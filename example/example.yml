@@ -1,0 +1,89 @@
+iter: 100
+# an example with a list
+datasize: [1024, 1024]
+# an example with nested associative arrays
+parallelism:
+  width:  4
+  height: 4
+
+--- # the subconfiguration for PDI
+pdi:
+  variables:
+    - name: coord
+      # a type similar to a MPI_Type_contiguous call
+      type: {kind: contiguous, count: 2, type: int}
+    - {name: height, type: int}
+    - {name: width, type: int}
+    - {name: iter, type: int}
+  data:
+    - name: main_field
+      dimensions: # additional dimensions so that the data is constant
+        iter: $iter # ref to a variable value
+        para_coord: $coord # idem
+      type:
+        kind: subarray # Cf. MPI_Type_subarray
+        # arguments of the MPI_Type_subarray call
+        ndims: 2
+        array_of_sizes: [$width, $height] # ref to variables
+        array_of_subsizes: [$width-2, $height-2] # ref + mathematical expression
+        array_of_starts: [1, 1]
+        order: ORDER_C
+        type: double # Cf. MPI_Double
+  plugins:
+    # load the hdf5_per_process PDI plugin
+    - name: hdf5_per_process
+      version: 1
+      # and here is its configuration
+      outputs:
+        - data: main_field
+          select: # the slices of the array to write
+            - mod($iter, 5) == 0 # a pythonic expression
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--- # a more complete example describing the exact same thing
+pdi:
+  types: # named types can be defined
+    - name: int_array # definition of a named type, just for the example
+      parameters: # named parameters can be used
+        - {name: size, type: int}
+      type: # the actual type definition
+        kind: vector # types are similar to MPI's (see MPI_Type_vector here)
+        # arguments of the MPI_Type_vector call
+        count: $size # reference to a named parameter
+        blocklength: 1 # ok, so that's
+        stride: 1      # actually a contiguous ...
+        type: int # same as MPI_int
+  variables:
+    - name: coord
+      type: {kind: int_array, size: 2} # reuse a named type defined before, just for the example
+    - {name: height, type: int}
+    - {name: width, type: int}
+    - {name: iter, type: int}
+  data:
+    - name: main_field
+      parameters: # values that identify one single call to PDI_val for main_field
+        iter: $iter # ref to a variable
+        para_coord: $coord # idem
+      type:
+        kind: subarray # Cf. MPI_Type_subarray
+        # arguments of the MPI_Type_subarray call
+        ndims: 2
+        array_of_sizes: [$width, $height] # ref to variables
+        array_of_subsizes: [$width-2, $height-2] # ref + mathematical expression
+        array_of_starts: [1, 1]
+        order: ORDER_C
+        type: double # Cf. MPI_Double
