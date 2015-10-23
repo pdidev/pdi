@@ -8,7 +8,7 @@ parallelism:
 
 --- # the subconfiguration for PDI
 pdi:
-  variables:
+  metadata:
     - name: coord
       # a type similar to a MPI_Type_contiguous call
       type: {kind: contiguous, count: 2, type: int}
@@ -16,15 +16,15 @@ pdi:
     - {name: width, type: int}
     - {name: iter, type: int}
   data:
-    - name: main_field
-      dimensions: # additional dimensions so that the data is constant
+    - name: main_field # main_field is a 3D array of 2D arrays
+      dimensions:
         iter: $iter # ref to a variable value
         para_coord: $coord # idem
       type:
-        kind: subarray # Cf. MPI_Type_subarray
+        kind: subarray # a subarray inside the local 2D array (excluding 
         # arguments of the MPI_Type_subarray call
         ndims: 2
-        array_of_sizes: [$width, $height] # ref to variables
+        array_of_sizes: [$width, $height] # ref to metadata
         array_of_subsizes: [$width-2, $height-2] # ref + mathematical expression
         array_of_starts: [1, 1]
         order: ORDER_C
@@ -36,8 +36,8 @@ pdi:
       # and here is its configuration
       outputs:
         - data: main_field
-          select: # the slices of the array to write
-            - mod($iter, 5) == 0 # a pythonic expression
+          select: mod($iter, 5) == 0 # a pythonic expression
+          file: 
 
 
 
@@ -67,7 +67,7 @@ pdi:
         blocklength: 1 # ok, so that's
         stride: 1      # actually a contiguous ...
         type: int # same as MPI_int
-  variables:
+  metadata:
     - name: coord
       type: {kind: int_array, size: 2} # reuse a named type defined before, just for the example
     - {name: height, type: int}
@@ -82,7 +82,7 @@ pdi:
         kind: subarray # Cf. MPI_Type_subarray
         # arguments of the MPI_Type_subarray call
         ndims: 2
-        array_of_sizes: [$width, $height] # ref to variables
+        array_of_sizes: [$width, $height] # ref to metadata
         array_of_subsizes: [$width-2, $height-2] # ref + mathematical expression
         array_of_starts: [1, 1]
         order: ORDER_C
