@@ -1,27 +1,19 @@
 # Header
 cmake_minimum_required(VERSION 3.0)
-cmake_policy(SET CMP0054 NEW)
-list(APPEND CMAKE_MODULE_PATH "cmake")
+project(paraconf LANGUAGES C)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-set(BUILD_SHARED_LIBS ON)
+option(BUILD_SHARED_LIBS "" ON)
+option(WITH_TESTS "" ON)
 
-find_package(MPI)
 add_subdirectory(vendor/paraconf)
 
-include_directories(include/ ${MPI_C_INCLUDE_PATH})
-
-set(SRC src/pdi.c)
-add_library(pdi ${SRC})
-target_link_libraries(pdi ${MPI_C_LIBRARIES} paraconf)
-set_target_properties(pdi PROPERTIES
-	LINK_FLAGS "${MPI_C_LINK_FLAGS}"
-	COMPILE_FLAGS "${MPI_C_COMPILE_FLAGS}"
+add_library(pdi src/pdi.c)
+target_link_libraries(pdi paraconf)
+target_include_directories(paraconf
+	PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
 )
 
-set(SRC_TEST example/example.c)
-add_executable(pdi_example ${SRC_TEST})
-target_link_libraries(pdi_example ${MPI_C_LIBRARIES} pdi paraconf)
-set_target_properties(pdi PROPERTIES
-	LINK_FLAGS ${MPI_C_LINK_FLAGS}
-	COMPILE_FLAGS ${MPI_C_COMPILE_FLAGS}
-)
+if("${WITH_TESTS}")
+	add_subdirectory(example/)
+endif()

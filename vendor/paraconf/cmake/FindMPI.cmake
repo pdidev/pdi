@@ -13,7 +13,8 @@
 # where <lang> is one of C, CXX, or Fortran:
 #   MPI_FOUND                  TRUE if FindMPI found MPI flags for all <lang>
 #   MPI_<lang>_COMPILER        MPI Compiler wrapper for <lang>
-#   MPI_<lang>_COMPILE_FLAGS   Compilation flags for MPI programs
+#   MPI_<lang>_COMPILE_FLAGS   Compilation flags for MPI programs (space separated)
+#   MPI_<lang>_COMPILE_OPTIONS Compilation flags for MPI programs (as a list)
 #   MPI_<lang>_INCLUDE_PATH    Include path(s) for MPI header
 #   MPI_<lang>_LINK_FLAGS      Linking flags for MPI programs
 #   MPI_<lang>_LIBRARIES       All libraries to link MPI programs against
@@ -78,6 +79,11 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
+
+cmake_minimum_required(VERSION 2.8.12)
+
+# Protect against multiple inclusion, which would fail when already imported targets are added once more.
+if(NOT TARGET mpi)
 
 # include this to handle the QUIETLY and REQUIRED arguments
 include(FindPackageHandleStandardArgs)
@@ -364,6 +370,7 @@ function (interrogate_mpi_compiler lang try_libs)
             set(MPI_LINK_FLAGS_WORK ${FLAG})
           endif()
         endforeach()
+				string(STRIP "${MPI_LINK_FLAGS_WORK}" MPI_LINK_FLAGS_WORK)
 
         # Extract the set of libraries to link against from the link command
         # line
@@ -585,14 +592,34 @@ foreach (lang C CXX Fortran)
     endif()
 
     list(APPEND _MPI_COMPILERS "${MPI_${lang}_COMPILER}")
+
+    # for newer cmake, provide COMPILE_OPTIONS in addition of COMPILE_FLAGS
+    string(REGEX REPLACE " +" ";" MPI_${lang}_COMPILE_OPTIONS ${MPI_${lang}_COMPILE_FLAGS})
   endif()
 endforeach()
 
+# Create imported target
+add_library(mpi UNKNOWN IMPORTED)
+list(GET MPI_C_LIBRARIES 0 _MPI_C_LIBRARY)
+set(_MPI_C_LIBRARIES_OTHER "${MPI_C_LIBRARIES}")
+list(REMOVE_AT _MPI_C_LIBRARIES_OTHER 0)
+set_target_properties(mpi PROPERTIES
+  IMPORTED_LOCATION             "${_MPI_C_LIBRARY}"
+  INTERFACE_COMPILE_OPTIONS     "${_MPI_C_COMPILE_OPTIONS}"
+  INTERFACE_INCLUDE_DIRECTORIES "${MPI_C_INCLUDE_PATH}"
+  INTERFACE_LINK_LIBRARIES      "${_MPI_C_LIBRARIES_OTHER};${MPI_C_LINK_FLAGS}"
+)
+
 find_package_handle_standard_args(MPI DEFAULT_MSG _MPI_COMPILERS)
+
+endif(NOT TARGET mpi)
+
 # unset these vars to cleanup namespace
 unset(_MPI_COMPILERS)
 unset(_MPI_PREFIX_PATH)
 unset(_MPI_BASE_DIR)
 foreach (lang C CXX Fortran)
   unset(_MPI_${lang}_COMPILER_NAMES)
+  unset(_MPI_${lang}_LIBRARY)
+  unset(_MPI_${lang}_LIBRARIES_OTHER)
 endforeach()

@@ -29,11 +29,11 @@
 
 #define PC_BUFFER_SIZE 256
 
-PC_status PC_get(yaml_document_t* document, const char* index, yaml_node_t* value)
+PC_status PC_get(yaml_node_t* document, const char* index, yaml_node_t* value)
 {
 	char tmp[PC_BUFFER_SIZE];
 	
-	value = yaml_document_get_root_node(document);
+	value = document;
 	
 	while ( *index ) {
 		switch ( *index ) {
@@ -70,3 +70,11 @@ PC_status PC_get_string(yaml_node_t* document, const char* index, char* value)
 {
 	return PC_OK;
 }
+
+PC_status PC_broadcast(yaml_node_t* document, int count, int root, MPI_Comm comm)
+{
+	char data[255];
+	MPI_Bcast(data, 255, MPI_CHAR, root, comm);
+	return PC_OK;
+}
+

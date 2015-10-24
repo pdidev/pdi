@@ -4,7 +4,7 @@
 
 # 3rd party
 - add C/Fortran struct generation based on kwalify
-- add parsong to C/Fortran struct
+- add parsing to C/Fortran struct
 
 # paraconf specific
 - add auto-broadcast capability

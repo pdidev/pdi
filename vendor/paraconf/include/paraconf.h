@@ -26,6 +26,7 @@
 #define PARACONF_H__
 
 #include <yaml.h>
+#include <mpi.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,6 +76,8 @@ PC_status PC_get_double(yaml_node_t *document, const char *index, double *value)
  * \return error status
  */
 PC_status PC_get_string(yaml_node_t *document, const char *index, char *value);
+
+PC_status PC_broadcast(yaml_node_t *document, int count, int root, MPI_Comm comm);
 
 #ifdef __cplusplus
 }
