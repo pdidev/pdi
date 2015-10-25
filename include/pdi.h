@@ -3,7 +3,10 @@
 #include <mpi.h>
 #endif // WITHOUT_MPI
 
-typedef enum { PDI_OK=0 } PDI_status_t;
+typedef enum { 
+	PDI_OK=0,
+	PDI_UNAVAILABLE ///< on an input call, no such data is available
+} PDI_status_t;
 
 /// \{ Initialization / Finalization stuff
 

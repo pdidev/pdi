@@ -116,9 +116,9 @@ int main(int argc, char *argv[])
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	assert(pwidth*pheight == size);
-	cart_dims[0] = pwidth;
-	cart_dims[1] = pheight;
-	cart_period[0]=0; cart_period[1]=0;
+	
+	cart_dims[0] = pwidth; cart_dims[1] = pheight;
+	cart_period[0]=0;      cart_period[1]=0;
 	MPI_Cart_create(MPI_COMM_WORLD, 2, cart_dims, cart_period, 1, &cart_com);
 	MPI_Cart_coords(main_comm, rank, 2, car_coord);
 
@@ -129,8 +129,10 @@ int main(int argc, char *argv[])
 	cur = malloc(sizeof(double)*width*height);
 	next = malloc(sizeof(double)*width*height);
 
-	init(cur, width, height, car_coord[0], car_coord[1]);
-
+	if ( PDI_import("main_field", cur) ) {
+		init(cur, width, height, car_coord[0], car_coord[1]);
+	}
+	
 	PDI_Event("main_loop");
 	for(ii=0; ii<nb_iter; ++ii) {
 		PDI_expose("iter", &ii);

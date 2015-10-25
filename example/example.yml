@@ -37,7 +37,8 @@ pdi:
       outputs:
         - data: main_field
           select: mod($iter, 5) == 0 # a pythonic expression
-          file: 
+          file: output_${coord[0]}x${coord[1]}.hdf5
+          var: /iter_${iter}/main_field
 
 
 
