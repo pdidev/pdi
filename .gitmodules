@@ -1,0 +1,3 @@
+[submodule "vendor/paraconf"]
+	path = vendor/paraconf
+	url = git@gitlab.maisondelasimulation.fr:jbigot/libparaconf.git

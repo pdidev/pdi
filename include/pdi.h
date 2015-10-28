@@ -1,9 +1,11 @@
 #include <yaml.h>
-#ifndef WITHOUT_MPI
 #include <mpi.h>
-#endif // WITHOUT_MPI
 
-typedef enum { 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum PDI_status_e { 
 	PDI_OK=0,
 	PDI_UNAVAILABLE ///< on an input call, no such data is available
 } PDI_status_t;
@@ -12,18 +14,10 @@ typedef enum {
 
 /** Initializes PDI
  * \param[in] conf the configuration
- * \return an error status
- */
-PDI_status_t PDI_init(const yaml_node_t *conf);
-
-#ifndef WITHOUT_MPI
-/** Initializes PDI with support for dedicated IO nodes over MPI.
  * \param[in,out] world the main MPI communicator
- * \param[in] conf the configuration
  * \return an error status
  */
-PDI_status_t PDI_MPI_init(const yaml_node_t *conf, MPI_Comm *world);
-#endif
+PDI_status_t PDI_init(const yaml_node_t *conf, MPI_Comm *world);
 
 /** Finalizes PDI
  * \return an error status
@@ -36,7 +30,7 @@ PDI_status_t PDI_finalize();
  * \param[in] event the event name
  * \return an error status
  */
-PDI_status_t PDI_Event(const char *event);
+PDI_status_t PDI_event(const char *event);
 
 /// \{ in/out data access
 
@@ -103,3 +97,7 @@ PDI_status_t PDI_import(const char *name, void *data);
 //TODO: a version of import where memory is allocated by PDI
 
 /// \}
+
+#ifdef __cplusplus
+} // extern C
+#endif

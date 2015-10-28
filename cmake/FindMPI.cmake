@@ -594,7 +594,7 @@ foreach (lang C CXX Fortran)
     list(APPEND _MPI_COMPILERS "${MPI_${lang}_COMPILER}")
 
     # for newer cmake, provide COMPILE_OPTIONS in addition of COMPILE_FLAGS
-    string(REGEX REPLACE " +" ";" MPI_${lang}_COMPILE_OPTIONS ${MPI_${lang}_COMPILE_FLAGS})
+    string(REGEX REPLACE " +" ";" MPI_${lang}_COMPILE_OPTIONS "${MPI_${lang}_COMPILE_FLAGS}")
   endif()
 endforeach()
 

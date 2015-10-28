@@ -32,7 +32,6 @@ pdi:
   plugins:
     # load the hdf5_per_process PDI plugin
     - name: hdf5_per_process
-      version: 1
       # and here is its configuration
       outputs:
         - data: main_field
