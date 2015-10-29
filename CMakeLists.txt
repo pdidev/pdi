@@ -10,13 +10,21 @@ option(WITH_TESTS
 	"Build tests in addition to the actual library"
 	ON
 )
+option(USE_SYSTEM_PARACONF
+	"Use an already installed paraconf instead of building the embedded one"
+	OFF
+)
 
 find_package(MPI REQUIRED)
-add_subdirectory(vendor/paraconf)
+if("${USE_SYSTEM_PARACONF}")
+	find_package(paraconf)
+else()
+	add_subdirectory(vendor/paraconf)
+endif()
 
-add_library(pdi src/pdi.c src/config.c)
+add_library(pdi src/api.c src/config.c)
 target_link_libraries(pdi paraconf mpi)
-target_include_directories(paraconf
+target_include_directories(pdi
 	PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
 )
 

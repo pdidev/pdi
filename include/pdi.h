@@ -1,3 +1,6 @@
+#ifndef PDI_H__
+#define PDI_H__
+
 #include <yaml.h>
 #include <mpi.h>
 
@@ -7,6 +10,7 @@ extern "C" {
 
 typedef enum PDI_status_e { 
 	PDI_OK=0,
+	PDI_NOT_IMPLEMENTED,
 	PDI_UNAVAILABLE ///< on an input call, no such data is available
 } PDI_status_t;
 
@@ -101,3 +105,5 @@ PDI_status_t PDI_import(const char *name, void *data);
 #ifdef __cplusplus
 } // extern C
 #endif
+
+#endif // PDI_H__

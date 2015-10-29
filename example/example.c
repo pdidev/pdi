@@ -101,26 +101,26 @@ int main(int argc, char *argv[])
 	conf = yaml_document_get_root_node(&conf_doc);
 	assert(conf);
 	
-	PC_get(conf, "pdi", pdi_conf);
+	assert(!PC_get(&conf_doc, conf, ".pdi", &pdi_conf));
 	main_comm = MPI_COMM_WORLD;
-	PDI_MPI_init(pdi_conf, &main_comm);
+	assert(!PDI_init(pdi_conf, &main_comm));
 
-	assert(!PC_get_int(conf, "iter", &nb_iter));
-	assert(!PC_get_int(conf, "datasize[0]", &height));
-	assert(!PC_get_int(conf, "datasize[1]", &width));
-	assert(!PC_get_int(conf, "parallelism/height", &pheight));
-	assert(!PC_get_int(conf, "parallelism/width", &pwidth));
+	assert(!PC_get_int(&conf_doc, conf, ".iter", &nb_iter));
+	assert(!PC_get_int(&conf_doc, conf, ".datasize[0]", &height));
+	assert(!PC_get_int(&conf_doc, conf, ".datasize[1]", &width));
+	assert(!PC_get_int(&conf_doc, conf, ".parallelism.height", &pheight));
+	assert(!PC_get_int(&conf_doc, conf, ".parallelism.width", &pwidth));
 
-	PDI_Event("initialization");
+	PDI_event("initialization");
 
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	assert(pwidth*pheight == size);
 	
-	cart_dims[0] = pwidth; cart_dims[1] = pheight;
-	cart_period[0]=0;      cart_period[1]=0;
+	cart_dims[0] =   pwidth; cart_dims[1] =   pheight;
+	cart_period[0] = 0;      cart_period[1] = 0;
 	MPI_Cart_create(MPI_COMM_WORLD, 2, cart_dims, cart_period, 1, &cart_com);
-	MPI_Cart_coords(main_comm, rank, 2, car_coord);
+	MPI_Cart_coords(cart_com, rank, 2, car_coord);
 
 	PDI_expose("coord", car_coord);
 	PDI_expose("height", &height);
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 		init(cur, width, height, car_coord[0], car_coord[1]);
 	}
 	
-	PDI_Event("main_loop");
+	PDI_event("main_loop");
 	for(ii=0; ii<nb_iter; ++ii) {
 		PDI_expose("iter", &ii);
 		PDI_expose("main_field", cur);
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 		exchange(cart_com,cur,next,height,width);
 		tmp = cur; cur = next; next = tmp; // 
 	}
-	PDI_Event("finalization");
+	PDI_event("finalization");
 	PDI_expose("main_field", cur);
 
 	yaml_document_delete(&conf_doc);

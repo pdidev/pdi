@@ -1,8 +1,9 @@
+#ifndef PDI_PLUGIN_H__
+#define PDI_PLUGIN_H__
+
 #include "pdi.h"
 
-typedef PDI_status_t (*PDI_init_f)(const yaml_node_t *conf);
-
-typedef PDI_status_t (*PDI_mpi_init_f)(const yaml_node_t *conf, MPI_Comm *world);
+typedef PDI_status_t (*PDI_init_f)(const yaml_node_t *conf, MPI_Comm *world);
 
 typedef PDI_status_t (*PDI_finalize_f)();
 
@@ -30,8 +31,6 @@ typedef struct PDI_plugin_impl_s {
 	
 	PDI_init_f init;
 	
-	PDI_mpi_init_f mpi_init;
-	
 	PDI_finalize_f finalize;
 	
 	PDI_event_f event;
@@ -47,3 +46,5 @@ typedef struct PDI_plugin_impl_s {
 	PDI_import_f import;
 	
 } PDI_plugin_impl_t;
+
+#endif // PDI_PLUGIN_H__
