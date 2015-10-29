@@ -89,32 +89,28 @@ int main(int argc, char *argv[])
 	FILE *conf_file;
 	yaml_parser_t conf_parser;
 	yaml_document_t conf_doc;
-	yaml_node_t *conf, *pdi_conf;
+	yaml_node_t *pdi_conf;
 
 	MPI_Init(&argc, &argv);
+
+	main_comm = MPI_COMM_WORLD;
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	
 	conf_file = fopen("example.yml", "rb");
 	assert(conf_file);
 	assert(yaml_parser_initialize(&conf_parser));
 	yaml_parser_set_input_file(&conf_parser, conf_file);
 	assert(yaml_parser_load(&conf_parser, &conf_doc));
-	conf = yaml_document_get_root_node(&conf_doc);
-	assert(conf);
 	
-	assert(!PC_get(&conf_doc, conf, ".pdi", &pdi_conf));
-	main_comm = MPI_COMM_WORLD;
+	assert(!PC_get(&conf_doc, NULL, ".pdi", &pdi_conf));
+	assert(!PC_get_int(&conf_doc, NULL, ".iter", &nb_iter));
+	assert(!PC_get_int(&conf_doc, NULL, ".datasize[0]", &height));
+	assert(!PC_get_int(&conf_doc, NULL, ".datasize[1]", &width));
+	assert(!PC_get_int(&conf_doc, NULL, ".parallelism.height", &pheight));
+	assert(!PC_get_int(&conf_doc, NULL, ".parallelism.width", &pwidth));
+	
 	assert(!PDI_init(pdi_conf, &main_comm));
-
-	assert(!PC_get_int(&conf_doc, conf, ".iter", &nb_iter));
-	assert(!PC_get_int(&conf_doc, conf, ".datasize[0]", &height));
-	assert(!PC_get_int(&conf_doc, conf, ".datasize[1]", &width));
-	assert(!PC_get_int(&conf_doc, conf, ".parallelism.height", &pheight));
-	assert(!PC_get_int(&conf_doc, conf, ".parallelism.width", &pwidth));
-
-	PDI_event("initialization");
-
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	assert(pwidth*pheight == size);
 	
 	cart_dims[0] =   pwidth; cart_dims[1] =   pheight;
