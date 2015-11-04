@@ -22,68 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#ifndef CONF_H__
+#define CONF_H__
+
 #include "pdi.h"
-#include "pdi_state.h"
-#include "pdi_plugin_impl.h"
-#include "conf.h"
 
-PDI_state_t PDI_state;
+PDI_status_t load_conf(yaml_document_t* document, yaml_node_t* node);
 
-PDI_status_t PDI_init(yaml_document_t *document, yaml_node_t* conf, MPI_Comm* world)
-{
-	PDI_state.nb_metadata = 0;
-	PDI_state.metadata = NULL;
-	PDI_state.nb_data = 0;
-	PDI_state.data = NULL;
-	PDI_state.nb_loaded_plugins = 0;
-	PDI_state.loaded_plugins = NULL;
-	
-	return load_conf(document, conf);
-}
-
-PDI_status_t PDI_finalize()
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_event(const char* event)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_share(const char* name, const void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_access(const char* name, void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_reclaim(const char* name)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_release(const char* name)
-{
-	return PDI_OK;
-}
-
-
-PDI_status_t PDI_expose(const char* name, const void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_export(const char* name, const void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_import(const char* name, void* data)
-{
-	return PDI_UNAVAILABLE;
-}
- 
+#endif // CONF_H__

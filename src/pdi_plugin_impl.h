@@ -22,68 +22,53 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#ifndef PDI_PLUGIN_H__
+#define PDI_PLUGIN_H__
+
 #include "pdi.h"
-#include "pdi_state.h"
-#include "pdi_plugin_impl.h"
-#include "conf.h"
 
-PDI_state_t PDI_state;
+typedef PDI_status_t (*PDI_init_f)(const yaml_node_t *conf, MPI_Comm *world);
 
-PDI_status_t PDI_init(yaml_document_t *document, yaml_node_t* conf, MPI_Comm* world)
-{
-	PDI_state.nb_metadata = 0;
-	PDI_state.metadata = NULL;
-	PDI_state.nb_data = 0;
-	PDI_state.data = NULL;
-	PDI_state.nb_loaded_plugins = 0;
-	PDI_state.loaded_plugins = NULL;
+typedef PDI_status_t (*PDI_finalize_f)();
+
+typedef PDI_status_t (*PDI_event_f)(const char *event);
+
+typedef PDI_status_t (*PDI_access_f)(const char *name, void *data);
+
+typedef PDI_status_t (*PDI_share_f)(const char *name, const void *data);
+
+typedef PDI_status_t (*PDI_release_f)(const char *name);
+
+typedef PDI_status_t (*PDI_reclaim_f)(const char *name);
+
+typedef PDI_status_t (*PDI_export_f)(const char *name, const void *data);
+
+typedef PDI_status_t (*PDI_expose_f)(const char *name, const void *data);
+
+typedef PDI_status_t (*PDI_import_f)(const char *name, void *data);
+
+typedef struct PDI_state_s PDI_state_t;
+
+/** Definition of a plugin
+ */
+typedef struct PDI_plugin_impl_s {
 	
-	return load_conf(document, conf);
-}
+	PDI_init_f init;
+	
+	PDI_finalize_f finalize;
+	
+	PDI_event_f event;
+	
+	PDI_access_f access;
+	
+	PDI_reclaim_f reclaim;
+	
+	PDI_export_f export_;
+	
+	PDI_expose_f expose;
+	
+	PDI_import_f import;
+	
+} PDI_plugin_impl_t;
 
-PDI_status_t PDI_finalize()
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_event(const char* event)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_share(const char* name, const void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_access(const char* name, void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_reclaim(const char* name)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_release(const char* name)
-{
-	return PDI_OK;
-}
-
-
-PDI_status_t PDI_expose(const char* name, const void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_export(const char* name, const void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_import(const char* name, void* data)
-{
-	return PDI_UNAVAILABLE;
-}
- 
+#endif // PDI_PLUGIN_H__

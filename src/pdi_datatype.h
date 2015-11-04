@@ -22,68 +22,90 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "pdi.h"
-#include "pdi_state.h"
-#include "pdi_plugin_impl.h"
-#include "conf.h"
+#ifndef PDI_DATATYPE_H__
+#define PDI_DATATYPE_H__
 
-PDI_state_t PDI_state;
+#include <string.h>
 
-PDI_status_t PDI_init(yaml_document_t *document, yaml_node_t* conf, MPI_Comm* world)
+typedef enum type_kind_e {
+	SCALAR,
+	ARRAY,
+	STRUCT
+} type_kind_t;
+
+typedef enum scalar_type_e {
+	INT8,
+	INT16,
+	INT32,
+	INT64,
+	UINT8,
+	UINT16,
+	UINT32,
+	UINT64,
+	FLOAT,
+	DOUBLE,
+	LONG_DOUBLE
+} scalar_type_t;
+
+typedef struct array_type_s array_type_t;
+
+typedef struct struct_type_s struct_type_t;
+
+typedef struct PDI_type_s
 {
-	PDI_state.nb_metadata = 0;
-	PDI_state.metadata = NULL;
-	PDI_state.nb_data = 0;
-	PDI_state.data = NULL;
-	PDI_state.nb_loaded_plugins = 0;
-	PDI_state.loaded_plugins = NULL;
+	type_kind_t kind;
 	
-	return load_conf(document, conf);
-}
+	union
+	{
+		scalar_type_t scalar;
+		
+		array_type_t *array;
+		
+		struct_type_t *struct_;
+		
+	};
+	
+} PDI_type_t;
 
-PDI_status_t PDI_finalize()
+typedef enum order_e {
+	ORDER_C,
+	ORDER_FORTRAN
+} order_t;
+
+typedef struct array_type_s
 {
-	return PDI_OK;
-}
+	int ndims;
+	
+	//TODO: change to be exprs
+	int *array_of_sizes;
+	
+	//TODO: change to be exprs
+	int *array_of_subsizes;
+	
+	//TODO: change to be exprs
+	int *array_of_starts;
+	
+	order_t order;
+	
+	PDI_type_t type;
+	
+} array_type_t;
 
-PDI_status_t PDI_event(const char* event)
+typedef struct member_s
 {
-	return PDI_OK;
-}
+	//TODO: change to be an expr
+	int displacement;
+	
+	PDI_type_t type;
+	
+} member_t;
 
-PDI_status_t PDI_share(const char* name, const void* data)
+typedef struct struct_type_s
 {
-	return PDI_OK;
-}
+	size_t nb_member;
+	
+	member_t *members;
+	
+} struct_type_t;
 
-PDI_status_t PDI_access(const char* name, void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_reclaim(const char* name)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_release(const char* name)
-{
-	return PDI_OK;
-}
-
-
-PDI_status_t PDI_expose(const char* name, const void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_export(const char* name, const void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_import(const char* name, void* data)
-{
-	return PDI_UNAVAILABLE;
-}
- 
+#endif // PDI_DATATYPE_H__

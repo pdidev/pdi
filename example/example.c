@@ -9,7 +9,7 @@
 
 #include "pdi.h"
 
-#define VAL2D(arr, xx, yy) arr[(xx)+width*(yy)]
+#define VAL2D(arr, xx, yy) (arr[(xx)+width*(yy)])
 
 void init(double* dat, int width, int height, int px, int py)
 {
@@ -26,7 +26,7 @@ void init(double* dat, int width, int height, int px, int py)
 	}
 }
 
-void iter(double* cur, double* next, int width, int height)
+void iter(double* cur, double* next, int height, int width)
 {
 	int xx, yy;
 	for (yy=1; yy<height-1; ++yy) {
@@ -41,7 +41,7 @@ void iter(double* cur, double* next, int width, int height)
 	}
 }
 
-void exchange(MPI_Comm cart_com, double *cur, double *next, int height, int width)
+void exchange(MPI_Comm cart_com, double *cur, int height, int width)
 {
 	MPI_Status status;
 	int rank_source, rank_dest;
@@ -49,34 +49,36 @@ void exchange(MPI_Comm cart_com, double *cur, double *next, int height, int widt
 	static int initialized = 0;
 	
 	if ( !initialized ) {
-		initialized = 1;
 		MPI_Type_vector(height, 1, width, MPI_DOUBLE, &column);
+		MPI_Type_commit(&column);
 		MPI_Type_contiguous(width, MPI_DOUBLE, &row);
+		MPI_Type_commit(&row);
+		initialized = 1;
 	}
 	
 	
 	/* send to the right */
 	MPI_Cart_shift(cart_com, 0, 1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur,  width-2, 0), 1, column, rank_dest,   100, /* send column before ghost */ 
-	             &VAL2D(next, 0,       0), 1, column, rank_source, 100, /* receive 1st column (ghost) */
+	MPI_Sendrecv(&VAL2D(cur, width-2, 0), 1, column, rank_dest,   100, /* send column before ghost */ 
+	             &VAL2D(cur, 0,       0), 1, column, rank_source, 100, /* receive 1st column (ghost) */
 	             cart_com, &status);
 
 	/* send to the left */
 	MPI_Cart_shift(cart_com, 0, -1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur,  1,       0), 1, column, rank_dest,   100, /* send column after ghost */
-	             &VAL2D(next, width-1, 0), 1, column, rank_source, 100, /* receive last column (ghost) */
+	MPI_Sendrecv(&VAL2D(cur, 1,       0), 1, column, rank_dest,   100, /* send column after ghost */
+	             &VAL2D(cur, width-1, 0), 1, column, rank_source, 100, /* receive last column (ghost) */
 	             cart_com, &status);
 
 	/* send down */
 	MPI_Cart_shift(cart_com, 1, 1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur,  0, height-2), 1, row, rank_dest,   100, /* send row before ghost */
-	             &VAL2D(next, 0, 0       ), 1, row, rank_source, 100, /* receive 1st row (ghost) */
+	MPI_Sendrecv(&VAL2D(cur, 0, height-2), 1, row, rank_dest,   100, /* send row before ghost */
+	             &VAL2D(cur, 0, 0       ), 1, row, rank_source, 100, /* receive 1st row (ghost) */
 	             cart_com, &status);
 
 	/* send up */
 	MPI_Cart_shift(cart_com, 1, -1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur,  0, 1       ), 1, row, rank_dest,   100, /* send column after ghost */
-	             &VAL2D(next, 0, height-1), 1, row, rank_source, 100, /* receive last column (ghost) */
+	MPI_Sendrecv(&VAL2D(cur, 0, 1       ), 1, row, rank_dest,   100, /* send column after ghost */
+	             &VAL2D(cur, 0, height-1), 1, row, rank_source, 100, /* receive last column (ghost) */
 	             cart_com, &status);
 }
 
@@ -110,11 +112,11 @@ int main(int argc, char *argv[])
 	assert(!PC_get_int(&conf_doc, NULL, ".parallelism.height", &pheight));
 	assert(!PC_get_int(&conf_doc, NULL, ".parallelism.width", &pwidth));
 	
-	assert(!PDI_init(pdi_conf, &main_comm));
+	assert(!PDI_init(&conf_doc, pdi_conf, &main_comm));
 	assert(pwidth*pheight == size);
 	
 	cart_dims[0] =   pwidth; cart_dims[1] =   pheight;
-	cart_period[0] = 0;      cart_period[1] = 0;
+	cart_period[0] = 1;      cart_period[1] = 1;
 	MPI_Cart_create(MPI_COMM_WORLD, 2, cart_dims, cart_period, 1, &cart_com);
 	MPI_Cart_coords(cart_com, rank, 2, car_coord);
 
@@ -133,8 +135,8 @@ int main(int argc, char *argv[])
 	for(ii=0; ii<nb_iter; ++ii) {
 		PDI_expose("iter", &ii);
 		PDI_expose("main_field", cur);
-		iter(cur, next, width, height);
-		exchange(cart_com,cur,next,height,width);
+		iter(cur, next, height, width);
+		exchange(cart_com, cur, height, width);
 		tmp = cur; cur = next; next = tmp; // 
 	}
 	PDI_event("finalization");
