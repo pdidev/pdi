@@ -29,22 +29,54 @@
 
 #include "conf.h"
 
+#define IDX_BUF_SIZE 256
+#define EXPR_BUF_SIZE 256
+
 static PDI_status_t load_datatype(yaml_document_t *document, yaml_node_t *node, PDI_type_t *type);
 
 static PDI_status_t load_subarray(yaml_document_t *document, yaml_node_t *node, array_type_t *type)
 {
 	PDI_status_t res = PDI_OK;
-	res = PC_get_int(document, node, ".ndims", &type->ndims);
-	if ( res ) return res;
-// 	res = PC_get_int(document, node, ".array_of_sizes", &type->array_of_sizes);
-	if ( res ) return res;
-// 	res = PC_get_int(document, node, ".array_of_subsizes", &type->array_of_subsizes);
-	if ( res ) return res;
-// 	res = PC_get_int(document, node, ".array_of_starts", &type->array_of_starts);
-	if ( res ) return res;
+	res = PC_get_int(document, node, ".ndims", &type->ndims); if ( res ) return res;
+	
+	int len;
+	res = PC_get_len(document, node, ".array_of_sizes", &len);
+	if ( len != type->ndims ) return PDI_CONFIG_ERROR;
+	res = PC_get_len(document, node, ".array_of_subsizes", &len);
+	if ( len != type->ndims ) return PDI_CONFIG_ERROR;
+	res = PC_get_len(document, node, ".array_of_starts", &len);
+	if ( len != type->ndims ) return PDI_CONFIG_ERROR;
+	
+	int ii;
+	type->array_of_sizes = malloc(type->ndims*sizeof(PDI_value_t));
+	for ( ii=0; ii<type->ndims; ++ii ) {
+		char idx[IDX_BUF_SIZE];
+		snprintf(idx, IDX_BUF_SIZE, ".array_of_sizes[%d]", ii);
+		char *expr;
+		res = PC_get_string(document, node, idx, &expr); if ( res ) return res;
+		res = PDI_value(expr, &type->array_of_sizes[ii]); if ( res ) return res;
+	}
+	
+	type->array_of_subsizes = malloc(type->ndims*sizeof(PDI_value_t));
+	for ( ii=0; ii<type->ndims; ++ii ) {
+		char idx[IDX_BUF_SIZE];
+		snprintf(idx, IDX_BUF_SIZE, ".array_of_subsizes[%d]", ii);
+		char *expr;
+		res = PC_get_string(document, node, idx, &expr); if ( res ) return res;
+		res = PDI_value(expr, &type->array_of_subsizes[ii]); if ( res ) return res;
+	}
+	
+	type->array_of_starts = malloc(type->ndims*sizeof(PDI_value_t));
+	for ( ii=0; ii<type->ndims; ++ii ) {
+		char idx[IDX_BUF_SIZE];
+		snprintf(idx, IDX_BUF_SIZE, ".array_of_starts[%d]", ii);
+		char *expr;
+		res = PC_get_string(document, node, idx, &expr); if ( res ) return res;
+		res = PDI_value(expr, &type->array_of_starts[ii]); if ( res ) return res;
+	}
+	
 	char *order_str;
-	res = PC_get_string(document, node, ".order", &order_str);
-	if ( res ) return res;
+	res = PC_get_string(document, node, ".order", &order_str); if ( res ) return res;
 	if ( !strcmp(order_str, "ORDER_C") ) {
 		type->order = ORDER_C;
 	} else if ( !strcmp(order_str, "ORDER_FORTRAN") ) {
@@ -52,30 +84,33 @@ static PDI_status_t load_subarray(yaml_document_t *document, yaml_node_t *node, 
 	} else {
 		return PDI_CONFIG_ERROR;
 	}
+	
 	yaml_node_t *type_type;
-	res = PC_get(document, node, ".type", &type_type);
-	if ( res ) return res;
-	res = load_datatype(document, type_type, &type->type);
-	return res;
+	res = PC_get(document, node, ".type", &type_type); if ( res ) return res;
+	
+	res = load_datatype(document, type_type, &type->type); return res;
 }
 
 static PDI_status_t load_contiguous(yaml_document_t *document, yaml_node_t *node, array_type_t *type)
 {
+	PDI_status_t res = PDI_OK;
+	
 	type->ndims = 1;
 	type->order = ORDER_C;
-	type->array_of_starts = malloc(sizeof(int));
-	type->array_of_starts[0] = 0;
-	type->array_of_sizes = malloc(sizeof(int));
-	type->array_of_subsizes = malloc(sizeof(int));
 	
-	PDI_status_t res = PDI_OK;
-	res = PC_get_int(document, node, ".count", type->array_of_sizes);
+	type->array_of_starts = malloc(sizeof(PDI_data_t));
+	res = PDI_value("0", type->array_of_starts); if ( res ) return res;
+	
+	type->array_of_sizes = malloc(sizeof(PDI_data_t));
+	char *expr;
+	res = PC_get_string(document, node, ".count", &expr);
+	res = PDI_value(expr, type->array_of_sizes); if ( res ) return res;
+	
 	type->array_of_subsizes = type->array_of_sizes;
+	
 	yaml_node_t *type_type;
-	res = PC_get(document, node, ".type", &type_type);
-	if ( res ) return res;
-	res = load_datatype(document, type_type, &type->type);
-	return res;
+	res = PC_get(document, node, ".type", &type_type); if ( res ) return res;
+	res = load_datatype(document, type_type, &type->type); return res;
 }
 
 static PDI_status_t load_datatype(yaml_document_t *document, yaml_node_t *node, PDI_type_t *type)
@@ -139,9 +174,10 @@ static PDI_status_t load_metadata(yaml_document_t *document, yaml_node_t *node)
 	if ( node->type != YAML_SEQUENCE_NODE ) return PDI_CONFIG_ERROR;
 	PDI_state.metadata = realloc(
 			PDI_state.metadata,
-			PDI_state.nb_metadata
+			( PDI_state.nb_metadata
 				+ node->data.sequence.items.top
-				- node->data.sequence.items.start
+				- node->data.sequence.items.start )
+				* sizeof(PDI_metadata_t)
 	);
 	yaml_node_item_t *metadata;
 	for (

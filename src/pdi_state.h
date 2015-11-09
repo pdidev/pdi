@@ -29,6 +29,7 @@
 
 #include "pdi_datatype.h"
 
+typedef struct PDI_value_s PDI_value_t;
 typedef struct PDI_plugin_impl_s PDI_plugin_impl_t;
 typedef struct PDI_type_s PDI_type_t;
 

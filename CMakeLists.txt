@@ -20,9 +20,8 @@ option(USE_SYSTEM_PARACONF
 )
 
 
-# used modules
+# dependancies
 
-include(GenerateExportHeader)
 find_package(MPI REQUIRED)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf)
@@ -35,10 +34,15 @@ endif()
 
 file(READ VERSION pdi_VERSION)
 
+
+# the actual library
+
 add_library(pdi
 	src/api.c
 	src/conf.c
+	src/pdi_value.c
 )
+include(GenerateExportHeader)
 generate_export_header(pdi)
 set_target_properties(pdi PROPERTIES C_VISIBILITY_PRESET hidden)
 target_include_directories(pdi

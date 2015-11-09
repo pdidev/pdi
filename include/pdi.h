@@ -38,7 +38,10 @@ typedef enum PDI_status_e {
 	PDI_OK=0,
 	/// on an input call, no such data is available
 	PDI_UNAVAILABLE,
-	PDI_CONFIG_ERROR
+	/// The configuration file is invalid
+	PDI_CONFIG_ERROR,
+	/// A value expression is invalid
+	PDI_VALUE_ERROR
 } PDI_status_t;
 
 /// \{ Initialization / Finalization stuff

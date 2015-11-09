@@ -22,87 +22,61 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_H__
-#define PDI_DATATYPE_H__
+#ifndef PDI_VALUE_H__
+#define PDI_VALUE_H__
 
-#include "pdi_value.h"
+#include "pdi.h"
 
-typedef enum type_kind_e {
-	SCALAR,
-	ARRAY,
-	STRUCT
-} type_kind_t;
+/* Grammar
+VALUE := VALUE2 ( OP1 VALUE2 )*
+OP1 ~= \+ | -
+VALUE2 := TERM ( OP2 TERM )*
+OP2 ~= \* | / | %
+TERM := CONST | REF | '(' VALUE ')'
+CONST ~= (0x)? [0-9]+
+REF ~= \$ [a-zA-Z_][a-zA-Z0-9_]*
+*/
 
-typedef enum scalar_type_e {
-	INT8,
-	INT16,
-	INT32,
-	INT64,
-	UINT8,
-	UINT16,
-	UINT32,
-	UINT64,
-	FLOAT,
-	DOUBLE,
-	LONG_DOUBLE
-} scalar_type_t;
+typedef struct PDI_value_s PDI_value_t;
+typedef struct PDI_metadata_s PDI_metadata_t;
 
-typedef struct array_type_s array_type_t;
+typedef enum PDI_exprop_e {
+	PDI_OP_PLUS = '+',
+	PDI_OP_MINUS = '-',
+	PDI_OP_MULT = '*',
+	PDI_OP_DIV = '/',
+	PDI_OP_MOD = '%'
+} PDI_exprop_t;
 
-typedef struct struct_type_s struct_type_t;
-
-typedef struct PDI_type_s
+typedef struct PDI_exprval_s
 {
-	type_kind_t kind;
+	int nb_value;
 	
-	union
-	{
-		scalar_type_t scalar;
+	PDI_value_t *values;
+	
+	PDI_exprop_t *ops;
+	
+} PDI_exprval_t;
+
+typedef enum PDI_valkind_e {
+	PDI_VAL_CONST,
+	PDI_VAL_REF,
+	PDI_VAL_EXPR
+} PDI_valkind_t;
+
+struct PDI_value_s
+{
+	PDI_valkind_t kind;
+	
+	union {
+		int constval;
 		
-		array_type_t *array;
+		PDI_metadata_t *refval;
 		
-		struct_type_t *struct_;
-		
+		PDI_exprval_t *exprval;
 	};
-	
-} PDI_type_t;
+};
 
-typedef enum order_e {
-	ORDER_C,
-	ORDER_FORTRAN
-} order_t;
+PDI_status_t PDI_value(char *val_str, PDI_value_t *value);
 
-typedef struct array_type_s
-{
-	int ndims;
-	
-	PDI_value_t *array_of_sizes;
-	
-	PDI_value_t *array_of_subsizes;
-	
-	PDI_value_t *array_of_starts;
-	
-	order_t order;
-	
-	PDI_type_t type;
-	
-} array_type_t;
-
-typedef struct member_s
-{
-	//TODO: change to be an expr
-	PDI_value_t displacement;
-	
-	PDI_type_t type;
-	
-} member_t;
-
-typedef struct struct_type_s
-{
-	int nb_member;
-	
-	member_t *members;
-	
-} struct_type_t;
-
-#endif // PDI_DATATYPE_H__
+#endif // PDI_VALUE_H__
