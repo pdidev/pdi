@@ -599,16 +599,12 @@ foreach (lang C CXX Fortran)
 endforeach()
 
 # Create imported target
-add_library(mpi UNKNOWN IMPORTED)
 list(GET MPI_C_LIBRARIES 0 _MPI_C_LIBRARY)
 set(_MPI_C_LIBRARIES_OTHER "${MPI_C_LIBRARIES}")
 list(REMOVE_AT _MPI_C_LIBRARIES_OTHER 0)
-set_target_properties(mpi PROPERTIES
-  IMPORTED_LOCATION             "${_MPI_C_LIBRARY}"
-  INTERFACE_COMPILE_OPTIONS     "${_MPI_C_COMPILE_OPTIONS}"
-  INTERFACE_INCLUDE_DIRECTORIES "${MPI_C_INCLUDE_PATH}"
-  INTERFACE_LINK_LIBRARIES      "${_MPI_C_LIBRARIES_OTHER};${MPI_C_LINK_FLAGS}"
-)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/MPIConfig.cmake.in MPIConfig.cmake)
+include(${CMAKE_CURRENT_BINARY_DIR}/MPIConfig.cmake)
+set(MPI_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/MPIConfig.cmake")
 
 find_package_handle_standard_args(MPI DEFAULT_MSG _MPI_COMPILERS)
 
