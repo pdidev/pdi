@@ -22,5 +22,8 @@
 # THE SOFTWARE.
 ################################################################################
 
-include("@@/paraconf.cmake")
+include(CMakeFindDependencyMacro)
+find_dependency(MPI)
+find_dependency(paraconf)
+
 include("${CMAKE_CURRENT_LIST_DIR}/pdi.cmake")

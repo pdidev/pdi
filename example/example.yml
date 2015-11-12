@@ -3,8 +3,8 @@ iter: 100
 datasize: [1024, 1024]
 # an example with nested associative arrays
 parallelism:
-  width:  4
-  height: 4
+  width:  2
+  height: 2
 pdi:
   metadata:
     - name: coord
