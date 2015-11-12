@@ -52,38 +52,51 @@ static PDI_status_t load_subarray(yaml_document_t *document, yaml_node_t *node, 
 	for ( ii=0; ii<type->ndims; ++ii ) {
 		char idx[IDX_BUF_SIZE];
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_sizes[%d]", ii);
-		char *expr;
-		res = PC_get_string(document, node, idx, &expr); if ( res ) return res;
-		res = PDI_value(expr, &type->array_of_sizes[ii]); if ( res ) return res;
+		char *expr = NULL;
+		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto sizes_free;
+		res = PDI_value(expr, &type->array_of_sizes[ii]); if (res) goto sizes_free;
+sizes_free:
+		free(expr);
+		if ( res ) return res;
 	}
 	
 	type->array_of_subsizes = malloc(type->ndims*sizeof(PDI_value_t));
 	for ( ii=0; ii<type->ndims; ++ii ) {
 		char idx[IDX_BUF_SIZE];
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_subsizes[%d]", ii);
-		char *expr;
-		res = PC_get_string(document, node, idx, &expr); if ( res ) return res;
-		res = PDI_value(expr, &type->array_of_subsizes[ii]); if ( res ) return res;
+		char *expr = NULL;
+		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto subsizes_free;
+		res = PDI_value(expr, &type->array_of_subsizes[ii]); if (res) goto subsizes_free;
+subsizes_free:
+		free(expr);
+		if ( res ) return res;
 	}
 	
 	type->array_of_starts = malloc(type->ndims*sizeof(PDI_value_t));
 	for ( ii=0; ii<type->ndims; ++ii ) {
 		char idx[IDX_BUF_SIZE];
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_starts[%d]", ii);
-		char *expr;
-		res = PC_get_string(document, node, idx, &expr); if ( res ) return res;
-		res = PDI_value(expr, &type->array_of_starts[ii]); if ( res ) return res;
+		char *expr = NULL;
+		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto starts_free;
+		res = PDI_value(expr, &type->array_of_starts[ii]); if (res) goto starts_free;
+starts_free:
+		free(expr);
+		if ( res ) return res;
 	}
 	
-	char *order_str;
-	res = PC_get_string(document, node, ".order", &order_str); if ( res ) return res;
+	char *order_str = NULL;
+	res = PC_get_string(document, node, ".order", &order_str, 0); if ( res ) goto order_free;
 	if ( !strcmp(order_str, "ORDER_C") ) {
 		type->order = ORDER_C;
 	} else if ( !strcmp(order_str, "ORDER_FORTRAN") ) {
 		type->order = ORDER_FORTRAN;
 	} else {
-		return PDI_CONFIG_ERROR;
+		res = PDI_CONFIG_ERROR;
+		goto order_free;
 	}
+order_free:
+	free(order_str);
+	if ( res ) return res;
 	
 	yaml_node_t *type_type;
 	res = PC_get(document, node, ".type", &type_type); if ( res ) return res;
@@ -102,9 +115,12 @@ static PDI_status_t load_contiguous(yaml_document_t *document, yaml_node_t *node
 	res = PDI_value("0", type->array_of_starts); if ( res ) return res;
 	
 	type->array_of_sizes = malloc(sizeof(PDI_data_t));
-	char *expr;
-	res = PC_get_string(document, node, ".count", &expr);
-	res = PDI_value(expr, type->array_of_sizes); if ( res ) return res;
+	char *expr = NULL;
+	res = PC_get_string(document, node, ".count", &expr, 0); if ( res ) goto expr_free;
+	res = PDI_value(expr, type->array_of_sizes); if ( res ) goto expr_free;
+expr_free:
+	free(expr);
+	if ( res ) return res;
 	
 	type->array_of_subsizes = type->array_of_sizes;
 	
@@ -115,31 +131,36 @@ static PDI_status_t load_contiguous(yaml_document_t *document, yaml_node_t *node
 
 static PDI_status_t load_datatype(yaml_document_t *document, yaml_node_t *node, PDI_type_t *type)
 {
-	char *scalar_type;
-	if ( !PC_get_string(document, node, "", &scalar_type) ) {
+	char *buf_str = NULL; 
+	if ( !PC_get_string(document, node, "", &buf_str, 0) ) {
 		type->kind = SCALAR;
-		if ( !strcmp(scalar_type, "int") ) {
+		if ( !strcmp(buf_str, "int") ) {
 			//TODO: adapt to the actual size of int
 			type->scalar = INT32;
 		} //TODO: handle missing types
+		free(buf_str);
 		return PDI_OK;
 	}
 	
-	char *kind;
-	if ( PC_get_string(document, node, ".kind", &kind) ) {
+	char *kind = NULL;
+	if ( PC_get_string(document, node, ".kind", &kind, 0) ) {
+		free(kind);
 		return PDI_CONFIG_ERROR;
 	}
 	
 	if ( !strcmp(kind, "subarray") ) {
+		free(kind);
 		type->kind = ARRAY;
 		type->array = malloc( sizeof(array_type_t) );
 		return load_subarray(document, node, type->array);
 	} else if ( !strcmp(kind, "contiguous") ) {
+		free(kind);
 		type->kind = ARRAY;
 		type->array = malloc( sizeof(array_type_t) );
 		return load_contiguous(document, node, type->array);
 	}
 	
+	free(kind);
 	return PDI_CONFIG_ERROR;
 }
 
@@ -151,15 +172,20 @@ static PDI_status_t load_metadata_item(yaml_document_t *document, yaml_node_t *n
 	data->memstatus = PDI_UNALOCATED;
 	yaml_node_pair_t *pair;
 	for ( pair = node->data.mapping.pairs.start; pair < node->data.mapping.pairs.top; ++pair ) {
-		char *key;
-		if ( PC_get_string(document, yaml_document_get_node(document, pair->key), "", &key) ) {
+		char *key = NULL;
+		if ( PC_get_string(document, yaml_document_get_node(document, pair->key), "", &key, NULL) ) {
+			free(key);
 			return PDI_CONFIG_ERROR;
 		}
 		if ( !strcmp(key, "name") ) {
-			if ( PC_get_string(document, yaml_document_get_node(document, pair->value), "", &data->name) ) {
+			free(key);
+			data->name = NULL;
+			if ( PC_get_string(document, yaml_document_get_node(document, pair->value), "", &data->name, NULL) ) {
+				free(data->name);
 				return PDI_CONFIG_ERROR;
 			}
 		} else if ( !strcmp(key, "type") ) {
+			free(key);
 			data->type = malloc(sizeof(PDI_type_t));
 			res = load_datatype(document, yaml_document_get_node(document, pair->value), data->type);
 			if ( res ) return res;
@@ -209,14 +235,17 @@ PDI_status_t load_conf(yaml_document_t *document, yaml_node_t *node)
 	yaml_node_pair_t *pair;
 	if ( node->type != YAML_MAPPING_NODE ) return PDI_CONFIG_ERROR;
 	for ( pair = node->data.mapping.pairs.start; pair < node->data.mapping.pairs.top; ++pair ) {
-		char *key;
-		if ( PC_get_string(document, yaml_document_get_node(document, pair->key), "", &key) ) {
+		char *key = NULL;
+		if ( PC_get_string(document, yaml_document_get_node(document, pair->key), "", &key, NULL) ) {
+			free(key);
 			return PDI_CONFIG_ERROR;
 		}
 		if ( !strcmp(key, "metadata") ) {
+			free(key);
 			res = load_metadata(document, yaml_document_get_node(document, pair->value));
 			if ( res ) return res;
 		} else if ( !strcmp(key, "data") ) {
+			free(key);
 			res = load_data(document, yaml_document_get_node(document, pair->value));
 			if ( res ) return res;
 		}
