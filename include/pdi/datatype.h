@@ -1,0 +1,85 @@
+/*******************************************************************************
+ * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * * Neither the name of CEA nor the names of its contributors may be used to
+ *   endorse or promote products derived from this software without specific 
+ *   prior written permission.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ ******************************************************************************/
+
+#ifndef PDI_DATATYPE_H__
+#define PDI_DATATYPE_H__
+
+#include <pdi/value.h>
+
+typedef struct PDI_type_s
+{
+	type_kind_t kind;
+	
+	union
+	{
+		scalar_type_t scalar;
+		
+		array_type_t *array;
+		
+		struct_type_t *struct_;
+		
+	};
+	
+} PDI_type_t;
+
+typedef enum order_e {
+	ORDER_C,
+	ORDER_FORTRAN
+} order_t;
+
+typedef struct array_type_s
+{
+	int ndims;
+	
+	PDI_value_t *array_of_sizes;
+	
+	PDI_value_t *array_of_subsizes;
+	
+	PDI_value_t *array_of_starts;
+	
+	order_t order;
+	
+	PDI_type_t type;
+	
+} array_type_t;
+
+typedef struct member_s
+{
+	PDI_value_t displacement;
+	
+	PDI_type_t type;
+	
+} member_t;
+
+typedef struct struct_type_s
+{
+	int nb_member;
+	
+	member_t *members;
+	
+} struct_type_t;
+
+PDI_status_t PDI_EXPORT PDI_datatype_load(yaml_document_t *document, yaml_node_t *node, PDI_type_t *type);
+
+#endif // PDI_DATATYPE_H__

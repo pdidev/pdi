@@ -22,87 +22,30 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_H__
-#define PDI_DATATYPE_H__
+#include <mpi.h>
 
-#include "pdi_value.h"
+#include <pdi.h>
+#include <pdi/plugin.h>
 
-typedef enum type_kind_e {
-	SCALAR,
-	ARRAY,
-	STRUCT
-} type_kind_t;
 
-typedef enum scalar_type_e {
-	INT8,
-	INT16,
-	INT32,
-	INT64,
-	UINT8,
-	UINT16,
-	UINT32,
-	UINT64,
-	FLOAT,
-	DOUBLE,
-	LONG_DOUBLE
-} scalar_type_t;
-
-typedef struct array_type_s array_type_t;
-
-typedef struct struct_type_s struct_type_t;
-
-typedef struct PDI_type_s
+PDI_status_t PDI_hdf5_per_process_init(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world)
 {
-	type_kind_t kind;
+	PDI_status_t err = PDI_OK;
 	
-	union
-	{
-		scalar_type_t scalar;
-		
-		array_type_t *array;
-		
-		struct_type_t *struct_;
-		
-	};
+	int rank; if (MPI_Comm_rank(*world, &rank)) { err = PDI_ERR_PLUGIN; goto init_err0; }
 	
-} PDI_type_t;
+	if ( rank == 0 ) {
+		printf("Welcome to the hdf5_per_process_init plugin!\n");
+	}
+	
+init_err0:
+	return PDI_OK;
+}
 
-typedef enum order_e {
-	ORDER_C,
-	ORDER_FORTRAN
-} order_t;
 
-typedef struct array_type_s
+PDI_status_t PDI_hdf5_per_process_finalize()
 {
-	int ndims;
-	
-	PDI_value_t *array_of_sizes;
-	
-	PDI_value_t *array_of_subsizes;
-	
-	PDI_value_t *array_of_starts;
-	
-	order_t order;
-	
-	PDI_type_t type;
-	
-} array_type_t;
+	return PDI_OK;
+}
 
-typedef struct member_s
-{
-	//TODO: change to be an expr
-	PDI_value_t displacement;
-	
-	PDI_type_t type;
-	
-} member_t;
-
-typedef struct struct_type_s
-{
-	int nb_member;
-	
-	member_t *members;
-	
-} struct_type_t;
-
-#endif // PDI_DATATYPE_H__
+PDI_PLUGIN(hdf5_per_process)

@@ -22,61 +22,35 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_VALUE_H__
-#define PDI_VALUE_H__
+#include <mpi.h>
 
-#include "pdi.h"
+#include <pdi.h>
+#include <pdi/plugin.h>
 
-/* Grammar
-VALUE := VALUE2 ( OP1 VALUE2 )*
-OP1 ~= \+ | -
-VALUE2 := TERM ( OP2 TERM )*
-OP2 ~= \* | / | %
-TERM := CONST | REF | '(' VALUE ')'
-CONST ~= (0x)? [0-9]+
-REF ~= \$ [a-zA-Z_][a-zA-Z0-9_]*
-*/
+MPI_Comm my_world;
 
-typedef struct PDI_value_s PDI_value_t;
-typedef struct PDI_metadata_s PDI_metadata_t;
-
-typedef enum PDI_exprop_e {
-	PDI_OP_PLUS = '+',
-	PDI_OP_MINUS = '-',
-	PDI_OP_MULT = '*',
-	PDI_OP_DIV = '/',
-	PDI_OP_MOD = '%'
-} PDI_exprop_t;
-
-typedef struct PDI_exprval_s
+PDI_status_t PDI_hdf5_per_process_init(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world)
 {
-	int nb_value;
+	my_world = *world;
 	
-	PDI_value_t *values;
+	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
 	
-	PDI_exprop_t *ops;
+	if ( rank == 0 ) {
+		printf("Welcome to the hdf5_per_process plugin!\n");
+	}
 	
-} PDI_exprval_t;
+	return PDI_OK;
+}
 
-typedef enum PDI_valkind_e {
-	PDI_VAL_CONST,
-	PDI_VAL_REF,
-	PDI_VAL_EXPR
-} PDI_valkind_t;
-
-struct PDI_value_s
+PDI_status_t PDI_hdf5_per_process_finalize()
 {
-	PDI_valkind_t kind;
+	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
 	
-	union {
-		int constval;
-		
-		PDI_metadata_t *refval;
-		
-		PDI_exprval_t *exprval;
-	};
-};
+	if ( rank == 0 ) {
+		printf("Goodbye from the hdf5_per_process plugin!\n");
+	}
+	
+	return PDI_OK;
+}
 
-PDI_status_t PDI_value(char *val_str, PDI_value_t *value);
-
-#endif // PDI_VALUE_H__
+PDI_PLUGIN(hdf5_per_process)

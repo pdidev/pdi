@@ -25,16 +25,16 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#include "pdi_state.h"
+#include "pdi/state.h"
 
-#include "pdi_value.h"
+#include "pdi/value.h"
 
 PDI_status_t parse_value(char **val_str, PDI_value_t *value);
 
 PDI_status_t parse_ref(char **val_str, PDI_metadata_t **value)
 {
 	char *refid = *val_str;
-	if ( *refid != '$' ) return PDI_VALUE_ERROR;
+	if ( *refid != '$' ) return PDI_ERR_VALUE;
 	++refid;
 	
 	if (!(
@@ -42,7 +42,7 @@ PDI_status_t parse_ref(char **val_str, PDI_metadata_t **value)
 		|| (*refid>='A' && *refid<='Z')
 		|| (*refid=='_')
 	)) {
-		return PDI_VALUE_ERROR;
+		return PDI_ERR_VALUE;
 	}
 	++refid;
 	
@@ -66,14 +66,14 @@ PDI_status_t parse_ref(char **val_str, PDI_metadata_t **value)
 		}
 	}
 	
-	return PDI_VALUE_ERROR;
+	return PDI_ERR_VALUE;
 }
 
 PDI_status_t parse_const(char **val_str, int *value)
 {
 	char *constval = *val_str;
 	long val_l = strtol(constval, &constval, 0);
-	if ( *val_str == constval ) return PDI_VALUE_ERROR;
+	if ( *val_str == constval ) return PDI_ERR_VALUE;
 	*value = val_l;
 	while ( isspace(*constval) ) ++constval;
 	*val_str = constval; return PDI_OK;
@@ -91,11 +91,11 @@ PDI_status_t parse_term(char **val_str, PDI_value_t *value)
 	}
 
 	char *term = *val_str;
-	if ( *term != '(' )  return PDI_VALUE_ERROR;
+	if ( *term != '(' )  return PDI_ERR_VALUE;
 	++term;
 	while ( isspace(*term) ) ++term;
-	if ( parse_value(&term, value) ) return PDI_VALUE_ERROR;
-	if ( *term != ')' )  return PDI_VALUE_ERROR;
+	if ( parse_value(&term, value) ) return PDI_ERR_VALUE;
+	if ( *term != ')' )  return PDI_ERR_VALUE;
 	++term;
 	while ( isspace(*term) ) ++term;
 	*val_str = term; return PDI_OK;
@@ -105,13 +105,13 @@ PDI_status_t parse_op(char **val_str, int prio, PDI_exprop_t *value)
 {
 	switch ( **val_str ) {
 	case PDI_OP_PLUS: case PDI_OP_MINUS: {
-		if ( prio != 1 ) return PDI_VALUE_ERROR;
+		if ( prio != 1 ) return PDI_ERR_VALUE;
 	} break;
 	case PDI_OP_MULT: case PDI_OP_DIV: case PDI_OP_MOD: {
-		if ( prio != 2 ) return PDI_VALUE_ERROR;
+		if ( prio != 2 ) return PDI_ERR_VALUE;
 	} break;
 	default:
-		return PDI_VALUE_ERROR;
+		return PDI_ERR_VALUE;
 	}
 	++ *val_str;
 	while ( isspace(**val_str) ) ++*val_str;
@@ -121,7 +121,7 @@ PDI_status_t parse_op(char **val_str, int prio, PDI_exprop_t *value)
 PDI_status_t parse_value2(char **val_str, PDI_value_t *value)
 {
 	char *exprval = *val_str;
-	if ( parse_term(&exprval, value) ) return PDI_VALUE_ERROR;
+	if ( parse_term(&exprval, value) ) return PDI_ERR_VALUE;
 	PDI_exprval_t *expr = NULL;
 	PDI_exprop_t op;
 	while ( !parse_op(&exprval, 2, &op) ) {
@@ -142,7 +142,7 @@ PDI_status_t parse_value2(char **val_str, PDI_value_t *value)
 			free(expr->values);
 			free(expr->ops);
 			free(expr);
-			return PDI_VALUE_ERROR;
+			return PDI_ERR_VALUE;
 		}
 	}
 	*val_str = exprval; return PDI_OK;
@@ -151,7 +151,7 @@ PDI_status_t parse_value2(char **val_str, PDI_value_t *value)
 PDI_status_t parse_value(char **val_str, PDI_value_t *value)
 {
 	char *exprval = *val_str;
-	if ( parse_value2(&exprval, value) ) return PDI_VALUE_ERROR;
+	if ( parse_value2(&exprval, value) ) return PDI_ERR_VALUE;
 	PDI_exprval_t *expr = NULL;
 	PDI_exprop_t op;
 	while ( !parse_op(&exprval, 1, &op) ) {
@@ -172,7 +172,7 @@ PDI_status_t parse_value(char **val_str, PDI_value_t *value)
 			free(expr->values);
 			free(expr->ops);
 			free(expr);
-			return PDI_VALUE_ERROR;
+			return PDI_ERR_VALUE;
 		}
 	}
 	*val_str = exprval; return PDI_OK;
@@ -183,6 +183,6 @@ PDI_status_t PDI_value(char *val_str, PDI_value_t* value)
 	while ( isspace(*val_str) ) ++val_str;
 	PDI_status_t err = parse_value(&val_str, value);
 	if ( err ) return err;
-	if ( *val_str ) return PDI_VALUE_ERROR;
+	if ( *val_str ) return PDI_ERR_VALUE;
 	return PDI_OK;
 }

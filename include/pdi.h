@@ -32,17 +32,24 @@ extern "C" {
 #include <yaml.h>
 #include <mpi.h>
 
-#include "pdi_export.h"
+#include <pdi_export.h>
 
 typedef enum PDI_status_e {
 	PDI_OK=0,
 	/// on an input call, no such data is available
 	PDI_UNAVAILABLE,
 	/// The configuration file is invalid
-	PDI_CONFIG_ERROR,
+	PDI_ERR_CONFIG,
 	/// A value expression is invalid
-	PDI_VALUE_ERROR
+	PDI_ERR_VALUE,
+	/// Tried to load a non-existing plugin
+	PDI_ERR_PLUGIN
 } PDI_status_t;
+
+typedef enum PDI_inout_e {
+	PDI_IN = 1,
+	PDI_OUT = 2
+} PDI_inout_t;
 
 /// \{ Initialization / Finalization stuff
 
@@ -66,69 +73,74 @@ PDI_status_t PDI_EXPORT PDI_finalize();
  */
 PDI_status_t PDI_EXPORT PDI_event(const char *event);
 
-/// \{ in/out data access
+/// \{ data access
 
-/** Let the code take a look at some data. Neither PDI nor the user code
- * should modify it before a call to either PDI_release or PDI_reclaim.
+/** Shares some data with PDI. The user code should not modify it before
+ * a call to either PDI_release or PDI_reclaim.
  * \param[in] name the data name
- * \param[out] data the accessed data
+ * \param[in,out] data the accessed data
+ * \param[in] access whether the data can be accessed for read or write 
+ *                   by PDI
  * \return an error status
+ * \pre the user code owns the data buffer
+ * \post ownership of the data buffer is shared between PDI and the user code
+ * 
+ * the access parameter is a binary OR of PDI_IN & PDI_OUT.
+ * * PDI_IN means PDI can modify the buffer
+ * * PDI_OUT means the buffer contains data that can be accessed by PDI
  */
-PDI_status_t PDI_EXPORT PDI_access(const char *name, void *data);
-
-//TODO: a version of access where memory is allocated by PDI
-
-/** Shares some data with PDI. Neither PDI nor the user code should modify it
- * before a call to either PDI_release or PDI_reclaim.
- * \param[in] name the data name
- * \param[in] data the shared data
- * \return an error status
- */
-PDI_status_t PDI_EXPORT PDI_share(const char *name, const void *data);
-
-/// \}
-
-/// \{ memory ownership management
+PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, int access);
 
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
  * \param[in] name name of the data to release
  * \return an error status
+ * \pre ownership of the data buffer is shared between PDI and the user code
+ * \pre PDI owns the data buffer
  */
 PDI_status_t PDI_EXPORT PDI_release(const char *name);
 
-/** Exposes a value to PDI
+/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
+ * free the associated memory whenever necessary.
  * \param[in] name name of the data to reclaim
  * \return an error status
+ * \pre ownership of the data buffer is shared between PDI and the user code
+ * \post the user code owns the data buffer
  */
 PDI_status_t PDI_EXPORT PDI_reclaim(const char *name);
+
+/** Requests for PDI to allocate (and initialize) a data buffer.
+ * \param[in] name the data name
+ * \param[in,out] data the accessed data
+ * \return an error status
+ * \post the user code owns the data buffer
+ */
+// PDI_status_t PDI_EXPORT PDI_alloc(const char *name, void **data);
 
 /// \}
 
 /// \{ combined in/out data access & memory ownership
 
-/** Exports some data to PDI. Equivalent to PDI_share + PDI_release.
+/** Exports some data to PDI. Equivalent to PDI_share(OUT) + PDI_release.
  * \param[in] name the data name
  * \param[in] data the exported data
  * \return an error status
  */
 PDI_status_t PDI_EXPORT PDI_export(const char *name, const void *data);
 
-/** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
+/** Shortly exposes some data to PDI. Equivalent to PDI_share(OUT) + PDI_reclaim.
  * \param[in] name the data name
  * \param[in] data the exposed data
  * \return an error status
  */
 PDI_status_t PDI_EXPORT PDI_expose(const char *name, const void *data);
 
-/** Imports some data from PDI. Equivalent to PDI_access + PDI_reclaim.
+/** Imports some data from PDI. Equivalent to PDI_share(IN) + PDI_reclaim.
  * \param[in] name the data name
  * \param[out] data the data to initialize
  * \return an error status
  */
 PDI_status_t PDI_EXPORT PDI_import(const char *name, void *data);
-
-//TODO: a version of import where memory is allocated by PDI
 
 /// \}
 

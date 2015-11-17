@@ -22,84 +22,61 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef STATE_H__
-#define STATE_H__
+#ifndef PDI_VALUE_H__
+#define PDI_VALUE_H__
 
-#include <string.h>
+#include <pdi.h>
 
-#include "pdi_datatype.h"
+/* Grammar
+VALUE := VALUE2 ( OP1 VALUE2 )*
+OP1 ~= \+ | -
+VALUE2 := TERM ( OP2 TERM )*
+OP2 ~= \* | / | %
+TERM := CONST | REF | '(' VALUE ')'
+CONST ~= (0x)? [0-9]+
+REF ~= \$ [a-zA-Z_][a-zA-Z0-9_]*
+*/
 
 typedef struct PDI_value_s PDI_value_t;
-typedef struct PDI_plugin_impl_s PDI_plugin_impl_t;
-typedef struct PDI_type_s PDI_type_t;
+typedef struct PDI_metadata_s PDI_metadata_t;
 
-typedef struct loaded_plugin_s
+typedef enum PDI_exprop_e {
+	PDI_OP_PLUS = '+',
+	PDI_OP_MINUS = '-',
+	PDI_OP_MULT = '*',
+	PDI_OP_DIV = '/',
+	PDI_OP_MOD = '%'
+} PDI_exprop_t;
+
+typedef struct PDI_exprval_s
 {
-	char *name;
+	int nb_value;
 	
-	PDI_plugin_impl_t *impl;
+	PDI_value_t *values;
 	
-} loaded_plugin_t;
+	PDI_exprop_t *ops;
+	
+} PDI_exprval_t;
 
-typedef enum PDI_memstatus_e {
-	PDI_UNALOCATED,
-	PDI_SHARED,
-	PDI_OWNED
-} PDI_memstatus_t;
+typedef enum PDI_valkind_e {
+	PDI_VAL_CONST,
+	PDI_VAL_REF,
+	PDI_VAL_EXPR
+} PDI_valkind_t;
 
-typedef struct PDI_metadata_s
+struct PDI_value_s
 {
-	char *name;
+	PDI_valkind_t kind;
 	
-	PDI_type_t *type;
-	
-	PDI_memstatus_t memstatus;
-	
-	void *value;
-	
-} PDI_metadata_t;
+	union {
+		int constval;
+		
+		PDI_metadata_t *refval;
+		
+		PDI_exprval_t *exprval;
+	};
+};
 
-typedef struct PDI_dimension_s
-{
-	char *name;
-	
-	//TODO: change to be an expr
-	PDI_metadata_t *value;
-	
-} PDI_dimension_t;
+PDI_status_t PDI_EXPORT PDI_value(char *val_str, PDI_value_t *value);
 
-typedef struct PDI_data_s
-{
-	char *name;
-	
-	PDI_type_t *type;
-	
-	size_t nb_coord;
-	
-	PDI_metadata_t *coords;
-	
-	PDI_memstatus_t memstatus;
-	
-	void *value;
-	
-} PDI_data_t;
-
-typedef struct PDI_state_s
-{
-	size_t nb_metadata;
-	
-	PDI_metadata_t *metadata;
-	
-	size_t nb_data;
-	
-	PDI_data_t *data;
-	
-	size_t nb_loaded_plugins;
-	
-	PDI_plugin_impl_t *loaded_plugins;
-	
-} PDI_state_t;
-
-extern PDI_state_t PDI_state;
-
-#endif // STATE_H__
+#endif // PDI_VALUE_H__

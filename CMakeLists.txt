@@ -34,6 +34,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 
+if(POLICY CMP0063)
+cmake_policy(SET CMP0063 NEW)
+endif()
+
 
 # Build options
 
@@ -71,7 +75,10 @@ file(READ VERSION pdi_VERSION)
 add_library(pdi
 	src/api.c
 	src/conf.c
-	src/pdi_value.c
+	src/datatype.c
+	src/plugin_loader.c
+	src/value.c
+	src/hdf5_per_process/hdf5_per_process.c
 )
 include(GenerateExportHeader)
 generate_export_header(pdi)

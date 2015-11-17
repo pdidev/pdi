@@ -22,53 +22,90 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_PLUGIN_H__
-#define PDI_PLUGIN_H__
+#ifndef PDI_STATE_H__
+#define PDI_STATE_H__
 
-#include "pdi.h"
+#include <pdi/datatype.h>
 
-typedef PDI_status_t (*PDI_init_f)(const yaml_node_t *conf, MPI_Comm *world);
-
-typedef PDI_status_t (*PDI_finalize_f)();
-
-typedef PDI_status_t (*PDI_event_f)(const char *event);
-
-typedef PDI_status_t (*PDI_access_f)(const char *name, void *data);
-
-typedef PDI_status_t (*PDI_share_f)(const char *name, const void *data);
-
-typedef PDI_status_t (*PDI_release_f)(const char *name);
-
-typedef PDI_status_t (*PDI_reclaim_f)(const char *name);
-
-typedef PDI_status_t (*PDI_export_f)(const char *name, const void *data);
-
-typedef PDI_status_t (*PDI_expose_f)(const char *name, const void *data);
-
-typedef PDI_status_t (*PDI_import_f)(const char *name, void *data);
-
-typedef struct PDI_state_s PDI_state_t;
-
-/** Definition of a plugin
- */
-typedef struct PDI_plugin_impl_s {
+typedef struct loaded_plugin_s
+{
+	char *name;
 	
-	PDI_init_f init;
+	PDI_plugin_t *impl;
 	
-	PDI_finalize_f finalize;
-	
-	PDI_event_f event;
-	
-	PDI_access_f access;
-	
-	PDI_reclaim_f reclaim;
-	
-	PDI_export_f export_;
-	
-	PDI_expose_f expose;
-	
-	PDI_import_f import;
-	
-} PDI_plugin_impl_t;
+} loaded_plugin_t;
 
-#endif // PDI_PLUGIN_H__
+typedef enum PDI_memstatus_e {
+	PDI_UNALOCATED,
+	PDI_SHARED,
+	PDI_OWNED
+} PDI_memstatus_t;
+
+typedef struct PDI_metadata_s
+{
+	char *name;
+	
+	PDI_type_t *type;
+	
+	PDI_memstatus_t memstatus;
+	
+	void *value;
+	
+} PDI_metadata_t;
+
+typedef struct PDI_dimension_s
+{
+	char *name;
+	
+	PDI_value_t *value;
+	
+} PDI_dimension_t;
+
+typedef struct PDI_data_content_s
+{
+	int *coords;
+	
+	PDI_memstatus_t memstatus;
+	
+	// PDI_inout_t ORed
+	int access;
+	
+	void *data;
+	
+} PDI_data_content_t;
+
+typedef struct PDI_data_s
+{
+	char *name;
+	
+	PDI_type_t *type;
+	
+	int nb_coord;
+	
+	PDI_metadata_t *coords;
+	
+	int nb_content;
+	
+	PDI_data_content_t *content;
+	
+} PDI_data_t;
+
+typedef struct PDI_state_s
+{
+	int nb_metadata;
+	
+	PDI_metadata_t *metadata;
+	
+	int nb_data;
+	
+	PDI_data_t *data;
+	
+	int nb_plugins;
+	
+	PDI_plugin_t *plugins;
+	
+} PDI_state_t;
+
+extern PDI_state_t PDI_EXPORT PDI_state;
+
+#endif // PDI_STATE_H__

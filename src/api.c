@@ -22,28 +22,54 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include "paraconf.h"
+
 #include "pdi.h"
-#include "pdi_state.h"
-#include "pdi_plugin_impl.h"
+#include "pdi/plugin.h"
+
+#include "pdi/state.h"
+#include "plugin_loader.h"
 #include "conf.h"
 
 PDI_state_t PDI_state;
 
 PDI_status_t PDI_init(yaml_document_t *document, yaml_node_t* conf, MPI_Comm* world)
 {
+	PDI_status_t err = PDI_OK;
 	PDI_state.nb_metadata = 0;
 	PDI_state.metadata = NULL;
 	PDI_state.nb_data = 0;
 	PDI_state.data = NULL;
-	PDI_state.nb_loaded_plugins = 0;
-	PDI_state.loaded_plugins = NULL;
+	PDI_state.nb_plugins = 0;
+	PDI_state.plugins = NULL;
 	
-	return load_conf(document, conf);
+	err = load_conf(document, conf); if (err) goto init_err;
+	
+	err = PC_get_len(document, conf, ".plugins", &PDI_state.nb_plugins); if (err) goto init_err;
+	PDI_state.plugins = malloc(PDI_state.nb_plugins*sizeof(PDI_plugin_t));
+	
+	int ii;
+	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+		yaml_node_t *plugin_conf; err = PC_get(document, conf, ".plugins[%d]", &plugin_conf, ii); if (err) goto init_err;
+		err = plugin_loader_load(document, plugin_conf, world, &PDI_state.plugins[ii]); if (err) goto init_err;
+	}
+	
+	
+init_err:
+	return err;
 }
 
 PDI_status_t PDI_finalize()
 {
-	return PDI_OK;
+	PDI_status_t err = PDI_OK;
+	
+	int ii;
+	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+		err = PDI_state.plugins[ii].finalize(); if (err) goto finalize_err0;
+	}
+	
+finalize_err0:
+	return err;
 }
 
 PDI_status_t PDI_event(const char* event)
@@ -51,18 +77,9 @@ PDI_status_t PDI_event(const char* event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_share(const char* name, const void* data)
+PDI_status_t PDI_share(const char* name, void* data, int access)
 {
-	return PDI_OK;
-}
-
-PDI_status_t PDI_access(const char* name, void* data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_reclaim(const char* name)
-{
+	if ( access && PDI_IN ) return PDI_UNAVAILABLE;
 	return PDI_OK;
 }
 
@@ -71,6 +88,10 @@ PDI_status_t PDI_release(const char* name)
 	return PDI_OK;
 }
 
+PDI_status_t PDI_reclaim(const char* name)
+{
+	return PDI_OK;
+}
 
 PDI_status_t PDI_expose(const char* name, const void* data)
 {
