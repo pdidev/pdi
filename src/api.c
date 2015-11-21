@@ -27,7 +27,7 @@
 #include "pdi.h"
 #include "pdi/plugin.h"
 
-#include "pdi/state.h"
+#include "state.h"
 #include "plugin_loader.h"
 #include "conf.h"
 

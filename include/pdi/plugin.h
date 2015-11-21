@@ -27,13 +27,15 @@
 
 #include <pdi.h>
 
+typedef struct PDI_data_s PDI_data_t;
+
 typedef PDI_status_t (*PDI_finalize_f)();
 
 typedef PDI_status_t (*PDI_event_f)(const char *event);
 
 typedef PDI_status_t (*PDI_data_start_f)(PDI_data_t *data, PDI_inout_t access);
 
-typedef PDI_status_t (*PDI_data_end_f)(PDI_data_t *data, PDI_memstatus);
+typedef PDI_status_t (*PDI_data_end_f)(PDI_data_t *data);
 
 /** Definition of a plugin
  */

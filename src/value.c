@@ -25,9 +25,9 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#include "pdi/state.h"
+#include "state.h"
 
-#include "pdi/value.h"
+#include "value.h"
 
 PDI_status_t parse_value(char **val_str, PDI_value_t *value);
 

@@ -25,7 +25,7 @@
 #include <paraconf.h>
 
 #include "pdi.h"
-#include "pdi/state.h"
+#include "state.h"
 
 #include "conf.h"
 

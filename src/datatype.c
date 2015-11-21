@@ -26,7 +26,7 @@
 
 #include "pdi.h"
 
-#include "pdi/datatype.h"
+#include "datatype.h"
 
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256

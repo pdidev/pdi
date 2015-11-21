@@ -22,90 +22,88 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_STATE_H__
-#define PDI_STATE_H__
+#ifndef PDI_DATATYPE_H__
+#define PDI_DATATYPE_H__
 
-#include <pdi/datatype.h>
+#include "value.h"
 
-typedef struct loaded_plugin_s
+typedef struct array_type_s array_type_t;
+
+typedef struct struct_type_s struct_type_t;
+
+typedef enum type_kind_e {
+	SCALAR,
+	ARRAY,
+	STRUCT
+} type_kind_t;
+
+typedef enum scalar_type_e {
+	INT8,
+	INT16,
+	INT32,
+	INT64,
+	UINT8,
+	UINT16,
+	UINT32,
+	UINT64,
+	FLOAT,
+	DOUBLE,
+	LONG_DOUBLE
+} scalar_type_t;
+
+typedef struct PDI_type_s
 {
-	char *name;
+	type_kind_t kind;
 	
-	PDI_plugin_t *impl;
+	union
+	{
+		scalar_type_t scalar;
+		
+		array_type_t *array;
+		
+		struct_type_t *struct_;
+		
+	};
 	
-} loaded_plugin_t;
+} PDI_type_t;
 
-typedef enum PDI_memstatus_e {
-	PDI_UNALOCATED,
-	PDI_SHARED,
-	PDI_OWNED
-} PDI_memstatus_t;
+typedef enum order_e {
+	ORDER_C,
+	ORDER_FORTRAN
+} order_t;
 
-typedef struct PDI_metadata_s
+typedef struct array_type_s
 {
-	char *name;
+	int ndims;
 	
-	PDI_type_t *type;
+	PDI_value_t *array_of_sizes;
 	
-	PDI_memstatus_t memstatus;
+	PDI_value_t *array_of_subsizes;
 	
-	void *value;
+	PDI_value_t *array_of_starts;
 	
-} PDI_metadata_t;
+	order_t order;
+	
+	PDI_type_t type;
+	
+} array_type_t;
 
-typedef struct PDI_dimension_s
+typedef struct member_s
 {
-	char *name;
+	PDI_value_t displacement;
 	
-	PDI_value_t *value;
+	PDI_type_t type;
 	
-} PDI_dimension_t;
+} member_t;
 
-typedef struct PDI_data_content_s
+typedef struct struct_type_s
 {
-	int *coords;
+	int nb_member;
 	
-	PDI_memstatus_t memstatus;
+	member_t *members;
 	
-	// PDI_inout_t ORed
-	int access;
-	
-	void *data;
-	
-} PDI_data_content_t;
+} struct_type_t;
 
-typedef struct PDI_data_s
-{
-	char *name;
-	
-	PDI_type_t *type;
-	
-	int nb_coord;
-	
-	PDI_metadata_t *coords;
-	
-	int nb_content;
-	
-	PDI_data_content_t *content;
-	
-} PDI_data_t;
+PDI_status_t PDI_EXPORT PDI_datatype_load(yaml_document_t *document, yaml_node_t *node, PDI_type_t *type);
 
-typedef struct PDI_state_s
-{
-	int nb_metadata;
-	
-	PDI_metadata_t *metadata;
-	
-	int nb_data;
-	
-	PDI_data_t *data;
-	
-	int nb_plugins;
-	
-	PDI_plugin_t *plugins;
-	
-} PDI_state_t;
-
-extern PDI_state_t PDI_EXPORT PDI_state;
-
-#endif // PDI_STATE_H__
+#endif // PDI_DATATYPE_H__
