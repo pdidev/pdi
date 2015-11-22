@@ -53,4 +53,19 @@ PDI_status_t PDI_hdf5_per_process_finalize()
 	return PDI_OK;
 }
 
+PDI_status_t PDI_hdf5_per_process_event(const char *event)
+{
+	return PDI_OK;
+}
+
+PDI_status_t PDI_hdf5_per_process_data_start(PDI_data_t *data, PDI_inout_t access)
+{
+	return PDI_OK;
+}
+
+PDI_status_t PDI_hdf5_per_process_data_end(PDI_data_t *data)
+{
+	return PDI_OK;
+}
+
 PDI_PLUGIN(hdf5_per_process)

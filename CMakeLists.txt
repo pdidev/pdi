@@ -78,7 +78,6 @@ add_library(pdi
 	src/datatype.c
 	src/plugin_loader.c
 	src/value.c
-	src/hdf5_per_process/hdf5_per_process.c
 )
 include(GenerateExportHeader)
 generate_export_header(pdi)
@@ -87,11 +86,17 @@ target_include_directories(pdi
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
 )
-target_link_libraries(pdi paraconf )
-# set_property(TARGET pdi PROPERTY VERSION ${pdi_VERSION})
+target_link_libraries(pdi paraconf)
+set_property(TARGET pdi PROPERTY VERSION ${pdi_VERSION})
 # set_property(TARGET pdi PROPERTY SOVERSION 3)
 # set_property(TARGET pdi PROPERTY INTERFACE_pdi_MAJOR_VERSION 3)
 # set_property(TARGET pdi APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
+
+
+# the plugins
+
+add_subdirectory(src/hdf5_per_process/)
+add_subdirectory(src/test_plugin/)
 
 
 # the test example
@@ -107,11 +112,8 @@ install(TARGETS pdi EXPORT pdiTargets
 	LIBRARY DESTINATION lib INCLUDES DESTINATION include
 	ARCHIVE DESTINATION lib INCLUDES DESTINATION include
 )
-install(FILES
-		include/pdi.h
-		"${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h"
-	DESTINATION include
-)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
+install(DIRECTORY include/ DESTINATION include)
 
 
 # cmake stuff installation

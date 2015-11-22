@@ -25,13 +25,14 @@
 #include <paraconf.h>
 
 #include "pdi.h"
+#include "pdi/value.h"
 
-#include "datatype.h"
+#include "pdi/datatype.h"
 
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256
 
-static PDI_status_t load_subarray(yaml_document_t *document, yaml_node_t *node, array_type_t *type)
+static PDI_status_t load_subarray(yaml_document_t *document, yaml_node_t *node, PDI_array_type_t *type)
 {
 	PDI_status_t res = PDI_OK;
 	res = PC_get_int(document, node, ".ndims", &type->ndims); if ( res ) return res;
@@ -51,7 +52,7 @@ static PDI_status_t load_subarray(yaml_document_t *document, yaml_node_t *node, 
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_sizes[%d]", ii);
 		char *expr = NULL;
 		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto sizes_free;
-		res = PDI_value(expr, &type->array_of_sizes[ii]); if (res) goto sizes_free;
+		res = PDI_value_parse(expr, &type->array_of_sizes[ii]); if (res) goto sizes_free;
 sizes_free:
 		free(expr);
 		if ( res ) return res;
@@ -63,7 +64,7 @@ sizes_free:
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_subsizes[%d]", ii);
 		char *expr = NULL;
 		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto subsizes_free;
-		res = PDI_value(expr, &type->array_of_subsizes[ii]); if (res) goto subsizes_free;
+		res = PDI_value_parse(expr, &type->array_of_subsizes[ii]); if (res) goto subsizes_free;
 subsizes_free:
 		free(expr);
 		if ( res ) return res;
@@ -75,7 +76,7 @@ subsizes_free:
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_starts[%d]", ii);
 		char *expr = NULL;
 		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto starts_free;
-		res = PDI_value(expr, &type->array_of_starts[ii]); if (res) goto starts_free;
+		res = PDI_value_parse(expr, &type->array_of_starts[ii]); if (res) goto starts_free;
 starts_free:
 		free(expr);
 		if ( res ) return res;
@@ -101,7 +102,7 @@ order_free:
 	res = PDI_datatype_load(document, type_type, &type->type); return res;
 }
 
-static PDI_status_t load_contiguous(yaml_document_t *document, yaml_node_t *node, array_type_t *type)
+static PDI_status_t load_contiguous(yaml_document_t *document, yaml_node_t *node, PDI_array_type_t *type)
 {
 	PDI_status_t res = PDI_OK;
 	
@@ -109,12 +110,12 @@ static PDI_status_t load_contiguous(yaml_document_t *document, yaml_node_t *node
 	type->order = ORDER_C;
 	
 	type->array_of_starts = malloc(sizeof(PDI_value_t));
-	res = PDI_value("0", type->array_of_starts); if ( res ) return res;
+	res = PDI_value_parse("0", type->array_of_starts); if ( res ) return res;
 	
 	type->array_of_sizes = malloc(sizeof(PDI_value_t));
 	char *expr = NULL;
 	res = PC_get_string(document, node, ".count", &expr, 0); if ( res ) goto expr_free;
-	res = PDI_value(expr, type->array_of_sizes); if ( res ) goto expr_free;
+	res = PDI_value_parse(expr, type->array_of_sizes); if ( res ) goto expr_free;
 expr_free:
 	free(expr);
 	if ( res ) return res;
@@ -148,12 +149,12 @@ PDI_status_t PDI_datatype_load(yaml_document_t *document, yaml_node_t *node, PDI
 	if ( !strcmp(kind, "subarray") ) {
 		free(kind);
 		type->kind = ARRAY;
-		type->array = malloc( sizeof(array_type_t) );
+		type->array = malloc( sizeof(PDI_array_type_t) );
 		return load_subarray(document, node, type->array);
 	} else if ( !strcmp(kind, "contiguous") ) {
 		free(kind);
 		type->kind = ARRAY;
-		type->array = malloc( sizeof(array_type_t) );
+		type->array = malloc( sizeof(PDI_array_type_t) );
 		return load_contiguous(document, node, type->array);
 	}
 	

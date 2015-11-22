@@ -22,88 +22,93 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_H__
-#define PDI_DATATYPE_H__
+#ifndef PDI_STATE_H__
+#define PDI_STATE_H__
 
-#include "value.h"
+#include <pdi.h>
 
-typedef struct array_type_s array_type_t;
+typedef struct PDI_value_s PDI_value_t;
+typedef struct PDI_type_s PDI_type_t;
 
-typedef struct struct_type_s struct_type_t;
+typedef struct PDI_plugin_s PDI_plugin_t;
 
-typedef enum type_kind_e {
-	SCALAR,
-	ARRAY,
-	STRUCT
-} type_kind_t;
-
-typedef enum scalar_type_e {
-	INT8,
-	INT16,
-	INT32,
-	INT64,
-	UINT8,
-	UINT16,
-	UINT32,
-	UINT64,
-	FLOAT,
-	DOUBLE,
-	LONG_DOUBLE
-} scalar_type_t;
-
-typedef struct PDI_type_s
+typedef struct loaded_plugin_s
 {
-	type_kind_t kind;
+	char *name;
 	
-	union
-	{
-		scalar_type_t scalar;
-		
-		array_type_t *array;
-		
-		struct_type_t *struct_;
-		
-	};
+	PDI_plugin_t *impl;
 	
-} PDI_type_t;
+} loaded_plugin_t;
 
-typedef enum order_e {
-	ORDER_C,
-	ORDER_FORTRAN
-} order_t;
+typedef enum PDI_memstatus_e {
+	PDI_UNALOCATED,
+	PDI_SHARED,
+	PDI_OWNED
+} PDI_memstatus_t;
 
-typedef struct array_type_s
+typedef struct PDI_dimension_s
 {
-	int ndims;
+	char *name;
 	
-	PDI_value_t *array_of_sizes;
+	PDI_value_t *value;
 	
-	PDI_value_t *array_of_subsizes;
-	
-	PDI_value_t *array_of_starts;
-	
-	order_t order;
-	
-	PDI_type_t type;
-	
-} array_type_t;
+} PDI_dimension_t;
 
-typedef struct member_s
+typedef struct PDI_data_content_s
 {
-	PDI_value_t displacement;
+	int *coords;
 	
-	PDI_type_t type;
+	PDI_memstatus_t memstatus;
 	
-} member_t;
+	// PDI_inout_t ORed
+	int access;
+	
+	void *data;
+	
+} PDI_data_content_t;
 
-typedef struct struct_type_s
+typedef struct PDI_metadata_s
 {
-	int nb_member;
+	char *name;
 	
-	member_t *members;
+	PDI_type_t *type;
 	
-} struct_type_t;
+	void *value;
+	
+} PDI_metadata_t;
 
-PDI_status_t PDI_EXPORT PDI_datatype_load(yaml_document_t *document, yaml_node_t *node, PDI_type_t *type);
+typedef struct PDI_data_s
+{
+	char *name;
+	
+	PDI_type_t *type;
+	
+	int nb_coord;
+	
+	PDI_metadata_t *coords;
+	
+	int nb_content;
+	
+	PDI_data_content_t *content;
+	
+} PDI_data_t;
 
-#endif // PDI_DATATYPE_H__
+typedef struct PDI_state_s
+{
+	int nb_metadata;
+	
+	PDI_metadata_t *metadata;
+	
+	int nb_data;
+	
+	PDI_data_t *data;
+	
+	int nb_plugins;
+	
+	PDI_plugin_t *plugins;
+	
+} PDI_state_t;
+
+extern PDI_state_t PDI_EXPORT PDI_state;
+
+#endif // PDI_STATE_H__

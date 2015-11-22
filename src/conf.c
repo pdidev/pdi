@@ -25,7 +25,8 @@
 #include <paraconf.h>
 
 #include "pdi.h"
-#include "state.h"
+#include "pdi/state.h"
+#include "pdi/datatype.h"
 
 #include "conf.h"
 
@@ -34,7 +35,6 @@ static PDI_status_t load_metadata_item(yaml_document_t *document, yaml_node_t *n
 	PDI_status_t res = PDI_OK;
 	if ( node->type != YAML_MAPPING_NODE ) return PDI_ERR_CONFIG;
 	data->value = NULL;
-	data->memstatus = PDI_UNALOCATED;
 	yaml_node_pair_t *pair;
 	for ( pair = node->data.mapping.pairs.start; pair < node->data.mapping.pairs.top; ++pair ) {
 		char *key = NULL;

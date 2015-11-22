@@ -80,5 +80,6 @@ PDI_status_t plugin_loader_load(yaml_document_t* document, yaml_node_t* node, MP
 load_err1:
 	free(plugin_symbol);
 load_err0:
+	free(plugin_name);
 	return err;
 }

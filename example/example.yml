@@ -3,85 +3,51 @@ iter: 100
 datasize: [1024, 1024]
 # an example with nested associative arrays
 parallelism:
-  width:  2
-  height: 2
+    width:  2
+    height: 2
+
 pdi:
-  metadata:
-    - name: coord
-      # a type similar to a MPI_Type_contiguous call
-      type: {kind: contiguous, count: 2, type: int}
-    - {name: height, type: int}
-    - {name: width, type: int}
-    - {name: iter, type: int}
-  data:
-    - name: main_field # main_field is a 3D array of 2D arrays
-      dimensions:
-        iter: $iter # ref to a variable value
-        para_coord: $coord # idem
-      type:
-        kind: subarray # a subarray inside the local 2D array (excluding 
-        # arguments of the MPI_Type_subarray call
-        ndims: 2
-        array_of_sizes: [$width, $height] # ref to metadata
-        array_of_subsizes: [$width-2, $height-2] # ref + mathematical expression
-        array_of_starts: [1, 1]
-        order: ORDER_C
-        type: double # Cf. MPI_Double
-  plugins:
-    # load the hdf5_per_process PDI plugin
-    - name: hdf5_per_process
-      # and here is its configuration
-      outputs:
-        - data: main_field
-          select: mod($iter, 5) == 0 # a pythonic expression
-          file: output_${coord[0]}x${coord[1]}.hdf5
-          var: /iter_${iter}/main_field
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---- # a more complete example describing the exact same thing
-pdi:
-  types: # named types can be defined
-    - name: int_array # definition of a named type, just for the example
-      parameters: # named parameters can be used
-        - {name: size, type: int}
-      type: # the actual type definition
-        kind: vector # types are similar to MPI's (see MPI_Type_vector here)
-        # arguments of the MPI_Type_vector call
-        count: $size # reference to a named parameter
-        blocklength: 1 # ok, so that's
-        stride: 1      # actually a contiguous ...
-        type: int # same as MPI_int
-  metadata:
-    - name: coord
-      type: {kind: int_array, size: 2} # reuse a named type defined before, just for the example
-    - {name: height, type: int}
-    - {name: width, type: int}
-    - {name: iter, type: int}
-  data:
-    - name: main_field
-      parameters: # values that identify one single call to PDI_val for main_field
-        iter: $iter # ref to a variable
-        para_coord: $coord # idem
-      type:
-        kind: subarray # Cf. MPI_Type_subarray
-        # arguments of the MPI_Type_subarray call
-        ndims: 2
-        array_of_sizes: [$width, $height] # ref to metadata
-        array_of_subsizes: [$width-2, $height-2] # ref + mathematical expression
-        array_of_starts: [1, 1]
-        order: ORDER_C
-        type: double # Cf. MPI_Double
+    metadata:
+        -
+            name: coord
+            type: {kind: contiguous, count: 2, type: int}
+        - {name: height, type: int}
+        - {name: width, type: int}
+        - {name: pheight, type: int}
+        - {name: pwidth, type: int}
+        - {name: nb_iter, type: int}
+        - {name: iter, type: int}
+    data:
+        -
+            name: main_field # main_field is a 3D array (2D space, 1D time)
+            slice_type:
+                kind: subarray
+                ndims: 3
+                array_of_sizes:
+                    - '($width-2)*$pwidth'
+                    - '($height-2)*$pheight'
+                    - $nb_iter
+                array_of_subsizes: [ $width-2, $height-2, 1]
+                array_of_starts:
+                    - '$coord[0]*($width-2)'
+                    - '$coord[1]*($heigth-2)'
+                    - $iter
+                order: ORDER_C
+                type: double
+            mem_type:
+                kind: subarray
+                ndims: 3
+                array_of_sizes: [$width, $height, $nb_iter]
+                array_of_subsizes: [ $width-2, $height-2, 1] # must match above
+                array_of_starts: [ 1, 1, 0 ]
+                order: ORDER_C
+                type: double
+    plugins:
+        # load the hdf5_per_process PDI plugin
+        - name: hdf5_per_process
+        # and here is its configuration
+        outputs:
+            - data: main_field
+            select: mod($iter, 5) == 0 # a pythonic expression
+            file: output_${coord[0]}x${coord[1]}.hdf5
+            var: /iter_${iter}/main_field

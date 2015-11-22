@@ -27,16 +27,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-add_library(hdf5_per_process
-	hdf5_per_process.c
+add_library(test_plugin
+	test_plugin.c
 )
-set_target_properties(hdf5_per_process PROPERTIES C_VISIBILITY_PRESET hidden)
-target_link_libraries(hdf5_per_process pdi)
+set_target_properties(test_plugin PROPERTIES C_VISIBILITY_PRESET hidden)
+target_link_libraries(test_plugin pdi)
 
 
 # library installation
 
-install(TARGETS hdf5_per_process EXPORT hdf5_per_processTargets
+install(TARGETS test_plugin EXPORT test_pluginTargets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )

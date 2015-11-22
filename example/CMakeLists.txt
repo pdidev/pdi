@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-add_executable(pdi_example
+add_executable(example
 	example.c
 )
-target_link_libraries(pdi_example pdi mpi)
+target_link_libraries(example pdi hdf5_per_process test_plugin mpi)

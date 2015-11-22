@@ -26,26 +26,65 @@
 
 #include <pdi.h>
 #include <pdi/plugin.h>
+#include <pdi/state.h>
 
+MPI_Comm my_world;
 
-PDI_status_t PDI_hdf5_per_process_init(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world)
+PDI_status_t PDI_test_plugin_init(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world)
 {
-	PDI_status_t err = PDI_OK;
+	my_world = *world;
 	
-	int rank; if (MPI_Comm_rank(*world, &rank)) { err = PDI_ERR_PLUGIN; goto init_err0; }
+	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
-		printf("Welcome to the hdf5_per_process_init plugin!\n");
+		printf("Welcome to the test plugin!\n");
 	}
 	
-init_err0:
 	return PDI_OK;
 }
 
-
-PDI_status_t PDI_hdf5_per_process_finalize()
+PDI_status_t PDI_test_plugin_finalize()
 {
+	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	
+	if ( rank == 0 ) {
+		printf("Goodbye from the test plugin!\n");
+	}
+	
 	return PDI_OK;
 }
 
-PDI_PLUGIN(hdf5_per_process)
+PDI_status_t PDI_test_plugin_event(const char *event)
+{
+	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	
+	if ( rank == 0 ) {
+		printf("test plugin got an event: %s!\n", event);
+	}
+	
+	return PDI_OK;
+}
+
+PDI_status_t PDI_test_plugin_data_start(PDI_data_t *data, PDI_inout_t access)
+{
+	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	
+	if ( rank == 0 ) {
+		printf("data becoming available to the test plugin: %s!\n", data->name);
+	}
+	
+	return PDI_OK;
+}
+
+PDI_status_t PDI_test_plugin_data_end(PDI_data_t *data)
+{
+	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	
+	if ( rank == 0 ) {
+		printf("data becoming unavailable to the test plugin: %s!\n", data->name);
+	}
+	
+	return PDI_OK;
+}
+
+PDI_PLUGIN(test_plugin)

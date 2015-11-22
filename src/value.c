@@ -25,9 +25,9 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#include "state.h"
+#include "pdi/state.h"
 
-#include "value.h"
+#include "pdi/value.h"
 
 PDI_status_t parse_value(char **val_str, PDI_value_t *value);
 
@@ -178,7 +178,7 @@ PDI_status_t parse_value(char **val_str, PDI_value_t *value)
 	*val_str = exprval; return PDI_OK;
 }
 
-PDI_status_t PDI_value(char *val_str, PDI_value_t* value)
+PDI_status_t PDI_value_parse(char *val_str, PDI_value_t* value)
 {
 	while ( isspace(*val_str) ) ++val_str;
 	PDI_status_t err = parse_value(&val_str, value);

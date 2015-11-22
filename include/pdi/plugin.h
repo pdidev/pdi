@@ -55,6 +55,9 @@ typedef struct PDI_plugin_s {
 PDI_status_t PDI_EXPORT PDI_plugin_##name##_ctor(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world, PDI_plugin_t* plugin) \
 {\
 	plugin->finalize = PDI_##name##_finalize;\
+	plugin->event = PDI_##name##_event;\
+	plugin->data_start = PDI_##name##_data_start;\
+	plugin->data_end = PDI_##name##_data_end;\
 	return PDI_##name##_init(document, conf, world);\
 }
 
