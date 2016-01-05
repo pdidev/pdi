@@ -26,9 +26,8 @@
 #define PDI_PLUGIN_LOADER_H__
 
 #include "pdi.h"
+#include "pdi/plugin_fwd.h"
 
-typedef struct PDI_plugin_s PDI_plugin_t;
-
-PDI_status_t plugin_loader_load(yaml_document_t* document, yaml_node_t* node, MPI_Comm* world, PDI_plugin_t* plugin);
+PDI_status_t plugin_loader_load(PC_tree_t node, MPI_Comm* world, PDI_plugin_t* plugin);
 
 #endif // PDI_PLUGIN_LOADER_H__

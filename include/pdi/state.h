@@ -27,34 +27,28 @@
 
 #include <pdi.h>
 
-typedef struct PDI_value_s PDI_value_t;
-typedef struct PDI_type_s PDI_type_t;
+#include <pdi/datatype_fwd.h>
+#include <pdi/state_fwd.h>
+#include <pdi/value_fwd.h>
+#include <pdi/plugin_fwd.h>
 
-typedef struct PDI_plugin_s PDI_plugin_t;
-
-typedef struct loaded_plugin_s
+struct loaded_plugin_s
 {
 	char *name;
 	
 	PDI_plugin_t *impl;
 	
-} loaded_plugin_t;
+};
 
-typedef enum PDI_memstatus_e {
-	PDI_UNALOCATED,
-	PDI_SHARED,
-	PDI_OWNED
-} PDI_memstatus_t;
-
-typedef struct PDI_dimension_s
+struct PDI_dimension_s
 {
 	char *name;
 	
 	PDI_value_t *value;
 	
-} PDI_dimension_t;
+};
 
-typedef struct PDI_data_content_s
+struct PDI_data_content_s
 {
 	int *coords;
 	
@@ -65,9 +59,9 @@ typedef struct PDI_data_content_s
 	
 	void *data;
 	
-} PDI_data_content_t;
+};
 
-typedef struct PDI_metadata_s
+struct PDI_metadata_s
 {
 	char *name;
 	
@@ -75,9 +69,9 @@ typedef struct PDI_metadata_s
 	
 	void *value;
 	
-} PDI_metadata_t;
+};
 
-typedef struct PDI_data_s
+struct PDI_data_s
 {
 	char *name;
 	
@@ -91,9 +85,9 @@ typedef struct PDI_data_s
 	
 	PDI_data_content_t *content;
 	
-} PDI_data_t;
+};
 
-typedef struct PDI_state_s
+struct PDI_state_s
 {
 	int nb_metadata;
 	
@@ -107,7 +101,7 @@ typedef struct PDI_state_s
 	
 	PDI_plugin_t *plugins;
 	
-} PDI_state_t;
+};
 
 extern PDI_state_t PDI_EXPORT PDI_state;
 

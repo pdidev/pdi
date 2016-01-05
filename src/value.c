@@ -81,11 +81,11 @@ PDI_status_t parse_const(char **val_str, int *value)
 
 PDI_status_t parse_term(char **val_str, PDI_value_t *value)
 {
-	if ( !parse_const(val_str, &value->constval) ) {
+	if ( !parse_const(val_str, &value->c.constval) ) {
 		value->kind = PDI_VAL_CONST;
 		return PDI_OK;
 	}
-	if ( !parse_ref(val_str, &value->refval) ) {
+	if ( !parse_ref(val_str, &value->c.refval) ) {
 		value->kind = PDI_VAL_REF;
 		return PDI_OK;
 	}
@@ -132,7 +132,7 @@ PDI_status_t parse_value2(char **val_str, PDI_value_t *value)
 			expr->ops = NULL;
 			expr->values[0] = *value;
 			value->kind = PDI_VAL_EXPR;
-			value->exprval = expr;
+			value->c.exprval = expr;
 		}
 		++expr->nb_value;
 		expr->ops =    realloc(expr, (expr->nb_value-1)*sizeof(PDI_exprop_t));
@@ -162,7 +162,7 @@ PDI_status_t parse_value(char **val_str, PDI_value_t *value)
 			expr->ops = NULL;
 			expr->values[0] = *value;
 			value->kind = PDI_VAL_EXPR;
-			value->exprval = expr;
+			value->c.exprval = expr;
 		}
 		++expr->nb_value;
 		expr->ops =    realloc(expr, (expr->nb_value-1)*sizeof(PDI_exprop_t));

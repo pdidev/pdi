@@ -37,24 +37,31 @@ static PDI_status_t load_metadata_item(yaml_document_t *document, yaml_node_t *n
 	data->value = NULL;
 	yaml_node_pair_t *pair;
 	for ( pair = node->data.mapping.pairs.start; pair < node->data.mapping.pairs.top; ++pair ) {
+		PC_tree_t key_tree = {document, yaml_document_get_node(document, pair->key)};
 		char *key = NULL;
-		if ( PC_get_string(document, yaml_document_get_node(document, pair->key), "", &key, NULL) ) {
+		if ( PC_get_string(key_tree, "", &key, NULL) ) {
 			free(key);
 			return PDI_ERR_CONFIG;
 		}
 		if ( !strcmp(key, "name") ) {
 			free(key);
+			PC_tree_t value_tree = {document, yaml_document_get_node(document, pair->value)};
 			data->name = NULL;
-			if ( PC_get_string(document, yaml_document_get_node(document, pair->value), "", &data->name, NULL) ) {
+			if ( PC_get_string(value_tree, "", &data->name, NULL) ) {
 				free(data->name);
 				return PDI_ERR_CONFIG;
 			}
 		} else if ( !strcmp(key, "type") ) {
 			free(key);
+			PC_tree_t value_tree = {document, yaml_document_get_node(document, pair->value)};
 			data->type = malloc(sizeof(PDI_type_t));
-			res = PDI_datatype_load(document, yaml_document_get_node(document, pair->value), data->type);
-			if ( res ) return res;
+			res = PDI_datatype_load(value_tree, data->type);
+			if ( res ) {
+				free(data->type);
+				return res;
+			}
 		}
+		free(key);
 	}
 	return res;
 }
@@ -87,31 +94,34 @@ static PDI_status_t load_metadata(yaml_document_t *document, yaml_node_t *node)
 	return res;
 }
 
-static PDI_status_t load_data(yaml_document_t *document, yaml_node_t *node)
+static PDI_status_t load_data(PC_tree_t node)
 {
 	PDI_status_t res = PDI_OK;
-	if ( node->type != YAML_SEQUENCE_NODE ) return PDI_ERR_CONFIG;
+	if ( node.node->type != YAML_SEQUENCE_NODE ) return PDI_ERR_CONFIG;
+	//TODO: implement
 	return res;
 }
 
-PDI_status_t load_conf(yaml_document_t *document, yaml_node_t *node)
+PDI_status_t load_conf(PC_tree_t node)
 {
 	PDI_status_t res = PDI_OK;
 	yaml_node_pair_t *pair;
-	if ( node->type != YAML_MAPPING_NODE ) return PDI_ERR_CONFIG;
-	for ( pair = node->data.mapping.pairs.start; pair < node->data.mapping.pairs.top; ++pair ) {
+	if ( node.node->type != YAML_MAPPING_NODE ) return PDI_ERR_CONFIG;
+	for ( pair = node.node->data.mapping.pairs.start; pair < node.node->data.mapping.pairs.top; ++pair ) {
 		char *key = NULL;
-		if ( PC_get_string(document, yaml_document_get_node(document, pair->key), "", &key, NULL) ) {
+		PC_tree_t key_tree = {node.document, yaml_document_get_node(node.document, pair->key)};
+		if ( PC_get_string(key_tree, "", &key, NULL) ) {
 			free(key);
 			return PDI_ERR_CONFIG;
 		}
 		if ( !strcmp(key, "metadata") ) {
 			free(key);
-			res = load_metadata(document, yaml_document_get_node(document, pair->value));
+			res = load_metadata(node.document, yaml_document_get_node(node.document, pair->value));
 			if ( res ) return res;
 		} else if ( !strcmp(key, "data") ) {
 			free(key);
-			res = load_data(document, yaml_document_get_node(document, pair->value));
+			PC_tree_t value_tree = {node.document, yaml_document_get_node(node.document, pair->value)};
+			res = load_data(value_tree);
 			if ( res ) return res;
 		}
 	}

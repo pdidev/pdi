@@ -26,14 +26,13 @@
 
 #include "pdi.h"
 #include "pdi/plugin.h"
-
 #include "pdi/state.h"
-#include "plugin_loader.h"
 #include "conf.h"
+#include "plugin_loader.h"
 
 PDI_state_t PDI_state;
 
-PDI_status_t PDI_init(yaml_document_t *document, yaml_node_t* conf, MPI_Comm* world)
+PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t err = PDI_OK;
 	PDI_state.nb_metadata = 0;
@@ -43,15 +42,15 @@ PDI_status_t PDI_init(yaml_document_t *document, yaml_node_t* conf, MPI_Comm* wo
 	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL;
 	
-	err = load_conf(document, conf); if (err) goto init_err;
+	err = load_conf(conf); if (err) goto init_err;
 	
-	err = PC_get_len(document, conf, ".plugins", &PDI_state.nb_plugins); if (err) goto init_err;
+	err = PC_get_len(conf, ".plugins", &PDI_state.nb_plugins); if (err) goto init_err;
 	PDI_state.plugins = malloc(PDI_state.nb_plugins*sizeof(PDI_plugin_t));
 	
 	int ii;
 	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		yaml_node_t *plugin_conf; err = PC_get(document, conf, ".plugins[%d]", &plugin_conf, ii); if (err) goto init_err;
-		err = plugin_loader_load(document, plugin_conf, world, &PDI_state.plugins[ii]); if (err) goto init_err;
+		PC_tree_t plugin_conf; err = PC_get(conf, ".plugins[%d]", &plugin_conf, ii); if (err) goto init_err;
+		err = plugin_loader_load(plugin_conf, world, &PDI_state.plugins[ii]); if (err) goto init_err;
 	}
 	
 	

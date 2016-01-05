@@ -27,6 +27,9 @@
 
 #include <pdi.h>
 
+#include <pdi/value_fwd.h>
+#include <pdi/state_fwd.h>
+
 /* Grammar
 VALUE := VALUE2 ( OP1 VALUE2 )*
 OP1 ~= \+ | -
@@ -37,20 +40,7 @@ CONST ~= (0x)? [0-9]+
 REF ~= \$ [a-zA-Z_][a-zA-Z0-9_]*
 */
 
-typedef struct PDI_type_s PDI_type_t;
-typedef struct PDI_metadata_s PDI_metadata_t;
-
-typedef struct PDI_value_s PDI_value_t;
-
-typedef enum PDI_exprop_e {
-	PDI_OP_PLUS = '+',
-	PDI_OP_MINUS = '-',
-	PDI_OP_MULT = '*',
-	PDI_OP_DIV = '/',
-	PDI_OP_MOD = '%'
-} PDI_exprop_t;
-
-typedef struct PDI_exprval_s
+struct PDI_exprval_s
 {
 	int nb_value;
 	
@@ -58,13 +48,7 @@ typedef struct PDI_exprval_s
 	
 	PDI_exprop_t *ops;
 	
-} PDI_exprval_t;
-
-typedef enum PDI_valkind_e {
-	PDI_VAL_CONST,
-	PDI_VAL_REF,
-	PDI_VAL_EXPR
-} PDI_valkind_t;
+};
 
 struct PDI_value_s
 {
@@ -76,7 +60,7 @@ struct PDI_value_s
 		PDI_metadata_t *refval;
 		
 		PDI_exprval_t *exprval;
-	};
+	} c;
 };
 
 PDI_status_t PDI_EXPORT PDI_value_parse(char *val_str, PDI_value_t *value);

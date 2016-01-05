@@ -27,7 +27,8 @@
 
 #include <pdi.h>
 
-typedef struct PDI_data_s PDI_data_t;
+#include <pdi/plugin_fwd.h>
+#include <pdi/state_fwd.h>
 
 typedef PDI_status_t (*PDI_finalize_f)();
 
@@ -39,7 +40,7 @@ typedef PDI_status_t (*PDI_data_end_f)(PDI_data_t *data);
 
 /** Definition of a plugin
  */
-typedef struct PDI_plugin_s {
+struct PDI_plugin_s {
 	
 	PDI_finalize_f finalize;
 	
@@ -49,7 +50,7 @@ typedef struct PDI_plugin_s {
 	
 	PDI_data_end_f data_end;
 	
-} PDI_plugin_t;
+};
 
 #define PDI_PLUGIN(name)\
 PDI_status_t PDI_EXPORT PDI_plugin_##name##_ctor(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world, PDI_plugin_t* plugin) \

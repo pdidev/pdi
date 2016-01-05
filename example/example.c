@@ -95,14 +95,16 @@ int main(int argc, char *argv[])
 	yaml_parser_set_input_file(&conf_parser, conf_file);
 	yaml_document_t conf_doc; assert(yaml_parser_load(&conf_parser, &conf_doc));
 	
-	yaml_node_t *pdi_conf; assert(!PC_get(&conf_doc, NULL, ".pdi", &pdi_conf));
-	int nb_iter; assert(!PC_get_int(&conf_doc, NULL, ".iter", &nb_iter));
-	int height; assert(!PC_get_int(&conf_doc, NULL, ".datasize[0]", &height));
-	int width; assert(!PC_get_int(&conf_doc, NULL, ".datasize[1]", &width));
-	int pheight; assert(!PC_get_int(&conf_doc, NULL, ".parallelism.height", &pheight));
-	int pwidth; assert(!PC_get_int(&conf_doc, NULL, ".parallelism.width", &pwidth));
+	PC_tree_t conf = {&conf_doc, NULL};
 	
-	assert(!PDI_init(&conf_doc, pdi_conf, &main_comm));
+	PC_tree_t pdi_conf; assert(!PC_get(conf, ".pdi", &pdi_conf));
+	int nb_iter; assert(!PC_get_int(conf, ".iter", &nb_iter));
+	int height; assert(!PC_get_int(conf, ".datasize[0]", &height));
+	int width; assert(!PC_get_int(conf, ".datasize[1]", &width));
+	int pheight; assert(!PC_get_int(conf, ".parallelism.height", &pheight));
+	int pwidth; assert(!PC_get_int(conf, ".parallelism.width", &pwidth));
+	
+	assert(!PDI_init(pdi_conf, &main_comm));
 	assert(pwidth*pheight == size);
 	
 	int cart_dims[2] = { pwidth, pheight };

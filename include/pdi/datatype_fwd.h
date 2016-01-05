@@ -22,64 +22,40 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_H__
-#define PDI_DATATYPE_H__
+#ifndef PDI_DATATYPE_FWD_H__
+#define PDI_DATATYPE_FWD_H__
 
-#include <pdi.h>
+typedef struct PDI_type_s PDI_type_t;
 
-#include <pdi/datatype_fwd.h>
-#include <pdi/value.h>
+typedef enum PDI_type_kind_e {
+	SCALAR,
+	ARRAY,
+	STRUCT
+} PDI_type_kind_t;
 
-struct PDI_type_s
-{
-	PDI_type_kind_t kind;
-	
-	union
-	{
-		PDI_scalar_type_t scalar;
-		
-		PDI_array_type_t *array;
-		
-		PDI_struct_type_t *struct_;
-		
-	} c;
-	
-};
+typedef struct PDI_array_type_s PDI_array_type_t;
 
-struct PDI_array_type_s
-{
-	int ndims;
-	
-	PDI_value_t *array_of_sizes;
-	
-	PDI_value_t *array_of_subsizes;
-	
-	PDI_value_t *array_of_starts;
-	
-	PDI_order_t order;
-	
-	PDI_type_t type;
-	
-};
+typedef enum PDI_order_e {
+	ORDER_C,
+	ORDER_FORTRAN
+} PDI_order_t;
 
-struct PDI_member_s
-{
-	PDI_value_t displacement;
-	
-	PDI_type_t type;
-	
-	char *name;
-	
-};
+typedef struct PDI_struct_type_s PDI_struct_type_t;
 
-struct PDI_struct_type_s
-{
-	int nb_member;
-	
-	PDI_member_t *members;
-	
-};
+typedef struct PDI_member_s PDI_member_t;
 
-PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
+typedef enum PDI_scalar_type_e {
+	INT8,
+	INT16,
+	INT32,
+	INT64,
+	UINT8,
+	UINT16,
+	UINT32,
+	UINT64,
+	FLOAT,
+	DOUBLE,
+	LONG_DOUBLE
+} PDI_scalar_type_t;
 
-#endif // PDI_DATATYPE_H__
+#endif // PDI_DATATYPE_FWD_H__

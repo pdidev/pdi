@@ -22,64 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_H__
-#define PDI_DATATYPE_H__
+#ifndef PDI_PLUGIN_FWD_H__
+#define PDI_PLUGIN_FWD_H__
 
-#include <pdi.h>
+/** Definition of a plugin
+ */
+typedef struct PDI_plugin_s PDI_plugin_t;
 
-#include <pdi/datatype_fwd.h>
-#include <pdi/value.h>
-
-struct PDI_type_s
-{
-	PDI_type_kind_t kind;
-	
-	union
-	{
-		PDI_scalar_type_t scalar;
-		
-		PDI_array_type_t *array;
-		
-		PDI_struct_type_t *struct_;
-		
-	} c;
-	
-};
-
-struct PDI_array_type_s
-{
-	int ndims;
-	
-	PDI_value_t *array_of_sizes;
-	
-	PDI_value_t *array_of_subsizes;
-	
-	PDI_value_t *array_of_starts;
-	
-	PDI_order_t order;
-	
-	PDI_type_t type;
-	
-};
-
-struct PDI_member_s
-{
-	PDI_value_t displacement;
-	
-	PDI_type_t type;
-	
-	char *name;
-	
-};
-
-struct PDI_struct_type_s
-{
-	int nb_member;
-	
-	PDI_member_t *members;
-	
-};
-
-PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
-
-#endif // PDI_DATATYPE_H__
+#endif // PDI_PLUGIN_FWD_H__

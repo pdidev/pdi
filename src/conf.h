@@ -27,6 +27,6 @@
 
 #include "pdi.h"
 
-PDI_status_t load_conf(yaml_document_t* document, yaml_node_t* node);
+PDI_status_t load_conf(PC_tree_t node);
 
 #endif // CONF_H__

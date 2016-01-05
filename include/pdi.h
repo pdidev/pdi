@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-#include <yaml.h>
+#include <paraconf.h>
 #include <mpi.h>
 
 #include <pdi_export.h>
@@ -58,7 +58,7 @@ typedef enum PDI_inout_e {
  * \param[in,out] world the main MPI communicator
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_init(yaml_document_t* document, yaml_node_t* conf, MPI_Comm* world);
+PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf, MPI_Comm* world);
 
 /** Finalizes PDI
  * \return an error status

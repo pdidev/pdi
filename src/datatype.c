@@ -32,17 +32,17 @@
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256
 
-static PDI_status_t load_subarray(yaml_document_t *document, yaml_node_t *node, PDI_array_type_t *type)
+static PDI_status_t load_subarray(PC_tree_t node, PDI_array_type_t *type)
 {
 	PDI_status_t res = PDI_OK;
-	res = PC_get_int(document, node, ".ndims", &type->ndims); if ( res ) return res;
+	res = PC_get_int(node, ".ndims", &type->ndims); if ( res ) return res;
 	
 	int len;
-	res = PC_get_len(document, node, ".array_of_sizes", &len);
+	res = PC_get_len(node, ".array_of_sizes", &len);
 	if ( len != type->ndims ) return PDI_ERR_CONFIG;
-	res = PC_get_len(document, node, ".array_of_subsizes", &len);
+	res = PC_get_len(node, ".array_of_subsizes", &len);
 	if ( len != type->ndims ) return PDI_ERR_CONFIG;
-	res = PC_get_len(document, node, ".array_of_starts", &len);
+	res = PC_get_len(node, ".array_of_starts", &len);
 	if ( len != type->ndims ) return PDI_ERR_CONFIG;
 	
 	int ii;
@@ -51,7 +51,7 @@ static PDI_status_t load_subarray(yaml_document_t *document, yaml_node_t *node, 
 		char idx[IDX_BUF_SIZE];
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_sizes[%d]", ii);
 		char *expr = NULL;
-		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto sizes_free;
+		res = PC_get_string(node, idx, &expr, 0); if (res) goto sizes_free;
 		res = PDI_value_parse(expr, &type->array_of_sizes[ii]); if (res) goto sizes_free;
 sizes_free:
 		free(expr);
@@ -63,7 +63,7 @@ sizes_free:
 		char idx[IDX_BUF_SIZE];
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_subsizes[%d]", ii);
 		char *expr = NULL;
-		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto subsizes_free;
+		res = PC_get_string(node, idx, &expr, 0); if (res) goto subsizes_free;
 		res = PDI_value_parse(expr, &type->array_of_subsizes[ii]); if (res) goto subsizes_free;
 subsizes_free:
 		free(expr);
@@ -75,7 +75,7 @@ subsizes_free:
 		char idx[IDX_BUF_SIZE];
 		snprintf(idx, IDX_BUF_SIZE, ".array_of_starts[%d]", ii);
 		char *expr = NULL;
-		res = PC_get_string(document, node, idx, &expr, 0); if (res) goto starts_free;
+		res = PC_get_string(node, idx, &expr, 0); if (res) goto starts_free;
 		res = PDI_value_parse(expr, &type->array_of_starts[ii]); if (res) goto starts_free;
 starts_free:
 		free(expr);
@@ -83,7 +83,7 @@ starts_free:
 	}
 	
 	char *order_str = NULL;
-	res = PC_get_string(document, node, ".order", &order_str, 0); if ( res ) goto order_free;
+	res = PC_get_string(node, ".order", &order_str, 0); if ( res ) goto order_free;
 	if ( !strcmp(order_str, "ORDER_C") ) {
 		type->order = ORDER_C;
 	} else if ( !strcmp(order_str, "ORDER_FORTRAN") ) {
@@ -96,13 +96,11 @@ order_free:
 	free(order_str);
 	if ( res ) return res;
 	
-	yaml_node_t *type_type;
-	res = PC_get(document, node, ".type", &type_type); if ( res ) return res;
-	
-	res = PDI_datatype_load(document, type_type, &type->type); return res;
+	PC_tree_t type_type; res = PC_get(node, ".type", &type_type); if ( res ) return res;
+	res = PDI_datatype_load(type_type, &type->type); return res;
 }
 
-static PDI_status_t load_contiguous(yaml_document_t *document, yaml_node_t *node, PDI_array_type_t *type)
+static PDI_status_t load_contiguous(PC_tree_t node, PDI_array_type_t *type)
 {
 	PDI_status_t res = PDI_OK;
 	
@@ -114,7 +112,7 @@ static PDI_status_t load_contiguous(yaml_document_t *document, yaml_node_t *node
 	
 	type->array_of_sizes = malloc(sizeof(PDI_value_t));
 	char *expr = NULL;
-	res = PC_get_string(document, node, ".count", &expr, 0); if ( res ) goto expr_free;
+	res = PC_get_string(node, ".count", &expr, 0); if ( res ) goto expr_free;
 	res = PDI_value_parse(expr, type->array_of_sizes); if ( res ) goto expr_free;
 expr_free:
 	free(expr);
@@ -122,26 +120,25 @@ expr_free:
 	
 	type->array_of_subsizes = type->array_of_sizes;
 	
-	yaml_node_t *type_type;
-	res = PC_get(document, node, ".type", &type_type); if ( res ) return res;
-	res = PDI_datatype_load(document, type_type, &type->type); return res;
+	PC_tree_t type_type; res = PC_get( node, ".type", &type_type); if ( res ) return res;
+	res = PDI_datatype_load(type_type, &type->type); return res;
 }
 
-PDI_status_t PDI_datatype_load(yaml_document_t *document, yaml_node_t *node, PDI_type_t *type)
+PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 {
 	char *buf_str = NULL; 
-	if ( !PC_get_string(document, node, "", &buf_str, 0) ) {
+	if ( !PC_get_string(node, "", &buf_str, 0) ) {
 		type->kind = SCALAR;
 		if ( !strcmp(buf_str, "int") ) {
 			//TODO: adapt to the actual size of int
-			type->scalar = INT32;
+			type->c.scalar = INT32;
 		} //TODO: handle missing types
 		free(buf_str);
 		return PDI_OK;
 	}
 	
 	char *kind = NULL;
-	if ( PC_get_string(document, node, ".kind", &kind, 0) ) {
+	if ( PC_get_string(node, ".kind", &kind, 0) ) {
 		free(kind);
 		return PDI_ERR_CONFIG;
 	}
@@ -149,13 +146,13 @@ PDI_status_t PDI_datatype_load(yaml_document_t *document, yaml_node_t *node, PDI
 	if ( !strcmp(kind, "subarray") ) {
 		free(kind);
 		type->kind = ARRAY;
-		type->array = malloc( sizeof(PDI_array_type_t) );
-		return load_subarray(document, node, type->array);
+		type->c.array = malloc( sizeof(PDI_array_type_t) );
+		return load_subarray(node, type->c.array);
 	} else if ( !strcmp(kind, "contiguous") ) {
 		free(kind);
 		type->kind = ARRAY;
-		type->array = malloc( sizeof(PDI_array_type_t) );
-		return load_contiguous(document, node, type->array);
+		type->c.array = malloc( sizeof(PDI_array_type_t) );
+		return load_contiguous(node, type->c.array);
 	}
 	
 	free(kind);
