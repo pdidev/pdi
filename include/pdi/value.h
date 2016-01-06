@@ -35,7 +35,7 @@ VALUE := VALUE2 ( OP1 VALUE2 )*
 OP1 ~= \+ | -
 VALUE2 := TERM ( OP2 TERM )*
 OP2 ~= \* | / | %
-TERM := CONST | REF | '(' VALUE ')'
+TERM := ( CONST | REF | '(' VALUE ')' ) ( '[' VALUE ']' )*
 CONST ~= (0x)? [0-9]+
 REF ~= \$ [a-zA-Z_][a-zA-Z0-9_]*
 */
@@ -61,6 +61,10 @@ struct PDI_value_s
 		
 		PDI_exprval_t *exprval;
 	} c;
+	
+	int nb_idx;
+	
+	PDI_value_t *idx;
 };
 
 PDI_status_t PDI_EXPORT PDI_value_parse(char *val_str, PDI_value_t *value);

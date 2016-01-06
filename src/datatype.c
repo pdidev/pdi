@@ -132,7 +132,9 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 		type->kind = SCALAR;
 		if ( !strcmp(buf_str, "int") ) {
 			//TODO: adapt to the actual size of int
-			type->c.scalar = INT32;
+			type->c.scalar = PDI_T_INT32;
+		} else if ( !strcmp(buf_str, "double") ) {
+			type->c.scalar = PDI_T_DOUBLE;
 		} else {
 			//TODO: handle missing types
 			res = PDI_ERR_VALUE;

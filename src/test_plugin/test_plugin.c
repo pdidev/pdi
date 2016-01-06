@@ -65,7 +65,7 @@ PDI_status_t PDI_test_plugin_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data_start(PDI_data_t *data, PDI_inout_t access)
+PDI_status_t PDI_test_plugin_data_start(PDI_data_t *data)
 {
 	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
 	

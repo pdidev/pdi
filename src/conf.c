@@ -47,15 +47,11 @@ static PDI_status_t load_metadata(PC_tree_t node)
 		
 		cur_meta->value = NULL;
 		
-		char *map_key = NULL;
-		if ( PC_get_string(node, "{%d}", &map_key, NULL, map_id) ) return PDI_ERR_CONFIG;
-		cur_meta->name = map_key;
-		free(map_key);
+		if ( PC_get_string(node, "{%d}", &cur_meta->name, NULL, map_id) ) return PDI_ERR_CONFIG;
 		
 		PC_tree_t map_value;
 		if ( PC_get(node, "<%d>", &map_value, map_id) ) return PDI_ERR_CONFIG;
-		cur_meta->type = malloc(sizeof(PDI_type_t));
-		res = PDI_datatype_load(map_value, cur_meta->type); if (res) return res;
+		res = PDI_datatype_load(map_value, &cur_meta->type); if (res) return res;
 		
 		++PDI_state.nb_metadata;
 	}
@@ -66,7 +62,29 @@ static PDI_status_t load_data(PC_tree_t node)
 {
 	PDI_status_t res = PDI_OK;
 	if ( node.node->type != YAML_MAPPING_NODE ) return PDI_ERR_CONFIG;
-	//TODO: implement
+	
+	int map_len; if ( PC_get_len(node, "", &map_len) ) return PDI_ERR_CONFIG;
+	
+	PDI_state.data = realloc(PDI_state.data,
+			( PDI_state.nb_data + map_len ) * sizeof(PDI_data_t)
+		);
+	
+	int map_id;
+	for ( map_id=0; map_id<map_len; ++map_id ) {
+		PDI_data_t *cur_dat = PDI_state.data+PDI_state.nb_data;
+		
+		if ( PC_get_string(node, "{%d}", &cur_dat->name, NULL, map_id) ) return PDI_ERR_CONFIG;
+		cur_dat->content.memstatus = PDI_UNALOCATED;
+		
+		PC_tree_t map_value;
+		if ( PC_get(node, "<%d>.slice_type", &map_value, map_id) ) return PDI_ERR_CONFIG;
+		res = PDI_datatype_load(map_value, &cur_dat->slice_type); if (res) return res;
+		
+		if ( PC_get(node, "<%d>.mem_type", &map_value, map_id) ) return PDI_ERR_CONFIG;
+		res = PDI_datatype_load(map_value, &cur_dat->mem_type); if (res) return res;
+		
+		++PDI_state.nb_data;
+	}
 	return res;
 }
 

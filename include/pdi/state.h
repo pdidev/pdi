@@ -27,10 +27,10 @@
 
 #include <pdi.h>
 
-#include <pdi/datatype_fwd.h>
 #include <pdi/state_fwd.h>
 #include <pdi/value_fwd.h>
 #include <pdi/plugin_fwd.h>
+#include <pdi/datatype.h>
 
 struct loaded_plugin_s
 {
@@ -65,7 +65,7 @@ struct PDI_metadata_s
 {
 	char *name;
 	
-	PDI_type_t *type;
+	PDI_type_t type;
 	
 	void *value;
 	
@@ -75,15 +75,15 @@ struct PDI_data_s
 {
 	char *name;
 	
-	PDI_type_t *type;
+	PDI_type_t slice_type;
+	
+	PDI_type_t mem_type;
 	
 	int nb_coord;
 	
 	PDI_metadata_t *coords;
 	
-	int nb_content;
-	
-	PDI_data_content_t *content;
+	PDI_data_content_t content;
 	
 };
 

@@ -45,17 +45,17 @@ typedef struct PDI_struct_type_s PDI_struct_type_t;
 typedef struct PDI_member_s PDI_member_t;
 
 typedef enum PDI_scalar_type_e {
-	INT8,
-	INT16,
-	INT32,
-	INT64,
-	UINT8,
-	UINT16,
-	UINT32,
-	UINT64,
-	FLOAT,
-	DOUBLE,
-	LONG_DOUBLE
+	PDI_T_INT8,
+	PDI_T_INT16,
+	PDI_T_INT32,
+	PDI_T_INT64,
+	PDI_T_UINT8,
+	PDI_T_UINT16,
+	PDI_T_UINT32,
+	PDI_T_UINT64,
+	PDI_T_FLOAT,
+	PDI_T_DOUBLE,
+	PDI_T_LONG_DOUBLE
 } PDI_scalar_type_t;
 
 #endif // PDI_DATATYPE_FWD_H__

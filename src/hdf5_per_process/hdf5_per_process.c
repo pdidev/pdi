@@ -33,23 +33,11 @@ PDI_status_t PDI_hdf5_per_process_init(yaml_document_t* document, const yaml_nod
 {
 	my_world = *world;
 	
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
-	
-	if ( rank == 0 ) {
-		printf("Welcome to the hdf5_per_process plugin!\n");
-	}
-	
 	return PDI_OK;
 }
 
 PDI_status_t PDI_hdf5_per_process_finalize()
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
-	
-	if ( rank == 0 ) {
-		printf("Goodbye from the hdf5_per_process plugin!\n");
-	}
-	
 	return PDI_OK;
 }
 
@@ -58,7 +46,7 @@ PDI_status_t PDI_hdf5_per_process_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_hdf5_per_process_data_start(PDI_data_t *data, PDI_inout_t access)
+PDI_status_t PDI_hdf5_per_process_data_start(PDI_data_t *data)
 {
 	return PDI_OK;
 }
