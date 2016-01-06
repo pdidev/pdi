@@ -42,19 +42,33 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL;
 	
-	err = load_conf(conf); if (err) goto init_err;
+	err = load_conf(conf); if (err) goto init_err0;
 	
-	err = PC_get_len(conf, ".plugins", &PDI_state.nb_plugins); if (err) goto init_err;
+	err = PC_get_len(conf, ".plugins", &PDI_state.nb_plugins); if (err) goto init_err0;
 	PDI_state.plugins = malloc(PDI_state.nb_plugins*sizeof(PDI_plugin_t));
 	
 	int ii;
 	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		PC_tree_t plugin_conf; err = PC_get(conf, ".plugins[%d]", &plugin_conf, ii); if (err) goto init_err;
-		err = plugin_loader_load(plugin_conf, world, &PDI_state.plugins[ii]); if (err) goto init_err;
+		char *plugin_name = NULL;
+		if ( PC_get_string(conf, ".plugins{%d}", &plugin_name, NULL, ii) ) {
+			err = PDI_ERR_CONFIG;
+			goto init_err0;
+		};
+		
+		PC_tree_t plugin_conf; 
+		if ( PC_get(conf, ".plugins<%d>", &plugin_conf, ii) ) {
+			err = PDI_ERR_CONFIG;
+			goto init_err1;
+		}
+		
+		err = plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[ii]); if (err) goto init_err1;
+		
+init_err1:
+		free(plugin_name);
+		if (err) goto init_err0;
 	}
 	
-	
-init_err:
+init_err0:
 	return err;
 }
 

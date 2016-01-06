@@ -128,13 +128,17 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 {
 	char *buf_str = NULL; 
 	if ( !PC_get_string(node, "", &buf_str, 0) ) {
+		PDI_status_t res = PDI_OK;
 		type->kind = SCALAR;
 		if ( !strcmp(buf_str, "int") ) {
 			//TODO: adapt to the actual size of int
 			type->c.scalar = INT32;
-		} //TODO: handle missing types
+		} else {
+			//TODO: handle missing types
+			res = PDI_ERR_VALUE;
+		}
 		free(buf_str);
-		return PDI_OK;
+		return res;
 	}
 	
 	char *kind = NULL;

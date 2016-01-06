@@ -93,7 +93,24 @@ int main(int argc, char *argv[])
 	FILE *conf_file = fopen("example.yml", "rb"); assert(conf_file);
 	yaml_parser_t conf_parser; assert(yaml_parser_initialize(&conf_parser));
 	yaml_parser_set_input_file(&conf_parser, conf_file);
-	yaml_document_t conf_doc; assert(yaml_parser_load(&conf_parser, &conf_doc));
+	yaml_document_t conf_doc; 
+	if ( !yaml_parser_load(&conf_parser, &conf_doc) ) {
+		printf("%s:%d:%d: Error: %s\n",
+				"example.yml",
+				conf_parser.problem_mark.line,
+				conf_parser.problem_mark.column,
+				conf_parser.problem
+  			);
+		if ( conf_parser.context ) {
+		printf("%s:%d:%d: Error: %s\n",
+				"example.yml",
+				conf_parser.context_mark.line,
+				conf_parser.context_mark.column,
+				conf_parser.context
+  			);
+		}
+		exit(1);
+	}
 	
 	PC_tree_t conf = {&conf_doc, NULL};
 	

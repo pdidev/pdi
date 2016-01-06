@@ -5,21 +5,17 @@ datasize: [1024, 1024]
 parallelism:
     width:  2
     height: 2
-
 pdi:
     metadata:
-        -
-            name: coord
-            type: {kind: contiguous, count: 2, type: int}
-        - {name: height, type: int}
-        - {name: width, type: int}
-        - {name: pheight, type: int}
-        - {name: pwidth, type: int}
-        - {name: nb_iter, type: int}
-        - {name: iter, type: int}
+        coord: {kind: contiguous, count: 2, type: int}
+        height: int
+        width: int
+        pheight: int
+        pwidth: int
+        nb_iter: int
+        iter: int
     data:
-        -
-            name: main_field # main_field is a 3D array (2D space, 1D time)
+        main_field: # main_field is a 3D array (2D space, 1D time)
             slice_type:
                 kind: subarray
                 ndims: 3
@@ -44,10 +40,10 @@ pdi:
                 type: double
     plugins:
         # load the hdf5_per_process PDI plugin
-        - name: hdf5_per_process
-        # and here is its configuration
-        outputs:
-            - data: main_field
-            select: mod($iter, 5) == 0 # a pythonic expression
-            file: output_${coord[0]}x${coord[1]}.hdf5
-            var: /iter_${iter}/main_field
+        hdf5_per_process:
+            # and here is its configuration
+            outputs:
+                    main_field:
+                        select: mod($iter, 5) == 0 # a pythonic expression
+                        file: output_${coord[0]}x${coord[1]}.hdf5
+                        var: /iter_${iter}/main_field

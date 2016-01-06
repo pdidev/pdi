@@ -57,16 +57,9 @@ static char *msprintf(const char *fmt, ...)
 
 typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin);
 
-PDI_status_t plugin_loader_load(PC_tree_t node, MPI_Comm *world, PDI_plugin_t* plugin)
+PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t* plugin)
 {
 	PDI_status_t err = PDI_OK;
-	
-	char *plugin_name = NULL;
-	PC_status_t pc_err = PC_get_string(node, ".name", &plugin_name, NULL);
-	if (pc_err) { 
-		err = PDI_ERR_CONFIG;
-		goto load_err0;
-	}
 	
 	char *plugin_symbol = msprintf("PDI_plugin_%s_ctor", plugin_name);
 	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
@@ -74,14 +67,12 @@ PDI_status_t plugin_loader_load(PC_tree_t node, MPI_Comm *world, PDI_plugin_t* p
 	init_f plugin_ctor = *((init_f *)&plugin_ctor_uncast);
 	if ( !plugin_ctor ) {
 		err = PDI_ERR_PLUGIN;
-		goto load_err1;
+		goto load_err0;
 	}
 	
-	err = plugin_ctor(node, world, plugin); if (err) goto load_err1;
+	err = plugin_ctor(node, world, plugin); if (err) goto load_err0;
 	
-load_err1:
-	free(plugin_symbol);
 load_err0:
-	free(plugin_name);
+	free(plugin_symbol);
 	return err;
 }
