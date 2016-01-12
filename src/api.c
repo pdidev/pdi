@@ -44,19 +44,23 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	
 	err = load_conf(conf); if (err) goto init_err0;
 	
-	err = PC_get_len(conf, ".plugins", &PDI_state.nb_plugins); if (err) goto init_err0;
+	PC_status_t pc_st = PC_len(PC_get(conf, ".plugins"), &PDI_state.nb_plugins);
+	if (pc_st.code) {
+		err = PDI_ERR_CONFIG;
+		goto init_err0;
+	}
 	PDI_state.plugins = malloc(PDI_state.nb_plugins*sizeof(PDI_plugin_t));
 	
 	int ii;
 	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 		char *plugin_name = NULL;
-		if ( PC_get_string(conf, ".plugins{%d}", &plugin_name, NULL, ii) ) {
+		if ( PC_string(PC_get(conf, ".plugins{%d}", ii), &plugin_name).code ) {
 			err = PDI_ERR_CONFIG;
 			goto init_err0;
 		};
 		
-		PC_tree_t plugin_conf; 
-		if ( PC_get(conf, ".plugins<%d>", &plugin_conf, ii) ) {
+		PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", ii);
+		if ( PC_status(plugin_conf) ) {
 			err = PDI_ERR_CONFIG;
 			goto init_err1;
 		}
