@@ -29,130 +29,114 @@
 
 #include "pdi/datatype.h"
 
+#include "error.h"
+
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256
 
 static PDI_status_t load_subarray(PC_tree_t node, PDI_array_type_t *type)
 {
-	PDI_status_t res = PDI_OK;
-	PC_status_t pc_st;
-	pc_st = PC_int(PC_get(node, ".ndims"), &type->ndims); 
-	if ( pc_st.code ) return PDI_ERR_CONFIG;
+	PDI_status_t status = PDI_OK;
 	
-	int len;
-	pc_st = PC_len(PC_get(node, ".array_of_sizes"), &len);
-	if ( pc_st.code || len != type->ndims ) return PDI_ERR_CONFIG;
-	pc_st = PC_len(PC_get(node, ".array_of_subsizes"), &len);
-	if ( pc_st.code || len != type->ndims ) return PDI_ERR_CONFIG;
-	pc_st = PC_len(PC_get(node, ".array_of_starts"), &len);
-	if ( pc_st.code || len != type->ndims ) return PDI_ERR_CONFIG;
+	handle_PC_err(PC_int(PC_get(node, ".ndims"), &type->ndims), err0); 
 	
-	int ii;
+	int len; handle_PC_err(PC_len(PC_get(node, ".array_of_sizes"), &len), err0);
+	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for array_of_sizes %d, %d expected", len, type->ndims), err0);
+	handle_PC_err(PC_len(PC_get(node, ".array_of_subsizes"), &len), err0);
+	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for array_of_subsizes %d, %d expected", len, type->ndims), err0);	
+	handle_PC_err(PC_len(PC_get(node, ".array_of_starts"), &len), err0);
+	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for array_of_starts %d, %d expected", len, type->ndims), err0);
+	
 	type->array_of_sizes = malloc(type->ndims*sizeof(PDI_value_t));
-	for ( ii=0; ii<type->ndims; ++ii ) {
-		char *expr = NULL;
-		pc_st = PC_string(PC_get(node, ".array_of_sizes[%d]", ii), &expr);
-		if (pc_st.code) {
-			res = PDI_ERR_CONFIG;
-			goto sizes_free;
-		}
-		res = PDI_value_parse(expr, &type->array_of_sizes[ii]); if (res) goto sizes_free;
-sizes_free:
+	for ( int ii=0; ii<type->ndims; ++ii ) {
+		char *expr; handle_PC_err(PC_string(PC_get(node, ".array_of_sizes[%d]", ii), &expr), err1);
+		handle_err(PDI_value_parse(expr, &type->array_of_sizes[ii]), err1);
+err1:
 		free(expr);
-		if ( res ) return res;
+		handle_err(status, err0);
 	}
 	
 	type->array_of_subsizes = malloc(type->ndims*sizeof(PDI_value_t));
-	for ( ii=0; ii<type->ndims; ++ii ) {
-		char *expr = NULL;
-		pc_st = PC_string(PC_get(node, ".array_of_subsizes[%d]", ii), &expr);
-		if (pc_st.code) {
-			res = PDI_ERR_CONFIG;
-			goto sizes_free;
-		}
-		res = PDI_value_parse(expr, &type->array_of_subsizes[ii]); if (res) goto subsizes_free;
-subsizes_free:
+	for ( int ii=0; ii<type->ndims; ++ii ) {
+		char *expr; handle_PC_err(PC_string(PC_get(node, ".array_of_subsizes[%d]", ii), &expr), err2);
+		handle_err(PDI_value_parse(expr, &type->array_of_subsizes[ii]), err2);
+err2:
 		free(expr);
-		if ( res ) return res;
+		handle_err(status, err0);
 	}
 	
 	type->array_of_starts = malloc(type->ndims*sizeof(PDI_value_t));
-	for ( ii=0; ii<type->ndims; ++ii ) {
-		char *expr = NULL;
-		pc_st = PC_string(PC_get(node, ".array_of_starts[%d]", ii), &expr);
-		if (pc_st.code) {
-			res = PDI_ERR_CONFIG;
-			goto sizes_free;
-		}
-		res = PDI_value_parse(expr, &type->array_of_starts[ii]); if (res) goto starts_free;
-starts_free:
+	for ( int ii=0; ii<type->ndims; ++ii ) {
+		char *expr; handle_PC_err(PC_string(PC_get(node, ".array_of_starts[%d]", ii), &expr), err3);
+		handle_err(PDI_value_parse(expr, &type->array_of_starts[ii]), err3);
+err3:
 		free(expr);
-		if ( res ) return res;
+		handle_err(status, err0);
 	}
 	
-	char *order_str = NULL;
-	pc_st = PC_string(PC_get(node, ".order"), &order_str); 
-	if ( pc_st.code ) {
-		res = PDI_ERR_CONFIG;
-		goto order_free;
-	}
+	char *order_str; handle_PC_err(PC_string(PC_get(node, ".order"), &order_str), err4);
 	if ( !strcmp(order_str, "ORDER_C") ) {
 		type->order = ORDER_C;
 	} else if ( !strcmp(order_str, "ORDER_FORTRAN") ) {
 		type->order = ORDER_FORTRAN;
 	} else {
-		res = PDI_ERR_CONFIG;
-		goto order_free;
+		handle_err(error(PDI_ERR_CONFIG, "Invalid order, should be either ORDER_C or ORDER_FORTRAN"), err4);
 	}
-order_free:
+err4:
 	free(order_str);
-	if ( res ) return res;
+	handle_err(status, err0);
 	
-	PC_tree_t type_type = PC_get(node, ".type"); 
-	if ( PC_status(type_type) ) {
-		res = PDI_ERR_CONFIG;
-		return res;
-	}
-	res = PDI_datatype_load(type_type, &type->type); return res;
+	PC_tree_t type_type = PC_get(node, ".type");
+	handle_PC_err(PC_status(type_type), err0);
+	handle_err(PDI_datatype_load(type_type, &type->type), err0);
+	
+err0:
+	return status;
 }
 
 static PDI_status_t load_contiguous(PC_tree_t node, PDI_array_type_t *type)
 {
-	PDI_status_t res = PDI_OK;
+	PDI_status_t status = PDI_OK;
 	
 	type->ndims = 1;
 	type->order = ORDER_C;
 	
 	type->array_of_starts = malloc(sizeof(PDI_value_t));
-	res = PDI_value_parse("0", type->array_of_starts); if ( res ) return res;
+	handle_err(PDI_value_parse("0", type->array_of_starts), err0);
 	
 	type->array_of_sizes = malloc(sizeof(PDI_value_t));
-	char *expr = NULL;
-	PC_status_t pc_st = PC_string(PC_get(node, ".count"), &expr);
-	if ( pc_st.code ) {
-		res = PDI_ERR_CONFIG;
-		goto expr_free;
-	}
-	res = PDI_value_parse(expr, type->array_of_sizes); if ( res ) goto expr_free;
-expr_free:
+	char *expr; handle_PC_err(PC_string(PC_get(node, ".count"), &expr), err1);
+	handle_err(PDI_value_parse(expr, type->array_of_sizes), err2);
+err2:
 	free(expr);
-	if ( res ) return res;
+	handle_err(status, err1);
 	
 	type->array_of_subsizes = type->array_of_sizes;
 	
 	PC_tree_t type_type = PC_get( node, ".type");
-	if ( PC_status(type_type) ) {
-		res = PDI_ERR_CONFIG;
-		return res;
-	}
-	res = PDI_datatype_load(type_type, &type->type); return res;
+	handle_PC_err(PC_status(type_type), err1);
+	handle_err(PDI_datatype_load(type_type, &type->type), err1);
+	
+	return status;
+
+err1:
+	free(type->array_of_sizes);
+	
+err0:
+	free(type->array_of_starts);
 }
 
 PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 {
-	char *buf_str = NULL; 
-	if ( !PC_string(node, &buf_str).code ) {
-		PDI_status_t res = PDI_OK;
+	PDI_status_t status = PDI_OK;
+	
+	PC_errhandler_t pc_handler = {NULL, NULL};
+	pc_handler = PC_errhandler(pc_handler); // paraconf errors should be ignored here
+	char *buf_str = NULL;
+	PC_string(node, &buf_str);
+	PC_errhandler(pc_handler);
+	
+	if ( buf_str ) { // case where the datatype is primitive
 		type->kind = SCALAR;
 		if ( !strcmp(buf_str, "int") ) {
 			//TODO: adapt to the actual size of int
@@ -161,30 +145,27 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 			type->c.scalar = PDI_T_DOUBLE;
 		} else {
 			//TODO: handle missing types
-			res = PDI_ERR_VALUE;
+			handle_err(error(PDI_ERR_VALUE, "Unknown primitive type: `%s'", buf_str), err0);
 		}
-		free(buf_str);
-		return res;
+	} else { // case where the datatype is composite
+		char *kind;
+		handle_PC_err(PC_string(PC_get(node, ".kind"), &kind), err0);
+		
+		if ( !strcmp(kind, "subarray") ) {
+			type->kind = ARRAY;
+			type->c.array = malloc( sizeof(PDI_array_type_t) );
+			handle_err(load_subarray(node, type->c.array), err2);
+		} else if ( !strcmp(kind, "contiguous") ) {
+			type->kind = ARRAY;
+			type->c.array = malloc( sizeof(PDI_array_type_t) );
+			handle_err(load_contiguous(node, type->c.array), err2);
+		}
+err2:
+		free(kind);
+		handle_err(status, err0);
 	}
 	
-	char *kind = NULL;
-	if ( PC_string(PC_get(node, ".kind"), &kind).code ) {
-		free(kind);
-		return PDI_ERR_CONFIG;
-	}
-	
-	if ( !strcmp(kind, "subarray") ) {
-		free(kind);
-		type->kind = ARRAY;
-		type->c.array = malloc( sizeof(PDI_array_type_t) );
-		return load_subarray(node, type->c.array);
-	} else if ( !strcmp(kind, "contiguous") ) {
-		free(kind);
-		type->kind = ARRAY;
-		type->c.array = malloc( sizeof(PDI_array_type_t) );
-		return load_contiguous(node, type->c.array);
-	}
-	
-	free(kind);
-	return PDI_ERR_CONFIG;
+err0:
+	free(buf_str);
+	return status;
 }

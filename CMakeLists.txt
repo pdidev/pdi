@@ -76,6 +76,7 @@ add_library(pdi
 	src/api.c
 	src/conf.c
 	src/datatype.c
+	src/error.c
 	src/plugin_loader.c
 	src/value.c
 )

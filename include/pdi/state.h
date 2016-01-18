@@ -101,6 +101,8 @@ struct PDI_state_s
 	
 	PDI_plugin_t *plugins;
 	
+	PDI_errfunc_f *errfunc;
+	
 };
 
 extern PDI_state_t PDI_EXPORT PDI_state;

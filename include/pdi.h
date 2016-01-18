@@ -34,6 +34,10 @@ extern "C" {
 
 #include <pdi_export.h>
 
+/// Error handling \{
+
+/** Error codes of PDI
+ */
 typedef enum PDI_status_e {
 	PDI_OK=0,
 	/// on an input call, no such data is available
@@ -46,10 +50,47 @@ typedef enum PDI_status_e {
 	PDI_ERR_PLUGIN
 } PDI_status_t;
 
-typedef enum PDI_inout_e {
-	PDI_IN = 1,
-	PDI_OUT = 2
-} PDI_inout_t;
+/** Type of a callback function used when an error occurs
+ * \param status the error code
+ * \param message the human-readable error message
+ * \param context a user-provided context
+ */
+typedef void (*PDI_errfunc_f)(PDI_status_t status, const char *message, void *context);
+
+/** Definition of an error handler
+ */
+typedef struct PDI_errhandler_s
+{
+	/// The function to handle the error (none if NULL)
+	PDI_errfunc_f func;
+	
+	/// the context that will be provided to the function
+	void *context;
+	
+} PDI_errhandler_t;
+
+/** Return a human-readabe message describing the last error that occured in PDI
+ */
+char PARACONF_EXPORT *PDI_errmsg();
+
+/** Sets the error handler to use
+ * 
+ * PDI_asserthandler is the default handler before this function is called
+ * 
+ * \param handler the new handler to set
+ * \return the previous handler
+ */
+PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler);
+
+/** Prints the error message and aborts if the status is invalid
+ */
+extern const PDI_errhandler_t PDI_asserthandler;
+
+/** Does nothing
+ */
+extern const PDI_errhandler_t PDI_nullhandler;
+
+/// \}
 
 /// \{ Initialization / Finalization stuff
 
@@ -75,6 +116,16 @@ PDI_status_t PDI_EXPORT PDI_event(const char *event);
 
 /// \{ data access
 
+/**
+ * Access directions
+ */
+typedef enum PDI_inout_e {
+	/// data tranfer from PDI to the main code
+	PDI_IN = 1,
+	/// data transfer from the main code to PDI
+	PDI_OUT = 2
+} PDI_inout_t;
+
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
  * \param[in] name the data name
@@ -86,7 +137,7 @@ PDI_status_t PDI_EXPORT PDI_event(const char *event);
  * \post ownership of the data buffer is shared between PDI and the user code
  * 
  * the access parameter is a binary OR of PDI_IN & PDI_OUT.
- * * PDI_IN means PDI can modify the buffer
+ * * PDI_IN means PDI can set the buffer content
  * * PDI_OUT means the buffer contains data that can be accessed by PDI
  */
 PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, int access);

@@ -28,16 +28,15 @@
 #include "pdi/state.h"
 #include "pdi/datatype.h"
 
+#include "error.h"
+
 #include "conf.h"
 
 static PDI_status_t load_metadata(PC_tree_t node)
 {
-	PDI_status_t res = PDI_OK;
-	if ( node.node->type != YAML_MAPPING_NODE ) return PDI_ERR_CONFIG;
+	PDI_status_t status = PDI_OK;
 	
-	PC_status_t pc_st;
-	int map_len; pc_st = PC_len(node, &map_len);
-	if (pc_st.code) return PDI_ERR_CONFIG;
+	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
 	
 	PDI_state.metadata = realloc(PDI_state.metadata,
 			( PDI_state.nb_metadata + map_len ) * sizeof(PDI_metadata_t)
@@ -49,22 +48,24 @@ static PDI_status_t load_metadata(PC_tree_t node)
 		
 		cur_meta->value = NULL;
 		
-		pc_st = PC_string(PC_get(node, "{%d}", map_id), &cur_meta->name); if ( pc_st.code ) return PDI_ERR_CONFIG;
+		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_meta->name), err0);
 		
-		PC_tree_t map_value = PC_get(node, "<%d>", map_id);  if (pc_st.code) return PDI_ERR_CONFIG;
-		res = PDI_datatype_load(map_value, &cur_meta->type); if (res) return res;
+		PC_tree_t map_value = PC_get(node, "<%d>", map_id);
+		handle_PC_err(PC_status(map_value), err0);
+		handle_err(PDI_datatype_load(map_value, &cur_meta->type), err0);
 		
 		++PDI_state.nb_metadata;
 	}
-	return res;
+	
+err0:
+	return status;
 }
 
 static PDI_status_t load_data(PC_tree_t node)
 {
-	PDI_status_t res = PDI_OK;
-	if ( node.node->type != YAML_MAPPING_NODE ) return PDI_ERR_CONFIG;
+	PDI_status_t status = PDI_OK;
 	
-	int map_len; if ( PC_len(node, &map_len).code ) return PDI_ERR_CONFIG;
+	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
 	
 	PDI_state.data = realloc(PDI_state.data,
 			( PDI_state.nb_data + map_len ) * sizeof(PDI_data_t)
@@ -74,34 +75,37 @@ static PDI_status_t load_data(PC_tree_t node)
 	for ( map_id=0; map_id<map_len; ++map_id ) {
 		PDI_data_t *cur_dat = PDI_state.data+PDI_state.nb_data;
 		
-		if ( PC_string(PC_get(node, "{%d}", map_id), &cur_dat->name).code ) return PDI_ERR_CONFIG;
+		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_dat->name), err0);
+		
 		cur_dat->content.memstatus = PDI_UNALOCATED;
 		
-		PC_tree_t map_value = PC_get(node, "<%d>.slice_type", map_id);
-		if ( PC_status(map_value) ) return PDI_ERR_CONFIG;
-		res = PDI_datatype_load(map_value, &cur_dat->slice_type); if (res) return res;
+		PC_tree_t slice_type = PC_get(node, "<%d>.slice_type", map_id);
+		handle_PC_err(PC_status(slice_type), err0);
+		handle_err(PDI_datatype_load(slice_type, &cur_dat->slice_type), err0);
 		
-		map_value = PC_get(node, "<%d>.mem_type", map_id);
-		if ( PC_status(map_value) ) return PDI_ERR_CONFIG;
-		res = PDI_datatype_load(map_value, &cur_dat->mem_type); if (res) return res;
+		PC_tree_t mem_type = PC_get(node, "<%d>.mem_type", map_id);
+		handle_PC_err(PC_status(mem_type), err0);
+		handle_err(PDI_datatype_load(mem_type, &cur_dat->mem_type), err0);
 		
 		++PDI_state.nb_data;
 	}
-	return res;
+	
+err0:
+	return status;
 }
 
 PDI_status_t load_conf(PC_tree_t node)
 {
-	PDI_status_t res = PDI_OK;
-	if ( node.node->type != YAML_MAPPING_NODE ) return PDI_ERR_CONFIG;
+	PDI_status_t status = PDI_OK;
 	
 	PC_tree_t metadata = PC_get(node, ".metadata");
-	if ( PC_status(metadata) ) return PDI_ERR_CONFIG;
-	res = load_metadata(metadata); if ( res ) return res;
+	handle_PC_err(PC_status(metadata), err0);
+	handle_err(load_metadata(metadata), err0);
 	
 	PC_tree_t data = PC_get(node, ".data");
-	if ( PC_status(data) ) return PDI_ERR_CONFIG;
-	res = load_data(data); if ( res ) return res;
+	handle_PC_err(PC_status(data), err0);
+	handle_err(load_data(data), err0);
 	
-	return res;
+err0:
+	return status;
 }

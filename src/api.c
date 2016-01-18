@@ -29,12 +29,26 @@
 #include "pdi/state.h"
 #include "conf.h"
 #include "plugin_loader.h"
+#include "error.h"
+
+#define PDI_BUFFER_SIZE 256
 
 PDI_state_t PDI_state;
 
+const PDI_errhandler_t PDI_asserthandler = {
+	&PDI_assert,
+	NULL
+};
+
+const PDI_errhandler_t PDI_nullhandler = {
+	NULL,
+	NULL
+};
+
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
-	PDI_status_t err = PDI_OK;
+	PDI_status_t status = PDI_OK;
+	
 	PDI_state.nb_metadata = 0;
 	PDI_state.metadata = NULL;
 	PDI_state.nb_data = 0;
@@ -42,38 +56,30 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL;
 	
-	err = load_conf(conf); if (err) goto init_err0;
+	handle_PC_err(conf.status, err0);
 	
-	PC_status_t pc_st = PC_len(PC_get(conf, ".plugins"), &PDI_state.nb_plugins);
-	if (pc_st.code) {
-		err = PDI_ERR_CONFIG;
-		goto init_err0;
-	}
+	handle_err(load_conf(conf), err0);
+	
+	handle_PC_err(PC_len(PC_get(conf, ".plugins"), &PDI_state.nb_plugins), err0);
 	PDI_state.plugins = malloc(PDI_state.nb_plugins*sizeof(PDI_plugin_t));
 	
 	int ii;
 	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 		char *plugin_name = NULL;
-		if ( PC_string(PC_get(conf, ".plugins{%d}", ii), &plugin_name).code ) {
-			err = PDI_ERR_CONFIG;
-			goto init_err0;
-		};
+		handle_PC_err(PC_string(PC_get(conf, ".plugins{%d}", ii), &plugin_name), err0);
 		
 		PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", ii);
-		if ( PC_status(plugin_conf) ) {
-			err = PDI_ERR_CONFIG;
-			goto init_err1;
-		}
+		handle_PC_err(PC_status(plugin_conf), err1);
 		
-		err = plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[ii]); if (err) goto init_err1;
+		handle_err(plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[ii]), err1);
 		
-init_err1:
+err1:
 		free(plugin_name);
-		if (err) goto init_err0;
+		handle_err(status, err0);
 	}
 	
-init_err0:
-	return err;
+err0:
+	return status;
 }
 
 PDI_status_t PDI_finalize()

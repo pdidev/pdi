@@ -82,14 +82,6 @@ void exchange(MPI_Comm cart_com, double *cur, int height, int width)
 	             cart_com, &status);
 }
 
-static inline void errpchandle ( PC_status_t st, const char *file, long line )
-{
-	if ( st.code ) {
-	}
-}
-
-#define assertpc(status) errpchandle(status, __FILE__, __LINE__)
-
 int main(int argc, char *argv[])
 {
 	MPI_Init(&argc, &argv);
@@ -120,17 +112,15 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-	PC_tree_t conf = PC_root(&conf_doc, PC_assert);
+	PC_tree_t conf = PC_root(&conf_doc);
 	
 	PC_tree_t pdi_conf = PC_get(conf, ".pdi");
-	assertpc ( pdi_conf.status );
 	PC_tree_t iter_tree = PC_get(conf, ".iter");
-	assertpc ( iter_tree.status );
-	int nb_iter; assertpc(PC_int(iter_tree, &nb_iter));
-	int height; assertpc(PC_int(PC_get(conf, ".datasize[0]"), &height));
-	int width; assertpc(PC_int(PC_get(conf, ".datasize[1]"), &width));
-	int pheight; assertpc(PC_int(PC_get(conf, ".parallelism.height"), &pheight));
-	int pwidth; assertpc(PC_int(PC_get(conf, ".parallelism.width"), &pwidth));
+	int nb_iter; PC_int(iter_tree, &nb_iter);
+	int height; PC_int(PC_get(conf, ".datasize[0]"), &height);
+	int width; PC_int(PC_get(conf, ".datasize[1]"), &width);
+	int pheight; PC_int(PC_get(conf, ".parallelism.height"), &pheight);
+	int pwidth; PC_int(PC_get(conf, ".parallelism.width"), &pwidth);
 	
 	assert(!PDI_init(pdi_conf, &main_comm));
 	assert(pwidth*pheight == size);
