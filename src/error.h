@@ -22,38 +22,32 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
+#ifndef ERROR_H__
+#define ERROR_H__
 
-#include <pdi.h>
-#include <pdi/plugin.h>
+#include "pdi.h"
 
-MPI_Comm my_world;
+#define handle_err(callstatus, free_stamp)\
+do { \
+	status = callstatus; \
+	if ( status ) goto free_stamp; \
+} while( 0 )
 
-PDI_status_t PDI_hdf5_per_process_init(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world)
-{
-	my_world = *world;
-	
-	return PDI_OK;
-}
+#define handle_PC_err(callstatus, free_stamp)\
+do { \
+	if ( callstatus ) { \
+		status = PDI_ERR_CONFIG; \
+		goto free_stamp; \
+	} \
+} while( 0 )
 
-PDI_status_t PDI_hdf5_per_process_finalize()
-{
-	return PDI_OK;
-}
+PDI_status_t error(PDI_status_t errcode, const char *message, ...);
 
-PDI_status_t PDI_hdf5_per_process_event(const char *event)
-{
-	return PDI_OK;
-}
+/** Prints the error message and aborts if the status is invalid
+ * \param status the error code
+ * \param message the human-readable error message
+ * \param context the user-provided context (ignored)
+ */
+void PDI_assert(PDI_status_t status, const char *message, void *context);
 
-PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_hdf5_per_process_data_end(PDI_variable_t *data)
-{
-	return PDI_OK;
-}
-
-PDI_PLUGIN(hdf5_per_process)
+#endif // ERROR_H__

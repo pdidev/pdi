@@ -22,38 +22,46 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
+#include <paraconf.h>
 
-#include <pdi.h>
-#include <pdi/plugin.h>
+#include "error.h"
 
-MPI_Comm my_world;
+static PDI_errhandler_t handler = { PDI_assert, NULL };
 
-PDI_status_t PDI_hdf5_per_process_init(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world)
+static char *buffer = NULL;
+
+static size_t buffer_size = 0;
+
+// TODO: make this thread-safe by using a distinct buffer / thread
+PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 {
-	my_world = *world;
-	
-	return PDI_OK;
+	PDI_errhandler_t old_handler = handler;
+	handler = new_handler;
+	return old_handler;
 }
 
-PDI_status_t PDI_hdf5_per_process_finalize()
+PDI_status_t error(PDI_status_t status, const char *message, ...)
 {
-	return PDI_OK;
+	va_list ap;
+	va_start(ap, message);
+	int realsize = vsnprintf(buffer, buffer_size, message, ap);
+	va_end(ap);
+	if ( realsize >= buffer_size ) {
+		buffer_size = realsize+1;
+		buffer = realloc(buffer, buffer_size);
+		va_start(ap, message);
+		vsnprintf(buffer, buffer_size, message, ap);
+		va_end(ap);
+	}
+	if ( handler.func ) handler.func(status, buffer, handler.context);
+	return status;
 }
 
-PDI_status_t PDI_hdf5_per_process_event(const char *event)
+void PDI_assert(PDI_status_t status, const char* message, void* context)
 {
-	return PDI_OK;
+	if ( status ) {
+		fprintf(stderr, "Error in PDI: %s\n", message);
+		abort();
+	}
 }
 
-PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
-{
-	return PDI_OK;
-}
-
-PDI_status_t PDI_hdf5_per_process_data_end(PDI_variable_t *data)
-{
-	return PDI_OK;
-}
-
-PDI_PLUGIN(hdf5_per_process)

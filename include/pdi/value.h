@@ -57,7 +57,7 @@ struct PDI_value_s
 	union {
 		int constval;
 		
-		PDI_metadata_t *refval;
+		PDI_param_t *refval;
 		
 		PDI_exprval_t *exprval;
 	} c;

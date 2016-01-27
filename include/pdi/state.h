@@ -48,7 +48,7 @@ struct PDI_dimension_s
 	
 };
 
-struct PDI_data_content_s
+struct PDI_variable_value_s
 {
 	int *coords;
 	
@@ -61,7 +61,7 @@ struct PDI_data_content_s
 	
 };
 
-struct PDI_metadata_s
+struct PDI_param_s
 {
 	char *name;
 	
@@ -71,31 +71,27 @@ struct PDI_metadata_s
 	
 };
 
-struct PDI_data_s
+struct PDI_variable_s
 {
 	char *name;
 	
-	PDI_type_t slice_type;
+	PDI_type_t type;
 	
-	PDI_type_t mem_type;
+	PC_tree_t config;
 	
-	int nb_coord;
-	
-	PDI_metadata_t *coords;
-	
-	PDI_data_content_t content;
+	PDI_variable_value_t content;
 	
 };
 
 struct PDI_state_s
 {
-	int nb_metadata;
+	int nb_params;
 	
-	PDI_metadata_t *metadata;
+	PDI_param_t *params;
 	
-	int nb_data;
+	int nb_variables;
 	
-	PDI_data_t *data;
+	PDI_variable_t *variables;
 	
 	int nb_plugins;
 	

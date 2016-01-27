@@ -30,7 +30,7 @@
 typedef struct PDI_value_s PDI_value_t;
 typedef struct PDI_plugin_s PDI_plugin_t;
 typedef struct PDI_type_s PDI_type_t;
-typedef struct PDI_data_s PDI_data_t;
+typedef struct PDI_variable_s PDI_variable_t;
 
 
 #endif // PDI_INTERNAL_H__

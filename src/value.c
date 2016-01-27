@@ -31,7 +31,7 @@
 
 PDI_status_t parse_value(char **val_str, PDI_value_t *value);
 
-PDI_status_t parse_ref(char **val_str, PDI_metadata_t **value)
+PDI_status_t parse_ref(char **val_str, PDI_param_t **value)
 {
 	char *refid = *val_str;
 	if ( *refid != '$' ) return PDI_ERR_VALUE;
@@ -56,9 +56,9 @@ PDI_status_t parse_ref(char **val_str, PDI_metadata_t **value)
 	}
 	
 	int met_id;
-	for ( met_id=0; met_id<PDI_state.nb_metadata; ++met_id ) {
-		if ( !strncmp(PDI_state.metadata[met_id].name, refid, refid_len) ) {
-			*value = &PDI_state.metadata[met_id];
+	for ( met_id=0; met_id<PDI_state.nb_params; ++met_id ) {
+		if ( !strncmp(PDI_state.params[met_id].name, refid, refid_len) ) {
+			*value = &PDI_state.params[met_id];
 			*val_str = refid+refid_len;
 			while ( isspace(**val_str) ) ++*val_str;
 			return PDI_OK;

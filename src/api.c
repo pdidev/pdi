@@ -49,10 +49,10 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_state.nb_metadata = 0;
-	PDI_state.metadata = NULL;
-	PDI_state.nb_data = 0;
-	PDI_state.data = NULL;
+	PDI_state.nb_params = 0;
+	PDI_state.params = NULL;
+	PDI_state.nb_variables = 0;
+	PDI_state.variables = NULL;
 	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL;
 	
@@ -114,11 +114,11 @@ PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 	PDI_status_t err = PDI_OK;
 	int ii;
 	
-	PDI_data_t *data = NULL;
-	for ( ii=0; ii<PDI_state.nb_data; ++ii ) {
-		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
+	PDI_variable_t *data = NULL;
+	for ( ii=0; ii<PDI_state.nb_variables; ++ii ) {
+		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
 		
-		data = PDI_state.data+ii;
+		data = PDI_state.variables+ii;
 		break;
 	}
 	if (!data) {
@@ -146,11 +146,11 @@ PDI_status_t PDI_release(const char* name)
 	PDI_status_t err = PDI_OK;
 	int ii;
 	
-	PDI_data_t *data = NULL;
-	for ( ii=0; ii<PDI_state.nb_data; ++ii ) {
-		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
+	PDI_variable_t *data = NULL;
+	for ( ii=0; ii<PDI_state.nb_variables; ++ii ) {
+		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
 		
-		data = PDI_state.data+ii;
+		data = PDI_state.variables+ii;
 		break;
 	}
 	if (!data) {
@@ -176,11 +176,11 @@ PDI_status_t PDI_reclaim(const char* name)
 	PDI_status_t err = PDI_OK;
 	int ii;
 	
-	PDI_data_t *data = NULL;
-	for ( ii=0; ii<PDI_state.nb_data; ++ii ) {
-		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
+	PDI_variable_t *data = NULL;
+	for ( ii=0; ii<PDI_state.nb_variables; ++ii ) {
+		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
 		
-		data = PDI_state.data+ii;
+		data = PDI_state.variables+ii;
 		break;
 	}
 	if (!data) {
@@ -205,11 +205,11 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 	PDI_status_t err = PDI_OK;
 	int ii;
 	
-	PDI_metadata_t *metadata = NULL;
-	for ( ii=0; ii<PDI_state.nb_metadata; ++ii ) {
-		if ( strcmp(name, PDI_state.metadata[ii].name) != 0 ) continue;
+	PDI_param_t *metadata = NULL;
+	for ( ii=0; ii<PDI_state.nb_params; ++ii ) {
+		if ( strcmp(name, PDI_state.params[ii].name) != 0 ) continue;
 		
-		metadata = PDI_state.metadata+ii;
+		metadata = PDI_state.params+ii;
 		break;
 	}
 	if (metadata) {

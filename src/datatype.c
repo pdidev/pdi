@@ -38,37 +38,36 @@ static PDI_status_t load_subarray(PC_tree_t node, PDI_array_type_t *type)
 {
 	PDI_status_t status = PDI_OK;
 	
-	handle_PC_err(PC_int(PC_get(node, ".ndims"), &type->ndims), err0); 
+	handle_PC_err(PC_len(PC_get(node, ".sizes"), &type->ndims), err0);
 	
-	int len; handle_PC_err(PC_len(PC_get(node, ".array_of_sizes"), &len), err0);
-	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for array_of_sizes %d, %d expected", len, type->ndims), err0);
-	handle_PC_err(PC_len(PC_get(node, ".array_of_subsizes"), &len), err0);
-	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for array_of_subsizes %d, %d expected", len, type->ndims), err0);	
-	handle_PC_err(PC_len(PC_get(node, ".array_of_starts"), &len), err0);
-	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for array_of_starts %d, %d expected", len, type->ndims), err0);
+	int len; handle_PC_err(PC_len(PC_get(node, ".subsizes"), &len), err0);
+	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, type->ndims), err0);	
 	
-	type->array_of_sizes = malloc(type->ndims*sizeof(PDI_value_t));
+	handle_PC_err(PC_len(PC_get(node, ".starts"), &len), err0);
+	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, type->ndims), err0);
+	
+	type->sizes = malloc(type->ndims*sizeof(PDI_value_t));
 	for ( int ii=0; ii<type->ndims; ++ii ) {
-		char *expr; handle_PC_err(PC_string(PC_get(node, ".array_of_sizes[%d]", ii), &expr), err1);
-		handle_err(PDI_value_parse(expr, &type->array_of_sizes[ii]), err1);
+		char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err1);
+		handle_err(PDI_value_parse(expr, &type->sizes[ii]), err1);
 err1:
 		free(expr);
 		handle_err(status, err0);
 	}
 	
-	type->array_of_subsizes = malloc(type->ndims*sizeof(PDI_value_t));
+	type->subsizes = malloc(type->ndims*sizeof(PDI_value_t));
 	for ( int ii=0; ii<type->ndims; ++ii ) {
-		char *expr; handle_PC_err(PC_string(PC_get(node, ".array_of_subsizes[%d]", ii), &expr), err2);
-		handle_err(PDI_value_parse(expr, &type->array_of_subsizes[ii]), err2);
+		char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err2);
+		handle_err(PDI_value_parse(expr, &type->subsizes[ii]), err2);
 err2:
 		free(expr);
 		handle_err(status, err0);
 	}
 	
-	type->array_of_starts = malloc(type->ndims*sizeof(PDI_value_t));
+	type->starts = malloc(type->ndims*sizeof(PDI_value_t));
 	for ( int ii=0; ii<type->ndims; ++ii ) {
-		char *expr; handle_PC_err(PC_string(PC_get(node, ".array_of_starts[%d]", ii), &expr), err3);
-		handle_err(PDI_value_parse(expr, &type->array_of_starts[ii]), err3);
+		char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err3);
+		handle_err(PDI_value_parse(expr, &type->starts[ii]), err3);
 err3:
 		free(expr);
 		handle_err(status, err0);
@@ -101,17 +100,17 @@ static PDI_status_t load_contiguous(PC_tree_t node, PDI_array_type_t *type)
 	type->ndims = 1;
 	type->order = ORDER_C;
 	
-	type->array_of_starts = malloc(sizeof(PDI_value_t));
-	handle_err(PDI_value_parse("0", type->array_of_starts), err0);
+	type->starts = malloc(sizeof(PDI_value_t));
+	handle_err(PDI_value_parse("0", type->starts), err0);
 	
-	type->array_of_sizes = malloc(sizeof(PDI_value_t));
+	type->sizes = malloc(sizeof(PDI_value_t));
 	char *expr; handle_PC_err(PC_string(PC_get(node, ".count"), &expr), err1);
-	handle_err(PDI_value_parse(expr, type->array_of_sizes), err2);
+	handle_err(PDI_value_parse(expr, type->sizes), err2);
 err2:
 	free(expr);
 	handle_err(status, err1);
 	
-	type->array_of_subsizes = type->array_of_sizes;
+	type->subsizes = type->sizes;
 	
 	PC_tree_t type_type = PC_get( node, ".type");
 	handle_PC_err(PC_status(type_type), err1);
@@ -120,10 +119,10 @@ err2:
 	return status;
 
 err1:
-	free(type->array_of_sizes);
+	free(type->sizes);
 	
 err0:
-	free(type->array_of_starts);
+	free(type->starts);
 }
 
 PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)

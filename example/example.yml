@@ -6,46 +6,39 @@ parallelism:
     width:  2
     height: 2
 pdi:
-    metadata:
-        coord: {kind: contiguous, count: 2, type: int}
+    params: # constant along both time and ranks
         height: int
         width: int
         pheight: int
         pwidth: int
         nb_iter: int
+    variables: # values that might change along time and process
         iter: int
-    data:
-        main_field: # main_field is a 3D array (2D space, 1D time)
-            slice_type:
-                kind: subarray
-                ndims: 3
-                array_of_sizes:
-                    - '($width-2)*$pwidth'
-                    - '($height-2)*$pheight'
-                    - $nb_iter
-                array_of_subsizes: [ $width-2, $height-2, 1]
-                array_of_starts:
+        coord: { kind: vector, size: 2, type: int }
+        main_field:
+            kind: subarray
+            type: double
+            sizes: [$width, $height]
+            subsizes: [$width-2, $height-2] # defaults to sizes
+            starts: [1, 1] # defaults to [0, 0]
+            order: ORDER_C 
+            # the following are not handled by PDI but might be used by plugins
+            
+            in: # specifies that the provided data is part of a bigger (constant) logical data
+                name: main_field # the global logical data
+                starts:
                     - '$coord[0]*($width-2)'
                     - '$coord[1]*($height-2)'
                     - $iter
-                order: ORDER_C
-                type: double
-            mem_type:
-                kind: subarray
-                ndims: 3
-                array_of_sizes: [$width, $height, $nb_iter]
-                array_of_subsizes: [ $width-2, $height-2, 1] # must match above
-                array_of_starts: [ 1, 1, 0 ]
-                order: ORDER_C
-                type: double
+            
     plugins:
         # load the hdf5_per_process PDI plugin
         hdf5_per_process:
             # and here is its configuration
             outputs:
-                main_field:
-                    select: mod($iter, 5) == 0 # a pythonic expression
+                main_field: # ref to a data
+                    select: $iter % 5 == 0 # a pythonic expression
                     file: output_${coord[0]}x${coord[1]}.hdf5
                     var: /iter_${iter}/main_field
-        # load the hdf5_per_process PDI plugin
-        test_plugin:
+        # load the test_plugin PDI plugin
+        test_plugin: ~

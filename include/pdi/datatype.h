@@ -50,11 +50,11 @@ struct PDI_array_type_s
 {
 	int ndims;
 	
-	PDI_value_t *array_of_sizes;
+	PDI_value_t *sizes;
 	
-	PDI_value_t *array_of_subsizes;
+	PDI_value_t *subsizes;
 	
-	PDI_value_t *array_of_starts;
+	PDI_value_t *starts;
 	
 	PDI_order_t order;
 	

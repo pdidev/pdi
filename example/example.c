@@ -114,15 +114,13 @@ int main(int argc, char *argv[])
 	
 	PC_tree_t conf = PC_root(&conf_doc);
 	
-	PC_tree_t pdi_conf = PC_get(conf, ".pdi");
-	PC_tree_t iter_tree = PC_get(conf, ".iter");
-	int nb_iter; PC_int(iter_tree, &nb_iter);
+	int nb_iter; PC_int(PC_get(conf, ".iter"), &nb_iter);
 	int height; PC_int(PC_get(conf, ".datasize[0]"), &height);
 	int width; PC_int(PC_get(conf, ".datasize[1]"), &width);
 	int pheight; PC_int(PC_get(conf, ".parallelism.height"), &pheight);
 	int pwidth; PC_int(PC_get(conf, ".parallelism.width"), &pwidth);
+	PDI_init(PC_get(conf, ".pdi"), &main_comm);
 	
-	assert(!PDI_init(pdi_conf, &main_comm));
 	assert(pwidth*pheight == size);
 	
 	int cart_dims[2] = { pwidth, pheight };
@@ -156,6 +154,8 @@ int main(int argc, char *argv[])
 	PDI_event("finalization");
 	PDI_expose("main_field", cur);
 
+	PDI_finalize();
+	
 	yaml_document_delete(&conf_doc);
 	yaml_parser_delete(&conf_parser);
 	fclose(conf_file);
@@ -163,7 +163,6 @@ int main(int argc, char *argv[])
 	free(cur);
 	free(next);
 
-	PDI_finalize();
 	MPI_Finalize();
 	return 0;
 }

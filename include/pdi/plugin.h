@@ -34,9 +34,9 @@ typedef PDI_status_t (*PDI_finalize_f)();
 
 typedef PDI_status_t (*PDI_event_f)(const char *event);
 
-typedef PDI_status_t (*PDI_data_start_f)(PDI_data_t *data);
+typedef PDI_status_t (*PDI_data_start_f)(PDI_variable_t *data);
 
-typedef PDI_status_t (*PDI_data_end_f)(PDI_data_t *data);
+typedef PDI_status_t (*PDI_data_end_f)(PDI_variable_t *data);
 
 /** Definition of a plugin
  */

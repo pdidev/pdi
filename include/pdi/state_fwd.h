@@ -27,9 +27,9 @@
 
 typedef struct PDI_state_s PDI_state_t;
 
-typedef struct PDI_metadata_s PDI_metadata_t;
+typedef struct PDI_param_s PDI_param_t;
 
-typedef struct PDI_data_s PDI_data_t;
+typedef struct PDI_variable_s PDI_variable_t;
 
 typedef enum PDI_memstatus_e {
 	PDI_UNALOCATED,
@@ -37,7 +37,7 @@ typedef enum PDI_memstatus_e {
 	PDI_OWNED
 } PDI_memstatus_t;
 
-typedef struct PDI_data_content_s PDI_data_content_t;
+typedef struct PDI_variable_value_s PDI_variable_value_t;
 
 typedef struct loaded_plugin_s loaded_plugin_t;
 
