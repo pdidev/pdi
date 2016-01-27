@@ -29,7 +29,7 @@
 #include "pdi/state.h"
 #include "conf.h"
 #include "plugin_loader.h"
-#include "error.h"
+#include "status.h"
 
 #define PDI_BUFFER_SIZE 256
 

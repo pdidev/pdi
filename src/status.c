@@ -24,7 +24,7 @@
 
 #include <paraconf.h>
 
-#include "error.h"
+#include "status.h"
 
 static char *buffer = NULL;
 

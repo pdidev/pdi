@@ -29,7 +29,7 @@
 
 #include "pdi/datatype.h"
 
-#include "error.h"
+#include "status.h"
 
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256

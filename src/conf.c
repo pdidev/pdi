@@ -28,7 +28,7 @@
 #include "pdi/state.h"
 #include "pdi/datatype.h"
 
-#include "error.h"
+#include "status.h"
 
 #include "conf.h"
 
