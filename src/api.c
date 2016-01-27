@@ -37,6 +37,8 @@ PDI_state_t PDI_state;
 
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
+	PC_errhandler_t pc_handler = intercept_PC_errors();
+	
 	PDI_status_t status = PDI_OK;
 	
 	PDI_state.nb_params = 0;
@@ -69,11 +71,15 @@ err1:
 	}
 	
 err0:
+	PC_errhandler(pc_handler);
+	
 	return status;
 }
 
 PDI_status_t PDI_finalize()
 {
+	PC_errhandler_t pc_handler = intercept_PC_errors();
+	
 	PDI_status_t err = PDI_OK;
 	
 	int ii;
@@ -82,11 +88,14 @@ PDI_status_t PDI_finalize()
 	}
 	
 finalize_err0:
+	PC_errhandler(pc_handler);
 	return err;
 }
 
 PDI_status_t PDI_event(const char* event)
 {
+	PC_errhandler_t pc_handler = intercept_PC_errors();
+	
 	PDI_status_t err = PDI_OK;
 	
 	int ii;
@@ -94,12 +103,15 @@ PDI_status_t PDI_event(const char* event)
 		if ( PDI_state.plugins[ii].event(event) ) err = PDI_ERR_PLUGIN;
 	}
 	
+	PC_errhandler(pc_handler);
 	return err;
 }
 
 PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 {
 	if ( access & PDI_IN ) return PDI_UNAVAILABLE;
+	
+	PC_errhandler_t pc_handler = intercept_PC_errors();
 	
 	PDI_status_t err = PDI_OK;
 	int ii;
@@ -128,11 +140,14 @@ PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 	if (err) goto err0;
 
 err0:
+	PC_errhandler(pc_handler);
 	return PDI_OK;
 }
 
 PDI_status_t PDI_release(const char* name)
 {
+	PC_errhandler_t pc_handler = intercept_PC_errors();
+	
 	PDI_status_t err = PDI_OK;
 	int ii;
 	
@@ -158,11 +173,14 @@ PDI_status_t PDI_release(const char* name)
 	if (err) goto release_err0;
 
 release_err0:
+	PC_errhandler(pc_handler);
 	return PDI_OK;
 }
 
 PDI_status_t PDI_reclaim(const char* name)
 {
+	PC_errhandler_t pc_handler = intercept_PC_errors();
+	
 	PDI_status_t err = PDI_OK;
 	int ii;
 	
@@ -187,6 +205,7 @@ PDI_status_t PDI_reclaim(const char* name)
 	if (err) goto release_err0;
 
 release_err0:
+	PC_errhandler(pc_handler);
 	return PDI_OK;
 }
 

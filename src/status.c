@@ -58,6 +58,11 @@ static errctx_t *get_context()
 	return &result;
 }
 
+static void forward_PC_error(PC_status_t status, const char *message, void *context)
+{
+	get_context()->handler.func(PDI_ERR_CONFIG, message, get_context()->handler.context);
+}
+
 // library private stuff
 
 PDI_status_t handle_error(PDI_status_t status, const char *message, ...)
@@ -75,6 +80,12 @@ PDI_status_t handle_error(PDI_status_t status, const char *message, ...)
 	}
 	if ( get_context()->handler.func ) get_context()->handler.func(status, get_context()->buffer, get_context()->handler.context);
 	return status;
+}
+
+PC_errhandler_t intercept_PC_errors()
+{
+	PC_errhandler_t forwarder = { forward_PC_error, NULL };
+	return PC_errhandler(forwarder);
 }
 
 // public stuff

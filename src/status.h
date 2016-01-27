@@ -43,4 +43,6 @@ do { \
 
 PDI_status_t handle_error(PDI_status_t errcode, const char *message, ...);
 
+PC_errhandler_t intercept_PC_errors();
+
 #endif // ERROR_H__
