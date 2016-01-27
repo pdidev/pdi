@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <pthread.h>
+
 #include <paraconf.h>
 
 #include "status.h"
@@ -38,6 +40,10 @@ typedef struct errctx_s {
 	
 } errctx_t;
 
+static pthread_key_t context_key;
+
+static pthread_once_t context_key_once = PTHREAD_ONCE_INIT;
+
 static void assert_status(PDI_status_t status, const char* message, void* context)
 {
 	if ( status ) {
@@ -46,16 +52,33 @@ static void assert_status(PDI_status_t status, const char* message, void* contex
 	}
 }
 
-// TODO: make this thread-safe by using a distinct buffer / thread
+/**
+ * \param context taken as a void* but in fact a errctx_t*
+ */
+static void context_destroy(void *context)
+{
+	free(context);
+}
+
+static void context_init()
+{
+	pthread_key_create(&context_key, context_destroy);
+}
+
 static errctx_t *get_context()
 {
-	static errctx_t result = {
-		{ assert_status, NULL },
-		NULL,
-		0
-	};
+	pthread_once(&context_key_once, &context_init);
 	
-	return &result;
+	errctx_t *context = pthread_getspecific(context_key);
+	if ( !context ) {
+		context = malloc(sizeof(errctx_t));
+		context->buffer = NULL;
+		context->buffer_size = 0;
+		context->handler = PDI_ASSERT_HANDLER;
+		pthread_setspecific(context_key, context);
+	}
+	
+	return context;
 }
 
 static void forward_PC_error(PC_status_t status, const char *message, void *context)
