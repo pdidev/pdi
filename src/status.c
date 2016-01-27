@@ -26,43 +26,55 @@
 
 #include "status.h"
 
-static char *buffer = NULL;
+// File private stuff
 
-static size_t buffer_size = 0;
+typedef struct errctx_s {
+	
+	PDI_errhandler_t handler;
+	
+	char *buffer;
+	
+	long buffer_size;
+	
+} errctx_t;
 
-static PDI_errhandler_t current_handler;
-
-// TODO: make this thread-safe by using a distinct buffer / thread
-PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
-{
-	PDI_errhandler_t old_handler = current_handler;
-	current_handler = new_handler;
-	return old_handler;
-}
-
-PDI_status_t handle_error(PDI_status_t status, const char *message, ...)
-{
-	va_list ap;
-	va_start(ap, message);
-	int realsize = vsnprintf(buffer, buffer_size, message, ap);
-	va_end(ap);
-	if ( realsize >= buffer_size ) {
-		buffer_size = realsize+1;
-		buffer = realloc(buffer, buffer_size);
-		va_start(ap, message);
-		vsnprintf(buffer, buffer_size, message, ap);
-		va_end(ap);
-	}
-	if ( current_handler.func ) current_handler.func(status, buffer, current_handler.context);
-	return status;
-}
-
-void assert_status(PDI_status_t status, const char* message, void* context)
+static void assert_status(PDI_status_t status, const char* message, void* context)
 {
 	if ( status ) {
 		fprintf(stderr, "Error in PDI: %s\n", message);
 		abort();
 	}
+}
+
+// TODO: make this thread-safe by using a distinct buffer / thread
+static errctx_t *get_context()
+{
+	static errctx_t result = {
+		{ assert_status, NULL },
+		NULL,
+		0
+	};
+	
+	return &result;
+}
+
+// library private stuff
+
+PDI_status_t handle_error(PDI_status_t status, const char *message, ...)
+{
+	va_list ap;
+	va_start(ap, message);
+	int realsize = vsnprintf(get_context()->buffer, get_context()->buffer_size, message, ap);
+	va_end(ap);
+	if ( realsize >= get_context()->buffer_size ) {
+		get_context()->buffer_size = realsize+1;
+		get_context()->buffer = realloc(get_context()->buffer, get_context()->buffer_size);
+		va_start(ap, message);
+		vsnprintf(get_context()->buffer, get_context()->buffer_size, message, ap);
+		va_end(ap);
+	}
+	if ( get_context()->handler.func ) get_context()->handler.func(status, get_context()->buffer, get_context()->handler.context);
+	return status;
 }
 
 // public stuff
@@ -76,3 +88,10 @@ const PDI_errhandler_t PDI_NULL_HANDLER = {
 	NULL,
 	NULL
 };
+
+PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
+{
+	PDI_errhandler_t old_handler = get_context()->handler;
+	get_context()->handler = new_handler;
+	return old_handler;
+}
