@@ -26,21 +26,21 @@
 
 #include "error.h"
 
-static PDI_errhandler_t handler = { PDI_assert, NULL };
-
 static char *buffer = NULL;
 
 static size_t buffer_size = 0;
 
+static PDI_errhandler_t current_handler;
+
 // TODO: make this thread-safe by using a distinct buffer / thread
 PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 {
-	PDI_errhandler_t old_handler = handler;
-	handler = new_handler;
+	PDI_errhandler_t old_handler = current_handler;
+	current_handler = new_handler;
 	return old_handler;
 }
 
-PDI_status_t error(PDI_status_t status, const char *message, ...)
+PDI_status_t handle_error(PDI_status_t status, const char *message, ...)
 {
 	va_list ap;
 	va_start(ap, message);
@@ -53,11 +53,11 @@ PDI_status_t error(PDI_status_t status, const char *message, ...)
 		vsnprintf(buffer, buffer_size, message, ap);
 		va_end(ap);
 	}
-	if ( handler.func ) handler.func(status, buffer, handler.context);
+	if ( current_handler.func ) current_handler.func(status, buffer, current_handler.context);
 	return status;
 }
 
-void PDI_assert(PDI_status_t status, const char* message, void* context)
+void assert_status(PDI_status_t status, const char* message, void* context)
 {
 	if ( status ) {
 		fprintf(stderr, "Error in PDI: %s\n", message);
@@ -65,3 +65,14 @@ void PDI_assert(PDI_status_t status, const char* message, void* context)
 	}
 }
 
+// public stuff
+
+const PDI_errhandler_t PDI_ASSERT_HANDLER = {
+	&assert_status,
+	NULL
+};
+
+const PDI_errhandler_t PDI_NULL_HANDLER = {
+	NULL,
+	NULL
+};

@@ -35,16 +35,6 @@
 
 PDI_state_t PDI_state;
 
-const PDI_errhandler_t PDI_asserthandler = {
-	&PDI_assert,
-	NULL
-};
-
-const PDI_errhandler_t PDI_nullhandler = {
-	NULL,
-	NULL
-};
-
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t status = PDI_OK;

@@ -41,13 +41,6 @@ do { \
 	} \
 } while( 0 )
 
-PDI_status_t error(PDI_status_t errcode, const char *message, ...);
-
-/** Prints the error message and aborts if the status is invalid
- * \param status the error code
- * \param message the human-readable error message
- * \param context the user-provided context (ignored)
- */
-void PDI_assert(PDI_status_t status, const char *message, void *context);
+PDI_status_t handle_error(PDI_status_t errcode, const char *message, ...);
 
 #endif // ERROR_H__

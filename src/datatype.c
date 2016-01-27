@@ -41,10 +41,10 @@ static PDI_status_t load_subarray(PC_tree_t node, PDI_array_type_t *type)
 	handle_PC_err(PC_len(PC_get(node, ".sizes"), &type->ndims), err0);
 	
 	int len; handle_PC_err(PC_len(PC_get(node, ".subsizes"), &len), err0);
-	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, type->ndims), err0);	
+	if ( len != type->ndims ) handle_err(handle_error(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, type->ndims), err0);	
 	
 	handle_PC_err(PC_len(PC_get(node, ".starts"), &len), err0);
-	if ( len != type->ndims ) handle_err(error(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, type->ndims), err0);
+	if ( len != type->ndims ) handle_err(handle_error(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, type->ndims), err0);
 	
 	type->sizes = malloc(type->ndims*sizeof(PDI_value_t));
 	for ( int ii=0; ii<type->ndims; ++ii ) {
@@ -79,7 +79,7 @@ err3:
 	} else if ( !strcmp(order_str, "ORDER_FORTRAN") ) {
 		type->order = ORDER_FORTRAN;
 	} else {
-		handle_err(error(PDI_ERR_CONFIG, "Invalid order, should be either ORDER_C or ORDER_FORTRAN"), err4);
+		handle_err(handle_error(PDI_ERR_CONFIG, "Invalid order, should be either ORDER_C or ORDER_FORTRAN"), err4);
 	}
 err4:
 	free(order_str);
@@ -144,7 +144,7 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 			type->c.scalar = PDI_T_DOUBLE;
 		} else {
 			//TODO: handle missing types
-			handle_err(error(PDI_ERR_VALUE, "Unknown primitive type: `%s'", buf_str), err0);
+			handle_err(handle_error(PDI_ERR_VALUE, "Unknown primitive type: `%s'", buf_str), err0);
 		}
 	} else { // case where the datatype is composite
 		char *kind;

@@ -84,11 +84,11 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler);
 
 /** Prints the error message and aborts if the status is invalid
  */
-extern const PDI_errhandler_t PDI_asserthandler;
+extern const PDI_errhandler_t PDI_ASSERT_HANDLER;
 
 /** Does nothing
  */
-extern const PDI_errhandler_t PDI_nullhandler;
+extern const PDI_errhandler_t PDI_NULL_HANDLER;
 
 /// \}
 
