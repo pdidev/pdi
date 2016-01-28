@@ -27,6 +27,8 @@
 
 #include "pdi/state.h"
 
+#include "status.h"
+
 #include "pdi/value.h"
 
 PDI_status_t parse_value(char **val_str, PDI_value_t *value);
@@ -202,3 +204,37 @@ PDI_status_t PDI_value_parse(char *val_str, PDI_value_t* value)
 	if ( *val_str ) return PDI_ERR_VALUE;
 	return PDI_OK;
 }
+
+PDI_status_t PDI_exprval_destroy(PDI_exprval_t* value)
+{
+	PDI_status_t status = PDI_OK;
+	
+	int ii;
+	for (ii=0; ii<value->nb_value; ++ii) {
+		PDI_value_destroy(&value->values[ii]); // ignore potential errors
+	}
+	free(value->values);
+	free(value->ops);
+	
+err0:
+	return status;
+}
+
+PDI_status_t PDI_value_destroy(PDI_value_t* value)
+{
+	PDI_status_t status = PDI_OK;
+	
+	int ii;
+	for (ii=0; ii<value->nb_idx; ++ii) {
+		PDI_value_destroy(&value->idx[ii]); // ignore potential errors
+	}
+	free(value->idx);
+	
+	if ( value->kind == PDI_VAL_EXPR ) {
+		//TODO: PDI_expr_destroy(value->c.exprval); // ignore portential errors
+	}
+	
+err0:
+	return status;
+}
+

@@ -14,14 +14,13 @@ pdi:
         nb_iter: int
     variables: # values that might change along time and process
         iter: int
-        coord: { kind: vector, size: 2, type: int }
+        coord: { size: 2, type: int }
         main_field:
-            kind: subarray
-            type: double
-            sizes: [$width, $height]
+            type:     double
+            sizes:    [$width, $height]     # if only one element, you can use size as a acalar
             subsizes: [$width-2, $height-2] # defaults to sizes
-            starts: [1, 1] # defaults to [0, 0]
-            order: ORDER_C 
+            starts:   [1, 1]                # defaults to [0, 0]
+            order:    ORDER_C               # defaults to ORDER_C
             # the following are not handled by PDI but might be used by plugins
             
             in: # specifies that the provided data is part of a bigger (constant) logical data

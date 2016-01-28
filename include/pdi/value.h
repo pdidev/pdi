@@ -71,4 +71,8 @@ PDI_status_t PDI_EXPORT PDI_value_parse(char *val_str, PDI_value_t *value);
 
 PDI_status_t PDI_EXPORT PDI_value_eval(PDI_value_t *value, int *res);
 
+PDI_status_t PDI_EXPORT PDI_exprval_destroy(PDI_exprval_t *value);
+
+PDI_status_t PDI_EXPORT PDI_value_destroy(PDI_value_t *value);
+
 #endif // PDI_VALUE_H__
