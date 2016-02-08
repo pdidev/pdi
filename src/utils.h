@@ -22,36 +22,18 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_FWD_H__
-#define PDI_DATATYPE_FWD_H__
+#ifndef PDI_UTILS_H__
+#define PDI_UTILS_H__
 
-typedef struct PDI_type_s PDI_type_t;
+#include <pdi.h>
+#include <pdi/datatype.h>
 
-typedef enum PDI_type_kind_e {
-	PDI_K_SCALAR,
-	PDI_K_ARRAY,
-	PDI_K_STRUCT
-} PDI_type_kind_t;
+unsigned long PDI_mem_size(PDI_type_t *type);
 
-typedef struct PDI_array_type_s PDI_array_type_t;
+unsigned long PDI_dat_size(PDI_type_t *type);
 
-typedef enum PDI_order_e {
-	PDI_ORDER_C,
-	PDI_ORDER_FORTRAN
-} PDI_order_t;
+PC_status_t PDI_copy(PDI_type_t *type, void *to, void *from);
 
-typedef struct PDI_struct_type_s PDI_struct_type_t;
+PC_status_t PDI_free(PDI_type_t *type, void *data);
 
-typedef struct PDI_member_s PDI_member_t;
-
-typedef enum PDI_scalar_type_e {
-	PDI_T_INT8,
-	PDI_T_INT16,
-	PDI_T_INT32,
-	PDI_T_INT64,
-	PDI_T_FLOAT,
-	PDI_T_DOUBLE,
-	PDI_T_LONG_DOUBLE
-} PDI_scalar_type_t;
-
-#endif // PDI_DATATYPE_FWD_H__
+#endif

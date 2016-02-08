@@ -109,6 +109,7 @@ PDI_status_t PDI_event(const char* event)
 
 PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 {
+	//TODO: handle this case
 	if ( access & PDI_IN ) return PDI_UNAVAILABLE;
 	
 	PC_errhandler_t pc_handler = intercept_PC_errors();
@@ -130,12 +131,10 @@ PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 	data->content.access = access;
 	//TODO: data->content.coords = ;
 	data->content.data = data_dat;
-	data->content.memstatus = PDI_SHARED;
 	
 	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 		if ( PDI_state.plugins[ii].data_start(data) ) err = PDI_ERR_PLUGIN;
 	}
-	
 	
 	if (err) goto err0;
 
@@ -168,7 +167,7 @@ PDI_status_t PDI_release(const char* name)
 	}
 	
 	free(data->content.data);
-	data->content.memstatus = PDI_UNALOCATED;
+	data->content.access = 0;
 	
 	if (err) goto release_err0;
 
@@ -200,7 +199,7 @@ PDI_status_t PDI_reclaim(const char* name)
 		if ( PDI_state.plugins[ii].data_end(data) ) err = PDI_ERR_PLUGIN;
 	}
 	
-	data->content.memstatus = PDI_UNALOCATED;
+	data->content.access = 0;
 	
 	if (err) goto release_err0;
 
@@ -214,16 +213,16 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 	PDI_status_t err = PDI_OK;
 	int ii;
 	
-	PDI_param_t *metadata = NULL;
+	PDI_param_t *param = NULL;
 	for ( ii=0; ii<PDI_state.nb_params; ++ii ) {
 		if ( strcmp(name, PDI_state.params[ii].name) != 0 ) continue;
 		
-		metadata = PDI_state.params+ii;
+		param = PDI_state.params+ii;
 		break;
 	}
-	if (metadata) {
+	if (param) {
 		//TODO: copy the value
-		metadata->value = (void*)data_dat;
+		param->value = (void*)data_dat;
 		return err;
 	}
 	

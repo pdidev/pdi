@@ -50,10 +50,6 @@ struct PDI_dimension_s
 
 struct PDI_variable_value_s
 {
-	int *coords;
-	
-	PDI_memstatus_t memstatus;
-	
 	// PDI_inout_t ORed
 	int access;
 	

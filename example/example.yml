@@ -6,15 +6,15 @@ parallelism:
     width:  2
     height: 2
 pdi:
-    params: # constant along both time and ranks
+    params: # values that can be referenced using $syntax
         height: int
         width: int
         pheight: int
         pwidth: int
         nb_iter: int
-    variables: # values that might change along time and process
         iter: int
         coord: { size: 2, type: int }
+    variables: # values that should not be referenced using $syntax
         main_field:
             type:     double
             sizes:    [$width, $height]     # if only one element, you can use size as a acalar
@@ -23,12 +23,12 @@ pdi:
             order:    ORDER_C               # defaults to ORDER_C
             # the following are not handled by PDI but might be used by plugins
             
-            in: # specifies that the provided data is part of a bigger (constant) logical data
-                name: main_field # the global logical data
-                starts:
-                    - '$coord[0]*($width-2)'
-                    - '$coord[1]*($height-2)'
-                    - $iter
+            #in: # specifies that the provided data is part of a bigger (constant) logical data
+                #name: global_main_field # the global logical data
+                #starts:
+                    #- '$coord[0]*($width-2)'
+                    #- '$coord[1]*($height-2)'
+                    #- $iter
             
     plugins:
         # load the hdf5_per_process PDI plugin

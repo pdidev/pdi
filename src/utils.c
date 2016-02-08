@@ -22,15 +22,54 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_INTERNAL_H__
-#define PDI_INTERNAL_H__
+#include <stdlib.h>
 
-#include <pdi.h>
+#include "pdi.h"
+#include "pdi/datatype.h"
+#include "pdi/value.h"
 
-typedef struct PDI_value_s PDI_value_t;
-typedef struct PDI_plugin_s PDI_plugin_t;
-typedef struct PDI_type_s PDI_type_t;
-typedef struct PDI_variable_s PDI_variable_t;
+#include "utils.h"
+
+unsigned long scal_size(PDI_scalar_type_t type)
+{
+	switch ( type ) {
+	case PDI_T_INT8: return sizeof(int8_t);
+	case PDI_T_INT16: return sizeof(int16_t);
+	case PDI_T_INT32: return sizeof(int32_t);
+	case PDI_T_INT64: return sizeof(int64_t);
+	case PDI_T_FLOAT: return sizeof(float);
+	case PDI_T_DOUBLE: return sizeof(double);
+	case PDI_T_LONG_DOUBLE: return sizeof(long double);
+	}
+	abort();
+}
 
 
-#endif // PDI_INTERNAL_H__
+unsigned long array_dat_size(PDI_array_type_t *type)
+{
+	unsigned long result = PDI_dat_size(&type->type);
+	int dim;
+	for ( dim=0; dim<type->ndims; ++dim ) {
+		int subsize;
+		//TODO: handle error here
+		PDI_value_eval(type->subsizes, subsize);
+		result *= subsize;
+	}
+	return result;
+}
+
+unsigned long PDI_dat_size(PDI_type_t *type)
+{
+	switch( type->kind ) {
+		case PDI_K_SCALAR: return scal_size(type->c.scalar);
+		case PDI_K_ARRAY: return array_dat_size(type->c.array);
+		//TODO: implement structs
+	}
+	abort();
+}
+
+
+PC_status_t PC_copy(PDI_type_t type, void *to, void *from)
+{
+	
+}

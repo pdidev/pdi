@@ -78,6 +78,7 @@ add_library(pdi
 	src/datatype.c
 	src/status.c
 	src/plugin_loader.c
+	src/utils.c
 	src/value.c
 )
 include(GenerateExportHeader)

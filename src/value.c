@@ -231,10 +231,17 @@ PDI_status_t PDI_value_destroy(PDI_value_t* value)
 	free(value->idx);
 	
 	if ( value->kind == PDI_VAL_EXPR ) {
-		//TODO: PDI_expr_destroy(value->c.exprval); // ignore portential errors
+		PDI_exprval_destroy(value->c.exprval); // ignore portential errors
 	}
 	
 err0:
 	return status;
 }
+
+PDI_status_t PDI_value_eval(PDI_value_t* value, int* res)
+{
+	//TODO: implement
+	abort();
+}
+
 

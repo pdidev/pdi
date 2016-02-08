@@ -77,7 +77,7 @@ static PDI_status_t load_variables(PC_tree_t node)
 		
 		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_var->name), err0);
 		
-		cur_var->content.memstatus = PDI_UNALOCATED;
+		cur_var->content.access = 0;
 		
 		cur_var->config = PC_get(node, "<%d>", map_id);
 		handle_PC_err(PC_status(cur_var->config), err0);

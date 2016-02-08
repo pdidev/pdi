@@ -105,9 +105,9 @@ err3:
 	if ( !PC_string(PC_get(node, ".order"), &order_str) ) {
 		PC_errhandler(pc_handler); // aka PC_end_try
 		if ( !strcmp(order_str, "ORDER_C") ) {
-			type->order = ORDER_C;
+			type->order = PDI_ORDER_C;
 		} else if ( !strcmp(order_str, "ORDER_FORTRAN") ) {
-			type->order = ORDER_FORTRAN;
+			type->order = PDI_ORDER_FORTRAN;
 		} else {
 			handle_err(handle_error(PDI_ERR_CONFIG, "Invalid order, should be either ORDER_C or ORDER_FORTRAN"), err4);
 		}
@@ -116,7 +116,7 @@ err4:
 		handle_err(status, err0);
 	} else { // default to ORDER_C if none specified
 		//TODO: change to calling language order
-		type->order = ORDER_C;
+		type->order = PDI_ORDER_C;
 	}
 	
 	PC_tree_t type_type = PC_get(node, ".type");
@@ -136,7 +136,7 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 	PC_errhandler(pc_handler); // aka PC_end_try
 	
 	if ( buf_str ) { // case where the datatype is primitive
-		type->kind = SCALAR;
+		type->kind = PDI_K_SCALAR;
 		if ( !strcmp(buf_str, "int") ) {
 			//TODO: adapt to the actual size of int
 			type->c.scalar = PDI_T_INT32;
@@ -147,7 +147,7 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 			handle_err(handle_error(PDI_ERR_VALUE, "Unknown primitive type: `%s'", buf_str), err0);
 		}
 	} else { // case where the datatype is composite
-		type->kind = ARRAY;
+		type->kind = PDI_K_ARRAY;
 		type->c.array = malloc( sizeof(PDI_array_type_t) );
 		handle_err(load_array(node, type->c.array), err0);
 	}
