@@ -30,7 +30,7 @@
 
 MPI_Comm my_world;
 
-PDI_status_t PDI_test_plugin_init(yaml_document_t* document, const yaml_node_t *conf, MPI_Comm *world)
+PDI_status_t PDI_test_plugin_init(PC_tree_t conf, MPI_Comm *world)
 {
 	my_world = *world;
 	
