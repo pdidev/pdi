@@ -30,10 +30,9 @@ typedef struct PDI_value_s PDI_value_t;
 typedef enum PDI_valkind_e {
 	PDI_VAL_CONST,
 	PDI_VAL_REF,
-	PDI_VAL_EXPR
+	PDI_VAL_EXPR,
+	PDI_VAL_STR
 } PDI_valkind_t;
-
-typedef struct PDI_exprval_s PDI_exprval_t;
 
 typedef enum PDI_exprop_e {
 	PDI_OP_PLUS = '+',

@@ -31,43 +31,109 @@
 
 #include "pdi/value.h"
 
-PDI_status_t parse_value(char **val_str, PDI_value_t *value);
-
-PDI_status_t parse_ref(char **val_str, PDI_param_t **value)
+struct PDI_refval_s
 {
-	char *refid = *val_str;
-	if ( *refid != '$' ) return PDI_ERR_VALUE;
-	++refid;
+	PDI_param_t *ref;
+	
+	PDI_value_t *idx;
+	
+	int nb_idx;
+	
+};
+
+struct PDI_exprval_s
+{
+	int nb_value;
+	
+	PDI_value_t *values;
+	
+	PDI_exprop_t *ops;
+	
+};
+
+struct PDI_strval_s
+{
+	PDI_value_t **values;
+	
+	char *str;
+	
+};
+
+PDI_status_t parse_intval(char **val_str, PDI_value_t *value);
+
+PDI_status_t parse_id(char **val_str, int *id_len)
+{
+	char *id = *val_str;
 	
 	if (!(
-		   (*refid>='a' && *refid<='z')
-		|| (*refid>='A' && *refid<='Z')
-		|| (*refid=='_')
+		   (*id>='a' && *id<='z')
+		|| (*id>='A' && *id<='Z')
+		|| (*id=='_')
 	)) {
 		return PDI_ERR_VALUE;
 	}
+	++id;
+	*id_len=1;
 	
-	int refid_len=1;
 	while (
-		   (refid[refid_len]>='a' && refid[refid_len]<='z')
-		|| (refid[refid_len]>='A' && refid[refid_len]<='Z')
-		|| (refid[refid_len]>='0' && refid[refid_len]<='9')
-		|| (refid[refid_len]=='_')
+		   (*id>='a' && *id<='z')
+		|| (*id>='A' && *id<='Z')
+		|| (*id>='0' && *id<='9')
+		|| (*id=='_')
 	) {
-		++refid_len;
+		++(*id_len);
+		++id;
 	}
 	
-	int met_id;
-	for ( met_id=0; met_id<PDI_state.nb_params; ++met_id ) {
-		if ( !strncmp(PDI_state.params[met_id].name, refid, refid_len) ) {
-			*value = &PDI_state.params[met_id];
-			*val_str = refid+refid_len;
+	*val_str = id+*id_len;
+	return PDI_OK;
+}
+
+PDI_status_t parse_ref(char **val_str, PDI_refval_t *value)
+{
+	PDI_status_t res = PDI_OK;
+	
+	char *ref = *val_str;
+	if ( *ref != '$' ) return PDI_ERR_VALUE;
+	++ref;
+	
+	int has_curly_brace = 0;
+	if ( *ref == '{' ) {
+		++ref;
+		has_curly_brace = 1;
+	}
+	
+	int refid_len; res = parse_id(&ref, &refid_len); if (res) return res;
+	
+	for ( int met_id=0; met_id<PDI_state.nb_params; ++met_id ) {
+		if ( !strncmp(PDI_state.params[met_id].name, ref-refid_len, refid_len) ) {
+			value->ref = &PDI_state.params[met_id];
+			*val_str = ref+refid_len;
 			while ( isspace(**val_str) ) ++*val_str;
 			return PDI_OK;
 		}
 	}
 	
-	return PDI_ERR_VALUE;
+	value->idx = NULL;
+	value->nb_idx = 0;
+	while ( *ref == '[' ) {
+		++ref;
+		while ( isspace(*ref) ) ++ref;
+		++(value->nb_idx);
+		value->idx = realloc(value->idx, value->nb_idx*sizeof(PDI_value_t));
+		res = parse_intval(&ref, &value->idx[value->nb_idx-1]); if (res) return res;
+		if ( *ref != ']' )  return PDI_ERR_VALUE;
+		++ref;
+		while ( isspace(*ref) ) ++ref;
+	}
+	
+	if ( has_curly_brace ) {
+		if ( *ref != '}' ) return PDI_ERR_VALUE;
+		++ref;
+	}
+	
+	*val_str = ref;
+	return PDI_OK;
 }
 
 PDI_status_t parse_const(char **val_str, int *value)
@@ -85,33 +151,25 @@ PDI_status_t parse_term(char **val_str, PDI_value_t *value)
 {
 	PDI_status_t res = PDI_ERR_VALUE;
 	char *term = *val_str;
-	value->nb_idx = 0;
-	value->idx = NULL;
 	
 	if ( !parse_const(&term, &value->c.constval) ) {
 		value->kind = PDI_VAL_CONST;
 		res = PDI_OK;
-	} else if ( !parse_ref(&term, &value->c.refval) ) {
-		value->kind = PDI_VAL_REF;
-		res = PDI_OK;
 	} else if ( *term == '(' ) {
 		++term;
 		while ( isspace(*term) ) ++term;
-		res = parse_value(&term, value); if (res) goto err0;
+		res = parse_intval(&term, value); if (res) goto err0;
 		if ( *term != ')' )  res = PDI_ERR_VALUE; if (res) goto err0;
 		++term;
 		while ( isspace(*term) ) ++term;
-	}
-	
-	while ( *term == '[' ) {
-		++term;
-		while ( isspace(*term) ) ++term;
-		++value->nb_idx;
-		value->idx = realloc(value->idx, value->nb_idx*sizeof(PDI_value_t));
-		res = parse_value(&term, &value->idx[value->nb_idx-1]); if (res) goto err0;
-		if ( *term != ']' )  res = PDI_ERR_VALUE; if (res) goto err0;
-		++term;
-		while ( isspace(*term) ) ++term;
+	} else {
+		value->c.refval = malloc(sizeof(PDI_refval_t));
+		if ( !parse_ref(&term, value->c.refval) ) {
+			value->kind = PDI_VAL_REF;
+			res = PDI_OK;
+		} else {
+			free(value->c.refval);
+		}
 	}
 	*val_str = term;
 	
@@ -136,7 +194,7 @@ PDI_status_t parse_op(char **val_str, int prio, PDI_exprop_t *value)
 	return PDI_OK;
 }
 
-PDI_status_t parse_value2(char **val_str, PDI_value_t *value)
+PDI_status_t parse_intval2(char **val_str, PDI_value_t *value)
 {
 	char *exprval = *val_str;
 	if ( parse_term(&exprval, value) ) return PDI_ERR_VALUE;
@@ -166,10 +224,10 @@ PDI_status_t parse_value2(char **val_str, PDI_value_t *value)
 	*val_str = exprval; return PDI_OK;
 }
 
-PDI_status_t parse_value(char **val_str, PDI_value_t *value)
+PDI_status_t parse_intval(char **val_str, PDI_value_t *value)
 {
 	char *exprval = *val_str;
-	if ( parse_value2(&exprval, value) ) return PDI_ERR_VALUE;
+	if ( parse_intval2(&exprval, value) ) return PDI_ERR_VALUE;
 	PDI_exprval_t *expr = NULL;
 	PDI_exprop_t op;
 	while ( !parse_op(&exprval, 1, &op) ) {
@@ -186,7 +244,7 @@ PDI_status_t parse_value(char **val_str, PDI_value_t *value)
 		expr->ops = realloc(expr->ops, (expr->nb_value-1)*sizeof(PDI_exprop_t));
 		expr->ops[expr->nb_value-2] = op;
 		expr->values = realloc(expr->values, expr->nb_value*sizeof(PDI_value_t));
-		if ( parse_value2(&exprval, &expr->values[expr->nb_value-1]) ) {
+		if ( parse_intval2(&exprval, &expr->values[expr->nb_value-1]) ) {
 			free(expr->values);
 			free(expr->ops);
 			free(expr);
@@ -196,16 +254,7 @@ PDI_status_t parse_value(char **val_str, PDI_value_t *value)
 	*val_str = exprval; return PDI_OK;
 }
 
-PDI_status_t PDI_value_parse(char *val_str, PDI_value_t* value)
-{
-	while ( isspace(*val_str) ) ++val_str;
-	PDI_status_t err = parse_value(&val_str, value);
-	if ( err ) return err;
-	if ( *val_str ) return PDI_ERR_VALUE;
-	return PDI_OK;
-}
-
-PDI_status_t PDI_exprval_destroy(PDI_exprval_t* value)
+PDI_status_t exprval_destroy(PDI_exprval_t* value)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -220,7 +269,7 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_value_destroy(PDI_value_t* value)
+PDI_status_t refval_destroy(PDI_refval_t* value)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -230,18 +279,39 @@ PDI_status_t PDI_value_destroy(PDI_value_t* value)
 	}
 	free(value->idx);
 	
+err0:
+	return status;
+}
+
+PDI_status_t PDI_value_parse(char *val_str, PDI_value_t* value)
+{
+	while ( isspace(*val_str) ) ++val_str;
+	PDI_status_t err = parse_intval(&val_str, value);
+	if ( err ) return err;
+	if ( *val_str ) return PDI_ERR_VALUE;
+	return PDI_OK;
+}
+
+PDI_status_t PDI_value_destroy(PDI_value_t* value)
+{
+	PDI_status_t status = PDI_OK;
+	
 	if ( value->kind == PDI_VAL_EXPR ) {
-		PDI_exprval_destroy(value->c.exprval); // ignore portential errors
+		exprval_destroy(value->c.exprval); // ignore portential errors
 	}
 	
 err0:
 	return status;
 }
 
-PDI_status_t PDI_value_eval(PDI_value_t* value, int* res)
+PDI_status_t PDI_value_int(PDI_value_t* value, int* res)
 {
 	//TODO: implement
 	abort();
 }
 
-
+PDI_status_t PDI_value_str(PDI_value_t* value, char** res)
+{
+	//TODO: implement
+	abort();
+}

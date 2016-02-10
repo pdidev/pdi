@@ -59,7 +59,7 @@ PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 		char *output_name; 
 		PC_string(PC_get(my_conf, ".outputs{%d}", ii), &output_name);
 		if ( !strcmp(output_name, data->name) ) {
-			output = PC_get(my_conf, ".outputs<%d>");
+			output = PC_get(my_conf, ".outputs<%d>", ii);
 			found_output = 1;
 		}
 		free(output_name);

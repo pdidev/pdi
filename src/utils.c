@@ -52,7 +52,7 @@ unsigned long array_dat_size(PDI_array_type_t *type)
 	for ( dim=0; dim<type->ndims; ++dim ) {
 		int subsize;
 		//TODO: handle error here
-		PDI_value_eval(type->subsizes, subsize);
+		PDI_value_int(type->subsizes, &subsize);
 		result *= subsize;
 	}
 	return result;

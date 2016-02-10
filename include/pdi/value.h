@@ -31,24 +31,25 @@
 #include <pdi/state_fwd.h>
 
 /* Grammar
-VALUE := VALUE2 ( OP1 VALUE2 )*
-OP1 ~= \+ | -
-VALUE2 := TERM ( OP2 TERM )*
-OP2 ~= \* | / | %
-TERM := ( CONST | REF | '(' VALUE ')' ) ( '[' VALUE ']' )*
-CONST ~= (0x)? [0-9]+
-REF ~= \$ [a-zA-Z_][a-zA-Z0-9_]*
+VALUE   := INTVAL | STRVAL
+STRVAL  := ( CHAR | '\' '$' | REF | '$' '(' INTVAL ')' )*
+INTVAL  := INTVAL2 ( OP1 INTVAL2 )*
+INTVAL2 := TERM ( OP2 TERM )*
+TERM    := ( CONST | REF | '(' INTVAL ')' )
+REF     := '$' ( IREF | '{' IREF '}' )
+IREF    := ID ( '[' INTVAL ']' )*
+CONST ~= (0x)? [0-9]+ ( \.  )
+OP1   ~= \+ | -
+OP2   ~= \* | / | %
+ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
+CHAR  ~= [^$\\]
 */
 
-struct PDI_exprval_s
-{
-	int nb_value;
-	
-	PDI_value_t *values;
-	
-	PDI_exprop_t *ops;
-	
-};
+typedef struct PDI_refval_s PDI_refval_t;
+
+typedef struct PDI_exprval_s PDI_exprval_t;
+
+typedef struct PDI_strval_s PDI_strval_t;
 
 struct PDI_value_s
 {
@@ -57,21 +58,21 @@ struct PDI_value_s
 	union {
 		int constval;
 		
-		PDI_param_t *refval;
+		PDI_refval_t *refval;
 		
 		PDI_exprval_t *exprval;
+		
+		PDI_strval_t *strval;
+		
 	} c;
 	
-	int nb_idx;
-	
-	PDI_value_t *idx;
 };
 
 PDI_status_t PDI_EXPORT PDI_value_parse(char *val_str, PDI_value_t *value);
 
-PDI_status_t PDI_EXPORT PDI_value_eval(PDI_value_t *value, int *res);
+PDI_status_t PDI_EXPORT PDI_value_int(PDI_value_t *value, int *res);
 
-PDI_status_t PDI_EXPORT PDI_exprval_destroy(PDI_exprval_t *value);
+PDI_status_t PDI_EXPORT PDI_value_str(PDI_value_t *value, char **res);
 
 PDI_status_t PDI_EXPORT PDI_value_destroy(PDI_value_t *value);
 
