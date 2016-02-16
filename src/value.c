@@ -254,6 +254,12 @@ PDI_status_t parse_intval(char **val_str, PDI_value_t *value)
 	*val_str = exprval; return PDI_OK;
 }
 
+PDI_status_t parse_strval(char **val_str, PDI_value_t *value)
+{
+	//TODO: implement
+	abort();
+}
+
 PDI_status_t exprval_destroy(PDI_exprval_t* value)
 {
 	PDI_status_t status = PDI_OK;
@@ -285,10 +291,17 @@ err0:
 
 PDI_status_t PDI_value_parse(char *val_str, PDI_value_t* value)
 {
-	while ( isspace(*val_str) ) ++val_str;
-	PDI_status_t err = parse_intval(&val_str, value);
-	if ( err ) return err;
-	if ( *val_str ) return PDI_ERR_VALUE;
+	PDI_status_t err = PDI_ERR_VALUE;
+	char *parse_val = val_str;
+	if ( err || *parse_val ) {
+		parse_val = val_str;
+		while ( isspace(*parse_val) ) ++parse_val;
+		PDI_status_t err = parse_intval(&parse_val, value);
+	}
+	if ( err || *parse_val ) {
+		parse_val = val_str;
+		err = parse_strval(&parse_val, value);
+	}
 	return PDI_OK;
 }
 

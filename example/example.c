@@ -87,8 +87,6 @@ int main(int argc, char *argv[])
 	MPI_Init(&argc, &argv);
 
 	MPI_Comm main_comm = MPI_COMM_WORLD;
-	int size; MPI_Comm_size(MPI_COMM_WORLD, &size);
-	int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	
 	FILE *conf_file = fopen("example.yml", "rb"); assert(conf_file);
 	yaml_parser_t conf_parser; assert(yaml_parser_initialize(&conf_parser));
@@ -120,6 +118,9 @@ int main(int argc, char *argv[])
 	int pheight; PC_int(PC_get(conf, ".parallelism.height"), &pheight);
 	int pwidth; PC_int(PC_get(conf, ".parallelism.width"), &pwidth);
 	PDI_init(PC_get(conf, ".pdi"), &main_comm);
+	
+	int size; MPI_Comm_size(main_comm, &size);
+	int rank; MPI_Comm_rank(main_comm, &rank);
 	
 	assert(pwidth*pheight == size);
 	
