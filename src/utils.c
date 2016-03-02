@@ -30,6 +30,8 @@
 
 #include "utils.h"
 
+#define PRINTF_BUFFER_SIZE 256
+
 unsigned long scal_size(PDI_scalar_type_t type)
 {
 	switch ( type ) {
@@ -68,8 +70,36 @@ unsigned long PDI_dat_size(PDI_type_t *type)
 	abort();
 }
 
-
-PC_status_t PC_copy(PDI_type_t type, void *to, void *from)
+char *vmsprintf(const char *fmt, va_list ap)
 {
-	
+	int index_size = PRINTF_BUFFER_SIZE;
+	char *index = malloc(index_size);
+	while ( vsnprintf(index, index_size, fmt, ap) > index_size ) {
+		index_size *= 2;
+		index = realloc(index, PRINTF_BUFFER_SIZE);
+	}
+	return index;
+}
+
+char *msprintf(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	char *res = vmsprintf(fmt, ap);
+	va_end(ap);
+	return res;
+}
+
+char *mstrcat(char *dest, size_t dlen, char *src, size_t slen)
+{
+	char *result = realloc(dest, dlen+slen+1);
+	memcpy(result+dlen, src, slen);
+	result[dlen+slen] = 0;
+	return result;
+}
+
+PDI_status_t PDI_copy(PDI_type_t *type, void *to, void *from)
+{
+	//TODO: implement
+	abort();
 }

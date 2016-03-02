@@ -33,28 +33,6 @@
 
 #include "plugin_loader.h"
 
-#define PRINTF_BUFFER_SIZE 256
-
-static char *vmsprintf(const char *fmt, va_list ap)
-{
-	int index_size = PRINTF_BUFFER_SIZE;
-	char *index = malloc(index_size);
-	while ( vsnprintf(index, index_size, fmt, ap) > index_size ) {
-		index_size *= 2;
-		index = realloc(index, PRINTF_BUFFER_SIZE);
-	}
-	return index;
-}
-
-static char *msprintf(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	char *res = vmsprintf(fmt, ap);
-	va_end(ap);
-	return res;
-}
-
 typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin);
 
 PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t* plugin)

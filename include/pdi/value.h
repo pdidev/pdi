@@ -32,7 +32,7 @@
 
 /* Grammar
 VALUE   := INTVAL | STRVAL
-STRVAL  := ( CHAR | '\' '$' | REF | '$' '(' INTVAL ')' )*
+STRVAL  := ( CHAR | '\' '\' | '\' '$' | REF | '$' '(' INTVAL ')' )*
 INTVAL  := INTVAL2 ( OP1 INTVAL2 )*
 INTVAL2 := TERM ( OP2 TERM )*
 TERM    := ( CONST | REF | '(' INTVAL ')' )

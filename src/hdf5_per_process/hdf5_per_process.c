@@ -65,8 +65,16 @@ PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 		free(output_name);
 	}
 	if ( found_output ) {
-		char *filename; PC_string(PC_get(output, ".file"), &filename);
-		char *varname; PC_string(PC_get(output, ".var"), &varname);
+		char *file_strv; PC_string(PC_get(output, ".file"), &file_strv);
+		PDI_value_t file_val; PDI_value_parse(file_strv, &file_val);
+		free(file_strv);
+		char *filename; PDI_value_str(&file_val, &filename);
+		PDI_value_destroy(&file_val);
+		char *var_strv; PC_string(PC_get(output, ".var"), &var_strv);
+		PDI_value_t var_val; PDI_value_parse(var_strv, &var_val);
+		free(var_strv);
+		char *varname; PDI_value_str(&var_val, &varname);
+		PDI_value_destroy(&var_val);
 		fprintf(stderr, "HDF5: TODO output %s to %s%s\n", data->name, filename, varname);
 		free(varname);
 		free(filename);
