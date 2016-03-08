@@ -36,7 +36,7 @@ pdi:
             # and here is its configuration
             outputs:
                 main_field: # ref to a variable
-                    select: $iter % 5 == 0 # an expression defining when to output the variable
+                    select: $iter % 2 = 0 # an expression defining when to output the variable
                     file: output_${coord[0]}x${coord[1]}.hdf5
                     var: /iter_${iter}/main_field
                     mode: append_reopen # append_keep, overwrite, create

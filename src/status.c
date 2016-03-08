@@ -129,3 +129,8 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 	get_context()->handler = new_handler;
 	return old_handler;
 }
+
+char *PDI_errmsg()
+{
+	return get_context()->buffer;
+}

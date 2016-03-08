@@ -39,7 +39,7 @@ TERM    := ( CONST | REF | '(' INTVAL ')' )
 REF     := '$' ( IREF | '{' IREF '}' )
 IREF    := ID ( '[' INTVAL ']' )*
 CONST ~= (0x)? [0-9]+ ( \.  )
-OP1   ~= \+ | -
+OP1   ~= \+ | - | =
 OP2   ~= \* | / | %
 ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
 CHAR  ~= [^$\\]

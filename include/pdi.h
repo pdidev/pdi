@@ -71,7 +71,7 @@ typedef struct PDI_errhandler_s
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
-char PARACONF_EXPORT *PDI_errmsg();
+char PDI_EXPORT *PDI_errmsg();
 
 /** Sets the error handler to use
  * 

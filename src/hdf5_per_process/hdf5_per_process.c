@@ -70,12 +70,24 @@ PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 		free(file_strv);
 		char *filename; PDI_value_str(&file_val, &filename);
 		PDI_value_destroy(&file_val);
+		
 		char *var_strv; PC_string(PC_get(output, ".var"), &var_strv);
 		PDI_value_t var_val; PDI_value_parse(var_strv, &var_val);
 		free(var_strv);
 		char *varname; PDI_value_str(&var_val, &varname);
 		PDI_value_destroy(&var_val);
-		fprintf(stderr, "HDF5: TODO output %s to %s%s\n", data->name, filename, varname);
+		
+		char *select_strv; PC_string(PC_get(output, ".select"), &select_strv);
+		PDI_value_t select_val; PDI_value_parse(select_strv, &select_val);
+		free(select_strv);
+		int select; PDI_value_int(&select_val, &select);
+		PDI_value_destroy(&select_val);
+		
+		int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+		
+		if ( select ) {
+			fprintf(stderr, "HDF5[%d]: TODO output `%s' as `%s' in `%s'\n", rank, data->name, varname, filename);
+		}
 		free(varname);
 		free(filename);
 	}

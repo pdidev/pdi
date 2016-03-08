@@ -31,6 +31,8 @@
 
 #include "pdi/plugin.h"
 
+#include "utils.h"
+
 #include "plugin_loader.h"
 
 typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin);

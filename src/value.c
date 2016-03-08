@@ -115,7 +115,7 @@ PDI_status_t parse_ref(char **val_str, PDI_refval_t *value)
 		has_curly_brace = 1;
 	}
 	
-	int refid_len; status = parse_id(&ref, &refid_len); handle_err(status, err0);
+	int refid_len; handle_err(parse_id(&ref, &refid_len), err0);
 	
 	value->ref = NULL;
 	for ( int met_id=0; met_id<PDI_state.nb_params; ++met_id ) {
@@ -136,7 +136,7 @@ PDI_status_t parse_ref(char **val_str, PDI_refval_t *value)
 		while ( isspace(*ref) ) ++ref;
 		++(value->nb_idx);
 		value->idx = realloc(value->idx, value->nb_idx*sizeof(PDI_value_t));
-		status = parse_intval(&ref, &value->idx[value->nb_idx-1]); handle_err(status, err0);
+		handle_err(parse_intval(&ref, &value->idx[value->nb_idx-1]), err0);
 		if ( *ref != ']' )  {
 			handle_err(handle_error(PDI_ERR_VALUE, "Expected ']', found %c", *ref), err0);
 		}
@@ -177,13 +177,16 @@ PDI_status_t parse_term(char **val_str, PDI_value_t *value)
 {
 	PDI_status_t status = PDI_OK;
 	char *term = *val_str;
-	
+
+	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 	if ( !parse_const(&term, &value->c.constval) ) {
+		PDI_errhandler(errh);
 		value->kind = PDI_VAL_CONST;
 	} else if ( *term == '(' ) {
+		PDI_errhandler(errh);
 		++term;
 		while ( isspace(*term) ) ++term;
-		status = parse_intval(&term, value); handle_err(status, err0);
+		handle_err(parse_intval(&term, value), err0);
 		if ( *term != ')' )  handle_err(handle_error(PDI_ERR_VALUE, "Expected ')', found '%c'", *term), err0);;
 		++term;
 		while ( isspace(*term) ) ++term;
@@ -194,6 +197,7 @@ PDI_status_t parse_term(char **val_str, PDI_value_t *value)
 		} else {
 			free(value->c.refval);
 		}
+		PDI_errhandler(errh);
 	}
 	
 	*val_str = term;
@@ -207,7 +211,7 @@ PDI_status_t parse_op(char **val_str, int prio, PDI_exprop_t *value)
 	char *op = *val_str;
 	
 	switch ( *op ) {
-	case PDI_OP_PLUS: case PDI_OP_MINUS: {
+		case PDI_OP_PLUS: case PDI_OP_MINUS: case PDI_OP_EQUAL: {
 		if ( prio != 1 ) {
 			handle_err(handle_error(PDI_ERR_VALUE, "Mixing operator priority"), err0);
 		}
@@ -237,10 +241,13 @@ PDI_status_t parse_intval2(char **val_str, PDI_value_t *value)
 	PDI_status_t status = PDI_OK;
 	char *exprval = *val_str;
 	
-	status = parse_term(&exprval, value); handle_err(status, err0);
+	handle_err(parse_term(&exprval, value), err0);
 	PDI_exprval_t *expr = NULL;
 	PDI_exprop_t op;
+	
+	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 	while ( !parse_op(&exprval, 2, &op) ) {
+		PDI_errhandler(errh);
 		if ( !expr ) {
 			expr = malloc(sizeof(PDI_exprval_t));
 			expr->nb_value = 1;
@@ -254,13 +261,18 @@ PDI_status_t parse_intval2(char **val_str, PDI_value_t *value)
 		expr->ops = realloc(expr->ops, (expr->nb_value-1)*sizeof(PDI_exprop_t));
 		expr->ops[expr->nb_value-2] = op;
 		expr->values = realloc(expr->values, expr->nb_value*sizeof(PDI_value_t));
+		//TODO: correctly dealloc on error
 		if ( status = parse_term(&exprval, &expr->values[expr->nb_value-1]) ) {
 			free(expr->values);
 			free(expr->ops);
 			free(expr);
 			handle_err(status, err0);
 		}
+		errh = PDI_errhandler(PDI_NULL_HANDLER);
 	}
+	PDI_errhandler(errh);
+	
+	while ( isspace(*exprval) ) ++exprval;
 	
 	*val_str = exprval;
 err0:
@@ -272,10 +284,13 @@ PDI_status_t parse_intval(char **val_str, PDI_value_t *value)
 	PDI_status_t status = PDI_OK;
 	char *exprval = *val_str;
 	
-	status = parse_intval2(&exprval, value); handle_err(status, err0);
+	handle_err(parse_intval2(&exprval, value), err0);
 	PDI_exprval_t *expr = NULL;
 	PDI_exprop_t op;
+	
+	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 	while ( !parse_op(&exprval, 1, &op) ) {
+		PDI_errhandler(errh);
 		if ( !expr ) {
 			expr = malloc(sizeof(PDI_exprval_t));
 			expr->nb_value = 1;
@@ -289,13 +304,18 @@ PDI_status_t parse_intval(char **val_str, PDI_value_t *value)
 		expr->ops = realloc(expr->ops, (expr->nb_value-1)*sizeof(PDI_exprop_t));
 		expr->ops[expr->nb_value-2] = op;
 		expr->values = realloc(expr->values, expr->nb_value*sizeof(PDI_value_t));
+		//TODO: correctly dealloc on error
 		if ( status = parse_intval2(&exprval, &expr->values[expr->nb_value-1]) ) {
 			free(expr->values);
 			free(expr->ops);
 			free(expr);
 			handle_err(status, err0);
 		}
+		errh = PDI_errhandler(PDI_NULL_HANDLER);
 	}
+	PDI_errhandler(errh);
+	
+	while ( isspace(*exprval) ) ++exprval;
 	
 	*val_str = exprval;
 err0:
@@ -343,12 +363,10 @@ PDI_status_t parse_strval(char **val_str, PDI_value_t *value)
 			switch ( str[1] ) {
 			case '(': {
 				++str; // parse the term starting with the parenthesis (the intvl)
-				status = parse_term(&str, &value->c.strval->values[value->c.strval->nb_values-1]);
-				handle_err(status, err0);
+				handle_err(parse_term(&str, &value->c.strval->values[value->c.strval->nb_values-1]), err0);
 			} break;
 			default: { // parse the term starting with the dollar (the ref)
-				parse_term(&str, &value->c.strval->values[value->c.strval->nb_values-1]);
-				handle_err(status, err0);
+				handle_err(parse_term(&str, &value->c.strval->values[value->c.strval->nb_values-1]), err0);
 			} break;
 			}
 		} break;
@@ -369,38 +387,134 @@ err0:
 	return status;
 }
 
+PDI_status_t eval_refval(PDI_refval_t *val, int *res)
+{
+	PDI_status_t status = PDI_OK;
+	
+	PDI_scalar_type_t type = val->ref->type.c.scalar;
+	
+	if ( val->ref->type.kind == PDI_K_ARRAY ) {
+		if ( val->nb_idx != val->ref->type.c.array->ndims ) {
+			handle_err(handle_error(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", val->nb_idx, val->ref->type.c.array->ndims), err0);
+		}
+		if ( val->ref->type.c.array->type.kind != PDI_K_SCALAR ) {
+			handle_err(handle_error(PDI_ERR_VALUE, "Invalid type accessed"), err0);
+		}
+		type = val->ref->type.c.array->type.c.scalar;
+	} else if ( val->ref->type.kind == PDI_K_SCALAR ) {
+		if ( val->nb_idx ) {
+			handle_err(handle_error(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", val->nb_idx), err0);
+		}
+	} else {
+		handle_err(handle_error(PDI_ERR_VALUE, "Invalid access to a struct"), err0);
+	}
+	
+	int idx = 0;
+	int stride = 1;
+	for ( int ii=0; ii<val->nb_idx; ++ii ) {
+		int start; handle_err(PDI_value_int(&val->ref->type.c.array->starts[ii], &start), err0);
+		int index; handle_err(PDI_value_int(&val->idx[ii], &index), err0);
+		idx += (start+index) * stride;
+		int size; handle_err(PDI_value_int(&val->ref->type.c.array->sizes[ii], &size), err0);
+		stride *= size;
+	}
+	
+	switch ( type ) {
+	case PDI_T_INT8: {
+		*res = ((int8_t*)val->ref->value)[idx];
+	} break;
+	case PDI_T_INT16: {
+		*res = ((int16_t*)val->ref->value)[idx];
+	} break;
+	case PDI_T_INT32: {
+		*res = ((int32_t*)val->ref->value)[idx];
+	} break;
+	case PDI_T_INT64: {
+		*res = ((int64_t*)val->ref->value)[idx];
+	} break;
+	default: {
+		handle_err(handle_error(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
+	} break;
+	}
+	return status;
+err0:
+	return status;
+}
+
+PDI_status_t eval_exprval(PDI_exprval_t *val, int *res)
+{
+	PDI_status_t status = PDI_OK;
+	
+	int computed_value; PDI_value_int(&val->values[0], &computed_value);
+	for ( int ii=1; ii<val->nb_value; ++ii ) {
+		int operand; PDI_value_int(&val->values[ii], &operand);
+		switch ( val->ops[ii-1] ) {
+		case PDI_OP_PLUS: {
+			computed_value += operand;
+		} break;
+		case PDI_OP_MINUS: {
+			computed_value -= operand;
+		} break;
+		case PDI_OP_MULT: {
+			computed_value *= operand;
+		} break;
+		case PDI_OP_DIV: {
+			computed_value /= operand;
+		} break;
+		case PDI_OP_MOD: {
+			computed_value %= operand;
+		} break;
+		case PDI_OP_EQUAL: {
+			computed_value = (computed_value == operand);
+		} break;
+		default: {
+			handle_err(handle_error(PDI_ERR_VALUE, "Unknown operator: `%c'", val->ops[ii-1]), err0);
+		}
+		}
+	}
+	
+	*res = computed_value;
+	return status;
+	
+err0:
+	return status;
+}
+
 PDI_status_t eval_strval(PDI_strval_t *val, char **res)
 {
 	PDI_status_t status = PDI_OK;
 	
-	//TODO: handle errors
 	*res = NULL;
 	size_t from_idx = 0;
 	size_t res_idx = 0;
 	
+	char *build_str = NULL;
 	for ( int ii=0; ii<val->nb_values; ++ii ) {
 		size_t blk_sz = val->value_pos[ii]-from_idx;
-		*res = realloc(*res, res_idx+blk_sz+1);
-		memcpy((*res)+res_idx, val->str+from_idx, blk_sz);
+		build_str = realloc(build_str, res_idx+blk_sz+1);
+		memcpy(build_str+res_idx, val->str+from_idx, blk_sz);
 		from_idx += blk_sz;
 		res_idx += blk_sz;
 		
-		char *val_str; PDI_value_str(&val->values[ii], &val_str);
+		char *val_str; handle_err(PDI_value_str(&val->values[ii], &val_str), err0);
 		blk_sz = strlen(val_str);
-		*res = realloc(*res, res_idx+blk_sz+1);
-		memcpy((*res)+res_idx, val_str, blk_sz);
+		build_str = realloc(build_str, res_idx+blk_sz+1);
+		memcpy(build_str+res_idx, val_str, blk_sz);
 		res_idx += blk_sz;
 	}
 	
 	size_t blk_sz = strlen(val->str+from_idx);
-	*res = realloc(*res, res_idx+blk_sz+1);
-	memcpy((*res)+res_idx, val->str+from_idx, blk_sz);
+	build_str = realloc(build_str, res_idx+blk_sz+1);
+	memcpy(build_str+res_idx, val->str+from_idx, blk_sz);
 	from_idx += blk_sz;
 	res_idx += blk_sz;
 	
-	(*res)[res_idx] = 0;
+	build_str[res_idx] = 0;
 	
+	*res = build_str;
+	return status;
 err0:
+	free(build_str);
 	return status;
 }
 
@@ -444,7 +558,9 @@ PDI_status_t PDI_value_parse(char *val_str, PDI_value_t* value)
 	if ( err || *parse_val ) {
 		parse_val = val_str;
 		while ( isspace(*parse_val) ) ++parse_val;
+		PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 		err = parse_intval(&parse_val, value);
+		PDI_errhandler(errh);
 		while ( isspace(*parse_val) ) ++parse_val;
 	}
 	if ( err || *parse_val ) {
@@ -470,8 +586,24 @@ err0:
 
 PDI_status_t PDI_value_int(PDI_value_t* value, int* res)
 {
-	PDI_status_t status = PDI_ERR_VALUE;
+	PDI_status_t status = PDI_OK;
 	
+	switch ( value->kind ) {
+	case PDI_VAL_CONST: {
+		*res = value->c.constval;
+	} break;
+	case PDI_VAL_REF: {
+		eval_refval(value->c.refval, res);
+	} break;
+	case PDI_VAL_EXPR: {
+		eval_exprval(value->c.exprval, res);
+	} break;
+	default: {
+		char *strval; PDI_value_str(value, &strval);
+		handle_err(handle_error(PDI_ERR_VALUE, "Non integer value type: %s", strval), err0);
+	}}
+	
+	return status;
 err0:
 	return status;
 }
@@ -479,12 +611,12 @@ err0:
 PDI_status_t PDI_value_str(PDI_value_t* value, char** res)
 {
 	PDI_status_t status = PDI_OK;
-	int intval; handle_err(PDI_value_int(value, &intval), err0); 
 	
-	if ( !status ) {
+	if ( value->kind == PDI_VAL_STR ) {
+		handle_err(eval_strval(value->c.strval, res), err0);
+	} else {
+		int intval; handle_err(PDI_value_int(value, &intval), err0);
 		*res = msprintf("%d", intval);
-	} else if ( value->kind == PDI_VAL_STR ) {
-		status = eval_strval(value->c.strval, res);
 	}
 	
 err0:

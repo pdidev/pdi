@@ -76,7 +76,7 @@ char *vmsprintf(const char *fmt, va_list ap)
 	char *index = malloc(index_size);
 	while ( vsnprintf(index, index_size, fmt, ap) > index_size ) {
 		index_size *= 2;
-		index = realloc(index, PRINTF_BUFFER_SIZE);
+		index = realloc(index, index_size);
 	}
 	return index;
 }

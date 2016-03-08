@@ -39,7 +39,8 @@ typedef enum PDI_exprop_e {
 	PDI_OP_MINUS = '-',
 	PDI_OP_MULT = '*',
 	PDI_OP_DIV = '/',
-	PDI_OP_MOD = '%'
+	PDI_OP_MOD = '%',
+	PDI_OP_EQUAL = '='
 } PDI_exprop_t;
 
 #endif // PDI_VALUE_FWD_H__
