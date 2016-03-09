@@ -1,6 +1,6 @@
 iter: 1000
 # an example with a list
-datasize: [64, 64]
+datasize: [16, 32]
 # an example with nested associative arrays
 parallelism:
     width:  2

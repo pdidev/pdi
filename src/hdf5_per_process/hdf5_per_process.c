@@ -39,11 +39,15 @@ PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 	my_world = *world;
 	my_conf = conf;
 	
+	H5open();
+	
 	return PDI_OK;
 }
 
 PDI_status_t PDI_hdf5_per_process_finalize()
 {
+	H5close();
+	
 	return PDI_OK;
 }
 
@@ -82,14 +86,26 @@ hid_t h5type(PDI_scalar_type_t ptype) {
 void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 {
 	int rank = 0;
-	hsize_t *h5dims = NULL;
+	hsize_t *h5sizes = NULL;
+	hsize_t *h5subsizes = NULL;
+	hsize_t *h5starts = NULL;
 	PDI_type_t *scalart = &data->type;
 	if ( data->type.kind = PDI_K_ARRAY ) {
 		rank = data->type.c.array->ndims;
-		h5dims = malloc(rank*sizeof(hsize_t));
+		h5sizes = malloc(rank*sizeof(hsize_t));
+		h5subsizes = malloc(rank*sizeof(hsize_t));
+		h5starts = malloc(rank*sizeof(hsize_t));
 		for ( int ii=0; ii<rank; ++ii ) {
-			int intdim; PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
-			h5dims[ii] = intdim;
+			int intdim;
+			
+			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
+			h5sizes[ii] = intdim;
+			
+			PDI_value_int(&data->type.c.array->subsizes[ii], &intdim);
+			h5subsizes[ii] = intdim;
+			
+			PDI_value_int(&data->type.c.array->starts[ii], &intdim);
+			h5starts[ii] = intdim;
 		}
 		scalart = &data->type.c.array->type;
 	}
@@ -102,30 +118,18 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 	} else {
 		h5file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 	}
+	hid_t h5fspace = H5Screate_simple(rank, h5subsizes, NULL);
+	hid_t h5mspace = H5Screate_simple(rank, h5sizes, NULL);
+	H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
+	free(h5sizes);
+	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
+	H5Pset_create_intermediate_group( h5lcp, 1 );
+	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar), h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT, data->content.data);
+	H5Dclose(h5set);
+	H5PTclose(h5lcp);
+	H5Sclose(h5fspace);
 	
-	hid_t h5path = h5file;
-	int nb_groups = 0;
-	hid_t *h5groups = NULL;
-	char *dirname;
-	while ( dirname = topdir(&pathname) ) {
-		herr_t status = H5Gget_objinfo (h5path, dirname, 0, NULL);
-		if ( 0 == status ) {
-			h5path = H5Gopen(h5path, dirname, H5P_DEFAULT);
-		} else {
-			h5path = H5Gcreate(h5path, dirname, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT); 
-		}
-		h5groups = realloc(h5groups, (++nb_groups)*sizeof(hid_t));
-		h5groups[nb_groups-1] = h5path;
-		free(dirname);
-	}
-	
-	H5LTmake_dataset(h5path, pathname, rank, h5dims, h5type(scalart->c.scalar), data->content.data);
-	free(h5dims);
-	
-	for ( int ii=nb_groups-1; ii>=0; --ii ) {
-		H5Gclose(h5groups[ii]);
-	}
-	free(h5groups);
 	H5Fclose(h5file);
 }
 
