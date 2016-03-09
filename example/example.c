@@ -11,7 +11,7 @@
 
 #define VAL2D(arr, xx, yy) (arr[(xx)+width*(yy)])
 
-void init(double* dat, int width, int height, int px, int py)
+void init(double* dat, int height, int width, int px, int py)
 {
 	int xx, yy;
 	for (yy=0; yy<height; ++yy) {
@@ -21,7 +21,7 @@ void init(double* dat, int width, int height, int px, int py)
 	}
 	if ( px == 0 ) {
 		for (yy=0; yy<height; ++yy) {
-			VAL2D(dat,0,yy) = 100;
+			VAL2D(dat,0,yy) = 1000000;
 		}
 	}
 }
@@ -29,15 +29,23 @@ void init(double* dat, int width, int height, int px, int py)
 void iter(double* cur, double* next, int height, int width)
 {
 	int xx, yy;
+	for(xx=0; xx<width; ++xx) {
+		VAL2D(next,xx,0) = VAL2D(cur,xx,0);
+	}
 	for (yy=1; yy<height-1; ++yy) {
+		VAL2D(next,0,yy) = VAL2D(cur,0,yy);
 		for(xx=1; xx<width-1; ++xx) {
 			VAL2D(next,xx,yy) =
-			VAL2D(cur,xx,yy) / 2
-			+ (VAL2D(cur,xx-1,yy) / 8)
-			+ (VAL2D(cur,xx+1,yy) / 8)
-			+ (VAL2D(cur,xx,yy-1) / 8)
-			+ (VAL2D(cur,xx,yy+1) / 8);
+					  (VAL2D(cur,xx,yy)   *.5)
+					+ (VAL2D(cur,xx-1,yy) *.125)
+					+ (VAL2D(cur,xx+1,yy) *.125)
+					+ (VAL2D(cur,xx,yy-1) *.125)
+					+ (VAL2D(cur,xx,yy+1) *.125);
 		}
+		VAL2D(next,width-1,yy) = VAL2D(cur,width-1,yy);
+	}
+	for(xx=0; xx<width; ++xx) {
+		VAL2D(next,xx,height-1) = VAL2D(cur,xx,height-1);
 	}
 }
 
@@ -140,7 +148,7 @@ int main(int argc, char *argv[])
 	double *next = malloc(sizeof(double)*width*height);
 
 	if ( PDI_import("main_field", cur) ) {
-		init(cur, width, height, car_coord[0], car_coord[1]);
+		init(cur, height, width, car_coord[0], car_coord[1]);
 	}
 	
 	PDI_event("main_loop");
@@ -149,7 +157,7 @@ int main(int argc, char *argv[])
 		PDI_expose("iter", &ii);
 		PDI_expose("main_field", cur);
 		iter(cur, next, height, width);
-		exchange(cart_com, cur, height, width);
+		exchange(cart_com, next, height, width);
 		double *tmp = cur; cur = next; next = tmp;
 	}
 	PDI_event("finalization");

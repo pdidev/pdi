@@ -24,6 +24,8 @@
 
 #include <string.h>
 #include <mpi.h>
+#include <hdf5/serial/hdf5.h>
+#include <hdf5/serial/hdf5_hl.h>
 
 #include <pdi.h>
 #include <pdi/plugin.h>
@@ -48,6 +50,81 @@ PDI_status_t PDI_hdf5_per_process_finalize()
 PDI_status_t PDI_hdf5_per_process_event(const char *event)
 {
 	return PDI_OK;
+}
+
+char *topdir(char **path)
+{
+	while ( **path && **path == '/' ) { ++*path; }
+	char* separator = *path;
+	while ( *separator && *separator != '/' ) { ++separator; }
+	if ( !*separator ) return NULL;
+	char *result = malloc(separator-*path);
+	memcpy(result, *path, separator-*path);
+	result[separator-*path] = 0;
+	*path = separator;
+	return result;
+}
+
+
+
+hid_t h5type(PDI_scalar_type_t ptype) {
+	switch (ptype) {
+	case PDI_T_INT8: return  H5T_NATIVE_INT8;
+	case PDI_T_INT16: return  H5T_NATIVE_INT16;
+	case PDI_T_INT32: return  H5T_NATIVE_INT32;
+	case PDI_T_INT64: return  H5T_NATIVE_INT64;
+	case PDI_T_FLOAT: return  H5T_NATIVE_FLOAT;
+	case PDI_T_DOUBLE: return  H5T_NATIVE_DOUBLE;
+	case PDI_T_LONG_DOUBLE: return  H5T_NATIVE_LDOUBLE;
+	}
+}
+
+void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
+{
+	int rank = 0;
+	hsize_t *h5dims = NULL;
+	PDI_type_t *scalart = &data->type;
+	if ( data->type.kind = PDI_K_ARRAY ) {
+		rank = data->type.c.array->ndims;
+		h5dims = malloc(rank*sizeof(hid_t));
+		for ( int ii=0; ii<rank; ++ii ) {
+			int intdim; PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
+			h5dims[ii] = intdim;
+		}
+		scalart = &data->type.c.array->type;
+	}
+	if ( scalart->kind != PDI_K_SCALAR ) return;
+	
+	hid_t h5file;
+	herr_t status = H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+	if ( H5Fis_hdf5(filename)>0 ) {
+		h5file = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
+	} else {
+		h5file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+	}
+	
+	hid_t h5path = h5file;
+	int nb_groups = 0;
+	hid_t *h5groups = NULL;
+	char *dirname;
+	while ( dirname = topdir(&pathname) ) {
+		herr_t status = H5Gget_objinfo (h5path, dirname, 0, NULL);
+		if ( 0 == status ) {
+			h5path = H5Gopen(h5path, dirname, H5P_DEFAULT);
+		} else {
+			h5path = H5Gcreate(h5path, dirname, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT); 
+		}
+		h5groups = realloc(h5groups, ++nb_groups);
+		h5groups[nb_groups-1] = h5path;
+		free(dirname);
+	}
+	
+	H5LTmake_dataset(h5path, pathname, rank, h5dims, h5type(scalart->c.scalar), data->content.data);
+	
+	for ( int ii=nb_groups-1; ii>=0; --ii ) {
+		H5Gclose(h5groups[ii]);
+	}
+	H5Fclose(h5file);
 }
 
 PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
@@ -83,11 +160,8 @@ PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 		int select; PDI_value_int(&select_val, &select);
 		PDI_value_destroy(&select_val);
 		
-		int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+		if ( select ) write_to_file(data, filename, varname);
 		
-		if ( select ) {
-			fprintf(stderr, "HDF5[%d]: TODO output `%s' as `%s' in `%s'\n", rank, data->name, varname, filename);
-		}
 		free(varname);
 		free(filename);
 	}
