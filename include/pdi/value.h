@@ -34,13 +34,18 @@
 VALUE   := INTVAL | STRVAL
 STRVAL  := ( CHAR | '\' '\' | '\' '$' | REF | '$' '(' INTVAL ')' )*
 INTVAL  := INTVAL2 ( OP1 INTVAL2 )*
-INTVAL2 := TERM ( OP2 TERM )*
+INTVAL2 := INTVAL3 ( OP2 INTVAL3 )*
+INTVAL3 := INTVAL4 ( OP3 INTVAL4 )*
+INTVAL4 := TERM ( OP4 TERM )*
 TERM    := ( CONST | REF | '(' INTVAL ')' )
 REF     := '$' ( IREF | '{' IREF '}' )
 IREF    := ID ( '[' INTVAL ']' )*
 CONST ~= (0x)? [0-9]+ ( \.  )
-OP1   ~= \+ | - | =
-OP2   ~= \* | / | %
+OP1   ~= \|
+OP2   ~= &
+OP3   ~= =
+OP4   ~= \+ | -
+OP5   ~= \* | / | %
 ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
 CHAR  ~= [^$\\]
 */

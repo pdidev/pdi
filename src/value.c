@@ -207,29 +207,34 @@ err0:
 	return status;
 }
 
-PDI_status_t parse_op(char **val_str, int prio, PDI_exprop_t *value)
+#define OP_LEVELS 5
+
+int op_level(PDI_exprop_t op)
+{
+	switch(op) {
+	case PDI_OP_OR: return 1;
+	case PDI_OP_AND: return 2;
+	case PDI_OP_EQUAL: return 3;
+	case PDI_OP_PLUS: case PDI_OP_MINUS: return 4;
+	case PDI_OP_MULT: case PDI_OP_DIV: case PDI_OP_MOD: return 5;
+	}
+	return 0;
+}
+
+PDI_status_t parse_op(char **val_str, int level, PDI_exprop_t *value)
 {
 	PDI_status_t status = PDI_OK;
 	char *op = *val_str;
 	
-	switch ( *op ) {
-		case PDI_OP_PLUS: case PDI_OP_MINUS: case PDI_OP_EQUAL: {
-		if ( prio != 1 ) {
-			handle_err(handle_error(PDI_ERR_VALUE, "Mixing operator priority"), err0);
-		}
-		*value = *op;
-		++op;
-	} break;
-	case PDI_OP_MULT: case PDI_OP_DIV: case PDI_OP_MOD: {
-		if ( prio != 2 ) {
-			handle_err(handle_error(PDI_ERR_VALUE, "Mixing operator priority"), err0);
-		}
-		*value = *op;
-		++op;
-	} break;
-	default:
+	int found_level = op_level(*op);
+	if ( found_level == 0 ) {
 		handle_err(handle_error(PDI_ERR_VALUE, "Expected operator, found '%c'", *op), err0);
 	}
+	if ( found_level != level ) {
+		handle_err(handle_error(PDI_ERR_VALUE, "Mixing operator priority"), err0);
+	}
+	*value = *op;
+	++op;
 	
 	while ( isspace(*op) ) ++op;
 	
@@ -243,7 +248,7 @@ PDI_status_t parse_intval(char **val_str, PDI_value_t *value, int level)
 	PDI_status_t status = PDI_OK;
 	char *exprval = *val_str;
 	
-	if ( level == 2 ) {
+	if ( level >= OP_LEVELS ) {
 		handle_err(parse_term(&exprval, value), err0);
 	} else {
 		handle_err(parse_intval(&exprval, value, level+1), err0);
@@ -268,7 +273,7 @@ PDI_status_t parse_intval(char **val_str, PDI_value_t *value, int level)
 		expr->ops[expr->nb_value-2] = op;
 		expr->values = realloc(expr->values, expr->nb_value*sizeof(PDI_value_t));
 		
-		if ( level == 2 ) {
+		if ( level >= OP_LEVELS ) {
 			handle_err(parse_term(&exprval, &expr->values[expr->nb_value-1]), err1);
 		} else {
 			handle_err(parse_intval(&exprval, &expr->values[expr->nb_value-1], level+1), err1);
@@ -433,6 +438,12 @@ PDI_status_t eval_exprval(PDI_exprval_t *val, int *res)
 		} break;
 		case PDI_OP_EQUAL: {
 			computed_value = (computed_value == operand);
+		} break;
+		case PDI_OP_AND: {
+			computed_value = computed_value && operand;
+		} break;
+		case PDI_OP_OR: {
+			computed_value = computed_value || operand;
 		} break;
 		default: {
 			handle_err(handle_error(PDI_ERR_VALUE, "Unknown operator: `%c'", val->ops[ii-1]), err0);
