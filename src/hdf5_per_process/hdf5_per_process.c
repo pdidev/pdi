@@ -58,7 +58,7 @@ char *topdir(char **path)
 	char* separator = *path;
 	while ( *separator && *separator != '/' ) { ++separator; }
 	if ( !*separator ) return NULL;
-	char *result = malloc(separator-*path);
+	char *result = malloc(separator-*path+1);
 	memcpy(result, *path, separator-*path);
 	result[separator-*path] = 0;
 	*path = separator;
@@ -86,7 +86,7 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 	PDI_type_t *scalart = &data->type;
 	if ( data->type.kind = PDI_K_ARRAY ) {
 		rank = data->type.c.array->ndims;
-		h5dims = malloc(rank*sizeof(hid_t));
+		h5dims = malloc(rank*sizeof(hsize_t));
 		for ( int ii=0; ii<rank; ++ii ) {
 			int intdim; PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
 			h5dims[ii] = intdim;
@@ -114,16 +114,18 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 		} else {
 			h5path = H5Gcreate(h5path, dirname, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT); 
 		}
-		h5groups = realloc(h5groups, ++nb_groups);
+		h5groups = realloc(h5groups, (++nb_groups)*sizeof(hid_t));
 		h5groups[nb_groups-1] = h5path;
 		free(dirname);
 	}
 	
 	H5LTmake_dataset(h5path, pathname, rank, h5dims, h5type(scalart->c.scalar), data->content.data);
+	free(h5dims);
 	
 	for ( int ii=nb_groups-1; ii>=0; --ii ) {
 		H5Gclose(h5groups[ii]);
 	}
+	free(h5groups);
 	H5Fclose(h5file);
 }
 
