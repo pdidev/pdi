@@ -98,14 +98,16 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 		for ( int ii=0; ii<rank; ++ii ) {
 			int intdim;
 			
+			int h5ii = rank-ii-1; // ORDER_C
+			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
-			h5sizes[ii] = intdim;
+			h5sizes[h5ii] = intdim;
 			
 			PDI_value_int(&data->type.c.array->subsizes[ii], &intdim);
-			h5subsizes[ii] = intdim;
+			h5subsizes[h5ii] = intdim;
 			
 			PDI_value_int(&data->type.c.array->starts[ii], &intdim);
-			h5starts[ii] = intdim;
+			h5starts[h5ii] = intdim;
 		}
 		scalart = &data->type.c.array->type;
 	}

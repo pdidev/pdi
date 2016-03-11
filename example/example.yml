@@ -1,26 +1,28 @@
-iter: 1000
-# an example with a list
-datasize: [16, 32]
+# a simple scalar, the number of iterations to execute
+iter: 100
+# an example with a list, global [width,height] (excluding ghost)
+datasize: [4, 4]
 # an example with nested associative arrays
 parallelism:
-    width:  2
+    width:  1
     height: 2
 pdi:
-    params: # values that can be referenced using $syntax
-        height: int
-        width: int
-        pheight: int
-        pwidth: int
-        nb_iter: int
-        iter: int
-        coord: { size: 2, type: int }
-    variables: # values that should not be referenced using $syntax
+    params: # metadata, i.e. small values that can be referenced using $syntax
+        width: int # per proc. width including ghost
+        height: int # per proc. height including ghost
+        pwidth: int  # nb proc. in the x dim
+        pheight: int # nb proc. in the y dim
+        nb_iter: int # total nb. iter (actually the iter option on top, but as exposed by the code)
+        iter: int # curent iteration id
+        coord: { size: 2, type: int } # coordinate of the process as [x, y]
+    variables: # values that can not be referenced using $syntax
         main_field:
             type:     double
             sizes:    [$width, $height]     # if only one element, you can use size as a acalar
             subsizes: [$width-2, $height-2] # defaults to sizes
             starts:   [1, 1]                # defaults to [0, 0]
-            order:    ORDER_C               # defaults to ORDER_C
+            # not handled yet ## order:    ORDER_C
+            
             # the following are not handled by PDI but might be used by plugins
             
             #in: # specifies that the provided data is part of a bigger (constant) logical data
@@ -36,9 +38,9 @@ pdi:
             # and here is its configuration
             outputs:
                 main_field: # ref to a variable
-                    select: $iter % 16 = 0 | $iter=$nb_iter # an expression defining when to output the variable
+                    select: 1 #$iter % 16 = 0 | $iter=$nb_iter # an expression defining when to output the variable
                     file: output_${coord[0]}x${coord[1]}.hdf5
-                    var: iter_${iter}/main_field
-                    mode: append_reopen # append_keep, overwrite, create
+                    var: iter_${iter}/main_field${coord[0]}x${coord[1]}
+                    # not handled yet ## mode: append_reopen # append_keep, overwrite, create # not handled yet
         # load the test_plugin PDI plugin
         #test_plugin: ~
