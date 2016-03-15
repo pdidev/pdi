@@ -27,6 +27,8 @@
 
 typedef struct PDI_value_s PDI_value_t;
 
+/** the possible kind of values
+ */
 typedef enum PDI_valkind_e {
 	PDI_VAL_CONST,
 	PDI_VAL_REF,
@@ -34,6 +36,8 @@ typedef enum PDI_valkind_e {
 	PDI_VAL_STR
 } PDI_valkind_t;
 
+/** The binary operators that can be used in values
+ */
 typedef enum PDI_exprop_e {
 	PDI_OP_PLUS = '+',
 	PDI_OP_MINUS = '-',

@@ -1,0 +1,7 @@
+* [ ] correctly copy variables
+* [ ] rename params->metadata, variables->data in config
+* [ ] correctly handle dimensions in hdf5
+* [ ] error handling in hdf5
+* [ ] debug plugin
+* [ ] support structs
+* [ ] handle nested arrays in HDF5
