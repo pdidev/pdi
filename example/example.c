@@ -13,14 +13,14 @@
 
 void init(double* dat, int width, int height, int px, int py)
 {
-	int xx, yy;
-	for (yy=0; yy<height; ++yy) {
-		for(xx=0; xx<width; ++xx) {
+	py = py; // prevent unused warning
+	for (int yy=0; yy<height; ++yy) {
+		for(int xx=0; xx<width; ++xx) {
 			VAL2D(dat,xx,yy) = 0;
 		}
 	}
 	if ( px == 0 ) {
-		for (yy=0; yy<height; ++yy) {
+		for (int yy=0; yy<height; ++yy) {
 			VAL2D(dat,0,yy) = 1000000;
 		}
 	}
@@ -103,15 +103,15 @@ int main(int argc, char *argv[])
 	if ( !yaml_parser_load(&conf_parser, &conf_doc) ) {
 		printf("%s:%d:%d: Error: %s\n",
 				"example.yml",
-				conf_parser.problem_mark.line,
-				conf_parser.problem_mark.column,
+				(int) conf_parser.problem_mark.line,
+				(int) conf_parser.problem_mark.column,
 				conf_parser.problem
   			);
 		if ( conf_parser.context ) {
 		printf("%s:%d:%d: Error: %s\n",
 				"example.yml",
-				conf_parser.context_mark.line,
-				conf_parser.context_mark.column,
+				(int) conf_parser.context_mark.line,
+				(int) conf_parser.context_mark.column,
 				conf_parser.context
   			);
 		}
@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
 		double *tmp = cur; cur = next; next = tmp;
 	}
 	PDI_event("finalization");
+	PDI_expose("iter", &ii);
 	PDI_expose("main_field", cur);
 
 	PDI_finalize();
