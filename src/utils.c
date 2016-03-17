@@ -90,7 +90,7 @@ char *msprintf(const char *fmt, ...)
 	return res;
 }
 
-char *mstrcat(char *dest, size_t dlen, char *src, size_t slen)
+char *mstrcat(char *dest, size_t dlen, const char *src, size_t slen)
 {
 	char *result = realloc(dest, dlen+slen+1);
 	memcpy(result+dlen, src, slen);
@@ -98,8 +98,8 @@ char *mstrcat(char *dest, size_t dlen, char *src, size_t slen)
 	return result;
 }
 
-PDI_status_t PDI_copy(PDI_type_t *type, void *to, void *from)
+PDI_status_t PDI_copy(PDI_type_t *type, void **to, void *from)
 {
 	//TODO: implement
-	abort();
+	*to = from;
 }

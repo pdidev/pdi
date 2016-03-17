@@ -35,10 +35,12 @@ do { \
 
 #define handle_PC_err(callstatus, free_stamp)\
 do { \
+	PC_errhandler_t pc_handler = intercept_PC_errors();\
 	if ( callstatus ) { \
 		status = PDI_ERR_CONFIG; \
 		goto free_stamp; \
 	} \
+	PC_errhandler(pc_handler);\
 } while( 0 )
 
 PDI_status_t handle_error(PDI_status_t errcode, const char *message, ...);

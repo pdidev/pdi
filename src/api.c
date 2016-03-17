@@ -30,6 +30,7 @@
 #include "conf.h"
 #include "plugin_loader.h"
 #include "status.h"
+#include "utils.h"
 
 #define PDI_BUFFER_SIZE 256
 
@@ -37,8 +38,6 @@ PDI_state_t PDI_state;
 
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
-	PC_errhandler_t pc_handler = intercept_PC_errors();
-	
 	PDI_status_t status = PDI_OK;
 	
 	PDI_state.nb_params = 0;
@@ -55,8 +54,7 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	handle_PC_err(PC_len(PC_get(conf, ".plugins"), &PDI_state.nb_plugins), err0);
 	PDI_state.plugins = malloc(PDI_state.nb_plugins*sizeof(PDI_plugin_t));
 	
-	int ii;
-	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 		char *plugin_name = NULL;
 		handle_PC_err(PC_string(PC_get(conf, ".plugins{%d}", ii), &plugin_name), err0);
 		
@@ -70,180 +68,177 @@ err1:
 		handle_err(status, err0);
 	}
 	
+	return status;
 err0:
-	PC_errhandler(pc_handler);
-	
 	return status;
 }
 
 PDI_status_t PDI_finalize()
 {
-	PC_errhandler_t pc_handler = intercept_PC_errors();
+	PDI_status_t status = PDI_OK;
 	
-	PDI_status_t err = PDI_OK;
-	
-	int ii;
-	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		if ( PDI_state.plugins[ii].finalize() ) err = PDI_ERR_PLUGIN;
+	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+		if ( PDI_state.plugins[ii].finalize() ) status = PDI_ERR_PLUGIN;
 	}
 	
-finalize_err0:
-	PC_errhandler(pc_handler);
-	return err;
+	return status;
+err0:
+	return status;
 }
 
 PDI_status_t PDI_event(const char* event)
 {
-	PC_errhandler_t pc_handler = intercept_PC_errors();
+	PDI_status_t status = PDI_OK;
 	
-	PDI_status_t err = PDI_OK;
-	
-	int ii;
-	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		if ( PDI_state.plugins[ii].event(event) ) err = PDI_ERR_PLUGIN;
+	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
+	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+		if ( PDI_state.plugins[ii].event(event) ) status = PDI_ERR_PLUGIN;
 	}
+	PDI_errhandler(errh);
 	
-	PC_errhandler(pc_handler);
-	return err;
+	return status;
+err0:
+	return status;
 }
 
 PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 {
-	//TODO: handle this case
-	if ( access & PDI_IN ) return PDI_UNAVAILABLE;
-	
-	PC_errhandler_t pc_handler = intercept_PC_errors();
-	
-	PDI_status_t err = PDI_OK;
-	int ii;
+	PDI_status_t status = PDI_OK;
 	
 	PDI_variable_t *data = NULL;
-	for ( ii=0; ii<PDI_state.nb_variables; ++ii ) {
+	for ( int ii=0; ii<PDI_state.nb_variables; ++ii ) {
 		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
 		
 		data = PDI_state.variables+ii;
 		break;
 	}
-	if (!data) {
-		err = PDI_ERR_VALUE;
-		goto err0;
+	if (data) {
+		//TODO: handle this case
+		if ( access & PDI_IN ) {
+			status = PDI_UNAVAILABLE;
+		}
+		if ( access & PDI_OUT ) {
+			data->content.access = access;
+			data->content.data = data_dat;
+			
+			PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
+			for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+				if ( PDI_state.plugins[ii].data_start(data) ) status = PDI_ERR_PLUGIN;
+			}
+			PDI_errhandler(errh);
+		}
+	} else {
+		status = PDI_UNAVAILABLE;
 	}
-	data->content.access = access;
-	//TODO: data->content.coords = ;
-	data->content.data = data_dat;
 	
-	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		if ( PDI_state.plugins[ii].data_start(data) ) err = PDI_ERR_PLUGIN;
-	}
-	
-	if (err) goto err0;
-
+	return status;
 err0:
-	PC_errhandler(pc_handler);
-	return PDI_OK;
+	return status;
 }
 
 PDI_status_t PDI_release(const char* name)
 {
-	PC_errhandler_t pc_handler = intercept_PC_errors();
-	
-	PDI_status_t err = PDI_OK;
-	int ii;
+	PDI_status_t status = PDI_OK;
 	
 	PDI_variable_t *data = NULL;
-	for ( ii=0; ii<PDI_state.nb_variables; ++ii ) {
+	for ( int ii=0; ii<PDI_state.nb_variables; ++ii ) {
 		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
 		
 		data = PDI_state.variables+ii;
 		break;
 	}
-	if (!data) {
-		err = PDI_ERR_VALUE;
-		goto release_err0;
+	if (data) {
+		PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
+		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+			if ( PDI_state.plugins[ii].data_end(data) ) status = PDI_ERR_PLUGIN;
+		}
+		PDI_errhandler(errh);
+		
+		free(data->content.data);
+		data->content.data = NULL;
+		data->content.access = 0;
+	} else {
+		status = PDI_UNAVAILABLE;
 	}
 	
-	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		if ( PDI_state.plugins[ii].data_end(data) ) err = PDI_ERR_PLUGIN;
-	}
-	
-	free(data->content.data);
-	data->content.access = 0;
-	
-	if (err) goto release_err0;
-
-release_err0:
-	PC_errhandler(pc_handler);
-	return PDI_OK;
+	return status;
+err0:
+	return status;
 }
 
 PDI_status_t PDI_reclaim(const char* name)
 {
-	PC_errhandler_t pc_handler = intercept_PC_errors();
-	
-	PDI_status_t err = PDI_OK;
-	int ii;
+	PDI_status_t status = PDI_OK;
 	
 	PDI_variable_t *data = NULL;
-	for ( ii=0; ii<PDI_state.nb_variables; ++ii ) {
+	for ( int ii=0; ii<PDI_state.nb_variables; ++ii ) {
 		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
 		
 		data = PDI_state.variables+ii;
 		break;
 	}
-	if (!data) {
-		err = PDI_ERR_VALUE;
-		goto release_err0;
+	if (data) {
+		PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
+		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+			if ( PDI_state.plugins[ii].data_end(data) ) status = PDI_ERR_PLUGIN;
+		}
+		PDI_errhandler(errh);
+		
+		data->content.access = 0;
+		data->content.data = NULL;
+	} else {
+		status = PDI_UNAVAILABLE;
 	}
 	
-	for ( ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		if ( PDI_state.plugins[ii].data_end(data) ) err = PDI_ERR_PLUGIN;
-	}
-	
-	data->content.access = 0;
-	
-	if (err) goto release_err0;
-
-release_err0:
-	PC_errhandler(pc_handler);
-	return PDI_OK;
+	return status;
+err0:
+	return status;
 }
 
 PDI_status_t PDI_expose(const char* name, const void* data_dat)
 {
-	PDI_status_t err = PDI_OK;
-	int ii;
+	PDI_status_t status = PDI_OK;
 	
 	PDI_param_t *param = NULL;
-	for ( ii=0; ii<PDI_state.nb_params; ++ii ) {
+	for ( int ii=0; ii<PDI_state.nb_params; ++ii ) {
 		if ( strcmp(name, PDI_state.params[ii].name) != 0 ) continue;
 		
 		param = PDI_state.params+ii;
 		break;
 	}
 	if (param) {
-		//TODO: copy the value
-		param->value = (void*)data_dat;
-		return err;
+		handle_err(PDI_copy(&param->type, &param->value, (void*)data_dat), err0);
+	} else {
+		handle_err(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
+		handle_err(PDI_reclaim(name), err0);
 	}
 	
-	err = PDI_share(name, (void*)data_dat, PDI_OUT); if (err) return err;
-	err = PDI_reclaim(name); if (err) return err;
-	return err;
+	return status;
+err0:
+	return status;
 }
 
 PDI_status_t PDI_export(const char* name, const void* data)
 {
-	PDI_status_t err = PDI_OK;
-	err = PDI_share(name, (void*)data, PDI_OUT); if (err) return err;
-	err = PDI_release(name); if (err) return err;
-	return PDI_OK;
+	PDI_status_t status = PDI_OK;
+	
+	handle_err(PDI_share(name, (void*)data, PDI_OUT), err0);
+	handle_err(PDI_release(name), err0);
+	
+	return status;
+err0:
+	return status;
 }
 
 PDI_status_t PDI_import(const char* name, void* data)
 {
-	PDI_status_t err = PDI_OK;
-	err = PDI_share(name, data, PDI_IN); if (err) return err;
-	err = PDI_reclaim(name); if (err) return err;
-	return PDI_OK;
+	PDI_status_t status = PDI_OK;
+	
+	handle_err(PDI_share(name, data, PDI_IN), err0);
+	handle_err(PDI_reclaim(name), err0);
+	
+	return status;
+err0:
+	return status;
 }
  

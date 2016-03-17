@@ -67,15 +67,15 @@ struct PDI_strval_s
 	
 };
 
-PDI_status_t parse_intval(char **val_str, PDI_value_t *value, int level);
+PDI_status_t parse_intval(char const**val_str, PDI_value_t* value, int level);
 
 PDI_status_t exprval_destroy(PDI_exprval_t* value);
 
-PDI_status_t parse_id(char **val_str, int *id_len)
+PDI_status_t parse_id(char const **val_str, int *id_len)
 {
 	PDI_status_t status = PDI_OK;
 	
-	char *id = *val_str;
+	const char *id = *val_str;
 	
 	if (!(
 		   (*id>='a' && *id<='z')
@@ -103,10 +103,10 @@ err0:
 	return status;
 }
 
-PDI_status_t parse_ref(char **val_str, PDI_refval_t *value)
+PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 {
 	PDI_status_t status = PDI_OK;
-	char *ref = *val_str;
+	const char *ref = *val_str;
 	
 	if ( *ref != '$' ) handle_err(handle_error(PDI_ERR_VALUE, "Expected '$', got %c", *ref), err0);
 	++ref;
@@ -158,12 +158,12 @@ err0:
 	return status;
 }
 
-PDI_status_t parse_const(char **val_str, int *value)
+PDI_status_t parse_const(char const **val_str, int *value)
 {
 	PDI_status_t status = PDI_OK;
-	char *constval = *val_str;
+	const char *constval = *val_str;
 	
-	long val_l = strtol(constval, &constval, 0);
+	long val_l = strtol(constval, (char**)&constval, 0);
 	if ( *val_str == constval ) {
 		handle_err(handle_error(PDI_ERR_VALUE, "Expected integer, found %s", constval), err0);
 	}
@@ -175,10 +175,10 @@ err0:
 	return status;
 }
 
-PDI_status_t parse_term(char **val_str, PDI_value_t *value)
+PDI_status_t parse_term(char const **val_str, PDI_value_t *value)
 {
 	PDI_status_t status = PDI_OK;
-	char *term = *val_str;
+	const char *term = *val_str;
 
 	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 	if ( !parse_const(&term, &value->c.constval) ) {
@@ -221,10 +221,10 @@ int op_level(PDI_exprop_t op)
 	return 0;
 }
 
-PDI_status_t parse_op(char **val_str, int level, PDI_exprop_t *value)
+PDI_status_t parse_op(char const **val_str, int level, PDI_exprop_t *value)
 {
 	PDI_status_t status = PDI_OK;
-	char *op = *val_str;
+	const char *op = *val_str;
 	
 	int found_level = op_level(*op);
 	if ( found_level == 0 ) {
@@ -243,10 +243,10 @@ err0:
 	return status;
 }
 
-PDI_status_t parse_intval(char **val_str, PDI_value_t *value, int level)
+PDI_status_t parse_intval(char const**val_str, PDI_value_t* value, int level)
 {
 	PDI_status_t status = PDI_OK;
-	char *exprval = *val_str;
+	const char *exprval = *val_str;
 	
 	if ( level >= OP_LEVELS ) {
 		handle_err(parse_term(&exprval, value), err0);
@@ -294,10 +294,10 @@ err0:
 	return status;
 }
 
-PDI_status_t parse_strval(char **val_str, PDI_value_t *value)
+PDI_status_t parse_strval(char const **val_str, PDI_value_t *value)
 {
 	PDI_status_t status = PDI_OK;
-	char *str = *val_str;
+	const char *str = *val_str;
 	
 	value->kind = PDI_VAL_STR;
 	value->c.strval = malloc(sizeof(PDI_strval_t));
@@ -546,12 +546,12 @@ err0:
 
 // public functions
 
-PDI_status_t PDI_value_parse(char *val_str, PDI_value_t* value)
+PDI_status_t PDI_value_parse(const char *val_str, PDI_value_t* value)
 {
 	PDI_status_t status = PDI_OK;
 	
 	PDI_status_t err = PDI_ERR_VALUE;
-	char *parse_val = val_str;
+	const char *parse_val = val_str;
 	if ( err || *parse_val ) {
 		parse_val = val_str;
 		while ( isspace(*parse_val) ) ++parse_val;
@@ -592,7 +592,7 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_value_int(PDI_value_t* value, int* res)
+PDI_status_t PDI_value_int(const PDI_value_t* value, int* res)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -616,7 +616,7 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_value_str(PDI_value_t* value, char** res)
+PDI_status_t PDI_value_str(const PDI_value_t* value, char** res)
 {
 	PDI_status_t status = PDI_OK;
 	

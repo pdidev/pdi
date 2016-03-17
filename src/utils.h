@@ -32,7 +32,7 @@ unsigned long PDI_mem_size(PDI_type_t *type);
 
 unsigned long PDI_dat_size(PDI_type_t *type);
 
-PDI_status_t PDI_copy(PDI_type_t *type, void *to, void *from);
+PDI_status_t PDI_copy(PDI_type_t* type, void** to, void* from);
 
 PDI_status_t PDI_free(PDI_type_t *type, void *data);
 
@@ -40,6 +40,6 @@ char *msprintf(const char *fmt, ...);
 
 char *vmsprintf(const char *fmt, va_list ap);
 
-char *mstrcat(char *dest, size_t dlen, char *src, size_t slen);
+char *mstrcat(char* dest, size_t dlen, const char* src, size_t slen);
 
 #endif

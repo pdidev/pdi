@@ -32,7 +32,24 @@
 #include <pdi/state.h>
 
 MPI_Comm my_world;
+
 PC_tree_t my_conf;
+
+typedef struct hdf5pp_var_s
+{
+	char *name;
+	
+	PDI_value_t h5file;
+	
+	PDI_value_t h5var;
+	
+	PDI_value_t select;
+	
+} hdf5pp_var_t;
+
+hdf5pp_var_t *outputs = NULL;
+
+int nb_outputs = 0;
 
 PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 {
@@ -41,13 +58,38 @@ PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 	
 	H5open();
 	
+	PC_len(PC_get(my_conf, ".outputs"), &nb_outputs);
+	outputs = malloc(nb_outputs*sizeof(hdf5pp_var_t));
+	for ( int ii=0; ii<nb_outputs; ++ii ) {
+		PC_string(PC_get(my_conf, ".outputs{%d}", ii), &outputs[ii].name);
+		
+		PC_tree_t output = PC_get(my_conf, ".outputs<%d>", ii);
+		
+		char *file_strv; PC_string(PC_get(output, ".file"), &file_strv);
+		PDI_value_parse(file_strv, &outputs[ii].h5file);
+		free(file_strv);
+		
+		char *var_strv; PC_string(PC_get(output, ".var"), &var_strv);
+		PDI_value_parse(var_strv, &outputs[ii].h5var);
+		free(var_strv);
+		
+		char *select_strv; PC_string(PC_get(output, ".select"), &select_strv);
+		PDI_value_parse(select_strv, &outputs[ii].select);
+		free(select_strv);
+	}
+	
 	return PDI_OK;
 }
 
 PDI_status_t PDI_hdf5_per_process_finalize()
 {
-	H5close();
-	
+	for ( int ii=0; ii<nb_outputs; ++ii ) {
+		PDI_value_destroy(&outputs[ii].h5file);
+		PDI_value_destroy(&outputs[ii].h5var);
+		PDI_value_destroy(&outputs[ii].select);
+		free(outputs[ii].name);
+	}
+	free(outputs);
 	return PDI_OK;
 }
 
@@ -55,21 +97,6 @@ PDI_status_t PDI_hdf5_per_process_event(const char *event)
 {
 	return PDI_OK;
 }
-
-char *topdir(char **path)
-{
-	while ( **path && **path == '/' ) { ++*path; }
-	char* separator = *path;
-	while ( *separator && *separator != '/' ) { ++separator; }
-	if ( !*separator ) return NULL;
-	char *result = malloc(separator-*path+1);
-	memcpy(result, *path, separator-*path);
-	result[separator-*path] = 0;
-	*path = separator;
-	return result;
-}
-
-
 
 hid_t h5type(PDI_scalar_type_t ptype) {
 	switch (ptype) {
@@ -96,9 +123,8 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 		h5subsizes = malloc(rank*sizeof(hsize_t));
 		h5starts = malloc(rank*sizeof(hsize_t));
 		for ( int ii=0; ii<rank; ++ii ) {
+			int h5ii = ii; //rank-ii-1; // ORDER_C
 			int intdim;
-			
-			int h5ii = rank-ii-1; // ORDER_C
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
 			h5sizes[h5ii] = intdim;
@@ -120,58 +146,42 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 	} else {
 		h5file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 	}
+	
 	hid_t h5fspace = H5Screate_simple(rank, h5subsizes, NULL);
 	hid_t h5mspace = H5Screate_simple(rank, h5sizes, NULL);
 	H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
-	free(h5sizes);
 	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
 	H5Pset_create_intermediate_group( h5lcp, 1 );
 	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar), h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
     H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT, data->content.data);
+	
 	H5Dclose(h5set);
 	H5PTclose(h5lcp);
 	H5Sclose(h5fspace);
-	
 	H5Fclose(h5file);
+	
+	free(h5sizes);
+	free(h5subsizes);
+	free(h5starts);
 }
 
 PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 {
-	int nb_outputs; PC_len(PC_get(my_conf, ".outputs"), &nb_outputs);
-	PC_tree_t output;
+	hdf5pp_var_t output;
 	int found_output = 0;
 	for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
-		char *output_name; 
-		PC_string(PC_get(my_conf, ".outputs{%d}", ii), &output_name);
-		if ( !strcmp(output_name, data->name) ) {
-			output = PC_get(my_conf, ".outputs<%d>", ii);
+		if ( !strcmp(outputs[ii].name, data->name) ) {
 			found_output = 1;
+			
+			char *h5file; PDI_value_str(&outputs[ii].h5file, &h5file);
+			char *h5var;  PDI_value_str(&outputs[ii].h5var,  &h5var);
+			int select;   PDI_value_int(&outputs[ii].select, &select);
+			
+			if ( select ) write_to_file(data, h5file, h5var);
+			
+			free(h5var);
+			free(h5file);
 		}
-		free(output_name);
-	}
-	if ( found_output ) {
-		char *file_strv; PC_string(PC_get(output, ".file"), &file_strv);
-		PDI_value_t file_val; PDI_value_parse(file_strv, &file_val);
-		free(file_strv);
-		char *filename; PDI_value_str(&file_val, &filename);
-		PDI_value_destroy(&file_val);
-		
-		char *var_strv; PC_string(PC_get(output, ".var"), &var_strv);
-		PDI_value_t var_val; PDI_value_parse(var_strv, &var_val);
-		free(var_strv);
-		char *varname; PDI_value_str(&var_val, &varname);
-		PDI_value_destroy(&var_val);
-		
-		char *select_strv; PC_string(PC_get(output, ".select"), &select_strv);
-		PDI_value_t select_val; PDI_value_parse(select_strv, &select_val);
-		free(select_strv);
-		int select; PDI_value_int(&select_val, &select);
-		PDI_value_destroy(&select_val);
-		
-		if ( select ) write_to_file(data, filename, varname);
-		
-		free(varname);
-		free(filename);
 	}
 	return PDI_OK;
 }
