@@ -95,6 +95,7 @@ PDI_status_t PDI_hdf5_per_process_finalize()
 
 PDI_status_t PDI_hdf5_per_process_event(const char *event)
 {
+	event = event; // prevent unused warning
 	return PDI_OK;
 }
 
@@ -108,6 +109,18 @@ hid_t h5type(PDI_scalar_type_t ptype) {
 	case PDI_T_DOUBLE: return  H5T_NATIVE_DOUBLE;
 	case PDI_T_LONG_DOUBLE: return  H5T_NATIVE_LDOUBLE;
 	}
+	return H5T_NO_CLASS; //TODO: better handle the error
+}
+
+int is_h5_file(char *filename)
+{
+	H5E_auto2_t old_func;
+	void *old_data;
+	H5Eget_auto2(H5E_DEFAULT, &old_func, &old_data);
+	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+	int fexists = (H5Fis_hdf5(filename)>0);
+	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
+	return fexists;
 }
 
 void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
@@ -117,7 +130,7 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
 	PDI_type_t *scalart = &data->type;
-	if ( data->type.kind = PDI_K_ARRAY ) {
+	if ( data->type.kind == PDI_K_ARRAY ) {
 		rank = data->type.c.array->ndims;
 		h5sizes = malloc(rank*sizeof(hsize_t));
 		h5subsizes = malloc(rank*sizeof(hsize_t));
@@ -140,8 +153,7 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 	if ( scalart->kind != PDI_K_SCALAR ) return;
 	
 	hid_t h5file;
-	herr_t status = H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-	if ( H5Fis_hdf5(filename)>0 ) {
+	if ( is_h5_file(filename) ) {
 		h5file = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
 	} else {
 		h5file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
@@ -167,7 +179,6 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 
 PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 {
-	hdf5pp_var_t output;
 	int found_output = 0;
 	for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
 		if ( !strcmp(outputs[ii].name, data->name) ) {
@@ -188,6 +199,7 @@ PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 
 PDI_status_t PDI_hdf5_per_process_data_end(PDI_variable_t *data)
 {
+	data = data; // prevent unused warning
 	return PDI_OK;
 }
 

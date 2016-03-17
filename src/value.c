@@ -24,6 +24,7 @@
 
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "pdi/state.h"
 
@@ -511,7 +512,6 @@ PDI_status_t strval_destroy(PDI_strval_t* value)
 	free(value->values);
 	free(value->str);
 	
-err0:
 	return status;
 }
 
@@ -526,7 +526,6 @@ PDI_status_t exprval_destroy(PDI_exprval_t* value)
 	free(value->values);
 	free(value->ops);
 	
-err0:
 	return status;
 }
 
@@ -540,13 +539,12 @@ PDI_status_t refval_destroy(PDI_refval_t* value)
 	}
 	free(value->idx);
 	
-err0:
 	return status;
 }
 
 // public functions
 
-PDI_status_t PDI_value_parse(const char *val_str, PDI_value_t* value)
+PDI_status_t PDI_value_parse(const char* val_str, PDI_value_t* value)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -565,7 +563,6 @@ PDI_status_t PDI_value_parse(const char *val_str, PDI_value_t* value)
 		err = parse_strval(&parse_val, value);
 	}
 	
-err0:
 	return status;
 }
 
@@ -586,9 +583,9 @@ PDI_status_t PDI_value_destroy(PDI_value_t* value)
 		strval_destroy(value->c.strval);
 		free(value->c.strval);
 	} break;
+	case PDI_VAL_CONST: break;
 	}
 	
-err0:
 	return status;
 }
 

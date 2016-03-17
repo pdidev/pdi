@@ -28,13 +28,13 @@
 #include <pdi.h>
 #include <pdi/datatype.h>
 
-unsigned long PDI_mem_size(PDI_type_t *type);
+unsigned long PDI_mem_size(const PDI_type_t *type);
 
-unsigned long PDI_dat_size(PDI_type_t *type);
+unsigned long PDI_dat_size(const PDI_type_t *type);
 
 PDI_status_t PDI_copy(PDI_type_t* type, void** to, void* from);
 
-PDI_status_t PDI_free(PDI_type_t *type, void *data);
+PDI_status_t PDI_free(const PDI_type_t *type, void *data);
 
 char *msprintf(const char *fmt, ...);
 

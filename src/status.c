@@ -46,6 +46,7 @@ static pthread_once_t context_key_once = PTHREAD_ONCE_INIT;
 
 static void assert_status(PDI_status_t status, const char* message, void* context)
 {
+	context = context; // prevent unused warning
 	if ( status ) {
 		fprintf(stderr, "Error in PDI: %s\n", message);
 		abort();
@@ -83,6 +84,8 @@ static errctx_t *get_context()
 
 static void forward_PC_error(PC_status_t status, const char *message, void *context)
 {
+	status = status; // prevent unused warning
+	context = context; // prevent unused warning
 	get_context()->handler.func(PDI_ERR_CONFIG, message, get_context()->handler.context);
 }
 

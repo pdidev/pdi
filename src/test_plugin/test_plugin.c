@@ -32,6 +32,7 @@ MPI_Comm my_world;
 
 PDI_status_t PDI_test_plugin_init(PC_tree_t conf, MPI_Comm *world)
 {
+	conf = conf; // prevent unused warning
 	my_world = *world;
 	
 	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;

@@ -82,8 +82,6 @@ PDI_status_t PDI_finalize()
 	}
 	
 	return status;
-err0:
-	return status;
 }
 
 PDI_status_t PDI_event(const char* event)
@@ -96,8 +94,6 @@ PDI_status_t PDI_event(const char* event)
 	}
 	PDI_errhandler(errh);
 	
-	return status;
-err0:
 	return status;
 }
 
@@ -132,8 +128,6 @@ PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 	}
 	
 	return status;
-err0:
-	return status;
 }
 
 PDI_status_t PDI_release(const char* name)
@@ -162,8 +156,6 @@ PDI_status_t PDI_release(const char* name)
 	}
 	
 	return status;
-err0:
-	return status;
 }
 
 PDI_status_t PDI_reclaim(const char* name)
@@ -190,8 +182,6 @@ PDI_status_t PDI_reclaim(const char* name)
 		status = PDI_UNAVAILABLE;
 	}
 	
-	return status;
-err0:
 	return status;
 }
 

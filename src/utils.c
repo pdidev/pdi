@@ -23,6 +23,7 @@
  ******************************************************************************/
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "pdi.h"
 #include "pdi/datatype.h"
@@ -47,7 +48,7 @@ unsigned long scal_size(PDI_scalar_type_t type)
 }
 
 
-unsigned long array_dat_size(PDI_array_type_t *type)
+unsigned long array_dat_size(const PDI_array_type_t *type)
 {
 	unsigned long result = PDI_dat_size(&type->type);
 	int dim;
@@ -60,12 +61,13 @@ unsigned long array_dat_size(PDI_array_type_t *type)
 	return result;
 }
 
-unsigned long PDI_dat_size(PDI_type_t *type)
+unsigned long PDI_dat_size(const PDI_type_t *type)
 {
 	switch( type->kind ) {
 		case PDI_K_SCALAR: return scal_size(type->c.scalar);
 		case PDI_K_ARRAY: return array_dat_size(type->c.array);
 		//TODO: implement structs
+		case PDI_K_STRUCT: abort();
 	}
 	abort();
 }
@@ -100,6 +102,11 @@ char *mstrcat(char *dest, size_t dlen, const char *src, size_t slen)
 
 PDI_status_t PDI_copy(PDI_type_t *type, void **to, void *from)
 {
+	type = type; // prevent unused warning
+	PDI_status_t status = PDI_OK;
+	
 	//TODO: implement
 	*to = from;
+	
+	return status;
 }
