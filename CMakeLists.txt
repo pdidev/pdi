@@ -81,6 +81,17 @@ add_library(pdi
 	src/utils.c
 	src/value.c
 )
+include(CheckCCompilerFlag)
+function(add_compiler_flags TARGET VISIBILITY FLAGS)
+	foreach(FLAG "${FLAGS}" ${ARGN})
+		set(FLAG_WORKS)
+		check_c_compiler_flag("${FLAG}" FLAG_WORKS)
+		if("${FLAG_WORKS}")
+			target_compile_options("${TARGET}" "${VISIBILITY}" "${FLAG}")
+		endif()
+	endforeach()
+endfunction()
+add_compiler_flags(pdi PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
 include(GenerateExportHeader)
 generate_export_header(pdi)
 set_target_properties(pdi PROPERTIES C_VISIBILITY_PRESET hidden)

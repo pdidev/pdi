@@ -39,8 +39,10 @@ static PDI_status_t load_array(PC_tree_t node, PDI_array_type_t *type)
 	PDI_status_t status = PDI_OK;
 	
 	PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	if ( !PC_len(PC_get(node, ".sizes"), &type->ndims) ) { // multi dim array
-		PC_errhandler(pc_handler); // aka PC_end_try
+	PDI_status_t sizes_invalid = PC_len(PC_get(node, ".sizes"), &type->ndims);
+	PC_errhandler(pc_handler); // aka PC_end_try
+	
+	if ( !sizes_invalid ) { // multi dim array
 		type->sizes = malloc(type->ndims*sizeof(PDI_value_t));
 		for ( int ii=0; ii<type->ndims; ++ii ) {
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err1);
@@ -50,7 +52,6 @@ err1:
 			handle_err(status, err0);
 		}
 	} else { //single dim array
-		PC_errhandler(pc_handler); // aka PC_end_try
 		type->ndims = 1;
 		type->sizes = malloc(type->ndims*sizeof(PDI_value_t));
 		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err5);
@@ -60,10 +61,11 @@ err5:
 		handle_err(status, err0);
 	}
 	
-	int len; 
 	pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	if ( !PC_len(PC_get(node, ".subsizes"), &len) ) {
-		PC_errhandler(pc_handler); // aka PC_end_try
+	int len; PC_status_t invalid_subsizes = PC_len(PC_get(node, ".subsizes"), &len);
+	PC_errhandler(pc_handler); // aka PC_end_try
+	
+	if ( !invalid_subsizes ) {
 		if ( len != type->ndims ) handle_err(handle_error(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, type->ndims), err0);	
 		type->subsizes = malloc(type->ndims*sizeof(PDI_value_t));
 		for ( int ii=0; ii<type->ndims; ++ii ) {
@@ -75,7 +77,6 @@ err2:
 		}
 		
 	} else { // no subsize, default to full size
-		PC_errhandler(pc_handler); // aka PC_end_try
 		type->subsizes = type->sizes;
 	}
 	
@@ -100,24 +101,7 @@ err3:
 		}
 	}
 	
-	pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	char *order_str; 
-	if ( !PC_string(PC_get(node, ".order"), &order_str) ) {
-		PC_errhandler(pc_handler); // aka PC_end_try
-		if ( !strcmp(order_str, "ORDER_C") ) {
-			type->order = PDI_ORDER_C;
-		} else if ( !strcmp(order_str, "ORDER_FORTRAN") ) {
-			type->order = PDI_ORDER_FORTRAN;
-		} else {
-			handle_err(handle_error(PDI_ERR_CONFIG, "Invalid order, should be either ORDER_C or ORDER_FORTRAN"), err4);
-		}
-err4:
-		free(order_str);
-		handle_err(status, err0);
-	} else { // default to ORDER_C if none specified
-		//TODO: change to calling language order
-		type->order = PDI_ORDER_C;
-	}
+	//TODO: implement .order ORDER_C|ORDER_FORTRAN
 	
 	PC_tree_t type_type = PC_get(node, ".type");
 	handle_PC_err(PC_status(type_type), err0);
@@ -154,5 +138,43 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 	
 err0:
 	free(buf_str);
+	return status;
+}
+
+PDI_status_t PDI_array_datatype_destroy(PDI_array_type_t *type)
+{
+	PDI_status_t status = PDI_OK;
+	
+	handle_err(PDI_datatype_destroy(&type->type), err0);
+	free(type->sizes);
+	free(type->starts);
+	// don't free subsizes in case it was a copy of sizes
+	if ( type->subsizes != type->sizes) free(type->subsizes);
+	
+	return status;
+err0:
+	return status;
+}
+
+PDI_status_t PDI_datatype_destroy(PDI_type_t *type)
+{
+	PDI_status_t status = PDI_OK;
+	
+	switch (type->kind) {
+	case PDI_K_ARRAY: {
+		PDI_array_datatype_destroy(type->c.array);
+		free(type->c.array);
+	} break;
+	case PDI_K_STRUCT: {
+		handle_err(handle_error(PDI_ERR_IMPL, "Structs not implemented yet"), err0);
+		free(type->c.struct_);
+	} break;
+	case PDI_K_SCALAR: {
+		// nothing to do here
+	} break;
+	}
+	
+	return status;
+err0:
 	return status;
 }

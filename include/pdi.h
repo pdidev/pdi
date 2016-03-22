@@ -47,7 +47,9 @@ typedef enum PDI_status_e {
 	/// A value expression is invalid
 	PDI_ERR_VALUE,
 	/// Tried to load a non-existing plugin
-	PDI_ERR_PLUGIN
+	PDI_ERR_PLUGIN,
+	/// Implementation limitation (typically an unimplemented feature)
+	PDI_ERR_IMPL
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs

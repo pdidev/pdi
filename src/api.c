@@ -73,6 +73,18 @@ err0:
 	return status;
 }
 
+
+PDI_status_t PDI_param_destroy(PDI_param_t *param)
+{
+	PDI_status_t status = PDI_OK;
+	
+	free(param->name);
+	free(param->value);
+	PDI_datatype_destroy(&param->type);
+	
+	return status;
+}
+
 PDI_status_t PDI_finalize()
 {
 	PDI_status_t status = PDI_OK;
@@ -80,6 +92,20 @@ PDI_status_t PDI_finalize()
 	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 		if ( PDI_state.plugins[ii].finalize() ) status = PDI_ERR_PLUGIN;
 	}
+	for (int ii=0; ii<PDI_state.nb_params; ++ii) {
+		PDI_param_destroy(&PDI_state.params[ii]);
+	}
+	free(PDI_state.params);
+	PDI_state.params = NULL; // help valgrind
+	for (int ii=0; ii<PDI_state.nb_variables; ++ii) {
+		
+	}
+	free(PDI_state.variables);
+	PDI_state.variables = NULL; // help valgrind
+	for (int ii=0; ii<PDI_state.nb_plugins; ++ii) {
+	}
+	free(PDI_state.plugins);
+	PDI_state.plugins = NULL; // help valgrind
 	
 	return status;
 }

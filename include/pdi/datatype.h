@@ -56,8 +56,6 @@ struct PDI_array_type_s
 	
 	PDI_value_t *starts;
 	
-	PDI_order_t order;
-	
 	PDI_type_t type;
 	
 };
@@ -81,5 +79,7 @@ struct PDI_struct_type_s
 };
 
 PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
+
+PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
 
 #endif // PDI_DATATYPE_H__
