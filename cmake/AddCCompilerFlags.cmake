@@ -27,9 +27,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-add_executable(example
-	example.c
-)
-target_link_libraries(example pdi hdf5_per_process test_plugin mpi)
-include(AddCCompilerFlags)
-add_compiler_flags(example PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
+cmake_minimum_required(VERSION 3.0)
+
+include(CheckCCompilerFlag)
+function(add_compiler_flags TARGET VISIBILITY FLAGS)
+	foreach(FLAG "${FLAGS}" ${ARGN})
+		set(FLAG_WORKS)
+		check_c_compiler_flag("${FLAG}" FLAG_WORKS)
+		if("${FLAG_WORKS}")
+			target_compile_options("${TARGET}" "${VISIBILITY}" "${FLAG}")
+		endif()
+	endforeach()
+endfunction()

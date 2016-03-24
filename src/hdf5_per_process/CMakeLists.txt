@@ -38,6 +38,8 @@ include_directories(${HDF5_SHARED_C_INCLUDE_PATH})
 set_property(SOURCE hdf5_per_process.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
 set_property(TARGET hdf5_per_process   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
 target_link_libraries(hdf5_per_process ${HDF5_SHARED_C_LIBRARIES})
+include(AddCCompilerFlags)
+add_compiler_flags(hdf5_per_process PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
 
 
 # library installation

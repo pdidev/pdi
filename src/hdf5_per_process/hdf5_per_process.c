@@ -24,8 +24,8 @@
 
 #include <string.h>
 #include <mpi.h>
-#include <hdf5/serial/hdf5.h>
-#include <hdf5/serial/hdf5_hl.h>
+#include <hdf5.h>
+#include <hdf5_hl.h>
 
 #include <pdi.h>
 #include <pdi/plugin.h>
