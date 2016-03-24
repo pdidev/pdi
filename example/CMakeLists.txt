@@ -27,6 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+find_package(MPI REQUIRED)
 add_executable(example
 	example.c
 )
