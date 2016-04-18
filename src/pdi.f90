@@ -1,5 +1,5 @@
 !/*******************************************************************************
-! * Copyright (c) 2016, Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
+! * Copyright (c) 2016, Julien Bigot | Mohamed Gaalich - CEA (julien.bigot@cea.fr)
 ! * All rights reserved.
 ! *
 ! * Redistribution and use in source and binary forms, with or without
