@@ -32,4 +32,4 @@ END PROGRAM example
 
 
 
-!gfortran -g ../vendor/paraconf/src/paraconf.f90 ../vendor/paraconf/build/libparaconf.so ../src/pdi.f90 ../build/libpdi.so ../example/example.f90 -o example34
+!mpif90 -g ../vendor/paraconf/src/paraconf.f90 ../vendor/paraconf/build/libparaconf.so ../src/pdi.f90 ../build/libpdi.so ../example/example.f90 -o example34
