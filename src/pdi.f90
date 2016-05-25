@@ -21,22 +21,22 @@
 ! * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! * THE SOFTWARE.
 ! ******************************************************************************/
-MODULE PC_tree_type
+!MODULE PC_tree_type
+!
+!  use iso_C_binding
 
-  use iso_C_binding
+!  TYPE, bind(C) :: PC_tree_t_f  
+!    INTEGER(C_INT) :: stat
+!    TYPE(C_PTR) :: document
+!    TYPE(C_PTR) :: node
+!  END TYPE PC_tree_t_f
 
-  TYPE, bind(C) :: PC_tree_t_f
-    INTEGER(C_INT) :: stat
-    TYPE(C_PTR) :: document
-    TYPE(C_PTR) :: node
-  END TYPE PC_tree_t_f
-
-END MODULE
+!END MODULE
 
 MODULE pdi
   
   USE iso_C_binding
-  USE PC_tree_type
+  USE paraconf
   
   IMPLICIT NONE 
   
@@ -46,7 +46,7 @@ MODULE pdi
     FUNCTION PDI_init_f(treeConf,world) &
       bind(C, name="PDI_init")   
       USE iso_C_binding 
-      USE PC_tree_type
+      USE paraconf
       INTEGER(C_INT) :: PDI_Init_f
       TYPE(PC_tree_t_f), VALUE :: treeConf
       TYPE(C_PTR), VALUE :: world 
@@ -154,15 +154,15 @@ MODULE pdi
 !=============================================================  
   SUBROUTINE PDI_init(treeConf,world,err)
     TYPE(PC_tree_t_f), INTENT(IN) :: treeConf
-    TYPE(C_PTR), INTENT(INOUT) :: world
+    INTEGER, INTENT(INOUT), TARGET :: world
     INTEGER, INTENT(OUT), OPTIONAL :: err
     
     INTEGER :: tmp
     
     if(PRESENT(err)) then
-      err = int(PDI_init_f(treeConf,world))
+      err = int(PDI_init_f(treeConf,c_loc(world)))
     else
-      tmp = int(PDI_init_f(treeConf,world))
+      tmp = int(PDI_init_f(treeConf,c_loc(world)))
     end if
   END SUBROUTINE PDI_init
 !=============================================================
