@@ -337,6 +337,8 @@ MODULE pdi
     
     CHARACTER(C_CHAR), TARGET :: C_namef(len_trim(namef)+1)
     INTEGER :: i,tmp
+
+    print *, "expose"
     
     do i=1,len_trim(namef)
       C_namef(i) = namef(i:i)
@@ -358,6 +360,7 @@ MODULE pdi
     
     CHARACTER(C_CHAR), TARGET :: C_namef(len_trim(namef)+1)
     INTEGER :: i,tmp
+    print *, "expose"
     
     do i=1,len_trim(namef)
       C_namef(i) = namef(i:i)
@@ -379,6 +382,8 @@ MODULE pdi
     
     CHARACTER(C_CHAR), TARGET :: C_namef(len_trim(namef)+1)
     INTEGER :: i,tmp
+
+    print *, "expose"
     
     do i=1,len_trim(namef)
       C_namef(i) = namef(i:i)

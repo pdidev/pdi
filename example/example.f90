@@ -6,12 +6,15 @@ USE mpi
 
 !#define VAL2D(arr, xx, yy) (arr[(xx)+width*(yy)])
 
-INTEGER :: nb_iter, width, height, pheight, pwidth, mpi_comm, status
+INTEGER :: nb_iter,iter, width, height, pheight, pwidth, mpi_comm, status
 TYPE(PC_tree_t_f) :: treetmp, tree1
 
 call MPI_INIT(status)
 
 mpi_comm = MPI_COMM_WORLD
+
+nb_iter = 0
+iter = 1
 
 call PC_parse_path("example.yml",tree1)
 
@@ -20,9 +23,28 @@ call PC_get(tree1,'.pdi',treetmp)
 
 call PDI_init(treetmp,mpi_comm,status)
 
-print *, "PDI_init"
+!call PDI_expose("iter", iter)
+!call PDI_expose("test",nb_iter)
+!call PDI_share("test", nb_iter,1)
+!call PDI_export("test", nb_iter)
+call PDI_import("iter", iter)
+print *, "iter =", iter
+!call PDI_release("test")
+!call PDI_reclaim("test")
 
-call PDI_finalize(status)
+call PDI_event("main_loop");
+
+!do iter =1,4
+!	nb_iter = nb_iter + iter
+!	call PDI_expose("iter", iter)
+!	call PDI_expose("test",nb_iter)
+!end do 
+
+call PDI_event("end");
+
+call PC_tree_destroy(tree1)
+
+call PDI_finalize()
 
 call MPI_FINALIZE(status)
 
