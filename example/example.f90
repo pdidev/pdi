@@ -23,8 +23,6 @@ call PC_get(tree1,'.pdi',treetmp)
 
 call PDI_init(treetmp,mpi_comm,status)
 
-!call PDI_expose("iter", iter)
-!call PDI_expose("test",nb_iter)
 !call PDI_share("test", nb_iter,1)
 !call PDI_export("test", nb_iter)
 call PDI_import("iter", iter)
@@ -34,11 +32,11 @@ print *, "iter =", iter
 
 call PDI_event("main_loop");
 
-!do iter =1,4
-!	nb_iter = nb_iter + iter
-!	call PDI_expose("iter", iter)
-!	call PDI_expose("test",nb_iter)
-!end do 
+do iter =1,4
+	nb_iter = nb_iter + iter
+	call PDI_expose("iter", iter)
+	call PDI_expose("test",nb_iter)
+end do 
 
 call PDI_event("end");
 

@@ -5,7 +5,7 @@
 there are four level of visibilty defined for PDI:
 * the public application API made up of all content exposed in the include/pdi.h header
 * the public plugin API made up of all content exposed in the include/pdi/*.h headers
-* the library-wide API made up of all content exposed in the scr/*.h headers
+* the library-wide API made up of all content exposed in the src/*.h headers
 * the file-local APIs made up of any content not exposed in any header
 
 ## Rules
