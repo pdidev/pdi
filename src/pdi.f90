@@ -337,8 +337,6 @@ MODULE pdi
     
     CHARACTER(C_CHAR), TARGET :: C_namef(len_trim(namef)+1)
     INTEGER :: i,tmp
-
-    print *, "expose"
     
     do i=1,len_trim(namef)
       C_namef(i) = namef(i:i)
@@ -360,7 +358,6 @@ MODULE pdi
     
     CHARACTER(C_CHAR), TARGET :: C_namef(len_trim(namef)+1)
     INTEGER :: i,tmp
-    print *, "expose"
     
     do i=1,len_trim(namef)
       C_namef(i) = namef(i:i)
@@ -382,8 +379,6 @@ MODULE pdi
     
     CHARACTER(C_CHAR), TARGET :: C_namef(len_trim(namef)+1)
     INTEGER :: i,tmp
-
-    print *, "expose"
     
     do i=1,len_trim(namef)
       C_namef(i) = namef(i:i)
@@ -414,9 +409,9 @@ MODULE pdi
     C_namef(len_trim(namef)+1) = C_NULL_CHAR
     
     if(PRESENT(err)) then
-      err = int(PDI_expose_f(c_loc(C_namef),c_loc(dataf)))
+      err = int(PDI_import_f(c_loc(C_namef),c_loc(dataf)))
     else
-      tmp = int(PDI_expose_f(c_loc(C_namef),c_loc(dataf)))
+      tmp = int(PDI_import_f(c_loc(C_namef),c_loc(dataf)))
     end if
   END SUBROUTINE PDI_import_double_scalar
 !=============================================================
@@ -435,9 +430,9 @@ MODULE pdi
     C_namef(len_trim(namef)+1) = C_NULL_CHAR
     
     if(PRESENT(err)) then
-      err = int(PDI_expose_f(c_loc(C_namef),c_loc(dataf)))
+      err = int(PDI_import_f(c_loc(C_namef),c_loc(dataf)))
     else
-      tmp = int(PDI_expose_f(c_loc(C_namef),c_loc(dataf)))
+      tmp = int(PDI_import_f(c_loc(C_namef),c_loc(dataf)))
     end if
   END SUBROUTINE PDI_import_int_scalar
 !=============================================================
