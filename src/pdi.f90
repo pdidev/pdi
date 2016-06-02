@@ -40,8 +40,7 @@ MODULE pdi
   
   IMPLICIT NONE 
   
-  
-  
+
   INTERFACE
     FUNCTION PDI_init_f(treeConf,world) &
       bind(C, name="PDI_init")   
@@ -129,6 +128,7 @@ MODULE pdi
     END FUNCTION PDI_import_f 
   END INTERFACE
   
+
   INTERFACE PDI_share
     module procedure PDI_share_double_scalar
     module procedure PDI_share_int_scalar
@@ -152,6 +152,10 @@ MODULE pdi
   
   CONTAINS
 !=============================================================  
+  !< Interface to the C function PDI_init : Initializes PDI
+  !! @param[in] treeConf the configuration
+  !! @param[in,out] world the main MPI communicator
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_init(treeConf,world,err)
     TYPE(PC_tree_t_f), INTENT(IN) :: treeConf
     INTEGER, INTENT(INOUT), TARGET :: world
@@ -167,6 +171,8 @@ MODULE pdi
   END SUBROUTINE PDI_init
 !=============================================================
 !=============================================================
+  !< Interface to the C function PDI_finalize : Finalizes PDI
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_finalize(err)
     INTEGER, INTENT(OUT), OPTIONAL :: err
     
@@ -179,6 +185,9 @@ MODULE pdi
   END SUBROUTINE PDI_finalize
 !=============================================================
 !=============================================================
+  !< Interface to the C function PDI_event : Triggers a PDI “event”
+  !! @param[in] event the event name
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_event(event,err)
     CHARACTER(LEN=*), INTENT(IN) :: event
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -199,7 +208,21 @@ MODULE pdi
   END SUBROUTINE PDI_event
 !=============================================================
 ![[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
-!============================================================= souci avec void *
+!============================================================= multiple subroutine to translate void *
+  !< Interface to the C function PDI_share : 
+  !! Shares some data with PDI. The user code should not modify it before
+  !! a call to either PDI_release or PDI_reclaim.
+  !! @param[in] namef the data name
+  !! @param[in,out] dataf the accessed data
+  !! @param[in] accessf whether the data can be accessed for read or write 
+  !!                   by PDI
+  !! @param[out] err for error status (optional)
+  !! @pre the user code owns the data buffer
+  !! @post ownership of the data buffer is shared between PDI and the user code
+  !! 
+  !! the access parameter is a binary OR of PDI_IN & PDI_OUT.
+  !! !! PDI_IN means PDI can set the buffer content
+  !! !! PDI_OUT means the buffer contains data that can be accessed by PDI
   SUBROUTINE PDI_share_double_scalar(namef,dataf,accessf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(IN) :: accessf
@@ -221,7 +244,21 @@ MODULE pdi
     end if
   END SUBROUTINE PDI_share_double_scalar
 !=============================================================
-!============================================================= souci avec void *
+!============================================================= 
+  !< Interface to the C function PDI_share : 
+  !! Shares some data with PDI. The user code should not modify it before
+  !! a call to either PDI_release or PDI_reclaim.
+  !! @param[in] namef the data name
+  !! @param[in,out] dataf the accessed data
+  !! @param[in] accessf whether the data can be accessed for read or write 
+  !!                   by PDI
+  !! @param[out] err for error status (optional)
+  !! @pre the user code owns the data buffer
+  !! @post ownership of the data buffer is shared between PDI and the user code
+  !! 
+  !! the access parameter is a binary OR of PDI_IN & PDI_OUT.
+  !! !! PDI_IN means PDI can set the buffer content
+  !! !! PDI_OUT means the buffer contains data that can be accessed by PDI
   SUBROUTINE PDI_share_int_scalar(namef,dataf,accessf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(IN) :: accessf
@@ -244,7 +281,14 @@ MODULE pdi
   END SUBROUTINE PDI_share_int_scalar
 !=============================================================
 ![[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
-!=============================================================
+!=============================================================  multiple subroutine to translate void *
+  !< Interface to the C function PDI_release : 
+  !! Releases ownership of a data shared with PDI. PDI is then responsible to
+  !! free the associated memory whenever necessary.
+  !! @param[in] namef name of the data to release
+  !! @param[out] err for error status (optional)
+  !! @pre ownership of the data buffer is shared between PDI and the user code
+  !! @pre PDI owns the data buffer
   SUBROUTINE PDI_release(namef,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -265,6 +309,13 @@ MODULE pdi
   END SUBROUTINE PDI_release
 !=============================================================
 !=============================================================
+   !< Interface to the C function PDI_reclaim : 
+   !! Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
+   !! free the associated memory whenever necessary.
+   !! @param[in] namef name of the data to reclaim
+   !! @param[out] err for error status (optional)
+   !! @pre ownership of the data buffer is shared between PDI and the user code
+   !! @post the user code owns the data buffer
   SUBROUTINE PDI_reclaim(namef,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -285,7 +336,12 @@ MODULE pdi
   END SUBROUTINE PDI_reclaim
 !=============================================================
 ![[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
-!============================================================= idem pour void *
+!============================================================= multiple subroutine to translate void *
+  !< Interface to the C function PDI_export : 
+  !! Exports some data to PDI. Equivalent to PDI_share(OUT) + PDI_release.
+  !! @param[in] namef the data name
+  !! @param[in] dataf the exported data
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_export_double_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -306,7 +362,12 @@ MODULE pdi
     end if
   END SUBROUTINE PDI_export_double_scalar
 !=============================================================
-!============================================================= idem pour void *
+!============================================================= 
+  !< Interface to the C function PDI_export : 
+  !! Exports some data to PDI. Equivalent to PDI_share(OUT) + PDI_release.
+  !! @param[in] namef the data name
+  !! @param[in] dataf the exported data
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_export_int_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -329,7 +390,12 @@ MODULE pdi
 !=============================================================
 ![[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
 ![[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
-!============================================================= idem pour void *
+!============================================================= multiple subroutine to translate void *
+  !< Interface to the C function PDI_expose :
+  !! Shortly exposes some data to PDI. Equivalent to PDI_share(OUT) + PDI_reclaim.
+  !! @param[in] namef the data name
+  !! @param[in] dataf the exposed data
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_expose_double_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -350,7 +416,12 @@ MODULE pdi
     end if
   END SUBROUTINE PDI_expose_double_scalar
 !=============================================================
-!============================================================= idem pour void *
+!=============================================================
+  !< Interface to the C function PDI_expose :
+  !! Shortly exposes some data to PDI. Equivalent to PDI_share(OUT) + PDI_reclaim.
+  !! @param[in] namef the data name
+  !! @param[in] dataf the exposed data
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_expose_int_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -371,7 +442,12 @@ MODULE pdi
     end if
   END SUBROUTINE PDI_expose_int_scalar
 !=============================================================
-!============================================================= idem pour void *
+!============================================================= 
+  !< Interface to the C function PDI_expose :
+  !! Shortly exposes some data to PDI. Equivalent to PDI_share(OUT) + PDI_reclaim.
+  !! @param[in] namef the data name
+  !! @param[in] dataf the exposed data
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_expose_double_array2D(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -394,7 +470,12 @@ MODULE pdi
 !=============================================================
 ![[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
 ![[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
-!============================================================= idem pour void *
+!============================================================= multiple subroutine to translate void *
+  !< Interface to the C function PDI_import :
+  !! Imports some data from PDI. Equivalent to PDI_share(IN) + PDI_reclaim.
+  !! @param[in] name the data name
+  !! @param[out] data the data to initialize
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_import_double_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
@@ -415,7 +496,12 @@ MODULE pdi
     end if
   END SUBROUTINE PDI_import_double_scalar
 !=============================================================
-!============================================================= idem pour void *
+!============================================================= 
+  !< Interface to the C function PDI_import :
+  !! Imports some data from PDI. Equivalent to PDI_share(IN) + PDI_reclaim.
+  !! @param[in] name the data name
+  !! @param[out] data the data to initialize
+  !! @param[out] err for error status (optional)
   SUBROUTINE PDI_import_int_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
