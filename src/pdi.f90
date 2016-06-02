@@ -473,8 +473,8 @@ MODULE pdi
 !============================================================= multiple subroutine to translate void *
   !< Interface to the C function PDI_import :
   !! Imports some data from PDI. Equivalent to PDI_share(IN) + PDI_reclaim.
-  !! @param[in] name the data name
-  !! @param[out] data the data to initialize
+  !! @param[in] namef the data name
+  !! @param[out] dataf the data to initialize
   !! @param[out] err for error status (optional)
   SUBROUTINE PDI_import_double_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
@@ -499,8 +499,8 @@ MODULE pdi
 !============================================================= 
   !< Interface to the C function PDI_import :
   !! Imports some data from PDI. Equivalent to PDI_share(IN) + PDI_reclaim.
-  !! @param[in] name the data name
-  !! @param[out] data the data to initialize
+  !! @param[in] namef the data name
+  !! @param[out] dataf the data to initialize
   !! @param[out] err for error status (optional)
   SUBROUTINE PDI_import_int_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
