@@ -28,32 +28,37 @@
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 #include <fti.h>
+#include <string.h>
 
 MPI_Comm my_world;
 
 PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
 {
-	conf = conf; // prevent unused warning
 	my_world = *world;
-	
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+
+	char * fti_file;
+
+	PC_string(PC_get(conf, ".config"), &fti_file);
+
+	FTI_Init(fti_file,my_world);
+
+	free(fti_file);
 	
 	return PDI_OK;
 }
 
 PDI_status_t PDI_fti_finalize()
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
-	
+	FTI_finalize();
 	return PDI_OK;
 }
 
 PDI_status_t PDI_fti_event(const char *event)
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
 	
-	if ( rank == 0 ) {
-		printf("test plugin got an event: %s!\n", event);
+	if(strcmp(event,"Snapshot")==0)
+	{
+		FTI_Snapshot();
 	}
 	
 	return PDI_OK;
@@ -66,6 +71,8 @@ PDI_status_t PDI_fti_data_start(PDI_variable_t *data)
 	if ( rank == 0 ) {
 		printf(">> data becoming available to the test plugin: %s!\n", data->name);
 	}
+
+	FTI_Protect();
 	
 	return PDI_OK;
 }
