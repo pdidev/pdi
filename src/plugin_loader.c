@@ -29,8 +29,10 @@
 
 #include <paraconf.h>
 
+#include "pdi/state.h"
 #include "pdi/plugin.h"
 
+#include "status.h"
 #include "utils.h"
 
 #include "plugin_loader.h"
@@ -39,20 +41,68 @@ typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* pl
 
 PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t* plugin)
 {
-	PDI_status_t err = PDI_OK;
+	PDI_status_t status = PDI_OK;
 	
 	char *plugin_symbol = msprintf("PDI_plugin_%s_ctor", plugin_name);
-	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
 	void *plugin_ctor_uncast = dlsym(NULL, plugin_symbol);
-	init_f plugin_ctor = *((init_f *)&plugin_ctor_uncast);
-	if ( !plugin_ctor ) {
-		err = PDI_ERR_PLUGIN;
-		goto load_err0;
+	
+	// case where the library was not prelinked
+	if ( !plugin_ctor_uncast ) {
+		char *libname = msprintf("lib%s.so", plugin_name);
+		void *lib_handle = dlopen(libname, RTLD_NOW);
+		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
+		free(libname);
+	}
+	free(plugin_symbol);
+	
+	if ( !plugin_ctor_uncast ) {
+		handle_err(handle_error(PDI_ERR_PLUGIN, "Error while loading plugin `%s'", plugin_name), err0);
 	}
 	
-	err = plugin_ctor(node, world, plugin); if (err) goto load_err0;
+	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
+	init_f plugin_ctor = *((init_f *)&plugin_ctor_uncast);
+	handle_err(plugin_ctor(node, world, plugin), err0);
 	
-load_err0:
-	free(plugin_symbol);
-	return err;
+	return status;
+	
+err0:
+	return status;
+}
+
+PDI_status_t plugin_loader_tryload( PC_tree_t conf, int plugin_id, MPI_Comm *world )
+{
+	PDI_status_t status = PDI_OK;
+	int msg_done = 0;
+
+	char *plugin_name = NULL;
+	handle_PC_err(PC_string(PC_get(conf, ".plugins{%d}", plugin_id), &plugin_name), err0);
+	
+	PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
+	handle_PC_err(PC_status(plugin_conf), err1);
+	
+	PDI_state.plugins = realloc(PDI_state.plugins, sizeof(PDI_plugin_t)*(PDI_state.nb_plugins+1));
+	handle_err(plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[PDI_state.nb_plugins]), err1);
+	++PDI_state.nb_plugins;
+	
+	free(plugin_name);
+	return status;
+	
+err1:
+	status = handle_error(status,
+			"Error while loading plugin `%s': %s",
+			plugin_name,
+			PDI_errmsg()
+	);
+	msg_done = 1;
+	free(plugin_name);
+	
+err0:
+	if (!msg_done) {
+		status = handle_error(status,
+				"Error while loading plugin #%d: %s",
+				plugin_id,
+				PDI_errmsg()
+		);
+	}
+	return status;
 }
