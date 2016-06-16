@@ -32,11 +32,94 @@
 
 MPI_Comm my_world;
 
+int get_id(PDI_variable_t *data)
+{
+	int id;
+	PC_int(PC_get(data->config, ".id"), &id);
+	return id;
+}
+
+int get_size(PDI_variable_t *data)
+{
+	int total = 1;
+	int i;
+
+	switch(data->type.kind) 
+	{
+		case PDI_K_SCALAR: return total;
+		case PDI_K_ARRAY:
+			for(i = 0;i<data->type.c.array->ndims;i++)
+			{
+				total = total * data->type.c.array->sizes[i].c.constval;
+			}
+			return total;
+		break;
+		case PDI_K_STRUCT:
+		//TODO
+		break;
+		default:
+		break;
+	}
+	return 0;
+}
+
+FTIT_type get_type(PDI_variable_t *data)
+{
+
+	switch(data->type.kind) 
+	{
+		case PDI_K_SCALAR:
+			switch(data->type.c.scalar)
+			{
+				case(PDI_T_INT8):
+				return FTI_CHAR;
+				case(PDI_T_INT16):
+				return FTI_SHRT;
+				case(PDI_T_INT32):
+				return FTI_INTG;
+				case(PDI_T_INT64):
+				return FTI_LONG;
+				case(PDI_T_FLOAT):
+				return FTI_SFLT;
+				case(PDI_T_DOUBLE):
+				return FTI_DBLE;
+				case(PDI_T_LONG_DOUBLE):
+				return FTI_LDBE;
+			}
+		break;
+		case PDI_K_ARRAY:
+			switch(data->type.c.array->type.c.scalar)
+			{
+				case(PDI_T_INT8):
+				return FTI_CHAR;
+				case(PDI_T_INT16):
+				return FTI_SHRT;
+				case(PDI_T_INT32):
+				return FTI_INTG;
+				case(PDI_T_INT64):
+				return FTI_LONG;
+				case(PDI_T_FLOAT):
+				return FTI_SFLT;
+				case(PDI_T_DOUBLE):
+				return FTI_DBLE;
+				case(PDI_T_LONG_DOUBLE):
+				return FTI_LDBE;
+			}
+		break;
+		case PDI_K_STRUCT:
+		//TODO
+		break;
+		default:
+		break;
+	}
+	return FTI_CHAR;
+}
+
 
 PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
 {
 	my_world = *world;
-
+	printf("\n\nI am here\n");
 	char * fti_file;
 
 	PC_string(PC_get(conf, ".config"), &fti_file);
@@ -69,111 +152,18 @@ PDI_status_t PDI_fti_event(const char *event)
 
 PDI_status_t PDI_fti_data_start(PDI_variable_t *data)
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
-	
-	if ( rank == 0 ) {
-		printf(">> data becoming available to the test plugin: %s!\n", data->name);
-	}
 
-	FTI_Protect(get_id(data->name),data->content.data,get_size(data),get_type(data));
+	FTI_Protect(get_id(data),data->content.data,get_size(data),get_type(data));
 	
 	return PDI_OK;
 }
 
 PDI_status_t PDI_fti_data_end(PDI_variable_t *data)
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
-	
-	if ( rank == 0 ) {
-		printf("<< data becoming unavailable to the test plugin: %s!\n", data->name);
-	}
+
+	FTI_Protect(get_id(data),data->content.data,0,get_type(data));
 	
 	return PDI_OK;
 }
-
-int get_id(char *name)
-{
-
-
-}
-
-int get_size(PDI_variable_t *data)
-{
-	int total = 1;
-	int i;
-
-	switch(data->type->kind) {
-
-		case PDI_K_SCALAR: return total;
-		case PDI_K_ARRAY:
-			for(i = 0;i<data->type->array->ndims;i++)
-			{
-				total = total * data->type->array->sizes[i]->constval;
-			}
-			return total;
-		break;
-		case PDI_K_STRUCT:
-		//TODO
-		break;
-		default:
-		break;
-	}
-	return 0;
-}
-
-int get_type(PDI_variable_t *data)
-{
-
-	switch(data->type->kind) 
-	{
-		case PDI_K_SCALAR:
-			switch(data->type->scalar)
-			{
-				case(PDI_T_INT8):
-				return FTI_CHAR;
-				case(PDI_T_INT16):
-				return FTI_SHRT;
-				case(PDI_T_INT32):
-				return FTI_INTG;
-				case(PDI_T_INT64):
-				return FTI_LONG;
-				case(PDI_T_FLOAT):
-				return FTI_SFLT;
-				case(PDI_T_DOUBLE):
-				return FTI_DBLE;
-				case(PDI_T_LONG_DOUBLE):
-				return FTI_LDBE;
-			}
-		break;
-		case PDI_K_ARRAY:
-			switch(data->type->array->scalar)
-			{
-				case(PDI_T_INT8):
-				return FTI_CHAR;
-				case(PDI_T_INT16):
-				return FTI_SHRT;
-				case(PDI_T_INT32):
-				return FTI_INTG;
-				case(PDI_T_INT64):
-				return FTI_LONG;
-				case(PDI_T_FLOAT):
-				return FTI_SFLT;
-				case(PDI_T_DOUBLE):
-				return FTI_DBLE;
-				case(PDI_T_LONG_DOUBLE):
-				return FTI_LDBE;
-			}
-		break;
-		case PDI_K_STRUCT:
-		//TODO
-		break;
-		default:
-		break;
-	}
-	return 0;
-}
-	
-}
-
 
 PDI_PLUGIN(fti)
