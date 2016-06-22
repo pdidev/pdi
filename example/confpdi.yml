@@ -1,0 +1,29 @@
+#precision: 0.005
+#iter_times: 2000
+#iter_out: 100
+#worktag: 50
+#reduce: 5
+pdi:
+    params: # metadata, i.e. small values that can be referenced using $syntax
+        M: int # number of elements per line
+        nbLines: int # number of lines
+    variables: # values that can not be referenced using $syntax
+        i: int
+        h:
+            type:     double
+            sizes:    [$nbLines, $M]     # if only one element, you can use size as a scalar
+        g:
+            type:     double
+            sizes:    [$nbLines, $M]     # if only one element, you can use size as a scalar
+    plugins:
+        fti:
+            config: config.fti
+            outputs:
+                i:
+                    id: 0
+                h:
+                    id: 1
+                g:
+                    id: 2
+
+
