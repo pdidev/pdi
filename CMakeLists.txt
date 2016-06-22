@@ -101,6 +101,7 @@ set_property(TARGET pdi PROPERTY VERSION ${pdi_VERSION})
 
 add_subdirectory(src/hdf5_per_process/)
 add_subdirectory(src/test_plugin/)
+add_subdirectory(src/fti/)
 
 
 # the test example
