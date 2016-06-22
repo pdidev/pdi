@@ -39,9 +39,9 @@ int get_id(PDI_variable_t *data)
 	return id;
 }
 
-int get_size(PDI_variable_t *data)
+long get_size(PDI_variable_t *data)
 {
-	int total = 1;
+	long total = 1;
 	int i;
 
 	switch(data->type.kind) 
@@ -52,6 +52,7 @@ int get_size(PDI_variable_t *data)
 			{
 				total = total * data->type.c.array->sizes[i].c.constval;
 			}
+			//printf("taille pour %s : %ld\n",data->name, total);
 			return total;
 		break;
 		case PDI_K_STRUCT:
@@ -119,7 +120,6 @@ FTIT_type get_type(PDI_variable_t *data)
 PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
 {
 	my_world = *world;
-	printf("\n\nI am here\n");
 	char * fti_file;
 
 	PC_string(PC_get(conf, ".config"), &fti_file);
@@ -135,7 +135,7 @@ PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
 
 PDI_status_t PDI_fti_finalize()
 {
-	FTI_finalize();
+	FTI_Finalize();
 	return PDI_OK;
 }
 
