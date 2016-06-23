@@ -22,6 +22,5 @@ pdi:
             id: 2
     plugins:
         fti:
-            config: config.fti
-
+            config: ../../example/config.fti
 

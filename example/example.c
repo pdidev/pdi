@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
 
     MPI_Comm my_comm = MPI_COMM_WORLD;
     //FTI_Init(argv[2], MPI_COMM_WORLD);
-    PC_tree_t conf = PC_parse_path("confpdi.yml");
+    PC_tree_t conf = PC_parse_path("../../example/confpdi.yml");
     PDI_init(PC_get(conf, ".pdi"), &my_comm);
 
     MPI_Comm_size(FTI_COMM_WORLD, &nbProcs);
