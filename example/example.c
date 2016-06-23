@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
     for(i = 0; i < ITER_TIMES; i++)
     {
         //int checkpointed = FTI_Snapshot();
-        PDI_expose("h",h);
+        //PDI_expose("h",h);
         PDI_share("i",&i,PDI_OUT);
         PDI_share("h",h,PDI_OUT);
         PDI_share("g",g,PDI_OUT);

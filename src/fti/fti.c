@@ -161,7 +161,7 @@ PDI_status_t PDI_fti_data_start(PDI_variable_t *data)
 PDI_status_t PDI_fti_data_end(PDI_variable_t *data)
 {
 
-	FTI_Protect(get_id(data),data->content.data,0,get_type(data));
+	FTI_Protect(get_id(data),NULL,0,get_type(data));
 	
 	return PDI_OK;
 }
