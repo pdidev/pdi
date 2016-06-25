@@ -55,7 +55,7 @@ option(USE_SYSTEM_PARACONF
 )
 
 
-# dependancies
+# Find dependancies
 
 # find_package(MPI REQUIRED)
 if("${USE_SYSTEM_PARACONF}")
