@@ -1,57 +1,110 @@
-PROGRAM example 
-
-USE pdi
-USE mpi
 
 
-!#define VAL2D(arr, xx, yy) (arr[(xx)+width*(yy)])
+program example
 
-INTEGER :: nb_iter,iter, width, height, pheight, pwidth, mpi_comm, status
-TYPE(PC_tree_t_f) :: treetmp, tree1
+  use pdi
+  use mpi
 
-call MPI_INIT(status)
+  implicit none
 
-mpi_comm = MPI_COMM_WORLD
+  integer :: status, nb_iter, width, height, pheight, pwidth, main_comm, iter
+  integer :: size, rank, cart_dims(2), cart_comm, cart_coord(2)
+  logical :: cart_period(2)
+  type(PC_tree_t_f) :: conf, treetmp
+  real(8), pointer :: cur(:,:), next(:,:), tmp(:,:)
 
-nb_iter = 1
-iter = 1
+  call MPI_init(status)
 
-call PDI_expose("iter", iter)
+  call PC_parse_path("example.yml", conf)
 
-call PC_parse_path("example.yml",tree1)
+  call PC_get(conf,".iter", treetmp)
+  call PC_int(treetmp, nb_iter)
+  call PC_get(conf,".datasize[0]", treetmp)
+  call PC_int(treetmp, width)
+  call PC_get(conf,".datasize[1]", treetmp)
+  call PC_int(treetmp, height)
+  call PC_get(conf,".parallelism.height", treetmp)
+  call PC_int(treetmp, pheight)
+  call PC_get(conf,".parallelism.width", treetmp)
+  call PC_int(treetmp, pwidth)
+  
+  main_comm = MPI_COMM_WORLD
+  call PC_get(conf, ".pdi", treetmp)
+  call PDI_init(treetmp, main_comm, status)
+  
+  ! get local & add ghosts to sizes
+  width  = width /pwidth  + 2;
+  height = height/pheight + 2;
+  
+  call PDI_expose("iter", iter)
 
-call PC_get(tree1,'.pdi',treetmp)
+  call MPI_Comm_size(main_comm, size, status)
+  call MPI_Comm_size(main_comm, rank, status)
+
+  cart_dims = (/ pwidth, pheight /)
+  cart_period = (/ .FALSE., .FALSE. /)
+  call MPI_Cart_create(main_comm, 2, cart_dims, cart_period, .TRUE., &
+      cart_comm, status)
+  call MPI_Cart_coords(cart_comm, rank, 2, cart_coord, status);
+
+  call PDI_expose("coord", cart_coord, status)
+  call PDI_expose("width", width, status)
+  call PDI_expose("height", height, status)
+  call PDI_expose("pwidth", pwidth, status)
+  call PDI_expose("pheight", pheight, status)
+  call PDI_expose("nb_iter", nb_iter, status)
+
+  allocate( cur(width, height) )
+  allocate( next(width, height) )
+  
+  if ( PDI_import("main_field", cur, status) ) then
+    call init(cur, width, height, cart_coord(1), cart_coord(2));
+  endif
+
+  call PDI_event("main_loop", status);
+  do iter = 1, nb_iter
+    call PDI_expose("iter", iter, status);
+    call PDI_expose("main_field", cur, status);
+!     call iter(cur, next, width, height);
+!     call exchange(cart_comm, next, width, height);
+    tmp => cur
+    cur => next
+    next => tmp
+  enddo
+  call PDI_event("finalization", status);
+  call PDI_expose("iter", iter, status);
+  call PDI_expose("main_field", cur, status);
+
+  call PDI_finalize()
+  
+  call PC_tree_destroy(conf);
+  
+  deallocate(cur);
+  deallocate(next);
 
 
-call PDI_init(treetmp,mpi_comm,status)
+  call MPI_finalize(status)
 
-call PDI_share("test", nb_iter,1)
-call PDI_reclaim("test")
-nb_iter = 12
-call PDI_import("iter", iter)
-print *, "iter =", iter
+contains
 
+  subroutine init(dat, width, height, px, py)
+    
+    real(8), intent(INOUT) :: dat(:,:)
+    integer, intent(IN) :: width, height, px, py
+    
+    integer :: yy, xx
+    
+    do xx = lbound(dat, 1), ubound(dat, 1)
+      do yy = lbound(dat, 2), ubound(dat, 2)
+        dat(xx,yy) = 0
+      enddo
+    enddo
+    if ( px == 0 ) then
+      do yy = lbound(dat, 2), ubound(dat, 2)
+        dat(lbound(dat, 1),yy) = 1000000;
+      enddo
+    endif
+    
+  endsubroutine
 
-call PDI_event("main_loop");
-
-do iter =1,12
-	nb_iter = nb_iter + iter
-	call PDI_expose("iter", iter)
-	call PDI_expose("test",nb_iter)
-end do 
-call PDI_release("test")
-call PDI_event("end");
-
-call PC_tree_destroy(tree1)
-
-call PDI_finalize()
-
-call MPI_FINALIZE(status)
-
-
-
-END PROGRAM example
-
-
-
-!mpif90 -g ../vendor/paraconf/src/paraconf.f90 ../vendor/paraconf/build/libparaconf.so ../src/pdi.f90 ../build/libpdi.so ../example/example.f90 -o example34
+endprogram example

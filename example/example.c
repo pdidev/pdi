@@ -93,38 +93,16 @@ void exchange(MPI_Comm cart_com, double *cur, int width, int height)
 int main(int argc, char *argv[])
 {
 	MPI_Init(&argc, &argv);
-
-	MPI_Comm main_comm = MPI_COMM_WORLD;
 	
-	FILE *conf_file = fopen("example.yml", "rb"); assert(conf_file);
-	yaml_parser_t conf_parser; assert(yaml_parser_initialize(&conf_parser));
-	yaml_parser_set_input_file(&conf_parser, conf_file);
-	yaml_document_t conf_doc; 
-	if ( !yaml_parser_load(&conf_parser, &conf_doc) ) {
-		printf("%s:%d:%d: Error: %s\n",
-				"example.yml",
-				(int) conf_parser.problem_mark.line,
-				(int) conf_parser.problem_mark.column,
-				conf_parser.problem
-  			);
-		if ( conf_parser.context ) {
-		printf("%s:%d:%d: Error: %s\n",
-				"example.yml",
-				(int) conf_parser.context_mark.line,
-				(int) conf_parser.context_mark.column,
-				conf_parser.context
-  			);
-		}
-		exit(1);
-	}
-	
-	PC_tree_t conf = PC_root(&conf_doc);
+	PC_tree_t conf = PC_parse_path("example.yml");
 	
 	int nb_iter; PC_int(PC_get(conf, ".iter"), &nb_iter);
 	int width; PC_int(PC_get(conf, ".datasize[0]"), &width);
 	int height; PC_int(PC_get(conf, ".datasize[1]"), &height);
 	int pheight; PC_int(PC_get(conf, ".parallelism.height"), &pheight);
 	int pwidth; PC_int(PC_get(conf, ".parallelism.width"), &pwidth);
+	
+	MPI_Comm main_comm = MPI_COMM_WORLD;
 	PDI_init(PC_get(conf, ".pdi"), &main_comm);
 	
 	// get local & add ghosts to sizes
@@ -138,7 +116,7 @@ int main(int argc, char *argv[])
 	
 	int cart_dims[2] = { pwidth, pheight };
 	int cart_period[2] = { 0, 0 };
-	MPI_Comm cart_com; MPI_Cart_create(MPI_COMM_WORLD, 2, cart_dims, cart_period, 1, &cart_com);
+	MPI_Comm cart_com; MPI_Cart_create(main_comm, 2, cart_dims, cart_period, 1, &cart_com);
 	int car_coord[2]; MPI_Cart_coords(cart_com, rank, 2, car_coord);
 
 	PDI_expose("coord", car_coord);
@@ -170,9 +148,7 @@ int main(int argc, char *argv[])
 
 	PDI_finalize();
 	
-	yaml_document_delete(&conf_doc);
-	yaml_parser_delete(&conf_parser);
-	fclose(conf_file);
+	PC_tree_destroy(&conf);
 	
 	free(cur);
 	free(next);
