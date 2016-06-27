@@ -195,7 +195,6 @@
 #include <math.h>
 #include <pdi.h>
 #include <paraconf.h>
-#include <fti.h>
 
 
 #define PRECISION   0.005
@@ -225,7 +224,7 @@ void initData(int nbLines, int M, int rank, double *h)
 }
 
 
-double doWork(int numprocs, int rank, int M, int nbLines, double *g, double *h)
+double doWork(int numprocs, int rank, int M, int nbLines, double *g, double *h, MPI_Comm *my_comm)
 {
     int i,j;
     MPI_Request req1[2], req2[2];
@@ -241,13 +240,13 @@ double doWork(int numprocs, int rank, int M, int nbLines, double *g, double *h)
     }
     if (rank > 0)
     {
-        MPI_Isend(g+M, M, MPI_DOUBLE, rank-1, WORKTAG, FTI_COMM_WORLD, &req1[0]);
-        MPI_Irecv(h,   M, MPI_DOUBLE, rank-1, WORKTAG, FTI_COMM_WORLD, &req1[1]);
+        MPI_Isend(g+M, M, MPI_DOUBLE, rank-1, WORKTAG, *my_comm, &req1[0]);
+        MPI_Irecv(h,   M, MPI_DOUBLE, rank-1, WORKTAG, *my_comm, &req1[1]);
     }
     if (rank < numprocs-1)
     {
-        MPI_Isend(g+((nbLines-2)*M), M, MPI_DOUBLE, rank+1, WORKTAG, FTI_COMM_WORLD, &req2[0]);
-        MPI_Irecv(h+((nbLines-1)*M), M, MPI_DOUBLE, rank+1, WORKTAG, FTI_COMM_WORLD, &req2[1]);
+        MPI_Isend(g+((nbLines-2)*M), M, MPI_DOUBLE, rank+1, WORKTAG, *my_comm, &req2[0]);
+        MPI_Irecv(h+((nbLines-1)*M), M, MPI_DOUBLE, rank+1, WORKTAG, *my_comm, &req2[1]);
     }
     if (rank > 0)
     {
@@ -288,13 +287,14 @@ int main(int argc, char *argv[])
 
     MPI_Init(&argc, &argv);
 
-    MPI_Comm my_comm = MPI_COMM_WORLD;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    MPI_Comm *my_comm = &comm;
     //FTI_Init(argv[2], MPI_COMM_WORLD);
     PC_tree_t conf = PC_parse_path("../../example/confpdi.yml");
-    PDI_init(PC_get(conf, ".pdi"), &my_comm);
+    PDI_init(PC_get(conf, ".pdi"), my_comm);
 
-    MPI_Comm_size(FTI_COMM_WORLD, &nbProcs);
-    MPI_Comm_rank(FTI_COMM_WORLD, &rank);
+    MPI_Comm_size(*my_comm, &nbProcs);
+    MPI_Comm_rank(*my_comm, &rank);
 
     arg = atoi(argv[1]);
     M = (int)sqrt((double)(arg * 1024.0 * 512.0 * nbProcs)/sizeof(double));
@@ -327,15 +327,16 @@ int main(int argc, char *argv[])
         //int checkpointed = FTI_Snapshot();
         //PDI_expose("h",h);
         PDI_share("i",&i,PDI_OUT);
+        //printf("%d\n", i);
         PDI_share("h",h,PDI_OUT);
         PDI_share("g",g,PDI_OUT);
         PDI_event("Snapshot");
         PDI_reclaim("i");
         PDI_reclaim("h");
         PDI_reclaim("g");
-        localerror = doWork(nbProcs, rank, M, nbLines, g, h);
+        localerror = doWork(nbProcs, rank, M, nbLines, g, h,my_comm);
         if (((i%ITER_OUT) == 0) && (rank == 0)) printf("Step : %d, error = %f\n", i, globalerror);
-        if ((i%REDUCE) == 0) MPI_Allreduce(&localerror, &globalerror, 1, MPI_DOUBLE, MPI_MAX, FTI_COMM_WORLD);
+        if ((i%REDUCE) == 0) MPI_Allreduce(&localerror, &globalerror, 1, MPI_DOUBLE, MPI_MAX, *my_comm);
         if(globalerror < PRECISION) break;
     }
     if (rank == 0) printf("Execution finished in %lf seconds.\n", MPI_Wtime() - wtime);
