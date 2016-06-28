@@ -31,6 +31,12 @@ find_package(MPI REQUIRED)
 add_executable(example
 	example.c
 )
+add_executable(exampleFTI
+	exampleFTI.c
+)
+
 target_link_libraries(example pdi hdf5_per_process test_plugin mpi ftip)
+target_link_libraries(exampleFTI pdi hdf5_per_process test_plugin mpi ftip)
 include(AddCCompilerFlags)
 add_compiler_flags(example PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
+add_compiler_flags(exampleFTI PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
