@@ -10,7 +10,7 @@ program example
   integer :: status, nb_iter, width, height, pheight, pwidth, main_comm, iter
   integer :: size, rank, cart_dims(2), cart_comm, cart_coord(2)
   logical :: cart_period(2)
-  type(PC_tree_t_f) :: conf, treetmp
+  type(PC_tree_t) :: conf, treetmp
   real(8), pointer :: cur(:,:), next(:,:), tmp(:,:)
 
   call MPI_init(status)
@@ -47,12 +47,12 @@ program example
       cart_comm, status)
   call MPI_Cart_coords(cart_comm, rank, 2, cart_coord, status);
 
-  call PDI_expose("coord", cart_coord, status)
-  call PDI_expose("width", width, status)
-  call PDI_expose("height", height, status)
-  call PDI_expose("pwidth", pwidth, status)
-  call PDI_expose("pheight", pheight, status)
-  call PDI_expose("nb_iter", nb_iter, status)
+  call PDI_expose("coord", cart_coord)
+  call PDI_expose("width", width)
+  call PDI_expose("height", height)
+  call PDI_expose("pwidth", pwidth)
+  call PDI_expose("pheight", pheight)
+  call PDI_expose("nb_iter", nb_iter)
 
   allocate( cur(width, height) )
   allocate( next(width, height) )

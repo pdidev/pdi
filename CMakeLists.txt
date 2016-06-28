@@ -37,8 +37,9 @@ cmake_policy(SET CMP0063 NEW)
 endif()
 
 include(AddCCompilerFlags)
-include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
+include(FortranCInterface)
+include(GenerateExportHeader)
 
 
 # Build options
@@ -90,6 +91,7 @@ list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
+install(DIRECTORY include/ DESTINATION include)
 
 #C version
 add_library(pdi
@@ -116,7 +118,6 @@ install(TARGETS pdi EXPORT PDI_export
 	LIBRARY DESTINATION lib INCLUDES DESTINATION include
 	ARCHIVE DESTINATION lib INCLUDES DESTINATION include
 )
-install(DIRECTORY include/ DESTINATION include)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
 
 #Fortran version

@@ -21,17 +21,6 @@
 ! * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! * THE SOFTWARE.
 ! ******************************************************************************/
-!MODULE PC_tree_type
-!
-!  use iso_C_binding
-
-!  TYPE, bind(C) :: PC_tree_t_f  
-!    INTEGER(C_INT) :: stat
-!    TYPE(C_PTR) :: document
-!    TYPE(C_PTR) :: node
-!  END TYPE PC_tree_t_f
-
-!END MODULE
 
 MODULE pdi
   
@@ -47,7 +36,7 @@ MODULE pdi
       USE iso_C_binding 
       USE paraconf
       INTEGER(C_INT) :: PDI_Init_f
-      TYPE(PC_tree_t_f), VALUE :: treeConf
+      TYPE(PC_tree_t), VALUE :: treeConf
       TYPE(C_PTR), VALUE :: world 
     END FUNCTION PDI_Init_f
   END INTERFACE
@@ -157,7 +146,7 @@ MODULE pdi
   !! @param[in,out] world the main MPI communicator
   !! @param[out] err for error status (optional)
   SUBROUTINE PDI_init(treeConf,world,err)
-    TYPE(PC_tree_t_f), INTENT(IN) :: treeConf
+    TYPE(PC_tree_t), INTENT(IN) :: treeConf
     INTEGER, INTENT(INOUT), TARGET :: world
     INTEGER, INTENT(OUT), OPTIONAL :: err
     
@@ -399,7 +388,7 @@ MODULE pdi
   SUBROUTINE PDI_expose_double_scalar(namef,dataf,err)
     CHARACTER(LEN=*), INTENT(IN) :: namef
     INTEGER, INTENT(OUT), OPTIONAL :: err
-    REAL(8), INTENT(IN), TARGET :: dataf
+    REAL(8), INTENT(IN), pointer :: dataf
     
     CHARACTER(C_CHAR), TARGET :: C_namef(len_trim(namef)+1)
     INTEGER :: i,tmp
