@@ -1,3 +1,6 @@
 [submodule "vendor/paraconf"]
 	path = vendor/paraconf
 	url = ../libparaconf.git
+[submodule "vendor/bpp"]
+	path = vendor/bpp
+	url = ../bpp.git

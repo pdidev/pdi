@@ -122,7 +122,12 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
 
 #Fortran version
 if("${ENABLE_FORTRAN}")
-	add_library(pdi_f90 src/pdi.F90)
+	add_subdirectory(vendor/bpp bpp EXCLUDE_FROM_ALL)
+
+	bpp_preprocess(SRC_PDI_F90_BPP
+		src/pdi.F90.bpp
+	)
+	add_library(pdi_f90 ${SRC_PDI_F90_BPP} src/fapi.c)
 	target_link_libraries(pdi_f90 pdi paraconf_f90)
 	set_property(TARGET pdi_f90 PROPERTY Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modinclude")
 	target_include_directories(pdi_f90 INTERFACE 

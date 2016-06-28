@@ -39,7 +39,7 @@ pdi:
             outputs:
                 main_field: # ref to a variable
                     select: ($iter % 16 = 0 | $iter=$nb_iter ) & $coord[0] = 0 # & $coord[0] = 0 & $coord[1] = 0 # an expression defining when to output the variable
-                    file: output_${coord[0]}x${coord[1]}.hdf5
+                    file: output_${coord[0]}x${coord[1]}.h5
                     var: iter_${iter}/main_field
                     # not handled yet ## mode: append_reopen # append_keep, overwrite, create # not handled yet
         # load the test_plugin PDI plugin
