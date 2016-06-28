@@ -28,7 +28,6 @@
 #include <pdi.h>
 #include <pdi/datatype.h>
 
-PDI_status_t dat_size(const PDI_type_t* type, int* result);
 
 PDI_status_t tcopy(const PDI_type_t* type, void* to, void* from);
 
