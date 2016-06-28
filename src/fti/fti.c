@@ -32,35 +32,11 @@
 
 MPI_Comm my_world;
 
-extern MPI_Comm FTI_COMM_WORLD;
-
 int get_id(PDI_variable_t *data)
 {
 	int id;
 	PC_int(PC_get(data->config, ".id"), &id);
 	return id;
-}
-
-int get_size(PDI_variable_t *data)
-{
-	int total = 1;
-	int i;
-
-	dat_size(&data->type,&total);
-
-	switch(data->type.kind) 
-	{
-		case PDI_K_SCALAR: return total;
-		case PDI_K_ARRAY:
-			return total;
-		break;
-		case PDI_K_STRUCT:
-		//TODO
-		break;
-		default:
-		break;
-	}
-	return 0;
 }
 
 FTIT_type get_type(PDI_variable_t *data)
@@ -115,6 +91,57 @@ FTIT_type get_type(PDI_variable_t *data)
 	return FTI_CHAR;
 }
 
+int get_size(PDI_variable_t *data)
+{
+	int total = 1;
+	int i;
+
+	int data_id = get_type(data).id;
+	
+
+	switch(data->type.kind) 
+	{
+		case PDI_K_SCALAR: return total;
+		case PDI_K_ARRAY:
+			dat_size(&data->type,&total);
+			if(data_id == FTI_CHAR.id)
+			{
+				return total;
+			}else 
+			if(data_id == FTI_SHRT.id)
+			{
+				return total/2;
+			}else
+			if(data_id == FTI_INTG.id)
+			{
+				return total/4;
+			}else
+			if(data_id == FTI_LONG.id)
+			{
+				return total/8;
+			}else
+			if(data_id == FTI_SFLT.id)
+			{
+				return total/4;
+			}else
+			if(data_id == FTI_DBLE.id)
+			{
+				return total/8;
+			}else
+			if(data_id == FTI_LDBE.id)
+			{
+				return total/10;
+			}
+		break;
+		case PDI_K_STRUCT:
+		//TODO
+		break;
+		default:
+		break;
+	}
+	return 0;
+}
+
 
 PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
 {
@@ -122,15 +149,9 @@ PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
 	char * fti_file;
 
 	PC_string(PC_get(conf, ".config"), &fti_file);
-
 	FTI_Init(fti_file,my_world);
-
 	free(fti_file);
-
 	*world = FTI_COMM_WORLD;
-
-
-	
 	return PDI_OK;
 }
 
@@ -147,10 +168,6 @@ PDI_status_t PDI_fti_event(const char *event)
 	if(strcmp(event,"Snapshot")==0)
 	{
 		FTI_Snapshot();
-		for(i=0;i<PDI_state.nb_variables;i++)
-		{
-			//printf("%s \n", PDI_state.variables[i].name);
-		}
 	}
 	
 	return PDI_OK;
@@ -159,10 +176,7 @@ PDI_status_t PDI_fti_event(const char *event)
 PDI_status_t PDI_fti_data_start(PDI_variable_t *data)
 {
 	int size;
-	dat_size(&data->type,&size);
-	printf("taille pour %s : %d || %d\n",data->name, data->type.c.array->sizes->c.constval,size);
-	FTI_Protect(get_id(data),data->content.data,size/*get_size(data)*/,/*get_type(data)*/FTI_CHAR);
-	//printf("taille = %d\n", get_type(data));
+	FTI_Protect(get_id(data),data->content.data,get_size(data),get_type(data));
 	return PDI_OK;
 }
 
@@ -170,7 +184,6 @@ PDI_status_t PDI_fti_data_end(PDI_variable_t *data)
 {
 
 	FTI_Protect(get_id(data),NULL,0,get_type(data));
-	//printf("%s, taille = 0\n",data->name);
 	
 	return PDI_OK;
 }
