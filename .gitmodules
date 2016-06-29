@@ -1,3 +1,6 @@
 [submodule "vendor/paraconf"]
 	path = vendor/paraconf
 	url = ../libparaconf.git
+[submodule "vendor/fti"]
+	path = vendor/fti
+	url = https://github.com/leobago/fti.git
