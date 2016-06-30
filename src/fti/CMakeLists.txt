@@ -31,7 +31,7 @@ add_library(ftip
 	fti.c
 )
 set_target_properties(ftip PROPERTIES C_VISIBILITY_PRESET hidden)
-target_link_libraries(ftip pdi /local/home/mgaalich/Bureau/FTIfork/lib/libfti.so)
+target_link_libraries(ftip pdi fti.shared)
 
 #include(AddCCompilerFlags)
 #add_compiler_flags(hdf5_per_process PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)

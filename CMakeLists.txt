@@ -53,6 +53,10 @@ option(USE_SYSTEM_PARACONF
 	"Use an already installed paraconf instead of building the embedded one"
 	OFF
 )
+option(USE_SYSTEM_FTI
+	"Use an already installed fti instead of building the embedded one"
+	OFF
+)
 
 
 # dependancies
@@ -62,6 +66,12 @@ if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf)
 else()
 	add_subdirectory(vendor/paraconf)
+endif()
+
+if("${USE_SYSTEM_FTI}")
+	find_package(fti)
+else()
+	add_subdirectory(vendor/fti)
 endif()
 
 
