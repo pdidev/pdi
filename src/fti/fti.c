@@ -30,6 +30,8 @@
 #include <fti.h>
 #include <string.h>
 
+
+
 MPI_Comm my_world;
 
 int get_id(PDI_variable_t *data)

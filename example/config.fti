@@ -4,9 +4,9 @@ head                           = 1
 node_size                      = 2
 ckpt_dir                       = /tmp/
 glbl_dir                       = /local/home/mgaalich/Checkpoint/
-meta_dir                       = /local/home/mgaalich/.fti
-ckpt_l1                        = 200000
-ckpt_l2                        = 1
+meta_dir                       = /local/home/mgaalich/.fti/
+ckpt_l1                        = 1
+ckpt_l2                        = 200000
 ckpt_l3                        = 200000
 ckpt_l4                        = 200000
 inline_l2                      = 1
@@ -18,8 +18,8 @@ verbosity                      = 2
 
 
 [restart]
-failure                        = 0
-exec_id                        = 2016-06-08_12-37-58
+failure                        = 1
+exec_id                        = 2016-07-01_14-50-49
 
 
 [injection]
