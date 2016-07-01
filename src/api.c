@@ -36,6 +36,8 @@
 
 PDI_state_t PDI_state;
 
+PDI_status_t dat_size(const PDI_type_t* type, int* result);
+
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t status = PDI_OK;
