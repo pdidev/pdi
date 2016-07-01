@@ -71,7 +71,7 @@ PDI_status_t PDI_test_plugin_data_start(PDI_variable_t *data)
 	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
-		printf(">> data becoming available to the test plugin: %s!\n", data->name);
+		printf(" =>> data becoming available to the test plugin: %s!\n", data->name);
 	}
 	
 	return PDI_OK;
@@ -82,7 +82,7 @@ PDI_status_t PDI_test_plugin_data_end(PDI_variable_t *data)
 	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
-		printf("<< data becoming unavailable to the test plugin: %s!\n", data->name);
+		printf(" <<= data becoming unavailable to the test plugin: %s!\n", data->name);
 	}
 	
 	return PDI_OK;

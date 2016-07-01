@@ -29,15 +29,17 @@
 
 cmake_minimum_required(VERSION 3.0)
 # enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
-enable_language(Fortran)
-project(pdi)
+project(pdi LANGUAGES C CXX Fortran)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 
 if(POLICY CMP0063)
 cmake_policy(SET CMP0063 NEW)
 endif()
+
+include(AddCCompilerFlags)
+include(CMakePackageConfigHelpers)
+include(FortranCInterface)
+include(GenerateExportHeader)
 
 
 # Build options
@@ -46,9 +48,13 @@ option(BUILD_SHARED_LIBS
 	"Build pdi as a shared library instead of a static one"
 	ON
 )
-option(WITH_TESTS
-	"Build tests in addition to the actual library"
+option(ENABLE_FORTRAN
+	"Enable compilation of the Fortran version of the library"
 	ON
+)
+option(ENABLE_TESTING
+	"Enable compilation of the (example) tests"
+	OFF
 )
 option(USE_SYSTEM_PARACONF
 	"Use an already installed paraconf instead of building the embedded one"
@@ -59,10 +65,15 @@ option(USE_SYSTEM_FTI
 	OFF
 )
 
+get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
+if("${ENABLE_FORTRAN}" AND NOT "${ENABLED_LANGUAGES}" MATCHES Fortran)
+	message(FATAL_ERROR "Fortran language support disabled can not build Fortran lib, set ENABLE_FORTRAN to OFF")
+endif()
 
-# dependancies
 
-# find_package(MPI REQUIRED)
+# Find dependancies
+
+find_package(MPI REQUIRED)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf)
 else()
@@ -76,13 +87,23 @@ else()
 endif()
 
 
-# version handling
+# Version
 
 file(READ VERSION pdi_VERSION)
+string(STRIP "${pdi_VERSION}" pdi_VERSION)
+string(REPLACE "." ";" pdi_VERSION_list ${pdi_VERSION})
+list(GET pdi_VERSION_list 0 pdi_VERSION_MAJOR)
+list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
+list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
 
 
-# the actual library
+# Libraries
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
+install(DIRECTORY include/ DESTINATION include)
+
+#C version
 add_library(pdi
 	src/api.c
 	src/conf.c
@@ -92,57 +113,76 @@ add_library(pdi
 	src/utils.c
 	src/value.c
 )
-include(AddCCompilerFlags)
 add_compiler_flags(pdi PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
-include(GenerateExportHeader)
 generate_export_header(pdi)
-set_target_properties(pdi PROPERTIES C_VISIBILITY_PRESET hidden)
-target_include_directories(pdi
-	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-)
-target_link_libraries(pdi paraconf)
+set_property(TARGET pdi PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET pdi PROPERTY VERSION ${pdi_VERSION})
-# set_property(TARGET pdi PROPERTY SOVERSION 3)
-# set_property(TARGET pdi PROPERTY INTERFACE_pdi_MAJOR_VERSION 3)
-# set_property(TARGET pdi APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
+set_property(TARGET pdi PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
+set_property(TARGET pdi PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
+set_property(TARGET pdi APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
+target_include_directories(pdi PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+)
+target_link_libraries(pdi paraconf mpi)
+install(TARGETS pdi EXPORT PDI_export
+	LIBRARY DESTINATION lib INCLUDES DESTINATION include
+	ARCHIVE DESTINATION lib INCLUDES DESTINATION include
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
+
+#Fortran version
+if("${ENABLE_FORTRAN}")
+	add_subdirectory(vendor/bpp bpp EXCLUDE_FROM_ALL)
+
+	bpp_preprocess(SRC_PDI_F90_BPP
+		src/pdi.F90.bpp
+	)
+	add_library(pdi_f90 ${SRC_PDI_F90_BPP} src/fapi.c)
+	target_link_libraries(pdi_f90 pdi paraconf_f90)
+	set_property(TARGET pdi_f90 PROPERTY Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modinclude")
+	target_include_directories(pdi_f90 INTERFACE 
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/modinclude/>" 
+		"$<INSTALL_INTERFACE:lib/pdi-${pdi_VERSION}/finclude>")
+	set_property(TARGET pdi_f90 PROPERTY VERSION ${pdi_VERSION})
+	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
+	set_property(TARGET pdi_f90 PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
+	set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
+	install(TARGETS pdi_f90 EXPORT PDI_export
+		LIBRARY DESTINATION lib INCLUDES DESTINATION "lib/pdi-${pdi_VERSION}"
+		ARCHIVE DESTINATION lib INCLUDES DESTINATION "lib/pdi-${pdi_VERSION}"
+	)
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modinclude/
+		DESTINATION "lib/pdi-${pdi_VERSION}/finclude"
+	)
+endif()
 
 
-# the plugins
+# The plugins
 
 add_subdirectory(src/hdf5_per_process/)
 add_subdirectory(src/test_plugin/)
 add_subdirectory(src/fti/)
 
 
-# the test example
+# Test examples
 
-if("${WITH_TESTS}")
+if("${ENABLE_TESTING}")
+	enable_testing()
 	add_subdirectory(example/)
 endif()
 
 
-# library installation
-
-install(TARGETS pdi EXPORT pdiTargets
-	LIBRARY DESTINATION lib INCLUDES DESTINATION include
-	ARCHIVE DESTINATION lib INCLUDES DESTINATION include
-)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
-install(DIRECTORY include/ DESTINATION include)
-
-
-# cmake stuff installation
+# Installable config
 
 set(ConfigPackageLocation "lib/CMake/pdi-${pdi_VERSION}")
-include(CMakePackageConfigHelpers)
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/pdi/pdiConfigVersion.cmake"
 	VERSION ${pdi_VERSION}
 	COMPATIBILITY AnyNewerVersion
 )
-install(EXPORT pdiTargets DESTINATION ${ConfigPackageLocation})
+install(EXPORT PDI_export DESTINATION ${ConfigPackageLocation})
 install(FILES
-# 		cmake/FindMPI.cmake
+		cmake/FindMPI.cmake
+		cmake/FindLibYaml.cmake
 		cmake/pdiConfig.cmake
 		"${CMAKE_CURRENT_BINARY_DIR}/pdi/pdiConfigVersion.cmake"
 	DESTINATION ${ConfigPackageLocation}

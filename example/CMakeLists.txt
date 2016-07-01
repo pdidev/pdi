@@ -27,16 +27,26 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-find_package(MPI REQUIRED)
-add_executable(example
+include(AddCCompilerFlags)
+
+add_executable(PDI_example
 	example.c
 )
 add_executable(exampleFTI
 	exampleFTI.c
 )
+add_executable(PDI_example_f90
+	example.f90
+)
 
-target_link_libraries(example pdi hdf5_per_process test_plugin mpi ftip)
 target_link_libraries(exampleFTI pdi hdf5_per_process test_plugin mpi ftip)
-include(AddCCompilerFlags)
-add_compiler_flags(example PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
 add_compiler_flags(exampleFTI PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
+
+add_compiler_flags(PDI_example PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
+target_link_libraries(PDI_example pdi hdf5_per_process test_plugin mpi)
+add_test(NAME PDI_example COMMAND PDI_example WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
+
+target_link_libraries(PDI_example_f90 pdi_f90 hdf5_per_process test_plugin mpi_f90)
+add_test(NAME PDI_example_f90 COMMAND PDI_example_f90 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+

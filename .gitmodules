@@ -4,3 +4,6 @@
 [submodule "vendor/fti"]
 	path = vendor/fti
 	url = https://github.com/leobago/fti.git
+[submodule "vendor/bpp"]
+	path = vendor/bpp
+	url = ../bpp.git
