@@ -78,6 +78,8 @@ struct PDI_struct_type_s
 	
 };
 
+PDI_status_t PDI_EXPORT PDI_data_size(const PDI_type_t* type, int* result);
+
 PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
 
 PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
