@@ -231,7 +231,7 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 		break;
 	}
 	if (param) {
-		int dsize; handle_err(dat_size(&param->type, &dsize), err0);
+		int dsize; handle_err(PDI_data_size(&param->type, &dsize), err0);
 		param->value = realloc(param->value, dsize);
 		handle_err(tcopy(&param->type, param->value, (void*)data_dat), err0);
 	} else {

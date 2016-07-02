@@ -42,7 +42,7 @@ int get_id(PDI_variable_t *data)
 	return id;
 }
 
-PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
+PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 {
 	char * fti_file; PC_string(PC_get(conf, ".config"), &fti_file);
 	FTI_Init(fti_file, *world);
@@ -52,13 +52,13 @@ PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_finalize()
+PDI_status_t PDI_fti_plugin_finalize()
 {
 	FTI_Finalize();
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_event(const char *event)
+PDI_status_t PDI_fti_plugin_event(const char *event)
 {
 	if( !strcmp(event, "Snapshot") ) {
 		FTI_Snapshot();
@@ -66,7 +66,7 @@ PDI_status_t PDI_fti_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_data_start(PDI_variable_t *data)
+PDI_status_t PDI_fti_plugin_data_start(PDI_variable_t *data)
 {
 	int size; PDI_data_size(&data->type, &size);
 	//TODO: handle non-contiguous data correctly
@@ -74,10 +74,10 @@ PDI_status_t PDI_fti_data_start(PDI_variable_t *data)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_data_end(PDI_variable_t *data)
+PDI_status_t PDI_fti_plugin_data_end(PDI_variable_t *data)
 {
 	FTI_Protect(get_id(data), NULL, 0, FTI_CHAR);
 	return PDI_OK;
 }
 
-PDI_PLUGIN(fti)
+PDI_PLUGIN(fti_plugin)

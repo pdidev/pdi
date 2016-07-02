@@ -3,8 +3,8 @@
 head                           = 1
 node_size                      = 2
 ckpt_dir                       = /tmp/
-glbl_dir                       = /local/home/mgaalich/Checkpoint/
-meta_dir                       = /local/home/mgaalich/.fti/
+glbl_dir                       = ./Checkpoint/
+meta_dir                       = ./.fti/
 ckpt_l1                        = 1
 ckpt_l2                        = 200000
 ckpt_l3                        = 200000

@@ -15,6 +15,6 @@ variables: # values that can not be referenced using $syntax
         sizes:    [$nbLines, $M]     # if only one element, you can use size as a scalar
         id: 2
 plugins:
-    fti:
-        config: ../../example/config.fti
+    fti_plugin:
+        config: example2.fti
 

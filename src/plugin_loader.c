@@ -25,6 +25,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <dlfcn.h>
+#include <errno.h>
 #include <stdarg.h>
 
 #include <paraconf.h>
@@ -49,9 +50,14 @@ PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *wor
 	// case where the library was not prelinked
 	if ( !plugin_ctor_uncast ) {
 		char *libname = msprintf("lib%s.so", plugin_name);
+		fprintf(stderr, "msprintf: %s\n", libname);
+		errno = 0;
 		void *lib_handle = dlopen(libname, RTLD_NOW);
-		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
+		if ( ! lib_handle ) fprintf(stderr, "dlopen: %s\n", dlerror());
 		free(libname);
+		errno = 0;
+		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
+		if ( ! plugin_ctor_uncast ) fprintf(stderr, "dlsym: %s\n", dlerror());
 	}
 	free(plugin_symbol);
 	
