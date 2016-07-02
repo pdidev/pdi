@@ -51,5 +51,5 @@ add_executable(PDI_example2
 )
 target_link_libraries(PDI_example2 pdi mpi "${LIB_M}")
 add_compiler_flags(PDI_example2 PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
-add_test(NAME PDI_example2-fti COMMAND "${MPIEXEC}" -n 8 "${CMAKE_CURRENT_BINARY_DIR}/PDI_example2" 64 example2-fti.yml WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME PDI_example2-fti COMMAND "${MPIEXEC}" -n 8 "${CMAKE_CURRENT_BINARY_DIR}/PDI_example2" 1 example2-fti.yml WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set_property(TEST PDI_example2-fti APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/fti_plugin/")
