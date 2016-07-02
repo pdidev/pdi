@@ -56,7 +56,7 @@ PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *wor
 	free(plugin_symbol);
 	
 	if ( !plugin_ctor_uncast ) {
-		handle_err(handle_error(PDI_ERR_PLUGIN, "Error while loading plugin `%s'", plugin_name), err0);
+		handle_err(handle_error(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s'", plugin_name), err0);
 	}
 	
 	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
