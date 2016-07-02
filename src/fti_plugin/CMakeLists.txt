@@ -27,11 +27,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-add_library(ftip
-	fti.c
+add_library(fti_plugin
+	fti_plugin.c
 )
-set_target_properties(ftip PROPERTIES C_VISIBILITY_PRESET hidden)
-target_link_libraries(ftip pdi fti.shared)
+set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden)
+target_link_libraries(fti_plugin pdi fti.shared)
 
 #include(AddCCompilerFlags)
 #add_compiler_flags(hdf5_per_process PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
@@ -39,7 +39,7 @@ target_link_libraries(ftip pdi fti.shared)
 
 # library installation
 
-install(TARGETS ftip EXPORT ftipTargets
+install(TARGETS fti_plugin EXPORT fti_pluginTargets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )

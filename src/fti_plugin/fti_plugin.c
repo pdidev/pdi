@@ -24,13 +24,14 @@
 
 #include <mpi.h>
 
+#include <string.h>
+
 #include <pdi.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/datatype.h>
+
 #include <fti.h>
-#include <string.h>
-
-
 
 MPI_Comm my_world;
 
@@ -41,119 +42,13 @@ int get_id(PDI_variable_t *data)
 	return id;
 }
 
-FTIT_type get_type(PDI_variable_t *data)
-{
-
-	switch(data->type.kind) 
-	{
-		case PDI_K_SCALAR:
-			switch(data->type.c.scalar)
-			{
-				case(PDI_T_INT8):
-				return FTI_CHAR;
-				case(PDI_T_INT16):
-				return FTI_SHRT;
-				case(PDI_T_INT32):
-				return FTI_INTG;
-				case(PDI_T_INT64):
-				return FTI_LONG;
-				case(PDI_T_FLOAT):
-				return FTI_SFLT;
-				case(PDI_T_DOUBLE):
-				return FTI_DBLE;
-				case(PDI_T_LONG_DOUBLE):
-				return FTI_LDBE;
-			}
-		break;
-		case PDI_K_ARRAY:
-			switch(data->type.c.array->type.c.scalar)
-			{
-				case(PDI_T_INT8):
-				return FTI_CHAR;
-				case(PDI_T_INT16):
-				return FTI_SHRT;
-				case(PDI_T_INT32):
-				return FTI_INTG;
-				case(PDI_T_INT64):
-				return FTI_LONG;
-				case(PDI_T_FLOAT):
-				return FTI_SFLT;
-				case(PDI_T_DOUBLE):
-				return FTI_DBLE;
-				case(PDI_T_LONG_DOUBLE):
-				return FTI_LDBE;
-			}
-		break;
-		case PDI_K_STRUCT:
-		//TODO
-		break;
-		default:
-		break;
-	}
-	return FTI_CHAR;
-}
-
-int get_size(PDI_variable_t *data)
-{
-	int total = 1;
-	int i;
-
-	int data_id = get_type(data).id;
-	
-
-	switch(data->type.kind) 
-	{
-		case PDI_K_SCALAR: return total;
-		case PDI_K_ARRAY:
-			dat_size(&data->type,&total);
-			if(data_id == FTI_CHAR.id)
-			{
-				return total;
-			}else 
-			if(data_id == FTI_SHRT.id)
-			{
-				return total/2;
-			}else
-			if(data_id == FTI_INTG.id)
-			{
-				return total/4;
-			}else
-			if(data_id == FTI_LONG.id)
-			{
-				return total/8;
-			}else
-			if(data_id == FTI_SFLT.id)
-			{
-				return total/4;
-			}else
-			if(data_id == FTI_DBLE.id)
-			{
-				return total/8;
-			}else
-			if(data_id == FTI_LDBE.id)
-			{
-				return total/10;
-			}
-		break;
-		case PDI_K_STRUCT:
-		//TODO
-		break;
-		default:
-		break;
-	}
-	return 0;
-}
-
-
 PDI_status_t PDI_fti_init(PC_tree_t conf, MPI_Comm *world)
 {
-	my_world = *world;
-	char * fti_file;
-
-	PC_string(PC_get(conf, ".config"), &fti_file);
-	FTI_Init(fti_file,my_world);
+	char * fti_file; PC_string(PC_get(conf, ".config"), &fti_file);
+	FTI_Init(fti_file, *world);
 	free(fti_file);
 	*world = FTI_COMM_WORLD;
+	my_world = FTI_COMM_WORLD;
 	return PDI_OK;
 }
 
@@ -165,28 +60,23 @@ PDI_status_t PDI_fti_finalize()
 
 PDI_status_t PDI_fti_event(const char *event)
 {
-	int i=0;
-	
-	if(strcmp(event,"Snapshot")==0)
-	{
+	if( !strcmp(event, "Snapshot") ) {
 		FTI_Snapshot();
 	}
-	
 	return PDI_OK;
 }
 
 PDI_status_t PDI_fti_data_start(PDI_variable_t *data)
 {
-	int size;
-	FTI_Protect(get_id(data),data->content.data,get_size(data),get_type(data));
+	int size; PDI_data_size(&data->type, &size);
+	//TODO: handle non-contiguous data correctly
+	FTI_Protect(get_id(data), data->content.data, size, FTI_CHAR);
 	return PDI_OK;
 }
 
 PDI_status_t PDI_fti_data_end(PDI_variable_t *data)
 {
-
-	FTI_Protect(get_id(data),NULL,0,get_type(data));
-	
+	FTI_Protect(get_id(data), NULL, 0, FTI_CHAR);
 	return PDI_OK;
 }
 

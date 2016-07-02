@@ -11,13 +11,11 @@
 #include <pdi.h>
 #include <paraconf.h>
 
-
 #define PRECISION   0.005
 #define ITER_TIMES  2000
 #define ITER_OUT    100
 #define WORKTAG     50
 #define REDUCE      5
-
 
 void initData(int nbLines, int M, int rank, double *h)
 {
@@ -37,7 +35,6 @@ void initData(int nbLines, int M, int rank, double *h)
         }
     }
 }
-
 
 double doWork(int numprocs, int rank, int M, int nbLines, double *g, double *h, MPI_Comm my_comm)
 {
@@ -92,20 +89,15 @@ double doWork(int numprocs, int rank, int M, int nbLines, double *g, double *h, 
     return localerror;
 }
 
-
 int main(int argc, char *argv[])
 {
     int rank, nbProcs, nbLines, i, M, arg;
     double wtime, *h, *g, memSize, localerror, globalerror = 1;
 
-    
-
     MPI_Init(&argc, &argv);
 
     MPI_Comm comm = MPI_COMM_WORLD;
-    //FTI_Init(argv[2], MPI_COMM_WORLD);
-    PC_tree_t conf = PC_parse_path("../../example/confpdi.yml");
-    PDI_init(PC_get(conf, ".pdi"), &comm);
+    PDI_init(PC_parse_path(argv[2]), &comm);
 
     MPI_Comm_size(comm, &nbProcs);
     MPI_Comm_rank(comm, &rank);
@@ -122,27 +114,12 @@ int main(int argc, char *argv[])
     if (rank == 0) printf("Target precision : %f \n", PRECISION);
     if (rank == 0) printf("Maximum number of iterations : %d \n", ITER_TIMES);
 
-
-
-    //FTI_Protect(0, &i, 1, FTI_INTG);
-    //FTI_Protect(1, h, M*nbLines, FTI_DBLE);
-    //FTI_Protect(2, g, M*nbLines, FTI_DBLE);
-
-    //PDI_start_expose_area();
     PDI_expose("M",&M);
     PDI_expose("nbLines",&nbLines);
-    //PDI_expose("i",&i);
-    //PDI_expose("h",h);
-    //PDI_expose("g",g);
-    //PDI_end_expose_area();
 
     wtime = MPI_Wtime();
     for(i = 0; i < ITER_TIMES; i++)
     {
-
-
-        //int checkpointed = FTI_Snapshot();
-        //PDI_expose("h",h);
         PDI_share("i",&i,PDI_OUT);
         PDI_share("h",h,PDI_OUT);
         PDI_share("g",g,PDI_OUT);
@@ -159,7 +136,6 @@ int main(int argc, char *argv[])
 
     free(h);
     free(g);
-    PC_tree_destroy(&conf);
     PDI_finalize();
     MPI_Finalize();
     return 0;

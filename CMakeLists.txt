@@ -161,7 +161,7 @@ endif()
 
 add_subdirectory(src/hdf5_per_process/)
 add_subdirectory(src/test_plugin/)
-add_subdirectory(src/fti/)
+add_subdirectory(src/fti_plugin/)
 
 
 # Test examples
