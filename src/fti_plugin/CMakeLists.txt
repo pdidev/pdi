@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+include_directories(${FTI_INCLUDE_PATH})
+
 add_library(fti_plugin
 	fti_plugin.c
 )
