@@ -27,29 +27,22 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-include(AddCCompilerFlags)
+include_directories(${FTI_INCLUDE_PATH})
 
-find_library(LIB_M m)
-
-add_executable(PDI_example
-	example.c
+add_library(fti_plugin
+	fti_plugin.c
 )
-add_compiler_flags(PDI_example PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
-target_link_libraries(PDI_example pdi mpi)
-add_test(NAME PDI_example COMMAND "${MPIEXEC}" -n 2 "${CMAKE_CURRENT_BINARY_DIR}/PDI_example" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-set_property(TEST PDI_example APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/hdf5_per_process/")
+set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden)
+target_link_libraries(fti_plugin pdi fti.shared)
 
-add_executable(PDI_example_f90
-	example.f90
-)
-target_link_libraries(PDI_example_f90 pdi_f90 mpi_f90)
-add_test(NAME PDI_example_f90 COMMAND "${MPIEXEC}" -n 2 "${CMAKE_CURRENT_BINARY_DIR}/PDI_example_f90" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-set_property(TEST PDI_example_f90 APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/hdf5_per_process/")
+#include(AddCCompilerFlags)
+#add_compiler_flags(hdf5_per_process PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
 
-add_executable(PDI_example2
-	example2.c
+
+# library installation
+
+install(TARGETS fti_plugin EXPORT fti_pluginTargets
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
 )
-target_link_libraries(PDI_example2 pdi mpi "${LIB_M}")
-add_compiler_flags(PDI_example2 PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
-add_test(NAME PDI_example2-fti COMMAND "${MPIEXEC}" -n 8 "${CMAKE_CURRENT_BINARY_DIR}/PDI_example2" 1 example2-fti.yml WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-set_property(TEST PDI_example2-fti APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/fti_plugin/")
+

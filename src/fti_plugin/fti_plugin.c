@@ -22,18 +22,62 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_UTILS_H__
-#define PDI_UTILS_H__
+#include <mpi.h>
+
+#include <string.h>
 
 #include <pdi.h>
+#include <pdi/plugin.h>
+#include <pdi/state.h>
 #include <pdi/datatype.h>
 
-PDI_status_t tcopy(const PDI_type_t* type, void* to, void* from);
+#include <fti.h>
 
-char *msprintf(const char *fmt, ...);
+MPI_Comm my_world;
 
-char *vmsprintf(const char *fmt, va_list ap);
+int get_id(PDI_variable_t *data)
+{
+	int id;
+	PC_int(PC_get(data->config, ".id"), &id);
+	return id;
+}
 
-char *mstrcat(char* dest, size_t dlen, const char* src, size_t slen);
+PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
+{
+	char * fti_file; PC_string(PC_get(conf, ".config"), &fti_file);
+	FTI_Init(fti_file, *world);
+	free(fti_file);
+	*world = FTI_COMM_WORLD;
+	my_world = FTI_COMM_WORLD;
+	return PDI_OK;
+}
 
-#endif
+PDI_status_t PDI_fti_plugin_finalize()
+{
+	FTI_Finalize();
+	return PDI_OK;
+}
+
+PDI_status_t PDI_fti_plugin_event(const char *event)
+{
+	if( !strcmp(event, "Snapshot") ) {
+		FTI_Snapshot();
+	}
+	return PDI_OK;
+}
+
+PDI_status_t PDI_fti_plugin_data_start(PDI_variable_t *data)
+{
+	int size; PDI_data_size(&data->type, &size);
+	//TODO: handle non-contiguous data correctly
+	FTI_Protect(get_id(data), data->content.data, size, FTI_CHAR);
+	return PDI_OK;
+}
+
+PDI_status_t PDI_fti_plugin_data_end(PDI_variable_t *data)
+{
+	FTI_Protect(get_id(data), NULL, 0, FTI_CHAR);
+	return PDI_OK;
+}
+
+PDI_PLUGIN(fti_plugin)

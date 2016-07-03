@@ -25,6 +25,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <dlfcn.h>
+#include <errno.h>
 #include <stdarg.h>
 
 #include <paraconf.h>
@@ -50,20 +51,25 @@ PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *wor
 	if ( !plugin_ctor_uncast ) {
 		char *libname = msprintf("lib%s.so", plugin_name);
 		void *lib_handle = dlopen(libname, RTLD_NOW);
-		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
 		free(libname);
+		if ( !lib_handle ) {
+			handle_err(handle_error(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s': %s", plugin_name, dlerror()), err1);
+		}
+		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
+		if ( !plugin_ctor_uncast ) {
+			handle_err(handle_error(PDI_ERR_PLUGIN, "Unable to load plugin ctor for `%s': %s", plugin_name, dlerror()), err1);
+		}
 	}
 	free(plugin_symbol);
-	
-	if ( !plugin_ctor_uncast ) {
-		handle_err(handle_error(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s'", plugin_name), err0);
-	}
 	
 	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
 	init_f plugin_ctor = *((init_f *)&plugin_ctor_uncast);
 	handle_err(plugin_ctor(node, world, plugin), err0);
 	
 	return status;
+	
+err1:
+	free(plugin_symbol);
 	
 err0:
 	return status;

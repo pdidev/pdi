@@ -60,6 +60,10 @@ option(USE_SYSTEM_PARACONF
 	"Use an already installed paraconf instead of building the embedded one"
 	OFF
 )
+option(USE_SYSTEM_FTI
+	"Use an already installed fti instead of building the embedded one"
+	OFF
+)
 
 get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 if("${ENABLE_FORTRAN}" AND NOT "${ENABLED_LANGUAGES}" MATCHES Fortran)
@@ -74,6 +78,12 @@ if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf)
 else()
 	add_subdirectory(vendor/paraconf)
+endif()
+
+if("${USE_SYSTEM_FTI}")
+	find_package(fti)
+else()
+	add_subdirectory(vendor/fti)
 endif()
 
 
@@ -151,6 +161,7 @@ endif()
 
 add_subdirectory(src/hdf5_per_process/)
 add_subdirectory(src/test_plugin/)
+add_subdirectory(src/fti_plugin/)
 
 
 # Test examples
