@@ -28,6 +28,6 @@
 #include "pdi.h"
 #include "pdi/plugin_fwd.h"
 
-PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm* world, PDI_plugin_t* plugin);
+PDI_status_t plugin_loader_tryload( PC_tree_t conf, int plugin_id, MPI_Comm *world );
 
 #endif // PDI_PLUGIN_LOADER_H__

@@ -47,28 +47,36 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL;
 	
-	handle_PC_err(conf.status, err0);
-	
 	handle_err(load_conf(conf), err0);
 	
-	handle_PC_err(PC_len(PC_get(conf, ".plugins"), &PDI_state.nb_plugins), err0);
-	PDI_state.plugins = malloc(PDI_state.nb_plugins*sizeof(PDI_plugin_t));
+	int nb_plugins; handle_PC_err(PC_len(PC_get(conf, ".plugins"), &nb_plugins), err0);
+	PDI_state.plugins = malloc(nb_plugins*sizeof(PDI_plugin_t));
 	
-	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		char *plugin_name = NULL;
-		handle_PC_err(PC_string(PC_get(conf, ".plugins{%d}", ii), &plugin_name), err0);
-		
-		PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", ii);
-		handle_PC_err(PC_status(plugin_conf), err1);
-		
-		handle_err(plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[ii]), err1);
-		
-err1:
-		free(plugin_name);
-		handle_err(status, err0);
+	char **errmsgs = NULL;
+	int nb_err = 0;
+	for ( int ii=0; ii<nb_plugins; ++ii ) {
+		PDI_status_t callstatus = plugin_loader_tryload(conf, ii, world);
+		if ( callstatus ) {
+			status = callstatus;
+			++nb_err;
+			errmsgs = realloc(errmsgs, sizeof(char*)*nb_err);
+			errmsgs[nb_err-1] = msprintf("%s");
+		}
 	}
-	
-	return status;
+	if ( nb_err > 1 ) {
+		char *fullmsg = "Multiple errors while loading plugins:";
+		for ( int ii=0; ii<nb_err; ++ii ) {
+			fullmsg = msprintf("%s\n    %s",
+				fullmsg,
+				errmsgs[ii]
+			);
+		}
+	}
+
+	for ( int ii=0; ii<nb_err; ++ii ) {
+		free(errmsgs[ii]);
+	}
+	free(errmsgs);
 err0:
 	return status;
 }

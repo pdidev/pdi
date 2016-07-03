@@ -33,11 +33,13 @@ add_executable(PDI_example
 	example.c
 )
 add_compiler_flags(PDI_example PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
-target_link_libraries(PDI_example pdi hdf5_per_process test_plugin mpi)
+target_link_libraries(PDI_example pdi mpi)
 add_test(NAME PDI_example COMMAND "${MPIEXEC}" -n 2 "${CMAKE_CURRENT_BINARY_DIR}/PDI_example" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+set_property(TEST PDI_example APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/hdf5_per_process/")
 
 add_executable(PDI_example_f90
 	example.f90
 )
-target_link_libraries(PDI_example_f90 pdi_f90 hdf5_per_process test_plugin mpi_f90)
+target_link_libraries(PDI_example_f90 pdi_f90 mpi_f90)
 add_test(NAME PDI_example_f90 COMMAND "${MPIEXEC}" -n 2 "${CMAKE_CURRENT_BINARY_DIR}/PDI_example_f90" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+set_property(TEST PDI_example_f90 APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/hdf5_per_process/")

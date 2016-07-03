@@ -95,6 +95,9 @@ PDI_status_t load_conf(PC_tree_t node)
 {
 	PDI_status_t status = PDI_OK;
 	
+	// Detect an invalid configuration as soon as possible
+	handle_PC_err(PC_status(node), err0);
+	
 	PC_tree_t params = PC_get(node, ".params");
 	handle_PC_err(PC_status(params), err0);
 	handle_err(load_params(params), err0);
