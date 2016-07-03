@@ -206,42 +206,52 @@ function (interrogate_mpi_compiler lang try_libs)
   # If MPI is set already in the cache, don't bother with interrogating the compiler.
   if (interrogate AND ((NOT MPI_${lang}_INCLUDE_PATH) OR (NOT MPI_${lang}_LIBRARIES)))
     if (MPI_${lang}_COMPILER)
-      # Check whether the -showme:compile option works. This indicates that we have either OpenMPI
-      # or a newer version of LAM-MPI, and implies that -showme:link will also work.
+
+      # MPICH just uses "-show" and doesn't return an error for other options. Try it first.
       execute_process(
-        COMMAND ${MPI_${lang}_COMPILER} -showme:compile
+        COMMAND ${MPI_${lang}_COMPILER} -show
         OUTPUT_VARIABLE  MPI_COMPILE_CMDLINE OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_VARIABLE   MPI_COMPILE_CMDLINE ERROR_STRIP_TRAILING_WHITESPACE
         RESULT_VARIABLE  MPI_COMPILER_RETURN)
 
-      if (MPI_COMPILER_RETURN EQUAL 0)
-        # If we appear to have -showme:compile, then we should
-        # also have -showme:link. Try it.
+      # Check whether the -showme:compile option works. This indicates that we have either OpenMPI
+      # or a newer version of LAM-MPI, and implies that -showme:link will also work.
+      if (NOT MPI_COMPILER_RETURN EQUAL 0)
         execute_process(
-          COMMAND ${MPI_${lang}_COMPILER} -showme:link
-          OUTPUT_VARIABLE  MPI_LINK_CMDLINE OUTPUT_STRIP_TRAILING_WHITESPACE
-          ERROR_VARIABLE   MPI_LINK_CMDLINE ERROR_STRIP_TRAILING_WHITESPACE
+          COMMAND ${MPI_${lang}_COMPILER} -showme:compile
+          OUTPUT_VARIABLE  MPI_COMPILE_CMDLINE OUTPUT_STRIP_TRAILING_WHITESPACE
+          ERROR_VARIABLE   MPI_COMPILE_CMDLINE ERROR_STRIP_TRAILING_WHITESPACE
           RESULT_VARIABLE  MPI_COMPILER_RETURN)
 
         if (MPI_COMPILER_RETURN EQUAL 0)
-          # We probably have -showme:incdirs and -showme:libdirs as well,
-          # so grab that while we're at it.
+          # If we appear to have -showme:compile, then we should
+          # also have -showme:link. Try it.
           execute_process(
-            COMMAND ${MPI_${lang}_COMPILER} -showme:incdirs
-            OUTPUT_VARIABLE  MPI_INCDIRS OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_VARIABLE   MPI_INCDIRS ERROR_STRIP_TRAILING_WHITESPACE)
+            COMMAND ${MPI_${lang}_COMPILER} -showme:link
+            OUTPUT_VARIABLE  MPI_LINK_CMDLINE OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_VARIABLE   MPI_LINK_CMDLINE ERROR_STRIP_TRAILING_WHITESPACE
+            RESULT_VARIABLE  MPI_COMPILER_RETURN)
 
-          execute_process(
-            COMMAND ${MPI_${lang}_COMPILER} -showme:libdirs
-            OUTPUT_VARIABLE  MPI_LIBDIRS OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_VARIABLE   MPI_LIBDIRS ERROR_STRIP_TRAILING_WHITESPACE)
+          if (MPI_COMPILER_RETURN EQUAL 0)
+            # We probably have -showme:incdirs and -showme:libdirs as well,
+            # so grab that while we're at it.
+            execute_process(
+              COMMAND ${MPI_${lang}_COMPILER} -showme:incdirs
+              OUTPUT_VARIABLE  MPI_INCDIRS OUTPUT_STRIP_TRAILING_WHITESPACE
+              ERROR_VARIABLE   MPI_INCDIRS ERROR_STRIP_TRAILING_WHITESPACE)
 
-        else()
-          # reset things here if something went wrong.
-          set(MPI_COMPILE_CMDLINE)
-          set(MPI_LINK_CMDLINE)
-        endif()
-      endif ()
+            execute_process(
+              COMMAND ${MPI_${lang}_COMPILER} -showme:libdirs
+              OUTPUT_VARIABLE  MPI_LIBDIRS OUTPUT_STRIP_TRAILING_WHITESPACE
+              ERROR_VARIABLE   MPI_LIBDIRS ERROR_STRIP_TRAILING_WHITESPACE)
+
+          else()
+            # reset things here if something went wrong.
+            set(MPI_COMPILE_CMDLINE)
+            set(MPI_LINK_CMDLINE)
+          endif()
+        endif ()
+      endif()
 
       # Older versions of LAM-MPI have "-showme". Try to find that.
       if (NOT MPI_COMPILER_RETURN EQUAL 0)
@@ -274,15 +284,6 @@ function (interrogate_mpi_compiler lang try_libs)
           set(MPI_COMPILE_CMDLINE)
           set(MPI_LINK_CMDLINE)
         endif()
-      endif()
-
-      # MPICH just uses "-show". Try it.
-      if (NOT MPI_COMPILER_RETURN EQUAL 0)
-        execute_process(
-          COMMAND ${MPI_${lang}_COMPILER} -show
-          OUTPUT_VARIABLE  MPI_COMPILE_CMDLINE OUTPUT_STRIP_TRAILING_WHITESPACE
-          ERROR_VARIABLE   MPI_COMPILE_CMDLINE ERROR_STRIP_TRAILING_WHITESPACE
-          RESULT_VARIABLE  MPI_COMPILER_RETURN)
       endif()
 
       if (MPI_COMPILER_RETURN EQUAL 0)
@@ -611,20 +612,6 @@ set_target_properties(mpi PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${MPI_C_INCLUDE_PATH}"
   INTERFACE_LINK_LIBRARIES      "${_MPI_C_LIBRARIES_OTHER};${MPI_C_LINK_FLAGS}"
 )
-
-list(GET MPI_Fortran_LIBRARIES 0 _MPI_Fortran_LIBRARY)
-set(_MPI_Fortran_LIBRARIES_OTHER "${MPI_Fortran_LIBRARIES}")
-list(REMOVE_AT _MPI_Fortran_LIBRARIES_OTHER 0)
-
-# Create imported target
-add_library(mpi_f90 UNKNOWN IMPORTED)
-set_target_properties(mpi_f90 PROPERTIES
-  IMPORTED_LOCATION             "${_MPI_Fortran_LIBRARY}"
-  INTERFACE_COMPILE_OPTIONS     "${_MPI_Fortran_COMPILE_OPTIONS};${_MPI_Fortran_COMPILE_OPTIONS}"
-  INTERFACE_INCLUDE_DIRECTORIES "${MPI_Fortran_INCLUDE_PATH};${MPI_Fortran_INCLUDE_PATH}"
-  INTERFACE_LINK_LIBRARIES      "mpi;${_MPI_Fortran_LIBRARIES_OTHER};${MPI_Fortran_LINK_FLAGS}"
-)
-# target_link_libraries(mpi_f90 mpi)
 
 find_package_handle_standard_args(MPI DEFAULT_MSG _MPI_COMPILERS)
 
