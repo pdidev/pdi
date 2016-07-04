@@ -613,6 +613,20 @@ set_target_properties(mpi PROPERTIES
   INTERFACE_LINK_LIBRARIES      "${_MPI_C_LIBRARIES_OTHER};${MPI_C_LINK_FLAGS}"
 )
 
+# Create imported target variables for Fortran
+list(GET MPI_Fortran_LIBRARIES 0 _MPI_Fortran_LIBRARY)
+set(_MPI_Fortran_LIBRARIES_OTHER "${MPI_Fortran_LIBRARIES}")
+list(REMOVE_AT _MPI_Fortran_LIBRARIES_OTHER 0)
+
+# Create imported target for Fortran
+add_library(mpi_f90 UNKNOWN IMPORTED)
+set_target_properties(mpi_f90 PROPERTIES
+  IMPORTED_LOCATION             "${_MPI_Fortran_LIBRARY}"
+  INTERFACE_COMPILE_OPTIONS     "${_MPI_Fortran_COMPILE_OPTIONS};${_MPI_Fortran_COMPILE_OPTIONS}"
+  INTERFACE_INCLUDE_DIRECTORIES "${MPI_Fortran_INCLUDE_PATH};${MPI_Fortran_INCLUDE_PATH}"
+  INTERFACE_LINK_LIBRARIES      "mpi;${_MPI_Fortran_LIBRARIES_OTHER};${MPI_Fortran_LINK_FLAGS}"
+)
+
 find_package_handle_standard_args(MPI DEFAULT_MSG _MPI_COMPILERS)
 
 endif(NOT TARGET mpi)
