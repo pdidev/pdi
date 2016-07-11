@@ -239,15 +239,15 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-    #ifdef CLOC_SUPPORTED
+#ifdef CLOC_SUPPORTED
     tmperr = int(PDI_share_C(C_loc(C_name), &
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
         accessf))
-    #else
+#else
     tmperr = int(PDI_share_C(C_loc(C_name), &
-        data, &
+        C_loc(data), &
         accessf))
-    #endif
+#endif
     
     if(present(err)) then
       err = tmperr
@@ -343,13 +343,13 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-    #ifdef CLOC_SUPPORTED
+#ifdef CLOC_SUPPORTED
       tmperr = int(PDI_export_C(C_loc(C_name), &
           C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-    #else
+#else
       tmperr = int(PDI_export_C(C_loc(C_name), &
-         data))
-    #endif
+         C_loc(data)))
+#endif
 
     if(present(err)) then
       err = tmperr
@@ -383,13 +383,13 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-    #ifdef CLOC_SUPPORTED
+#ifdef CLOC_SUPPORTED
       tmperr = int(PDI_expose_C(C_loc(C_name), &
           C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-    #else
+#else
       tmperr = int(PDI_expose_C(C_loc(C_name), &
-          data))
-    #endif
+          C_loc(data)))
+#endif
     
     if(present(err)) then
       err = tmperr
@@ -423,13 +423,13 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-    #ifdef CLOC_SUPPORTED
+#ifdef CLOC_SUPPORTED
       tmperr = int(PDI_import_C(C_loc(C_name), &
           C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-    #else
+#else
       tmperr = int(PDI_import_C(C_loc(C_name), &
-          data))
-    #endif
+          C_loc(data)))
+#endif
     if(present(err)) then
       err = tmperr
     endif
