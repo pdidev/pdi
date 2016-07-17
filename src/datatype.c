@@ -106,8 +106,8 @@ PDI_status_t array_size(const PDI_array_type_t *type, val_size_t *result)
 
 	handle_err(size(&type->type, result), err0);
 	for ( int dim=0; dim<type->ndims; ++dim ) {
-		int size; handle_err(PDI_value_int(type->sizes, &size), err1);
-		int subsize; handle_err(PDI_value_int(type->subsizes, &subsize), err1);
+		int size; handle_err(PDI_value_int(&(type->sizes[dim]), &size), err1);
+		int subsize; handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err1);
 		if ( (size == subsize) && (result->ndims == 0) ) {
 			result->type *= size;
 		} else {
