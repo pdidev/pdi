@@ -137,7 +137,7 @@ module PDI
   endinterface PDI_import
 
   interface fptr
-!$SH for T in ${HDF5TYPES}; do
+!$SH for T in ${FORTTYPES}; do
 !$SH   for D in $(seq 0 ${MAXDIM}); do
     module procedure fptr_${T}_${D}D
 !$SH   done
@@ -149,7 +149,7 @@ module PDI
 
 #ifdef __GFORTRAN__
 
-!$SH for T in ${HDF5TYPES}; do
+!$SH for T in ${FORTTYPES}; do
 !$SH   for D in $(seq 0 ${MAXDIM}); do
 
    pure function fptr_${T}_${D}D ( data ) result ( pdata )
