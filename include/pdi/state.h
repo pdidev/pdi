@@ -82,6 +82,8 @@ struct PDI_variable_s
 struct PDI_state_s
 {
 	int nb_params;
+
+	MPI_Comm PDI_comm;
 	
 	PDI_param_t *params;
 	
