@@ -39,7 +39,7 @@ PDI_state_t PDI_state;
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t status = PDI_OK;
-	
+	PDI_state.PDI_comm = *world;
 	PDI_state.nb_params = 0;
 	PDI_state.params = NULL;
 	PDI_state.nb_variables = 0;

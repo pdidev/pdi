@@ -95,12 +95,12 @@ int main(int argc, char *argv[])
     double wtime, *h, *g, memSize, localerror, globalerror = 1;
 
     MPI_Init(&argc, &argv);
+    MPI_Comm mycomm = MPI_COMM_WORLD;
 
-    PDI_state.PDI_comm = MPI_COMM_WORLD;
-    PDI_init(PC_parse_path(argv[2]), &(PDI_state.PDI_comm));
+    PDI_init(PC_parse_path(argv[2]), &mycomm);
 
-    MPI_Comm_size(PDI_state.PDI_comm, &nbProcs);
-    MPI_Comm_rank(PDI_state.PDI_comm, &rank);
+    MPI_Comm_size(mycomm, &nbProcs);
+    MPI_Comm_rank(mycomm, &rank);
 
     arg = atoi(argv[1]);
     M = (int)sqrt((double)(arg * 1024.0 * 512.0 * nbProcs)/sizeof(double));
@@ -127,9 +127,9 @@ int main(int argc, char *argv[])
         PDI_reclaim("i");
         PDI_reclaim("h");
         PDI_reclaim("g");
-        localerror = doWork(nbProcs, rank, M, nbLines, g, h,PDI_state.PDI_comm);
+        localerror = doWork(nbProcs, rank, M, nbLines, g, h,mycomm);
         if (((i%ITER_OUT) == 0) && (rank == 0)) printf("Step : %d, error = %f\n", i, globalerror);
-        if ((i%REDUCE) == 0) MPI_Allreduce(&localerror, &globalerror, 1, MPI_DOUBLE, MPI_MAX, PDI_state.PDI_comm);
+        if ((i%REDUCE) == 0) MPI_Allreduce(&localerror, &globalerror, 1, MPI_DOUBLE, MPI_MAX, mycomm);
         if(globalerror < PRECISION) break;
     }
     if (rank == 0) printf("Execution finished in %lf seconds.\n", MPI_Wtime() - wtime);

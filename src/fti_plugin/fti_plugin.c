@@ -45,8 +45,9 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	char * fti_file; PC_string(PC_get(conf, ".config"), &fti_file);
 	FTI_Init(fti_file, PDI_state.PDI_comm);
 	free(fti_file);
-	*world = FTI_COMM_WORLD;
 	PDI_state.PDI_comm = FTI_COMM_WORLD;
+        *world = PDI_state.PDI_comm;
+
 	return PDI_OK;
 }
 
