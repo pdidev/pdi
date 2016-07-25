@@ -262,7 +262,7 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-#ifndef __GFORTRAN__
+#ifdef CLOC_SUPPORTED
     tmperr = int(PDI_share_C(C_loc(C_name), &
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
         accessf))
@@ -366,11 +366,11 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-#ifndef __GFORTRAN__
-      tmperr = int(PDI_export_C(C_loc(C_name), &
+#ifdef CLOC_SUPPORTED
+    tmperr = int(PDI_export_C(C_loc(C_name), &
           C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
 #else
-      tmperr = int(PDI_export_C(C_loc(C_name), &
+    tmperr = int(PDI_export_C(C_loc(C_name), &
          C_loc(fptr(data))))
 #endif
 
@@ -406,11 +406,11 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-#ifndef __GFORTRAN__
-      tmperr = int(PDI_expose_C(C_loc(C_name), &
+#ifdef CLOC_SUPPORTED
+    tmperr = int(PDI_expose_C(C_loc(C_name), &
           C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
 #else
-      tmperr = int(PDI_expose_C(C_loc(C_name), &
+    tmperr = int(PDI_expose_C(C_loc(C_name), &
           C_loc(fptr(data))))
 #endif
     
@@ -446,11 +446,11 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-#ifndef __GFORTRAN__
-      tmperr = int(PDI_import_C(C_loc(C_name), &
+#ifdef CLOC_SUPPORTED
+    tmperr = int(PDI_import_C(C_loc(C_name), &
           C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
 #else
-      tmperr = int(PDI_import_C(C_loc(C_name), &
+    tmperr = int(PDI_import_C(C_loc(C_name), &
           C_loc(fptr(data))))
 #endif
     if(present(err)) then
