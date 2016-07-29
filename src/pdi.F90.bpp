@@ -139,7 +139,6 @@ module PDI
 
   contains
 
-
   !=============================================================================
   !< interface to the C function PDI_init : initializes PDI
   !! \param[IN] treeconf the configuration
@@ -244,7 +243,6 @@ module PDI
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
         accessf))
 
-    
     if(present(err)) then
       err = tmperr
     endif
@@ -341,7 +339,7 @@ module PDI
 
     tmperr = int(PDI_export_C(C_loc(C_name), &
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-
+    
     if(present(err)) then
       err = tmperr
     endif
@@ -411,7 +409,7 @@ module PDI
 
     tmperr = int(PDI_import_C(C_loc(C_name), &
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-
+    
     if(present(err)) then
       err = tmperr
     endif
