@@ -136,32 +136,10 @@ module PDI
 !$SH done
   endinterface PDI_import
 
-  interface fptr
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
-    module procedure fptr_${T}_${D}D
-!$SH   done
-!$SH done
-  endinterface fptr
-
 
   contains
 
-#ifdef __GFORTRAN__
 
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
-
-   pure function fptr_${T}_${D}D ( data ) result ( pdata )
-    $(fort_type $T), intent(IN), target :: data$(array_desc $D)
-    $(fort_type $T), target :: pdata
-    pdata = data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')
-  end function fptr_${T}_${D}D
-
-!$SH   done
-!$SH done
-
-#endif
   !=============================================================================
   !< interface to the C function PDI_init : initializes PDI
   !! \param[IN] treeconf the configuration
@@ -262,15 +240,10 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-#ifndef __GFORTRAN__
     tmperr = int(PDI_share_C(C_loc(C_name), &
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
         accessf))
-#else
-    tmperr = int(PDI_share_C(C_loc(C_name), &
-        C_loc(fptr(data)), &
-        accessf))
-#endif
+
     
     if(present(err)) then
       err = tmperr
@@ -366,13 +339,8 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-#ifndef __GFORTRAN__
-      tmperr = int(PDI_export_C(C_loc(C_name), &
-          C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-#else
-      tmperr = int(PDI_export_C(C_loc(C_name), &
-         C_loc(fptr(data))))
-#endif
+    tmperr = int(PDI_export_C(C_loc(C_name), &
+        C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
 
     if(present(err)) then
       err = tmperr
@@ -406,13 +374,8 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-#ifndef __GFORTRAN__
-      tmperr = int(PDI_expose_C(C_loc(C_name), &
-          C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-#else
-      tmperr = int(PDI_expose_C(C_loc(C_name), &
-          C_loc(fptr(data))))
-#endif
+    tmperr = int(PDI_expose_C(C_loc(C_name), &
+        C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
     
     if(present(err)) then
       err = tmperr
@@ -446,13 +409,9 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-#ifndef __GFORTRAN__
-      tmperr = int(PDI_import_C(C_loc(C_name), &
-          C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-#else
-      tmperr = int(PDI_import_C(C_loc(C_name), &
-          C_loc(fptr(data))))
-#endif
+    tmperr = int(PDI_import_C(C_loc(C_name), &
+        C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
+
     if(present(err)) then
       err = tmperr
     endif
