@@ -30,7 +30,6 @@
 cmake_minimum_required(VERSION 3.0)
 
 include(CheckCCompilerFlag)
-
 function(add_compiler_flags TARGET VISIBILITY FLAGS)
 	foreach(FLAG "${FLAGS}" ${ARGN})
 		set(FLAG_WORKS)
