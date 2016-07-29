@@ -242,7 +242,7 @@ module PDI
     tmperr = int(PDI_share_C(C_loc(C_name), &
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
         accessf))
-
+    
     if(present(err)) then
       err = tmperr
     endif
