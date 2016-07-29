@@ -54,7 +54,7 @@ option(ENABLE_FORTRAN
 )
 option(ENABLE_TESTING
 	"Enable compilation of the (example) tests"
-	ON
+	OFF
 )
 option(USE_SYSTEM_PARACONF
 	"Use an already installed paraconf instead of building the embedded one"
