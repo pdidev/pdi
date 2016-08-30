@@ -133,7 +133,16 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
 #Fortran version
 if("${ENABLE_FORTRAN}")
 	add_subdirectory(vendor/bpp bpp EXCLUDE_FROM_ALL)
-	bpp_preprocess(SRC_PDI_F90_BPP src/pdi.f90.bpp)
+	
+	include(TestCLocArray)
+	test_cloc_array(CLOC_ARRAY_WORKS)
+	
+	set(BPP_DEFINES)
+	if (NOT "${CLOC_ARRAY_WORKS}")
+		set(BPP_DEFINES DEFINES "NO_CLOC_ARRAY=1")
+	endif()
+	
+	bpp_preprocess(OUTPUT SRC_PDI_F90_BPP "${BPP_DEFINES}" SOURCES src/pdi.f90.bpp)
 	set(GENINC "${CMAKE_CURRENT_BINARY_DIR}/geninc")
 	file(MAKE_DIRECTORY "${GENINC}")
 	add_custom_target(pdi_f90_inc

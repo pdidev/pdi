@@ -29,14 +29,45 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-include(CheckCCompilerFlag)
+function(test_cloc_array RESULT_VAR)
+	if(DEFINED "${RESULT_VAR}")
+		return()
+	endif()
+	message(STATUS "Checking whether Fortran supports the C_loc call on assumed shape array elements")
+	set(TEST_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/cmake_test_${RESULT_VAR}.f90")
+	file(WRITE "${TEST_FILE}" "
+program test${RESULT_VAR}
 
-function(add_compiler_flags TARGET VISIBILITY FLAGS)
-	foreach(FLAG "${FLAGS}" ${ARGN})
-		set(FLAG_WORKS)
-		check_c_compiler_flag("${FLAG}" FLAG_WORKS)
-		if("${FLAG_WORKS}")
-			target_compile_options("${TARGET}" "${VISIBILITY}" "${FLAG}")
-		endif()
-	endforeach()
+use, intrinsic :: ISO_C_binding
+implicit none
+
+interface
+  subroutine free(v) bind(C)
+   use, intrinsic :: ISO_C_binding
+   type(C_ptr), value :: v
+  endsubroutine
+endinterface
+
+real(C_float), dimension(:,:), pointer :: v
+
+call free(c_loc(v(0,0)))
+
+endprogram
+")
+	try_compile(COMPILE_RESULT "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}" "${TEST_FILE}"
+		OUTPUT_VARIABLE COMPILE_OUTPUT
+	)
+	if(COMPILE_RESULT)
+		file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+		"${TYPE}(KIND=${KIND}) type successfully compiled with the following output:\n"
+		"${COMPILE_OUTPUT}\n")
+		message(STATUS "Checking whether Fortran supports the C_loc call on assumed shape array elements -- yes")
+	else()
+		file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+		"${TYPE}(KIND=${KIND}) type failed to compile with the following output:\n"
+		"${COMPILE_OUTPUT}\n")
+		message(STATUS "Checking whether Fortran supports the C_loc call on assumed shape array elements -- no")
+	endif()
+	set("${RESULT_VAR}" "${COMPILE_RESULT}" CACHE BOOL "Whether Fortran supports the C_loc call on assumed shape array elements")
+	mark_as_advanced("${RESULT_VAR}")
 endfunction()
