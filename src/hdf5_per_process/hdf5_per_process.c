@@ -51,6 +51,7 @@ int nb_outputs = 0;
 
 PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 {
+	world = world; // prevent unused param warning
 	my_conf = conf;
 	
 	H5open();
