@@ -49,7 +49,9 @@ typedef enum PDI_status_e {
 	/// Tried to load a non-existing plugin
 	PDI_ERR_PLUGIN,
 	/// Implementation limitation (typically an unimplemented feature)
-	PDI_ERR_IMPL
+	PDI_ERR_IMPL,
+	/// A system error occured (OS, MPI, etc.)
+	PDI_ERR_SYSTEM
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs
@@ -110,7 +112,7 @@ PDI_status_t PDI_EXPORT PDI_finalize();
 
 /// \}
 
-/** Triggers a PDI “event”
+/** Triggers a PDI "event"
  * \param[in] event the event name
  * \return an error status
  */

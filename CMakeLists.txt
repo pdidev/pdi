@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 # enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
 project(pdi LANGUAGES C CXX Fortran)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -133,26 +133,28 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
 #Fortran version
 if("${ENABLE_FORTRAN}")
 	add_subdirectory(vendor/bpp bpp EXCLUDE_FROM_ALL)
-
-	bpp_preprocess(SRC_PDI_F90_BPP
-		src/pdi.F90.bpp
-	)
-	add_library(pdi_f90 ${SRC_PDI_F90_BPP} src/fapi.c)
+	bpp_preprocess(SRC_PDI_F90_BPP src/pdi.f90.bpp)
+	set(GENINC "${CMAKE_CURRENT_BINARY_DIR}/geninc")
+	file(MAKE_DIRECTORY "${GENINC}")
+	add_custom_target(pdi_f90_inc
+			COMMAND "${CMAKE_COMMAND}" -E copy "${SRC_PDI_F90_BPP}" "${GENINC}/PDI.f90"
+			DEPENDS "${SRC_PDI_F90_BPP}"
+			COMMENT "Renaming include file to 'PDI.f90'"
+			VERBATIM)
+	add_library(pdi_f90 src/fapi.c)
+	add_dependencies(pdi_f90 pdi_f90_inc)
 	target_link_libraries(pdi_f90 pdi paraconf_f90)
-	set_property(TARGET pdi_f90 PROPERTY Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modinclude")
 	target_include_directories(pdi_f90 INTERFACE 
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/modinclude/>" 
-		"$<INSTALL_INTERFACE:lib/pdi-${pdi_VERSION}/finclude>")
+					"$<BUILD_INTERFACE:${GENINC}>" 
+					"$<INSTALL_INTERFACE:include>")
 	set_property(TARGET pdi_f90 PROPERTY VERSION ${pdi_VERSION})
 	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
+	install(FILES "${GENINC}/PDI.f90" DESTINATION "include")
 	install(TARGETS pdi_f90 EXPORT PDI_export
-		LIBRARY DESTINATION lib INCLUDES DESTINATION "lib/pdi-${pdi_VERSION}"
-		ARCHIVE DESTINATION lib INCLUDES DESTINATION "lib/pdi-${pdi_VERSION}"
-	)
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modinclude/
-		DESTINATION "lib/pdi-${pdi_VERSION}/finclude"
+					LIBRARY DESTINATION lib INCLUDES DESTINATION "include"
+					ARCHIVE DESTINATION lib INCLUDES DESTINATION "include"
 	)
 endif()
 

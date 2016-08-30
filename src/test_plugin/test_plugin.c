@@ -28,14 +28,12 @@
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 
-MPI_Comm my_world;
 
 PDI_status_t PDI_test_plugin_init(PC_tree_t conf, MPI_Comm *world)
 {
 	conf = conf; // prevent unused warning
-	my_world = *world;
 	
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(*world, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
 		printf("Welcome to the test plugin!\n");
@@ -46,7 +44,7 @@ PDI_status_t PDI_test_plugin_init(PC_tree_t conf, MPI_Comm *world)
 
 PDI_status_t PDI_test_plugin_finalize()
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
 		printf("Goodbye from the test plugin!\n");
@@ -57,7 +55,7 @@ PDI_status_t PDI_test_plugin_finalize()
 
 PDI_status_t PDI_test_plugin_event(const char *event)
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
 		printf("test plugin got an event: %s!\n", event);
@@ -68,7 +66,7 @@ PDI_status_t PDI_test_plugin_event(const char *event)
 
 PDI_status_t PDI_test_plugin_data_start(PDI_variable_t *data)
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
 		printf(" =>> data becoming available to the test plugin: %s!\n", data->name);
@@ -79,7 +77,7 @@ PDI_status_t PDI_test_plugin_data_start(PDI_variable_t *data)
 
 PDI_status_t PDI_test_plugin_data_end(PDI_variable_t *data)
 {
-	int rank; if (MPI_Comm_rank(my_world, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
 		printf(" <<= data becoming unavailable to the test plugin: %s!\n", data->name);

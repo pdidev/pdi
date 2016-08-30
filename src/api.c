@@ -39,7 +39,6 @@ PDI_state_t PDI_state;
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t status = PDI_OK;
-	
 	PDI_state.nb_params = 0;
 	PDI_state.params = NULL;
 	PDI_state.nb_variables = 0;
@@ -55,6 +54,7 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	char **errmsgs = NULL;
 	int nb_err = 0;
 	for ( int ii=0; ii<nb_plugins; ++ii ) {
+		PDI_state.PDI_comm = *world;
 		PDI_status_t callstatus = plugin_loader_tryload(conf, ii, world);
 		if ( callstatus ) {
 			status = callstatus;
@@ -71,6 +71,10 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 				errmsgs[ii]
 			);
 		}
+	}
+	
+	if ( MPI_Comm_dup(*world, &PDI_state.PDI_comm) ) {
+		handle_err(handle_error(PDI_ERR_SYSTEM, "Unable to clone the main communicator"), err0);
 	}
 
 	for ( int ii=0; ii<nb_err; ++ii ) {

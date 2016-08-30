@@ -31,8 +31,6 @@
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 
-MPI_Comm my_world;
-
 PC_tree_t my_conf;
 
 typedef struct hdf5pp_var_s
@@ -53,7 +51,7 @@ int nb_outputs = 0;
 
 PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 {
-	my_world = *world;
+	world = world; // prevent unused param warning
 	my_conf = conf;
 	
 	H5open();
