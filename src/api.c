@@ -54,6 +54,7 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	char **errmsgs = NULL;
 	int nb_err = 0;
 	for ( int ii=0; ii<nb_plugins; ++ii ) {
+		PDI_state.PDI_comm = *world;
 		PDI_status_t callstatus = plugin_loader_tryload(conf, ii, world);
 		if ( callstatus ) {
 			status = callstatus;

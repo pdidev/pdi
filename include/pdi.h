@@ -112,7 +112,7 @@ PDI_status_t PDI_EXPORT PDI_finalize();
 
 /// \}
 
-/** Triggers a PDI “event”
+/** Triggers a PDI "event"
  * \param[in] event the event name
  * \return an error status
  */

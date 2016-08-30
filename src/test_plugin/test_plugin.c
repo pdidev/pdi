@@ -33,12 +33,11 @@ PDI_status_t PDI_test_plugin_init(PC_tree_t conf, MPI_Comm *world)
 {
 	conf = conf; // prevent unused warning
 	
-	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(*world, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
 		printf("Welcome to the test plugin!\n");
 	}
-	*world = PDI_state.PDI_comm;
 	
 	return PDI_OK;
 }
