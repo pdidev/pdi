@@ -36,15 +36,26 @@ do { \
 #define handle_PC_err(callstatus, free_stamp)\
 do { \
 	PC_errhandler_t pc_handler = intercept_PC_errors();\
-	if ( callstatus ) { \
-		status = PDI_ERR_CONFIG; \
-		goto free_stamp; \
-	} \
+	if ( callstatus ) status = PDI_ERR_CONFIG; \
 	PC_errhandler(pc_handler);\
+	if ( status ) goto free_stamp; \
 } while( 0 )
 
+/** Create a new PDI error and calls the user specified handler to handle it
+ * \param[in] errcode the error code of the error to create
+ * \param[in] message an errror message as a printf-style format
+ * \param[in] ... the printf-style parameters for the message
+ * \see printf
+ * \return the newly created error
+ */
 PDI_status_t handle_error(PDI_status_t errcode, const char *message, ...);
 
+/** install a paraconf error-handler that forwards errors to PDI
+ * 
+ * Used in the handle_PC_err macro
+ * 
+ * \return the previously installed paraconf error-handler
+ */
 PC_errhandler_t intercept_PC_errors();
 
 #endif // ERROR_H__

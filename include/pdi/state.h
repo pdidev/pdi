@@ -99,6 +99,7 @@ struct PDI_state_s
 	
 };
 
+/// The main state of the PDI implementation
 extern PDI_state_t PDI_EXPORT PDI_state;
 
 #endif // PDI_STATE_H__

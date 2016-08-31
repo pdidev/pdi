@@ -28,12 +28,48 @@
 #include <pdi.h>
 #include <pdi/datatype.h>
 
+/** Copies some (possibly sparse) data into a new (dense) buffer
+ * \param type the type of the source data
+ * \param to the destination buffer that should be large enough to hold the data
+ * \param from the source buffer
+ * \return an error code
+ */
 PDI_status_t tcopy(const PDI_type_t* type, void* to, void* from);
 
+/** A mallocing sprintf
+ * 
+ * Behaves similarly to sprintf except it allocates the buffer where it writes
+ * using malloc.
+ * \param fmt the format string
+ * \param ... the printf-style arguments
+ * \return the newly allocated buffer
+ * \see sprintf
+ */
 char *msprintf(const char *fmt, ...);
 
+/** A mallocing vsprintf
+ * 
+ * Behaves similarly to vsprintf except it allocates the buffer where it writes
+ * using malloc.
+ * \param fmt the format string
+ * \param ap the va_list of printf-style arguments
+ * \return the newly allocated buffer
+ * \see vsprintf
+ */
 char *vmsprintf(const char *fmt, va_list ap);
 
+/** A mallocing strcat
+ * 
+ * Behaves somewhat similarly to strcat but
+ * - it grows the destination buffer using realloc
+ * - both strings have their length specified instead of being NULL-terminated
+ * \param dest the destination buffer that will be extended (and NULL-terminated)
+ * \param dlen the amount of characters to keep from the destination buffer
+ * \param src the buffer to concatenate to dest
+ * \param dlen the amount of characters to use from the concatenated buffer
+ * \return the destination buffer
+ * \see strcat
+ */
 char *mstrcat(char* dest, size_t dlen, const char* src, size_t slen);
 
 #endif

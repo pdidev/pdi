@@ -78,10 +78,28 @@ struct PDI_struct_type_s
 	
 };
 
+/** Computes the data size of a type, excluding potentially unused memory from
+ * a sparse type
+ * \param type the type whose size to compute
+ * \param result the size in bytes
+ * \return an error code
+ */
 PDI_status_t PDI_EXPORT PDI_data_size(const PDI_type_t* type, int* result);
 
+/** Loads a type definition from a paraconf-style config
+ * \param node the configuration to read
+ * \param type the type to generate
+ * \return an error code
+ */
 PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
 
+/** Destroys a previously constructed type and frees the associated memory
+ * 
+ * This does not free the memory required for the actual PDI_type_t structure
+ * 
+ * \param type the type to destroy
+ * \return an error code
+ */
 PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
 
 #endif // PDI_DATATYPE_H__

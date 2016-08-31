@@ -19,7 +19,7 @@ verbosity                      = 2
 
 [restart]
 failure                        = 0
-exec_id                        = 2016-07-08_10-48-46
+exec_id                        = xxxx-xx-xx_xx-xx-xx
 
 
 [injection]

@@ -27,6 +27,10 @@
 
 #include "pdi.h"
 
+/** Loads the PDI configuration
+ * \param[in] node the configuration as a paraconf node
+ * \return an error code
+ */
 PDI_status_t load_conf(PC_tree_t node);
 
 #endif // CONF_H__
