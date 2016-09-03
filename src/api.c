@@ -51,37 +51,20 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	int nb_plugins; handle_PC_err(PC_len(PC_get(conf, ".plugins"), &nb_plugins), err0);
 	PDI_state.plugins = malloc(nb_plugins*sizeof(PDI_plugin_t));
 	
-	char **errmsgs = NULL;
-	int nb_err = 0;
 	for ( int ii=0; ii<nb_plugins; ++ii ) {
 		PDI_state.PDI_comm = *world;
-		PDI_status_t callstatus = plugin_loader_tryload(conf, ii, world);
-		if ( callstatus ) {
-			status = callstatus;
-			++nb_err;
-			errmsgs = realloc(errmsgs, sizeof(char*)*nb_err);
-			errmsgs[nb_err-1] = msprintf("%s");
-		}
-	}
-	if ( nb_err > 1 ) {
-		char *fullmsg = "Multiple errors while loading plugins:";
-		for ( int ii=0; ii<nb_err; ++ii ) {
-			fullmsg = msprintf("%s\n    %s",
-				fullmsg,
-				errmsgs[ii]
-			);
-		}
+		//TODO we should concatenate errors here...
+		handle_err(plugin_loader_tryload(conf, ii, world), err0);
 	}
 	
 	if ( MPI_Comm_dup(*world, &PDI_state.PDI_comm) ) {
 		handle_err(handle_error(PDI_ERR_SYSTEM, "Unable to clone the main communicator"), err0);
 	}
 
-	for ( int ii=0; ii<nb_err; ++ii ) {
-		free(errmsgs[ii]);
-	}
-	free(errmsgs);
+	return status;
+	
 err0:
+	PDI_finalize();
 	return status;
 }
 
@@ -92,8 +75,24 @@ PDI_status_t PDI_param_destroy(PDI_param_t *param)
 	
 	free(param->name);
 	free(param->value);
-	PDI_datatype_destroy(&param->type);
+	handle_err(PDI_datatype_destroy(&param->type), err0);
 	
+	return status;
+	
+err0:
+	return status;
+}
+
+PDI_status_t PDI_variable_destroy(PDI_variable_t *var)
+{
+	PDI_status_t status = PDI_OK;
+	
+	free(var->name);
+	handle_err(PDI_datatype_destroy(&var->type), err0);
+	
+	return status;
+	
+err0:
 	return status;
 }
 
@@ -101,24 +100,30 @@ PDI_status_t PDI_finalize()
 {
 	PDI_status_t status = PDI_OK;
 	
+	// Don't stop on errors in finalize, try to do our best
+	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
+	
 	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		if ( PDI_state.plugins[ii].finalize() ) status = PDI_ERR_PLUGIN;
+		PDI_state.plugins[ii].finalize();
 	}
+	free(PDI_state.plugins);
+	PDI_state.plugins = NULL; // help valgrind
+	
 	for (int ii=0; ii<PDI_state.nb_params; ++ii) {
 		PDI_param_destroy(&PDI_state.params[ii]);
 	}
 	free(PDI_state.params);
 	PDI_state.params = NULL; // help valgrind
+	
 	for (int ii=0; ii<PDI_state.nb_variables; ++ii) {
-		
+		PDI_variable_destroy(&PDI_state.variables[ii]);
 	}
 	free(PDI_state.variables);
 	PDI_state.variables = NULL; // help valgrind
-	for (int ii=0; ii<PDI_state.nb_plugins; ++ii) {
-	}
-	free(PDI_state.plugins);
-	PDI_state.plugins = NULL; // help valgrind
 	
+	PDI_errhandler(errh);
+	
+	//TODO we should concatenate errors here...
 	return status;
 }
 
@@ -126,12 +131,14 @@ PDI_status_t PDI_event(const char* event)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		if ( PDI_state.plugins[ii].event(event) ) status = PDI_ERR_PLUGIN;
+		//TODO we should concatenate errors here...
+		handle_err(PDI_state.plugins[ii].event(event), err0);
 	}
-	PDI_errhandler(errh);
 	
+	return status;
+	
+err0:
 	return status;
 }
 
@@ -147,24 +154,33 @@ PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 		break;
 	}
 	if (data) {
-		//TODO: handle this case
+		if ( access & PDI_OUT ) {
+			data->content.access = PDI_OUT;
+			data->content.data = data_dat;
+			for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+				handle_err(PDI_state.plugins[ii].data_start(data), err0);
+			}
+		}
 		if ( access & PDI_IN ) {
 			status = PDI_UNAVAILABLE;
-		}
-		if ( access & PDI_OUT ) {
-			data->content.access = access;
-			data->content.data = data_dat;
-			
-			PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
+			data->content.access = PDI_IN;
 			for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-				if ( PDI_state.plugins[ii].data_start(data) ) status = PDI_ERR_PLUGIN;
+				PDI_status_t instatus = PDI_state.plugins[ii].data_start(data);
+				handle_err(instatus, err0);
+				if ( !instatus ) { // only one plugin for input
+					status = PDI_OK;
+					break;
+				}
 			}
-			PDI_errhandler(errh);
 		}
+		data->content.access = access;
 	} else {
 		status = PDI_UNAVAILABLE;
 	}
 	
+	return status;
+	
+err0:
 	return status;
 }
 
@@ -180,11 +196,9 @@ PDI_status_t PDI_release(const char* name)
 		break;
 	}
 	if (data) {
-		PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-			if ( PDI_state.plugins[ii].data_end(data) ) status = PDI_ERR_PLUGIN;
+			handle_err(PDI_state.plugins[ii].data_end(data), err0);
 		}
-		PDI_errhandler(errh);
 		
 		free(data->content.data);
 		data->content.data = NULL;
@@ -193,6 +207,9 @@ PDI_status_t PDI_release(const char* name)
 		status = PDI_UNAVAILABLE;
 	}
 	
+	return status;
+	
+err0:
 	return status;
 }
 
@@ -208,11 +225,9 @@ PDI_status_t PDI_reclaim(const char* name)
 		break;
 	}
 	if (data) {
-		PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-			if ( PDI_state.plugins[ii].data_end(data) ) status = PDI_ERR_PLUGIN;
+			handle_err(PDI_state.plugins[ii].data_end(data), err0);
 		}
-		PDI_errhandler(errh);
 		
 		data->content.access = 0;
 		data->content.data = NULL;
@@ -220,6 +235,9 @@ PDI_status_t PDI_reclaim(const char* name)
 		status = PDI_UNAVAILABLE;
 	}
 	
+	return status;
+	
+err0:
 	return status;
 }
 
@@ -244,6 +262,7 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 	}
 	
 	return status;
+	
 err0:
 	return status;
 }
@@ -256,6 +275,7 @@ PDI_status_t PDI_export(const char* name, const void* data)
 	handle_err(PDI_release(name), err0);
 	
 	return status;
+	
 err0:
 	return status;
 }
@@ -268,7 +288,7 @@ PDI_status_t PDI_import(const char* name, void* data)
 	handle_err(PDI_reclaim(name), err0);
 	
 	return status;
+	
 err0:
 	return status;
 }
- 

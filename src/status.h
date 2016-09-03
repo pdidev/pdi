@@ -30,7 +30,7 @@
 #define handle_err(callstatus, free_stamp)\
 do { \
 	status = callstatus; \
-	if ( status ) goto free_stamp; \
+	if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \
 } while( 0 )
 
 #define handle_PC_err(callstatus, free_stamp)\

@@ -45,9 +45,13 @@ typedef struct hdf5pp_var_s
 	
 } hdf5pp_var_t;
 
+int nb_outputs = 0;
+
 hdf5pp_var_t *outputs = NULL;
 
-int nb_outputs = 0;
+int nb_inputs = 0;
+
+hdf5pp_var_t *inputs = NULL;
 
 PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 {
@@ -56,7 +60,11 @@ PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 	
 	H5open();
 	
-	PC_len(PC_get(my_conf, ".outputs"), &nb_outputs);
+	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
+	if ( PC_len(PC_get(my_conf, ".outputs"), &nb_outputs) ) {
+		nb_outputs = 0;
+	}
+	PC_errhandler(errh);
 	outputs = malloc(nb_outputs*sizeof(hdf5pp_var_t));
 	for ( int ii=0; ii<nb_outputs; ++ii ) {
 		PC_string(PC_get(my_conf, ".outputs{%d}", ii), &outputs[ii].name);
@@ -73,6 +81,30 @@ PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 		
 		char *select_strv; PC_string(PC_get(output, ".select"), &select_strv);
 		PDI_value_parse(select_strv, &outputs[ii].select);
+		free(select_strv);
+	}
+	
+	errh = PC_errhandler(PC_NULL_HANDLER);
+	if ( PC_len(PC_get(my_conf, ".inputs"), &nb_inputs) ) {
+		nb_inputs = 0;
+	}
+	PC_errhandler(errh);
+	inputs = malloc(nb_inputs*sizeof(hdf5pp_var_t));
+	for ( int ii=0; ii<nb_inputs; ++ii ) {
+		PC_string(PC_get(my_conf, ".inputs{%d}", ii), &inputs[ii].name);
+		
+		PC_tree_t input = PC_get(my_conf, ".inputs<%d>", ii);
+		
+		char *file_strv; PC_string(PC_get(input, ".file"), &file_strv);
+		PDI_value_parse(file_strv, &inputs[ii].h5file);
+		free(file_strv);
+		
+		char *var_strv; PC_string(PC_get(input, ".var"), &var_strv);
+		PDI_value_parse(var_strv, &inputs[ii].h5var);
+		free(var_strv);
+		
+		char *select_strv; PC_string(PC_get(input, ".select"), &select_strv);
+		PDI_value_parse(select_strv, &inputs[ii].select);
 		free(select_strv);
 	}
 	
@@ -175,21 +207,89 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 	free(h5starts);
 }
 
+void read_from_file(PDI_variable_t *data, char *filename, char *pathname)
+{
+	int rank = 0;
+	hsize_t *h5sizes = NULL;
+	hsize_t *h5subsizes = NULL;
+	hsize_t *h5starts = NULL;
+	PDI_type_t *scalart = &data->type;
+	if ( data->type.kind == PDI_K_ARRAY ) {
+		rank = data->type.c.array->ndims;
+		h5sizes = malloc(rank*sizeof(hsize_t));
+		h5subsizes = malloc(rank*sizeof(hsize_t));
+		h5starts = malloc(rank*sizeof(hsize_t));
+		for ( int ii=0; ii<rank; ++ii ) {
+			int h5ii = ii; //rank-ii-1; // ORDER_C
+			int intdim;
+			
+			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
+			h5sizes[h5ii] = intdim;
+			
+			PDI_value_int(&data->type.c.array->subsizes[ii], &intdim);
+			h5subsizes[h5ii] = intdim;
+			
+			PDI_value_int(&data->type.c.array->starts[ii], &intdim);
+			h5starts[h5ii] = intdim;
+		}
+		scalart = &data->type.c.array->type;
+	}
+	if ( scalart->kind != PDI_K_SCALAR ) return;
+	
+	hid_t h5file = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
+	
+	hid_t h5fspace = H5Screate_simple(rank, h5subsizes, NULL);
+	hid_t h5mspace = H5Screate_simple(rank, h5sizes, NULL);
+	H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
+	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
+	H5Pset_create_intermediate_group( h5lcp, 1 );
+	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar), h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dread(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT, data->content.data);
+	
+	H5Dclose(h5set);
+	H5PTclose(h5lcp);
+	H5Sclose(h5fspace);
+	H5Fclose(h5file);
+	
+	free(h5sizes);
+	free(h5subsizes);
+	free(h5starts);
+}
+
 PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 {
-	int found_output = 0;
-	for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
-		if ( !strcmp(outputs[ii].name, data->name) ) {
-			found_output = 1;
-			
-			char *h5file; PDI_value_str(&outputs[ii].h5file, &h5file);
-			char *h5var;  PDI_value_str(&outputs[ii].h5var,  &h5var);
-			int select;   PDI_value_int(&outputs[ii].select, &select);
-			
-			if ( select ) write_to_file(data, h5file, h5var);
-			
-			free(h5var);
-			free(h5file);
+	if ( data->content.access & PDI_OUT ) {
+		int found_output = 0;
+		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
+			if ( !strcmp(outputs[ii].name, data->name) ) {
+				found_output = 1;
+				
+				char *h5file; PDI_value_str(&outputs[ii].h5file, &h5file);
+				char *h5var;  PDI_value_str(&outputs[ii].h5var,  &h5var);
+				int select;   PDI_value_int(&outputs[ii].select, &select);
+				
+				if ( select ) write_to_file(data, h5file, h5var);
+				
+				free(h5var);
+				free(h5file);
+			}
+		}
+	}
+	if ( data->content.access & PDI_IN ) {
+		int found_input = 0;
+		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
+			if ( !strcmp(inputs[ii].name, data->name) ) {
+				found_input = 1;
+				
+				char *h5file; PDI_value_str(&inputs[ii].h5file, &h5file);
+				char *h5var;  PDI_value_str(&inputs[ii].h5var,  &h5var);
+				int select;   PDI_value_int(&inputs[ii].select, &select);
+				
+				if ( select ) read_from_file(data, h5file, h5var);
+				
+				free(h5var);
+				free(h5file);
+			}
 		}
 	}
 	return PDI_OK;
