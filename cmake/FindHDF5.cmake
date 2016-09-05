@@ -335,18 +335,18 @@ function(hdf5_try_find parallel_hdf5)
 	foreach (lang C CXX Fortran)
 		if (CMAKE_${lang}_COMPILER_WORKS)
 			# If the user supplies a compiler *name* instead of an absolute path, assume that we need to find THAT compiler.
-#			if (HDF5_${lang}_COMPILER)
-#				is_file_executable(HDF5_${lang}_COMPILER HDF5_COMPILER_IS_EXECUTABLE)
-#				if (NOT HDF5_COMPILER_IS_EXECUTABLE)
-#					# Get rid of our default list of names and just search for the name the user wants.
-#					set(_HDF5_${lang}_COMPILER_NAMES ${HDF5_${lang}_COMPILER})
-#					set(HDF5_${lang}_COMPILER "HDF5_${lang}_COMPILER-NOTFOUND" CACHE FILEPATH "Cleared" FORCE)
-#					# If the user specifies a compiler, we don't want to try to search libraries either.
-#					set(try_libs FALSE)
-#				endif()
-#			else()
-#				set(try_libs TRUE)
-#			endif()
+			if (HDF5_${lang}_COMPILER)
+				is_file_executable(HDF5_${lang}_COMPILER HDF5_COMPILER_IS_EXECUTABLE)
+				if (NOT HDF5_COMPILER_IS_EXECUTABLE)
+					# Get rid of our default list of names and just search for the name the user wants.
+					set(_HDF5_${lang}_COMPILER_NAMES ${HDF5_${lang}_COMPILER})
+					set(HDF5_${lang}_COMPILER "HDF5_${lang}_COMPILER-NOTFOUND" CACHE FILEPATH "Cleared" FORCE)
+					# If the user specifies a compiler, we don't want to try to search libraries either.
+					set(try_libs FALSE)
+				endif()
+			else()
+				set(try_libs TRUE)
+			endif()
 
 			find_program(HDF5_${lang}_COMPILER
 				NAMES         ${_HDF5_${lang}_COMPILER_NAMES}
