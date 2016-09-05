@@ -42,17 +42,36 @@ use, intrinsic :: ISO_C_binding
 implicit none
 
 interface
+  subroutine fortran_free(array) 
+   use, intrinsic :: ISO_C_binding
+   real(C_float),dimension(:,:), target :: array
+  endsubroutine fortran_free
+endinterface
+
+real(C_float),dimension(:,:), allocatable, target :: array
+
+allocate(array(10,10))
+call fortran_free(array)
+
+endprogram
+
+subroutine fortran_free(array)
+use, intrinsic :: ISO_C_binding
+implicit none
+
+interface
   subroutine free(v) bind(C)
    use, intrinsic :: ISO_C_binding
    type(C_ptr), value :: v
   endsubroutine
 endinterface
 
-real(C_float), dimension(:,:), pointer :: v
+    real(C_float),dimension(:,:), target :: array
 
-call free(c_loc(v(0,0)))
+    call free(c_loc(array(1,1)))
 
-endprogram
+end subroutine
+
 ")
 	try_compile(COMPILE_RESULT "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}" "${TEST_FILE}"
 		OUTPUT_VARIABLE COMPILE_OUTPUT

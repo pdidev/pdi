@@ -267,7 +267,7 @@ module PDI
     C_name(len_trim(name)+1) = C_null_char
     
 !$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_export_C(C_loc(C_name), &
+    tmperr = int(PDI_share_C(C_loc(C_name), &
         C_loc(fptr(data)), &
         accessf))
 !$SH else
