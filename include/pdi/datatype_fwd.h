@@ -25,32 +25,49 @@
 #ifndef PDI_DATATYPE_FWD_H__
 #define PDI_DATATYPE_FWD_H__
 
+/// A PDI type descriptor
 typedef struct PDI_type_s PDI_type_t;
 
+/// The possible kinds of type
 typedef enum PDI_type_kind_e {
+	/// A scalar
 	PDI_K_SCALAR,
+	/// An array
 	PDI_K_ARRAY,
+	/// A record (a.k.a. C-style structure)
 	PDI_K_STRUCT
 } PDI_type_kind_t;
 
+/// A PDI array type descriptor
 typedef struct PDI_array_type_s PDI_array_type_t;
 
+//TODO: implement
 // typedef enum PDI_order_e {
 // 	PDI_ORDER_C,
 // 	PDI_ORDER_FORTRAN
 // } PDI_order_t;
 
+/// A PDI record type descriptor
 typedef struct PDI_struct_type_s PDI_struct_type_t;
 
+/// A record member descriptor
 typedef struct PDI_member_s PDI_member_t;
 
+/// A PDI scalar type descriptor
 typedef enum PDI_scalar_type_e {
+	/// A 8 bits integer
 	PDI_T_INT8,
+	/// A 16 bits integer
 	PDI_T_INT16,
+	/// A 32 bits integer
 	PDI_T_INT32,
+	/// A 64 bits integer
 	PDI_T_INT64,
+	/// A 32 bits IEEE ??? floating point value
 	PDI_T_FLOAT,
+	/// A 64 bits IEEE ??? floating point value
 	PDI_T_DOUBLE,
+	/// A 128 bits IEEE ??? floating point value
 	PDI_T_LONG_DOUBLE
 } PDI_scalar_type_t;
 

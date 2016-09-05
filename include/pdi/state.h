@@ -34,67 +34,81 @@
 
 struct loaded_plugin_s
 {
+	/// the name of the plugin
 	char *name;
 	
+	/// the plugin implementation, i.e. the functions it provides
 	PDI_plugin_t *impl;
 	
 };
 
-struct PDI_dimension_s
-{
-	char *name;
-	
-	PDI_value_t *value;
-	
-};
-
+/** The value of a variable (a.k.a. data) as a reference to the value in code
+ */
 struct PDI_variable_value_s
 {
-	// PDI_inout_t ORed
+	// PDI_inout_t ORed, 0 if the variable is not currently shared
 	int access;
 	
+	/// a pointer to the data in code representation (i.e. potentially sparse)
 	void *data;
 	
 };
 
 struct PDI_param_s
 {
+	/// The name os this specific parameter (a.k.a. metadata)
 	char *name;
 	
+	/// The type of the parameter (a.k.a. metadata)
 	PDI_type_t type;
 	
+	/// The value of the parameter (a.k.a. metadata) in dense representation
 	void *value;
 	
 };
 
 struct PDI_variable_s
 {
+	/// The name os this specific variable (a.k.a. data)
 	char *name;
 	
+	/// The type of the variable (a.k.a. data)
 	PDI_type_t type;
 	
+	/// A reference to the variable (a.k.a. data) configuration
 	PC_tree_t config;
 	
+	/// The value of the variable (a.k.a. data) as a reference
 	PDI_variable_value_t content;
 	
 };
 
 struct PDI_state_s
 {
-	int nb_params;
-
+	/** A MPI communicator containing all application processes, i.e. all
+	 *  those not reserved by any PDI plugin
+	 */
 	MPI_Comm PDI_comm;
 	
+	/// the number of parameters
+	int nb_params;
+	
+	/// the actual parameters (a.k.a. metadata)
 	PDI_param_t *params;
 	
+	/// The number of variables
 	int nb_variables;
 	
+	/// The actual variables (a.k.a data)
 	PDI_variable_t *variables;
 	
+	/// The number of loaded plugins
 	int nb_plugins;
 	
+	/// The actual loaded plugins
 	PDI_plugin_t *plugins;
 	
+	/// The current error handling function
 	PDI_errfunc_f *errfunc;
 	
 };

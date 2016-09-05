@@ -30,34 +30,18 @@
 #include <pdi/value_fwd.h>
 #include <pdi/state_fwd.h>
 
-/* Grammar
-VALUE   := INTVAL | STRVAL
-STRVAL  := ( CHAR | '\' '\' | '\' '$' | REF | '$' '(' INTVAL ')' )*
-INTVAL  := INTVAL2 ( OP1 INTVAL2 )*
-INTVAL2 := INTVAL3 ( OP2 INTVAL3 )*
-INTVAL3 := INTVAL4 ( OP3 INTVAL4 )*
-INTVAL4 := TERM ( OP4 TERM )*
-TERM    := ( CONST | REF | '(' INTVAL ')' )
-REF     := '$' ( IREF | '{' IREF '}' )
-IREF    := ID ( '[' INTVAL ']' )*
-CONST ~= (0x)? [0-9]+ ( \.  )
-OP1   ~= \|
-OP2   ~= &
-OP3   ~= =
-OP4   ~= \+ | -
-OP5   ~= \* | / | %
-ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
-CHAR  ~= [^$\\]
-*/
-
+/** A value in case this is a reference to another value
+ */
 typedef struct PDI_refval_s PDI_refval_t;
 
+/** A value in case this is an expression
+ */
 typedef struct PDI_exprval_s PDI_exprval_t;
 
+/** A value in case this is a string (potentially with dolloar refs inside)
+ */
 typedef struct PDI_strval_s PDI_strval_t;
 
-/** A parsed value
- */
 struct PDI_value_s
 {
 	/// the kind of value this is

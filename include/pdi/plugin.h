@@ -30,28 +30,46 @@
 #include <pdi/plugin_fwd.h>
 #include <pdi/state_fwd.h>
 
+/// Skeleton of the function called at PDI finalization
 typedef PDI_status_t (*PDI_finalize_f)();
 
+/// Skeleton of the function called to notify an event
 typedef PDI_status_t (*PDI_event_f)(const char *event);
 
+/// Skeleton of the function called to notify that some data becomes available
 typedef PDI_status_t (*PDI_data_start_f)(PDI_variable_t *data);
 
+/// Skeleton of the function called to notify that some data becomes unavailable
 typedef PDI_status_t (*PDI_data_end_f)(PDI_variable_t *data);
 
-/** Definition of a plugin
- */
 struct PDI_plugin_s {
 	
+	/// The function called at PDI finalization
 	PDI_finalize_f finalize;
 	
+	/// The function called to notify an event
 	PDI_event_f event;
 	
+	/// The function called to notify that some data becomes available
 	PDI_data_start_f data_start;
 	
+	/// The function called to notify that some data becomes unavailable
 	PDI_data_end_f data_end;
 	
 };
 
+/** Declares a plugin.
+ * 
+ * This should be called after having implemeted the five required functions
+ * for a PDI plugin:
+ * - PDI_&lt;name&gt;_finalize;\
+ * - PDI_&lt;name&gt;_event;\
+ * - PDI_&lt;name&gt;_data_start;\
+ * - PDI_&lt;name&gt;_data_end;\
+ * - PDI_&lt;name&gt;_init(conf, world);\
+ * 
+ * \param name the name of the plugin
+ */
 #define PDI_PLUGIN(name)\
 PDI_status_t PDI_EXPORT PDI_plugin_##name##_ctor(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin) \
 {\

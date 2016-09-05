@@ -32,14 +32,18 @@
 
 struct PDI_type_s
 {
+	/// The kind of type this describes
 	PDI_type_kind_t kind;
 	
 	union
 	{
+		/// The actual descriptor in case of a scalar
 		PDI_scalar_type_t scalar;
 		
+		/// The actual descriptor in case of an array
 		PDI_array_type_t *array;
 		
+		/// The actual descriptor in case of a record
 		PDI_struct_type_t *struct_;
 		
 	} c;

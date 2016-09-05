@@ -25,6 +25,31 @@
 #ifndef PDI_VALUE_FWD_H__
 #define PDI_VALUE_FWD_H__
 
+/** A parsed value as specified by an expression.
+ * 
+ * References are not resolved, this is only the AST.
+ * 
+ * The grammar of an expression is as follow:
+ * ```
+ * VALUE   := INTVAL | STRVAL
+ * BSTRVAL  := ( CHAR | '\' '\' | '\' '$' | REF | '$' '(' INTVAL ')' )*
+ * BINTVAL  := INTVAL2 ( OP1 INTVAL2 )*
+ * BINTVAL2 := INTVAL3 ( OP2 INTVAL3 )*
+ * BINTVAL3 := INTVAL4 ( OP3 INTVAL4 )*
+ * BINTVAL4 := TERM ( OP4 TERM )*
+ * BTERM    := ( CONST | REF | '(' INTVAL ')' )
+ * BREF     := '$' ( IREF | '{' IREF '}' )
+ * BIREF    := ID ( '[' INTVAL ']' )*
+ * BCONST ~= (0x)? [0-9]+ ( \.  )
+ * BOP1   ~= \|
+ * BOP2   ~= &
+ * BOP3   ~= =
+ * BOP4   ~= \+ | -
+ * BOP5   ~= \* | / | %
+ * BID    ~= [a-zA-Z_][a-zA-Z0-9_]*
+ * BCHAR  ~= [^$\\]
+ * ```
+ */
 typedef struct PDI_value_s PDI_value_t;
 
 /** the possible kind of values

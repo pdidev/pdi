@@ -26,13 +26,22 @@
 #define ERROR_H__
 
 #include "pdi.h"
-
+/** Handle a PDI return code, jumping to the error handler code on error
+ * \param callstatus the call status to handle, will be used only once, this
+ *        can be the call itself
+ * \param free_stamp the label of the error handling code
+ */
 #define handle_err(callstatus, free_stamp)\
 do { \
 	status = callstatus; \
 	if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \
 } while( 0 )
 
+/** Handle a Paraconf return code, jumping to the error handler code on error
+ * \param callstatus the call status to handle, will be used only once, this
+ *        can be the call itself
+ * \param free_stamp the label of the error handling code
+ */
 #define handle_PC_err(callstatus, free_stamp)\
 do { \
 	PC_errhandler_t pc_handler = intercept_PC_errors();\
