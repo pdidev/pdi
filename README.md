@@ -3,9 +3,9 @@
 ## Main features
 PDI is a C library to manage how data are imported and exported.
 An API is provided whose generic interface handles data IO and format.
-PDI use existing library that are integrated in PDI via a plugin mechanism.
-Before running a program that uses PDI a configuration file should be provided that describs which plugins are used and how. 
-The library currently propose HDF5, FTI format (and soon many other ;) ).
+PDI uses existing libraries that are integrated to PDI through plugins.
+Before running a program that uses PDI a configuration file should be provided which describes which plugins are used and how.
+The library currently supports HDF5, FTI format (and soon many other ;) ).
 
 
 #### Existing plugins
