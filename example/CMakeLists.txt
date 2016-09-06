@@ -57,4 +57,4 @@ add_compiler_flags(PDI_example2 PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror
 file(COPY example2-fti.yml example2.fti DESTINATION .)
 add_test(NAME PDI_example2-fti COMMAND "${MPIEXEC}" -n 8 PDI_example2 1 example2-fti.yml)
 set_property(TEST PDI_example2-fti APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/fti_plugin/")
-set_property(TEST PDI_example2-fti PROPERTY TIMEOUT 15)
+set_property(TEST PDI_example2-fti PROPERTY TIMEOUT 30)
