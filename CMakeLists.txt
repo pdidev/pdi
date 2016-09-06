@@ -57,10 +57,6 @@ option(ENABLE_FORTRAN
 	"Enable compilation of the Fortran version of the library"
 	ON
 )
-option(ENABLE_TESTING
-	"Enable compilation of the (example) tests"
-	OFF
-)
 option(USE_SYSTEM_PARACONF
 	"Use an already installed paraconf instead of building the embedded one"
 	OFF
@@ -182,10 +178,8 @@ add_subdirectory(src/fti_plugin/)
 
 # Test examples
 
-if("${ENABLE_TESTING}")
-	enable_testing()
-	add_subdirectory(example/)
-endif()
+enable_testing()
+add_subdirectory(example/)
 
 
 # Installable config
