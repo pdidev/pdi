@@ -1,6 +1,39 @@
-PDI is the Parallel Data Interface
+# PDI: the Parallel Data Interface.
 
-# Installation
+## Main features
+PDI is a C library to manage how data are imported and exported.
+An API is provided whose generic interface handles data IO and format.
+PDI use existing library that are integrated in PDI via a plugin mechanism.
+Before running a program that uses PDI a configuration file should be provided that describs which plugins are used and how. 
+The library currently propose HDF5, FTI format (and soon many other ;) ).
+
+
+#### Existing plugins
+* Export
+    * [ ] HDF5
+    	* [x] HDF5 serial/one-core-one-file;
+    	* [ ] HDF5 parallel
+	* [ ] AH5 (HDF5 asynchronous)
+    * [x] FTI
+    * [ ] ... see TODO.md
+* Import
+
+All the importers are under developing.
+
+
+## Installation
+Currently, to obtain the library one needs to build it from source.
+Pre-build binaries are not available.
+
+### Prerequisites
+#### Minimum requirement
+To build the library one needs:
+ * cmake, version >= 3.1
+ * mpi 
+ * gcc
+ 
+#### Additionnal functionnality requirement
+Fortran language is supported (require a fortran compiler!).
 
 ## Get the source
 
@@ -18,10 +51,15 @@ Go to page ???
 git clone --recursive 
 ```
 
-## Compile
+## Step by step
+if the sources are in the folder pdi:
+
 
 ```
-cmake
+cd pdi
+mkdir build
+cd build
+cmake .. 
 make
 make install
 ```
