@@ -78,13 +78,13 @@ find_package(MPI REQUIRED)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf)
 else()
-	add_subdirectory(vendor/paraconf)
+	add_subdirectory(vendor/paraconf paraconf EXCLUDE_FROM_ALL)
 endif()
 
 if("${USE_SYSTEM_FTI}")
 	find_package(fti)
 else()
-	add_subdirectory(vendor/fti)
+	add_subdirectory(vendor/fti fti EXCLUDE_FROM_ALL)
 endif()
 
 

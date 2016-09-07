@@ -6,7 +6,7 @@
   - `handle_err` to `throw_error`
 * Unifiy error handling, define the status variable, use the 2 macros & gotos
 everywhere
-  - Document this
+  - Document this (Doxygen, ...)
 
 # FTI Plugin
 * Correct restart support
@@ -16,7 +16,7 @@ everywhere
 * Correctly support sparse data
 
 # seq-HDF5 Plugin
-* correctly handle dimensions
+* correctly handle dimensions (?) 
 * error handling
 * handle nested arrays
 
@@ -27,11 +27,11 @@ everywhere
  - plugins
 
 # Design
-* Support transactions, trigger an event before transac close
+* Support transactions (=multiple successive expose), trigger an event before transac close
 * Support installation of filters for events & data by plugins (i.e. regexp)
 * Define how error handling should be done in plugins
 * Define how memory transfered to PDI should be handled, how can plugins
-  request for the data to be kept alive?
+  request for the data to be kept alive? (if release how to use the data (efficiently))
 * Determine if plugins should be notified about data not specified in the
   config file at all?
 * Add support for situations where you want to continue even on error, but
@@ -43,6 +43,6 @@ everywhere
 * Parallel HDF5
 * Debug (i.e., printf, cksum)
 * AH5
-* SIONlib
-* XIOS
-* Post-processing
+* SIONlib (Jülich center) 
+* XIOS 
+* Post-processing (use fonction)
