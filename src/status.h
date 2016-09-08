@@ -31,7 +31,7 @@
  *        can be the call itself
  * \param free_stamp the label of the error handling code
  */
-#define handle_err(callstatus, free_stamp)\
+#define handle_error(callstatus, free_stamp)\
 do { \
 	status = callstatus; \
 	if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \
@@ -57,7 +57,7 @@ do { \
  * \see printf
  * \return the newly created error
  */
-PDI_status_t handle_error(PDI_status_t errcode, const char *message, ...);
+PDI_status_t make_error(PDI_status_t errcode, const char *message, ...);
 
 /** install a paraconf error-handler that forwards errors to PDI
  * 

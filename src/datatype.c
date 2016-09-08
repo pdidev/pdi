@@ -92,7 +92,7 @@ PDI_status_t scal_size(PDI_scalar_type_t type, val_size_t *result)
 		result->type = sizeof(long double);
 		break;
 	default:
-		handle_err(handle_error(PDI_ERR_CONFIG, "Unknown PDI type: #%d", type), err0);
+		handle_error(make_error(PDI_ERR_CONFIG, "Unknown PDI type: #%d", type), err0);
 	}
 
 	return status;
@@ -104,14 +104,14 @@ PDI_status_t array_size(const PDI_array_type_t *type, val_size_t *result)
 {
 	PDI_status_t status = PDI_OK;
 
-	handle_err(size(&type->type, result), err0);
+	handle_error(size(&type->type, result), err0);
 	for ( int dim=0; dim<type->ndims; ++dim ) {
-		int size; handle_err(PDI_value_int(&(type->sizes[dim]), &size), err1);
-		int subsize; handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err1);
+		int size; handle_error(PDI_value_int(&(type->sizes[dim]), &size), err1);
+		int subsize; handle_error(PDI_value_int(&(type->subsizes[dim]), &subsize), err1);
 		if ( (size == subsize) && (result->ndims == 0) ) {
 			result->type *= size;
 		} else {
-			int start; handle_err(PDI_value_int(type->starts, &start), err1);
+			int start; handle_error(PDI_value_int(type->starts, &start), err1);
 			++result->ndims;
 			result->sizes = realloc(result->sizes, result->ndims*sizeof(int));
 			result->subsizes = realloc(result->subsizes, result->ndims*sizeof(int));
@@ -135,13 +135,13 @@ PDI_status_t size(const PDI_type_t *type, val_size_t *result)
 
 	switch( type->kind ) {
 	case PDI_K_SCALAR: {
-		handle_err(scal_size(type->c.scalar, result), err0);
+		handle_error(scal_size(type->c.scalar, result), err0);
 	} break;
 	case PDI_K_ARRAY: {
-		handle_err(array_size(type->c.array, result), err0);
+		handle_error(array_size(type->c.array, result), err0);
 	} break;
 	case PDI_K_STRUCT: {
-		handle_err(handle_error(PDI_ERR_CONFIG, "Not implemented yet"), err0);
+		handle_error(make_error(PDI_ERR_CONFIG, "Not implemented yet"), err0);
 	} break;
 	}
 
@@ -172,7 +172,7 @@ PDI_status_t tcopy(const PDI_type_t *type, void *to, void *from)
 {
 	PDI_status_t status = PDI_OK;
 
-	val_size_t tsize; handle_err(size(type, &tsize), err0);
+	val_size_t tsize; handle_error(size(type, &tsize), err0);
 	do_copy(&tsize, 0, to, from);
 	size_destroy(&tsize);
 
@@ -193,19 +193,19 @@ static PDI_status_t load_array(PC_tree_t node, PDI_array_type_t *type)
 		type->sizes = malloc(type->ndims*sizeof(PDI_value_t));
 		for ( int ii=0; ii<type->ndims; ++ii ) {
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err1);
-			handle_err(PDI_value_parse(expr, &type->sizes[ii]), err1);
+			handle_error(PDI_value_parse(expr, &type->sizes[ii]), err1);
 err1:
 			free(expr);
-			handle_err(status, err0);
+			handle_error(status, err0);
 		}
 	} else { //single dim array
 		type->ndims = 1;
 		type->sizes = malloc(type->ndims*sizeof(PDI_value_t));
 		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err5);
-		handle_err(PDI_value_parse(expr, type->sizes), err5);
+		handle_error(PDI_value_parse(expr, type->sizes), err5);
 err5:
 		free(expr);
-		handle_err(status, err0);
+		handle_error(status, err0);
 	}
 	
 	pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
@@ -213,14 +213,14 @@ err5:
 	PC_errhandler(pc_handler); // aka PC_end_try
 	
 	if ( !invalid_subsizes ) {
-		if ( len != type->ndims ) handle_err(handle_error(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, type->ndims), err0);	
+		if ( len != type->ndims ) handle_error(make_error(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, type->ndims), err0);	
 		type->subsizes = malloc(type->ndims*sizeof(PDI_value_t));
 		for ( int ii=0; ii<type->ndims; ++ii ) {
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err2);
-			handle_err(PDI_value_parse(expr, &type->subsizes[ii]), err2);
+			handle_error(PDI_value_parse(expr, &type->subsizes[ii]), err2);
 err2:
 			free(expr);
-			handle_err(status, err0);
+			handle_error(status, err0);
 		}
 		
 	} else { // no subsize, default to full size
@@ -231,20 +231,20 @@ err2:
 	pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
 	if ( !PC_len(PC_get(node, ".starts"), &len) ) {
 		PC_errhandler(pc_handler); // aka PC_end_try
-		if ( len != type->ndims ) handle_err(handle_error(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, type->ndims), err0);
+		if ( len != type->ndims ) handle_error(make_error(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, type->ndims), err0);
 		type->starts = malloc(type->ndims*sizeof(PDI_value_t));
 		for ( int ii=0; ii<type->ndims; ++ii ) {
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err3);
-			handle_err(PDI_value_parse(expr, &type->starts[ii]), err3);
+			handle_error(PDI_value_parse(expr, &type->starts[ii]), err3);
 err3:
 			free(expr);
-			handle_err(status, err0);
+			handle_error(status, err0);
 		}
 	} else { // no start, start at 0 everywhere
 		PC_errhandler(pc_handler); // aka PC_end_try
 		type->starts = malloc(type->ndims*sizeof(PDI_value_t));
 		for ( int ii=0; ii<type->ndims; ++ii ) {
-			handle_err(PDI_value_parse("0", &type->starts[ii]), err0);
+			handle_error(PDI_value_parse("0", &type->starts[ii]), err0);
 		}
 	}
 	
@@ -252,7 +252,7 @@ err3:
 	
 	PC_tree_t type_type = PC_get(node, ".type");
 	handle_PC_err(PC_status(type_type), err0);
-	handle_err(PDI_datatype_load(type_type, &type->type), err0);
+	handle_error(PDI_datatype_load(type_type, &type->type), err0);
 	
 err0:
 	return status;
@@ -275,12 +275,12 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 			type->c.scalar = PDI_T_DOUBLE;
 		} else {
 			//TODO: handle missing types
-			handle_err(handle_error(PDI_ERR_VALUE, "Unknown primitive type: `%s'", buf_str), err0);
+			handle_error(make_error(PDI_ERR_VALUE, "Unknown primitive type: `%s'", buf_str), err0);
 		}
 	} else { // case where the datatype is composite
 		type->kind = PDI_K_ARRAY;
 		type->c.array = malloc( sizeof(PDI_array_type_t) );
-		handle_err(load_array(node, type->c.array), err0);
+		handle_error(load_array(node, type->c.array), err0);
 	}
 	
 err0:
@@ -292,7 +292,7 @@ PDI_status_t PDI_data_size(const PDI_type_t *type, int *result)
 {
 	PDI_status_t status = PDI_OK;
 
-	val_size_t valsz; handle_err(size(type, &valsz), err0);
+	val_size_t valsz; handle_error(size(type, &valsz), err0);
 	*result = valsz.type;
 	for ( int dim=0; dim<valsz.ndims; ++dim ) {
 		*result *= valsz.subsizes[dim];
@@ -308,7 +308,7 @@ PDI_status_t PDI_array_datatype_destroy(PDI_array_type_t *type)
 {
 	PDI_status_t status = PDI_OK;
 	
-	handle_err(PDI_datatype_destroy(&type->type), err0);
+	handle_error(PDI_datatype_destroy(&type->type), err0);
 	free(type->sizes);
 	free(type->starts);
 	// don't free subsizes in case it was a copy of sizes
@@ -329,7 +329,7 @@ PDI_status_t PDI_datatype_destroy(PDI_type_t *type)
 		free(type->c.array);
 	} break;
 	case PDI_K_STRUCT: {
-		handle_err(handle_error(PDI_ERR_IMPL, "Structs not implemented yet"), err0);
+		handle_error(make_error(PDI_ERR_IMPL, "Structs not implemented yet"), err0);
 		free(type->c.struct_);
 	} break;
 	case PDI_K_SCALAR: {
