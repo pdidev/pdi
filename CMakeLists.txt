@@ -169,10 +169,8 @@ if("${ENABLE_FORTRAN}")
 endif()
 
 
-# PDI test for plugins
-add_subdirectory(src/test_plugin/)
-
 # the plugins
+add_subdirectory(plugins/test_plugin/)
 add_subdirectory(plugins/HDF5_per_process/)
 add_subdirectory(plugins/FTI/)
 
