@@ -53,18 +53,18 @@ PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *wor
 		void *lib_handle = dlopen(libname, RTLD_NOW);
 		free(libname);
 		if ( !lib_handle ) {
-			throw_error(make_error(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s': %s", plugin_name, dlerror()), err1);
+			handle_error(make_error(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s': %s", plugin_name, dlerror()), err1);
 		}
 		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
 		if ( !plugin_ctor_uncast ) {
-			throw_error(make_error(PDI_ERR_PLUGIN, "Unable to load plugin ctor for `%s': %s", plugin_name, dlerror()), err1);
+			handle_error(make_error(PDI_ERR_PLUGIN, "Unable to load plugin ctor for `%s': %s", plugin_name, dlerror()), err1);
 		}
 	}
 	free(plugin_symbol);
 	
 	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
 	init_f plugin_ctor = *((init_f *)&plugin_ctor_uncast);
-	throw_error(plugin_ctor(node, world, plugin), err0);
+	handle_error(plugin_ctor(node, world, plugin), err0);
 	
 	return status;
 	
@@ -87,7 +87,7 @@ PDI_status_t plugin_loader_tryload( PC_tree_t conf, int plugin_id, MPI_Comm *wor
 	handle_PC_err(PC_status(plugin_conf), err1);
 	
 	PDI_state.plugins = realloc(PDI_state.plugins, sizeof(PDI_plugin_t)*(PDI_state.nb_plugins+1));
-	throw_error(plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[PDI_state.nb_plugins]), err1);
+	handle_error(plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[PDI_state.nb_plugins]), err1);
 	++PDI_state.nb_plugins;
 	
 	free(plugin_name);

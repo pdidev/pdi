@@ -31,7 +31,7 @@
  *        can be the call itself
  * \param free_stamp the label of the error handling code
  */
-#define throw_error(callstatus, free_stamp)\
+#define handle_error(callstatus, free_stamp)\
 do { \
 	status = callstatus; \
 	if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \

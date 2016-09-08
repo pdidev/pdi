@@ -52,7 +52,7 @@ static PDI_status_t load_params(PC_tree_t node)
 		
 		PC_tree_t map_value = PC_get(node, "<%d>", map_id);
 		handle_PC_err(PC_status(map_value), err0);
-		throw_error(PDI_datatype_load(map_value, &cur_meta->type), err0);
+		handle_error(PDI_datatype_load(map_value, &cur_meta->type), err0);
 		
 		++PDI_state.nb_params;
 	}
@@ -81,7 +81,7 @@ static PDI_status_t load_variables(PC_tree_t node)
 		
 		cur_var->config = PC_get(node, "<%d>", map_id);
 		handle_PC_err(PC_status(cur_var->config), err0);
-		throw_error(PDI_datatype_load(cur_var->config, &cur_var->type), err0);
+		handle_error(PDI_datatype_load(cur_var->config, &cur_var->type), err0);
 		
 		
 		++PDI_state.nb_variables;
@@ -100,11 +100,11 @@ PDI_status_t load_conf(PC_tree_t node)
 	
 	PC_tree_t params = PC_get(node, ".params");
 	handle_PC_err(PC_status(params), err0);
-	throw_error(load_params(params), err0);
+	handle_error(load_params(params), err0);
 	
 	PC_tree_t variable = PC_get(node, ".variables");
 	handle_PC_err(PC_status(variable), err0);
-	throw_error(load_variables(variable), err0);
+	handle_error(load_variables(variable), err0);
 	
 err0:
 	return status;
