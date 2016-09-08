@@ -31,30 +31,30 @@ include(AddCCompilerFlags)
 
 find_library(LIB_M m DOC "The math library")
 
-add_executable(PDI_example
-	example.c
-)
+add_executable(PDI_example EXCLUDE_FROM_ALL example.c)
 add_compiler_flags(PDI_example PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
 target_link_libraries(PDI_example pdi mpi)
+add_test(NAME PDI_example_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 file(COPY example.yml DESTINATION .)
 add_test(NAME PDI_example COMMAND "${MPIEXEC}" -n 2 PDI_example)
+set_property(TEST PDI_example PROPERTY DEPENDS PDI_example_build)
 set_property(TEST PDI_example APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/hdf5_per_process/")
 set_property(TEST PDI_example PROPERTY TIMEOUT 2)
 
-add_executable(PDI_example_f90
-	example.f90
-)
+add_executable(PDI_example_f90 EXCLUDE_FROM_ALL example.f90)
 target_link_libraries(PDI_example_f90 pdi_f90 mpi_f90)
+add_test(NAME PDI_example_f90_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example_f90 WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_test(NAME PDI_example_f90 COMMAND "${MPIEXEC}" -n 2 PDI_example_f90)
+set_property(TEST PDI_example_f90 PROPERTY DEPENDS PDI_example_f90_build)
 set_property(TEST PDI_example_f90 APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/hdf5_per_process/")
 set_property(TEST PDI_example_f90 PROPERTY TIMEOUT 2)
 
-add_executable(PDI_example2
-	example2.c
-)
+add_executable(PDI_example2 EXCLUDE_FROM_ALL example2.c)
 target_link_libraries(PDI_example2 pdi mpi "${LIB_M}")
 add_compiler_flags(PDI_example2 PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
+add_test(NAME PDI_example2_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example2 WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 file(COPY example2-fti.yml example2.fti DESTINATION .)
 add_test(NAME PDI_example2-fti COMMAND "${MPIEXEC}" -n 8 PDI_example2 1 example2-fti.yml)
+set_property(TEST PDI_example2-fti PROPERTY DEPENDS PDI_example2_build)
 set_property(TEST PDI_example2-fti APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../src/fti_plugin/")
-set_property(TEST PDI_example2-fti PROPERTY TIMEOUT 15)
+set_property(TEST PDI_example2-fti PROPERTY TIMEOUT 30)
