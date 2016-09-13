@@ -39,7 +39,7 @@ file(COPY example.yml DESTINATION .)
 add_test(NAME PDI_example COMMAND "${MPIEXEC}" -n 2 PDI_example)
 set_property(TEST PDI_example PROPERTY DEPENDS PDI_example_build)
 set_property(TEST PDI_example APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../plugins/HDF5_per_process/")
-set_property(TEST PDI_example PROPERTY TIMEOUT 2)
+set_property(TEST PDI_example PROPERTY TIMEOUT 5)
 
 add_executable(PDI_example_f90 EXCLUDE_FROM_ALL example.f90)
 target_link_libraries(PDI_example_f90 pdi_f90 mpi_f90)
@@ -47,7 +47,7 @@ add_test(NAME PDI_example_f90_build COMMAND "${CMAKE_COMMAND}" --build . --targe
 add_test(NAME PDI_example_f90 COMMAND "${MPIEXEC}" -n 2 PDI_example_f90)
 set_property(TEST PDI_example_f90 PROPERTY DEPENDS PDI_example_f90_build)
 set_property(TEST PDI_example_f90 APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../plugins/HDF5_per_process/")
-set_property(TEST PDI_example_f90 PROPERTY TIMEOUT 2)
+set_property(TEST PDI_example_f90 PROPERTY TIMEOUT 5)
 
 add_executable(PDI_example2 EXCLUDE_FROM_ALL example2.c)
 target_link_libraries(PDI_example2 pdi mpi "${LIB_M}")
