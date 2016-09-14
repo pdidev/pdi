@@ -169,11 +169,10 @@ if("${ENABLE_FORTRAN}")
 endif()
 
 
-# The plugins
-
-add_subdirectory(src/hdf5_per_process/)
-add_subdirectory(src/test_plugin/)
-add_subdirectory(src/fti_plugin/)
+# the plugins
+add_subdirectory(plugins/test_plugin/)
+add_subdirectory(plugins/HDF5_per_process/)
+add_subdirectory(plugins/FTI/)
 
 
 # Test examples
