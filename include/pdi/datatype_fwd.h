@@ -68,7 +68,9 @@ typedef enum PDI_scalar_type_e {
 	/// A 64 bits IEEE ??? floating point value
 	PDI_T_DOUBLE,
 	/// A 128 bits IEEE ??? floating point value
-	PDI_T_LONG_DOUBLE
+	PDI_T_LONG_DOUBLE,
+	/// undefined type
+	PDI_T_UNDEF
 } PDI_scalar_type_t;
 
 #endif // PDI_DATATYPE_FWD_H__

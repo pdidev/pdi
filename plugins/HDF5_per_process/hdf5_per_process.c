@@ -138,6 +138,7 @@ hid_t h5type(PDI_scalar_type_t ptype) {
 	case PDI_T_FLOAT: return  H5T_NATIVE_FLOAT;
 	case PDI_T_DOUBLE: return  H5T_NATIVE_DOUBLE;
 	case PDI_T_LONG_DOUBLE: return  H5T_NATIVE_LDOUBLE;
+	case PDI_T_UNDEF: return H5T_NO_CLASS;
 	}
 	return H5T_NO_CLASS; //TODO: better handle the error
 }

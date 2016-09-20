@@ -60,6 +60,17 @@ PDI_status_t size_destroy(val_size_t *result)
 	return PDI_OK;
 }
 
+val_size_t size_new()
+{
+	val_size_t new_size;
+	new_size.ndims=-1;
+	new_size.sizes=NULL;      
+	new_size.subsizes=NULL;   
+	new_size.starts=NULL;     
+	new_size.type=PDI_T_UNDEF;
+	return new_size;
+}
+
 PDI_status_t scal_size(PDI_scalar_type_t type, val_size_t *result)
 {
 	PDI_status_t status = PDI_OK;
@@ -292,7 +303,7 @@ PDI_status_t PDI_data_size(const PDI_type_t *type, int *result)
 {
 	PDI_status_t status = PDI_OK;
 
-	val_size_t valsz; handle_error(size(type, &valsz), err0);
+	val_size_t valsz=size_new(); handle_error(size(type, &valsz), err0); // remove unitialized warning for valsz
 	*result = valsz.type;
 	for ( int dim=0; dim<valsz.ndims; ++dim ) {
 		*result *= valsz.subsizes[dim];
