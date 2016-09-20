@@ -44,7 +44,7 @@ struct loaded_plugin_s
 
 /** The value of a variable (a.k.a. data) as a reference to the value in code
  */
-struct PDI_variable_value_s
+struct PDI_data_value_s
 {
 	// PDI_inout_t ORed, 0 if the variable is not currently shared
 	int access;
@@ -54,9 +54,9 @@ struct PDI_variable_value_s
 	
 };
 
-struct PDI_param_s
+struct PDI_metadata_s
 {
-	/// The name os this specific parameter (a.k.a. metadata)
+	/// The name of this specific parameter (a.k.a. metadata)
 	char *name;
 	
 	/// The type of the parameter (a.k.a. metadata)
@@ -67,7 +67,7 @@ struct PDI_param_s
 	
 };
 
-struct PDI_variable_s
+struct PDI_data_s
 {
 	/// The name os this specific variable (a.k.a. data)
 	char *name;
@@ -79,7 +79,7 @@ struct PDI_variable_s
 	PC_tree_t config;
 	
 	/// The value of the variable (a.k.a. data) as a reference
-	PDI_variable_value_t content;
+	PDI_data_value_t content;
 	
 };
 
@@ -91,16 +91,16 @@ struct PDI_state_s
 	MPI_Comm PDI_comm;
 	
 	/// the number of parameters
-	int nb_params;
+	int nb_metadata;
 	
 	/// the actual parameters (a.k.a. metadata)
-	PDI_param_t *params;
+	PDI_metadata_t *metadata;
 	
-	/// The number of variables
-	int nb_variables;
+	/// The number of data
+	int nb_data;
 	
-	/// The actual variables (a.k.a data)
-	PDI_variable_t *variables;
+	/// The actual data (a.k.a data)
+	PDI_data_t *data;
 	
 	/// The number of loaded plugins
 	int nb_plugins;

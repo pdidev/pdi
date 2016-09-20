@@ -154,7 +154,7 @@ int is_h5_file(char *filename)
 	return fexists;
 }
 
-void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
+void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 {
 	int rank = 0;
 	hsize_t *h5sizes = NULL;
@@ -208,7 +208,7 @@ void write_to_file(PDI_variable_t *data, char *filename, char *pathname)
 	free(h5starts);
 }
 
-void read_from_file(PDI_variable_t *data, char *filename, char *pathname)
+void read_from_file(PDI_data_t *data, char *filename, char *pathname)
 {
 	int rank = 0;
 	hsize_t *h5sizes = NULL;
@@ -257,7 +257,7 @@ void read_from_file(PDI_variable_t *data, char *filename, char *pathname)
 	free(h5starts);
 }
 
-PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
+PDI_status_t PDI_hdf5_per_process_data_start(PDI_data_t *data)
 {
 	if ( data->content.access & PDI_OUT ) {
 		int found_output = 0;
@@ -296,7 +296,7 @@ PDI_status_t PDI_hdf5_per_process_data_start(PDI_variable_t *data)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_hdf5_per_process_data_end(PDI_variable_t *data)
+PDI_status_t PDI_hdf5_per_process_data_end(PDI_data_t *data)
 {
 	data = data; // prevent unused warning
 	return PDI_OK;
