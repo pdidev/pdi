@@ -33,7 +33,7 @@
 
 #include <fti.h>
 
-int get_id(PDI_variable_t *data)
+int get_id(PDI_data_t *data)
 {
 	int id;
 	PC_int(PC_get(data->config, ".id"), &id);
@@ -63,7 +63,7 @@ PDI_status_t PDI_fti_plugin_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data_start(PDI_variable_t *data)
+PDI_status_t PDI_fti_plugin_data_start(PDI_data_t *data)
 {
 	int size; PDI_data_size(&data->type, &size);
 	//TODO: handle non-contiguous data correctly
@@ -71,7 +71,7 @@ PDI_status_t PDI_fti_plugin_data_start(PDI_variable_t *data)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data_end(PDI_variable_t *data)
+PDI_status_t PDI_fti_plugin_data_end(PDI_data_t *data)
 {
 	FTI_Protect(get_id(data), NULL, 0, FTI_CHAR);
 	return PDI_OK;

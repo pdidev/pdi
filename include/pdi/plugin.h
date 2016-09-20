@@ -37,10 +37,10 @@ typedef PDI_status_t (*PDI_finalize_f)();
 typedef PDI_status_t (*PDI_event_f)(const char *event);
 
 /// Skeleton of the function called to notify that some data becomes available
-typedef PDI_status_t (*PDI_data_start_f)(PDI_variable_t *data);
+typedef PDI_status_t (*PDI_data_start_f)(PDI_data_t *data);
 
 /// Skeleton of the function called to notify that some data becomes unavailable
-typedef PDI_status_t (*PDI_data_end_f)(PDI_variable_t *data);
+typedef PDI_status_t (*PDI_data_end_f)(PDI_data_t *data);
 
 struct PDI_plugin_s {
 	

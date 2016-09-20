@@ -155,6 +155,7 @@ if("${ENABLE_FORTRAN}")
 	add_library(pdi_f90 src/fapi.c)
 	add_dependencies(pdi_f90 pdi_f90_inc)
 	target_link_libraries(pdi_f90 pdi paraconf_f90)
+	add_compiler_flags(pdi_f90 PRIVATE -fimplicit-none)
 	target_include_directories(pdi_f90 INTERFACE 
 					"$<BUILD_INTERFACE:${GENINC}>" 
 					"$<INSTALL_INTERFACE:include>")

@@ -33,17 +33,17 @@ typedef struct PDI_state_s PDI_state_t;
 /** This is a parameter (a.k.a. metadata) as decribed in the configuration and
  *  its last exposed value if available
  */
-typedef struct PDI_param_s PDI_param_t;
+typedef struct PDI_metadata_s PDI_metadata_t;
 
 /** This is a variable (a.k.a. data) as decribed in the configuration and
  *  its shared value if not reclaimed yet
  */
-typedef struct PDI_variable_s PDI_variable_t;
+typedef struct PDI_data_s PDI_data_t;
 
 /** This is a variable (a.k.a. data) as decribed in the configuration and
  *  its shared value if not reclaimed yet
  */
-typedef struct PDI_variable_value_s PDI_variable_value_t;
+typedef struct PDI_data_value_s PDI_data_value_t;
 
 /** This is the information about a plugin loaded by the implementation
  */
