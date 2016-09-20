@@ -6,7 +6,7 @@
     - `handle_err` to `throw_error`
 - [ ] Unifiy error handling, define the status variable, use the 2 macros & gotos
 everywhere
-- [ ] _WIP_: Document this (Doxygen, ...)
+- [ ] __WIP__: Document this (Doxygen, ...)
 
 # FTI Plugin
 - [ ] Correct restart support
