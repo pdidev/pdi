@@ -34,9 +34,9 @@ everywhere
   request for the data to be kept alive? (if release how to use the data (efficiently))
 - [ ] Determine if plugins should be notified about data not specified in the
   config file at all?
-- [] Add support for situations where you want to continue even on error, but
+- [ ] Add support for situations where you want to continue even on error, but
   store them for later report (finalize, plugins, etc.)
-- [] Make meta-data (a.k.a. params) a specific case of data (a.k.a. variables),
+- [ ] Make meta-data (a.k.a. params) a specific case of data (a.k.a. variables),
   let their exposure be notified to plugins, same as normal data
 
 # New plugins ideas
