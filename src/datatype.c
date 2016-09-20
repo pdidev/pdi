@@ -302,7 +302,6 @@ err0:
 PDI_status_t PDI_data_size(const PDI_type_t *type, int *result)
 {
 	PDI_status_t status = PDI_OK;
-
 	val_size_t valsz=size_new(); handle_error(size(type, &valsz), err0); // remove uninitialized warning for valsz
 	*result = valsz.type;
 	for ( int dim=0; dim<valsz.ndims; ++dim ) {
