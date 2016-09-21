@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file conf.c
+ * \brief Functions to load data and metadata 
+ * \author J. Bigot (CEA)
+ */
 
 #include <paraconf.h>
 

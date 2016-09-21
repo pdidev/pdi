@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+ //The following is used for doxygen documentation:
+ /**
+ * \file conf.h
+ * \brief contains load_conf prototype 
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef CONF_H__
 #define CONF_H__
@@ -29,7 +36,7 @@
 
 /** Loads the PDI configuration
  * \param[in] node the configuration as a paraconf node
- * \return an error code
+ * \return an exit status code
  */
 PDI_status_t load_conf(PC_tree_t node);
 

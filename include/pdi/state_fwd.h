@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file state_fwd.h
+ * \brief public delcaration of structures that store state, data, metada, plugin.
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef PDI_STATE_FWD_H__
 #define PDI_STATE_FWD_H__

@@ -12,7 +12,7 @@
  * * Neither the name of CEA nor the names of its contributors may be used to
  *   endorse or promote products derived from this software without specific 
  *   prior written permission.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file datatype_fwd.h
+ * \brief public PDI type declaration
+ * \details
+ * PDI type (PDI_type_t) handles 3 datatypes that are either scalars, arrays, or structures 
+ * (respectively PDI_K_SCALAR, PDI_K_ARRAY, PDI_K_STRUCT).
+ * Scalar are currently restricted to int8 to int64 or float to long double.
+ * Other scalars cannot be used (real16 for instance)
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef PDI_DATATYPE_FWD_H__
 #define PDI_DATATYPE_FWD_H__
@@ -41,7 +53,7 @@ typedef enum PDI_type_kind_e {
 /// A PDI array type descriptor
 typedef struct PDI_array_type_s PDI_array_type_t;
 
-//TODO: implement
+//TODO: ordering of array, implement 
 // typedef enum PDI_order_e {
 // 	PDI_ORDER_C,
 // 	PDI_ORDER_FORTRAN

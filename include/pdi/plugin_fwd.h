@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file plugin_fwd.h
+ * \brief public declaration of a plugin structure
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef PDI_PLUGIN_FWD_H__
 #define PDI_PLUGIN_FWD_H__

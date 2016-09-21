@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file api.c
+ * \brief PDI public API functions (init, event, ... finalize).
+ * \author J. Bigot (CEA)
+ */
 
 #include "paraconf.h"
 
