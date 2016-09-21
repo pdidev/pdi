@@ -32,19 +32,19 @@
 
 #include "conf.h"
 
-static PDI_status_t load_params(PC_tree_t node)
+static PDI_status_t load_metadata(PC_tree_t node)
 {
 	PDI_status_t status = PDI_OK;
 	
 	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
 	
-	PDI_state.params = realloc(PDI_state.params,
-			( PDI_state.nb_params + map_len ) * sizeof(PDI_param_t)
+	PDI_state.metadata = realloc(PDI_state.metadata,
+			( PDI_state.nb_metadata + map_len ) * sizeof(PDI_metadata_t)
 		);
 	
 	int map_id;
 	for ( map_id=0; map_id<map_len; ++map_id ) {
-		PDI_param_t *cur_meta = PDI_state.params+PDI_state.nb_params;
+		PDI_metadata_t *cur_meta = PDI_state.metadata+PDI_state.nb_metadata;
 		
 		cur_meta->value = NULL;
 		
@@ -54,26 +54,26 @@ static PDI_status_t load_params(PC_tree_t node)
 		handle_PC_err(PC_status(map_value), err0);
 		handle_error(PDI_datatype_load(map_value, &cur_meta->type), err0);
 		
-		++PDI_state.nb_params;
+		++PDI_state.nb_metadata;
 	}
 	
 err0:
 	return status;
 }
 
-static PDI_status_t load_variables(PC_tree_t node)
+static PDI_status_t load_data(PC_tree_t node)
 {
 	PDI_status_t status = PDI_OK;
 	
 	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
 	
-	PDI_state.variables = realloc(PDI_state.variables,
-			( PDI_state.nb_variables + map_len ) * sizeof(PDI_variable_t)
+	PDI_state.data = realloc(PDI_state.data,
+			( PDI_state.nb_data + map_len ) * sizeof(PDI_data_t)
 		);
 	
 	int map_id;
 	for ( map_id=0; map_id<map_len; ++map_id ) {
-		PDI_variable_t *cur_var = PDI_state.variables+PDI_state.nb_variables;
+		PDI_data_t *cur_var = PDI_state.data+PDI_state.nb_data;
 		
 		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_var->name), err0);
 		
@@ -84,7 +84,7 @@ static PDI_status_t load_variables(PC_tree_t node)
 		handle_error(PDI_datatype_load(cur_var->config, &cur_var->type), err0);
 		
 		
-		++PDI_state.nb_variables;
+		++PDI_state.nb_data;
 	}
 	
 err0:
@@ -98,13 +98,13 @@ PDI_status_t load_conf(PC_tree_t node)
 	// Detect an invalid configuration as soon as possible
 	handle_PC_err(PC_status(node), err0);
 	
-	PC_tree_t params = PC_get(node, ".params");
-	handle_PC_err(PC_status(params), err0);
-	handle_error(load_params(params), err0);
+	PC_tree_t metadata = PC_get(node, ".metadata");
+	handle_PC_err(PC_status(metadata), err0);
+	handle_error(load_metadata(metadata), err0);
 	
-	PC_tree_t variable = PC_get(node, ".variables");
-	handle_PC_err(PC_status(variable), err0);
-	handle_error(load_variables(variable), err0);
+	PC_tree_t data = PC_get(node, ".data");
+	handle_PC_err(PC_status(data), err0);
+	handle_error(load_data(data), err0);
 	
 err0:
 	return status;

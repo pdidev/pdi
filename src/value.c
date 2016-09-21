@@ -35,7 +35,7 @@
 
 struct PDI_refval_s
 {
-	PDI_param_t *ref;
+	PDI_metadata_t *ref;
 	
 	PDI_value_t *idx;
 	
@@ -121,9 +121,9 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	int refid_len; handle_error(parse_id(&ref, &refid_len), err0);
 	
 	value->ref = NULL;
-	for ( int met_id=0; met_id<PDI_state.nb_params; ++met_id ) {
-		if ( !strncmp(PDI_state.params[met_id].name, ref-refid_len, refid_len) ) {
-			value->ref = &PDI_state.params[met_id];
+	for ( int met_id=0; met_id<PDI_state.nb_metadata; ++met_id ) {
+		if ( !strncmp(PDI_state.metadata[met_id].name, ref-refid_len, refid_len) ) {
+			value->ref = &PDI_state.metadata[met_id];
 		}
 	}
 	if ( !value->ref ) {

@@ -64,7 +64,7 @@ PDI_status_t PDI_test_plugin_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data_start(PDI_variable_t *data)
+PDI_status_t PDI_test_plugin_data_start(PDI_data_t *data)
 {
 	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
@@ -75,7 +75,7 @@ PDI_status_t PDI_test_plugin_data_start(PDI_variable_t *data)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data_end(PDI_variable_t *data)
+PDI_status_t PDI_test_plugin_data_end(PDI_data_t *data)
 {
 	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	

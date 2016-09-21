@@ -39,10 +39,10 @@ PDI_state_t PDI_state;
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t status = PDI_OK;
-	PDI_state.nb_params = 0;
-	PDI_state.params = NULL;
-	PDI_state.nb_variables = 0;
-	PDI_state.variables = NULL;
+	PDI_state.nb_metadata = 0;
+	PDI_state.metadata = NULL;
+	PDI_state.nb_data = 0;
+	PDI_state.data = NULL;
 	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL;
 	
@@ -69,13 +69,13 @@ err0:
 }
 
 
-PDI_status_t PDI_param_destroy(PDI_param_t *param)
+PDI_status_t PDI_metadata_destroy(PDI_metadata_t *metadata)
 {
 	PDI_status_t status = PDI_OK;
 	
-	free(param->name);
-	free(param->value);
-	handle_error(PDI_datatype_destroy(&param->type), err0);
+	free(metadata->name);
+	free(metadata->value);
+	handle_error(PDI_datatype_destroy(&metadata->type), err0);
 	
 	return status;
 	
@@ -83,7 +83,7 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_variable_destroy(PDI_variable_t *var)
+PDI_status_t PDI_data_destroy(PDI_data_t *var)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -109,17 +109,17 @@ PDI_status_t PDI_finalize()
 	free(PDI_state.plugins);
 	PDI_state.plugins = NULL; // help valgrind
 	
-	for (int ii=0; ii<PDI_state.nb_params; ++ii) {
-		PDI_param_destroy(&PDI_state.params[ii]);
+	for (int ii=0; ii<PDI_state.nb_metadata; ++ii) {
+		PDI_metadata_destroy(&PDI_state.metadata[ii]);
 	}
-	free(PDI_state.params);
-	PDI_state.params = NULL; // help valgrind
+	free(PDI_state.metadata);
+	PDI_state.metadata = NULL; // help valgrind
 	
-	for (int ii=0; ii<PDI_state.nb_variables; ++ii) {
-		PDI_variable_destroy(&PDI_state.variables[ii]);
+	for (int ii=0; ii<PDI_state.nb_data; ++ii) {
+		PDI_data_destroy(&PDI_state.data[ii]);
 	}
-	free(PDI_state.variables);
-	PDI_state.variables = NULL; // help valgrind
+	free(PDI_state.data);
+	PDI_state.data = NULL; // help valgrind
 	
 	PDI_errhandler(errh);
 	
@@ -146,11 +146,11 @@ PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_variable_t *data = NULL;
-	for ( int ii=0; ii<PDI_state.nb_variables; ++ii ) {
-		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
+	PDI_data_t *data = NULL;
+	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
+		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
 		
-		data = PDI_state.variables+ii;
+		data = PDI_state.data+ii;
 		break;
 	}
 	if (data) {
@@ -188,11 +188,11 @@ PDI_status_t PDI_release(const char* name)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_variable_t *data = NULL;
-	for ( int ii=0; ii<PDI_state.nb_variables; ++ii ) {
-		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
+	PDI_data_t *data = NULL;
+	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
+		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
 		
-		data = PDI_state.variables+ii;
+		data = PDI_state.data+ii;
 		break;
 	}
 	if (data) {
@@ -217,11 +217,11 @@ PDI_status_t PDI_reclaim(const char* name)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_variable_t *data = NULL;
-	for ( int ii=0; ii<PDI_state.nb_variables; ++ii ) {
-		if ( strcmp(PDI_state.variables[ii].name, name) ) continue;
+	PDI_data_t *data = NULL;
+	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
+		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
 		
-		data = PDI_state.variables+ii;
+		data = PDI_state.data+ii;
 		break;
 	}
 	if (data) {
@@ -245,17 +245,17 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_param_t *param = NULL;
-	for ( int ii=0; ii<PDI_state.nb_params; ++ii ) {
-		if ( strcmp(name, PDI_state.params[ii].name) != 0 ) continue;
+	PDI_metadata_t *metadata = NULL;
+	for ( int ii=0; ii<PDI_state.nb_metadata; ++ii ) {
+		if ( strcmp(name, PDI_state.metadata[ii].name) != 0 ) continue;
 		
-		param = PDI_state.params+ii;
+		metadata = PDI_state.metadata+ii;
 		break;
 	}
-	if (param) {
-		int dsize; handle_error(PDI_data_size(&param->type, &dsize), err0);
-		param->value = realloc(param->value, dsize);
-		handle_error(tcopy(&param->type, param->value, (void*)data_dat), err0);
+	if (metadata) {
+		int dsize; handle_error(PDI_data_size(&metadata->type, &dsize), err0);
+		metadata->value = realloc(metadata->value, dsize);
+		handle_error(tcopy(&metadata->type, metadata->value, (void*)data_dat), err0);
 	} else {
 		handle_error(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
 		handle_error(PDI_reclaim(name), err0);

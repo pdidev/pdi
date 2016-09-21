@@ -1,7 +1,7 @@
-params: # metadata, i.e. small values that can be referenced using $syntax
+metadata: # metadata, i.e. small values that can be referenced using $syntax
     M: int # number of elements per line
     nbLines: int # number of lines
-variables: # values that can not be referenced using $syntax
+data : # values that can not be referenced using $syntax
     i: 
         type: int
         size: 1

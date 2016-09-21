@@ -7,7 +7,7 @@ parallelism:
     width:  1
     height: 2
 pdi:
-    params: # metadata, i.e. small values that can be referenced using $syntax
+    metadata: # metadata, i.e. small values that can be referenced using $syntax
         width: int # per proc. width including ghost
         height: int # per proc. height including ghost
         pwidth: int  # nb proc. in the x dim
@@ -15,7 +15,7 @@ pdi:
         nb_iter: int # total nb. iter (actually the iter option on top, but as exposed by the code)
         iter: int # curent iteration id
         coord: { size: 2, type: int } # coordinate of the process as [x, y]
-    variables: # values that can not be referenced using $syntax
+    data: # values that can not be referenced using $syntax
         main_field:
             type:     double
             sizes:    [$width, $height]     # if only one element, you can use size as a acalar
