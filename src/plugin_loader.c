@@ -21,6 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file plugin_loader.c
+ * \brief Contains function to load plugins
+ * \details Plugins name written in config.yml are read/parse by paraconf: if PDI is build with a plugins having the same name, the plugin is loaded.
+ * \author J. Bigot (CEA)
+ */
 
 #define _GNU_SOURCE
 #include <stdio.h>

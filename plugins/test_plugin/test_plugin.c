@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file test_plugin.c
+ * \brief a pdi project file
+ * \author J. Bigot (CEA)
+ */
 
 #include <mpi.h>
 

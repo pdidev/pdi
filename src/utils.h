@@ -12,7 +12,7 @@
  * * Neither the name of CEA nor the names of its contributors may be used to
  *   endorse or promote products derived from this software without specific 
  *   prior written permission.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file utils.h
+ * \brief Various tools copying, strcat-like ... 
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef PDI_UTILS_H__
 #define PDI_UTILS_H__

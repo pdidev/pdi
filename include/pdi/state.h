@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file state.h
+ * \brief details of the strucutures that store data, metadata, ...
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef PDI_STATE_H__
 #define PDI_STATE_H__

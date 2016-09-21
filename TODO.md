@@ -25,6 +25,9 @@ everywhere
 - [ ] Whole config specification from code
  - metadata, data & their types
  - plugins
+* automatic declaration of scalars and n-Dim arrays (configuration file should be simpler)
+* handle multiple views on one array
+
 
 # Design
 - [ ] Support transactions (=multiple successive expose), trigger an event before transac close
@@ -46,3 +49,10 @@ everywhere
 - [ ] SIONlib (Jülich center) 
 - [ ] XIOS 
 - [ ] Post-processing (use fonction)
+
+
+# Existing plugins (improvement)
+* HDF5
+   - [ ] better support various type (simple, double can be used but they are machine dependant -> real16, real32, real64, real128) ?
+   - [ ] test import
+    
