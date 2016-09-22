@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file plugin_loader.h
+ * \brief Header of the functions used to load plugins  
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef PDI_PLUGIN_LOADER_H__
 #define PDI_PLUGIN_LOADER_H__

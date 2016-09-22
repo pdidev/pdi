@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file status.h
+ * \brief Macros used to handle errors
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef ERROR_H__
 #define ERROR_H__

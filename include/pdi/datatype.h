@@ -12,7 +12,7 @@
  * * Neither the name of CEA nor the names of its contributors may be used to
  *   endorse or promote products derived from this software without specific 
  *   prior written permission.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file datatype.h
+ * \brief private PDI type declaration
+ * \details
+ * PDI type (PDI_type_t) handles 3 datatypes that are either scalars, arrays, or structures.
+ * Structures are composed of one or mutiple PDI_type_t.
+ * Data are managed differently in memory: scalars are copied whereas a pointer is used to access arrays/structures.
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef PDI_DATATYPE_H__
 #define PDI_DATATYPE_H__
@@ -66,8 +77,9 @@ struct PDI_array_type_s
 
 struct PDI_member_s
 {
+	/// Offset or distance in octet between the beginning of PDI_struct_type 
 	PDI_value_t displacement;
-	
+	 
 	PDI_type_t type;
 	
 	char *name;
@@ -86,14 +98,14 @@ struct PDI_struct_type_s
  * a sparse type
  * \param type the type whose size to compute
  * \param result the size in bytes
- * \return an error code
+ * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_data_size(const PDI_type_t* type, int* result);
 
 /** Loads a type definition from a paraconf-style config
  * \param node the configuration to read
  * \param type the type to generate
- * \return an error code
+ * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
 
@@ -102,7 +114,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
  * This does not free the memory required for the actual PDI_type_t structure
  * 
  * \param type the type to destroy
- * \return an error code
+ * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
 

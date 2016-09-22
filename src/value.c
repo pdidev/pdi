@@ -21,6 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file value.c
+ * \brief Parsing functions
+ * \details The data obtained from paraconf consist of arrays of chars.
+ * Those string may contain variable name, operations... and are evaluated/parse using the above functions.
+ * \author J. Bigot (CEA)
+ */
 
 #include <ctype.h>
 #include <stdlib.h>

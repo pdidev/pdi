@@ -12,7 +12,7 @@
  * * Neither the name of CEA nor the names of its contributors may be used to
  *   endorse or promote products derived from this software without specific 
  *   prior written permission.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
+  
+//The following is used for doxygen documentation:
+ /**
+ * \file value.h
+ * \brief Structures and functions to parse expression 
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef PDI_VALUE_H__
 #define PDI_VALUE_H__
@@ -68,7 +75,7 @@ struct PDI_value_s
  * 
  * \param[in] val_str the string to parse
  * \param[out] value a pointer to the parsed value
- * \return an error status
+ * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_value_parse(const char *val_str, PDI_value_t *value);
 
@@ -76,7 +83,7 @@ PDI_status_t PDI_EXPORT PDI_value_parse(const char *val_str, PDI_value_t *value)
  * 
  * \param[in] value the value to evaluate
  * \param[out] res a pointer to the integer value
- * \return an error status
+ * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_value_int(const PDI_value_t *value, int *res);
 
@@ -84,14 +91,14 @@ PDI_status_t PDI_EXPORT PDI_value_int(const PDI_value_t *value, int *res);
  * 
  * \param[in] value the value to evaluate
  * \param[out] res a pointer to the string value
- * \return an error status
+ * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_value_str(const PDI_value_t *value, char **res);
 
 /** Destroys a PDI value
  * 
  * \param[in] value the value to destroy
- * \return an error status
+ * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_value_destroy(PDI_value_t *value);
 
