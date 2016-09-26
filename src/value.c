@@ -92,7 +92,7 @@ PDI_status_t parse_id(char const **val_str, int *id_len)
 		|| (*id>='A' && *id<='Z')
 		|| (*id=='_')
 	)) {
-		handle_error(make_error(PDI_ERR_VALUE, "Invalid first ID character: %c", *id), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid first ID character: %c", *id), err0);
 	}
 	++id;
 	*id_len=1;
@@ -118,7 +118,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	PDI_status_t status = PDI_OK;
 	const char *ref = *val_str;
 	
-	if ( *ref != '$' ) handle_error(make_error(PDI_ERR_VALUE, "Expected '$', got %c", *ref), err0);
+	if ( *ref != '$' ) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected '$', got %c", *ref), err0);
 	++ref;
 	
 	int has_curly_brace = 0;
@@ -127,7 +127,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 		has_curly_brace = 1;
 	}
 	
-	int refid_len; handle_error(parse_id(&ref, &refid_len), err0);
+	int refid_len; PDI_handle_err(parse_id(&ref, &refid_len), err0);
 	
 	value->ref = NULL;
 	for ( int met_id=0; met_id<PDI_state.nb_metadata; ++met_id ) {
@@ -136,7 +136,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 		}
 	}
 	if ( !value->ref ) {
-		handle_error(make_error(PDI_ERR_VALUE, "Invalid reference %*s", refid_len, ref-refid_len), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid reference %*s", refid_len, ref-refid_len), err0);
 	}
 	
 	while ( isspace(*ref) ) ++ref;
@@ -148,9 +148,9 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 		while ( isspace(*ref) ) ++ref;
 		++(value->nb_idx);
 		value->idx = realloc(value->idx, value->nb_idx*sizeof(PDI_value_t));
-		handle_error(parse_intval(&ref, &value->idx[value->nb_idx-1], 1), err0);
+		PDI_handle_err(parse_intval(&ref, &value->idx[value->nb_idx-1], 1), err0);
 		if ( *ref != ']' )  {
-			handle_error(make_error(PDI_ERR_VALUE, "Expected ']', found %c", *ref), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected ']', found %c", *ref), err0);
 		}
 		++ref;
 		while ( isspace(*ref) ) ++ref;
@@ -158,7 +158,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	
 	if ( has_curly_brace ) {
 		if ( *ref != '}' ) {
-			handle_error(make_error(PDI_ERR_VALUE, "Expected '}', found %c", *ref), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected '}', found %c", *ref), err0);
 		}
 		++ref;
 	}
@@ -175,7 +175,7 @@ PDI_status_t parse_const(char const **val_str, int *value)
 	
 	long val_l = strtol(constval, (char**)&constval, 0);
 	if ( *val_str == constval ) {
-		handle_error(make_error(PDI_ERR_VALUE, "Expected integer, found %s", constval), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected integer, found %s", constval), err0);
 	}
 	*value = val_l;
 	while ( isspace(*constval) ) ++constval;
@@ -198,8 +198,8 @@ PDI_status_t parse_term(char const **val_str, PDI_value_t *value)
 		PDI_errhandler(errh);
 		++term;
 		while ( isspace(*term) ) ++term;
-		handle_error(parse_intval(&term, value, 1), err0);
-		if ( *term != ')' )  handle_error(make_error(PDI_ERR_VALUE, "Expected ')', found '%c'", *term), err0);;
+		PDI_handle_err(parse_intval(&term, value, 1), err0);
+		if ( *term != ')' )  PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected ')', found '%c'", *term), err0);;
 		++term;
 		while ( isspace(*term) ) ++term;
 	} else {
@@ -238,10 +238,10 @@ PDI_status_t parse_op(char const **val_str, int level, PDI_exprop_t *value)
 	
 	int found_level = op_level(*op);
 	if ( found_level == 0 ) {
-		handle_error(make_error(PDI_ERR_VALUE, "Expected operator, found '%c'", *op), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected operator, found '%c'", *op), err0);
 	}
 	if ( found_level != level ) {
-		handle_error(make_error(PDI_ERR_VALUE, "Mixing operator priority"), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Mixing operator priority"), err0);
 	}
 	*value = *op;
 	++op;
@@ -259,9 +259,9 @@ PDI_status_t parse_intval(char const**val_str, PDI_value_t* value, int level)
 	const char *exprval = *val_str;
 	
 	if ( level >= OP_LEVELS ) {
-		handle_error(parse_term(&exprval, value), err0);
+		PDI_handle_err(parse_term(&exprval, value), err0);
 	} else {
-		handle_error(parse_intval(&exprval, value, level+1), err0);
+		PDI_handle_err(parse_intval(&exprval, value, level+1), err0);
 	}
 	PDI_exprval_t *expr = NULL;
 	PDI_exprop_t op;
@@ -284,9 +284,9 @@ PDI_status_t parse_intval(char const**val_str, PDI_value_t* value, int level)
 		expr->values = realloc(expr->values, expr->nb_value*sizeof(PDI_value_t));
 		
 		if ( level >= OP_LEVELS ) {
-			handle_error(parse_term(&exprval, &expr->values[expr->nb_value-1]), err1);
+			PDI_handle_err(parse_term(&exprval, &expr->values[expr->nb_value-1]), err1);
 		} else {
-			handle_error(parse_intval(&exprval, &expr->values[expr->nb_value-1], level+1), err1);
+			PDI_handle_err(parse_intval(&exprval, &expr->values[expr->nb_value-1], level+1), err1);
 		}
 		errh = PDI_errhandler(PDI_NULL_HANDLER);
 	}
@@ -345,10 +345,10 @@ PDI_status_t parse_strval(char const **val_str, PDI_value_t *value)
 			switch ( str[1] ) {
 			case '(': {
 				++str; // parse the term starting with the parenthesis (the intvl)
-				handle_error(parse_term(&str, &value->c.strval->values[value->c.strval->nb_values-1]), err0);
+				PDI_handle_err(parse_term(&str, &value->c.strval->values[value->c.strval->nb_values-1]), err0);
 			} break;
 			default: { // parse the term starting with the dollar (the ref)
-				handle_error(parse_term(&str, &value->c.strval->values[value->c.strval->nb_values-1]), err0);
+				PDI_handle_err(parse_term(&str, &value->c.strval->values[value->c.strval->nb_values-1]), err0);
 			} break;
 			}
 		} break;
@@ -377,27 +377,27 @@ PDI_status_t eval_refval(PDI_refval_t *val, int *res)
 	
 	if ( val->ref->type.kind == PDI_K_ARRAY ) {
 		if ( val->nb_idx != val->ref->type.c.array->ndims ) {
-			handle_error(make_error(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", val->nb_idx, val->ref->type.c.array->ndims), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", val->nb_idx, val->ref->type.c.array->ndims), err0);
 		}
 		if ( val->ref->type.c.array->type.kind != PDI_K_SCALAR ) {
-			handle_error(make_error(PDI_ERR_VALUE, "Invalid type accessed"), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid type accessed"), err0);
 		}
 		type = val->ref->type.c.array->type.c.scalar;
 	} else if ( val->ref->type.kind == PDI_K_SCALAR ) {
 		if ( val->nb_idx ) {
-			handle_error(make_error(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", val->nb_idx), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", val->nb_idx), err0);
 		}
 	} else {
-		handle_error(make_error(PDI_ERR_VALUE, "Invalid access to a struct"), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid access to a struct"), err0);
 	}
 	
 	int idx = 0;
 	int stride = 1;
 	for ( int ii=0; ii<val->nb_idx; ++ii ) {
-		int start; handle_error(PDI_value_int(&val->ref->type.c.array->starts[ii], &start), err0);
-		int index; handle_error(PDI_value_int(&val->idx[ii], &index), err0);
+		int start; PDI_handle_err(PDI_value_int(&val->ref->type.c.array->starts[ii], &start), err0);
+		int index; PDI_handle_err(PDI_value_int(&val->idx[ii], &index), err0);
 		idx += (start+index) * stride;
-		int size; handle_error(PDI_value_int(&val->ref->type.c.array->sizes[ii], &size), err0);
+		int size; PDI_handle_err(PDI_value_int(&val->ref->type.c.array->sizes[ii], &size), err0);
 		stride *= size;
 	}
 	
@@ -415,7 +415,7 @@ PDI_status_t eval_refval(PDI_refval_t *val, int *res)
 		*res = ((int64_t*)val->ref->value)[idx];
 	} break;
 	default: {
-		handle_error(make_error(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
 	} break;
 	}
 	return status;
@@ -456,7 +456,7 @@ PDI_status_t eval_exprval(PDI_exprval_t *val, int *res)
 			computed_value = computed_value || operand;
 		} break;
 		default: {
-			handle_error(make_error(PDI_ERR_VALUE, "Unknown operator: `%c'", val->ops[ii-1]), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unknown operator: `%c'", val->ops[ii-1]), err0);
 		}
 		}
 	}
@@ -484,14 +484,14 @@ PDI_status_t eval_strval(PDI_strval_t *val, char **res)
 		from_idx += blk_sz;
 		res_idx += blk_sz;
 		
-		char *val_str; handle_error(PDI_value_str(&val->values[ii], &val_str), err1);
+		char *val_str; PDI_handle_err(PDI_value_str(&val->values[ii], &val_str), err1);
 		blk_sz = strlen(val_str);
 		build_str = realloc(build_str, res_idx+blk_sz+1);
 		memcpy(build_str+res_idx, val_str, blk_sz);
 		res_idx += blk_sz;
 err1:
 		free(val_str);
-		handle_error(status, err0);
+		PDI_handle_err(status, err0);
 	}
 	
 	size_t blk_sz = strlen(val->str+from_idx);
@@ -614,7 +614,7 @@ PDI_status_t PDI_value_int(const PDI_value_t* value, int* res)
 	} break;
 	default: {
 		char *strval; PDI_value_str(value, &strval);
-		handle_error(make_error(PDI_ERR_VALUE, "Non integer value type: %s", strval), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non integer value type: %s", strval), err0);
 	}}
 	
 	return status;
@@ -627,9 +627,9 @@ PDI_status_t PDI_value_str(const PDI_value_t* value, char** res)
 	PDI_status_t status = PDI_OK;
 	
 	if ( value->kind == PDI_VAL_STR ) {
-		handle_error(eval_strval(value->c.strval, res), err0);
+		PDI_handle_err(eval_strval(value->c.strval, res), err0);
 	} else {
-		int intval; handle_error(PDI_value_int(value, &intval), err0);
+		int intval; PDI_handle_err(PDI_value_int(value, &intval), err0);
 		*res = msprintf("%d", intval);
 	}
 	
