@@ -53,7 +53,7 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL;
 	
-	handle_error(load_conf(conf), err0);
+	PDI_handle_err(load_conf(conf), err0);
 	
 	int nb_plugins; handle_PC_err(PC_len(PC_get(conf, ".plugins"), &nb_plugins), err0);
 	PDI_state.plugins = malloc(nb_plugins*sizeof(PDI_plugin_t));
@@ -61,11 +61,11 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	for ( int ii=0; ii<nb_plugins; ++ii ) {
 		PDI_state.PDI_comm = *world;
 		//TODO we should concatenate errors here...
-		handle_error(plugin_loader_tryload(conf, ii, world), err0);
+		PDI_handle_err(plugin_loader_tryload(conf, ii, world), err0);
 	}
 	
 	if ( MPI_Comm_dup(*world, &PDI_state.PDI_comm) ) {
-		handle_error(make_error(PDI_ERR_SYSTEM, "Unable to clone the main communicator"), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_SYSTEM, "Unable to clone the main communicator"), err0);
 	}
 
 	return status;
@@ -82,7 +82,7 @@ PDI_status_t PDI_metadata_destroy(PDI_metadata_t *metadata)
 	
 	free(metadata->name);
 	free(metadata->value);
-	handle_error(PDI_datatype_destroy(&metadata->type), err0);
+	PDI_handle_err(PDI_datatype_destroy(&metadata->type), err0);
 	
 	return status;
 	
@@ -95,7 +95,7 @@ PDI_status_t PDI_data_destroy(PDI_data_t *var)
 	PDI_status_t status = PDI_OK;
 	
 	free(var->name);
-	handle_error(PDI_datatype_destroy(&var->type), err0);
+	PDI_handle_err(PDI_datatype_destroy(&var->type), err0);
 	
 	return status;
 	
@@ -140,7 +140,7 @@ PDI_status_t PDI_event(const char* event)
 	
 	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 		//TODO we should concatenate errors here...
-		handle_error(PDI_state.plugins[ii].event(event), err0);
+		PDI_handle_err(PDI_state.plugins[ii].event(event), err0);
 	}
 	
 	return status;
@@ -165,7 +165,7 @@ PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 			data->content.access = PDI_OUT;
 			data->content.data = data_dat;
 			for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-				handle_error(PDI_state.plugins[ii].data_start(data), err0);
+				PDI_handle_err(PDI_state.plugins[ii].data_start(data), err0);
 			}
 		}
 		if ( access & PDI_IN ) {
@@ -173,7 +173,7 @@ PDI_status_t PDI_share(const char* name, void* data_dat, int access)
 			data->content.access = PDI_IN;
 			for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 				PDI_status_t instatus = PDI_state.plugins[ii].data_start(data);
-				handle_error(instatus, err0);
+				PDI_handle_err(instatus, err0);
 				if ( !instatus ) { // only one plugin for input
 					status = PDI_OK;
 					break;
@@ -204,7 +204,7 @@ PDI_status_t PDI_release(const char* name)
 	}
 	if (data) {
 		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-			handle_error(PDI_state.plugins[ii].data_end(data), err0);
+			PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
 		}
 		
 		free(data->content.data);
@@ -233,7 +233,7 @@ PDI_status_t PDI_reclaim(const char* name)
 	}
 	if (data) {
 		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-			handle_error(PDI_state.plugins[ii].data_end(data), err0);
+			PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
 		}
 		
 		data->content.access = 0;
@@ -260,12 +260,12 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 		break;
 	}
 	if (metadata) {
-		int dsize; handle_error(PDI_data_size(&metadata->type, &dsize), err0);
+		int dsize; PDI_handle_err(PDI_data_size(&metadata->type, &dsize), err0);
 		metadata->value = realloc(metadata->value, dsize);
-		handle_error(tcopy(&metadata->type, metadata->value, (void*)data_dat), err0);
+		PDI_handle_err(tcopy(&metadata->type, metadata->value, (void*)data_dat), err0);
 	} else {
-		handle_error(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
-		handle_error(PDI_reclaim(name), err0);
+		PDI_handle_err(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
+		PDI_handle_err(PDI_reclaim(name), err0);
 	}
 	
 	return status;
@@ -278,8 +278,8 @@ PDI_status_t PDI_export(const char* name, const void* data)
 {
 	PDI_status_t status = PDI_OK;
 	
-	handle_error(PDI_share(name, (void*)data, PDI_OUT), err0);
-	handle_error(PDI_release(name), err0);
+	PDI_handle_err(PDI_share(name, (void*)data, PDI_OUT), err0);
+	PDI_handle_err(PDI_release(name), err0);
 	
 	return status;
 	
@@ -291,8 +291,8 @@ PDI_status_t PDI_import(const char* name, void* data)
 {
 	PDI_status_t status = PDI_OK;
 	
-	handle_error(PDI_share(name, data, PDI_IN), err0);
-	handle_error(PDI_reclaim(name), err0);
+	PDI_handle_err(PDI_share(name, data, PDI_IN), err0);
+	PDI_handle_err(PDI_reclaim(name), err0);
 	
 	return status;
 	

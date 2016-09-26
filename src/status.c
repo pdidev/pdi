@@ -98,7 +98,7 @@ static void forward_PC_error(PC_status_t status, const char *message, void *cont
 
 // library private stuff
 
-PDI_status_t make_error(PDI_status_t status, const char *message, ...)
+PDI_status_t PDI_make_err(PDI_status_t status, const char *message, ...)
 {
 	va_list ap;
 	va_start(ap, message);
