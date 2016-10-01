@@ -61,11 +61,11 @@ PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *wor
 		void *lib_handle = dlopen(libname, RTLD_NOW);
 		free(libname);
 		if ( !lib_handle ) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s': %s", plugin_name, dlerror()), err1);
+			PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s': %s", plugin_name, dlerror()), err0);
 		}
 		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
 		if ( !plugin_ctor_uncast ) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Unable to load plugin ctor for `%s': %s", plugin_name, dlerror()), err1);
+			PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Unable to load plugin ctor for `%s': %s", plugin_name, dlerror()), err0);
 		}
 	}
 	free(plugin_symbol);
@@ -76,10 +76,8 @@ PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *wor
 	
 	return status;
 	
-err1:
-	free(plugin_symbol);
-	
 err0:
+	free(plugin_symbol);
 	return status;
 }
 
