@@ -95,6 +95,17 @@ module PDI
       type(C_ptr), value :: data
     endfunction PDI_import_C
     
+    function PDI_transaction_begin_C( name ) bind(C, name="PDI_transaction_begin")
+      use ISO_C_binding
+      integer(C_int) :: PDI_transaction_begin_C
+      type(C_ptr), value :: name
+    endfunction PDI_transaction_begin_C
+    
+    function PDI_transaction_end_C() bind(C, name="PDI_transaction_end")
+      use ISO_C_binding
+      integer(C_int) :: PDI_transaction_end_C
+    endfunction PDI_transaction_end_C
+    
   endinterface
 
   
@@ -466,4 +477,52 @@ module PDI
   
 !$SH   done
 !$SH done
+  
+  !=============================================================================
+  !< Begin a transaction. All the ::PDI_expose will be exposed together.
+  !! 
+  !! This requires a ::PDI_transaction_end to close the transaction.
+  !! 
+  !! \param[in] name the name of the transaction (an event thus named will be
+  !!                 triggered when all data become available)
+  !! \param[out] err an error status
+  subroutine PDI_transaction_begin( name, err )
+    character(len=*), intent(IN) :: name
+    integer, intent(OUT), optional :: err
+
+    character(C_char), target :: C_name(len_trim(name)+1)
+    integer :: ii, tmperr
+
+    do ii=1, len_trim(name)
+      C_name(ii) = name(ii:ii)
+    enddo
+    C_name(len_trim(name)+1) = C_null_char
+
+    tmperr = int(PDI_transaction_begin_C(C_loc(C_name)))
+    
+    if(present(err)) then
+      err = tmperr
+    endif
+    
+  endsubroutine PDI_transaction_begin
+  !=============================================================================
+  
+  
+  !=============================================================================
+  !< Ends the previously opened transaction.
+  !! \param[out] err an error status
+  subroutine PDI_transaction_end( err )
+    integer, intent(OUT), optional :: err
+
+    integer :: tmperr
+
+    tmperr = int(PDI_transaction_end_C())
+    
+    if(present(err)) then
+      err = tmperr
+    endif
+    
+  endsubroutine PDI_transaction_end
+  !=============================================================================
+  
 endmodule PDI

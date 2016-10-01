@@ -29,6 +29,8 @@
  * \author J. Bigot (CEA)
  */
 
+#include <string.h>
+
 #include "paraconf.h"
 
 #include "pdi.h"
@@ -43,6 +45,32 @@
 
 PDI_state_t PDI_state;
 
+
+static PDI_metadata_t *find_metadata( const char *name )
+{
+	PDI_metadata_t *metadata = NULL;
+	for ( int ii=0; ii<PDI_state.nb_metadata; ++ii ) {
+		if ( strcmp(name, PDI_state.metadata[ii].name) != 0 ) continue;
+		
+		metadata = PDI_state.metadata+ii;
+		break;
+	}
+	return metadata;
+}
+
+
+static PDI_data_t *find_data( const char *name )
+{
+	PDI_data_t *data = NULL;
+	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
+		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
+		data = PDI_state.data+ii;
+		break;
+	}
+	return data;
+}
+
+
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t status = PDI_OK;
@@ -50,6 +78,9 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 	PDI_state.metadata = NULL;
 	PDI_state.nb_data = 0;
 	PDI_state.data = NULL;
+	PDI_state.transaction = NULL;
+	PDI_state.nb_transaction_data = 0;
+	PDI_state.transaction_data = NULL;
 	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL;
 	
@@ -90,6 +121,7 @@ err0:
 	return status;
 }
 
+
 PDI_status_t PDI_data_destroy(PDI_data_t *var)
 {
 	PDI_status_t status = PDI_OK;
@@ -102,6 +134,7 @@ PDI_status_t PDI_data_destroy(PDI_data_t *var)
 err0:
 	return status;
 }
+
 
 PDI_status_t PDI_finalize()
 {
@@ -134,6 +167,7 @@ PDI_status_t PDI_finalize()
 	return status;
 }
 
+
 PDI_status_t PDI_event(const char* event)
 {
 	PDI_status_t status = PDI_OK;
@@ -149,17 +183,12 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_share(const char* name, void* data_dat, int access)
+
+PDI_status_t PDI_share( const char* name, void* data_dat, int access )
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_data_t *data = NULL;
-	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
-		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
-		
-		data = PDI_state.data+ii;
-		break;
-	}
+	PDI_data_t *data = find_data(name);
 	if (data) {
 		if ( access & PDI_OUT ) {
 			data->content.access = PDI_OUT;
@@ -191,17 +220,12 @@ err0:
 	return status;
 }
 
+
 PDI_status_t PDI_release(const char* name)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_data_t *data = NULL;
-	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
-		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
-		
-		data = PDI_state.data+ii;
-		break;
-	}
+	PDI_data_t *data = find_data(name);
 	if (data) {
 		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 			PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
@@ -220,17 +244,12 @@ err0:
 	return status;
 }
 
+
 PDI_status_t PDI_reclaim(const char* name)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_data_t *data = NULL;
-	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
-		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
-		
-		data = PDI_state.data+ii;
-		break;
-	}
+	PDI_data_t *data = find_data(name);
 	if (data) {
 		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 			PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
@@ -248,24 +267,30 @@ err0:
 	return status;
 }
 
+
 PDI_status_t PDI_expose(const char* name, const void* data_dat)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_metadata_t *metadata = NULL;
-	for ( int ii=0; ii<PDI_state.nb_metadata; ++ii ) {
-		if ( strcmp(name, PDI_state.metadata[ii].name) != 0 ) continue;
-		
-		metadata = PDI_state.metadata+ii;
-		break;
-	}
+	PDI_metadata_t *metadata = find_metadata(name);
 	if (metadata) {
 		int dsize; PDI_handle_err(PDI_data_size(&metadata->type, &dsize), err0);
 		metadata->value = realloc(metadata->value, dsize);
 		PDI_handle_err(tcopy(&metadata->type, metadata->value, (void*)data_dat), err0);
 	} else {
 		PDI_handle_err(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
-		PDI_handle_err(PDI_reclaim(name), err0);
+		if ( PDI_state.transaction ) { // defer the reclaim
+			PDI_data_t *data = find_data(name);
+			if ( data ) {
+				++PDI_state.nb_transaction_data;
+				PDI_state.transaction_data = realloc(
+						PDI_state.transaction_data,
+						PDI_state.nb_transaction_data * sizeof(PDI_data_t *) );
+				PDI_state.transaction_data[PDI_state.nb_transaction_data-1] = data;
+			}
+		} else { // do the reclaim now
+			PDI_handle_err(PDI_reclaim(name), err0);
+		}
 	}
 	
 	return status;
@@ -273,6 +298,34 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 err0:
 	return status;
 }
+
+
+PDI_status_t PDI_transaction_begin( const char *name )
+{
+	PDI_status_t status = PDI_OK;
+	PDI_state.transaction = strdup(name);
+	return status;
+}
+
+
+PDI_status_t PDI_transaction_end()
+{
+	PDI_status_t status = PDI_OK;
+	
+	PDI_event(PDI_state.transaction);
+	for( int ii=0; ii<PDI_state.nb_transaction_data; ii++ ) {
+		//TODO we should concatenate errors here...
+		PDI_reclaim(PDI_state.transaction_data[ii]->name);
+	}
+	PDI_state.nb_transaction_data = 0;
+	free(PDI_state.transaction_data);
+	PDI_state.transaction_data = NULL;
+	free(PDI_state.transaction);
+	PDI_state.transaction = NULL;
+	
+	return status;
+}
+
 
 PDI_status_t PDI_export(const char* name, const void* data)
 {
@@ -286,6 +339,7 @@ PDI_status_t PDI_export(const char* name, const void* data)
 err0:
 	return status;
 }
+
 
 PDI_status_t PDI_import(const char* name, void* data)
 {

@@ -206,6 +206,25 @@ PDI_status_t PDI_EXPORT PDI_import(const char *name, void *data);
 
 /// \}
 
+/// \{
+
+/** Begin a transaction. All the ::PDI_expose will be exposed together.
+ * 
+ * This requires a ::PDI_transaction_end to close the transaction.
+ * 
+ * \param[in] name the name of the transaction (an event thus named will be
+ *                 triggered when all data become available)
+ * \return an error status
+ */
+PDI_status_t PDI_EXPORT PDI_transaction_begin( const char *name );
+
+/** Ends the previously opened transaction.
+ * \return an error status
+ */
+PDI_status_t PDI_EXPORT PDI_transaction_end();
+
+/// \}
+
 #ifdef __cplusplus
 } // extern C
 #endif

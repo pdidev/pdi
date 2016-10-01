@@ -97,10 +97,10 @@ struct PDI_state_s
 	 */
 	MPI_Comm PDI_comm;
 	
-	/// the number of parameters
+	/// the number of metadata
 	int nb_metadata;
 	
-	/// the actual parameters (a.k.a. metadata)
+	/// the actual metadata (a.k.a. parameters)
 	PDI_metadata_t *metadata;
 	
 	/// The number of data
@@ -108,7 +108,13 @@ struct PDI_state_s
 	
 	/// The actual data (a.k.a data)
 	PDI_data_t *data;
+
+	char *transaction;
 	
+	int nb_transaction_data;
+
+	PDI_data_t **transaction_data;
+
 	/// The number of loaded plugins
 	int nb_plugins;
 	
@@ -117,7 +123,7 @@ struct PDI_state_s
 	
 	/// The current error handling function
 	PDI_errfunc_f *errfunc;
-	
+
 };
 
 /// The main state of the PDI implementation
