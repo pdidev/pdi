@@ -58,7 +58,11 @@ typedef enum PDI_status_e {
 	/// Implementation limitation (typically an unimplemented feature)
 	PDI_ERR_IMPL,
 	/// A system error occured (OS, MPI, etc.)
-	PDI_ERR_SYSTEM
+	PDI_ERR_SYSTEM,
+	/** A call to a function has been made at a wrong time (e.g. closing an
+	 *  unopened transaction)
+	 */
+	PDI_ERR_STATE
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs
