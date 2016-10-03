@@ -90,17 +90,22 @@ void exchange(MPI_Comm cart_com, double *cur, int width, int height)
 	             cart_com, &status);
 }
 
-int main(int argc, char *argv[])
+int main( int argc, char *argv[] )
 {
 	MPI_Init(&argc, &argv);
 	
-	PC_tree_t conf = PC_parse_path("example.yml");
+	if ( argc != 2 ) {
+		fprintf(stderr, "Usage: %s <config_file>\n", argv[0]);
+		exit(1);
+	}
 	
-	int nb_iter; PC_int(PC_get(conf, ".iter"), &nb_iter);
+	PC_tree_t conf = PC_parse_path(argv[1]);
+	
 	int width; PC_int(PC_get(conf, ".datasize[0]"), &width);
 	int height; PC_int(PC_get(conf, ".datasize[1]"), &height);
 	int pheight; PC_int(PC_get(conf, ".parallelism.height"), &pheight);
 	int pwidth; PC_int(PC_get(conf, ".parallelism.width"), &pwidth);
+	double duration; PC_double(PC_get(conf, ".duration"), &duration);
 	
 	MPI_Comm main_comm = MPI_COMM_WORLD;
 	PDI_init(PC_get(conf, ".pdi"), &main_comm);
@@ -124,7 +129,6 @@ int main(int argc, char *argv[])
 	PDI_expose("height", &height);
 	PDI_expose("pwidth", &pwidth);
 	PDI_expose("pheight", &pheight);
-	PDI_expose("nb_iter", &nb_iter);
 
 	double *cur = malloc(sizeof(double)*width*height);
 	double *next = malloc(sizeof(double)*width*height);
@@ -134,13 +138,29 @@ int main(int argc, char *argv[])
 	}
 	
 	PDI_event("main_loop");
+	double start = MPI_Wtime();
 	int ii;
-	for(ii=0; ii<nb_iter; ++ii) {
+	int next_reduce = 0;
+	for(ii=0;; ++ii) {
+		PDI_transaction_begin("newiter");
 		PDI_expose("iter", &ii);
+		PDI_expose("iter_dat", &ii);
 		PDI_expose("main_field", cur);
+		PDI_transaction_end();
+		
 		iter(cur, next, width, height);
 		exchange(cart_com, next, width, height);
 		double *tmp = cur; cur = next; next = tmp;
+		
+		if ( ii >= next_reduce ) {
+			double local_time, global_time;
+			local_time = MPI_Wtime()-start;
+			MPI_Allreduce(&local_time, &global_time, 1, MPI_DOUBLE, MPI_MAX, main_comm);
+			if ( global_time >= duration ) break;
+			int rem_iter = .8 * (duration-global_time) * (ii+1) / global_time + 1;
+			if ( rem_iter < 1 ) rem_iter = 1;
+			next_reduce = ii + rem_iter;
+		}
 	}
 	PDI_event("finalization");
 	PDI_expose("iter", &ii);

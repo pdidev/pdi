@@ -1,19 +1,18 @@
-
 [basic]
 head                           = 1
 node_size                      = 2
 ckpt_dir                       = /tmp/
-glbl_dir                       = ./Checkpoint/
+glbl_dir                       = ./
 meta_dir                       = ./.fti/
 ckpt_l1                        = 1
 ckpt_l2                        = 200000
 ckpt_l3                        = 200000
 ckpt_l4                        = 200000
-inline_l2                      = 1
-inline_l3                      = 1
-inline_l4                      = 1
+inline_l2                      = 0
+inline_l3                      = 0
+inline_l4                      = 0
 keep_last_ckpt                 = 0
-group_size                     = 4
+group_size                     = 3
 verbosity                      = 2
 
 
