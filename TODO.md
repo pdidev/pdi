@@ -10,9 +10,8 @@ everywhere
 
 # FTI Plugin
 - [ ] Correct restart support
-- [ ] Specify variables to protect in the config file (regex?)
-- [ ] Specify the name of the snapshot event in the config files (regex?)
-- [ ] Make information from FTI available for import (restart mode, etc...)
+- [x] Specify variables to protect in the config file (regex?)
+- [x] Specify the name of the snapshot event in the config files (regex?)
 - [ ] Correctly support sparse data
 
 # seq-HDF5 Plugin
@@ -30,16 +29,16 @@ everywhere
 
 
 # Design
-- [ ] Support transactions (=multiple successive expose), trigger an event before transac close
+- [x] Support transactions (=multiple successive expose), trigger an event before transac close
 - [ ] Support installation of filters for events & data by plugins (i.e. regexp)
 - [ ] Define how error handling should be done in plugins
-- [ ] Define how memory transfered to PDI should be handled, how can plugins
+- [ ] WIP: Define how memory transfered to PDI should be handled, how can plugins
   request for the data to be kept alive? (if release how to use the data (efficiently))
 - [ ] Determine if plugins should be notified about data not specified in the
   config file at all?
 - [ ] Add support for situations where you want to continue even on error, but
   store them for later report (finalize, plugins, etc.)
-- [ ] Make meta-data (a.k.a. params) a specific case of data (a.k.a. variables),
+- [x] Make meta-data (a.k.a. params) a specific case of data (a.k.a. variables),
   let their exposure be notified to plugins, same as normal data
 
 # New plugins ideas

@@ -144,7 +144,6 @@ int main( int argc, char *argv[] )
 	for(ii=0;; ++ii) {
 		PDI_transaction_begin("newiter");
 		PDI_expose("iter", &ii);
-		PDI_expose("iter_dat", &ii);
 		PDI_expose("main_field", cur);
 		PDI_transaction_end();
 		
