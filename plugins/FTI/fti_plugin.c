@@ -67,7 +67,7 @@ PDI_status_t PDI_fti_plugin_data_start(PDI_data_t *data)
 {
 	int size; PDI_data_size(&data->type, &size);
 	//TODO: handle non-contiguous data correctly
-	FTI_Protect(get_id(data), data->content.data, size, FTI_CHAR);
+	FTI_Protect(get_id(data), data->content[data->nb_content-1].data, size, FTI_CHAR);
 	return PDI_OK;
 }
 

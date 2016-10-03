@@ -53,7 +53,7 @@ struct loaded_plugin_s
  */
 struct PDI_data_value_s
 {
-	// PDI_inout_t ORed, 0 if the variable is not currently shared
+	// PDI_inout_t ORed with PDI_memmode_t. Only the latest 
 	int access;
 	
 	/// a pointer to the data in code representation (i.e. potentially sparse)
@@ -61,34 +61,31 @@ struct PDI_data_value_s
 	
 };
 
-struct PDI_metadata_s
+struct PDI_data_s
 {
-	/// The name of this specific parameter (a.k.a. metadata)
+	/// The name of this specific data
 	char *name;
 	
-	/// The type of the parameter (a.k.a. metadata)
+	/// Whether this represents data or metadata
+	PDI_datakind_t kind;
+	
+	/// The type of the data
 	PDI_type_t type;
 	
-	/// The value of the parameter (a.k.a. metadata) in dense representation
-	void *value;
+	/// A reference to the data configuration
+	PC_tree_t config;
+	
+	/// The number of versions of the content available
+	int nb_content;
+	
+	/** All the versions of the data content in share order.
+	 * Only the latest can be actually shared with the user code, all the others
+	 * are copies kept for PDI that should have the PDI_MM_FREE flag set.
+	 */
+	PDI_data_value_t *content;
 	
 };
 
-struct PDI_data_s
-{
-	/// The name os this specific variable (a.k.a. data)
-	char *name;
-	
-	/// The type of the variable (a.k.a. data)
-	PDI_type_t type;
-	
-	/// A reference to the variable (a.k.a. data) configuration
-	PC_tree_t config;
-	
-	/// The value of the variable (a.k.a. data) as a reference
-	PDI_data_value_t content;
-	
-};
 
 struct PDI_state_s
 {
@@ -97,16 +94,10 @@ struct PDI_state_s
 	 */
 	MPI_Comm PDI_comm;
 	
-	/// the number of metadata
-	int nb_metadata;
-	
-	/// the actual metadata (a.k.a. parameters)
-	PDI_metadata_t *metadata;
-	
 	/// The number of data
 	int nb_data;
 	
-	/// The actual data (a.k.a data)
+	/// The actual data
 	PDI_data_t *data;
 
 	char *transaction;
@@ -125,6 +116,15 @@ struct PDI_state_s
 	PDI_errfunc_f *errfunc;
 
 };
+
+
+/** Removes a version of the content of a data
+ * \param[in] data the data whose content to discard
+ * \param[in] content_id the version of the content to discard
+ * \return an error code
+ */
+PDI_status_t PDI_EXPORT PDI_data_unlink( PDI_data_t *data, int content_id );
+
 
 /// The main state of the PDI implementation
 extern PDI_state_t PDI_EXPORT PDI_state;

@@ -39,36 +39,7 @@
 
 #include "conf.h"
 
-static PDI_status_t load_metadata(PC_tree_t node)
-{
-	PDI_status_t status = PDI_OK;
-	
-	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
-	
-	PDI_state.metadata = realloc(PDI_state.metadata,
-			( PDI_state.nb_metadata + map_len ) * sizeof(PDI_metadata_t)
-		);
-	
-	int map_id;
-	for ( map_id=0; map_id<map_len; ++map_id ) {
-		PDI_metadata_t *cur_meta = PDI_state.metadata+PDI_state.nb_metadata;
-		
-		cur_meta->value = NULL;
-		
-		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_meta->name), err0);
-		
-		PC_tree_t map_value = PC_get(node, "<%d>", map_id);
-		handle_PC_err(PC_status(map_value), err0);
-		PDI_handle_err(PDI_datatype_load(map_value, &cur_meta->type), err0);
-		
-		++PDI_state.nb_metadata;
-	}
-	
-err0:
-	return status;
-}
-
-static PDI_status_t load_data(PC_tree_t node)
+static PDI_status_t load_data( PC_tree_t node, PDI_datakind_t kind )
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -80,19 +51,22 @@ static PDI_status_t load_data(PC_tree_t node)
 	
 	int map_id;
 	for ( map_id=0; map_id<map_len; ++map_id ) {
-		PDI_data_t *cur_var = PDI_state.data+PDI_state.nb_data;
+		PDI_data_t *cur_data = PDI_state.data+PDI_state.nb_data;
 		
-		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_var->name), err0);
+		cur_data->kind = kind;
+		cur_data->nb_content = 0;
+		cur_data->content = NULL;
 		
-		cur_var->content.access = 0;
+		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_data->name), err0);
 		
-		cur_var->config = PC_get(node, "<%d>", map_id);
-		handle_PC_err(PC_status(cur_var->config), err0);
-		PDI_handle_err(PDI_datatype_load(cur_var->config, &cur_var->type), err0);
-		
+		cur_data->config = PC_get(node, "<%d>", map_id);
+		handle_PC_err(PC_status(cur_data->config), err0);
+		PDI_handle_err(PDI_datatype_load(cur_data->config, &cur_data->type), err0);
 		
 		++PDI_state.nb_data;
 	}
+	
+	return status;
 	
 err0:
 	return status;
@@ -105,13 +79,19 @@ PDI_status_t load_conf(PC_tree_t node)
 	// Detect an invalid configuration as soon as possible
 	handle_PC_err(PC_status(node), err0);
 	
+	// no metadata is not an error
 	PC_tree_t metadata = PC_get(node, ".metadata");
-	handle_PC_err(PC_status(metadata), err0);
-	PDI_handle_err(load_metadata(metadata), err0);
+	if ( !PC_status(metadata) ) {
+		PDI_handle_err(load_data(metadata, PDI_DK_METADATA), err0);
+	}
 	
+	// no data is spurious, but not an error
 	PC_tree_t data = PC_get(node, ".data");
-	handle_PC_err(PC_status(data), err0);
-	PDI_handle_err(load_data(data), err0);
+	if ( !PC_status(data) ) {
+		PDI_handle_err(load_data(data, PDI_DK_DATA), err0);
+	}
+	
+	return status;
 	
 err0:
 	return status;
