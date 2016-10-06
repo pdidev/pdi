@@ -73,6 +73,7 @@ struct PDI_array_type_s
 	
 	PDI_type_t type;
 	
+	PDI_order_t order;
 };
 
 struct PDI_member_s
