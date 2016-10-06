@@ -156,7 +156,8 @@ int is_h5_file(char *filename)
 
 void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 {
-	int rank = 0, order = PDI_ORDER_C;
+	int rank = 0;
+	int order = PDI_ORDER_C;
 	hsize_t *h5sizes = NULL;
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
@@ -169,11 +170,11 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 		order = data->type.c.array->order;
 		int h5ii = 0;
 		for ( int ii=0; ii<rank; ++ii ) {
-			if (order == PDI_ORDER_C){
-				printf("Ordering is C");
-				h5ii = ii; // ORDER_C
-			} else {
-				h5ii = rank-ii-1; // ORDER_FORTRAN
+			switch (order){
+			case PDI_ORDER_C:
+				h5ii = ii; break; // ORDER_C
+			case PDI_ORDER_FORTRAN:
+				h5ii = rank-ii-1; break; // ORDER_FORTRAN
 			}
 			int intdim;
 			

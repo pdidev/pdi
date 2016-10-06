@@ -268,21 +268,18 @@ err3:
 	}
 	
 	// Order: C or fortran ordering, default is C
-	type->order=PDI_ORDER_C; 
 	pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	char *order; PC_status_t invalid_order = PC_string(PC_get(node, ".order"), &order);
+	char *order="c"; PC_string(PC_get(node, ".order"), &order);
 	PC_errhandler(pc_handler); // aka PC_end_try
-	if(!invalid_order){
-		if(!strcmp(order, "c")){
-			type->order=PDI_ORDER_C;
-		} else if(!strcmp(order, "fortran")){
-			type->order=PDI_ORDER_FORTRAN;
-		} else {
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Incorrect array ordering: `%s'", order), err6);
-		}
+	// in case of error, char *order is not modified so order=="c" is true
+	if( (!strcmp(order, "c"))||(!strcmp(order, "C")) ){
+		type->order=PDI_ORDER_C;
+	} else if( (!strcmp(order, "fortran"))||(!strcmp(order, "Fortran")) ){
+		type->order=PDI_ORDER_FORTRAN;
+	} else {
+		PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Incorrect array ordering: `%s'", order), err0);
 	}
 
-err6:; // empty statement to declare variable 
 	PC_tree_t type_type = PC_get(node, ".type");
 	handle_PC_err(PC_status(type_type), err0);
 	PDI_handle_err(PDI_datatype_load(type_type, &type->type), err0);
