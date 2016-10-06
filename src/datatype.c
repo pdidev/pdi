@@ -267,8 +267,21 @@ err3:
 		}
 	}
 	
-	//TODO: implement .order ORDER_C|ORDER_FORTRAN
-	
+	// Order: C or fortran ordering, default is C
+	type->order=PDI_ORDER_UNKNOW; // in case something goes wrong
+	char *order; handle_PC_err(PC_string(PC_get(node, ".order"), &order), err6);
+	if(order){
+		if(!strcmp(order, "c")){
+			type->order=PDI_ORDER_C;
+		} else if(!strcmp(order, "fortran")){
+			type->order=PDI_ORDER_FORTRAN;
+		} else {
+			type->order=PDI_ORDER_UNKNOW; 
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Incorrect array ordering: `%s'", order), err6);
+		}
+	}
+
+err6:
 	PC_tree_t type_type = PC_get(node, ".type");
 	handle_PC_err(PC_status(type_type), err0);
 	PDI_handle_err(PDI_datatype_load(type_type, &type->type), err0);

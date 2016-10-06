@@ -53,11 +53,14 @@ typedef enum PDI_type_kind_e {
 /// A PDI array type descriptor
 typedef struct PDI_array_type_s PDI_array_type_t;
 
-//TODO: ordering of array, implement 
-// typedef enum PDI_order_e {
-// 	PDI_ORDER_C,
-// 	PDI_ORDER_FORTRAN
-// } PDI_order_t;
+// ordering of array, implement 
+typedef enum PDI_order_e {
+	PDI_ORDER_C,
+	PDI_ORDER_FORTRAN,
+	PDI_ORDER_UNKNOW, // unspecified ordering
+	PDI_ORDER_FROM_C, // switch order depending on the
+	PDI_ORDER_FROM_F  // language of the function calling expose
+} PDI_order_t;
 
 /// A PDI record type descriptor
 typedef struct PDI_struct_type_s PDI_struct_type_t;
