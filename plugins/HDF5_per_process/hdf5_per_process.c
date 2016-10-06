@@ -156,7 +156,7 @@ int is_h5_file(char *filename)
 
 void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 {
-	int rank = 0;
+	int rank = 0, order = PDI_ORDER_C;
 	hsize_t *h5sizes = NULL;
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
@@ -166,8 +166,15 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 		h5sizes = malloc(rank*sizeof(hsize_t));
 		h5subsizes = malloc(rank*sizeof(hsize_t));
 		h5starts = malloc(rank*sizeof(hsize_t));
+		order = data->type.c.array->order;
+		int h5ii = 0;
 		for ( int ii=0; ii<rank; ++ii ) {
-			int h5ii = ii; //rank-ii-1; // ORDER_C
+			if (order == PDI_ORDER_C){
+				printf("Ordering is C");
+				h5ii = ii; // ORDER_C
+			} else {
+				h5ii = rank-ii-1; // ORDER_FORTRAN
+			}
 			int intdim;
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
@@ -196,7 +203,7 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
 	H5Pset_create_intermediate_group( h5lcp, 1 );
 	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar), h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
-    H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT, data->content.data);
+	H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT, data->content.data);
 	
 	H5Dclose(h5set);
 	H5PTclose(h5lcp);
