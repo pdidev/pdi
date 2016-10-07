@@ -8,18 +8,26 @@ program PDI_example_f90
 
   implicit none
 
-  integer :: status, nb_iter, width, height, pheight, pwidth, main_comm, ii
-  integer :: size, rank, cart_dims(2), cart_comm, cart_coord(2)
-  logical :: cart_period(2)
+  integer :: status, next_reduce, width, height, pheight, pwidth, main_comm, ii
+  integer :: size, rank, cart_dims(2), cart_comm, cart_coord(2), rem_iter, err
+  logical :: cart_period(2), keep_running
   type(PC_tree_t) :: conf, treetmp
   real(8), pointer :: cur(:,:), next(:,:), tmp(:,:)
-
+  real(8) :: local_time, global_time, duration, start
+  character(len=512) :: strbuf
+  
   call MPI_init(status)
 
-  call PC_parse_path("example.yml", conf)
+  if ( command_argument_count() /= 1 ) then
+    call get_command_argument(0, strbuf)
+    print '("Usage: ",A," <config_file>")', trim(strbuf)
+    stop
+  endif
+  
+  call get_command_argument(1, strbuf)
+  
+  call PC_parse_path(strbuf, conf)
 
-  call PC_get(conf,".iter", treetmp)
-  call PC_int(treetmp, nb_iter)
   call PC_get(conf,".datasize[0]", treetmp)
   call PC_int(treetmp, width)
   call PC_get(conf,".datasize[1]", treetmp)
@@ -28,6 +36,8 @@ program PDI_example_f90
   call PC_int(treetmp, pheight)
   call PC_get(conf,".parallelism.width", treetmp)
   call PC_int(treetmp, pwidth)
+  call PC_get(conf,".duration", treetmp)
+  call PC_double(treetmp, duration)
 
   main_comm = MPI_COMM_WORLD
   call PC_get(conf, ".pdi", treetmp)
@@ -64,7 +74,6 @@ program PDI_example_f90
   call PDI_expose("height", height)
   call PDI_expose("pwidth", pwidth)
   call PDI_expose("pheight", pheight)
-  call PDI_expose("nb_iter", nb_iter)
 
   allocate( cur(width, height) )
   allocate( next(width, height) )
@@ -75,15 +84,30 @@ program PDI_example_f90
   endif
 
   call PDI_event("main_loop")
-  do ii = 1, nb_iter
+  start = MPI_Wtime()
+  next_reduce = 0
+  keep_running = .TRUE.
+  do while( keep_running )
+    call PDI_transaction_begin("newiter")
     call PDI_expose("iter", ii)
     call PDI_expose("main_field", cur)
+    call PDI_transaction_end()
+    
     call iter(cur, next)
     call exchange(cart_comm, next)
-    tmp => cur
-    cur => next
-    next => tmp
+    tmp => cur; cur => next; next => tmp
+    
+    if ( ii >= next_reduce ) then
+      local_time = MPI_Wtime()-start
+      call MPI_Allreduce(local_time, global_time, 1, MPI_DOUBLE, MPI_MAX, main_comm, err)
+      if ( global_time >= duration ) keep_running = .FALSE.
+      rem_iter = .8 * (duration-global_time) * (ii+1) / global_time + 1
+      if ( rem_iter < 1 ) rem_iter = 1
+      next_reduce = ii + rem_iter
+    endif
+    ii = ii+1
   enddo
+  
   call PDI_event("finalization")
   call PDI_expose("iter", ii)
   call PDI_expose("main_field", cur)
