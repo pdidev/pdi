@@ -327,7 +327,7 @@ PDI_status_t PDI_transaction_end()
 {
 	PDI_status_t status = PDI_OK;
 	
-	if ( PDI_state.transaction ) {
+	if ( !PDI_state.transaction ) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_STATE, "No transaction in progress, cannot end one"), err0);
 	}
 	
