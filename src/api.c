@@ -309,7 +309,16 @@ err0:
 PDI_status_t PDI_transaction_begin( const char *name )
 {
 	PDI_status_t status = PDI_OK;
+	
+	if ( PDI_state.transaction ) {
+		PDI_handle_err(PDI_make_err(PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"), err0);
+	}
+	
 	PDI_state.transaction = strdup(name);
+	
+	return status;
+	
+err0:
 	return status;
 }
 
@@ -317,6 +326,10 @@ PDI_status_t PDI_transaction_begin( const char *name )
 PDI_status_t PDI_transaction_end()
 {
 	PDI_status_t status = PDI_OK;
+	
+	if ( PDI_state.transaction ) {
+		PDI_handle_err(PDI_make_err(PDI_ERR_STATE, "No transaction in progress, cannot end one"), err0);
+	}
 	
 	PDI_event(PDI_state.transaction);
 	for( int ii=0; ii<PDI_state.nb_transaction_data; ii++ ) {
@@ -329,6 +342,9 @@ PDI_status_t PDI_transaction_end()
 	free(PDI_state.transaction);
 	PDI_state.transaction = NULL;
 	
+	return status;
+	
+err0:
 	return status;
 }
 
