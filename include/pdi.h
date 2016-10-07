@@ -197,6 +197,13 @@ PDI_status_t PDI_EXPORT PDI_export(const char *name, const void *data);
  */
 PDI_status_t PDI_EXPORT PDI_expose(const char *name, const void *data);
 
+/** Exchanges some data with PDI. Equivalent to PDI_share(IN|OUT) + PDI_reclaim.
+ * \param[in] name the data name
+ * \param[in] data the exposed data
+ * \return an error status
+ */
+PDI_status_t PDI_EXPORT PDI_exchange(const char *name, void *data);
+
 /** Imports some data from PDI. Equivalent to PDI_share(IN) + PDI_reclaim.
  * \param[in] name the data name
  * \param[out] data the data to initialize

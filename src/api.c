@@ -306,6 +306,32 @@ err0:
 }
 
 
+PDI_status_t PDI_exchange ( const char* name, void* data_dat )
+{
+	PDI_status_t status = PDI_OK;
+	
+	PDI_handle_err(PDI_share(name, data_dat, PDI_IN|PDI_OUT), err0);
+	
+	if ( PDI_state.transaction ) { // defer the reclaim
+		PDI_data_t *data = find_data(name);
+		if ( data ) {
+			++PDI_state.nb_transaction_data;
+			PDI_state.transaction_data = realloc(
+					PDI_state.transaction_data,
+					PDI_state.nb_transaction_data * sizeof(PDI_data_t *) );
+			PDI_state.transaction_data[PDI_state.nb_transaction_data-1] = data;
+		}
+	} else { // do the reclaim now
+		PDI_handle_err(PDI_reclaim(name), err0);
+	}
+	
+	return status;
+	
+err0:
+	return status;
+}
+
+
 PDI_status_t PDI_transaction_begin( const char *name )
 {
 	PDI_status_t status = PDI_OK;

@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <assert.h>
 #include <string.h>
 #include <mpi.h>
 #include <fti.h>
@@ -37,11 +38,22 @@ typedef struct {
 	int fti_id;
 } protected_data_t;
 
+
+/// The types of events FTI supports
+typedef enum { NO_EVENT=0, RECOVER, SNAPSHOT } PDI_FTI_event_t;
+
+
 int nb_protected = 0;
+
 protected_data_t *protected = NULL;
 
 int nb_snapshot_events = 0;
+
 char **snapshot_events = NULL;
+
+int nb_recover_events = 0;
+
+char **recover_events = NULL;
 
 
 PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
@@ -71,13 +83,27 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 			PC_string(PC_get(conf, ".snapshot_on[%d]", ii), &snapshot_events[ii]);
 		}
 	} else {
-		fprintf(stderr, "** Warning: [PDI/FTI] missing \"snapshot_on\"\n");
 		nb_snapshot_events = 0;
 		free(snapshot_events);
 	}
+	
+	nb_recover_events = 1;
+	recover_events = malloc(sizeof(char*));
+	if ( !PC_string(PC_get(conf, ".recover_on"), recover_events) ) {
+	} else if ( ! PC_len(PC_get(conf, ".recover_on"), &nb_recover_events) ) {
+		recover_events = realloc(recover_events, nb_recover_events * sizeof(char*));
+		for ( int ii=0; ii<nb_recover_events; ++ii ) {
+			PC_string(PC_get(conf, ".recover_on[%d]", ii), &recover_events[ii]);
+		}
+	} else {
+		nb_recover_events = 0;
+		free(recover_events);
+	}
+	
 	PC_errhandler(pc_handler); // aka PC_end_try
 	
 	FTI_Init(fti_file, *world);
+	
 	free(fti_file);
 	*world = FTI_COMM_WORLD;
 	return PDI_OK;
@@ -94,30 +120,52 @@ PDI_status_t PDI_fti_plugin_finalize()
 }
 
 
-PDI_status_t PDI_fti_plugin_event(const char *event)
+PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 {
-	int do_snapshot = 0;
-	for ( int ii=0; ii<nb_snapshot_events; ++ii ) {
-		if ( !strcmp(event, snapshot_events[ii]) ) {
-			do_snapshot = 1;
-			break;
+	PDI_FTI_event_t event = NO_EVENT;
+	for ( int ii=0; ii<nb_snapshot_events && !event; ++ii ) {
+		if ( !strcmp(event_name, snapshot_events[ii]) ) {
+			event = SNAPSHOT;
 		}
 	}
-	if( do_snapshot ) {
+	for ( int ii=0; ii<nb_recover_events && !event; ++ii ) {
+		if ( !strcmp(event_name, recover_events[ii]) ) {
+			event = RECOVER;
+		}
+	}
+	
+	if( event ) {
+		/* the direction we need to access the data depending on whether this is a
+		   recovery or a checkpoint write */
+		PDI_inout_t direction = PDI_IN;
+		if ( event == SNAPSHOT && !FTI_Status() ) {
+			direction = PDI_OUT;
+		}
 		for ( int ii = 0; ii<nb_protected; ++ii ) {
 			PDI_data_t *data = protected[ii].data;
-			if ( data->nb_content && (data->content[data->nb_content-1].access & PDI_OUT) ) {
+			if ( data->nb_content
+					&& (data->content[data->nb_content-1].access & direction) ) {
 				int size; PDI_data_size(&protected[ii].data->type, &size);
 				//TODO: handle non-contiguous data correctly
-				FTI_Protect(protected[ii].fti_id, data->content[data->nb_content-1].data, size, FTI_CHAR);
+				FTI_Protect(protected[ii].fti_id,
+						data->content[data->nb_content-1].data, size, FTI_CHAR);
 			} else {
-				FTI_Protect(protected[ii].fti_id, "", 0, FTI_CHAR);
+				FTI_Protect(protected[ii].fti_id, NULL, 0, FTI_CHAR);
 				fprintf(stderr,
 						"** Warning: [PDI/FTI] Protected variable %s unavailable\n",
 						protected[ii].data->name);
 			}
 		}
-		FTI_Snapshot();
+		switch ( event ) {
+		case SNAPSHOT:
+			FTI_Snapshot();
+			break;
+		case RECOVER:
+			FTI_Recover();
+			break;
+		default:
+			assert(0 && "Unexpected event type");
+		}
 	}
 	return PDI_OK;
 }
