@@ -40,7 +40,7 @@
  */
 #define PDI_handle_err(callstatus, free_stamp)\
 do { \
-	status = callstatus; \
+	if ( callstatus ) status = callstatus; \
 	if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \
 } while( 0 )
 
