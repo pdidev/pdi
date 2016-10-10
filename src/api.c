@@ -46,19 +46,6 @@
 PDI_state_t PDI_state;
 
 
-static PDI_metadata_t *find_metadata( const char *name )
-{
-	PDI_metadata_t *metadata = NULL;
-	for ( int ii=0; ii<PDI_state.nb_metadata; ++ii ) {
-		if ( strcmp(name, PDI_state.metadata[ii].name) != 0 ) continue;
-		
-		metadata = PDI_state.metadata+ii;
-		break;
-	}
-	return metadata;
-}
-
-
 static PDI_data_t *find_data( const char *name )
 {
 	PDI_data_t *data = NULL;
@@ -74,8 +61,6 @@ static PDI_data_t *find_data( const char *name )
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
 	PDI_status_t status = PDI_OK;
-	PDI_state.nb_metadata = 0;
-	PDI_state.metadata = NULL;
 	PDI_state.nb_data = 0;
 	PDI_state.data = NULL;
 	PDI_state.transaction = NULL;
@@ -107,27 +92,18 @@ err0:
 }
 
 
-PDI_status_t PDI_metadata_destroy(PDI_metadata_t *metadata)
-{
-	PDI_status_t status = PDI_OK;
-	
-	free(metadata->name);
-	free(metadata->value);
-	PDI_handle_err(PDI_datatype_destroy(&metadata->type), err0);
-	
-	return status;
-	
-err0:
-	return status;
-}
-
-
 PDI_status_t PDI_data_destroy(PDI_data_t *var)
 {
 	PDI_status_t status = PDI_OK;
 	
-	free(var->name);
 	PDI_handle_err(PDI_datatype_destroy(&var->type), err0);
+	free(var->name);
+	for ( int ii=0; ii<var->nb_content; ++ii ) {
+		if ( var->content[ii].access & PDI_MM_FREE ) {
+			free(var->content[ii].data);
+		}
+	}
+	free(var->content);
 	
 	return status;
 	
@@ -148,12 +124,6 @@ PDI_status_t PDI_finalize()
 	}
 	free(PDI_state.plugins);
 	PDI_state.plugins = NULL; // help valgrind
-	
-	for (int ii=0; ii<PDI_state.nb_metadata; ++ii) {
-		PDI_metadata_destroy(&PDI_state.metadata[ii]);
-	}
-	free(PDI_state.metadata);
-	PDI_state.metadata = NULL; // help valgrind
 	
 	for (int ii=0; ii<PDI_state.nb_data; ++ii) {
 		PDI_data_destroy(&PDI_state.data[ii]);
@@ -190,29 +160,57 @@ PDI_status_t PDI_share( const char* name, void* data_dat, int access )
 	
 	PDI_data_t *data = find_data(name);
 	if (data) {
+		if ( data->nb_content > 0 && data->kind & PDI_DK_METADATA ) {
+			// for metadata, unlink happens on share
+			PDI_data_unlink(data, data->nb_content-1);
+		}
+		
+		// insert the new value
+		++data->nb_content;
+		data->content = realloc(data->content, data->nb_content*sizeof(PDI_data_value_t));
+		data->content[data->nb_content-1].data = data_dat;
+		
 		if ( access & PDI_OUT ) {
-			data->content.access = PDI_OUT;
-			data->content.data = data_dat;
+			data->content[data->nb_content-1].access = PDI_OUT;
 			for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
 				PDI_handle_err(PDI_state.plugins[ii].data_start(data), err0);
 			}
 		}
 		if ( access & PDI_IN ) {
 			status = PDI_UNAVAILABLE;
-			data->content.access = PDI_IN;
-			for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-				PDI_status_t instatus = PDI_state.plugins[ii].data_start(data);
-				PDI_handle_err(instatus, err0);
-				if ( !instatus ) { // only one plugin for input
-					status = PDI_OK;
-					break;
-				}
+			data->content[data->nb_content-1].access = PDI_IN;
+			for ( int ii=0; ii<PDI_state.nb_plugins && status==PDI_UNAVAILABLE; ++ii ) {
+				PDI_handle_err(PDI_state.plugins[ii].data_start(data), err0);
 			}
 		}
-		data->content.access = access;
+		data->content[data->nb_content-1].access = access;
 	} else {
+		//TODO: create a data with unknown type here
 		status = PDI_UNAVAILABLE;
 	}
+	
+	return status;
+	
+err0:
+	return status;
+}
+
+
+PDI_status_t PDI_data_unlink( PDI_data_t *data, int content_id )
+{
+	PDI_status_t status = PDI_OK;
+	
+	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
+		PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
+	}
+	
+	if ( data->content[content_id].access & PDI_MM_FREE ) {
+		free(data->content[content_id].data);
+	}
+	for ( int ii=content_id; ii<data->nb_content-1; ++ii ) {
+		data->content[ii] = data->content[ii+1];
+	}
+	--data->nb_content;
 	
 	return status;
 	
@@ -226,14 +224,15 @@ PDI_status_t PDI_release(const char* name)
 	PDI_status_t status = PDI_OK;
 	
 	PDI_data_t *data = find_data(name);
-	if (data) {
-		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-			PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
+	if ( data ) {
+		if ( data->nb_content == 0 ) {
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Cannot release a non shared value"), err0);
 		}
-		
-		free(data->content.data);
-		data->content.data = NULL;
-		data->content.access = 0;
+		data->content[data->nb_content-1].access |= PDI_MM_FREE;
+		if ( ! (data->kind & PDI_DK_METADATA) ) {
+			// metadata is unlinked at share, not at release
+			PDI_data_unlink(data, data->nb_content-1);
+		}
 	} else {
 		status = PDI_UNAVAILABLE;
 	}
@@ -245,18 +244,31 @@ err0:
 }
 
 
-PDI_status_t PDI_reclaim(const char* name)
+PDI_status_t PDI_reclaim( const char* name )
 {
 	PDI_status_t status = PDI_OK;
 	
 	PDI_data_t *data = find_data(name);
-	if (data) {
-		for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-			PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
+	if ( data ) {
+		if ( data->nb_content == 0 ) {
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Cannot reclaim a non shared value"), err0);
 		}
-		
-		data->content.access = 0;
-		data->content.data = NULL;
+		if ( (data->kind & PDI_DK_METADATA)
+				&& (data->content[data->nb_content-1].access & PDI_OUT) ) {
+			// keep a copy of the last exposed value of the data
+			data->content[data->nb_content-1].access |= PDI_MM_FREE & PDI_MM_COPY;
+			int dsize; PDI_handle_err(PDI_data_size(&data->type, &dsize), err0);
+			void *newval = malloc(dsize);
+			PDI_handle_err(
+					tcopy(
+							&data->type,
+							newval,
+							(void*)data->content[data->nb_content-1].data),
+					err0);
+			data->content[data->nb_content-1].data = newval;
+		} else {
+			PDI_data_unlink(data, data->nb_content-1);
+		}
 	} else {
 		status = PDI_UNAVAILABLE;
 	}
@@ -272,25 +284,19 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_metadata_t *metadata = find_metadata(name);
-	if (metadata) {
-		int dsize; PDI_handle_err(PDI_data_size(&metadata->type, &dsize), err0);
-		metadata->value = realloc(metadata->value, dsize);
-		PDI_handle_err(tcopy(&metadata->type, metadata->value, (void*)data_dat), err0);
-	} else {
-		PDI_handle_err(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
-		if ( PDI_state.transaction ) { // defer the reclaim
-			PDI_data_t *data = find_data(name);
-			if ( data ) {
-				++PDI_state.nb_transaction_data;
-				PDI_state.transaction_data = realloc(
-						PDI_state.transaction_data,
-						PDI_state.nb_transaction_data * sizeof(PDI_data_t *) );
-				PDI_state.transaction_data[PDI_state.nb_transaction_data-1] = data;
-			}
-		} else { // do the reclaim now
-			PDI_handle_err(PDI_reclaim(name), err0);
+	PDI_handle_err(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
+	
+	if ( PDI_state.transaction ) { // defer the reclaim
+		PDI_data_t *data = find_data(name);
+		if ( data ) {
+			++PDI_state.nb_transaction_data;
+			PDI_state.transaction_data = realloc(
+					PDI_state.transaction_data,
+					PDI_state.nb_transaction_data * sizeof(PDI_data_t *) );
+			PDI_state.transaction_data[PDI_state.nb_transaction_data-1] = data;
 		}
+	} else { // do the reclaim now
+		PDI_handle_err(PDI_reclaim(name), err0);
 	}
 	
 	return status;

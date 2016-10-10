@@ -12,17 +12,16 @@ pdi:
     height: int # per proc. height including ghost
     pwidth: int  # nb proc. in the x dim
     pheight: int # nb proc. in the y dim
-    iter: int # curent iteration id
+    iter:
+      type: int # curent iteration id
+      size: 1
+      fti_id: 1
     coord: { size: 2, type: int } # coordinate of the process as [x, y]
   data: # values that can not be referenced using $syntax
     main_field:
       type:   double
       sizes:  [$width, $height]
       fti_id: 0
-    iter_dat:
-      type:   int
-      size:   1
-      fti_id: 1
   plugins:
     fti_plugin:
       config_file: example2.fti

@@ -105,10 +105,11 @@ PDI_status_t PDI_fti_plugin_event(const char *event)
 	}
 	if( do_snapshot ) {
 		for ( int ii = 0; ii<nb_protected; ++ii ) {
-			if ( protected[ii].data->content.access & PDI_OUT ) {
+			PDI_data_t *data = protected[ii].data;
+			if ( data->nb_content && (data->content[data->nb_content-1].access & PDI_OUT) ) {
 				int size; PDI_data_size(&protected[ii].data->type, &size);
 				//TODO: handle non-contiguous data correctly
-				FTI_Protect(protected[ii].fti_id, protected[ii].data->content.data, size, FTI_CHAR);
+				FTI_Protect(protected[ii].fti_id, data->content[data->nb_content-1].data, size, FTI_CHAR);
 			} else {
 				FTI_Protect(protected[ii].fti_id, "", 0, FTI_CHAR);
 				fprintf(stderr,

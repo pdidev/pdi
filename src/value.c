@@ -44,7 +44,7 @@
 
 struct PDI_refval_s
 {
-	PDI_metadata_t *ref;
+	PDI_data_t *ref;
 	
 	PDI_value_t *idx;
 	
@@ -130,9 +130,10 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	int refid_len; PDI_handle_err(parse_id(&ref, &refid_len), err0);
 	
 	value->ref = NULL;
-	for ( int met_id=0; met_id<PDI_state.nb_metadata; ++met_id ) {
-		if ( !strncmp(PDI_state.metadata[met_id].name, ref-refid_len, refid_len) ) {
-			value->ref = &PDI_state.metadata[met_id];
+	for ( int met_id=0; met_id<PDI_state.nb_data; ++met_id ) {
+		if ( !strncmp(PDI_state.data[met_id].name, ref-refid_len, refid_len) ) {
+			value->ref = &PDI_state.data[met_id];
+			break;
 		}
 	}
 	if ( !value->ref ) {
@@ -401,24 +402,29 @@ PDI_status_t eval_refval(PDI_refval_t *val, int *res)
 		stride *= size;
 	}
 	
+	if ( val->ref->nb_content < 1 ) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->ref->name), err0);
+	void *value = val->ref->content[0].data;
+	
 	switch ( type ) {
 	case PDI_T_INT8: {
-		*res = ((int8_t*)val->ref->value)[idx];
+		*res = ((int8_t*)value)[idx];
 	} break;
 	case PDI_T_INT16: {
-		*res = ((int16_t*)val->ref->value)[idx];
+		*res = ((int16_t*)value)[idx];
 	} break;
 	case PDI_T_INT32: {
-		*res = ((int32_t*)val->ref->value)[idx];
+		*res = ((int32_t*)value)[idx];
 	} break;
 	case PDI_T_INT64: {
-		*res = ((int64_t*)val->ref->value)[idx];
+		*res = ((int64_t*)value)[idx];
 	} break;
 	default: {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
 	} break;
 	}
+	
 	return status;
+	
 err0:
 	return status;
 }

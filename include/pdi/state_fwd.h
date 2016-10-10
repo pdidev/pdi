@@ -32,23 +32,38 @@
 #ifndef PDI_STATE_FWD_H__
 #define PDI_STATE_FWD_H__
 
+/** the possible kind of data
+ */
+typedef enum PDI_datakind_e {
+	PDI_DK_DATA=0,
+	PDI_DK_METADATA
+} PDI_datakind_t;
+
+
+/** the possible kind of data
+ */
+typedef enum PDI_memmode_e {
+	PDI_MM_NONE=0,
+	/// PDI is responsible for freeing the memory
+	PDI_MM_FREE=0x08, // start at 8 so as to be ORable w. PDI_inout_t
+	/** The data is a copy stored in the compact (dense) format.
+	 * Implies PDI_MM_FREE.
+	 */
+	PDI_MM_COPY=0x10
+} PDI_memmode_t;
+
+
 /** Describes the state of a PDI instanciation, its configuration, the
  *  currently exposed data, etc...
  */
 typedef struct PDI_state_s PDI_state_t;
 
-/** This is a parameter (a.k.a. metadata) as decribed in the configuration and
- *  its last exposed value if available
- */
-typedef struct PDI_metadata_s PDI_metadata_t;
-
-/** This is a variable (a.k.a. data) as decribed in the configuration and
- *  its shared value if not reclaimed yet
+/** Data as described in the configuration and its shared value if not reclaimed
+ *  yet
  */
 typedef struct PDI_data_s PDI_data_t;
 
-/** This is a variable (a.k.a. data) as decribed in the configuration and
- *  its shared value if not reclaimed yet
+/** The value of some data
  */
 typedef struct PDI_data_value_s PDI_data_value_t;
 

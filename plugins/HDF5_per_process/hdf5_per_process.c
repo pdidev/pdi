@@ -203,8 +203,10 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 	H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
 	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
 	H5Pset_create_intermediate_group( h5lcp, 1 );
-	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar), h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT, data->content.data);
+	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar),
+			h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT,
+			data->content[data->nb_content-1].data);
 	
 	H5Dclose(h5set);
 	H5PTclose(h5lcp);
@@ -252,8 +254,10 @@ void read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
 	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
 	H5Pset_create_intermediate_group( h5lcp, 1 );
-	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar), h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
-    H5Dread(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT, data->content.data);
+	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar), 
+			h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dread(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT,
+			data->content[data->nb_content-1].data);
 	
 	H5Dclose(h5set);
 	H5PTclose(h5lcp);
@@ -265,9 +269,9 @@ void read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	free(h5starts);
 }
 
-PDI_status_t PDI_hdf5_per_process_data_start(PDI_data_t *data)
+PDI_status_t PDI_hdf5_per_process_data_start( PDI_data_t *data )
 {
-	if ( data->content.access & PDI_OUT ) {
+	if ( data->content[data->nb_content-1].access & PDI_OUT ) {
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
 			if ( !strcmp(outputs[ii].name, data->name) ) {
@@ -284,7 +288,7 @@ PDI_status_t PDI_hdf5_per_process_data_start(PDI_data_t *data)
 			}
 		}
 	}
-	if ( data->content.access & PDI_IN ) {
+	if ( data->content[data->nb_content-1].access & PDI_IN ) {
 		int found_input = 0;
 		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
 			if ( !strcmp(inputs[ii].name, data->name) ) {
