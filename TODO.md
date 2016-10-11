@@ -19,6 +19,7 @@ everywhere
 - [ ] correctly handle dimensions (?) 
 - [ ] error handling
 - [ ] handle nested arrays
+- [ ] add checksum (global option)
 
 # Missing features
 - [ ] Structs & arrays dimensions order (C vs. Fortran)
