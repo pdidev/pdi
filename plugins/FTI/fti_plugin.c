@@ -124,11 +124,13 @@ PDI_status_t PDI_fti_plugin_event(const char *event)
 
 PDI_status_t PDI_fti_plugin_data_start(PDI_data_t *data)
 {
+	data=data; // prevent unused warning
 	return PDI_OK;
 }
 
 PDI_status_t PDI_fti_plugin_data_end(PDI_data_t *data)
 {
+	data=data; // prevent unused warning
 	return PDI_OK;
 }
 
