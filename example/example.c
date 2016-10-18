@@ -143,8 +143,8 @@ int main( int argc, char *argv[] )
 	int next_reduce = 0;
 	for(ii=0;; ++ii) {
 		PDI_transaction_begin("newiter");
-		PDI_expose("iter", &ii);
-		PDI_expose("main_field", cur);
+		PDI_exchange("iter", &ii);
+		PDI_exchange("main_field", cur);
 		PDI_transaction_end();
 		
 		iter(cur, next, width, height);
