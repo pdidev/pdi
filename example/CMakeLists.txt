@@ -32,7 +32,7 @@ include(AddCCompilerFlags)
 find_library(LIB_M m DOC "The math library")
 
 add_executable(PDI_example EXCLUDE_FROM_ALL example.c)
-add_compiler_flags(PDI_example PRIVATE -pedantic -Wall -Wextra -Werror)
+add_compiler_flags(PDI_example PRIVATE -pedantic -Wall -Wextra)
 target_compile_features(PDI_example PUBLIC c_variadic_macros)
 target_link_libraries(PDI_example pdi mpi)
 add_test(NAME PDI_example_build

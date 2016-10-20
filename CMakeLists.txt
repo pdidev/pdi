@@ -115,7 +115,7 @@ add_library(pdi
 	src/value.c
 )
 target_compile_features(pdi PUBLIC c_variadic_macros)
-add_compiler_flags(pdi PRIVATE -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
+add_compiler_flags(pdi PRIVATE -pedantic -Wall -Wextra)
 generate_export_header(pdi)
 set_property(TARGET pdi PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET pdi PROPERTY VERSION ${pdi_VERSION})
