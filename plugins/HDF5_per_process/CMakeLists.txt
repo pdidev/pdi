@@ -38,8 +38,10 @@ include_directories(${HDF5_SHARED_C_INCLUDE_PATH})
 set_property(SOURCE hdf5_per_process.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
 set_property(TARGET hdf5_per_process   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
 target_link_libraries(hdf5_per_process ${HDF5_SHARED_C_LIBRARIES})
+
+target_compile_features(hdf5_per_process PUBLIC c_variadic_macros)
 include(AddCCompilerFlags)
-add_compiler_flags(hdf5_per_process PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
+add_compiler_flags(hdf5_per_process PRIVATE -Wall -Wextra)
 
 
 # library installation
@@ -48,4 +50,3 @@ install(TARGETS hdf5_per_process EXPORT hdf5_per_processTargets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )
-

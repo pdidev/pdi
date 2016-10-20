@@ -40,4 +40,3 @@ install(TARGETS test_plugin EXPORT test_pluginTargets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )
-

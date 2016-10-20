@@ -35,10 +35,6 @@ add_library(fti_plugin
 set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden)
 target_link_libraries(fti_plugin pdi fti.shared)
 
-#include(AddCCompilerFlags)
-#add_compiler_flags(hdf5_per_process PRIVATE -std=c99 -pedantic -Wall -Wextra -Werror -Wfatal-errors -pedantic-errors)
-
-
 # library installation
 
 install(TARGETS fti_plugin EXPORT fti_pluginTargets
