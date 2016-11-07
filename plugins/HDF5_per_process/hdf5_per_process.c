@@ -58,11 +58,7 @@ PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 	world = world; // prevent unused param warning
 	my_conf = conf;
 	
-	if( H5open() < 0) { // Failure initializing HDF5 
-		PDI_errhandler_t errh = PDI_errhandler(PDI_WARN_HANDLER);
-		PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Cannot load HDF5 library"), err0);
-		PDI_errhandler(errh);
-	}
+	H5open();
 	
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 	if ( PC_len(PC_get(my_conf, ".outputs"), &nb_outputs) ) {
@@ -113,9 +109,6 @@ PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 	}
 	
 	return PDI_OK;
-
-err0:
-	return PDI_ERR_PLUGIN;
 }
 
 PDI_status_t PDI_hdf5_per_process_finalize()
