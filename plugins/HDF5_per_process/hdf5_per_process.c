@@ -58,7 +58,10 @@ PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 	world = world; // prevent unused param warning
 	my_conf = conf;
 	
-	H5open();
+	if( H5open() < 0) { // Failure initializing HDF5 
+        printf("Cannot load HDF5 library");
+		return PDI_ERR_PLUGIN;
+	}
 	
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 	if ( PC_len(PC_get(my_conf, ".outputs"), &nb_outputs) ) {
@@ -169,6 +172,7 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 		h5starts = malloc(rank*sizeof(hsize_t));
 		order = data->type.c.array->order;
 		int h5ii = 0;
+		int intdim = 0;
 		for ( int ii=0; ii<rank; ++ii ) {
 			switch (order){
 			case PDI_ORDER_C:
@@ -176,7 +180,6 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 			case PDI_ORDER_FORTRAN:
 				h5ii = rank-ii-1; break; // ORDER_FORTRAN
 			}
-			int intdim;
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
 			h5sizes[h5ii] = intdim;
@@ -207,9 +210,10 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 			h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT,
 			data->content[data->nb_content-1].data);
-	
+
 	H5Dclose(h5set);
 	H5PTclose(h5lcp);
+	H5Sclose(h5mspace);
 	H5Sclose(h5fspace);
 	H5Fclose(h5file);
 	
