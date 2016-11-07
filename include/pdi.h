@@ -101,6 +101,10 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler);
  */
 extern const PDI_errhandler_t PDI_ASSERT_HANDLER;
 
+/** Prints the error message and continue if the status is invalid
+ */
+extern const PDI_errhandler_t PDI_WARN_HANDLER;
+
 /** Does nothing
  */
 extern const PDI_errhandler_t PDI_NULL_HANDLER;
