@@ -1,5 +1,5 @@
 
-include 'PDI.f90'
+include 'PDI.h'
 
 program PDI_example_f90
 
@@ -28,20 +28,14 @@ program PDI_example_f90
   
   call PC_parse_path(strbuf, conf)
 
-  call PC_get(conf,".datasize[0]", treetmp)
-  call PC_int(treetmp, width)
-  call PC_get(conf,".datasize[1]", treetmp)
-  call PC_int(treetmp, height)
-  call PC_get(conf,".parallelism.height", treetmp)
-  call PC_int(treetmp, pheight)
-  call PC_get(conf,".parallelism.width", treetmp)
-  call PC_int(treetmp, pwidth)
-  call PC_get(conf,".duration", treetmp)
-  call PC_double(treetmp, duration)
+  call PC_int(PC_get(conf,".datasize[0]"), width)
+  call PC_int(PC_get(conf,".datasize[1]"), height)
+  call PC_int(PC_get(conf,".parallelism.height"), pheight)
+  call PC_int(PC_get(conf,".parallelism.width"), pwidth)
+  call PC_double(PC_get(conf,".duration"), duration)
 
   main_comm = MPI_COMM_WORLD
-  call PC_get(conf, ".pdi", treetmp)
-  call PDI_init(treetmp, main_comm)
+  call PDI_init(PC_get(conf, ".pdi"), main_comm)
 
   ! get local & add ghosts to sizes
   if ( mod(width, pwidth) /= 0 ) then
