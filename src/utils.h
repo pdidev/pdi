@@ -79,4 +79,7 @@ char *vmsprintf(const char *fmt, va_list ap);
  */
 char *mstrcat(char* dest, size_t dlen, const char* src, size_t slen);
 
+/* duplicate of strdup locally implemented for better support */
+char* mstrdup(const char* s);
+
 #endif

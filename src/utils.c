@@ -68,3 +68,15 @@ char *mstrcat(char *dest, size_t dlen, const char *src, size_t slen)
 	result[dlen+slen] = 0;
 	return result;
 }
+
+// sometime not included in string.h 
+char* mstrdup(const char *s)
+{
+    char *p=NULL;
+    if (strlen(s)!=0) {
+        p=malloc(strlen(s)+1);
+        strcpy(p,s);
+    }
+    return p;
+}
+

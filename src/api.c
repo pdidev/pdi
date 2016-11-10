@@ -45,16 +45,6 @@
 
 PDI_state_t PDI_state;
 
-// sometime not included in string.h 
-char* mstrdup(const char *s)
-{
-    char *p=NULL;
-    if (strlen(s)!=0) {
-        p=malloc(strlen(s)+1);
-        strcpy(p,s);
-    }
-    return p;
-}
 
 static PDI_data_t *find_data( const char *name )
 {

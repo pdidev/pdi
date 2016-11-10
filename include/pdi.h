@@ -240,8 +240,6 @@ PDI_status_t PDI_EXPORT PDI_transaction_end();
 
 /// \}
 
-/* duplicate of strdup locally implemented for better support */
-char* PDI_EXPORT mstrdup(const char* s);
 
 
 #ifdef __cplusplus
