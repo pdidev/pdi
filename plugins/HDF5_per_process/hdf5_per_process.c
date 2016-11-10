@@ -210,6 +210,7 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 	
 	H5Dclose(h5set);
 	H5PTclose(h5lcp);
+	H5Sclose(h5mspace);
 	H5Sclose(h5fspace);
 	H5Fclose(h5file);
 	
@@ -261,6 +262,7 @@ void read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	
 	H5Dclose(h5set);
 	H5PTclose(h5lcp);
+	H5Sclose(h5mspace);
 	H5Sclose(h5fspace);
 	H5Fclose(h5file);
 	
