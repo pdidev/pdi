@@ -41,7 +41,7 @@ target_link_libraries(hdf5_per_process ${HDF5_SHARED_C_LIBRARIES})
 
 set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
-add_compiler_flags(hdf5_per_process PRIVATE -Wall -Wextra --std=c99)
+add_compiler_flags(hdf5_per_process PRIVATE -Wall -Wextra -std=c99)
 
 
 # library installation

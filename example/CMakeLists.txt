@@ -33,7 +33,7 @@ find_library(LIB_M m DOC "The math library")
 
 add_executable(PDI_example EXCLUDE_FROM_ALL example.c)
 set_target_properties(PDI_example PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
-add_compiler_flags(PDI_example PRIVATE -Wall -Wextra --std=c99)
+add_compiler_flags(PDI_example PRIVATE -Wall -Wextra -std=c99)
 target_link_libraries(PDI_example pdi mpi)
 add_test(NAME PDI_example_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example
