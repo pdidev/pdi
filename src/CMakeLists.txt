@@ -71,8 +71,8 @@ add_library(pdi
 		utils.c
 		value.c
 )
-target_compile_features(pdi PUBLIC c_variadic_macros)
-add_compiler_flags(pdi PRIVATE -Wall -Wextra)
+set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
+add_compiler_flags(pdi PRIVATE -Wall -Wextra --std=c99)
 generate_export_header(pdi)
 set_property(TARGET pdi PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET pdi PROPERTY VERSION ${pdi_VERSION})
