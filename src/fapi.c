@@ -25,7 +25,7 @@
 //The following is used for doxygen documentation:
  /**
  * \file fapi.c
- * \brief Solely a PDI_init that takes a Fortran communicator
+ * \brief PDI_init_f to obtain a Fortran communicator
  * \author J. Bigot (CEA)
  */
 

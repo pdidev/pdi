@@ -53,65 +53,135 @@ int nb_inputs = 0;
 
 hdf5pp_var_t *inputs = NULL;
 
+
+// sometime not included in string.h 
+char* mstrdup(const char *s)
+{
+    char *p=NULL;
+    if (strlen(s)!=0) {
+        p=malloc(strlen(s)+1);
+        strcpy(p,s);
+    }
+    return p;
+}
+
+
+PDI_status_t read_config_file(char* node_name, hdf5pp_var_t *ptr_hdf5data[], int *iptr_ndata, char* def_file, char* def_select)
+{
+	PDI_status_t status=PDI_OK;
+	hdf5pp_var_t *hdf5data = NULL;
+	*iptr_ndata=0; 
+
+	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
+	if ( PC_len(PC_get(my_conf, node_name), iptr_ndata) ) { // if no subtree found
+		*iptr_ndata = 0;
+		hdf5data = NULL;
+		return status;
+	}
+
+	PC_errhandler(errh);  
+	hdf5data = malloc((*iptr_ndata)*sizeof(hdf5pp_var_t));
+	*ptr_hdf5data = hdf5data; // referencing  
+	errh = PC_errhandler(PC_ASSERT_HANDLER);
+	if ( (*iptr_ndata) > 0 ){ // otherwise accessing subtree
+		for ( int ii=0; ii< (*iptr_ndata); ++ii ) {
+			PC_tree_t treetmp = PC_get(my_conf, "%s{%d}", node_name, ii);
+			PC_string(treetmp , &hdf5data[ii].name);
+
+			treetmp = PC_get(my_conf, "%s<%d>", node_name, ii); // get the node 
+
+			// set the corresponding HDF5 variable name
+			char *var_strv=NULL;
+			if( PC_string(PC_get(treetmp, ".var"), &var_strv)){ // no variable name or not readable
+				var_strv=mstrdup(hdf5data[ii].name); // the node label is used (as a default value)
+			}
+			PDI_value_parse(var_strv, &hdf5data[ii].h5var);
+            
+			// set the HDF5 filename (i.e. where do we write the data)
+			char *file_strv=NULL; 
+			if( PC_string(PC_get(treetmp, ".file"), &file_strv) ){ // No file name
+				
+				if (def_file){ file_strv = mstrdup(def_file);} // using default
+				else {
+					return PDI_ERR_CONFIG;  
+				}
+			}
+			
+			PDI_value_parse(file_strv, &hdf5data[ii].h5file);
+			
+			// sampling or frequency (i.e. when do we expose)
+			char *select_strv=NULL ; 
+			if( PC_string(PC_get(treetmp, ".select"), &select_strv) ){
+				if (def_select){ 
+					select_strv = mstrdup(def_select);} // using default
+				else {
+					return PDI_ERR_CONFIG;  
+				}
+			}
+			
+			PDI_value_parse(select_strv, &hdf5data[ii].select);
+			
+			free(select_strv);
+			free(file_strv);
+			free(var_strv);
+			
+		}
+	}
+	PC_errhandler(errh); 
+
+	return status;
+}
+
+
 PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 {
+	// defaults outputs/inputs
+	char* def_out_file=NULL;   // output file 
+	char* def_out_select=NULL; // output select 
+	char* def_in_file=NULL;    // input file 
+	char* def_in_select=NULL;  // input select 
+	PDI_status_t status=PDI_OK; // 0 when success
 	world = world; // prevent unused param warning
-	my_conf = conf;
+	my_conf = conf; 
 	
 	if( H5open() < 0) { // Failure initializing HDF5 
-        printf("Cannot load HDF5 library");
+		printf("Cannot load HDF5 library");
+		return PDI_ERR_PLUGIN;
+	}
+	
+	if(my_conf.status){
+		printf("Loading HDF5 library, PC_tree is corrupted.");
 		return PDI_ERR_PLUGIN;
 	}
 	
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
-	if ( PC_len(PC_get(my_conf, ".outputs"), &nb_outputs) ) {
-		nb_outputs = 0;
+	int ndefault=0;
+	if ( !PC_len(PC_get(conf, ".defaults"), &ndefault) ){ // if succeed
+		if (ndefault >0 ){
+			// defaults for output 
+			PC_tree_t treetmp = PC_get(my_conf, ".outputs"); // getting node 
+			PC_string(PC_get(treetmp, ".file"),  &def_out_file);
+			PC_string(PC_get(treetmp, ".select"),&def_out_select);
+			// defaults for input 
+			treetmp = PC_get(my_conf, ".inputs"); // getting node 
+			PC_string(PC_get(treetmp, ".file"),  &def_in_file);
+			PC_string(PC_get(treetmp, ".select"),&def_in_select);
+		}
 	}
 	PC_errhandler(errh);
-	outputs = malloc(nb_outputs*sizeof(hdf5pp_var_t));
-	for ( int ii=0; ii<nb_outputs; ++ii ) {
-		PC_string(PC_get(my_conf, ".outputs{%d}", ii), &outputs[ii].name);
-		
-		PC_tree_t output = PC_get(my_conf, ".outputs<%d>", ii);
-		
-		char *file_strv; PC_string(PC_get(output, ".file"), &file_strv);
-		PDI_value_parse(file_strv, &outputs[ii].h5file);
-		free(file_strv);
-		
-		char *var_strv; PC_string(PC_get(output, ".var"), &var_strv);
-		PDI_value_parse(var_strv, &outputs[ii].h5var);
-		free(var_strv);
-		
-		char *select_strv; PC_string(PC_get(output, ".select"), &select_strv);
-		PDI_value_parse(select_strv, &outputs[ii].select);
-		free(select_strv);
-	}
 	
-	errh = PC_errhandler(PC_NULL_HANDLER);
-	if ( PC_len(PC_get(my_conf, ".inputs"), &nb_inputs) ) {
-		nb_inputs = 0;
-	}
-	PC_errhandler(errh);
-	inputs = malloc(nb_inputs*sizeof(hdf5pp_var_t));
-	for ( int ii=0; ii<nb_inputs; ++ii ) {
-		PC_string(PC_get(my_conf, ".inputs{%d}", ii), &inputs[ii].name);
-		
-		PC_tree_t input = PC_get(my_conf, ".inputs<%d>", ii);
-		
-		char *file_strv; PC_string(PC_get(input, ".file"), &file_strv);
-		PDI_value_parse(file_strv, &inputs[ii].h5file);
-		free(file_strv);
-		
-		char *var_strv; PC_string(PC_get(input, ".var"), &var_strv);
-		PDI_value_parse(var_strv, &inputs[ii].h5var);
-		free(var_strv);
-		
-		char *select_strv; PC_string(PC_get(input, ".select"), &select_strv);
-		PDI_value_parse(select_strv, &inputs[ii].select);
-		free(select_strv);
-	}
+	status = read_config_file(".outputs", &outputs, &nb_outputs,
+			 def_out_file, def_out_select);
+	free(def_out_file); 
+	free(def_out_select); 
+	if (status) return status;
 	
-	return PDI_OK;
+	status = read_config_file(".inputs", &inputs, &nb_inputs,
+				def_in_file, def_in_select);
+	free(def_in_file); 
+	free(def_in_select); 
+	
+	return status;
 }
 
 PDI_status_t PDI_hdf5_per_process_finalize()

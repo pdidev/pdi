@@ -187,13 +187,14 @@ module PDI
     integer, intent(INOUT), target :: world
     integer, intent(OUT), optional :: err
 
-    integer :: tmperr
-
-    tmperr = int(PDI_init_f_C(treeconf, world))
+    integer(C_int) :: tmpcerr
+    
+    tmpcerr=PDI_init_f_C(treeconf, world)
     
     if(present(err)) then
-      err = tmperr
+      err = int(tmpcerr)
     endif
+
     
   endsubroutine PDI_init
   !=============================================================================

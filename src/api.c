@@ -45,6 +45,16 @@
 
 PDI_state_t PDI_state;
 
+// sometime not included in string.h 
+char* mstrdup(const char *s)
+{
+    char *p=NULL;
+    if (strlen(s)!=0) {
+        p=malloc(strlen(s)+1);
+        strcpy(p,s);
+    }
+    return p;
+}
 
 static PDI_data_t *find_data( const char *name )
 {
@@ -340,7 +350,8 @@ PDI_status_t PDI_transaction_begin( const char *name )
 		PDI_handle_err(PDI_make_err(PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"), err0);
 	}
 	
-	PDI_state.transaction = strdup(name);
+//	PDI_state.transaction = strdup(name); // Default not always supported 
+	PDI_state.transaction = mstrdup(name); // PDI version of strdup 
 	
 	return status;
 	
