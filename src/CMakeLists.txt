@@ -102,17 +102,21 @@ if("${ENABLE_FORTRAN}")
 	endif()
 	
 	bpp_preprocess(OUTPUT SRC_PDI_F90_BPP "${BPP_DEFINES}" SOURCES PDI.h.bpp)
-	get_filename_component(GENINC "${BPP_DEFINES}" DIRECTORY)
+	get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
 	add_library(pdi_f90 fapi.c ${SRC_PDI_F90_BPP})
 	target_link_libraries(pdi_f90 pdi paraconf_f90)
+	set_source_files_properties(${SRC_PDI_F90_BPP} PROPERTIES GENERATED TRUE)
+	target_compile_definitions(pdi_f90 INTERFACE PDI_USE_F90_INCLUDE)
 	target_include_directories(pdi_f90 INTERFACE 
 			"$<BUILD_INTERFACE:${GENINC}>" 
+			"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>" 
 			"$<INSTALL_INTERFACE:include>")
 	set_property(TARGET pdi_f90 PROPERTY VERSION ${pdi_VERSION})
 	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
-	install(FILES ${SRC_PDI_F90_BPP} DESTINATION "include")
+	install(FILES ${SRC_PDI_F90_BPP} ${CMAKE_CURRENT_SOURCE_DIR}/../include/PDI.f90
+			DESTINATION "include")
 	install(TARGETS pdi_f90 EXPORT PDI_export
 			LIBRARY DESTINATION lib INCLUDES DESTINATION "include"
 			ARCHIVE DESTINATION lib INCLUDES DESTINATION "include"
