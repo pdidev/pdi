@@ -33,7 +33,7 @@ project(pdi_test_plugin LANGUAGES C CXX Fortran)
 
 find_package(MPI REQUIRED)
 
-add_library(test_plugin
+add_library(test_plugin MODULE
 	test_plugin.c
 )
 set_target_properties(test_plugin PROPERTIES C_VISIBILITY_PRESET hidden)

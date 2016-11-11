@@ -71,7 +71,7 @@ add_library(pdi
 		utils.c
 		value.c
 )
-set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
+set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON POSITION_INDEPENDENT_CODE ON)
 add_compiler_flags(pdi PRIVATE -Wall -Wextra -std=c99)
 generate_export_header(pdi)
 set_property(TARGET pdi PROPERTY C_VISIBILITY_PRESET hidden)

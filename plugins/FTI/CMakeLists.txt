@@ -44,7 +44,7 @@ endif()
 
 include_directories(${FTI_INCLUDE_PATH})
 
-add_library(fti_plugin
+add_library(fti_plugin MODULE
 		fti_plugin.c
 )
 set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden)

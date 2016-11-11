@@ -29,7 +29,7 @@
 
 find_package(HDF5 REQUIRED)
 
-add_library(hdf5_per_process
+add_library(hdf5_per_process MODULE
 	hdf5_per_process.c
 )
 set_target_properties(hdf5_per_process PROPERTIES C_VISIBILITY_PRESET hidden)
