@@ -48,6 +48,9 @@ option(USE_SYSTEM_PARACONF
 		OFF
 )
 
+## Because of plugins, we need PIC code
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 
 # Find dependancies
 
@@ -70,9 +73,6 @@ list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
 
 
 # The src
-
-## Because of plugins, we need PIC code
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ## Main source dir
 add_subdirectory(src/)
