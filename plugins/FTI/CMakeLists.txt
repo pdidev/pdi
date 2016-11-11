@@ -47,8 +47,10 @@ include_directories(${FTI_INCLUDE_PATH})
 add_library(fti_plugin MODULE
 		fti_plugin.c
 )
-set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden)
 target_link_libraries(fti_plugin pdi fti.shared)
+set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden C_STANDARD 99 C_STANDARD_REQUIRED ON)
+include(AddCCompilerFlags)
+add_compiler_flags(fti_plugin PRIVATE -Wall -Wextra -std=c99)
 
 install(TARGETS fti_plugin EXPORT fti_pdi_pluginTargets
 		LIBRARY DESTINATION lib INCLUDES DESTINATION include
