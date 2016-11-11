@@ -72,7 +72,7 @@ list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
 # The src
 
 ## Because of plugins, we need PIC code
-set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "Compile PIC code" FORCE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ## Main source dir
 add_subdirectory(src/)
