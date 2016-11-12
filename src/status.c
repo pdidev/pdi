@@ -51,12 +51,28 @@ static pthread_key_t context_key;
 
 static pthread_once_t context_key_once = PTHREAD_ONCE_INIT;
 
+/** \brief handler for fatal errors
+  *
+  *
+  */
 static void assert_status(PDI_status_t status, const char* message, void* context)
 {
 	context = context; // prevent unused warning
 	if ( status ) {
-		fprintf(stderr, "Error in PDI: %s\n", message);
+		fprintf(stderr, "FATAL ERROR, in PDI: %s\n", message);
 		abort();
+	}
+}
+
+/** \brief handler for warning
+  *
+  *
+  */
+static void warn_status(PDI_status_t status, const char* message, void* context)
+{
+	context = context; // prevent unused warning
+	if ( status ) {
+		fprintf(stderr, "Warning, in PDI: %s\n", message);
 	}
 }
 
@@ -125,6 +141,11 @@ PC_errhandler_t intercept_PC_errors()
 
 const PDI_errhandler_t PDI_ASSERT_HANDLER = {
 	&assert_status,
+	NULL
+};
+
+const PDI_errhandler_t PDI_WARN_HANDLER = {
+	&warn_status,
 	NULL
 };
 

@@ -11,7 +11,7 @@ program PDI_example_f90
   integer :: status, next_reduce, width, height, pheight, pwidth, main_comm, ii
   integer :: size, rank, cart_dims(2), cart_comm, cart_coord(2), rem_iter, err
   logical :: cart_period(2), keep_running
-  type(PC_tree_t) :: conf, treetmp
+  type(PC_tree_t) :: conf
   real(8), pointer :: cur(:,:), next(:,:), tmp(:,:)
   real(8) :: local_time, global_time, duration, start
   character(len=512) :: strbuf
