@@ -42,6 +42,7 @@ cmake_policy(SET CMP0063 NEW)
 endif()
 
 include(AddCCompilerFlags)
+include(CheckSymbolExists)
 include(CMakePackageConfigHelpers)
 include(FortranCInterface)
 include(GenerateExportHeader)
@@ -96,6 +97,13 @@ string(REPLACE "." ";" pdi_VERSION_list ${pdi_VERSION})
 list(GET pdi_VERSION_list 0 pdi_VERSION_MAJOR)
 list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
 list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
+
+
+# Check for some portability stuff and generate config.h
+
+set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200809L)
+check_symbol_exists(strdup string.h STRDUP_WORKS)
+configure_file(src/config.h.in config.h @ONLY)
 
 
 # Libraries

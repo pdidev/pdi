@@ -22,7 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include "config.h"
+
+#ifdef STRDUP_WORKS
+#define _POSIX_C_SOURCE 200809L
 #include <string.h>
+#endif
 #include <mpi.h>
 #include <hdf5.h>
 #include <hdf5_hl.h>
@@ -55,16 +60,15 @@ hdf5pp_var_t *inputs = NULL;
 
 const char* base_errmsg="Reading configuration file for plugin HDF5:\n";
 
-// sometime not included in string.h 
-char* mstrdup(const char *s)
+
+#ifndef STRDUP_WORKS
+char *strdup(const char *s)
 {
-    char *p=NULL;
-    if (strlen(s)!=0) {
-        p=malloc(strlen(s)+1);
-        strcpy(p,s);
-    }
-    return p;
+	char *p = malloc(strlen(s)+1);
+	if ( p ) strcpy(p, s);
+	return p;
 }
+#endif
 
 
 PDI_status_t read_config_file(char* node_name, hdf5pp_var_t *ptr_hdf5data[], int *iptr_ndata, char* def_file, char* def_select)
@@ -94,7 +98,7 @@ PDI_status_t read_config_file(char* node_name, hdf5pp_var_t *ptr_hdf5data[], int
 			// set the corresponding HDF5 variable name
 			char *var_strv=NULL;
 			if( PC_string(PC_get(treetmp, ".var"), &var_strv)){ // no variable name or not readable
-				var_strv=mstrdup(hdf5data[ii].name); // the node label is used (as a default value)
+				var_strv=strdup(hdf5data[ii].name); // the node label is used (as a default value)
 			}
 			PDI_value_parse(var_strv, &hdf5data[ii].h5var);
             
@@ -102,7 +106,7 @@ PDI_status_t read_config_file(char* node_name, hdf5pp_var_t *ptr_hdf5data[], int
 			char *file_strv=NULL; 
 			if( PC_string(PC_get(treetmp, ".file"), &file_strv) ){ // No file name
 				
-				if (def_file){ file_strv = mstrdup(def_file);} // using default
+				if (def_file){ file_strv = strdup(def_file);} // using default
 				else {
 					printf("%sMissing configuration, 'file' not found for variable %s\n",base_errmsg, var_strv);
 					return PDI_ERR_CONFIG;  
@@ -115,7 +119,7 @@ PDI_status_t read_config_file(char* node_name, hdf5pp_var_t *ptr_hdf5data[], int
 			char *select_strv=NULL ; 
 			if( PC_string(PC_get(treetmp, ".select"), &select_strv) ){
 				if (def_select){ 
-					select_strv = mstrdup(def_select);} // using default
+					select_strv = strdup(def_select);} // using default
 				else {
 					printf("%sMissing configuration, 'select' not found for variable %s\n",base_errmsg, var_strv);
 					return PDI_ERR_CONFIG;  

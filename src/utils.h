@@ -22,15 +22,16 @@
  * THE SOFTWARE.
  ******************************************************************************/
   
-//The following is used for doxygen documentation:
- /**
- * \file utils.h
- * \brief Various tools copying, strcat-like ... 
- * \author J. Bigot (CEA)
- */
+/**
+\file utils.h
+\brief Various tools copying, strcat-like ... 
+\author J. Bigot (CEA)
+*/
 
 #ifndef PDI_UTILS_H__
 #define PDI_UTILS_H__
+
+#include "config.h"
 
 #include <pdi.h>
 #include <pdi/datatype.h>
@@ -79,7 +80,17 @@ char *vmsprintf(const char *fmt, va_list ap);
  */
 char *mstrcat(char* dest, size_t dlen, const char* src, size_t slen);
 
-/* duplicate of strdup locally implemented for better support */
-char* mstrdup(const char* s);
+#ifndef STRDUP_WORKS
+/** returns a pointer to a new string which is a duplicate of the string s.
+ * Memory for the new string is obtained with malloc, and can be freed with free.
+ * 
+ * This is a re-implementation of POSIX strdup for portability.
+ * 
+ * \param s the string to duplicate
+ * \return a pointer to the duplicated string on success, NULL if insufficient
+ * memory was available, with errno set to indicate the cause of the error.
+ */
+char *strdup( const char *s );
+#endif
 
 #endif

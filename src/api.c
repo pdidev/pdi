@@ -22,14 +22,18 @@
  * THE SOFTWARE.
  ******************************************************************************/
   
-//The following is used for doxygen documentation:
- /**
- * \file api.c
- * \brief PDI public API functions (init, event, ... finalize).
- * \author J. Bigot (CEA)
- */
+/**
+\file api.c
+\brief PDI public API functions (init, event, ... finalize).
+\author J. Bigot (CEA)
+**/
 
+#include "config.h"
+
+#ifdef STRDUP_WORKS
+#define _POSIX_C_SOURCE 200809L
 #include <string.h>
+#endif
 
 #include "paraconf.h"
 
@@ -339,9 +343,7 @@ PDI_status_t PDI_transaction_begin( const char *name )
 	if ( PDI_state.transaction ) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"), err0);
 	}
-	
-//	PDI_state.transaction = strdup(name); // Default not always supported 
-	PDI_state.transaction = mstrdup(name); // PDI version of strdup 
+	PDI_state.transaction = strdup(name);
 	
 	return status;
 	
