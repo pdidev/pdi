@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -32,7 +32,7 @@
 #include <hdf5.h>
 #include <hdf5_hl.h>
 
-#include <pdi.h>
+#include "pdi.h"
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 
@@ -58,8 +58,6 @@ int nb_inputs = 0;
 
 hdf5pp_var_t *inputs = NULL;
 
-const char* base_errmsg="Reading configuration file for plugin HDF5:\n";
-
 
 #ifndef STRDUP_WORKS
 char *strdup(const char *s)
@@ -71,125 +69,116 @@ char *strdup(const char *s)
 #endif
 
 
-PDI_status_t read_config_file(char* node_name, hdf5pp_var_t *ptr_hdf5data[], int *iptr_ndata, char* def_file, char* def_select)
+/** Reads the plugin config for either inputs or outputs
+ * \param conf the configuration node to read
+ * \param hdf5data the array where to store the resulting variables
+ * \param nb_hdf5data somewhere where to store the number of variables found
+ * \param def_file the default file for HDF5 inputs/outputs
+ * \param def_select the default select for HDF5 inputs/outputs
+ */
+PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
+		int *nb_hdf5data, char *def_file, char *def_select )
 {
-	PDI_status_t status=PDI_OK;
-	hdf5pp_var_t *hdf5data = NULL;
-	*iptr_ndata=0; 
-
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
-	if ( PC_len(PC_get(my_conf, node_name), iptr_ndata) ) { // if no subtree found
-		*iptr_ndata = 0;
-		hdf5data = NULL;
-		return status;
+	
+	if ( PC_len(conf, nb_hdf5data) ) { // if no subtree found
+		*nb_hdf5data = 0;
+		*hdf5data = NULL;
+		PC_errhandler(errh);
+		return PDI_OK;
+	}
+	*hdf5data = malloc((*nb_hdf5data)*sizeof(hdf5pp_var_t));
+	
+	for ( int ii=0; ii<(*nb_hdf5data); ++ii ) {
+		PC_string(PC_get(conf, "{%d}", ii) , &(*hdf5data)[ii].name);
+		PC_tree_t treetmp = PC_get(conf, "<%d>", ii); // get the node
+
+		// set the corresponding HDF5 variable name
+		char *var_strv = NULL;
+		if( PC_string(PC_get(treetmp, ".var"), &var_strv)){ // no variable name or not readable
+			var_strv = strdup((*hdf5data)[ii].name); // the node label is used (as a default value)
+		}
+		PDI_value_parse(var_strv, &(*hdf5data)[ii].h5var);
+		free(var_strv);
+		
+		// set the HDF5 filename (i.e. where do we write the data)
+		char *file_strv = NULL;
+		if( PC_string(PC_get(treetmp, ".file"), &file_strv) ){ // No file name
+			if ( def_file ) { // using default
+				file_strv = strdup(def_file);
+			} else {
+				fprintf(stderr, "[PDI/HDF5] 'file' not found for variable %s\n", var_strv);
+				free(file_strv);
+				PC_errhandler(errh);
+				return PDI_ERR_CONFIG;
+			}
+		}
+		PDI_value_parse(file_strv, &(*hdf5data)[ii].h5file);
+		free(file_strv);
+		
+		// sampling or frequency (i.e. when do we expose)
+		char *select_strv = NULL;
+		if ( PC_string(PC_get(treetmp, ".select"), &select_strv) ){
+			if ( def_select ) { // using default
+				select_strv = strdup(def_select);
+			} else {
+				fprintf(stderr, "[PDI/HDF5] 'select' not found for variable %s\n", select_strv);
+				free(select_strv);
+				PC_errhandler(errh);
+				return PDI_ERR_CONFIG;
+			}
+		}
+		PDI_value_parse(select_strv, &(*hdf5data)[ii].select);
+		free(select_strv);
 	}
 	PC_errhandler(errh);
 
-	hdf5data = malloc((*iptr_ndata)*sizeof(hdf5pp_var_t));
-	*ptr_hdf5data = hdf5data; // referencing  
-	errh = PC_errhandler(PC_NULL_HANDLER);
-	if ( (*iptr_ndata) > 0 ){ // otherwise accessing subtree
-		for ( int ii=0; ii< (*iptr_ndata); ++ii ) {
-			PC_tree_t treetmp = PC_get(my_conf, "%s{%d}", node_name, ii);
-			PC_string(treetmp , &hdf5data[ii].name);
-
-			treetmp = PC_get(my_conf, "%s<%d>", node_name, ii); // get the node 
-
-			// set the corresponding HDF5 variable name
-			char *var_strv=NULL;
-			if( PC_string(PC_get(treetmp, ".var"), &var_strv)){ // no variable name or not readable
-				var_strv=strdup(hdf5data[ii].name); // the node label is used (as a default value)
-			}
-			PDI_value_parse(var_strv, &hdf5data[ii].h5var);
-            
-			// set the HDF5 filename (i.e. where do we write the data)
-			char *file_strv=NULL; 
-			if( PC_string(PC_get(treetmp, ".file"), &file_strv) ){ // No file name
-				
-				if (def_file){ file_strv = strdup(def_file);} // using default
-				else {
-					printf("%sMissing configuration, 'file' not found for variable %s\n",base_errmsg, var_strv);
-					return PDI_ERR_CONFIG;  
-				}
-			}
-			
-			PDI_value_parse(file_strv, &hdf5data[ii].h5file);
-			
-			// sampling or frequency (i.e. when do we expose)
-			char *select_strv=NULL ; 
-			if( PC_string(PC_get(treetmp, ".select"), &select_strv) ){
-				if (def_select){ 
-					select_strv = strdup(def_select);} // using default
-				else {
-					printf("%sMissing configuration, 'select' not found for variable %s\n",base_errmsg, var_strv);
-					return PDI_ERR_CONFIG;  
-				}
-			}
-			
-			PDI_value_parse(select_strv, &hdf5data[ii].select);
-			
-			free(select_strv);
-			free(file_strv);
-			free(var_strv);
-			
-		}
-	}
-	PC_errhandler(errh); 
-
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 {
-	// defaults outputs/inputs
-	char* def_out_file=NULL;   // output file 
-	char* def_out_select=NULL; // output select 
-	char* def_in_file=NULL;    // input file 
-	char* def_in_select=NULL;  // input select 
-	PDI_status_t status=PDI_OK; // 0 when success
 	world = world; // prevent unused param warning
-	my_conf = conf; 
+	my_conf = conf;
 	
-	if( H5open() < 0) { // Failure initializing HDF5 
-		printf("Cannot load HDF5 library");
+	if ( H5open() < 0 ) { // Failure initializing HDF5
+		fprintf(stderr, "[PDI/HDF5] Cannot load HDF5 library");
 		return PDI_ERR_PLUGIN;
 	}
 	
-	if(my_conf.status){
-		printf("Loading HDF5 library, PC_tree is corrupted.");
+	if ( PC_status(my_conf) ) {
+		fprintf(stderr, "[PDI/HDF5] Invalid configuration.");
 		return PDI_ERR_PLUGIN;
 	}
 	
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
-	int ndefault=0;
-	if ( !PC_len(PC_get(conf, ".defaults"), &ndefault) ){ // if succeed
-		if (ndefault >0 ){ // and at least one default
-			PC_tree_t subtree = PC_get(my_conf, ".defaults"); // getting node 
-			// defaults for output 
-			PC_tree_t treetmp = PC_get(subtree, ".outputs"); // getting node 
-			PC_string(PC_get(treetmp, ".file"),  &def_out_file);
-			PC_string(PC_get(treetmp, ".select"),&def_out_select);
-			// defaults for input 
-			treetmp = PC_get(subtree, ".inputs"); // getting node 
-			PC_string(PC_get(treetmp, ".file"),  &def_in_file);
-			PC_string(PC_get(treetmp, ".select"),&def_in_select);
-		}
-	}
+	char *def_out_file = NULL; // default output file if none specified
+	PC_string(PC_get(my_conf, ".defaults.outputs.file"), &def_out_file);
+	char *def_out_select = NULL; // default output select if none specified
+	PC_string(PC_get(my_conf, ".defaults.outputs.select"), &def_out_select);
+	PC_tree_t outputs_cfg = PC_get(conf, ".outputs");
 	PC_errhandler(errh);
 	
-	status = read_config_file(".outputs", &outputs, &nb_outputs,
-			 def_out_file, def_out_select);
-	free(def_out_file); 
+	PDI_status_t status = read_config_file(outputs_cfg, &outputs, &nb_outputs,
+			def_out_file, def_out_select);
+	free(def_out_file);
 	free(def_out_select);
-	printf("Status: %d", status); fflush(stdout);
+	
 	if (status) return status;
 	
-	status = read_config_file(".inputs", &inputs, &nb_inputs,
-				def_in_file, def_in_select);
-	free(def_in_file); 
-	free(def_in_select); 
-	printf("Status: %d", status); fflush(stdout);
+	errh = PC_errhandler(PC_NULL_HANDLER);
+	char* def_in_file = NULL; // default input file if none specified
+	PC_string(PC_get(my_conf, ".defaults.inputs.file"), &def_in_file);
+	char* def_in_select = NULL; // default input select if none specified
+	PC_string(PC_get(my_conf, ".defaults.inputs.select"), &def_in_select);
+	PC_tree_t inputs_cfg = PC_get(conf, ".inputs");
+	PC_errhandler(errh);
+	
+	status = read_config_file(inputs_cfg, &inputs, &nb_inputs, def_in_file,
+			def_in_select);
+	free(def_in_file);
+	free(def_in_select);
 	
 	return status;
 }
@@ -338,7 +327,7 @@ void read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
 	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
 	H5Pset_create_intermediate_group( h5lcp, 1 );
-	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar), 
+	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar),
 			h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dread(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT,
 			data->content[data->nb_content-1].data);

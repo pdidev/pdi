@@ -22,12 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
   
-//The following is used for doxygen documentation:
- /**
- * \file fapi.c
- * \brief PDI_init_f to obtain a Fortran communicator
- * \author J. Bigot (CEA)
- */
+/**
+\file fapi.c
+\brief Fortran API wrappers for functions that need wrapping on the C side
+\author J. Bigot (CEA)
+**/
 
 #include "pdi.h"
 

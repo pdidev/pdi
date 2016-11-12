@@ -343,6 +343,7 @@ PDI_status_t PDI_transaction_begin( const char *name )
 	if ( PDI_state.transaction ) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"), err0);
 	}
+	
 	PDI_state.transaction = strdup(name);
 	
 	return status;

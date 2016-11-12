@@ -240,8 +240,6 @@ PDI_status_t PDI_EXPORT PDI_transaction_end();
 
 /// \}
 
-
-
 #ifdef __cplusplus
 } // extern C
 #endif

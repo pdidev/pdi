@@ -163,7 +163,5 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 
 char *PDI_errmsg()
 {
-	char* msg="No context found";
-	if(get_context()->buffer) return get_context()->buffer;
-	return msg;
+	return get_context()->buffer;
 }
