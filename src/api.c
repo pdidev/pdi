@@ -22,14 +22,18 @@
  * THE SOFTWARE.
  ******************************************************************************/
   
-//The following is used for doxygen documentation:
- /**
- * \file api.c
- * \brief PDI public API functions (init, event, ... finalize).
- * \author J. Bigot (CEA)
- */
+/**
+\file api.c
+\brief PDI public API functions (init, event, ... finalize).
+\author J. Bigot (CEA)
+**/
 
+#include "config.h"
+
+#ifdef STRDUP_WORKS
+#define _POSIX_C_SOURCE 200809L
 #include <string.h>
+#endif
 
 #include "paraconf.h"
 
