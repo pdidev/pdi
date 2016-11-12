@@ -28,6 +28,7 @@
 #=============================================================================
 
 include(AddCCompilerFlags)
+include(CheckSymbolExists)
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
 include(TestCLocArray)
@@ -54,6 +55,14 @@ option(ENABLE_FORTRAN
 if("${ENABLE_FORTRAN}" AND NOT "${FORTRAN_ENABLEABLE}")
 	message(FATAL_ERROR "Fortran language support disabled can not build Fortran lib, set ENABLE_FORTRAN to OFF")
 endif()
+
+
+# Check for some portability stuff and generate config.h
+
+set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200809L)
+check_symbol_exists(strdup string.h STRDUP_WORKS)
+configure_file(config.h.in config.h @ONLY)
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 
 # Libraries

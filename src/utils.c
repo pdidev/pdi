@@ -22,13 +22,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
   
-//The following is used for doxygen documentation:
- /**
- * \file utils.c
- * \brief Various tools copying, strcat-like ... 
- * \author J. Bigot (CEA)
- */
+/**
+\file utils.c
+\brief Various tools copying, strcat-like ... 
+\author J. Bigot (CEA)
+**/
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -68,3 +68,12 @@ char *mstrcat(char *dest, size_t dlen, const char *src, size_t slen)
 	result[dlen+slen] = 0;
 	return result;
 }
+
+#ifndef STRDUP_WORKS
+char *strdup(const char *s)
+{
+	char *p = malloc(strlen(s)+1);
+	if ( p ) strcpy(p, s);
+	return p;
+}
+#endif
