@@ -8,12 +8,12 @@ program PDI_example_f90
 
   implicit none
 
-  integer :: status, next_reduce, width, height, pheight, pwidth, main_comm, ii
-  integer :: size, rank, cart_dims(2), cart_comm, cart_coord(2), rem_iter, err
-  logical :: cart_period(2), keep_running
-  type(PC_tree_t) :: conf
-  real(8), pointer :: cur(:,:), next(:,:), tmp(:,:)
-  real(8) :: local_time, global_time, duration, start
+  integer,target :: status, next_reduce, width, height, pheight, pwidth, main_comm, ii
+  integer,target :: size, rank, cart_dims(2), cart_comm, cart_coord(2), rem_iter, err
+  logical,target :: cart_period(2), keep_running
+  type(PC_tree_t),target :: conf
+  real(8),pointer :: cur(:,:), next(:,:), tmp(:,:)
+  real(8),target :: local_time, global_time, duration, start
   character(len=512) :: strbuf
   
   call MPI_init(status)
@@ -81,6 +81,7 @@ program PDI_example_f90
   start = MPI_Wtime()
   next_reduce = 0
   keep_running = .TRUE.
+  ii = 0
   do while( keep_running )
     call PDI_transaction_begin("newiter")
     call PDI_expose("iter", ii)
