@@ -577,7 +577,7 @@ PDI_status_t PDI_value_parse(const char* val_str, PDI_value_t* value)
 	}
 	if ( err || *parse_val ) {
 		parse_val = val_str;
-		err = parse_strval(&parse_val, value);
+		status = parse_strval(&parse_val, value);
 	}
 	
 	return status;

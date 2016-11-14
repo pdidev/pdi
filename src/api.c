@@ -127,12 +127,14 @@ PDI_status_t PDI_finalize()
 		PDI_state.plugins[ii].finalize();
 	}
 	free(PDI_state.plugins);
+	PDI_state.nb_plugins = 0;
 	PDI_state.plugins = NULL; // help valgrind
 	
 	for (int ii=0; ii<PDI_state.nb_data; ++ii) {
 		PDI_data_destroy(&PDI_state.data[ii]);
 	}
 	free(PDI_state.data);
+	PDI_state.nb_data = 0;
 	PDI_state.data = NULL; // help valgrind
 	
 	PDI_errhandler(errh);

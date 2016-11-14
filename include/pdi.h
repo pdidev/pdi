@@ -95,19 +95,19 @@ char PDI_EXPORT *PDI_errmsg();
  * \param handler the new handler to set
  * \return the previous handler
  */
-PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler);
+PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler);
 
 /** Prints the error message and aborts if the status is invalid
  */
-extern const PDI_errhandler_t PDI_ASSERT_HANDLER;
+extern const PDI_errhandler_t PDI_EXPORT PDI_ASSERT_HANDLER;
 
 /** Prints the error message and continue if the status is invalid
  */
-extern const PDI_errhandler_t PDI_WARN_HANDLER;
+extern const PDI_errhandler_t PDI_EXPORT PDI_WARN_HANDLER;
 
 /** Does nothing
  */
-extern const PDI_errhandler_t PDI_NULL_HANDLER;
+extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
 
 /// \}
 
