@@ -22,12 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
   
-//The following is used for doxygen documentation:
- /**
- * \file utils.h
- * \brief Various tools copying, strcat-like ... 
- * \author J. Bigot (CEA)
- */
+/**
+\file utils.h
+\brief Various tools copying, strcat-like ... 
+\author J. Bigot (CEA)
+*/
 
 #ifndef PDI_UTILS_H__
 #define PDI_UTILS_H__
