@@ -1,0 +1,12 @@
+Julien Bigot - CEA (julien.bigot@cea.fr)
+  Initial design and implementation
+  Initial Test & HDF5 plugins
+  
+Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
+  Initial FTI plugin
+  Initial Fortran interface
+
+Corentin Roussel - CEA (Corentin.roussel@cea.fr)
+  Overall improvement & debug
+  HDF5 plugin rework
+  Library maintainer from sept. 2016 on...
