@@ -29,7 +29,7 @@
 
 find_package(HDF5 REQUIRED)
 
-add_library(hdf5_per_process
+add_library(hdf5_per_process MODULE
 	hdf5_per_process.c
 )
 set_target_properties(hdf5_per_process PROPERTIES C_VISIBILITY_PRESET hidden)
@@ -39,9 +39,9 @@ set_property(SOURCE hdf5_per_process.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${
 set_property(TARGET hdf5_per_process   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
 target_link_libraries(hdf5_per_process ${HDF5_SHARED_C_LIBRARIES})
 
-target_compile_features(hdf5_per_process PUBLIC c_variadic_macros)
+set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
-add_compiler_flags(hdf5_per_process PRIVATE -Wall -Wextra)
+add_compiler_flags(hdf5_per_process PRIVATE -Wall -Wextra -std=c99)
 
 
 # library installation

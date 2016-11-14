@@ -11,7 +11,7 @@ program PDI_example_f90
   integer :: status, next_reduce, width, height, pheight, pwidth, main_comm, ii
   integer :: size, rank, cart_dims(2), cart_comm, cart_coord(2), rem_iter, err
   logical :: cart_period(2), keep_running
-  type(PC_tree_t) :: conf, treetmp
+  type(PC_tree_t) :: conf
   real(8), pointer :: cur(:,:), next(:,:), tmp(:,:)
   real(8) :: local_time, global_time, duration, start
   character(len=512) :: strbuf
@@ -27,13 +27,12 @@ program PDI_example_f90
   call get_command_argument(1, strbuf)
   
   call PC_parse_path(strbuf, conf)
-  treetmp = PC_get(conf,".datasize[0]") ! PC_get is a function that return a PC_tree_t
-  call PC_int(treetmp, width)
 
-  call PC_int(PC_get(conf, ".datasize[1]"), height) ! smaller way to use it
-  call PC_int(PC_get(conf, ".parallelism.height"), pheight)
-  call PC_int(PC_get(conf, ".parallelism.width"), pwidth)
-  call PC_double(PC_get(conf, ".duration"), duration)
+  call PC_int(PC_get(conf,".datasize[0]"), width)
+  call PC_int(PC_get(conf,".datasize[1]"), height)
+  call PC_int(PC_get(conf,".parallelism.height"), pheight)
+  call PC_int(PC_get(conf,".parallelism.width"), pwidth)
+  call PC_double(PC_get(conf,".duration"), duration)
 
   main_comm = MPI_COMM_WORLD
   call PDI_init(PC_get(conf, ".pdi"), main_comm)

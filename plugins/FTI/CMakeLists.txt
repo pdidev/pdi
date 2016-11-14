@@ -27,18 +27,32 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+cmake_minimum_required(VERSION 3.1)
+# enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
+project(FTI_pdi LANGUAGES C CXX Fortran)
+
+option(USE_SYSTEM_FTI
+		"Use an already installed fti instead of building the embedded one"
+		OFF
+)
+
+if("${USE_SYSTEM_FTI}")
+	find_package(fti)
+else()
+	add_subdirectory(../../vendor/fti fti EXCLUDE_FROM_ALL)
+endif()
+
 include_directories(${FTI_INCLUDE_PATH})
 
-add_library(fti_plugin
-	fti_plugin.c
+add_library(fti_plugin MODULE
+		fti_plugin.c
 )
-set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden)
 target_link_libraries(fti_plugin pdi fti.shared)
+set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden C_STANDARD 99 C_STANDARD_REQUIRED ON)
+include(AddCCompilerFlags)
+add_compiler_flags(fti_plugin PRIVATE -Wall -Wextra -std=c99)
 
-# library installation
-
-install(TARGETS fti_plugin EXPORT fti_pluginTargets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
+install(TARGETS fti_plugin EXPORT fti_pdi_pluginTargets
+		LIBRARY DESTINATION lib INCLUDES DESTINATION include
+		ARCHIVE DESTINATION lib INCLUDES DESTINATION include
 )
-
