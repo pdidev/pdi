@@ -209,6 +209,8 @@ PDI_status_t parse_term(char const **val_str, PDI_value_t *value)
 			value->kind = PDI_VAL_REF;
 		} else {
 			free(value->c.refval);
+			PDI_errhandler(errh);
+			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid ref: `%s'", *val_str), err0);
 		}
 		PDI_errhandler(errh);
 	}
@@ -422,7 +424,7 @@ PDI_status_t eval_refval(PDI_refval_t *val, int *res)
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
 	} break;
 	}
-	
+
 	return status;
 	
 err0:
@@ -613,10 +615,10 @@ PDI_status_t PDI_value_int(const PDI_value_t* value, int* res)
 		*res = value->c.constval;
 	} break;
 	case PDI_VAL_REF: {
-		eval_refval(value->c.refval, res);
+		PDI_handle_err(eval_refval(value->c.refval, res), err0);
 	} break;
 	case PDI_VAL_EXPR: {
-		eval_exprval(value->c.exprval, res);
+		PDI_handle_err(eval_exprval(value->c.exprval, res), err0);
 	} break;
 	default: {
 		char *strval; PDI_value_str(value, &strval);

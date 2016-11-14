@@ -32,8 +32,8 @@
 
 #ifdef STRDUP_WORKS
 #define _POSIX_C_SOURCE 200809L
-#include <string.h>
 #endif
+#include <string.h>
 
 #include "paraconf.h"
 
