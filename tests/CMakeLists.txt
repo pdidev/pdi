@@ -27,63 +27,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.1)
-# enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
-project(pdi LANGUAGES C CXX Fortran)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(AddCCompilerFlags)
 
-cmake_policy(VERSION 3.1)
-if(POLICY CMP0054)
-	cmake_policy(SET CMP0054 NEW)
-endif()
-
-if(POLICY CMP0063)
-cmake_policy(SET CMP0063 NEW)
-endif()
-
-# Build options
-
-option(USE_SYSTEM_PARACONF
-		"Use an already installed paraconf instead of building the embedded one"
-		OFF
-)
-
-## Because of plugins, we need PIC code
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-
-# Find dependancies
-
-find_package(MPI REQUIRED)
-if("${USE_SYSTEM_PARACONF}")
-	find_package(paraconf)
-else()
-	add_subdirectory(vendor/paraconf paraconf EXCLUDE_FROM_ALL)
-endif()
-
-
-# Version
-
-file(READ VERSION pdi_VERSION)
-string(STRIP "${pdi_VERSION}" pdi_VERSION)
-string(REPLACE "." ";" pdi_VERSION_list ${pdi_VERSION})
-list(GET pdi_VERSION_list 0 pdi_VERSION_MAJOR)
-list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
-list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
-
-
-# The src
-
-## Main source dir
-add_subdirectory(src/)
-
-## The plugins
-add_subdirectory(plugins/test_plugin/)
-add_subdirectory(plugins/HDF5_per_process/)
-add_subdirectory(plugins/FTI/)
-
-# Examples & tests
-
-enable_testing()
-add_subdirectory(example/)
-add_subdirectory(tests/)
+add_executable(PDI_test1 EXCLUDE_FROM_ALL test1.c)
+add_compiler_flags(PDI_test1 PRIVATE -Wall -Wextra)
+target_link_libraries(PDI_test1 pdi)
+add_test(NAME PDI_test1_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target PDI_test1
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+add_test(NAME PDI_test1_run COMMAND PDI_test1 "${CMAKE_CURRENT_SOURCE_DIR}/test1.yml")
+set_tests_properties(PDI_test1_run PROPERTIES DEPENDS PDI_test1_build TIMEOUT 3)
