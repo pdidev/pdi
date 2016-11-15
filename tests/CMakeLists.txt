@@ -37,3 +37,13 @@ add_test(NAME PDI_test1_build
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_test(NAME PDI_test1_run COMMAND PDI_test1 "${CMAKE_CURRENT_SOURCE_DIR}/test1.yml")
 set_tests_properties(PDI_test1_run PROPERTIES DEPENDS PDI_test1_build TIMEOUT 3)
+
+
+add_executable(PDI_test2 EXCLUDE_FROM_ALL test2.c)
+add_compiler_flags(PDI_test2 PRIVATE -Wall -Wextra)
+target_link_libraries(PDI_test2 pdi)
+add_test(NAME PDI_test2_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target PDI_test2
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+add_test(NAME PDI_test2_run COMMAND PDI_test2 "${CMAKE_CURRENT_SOURCE_DIR}/test2.yml")
+set_tests_properties(PDI_test2_run PROPERTIES DEPENDS PDI_test2_build TIMEOUT 3)

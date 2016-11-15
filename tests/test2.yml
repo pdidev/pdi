@@ -1,0 +1,11 @@
+metadata:
+  meta1: int
+data: # values that can not be referenced using $syntax
+  test_var: double
+plugins:
+  hdf5_per_process:
+    outputs:
+      test_var:
+        file: $meta1.h5
+        select: 1
+
