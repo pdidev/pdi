@@ -1,5 +1,5 @@
 
-include 'PDI.f90'
+include 'PDI.F90'
 
 program PDI_example_f90
 
