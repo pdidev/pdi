@@ -78,22 +78,18 @@ program test2
   test_var=0
   pt=>test_var
   call PDI_expose("test_var",pt)
-  print*, "Test variable is exposed"
-  !deallocate(buf)
-  print*, "ending pdi"
+  deallocate(buf)
   test_var=1
   call PDI_transaction_end()
   call PDI_finalize()
   
-  print*, "outside of pdi"
   inquire(file="6.h5", exist=file_exist) ! values(1)=6
   if( file_exist ) then
     print*, "File found."
   else
     print*, "File not found"
-!    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
   endif ! file doesn't exist
-  print*, "MPI_finalize"
   call MPI_Finalize(ierr)
 
 endprogram  
