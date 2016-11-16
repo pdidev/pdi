@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (c) 2015, Corentin Roussel - CEA (corentin.roussel@cea.fr)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ int main( int argc, char *argv[] )
 	assert(argc == 2 && "Needs 1 single arg: config file");
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_status_t err = PDI_init(conf, &world);
+	PDI_status_t err = PDI_init(PC_get(conf,".pdi"), &world);
 
 	PDI_transaction_begin("testing");
 	PDI_expose("meta0",&value[0]);
