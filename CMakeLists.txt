@@ -82,7 +82,8 @@ add_subdirectory(plugins/test_plugin/)
 add_subdirectory(plugins/HDF5_per_process/)
 add_subdirectory(plugins/FTI/)
 
-## Test examples
+# Examples & tests
+
 enable_testing()
 add_subdirectory(example/)
 add_subdirectory(tests/)
