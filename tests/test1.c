@@ -24,9 +24,7 @@
 
 #include <assert.h>
 #include <mpi.h>
-#include <paraconf.h>
 #include <pdi.h>
-#include <../vendor/paraconf/include/paraconf.h>
 
 int main( int argc, char *argv[] )
 {
@@ -34,10 +32,10 @@ int main( int argc, char *argv[] )
 	assert(argc == 2 && "Needs 1 single arg: config file");
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
-	//TODO: call this and make the test pass
-	// * PDI_errhandler(PDI_NULL_HANDLER);
-	PDI_init(conf, &world);
-	//TODO: check the return code and error message
+	PDI_errhandler(PDI_NULL_HANDLER);
+	PDI_status_t err = PDI_init(conf, &world);
+	assert(err == PDI_ERR_CONFIG);
+	assert(!strcmp(PDI_errmsg(), "Invalid ref: `$meta2'"));
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();

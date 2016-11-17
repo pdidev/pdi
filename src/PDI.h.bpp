@@ -168,7 +168,7 @@ module PDI
 !$SH   for D in $(seq 0 ${MAXDIM}); do
 
   pure function fptr_${T}_${D}D ( data ) result ( pdata )
-    $(fort_type $T), intent(IN), target :: data$(array_desc $D)
+    $(fort_type $T), intent(IN), pointer :: data$(array_desc $D)
     $(fort_type $T), target :: pdata
     pdata = data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')
   end function fptr_${T}_${D}D
@@ -265,7 +265,7 @@ module PDI
   !! * PDI_OUT means the buffer contains data that can be accessed by PDI
   subroutine PDI_share_${T}_${D}D( name, data, accessf, err )
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(INOUT), target :: data$(array_desc $D)
+    $(fort_type $T), intent(INOUT), pointer :: data$(array_desc $D)
     integer, intent(IN) :: accessf
     integer, intent(OUT), optional :: err
 
@@ -278,9 +278,7 @@ module PDI
     C_name(len_trim(name)+1) = C_null_char
     
 !$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_share_C(C_loc(C_name), &
-        C_loc(fptr(data)), &
-        accessf))
+    tmperr = int(PDI_share_C(C_loc(C_name), C_loc(fptr(data)), accessf))
 !$SH else
     tmperr = int(PDI_share_C(C_loc(C_name), &
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
@@ -370,7 +368,7 @@ module PDI
   !! \param[OUT] err for error status (optional)
   subroutine PDI_export_${T}_${D}D(name, data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(IN), target :: data$(array_desc $D)
+    $(fort_type $T), intent(IN), pointer :: data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
@@ -382,8 +380,7 @@ module PDI
     C_name(len_trim(name)+1) = C_null_char
 
 !$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_export_C(C_loc(C_name), &
-        C_loc(fptr(data))))
+    tmperr = int(PDI_export_C(C_loc(C_name), C_loc(fptr(data))))
 !$SH else
     tmperr = int(PDI_export_C(C_loc(C_name), &
         C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
@@ -410,7 +407,7 @@ module PDI
   !! \param[OUT] err for error status (optional)
   subroutine PDI_expose_${T}_${D}D(name, data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(IN), target :: data$(array_desc $D)
+    $(fort_type $T), intent(IN), pointer :: data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
@@ -450,7 +447,7 @@ module PDI
   !! \param[OUT] err for error status (optional)
   subroutine PDI_import_${T}_${D}D(name, data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(OUT), target :: data$(array_desc $D)
+    $(fort_type $T), intent(OUT), pointer :: data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)

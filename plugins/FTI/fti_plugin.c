@@ -89,6 +89,7 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	} else {
 		nb_snapshot_events = 0;
 		free(snapshot_events);
+		snapshot_events = NULL;
 	}
 
 	nb_recover_events = 1;
@@ -102,6 +103,7 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	} else {
 		nb_recover_events = 0;
 		free(recover_events);
+		recover_events = NULL;
 	}
 	
 	nb_checkpoint_events = 1; // listing event name that trigger FTI checkpoint 
@@ -115,6 +117,7 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	} else {
 		nb_checkpoint_events = 0;
 		free(checkpoint_events);
+		checkpoint_events = NULL;
 	}
 	
 	PC_errhandler(pc_handler); // aka PC_end_try

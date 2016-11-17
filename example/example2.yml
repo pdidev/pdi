@@ -1,5 +1,5 @@
 # a simple scalar, the duration in seconds
-duration: 65
+duration: 2
 # an example with a list, global [width,height] (excluding ghost)
 datasize: [3072, 1024]
 # an example with nested associative arrays
