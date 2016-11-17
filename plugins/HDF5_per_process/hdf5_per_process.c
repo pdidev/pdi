@@ -241,7 +241,7 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 		h5starts = malloc(rank*sizeof(hsize_t));
 		order = data->type.c.array->order;
 		int h5ii = 0;
-		int intdim = 0;
+		long intdim = 0;
 		for ( int ii=0; ii<rank; ++ii ) {
 			switch (order){
 			case PDI_ORDER_C:
@@ -305,7 +305,7 @@ void read_from_file(PDI_data_t *data, char *filename, char *pathname)
 		h5starts = malloc(rank*sizeof(hsize_t));
 		for ( int ii=0; ii<rank; ++ii ) {
 			int h5ii = ii; //rank-ii-1; // ORDER_C
-			int intdim;
+			long intdim;
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
 			h5sizes[h5ii] = intdim;
@@ -353,7 +353,7 @@ PDI_status_t PDI_hdf5_per_process_data_start( PDI_data_t *data )
 				
 				char *h5file; PDI_value_str(&outputs[ii].h5file, &h5file);
 				char *h5var;  PDI_value_str(&outputs[ii].h5var,  &h5var);
-				int select;   PDI_value_int(&outputs[ii].select, &select);
+				long select;   PDI_value_int(&outputs[ii].select, &select);
 				
 				if ( select ) write_to_file(data, h5file, h5var);
 				
@@ -370,7 +370,7 @@ PDI_status_t PDI_hdf5_per_process_data_start( PDI_data_t *data )
 				
 				char *h5file; PDI_value_str(&inputs[ii].h5file, &h5file);
 				char *h5var;  PDI_value_str(&inputs[ii].h5var,  &h5var);
-				int select;   PDI_value_int(&inputs[ii].select, &select);
+				long select;   PDI_value_int(&inputs[ii].select, &select);
 				
 				if ( select ) read_from_file(data, h5file, h5var);
 				

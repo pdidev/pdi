@@ -26,6 +26,7 @@
 #include <string.h>
 #include <mpi.h>
 #include <fti.h>
+#include <limits.h>
 
 #include <pdi.h>
 #include <pdi/plugin.h>
@@ -40,10 +41,7 @@ typedef struct {
 
 
 /// The types of events FTI supports
-typedef enum { NO_EVENT=0, RECOVER, SNAPSHOT } PDI_FTI_event_t;
-
-static char* last_ckpt_name=NULL; 	// name of the event that indicate all future checkpoint are treated as 
-									// the last ckpt (default value)
+typedef enum { NO_EVENT=0, RECOVER, SNAPSHOT, CHECKPOINT } PDI_FTI_event_t;
 
 int nb_protected = 0;
 
@@ -52,6 +50,10 @@ protected_data_t *protected = NULL;
 int nb_snapshot_events = 0;
 
 char **snapshot_events = NULL;
+
+int nb_checkpoint_events = 0;
+
+char **checkpoint_events = NULL;
 
 int nb_recover_events = 0;
 
@@ -67,7 +69,7 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
 	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
 		PDI_data_t *data = &PDI_state.data[ii];
-		int fti_id;
+		long fti_id;
 		if ( !PC_int(PC_get(data->config, ".fti_id"),&fti_id) ) {
 			++nb_protected;
 			protected = realloc(protected, nb_protected*sizeof(protected_data_t));
@@ -89,14 +91,6 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 		free(snapshot_events);
 	}
 
-	// listing the only event that indicates a program is terminating
-	last_ckpt_name=malloc(sizeof(char*));
-	if ( PC_string(PC_get(conf, ".last_snapshot"), &last_ckpt_name) ) {
-		last_ckpt_name="last_ckpt"; // default value
-	}
-
-
-	
 	nb_recover_events = 1;
 	recover_events = malloc(sizeof(char*));
 	if ( !PC_string(PC_get(conf, ".recover_on"), recover_events) ) {
@@ -108,6 +102,19 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	} else {
 		nb_recover_events = 0;
 		free(recover_events);
+	}
+	
+	nb_checkpoint_events = 1; // listing event name that trigger FTI checkpoint 
+	checkpoint_events = malloc(sizeof(char*));
+	if ( !PC_string(PC_get(conf, ".checkpoint_on"), checkpoint_events) ) {
+	} else if ( ! PC_len(PC_get(conf, ".checkpoint_on"), &nb_checkpoint_events) ) {
+		checkpoint_events = realloc(checkpoint_events, nb_checkpoint_events * sizeof(char*));
+		for ( int ii=0; ii<nb_checkpoint_events; ++ii ) {
+			PC_string(PC_get(conf, ".checkpoint_on[%d]", ii), &checkpoint_events[ii]);
+		}
+	} else {
+		nb_checkpoint_events = 0;
+		free(checkpoint_events);
 	}
 	
 	PC_errhandler(pc_handler); // aka PC_end_try
@@ -124,6 +131,10 @@ PDI_status_t PDI_fti_plugin_finalize()
 {
 	for ( int ii=0; ii<nb_snapshot_events; ++ii ) free(snapshot_events[ii]);
 	free(snapshot_events);
+	for ( int ii=0; ii<nb_recover_events; ++ii ) free(recover_events[ii]);
+	free(recover_events);
+	for ( int ii=0; ii<nb_checkpoint_events; ++ii ) free(checkpoint_events[ii]);
+	free(checkpoint_events);
 	free(protected);
 	FTI_Finalize();
 	return PDI_OK;
@@ -132,13 +143,16 @@ PDI_status_t PDI_fti_plugin_finalize()
 
 PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 {
-	int static is_last_ckpt = 0;
 	PDI_FTI_event_t event = NO_EVENT;
 	for ( int ii=0; ii<nb_snapshot_events && !event; ++ii ) {
 		if ( !strcmp(event_name, snapshot_events[ii]) ) {
 			event = SNAPSHOT; 
 		}
-		if ( !strcmp(event_name, last_ckpt_name)) is_last_ckpt=1;
+	}
+	for ( int ii=0; ii<nb_checkpoint_events && !event; ++ii ) {
+		if ( !strcmp(event_name, checkpoint_events[ii]) ) {
+			event = CHECKPOINT; 
+		}
 	}
 	for ( int ii=0; ii<nb_recover_events && !event; ++ii ) {
 		if ( !strcmp(event_name, recover_events[ii]) ) {
@@ -153,11 +167,14 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 		if ( event == SNAPSHOT && !FTI_Status() ) {
 			direction = PDI_OUT;
 		}
+		if ( event == CHECKPOINT ) {
+			direction = PDI_OUT;
+		}
 		for ( int ii = 0; ii<nb_protected; ++ii ) {
 			PDI_data_t *data = protected[ii].data;
 			if ( data->nb_content
 					&& (data->content[data->nb_content-1].access & direction) ) {
-				int size; PDI_data_size(&protected[ii].data->type, &size);
+				size_t size; PDI_data_size(&protected[ii].data->type, &size);
 				//TODO: handle non-contiguous data correctly
 				FTI_Protect(protected[ii].fti_id,
 						data->content[data->nb_content-1].data, size, FTI_CHAR);
@@ -170,15 +187,13 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 		}
 		switch ( event ) {
 		case SNAPSHOT:
-			if (!is_last_ckpt) {FTI_Snapshot();}
-			else {
-				for ( int ii = 0; ii<nb_protected; ++ii ) {
-					FTI_Checkpoint(protected[ii].fti_id, 4); //level == 4
-				}
-			}
+			FTI_Snapshot();
 			break;
 		case RECOVER:
 			FTI_Recover();
+			break;
+		case CHECKPOINT:
+			FTI_Checkpoint(INT_MAX-1, 4);
 			break;
 		default:
 			assert(0 && "Unexpected event type");
