@@ -48,7 +48,7 @@ add_library(fti_plugin MODULE
 		fti_plugin.c
 )
 target_link_libraries(fti_plugin pdi fti.shared)
-set_target_properties(fti_plugin PROPERTIES C_VISIBILITY_PRESET hidden C_STANDARD 99 C_STANDARD_REQUIRED ON)
+set_target_properties(fti_plugin PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
 add_compiler_flags(fti_plugin PRIVATE -Wall -Wextra -std=c99)
 

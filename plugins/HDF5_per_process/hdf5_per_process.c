@@ -99,7 +99,6 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 			var_strv = strdup((*hdf5data)[ii].name); // the node label is used (as a default value)
 		}
 		PDI_value_parse(var_strv, &(*hdf5data)[ii].h5var);
-		free(var_strv);
 		
 		// set the HDF5 filename (i.e. where do we write the data)
 		char *file_strv = NULL;
@@ -108,6 +107,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 				file_strv = strdup(def_file);
 			} else {
 				fprintf(stderr, "[PDI/HDF5] 'file' not found for variable %s\n", var_strv);
+				free(var_strv);
 				free(file_strv);
 				PC_errhandler(errh);
 				return PDI_ERR_CONFIG;
@@ -118,11 +118,12 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		
 		// sampling or frequency (i.e. when do we expose)
 		char *select_strv = NULL;
-		if ( PC_string(PC_get(treetmp, ".select"), &select_strv) ){
+		if ( PC_string(PC_get(treetmp, ".select"), &select_strv) ) {
 			if ( def_select ) { // using default
 				select_strv = strdup(def_select);
 			} else {
-				fprintf(stderr, "[PDI/HDF5] 'select' not found for variable %s\n", select_strv);
+				fprintf(stderr, "[PDI/HDF5] 'select' not found for variable %s\n", var_strv);
+				free(var_strv);
 				free(select_strv);
 				PC_errhandler(errh);
 				return PDI_ERR_CONFIG;
@@ -130,6 +131,8 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		}
 		PDI_value_parse(select_strv, &(*hdf5data)[ii].select);
 		free(select_strv);
+		
+		free(var_strv);
 	}
 	PC_errhandler(errh);
 

@@ -200,22 +200,22 @@ PDI_status_t parse_term(char const **val_str, PDI_value_t *value)
 		++term;
 		while ( isspace(*term) ) ++term;
 		PDI_handle_err(parse_intval(&term, value, 1), err0);
-		if ( *term != ')' )  PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected ')', found '%c'", *term), err0);;
+		if ( *term != ')' )  PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected ')', found '%c'", *term), err0);
 		++term;
 		while ( isspace(*term) ) ++term;
 	} else {
+		PDI_errhandler(errh);
 		value->c.refval = malloc(sizeof(PDI_refval_t));
-		if ( !parse_ref(&term, value->c.refval) ) {
-			value->kind = PDI_VAL_REF;
-		} else {
-			free(value->c.refval);
-			PDI_errhandler(errh);
-			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid ref: `%s'", *val_str), err0);
-		}
+		value->kind = PDI_VAL_REF;
+		PDI_handle_err(parse_ref(&term, value->c.refval), err1);
 		PDI_errhandler(errh);
 	}
 	
 	*val_str = term;
+	return status;
+	
+err1:
+	free(value->c.refval);
 err0:
 	return status;
 }
@@ -621,7 +621,7 @@ PDI_status_t PDI_value_int(const PDI_value_t *value, long *res)
 		PDI_handle_err(eval_exprval(value->c.exprval, res), err0);
 	} break;
 	default: {
-		char *strval; PDI_value_str(value, &strval);
+		char *strval=NULL; PDI_handle_err(PDI_value_str(value, &strval), err0);
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non integer value type: %s", strval), err0);
 	}}
 	
