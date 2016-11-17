@@ -42,6 +42,8 @@ typedef struct {
 /// The types of events FTI supports
 typedef enum { NO_EVENT=0, RECOVER, SNAPSHOT } PDI_FTI_event_t;
 
+static char* last_ckpt_name=NULL; 	// name of the event that indicate all future checkpoint are treated as 
+									// the last ckpt (default value)
 
 int nb_protected = 0;
 
@@ -74,7 +76,7 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 		}
 	}
 	
-	nb_snapshot_events = 1;
+	nb_snapshot_events = 1; // listing event name that trigger FTI snapshot 
 	snapshot_events = malloc(sizeof(char*));
 	if ( !PC_string(PC_get(conf, ".snapshot_on"), snapshot_events) ) {
 	} else if ( ! PC_len(PC_get(conf, ".snapshot_on"), &nb_snapshot_events) ) {
@@ -86,6 +88,14 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 		nb_snapshot_events = 0;
 		free(snapshot_events);
 	}
+
+	// listing the only event that indicates a program is terminating
+	last_ckpt_name=malloc(sizeof(char*));
+	if ( PC_string(PC_get(conf, ".last_snapshot"), &last_ckpt_name) ) {
+		last_ckpt_name="last_ckpt"; // default value
+	}
+
+
 	
 	nb_recover_events = 1;
 	recover_events = malloc(sizeof(char*));
@@ -122,11 +132,13 @@ PDI_status_t PDI_fti_plugin_finalize()
 
 PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 {
+	int static is_last_ckpt = 0;
 	PDI_FTI_event_t event = NO_EVENT;
 	for ( int ii=0; ii<nb_snapshot_events && !event; ++ii ) {
 		if ( !strcmp(event_name, snapshot_events[ii]) ) {
-			event = SNAPSHOT;
+			event = SNAPSHOT; 
 		}
+		if ( !strcmp(event_name, last_ckpt_name)) is_last_ckpt=1;
 	}
 	for ( int ii=0; ii<nb_recover_events && !event; ++ii ) {
 		if ( !strcmp(event_name, recover_events[ii]) ) {
@@ -158,7 +170,12 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 		}
 		switch ( event ) {
 		case SNAPSHOT:
-			FTI_Snapshot();
+			if (!is_last_ckpt) {FTI_Snapshot();}
+			else {
+				for ( int ii = 0; ii<nb_protected; ++ii ) {
+					FTI_Checkpoint(protected[ii].fti_id, 4); //level == 4
+				}
+			}
 			break;
 		case RECOVER:
 			FTI_Recover();
