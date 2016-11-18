@@ -56,7 +56,7 @@ struct PDI_value_s
 	
 	union {
 		/// in case this is a PDI_VAL_CONST, the constant value
-		int constval;
+		long constval;
 		
 		/// in case of PDI_VAL_REF the referenced value (not owned)
 		PDI_refval_t *refval;
@@ -85,7 +85,7 @@ PDI_status_t PDI_EXPORT PDI_value_parse(const char *val_str, PDI_value_t *value)
  * \param[out] res a pointer to the integer value
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_value_int(const PDI_value_t *value, int *res);
+PDI_status_t PDI_EXPORT PDI_value_int(const PDI_value_t *value, long *res);
 
 /** Evaluates a value as a string
  * 

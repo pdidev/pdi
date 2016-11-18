@@ -48,13 +48,13 @@ typedef struct val_size_s
 {
 	int ndims;
 
-	int *sizes;
+	size_t *sizes;
 
-	int *subsizes;
+	size_t *subsizes;
 
-	int *starts;
+	size_t *starts;
 
-	int type;
+	size_t type;
 
 } val_size_t;
 
@@ -125,16 +125,16 @@ PDI_status_t array_size(const PDI_array_type_t *type, val_size_t *result)
 
 	PDI_handle_err(size(&type->type, result), err0);
 	for ( int dim=0; dim<type->ndims; ++dim ) {
-		int size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err1);
-		int subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err1);
+		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err1);
+		long subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err1);
 		if ( (size == subsize) && (result->ndims == 0) ) {
 			result->type *= size;
 		} else {
-			int start; PDI_handle_err(PDI_value_int(type->starts, &start), err1);
+			long start; PDI_handle_err(PDI_value_int(type->starts, &start), err1);
 			++result->ndims;
-			result->sizes = realloc(result->sizes, result->ndims*sizeof(int));
-			result->subsizes = realloc(result->subsizes, result->ndims*sizeof(int));
-			result->starts = realloc(result->starts, result->ndims*sizeof(int));
+			result->sizes = realloc(result->sizes, result->ndims*sizeof(size_t));
+			result->subsizes = realloc(result->subsizes, result->ndims*sizeof(size_t));
+			result->starts = realloc(result->starts, result->ndims*sizeof(size_t));
 			result->sizes[result->ndims-1] = size;
 			result->subsizes[result->ndims-1] = subsize;
 			result->starts[result->ndims-1] = start;
@@ -174,10 +174,10 @@ void do_copy(val_size_t *tsize, int dim, void *to, void *from)
 	if ( dim == tsize->ndims ) {
 		memcpy(to, from, tsize->type);
 	} else {
-		int blocksize = tsize->type;
+		size_t blocksize = tsize->type;
 		for (int ii=dim+1; ii<tsize->ndims; ++ii) blocksize*= tsize->sizes[ii];
 		from = (char*)from + tsize->starts[dim]*blocksize;
-		for (int ii=0; ii<tsize->subsizes[dim]; ++ii) {
+		for (size_t ii=0; ii<tsize->subsizes[dim]; ++ii) {
 			do_copy(tsize, dim+1, to, from);
 			from = (char*)from + blocksize;
 			to = (char*)to + blocksize;
@@ -318,10 +318,11 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_data_size(const PDI_type_t *type, int *result)
+PDI_status_t PDI_data_size(const PDI_type_t *type, size_t *result)
 {
 	PDI_status_t status = PDI_OK;
-	val_size_t valsz=size_new(); PDI_handle_err(size(type, &valsz), err0); // remove uninitialized warning for valsz
+	val_size_t valsz = size_new();
+	PDI_handle_err(size(type, &valsz), err0);
 	*result = valsz.type;
 	for ( int dim=0; dim<valsz.ndims; ++dim ) {
 		*result *= valsz.subsizes[dim];

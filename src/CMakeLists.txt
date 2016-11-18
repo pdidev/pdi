@@ -71,7 +71,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 install(DIRECTORY ../include/ DESTINATION include)
 
 ## C version
-add_library(pdi
+add_library(pdi SHARED
 		api.c
 		conf.c
 		datatype.c
