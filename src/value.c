@@ -137,7 +137,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 		}
 	}
 	if ( !value->ref ) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid reference %*s", refid_len, ref-refid_len), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Reference to unknown data: `%*s'", refid_len, ref-refid_len), err0);
 	}
 	
 	while ( isspace(*ref) ) ++ref;
