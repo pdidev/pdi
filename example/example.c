@@ -164,6 +164,7 @@ int main( int argc, char *argv[] )
 			int rem_iter = .8 * (duration-global_time) * (ii+1) / global_time + 1;
 			if ( rem_iter < 1 ) rem_iter = 1;
 			next_reduce = ii + rem_iter;
+			printf("iter=%d; time=%f; next_reduce=%d\n", ii, global_time, next_reduce);
 		}
 	}
 	PDI_event("finalization");
