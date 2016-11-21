@@ -1,9 +1,9 @@
 [basic]
 head                           = 1
 node_size                      = 2
-ckpt_dir                       = /tmp/
-glbl_dir                       = ./
-meta_dir                       = ./.fti/
+ckpt_dir                       = ./fti_ckpt/
+glbl_dir                       = ./fti_glbl/
+meta_dir                       = ./fti_meta/
 ckpt_l1                        = 1
 ckpt_l2                        = 200000
 ckpt_l3                        = 200000
