@@ -250,13 +250,9 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
     
-!$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_share_C(C_loc(C_name), C_loc(ptr_data), accessf))
-!$SH else
     tmperr = int(PDI_share_C(C_loc(C_name), &
         C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')')), &
         accessf))
-!$SH fi
     
     if(present(err)) then
       err = tmperr
@@ -352,12 +348,8 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-!$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_export_C(C_loc(C_name), C_loc(ptr_data)))
-!$SH else
     tmperr = int(PDI_export_C(C_loc(C_name), &
         C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-!$SH fi
 
     if(present(err)) then
       err = tmperr
@@ -391,13 +383,8 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-!$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_expose_C(C_loc(C_name), &
-        C_loc(ptr_data)))
-!$SH else
     tmperr = int(PDI_expose_C(C_loc(C_name), &
         C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-!$SH fi
     
     if(present(err)) then
       err = tmperr
@@ -431,13 +418,8 @@ module PDI
     enddo
     C_name(len_trim(name)+1) = C_null_char
 
-!$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_import_C(C_loc(C_name), &
-        C_loc(ptr_data)))
-!$SH else
     tmperr = int(PDI_import_C(C_loc(C_name), &
         C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')'))))
-!$SH fi
     if(present(err)) then
       err = tmperr
     endif
