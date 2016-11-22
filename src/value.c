@@ -220,7 +220,7 @@ err0:
 	return status;
 }
 
-#define OP_LEVELS 5
+#define OP_LEVELS 6
 
 int op_level(PDI_exprop_t op)
 {
@@ -228,8 +228,9 @@ int op_level(PDI_exprop_t op)
 	case PDI_OP_OR: return 1;
 	case PDI_OP_AND: return 2;
 	case PDI_OP_EQUAL: return 3;
-	case PDI_OP_PLUS: case PDI_OP_MINUS: return 4;
-	case PDI_OP_MULT: case PDI_OP_DIV: case PDI_OP_MOD: return 5;
+	case PDI_OP_GT: case PDI_OP_LT: return 4;
+	case PDI_OP_PLUS: case PDI_OP_MINUS: return 5;
+	case PDI_OP_MULT: case PDI_OP_DIV: case PDI_OP_MOD: return 6;
 	}
 	return 0;
 }
@@ -462,6 +463,12 @@ PDI_status_t eval_exprval(PDI_exprval_t *val, long *res)
 		} break;
 		case PDI_OP_OR: {
 			computed_value = computed_value || operand;
+		} break;
+		case PDI_OP_GT: {
+			computed_value = (computed_value > operand);
+		} break;
+		case PDI_OP_LT: {
+			computed_value = (computed_value < operand);
 		} break;
 		default: {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unknown operator: `%c'", val->ops[ii-1]), err0);
