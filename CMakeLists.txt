@@ -85,5 +85,5 @@ add_subdirectory(plugins/FTI/)
 # Examples & tests
 
 enable_testing()
-#add_subdirectory(example/)
+add_subdirectory(example/)
 add_subdirectory(tests/)

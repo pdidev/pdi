@@ -32,7 +32,7 @@ program test2
   integer :: i, ierr,  main_comm 
   integer,dimension(:), allocatable :: buf
   integer :: nbuf=1000
-  double precision,target :: test_var=0
+  double precision,target :: test_var=69
   double precision,pointer ::pt
   character(len=512) :: strbuf
   logical :: file_exist
@@ -67,12 +67,12 @@ program test2
   call PDI_transaction_begin("testing")
   call PDI_expose("meta0",pmeta0)
   call PDI_expose("meta1",pmeta1)
-  allocate(buf(nbuf)) 
+  allocate(buf(nbuf)) !! an useless buffer 
   call PDI_expose("meta2",pmeta2)
   buf(:)=0
   call PDI_expose("meta3",pmeta3)
-  do i=0,nbuf-1
-    buf(i)=buf(i+1)+1
+  do i=1,nbuf-1
+    buf(i)=buf(i+1)+1 
   enddo
   call PDI_expose("meta4",pmeta4)
   test_var=0

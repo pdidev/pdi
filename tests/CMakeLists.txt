@@ -62,4 +62,6 @@ add_test(NAME PDI_test2_F_build
 add_test(NAME PDI_test2_F_run COMMAND PDI_test2_F "${CMAKE_CURRENT_SOURCE_DIR}/test2.yml")
 set_property(TEST PDI_test2_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../plugins/HDF5_per_process/")
 set_property(TEST PDI_test2_F_run PROPERTY DEPENDS PDI_test2_F_build)
-#set_tests_properties(PDI_test2_F_run PROPERTIES DEPENDS PDI_test2_F_build TIMEOUT 3) 
+set_tests_properties(PDI_test2_F_run PROPERTIES DEPENDS PDI_test2_F_build TIMEOUT 3)
+
+
