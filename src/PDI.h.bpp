@@ -109,19 +109,6 @@ module PDI
   endinterface
 
   
-
-!$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-  interface fptr
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
-    module procedure fptr_${T}_${D}D
-!$SH   done
-!$SH done
-  endinterface fptr
-!$SH fi
-
-  
-
   interface PDI_share
 !$SH for T in ${FORTTYPES}; do
 !$SH   for D in $(seq 0 ${MAXDIM}); do
@@ -163,20 +150,6 @@ module PDI
 
   contains
 
-!$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
-
-  pure function fptr_${T}_${D}D ( data ) result ( pdata )
-    $(fort_type $T), intent(IN), pointer :: data$(array_desc $D)
-    $(fort_type $T), target :: pdata
-    pdata = data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')
-  end function fptr_${T}_${D}D
-
-!$SH   done
-!$SH done
-!$SH fi
-  
   !=============================================================================
   !< interface to the C function PDI_init : initializes PDI
   !! \param[IN] treeconf the configuration
@@ -253,7 +226,7 @@ module PDI
   !! shares some data with PDI. the user code should not modify it before
   !! a call to either PDI_release or PDI_reclaim.
   !! \param[IN] name the data name
-  !! \param[IN,OUT] data the accessed data
+  !! \param[IN,OUT] ptr_data the pointer to the trageted data
   !! \param[IN] accessf whether the data can be accessed for read or write by
   !!            PDI
   !! \param[OUT] err for error status (optional)
@@ -263,9 +236,9 @@ module PDI
   !! the access parameter is a binary or of PDI_IN & PDI_OUT.
   !! * PDI_IN means PDI can set the buffer content
   !! * PDI_OUT means the buffer contains data that can be accessed by PDI
-  subroutine PDI_share_${T}_${D}D( name, data, accessf, err )
+  subroutine PDI_share_${T}_${D}D( name, ptr_data, accessf, err )
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(INOUT), pointer :: data$(array_desc $D)
+    $(fort_type $T), intent(INOUT), pointer :: ptr_data$(array_desc $D)
     integer, intent(IN) :: accessf
     integer, intent(OUT), optional :: err
 
@@ -278,10 +251,10 @@ module PDI
     C_name(len_trim(name)+1) = C_null_char
     
 !$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_share_C(C_loc(C_name), C_loc(fptr(data)), accessf))
+    tmperr = int(PDI_share_C(C_loc(C_name), C_loc(ptr_data), accessf))
 !$SH else
     tmperr = int(PDI_share_C(C_loc(C_name), &
-        C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
+        C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')')), &
         accessf))
 !$SH fi
     
@@ -364,11 +337,11 @@ module PDI
   !< interface to the C function PDI_export :
   !! exports some data to PDI. equivalent to PDI_share(OUT) + PDI_release.
   !! \param[IN] name the data name
-  !! \param[IN] data the exported data
+  !! \param[IN] ptr_data a pointer associated with the exported data
   !! \param[OUT] err for error status (optional)
-  subroutine PDI_export_${T}_${D}D(name, data, err)
+  subroutine PDI_export_${T}_${D}D(name, ptr_data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(IN), pointer :: data$(array_desc $D)
+    $(fort_type $T), intent(INOUT), pointer :: ptr_data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
@@ -380,10 +353,10 @@ module PDI
     C_name(len_trim(name)+1) = C_null_char
 
 !$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
-    tmperr = int(PDI_export_C(C_loc(C_name), C_loc(fptr(data))))
+    tmperr = int(PDI_export_C(C_loc(C_name), C_loc(ptr_data)))
 !$SH else
     tmperr = int(PDI_export_C(C_loc(C_name), &
-        C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
+        C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')'))))
 !$SH fi
 
     if(present(err)) then
@@ -403,11 +376,11 @@ module PDI
   !< interface to the C function PDI_expose :
   !! shortly exposes some data to PDI. equivalent to PDI_share(OUT) + PDI_reclaim.
   !! \param[IN] name the data name
-  !! \param[IN] data the exposed data
+  !! \param[IN] ptr_data pointer associated with the exposed data
   !! \param[OUT] err for error status (optional)
-  subroutine PDI_expose_${T}_${D}D(name, data, err)
+  subroutine PDI_expose_${T}_${D}D(name, ptr_data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(IN), pointer :: data$(array_desc $D)
+    $(fort_type $T), intent(INOUT), pointer :: ptr_data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
@@ -420,10 +393,10 @@ module PDI
 
 !$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
     tmperr = int(PDI_expose_C(C_loc(C_name), &
-        C_loc(fptr(data))))
+        C_loc(ptr_data)))
 !$SH else
     tmperr = int(PDI_expose_C(C_loc(C_name), &
-        C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
+        C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')'))))
 !$SH fi
     
     if(present(err)) then
@@ -443,11 +416,11 @@ module PDI
   !< interface to the C function PDI_import :
   !! imports some data from PDI. equivalent to PDI_share(IN) + PDI_reclaim.
   !! \param[IN] name the data name
-  !! \param[OUT] data the data to initialize
+  !! \param[OUT] ptr_data associated with the data to initialize
   !! \param[OUT] err for error status (optional)
-  subroutine PDI_import_${T}_${D}D(name, data, err)
+  subroutine PDI_import_${T}_${D}D(name, ptr_data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(OUT), pointer :: data$(array_desc $D)
+    $(fort_type $T), intent(INOUT), pointer :: ptr_data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
@@ -460,10 +433,10 @@ module PDI
 
 !$SH if [ -n "${NO_CLOC_ARRAY}" ]; then
     tmperr = int(PDI_import_C(C_loc(C_name), &
-        C_loc(fptr(data))))
+        C_loc(ptr_data)))
 !$SH else
     tmperr = int(PDI_import_C(C_loc(C_name), &
-        C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')'))))
+        C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')'))))
 !$SH fi
     if(present(err)) then
       err = tmperr
