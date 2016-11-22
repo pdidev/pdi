@@ -101,8 +101,6 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
 if("${ENABLE_FORTRAN}")
 	add_subdirectory(../vendor/bpp bpp EXCLUDE_FROM_ALL)
 	
-	set(BPP_DEFINES)
-	
 	bpp_preprocess(OUTPUT SRC_PDI_F90_BPP "${BPP_DEFINES}" SOURCES PDI.h.bpp)
 	get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
 	add_library(pdi_f90 fapi.c ${SRC_PDI_F90_BPP})
