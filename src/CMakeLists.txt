@@ -31,8 +31,6 @@ include(AddCCompilerFlags)
 include(CheckSymbolExists)
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
-include(TestCLocArray)
-
 
 # Build options
 
@@ -103,12 +101,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
 if("${ENABLE_FORTRAN}")
 	add_subdirectory(../vendor/bpp bpp EXCLUDE_FROM_ALL)
 	
-	test_cloc_array(CLOC_ARRAY_WORKS)
-	
 	set(BPP_DEFINES)
-	if (NOT "${CLOC_ARRAY_WORKS}")
-		set(BPP_DEFINES DEFINES "NO_CLOC_ARRAY=1")
-	endif()
 	
 	bpp_preprocess(OUTPUT SRC_PDI_F90_BPP "${BPP_DEFINES}" SOURCES PDI.h.bpp)
 	get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
