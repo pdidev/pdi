@@ -55,10 +55,11 @@ int main( int argc, char *argv[] )
 	PDI_finalize();
 
 	char fname[] = "5.h5";
-	if (access( fname, F_OK ) == -1 ) {
-		printf("File not found.");
-		return -1;
-	}// file doesn't exist
+	FILE* fp=NULL;
+	fp= fopen(fname, "r");
+	assert( fp != NULL  && "File not found.");
+	fclose(fp);
+
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 	return 0;

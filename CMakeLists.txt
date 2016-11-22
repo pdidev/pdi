@@ -48,6 +48,11 @@ option(USE_SYSTEM_PARACONF
 		OFF
 )
 
+option(RUN_EXAMPLES
+	"Build and run examples during ctest."
+		ON
+)
+
 ## Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -85,5 +90,7 @@ add_subdirectory(plugins/FTI/)
 # Examples & tests
 
 enable_testing()
-add_subdirectory(example/)
+if( "${RUN_EXAMPLES}" ) 
+	add_subdirectory(example/)
+endif()
 add_subdirectory(tests/)
