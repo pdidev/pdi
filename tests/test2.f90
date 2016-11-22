@@ -24,15 +24,18 @@
 include 'PDI.F90'
 
 program test2
-  use mpi
-  use PDI
+  use pdi
+
   implicit none
+
+  include 'mpif.h'
+
   integer, pointer :: pmeta0,pmeta1,pmeta2,pmeta3,pmeta4
   integer, target :: meta0,meta1,meta2,meta3,meta4
   integer :: i, ierr,  main_comm 
   integer,dimension(:), allocatable :: buf
   integer :: nbuf=1000
-  double precision,target :: test_var=69
+  double precision,target :: test_var=0.0
   double precision,pointer ::pt
   character(len=512) :: strbuf
   logical :: file_exist
