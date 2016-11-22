@@ -34,9 +34,9 @@ int main( int argc, char *argv[] )
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_errhandler(PDI_NULL_HANDLER);
 	PDI_status_t err = PDI_init(conf, &world);
-	assert(err == PDI_ERR_CONFIG);
-	assert(!strcmp(PDI_errmsg(), "Invalid ref: `$meta2'"));
-	PDI_finalize();
+	fprintf(stderr, "err=%d; message='%s'\n", err, PDI_errmsg());
+	assert(err == PDI_ERR_VALUE);
+	assert(!strcmp(PDI_errmsg(), "Reference to unknown data: `meta2'"));
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 	return 0;

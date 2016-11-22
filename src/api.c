@@ -263,7 +263,7 @@ PDI_status_t PDI_reclaim( const char* name )
 				&& (data->content[data->nb_content-1].access & PDI_OUT) ) {
 			// keep a copy of the last exposed value of the data
 			data->content[data->nb_content-1].access |= PDI_MM_FREE & PDI_MM_COPY;
-			int dsize; PDI_handle_err(PDI_data_size(&data->type, &dsize), err0);
+			size_t dsize; PDI_handle_err(PDI_data_size(&data->type, &dsize), err0);
 			void *newval = malloc(dsize);
 			PDI_handle_err(
 					tcopy(

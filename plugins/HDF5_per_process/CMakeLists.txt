@@ -32,7 +32,6 @@ find_package(HDF5 REQUIRED)
 add_library(hdf5_per_process MODULE
 	hdf5_per_process.c
 )
-set_target_properties(hdf5_per_process PROPERTIES C_VISIBILITY_PRESET hidden)
 target_link_libraries(hdf5_per_process pdi)
 include_directories(${HDF5_SHARED_C_INCLUDE_PATH})
 set_property(SOURCE hdf5_per_process.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")

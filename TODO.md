@@ -1,3 +1,6 @@
+# API
+- [ ] Ensure continuity for array (contiguous statement in fortran)
+
 # Refactoring
 - [ ] Unifiy error handling, define the status variable, use the 2 macros & gotos
       everywhere

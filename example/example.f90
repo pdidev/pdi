@@ -4,9 +4,10 @@ include 'PDI.F90'
 program PDI_example_f90
 
   use pdi
-  use mpi
 
   implicit none
+  
+  include 'mpif.h'
 
   integer,target :: status, next_reduce, width, height, pheight, pwidth, main_comm, ii
   integer,target :: size, rank, cart_dims(2), cart_comm, cart_coord(2), rem_iter, err
@@ -107,6 +108,7 @@ program PDI_example_f90
       rem_iter = .8 * (duration-global_time) * (ii+1) / global_time + 1
       if ( rem_iter < 1 ) rem_iter = 1
       next_reduce = ii + rem_iter
+      print '("iter=",I7,"; time=",F7.3,"; next_reduce=",I7)', ii, global_time, next_reduce
     endif
     ii = ii+1
   enddo

@@ -101,10 +101,15 @@ int main( int argc, char *argv[] )
 	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	
-	int width; PC_int(PC_get(conf, ".datasize[0]"), &width);
-	int height; PC_int(PC_get(conf, ".datasize[1]"), &height);
-	int pheight; PC_int(PC_get(conf, ".parallelism.height"), &pheight);
-	int pwidth; PC_int(PC_get(conf, ".parallelism.width"), &pwidth);
+	long longval;
+	PC_int(PC_get(conf, ".datasize[0]"), &longval);
+	int width = longval;
+	PC_int(PC_get(conf, ".datasize[1]"), &longval);
+	int height = longval;
+	PC_int(PC_get(conf, ".parallelism.height"), &longval);
+	int pheight = longval;
+	PC_int(PC_get(conf, ".parallelism.width"), &longval);
+	int pwidth = longval;
 	double duration; PC_double(PC_get(conf, ".duration"), &duration);
 	
 	MPI_Comm main_comm = MPI_COMM_WORLD;
@@ -159,6 +164,7 @@ int main( int argc, char *argv[] )
 			int rem_iter = .8 * (duration-global_time) * (ii+1) / global_time + 1;
 			if ( rem_iter < 1 ) rem_iter = 1;
 			next_reduce = ii + rem_iter;
+			printf("iter=%d; time=%f; next_reduce=%d\n", ii, global_time, next_reduce);
 		}
 	}
 	PDI_event("finalization");

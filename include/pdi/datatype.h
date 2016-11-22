@@ -101,7 +101,7 @@ struct PDI_struct_type_s
  * \param result the size in bytes
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_data_size(const PDI_type_t* type, int* result);
+PDI_status_t PDI_EXPORT PDI_data_size(const PDI_type_t* type, size_t* result);
 
 /** Loads a type definition from a paraconf-style config
  * \param node the configuration to read
