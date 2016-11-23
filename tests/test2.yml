@@ -1,0 +1,16 @@
+pdi:
+  metadata:
+    meta0: int
+    meta1: int
+    meta2: int
+    meta3: int
+    meta4: int
+  data: # values that can not be referenced using $syntax
+    test_var: double
+  plugins:
+    hdf5_per_process:
+      outputs:
+        test_var:
+          file: $meta1.h5
+          select: 1
+  
