@@ -47,7 +47,7 @@ add_test(NAME PDI_test2_C_build
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 add_test(NAME PDI_test2_C_run COMMAND PDI_test2_C "${CMAKE_CURRENT_SOURCE_DIR}/test2.yml")
-set_property(TEST PDI_test2_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../plugins/HDF5_per_process/")
+set_property(TEST PDI_test2_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/HDF5_per_process/")
 set_property(TEST PDI_test2_C_run PROPERTY DEPENDS PDI_test2_C_build)
 set_tests_properties(PDI_test2_C_run PROPERTIES DEPENDS PDI_test2_C_build TIMEOUT 3)
 
@@ -60,7 +60,7 @@ add_test(NAME PDI_test2_F_build
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 add_test(NAME PDI_test2_F_run COMMAND PDI_test2_F "${CMAKE_CURRENT_SOURCE_DIR}/test2.yml")
-set_property(TEST PDI_test2_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/../plugins/HDF5_per_process/")
+set_property(TEST PDI_test2_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/HDF5_per_process/")
 set_property(TEST PDI_test2_F_run PROPERTY DEPENDS PDI_test2_F_build)
 set_tests_properties(PDI_test2_F_run PROPERTIES DEPENDS PDI_test2_F_build TIMEOUT 3)
 
