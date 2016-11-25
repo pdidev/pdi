@@ -238,7 +238,7 @@ module PDI
   !! * PDI_OUT means the buffer contains data that can be accessed by PDI
   subroutine PDI_share_${T}_${D}D( name, ptr_data, accessf, err )
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(INOUT), pointer :: ptr_data$(array_desc $D)
+    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
     integer, intent(IN) :: accessf
     integer, intent(OUT), optional :: err
 
@@ -337,7 +337,7 @@ module PDI
   !! \param[OUT] err for error status (optional)
   subroutine PDI_export_${T}_${D}D(name, ptr_data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(INOUT), pointer :: ptr_data$(array_desc $D)
+    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
@@ -372,7 +372,7 @@ module PDI
   !! \param[OUT] err for error status (optional)
   subroutine PDI_expose_${T}_${D}D(name, ptr_data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(INOUT), pointer :: ptr_data$(array_desc $D)
+    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
@@ -407,7 +407,7 @@ module PDI
   !! \param[OUT] err for error status (optional)
   subroutine PDI_import_${T}_${D}D(name, ptr_data, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), intent(INOUT), pointer :: ptr_data$(array_desc $D)
+    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
