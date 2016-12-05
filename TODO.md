@@ -22,7 +22,7 @@
  - plugins
 * automatic declaration of scalars and n-Dim arrays (configuration file should be simpler)
 * handle multiple views on one array
-- [ ] select plug-in for importing data (ie: handle concurrent plug-ins)
+- [ ] select plug-in (ie: handle concurrent plug-ins)
 - [ ] add a verbose debugging mode
 
 # Design
@@ -35,7 +35,7 @@
 - [ ] Add support for situations where you want to continue even on error, but
   store them for later report (finalize, plugins, etc.)
   let their exposure be notified to plugins, same as normal data
-
+- [ ] Add/Define good pratices for plug-ins, event name ...etc.
 
 # New plugins ideas
 - [ ] Parallel HDF5
