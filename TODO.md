@@ -16,14 +16,17 @@
 - [ ] add checksum (global option)
 
 # Missing features
+- [ ] support string data type
 - [ ] Structs & arrays dimensions order (C vs. Fortran)
 - [ ] Whole config specification from code
- - metadata, data & their types
- - plugins
+        - metadata, data & their types
+        - plugins
 * automatic declaration of scalars and n-Dim arrays (configuration file should be simpler)
 * handle multiple views on one array
-- [ ] select plug-in (ie: handle concurrent plug-ins)
 - [ ] add a verbose debugging mode
+- [ ] add a cyclic buffer to keep the last n events
+- [ ] select plug-in (ie: handle concurrent plug-ins): if string are handled almost ok.
+
 
 # Design
 - [ ] Support installation of filters for events & data by plugins (i.e. regexp)
@@ -50,4 +53,5 @@
 * HDF5
    - [ ] better support various type (simple, double can be used but they are machine dependant -> real16, real32, real64, real128) ?
    - [ ] test import
+   - [ ] redo plug-in on a event basis
     
