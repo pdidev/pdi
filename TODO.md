@@ -19,8 +19,8 @@
 - [ ] support string data type
 - [ ] Structs & arrays dimensions order (C vs. Fortran)
 - [ ] Whole config specification from code
-        - metadata, data & their types
-        - plugins
+    - metadata, data & their types
+    - plugins
 * automatic declaration of scalars and n-Dim arrays (configuration file should be simpler)
 * handle multiple views on one array
 - [ ] add a verbose debugging mode
