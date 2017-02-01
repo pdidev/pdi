@@ -1,24 +1,17 @@
 # PDI: the Parallel Data Interface.
 
 ## Main features
-PDI is a C library to manage how data are imported and exported.
-An API is provided whose generic interface handles data IO and format.
-PDI uses existing libraries that are integrated to PDI through plugins.
-Before running a program that uses PDI a configuration file should be provided which describes which plugins are used and how.
-The library currently supports HDF5, FTI format (and soon many other ;) ).
+PDI is a library to decouple simulation codes from IO concerns.
+PDI supports existing IO libraries through a plugin system.
+PDI declarative API makes it possible to share buffers manipulated in the application with IO libraries.
+The type of data and the IO requests to forward to libraries are described in a dedicated YAML file.
+PDI supports HDF5 and FTI as of now, other libraries are work-in-progress.
 
 
 #### Existing plugins
-* Export
-    * [ ] HDF5
-    	* [x] HDF5 serial/one-core-one-file;
-    	* [ ] HDF5 parallel
-	* [ ] AH5 (HDF5 asynchronous)
-    * [x] FTI
-    * [ ] ... see TODO.md
-* Import
-
-All the importers are under developing.
+* [x] HDF5 serial/one-file-per-process;
+* [x] FTI
+* [ ] ... see TODO.md
 
 
 ## Installation
