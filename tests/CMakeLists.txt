@@ -65,3 +65,18 @@ set_property(TEST PDI_test2_F_run PROPERTY DEPENDS PDI_test2_F_build)
 set_tests_properties(PDI_test2_F_run PROPERTIES DEPENDS PDI_test2_F_build TIMEOUT 3)
 
 
+add_executable(PDI_test3_C EXCLUDE_FROM_ALL test3.c)
+add_compiler_flags(PDI_test3_C PRIVATE -Wall -Wextra)
+target_link_libraries(PDI_test3_C pdi mpi)
+add_test(NAME PDI_test3_C_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target PDI_test3_C
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+add_test(NAME PDI_test3_C_run COMMAND PDI_test3_C "${CMAKE_CURRENT_SOURCE_DIR}/test3.yml")
+set_property(TEST PDI_test3_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/Utilities/")
+set_property(TEST PDI_test3_C_run PROPERTY DEPENDS PDI_test3_C_build)
+set_tests_properties(PDI_test3_C_run PROPERTIES DEPENDS PDI_test3_C_build TIMEOUT 3)
+
+
+
+

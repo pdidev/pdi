@@ -1,0 +1,26 @@
+pdi:
+  metadata:
+    meta0: int
+    meta1: int
+    meta2: int
+    meta3: int
+    nth_meta: int
+  data: # values that can not be referenced using $syntax
+    test_var: double
+  plugins:
+    utilities:
+      #event2data:
+      #  event: casual_event
+      #  in: $meta1 #($meta0+$meta1)
+      #  out: meta2 # ${nth_meta} # output in nth 
+      #event2data:
+      #  event: casual_event2
+      #  in: $meta1 #($meta0-$meta2)
+      #  out: meta3 # == meta1 
+      file_exists:
+        event: init
+        in: empty_file.txt
+        out: test_var
+
+
+  
