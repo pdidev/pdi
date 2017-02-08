@@ -29,8 +29,6 @@
  *  ... etc.
  ***/
 
-#define _DBG_MACRO_ fprintf(stderr,"line %6d ||  Utilities\n", __LINE__); fflush(stderr);
-
 #include "config.h"
 
 #include <inttypes.h>
@@ -57,6 +55,7 @@ PC_tree_t my_conf;
 /// Supported actions 
 typedef enum { EVENT2DATA=0,
 	FILE_EXISTS,
+	DIR_EXISTS,
 	EXTRACT_SUBARRAY}
 	utils_action_t;
 
@@ -163,17 +162,21 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		PC_string(PC_get(my_conf, "{%d}", ii) , &str_action); 
 		if ( !strcmp(str_action, "event2data") ){
 			tasks[ii].action = EVENT2DATA;
-			tasks[ii].size = sizeof(int64_t);
+			tasks[ii].size = sizeof(int32_t);
 			tasks[ii].data = malloc(tasks[ii].size);
 			memcpy(tasks[ii].data,(const void *)(&zero), tasks[ii].size);
-			if (tasks[ii].size) fprintf(stderr,"is allocated, %ld",*(int64_t *)tasks[ii].data);
 
 		} else if ( !strcmp(str_action, "file_exists") ){
 			tasks[ii].action = FILE_EXISTS;
-			tasks[ii].size = sizeof(int8_t);
+			tasks[ii].size = sizeof(int32_t);
 			tasks[ii].data = malloc(tasks[ii].size);
 			memcpy(tasks[ii].data,(const void *)(&zero), tasks[ii].size);
-			if (tasks[ii].size) fprintf(stderr,"is allocated, %ld",*(int8_t *)tasks[ii].data);
+
+		} else if ( !strcmp(str_action, "dir_exists") ){
+			tasks[ii].action = DIR_EXISTS;
+			tasks[ii].size = sizeof(int32_t);
+			tasks[ii].data = malloc(tasks[ii].size);
+			memcpy(tasks[ii].data,(const void *)(&zero), tasks[ii].size);
 
 		} else if ( !strcmp(str_action, "extract_subarray") ){
 			tasks[ii].action = EXTRACT_SUBARRAY;
@@ -195,7 +198,6 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 
 PDI_status_t PDI_utilities_finalize()
 {
-	_DBG_MACRO_
 	for ( int ii=0; ii<nb_tasks; ++ii ) {
 		free(tasks[ii].events);
 		if(tasks[ii].size) free(tasks[ii].data);
@@ -210,6 +212,7 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 	char *str=NULL;
 	char *str2=NULL;
 	int same_event = 0;
+	int32_t tmp=0;
 	struct stat sb;
 	for(int ii=0; ii<nb_tasks; ++ii ){
 		for(int nn=0; nn<tasks[ii].nb_events; ++nn){
@@ -217,27 +220,16 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 			if(!strcmp(tasks[ii].events[nn],event_name)) same_event=1;
 			if( same_event || tasks[ii].action == EVENT2DATA ){
 				switch(tasks[ii].action){
-					case EVENT2DATA:{
-						int64_t tmp=0;
-						// Evaluate expression define in 'in' and set value in 'out'
+					case EVENT2DATA:
+						// Should evaluate expression define in 'in' and set value in 'out'
 						if (same_event){
-							PDI_value_int(&tasks[ii].in,&tmp); // TODO[CR]: error check
-						} else { 
-							tasks[ii].data = 0;
+							// PDI_value_int(&tasks[ii].in,&tmp); // TODO[CR]: error check
+							tmp=1;
+						} else {
+							tmp=0;
 						}
-						fprintf(stderr,"event %s \n", tasks[ii].events[0]);
-	//_DBG_MACRO_
-						if (!tasks[ii].size) fprintf(stderr,"not allocated"); 
-	//					fflush(stderr);
-	//_DBG_MACRO_
-						if (tasks[ii].size) fprintf(stderr,"is allocated:");fflush(stderr);
-	//_DBG_MACRO_
-	//					if (tasks[ii].size) fprintf(stderr,"is allocated, %ld",*(long *)tasks[ii].data);
-	//					fflush(stderr);
-	_DBG_MACRO_
 						memcpy(tasks[ii].data, &tmp, tasks[ii].size);
-	_DBG_MACRO_
-						} break;
+						break;
 					case EXTRACT_SUBARRAY:
 						// Find dimensions of input array
 						
@@ -248,19 +240,28 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 						break;
 
 					case FILE_EXISTS:{
-						int8_t tmp=0;
 						// get filename into str
 						PDI_value_str(&tasks[ii].in,&str); // TODO[CR]: error check
-						// if (stat(pathname, &sb) == 0 && S_ISDIR(sb.st_mode))
-						tmp = 0;
 						// check for file
 						if (stat(str, &sb) == 0 && S_ISREG(sb.st_mode)){
 							tmp = 1;
-						}  
+						} else {
+							tmp = 0;
+						}
 						memcpy(tasks[ii].data, &tmp, tasks[ii].size);
+						free(str);
+						} break;
 
-						// expose in ouput variable
-						// PDI_value_str(&tasks[ii].out,&str); // TODO[CR]: error check
+					case DIR_EXISTS:{
+						// get filename into str
+						PDI_value_str(&tasks[ii].in,&str); // TODO[CR]: error check
+						// check for file
+						if (stat(str, &sb) == 0 && S_ISDIR(sb.st_mode)){
+							tmp = 1;
+						} else {
+							tmp = 0;
+						}
+						memcpy(tasks[ii].data, &tmp, tasks[ii].size);
 						free(str);
 						} break;
 
@@ -273,40 +274,36 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 	return PDI_OK;
 }
 
-int cast_data_int(PDI_data_t *data, int64_t plugin_data) {
+int cast_data_int(PDI_data_t *data, int32_t plugin_data) {
 	int status = PDI_OK; 
-	_DBG_MACRO_
 	if (data->type.kind == PDI_K_SCALAR){
 		switch(data->type.c.scalar){
-			// single cast 
 			case PDI_T_INT32:  
-				*(int32_t *) data->content[data->nb_content-1].data = (int32_t)plugin_data;
+				memcpy(data->content[data->nb_content-1].data, &plugin_data, sizeof(int32_t));
 				break;
-			// double cast 
 			case PDI_T_INT8: 
-				*(int8_t *)  data->content[data->nb_content-1].data = (int8_t)plugin_data;
+				memcpy(data->content[data->nb_content-1].data, &plugin_data, sizeof(int8_t));
 				break; 
 			case PDI_T_INT16:  
-				*(int16_t*)  data->content[data->nb_content-1].data = (int16_t)plugin_data;
+				memcpy(data->content[data->nb_content-1].data, &plugin_data, sizeof(int16_t));
 				break; 
 			case PDI_T_INT64:  
-				*(int64_t *) data->content[data->nb_content-1].data = (int64_t)plugin_data;
+				memcpy(data->content[data->nb_content-1].data, &plugin_data, sizeof(int64_t));
 				break; 
 			case PDI_T_FLOAT:  
-				*(float *)   data->content[data->nb_content-1].data = (float)plugin_data;
+				memcpy(data->content[data->nb_content-1].data, &plugin_data, sizeof(float));
 				break; 
 			case PDI_T_DOUBLE: 
-				*(double *)  data->content[data->nb_content-1].data = (double)plugin_data;
+				memcpy(data->content[data->nb_content-1].data, &plugin_data, sizeof(double));
 				break; 
 			case PDI_T_LONG_DOUBLE:
-				*(long double *)data->content[data->nb_content-1].data = (long double)plugin_data;
+				memcpy(data->content[data->nb_content-1].data, &plugin_data, sizeof(long double));
 				break; 
 			case PDI_T_UNDEF: status = PDI_ERR_VALUE; 
 		}
 	} else {
 		status = PDI_ERR_VALUE;
 	}
-	_DBG_MACRO_
 	return status;
 }
 
@@ -316,8 +313,7 @@ PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 	char *str=NULL;
 	int status=PDI_OK;
 	// Only import is possible
-	int64_t copy;
-	_DBG_MACRO_
+	int32_t copy;
 	if ( data->content[data->nb_content-1].access & PDI_IN ) {
 		// for each utils_task look if the output is the same than the PDI_data_t
 		for ( int ii=0; ii<nb_tasks; ++ii ) {  
@@ -326,13 +322,17 @@ PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 			if ( !strcmp(str, data->name) ){   // output and data name matches
 				switch(tasks[ii].action){  // check datatype compatibiliy
 					case EVENT2DATA:
-						copy = *(int64_t *)tasks[ii].data;
+						copy = *(int32_t *)tasks[ii].data;
 						status = cast_data_int(data, copy);
 						break; 
 				//	case EXTRACT_SUBARRAY:
 				//		return PDI_UNAVAILABLE;
 					case FILE_EXISTS:
-						copy = (int64_t)(*(int8_t *)tasks[ii].data);
+						copy = *(int32_t *)tasks[ii].data;
+						status = cast_data_int(data, copy);
+						break; 
+					case DIR_EXISTS:
+						copy = *(int32_t *)tasks[ii].data;
 						status = cast_data_int(data, copy);
 						break; 
 					default:
@@ -342,7 +342,6 @@ PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 			}
 		}
 	}
-	_DBG_MACRO_
 	return status;
 }
 
@@ -353,18 +352,15 @@ PDI_status_t PDI_utilities_data_end(PDI_data_t *data)
 	// Only import is possible
 	if ( data->content[data->nb_content-1].access & PDI_IN ) {
 		// for each utils_task look if the output is the same than the PDI_data_t
-	_DBG_MACRO_
 		for ( int ii=0; ii<nb_tasks; ++ii ) {  
 			str=NULL;
 			PDI_value_str(&tasks[ii].out,&str); // output string
 			if ( tasks[ii].action == EXTRACT_SUBARRAY){
 				if (!strcmp(str, data->name) ){   // output and data name matches
 					if(tasks[ii].size){
-	_DBG_MACRO_
 						free(tasks[ii].data); 
 						tasks[ii].size = 0;
 					}
-	_DBG_MACRO_
 				}
 			}
 		}

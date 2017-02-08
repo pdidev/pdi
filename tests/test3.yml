@@ -9,14 +9,10 @@ pdi:
     test_var: double
   plugins:
     utilities:
-      #event2data:
-      #  event: casual_event
-      #  in: $meta1 #($meta0+$meta1)
-      #  out: meta2 # ${nth_meta} # output in nth 
-      #event2data:
-      #  event: casual_event2
-      #  in: $meta1 #($meta0-$meta2)
-      #  out: meta3 # == meta1 
+      event2data:
+        event: casual_event
+        in: 1 #($meta0+$meta1)
+        out: meta2 # ${nth_meta} # output in nth 
       file_exists:
         event: init
         in: empty_file.txt

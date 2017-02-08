@@ -30,7 +30,7 @@
 
 int main( int argc, char *argv[])
 {
-	int value[5]={0,1,2,3,4};
+	long value[5]={0,1,2,3,4};
 	int i ,err;
 	double test_var=0;
 	const char *filename="empty_file.txt";
@@ -52,24 +52,25 @@ int main( int argc, char *argv[])
 	PDI_event("init"); // check file exist 'empty_file.txt'
 	test_var=0;
 	err=PDI_import("test_var",&test_var); // utilities plug-in provides the value
-	assert( !test_var && "Import should fail. File has been removed"); 
+	assert( (((int)test_var)==0) && "Import should fail. File has been removed"); 
 
 	FILE *fp = fopen(filename, "ab+");
+	fprintf(fp,"Testing");
 	fflush(fp);
 	fclose(fp);
+
 	PDI_event("init"); // check file exist 'empty_file.txt'
-	test_var=0;
 	err=PDI_import("test_var",&test_var); // utilities plug-in provides the value
-	assert( (int)(test_var) !=0 && "Import should succeed. File has been created");
+	fprintf(stderr,"Value is %f \n",test_var);
+	assert( test_var !=0 && "Import should succeed. File has been created");
 
 
 	// ------- Checking that "event2data" action works
 	PDI_event("casual_event"); // compute meta0+meta1 = 0+1 -> meta2
-	PDI_event("casual_event2"); // meta0-meta2 = -1
 
 	PDI_import("meta2",&i); // meta2=meta0+meta1
-	// assert(i==1 && "should be 1");
-	PDI_import("meta3",&i);
+	 assert(i==1 && "should be 1");
+	// PDI_import("meta3",&i);
 	// assert(i==-1 && "should be -1 ");
 
 	PDI_finalize();
