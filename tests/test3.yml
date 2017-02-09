@@ -11,8 +11,8 @@ pdi:
     utilities:
       event2data:
         event: casual_event
-        in: 1 #($meta0+$meta1)
-        out: meta2 # ${nth_meta} # output in nth 
+        in: $meta0+$meta1
+        out: meta${nth_meta} # output in nth 
       file_exists:
         event: init
         in: empty_file.txt

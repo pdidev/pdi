@@ -32,6 +32,7 @@ int main( int argc, char *argv[])
 {
 	long value[5]={0,1,2,3,4};
 	int i ,err;
+	const int two=2;
 	double test_var=0;
 	const char *filename="empty_file.txt";
 	MPI_Init(&argc, &argv);
@@ -45,12 +46,12 @@ int main( int argc, char *argv[])
 	PDI_expose("meta1",&value[1]);
 	PDI_expose("meta2",&value[2]);
 	PDI_expose("meta3",&value[3]);
-	PDI_expose("nth_meta",&value[2]);
+	PDI_expose("nth_meta",&two);
 
 	// ------- Checking that "file_exists" action works
 	remove(filename); // remove file if it exists
-	PDI_event("init"); // check file exist 'empty_file.txt'
 	test_var=0;
+	PDI_event("init"); // check file exist 'empty_file.txt'
 	err=PDI_import("test_var",&test_var); // utilities plug-in provides the value
 	assert( (((int)test_var)==0) && "Import should fail. File has been removed"); 
 
@@ -67,9 +68,9 @@ int main( int argc, char *argv[])
 
 	// ------- Checking that "event2data" action works
 	PDI_event("casual_event"); // compute meta0+meta1 = 0+1 -> meta2
-
+	
 	PDI_import("meta2",&i); // meta2=meta0+meta1
-	 assert(i==1 && "should be 1");
+	assert(i==1 && "should be 1");
 	// PDI_import("meta3",&i);
 	// assert(i==-1 && "should be -1 ");
 
