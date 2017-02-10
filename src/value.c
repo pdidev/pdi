@@ -31,7 +31,6 @@
  * \author J. Bigot (CEA)
  */
 
-#define _DBG_MACRO0_ fprintf(stderr,"line %d", __LINE__); fflush(stderr);
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -395,7 +394,7 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	} else {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid access to a struct"), err0);
 	}
-	_DBG_MACRO0_
+	
 	long idx = 0;
 	long stride = 1;
 	for ( int ii=0; ii<val->nb_idx; ++ii ) {
@@ -406,11 +405,9 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 		stride *= size;
 	}
 	
-	_DBG_MACRO0_
 	if ( val->ref->nb_content < 1 ) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->ref->name), err0);
 	void *value = val->ref->content[0].data;
 	
-	_DBG_MACRO0_
 	switch ( type ) {
 	case PDI_T_INT8: {
 		*res = ((int8_t*)value)[idx];
@@ -428,7 +425,6 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
 	} break;
 	}
-	_DBG_MACRO0_
 
 	return status;
 	
@@ -626,20 +622,15 @@ PDI_status_t PDI_value_int(const PDI_value_t *value, long *res)
 		*res = value->c.constval;
 	} break;
 	case PDI_VAL_REF: {
-		_DBG_MACRO0_
-
 		PDI_handle_err(eval_refval(value->c.refval, res), err0);
-		_DBG_MACRO0_
 	} break;
 	case PDI_VAL_EXPR: {
-		_DBG_MACRO0_
 		PDI_handle_err(eval_exprval(value->c.exprval, res), err0);
 	} break;
 	default: {
 		char *strval=NULL; PDI_handle_err(PDI_value_str(value, &strval), err0);
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non integer value type: %s", strval), err0);
 	}}
-		_DBG_MACRO0_
 	
 	return status;
 err0:
