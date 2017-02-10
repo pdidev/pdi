@@ -33,24 +33,19 @@
 
 #include <inttypes.h>
 #include <assert.h>
-#include <string.h>
-#ifdef STRDUP_WORKS
-#define _POSIX_C_SOURCE 200809L
-#endif
-
 #include <mpi.h>
-
-// Check file exist 
-#include <sys/stat.h>
+#include <sys/stat.h> // to check file existence 
 
 #include "pdi.h"
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 
+#ifdef STRDUP_WORKS
+#define _POSIX_C_SOURCE 200809L
+#endif
+#include <string.h>
 
 
-
-PC_tree_t my_conf;
 
 /// Supported actions 
 typedef enum { EVENT2DATA=0,
@@ -61,28 +56,32 @@ typedef enum { EVENT2DATA=0,
 
 typedef struct utils_task_s
 {
-	utils_action_t action; // action to perform on event
+	utils_action_t action; /// The action to perform on event
 
-	int nb_events;
+	int nb_events; /// Number of events
 
-	char **events; // events that trigger processing the task
+	char **events; /// Events that trigger the previous action
 
-	char* in; // file name, variables, or expressions
+	char *in; /// An expression: could be a file name, variables, or expressions
 
-	char *out; // currently, only a variable name
+	char *out; /// An expression 
 
-	char *select; // select when apply
+	char *select; /// select when to perform action (default is always)
 
-	void *data; // a compatible PDI data
+	void *data; /// data to store the result   
 
-	size_t size; // size of allocated data
+	size_t size; /// data size
 
 } utils_task_t;
 
 
+/// Number of tasks performed by the plug-in
 int nb_tasks = 0;
-
+/// Tasks 
 utils_task_t *tasks = NULL;
+
+/// Configuration file obtain from PDI
+PC_tree_t my_conf;
 
 
 #ifndef STRDUP_WORKS
@@ -95,15 +94,16 @@ char *strdup(const char *s)
 #endif
 
 
+/// Initialization: read configuration file and fill data structure
 PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 {
 	world = world; // prevent unused param warning
-	my_conf = conf;
+	my_conf = conf; 
 	
 	if ( PC_status(my_conf) ) {
 		return PDI_ERR_PLUGIN;
 	}
-	/// Get the number of actions 
+	// Get the number of actions 
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 	if(PC_len(my_conf,&nb_tasks)){
 		nb_tasks=0;
@@ -115,7 +115,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 	}
 	PC_errhandler(errh);
 
-	/// fill the utils_task_t data structure with corresponding values from conf file
+	// fill the utils_task_t data structure with corresponding values from conf file
 	char *str, *one="1";
 	const long zero = 0;
 	for ( int ii=0; ii<=nb_tasks-1; ++ii){ 
@@ -204,17 +204,22 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 }
 
 
+/// Finalize and free allocated data
 PDI_status_t PDI_utilities_finalize()
 {
 	for ( int ii=0; ii<nb_tasks; ++ii ) {
 		free(tasks[ii].events);
+		if(tasks[ii].in)   free(tasks[ii].in);
+		if(tasks[ii].out)  free(tasks[ii].out);
 		if(tasks[ii].size) free(tasks[ii].data);
+		tasks[ii].size = 0;
 	}
 	free(tasks);
 	return PDI_OK;
 }
 
 
+/// Traps and converts events into tasks
 PDI_status_t PDI_utilities_event(const char *event_name)
 {
 	char *str=NULL;
@@ -228,14 +233,12 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 				PDI_value_parse(tasks[ii].select, &parse_sel);
 				PDI_value_int(&parse_sel,&ltmp);
 				tmp=ltmp; // Nasty workaround to remove warning
-				fprintf(stderr, "select = %d\n",tmp);
 				if(tmp){
 					// Should evaluate expression define in 'in' and set value in 'out'
 					if (!strcmp(tasks[ii].events[nn],event_name)){
 						PDI_value_parse(tasks[ii].in, &parse_in);
 						PDI_value_int(&parse_in,&ltmp);
 						tmp=ltmp; // Nasty workaround to remove warning
-						fprintf(stderr, "in = %d\n",tmp);
 
 					} else {
 						tmp=0;
@@ -323,6 +326,7 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 	return PDI_OK;
 }
 
+/// Convert into corresponding data type
 int cast_data_int(PDI_data_t *data, int32_t plugin_data) {
 	int status = PDI_OK; 
 	if (data->type.kind == PDI_K_SCALAR){

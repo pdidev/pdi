@@ -27,8 +27,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-find_package(HDF5 REQUIRED)
-
 add_library(utilities MODULE
 	utilities.c
 )
@@ -40,7 +38,6 @@ add_compiler_flags(utilities PRIVATE -Wall -Wextra -std=c99)
 
 
 # library installation
-
 install(TARGETS utilities EXPORT utilitiesTargets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
