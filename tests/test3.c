@@ -69,7 +69,7 @@ int main( int argc, char *argv[])
 	// ------- Checking that "event2data" action works
 	PDI_event("casual_event"); // compute meta0+meta1 = 0+1 -> meta2
 	
-	PDI_import("meta2",&i); // meta2=meta0+meta1
+	PDI_import("meta2",&i); // meta2=meta3-(2*meta1)
 	assert(i==1 && "should be 1");
 	// PDI_import("meta3",&i);
 	// assert(i==-1 && "should be -1 ");

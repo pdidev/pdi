@@ -62,11 +62,11 @@ typedef struct utils_task_s
 
 	char **events; /// Events that trigger the previous action
 
-	char *in; /// An expression: could be a file name, variables, or expressions
+	PDI_value_t in; /// An expression: could be a file name, variables, or expressions
 
-	char *out; /// An expression 
+	PDI_value_t out; /// An expression 
 
-	char *select; /// select when to perform action (default is always)
+	PDI_value_t select; /// select when to perform action (default is always)
 
 	void *data; /// data to store the result   
 
@@ -143,7 +143,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		// data 'in'
 		str =NULL; 
 		if( !PC_string(PC_get(treetmp, ".in"), &str) ){
-			tasks[ii].in=str;
+			PDI_value_parse(str, &tasks[ii].in); 
 		} else {
 			fprintf(stderr, "[PDI/Utilities] Error: no value or invalid value for 'in'.\n");
 			return PDI_ERR_CONFIG;
@@ -151,7 +151,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		// data 'out'
 		str=NULL;
 		if( !PC_string(PC_get(treetmp, ".out"), &str) ){
-			tasks[ii].out=str;
+			PDI_value_parse(str, &tasks[ii].out); 
 		} else {
 			fprintf(stderr, "[PDI/Utilities] Error: no value or invalid value for 'out'.\n");
 			return PDI_ERR_CONFIG;
@@ -162,7 +162,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		str=one;
 		PC_string(PC_get(treetmp, ".select"), &str);
 		// else apply default value of 1 (always true)
-		tasks[ii].select=str;
+		PDI_value_parse(str, &tasks[ii].select); 
 		PC_errhandler(errh);
 
 		// Select an existing task 
@@ -209,8 +209,6 @@ PDI_status_t PDI_utilities_finalize()
 {
 	for ( int ii=0; ii<nb_tasks; ++ii ) {
 		free(tasks[ii].events);
-		if(tasks[ii].in)   free(tasks[ii].in);
-		if(tasks[ii].out)  free(tasks[ii].out);
 		if(tasks[ii].size) free(tasks[ii].data);
 		tasks[ii].size = 0;
 	}
@@ -226,18 +224,15 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 	int32_t tmp;
 	long  ltmp;
 	struct stat sb;
-	PDI_value_t parse_in, parse_out, parse_sel;
 	for(int ii=0; ii<nb_tasks; ++ii ){
 		for(int nn=0; nn<tasks[ii].nb_events; ++nn){
 			if(tasks[ii].action == EVENT2DATA){// TODO[CR]: error check
-				PDI_value_parse(tasks[ii].select, &parse_sel);
-				PDI_value_int(&parse_sel,&ltmp);
+				PDI_value_int(&tasks[ii].select,&ltmp);
 				tmp=ltmp; // Nasty workaround to remove warning
 				if(tmp){
 					// Should evaluate expression define in 'in' and set value in 'out'
 					if (!strcmp(tasks[ii].events[nn],event_name)){
-						PDI_value_parse(tasks[ii].in, &parse_in);
-						PDI_value_int(&parse_in,&ltmp);
+						PDI_value_int(&tasks[ii].in,&ltmp);
 						tmp=ltmp; // Nasty workaround to remove warning
 
 					} else {
@@ -247,8 +242,7 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 					memcpy(tasks[ii].data, &tmp, tasks[ii].size);
 
 					// expose value in current out (can be received by other plug-ins).
-					PDI_value_parse(tasks[ii].out, &parse_out);
-					PDI_value_str(&parse_out,&str);
+					PDI_value_str(&tasks[ii].out,&str);
 					PDI_expose(str, &tmp);
 					
 				}
@@ -266,13 +260,11 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 						break;
 
 					case FILE_EXISTS:
-						PDI_value_parse(tasks[ii].select, &parse_sel);
-						PDI_value_int(&parse_sel,&ltmp);
+						PDI_value_int(&tasks[ii].select,&ltmp);
 						tmp=ltmp; // Nasty workaround to remove warning
 						if(tmp){
 							// get filename from input into str
-							PDI_value_parse(tasks[ii].in, &parse_in);
-							PDI_value_str(&parse_in,&str); 
+							PDI_value_str(&tasks[ii].in,&str); 
 							// check for file
 							if (stat(str, &sb) == 0 && S_ISREG(sb.st_mode)){
 								tmp = 1;
@@ -283,8 +275,7 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 
 							memcpy(tasks[ii].data, &tmp, tasks[ii].size);
 							// get name to expose the return value
-							PDI_value_parse(tasks[ii].out, &parse_out);
-							PDI_value_str(&parse_out,&str);
+							PDI_value_str(&tasks[ii].out,&str);
 							PDI_expose(str, &tmp);
 
 							free(str);
@@ -292,13 +283,11 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 						break;
 
 					case DIR_EXISTS:
-						PDI_value_parse(tasks[ii].select, &parse_sel);
-						PDI_value_int(&parse_sel,&ltmp);
+						PDI_value_int(&tasks[ii].select,&ltmp);
 						tmp=ltmp; // Nasty workaround to remove warning
 						if(tmp){
 							// get filename from input into str
-							PDI_value_parse(tasks[ii].in, &parse_in);
-							PDI_value_str(&parse_in,&str); 
+							PDI_value_str(&tasks[ii].in,&str); 
 							// check for file
 							if (stat(str, &sb) == 0 && S_ISDIR(sb.st_mode)){
 								tmp = 1;
@@ -309,8 +298,7 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 
 							memcpy(tasks[ii].data, &tmp, tasks[ii].size);
 							// get name to expose the return value
-							PDI_value_parse(tasks[ii].out, &parse_out);
-							PDI_value_str(&parse_out,&str);
+							PDI_value_str(&tasks[ii].out,&str);
 							PDI_expose(str, &tmp);
 
 							free(str);
@@ -367,13 +355,11 @@ PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 	int status=PDI_OK;
 	// Only import is possible
 	int32_t copy;
-	PDI_value_t parse_out;
 	if ( data->content[data->nb_content-1].access & PDI_IN ) {
 		// for each utils_task look if the output is the same than the PDI_data_t
 		for ( int ii=0; ii<nb_tasks; ++ii ) {  
 			str=NULL;
-			PDI_value_parse(tasks[ii].out,&parse_out); // output value
-			PDI_value_str(&parse_out, &str); // output string
+			PDI_value_str(&tasks[ii].out, &str); // output string
 			if ( !strcmp(str, data->name) ){   // output and data name matches
 				switch(tasks[ii].action){  // check datatype compatibiliy
 					case EVENT2DATA:
@@ -404,14 +390,12 @@ PDI_status_t PDI_utilities_data_end(PDI_data_t *data)
 {
 	int status = PDI_OK;
 	char *str=NULL;
-	PDI_value_t parse_out;
 	// Only import is possible
 	if ( data->content[data->nb_content-1].access & PDI_IN ) {
 		// for each utils_task look if the output is the same than the PDI_data_t
 		for ( int ii=0; ii<nb_tasks; ++ii ) {  
 			str=NULL;
-			PDI_value_parse(tasks[ii].out,&parse_out); // output value
-			PDI_value_str(&parse_out, &str); // output string
+			PDI_value_str(&tasks[ii].out, &str); // output string
 			if ( tasks[ii].action == EXTRACT_SUBARRAY){
 				if (!strcmp(str, data->name) ){   // output and data name matches
 					if(tasks[ii].size){
