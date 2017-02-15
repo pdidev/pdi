@@ -1,0 +1,22 @@
+pdi:
+  metadata:
+    meta0: int
+    meta1: int
+    meta2: int
+    meta3: int
+    nth_meta: int
+  data: # values that can not be referenced using $syntax
+    test_var: double
+  plugins:
+    utilities:
+      event2data:
+        event: casual_event
+        in: $meta3-($meta1 * 2)
+        out: meta${nth_meta} # output in nth 
+      file_exists:
+        event: init
+        in: empty_file.txt
+        out: test_var
+
+
+  
