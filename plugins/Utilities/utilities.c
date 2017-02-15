@@ -56,21 +56,21 @@ typedef enum { EVENT2DATA=0,
 
 typedef struct utils_task_s
 {
-	utils_action_t action; /// The action to perform on event
+	utils_action_t action; ///<  The action to perform on event
 
-	int nb_events; /// Number of events
+	int nb_events; ///<  Number of events
 
-	char **events; /// Events that trigger the previous action
+	char **events; ///<  Events that trigger the previous action
 
-	PDI_value_t in; /// An expression: could be a file name, variables, or expressions
+	PDI_value_t in; ///<  An expression: could be a file name, variables, or expressions
 
-	PDI_value_t out; /// An expression 
+	PDI_value_t out; ///<  An expression 
 
-	PDI_value_t select; /// select when to perform action (default is always)
+	PDI_value_t select; ///<  select when to perform action (default is always)
 
-	void *data; /// data to store the result   
+	void *data; ///<  data to store the result   
 
-	size_t size; /// data size
+	size_t size; ///<  data size
 
 } utils_task_t;
 
