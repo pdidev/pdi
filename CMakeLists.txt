@@ -95,3 +95,15 @@ if( "${RUN_EXAMPLES}" )
 	add_subdirectory(example/)
 endif()
 add_subdirectory(tests/)
+
+# plug-ins tests
+#FILE(GLOB children ${CURRENT_DIR} LIST_DIRECTORIES true plugins/*)
+#SET(dirlist "")
+#FOREACH(child ${children})
+#	IF(IS_DIRECTORY ${child})
+#		IF(IS_DIRECTORY ${child}/tests/)
+#			add_subdirectory(${child}/tests/)
+#		ENDIF()
+#	ENDIF()
+#ENDFOREACH()
+

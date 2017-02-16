@@ -27,28 +27,18 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-find_package(HDF5 REQUIRED)
-
-add_library(hdf5_per_process MODULE
-	hdf5_per_process.c
-)
-target_link_libraries(hdf5_per_process pdi)
-include_directories(${HDF5_SHARED_C_INCLUDE_PATH})
-set_property(SOURCE hdf5_per_process.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
-set_property(TARGET hdf5_per_process   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
-target_link_libraries(hdf5_per_process ${HDF5_SHARED_C_LIBRARIES})
-
-set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
-add_compiler_flags(hdf5_per_process PRIVATE -Wall -Wextra -std=c99)
+
+add_executable(Utilities_01_C EXCLUDE_FROM_ALL Utilities_test_01.c)
+add_compiler_flags(Utilities_01_C PRIVATE -Wall -Wextra)
+target_link_libraries(Utilities_01_C pdi mpi)
+add_test(NAME Utilities_01_C_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target Utilities_01_C
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+add_test(NAME Utilities_01_C_run COMMAND Utilities_01_C "${CMAKE_CURRENT_SOURCE_DIR}/Utilities_test_01.yml")
+set_property(TEST Utilities_01_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+set_property(TEST Utilities_01_C_run PROPERTY DEPENDS Utilities_01_C_build)
+set_tests_properties(Utilities_01_C_run PROPERTIES DEPENDS Utilities_01_C_build TIMEOUT 3)
 
 
-# library installation
-
-install(TARGETS hdf5_per_process EXPORT hdf5_per_processTargets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
-
-enable_testing()
-add_subdirectory(tests/)
