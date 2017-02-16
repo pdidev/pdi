@@ -32,7 +32,7 @@
 #include <hdf5.h>
 #include <hdf5_hl.h>
 
-#include "pdi.h"
+#include <pdi.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 
@@ -229,6 +229,16 @@ int is_h5_file(char *filename)
 	return fexists;
 }
 
+void rm_if_exist(hid_t h5file, char *dset_name)
+{
+	H5E_auto2_t old_func;
+	void *old_data;
+	H5Eget_auto2(H5E_DEFAULT, &old_func, &old_data);
+	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+	H5Ldelete(h5file, dset_name, H5P_DEFAULT);
+	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
+}
+
 void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 {
 	int rank = 0;
@@ -272,6 +282,8 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 	} else {
 		h5file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 	}
+	
+	rm_if_exist(h5file, pathname);
 	
 	hid_t h5fspace = H5Screate_simple(rank, h5subsizes, NULL);
 	hid_t h5mspace = H5Screate_simple(rank, h5sizes, NULL);
