@@ -42,3 +42,7 @@ install(TARGETS utilities EXPORT utilitiesTargets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )
+
+enable_testing()
+add_subdirectory(tests/)
+
