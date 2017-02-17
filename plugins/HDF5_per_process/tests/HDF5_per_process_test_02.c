@@ -50,8 +50,8 @@ int main( int argc, char *argv[] )
 		for(i=0;i<IMX;++i){
 			values[j][i]= i;
 			reals[j][i] = (double)(i)+0.1*(i%10);
-			cp_values[j][i]= 0;
-			cp_reals[j][i] = 0.0;
+			cp_values[j][i]= -1;
+			cp_reals[j][i] = -1.0;
 		}
 	}
 	
@@ -74,9 +74,11 @@ int main( int argc, char *argv[] )
 	PDI_exchange("values" ,&cp_values); // input integers
 
 	// So the data should be the same
+	fprintf(stderr,"Data exported | Data imported\n");
 	for(j=0;j<JMX;++j){
 		for(i=0;i<IMX;++i){
-			fprintf(stderr,"values (out) %d    %d values (in) ", values[j][i], cp_values[j][i]);
+			fprintf(stderr,"%10d     %4d\n", values[j][i], cp_values[j][i]);
+			fprintf(stderr,"%10.2f     %2.2f\n", reals[j][i], cp_reals[j][i]);
 			assert( values[j][i] ==  cp_values[j][i]);
 			assert( reals[j][i]  ==  cp_reals[j][i] );
 		}

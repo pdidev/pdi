@@ -1,0 +1,34 @@
+pdi:
+  metadata:
+    input: int
+    ni: int
+    nj: int
+    rank: int
+  data: # values that can not be referenced using $syntax
+    reals: 
+      type: double
+      sizes: [$nj , $ni]
+      order: fortran
+    values: 
+      type: int
+      sizes: [$nj , $ni]
+      order: fortran
+
+  plugins:
+    hdf5_per_process:
+      defaults:
+        outputs:
+          select: $input=0
+          file: test_02_rank_${rank}.h5
+        inputs:
+          select: $input=1
+          file: test_02_rank_${rank}.h5
+      outputs:
+        reals:
+        values:
+        ni:
+        nj:
+      inputs:
+        reals:
+        values:
+  
