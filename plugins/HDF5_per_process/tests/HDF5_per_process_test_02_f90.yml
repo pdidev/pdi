@@ -19,10 +19,10 @@ pdi:
       defaults:
         outputs:
           select: $input=0
-          file: test_02_rank_${rank}.h5
+          file: test_02_rank_${rank}_f90.h5
         inputs:
           select: $input=1
-          file: test_02_rank_${rank}.h5
+          file: test_02_rank_${rank}_f90.h5
       outputs:
         reals:
         values:
