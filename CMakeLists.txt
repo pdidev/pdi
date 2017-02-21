@@ -76,6 +76,12 @@ list(GET pdi_VERSION_list 0 pdi_VERSION_MAJOR)
 list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
 list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
 
+# Examples & tests
+enable_testing()
+if( "${RUN_EXAMPLES}" ) 
+	add_subdirectory(example/)
+endif()
+add_subdirectory(tests/)
 
 # The src
 
@@ -88,10 +94,4 @@ add_subdirectory(plugins/HDF5_per_process/)
 add_subdirectory(plugins/FTI/)
 add_subdirectory(plugins/Utilities/)
 
-# Examples & tests
 
-enable_testing()
-if( "${RUN_EXAMPLES}" ) 
-	add_subdirectory(example/)
-endif()
-add_subdirectory(tests/)
