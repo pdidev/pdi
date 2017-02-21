@@ -50,5 +50,4 @@ install(TARGETS hdf5_per_process EXPORT hdf5_per_processTargets
 	ARCHIVE DESTINATION lib
 )
 
-enable_testing()
 add_subdirectory(tests/)
