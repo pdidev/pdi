@@ -40,6 +40,7 @@ extern "C" {
 #include <mpi.h>
 
 #include <pdi_export.h>
+#include "pdi/state_fwd.h"
 
 /// Error handling \{
 
@@ -144,6 +145,12 @@ typedef enum PDI_inout_e {
 	/// data transfer from the main code to PDI
 	PDI_OUT = 2
 } PDI_inout_t;
+
+/** Get the data adress using the data name. If the data does not exist, return NULL.
+ * \param[in] name of the data
+ * \param[out] data adress or NULL if data does not exist
+ */
+int PDI_EXPORT get_data( const char *name, PDI_data_t* data);
 
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.

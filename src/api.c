@@ -50,7 +50,7 @@
 PDI_state_t PDI_state;
 
 
-static PDI_data_t *find_data( const char *name )
+PDI_data_t *find_data( const char *name )
 {
 	PDI_data_t *data = NULL;
 	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
@@ -61,6 +61,11 @@ static PDI_data_t *find_data( const char *name )
 	return data;
 }
 
+int get_data( const char* name, PDI_data_t *data){
+	data=find_data(name);
+	if(data) return 1; 
+	return 0;
+}
 
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
