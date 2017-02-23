@@ -306,9 +306,11 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 	free(h5starts);
 }
 
-void read_from_file(PDI_data_t *data, char *filename, char *pathname)
+int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 {
+	int status=0;
 	int rank = 0;
+	int order = PDI_ORDER_C;
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
@@ -318,8 +320,15 @@ void read_from_file(PDI_data_t *data, char *filename, char *pathname)
 		sizes = malloc(rank*sizeof(hsize_t));
 		subsizes = malloc(rank*sizeof(hsize_t));
 		starts = malloc(rank*sizeof(hsize_t));
+		order = data->type.c.array->order;
+		int h5ii ;
 		for ( int ii=0; ii<rank; ++ii ) {
-			int h5ii = ii; //rank-ii-1; // ORDER_C
+			switch (order){
+			case PDI_ORDER_C:
+				h5ii = ii; break; // ORDER_C
+			case PDI_ORDER_FORTRAN:
+				h5ii = rank-ii-1; break; // ORDER_FORTRAN
+			}
 			long intdim;
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
@@ -333,38 +342,56 @@ void read_from_file(PDI_data_t *data, char *filename, char *pathname)
 		}
 		scalart = &data->type.c.array->type;
 	}
-	if ( scalart->kind != PDI_K_SCALAR ) return;
+	if ( scalart->kind != PDI_K_SCALAR ) return PDI_ERR_CONFIG;
 
 	/// Open file for read/write
 	hid_t file_id = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
 
-	/// Create data representation 
-	hid_t sub_memspace = H5Screate_simple(rank, subsizes, NULL);
-	
-	/// Open dataset "pathname" and gets its memspace
-	hid_t dataset_id = H5Dopen2 (file_id, pathname, H5P_DEFAULT);
-	hid_t dataspace_id = H5Dget_space (dataset_id);
+	if(file_id > 0){ // File exists
 
-	/// Extract subspace from dataspace
-	int status = H5Sselect_hyperslab (dataspace_id, H5S_SELECT_SET, starts,
-			                                      NULL, subsizes, NULL);
-	
-	/// Read content 
-	status += H5Dread( dataset_id, h5type(scalart->c.scalar), sub_memspace, dataspace_id, H5P_DEFAULT,
-			data->content[data->nb_content-1].data);
-	
-	H5Sclose(sub_memspace);
-	H5Sclose(dataspace_id);
-	H5Dclose(dataset_id);
-	H5Fclose(file_id);
-	
+		/// Open dataset "pathname" and gets its memspace
+		hid_t dataset_id = H5Dopen(file_id, pathname, H5P_DEFAULT);
+		if( dataset_id >0 ) { // Successfull
+
+			hid_t dataspace_id = H5Dget_space (dataset_id);
+
+			/// The dataspace from the file is left unmodified (ie get all data from file).
+
+			/// Create data representation 
+			hid_t memspace = H5Screate_simple(rank, sizes, NULL);
+			
+			/// Extract subspace of data 
+			if ( data->type.kind == PDI_K_ARRAY ) {
+			H5Sselect_hyperslab (memspace, H5S_SELECT_SET, starts, NULL, 
+        		                          subsizes, NULL);
+			}
+
+			/// Read content 
+			status = H5Dread( dataset_id, h5type(scalart->c.scalar), memspace, dataspace_id, H5P_DEFAULT,
+					data->content[data->nb_content-1].data);
+			
+			H5Sclose(memspace);
+			H5Sclose(dataspace_id);
+			H5Dclose(dataset_id);
+
+			if (status<0) status= PDI_UNAVAILABLE;
+		} else {
+			status = PDI_UNAVAILABLE;
+		}
+		H5Fclose(file_id);
+	} else {
+		status = PDI_UNAVAILABLE;
+	}
 	free(sizes);
 	free(subsizes);
 	free(starts);
+	
+	return status;
 }
 
 PDI_status_t PDI_hdf5_per_process_data_start( PDI_data_t *data )
 {
+	int status = PDI_OK;
 	if ( data->content[data->nb_content-1].access & PDI_OUT ) {
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
@@ -392,14 +419,14 @@ PDI_status_t PDI_hdf5_per_process_data_start( PDI_data_t *data )
 				char *h5var;  PDI_value_str(&inputs[ii].h5var,  &h5var);
 				long select;   PDI_value_int(&inputs[ii].select, &select);
 				
-				if ( select ) read_from_file(data, h5file, h5var);
+				if ( select ) status = read_from_file(data, h5file, h5var);
 				
 				free(h5var);
 				free(h5file);
 			}
 		}
 	}
-	return PDI_OK;
+	return status;
 }
 
 PDI_status_t PDI_hdf5_per_process_data_end(PDI_data_t *data)
