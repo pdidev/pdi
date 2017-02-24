@@ -47,25 +47,6 @@
 
 #define PDI_BUFFER_SIZE 256
 
-PDI_state_t PDI_state;
-
-
-PDI_data_t *find_data( const char *name )
-{
-	PDI_data_t *data = NULL;
-	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
-		if ( strcmp(PDI_state.data[ii].name, name) ) continue;
-		data = PDI_state.data+ii;
-		break;
-	}
-	return data;
-}
-
-int get_data( const char* name, PDI_data_t *data){
-	data=find_data(name);
-	if(data) return 1; 
-	return 0;
-}
 
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 {
@@ -169,7 +150,7 @@ PDI_status_t PDI_share( const char* name, void* data_dat, int access )
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_data_t *data = find_data(name);
+	PDI_data_t *data = PDI_find_data(name);
 	if (data) {
 		if ( data->nb_content > 0 && data->kind & PDI_DK_METADATA ) {
 			// for metadata, unlink happens on share
@@ -207,34 +188,12 @@ err0:
 }
 
 
-PDI_status_t PDI_data_unlink( PDI_data_t *data, int content_id )
-{
-	PDI_status_t status = PDI_OK;
-	
-	for ( int ii=0; ii<PDI_state.nb_plugins; ++ii ) {
-		PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
-	}
-	
-	if ( data->content[content_id].access & PDI_MM_FREE ) {
-		free(data->content[content_id].data);
-	}
-	for ( int ii=content_id; ii<data->nb_content-1; ++ii ) {
-		data->content[ii] = data->content[ii+1];
-	}
-	--data->nb_content;
-	
-	return status;
-	
-err0:
-	return status;
-}
-
 
 PDI_status_t PDI_release(const char* name)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_data_t *data = find_data(name);
+	PDI_data_t *data = PDI_find_data(name);
 	if ( data ) {
 		if ( data->nb_content == 0 ) {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Cannot release a non shared value"), err0);
@@ -259,7 +218,7 @@ PDI_status_t PDI_reclaim( const char* name )
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_data_t *data = find_data(name);
+	PDI_data_t *data = PDI_find_data(name);
 	if ( data ) {
 		if ( data->nb_content == 0 ) {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Cannot reclaim a non shared value"), err0);
@@ -298,7 +257,7 @@ PDI_status_t PDI_expose(const char* name, const void* data_dat)
 	PDI_handle_err(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
 	
 	if ( PDI_state.transaction ) { // defer the reclaim
-		PDI_data_t *data = find_data(name);
+		PDI_data_t *data = PDI_find_data(name);
 		if ( data ) {
 			++PDI_state.nb_transaction_data;
 			PDI_state.transaction_data = realloc(
@@ -324,7 +283,7 @@ PDI_status_t PDI_exchange ( const char* name, void* data_dat )
 	PDI_handle_err(PDI_share(name, data_dat, PDI_IN|PDI_OUT), err0);
 	
 	if ( PDI_state.transaction ) { // defer the reclaim
-		PDI_data_t *data = find_data(name);
+		PDI_data_t *data = PDI_find_data(name);
 		if ( data ) {
 			++PDI_state.nb_transaction_data;
 			PDI_state.transaction_data = realloc(

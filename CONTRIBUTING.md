@@ -1,12 +1,44 @@
+# Gitlab: new branch, merge request, issues
+
+## General Rules
+ * Branch names, merge request and issues titles consist of three zones
+    * 1st, type of improvement (bug, feature, update, support...)
+    * 2nd, part of the software concerned (PDI, one plug-in, all plug-ins...)
+    * Last, a brief description 
+ * Each zone is delimited by two hyphens
+ * Spaces are replaced by underscores
+ 
+### issues:
+ * 1st keyword: bug, miss_feature, outdated, ...
+ * 2nd keyword: PDI or \<Plug-in name\> 
+ * 3rd: content
+ * Examples:
+     *  bug--HDF5_per_process--Something_is_wrong_there
+     *  miss_feature--PDI--Should_make_the_tea
+
+### Branch and merge request
+ * 1st keyword: bugfix, feature, update ...
+ * 2nd keyword: PDI or \<Plug-in name\>
+ * 3rd content
+ * Examples:
+     *  bugfix--HDF5_per_process--Something_is_working_better_there
+     *  feature--PDI--Now_make_the_tea
+
+
+
 # PDI Coding style
 
 ## API visibility levels
 
-there are four level of visibilty defined for PDI:
-* the public application API made up of all content exposed in the include/pdi.h header
-* the public plugin API made up of all content exposed in the include/pdi/*.h headers
-* the library-wide API made up of all content exposed in the src/*.h headers
-* the file-local APIs made up of any content not exposed in any header
+There are four levels of visibility:
+
+| **API**                |  **Exposed**  | **Headers**         |
+| :--------------------  |:-------------:| :--------------:|
+|  public application    |  all content  | include/pdi.h   |
+|  public plugin         |  all content  | include/pdi/*.h.|
+|  library-wide          |  all content  | src/*.h         |
+|  file-local APIs       |  any content  |  not exposed in any header  |
+
 
 ## Rules
 
@@ -31,3 +63,4 @@ there are four level of visibilty defined for PDI:
 * any public (app or plugin) symbol (i.e. function or global variable) *must* be exported using the `PDI_EXPORT` macro
 * public typedefs & enums *must* be defined in a header ending with the `_fwd.h` suffix
 * no struct *might* be defined in a header ending with the `_fwd.h` suffix
+
