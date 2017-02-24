@@ -1,16 +1,16 @@
 # Gitlab: new branch, merge request, issues
 
 ## General Rules
- * Names consists of three zones
-    * 1st: type of improvement (bug, feature, update, support...)
-    * 2nd: part of the software concerned (PDI, one plug-in, all plug-ins...)
-    * last: brief description 
+ * Branch names, merge request and issues titles consist of three zones
+    * 1st, type of improvement (bug, feature, update, support...)
+    * 2nd, part of the software concerned (PDI, one plug-in, all plug-ins...)
+    * Last, a brief description 
  * Each zone is delimited by two hyphens
- * Space are placed by underscore
+ * Spaces are replaced by underscores
  
 ### issues:
  * 1st keyword: bug, miss_feature, outdated, ...
- * 2nd keyword: PDI or <Plug-in name> 
+ * 2nd keyword: PDI or \<Plug-in name\> 
  * 3rd: content
  * Examples:
      *  bug--HDF5_per_process--Something_is_wrong_there
@@ -18,7 +18,7 @@
 
 ### Branch and merge request
  * 1st keyword: bugfix, feature, update ...
- * 2nd keyword: PDI or <Plug-in name>
+ * 2nd keyword: PDI or \<Plug-in name\>
  * 3rd content
  * Examples:
      *  bugfix--HDF5_per_process--Something_is_working_better_there
@@ -30,7 +30,7 @@
 
 ## API visibility levels
 
-There are four level of visibilty defined for PDI:
+There are four levels of visibility:
 
 | **API**                |  **Exposed**  | **Headers**         |
 | :--------------------  |:-------------:| :--------------:|
