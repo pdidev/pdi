@@ -32,13 +32,12 @@
 
 There are four level of visibilty defined for PDI:
 
-|        API             |    exposed    |    headers                  |
------------------------------------------------------------------------|
-|  public application    |  all content  | include/pdi.h               |
-|  public plugin         |  all content  | include/pdi/*.h             |
-|  library-wide          |  all content  | src/*.h                     |
-|  file-local APIs       |  any content  | not exposed in any header   |
-------------------------------------------------------------------------
+| **API**                |  **Exposed**  | **Headers**         |
+| :--------------------  |:-------------:| :--------------:|
+|  public application    |  all content  | include/pdi.h   |
+|  public plugin         |  all content  | include/pdi/*.h.|
+|  library-wide          |  all content  | src/*.h         |
+|  file-local APIs       |  any content  |  not exposed in any header  |
 
 
 ## Rules
