@@ -125,6 +125,12 @@ struct PDI_state_s
  */
 PDI_status_t PDI_EXPORT PDI_data_unlink( PDI_data_t *data, int content_id );
 
+/** Return the first data whose name match the input name   
+ * \param[in] name a constant litteral that is compared with names of data 
+ * \return the address of the first data whose name matches the input name
+ * or NULL if no name matches.
+ */
+PDI_data_t PDI_EXPORT *PDI_find_data( const char *name );
 
 /// The main state of the PDI implementation
 extern PDI_state_t PDI_EXPORT PDI_state;
