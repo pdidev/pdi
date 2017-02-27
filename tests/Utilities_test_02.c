@@ -29,13 +29,17 @@
 
 #define IMX 10
 #define JMX 5
+#define JGH 1
+#define IGH 2
 
 int main( int argc, char *argv[] )
 {
-	int values[JMX][IMX], cp_values[JMX][IMX];
-	double reals[JMX][IMX], cp_reals[JMX][IMX];
-	int i, j, input;
-	int ni=IMX,nj=JMX; // PDI only
+
+	int values[JMX][IMX], cp_values[JMX-2*JGH][IMX-2*IGH];
+	double reals[JMX][IMX], cp_reals[JMX-2*JGH][IMX-2*IGH];
+	int i, j;
+	int ni=IMX, nj=JMX, ni_gh=IGH, nj_gh=JGH; // PDI only
+
 
 	MPI_Init(&argc, &argv);
 	assert(argc == 2 && "Needs 1 single arg: config file");
@@ -48,42 +52,53 @@ int main( int argc, char *argv[] )
 	// Fill arrays 
 	for(j=0;j<JMX;++j){
 		for(i=0;i<IMX;++i){
-			values[j][i]= i;
-			reals[j][i] = (double)(i)+0.1*(i%10);
-			cp_values[j][i]= -1;
-			cp_reals[j][i] = -1.0;
+			values[j][i]= -1;
+			reals[j][i] = -1.0;
 		}
 	}
-	
-	input=0;
+
+	for(j=0; j<JMX-2*JGH; ++j){
+		for(i=0; i<IMX-2*IGH; ++i){
+			cp_values[j][i]= 0;
+			cp_reals[j][i] = 0.0;
+			values[j+JGH][i+IGH]= i+1+10*(double)(j);
+			reals[j+JGH][i+IGH] = (double)(i+1)+0.1*((i+1)%10)+10*(double)(j);
+		}
+	}
+
 	PDI_expose("rank",&rank);
-	PDI_expose("input",&input);
 	// Set size for PDI
 	PDI_expose("ni",&ni);
 	PDI_expose("nj",&nj);
+	PDI_expose("ni_ghost",&ni_gh);
+	PDI_expose("nj_ghost",&nj_gh);
 
-	// Test that export/exchange works
-	PDI_expose("input",&input);
+	// Export data => produce a buffer => buffer is exported in hdf5
 	PDI_expose("reals",&reals );     // output real
-	PDI_exchange("values",&values ); // output integers
+	PDI_expose("values",&values );   // output integers
 	
-	input=1;
-	// Import should also work
-	PDI_expose("input",&input); // update metadata => HDF5 now import only
-	PDI_import("reals" ,&cp_reals);     // input real 
-	PDI_exchange("values" ,&cp_values); // input integers
+	// reimport buffer (read hdf5)
+	PDI_import("cp_reals",&cp_reals);
+	PDI_import("cp_values",&cp_values);
 
-	// So the data should be the same
-	fprintf(stderr,"Data exported | Data imported\n");
+
+	fprintf(stderr, "Comparing arrays. -1 indicates ghost cells.",j); 
 	for(j=0;j<JMX;++j){
+		fprintf(stderr, "\n Values (exported) j= %d\n",j); 
 		for(i=0;i<IMX;++i){
-			fprintf(stderr,"%10d     %4d\n", values[j][i], cp_values[j][i]);
-			fprintf(stderr,"%10.2f     %2.2f\n", reals[j][i], cp_reals[j][i]);
-			assert( values[j][i] ==  cp_values[j][i]);
-			assert( reals[j][i]  ==  cp_reals[j][i] );
+			fprintf(stderr, " %4d  |",values[j][i]); 
 		}
 	}
-	
+	for(j=0; j<JMX-2*JGH; ++j){
+		fprintf(stderr, "\n Values (read) j= %d\n",j); 
+		for(i=0; i<IMX-2*IGH; ++i){
+			fprintf(stderr, " %4d  |", cp_values[j][i]); 
+			assert( cp_values[j][i] == values[j+JGH][i+IGH]);
+			assert( cp_reals[j][i]  == reals[j+JGH][i+IGH] ); 
+		}
+	}
+
+
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
