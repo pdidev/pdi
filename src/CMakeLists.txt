@@ -73,6 +73,7 @@ add_library(pdi SHARED
 		api.c
 		conf.c
 		datatype.c
+		state.c
 		status.c
 		plugin_loader.c
 		utils.c
