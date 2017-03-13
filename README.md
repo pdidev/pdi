@@ -22,11 +22,25 @@ Pre-build binaries are not available.
 #### Minimum requirement
 To build the library one needs:
  * cmake, version >= 3.1
- * mpi 
- * gcc
+ * mpi  
+ * a C compiler (e.g, *icc*, *gcc*, ...).
+
+Currently, PDI requires BPP and Paraconf vendors that are located in vendor directory. See Vendors hereafter.
  
-#### Additionnal functionnality requirement
-Fortran language is supported (require a fortran compiler!).
+#### Vendors
+PDI library have mandatory dependancies that are shipped with it:
+  * Paraconf, a wrapped of the *YAML* C library that provide a C and Fortran API. By default Paraconf uses the system YAML library. This can be desactivated with the cmake option -DUSE\_SYSTEM\_YAML=OFF.
+  * BPP, a _B_ash _P_re_p_rocessor that expends lines of code using Bash directives.
+
+#### Optionnal: 
+  * _Fortran compatibility_ : 
+Fortran language is supported. This requires a Fortran compiler, for instance *gfortran, ifort*.
+
+  * _Additional vendors_ :
+PDI can provide access to various libaries that should be included in the vendors directory. 
+Thoses library can be disabled or remove if not required.
+List of included optionnal vendors: FTI.
+
 
 ## Get the source
 
