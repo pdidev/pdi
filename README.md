@@ -30,13 +30,13 @@ Currently, PDI requires BPP and Paraconf vendors that are located in vendor dire
 #### Vendors
 PDI library have mandatory dependancies that are shipped with it:
   * Paraconf, a wrapped of the *YAML* C library that provide a C and Fortran API. By default Paraconf uses the system YAML library. This can be desactivated with the cmake option -DUSE\_SYSTEM\_YAML=OFF.
-  * BPP, a _B_ash _P_re_p_rocessor that expends lines of code using Bash directives.
+  * BPP, a **B**ash **P**re-**p**rocessor that expends lines of code using Bash directives.
 
 #### Optionnal: 
-  * _Fortran compatibility_ : 
+  * **Fortran compatibility** : 
 Fortran language is supported. This requires a Fortran compiler, for instance *gfortran, ifort*.
 
-  * _Additional vendors_ :
+  * **Additional vendors** :
 PDI can provide access to various libaries that should be included in the vendors directory. 
 Thoses library can be disabled or remove if not required.
 List of included optionnal vendors: FTI.
