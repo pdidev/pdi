@@ -1,17 +1,15 @@
 # PDI: the Parallel Data Interface.
 
-## Main features
-PDI is a library to decouple simulation codes from IO concerns.
-PDI supports existing IO libraries through a plugin system.
-PDI declarative API makes it possible to share buffers manipulated in the application with IO libraries.
-The type of data and the IO requests to forward to libraries are described in a dedicated YAML file.
-PDI supports HDF5 and FTI as of now, other libraries are work-in-progress.
+PDI is a library that aims to decouple high-performance simulation codes from Input/Output concerns.
+It offers a declarative application programming interface that enables codes to expose the buffers in which they store data and to notify PDI of significant steps of the simulation.
+It supports a plugin system to make existing libraries such as HDF5, SIONlib or FTI available to codes, potentially mixed in a single execution.
+This approach makes it possible to describe the I/O operations in a dedicated YAML file instead of interleaving them with the simulation code and thus to improve their portability and maintainability.
+The public plugin API offered by PDI is general and simple enough that one can easily add support for the best suited library for its use-case (problem size, IO type, hardware used, etc.)
 
-
-#### Existing plugins
-* [x] HDF5 serial/one-file-per-process;
-* [x] FTI
-* [ ] ... see TODO.md
+## Existing plugins
+* serial HDF5 (one-file-per-process)
+* FTI
+* ... see TODO.md
 
 
 ## Prerequisites
