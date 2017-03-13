@@ -20,18 +20,14 @@ To build the library one needs:
   * a MPI library
 
 PDI also requires the BPP tool and Paraconf library that are distributed together with PDI in the `vendor` directory.
-  * paraconf depends on libyaml. By default paraconf uses the system libyaml but it also embedds a copy that can be used by passing the `-DUSE\_SYSTEM\_YAML=OFF` option to cmake.
+  * paraconf depends on libyaml. By default paraconf uses the system libyaml but it also embedds a copy that can be used by passing the `-DUSE_SYSTEM_YAML=OFF` option to cmake.
 
 Fortran support:
-  * a working Fortran compiler with 'iso_c_binding` support is required.
+  * a working Fortran compiler with `iso_c_binding` support is required.
 
 Plugins:
   * the HDF5 plugin require a version of HDF5 compatible with the chosen MPI (and Fortran compiler if enabled)
-  * the FTI plugin depends on the FTI library that 
-PDI can provide access to various libaries that should be included in the vendors directory. 
-Thoses library can be disabled or remove if not required.
-List of included optionnal vendors: FTI.
-
+  * the FTI plugin depends on the FTI library that is distributed together with PDI in the `vendor` directory.
 
 ## Getting the source
 
