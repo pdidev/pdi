@@ -14,53 +14,39 @@ PDI supports HDF5 and FTI as of now, other libraries are work-in-progress.
 * [ ] ... see TODO.md
 
 
-## Installation
-Currently, to obtain the library one needs to build it from source.
-Pre-build binaries are not available.
+## Prerequisites
 
-### Prerequisites
-#### Minimum requirement
 To build the library one needs:
- * cmake, version >= 3.1
- * mpi  
- * a C compiler (e.g, *icc*, *gcc*, ...).
+  * cmake, version >= 3.1
+  * mpi
+  * a C compiler (gcc and icc are tested).
 
-Currently, PDI requires BPP and Paraconf vendors that are located in vendor directory. See Vendors hereafter.
- 
-#### Vendors
-PDI library have mandatory dependancies that are shipped with it:
-  * Paraconf, a wrapped of the *YAML* C library that provide a C and Fortran API. By default Paraconf uses the system YAML library. This can be desactivated with the cmake option -DUSE\_SYSTEM\_YAML=OFF.
-  * BPP, a **B**ash **P**re-**p**rocessor that expends lines of code using Bash directives.
+PDI also requires the BPP tool and Paraconf library that are distributed together with PDI in the `vendor` directory.
+  * paraconf depends on libyaml. By default paraconf uses the system libyaml but it also embedds a copy that can be used by passing the `-DUSE\_SYSTEM\_YAML=OFF` option to cmake.
 
-#### Optionnal: 
-  * **Fortran compatibility** : 
-Fortran language is supported. This requires a Fortran compiler, for instance *gfortran, ifort*.
+Fortran support:
+  * a working Fortran compiler with 'iso_c_binding` support is required.
 
-  * **Additional vendors** :
+Plugins:
+  * the HDF5 plugin require a version of HDF5 compatible with the chosen MPI (and Fortran compiler if enabled)
+  * the FTI plugin depends on the FTI library that 
 PDI can provide access to various libaries that should be included in the vendors directory. 
 Thoses library can be disabled or remove if not required.
 List of included optionnal vendors: FTI.
 
 
-## Get the source
+## Getting the source
 
-2 options:
-* get a release,
-* get the latest source from Git
+As of now, the source has to be fetched from git .
 
-### Get a release
-
-Go to page ???
-
-### From git
 
 ```
 git clone --recursive 
 ```
 
-## Step by step
-if the sources are in the folder pdi:
+## Compilation
 
+if the sources are in the folder pdi:
 
 ```
 cd pdi
@@ -70,5 +56,3 @@ cmake ..
 make
 make install
 ```
-
-# Usage
