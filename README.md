@@ -18,8 +18,8 @@ PDI supports HDF5 and FTI as of now, other libraries are work-in-progress.
 
 To build the library one needs:
   * cmake, version >= 3.1
-  * mpi
   * a C compiler (gcc and icc are tested).
+  * a MPI library
 
 PDI also requires the BPP tool and Paraconf library that are distributed together with PDI in the `vendor` directory.
   * paraconf depends on libyaml. By default paraconf uses the system libyaml but it also embedds a copy that can be used by passing the `-DUSE\_SYSTEM\_YAML=OFF` option to cmake.
