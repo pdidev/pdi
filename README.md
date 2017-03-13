@@ -46,7 +46,7 @@ if the sources are in the folder pdi:
 cd pdi
 mkdir build
 cd build
-cmake .. 
+cmake -DUSE_SYSTEM_YAML=OFF .. 
 make
 make install
 ```
