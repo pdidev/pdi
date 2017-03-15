@@ -195,6 +195,14 @@ PDI_status_t PDI_hdf5_per_process_finalize()
 		free(outputs[ii].name);
 	}
 	free(outputs);
+
+	for ( int ii=0; ii<nb_inputs; ++ii ) {
+		PDI_value_destroy(&inputs[ii].h5file);
+		PDI_value_destroy(&inputs[ii].h5var);
+		PDI_value_destroy(&inputs[ii].select);
+		free(inputs[ii].name);
+	}
+	free(inputs);
 	return PDI_OK;
 }
 
