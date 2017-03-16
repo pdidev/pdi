@@ -29,6 +29,9 @@
 
 include(AddCCompilerFlags)
 
+#############
+# PDI tests #
+#############
 add_executable(PDI_test_01 EXCLUDE_FROM_ALL PDI_test_01.c)
 add_compiler_flags(PDI_test_01 PRIVATE -Wall -Wextra)
 target_link_libraries(PDI_test_01 pdi)
@@ -37,5 +40,22 @@ add_test(NAME PDI_test_01_build
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 	add_test(NAME PDI_test_01_run COMMAND PDI_test_01 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_01.yml")
 set_tests_properties(PDI_test_01_run PROPERTIES DEPENDS PDI_test_01_build TIMEOUT 3)
+
+
+
+#################
+# Plug-in tests #
+#################
+add_executable(Utilities_02_C EXCLUDE_FROM_ALL Utilities_test_02.c)
+add_compiler_flags(Utilities_02_C PRIVATE -Wall -Wextra)
+target_link_libraries(Utilities_02_C pdi mpi)
+add_test(NAME Utilities_02_C_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target Utilities_02_C
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+add_test(NAME Utilities_02_C_run COMMAND Utilities_02_C "${CMAKE_CURRENT_SOURCE_DIR}/Utilities_test_02.yml")
+set_property(TEST Utilities_02_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/Utilities/:${CMAKE_CURRENT_BINARY_DIR}/../plugins/HDF5_per_process/")
+set_property(TEST Utilities_02_C_run PROPERTY DEPENDS Utilities_02_C_build)
+set_tests_properties(Utilities_02_C_run PROPERTIES DEPENDS Utilities_02_C_build TIMEOUT 3)
 
 

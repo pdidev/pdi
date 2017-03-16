@@ -226,10 +226,9 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 	struct stat sb;
 	for(int ii=0; ii<nb_tasks; ++ii ){
 		for(int nn=0; nn<tasks[ii].nb_events; ++nn){
-			if(tasks[ii].action == EVENT2DATA){// TODO[CR]: error check
-				PDI_value_int(&tasks[ii].select,&ltmp);
-				tmp=ltmp; // Nasty workaround to remove warning
-				if(tmp){
+			PDI_value_int(&tasks[ii].select,&ltmp);
+			if(ltmp){
+				if(tasks[ii].action == EVENT2DATA){// TODO[CR]: error check
 					// Should evaluate expression define in 'in' and set value in 'out'
 					if (!strcmp(tasks[ii].events[nn],event_name)){
 						PDI_value_int(&tasks[ii].in,&ltmp);
@@ -244,25 +243,14 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 					// expose value in current out (can be received by other plug-ins).
 					PDI_value_str(&tasks[ii].out,&str);
 					PDI_expose(str, &tmp);
-					
 				}
-			}
-			else if(!strcmp(tasks[ii].events[nn],event_name)){
-				switch(tasks[ii].action){
-						
-					case EXTRACT_SUBARRAY:
-						// Find dimensions of input array
-						
-						// Find dimensions of output array
-						
-						// Copy one into the other
-						
-						break;
+				else if(!strcmp(tasks[ii].events[nn],event_name)){
+					switch(tasks[ii].action){
+							
+						case EXTRACT_SUBARRAY:
+							break;
 
-					case FILE_EXISTS:
-						PDI_value_int(&tasks[ii].select,&ltmp);
-						tmp=ltmp; // Nasty workaround to remove warning
-						if(tmp){
+						case FILE_EXISTS:
 							// get filename from input into str
 							PDI_value_str(&tasks[ii].in,&str); 
 							// check for file
@@ -279,13 +267,9 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 							PDI_expose(str, &tmp);
 
 							free(str);
-						}
-						break;
+							break;
 
-					case DIR_EXISTS:
-						PDI_value_int(&tasks[ii].select,&ltmp);
-						tmp=ltmp; // Nasty workaround to remove warning
-						if(tmp){
+						case DIR_EXISTS:
 							// get filename from input into str
 							PDI_value_str(&tasks[ii].in,&str); 
 							// check for file
@@ -302,11 +286,11 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 							PDI_expose(str, &tmp);
 
 							free(str);
-						}
-						break;
+							break;
 
-					default:
-						return PDI_ERR_CONFIG;
+						default:
+							return PDI_ERR_CONFIG;
+					}
 				}
 			}
 		}
@@ -349,37 +333,187 @@ int cast_data_int(PDI_data_t *data, int32_t plugin_data) {
 }
 
 
+// Arrays should have the same rank
+PDI_status_t extract_subarray( PDI_data_t *data, PDI_data_t *sub, void **buffer, size_t *size ){
+	void *p1, *p2;
+	int order = PDI_ORDER_C;
+	int sub_order = PDI_ORDER_C;
+	// Array sizes and offset
+	int sizes   [7]={0,0,0,0,0,0,0};
+	int subsizes[7]={0,0,0,0,0,0,0};
+	int offsets [7]={0,0,0,0,0,0,0};
+	// Sizes of buffer == subsizes
+	int buff_sizes[7]={0,0,0,0,0,0,0};
+
+	// Allocate and Initialialize
+	order = data->type.c.array->order;
+	int rank = data->type.c.array->ndims;
+	// buffer 
+	int rank_sub = sub->type.c.array->ndims;
+	if (rank != rank_sub){
+		fprintf(stderr, "[PDI/Utilities] While extracting subarray, rank mismatched.");
+		return PDI_ERR_VALUE;
+	}
+
+	// Parse size
+	int ii,si;
+	long intdim = 0;
+	for ( int i=0; i<rank; ++i ) {
+		// dimensions arrays
+		switch (order){
+		case PDI_ORDER_C:
+			ii = i; break; // ORDER_C
+		case PDI_ORDER_FORTRAN:
+			ii = rank-i-1; break; // ORDER_FORTRAN
+		}
+		
+		PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
+		sizes[ii] = intdim;
+		
+		PDI_value_int(&data->type.c.array->subsizes[ii], &intdim);
+		subsizes[ii] = intdim;
+		
+		PDI_value_int(&data->type.c.array->starts[ii], &intdim);
+		offsets[ii] = intdim;
+		
+		// dimensions sub-arrays
+		switch (sub_order){
+		case PDI_ORDER_C:
+			si = i; break; 
+		case PDI_ORDER_FORTRAN:
+			si = rank-i-1; break;
+		}
+		PDI_value_int(&sub->type.c.array->sizes[si], &intdim);
+		buff_sizes[si] = intdim;
+	}
+	
+	// allocate the buffer
+	size_t nbytes=0;
+	if ( PDI_data_size( &sub->type.c.array->type, &nbytes)) return PDI_ERR_VALUE;
+	
+	size_t positive_nb;
+	*size = nbytes;
+	for(int i=0; i<rank; ++i){
+		positive_nb = buff_sizes[i];
+		if( buff_sizes[i] < 1) positive_nb=1;
+		*size *= positive_nb;
+	}
+	*buffer=malloc(*size);
+
+	// Copy one into the other
+	// max rank=7
+	for ( int n6=offsets[6], i6=0; n6<=subsizes[6]; ++n6 ) {
+	  for ( int n5=offsets[5], i5=0; n5<=subsizes[5]; ++n5 ) {
+	    for ( int n4=offsets[4], i4=0; n4<=subsizes[4]; ++n4 ) {
+	      for ( int n3=offsets[3], i3=0; n3<=subsizes[3]; ++n3 ) {
+	        for ( int n2=offsets[2], i2=0; n2<=subsizes[2]; ++n2 ) {
+	          for ( int n1=offsets[1], i1=0; n1<=subsizes[1]; ++n1 ) {
+	            p1=data->content[data->nb_content-1].data + nbytes*( offsets[0]
+	              + n1*sizes[0] 
+	              + n2*sizes[0]*sizes[1] 
+	              + n3*sizes[0]*sizes[1]*sizes[2]
+	              + n4*sizes[0]*sizes[1]*sizes[2]*sizes[3]
+	              + n5*sizes[0]*sizes[1]*sizes[2]*sizes[3]*sizes[4]
+	              + n6*sizes[0]*sizes[1]*sizes[2]*sizes[3]*sizes[4]*sizes[5]
+	              );
+	
+	            p2=*buffer + nbytes*(
+	              + i1*buff_sizes[0] 
+	              + i2*buff_sizes[0]*buff_sizes[1] 
+	              + i3*buff_sizes[0]*buff_sizes[1]*buff_sizes[2]
+	              + i4*buff_sizes[0]*buff_sizes[1]*buff_sizes[2]*buff_sizes[3]
+	              + i5*buff_sizes[0]*buff_sizes[1]*buff_sizes[2]*buff_sizes[3]*buff_sizes[4]
+	              + i6*buff_sizes[0]*buff_sizes[1]*buff_sizes[2]*buff_sizes[3]*buff_sizes[4]*buff_sizes[5]
+	              );
+	
+	            memcpy(p2, p1, nbytes*subsizes[0]);
+	            ++i1;
+	          }
+	          ++i2;
+	        }
+	        ++i3; 
+	      }
+	      ++i4;
+	    }
+	    ++i5;
+	  }
+	  ++i6;
+	}
+return PDI_OK;
+}
+
+
+
 PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 {
-	char *str=NULL;
-	int status=PDI_OK;
+	char *str_out=NULL,*str_in=NULL;
+	int status=PDI_OK,tmp_status=PDI_OK;
 	// Only import is possible
 	int32_t copy;
 	if ( data->content[data->nb_content-1].access & PDI_IN ) {
 		// for each utils_task look if the output is the same than the PDI_data_t
-		for ( int ii=0; ii<nb_tasks; ++ii ) {  
-			str=NULL;
-			PDI_value_str(&tasks[ii].out, &str); // output string
-			if ( !strcmp(str, data->name) ){   // output and data name matches
+		for ( int ii=0; ii<nb_tasks; ++ii ) {
+			if(tmp_status!= PDI_OK) status=tmp_status;
+
+			PDI_value_str(&tasks[ii].out, &str_out); // output string
+			if ( !strcmp(str_out, data->name) ){   // output and data name matches
 				switch(tasks[ii].action){  // check datatype compatibiliy
 					case EVENT2DATA:
 						copy = *(int32_t *)tasks[ii].data;
-						status = cast_data_int(data, copy);
+						tmp_status = cast_data_int(data, copy);
 						break; 
-				//	case EXTRACT_SUBARRAY:
-				//		return PDI_UNAVAILABLE;
 					case FILE_EXISTS:
 						copy = *(int32_t *)tasks[ii].data;
-						status = cast_data_int(data, copy);
+						tmp_status = cast_data_int(data, copy);
 						break; 
 					case DIR_EXISTS:
 						copy = *(int32_t *)tasks[ii].data;
-						status = cast_data_int(data, copy);
+						tmp_status = cast_data_int(data, copy);
 						break; 
 					default:
-						status = PDI_ERR_VALUE;
+						break;
 				}
 				
+			}
+		}
+	} 
+	if (data->content[data->nb_content-1].access & PDI_OUT){
+		for ( int ii=0; ii<nb_tasks; ++ii ) {
+			if(tmp_status!= PDI_OK) status=tmp_status;
+				if( tasks[ii].action == EXTRACT_SUBARRAY ){
+				// check select
+				PDI_value_str(&tasks[ii].in, &str_in); // input string
+				if( (!strcmp(str_in, data->name)) ){ // && ( data->type.kind == PDI_K_ARRAY) ){
+					PDI_value_str(&tasks[ii].out, &str_out); // output string
+					if( !strcmp(str_in,str_out) ){
+						fprintf(stderr,"[PDI/Utilities] Cannot extract subarray. Array %s and subarray %s identified the same data\n", str_in, str_out);
+						tmp_status = PDI_ERR_CONFIG;
+						continue;
+					}
+
+					PDI_data_t *data_out=PDI_find_data(str_out);
+					if( data_out ){ // checking that output data exists
+						//TODO[CR] Check that both datasets have the correct type
+						//  if( data->type.c.array->type.kind != PDI_K_SCALAR ){
+						//  	fprintf(stderr," Array : %d %d %d\n", PDI_K_SCALAR, PDI_K_ARRAY, data->type.c.array->type.kind);
+						//  	fprintf(stderr,"[PDI/Utilities] Cannot extract subarray (from in). Array %s is not a N-dim array\n", str_in);
+						//  	tmp_status = PDI_ERR_CONFIG;
+						//  	continue;
+						//  }
+						//  if( data_out->type.c.array->type.kind != PDI_K_SCALAR ){
+						//  	fprintf(stderr,"[PDI/Utilities] Cannot extract subarray (out). Array %s is not a N-dim array\n", str_out);
+						//  	tmp_status = PDI_ERR_CONFIG;
+						//  	continue;
+						//  }
+
+						fprintf(stderr, "Matching, in: %s   ||  var: %s\n", str_in, data->name);
+						if( tasks[ii].size != 0) free(tasks[ii].data);
+						tmp_status=extract_subarray(data, data_out, &tasks[ii].data, &tasks[ii].size);
+						PDI_expose(str_out, tasks[ii].data);
+					}
+				} else {
+					fprintf(stderr, "Not matching, in: %s   ||  var: %s\n", str_in, data->name);
+				}
 			}
 		}
 	}
@@ -388,25 +522,8 @@ PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 
 PDI_status_t PDI_utilities_data_end(PDI_data_t *data)
 {
-	int status = PDI_OK;
-	char *str=NULL;
-	// Only import is possible
-	if ( data->content[data->nb_content-1].access & PDI_IN ) {
-		// for each utils_task look if the output is the same than the PDI_data_t
-		for ( int ii=0; ii<nb_tasks; ++ii ) {  
-			str=NULL;
-			PDI_value_str(&tasks[ii].out, &str); // output string
-			if ( tasks[ii].action == EXTRACT_SUBARRAY){
-				if (!strcmp(str, data->name) ){   // output and data name matches
-					if(tasks[ii].size){
-						free(tasks[ii].data); 
-						tasks[ii].size = 0;
-					}
-				}
-			}
-		}
-	}
-	return status;
+	data=data; // remove warning "unused var..."
+	return PDI_OK;
 }
 
 PDI_PLUGIN(utilities)
