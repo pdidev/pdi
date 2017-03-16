@@ -1,60 +1,52 @@
 # PDI: the Parallel Data Interface.
 
-## Main features
-PDI is a library to decouple simulation codes from IO concerns.
-PDI supports existing IO libraries through a plugin system.
-PDI declarative API makes it possible to share buffers manipulated in the application with IO libraries.
-The type of data and the IO requests to forward to libraries are described in a dedicated YAML file.
-PDI supports HDF5 and FTI as of now, other libraries are work-in-progress.
+PDI is a library that aims to decouple high-performance simulation codes from Input/Output concerns.
+It offers a declarative application programming interface that enables codes to expose the buffers in which they store data and to notify PDI of significant steps of the simulation.
+It supports a plugin system to make existing libraries such as HDF5, SIONlib or FTI available to codes, potentially mixed in a single execution.
+This approach makes it possible to describe the I/O operations in a dedicated YAML file instead of interleaving them with the simulation code and thus to improve their portability and maintainability.
+The public plugin API offered by PDI is general and simple enough that one can easily add support for the best suited library for its use-case (problem size, IO type, hardware used, etc.)
+
+## Existing plugins
+* serial HDF5 (one-file-per-process)
+* FTI
+* ... see TODO.md
 
 
-#### Existing plugins
-* [x] HDF5 serial/one-file-per-process;
-* [x] FTI
-* [ ] ... see TODO.md
+## Prerequisites
 
-
-## Installation
-Currently, to obtain the library one needs to build it from source.
-Pre-build binaries are not available.
-
-### Prerequisites
-#### Minimum requirement
 To build the library one needs:
- * cmake, version >= 3.1
- * mpi 
- * gcc
- 
-#### Additionnal functionnality requirement
-Fortran language is supported (require a fortran compiler!).
+  * cmake, version >= 3.1
+  * a C compiler (gcc and icc are tested).
+  * a MPI library
 
-## Get the source
+PDI also requires the BPP tool and Paraconf library that are distributed together with PDI in the `vendor` directory.
+  * paraconf depends on libyaml. By default paraconf uses the system libyaml but it also embedds a copy that can be used by passing the `-DUSE_SYSTEM_YAML=OFF` option to cmake.
 
-2 options:
-* get a release,
-* get the latest source from Git
+Fortran support:
+  * a working Fortran compiler with `iso_c_binding` support is required.
 
-### Get a release
+Plugins:
+  * the HDF5 plugin require a version of HDF5 compatible with the chosen MPI (and Fortran compiler if enabled)
+  * the FTI plugin depends on the FTI library that is distributed together with PDI in the `vendor` directory.
 
-Go to page ???
+## Getting the source
 
-### From git
+As of now, the source has to be fetched from git .
+
 
 ```
 git clone --recursive 
 ```
 
-## Step by step
-if the sources are in the folder pdi:
+## Compilation
 
+if the sources are in the folder pdi:
 
 ```
 cd pdi
 mkdir build
 cd build
-cmake .. 
+cmake -DUSE_SYSTEM_YAML=OFF .. 
 make
 make install
 ```
-
-# Usage
