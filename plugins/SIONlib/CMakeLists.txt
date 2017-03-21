@@ -49,4 +49,4 @@ install(TARGETS SIONlib EXPORT SIONlibTargets
 	ARCHIVE DESTINATION lib
 )
 
-# add_subdirectory(tests/)
+add_subdirectory(tests/)
