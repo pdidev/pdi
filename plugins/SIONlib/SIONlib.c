@@ -167,6 +167,7 @@ PDI_status_t PDI_SIONlib_init(PC_tree_t conf, MPI_Comm* world)
 
 static void destroy_vars(size_t n_vars, SIONlib_var_t *vars) {
   for (size_t i = 0; i < n_vars; ++i) {
+    PDI_value_destroy(&vars[i].directory);
     PDI_value_destroy(&vars[i].generation);
     PDI_value_destroy(&vars[i].select);
     free(vars[i].name);
