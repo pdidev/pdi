@@ -89,39 +89,32 @@ static PDI_status_t read_var_property_from_config(PC_tree_t conf, const char *va
 
 static PDI_status_t read_vars_from_config(PC_tree_t conf, SIONlib_var_t *vars[], size_t *n_vars, const char *default_directory, const char *default_select)
 {
-  PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
-  PDI_status_t status = PDI_OK;
-
   int len;
   if ( PC_len(conf, &len) ) { // if no subtree found
           *n_vars = 0;
           *vars = NULL;
-          goto exit;
+          return PDI_OK;
   }
   *n_vars = len;
   *vars = calloc(sizeof(SIONlib_var_t), *n_vars);
-  if (!vars) {
-    status = PDI_ERR_SYSTEM;
-    goto exit;
-  }
+  if (!vars) return PDI_ERR_SYSTEM;
 
   for (size_t i = 0; i < *n_vars; ++i) {
     PC_string(PC_get(conf, "{%zd}", i), &(*vars)[i].name);
     PC_tree_t var_conf = PC_get(conf, "<%zd>", i);
 
+    PDI_status_t status;
     // set directory
-    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".directory", default_directory, &(*vars)[i].directory))) goto exit;
+    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".directory", default_directory, &(*vars)[i].directory))) return status;
 
     // set generation
-    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".generation", "-1", &(*vars)[i].generation))) goto exit;
+    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".generation", "-1", &(*vars)[i].generation))) return status;
 
     // set select
-    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".select", default_select, &(*vars)[i].select))) goto exit;
+    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".select", default_select, &(*vars)[i].select))) return status;
   }
 
-exit:
-  PC_errhandler(errh);
-  return status;
+  return PDI_OK;
 }
 
 PDI_status_t PDI_SIONlib_init(PC_tree_t conf, MPI_Comm* world)
@@ -137,31 +130,29 @@ PDI_status_t PDI_SIONlib_init(PC_tree_t conf, MPI_Comm* world)
   }
 
   PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
+
   char *default_out_directory = NULL; // default output directory if none specified
   PC_string(PC_get(conf, ".defaults.outputs.directory"), &default_out_directory);
   char *default_out_select = NULL; // default output select if none specified
   PC_string(PC_get(conf, ".defaults.outputs.select"), &default_out_select);
   PC_tree_t outputs_cfg = PC_get(conf, ".outputs");
-  PC_errhandler(errh);
-
   PDI_status_t status = read_vars_from_config(outputs_cfg, &outputs, &n_outputs, default_out_directory, default_out_select);
   free(default_out_directory);
   free(default_out_select);
 
-  if (status) return status;
+  if (status) goto err0;
 
-  errh = PC_errhandler(PC_NULL_HANDLER);
   char* default_in_directory = NULL; // default input directory if none specified
   PC_string(PC_get(conf, ".defaults.inputs.directory"), &default_in_directory);
   char* default_in_select = NULL; // default input select if none specified
   PC_string(PC_get(conf, ".defaults.inputs.select"), &default_in_select);
   PC_tree_t inputs_cfg = PC_get(conf, ".inputs");
-  PC_errhandler(errh);
-
   status = read_vars_from_config(inputs_cfg, &inputs, &n_inputs, default_in_directory, default_in_select);
   free(default_in_directory);
   free(default_in_select);
 
+err0:
+  PC_errhandler(errh);
   return status;
 }
 
