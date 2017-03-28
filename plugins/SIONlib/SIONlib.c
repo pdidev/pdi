@@ -206,10 +206,11 @@ static PDI_status_t write_to_file(const PDI_data_t *data, const char *directory,
   char* path = construct_path(directory, data->name, generation);
   if (!path) return PDI_ERR_SYSTEM;
 
+  // TODO: make num_files configuration parameter
   int num_files = 1;
   size_t data_size;
-  PDI_status_t status = PDI_data_size(&data->type, &data_size);
-  if (status) {
+  PDI_status_t status;
+  if (status = PDI_data_size(&data->type, &data_size)) {
     free(path);
     return status;
   }
@@ -221,7 +222,7 @@ static PDI_status_t write_to_file(const PDI_data_t *data, const char *directory,
 
   // write data to file
   // TODO: assert type is dense/contiguous
-  size_t written = sion_fwrite(data->content->data, data_size, 1, sid);
+  size_t written = sion_fwrite(data->content[data->nb_content - 1].data, data_size, 1, sid);
 
   // close file
   if (SION_SUCCESS != sion_parclose_mpi(sid) || written != 1) return PDI_ERR_SYSTEM;
@@ -235,14 +236,15 @@ static PDI_status_t read_from_file(const PDI_data_t *data, const char *directory
   char* path = construct_path(directory, data->name, generation);
   if (!path) return PDI_ERR_SYSTEM;
 
+  // TODO: make num_files configuration parameter
   int num_files = 1;
   size_t data_size;
-  PDI_status_t status = PDI_data_size(&data->type, &data_size);
-  if (status) {
+  PDI_status_t status;
+  if (status = PDI_data_size(&data->type, &data_size)) {
     free(path);
     return status;
   }
-  sion_int64 chunksize = (size_t)data_size;
+  sion_int64 chunksize = 0;
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
   int sid = sion_paropen_mpi(path, "r", &num_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
@@ -250,7 +252,7 @@ static PDI_status_t read_from_file(const PDI_data_t *data, const char *directory
 
   // read data from file
   // TODO: assert type is dense/contiguous
-  size_t read = sion_fread(data->content->data, data_size, 1, sid);
+  size_t read = sion_fread(data->content[data->nb_content - 1].data, data_size, 1, sid);
 
   // close file
   if (SION_SUCCESS != sion_parclose_mpi(sid) || read != 1) return PDI_ERR_SYSTEM;
