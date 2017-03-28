@@ -355,11 +355,11 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	/// Open file for read/write
 	hid_t file_id = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
 
-	if(file_id > 0){ // File exists
+	if(file_id >= 0){ // File exists
 
 		/// Open dataset "pathname" and gets its memspace
 		hid_t dataset_id = H5Dopen(file_id, pathname, H5P_DEFAULT);
-		if( dataset_id >0 ) { // Successfull
+		if( dataset_id >= 0 ) { // Successfull
 
 			hid_t dataspace_id = H5Dget_space (dataset_id);
 
