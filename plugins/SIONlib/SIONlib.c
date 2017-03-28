@@ -262,26 +262,21 @@ static PDI_status_t read_from_file(const PDI_data_t *data, const char *directory
 
 PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
 {
+  PDI_status_t write_status = PDI_OK;
   if (data->content[data->nb_content - 1].access & PDI_OUT) {
     for (size_t i = 0; i < n_outputs; ++i) {
       if (!strcmp(outputs[i].name, data->name)) {
-        PDI_status_t status = PDI_OK;
         long generation;
-        if ((status = PDI_value_int(&outputs[i].generation, &generation))) return status;
+        if ((write_status = PDI_value_int(&outputs[i].generation, &generation))) break;
         long select;
-        if ((status = PDI_value_int(&outputs[i].select, &select))) return status;
+        if ((write_status = PDI_value_int(&outputs[i].select, &select))) break;
         char *directory;
-        if ((status = PDI_value_str(&outputs[i].directory, &directory))) {
+        if ((write_status = PDI_value_str(&outputs[i].directory, &directory))) {
           free(directory);
-          return status;
+          break;
         }
 
-        if (select) {
-          if ((status = write_to_file(data, directory, generation))) {
-            free(directory);
-            return status;
-          }
-        }
+        if (select) write_status = write_to_file(data, directory, generation);
 
         free(directory);
         break;
@@ -289,26 +284,21 @@ PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
     }
   }
 
+  PDI_status_t read_status = PDI_OK;
   if (data->content[data->nb_content - 1].access & PDI_IN) {
     for (size_t i = 0; i < n_inputs; ++i) {
       if (!strcmp(inputs[i].name, data->name)) {
-        PDI_status_t status = PDI_OK;
         long generation;
-        if ((status = PDI_value_int(&inputs[i].generation, &generation))) return status;
+        if ((read_status = PDI_value_int(&inputs[i].generation, &generation))) break;
         long select;
-        if ((status = PDI_value_int(&inputs[i].select, &select))) return status;
+        if ((read_status = PDI_value_int(&inputs[i].select, &select))) break;
         char *directory;
-        if ((status = PDI_value_str(&inputs[i].directory, &directory))) {
+        if ((read_status = PDI_value_str(&inputs[i].directory, &directory))) {
           free(directory);
-          return status;
+          break;
         }
 
-        if (select) {
-          if ((status = read_from_file(data, directory, generation))) {
-            free(directory);
-            return status;
-          }
-        }
+        if (select) read_status = read_from_file(data, directory, generation);
 
         free(directory);
         break;
@@ -316,7 +306,7 @@ PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
     }
   }
 
-  return PDI_OK;
+  return (write_status) ? read_status : write_status;
 }
 
 PDI_status_t PDI_SIONlib_data_end(PDI_data_t *data)
