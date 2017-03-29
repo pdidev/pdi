@@ -41,6 +41,8 @@
 
 #include "status.h"
 
+#include "config.h"
+
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256
 
@@ -254,6 +256,151 @@ err3:
 	PDI_handle_err(PDI_datatype_load(&res_type.type, type_type), err0);
 	
 	*type = res_type;
+	return status;
+	
+err0:
+	return status;
+}
+
+
+static PDI_status_t struct_datatype_load ( PC_tree_t node, PDI_struct_type_t *type )
+{
+	PDI_status_t status = PDI_OK;
+	
+	(void) node; // to prevent unused parameter warnings
+	(void) type; // to prevent unused parameter warnings
+	
+	PDI_handle_err(PDI_make_err(PDI_ERR_IMPL, "Structure support not implemented yet"), err0);
+	
+	return status;
+	
+err0:
+	return status;
+}
+
+
+static PDI_status_t scalar_datatype_load ( PC_tree_t node, PDI_scalar_type_t *type )
+{
+	PDI_status_t status = PDI_OK;
+	
+	char *tname = NULL;
+	long kind = 0;
+	{
+		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
+		PC_string(PC_get(node, ".type"), &tname);
+		PC_int(PC_get(node, ".kind"), &kind);
+		PC_errhandler(pc_handler); // aka PC_end_try
+	}
+	
+	if ( !tname ) {
+		handle_PC_err(PC_string(node, &tname), err0);
+	}
+	
+	// For Fortran, we assume kind means number of bytes... TODO: autodetect
+	if ( !strcmp(tname, "char") && kind==0 ) { // C char
+			*type = PDI_T_INT8;
+	} else if ( !strcmp(tname, "int") && kind==0 ) { // C int
+		switch (sizeof(int)) {
+		case 1:
+			*type = PDI_T_INT8;
+			break;
+		case 2:
+			*type = PDI_T_INT16; 
+			break;
+		case 4:
+			*type = PDI_T_INT32; 
+			break;
+		case 8:
+			*type = PDI_T_INT64; 
+			break;
+		default: 
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unsupported int size: %d", sizeof(int)*8), err0);
+		}
+	} else if ( !strcmp(tname, "int8") && kind==0 ) { // C int8
+			*type = PDI_T_INT8;
+	} else if ( !strcmp(tname, "int16") && kind==0 ) { // C int16
+			*type = PDI_T_INT16;
+	} else if ( !strcmp(tname, "int32") && kind==0 ) { // C int32
+			*type = PDI_T_INT32;
+	} else if ( !strcmp(tname, "int64") && kind==0 ) { // C int64
+			*type = PDI_T_INT64;
+	} else if ( !strcmp(tname, "float") && kind==0 ) { // C float
+			*type = PDI_T_FLOAT;
+	} else if ( !strcmp(tname, "double") && kind==0 ) { // C double
+			*type = PDI_T_DOUBLE;
+	} else if ( !strcmp(tname, "character") ) { // Fortran character
+		if ( kind == 0 ) kind = PDI_CHARACTER_DEFAULT_KIND;
+		switch(kind){
+		case 1:
+			*type = PDI_T_INT8;
+			break;
+		case 2:
+			*type = PDI_T_INT16; 
+			break;
+		case 4:
+			*type = PDI_T_INT32; 
+			break;
+		case 8:
+			*type = PDI_T_INT64; 
+			break;
+		default: 
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for character: `%s'", tname), err0);
+		}
+	} else if ( !strcmp(tname, "integer") ) { // Fortran integer
+		if ( kind == 0 ) kind = PDI_INTEGER_DEFAULT_KIND;
+		switch(kind){
+		case 1:
+			*type = PDI_T_INT8;
+			break;
+		case 2:
+			*type = PDI_T_INT16; 
+			break;
+		case 4:
+			*type = PDI_T_INT32; 
+			break;
+		case 8:
+			*type = PDI_T_INT64; 
+			break;
+		default: 
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err0);
+		}
+	} else if ( !strcmp(tname, "logical") ) { // Fortran integer
+		if ( kind == 0 ) kind = PDI_LOGICAL_DEFAULT_KIND;
+		switch(kind){
+		case 1:
+			*type = PDI_T_INT8;
+			break;
+		case 2:
+			*type = PDI_T_INT16; 
+			break;
+		case 4:
+			*type = PDI_T_INT32; 
+			break;
+		case 8:
+			*type = PDI_T_INT64; 
+			break;
+		default: 
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err0);
+		}
+	} else if ( !strcmp(tname, "real") ) { // Fortran real
+		if ( kind == 0 ) kind = PDI_REAL_DEFAULT_KIND;
+		switch(kind){
+		case 4:
+			*type = PDI_T_FLOAT; 
+			break;
+		case 8:
+			*type = PDI_T_DOUBLE; 
+			break;
+		case 16:
+			*type = PDI_T_LONG_DOUBLE; 
+			break;
+		default: 
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for real: `%s'", tname), err0);
+		}
+	} else {
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid scalar type: `%s'", tname), err0);
+	}
+	
 	return status;
 	
 err0:
@@ -633,29 +780,44 @@ PDI_status_t PDI_datatype_load ( PDI_type_t *type, PC_tree_t node )
 {
 	PDI_status_t status = PDI_OK;
 	
-	PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	char *buf_str = NULL; PC_string(node, &buf_str);
-	PC_errhandler(pc_handler); // aka PC_end_try
+	// load as a scalar by default
+	PDI_type_kind_t kind = PDI_K_SCALAR;
+	// size or sizes => array
+	{
+		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
+		if ( !PC_status(PC_get(node, ".size")) ) kind = PDI_K_ARRAY;
+		if ( !PC_status(PC_get(node, ".sizes")) ) kind = PDI_K_ARRAY;
+		PC_errhandler(pc_handler); // aka PC_end_try
+	}
 	
-	if ( buf_str ) { // case where the datatype is primitive
-			type->kind = PDI_K_SCALAR;
-		if ( !strcmp(buf_str, "int") ) {
-			//TODO: adapt to the actual size of int
-			type->c.scalar = PDI_T_INT32;
-		} else if ( !strcmp(buf_str, "double") ) {
-			type->c.scalar = PDI_T_DOUBLE;
-		} else {
-			//TODO: handle missing types
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unknown primitive type: `%s'", buf_str), err0);
+	switch ( kind ) {
+	case PDI_K_ARRAY: {// load the type as an array
+		PDI_array_type_t *array = malloc(sizeof(PDI_array_type_t));
+		PDI_handle_err(array_datatype_load(node, array), err1);
+		type->c.array = array;
+err1:
+		if ( status ) {
+			free(array);
+		}
+		PDI_handle_err(status, err0);
+	} break;
+	case PDI_K_STRUCT: { // load the type as a structure
+		PDI_struct_type_t *struct_ = malloc(sizeof(PDI_struct_type_t));
+		PDI_handle_err(struct_datatype_load(node, struct_), err2);
+		type->c.struct_ = struct_;
+err2:
+		if ( status ) {
+			free(struct_);
+		}
+		PDI_handle_err(status, err0);
+	} break;
+	case PDI_K_SCALAR: { // load the type as a scalar
+		PDI_handle_err(scalar_datatype_load(node, &(type->c.scalar)), err0);
+	} break;
 	}
-	} else { // case where the datatype is composite
-		type->kind = PDI_K_ARRAY;
-		type->c.array = malloc( sizeof(PDI_array_type_t) );
-		PDI_handle_err(array_datatype_load(node, type->c.array), err0);
-	}
+	type->kind = kind;
 	
 err0:
-	free(buf_str);
 	return status;
 }
 

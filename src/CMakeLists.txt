@@ -59,6 +59,11 @@ endif()
 
 set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200809L)
 check_symbol_exists(strdup string.h STRDUP_WORKS)
+include(DefaultKind)
+get_default_kind(INTEGER   PDI_INTEGER_DEFAULT_KIND)
+get_default_kind(CHARACTER PDI_CHARACTER_DEFAULT_KIND)
+get_default_kind(REAL      PDI_REAL_DEFAULT_KIND)
+get_default_kind(LOGICAL   PDI_LOGICAL_DEFAULT_KIND)
 configure_file(config.h.in config.h @ONLY)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -103,6 +108,8 @@ if("${ENABLE_FORTRAN}")
 	add_subdirectory(../vendor/bpp bpp EXCLUDE_FROM_ALL)
 	
 	bpp_preprocess(OUTPUT SRC_PDI_F90_BPP SOURCES PDI.h.bpp)
+	include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+
 	get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
 	add_library(pdi_f90 fapi.c ${SRC_PDI_F90_BPP})
 	target_link_libraries(pdi_f90 pdi paraconf_f90)
