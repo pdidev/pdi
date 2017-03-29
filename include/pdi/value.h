@@ -102,4 +102,14 @@ PDI_status_t PDI_EXPORT PDI_value_str(const PDI_value_t *value, char **res);
  */
 PDI_status_t PDI_EXPORT PDI_value_destroy(PDI_value_t *value);
 
+/** Copies a PDI value
+ * 
+ * \param[in] value the value to copy
+ * \param[in] copy copying the content of value in an existing PDI_value_t
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_value_copy(PDI_value_t *value, PDI_value_t *copy);
+
+
+
 #endif // PDI_VALUE_H__

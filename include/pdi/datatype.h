@@ -119,4 +119,38 @@ PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
  */
 PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
 
+/** Copies a data into an other 
+ * 
+ * Content of <from> is copied into <to> if both type are compatible.
+ * No allocation is performed by this routine.
+ * Please note that if one array is sparse and not the other, only the dense parts
+ * are copied. A current limitation is that both arrays can't be sparse.
+ * 
+ * \param from the data that is copied
+ * \param from_type the type of the original data
+ * \param to the destination of the copy
+ * \param to_type the type of the destination data
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_copy(void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type);
+
+/** Allocate and create a dense type.
+ *
+ * Allocate and create a dense type whose subsizes and sizes are equals to the subsizes of a given datatype.
+ * Starts values (offset) are set to 0.
+ *
+ * \param type the type of the (possibly sparse) data whose attributes are used to produce a corresponding dense type.
+ * \param dense the dense type that is produced using type attributes.
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_type_create_dense(PDI_type_t *type, PDI_type_t **dense);
+
+/** Indicate if a given datatype is dense or not 
+ * 
+ * \param array_type the type that is check
+ * \param is_dense an integer that stores 1 if the array is dense and 0 otherwise. 
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_array_type_is_dense(PDI_array_type_t *array_type, int *is_dense);
+
 #endif // PDI_DATATYPE_H__

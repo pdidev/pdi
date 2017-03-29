@@ -525,6 +525,66 @@ err0:
 	return status;
 }
 
+
+PDI_status_t strval_dup(PDI_strval_t* value, PDI_strval_t **dup)
+{
+	*dup=malloc(sizeof(PDI_strval_t));
+	
+	(*dup)->str = strdup(value->str);
+	
+	(*dup)->value_pos = malloc(sizeof(int));
+	(*dup)->value_pos = value->value_pos;
+
+	int nb_values = value->nb_values;
+	(*dup)->nb_values = nb_values;
+	(*dup)->values = malloc(nb_values*sizeof(PDI_value_t));
+	for( int ii=0; ii<value->nb_values; ii++)
+	{
+		PDI_value_copy(&value->values[ii], &( (*dup)->values[ii] ));
+	}
+	
+	return PDI_OK;
+}
+
+PDI_status_t exprval_dup(PDI_exprval_t *value, PDI_exprval_t **dup)
+{
+	*dup=malloc(sizeof(PDI_exprval_t));
+	
+	int nb_value = value->nb_value;
+	(*dup)->nb_value = nb_value;
+	(*dup)->values = malloc(nb_value*sizeof(PDI_value_t));
+	for( int ii=0; ii<nb_value; ii++)
+	{
+		PDI_value_copy(&value->values[ii], &( (*dup)->values[ii] ));
+	}
+
+	(*dup)->ops=malloc( (nb_value-1)*sizeof(PDI_exprop_t) );
+	for( int ii=0; ii<nb_value-1; ii++)
+	{
+		(*dup)->ops[ii]=value->ops[ii];
+	}
+
+	return PDI_OK;
+};
+
+PDI_status_t refval_dup(PDI_refval_t *value, PDI_refval_t **dup)
+{
+	*dup=malloc(sizeof(PDI_refval_t));
+	(*dup)->nb_idx=value->nb_idx;
+
+	(*dup)->ref = value->ref;
+
+	int nb_idx = value->nb_idx;
+	(*dup)->nb_idx = nb_idx;
+	(*dup)->idx = malloc(nb_idx*sizeof(PDI_value_t));
+	for( int ii=0; ii<nb_idx; ii++)
+	{
+		PDI_value_copy(&value->idx[ii], &( (*dup)->idx[ii] ));
+	}
+	
+	return PDI_OK;
+};
+
 PDI_status_t strval_destroy(PDI_strval_t* value)
 {
 	PDI_status_t status = PDI_OK;
@@ -651,3 +711,33 @@ PDI_status_t PDI_value_str(const PDI_value_t* value, char** res)
 err0:
 	return status;
 }
+
+PDI_status_t PDI_value_copy(PDI_value_t *value, PDI_value_t *copy)
+{
+	int status=PDI_OK;
+	copy->kind = value->kind;
+	switch( value->kind ){
+
+		case PDI_VAL_CONST:  
+			copy->c.constval = value->c.constval;
+			break;
+
+		case PDI_VAL_REF: 
+			status = refval_dup(value->c.refval, &copy->c.refval);
+			break;
+
+		case PDI_VAL_EXPR:  
+			status = exprval_dup(value->c.exprval, &copy->c.exprval);
+			break;
+
+		case PDI_VAL_STR:
+			status = strval_dup(value->c.strval, &copy->c.strval);
+			break;
+
+		default:
+			return PDI_ERR_IMPL;
+	}
+
+	return status;
+}
+

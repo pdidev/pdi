@@ -40,6 +40,7 @@
 #include "pdi.h"
 #include "pdi/plugin.h"
 #include "pdi/state.h"
+#include "pdi/datatype.h"
 #include "conf.h"
 #include "plugin_loader.h"
 #include "status.h"
@@ -217,6 +218,7 @@ err0:
 PDI_status_t PDI_reclaim( const char* name )
 {
 	PDI_status_t status = PDI_OK;
+	PDI_type_t *newtype;
 	
 	PDI_data_t *data = PDI_find_data(name);
 	if ( data ) {
@@ -229,13 +231,17 @@ PDI_status_t PDI_reclaim( const char* name )
 			data->content[data->nb_content-1].access |= PDI_MM_FREE & PDI_MM_COPY;
 			size_t dsize; PDI_handle_err(PDI_data_size(&data->type, &dsize), err0);
 			void *newval = malloc(dsize);
-			PDI_handle_err(
-					tcopy(
-							&data->type,
+			PDI_handle_err(PDI_type_create_dense(&data->type, &newtype), err1);
+			PDI_handle_err( PDI_copy(
+							(void*)data->content[data->nb_content-1].data,
+							&data->type, 
 							newval,
-							(void*)data->content[data->nb_content-1].data),
-					err0);
+							newtype)
+					, err0);
 			data->content[data->nb_content-1].data = newval;
+
+			//PDI_datatype_destroy(newtype); TODO
+			free(newtype);
 		} else {
 			PDI_data_unlink(data, data->nb_content-1);
 		}
@@ -245,6 +251,8 @@ PDI_status_t PDI_reclaim( const char* name )
 	
 	return status;
 	
+err1:
+	if(newtype) free(newtype);
 err0:
 	return status;
 }
