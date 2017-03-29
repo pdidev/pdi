@@ -28,3 +28,4 @@ pdi:
           vars: [ iter, width, height, pwidth, pheight, coord, main_field ]
           transaction: newiter
           select: $iter % 10 = 0
+          n_files: 3

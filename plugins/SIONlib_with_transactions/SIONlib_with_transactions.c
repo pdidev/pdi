@@ -52,6 +52,7 @@ typedef struct
   char *transaction;
   PDI_value_t path;
   PDI_value_t select;
+  PDI_value_t n_files;
   size_t n_vars;
   char **vars;
 } SIONlib_with_transactions_file_t;
@@ -71,13 +72,17 @@ static char *strdup(const char *s)
 }
 #endif
 
-static PDI_status_t read_file_property_from_config(PC_tree_t conf, const char *file_name, const char *property_name, PDI_value_t *property)
+static PDI_status_t read_file_property_from_config(PC_tree_t conf, const char *file_name, const char *property_name, const char *default_value, PDI_value_t *property)
 {
   char *strv = NULL;
   if (PC_string(PC_get(conf, property_name), &strv)) {
-    fprintf(stderr, "[PDI/SIONlib_with_transactions] Property '%s' not found for file %s.\n", property_name, file_name);
-    free(strv);
-    return PDI_ERR_CONFIG;
+    if (default_value) {
+      strv = strdup(default_value);
+    } else {
+      fprintf(stderr, "[PDI/SIONlib_with_transactions] Property '%s' not found for file %s.\n", property_name, file_name);
+      free(strv);
+      return PDI_ERR_CONFIG;
+    }
   }
   if (!strv) return PDI_ERR_SYSTEM;
   PDI_status_t status = PDI_value_parse(strv, property);
@@ -118,18 +123,21 @@ static PDI_status_t read_files_from_config(PC_tree_t conf, SIONlib_with_transact
     PC_string(PC_get(conf, "{%zd}", i), &(*files)[i].name);
     PC_tree_t file_conf = PC_get(conf, "<%zd>", i);
 
-    PDI_status_t status;
     // set transaction
     if (PC_string(PC_get(file_conf, ".transaction"), &(*files)[i].transaction)) {
       fprintf(stderr, "[PDI/SIONlib_with_transactions] Property '.transaction' not found for file %s.\n", (*files)[i].name);
       return PDI_ERR_CONFIG;
     }
 
+    PDI_status_t status;
     // set path
-    if ((status = read_file_property_from_config(file_conf, (*files)[i].name, ".path", &(*files)[i].path))) return status;
+    if ((status = read_file_property_from_config(file_conf, (*files)[i].name, ".path", NULL, &(*files)[i].path))) return status;
 
     // set select
-    if ((status = read_file_property_from_config(file_conf, (*files)[i].name, ".select", &(*files)[i].select))) return status;
+    if ((status = read_file_property_from_config(file_conf, (*files)[i].name, ".select", "1", &(*files)[i].select))) return status;
+
+    // set n_files
+    if ((status = read_file_property_from_config(file_conf, (*files)[i].name, ".n_files", "1", &(*files)[i].n_files))) return status;
 
     // set variables
     PC_tree_t vars_conf = PC_get(file_conf, ".vars");
@@ -172,9 +180,11 @@ static void destroy_files(size_t n_files, SIONlib_with_transactions_file_t *file
     free(files[i].transaction);
     PDI_value_destroy(&files[i].path);
     PDI_value_destroy(&files[i].select);
+    PDI_value_destroy(&files[i].n_files);
     for (size_t j = 0; j < files[i].n_vars; ++j) {
       free(files[i].vars[j]);
     }
+    files[i].n_vars = 0;
     free(files[i].vars);
   }
   free(files);
@@ -189,9 +199,10 @@ PDI_status_t PDI_SIONlib_with_transactions_finalize()
 
 static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
 {
-  PDI_status_t status = PDI_OK;
-  // TODO: make configuration parameter
-  int num_files = 1;
+  PDI_status_t status;
+  long n_files_;
+  if ((status = PDI_value_int(&file->n_files, &n_files_))) return status;
+  int n_files = n_files_;
   sion_int64 chunksize = 0;
   for (size_t i = 0; i < file->n_vars; ++i) {
     PDI_data_t *data = PDI_find_data(file->vars[i]);
@@ -209,7 +220,7 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
     return status;
   }
 
-  int sid = sion_paropen_mpi(path, "w", &num_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  int sid = sion_paropen_mpi(path, "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
   free(path);
 
   for (size_t i = 0; i < file->n_vars; ++i) {
@@ -241,19 +252,19 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
 
 static PDI_status_t read_from_file(const SIONlib_with_transactions_file_t *file)
 {
-  PDI_status_t status = PDI_OK;
-  int num_files = 1;
+  int n_files = 1;
   sion_int64 chunksize = 0;
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
+  PDI_status_t status;
   char *path = NULL;
   if ((status = PDI_value_str(&file->path, &path))) {
     free(path);
     return status;
   }
 
-  int sid = sion_paropen_mpi(path, "r", &num_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  int sid = sion_paropen_mpi(path, "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
   free(path);
 
   for (size_t i = 0; i < file->n_vars; ++i) {
