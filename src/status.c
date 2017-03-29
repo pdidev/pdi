@@ -109,7 +109,7 @@ static void forward_PC_error(PC_status_t status, const char *message, void *cont
 {
 	status = status; // prevent unused warning
 	context = context; // prevent unused warning
-	get_context()->handler.func(PDI_ERR_CONFIG, message, get_context()->handler.context);
+	if ( get_context()->handler.func ) get_context()->handler.func(PDI_ERR_CONFIG, message, get_context()->handler.context);
 }
 
 // library private stuff

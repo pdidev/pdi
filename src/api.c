@@ -34,6 +34,7 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 #include <string.h>
+#include <stddef.h>
 
 #include "paraconf.h"
 
@@ -170,9 +171,10 @@ PDI_status_t PDI_share( const char* name, void* data_dat, int access )
 			}
 		}
 		if ( access & PDI_IN ) {
-			status = PDI_UNAVAILABLE;
 			data->content[data->nb_content-1].access = PDI_IN;
+			status = PDI_UNAVAILABLE;
 			for ( int ii=0; ii<PDI_state.nb_plugins && status==PDI_UNAVAILABLE; ++ii ) {
+				status = PDI_OK;
 				PDI_handle_err(PDI_state.plugins[ii].data_start(data), err0);
 			}
 		}
@@ -218,8 +220,6 @@ err0:
 PDI_status_t PDI_reclaim( const char* name )
 {
 	PDI_status_t status = PDI_OK;
-	PDI_type_t newtype;
-	void *newval=NULL;
 	
 	PDI_data_t *data = PDI_find_data(name);
 	if ( data ) {
@@ -229,19 +229,26 @@ PDI_status_t PDI_reclaim( const char* name )
 		if ( (data->kind & PDI_DK_METADATA)
 				&& (data->content[data->nb_content-1].access & PDI_OUT) ) {
 			// keep a copy of the last exposed value of the data
-			data->content[data->nb_content-1].access |= PDI_MM_FREE & PDI_MM_COPY;
-			size_t dsize; PDI_handle_err(PDI_data_size(&data->type, &dsize), err0);
-			newval = malloc(dsize);
-			PDI_handle_err( PDI_datatype_densify(&data->type, &newtype), err1);
+			data->content[data->nb_content-1].access |= PDI_MM_FREE | PDI_MM_COPY;
+			PDI_type_t newtype; PDI_handle_err( PDI_datatype_densify(&newtype, &data->type), err0);
+			size_t dsize; PDI_handle_err(PDI_datatype_buffersize(&newtype, &dsize), err0);
+			void *newval; newval = malloc(dsize);
 			PDI_handle_err( PDI_buffer_copy(
-							(void*)data->content[data->nb_content-1].data,
-							&data->type, 
 							newval,
-							&newtype)
-					, err2);
+							&newtype,
+							data->content[data->nb_content-1].data,
+							&data->type),
+					err1);
 			data->content[data->nb_content-1].data = newval;
 
 			PDI_datatype_destroy(&newtype);
+			
+err1:
+			if ( status && status != PDI_UNAVAILABLE ) {
+				PDI_datatype_destroy(&newtype);
+				free(newval);
+				PDI_handle_err(status, err0);
+			}
 		} else {
 			PDI_data_unlink(data, data->nb_content-1);
 		}
@@ -251,10 +258,6 @@ PDI_status_t PDI_reclaim( const char* name )
 	
 	return status;
 
-err2:
-	PDI_datatype_destroy(&newtype);
-err1:
-	free(newval);
 err0:
 	return status;
 }

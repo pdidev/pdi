@@ -47,16 +47,23 @@ There are four levels of visibility:
 * any public content (symbol, type, macro, ...) *must* start with the `PDI_` prefix
 * macro names *must* be all caps
 * enum names *should* end with a `_e` suffix, this is mandatory for public enums
-* struct names *should* end with a `_s` suffix, this is mandatory for public enums
+* struct names *should* end with a `_s` suffix, this is mandatory for public structs
 * typedefs names  *should* end with a `_t` suffix, this is mandatory for public typedefs
 * name elements *should* be separated by underscores
+
+### Functions
+
+* The code *should* be mostly object-oriented
+* Function names *should* be composed of an identifier common to all functions manipulating the same type followed by a descriptor of the function role
+* The main data manipulated by the function *must* come first
+* output parameters *should* come just after the main data
 
 ### Error handling
 
 * any public or library-wide function *should* return a `PDI_status_t` error status
 * error *should* be handled linux-style, i.e. a single return at the end of the function followed by tags to go to on error that free allocated resources
-* errors *can* be created using the `handle_error()` function
-* errors *should* be forwarded using the `handle_err` macro
+* errors *can* be created using the `PDI_make_err` function
+* errors *should* be forwarded using the `PDI_handle_err` macro
 
 ### Misc.
 

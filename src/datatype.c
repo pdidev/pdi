@@ -44,23 +44,55 @@
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256
 
-typedef struct val_size_s
+
+/// ordering of array
+typedef enum PDI_order_e {
+	PDI_ORDER_C,
+	PDI_ORDER_FORTRAN
+} PDI_order_t;
+
+
+/// Descriptor of a buffer and its content
+typedef struct buffer_descriptor_s 
 {
+	/// number of dimensions of the array
 	int ndims;
 
+	/* Array of sizes of the array from outer to inner dim
+	 * 
+	 * The array size is ndims.
+	 * The slowest dimension is sizes[0], the fastest sizes[ndims-1]
+	 * 
+	 * The stride for a given dimension is the product of the element size by all
+	 * size of dimensions with a lower index.
+	 */
 	size_t *sizes;
 
+	/* Array of subsizes of the array from outer to inner dim
+	 * 
+	 * The array size is ndims.
+	 * The slowest dimension is subsizes[0], the fastest subsizes[ndims-1]
+	 * 
+	 * The subsize describes the part of the array actually containing data.
+	 */
 	size_t *subsizes;
 
+	/* Array of start of the array from outer to inner dim
+	 * 
+	 * The array size is ndims.
+	 * The slowest dimension is starts[0], the fastest starts[ndims-1]
+	 * 
+	 * The start is the first index in a given dimension containing data.
+	 */
 	size_t *starts;
 
-	size_t type;
+	/// Size of the dense block contained in the array
+	size_t dense_size;
 
-} val_size_t;
+} buffer_descriptor_t;
 
-PDI_status_t size(const PDI_type_t *type, val_size_t *result);
 
-PDI_status_t size_destroy(val_size_t *result)
+static PDI_status_t bufdesc_destroy ( buffer_descriptor_t *result )
 {
 	free(result->sizes);
 	free(result->subsizes);
@@ -68,18 +100,211 @@ PDI_status_t size_destroy(val_size_t *result)
 	return PDI_OK;
 }
 
-val_size_t size_new()
+
+static PDI_status_t bufdesc_datasize ( const buffer_descriptor_t *bufdesc, size_t *result )
 {
-	val_size_t new_size;
-	new_size.ndims=-1;
-	new_size.sizes=NULL;      
-	new_size.subsizes=NULL;   
-	new_size.starts=NULL;     
-	new_size.type=PDI_T_UNDEF;
-	return new_size;
+	PDI_status_t status = PDI_OK;
+	
+	*result = bufdesc->dense_size;
+	for ( int dim=0; dim<bufdesc->ndims; ++dim ) {
+		*result *= bufdesc->subsizes[dim];
+	}
+	
+	return status;
 }
 
-PDI_status_t scal_size(PDI_scalar_type_t type, val_size_t *result)
+
+static PDI_status_t bufdesc_buffersize ( const buffer_descriptor_t *bufdesc, size_t *result )
+{
+	PDI_status_t status = PDI_OK;
+	
+	*result = bufdesc->dense_size;
+	for ( int dim=0; dim<bufdesc->ndims; ++dim ) {
+		*result *= bufdesc->sizes[dim];
+	}
+	
+	return status;
+}
+
+
+/** Return a reordered index, i.e. a C style index given either a C for Fortran
+ *  style one
+ * \param ordered_index the initial C or Fortran ordered index
+ * \param order the style of the initial index (C/Fortran)
+ * \param size the size of the dimension the index accesses
+ * \return the reordered index (C style)
+ */
+static size_t ridx ( size_t ordered_index, PDI_order_t order, size_t size )
+{
+	if ( order == PDI_ORDER_FORTRAN ) return size-ordered_index-1;
+	return ordered_index;
+}
+
+
+static PDI_status_t array_datatype_load ( PC_tree_t node, PDI_array_type_t *type )
+{
+	PDI_status_t status = PDI_OK;
+	
+	PDI_array_type_t res_type;
+	
+	// Order: C or fortran ordering, default is C
+	PDI_order_t order = PDI_ORDER_C;
+	{
+		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
+		char *order_str = "c";
+		PC_status_t pc_stat = PC_string(PC_get(node, ".order"), &order_str);
+		if( (!strcmp(order_str, "c"))||(!strcmp(order_str, "C")) ){
+			order = PDI_ORDER_C;
+		} else if( (!strcmp(order_str, "fortran"))||(!strcmp(order_str, "Fortran")) ){
+			order = PDI_ORDER_FORTRAN;
+		} else {
+			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Incorrect array ordering: `%s'", order_str), err0);
+		}
+		if ( !pc_stat ) free(order_str);
+		PC_errhandler(pc_handler); // aka PC_end_try
+	}
+
+	// sizes for a multidim array
+	PC_status_t invalid_sizes;
+	{
+		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
+		invalid_sizes = PC_len(PC_get(node, ".sizes"), &res_type.ndims);
+		PC_errhandler(pc_handler); // aka PC_end_try
+	}
+	
+	if ( !invalid_sizes ) { // multi dim array
+		res_type.sizes = malloc(res_type.ndims*sizeof(PDI_value_t));
+		for ( int ii=0; ii<res_type.ndims; ++ii ) {
+			int ri = ridx(ii, order, res_type.ndims);
+			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err0);
+			PDI_handle_err(PDI_value_parse(expr, &res_type.sizes[ri]), err1);
+err1:
+			free(expr);
+			PDI_handle_err(status, err0);
+		}
+	} else { //single dim array
+		res_type.ndims = 1;
+		res_type.sizes = malloc(res_type.ndims*sizeof(PDI_value_t));
+		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err0);
+		PDI_handle_err(PDI_value_parse(expr, res_type.sizes), err5);
+err5:
+		free(expr);
+		PDI_handle_err(status, err0);
+	}
+	
+	PC_status_t invalid_subsizes;
+	{
+		int len;
+		{
+			PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
+			invalid_subsizes = PC_len(PC_get(node, ".subsizes"), &len);
+			PC_errhandler(pc_handler); // aka PC_end_try
+		}
+		if ( !invalid_subsizes && len != res_type.ndims ) {
+			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, res_type.ndims), err0);
+		}
+	}
+	
+	if ( !invalid_subsizes ) {
+		res_type.subsizes = malloc(res_type.ndims*sizeof(PDI_value_t));
+		for ( int ii=0; ii<res_type.ndims; ++ii ) {
+			int ri = ridx(ii, order, res_type.ndims);
+			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err0);
+			PDI_handle_err(PDI_value_parse(expr, &res_type.subsizes[ri]), err2);
+err2:
+			free(expr);
+			PDI_handle_err(status, err0);
+		}
+	} else { // no subsize, default to full size
+		res_type.subsizes = res_type.sizes;
+	}
+	
+	PC_status_t invalid_starts;
+	{
+		int len;
+		{
+			PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
+			invalid_starts = PC_len(PC_get(node, ".starts"), &len);
+			PC_errhandler(pc_handler); // aka PC_end_try
+		}
+		if ( !invalid_starts && len != res_type.ndims ) {
+			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, res_type.ndims), err0);
+		}
+	}
+	
+	res_type.starts = malloc(res_type.ndims*sizeof(PDI_value_t));
+	if ( !invalid_starts ) {
+		for ( int ii=0; ii<res_type.ndims; ++ii ) {
+			int ri = ridx(ii, order, res_type.ndims);
+			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err0);
+			PDI_handle_err(PDI_value_parse(expr, &res_type.starts[ri]), err3);
+err3:
+			free(expr);
+			PDI_handle_err(status, err0);
+		}
+	} else { // no start, start at 0 everywhere
+		res_type.starts = malloc(res_type.ndims*sizeof(PDI_value_t));
+		for ( int ii=0; ii<res_type.ndims; ++ii ) {
+			PDI_handle_err(PDI_value_parse("0", &res_type.starts[ii]), err0);
+		}
+	}
+	
+	PC_tree_t type_type = PC_get(node, ".type");
+	handle_PC_err(PC_status(type_type), err0);
+	PDI_handle_err(PDI_datatype_load(&res_type.type, type_type), err0);
+	
+	*type = res_type;
+	return status;
+	
+err0:
+	return status;
+}
+
+
+static PDI_status_t array_datatype_destroy ( PDI_array_type_t *type )
+{
+	PDI_status_t status = PDI_OK;
+	
+	PDI_handle_err(PDI_datatype_destroy(&type->type), err0);
+	// don't free subsizes in case it was a copy of sizes
+	if ( type->subsizes != type->sizes) free(type->subsizes);
+	
+	free(type->sizes);
+	free(type->starts);
+	
+	return status;
+err0:
+	return status;
+}
+
+
+static PDI_status_t array_datatype_is_dense ( const PDI_array_type_t *type, int *is_dense )
+{
+	PDI_status_t status = PDI_OK;
+	
+	int result = 1;
+	
+	for( int dim=0; dim<type->ndims; ++dim){
+		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err0);
+		long subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err0);
+		if( size != subsize ){
+			result = 0;
+			break;
+		}
+	}
+	
+	*is_dense = result; // late copy so as not to modify arguments in case of error
+	return status;
+	
+err0:
+	return status;
+}
+
+
+static PDI_status_t datatype_bufdesc ( const PDI_type_t *type, buffer_descriptor_t *result );
+
+
+static PDI_status_t scalar_datatype_bufdesc ( PDI_scalar_type_t type, buffer_descriptor_t *result )
 {
 	PDI_status_t status = PDI_OK;
 
@@ -90,48 +315,49 @@ PDI_status_t scal_size(PDI_scalar_type_t type, val_size_t *result)
 
 	switch ( type ) {
 	case PDI_T_INT8:
-		result->type = sizeof(int8_t);
+		result->dense_size = sizeof(int8_t);
 		break;
 	case PDI_T_INT16:
-		result->type = sizeof(int16_t);
+		result->dense_size = sizeof(int16_t);
 		break;
 	case PDI_T_INT32:
-		result->type = sizeof(int32_t);
+		result->dense_size = sizeof(int32_t);
 		break;
 	case PDI_T_INT64:
-		result->type = sizeof(int64_t);
+		result->dense_size = sizeof(int64_t);
 		break;
 	case PDI_T_FLOAT:
-		result->type = sizeof(float);
+		result->dense_size = sizeof(float);
 		break;
 	case PDI_T_DOUBLE:
-		result->type = sizeof(double);
+		result->dense_size = sizeof(double);
 		break;
 	case PDI_T_LONG_DOUBLE:
-		result->type = sizeof(long double);
+		result->dense_size = sizeof(long double);
 		break;
 	default:
 		PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Unknown PDI type: #%d", type), err0);
 	}
-
+	
 	return status;
+	
 err0:
 	return status;
 }
 
 
-PDI_status_t array_size(const PDI_array_type_t *type, val_size_t *result)
+static PDI_status_t array_datatype_bufdesc ( const PDI_array_type_t *type, buffer_descriptor_t *result )
 {
 	PDI_status_t status = PDI_OK;
 
-	PDI_handle_err(size(&type->type, result), err0);
+	PDI_handle_err(datatype_bufdesc(&type->type, result), err0);
 	for ( int dim=0; dim<type->ndims; ++dim ) {
 		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err1);
 		long subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err1);
-		if ( (size == subsize) && (result->ndims == 0) ) {
-			result->type *= size;
-		} else {
-			long start; PDI_handle_err(PDI_value_int(type->starts, &start), err1);
+		if ( (size == subsize) && (result->ndims == 0) ) { // dense case
+			result->dense_size *= size;
+		} else { // sparse case
+			long start; PDI_handle_err(PDI_value_int(&type->starts[dim], &start), err1);
 			++result->ndims;
 			result->sizes = realloc(result->sizes, result->ndims*sizeof(size_t));
 			result->subsizes = realloc(result->subsizes, result->ndims*sizeof(size_t));
@@ -144,22 +370,22 @@ PDI_status_t array_size(const PDI_array_type_t *type, val_size_t *result)
 
 	return status;
 err1:
-	size_destroy(result);
+	bufdesc_destroy(result);
 err0:
 	return status;
 }
 
 
-PDI_status_t size(const PDI_type_t *type, val_size_t *result)
+static PDI_status_t datatype_bufdesc ( const PDI_type_t *type, buffer_descriptor_t *result )
 {
 	PDI_status_t status = PDI_OK;
 
 	switch( type->kind ) {
 	case PDI_K_SCALAR: {
-		PDI_handle_err(scal_size(type->c.scalar, result), err0);
+		PDI_handle_err(scalar_datatype_bufdesc(type->c.scalar, result), err0);
 	} break;
 	case PDI_K_ARRAY: {
-		PDI_handle_err(array_size(type->c.array, result), err0);
+		PDI_handle_err(array_datatype_bufdesc(type->c.array, result), err0);
 	} break;
 	case PDI_K_STRUCT: {
 		PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Not implemented yet"), err0);
@@ -167,145 +393,122 @@ PDI_status_t size(const PDI_type_t *type, val_size_t *result)
 	}
 
 	return status;
+	
 err0:
 	return status;
 }
 
 
-/** Indicate if a given array_type is dense or not 
+/** Copies a subpart of from content into to
  * 
- * \param array_type the type that is checked
- * \param is_dense an integer that stores 1 if the array is dense and 0 otherwise. 
- * \return an exit status code
+ * \param dim the number of the subdimension to copy
+ * \param from buffer holding the from data
+ * \param from_size size of the data in from
+ * \param to buffer holding the to data
+ * \param to_size size of the data in to
  */
-PDI_status_t PDI_array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense)
+static PDI_status_t buffer_do_copy ( void *to, const buffer_descriptor_t *to_desc, const void *from, const buffer_descriptor_t *from_desc )
 {
 	PDI_status_t status = PDI_OK;
-	*is_dense=1;
-	for( int dim=0; dim<type->ndims; ++dim){
-		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err0);
-		long subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err0);
-		long start; PDI_handle_err(PDI_value_int(&(type->starts[dim]), &start), err0);
-		if( (start > 0) || size > subsize ){
-			*is_dense=0;
-			break;
+	
+	
+	size_t from_size; PDI_handle_err(bufdesc_datasize(from_desc, &from_size), err0);
+	size_t to_size; PDI_handle_err(bufdesc_datasize(to_desc, &to_size), err0);
+	
+	// and now for a little defensive programming
+	if ( from_size != to_size ) {
+		PDI_handle_err(PDI_make_err(PDI_ERR_TYPE, "Incompatible types for copy: %ld Bytes -> %ld Bytes", (long)from_size, (long)to_size), err0);
+	}
+	
+
+	if ( 0 == from_desc->ndims && 0 == to_desc->ndims ) { // dense to dense
+		if ( from_desc->dense_size != to_desc->dense_size ) {
+			PDI_handle_err(PDI_make_err(PDI_ERR_TYPE, "Incompatible type size for dense copy: %ld vs. %ld .", (long)from_desc->dense_size, (long)to_desc->dense_size ), err0);
+		}
+		memcpy(to, from, from_desc->dense_size);
+		
+	} else { // sparse involved, explicit loop
+		size_t nblocks;
+		buffer_descriptor_t from_blockdesc;
+		size_t from_start;
+		buffer_descriptor_t to_blockdesc;
+		size_t to_start;
+		
+		if ( 0 == from_desc->ndims ) { // dense to sparse
+			nblocks = to_desc->subsizes[0];
+			
+			from_blockdesc = *from_desc;
+			from_blockdesc.dense_size /= to_desc->subsizes[0];
+			from_start = 0;
+			
+			to_blockdesc = *to_desc;
+			// remove slowest dim
+			--to_blockdesc.ndims;
+			++to_blockdesc.sizes;
+			++to_blockdesc.starts;
+			++to_blockdesc.subsizes;
+			to_start = to_desc->starts[0];
+			
+		} else if ( 0 == to_desc->ndims ) { // sparse to dense
+			nblocks = from_desc->subsizes[0];
+			
+			from_blockdesc = *from_desc;
+			// remove slowest dim
+			--from_blockdesc.ndims;
+			++from_blockdesc.sizes;
+			++from_blockdesc.starts;
+			++from_blockdesc.subsizes;
+			from_start = from_desc->starts[0];
+			
+			to_blockdesc = *to_desc;
+			to_blockdesc.dense_size /= from_desc->subsizes[0];
+			to_start = 0;
+			
+		} else { // sparse to sparse
+			if ( from_desc->subsizes[0] != to_desc->subsizes[0] ) {
+				PDI_handle_err(PDI_make_err(PDI_ERR_TYPE, "Incompatible array type size for copy."), err0);
+			}
+			nblocks = from_desc->subsizes[0];
+			
+			from_blockdesc = *from_desc;
+			// remove slowest dim
+			--from_blockdesc.ndims;
+			++from_blockdesc.sizes;
+			++from_blockdesc.starts;
+			++from_blockdesc.subsizes;
+			from_start = from_desc->starts[0];
+			
+			to_blockdesc = *to_desc;
+			// remove slowest dim
+			--to_blockdesc.ndims;
+			++to_blockdesc.sizes;
+			++to_blockdesc.starts;
+			++to_blockdesc.subsizes;
+			to_start = to_desc->starts[0];
+			
+		}
+		size_t to_stride; bufdesc_buffersize(&to_blockdesc, &to_stride);
+		size_t from_stride; bufdesc_buffersize(&from_blockdesc, &from_stride);
+		from = (char*)from + from_start*from_stride;
+		to = (char*)to + to_start*to_stride;
+		for ( size_t ii=0; ii<nblocks; ++ii ) {
+			buffer_do_copy(to, &to_blockdesc, from, &from_blockdesc );
+			from = (char*)from+from_stride;
+			to = (char*)to+to_stride;
 		}
 	}
-
-	return PDI_OK;
-err0:
-	return PDI_ERR_IMPL;
-}
-
-
-void do_copy_dense_to_sparse(int dim, const void *from, void *to, const val_size_t *to_size)
-{
-	if ( dim == to_size->ndims ) { 
-		memcpy(to, from, to_size->type);
-	} else {
-		size_t blocksize = to_size->type; 
-		for (int ii=dim+1; ii<to_size->ndims; ++ii) blocksize*= to_size->sizes[ii];  
-		to = (char*)to + to_size->starts[dim]*blocksize; 
-		for (size_t ii=0; ii<to_size->subsizes[dim]; ++ii) { 
-			do_copy_dense_to_sparse(dim+1, from, to, to_size); 
-			from = (char*)from + blocksize;
-			to = (char*)to + blocksize;
-		}
-		int end = to_size->sizes[dim]-to_size->starts[dim]-to_size->subsizes[dim];
-		to = (char*)to + end*blocksize;
-	}
-}
-
-void do_copy_sparse_to_dense(int dim, const void *from, const val_size_t *from_size, void *to)
-{
-	if ( dim == from_size->ndims ) { 
-		memcpy(to, from, from_size->type);
-	} else {
-		size_t blocksize = from_size->type; 
-		for (int ii=dim+1; ii<from_size->ndims; ++ii) blocksize*= from_size->sizes[ii];  
-		from = (char*)from + from_size->starts[dim]*blocksize; 
-		for (size_t ii=0; ii<from_size->subsizes[dim]; ++ii) { 
-			do_copy_sparse_to_dense(dim+1, from, from_size, to); 
-			from = (char*)from + blocksize;
-			to = (char*)to + blocksize;
-		}
-		int end = from_size->sizes[dim]-from_size->starts[dim]-from_size->subsizes[dim];
-		from = (char*)from + end*blocksize;
-	}
-}
-
-
-PDI_status_t PDI_buffer_copy(const void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type)
-{
-	PDI_status_t status = PDI_OK;
-	val_size_t tsize;
-
-	switch(from_type->kind){
-	case PDI_K_SCALAR:
-		// TODO[CR]: add the case of array with 1 element ?
-		if( to_type->kind != PDI_K_SCALAR ){
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
-				"In %s, line %d, cannot copy scalar into arrays.",__func__, __LINE__), err0);
-		}
-		/// PDI does not perform type conversion
-		if( to_type->c.scalar != from_type->c.scalar ){
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
-				"In %s, line %d, cannot convert data with different types.",__func__, __LINE__), err0);
-		}
-
-		PDI_handle_err( scal_size(from_type->c.scalar, &tsize), err0 );
-		memcpy(to, from, tsize.type); 
-		size_destroy(&tsize);
-		break;
-
-	case PDI_K_ARRAY:
-		if( to_type->kind != PDI_K_ARRAY ){
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
-				"In %s, line %d, cannot copy arrays into scalars.",__func__, __LINE__), err0);
-		}
-		//TODO: For now, do not handle imbricated arrays
-		if( to_type->c.array->type.kind != PDI_K_SCALAR ){
-			PDI_handle_err(PDI_make_err(PDI_UNAVAILABLE,
-				"In %s, line %d, Imbricated arrays not supported.",__func__, __LINE__), err0);
-		}
-		/// PDI does not perform type conversion
-		if( to_type->c.array->type.c.scalar != from_type->c.array->type.c.scalar ){
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
-				"In %s, line %d, cannot convert data with different types.",__func__, __LINE__), err0);
-		}
-
-
-		int from_is_dense=0;
-		int to_is_dense=0;
-		PDI_handle_err(PDI_array_datatype_is_dense(to_type->c.array, &from_is_dense), err0);
-		PDI_handle_err(PDI_array_datatype_is_dense(to_type->c.array, &to_is_dense), err0);
-		/// Both arrays can't be sparse. 
-		if( from_is_dense == 0 && to_is_dense == 0 ) return PDI_ERR_VALUE;
-
-		/// from is dense, dense part is copied inside the other array
-		if( from_is_dense ){
-			PDI_handle_err( size(to_type, &tsize), err0);
-			do_copy_dense_to_sparse(0, from, to, &tsize); 
-		} else { //< from is sparse 
-			PDI_handle_err( size(from_type, &tsize), err0);
-			do_copy_sparse_to_dense(0, from, &tsize, to); 
-		}
-		size_destroy(&tsize);
-		break;
-
-	case PDI_K_STRUCT:
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
-				"In %s, line %d, Structure cannot be copied (not implemented).",__func__, __LINE__), err0);
-		break;
-	}
-
+	
 	return status;
+	
 err0:
 	return status;
 }
 
 
-PDI_status_t PDI_datatype_init_scalar(PDI_type_t *this, PDI_scalar_type_t scalar_type)
+// public functions
+
+
+PDI_status_t PDI_datatype_init_scalar ( PDI_type_t *this, PDI_scalar_type_t scalar_type )
 {
 	this->kind = PDI_K_SCALAR;
 	this->c.scalar = scalar_type;
@@ -313,100 +516,105 @@ PDI_status_t PDI_datatype_init_scalar(PDI_type_t *this, PDI_scalar_type_t scalar
 }
 
 
-PDI_status_t PDI_datatype_init_array(PDI_type_t *this, PDI_type_t *type, const int ndims,
-		PDI_value_t *sizes, PDI_value_t *subsizes, PDI_value_t *starts,
-		const PDI_order_t order)
+PDI_status_t PDI_datatype_init_array ( PDI_type_t *result, const PDI_type_t *type, int ndims,
+		const PDI_value_t *sizes, const PDI_value_t *subsizes, const PDI_value_t *starts )
 {
-	int status=PDI_OK;
+	PDI_status_t status = PDI_OK;
 
-	// Set PDI_type
-	this->kind = PDI_K_ARRAY;
-	this->c.array = malloc(sizeof(PDI_array_type_t));
-
-	switch(type->kind){
-	case PDI_K_SCALAR:
-		PDI_datatype_init_scalar(&this->c.array->type, type->c.scalar);
-		break;
-	case PDI_K_ARRAY:
-		PDI_handle_err(PDI_datatype_init_array(&this->c.array->type,
-			&type->c.array->type,
-			type->c.array->ndims,
-			type->c.array->sizes,
-			type->c.array->subsizes,
-			type->c.array->starts,
-			type->c.array->order), err0);
-		break;
-	case PDI_K_STRUCT:
-		PDI_handle_err(PDI_make_err(PDI_UNAVAILABLE,
-			"In %s, line %s, cannot create structure (not implemented)"
-			, __func__, __LINE__), err0);
-		break;
+	PDI_array_type_t *array = malloc(sizeof(PDI_array_type_t));
+	
+	array->ndims = ndims;
+	
+	array->sizes = malloc(ndims*sizeof(PDI_value_t));
+	for ( int ii=0; ii<ndims; ++ii ) {
+		PDI_handle_err(PDI_value_copy(&(sizes[ii]), &(array->sizes[ii])), err0);
 	}
-
-	this->c.array->ndims = ndims;
-	this->c.array->order = order;
-
-	// set sizes
-	this->c.array->sizes = malloc( ndims*sizeof(PDI_value_t) );
-	for( int ii=0; ii<ndims; ++ii ){
-		PDI_handle_err( PDI_value_copy(
-			&sizes[ii], &this->c.array->sizes[ii] ), err1);
+	
+	if ( sizes == subsizes ) {
+		array->subsizes = array->sizes;
+	} else {
+		array->subsizes = malloc(ndims*sizeof(PDI_value_t));
+		for ( int ii=0; ii<ndims; ++ii ) {
+			PDI_handle_err(PDI_value_copy(&(subsizes[ii]), &(array->subsizes[ii])), err1);
+		}
 	}
-
-	if( subsizes ){
-		this->c.array->subsizes = malloc( ndims*sizeof(PDI_value_t) );
-		for( int ii=0; ii<ndims; ++ii ){
-			PDI_handle_err( PDI_value_copy(
-				&subsizes[ii], &( this->c.array->subsizes[ii])), err2);
+	
+	array->starts = malloc(ndims*sizeof(PDI_value_t));
+	if ( !starts ) {
+		for ( int ii=0; ii<ndims; ++ii ) {
+			PDI_handle_err(PDI_value_parse("0", &( array->starts[ii])), err2);
 		}
 	} else {
-		this->c.array->subsizes = this->c.array->sizes;
-	}
-
-	this->c.array->starts = malloc( ndims*sizeof(PDI_value_t) );
-	if( !starts ){
-		for( int ii=0; ii<ndims; ++ii ){
-			PDI_handle_err(PDI_value_parse("0", &( this->c.array->starts[ii])), err3);
-		}
-	} else {
-		for( int ii=0; ii<ndims; ++ii ){
-			PDI_handle_err( PDI_value_copy(
-				&starts[ii],  &( this->c.array->starts[ii])) , err3);
+		for ( int ii=0; ii<ndims; ++ii ) {
+			PDI_handle_err(PDI_value_copy(&(starts[ii]), &(array->starts[ii])), err2);
 		}
 	}
+	
+	PDI_handle_err(PDI_datatype_copy(&array->type, type), err3);
+	
+	result->kind = PDI_K_ARRAY;
+	result->c.array = array;
 
-	return PDI_OK;
-
+	return status;
+	
 err3:
-	free(this->c.array->starts);
+	for ( int ii=0; ii<ndims; ++ii ) PDI_value_destroy(&array->starts[ii]);
 err2:
-	if( this->c.array->subsizes != this->c.array->sizes ) free(this->c.array->subsizes);
+	//TODO: free already built starts
+	free(array->starts);
+	for ( int ii=0; ii<ndims; ++ii ) PDI_value_destroy(&array->subsizes[ii]);
 err1:
-	free(this->c.array->sizes);
+	//TODO: free already built subsizes
+	if ( array->subsizes != array->sizes ) free(array->subsizes);
+	for ( int ii=0; ii<ndims; ++ii ) PDI_value_destroy(&array->sizes[ii]);
 err0:
-	free(this->c.array);
-	return PDI_ERR_IMPL;
+	//TODO: free already built sizes
+	free(array->sizes);
+	free(array);
+	return status;
 }
 
 
-PDI_status_t PDI_datatype_densify(const PDI_type_t *type, PDI_type_t *dense)
+PDI_status_t PDI_datatype_copy ( PDI_type_t *result, const PDI_type_t *from )
 {
-	int status=PDI_OK;
-	switch(type->kind){
+	PDI_status_t status = PDI_OK;
+	
+	switch ( from->kind ) {
 	case PDI_K_SCALAR:
-		PDI_datatype_init_scalar(dense, type->c.scalar);
+		PDI_handle_err(PDI_datatype_init_scalar(result, from->c.scalar), err0);
+		break;
+	case PDI_K_ARRAY:
+		PDI_handle_err(PDI_datatype_init_array(result, &from->c.array->type, 
+						from->c.array->ndims, from->c.array->sizes, from->c.array->subsizes,
+						from->c.array->starts),
+				err0);
+		break;
+	case PDI_K_STRUCT:
+		PDI_handle_err(PDI_make_err(PDI_UNAVAILABLE, "Structure support not implemented"), err0);
+		break;
+	}
+	
+	return status;
+	
+err0:
+	return status;
+}
+
+
+PDI_status_t PDI_datatype_densify ( PDI_type_t *result, const PDI_type_t *oldtype )
+{
+	int status = PDI_OK;
+	
+	switch ( oldtype->kind ){
+	case PDI_K_SCALAR:
+		PDI_datatype_init_scalar(result, oldtype->c.scalar);
 		break;
 
 	case PDI_K_ARRAY: ;
-		PDI_type_t next_type;
-		PDI_handle_err(PDI_datatype_densify(&type->c.array->type, &next_type), err0);
-		PDI_handle_err(PDI_datatype_init_array(dense,
-			&next_type,
-			type->c.array->ndims,
-			type->c.array->subsizes,
-			NULL,
-			NULL,
-			type->c.array->order), err0 );
+		PDI_type_t subtype; PDI_handle_err(PDI_datatype_densify(&subtype, &oldtype->c.array->type), err0);
+		PDI_handle_err(PDI_datatype_init_array(result, &subtype, oldtype->c.array->ndims,
+						                               oldtype->c.array->subsizes, oldtype->c.array->subsizes, NULL),
+				err0 );
 		break;
 
 	case PDI_K_STRUCT:
@@ -420,110 +628,8 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_datatype_is_dense(const PDI_type_t *type, int *is_dense){
-	switch(type->kind){
-	case PDI_K_SCALAR:
-		*is_dense=1;
-		return PDI_OK;
 
-	case PDI_K_ARRAY:
-		return PDI_array_datatype_is_dense(type->c.array, is_dense);
-
-	case PDI_K_STRUCT:
-		return PDI_UNAVAILABLE;
-	}
-	return PDI_OK;
-}
-
-static PDI_status_t load_array(PC_tree_t node, PDI_array_type_t *type)
-{
-	PDI_status_t status = PDI_OK;
-	
-	PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	PDI_status_t sizes_invalid = PC_len(PC_get(node, ".sizes"), &type->ndims);
-	PC_errhandler(pc_handler); // aka PC_end_try
-	
-	if ( !sizes_invalid ) { // multi dim array
-		type->sizes = malloc(type->ndims*sizeof(PDI_value_t));
-		for ( int ii=0; ii<type->ndims; ++ii ) {
-			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err1);
-			PDI_handle_err(PDI_value_parse(expr, &type->sizes[ii]), err1);
-err1:
-			free(expr);
-			PDI_handle_err(status, err0);
-		}
-	} else { //single dim array
-		type->ndims = 1;
-		type->sizes = malloc(type->ndims*sizeof(PDI_value_t));
-		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err5);
-		PDI_handle_err(PDI_value_parse(expr, type->sizes), err5);
-err5:
-		free(expr);
-		PDI_handle_err(status, err0);
-	}
-	
-	pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	int len; PC_status_t invalid_subsizes = PC_len(PC_get(node, ".subsizes"), &len);
-	PC_errhandler(pc_handler); // aka PC_end_try
-	
-	if ( !invalid_subsizes ) {
-		if ( len != type->ndims ) PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, type->ndims), err0);	
-		type->subsizes = malloc(type->ndims*sizeof(PDI_value_t));
-		for ( int ii=0; ii<type->ndims; ++ii ) {
-			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err2);
-			PDI_handle_err(PDI_value_parse(expr, &type->subsizes[ii]), err2);
-err2:
-			free(expr);
-			PDI_handle_err(status, err0);
-		}
-		
-	} else { // no subsize, default to full size
-		type->subsizes = type->sizes;
-	}
-	
-	
-	pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	if ( !PC_len(PC_get(node, ".starts"), &len) ) {
-		PC_errhandler(pc_handler); // aka PC_end_try
-		if ( len != type->ndims ) PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, type->ndims), err0);
-		type->starts = malloc(type->ndims*sizeof(PDI_value_t));
-		for ( int ii=0; ii<type->ndims; ++ii ) {
-			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err3);
-			PDI_handle_err(PDI_value_parse(expr, &type->starts[ii]), err3);
-err3:
-			free(expr);
-			PDI_handle_err(status, err0);
-		}
-	} else { // no start, start at 0 everywhere
-		PC_errhandler(pc_handler); // aka PC_end_try
-		type->starts = malloc(type->ndims*sizeof(PDI_value_t));
-		for ( int ii=0; ii<type->ndims; ++ii ) {
-			PDI_handle_err(PDI_value_parse("0", &type->starts[ii]), err0);
-		}
-	}
-	
-	// Order: C or fortran ordering, default is C
-	pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	char *order="c"; PC_string(PC_get(node, ".order"), &order);
-	PC_errhandler(pc_handler); // aka PC_end_try
-	// in case of error, char *order is not modified so order=="c" is true
-	if( (!strcmp(order, "c"))||(!strcmp(order, "C")) ){
-		type->order=PDI_ORDER_C;
-	} else if( (!strcmp(order, "fortran"))||(!strcmp(order, "Fortran")) ){
-		type->order=PDI_ORDER_FORTRAN;
-	} else {
-		PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Incorrect array ordering: `%s'", order), err0);
-	}
-
-	PC_tree_t type_type = PC_get(node, ".type");
-	handle_PC_err(PC_status(type_type), err0);
-	PDI_handle_err(PDI_datatype_load(type_type, &type->type), err0);
-err0:
-	
-	return status;
-}
-
-PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
+PDI_status_t PDI_datatype_load ( PDI_type_t *type, PC_tree_t node )
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -532,7 +638,7 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 	PC_errhandler(pc_handler); // aka PC_end_try
 	
 	if ( buf_str ) { // case where the datatype is primitive
-		type->kind = PDI_K_SCALAR;
+			type->kind = PDI_K_SCALAR;
 		if ( !strcmp(buf_str, "int") ) {
 			//TODO: adapt to the actual size of int
 			type->c.scalar = PDI_T_INT32;
@@ -541,11 +647,11 @@ PDI_status_t PDI_datatype_load(PC_tree_t node, PDI_type_t *type)
 		} else {
 			//TODO: handle missing types
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unknown primitive type: `%s'", buf_str), err0);
-		}
+	}
 	} else { // case where the datatype is composite
 		type->kind = PDI_K_ARRAY;
 		type->c.array = malloc( sizeof(PDI_array_type_t) );
-		PDI_handle_err(load_array(node, type->c.array), err0);
+		PDI_handle_err(array_datatype_load(node, type->c.array), err0);
 	}
 	
 err0:
@@ -553,45 +659,14 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_data_size(const PDI_type_t *type, size_t *result)
-{
-	PDI_status_t status = PDI_OK;
-	val_size_t valsz = size_new();
-	PDI_handle_err(size(type, &valsz), err0);
-	*result = valsz.type;
-	for ( int dim=0; dim<valsz.ndims; ++dim ) {
-		*result *= valsz.subsizes[dim];
-	}
-	size_destroy(&valsz);
 
-	return status;
-err0:
-	return status;
-}
-
-PDI_status_t PDI_array_datatype_destroy(PDI_array_type_t *type)
-{
-	PDI_status_t status = PDI_OK;
-	
-	PDI_handle_err(PDI_datatype_destroy(&type->type), err0);
-	// don't free subsizes in case it was a copy of sizes
-	if ( type->subsizes != type->sizes) free(type->subsizes);
-
-	free(type->sizes);
-	free(type->starts);
-	
-	return status;
-err0:
-	return status;
-}
-
-PDI_status_t PDI_datatype_destroy(PDI_type_t *type)
+PDI_status_t PDI_datatype_destroy ( PDI_type_t *type )
 {
 	PDI_status_t status = PDI_OK;
 	
 	switch (type->kind) {
 	case PDI_K_ARRAY: {
-		PDI_array_datatype_destroy(type->c.array);
+		array_datatype_destroy(type->c.array);
 		free(type->c.array);
 	} break;
 	case PDI_K_STRUCT: {
@@ -607,3 +682,85 @@ PDI_status_t PDI_datatype_destroy(PDI_type_t *type)
 err0:
 	return status;
 }
+
+
+PDI_status_t PDI_datatype_is_dense ( const PDI_type_t *type, int *is_dense )
+{
+	switch(type->kind){
+	case PDI_K_SCALAR:
+		*is_dense=1;
+		return PDI_OK;
+
+	case PDI_K_ARRAY:
+		return array_datatype_is_dense(type->c.array, is_dense);
+
+	case PDI_K_STRUCT:
+		return PDI_UNAVAILABLE;
+	}
+	return PDI_OK;
+}
+
+
+PDI_status_t PDI_datatype_datasize ( const PDI_type_t *type, size_t *result )
+{
+	PDI_status_t status = PDI_OK;
+	
+	buffer_descriptor_t valsz; PDI_handle_err(datatype_bufdesc(type, &valsz), err0);
+	PDI_handle_err(bufdesc_datasize(&valsz, result), err1);
+	bufdesc_destroy(&valsz);
+	
+	return status;
+
+err1:
+	bufdesc_destroy(&valsz);
+err0:
+	return status;
+}
+
+
+PDI_status_t PDI_datatype_buffersize ( const PDI_type_t *type, size_t *result )
+{
+	PDI_status_t status = PDI_OK;
+	
+	buffer_descriptor_t valsz; PDI_handle_err(datatype_bufdesc(type, &valsz), err0);
+	PDI_handle_err(bufdesc_buffersize(&valsz, result), err1);
+	bufdesc_destroy(&valsz);
+	
+	return status;
+
+err1:
+	bufdesc_destroy(&valsz);
+err0:
+	return status;
+}
+
+
+PDI_status_t PDI_buffer_copy ( void *to, const PDI_type_t *to_type, const void *from, const PDI_type_t *from_type )
+{
+	PDI_status_t status = PDI_OK;
+
+	buffer_descriptor_t from_desc; PDI_handle_err( datatype_bufdesc(from_type, &from_desc), err0 );
+	buffer_descriptor_t to_desc; PDI_handle_err( datatype_bufdesc(to_type, &to_desc), err1 );
+	
+	size_t from_size; PDI_handle_err(bufdesc_datasize(&from_desc, &from_size), err2);
+	size_t to_size; PDI_handle_err(bufdesc_datasize(&to_desc, &to_size), err2);
+	
+	// and now for a little defensive programming
+	if ( from_size != to_size ) {
+		PDI_handle_err(PDI_make_err(PDI_ERR_TYPE, "Incompatible types for copy: %ld Bytes -> %ld Bytes", (long)from_size, (long)to_size), err2);
+	}
+	
+	PDI_handle_err( buffer_do_copy(to, &to_desc, from, &from_desc), err2);
+	bufdesc_destroy(&from_desc);
+	bufdesc_destroy(&to_desc);
+	
+	return status;
+	
+err2:
+	bufdesc_destroy(&to_desc);
+err1:
+	bufdesc_destroy(&from_desc);
+err0:
+	return status;
+}
+

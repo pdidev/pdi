@@ -63,17 +63,39 @@ struct PDI_type_s
 
 struct PDI_array_type_s
 {
+	/// number of dimensions of the array
 	int ndims;
 	
+	/* Array of sizes of the array from outer to inner dim
+	 * 
+	 * The array size is ndims.
+	 * The slowest dimension is sizes[0], the fastest sizes[ndims-1]
+	 * 
+	 * The stride for a given dimension is the product of the element size by all
+	 * size of dimensions with a lower index.
+	 */
 	PDI_value_t *sizes;
 	
+	/* Array of subsizes of the array from outer to inner dim
+	 * 
+	 * The array size is ndims.
+	 * The slowest dimension is subsizes[0], the fastest subsizes[ndims-1]
+	 * 
+	 * The subsize describes the part of the array actually containing data.
+	 */
 	PDI_value_t *subsizes;
 	
+	/* Array of start of the array from outer to inner dim
+	 * 
+	 * The array size is ndims.
+	 * The slowest dimension is starts[0], the fastest starts[ndims-1]
+	 * 
+	 * The start is the first index in a given dimension containing data.
+	 */
 	PDI_value_t *starts;
 	
+	/// Type of the elements contained in the array.
 	PDI_type_t type;
-	
-	PDI_order_t order;
 };
 
 struct PDI_member_s
@@ -95,20 +117,45 @@ struct PDI_struct_type_s
 	
 };
 
-/** Computes the data size of a type, excluding potentially unused memory from
- * a sparse type
- * \param type the type whose size to compute
- * \param result the size in bytes
+/** Creates a new datatype to represent a scalar
+ * \param result the datatype to be constructed
+ * \param scalar_type the scalar the datatype should represent
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_data_size(const PDI_type_t* type, size_t* result);
+PDI_status_t PDI_EXPORT PDI_datatype_init_scalar ( PDI_type_t *result, PDI_scalar_type_t scalar_type );
 
-/** Loads a type definition from a paraconf-style config
- * \param node the configuration to read
- * \param type the type to generate
+/** Creates a new datatype to represent a scalar
+ * \param result the datatype to be constructed
+ * \param elem_type type of an element of the array
+ * \param ndims number of dimensions of the array
+ * \param sizes size of the buffer in each dimension
+ * \param subsizes size of the data inside the buffer in each dimension
+ * \param starts first index containing data in each dimension
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
+PDI_status_t PDI_EXPORT PDI_datatype_init_array ( PDI_type_t *result, const PDI_type_t *elem_type, int ndims,
+		const PDI_value_t *sizes, const PDI_value_t *subsizes, const PDI_value_t *starts );
+
+/** Creates a new datatype as the exact copy of an existing datatype
+ * \param result the datatype to be constructed
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_datatype_copy ( PDI_type_t *result, const PDI_type_t *from );
+
+/** Creates a new datatype as the dense copy of an existing type.
+ *
+ * \param oldtype the type of the (possibly sparse) data whose attributes are used to produce a corresponding dense type.
+ * \param result the dense type that is produced using type attributes.
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_datatype_densify ( PDI_type_t *result, const PDI_type_t *oldtype );
+
+/** Creates a new datatype from a paraconf-style config
+ * \param node the configuration to read
+ * \param result the type to generate
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_datatype_load ( PDI_type_t* result, PC_tree_t node );
 
 /** Destroys a previously constructed type and frees the associated memory
  * 
@@ -117,7 +164,31 @@ PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
  * \param type the type to destroy
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
+PDI_status_t PDI_EXPORT PDI_datatype_destroy ( PDI_type_t *type );
+
+/** Indicate if a given datatype is dense or not 
+ * 
+ * \param array_type the type that is checked
+ * \param is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_datatype_is_dense ( const PDI_type_t *type, int *is_dense );
+
+/** Computes the data size of a type, excluding potentially unused memory from
+ * a sparse type
+ * \param type the type whose size to compute
+ * \param result the size in bytes
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_datatype_datasize ( const PDI_type_t* type, size_t* result );
+
+/** Computes the data size of a type, including potentially unused memory from
+ * a sparse type
+ * \param type the type whose size to compute
+ * \param result the size in bytes
+ * \return an exit status code
+ */
+PDI_status_t PDI_EXPORT PDI_datatype_buffersize ( const PDI_type_t* type, size_t* result );
 
 /** Copies a buffer into an other 
  * 
@@ -132,18 +203,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
  * \param to_type the type of the destination data
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_buffer_copy(const void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type);
-
-/** Allocate and create a dense type.
- *
- * Allocate and create a dense type whose subsizes and sizes are equals to the subsizes of a given datatype.
- * Starts values (offset) are set to 0.
- *
- * \param type the type of the (possibly sparse) data whose attributes are used to produce a corresponding dense type.
- * \param dense the dense type that is produced using type attributes.
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_densify(const PDI_type_t *type, PDI_type_t *dense);
+PDI_status_t PDI_EXPORT PDI_buffer_copy ( void *to, const PDI_type_t *to_type, const void *from, const PDI_type_t *from_type );
 
 /** Indicate if a given datatype is dense or not 
  * 

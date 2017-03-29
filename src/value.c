@@ -708,7 +708,7 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_value_copy(PDI_value_t *value, PDI_value_t *copy)
+PDI_status_t PDI_value_copy ( const PDI_value_t *value, PDI_value_t *copy )
 {
 	int status=PDI_OK;
 	copy->kind = value->kind;

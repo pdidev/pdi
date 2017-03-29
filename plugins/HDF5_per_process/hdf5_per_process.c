@@ -250,7 +250,6 @@ void rm_if_exist(hid_t h5file, char *dset_name)
 void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 {
 	int rank = 0;
-	int order = PDI_ORDER_C;
 	hsize_t *h5sizes = NULL;
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
@@ -260,25 +259,17 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 		h5sizes = malloc(rank*sizeof(hsize_t));
 		h5subsizes = malloc(rank*sizeof(hsize_t));
 		h5starts = malloc(rank*sizeof(hsize_t));
-		order = data->type.c.array->order;
-		int h5ii = 0;
 		long intdim = 0;
 		for ( int ii=0; ii<rank; ++ii ) {
-			switch (order){
-			case PDI_ORDER_C:
-				h5ii = ii; break; // ORDER_C
-			case PDI_ORDER_FORTRAN:
-				h5ii = rank-ii-1; break; // ORDER_FORTRAN
-			}
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
-			h5sizes[h5ii] = intdim;
+			h5sizes[ii] = intdim;
 			
 			PDI_value_int(&data->type.c.array->subsizes[ii], &intdim);
-			h5subsizes[h5ii] = intdim;
+			h5subsizes[ii] = intdim;
 			
 			PDI_value_int(&data->type.c.array->starts[ii], &intdim);
-			h5starts[h5ii] = intdim;
+			h5starts[ii] = intdim;
 		}
 		scalart = &data->type.c.array->type;
 	}
@@ -318,7 +309,6 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 {
 	int status=0;
 	int rank = 0;
-	int order = PDI_ORDER_C;
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
@@ -328,25 +318,17 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 		sizes = malloc(rank*sizeof(hsize_t));
 		subsizes = malloc(rank*sizeof(hsize_t));
 		starts = malloc(rank*sizeof(hsize_t));
-		order = data->type.c.array->order;
-		int h5ii ;
 		for ( int ii=0; ii<rank; ++ii ) {
-			switch (order){
-			case PDI_ORDER_C:
-				h5ii = ii; break; // ORDER_C
-			case PDI_ORDER_FORTRAN:
-				h5ii = rank-ii-1; break; // ORDER_FORTRAN
-			}
 			long intdim;
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
-			sizes[h5ii] = intdim;
+			sizes[ii] = intdim;
 			
 			PDI_value_int(&data->type.c.array->subsizes[ii], &intdim);
-			subsizes[h5ii] = intdim;
+			subsizes[ii] = intdim;
 			
 			PDI_value_int(&data->type.c.array->starts[ii], &intdim);
-			starts[h5ii] = intdim;
+			starts[ii] = intdim;
 		}
 		scalart = &data->type.c.array->type;
 	}
@@ -418,6 +400,7 @@ PDI_status_t PDI_hdf5_per_process_data_start( PDI_data_t *data )
 		}
 	}
 	if ( data->content[data->nb_content-1].access & PDI_IN ) {
+		status = PDI_UNAVAILABLE;
 		int found_input = 0;
 		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
 			if ( !strcmp(inputs[ii].name, data->name) ) {

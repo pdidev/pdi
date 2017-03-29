@@ -6,7 +6,7 @@ pdi:
     meta3: int
     nth_meta: int
   data: # values that can not be referenced using $syntax
-    test_var: double
+    test_var: int
   plugins:
     utilities:
       event2data:

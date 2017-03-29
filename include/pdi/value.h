@@ -108,7 +108,7 @@ PDI_status_t PDI_EXPORT PDI_value_destroy(PDI_value_t *value);
  * \param[in] copy copying the content of value in an existing PDI_value_t
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_value_copy(PDI_value_t *value, PDI_value_t *copy);
+PDI_status_t PDI_EXPORT PDI_value_copy(const PDI_value_t *value, PDI_value_t *copy);
 
 
 
