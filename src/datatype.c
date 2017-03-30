@@ -59,6 +59,7 @@ typedef struct val_size_s
 } val_size_t;
 
 PDI_status_t size(const PDI_type_t *type, val_size_t *result);
+PDI_status_t PDI_array_datatype_is_dense(PDI_array_type_t *type, int *is_dense);
 
 PDI_status_t size_destroy(val_size_t *result)
 {
@@ -232,8 +233,8 @@ PDI_status_t PDI_copy(void *from, const PDI_type_t *from_type, void *to, const P
 
 			int from_is_dense=0;
 			int to_is_dense=0;
-			PDI_handle_err(PDI_array_type_is_dense(to_type->c.array, &from_is_dense), err0);
-			PDI_handle_err(PDI_array_type_is_dense(to_type->c.array, &to_is_dense), err0);
+			PDI_handle_err(PDI_array_datatype_is_dense(to_type->c.array, &from_is_dense), err0);
+			PDI_handle_err(PDI_array_datatype_is_dense(to_type->c.array, &to_is_dense), err0);
 			/// Both arrays can't be sparse. 
 			if( from_is_dense == 0 && to_is_dense == 0 ) return PDI_ERR_VALUE;
 
@@ -304,7 +305,13 @@ err0:
 	return PDI_ERR_IMPL;
 }
 
-PDI_status_t PDI_array_type_is_dense(PDI_array_type_t *type, int *is_dense)
+/** Indicate if a given array_type is dense or not 
+ * 
+ * \param array_type the type that is checked
+ * \param is_dense an integer that stores 1 if the array is dense and 0 otherwise. 
+ * \return an exit status code
+ */
+PDI_status_t PDI_array_datatype_is_dense(PDI_array_type_t *type, int *is_dense)
 {
 	PDI_status_t status;
 	*is_dense=1;
@@ -322,6 +329,23 @@ PDI_status_t PDI_array_type_is_dense(PDI_array_type_t *type, int *is_dense)
 err0:
 	return PDI_ERR_IMPL;
 }
+
+PDI_status_t PDI_datatype_is_dense(PDI_type_t *type, int *is_dense){
+	switch(type->kind){
+		case PDI_K_SCALAR:
+			*is_dense=1;
+			return PDI_OK;
+
+		case PDI_K_ARRAY:
+			return PDI_array_datatype_is_dense(type->c.array, is_dense);
+
+		case PDI_K_STRUCT:
+			return PDI_UNAVAILABLE;
+	}
+	return PDI_OK;
+}
+
+
 
 static PDI_status_t load_array(PC_tree_t node, PDI_array_type_t *type)
 {

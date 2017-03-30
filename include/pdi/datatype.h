@@ -147,10 +147,10 @@ PDI_status_t PDI_EXPORT PDI_datatype_copy_dense(PDI_type_t *type, PDI_type_t *de
 
 /** Indicate if a given datatype is dense or not 
  * 
- * \param array_type the type that is check
- * \param is_dense an integer that stores 1 if the array is dense and 0 otherwise. 
+ * \param array_type the type that is checked
+ * \param is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_array_type_is_dense(PDI_array_type_t *array_type, int *is_dense);
+PDI_status_t PDI_EXPORT PDI_datatype_is_dense(PDI_type_t *array_type, int *is_dense);
 
 #endif // PDI_DATATYPE_H__
