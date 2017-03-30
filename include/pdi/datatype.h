@@ -119,7 +119,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_load(PC_tree_t node, PDI_type_t* type);
  */
 PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
 
-/** Copies a data into an other 
+/** Copies a buffer into an other 
  * 
  * Content of <from> is copied into <to> if both type are compatible.
  * No allocation is performed by this routine.
@@ -143,7 +143,7 @@ PDI_status_t PDI_EXPORT PDI_copy(void *from, const PDI_type_t *from_type, void *
  * \param dense the dense type that is produced using type attributes.
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_type_create_dense(PDI_type_t *type, PDI_type_t **dense);
+PDI_status_t PDI_EXPORT PDI_datatype_copy_dense(PDI_type_t *type, PDI_type_t *dense);
 
 /** Indicate if a given datatype is dense or not 
  * 

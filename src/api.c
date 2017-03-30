@@ -218,7 +218,8 @@ err0:
 PDI_status_t PDI_reclaim( const char* name )
 {
 	PDI_status_t status = PDI_OK;
-	PDI_type_t *newtype;
+	PDI_type_t newtype;
+	void *newval=NULL;
 	
 	PDI_data_t *data = PDI_find_data(name);
 	if ( data ) {
@@ -230,18 +231,17 @@ PDI_status_t PDI_reclaim( const char* name )
 			// keep a copy of the last exposed value of the data
 			data->content[data->nb_content-1].access |= PDI_MM_FREE & PDI_MM_COPY;
 			size_t dsize; PDI_handle_err(PDI_data_size(&data->type, &dsize), err0);
-			void *newval = malloc(dsize);
-			PDI_handle_err(PDI_type_create_dense(&data->type, &newtype), err1);
+			newval = malloc(dsize);
+			PDI_handle_err( PDI_datatype_copy_dense(&data->type, &newtype), err1);
 			PDI_handle_err( PDI_copy(
 							(void*)data->content[data->nb_content-1].data,
 							&data->type, 
 							newval,
-							newtype)
-					, err0);
+							&newtype)
+					, err2);
 			data->content[data->nb_content-1].data = newval;
 
-			//PDI_datatype_destroy(newtype); TODO
-			free(newtype);
+			PDI_datatype_destroy(&newtype);
 		} else {
 			PDI_data_unlink(data, data->nb_content-1);
 		}
@@ -250,9 +250,11 @@ PDI_status_t PDI_reclaim( const char* name )
 	}
 	
 	return status;
-	
+
+err2:
+	PDI_datatype_destroy(&newtype);
 err1:
-	if(newtype) free(newtype);
+	free(newval);
 err0:
 	return status;
 }

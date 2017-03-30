@@ -170,39 +170,39 @@ err0:
 }
 
 
-void do_copy_sparse_to_dense(int dim, void *to, val_size_t *to_size, void *from)
+void do_copy_dense_to_sparse(int dim, void *from, void *to, val_size_t *to_size)
 {
 	if ( dim == to_size->ndims ) { 
 		memcpy(to, from, to_size->type);
 	} else {
 		size_t blocksize = to_size->type; 
 		for (int ii=dim+1; ii<to_size->ndims; ++ii) blocksize*= to_size->sizes[ii];  
-		from = (char*)from + to_size->starts[dim]*blocksize; 
+		to = (char*)to + to_size->starts[dim]*blocksize; 
 		for (size_t ii=0; ii<to_size->subsizes[dim]; ++ii) { 
-			do_copy_sparse_to_dense(dim+1, to, from, to_size); 
+			do_copy_dense_to_sparse(dim+1, from, to, to_size); 
 			from = (char*)from + blocksize;
 			to = (char*)to + blocksize;
 		}
 		int end = to_size->sizes[dim]-to_size->starts[dim]-to_size->subsizes[dim];
-		from = (char*)from + end*blocksize;
+		to = (char*)to + end*blocksize;
 	}
 }
 
-void do_copy_dense_to_sparse(int dim, void *to, void *from, val_size_t *from_size)
+void do_copy_sparse_to_dense(int dim, void *from, val_size_t *from_size, void *to)
 {
 	if ( dim == from_size->ndims ) { 
 		memcpy(to, from, from_size->type);
 	} else {
 		size_t blocksize = from_size->type; 
 		for (int ii=dim+1; ii<from_size->ndims; ++ii) blocksize*= from_size->sizes[ii];  
-		to = (char*)to + from_size->starts[dim]*blocksize; 
+		from = (char*)from + from_size->starts[dim]*blocksize; 
 		for (size_t ii=0; ii<from_size->subsizes[dim]; ++ii) { 
-			do_copy_dense_to_sparse(dim+1, to, from_size, from); 
+			do_copy_sparse_to_dense(dim+1, from, from_size, to); 
 			from = (char*)from + blocksize;
 			to = (char*)to + blocksize;
 		}
 		int end = from_size->sizes[dim]-from_size->starts[dim]-from_size->subsizes[dim];
-		to = (char*)from + end*blocksize;
+		from = (char*)from + end*blocksize;
 	}
 }
 
@@ -239,11 +239,11 @@ PDI_status_t PDI_copy(void *from, const PDI_type_t *from_type, void *to, const P
 
 			/// from is dense, dense part is copied inside the other array
 			if( from_is_dense ){
-				PDI_handle_err( size(from_type, &tsize), err0);
-				do_copy_dense_to_sparse(0, to, &tsize, from); 
+				PDI_handle_err( size(to_type, &tsize), err0);
+				do_copy_dense_to_sparse(0, from, to, &tsize); 
 			} else { //< from is sparse 
 				PDI_handle_err( size(from_type, &tsize), err0);
-				do_copy_sparse_to_dense(0, to, from, &tsize); 
+				do_copy_sparse_to_dense(0, from, &tsize, to); 
 			}
 			size_destroy(&tsize);
 
@@ -251,50 +251,56 @@ PDI_status_t PDI_copy(void *from, const PDI_type_t *from_type, void *to, const P
 			return PDI_UNAVAILABLE;
 	}
 
-	return status;
 err0:
-	size_destroy(&tsize);
 	return status;
 }
 
-PDI_status_t PDI_type_create_dense(PDI_type_t *type, PDI_type_t **dense)
+PDI_status_t PDI_datatype_copy_dense(PDI_type_t *type, PDI_type_t *dense)
 {
 	int status=PDI_OK;
-	if( type->kind == PDI_K_STRUCT ) return PDI_UNAVAILABLE;
-	
-	*dense = malloc(sizeof(PDI_type_t));
-	
-	if( type->kind == PDI_K_SCALAR ){
-		(*dense)->kind = PDI_K_SCALAR;
-		(*dense)->c.scalar = type->c.scalar;
-	}
-	
-	// Set PDI_type
-	(*dense)->kind = PDI_K_ARRAY;
-	(*dense)->c.array = malloc(sizeof(PDI_array_type_t));
-	
-	int ndims = type->c.array->ndims;
-	// Set PDI_array_type
-	(*dense)->c.array->sizes = malloc( ndims*sizeof(PDI_value_t) );
-	(*dense)->c.array->subsizes = malloc( ndims*sizeof(PDI_value_t) );
-	(*dense)->c.array->starts = malloc( ndims*sizeof(PDI_value_t) );
-	
-	(*dense)->c.array->ndims = ndims;
-	for( int ii=0; ii<ndims; ++ii ){
-		PDI_handle_err( PDI_value_copy(&type->c.array->sizes[ii], &( (*dense)->c.array->sizes[ii] )), err0);
-		PDI_handle_err( PDI_value_copy(&type->c.array->subsizes[ii], &( (*dense)->c.array->subsizes[ii])), err0);
-		PDI_handle_err( PDI_value_copy(&type->c.array->starts[ii],  &( (*dense)->c.array->starts[ii])) , err0);
-	}
+	switch(type->kind){
+		case PDI_K_SCALAR:
+			dense->kind = PDI_K_SCALAR;
+			dense->c.scalar = type->c.scalar;
+			break;
 
+		case PDI_K_ARRAY:
+			// Set PDI_type
+			dense->kind = PDI_K_ARRAY;
+			dense->c.array = malloc(sizeof(PDI_array_type_t));
+
+			int ndims = type->c.array->ndims;
+			// Set PDI_array_type
+			PDI_handle_err(PDI_datatype_copy_dense(&type->c.array->type, &dense->c.array->type), err0);
+			dense->c.array->order = type->c.array->order;
+
+			// set sizes
+			dense->c.array->sizes = malloc( ndims*sizeof(PDI_value_t) );
+			dense->c.array->subsizes = malloc( ndims*sizeof(PDI_value_t) );
+			dense->c.array->starts = malloc( ndims*sizeof(PDI_value_t) );
+			
+			dense->c.array->ndims = ndims;
+			for( int ii=0; ii<ndims; ++ii ){
+				PDI_handle_err( PDI_value_copy(
+					&type->c.array->sizes[ii], &( dense->c.array->sizes[ii] )), err1);
+				PDI_handle_err( PDI_value_copy(
+					&type->c.array->subsizes[ii], &( dense->c.array->subsizes[ii])), err1);
+				PDI_handle_err( PDI_value_copy(
+					&type->c.array->starts[ii],  &( dense->c.array->starts[ii])) , err1);
+			}
+			break;
+
+		case PDI_K_STRUCT:
+			return PDI_UNAVAILABLE;
+	}
 	return PDI_OK;
 
+err1:
+	free(dense->c.array->sizes);
+	free(dense->c.array->subsizes);
+	free(dense->c.array->starts);
 err0:
-	free((*dense)->c.array->sizes);
-	free((*dense)->c.array->subsizes);
-	free((*dense)->c.array->starts);
-	free((*dense)->c.array);
-	free(*dense);
-	*dense=NULL;
+	free(dense->c.array);
 	return PDI_ERR_IMPL;
 }
 
@@ -456,10 +462,11 @@ PDI_status_t PDI_array_datatype_destroy(PDI_array_type_t *type)
 	PDI_status_t status = PDI_OK;
 	
 	PDI_handle_err(PDI_datatype_destroy(&type->type), err0);
-	free(type->sizes);
-	free(type->starts);
 	// don't free subsizes in case it was a copy of sizes
 	if ( type->subsizes != type->sizes) free(type->subsizes);
+
+	free(type->sizes);
+	free(type->starts);
 	
 	return status;
 err0:
