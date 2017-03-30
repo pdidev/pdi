@@ -29,4 +29,5 @@ pdi:
       outputs:
         main_field:
           generation: $iter
+          n_files: 3
         iter:

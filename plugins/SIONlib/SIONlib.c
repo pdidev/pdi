@@ -52,6 +52,7 @@ typedef struct
   PDI_value_t directory;
   PDI_value_t generation;
   PDI_value_t select;
+  PDI_value_t n_files;
 } SIONlib_var_t;
 
 static size_t n_outputs = 0;
@@ -112,6 +113,9 @@ static PDI_status_t read_vars_from_config(PC_tree_t conf, SIONlib_var_t *vars[],
 
     // set select
     if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".select", default_select, &(*vars)[i].select))) return status;
+
+    // set n_files
+    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".n_files", "1", &(*vars)[i].n_files))) return status;
   }
 
   return PDI_OK;
@@ -200,24 +204,37 @@ static char *construct_path(const char *directory, const char* name, long genera
 }
 
 
-static PDI_status_t write_to_file(const PDI_data_t *data, const char *directory, long generation)
+static PDI_status_t write_to_file(const PDI_data_t *data, const SIONlib_var_t *var)
 {
   // open file
+  PDI_status_t status;
+  long generation;
+  if ((status = PDI_value_int(&var->generation, &generation))) return status;
+
+  long n_files_;
+  if ((status = PDI_value_int(&var->n_files, &n_files_))) return status;
+  int n_files = n_files_;
+
+  char *directory;
+  if ((status = PDI_value_str(&var->directory, &directory))) {
+    free(directory);
+    return status;
+  }
+
   char* path = construct_path(directory, data->name, generation);
+  free(directory);
   if (!path) return PDI_ERR_SYSTEM;
 
-  // TODO: make num_files configuration parameter
-  int num_files = 1;
   size_t data_size;
-  PDI_status_t status;
   if (status = PDI_data_size(&data->type, &data_size)) {
     free(path);
     return status;
   }
-  sion_int64 chunksize = (size_t)data_size;
+  sion_int64 chunksize = data_size;
+
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
-  int sid = sion_paropen_mpi(path, "w", &num_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  int sid = sion_paropen_mpi(path, "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
   free(path);
 
   // write data to file
@@ -230,16 +247,25 @@ static PDI_status_t write_to_file(const PDI_data_t *data, const char *directory,
   return PDI_OK;
 }
 
-static PDI_status_t read_from_file(const PDI_data_t *data, const char *directory, long generation)
+static PDI_status_t read_from_file(const PDI_data_t *data, const SIONlib_var_t *var)
 {
   // open file
+  PDI_status_t status;
+  long generation;
+  if ((status = PDI_value_int(&var->generation, &generation))) return status;
+
+  char *directory;
+  if ((status = PDI_value_str(&var->directory, &directory))) {
+    free(directory);
+    return status;
+  }
+
   char* path = construct_path(directory, data->name, generation);
+  free(directory);
   if (!path) return PDI_ERR_SYSTEM;
 
-  // TODO: make num_files configuration parameter
-  int num_files = 1;
+  int n_files = 1;
   size_t data_size;
-  PDI_status_t status;
   if (status = PDI_data_size(&data->type, &data_size)) {
     free(path);
     return status;
@@ -247,7 +273,7 @@ static PDI_status_t read_from_file(const PDI_data_t *data, const char *directory
   sion_int64 chunksize = 0;
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
-  int sid = sion_paropen_mpi(path, "r", &num_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  int sid = sion_paropen_mpi(path, "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
   free(path);
 
   // read data from file
@@ -266,19 +292,9 @@ PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
   if (data->content[data->nb_content - 1].access & PDI_OUT) {
     for (size_t i = 0; i < n_outputs; ++i) {
       if (!strcmp(outputs[i].name, data->name)) {
-        long generation;
-        if ((write_status = PDI_value_int(&outputs[i].generation, &generation))) break;
         long select;
         if ((write_status = PDI_value_int(&outputs[i].select, &select))) break;
-        char *directory;
-        if ((write_status = PDI_value_str(&outputs[i].directory, &directory))) {
-          free(directory);
-          break;
-        }
-
-        if (select) write_status = write_to_file(data, directory, generation);
-
-        free(directory);
+        if (select) write_status = write_to_file(data, &outputs[i]);
         break;
       }
     }
@@ -288,19 +304,9 @@ PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
   if (data->content[data->nb_content - 1].access & PDI_IN) {
     for (size_t i = 0; i < n_inputs; ++i) {
       if (!strcmp(inputs[i].name, data->name)) {
-        long generation;
-        if ((read_status = PDI_value_int(&inputs[i].generation, &generation))) break;
         long select;
         if ((read_status = PDI_value_int(&inputs[i].select, &select))) break;
-        char *directory;
-        if ((read_status = PDI_value_str(&inputs[i].directory, &directory))) {
-          free(directory);
-          break;
-        }
-
-        if (select) read_status = read_from_file(data, directory, generation);
-
-        free(directory);
+        if (select) read_status = read_from_file(data, &inputs[i]);
         break;
       }
     }
