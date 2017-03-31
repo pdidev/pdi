@@ -315,7 +315,7 @@ err0:
  */
 PDI_status_t PDI_array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense)
 {
-	PDI_status_t status;
+	PDI_status_t status = PDI_OK;
 	*is_dense=1;
 	for( int dim=0; dim<type->ndims; ++dim){
 		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err0);
