@@ -59,7 +59,7 @@ typedef struct val_size_s
 } val_size_t;
 
 PDI_status_t size(const PDI_type_t *type, val_size_t *result);
-PDI_status_t PDI_array_datatype_is_dense(PDI_array_type_t *type, int *is_dense);
+PDI_status_t PDI_array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense);
 
 PDI_status_t size_destroy(val_size_t *result)
 {
@@ -171,7 +171,7 @@ err0:
 }
 
 
-void do_copy_dense_to_sparse(int dim, void *from, void *to, val_size_t *to_size)
+void do_copy_dense_to_sparse(int dim, const void *from, void *to, const val_size_t *to_size)
 {
 	if ( dim == to_size->ndims ) { 
 		memcpy(to, from, to_size->type);
@@ -189,7 +189,7 @@ void do_copy_dense_to_sparse(int dim, void *from, void *to, val_size_t *to_size)
 	}
 }
 
-void do_copy_sparse_to_dense(int dim, void *from, val_size_t *from_size, void *to)
+void do_copy_sparse_to_dense(int dim, const void *from, const val_size_t *from_size, void *to)
 {
 	if ( dim == from_size->ndims ) { 
 		memcpy(to, from, from_size->type);
@@ -208,7 +208,7 @@ void do_copy_sparse_to_dense(int dim, void *from, val_size_t *from_size, void *t
 }
 
 
-PDI_status_t PDI_copy(void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type)
+PDI_status_t PDI_copy(const void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type)
 {
 	PDI_status_t status = PDI_OK;
 	val_size_t tsize;
@@ -256,7 +256,7 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_datatype_copy_dense(PDI_type_t *type, PDI_type_t *dense)
+PDI_status_t PDI_datatype_copy_dense(const PDI_type_t *type, PDI_type_t *dense)
 {
 	int status=PDI_OK;
 	switch(type->kind){
@@ -311,7 +311,7 @@ err0:
  * \param is_dense an integer that stores 1 if the array is dense and 0 otherwise. 
  * \return an exit status code
  */
-PDI_status_t PDI_array_datatype_is_dense(PDI_array_type_t *type, int *is_dense)
+PDI_status_t PDI_array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense)
 {
 	PDI_status_t status;
 	*is_dense=1;
@@ -330,7 +330,7 @@ err0:
 	return PDI_ERR_IMPL;
 }
 
-PDI_status_t PDI_datatype_is_dense(PDI_type_t *type, int *is_dense){
+PDI_status_t PDI_datatype_is_dense(const PDI_type_t *type, int *is_dense){
 	switch(type->kind){
 		case PDI_K_SCALAR:
 			*is_dense=1;

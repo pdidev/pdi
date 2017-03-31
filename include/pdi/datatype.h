@@ -132,7 +132,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
  * \param to_type the type of the destination data
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_copy(void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type);
+PDI_status_t PDI_EXPORT PDI_copy(const void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type);
 
 /** Allocate and create a dense type.
  *
@@ -143,7 +143,7 @@ PDI_status_t PDI_EXPORT PDI_copy(void *from, const PDI_type_t *from_type, void *
  * \param dense the dense type that is produced using type attributes.
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_copy_dense(PDI_type_t *type, PDI_type_t *dense);
+PDI_status_t PDI_EXPORT PDI_datatype_copy_dense(const PDI_type_t *type, PDI_type_t *dense);
 
 /** Indicate if a given datatype is dense or not 
  * 
@@ -151,6 +151,6 @@ PDI_status_t PDI_EXPORT PDI_datatype_copy_dense(PDI_type_t *type, PDI_type_t *de
  * \param is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_is_dense(PDI_type_t *array_type, int *is_dense);
+PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const PDI_type_t *type, int *is_dense);
 
 #endif // PDI_DATATYPE_H__
