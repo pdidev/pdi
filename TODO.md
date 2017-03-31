@@ -17,18 +17,17 @@
 
 # Missing features
 - [ ] support string data type
-- [ ] Structs & arrays dimensions order (C vs. Fortran)
 - [ ] Whole config specification from code
     - metadata, data & their types
     - plugins
 * automatic declaration of scalars and n-Dim arrays (configuration file should be simpler)
 * handle multiple views on one array
 - [ ] add a verbose debugging mode
-- [ ] add a cyclic buffer to keep the last n events
 - [ ] select plug-in (ie: handle concurrent plug-ins): if string are handled almost ok.
 
 
 # Design
+- [ ] CMake should support 3 situations regarding libraries: ignore, install, find and use local
 - [ ] Support installation of filters for events & data by plugins (i.e. regexp)
 - [ ] Define how error handling should be done in plugins
 - [ ] WIP: Define how memory transfered to PDI should be handled, how can plugins
