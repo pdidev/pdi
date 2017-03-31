@@ -36,8 +36,10 @@
 #include <mpi.h>
 
 #include <pdi.h>
+#include <pdi/datatype.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/value.h>
 
 #include <paraconf.h>
 
@@ -206,8 +208,16 @@ static char *construct_path(const char *directory, const char* name, long genera
 
 static PDI_status_t write_to_file(const PDI_data_t *data, const SIONlib_var_t *var)
 {
-  // open file
+  // check that data type is dense
   PDI_status_t status;
+  int is_dense;
+  if ((status = PDI_datatype_is_dense(&data->type, &is_dense))) return status;
+  if (!is_dense) {
+    fprintf(stderr, "[PDI/SIONlib] Sparse data is not supported.\n");
+    return PDI_ERR_IMPL;
+  }
+
+  // open file
   long generation;
   if ((status = PDI_value_int(&var->generation, &generation))) return status;
 
@@ -238,7 +248,6 @@ static PDI_status_t write_to_file(const PDI_data_t *data, const SIONlib_var_t *v
   free(path);
 
   // write data to file
-  // TODO: assert type is dense/contiguous
   size_t written = sion_fwrite(data->content[data->nb_content - 1].data, data_size, 1, sid);
 
   // close file
@@ -249,8 +258,16 @@ static PDI_status_t write_to_file(const PDI_data_t *data, const SIONlib_var_t *v
 
 static PDI_status_t read_from_file(const PDI_data_t *data, const SIONlib_var_t *var)
 {
-  // open file
+  // check that data type is dense
   PDI_status_t status;
+  int is_dense;
+  if ((status = PDI_datatype_is_dense(&data->type, &is_dense))) return status;
+  if (!is_dense) {
+    fprintf(stderr, "[PDI/SIONlib] Sparse data is not supported.\n");
+    return PDI_ERR_IMPL;
+  }
+
+  // open file
   long generation;
   if ((status = PDI_value_int(&var->generation, &generation))) return status;
 
@@ -277,7 +294,6 @@ static PDI_status_t read_from_file(const PDI_data_t *data, const SIONlib_var_t *
   free(path);
 
   // read data from file
-  // TODO: assert type is dense/contiguous
   size_t read = sion_fread(data->content[data->nb_content - 1].data, data_size, 1, sid);
 
   // close file
@@ -288,8 +304,10 @@ static PDI_status_t read_from_file(const PDI_data_t *data, const SIONlib_var_t *
 
 PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
 {
+  int access = data->content[data->nb_content - 1].access;
+
   PDI_status_t write_status = PDI_OK;
-  if (data->content[data->nb_content - 1].access & PDI_OUT) {
+  if (access & PDI_OUT) {
     for (size_t i = 0; i < n_outputs; ++i) {
       if (!strcmp(outputs[i].name, data->name)) {
         long select;
@@ -301,7 +319,7 @@ PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
   }
 
   PDI_status_t read_status = PDI_OK;
-  if (data->content[data->nb_content - 1].access & PDI_IN) {
+  if (access & PDI_IN) {
     for (size_t i = 0; i < n_inputs; ++i) {
       if (!strcmp(inputs[i].name, data->name)) {
         long select;
@@ -312,7 +330,13 @@ PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
     }
   }
 
-  return (write_status) ? read_status : write_status;
+  if (access & PDI_IN && access & PDI_OUT) {
+    return (write_status) ? read_status : write_status;
+  } else if (access & PDI_OUT) {
+    return write_status;
+  } else {
+    return read_status;
+  }
 }
 
 PDI_status_t PDI_SIONlib_data_end(PDI_data_t *data)

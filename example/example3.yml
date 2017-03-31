@@ -18,8 +18,6 @@ pdi:
     main_field:
       type:     double
       sizes:    [$width, $height]     # if only one element, you can use size as a acalar
-      subsizes: [$width-2, $height-2] # defaults to sizes
-      starts:   [1, 1]                # defaults to [0, 0]
   plugins:
     SIONlib:
       defaults:
