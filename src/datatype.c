@@ -223,6 +223,7 @@ PDI_status_t PDI_copy(const void *from, const PDI_type_t *from_type, void *to, c
 			PDI_handle_err( scal_size(from_type->c.scalar, &tsize), err0 );
 			memcpy(to, from, sizeof(tsize.type)); 
 			size_destroy(&tsize);
+			break;
 
 		case PDI_K_ARRAY:
 			if( to_type->kind != PDI_K_ARRAY ) return PDI_ERR_VALUE;
@@ -247,6 +248,7 @@ PDI_status_t PDI_copy(const void *from, const PDI_type_t *from_type, void *to, c
 				do_copy_sparse_to_dense(0, from, &tsize, to); 
 			}
 			size_destroy(&tsize);
+			break;
 
 		case PDI_K_STRUCT:
 			return PDI_UNAVAILABLE;
