@@ -36,8 +36,10 @@
 #include <mpi.h>
 
 #include <pdi.h>
+#include <pdi/datatype.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/value.h>
 
 #include <paraconf.h>
 
@@ -200,9 +202,23 @@ PDI_status_t PDI_SIONlib_with_transactions_finalize()
 static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
 {
   PDI_status_t status;
+  // check that data is available and data type is dense
+  for (size_t i = 0; i < file->n_vars; ++i) {
+    PDI_data_t *data = PDI_find_data(file->vars[i]);
+    if (!data || data->nb_content < 1 || !(data->content[data->nb_content - 1].access & PDI_OUT)) return PDI_UNAVAILABLE;
+
+    int is_dense;
+    if ((status = PDI_datatype_is_dense(&data->type, &is_dense))) return status;
+    if (!is_dense) {
+      fprintf(stderr, "[PDI/SIONlib_with_transactions] Sparse data type of variable '%s' is not supported.\n", file->vars[i]);
+      return PDI_ERR_IMPL;
+    }
+  }
+
   long n_files_;
   if ((status = PDI_value_int(&file->n_files, &n_files_))) return status;
   int n_files = n_files_;
+
   sion_int64 chunksize = 0;
   for (size_t i = 0; i < file->n_vars; ++i) {
     PDI_data_t *data = PDI_find_data(file->vars[i]);
@@ -211,6 +227,7 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
     if ((status = PDI_data_size(&data->type, &data_size))) return status;
     chunksize += data_size;
   }
+
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
@@ -226,12 +243,6 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
   for (size_t i = 0; i < file->n_vars; ++i) {
     PDI_data_t *data = PDI_find_data(file->vars[i]);
 
-    if (data->nb_content < 1 || !(data->content[data->nb_content - 1].access & PDI_OUT)) {
-      sion_parclose_mpi(sid);
-      return PDI_UNAVAILABLE;
-    }
-
-    // TODO: assert type is dense
     size_t data_size;
     if ((status = PDI_data_size(&data->type, &data_size))) {
       sion_parclose_mpi(sid);
@@ -252,12 +263,25 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
 
 static PDI_status_t read_from_file(const SIONlib_with_transactions_file_t *file)
 {
+  // check that data type is dense
+  PDI_status_t status;
+  for (size_t i = 0; i < file->n_vars; ++i) {
+    PDI_data_t *data = PDI_find_data(file->vars[i]);
+    if (!data || data->nb_content < 1 || !(data->content[data->nb_content - 1].access & PDI_IN)) return PDI_UNAVAILABLE;
+
+    int is_dense;
+    if ((status = PDI_datatype_is_dense(&data->type, &is_dense))) return status;
+    if (!is_dense) {
+      fprintf(stderr, "[PDI/SIONlib_with_transactions] Sparse data type of variable '%s' is not supported.\n", file->vars[i]);
+      return PDI_ERR_IMPL;
+    }
+  }
+
   int n_files = 1;
   sion_int64 chunksize = 0;
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
-  PDI_status_t status;
   char *path = NULL;
   if ((status = PDI_value_str(&file->path, &path))) {
     free(path);
@@ -270,12 +294,6 @@ static PDI_status_t read_from_file(const SIONlib_with_transactions_file_t *file)
   for (size_t i = 0; i < file->n_vars; ++i) {
     PDI_data_t *data = PDI_find_data(file->vars[i]);
 
-    if (!data || data->nb_content < 1 || !(data->content[data->nb_content - 1].access & PDI_IN)) {
-      sion_parclose_mpi(sid);
-      return PDI_UNAVAILABLE;
-    }
-
-    // TODO: assert type is dense
     size_t data_size;
     if ((status = PDI_data_size(&data->type, &data_size))) {
       sion_parclose_mpi(sid);
@@ -297,8 +315,10 @@ static PDI_status_t read_from_file(const SIONlib_with_transactions_file_t *file)
 PDI_status_t PDI_SIONlib_with_transactions_event(const char *event)
 {
   PDI_status_t write_status = PDI_OK;
+  int write_attempted = 0;
   for (size_t i = 0; i < n_outputs; ++i) {
     if (!strcmp(outputs[i].transaction, event)) {
+      write_attempted = 1;
       long select;
       if ((write_status = PDI_value_int(&outputs[i].select, &select))) break;
       if (select) write_status = write_to_file(&outputs[i]);
@@ -306,15 +326,29 @@ PDI_status_t PDI_SIONlib_with_transactions_event(const char *event)
   }
 
   PDI_status_t read_status = PDI_OK;
+  int read_attempted = 0;
   for (size_t i = 0; i < n_inputs; ++i) {
     if (!strcmp(inputs[i].transaction, event)) {
+      read_attempted = 1;
       long select;
       if ((read_status = PDI_value_int(&inputs[i].select, &select))) break;
       if (select) read_status = read_from_file(&inputs[i]);
     }
   }
 
-  return (write_status) ? read_status : write_status;
+  if (write_attempted && read_attempted) {
+    // attempted to write and read, if either succeeded, call this a success
+    return (write_status) ? read_status : write_status;
+  } else if (write_attempted) {
+    // write attempt only
+    return write_status;
+  } else if (read_attempted) {
+    // read attempt only
+    return read_status;
+  } else {
+    // no attempts triggered
+    return PDI_OK;
+  }
 }
 
 PDI_status_t PDI_SIONlib_with_transactions_data_start(PDI_data_t *data)
