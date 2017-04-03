@@ -126,13 +126,13 @@ PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_type_t *type);
  * Please note that if one array is sparse and not the other, only the dense parts
  * are copied. A current limitation is that both arrays can't be sparse.
  * 
- * \param from the data that is copied
+ * \param from the buffer that is copied
  * \param from_type the type of the original data
  * \param to the destination of the copy
  * \param to_type the type of the destination data
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_copy(const void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type);
+PDI_status_t PDI_EXPORT PDI_buffer_copy(const void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type);
 
 /** Allocate and create a dense type.
  *
@@ -143,7 +143,7 @@ PDI_status_t PDI_EXPORT PDI_copy(const void *from, const PDI_type_t *from_type, 
  * \param dense the dense type that is produced using type attributes.
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_copy_dense(const PDI_type_t *type, PDI_type_t *dense);
+PDI_status_t PDI_EXPORT PDI_datatype_densify(const PDI_type_t *type, PDI_type_t *dense);
 
 /** Indicate if a given datatype is dense or not 
  * 

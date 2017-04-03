@@ -59,7 +59,6 @@ typedef struct val_size_s
 } val_size_t;
 
 PDI_status_t size(const PDI_type_t *type, val_size_t *result);
-PDI_status_t PDI_array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense);
 
 PDI_status_t size_destroy(val_size_t *result)
 {
@@ -120,6 +119,7 @@ err0:
 	return status;
 }
 
+
 PDI_status_t array_size(const PDI_array_type_t *type, val_size_t *result)
 {
 	PDI_status_t status = PDI_OK;
@@ -149,6 +149,7 @@ err0:
 	return status;
 }
 
+
 PDI_status_t size(const PDI_type_t *type, val_size_t *result)
 {
 	PDI_status_t status = PDI_OK;
@@ -168,6 +169,32 @@ PDI_status_t size(const PDI_type_t *type, val_size_t *result)
 	return status;
 err0:
 	return status;
+}
+
+
+/** Indicate if a given array_type is dense or not 
+ * 
+ * \param array_type the type that is checked
+ * \param is_dense an integer that stores 1 if the array is dense and 0 otherwise. 
+ * \return an exit status code
+ */
+PDI_status_t PDI_array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense)
+{
+	PDI_status_t status = PDI_OK;
+	*is_dense=1;
+	for( int dim=0; dim<type->ndims; ++dim){
+		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err0);
+		long subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err0);
+		long start; PDI_handle_err(PDI_value_int(&(type->starts[dim]), &start), err0);
+		if( (start > 0) || size > subsize ){
+			*is_dense=0;
+			break;
+		}
+	}
+
+	return PDI_OK;
+err0:
+	return PDI_ERR_IMPL;
 }
 
 
@@ -208,146 +235,205 @@ void do_copy_sparse_to_dense(int dim, const void *from, const val_size_t *from_s
 }
 
 
-PDI_status_t PDI_copy(const void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type)
+PDI_status_t PDI_buffer_copy(const void *from, const PDI_type_t *from_type, void *to, const PDI_type_t *to_type)
 {
 	PDI_status_t status = PDI_OK;
 	val_size_t tsize;
 
 	switch(from_type->kind){
-		case PDI_K_SCALAR:
-			// TODO[CR]: add the case of array with 1 element ?
-			if( to_type->kind != PDI_K_SCALAR ) return PDI_ERR_VALUE;
-			/// PDI does not perform type conversion
-			if( to_type->c.scalar != from_type->c.scalar ) return PDI_ERR_VALUE;
+	case PDI_K_SCALAR:
+		// TODO[CR]: add the case of array with 1 element ?
+		if( to_type->kind != PDI_K_SCALAR ){
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
+				"In %s, line %d, cannot copy scalar into arrays.",__func__, __LINE__), err0);
+		}
+		/// PDI does not perform type conversion
+		if( to_type->c.scalar != from_type->c.scalar ){
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
+				"In %s, line %d, cannot convert data with different types.",__func__, __LINE__), err0);
+		}
 
-			PDI_handle_err( scal_size(from_type->c.scalar, &tsize), err0 );
-			memcpy(to, from, sizeof(tsize.type)); 
-			size_destroy(&tsize);
-			break;
+		PDI_handle_err( scal_size(from_type->c.scalar, &tsize), err0 );
+		memcpy(to, from, tsize.type); 
+		size_destroy(&tsize);
+		break;
 
-		case PDI_K_ARRAY:
-			if( to_type->kind != PDI_K_ARRAY ) return PDI_ERR_VALUE;
-			//TODO: For now, do not handle imbricated arrays
-			if( to_type->c.array->type.kind != PDI_K_SCALAR ) return PDI_UNAVAILABLE;
-			/// PDI does not perform type conversion
-			if( to_type->c.array->type.c.scalar != from_type->c.array->type.c.scalar ) return PDI_ERR_VALUE;
+	case PDI_K_ARRAY:
+		if( to_type->kind != PDI_K_ARRAY ){
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
+				"In %s, line %d, cannot copy arrays into scalars.",__func__, __LINE__), err0);
+		}
+		//TODO: For now, do not handle imbricated arrays
+		if( to_type->c.array->type.kind != PDI_K_SCALAR ){
+			PDI_handle_err(PDI_make_err(PDI_UNAVAILABLE,
+				"In %s, line %d, Imbricated arrays not supported.",__func__, __LINE__), err0);
+		}
+		/// PDI does not perform type conversion
+		if( to_type->c.array->type.c.scalar != from_type->c.array->type.c.scalar ){
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
+				"In %s, line %d, cannot convert data with different types.",__func__, __LINE__), err0);
+		}
 
-			int from_is_dense=0;
-			int to_is_dense=0;
-			PDI_handle_err(PDI_array_datatype_is_dense(to_type->c.array, &from_is_dense), err0);
-			PDI_handle_err(PDI_array_datatype_is_dense(to_type->c.array, &to_is_dense), err0);
-			/// Both arrays can't be sparse. 
-			if( from_is_dense == 0 && to_is_dense == 0 ) return PDI_ERR_VALUE;
 
-			/// from is dense, dense part is copied inside the other array
-			if( from_is_dense ){
-				PDI_handle_err( size(to_type, &tsize), err0);
-				do_copy_dense_to_sparse(0, from, to, &tsize); 
-			} else { //< from is sparse 
-				PDI_handle_err( size(from_type, &tsize), err0);
-				do_copy_sparse_to_dense(0, from, &tsize, to); 
-			}
-			size_destroy(&tsize);
-			break;
+		int from_is_dense=0;
+		int to_is_dense=0;
+		PDI_handle_err(PDI_array_datatype_is_dense(to_type->c.array, &from_is_dense), err0);
+		PDI_handle_err(PDI_array_datatype_is_dense(to_type->c.array, &to_is_dense), err0);
+		/// Both arrays can't be sparse. 
+		if( from_is_dense == 0 && to_is_dense == 0 ) return PDI_ERR_VALUE;
 
-		case PDI_K_STRUCT:
-			return PDI_UNAVAILABLE;
+		/// from is dense, dense part is copied inside the other array
+		if( from_is_dense ){
+			PDI_handle_err( size(to_type, &tsize), err0);
+			do_copy_dense_to_sparse(0, from, to, &tsize); 
+		} else { //< from is sparse 
+			PDI_handle_err( size(from_type, &tsize), err0);
+			do_copy_sparse_to_dense(0, from, &tsize, to); 
+		}
+		size_destroy(&tsize);
+		break;
+
+	case PDI_K_STRUCT:
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
+				"In %s, line %d, Structure cannot be copied (not implemented).",__func__, __LINE__), err0);
+		break;
 	}
 
+	return status;
 err0:
 	return status;
 }
 
-PDI_status_t PDI_datatype_copy_dense(const PDI_type_t *type, PDI_type_t *dense)
+
+PDI_status_t PDI_datatype_init_scalar(PDI_type_t *this, PDI_scalar_type_t scalar_type)
 {
-	int status=PDI_OK;
-	switch(type->kind){
-		case PDI_K_SCALAR:
-			dense->kind = PDI_K_SCALAR;
-			dense->c.scalar = type->c.scalar;
-			break;
-
-		case PDI_K_ARRAY:
-			// Set PDI_type
-			dense->kind = PDI_K_ARRAY;
-			dense->c.array = malloc(sizeof(PDI_array_type_t));
-
-			int ndims = type->c.array->ndims;
-			// Set PDI_array_type
-			PDI_handle_err(PDI_datatype_copy_dense(&type->c.array->type, &dense->c.array->type), err0);
-			dense->c.array->order = type->c.array->order;
-
-			// set sizes
-			dense->c.array->sizes = malloc( ndims*sizeof(PDI_value_t) );
-			dense->c.array->subsizes = malloc( ndims*sizeof(PDI_value_t) );
-			dense->c.array->starts = malloc( ndims*sizeof(PDI_value_t) );
-			
-			dense->c.array->ndims = ndims;
-			for( int ii=0; ii<ndims; ++ii ){
-				PDI_handle_err( PDI_value_copy(
-					&type->c.array->sizes[ii], &( dense->c.array->sizes[ii] )), err1);
-				PDI_handle_err( PDI_value_copy(
-					&type->c.array->subsizes[ii], &( dense->c.array->subsizes[ii])), err1);
-				PDI_handle_err( PDI_value_copy(
-					&type->c.array->starts[ii],  &( dense->c.array->starts[ii])) , err1);
-			}
-			break;
-
-		case PDI_K_STRUCT:
-			return PDI_UNAVAILABLE;
-	}
+	this->kind = PDI_K_SCALAR;
+	this->c.scalar = scalar_type;
 	return PDI_OK;
-
-err1:
-	free(dense->c.array->sizes);
-	free(dense->c.array->subsizes);
-	free(dense->c.array->starts);
-err0:
-	free(dense->c.array);
-	return PDI_ERR_IMPL;
 }
 
-/** Indicate if a given array_type is dense or not 
- * 
- * \param array_type the type that is checked
- * \param is_dense an integer that stores 1 if the array is dense and 0 otherwise. 
- * \return an exit status code
- */
-PDI_status_t PDI_array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense)
+
+PDI_status_t PDI_datatype_init_array(PDI_type_t *this, PDI_type_t *type, const int ndims,
+		PDI_value_t *sizes, PDI_value_t *subsizes, PDI_value_t *starts,
+		const PDI_order_t order)
 {
-	PDI_status_t status = PDI_OK;
-	*is_dense=1;
-	for( int dim=0; dim<type->ndims; ++dim){
-		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err0);
-		long subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err0);
-		long start; PDI_handle_err(PDI_value_int(&(type->starts[dim]), &start), err0);
-		if( (start > 0) || size > subsize ){
-			*is_dense=0;
-			break;
+	int status=PDI_OK;
+
+	// Set PDI_type
+	this->kind = PDI_K_ARRAY;
+	this->c.array = malloc(sizeof(PDI_array_type_t));
+
+	switch(type->kind){
+	case PDI_K_SCALAR:
+		PDI_datatype_init_scalar(&this->c.array->type, type->c.scalar);
+		break;
+	case PDI_K_ARRAY:
+		PDI_handle_err(PDI_datatype_init_array(&this->c.array->type,
+			&type->c.array->type,
+			type->c.array->ndims,
+			type->c.array->sizes,
+			type->c.array->subsizes,
+			type->c.array->starts,
+			type->c.array->order), err0);
+		break;
+	case PDI_K_STRUCT:
+		PDI_handle_err(PDI_make_err(PDI_UNAVAILABLE,
+			"In %s, line %s, cannot create structure (not implemented)"
+			, __func__, __LINE__), err0);
+		break;
+	}
+
+	this->c.array->ndims = ndims;
+	this->c.array->order = order;
+
+	// set sizes
+	this->c.array->sizes = malloc( ndims*sizeof(PDI_value_t) );
+	for( int ii=0; ii<ndims; ++ii ){
+		PDI_handle_err( PDI_value_copy(
+			&sizes[ii], &this->c.array->sizes[ii] ), err1);
+	}
+
+	if( subsizes ){
+		this->c.array->subsizes = malloc( ndims*sizeof(PDI_value_t) );
+		for( int ii=0; ii<ndims; ++ii ){
+			PDI_handle_err( PDI_value_copy(
+				&subsizes[ii], &( this->c.array->subsizes[ii])), err2);
+		}
+	} else {
+		this->c.array->subsizes = this->c.array->sizes;
+	}
+
+	this->c.array->starts = malloc( ndims*sizeof(PDI_value_t) );
+	if( !starts ){
+		for( int ii=0; ii<ndims; ++ii ){
+			PDI_handle_err(PDI_value_parse("0", &( this->c.array->starts[ii])), err3);
+		}
+	} else {
+		for( int ii=0; ii<ndims; ++ii ){
+			PDI_handle_err( PDI_value_copy(
+				&starts[ii],  &( this->c.array->starts[ii])) , err3);
 		}
 	}
 
 	return PDI_OK;
+
+err3:
+	free(this->c.array->starts);
+err2:
+	if( this->c.array->subsizes != this->c.array->sizes ) free(this->c.array->subsizes);
+err1:
+	free(this->c.array->sizes);
 err0:
+	free(this->c.array);
 	return PDI_ERR_IMPL;
+}
+
+
+PDI_status_t PDI_datatype_densify(const PDI_type_t *type, PDI_type_t *dense)
+{
+	int status=PDI_OK;
+	switch(type->kind){
+	case PDI_K_SCALAR:
+		PDI_datatype_init_scalar(dense, type->c.scalar);
+		break;
+
+	case PDI_K_ARRAY: ;
+		PDI_type_t next_type;
+		PDI_handle_err(PDI_datatype_densify(&type->c.array->type, &next_type), err0);
+		PDI_handle_err(PDI_datatype_init_array(dense,
+			&next_type,
+			type->c.array->ndims,
+			type->c.array->subsizes,
+			NULL,
+			NULL,
+			type->c.array->order), err0 );
+		break;
+
+	case PDI_K_STRUCT:
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
+			"In %s, line %d, Structure cannot be copied (not implemented).",__func__, __LINE__), err0);
+		break;
+	}
+
+	return status;
+err0:
+	return status;
 }
 
 PDI_status_t PDI_datatype_is_dense(const PDI_type_t *type, int *is_dense){
 	switch(type->kind){
-		case PDI_K_SCALAR:
-			*is_dense=1;
-			return PDI_OK;
+	case PDI_K_SCALAR:
+		*is_dense=1;
+		return PDI_OK;
 
-		case PDI_K_ARRAY:
-			return PDI_array_datatype_is_dense(type->c.array, is_dense);
+	case PDI_K_ARRAY:
+		return PDI_array_datatype_is_dense(type->c.array, is_dense);
 
-		case PDI_K_STRUCT:
-			return PDI_UNAVAILABLE;
+	case PDI_K_STRUCT:
+		return PDI_UNAVAILABLE;
 	}
 	return PDI_OK;
 }
-
-
 
 static PDI_status_t load_array(PC_tree_t node, PDI_array_type_t *type)
 {

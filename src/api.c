@@ -232,8 +232,8 @@ PDI_status_t PDI_reclaim( const char* name )
 			data->content[data->nb_content-1].access |= PDI_MM_FREE & PDI_MM_COPY;
 			size_t dsize; PDI_handle_err(PDI_data_size(&data->type, &dsize), err0);
 			newval = malloc(dsize);
-			PDI_handle_err( PDI_datatype_copy_dense(&data->type, &newtype), err1);
-			PDI_handle_err( PDI_copy(
+			PDI_handle_err( PDI_datatype_densify(&data->type, &newtype), err1);
+			PDI_handle_err( PDI_buffer_copy(
 							(void*)data->content[data->nb_content-1].data,
 							&data->type, 
 							newval,
