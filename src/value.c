@@ -526,60 +526,56 @@ err0:
 }
 
 
-PDI_status_t strval_dup(PDI_strval_t* value, PDI_strval_t **dup)
+PDI_status_t strval_copy(PDI_strval_t* value, PDI_strval_t *copy)
 {
-	*dup=malloc(sizeof(PDI_strval_t));
+	copy->str = strdup(value->str);
 	
-	(*dup)->str = strdup(value->str);
-	
-	(*dup)->value_pos = malloc(sizeof(int));
-	(*dup)->value_pos = value->value_pos;
+	copy->value_pos = malloc(sizeof(int));
+	copy->value_pos = value->value_pos;
 
 	int nb_values = value->nb_values;
-	(*dup)->nb_values = nb_values;
-	(*dup)->values = malloc(nb_values*sizeof(PDI_value_t));
+	copy->nb_values = nb_values;
+	copy->values = malloc(nb_values*sizeof(PDI_value_t));
 	for( int ii=0; ii<value->nb_values; ii++)
 	{
-		PDI_value_copy(&value->values[ii], &( (*dup)->values[ii] ));
+		PDI_value_copy(&value->values[ii], &( copy->values[ii] ));
 	}
 	
 	return PDI_OK;
 }
 
-PDI_status_t exprval_dup(PDI_exprval_t *value, PDI_exprval_t **dup)
+PDI_status_t exprval_copy(PDI_exprval_t *value, PDI_exprval_t *copy)
 {
-	*dup=malloc(sizeof(PDI_exprval_t));
 	
 	int nb_value = value->nb_value;
-	(*dup)->nb_value = nb_value;
-	(*dup)->values = malloc(nb_value*sizeof(PDI_value_t));
+	copy->nb_value = nb_value;
+	copy->values = malloc(nb_value*sizeof(PDI_value_t));
 	for( int ii=0; ii<nb_value; ii++)
 	{
-		PDI_value_copy(&value->values[ii], &( (*dup)->values[ii] ));
+		PDI_value_copy(&value->values[ii], &( copy->values[ii] ));
 	}
 
-	(*dup)->ops=malloc( (nb_value-1)*sizeof(PDI_exprop_t) );
+	copy->ops=malloc( (nb_value-1)*sizeof(PDI_exprop_t) );
 	for( int ii=0; ii<nb_value-1; ii++)
 	{
-		(*dup)->ops[ii]=value->ops[ii];
+		copy->ops[ii]=value->ops[ii];
 	}
 
 	return PDI_OK;
 };
 
-PDI_status_t refval_dup(PDI_refval_t *value, PDI_refval_t **dup)
+PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
 {
-	*dup=malloc(sizeof(PDI_refval_t));
-	(*dup)->nb_idx=value->nb_idx;
+	copy->nb_idx=value->nb_idx;
 
-	(*dup)->ref = value->ref;
+	copy->ref = value->ref;
 
 	int nb_idx = value->nb_idx;
-	(*dup)->nb_idx = nb_idx;
-	(*dup)->idx = malloc(nb_idx*sizeof(PDI_value_t));
+	copy->nb_idx = nb_idx;
+	copy->idx = malloc(nb_idx*sizeof(PDI_value_t));
 	for( int ii=0; ii<nb_idx; ii++)
 	{
-		PDI_value_copy(&value->idx[ii], &( (*dup)->idx[ii] ));
+		PDI_value_copy(&value->idx[ii], &( copy->idx[ii] ));
 	}
 	
 	return PDI_OK;
@@ -723,15 +719,18 @@ PDI_status_t PDI_value_copy(PDI_value_t *value, PDI_value_t *copy)
 			break;
 
 		case PDI_VAL_REF: 
-			status = refval_dup(value->c.refval, &copy->c.refval);
+			copy->c.refval=malloc(sizeof(PDI_refval_t));
+			status = refval_copy(value->c.refval, copy->c.refval);
 			break;
 
 		case PDI_VAL_EXPR:  
-			status = exprval_dup(value->c.exprval, &copy->c.exprval);
+			copy->c.exprval=malloc(sizeof(PDI_exprval_t));
+			status = exprval_copy(value->c.exprval, copy->c.exprval);
 			break;
 
 		case PDI_VAL_STR:
-			status = strval_dup(value->c.strval, &copy->c.strval);
+			copy->c.strval=malloc(sizeof(PDI_strval_t));
+			status = strval_copy(value->c.strval, copy->c.strval);
 			break;
 
 		default:
