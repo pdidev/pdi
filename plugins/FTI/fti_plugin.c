@@ -41,7 +41,7 @@ typedef struct {
 
 
 /// The types of events FTI supports
-typedef enum { NO_EVENT=0, RECOVER, SNAPSHOT, CHECKPOINT } PDI_FTI_event_t;
+typedef enum { NO_EVENT=0, RECOVER, SNAPSHOT, CHECKPOINT, RESTART_STATUS } PDI_FTI_event_t;
 
 int nb_protected = 0;
 
@@ -58,6 +58,13 @@ char **checkpoint_events = NULL;
 int nb_recover_events = 0;
 
 char **recover_events = NULL;
+
+int nb_restart_status_events = 0;
+
+char **restart_status_events = NULL;
+
+int restart_status = 0;
+
 
 
 PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
@@ -105,7 +112,21 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 		free(recover_events);
 		recover_events = NULL;
 	}
-	
+
+	nb_restart_status_events = 1;
+	restart_status_events = malloc(sizeof(char*));
+	if ( !PC_string(PC_get(conf, ".datastart.restart_status"), restart_status_events) ) {
+	} else if ( ! PC_len(PC_get(conf, ".datastart.restart_status"), &nb_restart_status_events) ) {
+		restart_status_events = realloc(restart_status_events, nb_restart_status_events * sizeof(char*));
+		for ( int ii=0; ii<nb_restart_status_events; ++ii ) {
+			PC_string(PC_get(conf, ".datastart.restart_status[%d]", ii), &restart_status_events[ii]);
+		}
+	} else {
+		nb_restart_status_events = 0;
+		free(restart_status_events);
+		restart_status_events = NULL;
+	}
+
 	nb_checkpoint_events = 1; // listing event name that trigger FTI checkpoint 
 	checkpoint_events = malloc(sizeof(char*));
 	if ( !PC_string(PC_get(conf, ".checkpoint_on"), checkpoint_events) ) {
@@ -136,6 +157,8 @@ PDI_status_t PDI_fti_plugin_finalize()
 	free(snapshot_events);
 	for ( int ii=0; ii<nb_recover_events; ++ii ) free(recover_events[ii]);
 	free(recover_events);
+	for ( int ii=0; ii<nb_restart_status_events; ++ii ) free(restart_status_events[ii]);
+	free(restart_status_events);
 	for ( int ii=0; ii<nb_checkpoint_events; ++ii ) free(checkpoint_events[ii]);
 	free(checkpoint_events);
 	free(protected);
@@ -207,7 +230,14 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 
 PDI_status_t PDI_fti_plugin_data_start(PDI_data_t *data)
 {
-	data=data; // prevent unused warning
+	if ( data->content[data->nb_content-1].access & PDI_IN ) {
+		int found_output = 0;
+		for ( int ii=0; ii<nb_restart_status_events && !found_output; ++ii ) {
+			if ( !strcmp(data->name, restart_status_events[ii]) ) {
+				*(int*)data->content[data->nb_content-1].data = FTI_Status();
+			}
+		}
+	}
 	return PDI_OK;
 }
 
