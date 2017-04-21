@@ -47,7 +47,8 @@ set_tests_properties(PDI_test_01_run PROPERTIES DEPENDS PDI_test_01_build TIMEOU
 # Plug-in tests #
 #################
 add_executable(Utilities_02_C EXCLUDE_FROM_ALL Utilities_test_02.c)
-add_compiler_flags(Utilities_02_C PRIVATE -Wall -Wextra)
+set_target_properties(Utilities_02_C PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
+add_compiler_flags(Utilities_02_C PRIVATE -Wall -Wextra -std=c99)
 target_link_libraries(Utilities_02_C pdi mpi)
 add_test(NAME Utilities_02_C_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target Utilities_02_C

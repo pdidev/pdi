@@ -377,7 +377,7 @@ PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 						size_t oldsize; PDI_datatype_buffersize(&data->type, &oldsize);
 						PDI_buffer_copy(subdata, &data_out->type, data->content[data->nb_content-1].data, &data->type);
 						PDI_expose(str_out, subdata);
-						free(tasks[ii].data);
+						free(subdata);
 					}
 					free(str_out);
 				}
