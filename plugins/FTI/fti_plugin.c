@@ -200,7 +200,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 			PDI_data_t *data = protected[ii].data;
 			if ( data->nb_content
 					&& (data->content[data->nb_content-1].access & direction) ) {
-				size_t size; PDI_data_size(&protected[ii].data->type, &size);
+				size_t size; PDI_datatype_datasize(&protected[ii].data->type, &size);
 				//TODO: handle non-contiguous data correctly
 				FTI_Protect(protected[ii].fti_id,
 						data->content[data->nb_content-1].data, size, FTI_CHAR);

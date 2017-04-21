@@ -62,7 +62,9 @@ typedef enum PDI_status_e {
 	/** A call to a function has been made at a wrong time (e.g. closing an
 	 *  unopened transaction)
 	 */
-	PDI_ERR_STATE
+	PDI_ERR_STATE,
+	/// Invalid type error
+	PDI_ERR_TYPE
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs

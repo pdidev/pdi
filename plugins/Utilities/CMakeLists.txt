@@ -32,7 +32,7 @@ add_library(utilities MODULE
 )
 target_link_libraries(utilities pdi)
 
-set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
+set_target_properties(utilities PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
 add_compiler_flags(utilities PRIVATE -Wall -Wextra -std=c99)
 

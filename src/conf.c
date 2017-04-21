@@ -61,7 +61,7 @@ static PDI_status_t load_data( PC_tree_t node, PDI_datakind_t kind )
 		
 		cur_data->config = PC_get(node, "<%d>", map_id);
 		handle_PC_err(PC_status(cur_data->config), err0);
-		PDI_handle_err(PDI_datatype_load(cur_data->config, &cur_data->type), err0);
+		PDI_handle_err(PDI_datatype_load(&cur_data->type, cur_data->config), err0);
 		
 		++PDI_state.nb_data;
 	}

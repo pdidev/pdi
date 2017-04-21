@@ -525,6 +525,62 @@ err0:
 	return status;
 }
 
+
+PDI_status_t strval_copy(PDI_strval_t* value, PDI_strval_t *copy)
+{
+	copy->str = strdup(value->str);
+	
+	copy->value_pos = malloc(sizeof(int));
+	copy->value_pos = value->value_pos;
+
+	int nb_values = value->nb_values;
+	copy->nb_values = nb_values;
+	copy->values = malloc(nb_values*sizeof(PDI_value_t));
+	for( int ii=0; ii<value->nb_values; ii++)
+	{
+		PDI_value_copy(&value->values[ii], &( copy->values[ii] ));
+	}
+	
+	return PDI_OK;
+}
+
+PDI_status_t exprval_copy(PDI_exprval_t *value, PDI_exprval_t *copy)
+{
+	
+	int nb_value = value->nb_value;
+	copy->nb_value = nb_value;
+	copy->values = malloc(nb_value*sizeof(PDI_value_t));
+	for( int ii=0; ii<nb_value; ii++)
+	{
+		PDI_value_copy(&value->values[ii], &( copy->values[ii] ));
+	}
+
+	copy->ops=malloc( (nb_value-1)*sizeof(PDI_exprop_t) );
+	for( int ii=0; ii<nb_value-1; ii++)
+	{
+		copy->ops[ii]=value->ops[ii];
+	}
+
+	return PDI_OK;
+};
+
+PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
+{
+	copy->nb_idx=value->nb_idx;
+
+	copy->ref = value->ref;
+
+	int nb_idx = value->nb_idx;
+	copy->nb_idx = nb_idx;
+	copy->idx = malloc(nb_idx*sizeof(PDI_value_t));
+	for( int ii=0; ii<nb_idx; ii++)
+	{
+		PDI_value_copy(&value->idx[ii], &( copy->idx[ii] ));
+	}
+	
+	return PDI_OK;
+};
+
 PDI_status_t strval_destroy(PDI_strval_t* value)
 {
 	PDI_status_t status = PDI_OK;
@@ -651,3 +707,36 @@ PDI_status_t PDI_value_str(const PDI_value_t* value, char** res)
 err0:
 	return status;
 }
+
+PDI_status_t PDI_value_copy ( const PDI_value_t *value, PDI_value_t *copy )
+{
+	int status=PDI_OK;
+	copy->kind = value->kind;
+	switch( value->kind ){
+
+		case PDI_VAL_CONST:  
+			copy->c.constval = value->c.constval;
+			break;
+
+		case PDI_VAL_REF: 
+			copy->c.refval=malloc(sizeof(PDI_refval_t));
+			status = refval_copy(value->c.refval, copy->c.refval);
+			break;
+
+		case PDI_VAL_EXPR:  
+			copy->c.exprval=malloc(sizeof(PDI_exprval_t));
+			status = exprval_copy(value->c.exprval, copy->c.exprval);
+			break;
+
+		case PDI_VAL_STR:
+			copy->c.strval=malloc(sizeof(PDI_strval_t));
+			status = strval_copy(value->c.strval, copy->c.strval);
+			break;
+
+		default:
+			return PDI_ERR_IMPL;
+	}
+
+	return status;
+}
+
