@@ -224,7 +224,7 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
     PDI_data_t *data = PDI_find_data(file->vars[i]);
     if (!data) return PDI_UNAVAILABLE;
     size_t data_size;
-    if ((status = PDI_data_size(&data->type, &data_size))) return status;
+    if ((status = PDI_datatype_datasize(&data->type, &data_size))) return status;
     chunksize += data_size;
   }
 
@@ -244,7 +244,7 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
     PDI_data_t *data = PDI_find_data(file->vars[i]);
 
     size_t data_size;
-    if ((status = PDI_data_size(&data->type, &data_size))) {
+    if ((status = PDI_datatype_datasize(&data->type, &data_size))) {
       sion_parclose_mpi(sid);
       return status;
     }
@@ -295,7 +295,7 @@ static PDI_status_t read_from_file(const SIONlib_with_transactions_file_t *file)
     PDI_data_t *data = PDI_find_data(file->vars[i]);
 
     size_t data_size;
-    if ((status = PDI_data_size(&data->type, &data_size))) {
+    if ((status = PDI_datatype_datasize(&data->type, &data_size))) {
       sion_parclose_mpi(sid);
       return status;
     }
