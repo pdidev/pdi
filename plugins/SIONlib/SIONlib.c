@@ -236,7 +236,7 @@ static PDI_status_t write_to_file(const PDI_data_t *data, const SIONlib_var_t *v
   if (!path) return PDI_ERR_SYSTEM;
 
   size_t data_size;
-  if (status = PDI_data_size(&data->type, &data_size)) {
+  if (status = PDI_datatype_datasize(&data->type, &data_size)) {
     free(path);
     return status;
   }
@@ -283,7 +283,7 @@ static PDI_status_t read_from_file(const PDI_data_t *data, const SIONlib_var_t *
 
   int n_files = 1;
   size_t data_size;
-  if (status = PDI_data_size(&data->type, &data_size)) {
+  if (status = PDI_datatype_datasize(&data->type, &data_size)) {
     free(path);
     return status;
   }
