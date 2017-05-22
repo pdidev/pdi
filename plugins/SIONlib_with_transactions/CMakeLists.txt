@@ -50,4 +50,4 @@ install(TARGETS SIONlib_with_transactions EXPORT SIONlib_with_transactionsTarget
 	ARCHIVE DESTINATION lib
 )
 
-#add_subdirectory(tests/)
+add_subdirectory(tests/)
