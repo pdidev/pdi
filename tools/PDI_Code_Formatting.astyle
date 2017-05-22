@@ -1,0 +1,35 @@
+# Language C
+--mode=c 
+# Style of brace 
+--style=kr
+# Indent is tab based
+--indent=tab 
+## Indent 
+# Pre-processor  
+--indent-preproc-block
+--indent-preproc-define
+--indent-preproc-cond
+# Comment
+--indent-col1-comments
+# If 
+--min-conditional-indent=0
+# char* tata, int* toto 
+# becomes
+# char *tata, int *toto 
+--align-pointer=name 
+# padding 
+--pad-oper
+# great option not available on all system : --pad-comma 
+#--pad-first-paren-out
+--pad-header 
+--keep-one-line-statements
+--unpad-paren
+# Braces 
+# remove optional, 1 line brace
+# --remove-brackets : result in messy code
+# Keep statement very long on one line
+--keep-one-line-statements
+# Keep date (file access, modify...)
+--preserve-date
+# END LINE IN LINUX STYLE
+--lineend=linux
