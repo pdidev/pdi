@@ -28,7 +28,9 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
+#include <inttypes.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -199,6 +201,16 @@ PDI_status_t PDI_SIONlib_with_transactions_finalize()
   return PDI_OK;
 }
 
+// This is FNV-1a
+static uint64_t hash(const uint8_t *data, size_t len) {
+  uint64_t hash = UINT64_C(0xcbf29ce484222325);
+  for (size_t i = 0; i < len; ++i) {
+    hash ^= (uint64_t) data[i];
+    hash *= UINT64_C(0x100000001b3);
+  }
+  return hash;
+}
+
 static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
 {
   PDI_status_t status;
@@ -237,7 +249,7 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
     return status;
   }
 
-  int sid = sion_paropen_mpi(path, "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  int sid = sion_paropen_mpi(path, "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
   free(path);
 
   for (size_t i = 0; i < file->n_vars; ++i) {
@@ -249,8 +261,27 @@ static PDI_status_t write_to_file(const SIONlib_with_transactions_file_t *file)
       return status;
     }
 
-    size_t written = sion_fwrite(data->content[data->nb_content - 1].data, data_size, 1, sid);
-    if (written != 1) {
+    size_t name_size = strlen(data->name);
+    uint64_t key = hash((uint8_t*)data->name, name_size);
+
+    uint64_t name_size_to_file = name_size;
+    if (1 != sion_fwrite_key(&name_size_to_file, key, sizeof(name_size_to_file), 1, sid)) {
+      sion_parclose_mpi(sid);
+      return PDI_ERR_SYSTEM;
+    }
+
+    if (1 != sion_fwrite_key(data->name, key, name_size, 1, sid)) {
+      sion_parclose_mpi(sid);
+      return PDI_ERR_SYSTEM;
+    }
+
+    uint64_t data_size_to_file = data_size;
+    if (1 != sion_fwrite_key(&data_size_to_file, key, sizeof(data_size_to_file), 1, sid)) {
+      sion_parclose_mpi(sid);
+      return PDI_ERR_SYSTEM;
+    }
+
+    if (1 != sion_fwrite_key(data->content[data->nb_content - 1].data, key, data_size, 1, sid)) {
       sion_parclose_mpi(sid);
       return PDI_ERR_SYSTEM;
     }
@@ -288,7 +319,7 @@ static PDI_status_t read_from_file(const SIONlib_with_transactions_file_t *file)
     return status;
   }
 
-  int sid = sion_paropen_mpi(path, "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  int sid = sion_paropen_mpi(path, "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
   free(path);
 
   for (size_t i = 0; i < file->n_vars; ++i) {
@@ -300,8 +331,59 @@ static PDI_status_t read_from_file(const SIONlib_with_transactions_file_t *file)
       return status;
     }
 
-    size_t read = sion_fread(data->content[data->nb_content - 1].data, data_size, 1, sid);
-    if (read != 1) {
+    size_t name_size = strlen(data->name);
+    uint64_t key = hash((uint8_t*)data->name, name_size);
+
+    for (int j = 0; ; ++j) {
+      if (SION_SUCCESS != sion_seek_key(sid, key, 4 * j, 0)) {
+        fprintf(stderr, "[PDI/SIONlib_with_transactions] Could not find variable '%s' for reading in file '%s'.\n", data->name, file->name);
+        sion_parclose_mpi(sid);
+        return PDI_ERR_SYSTEM;
+      }
+
+      uint64_t name_size_from_file;
+      if (1 != sion_fread_key(&name_size_from_file, key, sizeof(uint64_t), 1, sid)) {
+        sion_parclose_mpi(sid);
+        return PDI_ERR_SYSTEM;
+      }
+
+      if (name_size != name_size_from_file)
+        // Collision (size of name does not match), this is not the data you are looking for.
+        continue;
+
+      char *name_from_file = malloc(name_size + 1);
+      if (NULL == name_from_file) {
+        sion_parclose_mpi(sid);
+        return PDI_ERR_SYSTEM;
+      }
+
+      if (1 != sion_fread_key(name_from_file, key, name_size, 1, sid)) {
+        free(name_from_file);
+        sion_parclose_mpi(sid);
+        return PDI_ERR_SYSTEM;
+      }
+      name_from_file[name_size] = '\0';
+
+      int names_match = !strcmp(data->name, name_from_file);
+      free(name_from_file);
+      if (names_match) break;
+
+      // Collision (names do not match), this is not the data you are looking for.
+    }
+
+    uint64_t data_size_from_file;
+    if (1 != sion_fread_key(&data_size_from_file, key, sizeof(data_size_from_file), 1, sid)) {
+      sion_parclose_mpi(sid);
+      return PDI_ERR_SYSTEM;
+    }
+
+    if (data_size != data_size_from_file) {
+      fprintf(stderr, "[PDI/SIONlib_with_transactions] Size of data for variable '%s' in file '%s' does not match memory size (%"PRIu64" (file) vs. %zu (memory)).\n", data->name, file->name, data_size_from_file, data_size);
+      sion_parclose_mpi(sid);
+      return PDI_ERR_SYSTEM;
+    }
+
+    if (1 != sion_fread_key(data->content[data->nb_content - 1].data, key, data_size, 1, sid)) {
       sion_parclose_mpi(sid);
       return PDI_ERR_SYSTEM;
     }
