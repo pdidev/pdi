@@ -19,12 +19,14 @@ pdi:
           transaction: read_data
           path: test_02_f90.sion
           vars:
-            - values
             - reals
+            - values
       outputs:
         output1:
           transaction: write_data
           path: test_02_f90.sion
           vars:
+            - ni
+            - nj
             - values
             - reals

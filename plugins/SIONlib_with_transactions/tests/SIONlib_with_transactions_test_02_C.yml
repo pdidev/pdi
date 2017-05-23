@@ -17,12 +17,14 @@ pdi:
           transaction: read_data
           path: test_02_C.sion
           vars:
-            - reals
             - values
+            - reals
       outputs:
         output1:
           transaction: write_data
           path: test_02_C.sion
           vars:
+            - ni
+            - nj
             - reals
             - values
