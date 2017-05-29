@@ -148,7 +148,37 @@ err0:
 }
 
 
-PDI_status_t PDI_share( const char* name, void* data_dat, int access )
+PDI_status_t PDI_access(const char* name, PDI_inout_t inout, void *buffer)
+{
+	PDI_data_t *data=PDI_find_data(name);
+	if( data ){
+		if(data->nb_content > 0){
+			PDI_inout_t access = data->content[data->nb_content-1].access;
+			switch( inout ) {
+				case PDI_OUT:
+					if(access & PDI_OUT){
+						buffer=data->content[data->nb_content-1].data;
+						return PDI_OK;
+					} break;
+				case PDI_IN:
+					if(access & PDI_IN){
+						buffer=data->content[data->nb_content-1].data;
+						return PDI_OK;
+					} break;
+				case PDI_INOUT:
+					if( (access & PDI_OUT) && (access & PDI_IN) ){
+						buffer=data->content[data->nb_content-1].data;
+						return PDI_OK;
+					} break;
+			}
+		}
+	}
+
+	return PDI_UNAVAILABLE;
+}
+
+
+PDI_status_t PDI_share( const char* name, void* data_dat, PDI_inout_t access )
 {
 	PDI_status_t status = PDI_OK;
 	

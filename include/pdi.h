@@ -144,7 +144,9 @@ typedef enum PDI_inout_e {
 	/// data tranfer from PDI to the main code
 	PDI_IN = 1,
 	/// data transfer from the main code to PDI
-	PDI_OUT = 2
+	PDI_OUT = 2,
+	/// data transfer in both direction
+	PDI_INOUT = 3
 } PDI_inout_t;
 
 /** Shares some data with PDI. The user code should not modify it before
@@ -161,7 +163,7 @@ typedef enum PDI_inout_e {
  * * PDI_IN means PDI can set the buffer content
  * * PDI_OUT means the buffer contains data that can be accessed by PDI
  */
-PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, int access);
+PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, PDI_inout_t access);
 
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
@@ -180,6 +182,14 @@ PDI_status_t PDI_EXPORT PDI_release(const char *name);
  * \post the user code owns the data buffer
  */
 PDI_status_t PDI_EXPORT PDI_reclaim(const char *name);
+
+/** Requests for PDI to access a data buffer.
+ * \param[in] name the data name
+ * \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
+ * \param[in,out] buffer the accessed data buffer
+ * \return an error status
+ */
+PDI_status_t  PDI_EXPORT PDI_access(const char* name, PDI_inout_t inout, void *buffer);
 
 /** Requests for PDI to allocate (and initialize) a data buffer.
  * \param[in] name the data name
