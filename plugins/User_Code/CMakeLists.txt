@@ -27,72 +27,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.1)
-# enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
-project(pdi LANGUAGES C CXX Fortran)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+add_library(user_code MODULE
+	user_code.c
+)
+set_target_properties(user_code PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
+include(AddCCompilerFlags)
+add_compiler_flags(user_code PRIVATE -Wall -Wextra -std=c99)
+target_link_libraries(user_code pdi)
 
-cmake_policy(VERSION 3.1)
-if(POLICY CMP0054)
-	cmake_policy(SET CMP0054 NEW)
-endif()
-
-if(POLICY CMP0063)
-cmake_policy(SET CMP0063 NEW)
-endif()
-
-# Build options
-
-option(USE_SYSTEM_PARACONF
-		"Use an already installed paraconf instead of building the embedded one"
-		OFF
+# library installation
+install(TARGETS user_code EXPORT user_codeTargets
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
 )
 
-option(RUN_EXAMPLES
-	"Build and run examples during ctest."
-		ON
-)
 
-## Because of plugins, we need PIC code
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-
-# Find dependancies
-
-find_package(MPI REQUIRED)
-if("${USE_SYSTEM_PARACONF}")
-	find_package(paraconf)
-else()
-	add_subdirectory(vendor/paraconf paraconf EXCLUDE_FROM_ALL)
-endif()
-
-
-# Version
-
-file(READ VERSION pdi_VERSION)
-string(STRIP "${pdi_VERSION}" pdi_VERSION)
-string(REPLACE "." ";" pdi_VERSION_list ${pdi_VERSION})
-list(GET pdi_VERSION_list 0 pdi_VERSION_MAJOR)
-list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
-list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
-
-# Examples & tests
-enable_testing()
-if( "${RUN_EXAMPLES}" ) 
-	add_subdirectory(example/)
-endif()
 add_subdirectory(tests/)
-
-# The src
-
-## Main source dir
-add_subdirectory(src/)
-
-## The plugins
-add_subdirectory(plugins/test_plugin/)
-add_subdirectory(plugins/HDF5_per_process/)
-add_subdirectory(plugins/FTI/)
-add_subdirectory(plugins/Utilities/)
-add_subdirectory(plugins/User_Code/)
-
-
