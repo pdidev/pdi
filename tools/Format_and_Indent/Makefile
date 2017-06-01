@@ -28,6 +28,12 @@ BACK_HDR:= $(shell find $(LOC_SRC) -iname '*.h')
 BACK_INC:= $(shell find $(LOC_INC) -iname '*.h')
 BACK_H:=   $(shell find $(LOC_H)   -iname '*.h')
 
+# Diff
+DIFF_SRC:= $(shell find $(LOC_SRC) -iname '*.diff')
+DIFF_HDR:= $(shell find $(LOC_SRC) -iname '*.diff')
+DIFF_INC:= $(shell find $(LOC_INC) -iname '*.diff')
+DIFF_H:=   $(shell find $(LOC_H)   -iname '*.diff')
+
 
 # Check if file does not exist copy 
 ifeq ("$(BACK_SRC)","")
@@ -51,7 +57,6 @@ loc_src.loc: $(PDI_SRC)
 	@cp $(PDI_SRC) $(LOC_SRC) 
 	@(cd $(LOC_SRC) && $(MAKE))
 	@touch loc_src.loc
-	@rm replace_src.loc
 
 #useless, done by upper make
 # loc_hdr: $(PDI_HDR)
@@ -63,13 +68,11 @@ loc_inc.loc: $(PDI_INC)
 	@cp $(PDI_INC) $(LOC_INC)
 	@(cd $(LOC_INC) && $(MAKE))
 	@touch loc_inc.loc
-	@rm replace_inc.loc
 
 loc_h.loc: $(PDI_H)
 	@cp $(PDI_H)   $(LOC_H)
 	@(cd $(LOC_H) && $(MAKE))
 	@touch loc_h.loc
-	@rm replace_h.loc
 
 
 #############################################
@@ -78,17 +81,17 @@ loc_h.loc: $(PDI_H)
 # replace file in all directories
 replace_all: replace_src.loc replace_inc.loc replace_h.loc 
 
-replace_src.loc:
-	@touch "replace_src.loc"
+replace_src.loc: $(BACK_SRC)
 	./replace $(LOC_SRC) $(DIR_SRC)
+	@touch "replace_src.loc"
 
-replace_inc.loc:
-	@touch "replace_inc.loc"
+replace_inc.loc: $(BACK_INC)
 	./replace $(LOC_INC) $(DIR_INC)
+	@touch "replace_inc.loc"
 
-replace_h.loc:
-	@touch "replace_h.loc"
+replace_h.loc: $(BACK_H)
 	./replace $(LOC_H) $(DIR_H)
+	@touch "replace_h.loc"
 
 
 #############################################
