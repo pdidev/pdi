@@ -16,18 +16,19 @@ pdi:
 
   plugins:
     SIONlib:
-      defaults:
+      variables:
+        defaults:
+          outputs:
+            select: $input=0
+            directory: .
+          inputs:
+            select: $input=1
+            directory: .
         outputs:
-          select: $input=0
-          directory: .
+          reals:
+          values:
+          ni:
+          nj:
         inputs:
-          select: $input=1
-          directory: .
-      outputs:
-        reals:
-        values:
-        ni:
-        nj:
-      inputs:
-        reals:
-        values:
+          reals:
+          values:

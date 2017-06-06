@@ -93,7 +93,6 @@ add_subdirectory(plugins/test_plugin/)
 add_subdirectory(plugins/HDF5_per_process/)
 add_subdirectory(plugins/FTI/)
 add_subdirectory(plugins/SIONlib/)
-add_subdirectory(plugins/SIONlib_with_transactions/)
 add_subdirectory(plugins/Utilities/)
 
 

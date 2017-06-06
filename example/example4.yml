@@ -19,11 +19,12 @@ pdi:
       type:     double
       sizes:    [$width, $height]     # if only one element, you can use size as a acalar
   plugins:
-    SIONlib_with_transactions:
-      outputs:
-        checkpoint:
-          path: checkpoint_${iter}.sionlib
-          vars: [ iter, width, height, pwidth, pheight, coord, main_field ]
-          transaction: newiter
-          select: $iter % 10 = 0
-          n_files: 3
+    SIONlib:
+      files:
+        outputs:
+          checkpoint:
+            path: checkpoint_${iter}.sionlib
+            vars: [ iter, width, height, pwidth, pheight, coord, main_field ]
+            transaction: newiter
+            select: $iter % 10 = 0
+            n_files: 3

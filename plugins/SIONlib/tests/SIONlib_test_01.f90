@@ -92,6 +92,15 @@ program test2
     print*, "File not found"
     call MPI_abort(MPI_COMM_WORLD, -1, ierr)
   endif ! file doesn't exist
+
+  inquire(file="6.sion", exist=file_exist) ! values(1)=6
+  if( file_exist ) then
+    print*, "File found."
+  else
+    print*, "File not found"
+    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+  endif ! file doesn't exist
+
   call MPI_Finalize(ierr)
 
 endprogram

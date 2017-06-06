@@ -54,9 +54,12 @@ int main( int argc, char *argv[] )
 	PDI_transaction_end();
 	PDI_finalize();
 
-	char fname[] = "test_var_000000005";
 	FILE* fp=NULL;
-	fp= fopen(fname, "r");
+	fp= fopen("test_var_000000005", "r");
+	assert( fp != NULL  && "File not found.");
+	fclose(fp);
+
+	fp= fopen("5.sion", "r");
 	assert( fp != NULL  && "File not found.");
 	fclose(fp);
 

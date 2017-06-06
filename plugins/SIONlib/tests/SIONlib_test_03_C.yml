@@ -1,0 +1,31 @@
+pdi:
+  metadata:
+    ni: int
+    nj: int
+  data: # values that can not be referenced using $syntax
+    reals:
+      type: double
+      sizes: [$nj , $ni]
+    values:
+      type: int
+      sizes: [$nj , $ni]
+
+  plugins:
+    SIONlib:
+      files:
+        inputs:
+          input1:
+            transaction: read_data
+            path: test_02_C.sion
+            vars:
+              - values
+              - reals
+        outputs:
+          output1:
+            transaction: write_data
+            path: test_02_C.sion
+            vars:
+              - ni
+              - nj
+              - reals
+              - values

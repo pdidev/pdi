@@ -87,10 +87,10 @@ add_test(NAME PDI_example_4_file COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CUR
 
 add_test(NAME PDI_example_4_C COMMAND "mpirun" -n 6 ./PDI_example "${CMAKE_CURRENT_SOURCE_DIR}/example4.yml")
 set_property(TEST PDI_example_4_C PROPERTY DEPENDS PDI_example_build PDI_example_4_file)
-set_property(TEST PDI_example_4_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/SIONlib_with_transactions/")
+set_property(TEST PDI_example_4_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/SIONlib/")
 set_property(TEST PDI_example_4_C PROPERTY TIMEOUT 120)
 
 add_test(NAME PDI_example_4_F COMMAND "mpirun" -n 6 ./PDI_example_f90 "${CMAKE_CURRENT_SOURCE_DIR}/example4.yml")
 set_property(TEST PDI_example_4_F PROPERTY DEPENDS PDI_example_f90_build PDI_example_4_file)
-set_property(TEST PDI_example_4_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/SIONlib_with_transactions/")
+set_property(TEST PDI_example_4_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/SIONlib/")
 set_property(TEST PDI_example_4_F PROPERTY TIMEOUT 120)
