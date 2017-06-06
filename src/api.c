@@ -148,7 +148,7 @@ err0:
 }
 
 
-PDI_status_t PDI_access(const char* name, PDI_inout_t inout, void *buffer)
+PDI_status_t PDI_access(const char* name, PDI_inout_t inout, void **buffer)
 {
 	PDI_data_t *data=PDI_find_data(name);
 	if( data ){
@@ -157,17 +157,17 @@ PDI_status_t PDI_access(const char* name, PDI_inout_t inout, void *buffer)
 			switch( inout ) {
 				case PDI_OUT:
 					if(access & PDI_OUT){
-						buffer=data->content[data->nb_content-1].data;
+						*buffer=data->content[data->nb_content-1].data;
 						return PDI_OK;
 					} break;
 				case PDI_IN:
 					if(access & PDI_IN){
-						buffer=data->content[data->nb_content-1].data;
+						*buffer=data->content[data->nb_content-1].data;
 						return PDI_OK;
 					} break;
 				case PDI_INOUT:
 					if( (access & PDI_OUT) && (access & PDI_IN) ){
-						buffer=data->content[data->nb_content-1].data;
+						*buffer=data->content[data->nb_content-1].data;
 						return PDI_OK;
 					} break;
 			}
