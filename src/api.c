@@ -172,6 +172,8 @@ PDI_status_t PDI_access(const char* name, PDI_inout_t inout, void **buffer)
 					} break;
 			}
 		}
+	} else {
+		*buffer = NULL;
 	}
 
 	return PDI_UNAVAILABLE;
