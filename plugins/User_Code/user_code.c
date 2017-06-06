@@ -76,7 +76,7 @@ char *msprintf(const char *fmt, ...)
 #define UC_verbose 2
 
 #if UC_verbose > 1
-#define UC_dbg(...) {fprintf(UC_stderr, "[PDI/GYSELA_HDF5_seq] Debug: ");\
+#define UC_dbg(...) {fprintf(UC_stderr, "[PDI/user_code] Debug: ");\
 		fprintf(UC_stderr, __VA_ARGS__);\
 		fflush(UC_stderr);}
 #else  // Does nothing
@@ -84,14 +84,14 @@ char *msprintf(const char *fmt, ...)
 #endif
 
 #if UC_verbose > 0
-#define UC_warn(...) {fprintf(UC_stderr, "[PDI/GYSELA_HDF5_seq] Warning: ");\
+#define UC_warn(...) {fprintf(UC_stderr, "[PDI/user_code] Warning: ");\
 		fprintf(UC_stderr, __VA_ARGS__);\
 		fflush(UC_stderr);}
 #else  // Does nothing
 #define UC_warn(...) if(0) printf( __VA_ARGS__);
 #endif
 
-#define UC_err(...) {fprintf(UC_stderr, "[PDI/GYSELA_HDF5_seq] Error: " );\
+#define UC_err(...) {fprintf(UC_stderr, "[PDI/user_code] Error: " );\
 		fprintf(UC_stderr, __VA_ARGS__);\
 		fflush(UC_stderr);}
 
@@ -313,27 +313,27 @@ PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *world)
 
 			/// Allocate and initialize
 			if (new_UC(&next)){
-				UC_dbg("Error when creating new UserCode %s\n", name);
+				UC_dbg("Error when creating next UserCode %s\n", name);
 				continue;
 			}
 
 			/// Fill the element
 			if (read_one_elemnt(next, conf, name)) {
-				free(new);
+				free(next);
 				UC_warn("Error when reading element %s\n", name);
 				continue;
 			}
 
 			/// Find the corresponding function
-			if (find_fct(name, NULL, &(new->fct.call) )) {
-				free(new);
+			if (find_fct(name, NULL, &(next->fct.call) )) {
+				free(next);
 				UC_warn("Error when reading element %s\n", name);
 				continue;
 			}
 
 			/// Append to list
 			all_uc = realloc(all_uc, sizeof(UC_t **)*nb_uc);
-			all_uc[nb_uc] = new;
+			all_uc[nb_uc] = next;
 			free(name);
 			nb_uc++;
 
@@ -351,8 +351,10 @@ PDI_status_t PDI_user_code_finalize()
 PDI_status_t PDI_user_code_event(const char *event)
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		if ( !strcmp(event, all_uc[ii]->fct.name) ) {
-			all_uc[ii]->fct.call;
+		for ( int n=0; n<all_uc[ii]->nb_events ; ++n ) {
+			if ( !strcmp(event, all_uc[ii]->events[n]) ) {
+				(*all_uc[ii]->fct.call)();
+			}
 		}
 	}
 
