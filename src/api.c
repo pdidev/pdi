@@ -293,22 +293,26 @@ err0:
 	return status;
 }
 
+static void add_to_transaction(const char* name){
+	PDI_data_t *data = PDI_find_data(name);
+	if ( data ) { 
+		++PDI_state.nb_transaction_data;
+		PDI_state.transaction_data = realloc(
+				PDI_state.transaction_data,
+				PDI_state.nb_transaction_data * sizeof(PDI_data_t *) );
+		PDI_state.transaction_data[PDI_state.nb_transaction_data-1] = data;
+	}
+	return;
+}
 
-PDI_status_t PDI_expose(const char* name, const void* data_dat)
+PDI_status_t PDI_expose(const char* name, const void* data)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_handle_err(PDI_share(name, (void*)data_dat, PDI_OUT), err0);
+	PDI_handle_err(PDI_share(name, (void*)data, PDI_OUT), err0);
 	
 	if ( PDI_state.transaction ) { // defer the reclaim
-		PDI_data_t *data = PDI_find_data(name);
-		if ( data ) {
-			++PDI_state.nb_transaction_data;
-			PDI_state.transaction_data = realloc(
-					PDI_state.transaction_data,
-					PDI_state.nb_transaction_data * sizeof(PDI_data_t *) );
-			PDI_state.transaction_data[PDI_state.nb_transaction_data-1] = data;
-		}
+		add_to_transaction(name);
 	} else { // do the reclaim now
 		PDI_handle_err(PDI_reclaim(name), err0);
 	}
@@ -320,21 +324,14 @@ err0:
 }
 
 
-PDI_status_t PDI_exchange ( const char* name, void* data_dat )
+PDI_status_t PDI_exchange ( const char* name, void* data )
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_handle_err(PDI_share(name, data_dat, PDI_IN|PDI_OUT), err0);
+	PDI_handle_err(PDI_share(name, data, PDI_IN|PDI_OUT), err0);
 	
 	if ( PDI_state.transaction ) { // defer the reclaim
-		PDI_data_t *data = PDI_find_data(name);
-		if ( data ) {
-			++PDI_state.nb_transaction_data;
-			PDI_state.transaction_data = realloc(
-					PDI_state.transaction_data,
-					PDI_state.nb_transaction_data * sizeof(PDI_data_t *) );
-			PDI_state.transaction_data[PDI_state.nb_transaction_data-1] = data;
-		}
+		add_to_transaction(name);
 	} else { // do the reclaim now
 		PDI_handle_err(PDI_reclaim(name), err0);
 	}
@@ -408,7 +405,12 @@ PDI_status_t PDI_import(const char* name, void* data)
 	PDI_status_t status = PDI_OK;
 	
 	PDI_handle_err(PDI_share(name, data, PDI_IN), err0);
-	PDI_handle_err(PDI_reclaim(name), err0);
+	
+	if ( PDI_state.transaction ) { // defer the reclaim
+		add_to_transaction(name);
+	} else { // do the reclaim now
+		PDI_handle_err(PDI_reclaim(name), err0);
+	}
 	
 	return status;
 	

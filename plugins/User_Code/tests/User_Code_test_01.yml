@@ -1,0 +1,15 @@
+pdi:
+  metadata:
+  data: # values that can not be referenced using $syntax
+    test_var: double
+    input: int 
+    output: int 
+  plugins:
+    user_code:
+      test:
+        function: test
+        events: testing
+        inputs: input  
+        outputs: output  
+        
+  

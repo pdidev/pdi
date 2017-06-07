@@ -73,7 +73,7 @@ char *msprintf(const char *fmt, ...)
 #define UC_stderr stderr
 
 /// Verbose level : 0 Error, 1 Warning, 2 Debug
-#define UC_verbose 2
+#define UC_verbose 1
 
 #if UC_verbose > 1
 #define UC_dbg(...) {fprintf(UC_stderr, "[PDI/user_code] Debug: ");\
@@ -112,11 +112,11 @@ typedef struct UC_s {
 	char **events; 		//< event names that trigger the function call
 	int nb_events; 		//< nb of events
 
-	char **inputs; 		//< inputs for the function
-	int nb_inputs; 		//< nb of inputs
+	char **datastarts; 		//< datastart events that trigger the function call
+	int nb_datastarts; 		//< nb of datastart events
 
-	char **outputs; 	//< ouputs of the functions
-	int nb_outputs; 	//< nb of outputs
+	char **dataends; 		//< dataend events that trigger the function call
+	int nb_dataends; 		//< nb of dataend events
 } UC_t ;
 
 
@@ -221,13 +221,10 @@ PDI_status_t find_fct(char *fct_name, char *libname, ptr_fct_t  *fct)
  * 		name :    // override default
  * 		events:   // name that trigger function
  *
- * // Assume one inputs after another
- * 		inputs:   // inputs required for the function
- * 		outputs:  // outputs required for the function
  */
 
 
-PDI_status_t read_one_elemnt(UC_t *this, PC_tree_t conf, char *name)
+PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
 {
 	char *node = str2nodename(name);
 	PC_tree_t tmptree = PC_get(conf, node);
@@ -237,20 +234,19 @@ PDI_status_t read_one_elemnt(UC_t *this, PC_tree_t conf, char *name)
 	if (PC_string(PC_get(tmptree, ".function"), &str)) {
 		UC_warn("'function' node not found. Default value '%s' \n", str);
 	}
-	this->fct.name = str;
+	that->fct.name = str;
 
 	node = ".events";
-	if (set_str_from_node(tmptree, node, &this->events, &this->nb_events)) {
-		UC_err("node '%s' not found\n", node);
-		return PDI_ERR_CONFIG;
+	if (set_str_from_node(tmptree, node, &that->events, &that->nb_events)) {
+		UC_warn("node '%s' not found\n", node);
 	}
 
-	node = ".inputs";
-	if (set_str_from_node(tmptree, node, &this->inputs, &this->nb_inputs))
+	node = ".datastarts";
+	if (set_str_from_node(tmptree, node, &that->datastarts, &that->nb_datastarts))
 		UC_warn("node '%s' not found\n", node);
 
-	node = ".outputs";
-	if (set_str_from_node(tmptree, node, &this->outputs, &this->nb_outputs))
+	node = ".dataends";
+	if (set_str_from_node(tmptree, node, &that->dataends, &that->nb_dataends))
 		UC_warn("node '%s' not found\n", node);
 
 	return PDI_OK;
@@ -260,20 +256,20 @@ PDI_status_t read_one_elemnt(UC_t *this, PC_tree_t conf, char *name)
 // ================  INIT AND FINALIZE  =====
 PDI_status_t new_UC(UC_t **new_uc)
 {
-	UC_t *this = malloc(sizeof(UC_t));
-	if (!this) {
+	UC_t *that = malloc(sizeof(UC_t));
+	if (!that) {
 		UC_err("Malloc failed during init...\n");
 		return PDI_ERR_PLUGIN;
 	}
 	// init function
-	this->fct.call = NULL;
-	this->fct.name = NULL;
+	that->fct.call = NULL;
+	that->fct.name = NULL;
 
-	this->events = NULL;
-	this->inputs = NULL;
-	this->outputs = NULL;
+	that->events = NULL;
+	that->datastarts = NULL;
+	that->dataends = NULL;
 
-	*new_uc = this;
+	*new_uc = that;
 
 	return PDI_OK;
 }
@@ -341,13 +337,32 @@ PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *world)
 		}
 	}
 
+	PC_errhandler(errh);
+
 	return status;
 }
 
 PDI_status_t PDI_user_code_finalize()
 {
+	for ( int ii=0; ii<nb_uc ; ++ii ) {
+		for ( int n=0; n<all_uc[ii]->nb_events ; ++n )
+			free(all_uc[ii]->events[n]);
+		free(all_uc[ii]->events);
+		for ( int n=0; n<all_uc[ii]->nb_datastarts ; ++n )
+			free(all_uc[ii]->datastarts[n]);
+		free(all_uc[ii]->datastarts);
+		for ( int n=0; n<all_uc[ii]->nb_dataends ; ++n )
+			free(all_uc[ii]->dataends[n]);
+		free(all_uc[ii]->dataends);
+
+		free(all_uc[ii]->fct.name);
+		free(all_uc[ii]);
+	}
+	free(all_uc);
+
 	return PDI_OK;
 }
+
 PDI_status_t PDI_user_code_event(const char *event)
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
@@ -360,12 +375,28 @@ PDI_status_t PDI_user_code_event(const char *event)
 
 	return PDI_OK;
 }
+
 PDI_status_t PDI_user_code_data_start(PDI_data_t *data)
 {
+	for ( int ii=0; ii<nb_uc ; ++ii ) {
+		for ( int n=0; n<all_uc[ii]->nb_datastarts ; ++n ) {
+			if ( !strcmp(data->name, all_uc[ii]->datastarts[n]) ) {
+				(*all_uc[ii]->fct.call)();
+			}
+		}
+	}
+
 	return PDI_OK;
 }
 PDI_status_t PDI_user_code_data_end(PDI_data_t *data)
 {
+	for ( int ii=0; ii<nb_uc ; ++ii ) {
+		for ( int n=0; n<all_uc[ii]->nb_dataends ; ++n ) {
+			if ( !strcmp(data->name, all_uc[ii]->datastarts[n]) ) {
+				(*all_uc[ii]->fct.call)();
+			}
+		}
+	}
 	return PDI_OK;
 }
 
