@@ -4,12 +4,12 @@ HDR=$(wildcard *.h)
 OBJ=$(SRC:.c=.orig_c)
 OBJH=$(HDR:.h=.orig_h)
 
-all: SRC_FILES_ARE_FORMATTED.loc HEADER_FILES_ARE_FORMATTED.loc
+all: src.loc hdr.loc
 
-SRC_FILES_ARE_FORMATTED.loc: $(OBJ) 
+src.loc: $(OBJ) 
 	@touch "SRC_FILES_ARE_FORMATTED.loc"
 
-HEADER_FILES_ARE_FORMATTED.loc: $(OBJH) 
+hdr.loc: $(OBJH) 
 	@touch "HEADER_FILES_ARE_FORMATTED.loc"
 
 

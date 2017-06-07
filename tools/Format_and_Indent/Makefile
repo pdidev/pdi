@@ -11,10 +11,10 @@ DIR_INC:= "../../include/pdi/"
 DIR_H  := "../../include/"
 
 # Origin src
-PDI_SRC:= $(shell find $(DIR_SRC) -iname '*.c')
-PDI_HDR:= $(shell find $(DIR_HDR) -iname '*.h')
-PDI_INC:= $(shell find $(DIR_INC) -iname '*.h')
-PDI_H  := $(shell find $(DIR_H)   -iname '*.h')
+PDI_SRC:= $(shell find $(DIR_SRC) -maxdepth 1 -iname '*.c')
+PDI_HDR:= $(shell find $(DIR_HDR) -maxdepth 1 -iname '*.h')
+PDI_INC:= $(shell find $(DIR_INC) -maxdepth 1 -iname '*.h')
+PDI_H  := $(shell find $(DIR_H)   -maxdepth 1 -iname '*.h')
 
 # Local dir
 LOC_SRC:= ".workdir/src/"
@@ -23,16 +23,16 @@ LOC_INC:= ".workdir/include/pdi/"
 LOC_H:=   ".workdir/include/"
 
 # Local SRC
-BACK_SRC:= $(shell find $(LOC_SRC) -iname '*.c')
-BACK_HDR:= $(shell find $(LOC_SRC) -iname '*.h')
-BACK_INC:= $(shell find $(LOC_INC) -iname '*.h')
-BACK_H:=   $(shell find $(LOC_H)   -iname '*.h')
+BACK_SRC:= $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.c')
+BACK_HDR:= $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.h')
+BACK_INC:= $(shell find $(LOC_INC) -maxdepth 1 -iname '*.h')
+BACK_H:=   $(shell find $(LOC_H)   -maxdepth 1 -iname '*.h')
 
 # Diff
-DIFF_SRC:= $(shell find $(LOC_SRC) -iname '*.diff')
-DIFF_HDR:= $(shell find $(LOC_SRC) -iname '*.diff')
-DIFF_INC:= $(shell find $(LOC_INC) -iname '*.diff')
-DIFF_H:=   $(shell find $(LOC_H)   -iname '*.diff')
+DIFF_SRC:= $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.diff')
+DIFF_HDR:= $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.diff')
+DIFF_INC:= $(shell find $(LOC_INC) -maxdepth 1 -iname '*.diff')
+DIFF_H:=   $(shell find $(LOC_H)   -maxdepth 1 -iname '*.diff')
 
 
 # Check if file does not exist copy 
@@ -44,25 +44,26 @@ COPY_ALL:
 	@cp PDI_Code_Formatting.astyle $(LOC_H).astylerc
 endif
 
-all: indent_all replace_all
+all: test indent_all replace_all
 
+test: 
+	@which astyle 1> /dev/null || (echo "Program 'astyle' is not installed and is required. Abort." && exit 1)
 
 #############################################
 #   Create new files that are reformatted   #
 #############################################
 # Check Formatting in all sub directories and create corrected files 
-indent_all: loc_src.loc loc_inc.loc loc_h.loc
+indent_all: loc_src.loc loc_hdr.loc loc_inc.loc loc_h.loc
 
 loc_src.loc: $(PDI_SRC)
 	@cp $(PDI_SRC) $(LOC_SRC) 
-	@(cd $(LOC_SRC) && $(MAKE))
+	@(cd $(LOC_SRC) && $(MAKE) src.loc)
 	@touch loc_src.loc
 
-#useless, done by upper make
-# loc_hdr: $(PDI_HDR)
-# 	@cp $(PDI_HDR) $(LOC_HDR)
-# 	@(cd $(LOC_HDR) && $(MAKE))
-# 	@touch loc_hdr
+loc_hdr.loc: $(PDI_HDR)
+	@cp $(PDI_HDR) $(LOC_HDR)
+	@(cd $(LOC_HDR) && $(MAKE) hdr.loc)
+	@touch loc_hdr.loc
 
 loc_inc.loc: $(PDI_INC) 
 	@cp $(PDI_INC) $(LOC_INC)
@@ -82,16 +83,26 @@ loc_h.loc: $(PDI_H)
 replace_all: replace_src.loc replace_inc.loc replace_h.loc 
 
 replace_src.loc: $(BACK_SRC)
-	./replace $(LOC_SRC) $(DIR_SRC)
+	@echo "--------------------------------"
+	@echo "Checking repertory: ""$(DIR_SRC)"
+	@./replace $(LOC_SRC) $(DIR_SRC)
 	@touch "replace_src.loc"
+	@echo "Done."
+	@echo "--------------------------------"
 
 replace_inc.loc: $(BACK_INC)
-	./replace $(LOC_INC) $(DIR_INC)
+	@echo "Checking repertory: ""$(DIR_INC)"
+	@./replace $(LOC_INC) $(DIR_INC)
 	@touch "replace_inc.loc"
+	@echo "Done."
+	@echo "--------------------------------"
 
 replace_h.loc: $(BACK_H)
-	./replace $(LOC_H) $(DIR_H)
+	@echo "Checking repertory: ""$(DIR_H)"
+	@./replace $(LOC_H) $(DIR_H)
 	@touch "replace_h.loc"
+	@echo "Done."
+	@echo "--------------------------------"
 
 
 #############################################

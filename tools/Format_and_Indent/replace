@@ -21,13 +21,17 @@ do
 	ls $this > /dev/null 2>&1
 	files_found=$?
 
-
 	if (( "$files_found" != "2" ))
 	then
 		for file in `ls $this`
 		do 
-			copy=$(echo "${file%.c}".orig_c)
 			replace=""
+			if [ $pattern == '*.c' ]
+			then
+				copy=$(echo "${file%.c}".orig_c)
+			else
+				copy=$(echo "${file%.h}".orig_h)
+			fi
 			if [ -s "$copy" ]
 			then
 				replace=$(diff $file $copy | wc -w)

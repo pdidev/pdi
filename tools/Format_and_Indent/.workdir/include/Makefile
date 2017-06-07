@@ -8,5 +8,5 @@ HEADER_FILES_ARE_FORMATTED.loc: $(OBJH)
 %.orig_h: %.h 
 	@cp $< $@
 	@astyle --options=.astylerc  < $@ > $<
-	@touch $< && touch $@ # Hack (see before)
+	@touch $< && touch $@ # Hack, update modification time
 
