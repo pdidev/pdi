@@ -14,20 +14,11 @@ pdi:
 
   plugins:
     SIONlib:
-      files:
-        inputs:
-          input1:
-            transaction: read_data
-            path: test_02_f90.sion
-            vars:
-              - reals
-              - values
-        outputs:
-          output1:
-            transaction: write_data
-            path: test_02_f90.sion
-            vars:
-              - ni
-              - nj
-              - values
-              - reals
+      inputs:
+        - event: read_data
+          file: test_02_f90.sion
+          vars: [ reals, values ]
+      outputs:
+        - event: write_data
+          file: test_02_f90.sion
+          vars: [ ni, nj, values, reals ]

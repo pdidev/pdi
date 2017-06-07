@@ -9,16 +9,9 @@ pdi:
     test_var: double
   plugins:
     SIONlib:
-      variables:
-        outputs:
-          test_var:
-            directory: .
-            generation: $meta1
-            select: 1
-      files:
-        outputs:
-          output1:
-            transaction: testing
-            path: $meta1.sion
-            vars:
-              - test_var
+      outputs:
+        - variable: test_var
+          file: test_01_variable_$meta1.sion
+        - event: testing
+          file: test_01_event_$meta1.sion
+          vars: [ test_var ]

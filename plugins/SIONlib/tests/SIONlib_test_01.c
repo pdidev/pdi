@@ -55,11 +55,11 @@ int main( int argc, char *argv[] )
 	PDI_finalize();
 
 	FILE* fp=NULL;
-	fp= fopen("test_var_000000005", "r");
+	fp= fopen("test_01_variable_5.sion", "r");
 	assert( fp != NULL  && "File not found.");
 	fclose(fp);
 
-	fp= fopen("5.sion", "r");
+	fp= fopen("test_01_event_5.sion", "r");
 	assert( fp != NULL  && "File not found.");
 	fclose(fp);
 

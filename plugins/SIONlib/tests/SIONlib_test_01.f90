@@ -85,7 +85,7 @@ program test2
   call PDI_transaction_end()
   call PDI_finalize()
 
-  inquire(file="test_var_000000006", exist=file_exist) ! values(1)=6
+  inquire(file="test_01_variable_6.sion", exist=file_exist) ! values(1)=6
   if( file_exist ) then
     print*, "File found."
   else
@@ -93,7 +93,7 @@ program test2
     call MPI_abort(MPI_COMM_WORLD, -1, ierr)
   endif ! file doesn't exist
 
-  inquire(file="6.sion", exist=file_exist) ! values(1)=6
+  inquire(file="test_01_event_6.sion", exist=file_exist) ! values(1)=6
   if( file_exist ) then
     print*, "File found."
   else

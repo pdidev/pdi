@@ -52,8 +52,7 @@ static MPI_Comm comm;
 typedef struct
 {
   char *name;
-  PDI_value_t directory;
-  PDI_value_t generation;
+  PDI_value_t file;
   PDI_value_t select;
   PDI_value_t n_files;
 } SIONlib_var_t;
@@ -61,13 +60,12 @@ typedef struct
 typedef struct
 {
   char *name;
-  char *transaction;
-  PDI_value_t path;
+  PDI_value_t file;
   PDI_value_t select;
   PDI_value_t n_files;
   size_t n_vars;
   char **vars;
-} SIONlib_file_t;
+} SIONlib_event_t;
 
 static size_t n_output_vars = 0;
 static SIONlib_var_t *output_vars = NULL;
@@ -75,11 +73,11 @@ static SIONlib_var_t *output_vars = NULL;
 static size_t n_input_vars = 0;
 static SIONlib_var_t *input_vars = NULL;
 
-static size_t n_output_files = 0;
-static SIONlib_file_t *output_files = NULL;
+static size_t n_output_events = 0;
+static SIONlib_event_t *output_events = NULL;
 
-static size_t n_input_files = 0;
-static SIONlib_file_t *input_files = NULL;
+static size_t n_input_events = 0;
+static SIONlib_event_t *input_events = NULL;
 
 #ifndef STRDUP_WORKS
 static char *strdup(const char *s)
@@ -90,25 +88,75 @@ static char *strdup(const char *s)
 }
 #endif
 
-static PDI_status_t read_var_property_from_config(PC_tree_t conf, const char *var_name, const char *property_name, const char *default_value, PDI_value_t *property)
+static PDI_status_t parse_property(PC_tree_t conf, const char *entry_name, const char *property_name, const char *default_value, PDI_value_t *property)
 {
   char *strv = NULL;
   if (PC_string(PC_get(conf, property_name), &strv)) {
+    free(strv);
     if (default_value) {
       strv = strdup(default_value);
+      if (!strv) return PDI_ERR_SYSTEM;
     } else {
-      fprintf(stderr, "[PDI/SIONlib] Property '%s' not found for variable %s.\n", property_name, var_name);
-      free(strv);
+      fprintf(stderr, "[PDI/SIONlib] Property '%s' not found for entry '%s'.\n", property_name, entry_name);
       return PDI_ERR_CONFIG;
     }
   }
-  if (!strv) return PDI_ERR_SYSTEM;
   PDI_status_t status = PDI_value_parse(strv, property);
   free(strv);
+  if (status) fprintf(stderr, "[PDI/SIONlib] Could not parse property '%s' for entry '%s'.\n", property_name, entry_name);
   return status;
 }
 
-static PDI_status_t read_vars_from_config(PC_tree_t conf, SIONlib_var_t *vars[], size_t *n_vars, const char *default_directory, const char *default_select)
+static PDI_status_t parse_var(PC_tree_t entry, SIONlib_var_t *var)
+{
+  char *name = NULL;
+  if (PC_string(PC_get(entry, ".variable"), &name)) {
+    free(name);
+    return PDI_ERR_SYSTEM;
+  }
+
+  PDI_status_t status;
+  // set file
+  PDI_value_t file;
+  if ((status = parse_property(entry, name, ".file", NULL, &file))) {
+    // property 'file' is mandatory
+    PDI_value_destroy(&file);
+    free(name);
+    return status;
+  }
+
+  // set select
+  PDI_value_t select;
+  if ((status = parse_property(entry, name, ".select", "1", &select))) {
+    // parse with default value should not fail
+    PDI_value_destroy(&select);
+    PDI_value_destroy(&file);
+    free(name);
+    return status;
+  }
+
+  // set n_files
+  PDI_value_t n_files;
+  if ((status = parse_property(entry, name, ".n_files", "1", &n_files))) {
+    // parse with default value should not fail
+    PDI_value_destroy(&n_files);
+    PDI_value_destroy(&select);
+    PDI_value_destroy(&file);
+    free(name);
+    return status;
+  }
+
+  *var = (SIONlib_var_t) {
+    .name = name,
+    .file = file,
+    .select = select,
+    .n_files = n_files
+  };
+
+  return PDI_OK;
+}
+
+static PDI_status_t parse_vars(PC_tree_t conf, SIONlib_var_t *vars[], size_t *n_vars)
 {
   int len;
   if ( PC_len(conf, &len) ) { // if no subtree found
@@ -116,101 +164,136 @@ static PDI_status_t read_vars_from_config(PC_tree_t conf, SIONlib_var_t *vars[],
           *vars = NULL;
           return PDI_OK;
   }
-  *n_vars = len;
-  *vars = calloc(sizeof(SIONlib_var_t), *n_vars);
+  // conf tree contains both vars and events, so len >= *n_vars
+  *vars = calloc(sizeof(SIONlib_var_t), len);
   if (!vars) return PDI_ERR_SYSTEM;
 
-  for (size_t i = 0; i < *n_vars; ++i) {
-    PC_string(PC_get(conf, "{%zd}", i), &(*vars)[i].name);
-    PC_tree_t var_conf = PC_get(conf, "<%zd>", i);
+  *n_vars = 0;
+  for (size_t i = 0; i < len; ++i) {
+    PC_tree_t entry = PC_get(conf, "[%zd]", i);
+    if (PC_status(PC_get(entry, ".variable"))) {
+      // not an entry for a variable
+      continue;
+    }
 
-    PDI_status_t status;
-    // set directory
-    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".directory", default_directory, &(*vars)[i].directory))) return status;
+    PDI_status_t status = parse_var(entry, &(*vars)[*n_vars]);
+    if (status) return status;
 
-    // set generation
-    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".generation", "-1", &(*vars)[i].generation))) return status;
-
-    // set select
-    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".select", default_select, &(*vars)[i].select))) return status;
-
-    // set n_files
-    if ((status = read_var_property_from_config(var_conf, (*vars)[i].name, ".n_files", "1", &(*vars)[i].n_files))) return status;
+    *n_vars += 1;
   }
 
   return PDI_OK;
 }
 
-static PDI_status_t read_file_property_from_config(PC_tree_t conf, const char *file_name, const char *property_name, const char *default_value, PDI_value_t *property)
-{
-  char *strv = NULL;
-  if (PC_string(PC_get(conf, property_name), &strv)) {
-    if (default_value) {
-      strv = strdup(default_value);
-    } else {
-      fprintf(stderr, "[PDI/SIONlib] Property '%s' not found for file %s.\n", property_name, file_name);
-      free(strv);
-      return PDI_ERR_CONFIG;
-    }
-  }
-  if (!strv) return PDI_ERR_SYSTEM;
-  PDI_status_t status = PDI_value_parse(strv, property);
-  free(strv);
-  return status;
-}
-
-static PDI_status_t read_file_vars_from_config(PC_tree_t conf, const char *file_name, size_t *n_vars, char ***vars)
+static PDI_status_t parse_event_vars(PC_tree_t conf, const char *event_name, size_t *n_vars, char ***vars)
 {
   int len;
-  if (PC_len(conf, &len)) {
-    fprintf(stderr, "[PDI/SIONlib] No variables specified for file '%s'.\n", file_name);
+  PC_status_t status = PC_len(conf, &len);
+  if (status || len <= 0) {
+    fprintf(stderr, "[PDI/SIONlib] No variables specified for event '%s'.\n", event_name);
     return PDI_ERR_CONFIG;
   }
-  *n_vars = (size_t) len;
-  *vars = calloc(sizeof(char *), *n_vars);
+
+  *vars = calloc(sizeof(char *), len);
   if (!*vars) return PDI_ERR_SYSTEM;
 
-  for (size_t i = 0; i < *n_vars; ++i) {
-    PC_string(PC_get(conf, "[%zd]", i), *vars + i);
+  for (size_t i = 0; i < len; ++i) {
+    if (PC_string(PC_get(conf, "[%zd]", i), *vars + i)) {
+      free(*vars);
+      return PDI_ERR_SYSTEM;
+    }
   }
+
+  *n_vars = (size_t) len;
   return PDI_OK;
 }
 
-static PDI_status_t read_files_from_config(PC_tree_t conf, SIONlib_file_t *files[], size_t *n_files)
+static PDI_status_t parse_event(PC_tree_t entry, SIONlib_event_t *event)
+{
+  char *name = NULL;
+  if (PC_string(PC_get(entry, ".event"), &name)) {
+    free(name);
+    return PDI_ERR_SYSTEM;
+  }
+
+  PDI_status_t status;
+  // set path
+  PDI_value_t file;
+  if ((status = parse_property(entry, name, ".file", NULL, &file))) {
+    // property 'file' is mandatory
+    PDI_value_destroy(&file);
+    free(name);
+    return status;
+  }
+
+  // set select
+  PDI_value_t select;
+  if ((status = parse_property(entry, name, ".select", "1", &select))) {
+    // parse with default value should not fail
+    PDI_value_destroy(&select);
+    PDI_value_destroy(&file);
+    free(name);
+    return status;
+  }
+
+  // set n_files
+  PDI_value_t n_files;
+  if ((status = parse_property(entry, name, ".n_files", "1", &n_files))) {
+    // parse with default value should not fail
+    PDI_value_destroy(&n_files);
+    PDI_value_destroy(&select);
+    PDI_value_destroy(&file);
+    free(name);
+    return status;
+  }
+
+  // set variables
+  PC_tree_t vars_conf = PC_get(entry, ".vars");
+  size_t n_vars;
+  char **vars;
+  if ((status = parse_event_vars(vars_conf, name, &n_vars, &vars))) {
+    PDI_value_destroy(&n_files);
+    PDI_value_destroy(&select);
+    PDI_value_destroy(&file);
+    free(name);
+    return status;
+  }
+
+  *event = (SIONlib_event_t) {
+    .name = name,
+    .file = file,
+    .select = select,
+    .n_files = n_files,
+    .n_vars = n_vars,
+    .vars = vars
+  };
+
+  return PDI_OK;
+}
+
+static PDI_status_t parse_events(PC_tree_t conf, SIONlib_event_t *events[], size_t *n_events)
 {
   int len;
   if (PC_len(conf, &len)) { // if no subtree found
-    *n_files = 0;
-    *files = NULL;
+    *n_events = 0;
+    *events = NULL;
     return PDI_OK;
   }
-  *n_files = len;
-  *files = calloc(sizeof(SIONlib_file_t), *n_files);
-  if (!files) return PDI_ERR_SYSTEM;
+  *events = calloc(sizeof(SIONlib_event_t), len);
+  if (!events) return PDI_ERR_SYSTEM;
 
-  for (size_t i = 0; i < *n_files; ++i) {
-    PC_string(PC_get(conf, "{%zd}", i), &(*files)[i].name);
-    PC_tree_t file_conf = PC_get(conf, "<%zd>", i);
-
-    // set transaction
-    if (PC_string(PC_get(file_conf, ".transaction"), &(*files)[i].transaction)) {
-      fprintf(stderr, "[PDI/SIONlib] Property '.transaction' not found for file %s.\n", (*files)[i].name);
-      return PDI_ERR_CONFIG;
+  *n_events = 0;
+  for (size_t i = 0; i < len; ++i) {
+    PC_tree_t entry = PC_get(conf, "[%zd]", i);
+    if (PC_status(PC_get(entry, ".event"))) {
+      // not an entry for an event
+      continue;
     }
 
-    PDI_status_t status;
-    // set path
-    if ((status = read_file_property_from_config(file_conf, (*files)[i].name, ".path", NULL, &(*files)[i].path))) return status;
+    PDI_status_t status = parse_event(entry, &(*events)[*n_events]);
+    if (status) return status;
 
-    // set select
-    if ((status = read_file_property_from_config(file_conf, (*files)[i].name, ".select", "1", &(*files)[i].select))) return status;
-
-    // set n_files
-    if ((status = read_file_property_from_config(file_conf, (*files)[i].name, ".n_files", "1", &(*files)[i].n_files))) return status;
-
-    // set variables
-    PC_tree_t vars_conf = PC_get(file_conf, ".vars");
-    if ((status = read_file_vars_from_config(vars_conf, (*files)[i].name, &(*files)[i].n_vars, &(*files)[i].vars))) return status;
+    *n_events += 1;
   }
 
   return PDI_OK;
@@ -230,72 +313,67 @@ PDI_status_t PDI_SIONlib_init(PC_tree_t conf, MPI_Comm* world)
 
   PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 
-  char *default_out_directory = NULL; // default output directory if none specified
-  PC_string(PC_get(conf, ".variables.defaults.outputs.directory"), &default_out_directory);
-  char *default_out_select = NULL; // default output select if none specified
-  PC_string(PC_get(conf, ".variables.defaults.outputs.select"), &default_out_select);
-  PC_tree_t output_vars_cfg = PC_get(conf, ".variables.outputs");
-  PDI_status_t status = read_vars_from_config(output_vars_cfg, &output_vars, &n_output_vars, default_out_directory, default_out_select);
-  free(default_out_directory);
-  free(default_out_select);
+  PC_tree_t outputs_cfg = PC_get(conf, ".outputs");
+  PDI_status_t status = parse_vars(outputs_cfg, &output_vars, &n_output_vars);
   if (status) goto err0;
 
-  char* default_in_directory = NULL; // default input directory if none specified
-  PC_string(PC_get(conf, ".variables.defaults.inputs.directory"), &default_in_directory);
-  char* default_in_select = NULL; // default input select if none specified
-  PC_string(PC_get(conf, ".variables.defaults.inputs.select"), &default_in_select);
-  PC_tree_t input_vars_cfg = PC_get(conf, ".variables.inputs");
-  status = read_vars_from_config(input_vars_cfg, &input_vars, &n_input_vars, default_in_directory, default_in_select);
-  free(default_in_directory);
-  free(default_in_select);
+  PC_tree_t inputs_cfg = PC_get(conf, ".inputs");
+  status = parse_vars(inputs_cfg, &input_vars, &n_input_vars);
   if (status) goto err0;
 
-  PC_tree_t output_files_cfg = PC_get(conf, ".files.outputs");
-  status = read_files_from_config(output_files_cfg, &output_files, &n_output_files);
+  status = parse_events(outputs_cfg, &output_events, &n_output_events);
   if (status) goto err0;
 
-  PC_tree_t input_files_cfg = PC_get(conf, ".files.inputs");
-  status = read_files_from_config(input_files_cfg, &input_files, &n_input_files);
+  status = parse_events(inputs_cfg, &input_events, &n_input_events);
 
 err0:
   PC_errhandler(errh);
   return status;
 }
 
-static void destroy_vars(size_t n_vars, SIONlib_var_t *vars) {
-  for (size_t i = 0; i < n_vars; ++i) {
-    PDI_value_destroy(&vars[i].directory);
-    PDI_value_destroy(&vars[i].generation);
-    PDI_value_destroy(&vars[i].select);
-    free(vars[i].name);
-  }
-  free(vars);
+static void destroy_var(SIONlib_var_t *var) {
+  free(var->name);
+  PDI_value_destroy(&var->file);
+  PDI_value_destroy(&var->select);
+  PDI_value_destroy(&var->n_files);
 }
 
-static void destroy_files(size_t n_files, SIONlib_file_t *files)
-{
-  for (size_t i = 0; i < n_files; ++i) {
-    free(files[i].name);
-    free(files[i].transaction);
-    PDI_value_destroy(&files[i].path);
-    PDI_value_destroy(&files[i].select);
-    PDI_value_destroy(&files[i].n_files);
-    for (size_t j = 0; j < files[i].n_vars; ++j) {
-      free(files[i].vars[j]);
-    }
-    files[i].n_vars = 0;
-    free(files[i].vars);
+static void destroy_vars(size_t *n_vars, SIONlib_var_t *vars) {
+  for (size_t i = 0; i < *n_vars; ++i) {
+    destroy_var(&vars[i]);
   }
-  free(files);
+  free(vars);
+  *n_vars = 0;
+}
+
+static void destroy_event(SIONlib_event_t *event) {
+    free(event->name);
+    PDI_value_destroy(&event->file);
+    PDI_value_destroy(&event->select);
+    PDI_value_destroy(&event->n_files);
+    for (size_t j = 0; j < event->n_vars; ++j) {
+      free(event->vars[j]);
+    }
+    event->n_vars = 0;
+    free(event->vars);
+}
+
+static void destroy_events(size_t *n_events, SIONlib_event_t *events)
+{
+  for (size_t i = 0; i < *n_events; ++i) {
+    destroy_event(&events[i]);
+  }
+  free(events);
+  *n_events = 0;
 }
 
 PDI_status_t PDI_SIONlib_finalize()
 {
-  destroy_vars(n_output_vars, output_vars);
-  destroy_vars(n_input_vars, input_vars);
+  destroy_vars(&n_output_vars, output_vars);
+  destroy_vars(&n_input_vars, input_vars);
 
-  destroy_files(n_output_files, output_files);
-  destroy_files(n_input_files, input_files);
+  destroy_events(&n_output_events, output_events);
+  destroy_events(&n_input_events, input_events);
 
   return PDI_OK;
 }
@@ -311,29 +389,29 @@ static uint64_t hash(const uint8_t *data, size_t len)
   return hash;
 }
 
-static PDI_status_t write_to_file(const SIONlib_file_t *file)
+static PDI_status_t write_event(const SIONlib_event_t *event)
 {
   PDI_status_t status;
   // check that data is available and data type is dense
-  for (size_t i = 0; i < file->n_vars; ++i) {
-    PDI_data_t *data = PDI_find_data(file->vars[i]);
+  for (size_t i = 0; i < event->n_vars; ++i) {
+    PDI_data_t *data = PDI_find_data(event->vars[i]);
     if (!data || data->nb_content < 1 || !(data->content[data->nb_content - 1].access & PDI_OUT)) return PDI_UNAVAILABLE;
 
     int is_dense;
     if ((status = PDI_datatype_is_dense(&data->type, &is_dense))) return status;
     if (!is_dense) {
-      fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", file->vars[i]);
+      fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
       return PDI_ERR_IMPL;
     }
   }
 
   long n_files_;
-  if ((status = PDI_value_int(&file->n_files, &n_files_))) return status;
+  if ((status = PDI_value_int(&event->n_files, &n_files_))) return status;
   int n_files = n_files_;
 
   sion_int64 chunksize = 0;
-  for (size_t i = 0; i < file->n_vars; ++i) {
-    PDI_data_t *data = PDI_find_data(file->vars[i]);
+  for (size_t i = 0; i < event->n_vars; ++i) {
+    PDI_data_t *data = PDI_find_data(event->vars[i]);
     if (!data) return PDI_UNAVAILABLE;
     size_t data_size;
     if ((status = PDI_datatype_datasize(&data->type, &data_size))) return status;
@@ -343,17 +421,17 @@ static PDI_status_t write_to_file(const SIONlib_file_t *file)
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
-  char *path = NULL;
-  if ((status = PDI_value_str(&file->path, &path))) {
-    free(path);
+  char *file = NULL;
+  if ((status = PDI_value_str(&event->file, &file))) {
+    free(file);
     return status;
   }
 
-  int sid = sion_paropen_mpi(path, "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
-  free(path);
+  int sid = sion_paropen_mpi(file, "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  free(file);
 
-  for (size_t i = 0; i < file->n_vars; ++i) {
-    PDI_data_t *data = PDI_find_data(file->vars[i]);
+  for (size_t i = 0; i < event->n_vars; ++i) {
+    PDI_data_t *data = PDI_find_data(event->vars[i]);
 
     size_t data_size;
     if ((status = PDI_datatype_datasize(&data->type, &data_size))) {
@@ -392,18 +470,18 @@ static PDI_status_t write_to_file(const SIONlib_file_t *file)
   return PDI_OK;
 }
 
-static PDI_status_t read_from_file(const SIONlib_file_t *file)
+static PDI_status_t read_event(const SIONlib_event_t *event)
 {
   // check that data type is dense
   PDI_status_t status;
-  for (size_t i = 0; i < file->n_vars; ++i) {
-    PDI_data_t *data = PDI_find_data(file->vars[i]);
+  for (size_t i = 0; i < event->n_vars; ++i) {
+    PDI_data_t *data = PDI_find_data(event->vars[i]);
     if (!data || data->nb_content < 1 || !(data->content[data->nb_content - 1].access & PDI_IN)) return PDI_UNAVAILABLE;
 
     int is_dense;
     if ((status = PDI_datatype_is_dense(&data->type, &is_dense))) return status;
     if (!is_dense) {
-      fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", file->vars[i]);
+      fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
       return PDI_ERR_IMPL;
     }
   }
@@ -413,21 +491,21 @@ static PDI_status_t read_from_file(const SIONlib_file_t *file)
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
-  char *path = NULL;
-  if ((status = PDI_value_str(&file->path, &path))) {
-    free(path);
+  char *file = NULL;
+  if ((status = PDI_value_str(&event->file, &file))) {
+    free(file);
     return status;
   }
 
-  int sid = sion_paropen_mpi(path, "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
-  free(path);
+  int sid = sion_paropen_mpi(file, "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
-  for (size_t i = 0; i < file->n_vars; ++i) {
-    PDI_data_t *data = PDI_find_data(file->vars[i]);
+  for (size_t i = 0; i < event->n_vars; ++i) {
+    PDI_data_t *data = PDI_find_data(event->vars[i]);
 
     size_t data_size;
     if ((status = PDI_datatype_datasize(&data->type, &data_size))) {
       sion_parclose_mpi(sid);
+      free(file);
       return status;
     }
 
@@ -436,14 +514,16 @@ static PDI_status_t read_from_file(const SIONlib_file_t *file)
 
     for (int j = 0; ; ++j) {
       if (SION_SUCCESS != sion_seek_key(sid, key, 4 * j, 0)) {
-        fprintf(stderr, "[PDI/SIONlib] Could not find variable '%s' for reading in file '%s'.\n", data->name, file->name);
+        fprintf(stderr, "[PDI/SIONlib] Could not find variable '%s' for reading in file '%s'.\n", data->name, file);
         sion_parclose_mpi(sid);
+        free(file);
         return PDI_ERR_SYSTEM;
       }
 
       uint64_t name_size_from_file;
       if (1 != sion_fread_key(&name_size_from_file, key, sizeof(uint64_t), 1, sid)) {
         sion_parclose_mpi(sid);
+        free(file);
         return PDI_ERR_SYSTEM;
       }
 
@@ -454,12 +534,14 @@ static PDI_status_t read_from_file(const SIONlib_file_t *file)
       char *name_from_file = malloc(name_size + 1);
       if (NULL == name_from_file) {
         sion_parclose_mpi(sid);
+        free(file);
         return PDI_ERR_SYSTEM;
       }
 
       if (1 != sion_fread_key(name_from_file, key, name_size, 1, sid)) {
         free(name_from_file);
         sion_parclose_mpi(sid);
+        free(file);
         return PDI_ERR_SYSTEM;
       }
       name_from_file[name_size] = '\0';
@@ -474,20 +556,25 @@ static PDI_status_t read_from_file(const SIONlib_file_t *file)
     uint64_t data_size_from_file;
     if (1 != sion_fread_key(&data_size_from_file, key, sizeof(data_size_from_file), 1, sid)) {
       sion_parclose_mpi(sid);
+      free(file);
       return PDI_ERR_SYSTEM;
     }
 
     if (data_size != data_size_from_file) {
-      fprintf(stderr, "[PDI/SIONlib] Size of data for variable '%s' in file '%s' does not match memory size (%"PRIu64" (file) vs. %zu (memory)).\n", data->name, file->name, data_size_from_file, data_size);
+      fprintf(stderr, "[PDI/SIONlib] Size of data for variable '%s' in file '%s' does not match memory size (%"PRIu64" (file) vs. %zu (memory)).\n", data->name, file, data_size_from_file, data_size);
       sion_parclose_mpi(sid);
+      free(file);
       return PDI_ERR_SYSTEM;
     }
 
     if (1 != sion_fread_key(data->content[data->nb_content - 1].data, key, data_size, 1, sid)) {
       sion_parclose_mpi(sid);
+      free(file);
       return PDI_ERR_SYSTEM;
     }
   }
+
+  free(file);
 
   if (SION_SUCCESS != sion_parclose_mpi(sid)) return PDI_ERR_SYSTEM;
 
@@ -498,23 +585,23 @@ PDI_status_t PDI_SIONlib_event(const char *event)
 {
   PDI_status_t write_status = PDI_OK;
   int write_attempted = 0;
-  for (size_t i = 0; i < n_output_files; ++i) {
-    if (!strcmp(output_files[i].transaction, event)) {
+  for (size_t i = 0; i < n_output_events; ++i) {
+    if (!strcmp(output_events[i].name, event)) {
       write_attempted = 1;
       long select;
-      if ((write_status = PDI_value_int(&output_files[i].select, &select))) break;
-      if (select) write_status = write_to_file(&output_files[i]);
+      if ((write_status = PDI_value_int(&output_events[i].select, &select))) break;
+      if (select) write_status = write_event(&output_events[i]);
     }
   }
 
   PDI_status_t read_status = PDI_OK;
   int read_attempted = 0;
-  for (size_t i = 0; i < n_input_files; ++i) {
-    if (!strcmp(input_files[i].transaction, event)) {
+  for (size_t i = 0; i < n_input_events; ++i) {
+    if (!strcmp(input_events[i].name, event)) {
       read_attempted = 1;
       long select;
-      if ((read_status = PDI_value_int(&input_files[i].select, &select))) break;
-      if (select) read_status = read_from_file(&input_files[i]);
+      if ((read_status = PDI_value_int(&input_events[i].select, &select))) break;
+      if (select) read_status = read_event(&input_events[i]);
     }
   }
 
@@ -533,28 +620,7 @@ PDI_status_t PDI_SIONlib_event(const char *event)
   }
 }
 
-static char *construct_path(const char *directory, const char* name, long generation) {
-  size_t path_len = strlen(directory) + 1 + strlen(name) + 1;
-  if (generation != -1) path_len += 1 + 9;
-  char *path = malloc(path_len);
-  if (!path) return NULL;
-
-  int written;
-  if (generation != -1) {
-    written = snprintf(path, path_len, "%s/%s_%09ld", directory, name, generation);
-  } else {
-    written = snprintf(path, path_len, "%s/%s", directory, name);
-  }
-  if (written < 0 || (size_t)written >= path_len) {
-    free(path);
-    return NULL;
-  }
-
-  return path;
-}
-
-
-static PDI_status_t write_var_to_file(const PDI_data_t *data, const SIONlib_var_t *var)
+static PDI_status_t write_var(const PDI_data_t *data, const SIONlib_var_t *var)
 {
   // check that data type is dense
   PDI_status_t status;
@@ -566,34 +632,27 @@ static PDI_status_t write_var_to_file(const PDI_data_t *data, const SIONlib_var_
   }
 
   // open file
-  long generation;
-  if ((status = PDI_value_int(&var->generation, &generation))) return status;
-
   long n_files_;
   if ((status = PDI_value_int(&var->n_files, &n_files_))) return status;
   int n_files = n_files_;
 
-  char *directory;
-  if ((status = PDI_value_str(&var->directory, &directory))) {
-    free(directory);
+  char *file = NULL;
+  if ((status = PDI_value_str(&var->file, &file))) {
+    free(file);
     return status;
   }
 
-  char* path = construct_path(directory, data->name, generation);
-  free(directory);
-  if (!path) return PDI_ERR_SYSTEM;
-
   size_t data_size;
   if (status = PDI_datatype_datasize(&data->type, &data_size)) {
-    free(path);
+    free(file);
     return status;
   }
   sion_int64 chunksize = data_size;
 
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
-  int sid = sion_paropen_mpi(path, "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
-  free(path);
+  int sid = sion_paropen_mpi(file, "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  free(file);
 
   // write data to file
   size_t written = sion_fwrite(data->content[data->nb_content - 1].data, data_size, 1, sid);
@@ -604,7 +663,7 @@ static PDI_status_t write_var_to_file(const PDI_data_t *data, const SIONlib_var_
   return PDI_OK;
 }
 
-static PDI_status_t read_var_from_file(const PDI_data_t *data, const SIONlib_var_t *var)
+static PDI_status_t read_var(const PDI_data_t *data, const SIONlib_var_t *var)
 {
   // check that data type is dense
   PDI_status_t status;
@@ -616,30 +675,23 @@ static PDI_status_t read_var_from_file(const PDI_data_t *data, const SIONlib_var
   }
 
   // open file
-  long generation;
-  if ((status = PDI_value_int(&var->generation, &generation))) return status;
-
-  char *directory;
-  if ((status = PDI_value_str(&var->directory, &directory))) {
-    free(directory);
+  char *file = NULL;
+  if ((status = PDI_value_str(&var->file, &file))) {
+    free(file);
     return status;
   }
-
-  char* path = construct_path(directory, data->name, generation);
-  free(directory);
-  if (!path) return PDI_ERR_SYSTEM;
 
   int n_files = 1;
   size_t data_size;
   if (status = PDI_datatype_datasize(&data->type, &data_size)) {
-    free(path);
+    free(file);
     return status;
   }
   sion_int64 chunksize = 0;
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
-  int sid = sion_paropen_mpi(path, "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
-  free(path);
+  int sid = sion_paropen_mpi(file, "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  free(file);
 
   // read data from file
   size_t read = sion_fread(data->content[data->nb_content - 1].data, data_size, 1, sid);
@@ -660,7 +712,7 @@ PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
       if (!strcmp(output_vars[i].name, data->name)) {
         long select;
         if ((write_status = PDI_value_int(&output_vars[i].select, &select))) break;
-        if (select) write_status = write_var_to_file(data, &output_vars[i]);
+        if (select) write_status = write_var(data, &output_vars[i]);
         break;
       }
     }
@@ -672,7 +724,7 @@ PDI_status_t PDI_SIONlib_data_start(PDI_data_t *data)
       if (!strcmp(input_vars[i].name, data->name)) {
         long select;
         if ((read_status = PDI_value_int(&input_vars[i].select, &select))) break;
-        if (select) read_status = read_var_from_file(data, &input_vars[i]);
+        if (select) read_status = read_var(data, &input_vars[i]);
         break;
       }
     }
