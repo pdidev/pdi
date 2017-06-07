@@ -35,19 +35,17 @@ DIFF_INC:= $(shell find $(LOC_INC) -maxdepth 1 -iname '*.diff')
 DIFF_H:=   $(shell find $(LOC_H)   -maxdepth 1 -iname '*.diff')
 
 
-# Check if file does not exist copy 
-ifeq ("$(BACK_SRC)","")
-COPY_ALL:
+all: test copy_style indent_all replace_all
+
+test: 
+	@which astyle 1> /dev/null || (echo "Program 'astyle' is not installed and is required. Abort." && exit 1)
+
+copy_style:
 	@cp PDI_Code_Formatting.astyle $(LOC_SRC).astylerc
 	@cp PDI_Code_Formatting.astyle $(LOC_HDR).astylerc
 	@cp PDI_Code_Formatting.astyle $(LOC_INC).astylerc
 	@cp PDI_Code_Formatting.astyle $(LOC_H).astylerc
-endif
 
-all: test indent_all replace_all
-
-test: 
-	@which astyle 1> /dev/null || (echo "Program 'astyle' is not installed and is required. Abort." && exit 1)
 
 #############################################
 #   Create new files that are reformatted   #

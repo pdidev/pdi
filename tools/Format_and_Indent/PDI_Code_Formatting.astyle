@@ -4,6 +4,8 @@
 --style=kr
 # Indent is tab based
 --indent=tab 
+# fill empty line with previous line space 
+--fill-empty-lines
 ## Indent 
 # Pre-processor  
 --indent-preproc-block
