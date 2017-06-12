@@ -17,10 +17,10 @@ PDI_INC:= $(shell find $(DIR_INC) -maxdepth 1 -iname '*.h')
 PDI_H  := $(shell find $(DIR_H)   -maxdepth 1 -iname '*.h')
 
 # Local dir
-LOC_SRC:= ".workdir/src/"
-LOC_HDR:= ".workdir/src/"
-LOC_INC:= ".workdir/include/pdi/"
-LOC_H:=   ".workdir/include/"
+LOC_SRC:= "workdir/src/"
+LOC_HDR:= "workdir/src/"
+LOC_INC:= "workdir/include/pdi/"
+LOC_H:=   "workdir/include/"
 
 # Local SRC
 BACK_SRC:= $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.c')
