@@ -185,11 +185,11 @@ PDI_status_t PDI_EXPORT PDI_reclaim(const char *name);
 
 /** Requests for PDI to access a data buffer.
  * \param[in] name the data name
- * \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
  * \param[in,out] buffer a pointer to the accessed data buffer
+ * \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
  * \return an error status
  */
-PDI_status_t  PDI_EXPORT PDI_access(const char* name, PDI_inout_t inout, void **buffer);
+PDI_status_t  PDI_EXPORT PDI_access(const char* name, void **buffer, PDI_inout_t inout);
 
 /** Requests for PDI to allocate (and initialize) a data buffer.
  * \param[in] name the data name
