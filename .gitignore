@@ -7,3 +7,5 @@ tools/Format_and_Indent/**/*.loc
 tools/Format_and_Indent/**/*.astylerc
 tools/Format_and_Indent/**/*.*_c
 tools/Format_and_Indent/**/*.*_h
+docs/doxygen
+docs/Reference_manual.pdf

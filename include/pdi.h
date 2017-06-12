@@ -10,9 +10,9 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file pdi.h
- * \brief Header of the PDI API.
- * \author J. Bigot (CEA)
- */
+/**
+* \file pdi.h
+* \brief Header of the PDI API.
+* \author J. Bigot (CEA)
+*/
 
 #ifndef PDI_H__
 #define PDI_H__
@@ -46,7 +46,7 @@ extern "C" {
 /** Error codes of PDI
  */
 typedef enum PDI_status_e {
-	PDI_OK=0,
+	PDI_OK = 0,
 	/// on an input call, no such data is available
 	PDI_UNAVAILABLE,
 	/// The configuration file is invalid
@@ -76,8 +76,7 @@ typedef void (*PDI_errfunc_f)(PDI_status_t status, const char *message, void *co
 
 /** Definition of an error handler
  */
-typedef struct PDI_errhandler_s
-{
+typedef struct PDI_errhandler_s {
 	/// The function to handle the error (none if NULL)
 	PDI_errfunc_f func;
 	
@@ -91,9 +90,9 @@ typedef struct PDI_errhandler_s
 char PDI_EXPORT *PDI_errmsg();
 
 /** Sets the error handler to use
- * 
+ *
  * PDI_asserthandler is the default handler before this function is called
- * 
+ *
  * \param handler the new handler to set
  * \return the previous handler
  */
@@ -120,7 +119,7 @@ extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
  * \param[in,out] world the main MPI communicator
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf, MPI_Comm* world);
+PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf, MPI_Comm *world);
 
 /** Finalizes PDI
  * \return an error status
@@ -144,24 +143,26 @@ typedef enum PDI_inout_e {
 	/// data tranfer from PDI to the main code
 	PDI_IN = 1,
 	/// data transfer from the main code to PDI
-	PDI_OUT = 2
+	PDI_OUT = 2,
+	/// data transfer in both direction
+	PDI_INOUT = 3
 } PDI_inout_t;
 
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
  * \param[in] name the data name
  * \param[in,out] data the accessed data
- * \param[in] access whether the data can be accessed for read or write 
+ * \param[in] access whether the data can be accessed for read or write
  *                   by PDI
  * \return an error status
  * \pre the user code owns the data buffer
  * \post ownership of the data buffer is shared between PDI and the user code
- * 
+ *
  * the access parameter is a binary OR of PDI_IN & PDI_OUT.
  * * PDI_IN means PDI can set the buffer content
  * * PDI_OUT means the buffer contains data that can be accessed by PDI
  */
-PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, int access);
+PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, PDI_inout_t access);
 
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
@@ -180,6 +181,14 @@ PDI_status_t PDI_EXPORT PDI_release(const char *name);
  * \post the user code owns the data buffer
  */
 PDI_status_t PDI_EXPORT PDI_reclaim(const char *name);
+
+/** Requests for PDI to access a data buffer.
+ * \param[in] name the data name
+ * \param[in,out] buffer a pointer to the accessed data buffer
+ * \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
+ * \return an error status
+ */
+PDI_status_t  PDI_EXPORT PDI_access(const char *name, void **buffer, PDI_inout_t inout);
 
 /** Requests for PDI to allocate (and initialize) a data buffer.
  * \param[in] name the data name
@@ -226,14 +235,14 @@ PDI_status_t PDI_EXPORT PDI_import(const char *name, void *data);
 /// \{
 
 /** Begin a transaction. All the ::PDI_expose will be exposed together.
- * 
+ *
  * This requires a ::PDI_transaction_end to close the transaction.
- * 
+ *
  * \param[in] name the name of the transaction (an event thus named will be
  *                 triggered when all data become available)
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_transaction_begin( const char *name );
+PDI_status_t PDI_EXPORT PDI_transaction_begin(const char *name);
 
 /** Ends the previously opened transaction.
  * \return an error status

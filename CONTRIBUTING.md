@@ -71,3 +71,16 @@ There are four levels of visibility:
 * public typedefs & enums *must* be defined in a header ending with the `_fwd.h` suffix
 * no struct *might* be defined in a header ending with the `_fwd.h` suffix
 
+## Indent & Format.
+
+A astyle configuration file is provided with a Makefile in `/tools/Format_and_Indent/`
+
+
+ *  `make indent_all`: copy and create indented copies into the subfolder workdir
+ *  `make replace_all`: replace the original sources and headers with the indented versions from workdir. __  _If the original sources files were modified, this will replace your files!_ __
+ *  `make all` / `make` : execute the two previous commands.
+ *  `make clean`: remove the temporary content of workdir
+
+
+
+

@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file plugin_loader.h
- * \brief Header of the functions used to load plugins  
- * \author J. Bigot (CEA)
- */
+/**
+* \file plugin_loader.h
+* \brief Header of the functions used to load plugins
+* \author J. Bigot (CEA)
+*/
 
 #ifndef PDI_PLUGIN_LOADER_H__
 #define PDI_PLUGIN_LOADER_H__
@@ -44,6 +44,6 @@
  * been removed
  * \return an error code
  */
-PDI_status_t plugin_loader_tryload( PC_tree_t conf, int plugin_id, MPI_Comm *world );
+PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *world);
 
 #endif // PDI_PLUGIN_LOADER_H__

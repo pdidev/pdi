@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file state_fwd.h
- * \brief public delcaration of structures that store state, data, metada, plugin.
- * \author J. Bigot (CEA)
- */
+/**
+* \file state_fwd.h
+* \brief public delcaration of structures that store state, data, metada, plugin.
+* \author J. Bigot (CEA)
+*/
 
 #ifndef PDI_STATE_FWD_H__
 #define PDI_STATE_FWD_H__
@@ -35,7 +35,7 @@
 /** the possible kind of data
  */
 typedef enum PDI_datakind_e {
-	PDI_DK_DATA=0,
+	PDI_DK_DATA = 0,
 	PDI_DK_METADATA
 } PDI_datakind_t;
 
@@ -43,13 +43,13 @@ typedef enum PDI_datakind_e {
 /** the possible kind of data
  */
 typedef enum PDI_memmode_e {
-	PDI_MM_NONE=0,
+	PDI_MM_NONE = 0,
 	/// PDI is responsible for freeing the memory
-	PDI_MM_FREE=0x08, // start at 8 so as to be ORable w. PDI_inout_t
+	PDI_MM_FREE = 0x08, // start at 8 so as to be ORable w. PDI_inout_t
 	/** The data is a copy stored in the compact (dense) format.
 	 * Implies PDI_MM_FREE.
 	 */
-	PDI_MM_COPY=0x10
+	PDI_MM_COPY = 0x10
 } PDI_memmode_t;
 
 

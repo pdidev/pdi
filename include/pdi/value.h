@@ -10,9 +10,9 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file value.h
- * \brief Structures and functions to parse expression 
- * \author J. Bigot (CEA)
- */
+/**
+* \file value.h
+* \brief Structures and functions to parse expression
+* \author J. Bigot (CEA)
+*/
 
 #ifndef PDI_VALUE_H__
 #define PDI_VALUE_H__
@@ -49,8 +49,7 @@ typedef struct PDI_exprval_s PDI_exprval_t;
  */
 typedef struct PDI_strval_s PDI_strval_t;
 
-struct PDI_value_s
-{
+struct PDI_value_s {
 	/// the kind of value this is
 	PDI_valkind_t kind;
 	
@@ -72,7 +71,7 @@ struct PDI_value_s
 };
 
 /** Builds (i.e. parse) a value from a string
- * 
+ *
  * \param[in] val_str the string to parse
  * \param[out] value a pointer to the parsed value
  * \return an exit status code
@@ -80,7 +79,7 @@ struct PDI_value_s
 PDI_status_t PDI_EXPORT PDI_value_parse(const char *val_str, PDI_value_t *value);
 
 /** Evaluates a value as an integer
- * 
+ *
  * \param[in] value the value to evaluate
  * \param[out] res a pointer to the integer value
  * \return an exit status code
@@ -88,7 +87,7 @@ PDI_status_t PDI_EXPORT PDI_value_parse(const char *val_str, PDI_value_t *value)
 PDI_status_t PDI_EXPORT PDI_value_int(const PDI_value_t *value, long *res);
 
 /** Evaluates a value as a string
- * 
+ *
  * \param[in] value the value to evaluate
  * \param[out] res a pointer to the string value
  * \return an exit status code
@@ -96,14 +95,14 @@ PDI_status_t PDI_EXPORT PDI_value_int(const PDI_value_t *value, long *res);
 PDI_status_t PDI_EXPORT PDI_value_str(const PDI_value_t *value, char **res);
 
 /** Destroys a PDI value
- * 
+ *
  * \param[in] value the value to destroy
  * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_value_destroy(PDI_value_t *value);
 
 /** Copies a PDI value
- * 
+ *
  * \param[in] value the value to copy
  * \param[in] copy copying the content of value in an existing PDI_value_t
  * \return an exit status code
