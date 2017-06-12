@@ -77,7 +77,7 @@ list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
 list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
 
 # Examples & tests
-enable_testing()
+include( CTest )
 if( "${RUN_EXAMPLES}" ) 
 	add_subdirectory(example/)
 endif()

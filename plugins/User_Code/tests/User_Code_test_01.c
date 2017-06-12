@@ -41,12 +41,12 @@
 void test(void){
 	int itest=err_code;
 	void *buffer=NULL;
-	PDI_access("input", PDI_OUT, &buffer);
+	PDI_access("input", &buffer, PDI_OUT);
 	if(buffer) itest=*(int*)(buffer); // copying content
 	test_value(itest,1);
 
 	itest=2;
-	PDI_access("output", PDI_IN, &buffer);
+	PDI_access("output", &buffer, PDI_IN);
 	if(buffer){
 		*(int*)(buffer)=itest; // copying content
 	}

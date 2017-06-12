@@ -9,7 +9,3 @@ pdi:
       test:
         function: test
         events: testing
-        inputs: input  
-        outputs: output  
-        
-  

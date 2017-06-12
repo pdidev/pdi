@@ -96,7 +96,6 @@ char *msprintf(const char *fmt, ...)
 		fflush(UC_stderr);}
 
 
-
 typedef void (*ptr_fct_t)(void);
 
 /// Structure to define a function
@@ -121,11 +120,9 @@ typedef struct UC_s {
 
 
 
-UC_t  **all_uc; // array of user code (functions...)
+UC_t  *all_uc; // array of user code (functions...)
 int nb_uc;
 
-int myrank;       // MPI rank 
-MPI_Comm myworld; // MPI comm world 
 PC_tree_t myconf;
 
 // ================  STRING and NODES  =====
@@ -134,11 +131,9 @@ PC_tree_t myconf;
 char *str2nodename(const char *s)
 {
 	char *p = malloc(strlen(s) + 1 + 1);
-	if (p) {
-		p[0] = '.';
-		strcpy(&p[1], s);
-	}
-	return p;
+	p[0] = '.';
+	strcpy(&p[1], s);// in case malloc failled program should crash
+	return p;  
 }
 
 
@@ -190,7 +185,7 @@ PDI_status_t find_fct(char *fct_name, char *libname, ptr_fct_t  *fct)
 	if (!fct_uncast) {
 		void *lib_handle = dlopen(libname, RTLD_NOW);
 		if (!lib_handle) {
-			UC_err("Unable to load lib %s: %s\n", libname, dlerror())
+			UC_err("Unable to load lib %s: %s\n", libname, dlerror());
 				status = PDI_ERR_CONFIG;
 		}
 		fct_uncast = dlsym(lib_handle, fct_symbol);
@@ -233,6 +228,7 @@ PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
 	char *str = name;
 	if (PC_string(PC_get(tmptree, ".function"), &str)) {
 		UC_warn("'function' node not found. Default value '%s' \n", str);
+		str = strdup(name);
 	}
 	that->fct.name = str;
 
@@ -254,22 +250,15 @@ PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
 
 
 // ================  INIT AND FINALIZE  =====
-PDI_status_t new_UC(UC_t **new_uc)
+PDI_status_t UC_init(UC_t *next)
 {
-	UC_t *that = malloc(sizeof(UC_t));
-	if (!that) {
-		UC_err("Malloc failed during init...\n");
-		return PDI_ERR_PLUGIN;
-	}
 	// init function
-	that->fct.call = NULL;
-	that->fct.name = NULL;
+	next->fct.call = NULL;
+	next->fct.name = NULL;
 
-	that->events = NULL;
-	that->datastarts = NULL;
-	that->dataends = NULL;
-
-	*new_uc = that;
+	next->events = NULL;
+	next->datastarts = NULL;
+	next->dataends = NULL;
 
 	return PDI_OK;
 }
@@ -279,15 +268,14 @@ PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *world)
 {
 	PDI_status_t status = PDI_OK;
 
-	// Copy world and save rank at initialization
-	MPI_Comm_rank(*world, &myrank);
-	myworld = *world;
+	// workaround to remove warning
+	*world = *world;
 
 	// Copy Yaml configuration
 	myconf = conf;
 
 	if (PC_status(conf)) {
-		UC_err("Invalid configuration, MPI_rank %d\n", myrank);
+		UC_err("Invalid configuration \n");
 		return PDI_ERR_CONFIG;
 	}
 
@@ -303,38 +291,38 @@ PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *world)
 		nb_uc = 0;
 		for (int map_id = 0; map_id < nb_node; map_id++) {
 			char *name;
-			UC_t *next;
+			UC_t next;
+			/// initialize
+			UC_init(&next);
+
 			/// Get next node
 			if (PC_string(PC_get(myconf, "{%d}", map_id), &name)) continue;
 
-			/// Allocate and initialize
-			if (new_UC(&next)){
-				UC_dbg("Error when creating next UserCode %s\n", name);
-				continue;
-			}
-
 			/// Fill the element
-			if (read_one_elemnt(next, conf, name)) {
-				free(next);
+			if (read_one_elemnt(&next, conf, name)) {
 				UC_warn("Error when reading element %s\n", name);
 				continue;
 			}
 
 			/// Find the corresponding function
-			if (find_fct(name, NULL, &(next->fct.call) )) {
-				free(next);
+			if (find_fct(name, NULL, &(next.fct.call) )) {
 				UC_warn("Error when reading element %s\n", name);
 				continue;
 			}
 
-			/// Append to list
-			all_uc = realloc(all_uc, sizeof(UC_t **)*nb_uc);
-			all_uc[nb_uc] = next;
 			free(name);
-			nb_uc++;
+			/// Append to list
+			all_uc = realloc(all_uc, sizeof(UC_t)*(nb_uc+1));
+			if ( all_uc){
+				all_uc[nb_uc] = next;
+				nb_uc++;
+			} else {
+				UC_err("Realloc has failed. Aborting.");
+				MPI_Abort(MPI_COMM_WORLD, PDI_ERR_PLUGIN);
+			}
 
-			UC_dbg("Number of function loaded %d\n", nb_uc);
 		}
+		UC_dbg("Number of function loaded %d\n", nb_uc);
 	}
 
 	PC_errhandler(errh);
@@ -345,20 +333,23 @@ PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *world)
 PDI_status_t PDI_user_code_finalize()
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		for ( int n=0; n<all_uc[ii]->nb_events ; ++n )
-			free(all_uc[ii]->events[n]);
-		free(all_uc[ii]->events);
-		for ( int n=0; n<all_uc[ii]->nb_datastarts ; ++n )
-			free(all_uc[ii]->datastarts[n]);
-		free(all_uc[ii]->datastarts);
-		for ( int n=0; n<all_uc[ii]->nb_dataends ; ++n )
-			free(all_uc[ii]->dataends[n]);
-		free(all_uc[ii]->dataends);
+		for ( int n=0; n<all_uc[ii].nb_events ; ++n ){
+			free( (all_uc[ii]).events[n] );
+		}
+		if(all_uc[ii].nb_events) free(all_uc[ii].events);
 
-		free(all_uc[ii]->fct.name);
-		free(all_uc[ii]);
+		for ( int n=0; n<all_uc[ii].nb_datastarts ; ++n )
+			free(all_uc[ii].datastarts[n]);
+		if(all_uc[ii].nb_datastarts) free(all_uc[ii].datastarts);
+		
+		for ( int n=0; n<all_uc[ii].nb_dataends ; ++n )
+			free(all_uc[ii].dataends[n]);
+		if(all_uc[ii].nb_dataends) free(all_uc[ii].dataends);
+
+		free(all_uc[ii].fct.name);
 	}
 	free(all_uc);
+	all_uc = NULL;
 
 	return PDI_OK;
 }
@@ -366,9 +357,9 @@ PDI_status_t PDI_user_code_finalize()
 PDI_status_t PDI_user_code_event(const char *event)
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		for ( int n=0; n<all_uc[ii]->nb_events ; ++n ) {
-			if ( !strcmp(event, all_uc[ii]->events[n]) ) {
-				(*all_uc[ii]->fct.call)();
+		for ( int n=0; n<all_uc[ii].nb_events ; ++n ) {
+			if ( !strcmp(event, all_uc[ii].events[n]) ) {
+				(*all_uc[ii].fct.call)();
 			}
 		}
 	}
@@ -379,9 +370,9 @@ PDI_status_t PDI_user_code_event(const char *event)
 PDI_status_t PDI_user_code_data_start(PDI_data_t *data)
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		for ( int n=0; n<all_uc[ii]->nb_datastarts ; ++n ) {
-			if ( !strcmp(data->name, all_uc[ii]->datastarts[n]) ) {
-				(*all_uc[ii]->fct.call)();
+		for ( int n=0; n<all_uc[ii].nb_datastarts ; ++n ) {
+			if ( !strcmp(data->name, all_uc[ii].datastarts[n]) ) {
+				(*all_uc[ii].fct.call)();
 			}
 		}
 	}
@@ -391,9 +382,9 @@ PDI_status_t PDI_user_code_data_start(PDI_data_t *data)
 PDI_status_t PDI_user_code_data_end(PDI_data_t *data)
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		for ( int n=0; n<all_uc[ii]->nb_dataends ; ++n ) {
-			if ( !strcmp(data->name, all_uc[ii]->datastarts[n]) ) {
-				(*all_uc[ii]->fct.call)();
+		for ( int n=0; n<all_uc[ii].nb_dataends ; ++n ) {
+			if ( !strcmp(data->name, all_uc[ii].datastarts[n]) ) {
+				(*all_uc[ii].fct.call)();
 			}
 		}
 	}
