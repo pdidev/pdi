@@ -1,0 +1,24 @@
+pdi:
+  metadata:
+    ni: int
+    nj: int
+  data: # values that can not be referenced using $syntax
+    reals:
+      type: double
+      sizes: [$nj , $ni]
+      order: fortran
+    values:
+      type: int
+      sizes: [$nj , $ni]
+      order: fortran
+
+  plugins:
+    SIONlib:
+      inputs:
+        - event: read_data
+          file: test_02_f90.sion
+          vars: [ reals, values ]
+      outputs:
+        - event: write_data
+          file: test_02_f90.sion
+          vars: [ ni, nj, values, reals ]
