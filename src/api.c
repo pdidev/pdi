@@ -148,7 +148,7 @@ err0:
 }
 
 
-PDI_status_t PDI_access(const char* name, PDI_inout_t inout, void **buffer)
+PDI_status_t PDI_access(const char* name, void **buffer, PDI_inout_t inout)
 {
 	PDI_data_t *data=PDI_find_data(name);
 	*buffer = NULL;

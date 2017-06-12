@@ -3,13 +3,17 @@
 PDI is a library that aims to decouple high-performance simulation codes from Input/Output concerns.
 It offers a declarative application programming interface that enables codes to expose the buffers in which they store data and to notify PDI of significant steps of the simulation.
 It supports a plugin system to make existing libraries such as HDF5, SIONlib or FTI available to codes, potentially mixed in a single execution.
+
 This approach makes it possible to describe the I/O operations in a dedicated YAML file instead of interleaving them with the simulation code and thus to improve their portability and maintainability.
 The public plugin API offered by PDI is general and simple enough that one can easily add support for the best suited library for its use-case (problem size, IO type, hardware used, etc.)
 
+
 ## Existing plugins
-* serial HDF5 (one-file-per-process)
+* HDF5 (one-file-per-process)
 * FTI
-* ... see TODO.md
+* SIONlib 
+* User Code
+* ... (see TODO.md for a list of future plug-ins)
 
 
 ## Prerequisites
@@ -50,3 +54,8 @@ cmake -DUSE_SYSTEM_YAML=OFF ..
 make
 make install
 ```
+
+## Documentation
+A doxygen documentation is provided in the docs folder along with a makefile.
+Invoking make will produce a `Reference_manual.pdf`.
+
