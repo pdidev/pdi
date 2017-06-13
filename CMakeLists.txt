@@ -53,12 +53,23 @@ option(RUN_EXAMPLES
 		ON
 )
 
+option(TIMEOUT
+	"Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)."
+	"3"
+)
+message("TIMEOUT" ${TIMEOUT})
+if (${TIMEOUT} GREATER "1") 
+	set(DEFAULT_TIMEOUT ${TIMEOUT})
+else()
+	set(DEFAULT_TIMEOUT 3)
+endif()
+
+
 ## Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
 # Find dependancies
-
 find_package(MPI REQUIRED)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf)
@@ -77,7 +88,7 @@ list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
 list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
 
 # Examples & tests
-enable_testing()
+include(CTest)
 if( "${RUN_EXAMPLES}" ) 
 	add_subdirectory(example/)
 endif()

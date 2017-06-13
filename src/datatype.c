@@ -314,7 +314,7 @@ static PDI_status_t scalar_datatype_load ( PC_tree_t node, PDI_scalar_type_t *ty
 			*type = PDI_T_INT64; 
 			break;
 		default: 
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unsupported int size: %d", sizeof(int)*8), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unsupported int size: %d", sizeof(int)*8), err1);
 		}
 	} else if ( !strcmp(tname, "int8") && kind==0 ) { // C int8
 			*type = PDI_T_INT8;
@@ -344,7 +344,7 @@ static PDI_status_t scalar_datatype_load ( PC_tree_t node, PDI_scalar_type_t *ty
 			*type = PDI_T_INT64; 
 			break;
 		default: 
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for character: `%s'", tname), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for character: `%s'", tname), err1);
 		}
 	} else if ( !strcmp(tname, "integer") ) { // Fortran integer
 		if ( kind == 0 ) kind = PDI_INTEGER_DEFAULT_KIND;
@@ -362,7 +362,7 @@ static PDI_status_t scalar_datatype_load ( PC_tree_t node, PDI_scalar_type_t *ty
 			*type = PDI_T_INT64; 
 			break;
 		default: 
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err1);
 		}
 	} else if ( !strcmp(tname, "logical") ) { // Fortran integer
 		if ( kind == 0 ) kind = PDI_LOGICAL_DEFAULT_KIND;
@@ -380,7 +380,7 @@ static PDI_status_t scalar_datatype_load ( PC_tree_t node, PDI_scalar_type_t *ty
 			*type = PDI_T_INT64; 
 			break;
 		default: 
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err1);
 		}
 	} else if ( !strcmp(tname, "real") ) { // Fortran real
 		if ( kind == 0 ) kind = PDI_REAL_DEFAULT_KIND;
@@ -395,14 +395,16 @@ static PDI_status_t scalar_datatype_load ( PC_tree_t node, PDI_scalar_type_t *ty
 			*type = PDI_T_LONG_DOUBLE; 
 			break;
 		default: 
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for real: `%s'", tname), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for real: `%s'", tname), err1);
 		}
 	} else {
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid scalar type: `%s'", tname), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid scalar type: `%s'", tname), err1);
 	}
 	
+	free(tname);
 	return status;
-	
+err1:
+	free(tname);
 err0:
 	return status;
 }

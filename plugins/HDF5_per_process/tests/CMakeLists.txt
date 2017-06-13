@@ -42,7 +42,7 @@ add_test(NAME HDF5_per_process_01_C_build
 add_test(NAME HDF5_per_process_01_C_run COMMAND HDF5_per_process_01_C "${CMAKE_CURRENT_SOURCE_DIR}/HDF5_per_process_test_01.yml")
 set_property(TEST HDF5_per_process_01_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST HDF5_per_process_01_C_run PROPERTY DEPENDS HDF5_per_process_01_C_build)
-set_tests_properties(HDF5_per_process_01_C_run PROPERTIES DEPENDS HDF5_per_process_01_C_build TIMEOUT 3)
+set_tests_properties(HDF5_per_process_01_C_run PROPERTIES DEPENDS HDF5_per_process_01_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 
 add_executable(HDF5_per_process_01_F EXCLUDE_FROM_ALL HDF5_per_process_test_01.f90)
@@ -55,7 +55,7 @@ add_test(NAME HDF5_per_process_01_F_build
 add_test(NAME HDF5_per_process_01_F_run COMMAND HDF5_per_process_01_F "${CMAKE_CURRENT_SOURCE_DIR}/HDF5_per_process_test_01.yml")
 set_property(TEST HDF5_per_process_01_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST HDF5_per_process_01_F_run PROPERTY DEPENDS HDF5_per_process_01_F_build)
-set_tests_properties(HDF5_per_process_01_F_run PROPERTIES DEPENDS HDF5_per_process_01_F_build TIMEOUT 3)
+set_tests_properties(HDF5_per_process_01_F_run PROPERTIES DEPENDS HDF5_per_process_01_F_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 
 
@@ -72,7 +72,7 @@ add_test(NAME HDF5_per_process_02_C_build
 add_test(NAME HDF5_per_process_02_C_run COMMAND "mpirun" -n 2 HDF5_per_process_02_C "${CMAKE_CURRENT_SOURCE_DIR}/HDF5_per_process_test_02_C.yml")
 set_property(TEST HDF5_per_process_02_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST HDF5_per_process_02_C_run PROPERTY DEPENDS HDF5_per_process_02_C_build)
-set_tests_properties(HDF5_per_process_02_C_run PROPERTIES DEPENDS HDF5_per_process_02_C_build TIMEOUT 3)
+set_tests_properties(HDF5_per_process_02_C_run PROPERTIES DEPENDS HDF5_per_process_02_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 add_executable(HDF5_per_process_02_F EXCLUDE_FROM_ALL HDF5_per_process_test_02.f90)
 add_compiler_flags(HDF5_per_process_02_F PRIVATE -Wall -Wextra)
@@ -84,7 +84,7 @@ add_test(NAME HDF5_per_process_02_F_build
 add_test(NAME HDF5_per_process_02_F_run COMMAND "mpirun" -n 2 HDF5_per_process_02_F "${CMAKE_CURRENT_SOURCE_DIR}/HDF5_per_process_test_02_f90.yml")
 set_property(TEST HDF5_per_process_02_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST HDF5_per_process_02_F_run PROPERTY DEPENDS HDF5_per_process_02_F_build)
-set_tests_properties(HDF5_per_process_02_F_run PROPERTIES DEPENDS HDF5_per_process_02_F_build TIMEOUT 3)
+set_tests_properties(HDF5_per_process_02_F_run PROPERTIES DEPENDS HDF5_per_process_02_F_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 
 ###############
@@ -93,6 +93,6 @@ set_tests_properties(HDF5_per_process_02_F_run PROPERTIES DEPENDS HDF5_per_proce
 add_test(NAME HDF5_per_process_03_F_run COMMAND "mpirun" -n 2 HDF5_per_process_02_F "${CMAKE_CURRENT_SOURCE_DIR}/HDF5_per_process_test_03_f90.yml" "test_03_on")
 set_property(TEST HDF5_per_process_03_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST HDF5_per_process_03_F_run PROPERTY DEPENDS HDF5_per_process_02_F_build)
-set_tests_properties(HDF5_per_process_03_F_run PROPERTIES DEPENDS HDF5_per_process_02_F_build TIMEOUT 3)
+set_tests_properties(HDF5_per_process_03_F_run PROPERTIES DEPENDS HDF5_per_process_02_F_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 
