@@ -15,7 +15,7 @@ pdi:
       order: fortran
 
   plugins:
-    hdf5_per_process:
+    declh5:
       defaults:
         outputs:
           select: $input=0

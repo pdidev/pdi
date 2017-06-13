@@ -140,7 +140,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 }
 
 
-PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
+PDI_status_t PDI_declh5_init(PC_tree_t conf, MPI_Comm *world)
 {
 	world = world; // prevent unused param warning
 	my_conf = conf;
@@ -186,7 +186,7 @@ PDI_status_t PDI_hdf5_per_process_init(PC_tree_t conf, MPI_Comm *world)
 	return status;
 }
 
-PDI_status_t PDI_hdf5_per_process_finalize()
+PDI_status_t PDI_declh5_finalize()
 {
 	for ( int ii=0; ii<nb_outputs; ++ii ) {
 		PDI_value_destroy(&outputs[ii].h5file);
@@ -206,7 +206,7 @@ PDI_status_t PDI_hdf5_per_process_finalize()
 	return PDI_OK;
 }
 
-PDI_status_t PDI_hdf5_per_process_event(const char *event)
+PDI_status_t PDI_declh5_event(const char *event)
 {
 	event = event; // prevent unused warning
 	return PDI_OK;
@@ -379,7 +379,7 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	return status;
 }
 
-PDI_status_t PDI_hdf5_per_process_data_start( PDI_data_t *data )
+PDI_status_t PDI_declh5_data_start( PDI_data_t *data )
 {
 	int status = PDI_OK;
 	if ( data->content[data->nb_content-1].access & PDI_OUT ) {
@@ -420,10 +420,10 @@ PDI_status_t PDI_hdf5_per_process_data_start( PDI_data_t *data )
 	return status;
 }
 
-PDI_status_t PDI_hdf5_per_process_data_end(PDI_data_t *data)
+PDI_status_t PDI_declh5_data_end(PDI_data_t *data)
 {
 	data = data; // prevent unused warning
 	return PDI_OK;
 }
 
-PDI_PLUGIN(hdf5_per_process)
+PDI_PLUGIN(declh5)
