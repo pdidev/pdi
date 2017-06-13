@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
- //The following is used for doxygen documentation:
- /**
- * \file conf.h
- * \brief contains load_conf prototype 
- * \author J. Bigot (CEA)
- */
+
+//The following is used for doxygen documentation:
+/**
+* \file conf.h
+* \brief contains load_conf prototype
+* \author J. Bigot (CEA)
+*/
 
 #ifndef CONF_H__
 #define CONF_H__

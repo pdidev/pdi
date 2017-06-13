@@ -84,7 +84,7 @@ endif()
 add_subdirectory(tests/)
 
 # The src
-
+add_custom_target(re_format target PRE_BUILD command cd ./tools/Format_and_Indent/ && make all)
 ## Main source dir
 add_subdirectory(src/)
 

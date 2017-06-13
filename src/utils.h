@@ -10,9 +10,9 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 /**
 \file utils.h
-\brief Various tools copying, strcat-like ... 
+\brief Various tools copying, strcat-like ...
 \author J. Bigot (CEA)
 */
 
@@ -42,10 +42,10 @@
  * \param from the source buffer
  * \return an error code
  */
-PDI_status_t tcopy(const PDI_type_t* type, void* to, void* from);
+PDI_status_t tcopy(const PDI_type_t *type, void *to, void *from);
 
 /** A mallocing sprintf
- * 
+ *
  * Behaves similarly to sprintf except it allocates the buffer where it writes
  * using malloc.
  * \param fmt the format string
@@ -56,7 +56,7 @@ PDI_status_t tcopy(const PDI_type_t* type, void* to, void* from);
 char *msprintf(const char *fmt, ...);
 
 /** A mallocing vsprintf
- * 
+ *
  * Behaves similarly to vsprintf except it allocates the buffer where it writes
  * using malloc.
  * \param fmt the format string
@@ -67,7 +67,7 @@ char *msprintf(const char *fmt, ...);
 char *vmsprintf(const char *fmt, va_list ap);
 
 /** A mallocing strcat
- * 
+ *
  * Behaves somewhat similarly to strcat but
  * - it grows the destination buffer using realloc
  * - both strings have their length specified instead of being NULL-terminated
@@ -78,19 +78,19 @@ char *vmsprintf(const char *fmt, va_list ap);
  * \return the destination buffer
  * \see strcat
  */
-char *mstrcat(char* dest, size_t dlen, const char* src, size_t slen);
+char *mstrcat(char *dest, size_t dlen, const char *src, size_t slen);
 
 #ifndef STRDUP_WORKS
-/** returns a pointer to a new string which is a duplicate of the string s.
- * Memory for the new string is obtained with malloc, and can be freed with free.
- * 
- * This is a re-implementation of POSIX strdup for portability.
- * 
- * \param s the string to duplicate
- * \return a pointer to the duplicated string on success, NULL if insufficient
- * memory was available, with errno set to indicate the cause of the error.
- */
-char *strdup( const char *s );
+	/** returns a pointer to a new string which is a duplicate of the string s.
+	* Memory for the new string is obtained with malloc, and can be freed with free.
+	*
+	* This is a re-implementation of POSIX strdup for portability.
+	*
+	* \param s the string to duplicate
+	* \return a pointer to the duplicated string on success, NULL if insufficient
+	* memory was available, with errno set to indicate the cause of the error.
+	*/
+	char *strdup(const char *s);
 #endif
 
 #endif
