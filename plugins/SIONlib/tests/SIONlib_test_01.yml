@@ -8,9 +8,10 @@ pdi:
   data: # values that can not be referenced using $syntax
     test_var: double
   plugins:
-    hdf5_per_process:
+    SIONlib:
       outputs:
-        test_var:
-          file: $meta1.h5
-          select: 1
-  
+        - variable: test_var
+          file: test_01_variable_$meta1.sion
+        - event: testing
+          file: test_01_event_$meta1.sion
+          vars: [ test_var ]

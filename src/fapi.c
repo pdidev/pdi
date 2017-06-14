@@ -10,9 +10,9 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 /**
 \file fapi.c
 \brief Fortran API wrappers for functions that need wrapping on the C side
@@ -32,7 +32,7 @@
 
 /** A version of PDI_init that takes a Fortran communicator instead of a C one
  */
-PDI_status_t PDI_EXPORT PDI_init_f(PC_tree_t conf, MPI_Fint* world)
+PDI_status_t PDI_EXPORT PDI_init_f(PC_tree_t conf, MPI_Fint *world)
 {
 	MPI_Comm world_C = MPI_Comm_f2c(*world);
 	PDI_status_t res = PDI_init(conf, &world_C);

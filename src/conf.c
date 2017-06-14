@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file conf.c
- * \brief Functions to load data and metadata 
- * \author J. Bigot (CEA)
- */
+/**
+* \file conf.c
+* \brief Functions to load data and metadata
+* \author J. Bigot (CEA)
+*/
 
 #include <paraconf.h>
 
@@ -39,19 +39,19 @@
 
 #include "conf.h"
 
-static PDI_status_t load_data( PC_tree_t node, PDI_datakind_t kind )
+static PDI_status_t load_data(PC_tree_t node, PDI_datakind_t kind)
 {
 	PDI_status_t status = PDI_OK;
 	
 	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
 	
 	PDI_state.data = realloc(PDI_state.data,
-			( PDI_state.nb_data + map_len ) * sizeof(PDI_data_t)
-		);
-	
+	                         (PDI_state.nb_data + map_len) * sizeof(PDI_data_t)
+	                        );
+	                        
 	int map_id;
-	for ( map_id=0; map_id<map_len; ++map_id ) {
-		PDI_data_t *cur_data = PDI_state.data+PDI_state.nb_data;
+	for (map_id = 0; map_id < map_len; ++map_id) {
+		PDI_data_t *cur_data = PDI_state.data + PDI_state.nb_data;
 		
 		cur_data->kind = kind;
 		cur_data->nb_content = 0;
@@ -81,13 +81,13 @@ PDI_status_t load_conf(PC_tree_t node)
 	
 	// no metadata is not an error
 	PC_tree_t metadata = PC_get(node, ".metadata");
-	if ( !PC_status(metadata) ) {
+	if (!PC_status(metadata)) {
 		PDI_handle_err(load_data(metadata, PDI_DK_METADATA), err0);
 	}
 	
 	// no data is spurious, but not an error
 	PC_tree_t data = PC_get(node, ".data");
-	if ( !PC_status(data) ) {
+	if (!PC_status(data)) {
 		PDI_handle_err(load_data(data, PDI_DK_DATA), err0);
 	}
 	

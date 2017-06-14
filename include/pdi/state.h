@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file state.h
- * \brief details of the strucutures that store data, metadata, ...
- * \author J. Bigot (CEA)
- */
+/**
+* \file state.h
+* \brief details of the strucutures that store data, metadata, ...
+* \author J. Bigot (CEA)
+*/
 
 #ifndef PDI_STATE_H__
 #define PDI_STATE_H__
@@ -39,8 +39,7 @@
 #include <pdi/plugin_fwd.h>
 #include <pdi/datatype.h>
 
-struct loaded_plugin_s
-{
+struct loaded_plugin_s {
 	/// the name of the plugin
 	char *name;
 	
@@ -51,9 +50,8 @@ struct loaded_plugin_s
 
 /** The value of a variable (a.k.a. data) as a reference to the value in code
  */
-struct PDI_data_value_s
-{
-	// PDI_inout_t ORed with PDI_memmode_t. Only the latest 
+struct PDI_data_value_s {
+	// PDI_inout_t ORed with PDI_memmode_t. Only the latest
 	int access;
 	
 	/// a pointer to the data in code representation (i.e. potentially sparse)
@@ -61,8 +59,7 @@ struct PDI_data_value_s
 	
 };
 
-struct PDI_data_s
-{
+struct PDI_data_s {
 	/// The name of this specific data
 	char *name;
 	
@@ -87,8 +84,7 @@ struct PDI_data_s
 };
 
 
-struct PDI_state_s
-{
+struct PDI_state_s {
 	/** A MPI communicator containing all application processes, i.e. all
 	 *  those not reserved by any PDI plugin
 	 */
@@ -99,13 +95,13 @@ struct PDI_state_s
 	
 	/// The actual data
 	PDI_data_t *data;
-
+	
 	char *transaction;
 	
 	int nb_transaction_data;
-
+	
 	PDI_data_t **transaction_data;
-
+	
 	/// The number of loaded plugins
 	int nb_plugins;
 	
@@ -114,16 +110,16 @@ struct PDI_state_s
 	
 	/// The current error handling function
 	PDI_errfunc_f *errfunc;
-
+	
 };
 
 
-/** Return the first data whose name match the input name   
- * \param[in] name a constant litteral that is compared with names of data 
+/** Return the first data whose name match the input name
+ * \param[in] name a constant litteral that is compared with names of data
  * \return the address of the first data whose name matches the input name
  * or NULL if no name matches.
  */
-PDI_data_t PDI_EXPORT *PDI_find_data( const char *name );
+PDI_data_t PDI_EXPORT *PDI_find_data(const char *name);
 
 
 /** Removes a version of the content of a data
@@ -131,7 +127,7 @@ PDI_data_t PDI_EXPORT *PDI_find_data( const char *name );
  * \param[in] content_id the version of the content to discard
  * \return an error code
  */
-PDI_status_t PDI_EXPORT PDI_data_unlink( PDI_data_t *data, int content_id );
+PDI_status_t PDI_EXPORT PDI_data_unlink(PDI_data_t *data, int content_id);
 
 
 /// The main state of the PDI implementation

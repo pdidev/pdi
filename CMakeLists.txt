@@ -41,17 +41,23 @@ if(POLICY CMP0063)
 cmake_policy(SET CMP0063 NEW)
 endif()
 
+
 # Build options
+option(USE_SYSTEM_PARACONF 		"Use an already installed paraconf instead of building the embedded one"
+	OFF )
 
-option(USE_SYSTEM_PARACONF
-		"Use an already installed paraconf instead of building the embedded one"
-		OFF
-)
+option(ENABLE_DECLH5 			"Build HDF5 based DeclH5 plug-in. Produce one HDF5 file per MPI process."
+	ON  )
+option(ENABLE_FTI 			"Build FTI plug-in."
+	ON  )
+option(ENABLE_SIONLIB 			"Build SIONlib plug-in."
+	ON  )
+option(ENABLE_UTILITIES 		"Build Utilities plug-in."
+	ON  )
 
-option(RUN_EXAMPLES
-	"Build and run examples during ctest."
-		ON
-)
+# Testing options
+option(RUN_EXAMPLES 			"Build and run examples during ctest."
+	ON  ) 
 
 option(TIMEOUT
 	"Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)."
@@ -95,14 +101,26 @@ endif()
 add_subdirectory(tests/)
 
 # The src
-
+add_custom_target(re_format target PRE_BUILD command cd ./tools/Format_and_Indent/ && make all)
 ## Main source dir
 add_subdirectory(src/)
 
 ## The plugins
 add_subdirectory(plugins/test_plugin/)
-add_subdirectory(plugins/HDF5_per_process/)
-add_subdirectory(plugins/FTI/)
-add_subdirectory(plugins/Utilities/)
+if(${ENABLE_DECLH5})
+	add_subdirectory(plugins/DeclH5/)
+endif()
+
+if(${ENABLE_FTI})
+	add_subdirectory(plugins/FTI/)
+endif()
+
+if(${ENABLE_SIONLIB})
+	add_subdirectory(plugins/SIONlib/)
+endif()
+
+if(${ENABLE_UTILITIES})
+	add_subdirectory(plugins/Utilities/)
+endif()
 
 

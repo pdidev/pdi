@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file status.c
- * \brief Manage error and context
- * \author J. Bigot (CEA)
- */
+/**
+* \file status.c
+* \brief Manage error and context
+* \author J. Bigot (CEA)
+*/
 
 #include <pthread.h>
 
@@ -38,7 +38,7 @@
 // File private stuff
 
 typedef struct errctx_s {
-	
+
 	PDI_errhandler_t handler;
 	
 	char *buffer;
@@ -55,10 +55,10 @@ static pthread_once_t context_key_once = PTHREAD_ONCE_INIT;
   *
   *
   */
-static void assert_status(PDI_status_t status, const char* message, void* context)
+static void assert_status(PDI_status_t status, const char *message, void *context)
 {
 	context = context; // prevent unused warning
-	if ( status ) {
+	if (status) {
 		fprintf(stderr, "FATAL ERROR, in PDI: %s\n", message);
 		abort();
 	}
@@ -68,10 +68,10 @@ static void assert_status(PDI_status_t status, const char* message, void* contex
   *
   *
   */
-static void warn_status(PDI_status_t status, const char* message, void* context)
+static void warn_status(PDI_status_t status, const char *message, void *context)
 {
 	context = context; // prevent unused warning
-	if ( status ) {
+	if (status) {
 		fprintf(stderr, "Warning, in PDI: %s\n", message);
 	}
 }
@@ -94,7 +94,7 @@ static errctx_t *get_context()
 	pthread_once(&context_key_once, &context_init);
 	
 	errctx_t *context = pthread_getspecific(context_key);
-	if ( !context ) {
+	if (!context) {
 		context = malloc(sizeof(errctx_t));
 		context->buffer = NULL;
 		context->buffer_size = 0;
@@ -109,7 +109,7 @@ static void forward_PC_error(PC_status_t status, const char *message, void *cont
 {
 	status = status; // prevent unused warning
 	context = context; // prevent unused warning
-	if ( get_context()->handler.func ) get_context()->handler.func(PDI_ERR_CONFIG, message, get_context()->handler.context);
+	if (get_context()->handler.func) get_context()->handler.func(PDI_ERR_CONFIG, message, get_context()->handler.context);
 }
 
 // library private stuff
@@ -120,14 +120,14 @@ PDI_status_t PDI_make_err(PDI_status_t status, const char *message, ...)
 	va_start(ap, message);
 	int realsize = vsnprintf(get_context()->buffer, get_context()->buffer_size, message, ap);
 	va_end(ap);
-	if ( realsize >= get_context()->buffer_size ) {
-		get_context()->buffer_size = realsize+1;
+	if (realsize >= get_context()->buffer_size) {
+		get_context()->buffer_size = realsize + 1;
 		get_context()->buffer = realloc(get_context()->buffer, get_context()->buffer_size);
 		va_start(ap, message);
 		vsnprintf(get_context()->buffer, get_context()->buffer_size, message, ap);
 		va_end(ap);
 	}
-	if ( get_context()->handler.func ) get_context()->handler.func(status, get_context()->buffer, get_context()->handler.context);
+	if (get_context()->handler.func) get_context()->handler.func(status, get_context()->buffer, get_context()->handler.context);
 	return status;
 }
 

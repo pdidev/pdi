@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,21 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file value_fwd.h
- * \brief Constants used for parsing expression
- * \author J. Bigot (CEA)
- */
+/**
+* \file value_fwd.h
+* \brief Constants used for parsing expression
+* \author J. Bigot (CEA)
+*/
 
 #ifndef PDI_VALUE_FWD_H__
 #define PDI_VALUE_FWD_H__
 
 /** A parsed value as specified by an expression.
- * 
+ *
  * References are not resolved, this is only the AST.
- * 
+ *
  * The grammar of an expression is as follow:
  * ```
  * VALUE   := INTVAL | STRVAL
