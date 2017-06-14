@@ -135,7 +135,7 @@ static PDI_status_t bufdesc_buffersize(const buffer_descriptor_t *bufdesc, size_
  * \param size the size of the dimension the index accesses
  * \return the reordered index (C style)
  */
-static size_t ridx(size_t ordered_index, PDI_order_t order, size_t size)
+static int ridx(int ordered_index, PDI_order_t order, int size)
 {
 	if (order == PDI_ORDER_FORTRAN) return size - ordered_index - 1;
 	return ordered_index;
@@ -173,22 +173,32 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		PC_errhandler(pc_handler); // aka PC_end_try
 	}
 	
-	if (!invalid_sizes) {   // multi dim array
+	if (!invalid_sizes) {   // if multi dim array
 		res_type.sizes = malloc(res_type.ndims * sizeof(PDI_value_t));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err0);
-			PDI_handle_err(PDI_value_parse(expr, &res_type.sizes[ri]), err1);
-err1:
+			PDI_handle_err(PDI_value_parse(expr, &res_type.sizes[ri]), err1a);
 			free(expr);
+			continue;
+
+err1a: 
+			free(expr);
+			if( ii == ri && (ii+1) == (ridx(ii+1, order, res_type.ndims))){
+				for( int jj = 0; jj < ri; jj++)
+					PDI_value_destroy(&res_type.sizes[ri]);
+			} else {
+				for( int jj = ri+1; jj < res_type.ndims ; jj++)
+					PDI_value_destroy(&res_type.sizes[ri]);
+			}
 			PDI_handle_err(status, err0);
 		}
-	} else { //single dim array
+	} else { // else single dim array
 		res_type.ndims = 1;
 		res_type.sizes = malloc(res_type.ndims * sizeof(PDI_value_t));
 		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err0);
-		PDI_handle_err(PDI_value_parse(expr, res_type.sizes), err5);
-err5:
+		PDI_handle_err(PDI_value_parse(expr, res_type.sizes), err1b);
+err1b:
 		free(expr);
 		PDI_handle_err(status, err0);
 	}
@@ -202,7 +212,7 @@ err5:
 			PC_errhandler(pc_handler); // aka PC_end_try
 		}
 		if (!invalid_subsizes && len != res_type.ndims) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, res_type.ndims), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, res_type.ndims), err1);
 		}
 	}
 	
@@ -210,11 +220,20 @@ err5:
 		res_type.subsizes = malloc(res_type.ndims * sizeof(PDI_value_t));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
-			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err0);
-			PDI_handle_err(PDI_value_parse(expr, &res_type.subsizes[ri]), err2);
-err2:
+			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err1);
+			PDI_handle_err(PDI_value_parse(expr, &res_type.subsizes[ri]), err2a);
 			free(expr);
-			PDI_handle_err(status, err0);
+			continue;
+err2a:
+			free(expr);
+			if( ii == ri && (ii+1) == (ridx(ii+1, order, res_type.ndims))){
+				for( int jj = 0; jj < ri; jj++)
+					PDI_value_destroy(&res_type.subsizes[jj]);
+			} else {
+				for( int jj = ri+1; jj < res_type.ndims ; jj++)
+					PDI_value_destroy(&res_type.subsizes[jj]);
+			}
+			PDI_handle_err(status, err1);
 		}
 	} else { // no subsize, default to full size
 		res_type.subsizes = res_type.sizes;
@@ -229,7 +248,7 @@ err2:
 			PC_errhandler(pc_handler); // aka PC_end_try
 		}
 		if (!invalid_starts && len != res_type.ndims) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, res_type.ndims), err0);
+			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, res_type.ndims), err2);
 		}
 	}
 	
@@ -237,25 +256,50 @@ err2:
 	if (!invalid_starts) {
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
-			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err0);
-			PDI_handle_err(PDI_value_parse(expr, &res_type.starts[ri]), err3);
-err3:
+			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err2);
+			PDI_handle_err(PDI_value_parse(expr, &res_type.starts[ri]), err3a);
 			free(expr);
-			PDI_handle_err(status, err0);
+			continue;
+err3a:
+			free(expr); // freeing all memory
+			if( ii == ri && (ii+1) == (ridx(ii+1, order, res_type.ndims))){
+				for( int jj = 0; jj < ri; jj++)
+					PDI_value_destroy(&res_type.starts[jj]);
+			} else {
+				for( int jj = ri+1; jj < res_type.ndims ; jj++)
+					PDI_value_destroy(&res_type.starts[jj]);
+			}
+			PDI_handle_err(status, err2);
 		}
 	} else { // no start, start at 0 everywhere
 		res_type.starts = malloc(res_type.ndims * sizeof(PDI_value_t));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
-			PDI_handle_err(PDI_value_parse("0", &res_type.starts[ii]), err0);
+			PDI_handle_err(PDI_value_parse("0", &res_type.starts[ii]), err2);
 		}
 	}
 	
 	PC_tree_t type_type = PC_get(node, ".type");
-	handle_PC_err(PC_status(type_type), err0);
-	PDI_handle_err(PDI_datatype_load(&res_type.type, type_type), err0);
+	handle_PC_err(PC_status(type_type), err3);
+	PDI_handle_err(PDI_datatype_load(&res_type.type, type_type), err3);
 	
 	*type = res_type;
 	return status;
+
+
+err3: // handling errors after "starts" have been allocated
+	for( int jj = 0; jj < res_type.ndims ; jj++)
+		PDI_value_destroy(&res_type.subsizes[jj]);
+	free(res_type.starts);
+err2: // --------------------  "subsizes"  -------------------
+	if(res_type.subsizes != res_type.sizes){ // subsizes exist
+		for( int jj = 0; jj < res_type.ndims ; jj++)
+			PDI_value_destroy(&res_type.subsizes[jj]);
+		free(res_type.subsizes);
+	}
+err1: // --------------------  "sizes"  -----------------------
+	for( int jj = 0; jj < res_type.ndims ; jj++)
+		PDI_value_destroy(&res_type.sizes[jj]);
+	free(res_type.sizes);
 	
 err0:
 	return status;
@@ -796,25 +840,24 @@ PDI_status_t PDI_datatype_load(PDI_type_t *type, PC_tree_t node)
 		PDI_array_type_t *array = malloc(sizeof(PDI_array_type_t));
 		PDI_handle_err(array_datatype_load(node, array), err1);
 		type->c.array = array;
+		break;
 err1:
-		if (status) {
-			free(array);
-		}
+		free(array);
 		PDI_handle_err(status, err0);
-	} break;
+		break; }
 	case PDI_K_STRUCT: { // load the type as a structure
 		PDI_struct_type_t *struct_ = malloc(sizeof(PDI_struct_type_t));
 		PDI_handle_err(struct_datatype_load(node, struct_), err2);
 		type->c.struct_ = struct_;
+		break;
 err2:
-		if (status) {
-			free(struct_);
-		}
+		free(struct_);
 		PDI_handle_err(status, err0);
-	} break;
+		break; }
 	case PDI_K_SCALAR: { // load the type as a scalar
 		PDI_handle_err(scalar_datatype_load(node, &(type->c.scalar)), err0);
-	} break;
+		break;
+	} 
 	}
 	type->kind = kind;
 	

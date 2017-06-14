@@ -63,8 +63,7 @@ option(TIMEOUT
 	"Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)."
 	"3"
 )
-message("TIMEOUT" ${TIMEOUT})
-if (${TIMEOUT} GREATER "1") 
+if (${TIMEOUT} GREATER "1" ) 
 	set(DEFAULT_TIMEOUT ${TIMEOUT})
 else()
 	set(DEFAULT_TIMEOUT 3)

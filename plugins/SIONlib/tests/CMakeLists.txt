@@ -42,7 +42,7 @@ add_test(NAME SIONlib_01_C_build
 add_test(NAME SIONlib_01_C_run COMMAND SIONlib_01_C "${CMAKE_CURRENT_SOURCE_DIR}/SIONlib_test_01.yml")
 set_property(TEST SIONlib_01_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST SIONlib_01_C_run PROPERTY DEPENDS SIONlib_01_C_build)
-set_tests_properties(SIONlib_01_C_run PROPERTIES DEPENDS SIONlib_01_C_build TIMEOUT 3)
+set_tests_properties(SIONlib_01_C_run PROPERTIES DEPENDS SIONlib_01_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 
 add_executable(SIONlib_01_F EXCLUDE_FROM_ALL SIONlib_test_01.f90)
@@ -55,7 +55,7 @@ add_test(NAME SIONlib_01_F_build
 add_test(NAME SIONlib_01_F_run COMMAND SIONlib_01_F "${CMAKE_CURRENT_SOURCE_DIR}/SIONlib_test_01.yml")
 set_property(TEST SIONlib_01_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST SIONlib_01_F_run PROPERTY DEPENDS SIONlib_01_F_build)
-set_tests_properties(SIONlib_01_F_run PROPERTIES DEPENDS SIONlib_01_F_build TIMEOUT 3)
+set_tests_properties(SIONlib_01_F_run PROPERTIES DEPENDS SIONlib_01_F_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 
 
@@ -72,7 +72,7 @@ add_test(NAME SIONlib_02_C_build
 add_test(NAME SIONlib_02_C_run COMMAND "mpirun" -n 2 ./SIONlib_02_C "${CMAKE_CURRENT_SOURCE_DIR}/SIONlib_test_02_C.yml")
 set_property(TEST SIONlib_02_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST SIONlib_02_C_run PROPERTY DEPENDS SIONlib_02_C_build)
-set_tests_properties(SIONlib_02_C_run PROPERTIES DEPENDS SIONlib_02_C_build TIMEOUT 3)
+set_tests_properties(SIONlib_02_C_run PROPERTIES DEPENDS SIONlib_02_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 add_executable(SIONlib_02_F EXCLUDE_FROM_ALL SIONlib_test_02.f90)
 add_compiler_flags(SIONlib_02_F PRIVATE -Wall -Wextra)
@@ -84,7 +84,7 @@ add_test(NAME SIONlib_02_F_build
 add_test(NAME SIONlib_02_F_run COMMAND "mpirun" -n 2 ./SIONlib_02_F "${CMAKE_CURRENT_SOURCE_DIR}/SIONlib_test_02_f90.yml")
 set_property(TEST SIONlib_02_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST SIONlib_02_F_run PROPERTY DEPENDS SIONlib_02_F_build)
-set_tests_properties(SIONlib_02_F_run PROPERTIES DEPENDS SIONlib_02_F_build TIMEOUT 3)
+set_tests_properties(SIONlib_02_F_run PROPERTIES DEPENDS SIONlib_02_F_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 
 ###############
@@ -100,7 +100,7 @@ add_test(NAME SIONlib_03_C_build
 add_test(NAME SIONlib_03_C_run COMMAND "mpirun" -n 2 ./SIONlib_03_C "${CMAKE_CURRENT_SOURCE_DIR}/SIONlib_test_03_C.yml")
 set_property(TEST SIONlib_03_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST SIONlib_03_C_run PROPERTY DEPENDS SIONlib_03_C_build)
-set_tests_properties(SIONlib_03_C_run PROPERTIES DEPENDS SIONlib_03_C_build TIMEOUT 3)
+set_tests_properties(SIONlib_03_C_run PROPERTIES DEPENDS SIONlib_03_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 add_executable(SIONlib_03_F EXCLUDE_FROM_ALL SIONlib_test_03.f90)
 add_compiler_flags(SIONlib_03_F PRIVATE -Wall -Wextra)
@@ -112,4 +112,4 @@ add_test(NAME SIONlib_03_F_build
 add_test(NAME SIONlib_03_F_run COMMAND "mpirun" -n 2 ./SIONlib_03_F "${CMAKE_CURRENT_SOURCE_DIR}/SIONlib_test_03_f90.yml")
 set_property(TEST SIONlib_03_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST SIONlib_03_F_run PROPERTY DEPENDS SIONlib_03_F_build)
-set_tests_properties(SIONlib_03_F_run PROPERTIES DEPENDS SIONlib_03_F_build TIMEOUT 3)
+set_tests_properties(SIONlib_03_F_run PROPERTIES DEPENDS SIONlib_03_F_build TIMEOUT ${DEFAULT_TIMEOUT})
