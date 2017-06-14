@@ -58,6 +58,6 @@ if( ${ENABLE_UTILITIES} AND ${ENABLE_DECLH5} )
 	add_test(NAME Utilities_02_C_run COMMAND Utilities_02_C "${CMAKE_CURRENT_SOURCE_DIR}/Utilities_test_02.yml")
 	set_property(TEST Utilities_02_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/Utilities/:${CMAKE_CURRENT_BINARY_DIR}/../plugins/DeclH5/")
 	set_property(TEST Utilities_02_C_run PROPERTY DEPENDS Utilities_02_C_build)
-	set_tests_properties(Utilities_02_C_run PROPERTIES DEPENDS Utilities_02_C_build TIMEOUT 3)
+	set_tests_properties(Utilities_02_C_run PROPERTIES DEPENDS Utilities_02_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 endif()
 

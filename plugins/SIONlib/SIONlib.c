@@ -169,7 +169,7 @@ static PDI_status_t parse_vars(PC_tree_t conf, SIONlib_var_t *vars[], size_t *n_
   if (!vars) return PDI_ERR_SYSTEM;
 
   *n_vars = 0;
-  for (size_t i = 0; i < len; ++i) {
+  for (int i = 0; i < len; ++i) {
     PC_tree_t entry = PC_get(conf, "[%zd]", i);
     if (PC_status(PC_get(entry, ".variable"))) {
       // not an entry for a variable
@@ -197,7 +197,7 @@ static PDI_status_t parse_event_vars(PC_tree_t conf, const char *event_name, siz
   *vars = calloc(sizeof(char *), len);
   if (!*vars) return PDI_ERR_SYSTEM;
 
-  for (size_t i = 0; i < len; ++i) {
+  for (int i = 0; i < len; ++i) {
     if (PC_string(PC_get(conf, "[%zd]", i), *vars + i)) {
       free(*vars);
       return PDI_ERR_SYSTEM;
@@ -283,7 +283,7 @@ static PDI_status_t parse_events(PC_tree_t conf, SIONlib_event_t *events[], size
   if (!events) return PDI_ERR_SYSTEM;
 
   *n_events = 0;
-  for (size_t i = 0; i < len; ++i) {
+  for (int i = 0; i < len; ++i) {
     PC_tree_t entry = PC_get(conf, "[%zd]", i);
     if (PC_status(PC_get(entry, ".event"))) {
       // not an entry for an event
@@ -643,7 +643,7 @@ static PDI_status_t write_var(const PDI_data_t *data, const SIONlib_var_t *var)
   }
 
   size_t data_size;
-  if (status = PDI_datatype_datasize(&data->type, &data_size)) {
+  if ((status = PDI_datatype_datasize(&data->type, &data_size))) {
     free(file);
     return status;
   }
@@ -683,7 +683,7 @@ static PDI_status_t read_var(const PDI_data_t *data, const SIONlib_var_t *var)
 
   int n_files = 1;
   size_t data_size;
-  if (status = PDI_datatype_datasize(&data->type, &data_size)) {
+  if ((status = PDI_datatype_datasize(&data->type, &data_size))) {
     free(file);
     return status;
   }
