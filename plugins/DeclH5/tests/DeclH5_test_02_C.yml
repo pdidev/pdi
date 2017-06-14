@@ -13,7 +13,7 @@ pdi:
       sizes: [$nj , $ni]
 
   plugins:
-    hdf5_per_process:
+    declh5:
       defaults:
         outputs:
           select: $input=0

@@ -29,23 +29,23 @@
 
 find_package(HDF5 REQUIRED)
 
-add_library(hdf5_per_process MODULE
-	hdf5_per_process.c
+add_library(declh5 MODULE
+	declh5.c
 )
-target_link_libraries(hdf5_per_process pdi)
+target_link_libraries(declh5 pdi)
 include_directories(${HDF5_SHARED_C_INCLUDE_PATH})
-set_property(SOURCE hdf5_per_process.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
-set_property(TARGET hdf5_per_process   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
-target_link_libraries(hdf5_per_process ${HDF5_SHARED_C_LIBRARIES})
+set_property(SOURCE declh5.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
+set_property(TARGET declh5   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
+target_link_libraries(declh5 ${HDF5_SHARED_C_LIBRARIES})
 
 set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
-add_compiler_flags(hdf5_per_process PRIVATE -Wall -Wextra -std=c99)
+add_compiler_flags(declh5 PRIVATE -Wall -Wextra -std=c99)
 
 
 # library installation
 
-install(TARGETS hdf5_per_process EXPORT hdf5_per_processTargets
+install(TARGETS declh5 EXPORT declh5Targets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )
