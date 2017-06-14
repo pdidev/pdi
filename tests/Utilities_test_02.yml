@@ -42,7 +42,7 @@ pdi:
               event: no_event
               in: values
               out: values_nobuf
-      hdf5_per_process:
+      declh5:
           defaults:
               outputs:
                   select: 1

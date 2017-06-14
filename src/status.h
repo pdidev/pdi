@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file status.h
- * \brief Macros used to handle errors
- * \author J. Bigot (CEA)
- */
+/**
+* \file status.h
+* \brief Macros used to handle errors
+* \author J. Bigot (CEA)
+*/
 
 #ifndef ERROR_H__
 #define ERROR_H__
@@ -39,11 +39,11 @@
  * \param free_stamp the label of the error handling code
  */
 #define PDI_handle_err(callstatus, free_stamp)\
-do { \
-	PDI_status_t newstatus = (callstatus); \
-	if ( newstatus ) status = newstatus; \
-	if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \
-} while( 0 )
+	do { \
+		PDI_status_t newstatus = (callstatus); \
+		if ( newstatus ) status = newstatus; \
+		if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \
+	} while( 0 )
 
 /** Handle a Paraconf return code, jumping to the error handler code on error
  * \param callstatus the call status to handle, will be used only once, this
@@ -51,12 +51,12 @@ do { \
  * \param free_stamp the label of the error handling code
  */
 #define handle_PC_err(callstatus, free_stamp)\
-do { \
-	PC_errhandler_t pc_handler = intercept_PC_errors();\
-	if ( callstatus ) status = PDI_ERR_CONFIG; \
-	PC_errhandler(pc_handler);\
-	if ( status ) goto free_stamp; \
-} while( 0 )
+	do { \
+		PC_errhandler_t pc_handler = intercept_PC_errors();\
+		if ( callstatus ) status = PDI_ERR_CONFIG; \
+		PC_errhandler(pc_handler);\
+		if ( status ) goto free_stamp; \
+	} while( 0 )
 
 /** Create a new PDI error and calls the user specified handler to handle it
  * \param[in] errcode the error code of the error to create
@@ -68,9 +68,9 @@ do { \
 PDI_status_t PDI_make_err(PDI_status_t errcode, const char *message, ...);
 
 /** install a paraconf error-handler that forwards errors to PDI
- * 
+ *
  * Used in the handle_PC_err macro
- * 
+ *
  * \return the previously installed paraconf error-handler
  */
 PC_errhandler_t intercept_PC_errors();

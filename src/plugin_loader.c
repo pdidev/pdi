@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
+
 //The following is used for doxygen documentation:
- /**
- * \file plugin_loader.c
- * \brief Contains function to load plugins
- * \details Plugins name written in config.yml are read/parse by paraconf: if PDI is build with a plugins having the same name, the plugin is loaded.
- * \author J. Bigot (CEA)
- */
+/**
+* \file plugin_loader.c
+* \brief Contains function to load plugins
+* \details Plugins name written in config.yml are read/parse by paraconf: if PDI is build with a plugins having the same name, the plugin is loaded.
+* \author J. Bigot (CEA)
+*/
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -46,9 +46,9 @@
 
 #include "plugin_loader.h"
 
-typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin);
+typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t *plugin);
 
-PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t* plugin)
+PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t *plugin)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -56,15 +56,15 @@ PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *wor
 	void *plugin_ctor_uncast = dlsym(NULL, plugin_symbol);
 	
 	// case where the library was not prelinked
-	if ( !plugin_ctor_uncast ) {
+	if (!plugin_ctor_uncast) {
 		char *libname = msprintf("lib%s.so", plugin_name);
 		void *lib_handle = dlopen(libname, RTLD_NOW);
 		free(libname);
-		if ( !lib_handle ) {
+		if (!lib_handle) {
 			PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s': %s", plugin_name, dlerror()), err0);
 		}
 		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
-		if ( !plugin_ctor_uncast ) {
+		if (!plugin_ctor_uncast) {
 			PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Unable to load plugin ctor for `%s': %s", plugin_name, dlerror()), err0);
 		}
 	}
@@ -81,18 +81,18 @@ err0:
 	return status;
 }
 
-PDI_status_t plugin_loader_tryload( PC_tree_t conf, int plugin_id, MPI_Comm *world )
+PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *world)
 {
 	PDI_status_t status = PDI_OK;
 	int msg_done = 0;
-
+	
 	char *plugin_name = NULL;
 	handle_PC_err(PC_string(PC_get(conf, ".plugins{%d}", plugin_id), &plugin_name), err0);
 	
 	PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
 	handle_PC_err(PC_status(plugin_conf), err1);
 	
-	PDI_state.plugins = realloc(PDI_state.plugins, sizeof(PDI_plugin_t)*(PDI_state.nb_plugins+1));
+	PDI_state.plugins = realloc(PDI_state.plugins, sizeof(PDI_plugin_t) * (PDI_state.nb_plugins + 1));
 	PDI_handle_err(plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[PDI_state.nb_plugins]), err1);
 	++PDI_state.nb_plugins;
 	
@@ -101,20 +101,20 @@ PDI_status_t plugin_loader_tryload( PC_tree_t conf, int plugin_id, MPI_Comm *wor
 	
 err1:
 	status = PDI_make_err(status,
-			"Error while loading plugin `%s': %s",
-			plugin_name,
-			PDI_errmsg()
-	);
+	                      "Error while loading plugin `%s': %s",
+	                      plugin_name,
+	                      PDI_errmsg()
+	                     );
 	msg_done = 1;
 	free(plugin_name);
 	
 err0:
 	if (!msg_done) {
 		status = PDI_make_err(status,
-				"Error while loading plugin #%d: %s",
-				plugin_id,
-				PDI_errmsg()
-		);
+		                      "Error while loading plugin #%d: %s",
+		                      plugin_id,
+		                      PDI_errmsg()
+		                     );
 	}
 	return status;
 }
