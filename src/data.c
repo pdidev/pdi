@@ -24,48 +24,29 @@
 
 //The following is used for doxygen documentation:
 /**
-* \file conf.c
-* \brief Functions to load data and metadata
+* \file data.c
+* \brief Functions to handle PDI data.
 * \author J. Bigot (CEA)
 */
 
-#include <paraconf.h>
+#include "config.h"
 
-#include "pdi.h"
-#include "pdi/state.h"
 #include "pdi/data.h"
-#include "pdi/datatype.h"
-
 #include "status.h"
 
-#include "conf.h"
 
-static PDI_status_t load_data(PC_tree_t node, PDI_datakind_t kind)
+PDI_status_t PDI_data_destroy(PDI_data_t *var)
 {
 	PDI_status_t status = PDI_OK;
 	
-	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
-	
-	PDI_state.data = realloc(PDI_state.data,
-	                         (PDI_state.nb_data + map_len) * sizeof(PDI_data_t)
-	                        );
-	                        
-	int map_id;
-	for (map_id = 0; map_id < map_len; ++map_id) {
-		PDI_data_t *cur_data = PDI_state.data + PDI_state.nb_data;
-		
-		cur_data->kind = kind;
-		cur_data->nb_content = 0;
-		cur_data->content = NULL;
-		
-		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_data->name), err0);
-		
-		cur_data->config = PC_get(node, "<%d>", map_id);
-		handle_PC_err(PC_status(cur_data->config), err0);
-		PDI_handle_err(PDI_datatype_load(&cur_data->type, cur_data->config), err0);
-		
-		++PDI_state.nb_data;
+	PDI_handle_err(PDI_datatype_destroy(&var->type), err0);
+	free(var->name);
+	for (int ii = 0; ii < var->nb_content; ++ii) {
+		if (var->content[ii].access & PDI_MM_FREE) {
+			free(var->content[ii].data);
+		}
 	}
+	free(var->content);
 	
 	return status;
 	
@@ -73,27 +54,32 @@ err0:
 	return status;
 }
 
-PDI_status_t load_conf(PC_tree_t node)
-{
+
+PDI_status_t PDI_data_copy(PDI_data_t *to, const PDI_data_t *from){
 	PDI_status_t status = PDI_OK;
+
+	to->name = strdup(from->name);
+	to->kind = from->kind;
 	
-	// Detect an invalid configuration as soon as possible
-	handle_PC_err(PC_status(node), err0);
-	
-	// no metadata is not an error
-	PC_tree_t metadata = PC_get(node, ".metadata");
-	if (!PC_status(metadata)) {
-		PDI_handle_err(load_data(metadata, PDI_DK_METADATA), err0);
-	}
-	
-	// no data is spurious, but not an error
-	PC_tree_t data = PC_get(node, ".data");
-	if (!PC_status(data)) {
-		PDI_handle_err(load_data(data, PDI_DK_DATA), err0);
+	/// The type of the data
+	PDI_handle_err(PDI_datatype_copy(&to->type,&from->type), err0);
+
+	/// A reference to the data configuration
+	to->config = from->config;
+
+	to->nb_content = from->nb_content;
+	to->content = malloc(to->nb_content * sizeof(PDI_data_value_t));
+	for (int ii = 0; ii < to->nb_content; ii++){
+		from->content[ii].data = to->content[ii].data;
+		from->content[ii].access = to->content[ii].access;
 	}
 	
 	return status;
-	
+
 err0:
+	free(to->name);
+	to->name = NULL;
 	return status;
 }
+
+

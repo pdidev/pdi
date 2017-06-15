@@ -24,78 +24,70 @@
 
 //The following is used for doxygen documentation:
 /**
-* \file state.h
-* \brief details of the strucutures that store data, metadata, ...
+* \file data.h
+* \brief Functions to manipulate PDI_data_t objects
 * \author J. Bigot (CEA)
 */
 
-#ifndef PDI_STATE_H__
-#define PDI_STATE_H__
+#ifndef PDI_DATA_H__
+#define PDI_DATA_H__
 
 #include <pdi.h>
-
-#include <pdi/state_fwd.h>
-#include <pdi/value_fwd.h>
-#include <pdi/plugin_fwd.h>
+#include <pdi/datatype.h>
 #include <pdi/data_fwd.h>
 
-struct loaded_plugin_s {
-	/// the name of the plugin
+/** The value of a variable (a.k.a. data) as a reference to the value in code
+ */
+typedef struct PDI_data_value_s {
+	// PDI_inout_t ORed with PDI_memmode_t. Only the latest
+	int access;
+	
+	/// a pointer to the data in code representation (i.e. potentially sparse)
+	void *data;
+	
+} PDI_data_value_t;
+
+struct PDI_data_s {
+	/// The name of this specific data
 	char *name;
 	
-	/// the plugin implementation, i.e. the functions it provides
-	PDI_plugin_t *impl;
+	/// Whether this represents data or metadata
+	PDI_datakind_t kind;
 	
-};
-
-
-struct PDI_state_s {
-	/** A MPI communicator containing all application processes, i.e. all
-	 *  those not reserved by any PDI plugin
+	/// The type of the data
+	PDI_datatype_t type;
+	
+	/// A reference to the data configuration
+	PC_tree_t config;
+	
+	/// The number of versions of the content available
+	int nb_content;
+	
+	/** All the versions of the data content in share order.
+	 * Only the latest can be actually shared with the user code, all the others
+	 * are copies kept for PDI that should have the PDI_MM_FREE flag set.
 	 */
-	MPI_Comm PDI_comm;
-	
-	/// The number of data
-	int nb_data;
-	
-	/// The actual data
-	PDI_data_t *data;
-	
-	char *transaction;
-	
-	int nb_transaction_data;
-	
-	PDI_data_t **transaction_data;
-	
-	/// The number of loaded plugins
-	int nb_plugins;
-	
-	/// The actual loaded plugins
-	PDI_plugin_t *plugins;
-	
-	/// The current error handling function
-	PDI_errfunc_f *errfunc;
+	PDI_data_value_t *content;
 	
 };
 
 
-/** Return the first data whose name match the input name
- * \param[in] name a constant litteral that is compared with names of data
- * \return the address of the first data whose name matches the input name
- * or NULL if no name matches.
+
+/** Copy the content of the data <from> into the data <to>
+ * \param[out] from an existing data whose content is replaced by the content of <to>
+ * \param[in] to source of the copy
+ * \return an error code.
  */
-PDI_data_t PDI_EXPORT *PDI_find_data(const char *name);
+PDI_status_t PDI_EXPORT PDI_data_copy(PDI_data_t *to, const PDI_data_t *from);
 
 
-/** Removes a version of the content of a data
- * \param[in] data the data whose content to discard
- * \param[in] content_id the version of the content to discard
- * \return an error code
+/** Copy the content of the data <from> into the data <to>
+ * \param[out] from an existing data whose content is replaced by the content of <to>
+ * \param[in] to source of the copy
+ * \return an error code.
  */
-PDI_status_t PDI_EXPORT PDI_data_unlink(PDI_data_t *data, int content_id);
+PDI_status_t PDI_EXPORT PDI_data_destroy(PDI_data_t *var);
 
 
-/// The main state of the PDI implementation
-extern PDI_state_t PDI_EXPORT PDI_state;
 
-#endif // PDI_STATE_H__
+#endif // PDI_DATA_H__
