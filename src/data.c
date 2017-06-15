@@ -62,7 +62,7 @@ PDI_status_t PDI_data_copy(PDI_data_t *to, const PDI_data_t *from){
 	to->kind = from->kind;
 	
 	/// The type of the data
-	PDI_handle_err(PDI_datatype_copy(&to->type,&from->type), err0);
+	PDI_handle_err(PDI_datatype_copy(&to->type, &from->type), err0);
 
 	/// A reference to the data configuration
 	to->config = from->config;
@@ -70,16 +70,32 @@ PDI_status_t PDI_data_copy(PDI_data_t *to, const PDI_data_t *from){
 	to->nb_content = from->nb_content;
 	to->content = malloc(to->nb_content * sizeof(PDI_data_value_t));
 	for (int ii = 0; ii < to->nb_content; ii++){
-		from->content[ii].data = to->content[ii].data;
 		from->content[ii].access = to->content[ii].access;
+		if (to->content[ii].access & PDI_MM_FREE) {
+			/// For data that own their buffer, allocate a distinct buffer
+			size_t dsize; PDI_handle_err(PDI_datatype_buffersize(&(to->type), &dsize), err1);
+			void *newval; newval = malloc(dsize);
+			PDI_handle_err(PDI_buffer_copy(
+			                   newval,
+			                   &(to->type),
+			                   from->content[ii].data,
+			                   &(from->type)),
+			               err2);
+			to->content[ii].data = newval;
+err2:
+			if(status) free(newval);
+		} else { /// else share the reference
+			from->content[ii].data = to->content[ii].data;
+		}
 	}
 	
 	return status;
 
+err1:
+	PDI_datatype_destroy(&(to->type));
 err0:
 	free(to->name);
-	to->name = NULL;
+	to->name = "";
 	return status;
 }
-
 
