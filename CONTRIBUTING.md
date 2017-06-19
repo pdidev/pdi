@@ -7,14 +7,7 @@
     * Last, a brief description 
  * Each zone is delimited by two hyphens
  * Spaces are replaced by underscores
- 
-### issues:
- * 1st keyword: bug, miss_feature, outdated, ...
- * 2nd keyword: PDI or \<Plug-in name\> 
- * 3rd: content
- * Examples:
-     *  bug--HDF5_per_process--Something_is_wrong_there
-     *  miss_feature--PDI--Should_make_the_tea
+
 
 ### Branch and merge request
  * 1st keyword: bugfix, feature, update ...
