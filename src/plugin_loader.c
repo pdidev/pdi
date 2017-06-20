@@ -39,6 +39,7 @@
 #include <paraconf.h>
 
 #include "pdi/state.h"
+#include "pdi/data.h"
 #include "pdi/plugin.h"
 
 #include "status.h"

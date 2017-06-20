@@ -31,6 +31,7 @@
 #include <pdi.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/data.h>
 #include <pdi/datatype.h>
 
 

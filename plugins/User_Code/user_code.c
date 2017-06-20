@@ -35,6 +35,7 @@
 #include <pdi.h> 	// PDI library 
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/data.h>
 
 #include <dlfcn.h> 	// dynamic loading of function 
 

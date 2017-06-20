@@ -35,6 +35,7 @@
 #include <pdi.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/data.h>
 
 PC_tree_t my_conf;
 
@@ -253,7 +254,7 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 	hsize_t *h5sizes = NULL;
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
-	PDI_type_t *scalart = &data->type;
+	PDI_datatype_t *scalart = &data->type;
 	if ( data->type.kind == PDI_K_ARRAY ) {
 		rank = data->type.c.array->ndims;
 		h5sizes = malloc(rank*sizeof(hsize_t));
@@ -312,7 +313,7 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
-	PDI_type_t *scalart = &data->type;
+	PDI_datatype_t *scalart = &data->type;
 	if ( data->type.kind == PDI_K_ARRAY ) {
 		rank = data->type.c.array->ndims;
 		sizes = malloc(rank*sizeof(hsize_t));

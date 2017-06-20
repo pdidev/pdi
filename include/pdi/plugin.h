@@ -43,7 +43,7 @@
 #include <pdi.h>
 
 #include <pdi/plugin_fwd.h>
-#include <pdi/state_fwd.h>
+#include <pdi/data_fwd.h>
 
 /** Skeleton of the function called at PDI finalization
  * \return an exit status code
