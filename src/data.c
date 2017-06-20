@@ -58,44 +58,54 @@ err0:
 PDI_status_t PDI_data_copy(PDI_data_t *to, const PDI_data_t *from){
 	PDI_status_t status = PDI_OK;
 
-	to->name = strdup(from->name);
-	to->kind = from->kind;
+	/// Create a temporary copy 
+	PDI_data_t copy;
+	copy.name = strdup(from->name);
+	copy.kind = from->kind;
 	
-	/// The type of the data
-	PDI_handle_err(PDI_datatype_copy(&to->type, &from->type), err0);
-
 	/// A reference to the data configuration
-	to->config = from->config;
+	copy.config = from->config;
 
-	to->nb_content = from->nb_content;
-	to->content = malloc(to->nb_content * sizeof(PDI_data_value_t));
-	for (int ii = 0; ii < to->nb_content; ii++){
-		from->content[ii].access = to->content[ii].access;
-		if (to->content[ii].access & PDI_MM_FREE) {
+	/// Copy data content
+	copy.nb_content = from->nb_content;
+	copy.content = malloc(copy.nb_content * sizeof(PDI_data_value_t));
+	for (int ii = 0; ii < copy.nb_content; ii++){
+		from->content[ii].access = copy.content[ii].access;
+		if (copy.content[ii].access & PDI_MM_FREE) {
 			/// For data that own their buffer, allocate a distinct buffer
-			size_t dsize; PDI_handle_err(PDI_datatype_buffersize(&(to->type), &dsize), err1);
+			size_t dsize; PDI_handle_err(PDI_datatype_buffersize(&(copy.type), &dsize), err0);
 			void *newval; newval = malloc(dsize);
 			PDI_handle_err(PDI_buffer_copy(
 			                   newval,
-			                   &(to->type),
+			                   &(copy.type),
 			                   from->content[ii].data,
 			                   &(from->type)),
 			               err2);
-			to->content[ii].data = newval;
+			copy.content[ii].data = newval;
 err2:
-			if(status) free(newval);
+			if(status){
+				free(newval);
+				PDI_handle_err(status,err0);
+			}
 		} else { /// else share the reference
-			from->content[ii].data = to->content[ii].data;
+			from->content[ii].data = copy.content[ii].data;
 		}
 	}
+
+	// If everything succeed transfert data from 'copy' to the destination 'to'.
+	// Copy the type of the data directly into the 'to'
+	PDI_handle_err(PDI_datatype_copy(&to->type, &from->type), err0);
+	// The other properties
+	to->name       = copy.name;       
+	to->kind       = copy.kind;       
+	to->config     = copy.config;     
+	to->nb_content = copy.nb_content; 
+	to->content    = copy.content;    
+
 	
 	return status;
 
-err1:
-	PDI_datatype_destroy(&(to->type));
-err0:
-	free(to->name);
-	to->name = "";
+err0: /// In case of error, the original data 'to' is unchanged/unmodified.
 	return status;
 }
 

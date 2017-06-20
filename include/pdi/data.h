@@ -74,8 +74,8 @@ struct PDI_data_s {
 
 
 /** Copy the content of the data <from> into the data <to>
- * \param[out] from an existing data whose content is replaced by the content of <to>
- * \param[in] to source of the copy
+ * \param[out] to an existing data whose content is replaced by the content of <from>
+ * \param[in] from source of the copy
  * \return an error code.
  */
 PDI_status_t PDI_EXPORT PDI_data_copy(PDI_data_t *to, const PDI_data_t *from);
