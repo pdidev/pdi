@@ -76,24 +76,24 @@ char *msprintf(const char *fmt, ...)
 #define UC_verbose 1
 
 #if UC_verbose > 1
-#define UC_dbg(...) {fprintf(UC_stderr, "[PDI/user_code] Debug: ");\
+#define UC_dbg(...) do{ fprintf(UC_stderr, "[PDI/user_code] Debug: ");\
 		fprintf(UC_stderr, __VA_ARGS__);\
-		fflush(UC_stderr);}
+		fflush(UC_stderr); } while(0);
 #else  // Does nothing
-#define UC_dbg(...) if(0) printf( __VA_ARGS__);
+#define UC_dbg(...) do{ if(0) printf( __VA_ARGS__) ;} while(0);
 #endif
 
 #if UC_verbose > 0
-#define UC_warn(...) {fprintf(UC_stderr, "[PDI/user_code] Warning: ");\
+#define UC_warn(...) do { fprintf(UC_stderr, "[PDI/user_code] Warning: ");\
 		fprintf(UC_stderr, __VA_ARGS__);\
-		fflush(UC_stderr);}
+		fflush(UC_stderr);} while(0);
 #else  // Does nothing
-#define UC_warn(...) if(0) printf( __VA_ARGS__);
+#define UC_warn(...) do { if(0) printf( __VA_ARGS__); } while(0);
 #endif
 
-#define UC_err(...) {fprintf(UC_stderr, "[PDI/user_code] Error: " );\
+#define UC_err(...) do {fprintf(UC_stderr, "[PDI/user_code] Error: " );\
 		fprintf(UC_stderr, __VA_ARGS__);\
-		fflush(UC_stderr);}
+		fflush(UC_stderr);} while(0);
 
 
 typedef void (*ptr_fct_t)(void);
