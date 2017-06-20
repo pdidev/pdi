@@ -39,6 +39,7 @@
 #include "pdi.h"
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/data.h>
 
 #ifdef STRDUP_WORKS
 #define _POSIX_C_SOURCE 200809L

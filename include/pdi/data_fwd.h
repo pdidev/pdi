@@ -22,55 +22,46 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+//The following is used for doxygen documentation:
 /**
-\file api.c
-\brief PDI internal data
-\author J. Bigot (CEA)
-**/
+* \file data_fwd.h
+* \brief public PDI data declaration
+* \author J. Bigot (CEA)
+*/
 
-#include "config.h"
+#ifndef PDI_DATA_FWD_H__
+#define PDI_DATA_FWD_H__
 
-#include "pdi/state.h"
-#include "pdi/data.h"
-#include "status.h"
-#include "pdi/plugin.h"
-
-
-PDI_state_t PDI_state;
-
-
-PDI_data_t *PDI_find_data(const char *name)
-{
-	PDI_data_t *data = NULL;
-	for (int ii = 0; ii < PDI_state.nb_data; ++ii) {
-		if (strcmp(PDI_state.data[ii].name, name)) continue;
-		data = PDI_state.data + ii;
-		break;
-	}
-	return data;
-}
+/** the possible kind of data
+ */
+typedef enum PDI_datakind_e {
+	PDI_DK_DATA = 0,
+	PDI_DK_METADATA
+} PDI_datakind_t;
 
 
-PDI_status_t PDI_data_unlink(PDI_data_t *data, int content_id)
-{
-	PDI_status_t status = PDI_OK;
-	
-	for (int ii = 0; ii < PDI_state.nb_plugins; ++ii) {
-		PDI_handle_err(PDI_state.plugins[ii].data_end(data), err0);
-	}
-	
-	if (data->content[content_id].access & PDI_MM_FREE) {
-		free(data->content[content_id].data);
-	}
-	for (int ii = content_id; ii < data->nb_content - 1; ++ii) {
-		data->content[ii] = data->content[ii + 1];
-	}
-	--data->nb_content;
-	
-	return status;
-	
-err0:
-	return status;
-}
+/** the possible kind of data
+ */
+typedef enum PDI_memmode_e {
+	PDI_MM_NONE = 0,
+	/// PDI is responsible for freeing the memory
+	PDI_MM_FREE = 0x08, // start at 8 so as to be ORable w. PDI_inout_t
+	/** The data is a copy stored in the compact (dense) format.
+	 * Implies PDI_MM_FREE.
+	 */
+	PDI_MM_COPY = 0x10
+} PDI_memmode_t;
 
+
+/** Data as described in the configuration and its shared value if not reclaimed
+ *  yet
+ */
+typedef struct PDI_data_s PDI_data_t;
+
+
+/** The value of some data
+ */
+typedef struct PDI_data_value_s PDI_data_value_t;
+
+#endif // PDI_DATA_FWD_H__
 

@@ -77,6 +77,7 @@ install(DIRECTORY ../include/ DESTINATION include)
 add_library(pdi SHARED
 		api.c
 		conf.c
+		data.c
 		datatype.c
 		state.c
 		status.c
