@@ -83,7 +83,7 @@ list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
 list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
 
 # Examples & tests
-enable_testing()
+include( CTest )
 if( "${RUN_EXAMPLES}" ) 
 	add_subdirectory(example/)
 endif()
@@ -96,6 +96,8 @@ add_subdirectory(src/)
 
 ## The plugins
 add_subdirectory(plugins/test_plugin/)
+add_subdirectory(plugins/User_Code/)
+
 if(${ENABLE_DECLH5})
 	add_subdirectory(plugins/DeclH5/)
 endif()
