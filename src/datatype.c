@@ -183,13 +183,10 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 			continue;
 
 err1a: 
-			free(expr);
-			if( ii == ri && (ii+1) == (ridx(ii+1, order, res_type.ndims))){
-				for( int jj = 0; jj < ri; jj++)
-					PDI_value_destroy(&res_type.sizes[ri]);
-			} else {
-				for( int jj = ri+1; jj < res_type.ndims ; jj++)
-					PDI_value_destroy(&res_type.sizes[ri]);
+			free(expr); // in case of error
+			for( int jj = 0; jj < ii; ++jj){
+				ri = ridx(jj, order, res_type.ndims);
+				PDI_value_destroy(&res_type.sizes[ri]);
 			}
 			PDI_handle_err(status, err0);
 		}
@@ -226,12 +223,9 @@ err1b:
 			continue;
 err2a:
 			free(expr);
-			if( ii == ri && (ii+1) == (ridx(ii+1, order, res_type.ndims))){
-				for( int jj = 0; jj < ri; jj++)
-					PDI_value_destroy(&res_type.subsizes[jj]);
-			} else {
-				for( int jj = ri+1; jj < res_type.ndims ; jj++)
-					PDI_value_destroy(&res_type.subsizes[jj]);
+			for( int jj = 0; jj < ii; ++jj){
+				ri = ridx(jj, order, res_type.ndims);
+				PDI_value_destroy(&res_type.sizes[ri]);
 			}
 			PDI_handle_err(status, err1);
 		}
@@ -262,12 +256,9 @@ err2a:
 			continue;
 err3a:
 			free(expr); // freeing all memory
-			if( ii == ri && (ii+1) == (ridx(ii+1, order, res_type.ndims))){
-				for( int jj = 0; jj < ri; jj++)
-					PDI_value_destroy(&res_type.starts[jj]);
-			} else {
-				for( int jj = ri+1; jj < res_type.ndims ; jj++)
-					PDI_value_destroy(&res_type.starts[jj]);
+			for( int jj = 0; jj < ii; ++jj){
+				ri = ridx(jj, order, res_type.ndims);
+				PDI_value_destroy(&res_type.sizes[ri]);
 			}
 			PDI_handle_err(status, err2);
 		}
@@ -287,17 +278,17 @@ err3a:
 
 
 err3: // handling errors after "starts" have been allocated
-	for( int jj = 0; jj < res_type.ndims ; jj++)
+	for( int jj = 0; jj < res_type.ndims ; ++jj)
 		PDI_value_destroy(&res_type.subsizes[jj]);
 	free(res_type.starts);
 err2: // --------------------  "subsizes"  -------------------
 	if(res_type.subsizes != res_type.sizes){ // subsizes exist
-		for( int jj = 0; jj < res_type.ndims ; jj++)
+		for( int jj = 0; jj < res_type.ndims ; ++jj)
 			PDI_value_destroy(&res_type.subsizes[jj]);
 		free(res_type.subsizes);
 	}
 err1: // --------------------  "sizes"  -----------------------
-	for( int jj = 0; jj < res_type.ndims ; jj++)
+	for( int jj = 0; jj < res_type.ndims ; ++jj)
 		PDI_value_destroy(&res_type.sizes[jj]);
 	free(res_type.sizes);
 	
