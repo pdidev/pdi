@@ -34,6 +34,7 @@
 #include <pdi.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/data.h>
 
 
 PDI_status_t PDI_test_plugin_init(PC_tree_t conf, MPI_Comm *world)

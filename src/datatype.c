@@ -484,7 +484,7 @@ err0:
 }
 
 
-static PDI_status_t datatype_bufdesc(const PDI_type_t *type, buffer_descriptor_t *result);
+static PDI_status_t datatype_bufdesc(const PDI_datatype_t *type, buffer_descriptor_t *result);
 
 
 static PDI_status_t scalar_datatype_bufdesc(PDI_scalar_type_t type, buffer_descriptor_t *result)
@@ -559,7 +559,7 @@ err0:
 }
 
 
-static PDI_status_t datatype_bufdesc(const PDI_type_t *type, buffer_descriptor_t *result)
+static PDI_status_t datatype_bufdesc(const PDI_datatype_t *type, buffer_descriptor_t *result)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -691,7 +691,7 @@ err0:
 // public functions
 
 
-PDI_status_t PDI_datatype_init_scalar(PDI_type_t *this, PDI_scalar_type_t scalar_type)
+PDI_status_t PDI_datatype_init_scalar(PDI_datatype_t *this, PDI_scalar_type_t scalar_type)
 {
 	this->kind = PDI_K_SCALAR;
 	this->c.scalar = scalar_type;
@@ -699,7 +699,7 @@ PDI_status_t PDI_datatype_init_scalar(PDI_type_t *this, PDI_scalar_type_t scalar
 }
 
 
-PDI_status_t PDI_datatype_init_array(PDI_type_t *result, const PDI_type_t *type, int ndims,
+PDI_status_t PDI_datatype_init_array(PDI_datatype_t *result, const PDI_datatype_t *type, int ndims,
                                      const PDI_value_t *sizes, const PDI_value_t *subsizes, const PDI_value_t *starts)
 {
 	PDI_status_t status = PDI_OK;
@@ -758,7 +758,7 @@ err0:
 }
 
 
-PDI_status_t PDI_datatype_copy(PDI_type_t *result, const PDI_type_t *from)
+PDI_status_t PDI_datatype_copy(PDI_datatype_t *result, const PDI_datatype_t *from)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -784,7 +784,7 @@ err0:
 }
 
 
-PDI_status_t PDI_datatype_densify(PDI_type_t *result, const PDI_type_t *oldtype)
+PDI_status_t PDI_datatype_densify(PDI_datatype_t *result, const PDI_datatype_t *oldtype)
 {
 	int status = PDI_OK;
 	
@@ -794,7 +794,7 @@ PDI_status_t PDI_datatype_densify(PDI_type_t *result, const PDI_type_t *oldtype)
 		break;
 		
 	case PDI_K_ARRAY: ;
-		PDI_type_t subtype; PDI_handle_err(PDI_datatype_densify(&subtype, &oldtype->c.array->type), err0);
+		PDI_datatype_t subtype; PDI_handle_err(PDI_datatype_densify(&subtype, &oldtype->c.array->type), err0);
 		PDI_handle_err(PDI_datatype_init_array(result, &subtype, oldtype->c.array->ndims,
 		                                       oldtype->c.array->subsizes, oldtype->c.array->subsizes, NULL),
 		               err0);
@@ -812,7 +812,7 @@ err0:
 }
 
 
-PDI_status_t PDI_datatype_load(PDI_type_t *type, PC_tree_t node)
+PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -857,7 +857,7 @@ err0:
 }
 
 
-PDI_status_t PDI_datatype_destroy(PDI_type_t *type)
+PDI_status_t PDI_datatype_destroy(PDI_datatype_t *type)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -881,7 +881,7 @@ err0:
 }
 
 
-PDI_status_t PDI_datatype_is_dense(const PDI_type_t *type, int *is_dense)
+PDI_status_t PDI_datatype_is_dense(const PDI_datatype_t *type, int *is_dense)
 {
 	switch (type->kind) {
 	case PDI_K_SCALAR:
@@ -898,7 +898,7 @@ PDI_status_t PDI_datatype_is_dense(const PDI_type_t *type, int *is_dense)
 }
 
 
-PDI_status_t PDI_datatype_datasize(const PDI_type_t *type, size_t *result)
+PDI_status_t PDI_datatype_datasize(const PDI_datatype_t *type, size_t *result)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -915,7 +915,7 @@ err0:
 }
 
 
-PDI_status_t PDI_datatype_buffersize(const PDI_type_t *type, size_t *result)
+PDI_status_t PDI_datatype_buffersize(const PDI_datatype_t *type, size_t *result)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -932,7 +932,7 @@ err0:
 }
 
 
-PDI_status_t PDI_buffer_copy(void *to, const PDI_type_t *to_type, const void *from, const PDI_type_t *from_type)
+PDI_status_t PDI_buffer_copy(void *to, const PDI_datatype_t *to_type, const void *from, const PDI_datatype_t *from_type)
 {
 	PDI_status_t status = PDI_OK;
 	

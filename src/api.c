@@ -41,6 +41,7 @@
 #include "pdi.h"
 #include "pdi/plugin.h"
 #include "pdi/state.h"
+#include "pdi/data.h"
 #include "pdi/datatype.h"
 #include "conf.h"
 #include "plugin_loader.h"
@@ -80,26 +81,6 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 	
 err0:
 	PDI_finalize();
-	return status;
-}
-
-
-PDI_status_t PDI_data_destroy(PDI_data_t *var)
-{
-	PDI_status_t status = PDI_OK;
-	
-	PDI_handle_err(PDI_datatype_destroy(&var->type), err0);
-	free(var->name);
-	for (int ii = 0; ii < var->nb_content; ++ii) {
-		if (var->content[ii].access & PDI_MM_FREE) {
-			free(var->content[ii].data);
-		}
-	}
-	free(var->content);
-	
-	return status;
-	
-err0:
 	return status;
 }
 
@@ -261,7 +242,7 @@ PDI_status_t PDI_reclaim(const char *name)
 		    && (data->content[data->nb_content - 1].access & PDI_OUT)) {
 			// keep a copy of the last exposed value of the data
 			data->content[data->nb_content - 1].access |= PDI_MM_FREE | PDI_MM_COPY;
-			PDI_type_t newtype; PDI_handle_err(PDI_datatype_densify(&newtype, &data->type), err0);
+			PDI_datatype_t newtype; PDI_handle_err(PDI_datatype_densify(&newtype, &data->type), err0);
 			size_t dsize; PDI_handle_err(PDI_datatype_buffersize(&newtype, &dsize), err0);
 			void *newval; newval = malloc(dsize);
 			PDI_handle_err(PDI_buffer_copy(
@@ -293,22 +274,27 @@ err0:
 	return status;
 }
 
+static void add_to_transaction(const char* name){
+	PDI_data_t *data = PDI_find_data(name);
+	if ( data ) { 
+		++PDI_state.nb_transaction_data;
+		PDI_state.transaction_data = realloc(
+				PDI_state.transaction_data,
+				PDI_state.nb_transaction_data * sizeof(PDI_data_t *) );
+		PDI_state.transaction_data[PDI_state.nb_transaction_data-1] = data;
+	}
+	return;
+}
 
-PDI_status_t PDI_expose(const char *name, const void *data_dat)
+
+PDI_status_t PDI_expose(const char* name, const void* data)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_handle_err(PDI_share(name, (void *)data_dat, PDI_OUT), err0);
+	PDI_handle_err(PDI_share(name, (void*)data, PDI_OUT), err0);
 	
-	if (PDI_state.transaction) {   // defer the reclaim
-		PDI_data_t *data = PDI_find_data(name);
-		if (data) {
-			++PDI_state.nb_transaction_data;
-			PDI_state.transaction_data = realloc(
-			                                 PDI_state.transaction_data,
-			                                 PDI_state.nb_transaction_data * sizeof(PDI_data_t *));
-			PDI_state.transaction_data[PDI_state.nb_transaction_data - 1] = data;
-		}
+	if ( PDI_state.transaction ) { // defer the reclaim
+		add_to_transaction(name);
 	} else { // do the reclaim now
 		PDI_handle_err(PDI_reclaim(name), err0);
 	}
@@ -320,21 +306,14 @@ err0:
 }
 
 
-PDI_status_t PDI_exchange(const char *name, void *data_dat)
+PDI_status_t PDI_exchange ( const char* name, void* data )
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_handle_err(PDI_share(name, data_dat, PDI_IN | PDI_OUT), err0);
+	PDI_handle_err(PDI_share(name, data, PDI_IN|PDI_OUT), err0);
 	
-	if (PDI_state.transaction) {   // defer the reclaim
-		PDI_data_t *data = PDI_find_data(name);
-		if (data) {
-			++PDI_state.nb_transaction_data;
-			PDI_state.transaction_data = realloc(
-			                                 PDI_state.transaction_data,
-			                                 PDI_state.nb_transaction_data * sizeof(PDI_data_t *));
-			PDI_state.transaction_data[PDI_state.nb_transaction_data - 1] = data;
-		}
+	if ( PDI_state.transaction ) { // defer the reclaim
+		add_to_transaction(name);
 	} else { // do the reclaim now
 		PDI_handle_err(PDI_reclaim(name), err0);
 	}
@@ -408,7 +387,12 @@ PDI_status_t PDI_import(const char *name, void *data)
 	PDI_status_t status = PDI_OK;
 	
 	PDI_handle_err(PDI_share(name, data, PDI_IN), err0);
-	PDI_handle_err(PDI_reclaim(name), err0);
+	
+	if ( PDI_state.transaction ) { // defer the reclaim
+		add_to_transaction(name);
+	} else { // do the reclaim now
+		PDI_handle_err(PDI_reclaim(name), err0);
+	}
 	
 	return status;
 	

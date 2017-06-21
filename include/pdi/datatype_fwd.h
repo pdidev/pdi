@@ -27,7 +27,7 @@
 * \file datatype_fwd.h
 * \brief public PDI type declaration
 * \details
-* PDI type (PDI_type_t) handles 3 datatypes that are either scalars, arrays, or structures
+* PDI type (PDI_datatype_t) handles 3 datatypes that are either scalars, arrays, or structures
 * (respectively PDI_K_SCALAR, PDI_K_ARRAY, PDI_K_STRUCT).
 * Scalar are currently restricted to int8 to int64 or float to long double.
 * Other scalars cannot be used (real16 for instance)
@@ -38,7 +38,7 @@
 #define PDI_DATATYPE_FWD_H__
 
 /// A PDI type descriptor
-typedef struct PDI_type_s PDI_type_t;
+typedef struct PDI_datatype_s PDI_datatype_t;
 
 /// The possible kinds of type
 typedef enum PDI_type_kind_e {

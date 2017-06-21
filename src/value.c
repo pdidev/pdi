@@ -36,6 +36,7 @@
 #include <stdint.h>
 
 #include "pdi/state.h"
+#include "pdi/data.h"
 
 #include "status.h"
 #include "utils.h"

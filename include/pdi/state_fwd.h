@@ -32,40 +32,11 @@
 #ifndef PDI_STATE_FWD_H__
 #define PDI_STATE_FWD_H__
 
-/** the possible kind of data
- */
-typedef enum PDI_datakind_e {
-	PDI_DK_DATA = 0,
-	PDI_DK_METADATA
-} PDI_datakind_t;
-
-
-/** the possible kind of data
- */
-typedef enum PDI_memmode_e {
-	PDI_MM_NONE = 0,
-	/// PDI is responsible for freeing the memory
-	PDI_MM_FREE = 0x08, // start at 8 so as to be ORable w. PDI_inout_t
-	/** The data is a copy stored in the compact (dense) format.
-	 * Implies PDI_MM_FREE.
-	 */
-	PDI_MM_COPY = 0x10
-} PDI_memmode_t;
-
-
 /** Describes the state of a PDI instanciation, its configuration, the
  *  currently exposed data, etc...
  */
 typedef struct PDI_state_s PDI_state_t;
 
-/** Data as described in the configuration and its shared value if not reclaimed
- *  yet
- */
-typedef struct PDI_data_s PDI_data_t;
-
-/** The value of some data
- */
-typedef struct PDI_data_value_s PDI_data_value_t;
 
 /** This is the information about a plugin loaded by the implementation
  */

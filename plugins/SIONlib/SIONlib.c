@@ -41,6 +41,7 @@
 #include <pdi/datatype.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
+#include <pdi/data.h>
 #include <pdi/value.h>
 
 #include <paraconf.h>
