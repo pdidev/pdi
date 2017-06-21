@@ -59,12 +59,22 @@ option(ENABLE_UTILITIES 		"Build Utilities plug-in."
 option(RUN_EXAMPLES 			"Build and run examples during ctest."
 	ON  ) 
 
+option(TIMEOUT
+	"Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)."
+	"3"
+)
+if (${TIMEOUT} GREATER "1" ) 
+	set(DEFAULT_TIMEOUT ${TIMEOUT})
+else()
+	set(DEFAULT_TIMEOUT 3)
+endif()
+
+
 ## Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
 # Find dependancies
-
 find_package(MPI REQUIRED)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf)
