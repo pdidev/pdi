@@ -29,14 +29,19 @@
 #include <pdi.h>
 
 #define err_code -1
-#define test_value(value,fatal) \
-	if(value == err_code) { \
-		fprintf(stdout, "Test in func %s line %3d, not working: value=%d \n",__func__,__LINE__,value); fflush(stdout);\
-		if (fatal) exit(1); \
-	} else { \
-		fprintf(stdout, "Test in func %s line %3d, working : value =%d \n",__func__,__LINE__,value); fflush(stdout);\
-	} value = err_code;
+#define test_value( value, fatal) fct_test_value( value, fatal, __func__, __LINE__)
 
+static void fct_test_value(int value, int fatal, const char *fct, int line){
+	if(value == err_code) {
+		fprintf(stdout, "Test in func %s line %3d, not working: value=%d \n", fct, line, value);
+		fflush(stdout);
+		if (fatal) exit(1);
+	} else { 
+		fprintf(stdout, "Test in func %s line %3d, working : value =%d \n", fct, line, value);
+		fflush(stdout);
+	}
+	return;
+}
 
 void test(void){
 	int itest=err_code;
