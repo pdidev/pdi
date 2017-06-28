@@ -624,23 +624,23 @@ PDI_status_t PDI_value_parse(const char *val_str, PDI_value_t *value)
 	
 	PDI_status_t err = PDI_ERR_VALUE;
 	const char *parse_val = val_str;
-
-	if ( err || *parse_val ) {
+	
+	if (err || *parse_val) {
 		parse_val = val_str;
 		/// Remove leading space
-		while ( isspace(*parse_val) ) ++parse_val;
+		while (isspace(*parse_val)) ++parse_val;
 		PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 		/// Try to parse as if it was an intval (const integer or expression)
 		err = parse_intval(&parse_val, value, 1);
 		PDI_errhandler(errh);
 		/// Goes to '\0' if the remaining characters are spaces
-		while ( isspace(*parse_val) ) ++parse_val;
+		while (isspace(*parse_val)) ++parse_val;
 	}
 	/// In case they are not spaces (something remains), we do not have an intval
-	if ( !err && *parse_val ) PDI_value_destroy(value);
-
+	if (!err && *parse_val) PDI_value_destroy(value);
+	
 	/// Try to parse as a strval
-	if ( err || *parse_val ) {
+	if (err || *parse_val) {
 		parse_val = val_str;
 		status = parse_strval(&parse_val, value);
 	}
