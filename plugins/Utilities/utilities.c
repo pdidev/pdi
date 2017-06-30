@@ -149,6 +149,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 			fprintf(stderr, "[PDI/Utilities] Error: no value or invalid value for 'in'.\n");
 			return PDI_ERR_CONFIG;
 		}
+		free(str);
 		// data 'out'
 		str=NULL;
 		if( !PC_string(PC_get(treetmp, ".out"), &str) ){
@@ -157,6 +158,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 			fprintf(stderr, "[PDI/Utilities] Error: no value or invalid value for 'out'.\n");
 			return PDI_ERR_CONFIG;
 		}
+		free(str);
 
 		// optional 'select'
 		PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
@@ -167,7 +169,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		PC_errhandler(errh);
 
 		// Select an existing task
-		str="[empty]";
+		str=NULL;
 		PC_string(PC_get(my_conf, "{%d}", ii) , &str);
 		if ( !strcmp(str, "event2data") ){
 			tasks[ii].action = EVENT2DATA;
@@ -198,6 +200,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 			fprintf(stderr, "[PDI/Utilities] Error: Invalid node name, '%s'.\n",str);
 			return PDI_ERR_CONFIG;
 		}
+		free(str);
 		
 	}
 	
@@ -209,10 +212,17 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 PDI_status_t PDI_utilities_finalize()
 {
 	for ( int ii=0; ii<nb_tasks; ++ii ) {
-		free(tasks[ii].events);
+		for (int n=0; n<tasks[ii].nb_events; n++)
+			free(tasks[ii].events[n]);
+		if(tasks[ii].nb_events) free(tasks[ii].events);
 		if(tasks[ii].size) free(tasks[ii].data);
 		tasks[ii].size = 0;
+
+		PDI_value_destroy(&tasks[ii].in);
+		PDI_value_destroy(&tasks[ii].out);
+		PDI_value_destroy(&tasks[ii].select);
 	}
+
 	free(tasks);
 	return PDI_OK;
 }
@@ -244,6 +254,7 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 					// expose value in current out (can be received by other plug-ins).
 					PDI_value_str(&tasks[ii].out,&str);
 					PDI_expose(str, &tmp);
+					free(str);
 				}
 				else if(!strcmp(tasks[ii].events[nn],event_name)){
 					switch( tasks[ii].action ) {

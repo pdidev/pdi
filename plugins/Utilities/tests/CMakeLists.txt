@@ -39,6 +39,6 @@ add_test(NAME Utilities_01_C_build
 add_test(NAME Utilities_01_C_run COMMAND Utilities_01_C "${CMAKE_CURRENT_SOURCE_DIR}/Utilities_test_01.yml")
 set_property(TEST Utilities_01_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST Utilities_01_C_run PROPERTY DEPENDS Utilities_01_C_build)
-set_tests_properties(Utilities_01_C_run PROPERTIES DEPENDS Utilities_01_C_build TIMEOUT 3)
+set_tests_properties(Utilities_01_C_run PROPERTIES DEPENDS Utilities_01_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 
