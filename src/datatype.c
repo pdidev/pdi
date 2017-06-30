@@ -181,10 +181,10 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 			PDI_handle_err(PDI_value_parse(expr, &res_type.sizes[ri]), err1a);
 			free(expr);
 			continue;
-
-err1a: 
+			
+err1a:
 			free(expr); // in case of error
-			for( int jj = 0; jj < ii; ++jj){
+			for (int jj = 0; jj < ii; ++jj) {
 				ri = ridx(jj, order, res_type.ndims);
 				PDI_value_destroy(&res_type.sizes[ri]);
 			}
@@ -223,7 +223,7 @@ err1b:
 			continue;
 err2a:
 			free(expr);
-			for( int jj = 0; jj < ii; ++jj){
+			for (int jj = 0; jj < ii; ++jj) {
 				ri = ridx(jj, order, res_type.ndims);
 				PDI_value_destroy(&res_type.sizes[ri]);
 			}
@@ -256,7 +256,7 @@ err2a:
 			continue;
 err3a:
 			free(expr); // freeing all memory
-			for( int jj = 0; jj < ii; ++jj){
+			for (int jj = 0; jj < ii; ++jj) {
 				ri = ridx(jj, order, res_type.ndims);
 				PDI_value_destroy(&res_type.sizes[ri]);
 			}
@@ -275,20 +275,20 @@ err3a:
 	
 	*type = res_type;
 	return status;
-
-
+	
+	
 err3: // handling errors after "starts" have been allocated
-	for( int jj = 0; jj < res_type.ndims ; ++jj)
+	for (int jj = 0; jj < res_type.ndims ; ++jj)
 		PDI_value_destroy(&res_type.subsizes[jj]);
 	free(res_type.starts);
 err2: // --------------------  "subsizes"  -------------------
-	if(res_type.subsizes != res_type.sizes){ // subsizes exist
-		for( int jj = 0; jj < res_type.ndims ; ++jj)
+	if (res_type.subsizes != res_type.sizes) { // subsizes exist
+		for (int jj = 0; jj < res_type.ndims ; ++jj)
 			PDI_value_destroy(&res_type.subsizes[jj]);
 		free(res_type.subsizes);
 	}
 err1: // --------------------  "sizes"  -----------------------
-	for( int jj = 0; jj < res_type.ndims ; ++jj)
+	for (int jj = 0; jj < res_type.ndims ; ++jj)
 		PDI_value_destroy(&res_type.sizes[jj]);
 	free(res_type.sizes);
 	
@@ -347,8 +347,8 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 		case 8:
 			*type = PDI_T_INT64;
 			break;
-		default: 
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unsupported int size: %d", sizeof(int)*8), err1);
+		default:
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unsupported int size: %d", sizeof(int) * 8), err1);
 		}
 	} else if (!strcmp(tname, "int8") && kind == 0) { // C int8
 		*type = PDI_T_INT8;
@@ -377,7 +377,7 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 		case 8:
 			*type = PDI_T_INT64;
 			break;
-		default: 
+		default:
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for character: `%s'", tname), err1);
 		}
 	} else if (!strcmp(tname, "integer")) {   // Fortran integer
@@ -395,7 +395,7 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 		case 8:
 			*type = PDI_T_INT64;
 			break;
-		default: 
+		default:
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err1);
 		}
 	} else if (!strcmp(tname, "logical")) {   // Fortran integer
@@ -413,7 +413,7 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 		case 8:
 			*type = PDI_T_INT64;
 			break;
-		default: 
+		default:
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err1);
 		}
 	} else if (!strcmp(tname, "real")) {   // Fortran real
@@ -428,7 +428,7 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 		case 16:
 			*type = PDI_T_LONG_DOUBLE;
 			break;
-		default: 
+		default:
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for real: `%s'", tname), err1);
 		}
 	} else {
@@ -835,7 +835,8 @@ PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
 err1:
 		free(array);
 		PDI_handle_err(status, err0);
-		break; }
+		break;
+	}
 	case PDI_K_STRUCT: { // load the type as a structure
 		PDI_struct_type_t *struct_ = malloc(sizeof(PDI_struct_type_t));
 		PDI_handle_err(struct_datatype_load(node, struct_), err2);
@@ -844,11 +845,12 @@ err1:
 err2:
 		free(struct_);
 		PDI_handle_err(status, err0);
-		break; }
+		break;
+	}
 	case PDI_K_SCALAR: { // load the type as a scalar
 		PDI_handle_err(scalar_datatype_load(node, &(type->c.scalar)), err0);
 		break;
-	} 
+	}
 	}
 	type->kind = kind;
 	
