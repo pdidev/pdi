@@ -11,14 +11,16 @@ pdi:
   data: # values that can not be referenced using $syntax
     reals: 
       type: double
-      sizes: [$nj , $ni]
+      sizes: [$ni , $nj]
       global_sizes: [$nit, $njt]
       global_starts: [$istart, $jstart]
+      order: fortran
     values: 
       type: int
-      sizes: [$nj , $ni]
+      sizes: [$ni , $nj]
       global_sizes: [$nit, $njt]
       global_starts: [$istart, $jstart]
+      order: fortran
 
   plugins:
     parallel_declh5:
@@ -30,15 +32,14 @@ pdi:
           select: $input=1
           file: test_01_one_file.h5
         scalars:
-          global_start: $rank
-          global_size: $nproc
+          global_start: [$rank*$ni, $rank*nj]
+          global_size: [$nproc*$ni, $nproc*$nj]
           select: 1 # $rank == 0, not implemented
 
       outputs:
         reals:
         values:
-
-          #      inputs:
-          #        reals:
-          #        values:
+      inputs:
+        reals:
+        values:
   

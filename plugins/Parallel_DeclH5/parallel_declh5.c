@@ -47,7 +47,7 @@ typedef struct hdf5pp_var_s
 	
 	PDI_value_t h5file;
 	
-	char* h5var; // changed to char * for the sake of simplicity 
+	PDI_value_t h5var; // changed to char * for the sake of simplicity 
 	
 	PDI_value_t select;
 	
@@ -194,8 +194,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		if( PC_string(PC_get(treetmp, ".var"), &var_strv)){ // no variable name or not readable
 			var_strv = strdup((*hdf5data)[ii].name); // the node label is used (as a default value)
 		}
-		(*hdf5data)[ii].h5var=var_strv;
-		// PDI_value_parse(var_strv, &(*hdf5data)[ii].h5var);
+		PDI_value_parse(var_strv, &(*hdf5data)[ii].h5var);
 		
 		// set the HDF5 filename (i.e. where do we write the data)
 		char *file_strv = NULL;
@@ -302,7 +301,7 @@ PDI_status_t PDI_parallel_declh5_finalize()
 {
 	for ( int ii=0; ii<nb_outputs; ++ii ) {
 		PDI_value_destroy(&outputs[ii].h5file);
-		free(&outputs[ii].h5var);
+		PDI_value_destroy(&outputs[ii].h5var);
 		PDI_value_destroy(&outputs[ii].select);
 		free(outputs[ii].name);
 	}
@@ -310,7 +309,7 @@ PDI_status_t PDI_parallel_declh5_finalize()
 
 	for ( int ii=0; ii<nb_inputs; ++ii ) {
 		PDI_value_destroy(&inputs[ii].h5file);
-		free(&inputs[ii].h5var);
+		PDI_value_destroy(&inputs[ii].h5var);
 		PDI_value_destroy(&inputs[ii].select);
 		free(inputs[ii].name);
 	}
@@ -325,6 +324,7 @@ PDI_status_t PDI_parallel_declh5_event(const char *event)
 }
 
 hid_t h5type(PDI_scalar_type_t ptype) {
+
 	switch (ptype) {
 	case PDI_T_INT8: return  H5T_NATIVE_CHAR;
 	case PDI_T_INT16: return  H5T_NATIVE_SHORT;
@@ -333,8 +333,9 @@ hid_t h5type(PDI_scalar_type_t ptype) {
 	case PDI_T_FLOAT: return  H5T_NATIVE_FLOAT;
 	case PDI_T_DOUBLE: return  H5T_NATIVE_DOUBLE;
 	case PDI_T_LONG_DOUBLE: return  H5T_NATIVE_LDOUBLE;
-	case PDI_T_UNDEF: return H5T_NO_CLASS;
+	case PDI_T_UNDEF: break;
 	}
+	fprintf(stderr, "[PDI/HDF5] Type is invalid (line %d) \n",__LINE__);
 	return H5T_NO_CLASS; //TODO: better handle the error
 }
 
@@ -360,49 +361,44 @@ void rm_if_exist(hid_t h5file, char *dset_name)
 }
 
 
-PDI_status_t init_sizes(hsize_t *sizes, hsize_t* subsizes, hsize_t *starts, PDI_data_t *data)
+PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts, hsize_t *rank, PDI_data_t *data)
 {
 	PDI_datatype_t *scalart = &data->type;
 	if ( data->type.kind == PDI_K_ARRAY ) {
-		int rank = data->type.c.array->ndims;
-		sizes = malloc(rank*sizeof(hsize_t));
-		subsizes = malloc(rank*sizeof(hsize_t));
-		starts = malloc(rank*sizeof(hsize_t));
-		for ( int ii=0; ii<rank; ++ii ) {
+		*rank = data->type.c.array->ndims;
+		*sizes = malloc(*rank*sizeof(hsize_t));
+		*subsizes = malloc(*rank*sizeof(hsize_t));
+		*starts = malloc(*rank*sizeof(hsize_t));
+		for ( int ii=0; ii<*rank; ++ii ) {
 			long intdim;
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
-			sizes[ii] = intdim;
-			fprintf(stderr, "line %d, sizes %d\n", __LINE__, intdim);
+			(*sizes)[ii] = intdim;
 			
 			PDI_value_int(&data->type.c.array->subsizes[ii], &intdim);
-			subsizes[ii] = intdim;
-			fprintf(stderr, "line %d, subsizes %d\n", __LINE__, intdim);
+			(*subsizes)[ii] = intdim;
 			
 			PDI_value_int(&data->type.c.array->starts[ii], &intdim);
-			starts[ii] = intdim;
-			fprintf(stderr, "line %d, starts %d\n", __LINE__, intdim);
+			(*starts)[ii] = intdim;
 		}
 		scalart = &data->type.c.array->type;
 	}
 	if ( scalart->kind != PDI_K_SCALAR ) return PDI_ERR_CONFIG;
 
-	return PDI_OK;
+	return scalart;
 }
 
 
 PDI_status_t write_to_file(PDI_data_t *data, char *filename, char *pathname)
 {
 	PDI_status_t status = PDI_OK;
-	int rank = 0;
+	hsize_t rank = 0;
 	hsize_t *h5sizes = NULL;
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
 	
-	PDI_datatype_t *scalart = &data->type;
 	/// Setting sizes, subsizes, offset
-	status = init_sizes(h5sizes, h5subsizes, h5starts, data);
-	if (status) return status;
+	PDI_datatype_t *scalart = init_sizes(&h5sizes, &h5subsizes, &h5starts, &rank, data);
 	
 	hid_t h5file;
 	if ( is_h5_file(filename) ) {
@@ -438,15 +434,13 @@ PDI_status_t write_to_file(PDI_data_t *data, char *filename, char *pathname)
 
 PDI_status_t pwrite_to_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *gsizes, hsize_t *gstarts)
 {
-	int rank = 0;
+	hsize_t rank = 0;
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
 	
-	PDI_datatype_t *scalart = &data->type;
 	/// Setting sizes, subsizes, offset
-	PDI_status_t status = init_sizes(sizes, subsizes, starts, data);
-	if (status) return status;
+	PDI_datatype_t *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, data);
 	
 
 	/// Setting files properties
@@ -456,24 +450,22 @@ PDI_status_t pwrite_to_file(PDI_data_t *data, char *filename, char *pathname, hs
 
 	if ( is_h5_file(filename) ) {
 		file = H5Fopen(filename, H5F_ACC_RDWR, plist_id);  
+		rm_if_exist(file, pathname);
 	} else {
 		file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
 	}
-	rm_if_exist(file, pathname);
 
 	// The total size (including ghost..) = data is spread along processor
 	hid_t dataspace = H5Screate_simple(rank, gsizes, NULL);   // space on disk
-	fprintf(stderr, "Line %d", __LINE__);
 	hid_t dataset = H5Dcreate( file, pathname, h5type(scalart->c.scalar), dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-	fprintf(stderr, "-- end --- Line %d", __LINE__);fflush(stderr);
 	// File space: poriton of the global file that we use to store our portion of the array
 	hid_t filespace = H5Screate_simple(rank, gsizes , NULL);
 	H5Sselect_hyperslab(filespace, H5S_SELECT_SET, gstarts, NULL, subsizes, NULL ); 
 	
 	// The size in memory (with ghost, data is sparse here)
-	hid_t memspace = H5Screate_simple(rank, sizes, NULL); 
-	if(data->type.kind != PDI_K_SCALAR) H5Sselect_hyperslab(memspace, H5S_SELECT_SET, starts, NULL, subsizes, NULL ); // todo: read one more data (offset in file and file size)
+	hid_t memspace = H5Screate_simple(rank, sizes, NULL);
+	H5Sselect_hyperslab(memspace, H5S_SELECT_SET, starts, NULL, subsizes, NULL ); // todo: read one more data (offset in file and file size)
 
 	hid_t plist_id2 = H5Pcreate(H5P_DATASET_XFER);
 	H5Pset_dxpl_mpio(plist_id2, H5FD_MPIO_COLLECTIVE);
@@ -499,16 +491,14 @@ PDI_status_t pwrite_to_file(PDI_data_t *data, char *filename, char *pathname, hs
 
 int pread_from_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *gsizes, hsize_t *gstarts)
 {
-	PDI_status_t status=0;
-	int rank = 0;
+	PDI_status_t status= PDI_OK;
+	hsize_t rank = 0;
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
 
-	PDI_datatype_t *scalart = &data->type;
 	/// Setting sizes, subsizes, offset
-	status = init_sizes(sizes, subsizes, starts, data);
-	if (status) return status;
+	PDI_datatype_t *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, data);
 
 	hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
 	H5Pset_fapl_mpio(plist_id, MPI_COMM_WORLD, MPI_INFO_NULL);  // todo: check communicator (set another than WORLD)
@@ -564,15 +554,13 @@ int pread_from_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *g
 int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 {
 	int status=0;
-	int rank = 0;
+	hsize_t rank = 0;
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
 
-	PDI_datatype_t *scalart = &data->type;
 	/// Setting sizes, subsizes, offset
-	status = init_sizes(sizes, subsizes, starts, data);
-	if (status) return status;
+	PDI_datatype_t *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, data);
 
 	/// Open file for read/write
 	hid_t file_id = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
@@ -619,6 +607,32 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	return status;
 }
 
+typedef enum PDI_order_e {
+	PDI_ORDER_C,
+	PDI_ORDER_FORTRAN
+} PDI_order_t;
+
+
+PDI_order_t array_order(PC_tree_t node)
+{
+	PDI_order_t order = PDI_ORDER_C;
+	{
+		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
+		char *order_str = "c";
+		PC_status_t pc_stat = PC_string(PC_get(node, ".order"), &order_str);
+		if ((!strcmp(order_str, "c")) || (!strcmp(order_str, "C"))) {
+			order = PDI_ORDER_C;
+		} else if ((!strcmp(order_str, "fortran")) || (!strcmp(order_str, "Fortran"))) {
+			order = PDI_ORDER_FORTRAN;
+		} else {
+			return PDI_ERR_CONFIG;
+		}
+		if (!pc_stat) free(order_str);
+		PC_errhandler(pc_handler); // aka PC_end_try
+	}
+	return order;
+}
+
 PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 {
 	int status = PDI_OK;
@@ -629,23 +643,24 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 				found_output = 1;
 				
 				char *h5file; PDI_value_str(&outputs[ii].h5file, &h5file);
-				char *h5var = outputs[ii].h5var;
+				char *h5var ; PDI_value_str(&outputs[ii].h5var, &h5var);
 				long select;  PDI_value_int(&outputs[ii].select, &select);
 
 				// TODO: warn user, assuming size is unchanged (unknow consequence when size is changed...)
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL;  
 				if ( data->type.kind == PDI_K_ARRAY ) {
+					PDI_order_t order = array_order(data->config);
 					int rank = data->type.c.array->ndims;
 					gstarts = malloc(rank*sizeof(hsize_t));
 					gsizes = malloc(rank*sizeof(hsize_t));
 					for ( int jj = 0 ; jj < rank; ++jj){
-						long n=0; PDI_value_int(&outputs[ii].gstarts[jj], &n);
+						int val = jj;
+						if(order == PDI_ORDER_FORTRAN) val = rank-1-jj ;
+						long n=0; PDI_value_int(&outputs[ii].gstarts[val], &n);
 						gstarts[jj] = n;
-						fprintf(stderr, "Global start %d\n", n);
 						
-						PDI_value_int(&outputs[ii].gsizes[jj], &n);
-						fprintf(stderr, "Global size %d\n", n);
+						PDI_value_int(&outputs[ii].gsizes[val], &n);
 						gsizes[jj] = n;
 					}
 				}
@@ -665,20 +680,23 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 				found_input = 1;
 				
 				char *h5file; PDI_value_str(&inputs[ii].h5file, &h5file);
-				char *h5var = inputs[ii].h5var;
-				long select;  PDI_value_int(&inputs[ii].select, &select);
+				char *h5var; PDI_value_str(&inputs[ii].h5var, &h5var);
+				long select; PDI_value_int(&inputs[ii].select, &select);
 				
 				hsize_t *gstarts = NULL; 
-				hsize_t *gsizes = NULL;  
+				hsize_t *gsizes = NULL; 
 				if ( data->type.kind == PDI_K_ARRAY ) {
+					PDI_order_t order = array_order(data->config);
 					int rank = data->type.c.array->ndims;
 					gstarts = malloc(rank*sizeof(hsize_t));
 					gsizes = malloc(rank*sizeof(hsize_t));
 					for ( int jj = 0 ; jj < rank; ++jj){
-						long n=0; PDI_value_int(&outputs[ii].gstarts[jj], &n);
+						int val = jj;
+						if(order == PDI_ORDER_FORTRAN) val = rank-1-jj ;
+						long n=0; PDI_value_int(&outputs[ii].gstarts[val], &n);
 						gstarts[jj] = n;
 						
-						PDI_value_int(&outputs[ii].gsizes[jj], &n);
+						PDI_value_int(&outputs[ii].gsizes[val], &n);
 						gsizes[jj] = n;
 					}
 				}

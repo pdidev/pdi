@@ -83,13 +83,12 @@ program test2
   call MPI_cart_coords(comm_2D, rank, ndims, coord, ierr)
 
   nj=jmx
-  ni=imx
+  ni=imx 
   istart=coord(1)*ni
   jstart=coord(2)*nj
   nit = ni*2
   njt = nj*2 
 
-  write(0,*) rank, "-------------------------------", __LINE__ ; flush(0)
   iptr => nit ; call PDI_expose("nit", iptr)
   iptr => njt ; call PDI_expose("njt", iptr)
 
@@ -99,13 +98,15 @@ program test2
   allocate(values(ni,nj),reals(ni,nj),cp_values(ni,nj),cp_reals(ni,nj))
 
   ! --- whole distributed array
+  !      coord(0,0)     coord(1,0)
+  !      coord(0,1)     coord(1,0)
   ! _________________ ______________ 
-  ! | 1  2  3  .. IMX| IMX+1  2*IMX|
-  ! | 11
-  ! |_21_____________|_____________|
+  ! | 1  2  3  .. IMX| IMX+1  2*IMX|  
+  ! | 11                                
+  ! |_21_______rank0_|_______rank2_|
   ! | 31             |             |
   ! | 
-  ! |________________|_____________|
+  ! |__________rank3_|_______rank4_|
 
   ! Part of the array on proc 0:
   ! ________________________
@@ -135,7 +136,6 @@ program test2
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
   enddo
   
-  write(0,*) rank, "-------------------------------", __LINE__ ; flush(0)
   input=0
   iptr => rank ; call PDI_expose("rank", iptr)
   iptr => input; call PDI_expose("input", iptr)
@@ -145,19 +145,16 @@ program test2
   iptr => ni; call PDI_expose("ni", iptr)
   iptr => nj; call PDI_expose("nj", iptr)
   
-  write(0,*) rank, "-------------------------------", __LINE__ ; flush(0)
   ! Test that export/exchange works
   iptr => input; call PDI_expose("input", iptr)  ! update metadata => HDF5 now export only
   call PDI_expose("reals",reals )     ! output real
   call PDI_exchange("values",values ) ! output integers
   
-  write(0,*) rank, "-------------------------------", __LINE__ ; flush(0)
   input=1
   ! Import should also work
   iptr => input ; call PDI_expose("input", iptr) ! update metadata => HDF5 now import only
   call PDI_import("reals" ,cp_reals)     ! input real 
   call PDI_exchange("values" ,cp_values) ! input integers
-  write(0,*) rank, "-------------------------------", __LINE__ ; flush(0)
   
   if(.not.(have_ghost)) then
     ! So the data should be the same everywhere
