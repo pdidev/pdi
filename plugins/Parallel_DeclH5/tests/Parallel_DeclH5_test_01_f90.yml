@@ -1,23 +1,33 @@
+
+
 pdi:
   metadata:
     input: int
     ni: int
     nj: int
+    nig: int
+    njg: int
     nit: int
     njt: int
     istart: int
     jstart: int
     rank: int
+
   data: # values that can not be referenced using $syntax
     reals: 
       type: double
-      sizes: [$ni , $nj]
+      sizes: [$ni + 2*$nig , $nj + 2*$njg]
+      subsizes: [$ni , $nj]
+      starts: [$nig, $njg]
       global_sizes: [$nit, $njt]
       global_starts: [$istart, $jstart]
       order: fortran
+
     values: 
       type: int
-      sizes: [$ni , $nj]
+      sizes: [$ni + 2*$nig , $nj + 2*$njg]
+      subsizes: [$ni , $nj]
+      starts: [$nig, $njg]
       global_sizes: [$nit, $njt]
       global_starts: [$istart, $jstart]
       order: fortran
@@ -27,14 +37,10 @@ pdi:
       defaults:
         outputs:
           select: $input=0
-          file: test_01_one_file.h5
+          file: test_01_F90_one_file.h5
         inputs:
           select: $input=1
-          file: test_01_one_file.h5
-        scalars:
-          global_start: [$rank*$ni, $rank*nj]
-          global_size: [$nproc*$ni, $nproc*$nj]
-          select: 1 # $rank == 0, not implemented
+          file: test_01_F90_one_file.h5
 
       outputs:
         reals:

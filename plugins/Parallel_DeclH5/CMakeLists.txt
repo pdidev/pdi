@@ -26,9 +26,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
-#if(PARALLEL_DECLH5)
 set(HDF5_PARALLEL "PAR")
-	#endif()
+
 find_package(HDF5 REQUIRED)
 
 add_library(parallel_declh5 MODULE

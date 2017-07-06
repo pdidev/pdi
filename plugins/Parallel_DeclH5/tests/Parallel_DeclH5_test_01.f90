@@ -23,6 +23,9 @@
 !******************************************************************************/
 include 'PDI.F90'
 
+#define NI_GHOST 1
+#define NJ_GHOST 1
+
 program test2
   use pdi
 
@@ -32,7 +35,7 @@ program test2
 
   character(len=512) :: strbuf
   integer :: i, j, n, ierr,  main_comm 
-  integer,target :: imx=5, jmx=4, input, rank, nj, ni, nig, njg, nit, njt, ntot, nptot
+  integer,target :: imx=5, jmx=4, input, rank, nj, ni, nig, njg, nit, njt, gsi, gei, gsj, gej, nptot
   double precision, pointer, dimension(:,:) :: reals, cp_reals
   integer, pointer, dimension(:,:) :: values, cp_values
   integer, parameter  :: ndims = 2 
@@ -44,7 +47,6 @@ program test2
 
   integer, pointer :: iptr
   type(PC_tree_t) :: conf
-  logical :: have_ghost
 
   integer :: icst=-1
   double precision :: rcst=-1.0D0
@@ -55,14 +57,6 @@ program test2
     call get_command_argument(0, strbuf)
     print '("Usage: ",A," <config_file>")', trim(strbuf)
     stop
-  elseif(command_argument_count() == 2) then
-    have_ghost=.true.
-    nig=2;
-    njg=1;
-  else
-    have_ghost=.false.
-    nig=0;
-    njg=0;
   endif
   
   call get_command_argument(1, strbuf)
@@ -83,11 +77,20 @@ program test2
   call MPI_cart_coords(comm_2D, rank, ndims, coord, ierr)
 
   nj=jmx
-  ni=imx 
+  ni=imx
+  nig=NI_GHOST
+  njg=NJ_GHOST
   istart=coord(1)*ni
   jstart=coord(2)*nj
   nit = ni*2
   njt = nj*2 
+
+  ! Set size for PDI
+  iptr => nig; call PDI_expose("nig", iptr)
+  iptr => njg; call PDI_expose("njg", iptr)
+
+  iptr => ni; call PDI_expose("ni", iptr)
+  iptr => nj; call PDI_expose("nj", iptr)
 
   iptr => nit ; call PDI_expose("nit", iptr)
   iptr => njt ; call PDI_expose("njt", iptr)
@@ -95,7 +98,13 @@ program test2
   iptr => istart ; call PDI_expose("istart", iptr)
   iptr => jstart ; call PDI_expose("jstart", iptr)
 
-  allocate(values(ni,nj),reals(ni,nj),cp_values(ni,nj),cp_reals(ni,nj))
+  ! Compute ghost start and end
+  gej = nj + njg
+  gei = ni + nig
+  gsj = 1-njg
+  gsi = 1-nig
+
+  allocate(values(gsi:gei,gsj:gej),reals(gsi:gei,gsj:gej),cp_values(gsi:gei,gsj:gej),cp_reals(gsi:gei,gsj:gej))
 
   ! --- whole distributed array
   !      coord(0,0)     coord(1,0)
@@ -114,7 +123,11 @@ program test2
   ! | 11               ..  |
   ! |_21_........___20+IMX_|
   !
-   
+  
+  values(:,:) = icst
+  cp_values(:,:) = icst
+  reals(:,:) = rcst
+  cp_reals(:,:) = rcst
 
   do j=1,nj
     do i=1,ni
@@ -139,11 +152,6 @@ program test2
   input=0
   iptr => rank ; call PDI_expose("rank", iptr)
   iptr => input; call PDI_expose("input", iptr)
-  ! Set size for PDI
-  iptr => nig; call PDI_expose("ni_ghost", iptr)
-  iptr => njg; call PDI_expose("nj_ghost", iptr)
-  iptr => ni; call PDI_expose("ni", iptr)
-  iptr => nj; call PDI_expose("nj", iptr)
   
   ! Test that export/exchange works
   iptr => input; call PDI_expose("input", iptr)  ! update metadata => HDF5 now export only
@@ -156,60 +164,47 @@ program test2
   call PDI_import("reals" ,cp_reals)     ! input real 
   call PDI_exchange("values" ,cp_values) ! input integers
   
-  if(.not.(have_ghost)) then
-    ! So the data should be the same everywhere
-    do j=1,nj
-      do i=1,ni
-         if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then 
-            write(0,*) "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
-            write(0,*) "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
-            call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-         endif
-      enddo
+  do j=1,nj ! Should be the same inside 
+    do i=1,ni
+       if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then 
+          write(0,*) "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
+          write(0,*) "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
+          call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+       endif
     enddo
-  else
-    do j=1+njg,nj-njg ! Should be the same inside 
-      do i=1+nig,ni-nig
-         if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then 
-            write(0,*) "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
-            write(0,*) "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
-            call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-         endif
-      enddo
+  enddo
+  do j=gsj,0 ! and should be icst/rscst outside 
+    do i=gsi,0
+       if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
+          write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
+          write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
+          call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+       endif
     enddo
-    do j=1,njg ! and should be icst/rscst outside 
-      do i=1,nig
-         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
-            write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
-            write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
-            call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-         endif
-      enddo
-      do i=ni-nig+1,ni
-         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
-            write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
-            write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
-            call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-         endif
-      enddo
+    do i=ni+1,gei
+       if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
+          write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
+          write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
+          call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+       endif
     enddo
-    do j=nj-njg+1,nj
-      do i=1,nig
-         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
-            write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
-            write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
-            call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-         endif
-      enddo
-      do i=ni-nig+1,ni
-         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
-            write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
-            write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
-            call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-         endif
-      enddo
+  enddo
+  do j=nj+1,gej
+    do i=gsi,0
+          if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
+          write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
+          write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
+          call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+       endif
     enddo
-  endif
+    do i=ni+1,gei
+       if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
+          write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
+          write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
+          call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+       endif
+    enddo
+  enddo
 
   call PDI_finalize()
   call MPI_Finalize(ierr)

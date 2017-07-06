@@ -76,7 +76,7 @@ char *strdup(const char *s)
 #endif
 
 
-PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, const char* scalar_size, const char* scalar_select) // return PDI_OK if succeed
+PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, const char* scalar_size) // return PDI_OK if succeed
 {
 	PDI_status_t status = PDI_OK;
 
@@ -108,17 +108,6 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 				return PDI_ERR_CONFIG;
 			}
 		}
-
-//		if( PC_string(PC_get(data->config, ".select"), &tmp)){
-//			if ( scalar_sizes ){
-//				var->name = strdup( scalar_sizes );
-//			} else {
-//				fprintf(stderr, "Var name %s and node name: %s\n",var->name, tmp); 
-//				fprintf(stderr, "[PDI/Parallel_DeclH5] %s not found in data \n", "global_sizes");
-//				return PDI_ERR_CONFIG;
-//			}
-//		}
-
 
 	} else {
 
@@ -172,7 +161,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
  */
 PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		int *nb_hdf5data, char *def_file, char *def_select,
-		const char* scal_start, const char* scal_size, const char *scal_select)
+		const char* scal_start, const char* scal_size)
 {
 	PDI_status_t status = PDI_OK;
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
@@ -229,7 +218,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		free(select_strv);
 		free(var_strv);
 		
-		status = set_parallel_extent( &(*hdf5data)[ii], scal_start, scal_size, scal_select);
+		status = set_parallel_extent( &(*hdf5data)[ii], scal_start, scal_size);
 		if(status){
 			fprintf(stderr, "[PDI/Parallel_DeclH5] cannot run in parallel \n");
 			return status;
@@ -260,7 +249,6 @@ PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *world)
 	char *scal_start = NULL, *scal_size = NULL, *scal_select = NULL;
 	PC_string(PC_get(my_conf, ".defaults.scalars.global_start"), &scal_start);
 	PC_string(PC_get(my_conf, ".defaults.scalars.global_size"), &scal_size);
-	PC_string(PC_get(my_conf, ".defaults.scalars.select"), &scal_select);
 
 	char *def_out_file = NULL; // default output file if none specified
 	PC_string(PC_get(my_conf, ".defaults.outputs.file"), &def_out_file);
@@ -271,7 +259,7 @@ PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *world)
 	
 	
 	PDI_status_t status = read_config_file(outputs_cfg, &outputs, &nb_outputs,
-			def_out_file, def_out_select, scal_start, scal_size, scal_select);
+			def_out_file, def_out_select, scal_start, scal_size);
 	free(def_out_file);
 	free(def_out_select);
 	
@@ -286,7 +274,7 @@ PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *world)
 	PC_errhandler(errh);
 	
 	status = read_config_file(inputs_cfg, &inputs, &nb_inputs, def_in_file,
-			def_in_select, scal_start, scal_size, scal_select);
+			def_in_select, scal_start, scal_size);
 	free(def_in_file);
 	free(def_in_select);
 
@@ -296,6 +284,7 @@ PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *world)
 	
 	return status;
 }
+
 
 PDI_status_t PDI_parallel_declh5_finalize()
 {
@@ -317,6 +306,7 @@ PDI_status_t PDI_parallel_declh5_finalize()
 	return PDI_OK;
 }
 
+
 PDI_status_t PDI_parallel_declh5_event(const char *event)
 {
 	event = event; // prevent unused warning
@@ -324,7 +314,6 @@ PDI_status_t PDI_parallel_declh5_event(const char *event)
 }
 
 hid_t h5type(PDI_scalar_type_t ptype) {
-
 	switch (ptype) {
 	case PDI_T_INT8: return  H5T_NATIVE_CHAR;
 	case PDI_T_INT16: return  H5T_NATIVE_SHORT;
@@ -389,49 +378,6 @@ PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts
 }
 
 
-PDI_status_t write_to_file(PDI_data_t *data, char *filename, char *pathname)
-{
-	PDI_status_t status = PDI_OK;
-	hsize_t rank = 0;
-	hsize_t *h5sizes = NULL;
-	hsize_t *h5subsizes = NULL;
-	hsize_t *h5starts = NULL;
-	
-	/// Setting sizes, subsizes, offset
-	PDI_datatype_t *scalart = init_sizes(&h5sizes, &h5subsizes, &h5starts, &rank, data);
-	
-	hid_t h5file;
-	if ( is_h5_file(filename) ) {
-		h5file = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
-	} else {
-		h5file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	}
-	
-	rm_if_exist(h5file, pathname); // TODO check properties
-	
-	hid_t h5fspace = H5Screate_simple(rank, h5subsizes, NULL);
-	hid_t h5mspace = H5Screate_simple(rank, h5sizes, NULL);
-	H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
-	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
-	H5Pset_create_intermediate_group( h5lcp, 1 );
-	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar),
-			h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT,
-			data->content[data->nb_content-1].data);
-
-	H5Dclose(h5set);
-	H5PTclose(h5lcp);
-	H5Sclose(h5mspace);
-	H5Sclose(h5fspace);
-	H5Fclose(h5file);
-	
-	free(h5sizes);
-	free(h5subsizes);
-	free(h5starts);
-	return status;
-}
-
-
 PDI_status_t pwrite_to_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *gsizes, hsize_t *gstarts)
 {
 	hsize_t rank = 0;
@@ -459,7 +405,7 @@ PDI_status_t pwrite_to_file(PDI_data_t *data, char *filename, char *pathname, hs
 	hid_t dataspace = H5Screate_simple(rank, gsizes, NULL);   // space on disk
 	hid_t dataset = H5Dcreate( file, pathname, h5type(scalart->c.scalar), dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-	// File space: poriton of the global file that we use to store our portion of the array
+	// File space: part of the global file that we use to store our piece of array
 	hid_t filespace = H5Screate_simple(rank, gsizes , NULL);
 	H5Sselect_hyperslab(filespace, H5S_SELECT_SET, gstarts, NULL, subsizes, NULL ); 
 	
@@ -551,61 +497,6 @@ int pread_from_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *g
 	return status;
 }
 
-int read_from_file(PDI_data_t *data, char *filename, char *pathname)
-{
-	int status=0;
-	hsize_t rank = 0;
-	hsize_t *sizes = NULL;
-	hsize_t *subsizes = NULL;
-	hsize_t *starts = NULL;
-
-	/// Setting sizes, subsizes, offset
-	PDI_datatype_t *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, data);
-
-	/// Open file for read/write
-	hid_t file_id = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
-
-	if(file_id >= 0){ // File exists
-
-		/// Open dataset "pathname" and gets its memspace
-		hid_t dataset_id = H5Dopen(file_id, pathname, H5P_DEFAULT);
-		if( dataset_id >= 0 ) { // Successfull
-
-			hid_t dataspace_id = H5Dget_space (dataset_id);
-
-			/// The dataspace from the file is left unmodified (ie get all data from file).
-
-			/// Create data representation 
-			hid_t memspace = H5Screate_simple(rank, sizes, NULL);
-			
-			/// Extract subspace of data 
-			if ( data->type.kind == PDI_K_ARRAY ) {
-			H5Sselect_hyperslab (memspace, H5S_SELECT_SET, starts, NULL, 
-        		                          subsizes, NULL);
-			}
-
-			/// Read content 
-			status = H5Dread( dataset_id, h5type(scalart->c.scalar), memspace, dataspace_id, H5P_DEFAULT,
-					data->content[data->nb_content-1].data);
-			
-			H5Sclose(memspace);
-			H5Sclose(dataspace_id);
-			H5Dclose(dataset_id);
-
-			if (status<0) status= PDI_UNAVAILABLE;
-		} else {
-			status = PDI_UNAVAILABLE;
-		}
-		H5Fclose(file_id);
-	} else {
-		status = PDI_UNAVAILABLE;
-	}
-	free(sizes);
-	free(subsizes);
-	free(starts);
-	
-	return status;
-}
 
 typedef enum PDI_order_e {
 	PDI_ORDER_C,
