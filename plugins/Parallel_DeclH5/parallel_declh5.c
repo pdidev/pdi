@@ -90,24 +90,28 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		var->gstarts = malloc(sizeof(PDI_value_t)); 
 		if( PC_string(PC_get(data->config, ".global_start"), &tmp)){
 			if ( scalar_start ){
-				var->name = strdup( scalar_start );
+				tmp = strdup(scalar_start);
 			} else {
 				fprintf(stderr, "Var name %s\n",var->name); 
-				fprintf(stderr, "[PDI/Parallel_DeclH5] %s not found in data \n", "global_start");
+				fprintf(stderr, "[PDI/Parallel_DeclH5] %s not found in data (no default value for scalar data)\n", "global_start");
 				return PDI_ERR_CONFIG;
 			}
 		}
+		status = PDI_value_parse(tmp, &(var->gstarts[0]));
+		free(tmp);
 
 		var->gsizes = malloc(sizeof(PDI_value_t));
 		if( PC_string(PC_get(data->config, ".global_size"), &tmp)){
 			if ( scalar_size ){
-				var->name = strdup( scalar_size );
+				tmp = strdup(scalar_size);
 			} else {
 				fprintf(stderr, "Var name %s\n",var->name); 
-				fprintf(stderr, "[PDI/Parallel_DeclH5] %s not found in data \n", "global_size");
+				fprintf(stderr, "[PDI/Parallel_DeclH5] %s not found in data (no default value for scalar data)\n", "global_size");
 				return PDI_ERR_CONFIG;
 			}
 		}
+		status = PDI_value_parse(tmp, &(var->gsizes[0]));
+		free(tmp);
 
 	} else {
 
@@ -246,7 +250,7 @@ PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *world)
 		return PDI_ERR_PLUGIN;
 	}
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
-	char *scal_start = NULL, *scal_size = NULL, *scal_select = NULL;
+	char *scal_start = NULL, *scal_size = NULL;
 	PC_string(PC_get(my_conf, ".defaults.scalars.global_start"), &scal_start);
 	PC_string(PC_get(my_conf, ".defaults.scalars.global_size"), &scal_size);
 
@@ -280,7 +284,6 @@ PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *world)
 
 	free(scal_start);
 	free(scal_size);
-	free(scal_select);
 	
 	return status;
 }
@@ -371,8 +374,16 @@ PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts
 			(*starts)[ii] = intdim;
 		}
 		scalart = &data->type.c.array->type;
+	} else { // assuming scalar type 
+		*rank = 1;
+		*sizes = malloc(sizeof(hsize_t));
+		*subsizes = malloc(sizeof(hsize_t));
+		*starts = malloc(sizeof(hsize_t));
+		*sizes[0] = 1;  
+		*subsizes[0] = 1; 
+		*starts[0] =  0;
 	}
-	if ( scalart->kind != PDI_K_SCALAR ) return PDI_ERR_CONFIG;
+	if ( scalart->kind != PDI_K_SCALAR ) return NULL;
 
 	return scalart;
 }
@@ -554,12 +565,24 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 						PDI_value_int(&outputs[ii].gsizes[val], &n);
 						gsizes[jj] = n;
 					}
+				} else { // supposing scalar case 
+					gstarts = malloc(sizeof(hsize_t));
+					gsizes = malloc(sizeof(hsize_t));
+					long n=0; PDI_value_int(&outputs[ii].gstarts[0], &n);
+					gstarts[0] = n;
+					
+					n = 0;
+					PDI_value_int(&outputs[ii].gsizes[0], &n);
+					gsizes[0] = n;
 				}
+
 				if ( select ) pwrite_to_file(data, h5file, h5var, gsizes, gstarts);
 				
 				free(h5var);
 				free(h5file);
 				
+				free(gstarts);
+				free(gsizes);
 			}
 		}
 	}
@@ -590,12 +613,24 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 						PDI_value_int(&outputs[ii].gsizes[val], &n);
 						gsizes[jj] = n;
 					}
+				} else { // supposing scalar case 
+					gstarts = malloc(sizeof(hsize_t));
+					gsizes = malloc(sizeof(hsize_t));
+					long n=0; PDI_value_int(&outputs[ii].gstarts[0], &n);
+					gstarts[0] = n;
+					
+					n = 0;
+					PDI_value_int(&outputs[ii].gsizes[0], &n);
+					gsizes[0] = n;
 				}
 
 				if ( select ) status = pread_from_file(data, h5file, h5var, gsizes, gstarts);
 				
 				free(h5var);
 				free(h5file);
+				
+				free(gstarts);
+				free(gsizes);
 			}
 		}
 	}
