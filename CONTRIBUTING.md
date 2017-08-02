@@ -2,15 +2,20 @@
 
 ## General Rules
  * Branch names, merge request and issues titles consist of three zones
-    * 1st, type of improvement (bug, feature, update, support...)
-    * 2nd, part of the software concerned (PDI, one plug-in, all plug-ins...)
+    * 1st, type of improvement: 
+        * bugfix : remove a bug
+        * feature : add a new feature to PDI or an existing plug-in
+        * update : update an existing feature
+        * new : add a new plug-in
+        * ... etc.
+    * 2nd, part of the software concerned: PDI, one plug-in, all plug-ins...
     * Last, a brief description 
  * Each zone is delimited by two hyphens
  * Spaces are replaced by underscores
 
 
 ### Branch and merge request
- * 1st keyword: bugfix, feature, update ...
+ * 1st keyword: bugfix, feature, update, new ...
  * 2nd keyword: PDI or \<Plug-in name\>
  * 3rd content
  * Examples:
