@@ -63,7 +63,7 @@ hdf5pp_var_t *inputs = NULL;
 #ifndef STRDUP_WORKS
 char *strdup(const char *s)
 {
-	char *p = malloc(strlen(s)+1);
+	char *p = (char*) malloc(strlen(s)+1);
 	if ( p ) strcpy(p, s);
 	return p;
 }
@@ -88,7 +88,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		PC_errhandler(errh);
 		return PDI_OK;
 	}
-	*hdf5data = malloc((*nb_hdf5data)*sizeof(hdf5pp_var_t));
+	*hdf5data = (hdf5pp_var_t*) malloc((*nb_hdf5data)*sizeof(hdf5pp_var_t));
 	
 	for ( int ii=0; ii<(*nb_hdf5data); ++ii ) {
 		PC_string(PC_get(conf, "{%d}", ii) , &(*hdf5data)[ii].name);
@@ -257,9 +257,9 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 	PDI_datatype_t *scalart = &data->type;
 	if ( data->type.kind == PDI_K_ARRAY ) {
 		rank = data->type.c.array->ndims;
-		h5sizes = malloc(rank*sizeof(hsize_t));
-		h5subsizes = malloc(rank*sizeof(hsize_t));
-		h5starts = malloc(rank*sizeof(hsize_t));
+		h5sizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
+		h5subsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
+		h5starts = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		long intdim = 0;
 		for ( int ii=0; ii<rank; ++ii ) {
 			
@@ -306,9 +306,9 @@ void write_to_file(PDI_data_t *data, char *filename, char *pathname)
 	free(h5starts);
 }
 
-int read_from_file(PDI_data_t *data, char *filename, char *pathname)
+PDI_status_t read_from_file(PDI_data_t *data, char *filename, char *pathname)
 {
-	int status=0;
+	PDI_status_t status= PDI_OK;
 	int rank = 0;
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
@@ -316,9 +316,9 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 	PDI_datatype_t *scalart = &data->type;
 	if ( data->type.kind == PDI_K_ARRAY ) {
 		rank = data->type.c.array->ndims;
-		sizes = malloc(rank*sizeof(hsize_t));
-		subsizes = malloc(rank*sizeof(hsize_t));
-		starts = malloc(rank*sizeof(hsize_t));
+		sizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
+		subsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
+		starts = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		for ( int ii=0; ii<rank; ++ii ) {
 			long intdim;
 			
@@ -358,8 +358,8 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 			}
 
 			/// Read content 
-			status = H5Dread( dataset_id, h5type(scalart->c.scalar), memspace, dataspace_id, H5P_DEFAULT,
-					data->content[data->nb_content-1].data);
+			if( H5Dread( dataset_id, h5type(scalart->c.scalar), memspace, dataspace_id, H5P_DEFAULT,
+					data->content[data->nb_content-1].data)) status = PDI_ERR_SYSTEM;
 			
 			H5Sclose(memspace);
 			H5Sclose(dataspace_id);
@@ -382,7 +382,7 @@ int read_from_file(PDI_data_t *data, char *filename, char *pathname)
 
 PDI_status_t PDI_declh5_data_start( PDI_data_t *data )
 {
-	int status = PDI_OK;
+	PDI_status_t status = PDI_OK;
 	if ( data->content[data->nb_content-1].access & PDI_OUT ) {
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {

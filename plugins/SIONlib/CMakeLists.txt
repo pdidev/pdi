@@ -30,16 +30,15 @@
 find_package(SIONlib REQUIRED)
 
 add_library(SIONlib MODULE
-  SIONlib.c
+  SIONlib.cxx 
 )
 target_link_libraries(SIONlib pdi)
 include_directories(${SIONlib_MPI_C_INCLUDE_DIRS})
-set_property(SOURCE SIONlib.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONlib_MPI_C_COMPILE_FLAGS} ")
+set_property(SOURCE SIONlib.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONlib_MPI_C_COMPILE_FLAGS} ")
 target_link_libraries(SIONlib ${SIONlib_MPI_C_LIBRARIES})
 
-set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
-add_compiler_flags(SIONlib PRIVATE -Wall -Wextra -std=c99)
+add_compiler_flags(SIONlib PRIVATE -Wall -Wextra)
 
 
 # library installation

@@ -43,7 +43,7 @@
 #ifndef STRDUP_WORKS
 char *strdup(const char *s)
 {
-	char *p = malloc(strlen(s) + 1);
+	char *p = (char*) malloc(strlen(s) + 1);
 	if (p) strcpy(p, s);
 	return p;
 }
@@ -53,10 +53,10 @@ char *strdup(const char *s)
 char *vmsprintf(const char *fmt, va_list ap)
 {
 	int index_size = PRINTF_BUFFER_SIZE;
-	char *index = malloc(index_size);
+	char *index = (char*) malloc(index_size);
 	while ( vsnprintf(index, index_size, fmt, ap) > index_size ) {
 		index_size *= 2;
-		index = realloc(index, index_size);
+		index = (char*) realloc(index, index_size);
 	}
 	return index;
 }
@@ -131,7 +131,7 @@ PC_tree_t myconf;
 
 char *str2nodename(const char *s)
 {
-	char *p = malloc(strlen(s) + 1 + 1);
+	char *p = (char*) malloc(strlen(s) + 1 + 1);
 	p[0] = '.';
 	strcpy(&p[1], s);// in case malloc failled program should crash
 	return p;  
@@ -144,14 +144,14 @@ PDI_status_t set_str_from_node(PC_tree_t cur_conf, const char *node_name, char *
 	if (!node_name) return status;
 
 	*nb_str = 1;
-	char **list_tmp = malloc(sizeof(char *));
+	char **list_tmp = (char**) malloc(sizeof(char *));
 
 	if (!PC_string(PC_get(cur_conf, node_name), list_tmp)) { //< if one node
 		status = PDI_OK;
 	} else if (!PC_len(PC_get(cur_conf, node_name), nb_str)) { //< if multiple nodes
-		list_tmp = realloc(list_tmp, (*nb_str) * sizeof(char *));
+		list_tmp = (char**) realloc(list_tmp, (*nb_str) * sizeof(char *));
 
-		char *all_node_name = malloc(strlen(node_name) + 4 + 1); //< len(node_name)+len([%d])+'\0'
+		char *all_node_name = (char*) malloc(strlen(node_name) + 4 + 1); //< len(node_name)+len([%d])+'\0'
 		strcpy(all_node_name, node_name);
 		strcat(&all_node_name[strlen(node_name)], "[%d]"); // going through the list
 
@@ -313,7 +313,7 @@ PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *world)
 
 			free(name);
 			/// Append to list
-			all_uc = realloc(all_uc, sizeof(UC_t)*(nb_uc+1));
+			all_uc = (UC_t*) realloc(all_uc, sizeof(UC_t)*(nb_uc+1));
 			if ( all_uc){
 				all_uc[nb_uc] = next;
 				nb_uc++;

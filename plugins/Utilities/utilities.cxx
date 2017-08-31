@@ -40,6 +40,8 @@
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 #include <pdi/data.h>
+#include <pdi/datatype.h>
+#include <pdi/value.h>
 
 #ifdef STRDUP_WORKS
 #define _POSIX_C_SOURCE 200809L
@@ -88,7 +90,7 @@ PC_tree_t my_conf;
 #ifndef STRDUP_WORKS
 char *strdup(const char *s)
 {
-	char *p = malloc(strlen(s)+1);
+	char *p = (char*)malloc(strlen(s)+1);
 	if ( p ) strcpy(p, s);
 	return p;
 }
@@ -112,7 +114,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		PC_errhandler(errh);
 		return PDI_OK;
 	} else {
-		tasks=malloc(nb_tasks*sizeof(utils_task_t));
+		tasks=(utils_task_t*)malloc(nb_tasks*sizeof(utils_task_t));
 	}
 	PC_errhandler(errh);
 
@@ -128,13 +130,13 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		errh = PC_errhandler(PC_NULL_HANDLER);
 		PC_tree_t all_events = PC_get(treetmp,".events");
 		if( !PC_len(all_events, &tasks[ii].nb_events) ){
-			tasks[ii].events=malloc(tasks[ii].nb_events*sizeof(char*));
+			tasks[ii].events=(char**)malloc(tasks[ii].nb_events*sizeof(char*));
 			for( int nn=0; nn < tasks[ii].nb_events; ++nn ){
 				PC_string(PC_get(all_events, "{%d}", ii) , &tasks[ii].events[nn]);
 			}
 		} else { // testing with one event
 			tasks[ii].nb_events=1;
-			tasks[ii].events=malloc(tasks[ii].nb_events*sizeof(char *));
+			tasks[ii].events=(char**)malloc(tasks[ii].nb_events*sizeof(char *));
 			PC_string(PC_get(treetmp,".event"), &tasks[ii].events[0]);
 		}
 		PC_errhandler(errh);

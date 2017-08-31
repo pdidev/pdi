@@ -68,7 +68,7 @@ PDI_status_t PDI_data_copy(PDI_data_t *to, const PDI_data_t *from){
 
 	/// Copy data content
 	copy.nb_content = from->nb_content;
-	copy.content = malloc(copy.nb_content * sizeof(PDI_data_value_t));
+	copy.content = (PDI_data_value_t*) malloc(copy.nb_content * sizeof(PDI_data_value_t));
 	for (int ii = 0; ii < copy.nb_content; ii++){
 		from->content[ii].access = copy.content[ii].access;
 		if (copy.content[ii].access & PDI_MM_FREE) {

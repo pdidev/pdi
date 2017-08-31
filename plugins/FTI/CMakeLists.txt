@@ -29,7 +29,7 @@
 
 cmake_minimum_required(VERSION 3.1)
 # enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
-project(FTI_pdi LANGUAGES C CXX Fortran)
+project(FTI_pdi LANGUAGES CXX C Fortran)
 
 option(USE_SYSTEM_FTI
 		"Use an already installed fti instead of building the embedded one"
@@ -45,12 +45,11 @@ endif()
 include_directories(${FTI_INCLUDE_PATH})
 
 add_library(fti_plugin MODULE
-		fti_plugin.c
+		fti_plugin.cxx 
 )
 target_link_libraries(fti_plugin pdi fti.shared)
-set_target_properties(fti_plugin PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
-add_compiler_flags(fti_plugin PRIVATE -Wall -Wextra -std=c99)
+add_compiler_flags(fti_plugin PRIVATE -Wall -Wextra)
 
 install(TARGETS fti_plugin EXPORT fti_pdi_pluginTargets
 		LIBRARY DESTINATION lib INCLUDES DESTINATION include

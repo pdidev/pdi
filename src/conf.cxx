@@ -46,7 +46,7 @@ static PDI_status_t load_data(PC_tree_t node, PDI_datakind_t kind)
 	
 	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
 	
-	PDI_state.data = realloc(PDI_state.data,
+	PDI_state.data = (PDI_data_t*) realloc(PDI_state.data,
 	                         (PDI_state.nb_data + map_len) * sizeof(PDI_data_t)
 	                        );
 	                        
@@ -81,15 +81,19 @@ PDI_status_t load_conf(PC_tree_t node)
 	handle_PC_err(PC_status(node), err0);
 	
 	// no metadata is not an error
-	PC_tree_t metadata = PC_get(node, ".metadata");
-	if (!PC_status(metadata)) {
-		PDI_handle_err(load_data(metadata, PDI_DK_METADATA), err0);
+	{ 
+		PC_tree_t metadata = PC_get(node, ".metadata");
+		if (!PC_status(metadata)) {
+			PDI_handle_err(load_data(metadata, PDI_DK_METADATA), err0);
+		}
 	}
 	
 	// no data is spurious, but not an error
-	PC_tree_t data = PC_get(node, ".data");
-	if (!PC_status(data)) {
-		PDI_handle_err(load_data(data, PDI_DK_DATA), err0);
+	{
+		PC_tree_t data = PC_get(node, ".data");
+		if (!PC_status(data)) {
+			PDI_handle_err(load_data(data, PDI_DK_DATA), err0);
+		}
 	}
 	
 	return status;

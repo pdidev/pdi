@@ -63,6 +63,36 @@ There are four levels of visibility:
 * errors *can* be created using the `PDI_make_err` function
 * errors *should* be forwarded using the `PDI_handle_err` macro
 
+
+### C++, future rules (code is being rewritten)
+#### Class
+```
+// Header
+class My_class {
+public: 
+  void example_function();
+private:
+  int m_an_int;
+}
+
+// Code
+int my_int = 0;
+My_class an_instance;
+an_instance.example_function();
+
+```
+* Class begins with an upper case and use underscore to separate words
+* Member variables begin with an `m_` followed by lower case and underscores
+* Private member fonctions begin with a lower score followed by underscores to separate words
+* Data members of classes, both static and non-static, are named like ordinary nonmember variables, but with a trailing underscore. 
+
+#### Variables 
+* Begins with a lower case
+
+#### Macro
+* All caracters are upper case and use underscores to separate words
+
+
 ### Misc.
 
 * any public (app or plugin) symbol (i.e. function or global variable) *must* be exported using the `PDI_EXPORT` macro

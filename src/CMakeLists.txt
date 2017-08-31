@@ -75,19 +75,21 @@ install(DIRECTORY ../include/ DESTINATION include)
 
 ## C version
 add_library(pdi SHARED
-		api.c
-		conf.c
-		data.c
-		datatype.c
-		state.c
-		status.c
-		plugin_loader.c
-		utils.c
-		value.c
+		api.cxx
+		conf.cxx
+		data.cxx
+		datatype.cxx
+		state.cxx
+		status.cxx
+		plugin_loader.cxx
+		utils.cxx
+		value.cxx
 )
-set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON POSITION_INDEPENDENT_CODE ON)
-add_compiler_flags(pdi PRIVATE -Wall -Wextra -std=c99)
+set_target_properties(pdi PROPERTIES POSITION_INDEPENDENT_CODE ON)
+add_compiler_flags(pdi PRIVATE -Wall -Wextra)
 generate_export_header(pdi)
+# This is left for the interface of PDI that may use C99 features
+set_property(TARGET pdi PROPERTY C_STANDARD 99 C_STANDARD_REQUIRED TRUE)
 set_property(TARGET pdi PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET pdi PROPERTY VERSION ${pdi_VERSION})
 set_property(TARGET pdi PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
@@ -97,7 +99,7 @@ target_include_directories(pdi PUBLIC
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>" 
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>"
 )
-target_link_libraries(pdi paraconf mpi)
+target_link_libraries(pdi paraconf mpi mpi_cxx)
 install(TARGETS pdi EXPORT PDI_export
 		LIBRARY DESTINATION lib INCLUDES DESTINATION include
 		ARCHIVE DESTINATION lib INCLUDES DESTINATION include
