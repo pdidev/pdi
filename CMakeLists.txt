@@ -110,12 +110,13 @@ add_subdirectory(src/)
 add_subdirectory(plugins/test_plugin/)
 add_subdirectory(plugins/User_Code/)
 
-if(${ENABLE_DECLH5})
-	add_subdirectory(plugins/DeclH5/)
+if(${ENABLE_PARALLEL_DECLH5})
+	set(HDF5_PARALLEL "PAR")
+	add_subdirectory(plugins/Parallel_DeclH5/)
 endif()
 
-if(${ENABLE_PARALLEL_DECLH5})
-	add_subdirectory(plugins/Parallel_DeclH5/)
+if(${ENABLE_DECLH5})
+	add_subdirectory(plugins/DeclH5/)
 endif()
 
 if(${ENABLE_FTI})
