@@ -44,10 +44,10 @@
 char *vmsprintf(const char *fmt, va_list ap)
 {
 	int index_size = PRINTF_BUFFER_SIZE;
-	char *index = (char*)malloc(index_size);
+	char *index = (char *)malloc(index_size);
 	while (vsnprintf(index, index_size, fmt, ap) > index_size) {
 		index_size *= 2;
-		index = (char*)realloc(index, index_size);
+		index = (char *)realloc(index, index_size);
 	}
 	return index;
 }
@@ -63,7 +63,7 @@ char *msprintf(const char *fmt, ...)
 
 char *mstrcat(char *dest, size_t dlen, const char *src, size_t slen)
 {
-	char *result = (char*)realloc(dest, dlen + slen + 1);
+	char *result = (char *)realloc(dest, dlen + slen + 1);
 	memcpy(result + dlen, src, slen);
 	result[dlen + slen] = 0;
 	return result;
@@ -72,7 +72,7 @@ char *mstrcat(char *dest, size_t dlen, const char *src, size_t slen)
 #ifndef STRDUP_WORKS
 char *strdup(const char *s)
 {
-	char *p = (char*) malloc(strlen(s) + 1);
+	char *p = (char *) malloc(strlen(s) + 1);
 	if (p) strcpy(p, s);
 	return p;
 }

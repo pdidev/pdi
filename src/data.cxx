@@ -55,21 +55,22 @@ err0:
 }
 
 
-PDI_status_t PDI_data_copy(PDI_data_t *to, const PDI_data_t *from){
+PDI_status_t PDI_data_copy(PDI_data_t *to, const PDI_data_t *from)
+{
 	PDI_status_t status = PDI_OK;
-
-	/// Create a temporary copy 
+	
+	/// Create a temporary copy
 	PDI_data_t copy;
 	copy.name = strdup(from->name);
 	copy.kind = from->kind;
 	
 	/// A reference to the data configuration
 	copy.config = from->config;
-
+	
 	/// Copy data content
 	copy.nb_content = from->nb_content;
-	copy.content = (PDI_data_value_t*) malloc(copy.nb_content * sizeof(PDI_data_value_t));
-	for (int ii = 0; ii < copy.nb_content; ii++){
+	copy.content = (PDI_data_value_t *) malloc(copy.nb_content * sizeof(PDI_data_value_t));
+	for (int ii = 0; ii < copy.nb_content; ii++) {
 		from->content[ii].access = copy.content[ii].access;
 		if (copy.content[ii].access & PDI_MM_FREE) {
 			/// For data that own their buffer, allocate a distinct buffer
@@ -83,28 +84,28 @@ PDI_status_t PDI_data_copy(PDI_data_t *to, const PDI_data_t *from){
 			               err2);
 			copy.content[ii].data = newval;
 err2:
-			if(status){
+			if (status) {
 				free(newval);
-				PDI_handle_err(status,err0);
+				PDI_handle_err(status, err0);
 			}
 		} else { /// else share the reference
 			from->content[ii].data = copy.content[ii].data;
 		}
 	}
-
+	
 	// If everything succeed transfert data from 'copy' to the destination 'to'.
 	// Copy the type of the data directly into the 'to'
 	PDI_handle_err(PDI_datatype_copy(&to->type, &from->type), err0);
 	// The other properties
-	to->name       = copy.name;       
-	to->kind       = copy.kind;       
-	to->config     = copy.config;     
-	to->nb_content = copy.nb_content; 
-	to->content    = copy.content;    
-
+	to->name       = copy.name;
+	to->kind       = copy.kind;
+	to->config     = copy.config;
+	to->nb_content = copy.nb_content;
+	to->content    = copy.content;
+	
 	
 	return status;
-
+	
 err0: /// In case of error, the original data 'to' is unchanged/unmodified.
 	return status;
 }

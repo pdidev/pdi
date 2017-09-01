@@ -29,7 +29,7 @@
 * \details Plugins name written in config.yml are read/parse by paraconf: if PDI is build with a plugins having the same name, the plugin is loaded.
 * \author J. Bigot (CEA)
 */
-#ifndef _GNU_SOURCE // TODO: check with JB about it  
+#ifndef _GNU_SOURCE // TODO: check with JB about it
 	#define _GNU_SOURCE
 #endif
 #include <stdio.h>
@@ -75,7 +75,7 @@ PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *wor
 	free(plugin_symbol);
 	
 	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
-	{ 
+	{
 		init_f plugin_ctor = *((init_f *)&plugin_ctor_uncast);
 		PDI_handle_err(plugin_ctor(node, world, plugin), err0);
 	}
@@ -99,32 +99,30 @@ PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *worl
 	plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
 	handle_PC_err(PC_status(plugin_conf), err1);
 	
-	PDI_state.plugins =(PDI_plugin_t*) realloc(PDI_state.plugins, sizeof(PDI_plugin_t) * (PDI_state.nb_plugins + 1));
+	PDI_state.plugins = (PDI_plugin_t *) realloc(PDI_state.plugins, sizeof(PDI_plugin_t) * (PDI_state.nb_plugins + 1));
 	PDI_handle_err(plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[PDI_state.nb_plugins]), err1);
 	++PDI_state.nb_plugins;
 	
 	free(plugin_name);
 	return status;
 	
-err1:
-	{
-	status = PDI_make_err(status,
-	                      "Error while loading plugin `%s': %s",
-	                      plugin_name,
-	                      PDI_errmsg()
-	                     );
-	msg_done = 1;
-	free(plugin_name);
-	}
-err0:
-	{ 
-	if (!msg_done) {
+err1: {
 		status = PDI_make_err(status,
-		                      "Error while loading plugin #%d: %s",
-		                      plugin_id,
+		                      "Error while loading plugin `%s': %s",
+		                      plugin_name,
 		                      PDI_errmsg()
 		                     );
+		msg_done = 1;
+		free(plugin_name);
 	}
+err0: {
+		if (!msg_done) {
+			status = PDI_make_err(status,
+			                      "Error while loading plugin #%d: %s",
+			                      plugin_id,
+			                      PDI_errmsg()
+			                     );
+		}
 	}
 	return status;
 }

@@ -15,7 +15,7 @@ else
 	fi
 fi
 
-for pattern in '*.c' '*.h'
+for pattern in '*.c' '*.cxx' '*.h'
 do
 	this="$orig""$pattern"
 	ls $this > /dev/null 2>&1
@@ -29,6 +29,9 @@ do
 			if [ $pattern == '*.c' ]
 			then
 				copy=$(echo "${file%.c}".orig_c)
+			elif [ $pattern == '*.cxx' ]
+			then
+				copy=$(echo "${file%.cxx}".orig_cxx)
 			else
 				copy=$(echo "${file%.h}".orig_h)
 			fi

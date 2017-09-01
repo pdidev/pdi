@@ -93,9 +93,9 @@ static errctx_t *get_context()
 {
 	pthread_once(&context_key_once, &context_init);
 	
-	errctx_t *context = (errctx_t*) pthread_getspecific(context_key);
+	errctx_t *context = (errctx_t *) pthread_getspecific(context_key);
 	if (!context) {
-		context = (errctx_t*) malloc(sizeof(errctx_t));
+		context = (errctx_t *) malloc(sizeof(errctx_t));
 		context->buffer = NULL;
 		context->buffer_size = 0;
 		context->handler = PDI_ASSERT_HANDLER;
@@ -122,7 +122,7 @@ PDI_status_t PDI_make_err(PDI_status_t status, const char *message, ...)
 	va_end(ap);
 	if (realsize >= get_context()->buffer_size) {
 		get_context()->buffer_size = realsize + 1;
-		get_context()->buffer = (char*) realloc(get_context()->buffer, get_context()->buffer_size);
+		get_context()->buffer = (char *) realloc(get_context()->buffer, get_context()->buffer_size);
 		va_start(ap, message);
 		vsnprintf(get_context()->buffer, get_context()->buffer_size, message, ap);
 		va_end(ap);
