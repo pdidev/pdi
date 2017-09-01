@@ -29,7 +29,7 @@
 
 cmake_minimum_required(VERSION 3.1)
 # enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
-project(pdi LANGUAGES C CXX Fortran)
+project(pdi LANGUAGES CXX C Fortran)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 cmake_policy(VERSION 3.1)

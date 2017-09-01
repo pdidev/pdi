@@ -28,11 +28,10 @@
 #=============================================================================
 
 add_library(user_code MODULE
-	user_code.c
+	user_code.cxx
 )
-set_target_properties(user_code PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
-add_compiler_flags(user_code PRIVATE -Wall -Wextra -std=c99)
+add_compiler_flags(user_code PRIVATE -Wall -Wextra)
 target_link_libraries(user_code pdi)
 
 # library installation

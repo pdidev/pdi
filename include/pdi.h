@@ -32,14 +32,14 @@
 #ifndef PDI_H__
 #define PDI_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <paraconf.h>
 #include <mpi.h>
 
 #include <pdi_export.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /// Error handling \{
 

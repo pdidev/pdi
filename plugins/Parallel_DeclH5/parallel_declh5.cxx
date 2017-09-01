@@ -69,7 +69,7 @@ hdf5pp_var_t *inputs = NULL;
 #ifndef STRDUP_WORKS
 char *strdup(const char *s)
 {
-	char *p = malloc(strlen(s)+1);
+	char *p = (char *) malloc(strlen(s)+1);
 	if ( p ) strcpy(p, s);
 	return p;
 }
@@ -87,7 +87,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 	if ( data->type.kind == PDI_K_SCALAR ){
 		char *tmp = NULL ;
-		var->gstarts = malloc(sizeof(PDI_value_t)); 
+		var->gstarts = (PDI_value_t*) malloc(sizeof(PDI_value_t)); 
 		if( PC_string(PC_get(data->config, ".global_start"), &tmp)){
 			if ( scalar_start ){
 				tmp = strdup(scalar_start);
@@ -100,7 +100,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		status = PDI_value_parse(tmp, &(var->gstarts[0]));
 		free(tmp);
 
-		var->gsizes = malloc(sizeof(PDI_value_t));
+		var->gsizes = (PDI_value_t*) malloc(sizeof(PDI_value_t));
 		if( PC_string(PC_get(data->config, ".global_size"), &tmp)){
 			if ( scalar_size ){
 				tmp = strdup(scalar_size);
@@ -125,7 +125,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		}
 
 		int len; PC_len(treetmp, &len);
-		var->gstarts = malloc(len*sizeof(PDI_value_t)); 
+		var->gstarts = (PDI_value_t*) malloc(len*sizeof(PDI_value_t)); 
 		for ( int ii=0; ii<len; ++ii ) {
 			char *expr = NULL;
 			PC_string(PC_get(treetmp, "[%d]", ii), &expr) ; 
@@ -142,7 +142,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		}
 
 		PC_len(treetmp, &len);
-		var->gsizes  = malloc(len*sizeof(PDI_value_t));
+		var->gsizes  = (PDI_value_t*) malloc(len*sizeof(PDI_value_t));
 		for ( int ii=0; ii<len; ++ii ) {
 			char *expr = NULL;
 			PC_string(PC_get(treetmp, "[%d]", ii), &expr) ; 
@@ -176,7 +176,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		PC_errhandler(errh);
 		return PDI_OK;
 	}
-	*hdf5data = malloc((*nb_hdf5data)*sizeof(hdf5pp_var_t));
+	*hdf5data = (hdf5pp_var_t*) malloc((*nb_hdf5data)*sizeof(hdf5pp_var_t));
 	
 	for ( int ii=0; ii<(*nb_hdf5data); ++ii ) {
 		PC_string(PC_get(conf, "{%d}", ii) , &(*hdf5data)[ii].name);
@@ -358,10 +358,10 @@ PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts
 	PDI_datatype_t *scalart = &data->type;
 	if ( data->type.kind == PDI_K_ARRAY ) {
 		*rank = data->type.c.array->ndims;
-		*sizes = malloc(*rank*sizeof(hsize_t));
-		*subsizes = malloc(*rank*sizeof(hsize_t));
-		*starts = malloc(*rank*sizeof(hsize_t));
-		for ( int ii=0; ii<*rank; ++ii ) {
+		*sizes = (hsize_t*) malloc(*rank*sizeof(hsize_t));
+		*subsizes = (hsize_t*) malloc(*rank*sizeof(hsize_t));
+		*starts = (hsize_t*) malloc(*rank*sizeof(hsize_t));
+		for ( unsigned int ii=0; ii<*rank; ++ii ) {
 			long intdim;
 			
 			PDI_value_int(&data->type.c.array->sizes[ii], &intdim);
@@ -376,9 +376,9 @@ PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts
 		scalart = &data->type.c.array->type;
 	} else { // assuming scalar type 
 		*rank = 1;
-		*sizes = malloc(sizeof(hsize_t));
-		*subsizes = malloc(sizeof(hsize_t));
-		*starts = malloc(sizeof(hsize_t));
+		*sizes = (hsize_t*) malloc(sizeof(hsize_t));
+		*subsizes = (hsize_t*) malloc(sizeof(hsize_t));
+		*starts = (hsize_t*) malloc(sizeof(hsize_t));
 		*sizes[0] = 1;  
 		*subsizes[0] = 1; 
 		*starts[0] =  0;
@@ -389,7 +389,7 @@ PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts
 }
 
 
-PDI_status_t pwrite_to_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *gsizes, hsize_t *gstarts)
+PDI_status_t pwrite_to_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *gstarts, hsize_t *gsizes)
 {
 	hsize_t rank = 0;
 	hsize_t *sizes = NULL;
@@ -446,7 +446,7 @@ PDI_status_t pwrite_to_file(PDI_data_t *data, char *filename, char *pathname, hs
 }
 
 
-int pread_from_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *gsizes, hsize_t *gstarts)
+PDI_status_t pread_from_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *gstarts)
 {
 	PDI_status_t status= PDI_OK;
 	hsize_t rank = 0;
@@ -486,8 +486,8 @@ int pread_from_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *g
 			/// Read content 
 			hid_t plist_id2 = H5Pcreate(H5P_DATASET_XFER);
 			H5Pset_dxpl_mpio(plist_id2, H5FD_MPIO_COLLECTIVE);
-			status = H5Dread( dataset_id, h5type(scalart->c.scalar), memspace, dataspace_id, plist_id2,
-					data->content[data->nb_content-1].data);
+			if( 0 > H5Dread( dataset_id, h5type(scalart->c.scalar), memspace, dataspace_id, plist_id2,
+					data->content[data->nb_content-1].data)) status = PDI_ERR_SYSTEM;
 			
 			H5Sclose(memspace);
 			H5Sclose(dataspace_id);
@@ -510,6 +510,7 @@ int pread_from_file(PDI_data_t *data, char *filename, char *pathname, hsize_t *g
 
 
 typedef enum PDI_order_e {
+	PDI_ORDER_INVALID = -1,
 	PDI_ORDER_C,
 	PDI_ORDER_FORTRAN
 } PDI_order_t;
@@ -520,16 +521,16 @@ PDI_order_t array_order(PC_tree_t node)
 	PDI_order_t order = PDI_ORDER_C;
 	{
 		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-		char *order_str = "c";
-		PC_status_t pc_stat = PC_string(PC_get(node, ".order"), &order_str);
+		char *order_str = strdup("c");
+		PC_string(PC_get(node, ".order"), &order_str);
 		if ((!strcmp(order_str, "c")) || (!strcmp(order_str, "C"))) {
 			order = PDI_ORDER_C;
 		} else if ((!strcmp(order_str, "fortran")) || (!strcmp(order_str, "Fortran"))) {
 			order = PDI_ORDER_FORTRAN;
 		} else {
-			return PDI_ERR_CONFIG;
+			order = PDI_ORDER_INVALID;
 		}
-		if (!pc_stat) free(order_str);
+		free(order_str);
 		PC_errhandler(pc_handler); // aka PC_end_try
 	}
 	return order;
@@ -537,7 +538,7 @@ PDI_order_t array_order(PC_tree_t node)
 
 PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 {
-	int status = PDI_OK;
+	PDI_status_t status = PDI_OK;
 	if ( data->content[data->nb_content-1].access & PDI_OUT ) {
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
@@ -552,10 +553,12 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL;  
 				if ( data->type.kind == PDI_K_ARRAY ) {
-					PDI_order_t order = array_order(data->config);
+					PDI_order_t order; 
+					if( (order = array_order(data->config)) < 0 )
+						return PDI_ERR_CONFIG;
 					int rank = data->type.c.array->ndims;
-					gstarts = malloc(rank*sizeof(hsize_t));
-					gsizes = malloc(rank*sizeof(hsize_t));
+					gstarts = (hsize_t*) malloc(rank*sizeof(hsize_t));
+					gsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 					for ( int jj = 0 ; jj < rank; ++jj){
 						int val = jj;
 						if(order == PDI_ORDER_FORTRAN) val = rank-1-jj ;
@@ -566,8 +569,8 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 						gsizes[jj] = n;
 					}
 				} else { // supposing scalar case 
-					gstarts = malloc(sizeof(hsize_t));
-					gsizes = malloc(sizeof(hsize_t));
+					gstarts = (hsize_t*) malloc(sizeof(hsize_t));
+					gsizes = (hsize_t*) malloc(sizeof(hsize_t));
 					long n=0; PDI_value_int(&outputs[ii].gstarts[0], &n);
 					gstarts[0] = n;
 					
@@ -576,7 +579,7 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 					gsizes[0] = n;
 				}
 
-				if ( select ) pwrite_to_file(data, h5file, h5var, gsizes, gstarts);
+				if ( select ) pwrite_to_file(data, h5file, h5var, gstarts, gsizes);
 				
 				free(h5var);
 				free(h5file);
@@ -600,10 +603,12 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL; 
 				if ( data->type.kind == PDI_K_ARRAY ) {
-					PDI_order_t order = array_order(data->config);
+					PDI_order_t order;
+					if( (order = array_order(data->config)) < 0 )
+						return PDI_ERR_CONFIG;
 					int rank = data->type.c.array->ndims;
-					gstarts = malloc(rank*sizeof(hsize_t));
-					gsizes = malloc(rank*sizeof(hsize_t));
+					gstarts = (hsize_t*) malloc(rank*sizeof(hsize_t));
+					gsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 					for ( int jj = 0 ; jj < rank; ++jj){
 						int val = jj;
 						if(order == PDI_ORDER_FORTRAN) val = rank-1-jj ;
@@ -614,8 +619,8 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 						gsizes[jj] = n;
 					}
 				} else { // supposing scalar case 
-					gstarts = malloc(sizeof(hsize_t));
-					gsizes = malloc(sizeof(hsize_t));
+					gstarts = (hsize_t*) malloc(sizeof(hsize_t));
+					gsizes = (hsize_t*) malloc(sizeof(hsize_t));
 					long n=0; PDI_value_int(&outputs[ii].gstarts[0], &n);
 					gstarts[0] = n;
 					
@@ -624,7 +629,7 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI_data_t *data )
 					gsizes[0] = n;
 				}
 
-				if ( select ) status = pread_from_file(data, h5file, h5var, gsizes, gstarts);
+				if ( select ) status = pread_from_file(data, h5file, h5var, gstarts);
 				
 				free(h5var);
 				free(h5file);

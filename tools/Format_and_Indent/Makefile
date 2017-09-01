@@ -11,7 +11,7 @@ DIR_INC:= "../../include/pdi/"
 DIR_H  := "../../include/"
 
 # Origin src
-PDI_SRC:= $(shell find $(DIR_SRC) -maxdepth 1 -iname '*.c')
+PDI_SRC:= $(shell find $(DIR_SRC) -maxdepth 1 -iname '*.c') $(shell find $(DIR_SRC) -maxdepth 1 -iname '*.cxx')
 PDI_HDR:= $(shell find $(DIR_HDR) -maxdepth 1 -iname '*.h')
 PDI_INC:= $(shell find $(DIR_INC) -maxdepth 1 -iname '*.h')
 PDI_H  := $(shell find $(DIR_H)   -maxdepth 1 -iname '*.h')
@@ -23,7 +23,7 @@ LOC_INC:= "workdir/include/pdi/"
 LOC_H:=   "workdir/include/"
 
 # Local SRC
-BACK_SRC:= $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.c')
+BACK_SRC:= $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.c') $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.cxx')
 BACK_HDR:= $(shell find $(LOC_SRC) -maxdepth 1 -iname '*.h')
 BACK_INC:= $(shell find $(LOC_INC) -maxdepth 1 -iname '*.h')
 BACK_H:=   $(shell find $(LOC_H)   -maxdepth 1 -iname '*.h')
@@ -55,7 +55,8 @@ indent_all: loc_src.loc loc_hdr.loc loc_inc.loc loc_h.loc
 
 loc_src.loc: $(PDI_SRC)
 	@cp $(PDI_SRC) $(LOC_SRC) 
-	@(cd $(LOC_SRC) && $(MAKE) src.loc)
+	@(cd $(LOC_SRC) && $(MAKE) src_c.loc)
+	@(cd $(LOC_SRC) && $(MAKE) src_cxx.loc)
 	@touch loc_src.loc
 
 loc_hdr.loc: $(PDI_HDR)
@@ -109,14 +110,16 @@ replace_h.loc: $(BACK_H)
 
 clean:
 	@rm -fv *.loc 2> /dev/null
-	@rm -fv $(LOC_SRC)/*.loc 2> /dev/null 
-	@rm -fv $(LOC_INC)/*.loc 2> /dev/null
-	@rm -fv $(LOC_H)/*.loc   2> /dev/null # remove lock
-	@rm -fv $(LOC_SRC)/*.*_c 2> /dev/null 
-	@rm -fv $(LOC_HDR)/*.*_h 2> /dev/null
-	@rm -fv $(LOC_INC)/*.*_h 2> /dev/null
-	@rm -fv $(LOC_H)/*.*_h   2> /dev/null # remove copy
-	@rm -fv $(LOC_SRC)/*.c   2> /dev/null 
-	@rm -fv $(LOC_HDR)/*.h   2> /dev/null
-	@rm -fv $(LOC_INC)/*.h   2> /dev/null
-	@rm -fv $(LOC_H)/*.h     2> /dev/null # remove src/header
+	@rm -fv $(LOC_SRC)/*.loc   2> /dev/null 
+	@rm -fv $(LOC_INC)/*.loc   2> /dev/null
+	@rm -fv $(LOC_H)/*.loc     2> /dev/null # remove lock
+	@rm -fv $(LOC_SRC)/*.*_c   2> /dev/null 
+	@rm -fv $(LOC_SRC)/*.*_cxx 2> /dev/null 
+	@rm -fv $(LOC_HDR)/*.*_h   2> /dev/null
+	@rm -fv $(LOC_INC)/*.*_h   2> /dev/null
+	@rm -fv $(LOC_H)/*.*_h     2> /dev/null # remove copy
+	@rm -fv $(LOC_SRC)/*.c     2> /dev/null 
+	@rm -fv $(LOC_SRC)/*.cxx   2> /dev/null 
+	@rm -fv $(LOC_HDR)/*.h     2> /dev/null
+	@rm -fv $(LOC_INC)/*.h     2> /dev/null
+	@rm -fv $(LOC_H)/*.h       2> /dev/null # remove src/header

@@ -31,7 +31,7 @@ set(HDF5_PARALLEL "PAR")
 find_package(HDF5 REQUIRED)
 
 add_library(parallel_declh5 MODULE
-	parallel_declh5.c
+	parallel_declh5.cxx
 )
 
 message("Include path: ${HDF5_SHARED_C_INCLUDE_PATH}")
@@ -40,13 +40,13 @@ message("link: ${HDF5_SHARED_C_LINK_PATH}")
 
 target_link_libraries(parallel_declh5 pdi)
 include_directories(${HDF5_SHARED_C_INCLUDE_PATH})
-set_property(SOURCE parallel_declh5.c APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
+set_property(SOURCE parallel_declh5.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
 set_property(TARGET parallel_declh5   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
 target_link_libraries(parallel_declh5 ${HDF5_SHARED_C_LIBRARIES})
 
 set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
 include(AddCCompilerFlags)
-add_compiler_flags(parallel_declh5 PRIVATE -Wall -Wextra -std=c99)
+add_compiler_flags(parallel_declh5 PRIVATE -Wall -Wextra)
 
 
 # library installation
