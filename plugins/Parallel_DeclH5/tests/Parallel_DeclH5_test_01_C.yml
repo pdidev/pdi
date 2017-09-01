@@ -1,0 +1,49 @@
+
+
+pdi:
+  metadata:
+    input: int
+    ni: int
+    nj: int
+    nig: int
+    njg: int
+    nit: int
+    njt: int
+    istart: int
+    jstart: int
+    rank: int
+    nproc: int
+  data: # values that can not be referenced using $syntax
+    reals: 
+      type: double
+      sizes: [$nj +2*$njg , $ni+2*$nig]
+      subsizes: [$nj , $ni]
+      starts: [$njg, $nig]
+      global_sizes: [$njt, $nit]
+      global_starts: [$jstart, $istart]
+
+    values: 
+      type: int
+      sizes: [$nj +2*$njg , $ni+2*$nig]
+      subsizes: [$nj , $ni]
+      starts: [$njg, $nig]
+      global_sizes: [$njt, $nit]
+      global_starts: [$jstart, $istart]
+
+  plugins:
+    parallel_declh5:
+      defaults:
+        outputs:
+          select: $input=0
+          file: test_01_C_one_file.h5
+        inputs:
+          select: $input=1
+          file: test_01_C_one_file.h5
+
+      outputs:
+        reals:
+        values:
+      inputs:
+        reals:
+        values:
+  
