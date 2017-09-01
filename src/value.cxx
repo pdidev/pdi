@@ -119,7 +119,8 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	if (*ref != '$') PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected '$', got %c", *ref), err0);
 	++ref;
 	
-	int has_curly_brace = 0;
+	int has_curly_brace;
+	has_curly_brace = 0;
 	if (*ref == '{') {
 		++ref;
 		has_curly_brace = 1;
@@ -146,7 +147,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 		++ref;
 		while (isspace(*ref)) ++ref;
 		++(value->nb_idx);
-		value->idx = realloc(value->idx, value->nb_idx * sizeof(PDI_value_t));
+		value->idx = (PDI_value_t *)realloc(value->idx, value->nb_idx * sizeof(PDI_value_t));
 		PDI_handle_err(parse_intval(&ref, &value->idx[value->nb_idx - 1], 1), err0);
 		if (*ref != ']')  {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected ']', found %c", *ref), err0);
@@ -203,7 +204,7 @@ PDI_status_t parse_term(char const **val_str, PDI_value_t *value)
 		while (isspace(*term)) ++term;
 	} else {
 		PDI_errhandler(errh);
-		value->c.refval = malloc(sizeof(PDI_refval_t));
+		value->c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
 		value->kind = PDI_VAL_REF;
 		PDI_handle_err(parse_ref(&term, value->c.refval), err1);
 		PDI_errhandler(errh);
@@ -236,21 +237,22 @@ int op_level(PDI_exprop_t op)
 PDI_status_t parse_op(char const **val_str, int level, PDI_exprop_t *value)
 {
 	PDI_status_t status = PDI_OK;
-	const char *op = *val_str;
+	const char *c_op = *val_str;
+	PDI_exprop_t op = (PDI_exprop_t)(*c_op);
 	
-	int found_level = op_level(*op);
+	int found_level = op_level(op);
 	if (found_level == 0) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected operator, found '%c'", *op), err0);
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected operator, found '%c'", *c_op), err0);
 	}
 	if (found_level != level) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Mixing operator priority"), err0);
 	}
-	*value = *op;
-	++op;
+	*value = op;
+	++c_op;
 	
-	while (isspace(*op)) ++op;
+	while (isspace(*c_op)) ++c_op;
 	
-	*val_str = op;
+	*val_str = c_op;
 err0:
 	return status;
 }
@@ -260,30 +262,34 @@ PDI_status_t parse_intval(char const **val_str, PDI_value_t *value, int level)
 	PDI_status_t status = PDI_OK;
 	const char *exprval = *val_str;
 	
-	if (level >= OP_LEVELS) {
-		PDI_handle_err(parse_term(&exprval, value), err0);
-	} else {
-		PDI_handle_err(parse_intval(&exprval, value, level + 1), err0);
+	{
+		if (level >= OP_LEVELS) {
+			PDI_handle_err(parse_term(&exprval, value), err0);
+		} else {
+			PDI_handle_err(parse_intval(&exprval, value, level + 1), err0);
+		}
 	}
-	PDI_exprval_t *expr = NULL;
+	PDI_exprval_t *expr;
+	expr = NULL;
 	PDI_exprop_t op;
 	
-	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
+	PDI_errhandler_t errh;
+	errh = PDI_errhandler(PDI_NULL_HANDLER);
 	while (!parse_op(&exprval, level, &op)) {
 		PDI_errhandler(errh);
 		if (!expr) {
-			expr = malloc(sizeof(PDI_exprval_t));
+			expr = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
 			expr->nb_value = 1;
-			expr->values = malloc(sizeof(PDI_value_t));
+			expr->values = (PDI_value_t *) malloc(sizeof(PDI_value_t));
 			expr->ops = NULL;
 			expr->values[0] = *value;
 			value->kind = PDI_VAL_EXPR;
 			value->c.exprval = expr;
 		}
 		++expr->nb_value;
-		expr->ops = realloc(expr->ops, (expr->nb_value - 1) * sizeof(PDI_exprop_t));
+		expr->ops = (PDI_exprop_t *)realloc(expr->ops, (expr->nb_value - 1) * sizeof(PDI_exprop_t));
 		expr->ops[expr->nb_value - 2] = op;
-		expr->values = realloc(expr->values, expr->nb_value * sizeof(PDI_value_t));
+		expr->values = (PDI_value_t *) realloc(expr->values, expr->nb_value * sizeof(PDI_value_t));
 		
 		if (level >= OP_LEVELS) {
 			PDI_handle_err(parse_term(&exprval, &expr->values[expr->nb_value - 1]), err1);
@@ -312,9 +318,9 @@ PDI_status_t parse_strval(char const **val_str, PDI_value_t *value)
 	const char *str = *val_str;
 	
 	value->kind = PDI_VAL_STR;
-	value->c.strval = malloc(sizeof(PDI_strval_t));
+	value->c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
 	size_t str_size = 0;
-	value->c.strval->str = malloc(str_size + 1);
+	value->c.strval->str = (char *) malloc(str_size + 1);
 	value->c.strval->str[str_size] = 0;
 	value->c.strval->nb_values = 0;
 	value->c.strval->values = NULL;
@@ -335,11 +341,11 @@ PDI_status_t parse_strval(char const **val_str, PDI_value_t *value)
 		} break;
 		case '$': {
 			++value->c.strval->nb_values;
-			value->c.strval->values = realloc(
+			value->c.strval->values = (PDI_value_t *) realloc(
 			                              value->c.strval->values,
 			                              value->c.strval->nb_values * sizeof(PDI_value_t)
 			                          );
-			value->c.strval->value_pos = realloc(
+			value->c.strval->value_pos = (int *) realloc(
 			                                 value->c.strval->value_pos,
 			                                 value->c.strval->nb_values * sizeof(int)
 			                             );
@@ -393,8 +399,8 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid access to a struct"), err0);
 	}
 	
-	long idx = 0;
-	long stride = 1;
+	long idx; idx = 0;
+	long stride; stride = 1;
 	for (int ii = 0; ii < val->nb_idx; ++ii) {
 		long start; PDI_handle_err(PDI_value_int(&val->ref->type.c.array->starts[ii], &start), err0);
 		long index; PDI_handle_err(PDI_value_int(&val->idx[ii], &index), err0);
@@ -404,7 +410,7 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	}
 	
 	if (val->ref->nb_content < 1) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->ref->name), err0);
-	void *value = val->ref->content[0].data;
+	void *value; value = val->ref->content[0].data;
 	
 	switch (type) {
 	case PDI_T_INT8: {
@@ -492,14 +498,14 @@ PDI_status_t eval_strval(PDI_strval_t *val, char **res)
 	char *build_str = NULL;
 	for (int ii = 0; ii < val->nb_values; ++ii) {
 		size_t blk_sz = val->value_pos[ii] - from_idx;
-		build_str = realloc(build_str, res_idx + blk_sz + 1);
+		build_str = (char *) realloc(build_str, res_idx + blk_sz + 1);
 		memcpy(build_str + res_idx, val->str + from_idx, blk_sz);
 		from_idx += blk_sz;
 		res_idx += blk_sz;
 		
 		char *val_str; PDI_handle_err(PDI_value_str(&val->values[ii], &val_str), err1);
 		blk_sz = strlen(val_str);
-		build_str = realloc(build_str, res_idx + blk_sz + 1);
+		build_str = (char *) realloc(build_str, res_idx + blk_sz + 1);
 		memcpy(build_str + res_idx, val_str, blk_sz);
 		res_idx += blk_sz;
 err1:
@@ -507,8 +513,8 @@ err1:
 		PDI_handle_err(status, err0);
 	}
 	
-	size_t blk_sz = strlen(val->str + from_idx);
-	build_str = realloc(build_str, res_idx + blk_sz + 1);
+	size_t blk_sz; blk_sz = strlen(val->str + from_idx);
+	build_str = (char *) realloc(build_str, res_idx + blk_sz + 1);
 	memcpy(build_str + res_idx, val->str + from_idx, blk_sz);
 	from_idx += blk_sz;
 	res_idx += blk_sz;
@@ -528,12 +534,12 @@ PDI_status_t strval_copy(PDI_strval_t *value, PDI_strval_t *copy)
 {
 	copy->str = strdup(value->str);
 	
-	copy->value_pos = malloc(sizeof(int));
+	copy->value_pos = (int *) malloc(sizeof(int));
 	copy->value_pos = value->value_pos;
 	
 	int nb_values = value->nb_values;
 	copy->nb_values = nb_values;
-	copy->values = malloc(nb_values * sizeof(PDI_value_t));
+	copy->values = (PDI_value_t *) malloc(nb_values * sizeof(PDI_value_t));
 	for (int ii = 0; ii < value->nb_values; ii++) {
 		PDI_value_copy(&value->values[ii], &(copy->values[ii]));
 	}
@@ -546,12 +552,12 @@ PDI_status_t exprval_copy(PDI_exprval_t *value, PDI_exprval_t *copy)
 
 	int nb_value = value->nb_value;
 	copy->nb_value = nb_value;
-	copy->values = malloc(nb_value * sizeof(PDI_value_t));
+	copy->values = (PDI_value_t *) malloc(nb_value * sizeof(PDI_value_t));
 	for (int ii = 0; ii < nb_value; ii++) {
 		PDI_value_copy(&value->values[ii], &(copy->values[ii]));
 	}
 	
-	copy->ops = malloc((nb_value - 1) * sizeof(PDI_exprop_t));
+	copy->ops = (PDI_exprop_t *) malloc((nb_value - 1) * sizeof(PDI_exprop_t));
 	for (int ii = 0; ii < nb_value - 1; ii++) {
 		copy->ops[ii] = value->ops[ii];
 	}
@@ -567,7 +573,7 @@ PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
 	
 	int nb_idx = value->nb_idx;
 	copy->nb_idx = nb_idx;
-	copy->idx = malloc(nb_idx * sizeof(PDI_value_t));
+	copy->idx = (PDI_value_t *) malloc(nb_idx * sizeof(PDI_value_t));
 	for (int ii = 0; ii < nb_idx; ii++) {
 		PDI_value_copy(&value->idx[ii], &(copy->idx[ii]));
 	}
@@ -713,7 +719,7 @@ err0:
 
 PDI_status_t PDI_value_copy(const PDI_value_t *value, PDI_value_t *copy)
 {
-	int status = PDI_OK;
+	PDI_status_t status = PDI_OK;
 	copy->kind = value->kind;
 	switch (value->kind) {
 	
@@ -722,17 +728,17 @@ PDI_status_t PDI_value_copy(const PDI_value_t *value, PDI_value_t *copy)
 		break;
 		
 	case PDI_VAL_REF:
-		copy->c.refval = malloc(sizeof(PDI_refval_t));
+		copy->c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
 		status = refval_copy(value->c.refval, copy->c.refval);
 		break;
 		
 	case PDI_VAL_EXPR:
-		copy->c.exprval = malloc(sizeof(PDI_exprval_t));
+		copy->c.exprval = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
 		status = exprval_copy(value->c.exprval, copy->c.exprval);
 		break;
 		
 	case PDI_VAL_STR:
-		copy->c.strval = malloc(sizeof(PDI_strval_t));
+		copy->c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
 		status = strval_copy(value->c.strval, copy->c.strval);
 		break;
 		

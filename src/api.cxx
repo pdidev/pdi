@@ -65,7 +65,7 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 	PDI_handle_err(load_conf(conf), err0);
 	
 	int nb_plugins; handle_PC_err(PC_len(PC_get(conf, ".plugins"), &nb_plugins), err0);
-	PDI_state.plugins = malloc(nb_plugins * sizeof(PDI_plugin_t));
+	PDI_state.plugins = new PDI_plugin_t[nb_plugins];
 	
 	for (int ii = 0; ii < nb_plugins; ++ii) {
 		PDI_state.PDI_comm = *world;
@@ -135,7 +135,7 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 	*buffer = NULL;
 	if (data) {
 		if (data->nb_content > 0) {
-			PDI_inout_t access = data->content[data->nb_content - 1].access;
+			PDI_inout_t access = (PDI_inout_t) data->content[data->nb_content - 1].access;
 			switch (inout) {
 			case PDI_OUT:
 				if (access & PDI_OUT) {
@@ -173,7 +173,7 @@ PDI_status_t PDI_share(const char *name, void *data_dat, PDI_inout_t access)
 		
 		// insert the new value
 		++data->nb_content;
-		data->content = realloc(data->content, data->nb_content * sizeof(PDI_data_value_t));
+		data->content = (PDI_data_value_t *)realloc(data->content, data->nb_content * sizeof(PDI_data_value_t));
 		data->content[data->nb_content - 1].data = data_dat;
 		
 		if (access & PDI_OUT) {
@@ -279,7 +279,7 @@ static void add_to_transaction(const char *name)
 	PDI_data_t *data = PDI_find_data(name);
 	if (data) {
 		++PDI_state.nb_transaction_data;
-		PDI_state.transaction_data = realloc(
+		PDI_state.transaction_data = (PDI_data_t **)realloc(
 		                                 PDI_state.transaction_data,
 		                                 PDI_state.nb_transaction_data * sizeof(PDI_data_t *));
 		PDI_state.transaction_data[PDI_state.nb_transaction_data - 1] = data;
@@ -311,7 +311,7 @@ PDI_status_t PDI_exchange(const char *name, void *data)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_handle_err(PDI_share(name, data, PDI_IN | PDI_OUT), err0);
+	PDI_handle_err(PDI_share(name, data, (PDI_inout_t)(PDI_IN | PDI_OUT)), err0);
 	
 	if (PDI_state.transaction) {   // defer the reclaim
 		add_to_transaction(name);

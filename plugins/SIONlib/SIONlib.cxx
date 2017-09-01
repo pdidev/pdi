@@ -83,7 +83,7 @@ static SIONlib_event_t *input_events = NULL;
 #ifndef STRDUP_WORKS
 static char *strdup(const char *s)
 {
-  char *p = malloc(strlen(s)+1);
+  char *p = (char*) malloc(strlen(s)+1);
   if ( p ) strcpy(p, s);
   return p;
 }
@@ -166,7 +166,7 @@ static PDI_status_t parse_vars(PC_tree_t conf, SIONlib_var_t *vars[], size_t *n_
           return PDI_OK;
   }
   // conf tree contains both vars and events, so len >= *n_vars
-  *vars = calloc(sizeof(SIONlib_var_t), len);
+  *vars = (SIONlib_var_t*) calloc(sizeof(SIONlib_var_t), len);
   if (!vars) return PDI_ERR_SYSTEM;
 
   *n_vars = 0;
@@ -195,7 +195,7 @@ static PDI_status_t parse_event_vars(PC_tree_t conf, const char *event_name, siz
     return PDI_ERR_CONFIG;
   }
 
-  *vars = calloc(sizeof(char *), len);
+  *vars = (char**) calloc(sizeof(char *), len);
   if (!*vars) return PDI_ERR_SYSTEM;
 
   for (int i = 0; i < len; ++i) {
@@ -280,7 +280,7 @@ static PDI_status_t parse_events(PC_tree_t conf, SIONlib_event_t *events[], size
     *events = NULL;
     return PDI_OK;
   }
-  *events = calloc(sizeof(SIONlib_event_t), len);
+  *events = (SIONlib_event_t*) calloc(sizeof(SIONlib_event_t), len);
   if (!events) return PDI_ERR_SYSTEM;
 
   *n_events = 0;
@@ -314,11 +314,11 @@ PDI_status_t PDI_SIONlib_init(PC_tree_t conf, MPI_Comm* world)
 
   PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 
-  PC_tree_t outputs_cfg = PC_get(conf, ".outputs");
+  PC_tree_t outputs_cfg; outputs_cfg = PC_get(conf, ".outputs");
   PDI_status_t status = parse_vars(outputs_cfg, &output_vars, &n_output_vars);
   if (status) goto err0;
 
-  PC_tree_t inputs_cfg = PC_get(conf, ".inputs");
+  PC_tree_t inputs_cfg; inputs_cfg = PC_get(conf, ".inputs");
   status = parse_vars(inputs_cfg, &input_vars, &n_input_vars);
   if (status) goto err0;
 
@@ -532,7 +532,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
         // Collision (size of name does not match), this is not the data you are looking for.
         continue;
 
-      char *name_from_file = malloc(name_size + 1);
+      char *name_from_file = (char*) malloc(name_size + 1);
       if (NULL == name_from_file) {
         sion_parclose_mpi(sid);
         free(file);

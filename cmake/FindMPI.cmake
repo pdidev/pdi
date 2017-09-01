@@ -49,7 +49,7 @@
 # MPI program.
 
 #=============================================================================
-# Copyright 2013 CEA, Julien Bigot <julien.bigot@cea.fr>
+# Copyright 2013-2017 CEA, Julien Bigot <julien.bigot@cea.fr>
 # Copyright 2001-2011 Kitware, Inc.
 # Copyright 2010-2011 Todd Gamblin tgamblin@llnl.gov
 # Copyright 2001-2009 Dave Partyka
@@ -613,6 +613,19 @@ set_target_properties(mpi PROPERTIES
   INTERFACE_LINK_LIBRARIES      "${_MPI_C_LIBRARIES_OTHER};${MPI_C_LINK_FLAGS}"
 )
 
+# Create imported target variables
+list(GET MPI_CXX_LIBRARIES 0 _MPI_CXX_LIBRARY)
+set(_MPI_CXX_LIBRARIES_OTHER "${MPI_CXX_LIBRARIES}")
+list(REMOVE_AT _MPI_CXX_LIBRARIES_OTHER 0)
+
+# Create imported target
+add_library(mpi_cxx UNKNOWN IMPORTED)
+set_target_properties(mpi_cxx PROPERTIES
+  IMPORTED_LOCATION             "${_MPI_CXX_LIBRARY}"
+  INTERFACE_COMPILE_OPTIONS     "${_MPI_CXX_COMPILE_OPTIONS}"
+  INTERFACE_INCLUDE_DIRECTORIES "${MPI_CXX_INCLUDE_PATH}"
+  INTERFACE_LINK_LIBRARIES      "mpi;${_MPI_CXX_LIBRARIES_OTHER};${MPI_CXX_LINK_FLAGS}"
+)
 # Create imported target variables for Fortran
 list(GET MPI_Fortran_LIBRARIES 0 _MPI_Fortran_LIBRARY)
 set(_MPI_Fortran_LIBRARIES_OTHER "${MPI_Fortran_LIBRARIES}")
@@ -622,8 +635,8 @@ list(REMOVE_AT _MPI_Fortran_LIBRARIES_OTHER 0)
 add_library(mpi_f90 UNKNOWN IMPORTED)
 set_target_properties(mpi_f90 PROPERTIES
   IMPORTED_LOCATION             "${_MPI_Fortran_LIBRARY}"
-  INTERFACE_COMPILE_OPTIONS     "${_MPI_Fortran_COMPILE_OPTIONS};${_MPI_Fortran_COMPILE_OPTIONS}"
-  INTERFACE_INCLUDE_DIRECTORIES "${MPI_Fortran_INCLUDE_PATH};${MPI_Fortran_INCLUDE_PATH}"
+  INTERFACE_COMPILE_OPTIONS     "${_MPI_Fortran_COMPILE_OPTIONS}"
+  INTERFACE_INCLUDE_DIRECTORIES "${MPI_Fortran_INCLUDE_PATH}"
   INTERFACE_LINK_LIBRARIES      "mpi;${_MPI_Fortran_LIBRARIES_OTHER};${MPI_Fortran_LINK_FLAGS}"
 )
 

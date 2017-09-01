@@ -46,7 +46,7 @@ typedef enum { NO_EVENT=0, RECOVER, SNAPSHOT, CHECKPOINT, RESTART_STATUS } PDI_F
 
 int nb_protected = 0;
 
-protected_data_t *protected = NULL;
+protected_data_t *fti_protected = NULL;
 
 int nb_snapshot_events = 0;
 
@@ -73,24 +73,24 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	char *fti_file; PC_string(PC_get(conf, ".config_file"), &fti_file);
 	
 	nb_protected = 0;
-	protected = NULL;
+	fti_protected = NULL;
 	PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
 	for ( int ii=0; ii<PDI_state.nb_data; ++ii ) {
 		PDI_data_t *data = &PDI_state.data[ii];
 		long fti_id;
 		if ( !PC_int(PC_get(data->config, ".fti_id"),&fti_id) ) {
 			++nb_protected;
-			protected = realloc(protected, nb_protected*sizeof(protected_data_t));
-			protected[nb_protected-1].data = data;
-			protected[nb_protected-1].fti_id = fti_id;
+			fti_protected = (protected_data_t*) realloc(fti_protected, nb_protected*sizeof(protected_data_t));
+			fti_protected[nb_protected-1].data = data;
+			fti_protected[nb_protected-1].fti_id = fti_id;
 		}
 	}
 	
 	nb_snapshot_events = 1; // listing event name that trigger FTI snapshot 
-	snapshot_events = malloc(sizeof(char*));
+	snapshot_events = (char**) malloc(sizeof(char*));
 	if ( !PC_string(PC_get(conf, ".snapshot_on"), snapshot_events) ) {
 	} else if ( ! PC_len(PC_get(conf, ".snapshot_on"), &nb_snapshot_events) ) {
-		snapshot_events = realloc(snapshot_events, nb_snapshot_events * sizeof(char*));
+		snapshot_events = (char**) realloc(snapshot_events, nb_snapshot_events * sizeof(char*));
 		for ( int ii=0; ii<nb_snapshot_events; ++ii ) {
 			PC_string(PC_get(conf, ".snapshot_on[%d]", ii), &snapshot_events[ii]);
 		}
@@ -101,10 +101,10 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	}
 
 	nb_recover_events = 1;
-	recover_events = malloc(sizeof(char*));
+	recover_events = (char**) malloc(sizeof(char*));
 	if ( !PC_string(PC_get(conf, ".recover_on"), recover_events) ) {
 	} else if ( ! PC_len(PC_get(conf, ".recover_on"), &nb_recover_events) ) {
-		recover_events = realloc(recover_events, nb_recover_events * sizeof(char*));
+		recover_events = (char**) realloc(recover_events, nb_recover_events * sizeof(char*));
 		for ( int ii=0; ii<nb_recover_events; ++ii ) {
 			PC_string(PC_get(conf, ".recover_on[%d]", ii), &recover_events[ii]);
 		}
@@ -115,10 +115,10 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	}
 
 	nb_restart_status_events = 1;
-	restart_status_events = malloc(sizeof(char*));
+	restart_status_events = (char**) malloc(sizeof(char*));
 	if ( !PC_string(PC_get(conf, ".datastart.restart_status"), restart_status_events) ) {
 	} else if ( ! PC_len(PC_get(conf, ".datastart.restart_status"), &nb_restart_status_events) ) {
-		restart_status_events = realloc(restart_status_events, nb_restart_status_events * sizeof(char*));
+		restart_status_events = (char**) realloc(restart_status_events, nb_restart_status_events * sizeof(char*));
 		for ( int ii=0; ii<nb_restart_status_events; ++ii ) {
 			PC_string(PC_get(conf, ".datastart.restart_status[%d]", ii), &restart_status_events[ii]);
 		}
@@ -129,10 +129,10 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	}
 
 	nb_checkpoint_events = 1; // listing event name that trigger FTI checkpoint 
-	checkpoint_events = malloc(sizeof(char*));
+	checkpoint_events = (char**) malloc(sizeof(char*));
 	if ( !PC_string(PC_get(conf, ".checkpoint_on"), checkpoint_events) ) {
 	} else if ( ! PC_len(PC_get(conf, ".checkpoint_on"), &nb_checkpoint_events) ) {
-		checkpoint_events = realloc(checkpoint_events, nb_checkpoint_events * sizeof(char*));
+		checkpoint_events = (char**) realloc(checkpoint_events, nb_checkpoint_events * sizeof(char*));
 		for ( int ii=0; ii<nb_checkpoint_events; ++ii ) {
 			PC_string(PC_get(conf, ".checkpoint_on[%d]", ii), &checkpoint_events[ii]);
 		}
@@ -162,7 +162,7 @@ PDI_status_t PDI_fti_plugin_finalize()
 	free(restart_status_events);
 	for ( int ii=0; ii<nb_checkpoint_events; ++ii ) free(checkpoint_events[ii]);
 	free(checkpoint_events);
-	free(protected);
+	free(fti_protected);
 	FTI_Finalize();
 	return PDI_OK;
 }
@@ -198,18 +198,18 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 			direction = PDI_OUT;
 		}
 		for ( int ii = 0; ii<nb_protected; ++ii ) {
-			PDI_data_t *data = protected[ii].data;
+			PDI_data_t *data = fti_protected[ii].data;
 			if ( data->nb_content
 					&& (data->content[data->nb_content-1].access & direction) ) {
-				size_t size; PDI_datatype_datasize(&protected[ii].data->type, &size);
+				size_t size; PDI_datatype_datasize(&fti_protected[ii].data->type, &size);
 				//TODO: handle non-contiguous data correctly
-				FTI_Protect(protected[ii].fti_id,
+				FTI_Protect(fti_protected[ii].fti_id,
 						data->content[data->nb_content-1].data, size, FTI_CHAR);
 			} else {
-				FTI_Protect(protected[ii].fti_id, NULL, 0, FTI_CHAR);
+				FTI_Protect(fti_protected[ii].fti_id, NULL, 0, FTI_CHAR);
 				fprintf(stderr,
 						"** Warning: [PDI/FTI] Protected variable %s unavailable\n",
-						protected[ii].data->name);
+						fti_protected[ii].data->name);
 			}
 		}
 		switch ( event ) {
