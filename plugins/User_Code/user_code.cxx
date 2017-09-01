@@ -233,18 +233,21 @@ PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
 	}
 	that->fct.name = str;
 
-	node = ".events";
+	node = strdup(".events");
 	if (set_str_from_node(tmptree, node, &that->events, &that->nb_events)) {
 		UC_warn("node '%s' not found\n", node);
 	}
+	free(node);
 
-	node = ".datastarts";
+	node = strdup(".datastarts");
 	if (set_str_from_node(tmptree, node, &that->datastarts, &that->nb_datastarts))
 		UC_warn("node '%s' not found\n", node);
+	free(node);
 
-	node = ".dataends";
+	node = strdup(".dataends");
 	if (set_str_from_node(tmptree, node, &that->dataends, &that->nb_dataends))
 		UC_warn("node '%s' not found\n", node);
+	free(node);
 
 	return PDI_OK;
 }

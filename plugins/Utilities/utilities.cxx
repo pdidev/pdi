@@ -119,7 +119,8 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 	PC_errhandler(errh);
 
 	// fill the utils_task_t data structure with corresponding values from conf file
-	char *str, *one="1";
+	char *str, *one;
+	one=strdup("1");
 	const long zero = 0;
 	for ( int ii=0; ii<=nb_tasks-1; ++ii){
 		// Get the next node
@@ -205,6 +206,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		free(str);
 		
 	}
+	free(one);
 	
 	return PDI_OK;
 }
