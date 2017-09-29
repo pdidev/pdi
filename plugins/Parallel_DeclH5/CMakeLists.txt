@@ -26,34 +26,36 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
-set(HDF5_PARALLEL "PAR")
-
-find_package(HDF5 REQUIRED)
 
 add_library(parallel_declh5 MODULE
 	parallel_declh5.cxx
 )
+target_link_libraries(parallel_declh5 PUBLIC pdi)
 
-message("Include path: ${HDF5_SHARED_C_INCLUDE_PATH}")
-message("flags: ${HDF5_SHARED_C_COMPILE_PATH}")
-message("link: ${HDF5_SHARED_C_LINK_PATH}")
+# HDF5
+set(HDF5_USE_STATIC_LIBRARIES OFF)
+set(HDF5_PREFER_PARALLEL TRUE)
+find_package(HDF5 REQUIRED C HL)
+if(NOT "${HDF5_IS_PARALLEL}")
+	message(FATAL_ERROR "Parallel HDF5 required, only Sequential HDF5 found")
+endif()
+target_link_libraries(parallel_declh5 PUBLIC ${HDF5_C_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
+target_include_directories(parallel_declh5 PRIVATE ${HDF5_INCLUDE_DIRS})
+target_compile_definitions(parallel_declh5 PRIVATE ${HDF5_DEFINITIONS})
 
-target_link_libraries(parallel_declh5 pdi)
-include_directories(${HDF5_SHARED_C_INCLUDE_PATH})
-set_property(SOURCE parallel_declh5.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
-set_property(TARGET parallel_declh5   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
-target_link_libraries(parallel_declh5 ${HDF5_SHARED_C_LIBRARIES})
+# OMP
+find_package(OMP)
+set_target_properties(parallel_declh5 PROPERTIES COMPILE_FLAGS " ${OMP_C_COMPILE_FLAGS}")
 
-set_target_properties(pdi PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
+# Warnings
 include(AddCCompilerFlags)
 add_compiler_flags(parallel_declh5 PRIVATE -Wall -Wextra)
 
-
 # library installation
-
 install(TARGETS parallel_declh5 EXPORT parallel_declh5Targets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )
 
+# Tests
 add_subdirectory(tests/)

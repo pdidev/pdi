@@ -1,393 +1,247 @@
-# - Find HDF5, a library for reading and writing self describing array data.
+# FindHDF5
+# --------
 #
-# === Variables ===
+# Find HDF5, a library for reading and writing self describing array data.
 #
-# This module accepts the following optional variable:
-#   HDF5_PARALLEL                     can be one of
-#                                     * "PAR": looks for the parallel version
-#                                     * "SEQ": looks for the sequential version
-#                                     * "ANY" or "": prefer the sequential
-#                                       version but fallback on the parallel
-#                                       version if not found
 #
-# This module will set the following variables per language in your project,
-# where <lang> is one of C, CXX, or Fortran:
-#   HDF5_<lang>_COMPILER              HDF5 Compiler wrapper for <lang>
-#   HDF5_<lang>_COMPILE_FLAGS         Compilation flags for HDF5 programs
-#   HDF5_<lang>_INCLUDE_PATH          Include path(s) for HDF5 header
-#   HDF5_<lang>_LINK_FLAGS            Linking flags for HDF5 programs
-#   HDF5_<lang>_LIBRARIES             All libraries to link HDF5 programs
-#                                     against
-#   HDF5_SHARED_<lang>_COMPILE_FLAGS  Compilation flags for HDF5 programs
-#   HDF5_SHARED_<lang>_INCLUDE_PATH   Include path(s) for HDF5 header
-#   HDF5_SHARED_<lang>_LINK_FLAGS     Linking flags for HDF5 programs
-#   HDF5_SHARED_<lang>_LIBRARIES      All libraries to link HDF5 programs
-#                                     against
-# Additionally, FindHDF5 sets the following variables:
-#   HDF5_FOUND                        TRUE if FindHDF5 found HDF5 flags for
-#                                     all enabled languages
-#   H5DIFF                            the path to the HDF5 dataset comparison
-#                                     tool
 #
-# === Usage ===
+# The module will optionally accept the COMPONENTS argument.  If no
+# COMPONENTS are specified, then the find module will default to finding
+# only the HDF5 C library.  If one or more COMPONENTS are specified, the
+# module will attempt to find the language bindings for the specified
+# components.  The only valid components are C, CXX, Fortran, HL, and
+# Fortran_HL.  If the COMPONENTS argument is not given, the module will
+# attempt to find only the C bindings.
 #
-# To use this module, simply call FindHDF5 from a CMakeLists.txt file, or
-# run find_package(HDF5), then run CMake.  If you are happy with the auto-
-# detected configuration for your language, then you're done.  If not, you
-# have two options:
-#   1. Set HDF5_<lang>_COMPILER to the HDF5 wrapper (hdf5cc, etc.) of your
-#      choice and reconfigure.  FindHDF5 will attempt to determine all the
-#      necessary variables using THAT compiler's compile and link flags.
-#   2. If this fails, or if your HDF5 implementation does not come with
-#      a compiler wrapper, then set both HDF5_<lang>_LIBRARIES and
-#      HDF5_<lang>_INCLUDE_PATH.  You may also set any other variables
-#      listed above, but these two are required.  This will circumvent
-#      autodetection entirely.
-# When configuration is successful, HDF5_<lang>_COMPILER will be set to the
-# compiler wrapper for <lang>, if it was found.  HDF5_<lang>_FOUND and other
-# variables above will be set if any HDF5 implementation was found for <lang>,
-# regardless of whether a compiler was found.
+# On UNIX systems, this module will read the variable
+# HDF5_USE_STATIC_LIBRARIES to determine whether or not to prefer a
+# static link to a dynamic link for HDF5 and all of it's dependencies.
+# To use this feature, make sure that the HDF5_USE_STATIC_LIBRARIES
+# variable is set before the call to find_package.
+#
+# The serial version of HDF5 is preferentially selected. This behavior
+# can be reversed by setting the variable HDF5_PREFER_PARALLEL to true.
+#
+# In addition to finding the includes and libraries required to compile
+# an HDF5 client application, this module also makes an effort to find
+# tools that come with the HDF5 distribution that may be useful for
+# regression testing.
+#
+# This module will define the following variables:
+#
+# ::
+#
+#   HDF5_FOUND - true if HDF5 was found on the system
+#   HDF5_VERSION - HDF5 version in format Major.Minor.Release
+#   HDF5_INCLUDE_DIRS - Location of the hdf5 includes
+#   HDF5_INCLUDE_DIR - Location of the hdf5 includes (deprecated)
+#   HDF5_DEFINITIONS - Required compiler definitions for HDF5
+#   HDF5_LIBRARIES - Required libraries for all requested bindings
+#   HDF5_HL_LIBRARIES - Required libraries for the HDF5 high level API for all
+#                       bindings, if the HL component is enabled
+#
+# Available components are: C CXX Fortran and HL.  For each enabled language
+# binding, a corresponding HDF5_${LANG}_LIBRARIES variable will be defined.
+# If the HL component is enabled, then an HDF5_${LANG}_HL_LIBRARIES will
+# also be defined.  With all components enabled, the following variables will be defined:
+#
+# ::
+#
+#   HDF5_C_LIBRARIES - Required libraries for the HDF5 C bindings
+#   HDF5_CXX_LIBRARIES - Required libraries for the HDF5 C++ bindings
+#   HDF5_Fortran_LIBRARIES - Required libraries for the HDF5 Fortran bindings
+#   HDF5_C_HL_LIBRARIES - Required libraries for the high level C bindings
+#   HDF5_CXX_HL_LIBRARIES - Required libraries for the high level C++ bindings
+#   HDF5_Fortran_HL_LIBRARIES - Required libraries for the high level Fortran
+#                               bindings.
+#
+#   HDF5_IS_PARALLEL - Whether or not HDF5 was found with parallel IO support
+#   HDF5_C_COMPILER_EXECUTABLE - the path to the HDF5 C wrapper compiler
+#   HDF5_CXX_COMPILER_EXECUTABLE - the path to the HDF5 C++ wrapper compiler
+#   HDF5_Fortran_COMPILER_EXECUTABLE - the path to the HDF5 Fortran wrapper compiler
+#   HDF5_C_COMPILER_EXECUTABLE_NO_INTERROGATE - path to the primary C compiler
+#                                               which is also the HDF5 wrapper
+#   HDF5_CXX_COMPILER_EXECUTABLE_NO_INTERROGATE - path to the primary C++
+#                                                 compiler which is also
+#                                                 the HDF5 wrapper
+#   HDF5_Fortran_COMPILER_EXECUTABLE_NO_INTERROGATE - path to the primary
+#                                                     Fortran compiler which
+#                                                     is also the HDF5 wrapper
+#   HDF5_DIFF_EXECUTABLE - the path to the HDF5 dataset comparison tool
+
 
 #=============================================================================
-# Copyright 2013-2016 CEA, Julien Bigot <julien.bigot@cea.fr>
-# Copyright 2001-2011 Kitware, Inc.
-# Copyright 2010-2011 Todd Gamblin tgamblin@llnl.gov
-# Copyright 2009 Kitware, Inc.
-# Copyright 2001-2009 Dave Partyka
-#
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-# * Neither the names of Kitware, Inc., the Insight Software Consortium, nor
-#   the names of their contributors may be used to endorse or promote products
-#   derived from this software without specific prior written  permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# Copyright 2017 CEA, Julien Bigot <julien.bigot@cea.fr>
 #=============================================================================
 
+
+cmake_minimum_required(VERSION 3.3)
 
 # include this to handle the QUIETLY and REQUIRED arguments
-include(FindPackageHandleStandardArgs)
-include(GetPrerequisites)
+include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
 
-
-# interrogate_hdf5_compiler(lang try_libs shared_hdf5)
-#
-# Attempts to extract compiler and linker args from an HDF5 compiler. The arguments set
-# by this function are:
-#
-#   HDF5<shared>_<lang>_INCLUDE_PATH    HDF5<shared>_<lang>_LINK_FLAGS     HDF5<shared>_<lang>_FOUND
-#   HDF5<shared>_<lang>_COMPILE_FLAGS   HDF5<shared>_<lang>_LIBRARIES
-#
-# HDF5_<lang>_COMPILER must be set beforehand to the absolute path to an HDF5 compiler for
-# <lang>.  Additionally, HDF5_<lang>_INCLUDE_PATH and HDF5_<lang>_LIBRARIES may be set
-# to skip autodetection.
-#
-# If try_libs is TRUE, this will also attempt to find plain HDF5 libraries in the usual
-# way.  In general, this is not as effective as interrogating the compilers, as it
-# ignores language-specific flags and libraries.
-#
-function (interrogate_hdf5_compiler lang try_libs shared_hdf5 parallel_hdf5)
-	# HDF5_${lang}_NO_INTERROGATE will be set to a compiler name when the *regular* compiler was
-	# discovered to be the HDF5 compiler. If the user force-sets another HDF5 compiler,
-	# HDF5_${lang}_COMPILER won't be equal to HDF5_${lang}_NO_INTERROGATE, and we'll inspect
-	# that compiler anew.  This allows users to set new compilers w/o rm'ing cache.
-	string(COMPARE NOTEQUAL "${HDF5_${lang}_NO_INTERROGATE}" "${HDF5_${lang}_COMPILER}" interrogate)
-
-	# If HDF5 is set already in the cache, don't bother with interrogating the compiler.
-	if (interrogate AND ((NOT HDF5_${lang}_INCLUDE_PATH) OR (NOT HDF5_${lang}_LIBRARIES)))
-		if (HDF5_${lang}_COMPILER)
-
-			set(H5COMPILER_PARAM)
-			if (${shared_hdf5})
-				set(H5COMPILER_PARAM "-shlib")
-			endif()
-
-			execute_process(
-				COMMAND ${HDF5_${lang}_COMPILER} -show ${H5COMPILER_PARAM}
-				OUTPUT_VARIABLE  HDF5_CMDLINE OUTPUT_STRIP_TRAILING_WHITESPACE
-				ERROR_VARIABLE   HDF5_CMDLINE ERROR_STRIP_TRAILING_WHITESPACE
-				RESULT_VARIABLE  HDF5_COMPILER_RETURN)
-
-			if (NOT "${HDF5_COMPILER_RETURN}" EQUAL 0)
-				message(STATUS "Unable to determine HDF5 from HDF5 driver ${HDF5_${lang}_COMPILER}")
-				set(HDF5_CMDLINE)
-			endif()
-
-			# Here, we're done with the interrogation part, and we'll try to extract args we care
-			# about from what we learned from the compiler wrapper scripts.
-
-			# If interrogation came back with something, extract our variable from the HDF5 command line
-			if (HDF5_CMDLINE)
-				# Extract compile flags from the compile command line.
-				# It used to contain -f.* options, but this took some invalid options on the way => removed.
-				string(REGEX MATCHALL "(^| )-D([^\" ]+|\"[^\"]+\")" HDF5_ALL_COMPILE_FLAGS "${HDF5_CMDLINE}")
-				set(HDF5_COMPILE_FLAGS_WORK)
-
-				foreach(FLAG ${HDF5_ALL_COMPILE_FLAGS})
-					if (HDF5_COMPILE_FLAGS_WORK)
-						set(HDF5_COMPILE_FLAGS_WORK "${HDF5_COMPILE_FLAGS_WORK} ${FLAG}")
-					else()
-						set(HDF5_COMPILE_FLAGS_WORK ${FLAG})
-					endif()
-				endforeach()
-
-				# Extract include paths from compile command line
-				string(REGEX MATCHALL "(^| )-I([^\" ]+|\"[^\"]+\")" HDF5_ALL_INCLUDE_PATHS "${HDF5_CMDLINE}")
-				foreach(IPATH ${HDF5_ALL_INCLUDE_PATHS})
-					string(REGEX REPLACE "^ ?-I" "" IPATH ${IPATH})
-					string(REGEX REPLACE "//" "/" IPATH ${IPATH})
-					list(APPEND HDF5_INCLUDE_PATH_WORK ${IPATH})
-				endforeach()
-
-				# If all else fails, just search for hdf5.h in the normal include paths.
-				if (NOT HDF5_INCLUDE_PATH_WORK)
-					set(HDF5_HEADER_PATH "HDF5_HEADER_PATH-NOTFOUND" CACHE FILEPATH "Cleared" FORCE)
-					if (lang STREQUAL Fortran)
-						find_path(HDF5_HEADER_PATH hdf5.mod
-							HINTS ${_HDF5_BASE_DIR}
-							PATH_SUFFIXES include)
-						set(HDF5_INCLUDE_PATH_WORK ${HDF5_HEADER_PATH})
-					else ()
-						find_path(HDF5_HEADER_PATH hdf5.h
-							HINTS ${_HDF5_BASE_DIR}
-							PATH_SUFFIXES include)
-						set(HDF5_INCLUDE_PATH_WORK ${HDF5_HEADER_PATH})
-					endif()
-				endif()
-
-				# Extract linker paths from the link command line
-				string(REGEX MATCHALL "(^| |-Wl,)-L([^\" ]+|\"[^\"]+\")" HDF5_ALL_LINK_PATHS "${HDF5_CMDLINE}")
-				set(HDF5_LINK_PATH)
-				foreach(LPATH ${HDF5_ALL_LINK_PATHS})
-					string(REGEX REPLACE "^(| |-Wl,)-L" "" LPATH ${LPATH})
-					string(REGEX REPLACE "//" "/" LPATH ${LPATH})
-					list(APPEND HDF5_LINK_PATH ${LPATH})
-				endforeach()
-				# add the compiler implicit directories because some compilers
-				# such as the intel compiler have libraries that show up
-				# in the show list that can only be found in the implicit
-				# link directories of the compiler.
-				if (DEFINED CMAKE_${lang}_IMPLICIT_LINK_DIRECTORIES)
-					list(APPEND HDF5_LINK_PATH "${CMAKE_${lang}_IMPLICIT_LINK_DIRECTORIES}")
-				endif ()
-
-				# Extract linker flags from the link command line
-				string(REGEX MATCHALL "(^| )-Wl,([^\" ]+|\"[^\"]+\")" HDF5_ALL_LINK_FLAGS "${HDF5_CMDLINE}")
-				set(HDF5_LINK_FLAGS_WORK)
-				foreach(FLAG ${HDF5_ALL_LINK_FLAGS})
-					if (HDF5_LINK_FLAGS_WORK)
-						set(HDF5_LINK_FLAGS_WORK "${HDF5_LINK_FLAGS_WORK} ${FLAG}")
-					else()
-						set(HDF5_LINK_FLAGS_WORK ${FLAG})
-					endif()
-				endforeach()
-
-				# Extract the set of libraries to link against from the link command
-				# line
-				string(REGEX MATCHALL "(^| )(-l([^\" ]+|\"[^\"]+\")|[^ ]*\\.(a|so))( |$)" HDF5_LIBNAMES "${HDF5_CMDLINE}")
-
-				# Determine full path names for all of the libraries that one needs
-				# to link against in an HDF5 program
-				foreach(LIB ${HDF5_LIBNAMES})
-					string(REGEX REPLACE "^ +" "" LIB ${LIB})
-					string(REGEX REPLACE "^-l *" "" LIB ${LIB})
-					string(REGEX REPLACE " $" "" LIB ${LIB})
-					# HDF5_LIB is cached by find_library, but we don't want that.  Clear it first.
-					set(HDF5_LIB "HDF5_LIB-NOTFOUND" CACHE FILEPATH "Cleared" FORCE)
-					if(EXISTS "${LIB}")
-						set(HDF5_LIB "${LIB}")
-					else()
-						find_library(HDF5_LIB NAMES ${LIB} HINTS ${HDF5_LINK_PATH})
-					endif()
-
-					if (HDF5_LIB)
-						list(APPEND HDF5_LIBRARIES_WORK ${HDF5_LIB})
-					elseif (NOT HDF5_FIND_QUIETLY)
-						message(WARNING "Unable to find HDF5 library ${LIB}")
-					endif()
-				endforeach()
-
-			endif()
-
-		elseif(try_libs)
-			# If we didn't have an HDF5 compiler script to interrogate, attempt to find everything
-			# with plain old find functions.
-			unset(HDF5_LIBRARIES_WORK)
-			unset(HDF5_INCLUDE_PATH_WORK)
-
-			find_path(HDF5_HEADER_PATH hdf5.h
-				HINTS ${_HDF5_BASE_DIR}
-				PATH_SUFFIXES include)
-			set(HDF5_INCLUDE_PATH_WORK ${HDF5_HEADER_PATH})
-
-			unset(HDF5_LIB CACHE)
-			find_library(HDF5_LIB
-				NAMES         hdf5
-				HINTS         ${_HDF5_BASE_DIR}
-				PATH_SUFFIXES lib)
-			if (${HDF5_LIB})
-				list(APPEND HDF5_LIBRARIES_WORK "${HDF5_LIB}")
-			endif()
-			unset(HDF5_LIB CACHE)
-			find_library(HDF5_LIB
-				NAMES         hdf5_hl
-				HINTS         ${_HDF5_BASE_DIR}
-				PATH_SUFFIXES lib)
-			if (${HDF5_LIB})
-				list(APPEND HDF5_LIBRARIES_WORK "${HDF5_LIB}")
-			endif()
-
-			if (${lang} STREQUAL CXX)
-				unset(HDF5_LIB CACHE)
-				find_library(HDF5_LIB
-					NAMES         hdf5_cpp
-					HINTS         ${_HDF5_BASE_DIR}
-					PATH_SUFFIXES lib)
-				unset(HDF5_LIB)
-				if (${HDF5_LIB})
-					list(APPEND HDF5_LIBRARIES_WORK "${HDF5_LIB}")
-				endif()
-			elseif (${lang} STREQUAL Fortran)
-				unset(HDF5_LIB CACHE)
-				find_library(HDF5_LIB
-					NAMES         hdf5_fortran
-					HINTS         ${_HDF5_BASE_DIR}
-					PATH_SUFFIXES lib)
-				if (${HDF5_LIB})
-					list(APPEND HDF5_LIBRARIES_WORK "${HDF5_LIB}")
-				endif()
-				unset(HDF5_LIB CACHE)
-				find_library(HDF5_LIB
-					NAMES         hdf5hl_fortran
-					HINTS         ${_HDF5_BASE_DIR}
-					PATH_SUFFIXES lib)
-				if (${HDF5_LIB})
-					list(APPEND HDF5_LIBRARIES_WORK "${HDF5_LIB}")
-				endif()
-			endif()
-
-			if (NOT HDF5_LIBRARIES_WORK)
-				set(HDF5_LIBRARIES_WORK "HDF5_${lang}_LIBRARIES-NOTFOUND")
-			endif()
+if("${HDF5_USE_EMBEDDED}")
+	
+	if(NOT TARGET hdf5-static AND NOT TARGET hdf5-shared)
+		
+		set(HDF5_EXTERNALLY_CONFIGURED 1)
+		set(HDF5_BUILD_EXAMPLES OFF CACHE BOOL "Build HDF5 Library Examples" FORCE)
+		set(HDF5_DISABLE_COMPILER_WARNINGS ON CACHE BOOL "Disable compiler warnings" FORCE)
+		set(BUILD_TESTING OFF CACHE BOOL "Build HDF5 Unit Testing" FORCE)
+		if(NOT DEFINED CMAKE_Fortran_MODULE_DIRECTORY)
+			set(CMAKE_Fortran_MODULE_DIRECTORY "${PROJECT_BINARY_DIR}")
 		endif()
-
-		set(H5SHARED)
-		if (${shared_hdf5})
-			set(H5SHARED _SHARED)
+		set(HDF5_EXPORTED_TARGETS "hdf5-exports")
+		
+		set(BUILD_SHARED_LIBS ON CACHE BOOL "Build Shared Libraries" FORCE)
+		if("${HDF5_USE_STATIC_LIBRARIES}")
+			set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Shared Libraries" FORCE)
 		endif()
-		# If we found HDF5, set up all of the appropriate cache entries
-		if ("${parallel_hdf5}")
-			find_package(MPI)
-			set(HDF5_COMPILE_FLAGS_WORK "${HDF5_COMPILE_FLAGS_WORK} ${MPI_${lang}_COMPILE_FLAGS}")
-			set(HDF5_INCLUDE_PATH_WORK "${HDF5_INCLUDE_PATH_WORK}" "${MPI_${lang}_INCLUDE_PATH}")
-			set(HDF5_LINK_FLAGS_WORK "${HDF5_LINK_FLAGS_WORK} ${MPI_${lang}_LINK_FLAGS}")
-			set(HDF5_LIBRARIES_WORK "${HDF5_LIBRARIES_WORK}" "${MPI_${lang}_LIBRARIES}")
+		
+		set(HDF5_ENABLE_PARALLEL OFF CACHE BOOL "Enable parallel build (requires MPI)" FORCE)
+		if(${HDF5_PREFER_PARALLEL})
+			set(HDF5_ENABLE_PARALLEL ON CACHE BOOL "Enable parallel build (requires MPI)" FORCE)
 		endif()
-		set(HDF5${H5SHARED}_${lang}_COMPILE_FLAGS ${HDF5_COMPILE_FLAGS_WORK} CACHE STRING "${H5SHARED} HDF5 ${lang} compilation flags"         FORCE)
-		set(HDF5${H5SHARED}_${lang}_INCLUDE_PATH  ${HDF5_INCLUDE_PATH_WORK}  CACHE STRING "${H5SHARED} HDF5 ${lang} include path"              FORCE)
-		set(HDF5${H5SHARED}_${lang}_LINK_FLAGS    ${HDF5_LINK_FLAGS_WORK}    CACHE STRING "${H5SHARED} HDF5 ${lang} linking flags"             FORCE)
-		set(HDF5${H5SHARED}_${lang}_LIBRARIES     ${HDF5_LIBRARIES_WORK}     CACHE STRING "${H5SHARED} HDF5 ${lang} libraries to link against" FORCE)
-		mark_as_advanced(HDF5${H5SHARED}_${lang}_COMPILE_FLAGS HDF5${H5SHARED}_${lang}_INCLUDE_PATH HDF5${H5SHARED}_${lang}_LINK_FLAGS HDF5${H5SHARED}_${lang}_LIBRARIES)
-
-		# clear out our temporary lib/header detectionv variable here.
-		set(HDF5_LIB         "HDF5_LIB-NOTFOUND"         CACHE INTERNAL "Scratch variable for HDF5 lib detection"    FORCE)
-		set(HDF5_HEADER_PATH "HDF5_HEADER_PATH-NOTFOUND" CACHE INTERNAL "Scratch variable for HDF5 header detection" FORCE)
-	endif()
-
-	# finally set a found variable for each HDF5 language
-	if (HDF5_${lang}_INCLUDE_PATH AND HDF5_${lang}_LIBRARIES)
-		set(HDF5_${lang}_FOUND TRUE PARENT_SCOPE)
-	else()
-		set(HDF5_${lang}_FOUND FALSE PARENT_SCOPE)
-	endif()
-endfunction()
-
-# Find the compilers and sends them off for interrogation.
-function(hdf5_try_find parallel_hdf5)
-	# HDF5 compiler names
-	if("${parallel_hdf5}")
-		set(_HDF5_C_COMPILER_NAMES         h5pcc)
-		set(_HDF5_CXX_COMPILER_NAMES       h5pc++)
-		set(_HDF5_Fortran_COMPILER_NAMES   h5pfc)
-	else()
-		set(_HDF5_C_COMPILER_NAMES         h5cc)
-		set(_HDF5_CXX_COMPILER_NAMES       h5c++)
-		set(_HDF5_Fortran_COMPILER_NAMES   h5fc)
-	endif()
-	unset(_HDF5_COMPILERS)
-	foreach (lang C CXX Fortran)
-		if (CMAKE_${lang}_COMPILER_WORKS)
-			# If the user supplies a compiler *name* instead of an absolute path, assume that we need to find THAT compiler.
-			if (HDF5_${lang}_COMPILER)
-				is_file_executable("${HDF5_${lang}_COMPILER}" HDF5_COMPILER_IS_EXECUTABLE)
-				if (NOT HDF5_COMPILER_IS_EXECUTABLE)
-					# Get rid of our default list of names and just search for the name the user wants.
-					set(_HDF5_${lang}_COMPILER_NAMES ${HDF5_${lang}_COMPILER})
-					set(HDF5_${lang}_COMPILER "HDF5_${lang}_COMPILER-NOTFOUND" CACHE FILEPATH "Cleared" FORCE)
-					# If the user specifies a compiler, we don't want to try to search libraries either.
-					set(try_libs FALSE)
-				endif()
+		
+		set(HDF5_BUILD_FORTRAN OFF CACHE BOOL "Build FORTRAN support" FORCE)
+		set(HDF5_BUILD_HL_LIB  OFF CACHE BOOL "Build HIGH Level HDF5 Library" FORCE)
+		set(HDF5_BUILD_CPP_LIB OFF CACHE BOOL "Build HDF5 C++ Library" FORCE)
+		# The only valid components are C, CXX, Fortran, HL, and Fortran_HL.
+		foreach(HDF5_COMPONENT ${HDF5_FIND_COMPONENTS})
+			if("${HDF5_COMPONENT}" STREQUAL "C")
+			elseif("${HDF5_COMPONENT}" STREQUAL "Fortran")
+				set(HDF5_BUILD_FORTRAN ON CACHE BOOL "Build FORTRAN support" FORCE)
+			elseif("${HDF5_COMPONENT}" STREQUAL "HL")
+				set(HDF5_BUILD_HL_LIB  ON CACHE BOOL "Build HIGH Level HDF5 Library" FORCE)
+			elseif("${HDF5_COMPONENT}" STREQUAL "Fortran_HL")
+				set(HDF5_BUILD_FORTRAN ON CACHE BOOL "Build FORTRAN support" FORCE)
+				set(HDF5_BUILD_HL_LIB  ON CACHE BOOL "Build HIGH Level HDF5 Library" FORCE)
+			elseif("${HDF5_COMPONENT}" STREQUAL "CXX")
+				set(HDF5_BUILD_CPP_LIB ON CACHE BOOL "Build HDF5 C++ Library" FORCE)
 			else()
-				set(try_libs TRUE)
+				message(AUTHOR_WARNING "Invalid component for FindHDF5: ${HDF5_COMPONENT}")
 			endif()
-
-			find_program(HDF5_${lang}_COMPILER
-				NAMES         ${_HDF5_${lang}_COMPILER_NAMES}
-				HINTS         ${_HDF5_BASE_DIR}
-				PATH_SUFFIXES bin)
-			mark_as_advanced(HDF5_${lang}_COMPILER)
-			interrogate_hdf5_compiler(${lang} ${try_libs} ON ${parallel_hdf5})
-			interrogate_hdf5_compiler(${lang} ${try_libs} OFF ${parallel_hdf5})
-			unset(_HDF5_${lang}_COMPILER_NAMES)
-			if(HDF5_${lang}_COMPILER)
-				list(APPEND _HDF5_COMPILERS "${HDF5_${lang}_COMPILER}")
-			else()
-				list(APPEND _HDF5_COMPILERS ${HDF5_${lang}_LIBRARIES})
-			endif()
+		endforeach()
+		
+		add_subdirectory(../ext/hdf5-1.8.18/ hdf5-1.8.18 EXCLUDE_FROM_ALL)
+		set(HDF5_VERSION "1.8.18")
+		set(EXALL) # EXCLUDE_FROM_ALL is only supported from 2.6 in install(EXPORT)
+		if("${CMAKE_VERSION}" VERSION_GREATER 3.6)
+			set(EXALL "EXCLUDE_FROM_ALL")
 		endif()
-	endforeach()
-	unset(_HDF5_BASE_DIR)
-	set(HDF5_COMPILERS "${_HDF5_COMPILERS}" PARENT_SCOPE)
-endfunction()
-
-# End definitions, commence real work here.
-
-find_program(H5DIFF NAMES h5diff PATH_SUFFIXES bin DOC "HDF5 file diff tool.")
-mark_as_advanced(H5DIFF)
-
-# call get_filename_component twice to remove h5diff and the directory it exists in (typically bin).
-# This gives us a fairly reliable base directory to search for /bin /lib and /include from.
-get_filename_component(_HDF5_BASE_DIR "${H5DIFF}" PATH)
-get_filename_component(_HDF5_BASE_DIR "${_HDF5_BASE_DIR}" PATH)
-
-if( "${HDF5_PARALLEL}" STREQUAL "PAR" )
-	hdf5_try_find(TRUE)
-elseif( "${HDF5_PARALLEL}" STREQUAL "SEQ" )
-	hdf5_try_find(FALSE)
+		install(EXPORT hdf5-exports DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/trash" ${EXALL})
+		
+		if(TARGET hdf5-shared)
+			target_include_directories(hdf5-shared INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/hdf5-1.8.18>") # Workaround missing modules in target
+			set(HDF5_C_LIBRARIES hdf5-shared)
+		endif()
+		
+		if(TARGET hdf5_hl-shared)
+			target_include_directories(hdf5_hl-shared INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../ext/hdf5-1.8.18/hl/src/>") # Workaround missing modules in target
+			set(HDF5_C_HL_LIBRARIES hdf5_hl-shared)
+		endif()
+		
+		if(TARGET hdf5_fortran-shared)
+			target_include_directories(hdf5_fortran-shared INTERFACE "$<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}/shared>") # Workaround missing modules in target
+			set(HDF5_Fortran_LIBRARIES hdf5_fortran-shared)
+		endif()
+		
+		if(TARGET hdf5_hl_fortran-shared)
+			set(HDF5_Fortran_HL_LIBRARIES hdf5_hl_fortran-shared)
+		endif()
+		
+		if(TARGET hdf5_cpp-shared)
+			target_include_directories(hdf5_cpp-shared INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/hdf5-1.8.18>") # Workaround missing modules in target
+			set(HDF5_CXX_LIBRARIES hdf5_cpp-shared)
+		endif()
+		
+		if("${HDF5_USE_STATIC_LIBRARIES}")
+			if(TARGET hdf5-static)
+				target_include_directories(hdf5-static INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/hdf5-1.8.18>") # Workaround missing modules in target
+				set(HDF5_C_LIBRARIES hdf5-static)
+			endif()
+		
+			if(TARGET hdf5_hl-static)
+				target_include_directories(hdf5_hl-static INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../ext/hdf5-1.8.18/hl/src/>") # Workaround missing modules in target
+				set(HDF5_C_HL_LIBRARIES hdf5_hl-static)
+			endif()
+			
+			if(TARGET hdf5_fortran-static)
+				target_include_directories(hdf5_fortran-static INTERFACE "$<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}/static>") # Workaround missing modules in target
+				set(HDF5_Fortran_LIBRARIES hdf5_fortran-static)
+			endif()
+			
+			if(TARGET hdf5_hl_fortran-static)
+# 				target_include_directories(hdf5_hl_fortran-static INTERFACE "$<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}/static>") # Workaround missing modules in target
+				set(HDF5_Fortran_HL_LIBRARIES hdf5_hl_fortran-static)
+			endif()
+			
+			if(TARGET hdf5_cpp-static)
+				target_include_directories(hdf5_cpp-static INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/hdf5-1.8.18>") # Workaround missing modules in target
+				set(HDF5_CXX_LIBRARIES hdf5_cpp-static)
+			endif()
+			
+		endif()
+		
+		if(TARGET "${HDF5_C_LIBRARIES}")
+			set(HDF5_C_FOUND TRUE)
+		endif()
+		
+		if(TARGET "${HDF5_Fortran_LIBRARIES}")
+			set(HDF5_Fortran_FOUND TRUE)
+		endif()
+		
+		if(TARGET "${HDF5_C_HL_LIBRARIES}")
+			set(HDF5_HL_FOUND TRUE)
+		endif()
+		
+		if(TARGET "${HDF5_Fortran_HL_LIBRARIES}")
+			set(HDF5_Fortran_HL_FOUND TRUE)
+		endif()
+		
+		set(HDF5_LIBRARIES    ${HDF5_C_LIBRARIES} ${HDF5_Fortran_LIBRARIES} ${HDF5_CXX_LIBRARIES})
+		set(HDF5_HL_LIBRARIES ${HDF5_C_HL_LIBRARIES} ${HDF5_Fortran_HL_LIBRARIES})
+		
+		set(HDF5_IS_PARALLEL "${H5_HAVE_PARALLEL}")
+		
+		# Force building h5diff that is exported by the lib
+		add_custom_target(hdf5_tools ALL)
+		add_dependencies(hdf5_tools h5diff)
+		set(HDF5_DIFF_EXECUTABLE h5diff)
+		
+	endif()
+	
+	set(HDF5_C_COMPILER_EXECUTABLE HDF5_C_COMPILER_EXECUTABLE-NOTFOUND)
+	set(HDF5_CXX_COMPILER_EXECUTABLE HDF5_CXX_COMPILER_EXECUTABLE-NOTFOUND)
+	set(HDF5_Fortran_COMPILER_EXECUTABLE HDF5_Fortran_COMPILER_EXECUTABLE-NOTFOUND)
+	set(HDF5_C_COMPILER_EXECUTABLE_NO_INTERROGATE HDF5_C_COMPILER_EXECUTABLE_NO_INTERROGATE-NOTFOUND)
+	set(HDF5_CXX_COMPILER_EXECUTABLE_NO_INTERROGATE HDF5_CXX_COMPILER_EXECUTABLE_NO_INTERROGATE-NOTFOUND)
+	set(HDF5_Fortran_COMPILER_EXECUTABLE_NO_INTERROGATE HDF5_Fortran_COMPILER_EXECUTABLE_NO_INTERROGATE-NOTFOUND)
+	find_package_handle_standard_args(HDF5
+		REQUIRED_VARS HDF5_C_LIBRARIES
+		VERSION_VAR HDF5_VERSION
+		HANDLE_COMPONENTS
+		)
 else()
-	hdf5_try_find(FALSE)
-	if( NOT "${HDF5_COMPILERS}" )
-		hdf5_try_find(TRUE)
+	
+	include(${CMAKE_CURRENT_LIST_DIR}/FindHDF5_ORIG.cmake)
+	
+	if("${HDF5_IS_PARALLEL}")
+		find_package(MPI)
+		set(HDF5_C_LIBRARIES ${HDF5_C_LIBRARIES} mpi)
+		set(HDF5_Fortran_LIBRARIES ${HDF5_Fortran_LIBRARIES} mpi_f90)
 	endif()
+	
+	# Compatibility with our old FindHDF5...
+	set(HDF5_C_LIBRARIES  ${HDF5_C_LIBRARIES})
+	set(HDF5_Fortran_LIBRARIES  ${HDF5_Fortran_LIBRARIES})
+	set(HDF5_C_INCLUDE_PATH  "${HDF5_INCLUDE_DIRS}")
+	set(HDF5_C_COMPILE_FLAGS "${HDF5_DEFINITIONS}")
+	set(HDF5_Fortran_INCLUDE_PATH  "${HDF5_INCLUDE_DIRS}")
+	set(HDF5_Fortran_COMPILE_FLAGS "${HDF5_DEFINITIONS}")
+	set(HDF5_SHARED_C_INCLUDE_PATH  "${HDF5_INCLUDE_DIRS}")
+	set(HDF5_SHARED_C_COMPILE_FLAGS "${HDF5_DEFINITIONS}")
+	set(HDF5_SHARED_Fortran_INCLUDE_PATH  "${HDF5_INCLUDE_DIRS}")
+	set(HDF5_SHARED_Fortran_COMPILE_FLAGS "${HDF5_DEFINITIONS}")
+	
 endif()
-
-find_package_handle_standard_args(HDF5 DEFAULT_MSG HDF5_COMPILERS)
-# unset these vars to cleanup namespace
-unset(_HDF5_COMPILERS)
