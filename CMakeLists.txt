@@ -43,30 +43,18 @@ endif()
 
 
 # Build options
-option(USE_SYSTEM_PARACONF 		"Use an already installed paraconf instead of building the embedded one"
-	OFF )
-
-option(ENABLE_DECLH5 			"Build HDF5 based DeclH5 plug-in. Produce one HDF5 file per MPI process."
-	ON  )
-option(ENABLE_PARALLEL_DECLH5 		"Build HDF5 based DeclH5 plug-in. This is the parallele version, produce a single file."
-	ON  )
-option(ENABLE_FTI 			"Build FTI plug-in."
-	ON  )
-option(ENABLE_SIONLIB 			"Build SIONlib plug-in."
-	ON  )
-option(ENABLE_UTILITIES 		"Build Utilities plug-in."
-	ON  )
-
+option(USE_SYSTEM_PARACONF     "Use an already installed paraconf instead of building the embedded one" OFF )
+option(ENABLE_DECLH5           "Build HDF5 based DeclH5 plug-in. Produce one HDF5 file per MPI process." ON )
+option(ENABLE_PARALLEL_DECLH5  "Build HDF5 based DeclH5 plug-in. This is the parallele version, produce a single file." ON )
+option(ENABLE_FTI              "Build FTI plug-in." ON )
+option(ENABLE_SIONLIB          "Build SIONlib plug-in." ON )
+option(ENABLE_UTILITIES        "Build Utilities plug-in." ON )
 # Testing options
-option(RUN_EXAMPLES 			"Build and run examples during ctest."
-	ON  ) 
+option(RUN_EXAMPLES            "Build and run examples during ctest." ON  )
+set(TIMEOUT 3 CACHE STRING     "Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)." )
 
-option(TIMEOUT
-	"Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)."
-	"3"
-)
-if (${TIMEOUT} GREATER "1" ) 
-	set(DEFAULT_TIMEOUT ${TIMEOUT})
+if ("${TIMEOUT}" GREATER "1" ) 
+	set(DEFAULT_TIMEOUT "${TIMEOUT}")
 else()
 	set(DEFAULT_TIMEOUT 3)
 endif()
@@ -76,7 +64,7 @@ endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
-# Find dependancies
+# Find dependencies
 find_package(MPI REQUIRED)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf)
@@ -101,9 +89,10 @@ if( "${RUN_EXAMPLES}" )
 endif()
 add_subdirectory(tests/)
 
-# The src
-add_custom_target(re_format target PRE_BUILD command cd ./tools/Format_and_Indent/ && make all)
-## Main source dir
+# Source formatting
+add_custom_target(re_format COMMAND make all WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tools/Format_and_Indent/" VERBATIM)
+
+# Main source dir
 add_subdirectory(src/)
 
 ## The plugins
@@ -111,7 +100,7 @@ add_subdirectory(plugins/test_plugin/)
 add_subdirectory(plugins/User_Code/)
 
 if(${ENABLE_PARALLEL_DECLH5})
-	set(HDF5_PARALLEL "PAR")
+	set(HDF5_PREFER_PARALLEL TRUE)
 	add_subdirectory(plugins/Parallel_DeclH5/)
 endif()
 
@@ -130,5 +119,3 @@ endif()
 if(${ENABLE_UTILITIES})
 	add_subdirectory(plugins/Utilities/)
 endif()
-
-

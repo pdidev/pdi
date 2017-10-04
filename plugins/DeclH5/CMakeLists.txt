@@ -27,25 +27,31 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-find_package(HDF5 REQUIRED)
+add_library(declh5 MODULE
+	declh5.cxx
+)
+target_link_libraries(declh5 PUBLIC pdi)
 
-add_library(declh5 MODULE declh5.cxx)
+# HDF5
+set(HDF5_USE_STATIC_LIBRARIES OFF)
+find_package(HDF5 REQUIRED C HL)
+target_link_libraries(declh5 PUBLIC ${HDF5_C_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
+target_include_directories(declh5 PRIVATE ${HDF5_INCLUDE_DIRS})
+target_compile_definitions(declh5 PRIVATE ${HDF5_DEFINITIONS})
 
-target_link_libraries(declh5 pdi)
-include_directories(${HDF5_SHARED_C_INCLUDE_PATH})
-set_property(SOURCE declh5.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${HDF5_SHARED_C_COMPILE_FLAGS} ")
-set_property(TARGET declh5   APPEND_STRING PROPERTY LINK_FLAGS    " ${HDF5_SHARED_C_LINK_FLAGS} ")
-target_link_libraries(declh5 ${HDF5_SHARED_C_LIBRARIES})
+# OMP
+find_package(OMP)
+set_target_properties(declh5 PROPERTIES COMPILE_FLAGS " ${OMP_C_COMPILE_FLAGS}")
 
+# Warnings
 include(AddCCompilerFlags)
 add_compiler_flags(declh5 PRIVATE -Wall -Wextra)
 
-
 # library installation
-
 install(TARGETS declh5 EXPORT declh5Targets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )
 
+# Tests
 add_subdirectory(tests/)
