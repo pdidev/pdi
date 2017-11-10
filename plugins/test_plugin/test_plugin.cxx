@@ -34,8 +34,9 @@
 #include <pdi.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
-#include <pdi/data.h>
+#include <pdi/data_reference.h>
 
+using namespace PDI;
 
 PDI_status_t PDI_test_plugin_init(PC_tree_t conf, MPI_Comm *world)
 {
@@ -72,23 +73,23 @@ PDI_status_t PDI_test_plugin_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data_start(PDI_data_t *data)
+PDI_status_t PDI_test_plugin_data_start(Data_ref&& ref)
 {
 	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
-		printf(" =>> data becoming available to the test plugin: %s!\n", data->name);
+		printf(" =>> data becoming available to the test plugin: %s!\n", ref.get_name().c_str());
 	}
 	
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data_end(PDI_data_t *data)
+PDI_status_t PDI_test_plugin_data_end(Data_ref&& ref)
 {
 	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
-		printf(" <<= data becoming unavailable to the test plugin: %s!\n", data->name);
+		printf(" <<= data becoming unavailable to the test plugin: %s!\n", ref.get_name().c_str());
 	}
 	
 	return PDI_OK;

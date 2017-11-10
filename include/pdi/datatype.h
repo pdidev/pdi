@@ -56,7 +56,6 @@ struct PDI_datatype_s {
 		PDI_struct_type_t *struct_;
 		
 	} c;
-	
 };
 
 struct PDI_array_type_s {

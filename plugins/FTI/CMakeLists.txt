@@ -48,8 +48,7 @@ add_library(fti_plugin MODULE
 		fti_plugin.cxx 
 )
 target_link_libraries(fti_plugin pdi fti.shared)
-include(AddCCompilerFlags)
-add_compiler_flags(fti_plugin PRIVATE -Wall -Wextra)
+set_property(TARGET fti_plugin PROPERTY CXX_STANDARD 11)
 
 install(TARGETS fti_plugin EXPORT fti_pdi_pluginTargets
 		LIBRARY DESTINATION lib INCLUDES DESTINATION include

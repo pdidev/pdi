@@ -21,33 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-
+/* The following is used for doxygen documentation */
 /**
-\file api.c
-\brief PDI internal data
-\author J. Bigot (CEA)
-**/
-
-#include "config.h"
-
-#include "pdi/state.h"
-#include "status.h"
-#include "pdi/plugin.h"
-#include "pdi/data_reference.h"
+* \file data_reference_fwd.h
+* \brief .
+* \author C. Roussel, corentin.roussel@cea.fr
+*/
+// Created:  04/10/2017 09:18:07
 
 
-using PDI::Data_ref;
-using std::string;
+#ifndef DATA_REF_FWD_H__
+#define DATA_REF_FWD_H__
 
-
-PDI_state_t PDI_state;
-
-
-Data_ref PDI_find_ref(const string &name)
+namespace PDI
 {
-	auto &&ref = PDI_state.store.find(name);
-	if (ref != PDI_state.store.end()) {
-		return ref->second.top();
-	}
-	return Data_ref();
+/** \class  Data_ref
+ *  \brief  References manage the access to a PDI::Data_content.
+ */
+class Data_ref;
 }
+
+#endif
+

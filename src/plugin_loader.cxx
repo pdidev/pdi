@@ -29,9 +29,6 @@
 * \details Plugins name written in config.yml are read/parse by paraconf: if PDI is build with a plugins having the same name, the plugin is loaded.
 * \author J. Bigot (CEA)
 */
-#ifndef _GNU_SOURCE // TODO: check with JB about it
-	#define _GNU_SOURCE
-#endif
 #include <stdio.h>
 #include <dlfcn.h>
 #include <errno.h>
@@ -40,7 +37,6 @@
 #include <paraconf.h>
 
 #include "pdi/state.h"
-#include "pdi/data.h"
 #include "pdi/plugin.h"
 
 #include "status.h"
@@ -99,9 +95,9 @@ PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *worl
 	plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
 	handle_PC_err(PC_status(plugin_conf), err1);
 	
-	PDI_state.plugins = (PDI_plugin_t *) realloc(PDI_state.plugins, sizeof(PDI_plugin_t) * (PDI_state.nb_plugins + 1));
-	PDI_handle_err(plugin_loader_load(plugin_name, plugin_conf, world, &PDI_state.plugins[PDI_state.nb_plugins]), err1);
-	++PDI_state.nb_plugins;
+	PDI_plugin_t *plugin; plugin = new(PDI_plugin_t);
+	PDI_handle_err(plugin_loader_load(plugin_name, plugin_conf, world, plugin), err1);
+	PDI_state.plugins.insert({std::string(plugin_name), std::shared_ptr<PDI_plugin_t>(plugin)});
 	
 	free(plugin_name);
 	return status;

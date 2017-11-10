@@ -89,6 +89,8 @@ if( "${RUN_EXAMPLES}" )
 endif()
 add_subdirectory(tests/)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CXX_STANDARD_REQUIRED TRUE)
 # Source formatting
 add_custom_target(re_format COMMAND make all WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tools/Format_and_Indent/" VERBATIM)
 

@@ -14,3 +14,6 @@ pdi:
           file: $meta1.h5
           select: 1
   
+        meta2:
+          file: $meta1.h5
+          select: 1

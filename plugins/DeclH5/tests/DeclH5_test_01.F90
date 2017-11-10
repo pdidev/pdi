@@ -10,7 +10,7 @@
 !   notice, this list of conditions and the following disclaimer in the
 !   documentation and/or other materials provided with the distribution.
 ! * Neither the name of CEA nor the names of its contributors may be used to
-!   endorse or promote products derived from this software without specific
+!   endorse or promote products derived from this software without specific 
 !   prior written permission.
 !
 ! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,7 +21,7 @@
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! THE SOFTWARE.
 !******************************************************************************/
-include 'PDI.F90'
+#include "PDI.F90"
 
 program test2
   use pdi
@@ -32,7 +32,7 @@ program test2
 
   integer, pointer :: pmeta0,pmeta1,pmeta2,pmeta3,pmeta4
   integer, target :: meta0,meta1,meta2,meta3,meta4
-  integer :: i, ierr,  main_comm
+  integer :: i, ierr,  main_comm 
   integer,dimension(:), allocatable :: buf
   integer :: nbuf=1000
   double precision,target :: test_var=0.0
@@ -55,26 +55,27 @@ program test2
   pmeta3=>meta3
   pmeta4=>meta4
 
+
   if (command_argument_count() /= 1) then
     call get_command_argument(0, strbuf)
     print '("Usage: ",A," <config_file>")', trim(strbuf)
     stop
   endif
-
+  
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
   main_comm = MPI_COMM_WORLD
   call PDI_init(PC_get(conf, ".pdi"), main_comm)
-
+  
   call PDI_transaction_begin("testing")
   call PDI_expose("meta0",pmeta0)
   call PDI_expose("meta1",pmeta1)
-  allocate(buf(nbuf)) !! an useless buffer
+  allocate(buf(nbuf)) !! an useless buffer 
   call PDI_expose("meta2",pmeta2)
   buf(:)=0
   call PDI_expose("meta3",pmeta3)
   do i=1,nbuf-1
-    buf(i)=buf(i+1)+1
+    buf(i)=buf(i+1)+1 
   enddo
   call PDI_expose("meta4",pmeta4)
   test_var=0
@@ -84,23 +85,14 @@ program test2
   test_var=1
   call PDI_transaction_end()
   call PDI_finalize()
-
-  inquire(file="test_01_variable_6.sion", exist=file_exist) ! values(1)=6
+  
+  inquire(file="6.h5", exist=file_exist) ! values(1)=6
   if( file_exist ) then
     print*, "File found."
   else
     print*, "File not found"
     call MPI_abort(MPI_COMM_WORLD, -1, ierr)
   endif ! file doesn't exist
-
-  inquire(file="test_01_event_6.sion", exist=file_exist) ! values(1)=6
-  if( file_exist ) then
-    print*, "File found."
-  else
-    print*, "File not found"
-    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-  endif ! file doesn't exist
-
   call MPI_Finalize(ierr)
 
-endprogram
+endprogram  

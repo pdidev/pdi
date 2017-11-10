@@ -35,7 +35,7 @@
 #include <pdi.h> 	// PDI library 
 #include <pdi/plugin.h>
 #include <pdi/state.h>
-#include <pdi/data.h>
+#include <pdi/data_reference.h>
 
 #include <dlfcn.h> 	// dynamic loading of function 
 
@@ -208,9 +208,6 @@ PDI_status_t find_fct(char *fct_name, char *libname, ptr_fct_t  *fct)
 	return status;
 }
 
-
-
-
 /* Read next node
  * User_Code:
  * 	fct_1: // default = function name
@@ -218,8 +215,6 @@ PDI_status_t find_fct(char *fct_name, char *libname, ptr_fct_t  *fct)
  * 		events:   // name that trigger function
  *
  */
-
-
 PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
 {
 	char *node = str2nodename(name);
@@ -234,19 +229,15 @@ PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
 	that->fct.name = str;
 
 	node = strdup(".events");
-	if (set_str_from_node(tmptree, node, &that->events, &that->nb_events)) {
-		UC_warn("node '%s' not found\n", node);
-	}
+	set_str_from_node(tmptree, node, &that->events, &that->nb_events);
 	free(node);
 
 	node = strdup(".datastarts");
-	if (set_str_from_node(tmptree, node, &that->datastarts, &that->nb_datastarts))
-		UC_warn("node '%s' not found\n", node);
+	set_str_from_node(tmptree, node, &that->datastarts, &that->nb_datastarts);
 	free(node);
 
 	node = strdup(".dataends");
-	if (set_str_from_node(tmptree, node, &that->dataends, &that->nb_dataends))
-		UC_warn("node '%s' not found\n", node);
+	set_str_from_node(tmptree, node, &that->dataends, &that->nb_dataends);
 	free(node);
 
 	return PDI_OK;
@@ -371,11 +362,12 @@ PDI_status_t PDI_user_code_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_user_code_data_start(PDI_data_t *data)
+PDI_status_t PDI_user_code_data_start(PDI::Data_ref&& ref)
 {
+	 
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
 		for ( int n=0; n<all_uc[ii].nb_datastarts ; ++n ) {
-			if ( !strcmp(data->name, all_uc[ii].datastarts[n]) ) {
+			if ( !strcmp(ref.get_name().c_str(), all_uc[ii].datastarts[n]) ) {
 				(*all_uc[ii].fct.call)();
 			}
 		}
@@ -383,11 +375,11 @@ PDI_status_t PDI_user_code_data_start(PDI_data_t *data)
 
 	return PDI_OK;
 }
-PDI_status_t PDI_user_code_data_end(PDI_data_t *data)
+PDI_status_t PDI_user_code_data_end(PDI::Data_ref&& ref)
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
 		for ( int n=0; n<all_uc[ii].nb_dataends ; ++n ) {
-			if ( !strcmp(data->name, all_uc[ii].datastarts[n]) ) {
+			if ( !strcmp(ref.get_name().c_str(), all_uc[ii].datastarts[n]) ) {
 				(*all_uc[ii].fct.call)();
 			}
 		}

@@ -21,33 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-
+/* The following is used for doxygen documentation */
 /**
-\file api.c
-\brief PDI internal data
-\author J. Bigot (CEA)
-**/
+ * \file data_content_fwd.h
+ * \brief .
+ * \author C. Roussel, corentin.roussel@cea.fr
+ */
 
-#include "config.h"
+#ifndef PDI_DATA_CONTENT_FWD_
+#define PDI_DATA_CONTENT_FWD_
 
-#include "pdi/state.h"
-#include "status.h"
-#include "pdi/plugin.h"
-#include "pdi/data_reference.h"
+#include "pdi.h"
 
-
-using PDI::Data_ref;
-using std::string;
-
-
-PDI_state_t PDI_state;
-
-
-Data_ref PDI_find_ref(const string &name)
+namespace PDI
 {
-	auto &&ref = PDI_state.store.find(name);
-	if (ref != PDI_state.store.end()) {
-		return ref->second.top();
-	}
-	return Data_ref();
+/** Destroyer function free or delete a buffer in a given context. **/
+typedef void (*Destroyer)(void *, void *);
+
+/** \class  Data_content
+*   \brief  Manipulate and grant access to a buffer depending on the remaining right access (read/write).
+*/
+class Data_content;
 }
+
+#endif // PDI_DATA_CONTENT_FWD_

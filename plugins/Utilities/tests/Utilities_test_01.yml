@@ -17,6 +17,3 @@ pdi:
         event: init
         in: empty_file.txt
         out: test_var
-
-
-  

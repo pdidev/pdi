@@ -23,7 +23,7 @@
 ! * THE SOFTWARE.
 ! ******************************************************************************
 
-#if defined(PDI_CMAKE_TAKE_THIS_AS_TRUE)
+#ifdef PDI_CMAKE_TAKE_THIS_AS_TRUE
 #define PDI_CMAKE_IGNORE_THIS
 #endif
 

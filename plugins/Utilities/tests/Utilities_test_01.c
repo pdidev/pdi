@@ -64,8 +64,9 @@ int main( int argc, char *argv[])
 	assert( (test_var)    && "Import should succeed. File has been created"); 
 
 	// ------- Checking that "event2data" action works
-	PDI_event("casual_event"); // compute meta0+meta1 = 0+1 -> meta2
-	int i = -1; PDI_import("meta2", &i); // meta2=meta3-(2*meta1)
+	int i = -1; 
+	PDI_event("casual_event"); // compute meta2=meta3-(2*meta1)
+	PDI_exchange("meta2", &i);
 	assert( (i==1) && "meta3-(2*meta1) should be 1");
 
 	PDI_finalize();
