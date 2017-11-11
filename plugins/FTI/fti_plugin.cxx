@@ -232,7 +232,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data_start(PDI::Data_ref&& ref)
+PDI_status_t PDI_fti_plugin_data_start(PDI::Data_ref ref)
 {
 	if ( ref.priviledge(PDI_IN) && restart_status_events.find(ref.get_name()) != restart_status_events.end() ) {
 		*(int*)ref.get_content()->get_buffer() = FTI_Status();
@@ -240,9 +240,9 @@ PDI_status_t PDI_fti_plugin_data_start(PDI::Data_ref&& ref)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data_end(PDI::Data_ref&& ref)
+PDI_status_t PDI_fti_plugin_data_end(PDI::Data_ref ref)
 {
-	ref=ref; // prevent unused warning
+	(void) ref; // prevent unused warning
 	return PDI_OK;
 }
 

@@ -61,6 +61,7 @@
 using namespace PDI;
 using std::make_shared;
 using std::move;
+using std::stack;
 using std::string;
 using std::underlying_type;
 using std::shared_ptr;
@@ -188,69 +189,31 @@ err0:
 	return status;
 }
 
-static PDI_status_t share_ref(string name, shared_ptr<Data_content> content)
+PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 {
-	PDI_status_t status(PDI_OK);
-	// Share reference
-	for (auto &elmnt : PDI_state.plugins) {
-		shared_ptr<PDI_plugin_t> plugin = elmnt.second;
-		PDI_data_end_f data_end = plugin->data_end;
-		
-		// Create and share a new reference for each plug-in
-		Data_ref new_ref;
-		PDI_handle_err(new_ref.init(name, content, data_end, PDI_NONE), err0);
-		// data_start
-		PDI_handle_err(plugin->data_start(move(new_ref)), err0); /// Move reference to the plug-in
-		continue;
-err0:
-		continue;
+	auto &&descit = PDI_state.descriptors.find(name);
+	if ( descit == PDI_state.descriptors.end() ) return PDI_UNAVAILABLE;
+	
+	Data_descriptor &desc = descit->second;
+	stack<Data_ref>& refstack = PDI_state.store[name];
+	if (!refstack.empty() && desc.is_metadata()) {
+		/// for metadata, unlink happens on share
+		refstack.top().reclaim();
+		refstack.pop();
 	}
 	
-	return status;
+	// make a reference and put it in the store
+	refstack.push(move(Data_ref(desc, buffer, access)));
+	Data_ref& ref = refstack.top();
 	
-}
-
-
-PDI_status_t PDI_share(const char *c_name, void *buffer, PDI_inout_t access)
-{
-	PDI_status_t status = PDI_OK;
-	string name(c_name);
-	
-	if (access == PDI_NONE) return PDI_OK;
-	
-	if (exist(name, PDI_state.descriptors)) {   // if the data exist in PDI
-		Data_descriptor &desc = PDI_state.descriptors.find(name)->second;
-		if (exist(name, PDI_state.store) && desc.is_metadata()) {
-			/// for metadata, unlink happens on share
-			auto &&refstack = PDI_state.store.find(name);
-			refstack->second.top().reclaim();
-			refstack->second.pop();
-			if (refstack->second.empty()) PDI_state.store.erase(refstack);
-		}
-		
-		// Create a content
-		shared_ptr<Data_content> content = make_shared<Data_content>();
-		PDI::Destroyer destroy = &destroyer_free;
-		const PDI_datatype_t &datatype = desc.get_type();
-		content->init(buffer, destroy, access, datatype);  // default: destroyer = free
-		
-		// check if the store has a reference regarding this content.
-		PDI_state.store[name].push(Data_ref());
-		PDI_handle_err(PDI_state.store[name].top().init(name, content, PDI_NONE), err0);
-		
-		// Provide reference to the plug-ins
-		PDI_handle_err(share_ref(name, content), err0);
-		
-	} else {
-		//TODO: create a data with unknown type here
-		status = PDI_UNAVAILABLE;
+	// Provide reference to the plug-ins
+	for (auto &&plugin: PDI_state.plugins) {
+		PDI_data_end_f data_end = plugin.second->data_end;
+		//TODO: register data_end
+		plugin.second->data_start(ref); /// Move reference to the plug-in
 	}
 	
-	return status;
-	
-err0:
-	PDI_state.store.erase(name);
-	return status;
+	return PDI_OK;
 }
 
 
@@ -275,25 +238,21 @@ PDI_status_t PDI_release(const char *c_name)
 
 PDI_status_t PDI_reclaim(const char *name)
 {
-	if (exist(name,  PDI_state.descriptors)) {
+	auto&& descit = PDI_state.descriptors.find(name);
+	if ( descit == PDI_state.descriptors.end() ) return PDI_UNAVAILABLE;
 	
-		auto &&refstack = PDI_state.store.find(name);
-		
-		if (refstack == PDI_state.store.end()) {
-			return PDI_make_err(PDI_ERR_VALUE, "Cannot reclaim a non shared value");
-		}
-		
-		// if the content is a metadata, keep it
-		if (refstack->second.top().is_metadata()) {
-			if (PDI_status_t status = refstack->second.top().get_content()->copy_metadata()) return status;
-		} else {
-			// Manually reclaiming data
-			refstack->second.top().reclaim();
-			refstack->second.pop();
-			if (refstack->second.empty()) PDI_state.store.erase(refstack);
-		}
+	stack<Data_ref>& refstack = PDI_state.store[name];
+	if (refstack.empty()) {
+		return PDI_make_err(PDI_ERR_VALUE, "Cannot reclaim a non shared value");
+	}
+	
+	// if the content is a metadata, keep it
+	if ( descit->second.is_metadata() ) {
+		if (PDI_status_t status = refstack.top().get_content()->copy_metadata()) return status;
 	} else {
-		return PDI_UNAVAILABLE;
+		// Manually reclaiming data
+		refstack.top().reclaim();
+		refstack.pop();
 	}
 	
 	return PDI_OK;

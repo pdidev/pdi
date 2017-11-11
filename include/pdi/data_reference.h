@@ -21,20 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-/* The following is used for doxygen documentation */
+
 /**
  * \file Data_ref.h
  * \brief .
  * \author C. Roussel, corentin.roussel@cea.fr
- */
-// Created:  08/09/2017 17:45:15
-
-/** \class  Data_ref
- *
- *  \brief  Reference and access a shared Data_content with restricted right.
- *
- *  This class allows to manipulate a shared Data_content with restricted right access.
- *  When the content stop being available it sends a terminating function and loose access and ownership.
  */
 
 #ifndef DATA_REF_H__
@@ -51,32 +42,74 @@
 namespace PDI
 {
 
+/** A dynamically typed reference to data with automatic memory management and
+ * read/write locking semantic.
+ * 
+ * Data_ref is a smart pointer that features:
+ * - cycle-free garbage collecting similar to std::shared_ptr 
+ * - a dynamic type system,
+ * - a read/write locking mechanism,
+ * - a release system that nullifies all existing references to the raw data
+ *   before returning it,
+ * - a notification system to be notified when the raw data is to be deleted
+ * 
+ * The lock system can not be relied upon in a multithreaded environment.
+ * 
+ * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ */
 class Data_ref
 {
 public:
-	/* ****** LIFECYCLE  ****** */
-	Data_ref();  ///< default constructor, empty object
-	Data_ref(const Data_ref &); ///< Copy contructor, THE DUPLICATED REFERENCE HAS NO RIGHT OF ACCESS
-	Data_ref(Data_ref &&); ///< Move constructor
-	~Data_ref();  ///< Destructor
+	/** Constructs a null ref
+	 */
+	Data_ref ();
 	
-	/// Inialized a Data_ref with or without a data_end function
-	PDI_status_t init(const std::string name, const std::shared_ptr< Data_content > content, const PDI_data_end_f data_end, const PDI_inout_t inout);
-	PDI_status_t init(const std::string name, const std::shared_ptr< Data_content > content, const PDI_inout_t inout);
+	/** Creates a reference to currently unreferenced data
+	 * \param desc a descriptor of the data to reference
+	 * \param data the raw data to reference
+	 * \param access the maximum allowed access to the underlying content
+	 */
+	Data_ref(const Data_descriptor& desc, void* data, PDI_inout_t access, PDI_inout_t lock=PDI_NONE);
 	
-	/* ****** OPERATORS  ****** */
-	Data_ref &operator = (Data_ref &&ref); ///< Move operator
-	Data_ref &operator = (const Data_ref &ref); ///< Copy operator -- Right of access are removed in the process
+	/** Copies an existing reference
+	 * \param other the ref to copyv
+	 */
+	Data_ref(const Data_ref &other, PDI_inout_t lock=PDI_NONE);
+	
+	/** The move constructor
+	 * \param other the ref to move
+	 */
+	Data_ref(Data_ref &&other, PDI_inout_t lock=PDI_NONE);
+	
+	
+	/** Copies an existing reference into this one
+	 * \param other the ref to copy
+	 * \return *this
+	 */
+	Data_ref &operator= (const Data_ref &other);
+	
+	/** Moves an existing reference into this one
+	 * \param other the ref to move
+	 * \return *this
+	 */
+	Data_ref &operator= (Data_ref &&other);
+	
+	/** Destructor
+	 */
+	~Data_ref();
+	
 	operator bool () const;
+	
+	//TODO: add a function to register a deletion callback
 	
 	/* ****** METHODS  ****** */
 	PDI_status_t reclaim(); ///< Inform the PDI::Data_content that the buffer is reclaimed. All others references and pending operation are stopped.
 	
 	/* ****** ACCESSORS  ****** */
 	std::shared_ptr< Data_content> get_content() const;  ///< shared the contained data_content
-	const Data_descriptor &get_desc() const;  ///< return a pointer to the descriptor
-	const std::string &get_name() const; ///< Get the data name
-	bool is_metadata() const; ///< return true if this is a metadata
+	const std::string& get_name() const;
+	const Data_descriptor& get_desc() const;
 	
 	bool try_grant(PDI_inout_t access); ///< Check if (additional) priviledge can be granted.
 	bool grant(PDI_inout_t access); ///< Ask for (additional) priviledge
@@ -88,22 +121,39 @@ public:
 	friend class Data_content;
 	
 private:
-	/* ****** LIFECYCLE  ****** */
-	void clear(); /// Reset reference
-	bool add_priviledge(const PDI_inout_t inout); /// increase priviledge
-	bool rm_priviledge(const PDI_inout_t inout); /// decrease priviledge
+	/// Reset reference
+	void clear();
 	
-	/* ****** DATA MEMBERS  ****** */
-	std::shared_ptr< Data_content >  m_content; ///< shared pointer on the data content
-	PDI_inout_t m_access;      ///< Authorized access using this reference
-	PDI_data_end_f m_data_end;  ///< function to use before releasing the data. Wrapper below.
-	Data_descriptor *m_desc;   ///< metadata that defines the name, PDI_datatype and ...etc.
+	/// increase priviledge
+	bool add_priviledge(const PDI_inout_t inout);
 	
-	/* ****** METHODS  ****** */
-	PDI_status_t data_end(); ///< wrapp the plugin function above, call this to release the data.
+	/// decrease priviledge
+	bool rm_priviledge(const PDI_inout_t inout);
 	
-}; // *****  end of class Data_ref  *****
+	/// wrap the plugin function above, call this to release the data.
+	PDI_status_t data_end();
+	
+	/** shared pointer on the data content
+	 * \todo make Data_content private to this class
+	 * \todo replace by a raw pointer we manage ourselves
+	 */
+	std::shared_ptr< Data_content >  m_content;
+	
+	/// Authorized access using this reference
+	PDI_inout_t m_access;
+	
+	/** function to use before releasing the data. Wrapper below.
+	 * \todo replace by a set in Data_content
+	 */
+	PDI_data_end_f m_data_end;
+	
+	/** The descriptor that lead to the creation of this data (might be null)
+	 * \todo move to Data_content
+	 */
+	const Data_descriptor *m_desc;
+	
+}; // class Data_ref
 
-} // ***** end of PDI namespace
+} // namespace PDI
 
 #endif //  DATA_REF_H__

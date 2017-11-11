@@ -730,7 +730,7 @@ static PDI_status_t read_var(const PDI::Data_ref& ref, const SIONlib_var_t *var)
   return PDI_OK;
 }
 
-PDI_status_t PDI_SIONlib_data_start(PDI::Data_ref&& ref)
+PDI_status_t PDI_SIONlib_data_start(PDI::Data_ref ref)
 {
   PDI_status_t write_status = PDI_OK;
   if (ref.try_grant(PDI_OUT)) {
@@ -766,9 +766,9 @@ PDI_status_t PDI_SIONlib_data_start(PDI::Data_ref&& ref)
   return read_status;
 }
 
-PDI_status_t PDI_SIONlib_data_end(PDI::Data_ref&& ref)
+PDI_status_t PDI_SIONlib_data_end(PDI::Data_ref ref)
 {
-  ref=ref;
+  (void)ref;
   return PDI_OK;
 }
 

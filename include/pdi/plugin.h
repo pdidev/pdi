@@ -60,13 +60,13 @@ typedef PDI_status_t (*PDI_event_f)(const char *event);
  * \param[in] available data
  * \return an exit status code
  */
-typedef PDI_status_t (*PDI_data_start_f)(PDI::Data_ref &&ref);
+typedef PDI_status_t (*PDI_data_start_f)(PDI::Data_ref ref);
 
 /** Skeleton of the function called to notify that some data becomes unavailable
  * \param[in] data the plugin cannot access anymore
  * \return an exit status code
  */
-typedef PDI_status_t (*PDI_data_end_f)(PDI::Data_ref &&ref);
+typedef PDI_status_t (*PDI_data_end_f)(PDI::Data_ref ref);
 
 struct PDI_plugin_s {
 

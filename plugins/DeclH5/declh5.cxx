@@ -40,6 +40,7 @@
 
 PC_tree_t my_conf;
 
+using PDI::Data_ref;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -392,7 +393,7 @@ PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	return status;
 }
 
-PDI_status_t PDI_declh5_data_start(PDI::Data_ref&& ref)
+PDI_status_t PDI_declh5_data_start(PDI::Data_ref ref)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -442,9 +443,9 @@ PDI_status_t PDI_declh5_data_start(PDI::Data_ref&& ref)
 	return status;
 }
 
-PDI_status_t PDI_declh5_data_end(PDI::Data_ref&& ref)
+PDI_status_t PDI_declh5_data_end(PDI::Data_ref ref)
 {
-	ref = ref; // prevent unused warning
+	(void) ref; // prevent unused warning
 	return PDI_OK;
 }
 

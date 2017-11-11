@@ -540,7 +540,7 @@ PDI_order_t array_order(PC_tree_t node)
 	return order;
 }
 
-PDI_status_t PDI_parallel_declh5_data_start( PDI::Data_ref&& ref )
+PDI_status_t PDI_parallel_declh5_data_start( PDI::Data_ref ref )
 {
 	PDI_status_t status = PDI_OK;
 	if ( ref.try_grant(PDI_OUT) ) {
@@ -653,7 +653,7 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI::Data_ref&& ref )
 	return status;
 }
 
-PDI_status_t PDI_parallel_declh5_data_end(PDI::Data_ref&& ref)
+PDI_status_t PDI_parallel_declh5_data_end(PDI::Data_ref ref)
 {
 	ref = ref; // prevent unused warning
 	return PDI_OK;

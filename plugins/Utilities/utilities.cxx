@@ -292,7 +292,7 @@ PDI_status_t cast_data_int(Data_ref& ref, int32_t plugin_data) {
 
 
 
-PDI_status_t PDI_utilities_data_start( Data_ref&& ref )
+PDI_status_t PDI_utilities_data_start( PDI::Data_ref ref )
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -349,7 +349,7 @@ PDI_status_t PDI_utilities_data_start( Data_ref&& ref )
 	return status;
 }
 
-PDI_status_t PDI_utilities_data_end(Data_ref&& ref)
+PDI_status_t PDI_utilities_data_end(PDI::Data_ref ref)
 {
 	(void) ref; // remove warning "unused var..."
 	return PDI_OK;
