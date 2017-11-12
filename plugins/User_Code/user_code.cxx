@@ -362,7 +362,7 @@ PDI_status_t PDI_user_code_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_user_code_data_start(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_user_code_data_start(const std::string& name, PDI::Data_ref)
 {
 	 
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
@@ -376,7 +376,7 @@ PDI_status_t PDI_user_code_data_start(const std::string& name, PDI::Data_ref ref
 	return PDI_OK;
 }
 
-PDI_status_t PDI_user_code_data_end(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_user_code_data_end(const std::string& name, PDI::Data_ref)
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
 		for ( int n=0; n<all_uc[ii].nb_dataends ; ++n ) {

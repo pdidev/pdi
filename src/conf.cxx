@@ -40,7 +40,7 @@
 
 #include "conf.h"
 
-static PDI_status_t load_data(PC_tree_t node, PDI_datakind_t kind)
+static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -64,7 +64,7 @@ static PDI_status_t load_data(PC_tree_t node, PDI_datakind_t kind)
 		PDI_handle_err(PDI_datatype_load(&type, config), err1);
 		
 		PDI::Data_descriptor cur_data;
-		PDI_handle_err(cur_data.init(name, config, (kind == PDI_DK_METADATA), type), err2);
+		PDI_handle_err(cur_data.init(name, config, is_metadata, type), err2);
 		
 		PDI_state.descriptors.insert({name, cur_data});
 	}
@@ -89,7 +89,7 @@ PDI_status_t load_conf(PC_tree_t node)
 	{
 		PC_tree_t metadata = PC_get(node, ".metadata");
 		if (!PC_status(metadata)) {
-			PDI_handle_err(load_data(metadata, PDI_DK_METADATA), err0);
+			PDI_handle_err(load_data(metadata, true), err0);
 		}
 	}
 	
@@ -97,7 +97,7 @@ PDI_status_t load_conf(PC_tree_t node)
 	{
 		PC_tree_t data = PC_get(node, ".data");
 		if (!PC_status(data)) {
-			PDI_handle_err(load_data(data, PDI_DK_DATA), err0);
+			PDI_handle_err(load_data(data, false), err0);
 		}
 	}
 	

@@ -21,14 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-/* The following is used for doxygen documentation */
-/**
- * \file Data_descriptor.h
- * \brief .
- * \author C. Roussel, corentin.roussel@cea.fr
- */
-// Created:  11/09/2017 14:22:31
-
 
 #ifndef DATA_DESCRIPTOR_H__
 #define DATA_DESCRIPTOR_H__
@@ -40,49 +32,52 @@
 
 #include "pdi/datatype.h"
 
+namespace PDI {
 
-/** the possible kind of data
- */
-typedef enum PDI_datakind_e {
-	PDI_DK_DATA = 0,
-	PDI_DK_METADATA
-} PDI_datakind_t;
-
-
-namespace PDI
-{
-
-/** \class  Data_descriptor
- *  \brief  Describe the content of a buffer.
+/** Describe the content of a buffer.
  */
 class Data_descriptor
 {
 public:
-	/* ****** LIFECYCLE  ****** */
-	Data_descriptor() = default;  ///< Create empty descriptor
-	Data_descriptor(const Data_descriptor &); ///< copy constructor
-	~Data_descriptor(); ///< Destructor
+	/** Create empty descriptor
+	 */
+	Data_descriptor() = default;
+	
+	Data_descriptor(const Data_descriptor &);
+	
+	~Data_descriptor();
 	
 	PDI_status_t init(const std::string &name, PC_tree_t config, bool is_metadata, const PDI_datatype_t &type);  ///< initialized descriptor
 	
-	/* ****** OPERATORS ****** */
 	Data_descriptor &operator= (const Data_descriptor &);  ///< Copy operator
 	
-	/* ****** ACCESSORS  ****** */
-	const std::string &get_name() const; ///< return the data name
-	const PDI_datatype_t &get_type() const;   ///< Return the datatype
-	PC_tree_t get_config() const;       ///< Return the PC_tree_t config
-	bool is_metadata() const;           ///< Return true if the data is a metadata
+	/** return the data name
+	 */
+	const std::string &get_name() const;
+	
+	/** Return the datatype
+	 */
+	const PDI_datatype_t &get_type() const;
+	
+	/** Return the PC_tree_t config
+	 */
+	PC_tree_t get_config() const;
+	
+	/** Return true if the data is a metadata
+	 */
+	bool is_metadata() const;
 	
 private:
-	/* ****** DATA MEMBERS  ****** */
 	std::string m_name;
+	
 	PC_tree_t m_config;
+	
 	bool m_metadata;
+	
 	PDI_datatype_t m_type;
 	
-}; // *****  end of class Data_descriptor  *****
+}; // class Data_descriptor
 
-} // ***** end of PDI namespace
+} // namespace PDI 
 
 #endif // DATA_DESCRIPTOR_H__
