@@ -50,14 +50,14 @@ typedef void (*Destroyer)(void *, void *);
  * read/write locking semantic.
  * 
  * Data_ref is a smart pointer that features:
- * - cycle-free garbage collecting similar to std::shared_ptr 
  * - a dynamic type system,
- * - a read/write locking mechanism,
- * - a release system that nullifies all existing references to the raw data
- *   before returning it,
- * - a notification system to be notified when the raw data is to be deleted
+ * - cycle-free garbage collecting similar to std::shared_ptr,
+ * - a read/write locking mechanism similar to std::shared_mutex,
+ * - a notification system to be notified when the raw data is to be deleted,
+ * - a release system that nullifies all existing references to the raw data.
  * 
- * The lock system can not be relied upon in a multithreaded environment.
+ * \warning As of now, and unlike std::shared_ptr, the lock system can not be
+ * relied upon in a multithreaded environment.
  * 
  * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
@@ -118,13 +118,21 @@ public:
 	 */
 	operator bool () const;
 	
-	/** Replaces the referenced raw data by a copy
+	/** Releases ownership of the referenced raw data by replacing all existing
+	 *  references by references to a copy.
+	 *
+	 * \return the previously referenced raw data or nullptr if this was a null
+	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	PDI_status_t detach ();
+	void* copy_release ();
 	
-	/** Nullifies all references to the referenced raw data but do not destroy it
+	/** Releases ownership of the referenced raw data by nullifying all existing
+	 *  references.
+	 * 
+	 * \return the previously referenced raw data or nullptr if this was a null
+	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	PDI_status_t reclaim();
+	void* null_release();
 	
 	//TODO: add a function to manage deletion callbacks
 	

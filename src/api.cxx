@@ -198,7 +198,7 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 	
 	/// for metadata, unlink happens on share
 	if (!refstack.empty() && desc.is_metadata()) {
-		refstack.top().reclaim();
+		refstack.top().null_release();
 		refstack.pop();
 	}
 	
@@ -248,11 +248,11 @@ PDI_status_t PDI_reclaim(const char *name)
 	
 	// if the content is a metadata, keep it
 	if ( descit->second.is_metadata() ) {
-		refstack.top().detach();
+		refstack.top().copy_release();
 	} else {
 		// Manually reclaiming data
-		refstack.top().reclaim();
-		refstack.pop(); //TODO seems to mess-up the store...
+		refstack.top().null_release();
+		refstack.pop();
 	}
 	
 	return PDI_OK;

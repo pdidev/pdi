@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include <cassert>
+#include <memory>
 
 #include "pdi.h"
 
@@ -43,6 +44,7 @@ namespace PDI {
 
 using std::make_shared;
 using std::move;
+using std::unique_ptr;
 
 /** \class  Data_content
 *   \brief  Manipulate and grant access to a buffer depending on the remaining right access (read/write).
@@ -64,8 +66,6 @@ public:
 	void *get_buffer() const; ///< return the buffer address
 	
 	const PDI_datatype_t &get_type() const;///< return a copy of the PDI_datatype_t or the a pointer on the current PDI_datatype_t
-	
-	PDI_status_t copy_metadata(); ///< duplicate the buffer content
 	
 	bool try_lock(PDI_inout_t access);  ///< retain right access
 	bool lock(PDI_inout_t access);  ///< retain right access
@@ -198,14 +198,36 @@ Data_ref::operator bool() const
 	return static_cast<bool>(m_content);
 }
 
-PDI_status_t Data_ref::detach()
+void* Data_ref::copy_release()
 {
-	return m_content->copy_metadata();
+	//TODO: error handling if data is not readable
+
+	//TODO: handle errors
+	PDI_datatype_t newtype; PDI_datatype_densify(&newtype, &m_content->m_type);
+	
+	//TODO: handle errors
+	size_t dsize; PDI_datatype_buffersize(&m_content->m_type, &dsize);
+	unique_ptr<void, decltype(free)*> newbuffer(malloc(dsize), free);
+	PDI_buffer_copy(newbuffer.get(),
+	                &newtype,
+	                m_content->m_buffer,
+	                &m_content->m_type);
+	
+	// replace the buffer
+	void *oldbuffer = m_content->m_buffer;
+	m_content->m_buffer = newbuffer.release();
+	
+	// replace the type
+	//TODO: handle errors & replace by move
+	PDI_datatype_destroy(&m_content->m_type);
+	PDI_datatype_copy(&m_content->m_type, &newtype);
+	PDI_datatype_destroy(&newtype);
+	
+	return oldbuffer;
 }
 
-PDI_status_t Data_ref::reclaim()
+void* Data_ref::null_release()
 {
-	m_data_end = nullptr; // no need to notify ourselves
 	for (auto && ref: m_content->m_refs) {
 		// TODO: should return errors
 		ref->data_end();
@@ -214,7 +236,7 @@ PDI_status_t Data_ref::reclaim()
 	m_content->m_context = nullptr;
 	m_content->m_delete = nullptr;
 	PDI_datatype_destroy(&m_content->m_type);
-	return PDI_OK;
+	return *this;
 }
 
 const std::string& Data_ref::get_name() const
@@ -415,43 +437,6 @@ void *Data_ref::Data_content::get_buffer() const
 const PDI_datatype_t &Data_ref::Data_content::get_type() const
 {
 	return m_type;
-}
-
-PDI_status_t Data_ref::Data_content::copy_metadata()
-{
-	PDI_status_t status(PDI_OK);
-	void *newval = NULL;
-	
-	assert(m_buffer);
-	if (!m_initialized) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_RIGHT, "Metadata has been exposed without read access"), err0);
-	}
-	
-	// copy the last exposed value of the data
-	PDI_datatype_t oldtype;
-	PDI_handle_err(PDI_datatype_copy(&oldtype, &m_type), err0);
-	PDI_handle_err(PDI_datatype_destroy(&m_type), err1);
-	PDI_handle_err(PDI_datatype_densify(&m_type, &oldtype), err1);
-	size_t dsize; PDI_handle_err(PDI_datatype_buffersize(&m_type, &dsize), err1);
-	newval = malloc(dsize);
-	PDI_handle_err(PDI_buffer_copy(
-	                   newval,
-	                   &m_type,
-	                   m_buffer,
-	                   &oldtype),
-	               err2);
-	               
-	m_buffer = newval;
-	
-	PDI_datatype_destroy(&oldtype);
-	return status;
-	
-err2:
-	free(newval);
-err1:
-	PDI_datatype_destroy(&oldtype);
-err0:
-	return status;
 }
 
 bool Data_ref::Data_content::try_lock(PDI_inout_t access)
