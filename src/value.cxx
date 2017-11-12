@@ -47,7 +47,8 @@ using std::string;
 
 
 struct PDI_refval_s {
-	PDI::Data_descriptor *desc;
+	//TODO: replace by a descriptor
+	string name;
 	
 	PDI_value_t *idx;
 	
@@ -118,6 +119,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 {
 	PDI_status_t status = PDI_OK;
 	const char *ref = *val_str;
+	new (value) PDI_refval_t;
 	
 	if (*ref != '$') PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected '$', got %c", *ref), err0);
 	++ref;
@@ -131,16 +133,9 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	
 	int refid_len; PDI_handle_err(parse_id(&ref, &refid_len), err0);
 	
-	{
-		string refid(ref - refid_len, refid_len);
-		auto desc = PDI_state.descriptors.find(refid);
-		if (desc != PDI_state.descriptors.end()) {
-			value->desc = &(desc->second);
-		} else {
-			value->desc = NULL;
-		}
-	}
-	if (!value->desc) {
+	value->name = string(ref - refid_len, refid_len);
+	
+	if ( PDI_state.descriptors.find(value->name) == PDI_state.descriptors.end() ) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Reference to unknown data: `%.*s'", refid_len, ref - refid_len), err0);
 	}
 	
@@ -386,7 +381,9 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 {
 	PDI_status_t status = PDI_OK;
 	
-	const PDI_datatype_t &ref_type = val->desc->get_type();
+	const PDI::Data_descriptor& desc = PDI_state.descriptors[val->name];
+	
+	const PDI_datatype_t &ref_type = desc.get_type();
 	PDI_scalar_type_t type = ref_type.c.scalar;
 	
 	if (ref_type.kind == PDI_K_ARRAY) {
@@ -416,10 +413,10 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	}
 	
 	void *value; value = NULL;
-	if (PDI_access(val->desc->get_name().c_str(), &value, PDI_OUT) != PDI_OK) { //TODO: check this with Julien
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not accessible", val->desc->get_name().c_str()), err0);
+	if (PDI_access(val->name.c_str(), &value, PDI_OUT) != PDI_OK) { //TODO: check this with Julien
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not accessible", val->name.c_str()), err0);
 	}
-	if (!value) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->desc->get_name().c_str()), err0);
+	if (!value) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->name.c_str()), err0);
 	
 	switch (type) {
 	case PDI_T_INT8: {
@@ -439,7 +436,7 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	} break;
 	}
 	
-	PDI_release(val->desc->get_name().c_str());
+	PDI_release(val->name.c_str());
 	
 	return status;
 	
@@ -578,9 +575,10 @@ PDI_status_t exprval_copy(PDI_exprval_t *value, PDI_exprval_t *copy)
 
 PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
 {
+	new (copy) PDI_refval_t;
 	copy->nb_idx = value->nb_idx;
 	
-	copy->desc = value->desc;
+	copy->name = value->name;
 	
 	int nb_idx = value->nb_idx;
 	copy->nb_idx = nb_idx;
@@ -629,6 +627,8 @@ PDI_status_t refval_destroy(PDI_refval_t *value)
 		PDI_value_destroy(&value->idx[ii]); // ignore potential errors
 	}
 	free(value->idx);
+	
+	value->~PDI_refval_t();
 	
 	return status;
 }

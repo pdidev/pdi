@@ -64,7 +64,7 @@ static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 		PDI_handle_err(PDI_datatype_load(&type, config), err1);
 		
 		PDI::Data_descriptor cur_data;
-		PDI_handle_err(cur_data.init(name, config, is_metadata, type), err2);
+		PDI_handle_err(cur_data.init(config, is_metadata, type), err2);
 		
 		PDI_state.descriptors.insert({name, cur_data});
 	}

@@ -47,13 +47,9 @@ public:
 	
 	~Data_descriptor();
 	
-	PDI_status_t init(const std::string &name, PC_tree_t config, bool is_metadata, const PDI_datatype_t &type);  ///< initialized descriptor
+	PDI_status_t init(PC_tree_t config, bool is_metadata, const PDI_datatype_t &type);  ///< initialized descriptor
 	
 	Data_descriptor &operator= (const Data_descriptor &);  ///< Copy operator
-	
-	/** return the data name
-	 */
-	const std::string &get_name() const;
 	
 	/** Return the datatype
 	 */
@@ -68,8 +64,6 @@ public:
 	bool is_metadata() const;
 	
 private:
-	std::string m_name;
-	
 	PC_tree_t m_config;
 	
 	bool m_metadata;

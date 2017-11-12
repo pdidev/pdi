@@ -73,10 +73,10 @@ struct PDI_state_s {
 	std::string transaction;
 	
 	/// List of data that are
-	std::unordered_set< std::string > transaction_data;
+	std::unordered_set<std::string> transaction_data;
 	
 	/// The actual loaded plugins
-	std::unordered_map<std::string, std::shared_ptr<PDI_plugin_t> > plugins;
+	std::unordered_map<std::string, std::shared_ptr<PDI_plugin_t>> plugins;
 	
 	/// The current error handling function
 	PDI_errfunc_f *errfunc;

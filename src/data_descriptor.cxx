@@ -42,7 +42,6 @@ namespace PDI
 
 /// Copy constructor
 Data_descriptor::Data_descriptor(const Data_descriptor &from):
-	m_name(from.m_name),
 	m_config(from.m_config),
 	m_metadata(from.m_metadata)
 {
@@ -51,14 +50,10 @@ Data_descriptor::Data_descriptor(const Data_descriptor &from):
 
 
 /// init data descriptor
-PDI_status_t Data_descriptor::init(const std::string &name, PC_tree_t config, bool is_metadata, const PDI_datatype_t &type)
+PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const PDI_datatype_t &type)
 {
 	PDI_status_t status(PDI_OK);
 	handle_PC_err(PC_status(config), err0);
-	if (name.empty()) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Cannot create data descriptor, name is empty"), err0);
-	}
-	m_name = name;
 	m_config = config;
 	m_metadata = is_metadata;
 	PDI_handle_err(PDI_datatype_copy(&m_type, &type), err0);
@@ -70,14 +65,12 @@ err0:
 /// Destructor
 Data_descriptor::~Data_descriptor()
 {
-	m_name.clear();
 	PDI_datatype_destroy(&m_type);
 }
 
 /// Copy operator
 Data_descriptor &Data_descriptor::operator= (const Data_descriptor &from)
 {
-	m_name = from.m_name;
 	m_config = from.m_config;
 	m_metadata = from.m_metadata;
 	PDI_datatype_copy(&m_type, &from.m_type);
@@ -94,11 +87,6 @@ const PDI_datatype_t &Data_descriptor::get_type() const
 bool Data_descriptor::is_metadata() const
 {
 	return m_metadata;
-}
-
-const std::string &Data_descriptor::get_name() const
-{
-	return m_name;
 }
 
 PC_tree_t Data_descriptor::get_config() const

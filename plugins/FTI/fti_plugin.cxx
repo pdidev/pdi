@@ -26,6 +26,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include <mpi.h>
@@ -42,21 +43,18 @@
 
 using std::cerr;
 using std::endl;
+using std::make_pair;
 using std::string;
 using std::unique_ptr;
+using std::unordered_map;
 using std::unordered_set;
 using std::vector;
-
-typedef struct {
-	PDI::Data_descriptor *desc;
-	long fti_id;
-} protected_data_t;
 
 /// The types of events FTI supports
 typedef enum { NO_EVENT=0, RECOVER, SNAPSHOT, CHECKPOINT, RESTART_STATUS } PDI_FTI_event_t;
 
 
-vector<protected_data_t> fti_protected;
+unordered_map<string, long> fti_protected;
 
 unordered_set<string> snapshot_events;
 
@@ -75,7 +73,7 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	for ( auto& iter : PDI_state.descriptors) {
 		long fti_id;
 		if ( !PC_int(PC_get(iter.second.get_config(), ".fti_id"), &fti_id) ) {
-			fti_protected.push_back({&(iter.second), fti_id});
+			fti_protected.insert(make_pair(iter.first, fti_id));
 		}
 	}
 	
@@ -202,17 +200,17 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 			direction = PDI_OUT;
 		}
 		for ( auto& protected_var: fti_protected ) {
-			PDI::Data_ref ref = PDI_find_ref(protected_var.desc->get_name());
+			PDI::Data_ref ref = PDI_find_ref(protected_var.first);
 			if ( ref.grant(direction) ) {
 				size_t size; PDI_datatype_datasize(&ref.get_type(), &size);
 				//TODO: handle non-contiguous data correctly
-				FTI_Protect(protected_var.fti_id,
+				FTI_Protect(protected_var.second,
 										ref.get(), size, FTI_CHAR);
 			} else {
-				FTI_Protect(protected_var.fti_id, NULL, 0, FTI_CHAR);
+				FTI_Protect(protected_var.second, NULL, 0, FTI_CHAR);
 				fprintf(stderr,
 								"** Warning: [PDI/FTI] Protected variable %s unavailable\n",
-						protected_var.desc->get_name().c_str());
+						protected_var.first.c_str());
 			}
 		}
 		switch ( event ) {
