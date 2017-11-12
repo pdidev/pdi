@@ -32,11 +32,12 @@
 #ifndef PDI_STATE_H__
 #define PDI_STATE_H__
 
-#include <unordered_map>
-#include <string>
 #include <list>
-#include <stack>
 #include <memory>
+#include <stack>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <pdi.h>
 
@@ -45,8 +46,6 @@
 #include <pdi/plugin_fwd.h>
 #include <pdi/data_reference.h>
 #include <pdi/data_descriptor.h>
-#include <pdi/data_content.h>
-
 
 
 struct loaded_plugin_s {

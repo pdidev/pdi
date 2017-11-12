@@ -83,7 +83,6 @@ add_library(pdi SHARED
 		plugin_loader.cxx
 		utils.cxx
 		value.cxx
-		data_content.cxx
 		data_descriptor.cxx
 		data_reference.cxx
 )

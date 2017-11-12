@@ -204,10 +204,10 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 		for ( auto& protected_var: fti_protected ) {
 			PDI::Data_ref ref = PDI_find_ref(protected_var.desc->get_name());
 			if ( ref.grant(direction) ) {
-				size_t size; PDI_datatype_datasize(&ref.get_content()->get_type(), &size);
+				size_t size; PDI_datatype_datasize(&ref.get_type(), &size);
 				//TODO: handle non-contiguous data correctly
 				FTI_Protect(protected_var.fti_id,
-										ref.get_content()->get_buffer(), size, FTI_CHAR);
+										ref.get(), size, FTI_CHAR);
 			} else {
 				FTI_Protect(protected_var.fti_id, NULL, 0, FTI_CHAR);
 				fprintf(stderr,
@@ -235,7 +235,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 PDI_status_t PDI_fti_plugin_data_start(PDI::Data_ref ref)
 {
 	if ( ref.priviledge(PDI_IN) && restart_status_events.find(ref.get_name()) != restart_status_events.end() ) {
-		*(int*)ref.get_content()->get_buffer() = FTI_Status();
+		*(int*)ref.get() = FTI_Status();
 	}
 	return PDI_OK;
 }

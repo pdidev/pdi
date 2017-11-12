@@ -358,7 +358,7 @@ void rm_if_exist(hid_t h5file, char *dset_name)
 
 const PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts, hsize_t *rank, PDI::Data_ref& ref)
 {
-	const PDI_datatype_t* scalart = &ref.get_content()->get_type();
+	const PDI_datatype_t* scalart = &ref.get_type();
 	if ( scalart->kind == PDI_K_ARRAY ) {
 		const PDI_datatype_t& datatype = *scalart; 
 		*rank = datatype.c.array->ndims;
@@ -431,7 +431,7 @@ PDI_status_t pwrite_to_file(PDI::Data_ref& ref, char *filename, char *pathname, 
 	hid_t plist_id2 = H5Pcreate(H5P_DATASET_XFER);
 	H5Pset_dxpl_mpio(plist_id2, H5FD_MPIO_COLLECTIVE);
 	//       dataset, datatype                 , selection in memory , selection within the file dataset dataspace , properties , buffer );
-	H5Dwrite(dataset, h5type(scalart->c.scalar), memspace, filespace, plist_id2, ref.get_content()->get_buffer());
+	H5Dwrite(dataset, h5type(scalart->c.scalar), memspace, filespace, plist_id2, ref.get());
 	
 	// closing 
 	H5Sclose(memspace);
@@ -482,7 +482,7 @@ PDI_status_t pread_from_file(PDI::Data_ref& ref, char *filename, char *pathname,
 			hid_t memspace = H5Screate_simple(rank, sizes, NULL);
 			
 			/// Extract subspace of data 
-			if ( ref.get_content()->get_type().kind == PDI_K_ARRAY ) {
+			if ( ref.get_type().kind == PDI_K_ARRAY ) {
 				H5Sselect_hyperslab (memspace, H5S_SELECT_SET, starts, NULL, 
 														 subsizes, NULL);
 			}
@@ -491,7 +491,7 @@ PDI_status_t pread_from_file(PDI::Data_ref& ref, char *filename, char *pathname,
 			hid_t plist_id2 = H5Pcreate(H5P_DATASET_XFER);
 			H5Pset_dxpl_mpio(plist_id2, H5FD_MPIO_COLLECTIVE);
 			if( 0 > H5Dread( dataset_id, h5type(scalart->c.scalar), memspace, dataspace_id, plist_id2,
-				ref.get_content()->get_buffer())) status = PDI_ERR_SYSTEM;
+				ref.get())) status = PDI_ERR_SYSTEM;
 			
 			H5Sclose(memspace);
 			H5Sclose(dataspace_id);
@@ -556,7 +556,7 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI::Data_ref ref )
 				// TODO: warn user, assuming size is unchanged (unknow consequence when size is changed...)
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL; 
-				const PDI_datatype_t& datatype = ref.get_content()->get_type();
+				const PDI_datatype_t& datatype = ref.get_type();
 				if ( datatype.kind == PDI_K_ARRAY ) {
 					PDI_order_t order;
 					PDI::Data_descriptor& desc = PDI_state.descriptors[ref.get_name()];
@@ -610,7 +610,7 @@ PDI_status_t PDI_parallel_declh5_data_start( PDI::Data_ref ref )
 				
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL;
-				const PDI_datatype_t& datatype = ref.get_content()->get_type();
+				const PDI_datatype_t& datatype = ref.get_type();
 				if ( datatype.kind == PDI_K_ARRAY ) {
 					PDI_order_t order;
 					if( (order = array_order(ref.get_desc().get_config())) < 0 )

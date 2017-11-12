@@ -33,14 +33,18 @@
 
 #include <memory>
 
-#include <pdi.h>
+#include "pdi.h"
 
-#include <pdi/data_descriptor_fwd.h>
-#include <pdi/data_content_fwd.h>
-#include <pdi/plugin.h>
+#include "pdi/data_descriptor_fwd.h"
+#include "pdi/datatype.h"
+#include "pdi/plugin.h"
 
 namespace PDI
 {
+
+/** Destroyer function free or delete a buffer in a given context.
+ */
+typedef void (*Destroyer)(void *, void *);
 
 /** A dynamically typed reference to data with automatic memory management and
  * read/write locking semantic.
@@ -99,16 +103,33 @@ public:
 	 */
 	~Data_ref();
 	
+	/** Offers access to the referenced raw data
+	 * \return a pointer to the referenced raw data
+	 */
+	operator void* () const;
+	
+	/** Offers access to the referenced raw data
+	 * \return a pointer to the referenced raw data
+	 */
+	void* get () const;
+	
+	/** Checks whether this is a null reference
+	 * \return whether this reference is non-null
+	 */
 	operator bool () const;
 	
-	//TODO: add a function to register a deletion callback
+	/** Replaces the referenced raw data by a copy
+	 */
+	PDI_status_t detach ();
 	
-	/* ****** METHODS  ****** */
-	PDI_status_t reclaim(); ///< Inform the PDI::Data_content that the buffer is reclaimed. All others references and pending operation are stopped.
+	/** Nullifies all references to the referenced raw data but do not destroy it
+	 */
+	PDI_status_t reclaim();
 	
-	/* ****** ACCESSORS  ****** */
-	std::shared_ptr< Data_content> get_content() const;  ///< shared the contained data_content
+	//TODO: add a function to manage deletion callbacks
+	
 	const std::string& get_name() const;
+	const PDI_datatype_t& get_type() const;
 	const Data_descriptor& get_desc() const;
 	
 	bool try_grant(PDI_inout_t access); ///< Check if (additional) priviledge can be granted.
@@ -118,9 +139,12 @@ public:
 	bool priviledge(PDI_inout_t access) const; ///< Return true if (access & m_access)
 	
 	
-	friend class Data_content;
 	
 private:
+	class Data_content;
+	
+	friend class Data_content;
+	
 	/// Reset reference
 	void clear();
 	

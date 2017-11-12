@@ -35,7 +35,6 @@
 #include "pdi.h"
 
 #include "pdi/data_reference.h"
-#include "pdi/data_content.h"
 #include "pdi/state.h"
 
 #include "status.h"
@@ -44,6 +43,75 @@ namespace PDI {
 
 using std::make_shared;
 using std::move;
+
+/** \class  Data_content
+*   \brief  Manipulate and grant access to a buffer depending on the remaining right access (read/write).
+*/
+class Data_ref::Data_content
+{
+public:
+	Data_content();   ///< constructor
+	~Data_content();  ///< destructor
+	Data_content(const Data_content &) = delete ; ///< unused
+	Data_content(Data_content &&) = delete;       ///< unused
+	
+	PDI_status_t init(void *buffer, Destroyer func, PDI_inout_t permission, const PDI_datatype_t &type); ///< Initialized a Data_content
+	
+	bool is_writable(); ///< True if no references has writing nor reading access right.
+	bool is_readable(); ///< True if is initialized and no reference can write.
+	bool has_reader();  ///< True if the number of reader > 0
+	
+	void *get_buffer() const; ///< return the buffer address
+	
+	const PDI_datatype_t &get_type() const;///< return a copy of the PDI_datatype_t or the a pointer on the current PDI_datatype_t
+	
+	PDI_status_t copy_metadata(); ///< duplicate the buffer content
+	
+	bool try_lock(PDI_inout_t access);  ///< retain right access
+	bool lock(PDI_inout_t access);  ///< retain right access
+	bool unlock(PDI_inout_t access); ///< return right access
+	
+	/// buffer that contains data
+	void *m_buffer;
+	
+	/// free memory allocated for the buffer
+	Destroyer m_delete;
+	
+	/// a context that is consumed by the destroyer
+	void *m_context;
+	
+	/// type of the data inside the buffer
+	PDI_datatype_t m_type;
+	
+	/// m_buffer has been initialized (is readable)
+	bool m_initialized;
+	
+	/// m_buffer is writable (if True, m_nb_reader=0)
+	bool m_writable;
+	
+	/// number of concurrent reader (if >1 , is_writable = False)
+	int m_nb_reader;
+	
+	/// m_buffer has writer
+	bool m_writer;
+	
+	/// references to this instance
+	std::unordered_set< Data_ref *> m_refs;
+	
+}; // class Data_content
+
+void destroyer_free(void *buffer, void *context)
+{
+	context = (void *)context;
+	free(buffer);
+}
+
+template <typename T>
+void destroyer_delete(void *buffer, void *context)
+{
+	context = (void *)context;
+	delete(reinterpret_cast<T*>(buffer));
+}
 
 Data_ref::Data_ref():
 		m_access(PDI_NONE),
@@ -115,10 +183,56 @@ Data_ref::~Data_ref()
 	clear();
 }
 
+Data_ref::operator void* () const
+{
+	return get();
+}
+
+void* Data_ref::get () const
+{
+	return m_content->m_buffer;
+}
+
 Data_ref::operator bool() const
 {
 	return static_cast<bool>(m_content);
 }
+
+PDI_status_t Data_ref::detach()
+{
+	return m_content->copy_metadata();
+}
+
+PDI_status_t Data_ref::reclaim()
+{
+	m_data_end = nullptr; // no need to notify ourselves
+	for (auto && ref: m_content->m_refs) {
+		// TODO: should return errors
+		ref->data_end();
+	}
+	m_content->m_buffer = nullptr;
+	m_content->m_context = nullptr;
+	m_content->m_delete = nullptr;
+	PDI_datatype_destroy(&m_content->m_type);
+	return PDI_OK;
+}
+
+const std::string& Data_ref::get_name() const
+{
+	return get_desc().get_name();
+}
+
+const PDI_datatype_t& Data_ref::get_type() const
+{
+	return m_content->get_type();
+}
+
+const Data_descriptor& Data_ref::get_desc() const
+{
+	return *m_desc;
+}
+
+
 
 void Data_ref::clear()
 {
@@ -131,35 +245,13 @@ void Data_ref::clear()
 	m_content.reset();
 }
 
-PDI_status_t Data_ref::reclaim()
-{
-	return m_content->reclaim(this); ///< reclaim all reference excep this one
-}
-
 PDI_status_t Data_ref::data_end()
 {
-	PDI_status_t status(PDI_OK);
-	if (m_data_end) PDI_handle_err((*m_data_end)(std::move(*this)), err0);  // calling data_end
+	if (m_data_end) {
+		if( PDI_status_t status = m_data_end(*this) ) return status;
+	}
 	
-	return status;
-err0:
-	this->revoke(PDI_INOUT);
-	return status;
-}
-
-std::shared_ptr< Data_content> Data_ref::get_content() const
-{
-	return m_content;
-}
-
-const std::string& Data_ref::get_name() const
-{
-	return get_desc().get_name();
-}
-
-const Data_descriptor& Data_ref::get_desc() const
-{
-	return *m_desc;
+	return PDI_OK;
 }
 
 bool Data_ref::add_priviledge(const PDI_inout_t inout)
@@ -261,5 +353,171 @@ PDI_inout_t Data_ref::priviledge() const
 {
 	return m_access;
 }
+
+Data_ref::Data_content::Data_content():
+		m_buffer(NULL),
+		m_initialized(false),
+		m_writable(true),
+		m_nb_reader(0),
+		m_writer(false),
+		m_refs(std::unordered_set<Data_ref * >())
+{ }
+
+/// Initialization
+PDI_status_t Data_ref::Data_content::init(void *buffer, Destroyer destroy, PDI_inout_t access, const PDI_datatype_t &type)
+{
+	PDI_status_t status(PDI_OK);
+	if (buffer == NULL || destroy == NULL) return PDI_ERR_VALUE;
+	
+	m_buffer = buffer;
+	m_delete = destroy;
+	m_context = nullptr;
+	m_initialized = (bool)(access & PDI_OUT);
+	m_writable = (bool)(access & PDI_IN);
+	PDI_handle_err(PDI_datatype_copy(&m_type, &type), err0);
+	
+	return status;
+err0:
+	return status;
+}
+
+/// Destructor
+Data_ref::Data_content::~Data_content()
+{
+	// If the data exist and has been reclaimed release it.
+	if (m_buffer) {
+		m_delete(m_buffer, m_context);
+		PDI_datatype_destroy(&m_type);
+	}
+}
+
+/* ****** ACCESSORS  ****** */
+bool Data_ref::Data_content::is_writable()
+{
+	return m_writable && (m_nb_reader == 0) && (!m_writer); // No one is writing nor reading
+}
+
+bool Data_ref::Data_content::is_readable()
+{
+	return m_initialized && (!m_writer); // data is initialized and no one is writing
+}
+
+bool Data_ref::Data_content::has_reader()
+{
+	return bool(m_nb_reader);
+}
+
+void *Data_ref::Data_content::get_buffer() const
+{
+	return m_buffer;
+}
+
+const PDI_datatype_t &Data_ref::Data_content::get_type() const
+{
+	return m_type;
+}
+
+PDI_status_t Data_ref::Data_content::copy_metadata()
+{
+	PDI_status_t status(PDI_OK);
+	void *newval = NULL;
+	
+	assert(m_buffer);
+	if (!m_initialized) {
+		PDI_handle_err(PDI_make_err(PDI_ERR_RIGHT, "Metadata has been exposed without read access"), err0);
+	}
+	
+	// copy the last exposed value of the data
+	PDI_datatype_t oldtype;
+	PDI_handle_err(PDI_datatype_copy(&oldtype, &m_type), err0);
+	PDI_handle_err(PDI_datatype_destroy(&m_type), err1);
+	PDI_handle_err(PDI_datatype_densify(&m_type, &oldtype), err1);
+	size_t dsize; PDI_handle_err(PDI_datatype_buffersize(&m_type, &dsize), err1);
+	newval = malloc(dsize);
+	PDI_handle_err(PDI_buffer_copy(
+	                   newval,
+	                   &m_type,
+	                   m_buffer,
+	                   &oldtype),
+	               err2);
+	               
+	m_buffer = newval;
+	
+	PDI_datatype_destroy(&oldtype);
+	return status;
+	
+err2:
+	free(newval);
+err1:
+	PDI_datatype_destroy(&oldtype);
+err0:
+	return status;
+}
+
+bool Data_ref::Data_content::try_lock(PDI_inout_t access)
+{
+	bool success(true);
+	
+	if (access & PDI_OUT) {
+		if (! is_readable()) {
+			success = false;
+		}
+	}
+	
+	if (access & PDI_IN) {
+		if (is_writable()) {
+			return success;
+		} else {
+			success = false;
+		}
+	}
+	
+	return success;
+}
+
+bool Data_ref::Data_content::lock(PDI_inout_t access)
+{
+	bool success(true);
+	int new_reader(0);
+	
+	if (access & PDI_OUT) {
+		if (is_readable()) {
+			++m_nb_reader ;
+			new_reader = 1;
+		} else {
+			success = false;
+		}
+	}
+	
+	
+	if (access & PDI_IN) {
+		if (((m_nb_reader - new_reader) == 0) && m_writable && (!m_writer)) {
+			m_writer = true;
+		} else {
+			success = false;
+		}
+	}
+	
+	return success;
+}
+
+
+bool Data_ref::Data_content::unlock(PDI_inout_t access)
+{
+	if ((access & PDI_OUT) && m_initialized && m_nb_reader > 0) {
+		--m_nb_reader;
+	} else {
+		return false;
+	}
+	
+	if ((access & PDI_IN) && m_writer) {
+		m_writer = false;
+	} else {
+		return false;
+	}
+	
+	return true;
+}
+
 
 } // namespace PDI

@@ -36,7 +36,6 @@
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 #include <pdi/data_reference.h>
-#include <pdi/data_content.h>
 
 PC_tree_t my_conf;
 
@@ -260,7 +259,7 @@ void write_to_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	hsize_t *h5sizes = NULL;
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
-	const PDI_datatype_t* scalart = &ref.get_content()->get_type();
+	const PDI_datatype_t* scalart = &ref.get_type();
 	const PDI_datatype_t& datatype = *scalart;
 	if ( datatype.kind == PDI_K_ARRAY ) {
 		rank = datatype.c.array->ndims;
@@ -297,7 +296,7 @@ void write_to_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	
 	hid_t h5fspace = H5Screate_simple(rank, h5subsizes, NULL);
 	hid_t h5mspace = H5Screate_simple(rank, h5sizes, NULL);
-	if ( ref.get_content()->get_type().kind == PDI_K_ARRAY) {
+	if ( ref.get_type().kind == PDI_K_ARRAY) {
 		H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
 	}
 	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
@@ -305,7 +304,7 @@ void write_to_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar),
 													 h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT,
-					 ref.get_content()->get_buffer());
+					 ref.get());
 	
 	H5Dclose(h5set);
 	H5PTclose(h5lcp);
@@ -325,7 +324,7 @@ PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
-	const PDI_datatype_t& datatype = ref.get_content()->get_type();
+	const PDI_datatype_t& datatype = ref.get_type();
 	const PDI_datatype_t* scalart = &datatype ;
 	if ( datatype.kind == PDI_K_ARRAY ) {
 		rank = datatype.c.array->ndims;
@@ -365,14 +364,14 @@ PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
 			hid_t memspace = H5Screate_simple(rank, sizes, NULL);
 			
 			/// Extract subspace of data 
-			if ( ref.get_content()->get_type().kind == PDI_K_ARRAY ) {
+			if ( ref.get_type().kind == PDI_K_ARRAY ) {
 				H5Sselect_hyperslab (memspace, H5S_SELECT_SET, starts, NULL, 
 														 subsizes, NULL);
 			}
 			
 			/// Read content 
 			if( H5Dread( dataset_id, h5type(scalart->c.scalar), memspace, dataspace_id, H5P_DEFAULT,
-				ref.get_content()->get_buffer())) status = PDI_ERR_SYSTEM;
+				ref.get())) status = PDI_ERR_SYSTEM;
 			
 			H5Sclose(memspace);
 			H5Sclose(dataspace_id);

@@ -36,7 +36,6 @@
 
 #include "pdi.h"
 #include "pdi/value.h"
-#include "pdi/data_content.h"
 
 #include "pdi/datatype.h"
 

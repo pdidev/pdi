@@ -258,29 +258,29 @@ PDI_status_t PDI_utilities_event(const char *event_name) {
 /// Convert into corresponding data type
 PDI_status_t cast_data_int(Data_ref& ref, int32_t plugin_data) {
 	PDI_status_t status = PDI_OK;
-	const PDI_datatype_t& type = ref.get_content()->get_type();
+	const PDI_datatype_t& type = ref.get_type();
 	if ( type.kind == PDI_K_SCALAR ) {
 		switch ( type.c.scalar ) {
 			case PDI_T_INT32:
-				*((int32_t*)ref.get_content()->get_buffer()) = plugin_data;
+				*((int32_t*)ref.get()) = plugin_data;
 				break;
 			case PDI_T_INT8:
-				*((int8_t*)ref.get_content()->get_buffer()) = plugin_data;
+				*((int8_t*)ref.get()) = plugin_data;
 				break;
 			case PDI_T_INT16: 
-				*((int16_t*)ref.get_content()->get_buffer()) = plugin_data;
+				*((int16_t*)ref.get()) = plugin_data;
 				break;
 			case PDI_T_INT64: 
-				*((int64_t*)ref.get_content()->get_buffer()) = plugin_data;
+				*((int64_t*)ref.get()) = plugin_data;
 				break;
 			case PDI_T_FLOAT: 
-				*((float*)ref.get_content()->get_buffer()) = plugin_data;
+				*((float*)ref.get()) = plugin_data;
 				break;
 			case PDI_T_DOUBLE:
-				*((double*)ref.get_content()->get_buffer()) = plugin_data;
+				*((double*)ref.get()) = plugin_data;
 				break;
 			case PDI_T_LONG_DOUBLE:
-				*((long double*)ref.get_content()->get_buffer()) = plugin_data;
+				*((long double*)ref.get()) = plugin_data;
 				break;
 			default: status = PDI_ERR_VALUE;
 		}
@@ -332,10 +332,10 @@ PDI_status_t PDI_utilities_data_start( PDI::Data_ref ref )
 					
 					auto&& outdesc = PDI_state.descriptors.find(str_out);
 					if( ref.grant(PDI_OUT) && outdesc != PDI_state.descriptors.end() ){ // checking that output data exists
-						size_t oldsize; PDI_datatype_buffersize(&ref.get_content()->get_type(), &oldsize);
+						size_t oldsize; PDI_datatype_buffersize(&ref.get_type(), &oldsize);
 						size_t subsize; PDI_datatype_datasize(&outdesc->second.get_type(), &subsize);
 						void *subdata = malloc(subsize);
-						PDI_buffer_copy(subdata, &outdesc->second.get_type(), ref.get_content()->get_buffer(), &ref.get_content()->get_type());
+						PDI_buffer_copy(subdata, &outdesc->second.get_type(), ref.get(), &ref.get_type());
 						PDI_expose(str_out, subdata, PDI_OUT);
 						free(subdata);
 						ref.revoke(PDI_OUT);

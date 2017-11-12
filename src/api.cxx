@@ -53,7 +53,6 @@
 #include "utils.h"
 
 #include "pdi/data_reference.h"
-#include "pdi/data_content.h"
 #include "pdi/data_descriptor.h"
 
 #define PDI_BUFFER_SIZE 256
@@ -176,7 +175,7 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 	if (refstack != PDI_state.store.end()) {
 		refstack->second.push(refstack->second.top());
 		if (refstack->second.top().grant(inout)) {   // got the requested rights
-			*buffer = refstack->second.top().get_content()->get_buffer();
+			*buffer = refstack->second.top();
 			return PDI_OK;
 		} else { // cannot get the requested rights
 			refstack->second.pop();
@@ -196,14 +195,15 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 	
 	Data_descriptor &desc = descit->second;
 	stack<Data_ref>& refstack = PDI_state.store[name];
+	
+	/// for metadata, unlink happens on share
 	if (!refstack.empty() && desc.is_metadata()) {
-		/// for metadata, unlink happens on share
 		refstack.top().reclaim();
 		refstack.pop();
 	}
 	
 	// make a reference and put it in the store
-	refstack.push(move(Data_ref(desc, buffer, access)));
+	refstack.push(Data_ref(desc, buffer, access));
 	Data_ref& ref = refstack.top();
 	
 	// Provide reference to the plug-ins
@@ -218,19 +218,19 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 
 
 
-PDI_status_t PDI_release(const char *c_name)
+PDI_status_t PDI_release(const char *name)
 {
-	if (exist(c_name, PDI_state.descriptors)) {
-		///< move reference out of the store
-		auto &&refstack = PDI_state.store.find(c_name);
-		if (refstack == PDI_state.store.end()) {
-			return PDI_make_err(PDI_ERR_VALUE, "Cannot release a non shared value");
-		}
-		refstack->second.pop();
-		if (refstack->second.empty()) PDI_state.store.erase(refstack);
-	} else {
+	if (!exist(name, PDI_state.descriptors)) {
 		return PDI_UNAVAILABLE;
 	}
+	
+	///< move reference out of the store
+	stack<Data_ref>& refstack = PDI_state.store[name];
+	if ( refstack.empty() ) {
+		return PDI_make_err(PDI_ERR_VALUE, "Cannot release a non shared value");
+	}
+	
+	refstack.pop();
 	
 	return PDI_OK;
 }
@@ -248,46 +248,27 @@ PDI_status_t PDI_reclaim(const char *name)
 	
 	// if the content is a metadata, keep it
 	if ( descit->second.is_metadata() ) {
-		if (PDI_status_t status = refstack.top().get_content()->copy_metadata()) return status;
+		refstack.top().detach();
 	} else {
 		// Manually reclaiming data
 		refstack.top().reclaim();
-		refstack.pop();
+		refstack.pop(); //TODO seems to mess-up the store...
 	}
 	
 	return PDI_OK;
 }
 
-
-static void add_to_transaction(const char *c_name)
+PDI_status_t PDI_expose(const char *name, const void *data)
 {
-	string name(c_name);
-	
-	if (exist(name, PDI_state.store)) {
-		if (!exist(name,  PDI_state.transaction_data)) {    ///< If ref is not found in the store
-			PDI_state.transaction_data.insert(name); // add a ref without access right
-		}
-	}
-	return;
-}
-
-
-PDI_status_t PDI_expose(const char *name, const void *data, PDI_inout_t access)
-{
-	PDI_status_t status = PDI_OK;
-	
-	PDI_handle_err(PDI_share(name, (void *)data, access), err0);
+	if ( PDI_status_t status = PDI_share(name, const_cast<void*>(data), PDI_OUT) ) return status;
 	
 	if (! PDI_state.transaction.empty()) {   // defer the reclaim
-		add_to_transaction(name);
+		PDI_state.transaction_data.insert(name);
 	} else { // do the reclaim now
-		PDI_handle_err(PDI_reclaim(name), err0);
+		if ( PDI_status_t status = PDI_reclaim(name) ) return status;
 	}
 	
-	return status;
-	
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
@@ -310,25 +291,21 @@ err0:
 
 PDI_status_t PDI_transaction_end()
 {
-	PDI_status_t status = PDI_OK;
-	
 	if (PDI_state.transaction.empty()) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_STATE, "No transaction in progress, cannot end one"), err0);
+		return PDI_make_err(PDI_ERR_STATE, "No transaction in progress, cannot end one");
 	}
 	
 	PDI_event(PDI_state.transaction.c_str());
-	for (auto &iter : PDI_state.transaction_data) {
+	
+	for (const string& data: PDI_state.transaction_data) {
 		//TODO we should concatenate errors here...
-		PDI_reclaim(iter.c_str());
+		PDI_reclaim(data.c_str());
 	}
 	
 	PDI_state.transaction_data.clear();
 	PDI_state.transaction.clear();
 	
-	return status;
-	
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
@@ -344,4 +321,3 @@ PDI_status_t PDI_export(const char *name, const void *data)
 err0:
 	return status;
 }
-
