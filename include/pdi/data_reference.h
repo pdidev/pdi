@@ -136,7 +136,6 @@ public:
 	
 	//TODO: add a function to manage deletion callbacks
 	
-	const std::string& get_name() const;
 	const PDI_datatype_t& get_type() const;
 	const Data_descriptor& get_desc() const;
 	

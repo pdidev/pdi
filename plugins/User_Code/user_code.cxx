@@ -362,12 +362,12 @@ PDI_status_t PDI_user_code_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_user_code_data_start(PDI::Data_ref ref)
+PDI_status_t PDI_user_code_data_start(const std::string& name, PDI::Data_ref ref)
 {
 	 
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
 		for ( int n=0; n<all_uc[ii].nb_datastarts ; ++n ) {
-			if ( !strcmp(ref.get_name().c_str(), all_uc[ii].datastarts[n]) ) {
+			if ( name == all_uc[ii].datastarts[n] ) {
 				(*all_uc[ii].fct.call)();
 			}
 		}
@@ -376,11 +376,11 @@ PDI_status_t PDI_user_code_data_start(PDI::Data_ref ref)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_user_code_data_end(PDI::Data_ref ref)
+PDI_status_t PDI_user_code_data_end(const std::string& name, PDI::Data_ref ref)
 {
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
 		for ( int n=0; n<all_uc[ii].nb_dataends ; ++n ) {
-			if ( !strcmp(ref.get_name().c_str(), all_uc[ii].datastarts[n]) ) {
+			if ( name == all_uc[ii].datastarts[n] ) {
 				(*all_uc[ii].fct.call)();
 			}
 		}

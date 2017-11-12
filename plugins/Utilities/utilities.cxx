@@ -292,7 +292,7 @@ PDI_status_t cast_data_int(Data_ref& ref, int32_t plugin_data) {
 
 
 
-PDI_status_t PDI_utilities_data_start( PDI::Data_ref ref )
+PDI_status_t PDI_utilities_data_start( const std::string& name, PDI::Data_ref ref )
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -301,7 +301,7 @@ PDI_status_t PDI_utilities_data_start( PDI::Data_ref ref )
 		// for each utils_task look if the output is the same as the PDI_data_t
 		for ( auto&& one_task: tasks ) {
 			char *str_out = NULL; status = PDI_value_str(&one_task.out, &str_out); // output string
-			if ( !status && ref.get_name() == str_out ) { // output and data name matches
+			if ( !status && name == str_out ) { // output and data name matches
 				switch(one_task.action){ // check datatype compatibiliy
 				case EVENT2DATA:
 				case FILE_EXISTS:
@@ -322,7 +322,7 @@ PDI_status_t PDI_utilities_data_start( PDI::Data_ref ref )
 		for ( auto&& one_task: tasks ) {
 			if ( one_task.action == EXTRACT_SUBARRAY) {
 				char *str_in = NULL; PDI_value_str(&one_task.in, &str_in); // input string
-				if ( ref.get_name() == str_in ) { // input and data name match
+				if ( name == str_in ) { // input and data name match
 					char *str_out = NULL; PDI_value_str(&one_task.out, &str_out); // output string
 					
 					if( !strcmp(str_in,str_out) ){
@@ -349,9 +349,8 @@ PDI_status_t PDI_utilities_data_start( PDI::Data_ref ref )
 	return status;
 }
 
-PDI_status_t PDI_utilities_data_end(PDI::Data_ref ref)
+PDI_status_t PDI_utilities_data_end(const std::string&, PDI::Data_ref)
 {
-	(void) ref; // remove warning "unused var..."
 	return PDI_OK;
 }
 

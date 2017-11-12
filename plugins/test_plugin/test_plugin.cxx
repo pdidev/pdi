@@ -30,13 +30,17 @@
  */
 
 #include <mpi.h>
+#include <iostream>
 
 #include <pdi.h>
 #include <pdi/plugin.h>
 #include <pdi/state.h>
 #include <pdi/data_reference.h>
 
+namespace {
+
 using namespace PDI;
+using std::cout;
 
 PDI_status_t PDI_test_plugin_init(PC_tree_t conf, MPI_Comm *world)
 {
@@ -73,26 +77,28 @@ PDI_status_t PDI_test_plugin_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data_start(PDI::Data_ref ref)
+PDI_status_t PDI_test_plugin_data_start(const std::string& name, PDI::Data_ref ref)
 {
 	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
-		printf(" =>> data becoming available to the test plugin: %s!\n", ref.get_name().c_str());
+		cout << " =>> data becoming available to the test plugin: "<<name<<"!\n";
 	}
 	
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data_end(PDI::Data_ref ref)
+PDI_status_t PDI_test_plugin_data_end(const std::string& name, PDI::Data_ref ref)
 {
 	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
-		printf(" <<= data becoming unavailable to the test plugin: %s!\n", ref.get_name().c_str());
+		printf(" <<= data becoming unavailable to the test plugin: %s!\n", name);
 	}
 	
 	return PDI_OK;
+}
+
 }
 
 PDI_PLUGIN(test_plugin)

@@ -239,11 +239,6 @@ void* Data_ref::null_release()
 	return *this;
 }
 
-const std::string& Data_ref::get_name() const
-{
-	return get_desc().get_name();
-}
-
 const PDI_datatype_t& Data_ref::get_type() const
 {
 	return m_content->get_type();
@@ -270,7 +265,8 @@ void Data_ref::clear()
 PDI_status_t Data_ref::data_end()
 {
 	if (m_data_end) {
-		if( PDI_status_t status = m_data_end(*this) ) return status;
+		//TODO: this does not make much sense here...
+		if( PDI_status_t status = m_data_end("", *this) ) return status;
 	}
 	
 	return PDI_OK;

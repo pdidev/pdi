@@ -210,7 +210,8 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 	for (auto &&plugin: PDI_state.plugins) {
 		PDI_data_end_f data_end = plugin.second->data_end;
 		//TODO: register data_end
-		plugin.second->data_start(ref); /// Move reference to the plug-in
+		// Notify the plug-ins of reference availability
+		plugin.second->data_start(name, ref);
 	}
 	
 	return PDI_OK;

@@ -232,17 +232,16 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data_start(PDI::Data_ref ref)
+PDI_status_t PDI_fti_plugin_data_start(const std::string& name, PDI::Data_ref ref)
 {
-	if ( ref.priviledge(PDI_IN) && restart_status_events.find(ref.get_name()) != restart_status_events.end() ) {
+	if ( ref.priviledge(PDI_IN) && restart_status_events.find(name) != restart_status_events.end() ) {
 		*(int*)ref.get() = FTI_Status();
 	}
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data_end(PDI::Data_ref ref)
+PDI_status_t PDI_fti_plugin_data_end(const std::string&, PDI::Data_ref)
 {
-	(void) ref; // prevent unused warning
 	return PDI_OK;
 }
 

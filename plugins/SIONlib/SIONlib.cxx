@@ -446,8 +446,8 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
       return status;
     }
 
-    size_t name_size = strlen(ref.get_name().c_str());
-    uint64_t key = hash((uint8_t*)ref.get_name().c_str(), name_size);
+    size_t name_size = strlen(event->vars[i]);
+    uint64_t key = hash((uint8_t*)event->vars[i], name_size);
 
     uint64_t name_size_to_file = name_size;
     if (1 != sion_fwrite_key(&name_size_to_file, key, sizeof(name_size_to_file), 1, sid)) {
@@ -455,7 +455,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
       return PDI_ERR_SYSTEM;
     }
 
-    if (1 != sion_fwrite_key(ref.get_name().c_str(), key, name_size, 1, sid)) {
+    if (1 != sion_fwrite_key(event->vars[i], key, name_size, 1, sid)) {
       sion_parclose_mpi(sid);
       return PDI_ERR_SYSTEM;
     }
@@ -523,12 +523,12 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
       return status;
     }
 
-    size_t name_size = strlen(ref.get_name().c_str());
-    uint64_t key = hash((uint8_t*)ref.get_name().c_str(), name_size);
+    size_t name_size = strlen(event->vars[i]);
+    uint64_t key = hash((uint8_t*)event->vars[i], name_size);
 
     for (int j = 0; ; ++j) {
       if (SION_SUCCESS != sion_seek_key(sid, key, 4 * j, 0)) {
-        fprintf(stderr, "[PDI/SIONlib] Could not find variable '%s' for reading in file '%s'.\n", ref.get_name().c_str(), file);
+        fprintf(stderr, "[PDI/SIONlib] Could not find variable '%s' for reading in file '%s'.\n", event->vars[i], file);
         sion_parclose_mpi(sid);
         free(file);
         return PDI_ERR_SYSTEM;
@@ -560,7 +560,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
       }
       name_from_file[name_size] = '\0';
 
-      int names_match = !strcmp(ref.get_name().c_str(), name_from_file);
+      int names_match = !strcmp(event->vars[i], name_from_file);
       free(name_from_file);
       if (names_match) break;
 
@@ -575,7 +575,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
     }
 
     if (data_size != data_size_from_file) {
-      fprintf(stderr, "[PDI/SIONlib] Size of data for variable '%s' in file '%s' does not match memory size (%" PRIu64 " (file) vs. %zu (memory)).\n", ref.get_name().c_str(), file, data_size_from_file, data_size);
+      fprintf(stderr, "[PDI/SIONlib] Size of data for variable '%s' in file '%s' does not match memory size (%" PRIu64 " (file) vs. %zu (memory)).\n", event->vars[i], file, data_size_from_file, data_size);
       sion_parclose_mpi(sid);
       free(file);
       return PDI_ERR_SYSTEM;
@@ -730,12 +730,12 @@ static PDI_status_t read_var(const PDI::Data_ref& ref, const SIONlib_var_t *var)
   return PDI_OK;
 }
 
-PDI_status_t PDI_SIONlib_data_start(PDI::Data_ref ref)
+PDI_status_t PDI_SIONlib_data_start(const std::string& name, PDI::Data_ref ref)
 {
   PDI_status_t write_status = PDI_OK;
   if (ref.try_grant(PDI_OUT)) {
     for (size_t i = 0; i < n_output_vars; ++i) {
-      if (!strcmp(output_vars[i].name, ref.get_name().c_str())) {
+      if ( name == output_vars[i].name ) {
         long select;
         if ((write_status = PDI_value_int(&output_vars[i].select, &select))) break;
         if (select && (!write_status) && ref.grant(PDI_OUT)){
@@ -750,7 +750,7 @@ PDI_status_t PDI_SIONlib_data_start(PDI::Data_ref ref)
   PDI_status_t read_status = PDI_OK;
   if (ref.try_grant(PDI_IN)) {
     for (size_t i = 0; i < n_input_vars; ++i) {
-      if (!strcmp(input_vars[i].name, ref.get_name().c_str())) {
+      if ( name == input_vars[i].name ) {
         long select;
         if ((read_status = PDI_value_int(&input_vars[i].select, &select))) break;
         if (select && (!read_status) && ref.grant(PDI_IN)){
@@ -766,9 +766,8 @@ PDI_status_t PDI_SIONlib_data_start(PDI::Data_ref ref)
   return read_status;
 }
 
-PDI_status_t PDI_SIONlib_data_end(PDI::Data_ref ref)
+PDI_status_t PDI_SIONlib_data_end(const std::string&, PDI::Data_ref)
 {
-  (void)ref;
   return PDI_OK;
 }
 

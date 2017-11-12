@@ -392,7 +392,7 @@ PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	return status;
 }
 
-PDI_status_t PDI_declh5_data_start(PDI::Data_ref ref)
+PDI_status_t PDI_declh5_data_start(const std::string& name, PDI::Data_ref ref)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -400,7 +400,7 @@ PDI_status_t PDI_declh5_data_start(PDI::Data_ref ref)
 		status = PDI_UNAVAILABLE;
 		int found_input = 0;
 		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
-			if ( !strcmp(inputs[ii].name, ref.get_name().c_str()) ) {
+			if ( !strcmp(inputs[ii].name, name.c_str()) ) {
 				found_input = 1;
 				
 				char *h5file; PDI_value_str(&inputs[ii].h5file, &h5file);
@@ -421,7 +421,7 @@ PDI_status_t PDI_declh5_data_start(PDI::Data_ref ref)
 	if ( ref.try_grant(PDI_OUT) ) {
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
-			if ( !strcmp(outputs[ii].name, ref.get_name().c_str()) ) {
+			if ( !strcmp(outputs[ii].name, name.c_str()) ) {
 				found_output = 1;
 				
 				char *h5file; PDI_value_str(&outputs[ii].h5file, &h5file);
@@ -442,9 +442,8 @@ PDI_status_t PDI_declh5_data_start(PDI::Data_ref ref)
 	return status;
 }
 
-PDI_status_t PDI_declh5_data_end(PDI::Data_ref ref)
+PDI_status_t PDI_declh5_data_end(const std::string&, PDI::Data_ref)
 {
-	(void) ref; // prevent unused warning
 	return PDI_OK;
 }
 
