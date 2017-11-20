@@ -41,6 +41,7 @@
 #include <pdi/data_descriptor.h>
 
 
+using PDI::Data_descriptor;
 using std::cerr;
 using std::endl;
 using std::make_pair;
@@ -200,7 +201,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 			direction = PDI_OUT;
 		}
 		for ( auto& protected_var: fti_protected ) {
-			PDI::Data_ref ref = PDI_find_ref(protected_var.first);
+			PDI::Data_ref ref = PDI_state.desc(protected_var.first).value();
 			if ( ref.grant(direction) ) {
 				size_t size; PDI_datatype_datasize(&ref.get_type(), &size);
 				//TODO: handle non-contiguous data correctly

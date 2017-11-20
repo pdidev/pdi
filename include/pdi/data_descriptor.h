@@ -26,6 +26,7 @@
 #define DATA_DESCRIPTOR_H__
 
 #include <memory>
+#include <stack>
 
 #include <paraconf.h>
 #include <pdi.h>
@@ -77,7 +78,56 @@ public:
 	
 	const std::string& name () const { return m_name; }
 	
+	/** Returns a reference to the value of the data behind this descriptor
+	 */
+	Data_ref value() { return ( m_values.empty()? Data_ref(): m_values.top() ); }
+	
+	/** Shares some data with PDI. The user code should not modify it before
+	* a call to either PDI_release or PDI_reclaim.
+	* \param[in,out] data the accessed data
+	* \param[in] access whether the data can be accessed for read or write
+	*                   by PDI
+	* \return an error status
+	* \pre the user code owns the data buffer
+	* \post ownership of the data buffer is shared between PDI and the user code
+	*
+	* the access parameter is a binary OR of PDI_IN & PDI_OUT.
+	* * PDI_IN means PDI can set the buffer content
+	* * PDI_OUT means the buffer contains data that can be accessed by PDI
+	*/
+	PDI_status_t share(void *data, PDI_inout_t access);
+
+	/** Requests for PDI to access a data buffer.
+	* \param[in,out] buffer a pointer to the accessed data buffer
+	* \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
+	* \return an error status
+	* \pre PDI owns the data buffer
+	* \post ownership of the data buffer is shared between PDI and the user code
+	*/
+	PDI_status_t access(void **buffer, PDI_inout_t inout);
+
+	/** Releases ownership of a data shared with PDI. PDI is then responsible to
+	* free the associated memory whenever necessary.
+	* \param[in] name name of the data to release
+	* \return an error status
+	* \pre ownership of the data buffer is shared between PDI and the user code
+	* \pre PDI owns the data buffer
+	*/
+	PDI_status_t release();
+
+	/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
+	* free the associated memory whenever necessary.
+	* \param[in] name name of the data to reclaim
+	* \return an error status
+	* \pre ownership of the data buffer is shared between PDI and the user code
+	* \post the user code owns the data buffer
+	*/
+	PDI_status_t reclaim();
+
 private:
+	/// References to the values of this descriptor
+	std::stack<Data_ref> m_values;
+	
 	PC_tree_t m_config;
 	
 	bool m_metadata;

@@ -176,6 +176,16 @@ PDI_inout_t  &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs);
  */
 PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, PDI_inout_t access);
 
+/** Requests for PDI to access a data buffer.
+ * \param[in] name the data name
+ * \param[in,out] buffer a pointer to the accessed data buffer
+ * \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
+ * \return an error status
+ * \pre PDI owns the data buffer
+ * \post ownership of the data buffer is shared between PDI and the user code
+ */
+PDI_status_t  PDI_EXPORT PDI_access(const char *name, void **buffer, PDI_inout_t inout);
+
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
  * \param[in] name name of the data to release
@@ -193,22 +203,6 @@ PDI_status_t PDI_EXPORT PDI_release(const char *name);
  * \post the user code owns the data buffer
  */
 PDI_status_t PDI_EXPORT PDI_reclaim(const char *name);
-
-/** Requests for PDI to access a data buffer.
- * \param[in] name the data name
- * \param[in,out] buffer a pointer to the accessed data buffer
- * \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
- * \return an error status
- */
-PDI_status_t  PDI_EXPORT PDI_access(const char *name, void **buffer, PDI_inout_t inout);
-
-/** Requests for PDI to allocate (and initialize) a data buffer.
- * \param[in] name the data name
- * \param[in,out] data the accessed data
- * \return an error status
- * \post the user code owns the data buffer
- */
-// PDI_status_t PDI_EXPORT PDI_alloc(const char *name, void **data);
 
 /// \}
 

@@ -57,10 +57,3 @@ PDI::Data_descriptor & PDI_state_s::desc(const std::string& name)
 {
 	return m_descriptors.emplace(name,name).first->second;
 }
-
-Data_ref PDI_find_ref(const string &name)
-{
-	stack<Data_ref>& refstack = PDI_state.store[name];
-	if ( !refstack.empty() ) return refstack.top();
-	return Data_ref();
-}

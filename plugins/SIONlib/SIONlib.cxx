@@ -49,7 +49,7 @@
 
 #include <sion.h>
 
-static MPI_Comm comm;
+using PDI::Data_ref;
 
 typedef struct
 {
@@ -69,6 +69,9 @@ typedef struct
   char **vars;
 } SIONlib_event_t;
 
+
+static MPI_Comm comm;
+
 static size_t n_output_vars = 0;
 static SIONlib_var_t *output_vars = NULL;
 
@@ -80,6 +83,7 @@ static SIONlib_event_t *output_events = NULL;
 
 static size_t n_input_events = 0;
 static SIONlib_event_t *input_events = NULL;
+
 
 #ifndef STRDUP_WORKS
 static char *strdup(const char *s)
@@ -396,7 +400,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   PDI_status_t status;
   // check that data is available and data type is dense
   for (size_t i = 0; i < event->n_vars; ++i) {
-    PDI::Data_ref ref = PDI_find_ref(event->vars[i]);
+    PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
     if ( !( ref && ref.grant(PDI_OUT)) ){
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
@@ -415,7 +419,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
 
   sion_int64 chunksize = 0;
   for (size_t i = 0; i < event->n_vars; ++i) {
-    const PDI::Data_ref& ref = PDI_find_ref(event->vars[i]);
+    const PDI::Data_ref& ref = PDI_state.desc(event->vars[i]).value();
     if (!ref) {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
@@ -438,7 +442,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   free(file);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
-    const PDI::Data_ref& ref = PDI_find_ref(event->vars[i]);
+    const PDI::Data_ref& ref = PDI_state.desc(event->vars[i]).value();
 
     size_t data_size;
     if ((status = PDI_datatype_datasize(&ref.get_type(), &data_size))) {
@@ -482,7 +486,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   // check that data type is dense
   PDI_status_t status;
   for (size_t i = 0; i < event->n_vars; ++i) {
-    PDI::Data_ref ref = PDI_find_ref(event->vars[i]);
+    PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
     if ( !( ref && ref.grant(PDI_IN)) ) {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
@@ -510,7 +514,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   int sid = sion_paropen_mpi(file, "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
-    PDI::Data_ref ref = PDI_find_ref(event->vars[i]);
+    PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
     if ( ! (ref && !ref.grant(PDI_IN)))  {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;

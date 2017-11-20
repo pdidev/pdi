@@ -36,7 +36,7 @@ int main( int argc, char *argv[] )
 	PDI_status_t err = PDI_init(conf, &world);
 	fprintf(stderr, "err=%d; message='%s'\n", err, PDI_errmsg());
 	assert(err == PDI_ERR_VALUE);
-	assert(!strcmp(PDI_errmsg(), "Reference to unknown data: `meta2'"));
+	assert(!strcmp(PDI_errmsg(), "Invalid reference to non-metadata `meta2'"));
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 	return 0;

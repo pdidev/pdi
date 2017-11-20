@@ -116,9 +116,7 @@ public:
 	 */
 	MPI_Comm PDI_comm;
 	
-	/// References on the data
-	std::unordered_map<std::string, std::stack<PDI::Data_ref>> store;
-	
+	/// The name of the ongoing transaction or "" if none
 	std::string transaction;
 	
 	/// List of data that are
@@ -140,7 +138,5 @@ private:
 /// The main state of the PDI implementation
 extern PDI_state_t PDI_EXPORT PDI_state;
 
-/// Find a reference in the PDI_state and returns it without access right
-PDI::Data_ref PDI_EXPORT PDI_find_ref(const std::string &name);
 
 #endif // PDI_STATE_H__

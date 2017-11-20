@@ -144,7 +144,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	new (value) PDI_refval_t{PDI_state.desc(string(ref-refid_len, refid_len)),{}};
 	
 	if ( !value->m_referenced.is_metadata() ) {
-		return PDI_make_err(PDI_ERR_CONFIG, "Invalid reference to non-metadata `%s'", value->m_referenced.name().c_str());
+		return PDI_make_err(PDI_ERR_VALUE, "Invalid reference to non-metadata `%s'", value->m_referenced.name().c_str());
 	}
 	
 	assert(!value->m_referenced.name().empty());
@@ -418,7 +418,7 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 		stride *= size;
 	}
 	
-	ref = PDI_find_ref(val->m_referenced.name());
+	ref = val->m_referenced.value();
 	if ( !ref ) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not shared", val->m_referenced.name().c_str()), err0);
 	}
