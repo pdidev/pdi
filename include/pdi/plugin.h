@@ -43,7 +43,7 @@
 #include <pdi.h>
 
 #include <pdi/plugin_fwd.h>
-#include <pdi/data_fwd.h>
+#include <pdi/data_reference_fwd.h>
 
 /** Skeleton of the function called at PDI finalization
  * \return an exit status code
@@ -60,13 +60,13 @@ typedef PDI_status_t (*PDI_event_f)(const char *event);
  * \param[in] available data
  * \return an exit status code
  */
-typedef PDI_status_t (*PDI_data_start_f)(PDI_data_t *data);
+typedef PDI_status_t (*PDI_data_start_f)(PDI::Data_ref &&ref);
 
 /** Skeleton of the function called to notify that some data becomes unavailable
  * \param[in] data the plugin cannot access anymore
  * \return an exit status code
  */
-typedef PDI_status_t (*PDI_data_end_f)(PDI_data_t *data);
+typedef PDI_status_t (*PDI_data_end_f)(PDI::Data_ref &&ref);
 
 struct PDI_plugin_s {
 

@@ -10,7 +10,7 @@
 !   notice, this list of conditions and the following disclaimer in the
 !   documentation and/or other materials provided with the distribution.
 ! * Neither the name of CEA nor the names of its contributors may be used to
-!   endorse or promote products derived from this software without specific 
+!   endorse or promote products derived from this software without specific
 !   prior written permission.
 !
 ! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,7 +21,7 @@
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! THE SOFTWARE.
 !******************************************************************************/
-include 'PDI.F90'
+#include "PDI.F90"
 
 program test2
   use pdi
@@ -31,7 +31,7 @@ program test2
   include 'mpif.h'
 
   character(len=512) :: strbuf
-  integer :: i, j, ierr,  main_comm 
+  integer :: i, j, ierr,  main_comm
   integer,target :: imx=10, jmx=5, input, rank, nj, ni, nig, njg
   double precision, pointer, dimension(:,:) :: reals, cp_reals
   integer, pointer, dimension(:,:) :: values, cp_values
@@ -58,7 +58,7 @@ program test2
     nig=0;
     njg=0;
   endif
-  
+
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
   main_comm = MPI_COMM_WORLD
@@ -87,23 +87,23 @@ program test2
   iptr => njg; call PDI_expose("nj_ghost", iptr)
   iptr => ni; call PDI_expose("ni", iptr)
   iptr => nj; call PDI_expose("nj", iptr)
-  
+
   ! Test that export/exchange works
-  iptr => input; call PDI_expose("input", iptr)  ! update metadata => HDF5 now export only
+  iptr => input; call PDI_expose("input", iptr)  ! update metadata => SIONlib now export only
   call PDI_expose("reals",reals )     ! output real
   call PDI_exchange("values",values ) ! output integers
-  
+
   input=1
   ! Import should also work
-  iptr => input ; call PDI_expose("input", iptr) ! update metadata => HDF5 now import only
-  call PDI_import("reals" ,cp_reals)     ! input real 
+  iptr => input ; call PDI_expose("input", iptr) ! update metadata => SIONlib now import only
+  call PDI_import("reals" ,cp_reals)     ! input real
   call PDI_exchange("values" ,cp_values) ! input integers
-  
+
   if(.not.(have_ghost)) then
     ! So the data should be the same everywhere
     do j=1,nj
       do i=1,ni
-         if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then 
+         if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then
             write(0,*) "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
             write(0,*) "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
@@ -111,25 +111,25 @@ program test2
       enddo
     enddo
   else
-    do j=1+njg,nj-njg ! Should be the same inside 
+    do j=1+njg,nj-njg ! Should be the same inside
       do i=1+nig,ni-nig
-         if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then 
+         if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then
             write(0,*) "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
             write(0,*) "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo
     enddo
-    do j=1,njg ! and should be icst/rscst outside 
+    do j=1,njg ! and should be icst/rscst outside
       do i=1,nig
-         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
+         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then
             write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
             write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo
       do i=ni-nig+1,ni
-         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
+         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then
             write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
             write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
@@ -138,14 +138,14 @@ program test2
     enddo
     do j=nj-njg+1,nj
       do i=1,nig
-         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
+         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then
             write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
             write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo
       do i=ni-nig+1,ni
-         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
+         if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then
             write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
             write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
@@ -157,4 +157,4 @@ program test2
   call PDI_finalize()
   call MPI_Finalize(ierr)
 
-endprogram  
+endprogram

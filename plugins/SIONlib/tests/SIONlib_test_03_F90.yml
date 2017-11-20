@@ -16,9 +16,9 @@ pdi:
     SIONlib:
       inputs:
         - event: read_data
-          file: test_02_f90.sion
+          file: test_03_F90.sion
           vars: [ reals, values ]
       outputs:
         - event: write_data
-          file: test_02_f90.sion
+          file: test_03_F90.sion
           vars: [ ni, nj, values, reals ]

@@ -24,27 +24,30 @@
 
 //The following is used for doxygen documentation:
 /**
-* \file value.c
-* \brief Parsing functions
-* \details The data obtained from paraconf consist of arrays of chars.
-* Those string may contain variable name, operations... and are evaluated/parse using the above functions.
-* \author J. Bigot (CEA)
-*/
+ * \file value.c
+ * \brief Parsing functions
+ * \details The data obtained from paraconf consist of arrays of chars.
+ * Those string may contain variable name, operations... and are evaluated/parse using the above functions.
+ * \author J. Bigot (CEA)
+ */
 
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdint.h>
 
 #include "pdi/state.h"
-#include "pdi/data.h"
+#include "pdi/data_reference.h"
 
 #include "status.h"
 #include "utils.h"
 
 #include "pdi/value.h"
 
+using std::string;
+
+
 struct PDI_refval_s {
-	PDI_data_t *ref;
+	PDI::Data_descriptor *desc;
 	
 	PDI_value_t *idx;
 	
@@ -128,14 +131,16 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	
 	int refid_len; PDI_handle_err(parse_id(&ref, &refid_len), err0);
 	
-	value->ref = NULL;
-	for (int met_id = 0; met_id < PDI_state.nb_data; ++met_id) {
-		if (!strncmp(PDI_state.data[met_id].name, ref - refid_len, refid_len)) {
-			value->ref = &PDI_state.data[met_id];
-			break;
+	{
+		string refid(ref - refid_len, refid_len);
+		auto desc = PDI_state.descriptors.find(refid);
+		if (desc != PDI_state.descriptors.end()) {
+			value->desc = &(desc->second);
+		} else {
+			value->desc = NULL;
 		}
 	}
-	if (!value->ref) {
+	if (!value->desc) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Reference to unknown data: `%.*s'", refid_len, ref - refid_len), err0);
 	}
 	
@@ -381,17 +386,18 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_scalar_type_t type = val->ref->type.c.scalar;
+	const PDI_datatype_t &ref_type = val->desc->get_type();
+	PDI_scalar_type_t type = ref_type.c.scalar;
 	
-	if (val->ref->type.kind == PDI_K_ARRAY) {
-		if (val->nb_idx != val->ref->type.c.array->ndims) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", val->nb_idx, val->ref->type.c.array->ndims), err0);
+	if (ref_type.kind == PDI_K_ARRAY) {
+		if (val->nb_idx != ref_type.c.array->ndims) {
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", val->nb_idx, ref_type.c.array->ndims), err0);
 		}
-		if (val->ref->type.c.array->type.kind != PDI_K_SCALAR) {
+		if (ref_type.c.array->type.kind != PDI_K_SCALAR) {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid type accessed"), err0);
 		}
-		type = val->ref->type.c.array->type.c.scalar;
-	} else if (val->ref->type.kind == PDI_K_SCALAR) {
+		type = ref_type.c.array->type.c.scalar;
+	} else if (ref_type.kind == PDI_K_SCALAR) {
 		if (val->nb_idx) {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", val->nb_idx), err0);
 		}
@@ -402,15 +408,18 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	long idx; idx = 0;
 	long stride; stride = 1;
 	for (int ii = 0; ii < val->nb_idx; ++ii) {
-		long start; PDI_handle_err(PDI_value_int(&val->ref->type.c.array->starts[ii], &start), err0);
+		long start; PDI_handle_err(PDI_value_int(&(ref_type.c.array->starts[ii]), &start), err0);
 		long index; PDI_handle_err(PDI_value_int(&val->idx[ii], &index), err0);
 		idx += (start + index) * stride;
-		long size; PDI_handle_err(PDI_value_int(&val->ref->type.c.array->sizes[ii], &size), err0);
+		long size; PDI_handle_err(PDI_value_int(&(ref_type.c.array->sizes[ii]), &size), err0);
 		stride *= size;
 	}
 	
-	if (val->ref->nb_content < 1) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->ref->name), err0);
-	void *value; value = val->ref->content[0].data;
+	void *value; value = NULL;
+	if (PDI_access(val->desc->get_name().c_str(), &value, PDI_OUT) != PDI_OK) { //TODO: check this with Julien
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not accessible", val->desc->get_name().c_str()), err0);
+	}
+	if (!value) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->desc->get_name().c_str()), err0);
 	
 	switch (type) {
 	case PDI_T_INT8: {
@@ -429,6 +438,8 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
 	} break;
 	}
+	
+	PDI_release(val->desc->get_name().c_str());
 	
 	return status;
 	
@@ -569,7 +580,7 @@ PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
 {
 	copy->nb_idx = value->nb_idx;
 	
-	copy->ref = value->ref;
+	copy->desc = value->desc;
 	
 	int nb_idx = value->nb_idx;
 	copy->nb_idx = nb_idx;
@@ -717,29 +728,29 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_value_copy(const PDI_value_t *value, PDI_value_t *copy)
+PDI_status_t PDI_value_copy(const PDI_value_t *origin, PDI_value_t *copy)
 {
 	PDI_status_t status = PDI_OK;
-	copy->kind = value->kind;
-	switch (value->kind) {
+	copy->kind = origin->kind;
+	switch (origin->kind) {
 	
 	case PDI_VAL_CONST:
-		copy->c.constval = value->c.constval;
+		copy->c.constval = origin->c.constval;
 		break;
 		
 	case PDI_VAL_REF:
 		copy->c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
-		status = refval_copy(value->c.refval, copy->c.refval);
+		status = refval_copy(origin->c.refval, copy->c.refval);
 		break;
 		
 	case PDI_VAL_EXPR:
 		copy->c.exprval = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
-		status = exprval_copy(value->c.exprval, copy->c.exprval);
+		status = exprval_copy(origin->c.exprval, copy->c.exprval);
 		break;
 		
 	case PDI_VAL_STR:
 		copy->c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
-		status = strval_copy(value->c.strval, copy->c.strval);
+		status = strval_copy(origin->c.strval, copy->c.strval);
 		break;
 		
 	default:

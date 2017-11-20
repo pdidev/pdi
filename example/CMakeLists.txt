@@ -39,10 +39,10 @@ add_test(NAME PDI_example_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
-add_executable(PDI_example_f90 EXCLUDE_FROM_ALL example.f90)
-target_link_libraries(PDI_example_f90 pdi_f90 mpi_f90)
-add_test(NAME PDI_example_f90_build
-		COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example_f90
+add_executable(PDI_example_F90 EXCLUDE_FROM_ALL example.F90)
+target_link_libraries(PDI_example_F90 pdi_f90 mpi_f90)
+add_test(NAME PDI_example_F90_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example_F90
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 add_test(NAME PDI_example_1_file COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/example.yml" "${CMAKE_CURRENT_BINARY_DIR}/example.yml")
@@ -53,8 +53,8 @@ set_property(TEST PDI_example_1_C PROPERTY DEPENDS PDI_example_build PDI_example
 set_property(TEST PDI_example_1_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/DeclH5/")
 set_property(TEST PDI_example_1_C PROPERTY TIMEOUT 5)
 
-add_test(NAME PDI_example_1_F COMMAND "mpirun" -n 2 ./PDI_example_f90 "${CMAKE_CURRENT_SOURCE_DIR}/example.yml")
-set_property(TEST PDI_example_1_F PROPERTY DEPENDS PDI_example_f90_build PDI_example_1_file)
+add_test(NAME PDI_example_1_F COMMAND "mpirun" -n 2 ./PDI_example_F90 "${CMAKE_CURRENT_SOURCE_DIR}/example.yml")
+set_property(TEST PDI_example_1_F PROPERTY DEPENDS PDI_example_F90_build PDI_example_1_file)
 set_property(TEST PDI_example_1_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/DeclH5/")
 set_property(TEST PDI_example_1_F PROPERTY TIMEOUT 5)
 endif()
@@ -69,8 +69,8 @@ set_property(TEST PDI_example_2_C PROPERTY DEPENDS PDI_example_build PDI_example
 set_property(TEST PDI_example_2_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/FTI/")
 set_property(TEST PDI_example_2_C PROPERTY TIMEOUT 120)
 
-add_test(NAME PDI_example_2_F COMMAND "mpirun" -n 6 ./PDI_example_f90 "${CMAKE_CURRENT_SOURCE_DIR}/example2.yml")
-set_property(TEST PDI_example_2_F PROPERTY DEPENDS PDI_example_f90_build PDI_example_2_file)
+add_test(NAME PDI_example_2_F COMMAND "mpirun" -n 6 ./PDI_example_F90 "${CMAKE_CURRENT_SOURCE_DIR}/example2.yml")
+set_property(TEST PDI_example_2_F PROPERTY DEPENDS PDI_example_F90_build PDI_example_2_file)
 set_property(TEST PDI_example_2_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/FTI/")
 set_property(TEST PDI_example_2_F PROPERTY TIMEOUT 120)
 endif()
@@ -83,8 +83,8 @@ set_property(TEST PDI_example_3_C PROPERTY DEPENDS PDI_example_build PDI_example
 set_property(TEST PDI_example_3_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/SIONlib/")
 set_property(TEST PDI_example_3_C PROPERTY TIMEOUT 120)
 
-add_test(NAME PDI_example_3_F COMMAND "mpirun" -n 6 ./PDI_example_f90 "${CMAKE_CURRENT_SOURCE_DIR}/example3.yml")
-set_property(TEST PDI_example_3_F PROPERTY DEPENDS PDI_example_f90_build PDI_example_3_file)
+add_test(NAME PDI_example_3_F COMMAND "mpirun" -n 6 ./PDI_example_F90 "${CMAKE_CURRENT_SOURCE_DIR}/example3.yml")
+set_property(TEST PDI_example_3_F PROPERTY DEPENDS PDI_example_F90_build PDI_example_3_file)
 set_property(TEST PDI_example_3_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/SIONlib/")
 set_property(TEST PDI_example_3_F PROPERTY TIMEOUT 120)
 endif()
@@ -97,8 +97,8 @@ set_property(TEST PDI_example_4_C PROPERTY DEPENDS PDI_example_build PDI_example
 set_property(TEST PDI_example_4_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/SIONlib/")
 set_property(TEST PDI_example_4_C PROPERTY TIMEOUT 120)
 
-add_test(NAME PDI_example_4_F COMMAND "mpirun" -n 6 ./PDI_example_f90 "${CMAKE_CURRENT_SOURCE_DIR}/example4.yml")
-set_property(TEST PDI_example_4_F PROPERTY DEPENDS PDI_example_f90_build PDI_example_4_file)
+add_test(NAME PDI_example_4_F COMMAND "mpirun" -n 6 ./PDI_example_F90 "${CMAKE_CURRENT_SOURCE_DIR}/example4.yml")
+set_property(TEST PDI_example_4_F PROPERTY DEPENDS PDI_example_F90_build PDI_example_4_file)
 set_property(TEST PDI_example_4_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/SIONlib/")
 set_property(TEST PDI_example_4_F PROPERTY TIMEOUT 120)
 endif()

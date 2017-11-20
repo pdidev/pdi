@@ -82,7 +82,6 @@ int main(int argc, char *argv[])
 	nit = 2*ni;
 	njt = 2*nj;
 
-	fprintf(stderr, "Wrong %d \n ", __LINE__);
 	PDI_expose("nig", &nig); /// Ghost cells
 	PDI_expose("njg", &njg);
 
@@ -111,26 +110,22 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	fprintf(stderr, "Wrong %d \n ", __LINE__);
 	input = 0;
 	///  Test that export/exchange works
 	PDI_expose("input", &input);
 	PDI_expose("reals", &reals);     // output real
 	PDI_exchange("values", &values); // output integers
-	fprintf(stderr, "Wrong %d \n ", __LINE__);
 
 	PDI_transaction_begin("useless_name");
 	PDI_expose("myrank", &rank);
 	PDI_expose("time", &starting_time);
 	PDI_transaction_end();
-	fprintf(stderr, "Wrong %d \n ", __LINE__);
 
 	input = 1;
 	///  Import should also work
 	PDI_expose("input", &input); // update metadata => HDF5 now import only
 	PDI_import("reals" , &cp_reals);    // input real
 	PDI_exchange("values" , &cp_values); // input integers
-	fprintf(stderr, "Wrong %d \n ", __LINE__);
 	
 	{ /// Testing scalar import
 		int test;
@@ -138,14 +133,12 @@ int main(int argc, char *argv[])
 		PDI_import("time",&tmp);
 		PDI_import("myrank",&test);
 		if( (starting_time != tmp) || (test != rank)){ 
-			fprintf(stderr, "Wrong scalar: \n ");
 			fprintf(stderr, "Float   : %6f vs %6f (out/in)\n", starting_time, tmp);
 			fprintf(stderr, "Integer : %6d vs %6d (out/in)\n", rank, test);
 			MPI_Abort(MPI_COMM_WORLD, -1);
 		}
 	}
 
-	fprintf(stderr, "Wrong %d \n ", __LINE__);
 	/// So the data should be the same
 	fprintf(stderr, "Data exported | Data imported\n");
 

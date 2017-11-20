@@ -21,7 +21,7 @@
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! THE SOFTWARE.
 !******************************************************************************/
-include 'PDI.F90'
+#include "PDI.F90"
 
 #define NI_GHOST 1
 #define NJ_GHOST 1

@@ -1,11 +1,11 @@
 pdi:
   metadata:
       input: int
-      ni: int
-      nj: int
-      ni_ghost: int
-      nj_ghost: int
-      rank: int
+      ni: integer
+      nj: integer
+      ni_ghost: integer
+      nj_ghost: integer
+      rank: integer
   data: # values that can not be referenced using $syntax
       reals: 
           type: double

@@ -68,7 +68,7 @@ int main( int argc, char *argv[] )
 	// Exchange should also work
         PDI_transaction_begin("read_data");
 	PDI_exchange("reals" ,&cp_reals);     // input real
-	PDI_exchange("values" ,&cp_values); // input integers
+	PDI_import("values" ,&cp_values); // input integers
         PDI_transaction_end();
 
 	// So the data should be the same

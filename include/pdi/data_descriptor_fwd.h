@@ -21,33 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-
+/* The following is used for doxygen documentation */
 /**
-\file api.c
-\brief PDI internal data
-\author J. Bigot (CEA)
-**/
+* \file data_descriptor_fwd.h
+* \brief .
+* \author C. Roussel, corentin.roussel@cea.fr
+*/
+// Created:  04/10/2017 09:41:47
 
-#include "config.h"
+#ifndef DATA_DESCRIPTOR_FWD_H__
+#define DATA_DESCRIPTOR_FWD_H__
 
-#include "pdi/state.h"
-#include "status.h"
-#include "pdi/plugin.h"
-#include "pdi/data_reference.h"
-
-
-using PDI::Data_ref;
-using std::string;
-
-
-PDI_state_t PDI_state;
-
-
-Data_ref PDI_find_ref(const string &name)
+namespace PDI
 {
-	auto &&ref = PDI_state.store.find(name);
-	if (ref != PDI_state.store.end()) {
-		return ref->second.top();
-	}
-	return Data_ref();
+
+/** \class  Data_descriptor
+  *  \brief Provide the properties of a data (data type, kind, ...etc.)
+  */
+class Data_descriptor;
 }
+
+#endif

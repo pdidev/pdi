@@ -33,7 +33,7 @@
 
 #include "pdi.h"
 #include "pdi/state.h"
-#include "pdi/data.h"
+#include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
 
 #include "status.h"
@@ -46,29 +46,34 @@ static PDI_status_t load_data(PC_tree_t node, PDI_datakind_t kind)
 	
 	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
 	
-	PDI_state.data = (PDI_data_t *) realloc(PDI_state.data,
-	                                        (PDI_state.nb_data + map_len) * sizeof(PDI_data_t)
-	                                       );
-	                                       
 	int map_id;
+	PDI_datatype_t *type; type = nullptr;
+	char *c_name; c_name = nullptr;
 	for (map_id = 0; map_id < map_len; ++map_id) {
-		PDI_data_t *cur_data = PDI_state.data + PDI_state.nb_data;
+		PC_tree_t config;
 		
-		cur_data->kind = kind;
-		cur_data->nb_content = 0;
-		cur_data->content = NULL;
 		
-		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &cur_data->name), err0);
+		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &c_name), err0);
+		std::string name(c_name);
+		free(c_name);
 		
-		cur_data->config = PC_get(node, "<%d>", map_id);
-		handle_PC_err(PC_status(cur_data->config), err0);
-		PDI_handle_err(PDI_datatype_load(&cur_data->type, cur_data->config), err0);
+		config = PC_get(node, "<%d>", map_id);
+		handle_PC_err(PC_status(config), err0);
 		
-		++PDI_state.nb_data;
+		PDI_datatype_t type;
+		PDI_handle_err(PDI_datatype_load(&type, config), err1);
+		
+		PDI::Data_descriptor cur_data;
+		PDI_handle_err(cur_data.init(name, config, (kind == PDI_DK_METADATA), type), err2);
+		
+		PDI_state.descriptors.insert({name, cur_data});
 	}
 	
 	return status;
-	
+err2:
+	PDI_datatype_destroy(type);
+err1:
+	delete(type);
 err0:
 	return status;
 }

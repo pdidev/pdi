@@ -32,12 +32,22 @@
 #ifndef PDI_STATE_H__
 #define PDI_STATE_H__
 
+#include <unordered_map>
+#include <string>
+#include <list>
+#include <stack>
+#include <memory>
+
 #include <pdi.h>
 
 #include <pdi/state_fwd.h>
 #include <pdi/value_fwd.h>
 #include <pdi/plugin_fwd.h>
-#include <pdi/data_fwd.h>
+#include <pdi/data_reference.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/data_content.h>
+
+
 
 struct loaded_plugin_s {
 	/// the name of the plugin
@@ -55,23 +65,19 @@ struct PDI_state_s {
 	 */
 	MPI_Comm PDI_comm;
 	
-	/// The number of data
-	int nb_data;
+	/// References on the data
+	std::unordered_map<std::string, std::stack<PDI::Data_ref>> store;
 	
-	/// The actual data
-	PDI_data_t *data;
+	/// Descriptors of the data
+	std::unordered_map<std::string, PDI::Data_descriptor> descriptors;
 	
-	char *transaction;
+	std::string transaction;
 	
-	int nb_transaction_data;
-	
-	PDI_data_t **transaction_data;
-	
-	/// The number of loaded plugins
-	int nb_plugins;
+	/// List of data that are
+	std::unordered_set< std::string > transaction_data;
 	
 	/// The actual loaded plugins
-	PDI_plugin_t *plugins;
+	std::unordered_map<std::string, std::shared_ptr<PDI_plugin_t> > plugins;
 	
 	/// The current error handling function
 	PDI_errfunc_f *errfunc;
@@ -79,23 +85,10 @@ struct PDI_state_s {
 };
 
 
-/** Return the first data whose name match the input name
- * \param[in] name a constant litteral that is compared with names of data
- * \return the address of the first data whose name matches the input name
- * or NULL if no name matches.
- */
-PDI_data_t PDI_EXPORT *PDI_find_data(const char *name);
-
-
-/** Removes a version of the content of a data
- * \param[in] data the data whose content to discard
- * \param[in] content_id the version of the content to discard
- * \return an error code
- */
-PDI_status_t PDI_EXPORT PDI_data_unlink(PDI_data_t *data, int content_id);
-
-
 /// The main state of the PDI implementation
 extern PDI_state_t PDI_EXPORT PDI_state;
+
+/// Find a reference in the PDI_state and returns it without access right
+PDI::Data_ref PDI_EXPORT PDI_find_ref(const std::string &name);
 
 #endif // PDI_STATE_H__

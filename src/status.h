@@ -45,6 +45,7 @@
 		if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \
 	} while( 0 )
 
+
 /** Handle a Paraconf return code, jumping to the error handler code on error
  * \param callstatus the call status to handle, will be used only once, this
  *        can be the call itself

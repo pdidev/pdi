@@ -36,6 +36,7 @@
 
 #include "pdi.h"
 #include "pdi/value.h"
+#include "pdi/data_content.h"
 
 #include "pdi/datatype.h"
 
@@ -161,7 +162,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		} else {
 			PDI_status_t err_status = PDI_make_err(PDI_ERR_CONFIG, "Incorrect array ordering: `%s'", order_str);
 			free(order_str);
-			PDI_handle_err(err_status , err0);
+			PDI_handle_err(err_status, err0);
 		}
 		PC_errhandler(pc_handler); // aka PC_end_try
 	}
@@ -697,15 +698,15 @@ err0:
 // public functions
 
 
-PDI_status_t PDI_datatype_init_scalar(PDI_datatype_t *that, PDI_scalar_type_t scalar_type)
+PDI_status_t PDI_datatype_init_scalar(PDI_datatype_t *dest, PDI_scalar_type_t value)
 {
-	that->kind = PDI_K_SCALAR;
-	that->c.scalar = scalar_type;
+	dest->kind = PDI_K_SCALAR;
+	dest->c.scalar = value;
 	return PDI_OK;
 }
 
 
-PDI_status_t PDI_datatype_init_array(PDI_datatype_t *result, const PDI_datatype_t *type, int ndims,
+PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t *type, int ndims,
                                      const PDI_value_t *sizes, const PDI_value_t *subsizes, const PDI_value_t *starts)
 {
 	PDI_status_t status = PDI_OK;
@@ -731,7 +732,8 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *result, const PDI_datatype_
 	array->starts = (PDI_value_t *)malloc(ndims * sizeof(PDI_value_t));
 	if (!starts) {
 		for (int ii = 0; ii < ndims; ++ii) {
-			PDI_handle_err(PDI_value_parse("0", &(array->starts[ii])), err2);
+			const char *zero = "0";
+			PDI_handle_err(PDI_value_parse(zero, &(array->starts[ii])), err2);
 		}
 	} else {
 		for (int ii = 0; ii < ndims; ++ii) {
@@ -741,8 +743,8 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *result, const PDI_datatype_
 	
 	PDI_handle_err(PDI_datatype_copy(&array->type, type), err3);
 	
-	result->kind = PDI_K_ARRAY;
-	result->c.array = array;
+	dest->kind = PDI_K_ARRAY;
+	dest->c.array = array;
 	
 	return status;
 	
@@ -764,16 +766,16 @@ err0:
 }
 
 
-PDI_status_t PDI_datatype_copy(PDI_datatype_t *result, const PDI_datatype_t *from)
+PDI_status_t PDI_datatype_copy(PDI_datatype_t *copy, const PDI_datatype_t *from)
 {
 	PDI_status_t status = PDI_OK;
 	
 	switch (from->kind) {
 	case PDI_K_SCALAR:
-		PDI_handle_err(PDI_datatype_init_scalar(result, from->c.scalar), err0);
+		PDI_handle_err(PDI_datatype_init_scalar(copy, from->c.scalar), err0);
 		break;
 	case PDI_K_ARRAY:
-		PDI_handle_err(PDI_datatype_init_array(result, &from->c.array->type,
+		PDI_handle_err(PDI_datatype_init_array(copy, &from->c.array->type,
 		                                       from->c.array->ndims, from->c.array->sizes, from->c.array->subsizes,
 		                                       from->c.array->starts),
 		               err0);
@@ -824,6 +826,7 @@ PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
 	
 	// load as a scalar by default
 	PDI_type_kind_t kind = PDI_K_SCALAR;
+	
 	// size or sizes => array
 	{
 		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
@@ -836,6 +839,7 @@ PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
 	case PDI_K_ARRAY: {// load the type as an array
 		PDI_array_type_t *array = (PDI_array_type_t *) malloc(sizeof(PDI_array_type_t));
 		PDI_handle_err(array_datatype_load(node, array), err1);
+		
 		type->c.array = array;
 		break;
 err1:
@@ -859,7 +863,6 @@ err2:
 	}
 	}
 	type->kind = kind;
-	
 err0:
 	return status;
 }

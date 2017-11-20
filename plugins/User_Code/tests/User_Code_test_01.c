@@ -44,17 +44,14 @@ static void fct_test_value(int value, int fatal, const char *fct, int line){
 }
 
 void test(void){
-	int itest=err_code;
-	void *buffer=NULL;
-	PDI_access("input", &buffer, PDI_OUT);
-	if(buffer) itest=*(int*)(buffer); // copying content
-	test_value(itest,1);
+	int *buffer=NULL;
+	PDI_access("input", (void**)&buffer, PDI_OUT);
+	test_value(*buffer,1);
+	PDI_release("input");
 
-	itest=2;
-	PDI_access("output", &buffer, PDI_IN);
-	if(buffer){
-		*(int*)(buffer)=itest; // copying content
-	}
+	PDI_access("output", (void**)&buffer, PDI_IN);
+	*buffer=2;
+	PDI_release("output");
 }
 
 
@@ -67,15 +64,15 @@ int main( int argc, char *argv[] )
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
 
-	PDI_status_t err = PDI_init(PC_get(conf,".pdi"), &world);
+	PDI_init(PC_get(conf,".pdi"), &world);
 
 	i=0;
 	j=err_code;
-	PDI_transaction_begin("testing");
-	PDI_expose("input",&i);
-	PDI_import("output",&j);
-	test_value(j,0);
-	PDI_transaction_end();
+	PDI_share("input",&i, PDI_OUT);
+	PDI_share("output",&j, PDI_IN);
+	PDI_event("testing");
+	PDI_reclaim("output");
+	PDI_reclaim("input");
 	test_value(j,1);
 	PDI_finalize();
 

@@ -1,26 +1,26 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * * Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific
- *   prior written permission.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- ******************************************************************************/
+* Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+* * Redistributions of source code must retain the above copyright
+*   notice, this list of conditions and the following disclaimer.
+* * Redistributions in binary form must reproduce the above copyright
+*   notice, this list of conditions and the following disclaimer in the
+*   documentation and/or other materials provided with the distribution.
+* * Neither the name of CEA nor the names of its contributors may be used to
+*   endorse or promote products derived from this software without specific
+*   prior written permission.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+******************************************************************************/
 
 //The following is used for doxygen documentation:
 /**
@@ -63,6 +63,8 @@ typedef enum PDI_status_e {
 	 *  unopened transaction)
 	 */
 	PDI_ERR_STATE,
+	/// A conflict of onwership over a content has been raised
+	PDI_ERR_RIGHT,
 	/// Invalid type error
 	PDI_ERR_TYPE
 } PDI_status_t;
@@ -140,6 +142,8 @@ PDI_status_t PDI_EXPORT PDI_event(const char *event);
  * Access directions
  */
 typedef enum PDI_inout_e {
+	/// No data transfert
+	PDI_NONE = 0,
 	/// data tranfer from PDI to the main code
 	PDI_IN = 1,
 	/// data transfer from the main code to PDI
@@ -147,6 +151,14 @@ typedef enum PDI_inout_e {
 	/// data transfer in both direction
 	PDI_INOUT = 3
 } PDI_inout_t;
+
+/** Declare binary OR and AND operator (required in C++)**/
+#ifdef __cplusplus
+PDI_inout_t   operator|(PDI_inout_t a, PDI_inout_t b);
+PDI_inout_t  &operator|=(PDI_inout_t &lhs, PDI_inout_t rhs);
+PDI_inout_t   operator&(PDI_inout_t a, PDI_inout_t b);
+PDI_inout_t  &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs);
+#endif
 
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
@@ -254,5 +266,6 @@ PDI_status_t PDI_EXPORT PDI_transaction_end();
 #ifdef __cplusplus
 } // extern C
 #endif
+
 
 #endif // PDI_H__

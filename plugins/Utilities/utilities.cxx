@@ -31,70 +31,62 @@
 
 #include "config.h"
 
+#include <cassert>
+#include <cstring>
+#include <set>
+#include <string>
+#include <unordered_set>
+#include <vector>
 #include <inttypes.h>
-#include <assert.h>
+
 #include <mpi.h>
 #include <sys/stat.h> // to check file existence
 
 #include "pdi.h"
 #include <pdi/plugin.h>
 #include <pdi/state.h>
-#include <pdi/data.h>
+#include <pdi/data_reference.h>
 #include <pdi/datatype.h>
 #include <pdi/value.h>
 
-#ifdef STRDUP_WORKS
-#define _POSIX_C_SOURCE 200809L
-#endif
-#include <string.h>
-
-
+using PDI::Data_ref;
+using std::cerr;
+using std::endl;
+using std::set;
+using std::string;
+using std::unordered_set;
+using std::vector;
 
 /// Supported actions
-typedef enum { EVENT2DATA=0,
+typedef enum {
+	EVENT2DATA=0,
 	FILE_EXISTS,
 	DIR_EXISTS,
-	EXTRACT_SUBARRAY}
-	utils_action_t;
+	EXTRACT_SUBARRAY
+} utils_action_t;
 
 typedef struct utils_task_s
 {
 	utils_action_t action; ///<  The action to perform on event
-
-	int nb_events; ///<  Number of events
-
-	char **events; ///<  Events that trigger the previous action
-
+	
+	unordered_set<string> events; ///<  Events that trigger the previous action
+	
 	PDI_value_t in; ///<  An expression: could be a file name, variables, or expressions
-
+	
 	PDI_value_t out; ///<  An expression
-
+	
 	PDI_value_t select; ///<  select when to perform action (default is always)
-
-	void *data; ///<  data to store the result  
-
-	size_t size; ///<  data size
-
+	
+	int32_t result; ///< the result of the last execution of the action
+	
 } utils_task_t;
 
 
-/// Number of tasks performed by the plug-in
-int nb_tasks = 0;
 /// Tasks
-utils_task_t *tasks = NULL;
+vector<utils_task_t> tasks;
 
 /// Configuration file obtain from PDI
 PC_tree_t my_conf;
-
-
-#ifndef STRDUP_WORKS
-char *strdup(const char *s)
-{
-	char *p = (char*)malloc(strlen(s)+1);
-	if ( p ) strcpy(p, s);
-	return p;
-}
-#endif
 
 
 /// Initialization: read configuration file and fill data structure
@@ -108,105 +100,89 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 	}
 	// Get the number of actions
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
-	if(PC_len(my_conf,&nb_tasks)){
-		nb_tasks=0;
-		tasks=NULL;
+	int nb_tasks;
+	if ( PC_len(my_conf, &nb_tasks) ) { // if our config is absent, simply return
 		PC_errhandler(errh);
 		return PDI_OK;
-	} else {
-		tasks=(utils_task_t*)malloc(nb_tasks*sizeof(utils_task_t));
 	}
 	PC_errhandler(errh);
-
+	
 	// fill the utils_task_t data structure with corresponding values from conf file
-	char *str, *one;
-	one=strdup("1");
-	const long zero = 0;
-	for ( int ii=0; ii<=nb_tasks-1; ++ii){
+	tasks.resize(nb_tasks);
+	for ( int ii=0; ii<nb_tasks; ++ii){
 		// Get the next node
 		PC_tree_t treetmp = PC_get(my_conf, "<%d>", ii);
 		
-		tasks[ii].nb_events = 0;
+		
 		// List of events (or single event)
 		errh = PC_errhandler(PC_NULL_HANDLER);
 		PC_tree_t all_events = PC_get(treetmp,".events");
-		if( !PC_len(all_events, &tasks[ii].nb_events) ){
-			tasks[ii].events=(char**)malloc(tasks[ii].nb_events*sizeof(char*));
-			for( int nn=0; nn < tasks[ii].nb_events; ++nn ){
-				PC_string(PC_get(all_events, "{%d}", ii) , &tasks[ii].events[nn]);
+		int nb_events;
+		if( !PC_len(all_events, &nb_events) ){
+			for( int nn=0; nn < nb_events; ++nn ){
+				char *event;
+				PC_string(PC_get(all_events, "{%d}", ii) , &event);
+				tasks[ii].events.insert(event);
+				free(event);
 			}
 		} else { // testing with one event
-			tasks[ii].nb_events=1;
-			tasks[ii].events=(char**)malloc(tasks[ii].nb_events*sizeof(char *));
-			PC_string(PC_get(treetmp,".event"), &tasks[ii].events[0]);
+			char *event;
+			PC_string(PC_get(treetmp,".event"), &event);
+			tasks[ii].events.insert(event);
+			free(event);
 		}
 		PC_errhandler(errh);
-		assert(tasks[ii].nb_events > 0 && "[PDI/Utilities] Error: no value or invalid value for 'event' or 'events'.\n");
-
+		assert(!tasks[ii].events.empty() && "[PDI/Utilities] Error: no value or invalid value for 'event' or 'events'.\n");
+		
 		// input and ouput
 		// data 'in'
-		str =NULL;
-		if( !PC_string(PC_get(treetmp, ".in"), &str) ){
-			PDI_value_parse(str, &tasks[ii].in);
+		char *in = NULL;
+		if( !PC_string(PC_get(treetmp, ".in"), &in) ){
+			PDI_value_parse(in, &tasks[ii].in);
 		} else {
 			fprintf(stderr, "[PDI/Utilities] Error: no value or invalid value for 'in'.\n");
 			return PDI_ERR_CONFIG;
 		}
-		free(str);
+		free(in);
 		// data 'out'
-		str=NULL;
-		if( !PC_string(PC_get(treetmp, ".out"), &str) ){
-			PDI_value_parse(str, &tasks[ii].out);
+		char* out = NULL;
+		if( !PC_string(PC_get(treetmp, ".out"), &out) ){
+			PDI_value_parse(out, &tasks[ii].out);
 		} else {
 			fprintf(stderr, "[PDI/Utilities] Error: no value or invalid value for 'out'.\n");
 			return PDI_ERR_CONFIG;
 		}
-		free(str);
-
+		free(out);
+		
 		// optional 'select'
 		PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
-		str=one;
-		PC_string(PC_get(treetmp, ".select"), &str);
-		// else apply default value of 1 (always true)
-		PDI_value_parse(str, &tasks[ii].select);
-		PC_errhandler(errh);
-
-		// Select an existing task
-		str=NULL;
-		PC_string(PC_get(my_conf, "{%d}", ii) , &str);
-		if ( !strcmp(str, "event2data") ){
-			tasks[ii].action = EVENT2DATA;
-			tasks[ii].size = sizeof(int32_t);
-			tasks[ii].data = malloc(tasks[ii].size);
-			memcpy(tasks[ii].data,(const void *)(&zero), tasks[ii].size);
-
-		} else if ( !strcmp(str, "file_exists") ){
-			tasks[ii].action = FILE_EXISTS;
-			tasks[ii].size = sizeof(int32_t);
-			tasks[ii].data = malloc(tasks[ii].size);
-			memcpy(tasks[ii].data,(const void *)(&zero), tasks[ii].size);
-
-		} else if ( !strcmp(str, "dir_exists") ){
-			tasks[ii].action = DIR_EXISTS;
-			tasks[ii].size = sizeof(int32_t);
-			tasks[ii].data = malloc(tasks[ii].size);
-			memcpy(tasks[ii].data,(const void *)(&zero), tasks[ii].size);
-
-		} else if ( !strcmp(str, "extract_subarray") ){
-			tasks[ii].action = EXTRACT_SUBARRAY;
-			tasks[ii].data = NULL;
-			tasks[ii].size = 0;
-
+		char* select;
+		if ( !PC_string(PC_get(treetmp, ".select"), &select) ) {
+			PDI_value_parse(select, &tasks[ii].select);
+			free(select);
 		} else {
-			tasks[ii].data = NULL;
-			tasks[ii].size = 0;
-			fprintf(stderr, "[PDI/Utilities] Error: Invalid node name, '%s'.\n",str);
+			// else apply default value of 1 (always true)
+			PDI_value_parse("1", &tasks[ii].select);
+		}
+		PC_errhandler(errh);
+		
+		// Select an existing task
+		char* task = NULL;
+		PC_string(PC_get(my_conf, "{%d}", ii) , &task);
+		if ( !strcmp(task, "event2data") ){
+			tasks[ii].action = EVENT2DATA;
+		} else if ( !strcmp(task, "file_exists") ){
+			tasks[ii].action = FILE_EXISTS;
+		} else if ( !strcmp(task, "dir_exists") ){
+			tasks[ii].action = DIR_EXISTS;
+		} else if ( !strcmp(task, "extract_subarray") ){
+			tasks[ii].action = EXTRACT_SUBARRAY;
+		} else {
+			fprintf(stderr, "[PDI/Utilities] Error: Invalid task name, '%s'.\n", task);
 			return PDI_ERR_CONFIG;
 		}
-		free(str);
-		
+		free(task);
 	}
-	free(one);
 	
 	return PDI_OK;
 }
@@ -215,93 +191,64 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 /// Finalize and free allocated data
 PDI_status_t PDI_utilities_finalize()
 {
-	for ( int ii=0; ii<nb_tasks; ++ii ) {
-		for (int n=0; n<tasks[ii].nb_events; n++)
-			free(tasks[ii].events[n]);
-		if(tasks[ii].nb_events) free(tasks[ii].events);
-		if(tasks[ii].size) free(tasks[ii].data);
-		tasks[ii].size = 0;
-
-		PDI_value_destroy(&tasks[ii].in);
-		PDI_value_destroy(&tasks[ii].out);
-		PDI_value_destroy(&tasks[ii].select);
+	for ( auto&& one_task: tasks) {
+		PDI_value_destroy(&one_task.in);
+		PDI_value_destroy(&one_task.out);
+		PDI_value_destroy(&one_task.select);
 	}
-
-	free(tasks);
+	tasks.clear();
 	return PDI_OK;
 }
 
 
 /// Traps and converts events into tasks
-PDI_status_t PDI_utilities_event(const char *event_name)
-{
-	char *str=NULL;
-	int32_t tmp;
-	long  ltmp;
-	struct stat sb;
-	for(int ii=0; ii<nb_tasks; ++ii ){
-		for(int nn=0; nn<tasks[ii].nb_events; ++nn){
-			PDI_value_int(&tasks[ii].select,&ltmp);
-			if(ltmp){
-				if(tasks[ii].action == EVENT2DATA){// TODO[CR]: error check
-					// Should evaluate expression define in 'in' and set value in 'out'
-					if (!strcmp(tasks[ii].events[nn],event_name)){
-						PDI_value_int(&tasks[ii].in,&ltmp);
-						tmp=ltmp; // Nasty workaround to remove warning
-
-					} else {
-						tmp=0;
-					}
-					// Save value
-					memcpy(tasks[ii].data, &tmp, tasks[ii].size);
-
-					// expose value in current out (can be received by other plug-ins).
-					PDI_value_str(&tasks[ii].out,&str);
-					PDI_expose(str, &tmp);
+PDI_status_t PDI_utilities_event(const char *event_name) {
+	for ( auto&& one_task: tasks ) {
+		if ( one_task.events.find(event_name) != one_task.events.end() ) {
+			long select; PDI_value_int(&one_task.select, &select);
+			if ( !select ) continue;
+			switch ( one_task.action ) {
+			case EVENT2DATA:{
+				// Should evaluate expression define in 'in' and set value in 'out'
+				long in; PDI_value_int(&one_task.in, &in);
+				one_task.result = in;
+			} break;
+			case FILE_EXISTS: {
+				// get filename from input into str
+				string fname;
+				{
+					char *str=NULL;
+					PDI_value_str(&one_task.in, &str);
+					fname = str;
 					free(str);
 				}
-				else if(!strcmp(tasks[ii].events[nn],event_name)){
-					switch( tasks[ii].action ) {
-					case EXTRACT_SUBARRAY:
-						break;
-					case FILE_EXISTS: {
-						// get filename from input into str
-						PDI_value_str(&tasks[ii].in,&str);
-						// check for file
-						if (stat(str, &sb) == 0 && S_ISREG(sb.st_mode)){
-							tmp = 1;
-						} else {
-							tmp = 0;
-						}
-						free(str);
-						memcpy(tasks[ii].data, &tmp, tasks[ii].size);
-						// get name to expose the return value
-						PDI_value_str(&tasks[ii].out,&str);
-						PDI_expose(str, &tmp);
-						free(str);
-					} break;
-					case DIR_EXISTS: {
-						// get filename from input into str
-						PDI_value_str(&tasks[ii].in,&str);
-						// check for file
-						if (stat(str, &sb) == 0 && S_ISDIR(sb.st_mode)){
-							tmp = 1;
-						} else {
-							tmp = 0;
-						}
-						free(str);
-
-						memcpy(tasks[ii].data, &tmp, tasks[ii].size);
-						// get name to expose the return value
-						PDI_value_str(&tasks[ii].out,&str);
-						PDI_expose(str, &tmp);
-
-						free(str);
-					} break;
-					default:
-						return PDI_ERR_CONFIG;
-					}
+				// check for file
+				struct stat sb;
+				if (stat(fname.c_str(), &sb) == 0 && S_ISREG(sb.st_mode)){
+					one_task.result = 1;
+				} else {
+					one_task.result = 0;
 				}
+			} break;
+			case DIR_EXISTS: {
+				// get filename from input into str
+				string fname;
+				{
+					char *str=NULL;
+					PDI_value_str(&one_task.in, &str);
+					fname = str;
+					free(str);
+				}
+				// check for file
+				struct stat sb;
+				if (stat(fname.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)){
+					one_task.result = 1;
+				} else {
+					one_task.result = 0;
+				}
+			} break;
+			case EXTRACT_SUBARRAY:
+				break;
 			}
 		}
 	}
@@ -309,32 +256,33 @@ PDI_status_t PDI_utilities_event(const char *event_name)
 }
 
 /// Convert into corresponding data type
-PDI_status_t cast_data_int(PDI_data_t *data, int32_t plugin_data) {
+PDI_status_t cast_data_int(Data_ref& ref, int32_t plugin_data) {
 	PDI_status_t status = PDI_OK;
-	if ( data->type.kind == PDI_K_SCALAR ) {
-		switch ( data->type.c.scalar ) {
-		case PDI_T_INT32:
-			*((int32_t*)data->content[data->nb_content-1].data) = plugin_data;
-			break;
-		case PDI_T_INT8:
-			*((int8_t*)data->content[data->nb_content-1].data) = plugin_data;
-			break;
-		case PDI_T_INT16: 
-			*((int16_t*)data->content[data->nb_content-1].data) = plugin_data;
-			break;
-		case PDI_T_INT64: 
-			*((int64_t*)data->content[data->nb_content-1].data) = plugin_data;
-			break;
-		case PDI_T_FLOAT: 
-			*((float*)data->content[data->nb_content-1].data) = plugin_data;
-			break;
-		case PDI_T_DOUBLE:
-			*((double*)data->content[data->nb_content-1].data) = plugin_data;
-			break;
-		case PDI_T_LONG_DOUBLE:
-			*((long double*)data->content[data->nb_content-1].data) = plugin_data;
-			break;
-		default: status = PDI_ERR_VALUE;
+	const PDI_datatype_t& type = ref.get_content()->get_type();
+	if ( type.kind == PDI_K_SCALAR ) {
+		switch ( type.c.scalar ) {
+			case PDI_T_INT32:
+				*((int32_t*)ref.get_content()->get_buffer()) = plugin_data;
+				break;
+			case PDI_T_INT8:
+				*((int8_t*)ref.get_content()->get_buffer()) = plugin_data;
+				break;
+			case PDI_T_INT16: 
+				*((int16_t*)ref.get_content()->get_buffer()) = plugin_data;
+				break;
+			case PDI_T_INT64: 
+				*((int64_t*)ref.get_content()->get_buffer()) = plugin_data;
+				break;
+			case PDI_T_FLOAT: 
+				*((float*)ref.get_content()->get_buffer()) = plugin_data;
+				break;
+			case PDI_T_DOUBLE:
+				*((double*)ref.get_content()->get_buffer()) = plugin_data;
+				break;
+			case PDI_T_LONG_DOUBLE:
+				*((long double*)ref.get_content()->get_buffer()) = plugin_data;
+				break;
+			default: status = PDI_ERR_VALUE;
 		}
 	} else {
 		status = PDI_ERR_VALUE;
@@ -344,28 +292,24 @@ PDI_status_t cast_data_int(PDI_data_t *data, int32_t plugin_data) {
 
 
 
-PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
+PDI_status_t PDI_utilities_data_start( Data_ref&& ref )
 {
 	PDI_status_t status = PDI_OK;
 	
-	if ( data->content[data->nb_content-1].access & PDI_IN ) {
+	if ( ref.try_grant(PDI_IN) ) {
 		status = PDI_UNAVAILABLE;
 		// for each utils_task look if the output is the same as the PDI_data_t
-		for ( int ii=0; ii<nb_tasks; ++ii ) {
-			char *str_out = NULL; PDI_value_str(&tasks[ii].out, &str_out); // output string
-			if ( !strcmp(str_out, data->name) ) { // output and data name matches
-				switch(tasks[ii].action){ // check datatype compatibiliy
-				case EVENT2DATA: {
-					int32_t copy = *(int32_t *)tasks[ii].data;
-					status = cast_data_int(data, copy);
-				} break;
-				case FILE_EXISTS: {
-					int32_t copy = *(int32_t *)tasks[ii].data;
-					status = cast_data_int(data, copy);
-				} break;
+		for ( auto&& one_task: tasks ) {
+			char *str_out = NULL; status = PDI_value_str(&one_task.out, &str_out); // output string
+			if ( !status && ref.get_name() == str_out ) { // output and data name matches
+				switch(one_task.action){ // check datatype compatibiliy
+				case EVENT2DATA:
+				case FILE_EXISTS:
 				case DIR_EXISTS: {
-					int32_t copy = *(int32_t *)tasks[ii].data;
-					status = cast_data_int(data, copy);
+					if( ref.grant(PDI_IN) ){ 
+						status = cast_data_int(ref, one_task.result);
+						ref.revoke(PDI_IN);
+					}
 				} break;
 				default: // do nothing
 					break;
@@ -374,26 +318,27 @@ PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 			free(str_out);
 		}
 	}
-	if ( data->content[data->nb_content-1].access & PDI_OUT ) {
-		for ( int ii=0; ii<nb_tasks; ++ii ) {
-			if ( tasks[ii].action == EXTRACT_SUBARRAY) {
-				char *str_in = NULL; PDI_value_str(&tasks[ii].in, &str_in); // input string
-				if( (!strcmp(str_in, data->name)) ){ // input and data name match
-					char *str_out = NULL; PDI_value_str(&tasks[ii].out, &str_out); // output string
+	if ( ref.try_grant(PDI_OUT) ) {
+		for ( auto&& one_task: tasks ) {
+			if ( one_task.action == EXTRACT_SUBARRAY) {
+				char *str_in = NULL; PDI_value_str(&one_task.in, &str_in); // input string
+				if ( ref.get_name() == str_in ) { // input and data name match
+					char *str_out = NULL; PDI_value_str(&one_task.out, &str_out); // output string
 					
 					if( !strcmp(str_in,str_out) ){
 						fprintf(stderr,"[PDI/Utilities] Cannot extract subarray. Array %s and subarray %s identify the same data\n", str_in, str_out);
 						return PDI_ERR_CONFIG;
 					}
-
-					PDI_data_t *data_out=PDI_find_data(str_out);
-					if( data_out ){ // checking that output data exists
-						size_t subsize; PDI_datatype_buffersize(&data_out->type, &subsize);
+					
+					auto&& outdesc = PDI_state.descriptors.find(str_out);
+					if( ref.grant(PDI_OUT) && outdesc != PDI_state.descriptors.end() ){ // checking that output data exists
+						size_t oldsize; PDI_datatype_buffersize(&ref.get_content()->get_type(), &oldsize);
+						size_t subsize; PDI_datatype_datasize(&outdesc->second.get_type(), &subsize);
 						void *subdata = malloc(subsize);
-						size_t oldsize; PDI_datatype_buffersize(&data->type, &oldsize);
-						PDI_buffer_copy(subdata, &data_out->type, data->content[data->nb_content-1].data, &data->type);
+						PDI_buffer_copy(subdata, &outdesc->second.get_type(), ref.get_content()->get_buffer(), &ref.get_content()->get_type());
 						PDI_expose(str_out, subdata);
 						free(subdata);
+						ref.revoke(PDI_OUT);
 					}
 					free(str_out);
 				}
@@ -404,10 +349,11 @@ PDI_status_t PDI_utilities_data_start( PDI_data_t *data )
 	return status;
 }
 
-PDI_status_t PDI_utilities_data_end(PDI_data_t *data)
+PDI_status_t PDI_utilities_data_end(Data_ref&& ref)
 {
-	(void) data; // remove warning "unused var..."
+	(void) ref; // remove warning "unused var..."
 	return PDI_OK;
 }
 
 PDI_PLUGIN(utilities)
+
