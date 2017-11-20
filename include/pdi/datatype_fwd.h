@@ -38,7 +38,7 @@
 #define PDI_DATATYPE_FWD_H__
 
 /// A PDI type descriptor
-typedef struct PDI_datatype_s PDI_datatype_t;
+class PDI_datatype_t;
 
 /// The possible kinds of type
 typedef enum PDI_type_kind_e {

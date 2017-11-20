@@ -23,12 +23,14 @@
  ******************************************************************************/
 
 /**
-\file api.c
-\brief PDI internal data
-\author J. Bigot (CEA)
-**/
+ * \file api.c
+ * \brief PDI internal data
+ * \author Julien Bigot (CEA) <julien-bigot@cea.fr>
+ */
 
 #include "config.h"
+
+#include <iostream>
 
 #include "pdi/state.h"
 #include "status.h"
@@ -37,17 +39,28 @@
 
 
 using PDI::Data_ref;
+using std::cerr;
+using std::endl;
+using std::stack;
 using std::string;
 
 
 PDI_state_t PDI_state;
 
 
+PDI::Data_descriptor & PDI_state_s::desc(const char* name)
+{
+	return m_descriptors.emplace(name,name).first->second;
+}
+
+PDI::Data_descriptor & PDI_state_s::desc(const std::string& name)
+{
+	return m_descriptors.emplace(name,name).first->second;
+}
+
 Data_ref PDI_find_ref(const string &name)
 {
-	auto &&ref = PDI_state.store.find(name);
-	if (ref != PDI_state.store.end()) {
-		return ref->second.top();
-	}
+	stack<Data_ref>& refstack = PDI_state.store[name];
+	if ( !refstack.empty() ) return refstack.top();
 	return Data_ref();
 }

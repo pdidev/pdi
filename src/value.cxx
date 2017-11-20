@@ -31,9 +31,12 @@
  * \author J. Bigot (CEA)
  */
 
+#include <cassert>
+#include <cstdint>
+#include <vector>
+
 #include <ctype.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 #include "pdi/state.h"
 #include "pdi/data_reference.h"
@@ -43,16 +46,20 @@
 
 #include "pdi/value.h"
 
+using PDI::Data_descriptor;
+using PDI::Data_ref;
 using std::string;
+using std::vector;
 
 
-struct PDI_refval_s {
-	//TODO: replace by a descriptor
-	string name;
+class PDI_refval_t
+{
+public:
+	/// The referenced data
+	Data_descriptor& m_referenced;
 	
-	PDI_value_t *idx;
-	
-	int nb_idx;
+	/// Indexes in case the referenced data is an array
+	vector<PDI_value_t> m_idx;
 	
 };
 
@@ -119,7 +126,6 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 {
 	PDI_status_t status = PDI_OK;
 	const char *ref = *val_str;
-	new (value) PDI_refval_t;
 	
 	if (*ref != '$') PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected '$', got %c", *ref), err0);
 	++ref;
@@ -133,22 +139,23 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	
 	int refid_len; PDI_handle_err(parse_id(&ref, &refid_len), err0);
 	
-	value->name = string(ref - refid_len, refid_len);
+	assert(PDI_state.desc(string(ref-refid_len, refid_len)).name() == string(ref-refid_len, refid_len));
 	
-	if ( PDI_state.descriptors.find(value->name) == PDI_state.descriptors.end() ) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Reference to unknown data: `%.*s'", refid_len, ref - refid_len), err0);
+	new (value) PDI_refval_t{PDI_state.desc(string(ref-refid_len, refid_len)),{}};
+	
+	if ( !value->m_referenced.is_metadata() ) {
+		return PDI_make_err(PDI_ERR_CONFIG, "Invalid reference to non-metadata `%s'", value->m_referenced.name().c_str());
 	}
+	
+	assert(!value->m_referenced.name().empty());
 	
 	while (isspace(*ref)) ++ref;
 	
-	value->idx = NULL;
-	value->nb_idx = 0;
 	while (*ref == '[') {
 		++ref;
 		while (isspace(*ref)) ++ref;
-		++(value->nb_idx);
-		value->idx = (PDI_value_t *)realloc(value->idx, value->nb_idx * sizeof(PDI_value_t));
-		PDI_handle_err(parse_intval(&ref, &value->idx[value->nb_idx - 1], 1), err0);
+		value->m_idx.push_back({});
+		PDI_handle_err(parse_intval(&ref, &value->m_idx.back(), 1), err0);
 		if (*ref != ']')  {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected ']', found %c", *ref), err0);
 		}
@@ -381,22 +388,21 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 {
 	PDI_status_t status = PDI_OK;
 	
-	const PDI::Data_descriptor& desc = PDI_state.descriptors[val->name];
-	
-	const PDI_datatype_t &ref_type = desc.get_type();
+	const PDI_datatype_t &ref_type = val->m_referenced.get_type();
 	PDI_scalar_type_t type = ref_type.c.scalar;
+	Data_ref ref;
 	
 	if (ref_type.kind == PDI_K_ARRAY) {
-		if (val->nb_idx != ref_type.c.array->ndims) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", val->nb_idx, ref_type.c.array->ndims), err0);
+		if (val->m_idx.size() != ref_type.c.array->ndims) {
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", val->m_idx.size(), ref_type.c.array->ndims), err0);
 		}
 		if (ref_type.c.array->type.kind != PDI_K_SCALAR) {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid type accessed"), err0);
 		}
 		type = ref_type.c.array->type.c.scalar;
 	} else if (ref_type.kind == PDI_K_SCALAR) {
-		if (val->nb_idx) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", val->nb_idx), err0);
+		if (!val->m_idx.empty()) {
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", val->m_idx.size()), err0);
 		}
 	} else {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid access to a struct"), err0);
@@ -404,19 +410,24 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	
 	long idx; idx = 0;
 	long stride; stride = 1;
-	for (int ii = 0; ii < val->nb_idx; ++ii) {
+	for (size_t ii = 0; ii < val->m_idx.size(); ++ii) {
 		long start; PDI_handle_err(PDI_value_int(&(ref_type.c.array->starts[ii]), &start), err0);
-		long index; PDI_handle_err(PDI_value_int(&val->idx[ii], &index), err0);
+		long index; PDI_handle_err(PDI_value_int(&val->m_idx[ii], &index), err0);
 		idx += (start + index) * stride;
 		long size; PDI_handle_err(PDI_value_int(&(ref_type.c.array->sizes[ii]), &size), err0);
 		stride *= size;
 	}
 	
-	void *value; value = NULL;
-	if (PDI_access(val->name.c_str(), &value, PDI_OUT) != PDI_OK) { //TODO: check this with Julien
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not accessible", val->name.c_str()), err0);
+	ref = PDI_find_ref(val->m_referenced.name());
+	if ( !ref ) {
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not shared", val->m_referenced.name().c_str()), err0);
 	}
-	if (!value) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->name.c_str()), err0);
+	ref.grant(PDI_OUT);
+	if ( !ref ) {
+		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not readable", val->m_referenced.name().c_str()), err0);
+	}
+	void *value; value = ref.get();
+	if (!value) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->m_referenced.name().c_str()), err0);
 	
 	switch (type) {
 	case PDI_T_INT8: {
@@ -435,8 +446,6 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
 	} break;
 	}
-	
-	PDI_release(val->name.c_str());
 	
 	return status;
 	
@@ -575,16 +584,11 @@ PDI_status_t exprval_copy(PDI_exprval_t *value, PDI_exprval_t *copy)
 
 PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
 {
-	new (copy) PDI_refval_t;
-	copy->nb_idx = value->nb_idx;
+	new (copy) PDI_refval_t{value->m_referenced, {}};
 	
-	copy->name = value->name;
-	
-	int nb_idx = value->nb_idx;
-	copy->nb_idx = nb_idx;
-	copy->idx = (PDI_value_t *) malloc(nb_idx * sizeof(PDI_value_t));
-	for (int ii = 0; ii < nb_idx; ii++) {
-		PDI_value_copy(&value->idx[ii], &(copy->idx[ii]));
+	for (auto&& idx: value->m_idx) {
+		copy->m_idx.push_back({});
+		PDI_value_copy(&value->m_idx.back(), &(idx));
 	}
 	
 	return PDI_OK;
@@ -620,17 +624,13 @@ PDI_status_t exprval_destroy(PDI_exprval_t *value)
 
 PDI_status_t refval_destroy(PDI_refval_t *value)
 {
-	PDI_status_t status = PDI_OK;
-	
-	int ii;
-	for (ii = 0; ii < value->nb_idx; ++ii) {
-		PDI_value_destroy(&value->idx[ii]); // ignore potential errors
+	for (auto&& idx: value->m_idx) {
+		PDI_value_destroy(&idx); // ignore potential errors
 	}
-	free(value->idx);
 	
 	value->~PDI_refval_t();
 	
-	return status;
+	return PDI_OK;
 }
 
 // public functions

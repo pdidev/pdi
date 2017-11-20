@@ -21,14 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-/* The following is used for doxygen documentation */
-/**
- * \file data_descriptor.cxx
- * \brief .
- * \author C. Roussel, corentin.roussel@cea.fr
- */
-// Created:  08/09/2017 08:21:55
-
 
 #include "config.h"
 
@@ -37,48 +29,39 @@
 
 #include "status.h"
 
-namespace PDI
-{
+namespace PDI {
 
-/// Copy constructor
-Data_descriptor::Data_descriptor(const Data_descriptor &from):
-	m_config(from.m_config),
-	m_metadata(from.m_metadata)
+using std::string;
+
+Data_descriptor::Data_descriptor(const char* name):
+		m_config(PC_parse_string(const_cast<char*>(""))),
+		m_metadata(false),
+		m_name(name)
 {
-	PDI_datatype_copy(&m_type, &from.m_type);
+	PDI_datatype_init_scalar(&m_type, PDI_T_UNDEF);
 }
 
-
-/// init data descriptor
-PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const PDI_datatype_t &type)
+Data_descriptor::Data_descriptor(const string& name):
+		m_config(PC_parse_string(const_cast<char*>(""))),
+		m_metadata(false),
+		m_name(name)
 {
-	PDI_status_t status(PDI_OK);
-	handle_PC_err(PC_status(config), err0);
-	m_config = config;
-	m_metadata = is_metadata;
-	PDI_handle_err(PDI_datatype_copy(&m_type, &type), err0);
-	
-err0:
-	return status;
+	PDI_datatype_init_scalar(&m_type, PDI_T_UNDEF);
 }
 
-/// Destructor
 Data_descriptor::~Data_descriptor()
 {
 	PDI_datatype_destroy(&m_type);
 }
 
-/// Copy operator
-Data_descriptor &Data_descriptor::operator= (const Data_descriptor &from)
+PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const PDI_datatype_t& type)
 {
-	m_config = from.m_config;
-	m_metadata = from.m_metadata;
-	PDI_datatype_copy(&m_type, &from.m_type);
-	return *this;
+	m_config = config;
+	m_metadata = is_metadata;
+	PDI_datatype_destroy(&m_type);
+	return PDI_datatype_copy(&m_type, &type);
 }
 
-
-/* ****** ACCESSORS  ****** */
 const PDI_datatype_t &Data_descriptor::get_type() const
 {
 	return m_type;

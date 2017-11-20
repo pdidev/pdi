@@ -100,20 +100,19 @@ public:
 	
 }; // class Data_content
 
-void destroyer_free(void *buffer, void *context)
+void destroyer_free(void *buffer, void *)
 {
-	context = (void *)context;
 	free(buffer);
 }
 
 template <typename T>
-void destroyer_delete(void *buffer, void *context)
+void destroyer_delete(void *buffer, void*)
 {
-	context = (void *)context;
-	delete(reinterpret_cast<T*>(buffer));
+	delete reinterpret_cast<T*>(buffer);
 }
 
 Data_ref::Data_ref():
+		m_content(nullptr),
 		m_access(PDI_NONE),
 		m_data_end(nullptr),
 		m_desc(nullptr)
@@ -126,7 +125,6 @@ Data_ref::Data_ref(const Data_descriptor& desc, void* data, PDI_inout_t access, 
 		m_data_end(nullptr),
 		m_desc(&desc)
 {
-	assert(data);
 	m_content->init(data, &destroyer_free, access, desc.get_type());
 	m_content->m_refs.insert(this);
 	grant(lock);
@@ -138,21 +136,17 @@ Data_ref::Data_ref(const Data_ref &other, PDI_inout_t lock):
 		m_data_end(nullptr),
 		m_desc(other.m_desc)
 {
-	m_content->m_refs.insert(this);
 	if (m_content) m_content->m_refs.insert(this);
 	grant(lock);
 }
 
 Data_ref::Data_ref(Data_ref &&other, PDI_inout_t lock):
-		m_content(move(other.m_content)),
+		m_content(other.m_content),
 		m_access(PDI_NONE),
 		m_data_end(nullptr),
 		m_desc(other.m_desc)
 {
-	if (m_content) {
-		m_content->m_refs.insert(this);
-		m_content->m_refs.erase(&other);
-	}
+	if (m_content) m_content->m_refs.insert(this);
 	grant(lock);
 }
 
@@ -173,7 +167,8 @@ Data_ref &Data_ref::operator = (Data_ref &&other)
 	m_content = other.m_content;
 	m_access = PDI_NONE;
 	m_data_end = nullptr;
-	m_content->m_refs.insert(this);
+	m_desc = other.m_desc;
+	if ( m_content ) m_content->m_refs.insert(this);
 	
 	return *this;
 }
@@ -249,17 +244,14 @@ const Data_descriptor& Data_ref::get_desc() const
 	return *m_desc;
 }
 
-
-
 void Data_ref::clear()
 {
 	rm_priviledge(m_access);
-	if ( m_content ) {
-		m_content->m_refs.erase(this);
-	}
-	m_desc = nullptr;
-	m_data_end = nullptr;
+	if ( m_content ) m_content->m_refs.erase(this);
 	m_content.reset();
+	m_access = PDI_NONE;
+	m_data_end = nullptr;
+	m_desc = nullptr;
 }
 
 PDI_status_t Data_ref::data_end()
@@ -274,6 +266,7 @@ PDI_status_t Data_ref::data_end()
 
 bool Data_ref::add_priviledge(const PDI_inout_t inout)
 {
+	if ( !m_content ) return false;
 	if (m_content->lock(inout)) {
 		m_access |= inout;
 		return true;
@@ -282,8 +275,9 @@ bool Data_ref::add_priviledge(const PDI_inout_t inout)
 }
 
 
-bool Data_ref::try_grant(PDI_inout_t access) ///< Attempt to ask for (additional) priviledge
+bool Data_ref::try_grant(PDI_inout_t access)
 {
+	if ( !m_content ) return false;
 	switch (m_access) {
 	case PDI_INOUT: { ///< Nothing to do here
 		return true;
@@ -308,6 +302,7 @@ bool Data_ref::try_grant(PDI_inout_t access) ///< Attempt to ask for (additional
 
 bool Data_ref::grant(PDI_inout_t access) ///< Attempt to ask for (additional) priviledge
 {
+	if ( !m_content ) return false;
 	switch (m_access) {
 	case PDI_INOUT: { ///< Nothing to do here
 		return true;

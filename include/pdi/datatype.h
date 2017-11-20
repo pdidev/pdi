@@ -41,7 +41,15 @@
 #include <pdi/datatype_fwd.h>
 #include <pdi/value.h>
 
-struct PDI_datatype_s {
+class PDI_datatype_t
+{
+public:
+	/** Checks whether the datatype is fully defined (no PDI_T_UNDEF)
+	*
+	* \return whether this is a fully defined type
+	*/
+	bool is_defined() const;
+	
 	/// The kind of type this describes
 	PDI_type_kind_t kind;
 	
@@ -191,18 +199,18 @@ PDI_status_t PDI_EXPORT PDI_datatype_buffersize(const PDI_datatype_t *type, size
  * Please note that if one array is sparse and not the other, only the dense parts
  * are copied. A current limitation is that both arrays can't be sparse.
  *
- * \param from the buffer that is copied
- * \param from_type the type of the original data
  * \param to the destination of the copy
  * \param to_type the type of the destination data
+ * \param from the buffer that is copied
+ * \param from_type the type of the original data
  * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_buffer_copy(void *to, const PDI_datatype_t *to_type, const void *from, const PDI_datatype_t *from_type);
 
 /** Indicate if a given datatype is dense or not
  *
- * \param array_type the type that is checked
- * \param is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
+ * \param[in] type the type that is checked
+ * \param[out] is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
  * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const PDI_datatype_t *type, int *is_dense);

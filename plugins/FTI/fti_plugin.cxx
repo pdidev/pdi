@@ -70,10 +70,10 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	char *fti_file; PC_string(PC_get(conf, ".config_file"), &fti_file);
 	
 	PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-	for ( auto& iter : PDI_state.descriptors) {
+	for ( auto&& iter : PDI_state.descriptors()) {
 		long fti_id;
-		if ( !PC_int(PC_get(iter.second.get_config(), ".fti_id"), &fti_id) ) {
-			fti_protected.insert(make_pair(iter.first, fti_id));
+		if ( !PC_int(PC_get(iter.get_config(), ".fti_id"), &fti_id) ) {
+			fti_protected.insert({iter.name(), fti_id});
 		}
 	}
 	

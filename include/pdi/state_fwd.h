@@ -35,7 +35,7 @@
 /** Describes the state of a PDI instanciation, its configuration, the
  *  currently exposed data, etc...
  */
-typedef struct PDI_state_s PDI_state_t;
+typedef class PDI_state_s PDI_state_t;
 
 
 /** This is the information about a plugin loaded by the implementation

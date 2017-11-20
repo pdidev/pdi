@@ -104,7 +104,6 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 {
 	PDI_status_t status = PDI_OK;
 	PDI_state.store.clear();
-	PDI_state.descriptors.clear();
 	PDI_state.transaction.clear();
 	PDI_state.plugins.clear();
 	
@@ -142,7 +141,6 @@ PDI_status_t PDI_finalize()
 	}
 	PDI_state.plugins.clear();
 	
-	PDI_state.descriptors.clear();
 	PDI_state.store.clear();
 	PDI_errhandler(errh);
 	
@@ -171,14 +169,15 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 {
 	PDI_status_t status(PDI_OK);
 	*buffer = NULL;
-	auto &&refstack = PDI_state.store.find(name);
-	if (refstack != PDI_state.store.end()) {
-		refstack->second.push(refstack->second.top());
-		if (refstack->second.top().grant(inout)) {   // got the requested rights
-			*buffer = refstack->second.top();
+	
+	stack<Data_ref>& refstack = PDI_state.store[name];
+	if ( ! refstack.empty() ) {
+		refstack.push(refstack.top());
+		if (refstack.top().grant(inout)) {   // got the requested rights
+			*buffer = refstack.top();
 			return PDI_OK;
 		} else { // cannot get the requested rights
-			refstack->second.pop();
+			refstack.pop();
 			PDI_handle_err(PDI_make_err(PDI_ERR_RIGHT, "Cannot grant priviledge for data '%s'", name), err0);
 		}
 	}
@@ -190,10 +189,8 @@ err0:
 
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 {
-	auto &&descit = PDI_state.descriptors.find(name);
-	if ( descit == PDI_state.descriptors.end() ) return PDI_UNAVAILABLE;
+	Data_descriptor& desc = PDI_state.desc(name);
 	
-	Data_descriptor &desc = descit->second;
 	stack<Data_ref>& refstack = PDI_state.store[name];
 	
 	/// for metadata, unlink happens on share
@@ -221,11 +218,7 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 
 PDI_status_t PDI_release(const char *name)
 {
-	if (!exist(name, PDI_state.descriptors)) {
-		return PDI_UNAVAILABLE;
-	}
-	
-	///< move reference out of the store
+	// move reference out of the store
 	stack<Data_ref>& refstack = PDI_state.store[name];
 	if ( refstack.empty() ) {
 		return PDI_make_err(PDI_ERR_VALUE, "Cannot release a non shared value");
@@ -239,16 +232,13 @@ PDI_status_t PDI_release(const char *name)
 
 PDI_status_t PDI_reclaim(const char *name)
 {
-	auto&& descit = PDI_state.descriptors.find(name);
-	if ( descit == PDI_state.descriptors.end() ) return PDI_UNAVAILABLE;
-	
 	stack<Data_ref>& refstack = PDI_state.store[name];
 	if (refstack.empty()) {
 		return PDI_make_err(PDI_ERR_VALUE, "Cannot reclaim a non shared value");
 	}
 	
 	// if the content is a metadata, keep it
-	if ( descit->second.is_metadata() ) {
+	if ( PDI_state.desc(name).is_metadata() ) {
 		refstack.top().copy_release();
 	} else {
 		// Manually reclaiming data

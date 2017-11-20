@@ -47,6 +47,8 @@
 #include <pdi/data_reference.h>
 #include <pdi/data_descriptor.h>
 
+#include <pdi/state_fwd.h>
+
 
 struct loaded_plugin_s {
 	/// the name of the plugin
@@ -58,7 +60,57 @@ struct loaded_plugin_s {
 };
 
 
-struct PDI_state_s {
+class PDI_state_s
+{
+public:
+	/** The store containing all data descriptors 
+	 * 
+	 * Implemented as a wrapper for a map
+	 */
+	class Descriptors_store
+	{
+	public:
+		/** An iterator used to go through the descriptor store.
+		 *
+		 * Implemented as a wrapper for a map iterator that hides the key part.
+		 */
+		class Descriptor_iterator
+		{
+		public:
+			PDI::Data_descriptor& operator-> () { return m_data->second; }
+			PDI::Data_descriptor& operator* () { return m_data->second; }
+			Descriptor_iterator& operator++ () { ++m_data; return *this; }
+			bool operator!= ( const Descriptor_iterator& o ) { return (m_data != o.m_data); }
+			friend class Descriptors_store;
+		private:
+			std::unordered_map<std::string, PDI::Data_descriptor>::iterator m_data;
+			Descriptor_iterator( const std::unordered_map<std::string, PDI::Data_descriptor>::iterator& data): m_data(data) {}
+			Descriptor_iterator( std::unordered_map<std::string, PDI::Data_descriptor>::iterator&& data): m_data(std::move(data)) {}
+		};
+		
+		typedef std::unordered_map<std::string, PDI::Data_descriptor> Mapped_type;
+		
+		Descriptor_iterator begin() { return m_data.begin(); }
+		
+		Descriptor_iterator end()  { return m_data.end(); }
+		
+		Descriptors_store ( Mapped_type& data): m_data(data) {}
+		
+	private:
+		Mapped_type& m_data;
+		
+	};
+	
+	Descriptors_store descriptors() { return m_descriptors; }
+		
+	/** Accesses the descriptor for a specific name. Might be uninitialized
+	*/
+	PDI::Data_descriptor& desc(const std::string& name);
+	
+	/** Accesses the descriptor for a specific name. Might be uninitialized
+	*/
+	PDI::Data_descriptor& desc(const char* name); 
+	
 	/** A MPI communicator containing all application processes, i.e. all
 	 *  those not reserved by any PDI plugin
 	 */
@@ -66,9 +118,6 @@ struct PDI_state_s {
 	
 	/// References on the data
 	std::unordered_map<std::string, std::stack<PDI::Data_ref>> store;
-	
-	/// Descriptors of the data
-	std::unordered_map<std::string, PDI::Data_descriptor> descriptors;
 	
 	std::string transaction;
 	
@@ -80,6 +129,10 @@ struct PDI_state_s {
 	
 	/// The current error handling function
 	PDI_errfunc_f *errfunc;
+	
+private:
+	/// Descriptors of the data
+	std::unordered_map<std::string, PDI::Data_descriptor> m_descriptors;
 	
 };
 

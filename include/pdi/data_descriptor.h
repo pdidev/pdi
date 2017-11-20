@@ -35,21 +35,33 @@
 namespace PDI {
 
 /** Describe the content of a buffer.
+ * \author Corentin Roussel <corentin.roussel@cea.fr>
+ * \date 2017-09-08
  */
 class Data_descriptor
 {
 public:
-	/** Create empty descriptor
+	/** Create an empty data descriptor
 	 */
-	Data_descriptor() = default;
+	Data_descriptor( const std::string& name );
 	
-	Data_descriptor(const Data_descriptor &);
+	/** Create an empty descriptor
+	 */
+	Data_descriptor( const char* name );
+	
+	Data_descriptor(const Data_descriptor &) = delete;
+	
+	Data_descriptor(Data_descriptor &&) = delete;
 	
 	~Data_descriptor();
 	
-	PDI_status_t init(PC_tree_t config, bool is_metadata, const PDI_datatype_t &type);  ///< initialized descriptor
+	Data_descriptor &operator= (const Data_descriptor &) = delete;
 	
-	Data_descriptor &operator= (const Data_descriptor &);  ///< Copy operator
+	Data_descriptor &operator= (Data_descriptor &&) = delete;
+	
+	/** initialize the descriptor
+	 */
+	PDI_status_t init(PC_tree_t config, bool is_metadata, const PDI_datatype_t &type);
 	
 	/** Return the datatype
 	 */
@@ -63,12 +75,16 @@ public:
 	 */
 	bool is_metadata() const;
 	
+	const std::string& name () const { return m_name; }
+	
 private:
 	PC_tree_t m_config;
 	
 	bool m_metadata;
 	
 	PDI_datatype_t m_type;
+	
+	const std::string m_name;
 	
 }; // class Data_descriptor
 

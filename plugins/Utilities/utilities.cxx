@@ -50,6 +50,7 @@
 #include <pdi/value.h>
 
 using PDI::Data_ref;
+using PDI::Data_descriptor;
 using std::cerr;
 using std::endl;
 using std::set;
@@ -330,12 +331,12 @@ PDI_status_t PDI_utilities_data_start( const std::string& name, PDI::Data_ref re
 						return PDI_ERR_CONFIG;
 					}
 					
-					auto&& outdesc = PDI_state.descriptors.find(str_out);
-					if( ref.grant(PDI_OUT) && outdesc != PDI_state.descriptors.end() ){ // checking that output data exists
+					Data_descriptor& outdesc = PDI_state.desc(str_out);
+					if( ref.grant(PDI_OUT) ){ // checking that output data exists
 						size_t oldsize; PDI_datatype_buffersize(&ref.get_type(), &oldsize);
-						size_t subsize; PDI_datatype_datasize(&outdesc->second.get_type(), &subsize);
+						size_t subsize; PDI_datatype_datasize(&outdesc.get_type(), &subsize);
 						void *subdata = malloc(subsize);
-						PDI_buffer_copy(subdata, &outdesc->second.get_type(), ref.get(), &ref.get_type());
+						PDI_buffer_copy(subdata, &outdesc.get_type(), ref.get(), &ref.get_type());
 						PDI_expose(str_out, subdata, PDI_OUT);
 						free(subdata);
 						ref.revoke(PDI_OUT);

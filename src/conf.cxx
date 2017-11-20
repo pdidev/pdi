@@ -40,6 +40,8 @@
 
 #include "conf.h"
 
+using PDI::Data_descriptor;
+
 static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 {
 	PDI_status_t status = PDI_OK;
@@ -63,10 +65,9 @@ static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 		PDI_datatype_t type;
 		PDI_handle_err(PDI_datatype_load(&type, config), err1);
 		
-		PDI::Data_descriptor cur_data;
+		Data_descriptor& cur_data = PDI_state.desc(name);
 		PDI_handle_err(cur_data.init(config, is_metadata, type), err2);
 		
-		PDI_state.descriptors.insert({name, cur_data});
 	}
 	
 	return status;

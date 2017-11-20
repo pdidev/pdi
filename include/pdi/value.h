@@ -39,7 +39,7 @@
 
 /** A value in case this is a reference to another value
  */
-typedef struct PDI_refval_s PDI_refval_t;
+class PDI_refval_t;
 
 /** A value in case this is an expression
  */

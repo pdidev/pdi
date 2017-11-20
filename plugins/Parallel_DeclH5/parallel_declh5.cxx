@@ -81,18 +81,14 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 {
 	PDI_status_t status = PDI_OK;
 	
-	if(PDI_state.descriptors.find(var->name) == PDI_state.descriptors.end()){
-		fprintf(stderr, "[PDI/Parallel_DeclH5] data '%s' not found.\n", var->name);
-		return PDI_ERR_PLUGIN;
-	}
-	PDI::Data_descriptor* desc = &(PDI_state.descriptors.find(var->name)->second);
-	const PDI_datatype_t& datatype = desc->get_type();
+	PDI::Data_descriptor& desc = PDI_state.desc(var->name);
+	const PDI_datatype_t& datatype = desc.get_type();
 	
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 	if ( datatype.kind == PDI_K_SCALAR ){
 		char *tmp = NULL ;
 		var->gstarts = (PDI_value_t*) malloc(sizeof(PDI_value_t)); 
-		if( PC_string(PC_get(desc->get_config(), ".global_start"), &tmp)){
+		if( PC_string(PC_get(desc.get_config(), ".global_start"), &tmp)){
 			if ( scalar_start ){
 				tmp = strdup(scalar_start);
 			} else {
@@ -105,7 +101,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		free(tmp);
 		
 		var->gsizes = (PDI_value_t*) malloc(sizeof(PDI_value_t));
-		if( PC_string(PC_get(desc->get_config(), ".global_size"), &tmp)){
+		if( PC_string(PC_get(desc.get_config(), ".global_size"), &tmp)){
 			if ( scalar_size ){
 				tmp = strdup(scalar_size);
 			} else {
@@ -120,7 +116,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 	} else {
 		
 		// Starts (offset where the local array begins on the distributed array)
-		PC_tree_t treetmp = PC_get(desc->get_config(), ".global_starts");
+		PC_tree_t treetmp = PC_get(desc.get_config(), ".global_starts");
 		if(PC_status(treetmp)) {
 			fprintf(stderr, "For var named %s \n",var->name); 
 			fprintf(stderr, "[PDI/Parallel_DeclH5] %s not found in data \n", "global_starts");
@@ -138,7 +134,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		
 		// Sizes (Size of the distributed array)
 		
-		treetmp = PC_get(desc->get_config(), ".global_sizes");
+		treetmp = PC_get(desc.get_config(), ".global_sizes");
 		if(PC_status(treetmp)) {
 			fprintf(stderr, "[PDI/Parallel_DeclH5] %s not found in data \n", "global_sizes");
 			return PDI_ERR_CONFIG;
@@ -559,7 +555,7 @@ PDI_status_t PDI_parallel_declh5_data_start( const std::string& name, PDI::Data_
 				const PDI_datatype_t& datatype = ref.get_type();
 				if ( datatype.kind == PDI_K_ARRAY ) {
 					PDI_order_t order;
-					PDI::Data_descriptor& desc = PDI_state.descriptors[name];
+					PDI::Data_descriptor& desc = PDI_state.desc(name);
 					if( (order = array_order(desc.get_config())) < 0 )
 						return PDI_ERR_CONFIG;
 					int rank = datatype.c.array->ndims;
