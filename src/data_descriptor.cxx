@@ -84,7 +84,7 @@ PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
 	}
 }
 
-PDI_status_t Data_descriptor::share(void *buffer, PDI_inout_t access)
+PDI_status_t Data_descriptor::share(void *buffer, Data_ref::Free_function freefunc, PDI_inout_t access)
 {
 	/// for metadata, unlink happens on share
 	if (!m_values.empty() && is_metadata()) {
@@ -93,7 +93,7 @@ PDI_status_t Data_descriptor::share(void *buffer, PDI_inout_t access)
 	}
 	
 	// make a reference and put it in the store
-	m_values.push(Data_ref(*this, buffer, access));
+	m_values.push(Data_ref(buffer, freefunc, this->get_type(), access));
 	Data_ref& ref = m_values.top();
 	
 	// Provide reference to the plug-ins

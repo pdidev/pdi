@@ -259,7 +259,7 @@ void write_to_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	hsize_t *h5sizes = NULL;
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
-	const PDI_datatype_t* scalart = &ref.get_type();
+	const PDI_datatype_t* scalart = &ref.type();
 	const PDI_datatype_t& datatype = *scalart;
 	if ( datatype.kind == PDI_K_ARRAY ) {
 		rank = datatype.c.array->ndims;
@@ -296,7 +296,7 @@ void write_to_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	
 	hid_t h5fspace = H5Screate_simple(rank, h5subsizes, NULL);
 	hid_t h5mspace = H5Screate_simple(rank, h5sizes, NULL);
-	if ( ref.get_type().kind == PDI_K_ARRAY) {
+	if ( ref.type().kind == PDI_K_ARRAY) {
 		H5Sselect_hyperslab(h5mspace, H5S_SELECT_SET, h5starts, NULL, h5subsizes, NULL );
 	}
 	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
@@ -324,7 +324,7 @@ PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
-	const PDI_datatype_t& datatype = ref.get_type();
+	const PDI_datatype_t& datatype = ref.type();
 	const PDI_datatype_t* scalart = &datatype ;
 	if ( datatype.kind == PDI_K_ARRAY ) {
 		rank = datatype.c.array->ndims;
@@ -364,7 +364,7 @@ PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
 			hid_t memspace = H5Screate_simple(rank, sizes, NULL);
 			
 			/// Extract subspace of data 
-			if ( ref.get_type().kind == PDI_K_ARRAY ) {
+			if ( ref.type().kind == PDI_K_ARRAY ) {
 				H5Sselect_hyperslab (memspace, H5S_SELECT_SET, starts, NULL, 
 														 subsizes, NULL);
 			}

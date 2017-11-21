@@ -95,7 +95,7 @@ public:
 	* * PDI_IN means PDI can set the buffer content
 	* * PDI_OUT means the buffer contains data that can be accessed by PDI
 	*/
-	PDI_status_t share(void *data, PDI_inout_t access);
+	PDI_status_t share(void *data, Data_ref::Free_function freefunc, PDI_inout_t access);
 
 	/** Requests for PDI to access a data buffer.
 	* \param[in,out] buffer a pointer to the accessed data buffer

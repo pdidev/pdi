@@ -354,7 +354,7 @@ void rm_if_exist(hid_t h5file, char *dset_name)
 
 const PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts, hsize_t *rank, PDI::Data_ref& ref)
 {
-	const PDI_datatype_t* scalart = &ref.get_type();
+	const PDI_datatype_t* scalart = &ref.type();
 	if ( scalart->kind == PDI_K_ARRAY ) {
 		const PDI_datatype_t& datatype = *scalart; 
 		*rank = datatype.c.array->ndims;
@@ -478,7 +478,7 @@ PDI_status_t pread_from_file(PDI::Data_ref& ref, char *filename, char *pathname,
 			hid_t memspace = H5Screate_simple(rank, sizes, NULL);
 			
 			/// Extract subspace of data 
-			if ( ref.get_type().kind == PDI_K_ARRAY ) {
+			if ( ref.type().kind == PDI_K_ARRAY ) {
 				H5Sselect_hyperslab (memspace, H5S_SELECT_SET, starts, NULL, 
 														 subsizes, NULL);
 			}
@@ -552,7 +552,7 @@ PDI_status_t PDI_parallel_declh5_data_start( const std::string& name, PDI::Data_
 				// TODO: warn user, assuming size is unchanged (unknow consequence when size is changed...)
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL; 
-				const PDI_datatype_t& datatype = ref.get_type();
+				const PDI_datatype_t& datatype = ref.type();
 				if ( datatype.kind == PDI_K_ARRAY ) {
 					PDI_order_t order;
 					PDI::Data_descriptor& desc = PDI_state.desc(name);
@@ -606,10 +606,10 @@ PDI_status_t PDI_parallel_declh5_data_start( const std::string& name, PDI::Data_
 				
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL;
-				const PDI_datatype_t& datatype = ref.get_type();
+				const PDI_datatype_t& datatype = ref.type();
 				if ( datatype.kind == PDI_K_ARRAY ) {
 					PDI_order_t order;
-					if( (order = array_order(ref.get_desc().get_config())) < 0 )
+					if( (order = array_order(PDI_state.desc(name).get_config())) < 0 )
 						return PDI_ERR_CONFIG;
 					int rank = datatype.c.array->ndims;
 					gstarts = (hsize_t*) malloc(rank*sizeof(hsize_t));

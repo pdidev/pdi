@@ -259,7 +259,7 @@ PDI_status_t PDI_utilities_event(const char *event_name) {
 /// Convert into corresponding data type
 PDI_status_t cast_data_int(Data_ref& ref, int32_t plugin_data) {
 	PDI_status_t status = PDI_OK;
-	const PDI_datatype_t& type = ref.get_type();
+	const PDI_datatype_t& type = ref.type();
 	if ( type.kind == PDI_K_SCALAR ) {
 		switch ( type.c.scalar ) {
 			case PDI_T_INT32:
@@ -333,10 +333,10 @@ PDI_status_t PDI_utilities_data_start( const std::string& name, PDI::Data_ref re
 					
 					Data_descriptor& outdesc = PDI_state.desc(str_out);
 					if( ref.grant(PDI_OUT) ){ // checking that output data exists
-						size_t oldsize; PDI_datatype_buffersize(&ref.get_type(), &oldsize);
+						size_t oldsize; PDI_datatype_buffersize(&ref.type(), &oldsize);
 						size_t subsize; PDI_datatype_datasize(&outdesc.get_type(), &subsize);
 						void *subdata = malloc(subsize);
-						PDI_buffer_copy(subdata, &outdesc.get_type(), ref.get(), &ref.get_type());
+						PDI_buffer_copy(subdata, &outdesc.get_type(), ref.get(), &ref.type());
 						PDI_expose(str_out, subdata, PDI_OUT);
 						free(subdata);
 						ref.revoke(PDI_OUT);

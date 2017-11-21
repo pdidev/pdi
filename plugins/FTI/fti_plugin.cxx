@@ -203,7 +203,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 		for ( auto& protected_var: fti_protected ) {
 			PDI::Data_ref ref = PDI_state.desc(protected_var.first).value();
 			if ( ref.grant(direction) ) {
-				size_t size; PDI_datatype_datasize(&ref.get_type(), &size);
+				size_t size; PDI_datatype_datasize(&ref.type(), &size);
 				//TODO: handle non-contiguous data correctly
 				FTI_Protect(protected_var.second,
 										ref.get(), size, FTI_CHAR);

@@ -22,12 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
- * \file Data_ref.h
- * \brief .
- * \author C. Roussel, corentin.roussel@cea.fr
- */
-
 #ifndef DATA_REF_H__
 #define DATA_REF_H__
 
@@ -41,10 +35,6 @@
 
 namespace PDI
 {
-
-/** Destroyer function free or delete a buffer in a given context.
- */
-typedef void (*Destroyer)(void *, void *);
 
 /** A dynamically typed reference to data with automatic memory management and
  * read/write locking semantic.
@@ -65,16 +55,19 @@ typedef void (*Destroyer)(void *, void *);
 class Data_ref
 {
 public:
+	/**
+	 */
+	typedef void (*Free_function)(void *);
+	
 	/** Constructs a null ref
 	 */
 	Data_ref ();
 	
 	/** Creates a reference to currently unreferenced data
-	 * \param desc a descriptor of the data to reference
 	 * \param data the raw data to reference
 	 * \param access the maximum allowed access to the underlying content
 	 */
-	Data_ref(const Data_descriptor& desc, void* data, PDI_inout_t access, PDI_inout_t lock=PDI_NONE);
+	Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &type, PDI_inout_t access, PDI_inout_t lock = PDI_NONE);
 	
 	/** Copies an existing reference
 	 * \param other the ref to copyv
@@ -85,7 +78,6 @@ public:
 	 * \param other the ref to move
 	 */
 	Data_ref(Data_ref &&other, PDI_inout_t lock=PDI_NONE);
-	
 	
 	/** Copies an existing reference into this one
 	 * \param other the ref to copy
@@ -136,36 +128,45 @@ public:
 	
 	//TODO: add a function to manage deletion callbacks
 	
-	const PDI_datatype_t& get_type() const;
-	const Data_descriptor& get_desc() const;
+	/** accesses the type of the referenced raw data
+	 */
+	const PDI_datatype_t& type() const;
 	
-	bool try_grant(PDI_inout_t access); ///< Check if (additional) priviledge can be granted.
-	bool grant(PDI_inout_t access); ///< Ask for (additional) priviledge
-	bool revoke(PDI_inout_t access); ///< Release current priviledge on the content
-	PDI_inout_t  priviledge() const; ///< Return the current priviledge
-	bool priviledge(PDI_inout_t access) const; ///< Return true if (access & m_access)
+	/** Check if a request for additional access priviledges would success
+	 *  without actually requesting them
+	 */
+	bool try_grant(PDI_inout_t access);
 	
+	/** Increase the access priviledge of this reference
+	 */
+	bool grant(PDI_inout_t access);
 	
+	/** Releases the specified access priviledge from this reference
+	 */
+	bool revoke(PDI_inout_t access);
+	
+	/** Returns the access priviledge this reference offers
+	 */
+	PDI_inout_t  priviledge() const;
+	
+	/** Checks whether this reference offers the requested access priviledge
+	 */
+	bool priviledge(PDI_inout_t access) const;
 	
 private:
 	class Data_content;
 	
 	friend class Data_content;
 	
-	/// Reset reference
-	void clear();
+	/** Makes this the null reference again
+	 */
+	void reset();
 	
-	/// increase priviledge
-	bool add_priviledge(const PDI_inout_t inout);
-	
-	/// decrease priviledge
-	bool rm_priviledge(const PDI_inout_t inout);
-	
-	/// wrap the plugin function above, call this to release the data.
+	/** Calls the data_end function of this reference
+	 */
 	PDI_status_t data_end();
 	
-	/** shared pointer on the data content
-	 * \todo make Data_content private to this class
+	/** shared pointer on the data content, it is never null
 	 * \todo replace by a raw pointer we manage ourselves
 	 */
 	std::shared_ptr< Data_content >  m_content;
@@ -177,11 +178,6 @@ private:
 	 * \todo replace by a set in Data_content
 	 */
 	PDI_data_end_f m_data_end;
-	
-	/** The descriptor that lead to the creation of this data (might be null)
-	 * \todo move to Data_content
-	 */
-	const Data_descriptor *m_desc;
 	
 }; // class Data_ref
 
