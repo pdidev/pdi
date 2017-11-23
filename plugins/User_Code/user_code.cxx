@@ -99,15 +99,9 @@ char *msprintf(const char *fmt, ...)
 
 typedef void (*ptr_fct_t)(void);
 
-/// Structure to define a function
-typedef struct func_s {
-	ptr_fct_t call; //< body of the function
-	char *name;   //< function name
-} func_t;
-
 /// Structure to organize the interaction between functions and PDI
 typedef struct UC_s {
-	func_t fct; 		//< function to call on event
+	ptr_fct_t fct; 		//< function to call on event
 
 	char **events; 		//< event names that trigger the function call
 	int nb_events; 		//< nb of events
@@ -115,8 +109,6 @@ typedef struct UC_s {
 	char **datastarts; 		//< datastart events that trigger the function call
 	int nb_datastarts; 		//< nb of datastart events
 
-	char **dataends; 		//< dataend events that trigger the function call
-	int nb_dataends; 		//< nb of dataend events
 } UC_t ;
 
 
@@ -221,23 +213,12 @@ PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
 	PC_tree_t tmptree = PC_get(conf, node);
 	free(node);
 
-	char *str = name;
-	if (PC_string(PC_get(tmptree, ".function"), &str)) {
-		UC_warn("'function' node not found. Default value '%s' \n", str);
-		str = strdup(name);
-	}
-	that->fct.name = str;
-
 	node = strdup(".events");
 	set_str_from_node(tmptree, node, &that->events, &that->nb_events);
 	free(node);
 
 	node = strdup(".datastarts");
 	set_str_from_node(tmptree, node, &that->datastarts, &that->nb_datastarts);
-	free(node);
-
-	node = strdup(".dataends");
-	set_str_from_node(tmptree, node, &that->dataends, &that->nb_dataends);
 	free(node);
 
 	return PDI_OK;
@@ -248,12 +229,10 @@ PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
 PDI_status_t UC_init(UC_t *next)
 {
 	// init function
-	next->fct.call = NULL;
-	next->fct.name = NULL;
+	next->fct = NULL;
 
 	next->events = NULL;
 	next->datastarts = NULL;
-	next->dataends = NULL;
 
 	return PDI_OK;
 }
@@ -300,7 +279,7 @@ PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *world)
 			}
 
 			/// Find the corresponding function
-			if (find_fct(name, NULL, &(next.fct.call) )) {
+			if (find_fct(name, NULL, &(next.fct) )) {
 				UC_warn("Error when reading element %s\n", name);
 				continue;
 			}
@@ -336,12 +315,6 @@ PDI_status_t PDI_user_code_finalize()
 		for ( int n=0; n<all_uc[ii].nb_datastarts ; ++n )
 			free(all_uc[ii].datastarts[n]);
 		if(all_uc[ii].nb_datastarts) free(all_uc[ii].datastarts);
-		
-		for ( int n=0; n<all_uc[ii].nb_dataends ; ++n )
-			free(all_uc[ii].dataends[n]);
-		if(all_uc[ii].nb_dataends) free(all_uc[ii].dataends);
-
-		free(all_uc[ii].fct.name);
 	}
 	free(all_uc);
 	all_uc = NULL;
@@ -354,7 +327,7 @@ PDI_status_t PDI_user_code_event(const char *event)
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
 		for ( int n=0; n<all_uc[ii].nb_events ; ++n ) {
 			if ( !strcmp(event, all_uc[ii].events[n]) ) {
-				(*all_uc[ii].fct.call)();
+				(*all_uc[ii].fct)();
 			}
 		}
 	}
@@ -362,31 +335,18 @@ PDI_status_t PDI_user_code_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_user_code_data_start(const std::string& name, PDI::Data_ref)
+PDI_status_t PDI_user_code_data(const std::string& name, PDI::Data_ref)
 {
 	 
 	for ( int ii=0; ii<nb_uc ; ++ii ) {
 		for ( int n=0; n<all_uc[ii].nb_datastarts ; ++n ) {
 			if ( name == all_uc[ii].datastarts[n] ) {
-				(*all_uc[ii].fct.call)();
+				(*all_uc[ii].fct)();
 			}
 		}
 	}
 
 	return PDI_OK;
 }
-
-PDI_status_t PDI_user_code_data_end(const std::string& name, PDI::Data_ref)
-{
-	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		for ( int n=0; n<all_uc[ii].nb_dataends ; ++n ) {
-			if ( name == all_uc[ii].datastarts[n] ) {
-				(*all_uc[ii].fct.call)();
-			}
-		}
-	}
-	return PDI_OK;
-}
-
 
 PDI_PLUGIN(user_code)

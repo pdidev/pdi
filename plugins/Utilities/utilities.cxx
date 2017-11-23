@@ -293,11 +293,11 @@ PDI_status_t cast_data_int(Data_ref& ref, int32_t plugin_data) {
 
 
 
-PDI_status_t PDI_utilities_data_start( const std::string& name, PDI::Data_ref ref )
+PDI_status_t PDI_utilities_data( const std::string& name, PDI::Data_ref ref )
 {
 	PDI_status_t status = PDI_OK;
 	
-	if ( ref.try_grant(PDI_IN) ) {
+	if ( ref.grant(false, true) ) {
 		status = PDI_UNAVAILABLE;
 		// for each utils_task look if the output is the same as the PDI_data_t
 		for ( auto&& one_task: tasks ) {
@@ -307,10 +307,7 @@ PDI_status_t PDI_utilities_data_start( const std::string& name, PDI::Data_ref re
 				case EVENT2DATA:
 				case FILE_EXISTS:
 				case DIR_EXISTS: {
-					if( ref.grant(PDI_IN) ){ 
-						status = cast_data_int(ref, one_task.result);
-						ref.revoke(PDI_IN);
-					}
+					status = cast_data_int(ref, one_task.result);
 				} break;
 				default: // do nothing
 					break;
@@ -319,7 +316,7 @@ PDI_status_t PDI_utilities_data_start( const std::string& name, PDI::Data_ref re
 			free(str_out);
 		}
 	}
-	if ( ref.try_grant(PDI_OUT) ) {
+	if ( ref.grant(true, false) ) {
 		for ( auto&& one_task: tasks ) {
 			if ( one_task.action == EXTRACT_SUBARRAY) {
 				char *str_in = NULL; PDI_value_str(&one_task.in, &str_in); // input string
@@ -332,15 +329,12 @@ PDI_status_t PDI_utilities_data_start( const std::string& name, PDI::Data_ref re
 					}
 					
 					Data_descriptor& outdesc = PDI_state.desc(str_out);
-					if( ref.grant(PDI_OUT) ){ // checking that output data exists
-						size_t oldsize; PDI_datatype_buffersize(&ref.type(), &oldsize);
-						size_t subsize; PDI_datatype_datasize(&outdesc.get_type(), &subsize);
-						void *subdata = malloc(subsize);
-						PDI_buffer_copy(subdata, &outdesc.get_type(), ref.get(), &ref.type());
-						PDI_expose(str_out, subdata, PDI_OUT);
-						free(subdata);
-						ref.revoke(PDI_OUT);
-					}
+					size_t oldsize; PDI_datatype_buffersize(&ref.type(), &oldsize);
+					size_t subsize; PDI_datatype_datasize(&outdesc.get_type(), &subsize);
+					void *subdata = malloc(subsize);
+					PDI_buffer_copy(subdata, &outdesc.get_type(), ref.get(), &ref.type());
+					PDI_expose(str_out, subdata, PDI_OUT);
+					free(subdata);
 					free(str_out);
 				}
 				free(str_in);
@@ -348,11 +342,6 @@ PDI_status_t PDI_utilities_data_start( const std::string& name, PDI::Data_ref re
 		}
 	}
 	return status;
-}
-
-PDI_status_t PDI_utilities_data_end(const std::string&, PDI::Data_ref)
-{
-	return PDI_OK;
 }
 
 PDI_PLUGIN(utilities)

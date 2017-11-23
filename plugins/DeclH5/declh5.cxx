@@ -392,11 +392,11 @@ PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	return status;
 }
 
-PDI_status_t PDI_declh5_data_start(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_declh5_data(const std::string& name, PDI::Data_ref ref)
 {
 	PDI_status_t status = PDI_OK;
 	
-	if ( ref.try_grant(PDI_IN) ) {
+	if ( ref.grant(false, true) ) {
 		status = PDI_UNAVAILABLE;
 		int found_input = 0;
 		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
@@ -407,9 +407,8 @@ PDI_status_t PDI_declh5_data_start(const std::string& name, PDI::Data_ref ref)
 				char *h5var;  PDI_value_str(&inputs[ii].h5var,  &h5var);
 				long select;  PDI_value_int(&inputs[ii].select, &select);
 				
-				if ( select && ref.grant(PDI_IN) ){
+				if ( select ){
 					status = read_from_file(ref, h5file, h5var);
-					ref.revoke(PDI_IN);
 				}
 
 				free(h5var);
@@ -418,7 +417,7 @@ PDI_status_t PDI_declh5_data_start(const std::string& name, PDI::Data_ref ref)
 		}
 	}
 	
-	if ( ref.try_grant(PDI_OUT) ) {
+	if ( ref.grant(true, false) ) {
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
 			if ( !strcmp(outputs[ii].name, name.c_str()) ) {
@@ -428,9 +427,8 @@ PDI_status_t PDI_declh5_data_start(const std::string& name, PDI::Data_ref ref)
 				char *h5var;  PDI_value_str(&outputs[ii].h5var,  &h5var);
 				long select;  PDI_value_int(&outputs[ii].select, &select);
 				
-				if ( select && ref.grant(PDI_OUT) ) {
+				if ( select ) {
 					write_to_file(ref, h5file, h5var);
-					ref.revoke(PDI_OUT);
 				}
 
 				free(h5var);
@@ -440,11 +438,6 @@ PDI_status_t PDI_declh5_data_start(const std::string& name, PDI::Data_ref ref)
 	}
 	
 	return status;
-}
-
-PDI_status_t PDI_declh5_data_end(const std::string&, PDI::Data_ref)
-{
-	return PDI_OK;
 }
 
 PDI_PLUGIN(declh5)

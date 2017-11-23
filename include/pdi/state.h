@@ -63,8 +63,8 @@ struct loaded_plugin_s {
 class PDI_state_s
 {
 public:
-	/** The store containing all data descriptors 
-	 * 
+	/** The store containing all data descriptors
+	 *
 	 * Implemented as a wrapper for a map
 	 */
 	class Descriptors_store
@@ -77,39 +77,61 @@ public:
 		class Descriptor_iterator
 		{
 		public:
-			PDI::Data_descriptor& operator-> () { return m_data->second; }
-			PDI::Data_descriptor& operator* () { return m_data->second; }
-			Descriptor_iterator& operator++ () { ++m_data; return *this; }
-			bool operator!= ( const Descriptor_iterator& o ) { return (m_data != o.m_data); }
+			PDI::Data_descriptor &operator-> ()
+			{
+				return m_data->second;
+			}
+			PDI::Data_descriptor &operator* ()
+			{
+				return m_data->second;
+			}
+			Descriptor_iterator &operator++ ()
+			{
+				++m_data;
+				return *this;
+			}
+			bool operator!= (const Descriptor_iterator &o)
+			{
+				return (m_data != o.m_data);
+			}
 			friend class Descriptors_store;
 		private:
 			std::unordered_map<std::string, PDI::Data_descriptor>::iterator m_data;
-			Descriptor_iterator( const std::unordered_map<std::string, PDI::Data_descriptor>::iterator& data): m_data(data) {}
-			Descriptor_iterator( std::unordered_map<std::string, PDI::Data_descriptor>::iterator&& data): m_data(std::move(data)) {}
+			Descriptor_iterator(const std::unordered_map<std::string, PDI::Data_descriptor>::iterator &data): m_data(data) {}
+			Descriptor_iterator(std::unordered_map<std::string, PDI::Data_descriptor>::iterator &&data): m_data(std::move(data)) {}
 		};
 		
 		typedef std::unordered_map<std::string, PDI::Data_descriptor> Mapped_type;
 		
-		Descriptor_iterator begin() { return m_data.begin(); }
+		Descriptor_iterator begin()
+		{
+			return m_data.begin();
+		}
 		
-		Descriptor_iterator end()  { return m_data.end(); }
+		Descriptor_iterator end()
+		{
+			return m_data.end();
+		}
 		
-		Descriptors_store ( Mapped_type& data): m_data(data) {}
+		Descriptors_store(Mapped_type &data): m_data(data) {}
 		
 	private:
-		Mapped_type& m_data;
+		Mapped_type &m_data;
 		
 	};
 	
-	Descriptors_store descriptors() { return m_descriptors; }
-		
-	/** Accesses the descriptor for a specific name. Might be uninitialized
-	*/
-	PDI::Data_descriptor& desc(const std::string& name);
+	Descriptors_store descriptors()
+	{
+		return m_descriptors;
+	}
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	*/
-	PDI::Data_descriptor& desc(const char* name); 
+	PDI::Data_descriptor &desc(const std::string &name);
+	
+	/** Accesses the descriptor for a specific name. Might be uninitialized
+	*/
+	PDI::Data_descriptor &desc(const char *name);
 	
 	/** A MPI communicator containing all application processes, i.e. all
 	 *  those not reserved by any PDI plugin

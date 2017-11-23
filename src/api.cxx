@@ -188,12 +188,12 @@ PDI_status_t PDI_reclaim(const char *name)
 
 PDI_status_t PDI_expose(const char *name, const void *data)
 {
-	if ( PDI_status_t status = PDI_share(name, const_cast<void*>(data), PDI_OUT) ) return status;
+	if (PDI_status_t status = PDI_share(name, const_cast<void *>(data), PDI_OUT)) return status;
 	
 	if (! PDI_state.transaction.empty()) {   // defer the reclaim
 		PDI_state.transaction_data.insert(name);
 	} else { // do the reclaim now
-		if ( PDI_status_t status = PDI_reclaim(name) ) return status;
+		if (PDI_status_t status = PDI_reclaim(name)) return status;
 	}
 	
 	return PDI_OK;
@@ -225,7 +225,7 @@ PDI_status_t PDI_transaction_end()
 	
 	PDI_event(PDI_state.transaction.c_str());
 	
-	for (const string& data: PDI_state.transaction_data) {
+	for (const string &data : PDI_state.transaction_data) {
 		//TODO we should concatenate errors here...
 		PDI_reclaim(data.c_str());
 	}

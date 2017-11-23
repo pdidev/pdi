@@ -61,14 +61,7 @@ typedef PDI_status_t (*PDI_event_f)(const char *event);
  * \param ref available data
  * \return an exit status code
  */
-typedef PDI_status_t (*PDI_data_start_f)(const std::string& name, PDI::Data_ref ref);
-
-/** Skeleton of the function called to notify that some data becomes unavailable
- * \param name the name of the data made available
- * \param ref data the plugin cannot access anymore
- * \return an exit status code
- */
-typedef PDI_status_t (*PDI_data_end_f)(const std::string& name, PDI::Data_ref ref);
+typedef PDI_status_t (*PDI_data_f)(const std::string &name, PDI::Data_ref ref);
 
 struct PDI_plugin_s {
 
@@ -79,10 +72,7 @@ struct PDI_plugin_s {
 	PDI_event_f event;
 	
 	/// The function called to notify that some data becomes available
-	PDI_data_start_f data_start;
-	
-	/// The function called to notify that some data becomes unavailable
-	PDI_data_end_f data_end;
+	PDI_data_f data;
 	
 };
 
@@ -104,8 +94,7 @@ struct PDI_plugin_s {
 	{\
 		plugin->finalize = PDI_##name##_finalize;\
 		plugin->event = PDI_##name##_event;\
-		plugin->data_start = PDI_##name##_data_start;\
-		plugin->data_end = PDI_##name##_data_end;\
+		plugin->data = PDI_##name##_data;\
 		return PDI_##name##_init(conf, world);\
 	}
 #else
@@ -114,8 +103,7 @@ struct PDI_plugin_s {
 	{\
 		plugin->finalize = PDI_##name##_finalize;\
 		plugin->event = PDI_##name##_event;\
-		plugin->data_start = PDI_##name##_data_start;\
-		plugin->data_end = PDI_##name##_data_end;\
+		plugin->data = PDI_##name##_data;\
 		return PDI_##name##_init(conf, world);\
 	}
 #endif

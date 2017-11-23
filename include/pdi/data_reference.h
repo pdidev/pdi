@@ -38,17 +38,17 @@ namespace PDI
 
 /** A dynamically typed reference to data with automatic memory management and
  * read/write locking semantic.
- * 
+ *
  * Data_ref is a smart pointer that features:
  * - a dynamic type system,
  * - cycle-free garbage collecting similar to std::shared_ptr,
  * - a read/write locking mechanism similar to std::shared_mutex,
  * - a notification system to be notified when the raw data is to be deleted,
  * - a release system that nullifies all existing references to the raw data.
- * 
+ *
  * \warning As of now, and unlike std::shared_ptr, the lock system can not be
  * relied upon in a multithreaded environment.
- * 
+ *
  * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
@@ -61,23 +61,23 @@ public:
 	
 	/** Constructs a null ref
 	 */
-	Data_ref ();
+	Data_ref();
 	
 	/** Creates a reference to currently unreferenced data
 	 * \param data the raw data to reference
-	 * \param access the maximum allowed access to the underlying content
+	 * \param readable the maximum allowed access to the underlying content
+	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &type, PDI_inout_t access, PDI_inout_t lock = PDI_NONE);
+	Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &type, bool readable, bool writable);
 	
 	/** Copies an existing reference
-	 * \param other the ref to copyv
+	 * \param other the ref to copy
 	 */
-	Data_ref(const Data_ref &other, PDI_inout_t lock=PDI_NONE);
+	Data_ref(const Data_ref &other);
 	
-	/** The move constructor
-	 * \param other the ref to move
+	/** Destructor
 	 */
-	Data_ref(Data_ref &&other, PDI_inout_t lock=PDI_NONE);
+	~Data_ref();
 	
 	/** Copies an existing reference into this one
 	 * \param other the ref to copy
@@ -85,25 +85,15 @@ public:
 	 */
 	Data_ref &operator= (const Data_ref &other);
 	
-	/** Moves an existing reference into this one
-	 * \param other the ref to move
-	 * \return *this
+	/** Offers access to the referenced raw data
+	 * \return a pointer to the referenced raw data
 	 */
-	Data_ref &operator= (Data_ref &&other);
-	
-	/** Destructor
-	 */
-	~Data_ref();
+	operator void *() const;
 	
 	/** Offers access to the referenced raw data
 	 * \return a pointer to the referenced raw data
 	 */
-	operator void* () const;
-	
-	/** Offers access to the referenced raw data
-	 * \return a pointer to the referenced raw data
-	 */
-	void* get () const;
+	void *get() const;
 	
 	/** Checks whether this is a null reference
 	 * \return whether this reference is non-null
@@ -116,44 +106,62 @@ public:
 	 * \return the previously referenced raw data or nullptr if this was a null
 	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	void* copy_release ();
+	void *copy_release();
 	
 	/** Releases ownership of the referenced raw data by nullifying all existing
 	 *  references.
-	 * 
+	 *
 	 * \return the previously referenced raw data or nullptr if this was a null
 	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	void* null_release();
+	void *null_release();
 	
-	//TODO: add a function to manage deletion callbacks
+	template <typename T>
+	void on_nullify(const T &notifier)
+	{
+		m_data_end = new Notification_wrapper<T>(notifier);
+	}
 	
 	/** accesses the type of the referenced raw data
 	 */
-	const PDI_datatype_t& type() const;
+	const PDI_datatype_t &type() const;
 	
 	/** Check if a request for additional access priviledges would success
 	 *  without actually requesting them
 	 */
-	bool try_grant(PDI_inout_t access);
+	bool can_grant(bool read, bool write);
 	
 	/** Increase the access priviledge of this reference
 	 */
-	bool grant(PDI_inout_t access);
+	bool grant(bool read, bool write);
 	
 	/** Releases the specified access priviledge from this reference
 	 */
-	bool revoke(PDI_inout_t access);
-	
-	/** Returns the access priviledge this reference offers
-	 */
-	PDI_inout_t  priviledge() const;
+	bool revoke(bool read, bool write);
 	
 	/** Checks whether this reference offers the requested access priviledge
 	 */
-	bool priviledge(PDI_inout_t access) const;
+	bool priviledge(bool read, bool write) const;
 	
 private:
+	class Notification
+	{
+	public:
+		virtual void operator()(const Data_ref &) = 0;
+		virtual ~Notification() {};
+	};
+	
+	template< typename T > class Notification_wrapper : public Notification
+	{
+	public:
+		Notification_wrapper(const T &notifier): m_notifier(notifier) {}
+		virtual void operator()(const Data_ref &ref)
+		{
+			m_notifier(ref);
+		};
+		T m_notifier;
+	};
+	
 	class Data_content;
 	
 	friend class Data_content;
@@ -172,12 +180,13 @@ private:
 	std::shared_ptr< Data_content >  m_content;
 	
 	/// Authorized access using this reference
-	PDI_inout_t m_access;
+	bool m_read_access;
 	
-	/** function to use before releasing the data. Wrapper below.
-	 * \todo replace by a set in Data_content
-	 */
-	PDI_data_end_f m_data_end;
+	/// Authorized access using this reference
+	bool m_write_access;
+	
+	/// function to use before releasing the data. Wrapper below.
+	std::unique_ptr<Notification> m_data_end;
 	
 }; // class Data_ref
 

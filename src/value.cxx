@@ -56,7 +56,7 @@ class PDI_refval_t
 {
 public:
 	/// The referenced data
-	Data_descriptor& m_referenced;
+	Data_descriptor &m_referenced;
 	
 	/// Indexes in case the referenced data is an array
 	vector<PDI_value_t> m_idx;
@@ -139,11 +139,11 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	
 	int refid_len; PDI_handle_err(parse_id(&ref, &refid_len), err0);
 	
-	assert(PDI_state.desc(string(ref-refid_len, refid_len)).name() == string(ref-refid_len, refid_len));
+	assert(PDI_state.desc(string(ref - refid_len, refid_len)).name() == string(ref - refid_len, refid_len));
 	
-	new (value) PDI_refval_t{PDI_state.desc(string(ref-refid_len, refid_len)),{}};
+	new (value) PDI_refval_t{PDI_state.desc(string(ref - refid_len, refid_len)), {}};
 	
-	if ( !value->m_referenced.is_metadata() ) {
+	if (!value->m_referenced.is_metadata()) {
 		return PDI_make_err(PDI_ERR_VALUE, "Invalid reference to non-metadata `%s'", value->m_referenced.name().c_str());
 	}
 	
@@ -419,11 +419,11 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	}
 	
 	ref = val->m_referenced.value();
-	if ( !ref ) {
+	if (!ref) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not shared", val->m_referenced.name().c_str()), err0);
 	}
-	ref.grant(PDI_OUT);
-	if ( !ref ) {
+	ref.grant(true, false);
+	if (!ref) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not readable", val->m_referenced.name().c_str()), err0);
 	}
 	void *value; value = ref.get();
@@ -586,7 +586,7 @@ PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
 {
 	new (copy) PDI_refval_t{value->m_referenced, {}};
 	
-	for (auto&& idx: value->m_idx) {
+	for (auto &&idx : value->m_idx) {
 		copy->m_idx.push_back({});
 		PDI_value_copy(&value->m_idx.back(), &(idx));
 	}
@@ -624,7 +624,7 @@ PDI_status_t exprval_destroy(PDI_exprval_t *value)
 
 PDI_status_t refval_destroy(PDI_refval_t *value)
 {
-	for (auto&& idx: value->m_idx) {
+	for (auto &&idx : value->m_idx) {
 		PDI_value_destroy(&idx); // ignore potential errors
 	}
 	

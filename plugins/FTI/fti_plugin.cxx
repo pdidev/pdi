@@ -193,16 +193,13 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 	if( event ) {
 		/* the direction we need to access the data depending on whether this is a
 		 *			recovery or a checkpoint write */
-		PDI_inout_t direction = PDI_IN;
-		if ( event == SNAPSHOT && !FTI_Status() ) {
-			direction = PDI_OUT;
-		}
-		if ( event == CHECKPOINT ) {
-			direction = PDI_OUT;
+		bool output = true;
+		if ( ( event == SNAPSHOT && FTI_Status() ) || event == RECOVER ) {
+			output = false;
 		}
 		for ( auto& protected_var: fti_protected ) {
 			PDI::Data_ref ref = PDI_state.desc(protected_var.first).value();
-			if ( ref.grant(direction) ) {
+			if ( ref.grant(output, !output) ) {
 				size_t size; PDI_datatype_datasize(&ref.type(), &size);
 				//TODO: handle non-contiguous data correctly
 				FTI_Protect(protected_var.second,
@@ -231,16 +228,11 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data_start(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_fti_plugin_data(const std::string& name, PDI::Data_ref ref)
 {
-	if ( ref.priviledge(PDI_IN) && restart_status_events.find(name) != restart_status_events.end() ) {
+	if ( ref.grant(false, true) && restart_status_events.find(name) != restart_status_events.end() ) {
 		*(int*)ref.get() = FTI_Status();
 	}
-	return PDI_OK;
-}
-
-PDI_status_t PDI_fti_plugin_data_end(const std::string&, PDI::Data_ref)
-{
 	return PDI_OK;
 }
 

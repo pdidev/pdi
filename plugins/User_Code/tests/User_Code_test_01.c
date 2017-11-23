@@ -45,11 +45,12 @@ static void fct_test_value(int value, int fatal, const char *fct, int line){
 
 void test(void){
 	int *buffer=NULL;
-	PDI_access("input", (void**)&buffer, PDI_OUT);
-	test_value(*buffer,1);
+
+	PDI_access("input", (void**)&buffer, PDI_IN);
+	test_value(*buffer, 1);
 	PDI_release("input");
 
-	PDI_access("output", (void**)&buffer, PDI_IN);
+	PDI_access("output", (void**)&buffer, PDI_OUT);
 	*buffer=2;
 	PDI_release("output");
 }
@@ -60,22 +61,21 @@ int main( int argc, char *argv[] )
 	int i,j;
 	MPI_Init(&argc, &argv);
 	assert(argc == 2 && "Needs 1 single arg: config file");
-
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
-
-	PDI_init(PC_get(conf,".pdi"), &world);
+	PDI_init(conf, &world);
 
 	i=0;
 	j=err_code;
-	PDI_share("input",&i, PDI_OUT);
-	PDI_share("output",&j, PDI_IN);
-	PDI_event("testing");
-	PDI_reclaim("output");
-	PDI_reclaim("input");
+	
+	PDI_transaction_begin("testing");
+	PDI_expose("input",&i);
+	PDI_import("output",&j);
+	PDI_transaction_end();
+	
 	test_value(j,1);
-	PDI_finalize();
 
+	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 	return 0;

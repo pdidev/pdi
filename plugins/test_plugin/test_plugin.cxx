@@ -77,23 +77,12 @@ PDI_status_t PDI_test_plugin_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data_start(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_test_plugin_data(const std::string& name, PDI::Data_ref ref)
 {
 	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	
 	if ( rank == 0 ) {
 		cout << " =>> data becoming available to the test plugin: "<<name<<"!\n";
-	}
-	
-	return PDI_OK;
-}
-
-PDI_status_t PDI_test_plugin_data_end(const std::string& name, PDI::Data_ref ref)
-{
-	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
-	
-	if ( rank == 0 ) {
-		printf(" <<= data becoming unavailable to the test plugin: %s!\n", name);
 	}
 	
 	return PDI_OK;

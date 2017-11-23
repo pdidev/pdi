@@ -33,24 +33,25 @@
 #include "pdi/data_descriptor.h"
 
 
-namespace PDI {
+namespace PDI
+{
 
 using std::stack;
 using std::string;
 
 
-Data_descriptor::Data_descriptor(const char* name):
-		m_config(PC_parse_string(const_cast<char*>(""))),
-		m_metadata(false),
-		m_name(name)
+Data_descriptor::Data_descriptor(const char *name):
+	m_config(PC_parse_string(const_cast<char *>(""))),
+	m_metadata(false),
+	m_name(name)
 {
 	PDI_datatype_init_scalar(&m_type, PDI_T_UNDEF);
 }
 
-Data_descriptor::Data_descriptor(const string& name):
-		m_config(PC_parse_string(const_cast<char*>(""))),
-		m_metadata(false),
-		m_name(name)
+Data_descriptor::Data_descriptor(const string &name):
+	m_config(PC_parse_string(const_cast<char *>(""))),
+	m_metadata(false),
+	m_name(name)
 {
 	PDI_datatype_init_scalar(&m_type, PDI_T_UNDEF);
 }
@@ -60,7 +61,7 @@ Data_descriptor::~Data_descriptor()
 	PDI_datatype_destroy(&m_type);
 }
 
-PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const PDI_datatype_t& type)
+PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const PDI_datatype_t &type)
 {
 	m_config = config;
 	m_metadata = is_metadata;
@@ -72,10 +73,10 @@ PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
 {
 	*buffer = NULL;
 	
-	if ( m_values.empty() ) return PDI_make_err(PDI_ERR_VALUE, "Cannot access a non shared value");
+	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot access a non shared value");
 	
 	m_values.push(m_values.top());
-	if (m_values.top().grant(inout)) { // got the requested rights
+	if (m_values.top().grant(inout & PDI_IN, inout & PDI_OUT)) { // got the requested rights
 		*buffer = m_values.top();
 		return PDI_OK;
 	} else { // cannot get the requested rights
@@ -93,15 +94,13 @@ PDI_status_t Data_descriptor::share(void *buffer, Data_ref::Free_function freefu
 	}
 	
 	// make a reference and put it in the store
-	m_values.push(Data_ref(buffer, freefunc, this->get_type(), access));
-	Data_ref& ref = m_values.top();
+	m_values.push(Data_ref(buffer, freefunc, this->get_type(), access & PDI_OUT, access & PDI_IN));
+	Data_ref &ref = m_values.top();
 	
 	// Provide reference to the plug-ins
-	for (auto &&plugin: PDI_state.plugins) {
-		PDI_data_end_f data_end = plugin.second->data_end;
-		//TODO: register data_end
+	for (auto &&plugin : PDI_state.plugins) {
 		// Notify the plug-ins of reference availability
-		plugin.second->data_start(m_name, ref);
+		plugin.second->data(m_name, ref);
 	}
 	
 	return PDI_OK;
@@ -110,7 +109,7 @@ PDI_status_t Data_descriptor::share(void *buffer, Data_ref::Free_function freefu
 PDI_status_t Data_descriptor::release()
 {
 	// move reference out of the store
-	if ( m_values.empty() ) return PDI_make_err(PDI_ERR_VALUE, "Cannot release a non shared value");
+	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot release a non shared value");
 	
 	m_values.pop();
 	
@@ -123,7 +122,7 @@ PDI_status_t Data_descriptor::reclaim()
 	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot reclaim a non shared value");
 	
 	// if the content is a metadata, keep it
-	if ( is_metadata() ) {
+	if (is_metadata()) {
 		m_values.top().copy_release();
 	} else {
 		// Manually reclaiming data

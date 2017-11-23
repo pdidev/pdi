@@ -536,10 +536,10 @@ PDI_order_t array_order(PC_tree_t node)
 	return order;
 }
 
-PDI_status_t PDI_parallel_declh5_data_start( const std::string& name, PDI::Data_ref ref )
+PDI_status_t PDI_parallel_declh5_data( const std::string& name, PDI::Data_ref ref )
 {
 	PDI_status_t status = PDI_OK;
-	if ( ref.try_grant(PDI_OUT) ) {
+	if ( ref.grant(true, false) ) { // get read access on the data to write it to file
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
 			if ( !strcmp(outputs[ii].name, name.c_str()) ) {
@@ -581,9 +581,8 @@ PDI_status_t PDI_parallel_declh5_data_start( const std::string& name, PDI::Data_
 					gsizes[0] = n;
 				}
 				
-				if ( select && ref.grant(PDI_OUT) ){
+				if ( select ){
 					pwrite_to_file(ref, h5file, h5var, gstarts, gsizes);
-					ref.revoke(PDI_OUT); // release right
 				}
 				free(h5var);
 				free(h5file);
@@ -593,7 +592,7 @@ PDI_status_t PDI_parallel_declh5_data_start( const std::string& name, PDI::Data_
 			}
 		}
 	}
-	if ( ref.try_grant(PDI_IN) ) {
+	if ( ref.grant(false, true) ) { // get write access on the data to read it from file
 		status = PDI_UNAVAILABLE;
 		int found_input = 0;
 		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
@@ -634,9 +633,8 @@ PDI_status_t PDI_parallel_declh5_data_start( const std::string& name, PDI::Data_
 					gsizes[0] = n;
 				}
 				
-				if ( select && ref.grant(PDI_IN) ){
+				if ( select ){
 					status = pread_from_file(ref, h5file, h5var, gstarts);
-					ref.revoke(PDI_IN); // release right
 				}
 				free(h5var);
 				free(h5file);
@@ -647,11 +645,6 @@ PDI_status_t PDI_parallel_declh5_data_start( const std::string& name, PDI::Data_
 		}
 	}
 	return status;
-}
-
-PDI_status_t PDI_parallel_declh5_data_end(const std::string&, PDI::Data_ref)
-{
-	return PDI_OK;
 }
 
 PDI_PLUGIN(parallel_declh5)

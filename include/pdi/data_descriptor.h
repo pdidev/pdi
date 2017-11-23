@@ -33,7 +33,8 @@
 
 #include "pdi/datatype.h"
 
-namespace PDI {
+namespace PDI
+{
 
 /** Describe the content of a buffer.
  * \author Corentin Roussel <corentin.roussel@cea.fr>
@@ -44,11 +45,11 @@ class Data_descriptor
 public:
 	/** Create an empty data descriptor
 	 */
-	Data_descriptor( const std::string& name );
+	Data_descriptor(const std::string &name);
 	
 	/** Create an empty descriptor
 	 */
-	Data_descriptor( const char* name );
+	Data_descriptor(const char *name);
 	
 	Data_descriptor(const Data_descriptor &) = delete;
 	
@@ -76,11 +77,17 @@ public:
 	 */
 	bool is_metadata() const;
 	
-	const std::string& name () const { return m_name; }
+	const std::string &name() const
+	{
+		return m_name;
+	}
 	
 	/** Returns a reference to the value of the data behind this descriptor
 	 */
-	Data_ref value() { return ( m_values.empty()? Data_ref(): m_values.top() ); }
+	Data_ref value()
+	{
+		return (m_values.empty() ? Data_ref() : m_values.top());
+	}
 	
 	/** Shares some data with PDI. The user code should not modify it before
 	* a call to either PDI_release or PDI_reclaim.
@@ -96,7 +103,7 @@ public:
 	* * PDI_OUT means the buffer contains data that can be accessed by PDI
 	*/
 	PDI_status_t share(void *data, Data_ref::Free_function freefunc, PDI_inout_t access);
-
+	
 	/** Requests for PDI to access a data buffer.
 	* \param[in,out] buffer a pointer to the accessed data buffer
 	* \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
@@ -105,7 +112,7 @@ public:
 	* \post ownership of the data buffer is shared between PDI and the user code
 	*/
 	PDI_status_t access(void **buffer, PDI_inout_t inout);
-
+	
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
 	* free the associated memory whenever necessary.
 	* \param[in] name name of the data to release
@@ -114,7 +121,7 @@ public:
 	* \pre PDI owns the data buffer
 	*/
 	PDI_status_t release();
-
+	
 	/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
 	* free the associated memory whenever necessary.
 	* \param[in] name name of the data to reclaim
@@ -123,7 +130,7 @@ public:
 	* \post the user code owns the data buffer
 	*/
 	PDI_status_t reclaim();
-
+	
 private:
 	/// References to the values of this descriptor
 	std::stack<Data_ref> m_values;
@@ -138,6 +145,6 @@ private:
 	
 }; // class Data_descriptor
 
-} // namespace PDI 
+} // namespace PDI
 
 #endif // DATA_DESCRIPTOR_H__

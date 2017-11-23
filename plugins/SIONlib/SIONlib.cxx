@@ -401,7 +401,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   // check that data is available and data type is dense
   for (size_t i = 0; i < event->n_vars; ++i) {
     PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
-    if ( !( ref && ref.grant(PDI_OUT)) ){
+    if ( !( ref.grant(true, false)) ){
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
     }
@@ -487,7 +487,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   PDI_status_t status;
   for (size_t i = 0; i < event->n_vars; ++i) {
     PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
-    if ( !( ref && ref.grant(PDI_IN)) ) {
+    if ( !( ref.grant(false, true)) ) {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
     }
@@ -515,7 +515,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
 
   for (size_t i = 0; i < event->n_vars; ++i) {
     PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
-    if ( ! (ref && !ref.grant(PDI_IN)))  {
+    if (  !ref.grant(false, true) )  {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
     }
@@ -734,17 +734,16 @@ static PDI_status_t read_var(const PDI::Data_ref& ref, const SIONlib_var_t *var)
   return PDI_OK;
 }
 
-PDI_status_t PDI_SIONlib_data_start(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_SIONlib_data(const std::string& name, PDI::Data_ref ref)
 {
   PDI_status_t write_status = PDI_OK;
-  if (ref.try_grant(PDI_OUT)) {
+  if (ref.grant(true, false)) {
     for (size_t i = 0; i < n_output_vars; ++i) {
       if ( name == output_vars[i].name ) {
         long select;
         if ((write_status = PDI_value_int(&output_vars[i].select, &select))) break;
-        if (select && (!write_status) && ref.grant(PDI_OUT)){
+        if (select && (!write_status) ) {
           write_status = write_var(ref, &output_vars[i]);
-          ref.revoke(PDI_OUT);
           break;
         }
       }
@@ -752,14 +751,13 @@ PDI_status_t PDI_SIONlib_data_start(const std::string& name, PDI::Data_ref ref)
   }
 
   PDI_status_t read_status = PDI_OK;
-  if (ref.try_grant(PDI_IN)) {
+  if (ref.grant(false, true)) {
     for (size_t i = 0; i < n_input_vars; ++i) {
       if ( name == input_vars[i].name ) {
         long select;
         if ((read_status = PDI_value_int(&input_vars[i].select, &select))) break;
-        if (select && (!read_status) && ref.grant(PDI_IN)){
+        if (select && (!read_status)){
           read_status = read_var(ref, &input_vars[i]);
-          ref.revoke(PDI_IN);
           break;
         }
       }
@@ -768,11 +766,6 @@ PDI_status_t PDI_SIONlib_data_start(const std::string& name, PDI::Data_ref ref)
 
   if(write_status) return write_status;
   return read_status;
-}
-
-PDI_status_t PDI_SIONlib_data_end(const std::string&, PDI::Data_ref)
-{
-  return PDI_OK;
 }
 
 PDI_PLUGIN(SIONlib)

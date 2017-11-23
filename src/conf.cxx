@@ -65,7 +65,7 @@ static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 		PDI_datatype_t type;
 		PDI_handle_err(PDI_datatype_load(&type, config), err1);
 		
-		Data_descriptor& cur_data = PDI_state.desc(name);
+		Data_descriptor &cur_data = PDI_state.desc(name);
 		PDI_handle_err(cur_data.init(config, is_metadata, type), err2);
 		
 	}
@@ -74,7 +74,7 @@ static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 err2:
 	PDI_datatype_destroy(type);
 err1:
-	delete(type);
+	delete (type);
 err0:
 	return status;
 }

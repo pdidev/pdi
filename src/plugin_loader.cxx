@@ -95,7 +95,7 @@ PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *worl
 	plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
 	handle_PC_err(PC_status(plugin_conf), err1);
 	
-	PDI_plugin_t *plugin; plugin = new(PDI_plugin_t);
+	PDI_plugin_t *plugin; plugin = new (PDI_plugin_t);
 	PDI_handle_err(plugin_loader_load(plugin_name, plugin_conf, world, plugin), err1);
 	PDI_state.plugins.insert({std::string(plugin_name), std::shared_ptr<PDI_plugin_t>(plugin)});
 	
