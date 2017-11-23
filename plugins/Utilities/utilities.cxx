@@ -50,6 +50,8 @@
 #include <pdi/value.h>
 
 using PDI::Data_ref;
+using PDI::Data_r_ref;
+using PDI::Data_w_ref;
 using PDI::Data_descriptor;
 using std::cerr;
 using std::endl;
@@ -293,11 +295,11 @@ PDI_status_t cast_data_int(Data_ref& ref, int32_t plugin_data) {
 
 
 
-PDI_status_t PDI_utilities_data( const std::string& name, PDI::Data_ref ref )
+PDI_status_t PDI_utilities_data( const std::string& name, PDI::Data_ref cref )
 {
 	PDI_status_t status = PDI_OK;
 	
-	if ( ref.grant(false, true) ) {
+	if ( Data_w_ref ref = cref ) {
 		status = PDI_UNAVAILABLE;
 		// for each utils_task look if the output is the same as the PDI_data_t
 		for ( auto&& one_task: tasks ) {
@@ -316,7 +318,7 @@ PDI_status_t PDI_utilities_data( const std::string& name, PDI::Data_ref ref )
 			free(str_out);
 		}
 	}
-	if ( ref.grant(true, false) ) {
+	if ( Data_r_ref ref = cref ) {
 		for ( auto&& one_task: tasks ) {
 			if ( one_task.action == EXTRACT_SUBARRAY) {
 				char *str_in = NULL; PDI_value_str(&one_task.in, &str_in); // input string

@@ -24,11 +24,14 @@
 
 #include "config.h"
 
+#include <mpi.h>
+
 #ifdef STRDUP_WORKS
 #define _POSIX_C_SOURCE 200809L
 #include <string.h>
 #endif
-#include <mpi.h>
+#include <iostream>
+
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <stdbool.h>
@@ -39,6 +42,14 @@
 #include <pdi/value.h>
 #include <pdi/data_reference.h>
 #include <pdi/data_descriptor.h>
+
+
+using PDI::Data_ref;
+using PDI::Data_r_ref;
+using PDI::Data_w_ref;
+using std::cout;
+using std::endl;
+
 
 PC_tree_t my_conf;
 
@@ -309,9 +320,8 @@ PDI_status_t PDI_parallel_declh5_finalize()
 }
 
 
-PDI_status_t PDI_parallel_declh5_event(const char *event)
+PDI_status_t PDI_parallel_declh5_event(const char *)
 {
-	event = event; // prevent unused warning
 	return PDI_OK;
 }
 
@@ -388,8 +398,7 @@ const PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **
 	return scalart;
 }
 
-
-PDI_status_t pwrite_to_file(PDI::Data_ref& ref, char *filename, char *pathname, hsize_t *gstarts, hsize_t *gsizes)
+PDI_status_t pwrite_to_file(Data_r_ref& ref, char *filename, char *pathname, hsize_t *gstarts, hsize_t *gsizes)
 {
 	hsize_t rank = 0;
 	hsize_t *sizes = NULL;
@@ -446,7 +455,7 @@ PDI_status_t pwrite_to_file(PDI::Data_ref& ref, char *filename, char *pathname, 
 }
 
 
-PDI_status_t pread_from_file(PDI::Data_ref& ref, char *filename, char *pathname, hsize_t *gstarts)
+PDI_status_t pread_from_file(Data_w_ref& ref, char *filename, char *pathname, hsize_t *gstarts)
 {
 	PDI_status_t status= PDI_OK;
 	hsize_t rank = 0;
@@ -536,10 +545,10 @@ PDI_order_t array_order(PC_tree_t node)
 	return order;
 }
 
-PDI_status_t PDI_parallel_declh5_data( const std::string& name, PDI::Data_ref ref )
+PDI_status_t PDI_parallel_declh5_data( const std::string& name, PDI::Data_ref cref )
 {
 	PDI_status_t status = PDI_OK;
-	if ( ref.grant(true, false) ) { // get read access on the data to write it to file
+	if ( Data_r_ref ref = cref ) { // get read access on the data to write it to file
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
 			if ( !strcmp(outputs[ii].name, name.c_str()) ) {
@@ -592,11 +601,11 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, PDI::Data_ref re
 			}
 		}
 	}
-	if ( ref.grant(false, true) ) { // get write access on the data to read it from file
+	if ( Data_w_ref ref = cref ) { // get write access on the data to read it from file
 		status = PDI_UNAVAILABLE;
 		int found_input = 0;
 		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
-			if ( !strcmp(inputs[ii].name, name.c_str()) ) {
+			if ( name == inputs[ii].name ) {
 				found_input = 1;
 				
 				char *h5file; PDI_value_str(&inputs[ii].h5file, &h5file);

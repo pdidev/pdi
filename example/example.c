@@ -13,7 +13,7 @@
 
 void init(double* dat, int width, int height, int px, int py)
 {
-	py = py; // prevent unused warning
+	(void) py; // prevent unused warning
 	for (int yy=0; yy<height; ++yy) {
 		for(int xx=0; xx<width; ++xx) {
 			VAL2D(dat,xx,yy) = 0;

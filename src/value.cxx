@@ -48,6 +48,8 @@
 
 using PDI::Data_descriptor;
 using PDI::Data_ref;
+using PDI::Data_r_ref;
+using PDI::Data_w_ref;
 using std::string;
 using std::vector;
 
@@ -390,7 +392,7 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	
 	const PDI_datatype_t &ref_type = val->m_referenced.get_type();
 	PDI_scalar_type_t type = ref_type.c.scalar;
-	Data_ref ref;
+	Data_ref cref;
 	
 	if (ref_type.kind == PDI_K_ARRAY) {
 		if (val->m_idx.size() != ref_type.c.array->ndims) {
@@ -418,34 +420,33 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 		stride *= size;
 	}
 	
-	ref = val->m_referenced.value();
-	if (!ref) {
+	if (!val->m_referenced.value()) {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not shared", val->m_referenced.name().c_str()), err0);
 	}
-	ref.grant(true, false);
-	if (!ref) {
+	
+	if (Data_r_ref ref = val->m_referenced.value()) {
+		void *value = ref.get();
+		switch (type) {
+		case PDI_T_INT8: {
+			*res = ((int8_t *)value)[idx];
+		} break;
+		case PDI_T_INT16: {
+			*res = ((int16_t *)value)[idx];
+		} break;
+		case PDI_T_INT32: {
+			*res = ((int32_t *)value)[idx];
+		} break;
+		case PDI_T_INT64: {
+			*res = ((int64_t *)value)[idx];
+		} break;
+		default: {
+			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
+		} break;
+		}
+	} else {
 		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not readable", val->m_referenced.name().c_str()), err0);
 	}
-	void *value; value = ref.get();
-	if (!value) PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' has no value set", val->m_referenced.name().c_str()), err0);
 	
-	switch (type) {
-	case PDI_T_INT8: {
-		*res = ((int8_t *)value)[idx];
-	} break;
-	case PDI_T_INT16: {
-		*res = ((int16_t *)value)[idx];
-	} break;
-	case PDI_T_INT32: {
-		*res = ((int32_t *)value)[idx];
-	} break;
-	case PDI_T_INT64: {
-		*res = ((int64_t *)value)[idx];
-	} break;
-	default: {
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Non-integer type accessed"), err0);
-	} break;
-	}
 	
 	return status;
 	

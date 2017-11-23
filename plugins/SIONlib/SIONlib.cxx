@@ -50,6 +50,9 @@
 #include <sion.h>
 
 using PDI::Data_ref;
+using PDI::Data_r_ref;
+using PDI::Data_w_ref;
+using std::string;
 
 typedef struct
 {
@@ -400,16 +403,17 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   PDI_status_t status;
   // check that data is available and data type is dense
   for (size_t i = 0; i < event->n_vars; ++i) {
-    PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
-    if ( !( ref.grant(true, false)) ){
+    Data_ref cref = PDI_state.desc(event->vars[i]).value();
+    if ( Data_r_ref ref = cref ) {
+      int is_dense=0;
+      if ((status = PDI_datatype_is_dense(&ref.type(), &is_dense))) return status;
+      if (!is_dense) {
+        fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
+        return PDI_ERR_IMPL;
+      }
+    } else {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
-    }
-    int is_dense=0;
-    if ((status = PDI_datatype_is_dense(&ref.type(), &is_dense))) return status;
-    if (!is_dense) {
-      fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
-      return PDI_ERR_IMPL;
     }
   }
 
@@ -419,7 +423,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
 
   sion_int64 chunksize = 0;
   for (size_t i = 0; i < event->n_vars; ++i) {
-    const PDI::Data_ref& ref = PDI_state.desc(event->vars[i]).value();
+    const Data_ref& ref = PDI_state.desc(event->vars[i]).value();
     if (!ref) {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
@@ -442,7 +446,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   free(file);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
-    const PDI::Data_ref& ref = PDI_state.desc(event->vars[i]).value();
+    const Data_ref& ref = PDI_state.desc(event->vars[i]).value();
 
     size_t data_size;
     if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
@@ -486,17 +490,17 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   // check that data type is dense
   PDI_status_t status;
   for (size_t i = 0; i < event->n_vars; ++i) {
-    PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
-    if ( !( ref.grant(false, true)) ) {
+    Data_ref cref = PDI_state.desc(event->vars[i]).value();
+    if ( Data_w_ref ref = cref ) {
+      int is_dense;
+      if ((status = PDI_datatype_is_dense(&ref.type(), &is_dense))) return status;
+      if (!is_dense) {
+        fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
+        return PDI_ERR_IMPL;
+      }
+    } else {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
-    }
-
-    int is_dense;
-    if ((status = PDI_datatype_is_dense(&ref.type(), &is_dense))) return status;
-    if (!is_dense) {
-      fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
-      return PDI_ERR_IMPL;
     }
   }
 
@@ -514,81 +518,80 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   int sid = sion_paropen_mpi(file, "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
-    PDI::Data_ref ref = PDI_state.desc(event->vars[i]).value();
-    if (  !ref.grant(false, true) )  {
+    if ( Data_w_ref ref = PDI_state.desc(event->vars[i]).value() ) {
+      size_t data_size;
+      if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
+        sion_parclose_mpi(sid);
+        free(file);
+        return status;
+      }
+  
+      size_t name_size = strlen(event->vars[i]);
+      uint64_t key = hash((uint8_t*)event->vars[i], name_size);
+  
+      for (int j = 0; ; ++j) {
+        if (SION_SUCCESS != sion_seek_key(sid, key, 4 * j, 0)) {
+          fprintf(stderr, "[PDI/SIONlib] Could not find variable '%s' for reading in file '%s'.\n", event->vars[i], file);
+          sion_parclose_mpi(sid);
+          free(file);
+          return PDI_ERR_SYSTEM;
+        }
+  
+        uint64_t name_size_from_file;
+        if (1 != sion_fread_key(&name_size_from_file, key, sizeof(uint64_t), 1, sid)) {
+          sion_parclose_mpi(sid);
+          free(file);
+          return PDI_ERR_SYSTEM;
+        }
+  
+        if (name_size != name_size_from_file)
+          // Collision (size of name does not match), this is not the data you are looking for.
+          continue;
+  
+        char *name_from_file = (char*) malloc(name_size + 1);
+        if (NULL == name_from_file) {
+          sion_parclose_mpi(sid);
+          free(file);
+          return PDI_ERR_SYSTEM;
+        }
+  
+        if (1 != sion_fread_key(name_from_file, key, name_size, 1, sid)) {
+          free(name_from_file);
+          sion_parclose_mpi(sid);
+          free(file);
+          return PDI_ERR_SYSTEM;
+        }
+        name_from_file[name_size] = '\0';
+  
+        int names_match = !strcmp(event->vars[i], name_from_file);
+        free(name_from_file);
+        if (names_match) break;
+  
+        // Collision (names do not match), this is not the data you are looking for.
+      }
+  
+      uint64_t data_size_from_file;
+      if (1 != sion_fread_key(&data_size_from_file, key, sizeof(data_size_from_file), 1, sid)) {
+        sion_parclose_mpi(sid);
+        free(file);
+        return PDI_ERR_SYSTEM;
+      }
+  
+      if (data_size != data_size_from_file) {
+        fprintf(stderr, "[PDI/SIONlib] Size of data for variable '%s' in file '%s' does not match memory size (%" PRIu64 " (file) vs. %zu (memory)).\n", event->vars[i], file, data_size_from_file, data_size);
+        sion_parclose_mpi(sid);
+        free(file);
+        return PDI_ERR_SYSTEM;
+      }
+  
+      if (1 != sion_fread_key(ref.get(), key, data_size, 1, sid)) {
+        sion_parclose_mpi(sid);
+        free(file);
+        return PDI_ERR_SYSTEM;
+      }
+    } else {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
-    }
-
-    size_t data_size;
-    if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
-      sion_parclose_mpi(sid);
-      free(file);
-      return status;
-    }
-
-    size_t name_size = strlen(event->vars[i]);
-    uint64_t key = hash((uint8_t*)event->vars[i], name_size);
-
-    for (int j = 0; ; ++j) {
-      if (SION_SUCCESS != sion_seek_key(sid, key, 4 * j, 0)) {
-        fprintf(stderr, "[PDI/SIONlib] Could not find variable '%s' for reading in file '%s'.\n", event->vars[i], file);
-        sion_parclose_mpi(sid);
-        free(file);
-        return PDI_ERR_SYSTEM;
-      }
-
-      uint64_t name_size_from_file;
-      if (1 != sion_fread_key(&name_size_from_file, key, sizeof(uint64_t), 1, sid)) {
-        sion_parclose_mpi(sid);
-        free(file);
-        return PDI_ERR_SYSTEM;
-      }
-
-      if (name_size != name_size_from_file)
-        // Collision (size of name does not match), this is not the data you are looking for.
-        continue;
-
-      char *name_from_file = (char*) malloc(name_size + 1);
-      if (NULL == name_from_file) {
-        sion_parclose_mpi(sid);
-        free(file);
-        return PDI_ERR_SYSTEM;
-      }
-
-      if (1 != sion_fread_key(name_from_file, key, name_size, 1, sid)) {
-        free(name_from_file);
-        sion_parclose_mpi(sid);
-        free(file);
-        return PDI_ERR_SYSTEM;
-      }
-      name_from_file[name_size] = '\0';
-
-      int names_match = !strcmp(event->vars[i], name_from_file);
-      free(name_from_file);
-      if (names_match) break;
-
-      // Collision (names do not match), this is not the data you are looking for.
-    }
-
-    uint64_t data_size_from_file;
-    if (1 != sion_fread_key(&data_size_from_file, key, sizeof(data_size_from_file), 1, sid)) {
-      sion_parclose_mpi(sid);
-      free(file);
-      return PDI_ERR_SYSTEM;
-    }
-
-    if (data_size != data_size_from_file) {
-      fprintf(stderr, "[PDI/SIONlib] Size of data for variable '%s' in file '%s' does not match memory size (%" PRIu64 " (file) vs. %zu (memory)).\n", event->vars[i], file, data_size_from_file, data_size);
-      sion_parclose_mpi(sid);
-      free(file);
-      return PDI_ERR_SYSTEM;
-    }
-
-    if (1 != sion_fread_key(ref.get(), key, data_size, 1, sid)) {
-      sion_parclose_mpi(sid);
-      free(file);
-      return PDI_ERR_SYSTEM;
     }
   }
 
@@ -652,7 +655,7 @@ PDI_status_t PDI_SIONlib_event(const char *event)
   }
 }
 
-static PDI_status_t write_var(const PDI::Data_ref& ref, const SIONlib_var_t *var)
+static PDI_status_t write_var(Data_r_ref& ref, const SIONlib_var_t *var)
 {
   // check that data type is dense
   PDI_status_t status;
@@ -695,7 +698,7 @@ static PDI_status_t write_var(const PDI::Data_ref& ref, const SIONlib_var_t *var
   return PDI_OK;
 }
 
-static PDI_status_t read_var(const PDI::Data_ref& ref, const SIONlib_var_t *var)
+static PDI_status_t read_var(const Data_ref& ref, const SIONlib_var_t *var)
 {
   // check that data type is dense
   PDI_status_t status;
@@ -734,10 +737,10 @@ static PDI_status_t read_var(const PDI::Data_ref& ref, const SIONlib_var_t *var)
   return PDI_OK;
 }
 
-PDI_status_t PDI_SIONlib_data(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_SIONlib_data(const string& name, Data_ref cref)
 {
   PDI_status_t write_status = PDI_OK;
-  if (ref.grant(true, false)) {
+  if ( Data_r_ref ref = cref ) {
     for (size_t i = 0; i < n_output_vars; ++i) {
       if ( name == output_vars[i].name ) {
         long select;
@@ -751,7 +754,7 @@ PDI_status_t PDI_SIONlib_data(const std::string& name, PDI::Data_ref ref)
   }
 
   PDI_status_t read_status = PDI_OK;
-  if (ref.grant(false, true)) {
+  if ( Data_w_ref ref = cref ) {
     for (size_t i = 0; i < n_input_vars; ++i) {
       if ( name == input_vars[i].name ) {
         long select;

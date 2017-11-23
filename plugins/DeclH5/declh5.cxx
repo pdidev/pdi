@@ -40,6 +40,8 @@
 PC_tree_t my_conf;
 
 using PDI::Data_ref;
+using PDI::Data_r_ref;
+using PDI::Data_w_ref;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -83,7 +85,7 @@ char *strdup(const char *s)
  * \param def_select the default select for HDF5 inputs/outputs
  */
 PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
-															 int *nb_hdf5data, char *def_file, char *def_select )
+                               int *nb_hdf5data, char *def_file, char *def_select )
 {
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 	
@@ -146,9 +148,8 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 }
 
 
-PDI_status_t PDI_declh5_init(PC_tree_t conf, MPI_Comm *world)
+PDI_status_t PDI_declh5_init(PC_tree_t conf, MPI_Comm *)
 {
-	world = world; // prevent unused param warning
 	my_conf = conf;
 	
 	if ( H5open() < 0 ) { // Failure initializing HDF5
@@ -212,9 +213,8 @@ PDI_status_t PDI_declh5_finalize()
 	return PDI_OK;
 }
 
-PDI_status_t PDI_declh5_event(const char *event)
+PDI_status_t PDI_declh5_event(const char *)
 {
-	event = event; // prevent unused warning
 	return PDI_OK;
 }
 
@@ -253,7 +253,7 @@ void rm_if_exist(hid_t h5file, char *dset_name)
 	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
 }
 
-void write_to_file(PDI::Data_ref& ref, char *filename, char *pathname)
+void write_to_file(Data_r_ref& ref, char *filename, char *pathname)
 {
 	int rank = 0;
 	hsize_t *h5sizes = NULL;
@@ -317,7 +317,7 @@ void write_to_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	free(h5starts);
 }
 
-PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
+PDI_status_t read_from_file(Data_w_ref& ref, char *filename, char *pathname)
 {
 	PDI_status_t status= PDI_OK;
 	int rank = 0;
@@ -392,11 +392,11 @@ PDI_status_t read_from_file(PDI::Data_ref& ref, char *filename, char *pathname)
 	return status;
 }
 
-PDI_status_t PDI_declh5_data(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_declh5_data(const std::string& name, Data_ref cref)
 {
 	PDI_status_t status = PDI_OK;
 	
-	if ( ref.grant(false, true) ) {
+	if ( Data_w_ref ref = cref ) {
 		status = PDI_UNAVAILABLE;
 		int found_input = 0;
 		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
@@ -417,7 +417,7 @@ PDI_status_t PDI_declh5_data(const std::string& name, PDI::Data_ref ref)
 		}
 	}
 	
-	if ( ref.grant(true, false) ) {
+	if ( Data_r_ref ref = cref ) {
 		int found_output = 0;
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
 			if ( !strcmp(outputs[ii].name, name.c_str()) ) {

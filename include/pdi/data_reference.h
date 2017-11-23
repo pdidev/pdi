@@ -88,7 +88,10 @@ public:
 	/** Offers access to the referenced raw data
 	 * \return a pointer to the referenced raw data
 	 */
-	operator void *() const;
+	operator void *() const
+	{
+		return get();
+	}
 	
 	/** Offers access to the referenced raw data
 	 * \return a pointer to the referenced raw data
@@ -99,6 +102,10 @@ public:
 	 * \return whether this reference is non-null
 	 */
 	operator bool () const;
+	
+	/** accesses the type of the referenced raw data
+	 */
+	const PDI_datatype_t &type() const;
 	
 	/** Nullifies this reference
 	 */
@@ -128,32 +135,31 @@ public:
 		m_data_end = new Notification_wrapper<T>(notifier);
 	}
 	
-	/** accesses the type of the referenced raw data
-	 */
-	const PDI_datatype_t &type() const;
-	
-	/** Check if a request for additional access priviledges would success
-	 *  without actually requesting them
-	 */
-	bool can_grant(bool read, bool write);
-	
-	/** Increase the access priviledge of this reference
-	 */
-	bool grant(bool read, bool write);
-	
-	/** Releases the specified access priviledge from this reference
-	 */
-	bool revoke(bool read, bool write);
-	
-	/** Checks whether this reference offers the requested access priviledge
-	 */
-	bool has_priviledge(bool read, bool write) const;
-	
-private:
+protected:
 	class Data_content;
 	
 	friend class Data_content;
 	
+	/** Get the privilege associated with this reference
+	 * \return whether this succeeded
+	 */
+	virtual bool lock();
+	
+	/** Releases the the privilege associated with this reference
+	 */
+	virtual void unlock();
+	
+	/** Check if a request for additional access privileges would success
+	 *  without actually requesting them
+	 */
+	bool can_lock(bool read, bool write);
+	
+	/** shared pointer on the data content, it is never null
+	 * \todo replace by a raw pointer we manage ourselves
+	 */
+	std::shared_ptr< Data_content >  m_content;
+	
+private:
 	class Notification
 	{
 	public:
@@ -172,26 +178,71 @@ private:
 		T m_notifier;
 	};
 	
-	/** Unlink the referenced Data_content and leaves this reference invalid
-	 * with m_content == nullptr
-	 */
-	void unlink();
-	
-	/** shared pointer on the data content, it is never null
-	 * \todo replace by a raw pointer we manage ourselves
-	 */
-	std::shared_ptr< Data_content >  m_content;
-	
-	/// Authorized access using this reference
-	bool m_read_access;
-	
-	/// Authorized access using this reference
-	bool m_write_access;
-	
 	/// function to use before releasing the data. Wrapper below.
 	std::unique_ptr<Notification> m_data_end;
 	
 }; // class Data_ref
+
+class Data_r_ref:
+	virtual public Data_ref
+{
+public:
+	Data_r_ref();
+	
+	Data_r_ref(const Data_ref &o);
+	
+	~Data_r_ref()
+	{
+		unlock();
+	}
+	
+protected:
+	virtual bool lock();
+	
+	virtual void unlock();
+	
+}; // class Data_r_ref
+
+class Data_w_ref:
+	virtual public Data_ref
+{
+public:
+	Data_w_ref();
+	
+	Data_w_ref(const Data_ref &o);
+	
+	~Data_w_ref()
+	{
+		unlock();
+	}
+	
+protected:
+	virtual bool lock();
+	
+	virtual void unlock();
+	
+}; // class Data_w_ref
+
+class Data_rw_ref:
+	public virtual Data_r_ref,
+	public virtual Data_w_ref
+{
+public:
+	Data_rw_ref();
+	
+	Data_rw_ref(const Data_ref &o);
+	
+	~Data_rw_ref()
+	{
+		unlock();
+	}
+	
+protected:
+	virtual bool lock();
+	
+	virtual void unlock();
+	
+}; // class Data_rw_ref
 
 } // namespace PDI
 

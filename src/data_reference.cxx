@@ -25,6 +25,7 @@
 #include "config.h"
 
 #include <cassert>
+#include <iostream>
 #include <memory>
 
 #include "pdi.h"
@@ -37,6 +38,8 @@
 namespace PDI
 {
 
+using std::cout;
+using std::endl;
 using std::make_shared;
 using std::move;
 using std::unique_ptr;
@@ -73,8 +76,8 @@ public:
 	Data_content():
 		m_buffer(nullptr),
 		m_delete(nullptr),
-		m_readable(false),
-		m_writable(false),
+		m_readable(true),
+		m_writable(true),
 		m_nb_reader(0),
 		m_has_writer(false)
 	{
@@ -95,6 +98,8 @@ public:
 	~Data_content()
 	{
 		assert(m_refs.empty());
+		assert(!m_has_writer);
+		assert(!m_nb_reader);
 		if (m_buffer) m_delete(m_buffer);
 		PDI_datatype_destroy(&m_type);
 	}
@@ -107,8 +112,6 @@ public:
 
 Data_ref::Data_ref():
 	m_content(make_shared<Data_content>()),
-	m_read_access(false),
-	m_write_access(false),
 	m_data_end(nullptr)
 {
 	m_content->m_refs.insert(this);
@@ -116,8 +119,6 @@ Data_ref::Data_ref():
 
 Data_ref::Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &type, bool readable, bool writable):
 	m_content(make_shared<Data_content>(data, freefunc, type, readable, writable)),
-	m_read_access(false),
-	m_write_access(false),
 	m_data_end(nullptr)
 {
 	m_content->m_refs.insert(this);
@@ -125,8 +126,6 @@ Data_ref::Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &typ
 
 Data_ref::Data_ref(const Data_ref &other):
 	m_content(other.m_content),
-	m_read_access(false),
-	m_write_access(false),
 	m_data_end(nullptr)
 {
 	m_content->m_refs.insert(this);
@@ -136,8 +135,13 @@ Data_ref &Data_ref::operator=(const Data_ref &other) // copy assignment
 {
 	if (this == &other) return *this;
 	
-	unlink();
+	m_content->m_refs.erase(this);
+	unlock();
 	m_content = other.m_content;
+	if (!lock()) {
+		m_content = make_shared<Data_content>();
+		lock();
+	}
 	m_content->m_refs.insert(this);
 	
 	return *this;
@@ -145,12 +149,7 @@ Data_ref &Data_ref::operator=(const Data_ref &other) // copy assignment
 
 Data_ref::~Data_ref()
 {
-	unlink();
-}
-
-Data_ref::operator void *() const
-{
-	return get();
+	m_content->m_refs.erase(this);
 }
 
 void *Data_ref::get() const
@@ -210,69 +209,110 @@ const PDI_datatype_t &Data_ref::type() const
 	return m_content->m_type;
 }
 
-void Data_ref::unlink()
-{
-	revoke(m_read_access, m_write_access);
-	assert(!m_read_access);
-	assert(!m_write_access);
-	m_content->m_refs.erase(this);
-}
-
 PDI_status_t Data_ref::reset()
 {
 	if (m_data_end)(*m_data_end)(*this);
-	unlink();
+	unlock();
+	m_content->m_refs.erase(this);
 	m_content = make_shared<Data_content>();
 	m_content->m_refs.insert(this);
+	lock();
 	return PDI_OK;
 }
 
-bool Data_ref::can_grant(bool read, bool write)
+bool Data_ref::can_lock(bool read, bool write)
 {
-	if (!m_content) return false;
-	if (write && !m_write_access) {   // need read access
+	if (write) {   // need read access
 		if (!m_content->m_writable) return false;   // content is not writable at all
 		if (m_content->m_has_writer) return false;   // content already has a writer
-		if (m_content->m_nb_reader > 1) return false;   // content has multiple readers
-		if (m_content->m_nb_reader && !m_read_access) return false;   // content has a reader that is not ourselves
+		if (m_content->m_nb_reader) return false;   // content has a reader
 	}
-	if (read && !m_read_access) {   // need read access
+	if (read) {   // need read access
 		if (!m_content->m_readable) return false;   // content is not readable at all
-		if (m_content->m_has_writer && !m_write_access) return false;   // content already has a writer that is not ourselves
+		if (m_content->m_has_writer) return false;   // content already has a writer
 	}
 	return true;
 }
 
-bool Data_ref::grant(bool read, bool write)
+bool Data_ref::lock()
 {
-	if (!can_grant(read, write)) return false;
-	if (write && !m_write_access) {
-		m_content->m_has_writer = true;
-		m_write_access = true;
-	}
-	if (read && !m_read_access) {
-		++m_content->m_nb_reader;
-		m_read_access = true;
-	}
 	return true;
 }
 
-bool Data_ref::revoke(bool read, bool write)
+void Data_ref::unlock()
 {
-	if (read && m_read_access) {
-		--m_content->m_nb_reader;
-		m_read_access = false;
-	}
-	if (write && m_write_access) {
-		m_content->m_has_writer = false;
-		m_write_access = false;
-	}
+}
+
+Data_r_ref::Data_r_ref()
+{
+	++m_content->m_nb_reader; // we automatically get W access on a null ref
+}
+
+Data_r_ref::Data_r_ref(const Data_ref &o):
+	Data_r_ref()
+{
+	Data_ref::operator=(o);
+}
+
+bool Data_r_ref::lock()
+{
+	if (!can_lock(true, false)) return false;
+	++m_content->m_nb_reader;
 	return true;
 }
 
-bool Data_ref::has_priviledge(bool read, bool write) const
+void Data_r_ref::unlock()
 {
-	return (!read || m_read_access) && (!write || m_write_access);
+	--m_content->m_nb_reader;
+}
+
+Data_w_ref::Data_w_ref()
+{
+	m_content->m_has_writer = true; // we automatically get W access on a null ref
+}
+
+Data_w_ref::Data_w_ref(const Data_ref &o):
+	Data_w_ref()
+{
+	Data_ref::operator=(o);
+}
+
+bool Data_w_ref::lock()
+{
+	if (!can_lock(false, true)) return false;
+	m_content->m_has_writer = true;
+	return true;
+}
+
+void Data_w_ref::unlock()
+{
+	m_content->m_has_writer = false;
+}
+
+Data_rw_ref::Data_rw_ref()
+{
+	++m_content->m_nb_reader; // we automatically get R access on a null ref
+	m_content->m_has_writer = true; // we automatically get W access on a null ref
+}
+
+Data_rw_ref::Data_rw_ref(const Data_ref &o):
+	Data_rw_ref()
+{
+	Data_ref::operator=(o);
+}
+
+bool Data_rw_ref::lock()
+{
+	if (!can_lock(true, true)) return false;
+	++m_content->m_nb_reader;
+	m_content->m_has_writer = true;
+	return true;
+}
+
+void Data_rw_ref::unlock()
+{
+	Data_w_ref::unlock();
+	Data_r_ref::unlock();
 }
 
 } // namespace PDI

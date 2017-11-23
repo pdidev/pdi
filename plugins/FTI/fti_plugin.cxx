@@ -42,6 +42,9 @@
 
 
 using PDI::Data_descriptor;
+using PDI::Data_ref;
+using PDI::Data_r_ref;
+using PDI::Data_w_ref;
 using std::cerr;
 using std::endl;
 using std::make_pair;
@@ -198,17 +201,28 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 			output = false;
 		}
 		for ( auto& protected_var: fti_protected ) {
-			PDI::Data_ref ref = PDI_state.desc(protected_var.first).value();
-			if ( ref.grant(output, !output) ) {
-				size_t size; PDI_datatype_datasize(&ref.type(), &size);
-				//TODO: handle non-contiguous data correctly
-				FTI_Protect(protected_var.second,
-										ref.get(), size, FTI_CHAR);
+			if ( output ) {
+				if ( PDI::Data_r_ref ref = PDI_state.desc(protected_var.first).value() ) {
+					size_t size; PDI_datatype_datasize(&ref.type(), &size);
+					//TODO: handle non-contiguous data correctly
+					FTI_Protect(protected_var.second, ref.get(), size, FTI_CHAR);
+				} else {
+					FTI_Protect(protected_var.second, NULL, 0, FTI_CHAR);
+					fprintf(stderr,
+                  "** Warning: [PDI/FTI] Protected variable %s unavailable\n",
+                  protected_var.first.c_str());
+				}
 			} else {
-				FTI_Protect(protected_var.second, NULL, 0, FTI_CHAR);
-				fprintf(stderr,
-								"** Warning: [PDI/FTI] Protected variable %s unavailable\n",
-						protected_var.first.c_str());
+				if ( PDI::Data_w_ref ref = PDI_state.desc(protected_var.first).value() ) {
+					size_t size; PDI_datatype_datasize(&ref.type(), &size);
+					//TODO: handle non-contiguous data correctly
+					FTI_Protect(protected_var.second, ref.get(), size, FTI_CHAR);
+				} else {
+					FTI_Protect(protected_var.second, NULL, 0, FTI_CHAR);
+					fprintf(stderr,
+                  "** Warning: [PDI/FTI] Protected variable %s unavailable\n",
+                  protected_var.first.c_str());
+				}
 			}
 		}
 		switch ( event ) {
@@ -228,10 +242,12 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_fti_plugin_data(const std::string& name, Data_ref cref)
 {
-	if ( ref.grant(false, true) && restart_status_events.find(name) != restart_status_events.end() ) {
-		*(int*)ref.get() = FTI_Status();
+	if ( Data_w_ref ref = cref ) {
+		if ( restart_status_events.find(name) != restart_status_events.end() ) {
+			*(int*)ref.get() = FTI_Status();
+		}
 	}
 	return PDI_OK;
 }

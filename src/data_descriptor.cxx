@@ -78,8 +78,21 @@ PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
 	
 	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot access a non shared value");
 	
-	m_values.push(unique_ptr<Data_ref>(new Data_ref(*m_values.top())));
-	if (m_values.top()->grant(inout & PDI_IN, inout & PDI_OUT)) { // got the requested rights
+	switch (inout) {
+	case PDI_NONE:
+		m_values.push(unique_ptr<Data_ref>(new Data_ref(*m_values.top())));
+		break;
+	case PDI_IN:
+		m_values.push(unique_ptr<Data_ref>(new Data_r_ref(*m_values.top())));
+		break;
+	case PDI_OUT:
+		m_values.push(unique_ptr<Data_ref>(new Data_w_ref(*m_values.top())));
+		break;
+	case PDI_INOUT:
+		m_values.push(unique_ptr<Data_ref>(new Data_rw_ref(*m_values.top())));
+		break;
+	}
+	if (m_values.top()) { // got the requested rights
 		*buffer = *m_values.top();
 		return PDI_OK;
 	} else { // cannot get the requested rights
