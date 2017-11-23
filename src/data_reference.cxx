@@ -136,9 +136,7 @@ Data_ref &Data_ref::operator=(const Data_ref &other) // copy assignment
 {
 	if (this == &other) return *this;
 	
-	revoke(m_read_access, m_write_access);
-	m_content->m_refs.erase(this);
-	
+	unlink();
 	m_content = other.m_content;
 	m_content->m_refs.insert(this);
 	
@@ -147,8 +145,7 @@ Data_ref &Data_ref::operator=(const Data_ref &other) // copy assignment
 
 Data_ref::~Data_ref()
 {
-	revoke(m_read_access, m_write_access);
-	m_content->m_refs.erase(this);
+	unlink();
 }
 
 Data_ref::operator void *() const
@@ -197,14 +194,14 @@ void no_action(void *) {}
 
 void *Data_ref::null_release()
 {
-	// no need to notify ourselves
+	// no need to notify ourselves, we'll do it last
 	m_content->m_refs.erase(this);
 	// but notify everybody else
-	while (!m_content->m_refs.empty())(*m_content->m_refs.begin())->data_end();
+	while (!m_content->m_refs.empty())(*m_content->m_refs.begin())->reset();
 	// now we shall be the sole owner of the data
 	m_content->m_delete = no_action; // prevent deletion
 	void *result = m_content->m_buffer;
-	reset();
+	reset(); // nullify and notify ourselves
 	return result;
 }
 
@@ -213,20 +210,20 @@ const PDI_datatype_t &Data_ref::type() const
 	return m_content->m_type;
 }
 
-void Data_ref::reset()
+void Data_ref::unlink()
 {
 	revoke(m_read_access, m_write_access);
 	assert(!m_read_access);
 	assert(!m_write_access);
 	m_content->m_refs.erase(this);
-	m_content = make_shared<Data_content>();
-	m_content->m_refs.insert(this);
 }
 
-PDI_status_t Data_ref::data_end()
+PDI_status_t Data_ref::reset()
 {
 	if (m_data_end)(*m_data_end)(*this);
-	reset();
+	unlink();
+	m_content = make_shared<Data_content>();
+	m_content->m_refs.insert(this);
 	return PDI_OK;
 }
 
@@ -273,7 +270,7 @@ bool Data_ref::revoke(bool read, bool write)
 	return true;
 }
 
-bool Data_ref::priviledge(bool read, bool write) const
+bool Data_ref::has_priviledge(bool read, bool write) const
 {
 	return (!read || m_read_access) && (!write || m_write_access);
 }

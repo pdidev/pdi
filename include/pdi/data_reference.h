@@ -100,6 +100,10 @@ public:
 	 */
 	operator bool () const;
 	
+	/** Nullifies this reference
+	 */
+	PDI_status_t reset();
+	
 	/** Releases ownership of the referenced raw data by replacing all existing
 	 *  references by references to a copy.
 	 *
@@ -116,6 +120,8 @@ public:
 	 */
 	void *null_release();
 	
+	/** Registers a nullification callback
+	 */
 	template <typename T>
 	void on_nullify(const T &notifier)
 	{
@@ -141,9 +147,13 @@ public:
 	
 	/** Checks whether this reference offers the requested access priviledge
 	 */
-	bool priviledge(bool read, bool write) const;
+	bool has_priviledge(bool read, bool write) const;
 	
 private:
+	class Data_content;
+	
+	friend class Data_content;
+	
 	class Notification
 	{
 	public:
@@ -162,17 +172,10 @@ private:
 		T m_notifier;
 	};
 	
-	class Data_content;
-	
-	friend class Data_content;
-	
-	/** Makes this the null reference again
+	/** Unlink the referenced Data_content and leaves this reference invalid
+	 * with m_content == nullptr
 	 */
-	void reset();
-	
-	/** Calls the data_end function of this reference
-	 */
-	PDI_status_t data_end();
+	void unlink();
 	
 	/** shared pointer on the data content, it is never null
 	 * \todo replace by a raw pointer we manage ourselves
