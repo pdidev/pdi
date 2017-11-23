@@ -86,7 +86,7 @@ public:
 	 */
 	Data_ref value()
 	{
-		return (m_values.empty() ? Data_ref() : m_values.top());
+		return (m_values.empty() ? Data_ref() : *m_values.top());
 	}
 	
 	/** Shares some data with PDI. The user code should not modify it before
@@ -133,7 +133,7 @@ public:
 	
 private:
 	/// References to the values of this descriptor
-	std::stack<Data_ref> m_values;
+	std::stack<std::unique_ptr<Data_ref>> m_values;
 	
 	PC_tree_t m_config;
 	

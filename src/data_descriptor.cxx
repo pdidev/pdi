@@ -24,6 +24,8 @@
 
 #include "config.h"
 
+#include <memory>
+
 #include "pdi/data_reference.h"
 #include "pdi/datatype.h"
 #include "pdi/state.h"
@@ -38,6 +40,7 @@ namespace PDI
 
 using std::stack;
 using std::string;
+using std::unique_ptr;
 
 
 Data_descriptor::Data_descriptor(const char *name):
@@ -75,9 +78,9 @@ PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
 	
 	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot access a non shared value");
 	
-	m_values.push(m_values.top());
-	if (m_values.top().grant(inout & PDI_IN, inout & PDI_OUT)) { // got the requested rights
-		*buffer = m_values.top();
+	m_values.push(unique_ptr<Data_ref>(new Data_ref(*m_values.top())));
+	if (m_values.top()->grant(inout & PDI_IN, inout & PDI_OUT)) { // got the requested rights
+		*buffer = *m_values.top();
 		return PDI_OK;
 	} else { // cannot get the requested rights
 		m_values.pop();
@@ -89,13 +92,13 @@ PDI_status_t Data_descriptor::share(void *buffer, Data_ref::Free_function freefu
 {
 	/// for metadata, unlink happens on share
 	if (!m_values.empty() && is_metadata()) {
-		m_values.top().null_release();
+		m_values.top()->null_release();
 		m_values.pop();
 	}
 	
 	// make a reference and put it in the store
-	m_values.push(Data_ref(buffer, freefunc, this->get_type(), access & PDI_OUT, access & PDI_IN));
-	Data_ref &ref = m_values.top();
+	m_values.push(std::unique_ptr<Data_ref>(new Data_ref(buffer, freefunc, this->get_type(), access & PDI_OUT, access & PDI_IN)));
+	Data_ref &ref = *m_values.top();
 	
 	// Provide reference to the plug-ins
 	for (auto &&plugin : PDI_state.plugins) {
@@ -123,10 +126,9 @@ PDI_status_t Data_descriptor::reclaim()
 	
 	// if the content is a metadata, keep it
 	if (is_metadata()) {
-		m_values.top().copy_release();
-	} else {
-		// Manually reclaiming data
-		m_values.top().null_release();
+		m_values.top()->copy_release();
+	} else { // otherwise, reclaim the data
+		m_values.top()->null_release();
 		m_values.pop();
 	}
 	

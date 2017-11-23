@@ -77,7 +77,7 @@ public:
 	
 	/** Destructor
 	 */
-	~Data_ref();
+	virtual ~Data_ref();
 	
 	/** Copies an existing reference into this one
 	 * \param other the ref to copy
