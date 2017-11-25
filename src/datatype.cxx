@@ -93,6 +93,9 @@ typedef struct buffer_descriptor_s {
 } buffer_descriptor_t;
 
 
+PDI_datatype_t PDI_UNDEF_TYPE = { PDI_K_SCALAR, { PDI_T_UNDEF } };
+
+
 static PDI_status_t bufdesc_destroy(buffer_descriptor_t *result)
 {
 	free(result->sizes);

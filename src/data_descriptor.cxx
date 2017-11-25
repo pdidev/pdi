@@ -110,7 +110,8 @@ PDI_status_t Data_descriptor::share(void *buffer, Data_ref::Free_function freefu
 	}
 	
 	// make a reference and put it in the store
-	m_values.push(std::unique_ptr<Data_ref>(new Data_ref(buffer, freefunc, this->get_type(), access & PDI_OUT, access & PDI_IN)));
+	PDI_datatype_t type; PDI_datatype_copy(&type, &this->get_type());
+	m_values.push(std::unique_ptr<Data_ref>(new Data_ref(buffer, freefunc, type, access & PDI_OUT, access & PDI_IN)));
 	Data_ref &ref = *m_values.top();
 	
 	// Provide reference to the plug-ins

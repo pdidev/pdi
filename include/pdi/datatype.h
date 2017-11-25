@@ -215,4 +215,6 @@ PDI_status_t PDI_EXPORT PDI_buffer_copy(void *to, const PDI_datatype_t *to_type,
  */
 PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const PDI_datatype_t *type, int *is_dense);
 
+extern PDI_datatype_t PDI_EXPORT PDI_UNDEF_TYPE;
+
 #endif // PDI_DATATYPE_H__

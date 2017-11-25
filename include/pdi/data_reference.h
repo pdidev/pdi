@@ -65,6 +65,8 @@ public:
 	
 	/** Creates a reference to currently unreferenced data
 	 * \param data the raw data to reference
+	 * \param freefunc the function to use to free the data buffer
+	 * \param type the type of the referenced data, ownership will be taken
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
@@ -101,7 +103,10 @@ public:
 	/** Checks whether this is a null reference
 	 * \return whether this reference is non-null
 	 */
-	operator bool () const;
+	operator bool () const
+	{
+		return get();
+	}
 	
 	/** accesses the type of the referenced raw data
 	 */
@@ -138,21 +143,14 @@ public:
 protected:
 	class Data_content;
 	
-	friend class Data_content;
-	
 	/** Get the privilege associated with this reference
 	 * \return whether this succeeded
 	 */
-	virtual bool lock();
+	virtual bool link(std::shared_ptr< Data_content >  content);
 	
 	/** Releases the the privilege associated with this reference
 	 */
-	virtual void unlock();
-	
-	/** Check if a request for additional access privileges would success
-	 *  without actually requesting them
-	 */
-	bool can_lock(bool read, bool write);
+	virtual void unlink();
 	
 	/** shared pointer on the data content, it is never null
 	 * \todo replace by a raw pointer we manage ourselves
@@ -187,19 +185,22 @@ class Data_r_ref:
 	virtual public Data_ref
 {
 public:
-	Data_r_ref();
+	Data_r_ref() {}
 	
-	Data_r_ref(const Data_ref &o);
+	Data_r_ref(const Data_ref &o)
+	{
+		Data_ref::operator=(o);
+	}
 	
 	~Data_r_ref()
 	{
-		unlock();
+		unlink();
 	}
 	
 protected:
-	virtual bool lock();
+	virtual bool link(std::shared_ptr< Data_content >  content) override;
 	
-	virtual void unlock();
+	virtual void unlink() override;
 	
 }; // class Data_r_ref
 
@@ -207,19 +208,22 @@ class Data_w_ref:
 	virtual public Data_ref
 {
 public:
-	Data_w_ref();
+	Data_w_ref() {}
 	
-	Data_w_ref(const Data_ref &o);
+	Data_w_ref(const Data_ref &o)
+	{
+		Data_ref::operator=(o);
+	}
 	
 	~Data_w_ref()
 	{
-		unlock();
+		unlink();
 	}
 	
 protected:
-	virtual bool lock();
+	virtual bool link(std::shared_ptr< Data_content >  content) override;
 	
-	virtual void unlock();
+	virtual void unlink() override;
 	
 }; // class Data_w_ref
 
@@ -228,19 +232,22 @@ class Data_rw_ref:
 	public virtual Data_w_ref
 {
 public:
-	Data_rw_ref();
+	Data_rw_ref() {}
 	
-	Data_rw_ref(const Data_ref &o);
+	Data_rw_ref(const Data_ref &o)
+	{
+		Data_ref::operator=(o);
+	}
 	
 	~Data_rw_ref()
 	{
-		unlock();
+		unlink();
 	}
 	
 protected:
-	virtual bool lock();
+	virtual bool link(std::shared_ptr< Data_content >  content) override;
 	
-	virtual void unlock();
+	virtual void unlink() override;
 	
 }; // class Data_rw_ref
 

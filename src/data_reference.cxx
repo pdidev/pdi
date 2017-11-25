@@ -58,112 +58,90 @@ public:
 	/// type of the data inside the buffer
 	PDI_datatype_t m_type;
 	
-	/// whether m_buffer is readable (if false, m_nb_reader==0)
-	bool m_readable;
+	/// number of locks preventing read access
+	int m_read_locks;
 	
-	/// whether m_buffer is writable (if false, m_has_writer==false)
-	bool m_writable;
-	
-	/// number of concurrent reader (if >0, is_readable==true)
-	int m_nb_reader;
-	
-	/// whether a reader has locked this (if true, m_writable==true)
-	bool m_has_writer;
+	/// number of locks preventing write access (should always remain between 0 & 2 inclusive w. current implem.)
+	int m_write_locks;
 	
 	/// references to this instance
 	std::unordered_set< Data_ref *> m_refs;
 	
-	Data_content():
-		m_buffer(nullptr),
-		m_delete(nullptr),
-		m_readable(true),
-		m_writable(true),
-		m_nb_reader(0),
-		m_has_writer(false)
-	{
-		PDI_datatype_init_scalar(&m_type, PDI_T_UNDEF);
-	}
-	
-	Data_content(void *buffer, Free_function destroy, const PDI_datatype_t &type, bool readable, bool writable):
-		m_buffer(buffer),
-		m_delete(destroy),
-		m_readable(readable),
-		m_writable(writable),
-		m_nb_reader(0),
-		m_has_writer(false)
-	{
-		PDI_datatype_copy(&m_type, &type);
-	}
-	
-	~Data_content()
-	{
-		assert(m_refs.empty());
-		assert(!m_has_writer);
-		assert(!m_nb_reader);
-		if (m_buffer) m_delete(m_buffer);
-		PDI_datatype_destroy(&m_type);
-	}
+	Data_content() = delete;
 	
 	Data_content(const Data_content &) = delete;
 	
 	Data_content(Data_content &&) = delete;
 	
+	/** Constrcuts a referenceable version of the content
+	 * \param buffer the actual content
+	 * \param destroy the function to use to destroy the content or null to not destroy it
+	 * \param type the content type, this takes ownership of the type
+	 * \param readable whether it is allowed to read the content
+	 * \param writable whether it is allowed to write the content
+	 */
+	Data_content(void *buffer, Free_function destroy, const PDI_datatype_t &type, bool readable, bool writable):
+		m_buffer(buffer),
+		m_delete(destroy),
+		m_type(type),
+		m_read_locks(readable ? 0 : 1),
+		m_write_locks(writable ? 0 : 1)
+	{
+		assert(buffer);
+	}
+	
+	~Data_content()
+	{
+		assert(m_refs.empty());
+		if (m_delete) m_delete(m_buffer);
+		PDI_datatype_destroy(&m_type);
+		assert(m_read_locks == 0 || m_read_locks == 1);
+		assert(m_write_locks == 0 || m_write_locks == 1);
+	}
+	
 }; // class Data_content
 
 Data_ref::Data_ref():
-	m_content(make_shared<Data_content>()),
+	m_content(nullptr),
 	m_data_end(nullptr)
 {
-	m_content->m_refs.insert(this);
 }
 
-Data_ref::Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &type, bool readable, bool writable):
-	m_content(make_shared<Data_content>(data, freefunc, type, readable, writable)),
-	m_data_end(nullptr)
+Data_ref::Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &type, bool readable, bool writable)
 {
-	m_content->m_refs.insert(this);
+	if (data) link(make_shared<Data_content>(data, freefunc, type, readable, writable));
 }
 
-Data_ref::Data_ref(const Data_ref &other):
-	m_content(other.m_content),
-	m_data_end(nullptr)
+Data_ref::Data_ref(const Data_ref &other)
 {
-	m_content->m_refs.insert(this);
+	link(other.m_content);
 }
 
 Data_ref &Data_ref::operator=(const Data_ref &other) // copy assignment
 {
 	if (this == &other) return *this;
 	
-	m_content->m_refs.erase(this);
-	unlock();
-	m_content = other.m_content;
-	if (!lock()) {
-		m_content = make_shared<Data_content>();
-		lock();
-	}
-	m_content->m_refs.insert(this);
+	unlink();
+	link(other.m_content);
 	
 	return *this;
 }
 
 Data_ref::~Data_ref()
 {
-	m_content->m_refs.erase(this);
+	unlink();
 }
 
 void *Data_ref::get() const
 {
+	if (!m_content) return nullptr;
 	return m_content->m_buffer;
-}
-
-Data_ref::operator bool() const
-{
-	return get();
 }
 
 void *Data_ref::copy_release()
 {
+	if (!m_content) return nullptr;
+	
 	//TODO: error handling if data is not readable
 	
 	//TODO: handle errors
@@ -181,6 +159,9 @@ void *Data_ref::copy_release()
 	void *oldbuffer = m_content->m_buffer;
 	m_content->m_buffer = newbuffer;
 	
+	// replace the destroyer
+	m_content->m_delete = free;
+	
 	// replace the type
 	//TODO: handle errors
 	PDI_datatype_destroy(&m_content->m_type);
@@ -189,16 +170,16 @@ void *Data_ref::copy_release()
 	return oldbuffer;
 }
 
-void no_action(void *) {}
-
 void *Data_ref::null_release()
 {
+	if (!m_content) return nullptr;
+	
 	// no need to notify ourselves, we'll do it last
 	m_content->m_refs.erase(this);
 	// but notify everybody else
 	while (!m_content->m_refs.empty())(*m_content->m_refs.begin())->reset();
 	// now we shall be the sole owner of the data
-	m_content->m_delete = no_action; // prevent deletion
+	m_content->m_delete = nullptr; // prevent deletion
 	void *result = m_content->m_buffer;
 	reset(); // nullify and notify ourselves
 	return result;
@@ -206,113 +187,88 @@ void *Data_ref::null_release()
 
 const PDI_datatype_t &Data_ref::type() const
 {
+	if (!m_content) return PDI_UNDEF_TYPE;
 	return m_content->m_type;
 }
 
 PDI_status_t Data_ref::reset()
 {
+	if (!m_content) return PDI_OK;
 	if (m_data_end)(*m_data_end)(*this);
-	unlock();
-	m_content->m_refs.erase(this);
-	m_content = make_shared<Data_content>();
-	m_content->m_refs.insert(this);
-	lock();
+	unlink();
 	return PDI_OK;
 }
 
-bool Data_ref::can_lock(bool read, bool write)
+bool Data_ref::link(std::shared_ptr< PDI::Data_ref::Data_content > content)
 {
-	if (write) {   // need read access
-		if (!m_content->m_writable) return false;   // content is not writable at all
-		if (m_content->m_has_writer) return false;   // content already has a writer
-		if (m_content->m_nb_reader) return false;   // content has a reader
-	}
-	if (read) {   // need read access
-		if (!m_content->m_readable) return false;   // content is not readable at all
-		if (m_content->m_has_writer) return false;   // content already has a writer
-	}
+	assert(!m_content);
+	if (!content) return true;
+	m_content = content;
+	m_content->m_refs.insert(this);
 	return true;
 }
 
-bool Data_ref::lock()
+void Data_ref::unlink()
 {
+	if (!m_content) return;
+	m_content->m_refs.erase(this);
+	m_content.reset();
+}
+
+bool Data_r_ref::link(std::shared_ptr< Data_content >  new_content)
+{
+	assert(!m_content);
+	if (!new_content) return true;
+	if (new_content->m_read_locks) return false;
+	Data_ref::link(new_content);
+	++m_content->m_write_locks; // a read ref locks data for writing, reading remains possible
 	return true;
 }
 
-void Data_ref::unlock()
+void Data_r_ref::unlink()
 {
+	if (!m_content) return;
+	--m_content->m_write_locks;
+	Data_ref::unlink();
 }
 
-Data_r_ref::Data_r_ref()
+bool Data_w_ref::link(std::shared_ptr< Data_content >  new_content)
 {
-	++m_content->m_nb_reader; // we automatically get W access on a null ref
-}
-
-Data_r_ref::Data_r_ref(const Data_ref &o):
-	Data_r_ref()
-{
-	Data_ref::operator=(o);
-}
-
-bool Data_r_ref::lock()
-{
-	if (!can_lock(true, false)) return false;
-	++m_content->m_nb_reader;
+	assert(!m_content);
+	if (!new_content) return true;
+	if (new_content->m_write_locks) return false;
+	Data_ref::link(new_content);
+	++m_content->m_write_locks; // a write ref locks data for both reading & writing
+	++m_content->m_read_locks;
 	return true;
 }
 
-void Data_r_ref::unlock()
+void Data_w_ref::unlink()
 {
-	--m_content->m_nb_reader;
+	if (!m_content) return;
+	--m_content->m_write_locks;
+	--m_content->m_read_locks;
+	Data_ref::unlink();
 }
 
-Data_w_ref::Data_w_ref()
+bool Data_rw_ref::link(std::shared_ptr< Data_content >  new_content)
 {
-	m_content->m_has_writer = true; // we automatically get W access on a null ref
-}
-
-Data_w_ref::Data_w_ref(const Data_ref &o):
-	Data_w_ref()
-{
-	Data_ref::operator=(o);
-}
-
-bool Data_w_ref::lock()
-{
-	if (!can_lock(false, true)) return false;
-	m_content->m_has_writer = true;
+	assert(!m_content);
+	if (!new_content) return true;
+	if (new_content->m_read_locks) return false;
+	if (new_content->m_write_locks) return false;
+	Data_ref::link(new_content);
+	++m_content->m_write_locks; // a read-write ref locks data for both reading & writing
+	++m_content->m_read_locks;
 	return true;
 }
 
-void Data_w_ref::unlock()
+void Data_rw_ref::unlink()
 {
-	m_content->m_has_writer = false;
-}
-
-Data_rw_ref::Data_rw_ref()
-{
-	++m_content->m_nb_reader; // we automatically get R access on a null ref
-	m_content->m_has_writer = true; // we automatically get W access on a null ref
-}
-
-Data_rw_ref::Data_rw_ref(const Data_ref &o):
-	Data_rw_ref()
-{
-	Data_ref::operator=(o);
-}
-
-bool Data_rw_ref::lock()
-{
-	if (!can_lock(true, true)) return false;
-	++m_content->m_nb_reader;
-	m_content->m_has_writer = true;
-	return true;
-}
-
-void Data_rw_ref::unlock()
-{
-	Data_w_ref::unlock();
-	Data_r_ref::unlock();
+	if (!m_content) return;
+	--m_content->m_write_locks;
+	--m_content->m_read_locks;
+	Data_ref::unlink();
 }
 
 } // namespace PDI
