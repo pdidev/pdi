@@ -146,16 +146,15 @@ protected:
 	/** Get the privilege associated with this reference
 	 * \return whether this succeeded
 	 */
-	virtual bool link(std::shared_ptr< Data_content >  content);
+	virtual void link(Data_content *content);
 	
 	/** Releases the the privilege associated with this reference
 	 */
 	virtual void unlink();
 	
-	/** shared pointer on the data content, it is never null
-	 * \todo replace by a raw pointer we manage ourselves
+	/** Pointer on the data content, null if the ref is null
 	 */
-	std::shared_ptr< Data_content >  m_content;
+	Data_content *m_content;
 	
 private:
 	class Notification
@@ -198,7 +197,7 @@ public:
 	}
 	
 protected:
-	virtual bool link(std::shared_ptr< Data_content >  content) override;
+	virtual void link(Data_content *content) override;
 	
 	virtual void unlink() override;
 	
@@ -221,7 +220,7 @@ public:
 	}
 	
 protected:
-	virtual bool link(std::shared_ptr< Data_content >  content) override;
+	virtual void link(Data_content *content) override;
 	
 	virtual void unlink() override;
 	
@@ -245,7 +244,7 @@ public:
 	}
 	
 protected:
-	virtual bool link(std::shared_ptr< Data_content >  content) override;
+	virtual void link(Data_content *content) override;
 	
 	virtual void unlink() override;
 	

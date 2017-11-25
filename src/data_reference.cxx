@@ -107,12 +107,14 @@ Data_ref::Data_ref():
 {
 }
 
-Data_ref::Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &type, bool readable, bool writable)
+Data_ref::Data_ref(void *data, Free_function freefunc, const PDI_datatype_t &type, bool readable, bool writable):
+		Data_ref()
 {
-	if (data) link(make_shared<Data_content>(data, freefunc, type, readable, writable));
+	if (data) link(new Data_content(data, freefunc, type, readable, writable));
 }
 
-Data_ref::Data_ref(const Data_ref &other)
+Data_ref::Data_ref(const Data_ref &other):
+		Data_ref()
 {
 	link(other.m_content);
 }
@@ -174,14 +176,17 @@ void *Data_ref::null_release()
 {
 	if (!m_content) return nullptr;
 	
-	// no need to notify ourselves, we'll do it last
-	m_content->m_refs.erase(this);
-	// but notify everybody else
-	while (!m_content->m_refs.empty())(*m_content->m_refs.begin())->reset();
-	// now we shall be the sole owner of the data
-	m_content->m_delete = nullptr; // prevent deletion
-	void *result = m_content->m_buffer;
-	reset(); // nullify and notify ourselves
+	void *result = m_content->m_buffer; // keep the content for later
+	m_content->m_delete = nullptr; // prevent its deletion
+	
+	// make a copy of the content pointer because we are going to be nullified
+	Data_content &content = *m_content;
+	
+	// notify everybody but one to release the data (including ourselves)
+	while (content.m_refs.size() > 1)(*content.m_refs.begin())->reset();
+	(*content.m_refs.begin())->reset(); // notify the last one which should delete the content
+	//TODO: handle the case where this last reset actually created a new ref
+	
 	return result;
 }
 
@@ -199,30 +204,29 @@ PDI_status_t Data_ref::reset()
 	return PDI_OK;
 }
 
-bool Data_ref::link(std::shared_ptr< PDI::Data_ref::Data_content > content)
+void Data_ref::link(Data_content *content)
 {
 	assert(!m_content);
-	if (!content) return true;
+	if (!content) return;
 	m_content = content;
 	m_content->m_refs.insert(this);
-	return true;
 }
 
 void Data_ref::unlink()
 {
 	if (!m_content) return;
 	m_content->m_refs.erase(this);
-	m_content.reset();
+	if ( m_content->m_refs.empty() ) delete m_content;
+	m_content = nullptr;
 }
 
-bool Data_r_ref::link(std::shared_ptr< Data_content >  new_content)
+void Data_r_ref::link(Data_content *new_content)
 {
 	assert(!m_content);
-	if (!new_content) return true;
-	if (new_content->m_read_locks) return false;
+	if (!new_content) return;
+	if (new_content->m_read_locks) return;
 	Data_ref::link(new_content);
 	++m_content->m_write_locks; // a read ref locks data for writing, reading remains possible
-	return true;
 }
 
 void Data_r_ref::unlink()
@@ -232,15 +236,14 @@ void Data_r_ref::unlink()
 	Data_ref::unlink();
 }
 
-bool Data_w_ref::link(std::shared_ptr< Data_content >  new_content)
+void Data_w_ref::link(Data_content *new_content)
 {
 	assert(!m_content);
-	if (!new_content) return true;
-	if (new_content->m_write_locks) return false;
+	if (!new_content) return;
+	if (new_content->m_write_locks) return;
 	Data_ref::link(new_content);
 	++m_content->m_write_locks; // a write ref locks data for both reading & writing
 	++m_content->m_read_locks;
-	return true;
 }
 
 void Data_w_ref::unlink()
@@ -251,16 +254,15 @@ void Data_w_ref::unlink()
 	Data_ref::unlink();
 }
 
-bool Data_rw_ref::link(std::shared_ptr< Data_content >  new_content)
+void Data_rw_ref::link(Data_content *new_content)
 {
 	assert(!m_content);
-	if (!new_content) return true;
-	if (new_content->m_read_locks) return false;
-	if (new_content->m_write_locks) return false;
+	if (!new_content) return;
+	if (new_content->m_read_locks) return;
+	if (new_content->m_write_locks) return;
 	Data_ref::link(new_content);
 	++m_content->m_write_locks; // a read-write ref locks data for both reading & writing
 	++m_content->m_read_locks;
-	return true;
 }
 
 void Data_rw_ref::unlink()
