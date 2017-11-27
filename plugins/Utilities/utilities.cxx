@@ -259,7 +259,7 @@ PDI_status_t PDI_utilities_event(const char *event_name) {
 }
 
 /// Convert into corresponding data type
-PDI_status_t cast_data_int(Data_ref& ref, int32_t plugin_data) {
+PDI_status_t cast_data_int(Data_ref ref, int32_t plugin_data) {
 	PDI_status_t status = PDI_OK;
 	const PDI_datatype_t& type = ref.type();
 	if ( type.kind == PDI_K_SCALAR ) {

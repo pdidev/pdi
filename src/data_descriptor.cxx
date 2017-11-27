@@ -28,7 +28,6 @@
 
 #include "pdi/data_reference.h"
 #include "pdi/datatype.h"
-#include "pdi/state.h"
 
 #include "status.h"
 
@@ -72,36 +71,7 @@ PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const PDI
 	return PDI_datatype_copy(&m_type, &type);
 }
 
-PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
-{
-	*buffer = NULL;
-	
-	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot access a non shared value");
-	
-	switch (inout) {
-	case PDI_NONE:
-		m_values.push(unique_ptr<Data_ref>(new Data_ref(*m_values.top())));
-		break;
-	case PDI_IN:
-		m_values.push(unique_ptr<Data_ref>(new Data_r_ref(*m_values.top())));
-		break;
-	case PDI_OUT:
-		m_values.push(unique_ptr<Data_ref>(new Data_w_ref(*m_values.top())));
-		break;
-	case PDI_INOUT:
-		m_values.push(unique_ptr<Data_ref>(new Data_rw_ref(*m_values.top())));
-		break;
-	}
-	if (m_values.top()) { // got the requested rights
-		*buffer = *m_values.top();
-		return PDI_OK;
-	} else { // cannot get the requested rights
-		m_values.pop();
-		return PDI_make_err(PDI_ERR_RIGHT, "Cannot grant priviledge for data '%s'", m_name.c_str());
-	}
-}
-
-PDI_status_t Data_descriptor::share(void *buffer, Data_ref::Free_function freefunc, PDI_inout_t access)
+PDI_status_t Data_descriptor::share(void *buffer, std::function<void(void*)> freefunc, PDI_inout_t access)
 {
 	/// for metadata, unlink happens on share
 	if (!m_values.empty() && is_metadata()) {
@@ -111,16 +81,38 @@ PDI_status_t Data_descriptor::share(void *buffer, Data_ref::Free_function freefu
 	
 	// make a reference and put it in the store
 	PDI_datatype_t type; PDI_datatype_copy(&type, &this->get_type());
-	m_values.push(std::unique_ptr<Data_ref>(new Data_ref(buffer, freefunc, type, access & PDI_OUT, access & PDI_IN)));
-	Data_ref &ref = *m_values.top();
-	
-	// Provide reference to the plug-ins
-	for (auto &&plugin : PDI_state.plugins) {
-		// Notify the plug-ins of reference availability
-		plugin.second->data(m_name, ref);
-	}
+	m_values.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(buffer, freefunc, type, access & PDI_OUT, access & PDI_IN)));
 	
 	return PDI_OK;
+}
+
+PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
+{
+	*buffer = NULL;
+	
+	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot access a non shared value");
+	
+	switch (inout) {
+	case PDI_NONE:
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false,false>(m_values.top()->ref())));
+		break;
+	case PDI_IN:
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true,false>(m_values.top()->ref())));
+		break;
+	case PDI_OUT:
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false,true>(m_values.top()->ref())));
+		break;
+	case PDI_INOUT:
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true,true>(m_values.top()->ref())));
+		break;
+	}
+	if (m_values.top()) { // got the requested rights
+		*buffer = m_values.top()->ref();
+		return PDI_OK;
+	} else { // cannot get the requested rights
+		m_values.pop();
+		return PDI_make_err(PDI_ERR_RIGHT, "Cannot grant priviledge for data '%s'", m_name.c_str());
+	}
 }
 
 PDI_status_t Data_descriptor::release()

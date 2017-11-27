@@ -35,10 +35,13 @@
 
 namespace PDI
 {
-/** \class  Data_ref
- *  \brief  References manage the access to a PDI::Data_content.
- */
-class Data_ref;
+
+template<bool, bool> class Data_A_ref;
+typedef Data_A_ref<false, false> Data_ref;
+typedef Data_A_ref<true, false> Data_r_ref;
+typedef Data_A_ref<false, true> Data_w_ref;
+typedef Data_A_ref<true, true> Data_rw_ref;
+
 }
 
 #endif

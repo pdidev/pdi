@@ -170,7 +170,16 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 {
-	return PDI_state.desc(name).share(buffer, &free, access);
+	Data_descriptor& desc = PDI_state.desc(name);
+	desc.share(buffer, &free, access);
+	Data_ref ref = desc.value();
+	
+	// Provide reference to the plug-ins
+	for (auto &&plugin : PDI_state.plugins) {
+		// Notify the plug-ins of reference availability
+		plugin.second->data(name, ref);
+	}
+	return PDI_OK;
 }
 
 

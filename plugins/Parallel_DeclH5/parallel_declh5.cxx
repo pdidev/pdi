@@ -44,6 +44,7 @@
 #include <pdi/data_descriptor.h>
 
 
+using PDI::Data_descriptor;
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
@@ -92,7 +93,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI::Data_descriptor& desc = PDI_state.desc(var->name);
+	Data_descriptor& desc = PDI_state.desc(var->name);
 	const PDI_datatype_t& datatype = desc.get_type();
 	
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
@@ -362,7 +363,7 @@ void rm_if_exist(hid_t h5file, char *dset_name)
 }
 
 
-const PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts, hsize_t *rank, PDI::Data_ref& ref)
+const PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts, hsize_t *rank, Data_ref ref)
 {
 	const PDI_datatype_t* scalart = &ref.type();
 	if ( scalart->kind == PDI_K_ARRAY ) {
@@ -545,7 +546,7 @@ PDI_order_t array_order(PC_tree_t node)
 	return order;
 }
 
-PDI_status_t PDI_parallel_declh5_data( const std::string& name, PDI::Data_ref cref )
+PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 {
 	PDI_status_t status = PDI_OK;
 	if ( Data_r_ref ref = cref ) { // get read access on the data to write it to file
@@ -564,7 +565,7 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, PDI::Data_ref cr
 				const PDI_datatype_t& datatype = ref.type();
 				if ( datatype.kind == PDI_K_ARRAY ) {
 					PDI_order_t order;
-					PDI::Data_descriptor& desc = PDI_state.desc(name);
+					Data_descriptor& desc = PDI_state.desc(name);
 					if( (order = array_order(desc.get_config())) < 0 )
 						return PDI_ERR_CONFIG;
 					int rank = datatype.c.array->ndims;

@@ -395,7 +395,7 @@ PDI_status_t eval_refval(PDI_refval_t *val, long *res)
 	Data_ref cref;
 	
 	if (ref_type.kind == PDI_K_ARRAY) {
-		if (val->m_idx.size() != ref_type.c.array->ndims) {
+		if (val->m_idx.size() != static_cast<size_t>(ref_type.c.array->ndims)) {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", val->m_idx.size(), ref_type.c.array->ndims), err0);
 		}
 		if (ref_type.c.array->type.kind != PDI_K_SCALAR) {

@@ -31,7 +31,7 @@
 #include <paraconf.h>
 #include <pdi.h>
 
-#include "pdi/datatype.h"
+#include <pdi/datatype.h>
 
 namespace PDI
 {
@@ -86,23 +86,23 @@ public:
 	 */
 	Data_ref value()
 	{
-		return (m_values.empty() ? Data_ref() : *m_values.top());
+		return (m_values.empty() ? Data_ref() : m_values.top()->ref());
 	}
 	
 	/** Shares some data with PDI. The user code should not modify it before
-	* a call to either PDI_release or PDI_reclaim.
-	* \param[in,out] data the accessed data
-	* \param[in] access whether the data can be accessed for read or write
-	*                   by PDI
-	* \return an error status
-	* \pre the user code owns the data buffer
-	* \post ownership of the data buffer is shared between PDI and the user code
-	*
-	* the access parameter is a binary OR of PDI_IN & PDI_OUT.
-	* * PDI_IN means PDI can set the buffer content
-	* * PDI_OUT means the buffer contains data that can be accessed by PDI
-	*/
-	PDI_status_t share(void *data, Data_ref::Free_function freefunc, PDI_inout_t access);
+	 * a call to either PDI_release or PDI_reclaim.
+	 * \param[in,out] data the accessed data
+	 * \param[in] access whether the data can be accessed for read or write
+	 *                   by PDI
+	 * \return an error status
+	 * \pre the user code owns the data buffer
+	 * \post ownership of the data buffer is shared between PDI and the user code
+	 *
+	 * the access parameter is a binary OR of PDI_IN & PDI_OUT.
+	 * * PDI_IN means PDI can set the buffer content
+	 * * PDI_OUT means the buffer contains data that can be accessed by PDI
+	 */
+	PDI_status_t share(void *data, std::function<void(void*)> freefunc, PDI_inout_t access);
 	
 	/** Requests for PDI to access a data buffer.
 	* \param[in,out] buffer a pointer to the accessed data buffer
@@ -132,8 +132,32 @@ public:
 	PDI_status_t reclaim();
 	
 private:
+	class Ref_holder
+	{
+	public:
+		virtual Data_ref ref() const = 0;
+		virtual void* null_release() = 0;
+		virtual void* copy_release() = 0;
+		virtual ~Ref_holder() {}
+	};
+	
+	template<bool R, bool W>
+	class Ref_A_holder:
+			public Ref_holder
+	{
+	public:
+		Ref_A_holder(void *data, std::function<void(void*)> freefunc, const PDI_datatype_t &type, bool readable, bool writable) noexcept:
+		m_t(data, freefunc, type, readable, writable) {}
+		template<bool OR, bool OW>
+		Ref_A_holder(const Data_A_ref<OR,OW> &t) :m_t(t){};
+		Data_ref ref() const override {return m_t;}
+		void* null_release() override {return m_t.null_release();}
+		void* copy_release() override {return m_t.copy_release();}
+		Data_A_ref<R,W> m_t;
+	};
+	
 	/// References to the values of this descriptor
-	std::stack<std::unique_ptr<Data_ref>> m_values;
+	std::stack<std::unique_ptr<Ref_holder>> m_values;
 	
 	PC_tree_t m_config;
 	
