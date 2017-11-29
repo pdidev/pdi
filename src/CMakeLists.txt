@@ -84,7 +84,6 @@ add_library(pdi SHARED
 		utils.cxx
 		value.cxx
 		data_descriptor.cxx
-		data_reference.cxx
 )
 set_target_properties(pdi PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_compiler_flags(pdi PRIVATE -Wall -Wextra)
