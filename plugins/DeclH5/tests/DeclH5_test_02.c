@@ -56,22 +56,22 @@ int main( int argc, char *argv[] )
 	}
 	
 	input=0;
-	PDI_expose("rank",&rank);
-	PDI_expose("input",&input);
+	PDI_expose("rank",&rank, PDI_OUT);
+	PDI_expose("input",&input, PDI_OUT);
 	// Set size for PDI
-	PDI_expose("ni",&ni);
-	PDI_expose("nj",&nj);
+	PDI_expose("ni",&ni, PDI_OUT);
+	PDI_expose("nj",&nj, PDI_OUT);
 
 	// Test that export/exchange works
-	PDI_expose("input",&input);
-	PDI_expose("reals",&reals );     // output real
-	PDI_exchange("values",&values ); // output integers
+	PDI_expose("input",&input, PDI_OUT);
+	PDI_expose("reals",&reals , PDI_OUT);     // output real
+	PDI_expose("values",&values , PDI_INOUT); // output integers
 	
 	input=1;
 	// Import should also work
-	PDI_expose("input",&input); // update metadata => HDF5 now import only
-	PDI_import("reals" ,&cp_reals);     // input real 
-	PDI_exchange("values" ,&cp_values); // input integers
+	PDI_expose("input",&input, PDI_OUT); // update metadata => HDF5 now import only
+	PDI_expose("reals" ,&cp_reals, PDI_IN);     // input real 
+	PDI_expose("values" ,&cp_values, PDI_INOUT); // input integers
 
 	// So the data should be the same
 	fprintf(stderr,"Data exported | Data imported\n");

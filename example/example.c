@@ -129,16 +129,16 @@ int main( int argc, char *argv[] )
 	MPI_Comm cart_com; MPI_Cart_create(main_comm, 2, cart_dims, cart_period, 1, &cart_com);
 	int car_coord[2]; MPI_Cart_coords(cart_com, rank, 2, car_coord);
 
-	PDI_expose("coord", car_coord);
-	PDI_expose("width", &width);
-	PDI_expose("height", &height);
-	PDI_expose("pwidth", &pwidth);
-	PDI_expose("pheight", &pheight);
+	PDI_expose("coord", car_coord, PDI_OUT);
+	PDI_expose("width", &width, PDI_OUT);
+	PDI_expose("height", &height, PDI_OUT);
+	PDI_expose("pwidth", &pwidth, PDI_OUT);
+	PDI_expose("pheight", &pheight, PDI_OUT);
 
 	double *cur = malloc(sizeof(double)*width*height);
 	double *next = malloc(sizeof(double)*width*height);
 
-	if ( PDI_import("main_field", cur) ) {
+	if ( PDI_expose("main_field", cur, PDI_IN) ) {
 		init(cur, width, height, car_coord[0], car_coord[1]);
 	}
 	
@@ -148,8 +148,8 @@ int main( int argc, char *argv[] )
 	int next_reduce = 0;
 	for(ii=0;; ++ii) {
 		PDI_transaction_begin("newiter");
-		PDI_exchange("iter", &ii);
-		PDI_exchange("main_field", cur);
+		PDI_expose("iter", &ii, PDI_INOUT);
+		PDI_expose("main_field", cur, PDI_INOUT);
 		PDI_transaction_end();
 		
 		iter(cur, next, width, height);
@@ -168,8 +168,8 @@ int main( int argc, char *argv[] )
 		}
 	}
 	PDI_event("finalization");
-	PDI_expose("iter", &ii);
-	PDI_expose("main_field", cur);
+	PDI_expose("iter", &ii, PDI_OUT);
+	PDI_expose("main_field", cur, PDI_OUT);
 
 	PDI_finalize();
 	

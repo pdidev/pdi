@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	{ /// setting nb of procs. 
 		int size; MPI_Comm_size(world, &size);
 		assert(size == 4 && "Run on 4 procs only.");
-		PDI_expose("nproc",&size);
+		PDI_expose("nproc",&size, PDI_OUT);
 	}
 	
 
@@ -78,17 +78,17 @@ int main(int argc, char *argv[])
 	nit = 2*ni;
 	njt = 2*nj;
 
-	PDI_expose("nig", &nig); /// Ghost cells
-	PDI_expose("njg", &njg);
+	PDI_expose("nig", &nig, PDI_OUT); /// Ghost cells
+	PDI_expose("njg", &njg, PDI_OUT);
 
-	PDI_expose("ni", &ni); /// Size of the portion of the array for a given MPI task
-	PDI_expose("nj", &nj);
+	PDI_expose("ni", &ni, PDI_OUT); /// Size of the portion of the array for a given MPI task
+	PDI_expose("nj", &nj, PDI_OUT);
 
-	PDI_expose("nit", &nit); ///  size of the distributed array
-	PDI_expose("njt", &njt);
+	PDI_expose("nit", &nit, PDI_OUT); ///  size of the distributed array
+	PDI_expose("njt", &njt, PDI_OUT);
 
-	PDI_expose("istart", &istart); /// offset 
-	PDI_expose("jstart", &jstart);
+	PDI_expose("istart", &istart, PDI_OUT); /// offset 
+	PDI_expose("jstart", &jstart, PDI_OUT);
 	
 	// Fill arrays
 	for (j = 0; j < nj + 2*njg ; ++j) {
@@ -107,19 +107,19 @@ int main(int argc, char *argv[])
 	}
 
 	input = 0;
-	PDI_expose("rank", &rank);
-	PDI_expose("input", &input);
+	PDI_expose("rank", &rank, PDI_OUT);
+	PDI_expose("input", &input, PDI_OUT);
 
 	///  Test that export/exchange works
-	PDI_expose("input", &input);
-	PDI_expose("reals", &reals);     // output real
-	PDI_exchange("values", &values); // output integers
+	PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("reals", &reals, PDI_OUT);     // output real
+	PDI_expose("values", &values, PDI_INOUT); // output integers
 
 	input = 1;
 	///  Import should also work
-	PDI_expose("input", &input); // update metadata => HDF5 now import only
-	PDI_import("reals" , &cp_reals);    // input real
-	PDI_exchange("values" , &cp_values); // input integers
+	PDI_expose("input", &input, PDI_OUT); // update metadata => HDF5 now import only
+	PDI_expose("reals" , &cp_reals, PDI_IN);    // input real
+	PDI_expose("values" , &cp_values, PDI_INOUT); // input integers
 
 	/// So the data should be the same
 	fprintf(stderr, "Data exported | Data imported\n");

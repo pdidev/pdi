@@ -66,20 +66,20 @@ int main( int argc, char *argv[] )
 		}
 	}
 
-	PDI_expose("rank", &rank);
+	PDI_expose("rank", &rank, PDI_OUT);
 	// Set size for PDI
-	PDI_expose("ni", &ni);
-	PDI_expose("nj", &nj);
-	PDI_expose("ni_ghost", &ni_gh);
-	PDI_expose("nj_ghost", &nj_gh);
+	PDI_expose("ni", &ni, PDI_OUT);
+	PDI_expose("nj", &nj, PDI_OUT);
+	PDI_expose("ni_ghost", &ni_gh, PDI_OUT);
+	PDI_expose("nj_ghost", &nj_gh, PDI_OUT);
 
 	// Export data => produce a buffer => buffer is exported in hdf5
-	PDI_expose("reals", &reals);     // output real
-	PDI_expose("values", &values);   // output integers
+	PDI_expose("reals", &reals, PDI_OUT);     // output real
+	PDI_expose("values", &values, PDI_OUT);   // output integers
 	
 	// reimport buffer (read hdf5)
-	PDI_import("cp_reals", &cp_reals);
-	PDI_import("cp_values", &cp_values);
+	PDI_expose("cp_reals", &cp_reals, PDI_IN);
+	PDI_expose("cp_values", &cp_values, PDI_IN);
 
 	fprintf(stderr, "Comparing arrays. -1 indicates ghost cells.\n");
 	fprintf(stderr, "Exported values\n");

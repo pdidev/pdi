@@ -41,15 +41,15 @@ int main( int argc, char *argv[] )
 	PDI_status_t err = PDI_init(PC_get(conf,".pdi"), &world);
 
 	PDI_transaction_begin("testing");
-	PDI_expose("meta0",&value[0]);
-	PDI_expose("meta1",&value[0]);
+	PDI_expose("meta0",&value[0], PDI_OUT);
+	PDI_expose("meta1",&value[0], PDI_OUT);
 	buf=malloc(nbuf*sizeof(int)); // memory 
-	PDI_expose("meta2",&value[1]);
+	PDI_expose("meta2",&value[1], PDI_OUT);
 	for(i=0;i<nbuf;i++){ buf[i]=0;}
-	PDI_expose("meta3",&value[2]);
+	PDI_expose("meta3",&value[2], PDI_OUT);
 	for(i=0;i<nbuf-1;i++){ buf[i]=buf[i+1]+1;}
-	PDI_expose("meta4",&value[3]);
-	PDI_expose("test_var",&test_var);
+	PDI_expose("meta4",&value[3], PDI_OUT);
+	PDI_expose("test_var",&test_var, PDI_OUT);
 	free(buf);
 	PDI_transaction_end();
 	PDI_finalize();

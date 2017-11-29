@@ -56,19 +56,19 @@ int main( int argc, char *argv[] )
 	}
 
 	// Set size for PDI
-	PDI_expose("ni",&ni);
-	PDI_expose("nj",&nj);
+	PDI_expose("ni",&ni, PDI_OUT);
+	PDI_expose("nj",&nj, PDI_OUT);
 
 	// Test that expose works
         PDI_transaction_begin("write_data");
-	PDI_expose("reals",&reals );     // output real
-	PDI_expose("values",&values ); // output integers
+	PDI_expose("reals",&reals , PDI_OUT);     // output real
+	PDI_expose("values",&values , PDI_OUT); // output integers
         PDI_transaction_end();
 
 	// Exchange should also work
         PDI_transaction_begin("read_data");
-	PDI_exchange("reals" ,&cp_reals);     // input real
-	PDI_import("values" ,&cp_values); // input integers
+	PDI_expose("reals" ,&cp_reals, PDI_INOUT);     // input real
+	PDI_expose("values" ,&cp_values, PDI_IN); // input integers
         PDI_transaction_end();
 
 	// So the data should be the same

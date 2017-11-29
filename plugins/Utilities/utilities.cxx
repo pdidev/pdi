@@ -336,7 +336,7 @@ PDI_status_t PDI_utilities_data_start( Data_ref&& ref )
 						size_t subsize; PDI_datatype_datasize(&outdesc->second.get_type(), &subsize);
 						void *subdata = malloc(subsize);
 						PDI_buffer_copy(subdata, &outdesc->second.get_type(), ref.get_content()->get_buffer(), &ref.get_content()->get_type());
-						PDI_expose(str_out, subdata);
+						PDI_expose(str_out, subdata, PDI_OUT);
 						free(subdata);
 						ref.revoke(PDI_OUT);
 					}
