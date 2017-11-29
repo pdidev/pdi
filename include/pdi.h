@@ -221,26 +221,14 @@ PDI_status_t  PDI_EXPORT PDI_access(const char *name, void **buffer, PDI_inout_t
  */
 PDI_status_t PDI_EXPORT PDI_export(const char *name, const void *data);
 
-/** Shortly exposes some data to PDI. Equivalent to PDI_share(OUT) + PDI_reclaim.
+/** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
  * \param[in] name the data name
  * \param[in] data the exposed data
+ * \param[in] access whether the data can be accessed for read or write
+ *                   by PDI
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_expose(const char *name, const void *data);
-
-/** Exchanges some data with PDI. Equivalent to PDI_share(IN|OUT) + PDI_reclaim.
- * \param[in] name the data name
- * \param[in] data the exposed data
- * \return an error status
- */
-PDI_status_t PDI_EXPORT PDI_exchange(const char *name, void *data);
-
-/** Imports some data from PDI. Equivalent to PDI_share(IN) + PDI_reclaim.
- * \param[in] name the data name
- * \param[out] data the data to initialize
- * \return an error status
- */
-PDI_status_t PDI_EXPORT PDI_import(const char *name, void *data);
+PDI_status_t PDI_EXPORT PDI_expose(const char *name, const void *data, PDI_inout_t access);
 
 /// \}
 

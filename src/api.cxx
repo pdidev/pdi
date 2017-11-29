@@ -313,30 +313,11 @@ static void add_to_transaction(const char *c_name)
 }
 
 
-PDI_status_t PDI_expose(const char *name, const void *data)
+PDI_status_t PDI_expose(const char *name, const void *data, PDI_inout_t access)
 {
 	PDI_status_t status = PDI_OK;
 	
-	PDI_handle_err(PDI_share(name, (void *)data, PDI_OUT), err0);
-	
-	if (! PDI_state.transaction.empty()) {   // defer the reclaim
-		add_to_transaction(name);
-	} else { // do the reclaim now
-		PDI_handle_err(PDI_reclaim(name), err0);
-	}
-	
-	return status;
-	
-err0:
-	return status;
-}
-
-
-PDI_status_t PDI_exchange(const char *name, void *data)
-{
-	PDI_status_t status = PDI_OK;
-	
-	PDI_handle_err(PDI_share(name, data, PDI_INOUT), err0);
+	PDI_handle_err(PDI_share(name, (void *)data, access), err0);
 	
 	if (! PDI_state.transaction.empty()) {   // defer the reclaim
 		add_to_transaction(name);
@@ -398,25 +379,6 @@ PDI_status_t PDI_export(const char *name, const void *data)
 	
 	PDI_handle_err(PDI_share(name, (void *)data, PDI_OUT), err0);
 	PDI_handle_err(PDI_release(name), err0);
-	
-	return status;
-	
-err0:
-	return status;
-}
-
-
-PDI_status_t PDI_import(const char *name, void *data)
-{
-	PDI_status_t status = PDI_OK;
-	
-	PDI_handle_err(PDI_share(name, data, PDI_IN), err0);
-	
-	if (! PDI_state.transaction.empty()) {// defer the reclaim
-		add_to_transaction(name);
-	} else { // do the reclaim now
-		PDI_handle_err(PDI_reclaim(name), err0);
-	}
 	
 	return status;
 	
