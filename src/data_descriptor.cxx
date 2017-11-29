@@ -71,11 +71,11 @@ PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const PDI
 	return PDI_datatype_copy(&m_type, &type);
 }
 
-PDI_status_t Data_descriptor::share(void *buffer, std::function<void(void*)> freefunc, PDI_inout_t access)
+PDI_status_t Data_descriptor::share(void *buffer, std::function<void(void *)> freefunc, PDI_inout_t access)
 {
 	/// for metadata, unlink happens on share
 	if (!m_values.empty() && is_metadata()) {
-		m_values.top()->null_release();
+		(*m_values.top()).null_release();
 		m_values.pop();
 	}
 	
@@ -94,20 +94,20 @@ PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
 	
 	switch (inout) {
 	case PDI_NONE:
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false,false>(m_values.top()->ref())));
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(*m_values.top())));
 		break;
 	case PDI_IN:
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true,false>(m_values.top()->ref())));
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(*m_values.top())));
 		break;
 	case PDI_OUT:
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false,true>(m_values.top()->ref())));
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, true>(*m_values.top())));
 		break;
 	case PDI_INOUT:
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true,true>(m_values.top()->ref())));
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, true>(*m_values.top())));
 		break;
 	}
 	if (m_values.top()) { // got the requested rights
-		*buffer = m_values.top()->ref();
+		*buffer = *m_values.top();
 		return PDI_OK;
 	} else { // cannot get the requested rights
 		m_values.pop();

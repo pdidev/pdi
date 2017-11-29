@@ -38,109 +38,26 @@
 namespace PDI
 {
 
-/** A dynamically typed reference to data with automatic memory management and
- * read/write locking semantic.
- *
- * Data_ref_base is a smart pointer that features:
- * - a dynamic type system,
- * - garbage collection mechanism similar to std::shared_ptr,
- * - a read/write locking mechanism similar to std::shared_mutex,
- * - a release system that nullifies all existing references to the raw data,
- * - a notification system to be notified when a reference is going to be nullified.
- *
- * \warning As of now, and unlike std::shared_ptr, the lock system can not be
- * relied upon in a multithreaded environment.
- *
- * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+/** A common base for all references, whatever their access privileges in
+ * order to ensure they share the same Data_content and can access each others.
  */
 class Data_ref_base
 {
 public:
-	/** Constructs a null ref
+	/** Constructs a null reference
 	 */
-	Data_ref_base() noexcept:
+	Data_ref_base():
 		m_content(nullptr)
 	{
 	}
 	
-	/** Offers access to the referenced raw data
-	 * \return a pointer to the referenced raw data
-	 */
-	operator void *() const
-	{
-		return get();
-	}
+	Data_ref_base(const Data_ref_base &) = delete;
 	
-	/** Offers access to the referenced raw data
-	 * \return a pointer to the referenced raw data
-	 */
-	void *get() const
-	{
-		if (!m_content) return nullptr;
-		return m_content->m_buffer;
-	}
+	Data_ref_base(Data_ref_base &&) = delete;
 	
-	/** Checks whether this is a null reference
-	 * \return whether this reference is non-null
-	 */
-	operator bool () const
-	{
-		return get();
-	}
+	Data_ref_base &operator = (const Data_ref_base &) = delete;
 	
-	/** accesses the type of the referenced raw data
-	 */
-	const PDI_datatype_t &type() const
-	{
-		if (!m_content || !m_content->m_buffer) return PDI_UNDEF_TYPE;
-		return m_content->m_type;
-	}
-	
-	/** Releases ownership of the referenced raw data by replacing all existing
-	 *  references by references to a copy.
-	 *
-	 * \return the previously referenced raw data or nullptr if this was a null
-	 * reference, i.e. the value which would be returned by get() before the call.
-	 */
-	void *copy_release()
-	{
-		if (!m_content || !m_content->m_buffer) return nullptr;
-		
-		//TODO: error handling if data is not readable
-		
-		//TODO: handle errors
-		PDI_datatype_t newtype; PDI_datatype_densify(&newtype, &m_content->m_type);
-		
-		//TODO: handle errors
-		size_t dsize; PDI_datatype_buffersize(&m_content->m_type, &dsize);
-		void *newbuffer = operator new(dsize, std::nothrow);
-		PDI_buffer_copy(newbuffer,
-										&newtype,
-										m_content->m_buffer,
-										&m_content->m_type);
-										
-		// replace the buffer
-		void *oldbuffer = m_content->m_buffer;
-		m_content->m_buffer = newbuffer;
-		
-		// replace the destroyer
-		m_content->m_delete = [](void* d){operator delete(d);};
-		
-		// replace the type
-		//TODO: handle errors
-		PDI_datatype_destroy(&m_content->m_type);
-		m_content->m_type = newtype;
-		
-		return oldbuffer;
-	}
-	
-	/** Registers a nullification callback
-	 */
-	void on_nullify(std::function<void(Data_ref)> notifier)
-	{
-		m_content->m_notifications[this] = move(notifier);
-	}
+	Data_ref_base &operator = (Data_ref_base &&) = delete;
 	
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
@@ -151,7 +68,8 @@ protected:
 		/// buffer that contains data
 		void *m_buffer;
 		
-		std::function<void(void*)> m_delete;
+		/// The function to call to deallocate the buffer memory
+		std::function<void(void *)> m_delete;
 		
 		/// type of the data inside the buffer
 		PDI_datatype_t m_type;
@@ -165,8 +83,8 @@ protected:
 		/// number of locks preventing write access (should always remain between 0 & 2 inclusive w. current implem.)
 		int m_write_locks;
 		
-		/// references to this instance
-		std::unordered_map< Data_ref_base*, std::function<void(Data_ref)> > m_notifications;
+		/// Nullification notifications registered on this instance
+		std::unordered_map<const Data_ref_base *, std::function<void(Data_ref)> > m_notifications;
 		
 		Data_content() = delete;
 		
@@ -174,23 +92,14 @@ protected:
 		
 		Data_content(Data_content &&) = delete;
 		
-		virtual ~Data_content()
-		{
-			assert(m_notifications.empty());
-			assert(!m_owners);
-			PDI_datatype_destroy(&m_type);
-			assert(m_read_locks == 0 || m_read_locks == 1);
-			assert(m_write_locks == 0 || m_write_locks == 1);
-			m_delete(this->m_buffer);
-		}
-		
-		/** Constrcuts a referenceable version of the content
-		* \param buffer the actual content
-		* \param type the content type, this takes ownership of the type
-		* \param readable whether it is allowed to read the content
-		* \param writable whether it is allowed to write the content
-		*/
-		Data_content(void *buffer, std::function<void(void*)> deleter, const PDI_datatype_t &type, bool readable, bool writable):
+		/** Constructs the content
+		 * \param buffer the actual content
+		 * \param deleter the function to use to deallocate the buffer memory
+		 * \param type the content type, this takes ownership of the type
+		 * \param readable whether it is allowed to read the content
+		 * \param writable whether it is allowed to write the content
+		 */
+		Data_content(void *buffer, std::function<void(void *)> deleter, const PDI_datatype_t &type, bool readable, bool writable):
 			m_buffer(buffer),
 			m_delete(deleter),
 			m_type(type),
@@ -201,109 +110,198 @@ protected:
 			assert(buffer);
 		}
 		
+		~Data_content()
+		{
+			m_delete(this->m_buffer);
+			PDI_datatype_destroy(&m_type);
+			assert(!m_owners);
+			assert(m_read_locks == 0 || m_read_locks == 1);
+			assert(m_write_locks == 0 || m_write_locks == 1);
+			assert(m_notifications.empty());
+		}
+		
 	}; // class Data_content
-
-	/** Tries to link this reference to a content
-	 * \param content the content to link to
+	
+	/** Function to access the content from a reference with different access right
 	 */
-	template<bool R, bool W>
-	void link(Data_content *content)
+	static Data_content *get_content(const Data_ref_base &other)
 	{
-		assert(!m_content);
-		if ( !content || !content->m_buffer) return;
-		if ( R && content->m_read_locks ) return;
-		if ( W && content->m_write_locks ) return;
-		m_content = content;
-		++m_content->m_owners;
-		if ( R || W ) ++m_content->m_write_locks;
-		if ( W ) ++m_content->m_read_locks;
+		return other.m_content;
 	}
 	
-	/** Tries to link this reference to the same content as another ref
+	/** Pointer on the data content, can be null if the ref is null
 	 */
-	template<bool R, bool W>
-	void link(const Data_ref_base& other)
-	{
-		link<R,W>(other.m_content);
-	}
-	
-	/** Unlinks this reference from a content (nullifies it)
-	 */
-	template<bool R, bool W>
-	void unlink()
-	{
-		if (!m_content) return;
-		if ( R || W ) --m_content->m_write_locks;
-		if ( W ) --m_content->m_read_locks;
-		++m_content->m_owners;
-		m_content->m_notifications.erase(this);
-		if ( !m_content->m_owners ) delete m_content;
-		m_content = nullptr;
-	}
-	
-	/** Pointer on the data content, null if the ref is null
-	 */
-	Data_content *m_content;
+	mutable Data_content *m_content;
 	
 }; // class Data_ref_base
 
+
+/** A dynamically typed reference to data with automatic memory management and
+ * read/write locking semantic.
+ *
+ * Data_A_ref is a smart pointer that features:
+ * - a dynamic type system,
+ * - garbage collection mechanism similar to std::shared_ptr,
+ * - a read/write locking mechanism similar to std::shared_mutex,
+ * - a release system that nullifies all existing references to the raw data,
+ * - a notification system to be notified when a reference is going to be nullified.
+ *
+ * \warning As of now, and unlike std::shared_ptr, the lock system can not be
+ * relied upon in a multithreaded environment.
+ *
+ * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ */
 template<bool R, bool W>
 class Data_A_ref:
-		public Data_ref_base
+	public Data_ref_base
 {
 public:
+	/** Constructs a null reference
+	 */
 	Data_A_ref() = default;
 	
 	/** Copies an existing reference
-	 * \param other the ref to copy
-	 */
-	Data_A_ref(const Data_ref_base &other):
-			Data_ref_base()
-	{
-		link<R,W>(other);
-	}
-	
-	/** Copies an existing reference
+	 *
+	 * if the requested rights can not be granted, the reference is made null
+	 *
 	 * \param other the ref to copy
 	 */
 	Data_A_ref(const Data_A_ref &other):
-			Data_ref_base()
+		Data_ref_base()
 	{
-		link<R,W>(other);
+		link(get_content(other));
+	}
+	
+	/** Copies an existing reference with different privileges
+	 *
+	 * if the requested rights can not be granted, the reference is made null
+	 *
+	 * \param other the ref to copy
+	 */
+	template<bool OR, bool OW>
+	Data_A_ref(const Data_A_ref<OR, OW> &other):
+		Data_ref_base()
+	{
+		link(get_content(other));
+	}
+	
+	/** Moves an existing reference
+	 * \param other the ref to copy
+	 */
+	Data_A_ref(Data_A_ref &&other):
+		Data_ref_base()
+	{
+		if (!other.m_content || !other.m_content->m_buffer) return;
+		// the other ref notification disappears
+		other.m_content->m_notifications.erase(&other);
+		// since we get the same privileges as those we release we can just steal the content
+		m_content = other.m_content;
+		other.m_content = nullptr;
 	}
 	
 	/** Creates a reference to currently unreferenced data
+	 *
 	 * \param data the raw data to reference
 	 * \param freefunc the function to use to free the data buffer
 	 * \param type the type of the referenced data, ownership will be taken
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Data_A_ref(void *data, std::function<void(void*)> freefunc, const PDI_datatype_t &type, bool readable, bool writable) noexcept:
-			Data_ref_base()
+	Data_A_ref(void *data, std::function<void(void *)> freefunc, const PDI_datatype_t &type, bool readable, bool writable):
+		Data_ref_base()
 	{
-		if (data) link<R,W>(new Data_content(data, freefunc, type, readable, writable));
-	}
-	
-	/** Copies an existing reference into this one
-	 * \param other the ref to copy
-	 * \return *this
-	 */
-	Data_A_ref &operator= (const Data_ref_base &other)
-	{
-		if (this == &other) return *this;
-		
-		unlink<R,W>();
-		link<R,W>(other);
-		
-		return *this;
+		if (data) link(new Data_content(data, freefunc, type, readable, writable));
 	}
 	
 	/** Destructor
 	 */
 	~Data_A_ref()
 	{
-		unlink<R,W>();
+		reset();
+	}
+	
+	/** Offers access to the referenced raw data
+	 *
+	 * \return a pointer to the referenced raw data
+	 */
+	operator void *() const
+	{
+		return get();
+	}
+	
+	/** Offers access to the referenced raw data
+	 *
+	 * \return a pointer to the referenced raw data
+	 */
+	void *get() const
+	{
+		if (is_null()) return nullptr;
+		return m_content->m_buffer;
+	}
+	
+	/** Checks whether this is a null reference
+	 *
+	 * \return whether this reference is non-null
+	 */
+	operator bool () const
+	{
+		return !is_null();
+	}
+	
+	/** accesses the type of the referenced raw data
+	 */
+	const PDI_datatype_t &type() const
+	{
+		if (is_null()) return PDI_UNDEF_TYPE;
+		return m_content->m_type;
+	}
+	
+	/** Nullify the reference
+	 */
+	void reset()
+	{
+		if (m_content) unlink();
+	}
+	
+	/** Releases ownership of the referenced raw data by replacing all existing
+	 *  references by references to a copy.
+	 *
+	 * \return the previously referenced raw data or nullptr if this was a null
+	 * reference, i.e. the value which would be returned by get() before the call.
+	 */
+	void *copy_release()
+	{
+		if (is_null()) return nullptr;
+		
+		//TODO: error handling if data is not readable
+		
+		//TODO: handle errors
+		PDI_datatype_t newtype; PDI_datatype_densify(&newtype, &m_content->m_type);
+		
+		//TODO: handle errors
+		size_t dsize; PDI_datatype_buffersize(&m_content->m_type, &dsize);
+		void *newbuffer = operator new (dsize, std::nothrow);
+		PDI_buffer_copy(newbuffer,
+		                &newtype,
+		                m_content->m_buffer,
+		                &m_content->m_type);
+		                
+		// replace the buffer
+		void *oldbuffer = m_content->m_buffer;
+		m_content->m_buffer = newbuffer;
+		
+		// replace the destroyer
+		m_content->m_delete = [](void *d) {
+			operator delete (d);
+		};
+		
+		// replace the type
+		//TODO: handle errors
+		PDI_datatype_destroy(&m_content->m_type);
+		m_content->m_type = newtype;
+		
+		return oldbuffer;
 	}
 	
 	/** Releases ownership of the referenced raw data by nullifying all existing
@@ -314,21 +312,85 @@ public:
 	 */
 	void *null_release()
 	{
-		if (!m_content || !m_content->m_buffer) return nullptr;
+		if (is_null()) return nullptr;
 		
 		// notify everybody of the nullification
-		while ( !m_content->m_notifications.empty() ) {
-			Data_ref_base* key = m_content->m_notifications.begin()->first;
+		while (!m_content->m_notifications.empty()) {
+			// get the key of a notification
+			const Data_ref_base *key = m_content->m_notifications.begin()->first;
+			// call this notification, this might invalidate any iterator
 			m_content->m_notifications.begin()->second(*this);
+			// remove the notification we just called
 			m_content->m_notifications.erase(key);
 		}
 		
 		void *result = m_content->m_buffer;
 		m_content->m_buffer = nullptr;
 		
-		unlink<R,W>();
+		unlink();
 		
 		return result;
+	}
+	
+	/** Registers a nullification callback
+	 *
+	 * \param notifier the function to call when this reference becomes null
+	 */
+	void on_nullify(std::function<void(Data_ref)> notifier)
+	{
+		if (!is_null()) m_content->m_notifications[this] = notifier;
+	}
+	
+private:
+	/** Tests if the reference is null.
+	 * 
+	 * Ensures m_content is null if the reference is to fasten deletion of the
+	 * shared Data_content
+	 * 
+	 * \return Whether the reference is null
+	 */
+	bool is_null() const
+	{
+		if (!m_content) return true;
+		if (!m_content->m_buffer) {
+			unlink();
+			return true;
+		}
+		return false;
+	}
+	
+	/** Unlink this reference from its content
+	 *
+	 * Can only be done on a reference with content
+	 */
+	void unlink() const
+	{
+		assert(m_content);
+		m_content->m_notifications.erase(this);
+		if (R || W) --m_content->m_write_locks;
+		if (W) --m_content->m_read_locks;
+		--m_content->m_owners;
+		if (!m_content->m_owners) delete m_content;
+		m_content = nullptr;
+	}
+	
+	/** Tries to link this reference to a content, leaves it null if privileges
+	 *  can not be granted
+	 *
+	 * Can only be done on a null reference
+	 *
+	 * \param content the content to link to
+	 */
+	void link(Data_content *content)
+	{
+		assert(!m_content);
+		if (!content || !content->m_buffer) return;
+		if (R && content->m_read_locks) return;
+		if (W && content->m_write_locks) return;
+		m_content = content;
+		++m_content->m_owners;
+		if (R || W) ++m_content->m_write_locks;
+		if (W) ++m_content->m_read_locks;
 	}
 	
 };

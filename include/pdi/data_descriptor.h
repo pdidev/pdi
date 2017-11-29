@@ -86,7 +86,7 @@ public:
 	 */
 	Data_ref value()
 	{
-		return (m_values.empty() ? Data_ref() : m_values.top()->ref());
+		return (m_values.empty() ? Data_ref() : *m_values.top());
 	}
 	
 	/** Shares some data with PDI. The user code should not modify it before
@@ -102,7 +102,7 @@ public:
 	 * * PDI_IN means PDI can set the buffer content
 	 * * PDI_OUT means the buffer contains data that can be accessed by PDI
 	 */
-	PDI_status_t share(void *data, std::function<void(void*)> freefunc, PDI_inout_t access);
+	PDI_status_t share(void *data, std::function<void(void *)> freefunc, PDI_inout_t access);
 	
 	/** Requests for PDI to access a data buffer.
 	* \param[in,out] buffer a pointer to the accessed data buffer
@@ -135,25 +135,35 @@ private:
 	class Ref_holder
 	{
 	public:
-		virtual Data_ref ref() const = 0;
-		virtual void* null_release() = 0;
-		virtual void* copy_release() = 0;
+		virtual operator Data_ref() const = 0;
+		operator void *()
+		{
+			return static_cast<Data_ref>(*this).get();
+		}
+		void *null_release()
+		{
+			return static_cast<Data_ref>(*this).null_release();
+		}
+		void *copy_release()
+		{
+			return static_cast<Data_ref>(*this).copy_release();
+		}
 		virtual ~Ref_holder() {}
 	};
 	
 	template<bool R, bool W>
 	class Ref_A_holder:
-			public Ref_holder
+		public Ref_holder
 	{
 	public:
-		Ref_A_holder(void *data, std::function<void(void*)> freefunc, const PDI_datatype_t &type, bool readable, bool writable) noexcept:
-		m_t(data, freefunc, type, readable, writable) {}
-		template<bool OR, bool OW>
-		Ref_A_holder(const Data_A_ref<OR,OW> &t) :m_t(t){};
-		Data_ref ref() const override {return m_t;}
-		void* null_release() override {return m_t.null_release();}
-		void* copy_release() override {return m_t.copy_release();}
-		Data_A_ref<R,W> m_t;
+		Ref_A_holder(void *data, std::function<void(void *)> freefunc, const PDI_datatype_t &type, bool readable, bool writable):
+			m_t(data, freefunc, type, readable, writable) {}
+		Ref_A_holder(Data_ref t) : m_t(t) {};
+		operator Data_ref() const override
+		{
+			return m_t;
+		}
+		Data_A_ref<R, W> m_t;
 	};
 	
 	/// References to the values of this descriptor

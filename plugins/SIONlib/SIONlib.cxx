@@ -423,7 +423,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
 
   sion_int64 chunksize = 0;
   for (size_t i = 0; i < event->n_vars; ++i) {
-    const Data_ref& ref = PDI_state.desc(event->vars[i]).value();
+    const Data_ref & ref = PDI_state.desc(event->vars[i]).value();
     if (!ref) {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
@@ -446,7 +446,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   free(file);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
-    const Data_ref& ref = PDI_state.desc(event->vars[i]).value();
+    const Data_ref & ref = PDI_state.desc(event->vars[i]).value();
 
     size_t data_size;
     if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
@@ -698,7 +698,7 @@ static PDI_status_t write_var(Data_r_ref& ref, const SIONlib_var_t *var)
   return PDI_OK;
 }
 
-static PDI_status_t read_var(const Data_ref& ref, const SIONlib_var_t *var)
+static PDI_status_t read_var(const Data_ref & ref, const SIONlib_var_t *var)
 {
   // check that data type is dense
   PDI_status_t status;

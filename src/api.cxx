@@ -170,7 +170,7 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 {
-	Data_descriptor& desc = PDI_state.desc(name);
+	Data_descriptor &desc = PDI_state.desc(name);
 	desc.share(buffer, &free, access);
 	Data_ref ref = desc.value();
 	
