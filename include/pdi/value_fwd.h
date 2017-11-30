@@ -61,28 +61,4 @@ class Value;
 
 typedef PDI::Value PDI_value_t;
 
-/** the possible kind of values
- */
-typedef enum PDI_valkind_e {
-	PDI_VAL_CONST,
-	PDI_VAL_REF,
-	PDI_VAL_EXPR,
-	PDI_VAL_STR
-} PDI_valkind_t;
-
-/** The binary operators that can be used in values
- */
-typedef enum PDI_exprop_e {
-	PDI_OP_PLUS = '+',
-	PDI_OP_MINUS = '-',
-	PDI_OP_MULT = '*',
-	PDI_OP_DIV = '/',
-	PDI_OP_MOD = '%',
-	PDI_OP_EQUAL = '=',
-	PDI_OP_AND = '&',
-	PDI_OP_OR = '|',
-	PDI_OP_GT = '>',
-	PDI_OP_LT = '<'
-} PDI_exprop_t;
-
 #endif // PDI_VALUE_FWD_H__

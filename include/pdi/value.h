@@ -53,6 +53,15 @@ typedef struct PDI_strval_s PDI_strval_t;
 class Value
 {
 public:
+	/** the possible kind of values
+	 */
+	typedef enum PDI_valkind_e {
+		PDI_VAL_CONST,
+		PDI_VAL_REF,
+		PDI_VAL_EXPR,
+		PDI_VAL_STR
+	} PDI_valkind_t;
+
 	/// the kind of value this is
 	PDI_valkind_t kind;
 	
@@ -71,7 +80,7 @@ public:
 		
 	} c;
 	
-	Value(); //TODO: put origin in a non-destructible state
+	Value();
 	
 	/** Builds (i.e. parse) a value from a string
 	 *
@@ -93,7 +102,7 @@ public:
 	 */
 	Value& operator=(const Value& value);
 
-	Value& operator=(Value&& value); //TODO: put origin in a non-destructible state
+	Value& operator=(Value&& value);
 
 	/** Destroys a PDI value
 	 */

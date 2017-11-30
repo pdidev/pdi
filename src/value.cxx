@@ -50,6 +50,22 @@ namespace PDI {
 using std::string;
 using std::vector;
 
+/** The binary operators that can be used in values
+ */
+enum PDI_exprop_t
+{
+	PDI_OP_PLUS = '+',
+	PDI_OP_MINUS = '-',
+	PDI_OP_MULT = '*',
+	PDI_OP_DIV = '/',
+	PDI_OP_MOD = '%',
+	PDI_OP_EQUAL = '=',
+	PDI_OP_AND = '&',
+	PDI_OP_OR = '|',
+	PDI_OP_GT = '>',
+	PDI_OP_LT = '<'
+};
+
 class PDI_refval_t
 {
 public:
@@ -61,32 +77,30 @@ public:
 	
 };
 
-struct PDI_exprval_s {
-	int nb_value;
+struct PDI_exprval_s
+{
+	vector<PDI_value_t> values;
 	
-	PDI_value_t *values;
-	
-	PDI_exprop_t *ops;
+	vector<PDI_exprop_t> ops;
 	
 };
 
 struct PDI_strval_s {
 	/// a char string containing the constant part of the str_value
-	char *str;
+	string str;
 	
-	int nb_values;
+	struct Subvalue {
+		PDI_value_t value;
+		/// position in str where to insert the value
+		int pos;
+	};
 	
-	/// array of nb_values values
-	PDI_value_t *values;
-	
-	/// array of nb_values positions in str where to insert the values
-	int *value_pos;
+	/// array of subvalues
+	vector<Subvalue> values;
 	
 };
 
 PDI_status_t parse_intval(char const **val_str, PDI_value_t *value, int level);
-
-PDI_status_t exprval_destroy(PDI_exprval_t *value);
 
 PDI_status_t parse_id(char const **val_str, int *id_len)
 {
@@ -198,7 +212,7 @@ PDI_status_t parse_term(char const **val_str, PDI_value_t *value)
 	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 	if (!parse_const(&term, &value->c.constval)) {
 		PDI_errhandler(errh);
-		value->kind = PDI_VAL_CONST;
+		value->kind = Value::PDI_VAL_CONST;
 	} else if (*term == '(') {
 		PDI_errhandler(errh);
 		++term;
@@ -209,8 +223,8 @@ PDI_status_t parse_term(char const **val_str, PDI_value_t *value)
 		while (isspace(*term)) ++term;
 	} else {
 		PDI_errhandler(errh);
-		value->c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
-		value->kind = PDI_VAL_REF;
+		value->kind = Value::PDI_VAL_REF;
+		value->c.refval = static_cast<PDI_refval_t*>(operator new (sizeof(PDI_refval_t)));
 		PDI_handle_err(parse_ref(&term, value->c.refval), err1);
 		PDI_errhandler(errh);
 	}
@@ -219,7 +233,7 @@ PDI_status_t parse_term(char const **val_str, PDI_value_t *value)
 	return status;
 	
 err1:
-	free(value->c.refval);
+	operator delete(value->c.refval);
 err0:
 	return status;
 }
@@ -269,13 +283,12 @@ PDI_status_t parse_intval(char const **val_str, PDI_value_t *value, int level)
 	
 	{
 		if (level >= OP_LEVELS) {
-			PDI_handle_err(parse_term(&exprval, value), err0);
+			if (parse_term(&exprval, value) ) return PDI_ERR_IMPL;
 		} else {
-			PDI_handle_err(parse_intval(&exprval, value, level + 1), err0);
+			if (parse_intval(&exprval, value, level + 1)) return PDI_ERR_IMPL;
 		}
 	}
-	PDI_exprval_t *expr;
-	expr = NULL;
+	PDI_exprval_t *expr = NULL;
 	PDI_exprop_t op;
 	
 	PDI_errhandler_t errh;
@@ -283,23 +296,18 @@ PDI_status_t parse_intval(char const **val_str, PDI_value_t *value, int level)
 	while (!parse_op(&exprval, level, &op)) {
 		PDI_errhandler(errh);
 		if (!expr) {
-			expr = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
-			expr->nb_value = 1;
-			expr->values = (PDI_value_t *) malloc(sizeof(PDI_value_t));
-			expr->ops = NULL;
-			expr->values[0] = std::move(*value);
-			value->kind = PDI_VAL_EXPR;
+			expr = new PDI_exprval_t;
+			expr->values.push_back(std::move(*value));
+			value->kind = Value::PDI_VAL_EXPR;
 			value->c.exprval = expr;
 		}
-		++expr->nb_value;
-		expr->ops = (PDI_exprop_t *)realloc(expr->ops, (expr->nb_value - 1) * sizeof(PDI_exprop_t));
-		expr->ops[expr->nb_value - 2] = op;
-		expr->values = (PDI_value_t *) realloc(expr->values, expr->nb_value * sizeof(PDI_value_t));
+		expr->ops.push_back(op);
+		expr->values.push_back(Value());
 		
 		if (level >= OP_LEVELS) {
-			PDI_handle_err(parse_term(&exprval, &expr->values[expr->nb_value - 1]), err1);
+			PDI_handle_err(parse_term(&exprval, &expr->values.back()), err1);
 		} else {
-			PDI_handle_err(parse_intval(&exprval, &expr->values[expr->nb_value - 1], level + 1), err1);
+			PDI_handle_err(parse_intval(&exprval, &expr->values.back(), level + 1), err1);
 		}
 		errh = PDI_errhandler(PDI_NULL_HANDLER);
 	}
@@ -311,9 +319,7 @@ PDI_status_t parse_intval(char const **val_str, PDI_value_t *value, int level)
 	return status;
 	
 err1:
-	exprval_destroy(expr);
-	free(expr);
-err0:
+	delete expr;
 	return status;
 }
 
@@ -322,46 +328,29 @@ PDI_status_t parse_strval(char const **val_str, PDI_value_t *value)
 	PDI_status_t status = PDI_OK;
 	const char *str = *val_str;
 	
-	value->kind = PDI_VAL_STR;
-	value->c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
-	size_t str_size = 0;
-	value->c.strval->str = (char *) malloc(str_size + 1);
-	value->c.strval->str[str_size] = 0;
-	value->c.strval->nb_values = 0;
-	value->c.strval->values = NULL;
-	value->c.strval->value_pos = NULL;
+	value->kind = Value::PDI_VAL_STR;
+	value->c.strval = new PDI_strval_t;
 	
 	while (*str) {
 		int sz = 0;
 		while (str[sz] != '\\' && str[sz] != '$' && str[sz]) ++sz;
-		value->c.strval->str = mstrcat(value->c.strval->str, str_size, str, sz);
-		str_size += sz;
+		value->c.strval->str.append(str, sz);
 		str += sz;
 		switch (*str) {
 		case '\\': {
 			++str;
-			value->c.strval->str = mstrcat(value->c.strval->str, str_size, str, 1);
-			str_size += 1;
+			value->c.strval->str.append(str, 1);
 			str += 1;
 		} break;
 		case '$': {
-			++value->c.strval->nb_values;
-			value->c.strval->values = (PDI_value_t *) realloc(
-			                              value->c.strval->values,
-			                              value->c.strval->nb_values * sizeof(PDI_value_t)
-			                          );
-			value->c.strval->value_pos = (int *) realloc(
-			                                 value->c.strval->value_pos,
-			                                 value->c.strval->nb_values * sizeof(int)
-			                             );
-			value->c.strval->value_pos[value->c.strval->nb_values - 1] = str_size;
+			value->c.strval->values.push_back({Value(), static_cast<int>(value->c.strval->str.size())});
 			switch (str[1]) {
 			case '(': {
 				++str; // parse the term starting with the parenthesis (the intvl)
-				PDI_handle_err(parse_term(&str, &value->c.strval->values[value->c.strval->nb_values - 1]), err0);
+				PDI_handle_err(parse_term(&str, &value->c.strval->values.back().value), err0);
 			} break;
 			default: { // parse the term starting with the dollar (the ref)
-				PDI_handle_err(parse_term(&str, &value->c.strval->values[value->c.strval->nb_values - 1]), err0);
+				PDI_handle_err(parse_term(&str, &value->c.strval->values.back().value), err0);
 			} break;
 			}
 		} break;
@@ -371,14 +360,7 @@ PDI_status_t parse_strval(char const **val_str, PDI_value_t *value)
 	*val_str = str;
 	return status;
 err0:
-	// don't free the last one that's responsible for the error
-	for (int ii = 0; ii < value->c.strval->nb_values - 1; ++ii) {
-		//TODO: free value->c.strval->values[ii]
-	}
-	free(value->c.strval->value_pos);
-	free(value->c.strval->values);
-	free(value->c.strval->str);
-	free(value->c.strval);
+	delete value->c.strval;
 	return status;
 }
 
@@ -455,7 +437,7 @@ PDI_status_t eval_exprval(PDI_exprval_t *val, long *res)
 	PDI_status_t status = PDI_OK;
 	
 	long computed_value; PDI_value_int(&val->values[0], &computed_value);
-	for (int ii = 1; ii < val->nb_value; ++ii) {
+	for (size_t ii = 1; ii < val->values.size(); ++ii) {
 		long operand; PDI_value_int(&val->values[ii], &operand);
 		switch (val->ops[ii - 1]) {
 		case PDI_OP_PLUS: {
@@ -510,14 +492,14 @@ PDI_status_t eval_strval(PDI_strval_t *val, char **res)
 	size_t res_idx = 0;
 	
 	char *build_str = NULL;
-	for (int ii = 0; ii < val->nb_values; ++ii) {
-		size_t blk_sz = val->value_pos[ii] - from_idx;
+	for (size_t ii = 0; ii < val->values.size(); ++ii) {
+		size_t blk_sz = val->values[ii].pos - from_idx;
 		build_str = (char *) realloc(build_str, res_idx + blk_sz + 1);
-		memcpy(build_str + res_idx, val->str + from_idx, blk_sz);
+		memcpy(build_str + res_idx, val->str.c_str() + from_idx, blk_sz);
 		from_idx += blk_sz;
 		res_idx += blk_sz;
 		
-		char *val_str; PDI_handle_err(PDI_value_str(&val->values[ii], &val_str), err1);
+		char *val_str; PDI_handle_err(PDI_value_str(&val->values[ii].value, &val_str), err1);
 		blk_sz = strlen(val_str);
 		build_str = (char *) realloc(build_str, res_idx + blk_sz + 1);
 		memcpy(build_str + res_idx, val_str, blk_sz);
@@ -527,9 +509,9 @@ err1:
 		PDI_handle_err(status, err0);
 	}
 	
-	size_t blk_sz; blk_sz = strlen(val->str + from_idx);
+	size_t blk_sz; blk_sz = val->str.size()-from_idx;
 	build_str = (char *) realloc(build_str, res_idx + blk_sz + 1);
-	memcpy(build_str + res_idx, val->str + from_idx, blk_sz);
+	memcpy(build_str + res_idx, val->str.c_str() + from_idx, blk_sz);
 	from_idx += blk_sz;
 	res_idx += blk_sz;
 	
@@ -546,36 +528,15 @@ err0:
 
 PDI_status_t strval_copy(PDI_strval_t *value, PDI_strval_t *copy)
 {
-	copy->str = strdup(value->str);
-	
-	copy->value_pos = (int *) malloc(sizeof(int));
-	copy->value_pos = value->value_pos;
-	
-	int nb_values = value->nb_values;
-	copy->nb_values = nb_values;
-	copy->values = (PDI_value_t *) malloc(nb_values * sizeof(PDI_value_t));
-	for (int ii = 0; ii < value->nb_values; ii++) {
-		copy->values[ii] = value->values[ii];
-	}
-	
+	copy->str = value->str;
+	copy->values = value->values;
 	return PDI_OK;
 }
 
 PDI_status_t exprval_copy(PDI_exprval_t *value, PDI_exprval_t *copy)
 {
-
-	int nb_value = value->nb_value;
-	copy->nb_value = nb_value;
-	copy->values = (PDI_value_t *) malloc(nb_value * sizeof(PDI_value_t));
-	for (int ii = 0; ii < nb_value; ii++) {
-		copy->values[ii] = value->values[ii];
-	}
-	
-	copy->ops = (PDI_exprop_t *) malloc((nb_value - 1) * sizeof(PDI_exprop_t));
-	for (int ii = 0; ii < nb_value - 1; ii++) {
-		copy->ops[ii] = value->ops[ii];
-	}
-	
+	copy->ops = value->ops;
+	copy->values = value->values;
 	return PDI_OK;
 };
 
@@ -590,41 +551,6 @@ PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
 	
 	return PDI_OK;
 };
-
-PDI_status_t strval_destroy(PDI_strval_t *value)
-{
-	PDI_status_t status = PDI_OK;
-	
-	for (int ii = 0; ii < value->nb_values; ++ii) {
-		value->values[ii].~Value();
-	}
-	free(value->value_pos);
-	free(value->values);
-	free(value->str);
-	
-	return status;
-}
-
-PDI_status_t exprval_destroy(PDI_exprval_t *value)
-{
-	PDI_status_t status = PDI_OK;
-	
-	int ii;
-	for (ii = 0; ii < value->nb_value; ++ii) {
-		value->values[ii].~Value(); // ignore potential errors
-	}
-	free(value->values);
-	free(value->ops);
-	
-	return status;
-}
-
-PDI_status_t refval_destroy(PDI_refval_t *value)
-{
-	value->~PDI_refval_t();
-	
-	return PDI_OK;
-}
 
 // public functions
 
@@ -659,13 +585,13 @@ PDI_status_t PDI_value_int(const PDI_value_t *value, long *res)
 	PDI_status_t status = PDI_OK;
 	
 	switch (value->kind) {
-	case PDI_VAL_CONST: {
+	case Value::PDI_VAL_CONST: {
 		*res = value->c.constval;
 	} break;
-	case PDI_VAL_REF: {
+	case Value::PDI_VAL_REF: {
 		PDI_handle_err(eval_refval(value->c.refval, res), err0);
 	} break;
-	case PDI_VAL_EXPR: {
+	case Value::PDI_VAL_EXPR: {
 		PDI_handle_err(eval_exprval(value->c.exprval, res), err0);
 	} break;
 	default: {
@@ -683,7 +609,7 @@ PDI_status_t PDI_value_str(const PDI_value_t *value, char **res)
 {
 	PDI_status_t status = PDI_OK;
 	
-	if (value->kind == PDI_VAL_STR) {
+	if (value->kind == Value::PDI_VAL_STR) {
 		PDI_handle_err(eval_strval(value->c.strval, res), err0);
 	} else {
 		long intval; PDI_handle_err(PDI_value_int(value, &intval), err0);
@@ -708,15 +634,15 @@ Value::Value(const Value& origin):
 		c.constval = origin.c.constval;
 		break;
 	case PDI_VAL_REF:
-		c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
+		c.refval = static_cast<PDI_refval_t*>(operator new (sizeof(PDI_refval_t)));
 		refval_copy(origin.c.refval, c.refval);
 		break;
 	case PDI_VAL_EXPR:
-		c.exprval = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
+		c.exprval = new PDI_exprval_t;
 		exprval_copy(origin.c.exprval, c.exprval);
 		break;
 	case PDI_VAL_STR:
-		c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
+		c.strval = new PDI_strval_t;
 		strval_copy(origin.c.strval, c.strval);
 		break;
 	}
@@ -737,15 +663,15 @@ Value& Value::operator=(const Value& origin)
 		c.constval = origin.c.constval;
 		break;
 	case PDI_VAL_REF:
-		c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
+		c.refval = static_cast<PDI_refval_t*>(operator new (sizeof(PDI_refval_t)));
 		refval_copy(origin.c.refval, c.refval);
 		break;
 	case PDI_VAL_EXPR:
-		c.exprval = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
+		c.exprval = new PDI_exprval_t;
 		exprval_copy(origin.c.exprval, c.exprval);
 		break;
 	case PDI_VAL_STR:
-		c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
+		c.strval = new PDI_strval_t;
 		strval_copy(origin.c.strval, c.strval);
 		break;
 	}
@@ -757,22 +683,20 @@ Value& Value::operator=(Value&& origin)
 	kind = origin.kind;
 	c = origin.c;
 	origin.kind = PDI_VAL_CONST;
+	return *this;
 }
 
 Value::~Value()
 {
 	switch (kind) {
 	case PDI_VAL_EXPR: {
-		exprval_destroy(c.exprval); // ignore portential errors
-		free(c.exprval);
+		delete c.exprval;
 	} break;
 	case PDI_VAL_REF: {
-		refval_destroy(c.refval);
-		free(c.refval);
+		delete c.refval;
 	} break;
 	case PDI_VAL_STR: {
-		strval_destroy(c.strval);
-		free(c.strval);
+		delete c.strval;
 	} break;
 	case PDI_VAL_CONST: break;
 	}
