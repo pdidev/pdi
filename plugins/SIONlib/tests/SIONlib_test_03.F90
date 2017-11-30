@@ -71,19 +71,19 @@ program test2
   enddo
 
   ! Set size for PDI
-  iptr => ni; call PDI_expose("ni", iptr)
-  iptr => nj; call PDI_expose("nj", iptr)
+  iptr => ni; call PDI_expose("ni", iptr, PDI_OUT)
+  iptr => nj; call PDI_expose("nj", iptr, PDI_OUT)
 
   ! Test that expose works
   call PDI_transaction_begin("write_data");
-  call PDI_expose("reals",reals )     ! output real
-  call PDI_expose("values",values ) ! output integers
+  call PDI_expose("reals",reals , PDI_OUT)     ! output real
+  call PDI_expose("values",values , PDI_OUT) ! output integers
   call PDI_transaction_end();
 
   ! Exchange should also work
   call PDI_transaction_begin("read_data");
-  call PDI_exchange("reals" ,cp_reals)     ! input real
-  call PDI_exchange("values" ,cp_values) ! input integers
+  call PDI_expose("reals" ,cp_reals, PDI_INOUT)     ! input real
+  call PDI_expose("values" ,cp_values, PDI_INOUT) ! input integers
   call PDI_transaction_end();
 
   do j=1,nj

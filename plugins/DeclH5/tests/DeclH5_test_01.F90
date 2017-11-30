@@ -68,19 +68,19 @@ program test2
   call PDI_init(PC_get(conf, ".pdi"), main_comm)
   
   call PDI_transaction_begin("testing")
-  call PDI_expose("meta0",pmeta0)
-  call PDI_expose("meta1",pmeta1)
+  call PDI_expose("meta0",pmeta0, PDI_OUT)
+  call PDI_expose("meta1",pmeta1, PDI_OUT)
   allocate(buf(nbuf)) !! an useless buffer 
-  call PDI_expose("meta2",pmeta2)
+  call PDI_expose("meta2",pmeta2, PDI_OUT)
   buf(:)=0
-  call PDI_expose("meta3",pmeta3)
+  call PDI_expose("meta3",pmeta3, PDI_OUT)
   do i=1,nbuf-1
     buf(i)=buf(i+1)+1 
   enddo
-  call PDI_expose("meta4",pmeta4)
+  call PDI_expose("meta4",pmeta4, PDI_OUT)
   test_var=0
   pt=>test_var
-  call PDI_expose("test_var",pt)
+  call PDI_expose("test_var",pt, PDI_OUT)
   deallocate(buf)
   test_var=1
   call PDI_transaction_end()

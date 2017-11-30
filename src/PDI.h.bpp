@@ -32,7 +32,13 @@ module PDI
   use paraconf
 
   implicit none
-  
+ 
+! Those values are corresponding to the enum PDI_inout_t 
+  integer(C_int), parameter :: PDI_NONE = 0
+  integer(C_int), parameter :: PDI_IN = 1
+  integer(C_int), parameter :: PDI_OUT = 2
+  integer(C_int), parameter :: PDI_INOUT = 3
+
   interface
   
     function PDI_init_f_C(treeconf, world) bind(C, name="PDI_init_f")
@@ -81,26 +87,13 @@ module PDI
       type(C_ptr), value :: data
     endfunction PDI_export_C
     
-    function PDI_expose_C(name, data) bind(C, name="PDI_expose")
+    function PDI_expose_C(name, data, accessf) bind(C, name="PDI_expose")
       use ISO_C_binding
       integer(C_int) :: PDI_expose_C
       type(C_ptr), value :: name
       type(C_ptr), value :: data
+      integer(C_int), value :: accessf
     endfunction PDI_expose_C
-    
-    function PDI_exchange_C(name, data) bind(C, name="PDI_exchange")
-      use ISO_C_binding
-      integer(C_int) :: PDI_exchange_C
-      type(C_ptr), value :: name
-      type(C_ptr), value :: data
-    endfunction PDI_exchange_C
-    
-    function PDI_import_C(name, data) bind(C, name="PDI_import")
-      use ISO_C_binding
-      integer(C_int) :: PDI_import_C
-      type(C_ptr), value :: name
-      type(C_ptr), value :: data
-    endfunction PDI_import_C
     
     function PDI_transaction_begin_C( name ) bind(C, name="PDI_transaction_begin")
       use ISO_C_binding
@@ -144,25 +137,6 @@ module PDI
 !$SH done
   endinterface PDI_expose
 
-
-
-   interface PDI_exchange
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
-    module procedure PDI_exchange_${T}_${D}D
-!$SH   done
-!$SH done
-  endinterface PDI_exchange
- 
-
-  
-  interface PDI_import
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
-    module procedure PDI_import_${T}_${D}D
-!$SH   done
-!$SH done
-  endinterface PDI_import
 
 
   contains
@@ -404,7 +378,7 @@ module PDI
     C_name(len_trim(name)+1) = C_null_char
 
     tmperr = int(PDI_expose_C(C_loc(C_name), &
-        C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')')),
+        C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')')), &
         accessf))
     
     if(present(err)) then

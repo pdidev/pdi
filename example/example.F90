@@ -67,20 +67,20 @@ program PDI_example_f90
   
   ! passing target argument to pointer dummy argument is F2008, not well supported
   iaptr => cart_coord
-  call PDI_expose("coord", iaptr)
+  call PDI_expose("coord", iaptr, PDI_OUT)
   iptr => width
-  call PDI_expose("width", iptr)
+  call PDI_expose("width", iptr, PDI_OUT)
   iptr => height
-  call PDI_expose("height", iptr)
+  call PDI_expose("height", iptr, PDI_OUT)
   iptr => pwidth
-  call PDI_expose("pwidth", iptr)
+  call PDI_expose("pwidth", iptr, PDI_OUT)
   iptr => pheight
-  call PDI_expose("pheight", iptr)
+  call PDI_expose("pheight", iptr, PDI_OUT)
 
   allocate( cur(width, height) )
   allocate( next(width, height) )
 
-  call PDI_import("main_field", cur, status)
+  call PDI_expose("main_field", cur, PDI_IN, status)
   if ( status>0 ) then
     call init(cur, width, height, cart_coord(1), cart_coord(2))
   endif
@@ -93,8 +93,8 @@ program PDI_example_f90
   do while( keep_running )
     call PDI_transaction_begin("newiter")
     iptr => ii
-    call PDI_expose("iter", iptr)
-    call PDI_expose("main_field", cur)
+    call PDI_expose("iter", iptr, PDI_OUT)
+    call PDI_expose("main_field", cur, PDI_OUT)
     call PDI_transaction_end()
     
     call iter(cur, next)
@@ -115,8 +115,8 @@ program PDI_example_f90
   
   call PDI_event("finalization")
   iptr => ii
-  call PDI_expose("iter", iptr)
-  call PDI_expose("main_field", cur)
+  call PDI_expose("iter", iptr, PDI_OUT)
+  call PDI_expose("main_field", cur, PDI_OUT)
 
   call PDI_finalize()
 

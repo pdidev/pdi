@@ -86,17 +86,17 @@ program test2
   njt = nj*2 
 
   ! Set size for PDI
-  iptr => nig; call PDI_expose("nig", iptr)
-  iptr => njg; call PDI_expose("njg", iptr)
+  iptr => nig; call PDI_expose("nig", iptr, PDI_OUT)
+  iptr => njg; call PDI_expose("njg", iptr, PDI_OUT)
 
-  iptr => ni; call PDI_expose("ni", iptr)
-  iptr => nj; call PDI_expose("nj", iptr)
+  iptr => ni; call PDI_expose("ni", iptr, PDI_OUT)
+  iptr => nj; call PDI_expose("nj", iptr, PDI_OUT)
 
-  iptr => nit ; call PDI_expose("nit", iptr)
-  iptr => njt ; call PDI_expose("njt", iptr)
+  iptr => nit ; call PDI_expose("nit", iptr, PDI_OUT)
+  iptr => njt ; call PDI_expose("njt", iptr, PDI_OUT)
 
-  iptr => istart ; call PDI_expose("istart", iptr)
-  iptr => jstart ; call PDI_expose("jstart", iptr)
+  iptr => istart ; call PDI_expose("istart", iptr, PDI_OUT)
+  iptr => jstart ; call PDI_expose("jstart", iptr, PDI_OUT)
 
   ! Compute ghost start and end
   gej = nj + njg
@@ -150,19 +150,19 @@ program test2
   enddo
   
   input=0
-  iptr => rank ; call PDI_expose("rank", iptr)
-  iptr => input; call PDI_expose("input", iptr)
+  iptr => rank ; call PDI_expose("rank", iptr, PDI_OUT)
+  iptr => input; call PDI_expose("input", iptr, PDI_OUT)
   
   ! Test that export/exchange works
-  iptr => input; call PDI_expose("input", iptr)  ! update metadata => HDF5 now export only
-  call PDI_expose("reals",reals )     ! output real
-  call PDI_exchange("values",values ) ! output integers
+  iptr => input; call PDI_expose("input", iptr, PDI_OUT)  ! update metadata => HDF5 now export only
+  call PDI_expose("reals",reals , PDI_OUT)     ! output real
+  call PDI_expose("values",values , PDI_INOUT) ! output integers
   
   input=1
   ! Import should also work
-  iptr => input ; call PDI_expose("input", iptr) ! update metadata => HDF5 now import only
-  call PDI_import("reals" ,cp_reals)     ! input real 
-  call PDI_exchange("values" ,cp_values) ! input integers
+  iptr => input ; call PDI_expose("input", iptr, PDI_OUT) ! update metadata => HDF5 now import only
+  call PDI_expose("reals" ,cp_reals, PDI_IN)     ! input real 
+  call PDI_expose("values" ,cp_values, PDI_INOUT) ! input integers
   
   do j=1,nj ! Should be the same inside 
     do i=1,ni

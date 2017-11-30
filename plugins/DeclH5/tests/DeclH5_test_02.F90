@@ -80,24 +80,24 @@ program test2
   enddo
 
   input=0
-  iptr => rank ; call PDI_expose("rank", iptr)
-  iptr => input; call PDI_expose("input", iptr)
+  iptr => rank ; call PDI_expose("rank", iptr, PDI_OUT)
+  iptr => input; call PDI_expose("input", iptr, PDI_OUT)
   ! Set size for PDI
-  iptr => nig; call PDI_expose("ni_ghost", iptr)
-  iptr => njg; call PDI_expose("nj_ghost", iptr)
-  iptr => ni; call PDI_expose("ni", iptr)
-  iptr => nj; call PDI_expose("nj", iptr)
+  iptr => nig; call PDI_expose("ni_ghost", iptr, PDI_OUT)
+  iptr => njg; call PDI_expose("nj_ghost", iptr, PDI_OUT)
+  iptr => ni; call PDI_expose("ni", iptr, PDI_OUT)
+  iptr => nj; call PDI_expose("nj", iptr, PDI_OUT)
   
   ! Test that export/exchange works
-  iptr => input; call PDI_expose("input", iptr)  ! update metadata => HDF5 now export only
-  call PDI_expose("reals",reals )     ! output real
-  call PDI_exchange("values",values ) ! output integers
+  iptr => input; call PDI_expose("input", iptr, PDI_OUT)  ! update metadata => HDF5 now export only
+  call PDI_expose("reals",reals , PDI_OUT)     ! output real
+  call PDI_expose("values",values , PDI_INOUT) ! output integers
   
   input=1
   ! Import should also work
-  iptr => input ; call PDI_expose("input", iptr) ! update metadata => HDF5 now import only
-  call PDI_import("reals" ,cp_reals)     ! input real 
-  call PDI_exchange("values" ,cp_values) ! input integers
+  iptr => input ; call PDI_expose("input", iptr, PDI_OUT) ! update metadata => HDF5 now import only
+  call PDI_expose("reals" ,cp_reals, PDI_IN)     ! input real 
+  call PDI_expose("values" ,cp_values, PDI_INOUT) ! input integers
   
   if(.not.(have_ghost)) then
     ! So the data should be the same everywhere
