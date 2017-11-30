@@ -186,24 +186,13 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err0);
 			res_type.sizes[ri] = Value{expr};
 			free(expr);
-			continue;
-			
-err1a:
-			free(expr); // in case of error
-			for (int jj = 0; jj < ii; ++jj) {
-				ri = ridx(jj, order, res_type.ndims);
-				PDI_value_destroy(&res_type.sizes[ri]);
-			}
-			PDI_handle_err(status, err0);
 		}
 	} else { // else single dim array
 		res_type.ndims = 1;
 		res_type.sizes = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
 		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err0);
 		*res_type.sizes = Value{expr};
-err1b:
 		free(expr);
-		PDI_handle_err(status, err0);
 	}
 	
 	PC_status_t invalid_subsizes;
@@ -226,14 +215,6 @@ err1b:
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err1);
 			res_type.subsizes[ri] = Value{expr};
 			free(expr);
-			continue;
-err2a:
-			free(expr);
-			for (int jj = 0; jj < ii; ++jj) {
-				ri = ridx(jj, order, res_type.ndims);
-				PDI_value_destroy(&res_type.sizes[ri]);
-			}
-			PDI_handle_err(status, err1);
 		}
 	} else { // no subsize, default to full size
 		res_type.subsizes = res_type.sizes;
@@ -259,16 +240,6 @@ err2a:
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err2);
 			res_type.starts[ri] = Value{expr};
 			free(expr);
-			continue;
-err3a: {
-				// error block
-				free(expr); // freeing all memory
-				for (int jj = 0; jj < ii; ++jj) {
-					ri = ridx(jj, order, res_type.ndims);
-					PDI_value_destroy(&res_type.sizes[ri]);
-				}
-				PDI_handle_err(status, err2);
-			}
 		}
 	} else { // no start, start at 0 everywhere
 		res_type.starts = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
@@ -288,19 +259,19 @@ err3a: {
 	
 err3: { // handling errors after "starts" have been allocated
 		for (int jj = 0; jj < res_type.ndims ; ++jj)
-			PDI_value_destroy(&res_type.subsizes[jj]);
+			res_type.subsizes[jj].~Value();
 		free(res_type.starts);
 	}
 err2: { // --------------------  "subsizes"  -------------------
 		if (res_type.subsizes != res_type.sizes) { // subsizes exist
 			for (int jj = 0; jj < res_type.ndims ; ++jj)
-				PDI_value_destroy(&res_type.subsizes[jj]);
+				res_type.subsizes[jj].~Value();
 			free(res_type.subsizes);
 		}
 	}
 err1: { // --------------------  "sizes"  -----------------------
 		for (int jj = 0; jj < res_type.ndims ; ++jj)
-			PDI_value_destroy(&res_type.sizes[jj]);
+			res_type.sizes[jj].~Value();
 		free(res_type.sizes);
 	}
 err0:
@@ -721,7 +692,7 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 	
 	array->sizes = (PDI_value_t *) malloc(ndims * sizeof(PDI_value_t));
 	for (int ii = 0; ii < ndims; ++ii) {
-		PDI_handle_err(PDI_value_copy(&(sizes[ii]), &(array->sizes[ii])), err0);
+		array->sizes[ii] = sizes[ii];
 	}
 	
 	if (sizes == subsizes) {
@@ -729,7 +700,7 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 	} else {
 		array->subsizes = (PDI_value_t *)malloc(ndims * sizeof(PDI_value_t));
 		for (int ii = 0; ii < ndims; ++ii) {
-			PDI_handle_err(PDI_value_copy(&(subsizes[ii]), &(array->subsizes[ii])), err1);
+			array->subsizes[ii] = subsizes[ii];
 		}
 	}
 	
@@ -740,7 +711,7 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 		}
 	} else {
 		for (int ii = 0; ii < ndims; ++ii) {
-			PDI_handle_err(PDI_value_copy(&(starts[ii]), &(array->starts[ii])), err2);
+			array->starts[ii] = starts[ii];
 		}
 	}
 	
@@ -752,16 +723,13 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 	return status;
 	
 err3:
-	for (int ii = 0; ii < ndims; ++ii) PDI_value_destroy(&array->starts[ii]);
-err2:
+	for (int ii = 0; ii < ndims; ++ii) array->starts[ii].~Value();
 	//TODO: free already built starts
 	free(array->starts);
-	for (int ii = 0; ii < ndims; ++ii) PDI_value_destroy(&array->subsizes[ii]);
-err1:
+	for (int ii = 0; ii < ndims; ++ii) array->subsizes[ii].~Value();
 	//TODO: free already built subsizes
 	if (array->subsizes != array->sizes) free(array->subsizes);
-	for (int ii = 0; ii < ndims; ++ii) PDI_value_destroy(&array->sizes[ii]);
-err0:
+	for (int ii = 0; ii < ndims; ++ii) array->sizes[ii].~Value();
 	//TODO: free already built sizes
 	free(array->sizes);
 	free(array);

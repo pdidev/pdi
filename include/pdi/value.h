@@ -46,7 +46,7 @@ class PDI_refval_t;
  */
 typedef struct PDI_exprval_s PDI_exprval_t;
 
-/** A value in case this is a string (potentially with dolloar refs inside)
+/** A value in case this is a string (potentially with dollar refs inside)
  */
 typedef struct PDI_strval_s PDI_strval_t;
 
@@ -71,11 +71,33 @@ public:
 		
 	} c;
 	
+	Value(); //TODO: put origin in a non-destructible state
+	
 	/** Builds (i.e. parse) a value from a string
 	 *
 	 * \param[in] val_str the string to parse
 	 */
-	explicit Value(const char *val_str="");
+	explicit Value(const char *val_str);
+	
+	/** Copies a value
+	 *
+	 * \param[in] value the value to copy
+	 */
+	Value(const Value& value);
+	
+	Value(Value&& value);
+	
+	/** Copies a value
+	 *
+	 * \param[in] value the value to copy
+	 */
+	Value& operator=(const Value& value);
+
+	Value& operator=(Value&& value); //TODO: put origin in a non-destructible state
+
+	/** Destroys a PDI value
+	 */
+	~Value();
 	
 };
 
@@ -94,21 +116,6 @@ PDI_status_t PDI_EXPORT PDI_value_int(const PDI_value_t *value, long *res);
  * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_value_str(const PDI_value_t *value, char **res);
-
-/** Destroys a PDI value
- *
- * \param[in] value the value to destroy
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_value_destroy(PDI_value_t *value);
-
-/** Copies a PDI value
- *
- * \param[in] value the value to copy
- * \param[in] copy copying the content of value in an existing PDI_value_t
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_value_copy(const PDI_value_t *value, PDI_value_t *copy);
 
 } // namespace PDI
 

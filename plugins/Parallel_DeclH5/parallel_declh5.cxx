@@ -303,17 +303,17 @@ PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *world)
 PDI_status_t PDI_parallel_declh5_finalize()
 {
 	for ( int ii=0; ii<nb_outputs; ++ii ) {
-		PDI_value_destroy(&outputs[ii].h5file);
-		PDI_value_destroy(&outputs[ii].h5var);
-		PDI_value_destroy(&outputs[ii].select);
+		outputs[ii].h5file.~Value();
+		outputs[ii].h5var.~Value();
+		outputs[ii].select.~Value();
 		free(outputs[ii].name);
 	}
 	free(outputs);
 	
 	for ( int ii=0; ii<nb_inputs; ++ii ) {
-		PDI_value_destroy(&inputs[ii].h5file);
-		PDI_value_destroy(&inputs[ii].h5var);
-		PDI_value_destroy(&inputs[ii].select);
+		inputs[ii].h5file.~Value();
+		inputs[ii].h5var.~Value();
+		inputs[ii].select.~Value();
 		free(inputs[ii].name);
 	}
 	free(inputs);

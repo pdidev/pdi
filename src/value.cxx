@@ -152,7 +152,7 @@ PDI_status_t parse_ref(char const **val_str, PDI_refval_t *value)
 	while (*ref == '[') {
 		++ref;
 		while (isspace(*ref)) ++ref;
-		value->m_idx.push_back({});
+		value->m_idx.push_back(Value());
 		PDI_handle_err(parse_intval(&ref, &value->m_idx.back(), 1), err0);
 		if (*ref != ']')  {
 			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Expected ']', found %c", *ref), err0);
@@ -287,7 +287,7 @@ PDI_status_t parse_intval(char const **val_str, PDI_value_t *value, int level)
 			expr->nb_value = 1;
 			expr->values = (PDI_value_t *) malloc(sizeof(PDI_value_t));
 			expr->ops = NULL;
-			expr->values[0] = *value;
+			expr->values[0] = std::move(*value);
 			value->kind = PDI_VAL_EXPR;
 			value->c.exprval = expr;
 		}
@@ -555,7 +555,7 @@ PDI_status_t strval_copy(PDI_strval_t *value, PDI_strval_t *copy)
 	copy->nb_values = nb_values;
 	copy->values = (PDI_value_t *) malloc(nb_values * sizeof(PDI_value_t));
 	for (int ii = 0; ii < value->nb_values; ii++) {
-		PDI_value_copy(&value->values[ii], &(copy->values[ii]));
+		copy->values[ii] = value->values[ii];
 	}
 	
 	return PDI_OK;
@@ -568,7 +568,7 @@ PDI_status_t exprval_copy(PDI_exprval_t *value, PDI_exprval_t *copy)
 	copy->nb_value = nb_value;
 	copy->values = (PDI_value_t *) malloc(nb_value * sizeof(PDI_value_t));
 	for (int ii = 0; ii < nb_value; ii++) {
-		PDI_value_copy(&value->values[ii], &(copy->values[ii]));
+		copy->values[ii] = value->values[ii];
 	}
 	
 	copy->ops = (PDI_exprop_t *) malloc((nb_value - 1) * sizeof(PDI_exprop_t));
@@ -584,8 +584,8 @@ PDI_status_t refval_copy(PDI_refval_t *value, PDI_refval_t *copy)
 	new (copy) PDI_refval_t{value->m_referenced, {}};
 	
 	for (auto &&idx : value->m_idx) {
-		copy->m_idx.push_back({});
-		PDI_value_copy(&value->m_idx.back(), &(idx));
+		copy->m_idx.push_back(Value());
+		idx = value->m_idx.back();
 	}
 	
 	return PDI_OK;
@@ -596,7 +596,7 @@ PDI_status_t strval_destroy(PDI_strval_t *value)
 	PDI_status_t status = PDI_OK;
 	
 	for (int ii = 0; ii < value->nb_values; ++ii) {
-		PDI_value_destroy(&value->values[ii]);
+		value->values[ii].~Value();
 	}
 	free(value->value_pos);
 	free(value->values);
@@ -611,7 +611,7 @@ PDI_status_t exprval_destroy(PDI_exprval_t *value)
 	
 	int ii;
 	for (ii = 0; ii < value->nb_value; ++ii) {
-		PDI_value_destroy(&value->values[ii]); // ignore potential errors
+		value->values[ii].~Value(); // ignore potential errors
 	}
 	free(value->values);
 	free(value->ops);
@@ -621,10 +621,6 @@ PDI_status_t exprval_destroy(PDI_exprval_t *value)
 
 PDI_status_t refval_destroy(PDI_refval_t *value)
 {
-	for (auto &&idx : value->m_idx) {
-		PDI_value_destroy(&idx); // ignore potential errors
-	}
-	
 	value->~PDI_refval_t();
 	
 	return PDI_OK;
@@ -648,37 +644,14 @@ Value::Value(const char *val_str)
 		/// Goes to '\0' if the remaining characters are spaces
 		while (isspace(*parse_val)) ++parse_val;
 	}
-	/// In case they are not spaces (something remains), we do not have an intval
-	if (!err && *parse_val) PDI_value_destroy(this);
+	// In case they are not spaces (something remains), we do not have an intval
+	if (!err && *parse_val) this->~Value();
 	
 	/// Try to parse as a strval
 	if (err || *parse_val) {
 		parse_val = val_str;
 		parse_strval(&parse_val, this);
 	}
-}
-
-PDI_status_t PDI_value_destroy(PDI_value_t *value)
-{
-	PDI_status_t status = PDI_OK;
-	
-	switch (value->kind) {
-	case PDI_VAL_EXPR: {
-		exprval_destroy(value->c.exprval); // ignore portential errors
-		free(value->c.exprval);
-	} break;
-	case PDI_VAL_REF: {
-		refval_destroy(value->c.refval);
-		free(value->c.refval);
-	} break;
-	case PDI_VAL_STR: {
-		strval_destroy(value->c.strval);
-		free(value->c.strval);
-	} break;
-	case PDI_VAL_CONST: break;
-	}
-	
-	return status;
 }
 
 PDI_status_t PDI_value_int(const PDI_value_t *value, long *res)
@@ -721,36 +694,88 @@ err0:
 	return status;
 }
 
-PDI_status_t PDI_value_copy(const PDI_value_t *origin, PDI_value_t *copy)
+Value::Value():
+		kind(PDI_VAL_CONST)
 {
-	PDI_status_t status = PDI_OK;
-	copy->kind = origin->kind;
-	switch (origin->kind) {
-	
+	c.constval = 0;
+}
+
+Value::Value(const Value& origin):
+		kind(origin.kind)
+{
+	switch (origin.kind) {
 	case PDI_VAL_CONST:
-		copy->c.constval = origin->c.constval;
+		c.constval = origin.c.constval;
 		break;
-		
 	case PDI_VAL_REF:
-		copy->c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
-		status = refval_copy(origin->c.refval, copy->c.refval);
+		c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
+		refval_copy(origin.c.refval, c.refval);
 		break;
-		
 	case PDI_VAL_EXPR:
-		copy->c.exprval = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
-		status = exprval_copy(origin->c.exprval, copy->c.exprval);
+		c.exprval = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
+		exprval_copy(origin.c.exprval, c.exprval);
 		break;
-		
 	case PDI_VAL_STR:
-		copy->c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
-		status = strval_copy(origin->c.strval, copy->c.strval);
+		c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
+		strval_copy(origin.c.strval, c.strval);
 		break;
-		
-	default:
-		return PDI_ERR_IMPL;
 	}
-	
-	return status;
+}
+
+Value::Value(Value&& origin):
+		kind(origin.kind),
+		c(origin.c)
+{
+	origin.kind = PDI_VAL_CONST;
+}
+
+Value& Value::operator=(const Value& origin)
+{
+	kind = origin.kind;
+	switch (origin.kind) {
+	case PDI_VAL_CONST:
+		c.constval = origin.c.constval;
+		break;
+	case PDI_VAL_REF:
+		c.refval = (PDI_refval_t *) malloc(sizeof(PDI_refval_t));
+		refval_copy(origin.c.refval, c.refval);
+		break;
+	case PDI_VAL_EXPR:
+		c.exprval = (PDI_exprval_t *) malloc(sizeof(PDI_exprval_t));
+		exprval_copy(origin.c.exprval, c.exprval);
+		break;
+	case PDI_VAL_STR:
+		c.strval = (PDI_strval_t *) malloc(sizeof(PDI_strval_t));
+		strval_copy(origin.c.strval, c.strval);
+		break;
+	}
+	return *this;
+}
+
+Value& Value::operator=(Value&& origin)
+{
+	kind = origin.kind;
+	c = origin.c;
+	origin.kind = PDI_VAL_CONST;
+}
+
+Value::~Value()
+{
+	switch (kind) {
+	case PDI_VAL_EXPR: {
+		exprval_destroy(c.exprval); // ignore portential errors
+		free(c.exprval);
+	} break;
+	case PDI_VAL_REF: {
+		refval_destroy(c.refval);
+		free(c.refval);
+	} break;
+	case PDI_VAL_STR: {
+		strval_destroy(c.strval);
+		free(c.strval);
+	} break;
+	case PDI_VAL_CONST: break;
+	}
 }
 
 } // namespace PDI

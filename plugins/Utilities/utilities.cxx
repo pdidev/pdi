@@ -195,11 +195,6 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 /// Finalize and free allocated data
 PDI_status_t PDI_utilities_finalize()
 {
-	for ( auto&& one_task: tasks) {
-		PDI_value_destroy(&one_task.in);
-		PDI_value_destroy(&one_task.out);
-		PDI_value_destroy(&one_task.select);
-	}
 	tasks.clear();
 	return PDI_OK;
 }
