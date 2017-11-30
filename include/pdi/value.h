@@ -71,15 +71,13 @@ public:
 		
 	} c;
 	
+	/** Builds (i.e. parse) a value from a string
+	 *
+	 * \param[in] val_str the string to parse
+	 */
+	explicit Value(const char *val_str="");
+	
 };
-
-/** Builds (i.e. parse) a value from a string
- *
- * \param[in] val_str the string to parse
- * \param[out] value a pointer to the parsed value
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_value_parse(const char *val_str, PDI_value_t *value);
 
 /** Evaluates a value as an integer
  *

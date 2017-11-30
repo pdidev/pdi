@@ -53,6 +53,7 @@ using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
 using PDI::Data_descriptor;
+using PDI::Value;
 using std::cerr;
 using std::endl;
 using std::set;
@@ -141,7 +142,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		// data 'in'
 		char *in = NULL;
 		if( !PC_string(PC_get(treetmp, ".in"), &in) ){
-			PDI_value_parse(in, &tasks[ii].in);
+			tasks[ii].in = Value{in};
 		} else {
 			fprintf(stderr, "[PDI/Utilities] Error: no value or invalid value for 'in'.\n");
 			return PDI_ERR_CONFIG;
@@ -150,7 +151,7 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		// data 'out'
 		char* out = NULL;
 		if( !PC_string(PC_get(treetmp, ".out"), &out) ){
-			PDI_value_parse(out, &tasks[ii].out);
+			tasks[ii].out = Value{out};
 		} else {
 			fprintf(stderr, "[PDI/Utilities] Error: no value or invalid value for 'out'.\n");
 			return PDI_ERR_CONFIG;
@@ -161,11 +162,11 @@ PDI_status_t PDI_utilities_init(PC_tree_t conf, MPI_Comm *world)
 		PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 		char* select;
 		if ( !PC_string(PC_get(treetmp, ".select"), &select) ) {
-			PDI_value_parse(select, &tasks[ii].select);
+			tasks[ii].select = Value{select};
 			free(select);
 		} else {
 			// else apply default value of 1 (always true)
-			PDI_value_parse("1", &tasks[ii].select);
+			tasks[ii].select = Value{"1"};
 		}
 		PC_errhandler(errh);
 		

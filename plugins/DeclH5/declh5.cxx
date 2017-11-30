@@ -42,6 +42,7 @@ PC_tree_t my_conf;
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
+using PDI::Value;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -106,7 +107,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		if( PC_string(PC_get(treetmp, ".var"), &var_strv)){ // no variable name or not readable
 			var_strv = strdup((*hdf5data)[ii].name); // the node label is used (as a default value)
 		}
-		PDI_value_parse(var_strv, &(*hdf5data)[ii].h5var);
+		(*hdf5data)[ii].h5var = Value{var_strv};
 		
 		// set the HDF5 filename (i.e. where do we write the data)
 		char *file_strv = NULL;
@@ -121,7 +122,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 				return PDI_ERR_CONFIG;
 			}
 		}
-		PDI_value_parse(file_strv, &(*hdf5data)[ii].h5file);
+		(*hdf5data)[ii].h5file = Value{file_strv};
 		free(file_strv);
 		
 		// sampling or frequency (i.e. when do we expose)
@@ -137,7 +138,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 				return PDI_ERR_CONFIG;
 			}
 		}
-		PDI_value_parse(select_strv, &(*hdf5data)[ii].select);
+		(*hdf5data)[ii].select = Value{select_strv};
 		free(select_strv);
 		
 		free(var_strv);

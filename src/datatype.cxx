@@ -47,6 +47,8 @@
 #define EXPR_BUF_SIZE 256
 
 
+using PDI::Value;
+
 /// ordering of array
 typedef enum PDI_order_e {
 	PDI_ORDER_C,
@@ -182,7 +184,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err0);
-			PDI_handle_err(PDI_value_parse(expr, &res_type.sizes[ri]), err1a);
+			res_type.sizes[ri] = Value{expr};
 			free(expr);
 			continue;
 			
@@ -198,7 +200,7 @@ err1a:
 		res_type.ndims = 1;
 		res_type.sizes = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
 		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err0);
-		PDI_handle_err(PDI_value_parse(expr, res_type.sizes), err1b);
+		*res_type.sizes = Value{expr};
 err1b:
 		free(expr);
 		PDI_handle_err(status, err0);
@@ -222,7 +224,7 @@ err1b:
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err1);
-			PDI_handle_err(PDI_value_parse(expr, &res_type.subsizes[ri]), err2a);
+			res_type.subsizes[ri] = Value{expr};
 			free(expr);
 			continue;
 err2a:
@@ -255,7 +257,7 @@ err2a:
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err2);
-			PDI_handle_err(PDI_value_parse(expr, &res_type.starts[ri]), err3a);
+			res_type.starts[ri] = Value{expr};
 			free(expr);
 			continue;
 err3a: {
@@ -271,7 +273,7 @@ err3a: {
 	} else { // no start, start at 0 everywhere
 		res_type.starts = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
-			PDI_handle_err(PDI_value_parse("0", &res_type.starts[ii]), err2);
+			res_type.starts[ii] = Value{"0"};
 		}
 	}
 	
@@ -734,8 +736,7 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 	array->starts = (PDI_value_t *)malloc(ndims * sizeof(PDI_value_t));
 	if (!starts) {
 		for (int ii = 0; ii < ndims; ++ii) {
-			const char *zero = "0";
-			PDI_handle_err(PDI_value_parse(zero, &(array->starts[ii])), err2);
+			array->starts[ii] = Value{"0"};
 		}
 	} else {
 		for (int ii = 0; ii < ndims; ++ii) {

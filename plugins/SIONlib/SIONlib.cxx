@@ -52,6 +52,7 @@
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
+using PDI::Value;
 using std::string;
 
 typedef struct
@@ -110,10 +111,9 @@ static PDI_status_t parse_property(PC_tree_t conf, const char *entry_name, const
       return PDI_ERR_CONFIG;
     }
   }
-  PDI_status_t status = PDI_value_parse(strv, property);
+  *property = Value{strv};
   free(strv);
-  if (status) fprintf(stderr, "[PDI/SIONlib] Could not parse property '%s' for entry '%s'.\n", property_name, entry_name);
-  return status;
+  return PDI_OK;
 }
 
 static PDI_status_t parse_var(PC_tree_t entry, SIONlib_var_t *var)

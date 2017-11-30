@@ -632,10 +632,8 @@ PDI_status_t refval_destroy(PDI_refval_t *value)
 
 // public functions
 
-PDI_status_t PDI_value_parse(const char *val_str, PDI_value_t *value)
+Value::Value(const char *val_str)
 {
-	PDI_status_t status = PDI_OK;
-	
 	PDI_status_t err = PDI_ERR_VALUE;
 	const char *parse_val = val_str;
 	
@@ -645,21 +643,19 @@ PDI_status_t PDI_value_parse(const char *val_str, PDI_value_t *value)
 		while (isspace(*parse_val)) ++parse_val;
 		PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
 		/// Try to parse as if it was an intval (const integer or expression)
-		err = parse_intval(&parse_val, value, 1);
+		err = parse_intval(&parse_val, this, 1);
 		PDI_errhandler(errh);
 		/// Goes to '\0' if the remaining characters are spaces
 		while (isspace(*parse_val)) ++parse_val;
 	}
 	/// In case they are not spaces (something remains), we do not have an intval
-	if (!err && *parse_val) PDI_value_destroy(value);
+	if (!err && *parse_val) PDI_value_destroy(this);
 	
 	/// Try to parse as a strval
 	if (err || *parse_val) {
 		parse_val = val_str;
-		status = parse_strval(&parse_val, value);
+		parse_strval(&parse_val, this);
 	}
-	
-	return status;
 }
 
 PDI_status_t PDI_value_destroy(PDI_value_t *value)
