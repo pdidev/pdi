@@ -22,7 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
 /**
 * \file value.h
 * \brief Structures and functions to parse expression
@@ -37,6 +36,8 @@
 #include <pdi/value_fwd.h>
 #include <pdi/state_fwd.h>
 
+namespace PDI {
+
 /** A value in case this is a reference to another value
  */
 class PDI_refval_t;
@@ -49,7 +50,9 @@ typedef struct PDI_exprval_s PDI_exprval_t;
  */
 typedef struct PDI_strval_s PDI_strval_t;
 
-struct PDI_value_s {
+class Value
+{
+public:
 	/// the kind of value this is
 	PDI_valkind_t kind;
 	
@@ -109,6 +112,6 @@ PDI_status_t PDI_EXPORT PDI_value_destroy(PDI_value_t *value);
  */
 PDI_status_t PDI_EXPORT PDI_value_copy(const PDI_value_t *value, PDI_value_t *copy);
 
-
+} // namespace PDI
 
 #endif // PDI_VALUE_H__

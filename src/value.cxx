@@ -22,7 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
 /**
  * \file value.c
  * \brief Parsing functions
@@ -46,13 +45,10 @@
 
 #include "pdi/value.h"
 
-using PDI::Data_descriptor;
-using PDI::Data_ref;
-using PDI::Data_r_ref;
-using PDI::Data_w_ref;
+namespace PDI {
+
 using std::string;
 using std::vector;
-
 
 class PDI_refval_t
 {
@@ -761,3 +757,4 @@ PDI_status_t PDI_value_copy(const PDI_value_t *origin, PDI_value_t *copy)
 	return status;
 }
 
+} // namespace PDI
