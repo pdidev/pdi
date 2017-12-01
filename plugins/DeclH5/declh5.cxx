@@ -46,6 +46,7 @@ using PDI::Value;
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::string;
 
 typedef struct hdf5pp_var_s
 {
@@ -233,28 +234,28 @@ hid_t h5type(PDI_scalar_type_t ptype) {
 	return H5T_NO_CLASS; //TODO: better handle the error
 }
 
-int is_h5_file(char *filename)
+int is_h5_file(const string& filename)
 {
 	H5E_auto2_t old_func;
 	void *old_data;
 	H5Eget_auto2(H5E_DEFAULT, &old_func, &old_data);
 	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-	int fexists = (H5Fis_hdf5(filename)>0);
+	int fexists = (H5Fis_hdf5(filename.c_str())>0);
 	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
 	return fexists;
 }
 
-void rm_if_exist(hid_t h5file, char *dset_name)
+void rm_if_exist(hid_t h5file, const string& dset_name)
 {
 	H5E_auto2_t old_func;
 	void *old_data;
 	H5Eget_auto2(H5E_DEFAULT, &old_func, &old_data);
 	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-	H5Ldelete(h5file, dset_name, H5P_DEFAULT);
+	H5Ldelete(h5file, dset_name.c_str(), H5P_DEFAULT);
 	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
 }
 
-void write_to_file(Data_r_ref& ref, char *filename, char *pathname)
+void write_to_file(Data_r_ref& ref, const string& filename, const string& pathname)
 {
 	int rank = 0;
 	hsize_t *h5sizes = NULL;
@@ -267,17 +268,10 @@ void write_to_file(Data_r_ref& ref, char *filename, char *pathname)
 		h5sizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		h5subsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		h5starts = (hsize_t*) malloc(rank*sizeof(hsize_t));
-		long intdim = 0;
 		for ( int ii=0; ii<rank; ++ii ) {
-			
-			PDI_value_int(&datatype.c.array->sizes[ii], &intdim);
-			h5sizes[ii] = intdim;
-			
-			PDI_value_int(&datatype.c.array->subsizes[ii], &intdim);
-			h5subsizes[ii] = intdim;
-			
-			PDI_value_int(&datatype.c.array->starts[ii], &intdim);
-			h5starts[ii] = intdim;
+			h5sizes[ii] = datatype.c.array->sizes[ii].to_long();
+			h5subsizes[ii] = datatype.c.array->subsizes[ii].to_long();
+			h5starts[ii] = datatype.c.array->starts[ii].to_long();
 		}
 		scalart = &datatype.c.array->type;
 	}
@@ -288,9 +282,9 @@ void write_to_file(Data_r_ref& ref, char *filename, char *pathname)
 	
 	hid_t h5file;
 	if ( is_h5_file(filename) ) {
-		h5file = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
+		h5file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
 	} else {
-		h5file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+		h5file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 	}
 	
 	rm_if_exist(h5file, pathname);
@@ -302,7 +296,7 @@ void write_to_file(Data_r_ref& ref, char *filename, char *pathname)
 	}
 	hid_t h5lcp = H5Pcreate(H5P_LINK_CREATE);
 	H5Pset_create_intermediate_group( h5lcp, 1 );
-	hid_t h5set = H5Dcreate( h5file, pathname, h5type(scalart->c.scalar),
+	hid_t h5set = H5Dcreate( h5file, pathname.c_str(), h5type(scalart->c.scalar),
 													 h5fspace, h5lcp, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(h5set, h5type(scalart->c.scalar), h5mspace, H5S_ALL, H5P_DEFAULT,
 					 ref.get());
@@ -318,7 +312,7 @@ void write_to_file(Data_r_ref& ref, char *filename, char *pathname)
 	free(h5starts);
 }
 
-PDI_status_t read_from_file(Data_w_ref& ref, char *filename, char *pathname)
+PDI_status_t read_from_file(Data_w_ref& ref, const string& filename, const string& pathname)
 {
 	PDI_status_t status= PDI_OK;
 	int rank = 0;
@@ -333,28 +327,21 @@ PDI_status_t read_from_file(Data_w_ref& ref, char *filename, char *pathname)
 		subsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		starts = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		for ( int ii=0; ii<rank; ++ii ) {
-			long intdim;
-			
-			PDI_value_int(&datatype.c.array->sizes[ii], &intdim);
-			sizes[ii] = intdim;
-			
-			PDI_value_int(&datatype.c.array->subsizes[ii], &intdim);
-			subsizes[ii] = intdim;
-			
-			PDI_value_int(&datatype.c.array->starts[ii], &intdim);
-			starts[ii] = intdim;
+			sizes[ii] = datatype.c.array->sizes[ii].to_long();
+			subsizes[ii] = datatype.c.array->subsizes[ii].to_long();
+			starts[ii] = datatype.c.array->starts[ii].to_long();
 		}
 		scalart = &datatype.c.array->type;
 	}
 	if ( scalart->kind != PDI_K_SCALAR ) return PDI_ERR_CONFIG;
 	
 	/// Open file for read/write
-	hid_t file_id = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
+	hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
 	
 	if(file_id >= 0){ // File exists
 		
 		/// Open dataset "pathname" and gets its memspace
-		hid_t dataset_id = H5Dopen(file_id, pathname, H5P_DEFAULT);
+		hid_t dataset_id = H5Dopen(file_id, pathname.c_str(), H5P_DEFAULT);
 		if( dataset_id >= 0 ) { // Successfull
 			
 			hid_t dataspace_id = H5Dget_space (dataset_id);
@@ -404,16 +391,13 @@ PDI_status_t PDI_declh5_data(const std::string& name, Data_ref cref)
 			if ( !strcmp(inputs[ii].name, name.c_str()) ) {
 				found_input = 1;
 				
-				char *h5file; PDI_value_str(&inputs[ii].h5file, &h5file);
-				char *h5var;  PDI_value_str(&inputs[ii].h5var,  &h5var);
-				long select;  PDI_value_int(&inputs[ii].select, &select);
+				string h5file = inputs[ii].h5file.to_str();
+				string h5var = inputs[ii].h5var.to_str();
+				long select = inputs[ii].select.to_long();
 				
 				if ( select ){
 					status = read_from_file(ref, h5file, h5var);
 				}
-
-				free(h5var);
-				free(h5file);
 			}
 		}
 	}
@@ -424,16 +408,13 @@ PDI_status_t PDI_declh5_data(const std::string& name, Data_ref cref)
 			if ( !strcmp(outputs[ii].name, name.c_str()) ) {
 				found_output = 1;
 				
-				char *h5file; PDI_value_str(&outputs[ii].h5file, &h5file);
-				char *h5var;  PDI_value_str(&outputs[ii].h5var,  &h5var);
-				long select;  PDI_value_int(&outputs[ii].select, &select);
+				string h5file = outputs[ii].h5file.to_str();
+				string h5var = outputs[ii].h5var.to_str();
+				long select = outputs[ii].select.to_long();
 				
 				if ( select ) {
 					write_to_file(ref, h5file, h5var);
 				}
-
-				free(h5var);
-				free(h5file);
 			}
 		}
 	}

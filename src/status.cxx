@@ -22,18 +22,45 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
 /**
-* \file status.c
-* \brief Manage error and context
-* \author J. Bigot (CEA)
-*/
+ * \file status.c
+ * \brief Manage error and context
+ * \author J. Bigot (CEA)
+ */
+
+#include <memory>
 
 #include <pthread.h>
 
 #include <paraconf.h>
 
 #include "status.h"
+
+namespace PDI {
+
+using std::unique_ptr;
+
+Error::Error(PDI_status_t errcode, const char* message, va_list ap):
+	m_status(errcode)
+{
+	va_list ap2; va_copy(ap2, ap);
+	m_what.resize(vsnprintf(NULL, 0, message, ap));
+	vsnprintf(&m_what[0], m_what.size(), message, ap2);
+}
+
+Error::Error(PDI_status_t errcode, const char* message, ...):
+	m_status(errcode)
+{
+	va_list ap;
+	va_start(ap, message);
+	m_what.resize(vsnprintf(NULL, 0, message, ap));
+	va_end(ap);
+	va_start(ap, message);
+	vsnprintf(&m_what[0], m_what.size(), message, ap);
+	va_end(ap);
+}
+
+}
 
 // File private stuff
 
@@ -51,26 +78,20 @@ static pthread_key_t context_key;
 
 static pthread_once_t context_key_once = PTHREAD_ONCE_INIT;
 
-/** \brief handler for fatal errors
-  *
-  *
+/** Handler for fatal errors
   */
-static void assert_status(PDI_status_t status, const char *message, void *context)
+static void assert_status(PDI_status_t status, const char *message, void *)
 {
-	context = context; // prevent unused warning
 	if (status) {
 		fprintf(stderr, "FATAL ERROR, in PDI: %s\n", message);
 		abort();
 	}
 }
 
-/** \brief handler for warning
-  *
-  *
+/** Handler for warning
   */
-static void warn_status(PDI_status_t status, const char *message, void *context)
+static void warn_status(PDI_status_t status, const char *message, void *)
 {
-	context = context; // prevent unused warning
 	if (status) {
 		fprintf(stderr, "Warning, in PDI: %s\n", message);
 	}
@@ -105,10 +126,8 @@ static errctx_t *get_context()
 	return context;
 }
 
-static void forward_PC_error(PC_status_t status, const char *message, void *context)
+static void forward_PC_error(PC_status_t, const char *message, void *)
 {
-	status = status; // prevent unused warning
-	context = context; // prevent unused warning
 	if (get_context()->handler.func) get_context()->handler.func(PDI_ERR_CONFIG, message, get_context()->handler.context);
 }
 
@@ -118,16 +137,8 @@ PDI_status_t PDI_make_err(PDI_status_t status, const char *message, ...)
 {
 	va_list ap;
 	va_start(ap, message);
-	int realsize = vsnprintf(get_context()->buffer, get_context()->buffer_size, message, ap);
+	throw PDI::Error(status, message, ap);
 	va_end(ap);
-	if (realsize >= get_context()->buffer_size) {
-		get_context()->buffer_size = realsize + 1;
-		get_context()->buffer = (char *) realloc(get_context()->buffer, get_context()->buffer_size);
-		va_start(ap, message);
-		vsnprintf(get_context()->buffer, get_context()->buffer_size, message, ap);
-		va_end(ap);
-	}
-	if (get_context()->handler.func) get_context()->handler.func(status, get_context()->buffer, get_context()->handler.context);
 	return status;
 }
 

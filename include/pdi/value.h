@@ -108,23 +108,19 @@ public:
 	 */
 	~Value();
 	
+	/** Evaluates a value as an integer
+	 *
+	 * \return the integer value
+	 */
+	long to_long() const;
+	
+	/** Evaluates a value as a string
+	 *
+	 * \return the string value
+	 */
+	std::string to_str() const;
+	
 };
-
-/** Evaluates a value as an integer
- *
- * \param[in] value the value to evaluate
- * \param[out] res a pointer to the integer value
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_value_int(const PDI_value_t *value, long *res);
-
-/** Evaluates a value as a string
- *
- * \param[in] value the value to evaluate
- * \param[out] res a pointer to the string value
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_value_str(const PDI_value_t *value, char **res);
 
 } // namespace PDI
 

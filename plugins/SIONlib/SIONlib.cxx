@@ -403,9 +403,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
     }
   }
 
-  long n_files_;
-  if ((status = PDI_value_int(&event->n_files, &n_files_))) return status;
-  int n_files = n_files_;
+  int n_files = event->n_files.to_long();
 
   sion_int64 chunksize = 0;
   for (size_t i = 0; i < event->n_vars; ++i) {
@@ -422,14 +420,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
-  char *file = NULL;
-  if ((status = PDI_value_str(&event->file, &file))) {
-    free(file);
-    return status;
-  }
-
-  int sid = sion_paropen_mpi(file, "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
-  free(file);
+  int sid = sion_paropen_mpi(event->file.to_str().c_str(), "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
     const Data_ref & ref = PDI_state.desc(event->vars[i]).value();
@@ -495,20 +486,14 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
-  char *file = NULL;
-  if ((status = PDI_value_str(&event->file, &file))) {
-    free(file);
-    return status;
-  }
-
-  int sid = sion_paropen_mpi(file, "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  string file = event->file.to_str();
+  int sid = sion_paropen_mpi(file.c_str(), "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
     if ( Data_w_ref ref = PDI_state.desc(event->vars[i]).value() ) {
       size_t data_size;
       if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
         sion_parclose_mpi(sid);
-        free(file);
         return status;
       }
   
@@ -517,16 +502,14 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   
       for (int j = 0; ; ++j) {
         if (SION_SUCCESS != sion_seek_key(sid, key, 4 * j, 0)) {
-          fprintf(stderr, "[PDI/SIONlib] Could not find variable '%s' for reading in file '%s'.\n", event->vars[i], file);
+          fprintf(stderr, "[PDI/SIONlib] Could not find variable '%s' for reading in file '%s'.\n", event->vars[i], file.c_str());
           sion_parclose_mpi(sid);
-          free(file);
           return PDI_ERR_SYSTEM;
         }
   
         uint64_t name_size_from_file;
         if (1 != sion_fread_key(&name_size_from_file, key, sizeof(uint64_t), 1, sid)) {
           sion_parclose_mpi(sid);
-          free(file);
           return PDI_ERR_SYSTEM;
         }
   
@@ -537,14 +520,12 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
         char *name_from_file = (char*) malloc(name_size + 1);
         if (NULL == name_from_file) {
           sion_parclose_mpi(sid);
-          free(file);
           return PDI_ERR_SYSTEM;
         }
   
         if (1 != sion_fread_key(name_from_file, key, name_size, 1, sid)) {
           free(name_from_file);
           sion_parclose_mpi(sid);
-          free(file);
           return PDI_ERR_SYSTEM;
         }
         name_from_file[name_size] = '\0';
@@ -559,20 +540,17 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
       uint64_t data_size_from_file;
       if (1 != sion_fread_key(&data_size_from_file, key, sizeof(data_size_from_file), 1, sid)) {
         sion_parclose_mpi(sid);
-        free(file);
         return PDI_ERR_SYSTEM;
       }
   
       if (data_size != data_size_from_file) {
-        fprintf(stderr, "[PDI/SIONlib] Size of data for variable '%s' in file '%s' does not match memory size (%" PRIu64 " (file) vs. %zu (memory)).\n", event->vars[i], file, data_size_from_file, data_size);
+        fprintf(stderr, "[PDI/SIONlib] Size of data for variable '%s' in file '%s' does not match memory size (%" PRIu64 " (file) vs. %zu (memory)).\n", event->vars[i], file.c_str(), data_size_from_file, data_size);
         sion_parclose_mpi(sid);
-        free(file);
         return PDI_ERR_SYSTEM;
       }
   
       if (1 != sion_fread_key(ref.get(), key, data_size, 1, sid)) {
         sion_parclose_mpi(sid);
-        free(file);
         return PDI_ERR_SYSTEM;
       }
     } else {
@@ -580,8 +558,6 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
       return PDI_UNAVAILABLE;
     }
   }
-
-  free(file);
 
   if (SION_SUCCESS != sion_parclose_mpi(sid)) return PDI_ERR_SYSTEM;
 
@@ -595,8 +571,7 @@ PDI_status_t PDI_SIONlib_event(const char *event)
   for (size_t i = 0; i < n_output_events; ++i) {
     if (!strcmp(output_events[i].name, event)) {
       write_attempted = 1;
-      long select;
-      if ((write_status = PDI_value_int(&output_events[i].select, &select))) break;
+      long select = output_events[i].select.to_long();
       if (select) write_status = write_event(&output_events[i]);
     }
   }
@@ -613,8 +588,7 @@ PDI_status_t PDI_SIONlib_event(const char *event)
   for (size_t i = 0; i < n_input_events; ++i) {
     if (!strcmp(input_events[i].name, event)) {
       read_attempted = 1;
-      long select;
-      if ((read_status = PDI_value_int(&input_events[i].select, &select))) break;
+      long select = input_events[i].select.to_long();
       if (select) read_status = read_event(&input_events[i]);
     }
   }
@@ -653,27 +627,17 @@ static PDI_status_t write_var(Data_r_ref& ref, const SIONlib_var_t *var)
   }
 
   // open file
-  long n_files_;
-  if ((status = PDI_value_int(&var->n_files, &n_files_))) return status;
-  int n_files = n_files_;
+  int n_files = var->n_files.to_long();
 
-  char *file = NULL;
-  if ((status = PDI_value_str(&var->file, &file))) {
-    free(file);
-    return status;
-  }
+  string file = var->file.to_str();
 
   size_t data_size;
-  if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
-    free(file);
-    return status;
-  }
+  if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) return status;
   sion_int64 chunksize = data_size;
 
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
-  int sid = sion_paropen_mpi(file, "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
-  free(file);
+  int sid = sion_paropen_mpi(file.c_str(), "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   // write data to file
   size_t written = sion_fwrite(ref.get(), data_size, 1, sid);
@@ -696,23 +660,17 @@ static PDI_status_t read_var(const Data_ref & ref, const SIONlib_var_t *var)
   }
 
   // open file
-  char *file = NULL;
-  if ((status = PDI_value_str(&var->file, &file))) {
-    free(file);
-    return status;
-  }
+  string file = var->file.to_str();
 
   int n_files = 1;
   size_t data_size;
   if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
-    free(file);
     return status;
   }
   sion_int64 chunksize = 0;
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
-  int sid = sion_paropen_mpi(file, "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
-  free(file);
+  int sid = sion_paropen_mpi(file.c_str(), "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   // read data from file
   size_t read = sion_fread(ref.get(), data_size, 1, sid);
@@ -729,9 +687,8 @@ PDI_status_t PDI_SIONlib_data(const string& name, Data_ref cref)
   if ( Data_r_ref ref = cref ) {
     for (size_t i = 0; i < n_output_vars; ++i) {
       if ( name == output_vars[i].name ) {
-        long select;
-        if ((write_status = PDI_value_int(&output_vars[i].select, &select))) break;
-        if (select && (!write_status) ) {
+        long select = output_vars[i].select.to_long();
+        if ( select && (!write_status) ) {
           write_status = write_var(ref, &output_vars[i]);
           break;
         }
@@ -743,8 +700,7 @@ PDI_status_t PDI_SIONlib_data(const string& name, Data_ref cref)
   if ( Data_w_ref ref = cref ) {
     for (size_t i = 0; i < n_input_vars; ++i) {
       if ( name == input_vars[i].name ) {
-        long select;
-        if ((read_status = PDI_value_int(&input_vars[i].select, &select))) break;
+        long select = input_vars[i].select.to_long();
         if (select && (!read_status)){
           read_status = read_var(ref, &input_vars[i]);
           break;

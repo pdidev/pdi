@@ -22,17 +22,41 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
 /**
-* \file status.h
-* \brief Macros used to handle errors
-* \author J. Bigot (CEA)
-*/
+ * \file status.h
+ * \brief Macros used to handle errors
+ * \author J. Bigot (CEA)
+ */
 
 #ifndef ERROR_H__
 #define ERROR_H__
 
+#include <exception>
+#include <string>
+
 #include "pdi.h"
+
+namespace PDI {
+
+class Error:
+		public std::exception
+{
+public:
+	PDI_status_t m_status;
+	
+	std::string m_what;
+	
+	Error(PDI_status_t errcode=PDI_OK, const char *message="", ...);
+	
+	Error(PDI_status_t errcode, const char *message, va_list args);
+	
+	const char *what () const noexcept override { return m_what.c_str(); }
+	
+	explicit operator bool () { return m_status != PDI_OK && m_status != PDI_UNAVAILABLE; }
+};
+
+} // namespace PDI
+
 /** Handle a PDI return code, jumping to the error handler code on error
  * \param callstatus the call status to handle, will be used only once, this
  *        can be the call itself

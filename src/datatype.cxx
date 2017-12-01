@@ -445,24 +445,15 @@ err0:
 
 static PDI_status_t array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense)
 {
-	PDI_status_t status = PDI_OK;
-	
-	int result = 1;
-	
 	for (int dim = 0; dim < type->ndims; ++dim) {
-		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err0);
-		long subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err0);
-		if (size != subsize) {
-			result = 0;
-			break;
+		if ( type->sizes[dim].to_long() != type->subsizes[dim].to_long() ) {
+			*is_dense = 0;
+			return PDI_OK;
 		}
 	}
 	
-	*is_dense = result; // late copy so as not to modify arguments in case of error
-	return status;
-	
-err0:
-	return status;
+	*is_dense = 1;
+	return PDI_OK;
 }
 
 
@@ -517,12 +508,12 @@ static PDI_status_t array_datatype_bufdesc(const PDI_array_type_t *type, buffer_
 	
 	PDI_handle_err(datatype_bufdesc(&type->type, result), err0);
 	for (int dim = 0; dim < type->ndims; ++dim) {
-		long size; PDI_handle_err(PDI_value_int(&(type->sizes[dim]), &size), err1);
-		long subsize; PDI_handle_err(PDI_value_int(&(type->subsizes[dim]), &subsize), err1);
+		long size = type->sizes[dim].to_long();
+		long subsize = type->subsizes[dim].to_long();
 		if ((size == subsize) && (result->ndims == 0)) {   // dense case
 			result->dense_size *= size;
 		} else { // sparse case
-			long start; PDI_handle_err(PDI_value_int(&type->starts[dim], &start), err1);
+			long start = type->starts[dim].to_long();
 			++result->ndims;
 			result->sizes    = (size_t *) realloc(result->sizes, result->ndims * sizeof(size_t));
 			result->subsizes = (size_t *) realloc(result->subsizes, result->ndims * sizeof(size_t));
@@ -534,8 +525,6 @@ static PDI_status_t array_datatype_bufdesc(const PDI_array_type_t *type, buffer_
 	}
 	
 	return status;
-err1:
-	bufdesc_destroy(result);
 err0:
 	return status;
 }

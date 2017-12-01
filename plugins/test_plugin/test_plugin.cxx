@@ -77,7 +77,7 @@ PDI_status_t PDI_test_plugin_event(const char *event)
 	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data(const std::string& name, PDI::Data_ref ref)
+PDI_status_t PDI_test_plugin_data(const std::string& name, PDI::Data_ref)
 {
 	int rank; if (MPI_Comm_rank(PDI_state.PDI_comm, &rank)) return PDI_ERR_PLUGIN;
 	

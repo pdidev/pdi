@@ -204,23 +204,16 @@ PDI_status_t PDI_utilities_finalize()
 PDI_status_t PDI_utilities_event(const char *event_name) {
 	for ( auto&& one_task: tasks ) {
 		if ( one_task.events.find(event_name) != one_task.events.end() ) {
-			long select; PDI_value_int(&one_task.select, &select);
+			long select = one_task.select.to_long();
 			if ( !select ) continue;
 			switch ( one_task.action ) {
 			case EVENT2DATA:{
 				// Should evaluate expression define in 'in' and set value in 'out'
-				long in; PDI_value_int(&one_task.in, &in);
-				one_task.result = in;
+				one_task.result = one_task.in.to_long();
 			} break;
 			case FILE_EXISTS: {
-				// get filename from input into str
-				string fname;
-				{
-					char *str=NULL;
-					PDI_value_str(&one_task.in, &str);
-					fname = str;
-					free(str);
-				}
+				// get filename from input into fname
+				string fname = one_task.in.to_str();
 				// check for file
 				struct stat sb;
 				if (stat(fname.c_str(), &sb) == 0 && S_ISREG(sb.st_mode)){
@@ -231,13 +224,7 @@ PDI_status_t PDI_utilities_event(const char *event_name) {
 			} break;
 			case DIR_EXISTS: {
 				// get filename from input into str
-				string fname;
-				{
-					char *str=NULL;
-					PDI_value_str(&one_task.in, &str);
-					fname = str;
-					free(str);
-				}
+				string fname = one_task.in.to_str();
 				// check for file
 				struct stat sb;
 				if (stat(fname.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)){
@@ -299,7 +286,7 @@ PDI_status_t PDI_utilities_data( const std::string& name, PDI::Data_ref cref )
 		status = PDI_UNAVAILABLE;
 		// for each utils_task look if the output is the same as the PDI_data_t
 		for ( auto&& one_task: tasks ) {
-			char *str_out = NULL; status = PDI_value_str(&one_task.out, &str_out); // output string
+			string str_out = one_task.out.to_str(); // output string
 			if ( !status && name == str_out ) { // output and data name matches
 				switch(one_task.action){ // check datatype compatibiliy
 				case EVENT2DATA:
@@ -311,31 +298,26 @@ PDI_status_t PDI_utilities_data( const std::string& name, PDI::Data_ref cref )
 					break;
 				}
 			}
-			free(str_out);
 		}
 	}
 	if ( Data_r_ref ref = cref ) {
 		for ( auto&& one_task: tasks ) {
 			if ( one_task.action == EXTRACT_SUBARRAY) {
-				char *str_in = NULL; PDI_value_str(&one_task.in, &str_in); // input string
+				string str_in = one_task.in.to_str(); // input string
 				if ( name == str_in ) { // input and data name match
-					char *str_out = NULL; PDI_value_str(&one_task.out, &str_out); // output string
-					
-					if( !strcmp(str_in,str_out) ){
-						fprintf(stderr,"[PDI/Utilities] Cannot extract subarray. Array %s and subarray %s identify the same data\n", str_in, str_out);
+					string str_out = one_task.out.to_str(); // output string
+					if( str_in == str_out ){
+						fprintf(stderr,"[PDI/Utilities] Cannot extract subarray. Array %s and subarray %s identify the same data\n", str_in.c_str(), str_out.c_str());
 						return PDI_ERR_CONFIG;
 					}
-					
 					Data_descriptor& outdesc = PDI_state.desc(str_out);
 					size_t oldsize; PDI_datatype_buffersize(&ref.type(), &oldsize);
 					size_t subsize; PDI_datatype_datasize(&outdesc.get_type(), &subsize);
 					void *subdata = malloc(subsize);
 					PDI_buffer_copy(subdata, &outdesc.get_type(), ref.get(), &ref.type());
-					PDI_expose(str_out, subdata, PDI_OUT);
+					PDI_expose(str_out.c_str(), subdata, PDI_OUT);
 					free(subdata);
-					free(str_out);
 				}
-				free(str_in);
 			}
 		}
 	}

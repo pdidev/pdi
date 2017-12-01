@@ -51,7 +51,7 @@ using PDI::Data_w_ref;
 using PDI::Value;
 using std::cout;
 using std::endl;
-
+using std::string;
 
 PC_tree_t my_conf;
 
@@ -341,24 +341,24 @@ hid_t h5type(PDI_scalar_type_t ptype) {
 	return H5T_NO_CLASS; //TODO: better handle the error
 }
 
-int is_h5_file(char *filename)
+int is_h5_file(const string& filename)
 {
 	H5E_auto2_t old_func;
 	void *old_data;
 	H5Eget_auto2(H5E_DEFAULT, &old_func, &old_data);
 	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-	int fexists = (H5Fis_hdf5(filename)>0);
+	int fexists = (H5Fis_hdf5(filename.c_str())>0);
 	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
 	return fexists;
 }
 
-void rm_if_exist(hid_t h5file, char *dset_name)
+void rm_if_exist(hid_t h5file, const string& dset_name)
 {
 	H5E_auto2_t old_func;
 	void *old_data;
 	H5Eget_auto2(H5E_DEFAULT, &old_func, &old_data);
 	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-	H5Ldelete(h5file, dset_name, H5P_DEFAULT);
+	H5Ldelete(h5file, dset_name.c_str(), H5P_DEFAULT);
 	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
 }
 
@@ -373,16 +373,9 @@ const PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **
 		*subsizes = (hsize_t*) malloc(*rank*sizeof(hsize_t));
 		*starts = (hsize_t*) malloc(*rank*sizeof(hsize_t));
 		for ( unsigned int ii=0; ii<*rank; ++ii ) {
-			long intdim;
-			
-			PDI_value_int(&datatype.c.array->sizes[ii], &intdim);
-			(*sizes)[ii] = intdim;
-			
-			PDI_value_int(&datatype.c.array->subsizes[ii], &intdim);
-			(*subsizes)[ii] = intdim;
-			
-			PDI_value_int(&datatype.c.array->starts[ii], &intdim);
-			(*starts)[ii] = intdim;
+			(*sizes)[ii] = datatype.c.array->sizes[ii].to_long();
+			(*subsizes)[ii] = datatype.c.array->subsizes[ii].to_long();
+			(*starts)[ii] = datatype.c.array->starts[ii].to_long();
 		}
 		scalart = &datatype.c.array->type;
 	} else { // assuming scalar type 
@@ -399,32 +392,32 @@ const PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **
 	return scalart;
 }
 
-PDI_status_t pwrite_to_file(Data_r_ref& ref, char *filename, char *pathname, hsize_t *gstarts, hsize_t *gsizes)
+PDI_status_t pwrite_to_file(Data_r_ref& ref, const string& filename, const string& pathname, hsize_t *gstarts, hsize_t *gsizes)
 {
 	hsize_t rank = 0;
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
 	
-	/// Setting sizes, subsizes, offset
+	// Setting sizes, subsizes, offset
 	const PDI_datatype_t *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, ref);
 	
 	
-	/// Setting files properties
+	// Setting files properties
 	hid_t file;
 	hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
 	H5Pset_fapl_mpio(plist_id, MPI_COMM_WORLD, MPI_INFO_NULL);  // todo: check communicator (set another than WORLD)
 	
 	if ( is_h5_file(filename) ) {
-		file = H5Fopen(filename, H5F_ACC_RDWR, plist_id);  
+		file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, plist_id);  
 		rm_if_exist(file, pathname);
 	} else {
-		file = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
+		file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
 	}
 	
 	// The total size (including ghost..) = data is spread along processor
 	hid_t dataspace = H5Screate_simple(rank, gsizes, NULL);   // space on disk
-	hid_t dataset = H5Dcreate( file, pathname, h5type(scalart->c.scalar), dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	hid_t dataset = H5Dcreate(file, pathname.c_str(), h5type(scalart->c.scalar), dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	
 	// File space: part of the global file that we use to store our piece of array
 	hid_t filespace = H5Screate_simple(rank, gsizes , NULL);
@@ -456,7 +449,7 @@ PDI_status_t pwrite_to_file(Data_r_ref& ref, char *filename, char *pathname, hsi
 }
 
 
-PDI_status_t pread_from_file(Data_w_ref& ref, char *filename, char *pathname, hsize_t *gstarts)
+PDI_status_t pread_from_file(Data_w_ref& ref, const string& filename, const string& pathname, hsize_t *gstarts)
 {
 	PDI_status_t status= PDI_OK;
 	hsize_t rank = 0;
@@ -470,13 +463,13 @@ PDI_status_t pread_from_file(Data_w_ref& ref, char *filename, char *pathname, hs
 	hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
 	H5Pset_fapl_mpio(plist_id, MPI_COMM_WORLD, MPI_INFO_NULL);  // todo: check communicator (set another than WORLD)
 	/// Open file for read/write
-	hid_t file_id = H5Fopen(filename, H5F_ACC_RDWR, plist_id);
+	hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDWR, plist_id);
 	
 	if(file_id >= 0){ // File exists
 		
 		
 		/// Open dataset "pathname" and gets its memspace
-		hid_t dataset_id = H5Dopen(file_id, pathname, H5P_DEFAULT);
+		hid_t dataset_id = H5Dopen(file_id, pathname.c_str(), H5P_DEFAULT);
 		
 		if( dataset_id >= 0 ) { // Successfull
 			
@@ -555,9 +548,9 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 			if ( !strcmp(outputs[ii].name, name.c_str()) ) {
 				found_output = 1;
 				
-				char *h5file; PDI_value_str(&outputs[ii].h5file, &h5file);
-				char *h5var ; PDI_value_str(&outputs[ii].h5var, &h5var);
-				long select;  PDI_value_int(&outputs[ii].select, &select);
+				string h5file = outputs[ii].h5file.to_str();
+				string h5var = outputs[ii].h5var.to_str();
+				long select = outputs[ii].select.to_long();
 				
 				// TODO: warn user, assuming size is unchanged (unknow consequence when size is changed...)
 				hsize_t *gstarts = NULL; 
@@ -574,28 +567,19 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 					for ( int jj = 0 ; jj < rank; ++jj){
 						int val = jj;
 						if(order == PDI_ORDER_FORTRAN) val = rank-1-jj ;
-						long n=0; PDI_value_int(&outputs[ii].gstarts[val], &n);
-						gstarts[jj] = n;
-						
-						PDI_value_int(&outputs[ii].gsizes[val], &n);
-						gsizes[jj] = n;
+						gstarts[jj] = outputs[ii].gstarts[val].to_long();
+						gsizes[jj] = outputs[ii].gsizes[val].to_long();
 					}
 				} else { // supposing scalar case 
 					gstarts = (hsize_t*) malloc(sizeof(hsize_t));
 					gsizes = (hsize_t*) malloc(sizeof(hsize_t));
-					long n=0; PDI_value_int(&outputs[ii].gstarts[0], &n);
-					gstarts[0] = n;
-					
-					n = 0;
-					PDI_value_int(&outputs[ii].gsizes[0], &n);
-					gsizes[0] = n;
+					gstarts[0] = outputs[ii].gstarts[0].to_long();
+					gsizes[0] = outputs[ii].gsizes[0].to_long();
 				}
 				
 				if ( select ){
 					pwrite_to_file(ref, h5file, h5var, gstarts, gsizes);
 				}
-				free(h5var);
-				free(h5file);
 				
 				free(gstarts);
 				free(gsizes);
@@ -609,9 +593,9 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 			if ( name == inputs[ii].name ) {
 				found_input = 1;
 				
-				char *h5file; PDI_value_str(&inputs[ii].h5file, &h5file);
-				char *h5var; PDI_value_str(&inputs[ii].h5var, &h5var);
-				long select; PDI_value_int(&inputs[ii].select, &select);
+				string h5file = inputs[ii].h5file.to_str();
+				string h5var = inputs[ii].h5var.to_str();
+				long select = inputs[ii].select.to_long();
 				
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL;
@@ -626,28 +610,19 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 					for ( int jj = 0 ; jj < rank; ++jj){
 						int val = jj;
 						if(order == PDI_ORDER_FORTRAN) val = rank-1-jj ;
-						long n=0; PDI_value_int(&outputs[ii].gstarts[val], &n);
-						gstarts[jj] = n;
-						
-						PDI_value_int(&outputs[ii].gsizes[val], &n);
-						gsizes[jj] = n;
+						gstarts[jj] = outputs[ii].gstarts[val].to_long();
+						gsizes[jj] = outputs[ii].gsizes[val].to_long();
 					}
 				} else { // supposing scalar case 
 					gstarts = (hsize_t*) malloc(sizeof(hsize_t));
 					gsizes = (hsize_t*) malloc(sizeof(hsize_t));
-					long n=0; PDI_value_int(&outputs[ii].gstarts[0], &n);
-					gstarts[0] = n;
-					
-					n = 0;
-					PDI_value_int(&outputs[ii].gsizes[0], &n);
-					gsizes[0] = n;
+					gstarts[0] = outputs[ii].gstarts[0].to_long();
+					gsizes[0] = outputs[ii].gsizes[0].to_long();
 				}
 				
 				if ( select ){
 					status = pread_from_file(ref, h5file, h5var, gstarts);
 				}
-				free(h5var);
-				free(h5file);
 				
 				free(gstarts);
 				free(gsizes);
