@@ -22,12 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
-* \file value.h
-* \brief Structures and functions to parse expression
-* \author J. Bigot (CEA)
-*/
-
 #ifndef PDI_VALUE_H__
 #define PDI_VALUE_H__
 
@@ -49,10 +43,6 @@ class PDI_refval_t;
  */
 typedef struct PDI_exprval_s PDI_exprval_t;
 
-/** A value in case this is a string (potentially with dollar refs inside)
- */
-typedef struct PDI_strval_s PDI_strval_t;
-
 class Value
 {
 public:
@@ -69,17 +59,14 @@ public:
 	PDI_valkind_t kind;
 	
 	union {
-		/// in case of PDI_VAL_REF the referenced value (not owned)
+		/// in case of PDI_VAL_REF the referenced value (owned)
 		PDI_refval_t *refval;
 		
 		/// in case of PDI_VAL_EXPR the expression (owned)
 		PDI_exprval_t *exprval;
 		
-		/// in case of PDI_VAL_STR the string (owned)
-		PDI_strval_t *strval;
-		
 	} c;
-
+	
 	struct Impl;
 	
 private:

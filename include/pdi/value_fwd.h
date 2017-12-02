@@ -22,13 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
-/**
-* \file value_fwd.h
-* \brief Constants used for parsing expression
-* \author J. Bigot (CEA)
-*/
-
 #ifndef PDI_VALUE_FWD_H__
 #define PDI_VALUE_FWD_H__
 
@@ -54,6 +47,8 @@ namespace PDI {
  * ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
  * CHAR  ~= [^$\\]
  * ```
+ * 
+ * \author Julie Bigot (CEA) <julien.bigot@cea.fr>
  */
 class Value;
 

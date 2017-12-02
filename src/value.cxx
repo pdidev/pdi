@@ -77,7 +77,7 @@ public:
 	Data_descriptor *m_referenced;
 	
 	/// Indexes in case the referenced data is an array
-	vector<PDI_value_t> m_idx;
+	vector<Value> m_idx;
 	
 	long to_long() const;
 	
@@ -96,7 +96,7 @@ struct Value::Impl
 	virtual unique_ptr<Impl> clone() const = 0;
 };
 
-/** A constant integer value 
+/** An empty value 
  */
 struct Noval:
 		public Value::Impl
@@ -125,22 +125,16 @@ struct Constval:
 	
 };
 
-struct PDI_exprval_s
+/** A value in case this is a string (potentially with dollar refs inside)
+ */
+struct Stringval:
+		public Value::Impl
 {
-	vector<PDI_value_t> values;
-	
-	vector<PDI_exprop_t> ops;
-	
-	long to_long() const;
-	
-};
-
-struct PDI_strval_s {
 	/// a char string containing the constant part of the str_value
 	string str;
 	
 	struct Subvalue {
-		PDI_value_t value;
+		Value value;
 		/// position in str where to insert the value
 		int pos;
 	};
@@ -148,11 +142,43 @@ struct PDI_strval_s {
 	/// array of subvalues
 	vector<Subvalue> values;
 	
-	string to_str() const;
+	operator long () const override
+	{
+		throw Error{PDI_ERR_VALUE, "Can not interpret %s as an integer value", static_cast<string>(*this).c_str()};
+	}
+	
+	operator string () const override
+	{
+		stringstream result;
+		
+		size_t from_idx = 0;
+		for (size_t ii = 0; ii < values.size(); ++ii) {
+			size_t blk_sz = values[ii].pos - from_idx;
+			result << string{str.c_str() + from_idx, blk_sz};
+			from_idx += blk_sz;
+			
+			result << values[ii].value.to_str();
+		}
+		result << str.c_str() + from_idx;
+		
+		return result.str();
+	}
+	
+	unique_ptr<Impl> clone() const override { return unique_ptr<Stringval>{new Stringval{*this}}; }
 	
 };
 
-PDI_value_t parse_intval(char const **val_str, int level);
+struct PDI_exprval_s
+{
+	vector<Value> values;
+	
+	vector<PDI_exprop_t> ops;
+	
+	long to_long() const;
+	
+};
+
+Value parse_intval(char const **val_str, int level);
 
 string parse_id(char const **val_str)
 {
@@ -242,12 +268,12 @@ unique_ptr<Constval> parse_const(char const **val_str)
 	return unique_ptr<Constval>{new Constval{result}};
 }
 
-PDI_value_t parse_term(char const **val_str)
+Value parse_term(char const **val_str)
 {
 	
 	if ( **val_str == '(' ) {
 		const char *term = *val_str;
-		PDI_value_t result;
+		Value result;
 		++term;
 		while (isspace(*term)) ++term;
 		result = parse_intval(&term, 1);
@@ -257,13 +283,13 @@ PDI_value_t parse_term(char const **val_str)
 		*val_str = term;
 		return result;
 	} else if ( **val_str == '$' ) {
-		PDI_value_t result;
+		Value result;
 		result.c.refval = new PDI_refval_t{parse_ref(val_str)};
 		result.kind = Value::PDI_VAL_REF;
 		return result;
 	} 
 	
-	return PDI_value_t{Value::PDI_VAL_CONST, parse_const(val_str)};
+	return Value{Value::PDI_VAL_CONST, parse_const(val_str)};
 }
 
 #define OP_LEVELS 6
@@ -301,10 +327,10 @@ PDI_exprop_t parse_op(char const **val_str, int level)
 	return op;
 }
 
-PDI_value_t parse_intval(char const **val_str, int level)
+Value parse_intval(char const **val_str, int level)
 {
 	const char *exprval = *val_str;
-	PDI_value_t result;
+	Value result;
 	if (level >= OP_LEVELS) {
 		result = parse_term(&exprval);
 	} else {
@@ -337,34 +363,32 @@ PDI_value_t parse_intval(char const **val_str, int level)
 	return result;
 }
 
-PDI_value_t parse_strval(char const **val_str)
+Value parse_strval(char const **val_str)
 {
 	const char *str = *val_str;
 	
-	PDI_value_t result;
-	result.kind = Value::PDI_VAL_STR;
-	result.c.strval = new PDI_strval_t;
+	unique_ptr<Stringval> result{new Stringval};
 	
 	while (*str) {
 		int sz = 0;
 		while (str[sz] != '\\' && str[sz] != '$' && str[sz]) ++sz;
-		result.c.strval->str.append(str, sz);
+		result->str.append(str, sz);
 		str += sz;
 		switch (*str) {
 		case '\\': {
 			++str;
-			result.c.strval->str.append(str, 1);
+			result->str.append(str, 1);
 			str += 1;
 		} break;
 		case '$': {
-			result.c.strval->values.push_back({Value(), static_cast<int>(result.c.strval->str.size())});
+			result->values.push_back({Value(), static_cast<int>(result->str.size())});
 			switch (str[1]) {
 			case '(': {
 				++str; // parse the term starting with the parenthesis (the intvl)
-				result.c.strval->values.back().value = parse_term(&str);
+				result->values.back().value = parse_term(&str);
 			} break;
 			default: { // parse the term starting with the dollar (the ref)
-				result.c.strval->values.back().value = parse_term(&str);
+				result->values.back().value = parse_term(&str);
 			} break;
 			}
 		} break;
@@ -372,7 +396,7 @@ PDI_value_t parse_strval(char const **val_str)
 	}
 	
 	*val_str = str;
-	return result;
+	return Value{Value::PDI_VAL_STR, move(result)};
 }
 
 long PDI_refval_t::to_long() const
@@ -474,23 +498,6 @@ long PDI_exprval_t::to_long() const
 	return computed_value;
 }
 
-string PDI_strval_t::to_str() const
-{
-	stringstream result;
-	
-	size_t from_idx = 0;
-	for (size_t ii = 0; ii < values.size(); ++ii) {
-		size_t blk_sz = values[ii].pos - from_idx;
-		result << string{str.c_str() + from_idx, blk_sz};
-		from_idx += blk_sz;
-		
-		result << values[ii].value.to_str();
-	}
-	result << str.c_str() + from_idx;
-	
-	return result.str();
-}
-
 // public functions
 
 Value::Value():
@@ -522,7 +529,6 @@ Value::Value(const Value& origin):
 		c.exprval = new PDI_exprval_t(*origin.c.exprval);
 		break;
 	case PDI_VAL_STR:
-		c.strval = new PDI_strval_t(*origin.c.strval);
 		break;
 	}
 	doassert();
@@ -576,7 +582,6 @@ Value& Value::operator=(const Value& origin)
 		c.exprval = new PDI_exprval_t(*origin.c.exprval);
 		break;
 	case PDI_VAL_STR:
-		c.strval = new PDI_strval_t(*origin.c.strval);
 		break;
 	}
 	doassert();
@@ -605,10 +610,7 @@ Value::~Value()
 	case PDI_VAL_REF: {
 		delete c.refval;
 	} break;
-	case PDI_VAL_STR: {
-		delete c.strval;
-	} break;
-	case PDI_VAL_CONST: break;
+	case PDI_VAL_STR: case PDI_VAL_CONST: break;
 	}
 }
 
@@ -631,7 +633,7 @@ string Value::to_str() const
 {
 	doassert();
 	if (kind == Value::PDI_VAL_STR) {
-		return c.strval->to_str();
+		return *m_impl;
 	} else {
 		stringstream result;
 		result << to_long();

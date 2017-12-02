@@ -59,17 +59,17 @@ using std::string;
 typedef struct
 {
   char *name;
-  PDI_value_t file;
-  PDI_value_t select;
-  PDI_value_t n_files;
+  Value file;
+  Value select;
+  Value n_files;
 } SIONlib_var_t;
 
 typedef struct
 {
   char *name;
-  PDI_value_t file;
-  PDI_value_t select;
-  PDI_value_t n_files;
+  Value file;
+  Value select;
+  Value n_files;
   size_t n_vars;
   char **vars;
 } SIONlib_event_t;
@@ -99,7 +99,7 @@ static char *strdup(const char *s)
 }
 #endif
 
-static PDI_status_t parse_property(PC_tree_t conf, const char *entry_name, const char *property_name, const char *default_value, PDI_value_t *property)
+static PDI_status_t parse_property(PC_tree_t conf, const char *entry_name, const char *property_name, const char *default_value, Value *property)
 {
   char *strv = NULL;
   if (PC_string(PC_get(conf, property_name), &strv)) {
@@ -127,7 +127,7 @@ static PDI_status_t parse_var(PC_tree_t entry, SIONlib_var_t *var)
 
   PDI_status_t status;
   // set file
-  PDI_value_t file;
+  Value file;
   if ((status = parse_property(entry, name, ".file", NULL, &file))) {
     // property 'file' is mandatory
     free(name);
@@ -135,7 +135,7 @@ static PDI_status_t parse_var(PC_tree_t entry, SIONlib_var_t *var)
   }
 
   // set select
-  PDI_value_t select;
+  Value select;
   if ((status = parse_property(entry, name, ".select", "1", &select))) {
     // parse with default value should not fail
     free(name);
@@ -143,19 +143,17 @@ static PDI_status_t parse_var(PC_tree_t entry, SIONlib_var_t *var)
   }
 
   // set n_files
-  PDI_value_t n_files;
+  Value n_files;
   if ((status = parse_property(entry, name, ".n_files", "1", &n_files))) {
     // parse with default value should not fail
     free(name);
     return status;
   }
 
-  *var = (SIONlib_var_t) {
-    .name = name,
-    .file = move(file),
-    .select = move(select),
-    .n_files = move(n_files)
-  };
+  var->name = name;
+  new (&var->file) Value{move(file)};
+  new (&var->select) Value{move(select)};
+  new (&var->n_files) Value{move(n_files)};
 
   return PDI_OK;
 }
@@ -222,7 +220,7 @@ static PDI_status_t parse_event(PC_tree_t entry, SIONlib_event_t *event)
 
   PDI_status_t status;
   // set path
-  PDI_value_t file;
+  Value file;
   if ((status = parse_property(entry, name, ".file", NULL, &file))) {
     // property 'file' is mandatory
     free(name);
@@ -230,7 +228,7 @@ static PDI_status_t parse_event(PC_tree_t entry, SIONlib_event_t *event)
   }
 
   // set select
-  PDI_value_t select;
+  Value select;
   if ((status = parse_property(entry, name, ".select", "1", &select))) {
     // parse with default value should not fail
     free(name);
@@ -238,7 +236,7 @@ static PDI_status_t parse_event(PC_tree_t entry, SIONlib_event_t *event)
   }
 
   // set n_files
-  PDI_value_t n_files;
+  Value n_files;
   if ((status = parse_property(entry, name, ".n_files", "1", &n_files))) {
     // parse with default value should not fail
     free(name);
@@ -254,14 +252,12 @@ static PDI_status_t parse_event(PC_tree_t entry, SIONlib_event_t *event)
     return status;
   }
 
-  *event = (SIONlib_event_t) {
-    .name = name,
-    .file = move(file),
-    .select = move(select),
-    .n_files = move(n_files),
-    .n_vars = n_vars,
-    .vars = vars
-  };
+  event->name = name;
+  new (&event->file) Value{move(file)};
+  new (&event->select) Value{move(select)};
+  new (&event->n_files) Value{move(n_files)};
+  event->n_vars = n_vars;
+  event->vars = vars;
 
   return PDI_OK;
 }
