@@ -184,14 +184,14 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err0);
-			res_type.sizes[ri] = Value{expr};
+			new (&res_type.sizes[ri]) Value{expr};
 			free(expr);
 		}
 	} else { // else single dim array
 		res_type.ndims = 1;
 		res_type.sizes = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
 		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err0);
-		*res_type.sizes = Value{expr};
+		new (res_type.sizes) Value{expr};
 		free(expr);
 	}
 	
@@ -213,7 +213,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err1);
-			res_type.subsizes[ri] = Value{expr};
+			new (&res_type.subsizes[ri]) Value{expr};
 			free(expr);
 		}
 	} else { // no subsize, default to full size
@@ -238,13 +238,13 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err2);
-			res_type.starts[ri] = Value{expr};
+			new (&res_type.starts[ri]) Value{expr};
 			free(expr);
 		}
 	} else { // no start, start at 0 everywhere
 		res_type.starts = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
-			res_type.starts[ii] = Value{"0"};
+			new (&res_type.starts[ii]) Value{"0"};
 		}
 	}
 	
@@ -681,7 +681,7 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 	
 	array->sizes = (PDI_value_t *) malloc(ndims * sizeof(PDI_value_t));
 	for (int ii = 0; ii < ndims; ++ii) {
-		array->sizes[ii] = sizes[ii];
+		new (&array->sizes[ii]) Value{sizes[ii]};
 	}
 	
 	if (sizes == subsizes) {
@@ -689,18 +689,18 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 	} else {
 		array->subsizes = (PDI_value_t *)malloc(ndims * sizeof(PDI_value_t));
 		for (int ii = 0; ii < ndims; ++ii) {
-			array->subsizes[ii] = subsizes[ii];
+			new (&array->subsizes[ii]) Value{subsizes[ii]};
 		}
 	}
 	
 	array->starts = (PDI_value_t *)malloc(ndims * sizeof(PDI_value_t));
 	if (!starts) {
 		for (int ii = 0; ii < ndims; ++ii) {
-			array->starts[ii] = Value{"0"};
+			new (&array->starts[ii]) Value{"0"};
 		}
 	} else {
 		for (int ii = 0; ii < ndims; ++ii) {
-			array->starts[ii] = starts[ii];
+			new (&array->starts[ii]) Value{starts[ii]};
 		}
 	}
 	

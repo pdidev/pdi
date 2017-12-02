@@ -83,6 +83,48 @@ public:
 	
 };
 
+struct Value::Impl
+{
+	virtual ~Impl() {}
+	virtual operator long () const = 0;
+	virtual operator string () const
+	{
+		stringstream result;
+		result << static_cast<long>(*this);
+		return result.str();
+	}
+	virtual unique_ptr<Impl> clone() const = 0;
+};
+
+/** A constant integer value 
+ */
+struct Noval:
+		public Value::Impl
+{
+	operator long () const override { throw Error{PDI_ERR_VALUE, "Invalid value used"}; }
+	
+	unique_ptr<Impl> clone() const override { return unique_ptr<Noval>{new Noval}; }
+	
+};
+
+/** A constant integer value 
+ */
+struct Constval:
+		public Value::Impl
+{
+	long m_value;
+	
+	Constval ( long value ) : m_value(value) {}
+	
+	operator long () const override { return m_value; }
+	
+	unique_ptr<Impl> clone() const override
+	{
+		return unique_ptr<Constval>{new Constval{*this}};
+	}
+	
+};
+
 struct PDI_exprval_s
 {
 	vector<PDI_value_t> values;
@@ -186,7 +228,7 @@ PDI_refval_t parse_ref(char const **val_str)
 	return result;
 }
 
-long parse_const(char const **val_str)
+unique_ptr<Constval> parse_const(char const **val_str)
 {
 	const char *constval = *val_str;
 	
@@ -197,37 +239,31 @@ long parse_const(char const **val_str)
 	while (isspace(*constval)) ++constval;
 	
 	*val_str = constval;
-	return result;
+	return unique_ptr<Constval>{new Constval{result}};
 }
 
 PDI_value_t parse_term(char const **val_str)
 {
-	const char *term = *val_str;
-	PDI_value_t result;
 	
-	bool done = false;
-	if ( !done && *term == '(' ) try {
+	if ( **val_str == '(' ) {
+		const char *term = *val_str;
+		PDI_value_t result;
 		++term;
 		while (isspace(*term)) ++term;
 		result = parse_intval(&term, 1);
 		if (*term != ')')  throw Error{PDI_ERR_VALUE, "Expected ')', found '%c'", *term};
 		++term;
 		while (isspace(*term)) ++term;
-		done = true;
-	} catch ( Error& e ) { }
-	if ( !done ) try {
-		result.c.constval = parse_const(&term);
-		result.kind = Value::PDI_VAL_CONST;
-		done = true;
-	} catch ( Error& e ) { }
-	if ( !done ) {
-		result.c.refval = new PDI_refval_t{parse_ref(&term)};
+		*val_str = term;
+		return result;
+	} else if ( **val_str == '$' ) {
+		PDI_value_t result;
+		result.c.refval = new PDI_refval_t{parse_ref(val_str)};
 		result.kind = Value::PDI_VAL_REF;
-		done = true;
-	}
+		return result;
+	} 
 	
-	*val_str = term;
-	return result;
+	return PDI_value_t{Value::PDI_VAL_CONST, parse_const(val_str)};
 }
 
 #define OP_LEVELS 6
@@ -275,25 +311,25 @@ PDI_value_t parse_intval(char const **val_str, int level)
 		result = parse_intval(&exprval, level + 1);
 	}
 	
-	try{
-		PDI_exprval_t *expr = NULL;
-		for (;;) {
-			PDI_exprop_t op = parse_op(&exprval, level);
-			if (!expr) {
-				expr = new PDI_exprval_t;
-				expr->values.push_back(std::move(result));
-				result.kind = Value::PDI_VAL_EXPR;
-				result.c.exprval = expr;
-			}
-			expr->ops.push_back(op);
-			
-			if (level >= OP_LEVELS) {
-				expr->values.push_back(parse_term(&exprval));
-			} else {
-				expr->values.push_back(parse_intval(&exprval, level + 1));
-			}
+	/* little compression trick, we only build the exprval if needed, instead we
+	   return  the previous expression directly */
+	PDI_exprval_t *expr = NULL;
+	while ( op_level(static_cast<PDI_exprop_t>(*exprval)) == level ) {
+		PDI_exprop_t op = parse_op(&exprval, level);
+		if (!expr) {
+			expr = new PDI_exprval_t;
+			expr->values.push_back(std::move(result));
+			result.kind = Value::PDI_VAL_EXPR;
+			result.c.exprval = expr;
 		}
-	} catch (Error&) {}
+		expr->ops.push_back(op);
+		
+		if (level >= OP_LEVELS) {
+			expr->values.push_back(parse_term(&exprval));
+		} else {
+			expr->values.push_back(parse_intval(&exprval, level + 1));
+		}
+	}
 	
 	while (isspace(*exprval)) ++exprval;
 	
@@ -457,64 +493,27 @@ string PDI_strval_t::to_str() const
 
 // public functions
 
-Value::Value(const char *val_str)
-{
-	const char *parse_val = val_str;
-	// Remove leading space
-	while (isspace(*parse_val)) ++parse_val;
-	try {
-		// Try to parse as if it was an intval
-		*this = parse_intval(&parse_val, 1);
-		// Goes to '\0' if the remaining characters are spaces
-		while (isspace(*parse_val)) ++parse_val;
-	} catch ( Error& ) {
-		parse_val = val_str; // rewind
-	}
-	
-	// In case something remains, we do not have an intval, t
-	// Try to parse as a strval
-	if (*parse_val) {
-		*this = parse_strval(&parse_val);
-	}
-}
-
-long Value::to_long() const
-{
-	switch (kind) {
-	case Value::PDI_VAL_CONST: 
-		return c.constval;
-	case Value::PDI_VAL_REF: 
-		return c.refval->to_long();
-	case Value::PDI_VAL_EXPR: 
-		return c.exprval->to_long();
-	default:
-		throw Error(PDI_ERR_VALUE, "Non integer value type: %s", to_str().c_str());
-	}
-}
-
-string Value::to_str() const
-{
-	if (kind == Value::PDI_VAL_STR) {
-		return c.strval->to_str();
-	} else {
-		stringstream result;
-		result << to_long();
-		return result.str();
-	}
-}
-
 Value::Value():
-		kind(PDI_VAL_CONST)
+		kind(PDI_VAL_CONST),
+		m_impl(new Noval)
 {
-	c.constval = 0;
+	doassert();
+}
+
+Value::Value(PDI_valkind_t k, std::unique_ptr<Impl> impl):
+		kind(k),
+		m_impl(move(impl))
+{
+	doassert();
 }
 
 Value::Value(const Value& origin):
-		kind(origin.kind)
+		kind(origin.kind),
+		m_impl(origin.m_impl->clone())
 {
+	doassert();
 	switch (origin.kind) {
 	case PDI_VAL_CONST:
-		c.constval = origin.c.constval;
 		break;
 	case PDI_VAL_REF:
 		c.refval = new PDI_refval_t(*origin.c.refval);
@@ -526,21 +525,49 @@ Value::Value(const Value& origin):
 		c.strval = new PDI_strval_t(*origin.c.strval);
 		break;
 	}
+	doassert();
 }
 
 Value::Value(Value&& origin):
 		kind(origin.kind),
-		c(origin.c)
+		c(origin.c),
+		m_impl(move(origin.m_impl))
 {
+	doassert();
 	origin.kind = PDI_VAL_CONST;
+	origin.m_impl = unique_ptr<Noval>(new Noval);
+	doassert();
+}
+
+Value::Value(const char *val_str):
+		kind(PDI_VAL_CONST),
+		m_impl(new Noval)
+{
+	doassert();
+	const char *parse_val = val_str;
+	
+	try { // parse as a space enclosed intval
+		while (isspace(*parse_val)) ++parse_val;
+		*this = parse_intval(&parse_val, 1);
+		while (isspace(*parse_val)) ++parse_val;
+	} catch ( Error& ) { // in case of error, unparse
+		parse_val = val_str;
+	}
+	
+	if (*parse_val) { // If we do not have an intval, parse as a strval
+		parse_val = val_str; // rewind
+		*this = parse_strval(&parse_val);
+	}
+	doassert();
 }
 
 Value& Value::operator=(const Value& origin)
 {
+	doassert();
 	kind = origin.kind;
+	m_impl = origin.m_impl->clone();
 	switch (origin.kind) {
 	case PDI_VAL_CONST:
-		c.constval = origin.c.constval;
 		break;
 	case PDI_VAL_REF:
 		c.refval = new PDI_refval_t(*origin.c.refval);
@@ -552,19 +579,25 @@ Value& Value::operator=(const Value& origin)
 		c.strval = new PDI_strval_t(*origin.c.strval);
 		break;
 	}
+	doassert();
 	return *this;
 }
 
 Value& Value::operator=(Value&& origin)
 {
+	doassert();
 	kind = origin.kind;
-	c = origin.c;
 	origin.kind = PDI_VAL_CONST;
+	c = origin.c;
+	m_impl = move(origin.m_impl);
+	origin.m_impl = unique_ptr<Noval>(new Noval);
+	doassert();
 	return *this;
 }
 
 Value::~Value()
 {
+	doassert();
 	switch (kind) {
 	case PDI_VAL_EXPR: {
 		delete c.exprval;
@@ -576,6 +609,33 @@ Value::~Value()
 		delete c.strval;
 	} break;
 	case PDI_VAL_CONST: break;
+	}
+}
+
+long Value::to_long() const
+{
+	doassert();
+	switch (kind) {
+	case Value::PDI_VAL_CONST: 
+		return *m_impl;
+	case Value::PDI_VAL_REF: 
+		return c.refval->to_long();
+	case Value::PDI_VAL_EXPR: 
+		return c.exprval->to_long();
+	default:
+		throw Error(PDI_ERR_VALUE, "Non integer value type: %s", to_str().c_str());
+	}
+}
+
+string Value::to_str() const
+{
+	doassert();
+	if (kind == Value::PDI_VAL_STR) {
+		return c.strval->to_str();
+	} else {
+		stringstream result;
+		result << to_long();
+		return result.str();
 	}
 }
 

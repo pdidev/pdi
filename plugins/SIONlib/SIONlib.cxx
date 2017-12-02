@@ -112,7 +112,7 @@ static PDI_status_t parse_property(PC_tree_t conf, const char *entry_name, const
       return PDI_ERR_CONFIG;
     }
   }
-  *property = Value{strv};
+  new (property) Value{strv};
   free(strv);
   return PDI_OK;
 }

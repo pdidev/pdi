@@ -31,6 +31,9 @@
 #ifndef PDI_VALUE_H__
 #define PDI_VALUE_H__
 
+#include <cassert>
+#include <memory>
+
 #include <pdi.h>
 
 #include <pdi/value_fwd.h>
@@ -61,14 +64,11 @@ public:
 		PDI_VAL_EXPR,
 		PDI_VAL_STR
 	} PDI_valkind_t;
-
+	
 	/// the kind of value this is
 	PDI_valkind_t kind;
 	
 	union {
-		/// in case this is a PDI_VAL_CONST, the constant value
-		long constval;
-		
 		/// in case of PDI_VAL_REF the referenced value (not owned)
 		PDI_refval_t *refval;
 		
@@ -79,8 +79,16 @@ public:
 		PDI_strval_t *strval;
 		
 	} c;
+
+	struct Impl;
 	
+private:
+	std::unique_ptr<Impl> m_impl;
+	
+public:
 	Value();
+	
+	Value(PDI_valkind_t k, std::unique_ptr<Impl> impl);
 	
 	/** Builds (i.e. parse) a value from a string
 	 *
@@ -107,6 +115,8 @@ public:
 	/** Destroys a PDI value
 	 */
 	~Value();
+	
+	void doassert() const { assert(m_impl.operator bool()); }
 	
 	/** Evaluates a value as an integer
 	 *
