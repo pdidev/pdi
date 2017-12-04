@@ -110,7 +110,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 				return PDI_ERR_CONFIG;
 			}
 		}
-		new (&var->gstarts[0]) Value{tmp};
+		new (&var->gstarts[0]) Value{Value::parse(tmp)};
 		free(tmp);
 		
 		var->gsizes = (PDI_value_t*) malloc(sizeof(PDI_value_t));
@@ -123,7 +123,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 				return PDI_ERR_CONFIG;
 			}
 		}
-		new (&var->gsizes[0]) Value{tmp};
+		new (&var->gsizes[0]) Value{Value::parse(tmp)};
 		free(tmp);
 		
 	} else {
@@ -141,7 +141,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		for ( int ii=0; ii<len; ++ii ) {
 			char *expr = NULL;
 			PC_string(PC_get(treetmp, "[%d]", ii), &expr) ; 
-			new (&var->gstarts[ii]) Value{expr};
+			new (&var->gstarts[ii]) Value{Value::parse(expr)};
 		}
 		
 		// Sizes (Size of the distributed array)
@@ -157,7 +157,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		for ( int ii=0; ii<len; ++ii ) {
 			char *expr = NULL;
 			PC_string(PC_get(treetmp, "[%d]", ii), &expr) ; 
-			new (&var->gsizes[ii]) Value{expr};
+			new (&var->gsizes[ii]) Value{Value::parse(expr)};
 			if(status) return status;
 		}
 	}
@@ -198,7 +198,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 		if( PC_string(PC_get(treetmp, ".var"), &var_strv)){ // no variable name or not readable
 			var_strv = strdup((*hdf5data)[ii].name); // the node label is used (as a default value)
 		}
-		new (&(*hdf5data)[ii].h5var) Value{var_strv};
+		new (&(*hdf5data)[ii].h5var) Value{Value::parse(var_strv)};
 		
 		// set the HDF5 filename (i.e. where do we write the data)
 		char *file_strv = NULL;
@@ -213,7 +213,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 				return PDI_ERR_CONFIG;
 			}
 		}
-		new(&(*hdf5data)[ii].h5file) Value{file_strv};
+		new(&(*hdf5data)[ii].h5file) Value{Value::parse(file_strv)};
 		free(file_strv);
 		
 		// sampling or frequency (i.e. when do we expose)
@@ -229,7 +229,7 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 				return PDI_ERR_CONFIG;
 			}
 		}
-		new (&(*hdf5data)[ii].select) Value{select_strv};
+		new (&(*hdf5data)[ii].select) Value{Value::parse(select_strv)};
 		free(select_strv);
 		free(var_strv);
 		

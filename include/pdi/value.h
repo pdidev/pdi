@@ -41,8 +41,8 @@ public:
 	struct Impl
 	{
 		virtual ~Impl() {}
-		virtual operator long () const = 0;
-		virtual operator std::string () const;
+		virtual long to_long() const = 0;
+		virtual std::string to_string() const;
 		virtual std::unique_ptr<Impl> clone() const = 0;
 	};
 	
@@ -50,7 +50,7 @@ private:
 	std::unique_ptr<Impl> m_impl;
 	
 public:
-	Value();
+	Value() = default;
 	
 	Value(std::unique_ptr<Impl> impl);
 	
@@ -58,7 +58,7 @@ public:
 	 *
 	 * \param[in] val_str the string to parse
 	 */
-	explicit Value(const char *val_str);
+	static Value parse(const char *val_str);
 	
 	/** Copies a value
 	 *
@@ -70,7 +70,7 @@ public:
 	 *
 	 * \param[in] value the value to move`
 	 */
-	Value(Value&& value);
+	Value(Value&& value) = default;
 	
 	/** Copies a value
 	 *
@@ -84,13 +84,13 @@ public:
 	 * \param[in] value the value to move`
 	 * \return *this
 	 */
-	Value& operator=(Value&& value);
+	Value& operator=(Value&& value) = default;
 
 	/** Evaluates a value as an integer
 	 *
 	 * \return the integer value
 	 */
-	long to_long() const;
+	long to_long() const { return m_impl->to_long(); }
 	
 	operator long() const { return to_long(); }
 	
@@ -98,7 +98,7 @@ public:
 	 *
 	 * \return the string value
 	 */
-	std::string to_string() const;
+	std::string to_string() const { return m_impl->to_string(); }
 	
 	operator std::string() const { return to_string(); }
 	

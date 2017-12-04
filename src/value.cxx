@@ -49,6 +49,8 @@
 
 namespace PDI {
 
+using std::cout;
+using std::endl;
 using std::move;
 using std::string;
 using std::stringstream;
@@ -71,17 +73,6 @@ enum PDI_exprop_t
 	PDI_OP_LT = '<'
 };
 
-/** An empty value 
- */
-struct Noval:
-		public Value::Impl
-{
-	operator long () const override { throw Error{PDI_ERR_VALUE, "Invalid value used"}; }
-	
-	unique_ptr<Impl> clone() const override { return unique_ptr<Noval>{new Noval}; }
-	
-};
-
 /** A constant integer value 
  */
 struct Constval:
@@ -91,7 +82,7 @@ struct Constval:
 	
 	Constval ( long value ) : m_value(value) {}
 	
-	operator long () const override { return m_value; }
+	long to_long() const override { return m_value; }
 	
 	unique_ptr<Impl> clone() const override
 	{
@@ -117,12 +108,12 @@ struct Stringval:
 	/// array of subvalues
 	vector<Subvalue> values;
 	
-	operator long () const override
+	long to_long() const override
 	{
-		throw Error{PDI_ERR_VALUE, "Can not interpret %s as an integer value", static_cast<string>(*this).c_str()};
+		throw Error{PDI_ERR_VALUE, "Can not interpret `%s' as an integer value", to_string().c_str()};
 	}
 	
-	operator string () const override
+	string to_string() const override
 	{
 		stringstream result;
 		
@@ -152,7 +143,7 @@ struct Exprval:
 	
 	vector<PDI_exprop_t> ops;
 	
-	operator long () const override
+	long to_long() const override
 	{
 		long computed_value = values[0].to_long();
 		for (size_t ii = 1; ii < values.size(); ++ii) {
@@ -214,7 +205,7 @@ struct Refval:
 	
 	Refval(Data_descriptor * desc): m_referenced(desc) {}
 	
-	operator long () const override
+	long to_long() const override
 	{
 		const PDI_datatype_t &ref_type = m_referenced->get_type();
 		PDI_scalar_type_t type = ref_type.c.scalar;
@@ -272,10 +263,10 @@ struct Refval:
 	
 };
 
-Value::Impl::operator string () const
+string Value::Impl::to_string() const
 {
 	stringstream result;
-	result << static_cast<long>(*this);
+	result << to_long();
 	return result.str();
 }
 
@@ -496,11 +487,6 @@ Value parse_strval(char const **val_str)
 
 // public functions
 
-Value::Value():
-		m_impl(new Noval)
-{
-}
-
 Value::Value(std::unique_ptr<Impl> impl):
 		m_impl(move(impl))
 {
@@ -511,28 +497,18 @@ Value::Value(const Value& origin):
 {
 }
 
-Value::Value(Value&& origin):
-		m_impl(move(origin.m_impl))
-{
-	origin.m_impl = unique_ptr<Noval>(new Noval);
-}
-
-Value::Value(const char *val_str):
-		m_impl(new Noval)
+Value Value::parse(const char *val_str)
 {
 	const char *parse_val = val_str;
 	
 	try { // parse as a space enclosed intval
 		while (isspace(*parse_val)) ++parse_val;
-		*this = parse_intval(&parse_val, 1);
+		Value result = parse_intval(&parse_val, 1);
 		while (isspace(*parse_val)) ++parse_val;
-	} catch ( Error& ) { // in case of error, unparse
-		parse_val = val_str;
-	}
-	
-	if (*parse_val) { // If we do not have an intval, parse as a strval
-		parse_val = val_str; // rewind
-		*this = parse_strval(&parse_val);
+		return result;
+	} catch ( Error& e ) { // in case of error, parse as a string
+// 		cout << "could not parse as a int: "<<e.what()<<endl;
+		return parse_strval(&val_str);
 	}
 }
 
@@ -540,23 +516,6 @@ Value& Value::operator=(const Value& origin)
 {
 	m_impl = origin.m_impl->clone();
 	return *this;
-}
-
-Value& Value::operator=(Value&& origin)
-{
-	m_impl = move(origin.m_impl);
-	origin.m_impl = unique_ptr<Noval>(new Noval);
-	return *this;
-}
-
-long Value::to_long() const
-{
-	return *m_impl;
-}
-
-string Value::to_string() const
-{
-	return *m_impl;
 }
 
 } // namespace PDI
