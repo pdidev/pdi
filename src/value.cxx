@@ -57,6 +57,8 @@ using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
+namespace {
+
 /** The binary operators that can be used in values
  */
 enum PDI_exprop_t
@@ -263,13 +265,6 @@ struct Refval:
 	
 };
 
-string Value::Impl::to_string() const
-{
-	stringstream result;
-	result << to_long();
-	return result.str();
-}
-
 Value parse_intval(char const **val_str, int level);
 
 string parse_id(char const **val_str)
@@ -352,7 +347,7 @@ unique_ptr<Constval> parse_const(char const **val_str)
 	
 	long result = strtol(constval, (char **)&constval, 0);
 	if (*val_str == constval) {
-		throw Error{PDI_ERR_VALUE, "Expected integer, found %s", constval};
+		throw Error{PDI_ERR_VALUE, "Expected integer, found `%s'", constval};
 	}
 	while (isspace(*constval)) ++constval;
 	
@@ -422,8 +417,8 @@ Value parse_intval(char const **val_str, int level)
 	
 	Value result = parse_intval(&exprval, level + 1);
 	
-	/* little compression trick, we only build the exprval if needed, instead we
-	   return  the previous expression directly */
+	/* little compression trick, we only build the Exprval if needed, otherwise
+	   we return  the previous expression directly */
 	unique_ptr<Exprval> expr = NULL;
 	while ( op_level(static_cast<PDI_exprop_t>(*exprval)) == level ) {
 		PDI_exprop_t op = parse_op(&exprval, level);
@@ -485,16 +480,13 @@ Value parse_strval(char const **val_str)
 	return Value{move(result)};
 }
 
-// public functions
+} // namespace <anonymous>
 
-Value::Value(std::unique_ptr<Impl> impl):
-		m_impl(move(impl))
+string Value::Impl::to_string() const
 {
-}
-
-Value::Value(const Value& origin):
-		m_impl(origin.m_impl->clone())
-{
+	stringstream result;
+	result << to_long();
+	return result.str();
 }
 
 Value Value::parse(const char *val_str)
@@ -507,15 +499,8 @@ Value Value::parse(const char *val_str)
 		while (isspace(*parse_val)) ++parse_val;
 		return result;
 	} catch ( Error& e ) { // in case of error, parse as a string
-// 		cout << "could not parse as a int: "<<e.what()<<endl;
 		return parse_strval(&val_str);
 	}
-}
-
-Value& Value::operator=(const Value& origin)
-{
-	m_impl = origin.m_impl->clone();
-	return *this;
 }
 
 } // namespace PDI

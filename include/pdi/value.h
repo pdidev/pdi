@@ -25,13 +25,11 @@
 #ifndef PDI_VALUE_H__
 #define PDI_VALUE_H__
 
-#include <cassert>
 #include <memory>
 
 #include <pdi.h>
 
 #include <pdi/value_fwd.h>
-#include <pdi/state_fwd.h>
 
 namespace PDI {
 
@@ -52,7 +50,7 @@ private:
 public:
 	Value() = default;
 	
-	Value(std::unique_ptr<Impl> impl);
+	Value(std::unique_ptr<Impl> impl): m_impl(move(impl)) {}
 	
 	/** Builds (i.e. parse) a value from a string
 	 *
@@ -64,7 +62,7 @@ public:
 	 *
 	 * \param[in] value the value to copy
 	 */
-	Value(const Value& value);
+	Value(const Value& value): m_impl(value.m_impl->clone()) {}
 	
 	/** Moves a value
 	 *
@@ -77,7 +75,7 @@ public:
 	 * \param[in] value the value to copy
 	 * \return *this
 	 */
-	Value& operator=(const Value& value);
+	Value& operator=(const Value& value) { m_impl = value.m_impl->clone(); return *this; }
 
 	/** Moves a value
 	 *
