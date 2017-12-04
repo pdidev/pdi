@@ -35,32 +35,16 @@
 
 namespace PDI {
 
-/** A value in case this is a reference to another value
- */
-class PDI_refval_t;
-
 class Value
 {
 public:
-	/** the possible kind of values
-	 */
-	typedef enum PDI_valkind_e {
-		PDI_VAL_CONST,
-		PDI_VAL_REF,
-		PDI_VAL_EXPR,
-		PDI_VAL_STR
-	} PDI_valkind_t;
-	
-	/// the kind of value this is
-	PDI_valkind_t kind;
-	
-	union {
-		/// in case of PDI_VAL_REF the referenced value (owned)
-		PDI_refval_t *refval;
-		
-	} c;
-	
-	struct Impl;
+	struct Impl
+	{
+		virtual ~Impl() {}
+		virtual operator long () const = 0;
+		virtual operator std::string () const;
+		virtual std::unique_ptr<Impl> clone() const = 0;
+	};
 	
 private:
 	std::unique_ptr<Impl> m_impl;
@@ -68,7 +52,7 @@ private:
 public:
 	Value();
 	
-	Value(PDI_valkind_t k, std::unique_ptr<Impl> impl);
+	Value(std::unique_ptr<Impl> impl);
 	
 	/** Builds (i.e. parse) a value from a string
 	 *
@@ -82,33 +66,41 @@ public:
 	 */
 	Value(const Value& value);
 	
+	/** Moves a value
+	 *
+	 * \param[in] value the value to move`
+	 */
 	Value(Value&& value);
 	
 	/** Copies a value
 	 *
 	 * \param[in] value the value to copy
+	 * \return *this
 	 */
 	Value& operator=(const Value& value);
 
+	/** Moves a value
+	 *
+	 * \param[in] value the value to move`
+	 * \return *this
+	 */
 	Value& operator=(Value&& value);
 
-	/** Destroys a PDI value
-	 */
-	~Value();
-	
-	void doassert() const { assert(m_impl.operator bool()); }
-	
 	/** Evaluates a value as an integer
 	 *
 	 * \return the integer value
 	 */
 	long to_long() const;
 	
+	operator long() const { return to_long(); }
+	
 	/** Evaluates a value as a string
 	 *
 	 * \return the string value
 	 */
-	std::string to_str() const;
+	std::string to_string() const;
+	
+	operator std::string() const { return to_string(); }
 	
 };
 

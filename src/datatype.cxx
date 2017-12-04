@@ -508,12 +508,12 @@ static PDI_status_t array_datatype_bufdesc(const PDI_array_type_t *type, buffer_
 	
 	PDI_handle_err(datatype_bufdesc(&type->type, result), err0);
 	for (int dim = 0; dim < type->ndims; ++dim) {
-		long size = type->sizes[dim].to_long();
-		long subsize = type->subsizes[dim].to_long();
+		long size = type->sizes[dim];
+		long subsize = type->subsizes[dim];
 		if ((size == subsize) && (result->ndims == 0)) {   // dense case
 			result->dense_size *= size;
 		} else { // sparse case
-			long start = type->starts[dim].to_long();
+			long start = type->starts[dim];
 			++result->ndims;
 			result->sizes    = (size_t *) realloc(result->sizes, result->ndims * sizeof(size_t));
 			result->subsizes = (size_t *) realloc(result->subsizes, result->ndims * sizeof(size_t));

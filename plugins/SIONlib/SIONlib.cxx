@@ -416,7 +416,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
-  int sid = sion_paropen_mpi(event->file.to_str().c_str(), "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+  int sid = sion_paropen_mpi(event->file.to_string().c_str(), "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
     const Data_ref & ref = PDI_state.desc(event->vars[i]).value();
@@ -482,7 +482,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
 
-  string file = event->file.to_str();
+  string file = event->file;
   int sid = sion_paropen_mpi(file.c_str(), "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
@@ -623,9 +623,9 @@ static PDI_status_t write_var(Data_r_ref& ref, const SIONlib_var_t *var)
   }
 
   // open file
-  int n_files = var->n_files.to_long();
+  int n_files = var->n_files;
 
-  string file = var->file.to_str();
+  string file = var->file;
 
   size_t data_size;
   if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) return status;
@@ -656,7 +656,7 @@ static PDI_status_t read_var(const Data_ref & ref, const SIONlib_var_t *var)
   }
 
   // open file
-  string file = var->file.to_str();
+  string file = var->file;
 
   int n_files = 1;
   size_t data_size;

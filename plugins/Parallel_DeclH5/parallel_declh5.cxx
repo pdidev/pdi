@@ -548,9 +548,9 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 			if ( !strcmp(outputs[ii].name, name.c_str()) ) {
 				found_output = 1;
 				
-				string h5file = outputs[ii].h5file.to_str();
-				string h5var = outputs[ii].h5var.to_str();
-				long select = outputs[ii].select.to_long();
+				string h5file = outputs[ii].h5file;
+				string h5var = outputs[ii].h5var;
+				long select = outputs[ii].select;
 				
 				// TODO: warn user, assuming size is unchanged (unknow consequence when size is changed...)
 				hsize_t *gstarts = NULL; 
@@ -593,9 +593,9 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 			if ( name == inputs[ii].name ) {
 				found_input = 1;
 				
-				string h5file = inputs[ii].h5file.to_str();
-				string h5var = inputs[ii].h5var.to_str();
-				long select = inputs[ii].select.to_long();
+				string h5file = inputs[ii].h5file;
+				string h5var = inputs[ii].h5var;
+				long select = inputs[ii].select;
 				
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL;

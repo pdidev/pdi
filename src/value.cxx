@@ -71,32 +71,6 @@ enum PDI_exprop_t
 	PDI_OP_LT = '<'
 };
 
-class PDI_refval_t
-{
-public:
-	/// The referenced data
-	Data_descriptor *m_referenced;
-	
-	/// Indexes in case the referenced data is an array
-	vector<Value> m_idx;
-	
-	long to_long() const;
-	
-};
-
-struct Value::Impl
-{
-	virtual ~Impl() {}
-	virtual operator long () const = 0;
-	virtual operator string () const
-	{
-		stringstream result;
-		result << static_cast<long>(*this);
-		return result.str();
-	}
-	virtual unique_ptr<Impl> clone() const = 0;
-};
-
 /** An empty value 
  */
 struct Noval:
@@ -158,7 +132,7 @@ struct Stringval:
 			result << string{str.c_str() + from_idx, blk_sz};
 			from_idx += blk_sz;
 			
-			result << values[ii].value.to_str();
+			result << values[ii].value.to_string();
 		}
 		result << str.c_str() + from_idx;
 		
@@ -227,6 +201,84 @@ struct Exprval:
 	
 };
 
+/** A value in case this is a reference to another value
+ */
+struct Refval:
+		public Value::Impl
+{
+	/// The referenced data
+	Data_descriptor *m_referenced;
+	
+	/// Indexes in case the referenced data is an array
+	vector<Value> m_idx;
+	
+	Refval(Data_descriptor * desc): m_referenced(desc) {}
+	
+	operator long () const override
+	{
+		const PDI_datatype_t &ref_type = m_referenced->get_type();
+		PDI_scalar_type_t type = ref_type.c.scalar;
+		Data_ref cref;
+		
+		if (ref_type.kind == PDI_K_ARRAY) {
+			if (m_idx.size() != static_cast<size_t>(ref_type.c.array->ndims)) {
+				PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), ref_type.c.array->ndims);
+			}
+			if (ref_type.c.array->type.kind != PDI_K_SCALAR) {
+				PDI_make_err(PDI_ERR_VALUE, "Invalid type accessed");
+			}
+			type = ref_type.c.array->type.c.scalar;
+		} else if (ref_type.kind == PDI_K_SCALAR) {
+			if (!m_idx.empty()) {
+				PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", m_idx.size());
+			}
+		} else {
+			PDI_make_err(PDI_ERR_VALUE, "Invalid access to a struct");
+		}
+		
+		long idx = 0;
+		long stride = 1;
+		for (size_t ii = 0; ii < m_idx.size(); ++ii) {
+			long start = ref_type.c.array->starts[ii].to_long();
+			long index = m_idx[ii].to_long();
+			idx += (start + index) * stride;
+			long size = ref_type.c.array->sizes[ii].to_long();
+			stride *= size;
+		}
+		
+		if (!m_referenced->value()) {
+			PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not shared", m_referenced->name().c_str());
+		}
+		
+		if (Data_r_ref ref = m_referenced->value()) {
+			void *value = ref.get();
+			switch (type) {
+			case PDI_T_INT8:
+				return static_cast<int8_t *>(value)[idx];
+			case PDI_T_INT16:
+				return static_cast<int16_t *>(value)[idx];
+			case PDI_T_INT32:
+				return static_cast<int32_t *>(value)[idx];
+			case PDI_T_INT64:
+				return static_cast<int64_t *>(value)[idx];
+			default:
+				throw Error(PDI_ERR_VALUE, "Non-integer type accessed");
+			}
+		}
+		throw Error(PDI_ERR_VALUE, "Referenced variable `%s' is not readable", m_referenced->name().c_str());
+	}
+	
+	unique_ptr<Impl> clone() const override { return unique_ptr<Refval>{new Refval{*this}}; }
+	
+};
+
+Value::Impl::operator string () const
+{
+	stringstream result;
+	result << static_cast<long>(*this);
+	return result.str();
+}
+
 Value parse_intval(char const **val_str, int level);
 
 string parse_id(char const **val_str)
@@ -258,7 +310,7 @@ string parse_id(char const **val_str)
 	return result;
 }
 
-PDI_refval_t parse_ref(char const **val_str)
+unique_ptr<Refval> parse_ref(char const **val_str)
 {
 	const char *ref = *val_str;
 	
@@ -271,20 +323,20 @@ PDI_refval_t parse_ref(char const **val_str)
 		has_curly_brace = true;
 	}
 	
-	PDI_refval_t result { &PDI_state.desc(parse_id(&ref)), {} };
+	unique_ptr<Refval> result{new Refval{ &PDI_state.desc(parse_id(&ref)) }};
 	
-	if (!result.m_referenced->is_metadata()) {
-		throw Error{PDI_ERR_VALUE, "Invalid reference to non-metadata `%s'", result.m_referenced->name().c_str()};
+	if (!result->m_referenced->is_metadata()) {
+		throw Error{PDI_ERR_VALUE, "Invalid reference to non-metadata `%s'", result->m_referenced->name().c_str()};
 	}
 	
-	assert(!result.m_referenced->name().empty());
+	assert(!result->m_referenced->name().empty());
 	
 	while (isspace(*ref)) ++ref;
 	
 	while (*ref == '[') {
 		++ref;
 		while (isspace(*ref)) ++ref;
-		result.m_idx.push_back(parse_intval(&ref, 1));
+		result->m_idx.push_back(parse_intval(&ref, 1));
 		if (*ref != ']')  {
 			throw Error{PDI_ERR_VALUE, "Expected ']', found %c", *ref};
 		}
@@ -322,23 +374,19 @@ Value parse_term(char const **val_str)
 	
 	if ( **val_str == '(' ) {
 		const char *term = *val_str;
-		Value result;
 		++term;
 		while (isspace(*term)) ++term;
-		result = parse_intval(&term, 1);
+		Value result = parse_intval(&term, 1);
 		if (*term != ')')  throw Error{PDI_ERR_VALUE, "Expected ')', found '%c'", *term};
 		++term;
 		while (isspace(*term)) ++term;
 		*val_str = term;
 		return result;
 	} else if ( **val_str == '$' ) {
-		Value result;
-		result.c.refval = new PDI_refval_t{parse_ref(val_str)};
-		result.kind = Value::PDI_VAL_REF;
-		return result;
-	} 
+		return Value { parse_ref(val_str) };
+	}
 	
-	return Value{Value::PDI_VAL_CONST, parse_const(val_str)};
+	return Value{parse_const(val_str)};
 }
 
 #define OP_LEVELS 6
@@ -378,13 +426,10 @@ PDI_exprop_t parse_op(char const **val_str, int level)
 
 Value parse_intval(char const **val_str, int level)
 {
+	if ( level > OP_LEVELS ) return parse_term(val_str);
 	const char *exprval = *val_str;
-	Value result;
-	if (level >= OP_LEVELS) {
-		result = parse_term(&exprval);
-	} else {
-		result = parse_intval(&exprval, level + 1);
-	}
+	
+	Value result = parse_intval(&exprval, level + 1);
 	
 	/* little compression trick, we only build the exprval if needed, instead we
 	   return  the previous expression directly */
@@ -408,7 +453,7 @@ Value parse_intval(char const **val_str, int level)
 	
 	*val_str = exprval;
 	if ( expr ) {
-		return Value{Value::PDI_VAL_EXPR, move(expr)};
+		return Value{move(expr)};
 	} else {
 		return result;
 	}
@@ -432,14 +477,13 @@ Value parse_strval(char const **val_str)
 			str += 1;
 		} break;
 		case '$': {
-			result->values.push_back({Value(), static_cast<int>(result->str.size())});
 			switch (str[1]) {
-			case '(': {
-				++str; // parse the term starting with the parenthesis (the intvl)
-				result->values.back().value = parse_term(&str);
+			case '(': { // parse the term starting with the parenthesis (the intvl)
+				++str;
+				result->values.push_back({Value{parse_term(&str)}, static_cast<int>(result->str.size())});
 			} break;
 			default: { // parse the term starting with the dollar (the ref)
-				result->values.back().value = parse_term(&str);
+				result->values.push_back({Value{parse_term(&str)}, static_cast<int>(result->str.size())});
 			} break;
 			}
 		} break;
@@ -447,112 +491,35 @@ Value parse_strval(char const **val_str)
 	}
 	
 	*val_str = str;
-	return Value{Value::PDI_VAL_STR, move(result)};
-}
-
-long PDI_refval_t::to_long() const
-{
-	const PDI_datatype_t &ref_type = m_referenced->get_type();
-	PDI_scalar_type_t type = ref_type.c.scalar;
-	Data_ref cref;
-	
-	if (ref_type.kind == PDI_K_ARRAY) {
-		if (m_idx.size() != static_cast<size_t>(ref_type.c.array->ndims)) {
-			PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), ref_type.c.array->ndims);
-		}
-		if (ref_type.c.array->type.kind != PDI_K_SCALAR) {
-			PDI_make_err(PDI_ERR_VALUE, "Invalid type accessed");
-		}
-		type = ref_type.c.array->type.c.scalar;
-	} else if (ref_type.kind == PDI_K_SCALAR) {
-		if (!m_idx.empty()) {
-			PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", m_idx.size());
-		}
-	} else {
-		PDI_make_err(PDI_ERR_VALUE, "Invalid access to a struct");
-	}
-	
-	long idx = 0;
-	long stride = 1;
-	for (size_t ii = 0; ii < m_idx.size(); ++ii) {
-		long start = ref_type.c.array->starts[ii].to_long();
-		long index = m_idx[ii].to_long();
-		idx += (start + index) * stride;
-		long size = ref_type.c.array->sizes[ii].to_long();
-		stride *= size;
-	}
-	
-	if (!m_referenced->value()) {
-		PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not shared", m_referenced->name().c_str());
-	}
-	
-	if (Data_r_ref ref = m_referenced->value()) {
-		void *value = ref.get();
-		switch (type) {
-		case PDI_T_INT8:
-			return static_cast<int8_t *>(value)[idx];
-		case PDI_T_INT16:
-			return static_cast<int16_t *>(value)[idx];
-		case PDI_T_INT32:
-			return static_cast<int32_t *>(value)[idx];
-		case PDI_T_INT64:
-			return static_cast<int64_t *>(value)[idx];
-		default:
-			throw Error(PDI_ERR_VALUE, "Non-integer type accessed");
-		}
-	}
-	throw Error(PDI_ERR_VALUE, "Referenced variable `%s' is not readable", m_referenced->name().c_str());
+	return Value{move(result)};
 }
 
 // public functions
 
 Value::Value():
-		kind(PDI_VAL_CONST),
 		m_impl(new Noval)
 {
-	doassert();
 }
 
-Value::Value(PDI_valkind_t k, std::unique_ptr<Impl> impl):
-		kind(k),
+Value::Value(std::unique_ptr<Impl> impl):
 		m_impl(move(impl))
 {
-	doassert();
 }
 
 Value::Value(const Value& origin):
-		kind(origin.kind),
 		m_impl(origin.m_impl->clone())
 {
-	doassert();
-	switch (origin.kind) {
-	case PDI_VAL_REF:
-		c.refval = new PDI_refval_t(*origin.c.refval);
-		break;
-	case PDI_VAL_CONST:
-	case PDI_VAL_EXPR:
-	case PDI_VAL_STR:
-		break;
-	}
-	doassert();
 }
 
 Value::Value(Value&& origin):
-		kind(origin.kind),
-		c(origin.c),
 		m_impl(move(origin.m_impl))
 {
-	doassert();
-	origin.kind = PDI_VAL_CONST;
 	origin.m_impl = unique_ptr<Noval>(new Noval);
-	doassert();
 }
 
 Value::Value(const char *val_str):
-		kind(PDI_VAL_CONST),
 		m_impl(new Noval)
 {
-	doassert();
 	const char *parse_val = val_str;
 	
 	try { // parse as a space enclosed intval
@@ -567,77 +534,29 @@ Value::Value(const char *val_str):
 		parse_val = val_str; // rewind
 		*this = parse_strval(&parse_val);
 	}
-	doassert();
 }
 
 Value& Value::operator=(const Value& origin)
 {
-	doassert();
-	kind = origin.kind;
 	m_impl = origin.m_impl->clone();
-	switch (origin.kind) {
-	case PDI_VAL_REF:
-		c.refval = new PDI_refval_t(*origin.c.refval);
-		break;
-	case PDI_VAL_CONST:
-	case PDI_VAL_EXPR:
-	case PDI_VAL_STR:
-		break;
-	}
-	doassert();
 	return *this;
 }
 
 Value& Value::operator=(Value&& origin)
 {
-	doassert();
-	kind = origin.kind;
-	origin.kind = PDI_VAL_CONST;
-	c = origin.c;
 	m_impl = move(origin.m_impl);
 	origin.m_impl = unique_ptr<Noval>(new Noval);
-	doassert();
 	return *this;
-}
-
-Value::~Value()
-{
-	doassert();
-	switch (kind) {
-	case PDI_VAL_REF: {
-		delete c.refval;
-	} break;
-	case PDI_VAL_EXPR:
-	case PDI_VAL_STR:
-	case PDI_VAL_CONST:
-		break;
-	}
 }
 
 long Value::to_long() const
 {
-	doassert();
-	switch (kind) {
-	case Value::PDI_VAL_CONST: 
-	case Value::PDI_VAL_EXPR: 
-	case Value::PDI_VAL_STR: 
-		return *m_impl;
-	case Value::PDI_VAL_REF: 
-		return c.refval->to_long();
-	}
 	return *m_impl;
 }
 
-string Value::to_str() const
+string Value::to_string() const
 {
-	doassert();
-	if (kind == Value::PDI_VAL_STR) {
-		return *m_impl;
-	} else {
-		stringstream result;
-		result << to_long();
-		return result.str();
-	}
+	return *m_impl;
 }
 
 } // namespace PDI

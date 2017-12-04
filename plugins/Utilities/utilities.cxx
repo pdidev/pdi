@@ -213,7 +213,7 @@ PDI_status_t PDI_utilities_event(const char *event_name) {
 			} break;
 			case FILE_EXISTS: {
 				// get filename from input into fname
-				string fname = one_task.in.to_str();
+				string fname = one_task.in;
 				// check for file
 				struct stat sb;
 				if (stat(fname.c_str(), &sb) == 0 && S_ISREG(sb.st_mode)){
@@ -224,7 +224,7 @@ PDI_status_t PDI_utilities_event(const char *event_name) {
 			} break;
 			case DIR_EXISTS: {
 				// get filename from input into str
-				string fname = one_task.in.to_str();
+				string fname = one_task.in;
 				// check for file
 				struct stat sb;
 				if (stat(fname.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)){
@@ -290,7 +290,7 @@ PDI_status_t PDI_utilities_data( const std::string& name, PDI::Data_ref cref )
 			case EVENT2DATA:
 			case FILE_EXISTS:
 			case DIR_EXISTS: {
-				string str_out = one_task.out.to_str(); // output string
+				string str_out = one_task.out; // output string
 				if ( status && name == str_out ) { // output and data name matches
 					status = cast_data_int(ref, one_task.result);
 					goto task_w_found;
@@ -305,9 +305,9 @@ task_w_found:
 	if ( Data_r_ref ref = cref ) {
 		for ( auto&& one_task: tasks ) {
 			if ( one_task.action == EXTRACT_SUBARRAY) {
-				string str_in = one_task.in.to_str(); // input string
+				string str_in = one_task.in; // input string
 				if ( name == str_in ) { // input and data name match
-					string str_out = one_task.out.to_str(); // output string
+					string str_out = one_task.out; // output string
 					if( str_in == str_out ){
 						fprintf(stderr,"[PDI/Utilities] Cannot extract subarray. Array %s and subarray %s identify the same data\n", str_in.c_str(), str_out.c_str());
 						return PDI_ERR_CONFIG;

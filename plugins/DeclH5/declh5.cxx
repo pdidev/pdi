@@ -390,13 +390,8 @@ PDI_status_t PDI_declh5_data(const std::string& name, Data_ref cref)
 		for ( int ii=0; ii<nb_inputs && !found_input; ++ii ) {
 			if ( !strcmp(inputs[ii].name, name.c_str()) ) {
 				found_input = 1;
-				
-				string h5file = inputs[ii].h5file.to_str();
-				string h5var = inputs[ii].h5var.to_str();
-				long select = inputs[ii].select.to_long();
-				
-				if ( select ){
-					status = read_from_file(ref, h5file, h5var);
+				if ( 0 != inputs[ii].select ){
+					status = read_from_file(ref, inputs[ii].h5file, inputs[ii].h5var);
 				}
 			}
 		}
@@ -407,13 +402,8 @@ PDI_status_t PDI_declh5_data(const std::string& name, Data_ref cref)
 		for ( int ii=0; ii<nb_outputs && !found_output; ++ii ) {
 			if ( !strcmp(outputs[ii].name, name.c_str()) ) {
 				found_output = 1;
-				
-				string h5file = outputs[ii].h5file.to_str();
-				string h5var = outputs[ii].h5var.to_str();
-				long select = outputs[ii].select.to_long();
-				
-				if ( select ) {
-					write_to_file(ref, h5file, h5var);
+				if ( 0 != outputs[ii].select ) {
+					write_to_file(ref, outputs[ii].h5file, outputs[ii].h5var);
 				}
 			}
 		}
