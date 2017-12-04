@@ -286,20 +286,22 @@ PDI_status_t PDI_utilities_data( const std::string& name, PDI::Data_ref cref )
 		status = PDI_UNAVAILABLE;
 		// for each utils_task look if the output is the same as the PDI_data_t
 		for ( auto&& one_task: tasks ) {
-			string str_out = one_task.out.to_str(); // output string
-			if ( !status && name == str_out ) { // output and data name matches
-				switch(one_task.action){ // check datatype compatibiliy
-				case EVENT2DATA:
-				case FILE_EXISTS:
-				case DIR_EXISTS: {
+			switch(one_task.action){ // check datatype compatibiliy
+			case EVENT2DATA:
+			case FILE_EXISTS:
+			case DIR_EXISTS: {
+				string str_out = one_task.out.to_str(); // output string
+				if ( status && name == str_out ) { // output and data name matches
 					status = cast_data_int(ref, one_task.result);
-				} break;
-				default: // do nothing
-					break;
+					goto task_w_found;
 				}
+			} break;
+			default: // do nothing
+				break;
 			}
 		}
 	}
+task_w_found:
 	if ( Data_r_ref ref = cref ) {
 		for ( auto&& one_task: tasks ) {
 			if ( one_task.action == EXTRACT_SUBARRAY) {

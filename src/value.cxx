@@ -49,6 +49,7 @@
 
 namespace PDI {
 
+using std::move;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
@@ -168,13 +169,61 @@ struct Stringval:
 	
 };
 
-struct PDI_exprval_s
+/** A value in case this is an expression
+ */
+struct Exprval:
+		public Value::Impl
 {
 	vector<Value> values;
 	
 	vector<PDI_exprop_t> ops;
 	
-	long to_long() const;
+	operator long () const override
+	{
+		long computed_value = values[0].to_long();
+		for (size_t ii = 1; ii < values.size(); ++ii) {
+			long operand = values[ii].to_long();
+			switch (ops[ii - 1]) {
+			case PDI_OP_PLUS: {
+				computed_value += operand;
+			} break;
+			case PDI_OP_MINUS: {
+				computed_value -= operand;
+			} break;
+			case PDI_OP_MULT: {
+				computed_value *= operand;
+			} break;
+			case PDI_OP_DIV: {
+				computed_value /= operand;
+			} break;
+			case PDI_OP_MOD: {
+				computed_value %= operand;
+			} break;
+			case PDI_OP_EQUAL: {
+				computed_value = (computed_value == operand);
+			} break;
+			case PDI_OP_AND: {
+				computed_value = computed_value && operand;
+			} break;
+			case PDI_OP_OR: {
+				computed_value = computed_value || operand;
+			} break;
+			case PDI_OP_GT: {
+				computed_value = (computed_value > operand);
+			} break;
+			case PDI_OP_LT: {
+				computed_value = (computed_value < operand);
+			} break;
+			default: {
+				PDI_make_err(PDI_ERR_VALUE, "Unknown operator: `%c'", ops[ii - 1]);
+			}
+			}
+		}
+		
+		return computed_value;
+	}
+	
+	unique_ptr<Impl> clone() const override { return unique_ptr<Exprval>{new Exprval{*this}}; }
 	
 };
 
@@ -339,14 +388,12 @@ Value parse_intval(char const **val_str, int level)
 	
 	/* little compression trick, we only build the exprval if needed, instead we
 	   return  the previous expression directly */
-	PDI_exprval_t *expr = NULL;
+	unique_ptr<Exprval> expr = NULL;
 	while ( op_level(static_cast<PDI_exprop_t>(*exprval)) == level ) {
 		PDI_exprop_t op = parse_op(&exprval, level);
 		if (!expr) {
-			expr = new PDI_exprval_t;
-			expr->values.push_back(std::move(result));
-			result.kind = Value::PDI_VAL_EXPR;
-			result.c.exprval = expr;
+			expr.reset(new Exprval);
+			expr->values.push_back(move(result));
 		}
 		expr->ops.push_back(op);
 		
@@ -360,7 +407,11 @@ Value parse_intval(char const **val_str, int level)
 	while (isspace(*exprval)) ++exprval;
 	
 	*val_str = exprval;
-	return result;
+	if ( expr ) {
+		return Value{Value::PDI_VAL_EXPR, move(expr)};
+	} else {
+		return result;
+	}
 }
 
 Value parse_strval(char const **val_str)
@@ -453,51 +504,6 @@ long PDI_refval_t::to_long() const
 	throw Error(PDI_ERR_VALUE, "Referenced variable `%s' is not readable", m_referenced->name().c_str());
 }
 
-long PDI_exprval_t::to_long() const
-{
-	long computed_value = values[0].to_long();
-	for (size_t ii = 1; ii < values.size(); ++ii) {
-		long operand = values[ii].to_long();
-		switch (ops[ii - 1]) {
-		case PDI_OP_PLUS: {
-			computed_value += operand;
-		} break;
-		case PDI_OP_MINUS: {
-			computed_value -= operand;
-		} break;
-		case PDI_OP_MULT: {
-			computed_value *= operand;
-		} break;
-		case PDI_OP_DIV: {
-			computed_value /= operand;
-		} break;
-		case PDI_OP_MOD: {
-			computed_value %= operand;
-		} break;
-		case PDI_OP_EQUAL: {
-			computed_value = (computed_value == operand);
-		} break;
-		case PDI_OP_AND: {
-			computed_value = computed_value && operand;
-		} break;
-		case PDI_OP_OR: {
-			computed_value = computed_value || operand;
-		} break;
-		case PDI_OP_GT: {
-			computed_value = (computed_value > operand);
-		} break;
-		case PDI_OP_LT: {
-			computed_value = (computed_value < operand);
-		} break;
-		default: {
-			PDI_make_err(PDI_ERR_VALUE, "Unknown operator: `%c'", ops[ii - 1]);
-		}
-		}
-	}
-	
-	return computed_value;
-}
-
 // public functions
 
 Value::Value():
@@ -520,14 +526,11 @@ Value::Value(const Value& origin):
 {
 	doassert();
 	switch (origin.kind) {
-	case PDI_VAL_CONST:
-		break;
 	case PDI_VAL_REF:
 		c.refval = new PDI_refval_t(*origin.c.refval);
 		break;
+	case PDI_VAL_CONST:
 	case PDI_VAL_EXPR:
-		c.exprval = new PDI_exprval_t(*origin.c.exprval);
-		break;
 	case PDI_VAL_STR:
 		break;
 	}
@@ -573,14 +576,11 @@ Value& Value::operator=(const Value& origin)
 	kind = origin.kind;
 	m_impl = origin.m_impl->clone();
 	switch (origin.kind) {
-	case PDI_VAL_CONST:
-		break;
 	case PDI_VAL_REF:
 		c.refval = new PDI_refval_t(*origin.c.refval);
 		break;
+	case PDI_VAL_CONST:
 	case PDI_VAL_EXPR:
-		c.exprval = new PDI_exprval_t(*origin.c.exprval);
-		break;
 	case PDI_VAL_STR:
 		break;
 	}
@@ -604,13 +604,13 @@ Value::~Value()
 {
 	doassert();
 	switch (kind) {
-	case PDI_VAL_EXPR: {
-		delete c.exprval;
-	} break;
 	case PDI_VAL_REF: {
 		delete c.refval;
 	} break;
-	case PDI_VAL_STR: case PDI_VAL_CONST: break;
+	case PDI_VAL_EXPR:
+	case PDI_VAL_STR:
+	case PDI_VAL_CONST:
+		break;
 	}
 }
 
@@ -619,14 +619,13 @@ long Value::to_long() const
 	doassert();
 	switch (kind) {
 	case Value::PDI_VAL_CONST: 
+	case Value::PDI_VAL_EXPR: 
+	case Value::PDI_VAL_STR: 
 		return *m_impl;
 	case Value::PDI_VAL_REF: 
 		return c.refval->to_long();
-	case Value::PDI_VAL_EXPR: 
-		return c.exprval->to_long();
-	default:
-		throw Error(PDI_ERR_VALUE, "Non integer value type: %s", to_str().c_str());
 	}
+	return *m_impl;
 }
 
 string Value::to_str() const

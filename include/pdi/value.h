@@ -39,10 +39,6 @@ namespace PDI {
  */
 class PDI_refval_t;
 
-/** A value in case this is an expression
- */
-typedef struct PDI_exprval_s PDI_exprval_t;
-
 class Value
 {
 public:
@@ -61,9 +57,6 @@ public:
 	union {
 		/// in case of PDI_VAL_REF the referenced value (owned)
 		PDI_refval_t *refval;
-		
-		/// in case of PDI_VAL_EXPR the expression (owned)
-		PDI_exprval_t *exprval;
 		
 	} c;
 	
