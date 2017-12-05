@@ -22,7 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
 /**
 * \file datatype_fwd.h
 * \brief public PDI type declaration
@@ -37,8 +36,16 @@
 #ifndef PDI_DATATYPE_FWD_H__
 #define PDI_DATATYPE_FWD_H__
 
-/// A PDI type descriptor
-class PDI_datatype_t;
+namespace PDI
+{
+
+/** A PDI type descriptor
+ */
+class Datatype;
+
+}
+
+typedef PDI::Datatype PDI_datatype_t;
 
 /// The possible kinds of type
 typedef enum PDI_type_kind_e {

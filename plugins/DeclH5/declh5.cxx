@@ -52,11 +52,11 @@ typedef struct hdf5pp_var_s
 {
 	char *name;
 	
-	PDI_value_t h5file;
+	Value h5file;
 	
-	PDI_value_t h5var;
+	Value h5var;
 	
-	PDI_value_t select;
+	Value select;
 	
 } hdf5pp_var_t;
 

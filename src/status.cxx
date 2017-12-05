@@ -36,11 +36,12 @@
 
 #include "status.h"
 
-namespace PDI {
+namespace PDI
+{
 
 using std::unique_ptr;
 
-Error::Error(PDI_status_t errcode, const char* message, va_list ap):
+Error::Error(PDI_status_t errcode, const char *message, va_list ap):
 	m_status(errcode)
 {
 	va_list ap2; va_copy(ap2, ap);
@@ -48,7 +49,7 @@ Error::Error(PDI_status_t errcode, const char* message, va_list ap):
 	vsnprintf(&m_what[0], m_what.size(), message, ap2);
 }
 
-Error::Error(PDI_status_t errcode, const char* message, ...):
+Error::Error(PDI_status_t errcode, const char *message, ...):
 	m_status(errcode)
 {
 	va_list ap;

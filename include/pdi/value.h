@@ -27,78 +27,108 @@
 
 #include <memory>
 
-#include <pdi.h>
-
 #include <pdi/value_fwd.h>
 
-namespace PDI {
+namespace PDI
+{
 
 class Value
 {
-public:
-	struct Impl
-	{
+protected:
+	struct Impl {
 		virtual ~Impl() {}
 		virtual long to_long() const = 0;
 		virtual std::string to_string() const;
 		virtual std::unique_ptr<Impl> clone() const = 0;
 	};
 	
-private:
 	std::unique_ptr<Impl> m_impl;
 	
+	Value(std::unique_ptr<Impl> impl): m_impl(move(impl)) {}
+	
+	static Value make_value(std::unique_ptr<Impl> impl)
+	{
+		return Value{std::move(impl)};
+	}
+	
 public:
+	/** Builds an empty value
+	 *
+	 * No operation can be used on an empty value
+	 */
 	Value() = default;
 	
-	Value(std::unique_ptr<Impl> impl): m_impl(move(impl)) {}
+	/** Copies a value
+	 *
+	 * \param[in] value the value to copy
+	 */
+	Value(const Value &value): m_impl(value.m_impl->clone()) {}
+	
+	/** Moves a value
+	 *
+	 * \param[in] value the value to move`
+	 */
+	Value(Value &&value) = default;
+	
+	/** Copies a value
+	 *
+	 * \param[in] value the value to copy
+	 * \return *this
+	 */
+	Value &operator=(const Value &value)
+	{
+		m_impl = value.m_impl->clone();
+		return *this;
+	}
+	
+	/** Moves a value
+	 *
+	 * \param[in] value the value to move`
+	 * \return *this
+	 */
+	Value &operator=(Value &&value) = default;
+	
+	/** Evaluates a value as an integer
+	 *
+	 * \return the integer value
+	 */
+	long to_long() const
+	{
+		return m_impl->to_long();
+	}
+	
+	/** Evaluates a value as an integer
+	 *
+	 * \return the integer value
+	 */
+	operator long() const
+	{
+		return to_long();
+	}
+	
+	/** Evaluates a value as a string
+	 *
+	 * \return the string value
+	 */
+	std::string to_string() const
+	{
+		return m_impl->to_string();
+	}
+	
+	/** Evaluates a value as a string
+	 *
+	 * \return the string value
+	 */
+	operator std::string() const
+	{
+		return to_string();
+	}
 	
 	/** Builds (i.e. parse) a value from a string
 	 *
 	 * \param[in] val_str the string to parse
 	 */
 	static Value parse(const char *val_str);
-	
-	/** Copies a value
-	 *
-	 * \param[in] value the value to copy
-	 */
-	Value(const Value& value): m_impl(value.m_impl->clone()) {}
-	
-	/** Moves a value
-	 *
-	 * \param[in] value the value to move`
-	 */
-	Value(Value&& value) = default;
-	
-	/** Copies a value
-	 *
-	 * \param[in] value the value to copy
-	 * \return *this
-	 */
-	Value& operator=(const Value& value) { m_impl = value.m_impl->clone(); return *this; }
-
-	/** Moves a value
-	 *
-	 * \param[in] value the value to move`
-	 * \return *this
-	 */
-	Value& operator=(Value&& value) = default;
-
-	/** Evaluates a value as an integer
-	 *
-	 * \return the integer value
-	 */
-	long to_long() const { return m_impl->to_long(); }
-	
-	operator long() const { return to_long(); }
-	
-	/** Evaluates a value as a string
-	 *
-	 * \return the string value
-	 */
-	std::string to_string() const { return m_impl->to_string(); }
-	
-	operator std::string() const { return to_string(); }
 	
 };
 

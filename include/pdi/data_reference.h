@@ -343,10 +343,10 @@ public:
 	
 private:
 	/** Tests if the reference is null.
-	 * 
+	 *
 	 * Ensures m_content is null if the reference is to fasten deletion of the
 	 * shared Data_content
-	 * 
+	 *
 	 * \return Whether the reference is null
 	 */
 	bool is_null() const

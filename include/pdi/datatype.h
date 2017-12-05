@@ -41,7 +41,10 @@
 #include <pdi/datatype_fwd.h>
 #include <pdi/value.h>
 
-class PDI_datatype_t
+namespace PDI
+{
+
+class Datatype
 {
 public:
 	/** Checks whether the datatype is fully defined (no PDI_T_UNDEF)
@@ -66,6 +69,8 @@ public:
 	} c;
 };
 
+}
+
 struct PDI_array_type_s {
 	/// number of dimensions of the array
 	int ndims;
@@ -78,7 +83,7 @@ struct PDI_array_type_s {
 	 * The stride for a given dimension is the product of the element size by all
 	 * size of dimensions with a lower index.
 	 */
-	PDI_value_t *sizes;
+	PDI::Value *sizes;
 	
 	/* Array of subsizes of the array from outer to inner dim
 	 *
@@ -87,7 +92,7 @@ struct PDI_array_type_s {
 	 *
 	 * The subsize describes the part of the array actually containing data.
 	 */
-	PDI_value_t *subsizes;
+	PDI::Value *subsizes;
 	
 	/* Array of start of the array from outer to inner dim
 	 *
@@ -96,7 +101,7 @@ struct PDI_array_type_s {
 	 *
 	 * The start is the first index in a given dimension containing data.
 	 */
-	PDI_value_t *starts;
+	PDI::Value *starts;
 	
 	/// Type of the elements contained in the array.
 	PDI_datatype_t type;
@@ -104,7 +109,7 @@ struct PDI_array_type_s {
 
 struct PDI_member_s {
 	/// Offset or distance in octet between the beginning of PDI_struct_type
-	PDI_value_t displacement;
+	PDI::Value displacement;
 	
 	PDI_datatype_t type;
 	
@@ -136,7 +141,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_init_scalar(PDI_datatype_t *result, PDI_sca
  * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_datatype_init_array(PDI_datatype_t *result, const PDI_datatype_t *elem_type, int ndims,
-        const PDI_value_t *sizes, const PDI_value_t *subsizes, const PDI_value_t *starts);
+        const PDI::Value *sizes, const PDI::Value *subsizes, const PDI::Value *starts);
 
 /** Creates a new datatype as the exact copy of an existing datatype
  * \param result the datatype to be constructed

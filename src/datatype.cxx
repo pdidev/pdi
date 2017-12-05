@@ -180,7 +180,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 	}
 	
 	if (!invalid_sizes) {   // if multi dim array
-		res_type.sizes = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
+		res_type.sizes = (Value *) malloc(res_type.ndims * sizeof(Value));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err0);
@@ -189,7 +189,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		}
 	} else { // else single dim array
 		res_type.ndims = 1;
-		res_type.sizes = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
+		res_type.sizes = (Value *) malloc(res_type.ndims * sizeof(Value));
 		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err0);
 		new (res_type.sizes) Value{Value::parse(expr)};
 		free(expr);
@@ -209,7 +209,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 	}
 	
 	if (!invalid_subsizes) {
-		res_type.subsizes = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
+		res_type.subsizes = (Value *) malloc(res_type.ndims * sizeof(Value));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
 			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err1);
@@ -233,7 +233,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		}
 	}
 	
-	res_type.starts = (PDI_value_t *)malloc(res_type.ndims * sizeof(PDI_value_t));
+	res_type.starts = (Value *)malloc(res_type.ndims * sizeof(Value));
 	if (!invalid_starts) {
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
@@ -242,7 +242,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 			free(expr);
 		}
 	} else { // no start, start at 0 everywhere
-		res_type.starts = (PDI_value_t *) malloc(res_type.ndims * sizeof(PDI_value_t));
+		res_type.starts = (Value *) malloc(res_type.ndims * sizeof(Value));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			new (&res_type.starts[ii]) Value{Value::parse("0")};
 		}
@@ -446,7 +446,7 @@ err0:
 static PDI_status_t array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense)
 {
 	for (int dim = 0; dim < type->ndims; ++dim) {
-		if ( type->sizes[dim].to_long() != type->subsizes[dim].to_long() ) {
+		if (type->sizes[dim].to_long() != type->subsizes[dim].to_long()) {
 			*is_dense = 0;
 			return PDI_OK;
 		}
@@ -671,7 +671,7 @@ PDI_status_t PDI_datatype_init_scalar(PDI_datatype_t *dest, PDI_scalar_type_t va
 
 
 PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t *type, int ndims,
-                                     const PDI_value_t *sizes, const PDI_value_t *subsizes, const PDI_value_t *starts)
+                                     const Value *sizes, const Value *subsizes, const Value *starts)
 {
 	PDI_status_t status = PDI_OK;
 	
@@ -679,7 +679,7 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 	
 	array->ndims = ndims;
 	
-	array->sizes = (PDI_value_t *) malloc(ndims * sizeof(PDI_value_t));
+	array->sizes = (Value *) malloc(ndims * sizeof(Value));
 	for (int ii = 0; ii < ndims; ++ii) {
 		new (&array->sizes[ii]) Value{sizes[ii]};
 	}
@@ -687,13 +687,13 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 	if (sizes == subsizes) {
 		array->subsizes = array->sizes;
 	} else {
-		array->subsizes = (PDI_value_t *)malloc(ndims * sizeof(PDI_value_t));
+		array->subsizes = (Value *)malloc(ndims * sizeof(Value));
 		for (int ii = 0; ii < ndims; ++ii) {
 			new (&array->subsizes[ii]) Value{subsizes[ii]};
 		}
 	}
 	
-	array->starts = (PDI_value_t *)malloc(ndims * sizeof(PDI_value_t));
+	array->starts = (Value *)malloc(ndims * sizeof(Value));
 	if (!starts) {
 		for (int ii = 0; ii < ndims; ++ii) {
 			new (&array->starts[ii]) Value{Value::parse("0")};

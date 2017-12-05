@@ -36,23 +36,30 @@
 
 #include "pdi.h"
 
-namespace PDI {
+namespace PDI
+{
 
 class Error:
-		public std::exception
+	public std::exception
 {
 public:
 	PDI_status_t m_status;
 	
 	std::string m_what;
 	
-	Error(PDI_status_t errcode=PDI_OK, const char *message="", ...);
+	Error(PDI_status_t errcode = PDI_OK, const char *message = "", ...);
 	
 	Error(PDI_status_t errcode, const char *message, va_list args);
 	
-	const char *what () const noexcept override { return m_what.c_str(); }
+	const char *what() const noexcept override
+	{
+		return m_what.c_str();
+	}
 	
-	explicit operator bool () { return m_status != PDI_OK && m_status != PDI_UNAVAILABLE; }
+	explicit operator bool ()
+	{
+		return m_status != PDI_OK && m_status != PDI_UNAVAILABLE;
+	}
 };
 
 } // namespace PDI

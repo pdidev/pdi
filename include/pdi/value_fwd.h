@@ -25,7 +25,8 @@
 #ifndef PDI_VALUE_FWD_H__
 #define PDI_VALUE_FWD_H__
 
-namespace PDI {
+namespace PDI
+{
 
 /** A parsed value as specified by an expression.
  *
@@ -47,13 +48,11 @@ namespace PDI {
  * ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
  * CHAR  ~= [^$\\]
  * ```
- * 
- * \author Julie Bigot (CEA) <julien.bigot@cea.fr>
+ *
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
 class Value;
 
 } // namespace PDI
-
-typedef PDI::Value PDI_value_t;
 
 #endif // PDI_VALUE_FWD_H__

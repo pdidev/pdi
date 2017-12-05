@@ -59,15 +59,15 @@ typedef struct hdf5pp_var_s
 {
 	char *name;
 	
-	PDI_value_t h5file;
+	Value h5file;
 	
-	PDI_value_t h5var; // changed to char * for the sake of simplicity 
+	Value h5var; // changed to char * for the sake of simplicity 
 	
-	PDI_value_t select;
+	Value select;
 	
 	// Global offet and size of the dataset
-	PDI_value_t *gstarts;
-	PDI_value_t *gsizes;
+	Value *gstarts;
+	Value *gsizes;
 	
 } hdf5pp_var_t;
 
@@ -100,7 +100,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 	if ( datatype.kind == PDI_K_SCALAR ){
 		char *tmp = NULL ;
-		var->gstarts = (PDI_value_t*) malloc(sizeof(PDI_value_t)); 
+		var->gstarts = (Value *) malloc(sizeof(Value)); 
 		if( PC_string(PC_get(desc.get_config(), ".global_start"), &tmp)){
 			if ( scalar_start ){
 				tmp = strdup(scalar_start);
@@ -113,7 +113,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		new (&var->gstarts[0]) Value{Value::parse(tmp)};
 		free(tmp);
 		
-		var->gsizes = (PDI_value_t*) malloc(sizeof(PDI_value_t));
+		var->gsizes = (Value *) malloc(sizeof(Value));
 		if( PC_string(PC_get(desc.get_config(), ".global_size"), &tmp)){
 			if ( scalar_size ){
 				tmp = strdup(scalar_size);
@@ -137,7 +137,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		}
 		
 		int len; PC_len(treetmp, &len);
-		var->gstarts = (PDI_value_t*) malloc(len*sizeof(PDI_value_t)); 
+		var->gstarts = (Value *) malloc(len*sizeof(Value)); 
 		for ( int ii=0; ii<len; ++ii ) {
 			char *expr = NULL;
 			PC_string(PC_get(treetmp, "[%d]", ii), &expr) ; 
@@ -153,7 +153,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 		}
 		
 		PC_len(treetmp, &len);
-		var->gsizes  = (PDI_value_t*) malloc(len*sizeof(PDI_value_t));
+		var->gsizes  = (Value *) malloc(len*sizeof(Value));
 		for ( int ii=0; ii<len; ++ii ) {
 			char *expr = NULL;
 			PC_string(PC_get(treetmp, "[%d]", ii), &expr) ; 

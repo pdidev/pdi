@@ -75,11 +75,11 @@ typedef struct utils_task_s
 	
 	unordered_set<string> events; ///<  Events that trigger the previous action
 	
-	PDI_value_t in; ///<  An expression: could be a file name, variables, or expressions
+	Value in; ///<  An expression: could be a file name, variables, or expressions
 	
-	PDI_value_t out; ///<  An expression
+	Value out; ///<  An expression
 	
-	PDI_value_t select; ///<  select when to perform action (default is always)
+	Value select; ///<  select when to perform action (default is always)
 	
 	int32_t result; ///< the result of the last execution of the action
 	
