@@ -72,7 +72,7 @@ protected:
 		std::function<void(void *)> m_delete;
 		
 		/// type of the data inside the buffer
-		PDI_datatype_t m_type;
+		Datatype m_type;
 		
 		/// number of references to this content
 		int m_owners;
@@ -99,7 +99,7 @@ protected:
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */
-		Data_content(void *buffer, std::function<void(void *)> deleter, const PDI_datatype_t &type, bool readable, bool writable):
+		Data_content(void *buffer, std::function<void(void *)> deleter, const Datatype &type, bool readable, bool writable):
 			m_buffer(buffer),
 			m_delete(deleter),
 			m_type(type),
@@ -208,7 +208,7 @@ public:
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Data_A_ref(void *data, std::function<void(void *)> freefunc, const PDI_datatype_t &type, bool readable, bool writable):
+	Data_A_ref(void *data, std::function<void(void *)> freefunc, const Datatype &type, bool readable, bool writable):
 		Data_ref_base()
 	{
 		if (data) link(new Data_content(data, freefunc, type, readable, writable));
@@ -251,7 +251,7 @@ public:
 	
 	/** accesses the type of the referenced raw data
 	 */
-	const PDI_datatype_t &type() const
+	const Datatype &type() const
 	{
 		if (is_null()) return PDI_UNDEF_TYPE;
 		return m_content->m_type;
@@ -277,7 +277,7 @@ public:
 		//TODO: error handling if data is not readable
 		
 		//TODO: handle errors
-		PDI_datatype_t newtype; PDI_datatype_densify(&newtype, &m_content->m_type);
+		Datatype newtype; PDI_datatype_densify(&newtype, &m_content->m_type);
 		
 		//TODO: handle errors
 		size_t dsize; PDI_datatype_buffersize(&m_content->m_type, &dsize);

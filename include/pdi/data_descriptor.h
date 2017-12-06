@@ -38,10 +38,6 @@
 namespace PDI
 {
 
-/** Describe the content of a buffer.
- * \author Corentin Roussel <corentin.roussel@cea.fr>
- * \date 2017-09-08
- */
 class Data_descriptor
 {
 public:
@@ -65,11 +61,11 @@ public:
 	
 	/** initialize the descriptor
 	 */
-	PDI_status_t init(PC_tree_t config, bool is_metadata, const PDI_datatype_t &type);
+	PDI_status_t init(PC_tree_t config, bool is_metadata, const Datatype &type);
 	
 	/** Return the datatype
 	 */
-	const PDI_datatype_t &get_type() const;
+	const Datatype &get_type() const;
 	
 	/** Return the PC_tree_t config
 	 */
@@ -158,7 +154,7 @@ private:
 		public Ref_holder
 	{
 	public:
-		Ref_A_holder(void *data, std::function<void(void *)> freefunc, const PDI_datatype_t &type, bool readable, bool writable):
+		Ref_A_holder(void *data, std::function<void(void *)> freefunc, const Datatype &type, bool readable, bool writable):
 			m_t(data, freefunc, type, readable, writable) {}
 		Ref_A_holder(Data_ref t) : m_t(t) {};
 		operator Data_ref() const override
@@ -175,7 +171,7 @@ private:
 	
 	bool m_metadata;
 	
-	PDI_datatype_t m_type;
+	Datatype m_type;
 	
 	const std::string m_name;
 	

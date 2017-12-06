@@ -49,11 +49,15 @@
 #include <pdi/datatype.h>
 #include <pdi/value.h>
 
+using PDI::Datatype;
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
 using PDI::Data_descriptor;
 using PDI::Value;
+using PDI::PDI_K_ARRAY;
+using PDI::PDI_K_SCALAR;
+using PDI::PDI_K_STRUCT;
 using std::cerr;
 using std::endl;
 using std::set;
@@ -244,9 +248,10 @@ PDI_status_t PDI_utilities_event(const char *event_name) {
 /// Convert into corresponding data type
 PDI_status_t cast_data_int(Data_ref ref, int32_t plugin_data) {
 	PDI_status_t status = PDI_OK;
-	const PDI_datatype_t& type = ref.type();
+	const Datatype & type = ref.type();
 	if ( type.kind == PDI_K_SCALAR ) {
 		switch ( type.c.scalar ) {
+			using namespace PDI;
 			case PDI_T_INT32:
 				*((int32_t*)ref.get()) = plugin_data;
 				break;

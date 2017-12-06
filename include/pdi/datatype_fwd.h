@@ -22,17 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
-* \file datatype_fwd.h
-* \brief public PDI type declaration
-* \details
-* PDI type (PDI_datatype_t) handles 3 datatypes that are either scalars, arrays, or structures
-* (respectively PDI_K_SCALAR, PDI_K_ARRAY, PDI_K_STRUCT).
-* Scalar are currently restricted to int8 to int64 or float to long double.
-* Other scalars cannot be used (real16 for instance)
-* \author J. Bigot (CEA)
-*/
-
 #ifndef PDI_DATATYPE_FWD_H__
 #define PDI_DATATYPE_FWD_H__
 
@@ -40,12 +29,21 @@ namespace PDI
 {
 
 /** A PDI type descriptor
+ * 
+ * A Datatype is either a scalar, an array, or a record.
+ * Structures are composed of one or mutiple PDI_datatype_t.
+ * 
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
 class Datatype;
 
-}
+/** A PDI array type descriptor
+ */
+struct Array_datatype;
 
-typedef PDI::Datatype PDI_datatype_t;
+/** A PDI record type descriptor
+ */
+struct Record_datatype;
 
 /// The possible kinds of type
 typedef enum PDI_type_kind_e {
@@ -55,19 +53,10 @@ typedef enum PDI_type_kind_e {
 	PDI_K_ARRAY,
 	/// A record (a.k.a. C-style structure)
 	PDI_K_STRUCT
-} PDI_type_kind_t;
-
-/// A PDI array type descriptor
-typedef struct PDI_array_type_s PDI_array_type_t;
-
-/// A PDI record type descriptor
-typedef struct PDI_struct_type_s PDI_struct_type_t;
-
-/// A record member descriptor
-typedef struct PDI_member_s PDI_member_t;
+} Datatype_kind;
 
 /// A PDI scalar type descriptor
-typedef enum PDI_scalar_type_e {
+enum Scalar_datatype {
 	/// A 8 bits integer
 	PDI_T_INT8,
 	/// A 16 bits integer
@@ -84,6 +73,8 @@ typedef enum PDI_scalar_type_e {
 	PDI_T_LONG_DOUBLE,
 	/// undefined type
 	PDI_T_UNDEF
-} PDI_scalar_type_t;
+};
+
+} // namespace PDI
 
 #endif // PDI_DATATYPE_FWD_H__

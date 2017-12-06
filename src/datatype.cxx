@@ -48,10 +48,10 @@
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256
 
-
-using namespace PDI;
 using std::string;
 using std::unique_ptr;
+
+namespace PDI {
 
 /// ordering of array
 typedef enum PDI_order_e {
@@ -99,7 +99,7 @@ typedef struct buffer_descriptor_s {
 } buffer_descriptor_t;
 
 
-PDI_datatype_t PDI_UNDEF_TYPE = { PDI_K_SCALAR, { PDI_T_UNDEF } };
+Datatype PDI_UNDEF_TYPE = { PDI_K_SCALAR, { PDI_T_UNDEF } };
 
 
 static PDI_status_t bufdesc_destroy(buffer_descriptor_t *result)
@@ -151,9 +151,9 @@ static int ridx(int ordered_index, PDI_order_t order, int size)
 }
 
 
-static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
+static PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 {
-	PDI_array_type_t res_type;
+	Array_datatype res_type;
 	
 	// Order: C or fortran ordering, default is C
 	PDI_order_t order = PDI_ORDER_C;
@@ -265,13 +265,13 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 }
 
 
-static PDI_status_t struct_datatype_load(PC_tree_t, PDI_struct_type_t *)
+static PDI_status_t struct_datatype_load(PC_tree_t, Record_datatype *)
 {
 	throw Error{PDI_ERR_IMPL, "Structure support not implemented yet"};
 }
 
 
-static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type)
+static PDI_status_t scalar_datatype_load(PC_tree_t node, Scalar_datatype *type)
 {
 	string tname;
 	long kind = 0;
@@ -397,7 +397,7 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 }
 
 
-static PDI_status_t array_datatype_destroy(PDI_array_type_t *type)
+static PDI_status_t array_datatype_destroy(Array_datatype *type)
 {
 	PDI_datatype_destroy(&type->type);
 	// don't free subsizes in case it was a copy of sizes
@@ -410,7 +410,7 @@ static PDI_status_t array_datatype_destroy(PDI_array_type_t *type)
 }
 
 
-static PDI_status_t array_datatype_is_dense(const PDI_array_type_t *type, int *is_dense)
+static PDI_status_t array_datatype_is_dense(const Array_datatype *type, int *is_dense)
 {
 	for (int dim = 0; dim < type->ndims; ++dim) {
 		if (type->sizes[dim].to_long() != type->subsizes[dim].to_long()) {
@@ -424,10 +424,10 @@ static PDI_status_t array_datatype_is_dense(const PDI_array_type_t *type, int *i
 }
 
 
-static PDI_status_t datatype_bufdesc(const PDI_datatype_t *type, buffer_descriptor_t *result);
+static PDI_status_t datatype_bufdesc(const Datatype *type, buffer_descriptor_t *result);
 
 
-static PDI_status_t scalar_datatype_bufdesc(PDI_scalar_type_t type, buffer_descriptor_t *result)
+static PDI_status_t scalar_datatype_bufdesc(Scalar_datatype type, buffer_descriptor_t *result)
 {
 	result->ndims = 0;
 	result->sizes = NULL;
@@ -464,7 +464,7 @@ static PDI_status_t scalar_datatype_bufdesc(PDI_scalar_type_t type, buffer_descr
 }
 
 
-static PDI_status_t array_datatype_bufdesc(const PDI_array_type_t *type, buffer_descriptor_t *result)
+static PDI_status_t array_datatype_bufdesc(const Array_datatype *type, buffer_descriptor_t *result)
 {
 	datatype_bufdesc(&type->type, result);
 	for (int dim = 0; dim < type->ndims; ++dim) {
@@ -488,7 +488,7 @@ static PDI_status_t array_datatype_bufdesc(const PDI_array_type_t *type, buffer_
 }
 
 
-static PDI_status_t datatype_bufdesc(const PDI_datatype_t *type, buffer_descriptor_t *result)
+static PDI_status_t datatype_bufdesc(const Datatype *type, buffer_descriptor_t *result)
 {
 	switch (type->kind) {
 	case PDI_K_SCALAR: {
@@ -609,7 +609,7 @@ static PDI_status_t buffer_do_copy(void *to, const buffer_descriptor_t *to_desc,
 // public functions
 
 
-PDI_status_t PDI_datatype_init_scalar(PDI_datatype_t *dest, PDI_scalar_type_t value)
+PDI_status_t PDI_datatype_init_scalar(Datatype *dest, Scalar_datatype value)
 {
 	dest->kind = PDI_K_SCALAR;
 	dest->c.scalar = value;
@@ -617,10 +617,10 @@ PDI_status_t PDI_datatype_init_scalar(PDI_datatype_t *dest, PDI_scalar_type_t va
 }
 
 
-PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t *type, int ndims,
+PDI_status_t PDI_datatype_init_array(Datatype *dest, const Datatype *type, int ndims,
                                      const Value *sizes, const Value *subsizes, const Value *starts)
 {
-	PDI_array_type_t *array = (PDI_array_type_t *) malloc(sizeof(PDI_array_type_t));
+	Array_datatype *array = (Array_datatype *) malloc(sizeof(Array_datatype));
 	
 	array->ndims = ndims;
 	
@@ -658,7 +658,7 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 }
 
 
-PDI_status_t PDI_datatype_copy(PDI_datatype_t *copy, const PDI_datatype_t *from)
+PDI_status_t PDI_datatype_copy(Datatype *copy, const Datatype *from)
 {
 	switch (from->kind) {
 	case PDI_K_SCALAR:
@@ -678,7 +678,7 @@ PDI_status_t PDI_datatype_copy(PDI_datatype_t *copy, const PDI_datatype_t *from)
 }
 
 
-PDI_status_t PDI_datatype_densify(PDI_datatype_t *result, const PDI_datatype_t *oldtype)
+PDI_status_t PDI_datatype_densify(Datatype *result, const Datatype *oldtype)
 {
 	switch (oldtype->kind) {
 	case PDI_K_SCALAR:
@@ -686,7 +686,7 @@ PDI_status_t PDI_datatype_densify(PDI_datatype_t *result, const PDI_datatype_t *
 		break;
 		
 	case PDI_K_ARRAY: ;
-		PDI_datatype_t subtype; PDI_datatype_densify(&subtype, &oldtype->c.array->type);
+		Datatype subtype; PDI_datatype_densify(&subtype, &oldtype->c.array->type);
 		PDI_datatype_init_array(result, &subtype, oldtype->c.array->ndims,
 		                        oldtype->c.array->subsizes,
 		                        oldtype->c.array->subsizes, NULL);
@@ -700,10 +700,10 @@ PDI_status_t PDI_datatype_densify(PDI_datatype_t *result, const PDI_datatype_t *
 }
 
 
-PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
+PDI_status_t PDI_datatype_load(Datatype *type, PC_tree_t node)
 {
 	// load as a scalar by default
-	PDI_type_kind_t kind = PDI_K_SCALAR;
+	Datatype_kind kind = PDI_K_SCALAR;
 	
 	// size or sizes => array
 	{
@@ -715,13 +715,13 @@ PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
 	
 	switch (kind) {
 	case PDI_K_ARRAY: {// load the type as an array
-		unique_ptr<PDI_array_type_t, decltype(&free)> array {static_cast<PDI_array_type_t*>(malloc(sizeof(PDI_array_type_t))), free};
+		unique_ptr<Array_datatype, decltype(&free)> array {static_cast<Array_datatype *>(malloc(sizeof(Array_datatype))), free};
 		array_datatype_load(node, array.get());
 		type->c.array = array.release();
 		break;
 	}
 	case PDI_K_STRUCT: { // load the type as a structure
-		unique_ptr<PDI_struct_type_t, decltype(&free)> struct_ {static_cast<PDI_struct_type_t*>(malloc(sizeof(PDI_struct_type_t))), free};
+		unique_ptr<Record_datatype, decltype(&free)> struct_ {static_cast<Record_datatype *>(malloc(sizeof(Record_datatype))), free};
 		struct_datatype_load(node, struct_.get());
 		type->c.struct_ = struct_.release();
 		break;
@@ -736,7 +736,7 @@ PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
 }
 
 
-PDI_status_t PDI_datatype_destroy(PDI_datatype_t *type)
+PDI_status_t PDI_datatype_destroy(Datatype *type)
 {
 	switch (type->kind) {
 	case PDI_K_ARRAY: {
@@ -756,7 +756,7 @@ PDI_status_t PDI_datatype_destroy(PDI_datatype_t *type)
 }
 
 
-PDI_status_t PDI_datatype_is_dense(const PDI_datatype_t *type, int *is_dense)
+PDI_status_t PDI_datatype_is_dense(const Datatype *type, int *is_dense)
 {
 	switch (type->kind) {
 	case PDI_K_SCALAR:
@@ -773,7 +773,7 @@ PDI_status_t PDI_datatype_is_dense(const PDI_datatype_t *type, int *is_dense)
 }
 
 
-PDI_status_t PDI_datatype_datasize(const PDI_datatype_t *type, size_t *result)
+PDI_status_t PDI_datatype_datasize(const Datatype *type, size_t *result)
 {
 	buffer_descriptor_t valsz; datatype_bufdesc(type, &valsz);
 	try {
@@ -788,7 +788,7 @@ PDI_status_t PDI_datatype_datasize(const PDI_datatype_t *type, size_t *result)
 }
 
 
-PDI_status_t PDI_datatype_buffersize(const PDI_datatype_t *type, size_t *result)
+PDI_status_t PDI_datatype_buffersize(const Datatype *type, size_t *result)
 {
 	buffer_descriptor_t valsz; datatype_bufdesc(type, &valsz);
 	try {
@@ -803,7 +803,7 @@ PDI_status_t PDI_datatype_buffersize(const PDI_datatype_t *type, size_t *result)
 }
 
 
-PDI_status_t PDI_buffer_copy(void *to, const PDI_datatype_t *to_type, const void *from, const PDI_datatype_t *from_type)
+PDI_status_t PDI_buffer_copy(void *to, const Datatype *to_type, const void *from, const Datatype *from_type)
 {
 	buffer_descriptor_t from_desc; datatype_bufdesc(from_type, &from_desc);
 	try {
@@ -830,4 +830,6 @@ PDI_status_t PDI_buffer_copy(void *to, const PDI_datatype_t *to_type, const void
 		throw;
 	}
 	return PDI_OK;
+}
+
 }

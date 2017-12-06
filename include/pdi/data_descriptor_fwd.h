@@ -21,13 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-/* The following is used for doxygen documentation */
-/**
-* \file data_descriptor_fwd.h
-* \brief .
-* \author C. Roussel, corentin.roussel@cea.fr
-*/
-// Created:  04/10/2017 09:41:47
 
 #ifndef DATA_DESCRIPTOR_FWD_H__
 #define DATA_DESCRIPTOR_FWD_H__
@@ -35,9 +28,12 @@
 namespace PDI
 {
 
-/** \class  Data_descriptor
-  *  \brief Provide the properties of a data (data type, kind, ...etc.)
-  */
+/** Provide the properties of a data (data type, kind, ...etc.)
+ * 
+ * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ * \date 2017-10-04
+ */
 class Data_descriptor;
 }
 

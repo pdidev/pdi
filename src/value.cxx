@@ -213,8 +213,8 @@ struct Value_parser:
 		
 		long to_long() const override
 		{
-			const PDI_datatype_t &ref_type = m_referenced->get_type();
-			PDI_scalar_type_t type = ref_type.c.scalar;
+			const Datatype &ref_type = m_referenced->get_type();
+			Scalar_datatype type = ref_type.c.scalar;
 			Data_ref cref;
 			
 			if (ref_type.kind == PDI_K_ARRAY) {

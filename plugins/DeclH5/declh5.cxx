@@ -39,9 +39,14 @@
 
 PC_tree_t my_conf;
 
+using PDI::Datatype;
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
+using PDI::PDI_K_ARRAY;
+using PDI::PDI_K_SCALAR;
+using PDI::PDI_K_STRUCT;
+using PDI::Scalar_datatype;
 using PDI::Value;
 using std::cerr;
 using std::cout;
@@ -220,7 +225,8 @@ PDI_status_t PDI_declh5_event(const char *)
 	return PDI_OK;
 }
 
-hid_t h5type(PDI_scalar_type_t ptype) {
+hid_t h5type(Scalar_datatype ptype) {
+	using namespace PDI;
 	switch (ptype) {
 		case PDI_T_INT8: return  H5T_NATIVE_INT8;
 		case PDI_T_INT16: return  H5T_NATIVE_INT16;
@@ -261,8 +267,8 @@ void write_to_file(Data_r_ref& ref, const string& filename, const string& pathna
 	hsize_t *h5sizes = NULL;
 	hsize_t *h5subsizes = NULL;
 	hsize_t *h5starts = NULL;
-	const PDI_datatype_t* scalart = &ref.type();
-	const PDI_datatype_t& datatype = *scalart;
+	const Datatype * scalart = &ref.type();
+	const Datatype & datatype = *scalart;
 	if ( datatype.kind == PDI_K_ARRAY ) {
 		rank = datatype.c.array->ndims;
 		h5sizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
@@ -319,8 +325,8 @@ PDI_status_t read_from_file(Data_w_ref& ref, const string& filename, const strin
 	hsize_t *sizes = NULL;
 	hsize_t *subsizes = NULL;
 	hsize_t *starts = NULL;
-	const PDI_datatype_t& datatype = ref.type();
-	const PDI_datatype_t* scalart = &datatype ;
+	const Datatype & datatype = ref.type();
+	const Datatype * scalart = &datatype ;
 	if ( datatype.kind == PDI_K_ARRAY ) {
 		rank = datatype.c.array->ndims;
 		sizes = (hsize_t*) malloc(rank*sizeof(hsize_t));

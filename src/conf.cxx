@@ -41,7 +41,7 @@
 
 #include "conf.h"
 
-using PDI::Data_descriptor;
+using namespace PDI;
 using std::string;
 
 static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
@@ -55,7 +55,7 @@ static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 		
 		PC_tree_t config = PC_get(node, "<%d>", map_id);
 		
-		PDI_datatype_t type;
+		Datatype type;
 		PDI_datatype_load(&type, config);
 		try {
 			PDI_state.desc(name).init(config, is_metadata, type);

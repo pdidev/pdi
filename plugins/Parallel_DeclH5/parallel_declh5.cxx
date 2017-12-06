@@ -44,11 +44,16 @@
 #include <pdi/data_descriptor.h>
 
 
+using PDI::Datatype;
 using PDI::Data_descriptor;
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
+using PDI::Scalar_datatype;
 using PDI::Value;
+using PDI::PDI_K_SCALAR;
+using PDI::PDI_K_ARRAY;
+using PDI::PDI_K_STRUCT;
 using std::cout;
 using std::endl;
 using std::string;
@@ -95,7 +100,7 @@ PDI_status_t set_parallel_extent(hdf5pp_var_t *var, const char *scalar_start, co
 	PDI_status_t status = PDI_OK;
 	
 	Data_descriptor& desc = PDI_state.desc(var->name);
-	const PDI_datatype_t& datatype = desc.get_type();
+	const Datatype & datatype = desc.get_type();
 	
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
 	if ( datatype.kind == PDI_K_SCALAR ){
@@ -326,7 +331,8 @@ PDI_status_t PDI_parallel_declh5_event(const char *)
 	return PDI_OK;
 }
 
-hid_t h5type(PDI_scalar_type_t ptype) {
+hid_t h5type(Scalar_datatype ptype) {
+	using namespace PDI;
 	switch (ptype) {
 		case PDI_T_INT8: return  H5T_NATIVE_CHAR;
 		case PDI_T_INT16: return  H5T_NATIVE_SHORT;
@@ -363,11 +369,11 @@ void rm_if_exist(hid_t h5file, const string& dset_name)
 }
 
 
-const PDI_datatype_t* init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts, hsize_t *rank, Data_ref ref)
+const Datatype * init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **starts, hsize_t *rank, Data_ref ref)
 {
-	const PDI_datatype_t* scalart = &ref.type();
+	const Datatype * scalart = &ref.type();
 	if ( scalart->kind == PDI_K_ARRAY ) {
-		const PDI_datatype_t& datatype = *scalart; 
+		const Datatype & datatype = *scalart; 
 		*rank = datatype.c.array->ndims;
 		*sizes = (hsize_t*) malloc(*rank*sizeof(hsize_t));
 		*subsizes = (hsize_t*) malloc(*rank*sizeof(hsize_t));
@@ -400,7 +406,7 @@ PDI_status_t pwrite_to_file(Data_r_ref& ref, const string& filename, const strin
 	hsize_t *starts = NULL;
 	
 	// Setting sizes, subsizes, offset
-	const PDI_datatype_t *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, ref);
+	const Datatype *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, ref);
 	
 	
 	// Setting files properties
@@ -458,7 +464,7 @@ PDI_status_t pread_from_file(Data_w_ref& ref, const string& filename, const stri
 	hsize_t *starts = NULL;
 	
 	/// Setting sizes, subsizes, offset
-	const PDI_datatype_t *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, ref);
+	const Datatype *scalart = init_sizes(&sizes, &subsizes, &starts, &rank, ref);
 	
 	hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
 	H5Pset_fapl_mpio(plist_id, MPI_COMM_WORLD, MPI_INFO_NULL);  // todo: check communicator (set another than WORLD)
@@ -555,7 +561,7 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 				// TODO: warn user, assuming size is unchanged (unknow consequence when size is changed...)
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL; 
-				const PDI_datatype_t& datatype = ref.type();
+				const Datatype & datatype = ref.type();
 				if ( datatype.kind == PDI_K_ARRAY ) {
 					PDI_order_t order;
 					Data_descriptor& desc = PDI_state.desc(name);
@@ -599,7 +605,7 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 				
 				hsize_t *gstarts = NULL; 
 				hsize_t *gsizes = NULL;
-				const PDI_datatype_t& datatype = ref.type();
+				const Datatype & datatype = ref.type();
 				if ( datatype.kind == PDI_K_ARRAY ) {
 					PDI_order_t order;
 					if( (order = array_order(PDI_state.desc(name).get_config())) < 0 )

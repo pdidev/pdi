@@ -42,7 +42,7 @@
  * \param from the source buffer
  * \return an error code
  */
-PDI_status_t tcopy(const PDI_datatype_t *type, void *to, void *from);
+PDI_status_t tcopy(const PDI::Datatype *type, void *to, void *from);
 
 /** A mallocing sprintf
  *

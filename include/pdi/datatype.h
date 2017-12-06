@@ -22,17 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
-/**
-* \file datatype.h
-* \brief private PDI type declaration
-* \details
-* PDI type (PDI_datatype_t) handles 3 datatypes that are either scalars, arrays, or structures.
-* Structures are composed of one or mutiple PDI_datatype_t.
-* Data are managed differently in memory: scalars are copied whereas a pointer is used to access arrays/structures.
-* \author J. Bigot (CEA)
-*/
-
 #ifndef PDI_DATATYPE_H__
 #define PDI_DATATYPE_H__
 
@@ -48,30 +37,29 @@ class Datatype
 {
 public:
 	/** Checks whether the datatype is fully defined (no PDI_T_UNDEF)
-	*
-	* \return whether this is a fully defined type
-	*/
+	 *
+	 * \return whether this is a fully defined type
+	 */
 	bool is_defined() const;
 	
 	/// The kind of type this describes
-	PDI_type_kind_t kind;
+	Datatype_kind kind;
 	
 	union {
 		/// The actual descriptor in case of a scalar
-		PDI_scalar_type_t scalar;
+		Scalar_datatype scalar;
 		
 		/// The actual descriptor in case of an array
-		PDI_array_type_t *array;
+		Array_datatype *array;
 		
 		/// The actual descriptor in case of a record
-		PDI_struct_type_t *struct_;
+		Record_datatype *struct_;
 		
 	} c;
 };
 
-}
+struct Array_datatype {
 
-struct PDI_array_type_s {
 	/// number of dimensions of the array
 	int ndims;
 	
@@ -104,23 +92,23 @@ struct PDI_array_type_s {
 	PDI::Value *starts;
 	
 	/// Type of the elements contained in the array.
-	PDI_datatype_t type;
+	Datatype type;
 };
 
-struct PDI_member_s {
-	/// Offset or distance in octet between the beginning of PDI_struct_type
-	PDI::Value displacement;
+struct Record_datatype {
+	struct Member {
+		/// Offset or distance in octet between the beginning of PDI_struct_type
+		PDI::Value displacement;
+		
+		Datatype type;
+		
+		char *name;
+		
+	};
 	
-	PDI_datatype_t type;
-	
-	char *name;
-	
-};
-
-struct PDI_struct_type_s {
 	int nb_member;
 	
-	PDI_member_t *members;
+	Member *members;
 	
 };
 
@@ -129,7 +117,7 @@ struct PDI_struct_type_s {
  * \param scalar_type the scalar the datatype should represent
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_init_scalar(PDI_datatype_t *result, PDI_scalar_type_t scalar_type);
+PDI_status_t PDI_EXPORT PDI_datatype_init_scalar(Datatype *result, Scalar_datatype scalar_type);
 
 /** Creates a new datatype to represent a scalar
  * \param result the datatype to be constructed
@@ -140,14 +128,14 @@ PDI_status_t PDI_EXPORT PDI_datatype_init_scalar(PDI_datatype_t *result, PDI_sca
  * \param starts first index containing data in each dimension
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_init_array(PDI_datatype_t *result, const PDI_datatype_t *elem_type, int ndims,
+PDI_status_t PDI_EXPORT PDI_datatype_init_array(Datatype *result, const Datatype *elem_type, int ndims,
         const PDI::Value *sizes, const PDI::Value *subsizes, const PDI::Value *starts);
 
 /** Creates a new datatype as the exact copy of an existing datatype
  * \param result the datatype to be constructed
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_copy(PDI_datatype_t *result, const PDI_datatype_t *from);
+PDI_status_t PDI_EXPORT PDI_datatype_copy(Datatype *result, const Datatype *from);
 
 /** Creates a new datatype as the dense copy of an existing type.
  *
@@ -155,14 +143,14 @@ PDI_status_t PDI_EXPORT PDI_datatype_copy(PDI_datatype_t *result, const PDI_data
  * \param result the dense type that is produced using type attributes.
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_densify(PDI_datatype_t *result, const PDI_datatype_t *oldtype);
+PDI_status_t PDI_EXPORT PDI_datatype_densify(Datatype *result, const Datatype *oldtype);
 
 /** Creates a new datatype from a paraconf-style config
  * \param node the configuration to read
  * \param result the type to generate
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_load(PDI_datatype_t *result, PC_tree_t node);
+PDI_status_t PDI_EXPORT PDI_datatype_load(Datatype *result, PC_tree_t node);
 
 /** Destroys a previously constructed type and frees the associated memory
  *
@@ -171,7 +159,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_load(PDI_datatype_t *result, PC_tree_t node
  * \param type the type to destroy
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_datatype_t *type);
+PDI_status_t PDI_EXPORT PDI_datatype_destroy(Datatype *type);
 
 /** Indicate if a given datatype is dense or not
  *
@@ -179,7 +167,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_destroy(PDI_datatype_t *type);
  * \param is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const PDI_datatype_t *type, int *is_dense);
+PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const Datatype *type, int *is_dense);
 
 /** Computes the data size of a type, excluding potentially unused memory from
  * a sparse type
@@ -187,7 +175,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const PDI_datatype_t *type, int *i
  * \param result the size in bytes
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_datasize(const PDI_datatype_t *type, size_t *result);
+PDI_status_t PDI_EXPORT PDI_datatype_datasize(const Datatype *type, size_t *result);
 
 /** Computes the data size of a type, including potentially unused memory from
  * a sparse type
@@ -195,7 +183,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_datasize(const PDI_datatype_t *type, size_t
  * \param result the size in bytes
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_buffersize(const PDI_datatype_t *type, size_t *result);
+PDI_status_t PDI_EXPORT PDI_datatype_buffersize(const Datatype *type, size_t *result);
 
 /** Copies a buffer into an other
  *
@@ -210,7 +198,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_buffersize(const PDI_datatype_t *type, size
  * \param from_type the type of the original data
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_buffer_copy(void *to, const PDI_datatype_t *to_type, const void *from, const PDI_datatype_t *from_type);
+PDI_status_t PDI_EXPORT PDI_buffer_copy(void *to, const Datatype *to_type, const void *from, const Datatype *from_type);
 
 /** Indicate if a given datatype is dense or not
  *
@@ -218,8 +206,10 @@ PDI_status_t PDI_EXPORT PDI_buffer_copy(void *to, const PDI_datatype_t *to_type,
  * \param[out] is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
  * \return an exit status code
  */
-PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const PDI_datatype_t *type, int *is_dense);
+PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const Datatype *type, int *is_dense);
 
-extern PDI_datatype_t PDI_EXPORT PDI_UNDEF_TYPE;
+extern Datatype PDI_EXPORT PDI_UNDEF_TYPE;
+
+} // namespace PDI
 
 #endif // PDI_DATATYPE_H__
