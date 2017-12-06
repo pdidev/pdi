@@ -30,34 +30,34 @@
 
 #include "config.h"
 
-#ifdef STRDUP_WORKS
-	#define _POSIX_C_SOURCE 200809L
-#endif
-
+#include <cstddef>
 #include <cstring>
+#include <iostream>
 #include <string>
 #include <type_traits>
 
-#include <stddef.h>
-
-#include "paraconf.h"
+#include <paraconf.h>
 
 #include "pdi.h"
 
 #include "pdi/plugin.h"
 #include "pdi/datatype.h"
+#include "pdi/data_descriptor.h"
+#include "pdi/data_reference.h"
 #include "pdi/state.h"
+#include "pdi/status.h"
+
 #include "conf.h"
 #include "plugin_loader.h"
-#include "status.h"
 #include "utils.h"
 
-#include "pdi/data_reference.h"
-#include "pdi/data_descriptor.h"
 
 #define PDI_BUFFER_SIZE 256
 
+
 using namespace PDI;
+using std::cerr;
+using std::endl;
 using std::make_shared;
 using std::move;
 using std::stack;
@@ -102,83 +102,110 @@ PDI_inout_t &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs)
 
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 {
-	PDI_status_t status = PDI_OK;
-	PDI_state.transaction.clear();
-	PDI_state.plugins.clear();
-	
-	PDI_handle_err(load_conf(conf), err0);
-	
-	int nb_plugins; handle_PC_err(PC_len(PC_get(conf, ".plugins"), &nb_plugins), err0);
-	
-	for (int ii = 0; ii < nb_plugins; ++ii) {
-		PDI_state.PDI_comm = *world;
-		//TODO we should concatenate errors here...
-		PDI_handle_err(plugin_loader_tryload(conf, ii, world), err0);
+	try {
+		Paraconf_raii_forwarder fw;
+		PDI_state.transaction.clear();
+		PDI_state.plugins.clear();
+		
+		load_conf(conf);
+		
+		int nb_plugins; PC_len(PC_get(conf, ".plugins"), &nb_plugins);
+		
+		for (int ii = 0; ii < nb_plugins; ++ii) {
+			PDI_state.PDI_comm = *world;
+			//TODO: what to do if a single plugin fails to load?
+			plugin_loader_tryload(conf, ii, world);
+		}
+		
+		if (MPI_Comm_dup(*world, &PDI_state.PDI_comm)) {
+			throw Error{PDI_ERR_SYSTEM, "Unable to clone the main communicator"};
+		}
+		
+	} catch (const Error& e) {
+		for (auto plugin : PDI_state.plugins) {
+			try { // ignore errors here, try our best to finalize everyone
+				plugin.second->finalize();
+			} catch (...) {}
+		}
+		PDI_state.transaction.clear();
+		PDI_state.transaction_data.clear();
+		PDI_state.plugins.clear();
+		return PDI::return_err(e);
 	}
 	
-	if (MPI_Comm_dup(*world, &PDI_state.PDI_comm)) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_SYSTEM, "Unable to clone the main communicator"), err0);
-	}
-	
-	return status;
-	
-err0:
-	PDI_finalize();
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_finalize()
 {
-	PDI_status_t status = PDI_OK;
-	
-	// Don't stop on errors in finalize, try to do our best
-	PDI_errhandler_t errh = PDI_errhandler(PDI_NULL_HANDLER);
-	
+	Paraconf_raii_forwarder fw;
 	for (auto plugin : PDI_state.plugins) {
-		plugin.second->finalize();
+		try { // ignore errors here, try our best to finalize everyone
+			//TODO: concatenate errors in some way
+			plugin.second->finalize();
+		} catch (...) {}
 	}
+	MPI_Comm_free(&PDI_state.PDI_comm);
+	PDI_state.transaction.clear();
+	PDI_state.transaction_data.clear();
 	PDI_state.plugins.clear();
+	//TODO: clear PDI_state.m_descriptors
 	
-	PDI_errhandler(errh);
-	
-	//TODO we should concatenate errors here...
-	return status;
+	//TODO we should return concatenated errors here...
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_event(const char *event)
 {
-	PDI_status_t status = PDI_OK;
-	
+	Paraconf_raii_forwarder fw;
 	for (auto &elmnt : PDI_state.plugins) {
-		//TODO we should concatenate errors here...
-		PDI_handle_err(elmnt.second->event(event), err0);
+		try { // ignore errors here, try our best to notify everyone
+			//TODO: concatenate errors in some way
+			elmnt.second->event(event);
+		} catch (...) {
+			//TODO: remove the faulty plugin?
+		}
 	}
 	
-	return status;
-	
-err0:
-	return status;
+	//TODO we should return concatenated errors here...
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 {
-	return PDI_state.desc(name).access(buffer, inout);
+	try {
+		Paraconf_raii_forwarder fw;
+		return PDI_state.desc(name).access(buffer, inout);
+	} catch (const Error& e) {
+		return return_err(e);
+	}
 }
 
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 {
-	Data_descriptor &desc = PDI_state.desc(name);
-	desc.share(buffer, &free, access);
-	Data_ref ref = desc.value();
-	
-	// Provide reference to the plug-ins
-	for (auto &&plugin : PDI_state.plugins) {
-		// Notify the plug-ins of reference availability
-		plugin.second->data(name, ref);
+	try {
+		Paraconf_raii_forwarder fw;
+		Data_descriptor &desc = PDI_state.desc(name);
+		desc.share(buffer, &free, access);
+		Data_ref ref = desc.value();
+		
+		// Provide reference to the plug-ins
+		for (auto &&plugin : PDI_state.plugins) {
+			try { // ignore errors here, try our best to notify everyone
+				//TODO: concatenate errors in some way
+				plugin.second->data(name, ref);
+			} catch (...) {
+				//TODO: remove the faulty plugin?
+			}
+		}
+	} catch (const Error& e) {
+		return return_err(e);
 	}
+	
+	//TODO we should return concatenated errors here...
 	return PDI_OK;
 }
 
@@ -186,17 +213,28 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 
 PDI_status_t PDI_release(const char *name)
 {
-	return PDI_state.desc(name).release();
+	try {
+		Paraconf_raii_forwarder fw;
+		return PDI_state.desc(name).release();
+	} catch (const Error& e) {
+		return return_err(e);
+	}
 }
 
 
 PDI_status_t PDI_reclaim(const char *name)
 {
-	return PDI_state.desc(name).reclaim();
+	try {
+		Paraconf_raii_forwarder fw;
+		return PDI_state.desc(name).reclaim();
+	} catch (const Error& e) {
+		return return_err(e);
+	}
 }
 
 PDI_status_t PDI_expose(const char *name, const void *data)
 {
+	Paraconf_raii_forwarder fw;
 	if (PDI_status_t status = PDI_share(name, const_cast<void *>(data), PDI_OUT)) return status;
 	
 	if (! PDI_state.transaction.empty()) {   // defer the reclaim
@@ -211,36 +249,40 @@ PDI_status_t PDI_expose(const char *name, const void *data)
 
 PDI_status_t PDI_transaction_begin(const char *c_name)
 {
-	PDI_status_t status = PDI_OK;
-	
-	if (!PDI_state.transaction.empty()) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"), err0);
+	try {
+		Paraconf_raii_forwarder fw;
+		if (!PDI_state.transaction.empty()) {
+			throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
+		}
+		PDI_state.transaction = c_name;
+	} catch (const Error& e) {
+		return return_err(e);
 	}
 	
-	PDI_state.transaction = string(c_name);
-	
-	return status;
-	
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_transaction_end()
 {
-	if (PDI_state.transaction.empty()) {
-		return PDI_make_err(PDI_ERR_STATE, "No transaction in progress, cannot end one");
+	try {
+		Paraconf_raii_forwarder fw;
+		if (PDI_state.transaction.empty()) {
+			throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
+		}
+		
+		PDI_event(PDI_state.transaction.c_str());
+		
+		for (const string &data : PDI_state.transaction_data) {
+			//TODO we should concatenate errors here...
+			PDI_reclaim(data.c_str());
+		}
+		PDI_state.transaction_data.clear();
+		PDI_state.transaction.clear();
+		
+	} catch (const Error& e) {
+		return return_err(e);
 	}
-	
-	PDI_event(PDI_state.transaction.c_str());
-	
-	for (const string &data : PDI_state.transaction_data) {
-		//TODO we should concatenate errors here...
-		PDI_reclaim(data.c_str());
-	}
-	
-	PDI_state.transaction_data.clear();
-	PDI_state.transaction.clear();
 	
 	return PDI_OK;
 }
@@ -248,13 +290,7 @@ PDI_status_t PDI_transaction_end()
 
 PDI_status_t PDI_export(const char *name, const void *data)
 {
-	PDI_status_t status = PDI_OK;
-	
-	PDI_handle_err(PDI_share(name, (void *)data, PDI_OUT), err0);
-	PDI_handle_err(PDI_release(name), err0);
-	
-	return status;
-	
-err0:
-	return status;
+	if ( PDI_status_t status = PDI_share(name, (void *)data, PDI_OUT) ) return status;
+	if ( PDI_status_t status = PDI_release(name) ) return status;
+	return PDI_OK;
 }

@@ -28,8 +28,7 @@
 
 #include "pdi/data_reference.h"
 #include "pdi/datatype.h"
-
-#include "status.h"
+#include "pdi/status.h"
 
 #include "pdi/data_descriptor.h"
 
@@ -90,7 +89,7 @@ PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
 {
 	*buffer = NULL;
 	
-	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot access a non shared value");
+	if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value"};
 	
 	switch (inout) {
 	case PDI_NONE:
@@ -111,14 +110,14 @@ PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
 		return PDI_OK;
 	} else { // cannot get the requested rights
 		m_values.pop();
-		return PDI_make_err(PDI_ERR_RIGHT, "Cannot grant priviledge for data '%s'", m_name.c_str());
+		throw Error{PDI_ERR_RIGHT, "Cannot grant privilege for data '%s'", m_name.c_str()};
 	}
 }
 
 PDI_status_t Data_descriptor::release()
 {
 	// move reference out of the store
-	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot release a non shared value");
+	if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot release a non shared value"};
 	
 	m_values.pop();
 	
@@ -128,7 +127,7 @@ PDI_status_t Data_descriptor::release()
 
 PDI_status_t Data_descriptor::reclaim()
 {
-	if (m_values.empty()) return PDI_make_err(PDI_ERR_VALUE, "Cannot reclaim a non shared value");
+	if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot reclaim a non shared value"};
 	
 	// if the content is a metadata, keep it
 	if (is_metadata()) {

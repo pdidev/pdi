@@ -30,24 +30,28 @@
 * \author J. Bigot (CEA)
 */
 
-#include <stdint.h>
+#include "config.h"
+
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include <paraconf.h>
 
 #include "pdi.h"
+
 #include "pdi/value.h"
+#include "pdi/status.h"
 
 #include "pdi/datatype.h"
-
-#include "status.h"
-
-#include "config.h"
 
 #define IDX_BUF_SIZE 256
 #define EXPR_BUF_SIZE 256
 
 
-using PDI::Value;
+using namespace PDI;
+using std::string;
+using std::unique_ptr;
 
 /// ordering of array
 typedef enum PDI_order_e {
@@ -149,26 +153,27 @@ static int ridx(int ordered_index, PDI_order_t order, int size)
 
 static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 {
-	PDI_status_t status = PDI_OK;
-	
 	PDI_array_type_t res_type;
 	
 	// Order: C or fortran ordering, default is C
 	PDI_order_t order = PDI_ORDER_C;
 	{
-		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-		char *order_str = strdup("c");
-		PC_string(PC_get(node, ".order"), &order_str);
-		if ((!strcmp(order_str, "c")) || (!strcmp(order_str, "C"))) {
+		string order_str;
+		try {
+			char *tmp;
+			PC_string(PC_get(node, ".order"), &tmp);
+			order_str = tmp;
+			free(tmp);
+		} catch ( const Error& ) {
+			order_str = "c";
+		}
+		if ( order_str == "c" || order_str == "C" ) {
 			order = PDI_ORDER_C;
-		} else if ((!strcmp(order_str, "fortran")) || (!strcmp(order_str, "Fortran"))) {
+		} else if ( order_str == "fortran" || order_str == "Fortran" ) {
 			order = PDI_ORDER_FORTRAN;
 		} else {
-			PDI_status_t err_status = PDI_make_err(PDI_ERR_CONFIG, "Incorrect array ordering: `%s'", order_str);
-			free(order_str);
-			PDI_handle_err(err_status, err0);
+			throw Error{PDI_ERR_CONFIG, "Incorrect array ordering: `%s'", order_str.c_str()};
 		}
-		PC_errhandler(pc_handler); // aka PC_end_try
 	}
 	
 	// sizes for a multidim array
@@ -183,16 +188,19 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		res_type.sizes = (Value *) malloc(res_type.ndims * sizeof(Value));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
-			char *expr; handle_PC_err(PC_string(PC_get(node, ".sizes[%d]", ii), &expr), err0);
-			new (&res_type.sizes[ri]) Value{Value::parse(expr)};
+			char *expr;
+			PC_string(PC_get(node, ".sizes[%d]", ii), &expr);
+			string expr2 = expr;
 			free(expr);
+			new (&res_type.sizes[ri]) Value{Value::parse(expr2.c_str())};
 		}
 	} else { // else single dim array
 		res_type.ndims = 1;
 		res_type.sizes = (Value *) malloc(res_type.ndims * sizeof(Value));
-		char *expr; handle_PC_err(PC_string(PC_get(node, ".size"), &expr), err0);
-		new (res_type.sizes) Value{Value::parse(expr)};
+		char *expr; PC_string(PC_get(node, ".size"), &expr);
+		string expr2 = expr;
 		free(expr);
+		new (res_type.sizes) Value{Value::parse(expr2.c_str())};
 	}
 	
 	PC_status_t invalid_subsizes;
@@ -204,7 +212,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 			PC_errhandler(pc_handler); // aka PC_end_try
 		}
 		if (!invalid_subsizes && len != res_type.ndims) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, res_type.ndims), err1);
+			throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, res_type.ndims};
 		}
 	}
 	
@@ -212,9 +220,10 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		res_type.subsizes = (Value *) malloc(res_type.ndims * sizeof(Value));
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
-			char *expr; handle_PC_err(PC_string(PC_get(node, ".subsizes[%d]", ii), &expr), err1);
-			new (&res_type.subsizes[ri]) Value{Value::parse(expr)};
+			char *expr; PC_string(PC_get(node, ".subsizes[%d]", ii), &expr);
+			string expr2 = expr;
 			free(expr);
+			new (&res_type.subsizes[ri]) Value{Value::parse(expr2.c_str())};
 		}
 	} else { // no subsize, default to full size
 		res_type.subsizes = res_type.sizes;
@@ -229,7 +238,7 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 			PC_errhandler(pc_handler); // aka PC_end_try
 		}
 		if (!invalid_starts && len != res_type.ndims) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, res_type.ndims), err2);
+			throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, res_type.ndims};
 		}
 	}
 	
@@ -237,9 +246,10 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 	if (!invalid_starts) {
 		for (int ii = 0; ii < res_type.ndims; ++ii) {
 			int ri = ridx(ii, order, res_type.ndims);
-			char *expr; handle_PC_err(PC_string(PC_get(node, ".starts[%d]", ii), &expr), err2);
-			new (&res_type.starts[ri]) Value{Value::parse(expr)};
+			char *expr; PC_string(PC_get(node, ".starts[%d]", ii), &expr);
+			string expr2 = expr;
 			free(expr);
+			new (&res_type.starts[ri]) Value{Value::parse(expr2.c_str())};
 		}
 	} else { // no start, start at 0 everywhere
 		res_type.starts = (Value *) malloc(res_type.ndims * sizeof(Value));
@@ -248,74 +258,40 @@ static PDI_status_t array_datatype_load(PC_tree_t node, PDI_array_type_t *type)
 		}
 	}
 	
-	PC_tree_t type_type;
-	type_type = PC_get(node, ".type"); // keep separate line, otherwise get error with err2 jump
-	handle_PC_err(PC_status(type_type), err3);
-	PDI_handle_err(PDI_datatype_load(&res_type.type, type_type), err3);
+	PDI_datatype_load(&res_type.type, PC_get(node, ".type"));
 	
 	*type = res_type;
-	return status;
-	
-	
-err3: { // handling errors after "starts" have been allocated
-		for (int jj = 0; jj < res_type.ndims ; ++jj)
-			res_type.subsizes[jj].~Value();
-		free(res_type.starts);
-	}
-err2: { // --------------------  "subsizes"  -------------------
-		if (res_type.subsizes != res_type.sizes) { // subsizes exist
-			for (int jj = 0; jj < res_type.ndims ; ++jj)
-				res_type.subsizes[jj].~Value();
-			free(res_type.subsizes);
-		}
-	}
-err1: { // --------------------  "sizes"  -----------------------
-		for (int jj = 0; jj < res_type.ndims ; ++jj)
-			res_type.sizes[jj].~Value();
-		free(res_type.sizes);
-	}
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
-static PDI_status_t struct_datatype_load(PC_tree_t node, PDI_struct_type_t *type)
+static PDI_status_t struct_datatype_load(PC_tree_t, PDI_struct_type_t *)
 {
-	PDI_status_t status = PDI_OK;
-	
-	(void) node; // to prevent unused parameter warnings
-	(void) type; // to prevent unused parameter warnings
-	
-	PDI_handle_err(PDI_make_err(PDI_ERR_IMPL, "Structure support not implemented yet"), err0);
-	
-	return status;
-	
-err0:
-	return status;
+	throw Error{PDI_ERR_IMPL, "Structure support not implemented yet"};
 }
 
 
 static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type)
 {
-	PDI_status_t status = PDI_OK;
-	
-	char *tname = NULL;
+	string tname;
 	long kind = 0;
-	{
-		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-		PC_string(PC_get(node, ".type"), &tname);
+	try {
+		char * ctname;
+		PC_string(PC_get(node, ".type"), &ctname);
+		tname = ctname;
+		free(ctname);
 		PC_int(PC_get(node, ".kind"), &kind);
-		PC_errhandler(pc_handler); // aka PC_end_try
-	}
-	
-	if (!tname) {
-		handle_PC_err(PC_string(node, &tname), err0);
+	} catch ( const Error& ) {
+		char * ctname;
+		PC_string(node, &ctname);
+		tname = ctname;
+		free(ctname);
 	}
 	
 	// For Fortran, we assume kind means number of bytes... TODO: autodetect
-	if (!strcmp(tname, "char") && kind == 0) { // C char
+	if ( tname == "char" && kind == 0) { // C char
 		*type = PDI_T_INT8;
-	} else if (!strcmp(tname, "int") && kind == 0) { // C int
+	} else if ( tname == "int" && kind == 0) { // C int
 		switch (sizeof(int)) {
 		case 1:
 			*type = PDI_T_INT8;
@@ -330,21 +306,21 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 			*type = PDI_T_INT64;
 			break;
 		default:
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Unsupported int size: %d", sizeof(int) * 8), err1);
+			throw Error{PDI_ERR_VALUE, "Unsupported int size: %d", sizeof(int) * 8};
 		}
-	} else if (!strcmp(tname, "int8") && kind == 0) { // C int8
+	} else if ( tname == "int8"  && kind == 0) { // C int8
 		*type = PDI_T_INT8;
-	} else if (!strcmp(tname, "int16") && kind == 0) { // C int16
+	} else if ( tname == "int16"  && kind == 0) { // C int16
 		*type = PDI_T_INT16;
-	} else if (!strcmp(tname, "int32") && kind == 0) { // C int32
+	} else if ( tname == "int32"  && kind == 0) { // C int32
 		*type = PDI_T_INT32;
-	} else if (!strcmp(tname, "int64") && kind == 0) { // C int64
+	} else if ( tname == "int64"  && kind == 0) { // C int64
 		*type = PDI_T_INT64;
-	} else if (!strcmp(tname, "float") && kind == 0) { // C float
+	} else if ( tname == "float"  && kind == 0) { // C float
 		*type = PDI_T_FLOAT;
-	} else if (!strcmp(tname, "double") && kind == 0) { // C double
+	} else if ( tname == "double"  && kind == 0) { // C double
 		*type = PDI_T_DOUBLE;
-	} else if (!strcmp(tname, "character")) {   // Fortran character
+	} else if ( tname == "character" ) {   // Fortran character
 		if (kind == 0) kind = PDI_CHARACTER_DEFAULT_KIND;
 		switch (kind) {
 		case 1:
@@ -360,9 +336,9 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 			*type = PDI_T_INT64;
 			break;
 		default:
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for character: `%s'", tname), err1);
+			throw Error{PDI_ERR_VALUE, "Invalid kind for character: `%s'", tname.c_str()};
 		}
-	} else if (!strcmp(tname, "integer")) {   // Fortran integer
+	} else if ( tname == "integer" ) {   // Fortran integer
 		if (kind == 0) kind = PDI_INTEGER_DEFAULT_KIND;
 		switch (kind) {
 		case 1:
@@ -378,9 +354,9 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 			*type = PDI_T_INT64;
 			break;
 		default:
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err1);
+			throw Error{PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname};
 		}
-	} else if (!strcmp(tname, "logical")) {   // Fortran integer
+	} else if ( tname == "logical" ) {   // Fortran integer
 		if (kind == 0) kind = PDI_LOGICAL_DEFAULT_KIND;
 		switch (kind) {
 		case 1:
@@ -396,9 +372,9 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 			*type = PDI_T_INT64;
 			break;
 		default:
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname), err1);
+			throw Error{PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname.c_str()};
 		}
-	} else if (!strcmp(tname, "real")) {   // Fortran real
+	} else if ( tname == "real" ) {   // Fortran real
 		if (kind == 0) kind = PDI_REAL_DEFAULT_KIND;
 		switch (kind) {
 		case 4:
@@ -411,35 +387,26 @@ static PDI_status_t scalar_datatype_load(PC_tree_t node, PDI_scalar_type_t *type
 			*type = PDI_T_LONG_DOUBLE;
 			break;
 		default:
-			PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid kind for real: `%s'", tname), err1);
+			throw Error{PDI_ERR_VALUE, "Invalid kind for real: `%s'", tname.c_str()};
 		}
 	} else {
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE, "Invalid scalar type: `%s'", tname), err1);
+		throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s'", tname.c_str()};
 	}
 	
-	free(tname);
-	return status;
-err1:
-	free(tname);
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 static PDI_status_t array_datatype_destroy(PDI_array_type_t *type)
 {
-	PDI_status_t status = PDI_OK;
-	
-	PDI_handle_err(PDI_datatype_destroy(&type->type), err0);
+	PDI_datatype_destroy(&type->type);
 	// don't free subsizes in case it was a copy of sizes
 	if (type->subsizes != type->sizes) free(type->subsizes);
 	
 	free(type->sizes);
 	free(type->starts);
 	
-	return status;
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
@@ -462,8 +429,6 @@ static PDI_status_t datatype_bufdesc(const PDI_datatype_t *type, buffer_descript
 
 static PDI_status_t scalar_datatype_bufdesc(PDI_scalar_type_t type, buffer_descriptor_t *result)
 {
-	PDI_status_t status = PDI_OK;
-	
 	result->ndims = 0;
 	result->sizes = NULL;
 	result->subsizes = NULL;
@@ -492,21 +457,16 @@ static PDI_status_t scalar_datatype_bufdesc(PDI_scalar_type_t type, buffer_descr
 		result->dense_size = sizeof(long double);
 		break;
 	default:
-		PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Unknown PDI type: #%d", type), err0);
+		throw Error{PDI_ERR_CONFIG, "Unknown PDI type: #%d", type};
 	}
 	
-	return status;
-	
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 static PDI_status_t array_datatype_bufdesc(const PDI_array_type_t *type, buffer_descriptor_t *result)
 {
-	PDI_status_t status = PDI_OK;
-	
-	PDI_handle_err(datatype_bufdesc(&type->type, result), err0);
+	datatype_bufdesc(&type->type, result);
 	for (int dim = 0; dim < type->ndims; ++dim) {
 		long size = type->sizes[dim];
 		long subsize = type->subsizes[dim];
@@ -524,32 +484,25 @@ static PDI_status_t array_datatype_bufdesc(const PDI_array_type_t *type, buffer_
 		}
 	}
 	
-	return status;
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 static PDI_status_t datatype_bufdesc(const PDI_datatype_t *type, buffer_descriptor_t *result)
 {
-	PDI_status_t status = PDI_OK;
-	
 	switch (type->kind) {
 	case PDI_K_SCALAR: {
-		PDI_handle_err(scalar_datatype_bufdesc(type->c.scalar, result), err0);
+		scalar_datatype_bufdesc(type->c.scalar, result);
 	} break;
 	case PDI_K_ARRAY: {
-		PDI_handle_err(array_datatype_bufdesc(type->c.array, result), err0);
+		array_datatype_bufdesc(type->c.array, result);
 	} break;
 	case PDI_K_STRUCT: {
-		PDI_handle_err(PDI_make_err(PDI_ERR_CONFIG, "Not implemented yet"), err0);
+		throw Error{PDI_ERR_IMPL, "Not implemented yet"};
 	} break;
 	}
 	
-	return status;
-	
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
@@ -563,21 +516,18 @@ err0:
  */
 static PDI_status_t buffer_do_copy(void *to, const buffer_descriptor_t *to_desc, const void *from, const buffer_descriptor_t *from_desc)
 {
-	PDI_status_t status = PDI_OK;
-	
-	
-	size_t from_size; PDI_handle_err(bufdesc_datasize(from_desc, &from_size), err0);
-	size_t to_size; PDI_handle_err(bufdesc_datasize(to_desc, &to_size), err0);
+	size_t from_size; bufdesc_datasize(from_desc, &from_size);
+	size_t to_size; bufdesc_datasize(to_desc, &to_size);
 	
 	// and now for a little defensive programming
 	if (from_size != to_size) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_TYPE, "Incompatible types for copy: %ld Bytes -> %ld Bytes", (long)from_size, (long)to_size), err0);
+		throw Error{PDI_ERR_TYPE, "Incompatible types for copy: %ld Bytes -> %ld Bytes", (long)from_size, (long)to_size};
 	}
 	
 	
 	if (0 == from_desc->ndims && 0 == to_desc->ndims) {   // dense to dense
 		if (from_desc->dense_size != to_desc->dense_size) {
-			PDI_handle_err(PDI_make_err(PDI_ERR_TYPE, "Incompatible type size for dense copy: %ld vs. %ld .", (long)from_desc->dense_size, (long)to_desc->dense_size), err0);
+			throw Error{PDI_ERR_TYPE, "Incompatible type size for dense copy: %ld vs. %ld .", (long)from_desc->dense_size, (long)to_desc->dense_size};
 		}
 		memcpy(to, from, from_desc->dense_size);
 		
@@ -620,7 +570,7 @@ static PDI_status_t buffer_do_copy(void *to, const buffer_descriptor_t *to_desc,
 			
 		} else { // sparse to sparse
 			if (from_desc->subsizes[0] != to_desc->subsizes[0]) {
-				PDI_handle_err(PDI_make_err(PDI_ERR_TYPE, "Incompatible array type size for copy."), err0);
+				throw Error{PDI_ERR_TYPE, "Incompatible array type size for copy."};
 			}
 			nblocks = from_desc->subsizes[0];
 			
@@ -652,10 +602,7 @@ static PDI_status_t buffer_do_copy(void *to, const buffer_descriptor_t *to_desc,
 		}
 	}
 	
-	return status;
-	
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
@@ -673,8 +620,6 @@ PDI_status_t PDI_datatype_init_scalar(PDI_datatype_t *dest, PDI_scalar_type_t va
 PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t *type, int ndims,
                                      const Value *sizes, const Value *subsizes, const Value *starts)
 {
-	PDI_status_t status = PDI_OK;
-	
 	PDI_array_type_t *array = (PDI_array_type_t *) malloc(sizeof(PDI_array_type_t));
 	
 	array->ndims = ndims;
@@ -704,86 +649,59 @@ PDI_status_t PDI_datatype_init_array(PDI_datatype_t *dest, const PDI_datatype_t 
 		}
 	}
 	
-	PDI_handle_err(PDI_datatype_copy(&array->type, type), err3);
+	PDI_datatype_copy(&array->type, type);
 	
 	dest->kind = PDI_K_ARRAY;
 	dest->c.array = array;
 	
-	return status;
-	
-err3:
-	for (int ii = 0; ii < ndims; ++ii) array->starts[ii].~Value();
-	//TODO: free already built starts
-	free(array->starts);
-	for (int ii = 0; ii < ndims; ++ii) array->subsizes[ii].~Value();
-	//TODO: free already built subsizes
-	if (array->subsizes != array->sizes) free(array->subsizes);
-	for (int ii = 0; ii < ndims; ++ii) array->sizes[ii].~Value();
-	//TODO: free already built sizes
-	free(array->sizes);
-	free(array);
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_datatype_copy(PDI_datatype_t *copy, const PDI_datatype_t *from)
 {
-	PDI_status_t status = PDI_OK;
-	
 	switch (from->kind) {
 	case PDI_K_SCALAR:
-		PDI_handle_err(PDI_datatype_init_scalar(copy, from->c.scalar), err0);
+		PDI_datatype_init_scalar(copy, from->c.scalar);
 		break;
 	case PDI_K_ARRAY:
-		PDI_handle_err(PDI_datatype_init_array(copy, &from->c.array->type,
-		                                       from->c.array->ndims, from->c.array->sizes, from->c.array->subsizes,
-		                                       from->c.array->starts),
-		               err0);
+		PDI_datatype_init_array(copy, &from->c.array->type, from->c.array->ndims,
+		                        from->c.array->sizes, from->c.array->subsizes,
+		                        from->c.array->starts);
 		break;
 	case PDI_K_STRUCT:
-		PDI_handle_err(PDI_make_err(PDI_UNAVAILABLE, "Structure support not implemented"), err0);
+		throw Error{PDI_UNAVAILABLE, "Structure support not implemented"};
 		break;
 	}
 	
-	return status;
-	
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_datatype_densify(PDI_datatype_t *result, const PDI_datatype_t *oldtype)
 {
-	PDI_status_t status = PDI_OK;
-	
 	switch (oldtype->kind) {
 	case PDI_K_SCALAR:
 		PDI_datatype_init_scalar(result, oldtype->c.scalar);
 		break;
 		
 	case PDI_K_ARRAY: ;
-		PDI_datatype_t subtype; PDI_handle_err(PDI_datatype_densify(&subtype, &oldtype->c.array->type), err0);
-		PDI_handle_err(PDI_datatype_init_array(result, &subtype, oldtype->c.array->ndims,
-		                                       oldtype->c.array->subsizes, oldtype->c.array->subsizes, NULL),
-		               err0);
+		PDI_datatype_t subtype; PDI_datatype_densify(&subtype, &oldtype->c.array->type);
+		PDI_datatype_init_array(result, &subtype, oldtype->c.array->ndims,
+		                        oldtype->c.array->subsizes,
+		                        oldtype->c.array->subsizes, NULL);
 		break;
-		
 	case PDI_K_STRUCT:
-		PDI_handle_err(PDI_make_err(PDI_ERR_VALUE,
-		                            "In %s, line %d, Structure cannot be copied (not implemented).", __func__, __LINE__), err0);
+		throw Error{PDI_ERR_IMPL, "Structure support not implemented"};
 		break;
 	}
 	
-	return status;
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
 {
-	PDI_status_t status = PDI_OK;
-	
 	// load as a scalar by default
 	PDI_type_kind_t kind = PDI_K_SCALAR;
 	
@@ -797,48 +715,36 @@ PDI_status_t PDI_datatype_load(PDI_datatype_t *type, PC_tree_t node)
 	
 	switch (kind) {
 	case PDI_K_ARRAY: {// load the type as an array
-		PDI_array_type_t *array = (PDI_array_type_t *) malloc(sizeof(PDI_array_type_t));
-		PDI_handle_err(array_datatype_load(node, array), err1);
-		
-		type->c.array = array;
-		break;
-err1:
-		free(array);
-		PDI_handle_err(status, err0);
+		unique_ptr<PDI_array_type_t, decltype(&free)> array {static_cast<PDI_array_type_t*>(malloc(sizeof(PDI_array_type_t))), free};
+		array_datatype_load(node, array.get());
+		type->c.array = array.release();
 		break;
 	}
 	case PDI_K_STRUCT: { // load the type as a structure
-		PDI_struct_type_t *struct_ = (PDI_struct_type_t *)malloc(sizeof(PDI_struct_type_t));
-		PDI_handle_err(struct_datatype_load(node, struct_), err2);
-		type->c.struct_ = struct_;
-		break;
-err2:
-		free(struct_);
-		PDI_handle_err(status, err0);
+		unique_ptr<PDI_struct_type_t, decltype(&free)> struct_ {static_cast<PDI_struct_type_t*>(malloc(sizeof(PDI_struct_type_t))), free};
+		struct_datatype_load(node, struct_.get());
+		type->c.struct_ = struct_.release();
 		break;
 	}
 	case PDI_K_SCALAR: { // load the type as a scalar
-		PDI_handle_err(scalar_datatype_load(node, &(type->c.scalar)), err0);
+		scalar_datatype_load(node, &(type->c.scalar));
 		break;
 	}
 	}
 	type->kind = kind;
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_datatype_destroy(PDI_datatype_t *type)
 {
-	PDI_status_t status = PDI_OK;
-	
 	switch (type->kind) {
 	case PDI_K_ARRAY: {
 		array_datatype_destroy(type->c.array);
 		free(type->c.array);
 	} break;
 	case PDI_K_STRUCT: {
-		PDI_handle_err(PDI_make_err(PDI_ERR_IMPL, "Structs not implemented yet"), err0);
+		throw Error{PDI_ERR_IMPL, "Structs not implemented yet"};
 		free(type->c.struct_);
 	} break;
 	case PDI_K_SCALAR: {
@@ -846,9 +752,7 @@ PDI_status_t PDI_datatype_destroy(PDI_datatype_t *type)
 	} break;
 	}
 	
-	return status;
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
@@ -871,63 +775,59 @@ PDI_status_t PDI_datatype_is_dense(const PDI_datatype_t *type, int *is_dense)
 
 PDI_status_t PDI_datatype_datasize(const PDI_datatype_t *type, size_t *result)
 {
-	PDI_status_t status = PDI_OK;
-	
-	buffer_descriptor_t valsz; PDI_handle_err(datatype_bufdesc(type, &valsz), err0);
-	PDI_handle_err(bufdesc_datasize(&valsz, result), err1);
+	buffer_descriptor_t valsz; datatype_bufdesc(type, &valsz);
+	try {
+		bufdesc_datasize(&valsz, result);
+	} catch(...) {
+		bufdesc_destroy(&valsz);
+		throw;
+	}
 	bufdesc_destroy(&valsz);
 	
-	return status;
-	
-err1:
-	bufdesc_destroy(&valsz);
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_datatype_buffersize(const PDI_datatype_t *type, size_t *result)
 {
-	PDI_status_t status = PDI_OK;
-	
-	buffer_descriptor_t valsz; PDI_handle_err(datatype_bufdesc(type, &valsz), err0);
-	PDI_handle_err(bufdesc_buffersize(&valsz, result), err1);
+	buffer_descriptor_t valsz; datatype_bufdesc(type, &valsz);
+	try {
+		bufdesc_buffersize(&valsz, result);
+	} catch(...) {
+		bufdesc_destroy(&valsz);
+		throw;
+	}
 	bufdesc_destroy(&valsz);
 	
-	return status;
-	
-err1:
-	bufdesc_destroy(&valsz);
-err0:
-	return status;
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_buffer_copy(void *to, const PDI_datatype_t *to_type, const void *from, const PDI_datatype_t *from_type)
 {
-	PDI_status_t status = PDI_OK;
-	
-	buffer_descriptor_t from_desc; PDI_handle_err(datatype_bufdesc(from_type, &from_desc), err0);
-	buffer_descriptor_t to_desc; PDI_handle_err(datatype_bufdesc(to_type, &to_desc), err1);
-	
-	size_t from_size; PDI_handle_err(bufdesc_datasize(&from_desc, &from_size), err2);
-	size_t to_size; PDI_handle_err(bufdesc_datasize(&to_desc, &to_size), err2);
-	
-	// and now for a little defensive programming
-	if (from_size != to_size) {
-		PDI_handle_err(PDI_make_err(PDI_ERR_TYPE, "Incompatible types for copy: %ld Bytes -> %ld Bytes", (long)from_size, (long)to_size), err2);
+	buffer_descriptor_t from_desc; datatype_bufdesc(from_type, &from_desc);
+	try {
+		buffer_descriptor_t to_desc; datatype_bufdesc(to_type, &to_desc);
+		try {
+			size_t from_size; bufdesc_datasize(&from_desc, &from_size);
+			size_t to_size; bufdesc_datasize(&to_desc, &to_size);
+			
+			// and now for a little defensive programming
+			if (from_size != to_size) {
+				throw Error{PDI_ERR_TYPE, "Incompatible types for copy: %ld Bytes -> %ld Bytes", (long)from_size, (long)to_size};
+			}
+			
+			buffer_do_copy(to, &to_desc, from, &from_desc);
+			
+			bufdesc_destroy(&from_desc);
+			bufdesc_destroy(&to_desc);
+		} catch ( ... ) {
+			bufdesc_destroy(&to_desc);
+			throw;
+		}
+	} catch ( ... ) {
+		bufdesc_destroy(&from_desc);
+		throw;
 	}
-	
-	PDI_handle_err(buffer_do_copy(to, &to_desc, from, &from_desc), err2);
-	bufdesc_destroy(&from_desc);
-	bufdesc_destroy(&to_desc);
-	
-	return status;
-	
-err2:
-	bufdesc_destroy(&to_desc);
-err1:
-	bufdesc_destroy(&from_desc);
-err0:
-	return status;
+	return PDI_OK;
 }

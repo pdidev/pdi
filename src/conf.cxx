@@ -29,68 +29,51 @@
 * \author J. Bigot (CEA)
 */
 
+#include "config.h"
+
 #include <paraconf.h>
 
 #include "pdi.h"
 #include "pdi/state.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
-
-#include "status.h"
+#include "pdi/status.h"
 
 #include "conf.h"
 
 using PDI::Data_descriptor;
+using std::string;
 
 static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 {
-	PDI_status_t status = PDI_OK;
+	int map_len; PC_len(node, &map_len);
 	
-	int map_len; handle_PC_err(PC_len(node, &map_len), err0);
-	
-	int map_id;
-	PDI_datatype_t *type; type = nullptr;
-	char *c_name; c_name = nullptr;
-	for (map_id = 0; map_id < map_len; ++map_id) {
-		PC_tree_t config;
-		
-		
-		handle_PC_err(PC_string(PC_get(node, "{%d}", map_id), &c_name), err0);
-		std::string name(c_name);
+	for (int map_id = 0; map_id < map_len; ++map_id) {
+		char *c_name; PC_string(PC_get(node, "{%d}", map_id), &c_name);
+		string name = c_name;
 		free(c_name);
 		
-		config = PC_get(node, "<%d>", map_id);
-		handle_PC_err(PC_status(config), err0);
+		PC_tree_t config = PC_get(node, "<%d>", map_id);
 		
 		PDI_datatype_t type;
-		PDI_handle_err(PDI_datatype_load(&type, config), err1);
-		
-		Data_descriptor &cur_data = PDI_state.desc(name);
-		PDI_handle_err(cur_data.init(config, is_metadata, type), err2);
-		
+		PDI_datatype_load(&type, config);
+		try {
+			PDI_state.desc(name).init(config, is_metadata, type);
+		} catch (...) {
+			PDI_datatype_destroy(&type);
+		}
 	}
 	
-	return status;
-err2:
-	PDI_datatype_destroy(type);
-err1:
-	delete (type);
-err0:
-	return status;
+	return PDI_OK;
 }
 
 PDI_status_t load_conf(PC_tree_t node)
 {
-	PDI_status_t status = PDI_OK;
-	
-	// Detect an invalid configuration as soon as possible
-	handle_PC_err(PC_status(node), err0);
-	
 	// no metadata is not an error
 	{
 		PC_tree_t metadata = PC_get(node, ".metadata");
 		if (!PC_status(metadata)) {
-			PDI_handle_err(load_data(metadata, true), err0);
+			load_data(metadata, true);
 		}
 	}
 	
@@ -98,12 +81,9 @@ PDI_status_t load_conf(PC_tree_t node)
 	{
 		PC_tree_t data = PC_get(node, ".data");
 		if (!PC_status(data)) {
-			PDI_handle_err(load_data(data, false), err0);
+			load_data(data, false);
 		}
 	}
 	
-	return status;
-	
-err0:
-	return status;
+	return PDI_OK;
 }

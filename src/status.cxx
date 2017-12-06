@@ -28,60 +28,31 @@
  * \author J. Bigot (CEA)
  */
 
+#include <cassert>
 #include <memory>
+#include <string>
 
 #include <pthread.h>
 
-#include <paraconf.h>
-
-#include "status.h"
-
-namespace PDI
-{
-
-using std::unique_ptr;
-
-Error::Error(PDI_status_t errcode, const char *message, va_list ap):
-	m_status(errcode)
-{
-	va_list ap2; va_copy(ap2, ap);
-	m_what.resize(vsnprintf(NULL, 0, message, ap));
-	vsnprintf(&m_what[0], m_what.size(), message, ap2);
-}
-
-Error::Error(PDI_status_t errcode, const char *message, ...):
-	m_status(errcode)
-{
-	va_list ap;
-	va_start(ap, message);
-	m_what.resize(vsnprintf(NULL, 0, message, ap));
-	va_end(ap);
-	va_start(ap, message);
-	vsnprintf(&m_what[0], m_what.size(), message, ap);
-	va_end(ap);
-}
-
-}
+#include "pdi/status.h"
 
 // File private stuff
 
-typedef struct errctx_s {
+namespace {
 
+using std::string;
+
+struct Error_context
+{
 	PDI_errhandler_t handler;
 	
-	char *buffer;
+	string errmsg;
 	
-	long buffer_size;
-	
-} errctx_t;
-
-static pthread_key_t context_key;
-
-static pthread_once_t context_key_once = PTHREAD_ONCE_INIT;
+};
 
 /** Handler for fatal errors
   */
-static void assert_status(PDI_status_t status, const char *message, void *)
+void assert_status(PDI_status_t status, const char *message, void *)
 {
 	if (status) {
 		fprintf(stderr, "FATAL ERROR, in PDI: %s\n", message);
@@ -91,62 +62,43 @@ static void assert_status(PDI_status_t status, const char *message, void *)
 
 /** Handler for warning
   */
-static void warn_status(PDI_status_t status, const char *message, void *)
+void warn_status(PDI_status_t status, const char *message, void *)
 {
 	if (status) {
 		fprintf(stderr, "Warning, in PDI: %s\n", message);
 	}
 }
 
-/**
- * \param context taken as a void* but in fact a errctx_t*
- */
-static void context_destroy(void *context)
+pthread_key_t context_key;
+
+void context_destroy(void *context)
 {
-	free(context);
+	delete static_cast<Error_context*>(context);
 }
 
-static void context_init()
+void context_init()
 {
 	pthread_key_create(&context_key, context_destroy);
 }
 
-static errctx_t *get_context()
+Error_context *get_context()
 {
-	pthread_once(&context_key_once, &context_init);
-	
-	errctx_t *context = (errctx_t *) pthread_getspecific(context_key);
+	static pthread_once_t context_key_once = PTHREAD_ONCE_INIT;
+	pthread_once(&context_key_once, context_init);
+	Error_context *context = static_cast<Error_context *>(pthread_getspecific(context_key));
 	if (!context) {
-		context = (errctx_t *) malloc(sizeof(errctx_t));
-		context->buffer = NULL;
-		context->buffer_size = 0;
-		context->handler = PDI_ASSERT_HANDLER;
+		context = new Error_context{PDI_ASSERT_HANDLER, ""};
 		pthread_setspecific(context_key, context);
 	}
-	
+	assert(context);
 	return context;
 }
 
-static void forward_PC_error(PC_status_t, const char *message, void *)
+void forward_PC_error(PC_status_t, const char *message, void *)
 {
-	if (get_context()->handler.func) get_context()->handler.func(PDI_ERR_CONFIG, message, get_context()->handler.context);
+	throw PDI::Error{PDI_ERR_CONFIG, message};
 }
 
-// library private stuff
-
-PDI_status_t PDI_make_err(PDI_status_t status, const char *message, ...)
-{
-	va_list ap;
-	va_start(ap, message);
-	throw PDI::Error(status, message, ap);
-	va_end(ap);
-	return status;
-}
-
-PC_errhandler_t intercept_PC_errors()
-{
-	PC_errhandler_t forwarder = { forward_PC_error, NULL };
-	return PC_errhandler(forwarder);
 }
 
 // public stuff
@@ -173,7 +125,55 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 	return old_handler;
 }
 
-char *PDI_errmsg()
+const char *PDI_errmsg()
 {
-	return get_context()->buffer;
+	return get_context()->errmsg.c_str();
+}
+
+namespace PDI
+{
+
+using std::unique_ptr;
+
+Error::Error(PDI_status_t errcode, const char *message, va_list ap):
+	m_status(errcode)
+{
+	va_list ap2; va_copy(ap2, ap);
+	m_what.resize(vsnprintf(NULL, 0, message, ap));
+	vsnprintf(&m_what[0], m_what.size(), message, ap2);
+}
+
+Error::Error(PDI_status_t errcode, const char *message, ...):
+	m_status(errcode)
+{
+	va_list ap;
+	va_start(ap, message);
+	// get the string size and allocate enough space for it plus a terminating null byte
+	m_what.resize(vsnprintf(NULL, 0, message, ap)+1);
+	va_end(ap);
+	va_start(ap, message);
+	vsnprintf(&m_what[0], m_what.size(), message, ap);
+	// remove the terminating null byte
+	m_what.resize(m_what.size()-1);
+	va_end(ap);
+}
+
+PDI_status_t return_err(const Error& err)
+{
+	Error_context* ctx = get_context();
+	ctx->errmsg = err.what();
+	if (ctx->handler.func) ctx->handler.func(err.m_status, err.what(), ctx->handler.context);
+	return err.m_status;
+}
+
+Paraconf_raii_forwarder::Paraconf_raii_forwarder():
+		m_handler{PC_errhandler(PC_errhandler_t{ forward_PC_error, NULL })}
+{
+}
+
+Paraconf_raii_forwarder::~Paraconf_raii_forwarder()
+{
+	PC_errhandler(m_handler);
+}
+
 }

@@ -34,19 +34,27 @@
 #include <exception>
 #include <string>
 
+#include <paraconf.h>
+
 #include "pdi.h"
 
 namespace PDI
 {
 
 class Error:
-	public std::exception
+		public std::exception
 {
 public:
 	PDI_status_t m_status;
 	
 	std::string m_what;
 	
+	/** Creates a PDI error
+	 * \param[in] errcode the error code of the error to create
+	 * \param[in] message an errror message as a printf-style format
+	 * \param[in] ... the printf-style parameters for the message
+	 * \see printf
+	 */
 	Error(PDI_status_t errcode = PDI_OK, const char *message = "", ...);
 	
 	Error(PDI_status_t errcode, const char *message, va_list args);
@@ -56,55 +64,24 @@ public:
 		return m_what.c_str();
 	}
 	
-	explicit operator bool ()
-	{
-		return m_status != PDI_OK && m_status != PDI_UNAVAILABLE;
-	}
 };
 
+/** Automatically installs a paraconf error-handler that forwards errors to
+ *  PDI on construction and uninstalls it on destruction.
+ */
+class Paraconf_raii_forwarder
+{
+	PC_errhandler_t m_handler;
+	
+public:
+	Paraconf_raii_forwarder();
+	
+	~Paraconf_raii_forwarder();
+	
+};
+
+PDI_status_t return_err(const Error& err);
+
 } // namespace PDI
-
-/** Handle a PDI return code, jumping to the error handler code on error
- * \param callstatus the call status to handle, will be used only once, this
- *        can be the call itself
- * \param free_stamp the label of the error handling code
- */
-#define PDI_handle_err(callstatus, free_stamp)\
-	do { \
-		PDI_status_t newstatus = (callstatus); \
-		if ( newstatus ) status = newstatus; \
-		if ( status && status != PDI_UNAVAILABLE ) goto free_stamp; \
-	} while( 0 )
-
-
-/** Handle a Paraconf return code, jumping to the error handler code on error
- * \param callstatus the call status to handle, will be used only once, this
- *        can be the call itself
- * \param free_stamp the label of the error handling code
- */
-#define handle_PC_err(callstatus, free_stamp)\
-	do { \
-		PC_errhandler_t pc_handler = intercept_PC_errors();\
-		if ( callstatus ) status = PDI_ERR_CONFIG; \
-		PC_errhandler(pc_handler);\
-		if ( status ) goto free_stamp; \
-	} while( 0 )
-
-/** Create a new PDI error and calls the user specified handler to handle it
- * \param[in] errcode the error code of the error to create
- * \param[in] message an errror message as a printf-style format
- * \param[in] ... the printf-style parameters for the message
- * \see printf
- * \return the newly created error
- */
-PDI_status_t PDI_make_err(PDI_status_t errcode, const char *message, ...);
-
-/** install a paraconf error-handler that forwards errors to PDI
- *
- * Used in the handle_PC_err macro
- *
- * \return the previously installed paraconf error-handler
- */
-PC_errhandler_t intercept_PC_errors();
 
 #endif // ERROR_H__

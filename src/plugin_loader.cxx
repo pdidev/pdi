@@ -29,96 +29,74 @@
 * \details Plugins name written in config.yml are read/parse by paraconf: if PDI is build with a plugins having the same name, the plugin is loaded.
 * \author J. Bigot (CEA)
 */
-#include <stdio.h>
+#include <cstdio>
+#include <cerrno>
+#include <cstdarg>
+#include <sstream>
+
 #include <dlfcn.h>
-#include <errno.h>
-#include <stdarg.h>
 
 #include <paraconf.h>
 
 #include "pdi/state.h"
 #include "pdi/plugin.h"
+#include "pdi/status.h"
 
-#include "status.h"
 #include "utils.h"
 
 #include "plugin_loader.h"
 
+using namespace PDI;
+using std::string;
+using std::stringstream;
+
 typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t *plugin);
 
-PDI_status_t plugin_loader_load(char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t *plugin)
+PDI_status_t plugin_loader_load(const char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t *plugin)
 {
-	PDI_status_t status = PDI_OK;
-	
-	char *plugin_symbol = msprintf("PDI_plugin_%s_ctor", plugin_name);
-	void *plugin_ctor_uncast = dlsym(NULL, plugin_symbol);
+	stringstream plugin_symbol;
+	plugin_symbol << "PDI_plugin_"<<plugin_name<<"_ctor";
+	void *plugin_ctor_uncast = dlsym(NULL, plugin_symbol.str().c_str());
 	
 	// case where the library was not prelinked
-	{
+	if (!plugin_ctor_uncast) {
+		stringstream libname;
+		libname << "lib"<<plugin_name<<".so";
+		void *lib_handle = dlopen(libname.str().c_str(), RTLD_NOW);
+		if (!lib_handle) {
+			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin file: %s", plugin_name, dlerror()};
+		}
+		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol.str().c_str());
 		if (!plugin_ctor_uncast) {
-			char *libname = msprintf("lib%s.so", plugin_name);
-			void *lib_handle = dlopen(libname, RTLD_NOW);
-			free(libname);
-			if (!lib_handle) {
-				PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Unable to load plugin file for `%s': %s", plugin_name, dlerror()), err0);
-			}
-			plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol);
-			if (!plugin_ctor_uncast) {
-				PDI_handle_err(PDI_make_err(PDI_ERR_PLUGIN, "Unable to load plugin ctor for `%s': %s", plugin_name, dlerror()), err0);
-			}
+			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin from file: %s", plugin_name, dlerror()};
 		}
 	}
-	free(plugin_symbol);
 	
 	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
 	{
 		init_f plugin_ctor = *((init_f *)&plugin_ctor_uncast);
-		PDI_handle_err(plugin_ctor(node, world, plugin), err0);
+		plugin_ctor(node, world, plugin);
 	}
 	
-	return status;
-	
-err0:
-	free(plugin_symbol);
-	return status;
+	return PDI_OK;
 }
 
 PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *world)
 {
-	PDI_status_t status = PDI_OK;
-	int msg_done = 0;
-	
-	char *plugin_name = NULL;
-	handle_PC_err(PC_string(PC_get(conf, ".plugins{%d}", plugin_id), &plugin_name), err0);
-	
-	PC_tree_t plugin_conf;
-	plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
-	handle_PC_err(PC_status(plugin_conf), err1);
-	
-	PDI_plugin_t *plugin; plugin = new (PDI_plugin_t);
-	PDI_handle_err(plugin_loader_load(plugin_name, plugin_conf, world, plugin), err1);
-	PDI_state.plugins.insert({std::string(plugin_name), std::shared_ptr<PDI_plugin_t>(plugin)});
-	
-	free(plugin_name);
-	return status;
-	
-err1: {
-		status = PDI_make_err(status,
-		                      "Error while loading plugin `%s': %s",
-		                      plugin_name,
-		                      PDI_errmsg()
-		                     );
-		msg_done = 1;
-		free(plugin_name);
+	string plugin_name;
+	{
+		char *tmp;
+		PC_string(PC_get(conf, ".plugins{%d}", plugin_id), &tmp);
+		plugin_name = tmp;
+		free(tmp);
 	}
-err0: {
-		if (!msg_done) {
-			status = PDI_make_err(status,
-			                      "Error while loading plugin #%d: %s",
-			                      plugin_id,
-			                      PDI_errmsg()
-			                     );
-		}
+	try {
+		PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
+		PDI_plugin_t *plugin = new PDI_plugin_t;
+		plugin_loader_load(plugin_name.c_str(), plugin_conf, world, plugin);
+		PDI_state.plugins.insert({std::string(plugin_name), std::shared_ptr<PDI_plugin_t>(plugin)});
+	} catch ( const std::exception& e ) {
+		throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
 	}
-	return status;
+	return PDI_OK;
 }

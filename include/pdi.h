@@ -32,8 +32,8 @@
 #ifndef PDI_H__
 #define PDI_H__
 
-#include <paraconf.h>
 #include <mpi.h>
+#include <paraconf.h>
 
 #include <pdi_export.h>
 
@@ -89,7 +89,7 @@ typedef struct PDI_errhandler_s {
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
-char PDI_EXPORT *PDI_errmsg();
+const char *PDI_errmsg();
 
 /** Sets the error handler to use
  *

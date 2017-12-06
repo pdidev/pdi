@@ -32,6 +32,8 @@
 #ifndef PDI_STATE_H__
 #define PDI_STATE_H__
 
+#include <mpi.h>
+
 #include <list>
 #include <memory>
 #include <stack>
@@ -146,9 +148,6 @@ public:
 	
 	/// The actual loaded plugins
 	std::unordered_map<std::string, std::shared_ptr<PDI_plugin_t>> plugins;
-	
-	/// The current error handling function
-	PDI_errfunc_f *errfunc;
 	
 private:
 	/// Descriptors of the data

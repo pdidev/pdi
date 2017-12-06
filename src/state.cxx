@@ -32,10 +32,11 @@
 
 #include <iostream>
 
-#include "pdi/state.h"
-#include "status.h"
 #include "pdi/plugin.h"
 #include "pdi/data_reference.h"
+#include "pdi/status.h"
+
+#include "pdi/state.h"
 
 
 using PDI::Data_ref;

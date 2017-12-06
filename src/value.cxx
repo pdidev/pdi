@@ -30,19 +30,19 @@
  * \author J. Bigot (CEA)
  */
 
+#include "config.h"
+
 #include <cassert>
+#include <cctype>
 #include <cstdint>
+#include <cstdlib>
 #include <sstream>
-#include <variant>
 #include <vector>
 
-#include <ctype.h>
-#include <stdlib.h>
-
-#include "pdi/state.h"
 #include "pdi/data_reference.h"
+#include "pdi/state.h"
+#include "pdi/status.h"
 
-#include "status.h"
 #include "utils.h"
 
 #include "pdi/value.h"
@@ -102,14 +102,16 @@ struct Value_parser:
 	/** A value in case this is a string (potentially with dollar refs inside)
 	 */
 	struct Stringval:
-		public Impl {
-		/// a char string containing the constant part of the str_value
-		string str;
+		public Impl
+	{
+		/// a char string containing the beginning str_value
+		string start;
 		
+		/** A Subvalue contains another value to insert and the string following it
+		 */
 		struct Subvalue {
 			Value value;
-			/// position in str where to insert the value
-			int pos;
+			string str;
 		};
 		
 		/// array of subvalues
@@ -123,17 +125,10 @@ struct Value_parser:
 		string to_string() const override
 		{
 			stringstream result;
-			
-			size_t from_idx = 0;
-			for (size_t ii = 0; ii < values.size(); ++ii) {
-				size_t blk_sz = values[ii].pos - from_idx;
-				result << string{str.c_str() + from_idx, blk_sz};
-				from_idx += blk_sz;
-				
-				result << values[ii].value.to_string();
+			result << start;
+			for (auto&& subval: values) {
+				result << subval.value.to_string()<<subval.str;
 			}
-			result << str.c_str() + from_idx;
-			
 			return result.str();
 		}
 		
@@ -189,7 +184,7 @@ struct Value_parser:
 					computed_value = (computed_value < operand);
 				} break;
 				default: {
-					PDI_make_err(PDI_ERR_VALUE, "Unknown operator: `%c'", ops[ii - 1]);
+					throw Error{PDI_ERR_VALUE, "Unknown operator: `%c'", ops[ii - 1]};
 				}
 				}
 			}
@@ -224,18 +219,18 @@ struct Value_parser:
 			
 			if (ref_type.kind == PDI_K_ARRAY) {
 				if (m_idx.size() != static_cast<size_t>(ref_type.c.array->ndims)) {
-					PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), ref_type.c.array->ndims);
+					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), ref_type.c.array->ndims};
 				}
 				if (ref_type.c.array->type.kind != PDI_K_SCALAR) {
-					PDI_make_err(PDI_ERR_VALUE, "Invalid type accessed");
+					throw Error{PDI_ERR_VALUE, "Invalid type accessed"};
 				}
 				type = ref_type.c.array->type.c.scalar;
 			} else if (ref_type.kind == PDI_K_SCALAR) {
 				if (!m_idx.empty()) {
-					PDI_make_err(PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", m_idx.size());
+					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", m_idx.size()};
 				}
 			} else {
-				PDI_make_err(PDI_ERR_VALUE, "Invalid access to a struct");
+				throw Error{PDI_ERR_VALUE, "Invalid access to a struct"};
 			}
 			
 			long idx = 0;
@@ -249,7 +244,7 @@ struct Value_parser:
 			}
 			
 			if (!m_referenced->value()) {
-				PDI_make_err(PDI_ERR_VALUE, "Referenced variable `%s' is not shared", m_referenced->name().c_str());
+				throw Error{PDI_ERR_VALUE, "Referenced variable `%s' is not shared", m_referenced->name().c_str()};
 			}
 			
 			if (Data_r_ref ref = m_referenced->value()) {
@@ -478,28 +473,34 @@ Value Value_parser::parse_strval(char const **val_str)
 	
 	unique_ptr<Stringval> result{new Stringval};
 	
+	string* curstr = &result->start;
 	while (*str) {
 		int sz = 0;
 		while (str[sz] != '\\' && str[sz] != '$' && str[sz]) ++sz;
-		result->str.append(str, sz);
+		curstr->append(str, sz);
 		str += sz;
 		switch (*str) {
 		case '\\': {
-			++str;
-			result->str.append(str, 1);
-			str += 1;
+			str += 2;
+			curstr->push_back('\\');
 		} break;
 		case '$': {
 			switch (str[1]) {
 			case '(': { // remove the dollar, parse the term starting with the parenthesis (the intvl)
 				++str;
-				result->values.push_back({Value{parse_term(&str)}, static_cast<int>(result->str.size())});
+				result->values.push_back({Value{parse_term(&str)}, ""});
+				curstr = &result->values.back().str;
 			} break;
 			default: { // parse the term starting with the dollar (the ref)
-				result->values.push_back({Value{parse_term(&str)}, static_cast<int>(result->str.size())});
+				result->values.push_back({Value{parse_term(&str)}, ""});
+				curstr = &result->values.back().str;
 			} break;
 			}
 		} break;
+		case 0: {} break;
+		default: {
+			throw Error{PDI_ERR_IMPL, "Unexpected error!!!"};
+		}
 		}
 	}
 	
@@ -524,10 +525,10 @@ Value Value::parse(const char *val_str)
 		while (isspace(*parse_val)) ++parse_val;
 		Value result = Value_parser::parse_intval(&parse_val, 1);
 		while (isspace(*parse_val)) ++parse_val;
-		return result;
+		if (!*parse_val) return result; // only return this is we parsed the whole string, otherwise, parse as a string
 	} catch (Error &e) {   // in case of error, parse as a string
-		return Value_parser::parse_strval(&val_str);
 	}
+	return Value_parser::parse_strval(&val_str);
 }
 
 } // namespace PDI

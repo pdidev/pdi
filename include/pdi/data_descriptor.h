@@ -25,13 +25,15 @@
 #ifndef DATA_DESCRIPTOR_H__
 #define DATA_DESCRIPTOR_H__
 
+#include <functional>
 #include <memory>
 #include <stack>
 
 #include <paraconf.h>
-#include <pdi.h>
 
+#include <pdi.h>
 #include <pdi/datatype.h>
+#include <pdi/data_reference.h>
 
 namespace PDI
 {

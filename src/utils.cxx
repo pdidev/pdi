@@ -35,8 +35,8 @@
 #include "pdi.h"
 #include "pdi/datatype.h"
 #include "pdi/value.h"
+#include "pdi/status.h"
 
-#include "status.h"
 #include "utils.h"
 
 #define PRINTF_BUFFER_SIZE 256
