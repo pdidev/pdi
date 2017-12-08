@@ -29,10 +29,10 @@ namespace PDI
 {
 
 /** A PDI type descriptor
- * 
+ *
  * A Datatype is either a scalar, an array, or a record.
  * Structures are composed of one or mutiple PDI_datatype_t.
- * 
+ *
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
 class Datatype;

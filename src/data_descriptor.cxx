@@ -42,32 +42,23 @@ using std::unique_ptr;
 
 
 Data_descriptor::Data_descriptor(const char *name):
-	m_config(PC_parse_string(const_cast<char *>(""))),
+	m_config(PC_parse_string("")),
 	m_metadata(false),
+	m_type{PDI_UNDEF_TYPE},
 	m_name(name)
 {
-	PDI_datatype_init_scalar(&m_type, PDI_T_UNDEF);
-}
-
-Data_descriptor::Data_descriptor(const string &name):
-	m_config(PC_parse_string(const_cast<char *>(""))),
-	m_metadata(false),
-	m_name(name)
-{
-	PDI_datatype_init_scalar(&m_type, PDI_T_UNDEF);
 }
 
 Data_descriptor::~Data_descriptor()
 {
-	PDI_datatype_destroy(&m_type);
 }
 
 PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const Datatype &type)
 {
 	m_config = config;
 	m_metadata = is_metadata;
-	PDI_datatype_destroy(&m_type);
-	return PDI_datatype_copy(&m_type, &type);
+	m_type = type;
+	return PDI_OK;
 }
 
 PDI_status_t Data_descriptor::share(void *buffer, std::function<void(void *)> freefunc, PDI_inout_t access)
@@ -79,8 +70,7 @@ PDI_status_t Data_descriptor::share(void *buffer, std::function<void(void *)> fr
 	}
 	
 	// make a reference and put it in the store
-	Datatype type; PDI_datatype_copy(&type, &this->get_type());
-	m_values.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(buffer, freefunc, type, access & PDI_OUT, access & PDI_IN)));
+	m_values.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(buffer, freefunc, get_type(), access & PDI_OUT, access & PDI_IN)));
 	
 	return PDI_OK;
 }

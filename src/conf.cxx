@@ -57,11 +57,7 @@ static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 		
 		Datatype type;
 		PDI_datatype_load(&type, config);
-		try {
-			PDI_state.desc(name).init(config, is_metadata, type);
-		} catch (...) {
-			PDI_datatype_destroy(&type);
-		}
+		PDI_state.desc(name).init(config, is_metadata, type);
 	}
 	
 	return PDI_OK;

@@ -25,6 +25,9 @@
 #ifndef PDI_DATATYPE_H__
 #define PDI_DATATYPE_H__
 
+#include <memory>
+#include <vector>
+
 #include <pdi.h>
 
 #include <pdi/datatype_fwd.h>
@@ -36,12 +39,6 @@ namespace PDI
 class Datatype
 {
 public:
-	/** Checks whether the datatype is fully defined (no PDI_T_UNDEF)
-	 *
-	 * \return whether this is a fully defined type
-	 */
-	bool is_defined() const;
-	
 	/// The kind of type this describes
 	Datatype_kind kind;
 	
@@ -56,59 +53,113 @@ public:
 		Record_datatype *struct_;
 		
 	} c;
+	
+	/** Creates a undefined datatype
+	 */
+	constexpr Datatype(): kind{PDI_K_SCALAR}, c{PDI_T_UNDEF} {}
+	
+	/** Creates a new datatype as the dense copy of this one
+	 *
+	 * \return the dense type that is produced
+	 */
+	Datatype densify() const;
+	
+	/** Creates a new datatype as the exact copy of an existing datatype
+	 */
+	Datatype(const Datatype &from);
+	
+	/** Copy of an existing datatype
+	 * \return *this
+	 */
+	Datatype &operator = (const Datatype &from);
+	
+	/** Destroys a Datatype
+	 */
+	~Datatype();
+	
+	/** Checks whether the datatype is fully defined (no PDI_T_UNDEF)
+	 *
+	 * \return whether this is a fully defined type
+	 */
+	bool is_defined() const;
+	
+	/** Indicate if the datatype is dense or not
+	 *
+	 * \return whether the datatype is dense
+	 */
+	bool is_dense() const;
+	
+	/** Computes the data size of a type, excluding potentially unused memory
+	 *  from a sparse type
+	 *
+	 * \return the size in bytes
+	 */
+	size_t datasize() const;
+	
+	/** Computes the data size of a type, including potentially unused memory
+	 *  from a sparse type
+	 *
+	 * \return the size in bytes
+	 */
+	size_t buffersize() const;
+	
 };
 
 struct Array_datatype {
-
-	/// number of dimensions of the array
-	int ndims;
+	struct Dimension {
+		Dimension(const Value &size): m_size{size}, m_start{Value::parse("0")}, m_subsize{size} {}
+		
+		Dimension(const Value &size, const Value &start, const Value &subsize): m_size{size}, m_start{start}, m_subsize{subsize} {}
+		
+		/* Size of the array in this dimension in term of sub-elements
+		 *
+		 * The stride for a given dimension is the product of the element size by
+		 * all size of dimensions with a lower index.
+		 */
+		Value m_size;
+		
+		/* Index of the first sub-element that is actually part of the array in
+		 * this dimension
+		 */
+		Value m_start;
+		
+		/// Number of elements contained in the array in this dimension,
+		Value m_subsize;
+		
+	};
 	
-	/* Array of sizes of the array from outer to inner dim
+	/* Array of dimensions of the array from outer to inner dim
 	 *
-	 * The array size is ndims.
-	 * The slowest dimension is sizes[0], the fastest sizes[ndims-1]
-	 *
-	 * The stride for a given dimension is the product of the element size by all
-	 * size of dimensions with a lower index.
+	 * The slowest (outer) dimension is m_dimensions[0], the fastest
+	 * m_dimensions[m_dimensions.size()-1]
 	 */
-	PDI::Value *sizes;
-	
-	/* Array of subsizes of the array from outer to inner dim
-	 *
-	 * The array size is ndims.
-	 * The slowest dimension is subsizes[0], the fastest subsizes[ndims-1]
-	 *
-	 * The subsize describes the part of the array actually containing data.
-	 */
-	PDI::Value *subsizes;
-	
-	/* Array of start of the array from outer to inner dim
-	 *
-	 * The array size is ndims.
-	 * The slowest dimension is starts[0], the fastest starts[ndims-1]
-	 *
-	 * The start is the first index in a given dimension containing data.
-	 */
-	PDI::Value *starts;
+	std::vector<Dimension> m_dimensions;
 	
 	/// Type of the elements contained in the array.
 	Datatype type;
+	
+	/** Indicate if the datatype is dense or not
+	 *
+	 * \return whether the datatype is dense
+	 */
+	bool is_dense() const;
+	
+	Array_datatype densify() const;
+	
 };
 
 struct Record_datatype {
 	struct Member {
 		/// Offset or distance in octet between the beginning of PDI_struct_type
-		PDI::Value displacement;
+		Value m_displacement;
 		
-		Datatype type;
+		Datatype m_type;
 		
-		char *name;
+		std::string m_name;
 		
 	};
 	
-	int nb_member;
-	
-	Member *members;
+	std::vector<Member> m_members;
 	
 };
 
@@ -119,71 +170,12 @@ struct Record_datatype {
  */
 PDI_status_t PDI_EXPORT PDI_datatype_init_scalar(Datatype *result, Scalar_datatype scalar_type);
 
-/** Creates a new datatype to represent a scalar
- * \param result the datatype to be constructed
- * \param elem_type type of an element of the array
- * \param ndims number of dimensions of the array
- * \param sizes size of the buffer in each dimension
- * \param subsizes size of the data inside the buffer in each dimension
- * \param starts first index containing data in each dimension
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_init_array(Datatype *result, const Datatype *elem_type, int ndims,
-        const PDI::Value *sizes, const PDI::Value *subsizes, const PDI::Value *starts);
-
-/** Creates a new datatype as the exact copy of an existing datatype
- * \param result the datatype to be constructed
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_copy(Datatype *result, const Datatype *from);
-
-/** Creates a new datatype as the dense copy of an existing type.
- *
- * \param oldtype the type of the (possibly sparse) data whose attributes are used to produce a corresponding dense type.
- * \param result the dense type that is produced using type attributes.
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_densify(Datatype *result, const Datatype *oldtype);
-
 /** Creates a new datatype from a paraconf-style config
  * \param node the configuration to read
  * \param result the type to generate
  * \return an exit status code
  */
 PDI_status_t PDI_EXPORT PDI_datatype_load(Datatype *result, PC_tree_t node);
-
-/** Destroys a previously constructed type and frees the associated memory
- *
- * This does not free the memory required for the actual PDI_datatype_t structure
- *
- * \param type the type to destroy
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_destroy(Datatype *type);
-
-/** Indicate if a given datatype is dense or not
- *
- * \param array_type the type that is checked
- * \param is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const Datatype *type, int *is_dense);
-
-/** Computes the data size of a type, excluding potentially unused memory from
- * a sparse type
- * \param type the type whose size to compute
- * \param result the size in bytes
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_datasize(const Datatype *type, size_t *result);
-
-/** Computes the data size of a type, including potentially unused memory from
- * a sparse type
- * \param type the type whose size to compute
- * \param result the size in bytes
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_buffersize(const Datatype *type, size_t *result);
 
 /** Copies a buffer into an other
  *
@@ -200,15 +192,7 @@ PDI_status_t PDI_EXPORT PDI_datatype_buffersize(const Datatype *type, size_t *re
  */
 PDI_status_t PDI_EXPORT PDI_buffer_copy(void *to, const Datatype *to_type, const void *from, const Datatype *from_type);
 
-/** Indicate if a given datatype is dense or not
- *
- * \param[in] type the type that is checked
- * \param[out] is_dense an integer that stores 1 for scalars and dense arrays and 0 otherwise.
- * \return an exit status code
- */
-PDI_status_t PDI_EXPORT PDI_datatype_is_dense(const Datatype *type, int *is_dense);
-
-extern Datatype PDI_EXPORT PDI_UNDEF_TYPE;
+extern const Datatype PDI_EXPORT PDI_UNDEF_TYPE;
 
 } // namespace PDI
 

@@ -29,7 +29,7 @@ namespace PDI
 {
 
 /** Provide the properties of a data (data type, kind, ...etc.)
- * 
+ *
  * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  * \date 2017-10-04

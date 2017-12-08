@@ -374,14 +374,14 @@ const Datatype * init_sizes(hsize_t **sizes, hsize_t** subsizes, hsize_t **start
 	const Datatype * scalart = &ref.type();
 	if ( scalart->kind == PDI_K_ARRAY ) {
 		const Datatype & datatype = *scalart; 
-		*rank = datatype.c.array->ndims;
+		*rank = datatype.c.array->m_dimensions.size();
 		*sizes = (hsize_t*) malloc(*rank*sizeof(hsize_t));
 		*subsizes = (hsize_t*) malloc(*rank*sizeof(hsize_t));
 		*starts = (hsize_t*) malloc(*rank*sizeof(hsize_t));
 		for ( unsigned int ii=0; ii<*rank; ++ii ) {
-			(*sizes)[ii] = datatype.c.array->sizes[ii].to_long();
-			(*subsizes)[ii] = datatype.c.array->subsizes[ii].to_long();
-			(*starts)[ii] = datatype.c.array->starts[ii].to_long();
+			(*sizes)[ii] = datatype.c.array->m_dimensions[ii].m_size;
+			(*subsizes)[ii] = datatype.c.array->m_dimensions[ii].m_subsize;
+			(*starts)[ii] = datatype.c.array->m_dimensions[ii].m_start;
 		}
 		scalart = &datatype.c.array->type;
 	} else { // assuming scalar type 
@@ -567,7 +567,7 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 					Data_descriptor& desc = PDI_state.desc(name);
 					if( (order = array_order(desc.get_config())) < 0 )
 						return PDI_ERR_CONFIG;
-					int rank = datatype.c.array->ndims;
+					int rank = datatype.c.array->m_dimensions.size();
 					gstarts = (hsize_t*) malloc(rank*sizeof(hsize_t));
 					gsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 					for ( int jj = 0 ; jj < rank; ++jj){
@@ -610,7 +610,7 @@ PDI_status_t PDI_parallel_declh5_data( const std::string& name, Data_ref cref )
 					PDI_order_t order;
 					if( (order = array_order(PDI_state.desc(name).get_config())) < 0 )
 						return PDI_ERR_CONFIG;
-					int rank = datatype.c.array->ndims;
+					int rank = datatype.c.array->m_dimensions.size();
 					gstarts = (hsize_t*) malloc(rank*sizeof(hsize_t));
 					gsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 					for ( int jj = 0 ; jj < rank; ++jj){

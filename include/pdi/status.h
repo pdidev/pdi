@@ -42,7 +42,7 @@ namespace PDI
 {
 
 class Error:
-		public std::exception
+	public std::exception
 {
 public:
 	PDI_status_t m_status;
@@ -80,7 +80,7 @@ public:
 	
 };
 
-PDI_status_t return_err(const Error& err);
+PDI_status_t return_err(const Error &err);
 
 } // namespace PDI
 

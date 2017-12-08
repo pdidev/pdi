@@ -38,12 +38,12 @@
 
 // File private stuff
 
-namespace {
+namespace
+{
 
 using std::string;
 
-struct Error_context
-{
+struct Error_context {
 	PDI_errhandler_t handler;
 	
 	string errmsg;
@@ -73,7 +73,7 @@ pthread_key_t context_key;
 
 void context_destroy(void *context)
 {
-	delete static_cast<Error_context*>(context);
+	delete static_cast<Error_context *>(context);
 }
 
 void context_init()
@@ -149,25 +149,25 @@ Error::Error(PDI_status_t errcode, const char *message, ...):
 	va_list ap;
 	va_start(ap, message);
 	// get the string size and allocate enough space for it plus a terminating null byte
-	m_what.resize(vsnprintf(NULL, 0, message, ap)+1);
+	m_what.resize(vsnprintf(NULL, 0, message, ap) + 1);
 	va_end(ap);
 	va_start(ap, message);
 	vsnprintf(&m_what[0], m_what.size(), message, ap);
 	// remove the terminating null byte
-	m_what.resize(m_what.size()-1);
+	m_what.resize(m_what.size() - 1);
 	va_end(ap);
 }
 
-PDI_status_t return_err(const Error& err)
+PDI_status_t return_err(const Error &err)
 {
-	Error_context* ctx = get_context();
+	Error_context *ctx = get_context();
 	ctx->errmsg = err.what();
 	if (ctx->handler.func) ctx->handler.func(err.m_status, err.what(), ctx->handler.context);
 	return err.m_status;
 }
 
 Paraconf_raii_forwarder::Paraconf_raii_forwarder():
-		m_handler{PC_errhandler(PC_errhandler_t{ forward_PC_error, NULL })}
+	m_handler{PC_errhandler(PC_errhandler_t{ forward_PC_error, NULL })}
 {
 }
 

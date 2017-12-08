@@ -113,7 +113,6 @@ protected:
 		~Data_content()
 		{
 			m_delete(this->m_buffer);
-			PDI_datatype_destroy(&m_type);
 			assert(!m_owners);
 			assert(m_read_locks == 0 || m_read_locks == 1);
 			assert(m_write_locks == 0 || m_write_locks == 1);
@@ -276,12 +275,11 @@ public:
 		
 		//TODO: error handling if data is not readable
 		
-		//TODO: handle errors
-		Datatype newtype; PDI_datatype_densify(&newtype, &m_content->m_type);
+		Datatype newtype = m_content->m_type.densify();
 		
 		//TODO: handle errors
-		size_t dsize; PDI_datatype_buffersize(&m_content->m_type, &dsize);
-		void *newbuffer = operator new (dsize, std::nothrow);
+		size_t dsize = m_content->m_type.buffersize();
+		void *newbuffer = operator new (dsize);
 		PDI_buffer_copy(newbuffer,
 		                &newtype,
 		                m_content->m_buffer,
@@ -297,8 +295,6 @@ public:
 		};
 		
 		// replace the type
-		//TODO: handle errors
-		PDI_datatype_destroy(&m_content->m_type);
 		m_content->m_type = newtype;
 		
 		return oldbuffer;

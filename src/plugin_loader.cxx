@@ -55,13 +55,13 @@ typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t *pl
 PDI_status_t plugin_loader_load(const char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t *plugin)
 {
 	stringstream plugin_symbol;
-	plugin_symbol << "PDI_plugin_"<<plugin_name<<"_ctor";
+	plugin_symbol << "PDI_plugin_" << plugin_name << "_ctor";
 	void *plugin_ctor_uncast = dlsym(NULL, plugin_symbol.str().c_str());
 	
 	// case where the library was not prelinked
 	if (!plugin_ctor_uncast) {
 		stringstream libname;
-		libname << "lib"<<plugin_name<<".so";
+		libname << "lib" << plugin_name << ".so";
 		void *lib_handle = dlopen(libname.str().c_str(), RTLD_NOW);
 		if (!lib_handle) {
 			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin file: %s", plugin_name, dlerror()};
@@ -95,7 +95,7 @@ PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *worl
 		PDI_plugin_t *plugin = new PDI_plugin_t;
 		plugin_loader_load(plugin_name.c_str(), plugin_conf, world, plugin);
 		PDI_state.plugins.insert({std::string(plugin_name), std::shared_ptr<PDI_plugin_t>(plugin)});
-	} catch ( const std::exception& e ) {
+	} catch (const std::exception &e) {
 		throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
 	}
 	return PDI_OK;

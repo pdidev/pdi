@@ -102,8 +102,7 @@ struct Value_parser:
 	/** A value in case this is a string (potentially with dollar refs inside)
 	 */
 	struct Stringval:
-		public Impl
-	{
+		public Impl {
 		/// a char string containing the beginning str_value
 		string start;
 		
@@ -126,8 +125,8 @@ struct Value_parser:
 		{
 			stringstream result;
 			result << start;
-			for (auto&& subval: values) {
-				result << subval.value.to_string()<<subval.str;
+			for (auto &&subval : values) {
+				result << subval.value.to_string() << subval.str;
 			}
 			return result.str();
 		}
@@ -218,8 +217,8 @@ struct Value_parser:
 			Data_ref cref;
 			
 			if (ref_type.kind == PDI_K_ARRAY) {
-				if (m_idx.size() != static_cast<size_t>(ref_type.c.array->ndims)) {
-					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), ref_type.c.array->ndims};
+				if (m_idx.size() != ref_type.c.array->m_dimensions.size()) {
+					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), static_cast<int>(ref_type.c.array->m_dimensions.size()) };
 				}
 				if (ref_type.c.array->type.kind != PDI_K_SCALAR) {
 					throw Error{PDI_ERR_VALUE, "Invalid type accessed"};
@@ -236,10 +235,10 @@ struct Value_parser:
 			long idx = 0;
 			long stride = 1;
 			for (size_t ii = 0; ii < m_idx.size(); ++ii) {
-				long start = ref_type.c.array->starts[ii].to_long();
-				long index = m_idx[ii].to_long();
+				long start = ref_type.c.array->m_dimensions[ii].m_start;
+				long index = m_idx[ii];
 				idx += (start + index) * stride;
-				long size = ref_type.c.array->sizes[ii].to_long();
+				long size = ref_type.c.array->m_dimensions[ii].m_size;
 				stride *= size;
 			}
 			
@@ -473,7 +472,7 @@ Value Value_parser::parse_strval(char const **val_str)
 	
 	unique_ptr<Stringval> result{new Stringval};
 	
-	string* curstr = &result->start;
+	string *curstr = &result->start;
 	while (*str) {
 		int sz = 0;
 		while (str[sz] != '\\' && str[sz] != '$' && str[sz]) ++sz;

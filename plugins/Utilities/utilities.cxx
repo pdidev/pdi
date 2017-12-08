@@ -318,9 +318,7 @@ task_w_found:
 						return PDI_ERR_CONFIG;
 					}
 					Data_descriptor& outdesc = PDI_state.desc(str_out);
-					size_t oldsize; PDI_datatype_buffersize(&ref.type(), &oldsize);
-					size_t subsize; PDI_datatype_datasize(&outdesc.get_type(), &subsize);
-					void *subdata = malloc(subsize);
+					void *subdata = malloc(outdesc.get_type().datasize());
 					PDI_buffer_copy(subdata, &outdesc.get_type(), ref.get(), &ref.type());
 					PDI_expose(str_out.c_str(), subdata, PDI_OUT);
 					free(subdata);

@@ -56,5 +56,5 @@ PDI::Data_descriptor &PDI_state_s::desc(const char *name)
 
 PDI::Data_descriptor &PDI_state_s::desc(const std::string &name)
 {
-	return m_descriptors.emplace(name, name).first->second;
+	return m_descriptors.emplace(name, name.c_str()).first->second;
 }

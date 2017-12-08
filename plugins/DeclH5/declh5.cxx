@@ -270,14 +270,14 @@ void write_to_file(Data_r_ref& ref, const string& filename, const string& pathna
 	const Datatype * scalart = &ref.type();
 	const Datatype & datatype = *scalart;
 	if ( datatype.kind == PDI_K_ARRAY ) {
-		rank = datatype.c.array->ndims;
+		rank = datatype.c.array->m_dimensions.size();
 		h5sizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		h5subsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		h5starts = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		for ( int ii=0; ii<rank; ++ii ) {
-			h5sizes[ii] = datatype.c.array->sizes[ii].to_long();
-			h5subsizes[ii] = datatype.c.array->subsizes[ii].to_long();
-			h5starts[ii] = datatype.c.array->starts[ii].to_long();
+			h5sizes[ii] = datatype.c.array->m_dimensions[ii].m_size;
+			h5subsizes[ii] = datatype.c.array->m_dimensions[ii].m_subsize;
+			h5starts[ii] = datatype.c.array->m_dimensions[ii].m_start;
 		}
 		scalart = &datatype.c.array->type;
 	}
@@ -328,14 +328,14 @@ PDI_status_t read_from_file(Data_w_ref& ref, const string& filename, const strin
 	const Datatype & datatype = ref.type();
 	const Datatype * scalart = &datatype ;
 	if ( datatype.kind == PDI_K_ARRAY ) {
-		rank = datatype.c.array->ndims;
+		rank = datatype.c.array->m_dimensions.size();
 		sizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		subsizes = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		starts = (hsize_t*) malloc(rank*sizeof(hsize_t));
 		for ( int ii=0; ii<rank; ++ii ) {
-			sizes[ii] = datatype.c.array->sizes[ii].to_long();
-			subsizes[ii] = datatype.c.array->subsizes[ii].to_long();
-			starts[ii] = datatype.c.array->starts[ii].to_long();
+			sizes[ii] = datatype.c.array->m_dimensions[ii].m_size;
+			subsizes[ii] = datatype.c.array->m_dimensions[ii].m_subsize;
+			starts[ii] = datatype.c.array->m_dimensions[ii].m_start;
 		}
 		scalart = &datatype.c.array->type;
 	}

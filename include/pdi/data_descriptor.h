@@ -41,10 +41,6 @@ namespace PDI
 class Data_descriptor
 {
 public:
-	/** Create an empty data descriptor
-	 */
-	Data_descriptor(const std::string &name);
-	
 	/** Create an empty descriptor
 	 */
 	Data_descriptor(const char *name);

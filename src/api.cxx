@@ -121,7 +121,7 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 			throw Error{PDI_ERR_SYSTEM, "Unable to clone the main communicator"};
 		}
 		
-	} catch (const Error& e) {
+	} catch (const Error &e) {
 		for (auto plugin : PDI_state.plugins) {
 			try { // ignore errors here, try our best to finalize everyone
 				plugin.second->finalize();
@@ -179,7 +179,7 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 	try {
 		Paraconf_raii_forwarder fw;
 		return PDI_state.desc(name).access(buffer, inout);
-	} catch (const Error& e) {
+	} catch (const Error &e) {
 		return return_err(e);
 	}
 }
@@ -201,7 +201,7 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 				//TODO: remove the faulty plugin?
 			}
 		}
-	} catch (const Error& e) {
+	} catch (const Error &e) {
 		return return_err(e);
 	}
 	
@@ -216,7 +216,7 @@ PDI_status_t PDI_release(const char *name)
 	try {
 		Paraconf_raii_forwarder fw;
 		return PDI_state.desc(name).release();
-	} catch (const Error& e) {
+	} catch (const Error &e) {
 		return return_err(e);
 	}
 }
@@ -227,7 +227,7 @@ PDI_status_t PDI_reclaim(const char *name)
 	try {
 		Paraconf_raii_forwarder fw;
 		return PDI_state.desc(name).reclaim();
-	} catch (const Error& e) {
+	} catch (const Error &e) {
 		return return_err(e);
 	}
 }
@@ -255,7 +255,7 @@ PDI_status_t PDI_transaction_begin(const char *c_name)
 			throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
 		}
 		PDI_state.transaction = c_name;
-	} catch (const Error& e) {
+	} catch (const Error &e) {
 		return return_err(e);
 	}
 	
@@ -280,7 +280,7 @@ PDI_status_t PDI_transaction_end()
 		PDI_state.transaction_data.clear();
 		PDI_state.transaction.clear();
 		
-	} catch (const Error& e) {
+	} catch (const Error &e) {
 		return return_err(e);
 	}
 	
@@ -290,7 +290,7 @@ PDI_status_t PDI_transaction_end()
 
 PDI_status_t PDI_export(const char *name, const void *data)
 {
-	if ( PDI_status_t status = PDI_share(name, (void *)data, PDI_OUT) ) return status;
-	if ( PDI_status_t status = PDI_release(name) ) return status;
+	if (PDI_status_t status = PDI_share(name, (void *)data, PDI_OUT)) return status;
+	if (PDI_status_t status = PDI_release(name)) return status;
 	return PDI_OK;
 }

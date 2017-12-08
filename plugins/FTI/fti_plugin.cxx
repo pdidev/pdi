@@ -203,7 +203,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 		for ( auto& protected_var: fti_protected ) {
 			if ( output ) {
 				if ( PDI::Data_r_ref ref = PDI_state.desc(protected_var.first).value() ) {
-					size_t size; PDI_datatype_datasize(&ref.type(), &size);
+					size_t size = ref.type().datasize();
 					//TODO: handle non-contiguous data correctly
 					FTI_Protect(protected_var.second, ref.get(), size, FTI_CHAR);
 				} else {
@@ -214,7 +214,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 				}
 			} else {
 				if ( PDI::Data_w_ref ref = PDI_state.desc(protected_var.first).value() ) {
-					size_t size; PDI_datatype_datasize(&ref.type(), &size);
+					size_t size = ref.type().datasize();
 					//TODO: handle non-contiguous data correctly
 					FTI_Protect(protected_var.second, ref.get(), size, FTI_CHAR);
 				} else {

@@ -382,14 +382,11 @@ static uint64_t hash(const uint8_t *data, size_t len)
 
 static PDI_status_t write_event(const SIONlib_event_t *event)
 {
-  PDI_status_t status;
   // check that data is available and data type is dense
   for (size_t i = 0; i < event->n_vars; ++i) {
     Data_ref cref = PDI_state.desc(event->vars[i]).value();
     if ( Data_r_ref ref = cref ) {
-      int is_dense=0;
-      if ((status = PDI_datatype_is_dense(&ref.type(), &is_dense))) return status;
-      if (!is_dense) {
+      if (!ref.type().is_dense()) {
         fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
         return PDI_ERR_IMPL;
       }
@@ -408,9 +405,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
     }
-    size_t data_size;
-    if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) return status;
-    chunksize += data_size;
+    chunksize += ref.type().datasize();
   }
 
   sion_int32 blksize = -1;
@@ -421,11 +416,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   for (size_t i = 0; i < event->n_vars; ++i) {
     const Data_ref & ref = PDI_state.desc(event->vars[i]).value();
 
-    size_t data_size;
-    if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
-      sion_parclose_mpi(sid);
-      return status;
-    }
+    size_t data_size = ref.type().datasize();
 
     size_t name_size = strlen(event->vars[i]);
     uint64_t key = hash((uint8_t*)event->vars[i], name_size);
@@ -461,13 +452,10 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
 static PDI_status_t read_event(const SIONlib_event_t *event)
 {
   // check that data type is dense
-  PDI_status_t status;
   for (size_t i = 0; i < event->n_vars; ++i) {
     Data_ref cref = PDI_state.desc(event->vars[i]).value();
     if ( Data_w_ref ref = cref ) {
-      int is_dense;
-      if ((status = PDI_datatype_is_dense(&ref.type(), &is_dense))) return status;
-      if (!is_dense) {
+      if (!ref.type().is_dense()) {
         fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
         return PDI_ERR_IMPL;
       }
@@ -487,11 +475,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
 
   for (size_t i = 0; i < event->n_vars; ++i) {
     if ( Data_w_ref ref = PDI_state.desc(event->vars[i]).value() ) {
-      size_t data_size;
-      if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
-        sion_parclose_mpi(sid);
-        return status;
-      }
+      size_t data_size= ref.type().datasize();
   
       size_t name_size = strlen(event->vars[i]);
       uint64_t key = hash((uint8_t*)event->vars[i], name_size);
@@ -614,10 +598,7 @@ PDI_status_t PDI_SIONlib_event(const char *event)
 static PDI_status_t write_var(Data_r_ref& ref, const SIONlib_var_t *var)
 {
   // check that data type is dense
-  PDI_status_t status;
-  int is_dense;
-  if ((status = PDI_datatype_is_dense(&ref.type(), &is_dense))) return status;
-  if (!is_dense) {
+  if (!ref.type().is_dense()) {
     fprintf(stderr, "[PDI/SIONlib] Sparse data is not supported.\n");
     return PDI_ERR_IMPL;
   }
@@ -627,8 +608,7 @@ static PDI_status_t write_var(Data_r_ref& ref, const SIONlib_var_t *var)
 
   string file = var->file;
 
-  size_t data_size;
-  if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) return status;
+  size_t data_size = ref.type().datasize();
   sion_int64 chunksize = data_size;
 
   sion_int32 blksize = -1;
@@ -647,10 +627,7 @@ static PDI_status_t write_var(Data_r_ref& ref, const SIONlib_var_t *var)
 static PDI_status_t read_var(const Data_ref & ref, const SIONlib_var_t *var)
 {
   // check that data type is dense
-  PDI_status_t status;
-  int is_dense;
-  if ((status = PDI_datatype_is_dense(&ref.type(), &is_dense))) return status;
-  if (!is_dense) {
+  if (!ref.type().is_dense()) {
     fprintf(stderr, "[PDI/SIONlib] Sparse data is not supported.\n");
     return PDI_ERR_IMPL;
   }
@@ -659,10 +636,7 @@ static PDI_status_t read_var(const Data_ref & ref, const SIONlib_var_t *var)
   string file = var->file;
 
   int n_files = 1;
-  size_t data_size;
-  if ((status = PDI_datatype_datasize(&ref.type(), &data_size))) {
-    return status;
-  }
+  size_t data_size = ref.type().datasize();
   sion_int64 chunksize = 0;
   sion_int32 blksize = -1;
   int rank; MPI_Comm_rank(comm, &rank);
