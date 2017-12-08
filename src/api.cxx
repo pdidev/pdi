@@ -232,10 +232,10 @@ PDI_status_t PDI_reclaim(const char *name)
 	}
 }
 
-PDI_status_t PDI_expose(const char *name, const void *data)
+PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
 {
 	Paraconf_raii_forwarder fw;
-	if (PDI_status_t status = PDI_share(name, const_cast<void *>(data), PDI_OUT)) return status;
+	if (PDI_status_t status = PDI_share(name, data, access)) return status;
 	
 	if (! PDI_state.transaction.empty()) {   // defer the reclaim
 		PDI_state.transaction_data.insert(name);

@@ -22,7 +22,6 @@
 * THE SOFTWARE.
 ******************************************************************************/
 
-//The following is used for doxygen documentation:
 /**
 * \file pdi.h
 * \brief Header of the PDI API.
@@ -222,7 +221,7 @@ PDI_status_t PDI_EXPORT PDI_export(const char *name, const void *data);
  *                   by PDI
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_expose(const char *name, const void *data, PDI_inout_t access);
+PDI_status_t PDI_EXPORT PDI_expose(const char *name, void *data, PDI_inout_t access);
 
 /// \}
 

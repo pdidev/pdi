@@ -69,8 +69,8 @@ int main( int argc, char *argv[] )
 	j=err_code;
 	
 	PDI_transaction_begin("testing");
-	PDI_expose("input",&i);
-	PDI_import("output",&j);
+	PDI_expose("input",&i,PDI_OUT);
+	PDI_expose("output",&j,PDI_IN);
 	PDI_transaction_end();
 	
 	test_value(j,1);
