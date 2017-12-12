@@ -49,12 +49,12 @@ using std::string;
 PDI_state_t PDI_state;
 
 
-PDI::Data_descriptor &PDI_state_s::desc(const char *name)
+PDI::Data_descriptor &PDI_state_t::desc(const char *name)
 {
 	return m_descriptors.emplace(name, name).first->second;
 }
 
-PDI::Data_descriptor &PDI_state_s::desc(const std::string &name)
+PDI::Data_descriptor &PDI_state_t::desc(const std::string &name)
 {
 	return m_descriptors.emplace(name, name.c_str()).first->second;
 }

@@ -34,6 +34,7 @@
 
 #include "pdi/datatype.h"
 #include "pdi/data_reference_fwd.h"
+#include "pdi/status.h"
 
 namespace PDI
 {
@@ -235,7 +236,7 @@ public:
 	 */
 	void *get() const
 	{
-		if (is_null()) return nullptr;
+		if (is_null()) throw Error{PDI_ERR_RIGHT, "Trying to dereference a null reference"};
 		return m_content->m_buffer;
 	}
 	
@@ -269,15 +270,16 @@ public:
 	 * \return the previously referenced raw data or nullptr if this was a null
 	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	void *copy_release()
+	Data_ref copy()
 	{
-		if (is_null()) return nullptr;
+		if (is_null()) return Data_ref{};
 		
-		//TODO: error handling if data is not readable
+		if (!Data_r_ref{*this}) {   // ensure data is readable
+			throw Error{PDI_ERR_RIGHT, "Cannot access data for writing during copy"};
+		}
 		
 		Datatype newtype = m_content->m_type.densify();
 		
-		//TODO: handle errors
 		size_t dsize = m_content->m_type.buffersize();
 		void *newbuffer = operator new (dsize);
 		PDI_buffer_copy(newbuffer,
@@ -285,19 +287,7 @@ public:
 		                m_content->m_buffer,
 		                &m_content->m_type);
 		                
-		// replace the buffer
-		void *oldbuffer = m_content->m_buffer;
-		m_content->m_buffer = newbuffer;
-		
-		// replace the destroyer
-		m_content->m_delete = [](void *d) {
-			operator delete (d);
-		};
-		
-		// replace the type
-		m_content->m_type = newtype;
-		
-		return oldbuffer;
+		return Data_ref{newbuffer, [](void *d) { operator delete (d); }, newtype, true, true};
 	}
 	
 	/** Releases ownership of the referenced raw data by nullifying all existing
@@ -306,7 +296,7 @@ public:
 	 * \return the previously referenced raw data or nullptr if this was a null
 	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	void *null_release()
+	void *release()
 	{
 		if (is_null()) return nullptr;
 		
@@ -380,7 +370,7 @@ private:
 	void link(Data_content *content)
 	{
 		assert(!m_content);
-		if (!content || !content->m_buffer) return;
+		if (!content || !content->m_buffer) return; // null ref
 		if (R && content->m_read_locks) return;
 		if (W && content->m_write_locks) return;
 		m_content = content;

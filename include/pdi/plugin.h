@@ -22,7 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
 /**
 * \file plugin.h
 * \brief private declaration of plugins functions and structures
@@ -30,8 +29,7 @@
 * To create a plugin, one must define 4 functions:
 *  - PDI_finalize
 *  - PDI_event
-*  - PDI_data_start
-*  - PDI_data_end
+*  - PDI_data
 *  Each function return a exit status code (PDI_status_t).
 *  A macro is used for the initialization (see PDI_PLUGIN)
 * \author J. Bigot (CEA)

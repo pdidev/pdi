@@ -62,7 +62,7 @@ struct loaded_plugin_s {
 };
 
 
-class PDI_state_s
+class PDI_state_t
 {
 public:
 	/** The store containing all data descriptors

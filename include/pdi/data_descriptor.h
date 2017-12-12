@@ -76,11 +76,12 @@ public:
 		return m_name;
 	}
 	
-	/** Returns a reference to the value of the data behind this descriptor
+	/** Return a reference to the value of the data behind this descriptor
 	 */
 	Data_ref value()
 	{
-		return (m_values.empty() ? Data_ref() : *m_values.top());
+		if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value"};
+		return m_values.top()->ref();
 	}
 	
 	/** Shares some data with PDI. The user code should not modify it before
@@ -96,7 +97,7 @@ public:
 	 * * PDI_IN means PDI can set the buffer content
 	 * * PDI_OUT means the buffer contains data that can be accessed by PDI
 	 */
-	PDI_status_t share(void *data, std::function<void(void *)> freefunc, PDI_inout_t access);
+	void share(void *data, std::function<void(void *)> freefunc, bool read, bool write);
 	
 	/** Requests for PDI to access a data buffer.
 	* \param[in,out] buffer a pointer to the accessed data buffer
@@ -105,7 +106,7 @@ public:
 	* \pre PDI owns the data buffer
 	* \post ownership of the data buffer is shared between PDI and the user code
 	*/
-	PDI_status_t access(void **buffer, PDI_inout_t inout);
+	void share(Data_ref ref, bool read, bool write);
 	
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
 	* free the associated memory whenever necessary.
@@ -114,7 +115,7 @@ public:
 	* \pre ownership of the data buffer is shared between PDI and the user code
 	* \pre PDI owns the data buffer
 	*/
-	PDI_status_t release();
+	void release();
 	
 	/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
 	* free the associated memory whenever necessary.
@@ -123,25 +124,13 @@ public:
 	* \pre ownership of the data buffer is shared between PDI and the user code
 	* \post the user code owns the data buffer
 	*/
-	PDI_status_t reclaim();
+	void reclaim();
 	
 private:
 	class Ref_holder
 	{
 	public:
-		virtual operator Data_ref() const = 0;
-		operator void *()
-		{
-			return static_cast<Data_ref>(*this).get();
-		}
-		void *null_release()
-		{
-			return static_cast<Data_ref>(*this).null_release();
-		}
-		void *copy_release()
-		{
-			return static_cast<Data_ref>(*this).copy_release();
-		}
+		virtual Data_ref ref() const = 0;
 		virtual ~Ref_holder() {}
 	};
 	
@@ -153,7 +142,7 @@ private:
 		Ref_A_holder(void *data, std::function<void(void *)> freefunc, const Datatype &type, bool readable, bool writable):
 			m_t(data, freefunc, type, readable, writable) {}
 		Ref_A_holder(Data_ref t) : m_t(t) {};
-		operator Data_ref() const override
+		Data_ref ref() const override
 		{
 			return m_t;
 		}

@@ -51,6 +51,16 @@ Data_descriptor::Data_descriptor(const char *name):
 
 Data_descriptor::~Data_descriptor()
 {
+	while (!m_values.empty()) {
+		if (is_metadata()) {
+			/* release metadata we kept */
+			m_values.pop();
+		} else {
+			/* on error, we might be destroyed while not empty. In that case, don't
+			   keep ownership */
+			reclaim();
+		}
+	}
 }
 
 PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const Datatype &type)
@@ -61,73 +71,75 @@ PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const Dat
 	return PDI_OK;
 }
 
-PDI_status_t Data_descriptor::share(void *buffer, std::function<void(void *)> freefunc, PDI_inout_t access)
+void Data_descriptor::share(void *data, std::function< void (void *) > freefunc, bool read, bool write)
 {
-	/// for metadata, unlink happens on share
+	if (is_metadata() && !read) throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
+	
+	// for metadata, unlink happens on share
 	if (!m_values.empty() && is_metadata()) {
-		(*m_values.top()).null_release();
 		m_values.pop();
 	}
 	
 	// make a reference and put it in the store
-	m_values.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(buffer, freefunc, get_type(), access & PDI_OUT, access & PDI_IN)));
-	
-	return PDI_OK;
-}
-
-PDI_status_t Data_descriptor::access(void **buffer, PDI_inout_t inout)
-{
-	*buffer = NULL;
-	
-	if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value"};
-	
-	switch (inout) {
-	case PDI_NONE:
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(*m_values.top())));
-		break;
-	case PDI_IN:
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(*m_values.top())));
-		break;
-	case PDI_OUT:
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, true>(*m_values.top())));
-		break;
-	case PDI_INOUT:
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, true>(*m_values.top())));
-		break;
-	}
-	if (m_values.top()) { // got the requested rights
-		*buffer = *m_values.top();
-		return PDI_OK;
-	} else { // cannot get the requested rights
+	m_values.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(data, freefunc, get_type(), read, write)));
+	if (!value()) {
 		m_values.pop();
-		throw Error{PDI_ERR_RIGHT, "Cannot grant privilege for data '%s'", m_name.c_str()};
+		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
 	}
 }
 
-PDI_status_t Data_descriptor::release()
+void Data_descriptor::share(Data_ref ref, bool read, bool write)
+{
+	if (is_metadata() && !read) throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
+	
+	/// for metadata, unlink happens on share
+	if (!m_values.empty() && is_metadata()) {
+		m_values.pop();
+	}
+	
+	if (read) {
+		if (write) {
+			m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, true>(ref)));
+		} else {
+			m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(ref)));
+		}
+	} else {
+		if (write) {
+			m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, true>(ref)));
+		} else {
+			m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(ref)));
+		}
+	}
+	if (!value()) {
+		m_values.pop();
+		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
+	}
+}
+
+void Data_descriptor::release()
 {
 	// move reference out of the store
 	if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot release a non shared value"};
 	
+	Data_ref oldref = value();
 	m_values.pop();
-	
-	return PDI_OK;
+	if (is_metadata()) {
+		// re-share ourselves & keep a read ref to be used
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref)));
+	}
 }
 
-
-PDI_status_t Data_descriptor::reclaim()
+void Data_descriptor::reclaim()
 {
 	if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot reclaim a non shared value"};
 	
-	// if the content is a metadata, keep it
+	Data_ref oldref = value();
+	m_values.pop();
 	if (is_metadata()) {
-		m_values.top()->copy_release();
-	} else { // otherwise, reclaim the data
-		m_values.top()->null_release();
-		m_values.pop();
+		// if the content is a metadata, keep a copy
+		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref.copy())));
 	}
-	
-	return PDI_OK;
+	oldref.release();
 }
 
 const Datatype &Data_descriptor::get_type() const

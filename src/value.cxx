@@ -212,56 +212,51 @@ struct Value_parser:
 		
 		long to_long() const override
 		{
-			const Datatype &ref_type = m_referenced->get_type();
-			Scalar_datatype type = ref_type.c.scalar;
-			Data_ref cref;
+			Data_r_ref ref = m_referenced->value();
 			
-			if (ref_type.kind == PDI_K_ARRAY) {
-				if (m_idx.size() != ref_type.c.array->m_dimensions.size()) {
-					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), static_cast<int>(ref_type.c.array->m_dimensions.size()) };
+			Scalar_datatype type;
+			long idx = 0;
+			
+			if (ref.type().kind == PDI_K_ARRAY) {
+				const Array_datatype &array_type = *ref.type().c.array;
+				if (m_idx.size() != array_type.m_dimensions.size()) {
+					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), static_cast<int>(array_type.m_dimensions.size()) };
 				}
-				if (ref_type.c.array->type.kind != PDI_K_SCALAR) {
+				long stride = 1;
+				for (size_t ii = 0; ii < m_idx.size(); ++ii) {
+					long start = array_type.m_dimensions[ii].m_start;
+					long index = m_idx[ii];
+					idx += (start + index) * stride;
+					long size = array_type.m_dimensions[ii].m_size;
+					stride *= size;
+				}
+				if (array_type.type.kind != PDI_K_SCALAR) {
 					throw Error{PDI_ERR_VALUE, "Invalid type accessed"};
 				}
-				type = ref_type.c.array->type.c.scalar;
-			} else if (ref_type.kind == PDI_K_SCALAR) {
+				type = array_type.type.c.scalar;
+			} else if (ref.type().kind == PDI_K_SCALAR) {
 				if (!m_idx.empty()) {
 					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", m_idx.size()};
 				}
+				type = ref.type().c.scalar;
 			} else {
 				throw Error{PDI_ERR_VALUE, "Invalid access to a struct"};
 			}
 			
-			long idx = 0;
-			long stride = 1;
-			for (size_t ii = 0; ii < m_idx.size(); ++ii) {
-				long start = ref_type.c.array->m_dimensions[ii].m_start;
-				long index = m_idx[ii];
-				idx += (start + index) * stride;
-				long size = ref_type.c.array->m_dimensions[ii].m_size;
-				stride *= size;
+			switch (type) {
+			case PDI_T_INT8:
+				return static_cast<int8_t *>(ref.get())[idx];
+			case PDI_T_INT16:
+				return static_cast<int16_t *>(ref.get())[idx];
+			case PDI_T_INT32:
+				return static_cast<int32_t *>(ref.get())[idx];
+			case PDI_T_INT64:
+				return static_cast<int64_t *>(ref.get())[idx];
+			default:
+				throw Error(PDI_ERR_VALUE, "Non-integer type accessed");
 			}
-			
-			if (!m_referenced->value()) {
-				throw Error{PDI_ERR_VALUE, "Referenced variable `%s' is not shared", m_referenced->name().c_str()};
-			}
-			
-			if (Data_r_ref ref = m_referenced->value()) {
-				void *value = ref.get();
-				switch (type) {
-				case PDI_T_INT8:
-					return static_cast<int8_t *>(value)[idx];
-				case PDI_T_INT16:
-					return static_cast<int16_t *>(value)[idx];
-				case PDI_T_INT32:
-					return static_cast<int32_t *>(value)[idx];
-				case PDI_T_INT64:
-					return static_cast<int64_t *>(value)[idx];
-				default:
-					throw Error(PDI_ERR_VALUE, "Non-integer type accessed");
-				}
-			}
-			throw Error(PDI_ERR_VALUE, "Referenced variable `%s' is not readable", m_referenced->name().c_str());
+			assert(false);
+			return -1;
 		}
 		
 		unique_ptr<Impl> clone() const override

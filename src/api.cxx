@@ -102,8 +102,8 @@ PDI_inout_t &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs)
 
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 {
+	Paraconf_raii_forwarder fw;
 	try {
-		Paraconf_raii_forwarder fw;
 		PDI_state.transaction.clear();
 		PDI_state.plugins.clear();
 		
@@ -122,10 +122,12 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 		}
 		
 	} catch (const Error &e) {
-		for (auto plugin : PDI_state.plugins) {
+		for (auto &&plugin : PDI_state.plugins) {
 			try { // ignore errors here, try our best to finalize everyone
 				plugin.second->finalize();
-			} catch (...) {}
+			} catch (...) {
+				cerr << "Error while finalizing " << plugin.first << endl;
+			}
 		}
 		PDI_state.transaction.clear();
 		PDI_state.transaction_data.clear();
@@ -144,7 +146,11 @@ PDI_status_t PDI_finalize()
 		try { // ignore errors here, try our best to finalize everyone
 			//TODO: concatenate errors in some way
 			plugin.second->finalize();
-		} catch (...) {}
+		} catch (const std::exception &e) {
+			cerr << "Error while finalizing " << plugin.first << ": " << e.what() << endl;
+		} catch (...) {
+			cerr << "Error while finalizing " << plugin.first << endl;
+		}
 	}
 	MPI_Comm_free(&PDI_state.PDI_comm);
 	PDI_state.transaction.clear();
@@ -164,7 +170,10 @@ PDI_status_t PDI_event(const char *event)
 		try { // ignore errors here, try our best to notify everyone
 			//TODO: concatenate errors in some way
 			elmnt.second->event(event);
+		} catch (const std::exception &e) {
+			cerr << "Error while triggering event " << event << " for plugin " << elmnt.first << ": " << e.what() << endl;
 		} catch (...) {
+			cerr << "Error while triggering event " << event << " for plugin " << elmnt.first << endl;
 			//TODO: remove the faulty plugin?
 		}
 	}
@@ -176,20 +185,24 @@ PDI_status_t PDI_event(const char *event)
 
 PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 {
+	Paraconf_raii_forwarder fw;
 	try {
-		Paraconf_raii_forwarder fw;
-		return PDI_state.desc(name).access(buffer, inout);
+		Data_descriptor &desc = PDI_state.desc(name);
+		Data_ref ref = desc.value();
+		desc.share(ref, inout & PDI_IN, inout & PDI_OUT);
+		*buffer = ref;
 	} catch (const Error &e) {
 		return return_err(e);
 	}
+	return PDI_OK;
 }
 
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 {
+	Paraconf_raii_forwarder fw;
 	try {
-		Paraconf_raii_forwarder fw;
 		Data_descriptor &desc = PDI_state.desc(name);
-		desc.share(buffer, &free, access);
+		desc.share(buffer, &free, access & PDI_OUT, access & PDI_IN);
 		Data_ref ref = desc.value();
 		
 		// Provide reference to the plug-ins
@@ -197,7 +210,10 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 			try { // ignore errors here, try our best to notify everyone
 				//TODO: concatenate errors in some way
 				plugin.second->data(name, ref);
+			} catch (const std::exception &e) {
+				cerr << "Error while sharing " << name << " for plugin " << plugin.first << ": " << e.what() << endl;
 			} catch (...) {
+				cerr << "Error while triggering event " << name << " for plugin " << plugin.first << endl;
 				//TODO: remove the faulty plugin?
 			}
 		}
@@ -213,23 +229,25 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 
 PDI_status_t PDI_release(const char *name)
 {
+	Paraconf_raii_forwarder fw;
 	try {
-		Paraconf_raii_forwarder fw;
-		return PDI_state.desc(name).release();
+		PDI_state.desc(name).release();
 	} catch (const Error &e) {
 		return return_err(e);
 	}
+	return PDI_OK;
 }
 
 
 PDI_status_t PDI_reclaim(const char *name)
 {
+	Paraconf_raii_forwarder fw;
 	try {
-		Paraconf_raii_forwarder fw;
-		return PDI_state.desc(name).reclaim();
+		PDI_state.desc(name).reclaim();
 	} catch (const Error &e) {
 		return return_err(e);
 	}
+	return PDI_OK;
 }
 
 PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
@@ -249,8 +267,8 @@ PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
 
 PDI_status_t PDI_transaction_begin(const char *c_name)
 {
+	Paraconf_raii_forwarder fw;
 	try {
-		Paraconf_raii_forwarder fw;
 		if (!PDI_state.transaction.empty()) {
 			throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
 		}
@@ -265,8 +283,8 @@ PDI_status_t PDI_transaction_begin(const char *c_name)
 
 PDI_status_t PDI_transaction_end()
 {
+	Paraconf_raii_forwarder fw;
 	try {
-		Paraconf_raii_forwarder fw;
 		if (PDI_state.transaction.empty()) {
 			throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
 		}
