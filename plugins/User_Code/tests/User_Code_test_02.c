@@ -36,11 +36,11 @@
 
 static void fct_test_value(int var, const int value, int fatal, const char *fct, int line){
 	if(value != var) {
-		fprintf(stdout, "Test in func %s line %3d, not working: value=%d, var=%d \n", fct, line, value, var);
+		fprintf(stdout, "Test in func %s line %3d, not working: value=%d, var=%d\n", fct, line, value, var);
 		fflush(stdout);
 		if (fatal) abort();
 	} else { 
-		fprintf(stdout, "Test in func %s line %3d, working : value =%d = var \n", fct, line, value);
+		fprintf(stdout, "Test in func %s line %3d, working : value=var=%d\n", fct, line, value);
 		fflush(stdout);
 	}
 	return;
@@ -48,13 +48,15 @@ static void fct_test_value(int var, const int value, int fatal, const char *fct,
 
 void test(void){
 	int *buffer=NULL;
-	PDI_access("input", (void**)&buffer, PDI_IN); // Read something from input
+	if ( PDI_access("var_in", (void**)&buffer, PDI_IN) ) {
+		assert(0&&"Could not access var_in");
+	}
 	test_value(*buffer, CST0, FATAL);
-	PDI_release("input");
+	PDI_release("var_in");
 
-	PDI_access("output", (void**)&buffer, PDI_OUT);
-	*buffer=CST1; // Write something to output
-	PDI_release("output");
+	PDI_access("var_out", (void**)&buffer, PDI_OUT);
+	*buffer = CST1;
+	PDI_release("var_out");
 }
 
 
@@ -72,8 +74,8 @@ int main( int argc, char *argv[] )
 	in=CST0;
 	out=CST0;
 	PDI_transaction_begin("testing");
-	PDI_expose("input", &in, PDI_OUT); // export function input
-	PDI_expose("output",&out, PDI_IN); // import function output
+	PDI_expose("input", &in, PDI_OUT); // export data as function input
+	PDI_expose("output", &out, PDI_IN); // import data as function output 
 	PDI_transaction_end();
 	test_value(out, CST1, FATAL);
 	PDI_finalize();
@@ -82,3 +84,4 @@ int main( int argc, char *argv[] )
 	MPI_Finalize();
 	return 0;
 }
+

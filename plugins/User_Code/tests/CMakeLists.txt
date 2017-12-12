@@ -45,3 +45,33 @@ set_property(TEST User_Code_01_C_run PROPERTY DEPENDS User_Code_01_C_build)
 set_tests_properties(User_Code_01_C_run PROPERTIES DEPENDS User_Code_01_C_build TIMEOUT 3)
 
  
+###############
+#   TEST 02   #
+###############
+add_executable(User_Code_02_C EXCLUDE_FROM_ALL User_Code_test_02.c)
+add_compiler_flags(User_Code_02_C PRIVATE -Wall -Wextra)
+target_link_libraries(User_Code_02_C pdi mpi)
+add_test(NAME User_Code_02_C_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target User_Code_02_C
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+add_test(NAME User_Code_02_C_run COMMAND User_Code_02_C "${CMAKE_CURRENT_SOURCE_DIR}/User_Code_test_02.yml")
+set_property(TEST User_Code_02_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+set_property(TEST User_Code_02_C_run PROPERTY DEPENDS User_Code_02_C_build)
+set_tests_properties(User_Code_02_C_run PROPERTIES DEPENDS User_Code_02_C_build TIMEOUT 3)
+
+
+###############
+#   TEST 03   #
+###############
+add_executable(User_Code_03_C EXCLUDE_FROM_ALL User_Code_test_03.c)
+add_compiler_flags(User_Code_03_C PRIVATE -Wall -Wextra)
+target_link_libraries(User_Code_03_C pdi mpi)
+add_test(NAME User_Code_03_C_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target User_Code_03_C
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+add_test(NAME User_Code_03_C_run COMMAND User_Code_03_C "${CMAKE_CURRENT_SOURCE_DIR}/User_Code_test_03.yml")
+set_property(TEST User_Code_03_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+set_property(TEST User_Code_03_C_run PROPERTY DEPENDS User_Code_03_C_build)
+set_tests_properties(User_Code_03_C_run PROPERTIES DEPENDS User_Code_03_C_build TIMEOUT 3)

@@ -22,63 +22,33 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-
 #include "config.h"
 
-#ifdef STRDUP_WORKS 	// used while reading configuration (strdup )
-	#define _POSIX_C_SOURCE 200809L
-	#include <string.h>
-#endif
+#include <mpi.h>
 
-#include <mpi.h> 	// MPI library
-
-#include <pdi.h> 	// PDI library 
-#include <pdi/plugin.h>
-#include <pdi/state.h>
-#include <pdi/data_reference.h>
+#include <cstring>
+#include <iostream>
+#include <unordered_set>
+#include <unordered_map>
+#include <vector>
 
 #include <dlfcn.h> 	// dynamic loading of function 
 
-/// if strdup is not provided
-#ifndef STRDUP_WORKS
-char *strdup(const char *s)
-{
-	char *p = (char*) malloc(strlen(s) + 1);
-	if (p) strcpy(p, s);
-	return p;
-}
-#endif
-#define PRINTF_BUFFER_SIZE 256
+#include <pdi.h>
+#include <pdi/plugin.h>
+#include <pdi/state.h>
+#include <pdi/data_reference.h>
+#include <pdi/data_descriptor.h>
 
-char *vmsprintf(const char *fmt, va_list ap)
-{
-	int index_size = PRINTF_BUFFER_SIZE;
-	char *index = (char*) malloc(index_size);
-	while ( vsnprintf(index, index_size, fmt, ap) > index_size ) {
-		index_size *= 2;
-		index = (char*) realloc(index, index_size);
-	}
-	return index;
-}
-
-char *msprintf(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	char *res = vmsprintf(fmt, ap);
-	va_end(ap);
-	return res;
-}
-
-// ================  CONSTANT AND MACRO =====
 #define UC_stderr stderr
 
 /// Verbose level : 0 Error, 1 Warning, 2 Debug
-#define UC_verbose 1
+#define UC_verbose 2
 
 #if UC_verbose > 1
 #define UC_dbg(...) do{ fprintf(UC_stderr, "[PDI/user_code] Debug: ");\
 		fprintf(UC_stderr, __VA_ARGS__);\
+		fprintf(UC_stderr, "\n"); \
 		fflush(UC_stderr); } while(0);
 #else  // Does nothing
 #define UC_dbg(...) do{ if(0) printf( __VA_ARGS__) ;} while(0);
@@ -87,6 +57,7 @@ char *msprintf(const char *fmt, ...)
 #if UC_verbose > 0
 #define UC_warn(...) do { fprintf(UC_stderr, "[PDI/user_code] Warning: ");\
 		fprintf(UC_stderr, __VA_ARGS__);\
+		fprintf(UC_stderr, "\n"); \
 		fflush(UC_stderr);} while(0);
 #else  // Does nothing
 #define UC_warn(...) do { if(0) printf( __VA_ARGS__); } while(0);
@@ -94,259 +65,215 @@ char *msprintf(const char *fmt, ...)
 
 #define UC_err(...) do {fprintf(UC_stderr, "[PDI/user_code] Error: " );\
 		fprintf(UC_stderr, __VA_ARGS__);\
+		fprintf(UC_stderr, "\n"); \
 		fflush(UC_stderr);} while(0);
 
 
+namespace {
+
+using std::string;
+using std::unordered_set;
+using std::unordered_map;
+using std::vector;
+
+/// function pointer
 typedef void (*ptr_fct_t)(void);
 
-/// Structure to organize the interaction between functions and PDI
-typedef struct UC_s {
-	ptr_fct_t fct; 		//< function to call on event
-
-	char **events; 		//< event names that trigger the function call
-	int nb_events; 		//< nb of events
-
-	char **datastarts; 		//< datastart events that trigger the function call
-	int nb_datastarts; 		//< nb of datastart events
-
-} UC_t ;
-
-
-
-UC_t  *all_uc; // array of user code (functions...)
-int nb_uc;
-
-PC_tree_t myconf;
-
-// ================  STRING and NODES  =====
-
-
-char *str2nodename(const char *s)
+/// Structure for aliases
+class UC_alias
 {
-	char *p = (char*) malloc(strlen(s) + 1 + 1);
-	p[0] = '.';
-	strcpy(&p[1], s);// in case malloc failled program should crash
-	return p;  
-}
-
-
-PDI_status_t set_str_from_node(PC_tree_t cur_conf, const char *node_name, char ***list_str, int *nb_str)
-{
-	PDI_status_t status = PDI_UNAVAILABLE;
-	if (!node_name) return status;
-
-	*nb_str = 1;
-	char **list_tmp = (char**) malloc(sizeof(char *));
-
-	if (!PC_string(PC_get(cur_conf, node_name), list_tmp)) { //< if one node
-		status = PDI_OK;
-	} else if (!PC_len(PC_get(cur_conf, node_name), nb_str)) { //< if multiple nodes
-		list_tmp = (char**) realloc(list_tmp, (*nb_str) * sizeof(char *));
-
-		char *all_node_name = (char*) malloc(strlen(node_name) + 4 + 1); //< len(node_name)+len([%d])+'\0'
-		strcpy(all_node_name, node_name);
-		strcat(&all_node_name[strlen(node_name)], "[%d]"); // going through the list
-
-		for (int ii = 0; ii < (*nb_str); ++ii) {
-			PC_string(PC_get(cur_conf, all_node_name, ii), &list_tmp[ii]);
-		}
-		free(all_node_name);
-		status = PDI_OK;
-	} else {
-		*nb_str = 0;
-		free(list_tmp);
-		list_tmp = NULL;
-	}
-
-	*list_str = list_tmp;
-	return status;
-}
-
-
-// ============ Loading Functions Dynamicaly =====
-PDI_status_t find_fct(char *fct_name, char *libname, ptr_fct_t  *fct)
-{
-	PDI_status_t status = PDI_OK;
-
-	char *fct_symbol = msprintf("%s", fct_name);
-
-	dlerror(); /// Empty dlerror in case of previous failure
-
-	void *fct_uncast = dlsym(NULL, fct_symbol);
-
-	// case where the library was not prelinked
-	if (!fct_uncast) {
-		void *lib_handle = dlopen(libname, RTLD_NOW);
-		if (!lib_handle) {
-			UC_err("Unable to load lib %s: %s\n", libname, dlerror());
-				status = PDI_ERR_CONFIG;
-		}
-		fct_uncast = dlsym(lib_handle, fct_symbol);
-		if (!fct_uncast) {
-			UC_err("Unable to load fct `%s' from lib %s: %s\n", fct_name, libname, dlerror());
-			status = PDI_ERR_CONFIG;
-		}
-
-		if(status){
-			free(fct_symbol);
-			return status;
-		}
-	}
-
-	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
-	*fct = *((ptr_fct_t *)&fct_uncast);
+public:
+	UC_alias() = default;
 	
-	free(fct_symbol);
-	return status;
-}
+	UC_alias(const string& name, const string& var):
+			m_name{name},
+			m_var{var}
+	{}
+	
+	/** exposes the alias
+	 */
+	void expose()
+	{
+		try {
+			PDI_state.desc(m_name).share(PDI_state.desc(m_var).ref(), false, false);
+		} catch (...) {
+			UC_err("Could not alias `%s' as `%s'", m_var.c_str(), m_name.c_str());
+			throw;
+		}
+		UC_dbg("Aliased `%s' as `%s'", m_var.c_str(), m_name.c_str());
+	}
+	
+	/** stop exposing the alias
+	 */
+	void unexpose()
+	{
+		PDI_state.desc(m_name).release();
+	}
+	
+private:
+	/// name to expose the alias as
+	string m_name;
+	
+	/// variable that is aliased
+	string m_var;
+	
+};
 
-/* Read next node
- * User_Code:
- * 	fct_1: // default = function name
- * 		name :    // override default
- * 		events:   // name that trigger function
+
+/** Structure to organize the interaction between functions and PDI
  *
+ * When a specific event happens, call a function
  */
-PDI_status_t read_one_elemnt(UC_t *that, PC_tree_t conf, char *name)
+class UC_trigger
 {
-	char *node = str2nodename(name);
-	PC_tree_t tmptree = PC_get(conf, node);
-	free(node);
+public:
+	/// parse tree to initialiaze this instance
+	UC_trigger(PC_tree_t config)
+	{
+		string funcname;
+		{
+			char *c_name = nullptr;
+			PC_string(PC_get(config, ".call"), &c_name);
+			funcname = c_name;
+			free(c_name);
+		}
+		
+		void *fct_uncast = dlsym(NULL, funcname.c_str());
+		if (!fct_uncast) {
+			UC_err("Unable to load fct `%s': %s", funcname.c_str(), dlerror());
+			return;
+		}
+		// ugly data to function ptr cast to be standard compatible (though undefined behavior)
+		m_fct = *((ptr_fct_t *)&fct_uncast);
+		UC_dbg("Loaded `%s' => %p", funcname.c_str(), m_fct);
+		
+		
+		PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
+		PC_tree_t params = PC_get(config, ".params");
+		PC_errhandler(errh);
+		if ( !PC_status(params) ) { // parameters
+			int len = 0; PC_len(params, &len);
+			for (int ii = 0; ii < len; ii++) {
+				char *alias_name; PC_string(PC_get(params, "{%d}", ii), &alias_name);
+				char *var; PC_string(PC_get(params, "<%d>", ii), &var);
+				m_aliases.push_back(UC_alias{alias_name, var});
+				free(var);
+				free(alias_name);
+			}
+		}
+	}
+	
+	/// call the function that has been registered
+	void call()
+	{
+		UC_dbg("Calling %p", m_fct);
+		for (auto &&alias : m_aliases) {
+			alias.expose(); //create alias and share it with the plug-in
+		}
+#if UC_verbose > 1
+		for ( auto&& desc: PDI_state.descriptors() ) {
+			UC_dbg(" * `%s'", desc.name().c_str());
+		}
+#endif
+		m_fct();
+		for (auto &&alias : m_aliases) {
+			alias.unexpose(); //create alias and share it with the plug-in
+		}
+	}
+	
+private:
+	/// function to call on event
+	ptr_fct_t m_fct;
+	
+	/// all the aliases to setup
+	vector<UC_alias> m_aliases;
+	
+};
 
-	node = strdup(".events");
-	set_str_from_node(tmptree, node, &that->events, &that->nb_events);
-	free(node);
 
-	node = strdup(".datastarts");
-	set_str_from_node(tmptree, node, &that->datastarts, &that->nb_datastarts);
-	free(node);
+/// User-code to call on named events
+unordered_map<string, UC_trigger> events_uc;
 
-	return PDI_OK;
-}
+/// User-code to call on data events
+unordered_map<string, UC_trigger> data_uc;
 
 
-// ================  INIT AND FINALIZE  =====
-PDI_status_t UC_init(UC_t *next)
-{
-	// init function
-	next->fct = NULL;
-
-	next->events = NULL;
-	next->datastarts = NULL;
-
-	return PDI_OK;
-}
-
-
-PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *world)
+PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *)
 {
 	PDI_status_t status = PDI_OK;
-
-	// workaround to remove warning
-	*world = *world;
-
-	// Copy Yaml configuration
-	myconf = conf;
-
+	
+	events_uc.clear();
+	data_uc.clear();
+	
 	if (PC_status(conf)) {
-		UC_err("Invalid configuration \n");
+		UC_err("Invalid configuration");
 		return PDI_ERR_CONFIG;
 	}
-
-	// Loading configuration for events
+	
 	PC_errhandler_t errh = PC_errhandler(PC_NULL_HANDLER);
-
-	int nb_node = 0;
-	PC_len(conf, &nb_node);
-	if (nb_node <= 0) {
-		UC_warn("Plugin 'User Code' is loaded but configuration is empty (or invalid)\n");
-	} else {
-		all_uc = NULL;
-		nb_uc = 0;
-		for (int map_id = 0; map_id < nb_node; map_id++) {
-			char *name;
-			UC_t next;
-			/// initialize
-			UC_init(&next);
-
-			/// Get next node
-			if (PC_string(PC_get(myconf, "{%d}", map_id), &name)) continue;
-
-			/// Fill the element
-			if (read_one_elemnt(&next, conf, name)) {
-				UC_warn("Error when reading element %s\n", name);
-				continue;
-			}
-
-			/// Find the corresponding function
-			if (find_fct(name, NULL, &(next.fct) )) {
-				UC_warn("Error when reading element %s\n", name);
-				continue;
-			}
-
-			free(name);
-			/// Append to list
-			all_uc = (UC_t*) realloc(all_uc, sizeof(UC_t)*(nb_uc+1));
-			if ( all_uc){
-				all_uc[nb_uc] = next;
-				nb_uc++;
-			} else {
-				UC_err("Realloc has failed. Aborting.");
-				MPI_Abort(MPI_COMM_WORLD, PDI_ERR_PLUGIN);
-			}
-
-		}
-		UC_dbg("Number of function loaded %d\n", nb_uc);
-	}
-
+	PC_tree_t on_event = PC_get(conf, ".on_event");
 	PC_errhandler(errh);
-
+	int conf_len=-1; PC_len(conf, &conf_len);
+	for ( int ii=0; ii<conf_len; ++ii ) {
+		char*name; PC_string(PC_get(conf, "{%d}", ii), &name);
+		UC_dbg("Node: %s", name);
+	}
+	if ( !PC_status(on_event) ) { // Loading configuration for events
+		int nb_events = 0; PC_len(on_event, &nb_events);
+		for (int map_id = 0; map_id < nb_events; map_id++) {
+			char* name; PC_string(PC_get(on_event, "{%d}", map_id), &name);
+			events_uc.emplace(name, UC_trigger{PC_get(on_event, "<%d>", map_id)});
+			free(name);
+		}
+	}
+	errh = PC_errhandler(PC_NULL_HANDLER);
+	PC_tree_t on_data = PC_get(conf, ".on_data");
+	PC_errhandler(errh);
+	if ( !PC_status(on_data) ) { // Loading configuration for data
+		int nb_data = 0; PC_len(on_data, &nb_data);
+		for (int map_id = 0; map_id < nb_data; map_id++) {
+			char* name; PC_string(PC_get(on_data, "{%d}", map_id), &name);
+			data_uc.emplace(name, UC_trigger{PC_get(on_data, "<%d>", map_id)});
+			free(name);
+		}
+	}
+	
 	return status;
 }
+
 
 PDI_status_t PDI_user_code_finalize()
 {
-	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		for ( int n=0; n<all_uc[ii].nb_events ; ++n ){
-			free( (all_uc[ii]).events[n] );
-		}
-		if(all_uc[ii].nb_events) free(all_uc[ii].events);
-
-		for ( int n=0; n<all_uc[ii].nb_datastarts ; ++n )
-			free(all_uc[ii].datastarts[n]);
-		if(all_uc[ii].nb_datastarts) free(all_uc[ii].datastarts);
-	}
-	free(all_uc);
-	all_uc = NULL;
-
+	events_uc.clear();
+	data_uc.clear();
 	return PDI_OK;
 }
+
 
 PDI_status_t PDI_user_code_event(const char *event)
 {
-	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		for ( int n=0; n<all_uc[ii].nb_events ; ++n ) {
-			if ( !strcmp(event, all_uc[ii].events[n]) ) {
-				(*all_uc[ii].fct)();
-			}
-		}
+	UC_dbg("Received event %s", event);
+	auto&& ucit = events_uc.find(event);
+	if ( ucit != events_uc.end() ) {
+		UC_dbg("Calling function for event %s", event);
+		// invoke function if required
+		ucit->second.call();
 	}
-
 	return PDI_OK;
 }
 
-PDI_status_t PDI_user_code_data(const std::string& name, PDI::Data_ref)
+
+PDI_status_t PDI_user_code_data(const std::string &name, PDI::Data_ref)
 {
-	 
-	for ( int ii=0; ii<nb_uc ; ++ii ) {
-		for ( int n=0; n<all_uc[ii].nb_datastarts ; ++n ) {
-			if ( name == all_uc[ii].datastarts[n] ) {
-				(*all_uc[ii].fct)();
-			}
-		}
+	auto&& ucit = data_uc.find(name);
+	if ( ucit != data_uc.end() ) {
+		UC_dbg("Calling function for data %s", name.c_str());
+		// invoke function if required
+		ucit->second.call();
 	}
-
 	return PDI_OK;
 }
+
+} // namespace <anonymous>
 
 PDI_PLUGIN(user_code)
