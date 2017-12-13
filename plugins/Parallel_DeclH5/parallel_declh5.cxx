@@ -251,9 +251,8 @@ PDI_status_t read_config_file( PC_tree_t conf, hdf5pp_var_t *hdf5data[],
 }
 
 
-PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *world)
+PDI_status_t PDI_parallel_declh5_init(PC_tree_t conf, MPI_Comm *)
 {
-	world = world; // prevent unused param warning
 	my_conf = conf;
 	
 	if ( H5open() < 0 ) { // Failure initializing HDF5

@@ -266,7 +266,7 @@ PDI_status_t scalar_datatype_load(PC_tree_t node, Scalar_datatype *type)
 			*type = PDI_T_INT64;
 			break;
 		default:
-			throw Error{PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname};
+			throw Error{PDI_ERR_VALUE, "Invalid kind for integer: `%s'", tname.c_str()};
 		}
 	} else if (tname == "logical") {     // Fortran integer
 		if (kind == 0) kind = PDI_LOGICAL_DEFAULT_KIND;
