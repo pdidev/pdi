@@ -68,10 +68,19 @@ public:
 	 */
 	Datatype(const Datatype &from);
 	
+	/** Creates a new datatype as the exact copy of an existing datatype
+	 */
+	Datatype(Datatype &&from);
+	
 	/** Copy of an existing datatype
 	 * \return *this
 	 */
 	Datatype &operator = (const Datatype &from);
+	
+	/** Move of an existing datatype
+	 * \return *this
+	 */
+	Datatype &operator = (Datatype &&from);
 	
 	/** Destroys a Datatype
 	 */

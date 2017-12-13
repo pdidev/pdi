@@ -518,6 +518,14 @@ Datatype::Datatype(const Datatype &from):
 	}
 }
 
+Datatype::Datatype(Datatype &&from):
+	kind{from.kind},
+	c{from.c}
+{
+	from.kind = PDI_K_SCALAR;
+	from.c.scalar = PDI_T_UNDEF;
+}
+
 Datatype &Datatype::operator=(const Datatype &from)
 {
 	kind = from.kind;
@@ -535,6 +543,14 @@ Datatype &Datatype::operator=(const Datatype &from)
 	return *this;
 }
 
+Datatype &Datatype::operator=(Datatype &&from)
+{
+	kind = from.kind;
+	c = from.c;
+	from.kind = PDI_K_SCALAR;
+	from.c.scalar = PDI_T_UNDEF;
+	return *this;
+}
 
 Datatype Datatype::densify() const
 {

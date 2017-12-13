@@ -47,7 +47,7 @@ public:
 	
 	Data_descriptor(const Data_descriptor &) = delete;
 	
-	Data_descriptor(Data_descriptor &&) = delete;
+	Data_descriptor(Data_descriptor &&) = default;
 	
 	~Data_descriptor();
 	
