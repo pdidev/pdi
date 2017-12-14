@@ -26,7 +26,7 @@
 /**
 * \file state_fwd.h
 * \brief public delcaration of structures that store state, data, metada, plugin.
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 
 #ifndef PDI_STATE_FWD_H_

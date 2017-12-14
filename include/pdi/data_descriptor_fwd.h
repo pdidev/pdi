@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef DATA_DESCRIPTOR_FWD_H_
-#define DATA_DESCRIPTOR_FWD_H_
+#ifndef PDI_DATA_DESCRIPTOR_FWD_H_
+#define PDI_DATA_DESCRIPTOR_FWD_H_
 
 namespace PDI
 {

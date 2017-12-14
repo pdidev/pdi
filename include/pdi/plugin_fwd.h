@@ -26,7 +26,7 @@
 /**
 * \file plugin_fwd.h
 * \brief public declaration of a plugin structure
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 
 #ifndef PDI_PLUGIN_FWD_H_

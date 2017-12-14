@@ -25,7 +25,7 @@
 /**
  * \file status.c
  * \brief Manage error and context
- * \author J. Bigot (CEA)
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
 
 #include <cassert>
@@ -72,11 +72,6 @@ void warn_status(PDI_status_t status, const char *message, void *)
 	if (status) {
 		fprintf(stderr, "Warning, in PDI: %s\n", message);
 	}
-}
-
-void forward_PC_error(PC_status_t, const char *message, void *)
-{
-	throw PDI::Error{PDI_ERR_CONFIG, message};
 }
 
 } // namespace <anonymous>
@@ -148,14 +143,11 @@ PDI_status_t return_err(const Error &err)
 	return err.m_status;
 }
 
-Paraconf_raii_forwarder::Paraconf_raii_forwarder():
-	m_handler{PC_errhandler(PC_errhandler_t{ forward_PC_error, NULL })}
+void pc(PC_status_t status)
 {
-}
-
-Paraconf_raii_forwarder::~Paraconf_raii_forwarder()
-{
-	PC_errhandler(m_handler);
+	if ( status ) {
+		throw Error{PDI_ERR_CONFIG, "Configuration error #%d: %s", static_cast<int>(status), PC_errmsg()};
+	}
 }
 
 } // namespace PDI

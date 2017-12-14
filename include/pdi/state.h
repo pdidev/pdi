@@ -26,7 +26,7 @@
 /**
 * \file state.h
 * \brief details of the strucutures that store data, metadata, ...
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 
 #ifndef PDI_STATE_H_

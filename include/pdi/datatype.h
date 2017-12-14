@@ -25,13 +25,14 @@
 #ifndef PDI_DATATYPE_H_
 #define PDI_DATATYPE_H_
 
-#include <memory>
 #include <vector>
 
+#include <paraconf.h>
+
 #include <pdi.h>
+#include <pdi/value.h>
 
 #include <pdi/datatype_fwd.h>
-#include <pdi/value.h>
 
 namespace PDI
 {

@@ -27,7 +27,7 @@
 * \file plugin_loader.c
 * \brief Contains function to load plugins
 * \details Plugins name written in config.yml are read/parse by paraconf: if PDI is build with a plugins having the same name, the plugin is loaded.
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 #include <cstdio>
 #include <cerrno>
@@ -36,13 +36,15 @@
 
 #include <dlfcn.h>
 
-#include <paraconf.h>
-
 #include "pdi/state.h"
 #include "pdi/plugin.h"
 #include "pdi/status.h"
 
+#include "paraconf_wrapper.h"
+
 #include "plugin_loader.h"
+
+namespace {
 
 using namespace PDI;
 using std::string;
@@ -50,7 +52,7 @@ using std::stringstream;
 
 typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t *plugin);
 
-PDI_status_t plugin_loader_load(const char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t *plugin)
+void load_plugin(const char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t *plugin)
 {
 	stringstream plugin_symbol;
 	plugin_symbol << "PDI_plugin_" << plugin_name << "_ctor";
@@ -70,31 +72,25 @@ PDI_status_t plugin_loader_load(const char *plugin_name, PC_tree_t node, MPI_Com
 		}
 	}
 	
-	// ugly data to function ptr cast to be standard compatible (though undefined behavior)
-	{
-		init_f plugin_ctor = *((init_f *)&plugin_ctor_uncast);
-		plugin_ctor(node, world, plugin);
-	}
-	
-	return PDI_OK;
+	// call the ctor
+	(reinterpret_cast<init_f>(plugin_ctor_uncast))(node, world, plugin);
 }
 
-PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *world)
+} // namespace <anonymous>
+
+namespace PDI {
+
+void try_load_plugin(PC_tree_t conf, int plugin_id, MPI_Comm *world)
 {
-	string plugin_name;
-	{
-		char *tmp;
-		PC_string(PC_get(conf, ".plugins{%d}", plugin_id), &tmp);
-		plugin_name = tmp;
-		free(tmp);
-	}
+	string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
 	try {
 		PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
 		PDI_plugin_t *plugin = new PDI_plugin_t;
-		plugin_loader_load(plugin_name.c_str(), plugin_conf, world, plugin);
-		PDI_state.plugins.insert({std::string(plugin_name), std::shared_ptr<PDI_plugin_t>(plugin)});
+		load_plugin(plugin_name.c_str(), plugin_conf, world, plugin);
+		PDI_state.plugins.emplace(plugin_name, std::shared_ptr<PDI_plugin_t>(plugin));
 	} catch (const std::exception &e) {
 		throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
 	}
-	return PDI_OK;
+}
+
 }

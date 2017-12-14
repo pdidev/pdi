@@ -78,11 +78,12 @@ add_library(pdi SHARED
 		api.cxx
 		conf.cxx
 		datatype.cxx
+		data_descriptor.cxx
+		paraconf_wrapper.cxx
+		plugin_loader.cxx
 		state.cxx
 		status.cxx
-		plugin_loader.cxx
 		value.cxx
-		data_descriptor.cxx
 )
 set_target_properties(pdi PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_compiler_flags(pdi PRIVATE -Wall -Wextra)

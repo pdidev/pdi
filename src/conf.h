@@ -22,15 +22,14 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
 /**
 * \file conf.h
 * \brief contains load_conf prototype
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 
-#ifndef CONF_H_
-#define CONF_H_
+#ifndef PDI_PARACONF_WRAPPER_H_
+#define PDI_PARACONF_WRAPPER_H_
 
 #include "pdi.h"
 
@@ -40,4 +39,4 @@
  */
 PDI_status_t load_conf(PC_tree_t node);
 
-#endif // CONF_H_
+#endif // PDI_PARACONF_WRAPPER_H_

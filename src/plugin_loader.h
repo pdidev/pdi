@@ -26,7 +26,7 @@
 /**
 * \file plugin_loader.h
 * \brief Header of the functions used to load plugins
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 
 #ifndef PDI_PLUGIN_LOADER_H_
@@ -35,6 +35,8 @@
 #include "pdi.h"
 #include "pdi/plugin_fwd.h"
 
+namespace PDI {
+
 /** Tries to load a given plugin
  * \param[in] conf the whole plugin configuration as a paraconf node
  * \param[in] plugin_id the ID of the plugin in the conf
@@ -42,8 +44,9 @@
  * from which the plugin can reserve some ranks for its own use in which case
  * it replaces the communicator by a new one from which the reserved ranks have
  * been removed
- * \return an error code
  */
-PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *world);
+void try_load_plugin(PC_tree_t conf, int plugin_id, MPI_Comm *world);
+
+}
 
 #endif // PDI_PLUGIN_LOADER_H_

@@ -22,61 +22,65 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
- * \file status.h
- * \brief Macros used to handle errors
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- */
+#include "config.h"
 
-#ifndef PDI_ERROR_H_
-#define PDI_ERROR_H_
+#include "pdi/status.h"
 
-#include <exception>
-#include <string>
+#include "paraconf_wrapper.h"
 
-#include <paraconf.h>
+namespace {
 
-#include "pdi.h"
+using PDI::Error;
 
-namespace PDI
+void do_pc(PC_status_t status)
 {
+	if ( status ) {
+		throw Error{PDI_ERR_CONFIG, "Configuration error #%d: %s", static_cast<int>(status), PC_errmsg()};
+	}
+}
 
-class Error:
-	public std::exception
+} // namespace <anonymous>
+
+namespace PDI {
+
+using std::string;
+
+
+int len(PC_tree_t tree)
 {
-public:
-	std::string m_what;
-	
-	PDI_status_t m_status;
-	
-	/** Creates a PDI error
-	 * \param[in] errcode the error code of the error to create
-	 * \param[in] message an errror message as a printf-style format
-	 * \param[in] ... the printf-style parameters for the message
-	 * \see printf
-	 */
-	Error(PDI_status_t errcode = PDI_OK, const char *message = "", ...);
-	
-	Error(PDI_status_t errcode, const char *message, va_list args);
-	
-	const char *what() const noexcept override;
-	
-};
+	int result;
+	do_pc(PC_len(tree, &result));
+	return result;
+}
 
-/** Automatically installs a paraconf error-handler that ignores errors and
- *  uninstalls it on destruction.
- */
-struct Try_pc
+long to_long(PC_tree_t tree)
 {
-	PC_errhandler_t m_handler;
-	Try_pc(): m_handler{PC_errhandler(PC_NULL_HANDLER)} { }
-	~Try_pc() { PC_errhandler(m_handler); }
-};
+	long result;
+	do_pc(PC_int(tree, &result));
+	return result;
+}
 
-/** Return the C error and stores the message corresponding to the C++ exception
- */
-PDI_status_t return_err(const Error &err);
+double to_double(PC_tree_t tree)
+{
+	double result;
+	do_pc(PC_double(tree, &result));
+	return result;
+}
+
+std::string to_string(PC_tree_t tree)
+{
+	char *cresult;
+	do_pc(PC_string(tree, &cresult));
+	string result = cresult;
+	free(cresult);
+	return result;
+}
+
+bool to_bool(PC_tree_t tree)
+{
+	int result;
+	do_pc(PC_bool(tree, &result));
+	return result;
+}
 
 } // namespace PDI
-
-#endif // PDI_ERROR_H_

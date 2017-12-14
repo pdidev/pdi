@@ -32,7 +32,7 @@
 *  - PDI_data
 *  Each function return a exit status code (PDI_status_t).
 *  A macro is used for the initialization (see PDI_PLUGIN)
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 
 #ifndef PDI_PLUGIN_H_

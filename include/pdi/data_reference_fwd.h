@@ -25,13 +25,13 @@
 /**
 * \file data_reference_fwd.h
 * \brief .
-* \author C. Roussel, corentin.roussel@cea.fr
+* \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
 */
 // Created:  04/10/2017 09:18:07
 
 
-#ifndef DATA_REF_FWD_H_
-#define DATA_REF_FWD_H_
+#ifndef PDI_DATA_REF_FWD_H_
+#define PDI_DATA_REF_FWD_H_
 
 namespace PDI
 {

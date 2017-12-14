@@ -23,60 +23,71 @@
  ******************************************************************************/
 
 /**
- * \file status.h
- * \brief Macros used to handle errors
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- */
+* \file conf.h
+* \brief contains load_conf prototype
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+*/
 
-#ifndef PDI_ERROR_H_
-#define PDI_ERROR_H_
+#ifndef PDI_CONF_H_
+#define PDI_CONF_H_
 
-#include <exception>
+#include "config.h"
+
 #include <string>
 
 #include <paraconf.h>
 
-#include "pdi.h"
+namespace PDI {
 
-namespace PDI
-{
-
-class Error:
-	public std::exception
-{
-public:
-	std::string m_what;
-	
-	PDI_status_t m_status;
-	
-	/** Creates a PDI error
-	 * \param[in] errcode the error code of the error to create
-	 * \param[in] message an errror message as a printf-style format
-	 * \param[in] ... the printf-style parameters for the message
-	 * \see printf
-	 */
-	Error(PDI_status_t errcode = PDI_OK, const char *message = "", ...);
-	
-	Error(PDI_status_t errcode, const char *message, va_list args);
-	
-	const char *what() const noexcept override;
-	
-};
-
-/** Automatically installs a paraconf error-handler that ignores errors and
- *  uninstalls it on destruction.
+/** Returns the length of a node.
+ *
+ * - for a sequence: the number of nodes,
+ * - for a mapping: the number of pairs,
+ * - for a scalar: the string length.
+ *
+ * throws an Error if the provided tree is in error
+ *
+ * \param[in] tree the sequence or mapping
+ * \return the length
  */
-struct Try_pc
-{
-	PC_errhandler_t m_handler;
-	Try_pc(): m_handler{PC_errhandler(PC_NULL_HANDLER)} { }
-	~Try_pc() { PC_errhandler(m_handler); }
-};
+int len(PC_tree_t tree);
 
-/** Return the C error and stores the message corresponding to the C++ exception
+/** Returns the int value of a scalar node
+ *
+ * throws an Error if the provided tree is in error
+ *
+ * \param[in] tree the int-valued node
+ * \return the int value of the scalar node
  */
-PDI_status_t return_err(const Error &err);
+long to_long(PC_tree_t tree);
+
+/** Returns the floating point value of a scalar node
+ *
+ * throws an Error if the provided tree is in error
+ *
+ * \param[in] tree the floating-point-valued node
+ * \return the floating point value of the scalar node
+ */
+double to_double(PC_tree_t tree);
+
+/** Returns the string content of a scalar node
+ *
+ * throws an Error if the provided tree is in error
+ *
+ * \param[in] tree the node
+ * \return the content of the scalar node
+ */
+std::string to_string(PC_tree_t tree);
+
+/** Returns the boolean value of a scalar node
+ *
+ * throws an Error if the provided tree is in error
+ *
+ * \param[in] tree the node
+ * \return the boolean value of the scalar node
+ */
+bool to_bool(PC_tree_t tree);
 
 } // namespace PDI
 
-#endif // PDI_ERROR_H_
+#endif // PDI_CONF_H_

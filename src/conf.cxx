@@ -26,18 +26,18 @@
 /**
 * \file conf.c
 * \brief Functions to load data and metadata
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 
 #include "config.h"
-
-#include <paraconf.h>
 
 #include "pdi.h"
 #include "pdi/state.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
 #include "pdi/status.h"
+
+#include "paraconf_wrapper.h"
 
 #include "conf.h"
 
@@ -46,18 +46,13 @@ using std::string;
 
 static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 {
-	int map_len; PC_len(node, &map_len);
+	int map_len = len(node);
 	
 	for (int map_id = 0; map_id < map_len; ++map_id) {
-		char *c_name; PC_string(PC_get(node, "{%d}", map_id), &c_name);
-		string name = c_name;
-		free(c_name);
-		
-		PC_tree_t config = PC_get(node, "<%d>", map_id);
-		
 		Datatype type;
+		PC_tree_t config = PC_get(node, "<%d>", map_id);
 		PDI_datatype_load(&type, config);
-		PDI_state.desc(name).init(config, is_metadata, type);
+		PDI_state.desc(to_string(PC_get(node, "{%d}", map_id))).init(config, is_metadata, type);
 	}
 	
 	return PDI_OK;

@@ -25,7 +25,7 @@
 /**
  * \file api.c
  * \brief PDI public API functions (init, event, ... finalize).
- * \author J. Bigot (CEA)
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  **/
 
 #include "config.h"
@@ -35,8 +35,6 @@
 #include <iostream>
 #include <string>
 #include <type_traits>
-
-#include <paraconf.h>
 
 #include "pdi.h"
 
@@ -48,6 +46,7 @@
 #include "pdi/status.h"
 
 #include "conf.h"
+#include "paraconf_wrapper.h"
 #include "plugin_loader.h"
 
 
@@ -101,19 +100,19 @@ PDI_inout_t &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs)
 
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	try {
 		PDI_state.transaction.clear();
 		PDI_state.plugins.clear();
 		
 		load_conf(conf);
 		
-		int nb_plugins; PC_len(PC_get(conf, ".plugins"), &nb_plugins);
+		int nb_plugins = len(PC_get(conf, ".plugins"));
 		
 		for (int ii = 0; ii < nb_plugins; ++ii) {
 			PDI_state.PDI_comm = *world;
 			//TODO: what to do if a single plugin fails to load?
-			plugin_loader_tryload(conf, ii, world);
+			try_load_plugin(conf, ii, world);
 		}
 		
 		if (MPI_Comm_dup(*world, &PDI_state.PDI_comm)) {
@@ -140,7 +139,7 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 
 PDI_status_t PDI_finalize()
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	for (auto plugin : PDI_state.plugins) {
 		try { // ignore errors here, try our best to finalize everyone
 			//TODO: concatenate errors in some way
@@ -164,7 +163,7 @@ PDI_status_t PDI_finalize()
 
 PDI_status_t PDI_event(const char *event)
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	for (auto &elmnt : PDI_state.plugins) {
 		try { // ignore errors here, try our best to notify everyone
 			//TODO: concatenate errors in some way
@@ -184,7 +183,7 @@ PDI_status_t PDI_event(const char *event)
 
 PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	try {
 		Data_descriptor &desc = PDI_state.desc(name);
 		Data_ref ref = desc.value();
@@ -198,7 +197,7 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	try {
 		Data_descriptor &desc = PDI_state.desc(name);
 		desc.share(buffer, &free, access & PDI_OUT, access & PDI_IN);
@@ -228,7 +227,7 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 
 PDI_status_t PDI_release(const char *name)
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	try {
 		PDI_state.desc(name).release();
 	} catch (const Error &e) {
@@ -240,7 +239,7 @@ PDI_status_t PDI_release(const char *name)
 
 PDI_status_t PDI_reclaim(const char *name)
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	try {
 		PDI_state.desc(name).reclaim();
 	} catch (const Error &e) {
@@ -251,7 +250,7 @@ PDI_status_t PDI_reclaim(const char *name)
 
 PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	if (PDI_status_t status = PDI_share(name, data, access)) return status;
 	
 	if (! PDI_state.transaction.empty()) {   // defer the reclaim
@@ -266,7 +265,7 @@ PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
 
 PDI_status_t PDI_transaction_begin(const char *c_name)
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	try {
 		if (!PDI_state.transaction.empty()) {
 			throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
@@ -282,7 +281,7 @@ PDI_status_t PDI_transaction_begin(const char *c_name)
 
 PDI_status_t PDI_transaction_end()
 {
-	Paraconf_raii_forwarder fw;
+	Try_pc fw;
 	try {
 		if (PDI_state.transaction.empty()) {
 			throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};

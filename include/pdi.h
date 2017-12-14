@@ -25,7 +25,7 @@
 /**
 * \file pdi.h
 * \brief Header of the PDI API.
-* \author J. Bigot (CEA)
+* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
 */
 
 #ifndef PDI_H_

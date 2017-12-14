@@ -29,12 +29,12 @@
 #include <memory>
 #include <string>
 
-#include <paraconf.h>
-
 #include "pdi.h"
 
 #include "pdi/value.h"
 #include "pdi/status.h"
+
+#include "paraconf_wrapper.h"
 
 #include "pdi/datatype.h"
 
@@ -188,16 +188,10 @@ PDI_status_t scalar_datatype_load(PC_tree_t node, Scalar_datatype *type)
 	string tname;
 	long kind = 0;
 	try {
-		char *ctname;
-		PC_string(PC_get(node, ".type"), &ctname);
-		tname = ctname;
-		free(ctname);
-		PC_int(PC_get(node, ".kind"), &kind);
+		tname = to_string(PC_get(node, ".type"));
+		kind = to_long(PC_get(node, ".kind"));
 	} catch (const Error &) {
-		char *ctname;
-		PC_string(node, &ctname);
-		tname = ctname;
-		free(ctname);
+		tname = to_string(node);
 	}
 	
 	// For Fortran, we assume kind means number of bytes... TODO: autodetect
@@ -317,10 +311,7 @@ PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 	{
 		string order_str;
 		try {
-			char *tmp;
-			PC_string(PC_get(node, ".order"), &tmp);
-			order_str = tmp;
-			free(tmp);
+			order_str = to_string(PC_get(node, ".order"));
 		} catch (const Error &) {
 			order_str = "c";
 		}
@@ -333,67 +324,41 @@ PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 		}
 	}
 	
-	// sizes for a multidim array
-	PC_status_t invalid_sizes;
-	int ndims = 1;
-	{
-		PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-		invalid_sizes = PC_len(PC_get(node, ".sizes"), &ndims);
-		PC_errhandler(pc_handler); // aka PC_end_try
-	}
-	
-	if (!invalid_sizes) {   // if multi dim array
+	int ndims;
+	try { // multi dim array
+		ndims = len(PC_get(node, ".sizes"));
 		for (int ii = 0; ii < ndims; ++ii) {
-			char *expr; PC_string(PC_get(node, ".sizes[%d]", ridx(ii, order, ndims)), &expr);
-			unique_ptr<char[], decltype(&free)> expr2{expr, free};
-			res_type.m_dimensions.push_back(Value::parse(expr2.get()));
+			res_type.m_dimensions.push_back(Value::parse(to_string(PC_get(node, ".sizes[%d]", ridx(ii, order, ndims))).c_str()));
 		}
-	} else { // else single dim array
-		char *expr; PC_string(PC_get(node, ".size"), &expr);
-		unique_ptr<char[], decltype(&free)> expr2{expr, free};
-		res_type.m_dimensions.push_back(Value::parse(expr2.get()));
+	} catch (const Error&) { // else single dim array
+		ndims = 1;
+		res_type.m_dimensions.push_back(Value::parse(to_string(PC_get(node, ".size")).c_str()));
 	}
 	
-	PC_status_t invalid_subsizes;
-	{
-		int len;
-		{
-			PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-			invalid_subsizes = PC_len(PC_get(node, ".subsizes"), &len);
-			PC_errhandler(pc_handler); // aka PC_end_try
-		}
-		if (!invalid_subsizes && len != ndims) {
-			throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, ndims};
-		}
+	int nsubdim;
+	try {
+		nsubdim = PDI::len(PC_get(node, ".subsizes"));
+	} catch ( const Error& ) {
+		nsubdim = 0;
+	}
+	if ( nsubdim && nsubdim != ndims) {
+		throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, ndims};
+	}
+	for (int ii = 0; ii < nsubdim; ++ii) {
+		res_type.m_dimensions[ii].m_subsize = Value::parse(to_string(PC_get(node, ".subsizes[%d]", ridx(ii, order, ndims))).c_str());
 	}
 	
-	if (!invalid_subsizes) {
-		for (int ii = 0; ii < ndims; ++ii) {
-			char *expr; PC_string(PC_get(node, ".subsizes[%d]", ridx(ii, order, ndims)), &expr);
-			unique_ptr<char[], decltype(&free)> expr2{expr, free};
-			res_type.m_dimensions[ii].m_subsize = Value::parse(expr2.get());
-		}
+	int nstart;
+	try {
+		nstart = len(PC_get(node, ".starts"));
+	} catch ( const Error& ) {
+		nstart = 0;
 	}
-	
-	PC_status_t invalid_starts;
-	{
-		int len;
-		{
-			PC_errhandler_t pc_handler = PC_errhandler(PC_NULL_HANDLER); // aka PC_try
-			invalid_starts = PC_len(PC_get(node, ".starts"), &len);
-			PC_errhandler(pc_handler); // aka PC_end_try
-		}
-		if (!invalid_starts && len != ndims) {
-			throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, ndims};
-		}
+	if ( nstart && nstart != ndims ) {
+		throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", nstart, ndims};
 	}
-	
-	if (!invalid_starts) {
-		for (int ii = 0; ii < ndims; ++ii) {
-			char *expr; PC_string(PC_get(node, ".starts[%d]", ridx(ii, order, ndims)), &expr);
-			unique_ptr<char[], decltype(&free)> expr2{expr, free};
-			res_type.m_dimensions[ii].m_start = Value::parse(expr2.get());
-		}
+	for (int ii = 0; ii < nstart; ++ii) {
+		res_type.m_dimensions[ii].m_start = Value::parse(to_string(PC_get(node, ".starts[%d]", ridx(ii, order, ndims))).c_str());
 	}
 	
 	PDI_datatype_load(&res_type.type, PC_get(node, ".type"));

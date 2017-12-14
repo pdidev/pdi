@@ -25,7 +25,7 @@
 /**
  * \file api.c
  * \brief PDI internal data
- * \author Julien Bigot (CEA) <julien-bigot@cea.fr>
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
 
 #include "config.h"

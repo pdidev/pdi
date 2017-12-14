@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef DATA_DESCRIPTOR_H_
-#define DATA_DESCRIPTOR_H_
+#ifndef PDI_DATA_DESCRIPTOR_H_
+#define PDI_DATA_DESCRIPTOR_H_
 
 #include <functional>
 #include <memory>
@@ -89,7 +89,6 @@ public:
 	 * \param[in,out] data the accessed data
 	 * \param[in] access whether the data can be accessed for read or write
 	 *                   by PDI
-	 * \return an error status
 	 * \pre the user code owns the data buffer
 	 * \post ownership of the data buffer is shared between PDI and the user code
 	 *
@@ -102,7 +101,6 @@ public:
 	/** Requests for PDI to access a data buffer.
 	* \param[in,out] buffer a pointer to the accessed data buffer
 	* \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
-	* \return an error status
 	* \pre PDI owns the data buffer
 	* \post ownership of the data buffer is shared between PDI and the user code
 	*/
@@ -111,7 +109,6 @@ public:
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
 	* free the associated memory whenever necessary.
 	* \param[in] name name of the data to release
-	* \return an error status
 	* \pre ownership of the data buffer is shared between PDI and the user code
 	* \pre PDI owns the data buffer
 	*/
@@ -120,7 +117,6 @@ public:
 	/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
 	* free the associated memory whenever necessary.
 	* \param[in] name name of the data to reclaim
-	* \return an error status
 	* \pre ownership of the data buffer is shared between PDI and the user code
 	* \post the user code owns the data buffer
 	*/
@@ -141,7 +137,7 @@ private:
 	public:
 		Ref_A_holder(void *data, std::function<void(void *)> freefunc, const Datatype &type, bool readable, bool writable):
 			m_t(data, freefunc, type, readable, writable) {}
-		Ref_A_holder(Data_ref t) : m_t(t) {};
+		Ref_A_holder(Data_ref t) : m_t(t) {}
 		Data_ref ref() const override
 		{
 			return m_t;
@@ -164,4 +160,4 @@ private:
 
 } // namespace PDI
 
-#endif // DATA_DESCRIPTOR_H_
+#endif // PDI_DATA_DESCRIPTOR_H_
