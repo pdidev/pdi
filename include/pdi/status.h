@@ -66,11 +66,13 @@ public:
 /** Automatically installs a paraconf error-handler that ignores errors and
  *  uninstalls it on destruction.
  */
-struct Try_pc
-{
+struct Try_pc {
 	PC_errhandler_t m_handler;
 	Try_pc(): m_handler{PC_errhandler(PC_NULL_HANDLER)} { }
-	~Try_pc() { PC_errhandler(m_handler); }
+	~Try_pc()
+	{
+		PC_errhandler(m_handler);
+	}
 };
 
 /** Return the C error and stores the message corresponding to the C++ exception

@@ -41,8 +41,7 @@ namespace
 
 using std::string;
 
-struct Error_context
-{
+struct Error_context {
 	Error_context(): handler{PDI_ASSERT_HANDLER} {}
 	
 	PDI_errhandler_t handler;
@@ -145,7 +144,7 @@ PDI_status_t return_err(const Error &err)
 
 void pc(PC_status_t status)
 {
-	if ( status ) {
+	if (status) {
 		throw Error{PDI_ERR_CONFIG, "Configuration error #%d: %s", static_cast<int>(status), PC_errmsg()};
 	}
 }

@@ -130,13 +130,10 @@ private:
 		virtual ~Ref_holder() {}
 	};
 	
-	template<bool R, bool W>
-	class Ref_A_holder:
-		public Ref_holder
+	template<bool R, bool W> class Ref_A_holder: public Ref_holder
 	{
 	public:
-		Ref_A_holder(void *data, std::function<void(void *)> freefunc, const Datatype &type, bool readable, bool writable):
-			m_t(data, freefunc, type, readable, writable) {}
+		Ref_A_holder(void *data, std::function<void(void *)> freefunc, const Datatype &type, bool readable, bool writable): m_t(data, freefunc, type, readable, writable) {}
 		Ref_A_holder(Data_ref t) : m_t(t) {}
 		Data_ref ref() const override
 		{

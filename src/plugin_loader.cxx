@@ -44,7 +44,8 @@
 
 #include "plugin_loader.h"
 
-namespace {
+namespace
+{
 
 using namespace PDI;
 using std::string;
@@ -78,7 +79,8 @@ void load_plugin(const char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_p
 
 } // namespace <anonymous>
 
-namespace PDI {
+namespace PDI
+{
 
 void try_load_plugin(PC_tree_t conf, int plugin_id, MPI_Comm *world)
 {

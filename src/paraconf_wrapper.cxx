@@ -28,20 +28,22 @@
 
 #include "paraconf_wrapper.h"
 
-namespace {
+namespace
+{
 
 using PDI::Error;
 
 void do_pc(PC_status_t status)
 {
-	if ( status ) {
+	if (status) {
 		throw Error{PDI_ERR_CONFIG, "Configuration error #%d: %s", static_cast<int>(status), PC_errmsg()};
 	}
 }
 
 } // namespace <anonymous>
 
-namespace PDI {
+namespace PDI
+{
 
 using std::string;
 

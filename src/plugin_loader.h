@@ -35,7 +35,8 @@
 #include "pdi.h"
 #include "pdi/plugin_fwd.h"
 
-namespace PDI {
+namespace PDI
+{
 
 /** Tries to load a given plugin
  * \param[in] conf the whole plugin configuration as a paraconf node

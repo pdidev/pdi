@@ -330,7 +330,7 @@ PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 		for (int ii = 0; ii < ndims; ++ii) {
 			res_type.m_dimensions.push_back(Value::parse(to_string(PC_get(node, ".sizes[%d]", ridx(ii, order, ndims))).c_str()));
 		}
-	} catch (const Error&) { // else single dim array
+	} catch (const Error &) { // else single dim array
 		ndims = 1;
 		res_type.m_dimensions.push_back(Value::parse(to_string(PC_get(node, ".size")).c_str()));
 	}
@@ -338,10 +338,10 @@ PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 	int nsubdim;
 	try {
 		nsubdim = PDI::len(PC_get(node, ".subsizes"));
-	} catch ( const Error& ) {
+	} catch (const Error &) {
 		nsubdim = 0;
 	}
-	if ( nsubdim && nsubdim != ndims) {
+	if (nsubdim && nsubdim != ndims) {
 		throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, ndims};
 	}
 	for (int ii = 0; ii < nsubdim; ++ii) {
@@ -351,10 +351,10 @@ PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 	int nstart;
 	try {
 		nstart = len(PC_get(node, ".starts"));
-	} catch ( const Error& ) {
+	} catch (const Error &) {
 		nstart = 0;
 	}
-	if ( nstart && nstart != ndims ) {
+	if (nstart && nstart != ndims) {
 		throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", nstart, ndims};
 	}
 	for (int ii = 0; ii < nstart; ++ii) {

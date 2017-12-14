@@ -37,7 +37,8 @@
 
 #include <paraconf.h>
 
-namespace PDI {
+namespace PDI
+{
 
 /** Returns the length of a node.
  *
