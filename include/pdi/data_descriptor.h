@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef DATA_DESCRIPTOR_H__
-#define DATA_DESCRIPTOR_H__
+#ifndef DATA_DESCRIPTOR_H_
+#define DATA_DESCRIPTOR_H_
 
 #include <functional>
 #include <memory>
@@ -164,4 +164,4 @@ private:
 
 } // namespace PDI
 
-#endif // DATA_DESCRIPTOR_H__
+#endif // DATA_DESCRIPTOR_H_

@@ -43,8 +43,6 @@
 #include "pdi/state.h"
 #include "pdi/status.h"
 
-#include "utils.h"
-
 #include "pdi/value.h"
 
 namespace PDI

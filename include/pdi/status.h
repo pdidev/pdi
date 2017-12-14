@@ -28,8 +28,8 @@
  * \author J. Bigot (CEA)
  */
 
-#ifndef ERROR_H__
-#define ERROR_H__
+#ifndef ERROR_H_
+#define ERROR_H_
 
 #include <exception>
 #include <string>
@@ -45,9 +45,9 @@ class Error:
 	public std::exception
 {
 public:
-	PDI_status_t m_status;
-	
 	std::string m_what;
+	
+	PDI_status_t m_status;
 	
 	/** Creates a PDI error
 	 * \param[in] errcode the error code of the error to create
@@ -59,10 +59,7 @@ public:
 	
 	Error(PDI_status_t errcode, const char *message, va_list args);
 	
-	const char *what() const noexcept override
-	{
-		return m_what.c_str();
-	}
+	const char *what() const noexcept override;
 	
 };
 
@@ -84,4 +81,4 @@ PDI_status_t return_err(const Error &err);
 
 } // namespace PDI
 
-#endif // ERROR_H__
+#endif // ERROR_H_

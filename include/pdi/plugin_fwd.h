@@ -29,11 +29,11 @@
 * \author J. Bigot (CEA)
 */
 
-#ifndef PDI_PLUGIN_FWD_H__
-#define PDI_PLUGIN_FWD_H__
+#ifndef PDI_PLUGIN_FWD_H_
+#define PDI_PLUGIN_FWD_H_
 
 /** Definition of a plugin
  */
 typedef struct PDI_plugin_s PDI_plugin_t;
 
-#endif // PDI_PLUGIN_FWD_H__
+#endif // PDI_PLUGIN_FWD_H_

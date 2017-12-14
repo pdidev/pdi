@@ -81,7 +81,6 @@ add_library(pdi SHARED
 		state.cxx
 		status.cxx
 		plugin_loader.cxx
-		utils.cxx
 		value.cxx
 		data_descriptor.cxx
 )

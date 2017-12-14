@@ -29,8 +29,8 @@
 * \author J. Bigot (CEA)
 */
 
-#ifndef PDI_STATE_H__
-#define PDI_STATE_H__
+#ifndef PDI_STATE_H_
+#define PDI_STATE_H_
 
 #include <mpi.h>
 
@@ -160,4 +160,4 @@ private:
 extern PDI_state_t PDI_EXPORT PDI_state;
 
 
-#endif // PDI_STATE_H__
+#endif // PDI_STATE_H_

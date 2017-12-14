@@ -29,8 +29,8 @@
 * \author J. Bigot (CEA)
 */
 
-#ifndef PDI_PLUGIN_LOADER_H__
-#define PDI_PLUGIN_LOADER_H__
+#ifndef PDI_PLUGIN_LOADER_H_
+#define PDI_PLUGIN_LOADER_H_
 
 #include "pdi.h"
 #include "pdi/plugin_fwd.h"
@@ -46,4 +46,4 @@
  */
 PDI_status_t plugin_loader_tryload(PC_tree_t conf, int plugin_id, MPI_Comm *world);
 
-#endif // PDI_PLUGIN_LOADER_H__
+#endif // PDI_PLUGIN_LOADER_H_

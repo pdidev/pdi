@@ -23,11 +23,8 @@
  ******************************************************************************/
 
 // Whether we can use strdup from string.h (with _POSIX_C_SOURCE=200809L)
+// not used anymore in the main code...
 #cmakedefine STRDUP_WORKS
-
-#ifdef STRDUP_WORKS
-	#define _POSIX_C_SOURCE 200809L
-#endif
 
 /* The following part of the file is dedicated to the definitions of default 
  * values.

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_FWD_H__
-#define PDI_DATATYPE_FWD_H__
+#ifndef PDI_DATATYPE_FWD_H_
+#define PDI_DATATYPE_FWD_H_
 
 namespace PDI
 {
@@ -77,4 +77,4 @@ enum Scalar_datatype {
 
 } // namespace PDI
 
-#endif // PDI_DATATYPE_FWD_H__
+#endif // PDI_DATATYPE_FWD_H_

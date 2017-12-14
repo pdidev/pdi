@@ -35,8 +35,8 @@
 * \author J. Bigot (CEA)
 */
 
-#ifndef PDI_PLUGIN_H__
-#define PDI_PLUGIN_H__
+#ifndef PDI_PLUGIN_H_
+#define PDI_PLUGIN_H_
 
 #include <pdi.h>
 
@@ -106,4 +106,4 @@ struct PDI_plugin_s {
 	}
 #endif
 
-#endif // PDI_PLUGIN_H__
+#endif // PDI_PLUGIN_H_

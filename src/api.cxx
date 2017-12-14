@@ -49,7 +49,6 @@
 
 #include "conf.h"
 #include "plugin_loader.h"
-#include "utils.h"
 
 
 #define PDI_BUFFER_SIZE 256

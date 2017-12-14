@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_VALUE_FWD_H__
-#define PDI_VALUE_FWD_H__
+#ifndef PDI_VALUE_FWD_H_
+#define PDI_VALUE_FWD_H_
 
 namespace PDI
 {
@@ -55,4 +55,4 @@ class Value;
 
 } // namespace PDI
 
-#endif // PDI_VALUE_FWD_H__
+#endif // PDI_VALUE_FWD_H_

@@ -36,19 +36,24 @@
 
 #include "pdi/status.h"
 
-// File private stuff
-
 namespace
 {
 
 using std::string;
 
-struct Error_context {
+struct Error_context
+{
+	Error_context(): handler{PDI_ASSERT_HANDLER} {}
+	
 	PDI_errhandler_t handler;
 	
 	string errmsg;
 	
 };
+
+
+static thread_local Error_context context;
+
 
 /** Handler for fatal errors
   */
@@ -69,39 +74,12 @@ void warn_status(PDI_status_t status, const char *message, void *)
 	}
 }
 
-pthread_key_t context_key;
-
-void context_destroy(void *context)
-{
-	delete static_cast<Error_context *>(context);
-}
-
-void context_init()
-{
-	pthread_key_create(&context_key, context_destroy);
-}
-
-Error_context *get_context()
-{
-	static pthread_once_t context_key_once = PTHREAD_ONCE_INIT;
-	pthread_once(&context_key_once, context_init);
-	Error_context *context = static_cast<Error_context *>(pthread_getspecific(context_key));
-	if (!context) {
-		context = new Error_context{PDI_ASSERT_HANDLER, ""};
-		pthread_setspecific(context_key, context);
-	}
-	assert(context);
-	return context;
-}
-
 void forward_PC_error(PC_status_t, const char *message, void *)
 {
 	throw PDI::Error{PDI_ERR_CONFIG, message};
 }
 
-}
-
-// public stuff
+} // namespace <anonymous>
 
 const PDI_errhandler_t PDI_ASSERT_HANDLER = {
 	&assert_status,
@@ -120,14 +98,14 @@ const PDI_errhandler_t PDI_NULL_HANDLER = {
 
 PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 {
-	PDI_errhandler_t old_handler = get_context()->handler;
-	get_context()->handler = new_handler;
+	PDI_errhandler_t old_handler = context.handler;
+	context.handler = new_handler;
 	return old_handler;
 }
 
 const char *PDI_errmsg()
 {
-	return get_context()->errmsg.c_str();
+	return context.errmsg.c_str();
 }
 
 namespace PDI
@@ -158,11 +136,15 @@ Error::Error(PDI_status_t errcode, const char *message, ...):
 	va_end(ap);
 }
 
+const char *Error::what() const noexcept
+{
+	return m_what.c_str();
+}
+
 PDI_status_t return_err(const Error &err)
 {
-	Error_context *ctx = get_context();
-	ctx->errmsg = err.what();
-	if (ctx->handler.func) ctx->handler.func(err.m_status, err.what(), ctx->handler.context);
+	context.errmsg = err.what();
+	if (context.handler.func) context.handler.func(err.m_status, err.what(), context.handler.context);
 	return err.m_status;
 }
 
@@ -176,4 +158,4 @@ Paraconf_raii_forwarder::~Paraconf_raii_forwarder()
 	PC_errhandler(m_handler);
 }
 
-}
+} // namespace PDI

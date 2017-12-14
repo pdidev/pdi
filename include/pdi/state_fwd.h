@@ -29,8 +29,8 @@
 * \author J. Bigot (CEA)
 */
 
-#ifndef PDI_STATE_FWD_H__
-#define PDI_STATE_FWD_H__
+#ifndef PDI_STATE_FWD_H_
+#define PDI_STATE_FWD_H_
 
 /** Describes the state of a PDI instanciation, its configuration, the
  *  currently exposed data, etc...
@@ -42,4 +42,4 @@ class PDI_state_t;
  */
 typedef struct loaded_plugin_s loaded_plugin_t;
 
-#endif // PDI_STATE_FWD_H__
+#endif // PDI_STATE_FWD_H_

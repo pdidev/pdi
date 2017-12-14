@@ -30,8 +30,8 @@
 // Created:  04/10/2017 09:18:07
 
 
-#ifndef DATA_REF_FWD_H__
-#define DATA_REF_FWD_H__
+#ifndef DATA_REF_FWD_H_
+#define DATA_REF_FWD_H_
 
 namespace PDI
 {

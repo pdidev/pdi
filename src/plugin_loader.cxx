@@ -42,8 +42,6 @@
 #include "pdi/plugin.h"
 #include "pdi/status.h"
 
-#include "utils.h"
-
 #include "plugin_loader.h"
 
 using namespace PDI;

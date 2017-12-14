@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_H__
-#define PDI_DATATYPE_H__
+#ifndef PDI_DATATYPE_H_
+#define PDI_DATATYPE_H_
 
 #include <memory>
 #include <vector>
@@ -205,4 +205,4 @@ extern const Datatype PDI_EXPORT PDI_UNDEF_TYPE;
 
 } // namespace PDI
 
-#endif // PDI_DATATYPE_H__
+#endif // PDI_DATATYPE_H_

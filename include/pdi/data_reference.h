@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef DATA_REF_H__
-#define DATA_REF_H__
+#ifndef DATA_REF_H_
+#define DATA_REF_H_
 
 #include <cassert>
 #include <functional>
@@ -383,4 +383,4 @@ private:
 
 } // namespace PDI
 
-#endif //  DATA_REF_H__
+#endif //  DATA_REF_H_

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_VALUE_H__
-#define PDI_VALUE_H__
+#ifndef PDI_VALUE_H_
+#define PDI_VALUE_H_
 
 #include <memory>
 
@@ -134,4 +134,4 @@ public:
 
 } // namespace PDI
 
-#endif // PDI_VALUE_H__
+#endif // PDI_VALUE_H_

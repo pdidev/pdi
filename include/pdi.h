@@ -28,8 +28,8 @@
 * \author J. Bigot (CEA)
 */
 
-#ifndef PDI_H__
-#define PDI_H__
+#ifndef PDI_H_
+#define PDI_H_
 
 #include <mpi.h>
 #include <paraconf.h>
@@ -250,4 +250,4 @@ PDI_inout_t  &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs);
 #endif
 
 
-#endif // PDI_H__
+#endif // PDI_H_

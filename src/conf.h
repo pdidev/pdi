@@ -29,8 +29,8 @@
 * \author J. Bigot (CEA)
 */
 
-#ifndef CONF_H__
-#define CONF_H__
+#ifndef CONF_H_
+#define CONF_H_
 
 #include "pdi.h"
 
@@ -40,4 +40,4 @@
  */
 PDI_status_t load_conf(PC_tree_t node);
 
-#endif // CONF_H__
+#endif // CONF_H_
