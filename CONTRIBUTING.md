@@ -66,15 +66,15 @@ A astyle configuration file is provided with a Makefile in
 
 * Branch names, merge request and issues titles consist of three zones
 	* 1st, type of improvement: 
-			* bugfix : remove a bug
-			* feature : add a new feature to PDI or an existing plug-in
-			* update : update an existing feature
-			* new : add a new plug-in
-			* ... etc.
+		- bugfix : remove a bug
+		- feature : add a new feature to PDI or an existing plug-in
+		- update : update an existing feature
+		- new : add a new plug-in
+		- ... etc.
 	* 2nd, part of the software concerned: PDI, one plug-in, all plug-ins...
 	* Last, a brief description 
 	* Examples:
-			*  bugfix--HDF5_per_process--Something_is_working_better_there
-			*  feature--PDI--Now_make_the_tea
+		- bugfix--HDF5_per_process--Something_is_working_better_there
+		- feature--PDI--Now_make_the_tea
 * Each zone is delimited by two hyphens
 * Spaces are replaced by underscores
