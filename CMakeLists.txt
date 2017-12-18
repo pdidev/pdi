@@ -107,7 +107,7 @@ if(${ENABLE_PARALLEL_DECLH5})
 endif()
 
 if(${ENABLE_DECLH5})
-	add_subdirectory(plugins/DeclH5/)
+	add_subdirectory(plugins/declh5/)
 endif()
 
 if(${ENABLE_FTI})

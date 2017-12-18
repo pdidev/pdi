@@ -26,7 +26,7 @@
 
 #include "pdi/status.h"
 
-#include "paraconf_wrapper.h"
+#include "pdi/paraconf_wrapper.h"
 
 namespace
 {

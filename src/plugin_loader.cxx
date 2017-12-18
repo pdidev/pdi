@@ -36,11 +36,10 @@
 
 #include <dlfcn.h>
 
-#include "pdi/state.h"
+#include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
+#include "pdi/state.h"
 #include "pdi/status.h"
-
-#include "paraconf_wrapper.h"
 
 #include "plugin_loader.h"
 

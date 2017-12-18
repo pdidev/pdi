@@ -30,11 +30,9 @@
 #include <string>
 
 #include "pdi.h"
-
-#include "pdi/value.h"
+#include "pdi/paraconf_wrapper.h"
 #include "pdi/status.h"
-
-#include "paraconf_wrapper.h"
+#include "pdi/value.h"
 
 #include "pdi/datatype.h"
 
