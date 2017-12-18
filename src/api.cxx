@@ -109,13 +109,8 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 		int nb_plugins = len(PC_get(conf, ".plugins"));
 		
 		for (int ii = 0; ii < nb_plugins; ++ii) {
-			PDI_state.PDI_comm = *world;
 			//TODO: what to do if a single plugin fails to load?
 			try_load_plugin(conf, ii, world);
-		}
-		
-		if (MPI_Comm_dup(*world, &PDI_state.PDI_comm)) {
-			throw Error{PDI_ERR_SYSTEM, "Unable to clone the main communicator"};
 		}
 		
 	} catch (const Error &e) {
@@ -149,7 +144,6 @@ PDI_status_t PDI_finalize()
 			cerr << "Error while finalizing " << plugin.first << endl;
 		}
 	}
-	MPI_Comm_free(&PDI_state.PDI_comm);
 	PDI_state.transaction.clear();
 	PDI_state.transaction_data.clear();
 	PDI_state.plugins.clear();

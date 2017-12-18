@@ -135,11 +135,6 @@ public:
 	*/
 	PDI::Data_descriptor &desc(const char *name);
 	
-	/** A MPI communicator containing all application processes, i.e. all
-	 *  those not reserved by any PDI plugin
-	 */
-	MPI_Comm PDI_comm;
-	
 	/// The name of the ongoing transaction or "" if none
 	std::string transaction;
 	
