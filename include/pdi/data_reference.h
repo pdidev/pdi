@@ -42,7 +42,7 @@ namespace PDI
 /** A common base for all references, whatever their access privileges in
  * order to ensure they share the same Data_content and can access each others.
  */
-class Data_ref_base
+class PDI_EXPORT Data_ref_base
 {
 public:
 	/** Constructs a null reference
@@ -63,7 +63,7 @@ public:
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
 	 */
-	class Data_content
+	class PDI_EXPORT Data_content
 	{
 	public:
 		/// buffer that contains data
@@ -153,7 +153,7 @@ protected:
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
 template<bool R, bool W>
-class Data_A_ref:
+class PDI_EXPORT Data_A_ref:
 	public Data_ref_base
 {
 public:

@@ -142,11 +142,4 @@ PDI_status_t return_err(const Error &err)
 	return err.status();
 }
 
-void pc(PC_status_t status)
-{
-	if (status) {
-		throw Error{PDI_ERR_CONFIG, "Configuration error #%d: %s", static_cast<int>(status), PC_errmsg()};
-	}
-}
-
 } // namespace PDI

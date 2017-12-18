@@ -41,7 +41,7 @@
 namespace PDI
 {
 
-class Error:
+class PDI_EXPORT Error:
 	public std::exception
 {
 	std::string m_what;
@@ -68,7 +68,7 @@ public:
 /** Automatically installs a paraconf error-handler that ignores errors and
  *  uninstalls it on destruction.
  */
-struct Try_pc {
+struct PDI_EXPORT Try_pc {
 	PC_errhandler_t m_handler;
 	Try_pc(): m_handler{PC_errhandler(PC_NULL_HANDLER)} { }
 	~Try_pc()
@@ -79,7 +79,7 @@ struct Try_pc {
 
 /** Return the C error and stores the message corresponding to the C++ exception
  */
-PDI_status_t return_err(const Error &err);
+PDI_status_t PDI_EXPORT return_err(const Error &err);
 
 } // namespace PDI
 

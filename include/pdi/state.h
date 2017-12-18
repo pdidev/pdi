@@ -62,14 +62,14 @@ struct loaded_plugin_s {
 };
 
 
-class PDI_state_t
+class PDI_EXPORT PDI_state_t
 {
 public:
 	/** The store containing all data descriptors
 	 *
 	 * Implemented as a wrapper for a map
 	 */
-	class Descriptors_store
+	class PDI_EXPORT Descriptors_store
 	{
 	public:
 		/** An iterator used to go through the descriptor store.

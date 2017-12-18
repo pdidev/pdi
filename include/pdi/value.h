@@ -32,7 +32,7 @@
 namespace PDI
 {
 
-class Value
+class PDI_EXPORT Value
 {
 protected:
 	struct Impl {

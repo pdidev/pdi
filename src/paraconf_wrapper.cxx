@@ -69,7 +69,7 @@ double to_double(PC_tree_t tree)
 	return result;
 }
 
-std::string to_string(PC_tree_t tree)
+string to_string(PC_tree_t tree)
 {
 	char *cresult;
 	do_pc(PC_string(tree, &cresult));

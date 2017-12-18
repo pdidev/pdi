@@ -33,6 +33,8 @@
 
 #include "config.h"
 
+#include <pdi_export.h>
+
 #include <string>
 
 #include <paraconf.h>
@@ -51,7 +53,7 @@ namespace PDI
  * \param[in] tree the sequence or mapping
  * \return the length
  */
-int len(PC_tree_t tree);
+int PDI_EXPORT len(PC_tree_t tree);
 
 /** Returns the int value of a scalar node
  *
@@ -60,7 +62,7 @@ int len(PC_tree_t tree);
  * \param[in] tree the int-valued node
  * \return the int value of the scalar node
  */
-long to_long(PC_tree_t tree);
+long PDI_EXPORT to_long(PC_tree_t tree);
 
 /** Returns the floating point value of a scalar node
  *
@@ -69,7 +71,7 @@ long to_long(PC_tree_t tree);
  * \param[in] tree the floating-point-valued node
  * \return the floating point value of the scalar node
  */
-double to_double(PC_tree_t tree);
+double PDI_EXPORT to_double(PC_tree_t tree);
 
 /** Returns the string content of a scalar node
  *
@@ -78,7 +80,7 @@ double to_double(PC_tree_t tree);
  * \param[in] tree the node
  * \return the content of the scalar node
  */
-std::string to_string(PC_tree_t tree);
+std::string PDI_EXPORT to_string(PC_tree_t tree);
 
 /** Returns the boolean value of a scalar node
  *
@@ -87,7 +89,7 @@ std::string to_string(PC_tree_t tree);
  * \param[in] tree the node
  * \return the boolean value of the scalar node
  */
-bool to_bool(PC_tree_t tree);
+bool PDI_EXPORT to_bool(PC_tree_t tree);
 
 } // namespace PDI
 

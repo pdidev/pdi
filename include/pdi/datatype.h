@@ -37,7 +37,7 @@
 namespace PDI
 {
 
-class Datatype
+class PDI_EXPORT Datatype
 {
 public:
 	/// The kind of type this describes
@@ -115,7 +115,7 @@ public:
 	
 };
 
-struct Array_datatype {
+struct PDI_EXPORT Array_datatype {
 	struct Dimension {
 		Dimension(const Value &size): m_size{size}, m_start{0}, m_subsize{size} {}
 		
@@ -158,7 +158,7 @@ struct Array_datatype {
 	
 };
 
-struct Record_datatype {
+struct PDI_EXPORT Record_datatype {
 	struct Member {
 		/// Offset or distance in octet between the beginning of PDI_struct_type
 		Value m_displacement;

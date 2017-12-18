@@ -38,7 +38,7 @@
 namespace PDI
 {
 
-class Data_descriptor
+class PDI_EXPORT Data_descriptor
 {
 public:
 	/** Create an empty descriptor
