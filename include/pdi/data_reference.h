@@ -113,7 +113,7 @@ protected:
 		
 		~Data_content()
 		{
-			m_delete(this->m_buffer);
+			if (m_buffer) m_delete(this->m_buffer);
 			assert(!m_owners);
 			assert(m_read_locks == 0 || m_read_locks == 1);
 			assert(m_write_locks == 0 || m_write_locks == 1);
