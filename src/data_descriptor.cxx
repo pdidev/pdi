@@ -51,10 +51,10 @@ Data_descriptor::Data_descriptor(const char *name):
 
 Data_descriptor::~Data_descriptor()
 {
-	while (!m_values.empty()) {
+	while (!m_refs.empty()) {
 		if (is_metadata()) {
 			/* release metadata we kept */
-			m_values.pop();
+			m_refs.pop();
 		} else {
 			/* on error, we might be destroyed while not empty. In that case, don't
 			   keep ownership */
@@ -76,14 +76,14 @@ void Data_descriptor::share(void *data, std::function< void (void *) > freefunc,
 	if (is_metadata() && !read) throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
 	
 	// for metadata, unlink happens on share
-	if (!m_values.empty() && is_metadata()) {
-		m_values.pop();
+	if (!m_refs.empty() && is_metadata()) {
+		m_refs.pop();
 	}
 	
 	// make a reference and put it in the store
-	m_values.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(data, freefunc, get_type(), read, write)));
-	if (!value()) {
-		m_values.pop();
+	m_refs.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(data, freefunc, get_type(), read, write)));
+	if (!ref()) {
+		m_refs.pop();
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
 	}
 }
@@ -93,25 +93,25 @@ void Data_descriptor::share(Data_ref ref, bool read, bool write)
 	if (is_metadata() && !read) throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
 	
 	/// for metadata, unlink happens on share
-	if (!m_values.empty() && is_metadata()) {
-		m_values.pop();
+	if (!m_refs.empty() && is_metadata()) {
+		m_refs.pop();
 	}
 	
 	if (read) {
 		if (write) {
-			m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, true>(ref)));
+			m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, true>(ref)));
 		} else {
-			m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(ref)));
+			m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(ref)));
 		}
 	} else {
 		if (write) {
-			m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, true>(ref)));
+			m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, true>(ref)));
 		} else {
-			m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(ref)));
+			m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(ref)));
 		}
 	}
-	if (!value()) {
-		m_values.pop();
+	if (!this->ref()) {
+		m_refs.pop();
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
 	}
 }
@@ -119,25 +119,25 @@ void Data_descriptor::share(Data_ref ref, bool read, bool write)
 void Data_descriptor::release()
 {
 	// move reference out of the store
-	if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot release a non shared value"};
+	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot release a non shared value"};
 	
-	Data_ref oldref = value();
-	m_values.pop();
+	Data_ref oldref = ref();
+	m_refs.pop();
 	if (is_metadata()) {
 		// re-share ourselves & keep a read ref to be used
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref)));
+		m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref)));
 	}
 }
 
 void Data_descriptor::reclaim()
 {
-	if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot reclaim a non shared value"};
+	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot reclaim a non shared value"};
 	
-	Data_ref oldref = value();
-	m_values.pop();
+	Data_ref oldref = ref();
+	m_refs.pop();
 	if (is_metadata()) {
 		// if the content is a metadata, keep a copy
-		m_values.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref.copy())));
+		m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref.copy())));
 	}
 	oldref.release();
 }

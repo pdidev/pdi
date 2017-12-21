@@ -384,7 +384,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
 {
   // check that data is available and data type is dense
   for (size_t i = 0; i < event->n_vars; ++i) {
-    Data_ref cref = PDI_state.desc(event->vars[i]).value();
+    Data_ref cref = PDI_state.desc(event->vars[i]).ref();
     if ( Data_r_ref ref = cref ) {
       if (!ref.type().is_dense()) {
         fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
@@ -400,7 +400,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
 
   sion_int64 chunksize = 0;
   for (size_t i = 0; i < event->n_vars; ++i) {
-    const Data_ref & ref = PDI_state.desc(event->vars[i]).value();
+    const Data_ref & ref = PDI_state.desc(event->vars[i]).ref();
     if (!ref) {
       fprintf(stderr, "[PDI/SIONlib] Dataset unavailable '%s'.\n", event->vars[i]);
       return PDI_UNAVAILABLE;
@@ -414,7 +414,7 @@ static PDI_status_t write_event(const SIONlib_event_t *event)
   int sid = sion_paropen_mpi(event->file.to_string().c_str(), "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
-    const Data_ref & ref = PDI_state.desc(event->vars[i]).value();
+    const Data_ref & ref = PDI_state.desc(event->vars[i]).ref();
 
     size_t data_size = ref.type().datasize();
 
@@ -453,7 +453,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
 {
   // check that data type is dense
   for (size_t i = 0; i < event->n_vars; ++i) {
-    Data_ref cref = PDI_state.desc(event->vars[i]).value();
+    Data_ref cref = PDI_state.desc(event->vars[i]).ref();
     if ( Data_w_ref ref = cref ) {
       if (!ref.type().is_dense()) {
         fprintf(stderr, "[PDI/SIONlib] Sparse data type of variable '%s' is not supported.\n", event->vars[i]);
@@ -474,7 +474,7 @@ static PDI_status_t read_event(const SIONlib_event_t *event)
   int sid = sion_paropen_mpi(file.c_str(), "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
   for (size_t i = 0; i < event->n_vars; ++i) {
-    if ( Data_w_ref ref = PDI_state.desc(event->vars[i]).value() ) {
+    if ( Data_w_ref ref = PDI_state.desc(event->vars[i]).ref() ) {
       size_t data_size= ref.type().datasize();
   
       size_t name_size = strlen(event->vars[i]);

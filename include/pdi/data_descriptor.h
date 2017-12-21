@@ -78,10 +78,10 @@ public:
 	
 	/** Return a reference to the value of the data behind this descriptor
 	 */
-	Data_ref value()
+	Data_ref ref()
 	{
-		if (m_values.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value"};
-		return m_values.top()->ref();
+		if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value"};
+		return m_refs.top()->ref();
 	}
 	
 	/** Shares some data with PDI. The user code should not modify it before
@@ -143,7 +143,7 @@ private:
 	};
 	
 	/// References to the values of this descriptor
-	std::stack<std::unique_ptr<Ref_holder>> m_values;
+	std::stack<std::unique_ptr<Ref_holder>> m_refs;
 	
 	PC_tree_t m_config;
 	

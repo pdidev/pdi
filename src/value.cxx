@@ -210,7 +210,7 @@ struct Value_parser:
 		
 		long to_long() const override
 		{
-			Data_r_ref ref = m_referenced->value();
+			Data_r_ref ref = m_referenced->ref();
 			
 			Scalar_datatype type;
 			long idx = 0;

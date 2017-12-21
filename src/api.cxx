@@ -186,7 +186,7 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 	Try_pc fw;
 	try {
 		Data_descriptor &desc = PDI_state.desc(name);
-		Data_ref ref = desc.value();
+		Data_ref ref = desc.ref();
 		desc.share(ref, inout & PDI_IN, inout & PDI_OUT);
 		*buffer = ref;
 	} catch (const Error &e) {
@@ -201,7 +201,7 @@ PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 	try {
 		Data_descriptor &desc = PDI_state.desc(name);
 		desc.share(buffer, &free, access & PDI_OUT, access & PDI_IN);
-		Data_ref ref = desc.value();
+		Data_ref ref = desc.ref();
 		
 		// Provide reference to the plug-ins
 		for (auto &&plugin : PDI_state.plugins) {
