@@ -138,8 +138,8 @@ const char *Error::what() const noexcept
 PDI_status_t return_err(const Error &err)
 {
 	context.errmsg = err.what();
-	if (context.handler.func) context.handler.func(err.m_status, err.what(), context.handler.context);
-	return err.m_status;
+	if (context.handler.func) context.handler.func(err.status(), err.what(), context.handler.context);
+	return err.status();
 }
 
 void pc(PC_status_t status)

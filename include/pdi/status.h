@@ -44,11 +44,11 @@ namespace PDI
 class Error:
 	public std::exception
 {
-public:
 	std::string m_what;
 	
 	PDI_status_t m_status;
 	
+public:
 	/** Creates a PDI error
 	 * \param[in] errcode the error code of the error to create
 	 * \param[in] message an errror message as a printf-style format
@@ -60,6 +60,8 @@ public:
 	Error(PDI_status_t errcode, const char *message, va_list args);
 	
 	const char *what() const noexcept override;
+	
+	PDI_status_t status() const noexcept { return m_status; }
 	
 };
 
