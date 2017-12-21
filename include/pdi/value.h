@@ -74,13 +74,25 @@ public:
 	 *
 	 * \param[in] value the integer value
 	 */
+	Value(int value);
+	
+	/** Builds a value that represents an integer
+	 *
+	 * \param[in] value the integer value
+	 */
+	Value(unsigned value);
+	
+	/** Builds a value that represents an integer
+	 *
+	 * \param[in] value the integer value
+	 */
 	Value(long value);
 	
 	/** Builds a value that represents an integer
 	 *
 	 * \param[in] value the integer value
 	 */
-	Value(int value);
+	Value(unsigned long value);
 	
 	/** Copies a value
 	 *

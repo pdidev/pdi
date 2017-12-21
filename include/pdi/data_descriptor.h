@@ -32,7 +32,7 @@
 #include <paraconf.h>
 
 #include <pdi.h>
-#include <pdi/datatype.h>
+#include <pdi/data_type.h>
 #include <pdi/data_reference.h>
 
 namespace PDI
@@ -57,11 +57,11 @@ public:
 	
 	/** initialize the descriptor
 	 */
-	PDI_status_t init(PC_tree_t config, bool is_metadata, const Datatype &type);
+	void init(PC_tree_t config, bool is_metadata, Data_type_uptr type);
 	
 	/** Return the datatype
 	 */
-	const Datatype &get_type() const;
+	const Data_type &get_type() const;
 	
 	/** Return the PC_tree_t config
 	 */
@@ -133,7 +133,7 @@ private:
 	template<bool R, bool W> class Ref_A_holder: public Ref_holder
 	{
 	public:
-		Ref_A_holder(void *data, std::function<void(void *)> freefunc, const Datatype &type, bool readable, bool writable): m_t(data, freefunc, type, readable, writable) {}
+		Ref_A_holder(void *data, std::function<void(void *)> freefunc, Data_type_uptr type, bool readable, bool writable): m_t(data, freefunc, std::move(type), readable, writable) {}
 		Ref_A_holder(Data_ref t) : m_t(t) {}
 		Data_ref ref() const override
 		{
@@ -149,7 +149,7 @@ private:
 	
 	bool m_metadata;
 	
-	Datatype m_type;
+	Data_type_uptr m_type;
 	
 	const std::string m_name;
 	

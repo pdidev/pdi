@@ -32,7 +32,7 @@
 #include "config.h"
 
 #include "pdi.h"
-#include "pdi/datatype.h"
+#include "pdi/data_type.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/state.h"
@@ -48,10 +48,8 @@ static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 	int map_len = len(node);
 	
 	for (int map_id = 0; map_id < map_len; ++map_id) {
-		Datatype type;
 		PC_tree_t config = PC_get(node, "<%d>", map_id);
-		PDI_datatype_load(&type, config);
-		PDI_state.desc(to_string(PC_get(node, "{%d}", map_id))).init(config, is_metadata, type);
+		PDI_state.desc(to_string(PC_get(node, "{%d}", map_id))).init(config, is_metadata, Data_type::load(config));
 	}
 	
 	return PDI_OK;

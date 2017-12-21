@@ -36,7 +36,7 @@
 #include <fti.h>
 
 #include <pdi.h>
-#include <pdi/datatype.h>
+#include <pdi/data_type.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/data_reference.h>
 #include <pdi/paraconf_wrapper.h>
@@ -169,7 +169,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 			if ( Data_r_ref ref = PDI_state.desc(protected_var.first).ref() ) {
 				size_t size = ref.type().datasize();
 				//TODO: handle non-contiguous data correctly
-				FTI_Protect(protected_var.second, ref.get(), size, FTI_CHAR);
+				FTI_Protect(protected_var.second, const_cast<void*>(ref.get()), size, FTI_CHAR);
 			} else {
 				FTI_Protect(protected_var.second, NULL, 0, FTI_CHAR);
 				fprintf(stderr,

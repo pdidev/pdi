@@ -48,8 +48,6 @@
 namespace PDI
 {
 
-using std::cout;
-using std::endl;
 using std::move;
 using std::string;
 using std::stringstream;
@@ -60,7 +58,8 @@ namespace
 {
 
 struct Value_parser:
-	public Value {
+	public Value
+{
 	
 	/** The binary operators that can be used in values
 	 */
@@ -199,7 +198,8 @@ struct Value_parser:
 	/** A value in case this is a reference to another value
 	 */
 	struct Refval:
-		public Impl {
+			public Impl
+	{
 		/// The referenced data
 		Data_descriptor *m_referenced;
 		
@@ -210,51 +210,51 @@ struct Value_parser:
 		
 		long to_long() const override
 		{
-			Data_r_ref ref = m_referenced->ref();
-			
-			Scalar_datatype type;
-			long idx = 0;
-			
-			if (ref.type().kind == PDI_K_ARRAY) {
-				const Array_datatype &array_type = *ref.type().c.array;
-				if (m_idx.size() != array_type.m_dimensions.size()) {
-					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, %d expected", m_idx.size(), static_cast<int>(array_type.m_dimensions.size()) };
-				}
+			if ( Data_r_ref ref = m_referenced->ref() ) {
+				const Data_type * type = &ref.type();
 				long stride = 1;
-				for (size_t ii = 0; ii < m_idx.size(); ++ii) {
-					long start = array_type.m_dimensions[ii].m_start;
-					long index = m_idx[ii];
-					idx += (start + index) * stride;
-					long size = array_type.m_dimensions[ii].m_size;
-					stride *= size;
+				long idx = 0;
+				for ( auto&& ii: m_idx ) {
+					auto&& array_type = dynamic_cast<const Array_datatype*>(type);
+					if ( !array_type ) throw Error{PDI_ERR_VALUE, "Accessing non-array data with an index"};
+					idx += (array_type->start() + ii) * stride;
+					stride *= array_type->size();
+					type = &array_type->subtype();
 				}
-				if (array_type.type.kind != PDI_K_SCALAR) {
-					throw Error{PDI_ERR_VALUE, "Invalid type accessed"};
+				
+				auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(type);
+				if ( !scalar_type ) throw Error{PDI_ERR_VALUE, "Expected scalar found invalid type instead"};
+				
+				if ( scalar_type->kind() == Scalar_datatype::SIGNED ) {
+					switch (scalar_type->size()) {
+					case 1:
+						return static_cast<const int8_t *>(ref.get())[idx];
+					case 2:
+						return static_cast<const int16_t *>(ref.get())[idx];
+					case 4:
+						return static_cast<const int32_t *>(ref.get())[idx];
+					case 8:
+						return static_cast<const int64_t *>(ref.get())[idx];
+					default:
+						throw Error(PDI_ERR_VALUE, "Unexpected int size: %ld", static_cast<long>(scalar_type->kind()));
+					}
+				} else if ( scalar_type->kind() == Scalar_datatype::UNSIGNED ) {
+					switch (scalar_type->size()) {
+					case 1:
+						return static_cast<const uint8_t *>(ref.get())[idx];
+					case 2:
+						return static_cast<const uint16_t *>(ref.get())[idx];
+					case 4:
+						return static_cast<const uint32_t *>(ref.get())[idx];
+					case 8:
+						return static_cast<const uint64_t *>(ref.get())[idx];
+					default:
+						throw Error(PDI_ERR_VALUE, "Unexpected uint size: %ld", static_cast<long>(scalar_type->kind()));
+					}
 				}
-				type = array_type.type.c.scalar;
-			} else if (ref.type().kind == PDI_K_SCALAR) {
-				if (!m_idx.empty()) {
-					throw Error{PDI_ERR_VALUE, "Invalid number of index: %d, 0 expected", m_idx.size()};
-				}
-				type = ref.type().c.scalar;
-			} else {
-				throw Error{PDI_ERR_VALUE, "Invalid access to a struct"};
+				throw Error{PDI_ERR_VALUE, "Expected integer scalar"};
 			}
-			
-			switch (type) {
-			case PDI_T_INT8:
-				return static_cast<int8_t *>(ref.get())[idx];
-			case PDI_T_INT16:
-				return static_cast<int16_t *>(ref.get())[idx];
-			case PDI_T_INT32:
-				return static_cast<int32_t *>(ref.get())[idx];
-			case PDI_T_INT64:
-				return static_cast<int64_t *>(ref.get())[idx];
-			default:
-				throw Error(PDI_ERR_VALUE, "Non-integer type accessed");
-			}
-			assert(false);
-			return -1;
+			throw Error{PDI_ERR_RIGHT, "Unable to grant access for value reference"};
 		}
 		
 		unique_ptr<Impl> clone() const override
@@ -504,8 +504,9 @@ Value Value_parser::parse_strval(char const **val_str)
 
 string Value::Impl::to_string() const
 {
+	long lres = to_long();
 	stringstream result;
-	result << to_long();
+	result << lres;
 	return result.str();
 }
 
@@ -534,6 +535,16 @@ Value::Value(long value):
 }
 
 Value::Value(int value):
+		Value(static_cast<long>(value))
+{
+}
+
+Value::Value(unsigned value):
+		Value(static_cast<long>(value))
+{
+}
+
+Value::Value(unsigned long value):
 		Value(static_cast<long>(value))
 {
 }

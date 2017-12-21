@@ -24,6 +24,7 @@
 
 #include <mpi.h>
 
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -46,19 +47,17 @@ namespace
 {
 
 using PDI::Array_datatype;
-using PDI::Datatype;
+using PDI::Data_type;
 using PDI::Data_descriptor;
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
 using PDI::Error;
 using PDI::len;
-using PDI::PDI_K_ARRAY;
-using PDI::PDI_K_SCALAR;
-using PDI::PDI_K_STRUCT;
 using PDI::Scalar_datatype;
 using PDI::to_string;
 using PDI::Value;
+using std::reverse;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -143,7 +142,7 @@ unordered_map<string, Hdf5_variable> read_config_file(PC_tree_t conf, PC_tree_t 
 			throw Error{PDI_ERR_CONFIG, "global_sizes and global_starts must either both be specified or none should be"};
 		}
 		
-		if ( desc.get_type().kind == PDI::PDI_K_ARRAY && !PC_status(global_starts) ) {
+		if ( !PC_status(global_starts) ) {
 			int rank = len(global_starts);
 			if ( rank != len(global_sizes) ) {
 				throw Error{PDI_ERR_CONFIG, "Non matching rank of global_starts & global_sizes"};
@@ -197,40 +196,58 @@ PDI_status_t PDI_declh5_event(const char *)
 	return PDI_OK;
 }
 
-void init_sizes(const Datatype &type, const vector<Slab_dim>& file_slab, hid_t& file_space, hid_t& mem_space, hid_t& h5type)
+void init_sizes(const Data_type &type, const vector<Slab_dim>& file_slab, hid_t& file_space, hid_t& mem_space, hid_t& h5type)
 {
 	size_t rank = 0;
 	vector<hsize_t> h5msizes;
 	vector<hsize_t> h5subsizes;
 	vector<hsize_t> h5mstarts;
-	const Datatype *subtype = &type;
+	const Data_type *subtype = &type;
 
-	while (subtype->kind == PDI_K_ARRAY) {
-		const Array_datatype &array_type = *subtype->c.array;
-		rank += array_type.m_dimensions.size();
-
-		for(auto && dim : array_type.m_dimensions) {
-			h5msizes.emplace_back(dim.m_size);
-			h5subsizes.emplace_back(dim.m_subsize);
-			h5mstarts.emplace_back(dim.m_start);
-		}
-		
-		subtype = &array_type.type;
+	while ( auto&& array_type = dynamic_cast<const Array_datatype*>(subtype) ) {
+		++rank;
+		h5msizes.emplace_back(array_type->size());
+		h5subsizes.emplace_back(array_type->subsize());
+		h5mstarts.emplace_back(array_type->start());
+		subtype = &array_type->subtype();
 	}
+	reverse(h5msizes.begin(), h5msizes.end());
+	reverse(h5subsizes.begin(), h5subsizes.end());
+	reverse(h5mstarts.begin(), h5mstarts.end());
 
 	if ( file_slab.size() && rank != file_slab.size() ) throw Error{PDI_ERR_TYPE, "Invalid rank for data in HDF5"};
 	
-	if(subtype->kind != PDI_K_SCALAR) throw Error{PDI_ERR_IMPL, "Unexpected type in HDF5"};
-	switch(subtype->c.scalar) {
-	using namespace PDI;
-	case PDI_T_INT8:        h5type = H5T_NATIVE_INT8; break;
-	case PDI_T_INT16:       h5type = H5T_NATIVE_INT16; break;
-	case PDI_T_INT32:       h5type = H5T_NATIVE_INT32; break;
-	case PDI_T_INT64:       h5type = H5T_NATIVE_INT64; break;
-	case PDI_T_FLOAT:       h5type = H5T_NATIVE_FLOAT; break;
-	case PDI_T_DOUBLE:      h5type = H5T_NATIVE_DOUBLE; break;
-	case PDI_T_LONG_DOUBLE: h5type = H5T_NATIVE_LDOUBLE; break;
-	default: throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", subtype->c.scalar};
+	auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(subtype);
+	if( !scalar_type ) throw Error{PDI_ERR_IMPL, "Unexpected type in HDF5"};
+	
+	switch(scalar_type->kind()) {
+	case Scalar_datatype::UNSIGNED: {
+		switch(scalar_type->size().to_long()) {
+		case 1: h5type = H5T_NATIVE_UINT8; break;
+		case 2: h5type = H5T_NATIVE_UINT16; break;
+		case 4: h5type = H5T_NATIVE_UINT32; break;
+		case 8: h5type = H5T_NATIVE_UINT64; break;
+		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #%ld", scalar_type->size().to_long()};
+		}
+	} break;
+	case Scalar_datatype::SIGNED: {
+		switch(scalar_type->size().to_long()) {
+		case 1: h5type = H5T_NATIVE_INT8; break;
+		case 2: h5type = H5T_NATIVE_INT16; break;
+		case 4: h5type = H5T_NATIVE_INT32; break;
+		case 8: h5type = H5T_NATIVE_INT64; break;
+		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #%ld", scalar_type->size().to_long()};
+		}
+	} break;
+	case Scalar_datatype::FLOAT: {
+		switch(scalar_type->size().to_long()) {
+		case 4:  h5type = H5T_NATIVE_FLOAT; break;
+		case 8:  h5type = H5T_NATIVE_DOUBLE; break;
+		case 16: h5type = H5T_NATIVE_LDOUBLE; break;
+		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #%ld", scalar_type->size().to_long()};
+		}
+	} break;
+	default: throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};
 	}
 	
 	// The size in memory (with ghost, data might be sparse)
@@ -379,29 +396,33 @@ void read_from_file(Data_ref cref, const string &filename, const string &pathnam
 
 PDI_status_t PDI_declh5_data(const string &name, Data_ref ref)
 {
-	auto&& outev = outputs.find(name);
-	if(outev != outputs.end()) {
-		int select;
-		try {
-			select = outev->second.select;
-		} catch ( const Error& ) {
-			select = 0;
-		}
-		if ( select ) {
-			write_to_file(ref, outev->second.h5file, outev->second.h5var, outev->second.file_slab);
+	if ( Data_r_ref{ref} ) {
+		auto&& outev = outputs.find(name);
+		if(outev != outputs.end()) {
+			int select;
+			try {
+				select = outev->second.select;
+			} catch ( const Error& ) {
+				select = 0;
+			}
+			if ( select ) {
+				write_to_file(ref, outev->second.h5file, outev->second.h5var, outev->second.file_slab);
+			}
 		}
 	}
 
-	auto&& inev = inputs.find(name);
-	if(inev != inputs.end()) {
-		int select;
-		try {
-			select = outev->second.select;
-		} catch ( const Error& ) {
-			select = 0;
-		}
-		if(select) {
-			read_from_file(ref, inev->second.h5file, inev->second.h5var, inev->second.file_slab);
+	if ( Data_w_ref{ref} ) {
+		auto&& inev = inputs.find(name);
+		if(inev != inputs.end()) {
+			int select;
+			try {
+				select = inev->second.select;
+			} catch ( const Error& ) {
+				select = 0;
+			}
+			if(select) {
+				read_from_file(ref, inev->second.h5file, inev->second.h5var, inev->second.file_slab);
+			}
 		}
 	}
 

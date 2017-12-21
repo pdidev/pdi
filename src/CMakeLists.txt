@@ -77,8 +77,9 @@ install(DIRECTORY ../include/ DESTINATION include)
 add_library(pdi SHARED
 		api.cxx
 		conf.cxx
-		datatype.cxx
+		data_type.cxx
 		data_descriptor.cxx
+		data_reference.cxx
 		paraconf_wrapper.cxx
 		plugin_loader.cxx
 		state.cxx

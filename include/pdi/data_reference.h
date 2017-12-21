@@ -32,7 +32,7 @@
 
 #include "pdi.h"
 
-#include "pdi/datatype.h"
+#include "pdi/data_type.h"
 #include "pdi/data_reference_fwd.h"
 #include "pdi/status.h"
 
@@ -73,7 +73,7 @@ protected:
 		std::function<void(void *)> m_delete;
 		
 		/// type of the data inside the buffer
-		Datatype m_type;
+		Data_type_uptr m_type;
 		
 		/// number of references to this content
 		int m_owners;
@@ -100,13 +100,13 @@ protected:
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */
-		Data_content(void *buffer, std::function<void(void *)> deleter, const Datatype &type, bool readable, bool writable):
-			m_buffer(buffer),
-			m_delete(deleter),
-			m_type(type),
-			m_owners(0),
-			m_read_locks(readable ? 0 : 1),
-			m_write_locks(writable ? 0 : 1)
+		Data_content(void *buffer, std::function<void(void *)> deleter, Data_type_uptr type, bool readable, bool writable):
+			m_buffer{buffer},
+			m_delete{deleter},
+			m_type{std::move(type)},
+			m_owners{0},
+			m_read_locks{readable ? 0 : 1},
+			m_write_locks{writable ? 0 : 1}
 		{
 			assert(buffer);
 		}
@@ -129,11 +129,32 @@ protected:
 		return other.m_content;
 	}
 	
+	static Data_ref do_copy(Data_r_ref ref);
+	
 	/** Pointer on the data content, can be null if the ref is null
 	 */
 	mutable Data_content *m_content;
 	
 }; // class Data_ref_base
+
+
+template<bool R, bool W>
+struct Ref_access
+{
+	typedef void type;
+};
+
+template<bool R>
+struct Ref_access<R, true>
+{
+	typedef void* type;
+};
+
+template<>
+struct Ref_access<true, false>
+{
+	typedef const void* type;
+};
 
 
 /** A dynamically typed reference to data with automatic memory management and
@@ -208,10 +229,10 @@ public:
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Data_A_ref(void *data, std::function<void(void *)> freefunc, const Datatype &type, bool readable, bool writable):
+	Data_A_ref(void *data, std::function<void(void *)> freefunc, Data_type_uptr type, bool readable, bool writable):
 		Data_ref_base()
 	{
-		if (data) link(new Data_content(data, freefunc, type, readable, writable));
+		if (data) link(new Data_content(data, freefunc, std::move(type), readable, writable));
 	}
 	
 	/** Destructor
@@ -225,7 +246,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	operator void *() const
+	operator typename Ref_access<R,W>::type() const
 	{
 		return get();
 	}
@@ -234,7 +255,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	void *get() const
+	typename Ref_access<R,W>::type get() const
 	{
 		if (is_null()) throw Error{PDI_ERR_RIGHT, "Trying to dereference a null reference"};
 		return m_content->m_buffer;
@@ -251,10 +272,10 @@ public:
 	
 	/** accesses the type of the referenced raw data
 	 */
-	const Datatype &type() const
+	const Data_type &type() const
 	{
-		if (is_null()) return PDI_UNDEF_TYPE;
-		return m_content->m_type;
+		if (is_null()) return UNDEF_TYPE;
+		return *m_content->m_type;
 	}
 	
 	/** Nullify the reference
@@ -270,24 +291,8 @@ public:
 	 * \return the previously referenced raw data or nullptr if this was a null
 	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	Data_ref copy()
-	{
-		if (is_null()) return Data_ref{};
-		
-		if (!Data_r_ref{*this}) {   // ensure data is readable
-			throw Error{PDI_ERR_RIGHT, "Cannot access data for writing during copy"};
-		}
-		
-		Datatype newtype = m_content->m_type.densify();
-		
-		size_t dsize = m_content->m_type.buffersize();
-		void *newbuffer = operator new (dsize);
-		PDI_buffer_copy(newbuffer,
-		                &newtype,
-		                m_content->m_buffer,
-		                &m_content->m_type);
-		                
-		return Data_ref{newbuffer, [](void *d) { operator delete (d); }, newtype, true, true};
+	Data_ref copy() {
+		return do_copy(*this);
 	}
 	
 	/** Releases ownership of the referenced raw data by nullifying all existing

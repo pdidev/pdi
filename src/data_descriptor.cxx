@@ -27,7 +27,7 @@
 #include <memory>
 
 #include "pdi/data_reference.h"
-#include "pdi/datatype.h"
+#include "pdi/data_type.h"
 #include "pdi/status.h"
 
 #include "pdi/data_descriptor.h"
@@ -44,7 +44,7 @@ using std::unique_ptr;
 Data_descriptor::Data_descriptor(const char *name):
 	m_config(PC_parse_string("")),
 	m_metadata(false),
-	m_type{PDI_UNDEF_TYPE},
+	m_type{UNDEF_TYPE.clone()},
 	m_name(name)
 {
 }
@@ -63,12 +63,11 @@ Data_descriptor::~Data_descriptor()
 	}
 }
 
-PDI_status_t Data_descriptor::init(PC_tree_t config, bool is_metadata, const Datatype &type)
+void Data_descriptor::init(PC_tree_t config, bool is_metadata, Data_type_uptr type)
 {
 	m_config = config;
 	m_metadata = is_metadata;
-	m_type = type;
-	return PDI_OK;
+	m_type = std::move(type);
 }
 
 void Data_descriptor::share(void *data, std::function< void (void *) > freefunc, bool read, bool write)
@@ -81,7 +80,7 @@ void Data_descriptor::share(void *data, std::function< void (void *) > freefunc,
 	}
 	
 	// make a reference and put it in the store
-	m_refs.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(data, freefunc, get_type(), read, write)));
+	m_refs.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(data, freefunc, get_type().evaluate(), read, write)));
 	if (!ref()) {
 		m_refs.pop();
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
@@ -142,9 +141,9 @@ void Data_descriptor::reclaim()
 	oldref.release();
 }
 
-const Datatype &Data_descriptor::get_type() const
+const Data_type &Data_descriptor::get_type() const
 {
-	return m_type;
+	return *m_type;
 }
 
 bool Data_descriptor::is_metadata() const

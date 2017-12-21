@@ -33,7 +33,7 @@
 #include <vector>
 
 #include <pdi.h>
-#include <pdi/datatype.h>
+#include <pdi/data_type.h>
 #include <pdi/data_reference.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/paraconf_wrapper.h>
@@ -195,7 +195,7 @@ void write_event(const Named_event &event)
 	// check that data is available and data type is dense
 	for(auto && var : event.vars) {
 		if(Data_r_ref ref = PDI_state.desc(var).ref()) {
-			if(!ref.type().is_dense()) {
+			if(!ref.type().dense()) {
 				throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", var.c_str()};
 			}
 		}
@@ -262,7 +262,7 @@ void read_event(const Named_event &event)
 	for(auto && var : event.vars) {
 		Data_ref cref = PDI_state.desc(var).ref();
 		if(Data_w_ref ref = cref) {
-			if(!ref.type().is_dense()) {
+			if(!ref.type().dense()) {
 				throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", var.c_str()};
 			}
 		}
@@ -373,7 +373,7 @@ void write_var(Data_ref cref, const string &name, const Variable_event &var)
 	}
 
 	// check that data type is dense
-	if(!ref.type().is_dense()) {
+	if(!ref.type().dense()) {
 		throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", name.c_str()};
 	}
 
@@ -404,7 +404,7 @@ void read_var(Data_ref cref, const string &name, const Variable_event &var)
 	}
 
 	// check that data type is dense
-	if(!ref.type().is_dense()) {
+	if(!ref.type().dense()) {
 		throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", name.c_str()};
 	}
 

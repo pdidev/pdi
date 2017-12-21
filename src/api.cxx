@@ -38,7 +38,7 @@
 
 #include "pdi.h"
 #include "pdi/plugin.h"
-#include "pdi/datatype.h"
+#include "pdi/data_type.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/data_reference.h"
 #include "pdi/paraconf_wrapper.h"
@@ -180,8 +180,13 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 	try {
 		Data_descriptor &desc = PDI_state.desc(name);
 		Data_ref ref = desc.ref();
+		switch (inout) {
+			case PDI_NONE: *buffer = nullptr; break;
+			case PDI_IN: *buffer = const_cast<void*>(Data_r_ref{desc.ref()}.get()); break;
+			case PDI_OUT: *buffer = Data_w_ref{desc.ref()}.get(); break;
+			case PDI_INOUT: *buffer = Data_rw_ref{desc.ref()}.get(); break;
+		}
 		desc.share(ref, inout & PDI_IN, inout & PDI_OUT);
-		*buffer = ref;
 	} catch (const Error &e) {
 		return return_err(e);
 	}
