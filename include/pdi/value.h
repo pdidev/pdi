@@ -58,6 +58,30 @@ public:
 	 */
 	Value() = default;
 	
+	/** Builds (i.e. parse) a value from a string
+	 *
+	 * \param[in] value the string to parse
+	 */
+	Value(const char *val_str);
+	
+	/** Builds (i.e. parse) a value from a string
+	 *
+	 * \param[in] value the string to parse
+	 */
+	Value(const std::string& value);
+	
+	/** Builds a value that represents an integer
+	 *
+	 * \param[in] value the integer value
+	 */
+	Value(long value);
+	
+	/** Builds a value that represents an integer
+	 *
+	 * \param[in] value the integer value
+	 */
+	Value(int value);
+	
 	/** Copies a value
 	 *
 	 * \param[in] value the value to copy
@@ -123,12 +147,6 @@ public:
 	{
 		return to_string();
 	}
-	
-	/** Builds (i.e. parse) a value from a string
-	 *
-	 * \param[in] val_str the string to parse
-	 */
-	static Value parse(const char *val_str);
 	
 };
 

@@ -117,7 +117,7 @@ public:
 
 struct Array_datatype {
 	struct Dimension {
-		Dimension(const Value &size): m_size{size}, m_start{Value::parse("0")}, m_subsize{size} {}
+		Dimension(const Value &size): m_size{size}, m_start{0}, m_subsize{size} {}
 		
 		Dimension(const Value &size, const Value &start, const Value &subsize): m_size{size}, m_start{start}, m_subsize{subsize} {}
 		

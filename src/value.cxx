@@ -509,7 +509,7 @@ string Value::Impl::to_string() const
 	return result.str();
 }
 
-Value Value::parse(const char *val_str)
+Value::Value(const char *val_str)
 {
 	const char *parse_val = val_str;
 	
@@ -517,10 +517,25 @@ Value Value::parse(const char *val_str)
 		while (isspace(*parse_val)) ++parse_val;
 		Value result = Value_parser::parse_intval(&parse_val, 1);
 		while (isspace(*parse_val)) ++parse_val;
-		if (!*parse_val) return result; // only return this is we parsed the whole string, otherwise, parse as a string
+		if (!*parse_val) *this = result; // take this if we parsed the whole string, otherwise, parse as a string
 	} catch (Error &e) {   // in case of error, parse as a string
+		*this = Value_parser::parse_strval(&val_str);
 	}
-	return Value_parser::parse_strval(&val_str);
+}
+
+Value::Value(const string& val_str):
+		Value{val_str.c_str()}
+{
+}
+
+Value::Value(long value):
+		Value(unique_ptr<Value_parser::Constval> {new Value_parser::Constval{value}})
+{
+}
+
+Value::Value(int value):
+		Value(static_cast<long>(value))
+{
 }
 
 } // namespace PDI

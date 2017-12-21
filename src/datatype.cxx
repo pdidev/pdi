@@ -328,11 +328,11 @@ PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 	try { // multi dim array
 		ndims = len(PC_get(node, ".sizes"));
 		for (int ii = 0; ii < ndims; ++ii) {
-			res_type.m_dimensions.push_back(Value::parse(to_string(PC_get(node, ".sizes[%d]", ridx(ii, order, ndims))).c_str()));
+			res_type.m_dimensions.emplace_back(to_string(PC_get(node, ".sizes[%d]", ridx(ii, order, ndims))));
 		}
 	} catch (const Error &) { // else single dim array
 		ndims = 1;
-		res_type.m_dimensions.push_back(Value::parse(to_string(PC_get(node, ".size")).c_str()));
+		res_type.m_dimensions.emplace_back(to_string(PC_get(node, ".size")));
 	}
 	
 	int nsubdim;
@@ -345,7 +345,7 @@ PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 		throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, ndims};
 	}
 	for (int ii = 0; ii < nsubdim; ++ii) {
-		res_type.m_dimensions[ii].m_subsize = Value::parse(to_string(PC_get(node, ".subsizes[%d]", ridx(ii, order, ndims))).c_str());
+		res_type.m_dimensions[ii].m_subsize = to_string(PC_get(node, ".subsizes[%d]", ridx(ii, order, ndims)));
 	}
 	
 	int nstart;
@@ -358,7 +358,7 @@ PDI_status_t array_datatype_load(PC_tree_t node, Array_datatype *type)
 		throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", nstart, ndims};
 	}
 	for (int ii = 0; ii < nstart; ++ii) {
-		res_type.m_dimensions[ii].m_start = Value::parse(to_string(PC_get(node, ".starts[%d]", ridx(ii, order, ndims))).c_str());
+		res_type.m_dimensions[ii].m_start = to_string(PC_get(node, ".starts[%d]", ridx(ii, order, ndims)));
 	}
 	
 	PDI_datatype_load(&res_type.type, PC_get(node, ".type"));
