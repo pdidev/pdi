@@ -515,12 +515,12 @@ Value::Value(const char *val_str)
 	
 	try { // parse as a space enclosed intval
 		while (isspace(*parse_val)) ++parse_val;
-		Value result = Value_parser::parse_intval(&parse_val, 1);
+		*this = Value_parser::parse_intval(&parse_val, 1);
 		while (isspace(*parse_val)) ++parse_val;
-		if (!*parse_val) *this = result; // take this if we parsed the whole string, otherwise, parse as a string
+		if (!*parse_val) return; // take this if we parsed the whole string, otherwise, parse as a string
 	} catch (Error &e) {   // in case of error, parse as a string
-		*this = Value_parser::parse_strval(&val_str);
 	}
+	*this = Value_parser::parse_strval(&val_str);
 }
 
 Value::Value(const string& val_str):
