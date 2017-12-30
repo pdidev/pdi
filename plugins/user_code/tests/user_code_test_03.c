@@ -36,32 +36,44 @@
 
 static void fct_test_value(int var, const int value, int fatal, const char *fct, int line){
 	if(value != var) {
-		fprintf(stdout, "Test in func %s line %3d, not working: value=%d, var=%d\n", fct, line, value, var);
+		fprintf(stdout, "Test in func %s line %3d, not working: value=%d, var=%d \n", fct, line, value, var);
 		fflush(stdout);
 		if (fatal) abort();
-	} else { 
-		fprintf(stdout, "Test in func %s line %3d, working : value=var=%d\n", fct, line, value);
+	} else {
+		fprintf(stdout, "Test in func %s line %3d, working : value =%d = var \n", fct, line, value);
 		fflush(stdout);
 	}
 	return;
 }
 
-void test(void){
+void test(void) {
 	int *buffer=NULL;
-	if ( PDI_access("var_in", (void**)&buffer, PDI_IN) ) {
-		assert(0&&"Could not access var_in");
-	}
+	PDI_access("var_in", (void**)&buffer, PDI_IN);
 	test_value(*buffer, CST0, FATAL);
 	PDI_release("var_in");
-
+	
+	buffer = NULL;
 	PDI_access("var_out", (void**)&buffer, PDI_OUT);
-	*buffer = CST1;
+	*buffer=CST1;
 	PDI_release("var_out");
 }
 
+void succeed_on_failure(PDI_status_t status, const char *message, void *ctx)
+{
+	(void) ctx;
+	fprintf(stderr, "%s ", message);
+	if(status){
+		fprintf(stderr, "PDI is aborting. This is a success!\n");
+		exit(0);
+	}
+	return;
+}
 
 int main( int argc, char *argv[] )
 {
+	PDI_errhandler_t local_errhandler;
+	local_errhandler.func = &succeed_on_failure; 
+	local_errhandler.context = "context";
 	int in,out;
 	MPI_Init(&argc, &argv);
 	assert(argc == 2 && "Needs 1 single arg: config file");
@@ -69,19 +81,22 @@ int main( int argc, char *argv[] )
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
 
-	PDI_init(PC_get(conf,".pdi"), &world);
+	PDI_init(conf, &world);
+	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
 
 	in=CST0;
 	out=CST0;
 	PDI_transaction_begin("testing");
-	PDI_expose("input", &in, PDI_OUT); // export data as function input
-	PDI_expose("output", &out, PDI_IN); // import data as function output 
+	PDI_expose("input", &in, PDI_IN);
+	PDI_expose("output", &out, PDI_IN);
 	PDI_transaction_end();
-	test_value(out, CST1, FATAL);
+	test_value(in, CST1, FATAL);
+
+	PDI_errhandler(std_handler); // returning to standard PDI err_handler 
 	PDI_finalize();
 
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
-	return 0;
+	abort();
 }
 

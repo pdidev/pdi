@@ -98,7 +98,7 @@ add_subdirectory(src/)
 
 ## The plugins
 add_subdirectory(plugins/test_plugin/)
-add_subdirectory(plugins/User_Code/)
+add_subdirectory(plugins/user_code/)
 
 if(${ENABLE_PARALLEL_DECLH5})
 	set(HDF5_PREFER_PARALLEL TRUE)
