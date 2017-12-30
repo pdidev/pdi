@@ -110,7 +110,7 @@ if(${ENABLE_DECLH5})
 endif()
 
 if(${ENABLE_FTI})
-	add_subdirectory(plugins/FTI/)
+	add_subdirectory(plugins/fti/)
 endif()
 
 if(${ENABLE_SIONLIB})
