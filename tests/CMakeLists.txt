@@ -45,21 +45,6 @@ set_tests_properties(PDI_test_01_run PROPERTIES DEPENDS PDI_test_01_build TIMEOU
 ###############################
 # Plug-in:    interaction     #
 ###############################
-#Utilities and HDF5
-if( ${ENABLE_UTILITIES} AND ${ENABLE_DECLH5} )
-	add_executable(Utilities_02_C EXCLUDE_FROM_ALL Utilities_test_02.c)
-	set_target_properties(Utilities_02_C PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON)
-	add_compiler_flags(Utilities_02_C PRIVATE -Wall -Wextra -std=c99)
-	target_link_libraries(Utilities_02_C pdi mpi)
-	add_test(NAME Utilities_02_C_build
-			COMMAND "${CMAKE_COMMAND}" --build . --target Utilities_02_C
-			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-	
-	add_test(NAME Utilities_02_C_run COMMAND Utilities_02_C "${CMAKE_CURRENT_SOURCE_DIR}/Utilities_test_02.yml")
-	set_property(TEST Utilities_02_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/Utilities/:${CMAKE_CURRENT_BINARY_DIR}/../plugins/declh5/")
-	set_property(TEST Utilities_02_C_run PROPERTY DEPENDS Utilities_02_C_build)
-	set_tests_properties(Utilities_02_C_run PROPERTIES DEPENDS Utilities_02_C_build TIMEOUT ${DEFAULT_TIMEOUT})
-endif()
 
 # Sequential and Parallel HDF5
 if( ${ENABLE_DECLH5} AND ${ENABLE_PARALLEL_DECLH5} ) 

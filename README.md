@@ -8,35 +8,27 @@ This approach makes it possible to describe the I/O operations in a dedicated YA
 The public plugin API offered by PDI is general and simple enough that one can easily add support for the best suited library for its use-case (problem size, IO type, hardware used, etc.)
 
 
-## Existing plugins
-* HDF5 (one-file-per-process)
-* FTI
-* SIONlib 
-* User Code
-* ... (see TODO.md for a list of future plug-ins)
-
-
 ## Prerequisites
 
 To build the library one needs:
   * cmake, version >= 3.1
-  * a C compiler (gcc and icc are tested).
+  * a C-99 and C++-14 compiler (gcc-5.4 and above are tested)
   * a MPI library
 
 PDI also requires the BPP tool and Paraconf library that are distributed together with PDI in the `vendor` directory.
-  * paraconf depends on libyaml. By default paraconf uses the system libyaml but it also embedds a copy that can be used by passing the `-DUSE_SYSTEM_YAML=OFF` option to cmake.
+  * paraconf depends on libyaml. By default paraconf uses the system libyaml but it also embeds a copy that can be used by passing the `-DUSE_SYSTEM_YAML=OFF` option to cmake.
 
 Fortran support:
   * a working Fortran compiler with `iso_c_binding` support is required.
 
 Plugins:
-  * the HDF5 plugin require a version of HDF5 compatible with the chosen MPI (and Fortran compiler if enabled)
-  * the FTI plugin depends on the FTI library that is distributed together with PDI in the `vendor` directory.
+  * the decl'H5 plugin require a version of HDF5 compatible with the chosen MPI
+  * the FTI plugin depends on the FTI library that is distributed together with PDI in the `vendor` directory
+  * the SIONlib plugin depends on SIONlib
 
 ## Getting the source
 
 As of now, the source has to be fetched from git .
-
 
 ```
 git clone --recursive 
@@ -48,14 +40,6 @@ if the sources are in the folder pdi:
 
 ```
 cd pdi
-mkdir build
-cd build
-cmake -DUSE_SYSTEM_YAML=OFF .. 
-make
-make install
+cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX=/usr/ .. 
+make && make install
 ```
-
-## Documentation
-A doxygen documentation is provided in the docs folder along with a makefile.
-Invoking make will produce a `Reference_manual.pdf`.
-
