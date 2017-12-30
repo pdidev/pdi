@@ -44,8 +44,7 @@ endif()
 
 # Build options
 option(USE_SYSTEM_PARACONF     "Use an already installed paraconf instead of building the embedded one" OFF )
-option(ENABLE_DECLH5           "Build HDF5 based DeclH5 plug-in. Produce one HDF5 file per MPI process." ON )
-option(ENABLE_PARALLEL_DECLH5  "Build HDF5 based DeclH5 plug-in. This is the parallele version, produce a single file." ON )
+option(ENABLE_DECLH5           "Build HDF5 based DeclH5 plug-in." ON )
 option(ENABLE_FTI              "Build FTI plug-in." ON )
 option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
 # Testing options
@@ -99,11 +98,6 @@ add_subdirectory(src/)
 ## The plugins
 add_subdirectory(plugins/test_plugin/)
 add_subdirectory(plugins/user_code/)
-
-if(${ENABLE_PARALLEL_DECLH5})
-	set(HDF5_PREFER_PARALLEL TRUE)
-	add_subdirectory(plugins/Parallel_DeclH5/)
-endif()
 
 if(${ENABLE_DECLH5})
 	add_subdirectory(plugins/declh5/)

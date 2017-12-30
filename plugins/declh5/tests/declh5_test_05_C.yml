@@ -1,0 +1,73 @@
+metadata:
+  input: int
+  ni: int
+  nj: int
+  nig: int
+  njg: int
+  nit: int
+  njt: int
+  istart:
+    type: int
+    size: 1
+    global_starts: [$rank]
+    global_sizes: [$nproc]
+  jstart:
+    type: int
+    size: 1
+    global_starts: [$rank]
+    global_sizes: [$nproc]
+  rank: int
+  nproc: int
+data: # values that can not be referenced using $syntax
+  reals: 
+    type: double
+    sizes: [$nj +2*$njg , $ni+2*$nig]
+    subsizes: [$nj , $ni]
+    starts: [$njg, $nig]
+    global_sizes: [$njt, $nit]
+    global_starts: [ "$jstart[0]", "$istart[0]"]
+
+  values: 
+    type: int
+    sizes: [$nj +2*$njg , $ni+2*$nig]
+    subsizes: [$nj , $ni]
+    starts: [$njg, $nig]
+    global_sizes: [$njt, $nit]
+    global_starts: ["$jstart[0]", "$istart[0]"]
+
+  time:
+    type: double
+    size: 1
+    global_starts: [$rank]
+    global_sizes: [$nproc]
+  myrank:
+    type: int
+    size: 1
+    global_starts: [$rank]
+    global_sizes: [$nproc]
+
+
+plugins:
+  declh5:
+    defaults:
+      outputs:
+        select: $input=0
+        file: test_02_C_one_file.h5
+      inputs:
+        select: $input=1
+        file: test_02_C_one_file.h5
+    outputs:
+      reals:
+      values:
+      istart:
+      jstart:
+      myrank:
+      time:
+    inputs:
+      reals:
+      values:
+      istart:
+      jstart:
+      myrank:
+      time:
+

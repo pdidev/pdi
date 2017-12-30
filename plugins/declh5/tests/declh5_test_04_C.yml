@@ -14,7 +14,6 @@ pdi:
     rank: int
     nproc: int
   data: # values that can not be referenced using $syntax
-    myrank: int
     reals: 
       type: double
       sizes: [$nj +2*$njg , $ni+2*$nig]
@@ -32,18 +31,7 @@ pdi:
       global_starts: [$jstart, $istart]
 
   plugins:
-
     declh5:
-      outputs:
-        myrank:
-          file: declh5_rank_$rank.h5
-          select: $input=0
-      inputs:
-        myrank:
-          file: declh5_rank_$rank.h5
-          select: $input=1
-
-    parallel_declh5:
       defaults:
         outputs:
           select: $input=0

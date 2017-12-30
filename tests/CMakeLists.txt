@@ -46,18 +46,3 @@ set_tests_properties(PDI_test_01_run PROPERTIES DEPENDS PDI_test_01_build TIMEOU
 # Plug-in:    interaction     #
 ###############################
 
-# Sequential and Parallel HDF5
-if( ${ENABLE_DECLH5} AND ${ENABLE_PARALLEL_DECLH5} ) 
-	add_executable(Mixing_DeclH5_01_C EXCLUDE_FROM_ALL Mixing_DeclH5_test_01.c)
-	add_compiler_flags(Mixing_DeclH5_01_C PRIVATE -Wall -Wextra)
-	target_link_libraries(Mixing_DeclH5_01_C pdi mpi)
-	add_test(NAME Mixing_DeclH5_01_C_build
-		COMMAND "${CMAKE_COMMAND}" --build . --target Mixing_DeclH5_01_C
-		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-	
-	add_test(NAME Mixing_DeclH5_01_C_run COMMAND "mpirun" -n 4 Mixing_DeclH5_01_C "${CMAKE_CURRENT_SOURCE_DIR}/Mixing_DeclH5_test_01_C.yml")
-	set_property(TEST Mixing_DeclH5_01_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/declh5/:${CMAKE_CURRENT_BINARY_DIR}/../plugins/Parallel_DeclH5/")
-	set_property(TEST Mixing_DeclH5_01_C_run PROPERTY DEPENDS Mixing_DeclH5_01_C_build)
-	set_tests_properties(Mixing_DeclH5_01_C_run PROPERTIES DEPENDS Mixing_DeclH5_01_C_build TIMEOUT ${DEFAULT_TIMEOUT})
-endif()
-

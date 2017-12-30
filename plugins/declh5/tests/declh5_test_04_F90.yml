@@ -33,7 +33,7 @@ pdi:
       order: fortran
 
   plugins:
-    parallel_declh5:
+    declh5:
       defaults:
         outputs:
           select: $input=0
