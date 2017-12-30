@@ -62,7 +62,7 @@ program test2
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
   main_comm = MPI_COMM_WORLD
-  call PDI_init(PC_get(conf, ".pdi"), main_comm)
+  call PDI_init(conf, main_comm)
   call MPI_Comm_rank(main_comm, rank, ierr)
 
   nj=jmx
@@ -89,13 +89,13 @@ program test2
   iptr => nj; call PDI_expose("nj", iptr, PDI_OUT)
 
   ! Test that export/exchange works
-  iptr => input; call PDI_expose("input", iptr, PDI_OUT)  ! update metadata => SIONlib now export only
+  iptr => input; call PDI_expose("input", iptr, PDI_OUT)  ! update metadata => decl_sion now export only
   call PDI_expose("reals",reals , PDI_OUT)     ! output real
   call PDI_expose("values",values , PDI_INOUT) ! output integers
 
   input=1
   ! Import should also work
-  iptr => input ; call PDI_expose("input", iptr, PDI_OUT) ! update metadata => SIONlib now import only
+  iptr => input ; call PDI_expose("input", iptr, PDI_OUT) ! update metadata => decl_sion now import only
   call PDI_expose("reals" ,cp_reals, PDI_IN)     ! input real
   call PDI_expose("values" ,cp_values, PDI_INOUT) ! input integers
 

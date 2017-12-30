@@ -30,77 +30,73 @@ program test2
 
   include 'mpif.h'
 
-  integer, pointer :: pmeta0,pmeta1,pmeta2,pmeta3,pmeta4
-  integer, target :: meta0,meta1,meta2,meta3,meta4
-  integer :: i, ierr,  main_comm
-  integer,dimension(:), allocatable :: buf
-  integer :: nbuf=1000
-  double precision,target :: test_var=0.0
-  double precision,pointer ::pt
   character(len=512) :: strbuf
-  logical :: file_exist
+  integer :: i, j, ierr,  main_comm
+  integer,target :: imx=10, jmx=5, rank, nj, ni
+  double precision, pointer, dimension(:,:) :: reals, cp_reals
+  integer, pointer, dimension(:,:) :: values, cp_values
+
+  integer, pointer :: iptr
   type(PC_tree_t) :: conf
+
+  integer :: icst=-1
+  double precision :: rcst=-1.0D0
 
   call MPI_init(ierr)
 
-  meta0=4
-  meta1=6
-  meta2=2
-  meta3=3
-  meta4=4
-
-  pmeta0=>meta0
-  pmeta1=>meta1
-  pmeta2=>meta2
-  pmeta3=>meta3
-  pmeta4=>meta4
-
-  if (command_argument_count() /= 1) then
+  if (command_argument_count() < 1) then
     call get_command_argument(0, strbuf)
     print '("Usage: ",A," <config_file>")', trim(strbuf)
     stop
-  endif
+  end if
 
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
   main_comm = MPI_COMM_WORLD
-  call PDI_init(PC_get(conf, ".pdi"), main_comm)
+  call PDI_init(conf, main_comm)
+  call MPI_Comm_rank(main_comm, rank, ierr)
 
-  call PDI_transaction_begin("testing")
-  call PDI_expose("meta0",pmeta0, PDI_OUT)
-  call PDI_expose("meta1",pmeta1, PDI_OUT)
-  allocate(buf(nbuf)) !! an useless buffer
-  call PDI_expose("meta2",pmeta2, PDI_OUT)
-  buf(:)=0
-  call PDI_expose("meta3",pmeta3, PDI_OUT)
-  do i=1,nbuf-1
-    buf(i)=buf(i+1)+1
+  nj=jmx
+  ni=imx
+
+  allocate(values(ni,nj),reals(ni,nj),cp_values(ni,nj),cp_reals(ni,nj))
+
+  do j=1,nj
+    do i=1,ni
+       values(i,j) = i
+       reals(i,j)  = i*1.1
+       cp_values(i,j) = icst
+       cp_reals(i,j)  = rcst
+    enddo
   enddo
-  call PDI_expose("meta4",pmeta4, PDI_OUT)
-  test_var=0
-  pt=>test_var
-  call PDI_expose("test_var",pt, PDI_OUT)
-  deallocate(buf)
-  test_var=1
-  call PDI_transaction_end()
+
+  ! Set size for PDI
+  iptr => ni; call PDI_expose("ni", iptr, PDI_OUT)
+  iptr => nj; call PDI_expose("nj", iptr, PDI_OUT)
+
+  ! Test that expose works
+  call PDI_transaction_begin("write_data");
+  call PDI_expose("reals",reals , PDI_OUT)     ! output real
+  call PDI_expose("values",values , PDI_OUT) ! output integers
+  call PDI_transaction_end();
+
+  ! Exchange should also work
+  call PDI_transaction_begin("read_data");
+  call PDI_expose("reals" ,cp_reals, PDI_INOUT)     ! input real
+  call PDI_expose("values" ,cp_values, PDI_INOUT) ! input integers
+  call PDI_transaction_end();
+
+  do j=1,nj
+    do i=1,ni
+       if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then
+          write(0,*) "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
+          write(0,*) "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
+          call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+       endif
+    enddo
+  enddo
+
   call PDI_finalize()
-
-  inquire(file="test_01_variable_6.sion", exist=file_exist) ! values(1)=6
-  if( file_exist ) then
-    print*, "File found."
-  else
-    print*, "File not found"
-    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-  endif ! file doesn't exist
-
-  inquire(file="test_01_event_6.sion", exist=file_exist) ! values(1)=6
-  if( file_exist ) then
-    print*, "File found."
-  else
-    print*, "File not found"
-    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
-  endif ! file doesn't exist
-
   call MPI_Finalize(ierr)
 
 endprogram

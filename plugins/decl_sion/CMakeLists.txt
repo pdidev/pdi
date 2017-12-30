@@ -29,21 +29,20 @@
 
 find_package(SIONlib REQUIRED)
 
-add_library(SIONlib MODULE
-  SIONlib.cxx 
+add_library(decl_sion MODULE
+  decl_sion.cxx 
 )
-target_link_libraries(SIONlib pdi)
+target_link_libraries(decl_sion pdi)
 include_directories(${SIONlib_MPI_C_INCLUDE_DIRS})
-set_property(SOURCE SIONlib.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONlib_MPI_C_COMPILE_FLAGS} ")
-target_link_libraries(SIONlib ${SIONlib_MPI_C_LIBRARIES})
+set_property(SOURCE decl_sion.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONlib_MPI_C_COMPILE_FLAGS} ")
+target_link_libraries(decl_sion ${SIONlib_MPI_C_LIBRARIES})
 
 include(AddCCompilerFlags)
-add_compiler_flags(SIONlib PRIVATE -Wall -Wextra)
 
 
 # library installation
 
-install(TARGETS SIONlib EXPORT SIONlibTargets
+install(TARGETS decl_sion EXPORT decl_sionTargets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 )

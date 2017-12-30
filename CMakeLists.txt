@@ -47,7 +47,7 @@ option(USE_SYSTEM_PARACONF     "Use an already installed paraconf instead of bui
 option(ENABLE_DECLH5           "Build HDF5 based DeclH5 plug-in. Produce one HDF5 file per MPI process." ON )
 option(ENABLE_PARALLEL_DECLH5  "Build HDF5 based DeclH5 plug-in. This is the parallele version, produce a single file." ON )
 option(ENABLE_FTI              "Build FTI plug-in." ON )
-option(ENABLE_SIONLIB          "Build SIONlib plug-in." ON )
+option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
 # Testing options
 option(RUN_EXAMPLES            "Build and run examples during ctest." ON  )
 set(TIMEOUT 3 CACHE STRING     "Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)." )
@@ -113,6 +113,6 @@ if(${ENABLE_FTI})
 	add_subdirectory(plugins/fti/)
 endif()
 
-if(${ENABLE_SIONLIB})
-	add_subdirectory(plugins/SIONlib/)
+if(${ENABLE_DECL_SION})
+	add_subdirectory(plugins/decl_sion/)
 endif()
