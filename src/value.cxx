@@ -94,6 +94,17 @@ struct Value_parser:
 			return unique_ptr<Constval> {new Constval{*this}};
 		}
 		
+		Data_ref to_ref() const override
+		{
+			return Data_ref{
+				new long{m_value},
+				[](void* v){delete static_cast<long*>(v);},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_datatype::SIGNED, sizeof(long)}},
+				true,
+				true
+			};
+		}
+		
 	};
 	
 	/** A value in case this is a string (potentially with dollar refs inside)
@@ -131,6 +142,26 @@ struct Value_parser:
 		unique_ptr<Impl> clone() const override
 		{
 			return unique_ptr<Stringval> {new Stringval{*this}};
+		}
+		
+		Data_ref to_ref() const override
+		{
+			string value = to_string();
+			
+			// copy because std::string does not provide a release call
+			unique_ptr<char[]> str{new char[value.length()+1]};
+			memcpy(str.get(), value.c_str(), value.length()+1);
+			
+			return Data_ref{
+				str.release(),
+				[](void* v){delete[] static_cast<char*>(v);},
+				unique_ptr<Array_datatype>{new Array_datatype{
+					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_datatype::UNSIGNED, sizeof(char)}},
+					value.length()+1
+				}},
+				true,
+				true
+			};
 		}
 		
 	};
@@ -188,6 +219,17 @@ struct Value_parser:
 			return computed_value;
 		}
 		
+		Data_ref to_ref() const override
+		{
+			return Data_ref{
+				new long{to_long()},
+				[](void* v){delete static_cast<long*>(v);},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_datatype::SIGNED, sizeof(long)}},
+				true,
+				true
+			};
+		}
+		
 		unique_ptr<Impl> clone() const override
 		{
 			return unique_ptr<Exprval> {new Exprval{*this}};
@@ -209,7 +251,7 @@ struct Value_parser:
 		Refval(Data_descriptor *desc): m_referenced(desc) {}
 		
 		long to_long() const override
-		{
+		try {
 			if ( Data_r_ref ref = m_referenced->ref() ) {
 				const Data_type * type = &ref.type();
 				long stride = 1;
@@ -255,6 +297,22 @@ struct Value_parser:
 				throw Error{PDI_ERR_VALUE, "Expected integer scalar"};
 			}
 			throw Error{PDI_ERR_RIGHT, "Unable to grant access for value reference"};
+		} catch ( const Error& e ) {
+			throw Error{e.status(), "error accessing `%s': %s", m_referenced->name().c_str(), e.what()};
+		}
+		
+		Data_ref to_ref() const override
+		{
+			if (!m_idx.empty()) {
+				return Data_ref{
+					new long{to_long()},
+					[](void* v){delete static_cast<long*>(v);},
+					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_datatype::SIGNED, sizeof(long)}},
+					true,
+					true
+				};
+			}
+			return m_referenced->ref();
 		}
 		
 		unique_ptr<Impl> clone() const override
@@ -325,10 +383,6 @@ Value Value_parser::parse_ref(char const **val_str)
 	}
 	
 	unique_ptr<Refval> result{new Refval{ &PDI_state.desc(parse_id(&ref)) }};
-	
-	if (!result->m_referenced->is_metadata()) {
-		throw Error{PDI_ERR_VALUE, "Invalid reference to non-metadata `%s'", result->m_referenced->name().c_str()};
-	}
 	
 	assert(!result->m_referenced->name().empty());
 	

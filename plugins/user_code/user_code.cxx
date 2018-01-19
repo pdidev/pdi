@@ -39,6 +39,7 @@
 #include <pdi/state.h>
 #include <pdi/data_reference.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/value.h>
 
 
 /// Verbose level : 0 Error, 1 Warning, 2 Debug
@@ -67,6 +68,7 @@ namespace {
 
 using PDI::Error;
 using PDI::len;
+using PDI::Value;
 using PDI::to_string;
 using std::cout;
 using std::endl;
@@ -85,13 +87,13 @@ private:
 	/// name to expose the alias as
 	string m_name;
 	
-	/// variable that is aliased
-	string m_var;
+	/// value that is aliased
+	Value m_value;
 	
 public:
 	Alias(const string& name, const string& var):
 			m_name{name},
-			m_var{var}
+				 m_value {var}
 	{}
 	
 	/** exposes the alias
@@ -99,9 +101,9 @@ public:
 	void expose()
 	{
 		try {
-			PDI_state.desc(m_name).share(PDI_state.desc(m_var).ref(), false, false);
+			PDI_state.desc(m_name).share(m_value, false, false);
 		} catch (const Error& e) {
-			throw Error{e.status(), "Could not alias `%s' as `%s' because %s", m_var.c_str(), m_name.c_str(), e.what()};
+			throw Error{e.status(), "Could not alias `%s' because %s", m_name.c_str(), e.what()};
 		}
 	}
 	

@@ -29,9 +29,6 @@
 
 include(AddCCompilerFlags)
 
-#############
-# PDI tests #
-#############
 add_executable(PDI_test_01 EXCLUDE_FROM_ALL PDI_test_01.c)
 add_compiler_flags(PDI_test_01 PRIVATE -Wall -Wextra)
 target_link_libraries(PDI_test_01 pdi)
@@ -40,9 +37,3 @@ add_test(NAME PDI_test_01_build
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_test(NAME PDI_test_01_run COMMAND PDI_test_01 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_01.yml")
 set_tests_properties(PDI_test_01_run PROPERTIES DEPENDS PDI_test_01_build TIMEOUT ${DEFAULT_TIMEOUT})
-
-
-###############################
-# Plug-in:    interaction     #
-###############################
-

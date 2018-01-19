@@ -33,19 +33,10 @@
 #include <pdi.h>
 #include <pdi/value.h>
 
+#include <pdi/data_type_fwd.h>
+
 namespace PDI
 {
-
-/** A PDI type descriptor
- *
- * A Datatype is either a scalar, an array, or a record.
- * Structures are composed of one or mutiple PDI_datatype_t.
- *
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- */
-class Data_type;
-
-typedef std::unique_ptr<Data_type> Data_type_uptr;
 
 class PDI_EXPORT Data_type
 {

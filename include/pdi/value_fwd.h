@@ -32,23 +32,6 @@ namespace PDI
  *
  * References are not resolved, this is only the AST.
  *
- * The grammar of an expression is as follow:
- * ```
- * VALUE   := INTVAL | STRVAL
- * STRVAL  := ( CHAR | '\' '\' | '\' '$' | REF | '$' '(' INTVAL ')' )*
- * INTVAL  := INTVAL2 ( '|' INTVAL2 )*
- * INTVAL2 := INTVAL3 ( '&' INTVAL3 )*
- * INTVAL3 := INTVAL4 ( '=' INTVAL4 )*
- * INTVAL4 := INTVAL5 ( ( '+' | '-' ) INTVAL5 )*
- * INTVAL5 := TERM ( ( '*' | '/' | '%' ) TERM )*
- * TERM    := ( CONST | REF | '(' INTVAL ')' )
- * REF     := '$' ( IREF | '{' IREF '}' )
- * IREF    := ID ( '[' INTVAL ']' )*
- * CONST ~= (0x)? [0-9]+ ( \.  )
- * ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
- * CHAR  ~= [^$\\]
- * ```
- *
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
 class Value;

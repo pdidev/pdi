@@ -29,9 +29,11 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <vector>
+
+#include "pdi/data_type.h"
 
 #include "pdi/data_reference.h"
-
 
 namespace PDI
 {
@@ -146,6 +148,12 @@ Data_ref Data_ref_base::do_copy(Data_r_ref ref)
 		::operator delete(newbuffer);
 		throw;
 	}
+}
+
+const Data_type & Data_ref_base::type() const
+{
+	if (!m_content || !m_content->m_buffer) return UNDEF_TYPE;
+	return *m_content->m_type;
 }
 
 } // namespace PDI

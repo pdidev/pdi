@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -22,25 +22,27 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
-#include <mpi.h>
-#include <paraconf.h>
+#ifndef PDI_DATA_TYPE_FWD_H_
+#define PDI_DATA_TYPE_FWD_H_
+
+#include <memory>
+
 #include <pdi.h>
 
-int main( int argc, char *argv[] )
+namespace PDI
 {
-	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	PC_tree_t conf = PC_parse_path(argv[1]);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
-	PDI_errhandler(PDI_NULL_HANDLER);
-	double invalid;
-	PDI_status_t err = PDI_expose("invalid", &invalid, PDI_INOUT);
-	fprintf(stderr, "err=%d; message=\"%s\"\n", err, PDI_errmsg());
-	assert(err == PDI_ERR_VALUE);
-	assert(!strcmp(PDI_errmsg(), "error accessing `meta2': Cannot access a non shared value"));
-	PC_tree_destroy(&conf);
-	MPI_Finalize();
-	return 0;
-}
+
+/** A PDI type descriptor
+ *
+ * A Datatype is either a scalar, an array, or a record.
+ * Structures are composed of one or mutiple PDI_datatype_t.
+ *
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ */
+class Data_type;
+
+typedef std::unique_ptr<Data_type> Data_type_uptr;
+
+} // namespace PDI
+
+#endif // PDI_DATA_TYPE_FWD_H_

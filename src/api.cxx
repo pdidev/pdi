@@ -211,7 +211,7 @@ try {
 		} catch (const std::exception &e) {
 			cerr << "Error while sharing " << name << " for plugin " << plugin.first << ": " << e.what() << endl;
 		} catch (...) {
-			cerr << "Error while triggering event " << name << " for plugin " << plugin.first << endl;
+			cerr << "Error while sharing " << name << " for plugin " << plugin.first << endl;
 			//TODO: remove the faulty plugin?
 		}
 	}

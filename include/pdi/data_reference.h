@@ -30,11 +30,12 @@
 #include <memory>
 #include <unordered_map>
 
-#include "pdi.h"
+#include <pdi.h>
 
-#include "pdi/data_type.h"
-#include "pdi/data_reference_fwd.h"
-#include "pdi/status.h"
+#include <pdi/data_type_fwd.h>
+#include <pdi/status.h>
+
+#include <pdi/data_reference_fwd.h>
 
 namespace PDI
 {
@@ -60,10 +61,14 @@ public:
 	
 	Data_ref_base &operator = (Data_ref_base &&) = delete;
 	
+	/** accesses the type of the referenced raw data
+	 */
+	const Data_type &type() const;
+	
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
 	 */
-	class PDI_EXPORT Data_content
+	class PDI_EXPORT Ref_count
 	{
 	public:
 		/// buffer that contains data
@@ -87,11 +92,11 @@ protected:
 		/// Nullification notifications registered on this instance
 		std::unordered_map<const Data_ref_base *, std::function<void(Data_ref)> > m_notifications;
 		
-		Data_content() = delete;
+		Ref_count() = delete;
 		
-		Data_content(const Data_content &) = delete;
+		Ref_count (const Ref_count &) = delete;
 		
-		Data_content(Data_content &&) = delete;
+		Ref_count (Ref_count &&) = delete;
 		
 		/** Constructs the content
 		 * \param buffer the actual content
@@ -100,7 +105,7 @@ protected:
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */
-		Data_content(void *buffer, std::function<void(void *)> deleter, Data_type_uptr type, bool readable, bool writable):
+		Ref_count (void *buffer, std::function<void(void *)> deleter, Data_type_uptr type, bool readable, bool writable):
 			m_buffer{buffer},
 			m_delete{deleter},
 			m_type{std::move(type)},
@@ -111,7 +116,7 @@ protected:
 			assert(buffer);
 		}
 		
-		~Data_content()
+		~Ref_count()
 		{
 			if (m_buffer) m_delete(this->m_buffer);
 			assert(!m_owners);
@@ -124,7 +129,7 @@ protected:
 	
 	/** Function to access the content from a reference with different access right
 	 */
-	static Data_content *get_content(const Data_ref_base &other)
+	static Ref_count *get_content(const Data_ref_base &other)
 	{
 		return other.m_content;
 	}
@@ -133,7 +138,7 @@ protected:
 	
 	/** Pointer on the data content, can be null if the ref is null
 	 */
-	mutable Data_content *m_content;
+	mutable Ref_count *m_content;
 	
 }; // class Data_ref_base
 
@@ -232,7 +237,7 @@ public:
 	Data_A_ref(void *data, std::function<void(void *)> freefunc, Data_type_uptr type, bool readable, bool writable):
 		Data_ref_base()
 	{
-		if (data) link(new Data_content(data, freefunc, std::move(type), readable, writable));
+		if (data) link(new Ref_count (data, freefunc, std::move(type), readable, writable));
 	}
 	
 	/** Destructor
@@ -268,14 +273,6 @@ public:
 	operator bool () const
 	{
 		return !is_null();
-	}
-	
-	/** accesses the type of the referenced raw data
-	 */
-	const Data_type &type() const
-	{
-		if (is_null()) return UNDEF_TYPE;
-		return *m_content->m_type;
 	}
 	
 	/** Nullify the reference
@@ -372,7 +369,7 @@ private:
 	 *
 	 * \param content the content to link to
 	 */
-	void link(Data_content *content)
+	void link(Ref_count *content)
 	{
 		assert(!m_content);
 		if (!content || !content->m_buffer) return; // null ref

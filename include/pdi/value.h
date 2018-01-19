@@ -27,6 +27,8 @@
 
 #include <memory>
 
+#include <pdi/data_reference.h>
+
 #include <pdi/value_fwd.h>
 
 namespace PDI
@@ -39,6 +41,7 @@ protected:
 		virtual ~Impl() {}
 		virtual long to_long() const = 0;
 		virtual std::string to_string() const;
+		virtual Data_ref to_ref() const = 0;
 		virtual std::unique_ptr<Impl> clone() const = 0;
 	};
 	
@@ -59,12 +62,46 @@ public:
 	Value() = default;
 	
 	/** Builds (i.e. parse) a value from a string
+	 * 
+	 * The grammar of an expression is as follow:
+	 * ```
+	 * VALUE   := INTVAL | STRVAL
+	 * STRVAL  := ( CHAR | '\' '\' | '\' '$' | REF | '$' '(' INTVAL ')' )*
+	 * INTVAL  := INTVAL2 ( '|' INTVAL2 )*
+	 * INTVAL2 := INTVAL3 ( '&' INTVAL3 )*
+	 * INTVAL3 := INTVAL4 ( '=' INTVAL4 )*
+	 * INTVAL4 := INTVAL5 ( ( '+' | '-' ) INTVAL5 )*
+	 * INTVAL5 := TERM ( ( '*' | '/' | '%' ) TERM )*
+	 * TERM    := ( CONST | REF | '(' INTVAL ')' )
+	 * REF     := '$' ( IREF | '{' IREF '}' )
+	 * IREF    := ID ( '[' INTVAL ']' )*
+	 * CONST ~= (0x)? [0-9]+ ( \.  )
+	 * ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
+	 * CHAR  ~= [^$\\]
+	 * ```
 	 *
 	 * \param[in] value the string to parse
 	 */
 	Value(const char *val_str);
 	
 	/** Builds (i.e. parse) a value from a string
+	 * 
+	 * The grammar of an expression is as follow:
+	 * ```
+	 * VALUE   := INTVAL | STRVAL
+	 * STRVAL  := ( CHAR | '\' '\' | '\' '$' | REF | '$' '(' INTVAL ')' )*
+	 * INTVAL  := INTVAL2 ( '|' INTVAL2 )*
+	 * INTVAL2 := INTVAL3 ( '&' INTVAL3 )*
+	 * INTVAL3 := INTVAL4 ( '=' INTVAL4 )*
+	 * INTVAL4 := INTVAL5 ( ( '+' | '-' ) INTVAL5 )*
+	 * INTVAL5 := TERM ( ( '*' | '/' | '%' ) TERM )*
+	 * TERM    := ( CONST | REF | '(' INTVAL ')' )
+	 * REF     := '$' ( IREF | '{' IREF '}' )
+	 * IREF    := ID ( '[' INTVAL ']' )*
+	 * CONST ~= (0x)? [0-9]+ ( \.  )
+	 * ID    ~= [a-zA-Z_][a-zA-Z0-9_]*
+	 * CHAR  ~= [^$\\]
+	 * ```
 	 *
 	 * \param[in] value the string to parse
 	 */
@@ -158,6 +195,24 @@ public:
 	operator std::string() const
 	{
 		return to_string();
+	}
+	
+	/** Evaluates a value as a data reference
+	 *
+	 * \return the data reference
+	 */
+	Data_ref to_ref() const
+	{
+		return m_impl->to_ref();
+	}
+	
+	/** Evaluates a value as a data reference
+	 *
+	 * \return the data reference
+	 */
+	operator Data_ref() const
+	{
+		return to_ref();
 	}
 	
 };
