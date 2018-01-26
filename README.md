@@ -1,4 +1,4 @@
-# PDI: the Parallel Data Interface.
+# PDI: the Portable Data Interface.
 
 PDI is a library that aims to decouple high-performance simulation codes from Input/Output concerns.
 It offers a declarative application programming interface that enables codes to expose the buffers in which they store data and to notify PDI of significant steps of the simulation.
