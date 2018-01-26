@@ -48,8 +48,10 @@ static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 	int map_len = len(node);
 	
 	for (int map_id = 0; map_id < map_len; ++map_id) {
+		Data_descriptor& dsc = PDI_state.desc(to_string(PC_get(node, "{%d}", map_id)));
+		dsc.metadata(is_metadata);
 		PC_tree_t config = PC_get(node, "<%d>", map_id);
-		PDI_state.desc(to_string(PC_get(node, "{%d}", map_id))).init(config, is_metadata, Data_type::load(config));
+		dsc.creation_template(Data_type::load(config), config);
 	}
 	
 	return PDI_OK;

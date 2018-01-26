@@ -47,7 +47,7 @@ public:
 	
 	Data_descriptor(const Data_descriptor &) = delete;
 	
-	Data_descriptor(Data_descriptor &&) = default;
+	Data_descriptor(Data_descriptor &&) = delete;
 	
 	~Data_descriptor();
 	
@@ -55,21 +55,29 @@ public:
 	
 	Data_descriptor &operator= (Data_descriptor &&) = delete;
 	
-	/** initialize the descriptor
+	/** Sets the creation template used to type raw pointers shared through this descriptor
+	 * \param type the type template that will be attached to raw pointers shared through this descriptor
+	 * \param config the full configuration attached to the descriptor
 	 */
-	void init(PC_tree_t config, bool is_metadata, Data_type_uptr type);
+	void creation_template(Data_type_uptr type, PC_tree_t config) {
+		m_type = move(type);
+		m_config = config; 
+	}
 	
-	/** Return the datatype
+	/** Returns the PC_tree_t config
+	 * \todo remove this and attach this config to the type
+	 * \return the full configuration attached to the descriptor
 	 */
-	const Data_type &get_type() const;
-	
-	/** Return the PC_tree_t config
-	 */
-	PC_tree_t get_config() const;
+	PC_tree_t config() const { return m_config; }
 	
 	/** Return true if the data is a metadata
 	 */
-	bool is_metadata() const;
+	bool metadata() const { return m_metadata; }
+	
+	/** Sets whether this describes a metadata or not
+	 * \param metadata whether data shared through this descriptor should behave as a metadata
+	 */
+	void metadata(bool metadata) { m_metadata = metadata; }
 	
 	const std::string &name() const
 	{

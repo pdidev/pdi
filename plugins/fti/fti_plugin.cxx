@@ -73,7 +73,7 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 {
 	for ( auto&& iter : PDI_state.descriptors()) {
 		try {
-			fti_protected.emplace(iter.name(), to_long(PC_get(iter.get_config(), ".fti_id")));
+			fti_protected.emplace(iter.name(), to_long(PC_get(iter.config(), ".fti_id")));
 		} catch ( const Error& ) {}
 	}
 	

@@ -135,8 +135,8 @@ unordered_map<string, Hdf5_variable> read_config_file(PC_tree_t conf, PC_tree_t 
 
 		const Data_descriptor &desc = PDI_state.desc(data_name);
 		vector<Slab_dim> global;
-		PC_tree_t global_starts = PC_get(desc.get_config(), ".global_starts");
-		PC_tree_t global_sizes = PC_get(desc.get_config(), ".global_sizes");
+		PC_tree_t global_starts = PC_get(desc.config(), ".global_starts");
+		PC_tree_t global_sizes = PC_get(desc.config(), ".global_sizes");
 		
 		if ( PC_status(global_sizes) != PC_status(global_starts) ) {
 			throw Error{PDI_ERR_CONFIG, "global_sizes and global_starts must either both be specified or none should be"};
@@ -150,7 +150,7 @@ unordered_map<string, Hdf5_variable> read_config_file(PC_tree_t conf, PC_tree_t 
 			
 			int mult = 1; int offset = 0;
 			try {
-				string order = to_string(PC_get(desc.get_config(), ".order"));
+				string order = to_string(PC_get(desc.config(), ".order"));
 				if ( order == "fortran" || order == "Fortran" ) {
 					mult = -1; offset = rank -1;
 				}

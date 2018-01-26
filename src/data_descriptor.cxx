@@ -52,7 +52,7 @@ Data_descriptor::Data_descriptor(const char *name):
 Data_descriptor::~Data_descriptor()
 {
 	while (!m_refs.empty()) {
-		if (is_metadata()) {
+		if (metadata()) {
 			/* release metadata we kept */
 			m_refs.pop();
 		} else {
@@ -63,24 +63,17 @@ Data_descriptor::~Data_descriptor()
 	}
 }
 
-void Data_descriptor::init(PC_tree_t config, bool is_metadata, Data_type_uptr type)
-{
-	m_config = config;
-	m_metadata = is_metadata;
-	m_type = std::move(type);
-}
-
 void Data_descriptor::share(void *data, std::function< void (void *) > freefunc, bool read, bool write)
 {
-	if (is_metadata() && !read) throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
+	if (metadata() && !read) throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
 	
 	// for metadata, unlink happens on share
-	if (!m_refs.empty() && is_metadata()) {
+	if (!m_refs.empty() && metadata()) {
 		m_refs.pop();
 	}
 	
 	// make a reference and put it in the store
-	m_refs.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(data, freefunc, get_type().evaluate(), read, write)));
+	m_refs.push(std::unique_ptr<Ref_holder>(new Ref_A_holder<false, false>(data, freefunc, m_type->evaluate(), read, write)));
 	if (!ref()) {
 		m_refs.pop();
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
@@ -89,10 +82,10 @@ void Data_descriptor::share(void *data, std::function< void (void *) > freefunc,
 
 void Data_descriptor::share(Data_ref ref, bool read, bool write)
 {
-	if (is_metadata() && !read) throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
+	if (metadata() && !read) throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
 	
 	/// for metadata, unlink happens on share
-	if (!m_refs.empty() && is_metadata()) {
+	if (!m_refs.empty() && metadata()) {
 		m_refs.pop();
 	}
 	
@@ -122,7 +115,7 @@ void Data_descriptor::release()
 	
 	Data_ref oldref = ref();
 	m_refs.pop();
-	if (is_metadata()) {
+	if (metadata()) {
 		// re-share ourselves & keep a read ref to be used
 		m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref)));
 	}
@@ -134,26 +127,11 @@ void Data_descriptor::reclaim()
 	
 	Data_ref oldref = ref();
 	m_refs.pop();
-	if (is_metadata()) {
+	if (metadata()) {
 		// if the content is a metadata, keep a copy
 		m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref.copy())));
 	}
 	oldref.release();
-}
-
-const Data_type &Data_descriptor::get_type() const
-{
-	return *m_type;
-}
-
-bool Data_descriptor::is_metadata() const
-{
-	return m_metadata;
-}
-
-PC_tree_t Data_descriptor::get_config() const
-{
-	return m_config;
 }
 
 } // namespace PDI

@@ -282,11 +282,10 @@ public:
 		if (m_content) unlink();
 	}
 	
-	/** Releases ownership of the referenced raw data by replacing all existing
-	 *  references by references to a copy.
+	/** Makes a copy of the raw content behind this reference and returns a new 
+	 * reference
 	 *
-	 * \return the previously referenced raw data or nullptr if this was a null
-	 * reference, i.e. the value which would be returned by get() before the call.
+	 * \return a new reference to a copy of the raw data this references
 	 */
 	Data_ref copy() {
 		return do_copy(*this);
