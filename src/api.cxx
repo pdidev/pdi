@@ -106,7 +106,7 @@ PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 		
 		load_conf(conf);
 		
-		int nb_plugins = len(PC_get(conf, ".plugins"));
+		int nb_plugins = len(PC_get(conf, ".plugins"), 0);
 		
 		for (int ii = 0; ii < nb_plugins; ++ii) {
 			//TODO: what to do if a single plugin fails to load?
@@ -194,31 +194,32 @@ PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 }
 
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
-{
+try {
 	Try_pc fw;
-	try {
-		Data_descriptor &desc = PDI_state.desc(name);
-		desc.share(buffer, &free, access & PDI_OUT, access & PDI_IN);
-		Data_ref ref = desc.ref();
-		
-		// Provide reference to the plug-ins
-		for (auto &&plugin : PDI_state.plugins) {
-			try { // ignore errors here, try our best to notify everyone
-				//TODO: concatenate errors in some way
-				plugin.second->data(name, ref);
-			} catch (const std::exception &e) {
-				cerr << "Error while sharing " << name << " for plugin " << plugin.first << ": " << e.what() << endl;
-			} catch (...) {
-				cerr << "Error while triggering event " << name << " for plugin " << plugin.first << endl;
-				//TODO: remove the faulty plugin?
-			}
-		}
-	} catch (const Error &e) {
-		return return_err(e);
+	if ( !buffer ) {
+		throw Error{PDI_ERR_VALUE, "Sharing null pointers is not allowed"};
 	}
+	Data_descriptor &desc = PDI_state.desc(name);
+	desc.share(buffer, &free, access & PDI_OUT, access & PDI_IN);
+	Data_ref ref = desc.ref();
 	
+	// Provide reference to the plug-ins
+	for (auto &&plugin : PDI_state.plugins) {
+		try { // ignore errors here, try our best to notify everyone
+			//TODO: concatenate errors in some way
+			plugin.second->data(name, ref);
+		} catch (const std::exception &e) {
+			cerr << "Error while sharing " << name << " for plugin " << plugin.first << ": " << e.what() << endl;
+		} catch (...) {
+			cerr << "Error while triggering event " << name << " for plugin " << plugin.first << endl;
+			//TODO: remove the faulty plugin?
+		}
+	}
+
 	//TODO we should return concatenated errors here...
 	return PDI_OK;
+} catch (const Error &e) {
+	return return_err(e);
 }
 
 

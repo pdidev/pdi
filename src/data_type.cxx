@@ -151,7 +151,7 @@ Data_type_uptr to_array_datatype(PC_tree_t node)
 	if ( !PC_status(conf_subsizes) ) {
 		size_t nsubsizes = len(conf_subsizes);
 		if ( nsubsizes != sizes.size() ) {
-			throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", len, sizes.size()};
+			throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", nsubsizes, sizes.size()};
 		}
 		for (size_t ii = 0; ii < nsubsizes; ++ii) {
 			subsizes.emplace_back(to_string(PC_get(node, ".subsizes[%d]", ridx(ii, order, nsubsizes))));
@@ -173,7 +173,7 @@ Data_type_uptr to_array_datatype(PC_tree_t node)
 	if ( !PC_status(conf_starts) ) {
 		size_t nstarts = len(conf_starts);
 		if ( nstarts != sizes.size() ) {
-			throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", len, sizes.size()};
+			throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", nstarts, sizes.size()};
 		}
 		for (size_t ii = 0; ii < nstarts; ++ii) {
 			starts.emplace_back(to_string(PC_get(node, ".starts[%d]", ridx(ii, order, nstarts))));

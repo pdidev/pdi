@@ -55,6 +55,20 @@ namespace PDI
  */
 int PDI_EXPORT len(PC_tree_t tree);
 
+/** Returns the length of a node.
+ *
+ * - for a sequence: the number of nodes,
+ * - for a mapping: the number of pairs,
+ * - for a scalar: the string length.
+ *
+ * throws an Error if the provided tree is in error
+ *
+ * \param[in] tree the sequence or mapping
+ * \param[in] dflt the default value in case of error
+ * \return the length
+ */
+int PDI_EXPORT len(PC_tree_t tree, int dflt);
+
 /** Returns the int value of a scalar node
  *
  * throws an Error if the provided tree is in error

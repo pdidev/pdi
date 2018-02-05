@@ -30,7 +30,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <dlfcn.h> 	// dynamic loading of function 
+#include <dlfcn.h>
+#include <link.h>
 
 #include <pdi.h>
 #include <pdi/paraconf_wrapper.h>
@@ -67,6 +68,8 @@ namespace {
 using PDI::Error;
 using PDI::len;
 using PDI::to_string;
+using std::cout;
+using std::endl;
 using std::string;
 using std::unordered_set;
 using std::unordered_map;
@@ -131,9 +134,16 @@ public:
 	{
 		string funcname = to_string(PC_get(config, ".call"));
 		
-		void *fct_uncast = dlsym(NULL, funcname.c_str());
+		void *fct_uncast = dlsym(RTLD_DEFAULT, funcname.c_str());
+		if (!fct_uncast) { // force loading from the main exe
+			void *exe_handle = dlopen(NULL, RTLD_NOW);
+			if (!exe_handle) {
+				throw Error{PDI_ERR_SYSTEM, "Unable to dlopen the main executable: %s", dlerror()};
+			}
+			fct_uncast = dlsym(exe_handle, funcname.c_str());
+		}
 		if (!fct_uncast) {
-			throw Error{PDI_ERR_SYSTEM, "Unable to load fct `%s': %s", funcname.c_str(), dlerror()};
+			throw Error{PDI_ERR_SYSTEM, "Unable to load user function `%s': %s", funcname.c_str(), dlerror()};
 		}
 		// ugly data to function ptr cast to be standard compatible (though undefined behavior)
 		m_fct = *((ptr_fct_t *)&fct_uncast);
@@ -157,7 +167,7 @@ public:
 		}
 		m_fct();
 		for (auto &&alias : m_aliases) {
-			alias.unexpose(); //create alias and share it with the plug-in
+			alias.unexpose();
 		}
 	}
 	

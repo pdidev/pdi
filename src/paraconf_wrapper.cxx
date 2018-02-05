@@ -55,6 +55,13 @@ int len(PC_tree_t tree)
 	return result;
 }
 
+int len(PC_tree_t tree, int dflt)
+{
+	int result;
+	if ( PC_len(tree, &result) ) return dflt;
+	return result;
+}
+
 long to_long(PC_tree_t tree)
 {
 	long result;
