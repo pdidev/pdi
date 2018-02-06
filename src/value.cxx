@@ -298,7 +298,7 @@ struct Value_parser:
 			}
 			throw Error{PDI_ERR_RIGHT, "Unable to grant access for value reference"};
 		} catch ( const Error& e ) {
-			throw Error{e.status(), "error accessing `%s': %s", m_referenced->name().c_str(), e.what()};
+			throw Error{e.status(), "while referencing `%s': %s", m_referenced->name().c_str(), e.what()};
 		}
 		
 		Data_ref to_ref() const override

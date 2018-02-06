@@ -62,14 +62,6 @@ using std::string;
 using std::underlying_type;
 using std::shared_ptr;
 
-/* ******* function and operator  ****** */
-
-template<typename T, typename Y>
-bool exist(Y &y, T &t)
-{
-	typename T::iterator it = t.find(y);
-	return it != t.end();
-}
 
 PDI_inout_t operator|(PDI_inout_t a, PDI_inout_t b)
 {
@@ -93,43 +85,35 @@ PDI_inout_t &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs)
 	return lhs = (PDI_inout_t)(lhs & rhs);
 }
 
-
-
-/* ******** API  ********* */
-
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
-{
+try {
 	Try_pc fw;
-	try {
-		PDI_state.transaction.clear();
-		PDI_state.plugins.clear();
-		
-		load_conf(conf);
-		
-		int nb_plugins = len(PC_get(conf, ".plugins"), 0);
-		
-		for (int ii = 0; ii < nb_plugins; ++ii) {
-			//TODO: what to do if a single plugin fails to load?
-			try_load_plugin(conf, ii, world);
-		}
-		
-	} catch (const Error &e) {
-		for (auto &&plugin : PDI_state.plugins) {
-			try { // ignore errors here, try our best to finalize everyone
-				plugin.second->finalize();
-			} catch (...) {
-				cerr << "Error while finalizing " << plugin.first << endl;
-			}
-		}
-		PDI_state.transaction.clear();
-		PDI_state.transaction_data.clear();
-		PDI_state.plugins.clear();
-		return PDI::return_err(e);
-	}
+	PDI_state.transaction.clear();
+	PDI_state.plugins.clear();
 	
+	load_conf(conf);
+	
+	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
+	
+	for (int ii = 0; ii < nb_plugins; ++ii) {
+		//TODO: what to do if a single plugin fails to load?
+		try_load_plugin(conf, ii, world);
+	}
 	return PDI_OK;
+	
+} catch (const Error &e) {
+	for (auto &&plugin : PDI_state.plugins) {
+		try { // ignore errors here, try our best to finalize everyone
+			plugin.second->finalize();
+		} catch (...) {
+			cerr << "Error while finalizing " << plugin.first << endl;
+		}
+	}
+	PDI_state.transaction.clear();
+	PDI_state.transaction_data.clear();
+	PDI_state.plugins.clear();
+	return PDI::return_err(e);
 }
-
 
 PDI_status_t PDI_finalize()
 {
@@ -175,22 +159,20 @@ PDI_status_t PDI_event(const char *event)
 
 
 PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
-{
+try {
 	Try_pc fw;
-	try {
-		Data_descriptor &desc = PDI_state.desc(name);
-		Data_ref ref = desc.ref();
-		switch (inout) {
-			case PDI_NONE: *buffer = nullptr; break;
-			case PDI_IN: *buffer = const_cast<void*>(Data_r_ref{desc.ref()}.get()); break;
-			case PDI_OUT: *buffer = Data_w_ref{desc.ref()}.get(); break;
-			case PDI_INOUT: *buffer = Data_rw_ref{desc.ref()}.get(); break;
-		}
-		desc.share(ref, inout & PDI_IN, inout & PDI_OUT);
-	} catch (const Error &e) {
-		return return_err(e);
+	Data_descriptor &desc = PDI_state.desc(name);
+	Data_ref ref = desc.ref();
+	switch (inout) {
+		case PDI_NONE: *buffer = nullptr; break;
+		case PDI_IN: *buffer = const_cast<void*>(Data_r_ref{desc.ref()}.get()); break;
+		case PDI_OUT: *buffer = Data_w_ref{desc.ref()}.get(); break;
+		case PDI_INOUT: *buffer = Data_rw_ref{desc.ref()}.get(); break;
 	}
+	desc.share(ref, inout & PDI_IN, inout & PDI_OUT);
 	return PDI_OK;
+} catch (const Error &e) {
+	return return_err(e);
 }
 
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
@@ -222,29 +204,22 @@ try {
 	return return_err(e);
 }
 
-
-
 PDI_status_t PDI_release(const char *name)
-{
+try {
 	Try_pc fw;
-	try {
-		PDI_state.desc(name).release();
-	} catch (const Error &e) {
-		return return_err(e);
-	}
+	PDI_state.desc(name).release();
 	return PDI_OK;
+} catch (const Error &e) {
+	return return_err(e);
 }
 
-
 PDI_status_t PDI_reclaim(const char *name)
-{
+try {
 	Try_pc fw;
-	try {
-		PDI_state.desc(name).reclaim();
-	} catch (const Error &e) {
-		return return_err(e);
-	}
+	PDI_state.desc(name).reclaim();
 	return PDI_OK;
+} catch (const Error &e) {
+	return return_err(e);
 }
 
 PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
@@ -263,45 +238,37 @@ PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
 
 
 PDI_status_t PDI_transaction_begin(const char *c_name)
-{
+try {
 	Try_pc fw;
-	try {
-		if (!PDI_state.transaction.empty()) {
-			throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
-		}
-		PDI_state.transaction = c_name;
-	} catch (const Error &e) {
-		return return_err(e);
+	if (!PDI_state.transaction.empty()) {
+		throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
 	}
-	
+	PDI_state.transaction = c_name;
 	return PDI_OK;
+} catch (const Error &e) {
+	return return_err(e);
 }
-
 
 PDI_status_t PDI_transaction_end()
-{
+try {
 	Try_pc fw;
-	try {
-		if (PDI_state.transaction.empty()) {
-			throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
-		}
-		
-		PDI_event(PDI_state.transaction.c_str());
-		
-		for (const string &data : PDI_state.transaction_data) {
-			//TODO we should concatenate errors here...
-			PDI_reclaim(data.c_str());
-		}
-		PDI_state.transaction_data.clear();
-		PDI_state.transaction.clear();
-		
-	} catch (const Error &e) {
-		return return_err(e);
+	if (PDI_state.transaction.empty()) {
+		throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
 	}
 	
+	PDI_event(PDI_state.transaction.c_str());
+	
+	for (const string &data : PDI_state.transaction_data) {
+		//TODO we should concatenate errors here...
+		PDI_reclaim(data.c_str());
+	}
+	PDI_state.transaction_data.clear();
+	PDI_state.transaction.clear();
+	
 	return PDI_OK;
+} catch (const Error &e) {
+	return return_err(e);
 }
-
 
 PDI_status_t PDI_export(const char *name, const void *data)
 {
