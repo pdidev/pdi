@@ -60,8 +60,8 @@ int PDI_EXPORT len(PC_tree_t tree);
  * - for a sequence: the number of nodes,
  * - for a mapping: the number of pairs,
  * - for a scalar: the string length.
- *
- * throws an Error if the provided tree is in error
+ * 
+ * returns the default value in case of error
  *
  * \param[in] tree the sequence or mapping
  * \param[in] dflt the default value in case of error
@@ -78,6 +78,16 @@ int PDI_EXPORT len(PC_tree_t tree, int dflt);
  */
 long PDI_EXPORT to_long(PC_tree_t tree);
 
+/** Returns the int value of a scalar node
+ *
+ * returns the default value in case of error
+ *
+ * \param[in] tree the int-valued node
+ * \param[in] dflt the default value in case of error
+ * \return the int value of the scalar node
+ */
+long PDI_EXPORT to_long(PC_tree_t tree, long dflt);
+
 /** Returns the floating point value of a scalar node
  *
  * throws an Error if the provided tree is in error
@@ -86,6 +96,16 @@ long PDI_EXPORT to_long(PC_tree_t tree);
  * \return the floating point value of the scalar node
  */
 double PDI_EXPORT to_double(PC_tree_t tree);
+
+/** Returns the floating point value of a scalar node
+ *
+ * returns the default value in case of error
+ *
+ * \param[in] tree the floating-point-valued node
+ * \param[in] dflt the default value in case of error
+ * \return the floating point value of the scalar node
+ */
+double PDI_EXPORT to_double(PC_tree_t tree, double dflt);
 
 /** Returns the string content of a scalar node
  *
@@ -96,6 +116,16 @@ double PDI_EXPORT to_double(PC_tree_t tree);
  */
 std::string PDI_EXPORT to_string(PC_tree_t tree);
 
+/** Returns the string content of a scalar node
+ *
+ * returns the default value in case of error
+ *
+ * \param[in] tree the node
+ * \param[in] dflt the default value in case of error
+ * \return the content of the scalar node
+ */
+std::string PDI_EXPORT to_string(PC_tree_t tree, const std::string& dflt);
+
 /** Returns the boolean value of a scalar node
  *
  * throws an Error if the provided tree is in error
@@ -104,6 +134,16 @@ std::string PDI_EXPORT to_string(PC_tree_t tree);
  * \return the boolean value of the scalar node
  */
 bool PDI_EXPORT to_bool(PC_tree_t tree);
+
+/** Returns the boolean value of a scalar node
+ *
+ * returns the default value in case of error
+ *
+ * \param[in] tree the node
+ * \param[in] dflt the default value in case of error
+ * \return the boolean value of the scalar node
+ */
+bool PDI_EXPORT to_bool(PC_tree_t tree, bool dflt);
 
 } // namespace PDI
 

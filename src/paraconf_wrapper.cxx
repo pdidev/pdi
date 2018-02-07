@@ -69,10 +69,24 @@ long to_long(PC_tree_t tree)
 	return result;
 }
 
+long to_long(PC_tree_t tree, long dflt)
+{
+	long result;
+	if (PC_int(tree, &result)) return dflt;
+	return result;
+}
+
 double to_double(PC_tree_t tree)
 {
 	double result;
 	do_pc(PC_double(tree, &result));
+	return result;
+}
+
+double to_double(PC_tree_t tree, double dflt)
+{
+	double result;
+	if (PC_double(tree, &result)) return dflt;
 	return result;
 }
 
@@ -85,10 +99,26 @@ string to_string(PC_tree_t tree)
 	return result;
 }
 
+string to_string(PC_tree_t tree, const string& dflt)
+{
+	char *cresult;
+	if( PC_string(tree, &cresult) ) return dflt;
+	string result = cresult;
+	free(cresult);
+	return result;
+}
+
 bool to_bool(PC_tree_t tree)
 {
 	int result;
 	do_pc(PC_bool(tree, &result));
+	return result;
+}
+
+bool to_bool(PC_tree_t tree, bool dflt)
+{
+	int result;
+	if (PC_bool(tree, &result)) return dflt;
 	return result;
 }
 
