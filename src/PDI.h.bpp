@@ -95,6 +95,14 @@ module PDI
       integer(C_int), value :: accessf
     endfunction PDI_expose_C
     
+    function PDI_access_C(name, data, accessf) bind(C, name="PDI_access")
+      use ISO_C_binding
+      integer(C_int) :: PDI_access_C
+      type(C_ptr), value :: name
+      type(C_ptr) :: data
+      integer(C_int), value :: accessf
+    endfunction PDI_access_C
+
     function PDI_transaction_begin_C( name ) bind(C, name="PDI_transaction_begin")
       use ISO_C_binding
       integer(C_int) :: PDI_transaction_begin_C
@@ -136,6 +144,16 @@ module PDI
 !$SH   done
 !$SH done
   endinterface PDI_expose
+
+
+
+  interface PDI_access
+!$SH for T in ${FORTTYPES}; do
+!$SH   for D in $(seq 0 ${MAXDIM}); do
+    module procedure PDI_access_${T}_${D}D
+!$SH   done
+!$SH done
+  endinterface PDI_access
 
 
 
@@ -386,6 +404,44 @@ module PDI
     endif
     
   endsubroutine PDI_expose_${T}_${D}D
+  !=============================================================================
+  
+!$SH   done
+!$SH done
+!$SH for T in ${FORTTYPES}; do
+!$SH   for D in $(seq 0 ${MAXDIM}); do
+  
+  
+  !=============================================================================
+  !< interface to the C function PDI_access : requests for PDI to access a data buffer.
+  !! \param[IN] name the data name
+  !! \param[OUT] ptr_data pointer associated with the accessd data
+  !! \param[IN] accessf whether the data can be accessed for read or write by
+  !!            PDI
+  !! \param[OUT] err for error status (optional)
+  subroutine PDI_access_${T}_${D}D(name, ptr_data, accessf, err)
+    character(len=*), intent(IN) :: name
+    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
+    integer, intent(IN) :: accessf
+    integer, intent(OUT), optional :: err
+
+    character(C_char), target :: C_name(len_trim(name)+1)
+    integer :: ii, tmperr
+
+    do ii=1, len_trim(name)
+      C_name(ii) = name(ii:ii)
+    enddo
+    C_name(len_trim(name)+1) = C_null_char
+
+    tmperr = int(PDI_access_C(C_loc(C_name), &
+        C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')')), &
+        accessf))
+    
+    if(present(err)) then
+      err = tmperr
+    endif
+    
+  endsubroutine PDI_access_${T}_${D}D
   !=============================================================================
   
 !$SH   done
