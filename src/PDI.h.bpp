@@ -99,7 +99,7 @@ module PDI
       use ISO_C_binding
       integer(C_int) :: PDI_access_C
       type(C_ptr), value :: name
-      type(C_ptr) :: data
+      type(C_ptr), intent(OUT) :: data
       integer(C_int), value :: accessf
     endfunction PDI_access_C
 
@@ -419,13 +419,21 @@ module PDI
   !! \param[IN] accessf whether the data can be accessed for read or write by
   !!            PDI
   !! \param[OUT] err for error status (optional)
-  subroutine PDI_access_${T}_${D}D(name, ptr_data, accessf, err)
+  subroutine PDI_access_${T}_${D}D(name, ptr_data, accessf, &
+!$SH     if [ 0 -lt "$D" ]; then
+      ptr_data_shape, &
+!$SH     fi
+      err)
     character(len=*), intent(IN) :: name
     $(fort_type $T), pointer :: ptr_data$(array_desc $D)
     integer, intent(IN) :: accessf
+!$SH     if [ 0 -lt "$D" ]; then
+    integer, intent(IN) :: ptr_data_shape($D)
+!$SH     fi
     integer, intent(OUT), optional :: err
 
     character(C_char), target :: C_name(len_trim(name)+1)
+    type(C_ptr) :: C_ptr_data
     integer :: ii, tmperr
 
     do ii=1, len_trim(name)
@@ -434,8 +442,13 @@ module PDI
     C_name(len_trim(name)+1) = C_null_char
 
     tmperr = int(PDI_access_C(C_loc(C_name), &
-        C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')')), &
+        C_ptr_data, &
         accessf))
+    call c_f_pointer(C_ptr_data, ptr_data &
+!$SH     if [ 0 -lt "$D" ]; then
+        , ptr_data_shape &
+!$SH     fi
+        )
     
     if(present(err)) then
       err = tmperr
