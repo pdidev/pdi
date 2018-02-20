@@ -55,6 +55,7 @@ using PDI::Data_w_ref;
 using PDI::Error;
 using PDI::len;
 using PDI::Scalar_datatype;
+using PDI::Scalar_kind;
 using PDI::to_string;
 using PDI::Value;
 using std::reverse;
@@ -221,30 +222,30 @@ void init_sizes(const Data_type &type, const vector<Slab_dim>& file_slab, hid_t&
 	if( !scalar_type ) throw Error{PDI_ERR_IMPL, "Unexpected type in HDF5"};
 	
 	switch(scalar_type->kind()) {
-	case Scalar_datatype::UNSIGNED: {
-		switch(scalar_type->size().to_long()) {
+	case Scalar_kind::UNSIGNED: {
+		switch(scalar_type->datasize()) {
 		case 1: h5type = H5T_NATIVE_UINT8; break;
 		case 2: h5type = H5T_NATIVE_UINT16; break;
 		case 4: h5type = H5T_NATIVE_UINT32; break;
 		case 8: h5type = H5T_NATIVE_UINT64; break;
-		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #%ld", scalar_type->size().to_long()};
+		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #%ld", scalar_type->datasize()};
 		}
 	} break;
-	case Scalar_datatype::SIGNED: {
-		switch(scalar_type->size().to_long()) {
+	case Scalar_kind::SIGNED: {
+		switch(scalar_type->datasize()) {
 		case 1: h5type = H5T_NATIVE_INT8; break;
 		case 2: h5type = H5T_NATIVE_INT16; break;
 		case 4: h5type = H5T_NATIVE_INT32; break;
 		case 8: h5type = H5T_NATIVE_INT64; break;
-		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #%ld", scalar_type->size().to_long()};
+		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #%ld", scalar_type->datasize()};
 		}
 	} break;
-	case Scalar_datatype::FLOAT: {
-		switch(scalar_type->size().to_long()) {
+	case Scalar_kind::FLOAT: {
+		switch(scalar_type->datasize()) {
 		case 4:  h5type = H5T_NATIVE_FLOAT; break;
 		case 8:  h5type = H5T_NATIVE_DOUBLE; break;
 		case 16: h5type = H5T_NATIVE_LDOUBLE; break;
-		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #%ld", scalar_type->size().to_long()};
+		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #%ld", scalar_type->datasize()};
 		}
 	} break;
 	default: throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};

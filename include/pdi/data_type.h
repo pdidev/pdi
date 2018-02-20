@@ -31,36 +31,27 @@
 #include <paraconf.h>
 
 #include <pdi/fwd.h>
-#include <pdi/value.h>
+#include <pdi/type_template.h>
 
 
 namespace PDI
 {
 
-class PDI_EXPORT Data_type
+class PDI_EXPORT Data_type:
+		public Type_template
 {
 public:
-	/** Destroys a Datatype
-	 */
-	virtual ~Data_type();
-	
 	/** Creates a new datatype as an exact copy of this one
 	 *
 	 * \return the dense type that is produced
 	 */
-	virtual Data_type_uptr clone() const = 0;
+	virtual Data_type_uptr clone_type() const = 0;
 	
 	/** Creates a new datatype as the dense copy of this one
 	 *
 	 * \return the type that is produced
 	 */
 	virtual Data_type_uptr densify() const = 0;
-	
-	/** Creates a new datatype by resolving the value of all metadata references
-	 *
-	 * \return the evaluated type that is produced
-	 */
-	virtual Data_type_uptr evaluate() const = 0;
 	
 	/** Indicate if the datatype is dense or not
 	 *
@@ -81,58 +72,40 @@ public:
 	 * \return the size in bytes
 	 */
 	virtual size_t buffersize() const = 0;
-
-
+	
 	/** Return the required alignment for a type
 	 *
 	 * \return the size in bytes
 	 */
 	virtual size_t alignment() const = 0;
-
-	/** Creates a new datatype from a paraconf-style config
-	 * \param node the configuration to read
-	 * \return the type generated
-	 */
-	static Data_type_uptr load(PC_tree_t node);
 	
 };
 
 class PDI_EXPORT Scalar_datatype:
 		public Data_type
 {
-public:
-	/** Different possible interpretations for a scalar
-	 */
-	enum Kind: uint8_t { UNKNOWN, SIGNED, UNSIGNED, FLOAT, ADDRESS };
-	
 private:
 	/// Interpretation of the content
-	Kind m_kind;
+	Scalar_kind m_kind;
 	
 	/// Size of the content in bytes or 0 if unknown
-	Value m_size;
+	size_t m_size;
 	
 	/// Size of the alignment in bytes
-	Value m_align;
+	size_t m_align;
 	
 public:
-	Scalar_datatype(Kind kind, const Value &size): m_kind{kind}, m_size{size}, m_align{size} {}
+	Scalar_datatype(Scalar_kind kind, size_t size): m_kind{kind}, m_size{size}, m_align{size} {}
 	
-	Scalar_datatype(Kind kind, const Value &size, const Value &align): m_kind{kind}, m_size{size}, m_align{align} {}
+	Scalar_datatype(Scalar_kind kind, size_t size, size_t align): m_kind{kind}, m_size{size}, m_align{align} {}
 	
 	/** Interpretation of the content
 	 */
-	Kind kind() const { return m_kind; }
+	Scalar_kind kind() const { return m_kind; }
 	
-	/** Size of the content in bytes or 0 if unknown
-	 */
-	const Value& size() const { return m_size; }
+	Type_template_uptr clone() const override { return clone_type(); }
 	
-	/** Size of the alignment in bytes or 0 if unknown
-	 */
-	const Value& align() const { return m_align; }
-	
-	Data_type_uptr clone() const override;
+	Data_type_uptr clone_type() const override;
 	
 	Data_type_uptr densify() const override;
 	
@@ -140,11 +113,11 @@ public:
 	
 	bool dense() const override { return true; }
 	
-	size_t datasize() const override { return size(); }
+	size_t datasize() const override { return m_size; }
 	
-	size_t buffersize() const override { return size(); }
+	size_t buffersize() const override { return m_size; }
 	
-	size_t alignment() const override { return align(); }
+	size_t alignment() const override { return m_align; }
 	
 };
 
@@ -155,18 +128,18 @@ class PDI_EXPORT Array_datatype:
 	Data_type_uptr m_subtype;
 	
 	/// Number of elements the array can store
-	Value m_size;
+	size_t m_size;
 	
 	/// id of the first actual element of the array
-	Value m_start;
+	size_t m_start;
 	
 	/// Number of actual elements in the array
-	Value m_subsize;
+	size_t m_subsize;
 	
 public:
-	Array_datatype(Data_type_uptr subtype, Value size, Value start, Value subsize): m_subtype {std::move(subtype)}, m_size{std::move(size)}, m_start{std::move(start)}, m_subsize{std::move(subsize)} {}
+	Array_datatype(Data_type_uptr subtype, size_t size, size_t start, size_t subsize): m_subtype {std::move(subtype)}, m_size{std::move(size)}, m_start{std::move(start)}, m_subsize{std::move(subsize)} {}
 	
-	Array_datatype(Data_type_uptr subtype, Value size): Array_datatype{std::move(subtype), size, 0, std::move(size)} {}
+	Array_datatype(Data_type_uptr subtype, size_t size): Array_datatype{std::move(subtype), size, 0, std::move(size)} {}
 	
 	/** Type of the elements contained in the array.
 	 */
@@ -174,17 +147,19 @@ public:
 	
 	/** Number of elements the array can store
 	 */
-	const Value& size() const { return m_size; }
+	size_t size() const { return m_size; }
 	
 	/** id of the first actual element of the array
 	 */
-	const Value& start() const { return m_start; }
+	size_t start() const { return m_start; }
 	
 	/** Number of actual elements in the array
 	 */
-	const Value& subsize() const { return m_subsize; }
+	size_t subsize() const { return m_subsize; }
 	
-	Data_type_uptr clone() const override;
+	Type_template_uptr clone() const override { return clone_type(); }
+	
+	Data_type_uptr clone_type() const override;
 	
 	Data_type_uptr densify() const override;
 	
@@ -208,7 +183,7 @@ public:
 	{
 	private:
 		/// Offset or distance in byte from the Record_datatype start
-		Value m_displacement;
+		size_t m_displacement;
 		
 		/// Type of the contained member
 		Data_type_uptr m_type;
@@ -216,11 +191,11 @@ public:
 		std::string m_name;
 		
 	public:
-		Member( Value displacement, Data_type_uptr type, const std::string& name ): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
+		Member( size_t displacement, Data_type_uptr type, const std::string& name ): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
 		
-		Member( const Member& o ): m_displacement{o.m_displacement}, m_type{o.m_type->clone()}, m_name{o.m_name} {}
+		Member( const Member& o ): m_displacement{o.m_displacement}, m_type{o.m_type->clone_type()}, m_name{o.m_name} {}
 		
-		const Value& displacement() const { return m_displacement; }
+		size_t displacement() const { return m_displacement; }
 		
 		const Data_type& type() const { return *m_type; }
 		
@@ -233,14 +208,16 @@ private:
 	std::vector<Member> m_members;
 	
 	/// The total size of the buffer containing all members
-	Value m_buffersize;
+	size_t m_buffersize;
 	
 public:
-	Record_datatype(std::vector<Member> &&members, Value &&size): m_members{move(members)}, m_buffersize{std::move(size)} {}
+	Record_datatype(std::vector<Member> &&members, size_t size): m_members{move(members)}, m_buffersize{std::move(size)} {}
 	
 	const std::vector<Member>& members() const { return m_members; }
 	
-	Data_type_uptr clone() const override;
+	Type_template_uptr clone() const override { return clone_type(); }
+	
+	Data_type_uptr clone_type() const override;
 	
 	Data_type_uptr densify() const override;
 	
@@ -256,7 +233,7 @@ public:
 	
 };
 
-const Scalar_datatype UNDEF_TYPE = {Scalar_datatype::UNKNOWN, 0};
+const Scalar_datatype UNDEF_TYPE = {Scalar_kind::UNKNOWN, 0};
 
 } // namespace PDI
 

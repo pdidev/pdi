@@ -73,15 +73,16 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 install(DIRECTORY ../include/ DESTINATION include)
 
-## pdi
+## C++ version
 add_library(pdi SHARED
 		api.cxx
-		data_type.cxx
 		data_descriptor.cxx
 		data_reference.cxx
+		data_type.cxx
 		paraconf_wrapper.cxx
 		state.cxx
 		status.cxx
+		type_template.cxx
 		value.cxx
 )
 set_target_properties(pdi PROPERTIES POSITION_INDEPENDENT_CODE ON)

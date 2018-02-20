@@ -33,13 +33,45 @@
 
 #include <pdi/fwd.h>
 #include <pdi/data_reference.h>
-#include <pdi/data_type.h>
+#include <pdi/type_template.h>
+
 
 namespace PDI
 {
 
 class PDI_EXPORT Data_descriptor
 {
+private:
+	class Ref_holder
+	{
+	public:
+		virtual Data_ref ref() const = 0;
+		virtual ~Ref_holder() {}
+	};
+	
+	template<bool R, bool W> class Ref_A_holder: public Ref_holder
+	{
+	public:
+		Ref_A_holder(void *data, std::function<void(void *)> freefunc, Data_type_uptr type, bool readable, bool writable): m_t(data, freefunc, std::move(type), readable, writable) {}
+		Ref_A_holder(Data_ref t) : m_t(t) {}
+		Data_ref ref() const override
+		{
+			return m_t;
+		}
+		Data_A_ref<R, W> m_t;
+	};
+	
+	/// References to the values of this descriptor
+	std::stack<std::unique_ptr<Ref_holder>> m_refs;
+	
+	PC_tree_t m_config;
+	
+	bool m_metadata;
+	
+	Type_template_uptr m_type;
+	
+	const std::string m_name;
+	
 public:
 	/** Create an empty descriptor
 	 */
@@ -59,7 +91,7 @@ public:
 	 * \param type the type template that will be attached to raw pointers shared through this descriptor
 	 * \param config the full configuration attached to the descriptor
 	 */
-	void creation_template(Data_type_uptr type, PC_tree_t config) {
+	void creation_template(Type_template_uptr type, PC_tree_t config) {
 		m_type = move(type);
 		m_config = config; 
 	}
@@ -129,37 +161,6 @@ public:
 	* \post the user code owns the data buffer
 	*/
 	void reclaim();
-	
-private:
-	class Ref_holder
-	{
-	public:
-		virtual Data_ref ref() const = 0;
-		virtual ~Ref_holder() {}
-	};
-	
-	template<bool R, bool W> class Ref_A_holder: public Ref_holder
-	{
-	public:
-		Ref_A_holder(void *data, std::function<void(void *)> freefunc, Data_type_uptr type, bool readable, bool writable): m_t(data, freefunc, std::move(type), readable, writable) {}
-		Ref_A_holder(Data_ref t) : m_t(t) {}
-		Data_ref ref() const override
-		{
-			return m_t;
-		}
-		Data_A_ref<R, W> m_t;
-	};
-	
-	/// References to the values of this descriptor
-	std::stack<std::unique_ptr<Ref_holder>> m_refs;
-	
-	PC_tree_t m_config;
-	
-	bool m_metadata;
-	
-	Data_type_uptr m_type;
-	
-	const std::string m_name;
 	
 }; // class Data_descriptor
 

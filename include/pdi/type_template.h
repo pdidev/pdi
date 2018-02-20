@@ -22,72 +22,44 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATA_DESCRIPTOR_FWD_H_
-#define PDI_DATA_DESCRIPTOR_FWD_H_
+#ifndef PDI_DATA_TYPE_TEMPLATE_H_
+#define PDI_DATA_TYPE_TEMPLATE_H_
 
-#include <memory>
+#include <paraconf.h>
 
-#include <pdi.h>
-
-/** Forward declaration of all PDI types
- * 
- * \file fwd.h
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
- */
+#include <pdi/fwd.h>
 
 namespace PDI
 {
 
-/** The properties of a data (data type, kind, ...etc.)
- */
-class Data_descriptor;
+class PDI_EXPORT Type_template
+{
+public:
+	/** Destroys the template
+	 */
+	virtual ~Type_template();
+	
+	/** Creates a new datatype as an exact copy of this one
+	 *
+	 * \return the dense type that is produced
+	 */
+	virtual Type_template_uptr clone() const = 0;
+	
+	/** Creates a new datatype by resolving the value of all metadata references
+	 *
+	 * \return the evaluated type that is produced
+	 */
+	virtual Data_type_uptr evaluate() const = 0;
 
-template<bool, bool> class Data_A_ref;
+	/** Creates a new datatype from a paraconf-style config
+	 * \param node the configuration to read
+	 * \return the type generated
+	 */
+	static Type_template_uptr load(PC_tree_t node);
+	
+};
 
-typedef Data_A_ref<false, false> Data_ref;
+} // namespace PDI
 
-typedef Data_A_ref<true, false> Data_r_ref;
+#endif // PDI_DATA_TYPE_TEMPLATE_H_
 
-typedef Data_A_ref<false, true> Data_w_ref;
-
-typedef Data_A_ref<true, true> Data_rw_ref;
-
-/** A PDI type descriptor
- *
- * A Data type is either a scalar, an array, or a record.
- */
-class Data_type;
-
-typedef std::unique_ptr<Data_type> Data_type_uptr;
-
-/** Different possible interpretations for a scalar
-	*/
-enum class Scalar_kind: uint8_t { UNKNOWN, SIGNED, UNSIGNED, FLOAT, ADDRESS };
-
-/** A PDI type template descriptor
- *
- * A template can be evaluated into a type by resolving its references
- */
-class Type_template;
-
-typedef std::unique_ptr<Type_template> Type_template_uptr;
-
-/** A parsed value as specified by an expression.
- *
- * References are not resolved, this is only the AST.
- */
-class Value;
-
-}
-
-/** Definition of a plugin
- */
-typedef struct PDI_plugin_s PDI_plugin_t;
-
-/** Describes the state of a PDI instanciation, its configuration, the
- *  currently exposed data, etc...
- */
-class PDI_state_t;
-
-#endif

@@ -31,6 +31,7 @@
 #include <unordered_map>
 
 #include <pdi/fwd.h>
+#include <pdi/data_type.h>
 #include <pdi/status.h>
 
 

@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "pdi/data_reference.h"
+#include <pdi/data_type.h>
 #include "pdi/state.h"
 #include "pdi/status.h"
 
@@ -50,6 +51,8 @@ using std::vector;
 namespace
 {
 
+/** A never to instantiate class only used to get access to Value private members 
+ */
 struct Value_parser:
 	public Value
 {
@@ -92,7 +95,7 @@ struct Value_parser:
 			return Data_ref{
 				new long{m_value},
 				[](void* v){delete static_cast<long*>(v);},
-				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_datatype::SIGNED, sizeof(long)}},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
 				true,
 				true
 			};
@@ -149,7 +152,7 @@ struct Value_parser:
 				str.release(),
 				[](void* v){delete[] static_cast<char*>(v);},
 				unique_ptr<Array_datatype>{new Array_datatype{
-					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_datatype::UNSIGNED, sizeof(char)}},
+					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}},
 					value.length()+1
 				}},
 				true,
@@ -217,7 +220,7 @@ struct Value_parser:
 			return Data_ref{
 				new long{to_long()},
 				[](void* v){delete static_cast<long*>(v);},
-				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_datatype::SIGNED, sizeof(long)}},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
 				true,
 				true
 			};
@@ -260,8 +263,8 @@ struct Value_parser:
 				auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(type);
 				if ( !scalar_type ) throw Error{PDI_ERR_VALUE, "Expected scalar found invalid type instead"};
 				
-				if ( scalar_type->kind() == Scalar_datatype::SIGNED ) {
-					switch (scalar_type->size()) {
+				if ( scalar_type->kind() == Scalar_kind::SIGNED ) {
+					switch (scalar_type->datasize()) {
 					case 1:
 						return static_cast<const int8_t *>(ref.get())[idx];
 					case 2:
@@ -273,8 +276,8 @@ struct Value_parser:
 					default:
 						throw Error(PDI_ERR_VALUE, "Unexpected int size: %ld", static_cast<long>(scalar_type->kind()));
 					}
-				} else if ( scalar_type->kind() == Scalar_datatype::UNSIGNED ) {
-					switch (scalar_type->size()) {
+				} else if ( scalar_type->kind() == Scalar_kind::UNSIGNED ) {
+					switch (scalar_type->datasize()) {
 					case 1:
 						return static_cast<const uint8_t *>(ref.get())[idx];
 					case 2:
@@ -300,7 +303,7 @@ struct Value_parser:
 				return Data_ref{
 					new long{to_long()},
 					[](void* v){delete static_cast<long*>(v);},
-					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_datatype::SIGNED, sizeof(long)}},
+					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
 					true,
 					true
 				};

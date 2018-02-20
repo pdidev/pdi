@@ -44,7 +44,7 @@ using std::unique_ptr;
 Data_descriptor::Data_descriptor(const char *name):
 	m_config(PC_parse_string("")),
 	m_metadata(false),
-	m_type{UNDEF_TYPE.clone()},
+	m_type{UNDEF_TYPE.clone_type()},
 	m_name(name)
 {
 }
