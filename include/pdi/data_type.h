@@ -109,7 +109,7 @@ public:
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate() const override;
+	Data_type_uptr evaluate(Context&) const override;
 	
 	bool dense() const override { return true; }
 	
@@ -163,7 +163,7 @@ public:
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate() const override;
+	Data_type_uptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	
@@ -221,7 +221,7 @@ public:
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate() const override;
+	Data_type_uptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	

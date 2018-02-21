@@ -22,19 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
-* \file plugin.h
-* \brief private declaration of plugins functions and structures
-* \details
-* To create a plugin, one must define 4 functions:
-*  - PDI_finalize
-*  - PDI_event
-*  - PDI_data
-*  Each function return a exit status code (PDI_status_t).
-*  A macro is used for the initialization (see PDI_PLUGIN)
-* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
-*/
-
 #ifndef PDI_PLUGIN_H_
 #define PDI_PLUGIN_H_
 
@@ -44,20 +31,20 @@
 /** Skeleton of the function called at PDI finalization
  * \return an exit status code
  */
-typedef PDI_status_t (*PDI_finalize_f)();
+typedef void (*PDI_finalize_f)(PDI::Context& ctx);
 
 /** Skeleton of the function called to notify an event
  * \param[in] event the event name
  * \return an exit status code
  */
-typedef PDI_status_t (*PDI_event_f)(const char *event);
+typedef void (*PDI_event_f)(PDI::Context& ctx, const char *event);
 
 /** Skeleton of the function called to notify that some data becomes available
  * \param name the name of the data made available
  * \param ref available data
  * \return an exit status code
  */
-typedef PDI_status_t (*PDI_data_f)(const std::string &name, PDI::Data_ref ref);
+typedef void (*PDI_data_f)(PDI::Context& ctx, const char *name, PDI::Data_ref ref);
 
 struct PDI_plugin_s {
 
@@ -84,24 +71,13 @@ struct PDI_plugin_s {
  *
  * \param name the name of the plugin
  */
-#ifdef __cplusplus
 #define PDI_PLUGIN(name)\
-	extern "C" PDI_status_t PDI_EXPORT PDI_plugin_##name##_ctor(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin) \
+	extern "C" void PDI_EXPORT PDI_plugin_##name##_ctor(PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin) \
 	{\
 		plugin->finalize = PDI_##name##_finalize;\
 		plugin->event = PDI_##name##_event;\
 		plugin->data = PDI_##name##_data;\
-		return PDI_##name##_init(conf, world);\
+		PDI_##name##_init(ctx, conf, world);\
 	}
-#else
-#define PDI_PLUGIN(name)\
-	PDI_status_t PDI_EXPORT PDI_plugin_##name##_ctor(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin) \
-	{\
-		plugin->finalize = PDI_##name##_finalize;\
-		plugin->event = PDI_##name##_event;\
-		plugin->data = PDI_##name##_data;\
-		return PDI_##name##_init(conf, world);\
-	}
-#endif
 
 #endif // PDI_PLUGIN_H_

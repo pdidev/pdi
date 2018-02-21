@@ -24,9 +24,7 @@
 
 #include <mpi.h>
 
-#include <cstring>
-#include <iostream>
-#include <unordered_set>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -34,9 +32,10 @@
 #include <link.h>
 
 #include <pdi.h>
+#include <pdi/context.h>
+#include <pdi/data_descriptor.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/state.h>
 #include <pdi/data_reference.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/value.h>
@@ -45,6 +44,7 @@
 namespace
 {
 
+using PDI::Context;
 using PDI::Error;
 using PDI::len;
 using PDI::Value;
@@ -76,15 +76,14 @@ public:
 	{
 		friend class Alias;
 
-		PDI::Data_descriptor *m_desc;
+		PDI::Data_descriptor* m_desc;
 
-		ExposedAlias(const Alias &alias):
-			m_desc {&PDI_state.desc(alias.m_name)} {
+		ExposedAlias(Context& ctx, const Alias &alias):
+				m_desc{&ctx.desc(alias.m_name.c_str())}
+		{
 			try {
-				m_desc->share(alias.m_value, false, false);
-			}
-			catch(const Error &e)
-			{
+				m_desc->share(alias.m_value.to_ref(ctx), false, false);
+			} catch(const Error &e) {
 				throw Error {e.status(), "Could not alias `%s' because %s", alias.m_name.c_str(), e.what()};
 			}
 		}
@@ -93,7 +92,8 @@ public:
 
 	public:
 		ExposedAlias(ExposedAlias &&alias):
-			m_desc {alias.m_desc} {
+				m_desc {alias.m_desc}
+		{
 			alias.m_desc = NULL;
 		}
 
@@ -109,9 +109,9 @@ public:
 
 	/** exposes the alias
 	 */
-	ExposedAlias expose()
+	ExposedAlias expose(Context& ctx)
 	{
-		return ExposedAlias {*this};
+		return ExposedAlias{ctx, *this};
 	}
 
 };
@@ -159,13 +159,13 @@ public:
 	}
 
 	/// call the function that has been registered
-	void call()
+	void call(Context& ctx)
 	{
 		// all exposed aliases that will be unexposed on destroy
 		vector<Alias::ExposedAlias> exposed_aliases;
 		for(auto && alias : m_aliases) {
 			//create alias and share it with the plug-in
-			exposed_aliases.emplace_back(alias.expose());
+			exposed_aliases.emplace_back(alias.expose(ctx));
 		}
 		m_fct();
 	}
@@ -180,10 +180,8 @@ unordered_multimap<string, Trigger> events_uc;
 unordered_multimap<string, Trigger> data_uc;
 
 
-PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *)
+void PDI_user_code_init(Context&, PC_tree_t conf, MPI_Comm *)
 {
-	PDI_status_t status = PDI_OK;
-
 	events_uc.clear();
 	data_uc.clear();
 
@@ -224,38 +222,30 @@ PDI_status_t PDI_user_code_init(PC_tree_t conf, MPI_Comm *)
 			}
 		}
 	}
-
-	return status;
 }
 
-
-PDI_status_t PDI_user_code_finalize()
+void PDI_user_code_finalize(Context&)
 {
 	events_uc.clear();
 	data_uc.clear();
-	return PDI_OK;
 }
 
-
-PDI_status_t PDI_user_code_event(const char *event)
+void PDI_user_code_event(Context& ctx, const char *event)
 {
 	auto&& evrange = events_uc.equal_range(event);
 	// invoke all required functions
 	for(auto evit = evrange.first; evit != evrange.second; ++evit) {
-		evit->second.call();
+		evit->second.call(ctx);
 	}
-	return PDI_OK;
 }
 
-
-PDI_status_t PDI_user_code_data(const std::string &name, PDI::Data_ref)
+void PDI_user_code_data(Context& ctx, const char* name, PDI::Data_ref)
 {
 	auto&& dtrange = events_uc.equal_range(name);
 	// invoke all required functions
 	for(auto dtit = dtrange.first; dtit != dtrange.second; ++dtit) {
-		dtit->second.call();
+		dtit->second.call(ctx);
 	}
-	return PDI_OK;
 }
 
 } // namespace <anonymous>

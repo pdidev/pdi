@@ -58,7 +58,7 @@ Data_type_uptr Scalar_datatype::densify() const
 	return unique_ptr<Scalar_datatype>{new Scalar_datatype{m_kind, m_size, m_align}};
 }
 
-Data_type_uptr Scalar_datatype::evaluate() const
+Data_type_uptr Scalar_datatype::evaluate(Context&) const
 {
 	return clone_type();
 }
@@ -73,9 +73,9 @@ Data_type_uptr Array_datatype::densify() const
 	return unique_ptr<Array_datatype>{new Array_datatype{m_subtype->densify(), m_subsize}};
 }
 
-Data_type_uptr Array_datatype::evaluate() const
+Data_type_uptr Array_datatype::evaluate(Context&) const
 {
-	return unique_ptr<Array_datatype>{new Array_datatype{m_subtype->evaluate(), m_size, m_start, m_subsize}};
+	return Array_datatype::clone_type();
 }
 
 bool Array_datatype::dense() const
@@ -101,7 +101,7 @@ size_t Array_datatype::alignment() const
 
 Data_type_uptr Record_datatype::clone_type() const
 {
-	return unique_ptr<Record_datatype>{new Record_datatype{vector<Member>(m_members), Value{m_buffersize}}};
+	return unique_ptr<Record_datatype>{new Record_datatype{vector<Member>(m_members), m_buffersize}};
 }
 
 Data_type_uptr Record_datatype::densify() const
@@ -112,16 +112,12 @@ Data_type_uptr Record_datatype::densify() const
 		densified_members.emplace_back(displacement, member.type().densify(), member.name());
 		displacement += densified_members.back().type().datasize();
 	}
-	return unique_ptr<Record_datatype>{new Record_datatype{move(densified_members), Value{m_buffersize}}};
+	return unique_ptr<Record_datatype>{new Record_datatype{move(densified_members), m_buffersize}};
 }
 
-Data_type_uptr Record_datatype::evaluate() const
+Data_type_uptr Record_datatype::evaluate(Context&) const
 {
-	vector<Record_datatype::Member> evaluated_members;
-	for ( auto&& member: m_members ) {
-		evaluated_members.emplace_back(member.displacement(), member.type().evaluate(), member.name());
-	}
-	return unique_ptr<Record_datatype>{new Record_datatype{move(evaluated_members), m_buffersize}};
+	return Record_datatype::clone_type();
 }
 
 bool Record_datatype::dense() const

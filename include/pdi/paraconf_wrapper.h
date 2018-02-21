@@ -22,12 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
-* \file conf.h
-* \brief contains load_conf prototype
-* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
-*/
-
 #ifndef PDI_CONF_H_
 #define PDI_CONF_H_
 

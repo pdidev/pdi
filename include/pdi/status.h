@@ -22,12 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
- * \file status.h
- * \brief Macros used to handle errors
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- */
-
 #ifndef PDI_ERROR_H_
 #define PDI_ERROR_H_
 

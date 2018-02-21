@@ -38,9 +38,9 @@ class PDI_EXPORT Value
 protected:
 	struct Impl {
 		virtual ~Impl() {}
-		virtual long to_long() const = 0;
-		virtual std::string to_string() const;
-		virtual Data_ref to_ref() const = 0;
+		virtual long to_long(Context&) const = 0;
+		virtual std::string to_string(Context&) const;
+		virtual Data_ref to_ref(Context&) const = 0;
 		virtual std::unique_ptr<Impl> clone() const = 0;
 	};
 	
@@ -164,54 +164,27 @@ public:
 	 *
 	 * \return the integer value
 	 */
-	long to_long() const
+	long to_long(Context& ctx) const
 	{
-		return m_impl->to_long();
-	}
-	
-	/** Evaluates a value as an integer
-	 *
-	 * \return the integer value
-	 */
-	operator long() const
-	{
-		return to_long();
+		return m_impl->to_long(ctx);
 	}
 	
 	/** Evaluates a value as a string
 	 *
 	 * \return the string value
 	 */
-	std::string to_string() const
+	std::string to_string(Context& ctx) const
 	{
-		return m_impl->to_string();
-	}
-	
-	/** Evaluates a value as a string
-	 *
-	 * \return the string value
-	 */
-	operator std::string() const
-	{
-		return to_string();
+		return m_impl->to_string(ctx);
 	}
 	
 	/** Evaluates a value as a data reference
 	 *
 	 * \return the data reference
 	 */
-	Data_ref to_ref() const
+	Data_ref to_ref(Context& ctx) const
 	{
-		return m_impl->to_ref();
-	}
-	
-	/** Evaluates a value as a data reference
-	 *
-	 * \return the data reference
-	 */
-	operator Data_ref() const
-	{
-		return to_ref();
+		return m_impl->to_ref(ctx);
 	}
 	
 };

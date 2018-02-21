@@ -39,6 +39,11 @@
 namespace PDI
 {
 
+/** Describes the state of a PDI instanciation, its configuration, the
+ *  currently exposed data, etc...
+ */
+class Context;
+
 /** The properties of a data (data type, kind, ...etc.)
  */
 class Data_descriptor;
@@ -84,10 +89,5 @@ class Value;
 /** Definition of a plugin
  */
 typedef struct PDI_plugin_s PDI_plugin_t;
-
-/** Describes the state of a PDI instanciation, its configuration, the
- *  currently exposed data, etc...
- */
-class PDI_state_t;
 
 #endif

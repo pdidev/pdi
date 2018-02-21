@@ -33,8 +33,8 @@
 #include <iostream>
 
 #include <pdi.h>
+#include <pdi/context.h>
 #include <pdi/plugin.h>
-#include <pdi/state.h>
 #include <pdi/data_reference.h>
 
 namespace {
@@ -44,52 +44,44 @@ using std::cout;
 
 MPI_Comm my_comm;
 
-PDI_status_t PDI_test_plugin_init(PC_tree_t, MPI_Comm *world)
+void PDI_test_plugin_init(Context&, PC_tree_t, MPI_Comm *world)
 {
-	if (MPI_Comm_dup(*world, &my_comm)) return PDI_ERR_PLUGIN;
+	if (MPI_Comm_dup(*world, &my_comm)) return;
 	
-	int rank; if (MPI_Comm_rank(my_comm, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(my_comm, &rank)) return;
 	
 	if ( rank == 0 ) {
 		printf("Welcome to the test plugin!\n");
 	}
-	
-	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_finalize()
+void PDI_test_plugin_finalize(Context&)
 {
-	int rank; if (MPI_Comm_rank(my_comm, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(my_comm, &rank)) return;
 	
 	if ( rank == 0 ) {
 		printf("Goodbye from the test plugin!\n");
 	}
 	
-	if (MPI_Comm_free(&my_comm)) return PDI_ERR_PLUGIN;
-	
-	return PDI_OK;
+	if (MPI_Comm_free(&my_comm)) return;
 }
 
-PDI_status_t PDI_test_plugin_event(const char *event)
+void PDI_test_plugin_event(Context&, const char *event)
 {
-	int rank; if (MPI_Comm_rank(my_comm, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(my_comm, &rank)) return;
 	
 	if ( rank == 0 ) {
 		printf("test plugin got an event: %s!\n", event);
 	}
-	
-	return PDI_OK;
 }
 
-PDI_status_t PDI_test_plugin_data(const std::string& name, PDI::Data_ref)
+void PDI_test_plugin_data(Context&, const char* name, PDI::Data_ref)
 {
-	int rank; if (MPI_Comm_rank(my_comm, &rank)) return PDI_ERR_PLUGIN;
+	int rank; if (MPI_Comm_rank(my_comm, &rank)) return;
 	
 	if ( rank == 0 ) {
 		cout << " =>> data becoming available to the test plugin: "<<name<<"!\n";
 	}
-	
-	return PDI_OK;
 }
 
 }

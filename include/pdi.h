@@ -197,15 +197,6 @@ PDI_status_t PDI_EXPORT PDI_reclaim(const char *name);
 
 /// \}
 
-/// \{ combined in/out data access & memory ownership
-
-/** Exports some data to PDI. Equivalent to PDI_share(OUT) + PDI_release.
- * \param[in] name the data name
- * \param[in] data the exported data
- * \return an error status
- */
-PDI_status_t PDI_EXPORT PDI_export(const char *name, const void *data);
-
 /** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
  * \param[in] name the data name
  * \param[in] data the exposed data
@@ -214,8 +205,6 @@ PDI_status_t PDI_EXPORT PDI_export(const char *name, const void *data);
  * \return an error status
  */
 PDI_status_t PDI_EXPORT PDI_expose(const char *name, void *data, PDI_inout_t access);
-
-/// \}
 
 /// \{
 

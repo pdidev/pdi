@@ -41,6 +41,9 @@ namespace PDI
 
 class PDI_EXPORT Data_descriptor
 {
+public:
+	friend class Context;
+	
 private:
 	class Ref_holder
 	{
@@ -52,7 +55,6 @@ private:
 	template<bool R, bool W> class Ref_A_holder: public Ref_holder
 	{
 	public:
-		Ref_A_holder(void *data, std::function<void(void *)> freefunc, Data_type_uptr type, bool readable, bool writable): m_t(data, freefunc, std::move(type), readable, writable) {}
 		Ref_A_holder(Data_ref t) : m_t(t) {}
 		Data_ref ref() const override
 		{
@@ -60,6 +62,8 @@ private:
 		}
 		Data_A_ref<R, W> m_t;
 	};
+	
+	Context& m_context;
 	
 	/// References to the values of this descriptor
 	std::stack<std::unique_ptr<Ref_holder>> m_refs;
@@ -72,29 +76,26 @@ private:
 	
 	const std::string m_name;
 	
-public:
 	/** Create an empty descriptor
 	 */
-	Data_descriptor(const char *name);
+	Data_descriptor(Context& ctx, const char *name);
 	
 	Data_descriptor(const Data_descriptor &) = delete;
-	
-	Data_descriptor(Data_descriptor &&) = default;
-	
-	~Data_descriptor();
 	
 	Data_descriptor &operator= (const Data_descriptor &) = delete;
 	
 	Data_descriptor &operator= (Data_descriptor &&) = delete;
 	
+public:
+	~Data_descriptor();
+	
+	Data_descriptor(Data_descriptor &&) = default;
+	
 	/** Sets the creation template used to type raw pointers shared through this descriptor
 	 * \param type the type template that will be attached to raw pointers shared through this descriptor
 	 * \param config the full configuration attached to the descriptor
 	 */
-	void creation_template(Type_template_uptr type, PC_tree_t config) {
-		m_type = move(type);
-		m_config = config; 
-	}
+	void creation_template(PC_tree_t config);
 	
 	/** Returns the PC_tree_t config
 	 * \todo remove this and attach this config to the type
@@ -111,55 +112,35 @@ public:
 	 */
 	void metadata(bool metadata) { m_metadata = metadata; }
 	
-	const std::string &name() const
-	{
-		return m_name;
-	}
+	const std::string &name() const { return m_name; }
 	
 	/** Return a reference to the value of the data behind this descriptor
 	 */
-	Data_ref ref()
-	{
-		if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value"};
-		return m_refs.top()->ref();
-	}
+	Data_ref ref();
 	
-	/** Shares some data with PDI. The user code should not modify it before
-	 * a call to either PDI_release or PDI_reclaim.
-	 * \param[in,out] data the accessed data
-	 * \param[in] access whether the data can be accessed for read or write
-	 *                   by PDI
-	 * \pre the user code owns the data buffer
-	 * \post ownership of the data buffer is shared between PDI and the user code
-	 *
-	 * the access parameter is a binary OR of PDI_IN & PDI_OUT.
-	 * * PDI_IN means PDI can set the buffer content
-	 * * PDI_OUT means the buffer contains data that can be accessed by PDI
+	/** Shares some data with PDI
+	 * \param[in,out] data the shared data
+	 * \param read whether read access is granted to other references
+	 * \param write whether write access is granted to other references
 	 */
-	void share(void *data, std::function<void(void *)> freefunc, bool read, bool write);
+	void share(void *data, bool read, bool write);
 	
-	/** Requests for PDI to access a data buffer.
-	* \param[in,out] buffer a pointer to the accessed data buffer
-	* \param[in] inout the access properties (PDI_IN, PDI_OUT, PDI_INOUT)
-	* \pre PDI owns the data buffer
-	* \post ownership of the data buffer is shared between PDI and the user code
-	*/
-	void share(Data_ref ref, bool read, bool write);
+	/** Shares some data with PDI
+	 * \param[in,out] ref a reference to the shared data
+	 * \param read whether the stored reference should have read access
+	 * \param write whether write access is granted to other references
+	 * \return the just shared buffer 
+	 */
+	void* share(Data_ref ref, bool read, bool write);
 	
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
-	* free the associated memory whenever necessary.
-	* \param[in] name name of the data to release
-	* \pre ownership of the data buffer is shared between PDI and the user code
-	* \pre PDI owns the data buffer
-	*/
+	 * free the associated memory whenever necessary.
+	 */
 	void release();
 	
 	/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
-	* free the associated memory whenever necessary.
-	* \param[in] name name of the data to reclaim
-	* \pre ownership of the data buffer is shared between PDI and the user code
-	* \post the user code owns the data buffer
-	*/
+	 * free the associated memory whenever necessary.
+	 */
 	void reclaim();
 	
 }; // class Data_descriptor

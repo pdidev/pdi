@@ -74,9 +74,13 @@ public:
 		return unique_ptr<Scalar_template>{new Scalar_template{m_kind, m_size, m_align}};
 	}
 	
-	Data_type_uptr evaluate() const override
+	Data_type_uptr evaluate(Context& ctx) const override
 	{
-		return unique_ptr<Scalar_datatype>{new Scalar_datatype{m_kind, m_size.to_long(), m_align.to_long()}};
+		return unique_ptr<Scalar_datatype>{new Scalar_datatype{
+				m_kind,
+				static_cast<size_t>(m_size.to_long(ctx)),
+				static_cast<size_t>(m_align.to_long(ctx))
+		}};
 	}
 	
 };
@@ -106,9 +110,14 @@ public:
 		return unique_ptr<Array_template>{new Array_template{m_subtype->clone(), m_size, m_start, m_subsize}};
 	}
 	
-	Data_type_uptr evaluate() const override
+	Data_type_uptr evaluate(Context& ctx) const override
 	{
-		return unique_ptr<Array_datatype>{new Array_datatype{m_subtype->evaluate(), m_size.to_long(), m_start.to_long(), m_subsize.to_long()}};
+		return unique_ptr<Array_datatype>{new Array_datatype{
+				m_subtype->evaluate(ctx),
+				static_cast<size_t>(m_size.to_long(ctx)),
+				static_cast<size_t>(m_start.to_long(ctx)),
+				static_cast<size_t>(m_subsize.to_long(ctx))
+		}};
 	}
 	
 };
@@ -146,13 +155,13 @@ public:
 		return unique_ptr<Record_template>{new Record_template{vector<Member>(m_members), Value{m_buffersize}}};
 	}
 	
-	Data_type_uptr evaluate() const override
+	Data_type_uptr evaluate(Context& ctx) const override
 	{
 		vector<Record_datatype::Member> evaluated_members;
 		for ( auto&& member: m_members ) {
-			evaluated_members.emplace_back(member.m_displacement.to_long(), member.m_type->evaluate(), member.m_name);
+			evaluated_members.emplace_back(member.m_displacement.to_long(ctx), member.m_type->evaluate(ctx), member.m_name);
 		}
-		return unique_ptr<Record_datatype>{new Record_datatype{move(evaluated_members), m_buffersize.to_long()}};
+		return unique_ptr<Record_datatype>{new Record_datatype{move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx))}};
 	}
 	
 };
@@ -307,7 +316,8 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 
 } // namespace <anonymous>
 
-Type_template::~Type_template() {}
+Type_template::~Type_template()
+{}
 
 Type_template_uptr Type_template::load(PC_tree_t node)
 {

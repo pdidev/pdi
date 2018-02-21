@@ -36,17 +36,18 @@
 #include <string>
 #include <sstream>
 #include <type_traits>
+#include <unordered_set>
 
-#include <dlfcn.h>
-
+#include "pdi/context.h"
 #include "pdi/plugin.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/data_reference.h"
 #include "pdi/data_type.h"
 #include "pdi/paraconf_wrapper.h"
-#include "pdi/state.h"
 #include "pdi/status.h"
 
+
+namespace {
 
 using namespace PDI;
 using std::cerr;
@@ -57,84 +58,19 @@ using std::stack;
 using std::string;
 using std::stringstream;
 using std::underlying_type;
-using std::shared_ptr;
+using std::unique_ptr;
+using std::unordered_set;
 
 
-namespace {
+/// The singleton context of PDI
+unique_ptr<Context> g_context;
 
-static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
-{
-	int map_len = len(node);
-	
-	for (int map_id = 0; map_id < map_len; ++map_id) {
-		Data_descriptor& dsc = PDI_state.desc(to_string(PC_get(node, "{%d}", map_id)));
-		dsc.metadata(is_metadata);
-		PC_tree_t config = PC_get(node, "<%d>", map_id);
-		dsc.creation_template(Data_type::load(config), config);
-	}
-	
-	return PDI_OK;
-}
+/// The name of the ongoing transaction or "" if none
+string g_transaction;
 
-PDI_status_t load_conf(PC_tree_t node)
-{
-	// no metadata is not an error
-	{
-		PC_tree_t metadata = PC_get(node, ".metadata");
-		if (!PC_status(metadata)) {
-			load_data(metadata, true);
-		}
-	}
-	
-	// no data is spurious, but not an error
-	{
-		PC_tree_t data = PC_get(node, ".data");
-		if (!PC_status(data)) {
-			load_data(data, false);
-		}
-	}
-	
-	return PDI_OK;
-}
+/// List of data that are
+unordered_set<string> g_transaction_data;
 
-typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t *plugin);
-
-void load_plugin(const char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t *plugin)
-{
-	stringstream plugin_symbol;
-	plugin_symbol << "PDI_plugin_" << plugin_name << "_ctor";
-	void *plugin_ctor_uncast = dlsym(NULL, plugin_symbol.str().c_str());
-	
-	// case where the library was not prelinked
-	if (!plugin_ctor_uncast) {
-		stringstream libname;
-		libname << "lib" << plugin_name << ".so";
-		void *lib_handle = dlopen(libname.str().c_str(), RTLD_NOW);
-		if (!lib_handle) {
-			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin file: %s", plugin_name, dlerror()};
-		}
-		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol.str().c_str());
-		if (!plugin_ctor_uncast) {
-			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin from file: %s", plugin_name, dlerror()};
-		}
-	}
-	
-	// call the ctor
-	(reinterpret_cast<init_f>(plugin_ctor_uncast))(node, world, plugin);
-}
-
-void try_load_plugin(PC_tree_t conf, int plugin_id, MPI_Comm *world)
-{
-	string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
-	try {
-		PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
-		PDI_plugin_t *plugin = new PDI_plugin_t;
-		load_plugin(plugin_name.c_str(), plugin_conf, world, plugin);
-		PDI_state.plugins.emplace(plugin_name, std::shared_ptr<PDI_plugin_t>(plugin));
-	} catch (const std::exception &e) {
-		throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
-	}
-}
 
 PDI_inout_t operator&(PDI_inout_t a, PDI_inout_t b)
 {
@@ -147,88 +83,31 @@ PDI_inout_t operator&(PDI_inout_t a, PDI_inout_t b)
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
 try {
 	Try_pc fw;
-	PDI_state.transaction.clear();
-	PDI_state.plugins.clear();
-	
-	load_conf(conf);
-	
-	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
-	
-	for (int ii = 0; ii < nb_plugins; ++ii) {
-		//TODO: what to do if a single plugin fails to load?
-		try_load_plugin(conf, ii, world);
-	}
+	g_transaction.clear();
+	g_transaction_data.clear();
+	g_context.reset(new Context{conf, world});
 	return PDI_OK;
-	
 } catch (const Error &e) {
-	for (auto &&plugin : PDI_state.plugins) {
-		try { // ignore errors here, try our best to finalize everyone
-			plugin.second->finalize();
-		} catch (...) {
-			cerr << "Error while finalizing " << plugin.first << endl;
-		}
-	}
-	PDI_state.transaction.clear();
-	PDI_state.transaction_data.clear();
-	PDI_state.plugins.clear();
-	return PDI::return_err(e);
+	g_context.reset();
+	return return_err(e);
 }
 
 PDI_status_t PDI_finalize()
-{
-	Try_pc fw;
-	for (auto plugin : PDI_state.plugins) {
-		try { // ignore errors here, try our best to finalize everyone
-			//TODO: concatenate errors in some way
-			plugin.second->finalize();
-		} catch (const std::exception &e) {
-			cerr << "Error while finalizing " << plugin.first << ": " << e.what() << endl;
-		} catch (...) {
-			cerr << "Error while finalizing " << plugin.first << endl;
-		}
-	}
-	PDI_state.transaction.clear();
-	PDI_state.transaction_data.clear();
-	PDI_state.plugins.clear();
-	//TODO: clear PDI_state.m_descriptors
-	
-	//TODO we should return concatenated errors here...
-	return PDI_OK;
-}
-
-
-PDI_status_t PDI_event(const char *event)
-{
-	Try_pc fw;
-	for (auto &elmnt : PDI_state.plugins) {
-		try { // ignore errors here, try our best to notify everyone
-			//TODO: concatenate errors in some way
-			elmnt.second->event(event);
-		} catch (const std::exception &e) {
-			cerr << "Error while triggering event " << event << " for plugin " << elmnt.first << ": " << e.what() << endl;
-		} catch (...) {
-			cerr << "Error while triggering event " << event << " for plugin " << elmnt.first << endl;
-			//TODO: remove the faulty plugin?
-		}
-	}
-	
-	//TODO we should return concatenated errors here...
-	return PDI_OK;
-}
-
-
-PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
 try {
 	Try_pc fw;
-	Data_descriptor &desc = PDI_state.desc(name);
-	Data_ref ref = desc.ref();
-	switch (inout) {
-		case PDI_NONE: *buffer = nullptr; break;
-		case PDI_IN: *buffer = const_cast<void*>(Data_r_ref{desc.ref()}.get()); break;
-		case PDI_OUT: *buffer = Data_w_ref{desc.ref()}.get(); break;
-		case PDI_INOUT: *buffer = Data_rw_ref{desc.ref()}.get(); break;
-	}
-	desc.share(ref, inout & PDI_IN, inout & PDI_OUT);
+	g_transaction.clear();
+	g_transaction_data.clear();
+	g_context.reset();
+	return PDI_OK;
+} catch (const Error &e) {
+	g_context.reset();
+	return return_err(e);
+}
+
+PDI_status_t PDI_event(const char *name)
+try {
+	Try_pc fw;
+	g_context->event(name);
 	return PDI_OK;
 } catch (const Error &e) {
 	return return_err(e);
@@ -237,27 +116,17 @@ try {
 PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
 try {
 	Try_pc fw;
-	if ( !buffer ) {
-		throw Error{PDI_ERR_VALUE, "Sharing null pointers is not allowed"};
-	}
-	Data_descriptor &desc = PDI_state.desc(name);
-	desc.share(buffer, &free, access & PDI_OUT, access & PDI_IN);
-	Data_ref ref = desc.ref();
-	
-	// Provide reference to the plug-ins
-	for (auto &&plugin : PDI_state.plugins) {
-		try { // ignore errors here, try our best to notify everyone
-			//TODO: concatenate errors in some way
-			plugin.second->data(name, ref);
-		} catch (const std::exception &e) {
-			cerr << "Error while sharing " << name << " for plugin " << plugin.first << ": " << e.what() << endl;
-		} catch (...) {
-			cerr << "Error while sharing " << name << " for plugin " << plugin.first << endl;
-			//TODO: remove the faulty plugin?
-		}
-	}
+	(*g_context)[name].share(buffer, access & PDI_OUT, access & PDI_IN);
+	return PDI_OK;
+} catch (const Error &e) {
+	return return_err(e);
+}
 
-	//TODO we should return concatenated errors here...
+PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
+try {
+	Try_pc fw;
+	Data_descriptor &desc = (*g_context)[name];
+	*buffer = desc.share(desc.ref(), inout & PDI_IN, inout & PDI_OUT);
 	return PDI_OK;
 } catch (const Error &e) {
 	return return_err(e);
@@ -266,7 +135,7 @@ try {
 PDI_status_t PDI_release(const char *name)
 try {
 	Try_pc fw;
-	PDI_state.desc(name).release();
+	(*g_context)[name].release();
 	return PDI_OK;
 } catch (const Error &e) {
 	return return_err(e);
@@ -275,34 +144,33 @@ try {
 PDI_status_t PDI_reclaim(const char *name)
 try {
 	Try_pc fw;
-	PDI_state.desc(name).reclaim();
+	(*g_context)[name].reclaim();
 	return PDI_OK;
 } catch (const Error &e) {
 	return return_err(e);
 }
 
 PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
-{
+try {
 	Try_pc fw;
 	if (PDI_status_t status = PDI_share(name, data, access)) return status;
-	
-	if (! PDI_state.transaction.empty()) {   // defer the reclaim
-		PDI_state.transaction_data.insert(name);
+	if (! g_transaction.empty()) {   // defer the reclaim
+		g_transaction_data.emplace(name);
 	} else { // do the reclaim now
 		if (PDI_status_t status = PDI_reclaim(name)) return status;
 	}
-	
 	return PDI_OK;
+} catch (const Error &e) {
+	return return_err(e);
 }
 
-
-PDI_status_t PDI_transaction_begin(const char *c_name)
+PDI_status_t PDI_transaction_begin(const char *name)
 try {
 	Try_pc fw;
-	if (!PDI_state.transaction.empty()) {
-		throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
+	if (!g_transaction.empty()) {
+		return return_err(Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"});
 	}
-	PDI_state.transaction = c_name;
+	g_transaction = name;
 	return PDI_OK;
 } catch (const Error &e) {
 	return return_err(e);
@@ -311,27 +179,17 @@ try {
 PDI_status_t PDI_transaction_end()
 try {
 	Try_pc fw;
-	if (PDI_state.transaction.empty()) {
-		throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
+	if (g_transaction.empty()) {
+		return return_err(Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"});
 	}
-	
-	PDI_event(PDI_state.transaction.c_str());
-	
-	for (const string &data : PDI_state.transaction_data) {
+	PDI_event(g_transaction.c_str());
+	for (const string &data : g_transaction_data) {
 		//TODO we should concatenate errors here...
 		PDI_reclaim(data.c_str());
 	}
-	PDI_state.transaction_data.clear();
-	PDI_state.transaction.clear();
-	
+	g_transaction_data.clear();
+	g_transaction.clear();
 	return PDI_OK;
 } catch (const Error &e) {
 	return return_err(e);
-}
-
-PDI_status_t PDI_export(const char *name, const void *data)
-{
-	if (PDI_status_t status = PDI_share(name, (void *)data, PDI_OUT)) return status;
-	if (PDI_status_t status = PDI_release(name)) return status;
-	return PDI_OK;
 }

@@ -33,19 +33,20 @@
 #include <vector>
 
 #include <pdi.h>
+#include <pdi/context.h>
 #include <pdi/data_type.h>
 #include <pdi/data_reference.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/state.h>
 #include <pdi/value.h>
 
 #include <sion.h>
 
 namespace
 {
-
+	
+using PDI::Context;
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
@@ -154,7 +155,7 @@ unordered_map<string, Named_event> parse_events(PC_tree_t conf)
 	return result;
 }
 
-PDI_status_t PDI_decl_sion_init(PC_tree_t conf, MPI_Comm *world)
+void PDI_decl_sion_init(Context& ctx, PC_tree_t conf, MPI_Comm *world)
 {
 	if(PC_status(conf)) throw Error {PDI_ERR_CONFIG, "Configuration is invalid"};
 	if(MPI_Comm_dup(*world, &comm)) {
@@ -165,18 +166,14 @@ PDI_status_t PDI_decl_sion_init(PC_tree_t conf, MPI_Comm *world)
 	output_events = parse_events(PC_get(conf, ".outputs"));
 	input_vars = parse_vars(PC_get(conf, ".inputs"));
 	input_events = parse_events(PC_get(conf, ".inputs"));
-
-	return PDI_OK;
 }
 
-PDI_status_t PDI_decl_sion_finalize()
+void PDI_decl_sion_finalize(Context& ctx)
 {
 	output_vars.clear();
 	input_vars.clear();
 	output_events.clear();
 	input_events.clear();
-
-	return PDI_OK;
 }
 
 // This is FNV-1a
@@ -190,11 +187,11 @@ static uint64_t hash(const uint8_t *data, size_t len)
 	return hash;
 }
 
-void write_event(const Named_event &event)
+void write_event(Context& ctx, const Named_event &event)
 {
 	// check that data is available and data type is dense
 	for(auto && var : event.vars) {
-		if(Data_r_ref ref = PDI_state.desc(var).ref()) {
+		if(Data_r_ref ref = ctx.desc(var).ref()) {
 			if(!ref.type().dense()) {
 				throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", var.c_str()};
 			}
@@ -204,11 +201,11 @@ void write_event(const Named_event &event)
 		}
 	}
 
-	int n_files = event.n_files;
+	int n_files = event.n_files.to_long(ctx);
 
 	sion_int64 chunksize = 0;
 	for(auto && var : event.vars) {
-		const Data_ref &ref = PDI_state.desc(var).ref();
+		const Data_ref &ref = ctx.desc(var).ref();
 		if(!ref) {
 			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
 		}
@@ -218,10 +215,10 @@ void write_event(const Named_event &event)
 	sion_int32 blksize = -1;
 	int rank; MPI_Comm_rank(comm, &rank);
 
-	int sid = sion_paropen_mpi(event.file.to_string().c_str(), "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+	int sid = sion_paropen_mpi(event.file.to_string(ctx).c_str(), "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
 	for(auto && var : event.vars) {
-		Data_r_ref ref = PDI_state.desc(var).ref();
+		Data_r_ref ref = ctx.desc(var).ref();
 		if(!ref) {
 			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
 		}
@@ -256,11 +253,11 @@ void write_event(const Named_event &event)
 	}
 }
 
-void read_event(const Named_event &event)
+void read_event(Context& ctx, const Named_event &event)
 {
 	// check that data type is dense
 	for(auto && var : event.vars) {
-		Data_ref cref = PDI_state.desc(var).ref();
+		Data_ref cref = ctx.desc(var).ref();
 		if(Data_w_ref ref = cref) {
 			if(!ref.type().dense()) {
 				throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", var.c_str()};
@@ -276,11 +273,11 @@ void read_event(const Named_event &event)
 	sion_int32 blksize = -1;
 	int rank; MPI_Comm_rank(comm, &rank);
 
-	string file = event.file;
-	int sid = sion_paropen_mpi(event.file.to_string().c_str(), "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+	string file = event.file.to_string(ctx);
+	int sid = sion_paropen_mpi(event.file.to_string(ctx).c_str(), "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
 	for(auto && var : event.vars) {
-		Data_w_ref ref = PDI_state.desc(var).ref();
+		Data_w_ref ref = ctx.desc(var).ref();
 		if(!ref) {
 			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
 		}
@@ -336,36 +333,34 @@ void read_event(const Named_event &event)
 	}
 }
 
-PDI_status_t PDI_decl_sion_event(const char *event)
+void PDI_decl_sion_event(Context& ctx, const char *event)
 {
 	auto &&outevit = output_events.find(event);
 	if(outevit != output_events.end()) {
 		int select;
 		try {
-			select = outevit->second.select;
+			select = outevit->second.select.to_long(ctx);
 		}
 		catch(Error &) {
 			select = 0;
 		}
-		if(select) write_event(outevit->second);
+		if(select) write_event(ctx, outevit->second);
 	}
 
 	auto &&inevit = input_events.find(event);
 	if(inevit != input_events.end()) {
 		int select;
 		try {
-			select = inevit->second.select;
+			select = inevit->second.select.to_long(ctx);
 		}
 		catch(Error &) {
 			select = 0;
 		}
-		if(select) read_event(inevit->second);
+		if(select) read_event(ctx, inevit->second);
 	}
-
-	return PDI_OK;
 }
 
-void write_var(Data_ref cref, const string &name, const Variable_event &var)
+void write_var(Context& ctx, Data_ref cref, const string &name, const Variable_event &var)
 {
 	Data_r_ref ref = cref;
 	if(!ref) {
@@ -378,12 +373,12 @@ void write_var(Data_ref cref, const string &name, const Variable_event &var)
 	}
 
 	// open file
-	int n_files = var.n_files;
+	int n_files = var.n_files.to_long(ctx);
 	size_t data_size = ref.type().datasize();
 	sion_int64 chunksize = data_size;
 	sion_int32 blksize = -1;
 	int rank; MPI_Comm_rank(comm, &rank);
-	int sid = sion_paropen_mpi(var.file.to_string().c_str(), "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+	int sid = sion_paropen_mpi(var.file.to_string(ctx).c_str(), "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
 	// write data to file
 	if(SION_SUCCESS != sion_fwrite(ref.get(), data_size, 1, sid)) {
@@ -396,7 +391,7 @@ void write_var(Data_ref cref, const string &name, const Variable_event &var)
 	}
 }
 
-void read_var(Data_ref cref, const string &name, const Variable_event &var)
+void read_var(Context& ctx, Data_ref cref, const string &name, const Variable_event &var)
 {
 	Data_w_ref ref = cref;
 	if(!ref) {
@@ -414,7 +409,7 @@ void read_var(Data_ref cref, const string &name, const Variable_event &var)
 	sion_int64 chunksize = 0;
 	sion_int32 blksize = -1;
 	int rank; MPI_Comm_rank(comm, &rank);
-	int sid = sion_paropen_mpi(var.file.to_string().c_str(), "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
+	int sid = sion_paropen_mpi(var.file.to_string(ctx).c_str(), "r", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 
 	// read data from file
 	if(SION_SUCCESS != sion_fread(ref.get(), data_size, 1, sid)) {
@@ -427,33 +422,31 @@ void read_var(Data_ref cref, const string &name, const Variable_event &var)
 	}
 }
 
-PDI_status_t PDI_decl_sion_data(const string &name, Data_ref cref)
+void PDI_decl_sion_data(Context& ctx, const char* name, Data_ref cref)
 {
 	auto &&outvarit = output_vars.find(name);
 	if(outvarit != output_vars.end()) {
 		int select;
 		try {
-			select = outvarit->second.select;
+			select = outvarit->second.select.to_long(ctx);
 		}
 		catch(Error &) {
 			select = 0;
 		}
-		if(select) write_var(cref, name, outvarit->second);
+		if(select) write_var(ctx, cref, name, outvarit->second);
 	}
 
 	auto &&invarit = input_vars.find(name);
 	if(invarit != input_vars.end()) {
 		int select;
 		try {
-			select = invarit->second.select;
+			select = invarit->second.select.to_long(ctx);
 		}
 		catch(Error &) {
 			select = 0;
 		}
-		if(select) read_var(cref, name, invarit->second);
+		if(select) read_var(ctx, cref, name, invarit->second);
 	}
-
-	return PDI_OK;
 }
 
 } // namespace <anonymous>

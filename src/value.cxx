@@ -31,9 +31,9 @@
 #include <sstream>
 #include <vector>
 
+#include "pdi/context.h"
 #include "pdi/data_reference.h"
-#include <pdi/data_type.h>
-#include "pdi/state.h"
+#include "pdi/data_type.h"
 #include "pdi/status.h"
 
 #include "pdi/value.h"
@@ -80,7 +80,7 @@ struct Value_parser:
 		
 		Constval(long value) : m_value(value) {}
 		
-		long to_long() const override
+		long to_long(Context&) const override
 		{
 			return m_value;
 		}
@@ -90,7 +90,7 @@ struct Value_parser:
 			return unique_ptr<Constval> {new Constval{*this}};
 		}
 		
-		Data_ref to_ref() const override
+		Data_ref to_ref(Context&) const override
 		{
 			return Data_ref{
 				new long{m_value},
@@ -120,19 +120,19 @@ struct Value_parser:
 		/// array of subvalues
 		vector<Subvalue> values;
 		
-		long to_long() const override
+		long to_long(Context& ctx) const override
 		{
-			throw Error{PDI_ERR_VALUE, "Can not interpret `%s' as an integer value", to_string().c_str()};
+			throw Error{PDI_ERR_VALUE, "Can not interpret `%s' as an integer value", to_string(ctx).c_str()};
 		}
 		
-		string to_string() const override
+		string to_string(Context& ctx) const override
 		{
-			stringstream result;
-			result << start;
+			string result = start;
 			for (auto &&subval : values) {
-				result << subval.value.to_string() << subval.str;
+				result += subval.value.to_string(ctx);
+				result += subval.str;
 			}
-			return result.str();
+			return result;
 		}
 		
 		unique_ptr<Impl> clone() const override
@@ -140,9 +140,9 @@ struct Value_parser:
 			return unique_ptr<Stringval> {new Stringval{*this}};
 		}
 		
-		Data_ref to_ref() const override
+		Data_ref to_ref(Context& ctx) const override
 		{
-			string value = to_string();
+			string value = to_string(ctx);
 			
 			// copy because std::string does not provide a release call
 			unique_ptr<char[]> str{new char[value.length()+1]};
@@ -170,11 +170,11 @@ struct Value_parser:
 		
 		vector<Operator> ops;
 		
-		long to_long() const override
+		long to_long(Context& ctx) const override
 		{
-			long computed_value = values[0].to_long();
+			long computed_value = values[0].to_long(ctx);
 			for (size_t ii = 1; ii < values.size(); ++ii) {
-				long operand = values[ii].to_long();
+				long operand = values[ii].to_long(ctx);
 				switch (ops[ii - 1]) {
 				case PDI_OP_PLUS: {
 					computed_value += operand;
@@ -215,10 +215,10 @@ struct Value_parser:
 			return computed_value;
 		}
 		
-		Data_ref to_ref() const override
+		Data_ref to_ref(Context& ctx) const override
 		{
 			return Data_ref{
-				new long{to_long()},
+				new long{to_long(ctx)},
 				[](void* v){delete static_cast<long*>(v);},
 				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
 				true,
@@ -239,23 +239,23 @@ struct Value_parser:
 			public Impl
 	{
 		/// The referenced data
-		Data_descriptor *m_referenced;
+		std::string m_referenced;
 		
 		/// Indexes in case the referenced data is an array
 		vector<Value> m_idx;
 		
-		Refval(Data_descriptor *desc): m_referenced(desc) {}
+		Refval(const char* desc): m_referenced(desc) {}
 		
-		long to_long() const override
+		long to_long(Context& ctx) const override
 		try {
-			if ( Data_r_ref ref = m_referenced->ref() ) {
+			if ( Data_r_ref ref = ctx.desc(m_referenced.c_str()).ref() ) {
 				const Data_type * type = &ref.type();
 				long stride = 1;
 				long idx = 0;
 				for ( auto&& ii: m_idx ) {
 					auto&& array_type = dynamic_cast<const Array_datatype*>(type);
 					if ( !array_type ) throw Error{PDI_ERR_VALUE, "Accessing non-array data with an index"};
-					idx += (array_type->start() + ii) * stride;
+					idx += (array_type->start() + ii.to_long(ctx)) * stride;
 					stride *= array_type->size();
 					type = &array_type->subtype();
 				}
@@ -294,21 +294,21 @@ struct Value_parser:
 			}
 			throw Error{PDI_ERR_RIGHT, "Unable to grant access for value reference"};
 		} catch ( const Error& e ) {
-			throw Error{e.status(), "while referencing `%s': %s", m_referenced->name().c_str(), e.what()};
+			throw Error{e.status(), "while referencing `%s': %s", m_referenced.c_str(), e.what()};
 		}
 		
-		Data_ref to_ref() const override
+		Data_ref to_ref(Context& ctx) const override
 		{
 			if (!m_idx.empty()) {
 				return Data_ref{
-					new long{to_long()},
+					new long{to_long(ctx)},
 					[](void* v){delete static_cast<long*>(v);},
 					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
 					true,
 					true
 				};
 			}
-			return m_referenced->ref();
+			return ctx.desc(m_referenced.c_str()).ref();
 		}
 		
 		unique_ptr<Impl> clone() const override
@@ -378,9 +378,7 @@ Value Value_parser::parse_ref(char const **val_str)
 		has_curly_brace = true;
 	}
 	
-	unique_ptr<Refval> result{new Refval{ &PDI_state.desc(parse_id(&ref)) }};
-	
-	assert(!result->m_referenced->name().empty());
+	unique_ptr<Refval> result{new Refval{parse_id(&ref).c_str()}};
 	
 	while (isspace(*ref)) ++ref;
 	
@@ -552,9 +550,9 @@ Value Value_parser::parse_strval(char const **val_str)
 
 };
 
-string Value::Impl::to_string() const
+string Value::Impl::to_string(Context& ctx) const
 {
-	long lres = to_long();
+	long lres = to_long(ctx);
 	stringstream result;
 	result << lres;
 	return result.str();

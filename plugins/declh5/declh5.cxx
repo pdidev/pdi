@@ -33,12 +33,13 @@
 #include <hdf5_hl.h>
 
 #include <paraconf.h>
+
 #include <pdi.h>
+#include <pdi/context.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/data_reference.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/state.h>
 #include <pdi/value.h>
 #include <unistd.h>
 
@@ -47,6 +48,7 @@ namespace
 {
 
 using PDI::Array_datatype;
+using PDI::Context;
 using PDI::Data_type;
 using PDI::Data_descriptor;
 using PDI::Data_ref;
@@ -94,7 +96,7 @@ unordered_map<string, Hdf5_variable> inputs;
  * \param def_select the default select for HDF5 inputs/outputs
  * \return the array where to store the resulting variables
  */
-unordered_map<string, Hdf5_variable> read_config_file(PC_tree_t conf, PC_tree_t dflt_file, PC_tree_t dflt_select)
+unordered_map<string, Hdf5_variable> read_config_file(Context& ctx, PC_tree_t conf, PC_tree_t dflt_file, PC_tree_t dflt_select)
 {
 	int nb_hdf5data;
 	try {
@@ -134,10 +136,10 @@ unordered_map<string, Hdf5_variable> read_config_file(PC_tree_t conf, PC_tree_t 
 			select = to_string(dflt_select); // using default
 		}
 
-		const Data_descriptor &desc = PDI_state.desc(data_name);
+		PC_tree_t cfg = ctx.desc(data_name).config();
 		vector<Slab_dim> global;
-		PC_tree_t global_starts = PC_get(desc.config(), ".global_starts");
-		PC_tree_t global_sizes = PC_get(desc.config(), ".global_sizes");
+		PC_tree_t global_starts = PC_get(cfg, ".global_starts");
+		PC_tree_t global_sizes = PC_get(cfg, ".global_sizes");
 		
 		if ( PC_status(global_sizes) != PC_status(global_starts) ) {
 			throw Error{PDI_ERR_CONFIG, "global_sizes and global_starts must either both be specified or none should be"};
@@ -151,7 +153,7 @@ unordered_map<string, Hdf5_variable> read_config_file(PC_tree_t conf, PC_tree_t 
 			
 			int mult = 1; int offset = 0;
 			try {
-				string order = to_string(PC_get(desc.config(), ".order"));
+				string order = to_string(PC_get(cfg, ".order"));
 				if ( order == "fortran" || order == "Fortran" ) {
 					mult = -1; offset = rank -1;
 				}
@@ -168,7 +170,7 @@ unordered_map<string, Hdf5_variable> read_config_file(PC_tree_t conf, PC_tree_t 
 	return result;
 }
 
-PDI_status_t PDI_declh5_init(PC_tree_t conf, MPI_Comm *)
+void PDI_declh5_init(Context& ctx, PC_tree_t conf, MPI_Comm *)
 {
 	if(PC_status(conf)) {
 		throw Error {PDI_ERR_PLUGIN, "Invalid configuration."};
@@ -178,26 +180,22 @@ PDI_status_t PDI_declh5_init(PC_tree_t conf, MPI_Comm *)
 		throw Error {PDI_ERR_PLUGIN, "Cannot initialize HDF5 library"};
 	}
 
-	outputs = read_config_file(PC_get(conf, ".outputs"), PC_get(conf, ".defaults.outputs.file"), PC_get(conf, ".defaults.outputs.select"));
+	outputs = read_config_file(ctx, PC_get(conf, ".outputs"), PC_get(conf, ".defaults.outputs.file"), PC_get(conf, ".defaults.outputs.select"));
 	
-	inputs = read_config_file(PC_get(conf, ".inputs"), PC_get(conf, ".defaults.inputs.file"), PC_get(conf, ".defaults.inputs.select"));
-	
-	return PDI_OK;
+	inputs = read_config_file(ctx, PC_get(conf, ".inputs"), PC_get(conf, ".defaults.inputs.file"), PC_get(conf, ".defaults.inputs.select"));
 }
 
-PDI_status_t PDI_declh5_finalize()
+void PDI_declh5_finalize(Context&)
 {
 	inputs.clear();
 	outputs.clear();
-	return PDI_OK;
 }
 
-PDI_status_t PDI_declh5_event(const char *)
+void PDI_declh5_event(Context&, const char *)
 {
-	return PDI_OK;
 }
 
-void init_sizes(const Data_type &type, const vector<Slab_dim>& file_slab, hid_t& file_space, hid_t& mem_space, hid_t& h5type)
+void init_sizes(Context& ctx, const Data_type &type, const vector<Slab_dim>& file_slab, hid_t& file_space, hid_t& mem_space, hid_t& h5type)
 {
 	size_t rank = 0;
 	vector<hsize_t> h5msizes;
@@ -260,8 +258,8 @@ void init_sizes(const Data_type &type, const vector<Slab_dim>& file_slab, hid_t&
 		vector<hsize_t> h5fsizes;
 		vector<hsize_t> h5fstarts;
 		for(auto && sz : file_slab) {
-			h5fsizes.emplace_back(sz.size);
-			h5fstarts.emplace_back(sz.start);
+			h5fsizes.emplace_back(sz.size.to_long(ctx));
+			h5fstarts.emplace_back(sz.start.to_long(ctx));
 		}
 		file_space = H5Screate_simple(rank, &h5fsizes[0], NULL);
 		H5Sselect_hyperslab(file_space, H5S_SELECT_SET, &h5fstarts[0], NULL, &h5subsizes[0], NULL);
@@ -291,7 +289,7 @@ void rm_if_exist(hid_t h5file, const string &dset_name)
 	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
 }
 
-void write_to_file(Data_ref cref, const string &filename, const string &pathname, const vector<Slab_dim>& file_slab)
+void write_to_file(Context& ctx, Data_ref cref, const string &filename, const string &pathname, const vector<Slab_dim>& file_slab)
 {
 	Data_r_ref ref = cref;
 	if ( !ref ) {
@@ -316,7 +314,7 @@ void write_to_file(Data_ref cref, const string &filename, const string &pathname
 	}
 	
 	hid_t fspace, mspace, type;
-	init_sizes(cref.type(), file_slab, fspace, mspace, type);
+	init_sizes(ctx, cref.type(), file_slab, fspace, mspace, type);
 	
 	hid_t set_lst = H5Pcreate(H5P_LINK_CREATE);
 	if ( set_lst<0 ) {
@@ -357,7 +355,7 @@ void write_to_file(Data_ref cref, const string &filename, const string &pathname
 	H5PTclose(file_lst);
 }
 
-void read_from_file(Data_ref cref, const string &filename, const string &pathname, const vector<Slab_dim>& file_slab)
+void read_from_file(Context& ctx, Data_ref cref, const string &filename, const string &pathname, const vector<Slab_dim>& file_slab)
 {
 	Data_w_ref ref = cref;
 	if ( !ref ) {
@@ -374,7 +372,7 @@ void read_from_file(Data_ref cref, const string &filename, const string &pathnam
 	hid_t file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, file_lst);
 
 	hid_t fspace, mspace, type;
-	init_sizes(cref.type(), file_slab, fspace, mspace, type);
+	init_sizes(ctx, cref.type(), file_slab, fspace, mspace, type);
 	
 	hid_t set = H5Dopen(file, pathname.c_str(), H5P_DEFAULT);
 
@@ -395,19 +393,19 @@ void read_from_file(Data_ref cref, const string &filename, const string &pathnam
 	H5PTclose(file_lst);
 }
 
-PDI_status_t PDI_declh5_data(const string &name, Data_ref ref)
+void PDI_declh5_data(Context& ctx, const char* name, Data_ref ref)
 {
 	if ( Data_r_ref{ref} ) {
 		auto&& outev = outputs.find(name);
 		if(outev != outputs.end()) {
 			int select;
 			try {
-				select = outev->second.select;
+				select = outev->second.select.to_long(ctx);
 			} catch ( const Error& ) {
 				select = 0;
 			}
 			if ( select ) {
-				write_to_file(ref, outev->second.h5file, outev->second.h5var, outev->second.file_slab);
+				write_to_file(ctx, ref, outev->second.h5file.to_string(ctx), outev->second.h5var.to_string(ctx), outev->second.file_slab);
 			}
 		}
 	}
@@ -417,17 +415,15 @@ PDI_status_t PDI_declh5_data(const string &name, Data_ref ref)
 		if(inev != inputs.end()) {
 			int select;
 			try {
-				select = inev->second.select;
+				select = inev->second.select.to_long(ctx);
 			} catch ( const Error& ) {
 				select = 0;
 			}
 			if(select) {
-				read_from_file(ref, inev->second.h5file, inev->second.h5var, inev->second.file_slab);
+				read_from_file(ctx, ref, inev->second.h5file.to_string(ctx), inev->second.h5var.to_string(ctx), inev->second.file_slab);
 			}
 		}
 	}
-
-	return PDI_OK;
 }
 
 } // namespace <anonymous>

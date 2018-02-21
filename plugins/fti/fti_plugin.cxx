@@ -36,17 +36,17 @@
 #include <fti.h>
 
 #include <pdi.h>
+#include <pdi/context.h>
 #include <pdi/data_type.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/data_reference.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/state.h>
 
 
 namespace {
 
-using PDI::Data_descriptor;
+using PDI::Context;
 using PDI::Data_ref;
 using PDI::Data_r_ref;
 using PDI::Data_w_ref;
@@ -69,9 +69,10 @@ unordered_map<string, long> fti_protected;
 
 unordered_map<string, Event_action> events;
 
-PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
+
+void PDI_fti_plugin_init(Context& ctx, PC_tree_t conf, MPI_Comm *world)
 {
-	for ( auto&& iter : PDI_state.descriptors()) {
+	for ( auto&& iter : ctx) {
 		try {
 			fti_protected.emplace(iter.name(), to_long(PC_get(iter.config(), ".fti_id")));
 		} catch ( const Error& ) {}
@@ -136,26 +137,23 @@ PDI_status_t PDI_fti_plugin_init(PC_tree_t conf, MPI_Comm *world)
 	FTI_Init(const_cast<char*>(to_string(PC_get(conf, ".config_file")).c_str()), *world);
 	
 	*world = FTI_COMM_WORLD;
-	return PDI_OK;
 }
 
-
-PDI_status_t PDI_fti_plugin_finalize()
+void PDI_fti_plugin_finalize(Context&)
 {
 	events.clear();
 	fti_protected.clear();
 	FTI_Finalize();
-	return PDI_OK;
 }
 
 
-PDI_status_t PDI_fti_plugin_event ( const char *event_name )
+void PDI_fti_plugin_event ( Context& ctx, const char *event_name )
 {
 	auto&& evit = events.find(event_name);
-	if ( evit == events.end() ) return PDI_OK;
+	if ( evit == events.end() ) return;
 	
 	Event_action event = evit->second;
-	if ( event == RESTART_STATUS ) return PDI_OK;
+	if ( event == RESTART_STATUS ) return;
 	
 	/* the direction we need to access the data depending on whether this is a
 		*			recovery or a checkpoint write */
@@ -166,7 +164,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 	
 	for ( auto&& protected_var: fti_protected ) {
 		if ( output ) {
-			if ( Data_r_ref ref = PDI_state.desc(protected_var.first).ref() ) {
+			if ( Data_r_ref ref = ctx.desc(protected_var.first).ref() ) {
 				size_t size = ref.type().datasize();
 				//TODO: handle non-contiguous data correctly
 				FTI_Protect(protected_var.second, const_cast<void*>(ref.get()), size, FTI_CHAR);
@@ -177,7 +175,7 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 								protected_var.first.c_str());
 			}
 		} else {
-			if ( Data_w_ref ref = PDI_state.desc(protected_var.first).ref() ) {
+			if ( Data_w_ref ref = ctx.desc(protected_var.first).ref() ) {
 				size_t size = ref.type().datasize();
 				//TODO: handle non-contiguous data correctly
 				FTI_Protect(protected_var.second, ref.get(), size, FTI_CHAR);
@@ -202,18 +200,16 @@ PDI_status_t PDI_fti_plugin_event ( const char *event_name )
 		default:
 			assert(0 && "Unexpected event type");
 	}
-	return PDI_OK;
 }
 
-PDI_status_t PDI_fti_plugin_data(const std::string& name, Data_ref cref)
+void PDI_fti_plugin_data(Context& ctx, const char* name, Data_ref cref)
 {
 	auto&& evit = events.find(name);
-	if ( evit == events.end() ) return PDI_OK;
-	if ( evit->second != RESTART_STATUS )  return PDI_OK;
+	if ( evit == events.end() ) return;
+	if ( evit->second != RESTART_STATUS )  return;
 	if ( Data_w_ref ref = cref ) {
 		*(int*)ref.get() = FTI_Status();
 	}
-	return PDI_OK;
 }
 
 } // namespace <anonymous>

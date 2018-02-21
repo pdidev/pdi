@@ -76,11 +76,11 @@ install(DIRECTORY ../include/ DESTINATION include)
 ## C++ version
 add_library(pdi SHARED
 		api.cxx
+		context.cxx
 		data_descriptor.cxx
 		data_reference.cxx
 		data_type.cxx
 		paraconf_wrapper.cxx
-		state.cxx
 		status.cxx
 		type_template.cxx
 		value.cxx
