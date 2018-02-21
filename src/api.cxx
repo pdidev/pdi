@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
+/** Implementation of the PDI public API functions.
+ * 
  * \file api.c
- * \brief PDI public API functions (init, event, ... finalize).
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  **/
 
@@ -34,22 +34,18 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <type_traits>
 
-#include "pdi.h"
+#include <dlfcn.h>
+
 #include "pdi/plugin.h"
-#include "pdi/data_type.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/data_reference.h"
+#include "pdi/data_type.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/state.h"
 #include "pdi/status.h"
-
-#include "conf.h"
-#include "plugin_loader.h"
-
-
-#define PDI_BUFFER_SIZE 256
 
 
 using namespace PDI;
@@ -59,30 +55,93 @@ using std::make_shared;
 using std::move;
 using std::stack;
 using std::string;
+using std::stringstream;
 using std::underlying_type;
 using std::shared_ptr;
 
 
-PDI_inout_t operator|(PDI_inout_t a, PDI_inout_t b)
+namespace {
+
+static PDI_status_t load_data(PC_tree_t node, bool is_metadata)
 {
-	typedef underlying_type< PDI_inout_t >::type UL;
-	return (PDI_inout_t)(static_cast< UL >(a) | static_cast< UL >(b));
+	int map_len = len(node);
+	
+	for (int map_id = 0; map_id < map_len; ++map_id) {
+		Data_descriptor& dsc = PDI_state.desc(to_string(PC_get(node, "{%d}", map_id)));
+		dsc.metadata(is_metadata);
+		PC_tree_t config = PC_get(node, "<%d>", map_id);
+		dsc.creation_template(Data_type::load(config), config);
+	}
+	
+	return PDI_OK;
 }
 
-PDI_inout_t &operator|=(PDI_inout_t &lhs, PDI_inout_t rhs)
+PDI_status_t load_conf(PC_tree_t node)
 {
-	return lhs = (PDI_inout_t)(lhs | rhs);
+	// no metadata is not an error
+	{
+		PC_tree_t metadata = PC_get(node, ".metadata");
+		if (!PC_status(metadata)) {
+			load_data(metadata, true);
+		}
+	}
+	
+	// no data is spurious, but not an error
+	{
+		PC_tree_t data = PC_get(node, ".data");
+		if (!PC_status(data)) {
+			load_data(data, false);
+		}
+	}
+	
+	return PDI_OK;
+}
+
+typedef PDI_status_t (*init_f)(PC_tree_t conf, MPI_Comm *world, PDI_plugin_t *plugin);
+
+void load_plugin(const char *plugin_name, PC_tree_t node, MPI_Comm *world, PDI_plugin_t *plugin)
+{
+	stringstream plugin_symbol;
+	plugin_symbol << "PDI_plugin_" << plugin_name << "_ctor";
+	void *plugin_ctor_uncast = dlsym(NULL, plugin_symbol.str().c_str());
+	
+	// case where the library was not prelinked
+	if (!plugin_ctor_uncast) {
+		stringstream libname;
+		libname << "lib" << plugin_name << ".so";
+		void *lib_handle = dlopen(libname.str().c_str(), RTLD_NOW);
+		if (!lib_handle) {
+			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin file: %s", plugin_name, dlerror()};
+		}
+		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol.str().c_str());
+		if (!plugin_ctor_uncast) {
+			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin from file: %s", plugin_name, dlerror()};
+		}
+	}
+	
+	// call the ctor
+	(reinterpret_cast<init_f>(plugin_ctor_uncast))(node, world, plugin);
+}
+
+void try_load_plugin(PC_tree_t conf, int plugin_id, MPI_Comm *world)
+{
+	string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
+	try {
+		PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
+		PDI_plugin_t *plugin = new PDI_plugin_t;
+		load_plugin(plugin_name.c_str(), plugin_conf, world, plugin);
+		PDI_state.plugins.emplace(plugin_name, std::shared_ptr<PDI_plugin_t>(plugin));
+	} catch (const std::exception &e) {
+		throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
+	}
 }
 
 PDI_inout_t operator&(PDI_inout_t a, PDI_inout_t b)
 {
 	typedef underlying_type< PDI_inout_t >::type UL;
-	return (PDI_inout_t)(static_cast< UL >(a) & static_cast< UL >(b));
+	return static_cast<PDI_inout_t>(static_cast<UL>(a) & static_cast<UL>(b));
 }
 
-PDI_inout_t &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs)
-{
-	return lhs = (PDI_inout_t)(lhs & rhs);
 }
 
 PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)

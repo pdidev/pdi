@@ -1,6 +1,7 @@
 Julien Bigot - CEA (julien.bigot@cea.fr)
-  Initial design and implementation
+  Overall design and implementation
   Initial Test & HDF5 plugins
+  Library maintainer (2015-2016 2018-...)
   
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
   Initial FTI plugin
@@ -9,7 +10,7 @@ Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 Corentin Roussel - CEA (Corentin.roussel@cea.fr)
   Overall improvement & debug
   HDF5 plugin rework
-  Library maintainer from sept. 2016 on...
+  Library maintainer from Sept. 2016 to Feb. 2018
 
 Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
   SIONlib plugin

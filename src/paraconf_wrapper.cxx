@@ -28,6 +28,7 @@
 
 #include "pdi/paraconf_wrapper.h"
 
+
 namespace
 {
 

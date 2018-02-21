@@ -22,14 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
- * \file value.c
- * \brief Parsing functions
- * \details The data obtained from paraconf consist of arrays of chars.
- * Those string may contain variable name, operations... and are evaluated/parse using the above functions.
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- */
-
 #include "config.h"
 
 #include <cassert>
@@ -44,6 +36,7 @@
 #include "pdi/status.h"
 
 #include "pdi/value.h"
+
 
 namespace PDI
 {

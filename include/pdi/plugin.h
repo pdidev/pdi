@@ -38,10 +38,8 @@
 #ifndef PDI_PLUGIN_H_
 #define PDI_PLUGIN_H_
 
-#include <pdi.h>
+#include <pdi/fwd.h>
 
-#include <pdi/plugin_fwd.h>
-#include <pdi/data_reference_fwd.h>
 
 /** Skeleton of the function called at PDI finalization
  * \return an exit status code

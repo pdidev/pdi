@@ -31,9 +31,9 @@
 
 #include <paraconf.h>
 
-#include <pdi.h>
-#include <pdi/data_type.h>
+#include <pdi/fwd.h>
 #include <pdi/data_reference.h>
+#include <pdi/data_type.h>
 
 namespace PDI
 {

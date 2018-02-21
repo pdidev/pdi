@@ -22,18 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
- * \file api.c
- * \brief PDI internal data
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- */
-
 #include "config.h"
 
 #include <iostream>
 
-#include "pdi/plugin.h"
 #include "pdi/data_reference.h"
+#include "pdi/plugin.h"
 #include "pdi/status.h"
 
 #include "pdi/state.h"

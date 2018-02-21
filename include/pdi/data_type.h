@@ -30,10 +30,9 @@
 
 #include <paraconf.h>
 
-#include <pdi.h>
+#include <pdi/fwd.h>
 #include <pdi/value.h>
 
-#include <pdi/data_type_fwd.h>
 
 namespace PDI
 {

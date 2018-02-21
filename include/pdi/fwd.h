@@ -22,32 +22,69 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//The following is used for doxygen documentation:
-/**
-* \file plugin_loader.h
-* \brief Header of the functions used to load plugins
-* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
-*/
+#ifndef PDI_DATA_DESCRIPTOR_FWD_H_
+#define PDI_DATA_DESCRIPTOR_FWD_H_
 
-#ifndef PDI_PLUGIN_LOADER_H_
-#define PDI_PLUGIN_LOADER_H_
+#include <memory>
 
-#include "pdi.h"
-#include "pdi/plugin_fwd.h"
+#include <pdi.h>
+
+/** Forward declaration of all PDI types
+ * 
+ * \file fwd.h
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
+ */
 
 namespace PDI
 {
 
-/** Tries to load a given plugin
- * \param[in] conf the whole plugin configuration as a paraconf node
- * \param[in] plugin_id the ID of the plugin in the conf
- * \param[in,out] world the communicator containing all application processes
- * from which the plugin can reserve some ranks for its own use in which case
- * it replaces the communicator by a new one from which the reserved ranks have
- * been removed
+/** Provide the properties of a data (data type, kind, ...etc.)
+ *
+ * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ * \date 2017-10-04
  */
-void try_load_plugin(PC_tree_t conf, int plugin_id, MPI_Comm *world);
+class Data_descriptor;
+
+template<bool, bool> class Data_A_ref;
+
+typedef Data_A_ref<false, false> Data_ref;
+
+typedef Data_A_ref<true, false> Data_r_ref;
+
+typedef Data_A_ref<false, true> Data_w_ref;
+
+typedef Data_A_ref<true, true> Data_rw_ref;
+
+/** A PDI type descriptor
+ *
+ * A Datatype is either a scalar, an array, or a record.
+ * Structures are composed of one or mutiple PDI_datatype_t.
+ *
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ */
+class Data_type;
+
+typedef std::unique_ptr<Data_type> Data_type_uptr;
+
+/** A parsed value as specified by an expression.
+ *
+ * References are not resolved, this is only the AST.
+ *
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ */
+class Value;
 
 }
 
-#endif // PDI_PLUGIN_LOADER_H_
+/** Definition of a plugin
+ */
+typedef struct PDI_plugin_s PDI_plugin_t;
+
+/** Describes the state of a PDI instanciation, its configuration, the
+ *  currently exposed data, etc...
+ */
+class PDI_state_t;
+
+#endif

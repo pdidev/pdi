@@ -27,9 +27,8 @@
 
 #include <memory>
 
+#include <pdi/fwd.h>
 #include <pdi/data_reference.h>
-
-#include <pdi/value_fwd.h>
 
 namespace PDI
 {

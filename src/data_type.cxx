@@ -30,12 +30,12 @@
 #include <memory>
 #include <string>
 
-#include "pdi.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/status.h"
 #include "pdi/value.h"
 
 #include "pdi/data_type.h"
+
 
 namespace PDI
 {

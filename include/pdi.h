@@ -240,14 +240,5 @@ PDI_status_t PDI_EXPORT PDI_transaction_end();
 } // extern C
 #endif
 
-#ifdef __cplusplus
-	/// Declare binary OR and AND operator (required in C++) \{
-	PDI_inout_t   operator|(PDI_inout_t a, PDI_inout_t b);
-	PDI_inout_t  &operator|=(PDI_inout_t &lhs, PDI_inout_t rhs);
-	PDI_inout_t   operator&(PDI_inout_t a, PDI_inout_t b);
-	PDI_inout_t  &operator&=(PDI_inout_t &lhs, PDI_inout_t rhs);
-	/// \}
-#endif
-
 
 #endif // PDI_H_

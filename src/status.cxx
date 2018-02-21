@@ -22,11 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
- * \file status.c
- * \brief Manage error and context
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- */
+#include "config.h"
 
 #include <cassert>
 #include <memory>
@@ -35,6 +31,7 @@
 #include <pthread.h>
 
 #include "pdi/status.h"
+
 
 namespace
 {

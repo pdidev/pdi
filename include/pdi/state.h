@@ -41,25 +41,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <pdi.h>
-
-#include <pdi/state_fwd.h>
-#include <pdi/value_fwd.h>
-#include <pdi/plugin_fwd.h>
+#include <pdi/fwd.h>
 #include <pdi/data_reference.h>
 #include <pdi/data_descriptor.h>
-
-#include <pdi/state_fwd.h>
-
-
-struct loaded_plugin_s {
-	/// the name of the plugin
-	char *name;
-	
-	/// the plugin implementation, i.e. the functions it provides
-	PDI_plugin_t *impl;
-	
-};
 
 
 class PDI_EXPORT PDI_state_t

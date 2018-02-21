@@ -30,12 +30,9 @@
 #include <memory>
 #include <unordered_map>
 
-#include <pdi.h>
-
-#include <pdi/data_type_fwd.h>
+#include <pdi/fwd.h>
 #include <pdi/status.h>
 
-#include <pdi/data_reference_fwd.h>
 
 namespace PDI
 {

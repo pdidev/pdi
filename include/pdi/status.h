@@ -36,7 +36,7 @@
 
 #include <paraconf.h>
 
-#include "pdi.h"
+#include <pdi/fwd.h>
 
 namespace PDI
 {

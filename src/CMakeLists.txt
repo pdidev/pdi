@@ -73,15 +73,13 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 install(DIRECTORY ../include/ DESTINATION include)
 
-## C++ version
+## pdi
 add_library(pdi SHARED
 		api.cxx
-		conf.cxx
 		data_type.cxx
 		data_descriptor.cxx
 		data_reference.cxx
 		paraconf_wrapper.cxx
-		plugin_loader.cxx
 		state.cxx
 		status.cxx
 		value.cxx

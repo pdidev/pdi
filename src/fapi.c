@@ -22,13 +22,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/**
-\file fapi.c
-\brief Fortran API wrappers for functions that need wrapping on the C side
-\author J. Bigot (CEA)
-**/
-
 #include "pdi.h"
+
+/** Fortran API wrappers for functions that need wrapping on the C side
+ * 
+ * \file fapi.c
+ * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+ **/
 
 /** A version of PDI_init that takes a Fortran communicator instead of a C one
  */
