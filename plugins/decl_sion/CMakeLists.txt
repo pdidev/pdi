@@ -27,24 +27,24 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+cmake_minimum_required(VERSION 3.1)
+project(pdi_decl_sion_plugin LANGUAGES CXX)
+
+# SIONlib
 find_package(SIONlib REQUIRED)
 
-add_library(decl_sion MODULE
-  decl_sion.cxx 
-)
-target_link_libraries(decl_sion pdi)
-include_directories(${SIONlib_MPI_C_INCLUDE_DIRS})
+# The plugin
+add_library(pdi_decl_sion_plugin MODULE decl_sion.cxx)
 set_property(SOURCE decl_sion.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONlib_MPI_C_COMPILE_FLAGS} ")
-target_link_libraries(decl_sion ${SIONlib_MPI_C_LIBRARIES})
+target_link_libraries(pdi_decl_sion_plugin PUBLIC pdi ${SIONlib_MPI_C_LIBRARIES})
+target_include_directories(pdi_decl_sion_plugin PUBLIC ${SIONlib_MPI_C_INCLUDE_DIRS})
+set_target_properties(pdi_decl_sion_plugin PROPERTIES
+		CXX_STANDARD 11
+		CXX_STANDARD_REQUIRED TRUE
+		CXX_VISIBILITY_PRESET hidden)
 
-include(AddCCompilerFlags)
+# Installation
+install(TARGETS pdi_decl_sion_plugin EXPORT decl_sionTargets LIBRARY DESTINATION lib)
 
-
-# library installation
-
-install(TARGETS decl_sion EXPORT decl_sionTargets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
-
+# Tests
 add_subdirectory(tests/)

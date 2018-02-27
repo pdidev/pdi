@@ -23,6 +23,6 @@ pdi:
       sizes:  [$width, $height]
       fti_id: 0
   plugins:
-    fti_plugin:
+    fti:
       config_file: example2.fti
       snapshot_on: newiter

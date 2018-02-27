@@ -46,7 +46,7 @@ using std::string;
 using std::unique_ptr;
 
 
-Data_descriptor::Data_descriptor(Context& ctx, const char *name):
+Data_descriptor::Data_descriptor(Context &ctx, const char *name):
 	m_context{ctx},
 	m_config(PC_parse_string("")),
 	m_metadata{false},
@@ -59,7 +59,7 @@ Data_descriptor::~Data_descriptor()
 {
 	if (metadata()) {
 		// release metadata we kept
-		if ( !m_refs.empty() ) m_refs.pop();
+		if (!m_refs.empty()) m_refs.pop();
 	}
 	/* on error, we might be destroyed while not empty. In that case, don't keep
 	 * ownership
@@ -69,9 +69,10 @@ Data_descriptor::~Data_descriptor()
 	}
 }
 
-void Data_descriptor::creation_template(PC_tree_t config) {
+void Data_descriptor::creation_template(PC_tree_t config)
+{
 	m_type = Data_type::load(config);
-	m_config = config; 
+	m_config = config;
 }
 
 Data_ref Data_descriptor::ref()
@@ -82,17 +83,17 @@ Data_ref Data_descriptor::ref()
 
 void Data_descriptor::share(void *data, bool read, bool write)
 {
-	if ( !data ) {
+	if (!data) {
 		throw Error{PDI_ERR_VALUE, "Sharing null pointers is not allowed"};
 	}
 	
 	share(Data_ref{data, &free, m_type->evaluate(m_context), read, write}, false, false);
 }
 
-void* Data_descriptor::share(Data_ref data_ref, bool read, bool write)
+void *Data_descriptor::share(Data_ref data_ref, bool read, bool write)
 {
 	// metadata must provide read access
-	if ( metadata() && !Data_r_ref(data_ref) ) {
+	if (metadata() && !Data_r_ref(data_ref)) {
 		throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
 	}
 	
@@ -102,18 +103,18 @@ void* Data_descriptor::share(Data_ref data_ref, bool read, bool write)
 	}
 	
 	// make a reference and put it in the store
-	void* result = nullptr;
+	void *result = nullptr;
 	if (read) {
 		if (write) {
-			result = Data_rw_ref{data_ref}.get();
+			result = Data_rw_ref{data_ref} .get();
 			m_refs.emplace(new Ref_A_holder<true, true>(data_ref));
 		} else {
-			result = const_cast<void*>(Data_r_ref{data_ref}.get());
+			result = const_cast<void *>(Data_r_ref{data_ref} .get());
 			m_refs.emplace(new Ref_A_holder<true, false>(data_ref));
 		}
 	} else {
 		if (write) {
-			result = Data_w_ref{data_ref}.get();
+			result = Data_w_ref{data_ref} .get();
 			m_refs.emplace(new Ref_A_holder<false, true>(data_ref));
 		} else {
 			m_refs.emplace(new Ref_A_holder<false, false>(data_ref));
@@ -127,7 +128,7 @@ void* Data_descriptor::share(Data_ref data_ref, bool read, bool write)
 	
 	for (auto &elmnt : m_context.plugins) {
 		try { // ignore errors here, try our best to notify everyone
-			elmnt.second->data(m_context, m_name.c_str(), ref());
+			elmnt.second->data(m_name.c_str(), ref());
 			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const std::exception &e) {
@@ -161,7 +162,7 @@ void Data_descriptor::reclaim()
 	m_refs.pop();
 	if (metadata()) {
 		// if the content is a metadata, keep a copy
-		m_refs.push(unique_ptr<Ref_holder>(new Ref_A_holder<true, false>(oldref.copy())));
+		m_refs.emplace(new Ref_A_holder<true, false>(oldref.copy()));
 	}
 	oldref.release();
 }

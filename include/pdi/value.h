@@ -38,9 +38,9 @@ class PDI_EXPORT Value
 protected:
 	struct Impl {
 		virtual ~Impl() {}
-		virtual long to_long(Context&) const = 0;
-		virtual std::string to_string(Context&) const;
-		virtual Data_ref to_ref(Context&) const = 0;
+		virtual long to_long(Context &) const = 0;
+		virtual std::string to_string(Context &) const;
+		virtual Data_ref to_ref(Context &) const = 0;
 		virtual std::unique_ptr<Impl> clone() const = 0;
 	};
 	
@@ -61,7 +61,7 @@ public:
 	Value() = default;
 	
 	/** Builds (i.e. parse) a value from a string
-	 * 
+	 *
 	 * The grammar of an expression is as follow:
 	 * ```
 	 * VALUE   := INTVAL | STRVAL
@@ -84,7 +84,7 @@ public:
 	Value(const char *val_str);
 	
 	/** Builds (i.e. parse) a value from a string
-	 * 
+	 *
 	 * The grammar of an expression is as follow:
 	 * ```
 	 * VALUE   := INTVAL | STRVAL
@@ -104,7 +104,7 @@ public:
 	 *
 	 * \param[in] value the string to parse
 	 */
-	Value(const std::string& value);
+	Value(const std::string &value);
 	
 	/** Builds a value that represents an integer
 	 *
@@ -164,7 +164,7 @@ public:
 	 *
 	 * \return the integer value
 	 */
-	long to_long(Context& ctx) const
+	long to_long(Context &ctx) const
 	{
 		return m_impl->to_long(ctx);
 	}
@@ -173,7 +173,7 @@ public:
 	 *
 	 * \return the string value
 	 */
-	std::string to_string(Context& ctx) const
+	std::string to_string(Context &ctx) const
 	{
 		return m_impl->to_string(ctx);
 	}
@@ -182,7 +182,7 @@ public:
 	 *
 	 * \return the data reference
 	 */
-	Data_ref to_ref(Context& ctx) const
+	Data_ref to_ref(Context &ctx) const
 	{
 		return m_impl->to_ref(ctx);
 	}

@@ -21,7 +21,7 @@
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! THE SOFTWARE.
 !******************************************************************************/
-#include "PDI.F90"
+#include "pdi.F90"
 
 program test2
   use pdi

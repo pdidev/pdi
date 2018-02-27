@@ -48,7 +48,7 @@ data: # values that can not be referenced using $syntax
 
 
 plugins:
-  declh5:
+  decl_hdf5:
     defaults:
       outputs:
         select: $input=0

@@ -28,21 +28,15 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.1)
-# enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
-project(pdi_test_plugin LANGUAGES CXX C Fortran)
+project(pdi_test_plugin LANGUAGES CXX)
 
-find_package(MPI REQUIRED)
+# The plugin
+add_library(pdi_test_plugin MODULE test.cxx)
+target_link_libraries(pdi_test_plugin pdi)
+set_target_properties(pdi_test_plugin PROPERTIES
+		CXX_STANDARD 11
+		CXX_STANDARD_REQUIRED TRUE
+		CXX_VISIBILITY_PRESET hidden)
 
-add_library(test_plugin MODULE
-	test_plugin.cxx 
-)
-set_target_properties(test_plugin PROPERTIES C_VISIBILITY_PRESET hidden)
-target_link_libraries(test_plugin pdi mpi)
-
-
-# library installation
-
-install(TARGETS test_plugin EXPORT test_pluginTargets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
+# Installation
+install(TARGETS pdi_test_plugin EXPORT test_pluginTargets LIBRARY DESTINATION lib)

@@ -22,8 +22,8 @@ pdi:
       starts:   [1, 1]                # defaults to [0, 0]
 
   plugins:
-    # load the declh5 PDI plugin
-    declh5:
+    # load the decl_hdf5 PDI plugin
+    decl_hdf5:
       # and here is its configuration
       outputs:
         main_field: # ref to a variable

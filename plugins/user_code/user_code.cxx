@@ -41,212 +41,207 @@
 #include <pdi/value.h>
 
 
-namespace
-{
+namespace {
 
 using PDI::Context;
+using PDI::Data_descriptor;
+using PDI::Data_ref;
 using PDI::Error;
 using PDI::len;
+using PDI::Plugin;
 using PDI::Value;
 using PDI::to_string;
 using std::string;
 using std::unordered_multimap;
 using std::vector;
 
-/// function pointer
-typedef void (*ptr_fct_t)(void);
+/** An alias from one variable name to another
+ */
+class Alias;
 
-/// Structure for aliases
-class Alias
+/** An instance standing for an exposed alias. Exposure ends when the instance
+ * is destroyed (RAII)
+ */
+class ExposedAlias
 {
-private:
-	/// name to expose the alias as
-	string m_name;
-
-	/// value that is aliased
-	Value m_value;
-
-public:
-	Alias(const string &name, const string &var):
-		m_name {name},
-				 m_value {var}
-	{}
-
-	class ExposedAlias
-	{
-		friend class Alias;
-
-		PDI::Data_descriptor* m_desc;
-
-		ExposedAlias(Context& ctx, const Alias &alias):
-				m_desc{&ctx.desc(alias.m_name.c_str())}
-		{
-			try {
-				m_desc->share(alias.m_value.to_ref(ctx), false, false);
-			} catch(const Error &e) {
-				throw Error {e.status(), "Could not alias `%s' because %s", alias.m_name.c_str(), e.what()};
-			}
-		}
-
-		ExposedAlias(const ExposedAlias &) = delete;
-
+		Data_descriptor* m_desc;
+		
 	public:
-		ExposedAlias(ExposedAlias &&alias):
-				m_desc {alias.m_desc}
-		{
-			alias.m_desc = NULL;
-		}
-
+		ExposedAlias(Context& ctx, const Alias& alias);
+		
+		ExposedAlias(const ExposedAlias&) = delete;
+		
+		ExposedAlias(ExposedAlias&& alias);
+		
 		/** stop exposing the alias
-		 */
+		    */
 		~ExposedAlias()
 		{
-			if(m_desc) m_desc->release();
+			if (m_desc) m_desc->release();
 		}
-	};
+		
+}; // class ExposedAlias
 
-	friend class ExposedAlias;
+class Alias
+{
+	private:
+		/// name to expose the alias as
+		string m_name;
+		
+		/// value that is aliased
+		Value m_value;
+		
+	public:
+		Alias(const string& name, const string& var):
+			m_name {name},
+			m_value {var}
+		{}
+		
+		friend class ExposedAlias;
+		
+		/** exposes the alias
+		    */
+		ExposedAlias expose(Context& ctx)
+		{
+			return ExposedAlias{ctx, *this};
+		}
+		
+}; // class Alias
 
-	/** exposes the alias
-	 */
-	ExposedAlias expose(Context& ctx)
-	{
-		return ExposedAlias{ctx, *this};
+ExposedAlias::ExposedAlias(Context& ctx, const Alias& alias):
+	m_desc{&ctx.desc(alias.m_name.c_str())}
+{
+	try {
+		m_desc->share(alias.m_value.to_ref(ctx), false, false);
+	} catch (const Error& e) {
+		throw Error {e.status(), "Could not alias `%s' because %s", alias.m_name.c_str(), e.what()};
 	}
+}
 
-};
+ExposedAlias::ExposedAlias(ExposedAlias&& alias):
+	m_desc {alias.m_desc}
+{
+	alias.m_desc = NULL;
+}
 
 
-/** Structure to organize the interaction between functions and PDI
- *
- * When a specific event happens, call a function
- */
+/** A trigger for a function call
+    */
 class Trigger
 {
-private:
-	/// function to call on event
-	ptr_fct_t m_fct;
+		/// function pointer
+		typedef void (*ptr_fct_t)(void);
+		
+		/// function to call on event
+		ptr_fct_t m_fct;
+		
+		/// all the aliases to setup
+		vector<Alias> m_aliases;
+		
+	public:
+		/// parse tree to initialiaze this instance
+		Trigger(string funcname, PC_tree_t params)
+		{
+			void* fct_uncast = dlsym(RTLD_DEFAULT, funcname.c_str());
+			if (!fct_uncast) { // force loading from the main exe
+				void* exe_handle = dlopen(NULL, RTLD_NOW);
+				if (!exe_handle) {
+					throw Error {PDI_ERR_SYSTEM, "Unable to dlopen the main executable: %s", dlerror()};
+				}
+				fct_uncast = dlsym(exe_handle, funcname.c_str());
+			}
+			if (!fct_uncast) {
+				throw Error {PDI_ERR_SYSTEM, "Unable to load user function `%s': %s", funcname.c_str(), dlerror()};
+			}
+			m_fct = reinterpret_cast<ptr_fct_t>(fct_uncast);
+			
+			if (!PC_status(PC_get(params, "{0}"))) {   // parameters
+				int nparams = len(params);
+				for (int ii = 0; ii < nparams; ii++) {
+					string alias_name = to_string(PC_get(params, "{%d}", ii));
+					string var = to_string(PC_get(params, "<%d>", ii));
+					m_aliases.emplace_back(alias_name, var);
+				}
+			}
+		}
+		
+		/// call the function that has been registered
+		void call(Context& ctx)
+		{
+			// all exposed aliases that will be unexposed on destroy
+			vector<ExposedAlias> exposed_aliases;
+			for (auto&& alias : m_aliases) {
+				//create alias and share it with the plug-in
+				exposed_aliases.emplace_back(alias.expose(ctx));
+			}
+			m_fct();
+		}
+		
+}; // class Trigger
 
-	/// all the aliases to setup
-	vector<Alias> m_aliases;
-
-public:
-	/// parse tree to initialiaze this instance
-	Trigger(string funcname, PC_tree_t params)
+struct user_code_plugin: Plugin
+{
+	/// User-code to call on named events
+	unordered_multimap<string, Trigger> events_uc;
+	
+	/// User-code to call on data events
+	unordered_multimap<string, Trigger> data_uc;
+	
+	user_code_plugin(Context& ctx, PC_tree_t conf, MPI_Comm*):
+		Plugin{ctx}
 	{
-		void *fct_uncast = dlsym(RTLD_DEFAULT, funcname.c_str());
-		if(!fct_uncast) {  // force loading from the main exe
-			void *exe_handle = dlopen(NULL, RTLD_NOW);
-			if(!exe_handle) {
-				throw Error {PDI_ERR_SYSTEM, "Unable to dlopen the main executable: %s", dlerror()};
+		// Loading configuration for events
+		PC_tree_t on_event = PC_get(conf, ".on_event");
+		int nb_events = len(on_event, 0);
+		for (int map_id = 0; map_id < nb_events; map_id++) {
+			string event_name = to_string(PC_get(on_event, "{%d}", map_id));
+			PC_tree_t event = PC_get(on_event, "<%d>", map_id);
+			if (!PC_status(PC_get(event, ".call"))) {
+				events_uc.emplace(event_name, Trigger {to_string(PC_get(event, ".call")), PC_get(event, ".params")});
+			} else {
+				int nb_call = len(event, 0);
+				for (int call_id = 0; call_id < nb_call; ++call_id) {
+					events_uc.emplace(event_name, Trigger {to_string(PC_get(event, "{%d}", call_id)), PC_get(event, "<%d>", call_id)});
+				}
 			}
-			fct_uncast = dlsym(exe_handle, funcname.c_str());
 		}
-		if(!fct_uncast) {
-			throw Error {PDI_ERR_SYSTEM, "Unable to load user function `%s': %s", funcname.c_str(), dlerror()};
-		}
-		// ugly data to function ptr cast to be standard compatible (though undefined behavior)
-		m_fct = *((ptr_fct_t *)&fct_uncast);
-
-		if(!PC_status(PC_get(params, "{0}"))) {    // parameters
-			int nparams = len(params);
-			for(int ii = 0; ii < nparams; ii++) {
-				string alias_name = to_string(PC_get(params, "{%d}", ii));
-				string var = to_string(PC_get(params, "<%d>", ii));
-				m_aliases.emplace_back(alias_name, var);
+		
+		// Loading configuration for data
+		PC_tree_t on_data = PC_get(conf, ".on_data");
+		int nb_data = len(on_data, 0);
+		for (int map_id = 0; map_id < nb_data; map_id++) {
+			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
+			PC_tree_t data = PC_get(on_data, "<%d>", map_id);
+			if (!PC_status(PC_get(data, ".call"))) {
+				events_uc.emplace(data_name, Trigger {to_string(PC_get(data, ".call")), PC_get(data, ".params")});
+			} else {
+				int nb_call = len(data, 0);
+				for (int call_id = 0; call_id < nb_call; ++call_id) {
+					events_uc.emplace(data_name, Trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)});
+				}
 			}
 		}
 	}
-
-	/// call the function that has been registered
-	void call(Context& ctx)
+	
+	void event(const char* event) override
 	{
-		// all exposed aliases that will be unexposed on destroy
-		vector<Alias::ExposedAlias> exposed_aliases;
-		for(auto && alias : m_aliases) {
-			//create alias and share it with the plug-in
-			exposed_aliases.emplace_back(alias.expose(ctx));
-		}
-		m_fct();
-	}
-
-};
-
-
-/// User-code to call on named events
-unordered_multimap<string, Trigger> events_uc;
-
-/// User-code to call on data events
-unordered_multimap<string, Trigger> data_uc;
-
-
-void PDI_user_code_init(Context&, PC_tree_t conf, MPI_Comm *)
-{
-	events_uc.clear();
-	data_uc.clear();
-
-	if(PC_status(conf)) {
-		throw Error {PDI_ERR_CONFIG, "Invalid configuration"};
-	}
-
-	// Loading configuration for events
-	PC_tree_t on_event = PC_get(conf, ".on_event");
-	int nb_events = len(on_event, 0);
-	for(int map_id = 0; map_id < nb_events; map_id++) {
-		string event_name = to_string(PC_get(on_event, "{%d}", map_id));
-		PC_tree_t event = PC_get(on_event, "<%d>", map_id);
-		if(!PC_status(PC_get(event, ".call"))) {
-			events_uc.emplace(event_name, Trigger {to_string(PC_get(event, ".call")), PC_get(event, ".params")});
-		}
-		else {
-			int nb_call = len(event, 0);
-			for(int call_id = 0; call_id < nb_call; ++call_id) {
-				events_uc.emplace(event_name, Trigger {to_string(PC_get(event, "{%d}", call_id)), PC_get(event, "<%d>", call_id)});
-			}
+		auto&& evrange = events_uc.equal_range(event);
+		// invoke all required functions
+		for (auto evit = evrange.first; evit != evrange.second; ++evit) {
+			evit->second.call(context());
 		}
 	}
-
-	// Loading configuration for data
-	PC_tree_t on_data = PC_get(conf, ".on_data");
-	int nb_data = len(on_data, 0);
-	for(int map_id = 0; map_id < nb_data; map_id++) {
-		string data_name = to_string(PC_get(on_data, "{%d}", map_id));
-		PC_tree_t data = PC_get(on_data, "<%d>", map_id);
-		if(!PC_status(PC_get(data, ".call"))) {
-			events_uc.emplace(data_name, Trigger {to_string(PC_get(data, ".call")), PC_get(data, ".params")});
-		}
-		else {
-			int nb_call = len(data, 0);
-			for(int call_id = 0; call_id < nb_call; ++call_id) {
-				events_uc.emplace(data_name, Trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)});
-			}
+	
+	void data(const char* name, Data_ref) override
+	{
+		auto&& dtrange = events_uc.equal_range(name);
+		// invoke all required functions
+		for (auto dtit = dtrange.first; dtit != dtrange.second; ++dtit) {
+			dtit->second.call(context());
 		}
 	}
-}
-
-void PDI_user_code_finalize(Context&)
-{
-	events_uc.clear();
-	data_uc.clear();
-}
-
-void PDI_user_code_event(Context& ctx, const char *event)
-{
-	auto&& evrange = events_uc.equal_range(event);
-	// invoke all required functions
-	for(auto evit = evrange.first; evit != evrange.second; ++evit) {
-		evit->second.call(ctx);
-	}
-}
-
-void PDI_user_code_data(Context& ctx, const char* name, PDI::Data_ref)
-{
-	auto&& dtrange = events_uc.equal_range(name);
-	// invoke all required functions
-	for(auto dtit = dtrange.first; dtit != dtrange.second; ++dtit) {
-		dtit->second.call(ctx);
-	}
-}
+	
+}; // struct user_code_plugin
 
 } // namespace <anonymous>
 

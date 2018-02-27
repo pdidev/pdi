@@ -63,7 +63,7 @@ private:
 		Data_A_ref<R, W> m_t;
 	};
 	
-	Context& m_context;
+	Context &m_context;
 	
 	/// References to the values of this descriptor
 	std::stack<std::unique_ptr<Ref_holder>> m_refs;
@@ -78,7 +78,7 @@ private:
 	
 	/** Create an empty descriptor
 	 */
-	Data_descriptor(Context& ctx, const char *name);
+	Data_descriptor(Context &ctx, const char *name);
 	
 	Data_descriptor(const Data_descriptor &) = delete;
 	
@@ -101,18 +101,30 @@ public:
 	 * \todo remove this and attach this config to the type
 	 * \return the full configuration attached to the descriptor
 	 */
-	PC_tree_t config() const { return m_config; }
+	PC_tree_t config() const
+	{
+		return m_config;
+	}
 	
 	/** Return true if the data is a metadata
 	 */
-	bool metadata() const { return m_metadata; }
+	bool metadata() const
+	{
+		return m_metadata;
+	}
 	
 	/** Sets whether this describes a metadata or not
 	 * \param metadata whether data shared through this descriptor should behave as a metadata
 	 */
-	void metadata(bool metadata) { m_metadata = metadata; }
+	void metadata(bool metadata)
+	{
+		m_metadata = metadata;
+	}
 	
-	const std::string &name() const { return m_name; }
+	const std::string &name() const
+	{
+		return m_name;
+	}
 	
 	/** Return a reference to the value of the data behind this descriptor
 	 */
@@ -129,9 +141,9 @@ public:
 	 * \param[in,out] ref a reference to the shared data
 	 * \param read whether the stored reference should have read access
 	 * \param write whether write access is granted to other references
-	 * \return the just shared buffer 
+	 * \return the just shared buffer
 	 */
-	void* share(Data_ref ref, bool read, bool write);
+	void *share(Data_ref ref, bool read, bool write);
 	
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
 	 * free the associated memory whenever necessary.

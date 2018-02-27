@@ -54,7 +54,7 @@ int PDI_EXPORT len(PC_tree_t tree);
  * - for a sequence: the number of nodes,
  * - for a mapping: the number of pairs,
  * - for a scalar: the string length.
- * 
+ *
  * returns the default value in case of error
  *
  * \param[in] tree the sequence or mapping
@@ -118,7 +118,7 @@ std::string PDI_EXPORT to_string(PC_tree_t tree);
  * \param[in] dflt the default value in case of error
  * \return the content of the scalar node
  */
-std::string PDI_EXPORT to_string(PC_tree_t tree, const std::string& dflt);
+std::string PDI_EXPORT to_string(PC_tree_t tree, const std::string &dflt);
 
 /** Returns the boolean value of a scalar node
  *

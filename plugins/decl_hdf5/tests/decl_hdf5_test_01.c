@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (c) 2015, Corentin Roussel - CEA (corentin.roussel@cea.fr)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,69 +21,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-  
-//The following is used for doxygen documentation:
- /**
- * \file test_plugin.c
- * \brief a pdi project file
- * \author J. Bigot (CEA)
- */
 
+#include <assert.h>
+#include <unistd.h>
 #include <mpi.h>
-#include <iostream>
-
 #include <pdi.h>
-#include <pdi/context.h>
-#include <pdi/plugin.h>
-#include <pdi/data_reference.h>
 
-namespace {
-
-using namespace PDI;
-using std::cout;
-
-MPI_Comm my_comm;
-
-void PDI_test_plugin_init(Context&, PC_tree_t, MPI_Comm *world)
+int main( int argc, char* argv[] )
 {
-	if (MPI_Comm_dup(*world, &my_comm)) return;
+	int value[5]= {5,4,3,2,1};
+	int i;
+	int* buf=NULL;
+	const int nbuf=1000;
+	double test_var=0;
+	MPI_Init(&argc, &argv);
+	assert(argc == 2 && "Needs 1 single arg: config file");
+	PC_tree_t conf = PC_parse_path(argv[1]);
+	MPI_Comm world = MPI_COMM_WORLD;
+	PDI_status_t err = PDI_init(PC_get(conf,".pdi"), &world);
 	
-	int rank; if (MPI_Comm_rank(my_comm, &rank)) return;
-	
-	if ( rank == 0 ) {
-		printf("Welcome to the test plugin!\n");
+	PDI_transaction_begin("testing");
+	PDI_expose("meta0",&value[0], PDI_OUT);
+	PDI_expose("meta1",&value[0], PDI_OUT);
+	buf=malloc(nbuf*sizeof(int)); // memory
+	PDI_expose("meta2",&value[1], PDI_OUT);
+	for (i=0; i<nbuf; i++) {
+		buf[i]=0;
 	}
-}
-
-void PDI_test_plugin_finalize(Context&)
-{
-	int rank; if (MPI_Comm_rank(my_comm, &rank)) return;
-	
-	if ( rank == 0 ) {
-		printf("Goodbye from the test plugin!\n");
+	PDI_expose("meta3",&value[2], PDI_OUT);
+	for (i=0; i<nbuf-1; i++) {
+		buf[i]=buf[i+1]+1;
 	}
+	PDI_expose("meta4",&value[3], PDI_OUT);
+	PDI_expose("test_var",&test_var, PDI_OUT);
+	free(buf);
+	PDI_transaction_end();
+	PDI_finalize();
 	
-	if (MPI_Comm_free(&my_comm)) return;
-}
-
-void PDI_test_plugin_event(Context&, const char *event)
-{
-	int rank; if (MPI_Comm_rank(my_comm, &rank)) return;
+	char fname[] = "5.h5";
+	FILE* fp=NULL;
+	fp= fopen(fname, "r");
+	assert( fp != NULL  && "File not found.");
+	fclose(fp);
 	
-	if ( rank == 0 ) {
-		printf("test plugin got an event: %s!\n", event);
-	}
+	PC_tree_destroy(&conf);
+	MPI_Finalize();
+	return 0;
 }
-
-void PDI_test_plugin_data(Context&, const char* name, PDI::Data_ref)
-{
-	int rank; if (MPI_Comm_rank(my_comm, &rank)) return;
-	
-	if ( rank == 0 ) {
-		cout << " =>> data becoming available to the test plugin: "<<name<<"!\n";
-	}
-}
-
-}
-
-PDI_PLUGIN(test_plugin)

@@ -38,7 +38,7 @@ namespace PDI
 {
 
 class PDI_EXPORT Data_type:
-		public Type_template
+	public Type_template
 {
 public:
 	/** Creates a new datatype as an exact copy of this one
@@ -82,7 +82,7 @@ public:
 };
 
 class PDI_EXPORT Scalar_datatype:
-		public Data_type
+	public Data_type
 {
 private:
 	/// Interpretation of the content
@@ -101,28 +101,46 @@ public:
 	
 	/** Interpretation of the content
 	 */
-	Scalar_kind kind() const { return m_kind; }
+	Scalar_kind kind() const
+	{
+		return m_kind;
+	}
 	
-	Type_template_uptr clone() const override { return clone_type(); }
+	Type_template_uptr clone() const override
+	{
+		return clone_type();
+	}
 	
 	Data_type_uptr clone_type() const override;
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context&) const override;
+	Data_type_uptr evaluate(Context &) const override;
 	
-	bool dense() const override { return true; }
+	bool dense() const override
+	{
+		return true;
+	}
 	
-	size_t datasize() const override { return m_size; }
+	size_t datasize() const override
+	{
+		return m_size;
+	}
 	
-	size_t buffersize() const override { return m_size; }
+	size_t buffersize() const override
+	{
+		return m_size;
+	}
 	
-	size_t alignment() const override { return m_align; }
+	size_t alignment() const override
+	{
+		return m_align;
+	}
 	
 };
 
 class PDI_EXPORT Array_datatype:
-		public Data_type
+	public Data_type
 {
 	/// Type of the elements contained in the array.
 	Data_type_uptr m_subtype;
@@ -143,27 +161,42 @@ public:
 	
 	/** Type of the elements contained in the array.
 	 */
-	const Data_type & subtype() const { return *m_subtype; }
+	const Data_type &subtype() const
+	{
+		return *m_subtype;
+	}
 	
 	/** Number of elements the array can store
 	 */
-	size_t size() const { return m_size; }
+	size_t size() const
+	{
+		return m_size;
+	}
 	
 	/** id of the first actual element of the array
 	 */
-	size_t start() const { return m_start; }
+	size_t start() const
+	{
+		return m_start;
+	}
 	
 	/** Number of actual elements in the array
 	 */
-	size_t subsize() const { return m_subsize; }
+	size_t subsize() const
+	{
+		return m_subsize;
+	}
 	
-	Type_template_uptr clone() const override { return clone_type(); }
+	Type_template_uptr clone() const override
+	{
+		return clone_type();
+	}
 	
 	Data_type_uptr clone_type() const override;
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context&) const override;
+	Data_type_uptr evaluate(Context &) const override;
 	
 	bool dense() const override;
 	
@@ -176,11 +209,10 @@ public:
 };
 
 class PDI_EXPORT Record_datatype:
-		public Data_type
+	public Data_type
 {
 public:
-	struct Member
-	{
+	struct Member {
 	private:
 		/// Offset or distance in byte from the Record_datatype start
 		size_t m_displacement;
@@ -191,15 +223,24 @@ public:
 		std::string m_name;
 		
 	public:
-		Member( size_t displacement, Data_type_uptr type, const std::string& name ): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
+		Member(size_t displacement, Data_type_uptr type, const std::string &name): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
 		
-		Member( const Member& o ): m_displacement{o.m_displacement}, m_type{o.m_type->clone_type()}, m_name{o.m_name} {}
+		Member(const Member &o): m_displacement{o.m_displacement}, m_type{o.m_type->clone_type()}, m_name{o.m_name} {}
 		
-		size_t displacement() const { return m_displacement; }
+		size_t displacement() const
+		{
+			return m_displacement;
+		}
 		
-		const Data_type& type() const { return *m_type; }
+		const Data_type &type() const
+		{
+			return *m_type;
+		}
 		
-		const std::string& name() const { return m_name; }
+		const std::string &name() const
+		{
+			return m_name;
+		}
 		
 	};
 	
@@ -213,21 +254,30 @@ private:
 public:
 	Record_datatype(std::vector<Member> &&members, size_t size): m_members{move(members)}, m_buffersize{std::move(size)} {}
 	
-	const std::vector<Member>& members() const { return m_members; }
+	const std::vector<Member> &members() const
+	{
+		return m_members;
+	}
 	
-	Type_template_uptr clone() const override { return clone_type(); }
+	Type_template_uptr clone() const override
+	{
+		return clone_type();
+	}
 	
 	Data_type_uptr clone_type() const override;
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context&) const override;
+	Data_type_uptr evaluate(Context &) const override;
 	
 	bool dense() const override;
 	
 	size_t datasize() const override;
 	
-	size_t buffersize() const override { return m_buffersize; }
+	size_t buffersize() const override
+	{
+		return m_buffersize;
+	}
 	
 	size_t alignment() const override;
 	

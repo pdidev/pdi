@@ -30,7 +30,7 @@
 #include <pdi.h>
 
 /** Forward declaration of all PDI types
- * 
+ *
  * \file fwd.h
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
@@ -66,9 +66,11 @@ class Data_type;
 
 typedef std::unique_ptr<Data_type> Data_type_uptr;
 
+class Plugin;
+
 /** Different possible interpretations for a scalar
 	*/
-enum class Scalar_kind: uint8_t { UNKNOWN, SIGNED, UNSIGNED, FLOAT, ADDRESS };
+enum class Scalar_kind : uint8_t { UNKNOWN, SIGNED, UNSIGNED, FLOAT, ADDRESS };
 
 /** A PDI type template descriptor
  *
@@ -85,9 +87,5 @@ typedef std::unique_ptr<Type_template> Type_template_uptr;
 class Value;
 
 }
-
-/** Definition of a plugin
- */
-typedef struct PDI_plugin_s PDI_plugin_t;
 
 #endif

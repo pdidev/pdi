@@ -44,7 +44,7 @@ endif()
 
 # Build options
 option(USE_SYSTEM_PARACONF     "Use an already installed paraconf instead of building the embedded one" OFF )
-option(ENABLE_DECLH5           "Build HDF5 based DeclH5 plug-in." ON )
+option(ENABLE_DECL_HDF5           "Build HDF5 based decl'HDF5 plug-in." ON )
 option(ENABLE_FTI              "Build FTI plug-in." ON )
 option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
 # Testing options
@@ -96,11 +96,11 @@ add_custom_target(re_format COMMAND make all WORKING_DIRECTORY "${CMAKE_CURRENT_
 add_subdirectory(src/)
 
 ## The plugins
-add_subdirectory(plugins/test_plugin/)
+add_subdirectory(plugins/test/)
 add_subdirectory(plugins/user_code/)
 
-if(${ENABLE_DECLH5})
-	add_subdirectory(plugins/declh5/)
+if(${ENABLE_DECL_HDF5})
+	add_subdirectory(plugins/decl_hdf5/)
 endif()
 
 if(${ENABLE_FTI})

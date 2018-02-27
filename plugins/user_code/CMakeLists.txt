@@ -27,18 +27,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-add_library(user_code MODULE
-	user_code.cxx
-)
-include(AddCCompilerFlags)
-add_compiler_flags(user_code PRIVATE -Wall -Wextra)
-target_link_libraries(user_code pdi)
+cmake_minimum_required(VERSION 3.1)
+project(pdi_user_code_plugin LANGUAGES CXX)
 
-# library installation
-install(TARGETS user_code EXPORT user_codeTargets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
+# The plugin
+add_library(pdi_user_code_plugin MODULE user_code.cxx)
+target_link_libraries(pdi_user_code_plugin pdi)
+set_target_properties(pdi_user_code_plugin PROPERTIES
+		CXX_STANDARD 11
+		CXX_STANDARD_REQUIRED TRUE
+		CXX_VISIBILITY_PRESET hidden)
 
+# Installation
+install(TARGETS pdi_user_code_plugin EXPORT user_codeTargets LIBRARY DESTINATION lib)
 
+# Tests
 add_subdirectory(tests/)

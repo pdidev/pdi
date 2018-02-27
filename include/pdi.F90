@@ -28,5 +28,5 @@
 #endif
 
 #ifndef PDI_CMAKE_IGNORE_THIS
-include 'PDI.h'
+include 'pdi_fortran.h'
 #endif

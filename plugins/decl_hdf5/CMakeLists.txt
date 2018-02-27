@@ -27,10 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-add_library(declh5 MODULE
-	declh5.cxx
-)
-target_link_libraries(declh5 PUBLIC pdi)
+cmake_minimum_required(VERSION 3.1)
+project(pdi_decl_hdf5_plugin LANGUAGES CXX)
 
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
@@ -39,23 +37,19 @@ find_package(HDF5 REQUIRED C HL)
 if(NOT "${HDF5_IS_PARALLEL}")
 	message(WARNING "Sequential HDF5 only found, decl'H5 will not work in parallel")
 endif()
-target_link_libraries(declh5 PUBLIC ${HDF5_C_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
-target_include_directories(declh5 PRIVATE ${HDF5_INCLUDE_DIRS})
-target_compile_definitions(declh5 PRIVATE ${HDF5_DEFINITIONS})
 
-# OMP
-find_package(OMP)
-set_target_properties(declh5 PROPERTIES COMPILE_FLAGS " ${OMP_C_COMPILE_FLAGS}")
+# The plugin
+add_library(pdi_decl_hdf5_plugin MODULE decl_hdf5.cxx)
+target_link_libraries(pdi_decl_hdf5_plugin PUBLIC pdi ${HDF5_C_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
+target_include_directories(pdi_decl_hdf5_plugin PRIVATE ${HDF5_INCLUDE_DIRS})
+target_compile_definitions(pdi_decl_hdf5_plugin PRIVATE ${HDF5_DEFINITIONS})
+set_target_properties(pdi_decl_hdf5_plugin PROPERTIES
+		CXX_STANDARD 11
+		CXX_STANDARD_REQUIRED TRUE
+		CXX_VISIBILITY_PRESET hidden)
 
-# Warnings
-include(AddCCompilerFlags)
-add_compiler_flags(declh5 PRIVATE -Wall -Wextra)
-
-# library installation
-install(TARGETS declh5 EXPORT declh5Targets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-)
+# installation
+install(TARGETS pdi_decl_hdf5_plugin EXPORT decl_hdf5Targets LIBRARY DESTINATION lib)
 
 # Tests
 add_subdirectory(tests/)

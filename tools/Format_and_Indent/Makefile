@@ -12,7 +12,6 @@ DIR_H  := "../../include/"
 
 # Origin src
 PDI_SRC:= $(shell find $(DIR_SRC) -maxdepth 1 -iname '*.c') $(shell find $(DIR_SRC) -maxdepth 1 -iname '*.cxx')
-PDI_HDR:= $(shell find $(DIR_HDR) -maxdepth 1 -iname '*.h')
 PDI_INC:= $(shell find $(DIR_INC) -maxdepth 1 -iname '*.h')
 PDI_H  := $(shell find $(DIR_H)   -maxdepth 1 -iname '*.h')
 
@@ -51,18 +50,13 @@ copy_style:
 #   Create new files that are reformatted   #
 #############################################
 # Check Formatting in all sub directories and create corrected files 
-indent_all: loc_src.loc loc_hdr.loc loc_inc.loc loc_h.loc
+indent_all: loc_src.loc loc_inc.loc loc_h.loc
 
 loc_src.loc: $(PDI_SRC)
 	@cp $(PDI_SRC) $(LOC_SRC) 
 	@(cd $(LOC_SRC) && $(MAKE) src_c.loc)
 	@(cd $(LOC_SRC) && $(MAKE) src_cxx.loc)
 	@touch loc_src.loc
-
-loc_hdr.loc: $(PDI_HDR)
-	@cp $(PDI_HDR) $(LOC_HDR)
-	@(cd $(LOC_HDR) && $(MAKE) hdr.loc)
-	@touch loc_hdr.loc
 
 loc_inc.loc: $(PDI_INC) 
 	@cp $(PDI_INC) $(LOC_INC)

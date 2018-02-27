@@ -55,7 +55,10 @@ public:
 	
 	const char *what() const noexcept override;
 	
-	PDI_status_t status() const noexcept { return m_status; }
+	PDI_status_t status() const noexcept
+	{
+		return m_status;
+	}
 	
 };
 

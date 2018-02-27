@@ -40,7 +40,6 @@
 namespace PDI
 {
 
-using std::back_inserter;
 using std::max;
 using std::string;
 using std::transform;
@@ -50,37 +49,37 @@ using std::vector;
 
 Data_type_uptr Scalar_datatype::clone_type() const
 {
-	return unique_ptr<Scalar_datatype>{new Scalar_datatype{m_kind, m_size, m_align}};
+	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
 }
 
 Data_type_uptr Scalar_datatype::densify() const
 {
-	return unique_ptr<Scalar_datatype>{new Scalar_datatype{m_kind, m_size, m_align}};
+	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
 }
 
-Data_type_uptr Scalar_datatype::evaluate(Context&) const
+Data_type_uptr Scalar_datatype::evaluate(Context &) const
 {
 	return clone_type();
 }
 
 Data_type_uptr Array_datatype::clone_type() const
 {
-	return unique_ptr<Array_datatype>{new Array_datatype{m_subtype->clone_type(), m_size, m_start, m_subsize}};
+	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->clone_type(), m_size, m_start, m_subsize}};
 }
 
 Data_type_uptr Array_datatype::densify() const
 {
-	return unique_ptr<Array_datatype>{new Array_datatype{m_subtype->densify(), m_subsize}};
+	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->densify(), m_subsize}};
 }
 
-Data_type_uptr Array_datatype::evaluate(Context&) const
+Data_type_uptr Array_datatype::evaluate(Context &) const
 {
 	return Array_datatype::clone_type();
 }
 
 bool Array_datatype::dense() const
 {
-	if ( m_size != m_subsize ) return false;
+	if (m_size != m_subsize) return false;
 	return m_subtype->dense();
 }
 
@@ -101,21 +100,21 @@ size_t Array_datatype::alignment() const
 
 Data_type_uptr Record_datatype::clone_type() const
 {
-	return unique_ptr<Record_datatype>{new Record_datatype{vector<Member>(m_members), m_buffersize}};
+	return unique_ptr<Record_datatype> {new Record_datatype{vector<Member>(m_members), m_buffersize}};
 }
 
 Data_type_uptr Record_datatype::densify() const
 {
 	long displacement = 0;
 	vector<Record_datatype::Member> densified_members;
-	for ( auto&& member: m_members ) {
+	for (auto &&member : m_members) {
 		densified_members.emplace_back(displacement, member.type().densify(), member.name());
 		displacement += densified_members.back().type().datasize();
 	}
-	return unique_ptr<Record_datatype>{new Record_datatype{move(densified_members), m_buffersize}};
+	return unique_ptr<Record_datatype> {new Record_datatype{move(densified_members), m_buffersize}};
 }
 
-Data_type_uptr Record_datatype::evaluate(Context&) const
+Data_type_uptr Record_datatype::evaluate(Context &) const
 {
 	return Record_datatype::clone_type();
 }
@@ -128,7 +127,7 @@ bool Record_datatype::dense() const
 size_t Record_datatype::datasize() const
 {
 	size_t result = 0;
-	for ( auto&& member: m_members ) {
+	for (auto &&member : m_members) {
 		result += member.type().datasize();
 	}
 	return result;
@@ -137,7 +136,7 @@ size_t Record_datatype::datasize() const
 size_t Record_datatype::alignment() const
 {
 	size_t result = 0;
-	for ( auto&& member: m_members ) {
+	for (auto &&member : m_members) {
 		result = max(result, member.type().alignment());
 	}
 	return result;

@@ -8,7 +8,7 @@ pdi:
   data: # values that can not be referenced using $syntax
     test_var: double
   plugins:
-    declh5:
+    decl_hdf5:
       outputs:
         test_var:
           file: $meta1.h5

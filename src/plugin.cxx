@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Corentin Roussel - CEA (corentin.roussel@cea.fr)
+ * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -22,45 +22,33 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
-#include <unistd.h>
-#include <mpi.h>
-#include <pdi.h>
+#include "config.h"
 
-int main( int argc, char *argv[] )
+#include <pdi/context.h>
+#include <pdi/data_reference.h>
+
+#include "pdi/plugin.h"
+
+
+namespace PDI
 {
-	int value[5]={5,4,3,2,1};
-	int i;
-	int* buf=NULL;
-	const int nbuf=1000;
-	double test_var=0;
-	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	PC_tree_t conf = PC_parse_path(argv[1]);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_status_t err = PDI_init(PC_get(conf,".pdi"), &world);
 
-	PDI_transaction_begin("testing");
-	PDI_expose("meta0",&value[0], PDI_OUT);
-	PDI_expose("meta1",&value[0], PDI_OUT);
-	buf=malloc(nbuf*sizeof(int)); // memory 
-	PDI_expose("meta2",&value[1], PDI_OUT);
-	for(i=0;i<nbuf;i++){ buf[i]=0;}
-	PDI_expose("meta3",&value[2], PDI_OUT);
-	for(i=0;i<nbuf-1;i++){ buf[i]=buf[i+1]+1;}
-	PDI_expose("meta4",&value[3], PDI_OUT);
-	PDI_expose("test_var",&test_var, PDI_OUT);
-	free(buf);
-	PDI_transaction_end();
-	PDI_finalize();
+Plugin::Plugin(Context &ctx):
+		m_context(ctx)
+{}
 
-	char fname[] = "5.h5";
-	FILE* fp=NULL;
-	fp= fopen(fname, "r");
-	assert( fp != NULL  && "File not found.");
-	fclose(fp);
+Plugin::~Plugin()
+{}
 
-	PC_tree_destroy(&conf);
-	MPI_Finalize();
-	return 0;
+void Plugin::event(const char*)
+{}
+
+void Plugin::data(const char *, Data_ref)
+{}
+
+Context &Plugin::context()
+{
+	return m_context;
+}
+
 }

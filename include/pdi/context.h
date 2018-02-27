@@ -39,7 +39,8 @@
 #include <pdi/data_descriptor.h>
 
 
-namespace PDI {
+namespace PDI
+{
 
 class PDI_EXPORT Context
 {
@@ -67,23 +68,21 @@ public:
 	
 private:
 	/// The loaded plugins
-	std::unordered_map<std::string, std::unique_ptr<PDI_plugin_t>> plugins;
+	std::unordered_map<std::string, std::unique_ptr<Plugin>> plugins;
 	
 	/// Descriptors of the data
 	std::unordered_map<std::string, Data_descriptor> m_descriptors;
 	
-	Context(const Context&) = delete;
+	Context(const Context &) = delete;
 	
-	Context(Context&&) = delete;
+	Context(Context &&) = delete;
 	
 public:
 	Context(PC_tree_t conf, MPI_Comm *world);
 	
-	~Context();
-	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	Data_descriptor &desc(const std::string& name);
+	Data_descriptor &desc(const std::string &name);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
@@ -91,7 +90,7 @@ public:
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	Data_descriptor &operator[](const std::string& name);
+	Data_descriptor &operator[](const std::string &name);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
@@ -104,7 +103,7 @@ public:
 	/** Returns an iterator past the last descriptor
 	 */
 	Iterator end();
-
+	
 	/** Triggers a PDI "event"
 	 * \param[in] name the event name
 	 */

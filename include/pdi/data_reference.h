@@ -92,9 +92,9 @@ protected:
 		
 		Ref_count() = delete;
 		
-		Ref_count (const Ref_count &) = delete;
+		Ref_count(const Ref_count &) = delete;
 		
-		Ref_count (Ref_count &&) = delete;
+		Ref_count(Ref_count &&) = delete;
 		
 		/** Constructs the content
 		 * \param buffer the actual content
@@ -103,7 +103,7 @@ protected:
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */
-		Ref_count (void *buffer, std::function<void(void *)> deleter, Data_type_uptr type, bool readable, bool writable):
+		Ref_count(void *buffer, std::function<void(void *)> deleter, Data_type_uptr type, bool readable, bool writable):
 			m_buffer{buffer},
 			m_delete{deleter},
 			m_type{std::move(type)},
@@ -142,21 +142,18 @@ protected:
 
 
 template<bool R, bool W>
-struct Ref_access
-{
+struct Ref_access {
 	typedef void type;
 };
 
 template<bool R>
-struct Ref_access<R, true>
-{
-	typedef void* type;
+struct Ref_access<R, true> {
+	typedef void *type;
 };
 
 template<>
-struct Ref_access<true, false>
-{
-	typedef const void* type;
+struct Ref_access<true, false> {
+	typedef const void *type;
 };
 
 
@@ -235,7 +232,7 @@ public:
 	Data_A_ref(void *data, std::function<void(void *)> freefunc, Data_type_uptr type, bool readable, bool writable):
 		Data_ref_base()
 	{
-		if (data) link(new Ref_count (data, freefunc, std::move(type), readable, writable));
+		if (data) link(new Ref_count(data, freefunc, std::move(type), readable, writable));
 	}
 	
 	/** Destructor
@@ -249,7 +246,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	operator typename Ref_access<R,W>::type() const
+	operator typename Ref_access<R, W>::type() const
 	{
 		return get();
 	}
@@ -258,7 +255,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	typename Ref_access<R,W>::type get() const
+	typename Ref_access<R, W>::type get() const
 	{
 		if (is_null()) throw Error{PDI_ERR_RIGHT, "Trying to dereference a null reference"};
 		return m_content->m_buffer;
@@ -280,12 +277,13 @@ public:
 		if (m_content) unlink();
 	}
 	
-	/** Makes a copy of the raw content behind this reference and returns a new 
+	/** Makes a copy of the raw content behind this reference and returns a new
 	 * reference
 	 *
 	 * \return a new reference to a copy of the raw data this references
 	 */
-	Data_ref copy() {
+	Data_ref copy()
+	{
 		return do_copy(*this);
 	}
 	

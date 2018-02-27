@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -34,41 +34,43 @@
 #define CST1 1
 #define test_value( var, value, fatal) fct_test_value( var, value, fatal, __func__, __LINE__)
 
-static void fct_test_value(int var, const int value, int fatal, const char *fct, int line){
-	if(value != var) {
+static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
+{
+	if (value != var) {
 		fprintf(stdout, "Test in func %s line %3d, not working: value=%d, var=%d \n", fct, line, value, var);
 		fflush(stdout);
 		if (fatal) abort();
-	} else { 
+	} else {
 		fprintf(stdout, "Test in func %s line %3d, working : value =%d = var \n", fct, line, value);
 		fflush(stdout);
 	}
 	return;
 }
 
-void test(void){
-	int *buffer=NULL;
+void test(void)
+{
+	int* buffer=NULL;
 	PDI_access("input", (void**)&buffer, PDI_IN); // Read something from input
 	test_value(*buffer, CST0, FATAL);
 	PDI_release("input");
-
+	
 	PDI_access("output", (void**)&buffer, PDI_OUT);
 	*buffer=CST1; // Write something to output
 	PDI_release("output");
 }
 
 
-int main( int argc, char *argv[] )
+int main( int argc, char* argv[] )
 {
 	int in,out;
 	MPI_Init(&argc, &argv);
 	assert(argc == 2 && "Needs 1 single arg: config file");
-
+	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
-
+	
 	PDI_init(conf, &world);
-
+	
 	in=CST0;
 	out=CST0;
 	PDI_transaction_begin("testing");
@@ -77,7 +79,7 @@ int main( int argc, char *argv[] )
 	PDI_transaction_end();
 	test_value(out, CST1, FATAL);
 	PDI_finalize();
-
+	
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 	return 0;

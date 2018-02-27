@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -30,24 +30,24 @@
 #define IMX 10
 #define JMX 5
 
-int main( int argc, char *argv[] )
+int main( int argc, char* argv[] )
 {
 	int values[JMX][IMX], cp_values[JMX][IMX];
 	double reals[JMX][IMX], cp_reals[JMX][IMX];
 	int i, j, input;
 	int ni=IMX,nj=JMX; // PDI only
-
+	
 	MPI_Init(&argc, &argv);
 	assert(argc == 2 && "Needs 1 single arg: config file");
-
+	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_status_t err = PDI_init(PC_get(conf,".pdi"), &world);
 	int rank; MPI_Comm_rank(world, &rank);
-
-	// Fill arrays 
-	for(j=0;j<JMX;++j){
-		for(i=0;i<IMX;++i){
+	
+	// Fill arrays
+	for (j=0; j<JMX; ++j) {
+		for (i=0; i<IMX; ++i) {
 			values[j][i]= i;
 			reals[j][i] = (double)(i)+0.1*(i%10);
 			cp_values[j][i]= -1;
@@ -61,22 +61,22 @@ int main( int argc, char *argv[] )
 	// Set size for PDI
 	PDI_expose("ni",&ni, PDI_OUT);
 	PDI_expose("nj",&nj, PDI_OUT);
-
+	
 	// Test that export/exchange works
 	PDI_expose("input",&input, PDI_OUT);
-	PDI_expose("reals",&reals , PDI_OUT);     // output real
-	PDI_expose("values",&values , PDI_INOUT); // output integers
+	PDI_expose("reals",&reals, PDI_OUT);      // output real
+	PDI_expose("values",&values, PDI_INOUT);  // output integers
 	
 	input=1;
 	// Import should also work
 	PDI_expose("input",&input, PDI_OUT); // update metadata => HDF5 now import only
-	PDI_expose("reals" ,&cp_reals, PDI_IN);     // input real 
-	PDI_expose("values" ,&cp_values, PDI_INOUT); // input integers
-
+	PDI_expose("reals",&cp_reals, PDI_IN);      // input real
+	PDI_expose("values",&cp_values, PDI_INOUT);  // input integers
+	
 	// So the data should be the same
 	fprintf(stderr,"Data exported | Data imported\n");
-	for(j=0;j<JMX;++j){
-		for(i=0;i<IMX;++i){
+	for (j=0; j<JMX; ++j) {
+		for (i=0; i<IMX; ++i) {
 			fprintf(stderr,"%10d     %4d\n", values[j][i], cp_values[j][i]);
 			fprintf(stderr,"%10.2f     %2.2f\n", reals[j][i], cp_reals[j][i]);
 			assert( values[j][i] ==  cp_values[j][i]);

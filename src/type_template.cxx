@@ -41,7 +41,6 @@
 namespace PDI
 {
 
-using std::back_inserter;
 using std::max;
 using std::string;
 using std::transform;
@@ -52,7 +51,7 @@ namespace
 {
 
 class Scalar_template:
-public Type_template
+	public Type_template
 {
 private:
 	/// Interpretation of the content
@@ -71,22 +70,23 @@ public:
 	
 	Type_template_uptr clone() const override
 	{
-		return unique_ptr<Scalar_template>{new Scalar_template{m_kind, m_size, m_align}};
+		return unique_ptr<Scalar_template> {new Scalar_template{m_kind, m_size, m_align}};
 	}
 	
-	Data_type_uptr evaluate(Context& ctx) const override
+	Data_type_uptr evaluate(Context &ctx) const override
 	{
-		return unique_ptr<Scalar_datatype>{new Scalar_datatype{
+		return unique_ptr<Scalar_datatype> {new Scalar_datatype{
 				m_kind,
 				static_cast<size_t>(m_size.to_long(ctx)),
 				static_cast<size_t>(m_align.to_long(ctx))
-		}};
+			}
+		};
 	}
 	
 };
 
 class Array_template:
-public Type_template
+	public Type_template
 {
 	/// Type of the elements contained in the array.
 	Type_template_uptr m_subtype;
@@ -107,26 +107,26 @@ public:
 	
 	Type_template_uptr clone() const override
 	{
-		return unique_ptr<Array_template>{new Array_template{m_subtype->clone(), m_size, m_start, m_subsize}};
+		return unique_ptr<Array_template> {new Array_template{m_subtype->clone(), m_size, m_start, m_subsize}};
 	}
 	
-	Data_type_uptr evaluate(Context& ctx) const override
+	Data_type_uptr evaluate(Context &ctx) const override
 	{
-		return unique_ptr<Array_datatype>{new Array_datatype{
+		return unique_ptr<Array_datatype> {new Array_datatype{
 				m_subtype->evaluate(ctx),
 				static_cast<size_t>(m_size.to_long(ctx)),
 				static_cast<size_t>(m_start.to_long(ctx)),
 				static_cast<size_t>(m_subsize.to_long(ctx))
-		}};
+			}
+		};
 	}
 	
 };
 
 class Record_template:
-public Type_template
+	public Type_template
 {
-	struct Member
-	{
+	struct Member {
 		/// Offset or distance in byte from the Record_template start
 		Value m_displacement;
 		
@@ -135,9 +135,9 @@ public Type_template
 		
 		std::string m_name;
 		
-		Member( Value displacement, Type_template_uptr type, const std::string& name ): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
+		Member(Value displacement, Type_template_uptr type, const std::string &name): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
 		
-		Member( const Member& o ): m_displacement{o.m_displacement}, m_type{o.m_type->clone()}, m_name{o.m_name} {}
+		Member(const Member &o): m_displacement{o.m_displacement}, m_type{o.m_type->clone()}, m_name{o.m_name} {}
 		
 	};
 	
@@ -152,22 +152,22 @@ public:
 	
 	Type_template_uptr clone() const override
 	{
-		return unique_ptr<Record_template>{new Record_template{vector<Member>(m_members), Value{m_buffersize}}};
+		return unique_ptr<Record_template> {new Record_template{vector<Member>(m_members), Value{m_buffersize}}};
 	}
 	
-	Data_type_uptr evaluate(Context& ctx) const override
+	Data_type_uptr evaluate(Context &ctx) const override
 	{
 		vector<Record_datatype::Member> evaluated_members;
-		for ( auto&& member: m_members ) {
+		for (auto &&member : m_members) {
 			evaluated_members.emplace_back(member.m_displacement.to_long(ctx), member.m_type->evaluate(ctx), member.m_name);
 		}
-		return unique_ptr<Record_datatype>{new Record_datatype{move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx))}};
+		return unique_ptr<Record_datatype> {new Record_datatype{move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx))}};
 	}
 	
 };
 
 /// ordering of array
-enum class Array_order: uint8_t { C, FORTRAN };
+enum class Array_order : uint8_t { C, FORTRAN };
 
 /** Return a reordered index, i.e. a C style index given either a C for Fortran
 	*  style one
@@ -200,33 +200,33 @@ Type_template_uptr to_scalar_datatype_template(PC_tree_t node)
 	
 	// For Fortran, we assume kind means number of bytes... TODO: autodetect
 	if (type == "char" && kind == 0) {  // C char
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::UNSIGNED, sizeof(char)}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::UNSIGNED, sizeof(char)}};
 	} else if (type == "int" && kind == 0) {  // C int
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::SIGNED, sizeof(int)}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, sizeof(int)}};
 	} else if (type == "int8"  && kind == 0) {  // C int8
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::SIGNED, 1}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, 1}};
 	} else if (type == "int16"  && kind == 0) {  // C int16
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::SIGNED, 2}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, 2}};
 	} else if (type == "int32"  && kind == 0) {  // C int32
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::SIGNED, 4}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, 4}};
 	} else if (type == "int64"  && kind == 0) {  // C int64
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::SIGNED, 8}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, 8}};
 	} else if (type == "float"  && kind == 0) {  // C float
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::FLOAT, 4}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::FLOAT, 4}};
 	} else if (type == "double"  && kind == 0) {  // C double
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::FLOAT, 8}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::FLOAT, 8}};
 	} else if (type == "character") {     // Fortran character
 		if (kind == 0) kind = PDI_CHARACTER_DEFAULT_KIND;
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::UNSIGNED, kind}};
 	} else if (type == "integer") { // Fortran integer
 		if (kind == 0) kind = PDI_INTEGER_DEFAULT_KIND;
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::SIGNED, kind}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, kind}};
 	} else if (type == "logical") { // Fortran logical
 		if (kind == 0) kind = PDI_LOGICAL_DEFAULT_KIND;
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::UNSIGNED, kind}};
 	} else if (type == "real") { // Fortran real
 		if (kind == 0) kind = PDI_REAL_DEFAULT_KIND;
-		return unique_ptr<Scalar_template>{new Scalar_template{Scalar_kind::FLOAT, kind}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::FLOAT, kind}};
 	}
 	throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s(kind=%d)'", type.c_str(), kind};
 }
@@ -253,7 +253,7 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 	
 	vector<Value> sizes;
 	PC_tree_t conf_sizes = PC_get(node, ".sizes");
-	if ( !PC_status(conf_sizes) ) { // multi dim array
+	if (!PC_status(conf_sizes)) {   // multi dim array
 		int nsizes = len(conf_sizes);
 		for (int ii = 0; ii < nsizes; ++ii) {
 			sizes.emplace_back(to_string(PC_get(node, ".sizes[%d]", ridx(ii, order, nsizes))));
@@ -264,9 +264,9 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 	
 	vector<Value> subsizes;
 	PC_tree_t conf_subsizes = PC_get(node, ".subsizes");
-	if ( !PC_status(conf_subsizes) ) {
+	if (!PC_status(conf_subsizes)) {
 		size_t nsubsizes = len(conf_subsizes);
-		if ( nsubsizes != sizes.size() ) {
+		if (nsubsizes != sizes.size()) {
 			throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", nsubsizes, sizes.size()};
 		}
 		for (size_t ii = 0; ii < nsubsizes; ++ii) {
@@ -274,8 +274,8 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 		}
 	} else {
 		PC_tree_t conf_subsize = PC_get(node, ".subsize");
-		if ( !PC_status(conf_subsize) ) {
-			if ( sizes.size() != 1 ) {
+		if (!PC_status(conf_subsize)) {
+			if (sizes.size() != 1) {
 				throw Error{PDI_ERR_CONFIG, "Invalid single subsize for %dD array", sizes.size()};
 			}
 			subsizes.emplace_back(to_string(conf_subsize));
@@ -286,9 +286,9 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 	
 	vector<Value> starts;
 	PC_tree_t conf_starts = PC_get(node, ".starts");
-	if ( !PC_status(conf_starts) ) {
+	if (!PC_status(conf_starts)) {
 		size_t nstarts = len(conf_starts);
-		if ( nstarts != sizes.size() ) {
+		if (nstarts != sizes.size()) {
 			throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", nstarts, sizes.size()};
 		}
 		for (size_t ii = 0; ii < nstarts; ++ii) {
@@ -296,8 +296,8 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 		}
 	} else {
 		PC_tree_t conf_start = PC_get(node, ".start");
-		if ( !PC_status(conf_start) ) {
-			if ( sizes.size() != 1 ) {
+		if (!PC_status(conf_start)) {
+			if (sizes.size() != 1) {
 				throw Error{PDI_ERR_CONFIG, "Invalid single start for %dD array", sizes.size()};
 			}
 			starts.emplace_back(to_string(conf_start));
@@ -322,10 +322,10 @@ Type_template::~Type_template()
 Type_template_uptr Type_template::load(PC_tree_t node)
 {
 	// size or sizes => array
-	if ( !PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes")) ) {
+	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {
 		return to_array_datatype_template(node);
 	}
 	return to_scalar_datatype_template(node);
 }
-	
+
 } // namespace PDI

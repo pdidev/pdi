@@ -28,29 +28,24 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.1)
-# enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
-project(FTI_pdi LANGUAGES CXX C Fortran)
+project(pdi_fti_plugin LANGUAGES CXX)
 
-option(USE_SYSTEM_FTI
-		"Use an already installed fti instead of building the embedded one"
-		OFF
-)
-
+# FTI
+option(USE_SYSTEM_FTI "Use an already installed fti instead of building the embedded one" OFF)
 if("${USE_SYSTEM_FTI}")
 	find_package(fti)
 else()
 	add_subdirectory(../../vendor/fti fti EXCLUDE_FROM_ALL)
 endif()
 
-include_directories(${FTI_INCLUDE_PATH})
+# The plugin
+add_library(pdi_fti_plugin MODULE fti.cxx)
+target_link_libraries(pdi_fti_plugin pdi fti.shared)
+target_include_directories(pdi_fti_plugin PUBLIC ${FTI_INCLUDE_PATH})
+set_target_properties(pdi_fti_plugin PROPERTIES
+		CXX_STANDARD 11
+		CXX_STANDARD_REQUIRED TRUE
+		CXX_VISIBILITY_PRESET hidden)
 
-add_library(fti_plugin MODULE
-		fti_plugin.cxx 
-)
-target_link_libraries(fti_plugin pdi fti.shared)
-set_property(TARGET fti_plugin PROPERTY CXX_STANDARD 11)
-
-install(TARGETS fti_plugin EXPORT fti_pdi_pluginTargets
-		LIBRARY DESTINATION lib INCLUDES DESTINATION include
-		ARCHIVE DESTINATION lib INCLUDES DESTINATION include
-)
+# Installation
+install(TARGETS pdi_fti_plugin EXPORT fti_pdi_pluginTargets LIBRARY DESTINATION lib)

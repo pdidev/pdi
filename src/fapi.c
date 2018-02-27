@@ -25,7 +25,7 @@
 #include "pdi.h"
 
 /** Fortran API wrappers for functions that need wrapping on the C side
- * 
+ *
  * \file fapi.c
  * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  **/

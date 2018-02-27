@@ -46,17 +46,17 @@ add_test(NAME PDI_example_F90_build
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 
-if("${ENABLE_DECLH5}")
+if("${ENABLE_DECL_HDF5}")
 add_test(NAME PDI_example_1_file COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/example.yml" "${CMAKE_CURRENT_BINARY_DIR}/example.yml")
 
 add_test(NAME PDI_example_1_C COMMAND "mpirun" -n 2 ./PDI_example "${CMAKE_CURRENT_SOURCE_DIR}/example.yml")
 set_property(TEST PDI_example_1_C PROPERTY DEPENDS PDI_example_build PDI_example_1_file)
-set_property(TEST PDI_example_1_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/declh5/")
+set_property(TEST PDI_example_1_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_hdf5/")
 set_property(TEST PDI_example_1_C PROPERTY TIMEOUT 5)
 
 add_test(NAME PDI_example_1_F COMMAND "mpirun" -n 2 ./PDI_example_F90 "${CMAKE_CURRENT_SOURCE_DIR}/example.yml")
 set_property(TEST PDI_example_1_F PROPERTY DEPENDS PDI_example_F90_build PDI_example_1_file)
-set_property(TEST PDI_example_1_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/declh5/")
+set_property(TEST PDI_example_1_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_hdf5/")
 set_property(TEST PDI_example_1_F PROPERTY TIMEOUT 5)
 endif()
 

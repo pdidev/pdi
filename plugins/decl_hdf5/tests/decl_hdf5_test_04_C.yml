@@ -31,7 +31,7 @@ pdi:
       global_starts: [$jstart, $istart]
 
   plugins:
-    declh5:
+    decl_hdf5:
       defaults:
         outputs:
           select: $input=0

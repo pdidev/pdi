@@ -33,10 +33,10 @@ pdi:
 
   plugins:
 
-    declh5:
+    decl_hdf5:
       outputs:
         myrank:
-          file: declh5_rank_$rank.h5
+          file: decl_hdf5_rank_$rank.h5
           select: $input=0
         reals:
           select: $input=0
@@ -46,7 +46,7 @@ pdi:
           file: test_01_C_one_file.h5
       inputs:
         myrank:
-          file: declh5_rank_$rank.h5
+          file: decl_hdf5_rank_$rank.h5
           select: $input=1
         reals:
           select: $input=1

@@ -50,8 +50,8 @@ public:
 	 * \param ctx the context in which to evaluate this template
 	 * \return the evaluated type that is produced
 	 */
-	virtual Data_type_uptr evaluate(Context& ctx) const = 0;
-
+	virtual Data_type_uptr evaluate(Context &ctx) const = 0;
+	
 	/** Creates a new datatype from a paraconf-style config
 	 * \param node the configuration to read
 	 * \return the type generated

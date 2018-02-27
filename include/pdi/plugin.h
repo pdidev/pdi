@@ -28,36 +28,38 @@
 #include <pdi/fwd.h>
 
 
-/** Skeleton of the function called at PDI finalization
- * \return an exit status code
- */
-typedef void (*PDI_finalize_f)(PDI::Context& ctx);
+namespace PDI
+{
 
-/** Skeleton of the function called to notify an event
- * \param[in] event the event name
- * \return an exit status code
- */
-typedef void (*PDI_event_f)(PDI::Context& ctx, const char *event);
-
-/** Skeleton of the function called to notify that some data becomes available
- * \param name the name of the data made available
- * \param ref available data
- * \return an exit status code
- */
-typedef void (*PDI_data_f)(PDI::Context& ctx, const char *name, PDI::Data_ref ref);
-
-struct PDI_plugin_s {
-
-	/// The function called at PDI finalization
-	PDI_finalize_f finalize;
+class PDI_EXPORT Plugin
+{
+private:
+	Context &m_context;
 	
-	/// The function called to notify an event
-	PDI_event_f event;
+public:
+	Plugin(Context &ctx);
 	
-	/// The function called to notify that some data becomes available
-	PDI_data_f data;
+	virtual ~Plugin();
 	
-};
+	/** Skeleton of the function called to notify an event
+	 * \param[in] event the event name
+	 * \return an exit status code
+	 */
+	virtual void event(const char *event);
+	
+	/** Skeleton of the function called to notify that some data becomes available
+	 * \param name the name of the data made available
+	 * \param ref available data
+	 * \return an exit status code
+	 */
+	virtual void data(const char *name, Data_ref ref);
+	
+protected:
+	Context &context();
+	
+}; // class Plugin
+
+} // namespace PDI
 
 /** Declares a plugin.
  *
@@ -72,12 +74,9 @@ struct PDI_plugin_s {
  * \param name the name of the plugin
  */
 #define PDI_PLUGIN(name)\
-	extern "C" void PDI_EXPORT PDI_plugin_##name##_ctor(PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world, PDI_plugin_t* plugin) \
+	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world) \
 	{\
-		plugin->finalize = PDI_##name##_finalize;\
-		plugin->event = PDI_##name##_event;\
-		plugin->data = PDI_##name##_data;\
-		PDI_##name##_init(ctx, conf, world);\
+		return ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
 	}
 
 #endif // PDI_PLUGIN_H_

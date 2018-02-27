@@ -81,6 +81,7 @@ add_library(pdi SHARED
 		data_reference.cxx
 		data_type.cxx
 		paraconf_wrapper.cxx
+		plugin.cxx
 		status.cxx
 		type_template.cxx
 		value.cxx
@@ -114,7 +115,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
 if("${ENABLE_FORTRAN}")
 	add_subdirectory(../vendor/bpp bpp EXCLUDE_FROM_ALL)
 	
-	bpp_preprocess(OUTPUT SRC_PDI_F90_BPP SOURCES PDI.h.bpp)
+	bpp_preprocess(OUTPUT SRC_PDI_F90_BPP SOURCES pdi_fortran.h.bpp)
 	include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 	get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
@@ -130,7 +131,7 @@ if("${ENABLE_FORTRAN}")
 	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
-	install(FILES ${SRC_PDI_F90_BPP} ${CMAKE_CURRENT_SOURCE_DIR}/../include/PDI.F90
+	install(FILES ${SRC_PDI_F90_BPP} ${CMAKE_CURRENT_SOURCE_DIR}/../include/pdi_fortran.F90
 			DESTINATION "include")
 	install(TARGETS pdi_f90 EXPORT PDI_export
 			LIBRARY DESTINATION lib INCLUDES DESTINATION "include"

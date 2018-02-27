@@ -37,7 +37,8 @@
 #include "pdi/context.h"
 
 
-namespace PDI {
+namespace PDI
+{
 
 using std::cerr;
 using std::endl;
@@ -47,29 +48,30 @@ using std::string;
 using std::unique_ptr;
 
 
-namespace {
+namespace
+{
 
-static void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
+static void load_data(Context &ctx, PC_tree_t node, bool is_metadata)
 {
 	int map_len = len(node);
 	
 	for (int map_id = 0; map_id < map_len; ++map_id) {
-		Data_descriptor& dsc = ctx.desc(to_string(PC_get(node, "{%d}", map_id)).c_str());
+		Data_descriptor &dsc = ctx.desc(to_string(PC_get(node, "{%d}", map_id)).c_str());
 		dsc.metadata(is_metadata);
 		dsc.creation_template(PC_get(node, "<%d>", map_id));
 	}
 }
 
-typedef PDI_status_t (*init_f)(Context&, PC_tree_t, MPI_Comm*, PDI_plugin_t*);
+typedef unique_ptr<Plugin> (*plugin_loader_f)(Context &, PC_tree_t, MPI_Comm *);
 
-init_f get_plugin_ctr(const char *plugin_name)
+plugin_loader_f get_plugin_ctr(const char *plugin_name)
 {
-	string plugin_symbol = string{"PDI_plugin_"} + plugin_name + string{"_ctor"};
+	string plugin_symbol = string{"PDI_plugin_"} + plugin_name + string{"_loader"};
 	void *plugin_ctor_uncast = dlsym(NULL, plugin_symbol.c_str());
 	
 	// case where the library was not prelinked
 	if (!plugin_ctor_uncast) {
-		string libname = string{"lib"} + plugin_name + string{".so"};
+		string libname = string{"libpdi_"} + plugin_name + string{"_plugin.so"};
 		void *lib_handle = dlopen(libname.c_str(), RTLD_NOW);
 		if (!lib_handle) {
 			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin file: %s", plugin_name, dlerror()};
@@ -81,7 +83,7 @@ init_f get_plugin_ctr(const char *plugin_name)
 		throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin from file: %s", plugin_name, dlerror()};
 	}
 	
-	return reinterpret_cast<init_f>(plugin_ctor_uncast);
+	return reinterpret_cast<plugin_loader_f>(plugin_ctor_uncast);
 }
 
 }
@@ -127,8 +129,7 @@ Context::Context(PC_tree_t conf, MPI_Comm *world)
 		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
 		try {
 			PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
-			unique_ptr<PDI_plugin_t> plugin{new PDI_plugin_t};
-			get_plugin_ctr(plugin_name.c_str())(*this, plugin_conf, world, plugin.get());
+			unique_ptr<Plugin> plugin = get_plugin_ctr(plugin_name.c_str())(*this, plugin_conf, world);
 			plugins.emplace(plugin_name, move(plugin));
 		} catch (const exception &e) {
 			throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
@@ -136,28 +137,14 @@ Context::Context(PC_tree_t conf, MPI_Comm *world)
 	}
 }
 
-Context::~Context()
-{
-	for (auto&& plugin : plugins) {
-		try { // ignore errors here, try our best to finalize everyone
-			//TODO: concatenate errors in some way
-			plugin.second->finalize(*this);
-		} catch (const exception &e) {
-			cerr << "Error while finalizing " << plugin.first << ": " << e.what() << endl;
-		} catch (...) {
-			cerr << "Error while finalizing " << plugin.first << endl;
-		}
-	}
-}
-
 Context::Iterator Context::begin()
 {
-return m_descriptors.begin();
+	return m_descriptors.begin();
 }
 
 Context::Iterator Context::end()
 {
-return m_descriptors.end();
+	return m_descriptors.end();
 }
 
 Data_descriptor &Context::desc(const char *name)
@@ -165,7 +152,7 @@ Data_descriptor &Context::desc(const char *name)
 	return m_descriptors.emplace(name, Data_descriptor{*this, name}).first->second;
 }
 
-Data_descriptor &Context::desc(const string& name)
+Data_descriptor &Context::desc(const string &name)
 {
 	return desc(name.c_str());
 }
@@ -175,7 +162,7 @@ Data_descriptor &Context::operator[](const char *name)
 	return desc(name);
 }
 
-Data_descriptor &Context::operator[](const string& name)
+Data_descriptor &Context::operator[](const string &name)
 {
 	return desc(name.c_str());
 }
@@ -184,7 +171,7 @@ void Context::event(const char *name)
 {
 	for (auto &elmnt : plugins) {
 		try { // ignore errors here, try our best to notify everyone
-			elmnt.second->event(*this, name);
+			elmnt.second->event(name);
 			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const exception &e) {

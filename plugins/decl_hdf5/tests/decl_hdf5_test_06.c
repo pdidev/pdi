@@ -33,18 +33,18 @@
 #define NJ_GHOST 2
 #define DIM 2
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	const int icst = -1; /// constants values in the ghost nodes
 	const double rcst = -1.1;
 	
 	int nig = NI_GHOST, njg = NJ_GHOST;
-	int ni = IMX, nj = JMX; 
-	int   values[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] ={{0}}, cp_values[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] ={{0}};
-	double reals[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] ={{0}},  cp_reals[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] ={{0}};
+	int ni = IMX, nj = JMX;
+	int   values[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] = {{0}}, cp_values[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] = {{0}};
+	double reals[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] = {{0}},  cp_reals[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] = {{0}};
 	int i, j, input;
-	int nit, njt; 
-
+	int nit, njt;
+	
 	/// MPI and parallel data or info
 	int dims[DIM], coord[DIM], periodic[DIM];
 	int istart, jstart;
@@ -53,41 +53,42 @@ int main(int argc, char *argv[])
 	periodic[1] = 0;
 	dims[0] = 2;
 	dims[1] = 2;
-
-
+	
+	
 	MPI_Init(&argc, &argv);
 	assert(argc == 2 && "Needs 1 single arg: config file");
-
+	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_status_t err = PDI_init(PC_get(conf, ".pdi"), &world);
 	int rank; MPI_Comm_rank(world, &rank);
-	{ /// setting nb of procs. 
+	{
+		/// setting nb of procs.
 		int size; MPI_Comm_size(world, &size);
 		assert(size == 4 && "Run on 4 procs only.");
 		PDI_expose("nproc",&size, PDI_OUT);
 	}
 	
-
+	
 	MPI_Cart_create(world, DIM, dims, periodic, 0, &comm2D);
 	MPI_Cart_coords(comm2D, rank, DIM, coord);
-
+	
 	istart = coord[1] * ni ;
 	jstart = coord[0] * nj ;
-
+	
 	nit = 2*ni;
 	njt = 2*nj;
-
+	
 	PDI_expose("nig", &nig, PDI_OUT); /// Ghost cells
 	PDI_expose("njg", &njg, PDI_OUT);
-
+	
 	PDI_expose("ni", &ni, PDI_OUT); /// Size of the portion of the array for a given MPI task
 	PDI_expose("nj", &nj, PDI_OUT);
-
+	
 	PDI_expose("nit", &nit, PDI_OUT); ///  size of the distributed array
 	PDI_expose("njt", &njt, PDI_OUT);
-
-	PDI_expose("istart", &istart, PDI_OUT); /// offset 
+	
+	PDI_expose("istart", &istart, PDI_OUT); /// offset
 	PDI_expose("jstart", &jstart, PDI_OUT);
 	
 	// Fill arrays
@@ -105,33 +106,33 @@ int main(int argc, char *argv[])
 			reals[j][i]     = i*cst + coord[1]*ni - nig*cst + (j+coord[0]*nj-njg)*10.; /// array that contains data
 		}
 	}
-
+	
 	input = 0;
 	PDI_expose("rank", &rank, PDI_OUT);
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("myrank", &rank, PDI_OUT);
-	fprintf(stderr, "DeclH5 should export rank = %d\n ", rank);
-
+	fprintf(stderr, "decl'HDF5 should export rank = %d\n ", rank);
+	
 	///  Test that export/exchange works
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("reals", &reals, PDI_OUT);     // output real
 	PDI_expose("values", &values, PDI_INOUT); // output integers
-
+	
 	input = 1;
-	///  Parallel HDF5 import 
+	///  Parallel HDF5 import
 	PDI_expose("input", &input, PDI_OUT); // update metadata => HDF5 now import only
-	PDI_expose("reals" , &cp_reals, PDI_IN);    // input real
-	PDI_expose("values" , &cp_values, PDI_INOUT); // input integers
-
-	// DeclH5 import
+	PDI_expose("reals", &cp_reals, PDI_IN);     // input real
+	PDI_expose("values", &cp_values, PDI_INOUT);  // input integers
+	
+	// decl'HDF5 import
 	int cp_rank; cp_rank = -1;
 	PDI_expose("myrank", &cp_rank, PDI_IN);
-	fprintf(stderr, "DeclH5 should export rank = %d\n ", cp_rank);
-	if( rank != cp_rank) MPI_Abort( MPI_COMM_WORLD, -1);
-
+	fprintf(stderr, "decl'HDF5 should export rank = %d\n ", cp_rank);
+	if ( rank != cp_rank) MPI_Abort( MPI_COMM_WORLD, -1);
+	
 	/// So the data should be the same
 	fprintf(stderr, "Data exported | Data imported\n");
-
+	
 	for (int j = njg; j < nj+njg ; ++j) { // Should be the same inside
 		for (int i = nig; i < ni + nig; i++) {
 			if ((values[j][i] !=  cp_values[j][i])  || (reals[j][i] != cp_reals[j][i])) {
@@ -141,7 +142,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	for (int j = 0; j < njg; j++){ // and should be icst/rcst outside 
+	for (int j = 0; j < njg; j++) { // and should be icst/rcst outside
 		for (int i = 0; i < nig; i++) {
 			if ((icst !=  cp_values[j][i])  || (rcst != cp_reals[j][i])) {
 				fprintf(stderr,"Ghost: integer (export) / integer(imported) :: %3d  %3d\n", icst, cp_values[j][i]);
@@ -157,7 +158,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	for (int j = nj+njg ; j < nj + 2*njg; ++j ){ 
+	for (int j = nj+njg ; j < nj + 2*njg; ++j ) {
 		for (int i = 0; i < nig; i++) {
 			if ((icst !=  cp_values[j][i]) || (rcst != cp_reals[j][i])) {
 				fprintf(stderr,"Ghost: integer (export) / integer(imported) :: %3d  %3d\n", icst, cp_values[j][i]);
@@ -173,7 +174,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
+	
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
