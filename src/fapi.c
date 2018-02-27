@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 
 /** A version of PDI_init that takes a Fortran communicator instead of a C one
  */
-PDI_status_t PDI_EXPORT PDI_init_f(PC_tree_t conf, MPI_Fint *world)
+PDI_status_t PDI_EXPORT PDI_init_f(PC_tree_t conf, MPI_Fint* world)
 {
 	MPI_Comm world_C = MPI_Comm_f2c(*world);
 	PDI_status_t res = PDI_init(conf, &world_C);

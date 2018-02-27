@@ -1,16 +1,20 @@
+Multiple people have contributed to PDI. To show our appreciation for their
+public spirit, we list here in alphabetical order a condensed list of their
+contributions.
+
 Julien Bigot - CEA (julien.bigot@cea.fr)
-  Overall design and implementation
-  Initial Test & HDF5 plugins
-  Library maintainer (2015-2016 2018-...)
+* Overall design and implementation
+* Initial Test & HDF5 plugins
+* Main library maintainer
   
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
-  Initial FTI plugin
-  Initial Fortran interface
+* Initial FTI plugin
+* Initial Fortran interface
 
 Corentin Roussel - CEA (Corentin.roussel@cea.fr)
-  Overall improvement & debug
-  HDF5 plugin rework
-  Library maintainer from Sept. 2016 to Feb. 2018
+* Overall improvement & debug
+* HDF5 plugin rework
+* Library maintainer from Sept. 2016 to Feb. 2018
 
 Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
-  SIONlib plugin
+* SIONlib plugin

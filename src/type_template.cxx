@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,7 @@
 
 #include "pdi/type_template.h"
 
-namespace PDI
-{
+namespace PDI {
 
 using std::max;
 using std::string;
@@ -47,8 +46,7 @@ using std::transform;
 using std::unique_ptr;
 using std::vector;
 
-namespace
-{
+namespace {
 
 class Scalar_template:
 	public Type_template
@@ -64,16 +62,16 @@ private:
 	Value m_align;
 	
 public:
-	Scalar_template(Scalar_kind kind, const Value &size): m_kind{kind}, m_size{size}, m_align{size} {}
+	Scalar_template(Scalar_kind kind, const Value& size): m_kind{kind}, m_size{size}, m_align{size} {}
 	
-	Scalar_template(Scalar_kind kind, const Value &size, const Value &align): m_kind{kind}, m_size{size}, m_align{align} {}
+	Scalar_template(Scalar_kind kind, const Value& size, const Value& align): m_kind{kind}, m_size{size}, m_align{align} {}
 	
 	Type_template_uptr clone() const override
 	{
 		return unique_ptr<Scalar_template> {new Scalar_template{m_kind, m_size, m_align}};
 	}
 	
-	Data_type_uptr evaluate(Context &ctx) const override
+	Data_type_uptr evaluate(Context& ctx) const override
 	{
 		return unique_ptr<Scalar_datatype> {new Scalar_datatype{
 				m_kind,
@@ -110,7 +108,7 @@ public:
 		return unique_ptr<Array_template> {new Array_template{m_subtype->clone(), m_size, m_start, m_subsize}};
 	}
 	
-	Data_type_uptr evaluate(Context &ctx) const override
+	Data_type_uptr evaluate(Context& ctx) const override
 	{
 		return unique_ptr<Array_datatype> {new Array_datatype{
 				m_subtype->evaluate(ctx),
@@ -126,7 +124,8 @@ public:
 class Record_template:
 	public Type_template
 {
-	struct Member {
+	struct Member
+	{
 		/// Offset or distance in byte from the Record_template start
 		Value m_displacement;
 		
@@ -135,9 +134,9 @@ class Record_template:
 		
 		std::string m_name;
 		
-		Member(Value displacement, Type_template_uptr type, const std::string &name): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
+		Member(Value displacement, Type_template_uptr type, const std::string& name): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
 		
-		Member(const Member &o): m_displacement{o.m_displacement}, m_type{o.m_type->clone()}, m_name{o.m_name} {}
+		Member(const Member& o): m_displacement{o.m_displacement}, m_type{o.m_type->clone()}, m_name{o.m_name} {}
 		
 	};
 	
@@ -148,17 +147,17 @@ class Record_template:
 	Value m_buffersize;
 	
 public:
-	Record_template(std::vector<Member> &&members, Value &&size): m_members{move(members)}, m_buffersize{std::move(size)} {}
+	Record_template(std::vector<Member>&& members, Value&& size): m_members{move(members)}, m_buffersize{std::move(size)} {}
 	
 	Type_template_uptr clone() const override
 	{
 		return unique_ptr<Record_template> {new Record_template{vector<Member>(m_members), Value{m_buffersize}}};
 	}
 	
-	Data_type_uptr evaluate(Context &ctx) const override
+	Data_type_uptr evaluate(Context& ctx) const override
 	{
 		vector<Record_datatype::Member> evaluated_members;
-		for (auto &&member : m_members) {
+		for (auto&& member : m_members) {
 			evaluated_members.emplace_back(member.m_displacement.to_long(ctx), member.m_type->evaluate(ctx), member.m_name);
 		}
 		return unique_ptr<Record_datatype> {new Record_datatype{move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx))}};
@@ -167,15 +166,16 @@ public:
 };
 
 /// ordering of array
-enum class Array_order : uint8_t { C, FORTRAN };
+enum class Array_order : uint8_t
+{ C, FORTRAN };
 
 /** Return a reordered index, i.e. a C style index given either a C for Fortran
-	*  style one
-	* \param ordered_index the initial C or Fortran ordered index
-	* \param order the style of the initial index (C/Fortran)
-	* \param size the size of the dimension the index accesses
-	* \return the reordered index (C style)
-	*/
+    *  style one
+    * \param ordered_index the initial C or Fortran ordered index
+    * \param order the style of the initial index (C/Fortran)
+    * \param size the size of the dimension the index accesses
+    * \return the reordered index (C style)
+    */
 int ridx(int ordered_index, Array_order order, int size)
 {
 	if (order == Array_order::FORTRAN) return size - ordered_index - 1;
@@ -190,10 +190,10 @@ Type_template_uptr to_scalar_datatype_template(PC_tree_t node)
 		type = to_string(PC_get(node, ".type"));
 		try {
 			kind = to_long(PC_get(node, ".kind"));
-		} catch (const Error &) {
+		} catch (const Error&) {
 			kind = 0;
 		}
-	} catch (const Error &) {
+	} catch (const Error&) {
 		type = to_string(node);
 		kind = 0;
 	}
@@ -239,7 +239,7 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 		string order_str;
 		try {
 			order_str = to_string(PC_get(node, ".order"));
-		} catch (const Error &) {
+		} catch (const Error&) {
 			order_str = "c";
 		}
 		if (order_str == "c" || order_str == "C") {

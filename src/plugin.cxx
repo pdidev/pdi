@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,11 +30,10 @@
 #include "pdi/plugin.h"
 
 
-namespace PDI
-{
+namespace PDI {
 
-Plugin::Plugin(Context &ctx):
-		m_context(ctx)
+Plugin::Plugin(Context& ctx):
+	m_context(ctx)
 {}
 
 Plugin::~Plugin()
@@ -43,10 +42,10 @@ Plugin::~Plugin()
 void Plugin::event(const char*)
 {}
 
-void Plugin::data(const char *, Data_ref)
+void Plugin::data(const char*, Data_ref)
 {}
 
-Context &Plugin::context()
+Context& Plugin::context()
 {
 	return m_context;
 }

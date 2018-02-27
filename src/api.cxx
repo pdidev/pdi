@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,8 +47,7 @@
 #include "pdi/status.h"
 
 
-namespace
-{
+namespace {
 
 using namespace PDI;
 using std::cerr;
@@ -81,7 +80,7 @@ PDI_inout_t operator&(PDI_inout_t a, PDI_inout_t b)
 
 }
 
-PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm *world)
+PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
 try
 {
 	Try_pc fw;
@@ -89,7 +88,7 @@ try
 	g_transaction_data.clear();
 	g_context.reset(new Context{conf, world});
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	g_context.reset();
 	return return_err(e);
@@ -103,69 +102,69 @@ try
 	g_transaction_data.clear();
 	g_context.reset();
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	g_context.reset();
 	return return_err(e);
 }
 
-PDI_status_t PDI_event(const char *name)
+PDI_status_t PDI_event(const char* name)
 try
 {
 	Try_pc fw;
 	g_context->event(name);
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	return return_err(e);
 }
 
-PDI_status_t PDI_share(const char *name, void *buffer, PDI_inout_t access)
+PDI_status_t PDI_share(const char* name, void* buffer, PDI_inout_t access)
 try
 {
 	Try_pc fw;
 	(*g_context)[name].share(buffer, access & PDI_OUT, access & PDI_IN);
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	return return_err(e);
 }
 
-PDI_status_t PDI_access(const char *name, void **buffer, PDI_inout_t inout)
+PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
 try
 {
 	Try_pc fw;
-	Data_descriptor &desc = (*g_context)[name];
+	Data_descriptor& desc = (*g_context)[name];
 	*buffer = desc.share(desc.ref(), inout & PDI_IN, inout & PDI_OUT);
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	return return_err(e);
 }
 
-PDI_status_t PDI_release(const char *name)
+PDI_status_t PDI_release(const char* name)
 try
 {
 	Try_pc fw;
 	(*g_context)[name].release();
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	return return_err(e);
 }
 
-PDI_status_t PDI_reclaim(const char *name)
+PDI_status_t PDI_reclaim(const char* name)
 try
 {
 	Try_pc fw;
 	(*g_context)[name].reclaim();
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	return return_err(e);
 }
 
-PDI_status_t PDI_expose(const char *name, void *data, PDI_inout_t access)
+PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access)
 try
 {
 	Try_pc fw;
@@ -176,12 +175,12 @@ try
 		if (PDI_status_t status = PDI_reclaim(name)) return status;
 	}
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	return return_err(e);
 }
 
-PDI_status_t PDI_transaction_begin(const char *name)
+PDI_status_t PDI_transaction_begin(const char* name)
 try
 {
 	Try_pc fw;
@@ -190,7 +189,7 @@ try
 	}
 	g_transaction = name;
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	return return_err(e);
 }
@@ -203,14 +202,14 @@ try
 		return return_err(Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"});
 	}
 	PDI_event(g_transaction.c_str());
-	for (const string &data : g_transaction_data) {
+	for (const string& data : g_transaction_data) {
 		//TODO we should concatenate errors here...
 		PDI_reclaim(data.c_str());
 	}
 	g_transaction_data.clear();
 	g_transaction.clear();
 	return PDI_OK;
-} catch (const Error &e)
+} catch (const Error& e)
 {
 	return return_err(e);
 }

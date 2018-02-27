@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,7 @@
 #include "pdi/paraconf_wrapper.h"
 
 
-namespace
-{
+namespace {
 
 using PDI::Error;
 
@@ -43,8 +42,7 @@ void do_pc(PC_status_t status)
 
 } // namespace <anonymous>
 
-namespace PDI
-{
+namespace PDI {
 
 using std::string;
 
@@ -93,16 +91,16 @@ double to_double(PC_tree_t tree, double dflt)
 
 string to_string(PC_tree_t tree)
 {
-	char *cresult;
+	char* cresult;
 	do_pc(PC_string(tree, &cresult));
 	string result = cresult;
 	free(cresult);
 	return result;
 }
 
-string to_string(PC_tree_t tree, const string &dflt)
+string to_string(PC_tree_t tree, const string& dflt)
 {
-	char *cresult;
+	char* cresult;
 	if (PC_string(tree, &cresult)) return dflt;
 	string result = cresult;
 	free(cresult);

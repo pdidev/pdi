@@ -71,7 +71,7 @@
 
 
 #=============================================================================
-# Copyright 2017 CEA, Julien Bigot <julien.bigot@cea.fr>
+# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #=============================================================================
 
 

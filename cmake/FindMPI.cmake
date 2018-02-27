@@ -49,7 +49,7 @@
 # MPI program.
 
 #=============================================================================
-# Copyright 2013-2017 CEA, Julien Bigot <julien.bigot@cea.fr>
+# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright 2001-2011 Kitware, Inc.
 # Copyright 2010-2011 Todd Gamblin tgamblin@llnl.gov
 # Copyright 2001-2009 Dave Partyka

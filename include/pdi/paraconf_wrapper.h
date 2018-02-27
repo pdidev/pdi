@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,7 @@
 
 #include <paraconf.h>
 
-namespace PDI
-{
+namespace PDI {
 
 /** Returns the length of a node.
  *
@@ -118,7 +117,7 @@ std::string PDI_EXPORT to_string(PC_tree_t tree);
  * \param[in] dflt the default value in case of error
  * \return the content of the scalar node
  */
-std::string PDI_EXPORT to_string(PC_tree_t tree, const std::string &dflt);
+std::string PDI_EXPORT to_string(PC_tree_t tree, const std::string& dflt);
 
 /** Returns the boolean value of a scalar node
  *

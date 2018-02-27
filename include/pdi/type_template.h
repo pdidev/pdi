@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,7 @@
 
 #include <pdi/fwd.h>
 
-namespace PDI
-{
+namespace PDI {
 
 class PDI_EXPORT Type_template
 {
@@ -50,7 +49,7 @@ public:
 	 * \param ctx the context in which to evaluate this template
 	 * \return the evaluated type that is produced
 	 */
-	virtual Data_type_uptr evaluate(Context &ctx) const = 0;
+	virtual Data_type_uptr evaluate(Context& ctx) const = 0;
 	
 	/** Creates a new datatype from a paraconf-style config
 	 * \param node the configuration to read

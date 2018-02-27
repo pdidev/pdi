@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright 2015 CEA, Julien Bigot <julien.bigot@cea.fr>
+# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,19 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 # enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
 project(pdi LANGUAGES CXX C Fortran)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-cmake_policy(VERSION 3.1)
-if(POLICY CMP0054)
-	cmake_policy(SET CMP0054 NEW)
-endif()
-
-if(POLICY CMP0063)
-cmake_policy(SET CMP0063 NEW)
-endif()
 
 
 # Build options
@@ -58,27 +49,49 @@ else()
 endif()
 
 
-## Because of plugins, we need PIC code
+# Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
 # Find dependencies
 find_package(MPI REQUIRED)
+find_package(Doxygen OPTIONAL_COMPONENTS dot)
 if("${USE_SYSTEM_PARACONF}")
-	find_package(paraconf)
+	find_package(paraconf REQUIRED)
 else()
 	add_subdirectory(vendor/paraconf paraconf EXCLUDE_FROM_ALL)
 endif()
 
 
 # Version
-
 file(READ VERSION pdi_VERSION)
 string(STRIP "${pdi_VERSION}" pdi_VERSION)
 string(REPLACE "." ";" pdi_VERSION_list ${pdi_VERSION})
 list(GET pdi_VERSION_list 0 pdi_VERSION_MAJOR)
 list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
 list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
+
+# Default standard in the project is C99 & C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_C_STANDARD 99)
+set(C_STANDARD_REQUIRED TRUE)
+
+# Main source dir
+add_subdirectory(src/)
+
+# The plugins
+add_subdirectory(plugins/test/)
+add_subdirectory(plugins/user_code/)
+if(${ENABLE_DECL_HDF5})
+	add_subdirectory(plugins/decl_hdf5/)
+endif()
+if(${ENABLE_FTI})
+	add_subdirectory(plugins/fti/)
+endif()
+if(${ENABLE_DECL_SION})
+	add_subdirectory(plugins/decl_sion/)
+endif()
 
 # Examples & tests
 include( CTest )
@@ -87,26 +100,11 @@ if( "${RUN_EXAMPLES}" )
 endif()
 add_subdirectory(tests/)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CXX_STANDARD_REQUIRED TRUE)
 # Source formatting
-add_custom_target(re_format COMMAND make all WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tools/Format_and_Indent/" VERBATIM)
+# TODO: detect astyle install & source files
+add_custom_target(indent COMMAND astyle --suffix=none --options=docs/formating.astyle --recursive src/*.cxx src/*.c include/*.h plugins/*.cxx plugins/*.c example/*.c tests/*.c WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/" VERBATIM)
 
-# Main source dir
-add_subdirectory(src/)
-
-## The plugins
-add_subdirectory(plugins/test/)
-add_subdirectory(plugins/user_code/)
-
-if(${ENABLE_DECL_HDF5})
-	add_subdirectory(plugins/decl_hdf5/)
-endif()
-
-if(${ENABLE_FTI})
-	add_subdirectory(plugins/fti/)
-endif()
-
-if(${ENABLE_DECL_SION})
-	add_subdirectory(plugins/decl_sion/)
+# Documentation
+if ("${DOXYGEN_FOUND}")
+	add_custom_target(doc COMMAND "${DOXYGEN_EXECUTABLE}" doxygen.cfg WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/docs" VERBATIM)
 endif()

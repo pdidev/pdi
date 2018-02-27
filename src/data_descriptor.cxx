@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,7 @@
 #include "pdi/plugin.h"
 
 
-namespace PDI
-{
+namespace PDI {
 
 using std::cerr;
 using std::endl;
@@ -46,7 +45,7 @@ using std::string;
 using std::unique_ptr;
 
 
-Data_descriptor::Data_descriptor(Context &ctx, const char *name):
+Data_descriptor::Data_descriptor(Context& ctx, const char* name):
 	m_context{ctx},
 	m_config(PC_parse_string("")),
 	m_metadata{false},
@@ -81,7 +80,7 @@ Data_ref Data_descriptor::ref()
 	return m_refs.top()->ref();
 }
 
-void Data_descriptor::share(void *data, bool read, bool write)
+void Data_descriptor::share(void* data, bool read, bool write)
 {
 	if (!data) {
 		throw Error{PDI_ERR_VALUE, "Sharing null pointers is not allowed"};
@@ -90,7 +89,7 @@ void Data_descriptor::share(void *data, bool read, bool write)
 	share(Data_ref{data, &free, m_type->evaluate(m_context), read, write}, false, false);
 }
 
-void *Data_descriptor::share(Data_ref data_ref, bool read, bool write)
+void* Data_descriptor::share(Data_ref data_ref, bool read, bool write)
 {
 	// metadata must provide read access
 	if (metadata() && !Data_r_ref(data_ref)) {
@@ -103,13 +102,13 @@ void *Data_descriptor::share(Data_ref data_ref, bool read, bool write)
 	}
 	
 	// make a reference and put it in the store
-	void *result = nullptr;
+	void* result = nullptr;
 	if (read) {
 		if (write) {
 			result = Data_rw_ref{data_ref} .get();
 			m_refs.emplace(new Ref_A_holder<true, true>(data_ref));
 		} else {
-			result = const_cast<void *>(Data_r_ref{data_ref} .get());
+			result = const_cast<void*>(Data_r_ref{data_ref} .get());
 			m_refs.emplace(new Ref_A_holder<true, false>(data_ref));
 		}
 	} else {
@@ -126,12 +125,12 @@ void *Data_descriptor::share(Data_ref data_ref, bool read, bool write)
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
 	}
 	
-	for (auto &elmnt : m_context.plugins) {
+	for (auto& elmnt : m_context.plugins) {
 		try { // ignore errors here, try our best to notify everyone
 			elmnt.second->data(m_name.c_str(), ref());
 			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
-		} catch (const std::exception &e) {
+		} catch (const std::exception& e) {
 			cerr << "Error while triggering event " << m_name << " for plugin " << elmnt.first << ": " << e.what() << endl;
 		} catch (...) {
 			cerr << "Error while triggering event " << m_name << " for plugin " << elmnt.first << endl;

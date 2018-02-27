@@ -13,7 +13,7 @@
 # Supported compilers can be found at http://openmp.org/wp/openmp-compilers/
 
 #=============================================================================
-# Copyright 2013 CEA, Julien Bigot <julien.bigot@cea.fr>
+# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright 2009 Kitware, Inc.
 # Copyright 2008-2009 André Rigland Brodtkorb <Andre.Brodtkorb@ifi.uio.no>
 # Copyright 2012 Rolf Eike Beer <eike@sf-mail.de>

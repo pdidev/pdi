@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,7 @@
 #include <pdi/type_template.h>
 
 
-namespace PDI
-{
+namespace PDI {
 
 class PDI_EXPORT Data_type:
 	public Type_template
@@ -115,7 +114,7 @@ public:
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context &) const override;
+	Data_type_uptr evaluate(Context&) const override;
 	
 	bool dense() const override
 	{
@@ -161,7 +160,7 @@ public:
 	
 	/** Type of the elements contained in the array.
 	 */
-	const Data_type &subtype() const
+	const Data_type& subtype() const
 	{
 		return *m_subtype;
 	}
@@ -196,7 +195,7 @@ public:
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context &) const override;
+	Data_type_uptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	
@@ -212,7 +211,8 @@ class PDI_EXPORT Record_datatype:
 	public Data_type
 {
 public:
-	struct Member {
+	struct Member
+	{
 	private:
 		/// Offset or distance in byte from the Record_datatype start
 		size_t m_displacement;
@@ -223,21 +223,21 @@ public:
 		std::string m_name;
 		
 	public:
-		Member(size_t displacement, Data_type_uptr type, const std::string &name): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
+		Member(size_t displacement, Data_type_uptr type, const std::string& name): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
 		
-		Member(const Member &o): m_displacement{o.m_displacement}, m_type{o.m_type->clone_type()}, m_name{o.m_name} {}
+		Member(const Member& o): m_displacement{o.m_displacement}, m_type{o.m_type->clone_type()}, m_name{o.m_name} {}
 		
 		size_t displacement() const
 		{
 			return m_displacement;
 		}
 		
-		const Data_type &type() const
+		const Data_type& type() const
 		{
 			return *m_type;
 		}
 		
-		const std::string &name() const
+		const std::string& name() const
 		{
 			return m_name;
 		}
@@ -252,9 +252,9 @@ private:
 	size_t m_buffersize;
 	
 public:
-	Record_datatype(std::vector<Member> &&members, size_t size): m_members{move(members)}, m_buffersize{std::move(size)} {}
+	Record_datatype(std::vector<Member>&& members, size_t size): m_members{move(members)}, m_buffersize{std::move(size)} {}
 	
-	const std::vector<Member> &members() const
+	const std::vector<Member>& members() const
 	{
 		return m_members;
 	}
@@ -268,7 +268,7 @@ public:
 	
 	Data_type_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context &) const override;
+	Data_type_uptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,7 @@
 #include "pdi/data_type.h"
 
 
-namespace PDI
-{
+namespace PDI {
 
 using std::max;
 using std::string;
@@ -57,7 +56,7 @@ Data_type_uptr Scalar_datatype::densify() const
 	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
 }
 
-Data_type_uptr Scalar_datatype::evaluate(Context &) const
+Data_type_uptr Scalar_datatype::evaluate(Context&) const
 {
 	return clone_type();
 }
@@ -72,7 +71,7 @@ Data_type_uptr Array_datatype::densify() const
 	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->densify(), m_subsize}};
 }
 
-Data_type_uptr Array_datatype::evaluate(Context &) const
+Data_type_uptr Array_datatype::evaluate(Context&) const
 {
 	return Array_datatype::clone_type();
 }
@@ -107,14 +106,14 @@ Data_type_uptr Record_datatype::densify() const
 {
 	long displacement = 0;
 	vector<Record_datatype::Member> densified_members;
-	for (auto &&member : m_members) {
+	for (auto&& member : m_members) {
 		densified_members.emplace_back(displacement, member.type().densify(), member.name());
 		displacement += densified_members.back().type().datasize();
 	}
 	return unique_ptr<Record_datatype> {new Record_datatype{move(densified_members), m_buffersize}};
 }
 
-Data_type_uptr Record_datatype::evaluate(Context &) const
+Data_type_uptr Record_datatype::evaluate(Context&) const
 {
 	return Record_datatype::clone_type();
 }
@@ -127,7 +126,7 @@ bool Record_datatype::dense() const
 size_t Record_datatype::datasize() const
 {
 	size_t result = 0;
-	for (auto &&member : m_members) {
+	for (auto&& member : m_members) {
 		result += member.type().datasize();
 	}
 	return result;
@@ -136,7 +135,7 @@ size_t Record_datatype::datasize() const
 size_t Record_datatype::alignment() const
 {
 	size_t result = 0;
-	for (auto &&member : m_members) {
+	for (auto&& member : m_members) {
 		result = max(result, member.type().alignment());
 	}
 	return result;

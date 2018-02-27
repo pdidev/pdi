@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
+ * Copyright (C) 2008-2016 Forschungszentrum Juelich, Juelich Supercomputing Centre
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

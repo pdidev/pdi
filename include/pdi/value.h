@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,17 +30,17 @@
 #include <pdi/fwd.h>
 #include <pdi/data_reference.h>
 
-namespace PDI
-{
+namespace PDI {
 
 class PDI_EXPORT Value
 {
 protected:
-	struct Impl {
+	struct Impl
+	{
 		virtual ~Impl() {}
-		virtual long to_long(Context &) const = 0;
-		virtual std::string to_string(Context &) const;
-		virtual Data_ref to_ref(Context &) const = 0;
+		virtual long to_long(Context&) const = 0;
+		virtual std::string to_string(Context&) const;
+		virtual Data_ref to_ref(Context&) const = 0;
 		virtual std::unique_ptr<Impl> clone() const = 0;
 	};
 	
@@ -81,7 +81,7 @@ public:
 	 *
 	 * \param[in] value the string to parse
 	 */
-	Value(const char *val_str);
+	Value(const char* val_str);
 	
 	/** Builds (i.e. parse) a value from a string
 	 *
@@ -104,7 +104,7 @@ public:
 	 *
 	 * \param[in] value the string to parse
 	 */
-	Value(const std::string &value);
+	Value(const std::string& value);
 	
 	/** Builds a value that represents an integer
 	 *
@@ -134,20 +134,20 @@ public:
 	 *
 	 * \param[in] value the value to copy
 	 */
-	Value(const Value &value): m_impl(value.m_impl->clone()) {}
+	Value(const Value& value): m_impl(value.m_impl->clone()) {}
 	
 	/** Moves a value
 	 *
 	 * \param[in] value the value to move`
 	 */
-	Value(Value &&value) = default;
+	Value(Value&& value) = default;
 	
 	/** Copies a value
 	 *
 	 * \param[in] value the value to copy
 	 * \return *this
 	 */
-	Value &operator=(const Value &value)
+	Value& operator=(const Value& value)
 	{
 		m_impl = value.m_impl->clone();
 		return *this;
@@ -158,13 +158,13 @@ public:
 	 * \param[in] value the value to move`
 	 * \return *this
 	 */
-	Value &operator=(Value &&value) = default;
+	Value& operator=(Value&& value) = default;
 	
 	/** Evaluates a value as an integer
 	 *
 	 * \return the integer value
 	 */
-	long to_long(Context &ctx) const
+	long to_long(Context& ctx) const
 	{
 		return m_impl->to_long(ctx);
 	}
@@ -173,7 +173,7 @@ public:
 	 *
 	 * \return the string value
 	 */
-	std::string to_string(Context &ctx) const
+	std::string to_string(Context& ctx) const
 	{
 		return m_impl->to_string(ctx);
 	}
@@ -182,7 +182,7 @@ public:
 	 *
 	 * \return the data reference
 	 */
-	Data_ref to_ref(Context &ctx) const
+	Data_ref to_ref(Context& ctx) const
 	{
 		return m_impl->to_ref(ctx);
 	}

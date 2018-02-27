@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,7 @@
 #include <pdi/data_descriptor.h>
 
 
-namespace PDI
-{
+namespace PDI {
 
 class PDI_EXPORT Context
 {
@@ -55,15 +54,15 @@ public:
 	{
 	public:
 		friend class Context;
-		Data_descriptor &operator-> ();
-		Data_descriptor &operator* ();
-		Iterator &operator++ ();
-		bool operator!= (const Iterator &o);
+		Data_descriptor& operator-> ();
+		Data_descriptor& operator* ();
+		Iterator& operator++ ();
+		bool operator!= (const Iterator& o);
 	private:
 		/// The iterator this wraps
 		std::unordered_map<std::string, Data_descriptor>::iterator m_data;
-		Iterator(const std::unordered_map<std::string, Data_descriptor>::iterator &data): m_data(data) {}
-		Iterator(std::unordered_map<std::string, Data_descriptor>::iterator &&data): m_data(std::move(data)) {}
+		Iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data): m_data(data) {}
+		Iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data): m_data(std::move(data)) {}
 	};
 	
 private:
@@ -73,28 +72,28 @@ private:
 	/// Descriptors of the data
 	std::unordered_map<std::string, Data_descriptor> m_descriptors;
 	
-	Context(const Context &) = delete;
+	Context(const Context&) = delete;
 	
-	Context(Context &&) = delete;
+	Context(Context&&) = delete;
 	
 public:
-	Context(PC_tree_t conf, MPI_Comm *world);
+	Context(PC_tree_t conf, MPI_Comm* world);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	Data_descriptor &desc(const std::string &name);
+	Data_descriptor& desc(const std::string& name);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	Data_descriptor &desc(const char *name);
+	Data_descriptor& desc(const char* name);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	Data_descriptor &operator[](const std::string &name);
+	Data_descriptor& operator[](const std::string& name);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	Data_descriptor &operator[](const char *name);
+	Data_descriptor& operator[](const char* name);
 	
 	/** Returns an iterator on the first descriptor
 	 */
@@ -107,7 +106,7 @@ public:
 	/** Triggers a PDI "event"
 	 * \param[in] name the event name
 	 */
-	void event(const char *name);
+	void event(const char* name);
 	
 };
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,7 @@
 
 #include <pdi/fwd.h>
 
-namespace PDI
-{
+namespace PDI {
 
 class PDI_EXPORT Error:
 	public std::exception
@@ -49,11 +48,11 @@ public:
 	 * \param[in] ... the printf-style parameters for the message
 	 * \see printf
 	 */
-	Error(PDI_status_t errcode = PDI_OK, const char *message = "", ...);
+	Error(PDI_status_t errcode = PDI_OK, const char* message = "", ...);
 	
-	Error(PDI_status_t errcode, const char *message, va_list args);
+	Error(PDI_status_t errcode, const char* message, va_list args);
 	
-	const char *what() const noexcept override;
+	const char* what() const noexcept override;
 	
 	PDI_status_t status() const noexcept
 	{
@@ -65,7 +64,8 @@ public:
 /** Automatically installs a paraconf error-handler that ignores errors and
  *  uninstalls it on destruction.
  */
-struct PDI_EXPORT Try_pc {
+struct PDI_EXPORT Try_pc
+{
 	PC_errhandler_t m_handler;
 	Try_pc(): m_handler{PC_errhandler(PC_NULL_HANDLER)} { }
 	~Try_pc()
@@ -76,7 +76,7 @@ struct PDI_EXPORT Try_pc {
 
 /** Return the C error and stores the message corresponding to the C++ exception
  */
-PDI_status_t PDI_EXPORT return_err(const Error &err);
+PDI_status_t PDI_EXPORT return_err(const Error& err);
 
 } // namespace PDI
 

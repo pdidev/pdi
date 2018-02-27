@@ -15,7 +15,7 @@ void init(double* dat, int width, int height, int px, int py)
 {
 	(void) py; // prevent unused warning
 	for (int yy=0; yy<height; ++yy) {
-		for(int xx=0; xx<width; ++xx) {
+		for (int xx=0; xx<width; ++xx) {
 			VAL2D(dat,xx,yy) = 0;
 		}
 	}
@@ -29,27 +29,27 @@ void init(double* dat, int width, int height, int px, int py)
 void iter(double* cur, double* next, int width, int height)
 {
 	int xx, yy;
-	for(xx=0; xx<width; ++xx) {
+	for (xx=0; xx<width; ++xx) {
 		VAL2D(next,xx,0) = VAL2D(cur,xx,0);
 	}
 	for (yy=1; yy<height-1; ++yy) {
 		VAL2D(next,0,yy) = VAL2D(cur,0,yy);
-		for(xx=1; xx<width-1; ++xx) {
+		for (xx=1; xx<width-1; ++xx) {
 			VAL2D(next,xx,yy) =
-					  (VAL2D(cur,xx,yy)   *.5)
-					+ (VAL2D(cur,xx-1,yy) *.125)
-					+ (VAL2D(cur,xx+1,yy) *.125)
-					+ (VAL2D(cur,xx,yy-1) *.125)
-					+ (VAL2D(cur,xx,yy+1) *.125);
+			    (VAL2D(cur,xx,yy)   *.5)
+			    + (VAL2D(cur,xx-1,yy) *.125)
+			    + (VAL2D(cur,xx+1,yy) *.125)
+			    + (VAL2D(cur,xx,yy-1) *.125)
+			    + (VAL2D(cur,xx,yy+1) *.125);
 		}
 		VAL2D(next,width-1,yy) = VAL2D(cur,width-1,yy);
 	}
-	for(xx=0; xx<width; ++xx) {
+	for (xx=0; xx<width; ++xx) {
 		VAL2D(next,xx,height-1) = VAL2D(cur,xx,height-1);
 	}
 }
 
-void exchange(MPI_Comm cart_com, double *cur, int width, int height)
+void exchange(MPI_Comm cart_com, double* cur, int width, int height)
 {
 	MPI_Status status;
 	int rank_source, rank_dest;
@@ -67,30 +67,30 @@ void exchange(MPI_Comm cart_com, double *cur, int width, int height)
 	
 	/* send to the right */
 	MPI_Cart_shift(cart_com, 0, 1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur, width-2, 1), 1, column, rank_dest,   100, /* send column before ghost */ 
-	             &VAL2D(cur, 0,       1), 1, column, rank_source, 100, /* receive 1st column (ghost) */
-	             cart_com, &status);
-
+	MPI_Sendrecv(&VAL2D(cur, width-2, 1), 1, column, rank_dest,   100, /* send column before ghost */
+	    &VAL2D(cur, 0,       1), 1, column, rank_source, 100, /* receive 1st column (ghost) */
+	    cart_com, &status);
+	    
 	/* send to the left */
 	MPI_Cart_shift(cart_com, 0, -1, &rank_source, &rank_dest);
 	MPI_Sendrecv(&VAL2D(cur, 1,       1), 1, column, rank_dest,   100, /* send column after ghost */
-	             &VAL2D(cur, width-1, 1), 1, column, rank_source, 100, /* receive last column (ghost) */
-	             cart_com, &status);
-
+	    &VAL2D(cur, width-1, 1), 1, column, rank_source, 100, /* receive last column (ghost) */
+	    cart_com, &status);
+	    
 	/* send down */
 	MPI_Cart_shift(cart_com, 1, 1, &rank_source, &rank_dest);
 	MPI_Sendrecv(&VAL2D(cur, 1, height-2), 1, row, rank_dest,   100, /* send row before ghost */
-	             &VAL2D(cur, 1, 0       ), 1, row, rank_source, 100, /* receive 1st row (ghost) */
-	             cart_com, &status);
-
+	    &VAL2D(cur, 1, 0       ), 1, row, rank_source, 100, /* receive 1st row (ghost) */
+	    cart_com, &status);
+	    
 	/* send up */
 	MPI_Cart_shift(cart_com, 1, -1, &rank_source, &rank_dest);
 	MPI_Sendrecv(&VAL2D(cur, 1, 1       ), 1, row, rank_dest,   100, /* send column after ghost */
-	             &VAL2D(cur, 1, height-1), 1, row, rank_source, 100, /* receive last column (ghost) */
-	             cart_com, &status);
+	    &VAL2D(cur, 1, height-1), 1, row, rank_source, 100, /* receive last column (ghost) */
+	    cart_com, &status);
 }
 
-int main( int argc, char *argv[] )
+int main( int argc, char* argv[] )
 {
 	MPI_Init(&argc, &argv);
 	
@@ -128,16 +128,16 @@ int main( int argc, char *argv[] )
 	int cart_period[2] = { 0, 0 };
 	MPI_Comm cart_com; MPI_Cart_create(main_comm, 2, cart_dims, cart_period, 1, &cart_com);
 	int car_coord[2]; MPI_Cart_coords(cart_com, rank, 2, car_coord);
-
+	
 	PDI_expose("coord", car_coord, PDI_OUT);
 	PDI_expose("width", &width, PDI_OUT);
 	PDI_expose("height", &height, PDI_OUT);
 	PDI_expose("pwidth", &pwidth, PDI_OUT);
 	PDI_expose("pheight", &pheight, PDI_OUT);
-
-	double *cur = malloc(sizeof(double)*width*height);
-	double *next = malloc(sizeof(double)*width*height);
-
+	
+	double* cur = malloc(sizeof(double)*width*height);
+	double* next = malloc(sizeof(double)*width*height);
+	
 	if ( PDI_expose("main_field", cur, PDI_IN) ) {
 		init(cur, width, height, car_coord[0], car_coord[1]);
 	}
@@ -146,7 +146,7 @@ int main( int argc, char *argv[] )
 	double start = MPI_Wtime();
 	int ii;
 	int next_reduce = 0;
-	for(ii=0;; ++ii) {
+	for (ii=0;; ++ii) {
 		PDI_transaction_begin("newiter");
 		PDI_expose("iter", &ii, PDI_INOUT);
 		PDI_expose("main_field", cur, PDI_INOUT);
@@ -154,7 +154,7 @@ int main( int argc, char *argv[] )
 		
 		iter(cur, next, width, height);
 		exchange(cart_com, next, width, height);
-		double *tmp = cur; cur = next; next = tmp;
+		double* tmp = cur; cur = next; next = tmp;
 		
 		if ( ii >= next_reduce ) {
 			double local_time, global_time;
@@ -170,14 +170,14 @@ int main( int argc, char *argv[] )
 	PDI_event("finalization");
 	PDI_expose("iter", &ii, PDI_OUT);
 	PDI_expose("main_field", cur, PDI_OUT);
-
+	
 	PDI_finalize();
 	
 	PC_tree_destroy(&conf);
 	
 	free(cur);
 	free(next);
-
+	
 	MPI_Finalize();
 	return 0;
 }

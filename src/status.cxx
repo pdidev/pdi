@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,12 +33,12 @@
 #include "pdi/status.h"
 
 
-namespace
-{
+namespace {
 
 using std::string;
 
-struct Error_context {
+struct Error_context
+{
 	Error_context(): handler{PDI_ASSERT_HANDLER} {}
 	
 	PDI_errhandler_t handler;
@@ -53,7 +53,7 @@ static thread_local Error_context context;
 
 /** Handler for fatal errors
   */
-void assert_status(PDI_status_t status, const char *message, void *)
+void assert_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
 		fprintf(stderr, "FATAL ERROR, in PDI: %s\n", message);
@@ -63,7 +63,7 @@ void assert_status(PDI_status_t status, const char *message, void *)
 
 /** Handler for warning
   */
-void warn_status(PDI_status_t status, const char *message, void *)
+void warn_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
 		fprintf(stderr, "Warning, in PDI: %s\n", message);
@@ -94,17 +94,16 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 	return old_handler;
 }
 
-const char *PDI_errmsg()
+const char* PDI_errmsg()
 {
 	return context.errmsg.c_str();
 }
 
-namespace PDI
-{
+namespace PDI {
 
 using std::unique_ptr;
 
-Error::Error(PDI_status_t errcode, const char *message, va_list ap):
+Error::Error(PDI_status_t errcode, const char* message, va_list ap):
 	m_status(errcode)
 {
 	va_list ap2; va_copy(ap2, ap);
@@ -112,7 +111,7 @@ Error::Error(PDI_status_t errcode, const char *message, va_list ap):
 	vsnprintf(&m_what[0], m_what.size(), message, ap2);
 }
 
-Error::Error(PDI_status_t errcode, const char *message, ...):
+Error::Error(PDI_status_t errcode, const char* message, ...):
 	m_status(errcode)
 {
 	va_list ap;
@@ -127,12 +126,12 @@ Error::Error(PDI_status_t errcode, const char *message, ...):
 	va_end(ap);
 }
 
-const char *Error::what() const noexcept
+const char* Error::what() const noexcept
 {
 	return m_what.c_str();
 }
 
-PDI_status_t return_err(const Error &err)
+PDI_status_t return_err(const Error& err)
 {
 	context.errmsg = err.what();
 	if (context.handler.func) context.handler.func(err.status(), err.what(), context.handler.context);

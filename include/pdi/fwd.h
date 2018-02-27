@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,7 @@
  * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
  */
 
-namespace PDI
-{
+namespace PDI {
 
 /** Describes the state of a PDI instanciation, its configuration, the
  *  currently exposed data, etc...
@@ -69,8 +68,9 @@ typedef std::unique_ptr<Data_type> Data_type_uptr;
 class Plugin;
 
 /** Different possible interpretations for a scalar
-	*/
-enum class Scalar_kind : uint8_t { UNKNOWN, SIGNED, UNSIGNED, FLOAT, ADDRESS };
+    */
+enum class Scalar_kind : uint8_t
+{ UNKNOWN, SIGNED, UNSIGNED, FLOAT, ADDRESS };
 
 /** A PDI type template descriptor
  *

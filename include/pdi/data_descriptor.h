@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,7 @@
 #include <pdi/type_template.h>
 
 
-namespace PDI
-{
+namespace PDI {
 
 class PDI_EXPORT Data_descriptor
 {
@@ -63,7 +62,7 @@ private:
 		Data_A_ref<R, W> m_t;
 	};
 	
-	Context &m_context;
+	Context& m_context;
 	
 	/// References to the values of this descriptor
 	std::stack<std::unique_ptr<Ref_holder>> m_refs;
@@ -78,18 +77,18 @@ private:
 	
 	/** Create an empty descriptor
 	 */
-	Data_descriptor(Context &ctx, const char *name);
+	Data_descriptor(Context& ctx, const char* name);
 	
-	Data_descriptor(const Data_descriptor &) = delete;
+	Data_descriptor(const Data_descriptor&) = delete;
 	
-	Data_descriptor &operator= (const Data_descriptor &) = delete;
+	Data_descriptor& operator= (const Data_descriptor&) = delete;
 	
-	Data_descriptor &operator= (Data_descriptor &&) = delete;
+	Data_descriptor& operator= (Data_descriptor&&) = delete;
 	
 public:
 	~Data_descriptor();
 	
-	Data_descriptor(Data_descriptor &&) = default;
+	Data_descriptor(Data_descriptor&&) = default;
 	
 	/** Sets the creation template used to type raw pointers shared through this descriptor
 	 * \param type the type template that will be attached to raw pointers shared through this descriptor
@@ -121,7 +120,7 @@ public:
 		m_metadata = metadata;
 	}
 	
-	const std::string &name() const
+	const std::string& name() const
 	{
 		return m_name;
 	}
@@ -135,7 +134,7 @@ public:
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
 	 */
-	void share(void *data, bool read, bool write);
+	void share(void* data, bool read, bool write);
 	
 	/** Shares some data with PDI
 	 * \param[in,out] ref a reference to the shared data
@@ -143,7 +142,7 @@ public:
 	 * \param write whether write access is granted to other references
 	 * \return the just shared buffer
 	 */
-	void *share(Data_ref ref, bool read, bool write);
+	void* share(Data_ref ref, bool read, bool write);
 	
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
 	 * free the associated memory whenever necessary.

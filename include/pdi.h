@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+* Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,8 @@ extern "C" {
 
 /** Error codes of PDI
  */
-typedef enum PDI_status_e {
+typedef enum PDI_status_e
+{
 	PDI_OK = 0,
 	/// on an input call, no such data is available
 	PDI_UNAVAILABLE,
@@ -73,22 +74,23 @@ typedef enum PDI_status_e {
  * \param message the human-readable error message
  * \param context a user-provided context
  */
-typedef void (*PDI_errfunc_f)(PDI_status_t status, const char *message, void *context);
+typedef void (*PDI_errfunc_f)(PDI_status_t status, const char* message, void* context);
 
 /** Definition of an error handler
  */
-typedef struct PDI_errhandler_s {
+typedef struct PDI_errhandler_s
+{
 	/// The function to handle the error (none if NULL)
 	PDI_errfunc_f func;
 	
 	/// the context that will be provided to the function
-	void *context;
+	void* context;
 	
 } PDI_errhandler_t;
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
-const char PDI_EXPORT *PDI_errmsg();
+const char PDI_EXPORT* PDI_errmsg();
 
 /** Sets the error handler to use
  *
@@ -120,7 +122,7 @@ extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
  * \param[in,out] world the main MPI communicator
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf, MPI_Comm *world);
+PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf, MPI_Comm* world);
 
 /** Finalizes PDI
  * \return an error status
@@ -133,14 +135,15 @@ PDI_status_t PDI_EXPORT PDI_finalize();
  * \param[in] event the event name
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_event(const char *event);
+PDI_status_t PDI_EXPORT PDI_event(const char* event);
 
 /// \{ data access
 
 /**
  * Access directions
  */
-typedef enum PDI_inout_e {
+typedef enum PDI_inout_e
+{
 	/// No data transfert
 	PDI_NONE = 0,
 	/// data tranfer from PDI to the main code
@@ -165,7 +168,7 @@ typedef enum PDI_inout_e {
  * * PDI_IN means PDI can set the buffer content
  * * PDI_OUT means the buffer contains data that can be accessed by PDI
  */
-PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, PDI_inout_t access);
+PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t access);
 
 /** Requests for PDI to access a data buffer.
  * \param[in] name the data name
@@ -175,7 +178,7 @@ PDI_status_t PDI_EXPORT PDI_share(const char *name, void *data, PDI_inout_t acce
  * \pre PDI owns the data buffer
  * \post ownership of the data buffer is shared between PDI and the user code
  */
-PDI_status_t  PDI_EXPORT PDI_access(const char *name, void **buffer, PDI_inout_t inout);
+PDI_status_t  PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t inout);
 
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
@@ -184,7 +187,7 @@ PDI_status_t  PDI_EXPORT PDI_access(const char *name, void **buffer, PDI_inout_t
  * \pre ownership of the data buffer is shared between PDI and the user code
  * \pre PDI owns the data buffer
  */
-PDI_status_t PDI_EXPORT PDI_release(const char *name);
+PDI_status_t PDI_EXPORT PDI_release(const char* name);
 
 /** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
@@ -193,7 +196,7 @@ PDI_status_t PDI_EXPORT PDI_release(const char *name);
  * \pre ownership of the data buffer is shared between PDI and the user code
  * \post the user code owns the data buffer
  */
-PDI_status_t PDI_EXPORT PDI_reclaim(const char *name);
+PDI_status_t PDI_EXPORT PDI_reclaim(const char* name);
 
 /// \}
 
@@ -204,7 +207,7 @@ PDI_status_t PDI_EXPORT PDI_reclaim(const char *name);
  *                   by PDI
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_expose(const char *name, void *data, PDI_inout_t access);
+PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t access);
 
 /// \{
 
@@ -216,7 +219,7 @@ PDI_status_t PDI_EXPORT PDI_expose(const char *name, void *data, PDI_inout_t acc
  *                 triggered when all data become available)
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_transaction_begin(const char *name);
+PDI_status_t PDI_EXPORT PDI_transaction_begin(const char* name);
 
 /** Ends the previously opened transaction.
  * \return an error status

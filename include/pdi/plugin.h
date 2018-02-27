@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,15 @@
 #include <pdi/fwd.h>
 
 
-namespace PDI
-{
+namespace PDI {
 
 class PDI_EXPORT Plugin
 {
 private:
-	Context &m_context;
+	Context& m_context;
 	
 public:
-	Plugin(Context &ctx);
+	Plugin(Context& ctx);
 	
 	virtual ~Plugin();
 	
@@ -45,17 +44,17 @@ public:
 	 * \param[in] event the event name
 	 * \return an exit status code
 	 */
-	virtual void event(const char *event);
+	virtual void event(const char* event);
 	
 	/** Skeleton of the function called to notify that some data becomes available
 	 * \param name the name of the data made available
 	 * \param ref available data
 	 * \return an exit status code
 	 */
-	virtual void data(const char *name, Data_ref ref);
+	virtual void data(const char* name, Data_ref ref);
 	
 protected:
-	Context &context();
+	Context& context();
 	
 }; // class Plugin
 

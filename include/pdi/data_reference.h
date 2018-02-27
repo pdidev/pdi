@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,7 @@
 #include <pdi/status.h>
 
 
-namespace PDI
-{
+namespace PDI {
 
 /** A common base for all references, whatever their access privileges in
  * order to ensure they share the same Data_content and can access each others.
@@ -51,17 +50,17 @@ public:
 	{
 	}
 	
-	Data_ref_base(const Data_ref_base &) = delete;
+	Data_ref_base(const Data_ref_base&) = delete;
 	
-	Data_ref_base(Data_ref_base &&) = delete;
+	Data_ref_base(Data_ref_base&&) = delete;
 	
-	Data_ref_base &operator = (const Data_ref_base &) = delete;
+	Data_ref_base& operator = (const Data_ref_base&) = delete;
 	
-	Data_ref_base &operator = (Data_ref_base &&) = delete;
+	Data_ref_base& operator = (Data_ref_base&&) = delete;
 	
 	/** accesses the type of the referenced raw data
 	 */
-	const Data_type &type() const;
+	const Data_type& type() const;
 	
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
@@ -70,10 +69,10 @@ protected:
 	{
 	public:
 		/// buffer that contains data
-		void *m_buffer;
+		void* m_buffer;
 		
 		/// The function to call to deallocate the buffer memory
-		std::function<void(void *)> m_delete;
+		std::function<void(void*)> m_delete;
 		
 		/// type of the data inside the buffer
 		Data_type_uptr m_type;
@@ -88,13 +87,13 @@ protected:
 		int m_write_locks;
 		
 		/// Nullification notifications registered on this instance
-		std::unordered_map<const Data_ref_base *, std::function<void(Data_ref)> > m_notifications;
+		std::unordered_map<const Data_ref_base*, std::function<void(Data_ref)> > m_notifications;
 		
 		Ref_count() = delete;
 		
-		Ref_count(const Ref_count &) = delete;
+		Ref_count(const Ref_count&) = delete;
 		
-		Ref_count(Ref_count &&) = delete;
+		Ref_count(Ref_count&&) = delete;
 		
 		/** Constructs the content
 		 * \param buffer the actual content
@@ -103,7 +102,7 @@ protected:
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */
-		Ref_count(void *buffer, std::function<void(void *)> deleter, Data_type_uptr type, bool readable, bool writable):
+		Ref_count(void* buffer, std::function<void(void*)> deleter, Data_type_uptr type, bool readable, bool writable):
 			m_buffer{buffer},
 			m_delete{deleter},
 			m_type{std::move(type)},
@@ -127,7 +126,7 @@ protected:
 	
 	/** Function to access the content from a reference with different access right
 	 */
-	static Ref_count *get_content(const Data_ref_base &other)
+	static Ref_count* get_content(const Data_ref_base& other)
 	{
 		return other.m_content;
 	}
@@ -136,24 +135,27 @@ protected:
 	
 	/** Pointer on the data content, can be null if the ref is null
 	 */
-	mutable Ref_count *m_content;
+	mutable Ref_count* m_content;
 	
 }; // class Data_ref_base
 
 
 template<bool R, bool W>
-struct Ref_access {
+struct Ref_access
+{
 	typedef void type;
 };
 
 template<bool R>
-struct Ref_access<R, true> {
-	typedef void *type;
+struct Ref_access<R, true>
+{
+	typedef void* type;
 };
 
 template<>
-struct Ref_access<true, false> {
-	typedef const void *type;
+struct Ref_access<true, false>
+{
+	typedef const void* type;
 };
 
 
@@ -188,7 +190,7 @@ public:
 	 *
 	 * \param other the ref to copy
 	 */
-	Data_A_ref(const Data_A_ref &other):
+	Data_A_ref(const Data_A_ref& other):
 		Data_ref_base()
 	{
 		link(get_content(other));
@@ -201,7 +203,7 @@ public:
 	 * \param other the ref to copy
 	 */
 	template<bool OR, bool OW>
-	Data_A_ref(const Data_A_ref<OR, OW> &other):
+	Data_A_ref(const Data_A_ref<OR, OW>& other):
 		Data_ref_base()
 	{
 		link(get_content(other));
@@ -210,7 +212,7 @@ public:
 	/** Moves an existing reference
 	 * \param other the ref to copy
 	 */
-	Data_A_ref(Data_A_ref &&other):
+	Data_A_ref(Data_A_ref&& other):
 		Data_ref_base()
 	{
 		if (!other.m_content || !other.m_content->m_buffer) return;
@@ -229,7 +231,7 @@ public:
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Data_A_ref(void *data, std::function<void(void *)> freefunc, Data_type_uptr type, bool readable, bool writable):
+	Data_A_ref(void* data, std::function<void(void*)> freefunc, Data_type_uptr type, bool readable, bool writable):
 		Data_ref_base()
 	{
 		if (data) link(new Ref_count(data, freefunc, std::move(type), readable, writable));
@@ -293,21 +295,21 @@ public:
 	 * \return the previously referenced raw data or nullptr if this was a null
 	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	void *release()
+	void* release()
 	{
 		if (is_null()) return nullptr;
 		
 		// notify everybody of the nullification
 		while (!m_content->m_notifications.empty()) {
 			// get the key of a notification
-			const Data_ref_base *key = m_content->m_notifications.begin()->first;
+			const Data_ref_base* key = m_content->m_notifications.begin()->first;
 			// call this notification, this might invalidate any iterator
 			m_content->m_notifications.begin()->second(*this);
 			// remove the notification we just called
 			m_content->m_notifications.erase(key);
 		}
 		
-		void *result = m_content->m_buffer;
+		void* result = m_content->m_buffer;
 		m_content->m_buffer = nullptr;
 		
 		unlink();
@@ -364,7 +366,7 @@ private:
 	 *
 	 * \param content the content to link to
 	 */
-	void link(Ref_count *content)
+	void link(Ref_count* content)
 	{
 		assert(!m_content);
 		if (!content || !content->m_buffer) return; // null ref

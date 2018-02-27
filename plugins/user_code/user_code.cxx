@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, Julien Bigot - CEA (julien.bigot@cea.fr)
+ * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,48 +64,48 @@ class Alias;
  */
 class ExposedAlias
 {
-		Data_descriptor* m_desc;
-		
-	public:
-		ExposedAlias(Context& ctx, const Alias& alias);
-		
-		ExposedAlias(const ExposedAlias&) = delete;
-		
-		ExposedAlias(ExposedAlias&& alias);
-		
-		/** stop exposing the alias
-		    */
-		~ExposedAlias()
-		{
-			if (m_desc) m_desc->release();
-		}
-		
+	Data_descriptor* m_desc;
+	
+public:
+	ExposedAlias(Context& ctx, const Alias& alias);
+	
+	ExposedAlias(const ExposedAlias&) = delete;
+	
+	ExposedAlias(ExposedAlias&& alias);
+	
+	/** stop exposing the alias
+	    */
+	~ExposedAlias()
+	{
+		if (m_desc) m_desc->release();
+	}
+	
 }; // class ExposedAlias
 
 class Alias
 {
-	private:
-		/// name to expose the alias as
-		string m_name;
-		
-		/// value that is aliased
-		Value m_value;
-		
-	public:
-		Alias(const string& name, const string& var):
-			m_name {name},
-			m_value {var}
-		{}
-		
-		friend class ExposedAlias;
-		
-		/** exposes the alias
-		    */
-		ExposedAlias expose(Context& ctx)
-		{
-			return ExposedAlias{ctx, *this};
-		}
-		
+private:
+	/// name to expose the alias as
+	string m_name;
+	
+	/// value that is aliased
+	Value m_value;
+	
+public:
+	Alias(const string& name, const string& var):
+		m_name {name},
+		m_value {var}
+	{}
+	
+	friend class ExposedAlias;
+	
+	/** exposes the alias
+	    */
+	ExposedAlias expose(Context& ctx)
+	{
+		return ExposedAlias{ctx, *this};
+	}
+	
 }; // class Alias
 
 ExposedAlias::ExposedAlias(Context& ctx, const Alias& alias):
@@ -129,54 +129,54 @@ ExposedAlias::ExposedAlias(ExposedAlias&& alias):
     */
 class Trigger
 {
-		/// function pointer
-		typedef void (*ptr_fct_t)(void);
-		
-		/// function to call on event
-		ptr_fct_t m_fct;
-		
-		/// all the aliases to setup
-		vector<Alias> m_aliases;
-		
-	public:
-		/// parse tree to initialiaze this instance
-		Trigger(string funcname, PC_tree_t params)
-		{
-			void* fct_uncast = dlsym(RTLD_DEFAULT, funcname.c_str());
-			if (!fct_uncast) { // force loading from the main exe
-				void* exe_handle = dlopen(NULL, RTLD_NOW);
-				if (!exe_handle) {
-					throw Error {PDI_ERR_SYSTEM, "Unable to dlopen the main executable: %s", dlerror()};
-				}
-				fct_uncast = dlsym(exe_handle, funcname.c_str());
+	/// function pointer
+	typedef void (*ptr_fct_t)(void);
+	
+	/// function to call on event
+	ptr_fct_t m_fct;
+	
+	/// all the aliases to setup
+	vector<Alias> m_aliases;
+	
+public:
+	/// parse tree to initialiaze this instance
+	Trigger(string funcname, PC_tree_t params)
+	{
+		void* fct_uncast = dlsym(RTLD_DEFAULT, funcname.c_str());
+		if (!fct_uncast) { // force loading from the main exe
+			void* exe_handle = dlopen(NULL, RTLD_NOW);
+			if (!exe_handle) {
+				throw Error {PDI_ERR_SYSTEM, "Unable to dlopen the main executable: %s", dlerror()};
 			}
-			if (!fct_uncast) {
-				throw Error {PDI_ERR_SYSTEM, "Unable to load user function `%s': %s", funcname.c_str(), dlerror()};
-			}
-			m_fct = reinterpret_cast<ptr_fct_t>(fct_uncast);
-			
-			if (!PC_status(PC_get(params, "{0}"))) {   // parameters
-				int nparams = len(params);
-				for (int ii = 0; ii < nparams; ii++) {
-					string alias_name = to_string(PC_get(params, "{%d}", ii));
-					string var = to_string(PC_get(params, "<%d>", ii));
-					m_aliases.emplace_back(alias_name, var);
-				}
+			fct_uncast = dlsym(exe_handle, funcname.c_str());
+		}
+		if (!fct_uncast) {
+			throw Error {PDI_ERR_SYSTEM, "Unable to load user function `%s': %s", funcname.c_str(), dlerror()};
+		}
+		m_fct = reinterpret_cast<ptr_fct_t>(fct_uncast);
+		
+		if (!PC_status(PC_get(params, "{0}"))) {   // parameters
+			int nparams = len(params);
+			for (int ii = 0; ii < nparams; ii++) {
+				string alias_name = to_string(PC_get(params, "{%d}", ii));
+				string var = to_string(PC_get(params, "<%d>", ii));
+				m_aliases.emplace_back(alias_name, var);
 			}
 		}
-		
-		/// call the function that has been registered
-		void call(Context& ctx)
-		{
-			// all exposed aliases that will be unexposed on destroy
-			vector<ExposedAlias> exposed_aliases;
-			for (auto&& alias : m_aliases) {
-				//create alias and share it with the plug-in
-				exposed_aliases.emplace_back(alias.expose(ctx));
-			}
-			m_fct();
+	}
+	
+	/// call the function that has been registered
+	void call(Context& ctx)
+	{
+		// all exposed aliases that will be unexposed on destroy
+		vector<ExposedAlias> exposed_aliases;
+		for (auto&& alias : m_aliases) {
+			//create alias and share it with the plug-in
+			exposed_aliases.emplace_back(alias.expose(ctx));
 		}
-		
+		m_fct();
+	}
+	
 }; // class Trigger
 
 struct user_code_plugin: Plugin

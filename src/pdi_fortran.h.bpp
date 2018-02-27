@@ -1,5 +1,5 @@
 ! *******************************************************************************
-! * Copyright (C) 2016, Julien Bigot - CEA (julien.bigot@cea.fr)
+! * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 ! * Copyright (C) 2016, Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 ! * All rights reserved.
 ! *
