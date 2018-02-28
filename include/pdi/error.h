@@ -22,69 +22,50 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** \file pdi/plugin.h
- * Main plugin API
+/** \file pdi/error.h
+ * Error handling subsystem
  */
 
-#ifndef PDI_PLUGIN_H_
-#define PDI_PLUGIN_H_
+#ifndef PDI_ERROR_H_
+#define PDI_ERROR_H_
+
+#include <exception>
+#include <string>
+
+#include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
 
-
 namespace PDI {
 
-class PDI_EXPORT Plugin
+class PDI_EXPORT Error:
+	public std::exception
 {
-	Context& m_context;
+	std::string m_what;
+	
+	PDI_status_t m_status;
 	
 public:
-	Plugin(Context& ctx);
-	
-	Plugin(const Plugin&) = delete;
-	
-	Plugin(Plugin&&) = delete;
-	
-	virtual ~Plugin() noexcept(false);
-	
-	/** Skeleton of the function called to notify an event
-	 * \param[in] event the event name
+	/** Creates a PDI error
+	 * \param[in] errcode the error code of the error to create
+	 * \param[in] message an errror message as a printf-style format
+	 * \param[in] ... the printf-style parameters for the message
+	 * \see printf
 	 */
-	virtual void event(const char* event);
+	Error(PDI_status_t errcode = PDI_OK, const char* message = "", ...);
 	
-	/** Skeleton of the function called to notify that some data becomes available
-	 * \param name the name of the data made available
-	 * \param ref available data
-	 */
-	virtual void data(const char* name, Ref ref);
+	Error(PDI_status_t errcode, const char* message, va_list args);
 	
-protected:
-	Context& context();
+	const char* what() const noexcept override;
 	
-}; // class Plugin
+	PDI_status_t status() const noexcept;
+	
+};
+
+/** Return the C error and stores the message corresponding to the C++ exception
+ */
+PDI_status_t PDI_EXPORT return_err(const Error& err);
 
 } // namespace PDI
 
-/** Declares a plugin.
- *
- * This should be called after having implemeted the five required functions
- * for a PDI plugin:
- * - PDI_&lt;name&gt;_finalize;\
- * - PDI_&lt;name&gt;_event;\
- * - PDI_&lt;name&gt;_data_start;\
- * - PDI_&lt;name&gt;_data_end;\
- * - PDI_&lt;name&gt;_init(conf, world);\
- *
- * \param name the name of the plugin
- */
-#define PDI_PLUGIN(name)\
-	_Pragma("clang diagnostic push")\
-	_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")\
-	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")\
-	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world) \
-	{\
-		return ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
-	}\
-	_Pragma("clang diagnostic pop")
-
-#endif // PDI_PLUGIN_H_
+#endif // PDI_ERROR_H_

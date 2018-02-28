@@ -34,26 +34,26 @@
 
 #include <pdi.h>
 #include <pdi/context.h>
-#include <pdi/data_type.h>
-#include <pdi/data_reference.h>
+#include <pdi/datatype.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/value.h>
+#include <pdi/reference.h>
+#include <pdi/expression.h>
 
 #include <sion.h>
 
 namespace {
 
 using PDI::Context;
-using PDI::Data_ref;
-using PDI::Data_r_ref;
-using PDI::Data_w_ref;
+using PDI::Ref;
+using PDI::Ref_r;
+using PDI::Ref_w;
 using PDI::Error;
 using PDI::len;
 using PDI::Plugin;
 using PDI::to_string;
-using PDI::Value;
+using PDI::Expression;
 using std::move;
 using std::string;
 using std::unordered_map;
@@ -61,25 +61,25 @@ using std::vector;
 
 struct Variable_event
 {
-	Value file;
-	Value select;
-	Value n_files;
+	Expression file;
+	Expression select;
+	Expression n_files;
 	
 	Variable_event(PC_tree_t entry, const string& name);
 };
 
 struct Named_event
 {
-	Value file;
-	Value select;
-	Value n_files;
+	Expression file;
+	Expression select;
+	Expression n_files;
 	vector<string> vars;
 	
 	Named_event(PC_tree_t entry, const string& name);
 };
 
 
-Value parse_property(PC_tree_t conf, const char* entry_name, const char* property_name, const char* default_value)
+Expression parse_property(PC_tree_t conf, const char* entry_name, const char* property_name, const char* default_value)
 {
 	try {
 		if ( default_value ) {
@@ -154,7 +154,7 @@ static uint64_t hash(const uint8_t* data, size_t len)
 {
 	uint64_t hash = UINT64_C(0xcbf29ce484222325);
 	for (size_t i = 0; i < len; ++i) {
-		hash ^= (uint64_t) data[i];
+		hash ^= static_cast<uint64_t>(data[i]);
 		hash *= UINT64_C(0x100000001b3);
 	}
 	return hash;
@@ -186,7 +186,7 @@ struct decl_sion_plugin: Plugin
 	{
 		// check that data is available and data type is dense
 		for (auto&& var : event.vars) {
-			if (Data_r_ref ref = context().desc(var).ref()) {
+			if (Ref_r ref = context().desc(var).ref()) {
 				if (!ref.type().dense()) {
 					throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", var.c_str()};
 				}
@@ -195,11 +195,11 @@ struct decl_sion_plugin: Plugin
 			}
 		}
 		
-		int n_files = event.n_files.to_long(context());
+		int n_files = static_cast<int>(event.n_files.to_long(context()));
 		
 		sion_int64 chunksize = 0;
 		for (auto&& var : event.vars) {
-			const Data_ref& ref = context().desc(var).ref();
+			const Ref& ref = context().desc(var).ref();
 			if (!ref) {
 				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
 			}
@@ -212,7 +212,7 @@ struct decl_sion_plugin: Plugin
 		int sid = sion_paropen_mpi(event.file.to_string(context()).c_str(), "w,keyval=inline", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 		
 		for (auto&& var : event.vars) {
-			Data_r_ref ref = context().desc(var).ref();
+			Ref_r ref = context().desc(var).ref();
 			if (!ref) {
 				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
 			}
@@ -251,8 +251,8 @@ struct decl_sion_plugin: Plugin
 	{
 		// check that data type is dense
 		for (auto&& var : event.vars) {
-			Data_ref cref = context().desc(var).ref();
-			if (Data_w_ref ref = cref) {
+			Ref cref = context().desc(var).ref();
+			if (Ref_w ref = cref) {
 				if (!ref.type().dense()) {
 					throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", var.c_str()};
 				}
@@ -270,7 +270,7 @@ struct decl_sion_plugin: Plugin
 		int sid = sion_paropen_mpi(event.file.to_string(context()).c_str(), "r,keyval=unknown", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
 		
 		for (auto&& var : event.vars) {
-			Data_w_ref ref = context().desc(var).ref();
+			Ref_w ref = context().desc(var).ref();
 			if (!ref) {
 				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
 			}
@@ -326,9 +326,9 @@ struct decl_sion_plugin: Plugin
 		}
 	}
 	
-	void write_var(Data_ref cref, const char* name, const Variable_event& var)
+	void write_var(Ref cref, const char* name, const Variable_event& var)
 	{
-		Data_r_ref ref = cref;
+		Ref_r ref = cref;
 		if (!ref) {
 			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", name};
 		}
@@ -339,9 +339,9 @@ struct decl_sion_plugin: Plugin
 		}
 		
 		// open file
-		int n_files = var.n_files.to_long(context());
+		int n_files = static_cast<int>(var.n_files.to_long(context()));
 		size_t data_size = ref.type().datasize();
-		sion_int64 chunksize = data_size;
+		sion_int64 chunksize = static_cast<sion_int64>(data_size);
 		sion_int32 blksize = -1;
 		int rank; MPI_Comm_rank(comm, &rank);
 		int sid = sion_paropen_mpi(var.file.to_string(context()).c_str(), "w", &n_files, comm, &comm, &chunksize, &blksize, &rank, NULL, NULL);
@@ -357,9 +357,9 @@ struct decl_sion_plugin: Plugin
 		}
 	}
 	
-	void read_var(Data_ref cref, const char* name, const Variable_event& var)
+	void read_var(Ref cref, const char* name, const Variable_event& var)
 	{
-		Data_w_ref ref = cref;
+		Ref_w ref = cref;
 		if (!ref) {
 			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", name};
 		}
@@ -392,7 +392,7 @@ struct decl_sion_plugin: Plugin
 	{
 		auto&& outevit = output_events.find(event);
 		if (outevit != output_events.end()) {
-			int select;
+			long select;
 			try {
 				select = outevit->second.select.to_long(context());
 			} catch (Error&) {
@@ -403,7 +403,7 @@ struct decl_sion_plugin: Plugin
 		
 		auto&& inevit = input_events.find(event);
 		if (inevit != input_events.end()) {
-			int select;
+			long select;
 			try {
 				select = inevit->second.select.to_long(context());
 			} catch (Error&) {
@@ -413,11 +413,11 @@ struct decl_sion_plugin: Plugin
 		}
 	}
 	
-	void data(const char* name, Data_ref cref) override
+	void data(const char* name, Ref cref) override
 	{
 		auto&& outvarit = output_vars.find(name);
 		if (outvarit != output_vars.end()) {
-			int select;
+			long select;
 			try {
 				select = outvarit->second.select.to_long(context());
 			} catch (Error&) {
@@ -428,7 +428,7 @@ struct decl_sion_plugin: Plugin
 		
 		auto&& invarit = input_vars.find(name);
 		if (invarit != input_vars.end()) {
-			int select;
+			long select;
 			try {
 				select = invarit->second.select.to_long(context());
 			} catch (Error&) {

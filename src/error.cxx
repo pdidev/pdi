@@ -30,12 +30,13 @@
 
 #include <pthread.h>
 
-#include "pdi/status.h"
+#include "pdi/error.h"
 
 
 namespace {
 
 using std::string;
+using std::unique_ptr;
 
 struct Error_context
 {
@@ -47,8 +48,7 @@ struct Error_context
 	
 };
 
-
-static thread_local Error_context context;
+thread_local Error_context context;
 
 
 /** Handler for fatal errors
@@ -72,6 +72,7 @@ void warn_status(PDI_status_t status, const char* message, void*)
 
 } // namespace <anonymous>
 
+
 const PDI_errhandler_t PDI_ASSERT_HANDLER = {
 	&assert_status,
 	NULL
@@ -87,6 +88,7 @@ const PDI_errhandler_t PDI_NULL_HANDLER = {
 	NULL
 };
 
+
 PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 {
 	PDI_errhandler_t old_handler = context.handler;
@@ -101,14 +103,15 @@ const char* PDI_errmsg()
 
 namespace PDI {
 
-using std::unique_ptr;
-
 Error::Error(PDI_status_t errcode, const char* message, va_list ap):
 	m_status(errcode)
 {
 	va_list ap2; va_copy(ap2, ap);
-	m_what.resize(vsnprintf(NULL, 0, message, ap));
+	// resize to contain the string + terminating null byte
+	m_what.resize(vsnprintf(NULL, 0, message, ap)+1);
 	vsnprintf(&m_what[0], m_what.size(), message, ap2);
+	// remove the terminating null byte
+	m_what.resize(m_what.size() - 1);
 }
 
 Error::Error(PDI_status_t errcode, const char* message, ...):
@@ -116,8 +119,8 @@ Error::Error(PDI_status_t errcode, const char* message, ...):
 {
 	va_list ap;
 	va_start(ap, message);
-	// get the string size and allocate enough space for it plus a terminating null byte
-	m_what.resize(vsnprintf(NULL, 0, message, ap) + 1);
+	// resize to contain the string + terminating null byte
+	m_what.resize(vsnprintf(NULL, 0, message, ap)+1);
 	va_end(ap);
 	va_start(ap, message);
 	vsnprintf(&m_what[0], m_what.size(), message, ap);
@@ -129,6 +132,11 @@ Error::Error(PDI_status_t errcode, const char* message, ...):
 const char* Error::what() const noexcept
 {
 	return m_what.c_str();
+}
+
+PDI_status_t Error::status() const noexcept
+{
+	return m_status;
 }
 
 PDI_status_t return_err(const Error& err)

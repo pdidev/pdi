@@ -22,44 +22,84 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATA_TYPE_TEMPLATE_H_
-#define PDI_DATA_TYPE_TEMPLATE_H_
+#include "config.h"
 
-#include <paraconf.h>
+#include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <string>
 
-#include <pdi/fwd.h>
+#include "pdi/paraconf_wrapper.h"
+#include "pdi/error.h"
+#include "pdi/expression.h"
+
+#include "pdi/scalar_datatype.h"
+
 
 namespace PDI {
 
-class PDI_EXPORT Type_template
+using std::max;
+using std::string;
+using std::transform;
+using std::unique_ptr;
+
+Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size):
+	m_size{size},
+	m_align{size},
+	m_kind{kind}
+{}
+
+Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align):
+	m_size{size},
+	m_align{align},
+	m_kind{kind}
+{}
+
+Scalar_kind Scalar_datatype::kind() const
 {
-public:
-	/** Destroys the template
-	 */
-	virtual ~Type_template();
-	
-	/** Creates a new datatype as an exact copy of this one
-	 *
-	 * \return the dense type that is produced
-	 */
-	virtual Type_template_uptr clone() const = 0;
-	
-	/** Creates a new datatype by resolving the value of all metadata references
-	 *
-	 * \param ctx the context in which to evaluate this template
-	 * \return the evaluated type that is produced
-	 */
-	virtual Data_type_uptr evaluate(Context& ctx) const = 0;
-	
-	/** Creates a new datatype from a paraconf-style config
-	 * \param node the configuration to read
-	 * \return the type generated
-	 */
-	static Type_template_uptr load(PC_tree_t node);
-	
-};
+	return m_kind;
+}
+
+Type_template_uptr Scalar_datatype::clone() const
+{
+	return clone_type();
+}
+
+Data_type_uptr Scalar_datatype::clone_type() const
+{
+	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
+}
+
+Data_type_uptr Scalar_datatype::densify() const
+{
+	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
+}
+
+Data_type_uptr Scalar_datatype::evaluate(Context&) const
+{
+	return clone_type();
+}
+
+bool Scalar_datatype::dense() const
+{
+	return true;
+}
+
+size_t Scalar_datatype::datasize() const
+{
+	return m_size;
+}
+
+size_t Scalar_datatype::buffersize() const
+{
+	return m_size;
+}
+
+size_t Scalar_datatype::alignment() const
+{
+	return m_align;
+}
 
 } // namespace PDI
-
-#endif // PDI_DATA_TYPE_TEMPLATE_H_
 

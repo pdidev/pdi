@@ -31,9 +31,12 @@
 #include <memory>
 #include <vector>
 
-#include "pdi/data_type.h"
+#include "pdi/array_datatype.h"
+#include "pdi/datatype.h"
+#include "pdi/record_datatype.h"
+#include "pdi/scalar_datatype.h"
 
-#include "pdi/data_reference.h"
+#include "pdi/reference.h"
 
 
 namespace PDI {
@@ -87,15 +90,15 @@ struct Data_layout
 	}
 };
 
-Data_layout desc(const Data_type& type)
+Data_layout desc(const Datatype& type)
 {
 	if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
 		return {scalar_type->datasize(), {}, 1, static_cast<uintptr_t>((1 << scalar_type->alignment()) - 1)};
 	}
 	if (auto&& array_type = dynamic_cast<const Array_datatype*>(&type)) {
 		Data_layout inner = desc(array_type->subtype());
-		long subsize = array_type->subsize();
-		long size = array_type->size();
+		size_t subsize = array_type->subsize();
+		size_t size = array_type->size();
 		if (subsize == size) {   // dense array
 			inner.m_repeat *= subsize;
 			return inner;
@@ -137,20 +140,20 @@ Data_layout desc(const Data_type& type)
 
 } // namespace <anonymous>
 
-Data_ref Data_ref_base::do_copy(Data_r_ref ref)
+Ref Reference_base::do_copy(Ref_r ref)
 {
 	Data_layout ref_desc = desc(ref.type());
 	void* newbuffer{operator new (ref_desc.m_size * ref_desc.m_repeat)};
 	try {
 		ref_desc.copy(static_cast<uint8_t*>(newbuffer), static_cast<const uint8_t*>(ref.get()));
-		return Data_ref{newbuffer,  [](void* d){::operator delete (d);}, ref.type().densify(), true, true};
+		return Ref {newbuffer,  [](void* d){::operator delete (d);}, ref.type().densify(), true, true};
 	} catch (...) {
 		::operator delete (newbuffer);
 		throw;
 	}
 }
 
-const Data_type& Data_ref_base::type() const
+const Datatype& Reference_base::type() const
 {
 	if (!m_content || !m_content->m_buffer) return UNDEF_TYPE;
 	return *m_content->m_type;

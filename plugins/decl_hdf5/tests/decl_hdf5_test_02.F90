@@ -104,8 +104,8 @@ program test2
     do j=1,nj
       do i=1,ni
          if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then 
-            write(0,*) "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
-            write(0,*) "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
+            write(0,*) i, j, "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
+            write(0,*) i, j, "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo
@@ -114,8 +114,8 @@ program test2
     do j=1+njg,nj-njg ! Should be the same inside 
       do i=1+nig,ni-nig
          if ( (values(i,j) .ne.  cp_values(i,j)) .or. (reals(i,j) .ne. cp_reals(i,j))) then 
-            write(0,*) "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
-            write(0,*) "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
+            write(0,*) i, j, "integer (export) / integer(imported) ::", values(i,j), cp_values(i,j)
+            write(0,*) i, j, "reals   (export) / reals (imported) ::", reals(i,j), cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo
@@ -123,15 +123,15 @@ program test2
     do j=1,njg ! and should be icst/rscst outside 
       do i=1,nig
          if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
-            write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
-            write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
+            write(0,*) i, j, "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
+            write(0,*) i, j, "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo
       do i=ni-nig+1,ni
          if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
-            write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
-            write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
+            write(0,*) i, j, "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
+            write(0,*) i, j, "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo
@@ -139,15 +139,15 @@ program test2
     do j=nj-njg+1,nj
       do i=1,nig
          if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
-            write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
-            write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
+            write(0,*) i, j, "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
+            write(0,*) i, j, "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo
       do i=ni-nig+1,ni
          if ( (icst .ne.  cp_values(i,j)) .or. (rcst .ne. cp_reals(i,j))) then 
-            write(0,*) "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
-            write(0,*) "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
+            write(0,*) i, j, "Ghost: integer (export) / integer(imported) ::",icst, cp_values(i,j)
+            write(0,*) i, j, "Ghost: reals   (export) / reals (imported) ::",rcst, cp_reals(i,j)
             call MPI_abort(MPI_COMM_WORLD, -1, ierr)
          endif
       enddo

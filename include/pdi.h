@@ -22,11 +22,9 @@
 * THE SOFTWARE.
 ******************************************************************************/
 
-/**
-* \file pdi.h
-* \brief Header of the PDI API.
-* \author Julien Bigot (CEA) <julien.bigot@cea.fr>
-*/
+/** \file pdi.h
+ * PDI C public application API
+ */
 
 #ifndef PDI_H_
 #define PDI_H_
@@ -90,7 +88,7 @@ typedef struct PDI_errhandler_s
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
-const char PDI_EXPORT* PDI_errmsg();
+const char PDI_EXPORT* PDI_errmsg(void);
 
 /** Sets the error handler to use
  *
@@ -127,7 +125,7 @@ PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf, MPI_Comm* world);
 /** Finalizes PDI
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_finalize();
+PDI_status_t PDI_EXPORT PDI_finalize(void);
 
 /// \}
 
@@ -224,7 +222,7 @@ PDI_status_t PDI_EXPORT PDI_transaction_begin(const char* name);
 /** Ends the previously opened transaction.
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_transaction_end();
+PDI_status_t PDI_EXPORT PDI_transaction_end(void);
 
 /// \}
 

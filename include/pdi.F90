@@ -23,6 +23,9 @@
 ! * THE SOFTWARE.
 ! ******************************************************************************
 
+!> \file pdi.F90
+!> PDI Fortran public application API
+
 #ifdef PDI_CMAKE_TAKE_THIS_AS_TRUE
 #define PDI_CMAKE_IGNORE_THIS
 #endif

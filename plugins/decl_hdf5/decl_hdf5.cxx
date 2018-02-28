@@ -30,37 +30,42 @@
 #include <unordered_map>
 #include <vector>
 
+#include <unistd.h>
+
 #include <hdf5.h>
 #include <hdf5_hl.h>
 
 #include <paraconf.h>
 
 #include <pdi.h>
+#include <pdi/array_datatype.h>
 #include <pdi/context.h>
 #include <pdi/data_descriptor.h>
-#include <pdi/data_reference.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/value.h>
-#include <unistd.h>
+#include <pdi/reference.h>
+#include <pdi/scalar_datatype.h>
+#include <pdi/expression.h>
 
 
 namespace {
 
 using PDI::Array_datatype;
 using PDI::Context;
-using PDI::Data_type;
+using PDI::Datatype;
 using PDI::Data_descriptor;
-using PDI::Data_ref;
-using PDI::Data_r_ref;
-using PDI::Data_w_ref;
+using PDI::Ref;
+using PDI::Ref_r;
+using PDI::Ref_w;
 using PDI::Error;
 using PDI::len;
 using PDI::Plugin;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
 using PDI::to_string;
-using PDI::Value;
+using PDI::Expression;
+using std::cerr;
+using std::endl;
 using std::reverse;
 using std::string;
 using std::unordered_map;
@@ -69,19 +74,19 @@ using std::vector;
 
 struct Slab_dim
 {
-	Value start;
+	Expression start;
 	
-	Value size;
+	Expression size;
 	
 };
 
 struct Hdf5_variable
 {
-	Value h5var;
+	Expression h5var;
 	
-	Value h5file;
+	Expression h5file;
 	
-	Value select;
+	Expression select;
 	
 	/// hyperslab to write in the file
 	vector<Slab_dim> file_slab;
@@ -90,8 +95,8 @@ struct Hdf5_variable
 
 /** Reads the plugin config for either inputs or outputs
     * \param conf the configuration node to read
-    * \param def_file the default file for HDF5 inputs/outputs
-    * \param def_select the default select for HDF5 inputs/outputs
+    * \param dflt_file the default file for HDF5 inputs/outputs
+    * \param dflt_select the default select for HDF5 inputs/outputs
     * \return the array where to store the resulting variables
     */
 unordered_map<string, Hdf5_variable> read_config_file(Context& ctx, PC_tree_t conf, const unique_ptr<string> dflt_file, const unique_ptr<string> dflt_select)
@@ -106,10 +111,10 @@ unordered_map<string, Hdf5_variable> read_config_file(Context& ctx, PC_tree_t co
 		
 		// set the corresponding HDF5 dataset name
 		// the data name is used as the default dataset name
-		Value var = to_string(PC_get(data_conf, ".var"), data_name);
+		Expression var = to_string(PC_get(data_conf, ".var"), data_name);
 		
 		// set the HDF5 filename (i.e. where do we write the data)
-		Value file;
+		Expression file;
 		if ( dflt_file ) {
 			file = to_string(PC_get(data_conf, ".file"), *dflt_file);
 		} else {
@@ -117,7 +122,7 @@ unordered_map<string, Hdf5_variable> read_config_file(Context& ctx, PC_tree_t co
 		}
 		
 		// sampling or frequency (i.e. when do we expose)
-		Value select;
+		Expression select;
 		if ( dflt_select ) {
 			select = to_string(PC_get(data_conf, ".select"), *dflt_select);
 		} else {
@@ -145,8 +150,8 @@ unordered_map<string, Hdf5_variable> read_config_file(Context& ctx, PC_tree_t co
 				mult = -1; offset = rank - 1;
 			}
 			
-			for (int ii = 0; ii < rank; ++ii) {
-				global.emplace_back(Slab_dim {to_string(PC_get(global_starts, "[%d]", ii * mult + offset)), to_string(PC_get(global_sizes, "[%d]", ii * mult + offset))});
+			for (int rank_id = 0; rank_id < rank; ++rank_id) {
+				global.emplace_back(Slab_dim {to_string(PC_get(global_starts, "[%d]", rank_id * mult + offset)), to_string(PC_get(global_sizes, "[%d]", rank_id * mult + offset))});
 			}
 		}
 		
@@ -156,13 +161,13 @@ unordered_map<string, Hdf5_variable> read_config_file(Context& ctx, PC_tree_t co
 	return result;
 }
 
-void init_sizes(Context& ctx, const Data_type& type, const vector<Slab_dim>& file_slab, hid_t& file_space, hid_t& mem_space, hid_t& h5type)
+void init_sizes(Context& ctx, const Datatype& type, const vector<Slab_dim>& file_slab, hid_t& file_space, hid_t& mem_space, hid_t& h5type)
 {
-	size_t rank = 0;
+	int rank = 0;
 	vector<hsize_t> h5msizes;
 	vector<hsize_t> h5subsizes;
 	vector<hsize_t> h5mstarts;
-	const Data_type* subtype = &type;
+	const Datatype* subtype = &type;
 	
 	while (auto&& array_type = dynamic_cast<const Array_datatype*>(subtype)) {
 		++rank;
@@ -175,7 +180,7 @@ void init_sizes(Context& ctx, const Data_type& type, const vector<Slab_dim>& fil
 	reverse(h5subsizes.begin(), h5subsizes.end());
 	reverse(h5mstarts.begin(), h5mstarts.end());
 	
-	if (file_slab.size() && rank != file_slab.size()) throw Error {PDI_ERR_TYPE, "Invalid rank for data in HDF5"};
+	if (file_slab.size() && rank != static_cast<int>(file_slab.size())) throw Error {PDI_ERR_TYPE, "Invalid rank for data in HDF5"};
 	
 	auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(subtype);
 	if (!scalar_type) throw Error {PDI_ERR_IMPL, "Unexpected type in HDF5"};
@@ -207,7 +212,8 @@ void init_sizes(Context& ctx, const Data_type& type, const vector<Slab_dim>& fil
 		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #%ld", scalar_type->datasize()};
 		}
 	} break;
-	default: throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};
+	case Scalar_kind::ADDRESS: case Scalar_kind::UNKNOWN:
+		throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};
 	}
 	
 	// The size in memory (with ghost, data might be sparse)
@@ -252,9 +258,9 @@ void rm_if_exist(hid_t h5file, const string& dset_name)
 	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
 }
 
-void write_to_file(Context& ctx, Data_ref cref, const string& filename, const string& pathname, const vector<Slab_dim>& file_slab)
+void write_to_file(Context& ctx, Ref cref, const string& filename, const string& pathname, const vector<Slab_dim>& file_slab)
 {
-	Data_r_ref ref = cref;
+	Ref_r ref = cref;
 	if (!ref) {
 		throw Error {PDI_ERR_PLUGIN, "Could not get read access on variable to write it to disk"};
 	}
@@ -318,9 +324,9 @@ void write_to_file(Context& ctx, Data_ref cref, const string& filename, const st
 	H5PTclose(file_lst);
 }
 
-void read_from_file(Context& ctx, Data_ref cref, const string& filename, const string& pathname, const vector<Slab_dim>& file_slab)
+void read_from_file(Context& ctx, Ref cref, const string& filename, const string& pathname, const vector<Slab_dim>& file_slab)
 {
-	Data_w_ref ref = cref;
+	Ref_w ref = cref;
 	if (!ref) {
 		throw Error {PDI_ERR_PLUGIN, "Could not get read access on variable to write it to disk"};
 	}
@@ -396,36 +402,36 @@ struct decl_hdf5_plugin: Plugin
 		}
 	}
 	
-	void data(const char* name, Data_ref ref) override
+	void data(const char* name, Ref ref) override
 	{
-		if (Data_r_ref {ref}) {
-			auto&& outev = outputs.find(name);
-			if (outev != outputs.end()) {
-				int select;
-				try {
-					select = outev->second.select.to_long(context());
-				} catch (const Error&) {
-					select = 0;
-				}
-				if (select) {
-					write_to_file(context(), ref, outev->second.h5file.to_string(context()), outev->second.h5var.to_string(context()), outev->second.file_slab);
-				}
+		auto&& outev = outputs.find(name);
+		if (outev != outputs.end()) try {
+			long select;
+			try {
+				select = outev->second.select.to_long(context());
+			} catch (const Error&) {
+				select = 0;
 			}
+			if (select) {
+				write_to_file(context(), ref, outev->second.h5file.to_string(context()), outev->second.h5var.to_string(context()), outev->second.file_slab);
+			}
+		} catch (...) {
+			cerr << "HDF5 error writing "<<name<<endl;
 		}
 		
-		if (Data_w_ref {ref}) {
-			auto&& inev = inputs.find(name);
-			if (inev != inputs.end()) {
-				int select;
-				try {
-					select = inev->second.select.to_long(context());
-				} catch (const Error&) {
-					select = 0;
-				}
-				if (select) {
-					read_from_file(context(), ref, inev->second.h5file.to_string(context()), inev->second.h5var.to_string(context()), inev->second.file_slab);
-				}
+		auto&& inev = inputs.find(name);
+		if (inev != inputs.end()) try {
+			long select;
+			try {
+				select = inev->second.select.to_long(context());
+			} catch (const Error&) {
+				select = 0;
 			}
+			if (select) {
+				read_from_file(context(), ref, inev->second.h5file.to_string(context()), inev->second.h5var.to_string(context()), inev->second.file_slab);
+			}
+		} catch (...) {
+			cerr << "HDF5 error reading "<<name<<endl;
 		}
 	}
 	

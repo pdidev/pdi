@@ -22,69 +22,69 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** \file pdi/plugin.h
- * Main plugin API
- */
-
-#ifndef PDI_PLUGIN_H_
-#define PDI_PLUGIN_H_
+#ifndef PDI_ARRAY_DATATYPE_H_
+#define PDI_ARRAY_DATATYPE_H_
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/datatype.h>
 
 
 namespace PDI {
 
-class PDI_EXPORT Plugin
+class PDI_EXPORT Array_datatype:
+	public Datatype
 {
-	Context& m_context;
+	/// Type of the elements contained in the array.
+	Data_type_uptr m_subtype;
+	
+	/// Number of elements the array can store
+	size_t m_size;
+	
+	/// id of the first actual element of the array
+	size_t m_start;
+	
+	/// Number of actual elements in the array
+	size_t m_subsize;
 	
 public:
-	Plugin(Context& ctx);
+	Array_datatype(Data_type_uptr subtype, size_t size, size_t start, size_t subsize);
 	
-	Plugin(const Plugin&) = delete;
+	Array_datatype(Data_type_uptr subtype, size_t size);
 	
-	Plugin(Plugin&&) = delete;
-	
-	virtual ~Plugin() noexcept(false);
-	
-	/** Skeleton of the function called to notify an event
-	 * \param[in] event the event name
+	/** Type of the elements contained in the array.
 	 */
-	virtual void event(const char* event);
+	const Datatype& subtype() const;
 	
-	/** Skeleton of the function called to notify that some data becomes available
-	 * \param name the name of the data made available
-	 * \param ref available data
+	/** Number of elements the array can store
 	 */
-	virtual void data(const char* name, Ref ref);
+	size_t size() const;
 	
-protected:
-	Context& context();
+	/** id of the first actual element of the array
+	 */
+	size_t start() const;
 	
-}; // class Plugin
+	/** Number of actual elements in the array
+	 */
+	size_t subsize() const;
+	
+	Type_template_uptr clone() const override;
+	
+	Data_type_uptr clone_type() const override;
+	
+	Data_type_uptr densify() const override;
+	
+	Data_type_uptr evaluate(Context&) const override;
+	
+	bool dense() const override;
+	
+	size_t datasize() const override;
+	
+	size_t buffersize() const override;
+	
+	size_t alignment() const override;
+	
+};
 
 } // namespace PDI
 
-/** Declares a plugin.
- *
- * This should be called after having implemeted the five required functions
- * for a PDI plugin:
- * - PDI_&lt;name&gt;_finalize;\
- * - PDI_&lt;name&gt;_event;\
- * - PDI_&lt;name&gt;_data_start;\
- * - PDI_&lt;name&gt;_data_end;\
- * - PDI_&lt;name&gt;_init(conf, world);\
- *
- * \param name the name of the plugin
- */
-#define PDI_PLUGIN(name)\
-	_Pragma("clang diagnostic push")\
-	_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")\
-	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")\
-	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world) \
-	{\
-		return ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
-	}\
-	_Pragma("clang diagnostic pop")
-
-#endif // PDI_PLUGIN_H_
+#endif // PDI_ARRAY_DATATYPE_H_

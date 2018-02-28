@@ -32,18 +32,23 @@ Naming:
 * typedefs names  *must* end with a `_t` suffix
 
 Prototypes:
-* any public or library-wide function *should* return a `PDI_status_t` error status
+* any public or library-wide function *should* return a `PDI_status_t` error
+  status
 
 ### For C++
 
 Naming:
-* class names *should* begin with an upper case and use underscore to separate words
-* non-static member variables names *should* begin with an `m_` followed by lower case and underscores
-* static member variables names *should* begin with an `s_` followed by lower case and underscores
-* functions and variable names *should* begin with a lower score followed by underscores to separate words
+* class names *should* begin with an upper case and use underscore to separate
+  words
+* non-static member variables names *should* begin with an `m_` followed by
+  lower case and underscores
+* static member variables names *should* begin with an `s_` followed by lower
+  case and underscores
+* functions and variable names *should* begin with a lower score followed by
+  underscores to separate words
 
 File organization:
-* public plugin enumerations *must* be defined in the `pdi/fwd.h` header
+* public plugin enumerations *must* be defined in the `pdi/pdi_fwd.h` header
 * public plugin classes and structures *must* be forward-declared in the
   `pdi/fwd.h` header
 

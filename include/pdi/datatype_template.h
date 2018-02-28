@@ -22,69 +22,44 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** \file pdi/plugin.h
- * Main plugin API
- */
+#ifndef PDI_DATATYPE_TEMPLATE_H_
+#define PDI_DATATYPE_TEMPLATE_H_
 
-#ifndef PDI_PLUGIN_H_
-#define PDI_PLUGIN_H_
+#include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
 
-
 namespace PDI {
 
-class PDI_EXPORT Plugin
+class PDI_EXPORT Datatype_template
 {
-	Context& m_context;
-	
 public:
-	Plugin(Context& ctx);
-	
-	Plugin(const Plugin&) = delete;
-	
-	Plugin(Plugin&&) = delete;
-	
-	virtual ~Plugin() noexcept(false);
-	
-	/** Skeleton of the function called to notify an event
-	 * \param[in] event the event name
+	/** Destroys the template
 	 */
-	virtual void event(const char* event);
+	virtual ~Datatype_template();
 	
-	/** Skeleton of the function called to notify that some data becomes available
-	 * \param name the name of the data made available
-	 * \param ref available data
+	/** Creates a new datatype as an exact copy of this one
+	 *
+	 * \return the dense type that is produced
 	 */
-	virtual void data(const char* name, Ref ref);
+	virtual Type_template_uptr clone() const = 0;
 	
-protected:
-	Context& context();
+	/** Creates a new datatype by resolving the value of all metadata references
+	 *
+	 * \param ctx the context in which to evaluate this template
+	 * \return the evaluated type that is produced
+	 */
+	virtual Data_type_uptr evaluate(Context& ctx) const = 0;
 	
-}; // class Plugin
+	/** Creates a new datatype from a paraconf-style config
+	 * \param node the configuration to read
+	 * \return the type generated
+	 */
+	static Type_template_uptr load(PC_tree_t node);
+	
+};
 
 } // namespace PDI
 
-/** Declares a plugin.
- *
- * This should be called after having implemeted the five required functions
- * for a PDI plugin:
- * - PDI_&lt;name&gt;_finalize;\
- * - PDI_&lt;name&gt;_event;\
- * - PDI_&lt;name&gt;_data_start;\
- * - PDI_&lt;name&gt;_data_end;\
- * - PDI_&lt;name&gt;_init(conf, world);\
- *
- * \param name the name of the plugin
- */
-#define PDI_PLUGIN(name)\
-	_Pragma("clang diagnostic push")\
-	_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")\
-	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")\
-	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world) \
-	{\
-		return ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
-	}\
-	_Pragma("clang diagnostic pop")
+#endif // PDI_DATATYPE_TEMPLATE_H_
 
-#endif // PDI_PLUGIN_H_

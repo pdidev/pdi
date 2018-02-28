@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_STATE_H_
-#define PDI_STATE_H_
+#ifndef PDI_CONTEXT_H_
+#define PDI_CONTEXT_H_
 
 #include <mpi.h>
 
@@ -34,35 +34,34 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <pdi/fwd.h>
-#include <pdi/data_reference.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/reference.h>
 
 
 namespace PDI {
 
 class PDI_EXPORT Context
 {
-public:
 	friend class Data_descriptor;
 	
+public:
 	/** An iterator used to go through the descriptor store.
 	 *
 	 * Implemented as a wrapper for a map iterator that hides the key part.
 	 */
 	class Iterator
 	{
-	public:
 		friend class Context;
+		/// The iterator this wraps
+		std::unordered_map<std::string, Data_descriptor>::iterator m_data;
+		Iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data);
+		Iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data);
+	public:
 		Data_descriptor& operator-> ();
 		Data_descriptor& operator* ();
 		Iterator& operator++ ();
-		bool operator!= (const Iterator& o);
-	private:
-		/// The iterator this wraps
-		std::unordered_map<std::string, Data_descriptor>::iterator m_data;
-		Iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data): m_data(data) {}
-		Iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data): m_data(std::move(data)) {}
+		bool operator!= (const Iterator&);
 	};
 	
 private:
@@ -112,4 +111,4 @@ public:
 
 } // namespace PDI
 
-#endif // PDI_STATE_H_
+#endif // PDI_CONTEXT_H_

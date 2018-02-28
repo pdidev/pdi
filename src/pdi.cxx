@@ -22,10 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** Implementation of the PDI public API functions.
- *
- * \file api.c
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+/** \file pdi.c
+ * Implementation of the PDI public API functions.
  **/
 
 #include "config.h"
@@ -39,12 +37,12 @@
 #include <unordered_set>
 
 #include "pdi/context.h"
-#include "pdi/plugin.h"
 #include "pdi/data_descriptor.h"
-#include "pdi/data_reference.h"
-#include "pdi/data_type.h"
 #include "pdi/paraconf_wrapper.h"
-#include "pdi/status.h"
+#include "pdi/plugin.h"
+#include "pdi/reference.h"
+#include "pdi/error.h"
+#include "pdi/datatype.h"
 
 
 namespace {

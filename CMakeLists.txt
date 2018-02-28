@@ -28,30 +28,25 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-# enable C++ to work-around cmake issue #15829 https://cmake.org/Bug/view.php?id=15829
 project(pdi LANGUAGES CXX C Fortran)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 
 # Build options
 option(USE_SYSTEM_PARACONF     "Use an already installed paraconf instead of building the embedded one" OFF )
-option(ENABLE_DECL_HDF5           "Build HDF5 based decl'HDF5 plug-in." ON )
+option(ENABLE_DECL_HDF5        "Build HDF5 based decl'HDF5 plug-in." ON )
 option(ENABLE_FTI              "Build FTI plug-in." ON )
 option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
-# Testing options
 option(RUN_EXAMPLES            "Build and run examples during ctest." ON  )
 set(TIMEOUT 3 CACHE STRING     "Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)." )
-
 if ("${TIMEOUT}" GREATER "1" ) 
 	set(DEFAULT_TIMEOUT "${TIMEOUT}")
 else()
 	set(DEFAULT_TIMEOUT 3)
 endif()
 
-
 # Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 
 # Find dependencies
 find_package(MPI REQUIRED)
@@ -62,6 +57,8 @@ else()
 	add_subdirectory(vendor/paraconf paraconf EXCLUDE_FROM_ALL)
 endif()
 
+# Enable testing
+include(CTest)
 
 # Version
 file(READ VERSION pdi_VERSION)
@@ -94,7 +91,6 @@ if(${ENABLE_DECL_SION})
 endif()
 
 # Examples & tests
-include( CTest )
 if( "${RUN_EXAMPLES}" ) 
 	add_subdirectory(example/)
 endif()

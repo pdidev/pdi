@@ -22,18 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATA_DESCRIPTOR_FWD_H_
-#define PDI_DATA_DESCRIPTOR_FWD_H_
+/** \file pdi/pdi_fwd.h
+ * Forward declaration of all public PDI types
+ */
+
+#ifndef PDI_PDI_FWD_H_
+#define PDI_PDI_FWD_H_
 
 #include <memory>
 
 #include <pdi.h>
 
-/** Forward declaration of all PDI types
- *
- * \file fwd.h
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
- * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
+/** \file pdi_fwd.h
+ * Forward declaration of all PDI types
  */
 
 namespace PDI {
@@ -43,49 +44,49 @@ namespace PDI {
  */
 class Context;
 
-/** The properties of a data (data type, kind, ...etc.)
- */
-class Data_descriptor;
-
-template<bool, bool> class Data_A_ref;
-
-typedef Data_A_ref<false, false> Data_ref;
-
-typedef Data_A_ref<true, false> Data_r_ref;
-
-typedef Data_A_ref<false, true> Data_w_ref;
-
-typedef Data_A_ref<true, true> Data_rw_ref;
-
 /** A PDI type descriptor
  *
  * A Data type is either a scalar, an array, or a record.
  */
-class Data_type;
+class Datatype;
 
-typedef std::unique_ptr<Data_type> Data_type_uptr;
+/** A PDI type template descriptor
+ *
+ * A template can be evaluated into a type by resolving its references
+ */
+class Datatype_template;
+
+typedef std::unique_ptr<Datatype_template> Type_template_uptr;
+
+typedef std::unique_ptr<Datatype> Data_type_uptr;
+
+/** The properties of a data (data type, kind, ...etc.)
+ */
+class Data_descriptor;
 
 class Plugin;
+
+template<bool, bool> class Reference;
+
+typedef Reference<false, false> Ref;
+
+typedef Reference<true, false> Ref_r;
+
+typedef Reference<false, true> Ref_w;
+
+typedef Reference<true, true> Ref_rw;
 
 /** Different possible interpretations for a scalar
     */
 enum class Scalar_kind : uint8_t
 { UNKNOWN, SIGNED, UNSIGNED, FLOAT, ADDRESS };
 
-/** A PDI type template descriptor
- *
- * A template can be evaluated into a type by resolving its references
- */
-class Type_template;
-
-typedef std::unique_ptr<Type_template> Type_template_uptr;
-
 /** A parsed value as specified by an expression.
  *
  * References are not resolved, this is only the AST.
  */
-class Value;
+class Expression;
 
 }
 
-#endif
+#endif // PDI_PDI_FWD_H_

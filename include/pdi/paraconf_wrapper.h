@@ -22,8 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_CONF_H_
-#define PDI_CONF_H_
+/** \file pdi/paraconf_wrapper.h
+ * C++ wrapper for the paraconf API
+ */
+
+#ifndef PDI_PARACONF_WRAPPER_H_
+#define PDI_PARACONF_WRAPPER_H_
 
 #include "config.h"
 
@@ -34,6 +38,19 @@
 #include <paraconf.h>
 
 namespace PDI {
+
+/** Automatically installs a paraconf error-handler that ignores errors and
+ *  uninstalls it on destruction.
+ */
+struct PDI_EXPORT Try_pc
+{
+	PC_errhandler_t m_handler;
+	Try_pc(): m_handler{PC_errhandler(PC_NULL_HANDLER)} { }
+	~Try_pc()
+	{
+		PC_errhandler(m_handler);
+	}
+};
 
 /** Returns the length of a node.
  *
@@ -140,4 +157,4 @@ bool PDI_EXPORT to_bool(PC_tree_t tree, bool dflt);
 
 } // namespace PDI
 
-#endif // PDI_CONF_H_
+#endif // PDI_PARACONF_WRAPPER_H_

@@ -22,69 +22,61 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** \file pdi/plugin.h
- * Main plugin API
- */
-
-#ifndef PDI_PLUGIN_H_
-#define PDI_PLUGIN_H_
+#ifndef PDI_DATATYPE_H_
+#define PDI_DATATYPE_H_
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/datatype_template.h>
 
 
 namespace PDI {
 
-class PDI_EXPORT Plugin
+class PDI_EXPORT Datatype:
+	public Datatype_template
 {
-	Context& m_context;
-	
 public:
-	Plugin(Context& ctx);
+	~Datatype();
 	
-	Plugin(const Plugin&) = delete;
-	
-	Plugin(Plugin&&) = delete;
-	
-	virtual ~Plugin() noexcept(false);
-	
-	/** Skeleton of the function called to notify an event
-	 * \param[in] event the event name
+	/** Creates a new datatype as an exact copy of this one
+	 *
+	 * \return the dense type that is produced
 	 */
-	virtual void event(const char* event);
+	virtual Data_type_uptr clone_type() const = 0;
 	
-	/** Skeleton of the function called to notify that some data becomes available
-	 * \param name the name of the data made available
-	 * \param ref available data
+	/** Creates a new datatype as the dense copy of this one
+	 *
+	 * \return the type that is produced
 	 */
-	virtual void data(const char* name, Ref ref);
+	virtual Data_type_uptr densify() const = 0;
 	
-protected:
-	Context& context();
+	/** Indicate if the datatype is dense or not
+	 *
+	 * \return whether the datatype is dense
+	 */
+	virtual bool dense() const = 0;
 	
-}; // class Plugin
+	/** Computes the data size of a type, excluding potentially unused memory
+	 *  from a sparse type
+	 *
+	 * \return the size in bytes
+	 */
+	virtual size_t datasize() const = 0;
+	
+	/** Computes the data size of a type, including potentially unused memory
+	 *  from a sparse type
+	 *
+	 * \return the size in bytes
+	 */
+	virtual size_t buffersize() const = 0;
+	
+	/** Return the required alignment for a type
+	 *
+	 * \return the size in bytes
+	 */
+	virtual size_t alignment() const = 0;
+	
+};
 
 } // namespace PDI
 
-/** Declares a plugin.
- *
- * This should be called after having implemeted the five required functions
- * for a PDI plugin:
- * - PDI_&lt;name&gt;_finalize;\
- * - PDI_&lt;name&gt;_event;\
- * - PDI_&lt;name&gt;_data_start;\
- * - PDI_&lt;name&gt;_data_end;\
- * - PDI_&lt;name&gt;_init(conf, world);\
- *
- * \param name the name of the plugin
- */
-#define PDI_PLUGIN(name)\
-	_Pragma("clang diagnostic push")\
-	_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")\
-	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")\
-	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world) \
-	{\
-		return ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
-	}\
-	_Pragma("clang diagnostic pop")
-
-#endif // PDI_PLUGIN_H_
+#endif // PDI_DATATYPE_H_

@@ -24,12 +24,11 @@
 
 #include "pdi.h"
 
-/** Fortran API wrappers for functions that need wrapping on the C side
- *
- * \file fapi.c
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
+/** \file fapi.c
+ * Fortran API wrappers for functions that need wrapping on the C side
  **/
 
+#pragma clang diagnostic ignored "-Wmissing-prototypes"
 /** A version of PDI_init that takes a Fortran communicator instead of a C one
  */
 PDI_status_t PDI_EXPORT PDI_init_f(PC_tree_t conf, MPI_Fint* world)

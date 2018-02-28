@@ -10,16 +10,18 @@ The public plugin API offered by PDI is general and simple enough that one can e
 
 ## Prerequisites
 
-To build the library one needs:
+PDI depends on:
   * cmake, version >= 3.1
-  * a C-99 and C++-14 compiler (gcc-5.4 and above are tested)
+  * a C-99 and C++-14 compiler (gcc-5.4 is tested)
+  * a POSIX compatible OS (linux is tested)
   * a MPI library
+  * paraconf (distributed with PDI, pass the `-USE_SYSTEM_PARACONF=ON` option to cmake to use an external one)
+  * libyaml (distributed with paraconf, pass the `-DUSE_SYSTEM_YAML=OFF` option to cmake to use it)
 
-PDI also requires the BPP tool and Paraconf library that are distributed together with PDI in the `vendor` directory.
-  * paraconf depends on libyaml. By default paraconf uses the system libyaml but it also embeds a copy that can be used by passing the `-DUSE_SYSTEM_YAML=OFF` option to cmake.
-
-Fortran support:
-  * a working Fortran compiler with `iso_c_binding` support is required.
+PDI Fortran support depends on:
+  * a Fortran-2003 compiler (gfort-5.4 is tested)
+  * BPP (distributed with PDI)
+  * a python and bash interpreter at compilation
 
 Plugins:
   * the decl'HDF5 plugin require a version of HDF5 compatible with the chosen MPI (either sequential or parallel)

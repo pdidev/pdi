@@ -36,20 +36,19 @@
 #include <pdi/data_descriptor.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/data_reference.h>
-#include <pdi/data_descriptor.h>
-#include <pdi/value.h>
+#include <pdi/reference.h>
+#include <pdi/expression.h>
 
 
 namespace {
 
 using PDI::Context;
 using PDI::Data_descriptor;
-using PDI::Data_ref;
+using PDI::Ref;
 using PDI::Error;
 using PDI::len;
 using PDI::Plugin;
-using PDI::Value;
+using PDI::Expression;
 using PDI::to_string;
 using std::string;
 using std::unordered_multimap;
@@ -89,7 +88,7 @@ private:
 	string m_name;
 	
 	/// value that is aliased
-	Value m_value;
+	Expression m_value;
 	
 public:
 	Alias(const string& name, const string& var):
@@ -232,7 +231,7 @@ struct user_code_plugin: Plugin
 		}
 	}
 	
-	void data(const char* name, Data_ref) override
+	void data(const char* name, Ref) override
 	{
 		auto&& dtrange = events_uc.equal_range(name);
 		// invoke all required functions

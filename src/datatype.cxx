@@ -24,30 +24,11 @@
 
 #include "config.h"
 
-#include <pdi/context.h>
-#include <pdi/reference.h>
-
-#include "pdi/plugin.h"
+#include "pdi/datatype.h"
 
 
 namespace PDI {
 
-Plugin::Plugin(Context& ctx):
-	m_context(ctx)
-{}
+Datatype::~Datatype() = default;
 
-Plugin::~Plugin() noexcept(false)
-{}
-
-void Plugin::event(const char*)
-{}
-
-void Plugin::data(const char*, Ref)
-{}
-
-Context& Plugin::context()
-{
-	return m_context;
-}
-
-}
+} // namespace PDI

@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "pdi/status.h"
+#include "pdi/error.h"
 
 #include "pdi/paraconf_wrapper.h"
 

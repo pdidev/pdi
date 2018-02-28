@@ -29,18 +29,22 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "pdi.h"
-#include "pdi/data_type.h"
+#include "pdi/array_datatype.h"
 #include "pdi/paraconf_wrapper.h"
-#include "pdi/status.h"
-#include "pdi/value.h"
+#include "pdi/record_datatype.h"
+#include "pdi/scalar_datatype.h"
+#include "pdi/error.h"
+#include "pdi/expression.h"
 
-#include "pdi/type_template.h"
+#include "pdi/datatype_template.h"
 
 namespace PDI {
 
 using std::max;
+using std::move;
 using std::string;
 using std::transform;
 using std::unique_ptr;
@@ -49,22 +53,22 @@ using std::vector;
 namespace {
 
 class Scalar_template:
-	public Type_template
+	public Datatype_template
 {
 private:
 	/// Interpretation of the content
 	Scalar_kind m_kind;
 	
 	/// Size of the content in bytes or 0 if unknown
-	Value m_size;
+	Expression m_size;
 	
 	/// Size of the alignment in bytes
-	Value m_align;
+	Expression m_align;
 	
 public:
-	Scalar_template(Scalar_kind kind, const Value& size): m_kind{kind}, m_size{size}, m_align{size} {}
+	Scalar_template(Scalar_kind kind, const Expression& size): m_kind{kind}, m_size{size}, m_align{size} {}
 	
-	Scalar_template(Scalar_kind kind, const Value& size, const Value& align): m_kind{kind}, m_size{size}, m_align{align} {}
+	Scalar_template(Scalar_kind kind, const Expression& size, const Expression& align): m_kind{kind}, m_size{size}, m_align{align} {}
 	
 	Type_template_uptr clone() const override
 	{
@@ -84,24 +88,22 @@ public:
 };
 
 class Array_template:
-	public Type_template
+	public Datatype_template
 {
 	/// Type of the elements contained in the array.
 	Type_template_uptr m_subtype;
 	
 	/// Number of elements the array can store
-	Value m_size;
+	Expression m_size;
 	
 	/// id of the first actual element of the array
-	Value m_start;
+	Expression m_start;
 	
 	/// Number of actual elements in the array
-	Value m_subsize;
+	Expression m_subsize;
 	
 public:
-	Array_template(Type_template_uptr subtype, Value size, Value start, Value subsize): m_subtype {std::move(subtype)}, m_size{std::move(size)}, m_start{std::move(start)}, m_subsize{std::move(subsize)} {}
-	
-	Array_template(Type_template_uptr subtype, Value size): Array_template{std::move(subtype), size, 0, std::move(size)} {}
+	Array_template(Type_template_uptr subtype, Expression size, Expression start, Expression subsize): m_subtype {move(subtype)}, m_size{move(size)}, m_start{move(start)}, m_subsize{move(subsize)} {}
 	
 	Type_template_uptr clone() const override
 	{
@@ -122,36 +124,36 @@ public:
 };
 
 class Record_template:
-	public Type_template
+	public Datatype_template
 {
 	struct Member
 	{
 		/// Offset or distance in byte from the Record_template start
-		Value m_displacement;
+		Expression m_displacement;
 		
 		/// Type of the contained member
 		Type_template_uptr m_type;
 		
-		std::string m_name;
+		string m_name;
 		
-		Member(Value displacement, Type_template_uptr type, const std::string& name): m_displacement{std::move(displacement)}, m_type{std::move(type)}, m_name{name} {}
+		//      Member(Expression displacement, Type_template_uptr type, const string& name): m_displacement{move(displacement)}, m_type{move(type)}, m_name{name} {}
 		
 		Member(const Member& o): m_displacement{o.m_displacement}, m_type{o.m_type->clone()}, m_name{o.m_name} {}
 		
 	};
 	
 	/// All members in increasing displacement order
-	std::vector<Member> m_members;
+	vector<Member> m_members;
 	
 	/// The total size of the buffer containing all members
-	Value m_buffersize;
+	Expression m_buffersize;
 	
 public:
-	Record_template(std::vector<Member>&& members, Value&& size): m_members{move(members)}, m_buffersize{std::move(size)} {}
+	Record_template(vector<Member>&& members, Expression&& size): m_members{move(members)}, m_buffersize{move(size)} {}
 	
 	Type_template_uptr clone() const override
 	{
-		return unique_ptr<Record_template> {new Record_template{vector<Member>(m_members), Value{m_buffersize}}};
+		return unique_ptr<Record_template> {new Record_template{vector<Member>(m_members), Expression{m_buffersize}}};
 	}
 	
 	Data_type_uptr evaluate(Context& ctx) const override
@@ -251,7 +253,7 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 		}
 	}
 	
-	vector<Value> sizes;
+	vector<Expression> sizes;
 	PC_tree_t conf_sizes = PC_get(node, ".sizes");
 	if (!PC_status(conf_sizes)) {   // multi dim array
 		int nsizes = len(conf_sizes);
@@ -262,14 +264,14 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 		sizes.emplace_back(to_string(PC_get(node, ".size")));
 	}
 	
-	vector<Value> subsizes;
+	vector<Expression> subsizes;
 	PC_tree_t conf_subsizes = PC_get(node, ".subsizes");
 	if (!PC_status(conf_subsizes)) {
-		size_t nsubsizes = len(conf_subsizes);
-		if (nsubsizes != sizes.size()) {
+		int nsubsizes = len(conf_subsizes);
+		if (nsubsizes != static_cast<int>(sizes.size())) {
 			throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", nsubsizes, sizes.size()};
 		}
-		for (size_t ii = 0; ii < nsubsizes; ++ii) {
+		for (int ii = 0; ii < nsubsizes; ++ii) {
 			subsizes.emplace_back(to_string(PC_get(node, ".subsizes[%d]", ridx(ii, order, nsubsizes))));
 		}
 	} else {
@@ -284,14 +286,14 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 		}
 	}
 	
-	vector<Value> starts;
+	vector<Expression> starts;
 	PC_tree_t conf_starts = PC_get(node, ".starts");
 	if (!PC_status(conf_starts)) {
-		size_t nstarts = len(conf_starts);
-		if (nstarts != sizes.size()) {
+		int nstarts = len(conf_starts);
+		if (nstarts != static_cast<int>(sizes.size())) {
 			throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", nstarts, sizes.size()};
 		}
-		for (size_t ii = 0; ii < nstarts; ++ii) {
+		for (int ii = 0; ii < nstarts; ++ii) {
 			starts.emplace_back(to_string(PC_get(node, ".starts[%d]", ridx(ii, order, nstarts))));
 		}
 	} else {
@@ -302,24 +304,24 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 			}
 			starts.emplace_back(to_string(conf_start));
 		} else {
-			starts = vector<Value>(sizes.size(), Value{0});
+			starts = vector<Expression>(sizes.size(), Expression{0});
 		}
 	}
 	
-	Type_template_uptr res_type = Type_template::load(PC_get(node, ".type"));
+	Type_template_uptr res_type = Datatype_template::load(PC_get(node, ".type"));
 	
 	for (size_t ii = 0; ii < sizes.size(); ++ii) {
-		res_type.reset(new Array_template(move(res_type), std::move(sizes[ii]), std::move(starts[ii]), std::move(subsizes[ii])));
+		res_type.reset(new Array_template(move(res_type), move(sizes[ii]), move(starts[ii]), move(subsizes[ii])));
 	}
 	return res_type;
 }
 
 } // namespace <anonymous>
 
-Type_template::~Type_template()
+Datatype_template::~Datatype_template()
 {}
 
-Type_template_uptr Type_template::load(PC_tree_t node)
+Type_template_uptr Datatype_template::load(PC_tree_t node)
 {
 	// size or sizes => array
 	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {

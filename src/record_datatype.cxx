@@ -25,78 +25,66 @@
 #include "config.h"
 
 #include <algorithm>
-#include <cassert>
-#include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "pdi/paraconf_wrapper.h"
-#include "pdi/status.h"
-#include "pdi/value.h"
+#include "pdi/error.h"
+#include "pdi/expression.h"
 
-#include "pdi/data_type.h"
+#include "pdi/record_datatype.h"
 
 
 namespace PDI {
 
 using std::max;
+using std::move;
 using std::string;
-using std::transform;
 using std::unique_ptr;
 using std::vector;
 
+Record_datatype::Member::Member(size_t displacement, Data_type_uptr type, const string& name):
+	m_displacement{move(displacement)},
+	m_type{move(type)},
+	m_name{name}
+{}
 
-Data_type_uptr Scalar_datatype::clone_type() const
+Record_datatype::Member::Member(const Member& o):
+	m_displacement{o.m_displacement},
+	m_type{o.m_type->clone_type()},
+	m_name{o.m_name}
+{}
+
+size_t Record_datatype::Member::displacement() const
 {
-	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
+	return m_displacement;
 }
 
-Data_type_uptr Scalar_datatype::densify() const
+const Datatype& Record_datatype::Member::type() const
 {
-	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
+	return *m_type;
 }
 
-Data_type_uptr Scalar_datatype::evaluate(Context&) const
+const string& Record_datatype::Member::name() const
+{
+	return m_name;
+}
+
+Record_datatype::Record_datatype(vector<Member>&& members, size_t size):
+	m_members{move(members)},
+	m_buffersize{move(size)}
+{}
+
+const vector<Record_datatype::Member>& Record_datatype::members() const
+{
+	return m_members;
+}
+
+Type_template_uptr Record_datatype::clone() const
 {
 	return clone_type();
 }
-
-Data_type_uptr Array_datatype::clone_type() const
-{
-	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->clone_type(), m_size, m_start, m_subsize}};
-}
-
-Data_type_uptr Array_datatype::densify() const
-{
-	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->densify(), m_subsize}};
-}
-
-Data_type_uptr Array_datatype::evaluate(Context&) const
-{
-	return Array_datatype::clone_type();
-}
-
-bool Array_datatype::dense() const
-{
-	if (m_size != m_subsize) return false;
-	return m_subtype->dense();
-}
-
-size_t Array_datatype::datasize() const
-{
-	return m_subsize * m_subtype->datasize();
-}
-
-size_t Array_datatype::buffersize() const
-{
-	return m_size * m_subtype->datasize();
-}
-
-size_t Array_datatype::alignment() const
-{
-	return m_subtype->alignment();
-}
-
 Data_type_uptr Record_datatype::clone_type() const
 {
 	return unique_ptr<Record_datatype> {new Record_datatype{vector<Member>(m_members), m_buffersize}};
@@ -130,6 +118,11 @@ size_t Record_datatype::datasize() const
 		result += member.type().datasize();
 	}
 	return result;
+}
+
+size_t Record_datatype::buffersize() const
+{
+	return m_buffersize;
 }
 
 size_t Record_datatype::alignment() const

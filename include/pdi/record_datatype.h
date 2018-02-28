@@ -22,69 +22,76 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** \file pdi/plugin.h
- * Main plugin API
- */
+#ifndef PDI_RECORD_DATATYPE_H_
+#define PDI_RECORD_DATATYPE_H_
 
-#ifndef PDI_PLUGIN_H_
-#define PDI_PLUGIN_H_
+#include <vector>
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/datatype.h>
 
 
 namespace PDI {
 
-class PDI_EXPORT Plugin
+class PDI_EXPORT Record_datatype:
+	public Datatype
 {
-	Context& m_context;
+public:
+	struct Member
+	{
+	private:
+		/// Offset or distance in byte from the Record_datatype start
+		size_t m_displacement;
+		
+		/// Type of the contained member
+		Data_type_uptr m_type;
+		
+		/// Name of this specific member
+		std::string m_name;
+		
+	public:
+		Member(size_t displacement, Data_type_uptr type, const std::string& name);
+		
+		Member(const Member& o);
+		
+		size_t displacement() const;
+		
+		const Datatype& type() const;
+		
+		const std::string& name() const;
+		
+	};
+	
+private:
+	/// All members in increasing displacement order
+	std::vector<Member> m_members;
+	
+	/// The total size of the buffer containing all members
+	size_t m_buffersize;
 	
 public:
-	Plugin(Context& ctx);
+	Record_datatype(std::vector<Member>&& members, size_t size);
 	
-	Plugin(const Plugin&) = delete;
+	const std::vector<Member>& members() const;
 	
-	Plugin(Plugin&&) = delete;
+	Type_template_uptr clone() const override;
 	
-	virtual ~Plugin() noexcept(false);
+	Data_type_uptr clone_type() const override;
 	
-	/** Skeleton of the function called to notify an event
-	 * \param[in] event the event name
-	 */
-	virtual void event(const char* event);
+	Data_type_uptr densify() const override;
 	
-	/** Skeleton of the function called to notify that some data becomes available
-	 * \param name the name of the data made available
-	 * \param ref available data
-	 */
-	virtual void data(const char* name, Ref ref);
+	Data_type_uptr evaluate(Context&) const override;
 	
-protected:
-	Context& context();
+	bool dense() const override;
 	
-}; // class Plugin
+	size_t datasize() const override;
+	
+	size_t buffersize() const override;
+	
+	size_t alignment() const override;
+	
+};
 
 } // namespace PDI
 
-/** Declares a plugin.
- *
- * This should be called after having implemeted the five required functions
- * for a PDI plugin:
- * - PDI_&lt;name&gt;_finalize;\
- * - PDI_&lt;name&gt;_event;\
- * - PDI_&lt;name&gt;_data_start;\
- * - PDI_&lt;name&gt;_data_end;\
- * - PDI_&lt;name&gt;_init(conf, world);\
- *
- * \param name the name of the plugin
- */
-#define PDI_PLUGIN(name)\
-	_Pragma("clang diagnostic push")\
-	_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")\
-	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")\
-	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world) \
-	{\
-		return ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
-	}\
-	_Pragma("clang diagnostic pop")
-
-#endif // PDI_PLUGIN_H_
+#endif // PDI_RECORD_DATATYPE_H_

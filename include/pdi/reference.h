@@ -22,17 +22,17 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATA_REF_H_
-#define PDI_DATA_REF_H_
+#ifndef PDI_REFERENCE_H_
+#define PDI_REFERENCE_H_
 
 #include <cassert>
 #include <functional>
 #include <memory>
 #include <unordered_map>
 
-#include <pdi/fwd.h>
-#include <pdi/data_type.h>
-#include <pdi/status.h>
+#include <pdi/pdi_fwd.h>
+#include <pdi/datatype.h>
+#include <pdi/error.h>
 
 
 namespace PDI {
@@ -40,32 +40,12 @@ namespace PDI {
 /** A common base for all references, whatever their access privileges in
  * order to ensure they share the same Data_content and can access each others.
  */
-class PDI_EXPORT Data_ref_base
+class PDI_EXPORT Reference_base
 {
-public:
-	/** Constructs a null reference
-	 */
-	Data_ref_base():
-		m_content(nullptr)
-	{
-	}
-	
-	Data_ref_base(const Data_ref_base&) = delete;
-	
-	Data_ref_base(Data_ref_base&&) = delete;
-	
-	Data_ref_base& operator = (const Data_ref_base&) = delete;
-	
-	Data_ref_base& operator = (Data_ref_base&&) = delete;
-	
-	/** accesses the type of the referenced raw data
-	 */
-	const Data_type& type() const;
-	
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
 	 */
-	class PDI_EXPORT Ref_count
+	class PDI_NO_EXPORT Ref_count
 	{
 	public:
 		/// buffer that contains data
@@ -87,7 +67,7 @@ protected:
 		int m_write_locks;
 		
 		/// Nullification notifications registered on this instance
-		std::unordered_map<const Data_ref_base*, std::function<void(Data_ref)> > m_notifications;
+		std::unordered_map<const Reference_base*, std::function<void(Ref)> > m_notifications;
 		
 		Ref_count() = delete;
 		
@@ -124,36 +104,57 @@ protected:
 		
 	}; // class Data_content
 	
-	/** Function to access the content from a reference with different access right
-	 */
-	static Ref_count* get_content(const Data_ref_base& other)
-	{
-		return other.m_content;
-	}
-	
-	static Data_ref do_copy(Data_r_ref ref);
 	
 	/** Pointer on the data content, can be null if the ref is null
 	 */
 	mutable Ref_count* m_content;
 	
+	
+	/** Function to access the content from a reference with different access right
+	 */
+	static Ref_count PDI_NO_EXPORT* get_content(const Reference_base& other)
+	{
+		return other.m_content;
+	}
+	
+	static Ref PDI_NO_EXPORT do_copy(Ref_r ref);
+	
+public:
+	/** Constructs a null reference
+	 */
+	Reference_base():
+		m_content(nullptr)
+	{}
+	
+	Reference_base(const Reference_base&) = delete;
+	
+	Reference_base(Reference_base&&) = delete;
+	
+	Reference_base& operator = (const Reference_base&) = delete;
+	
+	Reference_base& operator = (Reference_base&&) = delete;
+	
+	/** accesses the type of the referenced raw data
+	 */
+	const Datatype& type() const;
+	
 }; // class Data_ref_base
 
 
 template<bool R, bool W>
-struct Ref_access
+struct Reference_access
 {
 	typedef void type;
 };
 
 template<bool R>
-struct Ref_access<R, true>
+struct Reference_access<R, true>
 {
 	typedef void* type;
 };
 
 template<>
-struct Ref_access<true, false>
+struct Reference_access<true, false>
 {
 	typedef const void* type;
 };
@@ -162,7 +163,7 @@ struct Ref_access<true, false>
 /** A dynamically typed reference to data with automatic memory management and
  * read/write locking semantic.
  *
- * Data_A_ref is a smart pointer that features:
+ * Reference is a smart pointer that features:
  * - a dynamic type system,
  * - garbage collection mechanism similar to std::shared_ptr,
  * - a read/write locking mechanism similar to std::shared_mutex,
@@ -171,18 +172,15 @@ struct Ref_access<true, false>
  *
  * \warning As of now, and unlike std::shared_ptr, the lock system can not be
  * relied upon in a multithreaded environment.
- *
- * \author Corentin Roussel (CEA) <corentin.roussel@cea.fr>
- * \author Julien Bigot (CEA) <julien.bigot@cea.fr>
  */
 template<bool R, bool W>
-class PDI_EXPORT Data_A_ref:
-	public Data_ref_base
+class PDI_EXPORT Reference:
+	public Reference_base
 {
 public:
 	/** Constructs a null reference
 	 */
-	Data_A_ref() = default;
+	Reference() = default;
 	
 	/** Copies an existing reference
 	 *
@@ -190,8 +188,8 @@ public:
 	 *
 	 * \param other the ref to copy
 	 */
-	Data_A_ref(const Data_A_ref& other):
-		Data_ref_base()
+	Reference(const Reference& other):
+		Reference_base()
 	{
 		link(get_content(other));
 	}
@@ -203,8 +201,8 @@ public:
 	 * \param other the ref to copy
 	 */
 	template<bool OR, bool OW>
-	Data_A_ref(const Data_A_ref<OR, OW>& other):
-		Data_ref_base()
+	Reference(const Reference<OR, OW>& other):
+		Reference_base()
 	{
 		link(get_content(other));
 	}
@@ -212,8 +210,8 @@ public:
 	/** Moves an existing reference
 	 * \param other the ref to copy
 	 */
-	Data_A_ref(Data_A_ref&& other):
-		Data_ref_base()
+	Reference(Reference&& other):
+		Reference_base()
 	{
 		if (!other.m_content || !other.m_content->m_buffer) return;
 		// the other ref notification disappears
@@ -231,15 +229,15 @@ public:
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Data_A_ref(void* data, std::function<void(void*)> freefunc, Data_type_uptr type, bool readable, bool writable):
-		Data_ref_base()
+	Reference(void* data, std::function<void(void*)> freefunc, Data_type_uptr type, bool readable, bool writable):
+		Reference_base()
 	{
 		if (data) link(new Ref_count(data, freefunc, std::move(type), readable, writable));
 	}
 	
 	/** Destructor
 	 */
-	~Data_A_ref()
+	~Reference()
 	{
 		reset();
 	}
@@ -248,7 +246,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	operator typename Ref_access<R, W>::type() const
+	operator typename Reference_access<R, W>::type() const
 	{
 		return get();
 	}
@@ -257,7 +255,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	typename Ref_access<R, W>::type get() const
+	typename Reference_access<R, W>::type get() const
 	{
 		if (is_null()) throw Error{PDI_ERR_RIGHT, "Trying to dereference a null reference"};
 		return m_content->m_buffer;
@@ -284,7 +282,7 @@ public:
 	 *
 	 * \return a new reference to a copy of the raw data this references
 	 */
-	Data_ref copy()
+	Ref copy()
 	{
 		return do_copy(*this);
 	}
@@ -302,7 +300,7 @@ public:
 		// notify everybody of the nullification
 		while (!m_content->m_notifications.empty()) {
 			// get the key of a notification
-			const Data_ref_base* key = m_content->m_notifications.begin()->first;
+			const Reference_base* key = m_content->m_notifications.begin()->first;
 			// call this notification, this might invalidate any iterator
 			m_content->m_notifications.begin()->second(*this);
 			// remove the notification we just called
@@ -321,7 +319,7 @@ public:
 	 *
 	 * \param notifier the function to call when this reference becomes null
 	 */
-	void on_nullify(std::function<void(Data_ref)> notifier)
+	void on_nullify(std::function<void(Ref)> notifier)
 	{
 		if (!is_null()) m_content->m_notifications[this] = notifier;
 	}
@@ -334,7 +332,7 @@ private:
 	 *
 	 * \return Whether the reference is null
 	 */
-	bool is_null() const
+	bool PDI_NO_EXPORT is_null() const
 	{
 		if (!m_content) return true;
 		if (!m_content->m_buffer) {
@@ -348,7 +346,7 @@ private:
 	 *
 	 * Can only be done on a reference with content
 	 */
-	void unlink() const
+	void PDI_NO_EXPORT unlink() const
 	{
 		assert(m_content);
 		m_content->m_notifications.erase(this);
@@ -366,7 +364,7 @@ private:
 	 *
 	 * \param content the content to link to
 	 */
-	void link(Ref_count* content)
+	void PDI_NO_EXPORT link(Ref_count* content)
 	{
 		assert(!m_content);
 		if (!content || !content->m_buffer) return; // null ref
@@ -382,4 +380,4 @@ private:
 
 } // namespace PDI
 
-#endif //  PDI_DATA_REF_H_
+#endif //  PDI_REFERENCE_H_

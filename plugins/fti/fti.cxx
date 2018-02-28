@@ -36,19 +36,19 @@
 
 #include <pdi.h>
 #include <pdi/context.h>
-#include <pdi/data_type.h>
+#include <pdi/datatype.h>
 #include <pdi/data_descriptor.h>
-#include <pdi/data_reference.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
+#include <pdi/reference.h>
 
 
 namespace {
 
 using PDI::Context;
-using PDI::Data_ref;
-using PDI::Data_r_ref;
-using PDI::Data_w_ref;
+using PDI::Ref;
+using PDI::Ref_r;
+using PDI::Ref_w;
 using PDI::Error;
 using PDI::len;
 using PDI::Plugin;
@@ -158,21 +158,21 @@ struct fti_plugin:
 		
 		for ( auto&& protected_var: fti_protected ) {
 			if ( output ) {
-				if ( Data_r_ref ref = context().desc(protected_var.first).ref() ) {
+				if ( Ref_r ref = context().desc(protected_var.first).ref() ) {
 					size_t size = ref.type().datasize();
 					//TODO: handle non-contiguous data correctly
-					FTI_Protect(protected_var.second, const_cast<void*>(ref.get()), size, FTI_CHAR);
+					FTI_Protect(static_cast<int>(protected_var.second), const_cast<void*>(ref.get()), static_cast<long>(size), FTI_CHAR);
 				} else {
-					FTI_Protect(protected_var.second, NULL, 0, FTI_CHAR);
+					FTI_Protect(static_cast<int>(protected_var.second), NULL, 0, FTI_CHAR);
 					cerr << "** Warning: [PDI/FTI] Protected variable "<<protected_var.first<<" unavailable"<<endl;
 				}
 			} else {
-				if ( Data_w_ref ref = context().desc(protected_var.first).ref() ) {
+				if ( Ref_w ref = context().desc(protected_var.first).ref() ) {
 					size_t size = ref.type().datasize();
 					//TODO: handle non-contiguous data correctly
-					FTI_Protect(protected_var.second, ref.get(), size, FTI_CHAR);
+					FTI_Protect(static_cast<int>(protected_var.second), ref.get(), static_cast<long>(size), FTI_CHAR);
 				} else {
-					FTI_Protect(protected_var.second, NULL, 0, FTI_CHAR);
+					FTI_Protect(static_cast<int>(protected_var.second), NULL, 0, FTI_CHAR);
 					cerr << "** Warning: [PDI/FTI] Protected variable "<<protected_var.first<<" unavailable"<<endl;
 				}
 			}
@@ -187,18 +187,18 @@ struct fti_plugin:
 		case CHECKPOINT:
 			FTI_Checkpoint(numeric_limits<int>::max(), 4);
 			break;
-		default:
+		case RESTART_STATUS: case NO_EVENT:
 			assert(0 && "Unexpected event type");
 		}
 	}
 	
-	void data(const char* name, Data_ref cref) override
+	void data(const char* name, Ref cref) override
 	{
 		auto&& evit = events.find(name);
 		if ( evit == events.end() ) return;
 		if ( evit->second != RESTART_STATUS )  return;
-		if ( Data_w_ref ref = cref ) {
-			*(int*)ref.get() = FTI_Status();
+		if ( Ref_w ref = cref ) {
+			*static_cast<int*>(ref.get()) = FTI_Status();
 		}
 	}
 	

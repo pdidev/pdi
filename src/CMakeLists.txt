@@ -75,16 +75,19 @@ install(DIRECTORY ../include/ DESTINATION include)
 
 ## C++ version
 add_library(pdi SHARED
-		api.cxx
+		array_datatype.cxx
 		context.cxx
 		data_descriptor.cxx
-		data_reference.cxx
-		data_type.cxx
+		datatype.cxx
+		datatype_template.cxx
+		error.cxx
+		expression.cxx
 		paraconf_wrapper.cxx
+		pdi.cxx
 		plugin.cxx
-		status.cxx
-		type_template.cxx
-		value.cxx
+		record_datatype.cxx
+		reference.cxx
+		scalar_datatype.cxx
 )
 set_target_properties(pdi PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_compiler_flags(pdi PRIVATE -Wall -Wextra)

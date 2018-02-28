@@ -22,62 +22,56 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_ERROR_H_
-#define PDI_ERROR_H_
+#ifndef PDI_SCALAR_DATATYPE_H_
+#define PDI_SCALAR_DATATYPE_H_
 
-#include <exception>
-#include <string>
+#include <pdi/pdi_fwd.h>
+#include <pdi/datatype.h>
 
-#include <paraconf.h>
-
-#include <pdi/fwd.h>
 
 namespace PDI {
 
-class PDI_EXPORT Error:
-	public std::exception
+class PDI_EXPORT Scalar_datatype:
+	public Datatype
 {
-	std::string m_what;
+	/// Size of the content in bytes or 0 if unknown
+	size_t m_size;
 	
-	PDI_status_t m_status;
+	/// Size of the alignment in bytes
+	size_t m_align;
+	
+	/// Interpretation of the content
+	Scalar_kind m_kind;
 	
 public:
-	/** Creates a PDI error
-	 * \param[in] errcode the error code of the error to create
-	 * \param[in] message an errror message as a printf-style format
-	 * \param[in] ... the printf-style parameters for the message
-	 * \see printf
+	Scalar_datatype(Scalar_kind kind, size_t size);
+	
+	Scalar_datatype(Scalar_kind kind, size_t size, size_t align);
+	
+	/** Interpretation of the content
 	 */
-	Error(PDI_status_t errcode = PDI_OK, const char* message = "", ...);
+	Scalar_kind kind() const;
 	
-	Error(PDI_status_t errcode, const char* message, va_list args);
+	Type_template_uptr clone() const override;
 	
-	const char* what() const noexcept override;
+	Data_type_uptr clone_type() const override;
 	
-	PDI_status_t status() const noexcept
-	{
-		return m_status;
-	}
+	Data_type_uptr densify() const override;
+	
+	Data_type_uptr evaluate(Context&) const override;
+	
+	bool dense() const override;
+	
+	size_t datasize() const override;
+	
+	size_t buffersize() const override;
+	
+	size_t alignment() const override;
 	
 };
 
-/** Automatically installs a paraconf error-handler that ignores errors and
- *  uninstalls it on destruction.
- */
-struct PDI_EXPORT Try_pc
-{
-	PC_errhandler_t m_handler;
-	Try_pc(): m_handler{PC_errhandler(PC_NULL_HANDLER)} { }
-	~Try_pc()
-	{
-		PC_errhandler(m_handler);
-	}
-};
-
-/** Return the C error and stores the message corresponding to the C++ exception
- */
-PDI_status_t PDI_EXPORT return_err(const Error& err);
+const Scalar_datatype UNDEF_TYPE = {Scalar_kind::UNKNOWN, 0};
 
 } // namespace PDI
 
-#endif // PDI_ERROR_H_
+#endif // PDI_SCALAR_DATATYPE_H_

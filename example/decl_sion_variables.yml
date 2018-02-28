@@ -1,11 +1,11 @@
 # a simple scalar, the duration in seconds
 duration: 1
 # an example with a list, global [width,height] (excluding ghost)
-datasize: [3000, 2000]
+datasize: [3600, 3600]
 # an example with nested associative arrays
 parallelism:
-    width:  3
-    height: 2
+  width:  1
+  height: 3
 pdi:
   metadata: # metadata, i.e. small values that can be referenced using $syntax
     width: int # per proc. width including ghost
@@ -19,12 +19,14 @@ pdi:
       type:     double
       sizes:    [$width, $height]     # if only one element, you can use size as a acalar
   plugins:
-    SIONlib:
-      files:
-        outputs:
-          checkpoint:
-            path: checkpoint_${iter}.sionlib
-            vars: [ iter, width, height, pwidth, pheight, coord, main_field ]
-            transaction: newiter
+    decl_sion:
+      variables:
+        defaults:
+          outputs:
+            directory: .
             select: $iter % 10 = 0
+        outputs:
+          main_field:
+            generation: $iter
             n_files: 3
+          iter:

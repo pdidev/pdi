@@ -29,10 +29,10 @@
 
 #include <dlfcn.h>
 
-#include "pdi/data_reference.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
-#include "pdi/status.h"
+#include "pdi/reference.h"
+#include "pdi/error.h"
 
 #include "pdi/context.h"
 
@@ -45,11 +45,14 @@ using std::exception;
 using std::move;
 using std::string;
 using std::unique_ptr;
-
+using std::unordered_map;
 
 namespace {
 
-static void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
+typedef unique_ptr<Plugin> (*plugin_loader_f)(Context&, PC_tree_t, MPI_Comm*);
+
+
+void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 {
 	int map_len = len(node);
 	
@@ -60,9 +63,7 @@ static void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 	}
 }
 
-typedef unique_ptr<Plugin> (*plugin_loader_f)(Context&, PC_tree_t, MPI_Comm*);
-
-plugin_loader_f get_plugin_ctr(const char* plugin_name)
+plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
 {
 	string plugin_symbol = string{"PDI_plugin_"} + plugin_name + string{"_loader"};
 	void* plugin_ctor_uncast = dlsym(NULL, plugin_symbol.c_str());
@@ -84,7 +85,15 @@ plugin_loader_f get_plugin_ctr(const char* plugin_name)
 	return reinterpret_cast<plugin_loader_f>(plugin_ctor_uncast);
 }
 
-}
+} // namespace <anonymous>
+
+Context::Iterator::Iterator(const unordered_map<string, Data_descriptor>::iterator& data):
+	m_data(data)
+{}
+
+Context::Iterator::Iterator(unordered_map<string, Data_descriptor>::iterator&& data):
+	m_data(move(data))
+{}
 
 Data_descriptor& Context::Iterator::operator-> ()
 {
@@ -126,9 +135,7 @@ Context::Context(PC_tree_t conf, MPI_Comm* world)
 		//TODO: what to do if a single plugin fails to load?
 		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
 		try {
-			PC_tree_t plugin_conf = PC_get(conf, ".plugins<%d>", plugin_id);
-			unique_ptr<Plugin> plugin = get_plugin_ctr(plugin_name.c_str())(*this, plugin_conf, world);
-			plugins.emplace(plugin_name, move(plugin));
+			plugins.emplace(plugin_name, get_plugin_ctr(plugin_name.c_str())(*this, PC_get(conf, ".plugins<%d>", plugin_id), world));
 		} catch (const exception& e) {
 			throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
 		}

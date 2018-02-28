@@ -30,24 +30,25 @@
 #include <pdi.h>
 #include <pdi/context.h>
 #include <pdi/plugin.h>
-#include <pdi/data_reference.h>
+#include <pdi/reference.h>
 
 namespace {
 
 using PDI::Context;
-using PDI::Data_ref;
+using PDI::Ref;
 using PDI::Error;
 using PDI::Plugin;
 using std::bind;
 using std::cout;
 using std::endl;
+using std::reference_wrapper;
 
 struct test_plugin:
 	Plugin
 {
 	MPI_Comm my_comm;
 	
-	test_plugin(Context& ctx, PC_tree_t cfg, MPI_Comm* world):
+	test_plugin(Context& ctx, PC_tree_t, MPI_Comm* world):
 		Plugin {ctx}
 	{
 		if ( MPI_Comm_dup(*world, &my_comm) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
@@ -76,10 +77,10 @@ struct test_plugin:
 		if ( rank == 0 ) cout << "The test plugin received an event: "<<event<<endl;
 	}
 	
-	void data(const char* name, Data_ref ref) override
+	void data(const char* name, Ref ref) override
 	{
 		// register to be notified when the data becomes unavailable
-		ref.on_nullify(bind(&test_plugin::data_end, *this, name));
+		ref.on_nullify(bind(&test_plugin::data_end, reference_wrapper<test_plugin>(*this), name));
 		
 		int rank;
 		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};

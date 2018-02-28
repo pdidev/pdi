@@ -28,12 +28,13 @@
 #include <memory>
 
 #include "pdi/context.h"
-#include "pdi/data_reference.h"
-#include "pdi/data_type.h"
-#include "pdi/status.h"
+#include "pdi/datatype.h"
+#include "pdi/scalar_datatype.h"
+#include "pdi/plugin.h"
+#include "pdi/reference.h"
+#include "pdi/error.h"
 
 #include "pdi/data_descriptor.h"
-#include "pdi/plugin.h"
 
 
 namespace PDI {
@@ -44,15 +45,46 @@ using std::stack;
 using std::string;
 using std::unique_ptr;
 
+struct PDI_NO_EXPORT Data_descriptor::Ref_holder
+{
+	virtual Ref ref() const = 0;
+	virtual ~Ref_holder();
+	template<bool R, bool W> struct Impl;
+};
+
+template<bool R, bool W>
+struct PDI_NO_EXPORT Data_descriptor::Ref_holder::Impl:
+	Data_descriptor::Ref_holder
+{
+	Reference<R, W> m_t;
+	Impl(Ref t);
+	Ref ref() const override;
+};
+
+Data_descriptor::Ref_holder::~Ref_holder()
+{}
+
+template<bool R, bool W>
+Data_descriptor::Ref_holder::Impl<R,W>::Impl(Ref t):
+	m_t(t)
+{}
+
+template<bool R, bool W>
+Ref Data_descriptor::Ref_holder::Impl<R,W>::ref() const
+{
+	return m_t;
+}
 
 Data_descriptor::Data_descriptor(Context& ctx, const char* name):
 	m_context{ctx},
 	m_config(PC_parse_string("")),
-	m_metadata{false},
 	m_type{UNDEF_TYPE.clone_type()},
-	m_name{name}
+	m_name{name},
+	m_metadata{false}
 {
 }
+
+Data_descriptor::Data_descriptor(Data_descriptor&&) = default;
 
 Data_descriptor::~Data_descriptor()
 {
@@ -70,11 +102,31 @@ Data_descriptor::~Data_descriptor()
 
 void Data_descriptor::creation_template(PC_tree_t config)
 {
-	m_type = Data_type::load(config);
+	m_type = Datatype::load(config);
 	m_config = config;
 }
 
-Data_ref Data_descriptor::ref()
+PC_tree_t Data_descriptor::config() const
+{
+	return m_config;
+}
+
+bool Data_descriptor::metadata() const
+{
+	return m_metadata;
+}
+
+void Data_descriptor::metadata(bool metadata)
+{
+	m_metadata = metadata;
+}
+
+const std::string& Data_descriptor::name() const
+{
+	return m_name;
+}
+
+Ref Data_descriptor::ref()
 {
 	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value"};
 	return m_refs.top()->ref();
@@ -86,13 +138,13 @@ void Data_descriptor::share(void* data, bool read, bool write)
 		throw Error{PDI_ERR_VALUE, "Sharing null pointers is not allowed"};
 	}
 	
-	share(Data_ref{data, &free, m_type->evaluate(m_context), read, write}, false, false);
+	share(Ref {data, &free, m_type->evaluate(m_context), read, write}, false, false);
 }
 
-void* Data_descriptor::share(Data_ref data_ref, bool read, bool write)
+void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 {
 	// metadata must provide read access
-	if (metadata() && !Data_r_ref(data_ref)) {
+	if (metadata() && !Ref_r(data_ref)) {
 		throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
 	}
 	
@@ -105,18 +157,18 @@ void* Data_descriptor::share(Data_ref data_ref, bool read, bool write)
 	void* result = nullptr;
 	if (read) {
 		if (write) {
-			result = Data_rw_ref{data_ref} .get();
-			m_refs.emplace(new Ref_A_holder<true, true>(data_ref));
+			result = Ref_rw{data_ref} .get();
+			m_refs.emplace(new Ref_holder::Impl<true, true>(data_ref));
 		} else {
-			result = const_cast<void*>(Data_r_ref{data_ref} .get());
-			m_refs.emplace(new Ref_A_holder<true, false>(data_ref));
+			result = const_cast<void*>(Ref_r{data_ref} .get());
+			m_refs.emplace(new Ref_holder::Impl<true, false>(data_ref));
 		}
 	} else {
 		if (write) {
-			result = Data_w_ref{data_ref} .get();
-			m_refs.emplace(new Ref_A_holder<false, true>(data_ref));
+			result = Ref_w{data_ref} .get();
+			m_refs.emplace(new Ref_holder::Impl<false, true>(data_ref));
 		} else {
-			m_refs.emplace(new Ref_A_holder<false, false>(data_ref));
+			m_refs.emplace(new Ref_holder::Impl<false, false>(data_ref));
 		}
 	}
 	
@@ -145,11 +197,11 @@ void Data_descriptor::release()
 	// move reference out of the store
 	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot release a non shared value"};
 	
-	Data_ref oldref = ref();
+	Ref oldref = ref();
 	m_refs.pop();
 	if (metadata()) {
 		// re-share ourselves & keep a read ref to be used
-		m_refs.emplace(new Ref_A_holder<true, false>(oldref));
+		m_refs.emplace(new Ref_holder::Impl<true, false>(oldref));
 	}
 }
 
@@ -157,11 +209,11 @@ void Data_descriptor::reclaim()
 {
 	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot reclaim a non shared value"};
 	
-	Data_ref oldref = ref();
+	Ref oldref = ref();
 	m_refs.pop();
 	if (metadata()) {
 		// if the content is a metadata, keep a copy
-		m_refs.emplace(new Ref_A_holder<true, false>(oldref.copy()));
+		m_refs.emplace(new Ref_holder::Impl<true, false>(oldref.copy()));
 	}
 	oldref.release();
 }
