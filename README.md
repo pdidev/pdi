@@ -22,9 +22,9 @@ Fortran support:
   * a working Fortran compiler with `iso_c_binding` support is required.
 
 Plugins:
-  * the decl'H5 plugin require a version of HDF5 compatible with the chosen MPI
+  * the decl'HDF5 plugin require a version of HDF5 compatible with the chosen MPI (either sequential or parallel)
   * the FTI plugin depends on the FTI library that is distributed together with PDI in the `vendor` directory
-  * the SIONlib plugin depends on SIONlib
+  * the decl'SION plugin depends on SIONlib
 
 ## Getting the source
 
@@ -41,5 +41,7 @@ if the sources are in the folder pdi:
 ```
 cd pdi
 cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX=/usr/ .. 
-make && make install
+make
+make doc
+make install
 ```
