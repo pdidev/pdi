@@ -49,4 +49,9 @@ File organization:
 
 ## Indentation
 
-A astyle configuration file is provided with in `docs/indent.astyle`:
+A astyle configuration file is provided with in `docs/indent.astyle`.
+You can apply the formatting to the source in your working copy with the command
+```
+make doc
+```
+in your build directory.
