@@ -1,3 +1,8 @@
+# Joining the PDI dev team
+
+To make you known to others, please join the PDI slack channel at 
+https://pdidev.slack.com
+
 # PDI Coding style
 
 ## API levels
@@ -18,7 +23,7 @@ There are four levels of API for PDI:
 * any public (app or plugin) symbol *must* be exported using the `PDI_EXPORT`
   macro
 
-## C coding conventions
+## C coding coding conventions
 
 These conventions only apply to the C part of PDI (the C public application API)
 
@@ -35,17 +40,19 @@ Prototypes:
 * any public or library-wide function *should* return a `PDI_status_t` error
   status
 
-### For C++
+## C++ coding conventions
 
 Naming:
-* class names *should* begin with an upper case and use underscore to separate
-  words
+* class names *should* begin with an upper case letter and use underscore to
+  separate words
 * non-static member variables names *should* begin with an `m_` followed by
   lower case and underscores
 * static member variables names *should* begin with an `s_` followed by lower
   case and underscores
-* functions and variable names *should* begin with a lower score followed by
-  underscores to separate words
+* global variables names *should* begin with an `g_` followed by lower case and
+  underscores
+* functions and variable names *should* begin with a lower case letter and use
+  underscore to separate words
 
 File organization:
 * public plugin enumerations *must* be defined in the `pdi/pdi_fwd.h` header
