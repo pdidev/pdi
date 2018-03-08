@@ -34,7 +34,7 @@
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
-#include "pdi/reference.h"
+#include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
 #include "pdi/error.h"
 #include "pdi/datatype.h"

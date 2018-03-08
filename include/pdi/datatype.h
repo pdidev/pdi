@@ -41,13 +41,13 @@ public:
 	 *
 	 * \return the dense type that is produced
 	 */
-	virtual Data_type_uptr clone_type() const = 0;
+	virtual Datatype_uptr clone_type() const = 0;
 	
 	/** Creates a new datatype as the dense copy of this one
 	 *
 	 * \return the type that is produced
 	 */
-	virtual Data_type_uptr densify() const = 0;
+	virtual Datatype_uptr densify() const = 0;
 	
 	/** Indicate if the datatype is dense or not
 	 *

@@ -33,53 +33,58 @@
 
 #include <pdi.h>
 
-/** \file pdi_fwd.h
- * Forward declaration of all PDI types
- */
 
 namespace PDI {
 
-/** Describes the state of a PDI instanciation, its configuration, the
- *  currently exposed data, etc...
+/** Describes the state of a PDI instanciation, mostly the set of data
+ * descriptors
  */
 class Context;
 
-/** A PDI type descriptor
+/** A PDI datatype
  *
- * A Data type is either a scalar, an array, or a record.
+ * A datatype is either a scalar, an array, or a record.
  */
 class Datatype;
 
-/** A PDI type template descriptor
+/** A PDI datatype template
  *
- * A template can be evaluated into a type by resolving its references
+ * A template can be evaluated into a datatype by resolving its references
  */
 class Datatype_template;
 
-typedef std::unique_ptr<Datatype_template> Type_template_uptr;
+typedef std::unique_ptr<Datatype_template> Datatype_template_uptr;
 
-typedef std::unique_ptr<Datatype> Data_type_uptr;
+typedef std::unique_ptr<Datatype> Datatype_uptr;
 
-/** The properties of a data (data type, kind, ...etc.)
+/** A data descriptors with a name and a value, it contains an implicit type
+ * template that is used when exposing untyped data
  */
 class Data_descriptor;
 
+/** A class used as base for all PDI plugins
+ */
 class Plugin;
 
-template<bool, bool> class Reference;
+template<bool, bool> class Ref_any;
 
-typedef Reference<false, false> Ref;
+typedef Ref_any<false, false> Ref;
 
-typedef Reference<true, false> Ref_r;
+typedef Ref_any<true, false> Ref_r;
 
-typedef Reference<false, true> Ref_w;
+typedef Ref_any<false, true> Ref_w;
 
-typedef Reference<true, true> Ref_rw;
+typedef Ref_any<true, true> Ref_rw;
 
 /** Different possible interpretations for a scalar
     */
-enum class Scalar_kind : uint8_t
-{ UNKNOWN, SIGNED, UNSIGNED, FLOAT, ADDRESS };
+enum class Scalar_kind : uint8_t {
+	UNKNOWN,
+	SIGNED,
+	UNSIGNED,
+	FLOAT,
+	ADDRESS
+};
 
 /** A parsed value as specified by an expression.
  *

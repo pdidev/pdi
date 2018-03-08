@@ -53,7 +53,7 @@ set_property(TEST PDI_example_decl_hdf5_F PROPERTY TIMEOUT 5)
 endif()
 
 if("${ENABLE_FTI}")
-add_test(NAME PDI_example_fti_file COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/fti.fti" "${CMAKE_CURRENT_BINARY_DIR}/fti.fti")
+add_test(NAME PDI_example_fti_file COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${CMAKE_CURRENT_BINARY_DIR}/fti_config.ini")
 
 add_test(NAME PDI_example_fti_C COMMAND "mpirun" -n 6 ./PDI_example_C "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
 set_property(TEST PDI_example_fti_C PROPERTY DEPENDS PDI_example_C_build PDI_example_fti_file)

@@ -35,7 +35,7 @@ class PDI_EXPORT Array_datatype:
 	public Datatype
 {
 	/// Type of the elements contained in the array.
-	Data_type_uptr m_subtype;
+	Datatype_uptr m_subtype;
 	
 	/// Number of elements the array can store
 	size_t m_size;
@@ -47,9 +47,9 @@ class PDI_EXPORT Array_datatype:
 	size_t m_subsize;
 	
 public:
-	Array_datatype(Data_type_uptr subtype, size_t size, size_t start, size_t subsize);
+	Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize);
 	
-	Array_datatype(Data_type_uptr subtype, size_t size);
+	Array_datatype(Datatype_uptr subtype, size_t size);
 	
 	/** Type of the elements contained in the array.
 	 */
@@ -67,13 +67,13 @@ public:
 	 */
 	size_t subsize() const;
 	
-	Type_template_uptr clone() const override;
+	Datatype_template_uptr clone() const override;
 	
-	Data_type_uptr clone_type() const override;
+	Datatype_uptr clone_type() const override;
 	
-	Data_type_uptr densify() const override;
+	Datatype_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context&) const override;
+	Datatype_uptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	

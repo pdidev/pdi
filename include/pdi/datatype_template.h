@@ -42,20 +42,20 @@ public:
 	 *
 	 * \return the dense type that is produced
 	 */
-	virtual Type_template_uptr clone() const = 0;
+	virtual Datatype_template_uptr clone() const = 0;
 	
 	/** Creates a new datatype by resolving the value of all metadata references
 	 *
 	 * \param ctx the context in which to evaluate this template
 	 * \return the evaluated type that is produced
 	 */
-	virtual Data_type_uptr evaluate(Context& ctx) const = 0;
+	virtual Datatype_uptr evaluate(Context& ctx) const = 0;
 	
 	/** Creates a new datatype from a paraconf-style config
 	 * \param node the configuration to read
 	 * \return the type generated
 	 */
-	static Type_template_uptr load(PC_tree_t node);
+	static Datatype_template_uptr load(PC_tree_t node);
 	
 };
 

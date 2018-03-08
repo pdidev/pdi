@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_REFERENCE_H_
-#define PDI_REFERENCE_H_
+#ifndef PDI_REF_ANY_H_
+#define PDI_REF_ANY_H_
 
 #include <cassert>
 #include <functional>
@@ -40,7 +40,7 @@ namespace PDI {
 /** A common base for all references, whatever their access privileges in
  * order to ensure they share the same Data_content and can access each others.
  */
-class PDI_EXPORT Reference_base
+class PDI_EXPORT Ref_base
 {
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
@@ -55,7 +55,7 @@ protected:
 		std::function<void(void*)> m_delete;
 		
 		/// type of the data inside the buffer
-		Data_type_uptr m_type;
+		Datatype_uptr m_type;
 		
 		/// number of references to this content
 		int m_owners;
@@ -67,7 +67,7 @@ protected:
 		int m_write_locks;
 		
 		/// Nullification notifications registered on this instance
-		std::unordered_map<const Reference_base*, std::function<void(Ref)> > m_notifications;
+		std::unordered_map<const Ref_base*, std::function<void(Ref)> > m_notifications;
 		
 		Ref_count() = delete;
 		
@@ -82,7 +82,7 @@ protected:
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */
-		Ref_count(void* buffer, std::function<void(void*)> deleter, Data_type_uptr type, bool readable, bool writable):
+		Ref_count(void* buffer, std::function<void(void*)> deleter, Datatype_uptr type, bool readable, bool writable):
 			m_buffer{buffer},
 			m_delete{deleter},
 			m_type{std::move(type)},
@@ -112,28 +112,28 @@ protected:
 	
 	/** Function to access the content from a reference with different access right
 	 */
-	static Ref_count PDI_NO_EXPORT* get_content(const Reference_base& other)
+	static Ref_count PDI_NO_EXPORT* get_content(const Ref_base& other)
 	{
 		return other.m_content;
 	}
 	
 	static Ref PDI_NO_EXPORT do_copy(Ref_r ref);
 	
-public:
 	/** Constructs a null reference
 	 */
-	Reference_base():
+	Ref_base():
 		m_content(nullptr)
 	{}
 	
-	Reference_base(const Reference_base&) = delete;
+	Ref_base(const Ref_base&) = delete;
 	
-	Reference_base(Reference_base&&) = delete;
+	Ref_base(Ref_base&&) = delete;
 	
-	Reference_base& operator = (const Reference_base&) = delete;
+	Ref_base& operator = (const Ref_base&) = delete;
 	
-	Reference_base& operator = (Reference_base&&) = delete;
+	Ref_base& operator = (Ref_base&&) = delete;
 	
+public:
 	/** accesses the type of the referenced raw data
 	 */
 	const Datatype& type() const;
@@ -142,17 +142,17 @@ public:
 
 
 template<bool R, bool W>
-struct Reference_access {
+struct Ref_access {
 	typedef void type;
 };
 
 template<bool R>
-struct Reference_access<R, true> {
+struct Ref_access<R, true> {
 	typedef void* type;
 };
 
 template<>
-struct Reference_access<true, false> {
+struct Ref_access<true, false> {
 	typedef const void* type;
 };
 
@@ -160,7 +160,7 @@ struct Reference_access<true, false> {
 /** A dynamically typed reference to data with automatic memory management and
  * read/write locking semantic.
  *
- * Reference is a smart pointer that features:
+ * Ref_any is a smart pointer that features:
  * - a dynamic type system,
  * - garbage collection mechanism similar to std::shared_ptr,
  * - a read/write locking mechanism similar to std::shared_mutex,
@@ -171,13 +171,13 @@ struct Reference_access<true, false> {
  * relied upon in a multithreaded environment.
  */
 template<bool R, bool W>
-class PDI_EXPORT Reference:
-	public Reference_base
+class PDI_EXPORT Ref_any:
+	public Ref_base
 {
 public:
 	/** Constructs a null reference
 	 */
-	Reference() = default;
+	Ref_any() = default;
 	
 	/** Copies an existing reference
 	 *
@@ -185,8 +185,8 @@ public:
 	 *
 	 * \param other the ref to copy
 	 */
-	Reference(const Reference& other):
-		Reference_base()
+	Ref_any(const Ref_any& other):
+		Ref_base()
 	{
 		link(get_content(other));
 	}
@@ -198,8 +198,8 @@ public:
 	 * \param other the ref to copy
 	 */
 	template<bool OR, bool OW>
-	Reference(const Reference<OR, OW>& other):
-		Reference_base()
+	Ref_any(const Ref_any<OR, OW>& other):
+		Ref_base()
 	{
 		link(get_content(other));
 	}
@@ -207,8 +207,8 @@ public:
 	/** Moves an existing reference
 	 * \param other the ref to copy
 	 */
-	Reference(Reference&& other):
-		Reference_base()
+	Ref_any(Ref_any&& other):
+		Ref_base()
 	{
 		if (!other.m_content || !other.m_content->m_buffer) return;
 		// the other ref notification disappears
@@ -226,15 +226,15 @@ public:
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Reference(void* data, std::function<void(void*)> freefunc, Data_type_uptr type, bool readable, bool writable):
-		Reference_base()
+	Ref_any(void* data, std::function<void(void*)> freefunc, Datatype_uptr type, bool readable, bool writable):
+		Ref_base()
 	{
 		if (data) link(new Ref_count(data, freefunc, std::move(type), readable, writable));
 	}
 	
 	/** Destructor
 	 */
-	~Reference()
+	~Ref_any()
 	{
 		reset();
 	}
@@ -243,7 +243,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	operator typename Reference_access<R, W>::type() const
+	operator typename Ref_access<R, W>::type() const
 	{
 		return get();
 	}
@@ -252,7 +252,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	typename Reference_access<R, W>::type get() const
+	typename Ref_access<R, W>::type get() const
 	{
 		if (is_null()) throw Error{PDI_ERR_RIGHT, "Trying to dereference a null reference"};
 		return m_content->m_buffer;
@@ -297,7 +297,7 @@ public:
 		// notify everybody of the nullification
 		while (!m_content->m_notifications.empty()) {
 			// get the key of a notification
-			const Reference_base* key = m_content->m_notifications.begin()->first;
+			const Ref_base* key = m_content->m_notifications.begin()->first;
 			// call this notification, this might invalidate any iterator
 			m_content->m_notifications.begin()->second(*this);
 			// remove the notification we just called
@@ -377,4 +377,4 @@ private:
 
 } // namespace PDI
 
-#endif //  PDI_REFERENCE_H_
+#endif //  PDI_REF_ANY_H_

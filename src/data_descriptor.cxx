@@ -31,7 +31,7 @@
 #include "pdi/datatype.h"
 #include "pdi/scalar_datatype.h"
 #include "pdi/plugin.h"
-#include "pdi/reference.h"
+#include "pdi/ref_any.h"
 #include "pdi/error.h"
 
 #include "pdi/data_descriptor.h"
@@ -58,7 +58,7 @@ struct Data_descriptor::Ref_holder {
 template<bool R, bool W>
 struct Data_descriptor::Ref_holder::Impl: Data_descriptor::Ref_holder {
 
-	Reference<R, W> m_t;
+	Ref_any<R, W> m_t;
 	
 	
 	Impl(Ref t):

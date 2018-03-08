@@ -39,41 +39,46 @@ class PDI_EXPORT Plugin
 	Context& m_context;
 	
 public:
-	Plugin(Context& ctx);
-	
 	Plugin(const Plugin&) = delete;
 	
 	Plugin(Plugin&&) = delete;
 	
+	/** Initialization of the plugin
+	 * \param ctx the PDI context for this plugin instance
+	 */
+	Plugin(Context& ctx);
+	
 	virtual ~Plugin() noexcept(false);
 	
-	/** Skeleton of the function called to notify an event
+	/** Notification for a named event
 	 * \param[in] event the event name
 	 */
 	virtual void event(const char* event);
 	
-	/** Skeleton of the function called to notify that some data becomes available
+	/** Notification that some data becomes available
 	 * \param name the name of the data made available
-	 * \param ref available data
+	 * \param ref a reference to the data value
 	 */
 	virtual void data(const char* name, Ref ref);
 	
 protected:
+	/** Provides access to the PDI context for this plugin instance
+	 */
 	Context& context();
 	
 }; // class Plugin
 
 } // namespace PDI
 
-/** Declares a plugin.
+/** Declares a plugin to be used with PDI
  *
- * This should be called after having implemeted the five required functions
- * for a PDI plugin:
- * - PDI_&lt;name&gt;_finalize;\
- * - PDI_&lt;name&gt;_event;\
- * - PDI_&lt;name&gt;_data_start;\
- * - PDI_&lt;name&gt;_data_end;\
- * - PDI_&lt;name&gt;_init(conf, world);\
+ * This should be called after having implemented a class that inherits
+ * PDI::Plugin with a constructor taking 3 parameters
+ * - PDI::Context& ctx: the context for this plugin (forward it to PDI::Plugin)
+ * - PC_tree_t conf: the configuration for this plugin
+ * - MPI_Comm *world: a MPI communicator from which this plugin can reserve ranks
+ *
+ * The name of the class should be NAME_plugin where NAME is the plugin name
  *
  * \param name the name of the plugin
  */

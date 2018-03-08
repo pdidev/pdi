@@ -32,7 +32,7 @@
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/reference.h>
+#include <pdi/ref_any.h>
 #include <pdi/datatype_template.h>
 
 
@@ -53,7 +53,7 @@ class PDI_EXPORT Data_descriptor
 	
 	PC_tree_t m_config;
 	
-	Type_template_uptr m_type;
+	Datatype_template_uptr m_type;
 	
 	const std::string m_name;
 	

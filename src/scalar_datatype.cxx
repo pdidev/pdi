@@ -61,22 +61,22 @@ Scalar_kind Scalar_datatype::kind() const
 	return m_kind;
 }
 
-Type_template_uptr Scalar_datatype::clone() const
+Datatype_template_uptr Scalar_datatype::clone() const
 {
 	return clone_type();
 }
 
-Data_type_uptr Scalar_datatype::clone_type() const
+Datatype_uptr Scalar_datatype::clone_type() const
 {
 	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
 }
 
-Data_type_uptr Scalar_datatype::densify() const
+Datatype_uptr Scalar_datatype::densify() const
 {
 	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
 }
 
-Data_type_uptr Scalar_datatype::evaluate(Context&) const
+Datatype_uptr Scalar_datatype::evaluate(Context&) const
 {
 	return clone_type();
 }

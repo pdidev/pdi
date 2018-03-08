@@ -52,13 +52,13 @@ public:
 	 */
 	Scalar_kind kind() const;
 	
-	Type_template_uptr clone() const override;
+	Datatype_template_uptr clone() const override;
 	
-	Data_type_uptr clone_type() const override;
+	Datatype_uptr clone_type() const override;
 	
-	Data_type_uptr densify() const override;
+	Datatype_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context&) const override;
+	Datatype_uptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	

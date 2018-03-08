@@ -46,14 +46,14 @@ using std::transform;
 using std::unique_ptr;
 using std::vector;
 
-Array_datatype::Array_datatype(Data_type_uptr subtype, size_t size, size_t start, size_t subsize):
+Array_datatype::Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize):
 	m_subtype {std::move(subtype)},
 	m_size{std::move(size)},
 	m_start{std::move(start)},
 	m_subsize{std::move(subsize)}
 {}
 
-Array_datatype::Array_datatype(Data_type_uptr subtype, size_t size):
+Array_datatype::Array_datatype(Datatype_uptr subtype, size_t size):
 	Array_datatype{std::move(subtype), size, 0, std::move(size)}
 {}
 
@@ -77,22 +77,22 @@ size_t Array_datatype::subsize() const
 	return m_subsize;
 }
 
-Type_template_uptr Array_datatype::clone() const
+Datatype_template_uptr Array_datatype::clone() const
 {
 	return clone_type();
 }
 
-Data_type_uptr Array_datatype::clone_type() const
+Datatype_uptr Array_datatype::clone_type() const
 {
 	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->clone_type(), m_size, m_start, m_subsize}};
 }
 
-Data_type_uptr Array_datatype::densify() const
+Datatype_uptr Array_datatype::densify() const
 {
 	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->densify(), m_subsize}};
 }
 
-Data_type_uptr Array_datatype::evaluate(Context&) const
+Datatype_uptr Array_datatype::evaluate(Context&) const
 {
 	return Array_datatype::clone_type();
 }

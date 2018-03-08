@@ -44,7 +44,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-Record_datatype::Member::Member(size_t displacement, Data_type_uptr type, const string& name):
+Record_datatype::Member::Member(size_t displacement, Datatype_uptr type, const string& name):
 	m_displacement{move(displacement)},
 	m_type{move(type)},
 	m_name{name}
@@ -81,16 +81,16 @@ const vector<Record_datatype::Member>& Record_datatype::members() const
 	return m_members;
 }
 
-Type_template_uptr Record_datatype::clone() const
+Datatype_template_uptr Record_datatype::clone() const
 {
 	return clone_type();
 }
-Data_type_uptr Record_datatype::clone_type() const
+Datatype_uptr Record_datatype::clone_type() const
 {
 	return unique_ptr<Record_datatype> {new Record_datatype{vector<Member>(m_members), m_buffersize}};
 }
 
-Data_type_uptr Record_datatype::densify() const
+Datatype_uptr Record_datatype::densify() const
 {
 	long displacement = 0;
 	vector<Record_datatype::Member> densified_members;
@@ -101,7 +101,7 @@ Data_type_uptr Record_datatype::densify() const
 	return unique_ptr<Record_datatype> {new Record_datatype{move(densified_members), m_buffersize}};
 }
 
-Data_type_uptr Record_datatype::evaluate(Context&) const
+Datatype_uptr Record_datatype::evaluate(Context&) const
 {
 	return Record_datatype::clone_type();
 }

@@ -31,7 +31,7 @@
 
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
-#include "pdi/reference.h"
+#include "pdi/ref_any.h"
 #include "pdi/error.h"
 
 #include "pdi/context.h"

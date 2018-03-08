@@ -69,12 +69,12 @@ public:
 	
 	Scalar_template(Scalar_kind kind, const Expression& size, const Expression& align): m_kind{kind}, m_size{size}, m_align{align} {}
 	
-	Type_template_uptr clone() const override
+	Datatype_template_uptr clone() const override
 	{
 		return unique_ptr<Scalar_template> {new Scalar_template{m_kind, m_size, m_align}};
 	}
 	
-	Data_type_uptr evaluate(Context& ctx) const override
+	Datatype_uptr evaluate(Context& ctx) const override
 	{
 		return unique_ptr<Scalar_datatype> {new Scalar_datatype{
 				m_kind,
@@ -90,7 +90,7 @@ class Array_template:
 	public Datatype_template
 {
 	/// Type of the elements contained in the array.
-	Type_template_uptr m_subtype;
+	Datatype_template_uptr m_subtype;
 	
 	/// Number of elements the array can store
 	Expression m_size;
@@ -102,14 +102,14 @@ class Array_template:
 	Expression m_subsize;
 	
 public:
-	Array_template(Type_template_uptr subtype, Expression size, Expression start, Expression subsize): m_subtype {move(subtype)}, m_size{move(size)}, m_start{move(start)}, m_subsize{move(subsize)} {}
+	Array_template(Datatype_template_uptr subtype, Expression size, Expression start, Expression subsize): m_subtype {move(subtype)}, m_size{move(size)}, m_start{move(start)}, m_subsize{move(subsize)} {}
 	
-	Type_template_uptr clone() const override
+	Datatype_template_uptr clone() const override
 	{
 		return unique_ptr<Array_template> {new Array_template{m_subtype->clone(), m_size, m_start, m_subsize}};
 	}
 	
-	Data_type_uptr evaluate(Context& ctx) const override
+	Datatype_uptr evaluate(Context& ctx) const override
 	{
 		return unique_ptr<Array_datatype> {new Array_datatype{
 				m_subtype->evaluate(ctx),
@@ -131,7 +131,7 @@ class Record_template:
 		Expression m_displacement;
 		
 		/// Type of the contained member
-		Type_template_uptr m_type;
+		Datatype_template_uptr m_type;
 		
 		string m_name;
 		
@@ -149,12 +149,12 @@ class Record_template:
 public:
 	Record_template(vector<Member>&& members, Expression&& size): m_members{move(members)}, m_buffersize{move(size)} {}
 	
-	Type_template_uptr clone() const override
+	Datatype_template_uptr clone() const override
 	{
 		return unique_ptr<Record_template> {new Record_template{vector<Member>(m_members), Expression{m_buffersize}}};
 	}
 	
-	Data_type_uptr evaluate(Context& ctx) const override
+	Datatype_uptr evaluate(Context& ctx) const override
 	{
 		vector<Record_datatype::Member> evaluated_members;
 		for (auto&& member : m_members) {
@@ -184,7 +184,7 @@ int ridx(int ordered_index, Array_order order, int size)
 	return ordered_index;
 }
 
-Type_template_uptr to_scalar_datatype_template(PC_tree_t node)
+Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node)
 {
 	string type;
 	long kind;
@@ -233,7 +233,7 @@ Type_template_uptr to_scalar_datatype_template(PC_tree_t node)
 	throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s(kind=%d)'", type.c_str(), kind};
 }
 
-Type_template_uptr to_array_datatype_template(PC_tree_t node)
+Datatype_template_uptr to_array_datatype_template(PC_tree_t node)
 {
 	// Order: C or fortran ordering, default is C
 	Array_order order = Array_order::C;
@@ -308,7 +308,7 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 		}
 	}
 	
-	Type_template_uptr res_type = Datatype_template::load(PC_get(node, ".type"));
+	Datatype_template_uptr res_type = Datatype_template::load(PC_get(node, ".type"));
 	
 	for (size_t ii = 0; ii < sizes.size(); ++ii) {
 		res_type.reset(new Array_template(move(res_type), move(sizes[ii]), move(starts[ii]), move(subsizes[ii])));
@@ -321,7 +321,7 @@ Type_template_uptr to_array_datatype_template(PC_tree_t node)
 Datatype_template::~Datatype_template()
 {}
 
-Type_template_uptr Datatype_template::load(PC_tree_t node)
+Datatype_template_uptr Datatype_template::load(PC_tree_t node)
 {
 	// size or sizes => array
 	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {

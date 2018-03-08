@@ -30,7 +30,7 @@
 #include <pdi.h>
 #include <pdi/context.h>
 #include <pdi/plugin.h>
-#include <pdi/reference.h>
+#include <pdi/ref_any.h>
 
 
 namespace {

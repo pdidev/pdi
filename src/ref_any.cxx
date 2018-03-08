@@ -36,7 +36,7 @@
 #include "pdi/record_datatype.h"
 #include "pdi/scalar_datatype.h"
 
-#include "pdi/reference.h"
+#include "pdi/ref_any.h"
 
 
 namespace PDI {
@@ -139,7 +139,7 @@ Data_layout desc(const Datatype& type)
 
 } // namespace <anonymous>
 
-Ref Reference_base::do_copy(Ref_r ref)
+Ref Ref_base::do_copy(Ref_r ref)
 {
 	Data_layout ref_desc = desc(ref.type());
 	void* newbuffer{operator new (ref_desc.m_size * ref_desc.m_repeat)};
@@ -152,7 +152,7 @@ Ref Reference_base::do_copy(Ref_r ref)
 	}
 }
 
-const Datatype& Reference_base::type() const
+const Datatype& Ref_base::type() const
 {
 	if (!m_content || !m_content->m_buffer) return UNDEF_TYPE;
 	return *m_content->m_type;

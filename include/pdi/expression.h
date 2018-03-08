@@ -28,7 +28,7 @@
 #include <memory>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/reference.h>
+#include <pdi/ref_any.h>
 
 namespace PDI {
 

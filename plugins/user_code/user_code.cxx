@@ -36,7 +36,7 @@
 #include <pdi/data_descriptor.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-#include <pdi/reference.h>
+#include <pdi/ref_any.h>
 #include <pdi/expression.h>
 
 

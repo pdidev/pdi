@@ -43,13 +43,13 @@ public:
 		size_t m_displacement;
 		
 		/// Type of the contained member
-		Data_type_uptr m_type;
+		Datatype_uptr m_type;
 		
 		/// Name of this specific member
 		std::string m_name;
 		
 	public:
-		Member(size_t displacement, Data_type_uptr type, const std::string& name);
+		Member(size_t displacement, Datatype_uptr type, const std::string& name);
 		
 		Member(const Member& o);
 		
@@ -73,13 +73,13 @@ public:
 	
 	const std::vector<Member>& members() const;
 	
-	Type_template_uptr clone() const override;
+	Datatype_template_uptr clone() const override;
 	
-	Data_type_uptr clone_type() const override;
+	Datatype_uptr clone_type() const override;
 	
-	Data_type_uptr densify() const override;
+	Datatype_uptr densify() const override;
 	
-	Data_type_uptr evaluate(Context&) const override;
+	Datatype_uptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	
