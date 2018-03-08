@@ -32,6 +32,7 @@
 #include <pdi/plugin.h>
 #include <pdi/reference.h>
 
+
 namespace {
 
 using PDI::Context;
@@ -43,10 +44,10 @@ using std::cout;
 using std::endl;
 using std::reference_wrapper;
 
-struct test_plugin:
-	Plugin
-{
+struct test_plugin: Plugin {
+
 	MPI_Comm my_comm;
+	
 	
 	test_plugin(Context& ctx, PC_tree_t, MPI_Comm* world):
 		Plugin {ctx}

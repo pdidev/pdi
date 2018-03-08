@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** \file pdi/error.h
- * Error handling subsystem
- */
-
 #ifndef PDI_ERROR_H_
 #define PDI_ERROR_H_
 
@@ -61,10 +57,6 @@ public:
 	PDI_status_t status() const noexcept;
 	
 };
-
-/** Return the C error and stores the message corresponding to the C++ exception
- */
-PDI_status_t PDI_EXPORT return_err(const Error& err);
 
 } // namespace PDI
 

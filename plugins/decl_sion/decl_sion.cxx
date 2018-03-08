@@ -43,6 +43,7 @@
 
 #include <sion.h>
 
+
 namespace {
 
 using PDI::Context;
@@ -59,20 +60,26 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 
-struct Variable_event
-{
+struct Variable_event {
+
 	Expression file;
+	
 	Expression select;
+	
 	Expression n_files;
+	
 	
 	Variable_event(PC_tree_t entry, const string& name);
 };
 
-struct Named_event
-{
+struct Named_event {
+
 	Expression file;
+	
 	Expression select;
+	
 	Expression n_files;
+	
 	vector<string> vars;
 	
 	Named_event(PC_tree_t entry, const string& name);
@@ -160,14 +167,18 @@ static uint64_t hash(const uint8_t* data, size_t len)
 	return hash;
 }
 
-struct decl_sion_plugin: Plugin
-{
+struct decl_sion_plugin: Plugin {
 
 	MPI_Comm comm;
+	
 	unordered_map<string, Variable_event> output_vars;
+	
 	unordered_map<string, Variable_event> input_vars;
+	
 	unordered_map<string, Named_event> output_events;
+	
 	unordered_map<string, Named_event> input_events;
+	
 	
 	decl_sion_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world):
 		Plugin{ctx},

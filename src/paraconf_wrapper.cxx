@@ -29,9 +29,11 @@
 #include "pdi/paraconf_wrapper.h"
 
 
-namespace {
+namespace PDI {
 
-using PDI::Error;
+using std::string;
+
+namespace {
 
 void do_pc(PC_status_t status)
 {
@@ -42,10 +44,14 @@ void do_pc(PC_status_t status)
 
 } // namespace <anonymous>
 
-namespace PDI {
+Paraconf_wrapper::Paraconf_wrapper():
+	m_handler{PC_errhandler(PC_NULL_HANDLER)}
+{}
 
-using std::string;
-
+Paraconf_wrapper::~Paraconf_wrapper()
+{
+	PC_errhandler(m_handler);
+}
 
 int len(PC_tree_t tree)
 {

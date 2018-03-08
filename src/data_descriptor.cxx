@@ -45,35 +45,33 @@ using std::stack;
 using std::string;
 using std::unique_ptr;
 
-struct PDI_NO_EXPORT Data_descriptor::Ref_holder
-{
+struct Data_descriptor::Ref_holder {
+
 	virtual Ref ref() const = 0;
-	virtual ~Ref_holder();
+	
+	virtual ~Ref_holder() {}
+	
 	template<bool R, bool W> struct Impl;
+	
 };
 
 template<bool R, bool W>
-struct PDI_NO_EXPORT Data_descriptor::Ref_holder::Impl:
-	Data_descriptor::Ref_holder
-{
+struct Data_descriptor::Ref_holder::Impl: Data_descriptor::Ref_holder {
+
 	Reference<R, W> m_t;
-	Impl(Ref t);
-	Ref ref() const override;
+	
+	
+	Impl(Ref t):
+		m_t(t)
+	{}
+	
+	Ref ref() const override
+	{
+		return m_t;
+	}
+	
 };
 
-Data_descriptor::Ref_holder::~Ref_holder()
-{}
-
-template<bool R, bool W>
-Data_descriptor::Ref_holder::Impl<R,W>::Impl(Ref t):
-	m_t(t)
-{}
-
-template<bool R, bool W>
-Ref Data_descriptor::Ref_holder::Impl<R,W>::ref() const
-{
-	return m_t;
-}
 
 Data_descriptor::Data_descriptor(Context& ctx, const char* name):
 	m_context{ctx},

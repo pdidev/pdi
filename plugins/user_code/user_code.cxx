@@ -178,8 +178,7 @@ public:
 	
 }; // class Trigger
 
-struct user_code_plugin: Plugin
-{
+struct user_code_plugin: Plugin {
 	/// User-code to call on named events
 	unordered_multimap<string, Trigger> events_uc;
 	

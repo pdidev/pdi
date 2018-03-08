@@ -72,16 +72,16 @@ using std::unordered_map;
 using std::unique_ptr;
 using std::vector;
 
-struct Slab_dim
-{
+struct Slab_dim {
+
 	Expression start;
 	
 	Expression size;
 	
 };
 
-struct Hdf5_variable
-{
+struct Hdf5_variable {
+
 	Expression h5var;
 	
 	Expression h5file;
@@ -362,8 +362,8 @@ void read_from_file(Context& ctx, Ref cref, const string& filename, const string
 	H5PTclose(file_lst);
 }
 
-struct decl_hdf5_plugin: Plugin
-{
+struct decl_hdf5_plugin: Plugin {
+
 	unordered_map<string, Hdf5_variable> outputs;
 	
 	unordered_map<string, Hdf5_variable> inputs;
@@ -405,33 +405,37 @@ struct decl_hdf5_plugin: Plugin
 	void data(const char* name, Ref ref) override
 	{
 		auto&& outev = outputs.find(name);
-		if (outev != outputs.end()) try {
-			long select;
+		if (outev != outputs.end()) {
 			try {
-				select = outev->second.select.to_long(context());
-			} catch (const Error&) {
-				select = 0;
+				long select;
+				try {
+					select = outev->second.select.to_long(context());
+				} catch (const Error&) {
+					select = 0;
+				}
+				if (select) {
+					write_to_file(context(), ref, outev->second.h5file.to_string(context()), outev->second.h5var.to_string(context()), outev->second.file_slab);
+				}
+			} catch (...) {
+				cerr << "HDF5 error writing "<<name<<endl;
 			}
-			if (select) {
-				write_to_file(context(), ref, outev->second.h5file.to_string(context()), outev->second.h5var.to_string(context()), outev->second.file_slab);
-			}
-		} catch (...) {
-			cerr << "HDF5 error writing "<<name<<endl;
 		}
 		
 		auto&& inev = inputs.find(name);
-		if (inev != inputs.end()) try {
-			long select;
+		if (inev != inputs.end()) {
 			try {
-				select = inev->second.select.to_long(context());
-			} catch (const Error&) {
-				select = 0;
+				long select;
+				try {
+					select = inev->second.select.to_long(context());
+				} catch (const Error&) {
+					select = 0;
+				}
+				if (select) {
+					read_from_file(context(), ref, inev->second.h5file.to_string(context()), inev->second.h5var.to_string(context()), inev->second.file_slab);
+				}
+			} catch (...) {
+				cerr << "HDF5 error reading "<<name<<endl;
 			}
-			if (select) {
-				read_from_file(context(), ref, inev->second.h5file.to_string(context()), inev->second.h5var.to_string(context()), inev->second.file_slab);
-			}
-		} catch (...) {
-			cerr << "HDF5 error reading "<<name<<endl;
 		}
 	}
 	

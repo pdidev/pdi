@@ -32,75 +32,6 @@
 
 #include "pdi/error.h"
 
-
-namespace {
-
-using std::string;
-using std::unique_ptr;
-
-struct Error_context
-{
-	Error_context(): handler{PDI_ASSERT_HANDLER} {}
-	
-	PDI_errhandler_t handler;
-	
-	string errmsg;
-	
-};
-
-thread_local Error_context context;
-
-
-/** Handler for fatal errors
-  */
-void assert_status(PDI_status_t status, const char* message, void*)
-{
-	if (status) {
-		fprintf(stderr, "FATAL ERROR, in PDI: %s\n", message);
-		abort();
-	}
-}
-
-/** Handler for warning
-  */
-void warn_status(PDI_status_t status, const char* message, void*)
-{
-	if (status) {
-		fprintf(stderr, "Warning, in PDI: %s\n", message);
-	}
-}
-
-} // namespace <anonymous>
-
-
-const PDI_errhandler_t PDI_ASSERT_HANDLER = {
-	&assert_status,
-	NULL
-};
-
-const PDI_errhandler_t PDI_WARN_HANDLER = {
-	&warn_status,
-	NULL
-};
-
-const PDI_errhandler_t PDI_NULL_HANDLER = {
-	NULL,
-	NULL
-};
-
-
-PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
-{
-	PDI_errhandler_t old_handler = context.handler;
-	context.handler = new_handler;
-	return old_handler;
-}
-
-const char* PDI_errmsg()
-{
-	return context.errmsg.c_str();
-}
-
 namespace PDI {
 
 Error::Error(PDI_status_t errcode, const char* message, va_list ap):
@@ -137,13 +68,6 @@ const char* Error::what() const noexcept
 PDI_status_t Error::status() const noexcept
 {
 	return m_status;
-}
-
-PDI_status_t return_err(const Error& err)
-{
-	context.errmsg = err.what();
-	if (context.handler.func) context.handler.func(err.status(), err.what(), context.handler.context);
-	return err.status();
 }
 
 } // namespace PDI

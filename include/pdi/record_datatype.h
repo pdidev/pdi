@@ -37,9 +37,8 @@ class PDI_EXPORT Record_datatype:
 	public Datatype
 {
 public:
-	struct Member
+	class Member
 	{
-	private:
 		/// Offset or distance in byte from the Record_datatype start
 		size_t m_displacement;
 		

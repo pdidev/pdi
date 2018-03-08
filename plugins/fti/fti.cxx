@@ -64,9 +64,8 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
-struct fti_plugin:
-	Plugin
-{
+struct fti_plugin: Plugin {
+
 	enum Event_action
 	{ NO_EVENT=0, RECOVER, SNAPSHOT, CHECKPOINT, RESTART_STATUS };
 	

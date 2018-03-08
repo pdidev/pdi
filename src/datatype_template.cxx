@@ -55,7 +55,6 @@ namespace {
 class Scalar_template:
 	public Datatype_template
 {
-private:
 	/// Interpretation of the content
 	Scalar_kind m_kind;
 	
@@ -126,8 +125,8 @@ public:
 class Record_template:
 	public Datatype_template
 {
-	struct Member
-	{
+	struct Member {
+	
 		/// Offset or distance in byte from the Record_template start
 		Expression m_displacement;
 		
@@ -136,7 +135,6 @@ class Record_template:
 		
 		string m_name;
 		
-		//      Member(Expression displacement, Type_template_uptr type, const string& name): m_displacement{move(displacement)}, m_type{move(type)}, m_name{name} {}
 		
 		Member(const Member& o): m_displacement{o.m_displacement}, m_type{o.m_type->clone()}, m_name{o.m_name} {}
 		
@@ -168,8 +166,10 @@ public:
 };
 
 /// ordering of array
-enum class Array_order : uint8_t
-{ C, FORTRAN };
+enum class Array_order : uint8_t {
+	C,
+	FORTRAN
+};
 
 /** Return a reordered index, i.e. a C style index given either a C for Fortran
     *  style one

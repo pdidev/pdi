@@ -1,5 +1,5 @@
 # Style of brace 
---style=mozilla
+--style=kr
 # Indent is tab based
 --indent=tab=4
 # Attach braces to a namespace statement

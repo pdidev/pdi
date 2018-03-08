@@ -51,8 +51,7 @@ using std::vector;
 
 namespace {
 
-struct Data_layout
-{
+struct Data_layout {
 	/// number of time to repeat the content
 	size_t m_repeat;
 	

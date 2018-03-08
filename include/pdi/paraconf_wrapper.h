@@ -37,19 +37,21 @@
 
 #include <paraconf.h>
 
+
 namespace PDI {
 
 /** Automatically installs a paraconf error-handler that ignores errors and
  *  uninstalls it on destruction.
  */
-struct PDI_EXPORT Try_pc
-{
+struct PDI_EXPORT Paraconf_wrapper {
+
 	PC_errhandler_t m_handler;
-	Try_pc(): m_handler{PC_errhandler(PC_NULL_HANDLER)} { }
-	~Try_pc()
-	{
-		PC_errhandler(m_handler);
-	}
+	
+	
+	Paraconf_wrapper();
+	
+	~Paraconf_wrapper();
+	
 };
 
 /** Returns the length of a node.

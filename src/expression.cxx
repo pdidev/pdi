@@ -51,8 +51,8 @@ using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
-struct Expression::Impl
-{
+struct Expression::Impl {
+
 	/** An expression made of a integer literal
 	 */
 	struct Int_literal;
@@ -68,6 +68,7 @@ struct Expression::Impl
 	/** An expression made of a reference to a data
 	*/
 	struct Reference_expression;
+	
 	
 	virtual ~Impl();
 	
@@ -85,9 +86,8 @@ struct Expression::Impl
 	
 };
 
-struct Expression::Impl::Int_literal:
-	Impl
-{
+struct Expression::Impl::Int_literal: Impl {
+
 	long m_value;
 	
 	
@@ -103,9 +103,8 @@ struct Expression::Impl::Int_literal:
 	
 };
 
-struct Expression::Impl::String_literal:
-	Impl
-{
+struct Expression::Impl::String_literal: Impl {
+
 	/** A Subvalue contains another value to insert and the string following it
 	 */
 	using Subvalue = pair<Expression, string>;
@@ -130,9 +129,8 @@ struct Expression::Impl::String_literal:
 	
 };
 
-struct Expression::Impl::Reference_expression:
-	Impl
-{
+struct Expression::Impl::Reference_expression: Impl {
+
 	/// The referenced data
 	string m_referenced;
 	
@@ -150,13 +148,11 @@ struct Expression::Impl::Reference_expression:
 	
 };
 
-struct Expression::Impl::Operation:
-	Impl
-{
+struct Expression::Impl::Operation: Impl {
+
 	/** The binary operators that can be used in expressions
 	 */
-	enum Operator
-	{
+	enum Operator {
 		PLUS = '+',
 		MINUS = '-',
 		MULT = '*',

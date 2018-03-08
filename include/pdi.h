@@ -42,8 +42,8 @@ extern "C" {
 
 /** Error codes of PDI
  */
-typedef enum PDI_status_e
-{
+typedef enum PDI_status_e {
+	/// everything went well
 	PDI_OK = 0,
 	/// on an input call, no such data is available
 	PDI_UNAVAILABLE,
@@ -65,6 +65,7 @@ typedef enum PDI_status_e
 	PDI_ERR_RIGHT,
 	/// Invalid type error
 	PDI_ERR_TYPE
+	
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs
@@ -76,8 +77,8 @@ typedef void (*PDI_errfunc_f)(PDI_status_t status, const char* message, void* co
 
 /** Definition of an error handler
  */
-typedef struct PDI_errhandler_s
-{
+typedef struct PDI_errhandler_s {
+
 	/// The function to handle the error (none if NULL)
 	PDI_errfunc_f func;
 	
@@ -85,6 +86,20 @@ typedef struct PDI_errhandler_s
 	void* context;
 	
 } PDI_errhandler_t;
+
+
+/** Prints the error message and aborts if the status is invalid
+ */
+extern const PDI_errhandler_t PDI_EXPORT PDI_ASSERT_HANDLER;
+
+/** Prints the error message and continue if the status is invalid
+ */
+extern const PDI_errhandler_t PDI_EXPORT PDI_WARN_HANDLER;
+
+/** Does nothing
+ */
+extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
+
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
@@ -98,18 +113,6 @@ const char PDI_EXPORT* PDI_errmsg(void);
  * \return the previous handler
  */
 PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler);
-
-/** Prints the error message and aborts if the status is invalid
- */
-extern const PDI_errhandler_t PDI_EXPORT PDI_ASSERT_HANDLER;
-
-/** Prints the error message and continue if the status is invalid
- */
-extern const PDI_errhandler_t PDI_EXPORT PDI_WARN_HANDLER;
-
-/** Does nothing
- */
-extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
 
 /// \}
 
@@ -140,8 +143,7 @@ PDI_status_t PDI_EXPORT PDI_event(const char* event);
 /**
  * Access directions
  */
-typedef enum PDI_inout_e
-{
+typedef enum PDI_inout_e {
 	/// No data transfert
 	PDI_NONE = 0,
 	/// data tranfer from PDI to the main code
@@ -150,7 +152,9 @@ typedef enum PDI_inout_e
 	PDI_OUT = 2,
 	/// data transfer in both direction
 	PDI_INOUT = 3
+	
 } PDI_inout_t;
+
 
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.

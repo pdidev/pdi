@@ -142,20 +142,17 @@ public:
 
 
 template<bool R, bool W>
-struct Reference_access
-{
+struct Reference_access {
 	typedef void type;
 };
 
 template<bool R>
-struct Reference_access<R, true>
-{
+struct Reference_access<R, true> {
 	typedef void* type;
 };
 
 template<>
-struct Reference_access<true, false>
-{
+struct Reference_access<true, false> {
 	typedef const void* type;
 };
 
