@@ -27,26 +27,31 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-###############
-#   TEST 01   #
-###############
-add_executable(PDI_test_01 EXCLUDE_FROM_ALL PDI_test_01.c)
-target_link_libraries(PDI_test_01 pdi)
-add_test(NAME PDI_test_01_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_test_01 --config "$<CONFIG>" WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download" )
+execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download" )
 
-add_test(NAME PDI_test_01_run COMMAND PDI_test_01 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_01.yml")
-set_tests_properties(PDI_test_01_run PROPERTIES DEPENDS PDI_test_01_build)
+# Prevent GoogleTest from overriding our compiler/linker options
+# when building with Visual Studio
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-###############
-#   TEST 02   #
-###############
-add_executable(PDI_test_02 EXCLUDE_FROM_ALL PDI_test_02.c)
-target_link_libraries(PDI_test_02 pdi)
-set_target_properties(PDI_test_02 PROPERTIES ENABLE_EXPORTS ON)
-add_test(NAME PDI_test_02_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_test_02 --config "$<CONFIG>" WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+# Add googletest directly to our build. This adds
+# the following targets: gtest, gtest_main, gmock
+# and gmock_main
+add_subdirectory("${CMAKE_BINARY_DIR}/googletest-src"
+                 "${CMAKE_BINARY_DIR}/googletest-build")
 
-add_test(NAME PDI_test_02_run COMMAND PDI_test_02 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_02.yml")
-set_property(TEST PDI_test_02_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/user_code/")
-set_tests_properties(PDI_test_02_run PROPERTIES DEPENDS PDI_test_02_build)
 
-add_subdirectory(gtest/)
+include(AddCCompilerFlags)
+
+add_executable(PDI_error_test EXCLUDE_FROM_ALL PDI_error_test.cxx)
+add_compiler_flags(PDI_error_test PRIVATE -Wall -Wextra)
+target_link_libraries(PDI_error_test pdi gtest gtest_main pthread dl)
+
+add_test(NAME PDI_error_test_build
+		COMMAND "${CMAKE_COMMAND}" --build . --target -V PDI_error_test
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+add_test(NAME PDI_error_test_run COMMAND PDI_error_test)
+set_tests_properties(PDI_error_test_run PROPERTIES DEPENDS PDI_error_test_build TIMEOUT ${DEFAULT_TIMEOUT})
