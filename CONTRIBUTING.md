@@ -19,11 +19,25 @@ There are four levels of API for PDI:
 
 ## Common C / C++ conventions
 
+Naming:
 * macro names *must* be all caps and begin with the `PDI_` prefix
 * any public (app or plugin) symbol *must* be exported using the `PDI_EXPORT`
   macro
 
-## C coding coding conventions
+Includes *should* be grouped in blocks separated by an empty lines with files in
+each block ordered in an alphabetical fashion.
+All includes should use the bracket notation except for PDI header included
+inside implementation (cxx) files.
+The blocks *should* be in order:
+1. in case of an implementation file (cxx), "config.h"
+2. the "mpi.h" file
+3. standard C/C++ includes
+4. system (POSIX) headers
+5. external library dependencies headers
+6. PDI dependencies (starting with "pdi/pdi_fwd.h" for header files)
+7. in case of an implementation file (cxx), the implemented PDI header
+
+## C coding conventions
 
 These conventions only apply to the C part of PDI (the C public application API)
 
@@ -43,16 +57,16 @@ Prototypes:
 ## C++ coding conventions
 
 Naming:
-* class names *should* begin with an upper case letter and use underscore to
+* class names *must* begin with an upper case letter and use underscore to
   separate words
+* functions and variable names *must* begin with a lower case letter and use
+  underscore to separate words
 * non-static member variables names *should* begin with an `m_` followed by
   lower case and underscores
 * static member variables names *should* begin with an `s_` followed by lower
   case and underscores
 * global variables names *should* begin with an `g_` followed by lower case and
   underscores
-* functions and variable names *should* begin with a lower case letter and use
-  underscore to separate words
 
 File organization:
 * public plugin enumerations *must* be defined in the `pdi/pdi_fwd.h` header

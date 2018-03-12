@@ -27,13 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-include(AddCCompilerFlags)
-
 ###############
 #   TEST 01   #
 ###############
 add_executable(decl_sion_01_c EXCLUDE_FROM_ALL decl_sion_test_01.c)
-add_compiler_flags(decl_sion_01_c PRIVATE -Wall -Wextra)
 target_link_libraries(decl_sion_01_c pdi mpi)
 add_test(NAME decl_sion_01_c_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_sion_01_c
@@ -46,7 +43,6 @@ set_tests_properties(decl_sion_01_c_run PROPERTIES DEPENDS decl_sion_01_c_build 
 
 
 add_executable(decl_sion_01_F EXCLUDE_FROM_ALL decl_sion_test_01.F90)
-add_compiler_flags(decl_sion_01_F PRIVATE -Wall -Wextra)
 target_link_libraries(decl_sion_01_F pdi_f90 mpi_f90)
 add_test(NAME decl_sion_01_F_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_sion_01_F
@@ -63,7 +59,6 @@ set_tests_properties(decl_sion_01_F_run PROPERTIES DEPENDS decl_sion_01_F_build 
 #   TEST 02   #
 ###############
 add_executable(decl_sion_02_c EXCLUDE_FROM_ALL decl_sion_test_02.c)
-add_compiler_flags(decl_sion_02_c PRIVATE -Wall -Wextra)
 target_link_libraries(decl_sion_02_c pdi mpi)
 add_test(NAME decl_sion_02_c_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_sion_02_c
@@ -75,7 +70,6 @@ set_property(TEST decl_sion_02_c_run PROPERTY DEPENDS decl_sion_02_c_build)
 set_tests_properties(decl_sion_02_c_run PROPERTIES DEPENDS decl_sion_02_c_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 add_executable(decl_sion_02_F EXCLUDE_FROM_ALL decl_sion_test_02.F90)
-add_compiler_flags(decl_sion_02_F PRIVATE -Wall -Wextra)
 target_link_libraries(decl_sion_02_F pdi_f90 mpi_f90)
 add_test(NAME decl_sion_02_F_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_sion_02_F
@@ -91,7 +85,6 @@ set_tests_properties(decl_sion_02_F_run PROPERTIES DEPENDS decl_sion_02_F_build 
 #   TEST 03   #
 ###############
 add_executable(decl_sion_03_c EXCLUDE_FROM_ALL decl_sion_test_03.c)
-add_compiler_flags(decl_sion_03_c PRIVATE -Wall -Wextra)
 target_link_libraries(decl_sion_03_c pdi mpi)
 add_test(NAME decl_sion_03_c_build
  		COMMAND "${CMAKE_COMMAND}" --build . --target decl_sion_03_c
@@ -103,7 +96,6 @@ set_property(TEST decl_sion_03_c_run PROPERTY DEPENDS decl_sion_03_c_build)
 set_tests_properties(decl_sion_03_c_run PROPERTIES DEPENDS decl_sion_03_c_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 add_executable(decl_sion_03_F EXCLUDE_FROM_ALL decl_sion_test_03.F90)
-add_compiler_flags(decl_sion_03_F PRIVATE -Wall -Wextra)
 target_link_libraries(decl_sion_03_F pdi_f90 mpi_f90)
 add_test(NAME decl_sion_03_F_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_sion_03_F

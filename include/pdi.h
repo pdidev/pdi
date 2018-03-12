@@ -30,6 +30,7 @@
 #define PDI_H_
 
 #include <mpi.h>
+
 #include <paraconf.h>
 
 #include <pdi_export.h>

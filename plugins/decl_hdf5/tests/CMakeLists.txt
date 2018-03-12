@@ -27,13 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-include(AddCCompilerFlags)
-
 ###############
 #   TEST 01   #
 ###############
 add_executable(decl_hdf5_01_C EXCLUDE_FROM_ALL decl_hdf5_test_01.c)
-add_compiler_flags(decl_hdf5_01_C PRIVATE -Wall -Wextra -g)
 target_link_libraries(decl_hdf5_01_C pdi mpi)
 add_test(NAME decl_hdf5_01_C_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_hdf5_01_C
@@ -46,7 +43,6 @@ set_tests_properties(decl_hdf5_01_C_run PROPERTIES DEPENDS decl_hdf5_01_C_build 
 
 
 add_executable(decl_hdf5_01_F EXCLUDE_FROM_ALL decl_hdf5_test_01.F90)
-add_compiler_flags(decl_hdf5_01_F PRIVATE -Wall -Wextra -g)
 target_link_libraries(decl_hdf5_01_F pdi_f90 mpi_f90)
 add_test(NAME decl_hdf5_01_F_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_hdf5_01_F
@@ -63,7 +59,6 @@ set_tests_properties(decl_hdf5_01_F_run PROPERTIES DEPENDS decl_hdf5_01_F_build 
 #   TEST 02   #
 ###############
 add_executable(decl_hdf5_02_C EXCLUDE_FROM_ALL decl_hdf5_test_02.c)
-add_compiler_flags(decl_hdf5_02_C PRIVATE -Wall -Wextra -g)
 target_link_libraries(decl_hdf5_02_C pdi mpi)
 add_test(NAME decl_hdf5_02_C_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_hdf5_02_C
@@ -75,7 +70,6 @@ set_property(TEST decl_hdf5_02_C_run PROPERTY DEPENDS decl_hdf5_02_C_build)
 set_tests_properties(decl_hdf5_02_C_run PROPERTIES DEPENDS decl_hdf5_02_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 add_executable(decl_hdf5_02_F EXCLUDE_FROM_ALL decl_hdf5_test_02.F90)
-add_compiler_flags(decl_hdf5_02_F PRIVATE -Wall -Wextra -g)
 target_link_libraries(decl_hdf5_02_F pdi_f90 mpi_f90)
 add_test(NAME decl_hdf5_02_F_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_hdf5_02_F
@@ -101,7 +95,6 @@ set_tests_properties(decl_hdf5_03_F_run PROPERTIES DEPENDS decl_hdf5_02_F_build 
 ###############
 
 add_executable(decl_hdf5_04_C EXCLUDE_FROM_ALL decl_hdf5_test_04.c)
-add_compiler_flags(decl_hdf5_04_C PRIVATE -Wall -Wextra)
 target_link_libraries(decl_hdf5_04_C pdi mpi)
 add_test(NAME decl_hdf5_04_C_build
 	COMMAND "${CMAKE_COMMAND}" --build . --target decl_hdf5_04_C
@@ -113,7 +106,6 @@ set_property(TEST decl_hdf5_04_C_run PROPERTY DEPENDS decl_hdf5_04_C_build)
 set_tests_properties(decl_hdf5_04_C_run PROPERTIES DEPENDS decl_hdf5_04_C_build TIMEOUT ${DEFAULT_TIMEOUT})
 
 add_executable(decl_hdf5_04_F EXCLUDE_FROM_ALL decl_hdf5_test_04.F90)
-add_compiler_flags(decl_hdf5_04_F PRIVATE -Wall -Wextra -cpp)
 target_link_libraries(decl_hdf5_04_F pdi_f90 mpi_f90)
 add_test(NAME decl_hdf5_04_F_build
 	COMMAND "${CMAKE_COMMAND}" --build . --target decl_hdf5_04_F
@@ -130,7 +122,6 @@ set_tests_properties(decl_hdf5_04_F_run PROPERTIES DEPENDS decl_hdf5_04_F_build 
 ################
 
 add_executable(decl_hdf5_05_C EXCLUDE_FROM_ALL decl_hdf5_test_05.c)
-add_compiler_flags(decl_hdf5_05_C PRIVATE -Wall -Wextra)
 target_link_libraries(decl_hdf5_05_C pdi mpi)
 add_test(NAME decl_hdf5_05_C_build
 	COMMAND "${CMAKE_COMMAND}" --build . --target decl_hdf5_05_C
@@ -149,7 +140,6 @@ set_tests_properties(decl_hdf5_05_C_run PROPERTIES DEPENDS decl_hdf5_05_C_build 
 # Sequential and Parallel HDF5
 if( ${ENABLE_DECL_HDF5} ) 
 	add_executable(decl_hdf5_06_C EXCLUDE_FROM_ALL decl_hdf5_test_06.c)
-	add_compiler_flags(decl_hdf5_06_C PRIVATE -Wall -Wextra)
 	target_link_libraries(decl_hdf5_06_C pdi mpi)
 	add_test(NAME decl_hdf5_06_C_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target decl_hdf5_06_C

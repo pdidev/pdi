@@ -27,7 +27,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-include(AddCCompilerFlags)
 include(CheckSymbolExists)
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
@@ -57,8 +56,6 @@ endif()
 
 # Check for some portability stuff and generate config.h
 
-set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200809L)
-check_symbol_exists(strdup string.h STRDUP_WORKS)
 include(DefaultKind)
 get_default_kind(INTEGER   PDI_INTEGER_DEFAULT_KIND)
 get_default_kind(CHARACTER PDI_CHARACTER_DEFAULT_KIND)
@@ -90,7 +87,6 @@ add_library(pdi SHARED
 		scalar_datatype.cxx
 )
 set_target_properties(pdi PROPERTIES POSITION_INDEPENDENT_CODE ON)
-add_compiler_flags(pdi PRIVATE -Wall -Wextra)
 generate_export_header(pdi)
 # This is left for the interface of PDI that may use C99 features
 set_property(TARGET pdi PROPERTY C_STANDARD 99)

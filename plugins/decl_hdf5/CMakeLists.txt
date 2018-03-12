@@ -41,6 +41,9 @@ endif()
 # The plugin
 add_library(pdi_decl_hdf5_plugin MODULE decl_hdf5.cxx)
 target_link_libraries(pdi_decl_hdf5_plugin PUBLIC pdi ${HDF5_C_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
+if("${HDF5_IS_PARALLEL}")
+	target_link_libraries(pdi_decl_hdf5_plugin PUBLIC mpi)
+endif()
 target_include_directories(pdi_decl_hdf5_plugin PRIVATE ${HDF5_INCLUDE_DIRS})
 target_compile_definitions(pdi_decl_hdf5_plugin PRIVATE ${HDF5_DEFINITIONS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES

@@ -27,16 +27,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-include(AddCCompilerFlags)
-
 find_library(LIB_M m DOC "The math library")
 
 add_executable(PDI_example_C EXCLUDE_FROM_ALL example.c)
-target_link_libraries(PDI_example_C pdi mpi)
+target_link_libraries(PDI_example_C pdi mpi m)
 add_test(NAME PDI_example_C_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example_C WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 add_executable(PDI_example_F EXCLUDE_FROM_ALL example.F90)
-target_link_libraries(PDI_example_F pdi_f90 mpi_f90)
+target_link_libraries(PDI_example_F pdi_f90 mpi_f90 m)
 add_test(NAME PDI_example_F_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_example_F WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 

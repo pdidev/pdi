@@ -27,13 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-include(AddCCompilerFlags)
-
 ###############
 #   TEST 01   #
 ###############
 add_executable(user_code_01_c EXCLUDE_FROM_ALL user_code_test_01.c)
-add_compiler_flags(user_code_01_c PRIVATE -Wall -Wextra)
 target_link_libraries(user_code_01_c pdi mpi)
 add_test(NAME user_code_01_c_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target user_code_01_c
@@ -49,7 +46,6 @@ set_tests_properties(user_code_01_c_run PROPERTIES DEPENDS user_code_01_c_build 
 #   TEST 02   #
 ###############
 add_executable(user_code_02_c EXCLUDE_FROM_ALL user_code_test_02.c)
-add_compiler_flags(user_code_02_c PRIVATE -Wall -Wextra)
 target_link_libraries(user_code_02_c pdi mpi)
 add_test(NAME user_code_02_c_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target user_code_02_c
@@ -65,7 +61,6 @@ set_tests_properties(user_code_02_c_run PROPERTIES DEPENDS user_code_02_c_build 
 #   TEST 03   #
 ###############
 add_executable(user_code_03_c EXCLUDE_FROM_ALL user_code_test_03.c)
-add_compiler_flags(user_code_03_c PRIVATE -Wall -Wextra)
 target_link_libraries(user_code_03_c pdi mpi)
 add_test(NAME user_code_03_c_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target user_code_03_c

@@ -29,13 +29,11 @@
 #ifndef PDI_PARACONF_WRAPPER_H_
 #define PDI_PARACONF_WRAPPER_H_
 
-#include "config.h"
-
-#include <pdi_export.h>
-
 #include <string>
 
 #include <paraconf.h>
+
+#include <pdi/pdi_fwd.h>
 
 
 namespace PDI {

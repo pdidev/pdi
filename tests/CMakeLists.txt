@@ -27,10 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-include(AddCCompilerFlags)
-
 add_executable(PDI_test_01 EXCLUDE_FROM_ALL PDI_test_01.c)
-add_compiler_flags(PDI_test_01 PRIVATE -Wall -Wextra)
 target_link_libraries(PDI_test_01 pdi)
 add_test(NAME PDI_test_01_build
 		COMMAND "${CMAKE_COMMAND}" --build . --target PDI_test_01
