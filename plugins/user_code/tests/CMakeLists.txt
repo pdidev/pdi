@@ -38,8 +38,7 @@ add_test(NAME user_code_01_c_build
 
 add_test(NAME user_code_01_c_run COMMAND user_code_01_c "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_01.yml")
 set_property(TEST user_code_01_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
-set_property(TEST user_code_01_c_run PROPERTY DEPENDS user_code_01_c_build)
-set_tests_properties(user_code_01_c_run PROPERTIES DEPENDS user_code_01_c_build TIMEOUT 3)
+set_tests_properties(user_code_01_c_run PROPERTIES DEPENDS user_code_01_c_build)
 
  
 ###############
@@ -53,8 +52,7 @@ add_test(NAME user_code_02_c_build
 
 add_test(NAME user_code_02_c_run COMMAND user_code_02_c "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_02.yml")
 set_property(TEST user_code_02_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
-set_property(TEST user_code_02_c_run PROPERTY DEPENDS user_code_02_c_build)
-set_tests_properties(user_code_02_c_run PROPERTIES DEPENDS user_code_02_c_build TIMEOUT 3)
+set_tests_properties(user_code_02_c_run PROPERTIES DEPENDS user_code_02_c_build)
 
 
 ###############
@@ -68,5 +66,4 @@ add_test(NAME user_code_03_c_build
 
 add_test(NAME user_code_03_c_run COMMAND user_code_03_c "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_03.yml")
 set_property(TEST user_code_03_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
-set_property(TEST user_code_03_c_run PROPERTY DEPENDS user_code_03_c_build)
-set_tests_properties(user_code_03_c_run PROPERTIES DEPENDS user_code_03_c_build TIMEOUT 3)
+set_tests_properties(user_code_03_c_run PROPERTIES DEPENDS user_code_03_c_build)

@@ -24,6 +24,7 @@
 
 #include <mpi.h>
 
+#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -50,6 +51,9 @@ using PDI::len;
 using PDI::Plugin;
 using PDI::Expression;
 using PDI::to_string;
+using std::cerr;
+using std::endl;
+using std::exception;
 using std::string;
 using std::unordered_multimap;
 using std::vector;
@@ -173,7 +177,13 @@ public:
 			//create alias and share it with the plug-in
 			exposed_aliases.emplace_back(alias.expose(ctx));
 		}
-		m_fct();
+		try {
+			m_fct();
+		} catch ( const std::exception& e ) {
+			cerr << "while calling user code, caught exception: "<<e.what()<<endl;
+		} catch (...) {
+			cerr << "while calling user code, caught exception"<<endl;
+		}
 	}
 	
 }; // class Trigger

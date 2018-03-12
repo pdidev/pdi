@@ -41,6 +41,7 @@ namespace PDI {
 
 using std::cerr;
 using std::endl;
+using std::nothrow;
 using std::stack;
 using std::string;
 using std::unique_ptr;
@@ -126,16 +127,12 @@ const std::string& Data_descriptor::name() const
 
 Ref Data_descriptor::ref()
 {
-	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value"};
+	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value: `%s'", m_name.c_str()};
 	return m_refs.top()->ref();
 }
 
 void Data_descriptor::share(void* data, bool read, bool write)
 {
-	if (!data) {
-		throw Error{PDI_ERR_VALUE, "Sharing null pointers is not allowed"};
-	}
-	
 	share(Ref {data, &free, m_type->evaluate(m_context), read, write}, false, false);
 }
 
@@ -155,22 +152,22 @@ void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 	void* result = nullptr;
 	if (read) {
 		if (write) {
-			result = Ref_rw{data_ref} .get();
+			result = Ref_rw{data_ref} .get(nothrow);
 			m_refs.emplace(new Ref_holder::Impl<true, true>(data_ref));
 		} else {
-			result = const_cast<void*>(Ref_r{data_ref} .get());
+			result = const_cast<void*>(Ref_r{data_ref} .get(nothrow));
 			m_refs.emplace(new Ref_holder::Impl<true, false>(data_ref));
 		}
 	} else {
 		if (write) {
-			result = Ref_w{data_ref} .get();
+			result = Ref_w{data_ref} .get(nothrow);
 			m_refs.emplace(new Ref_holder::Impl<false, true>(data_ref));
 		} else {
 			m_refs.emplace(new Ref_holder::Impl<false, false>(data_ref));
 		}
 	}
 	
-	if (!ref()) {
+	if (data_ref && !ref()) {
 		m_refs.pop();
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
 	}
@@ -181,9 +178,9 @@ void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const std::exception& e) {
-			cerr << "Error while triggering event " << m_name << " for plugin " << elmnt.first << ": " << e.what() << endl;
+			cerr << "Error while triggering data event `" << m_name << "' for plugin `" << elmnt.first << "': " << e.what() << endl;
 		} catch (...) {
-			cerr << "Error while triggering event " << m_name << " for plugin " << elmnt.first << endl;
+			cerr << "Error while triggering data event `" << m_name << "' for plugin `" << elmnt.first <<"'"<< endl;
 		}
 	}
 	

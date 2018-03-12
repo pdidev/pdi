@@ -1,0 +1,5 @@
+plugins:
+  user_code:
+    on_event:
+      test:
+        test_null: {test_in: $main_out, test_out: $main_in, test_inout: $main_inout}

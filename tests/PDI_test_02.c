@@ -22,10 +22,36 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
 #include <mpi.h>
+
+#include <assert.h>
+#include <stdio.h>
+
 #include <paraconf.h>
+
 #include <pdi.h>
+
+void test_null()
+{
+	int data = 0;
+	void *data_in = &data;
+	void *data_out = &data;
+	void *data_inout = &data;
+	PDI_access("test_in", &data_in, PDI_IN);
+	PDI_access("test_out", &data_out, PDI_OUT);
+	PDI_access("test_inout", &data_inout, PDI_INOUT);
+	
+	if ( data_in ) fprintf(stderr, "data_in = %p\n", data_in);
+	assert(!data_in && "data_in should be null");
+	if ( data_out ) fprintf(stderr, "data_out = %p\n", data_out);
+	assert(!data_out && "data_out should be null");
+	if ( data_inout ) fprintf(stderr, "data_inout = %p\n", data_inout);
+	assert(!data_inout && "data_inout should be null");
+	
+	PDI_release("test_inout");
+	PDI_release("test_out");
+	PDI_release("test_in");
+}
 
 int main( int argc, char* argv[] )
 {
@@ -34,12 +60,16 @@ int main( int argc, char* argv[] )
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_init(conf, &world);
-	PDI_errhandler(PDI_NULL_HANDLER);
-	double invalid;
-	PDI_status_t err = PDI_expose("invalid", &invalid, PDI_INOUT);
-	fprintf(stderr, "err=%d; message=\"%s\"\n", err, PDI_errmsg());
-	assert(err == PDI_ERR_VALUE);
-	assert(!strcmp(PDI_errmsg(), "while referencing `meta2': Cannot access a non shared value: `meta2'"));
+	
+	void* data = NULL;
+	
+	PDI_transaction_begin("test");
+	PDI_expose("main_in", data, PDI_IN);
+	PDI_expose("main_out", data, PDI_OUT);
+	PDI_expose("main_inout", data, PDI_INOUT);
+	PDI_transaction_end();
+	
+	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 	return 0;
