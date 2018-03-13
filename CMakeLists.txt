@@ -63,10 +63,14 @@ include(CTest)
 # Version
 file(READ VERSION pdi_VERSION)
 string(STRIP "${pdi_VERSION}" pdi_VERSION)
-string(REPLACE "." ";" pdi_VERSION_list ${pdi_VERSION})
-list(GET pdi_VERSION_list 0 pdi_VERSION_MAJOR)
-list(GET pdi_VERSION_list 1 pdi_VERSION_MINOR)
-list(GET pdi_VERSION_list 2 pdi_VERSION_PATCH)
+string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${pdi_VERSION}")
+set(pdi_VERSION_MAJOR "${CMAKE_MATCH_1}")
+set(pdi_VERSION_MINOR "${CMAKE_MATCH_2}")
+set(pdi_VERSION_PATCH "${CMAKE_MATCH_3}")
+set(pdi_VERSION_MODIF "${CMAKE_MATCH_5}")
+if("git" STREQUAL "${pdi_VERSION_MODIF}")
+	execute_process(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version-uid" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" OUTPUT_VARIABLE pdi_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
 
 # Default standard in the project is C99 & C++11
 set(CMAKE_CXX_STANDARD 11)

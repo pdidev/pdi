@@ -61,12 +61,29 @@ public:
 	 */
 	virtual void data(const char* name, Ref ref);
 	
-protected:
 	/** Provides access to the PDI context for this plugin instance
 	 */
 	Context& context();
 	
 }; // class Plugin
+
+
+#define PLUGIN_API_VERSION_MAJOR (0ul)
+
+#define PLUGIN_API_VERSION_MINOR (0ul)
+
+#define PLUGIN_API_VERSION_PATCH (1ul)
+
+#define PLUGIN_API_VERSION ((PLUGIN_API_VERSION_MAJOR<<24) + (PLUGIN_API_VERSION_MINOR<<16) + (PLUGIN_API_VERSION_PATCH<<8))
+
+/** Checks compatibility with a plugin API
+ * 
+ * \param expected_version the expected version of the API or 0 for no check
+ * \returns the version of the API provided by PDI
+ * \throws PDI::Error if the provided version is incompatible with the expected
+ * one
+ */
+unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version=0);
 
 } // namespace PDI
 
@@ -88,7 +105,9 @@ protected:
 	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")\
 	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world) \
 	{\
-		return ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
+		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
+		::PDI::plugin_api_version(PLUGIN_API_VERSION);\
+		return plugin;\
 	}\
 	_Pragma("clang diagnostic pop")
 

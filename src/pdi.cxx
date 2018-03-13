@@ -211,6 +211,47 @@ try
 	return g_error_context.return_err();
 }
 
+PDI_status_t PDI_version(unsigned long *provided, unsigned long expected)
+try
+{
+	Paraconf_wrapper fw;
+	if ( provided ) *provided = PDI_VERSION;
+	
+	constexpr unsigned long MASK = (1<<8) - 1;
+	unsigned long expected_major = (expected>>24)&MASK;
+	unsigned long expected_minor = (expected>>16)&MASK;
+	unsigned long expected_patch = (expected>>8 )&MASK;
+	
+	if ( 
+		expected
+		&& (
+			expected_major != PDI_VERSION_MAJOR 
+			|| expected_minor > PDI_VERSION_MINOR
+		)
+	) {
+		throw Error{
+			PDI_ERR_PLUGIN,
+			"Invalid PDI API version: %lu.%lu.%lu, PDI provided version is %lu.%lu.%lu",
+			expected_major,
+			expected_minor, 
+			expected_patch, 
+			PDI_VERSION_MAJOR, 
+			PDI_VERSION_MINOR, 
+			PDI_VERSION_PATCH 
+		};
+	}
+	return PDI_OK;
+} catch (const Error& e)
+{
+	return g_error_context.return_err(e);
+} catch (const exception& e)
+{
+	return g_error_context.return_err(e);
+} catch (...)
+{
+	return g_error_context.return_err();
+}
+
 PDI_status_t PDI_event(const char* name)
 try
 {

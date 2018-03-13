@@ -61,8 +61,9 @@ get_default_kind(INTEGER   PDI_INTEGER_DEFAULT_KIND)
 get_default_kind(CHARACTER PDI_CHARACTER_DEFAULT_KIND)
 get_default_kind(REAL      PDI_REAL_DEFAULT_KIND)
 get_default_kind(LOGICAL   PDI_LOGICAL_DEFAULT_KIND)
+set(PDI_VERSION_MODIF "${pdi_VERSION_MODIF}")
 configure_file(config.h.in config.h @ONLY)
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+configure_file(version.h.in pdi/version.h @ONLY)
 
 
 # Libraries
@@ -87,7 +88,7 @@ add_library(pdi SHARED
 		scalar_datatype.cxx
 )
 set_target_properties(pdi PROPERTIES POSITION_INDEPENDENT_CODE ON)
-generate_export_header(pdi)
+generate_export_header(pdi EXPORT_FILE_NAME pdi/export.h)
 # This is left for the interface of PDI that may use C99 features
 set_property(TARGET pdi PROPERTY C_STANDARD 99)
 set_property(TARGET pdi PROPERTY C_STANDARD_REQUIRED TRUE)
@@ -108,7 +109,10 @@ install(TARGETS pdi EXPORT PDI_export
 		LIBRARY DESTINATION lib INCLUDES DESTINATION include
 		ARCHIVE DESTINATION lib INCLUDES DESTINATION include
 )
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/pdi_export.h" DESTINATION include)
+install(FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/pdi/export.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/version.h"
+	DESTINATION include/pdi)
 
 ## Fortran version
 if("${ENABLE_FORTRAN}")

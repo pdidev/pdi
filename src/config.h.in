@@ -22,14 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-// Whether we can use strdup from string.h (with _POSIX_C_SOURCE=200809L)
-// not used anymore in the main code...
-#cmakedefine STRDUP_WORKS
-
-/* The following part of the file is dedicated to the definitions of default 
- * values.
+/** Definitions of default values for Fortran kind.
+ * \{
  */
 #define PDI_LOGICAL_DEFAULT_KIND   @PDI_LOGICAL_DEFAULT_KIND@
 #define PDI_REAL_DEFAULT_KIND      @PDI_REAL_DEFAULT_KIND@
 #define PDI_INTEGER_DEFAULT_KIND   @PDI_INTEGER_DEFAULT_KIND@
 #define PDI_CHARACTER_DEFAULT_KIND @PDI_CHARACTER_DEFAULT_KIND@
+/// \}

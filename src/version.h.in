@@ -10,7 +10,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific
+ *   endorse or promote products derived from this software without specific 
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -22,60 +22,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
+#define      PDI_VERSION_MAJOR @pdi_VERSION_MAJOR@
+#define      PDI_VERSION_MINOR @pdi_VERSION_MINOR@
+#define      PDI_VERSION_PATCH @pdi_VERSION_PATCH@
+#cmakedefine PDI_VERSION_MODIF "@pdi_VERSION_MODIF@"
 
-#include <pdi/context.h>
-#include <pdi/ref_any.h>
-
-#include "pdi/plugin.h"
-
-
-namespace PDI {
-
-Plugin::Plugin(Context& ctx):
-	m_context{ctx}
-{}
-
-Plugin::~Plugin() noexcept(false)
-{}
-
-void Plugin::event(const char*)
-{}
-
-void Plugin::data(const char*, Ref)
-{}
-
-Context& Plugin::context()
-{
-	return m_context;
-}
-
-unsigned long plugin_api_version(unsigned long expected_version)
-{
-	constexpr unsigned long MASK = (1<<8) - 1;
-	unsigned long expected_major = (expected_version>>24)&MASK;
-	unsigned long expected_minor = (expected_version>>16)&MASK;
-	unsigned long expected_patch = (expected_version>>8 )&MASK;
-	
-	if ( 
-		expected_version 
-		&& (
-			expected_major != PLUGIN_API_VERSION_MAJOR 
-			|| expected_minor > PLUGIN_API_VERSION_MINOR
-		)
-	) {
-		throw Error{
-			PDI_ERR_PLUGIN,
-			"Invalid plugin API version: %lu.%lu.%lu, PDI provided version is %lu.%lu.%lu",
-			expected_major,
-			expected_minor, 
-			expected_patch, 
-			PLUGIN_API_VERSION_MAJOR, 
-			PLUGIN_API_VERSION_MINOR, 
-			PLUGIN_API_VERSION_PATCH 
-		};
-	}
-	return PLUGIN_API_VERSION;
-}
-
-}
+#define PDI_VERSION ((PDI_VERSION_MAJOR<<24) + (PDI_VERSION_MINOR<<16) + (PDI_VERSION_PATCH<<8))
