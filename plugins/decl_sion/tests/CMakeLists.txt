@@ -39,7 +39,7 @@ add_test(NAME decl_sion_01_c_build
 add_test(NAME decl_sion_01_c_run COMMAND decl_sion_01_c "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
 set_property(TEST decl_sion_01_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_sion_01_c_run PROPERTY DEPENDS decl_sion_01_c_build)
-set_tests_properties(decl_sion_01_c_run PROPERTIES DEPENDS decl_sion_01_c_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_sion_01_c_run PROPERTIES DEPENDS decl_sion_01_c_build)
 
 
 add_executable(decl_sion_01_F EXCLUDE_FROM_ALL decl_sion_test_01.F90)
@@ -51,7 +51,7 @@ add_test(NAME decl_sion_01_F_build
 add_test(NAME decl_sion_01_F_run COMMAND decl_sion_01_F "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
 set_property(TEST decl_sion_01_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_sion_01_F_run PROPERTY DEPENDS decl_sion_01_F_build)
-set_tests_properties(decl_sion_01_F_run PROPERTIES DEPENDS decl_sion_01_F_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_sion_01_F_run PROPERTIES DEPENDS decl_sion_01_F_build)
 
 
 
@@ -67,7 +67,7 @@ add_test(NAME decl_sion_02_c_build
 add_test(NAME decl_sion_02_c_run COMMAND "mpirun" -n 2 ./decl_sion_02_c "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02_c.yml")
 set_property(TEST decl_sion_02_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_sion_02_c_run PROPERTY DEPENDS decl_sion_02_c_build)
-set_tests_properties(decl_sion_02_c_run PROPERTIES DEPENDS decl_sion_02_c_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_sion_02_c_run PROPERTIES DEPENDS decl_sion_02_c_build)
 
 add_executable(decl_sion_02_F EXCLUDE_FROM_ALL decl_sion_test_02.F90)
 target_link_libraries(decl_sion_02_F pdi_f90 mpi_f90)
@@ -78,7 +78,7 @@ add_test(NAME decl_sion_02_F_build
 add_test(NAME decl_sion_02_F_run COMMAND "mpirun" -n 2 ./decl_sion_02_F "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02_F90.yml")
 set_property(TEST decl_sion_02_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_sion_02_F_run PROPERTY DEPENDS decl_sion_02_F_build)
-set_tests_properties(decl_sion_02_F_run PROPERTIES DEPENDS decl_sion_02_F_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_sion_02_F_run PROPERTIES DEPENDS decl_sion_02_F_build)
 
 
 ###############
@@ -93,7 +93,7 @@ add_test(NAME decl_sion_03_c_build
 add_test(NAME decl_sion_03_c_run COMMAND "mpirun" -n 2 ./decl_sion_03_c "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03_c.yml")
 set_property(TEST decl_sion_03_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_sion_03_c_run PROPERTY DEPENDS decl_sion_03_c_build)
-set_tests_properties(decl_sion_03_c_run PROPERTIES DEPENDS decl_sion_03_c_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_sion_03_c_run PROPERTIES DEPENDS decl_sion_03_c_build)
 
 add_executable(decl_sion_03_F EXCLUDE_FROM_ALL decl_sion_test_03.F90)
 target_link_libraries(decl_sion_03_F pdi_f90 mpi_f90)
@@ -104,4 +104,4 @@ add_test(NAME decl_sion_03_F_build
 add_test(NAME decl_sion_03_F_run COMMAND "mpirun" -n 2 ./decl_sion_03_F "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03_F90.yml")
 set_property(TEST decl_sion_03_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_sion_03_F_run PROPERTY DEPENDS decl_sion_03_F_build)
-set_tests_properties(decl_sion_03_F_run PROPERTIES DEPENDS decl_sion_03_F_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_sion_03_F_run PROPERTIES DEPENDS decl_sion_03_F_build)

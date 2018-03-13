@@ -38,12 +38,6 @@ option(ENABLE_DECL_HDF5        "Build HDF5 based decl'HDF5 plug-in." ON )
 option(ENABLE_FTI              "Build FTI plug-in." ON )
 option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
 option(RUN_EXAMPLES            "Build and run examples during ctest." ON  )
-set(TIMEOUT 3 CACHE STRING     "Tests run (max) duration is 3 seconds. If set to NO, duration is increased to 10mn. Usefull to test with memcheck activated (CTest -T memcheck)." )
-if ("${TIMEOUT}" GREATER "1" ) 
-	set(DEFAULT_TIMEOUT "${TIMEOUT}")
-else()
-	set(DEFAULT_TIMEOUT 3)
-endif()
 
 # Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

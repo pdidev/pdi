@@ -83,9 +83,9 @@ protected:
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */
-		Referenced(void* buffer, std::function<void(void*)> deleter, Datatype_uptr type, bool readable, bool writable):
+		Referenced(void* buffer, std::function<void(void*)> deleter, Datatype_uptr type, bool readable, bool writable) noexcept:
 			m_buffer{buffer},
-			m_delete{deleter},
+			m_delete{std::move(deleter)},
 			m_type{std::move(type)},
 			m_owners{0},
 			m_read_locks{readable ? 0 : 1},
@@ -113,8 +113,10 @@ protected:
 	
 	/** Function to access the content from a reference with different access right
 	 */
-	static Referenced PDI_NO_EXPORT* get_content(const Ref_base& other)
+	static Referenced PDI_NO_EXPORT* get_content(const Ref_base& other) noexcept
 	{
+		if ( !other.m_content ) return NULL;
+		if ( !other.m_content->m_buffer ) return NULL;
 		return other.m_content;
 	}
 	
@@ -122,7 +124,7 @@ protected:
 	
 	/** Constructs a null reference
 	 */
-	Ref_base():
+	Ref_base() noexcept:
 		m_content(nullptr)
 	{}
 	
@@ -137,7 +139,9 @@ protected:
 public:
 	/** accesses the type of the referenced raw data
 	 */
-	const Datatype& type() const;
+	const Datatype& type() const noexcept;
+	
+	size_t hash() const noexcept { return std::hash<Referenced*>()(get_content(*this)); }
 	
 }; // class Data_ref_base
 
@@ -186,7 +190,7 @@ public:
 	 *
 	 * \param other the ref to copy
 	 */
-	Ref_any(const Ref_any& other):
+	Ref_any(const Ref_any& other) noexcept:
 		Ref_base()
 	{
 		link(get_content(other));
@@ -199,7 +203,7 @@ public:
 	 * \param other the ref to copy
 	 */
 	template<bool OR, bool OW>
-	Ref_any(const Ref_any<OR, OW>& other):
+	Ref_any(const Ref_any<OR, OW>& other) noexcept:
 		Ref_base()
 	{
 		link(get_content(other));
@@ -208,7 +212,7 @@ public:
 	/** Moves an existing reference
 	 * \param other the ref to copy
 	 */
-	Ref_any(Ref_any&& other):
+	Ref_any(Ref_any&& other) noexcept:
 		Ref_base()
 	{
 		if (!other.m_content || !other.m_content->m_buffer) return;
@@ -243,6 +247,18 @@ public:
 		reset();
 	}
 	
+	bool operator== (const Ref_base& o) const noexcept { is_null(); return m_content == get_content(o);}
+	
+	bool operator!= (const Ref_base& o) const noexcept { is_null(); return m_content != get_content(o);}
+	
+	bool operator<  (const Ref_base& o) const noexcept { is_null(); return m_content < get_content(o);}
+	
+	bool operator>  (const Ref_base& o) const noexcept { is_null(); return m_content > get_content(o);}
+	
+	bool operator<= (const Ref_base& o) const noexcept { is_null(); return m_content <= get_content(o);}
+	
+	bool operator>= (const Ref_base& o) const noexcept { is_null(); return m_content >= get_content(o);}
+	
 	/** Offers access to the referenced raw data
 	 *
 	 * \return a pointer to the referenced raw data
@@ -266,7 +282,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	typename Ref_access<R, W>::type get(std::nothrow_t) const
+	typename Ref_access<R, W>::type get(std::nothrow_t) const noexcept
 	{
 		if (is_null()) return nullptr;
 		return m_content->m_buffer;
@@ -276,14 +292,14 @@ public:
 	 *
 	 * \return whether this reference is non-null
 	 */
-	operator bool () const
+	operator bool () const noexcept
 	{
 		return !is_null();
 	}
 	
 	/** Nullify the reference
 	 */
-	void reset()
+	void reset() noexcept
 	{
 		if (m_content) unlink();
 	}
@@ -293,7 +309,7 @@ public:
 	 *
 	 * \return a new reference to a copy of the raw data this references
 	 */
-	Ref copy()
+	Ref copy() const
 	{
 		return do_copy(*this);
 	}
@@ -304,7 +320,7 @@ public:
 	 * \return the previously referenced raw data or nullptr if this was a null
 	 * reference, i.e. the value which would be returned by get() before the call.
 	 */
-	void* release()
+	void* release() noexcept
 	{
 		if (is_null()) return nullptr;
 		
@@ -330,7 +346,7 @@ public:
 	 *
 	 * \param notifier the function to call when this reference becomes null
 	 */
-	void on_nullify(std::function<void(Ref)> notifier)
+	void on_nullify(std::function<void(Ref)> notifier) const noexcept
 	{
 		if (!is_null()) m_content->m_notifications[this] = notifier;
 	}
@@ -343,7 +359,7 @@ private:
 	 *
 	 * \return Whether the reference is null
 	 */
-	bool PDI_NO_EXPORT is_null() const
+	bool PDI_NO_EXPORT is_null() const noexcept
 	{
 		if (!m_content) return true;
 		if (!m_content->m_buffer) {
@@ -357,7 +373,7 @@ private:
 	 *
 	 * Can only be done on a reference with content
 	 */
-	void PDI_NO_EXPORT unlink() const
+	void PDI_NO_EXPORT unlink() const noexcept
 	{
 		assert(m_content);
 		m_content->m_notifications.erase(this);
@@ -375,7 +391,7 @@ private:
 	 *
 	 * \param content the content to link to
 	 */
-	void PDI_NO_EXPORT link(Referenced* content)
+	void PDI_NO_EXPORT link(Referenced* content) noexcept
 	{
 		assert(!m_content);
 		if (!content || !content->m_buffer) return; // null ref
@@ -390,5 +406,15 @@ private:
 };
 
 } // namespace PDI
+
+namespace std {
+
+template<bool R, bool W>
+struct hash<PDI::Ref_any<R,W>>
+{
+	size_t operator() (const PDI::Ref_any<R,W>& r) const noexcept { return r.hash(); }
+};
+
+} // namespace std
 
 #endif //  PDI_REF_ANY_H_

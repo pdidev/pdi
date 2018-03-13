@@ -26,6 +26,8 @@
 
 #include <functional>
 #include <iostream>
+#include <string>
+#include <unordered_set>
 
 #include <pdi.h>
 #include <pdi/context.h>
@@ -43,10 +45,14 @@ using std::bind;
 using std::cout;
 using std::endl;
 using std::reference_wrapper;
+using std::string;
+using std::unordered_set;
 
 struct test_plugin: Plugin {
 
 	MPI_Comm my_comm;
+	
+	unordered_set<Ref> m_refs;
 	
 	
 	test_plugin(Context& ctx, PC_tree_t, MPI_Comm* world):
@@ -57,7 +63,7 @@ struct test_plugin: Plugin {
 		int rank;
 		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
 		
-		if ( rank == 0 ) cout << "Welcome to the test plugin!"<<endl;
+		if ( rank == 0 ) cout << "[PDI test plugin] Welcome to the test plugin!"<<endl;
 	}
 	
 	~test_plugin()
@@ -65,7 +71,7 @@ struct test_plugin: Plugin {
 		int rank;
 		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
 		
-		if ( rank == 0 ) cout << "Goodbye from the test plugin!"<<endl;
+		if ( rank == 0 ) cout << "[PDI test plugin] Goodbye from the test plugin!"<<endl;
 		
 		if ( MPI_Comm_free(&my_comm) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
 	}
@@ -75,26 +81,30 @@ struct test_plugin: Plugin {
 		int rank;
 		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
 		
-		if ( rank == 0 ) cout << "The test plugin received an event: "<<event<<endl;
+		if ( rank == 0 ) cout << "[PDI test plugin] The test plugin received an event: "<<event<<endl;
 	}
 	
 	void data(const char* name, Ref ref) override
 	{
-		// register to be notified when the data becomes unavailable
-		ref.on_nullify(bind(&test_plugin::data_end, reference_wrapper<test_plugin>(*this), name));
+		// store a copy of the reference because we need to keep it for notification
+		auto ref_it = m_refs.emplace(ref).first;
+		// register to be notified when the reference becomes invalid (on the copy we keep)
+		string sname = name; // store the name in a string to reuse it
+		ref_it->on_nullify([=](Ref r){this->data_end(sname.c_str(), r);});
 		
 		int rank;
 		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
 		
-		if ( rank == 0 ) cout << " =>> data becoming available to the test plugin: "<<name<<endl;
+		if ( rank == 0 ) cout << "[PDI test plugin]  =>> data becoming available to the test plugin: "<<name<<endl;
 	}
 	
-	void data_end(const char* name)
+	void data_end(const char* name, Ref r)
 	{
 		int rank;
 		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
+		m_refs.erase(r);
 		
-		if ( rank == 0 ) cout << " <<= data stop being available to the test plugin: "<<name<<endl;
+		if ( rank == 0 ) cout << "[PDI test plugin]  <<= data stop being available to the test plugin: "<<name<<endl;
 	}
 	
 }; // struct test_plugin

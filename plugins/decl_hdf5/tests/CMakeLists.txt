@@ -39,7 +39,7 @@ add_test(NAME decl_hdf5_01_C_build
 add_test(NAME decl_hdf5_01_C_run COMMAND decl_hdf5_01_C "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_01.yml")
 set_property(TEST decl_hdf5_01_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_hdf5_01_C_run PROPERTY DEPENDS decl_hdf5_01_C_build)
-set_tests_properties(decl_hdf5_01_C_run PROPERTIES DEPENDS decl_hdf5_01_C_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_hdf5_01_C_run PROPERTIES DEPENDS decl_hdf5_01_C_build)
 
 
 add_executable(decl_hdf5_01_F EXCLUDE_FROM_ALL decl_hdf5_test_01.F90)
@@ -51,7 +51,7 @@ add_test(NAME decl_hdf5_01_F_build
 add_test(NAME decl_hdf5_01_F_run COMMAND decl_hdf5_01_F "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_01.yml")
 set_property(TEST decl_hdf5_01_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_hdf5_01_F_run PROPERTY DEPENDS decl_hdf5_01_F_build)
-set_tests_properties(decl_hdf5_01_F_run PROPERTIES DEPENDS decl_hdf5_01_F_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_hdf5_01_F_run PROPERTIES DEPENDS decl_hdf5_01_F_build)
 
 
 
@@ -67,7 +67,7 @@ add_test(NAME decl_hdf5_02_C_build
 add_test(NAME decl_hdf5_02_C_run COMMAND "mpirun" -n 2 decl_hdf5_02_C "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02_C.yml")
 set_property(TEST decl_hdf5_02_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_hdf5_02_C_run PROPERTY DEPENDS decl_hdf5_02_C_build)
-set_tests_properties(decl_hdf5_02_C_run PROPERTIES DEPENDS decl_hdf5_02_C_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_hdf5_02_C_run PROPERTIES DEPENDS decl_hdf5_02_C_build)
 
 add_executable(decl_hdf5_02_F EXCLUDE_FROM_ALL decl_hdf5_test_02.F90)
 target_link_libraries(decl_hdf5_02_F pdi_f90 mpi_f90)
@@ -78,7 +78,7 @@ add_test(NAME decl_hdf5_02_F_build
 add_test(NAME decl_hdf5_02_F_run COMMAND "mpirun" -n 2 decl_hdf5_02_F "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02_F90.yml")
 set_property(TEST decl_hdf5_02_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_hdf5_02_F_run PROPERTY DEPENDS decl_hdf5_02_F_build)
-set_tests_properties(decl_hdf5_02_F_run PROPERTIES DEPENDS decl_hdf5_02_F_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_hdf5_02_F_run PROPERTIES DEPENDS decl_hdf5_02_F_build)
 
 
 ###############
@@ -87,7 +87,7 @@ set_tests_properties(decl_hdf5_02_F_run PROPERTIES DEPENDS decl_hdf5_02_F_build 
 add_test(NAME decl_hdf5_03_F_run COMMAND "mpirun" -n 2 decl_hdf5_02_F "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_03_F90.yml" "test_03_on")
 set_property(TEST decl_hdf5_03_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_hdf5_03_F_run PROPERTY DEPENDS decl_hdf5_02_F_build)
-set_tests_properties(decl_hdf5_03_F_run PROPERTIES DEPENDS decl_hdf5_02_F_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_hdf5_03_F_run PROPERTIES DEPENDS decl_hdf5_02_F_build)
 
 
 ###############
@@ -103,7 +103,7 @@ add_test(NAME decl_hdf5_04_C_build
 add_test(NAME decl_hdf5_04_C_run COMMAND "mpirun" -n 4 decl_hdf5_04_C "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04_C.yml")
 set_property(TEST decl_hdf5_04_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_hdf5_04_C_run PROPERTY DEPENDS decl_hdf5_04_C_build)
-set_tests_properties(decl_hdf5_04_C_run PROPERTIES DEPENDS decl_hdf5_04_C_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_hdf5_04_C_run PROPERTIES DEPENDS decl_hdf5_04_C_build)
 
 add_executable(decl_hdf5_04_F EXCLUDE_FROM_ALL decl_hdf5_test_04.F90)
 target_link_libraries(decl_hdf5_04_F pdi_f90 mpi_f90)
@@ -114,7 +114,7 @@ add_test(NAME decl_hdf5_04_F_build
 add_test(NAME decl_hdf5_04_F_run COMMAND "mpirun" -n 4 decl_hdf5_04_F "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04_F90.yml")
 set_property(TEST decl_hdf5_04_F_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_hdf5_04_F_run PROPERTY DEPENDS decl_hdf5_04_F_build)
-set_tests_properties(decl_hdf5_04_F_run PROPERTIES DEPENDS decl_hdf5_04_F_build TIMEOUT ${DEFAULT_TIMEOUT}) 
+set_tests_properties(decl_hdf5_04_F_run PROPERTIES DEPENDS decl_hdf5_04_F_build) 
 
 
 ################ 
@@ -130,7 +130,7 @@ add_test(NAME decl_hdf5_05_C_build
 add_test(NAME decl_hdf5_05_C_run COMMAND "mpirun" -n 4 decl_hdf5_05_C "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_05_C.yml")
 set_property(TEST decl_hdf5_05_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 set_property(TEST decl_hdf5_05_C_run PROPERTY DEPENDS decl_hdf5_05_C_build)
-set_tests_properties(decl_hdf5_05_C_run PROPERTIES DEPENDS decl_hdf5_05_C_build TIMEOUT ${DEFAULT_TIMEOUT})
+set_tests_properties(decl_hdf5_05_C_run PROPERTIES DEPENDS decl_hdf5_05_C_build)
 
 
 ################ 
@@ -147,5 +147,5 @@ if( ${ENABLE_DECL_HDF5} )
 	add_test(NAME decl_hdf5_06_C_run COMMAND "mpirun" -n 4 decl_hdf5_06_C "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_06_C.yml")
 	set_property(TEST decl_hdf5_06_C_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 	set_property(TEST decl_hdf5_06_C_run PROPERTY DEPENDS decl_hdf5_06_C_build)
-	set_tests_properties(decl_hdf5_06_C_run PROPERTIES DEPENDS decl_hdf5_06_C_build TIMEOUT ${DEFAULT_TIMEOUT})
+	set_tests_properties(decl_hdf5_06_C_run PROPERTIES DEPENDS decl_hdf5_06_C_build)
 endif()
