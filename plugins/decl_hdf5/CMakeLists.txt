@@ -33,13 +33,13 @@ project(pdi_decl_hdf5_plugin LANGUAGES CXX)
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
 set(HDF5_PREFER_PARALLEL TRUE)
-find_package(HDF5 REQUIRED C HL)
+find_package(HDF5 REQUIRED)
 if(NOT "${HDF5_IS_PARALLEL}")
-	message(WARNING "Sequential HDF5 only found, decl'H5 will not work in parallel")
+	message(WARNING "Sequential HDF5 only found, decl'HDF5 will not work in parallel")
 endif()
 
 # The plugin
-add_library(pdi_decl_hdf5_plugin MODULE decl_hdf5.cxx)
+add_library(pdi_decl_hdf5_plugin MODULE decl_hdf5.cxx ast.cxx)
 target_link_libraries(pdi_decl_hdf5_plugin PUBLIC pdi ${HDF5_C_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
 if("${HDF5_IS_PARALLEL}")
 	target_link_libraries(pdi_decl_hdf5_plugin PUBLIC mpi)

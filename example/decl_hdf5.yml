@@ -6,27 +6,36 @@ datasize: [3600, 3600]
 parallelism:
   width:  1
   height: 3
-pdi:
-  metadata: # metadata, i.e. small values that can be referenced using $syntax
-    width: int # per proc. width including ghost
-    height: int # per proc. height including ghost
-    pwidth: int  # nb proc. in the x dim
-    pheight: int # nb proc. in the y dim
-    iter: int # curent iteration id
-    coord: { size: 2, type: int } # coordinate of the process as [x, y]
-  data: # values that can not be referenced using $syntax
-    main_field:
-      type:     double
-      sizes:    [$width, $height]     # for 1D arrays, a `size' scalar can replace the `sizes' array
-      subsizes: [$width-2, $height-2] # defaults to sizes
-      starts:   [1, 1]                # defaults to [0, 0]
 
+# PDI configuration
+pdi:
+  metadata: # small values for which PDI keeps a copy
+    width:   int                    # per proc. width including ghost
+    height:  int                    # per proc. height including ghost
+    pwidth:  int                    # nb proc. in the x dim
+    pheight: int                    # nb proc. in the y dim
+    iter:    int                    # curent iteration id
+    coord:   { size: 2, type: int } # coordinate of the process as [x, y]
+  data:     # values that are not copied by PDI
+    main_field:
+      type:  double
+      sizes: [$width, $height]
   plugins:
-    # load the decl_hdf5 PDI plugin
-    decl_hdf5:
-      # and here is its configuration
-      outputs:
-        main_field: # ref to a variable
-          select: $iter % 16 = 0 # an expression defining when to output the variable
-          file: output_${coord[0]}x${coord[1]}.h5
-          var: iter_${iter}/main_field
+    decl_hdf5: # a list of file to write to (can be a single element)
+      file: data${coord[0]}x${coord[1]}.h5 # the file in which to write the data (required)
+      #on_event: newiter                    # the event that triggers these actions (default: trigger on data expose)
+      communicator: self                   # the MPI communicator used for HDF5 parallel synchronized write (default: self, sequential write)
+      datasets:                            # a list of datasets inside the file created on first access
+        data/array: # a dataset name, datasets referenced but not defined are created just big enough to fit the data
+          type: double                    # type of the data in the dataset
+          sizes: [10, $width-2, $height-2] # size of the dataset
+      write:                               # a list or map of data to write (default: empty)
+        main_field: # name of the data, it contains either a list or a single write to execute
+          - dataset: data/array # a dataset name (default: the data name)
+            when: "$iter>0&$iter<11"    # a condition when to actually trigger the actions (default: that of the file)
+            memory_selection:
+              size:  [$width-2, $height-2] # number of elements to transfer in each dimension (default: size of the full data)
+              start: [1, 1]                # coordinate of the start point in memory relative to the shared data (default: 0 in each dimensions)
+            dataset_selection:
+              size:  [1, $width-2, $height-2] # number of elements to transfer in each dimension, must amount to the same number as the memory selection (default: size of memory selection)
+              start: [$iter-1, 0, 0]         # coordinate of the start point in the file relative to the dataset (default: 0 in each dimensions)

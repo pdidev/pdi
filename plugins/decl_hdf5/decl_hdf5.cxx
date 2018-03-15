@@ -25,16 +25,17 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
 #include <unistd.h>
 
 #include <hdf5.h>
-#include <hdf5_hl.h>
 
 #include <paraconf.h>
 
@@ -48,168 +49,77 @@
 #include <pdi/scalar_datatype.h>
 #include <pdi/expression.h>
 
+#include "ast.h"
+#include "raii.h"
 
 namespace {
 
+using namespace decl_hdf5;
 using PDI::Array_datatype;
 using PDI::Context;
 using PDI::Datatype;
-using PDI::Data_descriptor;
+using PDI::Datatype_uptr;
+using PDI::Error;
+using PDI::Plugin;
 using PDI::Ref;
 using PDI::Ref_r;
 using PDI::Ref_w;
-using PDI::Error;
-using PDI::len;
-using PDI::Plugin;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
-using PDI::to_string;
-using PDI::Expression;
 using std::cerr;
 using std::endl;
-using std::reverse;
-using std::string;
-using std::unordered_map;
-using std::unique_ptr;
-using std::vector;
+using std::make_tuple;
+using std::move;
+using std::tie;
+using std::transform;
+using std::tuple;
 
-struct Slab_dim {
-
-	Expression start;
-	
-	Expression size;
-	
-};
-
-struct Hdf5_variable {
-
-	Expression h5var;
-	
-	Expression h5file;
-	
-	Expression select;
-	
-	/// hyperslab to write in the file
-	vector<Slab_dim> file_slab;
-	
-};
-
-/** Reads the plugin config for either inputs or outputs
-    * \param conf the configuration node to read
-    * \param dflt_file the default file for HDF5 inputs/outputs
-    * \param dflt_select the default select for HDF5 inputs/outputs
-    * \return the array where to store the resulting variables
-    */
-unordered_map<string, Hdf5_variable> read_config_file(Context& ctx, PC_tree_t conf, const unique_ptr<string> dflt_file, const unique_ptr<string> dflt_select)
-{
-	unordered_map<string, Hdf5_variable> result;
-	
-	int nb_hdf5data = len(conf, 0);
-	for (int ii = 0; ii < nb_hdf5data; ++ii) {
-	
-		string data_name = to_string(PC_get(conf, "{%d}", ii));
-		PC_tree_t data_conf = PC_get(conf, "<%d>", ii); // get the node
-		
-		// set the corresponding HDF5 dataset name
-		// the data name is used as the default dataset name
-		Expression var = to_string(PC_get(data_conf, ".var"), data_name);
-		
-		// set the HDF5 filename (i.e. where do we write the data)
-		Expression file;
-		if ( dflt_file ) {
-			file = to_string(PC_get(data_conf, ".file"), *dflt_file);
-		} else {
-			file = to_string(PC_get(data_conf, ".file"));
-		}
-		
-		// sampling or frequency (i.e. when do we expose)
-		Expression select;
-		if ( dflt_select ) {
-			select = to_string(PC_get(data_conf, ".select"), *dflt_select);
-		} else {
-			select = to_string(PC_get(data_conf, ".select"));
-		}
-		
-		PC_tree_t cfg = ctx.desc(data_name).config();
-		vector<Slab_dim> global;
-		PC_tree_t global_starts = PC_get(cfg, ".global_starts");
-		PC_tree_t global_sizes = PC_get(cfg, ".global_sizes");
-		
-		if (PC_status(global_sizes) != PC_status(global_starts)) {
-			throw Error {PDI_ERR_CONFIG, "global_sizes and global_starts must either both be specified or none should be"};
-		}
-		
-		if (!PC_status(global_starts)) {
-			int rank = len(global_starts);
-			if (rank != len(global_sizes)) {
-				throw Error {PDI_ERR_CONFIG, "Non matching rank of global_starts & global_sizes"};
-			}
-			
-			int mult = 1; int offset = 0;
-			string order = to_string(PC_get(cfg, ".order"), "C");
-			if (order == "fortran" || order == "Fortran") {
-				mult = -1; offset = rank - 1;
-			}
-			
-			for (int rank_id = 0; rank_id < rank; ++rank_id) {
-				global.emplace_back(Slab_dim {to_string(PC_get(global_starts, "[%d]", rank_id * mult + offset)), to_string(PC_get(global_sizes, "[%d]", rank_id * mult + offset))});
-			}
-		}
-		
-		result.emplace(data_name, Hdf5_variable {var, file, select, move(global)});
-	}
-	
-	return result;
-}
-
-void init_sizes(Context& ctx, const Datatype& type, const vector<Slab_dim>& file_slab, hid_t& file_space, hid_t& mem_space, hid_t& h5type)
+tuple<Raii_hid, Raii_hid> space(const Datatype& type)
 {
 	int rank = 0;
-	vector<hsize_t> h5msizes;
-	vector<hsize_t> h5subsizes;
-	vector<hsize_t> h5mstarts;
+	vector<hsize_t> h5_size;
+	vector<hsize_t> h5_subsize;
+	vector<hsize_t> h5_start;
 	const Datatype* subtype = &type;
 	
 	while (auto&& array_type = dynamic_cast<const Array_datatype*>(subtype)) {
 		++rank;
-		h5msizes.emplace_back(array_type->size());
-		h5subsizes.emplace_back(array_type->subsize());
-		h5mstarts.emplace_back(array_type->start());
+		h5_size.emplace_back(array_type->size());
+		h5_subsize.emplace_back(array_type->subsize());
+		h5_start.emplace_back(array_type->start());
 		subtype = &array_type->subtype();
 	}
-	reverse(h5msizes.begin(), h5msizes.end());
-	reverse(h5subsizes.begin(), h5subsizes.end());
-	reverse(h5mstarts.begin(), h5mstarts.end());
-	
-	if (file_slab.size() && rank != static_cast<int>(file_slab.size())) throw Error {PDI_ERR_TYPE, "Invalid rank for data in HDF5"};
-	
+	reverse(h5_size.begin(), h5_size.end());
+	reverse(h5_subsize.begin(), h5_subsize.end());
+	reverse(h5_start.begin(), h5_start.end());
 	auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(subtype);
 	if (!scalar_type) throw Error {PDI_ERR_IMPL, "Unexpected type in HDF5"};
 	
+	hid_t h5_type;
 	switch (scalar_type->kind()) {
 	case Scalar_kind::UNSIGNED: {
 		switch (scalar_type->datasize()) {
-		case 1: h5type = H5T_NATIVE_UINT8; break;
-		case 2: h5type = H5T_NATIVE_UINT16; break;
-		case 4: h5type = H5T_NATIVE_UINT32; break;
-		case 8: h5type = H5T_NATIVE_UINT64; break;
+		case 1: h5_type = H5T_NATIVE_UINT8; break;
+		case 2: h5_type = H5T_NATIVE_UINT16; break;
+		case 4: h5_type = H5T_NATIVE_UINT32; break;
+		case 8: h5_type = H5T_NATIVE_UINT64; break;
 		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #%ld", scalar_type->datasize()};
 		}
 	} break;
 	case Scalar_kind::SIGNED: {
 		switch (scalar_type->datasize()) {
-		case 1: h5type = H5T_NATIVE_INT8; break;
-		case 2: h5type = H5T_NATIVE_INT16; break;
-		case 4: h5type = H5T_NATIVE_INT32; break;
-		case 8: h5type = H5T_NATIVE_INT64; break;
+		case 1: h5_type = H5T_NATIVE_INT8; break;
+		case 2: h5_type = H5T_NATIVE_INT16; break;
+		case 4: h5_type = H5T_NATIVE_INT32; break;
+		case 8: h5_type = H5T_NATIVE_INT64; break;
 		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #%ld", scalar_type->datasize()};
 		}
 	} break;
 	case Scalar_kind::FLOAT: {
 		switch (scalar_type->datasize()) {
-		case 4:  h5type = H5T_NATIVE_FLOAT; break;
-		case 8:  h5type = H5T_NATIVE_DOUBLE; break;
-		case 16: h5type = H5T_NATIVE_LDOUBLE; break;
+		case 4:  h5_type = H5T_NATIVE_FLOAT; break;
+		case 8:  h5_type = H5T_NATIVE_DOUBLE; break;
+		case 16: h5_type = H5T_NATIVE_LDOUBLE; break;
 		default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #%ld", scalar_type->datasize()};
 		}
 	} break;
@@ -217,226 +127,302 @@ void init_sizes(Context& ctx, const Datatype& type, const vector<Slab_dim>& file
 		throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};
 	}
 	
-	// The size in memory (with ghost, data might be sparse)
-	mem_space = H5Screate_simple(rank, &h5msizes[0], NULL);
+	Raii_hid h5_space = raii_call(H5Screate_simple(rank, &h5_size[0], NULL), H5Sclose);
+	    
 	if (rank) {
-		H5Sselect_hyperslab(mem_space, H5S_SELECT_SET, &h5mstarts[0], NULL, &h5subsizes[0], NULL);
+		if ( 0>H5Sselect_hyperslab(h5_space, H5S_SELECT_SET, &h5_start[0], NULL, &h5_subsize[0], NULL) ) handle_hdf5_err();
 	}
+	return make_tuple(move(h5_space), Raii_hid{h5_type, NULL});
+}
+
+void select(Context& ctx, hid_t h5_space, const Selection_cfg& select, hid_t dflt_space = -1)
+{
+	int rank = H5Sget_simple_extent_ndims(h5_space);
+	if ( 0>rank ) handle_hdf5_err();
+	if ( 0==rank ) return;
 	
-	// File space: part of the global file that we use to store our piece of array
-	if (file_slab.size()) {
-		vector<hsize_t> h5fsizes;
-		vector<hsize_t> h5fstarts;
-		for (auto&& sz : file_slab) {
-			h5fsizes.emplace_back(sz.size.to_long(ctx));
-			h5fstarts.emplace_back(sz.start.to_long(ctx));
+	vector<hsize_t> h5_subsize(rank);
+	vector<hsize_t> h5_start(rank);
+	if ( 0>H5Sget_select_bounds(h5_space, &h5_start[0], &h5_subsize[0]) ) handle_hdf5_err();
+	transform( h5_start.begin(), h5_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end){return end-start+1;});
+	
+	if ( !select.size().empty() ) {
+		if (select.size().size() != rank ) {
+			throw Error{PDI_ERR_CONFIG, "Invalid selection: %dd selection in %dd array", select.size().size(), rank};
 		}
-		file_space = H5Screate_simple(rank, &h5fsizes[0], NULL);
-		H5Sselect_hyperslab(file_space, H5S_SELECT_SET, &h5fstarts[0], NULL, &h5subsizes[0], NULL);
-	} else {
-		file_space = H5Screate_simple(rank, &h5subsizes[0], NULL);
-	}
-}
-
-int is_h5_file(const string& filename)
-{
-	H5E_auto2_t old_func;
-	void* old_data;
-	H5Eget_auto2(H5E_DEFAULT, &old_func, &old_data);
-	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-	int fexists = (H5Fis_hdf5(filename.c_str()) > 0);
-	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
-	return fexists;
-}
-
-void rm_if_exist(hid_t h5file, const string& dset_name)
-{
-	H5E_auto2_t old_func;
-	void* old_data;
-	H5Eget_auto2(H5E_DEFAULT, &old_func, &old_data);
-	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-	H5Ldelete(h5file, dset_name.c_str(), H5P_DEFAULT);
-	H5Eset_auto(H5E_DEFAULT, old_func, old_data);
-}
-
-void write_to_file(Context& ctx, Ref cref, const string& filename, const string& pathname, const vector<Slab_dim>& file_slab)
-{
-	Ref_r ref = cref;
-	if (!ref) {
-		throw Error {PDI_ERR_PLUGIN, "Could not get read access on variable to write it to disk"};
+		for ( int size_id=0; size_id<rank; ++size_id ) {
+			h5_subsize[size_id] = select.size()[size_id].to_long(ctx);
+		}
+	} else if (dflt_space != -1 ) {
+		int dflt_rank = H5Sget_simple_extent_ndims(dflt_space);
+		if (dflt_rank != rank ) {
+			throw Error{PDI_ERR_CONFIG, "Invalid default selection: %dd selection in %dd array", dflt_rank, rank};
+		}
+		
+		vector<hsize_t> dflt_start(rank);
+		if ( 0>H5Sget_select_bounds(dflt_space, &dflt_start[0], &h5_subsize[0] ) ) handle_hdf5_err();
+		transform( dflt_start.begin(), dflt_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end){return end-start+1;});
 	}
 	
-	hid_t file_lst = H5Pcreate(H5P_FILE_ACCESS);
-	if (file_lst < 0) {
-		throw Error {PDI_ERR_SYSTEM, "Unable to create HDF5 file plist"};
-	}
-#ifdef H5_HAVE_PARALLEL
-	if (file_slab.size()) {
-		H5Pset_fapl_mpio(file_lst, MPI_COMM_WORLD, MPI_INFO_NULL);  // todo: check communicator (set another than WORLD)
-	}
-#endif
-	
-	hid_t file;
-	if (is_h5_file(filename)) {
-		file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, file_lst);
-	} else {
-		file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, file_lst);
-	}
-	
-	hid_t fspace, mspace, type;
-	init_sizes(ctx, cref.type(), file_slab, fspace, mspace, type);
-	
-	hid_t set_lst = H5Pcreate(H5P_LINK_CREATE);
-	if (set_lst < 0) {
-		throw Error {PDI_ERR_SYSTEM, "Unable to create HDF5 set plist"};
-	}
-	if (H5Pset_create_intermediate_group(set_lst, 1) < 0) {
-		throw Error {PDI_ERR_SYSTEM, "Unable to set automatic creation of intermediate groups in HDF5"};
-	}
-	
-	rm_if_exist(file, pathname);
-	hid_t set = H5Dcreate(file, pathname.c_str(), type, fspace, set_lst, H5P_DEFAULT, H5P_DEFAULT);
-	if (set < 0) {
-		throw Error {PDI_ERR_SYSTEM, "Unable to create HDF5 dataset"};
-	}
-	
-	hid_t write_lst = H5Pcreate(H5P_DATASET_XFER);
-	if (write_lst < 0) {
-		throw Error {PDI_ERR_SYSTEM, "Unable to create HDF5 dset plist"};
-	}
-#ifdef H5_HAVE_PARALLEL
-	if (file_slab.size()) {
-		if (H5Pset_dxpl_mpio(write_lst, H5FD_MPIO_COLLECTIVE) < 0) {
-			throw Error {PDI_ERR_SYSTEM, "Unable to set collective IO in HDF5"};
+	if ( !select.start().empty() ) {
+		if ( select.start().size() != rank ) {
+			throw Error{PDI_ERR_CONFIG, "Invalid selection: %dd start in %dd array", select.size().size(), rank};
+		}
+		for ( int size_id=0; size_id<rank; ++size_id ) {
+			h5_start[size_id] += select.start()[size_id].to_long(ctx);
 		}
 	}
-#endif
 	
-	if (H5Dwrite(set, type, mspace, fspace, write_lst, ref) < 0) {
-		throw Error {PDI_ERR_SYSTEM, "Unable to write HDF5 file"};
-	}
-	
-	H5PTclose(write_lst);
-	H5Dclose(set);
-	H5PTclose(set_lst);
-	H5Sclose(mspace);
-	H5Sclose(fspace);
-	H5Fclose(file);
-	H5PTclose(file_lst);
+	if ( 0>H5Sselect_hyperslab(h5_space, H5S_SELECT_SET, &h5_start[0], NULL, &h5_subsize[0], NULL) ) handle_hdf5_err();
 }
 
-void read_from_file(Context& ctx, Ref cref, const string& filename, const string& pathname, const vector<Slab_dim>& file_slab)
+void do_read(Context& ctx, const Transfer_cfg& xfer, hid_t h5_file, hid_t read_lst, Ref ref)
 {
-	Ref_w ref = cref;
-	if (!ref) {
-		throw Error {PDI_ERR_PLUGIN, "Could not get read access on variable to write it to disk"};
+	string dataset_name = xfer.dataset().to_string(ctx);
+	
+	Raii_hid h5_mem_space, h5_mem_type;
+	tie(h5_mem_space, h5_mem_type) = space(ref.type());
+	select(ctx, h5_mem_space, xfer.memory_selection());
+	
+	auto&& dataset_type_iter = xfer.parent().datasets().find(dataset_name);
+	Datatype_uptr explicit_dataset_type;
+	if ( dataset_type_iter != xfer.parent().datasets().end() ) {
+		explicit_dataset_type = dataset_type_iter->second->evaluate(ctx);
 	}
 	
-	hid_t file_lst = H5Pcreate(H5P_FILE_ACCESS);
+	const Datatype& file_datatype = ((explicit_dataset_type) ? (
+	            *explicit_dataset_type
+	        ) : (
+	            ref.type()
+	        ));
+	        
+	Raii_hid h5_file_space, h5_file_type;
+	tie(h5_file_space, h5_file_type) = space(file_datatype);
+	select(ctx, h5_file_space, xfer.dataset_selection(), h5_mem_space);
+	
+	Raii_hid h5_set = raii_call(H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose);
+	if ( 0>H5Dread(h5_set, h5_mem_type, h5_mem_space, h5_file_space, read_lst, Ref_w{ref}) ) handle_hdf5_err();
+}
+
+void do_write(Context& ctx, const Transfer_cfg& xfer, hid_t h5_file, hid_t write_lst, Ref ref)
+{
+	string dataset_name = xfer.dataset().to_string(ctx);
+	
+	Raii_hid h5_mem_space, h5_mem_type;
+	tie(h5_mem_space, h5_mem_type) = space(ref.type());
+	select(ctx, h5_mem_space, xfer.memory_selection());
+	
+	auto&& dataset_type_iter = xfer.parent().datasets().find(dataset_name);
+	Datatype_uptr explicit_dataset_type;
+	if ( dataset_type_iter != xfer.parent().datasets().end() ) {
+		explicit_dataset_type = dataset_type_iter->second->evaluate(ctx);
+	}
+	
+	const Datatype& file_datatype = ((explicit_dataset_type) ? (
+	            *explicit_dataset_type
+	        ) : (
+	            ref.type()
+	        ));
+	        
+	        
+	Raii_hid h5_file_type, h5_file_space;
+	tie(h5_file_space, h5_file_type) = space(file_datatype);
+	Raii_hid h5_file_selection = raii_call(H5Scopy(h5_file_space), H5Sclose);
+	select(ctx, h5_file_selection, xfer.dataset_selection(), h5_mem_space);
+	
+	Raii_hid set_lst = raii_call(H5Pcreate(H5P_LINK_CREATE), H5Pclose);
+	if ( 0>H5Pset_create_intermediate_group(set_lst, 1) ) handle_hdf5_err();
+	
+	//  {
+	// //   int size; MPI_Comm_size(MPI_COMM_WORLD, &size);
+	// //   int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	// //   for ( int ii=0; ii<size; ++ii ) {
+	// //   if ( rank == ii ) {
+	//
+	//  cerr<<" ***    NAME: "<<dataset_name<<endl;
+	//
+	//  int pr_rank = H5Sget_simple_extent_ndims(h5_mem_space);
+	//  vector<hsize_t> pr_size(pr_rank);
+	//  H5Sget_simple_extent_dims(h5_mem_space, &pr_size[0], NULL);
+	//  vector<hsize_t> pr_subsize(pr_rank);
+	//  vector<hsize_t> pr_start(pr_rank);
+	//  H5Sget_regular_hyperslab( h5_mem_space, &pr_start[0], NULL, &pr_subsize[0], NULL);
+	//  cerr << " ***     MEM: "<< pr_rank <<":[";
+	//  for ( int ii=0; ii< pr_rank; ++ii) cerr << " ("<< pr_subsize[ii]<<"/"<< pr_size[ii]<<"=>"<< pr_start[ii]<<")";
+	//  cerr<<" ] @"<<Ref_r{ref}.get()<<endl;
+	//
+	//  int max_pr_idx = 0;
+	//  for ( int ii=0; ii< pr_rank; ++ii ) {
+	//          if (ii) max_pr_idx *= pr_size[ii-1];
+	//          max_pr_idx += pr_size[ii];
+	//  }
+	//  cerr << " *** CONTENT:";
+	//  for ( int pr_idx =0; pr_idx < max_pr_idx; ++pr_idx ) {
+	//          if ( pr_idx && (pr_idx)% pr_size[0] == 0 ) cerr<<"             ";
+	//          cerr << " "<<reinterpret_cast<const double*>(Ref_r{ref}.get())[pr_idx];
+	//          if ( (pr_idx +1)% pr_size[0] == 0 ) cerr<<endl;
+	//  }
+	//
+	//  pr_rank = H5Sget_simple_extent_ndims(h5_file_space);
+	//  H5Sget_simple_extent_dims(h5_file_space, &pr_size[0], NULL);
+	//  H5Sget_regular_hyperslab( h5_file_space, &pr_start[0], NULL, &pr_subsize[0], NULL);
+	//  cerr << " ***    FILE: "<< pr_rank <<":[";
+	//  for ( int ii=0; ii< pr_rank; ++ii) cerr << " ("<< pr_subsize[ii]<<"/"<< pr_size[ii]<<"=>"<< pr_start[ii]<<")";
+	//  cerr<<" ]"<<endl;
+	//
+	//  pr_rank = H5Sget_simple_extent_ndims(h5_file_selection);
+	//  H5Sget_simple_extent_dims(h5_file_selection, &pr_size[0], NULL);
+	//  H5Sget_regular_hyperslab( h5_file_selection, &pr_start[0], NULL, &pr_subsize[0], NULL);
+	//  cerr << " *** FSELECT: "<< pr_rank <<":[";
+	//  for ( int ii=0; ii< pr_rank; ++ii) cerr << " ("<< pr_subsize[ii]<<"/"<< pr_size[ii]<<"=>"<< pr_start[ii]<<")";
+	//  cerr<<" ]"<<endl;
+	// //   }
+	// //   MPI_Barrier(MPI_COMM_WORLD);
+	// //   }
+	//  }
+	
+	hid_t h5_set_raw = H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT);
+	if ( 0 > h5_set_raw ) {
+		h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, H5P_DEFAULT, H5P_DEFAULT);
+	}
+	Raii_hid h5_set = raii_call(h5_set_raw, H5Dclose);
+	    
+	if ( 0>H5Dwrite(h5_set, h5_mem_type, h5_mem_space, h5_file_selection, write_lst, Ref_r{ref}) ) handle_hdf5_err();
+}
+
+void read(Context& ctx, const Transfer_cfg& xfer, Ref ref)
+{
+	try {
+		if ( !xfer.when().to_long(ctx) ) return;
+	} catch (...) {
+		return;    // an invalid expression is handled as false
+	}
+	
+	Raii_hid file_lst = raii_call(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
+	Raii_hid read_lst = raii_call(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
-	if (file_slab.size()) {
-		H5Pset_fapl_mpio(file_lst, MPI_COMM_WORLD, MPI_INFO_NULL);  // todo: check communicator (set another than WORLD)
+	if ( xfer.communicator() != MPI_COMM_SELF ) {
+		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
+		if ( 0>H5Pset_dxpl_mpio(read_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
 	}
 #endif
 	
-	hid_t file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, file_lst);
+	Raii_hid h5_file = raii_call(H5Fopen(xfer.parent().file().to_string(ctx).c_str(), H5F_ACC_RDONLY, file_lst), H5Fclose);
+	do_read(ctx, xfer, h5_file, read_lst, ref);
+}
+
+void write(Context& ctx, const Transfer_cfg& xfer, Ref ref)
+{
+	try {
+		if ( !xfer.when().to_long(ctx) ) return;
+	} catch (...) {
+		return;    // an invalid expression is handled as false
+	}
 	
-	hid_t fspace, mspace, type;
-	init_sizes(ctx, cref.type(), file_slab, fspace, mspace, type);
-	
-	hid_t set = H5Dopen(file, pathname.c_str(), H5P_DEFAULT);
-	
-	hid_t read_lst = H5Pcreate(H5P_DATASET_XFER);
+	Raii_hid file_lst = raii_call(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
+	Raii_hid write_lst = raii_call(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
-	if (file_slab.size()) {
-		H5Pset_dxpl_mpio(read_lst, H5FD_MPIO_COLLECTIVE);
+	if ( xfer.communicator() != MPI_COMM_SELF ) {
+		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
+		if ( 0>H5Pset_dxpl_mpio(write_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
 	}
 #endif
 	
-	H5Dread(set, type, mspace, fspace, read_lst, ref);
+	string filename = xfer.parent().file().to_string(ctx);
+	hid_t h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
+	if (0>h5_file_raw) {
+		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDWR, file_lst);
+	}
+	Raii_hid h5_file = raii_call(h5_file_raw, H5Fclose);
+	    
+	do_write(ctx, xfer, h5_file, write_lst, ref);
+}
+
+void execute(Context& ctx, const File_cfg& file_cfg)
+{
+	Raii_hid file_lst = raii_call(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
+	Raii_hid xfer_lst = raii_call(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
+#ifdef H5_HAVE_PARALLEL
+	if ( file_cfg.communicator() != MPI_COMM_SELF ) {
+		if ( 0>H5Pset_fapl_mpio(file_lst, file_cfg.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
+		if ( 0>H5Pset_dxpl_mpio(xfer_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
+	}
+#endif
 	
-	H5PTclose(read_lst);
-	H5Dclose(set);
-	H5Sclose(mspace);
-	H5Sclose(fspace);
-	H5Fclose(file);
-	H5PTclose(file_lst);
+	string filename = file_cfg.file().to_string(ctx);
+	hid_t h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
+	if (0>h5_file_raw) {
+		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDWR, file_lst);
+	}
+	Raii_hid h5_file = raii_call(h5_file_raw, H5Fclose);
+	    
+	for (auto&& read: file_cfg.read() ) {
+		const Transfer_cfg& xfer = read.second;
+		try {
+			if ( !xfer.when().to_long(ctx) ) continue;
+		} catch (...) {
+			continue;    // an invalid expression is handled as false
+		}
+		do_read(ctx, xfer, h5_file, xfer_lst, ctx[read.first].ref());
+		Ref ref = ctx[read.first].ref();
+		if ( Ref_w{ref} ) {
+			do_read(ctx, xfer, h5_file, xfer_lst, ref);
+		} else {
+			cerr << " *** [PDI/Decl'HDF5] Warning: Reference to read not available: `"<<read.first<<"'"<<endl;
+		}
+	}
+	
+	for (auto&& write: file_cfg.write() ) {
+		const Transfer_cfg& xfer = write.second;
+		try {
+			if ( !xfer.when().to_long(ctx) ) continue;
+		} catch (...) {
+			continue;    // an invalid expression is handled as false
+		}
+		Ref ref = ctx[write.first].ref();
+		if ( Ref_r{ref} ) {
+			do_write(ctx, xfer, h5_file, xfer_lst, ref);
+		} else {
+			cerr << " *** [PDI/Decl'HDF5] Warning: Reference to write not available: `"<<write.first<<"'"<<endl;
+		}
+	}
 }
 
 struct decl_hdf5_plugin: Plugin {
 
-	unordered_map<string, Hdf5_variable> outputs;
+	const Decl_hdf5_cfg m_config;
 	
-	unordered_map<string, Hdf5_variable> inputs;
-	
-	
-	decl_hdf5_plugin(Context& ctx, PC_tree_t conf, MPI_Comm*):
-		Plugin {ctx}
+	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*):
+		Plugin {ctx},
+		m_config{config}
 	{
-		// Failure initializing HDF5
-		if ( H5open() < 0 ) {
-			throw Error {PDI_ERR_PLUGIN, "Cannot initialize HDF5 library"};
-		}
-		
-		{
-			unique_ptr<string> dflt_file;
-			try {
-				dflt_file.reset(new string{to_string(PC_get(conf, ".defaults.outputs.file"))});
-			} catch (const Error&) {}
-			unique_ptr<string> dflt_select;
-			try {
-				dflt_select.reset(new string{to_string(PC_get(conf, ".defaults.outputs.select"))});
-			} catch (const Error&) {}
-			outputs = read_config_file(ctx, PC_get(conf, ".outputs"), move(dflt_file), move(dflt_select));
-		}
-		
-		{
-			unique_ptr<string> dflt_file;
-			try {
-				dflt_file.reset(new string{to_string(PC_get(conf, ".defaults.inputs.file"))});
-			} catch (const Error&) {}
-			unique_ptr<string> dflt_select;
-			try {
-				dflt_select.reset(new string{to_string(PC_get(conf, ".defaults.inputs.select"))});
-			} catch (const Error&) {}
-			inputs = read_config_file(ctx, PC_get(conf, ".inputs"), move(dflt_file), move(dflt_select));
-		}
+		Raii_set_hdf5_handler _;
+		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");
 	}
 	
 	void data(const char* name, Ref ref) override
 	{
-		auto&& outev = outputs.find(name);
-		if (outev != outputs.end()) {
-			try {
-				long select;
-				try {
-					select = outev->second.select.to_long(context());
-				} catch (const Error&) {
-					select = 0;
-				}
-				if (select) {
-					write_to_file(context(), ref, outev->second.h5file.to_string(context()), outev->second.h5var.to_string(context()), outev->second.file_slab);
-				}
-			} catch (...) {
-				cerr << "HDF5 error writing "<<name<<endl;
+		Raii_set_hdf5_handler _;
+		if (Ref_r{ref}) {
+			auto range = m_config.write().equal_range(name);
+			for (auto&& write_cfg = range.first; write_cfg != range.second; ++write_cfg) {
+				write(context(), write_cfg->second, ref);
 			}
 		}
-		
-		auto&& inev = inputs.find(name);
-		if (inev != inputs.end()) {
-			try {
-				long select;
-				try {
-					select = inev->second.select.to_long(context());
-				} catch (const Error&) {
-					select = 0;
-				}
-				if (select) {
-					read_from_file(context(), ref, inev->second.h5file.to_string(context()), inev->second.h5var.to_string(context()), inev->second.file_slab);
-				}
-			} catch (...) {
-				cerr << "HDF5 error reading "<<name<<endl;
+		if (Ref_w{ref}) {
+			auto range = m_config.read().equal_range(name);
+			for (auto&& read_cfg = range.first; read_cfg != range.second; ++read_cfg) {
+				read(context(), read_cfg->second, ref);
 			}
+		}
+	}
+	
+	void event(const char* event) override
+	{
+		Raii_set_hdf5_handler _;
+		auto range = m_config.events().equal_range(event);
+		for (auto&& file = range.first; file != range.second; ++file) {
+			execute(context(), file->second);
 		}
 	}
 	

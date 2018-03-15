@@ -138,9 +138,7 @@ int main( int argc, char* argv[] )
 	double* cur = malloc(sizeof(double)*width*height);
 	double* next = malloc(sizeof(double)*width*height);
 	
-	if ( PDI_expose("main_field", cur, PDI_IN) ) {
-		init(cur, width, height, car_coord[0], car_coord[1]);
-	}
+	init(cur, width, height, car_coord[0], car_coord[1]);
 	
 	PDI_event("main_loop");
 	double start = MPI_Wtime();

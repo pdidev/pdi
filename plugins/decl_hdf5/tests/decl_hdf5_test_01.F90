@@ -65,7 +65,7 @@ program test2
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
   main_comm = MPI_COMM_WORLD
-  call PDI_init(PC_get(conf, ".pdi"), main_comm)
+  call PDI_init(conf, main_comm)
   
   call PDI_transaction_begin("testing")
   call PDI_expose("meta0",pmeta0, PDI_OUT)

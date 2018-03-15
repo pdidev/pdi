@@ -29,42 +29,35 @@
 
 int main( int argc, char* argv[] )
 {
-	int value[5]= {5,4,3,2,1};
-	int i;
-	int* buf=NULL;
-	const int nbuf=1000;
-	double test_var=0;
+	int nbuf = 1000;
+	int value[5] = {5,4,3,2,1};
+	double test_var = 0;
+	
+	remove("5.h5");
+	
 	MPI_Init(&argc, &argv);
 	assert(argc == 2 && "Needs 1 single arg: config file");
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_status_t err = PDI_init(PC_get(conf,".pdi"), &world);
+	PDI_init(conf, &world);
 	
 	PDI_transaction_begin("testing");
 	PDI_expose("meta0",&value[0], PDI_OUT);
 	PDI_expose("meta1",&value[0], PDI_OUT);
-	buf=malloc(nbuf*sizeof(int)); // memory
 	PDI_expose("meta2",&value[1], PDI_OUT);
-	for (i=0; i<nbuf; i++) {
-		buf[i]=0;
-	}
 	PDI_expose("meta3",&value[2], PDI_OUT);
-	for (i=0; i<nbuf-1; i++) {
-		buf[i]=buf[i+1]+1;
-	}
 	PDI_expose("meta4",&value[3], PDI_OUT);
 	PDI_expose("test_var",&test_var, PDI_OUT);
-	free(buf);
 	PDI_transaction_end();
+	
 	PDI_finalize();
-	
-	char fname[] = "5.h5";
-	FILE* fp=NULL;
-	fp= fopen(fname, "r");
-	assert( fp != NULL  && "File not found.");
-	fclose(fp);
-	
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
+	
+	FILE* fp = fopen("5.h5", "r");
+	assert( fp != NULL && "File not found.");
+	fclose(fp);
+	remove("5.h5");
+	
 	return 0;
 }

@@ -62,7 +62,7 @@ program test2
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
   main_comm = MPI_COMM_WORLD
-  call PDI_init(PC_get(conf, ".pdi"), main_comm)
+  call PDI_init(conf, main_comm)
   call MPI_Comm_rank(main_comm, rank, ierr)
 
   nj=jmx

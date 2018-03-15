@@ -1,0 +1,28 @@
+metadata:
+  input: int
+  ni: integer
+  nj: integer
+  ni_ghost: integer
+  nj_ghost: integer
+  rank: integer
+data:
+  reals: 
+    type: double
+    sizes: [$ni, $nj]
+    subsizes: [$ni - (2*$ni_ghost) , $nj - (2*$nj_ghost)] 
+    starts: [$ni_ghost, $nj_ghost] # offset
+    order: fortran
+  values: 
+    type: int
+    sizes: [$ni , $nj]
+    subsizes: [$ni - (2*$ni_ghost) , $nj - (2*$nj_ghost)] 
+    starts: [$ni_ghost, $nj_ghost] # offset
+    order: fortran
+plugins:
+  decl_hdf5:
+    - file: decl_hdf5_test_03_r${rank}.h5
+      when: $input = 0
+      write: [ reals, values, ni, nj ]
+    - file: decl_hdf5_test_03_r${rank}.h5
+      when: $input = 1
+      read: [ reals, values ]
