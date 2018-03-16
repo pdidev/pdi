@@ -49,4 +49,9 @@ add_test(NAME PDI_test_02_run COMMAND PDI_test_02 "${CMAKE_CURRENT_SOURCE_DIR}/P
 set_property(TEST PDI_test_02_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/user_code/")
 set_tests_properties(PDI_test_02_run PROPERTIES DEPENDS PDI_test_02_build)
 
+###############
+# GOOGLE TEST #
+###############
+if( "${RUN_GTEST}" ) 
 add_subdirectory(gtest/)
+endif()

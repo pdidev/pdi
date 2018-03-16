@@ -4,9 +4,8 @@
 #include <pdi.h>
 #include <pdi/status.h>
 
-namespace {
-    TEST(ErrorTest, what) {
-        PDI::Error error(PDI_OK, "This is some error.");
-        ASSERT_STREQ("This is some error.", error.what());
-    }
+TEST(ErrorTest, what)
+{
+    PDI::Error error(PDI_OK, "This is some error.");
+    ASSERT_STREQ("This is some error.", error.what());
 }

@@ -38,6 +38,7 @@ option(ENABLE_DECL_HDF5        "Build HDF5 based decl'HDF5 plug-in." ON )
 option(ENABLE_FTI              "Build FTI plug-in." ON )
 option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
 option(RUN_EXAMPLES            "Build and run examples during ctest." ON  )
+option(RUN_GTEST               "Build and run google tests during ctest." ON )
 
 # Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
