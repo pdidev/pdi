@@ -27,31 +27,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download" )
-execute_process(COMMAND "${CMAKE_COMMAND}" --build .
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download" )
+cmake_minimum_required(VERSION 3.10)
 
-# Prevent GoogleTest from overriding our compiler/linker options
-# when building with Visual Studio
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+include(${CMAKE_SOURCE_DIR}/cmake/External_GTest.cmake)
+include(GoogleTest)
 
-# Add googletest directly to our build. This adds
-# the following targets: gtest, gtest_main, gmock
-# and gmock_main
-add_subdirectory("${CMAKE_BINARY_DIR}/googletest-src"
-                 "${CMAKE_BINARY_DIR}/googletest-build")
+include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 
+file(GLOB_RECURSE GTEST_SRC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cxx)
 
-include(AddCCompilerFlags)
+add_executable(PDI_gtest ${GTEST_SRC_FILES})
+target_link_libraries(PDI_gtest pdi gtest gtest_main dl)
+add_dependencies(PDI_gtest googletest)
 
-add_executable(PDI_error_test EXCLUDE_FROM_ALL PDI_error_test.cxx)
-add_compiler_flags(PDI_error_test PRIVATE -Wall -Wextra)
-target_link_libraries(PDI_error_test pdi gtest gtest_main pthread dl)
-
-add_test(NAME PDI_error_test_build
-		COMMAND "${CMAKE_COMMAND}" --build . --target -V PDI_error_test
-		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-add_test(NAME PDI_error_test_run COMMAND PDI_error_test)
-set_tests_properties(PDI_error_test_run PROPERTIES DEPENDS PDI_error_test_build TIMEOUT ${DEFAULT_TIMEOUT})
+gtest_discover_tests(PDI_gtest)
