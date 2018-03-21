@@ -11,7 +11,7 @@ The public plugin API offered by PDI is general and simple enough that one can e
 ## Prerequisites
 
 PDI depends on:
-  * cmake, version >= 3.1
+  * cmake, version >= 3.5 (version >= 3.10 if you want to run tests)
   * a C-99 and C++-14 compiler (gcc-5.4 is tested)
   * a POSIX compatible OS (linux is tested)
   * a MPI library
