@@ -38,7 +38,7 @@ option(ENABLE_DECL_HDF5        "Build HDF5 based decl'HDF5 plug-in." ON )
 option(ENABLE_FTI              "Build FTI plug-in." ON )
 option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
 option(RUN_EXAMPLES            "Build and run examples during ctest." ON  )
-option(RUN_GTEST               "Build and run google tests during ctest." ON )
+option(USE_SYSTEM_GTEST        "Use an already installed gtest and gmock instead of downloading and building." OFF )
 
 # Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -93,7 +93,9 @@ endif()
 if( "${RUN_EXAMPLES}" ) 
 	add_subdirectory(example/)
 endif()
-add_subdirectory(tests/)
+if(BUILD_TESTING)
+	add_subdirectory(tests/)
+endif()
 
 # Source formatting
 # TODO: detect astyle install & source files

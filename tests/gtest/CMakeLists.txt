@@ -34,7 +34,8 @@ include(GoogleTest)
 
 include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 
-file(GLOB_RECURSE GTEST_SRC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cxx)
+set(GTEST_SRC_FILES PDI_error_test.cxx
+                    PDI_scalar_datatype.cxx)
 
 add_executable(PDI_gtest ${GTEST_SRC_FILES})
 target_link_libraries(PDI_gtest pdi gtest gtest_main dl)

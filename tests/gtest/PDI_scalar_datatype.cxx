@@ -17,32 +17,18 @@
  * Class prepared for ScalarDatatypeTest.
  */
 template <typename T>
-class ScalarDatatypeTest : public ::testing::Test
+struct ScalarDatatypeTest : public ::testing::Test
 {
-    public:
-
     //set kind and size depending on type
     ScalarDatatypeTest() {
-        if (std::is_same<T,int>::value) {
+        if (std::is_same<T,int>::value || std::is_same<T,unsigned int>::value) {
             test_kind = PDI::Scalar_kind::SIGNED;
-            test_size = sizeof(int);
-        } else if (std::is_same<T,long>::value) {
-            test_kind = PDI::Scalar_kind::SIGNED;
-            test_size = sizeof(long);
-        } else if (std::is_same<T,unsigned int>::value) {
+        } else if (std::is_same<T,unsigned int>::value || std::is_same<T,unsigned long>::value) {
             test_kind = PDI::Scalar_kind::UNSIGNED;
-            test_size = sizeof(unsigned int);
-        } else if (std::is_same<T,unsigned long>::value) {
-            test_kind = PDI::Scalar_kind::UNSIGNED;
-            test_size = sizeof(unsigned long);
-        } else if (std::is_same<T,float>::value) {
+        } else if (std::is_same<T,float>::value || std::is_same<T,double>::value) {
             test_kind = PDI::Scalar_kind::FLOAT;
-            test_size = sizeof(float);
-        } else if (std::is_same<T,double>::value) {
-            test_kind = PDI::Scalar_kind::FLOAT;
-            test_size = sizeof(double);
         }
-
+        test_size = sizeof(T);
         test_scalar = new PDI::Scalar_datatype(test_kind, test_size);
     }
     
