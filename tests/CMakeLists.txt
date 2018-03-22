@@ -52,6 +52,4 @@ set_tests_properties(PDI_test_02_run PROPERTIES DEPENDS PDI_test_02_build)
 ###############
 # GOOGLE TEST #
 ###############
-if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10.0") 
-    add_subdirectory(gtest/)
-endif()
+add_subdirectory(gtest/)

@@ -21,7 +21,7 @@ struct ScalarDatatypeTest : public ::testing::Test
 {
     //set kind and size depending on type
     ScalarDatatypeTest() {
-        if (std::is_same<T,int>::value || std::is_same<T,unsigned int>::value) {
+        if (std::is_same<T,int>::value || std::is_same<T,long>::value) {
             test_kind = PDI::Scalar_kind::SIGNED;
         } else if (std::is_same<T,unsigned int>::value || std::is_same<T,unsigned long>::value) {
             test_kind = PDI::Scalar_kind::UNSIGNED;
