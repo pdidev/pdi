@@ -22,7 +22,7 @@ file(MAKE_DIRECTORY ${GMOCK_INCLUDE_DIRS})
 
 ExternalProject_Get_Property(googletest binary_dir)
 set(GTEST_LIBRARY_PATH ${binary_dir}/googlemock/gtest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a)
-set(GTEST_LIBRARY gtest)
+set(GTEST_LIBRARY GTest::GTest)
 add_library(${GTEST_LIBRARY} UNKNOWN IMPORTED)
 set_target_properties(${GTEST_LIBRARY} PROPERTIES
     "IMPORTED_LOCATION" "${GTEST_LIBRARY_PATH}"
@@ -31,7 +31,7 @@ set_target_properties(${GTEST_LIBRARY} PROPERTIES
 add_dependencies(${GTEST_LIBRARY} googletest)
 
 set(GTEST_MAIN_LIBRARY_PATH ${binary_dir}/googlemock/gtest/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a)
-set(GTEST_MAIN_LIBRARY gtest_main)
+set(GTEST_MAIN_LIBRARY GTest::Main)
 add_library(${GTEST_MAIN_LIBRARY} UNKNOWN IMPORTED)
 set_target_properties(${GTEST_MAIN_LIBRARY} PROPERTIES
     "IMPORTED_LOCATION" "${GTEST_MAIN_LIBRARY_PATH}"
@@ -40,7 +40,7 @@ set_target_properties(${GTEST_MAIN_LIBRARY} PROPERTIES
 add_dependencies(${GTEST_MAIN_LIBRARY} googletest)
 
 set(GMOCK_LIBRARY_PATH ${binary_dir}/googlemock/${CMAKE_FIND_LIBRARY_PREFIXES}gmock.a)
-set(GMOCK_LIBRARY gmock)
+set(GMOCK_LIBRARY GMock::GMock)
 add_library(${GMOCK_LIBRARY} UNKNOWN IMPORTED)
 set_target_properties(${GMOCK_LIBRARY} PROPERTIES
     "IMPORTED_LOCATION" "${GMOCK_LIBRARY_PATH}"
@@ -49,7 +49,7 @@ set_target_properties(${GMOCK_LIBRARY} PROPERTIES
 add_dependencies(${GMOCK_LIBRARY} googletest)
 
 set(GMOCK_MAIN_LIBRARY_PATH ${binary_dir}/googlemock/${CMAKE_FIND_LIBRARY_PREFIXES}gmock_main.a)
-set(GMOCK_MAIN_LIBRARY gmock_main)
+set(GMOCK_MAIN_LIBRARY GMock::Main)
 add_library(${GMOCK_MAIN_LIBRARY} UNKNOWN IMPORTED)
 set_target_properties(${GMOCK_MAIN_LIBRARY} PROPERTIES
     "IMPORTED_LOCATION" "${GMOCK_MAIN_LIBRARY_PATH}"

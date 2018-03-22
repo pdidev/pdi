@@ -54,6 +54,9 @@ endif()
 
 # Enable testing
 include(CTest)
+if(BUILD_TESTING AND "${CMAKE_VERSION}" VERSION_LESS "3.10.0") 
+	message(FATAL_ERROR "Minimum CMake version for tests is 3.10. Please update CMake or turn off testing by adding flag -DBUILD_TESTING=OFF")
+endif()
 
 # Version
 file(READ VERSION pdi_VERSION)
@@ -90,15 +93,11 @@ if(${ENABLE_DECL_SION})
 endif()
 
 # Examples & tests
-if( "${RUN_EXAMPLES}" ) 
+if("${BUILD_TESTING}" AND "${RUN_EXAMPLES}") 
 	add_subdirectory(example/)
 endif()
-if(BUILD_TESTING)
-	if(${CMAKE_VERSION} VERSION_LESS "3.10.0") 
-		message(FATAL_ERROR "Minimum CMake version for tests is 3.10. Please update CMake or turn off testing by adding flag -DBUILD_TESTING=OFF")
-	else()
-		add_subdirectory(tests/)
-	endif()
+if("${BUILD_TESTING}")
+	add_subdirectory(tests/)
 endif()
 
 # Source formatting

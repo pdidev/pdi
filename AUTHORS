@@ -3,18 +3,23 @@ public spirit, we list here in alphabetical order a condensed list of their
 contributions.
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
-* Overall design and implementation
-* Initial Test & HDF5 plugins
 * Main library maintainer
-  
+* Overall library design and implementation
+* Test plugin
+* Initial Decl'HDF5 plugins
+
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Initial FTI plugin
 * Initial Fortran interface
 
 Corentin Roussel - CEA (Corentin.roussel@cea.fr)
-* Overall improvement & debug
-* HDF5 plugin rework
 * Library maintainer from Sept. 2016 to Feb. 2018
+* Overall library improvement & debug
+* Decl'HDF5 plugin improvement
+* Initial User-code plugin
+
+Karol Sierocinski - PSNC (ksiero@man.poznan.pl)
+* Set-up and development of unit-tests
 
 Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
-* SIONlib plugin
+* Decl'SION plugin

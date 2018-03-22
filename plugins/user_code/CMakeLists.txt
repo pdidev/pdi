@@ -42,4 +42,6 @@ set_target_properties(pdi_user_code_plugin PROPERTIES
 install(TARGETS pdi_user_code_plugin EXPORT user_codeTargets LIBRARY DESTINATION lib)
 
 # Tests
-add_subdirectory(tests/)
+if("${BUILD_TESTING}")
+	add_subdirectory(tests/)
+endif()

@@ -47,4 +47,6 @@ set_target_properties(pdi_decl_sion_plugin PROPERTIES
 install(TARGETS pdi_decl_sion_plugin EXPORT decl_sionTargets LIBRARY DESTINATION lib)
 
 # Tests
-add_subdirectory(tests/)
+if("${BUILD_TESTING}")
+	add_subdirectory(tests/)
+endif()

@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-#
+# Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+cmake_minimum_required(VERSION 3.10)
+
 ###############
 #   TEST 01   #
 ###############
@@ -50,6 +52,19 @@ set_property(TEST PDI_test_02_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$
 set_tests_properties(PDI_test_02_run PROPERTIES DEPENDS PDI_test_02_build)
 
 ###############
-# GOOGLE TEST #
+# UNNIT TESTS #
 ###############
-add_subdirectory(gtest/)
+
+if("${USE_SYSTEM_GTEST}")
+	find_package(GTest REQUIRED)
+else()
+	include(External_GTest)
+endif()
+include(GoogleTest)
+
+add_executable(PDI_unit_tests
+		PDI_error.cxx
+		PDI_scalar_datatype.cxx)
+target_link_libraries(PDI_unit_tests pdi GTest::GTest GTest::Main)
+
+gtest_discover_tests(PDI_unit_tests)
