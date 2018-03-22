@@ -1,20 +1,14 @@
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
-#include <list>
-#include <memory>
 #include <type_traits>
-
-#include <mpi.h>
 
 #include <pdi.h>
 #include <pdi/context.h>
 #include <pdi/datatype_template.h>
-#include <pdi/pdi_fwd.h>
 #include <pdi/scalar_datatype.h>
 
 /*
- * Class prepared for ScalarDatatypeTest.
+ * Struct prepared for ScalarDatatypeTest.
  */
 template <typename T>
 struct ScalarDatatypeTest : public ::testing::Test
@@ -122,8 +116,7 @@ TYPED_TEST(ScalarDatatypeTest, check_clone_type)
     PDI::Datatype_uptr cloned_datatype {this->test_scalar->clone_type()};
 
     //need to cast to unique_ptr<PDI::Scalar_datatype> to get the kind()
-    PDI::Scalar_datatype* ptr = static_cast<PDI::Scalar_datatype*>(cloned_datatype.release());
-    std::unique_ptr<PDI::Scalar_datatype> cloned_scalar = std::unique_ptr<PDI::Scalar_datatype> {ptr};
+    std::unique_ptr<PDI::Scalar_datatype> cloned_scalar {static_cast<PDI::Scalar_datatype*>(cloned_datatype.release())};
     ASSERT_EQ(this->test_scalar->kind(), cloned_scalar->kind());
     ASSERT_EQ(this->test_scalar->datasize(), cloned_scalar->datasize());
     ASSERT_EQ(this->test_scalar->buffersize(), cloned_scalar->buffersize());
@@ -144,8 +137,7 @@ TYPED_TEST(ScalarDatatypeTest, check_clone)
     PDI::Datatype_template_uptr cloned_datatype {this->test_scalar->clone()};
     
     //need to cast to unique_ptr<PDI::Scalar_datatype> to get the kind()
-    PDI::Scalar_datatype* ptr = static_cast<PDI::Scalar_datatype*>(cloned_datatype.release());
-    std::unique_ptr<PDI::Scalar_datatype> cloned_scalar = std::unique_ptr<PDI::Scalar_datatype> {ptr};
+    std::unique_ptr<PDI::Scalar_datatype> cloned_scalar {static_cast<PDI::Scalar_datatype*>(cloned_datatype.release())};
     ASSERT_EQ(this->test_scalar->kind(), cloned_scalar->kind());
     ASSERT_EQ(this->test_scalar->datasize(), cloned_scalar->datasize());
     ASSERT_EQ(this->test_scalar->buffersize(), cloned_scalar->buffersize());
@@ -168,8 +160,7 @@ TYPED_TEST(ScalarDatatypeTest, check_evaluate)
     PDI::Datatype_uptr cloned_datatype {this->test_scalar->evaluate(*context)};
 
     //need to cast to unique_ptr<PDI::Scalar_datatype> to get the kind()
-    PDI::Scalar_datatype* ptr = static_cast<PDI::Scalar_datatype*>(cloned_datatype.release());
-    std::unique_ptr<PDI::Scalar_datatype> cloned_scalar = std::unique_ptr<PDI::Scalar_datatype> {ptr};
+    std::unique_ptr<PDI::Scalar_datatype> cloned_scalar {static_cast<PDI::Scalar_datatype*>(cloned_datatype.release())};
     ASSERT_EQ(this->test_scalar->kind(), cloned_scalar->kind());
     ASSERT_EQ(this->test_scalar->datasize(), cloned_scalar->datasize());
     ASSERT_EQ(this->test_scalar->buffersize(), cloned_scalar->buffersize());

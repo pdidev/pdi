@@ -34,7 +34,7 @@ include(GoogleTest)
 
 include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 
-set(GTEST_SRC_FILES PDI_error_test.cxx
+set(GTEST_SRC_FILES PDI_error.cxx
                     PDI_scalar_datatype.cxx)
 
 add_executable(PDI_gtest ${GTEST_SRC_FILES})
