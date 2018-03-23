@@ -47,7 +47,7 @@ struct ScalarDatatypeTest : public ::testing::Test
             test_kind = PDI::Scalar_kind::FLOAT;
         }
         test_size = sizeof(T);
-        test_scalar = new PDI::Scalar_datatype(test_kind, test_size);
+        test_scalar = std::unique_ptr<PDI::Scalar_datatype>(new PDI::Scalar_datatype {test_kind, test_size});
     }
     
     //kind used to create Scalar_datatype
@@ -56,7 +56,7 @@ struct ScalarDatatypeTest : public ::testing::Test
     //size used to create Scalar_datatype
     size_t test_size;
     
-    PDI::Scalar_datatype* test_scalar;
+    std::unique_ptr<PDI::Scalar_datatype> test_scalar;
 };
 
 typedef ::testing::Types<int, long, unsigned int, unsigned long, float, double> TypesForScalar;

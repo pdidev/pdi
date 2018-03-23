@@ -54,7 +54,7 @@ endif()
 
 # Enable testing
 include(CTest)
-if(BUILD_TESTING AND "${CMAKE_VERSION}" VERSION_LESS "3.10.0") 
+if("${BUILD_TESTING}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10.0") 
 	message(FATAL_ERROR "Minimum CMake version for tests is 3.10. Please update CMake or turn off testing by adding flag -DBUILD_TESTING=OFF")
 endif()
 
