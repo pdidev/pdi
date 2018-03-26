@@ -57,6 +57,7 @@ set_tests_properties(PDI_test_02_run PROPERTIES DEPENDS PDI_test_02_build)
 
 if("${USE_SYSTEM_GTEST}")
 	find_package(GTest REQUIRED)
+	find_package(GMock REQUIRED)
 else()
 	include(External_GTest)
 endif()
@@ -64,7 +65,8 @@ include(GoogleTest)
 
 add_executable(PDI_unit_tests
 		PDI_error.cxx
+		PDI_member.cxx
 		PDI_scalar_datatype.cxx)
-target_link_libraries(PDI_unit_tests pdi pthread dl GTest::GTest GTest::Main)
+target_link_libraries(PDI_unit_tests pdi pthread dl GTest::GTest GTest::Main GMock::GMock GMock::Main)
 
 gtest_discover_tests(PDI_unit_tests)
