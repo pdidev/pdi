@@ -52,16 +52,15 @@ set_property(TEST PDI_test_02_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$
 set_tests_properties(PDI_test_02_run PROPERTIES DEPENDS PDI_test_02_build)
 
 ###############
-# UNNIT TESTS #
+# UNIT TESTS  #
 ###############
-
 if("${USE_SYSTEM_GTEST}")
 	find_package(GTest REQUIRED)
 	find_package(GMock REQUIRED)
 else()
 	include(External_GTest)
+	include(GoogleTest)
 endif()
-include(GoogleTest)
 
 add_executable(PDI_unit_tests
 		PDI_error.cxx
