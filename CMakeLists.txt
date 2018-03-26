@@ -46,6 +46,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Find dependencies
 find_package(MPI REQUIRED)
 find_package(Doxygen OPTIONAL_COMPONENTS dot)
+find_package(Astyle)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf REQUIRED)
 else()
@@ -101,8 +102,26 @@ if("${BUILD_TESTING}")
 endif()
 
 # Source formatting
-# TODO: detect astyle install & source files
-add_custom_target(indent COMMAND astyle --suffix=none --options=docs/formating.astyle --recursive src/*.cxx src/*.c include/*.h plugins/*.cxx plugins/*.c example/*.c tests/*.c WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/" VERBATIM)
+if("${ASTYLE_FOUND}")
+	add_custom_target(indent
+		COMMAND Astyle::astyle --suffix=none --options=docs/formating.astyle --recursive src/*.cxx src/*.c include/*.h plugins/*.cxx plugins/*.c example/*.c tests/*.c tests/*.cxx
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
+		VERBATIM)
+	file(WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-indent" "#!/bin/bash
+cd '${CMAKE_CURRENT_SOURCE_DIR}'
+NB_FORMATTED=\"$(
+'${ASTYLE_EXECUTABLE}' --dry-run --suffix=none --options=docs/formating.astyle --recursive 'src/*.cxx' 'src/*.c' 'include/*.h' 'plugins/*.cxx' 'plugins/*.c' 'example/*.c' 'tests/*.c' 'tests/*.cxx' \\
+| grep Formatted \\
+| wc -l \\
+)\"
+test 00 -eq \"0\${NB_FORMATTED}\"
+")
+	file(COPY "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-indent"
+		DESTINATION "${CMAKE_BINARY_DIR}"
+		FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+	
+	add_test(NAME PDI_test_indent COMMAND "${CMAKE_BINARY_DIR}/check-indent")
+endif()
 
 # Documentation
 if ("${DOXYGEN_FOUND}")
