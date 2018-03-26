@@ -63,6 +63,7 @@ else()
 endif()
 
 add_executable(PDI_unit_tests
+		PDI_array_datatype.cxx
 		PDI_error.cxx
 		PDI_member.cxx
 		PDI_record_datatype_empty.cxx
