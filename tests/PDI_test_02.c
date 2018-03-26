@@ -34,9 +34,9 @@
 void test_null()
 {
 	int data = 0;
-	void *data_in = &data;
-	void *data_out = &data;
-	void *data_inout = &data;
+	void* data_in = &data;
+	void* data_out = &data;
+	void* data_inout = &data;
 	PDI_access("test_in", &data_in, PDI_IN);
 	PDI_access("test_out", &data_out, PDI_OUT);
 	PDI_access("test_inout", &data_inout, PDI_INOUT);

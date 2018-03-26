@@ -77,7 +77,7 @@ public:
 #define PLUGIN_API_VERSION ((PLUGIN_API_VERSION_MAJOR<<24) + (PLUGIN_API_VERSION_MINOR<<16) + (PLUGIN_API_VERSION_PATCH<<8))
 
 /** Checks compatibility with a plugin API
- * 
+ *
  * \param expected_version the expected version of the API or 0 for no check
  * \returns the version of the API provided by PDI
  * \throws PDI::Error if the provided version is incompatible with the expected

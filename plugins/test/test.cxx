@@ -90,7 +90,9 @@ struct test_plugin: Plugin {
 		auto ref_it = m_refs.emplace(ref).first;
 		// register to be notified when the reference becomes invalid (on the copy we keep)
 		string sname = name; // store the name in a string to reuse it
-		ref_it->on_nullify([=](Ref r){this->data_end(sname.c_str(), r);});
+		ref_it->on_nullify([=](Ref r) {
+			this->data_end(sname.c_str(), r);
+		});
 		
 		int rank;
 		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};

@@ -46,8 +46,7 @@ class PDI_EXPORT Ref_base
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
 	 */
-	struct PDI_NO_EXPORT Referenced
-	{
+	struct PDI_NO_EXPORT Referenced {
 		/// buffer that contains data
 		void* m_buffer;
 		
@@ -85,11 +84,11 @@ protected:
 		 */
 		Referenced(void* buffer, std::function<void(void*)> deleter, Datatype_uptr type, bool readable, bool writable) noexcept:
 			m_buffer{buffer},
-			m_delete{std::move(deleter)},
-			m_type{std::move(type)},
-			m_owners{0},
-			m_read_locks{readable ? 0 : 1},
-			m_write_locks{writable ? 0 : 1}
+		         m_delete{std::move(deleter)},
+		         m_type{std::move(type)},
+		         m_owners{0},
+		         m_read_locks{readable ? 0 : 1},
+		         m_write_locks{writable ? 0 : 1}
 		{
 			assert(buffer);
 		}
@@ -141,7 +140,10 @@ public:
 	 */
 	const Datatype& type() const noexcept;
 	
-	size_t hash() const noexcept { return std::hash<Referenced*>()(get_content(*this)); }
+	size_t hash() const noexcept
+	{
+		return std::hash<Referenced*>()(get_content(*this));
+	}
 	
 }; // class Data_ref_base
 
@@ -247,17 +249,41 @@ public:
 		reset();
 	}
 	
-	bool operator== (const Ref_base& o) const noexcept { is_null(); return m_content == get_content(o);}
+	bool operator== (const Ref_base& o) const noexcept
+	{
+		is_null();
+		return m_content == get_content(o);
+	}
 	
-	bool operator!= (const Ref_base& o) const noexcept { is_null(); return m_content != get_content(o);}
+	bool operator!= (const Ref_base& o) const noexcept
+	{
+		is_null();
+		return m_content != get_content(o);
+	}
 	
-	bool operator<  (const Ref_base& o) const noexcept { is_null(); return m_content < get_content(o);}
+	bool operator<  (const Ref_base& o) const noexcept
+	{
+		is_null();
+		return m_content < get_content(o);
+	}
 	
-	bool operator>  (const Ref_base& o) const noexcept { is_null(); return m_content > get_content(o);}
+	bool operator>  (const Ref_base& o) const noexcept
+	{
+		is_null();
+		return m_content > get_content(o);
+	}
 	
-	bool operator<= (const Ref_base& o) const noexcept { is_null(); return m_content <= get_content(o);}
+	bool operator<= (const Ref_base& o) const noexcept
+	{
+		is_null();
+		return m_content <= get_content(o);
+	}
 	
-	bool operator>= (const Ref_base& o) const noexcept { is_null(); return m_content >= get_content(o);}
+	bool operator>= (const Ref_base& o) const noexcept
+	{
+		is_null();
+		return m_content >= get_content(o);
+	}
 	
 	/** Offers access to the referenced raw data
 	 *
@@ -410,9 +436,11 @@ private:
 namespace std {
 
 template<bool R, bool W>
-struct hash<PDI::Ref_any<R,W>>
-{
-	size_t operator() (const PDI::Ref_any<R,W>& r) const noexcept { return r.hash(); }
+struct hash<PDI::Ref_any<R,W>> {
+	size_t operator() (const PDI::Ref_any<R,W>& r) const noexcept
+	{
+		return r.hash();
+	}
 };
 
 } // namespace std

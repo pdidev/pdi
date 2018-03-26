@@ -135,13 +135,13 @@ PDI_status_t PDI_EXPORT PDI_finalize(void);
 /// \}
 
 /** Checks PDI API version
- * 
+ *
  * \param[out] provided version if non-null it is filled with the provided API version
  * \param[in] expected if non-zero the expected API version
- * \return an error status if the expected version is incompatible with the 
+ * \return an error status if the expected version is incompatible with the
  * provided one
  */
-PDI_status_t PDI_EXPORT PDI_version(unsigned long *provided, unsigned long expected);
+PDI_status_t PDI_EXPORT PDI_version(unsigned long* provided, unsigned long expected);
 
 /** Triggers a PDI "event"
  * \param[in] event the event name
