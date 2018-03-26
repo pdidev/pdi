@@ -33,7 +33,7 @@ Plugins:
 As of now, the source has to be fetched from git .
 
 ```
-git clone --recursive 
+git clone --recursive https://gitlab.maisondelasimulation.fr/jbigot/pdi.git
 ```
 
 ## Compilation
