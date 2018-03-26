@@ -65,6 +65,7 @@ endif()
 add_executable(PDI_unit_tests
 		PDI_error.cxx
 		PDI_member.cxx
+		PDI_record_datatype_empty.cxx
 		PDI_scalar_datatype.cxx)
 target_link_libraries(PDI_unit_tests pdi pthread dl GTest::GTest GTest::Main GMock::GMock GMock::Main)
 

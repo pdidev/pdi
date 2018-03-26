@@ -172,7 +172,7 @@ TYPED_TEST(ScalarDatatypeTest, check_clone)
 /*
  * Name:                ScalarDatatypeTest/<typename>.check_evaluate
  *
- * Tested functions:    PDI::Scalar_datatype::check_evaluate()
+ * Tested functions:    PDI::Scalar_datatype::evaluate()
  *
  * Description:         Test checks if correct clone is created on evaluation.
  *
