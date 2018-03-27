@@ -22,62 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <datatype_mock.h>
 
-#include <pdi.h>
 #include <pdi/array_datatype.h>
-#include <pdi/context.h>
-#include <pdi/datatype.h>
-#include <pdi/datatype_template.h>
-#include <pdi/pdi_fwd.h>
 
 using namespace PDI;
 using ::testing::Return;
-using ::testing::ByMove;
-
-
-/*
- * Mock class prepared mocking Datatype for ArrayDatatypeTest.
- */
-struct MockDatatype :
-	public Datatype {
-	Datatype_template_uptr clone() const override
-	{
-		return Datatype_template_uptr{clone_proxy()};
-	}
-	
-	Datatype_uptr clone_type() const override
-	{
-		return Datatype_uptr{clone_type_proxy()};
-	}
-	
-	Datatype_uptr densify() const override
-	{
-		return Datatype_uptr{densify_proxy()};
-	}
-	
-	Datatype_uptr evaluate(Context&) const override
-	{
-		return Datatype_uptr{evaluate_proxy()};
-	}
-	
-	MOCK_CONST_METHOD0(dense, bool());
-	MOCK_CONST_METHOD0(datasize, size_t());
-	MOCK_CONST_METHOD0(buffersize, size_t());
-	MOCK_CONST_METHOD0(alignment, size_t());
-	MOCK_CONST_METHOD0(clone_type_proxy, MockDatatype*());
-	MOCK_CONST_METHOD0(clone_proxy, MockDatatype*());
-	MOCK_CONST_METHOD0(densify_proxy, MockDatatype*());
-	MOCK_CONST_METHOD0(evaluate_proxy, MockDatatype*());
-};
 
 /*
  * Struct prepared for ArrayDatatypeTest.
  */
-struct ArrayDatatypeTest :
-	public ::testing::Test {
+struct ArrayDatatypeTest : public ::testing::Test {
 	ArrayDatatypeTest():
 		test_size{10},
 		test_start{0},
@@ -112,7 +69,7 @@ TEST_F(ArrayDatatypeTest, check_fields)
 }
 
 /*
- * Name:                ArrayDatatypeTest.check_array_datatype
+ * Name:                ArrayDatatypeTest.check_less_args
  *
  * Tested functions:    PDI::ArrayDatatypeTest::Array_datatype(Datatype_uptr, size_t)
  *
@@ -120,7 +77,7 @@ TEST_F(ArrayDatatypeTest, check_fields)
  *                      assign values to other fields.
  *
  */
-TEST_F(ArrayDatatypeTest, check)
+TEST_F(ArrayDatatypeTest, check_less_args)
 {
 	size_t size = 10;
 	Array_datatype array{Datatype_uptr{new MockDatatype()}, size};

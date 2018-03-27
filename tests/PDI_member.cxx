@@ -1,52 +1,35 @@
-#include <gmock/gmock.h>
+/*******************************************************************************
+ * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * * Neither the name of CEA nor the names of its contributors may be used to
+ *   endorse or promote products derived from this software without specific
+ *   prior written permission.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ ******************************************************************************/
+
 #include <gtest/gtest.h>
 
-#include <string>
-#include <map>
-#include <stddef.h>
+#include <datatype_mock.h>
 
-
-#include <pdi.h>
-#include <pdi/context.h>
-#include <pdi/datatype.h>
-#include <pdi/pdi_fwd.h>
 #include <pdi/record_datatype.h>
-#include <pdi/scalar_datatype.h>
 
 using namespace PDI;
 using ::testing::Return;
-
-struct MockDatatype : public Datatype {
-	Datatype_template_uptr clone() const override
-	{
-		return Datatype_template_uptr{clone_proxy()};
-	}
-	
-	Datatype_uptr clone_type() const override
-	{
-		return Datatype_uptr{clone_type_proxy()};
-	}
-	
-	Datatype_uptr densify() const override
-	{
-		return Datatype_uptr{densify_proxy()};
-	}
-	
-	Datatype_uptr evaluate(Context&) const override
-	{
-		return Datatype_uptr{evaluate_proxy()};
-	}
-	
-	MOCK_CONST_METHOD0(dense, bool());
-	MOCK_CONST_METHOD0(datasize, size_t());
-	MOCK_CONST_METHOD0(buffersize, size_t());
-	MOCK_CONST_METHOD0(alignment, size_t());
-	
-	MOCK_CONST_METHOD0(clone_type_proxy, MockDatatype*());
-	MOCK_CONST_METHOD0(clone_proxy, MockDatatype*());
-	MOCK_CONST_METHOD0(densify_proxy, MockDatatype*());
-	MOCK_CONST_METHOD0(evaluate_proxy, MockDatatype*());
-};
 
 /*
  * Member is int with displacement = 8 and named "intMember"

@@ -24,12 +24,10 @@
 
 #include <gtest/gtest.h>
 
-#include <type_traits>
-
-#include <pdi.h>
-#include <pdi/context.h>
-#include <pdi/datatype_template.h>
 #include <pdi/scalar_datatype.h>
+
+using namespace PDI;
+using namespace std;
 
 /*
  * Struct prepared for ScalarDatatypeTest.
@@ -39,24 +37,24 @@ struct ScalarDatatypeTest : public ::testing::Test {
 	//set kind and size depending on type
 	ScalarDatatypeTest()
 	{
-		if (std::is_same<T,int>::value || std::is_same<T,long>::value) {
-			test_kind = PDI::Scalar_kind::SIGNED;
-		} else if (std::is_same<T,unsigned int>::value || std::is_same<T,unsigned long>::value) {
-			test_kind = PDI::Scalar_kind::UNSIGNED;
-		} else if (std::is_same<T,float>::value || std::is_same<T,double>::value) {
-			test_kind = PDI::Scalar_kind::FLOAT;
+		if (is_same<T,int>::value || is_same<T,long>::value) {
+			test_kind = Scalar_kind::SIGNED;
+		} else if (is_same<T,unsigned int>::value || is_same<T,unsigned long>::value) {
+			test_kind = Scalar_kind::UNSIGNED;
+		} else if (is_same<T,float>::value || is_same<T,double>::value) {
+			test_kind = Scalar_kind::FLOAT;
 		}
 		test_size = sizeof(T);
-		test_scalar = std::unique_ptr<PDI::Scalar_datatype>(new PDI::Scalar_datatype {test_kind, test_size});
+		test_scalar = unique_ptr<Scalar_datatype>(new Scalar_datatype {test_kind, test_size});
 	}
 	
 	//kind used to create Scalar_datatype
-	PDI::Scalar_kind test_kind ;
+	Scalar_kind test_kind ;
 	
 	//size used to create Scalar_datatype
 	size_t test_size;
 	
-	std::unique_ptr<PDI::Scalar_datatype> test_scalar;
+	unique_ptr<Scalar_datatype> test_scalar;
 };
 
 typedef ::testing::Types<int, long, unsigned int, unsigned long, float, double> TypesForScalar;
@@ -137,10 +135,10 @@ TYPED_TEST(ScalarDatatypeTest, check_dense)
  */
 TYPED_TEST(ScalarDatatypeTest, check_clone_type)
 {
-	PDI::Datatype_uptr cloned_datatype {this->test_scalar->clone_type()};
+	Datatype_uptr cloned_datatype {this->test_scalar->clone_type()};
 	
-	//need to cast to unique_ptr<PDI::Scalar_datatype> to get the kind()
-	std::unique_ptr<PDI::Scalar_datatype> cloned_scalar {static_cast<PDI::Scalar_datatype*>(cloned_datatype.release())};
+	//need to cast to unique_ptr<Scalar_datatype> to get the kind()
+	unique_ptr<Scalar_datatype> cloned_scalar {static_cast<Scalar_datatype*>(cloned_datatype.release())};
 	ASSERT_EQ(this->test_scalar->kind(), cloned_scalar->kind());
 	ASSERT_EQ(this->test_scalar->datasize(), cloned_scalar->datasize());
 	ASSERT_EQ(this->test_scalar->buffersize(), cloned_scalar->buffersize());
@@ -158,10 +156,10 @@ TYPED_TEST(ScalarDatatypeTest, check_clone_type)
  */
 TYPED_TEST(ScalarDatatypeTest, check_clone)
 {
-	PDI::Datatype_template_uptr cloned_datatype {this->test_scalar->clone()};
+	Datatype_template_uptr cloned_datatype {this->test_scalar->clone()};
 	
-	//need to cast to unique_ptr<PDI::Scalar_datatype> to get the kind()
-	std::unique_ptr<PDI::Scalar_datatype> cloned_scalar {static_cast<PDI::Scalar_datatype*>(cloned_datatype.release())};
+	//need to cast to unique_ptr<Scalar_datatype> to get the kind()
+	unique_ptr<Scalar_datatype> cloned_scalar {static_cast<Scalar_datatype*>(cloned_datatype.release())};
 	ASSERT_EQ(this->test_scalar->kind(), cloned_scalar->kind());
 	ASSERT_EQ(this->test_scalar->datasize(), cloned_scalar->datasize());
 	ASSERT_EQ(this->test_scalar->buffersize(), cloned_scalar->buffersize());
@@ -180,11 +178,11 @@ TYPED_TEST(ScalarDatatypeTest, check_clone)
 TYPED_TEST(ScalarDatatypeTest, check_evaluate)
 {
 	//just need something for evalute function (not used)
-	PDI::Context* context;
-	PDI::Datatype_uptr cloned_datatype {this->test_scalar->evaluate(*context)};
+	Context* context;
+	Datatype_uptr cloned_datatype {this->test_scalar->evaluate(*context)};
 	
-	//need to cast to unique_ptr<PDI::Scalar_datatype> to get the kind()
-	std::unique_ptr<PDI::Scalar_datatype> cloned_scalar {static_cast<PDI::Scalar_datatype*>(cloned_datatype.release())};
+	//need to cast to unique_ptr<Scalar_datatype> to get the kind()
+	unique_ptr<Scalar_datatype> cloned_scalar {static_cast<Scalar_datatype*>(cloned_datatype.release())};
 	ASSERT_EQ(this->test_scalar->kind(), cloned_scalar->kind());
 	ASSERT_EQ(this->test_scalar->datasize(), cloned_scalar->datasize());
 	ASSERT_EQ(this->test_scalar->buffersize(), cloned_scalar->buffersize());

@@ -23,21 +23,11 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
-#include <memory>
-#include <type_traits>
-#include <vector>
-
-#include <pdi.h>
-#include <pdi/context.h>
-#include <pdi/datatype_template.h>
-#include <pdi/pdi_fwd.h>
-#include <pdi/scalar_datatype.h>
 #include <pdi/record_datatype.h>
 
 using namespace PDI;
-using ::testing::Return;
+using namespace std;
 
 /*
  * Struct prepared for RecordDatatypeEmptyTest.
@@ -49,14 +39,14 @@ struct RecordDatatypeEmptyTest : public ::testing::Test {
 	{
 		test_size = sizeof(EmptyStructure);
 		
-		std::vector<Record_datatype::Member> test_members;
-		test_record = std::unique_ptr<Record_datatype> {new Record_datatype(std::move(test_members), test_size)};
+		vector<Record_datatype::Member> test_members;
+		test_record = unique_ptr<Record_datatype> {new Record_datatype(move(test_members), test_size)};
 	}
 	
 	//size used to create Record_datatype
 	size_t test_size;
 	
-	std::unique_ptr<Record_datatype> test_record;
+	unique_ptr<Record_datatype> test_record;
 };
 
 /*
@@ -104,7 +94,7 @@ TEST_F(RecordDatatypeEmptyTest, check_clone_type)
 	
 	//need to cast to unique_ptr<Record_datatype> to get the members()
 	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype.release())};
-	std::unique_ptr<Record_datatype> cloned_record {ptr};
+	unique_ptr<Record_datatype> cloned_record {ptr};
 	
 	ASSERT_EQ(true, this->test_record->members().empty());
 	ASSERT_EQ(true, cloned_record->members().empty());
@@ -127,7 +117,7 @@ TEST_F(RecordDatatypeEmptyTest, check_clone)
 	
 	//need to cast to unique_ptr<Record_datatype> to get the members()
 	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype.release())};
-	std::unique_ptr<Record_datatype> cloned_record {ptr};
+	unique_ptr<Record_datatype> cloned_record {ptr};
 	
 	ASSERT_EQ(this->test_record->datasize(), cloned_record->datasize());
 	ASSERT_EQ(this->test_record->buffersize(), cloned_record->buffersize());
@@ -148,7 +138,7 @@ TEST_F(RecordDatatypeEmptyTest, check_densify)
 	
 	//need to cast to unique_ptr<Record_datatype> to get the members()
 	Record_datatype* ptr {static_cast<Record_datatype*>(densified_uptr.release())};
-	std::unique_ptr<Record_datatype> densified_record {ptr};
+	unique_ptr<Record_datatype> densified_record {ptr};
 	
 	ASSERT_EQ(true, this->test_record->members().empty());
 	ASSERT_EQ(true, densified_record->members().empty());
@@ -173,7 +163,7 @@ TEST_F(RecordDatatypeEmptyTest, check_evaluate)
 	
 	//need to cast to unique_ptr<Record_datatype> to get the members()
 	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype.release())};
-	std::unique_ptr<Record_datatype> densified_record {ptr};
+	unique_ptr<Record_datatype> densified_record {ptr};
 	
 	ASSERT_EQ(true, this->test_record->members().empty());
 	ASSERT_EQ(true, densified_record->members().empty());

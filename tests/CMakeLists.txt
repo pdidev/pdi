@@ -68,6 +68,10 @@ add_executable(PDI_unit_tests
 		PDI_member.cxx
 		PDI_record_datatype_empty.cxx
 		PDI_scalar_datatype.cxx)
+
+target_include_directories(PDI_unit_tests PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mocks/>")
+
 target_link_libraries(PDI_unit_tests pdi pthread dl GTest::GTest GTest::Main GMock::GMock GMock::Main)
 
 gtest_discover_tests(PDI_unit_tests)
