@@ -15,7 +15,7 @@ PDI depends on:
   * a C-99 and C++-14 compiler (gcc-5.4 is tested)
   * a POSIX compatible OS (linux with GNU libc-2.27 is tested)
   * a MPI-2 library (openmpi-1.10.2 is tested)
-  * paraconf (distributed with PDI, pass the `-USE_SYSTEM_PARACONF=ON` option to cmake to use an external one)
+  * paraconf (distributed with PDI, pass the `-DUSE_SYSTEM_PARACONF=ON` option to cmake to use an external one)
   * libyaml (distributed with paraconf, pass the `-DUSE_SYSTEM_YAML=OFF` option to cmake to use it)
 
 PDI Fortran support depends on:
