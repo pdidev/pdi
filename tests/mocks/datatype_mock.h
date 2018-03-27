@@ -30,8 +30,7 @@
 #include <pdi/datatype.h>
 #include <pdi/pdi_fwd.h>
 
-struct MockDatatype : public PDI::Datatype
-{
+struct MockDatatype : public PDI::Datatype {
 	PDI::Datatype_template_uptr clone() const override
 	{
 		return PDI::Datatype_template_uptr{clone_proxy()};
@@ -56,7 +55,7 @@ struct MockDatatype : public PDI::Datatype
 	MOCK_CONST_METHOD0(datasize, size_t());
 	MOCK_CONST_METHOD0(buffersize, size_t());
 	MOCK_CONST_METHOD0(alignment, size_t());
-
+	
 	//proxies are needed to work with unique_ptr<>
 	MOCK_CONST_METHOD0(clone_type_proxy, MockDatatype*());
 	MOCK_CONST_METHOD0(clone_proxy, MockDatatype*());

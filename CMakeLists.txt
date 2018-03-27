@@ -104,16 +104,18 @@ endif()
 # Source formatting
 if("${ASTYLE_FOUND}")
 	add_custom_target(indent
-		COMMAND Astyle::astyle --suffix=none --options=docs/formating.astyle --recursive src/*.cxx src/*.c include/*.h plugins/*.cxx plugins/*.c example/*.c tests/*.c tests/*.cxx
+		COMMAND Astyle::astyle --suffix=none --options=docs/formating.astyle --recursive src/*.cxx src/*.c include/*.h plugins/*.cxx plugins/*.c example/*.c tests/*.c tests/*.cxx tests/mocks/*.h
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
 		VERBATIM)
 	file(WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-indent" "#!/bin/bash
 cd '${CMAKE_CURRENT_SOURCE_DIR}'
-NB_FORMATTED=\"$(
-'${ASTYLE_EXECUTABLE}' --dry-run --suffix=none --options=docs/formating.astyle --recursive 'src/*.cxx' 'src/*.c' 'include/*.h' 'plugins/*.cxx' 'plugins/*.c' 'example/*.c' 'tests/*.c' 'tests/*.cxx' \\
+FORMATTED=\"\$(
+'${ASTYLE_EXECUTABLE}' --dry-run --suffix=none --options=docs/formating.astyle --recursive 'src/*.cxx' 'src/*.c' 'include/*.h' 'plugins/*.cxx' 'plugins/*.c' 'example/*.c' 'tests/*.c' 'tests/*.cxx' 'tests/mocks/*.h' \\
 | grep Formatted \\
-| wc -l \\
 )\"
+NB_FORMATTED=\"\$(echo -n \"\${FORMATTED}\" | wc -l)\"
+echo \"\${NB_FORMATTED} file(s) need formatting:\"
+echo \"\${FORMATTED}\" | sed 's/Formatted/ *** Needs formatting:/'
 test 00 -eq \"0\${NB_FORMATTED}\"
 ")
 	file(COPY "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-indent"
