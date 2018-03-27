@@ -38,8 +38,7 @@ git clone --recursive https://gitlab.maisondelasimulation.fr/jbigot/pdi.git
 
 ## Compilation
 
-if the sources are in the folder pdi:
-
+if the sources are stored in the folder `pdi`:
 ```
 cd pdi
 git submodule update --init --recursive 
