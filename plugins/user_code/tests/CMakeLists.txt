@@ -30,40 +30,23 @@
 ###############
 #   TEST 01   #
 ###############
-add_executable(user_code_01_c EXCLUDE_FROM_ALL user_code_test_01.c)
+add_executable(user_code_01_c user_code_test_01.c)
 target_link_libraries(user_code_01_c pdi mpi)
-add_test(NAME user_code_01_c_build
-		COMMAND "${CMAKE_COMMAND}" --build . --target user_code_01_c
-		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-
 add_test(NAME user_code_01_c_run COMMAND user_code_01_c "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_01.yml")
 set_property(TEST user_code_01_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
-set_tests_properties(user_code_01_c_run PROPERTIES DEPENDS user_code_01_c_build)
-
  
 ###############
 #   TEST 02   #
 ###############
-add_executable(user_code_02_c EXCLUDE_FROM_ALL user_code_test_02.c)
+add_executable(user_code_02_c user_code_test_02.c)
 target_link_libraries(user_code_02_c pdi mpi)
-add_test(NAME user_code_02_c_build
-		COMMAND "${CMAKE_COMMAND}" --build . --target user_code_02_c
-		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-
 add_test(NAME user_code_02_c_run COMMAND user_code_02_c "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_02.yml")
 set_property(TEST user_code_02_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
-set_tests_properties(user_code_02_c_run PROPERTIES DEPENDS user_code_02_c_build)
-
 
 ###############
 #   TEST 03   #
 ###############
-add_executable(user_code_03_c EXCLUDE_FROM_ALL user_code_test_03.c)
+add_executable(user_code_03_c user_code_test_03.c)
 target_link_libraries(user_code_03_c pdi mpi)
-add_test(NAME user_code_03_c_build
-		COMMAND "${CMAKE_COMMAND}" --build . --target user_code_03_c
-		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-
 add_test(NAME user_code_03_c_run COMMAND user_code_03_c "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_03.yml")
 set_property(TEST user_code_03_c_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
-set_tests_properties(user_code_03_c_run PROPERTIES DEPENDS user_code_03_c_build)

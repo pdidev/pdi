@@ -32,24 +32,18 @@ cmake_minimum_required(VERSION 3.10)
 ###############
 #   TEST 01   #
 ###############
-add_executable(PDI_test_01 EXCLUDE_FROM_ALL PDI_test_01.c)
+add_executable(PDI_test_01 PDI_test_01.c)
 target_link_libraries(PDI_test_01 pdi)
-add_test(NAME PDI_test_01_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_test_01 --config "$<CONFIG>" WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-
 add_test(NAME PDI_test_01_run COMMAND PDI_test_01 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_01.yml")
-set_tests_properties(PDI_test_01_run PROPERTIES DEPENDS PDI_test_01_build)
 
 ###############
 #   TEST 02   #
 ###############
-add_executable(PDI_test_02 EXCLUDE_FROM_ALL PDI_test_02.c)
+add_executable(PDI_test_02 PDI_test_02.c)
 target_link_libraries(PDI_test_02 pdi)
 set_target_properties(PDI_test_02 PROPERTIES ENABLE_EXPORTS ON)
-add_test(NAME PDI_test_02_build COMMAND "${CMAKE_COMMAND}" --build . --target PDI_test_02 --config "$<CONFIG>" WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-
 add_test(NAME PDI_test_02_run COMMAND PDI_test_02 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_02.yml")
 set_property(TEST PDI_test_02_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/user_code/")
-set_tests_properties(PDI_test_02_run PROPERTIES DEPENDS PDI_test_02_build)
 
 ###############
 # UNIT TESTS  #
