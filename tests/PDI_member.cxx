@@ -57,7 +57,7 @@ struct ScalarMemberTest : public ::testing::Test {
 /*
  * Name:                ScalarMemberTest.check_fields
  *
- * Tested functions:    Record_datatype::Member::Member(size_t displacement, Datatype_uptr type, const string& name)
+ * Tested functions:    PDI::Record_datatype::Member::Member(size_t displacement, Datatype_uptr type, const string& name)
  *
  * Description:         Test checks values of fields.
  *
@@ -73,7 +73,7 @@ TEST_F(ScalarMemberTest, check_fields)
 /*
  * Name:                ScalarMemberTest.check_clone_constructor
  *
- * Tested functions:    Record_datatype::Member::Member(const Member&)
+ * Tested functions:    PDI::Record_datatype::Member::Member(const Member&)
  *
  * Description:         Test checks clone constructor.
  *

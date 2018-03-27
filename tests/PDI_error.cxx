@@ -31,9 +31,9 @@ using namespace PDI;
 /*
  * Name:                ErrorTest.call_constructor_no_vargs
  *
- * Tested functions:    Error::Error()
- *                      Error::status()
- *                      Error::what()
+ * Tested functions:    PDI::Error::Error()
+ *                      PDI::Error::status()
+ *                      PDI::Error::what()
  *
  * Description:         Test calls Error constructor without vargs
  *                      and checks what() and status() values.
@@ -49,9 +49,9 @@ TEST(ErrorTest, call_constructor_no_vargs)
 /*
  * Name:                ErrorTest.call_constructor_vargs
  *
- * Tested functions:    Error::Error()
- *                      Error::status()
- *                      Error::what()
+ * Tested functions:    PDI::Error::Error()
+ *                      PDI::Error::status()
+ *                      PDI::Error::what()
  *
  * Description:         Test calls Error constructor with 2 vargs
  *                      and checks what() and status() values.
@@ -65,7 +65,7 @@ TEST(ErrorTest, call_constructor_vargs)
 }
 
 /*
- * Function created to support the va_list argument for Error::Error()
+ * Function created to support the va_list argument for PDI::Error::Error()
  */
 Error va_function(const char* msg, ...)
 {
@@ -79,9 +79,9 @@ Error va_function(const char* msg, ...)
 /*
  * Name:                ErrorTest.call_constructor_va_list
  *
- * Tested functions:    Error::Error()
- *                      Error::status()
- *                      Error::what()
+ * Tested functions:    PDI::Error::Error()
+ *                      PDI::Error::status()
+ *                      PDI::Error::what()
  *
  * Description:         Test calls Error constructor with va_list
  *                      (containing 2 strings) and checks what() and
@@ -98,9 +98,9 @@ TEST(ErrorTest, call_constructor_va_list)
 /*
  * Name:                ErrorTest.call_constructor_empty_va_list
  *
- * Tested functions:    Error::Error()
- *                      Error::status()
- *                      Error::what()
+ * Tested functions:    PDI::Error::Error()
+ *                      PDI::Error::status()
+ *                      PDI::Error::what()
  *
  * Description:         Test calls Error constructor with empty va_list
  *                      and checks what() and status() values.

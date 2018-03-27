@@ -52,9 +52,9 @@ struct RecordDatatypeEmptyTest : public ::testing::Test {
 /*
  * Name:                RecordDatatypeEmptyTest.check_fields
  *
- * Tested functions:    Record_datatype::buffersize()
- *                      Record_datatype::datasize()
- *                      Record_datatype::alignment()
+ * Tested functions:    PDI::Record_datatype::buffersize()
+ *                      PDI::Record_datatype::datasize()
+ *                      PDI::Record_datatype::alignment()
  *
  * Description:         Test checks if correct buffersize is returned.
  *
@@ -70,7 +70,7 @@ TEST_F(RecordDatatypeEmptyTest, check_fields)
 /*
  * Name:                RecordDatatypeEmptyTest.check_if_empty_members
  *
- * Tested functions:    Record_datatype::members()
+ * Tested functions:    PDI::Record_datatype::members()
  *
  * Description:         Test checks if members() return empty vector.
  *
@@ -83,7 +83,7 @@ TEST_F(RecordDatatypeEmptyTest, check_if_empty_members)
 /*
  * Name:                RecordDatatypeEmptyTest.check_clone_type
  *
- * Tested functions:    Record_datatype::clone_type()
+ * Tested functions:    PDI::Record_datatype::clone_type()
  *
  * Description:         Test checks if correct clone is created.
  *
@@ -106,7 +106,7 @@ TEST_F(RecordDatatypeEmptyTest, check_clone_type)
 /*
  * Name:                RecordDatatypeEmptyTest.check_clone
  *
- * Tested functions:    Record_datatype::clone()
+ * Tested functions:    PDI::Record_datatype::clone()
  *
  * Description:         Test checks if correct clone is created.
  *
@@ -127,7 +127,7 @@ TEST_F(RecordDatatypeEmptyTest, check_clone)
 /*
  * Name:                RecordDatatypeEmptyTest.check_densify
  *
- * Tested functions:    Record_datatype::densify()
+ * Tested functions:    PDI::Record_datatype::densify()
  *
  * Description:         Test checks if densified empty record is also empty.
  *
@@ -150,7 +150,7 @@ TEST_F(RecordDatatypeEmptyTest, check_densify)
 /*
  * Name:                RecordDatatypeEmptyTest.check_evaluate
  *
- * Tested functions:    Record_datatype::evaluate()
+ * Tested functions:    PDI::Record_datatype::evaluate()
  *
  * Description:         Test checks if correct clone is created on evaluation.
  *
