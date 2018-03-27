@@ -42,7 +42,8 @@ if the sources are in the folder pdi:
 
 ```
 cd pdi
-cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX=/usr/ .. 
+git submodule update --init --recursive 
+cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX=/usr/ .
 make
 make doc
 make install
