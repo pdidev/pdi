@@ -35,7 +35,7 @@ class PDI_EXPORT Datatype:
 	public Datatype_template
 {
 public:
-	~Datatype();
+	~Datatype() override;
 	
 	/** Creates a new datatype as an exact copy of this one
 	 *
