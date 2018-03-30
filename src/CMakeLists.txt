@@ -104,7 +104,7 @@ target_include_directories(pdi PUBLIC
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>" 
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>"
 )
-target_link_libraries(pdi paraconf mpi mpi_cxx)
+target_link_libraries(pdi PUBLIC paraconf mpi mpi_cxx ${CMAKE_DL_LIBS})
 install(TARGETS pdi EXPORT PDI_export
 		LIBRARY DESTINATION lib INCLUDES DESTINATION include
 		ARCHIVE DESTINATION lib INCLUDES DESTINATION include
