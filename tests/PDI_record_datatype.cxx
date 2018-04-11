@@ -41,7 +41,9 @@ struct RecordDatatypeTest : public ::testing::Test {
 typedef ::testing::Types<DenseScalarsTest,
         SparseScalarsTest,
         DenseArrayScalarsTest,
-        SparseArrayScalarsTest> TypesForRecord;
+        SparseArrayScalarsTest,
+        DenseRecordsInRecordTest,
+        SparseRecordsInRecordTest> TypesForRecord;
 TYPED_TEST_CASE(RecordDatatypeTest, TypesForRecord);
 
 /*

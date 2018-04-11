@@ -41,7 +41,7 @@ struct Record_interface {
 	virtual const size_t alignment() = 0;
 	
 	//tested record
-	virtual const PDI::Record_datatype* test_record() = 0;
+	virtual PDI::Record_datatype* test_record() = 0;
 };
 
 /*
@@ -96,7 +96,7 @@ struct SparseScalarsTest : Record_interface {
 		            sizeof(float),
 		            sizeof(double)});
 	}
-	const PDI::Record_datatype* test_record() override
+	PDI::Record_datatype* test_record() override
 	{
 		return &m_test_record;
 	}
@@ -207,7 +207,7 @@ struct DenseScalarsTest : Record_interface {
 		            sizeof(unsigned long)});
 	}
 	
-	const PDI::Record_datatype* test_record() override
+	PDI::Record_datatype* test_record() override
 	{
 		return &m_test_record;
 	}
@@ -273,7 +273,7 @@ struct DenseArrayScalarsTest : Record_interface {
 		            sizeof(unsigned long)});
 	}
 	
-	const PDI::Record_datatype* test_record() override
+	PDI::Record_datatype* test_record() override
 	{
 		return &m_test_record;
 	}
@@ -363,7 +363,7 @@ struct SparseArrayScalarsTest : Record_interface {
 		            sizeof(long)});
 	}
 	
-	const PDI::Record_datatype* test_record() override
+	PDI::Record_datatype* test_record() override
 	{
 		return &m_test_record;
 	}
@@ -414,6 +414,122 @@ struct SparseArrayScalarsTest : Record_interface {
 			}
 		},
 		sizeof(Sparse_array_structure)
+	};
+};
+
+struct DenseRecordsInRecordTest : Record_interface {
+	struct Dense_record {
+		DenseScalarsTest::Dense_structure dense_scalar_record;
+		DenseArrayScalarsTest::Dense_array_structure dense_array_record;
+	};
+	
+	const bool dense() override
+	{
+		return true;
+	}
+	
+	const size_t datasize() override
+	{
+		return scalar_structure_test->datasize() + array_structure_test->datasize();
+	}
+	
+	const size_t buffersize() override
+	{
+		return sizeof(Dense_record);
+	}
+	
+	const size_t alignment() override
+	{
+		return std::max({scalar_structure_test->alignment(),
+		            array_structure_test->alignment()});
+	}
+	
+	PDI::Record_datatype* test_record() override
+	{
+		return &m_test_record;
+	}
+	
+	std::unique_ptr<DenseScalarsTest> scalar_structure_test {new DenseScalarsTest()};
+	std::unique_ptr<DenseArrayScalarsTest> array_structure_test {new DenseArrayScalarsTest()};
+	
+	PDI::Record_datatype m_test_record {
+		std::vector<PDI::Record_datatype::Member> {
+			{
+				offsetof(Dense_record, dense_scalar_record),
+				PDI::Datatype_uptr
+				{
+					scalar_structure_test->test_record()->clone_type()
+				},
+				"dense_scalar_record"
+			},
+			{
+				offsetof(Dense_record, dense_array_record),
+				PDI::Datatype_uptr
+				{
+					array_structure_test->test_record()->clone_type()
+				},
+				"dense_array_record"
+			}
+		},
+		sizeof(Dense_record)
+	};
+};
+
+struct SparseRecordsInRecordTest : Record_interface {
+	struct Sparse_record {
+		SparseScalarsTest::Sparse_structure sparse_scalar_record;
+		SparseArrayScalarsTest::Sparse_array_structure sparse_array_record;
+	};
+	
+	const bool dense() override
+	{
+		return false;
+	}
+	
+	const size_t datasize() override
+	{
+		return scalar_structure_test->datasize() + array_structure_test->datasize();
+	}
+	
+	const size_t buffersize() override
+	{
+		return sizeof(Sparse_record);
+	}
+	
+	const size_t alignment() override
+	{
+		return std::max({scalar_structure_test->alignment(),
+		            array_structure_test->alignment()});
+	}
+	
+	PDI::Record_datatype* test_record() override
+	{
+		return &m_test_record;
+	}
+	
+	std::unique_ptr<SparseScalarsTest> scalar_structure_test {new SparseScalarsTest()};
+	std::unique_ptr<SparseArrayScalarsTest> array_structure_test {new SparseArrayScalarsTest()};
+	
+	PDI::Record_datatype m_test_record {
+		std::vector<PDI::Record_datatype::Member> {
+			{
+				offsetof(Sparse_record, sparse_scalar_record),
+				PDI::Datatype_uptr
+				{
+					scalar_structure_test->test_record()->clone_type()
+				},
+				"sparse_scalar_record"
+			},
+			{
+				offsetof(Sparse_record, sparse_array_record),
+				PDI::Datatype_uptr
+				{
+					array_structure_test->test_record()->clone_type()
+				},
+				"sparse_array_record"
+			}
+		},
+		sizeof(Sparse_record)
 	};
 };
 
