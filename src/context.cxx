@@ -180,9 +180,9 @@ void Context::event(const char* name)
 			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const exception& e) {
-			cerr << "Error while triggering named event `" << name << "' for plugin `" << elmnt.first << "': " << e.what() << endl;
+			cerr << " *** [PDI] Error: While triggering named event `" << name << "' for plugin `" << elmnt.first << "': " << e.what() << endl;
 		} catch (...) {
-			cerr << "Error while triggering named event `" << name << "' for plugin `" << elmnt.first << "'"<<endl;
+			cerr << " *** [PDI] Error: While triggering named event `" << name << "' for plugin `" << elmnt.first << "'"<<endl;
 		}
 	}
 }

@@ -87,16 +87,17 @@ Data_descriptor::Data_descriptor(Data_descriptor&&) = default;
 
 Data_descriptor::~Data_descriptor()
 {
-	if (metadata()) {
-		// release metadata we kept
-		if (!m_refs.empty()) m_refs.pop();
-	}
+	// release metadata copies we kept
+	if ( metadata() && m_refs.size() == 1) m_refs.pop();
+	
 	/* on error, we might be destroyed while not empty. In that case, don't keep
 	 * ownership
 	 */
-	while (!m_refs.empty()) {
-		reclaim();
+	if (!m_refs.empty()) {
+		std::cerr<<" *** [PDI] Warning: Remaining "<<m_refs.size()<<" reference(s) to `"<<m_name<<"' in PDI after program end"<<std::endl;
 	}
+	if ( metadata()  ) while (!m_refs.empty()) m_refs.pop();
+	if ( !metadata() ) while (!m_refs.empty()) reclaim();
 }
 
 void Data_descriptor::creation_template(PC_tree_t config)
@@ -178,9 +179,9 @@ void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const std::exception& e) {
-			cerr << "Error while triggering data event `" << m_name << "' for plugin `" << elmnt.first << "': " << e.what() << endl;
+			cerr << " *** [PDI] Error: While triggering data event `" << m_name << "' for plugin `" << elmnt.first << "': " << e.what() << endl;
 		} catch (...) {
-			cerr << "Error while triggering data event `" << m_name << "' for plugin `" << elmnt.first <<"'"<< endl;
+			cerr << " *** [PDI] Error: While triggering data event `" << m_name << "' for plugin `" << elmnt.first <<"'"<< endl;
 		}
 	}
 	

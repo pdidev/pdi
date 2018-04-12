@@ -29,7 +29,6 @@
 #include "config.h"
 
 #include <cstddef>
-#include <cstring>
 #include <exception>
 #include <iostream>
 #include <string>
@@ -125,7 +124,7 @@ PDI_inout_t operator&(PDI_inout_t a, PDI_inout_t b)
 void assert_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		fprintf(stderr, "FATAL ERROR, in PDI: %s\n", message);
+		cerr<<" *** [PDI] Error: "<<message<<endl;
 		abort();
 	}
 }
@@ -135,7 +134,7 @@ void assert_status(PDI_status_t status, const char* message, void*)
 void warn_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		fprintf(stderr, "Warning, in PDI: %s\n", message);
+		cerr<<" *** [PDI] Error: "<<message<<endl;
 	}
 }
 
@@ -343,6 +342,7 @@ try
 {
 	Paraconf_wrapper fw;
 	if (PDI_status_t status = PDI_share(name, data, access)) return status;
+	
 	if (! g_transaction.empty()) {   // defer the reclaim
 		g_transaction_data.emplace(name);
 	} else { // do the reclaim now

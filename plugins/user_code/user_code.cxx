@@ -180,9 +180,9 @@ public:
 		try {
 			m_fct();
 		} catch ( const std::exception& e ) {
-			cerr << "while calling user code, caught exception: "<<e.what()<<endl;
+			cerr << " *** [PDI/User-code] Error: while calling user code, caught exception: "<<e.what()<<endl;
 		} catch (...) {
-			cerr << "while calling user code, caught exception"<<endl;
+			cerr << " *** [PDI/User-code] Error: while calling user code, caught exception"<<endl;
 		}
 	}
 	
