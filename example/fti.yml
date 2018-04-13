@@ -1,7 +1,7 @@
 # a simple scalar, the duration in seconds
 duration: 65
 # an example with a list, global [width,height] (excluding ghost)
-datasize: [3600, 3600]
+datasize: [60, 60]
 # an example with nested associative arrays
 parallelism:
   width:  1
