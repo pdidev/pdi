@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include <dlfcn.h>
 
@@ -46,6 +47,7 @@ using std::move;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
+using std::vector;
 
 namespace {
 
@@ -175,14 +177,27 @@ Data_descriptor& Context::operator[](const string& name)
 void Context::event(const char* name)
 {
 	for (auto& elmnt : plugins) {
-		try { // ignore errors here, try our best to notify everyone
+		vector<Error> errors;
+		try {
 			elmnt.second->event(name);
-			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
-		} catch (const exception& e) {
-			cerr << " *** [PDI] Error: While triggering named event `" << name << "' for plugin `" << elmnt.first << "': " << e.what() << endl;
+		} catch (const Error& e) {
+			errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+		} catch (const std::exception& e) {
+			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
 		} catch (...) {
-			cerr << " *** [PDI] Error: While triggering named event `" << name << "' for plugin `" << elmnt.first << "'"<<endl;
+			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
+		}
+		if ( 1 == errors.size() ) throw Error{errors.front().status(), "While triggering named event `%s' %s", name, errors.front().what()};
+		if ( !errors.empty() ) {
+			string errmsg = "multiple errors while triggering named event `";
+			errmsg += name;
+			errmsg += "':";
+			for ( auto&& err: errors ) {
+				errmsg += " ";
+				errmsg += err.what();
+			}
+			throw Error{PDI_ERR_PLUGIN, "%s", errmsg.c_str()};
 		}
 	}
 }

@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "pdi/context.h"
 #include "pdi/datatype.h"
@@ -41,10 +42,12 @@ namespace PDI {
 
 using std::cerr;
 using std::endl;
+using std::exception;
 using std::nothrow;
 using std::stack;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
 struct Data_descriptor::Ref_holder {
 
@@ -174,14 +177,25 @@ void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 	}
 	
 	for (auto& elmnt : m_context.plugins) {
-		try { // ignore errors here, try our best to notify everyone
+		vector<Error> errors;
+		try {
 			elmnt.second->data(m_name.c_str(), ref());
-			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
+		} catch (const Error& e) {
+			errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
 		} catch (const std::exception& e) {
-			cerr << " *** [PDI] Error: While triggering data event `" << m_name << "' for plugin `" << elmnt.first << "': " << e.what() << endl;
+			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
 		} catch (...) {
-			cerr << " *** [PDI] Error: While triggering data event `" << m_name << "' for plugin `" << elmnt.first <<"'"<< endl;
+			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
+		}
+		if ( 1 == errors.size() ) throw Error{errors.front().status(), "While triggering data event `%s' %s", m_name.c_str(), errors.front().what()};
+		if ( !errors.empty() ) {
+			string errmsg = "multiple errors while triggering data event `"+m_name+"':";
+			for ( auto&& err: errors ) {
+				errmsg += " ";
+				errmsg += err.what();
+			}
+			throw Error{PDI_ERR_PLUGIN, "%s", errmsg.c_str()};
 		}
 	}
 	
