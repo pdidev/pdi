@@ -39,7 +39,7 @@ if(NOT "${HDF5_IS_PARALLEL}")
 endif()
 
 # The plugin
-add_library(pdi_decl_hdf5_plugin MODULE decl_hdf5.cxx ast.cxx)
+add_library(pdi_decl_hdf5_plugin MODULE decl_hdf5.cxx)
 target_link_libraries(pdi_decl_hdf5_plugin PUBLIC pdi ${HDF5_C_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
 if("${HDF5_IS_PARALLEL}")
 	target_link_libraries(pdi_decl_hdf5_plugin PUBLIC mpi)

@@ -25,18 +25,16 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <functional>
 #include <iostream>
-#include <memory>
+#include <sstream>
 #include <string>
 #include <tuple>
-#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <unistd.h>
 
 #include <hdf5.h>
-
 #include <paraconf.h>
 
 #include <pdi.h>
@@ -49,12 +47,14 @@
 #include <pdi/scalar_datatype.h>
 #include <pdi/expression.h>
 
-#include "ast.h"
-#include "raii.h"
+#include "decl_hdf5_cfg.h"
+#include "file_cfg.h"
+#include "raii_hid.h"
+#include "selection_cfg.h"
+#include "transfer_cfg.h"
 
 namespace {
 
-using namespace decl_hdf5;
 using PDI::Array_datatype;
 using PDI::Context;
 using PDI::Datatype;
@@ -70,9 +70,12 @@ using std::cerr;
 using std::endl;
 using std::make_tuple;
 using std::move;
+using std::string;
+using std::stringstream;
 using std::tie;
 using std::transform;
 using std::tuple;
+using std::vector;
 
 tuple<Raii_hid, Raii_hid> space(const Datatype& type)
 {
@@ -127,8 +130,8 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type)
 		throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};
 	}
 	
-	Raii_hid h5_space = raii_call(H5Screate_simple(rank, &h5_size[0], NULL), H5Sclose);
-	    
+	Raii_hid h5_space = make_raii_hid(H5Screate_simple(rank, &h5_size[0], NULL), H5Sclose);
+	
 	if (rank) {
 		if ( 0>H5Sselect_hyperslab(h5_space, H5S_SELECT_SET, &h5_start[0], NULL, &h5_subsize[0], NULL) ) handle_hdf5_err();
 	}
@@ -144,7 +147,9 @@ void select(Context& ctx, hid_t h5_space, const Selection_cfg& select, hid_t dfl
 	vector<hsize_t> h5_subsize(rank);
 	vector<hsize_t> h5_start(rank);
 	if ( 0>H5Sget_select_bounds(h5_space, &h5_start[0], &h5_subsize[0]) ) handle_hdf5_err();
-	transform( h5_start.begin(), h5_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end){return end-start+1;});
+	transform( h5_start.begin(), h5_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end) {
+		return end-start+1;
+	});
 	
 	if ( !select.size().empty() ) {
 		if (select.size().size() != rank ) {
@@ -161,7 +166,9 @@ void select(Context& ctx, hid_t h5_space, const Selection_cfg& select, hid_t dfl
 		
 		vector<hsize_t> dflt_start(rank);
 		if ( 0>H5Sget_select_bounds(dflt_space, &dflt_start[0], &h5_subsize[0] ) ) handle_hdf5_err();
-		transform( dflt_start.begin(), dflt_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end){return end-start+1;});
+		transform( dflt_start.begin(), dflt_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end) {
+			return end-start+1;
+		});
 	}
 	
 	if ( !select.start().empty() ) {
@@ -200,8 +207,23 @@ void do_read(Context& ctx, const Transfer_cfg& xfer, hid_t h5_file, hid_t read_l
 	tie(h5_file_space, h5_file_type) = space(file_datatype);
 	select(ctx, h5_file_space, xfer.dataset_selection(), h5_mem_space);
 	
-	Raii_hid h5_set = raii_call(H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose);
+	Raii_hid h5_set = make_raii_hid(H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose);
 	if ( 0>H5Dread(h5_set, h5_mem_type, h5_mem_space, h5_file_space, read_lst, Ref_w{ref}) ) handle_hdf5_err();
+}
+
+tuple<vector<hsize_t>, vector<hsize_t>, vector<hsize_t>> get_selection(hid_t selection)
+{
+	int rank = H5Sget_simple_extent_ndims(selection);
+	if ( 0>rank ) handle_hdf5_err();
+	vector<hsize_t> size(rank);
+	if ( 0>H5Sget_simple_extent_dims(selection, &size[0], NULL) ) handle_hdf5_err();
+	vector<hsize_t> start(rank);
+	vector<hsize_t> subsize(rank);
+	if ( 0>H5Sget_select_bounds(selection, &start[0], &subsize[0] ) ) handle_hdf5_err();
+	transform( start.begin(), start.end(), subsize.begin(), subsize.begin(), [](hsize_t start, hsize_t end) {
+		return end-start+1;
+	});
+	return make_tuple(move(size), move(start), move(subsize));
 }
 
 void do_write(Context& ctx, const Transfer_cfg& xfer, hid_t h5_file, hid_t write_lst, Ref ref)
@@ -211,6 +233,9 @@ void do_write(Context& ctx, const Transfer_cfg& xfer, hid_t h5_file, hid_t write
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
 	select(ctx, h5_mem_space, xfer.memory_selection());
+	
+	hssize_t n_data_pts = H5Sget_select_npoints(h5_mem_space);
+	if ( 0>n_data_pts ) handle_hdf5_err();
 	
 	auto&& dataset_type_iter = xfer.parent().datasets().find(dataset_name);
 	Datatype_uptr explicit_dataset_type;
@@ -227,66 +252,37 @@ void do_write(Context& ctx, const Transfer_cfg& xfer, hid_t h5_file, hid_t write
 	        
 	Raii_hid h5_file_type, h5_file_space;
 	tie(h5_file_space, h5_file_type) = space(file_datatype);
-	Raii_hid h5_file_selection = raii_call(H5Scopy(h5_file_space), H5Sclose);
+	Raii_hid h5_file_selection = make_raii_hid(H5Scopy(h5_file_space), H5Sclose);
 	select(ctx, h5_file_selection, xfer.dataset_selection(), h5_mem_space);
 	
-	Raii_hid set_lst = raii_call(H5Pcreate(H5P_LINK_CREATE), H5Pclose);
-	if ( 0>H5Pset_create_intermediate_group(set_lst, 1) ) handle_hdf5_err();
+	hssize_t n_file_pts = H5Sget_select_npoints(h5_file_selection);
+	if ( 0>n_file_pts ) handle_hdf5_err();
 	
-	//  {
-	// //   int size; MPI_Comm_size(MPI_COMM_WORLD, &size);
-	// //   int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	// //   for ( int ii=0; ii<size; ++ii ) {
-	// //   if ( rank == ii ) {
-	//
-	//  cerr<<" ***    NAME: "<<dataset_name<<endl;
-	//
-	//  int pr_rank = H5Sget_simple_extent_ndims(h5_mem_space);
-	//  vector<hsize_t> pr_size(pr_rank);
-	//  H5Sget_simple_extent_dims(h5_mem_space, &pr_size[0], NULL);
-	//  vector<hsize_t> pr_subsize(pr_rank);
-	//  vector<hsize_t> pr_start(pr_rank);
-	//  H5Sget_regular_hyperslab( h5_mem_space, &pr_start[0], NULL, &pr_subsize[0], NULL);
-	//  cerr << " ***     MEM: "<< pr_rank <<":[";
-	//  for ( int ii=0; ii< pr_rank; ++ii) cerr << " ("<< pr_subsize[ii]<<"/"<< pr_size[ii]<<"=>"<< pr_start[ii]<<")";
-	//  cerr<<" ] @"<<Ref_r{ref}.get()<<endl;
-	//
-	//  int max_pr_idx = 0;
-	//  for ( int ii=0; ii< pr_rank; ++ii ) {
-	//          if (ii) max_pr_idx *= pr_size[ii-1];
-	//          max_pr_idx += pr_size[ii];
-	//  }
-	//  cerr << " *** CONTENT:";
-	//  for ( int pr_idx =0; pr_idx < max_pr_idx; ++pr_idx ) {
-	//          if ( pr_idx && (pr_idx)% pr_size[0] == 0 ) cerr<<"             ";
-	//          cerr << " "<<reinterpret_cast<const double*>(Ref_r{ref}.get())[pr_idx];
-	//          if ( (pr_idx +1)% pr_size[0] == 0 ) cerr<<endl;
-	//  }
-	//
-	//  pr_rank = H5Sget_simple_extent_ndims(h5_file_space);
-	//  H5Sget_simple_extent_dims(h5_file_space, &pr_size[0], NULL);
-	//  H5Sget_regular_hyperslab( h5_file_space, &pr_start[0], NULL, &pr_subsize[0], NULL);
-	//  cerr << " ***    FILE: "<< pr_rank <<":[";
-	//  for ( int ii=0; ii< pr_rank; ++ii) cerr << " ("<< pr_subsize[ii]<<"/"<< pr_size[ii]<<"=>"<< pr_start[ii]<<")";
-	//  cerr<<" ]"<<endl;
-	//
-	//  pr_rank = H5Sget_simple_extent_ndims(h5_file_selection);
-	//  H5Sget_simple_extent_dims(h5_file_selection, &pr_size[0], NULL);
-	//  H5Sget_regular_hyperslab( h5_file_selection, &pr_start[0], NULL, &pr_subsize[0], NULL);
-	//  cerr << " *** FSELECT: "<< pr_rank <<":[";
-	//  for ( int ii=0; ii< pr_rank; ++ii) cerr << " ("<< pr_subsize[ii]<<"/"<< pr_size[ii]<<"=>"<< pr_start[ii]<<")";
-	//  cerr<<" ]"<<endl;
-	// //   }
-	// //   MPI_Barrier(MPI_COMM_WORLD);
-	// //   }
-	//  }
+	if ( n_data_pts != n_file_pts ) {
+		vector<hsize_t> pr_size;
+		vector<hsize_t> pr_subsize;
+		vector<hsize_t> pr_start;
+		
+		tie(pr_size, pr_start, pr_subsize) = get_selection(h5_mem_space);
+		stringstream mem_desc;
+		for ( int ii=0; ii< pr_size.size(); ++ii) mem_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
+		
+		tie(pr_size, pr_start, pr_subsize) = get_selection(h5_file_selection);
+		stringstream file_desc;
+		for ( int ii=0; ii< pr_size.size(); ++ii) file_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
+		
+		throw Error{PDI_ERR_CONFIG, "Incompatible selections while writing `%s': [%s ] -> [%s ]", dataset_name.c_str(), mem_desc.str().c_str(), file_desc.str().c_str()};
+	}
+	
+	Raii_hid set_lst = make_raii_hid(H5Pcreate(H5P_LINK_CREATE), H5Pclose);
+	if ( 0>H5Pset_create_intermediate_group(set_lst, 1) ) handle_hdf5_err();
 	
 	hid_t h5_set_raw = H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT);
 	if ( 0 > h5_set_raw ) {
 		h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, H5P_DEFAULT, H5P_DEFAULT);
 	}
-	Raii_hid h5_set = raii_call(h5_set_raw, H5Dclose);
-	    
+	Raii_hid h5_set = make_raii_hid(h5_set_raw, H5Dclose);
+	
 	if ( 0>H5Dwrite(h5_set, h5_mem_type, h5_mem_space, h5_file_selection, write_lst, Ref_r{ref}) ) handle_hdf5_err();
 }
 
@@ -294,12 +290,12 @@ void read(Context& ctx, const Transfer_cfg& xfer, Ref ref)
 {
 	try {
 		if ( !xfer.when().to_long(ctx) ) return;
-	} catch (...) {
-		return;    // an invalid expression is handled as false
+	} catch (Error&) {
+		return; // an invalid expression is handled as false
 	}
 	
-	Raii_hid file_lst = raii_call(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
-	Raii_hid read_lst = raii_call(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
+	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
+	Raii_hid read_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
 	if ( xfer.communicator() != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
@@ -307,7 +303,7 @@ void read(Context& ctx, const Transfer_cfg& xfer, Ref ref)
 	}
 #endif
 	
-	Raii_hid h5_file = raii_call(H5Fopen(xfer.parent().file().to_string(ctx).c_str(), H5F_ACC_RDONLY, file_lst), H5Fclose);
+	Raii_hid h5_file = make_raii_hid(H5Fopen(xfer.parent().file().to_string(ctx).c_str(), H5F_ACC_RDONLY, file_lst), H5Fclose);
 	do_read(ctx, xfer, h5_file, read_lst, ref);
 }
 
@@ -315,12 +311,12 @@ void write(Context& ctx, const Transfer_cfg& xfer, Ref ref)
 {
 	try {
 		if ( !xfer.when().to_long(ctx) ) return;
-	} catch (...) {
-		return;    // an invalid expression is handled as false
+	} catch (Error&) {
+		return; // an invalid expression is handled as false
 	}
 	
-	Raii_hid file_lst = raii_call(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
-	Raii_hid write_lst = raii_call(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
+	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
+	Raii_hid write_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
 	if ( xfer.communicator() != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
@@ -333,15 +329,15 @@ void write(Context& ctx, const Transfer_cfg& xfer, Ref ref)
 	if (0>h5_file_raw) {
 		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDWR, file_lst);
 	}
-	Raii_hid h5_file = raii_call(h5_file_raw, H5Fclose);
-	    
+	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose);
+	
 	do_write(ctx, xfer, h5_file, write_lst, ref);
 }
 
 void execute(Context& ctx, const File_cfg& file_cfg)
 {
-	Raii_hid file_lst = raii_call(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
-	Raii_hid xfer_lst = raii_call(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
+	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
+	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
 	if ( file_cfg.communicator() != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, file_cfg.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
@@ -354,14 +350,14 @@ void execute(Context& ctx, const File_cfg& file_cfg)
 	if (0>h5_file_raw) {
 		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDWR, file_lst);
 	}
-	Raii_hid h5_file = raii_call(h5_file_raw, H5Fclose);
-	    
+	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose);
+	
 	for (auto&& read: file_cfg.read() ) {
 		const Transfer_cfg& xfer = read.second;
 		try {
 			if ( !xfer.when().to_long(ctx) ) continue;
-		} catch (...) {
-			continue;    // an invalid expression is handled as false
+		} catch (Error&) {
+			continue; // an invalid expression is handled as false
 		}
 		do_read(ctx, xfer, h5_file, xfer_lst, ctx[read.first].ref());
 		Ref ref = ctx[read.first].ref();
@@ -376,8 +372,8 @@ void execute(Context& ctx, const File_cfg& file_cfg)
 		const Transfer_cfg& xfer = write.second;
 		try {
 			if ( !xfer.when().to_long(ctx) ) continue;
-		} catch (...) {
-			continue;    // an invalid expression is handled as false
+		} catch (Error&) {
+			continue; // an invalid expression is handled as false
 		}
 		Ref ref = ctx[write.first].ref();
 		if ( Ref_r{ref} ) {
@@ -396,13 +392,13 @@ struct decl_hdf5_plugin: Plugin {
 		Plugin {ctx},
 		m_config{config}
 	{
-		Raii_set_hdf5_handler _;
+		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");
 	}
 	
 	void data(const char* name, Ref ref) override
 	{
-		Raii_set_hdf5_handler _;
+		Hdf5_error_handler _;
 		if (Ref_r{ref}) {
 			auto range = m_config.write().equal_range(name);
 			for (auto&& write_cfg = range.first; write_cfg != range.second; ++write_cfg) {
@@ -419,7 +415,7 @@ struct decl_hdf5_plugin: Plugin {
 	
 	void event(const char* event) override
 	{
-		Raii_set_hdf5_handler _;
+		Hdf5_error_handler _;
 		auto range = m_config.events().equal_range(event);
 		for (auto&& file = range.first; file != range.second; ++file) {
 			execute(context(), file->second);

@@ -1,5 +1,8 @@
 # The Decl'HDF5 plugin
 
+**WARNING** This documentation is a work in progress and does not reflect the
+full Decl'HDF5 potential.
+
 The Decl'HDF5 plugin enables one to read and write data from HDF5 files in a
 declarative way.
 Decl'HDF5 does not support the full HDF5 feature set but offers a simple
