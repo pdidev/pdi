@@ -11,7 +11,7 @@
 
 #define VAL2D(arr, xx, yy) (arr[(xx)+width*(yy)])
 
-void init(double* dat, int width, int height, int px, int py)
+void init(double* dat, int width, int height, int py, int px)
 {
 	(void) py; // prevent unused warning
 	for (int yy=0; yy<height; ++yy) {
@@ -64,29 +64,28 @@ void exchange(MPI_Comm cart_com, double* cur, int width, int height)
 		initialized = 1;
 	}
 	
-	
-	/* send to the right */
-	MPI_Cart_shift(cart_com, 0, 1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur, width-2, 1), 1, column, rank_dest,   100, /* send column before ghost */
-	    &VAL2D(cur, 0,       1), 1, column, rank_source, 100, /* receive 1st column (ghost) */
-	    cart_com, &status);
-	    
-	/* send to the left */
-	MPI_Cart_shift(cart_com, 0, -1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur, 1,       1), 1, column, rank_dest,   100, /* send column after ghost */
-	    &VAL2D(cur, width-1, 1), 1, column, rank_source, 100, /* receive last column (ghost) */
-	    cart_com, &status);
-	    
 	/* send down */
-	MPI_Cart_shift(cart_com, 1, 1, &rank_source, &rank_dest);
+	MPI_Cart_shift(cart_com, 0, 1, &rank_source, &rank_dest);
 	MPI_Sendrecv(&VAL2D(cur, 1, height-2), 1, row, rank_dest,   100, /* send row before ghost */
 	    &VAL2D(cur, 1, 0       ), 1, row, rank_source, 100, /* receive 1st row (ghost) */
 	    cart_com, &status);
 	    
 	/* send up */
-	MPI_Cart_shift(cart_com, 1, -1, &rank_source, &rank_dest);
+	MPI_Cart_shift(cart_com, 0, -1, &rank_source, &rank_dest);
 	MPI_Sendrecv(&VAL2D(cur, 1, 1       ), 1, row, rank_dest,   100, /* send column after ghost */
 	    &VAL2D(cur, 1, height-1), 1, row, rank_source, 100, /* receive last column (ghost) */
+	    cart_com, &status);
+	    
+	/* send to the right */
+	MPI_Cart_shift(cart_com, 1, 1, &rank_source, &rank_dest);
+	MPI_Sendrecv(&VAL2D(cur, width-2, 1), 1, column, rank_dest,   100, /* send column before ghost */
+	    &VAL2D(cur, 0,       1), 1, column, rank_source, 100, /* receive 1st column (ghost) */
+	    cart_com, &status);
+	    
+	/* send to the left */
+	MPI_Cart_shift(cart_com, 1, -1, &rank_source, &rank_dest);
+	MPI_Sendrecv(&VAL2D(cur, 1,       1), 1, column, rank_dest,   100, /* send column after ghost */
+	    &VAL2D(cur, width-1, 1), 1, column, rank_source, 100, /* receive last column (ghost) */
 	    cart_com, &status);
 }
 
@@ -103,9 +102,9 @@ int main( int argc, char* argv[] )
 	
 	long longval;
 	PC_int(PC_get(conf, ".datasize[0]"), &longval);
-	int width = longval;
-	PC_int(PC_get(conf, ".datasize[1]"), &longval);
 	int height = longval;
+	PC_int(PC_get(conf, ".datasize[1]"), &longval);
+	int width = longval;
 	PC_int(PC_get(conf, ".parallelism.height"), &longval);
 	int pheight = longval;
 	PC_int(PC_get(conf, ".parallelism.width"), &longval);
@@ -116,15 +115,15 @@ int main( int argc, char* argv[] )
 	PDI_init(PC_get(conf, ".pdi"), &main_comm);
 	
 	// get local & add ghosts to sizes
-	assert(width %pwidth ==0); width  = width /pwidth  + 2;
 	assert(height%pheight==0); height = height/pheight + 2;
+	assert(width %pwidth ==0); width  = width /pwidth  + 2;
 	
 	int size; MPI_Comm_size(main_comm, &size);
 	int rank; MPI_Comm_rank(main_comm, &rank);
 	
 	assert(pwidth*pheight == size);
 	
-	int cart_dims[2] = { pwidth, pheight };
+	int cart_dims[2] = { pheight, pwidth };
 	int cart_period[2] = { 0, 0 };
 	MPI_Comm cart_com; MPI_Cart_create(main_comm, 2, cart_dims, cart_period, 1, &cart_com);
 	int car_coord[2]; MPI_Cart_coords(cart_com, rank, 2, car_coord);
@@ -162,7 +161,7 @@ int main( int argc, char* argv[] )
 			int rem_iter = .8 * (duration-global_time) * (ii+1) / global_time + 1;
 			if ( rem_iter < 1 ) rem_iter = 1;
 			next_reduce = ii + rem_iter;
-			printf("iter=%d; time=%f; next_reduce=%d\n", ii, global_time, next_reduce);
+			if ( 0==rank) printf("iter=%d; time=%f; next_reduce=%d\n", ii, global_time, next_reduce);
 		}
 	}
 	PDI_event("finalization");

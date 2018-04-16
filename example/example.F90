@@ -30,8 +30,8 @@ program PDI_example_f90
   
   call PC_parse_path(strbuf, conf)
 
-  call PC_int(PC_get(conf,".datasize[0]"), width)
-  call PC_int(PC_get(conf,".datasize[1]"), height)
+  call PC_int(PC_get(conf,".datasize[0]"), height)
+  call PC_int(PC_get(conf,".datasize[1]"), width)
   call PC_int(PC_get(conf,".parallelism.height"), pheight)
   call PC_int(PC_get(conf,".parallelism.width"), pwidth)
   call PC_double(PC_get(conf,".duration"), duration)
@@ -59,7 +59,7 @@ program PDI_example_f90
     stop
   endif
 
-  cart_dims = (/ pwidth, pheight /)
+  cart_dims = (/ pheight, pwidth /)
   cart_period = (/ .FALSE., .FALSE. /)
   call MPI_Cart_create(main_comm, 2, cart_dims, cart_period, .TRUE., &
       cart_comm, status)
@@ -80,10 +80,8 @@ program PDI_example_f90
   allocate( cur(width, height) )
   allocate( next(width, height) )
 
+  call init(cur, width, height, cart_coord(2), cart_coord(1))
   call PDI_expose("main_field", cur, PDI_IN, status)
-  if ( status>0 ) then
-    call init(cur, width, height, cart_coord(1), cart_coord(2))
-  endif
 
   call PDI_event("main_loop")
   start = MPI_Wtime()
@@ -108,7 +106,9 @@ program PDI_example_f90
       rem_iter = .8 * (duration-global_time) * (ii+1) / global_time + 1
       if ( rem_iter < 1 ) rem_iter = 1
       next_reduce = ii + rem_iter
-      print '("iter=",I7,"; time=",F7.3,"; next_reduce=",I7)', ii, global_time, next_reduce
+      if ( 0 == rank ) then
+        print '("iter=",I7,"; time=",F7.3,"; next_reduce=",I7)', ii, global_time, next_reduce
+      endif
     endif
     ii = ii+1
   enddo
@@ -199,7 +199,7 @@ contains
     yub = ubound(cur, 2)
 
     ! send to the right
-    call MPI_Cart_shift(cart_com, 0, 1, rank_source, rank_dest, mpi_err)
+    call MPI_Cart_shift(cart_com, 1, 1, rank_source, rank_dest, mpi_err)
     call MPI_Sendrecv( &
         ! send column before ghost
         cur(xub-1, ylb+1), 1, column, rank_dest,   100, &
@@ -208,7 +208,7 @@ contains
         cart_com, status, mpi_err)
 
     ! send to the left
-    call MPI_Cart_shift(cart_com, 0, -1, rank_source, rank_dest, mpi_err)
+    call MPI_Cart_shift(cart_com, 1, -1, rank_source, rank_dest, mpi_err)
     call MPI_Sendrecv( &
         ! send column after ghost
         cur(xlb+1, ylb+1), 1, column, rank_dest,   100, &
@@ -217,7 +217,7 @@ contains
         cart_com, status, mpi_err)
 
     ! send down
-    call MPI_Cart_shift(cart_com, 1, 1, rank_source, rank_dest, mpi_err)
+    call MPI_Cart_shift(cart_com, 0, 1, rank_source, rank_dest, mpi_err)
     call MPI_Sendrecv( &
         ! send row before ghost
         cur(xlb+1, yub-1), 1, row, rank_dest,   100, &
@@ -226,7 +226,7 @@ contains
         cart_com, status, mpi_err)
 
     ! send up
-    call MPI_Cart_shift(cart_com, 1, -1, rank_source, rank_dest, mpi_err)
+    call MPI_Cart_shift(cart_com, 0, -1, rank_source, rank_dest, mpi_err)
     call MPI_Sendrecv( &
         ! send column after ghost
         cur(xlb+1, ylb+1), 1, row, rank_dest,   100, &

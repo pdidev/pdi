@@ -1,23 +1,25 @@
 # a simple scalar, the duration in seconds
 duration: 1
-# an example with a list, global [width,height] (excluding ghost)
-datasize: [60, 60]
+# an example with a list, global [height, width] (excluding ghost)
+datasize: [60, 12]
 # an example with nested associative arrays
 parallelism:
-  width:  1
   height: 3
+  width:  1
+
+# PDI configuration
 pdi:
-  metadata: # metadata, i.e. small values that can be referenced using $syntax
-    width: int # per proc. width including ghost
-    height: int # per proc. height including ghost
-    pwidth: int  # nb proc. in the x dim
-    pheight: int # nb proc. in the y dim
-    iter: int # curent iteration id
-    coord: { size: 2, type: int } # coordinate of the process as [x, y]
-  data: # values that can not be referenced using $syntax
+  metadata: # small values for which PDI keeps a copy
+    width:   int                    # per proc. width including ghost
+    height:  int                    # per proc. height including ghost
+    pwidth:  int                    # nb proc. in the x dim
+    pheight: int                    # nb proc. in the y dim
+    iter:    int                    # curent iteration id
+    coord:   { size: 2, type: int } # coordinate of the process as [y, x]
+  data:     # values that are not copied by PDI
     main_field:
-      type:     double
-      sizes:    [$width, $height]     # if only one element, you can use size as a acalar
+      type:  double
+      sizes: [$height, $width]
   plugins:
     decl_sion:
       variables:

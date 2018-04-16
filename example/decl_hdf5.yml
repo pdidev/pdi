@@ -1,11 +1,11 @@
 # a simple scalar, the duration in seconds
 duration: 1
-# an example with a list, global [width,height] (excluding ghost)
-datasize: [60, 60]
+# an example with a list, global [height, width] (excluding ghost)
+datasize: [60, 12]
 # an example with nested associative arrays
 parallelism:
-  width:  1
   height: 3
+  width:  1
 
 # PDI configuration
 pdi:
@@ -15,27 +15,27 @@ pdi:
     pwidth:  int                    # nb proc. in the x dim
     pheight: int                    # nb proc. in the y dim
     iter:    int                    # curent iteration id
-    coord:   { size: 2, type: int } # coordinate of the process as [x, y]
+    coord:   { size: 2, type: int } # coordinate of the process as [y, x]
   data:     # values that are not copied by PDI
     main_field:
       type:  double
-      sizes: [$width, $height]
+      sizes: [$height, $width]
   plugins:
     decl_hdf5: # a list of file to write to (can be a single element)
-      file: data${coord[0]}x${coord[1]}.h5 # the file in which to write the data (required)
+      file: data.h5 # the file in which to write the data (required)
       #on_event: newiter                    # the event that triggers these actions (default: trigger on data expose)
-      communicator: self                   # the MPI communicator used for HDF5 parallel synchronized write (default: self, sequential write)
+      communicator: world                   # the MPI communicator used for HDF5 parallel synchronized write (default: self, sequential write)
       datasets:                            # a list of datasets inside the file created on first access
-        data/array: # a dataset name, datasets referenced but not defined are created just big enough to fit the data
+        data: # a dataset name, datasets referenced but not defined are created just big enough to fit the data
           type: double                    # type of the data in the dataset
-          sizes: [10, $width-2, $height-2] # size of the dataset
+          sizes: [10, '$pheight*($height-2)', '$pwidth*($width-2)'] # size of the dataset
       write:                               # a list or map of data to write (default: empty)
         main_field: # name of the data, it contains either a list or a single write to execute
-          - dataset: data/array # a dataset name (default: the data name)
-            when: "$iter>0&$iter<11"    # a condition when to actually trigger the actions (default: that of the file)
+          - dataset: data # a dataset name (default: the data name)
+            when: "$iter<10"    # a condition when to actually trigger the actions (default: that of the file)
             memory_selection:
-              size:  [$width-2, $height-2] # number of elements to transfer in each dimension (default: size of the full data)
+              size:  [$height-2, $width-2] # number of elements to transfer in each dimension (default: size of the full data)
               start: [1, 1]                # coordinate of the start point in memory relative to the shared data (default: 0 in each dimensions)
             dataset_selection:
-              size:  [1, $width-2, $height-2] # number of elements to transfer in each dimension, must amount to the same number as the memory selection (default: size of memory selection)
-              start: [$iter-1, 0, 0]         # coordinate of the start point in the file relative to the dataset (default: 0 in each dimensions)
+              size:  [1, $height-2, $width-2] # number of elements to transfer in each dimension, must amount to the same number as the memory selection (default: size of memory selection)
+              start: [$iter, '($height-2)*$coord[0]', "($width-2)*$coord[1]"]         # coordinate of the start point in the file relative to the dataset (default: 0 in each dimensions)
