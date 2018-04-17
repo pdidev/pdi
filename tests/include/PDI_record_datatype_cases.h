@@ -32,7 +32,10 @@
 
 #include <vector>
 
-//all records must inherit this interface for proper testing in PDI_record_datatype.cxx
+/*
+ * All records must inherit from this interface
+ * for proper testing in tests/PDI_record_datatype.cxx
+ */
 struct Record_interface {
 	//expected values from record functions
 	virtual const bool dense() = 0;
@@ -46,7 +49,8 @@ struct Record_interface {
 
 /*
  * Struct prepared for SparseScalarsTest.
- * Order of the fields is important to test padding sizes.
+ * Order of the fields in Sparse_structure is important
+ * to test padding sizes.
  */
 struct SparseScalarsTest : Record_interface {
 	//frame of the structure
@@ -101,7 +105,7 @@ struct SparseScalarsTest : Record_interface {
 		return &m_test_record;
 	}
 	
-	//creating record with scalar members
+	//record with scalar members (which are sparse)
 	PDI::Record_datatype m_test_record {
 		std::vector<PDI::Record_datatype::Member> {
 			{
@@ -171,7 +175,8 @@ struct SparseScalarsTest : Record_interface {
 
 /*
  * Struct prepared for DenseScalarsTest.
- * Order of the fields is important to test padding sizes.
+ * Order of the fields in Dense_structure is important
+ * to test padding sizes.
  */
 struct DenseScalarsTest : Record_interface {
 	struct Dense_structure {
@@ -212,6 +217,7 @@ struct DenseScalarsTest : Record_interface {
 		return &m_test_record;
 	}
 	
+	//record with scalar members (which are dense)
 	PDI::Record_datatype m_test_record {
 		std::vector<PDI::Record_datatype::Member> {
 			{
@@ -239,6 +245,11 @@ struct DenseScalarsTest : Record_interface {
 	};
 };
 
+/*
+ * Struct prepared for DenseArrayScalarsTest.
+ * Order of the fields in Dense_array_structure is important
+ * to test padding sizes.
+ */
 struct DenseArrayScalarsTest : Record_interface {
 	struct Dense_array_structure {
 		int i[3];
@@ -278,7 +289,7 @@ struct DenseArrayScalarsTest : Record_interface {
 		return &m_test_record;
 	}
 	
-	//creating record with array containing scalars
+	//record with arrays (which are dense) containing scalars
 	PDI::Record_datatype m_test_record {
 		std::vector<PDI::Record_datatype::Member> {
 			{
@@ -335,9 +346,14 @@ struct DenseArrayScalarsTest : Record_interface {
 	};
 };
 
+/*
+ * Struct prepared for SparseScalarsTest.
+ * Order of the fields in Sparse_structure is important
+ * to test padding sizes.
+ */
 struct SparseArrayScalarsTest : Record_interface {
 	struct Sparse_array_structure {
-		int i[100];  //buffer: 10 x 10; data: 4 x 4; start: (4, 4)
+		int i[100]; //buffer: 10 x 10; data: 4 x 4; start: (4, 4)
 		long l[60]; //buffer: 3 x 20; data: 1 x 20; start (0, 1)
 	};
 	
@@ -368,6 +384,7 @@ struct SparseArrayScalarsTest : Record_interface {
 		return &m_test_record;
 	}
 	
+	//record with arrays (which are sparse) containing scalars
 	PDI::Record_datatype m_test_record {
 		std::vector<PDI::Record_datatype::Member> {
 			{
@@ -417,6 +434,11 @@ struct SparseArrayScalarsTest : Record_interface {
 	};
 };
 
+/*
+ * Struct prepared for DenseRecordsInRecordTest.
+ * Order of the fields in Dense_record is important
+ * to test padding sizes.
+ */
 struct DenseRecordsInRecordTest : Record_interface {
 	struct Dense_record {
 		DenseScalarsTest::Dense_structure dense_scalar_record;
@@ -452,6 +474,10 @@ struct DenseRecordsInRecordTest : Record_interface {
 	std::unique_ptr<DenseScalarsTest> scalar_structure_test {new DenseScalarsTest()};
 	std::unique_ptr<DenseArrayScalarsTest> array_structure_test {new DenseArrayScalarsTest()};
 	
+	/*
+	 * record with records (which are dense) which contain dense
+	 * structures (scalars and arrays from previous tests)
+	 */
 	PDI::Record_datatype m_test_record {
 		std::vector<PDI::Record_datatype::Member> {
 			{
@@ -475,6 +501,11 @@ struct DenseRecordsInRecordTest : Record_interface {
 	};
 };
 
+/*
+ * Struct prepared for SparseRecordsInRecordTest.
+ * Order of the fields in Sparse_record is important
+ * to test padding sizes.
+ */
 struct SparseRecordsInRecordTest : Record_interface {
 	struct Sparse_record {
 		SparseScalarsTest::Sparse_structure sparse_scalar_record;
@@ -510,6 +541,10 @@ struct SparseRecordsInRecordTest : Record_interface {
 	std::unique_ptr<SparseScalarsTest> scalar_structure_test {new SparseScalarsTest()};
 	std::unique_ptr<SparseArrayScalarsTest> array_structure_test {new SparseArrayScalarsTest()};
 	
+	/*
+	 * record with records (which are dense) which contain sparse
+	 * structures (scalars and arrays from previous tests)
+	 */
 	PDI::Record_datatype m_test_record {
 		std::vector<PDI::Record_datatype::Member> {
 			{
