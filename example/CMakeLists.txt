@@ -68,11 +68,11 @@ endif()
 if("${ENABLE_FTI}")
 add_test(NAME PDI_example_fti_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "mpirun" -n 6 "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
 set_property(TEST PDI_example_fti_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/fti/")
-set_property(TEST PDI_example_fti_C PROPERTY TIMEOUT 120)
+set_property(TEST PDI_example_fti_C PROPERTY TIMEOUT 180)
 
 add_test(NAME PDI_example_fti_F COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "mpirun" -n 6 "$<TARGET_FILE:PDI_example_F>" "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
 set_property(TEST PDI_example_fti_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/fti/")
-set_property(TEST PDI_example_fti_F PROPERTY TIMEOUT 120)
+set_property(TEST PDI_example_fti_F PROPERTY TIMEOUT 180)
 endif()
 
 add_test(NAME PDI_example_test_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test.yml")

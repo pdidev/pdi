@@ -1,25 +1,20 @@
-# a simple scalar, the duration in seconds
-duration: 1
-# an example with a list, global [height, width] (excluding ghost)
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
 datasize: [60, 12]
-# an example with nested associative arrays
-parallelism:
-  height: 3
-  width:  1
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
 
-# PDI configuration
+# only the following config is passed to PDI
 pdi:
-  metadata: # small values for which PDI keeps a copy
-    width:   int                    # per proc. width including ghost
-    height:  int                    # per proc. height including ghost
-    pwidth:  int                    # nb proc. in the x dim
-    pheight: int                    # nb proc. in the y dim
-    iter:    int                    # curent iteration id
-    coord:   { size: 2, type: int } # coordinate of the process as [y, x]
-  data:     # values that are not copied by PDI
-    main_field:
-      type:  double
-      sizes: [$height, $width]
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: int } # number of processes in each dimension
+    pcoord: { size: 2, type: int } # coordinate of the process
+  data: # type of values for which PDI does not keep a copy
+    main_field: { sizes: [ '$dsize[0]', '$dsize[1]' ], type: double }
+  
   plugins:
     decl_sion:
       variables:

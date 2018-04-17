@@ -1,41 +1,35 @@
-# a simple scalar, the duration in seconds
-duration: 1
-# an example with a list, global [height, width] (excluding ghost)
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
 datasize: [60, 12]
-# an example with nested associative arrays
-parallelism:
-  height: 3
-  width:  1
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
 
-# PDI configuration
+# only the following config is passed to PDI
 pdi:
-  metadata: # small values for which PDI keeps a copy
-    width:   int                    # per proc. width including ghost
-    height:  int                    # per proc. height including ghost
-    pwidth:  int                    # nb proc. in the x dim
-    pheight: int                    # nb proc. in the y dim
-    iter:    int                    # curent iteration id
-    coord:   { size: 2, type: int } # coordinate of the process as [y, x]
-  data:     # values that are not copied by PDI
-    main_field:
-      type:  double
-      sizes: [$height, $width]
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: int } # number of processes in each dimension
+    pcoord: { size: 2, type: int } # coordinate of the process
+  data: # type of values for which PDI does not keep a copy
+    main_field: { sizes: [ '$dsize[0]', '$dsize[1]' ], type: double }
+  
   plugins:
-    decl_hdf5: # a list of file to write to (can be a single element)
-      file: data.h5 # the file in which to write the data (required)
-      #on_event: newiter                    # the event that triggers these actions (default: trigger on data expose)
-      communicator: world                   # the MPI communicator used for HDF5 parallel synchronized write (default: self, sequential write)
-      datasets:                            # a list of datasets inside the file created on first access
-        data: # a dataset name, datasets referenced but not defined are created just big enough to fit the data
-          type: double                    # type of the data in the dataset
-          sizes: [10, '$pheight*($height-2)', '$pwidth*($width-2)'] # size of the dataset
-      write:                               # a list or map of data to write (default: empty)
-        main_field: # name of the data, it contains either a list or a single write to execute
-          - dataset: data # a dataset name (default: the data name)
-            when: "$iter<10"    # a condition when to actually trigger the actions (default: that of the file)
-            memory_selection:
-              size:  [$height-2, $width-2] # number of elements to transfer in each dimension (default: size of the full data)
-              start: [1, 1]                # coordinate of the start point in memory relative to the shared data (default: 0 in each dimensions)
-            dataset_selection:
-              size:  [1, $height-2, $width-2] # number of elements to transfer in each dimension, must amount to the same number as the memory selection (default: size of memory selection)
-              start: [$iter, '($height-2)*$coord[0]', "($width-2)*$coord[1]"]         # coordinate of the start point in the file relative to the dataset (default: 0 in each dimensions)
+    decl_hdf5:
+      file: data.h5
+      communicator: world # the MPI communicator used for HDF5 parallel synchronized write
+      datasets: # type of the datasets to create in file
+        data:
+          type: double
+          sizes: [10, '$psize[0]*($dsize[0]-2)', '$psize[1]*($dsize[1]-2)']
+      write:
+        main_field: # the name of the data to write
+          dataset: data
+          when: '$iter<10'   # do only write the first 10 iterations (0...9)
+          memory_selection:  # exclude ghosts from the data in memory
+            size:  ['$dsize[0]-2', '$dsize[1]-2']
+            start: [1, 1]
+          dataset_selection: # only write into a single slice in time
+            size:  [1, '$dsize[0]-2', '$dsize[1]-2']
+            start: [$iter, '($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']

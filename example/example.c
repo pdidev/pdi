@@ -9,47 +9,44 @@
 
 #include "pdi.h"
 
-#define VAL2D(arr, xx, yy) (arr[(xx)+width*(yy)])
-
-void init(double* dat, int width, int height, int py, int px)
+void init(int dsize[2], int pcoord[2], double dat[dsize[0]][dsize[1]])
 {
-	(void) py; // prevent unused warning
-	for (int yy=0; yy<height; ++yy) {
-		for (int xx=0; xx<width; ++xx) {
-			VAL2D(dat,xx,yy) = 0;
+	for (int yy=0; yy<dsize[0]; ++yy) {
+		for (int xx=0; xx<dsize[1]; ++xx) {
+			dat[yy][xx] = 0;
 		}
 	}
-	if ( px == 0 ) {
-		for (int yy=0; yy<height; ++yy) {
-			VAL2D(dat,0,yy) = 1000000;
+	if ( pcoord[1] == 0 ) {
+		for (int yy=0; yy<dsize[0]; ++yy) {
+			dat[yy][0] = 1000000;
 		}
 	}
 }
 
-void iter(double* cur, double* next, int width, int height)
+void iter(int dsize[2], double cur[dsize[0]][dsize[1]], double next[dsize[0]][dsize[1]])
 {
 	int xx, yy;
-	for (xx=0; xx<width; ++xx) {
-		VAL2D(next,xx,0) = VAL2D(cur,xx,0);
+	for (xx=0; xx<dsize[1]; ++xx) {
+		next[0][xx] = cur[0][xx];
 	}
-	for (yy=1; yy<height-1; ++yy) {
-		VAL2D(next,0,yy) = VAL2D(cur,0,yy);
-		for (xx=1; xx<width-1; ++xx) {
-			VAL2D(next,xx,yy) =
-			    (VAL2D(cur,xx,yy)   *.5)
-			    + (VAL2D(cur,xx-1,yy) *.125)
-			    + (VAL2D(cur,xx+1,yy) *.125)
-			    + (VAL2D(cur,xx,yy-1) *.125)
-			    + (VAL2D(cur,xx,yy+1) *.125);
+	for (yy=1; yy<dsize[0]-1; ++yy) {
+		next[yy][0] = cur[yy][0];
+		for (xx=1; xx<dsize[1]-1; ++xx) {
+			next[yy][xx] =
+			    (cur[yy][xx]   *.5)
+			    + (cur[yy][xx-1] *.125)
+			    + (cur[yy][xx+1] *.125)
+			    + (cur[yy-1][xx] *.125)
+			    + (cur[yy+1][xx] *.125);
 		}
-		VAL2D(next,width-1,yy) = VAL2D(cur,width-1,yy);
+		next[yy][dsize[1]-1] = cur[yy][dsize[1]-1];
 	}
-	for (xx=0; xx<width; ++xx) {
-		VAL2D(next,xx,height-1) = VAL2D(cur,xx,height-1);
+	for (xx=0; xx<dsize[1]; ++xx) {
+		next[dsize[0]-1][xx] = cur[dsize[0]-1][xx];
 	}
 }
 
-void exchange(MPI_Comm cart_com, double* cur, int width, int height)
+void exchange(MPI_Comm cart_com, int dsize[2], double cur[dsize[0]][dsize[1]])
 {
 	MPI_Status status;
 	int rank_source, rank_dest;
@@ -57,35 +54,35 @@ void exchange(MPI_Comm cart_com, double* cur, int width, int height)
 	static int initialized = 0;
 	
 	if ( !initialized ) {
-		MPI_Type_vector(height-2, 1, width, MPI_DOUBLE, &column);
+		MPI_Type_vector(dsize[0]-2, 1, dsize[1], MPI_DOUBLE, &column);
 		MPI_Type_commit(&column);
-		MPI_Type_contiguous(width-2, MPI_DOUBLE, &row);
+		MPI_Type_contiguous(dsize[1]-2, MPI_DOUBLE, &row);
 		MPI_Type_commit(&row);
 		initialized = 1;
 	}
 	
 	/* send down */
 	MPI_Cart_shift(cart_com, 0, 1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur, 1, height-2), 1, row, rank_dest,   100, /* send row before ghost */
-	    &VAL2D(cur, 1, 0       ), 1, row, rank_source, 100, /* receive 1st row (ghost) */
+	MPI_Sendrecv(&cur[dsize[0]-2][1], 1, row, rank_dest,   100, /* send row before ghost */
+	    &cur[0][1], 1, row, rank_source, 100, /* receive 1st row (ghost) */
 	    cart_com, &status);
 	    
 	/* send up */
 	MPI_Cart_shift(cart_com, 0, -1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur, 1, 1       ), 1, row, rank_dest,   100, /* send column after ghost */
-	    &VAL2D(cur, 1, height-1), 1, row, rank_source, 100, /* receive last column (ghost) */
+	MPI_Sendrecv(&cur[1][1], 1, row, rank_dest,   100, /* send column after ghost */
+	    &cur[dsize[0]-1][1], 1, row, rank_source, 100, /* receive last column (ghost) */
 	    cart_com, &status);
 	    
 	/* send to the right */
 	MPI_Cart_shift(cart_com, 1, 1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur, width-2, 1), 1, column, rank_dest,   100, /* send column before ghost */
-	    &VAL2D(cur, 0,       1), 1, column, rank_source, 100, /* receive 1st column (ghost) */
+	MPI_Sendrecv(&cur[1][dsize[1]-2], 1, column, rank_dest,   100, /* send column before ghost */
+	    &cur[1][0], 1, column, rank_source, 100, /* receive 1st column (ghost) */
 	    cart_com, &status);
 	    
 	/* send to the left */
 	MPI_Cart_shift(cart_com, 1, -1, &rank_source, &rank_dest);
-	MPI_Sendrecv(&VAL2D(cur, 1,       1), 1, column, rank_dest,   100, /* send column after ghost */
-	    &VAL2D(cur, width-1, 1), 1, column, rank_source, 100, /* receive last column (ghost) */
+	MPI_Sendrecv(&cur[1][1], 1, column, rank_dest,   100, /* send column after ghost */
+	    &cur[1][dsize[1]-1], 1, column, rank_source, 100, /* receive last column (ghost) */
 	    cart_com, &status);
 }
 
@@ -100,44 +97,42 @@ int main( int argc, char* argv[] )
 	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	
-	long longval;
-	PC_int(PC_get(conf, ".datasize[0]"), &longval);
-	int height = longval;
-	PC_int(PC_get(conf, ".datasize[1]"), &longval);
-	int width = longval;
-	PC_int(PC_get(conf, ".parallelism.height"), &longval);
-	int pheight = longval;
-	PC_int(PC_get(conf, ".parallelism.width"), &longval);
-	int pwidth = longval;
-	double duration; PC_double(PC_get(conf, ".duration"), &duration);
-	
 	MPI_Comm main_comm = MPI_COMM_WORLD;
 	PDI_init(PC_get(conf, ".pdi"), &main_comm);
 	
+	int psize_1d;  MPI_Comm_size(main_comm, &psize_1d);
+	int pcoord_1d; MPI_Comm_rank(main_comm, &pcoord_1d);
+	
+	long longval;
+	
+	int dsize[2];
+	PC_int(PC_get(conf, ".datasize[0]"), &longval); dsize[0] = longval;
+	PC_int(PC_get(conf, ".datasize[1]"), &longval); dsize[1] = longval;
+	
+	int psize[2];
+	PC_int(PC_get(conf, ".parallelism.height"), &longval); psize[0] = longval;
+	PC_int(PC_get(conf, ".parallelism.width" ), &longval); psize[1] = longval;
+	
+	double duration; PC_double(PC_get(conf, ".duration"), &duration);
+	
 	// get local & add ghosts to sizes
-	assert(height%pheight==0); height = height/pheight + 2;
-	assert(width %pwidth ==0); width  = width /pwidth  + 2;
+	assert(dsize[0]%psize[0]==0); dsize[0] = dsize[0]/psize[0] + 2;
+	assert(dsize[1]%psize[1]==0); dsize[1] = dsize[1]/psize[1] + 2;
 	
-	int size; MPI_Comm_size(main_comm, &size);
-	int rank; MPI_Comm_rank(main_comm, &rank);
+	assert(psize[1]*psize[0] == psize_1d);
 	
-	assert(pwidth*pheight == size);
-	
-	int cart_dims[2] = { pheight, pwidth };
 	int cart_period[2] = { 0, 0 };
-	MPI_Comm cart_com; MPI_Cart_create(main_comm, 2, cart_dims, cart_period, 1, &cart_com);
-	int car_coord[2]; MPI_Cart_coords(cart_com, rank, 2, car_coord);
+	MPI_Comm cart_com; MPI_Cart_create(main_comm, 2, psize, cart_period, 1, &cart_com);
+	int pcoord[2]; MPI_Cart_coords(cart_com, pcoord_1d, 2, pcoord);
 	
-	PDI_expose("coord", car_coord, PDI_OUT);
-	PDI_expose("width", &width, PDI_OUT);
-	PDI_expose("height", &height, PDI_OUT);
-	PDI_expose("pwidth", &pwidth, PDI_OUT);
-	PDI_expose("pheight", &pheight, PDI_OUT);
+	PDI_expose("dsize", dsize, PDI_OUT);
+	PDI_expose("psize", psize, PDI_OUT);
+	PDI_expose("pcoord", pcoord, PDI_OUT);
 	
-	double* cur = malloc(sizeof(double)*width*height);
-	double* next = malloc(sizeof(double)*width*height);
+	double(*cur)[dsize[1]]  = malloc(sizeof(double)*dsize[1]*dsize[0]);
+	double(*next)[dsize[1]] = malloc(sizeof(double)*dsize[1]*dsize[0]);
 	
-	init(cur, width, height, car_coord[0], car_coord[1]);
+	init(dsize, pcoord, cur);
 	
 	PDI_event("main_loop");
 	double start = MPI_Wtime();
@@ -149,19 +144,22 @@ int main( int argc, char* argv[] )
 		PDI_expose("main_field", cur, PDI_INOUT);
 		PDI_transaction_end();
 		
-		iter(cur, next, width, height);
-		exchange(cart_com, next, width, height);
-		double* tmp = cur; cur = next; next = tmp;
+		iter(dsize, cur, next);
+		exchange(cart_com, dsize, next);
+		double (*tmp)[dsize[1]] = cur; cur = next; next = tmp;
 		
 		if ( ii >= next_reduce ) {
 			double local_time, global_time;
 			local_time = MPI_Wtime()-start;
 			MPI_Allreduce(&local_time, &global_time, 1, MPI_DOUBLE, MPI_MAX, main_comm);
-			if ( global_time >= duration ) break;
-			int rem_iter = .8 * (duration-global_time) * (ii+1) / global_time + 1;
+			if ( global_time >= duration ) {
+				if ( 0==pcoord_1d ) printf("iter=%7d; time=%7.3f; STOP!!!\n", ii, global_time);
+				break;
+			}
+			int rem_iter = .9 * (duration-global_time) * (ii+1) / (global_time + 0.1);
 			if ( rem_iter < 1 ) rem_iter = 1;
 			next_reduce = ii + rem_iter;
-			if ( 0==rank) printf("iter=%d; time=%f; next_reduce=%d\n", ii, global_time, next_reduce);
+			if ( 0==pcoord_1d ) printf("iter=%7d; time=%7.3f; next_reduce=%7d\n", ii, global_time, next_reduce);
 		}
 	}
 	PDI_event("finalization");
