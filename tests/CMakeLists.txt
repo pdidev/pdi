@@ -61,6 +61,7 @@ add_executable(PDI_unit_tests
 		PDI_error.cxx
 		PDI_member.cxx
 		PDI_record_datatype_empty.cxx
+		PDI_ref_any.cxx
 		PDI_scalar_datatype.cxx)
 
 target_include_directories(PDI_unit_tests PRIVATE
