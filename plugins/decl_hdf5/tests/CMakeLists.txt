@@ -37,12 +37,14 @@ target_link_libraries(decl_hdf5_01_C pdi mpi)
 add_test(NAME decl_hdf5_01_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_01.yml")
 set_property(TEST decl_hdf5_01_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 
+if("${ENABLE_FORTRAN}")
 add_executable(decl_hdf5_01_F decl_hdf5_test_01.F90)
 target_link_libraries(decl_hdf5_01_F pdi_f90 mpi_f90)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_01_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_01.yml")
 set_property(TEST decl_hdf5_01_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+endif("${ENABLE_FORTRAN}")
 
 ##########
 # TEST 02: PDI_import/PDI_export
@@ -52,12 +54,14 @@ target_link_libraries(decl_hdf5_02_C pdi mpi)
 add_test(NAME decl_hdf5_02_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_hdf5_02_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02_C.yml")
 set_property(TEST decl_hdf5_02_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 
+if("${ENABLE_FORTRAN}")
 add_executable(decl_hdf5_02_F decl_hdf5_test_02.F90)
 target_link_libraries(decl_hdf5_02_F pdi_f90 mpi_f90)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_hdf5_02_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02_F.yml")
 set_property(TEST decl_hdf5_02_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+endif("${ENABLE_FORTRAN}")
 
 ##########
 # TEST 03: slicing mechanism
@@ -73,12 +77,14 @@ target_link_libraries(decl_hdf5_04_C pdi mpi)
 add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04_C.yml")
 set_property(TEST decl_hdf5_04_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 
+if("${ENABLE_FORTRAN}")
 add_executable(decl_hdf5_04_F decl_hdf5_test_04.F90)
 target_link_libraries(decl_hdf5_04_F pdi_f90 mpi_f90)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_04_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_04_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_04_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04_F.yml")
 set_property(TEST decl_hdf5_04_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+endif("${ENABLE_FORTRAN}")
 
 ##########
 # TEST 05: scalars default options
