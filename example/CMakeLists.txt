@@ -27,14 +27,25 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+cmake_minimum_required(VERSION 3.5)
+project(pdi_examples LANGUAGES C CXX Fortran)
+
+# find_package(pdi REQUIRED)
+find_package(MPI REQUIRED)
 find_library(LIB_M m DOC "The math library")
 
+# Default standard in the project is C99 & C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_C_STANDARD 99)
+set(C_STANDARD_REQUIRED TRUE)
+
 add_executable(PDI_example_C example.c)
-target_link_libraries(PDI_example_C pdi mpi m)
+target_link_libraries(PDI_example_C pdi MPI::MPI_C m)
 
 if("${ENABLE_FORTRAN}")
 add_executable(PDI_example_F example.F90)
-target_link_libraries(PDI_example_F pdi_f90 mpi_f90 m)
+target_link_libraries(PDI_example_F pdi_f90 MPI::MPI_Fortran m)
 endif("${ENABLE_FORTRAN}")
 
 set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
