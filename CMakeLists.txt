@@ -50,7 +50,7 @@ find_package(Astyle)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf REQUIRED)
 else()
-	add_subdirectory(vendor/paraconf paraconf EXCLUDE_FROM_ALL)
+	add_subdirectory(vendor/paraconf paraconf)
 endif()
 
 # Enable testing
