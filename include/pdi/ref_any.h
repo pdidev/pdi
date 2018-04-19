@@ -119,7 +119,10 @@ protected:
 		return other.m_content;
 	}
 	
-	static Ref PDI_NO_EXPORT do_copy(Ref_r ref);
+	/** Symbol should not be exported, but it required to force
+	 *  generation of all 4 variants of `Ref_any::copy`
+	 */
+	static Ref do_copy(Ref_r ref);
 	
 	/** Constructs a null reference
 	 */
