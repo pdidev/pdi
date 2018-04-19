@@ -37,12 +37,14 @@ target_link_libraries(decl_sion_01_c pdi mpi)
 add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_sion_01_c>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
 set_property(TEST decl_sion_01_c APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 
+if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_01_F decl_sion_test_01.F90)
 target_link_libraries(decl_sion_01_F pdi_f90 mpi_f90)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_sion_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
 set_property(TEST decl_sion_01_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+endif("${ENABLE_FORTRAN}")
 
 ###############
 #   TEST 02   #
@@ -52,12 +54,14 @@ target_link_libraries(decl_sion_02_c pdi mpi)
 add_test(NAME decl_sion_02_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_02_c>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02_c.yml")
 set_property(TEST decl_sion_02_c APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 
+if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_02_F decl_sion_test_02.F90)
 target_link_libraries(decl_sion_02_F pdi_f90 mpi_f90)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_02_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_02_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02_F90.yml")
 set_property(TEST decl_sion_02_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+endif("${ENABLE_FORTRAN}")
 
 ###############
 #   TEST 03   #
@@ -67,9 +71,11 @@ target_link_libraries(decl_sion_03_c pdi mpi)
 add_test(NAME decl_sion_03_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_03_c>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03_c.yml")
 set_property(TEST decl_sion_03_c APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 
+if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_03_F decl_sion_test_03.F90)
 target_link_libraries(decl_sion_03_F pdi_f90 mpi_f90)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_03_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_03_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_03_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03_F90.yml")
 set_property(TEST decl_sion_03_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+endif("${ENABLE_FORTRAN}")

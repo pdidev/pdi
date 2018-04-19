@@ -111,7 +111,7 @@ install(TARGETS pdi EXPORT PDI_export
 )
 install(FILES
 		"${CMAKE_CURRENT_BINARY_DIR}/pdi/export.h"
-		"${CMAKE_CURRENT_BINARY_DIR}/version.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/pdi/version.h"
 	DESTINATION include/pdi)
 
 ## Fortran version
@@ -134,7 +134,7 @@ if("${ENABLE_FORTRAN}")
 	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
-	install(FILES ${SRC_PDI_F90_BPP} ${CMAKE_CURRENT_SOURCE_DIR}/../include/pdi_fortran.F90
+	install(FILES ${SRC_PDI_F90_BPP}
 			DESTINATION "include")
 	install(TARGETS pdi_f90 EXPORT PDI_export
 			LIBRARY DESTINATION lib INCLUDES DESTINATION "include"
