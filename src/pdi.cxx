@@ -37,6 +37,7 @@
 #include <unordered_set>
 
 #include "pdi/context.h"
+#include "pdi/context_core.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
@@ -175,7 +176,7 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	g_context.reset(new Context{conf, world});
+	g_context.reset(new Context_core{conf, world});
 	return PDI_OK;
 } catch (const Error& e)
 {

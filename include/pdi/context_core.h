@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_CONTEXT_H_
-#define PDI_CONTEXT_H_
+#ifndef PDI_CONTEXT_CORE_H_
+#define PDI_CONTEXT_CORE_H_
 
 #include <mpi.h>
 
@@ -34,6 +34,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <pdi/context.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/ref_any.h>
@@ -41,70 +42,59 @@
 
 namespace PDI {
 
-class PDI_EXPORT Context
+class PDI_EXPORT Context_core : public Context
 {
-	friend class Data_descriptor;
-	
-public:
-	/** An iterator used to go through the descriptor store.
-	 *
-	 * Implemented as a wrapper for a map iterator that hides the key part.
-	 */
-	class Iterator
-	{
-		friend class Context_core;
-		/// The iterator this wraps
-		std::unordered_map<std::string, Data_descriptor>::iterator m_data;
-		Iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data);
-		Iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data);
-	public:
-		Data_descriptor* operator-> ();
-		Data_descriptor& operator* ();
-		Iterator& operator++ ();
-		bool operator!= (const Iterator&);
-	};
-	
 private:
 	/// The loaded plugins
-	virtual std::unordered_map<std::string, std::unique_ptr<Plugin>>& get_plugins() = 0 ;
+	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
 	
 	/// Descriptors of the data
-	virtual std::unordered_map<std::string, Data_descriptor>& get_descriptors() = 0 ;
+	std::unordered_map<std::string, Data_descriptor> m_descriptors;
+	
+	/// The loaded plugins function getter
+	std::unordered_map<std::string, std::unique_ptr<Plugin>>& get_plugins() override;
+	
+	/// Descriptors of the data function geteter
+	std::unordered_map<std::string, Data_descriptor>& get_descriptors() override;
+
+	Context_core(const Context_core&) = delete;
+	
+	Context_core(Context_core&&) = delete;
 	
 public:
+	Context_core(PC_tree_t conf, MPI_Comm* world);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& desc(const std::string& name) = 0;
+	Data_descriptor& desc(const std::string& name) override;
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& desc(const char* name) = 0;
+	Data_descriptor& desc(const char* name) override;
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& operator[](const std::string& name) = 0;
+	Data_descriptor& operator[](const std::string& name) override;
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& operator[](const char* name) = 0;
+	Data_descriptor& operator[](const char* name) override;
 	
 	/** Returns an iterator on the first descriptor
 	 */
-	virtual Iterator begin() = 0;
+	Iterator begin() override;
 	
 	/** Returns an iterator past the last descriptor
 	 */
-	virtual Iterator end() = 0;
+	Iterator end() override;
 	
 	/** Triggers a PDI "event"
 	 * \param[in] name the event name
 	 */
-	virtual void event(const char* name) = 0;
+	void event(const char* name) override;
 	
-	virtual ~Context() = default;
 };
 
 } // namespace PDI
 
-#endif // PDI_CONTEXT_H_
+#endif // PDI_CONTEXT_CORE_H_
