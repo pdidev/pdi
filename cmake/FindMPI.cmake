@@ -331,10 +331,15 @@ endforeach()
 unset(_MPIEXEC_NAMES_BASE)
 
 function (_MPI_check_compiler LANG QUERY_FLAG OUTPUT_VARIABLE RESULT_VARIABLE)
+  if(${WIN32})
+    set(CM35_NATIVE_COMMAND WINDOWS_COMMAND)
+  else(${WIN32})
+    set(CM35_NATIVE_COMMAND UNIX_COMMAND)
+  endif(${WIN32})
   if(DEFINED MPI_${LANG}_COMPILER_FLAGS)
-    separate_arguments(_MPI_COMPILER_WRAPPER_OPTIONS NATIVE_COMMAND "${MPI_${LANG}_COMPILER_FLAGS}")
+    separate_arguments(_MPI_COMPILER_WRAPPER_OPTIONS "${CM35_NATIVE_COMMAND}" "${MPI_${LANG}_COMPILER_FLAGS}")
   else()
-    separate_arguments(_MPI_COMPILER_WRAPPER_OPTIONS NATIVE_COMMAND "${MPI_COMPILER_FLAGS}")
+    separate_arguments(_MPI_COMPILER_WRAPPER_OPTIONS "${CM35_NATIVE_COMMAND}" "${MPI_COMPILER_FLAGS}")
   endif()
   execute_process(
     COMMAND ${MPI_${LANG}_COMPILER} ${_MPI_COMPILER_WRAPPER_OPTIONS} ${QUERY_FLAG}
@@ -367,6 +372,12 @@ function (_MPI_interrogate_compiler lang)
   unset(MPI_LINK_FLAGS_WORK)
   unset(MPI_LIB_NAMES_WORK)
   unset(MPI_LIB_FULLPATHS_WORK)
+  
+  if(${WIN32})
+    set(CM35_NATIVE_COMMAND WINDOWS_COMMAND)
+  else(${WIN32})
+    set(CM35_NATIVE_COMMAND UNIX_COMMAND)
+  endif(${WIN32})
 
   # Check whether the -showme:compile option works. This indicates that we have either Open MPI
   # or a newer version of LAM/MPI, and implies that -showme:link will also work.
@@ -477,7 +488,7 @@ function (_MPI_interrogate_compiler lang)
   if (NOT MPI_ALL_INCLUDE_PATHS)
     _MPI_check_compiler(${LANG} "-showme:incdirs" MPI_INCDIRS_CMDLINE MPI_INCDIRS_COMPILER_RETURN)
     if(MPI_INCDIRS_COMPILER_RETURN)
-      separate_arguments(MPI_ALL_INCLUDE_PATHS NATIVE_COMMAND "${MPI_INCDIRS_CMDLINE}")
+      separate_arguments(MPI_ALL_INCLUDE_PATHS "${CM35_NATIVE_COMMAND}" "${MPI_INCDIRS_CMDLINE}")
     endif()
   endif()
 
@@ -495,7 +506,7 @@ function (_MPI_interrogate_compiler lang)
   if (NOT MPI_ALL_LINK_PATHS)
     _MPI_check_compiler(${LANG} "-showme:libdirs" MPI_LIBDIRS_CMDLINE MPI_LIBDIRS_COMPILER_RETURN)
     if(MPI_LIBDIRS_COMPILER_RETURN)
-      separate_arguments(MPI_ALL_LINK_PATHS NATIVE_COMMAND "${MPI_LIBDIRS_CMDLINE}")
+      separate_arguments(MPI_ALL_LINK_PATHS "${CM35_NATIVE_COMMAND}" "${MPI_LIBDIRS_CMDLINE}")
     endif()
   endif()
 
@@ -1077,6 +1088,12 @@ mark_as_advanced(MPIEXEC_EXECUTABLE MPIEXEC_NUMPROC_FLAG MPIEXEC_PREFLAGS MPIEXE
 # Once we find the new variables, we translate them back into their old
 # equivalents below.
 if(NOT MPI_IGNORE_LEGACY_VARIABLES)
+  if(${WIN32})
+    set(CM35_NATIVE_COMMAND WINDOWS_COMMAND)
+  else(${WIN32})
+    set(CM35_NATIVE_COMMAND UNIX_COMMAND)
+  endif(${WIN32})
+  
   foreach (LANG IN ITEMS C CXX)
     # Old input variables.
     set(_MPI_OLD_INPUT_VARS COMPILER COMPILE_FLAGS INCLUDE_PATH LINK_FLAGS)
@@ -1093,7 +1110,7 @@ if(NOT MPI_IGNORE_LEGACY_VARIABLES)
     unset(MPI_${LANG}_EXTRA_COMPILE_DEFINITIONS)
     unset(MPI_${LANG}_EXTRA_COMPILE_OPTIONS)
     if(MPI_${LANG}_COMPILE_FLAGS)
-      separate_arguments(MPI_SEPARATE_FLAGS NATIVE_COMMAND "${MPI_${LANG}_COMPILE_FLAGS}")
+      separate_arguments(MPI_SEPARATE_FLAGS "${CM35_NATIVE_COMMAND}" "${MPI_${LANG}_COMPILE_FLAGS}")
       foreach(_MPI_FLAG IN LISTS MPI_SEPARATE_FLAGS)
         if("${_MPI_FLAG}" MATCHES "^ *[-/D]([^ ]+)")
           list(APPEND MPI_${LANG}_EXTRA_COMPILE_DEFINITIONS "${CMAKE_MATCH_1}")
