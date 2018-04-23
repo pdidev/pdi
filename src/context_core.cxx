@@ -89,12 +89,14 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
 
 } // namespace <anonymous>
 
-std::unordered_map<std::string, std::unique_ptr<Plugin>>& Context_core::get_plugins() {
+std::unordered_map<std::string, std::unique_ptr<Plugin>>& Context_core::get_plugins()
+{
 	return m_plugins;
 }
 
 
-std::unordered_map<std::string, Data_descriptor>& Context_core::get_descriptors() {
+std::unordered_map<std::string, Data_descriptor>& Context_core::get_descriptors()
+{
 	return m_descriptors;
 }
 

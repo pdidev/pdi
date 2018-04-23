@@ -65,14 +65,14 @@ public:
 	};
 	
 private:
-	/// The loaded plugins
-	virtual std::unordered_map<std::string, std::unique_ptr<Plugin>>& get_plugins() = 0 ;
+	/// The getter function of loaded plugins
+	virtual std::unordered_map<std::string, std::unique_ptr<Plugin>>& get_plugins() = 0;
 	
-	/// Descriptors of the data
-	virtual std::unordered_map<std::string, Data_descriptor>& get_descriptors() = 0 ;
+	/// The getter function of descriptors
+	virtual std::unordered_map<std::string, Data_descriptor>& get_descriptors() = 0;
 	
 public:
-	
+
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
 	virtual Data_descriptor& desc(const std::string& name) = 0;

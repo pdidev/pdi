@@ -51,12 +51,12 @@ private:
 	/// Descriptors of the data
 	std::unordered_map<std::string, Data_descriptor> m_descriptors;
 	
-	/// The loaded plugins function getter
+	/// The getter function of loaded plugins
 	std::unordered_map<std::string, std::unique_ptr<Plugin>>& get_plugins() override;
 	
-	/// Descriptors of the data function geteter
+	/// The getter function of descriptors
 	std::unordered_map<std::string, Data_descriptor>& get_descriptors() override;
-
+	
 	Context_core(const Context_core&) = delete;
 	
 	Context_core(Context_core&&) = delete;
