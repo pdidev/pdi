@@ -1,32 +1,35 @@
-# a simple scalar, the duration in seconds
-duration: 1
-# an example with a list, global [width,height] (excluding ghost)
-datasize: [3600, 3600]
-# an example with nested associative arrays
-parallelism:
-  width:  1
-  height: 3
-pdi:
-  metadata: # metadata, i.e. small values that can be referenced using $syntax
-    width: int # per proc. width including ghost
-    height: int # per proc. height including ghost
-    pwidth: int  # nb proc. in the x dim
-    pheight: int # nb proc. in the y dim
-    iter: int # curent iteration id
-    coord: { size: 2, type: int } # coordinate of the process as [x, y]
-  data: # values that can not be referenced using $syntax
-    main_field:
-      type:     double
-      sizes:    [$width, $height]     # for 1D arrays, a `size' scalar can replace the `sizes' array
-      subsizes: [$width-2, $height-2] # defaults to sizes
-      starts:   [1, 1]                # defaults to [0, 0]
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [60, 12]
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
 
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: int } # number of processes in each dimension
+    pcoord: { size: 2, type: int } # coordinate of the process
+  data: # type of values for which PDI does not keep a copy
+    main_field: { sizes: [ '$dsize[0]', '$dsize[1]' ], type: double }
+  
   plugins:
-    # load the decl_hdf5 PDI plugin
     decl_hdf5:
-      # and here is its configuration
-      outputs:
-        main_field: # ref to a variable
-          select: $iter % 16 = 0 # an expression defining when to output the variable
-          file: output_${coord[0]}x${coord[1]}.h5
-          var: iter_${iter}/main_field
+      file: data.h5
+      communicator: world # the MPI communicator used for HDF5 parallel synchronized write
+      datasets: # type of the datasets to create in file
+        data:
+          type: double
+          sizes: [10, '$psize[0]*($dsize[0]-2)', '$psize[1]*($dsize[1]-2)']
+      write:
+        main_field: # the name of the data to write
+          dataset: data
+          when: '$iter<10'   # do only write the first 10 iterations (0...9)
+          memory_selection:  # exclude ghosts from the data in memory
+            size:  ['$dsize[0]-2', '$dsize[1]-2']
+            start: [1, 1]
+          dataset_selection: # only write into a single slice in time
+            size:  [1, '$dsize[0]-2', '$dsize[1]-2']
+            start: [$iter, '($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']

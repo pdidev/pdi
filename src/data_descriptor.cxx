@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "pdi/context.h"
 #include "pdi/datatype.h"
@@ -41,10 +42,12 @@ namespace PDI {
 
 using std::cerr;
 using std::endl;
+using std::exception;
 using std::nothrow;
 using std::stack;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
 struct Data_descriptor::Ref_holder {
 
@@ -87,16 +90,17 @@ Data_descriptor::Data_descriptor(Data_descriptor&&) = default;
 
 Data_descriptor::~Data_descriptor()
 {
-	if (metadata()) {
-		// release metadata we kept
-		if (!m_refs.empty()) m_refs.pop();
-	}
+	// release metadata copies we kept
+	if ( metadata() && m_refs.size() == 1) m_refs.pop();
+	
 	/* on error, we might be destroyed while not empty. In that case, don't keep
 	 * ownership
 	 */
-	while (!m_refs.empty()) {
-		reclaim();
+	if (!m_refs.empty()) {
+		std::cerr<<" *** [PDI] Warning: Remaining "<<m_refs.size()<<" reference(s) to `"<<m_name<<"' in PDI after program end"<<std::endl;
 	}
+	if ( metadata()  ) while (!m_refs.empty()) m_refs.pop();
+	if ( !metadata() ) while (!m_refs.empty()) reclaim();
 }
 
 void Data_descriptor::creation_template(PC_tree_t config)
@@ -173,14 +177,25 @@ void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 	}
 	
 	for (auto& elmnt : m_context.plugins) {
-		try { // ignore errors here, try our best to notify everyone
+		vector<Error> errors;
+		try {
 			elmnt.second->data(m_name.c_str(), ref());
-			//TODO: concatenate errors in some way
 			//TODO: remove the faulty plugin in case of error?
+		} catch (const Error& e) {
+			errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
 		} catch (const std::exception& e) {
-			cerr << "Error while triggering data event `" << m_name << "' for plugin `" << elmnt.first << "': " << e.what() << endl;
+			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
 		} catch (...) {
-			cerr << "Error while triggering data event `" << m_name << "' for plugin `" << elmnt.first <<"'"<< endl;
+			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
+		}
+		if ( 1 == errors.size() ) throw Error{errors.front().status(), "While triggering data event `%s' %s", m_name.c_str(), errors.front().what()};
+		if ( !errors.empty() ) {
+			string errmsg = "multiple errors while triggering data event `"+m_name+"':";
+			for ( auto&& err: errors ) {
+				errmsg += " ";
+				errmsg += err.what();
+			}
+			throw Error{PDI_ERR_PLUGIN, "%s", errmsg.c_str()};
 		}
 	}
 	

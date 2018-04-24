@@ -1,19 +1,12 @@
-pdi:
-  metadata:
-    meta0: int
-    meta1: int
-    meta2: int
-    meta3: int
-    meta4: int
-  data: # values that can not be referenced using $syntax
-    test_var: double
-  plugins:
-    decl_hdf5:
-      outputs:
-        test_var:
-          file: $meta1.h5
-          select: 1
-  
-        meta2:
-          file: $meta1.h5
-          select: 1
+metadata:
+  meta0: int
+  meta1: int
+  meta2: int
+  meta3: int
+  meta4: int
+data:
+  test_var: double
+plugins:
+  decl_hdf5:
+    file: $meta1.h5
+    write: [ test_var, meta2 ]

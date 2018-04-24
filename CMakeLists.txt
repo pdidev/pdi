@@ -44,13 +44,13 @@ option(USE_SYSTEM_GTEST        "Use an already installed gtest and gmock instead
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Find dependencies
-find_package(MPI REQUIRED)
+find_package(MPI REQUIRED COMPONENTS C CXX Fortran)
 find_package(Doxygen OPTIONAL_COMPONENTS dot)
 find_package(Astyle)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf REQUIRED)
 else()
-	add_subdirectory(vendor/paraconf paraconf EXCLUDE_FROM_ALL)
+	add_subdirectory(vendor/paraconf paraconf)
 endif()
 
 # Enable testing

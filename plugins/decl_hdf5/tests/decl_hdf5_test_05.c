@@ -64,6 +64,11 @@ int main(int argc, char* argv[])
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_status_t err = PDI_init(conf, &world);
 	int rank; MPI_Comm_rank(world, &rank);
+	
+	if ( 0 == rank ) {
+		remove("decl_hdf5_test_05_C.h5");
+	}
+	
 	{
 		/// setting nb of procs.
 		int size; MPI_Comm_size(world, &size);

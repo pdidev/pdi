@@ -164,7 +164,7 @@ struct fti_plugin: Plugin {
 					FTI_Protect(static_cast<int>(protected_var.second), const_cast<void*>(ref.get()), static_cast<long>(size), FTI_CHAR);
 				} else {
 					FTI_Protect(static_cast<int>(protected_var.second), NULL, 0, FTI_CHAR);
-					cerr << "** Warning: [PDI/FTI] Protected variable "<<protected_var.first<<" unavailable"<<endl;
+					cerr << " *** [PDI/FTI] Warning: Protected variable "<<protected_var.first<<" unavailable"<<endl;
 				}
 			} else {
 				if ( Ref_w ref = context().desc(protected_var.first).ref() ) {
@@ -173,7 +173,7 @@ struct fti_plugin: Plugin {
 					FTI_Protect(static_cast<int>(protected_var.second), ref.get(), static_cast<long>(size), FTI_CHAR);
 				} else {
 					FTI_Protect(static_cast<int>(protected_var.second), NULL, 0, FTI_CHAR);
-					cerr << "** Warning: [PDI/FTI] Protected variable "<<protected_var.first<<" unavailable"<<endl;
+					cerr << " *** [PDI/FTI] Warning: Protected variable "<<protected_var.first<<" unavailable"<<endl;
 				}
 			}
 		}

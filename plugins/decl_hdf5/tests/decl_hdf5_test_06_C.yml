@@ -1,56 +1,54 @@
-
-
-pdi:
-  metadata:
-    input: int
-    ni: int
-    nj: int
-    nig: int
-    njg: int
-    nit: int
-    njt: int
-    istart: int
-    jstart: int
-    rank: int
-    nproc: int
-  data: # values that can not be referenced using $syntax
-    myrank: int
-    reals: 
-      type: double
-      sizes: [$nj +2*$njg , $ni+2*$nig]
-      subsizes: [$nj , $ni]
-      starts: [$njg, $nig]
-      global_sizes: [$njt, $nit]
-      global_starts: [$jstart, $istart]
-
-    values: 
-      type: int
-      sizes: [$nj +2*$njg , $ni+2*$nig]
-      subsizes: [$nj , $ni]
-      starts: [$njg, $nig]
-      global_sizes: [$njt, $nit]
-      global_starts: [$jstart, $istart]
-
-  plugins:
-
-    decl_hdf5:
-      outputs:
-        myrank:
-          file: decl_hdf5_rank_$rank.h5
-          select: $input=0
+metadata:
+  input: int
+  ni: int
+  nj: int
+  nig: int
+  njg: int
+  nit: int
+  njt: int
+  istart: int
+  jstart: int
+  rank: int
+  nproc: int
+data:
+  myrank: int
+  reals: 
+    type: double
+    sizes: [$nj +2*$njg , $ni+2*$nig]
+    subsizes: [$nj , $ni]
+    starts: [$njg, $nig]
+    global_sizes: [$njt, $nit]
+    global_starts: [$jstart, $istart]
+  values: 
+    type: int
+    sizes: [$nj +2*$njg , $ni+2*$nig]
+    subsizes: [$nj , $ni]
+    starts: [$njg, $nig]
+    global_sizes: [$njt, $nit]
+    global_starts: [$jstart, $istart]
+plugins:
+  decl_hdf5:
+    - file: decl_hdf5_test_06_C_r${rank}.h5
+      write:
+        myrank: {when: $input=0}
+      read:
+        myrank: {when: $input=1}
+    - file: decl_hdf5_test_06_C.h5
+      communicator: world
+      datasets:
+        reals: {type: double, sizes: [$njt, $nit]}
+        values: {type: int, sizes: [$njt, $nit]}
+      write:
         reals:
-          select: $input=0
-          file: test_01_C_one_file.h5
+          when: $input=0
+          dataset_selection: {start: [$jstart, $istart]}
         values:
-          select: $input=0
-          file: test_01_C_one_file.h5
-      inputs:
-        myrank:
-          file: decl_hdf5_rank_$rank.h5
-          select: $input=1
+          when: $input=0
+          dataset_selection: {start: [$jstart, $istart]}
+      read:
         reals:
-          select: $input=1
-          file: test_01_C_one_file.h5
+          when: $input=1
+          dataset_selection: {start: [$jstart, $istart]}
         values:
-          select: $input=1
-          file: test_01_C_one_file.h5
+          when: $input=1
+          dataset_selection: {start: [$jstart, $istart]}

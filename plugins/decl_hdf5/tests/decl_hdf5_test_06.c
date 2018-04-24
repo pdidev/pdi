@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_status_t err = PDI_init(PC_get(conf, ".pdi"), &world);
+	PDI_status_t err = PDI_init(conf, &world);
 	int rank; MPI_Comm_rank(world, &rank);
 	{
 		/// setting nb of procs.
