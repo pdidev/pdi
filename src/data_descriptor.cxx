@@ -137,7 +137,13 @@ Ref Data_descriptor::ref()
 
 void Data_descriptor::share(void* data, bool read, bool write)
 {
-	share(Ref {data, &free, m_type->evaluate(m_context), read, write}, false, false);
+	Ref r{data, &free, m_type->evaluate(m_context), read, write};
+	try {
+		share(r, false, false);
+	} catch (...) {
+		// on error, do not free the data as would be done automatically otherwise
+		r.release();
+	}
 }
 
 void* Data_descriptor::share(Ref data_ref, bool read, bool write)
