@@ -58,7 +58,7 @@ public:
 		Iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data);
 		Iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data);
 	public:
-		Data_descriptor& operator-> ();
+		Data_descriptor* operator-> ();
 		Data_descriptor& operator* ();
 		Iterator& operator++ ();
 		bool operator!= (const Iterator&);
