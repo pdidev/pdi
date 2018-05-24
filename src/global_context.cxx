@@ -35,7 +35,7 @@
 #include "pdi/ref_any.h"
 #include "pdi/error.h"
 
-#include "pdi/context_core.h"
+#include "pdi/global_context.h"
 
 
 namespace PDI {
@@ -89,18 +89,18 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
 
 } // namespace <anonymous>
 
-std::unordered_map<std::string, std::unique_ptr<Plugin>>& Context_core::get_plugins()
+std::unordered_map<std::string, std::unique_ptr<Plugin>>& Global_context::get_plugins()
 {
 	return m_plugins;
 }
 
 
-std::unordered_map<std::string, Data_descriptor>& Context_core::get_descriptors()
+std::unordered_map<std::string, Data_descriptor>& Global_context::get_descriptors()
 {
 	return m_descriptors;
 }
 
-Context_core::Context_core(PC_tree_t conf, MPI_Comm* world)
+Global_context::Global_context(PC_tree_t conf, MPI_Comm* world)
 {
 	// no metadata is not an error
 	PC_tree_t metadata = PC_get(conf, ".metadata");
@@ -126,37 +126,37 @@ Context_core::Context_core(PC_tree_t conf, MPI_Comm* world)
 	}
 }
 
-Context_core::Iterator Context_core::begin()
+Global_context::Iterator Global_context::begin()
 {
-	return m_descriptors.begin();
+	return Context::get_iterator(m_descriptors.begin());
 }
 
-Context_core::Iterator Context_core::end()
+Global_context::Iterator Global_context::end()
 {
-	return m_descriptors.end();
+	return Context::get_iterator(m_descriptors.end());
 }
 
-Data_descriptor& Context_core::desc(const char* name)
+Data_descriptor& Global_context::desc(const char* name)
 {
 	return m_descriptors.emplace(name, Data_descriptor{*this, name}).first->second;
 }
 
-Data_descriptor& Context_core::desc(const string& name)
+Data_descriptor& Global_context::desc(const string& name)
 {
 	return desc(name.c_str());
 }
 
-Data_descriptor& Context_core::operator[](const char* name)
+Data_descriptor& Global_context::operator[](const char* name)
 {
 	return desc(name);
 }
 
-Data_descriptor& Context_core::operator[](const string& name)
+Data_descriptor& Global_context::operator[](const string& name)
 {
 	return desc(name.c_str());
 }
 
-void Context_core::event(const char* name)
+void Global_context::event(const char* name)
 {
 	for (auto& elmnt : m_plugins) {
 		vector<Error> errors;

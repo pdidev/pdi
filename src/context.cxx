@@ -72,4 +72,16 @@ bool Context::Iterator::operator!= (const Iterator& o)
 	return (m_data != o.m_data);
 }
 
+Context::Iterator Context::get_iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data)
+{
+	return data;
+}
+
+Context::Iterator Context::get_iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data)
+{
+	return move(data);
+}
+
+Context::~Context() = default;
+
 }

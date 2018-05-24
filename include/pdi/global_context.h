@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_CONTEXT_CORE_H_
-#define PDI_CONTEXT_CORE_H_
+#ifndef PDI_GLOBAL_CONTEXT_H_
+#define PDI_GLOBAL_CONTEXT_H_
 
 #include <mpi.h>
 
@@ -42,7 +42,7 @@
 
 namespace PDI {
 
-class PDI_EXPORT Context_core : public Context
+class PDI_EXPORT Global_context : public Context
 {
 private:
 	/// The loaded plugins
@@ -57,12 +57,12 @@ private:
 	/// The getter function of descriptors
 	std::unordered_map<std::string, Data_descriptor>& get_descriptors() override;
 	
-	Context_core(const Context_core&) = delete;
+	Global_context(const Global_context&) = delete;
 	
-	Context_core(Context_core&&) = delete;
+	Global_context(Global_context&&) = delete;
 	
 public:
-	Context_core(PC_tree_t conf, MPI_Comm* world);
+	Global_context(PC_tree_t conf, MPI_Comm* world);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
@@ -97,4 +97,4 @@ public:
 
 } // namespace PDI
 
-#endif // PDI_CONTEXT_CORE_H_
+#endif // PDI_GLOBAL_CONTEXT_H_

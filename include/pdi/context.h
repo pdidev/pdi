@@ -52,7 +52,7 @@ public:
 	 */
 	class Iterator
 	{
-		friend class Context_core;
+		friend class Context;
 		/// The iterator this wraps
 		std::unordered_map<std::string, Data_descriptor>::iterator m_data;
 		Iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data);
@@ -63,6 +63,10 @@ public:
 		Iterator& operator++ ();
 		bool operator!= (const Iterator&);
 	};
+	
+protected:
+	Iterator get_iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data);
+	Iterator get_iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data);
 	
 private:
 	/// The getter function of loaded plugins
@@ -102,7 +106,7 @@ public:
 	 */
 	virtual void event(const char* name) = 0;
 	
-	virtual ~Context() = default;
+	virtual ~Context();
 };
 
 } // namespace PDI
