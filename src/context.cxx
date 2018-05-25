@@ -97,9 +97,9 @@ Context::Iterator::Iterator(unordered_map<string, Data_descriptor>::iterator&& d
 	m_data(move(data))
 {}
 
-Data_descriptor& Context::Iterator::operator-> ()
+Data_descriptor* Context::Iterator::operator-> ()
 {
-	return m_data->second;
+	return &m_data->second;
 }
 
 Data_descriptor& Context::Iterator::operator* ()

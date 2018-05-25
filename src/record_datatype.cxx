@@ -45,7 +45,7 @@ using std::unique_ptr;
 using std::vector;
 
 Record_datatype::Member::Member(size_t displacement, Datatype_uptr type, const string& name):
-	m_displacement{move(displacement)},
+	m_displacement{displacement},
 	m_type{move(type)},
 	m_name{name}
 {}
@@ -85,6 +85,7 @@ Datatype_template_uptr Record_datatype::clone() const
 {
 	return clone_type();
 }
+
 Datatype_uptr Record_datatype::clone_type() const
 {
 	return unique_ptr<Record_datatype> {new Record_datatype{vector<Member>(m_members), m_buffersize}};
@@ -92,13 +93,19 @@ Datatype_uptr Record_datatype::clone_type() const
 
 Datatype_uptr Record_datatype::densify() const
 {
-	long displacement = 0;
+	size_t displacement = 0;
 	vector<Record_datatype::Member> densified_members;
 	for (auto&& member : m_members) {
-		densified_members.emplace_back(displacement, member.type().densify(), member.name());
-		displacement += densified_members.back().type().datasize();
+		Datatype_uptr densified_type = member.type().densify();
+		size_t alignment = densified_type->alignment();
+		// align the next member as requested
+		displacement += (displacement + alignment - 1) % alignment;
+		densified_members.emplace_back(displacement, move(densified_type), member.name());
+		displacement += densified_members.back().type().buffersize();
 	}
-	return unique_ptr<Record_datatype> {new Record_datatype{move(densified_members), m_buffersize}};
+	// ensure the record size is at least 1 to have a unique address
+	displacement = max<size_t>(1, displacement);
+	return unique_ptr<Record_datatype> {new Record_datatype{move(densified_members), displacement}};
 }
 
 Datatype_uptr Record_datatype::evaluate(Context&) const
@@ -108,7 +115,19 @@ Datatype_uptr Record_datatype::evaluate(Context&) const
 
 bool Record_datatype::dense() const
 {
-	throw Error{PDI_ERR_IMPL, "Record support incomplete"};
+	size_t displacement = 0;
+	for (auto&& member : m_members) {
+		if ( !member.type().dense() ) return false;
+		size_t alignment = member.type().alignment();
+		// add space for alignment
+		displacement += (displacement + alignment - 1) % alignment;
+		if ( member.displacement() > displacement ) return false;
+		displacement += member.type().buffersize();
+	}
+	// accept 1 extra byte for unique address
+	displacement = max<size_t>(1, displacement);
+	if ( buffersize() > displacement ) return false;
+	return true;
 }
 
 size_t Record_datatype::datasize() const
@@ -127,7 +146,7 @@ size_t Record_datatype::buffersize() const
 
 size_t Record_datatype::alignment() const
 {
-	size_t result = 0;
+	size_t result = 1;
 	for (auto&& member : m_members) {
 		result = max(result, member.type().alignment());
 	}

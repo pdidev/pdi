@@ -37,14 +37,19 @@ namespace {
 
 herr_t raii_walker(unsigned n, const H5E_error2_t* err_desc, void* client_data)
 {
-	if ( 0 == n ) *(static_cast<std::string*>(client_data)) = err_desc->desc;
+	using std::string;
+	string& result = *(static_cast<std::string*>(client_data));
+	if ( n == 1 ) result += "; (HDF5 root causes) => ";
+	if ( n > 1 ) result += "; => ";
+	result += err_desc->desc;
 	return 0;
 }
 
 void handle_hdf5_err(const char* message=NULL)
 {
-	std::string h5_errmsg = "Unknown error";
+	std::string h5_errmsg;
 	H5Ewalk2(H5E_DEFAULT, H5E_WALK_UPWARD, raii_walker, &h5_errmsg);
+	if ( h5_errmsg.empty() ) h5_errmsg = "Unknown error";
 	
 	if ( !message ) message = "HDF5 ";
 	throw PDI::Error{PDI_ERR_SYSTEM, "%s%s", message, h5_errmsg.c_str()};

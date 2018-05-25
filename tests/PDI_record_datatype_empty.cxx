@@ -64,7 +64,7 @@ TEST_F(RecordDatatypeEmptyTest, check_fields)
 	//sizeof empty struct is 1 byte
 	ASSERT_EQ(1, this->test_record->buffersize());
 	ASSERT_EQ(0, this->test_record->datasize());
-	ASSERT_EQ(0, this->test_record->alignment());
+	ASSERT_EQ(1, this->test_record->alignment());
 }
 
 /*
