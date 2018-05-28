@@ -99,7 +99,7 @@ Datatype_uptr Record_datatype::densify() const
 		Datatype_uptr densified_type = member.type().densify();
 		size_t alignment = densified_type->alignment();
 		// align the next member as requested
-		displacement += (displacement + alignment - 1) % alignment;
+		displacement += (alignment - (displacement % alignment)) % alignment;
 		densified_members.emplace_back(displacement, move(densified_type), member.name());
 		displacement += densified_members.back().type().buffersize();
 	}
@@ -120,7 +120,7 @@ bool Record_datatype::dense() const
 		if ( !member.type().dense() ) return false;
 		size_t alignment = member.type().alignment();
 		// add space for alignment
-		displacement += (displacement + alignment - 1) % alignment;
+		displacement += (alignment - (displacement % alignment)) % alignment;
 		if ( member.displacement() > displacement ) return false;
 		displacement += member.type().buffersize();
 	}
