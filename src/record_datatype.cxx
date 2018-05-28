@@ -103,6 +103,10 @@ Datatype_uptr Record_datatype::densify() const
 		densified_members.emplace_back(displacement, move(densified_type), member.name());
 		displacement += densified_members.back().type().buffersize();
 	}
+	//add padding at the end of record
+	size_t record_alignment = alignment();
+	displacement += (record_alignment - (displacement % record_alignment)) % record_alignment;
+	
 	// ensure the record size is at least 1 to have a unique address
 	displacement = max<size_t>(1, displacement);
 	return unique_ptr<Record_datatype> {new Record_datatype{move(densified_members), displacement}};
@@ -124,6 +128,10 @@ bool Record_datatype::dense() const
 		if ( member.displacement() > displacement ) return false;
 		displacement += member.type().buffersize();
 	}
+	//add padding at the end of record
+	size_t record_alignment = alignment();
+	displacement += (record_alignment - (displacement % record_alignment)) % record_alignment;
+	
 	// accept 1 extra byte for unique address
 	displacement = max<size_t>(1, displacement);
 	if ( buffersize() > displacement ) return false;
