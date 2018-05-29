@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 
+#include <context_mock.h>
+
 #include <pdi/record_datatype.h>
 
 using namespace PDI;
@@ -116,7 +118,8 @@ TEST_F(RecordDatatypeEmptyTest, check_clone)
 	Datatype_template_uptr cloned_datatype {this->test_record->clone()};
 	
 	//need to cast to unique_ptr<Record_datatype> to get the members()
-	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype.release())};
+	MockContext mockCtx;
+	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype->evaluate(mockCtx).release())};
 	unique_ptr<Record_datatype> cloned_record {ptr};
 	
 	ASSERT_EQ(this->test_record->datasize(), cloned_record->datasize());
@@ -157,9 +160,8 @@ TEST_F(RecordDatatypeEmptyTest, check_densify)
  */
 TEST_F(RecordDatatypeEmptyTest, check_evaluate)
 {
-	//just need something for evalute function (not used)
-	Context* context;
-	Datatype_uptr cloned_datatype {this->test_record->evaluate(*context)};
+	MockContext mockCtx;
+	Datatype_uptr cloned_datatype {this->test_record->evaluate(mockCtx)};
 	
 	//need to cast to unique_ptr<Record_datatype> to get the members()
 	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype.release())};

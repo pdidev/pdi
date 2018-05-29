@@ -56,7 +56,7 @@ TYPED_TEST_CASE(RecordDatatypeTest, TypesForRecord);
  */
 TYPED_TEST(RecordDatatypeTest, check_dense)
 {
-    ASSERT_EQ(this->test_structure->dense(), this->test_structure->test_record()->dense());
+	ASSERT_EQ(this->test_structure->dense(), this->test_structure->test_record()->dense());
 }
 
 
