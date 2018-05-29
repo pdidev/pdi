@@ -38,31 +38,13 @@ struct RecordDatatypeTest : public ::testing::Test {
 	unique_ptr<Record_interface> test_structure;
 };
 
-typedef ::testing::Types<DenseScalarsTest,
-        SparseScalarsTest,
+typedef ::testing::Types<AlignedScalarsTest,
+        NotAlignedScalarsTest,
         DenseArrayScalarsTest,
         SparseArrayScalarsTest,
         DenseRecordsInRecordTest,
         SparseRecordsInRecordTest> TypesForRecord;
 TYPED_TEST_CASE(RecordDatatypeTest, TypesForRecord);
-
-/*
- * Name:                RecordDatatypeTest/<structname>.assert_dense
- *
- * Tested functions:    none
- *
- * Description:         Test checks if record is dense.
- *
- */
-TYPED_TEST(RecordDatatypeTest, assert_dense)
-{
-	if (is_same<TypeParam,DenseScalarsTest>::value) {
-		ASSERT_EQ(this->test_structure->datasize(), this->test_structure->buffersize()) << "Struct of ints and longs is not dense. Can't test dense record";
-	}
-	if (is_same<TypeParam,SparseScalarsTest>::value) {
-		ASSERT_LT(this->test_structure->datasize(), this->test_structure->buffersize()) << "Struct of chars, ints and floats is dense. Can't test sparse record";
-	}
-}
 
 /*
  * Name:                RecordDatatypeTest/<structname>.check_dense
@@ -72,16 +54,10 @@ TYPED_TEST(RecordDatatypeTest, assert_dense)
  * Description:         Test checks if record has correct dense value.
  *
  */
-// ************     NOT SUPPORTED YET     *******************
-// TYPED_TEST(RecordDatatypeTest, check_dense)
-// {
-//  if (is_same<TypeParam,DenseScalarsTest>::value) {
-//      ASSERT_TRUE(this->test_structure->test_record()->dense());
-//  }
-//  if (is_same<TypeParam,SparseScalarsTest>::value) {
-//      ASSERT_FALSE(this->test_structure->test_record()->dense());
-//  }
-// }
+TYPED_TEST(RecordDatatypeTest, check_dense)
+{
+    ASSERT_EQ(this->test_structure->dense(), this->test_structure->test_record()->dense());
+}
 
 
 /*
@@ -136,7 +112,7 @@ TYPED_TEST(RecordDatatypeTest, check_densify)
 {
 	Datatype_uptr newRecord {this->test_structure->test_record()->densify()};
 	ASSERT_EQ(this->test_structure->datasize(), newRecord->datasize());
-	ASSERT_EQ(this->test_structure->datasize(), newRecord->buffersize());
+	ASSERT_EQ(this->test_structure->buffersize_after_densify(), newRecord->buffersize());
 }
 
 /*
@@ -155,7 +131,7 @@ TYPED_TEST(RecordDatatypeTest, check_clone_type)
 	ASSERT_EQ(this->test_structure->test_record()->buffersize(), newRecord->buffersize());
 	ASSERT_EQ(this->test_structure->test_record()->datasize(), newRecord->datasize());
 	ASSERT_EQ(this->test_structure->test_record()->alignment(), newRecord->alignment());
-	//TODO ASSERT_EQ(this->test_structure->dense(), newRecord->dense());
+	ASSERT_EQ(this->test_structure->dense(), newRecord->dense());
 	ASSERT_EQ(this->test_structure->test_record()->members().size(), newRecord->members().size());
 }
 
