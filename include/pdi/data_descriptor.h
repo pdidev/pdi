@@ -41,7 +41,8 @@ namespace PDI {
 class PDI_EXPORT Data_descriptor
 {
 	friend class Global_context;
-	
+	friend class Descriptor_test_handler;
+
 	struct PDI_NO_EXPORT Ref_holder;
 	
 	
@@ -62,7 +63,7 @@ class PDI_EXPORT Data_descriptor
 	
 	/** Create an empty descriptor
 	 */
-	PDI_NO_EXPORT Data_descriptor(Context& ctx, const char* name);
+	Data_descriptor(Context& ctx, const char* name);
 	
 	Data_descriptor(const Data_descriptor&) = delete;
 	
