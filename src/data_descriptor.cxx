@@ -182,7 +182,7 @@ void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
 	}
 	
-	for (auto& elmnt : m_context.plugins) {
+	for (auto& elmnt : m_context.get_plugins()) {
 		vector<Error> errors;
 		try {
 			elmnt.second->data(m_name.c_str(), ref());
