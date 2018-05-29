@@ -143,6 +143,7 @@ void Data_descriptor::share(void* data, bool read, bool write)
 	} catch (...) {
 		// on error, do not free the data as would be done automatically otherwise
 		r.release();
+		throw;
 	}
 }
 
