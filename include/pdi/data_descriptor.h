@@ -40,7 +40,7 @@ namespace PDI {
 
 class PDI_EXPORT Data_descriptor
 {
-	friend class Context;
+	friend class Global_context;
 	
 	struct PDI_NO_EXPORT Ref_holder;
 	

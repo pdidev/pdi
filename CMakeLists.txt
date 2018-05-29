@@ -44,13 +44,13 @@ option(USE_SYSTEM_GTEST        "Use an already installed gtest and gmock instead
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Find dependencies
-find_package(MPI REQUIRED)
+find_package(MPI REQUIRED COMPONENTS C CXX Fortran)
 find_package(Doxygen OPTIONAL_COMPONENTS dot)
 find_package(Astyle)
 if("${USE_SYSTEM_PARACONF}")
 	find_package(paraconf REQUIRED)
 else()
-	add_subdirectory(vendor/paraconf paraconf EXCLUDE_FROM_ALL)
+	add_subdirectory(vendor/paraconf paraconf)
 endif()
 
 # Enable testing
@@ -104,13 +104,13 @@ endif()
 # Source formatting
 if("${ASTYLE_FOUND}")
 	add_custom_target(indent
-		COMMAND Astyle::astyle --suffix=none --options=docs/formating.astyle --recursive src/*.cxx src/*.c include/*.h plugins/*.cxx plugins/*.c example/*.c tests/*.c tests/*.cxx tests/mocks/*.h
+		COMMAND Astyle::astyle --suffix=none --options=docs/formating.astyle --recursive src/*.cxx src/*.c include/*.h plugins/*.cxx plugins/*.c example/*.c tests/*.c tests/*.cxx tests/*.h
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
 		VERBATIM)
 	file(WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-indent" "#!/bin/bash
 cd '${CMAKE_CURRENT_SOURCE_DIR}'
 FORMATTED=\"\$(
-'${ASTYLE_EXECUTABLE}' --dry-run --suffix=none --options=docs/formating.astyle --recursive 'src/*.cxx' 'src/*.c' 'include/*.h' 'plugins/*.cxx' 'plugins/*.c' 'example/*.c' 'tests/*.c' 'tests/*.cxx' 'tests/mocks/*.h' \\
+'${ASTYLE_EXECUTABLE}' --dry-run --suffix=none --options=docs/formating.astyle --recursive 'src/*.cxx' 'src/*.c' 'include/*.h' 'plugins/*.cxx' 'plugins/*.c' 'example/*.c' 'tests/*.c' 'tests/*.cxx' 'tests/*.h' \\
 | grep Formatted \\
 )\"
 NB_FORMATTED=\"\$(echo -n \"\${FORMATTED}\" | wc -l)\"

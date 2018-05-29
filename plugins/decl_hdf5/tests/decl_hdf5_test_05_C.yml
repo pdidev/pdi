@@ -6,68 +6,59 @@ metadata:
   njg: int
   nit: int
   njt: int
-  istart:
-    type: int
-    size: 1
-    global_starts: [$rank]
-    global_sizes: [$nproc]
-  jstart:
-    type: int
-    size: 1
-    global_starts: [$rank]
-    global_sizes: [$nproc]
+  istart: int
+  jstart: int
   rank: int
   nproc: int
-data: # values that can not be referenced using $syntax
+data:
   reals: 
     type: double
     sizes: [$nj +2*$njg , $ni+2*$nig]
     subsizes: [$nj , $ni]
     starts: [$njg, $nig]
-    global_sizes: [$njt, $nit]
-    global_starts: [ "$jstart[0]", "$istart[0]"]
-
   values: 
     type: int
     sizes: [$nj +2*$njg , $ni+2*$nig]
     subsizes: [$nj , $ni]
     starts: [$njg, $nig]
-    global_sizes: [$njt, $nit]
-    global_starts: ["$jstart[0]", "$istart[0]"]
-
   time:
     type: double
     size: 1
-    global_starts: [$rank]
-    global_sizes: [$nproc]
   myrank:
     type: int
     size: 1
-    global_starts: [$rank]
-    global_sizes: [$nproc]
-
-
 plugins:
   decl_hdf5:
-    defaults:
-      outputs:
-        select: $input=0
-        file: test_02_C_one_file.h5
-      inputs:
-        select: $input=1
-        file: test_02_C_one_file.h5
-    outputs:
+    file: decl_hdf5_test_05_C.h5
+    communicator: world
+    datasets:
+      reals: {type: double, sizes: [$njt, $nit]}
+      values: {type: int, sizes: [$njt, $nit]}
+      myrank: {type: int, size: $nproc}
+      time: {type: double, size: $nproc}
+    write:
       reals:
+        when: $input=0
+        dataset_selection: {start: [$jstart, $istart]}
       values:
-      istart:
-      jstart:
+        when: $input=0
+        dataset_selection: {start: [$jstart, $istart]}
       myrank:
+        when: $input=0
+        dataset_selection: {size: 1, start: $rank}
       time:
-    inputs:
+        when: $input=0
+        dataset_selection: {size: 1, start: $rank}
+    read:
       reals:
+        when: $input=1
+        dataset_selection: {start: [$jstart, $istart]}
       values:
-      istart:
-      jstart:
+        when: $input=1
+        dataset_selection: {start: [$jstart, $istart]}
       myrank:
+        when: $input=1
+        dataset_selection: {size: 1, start: $rank}
       time:
-
+        when: $input=1
+        dataset_selection: {size: 1, start: $rank}

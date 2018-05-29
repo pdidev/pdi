@@ -24,6 +24,7 @@
 
 #include <gtest/gtest.h>
 
+#include <context_mock.h>
 #include <datatype_mock.h>
 
 #include <pdi/array_datatype.h>
@@ -100,11 +101,11 @@ TEST_F(ArrayDatatypeTest, check_clone)
 	EXPECT_CALL(*this->mockDatatype, clone_type_proxy()).WillOnce(Return(new_datatype));
 	
 	Datatype_template_uptr cloned_datatype {this->test_array.clone()};
-	std::unique_ptr<Array_datatype> cloned_array {static_cast<Array_datatype*>(cloned_datatype.release())};
+	MockContext mockCtx;
+	std::unique_ptr<Array_datatype> cloned_array {static_cast<Array_datatype*>(cloned_datatype->evaluate(mockCtx).release())};
 	ASSERT_EQ(this->test_array.size(), cloned_array->size());
 	ASSERT_EQ(this->test_array.start(), cloned_array->start());
 	ASSERT_EQ(this->test_array.subsize(), cloned_array->subsize());
-	ASSERT_EQ(new_datatype, &cloned_array->subtype());
 }
 
 /*
@@ -159,12 +160,11 @@ TEST_F(ArrayDatatypeTest, check_densify)
  */
 TEST_F(ArrayDatatypeTest, check_evaluate)
 {
-	//just need something for evalute function (not used)
-	PDI::Context* context;
 	MockDatatype* new_datatype = new MockDatatype();
 	EXPECT_CALL(*this->mockDatatype, clone_type_proxy()).WillOnce(Return(new_datatype));
 	
-	Datatype_uptr cloned_datatype {this->test_array.evaluate(*context)};
+	MockContext mockCtx;
+	Datatype_uptr cloned_datatype {this->test_array.evaluate(mockCtx)};
 	std::unique_ptr<Array_datatype> cloned_array {static_cast<Array_datatype*>(cloned_datatype.release())};
 	ASSERT_EQ(this->test_array.size(), cloned_array->size());
 	ASSERT_EQ(this->test_array.start(), cloned_array->start());

@@ -36,7 +36,7 @@
 int main(int argc, char* argv[])
 {
 	const int icst = -1; /// constants values in the ghost nodes
-	const double rcst = -1.1;
+	const double rcst = -1.01;
 	
 	int nig = NI_GHOST, njg = NJ_GHOST;
 	int ni = IMX, nj = JMX;
@@ -60,8 +60,13 @@ int main(int argc, char* argv[])
 	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_status_t err = PDI_init(PC_get(conf, ".pdi"), &world);
+	PDI_status_t err = PDI_init(conf, &world);
 	int rank; MPI_Comm_rank(world, &rank);
+	
+	if ( 0 == rank ) {
+		remove("decl_hdf5_test_04_C.h5");
+	}
+	
 	{
 		/// setting nb of procs.
 		int size; MPI_Comm_size(world, &size);
@@ -102,8 +107,8 @@ int main(int argc, char* argv[])
 	double cst = -rcst;
 	for (j = njg; j < nj + njg ; ++j) {
 		for (i = nig; i < ni + nig; ++i) {
-			values[j][i]    = i + coord[1]*ni  -nig + (j+coord[0]*nj-njg)*10;
-			reals[j][i]     = i*cst + coord[1]*ni - nig*cst + (j+coord[0]*nj-njg)*10.; /// array that contains data
+			values[j][i]    = (i + coord[1]*ni  -nig)       + (j+coord[0]*nj-njg)*10;
+			reals[j][i]     = (i + coord[1]*ni - nig) * cst + (j+coord[0]*nj-njg)*10 * cst;
 		}
 	}
 	

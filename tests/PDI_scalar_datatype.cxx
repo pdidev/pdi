@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 
+#include <context_mock.h>
+
 #include <pdi/scalar_datatype.h>
 
 using namespace PDI;
@@ -159,7 +161,8 @@ TYPED_TEST(ScalarDatatypeTest, check_clone)
 	Datatype_template_uptr cloned_datatype {this->test_scalar->clone()};
 	
 	//need to cast to unique_ptr<Scalar_datatype> to get the kind()
-	unique_ptr<Scalar_datatype> cloned_scalar {static_cast<Scalar_datatype*>(cloned_datatype.release())};
+	MockContext mockCtx;
+	unique_ptr<Scalar_datatype> cloned_scalar {static_cast<Scalar_datatype*>(cloned_datatype->evaluate(mockCtx).release())};
 	ASSERT_EQ(this->test_scalar->kind(), cloned_scalar->kind());
 	ASSERT_EQ(this->test_scalar->datasize(), cloned_scalar->datasize());
 	ASSERT_EQ(this->test_scalar->buffersize(), cloned_scalar->buffersize());
@@ -177,9 +180,8 @@ TYPED_TEST(ScalarDatatypeTest, check_clone)
  */
 TYPED_TEST(ScalarDatatypeTest, check_evaluate)
 {
-	//just need something for evalute function (not used)
-	Context* context;
-	Datatype_uptr cloned_datatype {this->test_scalar->evaluate(*context)};
+	MockContext mockCtx;
+	Datatype_uptr cloned_datatype {this->test_scalar->evaluate(mockCtx)};
 	
 	//need to cast to unique_ptr<Scalar_datatype> to get the kind()
 	unique_ptr<Scalar_datatype> cloned_scalar {static_cast<Scalar_datatype*>(cloned_datatype.release())};

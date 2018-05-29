@@ -1,27 +1,20 @@
-# a simple scalar, the duration in seconds
+# duration in seconds
 duration: 65
-# an example with a list, global [width,height] (excluding ghost)
-datasize: [3600, 3600]
-# an example with nested associative arrays
-parallelism:
-  width:  1
-  height: 3
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [420, 60]
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
+
+# only the following config is passed to PDI
 pdi:
-  metadata: # metadata, i.e. small values that can be referenced using $syntax
-    width: int # per proc. width including ghost
-    height: int # per proc. height including ghost
-    pwidth: int  # nb proc. in the x dim
-    pheight: int # nb proc. in the y dim
-    iter:
-      type: int # curent iteration id
-      size: 1
-      fti_id: 1
-    coord: { size: 2, type: int } # coordinate of the process as [x, y]
-  data: # values that can not be referenced using $syntax
-    main_field:
-      type:   double
-      sizes:  [$width, $height]
-      fti_id: 0
+  metadata: # type of small values for which PDI keeps a copy
+    iter: {type: int, size: 1, fti_id: 1 } # current iteration id
+    dsize:  { size: 2, type: int }         # local data size including ghosts/boundary
+    psize:  { size: 2, type: int }         # number of processes in each dimension
+    pcoord: { size: 2, type: int }         # coordinate of the process
+  data: # type of values for which PDI does not keep a copy
+    main_field: { sizes: [ '$dsize[0]', '$dsize[1]' ], type: double, fti_id: 0 }
+  
   plugins:
     fti:
       config_file: fti_config.ini

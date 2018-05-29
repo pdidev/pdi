@@ -68,13 +68,13 @@ configure_file(version.h.in pdi/version.h @ONLY)
 
 # Libraries
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 install(DIRECTORY ../include/ DESTINATION include)
 
 ## C++ version
 add_library(pdi SHARED
 		array_datatype.cxx
 		context.cxx
+		global_context.cxx
 		data_descriptor.cxx
 		datatype.cxx
 		datatype_template.cxx
@@ -103,15 +103,16 @@ set_property(TARGET pdi APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VE
 target_include_directories(pdi PUBLIC
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>" 
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>"
+		"$<INSTALL_INTERFACE:include>"
 )
-target_link_libraries(pdi PUBLIC paraconf mpi mpi_cxx ${CMAKE_DL_LIBS})
+target_link_libraries(pdi PUBLIC paraconf MPI::MPI_CXX ${CMAKE_DL_LIBS})
 install(TARGETS pdi EXPORT PDI_export
-		LIBRARY DESTINATION lib INCLUDES DESTINATION include
-		ARCHIVE DESTINATION lib INCLUDES DESTINATION include
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
 )
 install(FILES
 		"${CMAKE_CURRENT_BINARY_DIR}/pdi/export.h"
-		"${CMAKE_CURRENT_BINARY_DIR}/version.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/pdi/version.h"
 	DESTINATION include/pdi)
 
 ## Fortran version
@@ -123,34 +124,40 @@ if("${ENABLE_FORTRAN}")
 
 	get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
 	add_library(pdi_f90 fapi.c ${SRC_PDI_F90_BPP})
-	target_link_libraries(pdi_f90 pdi paraconf_f90)
+	target_link_libraries(pdi_f90 pdi paraconf_f90 MPI::MPI_Fortran)
 	set_source_files_properties(${SRC_PDI_F90_BPP} PROPERTIES GENERATED TRUE)
 	target_compile_definitions(pdi_f90 INTERFACE PDI_USE_F90_INCLUDE)
 	target_include_directories(pdi_f90 INTERFACE 
 			"$<BUILD_INTERFACE:${GENINC}>" 
-			"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>" 
+			"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>"
 			"$<INSTALL_INTERFACE:include>")
 	set_property(TARGET pdi_f90 PROPERTY VERSION ${pdi_VERSION})
 	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
 	set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
-	install(FILES ${SRC_PDI_F90_BPP} ${CMAKE_CURRENT_SOURCE_DIR}/../include/pdi_fortran.F90
+	install(FILES ${SRC_PDI_F90_BPP}
 			DESTINATION "include")
 	install(TARGETS pdi_f90 EXPORT PDI_export
-			LIBRARY DESTINATION lib INCLUDES DESTINATION "include"
-			ARCHIVE DESTINATION lib INCLUDES DESTINATION "include"
+			LIBRARY DESTINATION lib
+			ARCHIVE DESTINATION lib
 	)
 endif()
 
 
 # Installable config
 
-set(ConfigPackageLocation "lib/CMake/pdi-${pdi_VERSION}")
+set(ConfigPackageLocation "share/pdi-${pdi_VERSION}/cmake/")
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/pdi/pdiConfigVersion.cmake"
 		VERSION ${pdi_VERSION}
 		COMPATIBILITY AnyNewerVersion
 )
-install(EXPORT PDI_export DESTINATION ${ConfigPackageLocation})
-install(FILES ../cmake/pdiConfig.cmake "${CMAKE_CURRENT_BINARY_DIR}/pdi/pdiConfigVersion.cmake"
+install(EXPORT PDI_export DESTINATION "${ConfigPackageLocation}" FILE pdi.cmake)
+install(FILES
+		../cmake/FindMPI.cmake
+		../cmake/FindPackageHandleStandardArgs.cmake
+		../cmake/FindPackageMessage.cmake
+		../cmake/pdiConfig.cmake
+		"${CMAKE_CURRENT_BINARY_DIR}/pdi/pdiConfigVersion.cmake"
 		DESTINATION ${ConfigPackageLocation}
 )
+install(DIRECTORY ../cmake/FindMPI DESTINATION "${ConfigPackageLocation}")
