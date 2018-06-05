@@ -47,15 +47,15 @@ struct DataRefAnyTest : public ::testing::Test, Ref_base {
 		EXPECT_CALL(*this->mocked_datatype, datasize())
 		.Times(1)
 		.WillOnce(Return(1024));
-
+		
 		m_tested_ref = unique_ptr<Ref> {new Ref{&m_data, [](void* d){ *((bool*) d) = false;  },
 			Datatype_uptr{mocked_datatype}, true, true}
 		};
 	}
-
+	
 	MockDatatype* mocked_datatype {new MockDatatype()};
 	bool m_data {true};
-
+	
 	unique_ptr<Ref> m_tested_ref;
 };
 
@@ -143,18 +143,18 @@ TEST_F(DataRefAnyTest, unlinkButNotDestroy)
 	ASSERT_TRUE(*this->m_tested_ref);
 	ASSERT_EQ(*this->m_tested_ref, copied_ref);
 	ASSERT_EQ(2, Ref_base::get_content(copied_ref)->m_owners);
-
+	
 	this->m_tested_ref->reset();
-
+	
 	ASSERT_FALSE(*this->m_tested_ref);
 	ASSERT_TRUE(copied_ref);
 	ASSERT_TRUE(this->m_data);
 	ASSERT_EQ(1, Ref_base::get_content(copied_ref)->m_owners);
 	ASSERT_EQ(0, Ref_base::get_content(copied_ref)->m_read_locks);
 	ASSERT_EQ(0, Ref_base::get_content(copied_ref)->m_write_locks);
-
+	
 	copied_ref.reset();
-
+	
 	ASSERT_FALSE(*this->m_tested_ref);
 	ASSERT_FALSE(copied_ref);
 	ASSERT_FALSE(this->m_data);
@@ -175,9 +175,9 @@ TEST_F(DataRefAnyTest, getAccess)
 	ASSERT_TRUE(copied_ref_r);
 	const void* ptr_r = copied_ref_r.get();
 	ASSERT_EQ(&this->m_data, ptr_r);
-
+	
 	copied_ref_r.reset();
-
+	
 	Ref_rw copied_ref_rw(*this->m_tested_ref);
 	ASSERT_TRUE(copied_ref_rw);
 	void* ptr_rw = copied_ref_rw.get();
@@ -297,11 +297,11 @@ TYPED_TEST(DataRefAnyTypedTest, chmodConstructor)
 {
 	//copies a reference with different privileges
 	TypeParam chref(*this->m_tested_ref);
-
+	
 	ASSERT_TRUE(*this->m_tested_ref);
 	ASSERT_EQ(*this->m_tested_ref, chref);
 	ASSERT_EQ(2, Ref_base::get_content(chref)->m_owners);
-
+	
 	if (this->locks & 2) {
 		//if granted with write access
 		ASSERT_EQ(1, Ref_base::get_content(chref)->m_read_locks);
@@ -328,16 +328,16 @@ struct DenseArrayRefAnyTest : public DataRefAnyTest {
 	DenseArrayRefAnyTest() : DataRefAnyTest()
 	{
 		DataRefAnyTest::m_tested_ref->reset();
-
+		
 		for (int i = 0; i < 100; i++) {
 			array_to_share[i] = i;
 		}
-
+		
 		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void*){},
 			datatype->clone_type(), true, true}
 		};
 	}
-
+	
 	Datatype_uptr datatype {
 		new Array_datatype
 		{
@@ -351,7 +351,7 @@ struct DenseArrayRefAnyTest : public DataRefAnyTest {
 			10
 		}
 	};
-
+	
 	int array_to_share[100]; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
 };
 
@@ -368,7 +368,7 @@ TEST_F(DenseArrayRefAnyTest, checkDeepCopy)
 {
 	Ref_r changed_ref(*this->m_tested_ref);
 	ASSERT_TRUE(changed_ref);
-
+	
 	Ref_rw cloned_ref(changed_ref.copy());
 	int* cloned_array = static_cast<int*>(cloned_ref.get());
 	for (int i = 0; i < 100; i++) {
@@ -379,8 +379,8 @@ TEST_F(DenseArrayRefAnyTest, checkDeepCopy)
 /*
  * Struct prepared for SparseArrayRefAnyTest.
  *
- * 		NOT SUPPORTED cannot make a deep copy of sparese array.
- * 		copy() method is only called for metadata. We assume that metadata should be dense.
+ *      NOT SUPPORTED cannot make a deep copy of sparese array.
+ *      copy() method is only called for metadata. We assume that metadata should be dense.
  *
  */
 /*
