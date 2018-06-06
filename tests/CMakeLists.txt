@@ -58,20 +58,21 @@ endif()
 
 add_executable(PDI_unit_tests
 		PDI_array_datatype.cxx
+<<<<<<< 039d8afc8bb426f8d6a0bb97abd15276a411deb4
 <<<<<<< ec924ec6f8f4cbdf2619ba753e27f1465abc684e
 		PDI_context.cxx
 		PDI_data_descriptor.cxx
 =======
 >>>>>>> Revert "add context test"
+=======
+		PDI_context.cxx
+>>>>>>> add context test
 		PDI_error.cxx
 		PDI_member.cxx
 		PDI_record_datatype_empty.cxx
-		PDI_record_datatype.cxx
-		PDI_ref_any.cxx
 		PDI_scalar_datatype.cxx)
 
 target_include_directories(PDI_unit_tests PRIVATE
-		./include/
 		./mocks/)
 
 target_link_libraries(PDI_unit_tests pdi pthread dl GTest::GTest GTest::Main GMock::GMock GMock::Main)
