@@ -62,9 +62,12 @@ add_executable(PDI_unit_tests
 		PDI_error.cxx
 		PDI_member.cxx
 		PDI_record_datatype_empty.cxx
+		PDI_record_datatype.cxx
+		PDI_ref_any.cxx
 		PDI_scalar_datatype.cxx)
 
 target_include_directories(PDI_unit_tests PRIVATE
+		./include/
 		./mocks/)
 
 target_link_libraries(PDI_unit_tests pdi pthread dl GTest::GTest GTest::Main GMock::GMock GMock::Main)
