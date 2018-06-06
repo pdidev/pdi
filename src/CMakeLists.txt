@@ -80,6 +80,7 @@ add_library(pdi SHARED
 		datatype_template.cxx
 		error.cxx
 		expression.cxx
+		logger.cxx
 		paraconf_wrapper.cxx
 		pdi.cxx
 		plugin.cxx

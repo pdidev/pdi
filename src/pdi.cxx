@@ -39,6 +39,7 @@
 #include "pdi/context.h"
 #include "pdi/global_context.h"
 #include "pdi/data_descriptor.h"
+#include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
@@ -176,6 +177,7 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
+	Logger::configure_logger(conf);
 	g_context.reset(new Global_context{conf, world});
 	return PDI_OK;
 } catch (const Error& e)

@@ -33,7 +33,6 @@
 
 #include <pdi.h>
 
-#include "spdlog/spdlog.h"
 
 namespace PDI {
 
