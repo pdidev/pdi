@@ -180,7 +180,7 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	configure_logger(conf, g_logger);
+	configure_logger(g_logger, conf);
 	g_context.reset(new Global_context{conf, world});
 	g_logger->info("Initialization successful.");
 	return PDI_OK;

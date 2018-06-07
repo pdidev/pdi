@@ -23,8 +23,6 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <stdio.h>
-#include <unistd.h>
 
 #include "pdi/logger.h"
 
@@ -124,7 +122,7 @@ static void configure_single_rank(PC_tree_t logging_tree, Logger& logger)
 	}
 }
 
-void configure_logger(PC_tree_t config, Logger& logger)
+void configure_logger(Logger& logger, PC_tree_t config)
 {
 	PC_tree_t logging_tree = PC_get(config, ".logging");
 	if (PC_status(logging_tree)) {
