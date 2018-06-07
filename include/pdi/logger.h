@@ -25,7 +25,7 @@
 #ifndef PDI_LOGGER_H_
 #define PDI_LOGGER_H_
 
-#include <spdlog/spdlog.h>
+#include <spdlog.h>
 
 #include <pdi/paraconf_wrapper.h>
 

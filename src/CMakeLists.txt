@@ -104,6 +104,7 @@ set_property(TARGET pdi APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VE
 target_include_directories(pdi PUBLIC
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>" 
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>"
+		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/vendor/spdlog/>"
 		"$<INSTALL_INTERFACE:include>"
 )
 target_link_libraries(pdi PUBLIC paraconf MPI::MPI_CXX ${CMAKE_DL_LIBS})
