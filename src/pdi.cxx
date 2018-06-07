@@ -103,6 +103,9 @@ struct Error_context {
 /// The singleton context of PDI
 unique_ptr<Context> g_context;
 
+/// Logger declaration
+Logger g_logger;
+
 /// The thread-local error context
 thread_local Error_context g_error_context;
 
@@ -177,8 +180,9 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	Logger::configure_logger(conf);
+	configure_logger(conf, g_logger);
 	g_context.reset(new Global_context{conf, world});
+	g_logger->info("Initialization successful.");
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -201,6 +205,7 @@ try
 	g_transaction.clear();
 	g_transaction_data.clear();
 	g_context.reset();
+	g_logger->info("Finalization successful.");
 	return PDI_OK;
 } catch (const Error& e)
 {

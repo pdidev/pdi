@@ -31,19 +31,12 @@
 
 namespace PDI {
 
-struct Logger {
-	/**
-	 * Returns a shared pointer to global logger.
-	 *
-	 *  \return a shared pointer to global logger
-	 */
-	static std::shared_ptr<spdlog::logger>& write();
-	
-	/**
-	 *  Reads configuration tree and sets up the global logger.
-	 */
-	static void configure_logger(PC_tree_t config);
-};
+typedef std::shared_ptr<spdlog::logger> Logger;
+
+/**
+ *  Reads configuration tree and sets up the global logger.
+ */
+void PDI_EXPORT configure_logger(PC_tree_t config, Logger& logger);
 
 } // namespace PDI
 

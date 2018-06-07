@@ -22,11 +22,68 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <mpi.h>
+#include <stdio.h>
+#include <unistd.h>
+
 #include "pdi/logger.h"
 
 namespace PDI {
 
-static void read_defaul_level(PC_tree_t logging_tree)
+static void set_up_log_format(Logger& logger)
+{
+	int world_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	char format[64];
+	snprintf(format, 64, "[PDI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
+	logger->set_pattern(std::string(format));
+}
+
+static void select_log_sinks(PC_tree_t logging_tree, Logger& logger)
+{
+	PC_tree_t output_tree = PC_get(logging_tree, ".output");
+	//check if there is output_tree and is not empty
+	if (!PC_status(output_tree)) {
+		std::vector<spdlog::sink_ptr> sinks;
+		
+		//configure file sink
+		if (!PC_status(PC_get(output_tree, ".file"))) {
+			std::string filename {PDI::to_string(PC_get(output_tree, ".file"))};
+			auto file_sink = std::make_shared<spdlog::sinks::simple_file_sink_st>(filename);
+			sinks.push_back(file_sink);
+		}
+		
+		//configure console sink
+		if (!PC_status(PC_get(output_tree, ".console"))) {
+			std::string console_switch {PDI::to_string(PC_get(output_tree, ".console"))};
+			if (console_switch.compare("off")) {
+				//logging to console is turned on
+				if (sinks.size() > 0) {
+#if defined _WIN32 && !defined(__cplusplus_winrt)
+					auto console_sink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_st>();
+#else
+					auto console_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_st>();
+#endif
+					sinks.push_back(console_sink);
+				} else {
+					//if console is turned on and no output file
+					logger = spdlog::stdout_color_st("console");
+					return;
+				}
+			}
+		}
+		
+		if (sinks.size() > 0) {
+			logger = std::make_shared<spdlog::logger>("pdi_logger", begin(sinks), end(sinks));
+		}
+	} else {
+		//if no output tree set console
+		logger = spdlog::stdout_color_st("console");
+	}
+}
+
+
+static void read_log_level(PC_tree_t logging_tree, Logger& logger)
 {
 	if (!PC_status(PC_get(logging_tree, ".level"))) {
 		std::string level_str {PDI::to_string(PC_get(logging_tree, ".level"))};
@@ -41,33 +98,52 @@ static void read_defaul_level(PC_tree_t logging_tree)
 		
 		auto level_it = level_map.find(level_str);
 		if (level_it != level_map.end()) {
-			Logger::write()->set_level(level_map.find(level_str)->second);
+			logger->set_level(level_map.find(level_str)->second);
 		} else {
-			Logger::write()->warn("Invalid logging level: {}. Available: 'debug', 'info', 'warn', 'error', 'off'.", level_str);
+			logger->warn("Invalid logging level: {}. Available: 'debug', 'info', 'warn', 'error', 'off'.", level_str);
 		}
 	}
 }
 
-void Logger::configure_logger(PC_tree_t config)
+static void configure_single_rank(PC_tree_t logging_tree, Logger& logger)
 {
-	//set default settings
-	write() = spdlog::stdout_color_mt("console");
-	write()->set_level(spdlog::level::info);
-	
-	PC_tree_t logging_tree = PC_get(config, ".logging");
-	if (PC_status(logging_tree)) {
-		write()->debug("Didn't found logging tree");
-		return;
+	PC_tree_t single_tree = PC_get(logging_tree, ".single");
+	if (!PC_status(single_tree)) {
+		int world_rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+		
+		int nb_key = len(single_tree);
+		for (int key_id = 0; key_id < nb_key; ++key_id) {
+			PC_tree_t rank_tree = PC_get(single_tree, "[%d]", key_id);
+			int selected_rank = PDI::to_long(PC_get(rank_tree, ".rank"), -1);
+			if (selected_rank == world_rank) {
+				read_log_level(rank_tree, logger);
+				break;
+			}
+		}
 	}
-	
-	//read a default log level
-	read_defaul_level(logging_tree);
 }
 
-std::shared_ptr<spdlog::logger>& Logger::write()
+void configure_logger(PC_tree_t config, Logger& logger)
 {
-	static std::shared_ptr<spdlog::logger> logger;
-	return logger;
+	PC_tree_t logging_tree = PC_get(config, ".logging");
+	if (PC_status(logging_tree)) {
+		//didn't found logging tree, set default
+		logger = spdlog::stdout_color_st("console");
+		set_up_log_format(logger);
+		return;
+	}
+	//select default sinks
+	select_log_sinks(logging_tree, logger);
+	
+	//read default log level
+	read_log_level(logging_tree, logger);
+	
+	//configure log level of single ranks
+	configure_single_rank(logging_tree, logger);
+	
+	//set up final format of logger
+	set_up_log_format(logger);
 }
 
 }
