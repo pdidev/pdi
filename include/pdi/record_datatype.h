@@ -70,9 +70,6 @@ private:
 	size_t m_buffersize;
 
 	/// Global logger of PDI
-	Logger logger {spdlog::get("logger")};
-	
-	/// Global logger of PDI
 	Logger m_logger {spdlog::get("logger")};
 	
 public:

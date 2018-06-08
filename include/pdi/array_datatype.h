@@ -49,9 +49,6 @@ class PDI_EXPORT Array_datatype:
 	/// Global logger of PDI
 	Logger logger {spdlog::get("logger")};
 	
-	/// Global logger of PDI
-	Logger logger {spdlog::get("logger")};
-	
 public:
 	Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize);
 	
