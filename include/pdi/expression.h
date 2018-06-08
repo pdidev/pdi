@@ -42,7 +42,7 @@ class PDI_EXPORT Expression
 	std::unique_ptr<Impl> m_impl;
 
 	/// Global logger of PDI
-	Logger logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger")};
 	
 	Expression(std::unique_ptr<Impl>);
 	

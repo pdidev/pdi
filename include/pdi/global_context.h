@@ -47,7 +47,7 @@ class PDI_EXPORT Global_context : public Context
 {
 private:
 	/// Global logger of PDI
-	Logger logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger")};
 
 	/// The loaded plugins
 	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
