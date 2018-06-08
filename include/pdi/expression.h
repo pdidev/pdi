@@ -40,6 +40,9 @@ class PDI_EXPORT Expression
 	friend struct Impl;
 	
 	std::unique_ptr<Impl> m_impl;
+
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
 	
 	/// Global logger of PDI
 	Logger m_logger {spdlog::get("logger")};

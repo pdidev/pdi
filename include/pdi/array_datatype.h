@@ -45,6 +45,9 @@ class PDI_EXPORT Array_datatype:
 	
 	/// Number of actual elements in the array
 	size_t m_subsize;
+
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
 	
 	/// Global logger of PDI
 	Logger logger {spdlog::get("logger")};
