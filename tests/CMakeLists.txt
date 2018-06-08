@@ -58,19 +58,8 @@ endif()
 
 add_executable(PDI_unit_tests
 		PDI_array_datatype.cxx
-<<<<<<< HEAD
-<<<<<<< 039d8afc8bb426f8d6a0bb97abd15276a411deb4
-<<<<<<< ec924ec6f8f4cbdf2619ba753e27f1465abc684e
 		PDI_context.cxx
 		PDI_data_descriptor.cxx
-=======
->>>>>>> Revert "add context test"
-=======
-		PDI_context.cxx
->>>>>>> add context test
-=======
-		PDI_context.cxx
->>>>>>> 79b85a26bd7278c18ec79a8f6dc90f33813755da
 		PDI_error.cxx
 		PDI_member.cxx
 		PDI_record_datatype_empty.cxx
