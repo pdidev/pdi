@@ -33,6 +33,7 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype_template.h>
+#include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
 
@@ -60,6 +61,9 @@ class PDI_EXPORT Data_descriptor
 	
 	bool m_metadata;
 	
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
+
 	
 	/** Create an empty descriptor
 	 */

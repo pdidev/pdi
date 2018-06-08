@@ -29,6 +29,7 @@
 #ifndef PDI_PLUGIN_H_
 #define PDI_PLUGIN_H_
 
+#include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 
 
@@ -37,6 +38,9 @@ namespace PDI {
 class PDI_EXPORT Plugin
 {
 	Context& m_context;
+
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
 	
 public:
 	Plugin(const Plugin&) = delete;

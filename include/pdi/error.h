@@ -30,6 +30,7 @@
 
 #include <paraconf.h>
 
+#include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 
 namespace PDI {
@@ -40,6 +41,9 @@ class PDI_EXPORT Error:
 	std::string m_what;
 	
 	PDI_status_t m_status;
+
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
 	
 public:
 	/** Creates a PDI error

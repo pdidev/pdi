@@ -28,11 +28,15 @@
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/logger.h>
 
 namespace PDI {
 
 class PDI_EXPORT Datatype_template
 {
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
+
 public:
 	/** Destroys the template
 	 */

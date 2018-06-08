@@ -35,6 +35,7 @@
 #include <unordered_set>
 
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/ref_any.h>
@@ -45,6 +46,9 @@ namespace PDI {
 class PDI_EXPORT Global_context : public Context
 {
 private:
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
+
 	/// The loaded plugins
 	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
 	

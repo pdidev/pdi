@@ -65,18 +65,18 @@ static void select_log_sinks(PC_tree_t logging_tree, Logger& logger)
 					sinks.push_back(console_sink);
 				} else {
 					//if console is turned on and no output file
-					logger = spdlog::stdout_color_st("console");
+					logger = spdlog::stdout_color_st("logger");
 					return;
 				}
 			}
 		}
 		
 		if (sinks.size() > 0) {
-			logger = std::make_shared<spdlog::logger>("pdi_logger", begin(sinks), end(sinks));
+			logger = std::make_shared<spdlog::logger>("logger", begin(sinks), end(sinks));
 		}
 	} else {
 		//if no output tree set console
-		logger = spdlog::stdout_color_st("console");
+		logger = spdlog::stdout_color_st("logger");
 	}
 }
 
@@ -127,7 +127,7 @@ void configure_logger(Logger& logger, PC_tree_t config)
 	PC_tree_t logging_tree = PC_get(config, ".logging");
 	if (PC_status(logging_tree)) {
 		//didn't found logging tree, set default
-		logger = spdlog::stdout_color_st("console");
+		logger = spdlog::stdout_color_st("logger");
 		set_up_log_format(logger);
 		return;
 	}

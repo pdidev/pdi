@@ -34,6 +34,7 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
+#include <pdi/logger.h>
 
 
 namespace PDI {
@@ -43,6 +44,9 @@ namespace PDI {
  */
 class PDI_EXPORT Ref_base
 {
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
+
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
 	 */

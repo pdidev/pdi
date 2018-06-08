@@ -43,6 +43,9 @@ class PDI_EXPORT Scalar_datatype:
 	/// Interpretation of the content
 	Scalar_kind m_kind;
 	
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
+	
 public:
 	Scalar_datatype(Scalar_kind kind, size_t size);
 	

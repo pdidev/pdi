@@ -27,6 +27,7 @@
 
 #include <vector>
 
+#include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
 
@@ -67,6 +68,9 @@ private:
 	
 	/// The total size of the buffer containing all members
 	size_t m_buffersize;
+
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
 	
 public:
 	Record_datatype(std::vector<Member>&& members, size_t size);
