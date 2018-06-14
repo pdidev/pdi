@@ -38,7 +38,7 @@ namespace PDI {
 class PDI_EXPORT Plugin
 {
 	Context& m_context;
-
+	
 protected:
 	/// Global logger of PDI
 	Logger m_logger {spdlog::get("logger")};

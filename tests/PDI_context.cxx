@@ -60,7 +60,7 @@ struct ContextTest : public ::testing::Test {
  * Tested functions:    PDI::Context::desc(string)
  *
  * Description:         Checks if accessesing uninitialzied descriptor
- * 						creates a new one.
+ *                      creates a new one.
  */
 TEST_F(ContextTest, desc_string_uninitialized)
 {
@@ -75,7 +75,7 @@ TEST_F(ContextTest, desc_string_uninitialized)
  * Tested functions:    PDI::Context::desc(string)
  *
  * Description:         Checks if accessesing a descriptor
- * 						returns correct one.
+ *                      returns correct one.
  */
 TEST_F(ContextTest, desc_string_initialized)
 {
@@ -95,7 +95,7 @@ TEST_F(ContextTest, desc_string_initialized)
  * Tested functions:    PDI::Context::desc(const char*)
  *
  * Description:         Checks if accessesing uninitialzied descriptor
- * 						creates a new one.
+ *                      creates a new one.
  */
 TEST_F(ContextTest, desc_cstring_uninitialized)
 {
@@ -110,7 +110,7 @@ TEST_F(ContextTest, desc_cstring_uninitialized)
  * Tested functions:    PDI::Context::desc(const char*)
  *
  * Description:         Checks if accessesing a descriptor
- * 						returns correct one.
+ *                      returns correct one.
  */
 TEST_F(ContextTest, desc_cstring_initialized)
 {
@@ -130,7 +130,7 @@ TEST_F(ContextTest, desc_cstring_initialized)
  * Tested functions:    PDI::Context::operator[](string)
  *
  * Description:         Checks if accessesing uninitialzied descriptor
- * 						creates a new one.
+ *                      creates a new one.
  */
 TEST_F(ContextTest, operator_string_uninitialized)
 {
@@ -145,7 +145,7 @@ TEST_F(ContextTest, operator_string_uninitialized)
  * Tested functions:    PDI::Context::operator[](string)
  *
  * Description:         Checks if accessesing a descriptor
- * 						returns correct one.
+ *                      returns correct one.
  */
 TEST_F(ContextTest, operator_string_initialized)
 {
@@ -165,7 +165,7 @@ TEST_F(ContextTest, operator_string_initialized)
  * Tested functions:    PDI::Context::operator[](const char*)
  *
  * Description:         Checks if accessesing uninitialzied descriptor
- * 						creates a new one.
+ *                      creates a new one.
  */
 TEST_F(ContextTest, operator_cstring_uninitialized)
 {
@@ -180,7 +180,7 @@ TEST_F(ContextTest, operator_cstring_uninitialized)
  * Tested functions:    PDI::Context::operator[](const char*)
  *
  * Description:         Checks if accessesing a descriptor
- * 						returns correct one.
+ *                      returns correct one.
  */
 TEST_F(ContextTest, operator_cstring_initialized)
 {
@@ -198,10 +198,10 @@ TEST_F(ContextTest, operator_cstring_initialized)
  * Name:                ContextTest.iterator
  *
  * Tested functions:    PDI::Context::begin(),
- * 						PDI::Context::end()
+ *                      PDI::Context::end()
  *
  * Description:         Checks if tested functions
- * 						return correct iterators.
+ *                      return correct iterators.
  */
 TEST_F(ContextTest, iterator)
 {

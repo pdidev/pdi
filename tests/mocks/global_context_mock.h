@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,67 +22,41 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
+#ifndef PDI_GLOBAL_CONTEXT_MOCK_H_
+#define PDI_GLOBAL_CONTEXT_MOCK_H_
 
-#include <iostream>
-#include <memory>
+#include <gmock/gmock.h>
+#include <pdi/global_context.h>
+#include <pdi/paraconf_wrapper.h>
+#include <pdi/plugin.h>
 
-#include <dlfcn.h>
+struct MockGlobalContext : public PDI::Global_context {
+	MockGlobalContext(PC_tree_t conf, MPI_Comm* world) :
+		Global_context(conf, world)
+	{}
+	PDI::Paraconf_wrapper fw;
+	
+	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));
+	MOCK_METHOD1(desc, PDI::Data_descriptor&(const char*));
+	
+	MOCK_METHOD1(BracketOp1, PDI::Data_descriptor&(const std::string&));
+	PDI::Data_descriptor& operator [] (const std::string& str) override
+	{
+		return BracketOp1(str);
+	}
+	
+	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char* name));
+	PDI::Data_descriptor& operator [] (const char* str) override
+	{
+		return BracketOp2(str);
+	}
+	
+	MOCK_METHOD0(begin, PDI::Context::Iterator());
+	MOCK_METHOD0(end, PDI::Context::Iterator());
+	
+	MOCK_METHOD1(event, void(const char* name));
+	
+};
 
-#include "pdi/paraconf_wrapper.h"
-#include "pdi/plugin.h"
-#include "pdi/ref_any.h"
-#include "pdi/error.h"
 
-#include "pdi/context.h"
-
-
-namespace PDI {
-
-using std::move;
-using std::string;
-using std::unordered_map;
-using std::unique_ptr;
-
-Context::Iterator::Iterator(const unordered_map<string, unique_ptr<Data_descriptor>>::iterator& data):
-	m_data(data)
-{}
-
-Context::Iterator::Iterator(unordered_map<string, unique_ptr<Data_descriptor>>::iterator&& data):
-	m_data(move(data))
-{}
-
-Data_descriptor* Context::Iterator::operator-> ()
-{
-	return m_data->second.get();
-}
-
-Data_descriptor& Context::Iterator::operator* ()
-{
-	return *m_data->second;
-}
-
-Context::Iterator& Context::Iterator::operator++ ()
-{
-	++m_data;
-	return *this;
-}
-
-bool Context::Iterator::operator!= (const Iterator& o)
-{
-	return (m_data != o.m_data);
-}
-
-Context::Iterator Context::get_iterator(const std::unordered_map<std::string, unique_ptr<Data_descriptor>>::iterator& data)
-{
-	return data;
-}
-
-Context::Iterator Context::get_iterator(std::unordered_map<std::string, unique_ptr<Data_descriptor>>::iterator&& data)
-{
-	return move(data);
-}
-
-Context::~Context() = default;
-
-}
+#endif //PDI_GLOBAL_CONTEXT_MOCK_H_

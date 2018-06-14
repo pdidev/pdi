@@ -24,10 +24,11 @@
 
 #include <gtest/gtest.h>
 
-#include <context_mock.h>
+#include <global_context_mock.h>
 
 #include <pdi/array_datatype.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/data_descriptor_impl.h>
 #include <pdi/error.h>
 #include <pdi/scalar_datatype.h>
 
@@ -41,20 +42,20 @@ using ::testing::ReturnRef;
 namespace PDI {
 //handler to private fields of Descriptor
 struct Descriptor_test_handler {
-	static unique_ptr<Data_descriptor> default_desc(MockContext& mockCtx)
+	static unique_ptr<Data_descriptor> default_desc(MockGlobalContext& mockGlCtx)
 	{
-		return unique_ptr<Data_descriptor> {new Data_descriptor{mockCtx, "default_desc"}};
+		return unique_ptr<Data_descriptor> {new Data_descriptor_impl{mockGlCtx, "default_desc"}};
 	}
 	
-	static Datatype_uptr desc_get_type(unique_ptr<Data_descriptor>& desc, MockContext& mockCtx)
+	static Datatype_uptr desc_get_type(unique_ptr<Data_descriptor>& desc, MockGlobalContext& mockGlCtx)
 	{
-		Datatype_template_uptr desc_template = desc->m_type->clone();
-		return desc_template->evaluate(mockCtx);
+		Datatype_template_uptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type->clone();
+		return desc_template->evaluate(mockGlCtx);
 	}
 	
-	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc, MockContext& mockCtx)
+	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc)
 	{
-		return desc->m_refs.size();
+		return dynamic_cast<Data_descriptor_impl*>(desc.get())->m_refs.size();
 	}
 };
 }
@@ -65,9 +66,9 @@ struct Descriptor_test_handler {
 struct DataDescTest : public ::testing::Test {
 	int array[10];
 	PC_tree_t array_config {PC_parse_string("{ size: 10, type: int }")};
-	
-	MockContext mockCtx;
-	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(mockCtx);
+	PDI::Paraconf_wrapper fw;
+	MockGlobalContext mockGlCtx{PC_parse_string(""), 0};
+	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(mockGlCtx);
 };
 
 /*
@@ -79,7 +80,7 @@ struct DataDescTest : public ::testing::Test {
  */
 TEST_F(DataDescTest, check_default_fields)
 {
-	Datatype_uptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, mockCtx);
+	Datatype_uptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, mockGlCtx);
 	Scalar_datatype* default_scalar = static_cast<Scalar_datatype*>(desc_type.release());
 	ASSERT_EQ(Scalar_kind::UNKNOWN, default_scalar->kind());
 	ASSERT_EQ(0, default_scalar->datasize());
@@ -113,7 +114,7 @@ TEST_F(DataDescTest, creation_template)
 {
 	Paraconf_wrapper fw;
 	this->m_desc_default->creation_template(array_config);
-	Datatype_uptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, mockCtx);
+	Datatype_uptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, mockGlCtx);
 	ASSERT_EQ(10 * sizeof(int), datatype->datasize());
 	ASSERT_EQ(10 * sizeof(int), datatype->buffersize());
 }
@@ -144,11 +145,6 @@ TEST_F(DataDescTest, catch_empty_exception)
  */
 TEST_F(DataDescTest, simply_share_data)
 {
-	unordered_map<string, unique_ptr<Plugin>> empty_map;
-	EXPECT_CALL(this->mockCtx, get_plugins())
-	.Times(1)
-	.WillOnce(ReturnRef(empty_map));
-	
 	this->m_desc_default->share(this->array, false, true);
 	
 	Ref created_ref = this->m_desc_default->ref();
@@ -172,18 +168,13 @@ TEST_F(DataDescTest, simply_share_data)
  */
 TEST_F(DataDescTest, multi_read_share_data)
 {
-	unordered_map<string, unique_ptr<Plugin>> empty_map;
-	EXPECT_CALL(this->mockCtx, get_plugins())
-	.Times(4)
-	.WillRepeatedly(ReturnRef(empty_map));
-	
 	this->m_desc_default->share(this->array, true, false);
 	void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(this->array, ptr);
 	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(this->array, ptr);
 	
-	int refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default, mockCtx);
+	int refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	
 	ASSERT_EQ(3, refs_number);
 	
@@ -192,15 +183,15 @@ TEST_F(DataDescTest, multi_read_share_data)
 	ASSERT_EQ(nullptr, ptr);
 	this->m_desc_default->release();
 	
-	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default, mockCtx);
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(2, refs_number);
 	
 	this->m_desc_default->release();
-	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default, mockCtx);
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(1, refs_number);
 	
 	this->m_desc_default->release();
-	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default, mockCtx);
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(0, refs_number);
 }
 
@@ -216,11 +207,6 @@ TEST_F(DataDescTest, multi_read_share_data)
  */
 TEST_F(DataDescTest, multi_write_share_data)
 {
-	unordered_map<string, unique_ptr<Plugin>> empty_map;
-	EXPECT_CALL(this->mockCtx, get_plugins())
-	.Times(2)
-	.WillRepeatedly(ReturnRef(empty_map));
-	
 	this->m_desc_default->share(this->array, false, true);
 	this->m_desc_default->share(this->m_desc_default->ref(), false, true);
 	try {
@@ -247,11 +233,6 @@ TEST_F(DataDescTest, multi_write_share_data)
  */
 TEST_F(DataDescTest, read_write_share_data)
 {
-	unordered_map<string, unique_ptr<Plugin>> empty_map;
-	EXPECT_CALL(this->mockCtx, get_plugins())
-	.Times(3)
-	.WillRepeatedly(ReturnRef(empty_map));
-	
 	this->m_desc_default->share(this->array, true, true);
 	this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	try {
@@ -283,12 +264,6 @@ TEST_F(DataDescTest, read_write_share_data)
  */
 TEST_F(DataDescTest, simply_share_meta)
 {
-	this->m_desc_default->metadata(true);
-	unordered_map<string, unique_ptr<Plugin>> empty_map;
-	EXPECT_CALL(this->mockCtx, get_plugins())
-	.Times(1)
-	.WillOnce(ReturnRef(empty_map));
-	
 	this->m_desc_default->share(this->array, true, false);
 	
 	Ref created_ref = this->m_desc_default->ref();
@@ -330,18 +305,13 @@ TEST_F(DataDescTest, share_meta_without_read)
 TEST_F(DataDescTest, multi_read_share_meta)
 {
 	this->m_desc_default->metadata(true);
-	unordered_map<string, unique_ptr<Plugin>> empty_map;
-	EXPECT_CALL(this->mockCtx, get_plugins())
-	.Times(4)
-	.WillRepeatedly(ReturnRef(empty_map));
-	
 	this->m_desc_default->share(this->array, true, false);
 	void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(this->array, ptr);
 	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(this->array, ptr);
 	
-	int refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default, mockCtx);
+	int refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	
 	ASSERT_EQ(1, refs_number);
 	
@@ -350,14 +320,14 @@ TEST_F(DataDescTest, multi_read_share_meta)
 	ASSERT_NE(this->array, ptr);
 	this->m_desc_default->release();
 	
-	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default, mockCtx);
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(1, refs_number);
 	
 	this->m_desc_default->release();
-	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default, mockCtx);
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(1, refs_number);
 	
 	this->m_desc_default->release();
-	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default, mockCtx);
+	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(1, refs_number);
 }

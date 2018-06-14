@@ -35,7 +35,7 @@
 #include "pdi/ref_any.h"
 #include "pdi/error.h"
 
-#include "pdi/data_descriptor.h"
+#include "pdi/data_descriptor_impl.h"
 
 
 namespace PDI {
@@ -49,7 +49,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-struct Data_descriptor::Ref_holder {
+struct Data_descriptor_impl::Ref_holder {
 
 	virtual Ref ref() const = 0;
 	
@@ -60,7 +60,7 @@ struct Data_descriptor::Ref_holder {
 };
 
 template<bool R, bool W>
-struct Data_descriptor::Ref_holder::Impl: Data_descriptor::Ref_holder {
+struct Data_descriptor_impl::Ref_holder::Impl: Data_descriptor_impl::Ref_holder {
 
 	Ref_any<R, W> m_t;
 	
@@ -77,7 +77,7 @@ struct Data_descriptor::Ref_holder::Impl: Data_descriptor::Ref_holder {
 };
 
 
-Data_descriptor::Data_descriptor(Context& ctx, const char* name):
+Data_descriptor_impl::Data_descriptor_impl(Global_context& ctx, const char* name):
 	m_context{ctx},
 	m_config(PC_parse_string("")),
 	m_type{UNDEF_TYPE.clone_type()},
@@ -86,9 +86,9 @@ Data_descriptor::Data_descriptor(Context& ctx, const char* name):
 {
 }
 
-Data_descriptor::Data_descriptor(Data_descriptor&&) = default;
+Data_descriptor_impl::Data_descriptor_impl(Data_descriptor_impl&&) = default;
 
-Data_descriptor::~Data_descriptor()
+Data_descriptor_impl::~Data_descriptor_impl()
 {
 	// release metadata copies we kept
 	if ( metadata() && m_refs.size() == 1) m_refs.pop();
@@ -103,39 +103,39 @@ Data_descriptor::~Data_descriptor()
 	if ( !metadata() ) while (!m_refs.empty()) reclaim();
 }
 
-void Data_descriptor::creation_template(PC_tree_t config)
+void Data_descriptor_impl::creation_template(PC_tree_t config)
 {
 	m_type = Datatype::load(config);
 	m_config = config;
 }
 
-PC_tree_t Data_descriptor::config() const
+PC_tree_t Data_descriptor_impl::config() const
 {
 	return m_config;
 }
 
-bool Data_descriptor::metadata() const
+bool Data_descriptor_impl::metadata() const
 {
 	return m_metadata;
 }
 
-void Data_descriptor::metadata(bool metadata)
+void Data_descriptor_impl::metadata(bool metadata)
 {
 	m_metadata = metadata;
 }
 
-const std::string& Data_descriptor::name() const
+const std::string& Data_descriptor_impl::name() const
 {
 	return m_name;
 }
 
-Ref Data_descriptor::ref()
+Ref Data_descriptor_impl::ref()
 {
 	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value: `%s'", m_name.c_str()};
 	return m_refs.top()->ref();
 }
 
-void Data_descriptor::share(void* data, bool read, bool write)
+void Data_descriptor_impl::share(void* data, bool read, bool write)
 {
 	Ref r{data, &free, m_type->evaluate(m_context), read, write};
 	try {
@@ -147,7 +147,7 @@ void Data_descriptor::share(void* data, bool read, bool write)
 	}
 }
 
-void* Data_descriptor::share(Ref data_ref, bool read, bool write)
+void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 {
 	// metadata must provide read access
 	if (metadata() && !Ref_r(data_ref)) {
@@ -183,7 +183,7 @@ void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
 	}
 	
-	for (auto& elmnt : m_context.get_plugins()) {
+	for (auto& elmnt : m_context.m_plugins) {
 		vector<Error> errors;
 		try {
 			elmnt.second->data(m_name.c_str(), ref());
@@ -209,7 +209,7 @@ void* Data_descriptor::share(Ref data_ref, bool read, bool write)
 	return result;
 }
 
-void Data_descriptor::release()
+void Data_descriptor_impl::release()
 {
 	// move reference out of the store
 	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot release a non shared value"};
@@ -222,7 +222,7 @@ void Data_descriptor::release()
 	}
 }
 
-void Data_descriptor::reclaim()
+void Data_descriptor_impl::reclaim()
 {
 	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot reclaim a non shared value"};
 	

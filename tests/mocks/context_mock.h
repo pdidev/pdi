@@ -30,20 +30,17 @@
 #include <pdi/plugin.h>
 
 struct MockContext : public PDI::Context {
-	MOCK_METHOD0(get_plugins, std::unordered_map<std::string, std::unique_ptr<PDI::Plugin>>& ());
-	MOCK_METHOD0(get_descriptors, std::unordered_map<std::string, PDI::Data_descriptor>& ());
-	
 	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));
 	MOCK_METHOD1(desc, PDI::Data_descriptor&(const char*));
 	
 	MOCK_METHOD1(BracketOp1, PDI::Data_descriptor&(const std::string&));
-	virtual PDI::Data_descriptor& operator [] (const std::string& str) override
+	PDI::Data_descriptor& operator [] (const std::string& str) override
 	{
 		return BracketOp1(str);
 	}
 	
 	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char* name));
-	virtual PDI::Data_descriptor& operator [] (const char* str) override
+	PDI::Data_descriptor& operator [] (const char* str) override
 	{
 		return BracketOp2(str);
 	}

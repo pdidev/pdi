@@ -22,57 +22,96 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATA_DESCRIPTOR_H_
-#define PDI_DATA_DESCRIPTOR_H_
+#ifndef PDI_DATA_DESCRIPTOR_IMPL_H_
+#define PDI_DATA_DESCRIPTOR_IMPL_H_
+
+#include <functional>
+#include <memory>
+#include <stack>
 
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/data_descriptor.h>
 #include <pdi/datatype_template.h>
-#include <pdi/logger.h>
+#include <pdi/global_context.h>
 #include <pdi/ref_any.h>
 
 
 namespace PDI {
 
-class PDI_EXPORT Data_descriptor
+class PDI_EXPORT Data_descriptor_impl : public Data_descriptor
 {
+	friend class Global_context;
+	friend class Descriptor_test_handler;
+	
+	struct PDI_NO_EXPORT Ref_holder;
+	
+	/// Global logger of PDI
+	Logger m_logger {spdlog::get("logger")};
+	
+	/// The context this descriptor is part of
+	Global_context& m_context;
+	
+	/// References to the values of this descriptor
+	std::stack<std::unique_ptr<Ref_holder>> m_refs;
+	
+	PC_tree_t m_config;
+	
+	Datatype_template_uptr m_type;
+	
+	const std::string m_name;
+	
+	bool m_metadata;
+	
+	
+	/** Create an empty descriptor
+	 */
+	Data_descriptor_impl(Global_context& ctx, const char* name);
+	
+	Data_descriptor_impl(const Data_descriptor_impl&) = delete;
+	
+	Data_descriptor_impl& operator= (const Data_descriptor_impl&) = delete;
+	
+	Data_descriptor_impl& operator= (Data_descriptor_impl&&) = delete;
+	
 public:
-
-	virtual ~Data_descriptor() = default;
+	Data_descriptor_impl(Data_descriptor_impl&&);
+	
+	~Data_descriptor_impl() override;
 	
 	/** Sets the creation template used to type raw pointers shared through this descriptor
 	 * \param config the full configuration attached to the descriptor
 	 */
-	virtual void creation_template(PC_tree_t config) = 0;
+	void creation_template(PC_tree_t config) override;
 	
 	/** Returns the PC_tree_t config
 	 * \todo remove this and attach this config to the type
 	 * \return the full configuration attached to the descriptor
 	 */
-	virtual PC_tree_t config() const = 0;
+	PC_tree_t config() const override;
 	
 	/** Return true if the data is a metadata
 	 */
-	virtual bool metadata() const = 0;
+	bool metadata() const override;
 	
 	/** Sets whether this describes a metadata or not
 	 * \param metadata whether data shared through this descriptor should behave as a metadata
 	 */
-	virtual void metadata(bool metadata) = 0;
+	void metadata(bool metadata) override;
 	
-	virtual const std::string& name() const = 0;
+	const std::string& name() const override;
 	
 	/** Return a reference to the value of the data behind this descriptor
 	 */
-	virtual Ref ref() = 0;
+	Ref ref() override;
 	
 	/** Shares some data with PDI
 	 * \param[in,out] data the shared data
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
 	 */
-	virtual void share(void* data, bool read, bool write) = 0;
+	void share(void* data, bool read, bool write) override;
 	
 	/** Shares some data with PDI
 	 * \param[in,out] ref a reference to the shared data
@@ -80,20 +119,20 @@ public:
 	 * \param write whether write access is granted to other references
 	 * \return the just shared buffer
 	 */
-	virtual void* share(Ref ref, bool read, bool write) = 0;
+	void* share(Ref ref, bool read, bool write) override;
 	
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
 	 * free the associated memory whenever necessary.
 	 */
-	virtual void release() = 0;
+	void release() override;
 	
 	/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
 	 * free the associated memory whenever necessary.
 	 */
-	virtual void reclaim() = 0;
+	void reclaim() override;
 	
 }; // class Data_descriptor
 
 } // namespace PDI
 
-#endif // PDI_DATA_DESCRIPTOR_H_
+#endif // PDI_DATA_DESCRIPTOR_IMPL_H_

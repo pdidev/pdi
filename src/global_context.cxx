@@ -30,6 +30,7 @@
 
 #include <dlfcn.h>
 
+#include "pdi/data_descriptor_impl.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
@@ -89,17 +90,6 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
 
 } // namespace <anonymous>
 
-std::unordered_map<std::string, std::unique_ptr<Plugin>>& Global_context::get_plugins()
-{
-	return m_plugins;
-}
-
-
-std::unordered_map<std::string, Data_descriptor>& Global_context::get_descriptors()
-{
-	return m_descriptors;
-}
-
 Global_context::Global_context(PC_tree_t conf, MPI_Comm* world)
 {
 	// no metadata is not an error
@@ -138,7 +128,7 @@ Global_context::Iterator Global_context::end()
 
 Data_descriptor& Global_context::desc(const char* name)
 {
-	return m_descriptors.emplace(name, Data_descriptor{*this, name}).first->second;
+	return *(m_descriptors.emplace(name, unique_ptr<Data_descriptor> {new Data_descriptor_impl{*this, name}}).first->second);
 }
 
 Data_descriptor& Global_context::desc(const string& name)

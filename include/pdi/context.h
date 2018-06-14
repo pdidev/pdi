@@ -43,8 +43,6 @@ namespace PDI {
 
 class PDI_EXPORT Context
 {
-	friend class Data_descriptor;
-	
 public:
 	/** An iterator used to go through the descriptor store.
 	 *
@@ -54,9 +52,9 @@ public:
 	{
 		friend class Context;
 		/// The iterator this wraps
-		std::unordered_map<std::string, Data_descriptor>::iterator m_data;
-		Iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data);
-		Iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data);
+		std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator m_data;
+		Iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
+		Iterator(std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator&& data);
 	public:
 		Data_descriptor* operator-> ();
 		Data_descriptor& operator* ();
@@ -65,15 +63,8 @@ public:
 	};
 	
 protected:
-	Iterator get_iterator(const std::unordered_map<std::string, Data_descriptor>::iterator& data);
-	Iterator get_iterator(std::unordered_map<std::string, Data_descriptor>::iterator&& data);
-	
-private:
-	/// The getter function of loaded plugins
-	virtual std::unordered_map<std::string, std::unique_ptr<Plugin>>& get_plugins() = 0;
-	
-	/// The getter function of descriptors
-	virtual std::unordered_map<std::string, Data_descriptor>& get_descriptors() = 0;
+	Iterator get_iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
+	Iterator get_iterator(std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator&& data);
 	
 public:
 

@@ -36,7 +36,7 @@ class PDI_EXPORT Datatype_template
 {
 	/// Global logger of PDI
 	Logger logger {spdlog::get("logger")};
-
+	
 public:
 	/** Destroys the template
 	 */

@@ -46,20 +46,16 @@ namespace PDI {
 class PDI_EXPORT Global_context : public Context
 {
 private:
+	friend class Data_descriptor_impl;
+	
 	/// Global logger of PDI
 	Logger m_logger {spdlog::get("logger")};
-
+	
 	/// The loaded plugins
 	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
 	
 	/// Descriptors of the data
-	std::unordered_map<std::string, Data_descriptor> m_descriptors;
-	
-	/// The getter function of loaded plugins
-	std::unordered_map<std::string, std::unique_ptr<Plugin>>& get_plugins() override;
-	
-	/// The getter function of descriptors
-	std::unordered_map<std::string, Data_descriptor>& get_descriptors() override;
+	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
 	
 	Global_context(const Global_context&) = delete;
 	
