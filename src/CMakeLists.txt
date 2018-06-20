@@ -75,6 +75,7 @@ add_library(pdi SHARED
 		array_datatype.cxx
 		context.cxx
 		global_context.cxx
+		data_descriptor.cxx
 		data_descriptor_impl.cxx
 		datatype.cxx
 		datatype_template.cxx

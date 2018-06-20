@@ -39,7 +39,7 @@ class PDI_EXPORT Data_descriptor
 {
 public:
 
-	virtual ~Data_descriptor() = default;
+	virtual ~Data_descriptor();
 	
 	/** Sets the creation template used to type raw pointers shared through this descriptor
 	 * \param config the full configuration attached to the descriptor
