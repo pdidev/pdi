@@ -21,14 +21,18 @@
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! THE SOFTWARE.
 !******************************************************************************/
-#include "pdi.F90"
 
-program test2
-  use pdi
+include 'paraconf.F90'
+
+program test1
+
+  use paraconf
 
   implicit none
-
+  
   include 'mpif.h'
+  include 'pdif.h'
+
 
   integer, pointer :: pmeta0,pmeta1,pmeta2,pmeta3,pmeta4
   integer, target :: meta0,meta1,meta2,meta3,meta4

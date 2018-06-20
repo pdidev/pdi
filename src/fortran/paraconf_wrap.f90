@@ -1,6 +1,5 @@
 ! *******************************************************************************
 ! * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-! * Copyright (C) 2016, Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 ! * All rights reserved.
 ! *
 ! * Redistribution and use in source and binary forms, with or without
@@ -23,7 +22,4 @@
 ! * THE SOFTWARE.
 ! ******************************************************************************
 
-!> \file pdi.F90
-!> \deprecated
-
-#warning "No need to include PDI.F90 anymore"
+include 'paraconf.F90'

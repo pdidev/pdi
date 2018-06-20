@@ -21,17 +21,20 @@
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! THE SOFTWARE.
 !******************************************************************************/
-#include "pdi.F90"
 
 #define NI_GHOST 1
 #define NJ_GHOST 1
 
-program test2
-  use pdi
+include 'paraconf.F90'
+
+program test4
+
+  use paraconf
 
   implicit none
-
+  
   include 'mpif.h'
+  include 'pdif.h'
 
   character(len=512) :: strbuf
   integer :: i, j, n, ierr,  main_comm 

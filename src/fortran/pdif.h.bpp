@@ -1,0 +1,213 @@
+! *******************************************************************************
+! * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+! * Copyright (C) 2016, Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
+! * All rights reserved.
+! *
+! * Redistribution and use in source and binary forms, with or without
+! * modification, are permitted provided that the following conditions are met:
+! * * Redistributions of source code must retain the above copyright
+! *   notice, this list of conditions and the following disclaimer.
+! * * Redistributions in binary form must reproduce the above copyright
+! *   notice, this list of conditions and the following disclaimer in the
+! *   documentation and/or other materials provided with the distribution.
+! * * Neither the name of CEA nor the names of its contributors may be used to
+! *   endorse or promote products derived from this software without specific
+! *   prior written permission.
+! *
+! * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+! * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+! * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+! * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+! * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+! * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+! * THE SOFTWARE.
+! ******************************************************************************
+
+!$SH source fortran.bpp.sh
+!$SH MAXDIM=7
+ 
+!> These are the values for enum PDI_inout_t 
+!! \{
+integer, parameter :: PDI_NONE = 0
+integer, parameter :: PDI_IN = 1
+integer, parameter :: PDI_OUT = 2
+integer, parameter :: PDI_INOUT = 3
+!> \}
+
+
+interface
+
+  !=============================================================================
+  !< initializes PDI
+  !! \param[IN] treeconf the configuration
+  !! \param[IN,OUT] world the main mpi communicator
+  !! \param[OUT] err for error status (optional)
+  subroutine PDI_init(treeconf, world, err)
+    use paraconf
+    type(PC_tree_t), intent(IN) :: treeconf
+    integer, intent(INOUT), target :: world
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_init
+  !=============================================================================
+  
+  
+  !=============================================================================
+  !< finalizes PDI
+  !! \param[OUT] err for error status (optional)
+  subroutine PDI_finalize(err)
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_finalize
+  !=============================================================================
+  
+  
+  !=============================================================================
+  !< triggers a PDI “event”
+  !! \param[IN] event the event name
+  !! \param[OUT] err for error status (optional)
+  subroutine PDI_event(event, err)
+    character(len=*), intent(IN) :: event
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_event
+  !=============================================================================
+  
+  
+  !=============================================================================
+  !< wrapper for PDI_release :
+  !! releases ownership of a data shared with PDI. PDI is then responsible to
+  !! free the associated memory whenever necessary.
+  !! \param[IN] name name of the data to release
+  !! \param[OUT] err for error status (optional)
+  !! \pre ownership of the data buffer is shared between PDI and the user code
+  !! \pre PDI owns the data buffer
+  subroutine PDI_release(name, err)
+    character(len=*), intent(IN) :: name
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_release
+  !=============================================================================
+  
+  
+  !=============================================================================
+   !< wrapper for PDI_reclaim :
+   !! reclaims ownership of a data buffer shared with PDI. PDI is then
+   !! responsible to free the associated memory whenever necessary.
+   !! \param[IN] name name of the data to reclaim
+   !! \param[OUT] err for error status (optional)
+   !! \pre ownership of the data buffer is shared between PDI and the user code
+   !! \post the user code owns the data buffer
+  subroutine PDI_reclaim(name, err)
+    character(len=*), intent(IN) :: name
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_reclaim
+  !=============================================================================
+  
+  
+  !=============================================================================
+  !< Begin a transaction. All the ::PDI_expose will be exposed together.
+  !! 
+  !! This requires a ::PDI_transaction_end to close the transaction.
+  !! 
+  !! \param[in] name the name of the transaction (an event thus named will be
+  !!                 triggered when all data become available)
+  !! \param[out] err an error status
+  subroutine PDI_transaction_begin( name, err )
+    character(len=*), intent(IN) :: name
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_transaction_begin
+  !=============================================================================
+  
+  
+  !=============================================================================
+  !< Ends the previously opened transaction.
+  !! \param[out] err an error status
+  subroutine PDI_transaction_end( err )
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_transaction_end
+  !=============================================================================
+  
+endinterface
+
+
+interface PDI_share
+!$SH for T in ${FORTTYPES}; do
+!$SH   for D in $(seq 0 ${MAXDIM}); do
+
+  !=============================================================================
+  !< shares some data with PDI. the user code should not modify it before
+  !! a call to either PDI_release or PDI_reclaim.
+  !! \param[IN] name the data name
+  !! \param[IN,OUT] ptr_data the pointer to the trageted data
+  !! \param[IN] accessf whether the data can be accessed for read or write by
+  !!            PDI
+  !! \param[OUT] err for error status (optional)
+  !! \pre the user code owns the data buffer
+  !! \post ownership of the data buffer is shared between PDI and the user code
+  !!
+  !! the access parameter is a binary or of PDI_IN & PDI_OUT.
+  !! * PDI_IN means PDI can set the buffer content
+  !! * PDI_OUT means the buffer contains data that can be accessed by PDI
+  subroutine PDI_share_${T}_${D}D( name, ptr_data, accessf, err )
+    character(len=*), intent(IN) :: name
+    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
+    integer, intent(IN) :: accessf
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_share_${T}_${D}D
+  !=============================================================================
+  
+!$SH   done
+!$SH done
+endinterface PDI_share
+  
+  
+interface PDI_expose
+!$SH for T in ${FORTTYPES}; do
+!$SH   for D in $(seq 0 ${MAXDIM}); do
+
+  !=============================================================================
+  !< shortly exposes some data to PDI. equivalent to PDI_share + PDI_reclaim.
+  !! \param[IN] name the data name
+  !! \param[IN] ptr_data pointer associated with the exposed data
+  !! \param[IN] accessf whether the data can be accessed for read or write by
+  !!            PDI
+  !! \param[OUT] err for error status (optional)
+  subroutine PDI_expose_${T}_${D}D(name, ptr_data, accessf, err)
+    character(len=*), intent(IN) :: name
+    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
+    integer, intent(IN) :: accessf
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_expose_${T}_${D}D
+  !=============================================================================
+  
+!$SH   done
+!$SH done
+endinterface PDI_expose
+
+
+interface PDI_access
+!$SH for T in ${FORTTYPES}; do
+!$SH   for D in $(seq 0 ${MAXDIM}); do
+  
+  !=============================================================================
+  !< requests for PDI to access a data buffer.
+  !! \param[IN] name the data name
+  !! \param[OUT] ptr_data pointer associated with the accessd data
+  !! \param[IN] accessf whether the data can be accessed for read or write by
+  !!            PDI
+  !! \param[OUT] err for error status (optional)
+  subroutine PDI_access_${T}_${D}D(name, ptr_data, accessf, &
+!$SH     if [ 0 -lt "$D" ]; then
+      ptr_data_shape, &
+!$SH     fi
+      err)
+    character(len=*), intent(IN) :: name
+    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
+    integer, intent(IN) :: accessf
+!$SH     if [ 0 -lt "$D" ]; then
+    integer, intent(IN) :: ptr_data_shape($D)
+!$SH     fi
+    integer, intent(OUT), optional :: err
+  endsubroutine PDI_access_${T}_${D}D
+  !=============================================================================
+  
+!$SH   done
+!$SH done
+endinterface PDI_access

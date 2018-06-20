@@ -21,13 +21,16 @@
 ! OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ! THE SOFTWARE.
 !******************************************************************************/
-#include "pdi.F90"
 
-program test2
-  use pdi
+include 'paraconf.F90'
+
+program test3
+
+  use paraconf
+  use PDI
 
   implicit none
-
+  
   include 'mpif.h'
 
   character(len=512) :: strbuf

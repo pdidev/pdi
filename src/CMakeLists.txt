@@ -68,7 +68,10 @@ if("${BUILD_DOCUMENTATION}")
 	find_package(Doxygen REQUIRED OPTIONAL_COMPONENTS dot)
 endif()
 if("${ENABLE_PYTHON}")
-find_package(pybind11 REQUIRED)
+	find_package(pybind11 REQUIRED)
+endif()
+if("${ENABLE_FORTRAN}")
+	find_package(Bpp REQUIRED)
 endif()
 
 
@@ -99,9 +102,6 @@ configure_file(version.h.in pdi/version.h @ONLY)
 
 # Libraries
 
-install(DIRECTORY ../include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-
-
 ## C version
 
 set(PDI_C_SRC 
@@ -116,7 +116,7 @@ set(PDI_C_SRC
 		expression.cxx
 		logger.cxx
 		paraconf_wrapper.cxx
-		pdi_c.cxx
+		pdi.cxx
 		plugin.cxx
 		record_datatype.cxx
 		ref_any.cxx
@@ -128,22 +128,12 @@ target_link_libraries(pdi PUBLIC paraconf::paraconf spdlog::spdlog MPI::MPI_CXX 
 target_include_directories(pdi PUBLIC
 		"$<BUILD_INTERFACE:${PDI_BINARY_DIR}>" 
 		"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/../include/>"
-		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
-if("${Astyle_FOUND}")
-	add_custom_target(indent)
-	Astyle_add_indent(PDI_indent
-			OPTIONS_FILE "${PDI_SOURCE_DIR}/../docs/formating.astyle"
-			TEST
-			RECURSIVE
-			../include/*.h ${PDI_C_SRC})
-	add_dependencies(indent PDI_indent)
-endif()
 set_property(TARGET pdi PROPERTY ENABLE_EXPORTS TRUE)
 set_property(TARGET pdi PROPERTY C_STANDARD 99)
 set_property(TARGET pdi PROPERTY C_STANDARD_REQUIRED TRUE)
 set_property(TARGET pdi PROPERTY C_VISIBILITY_PRESET hidden)
-set_property(TARGET pdi PROPERTY CXX_STANDARD 11)
+set_property(TARGET pdi PROPERTY CXX_STANDARD 14)
 set_property(TARGET pdi PROPERTY CXX_STANDARD_REQUIRED TRUE)
 set_property(TARGET pdi PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET pdi PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -154,64 +144,135 @@ set_property(TARGET pdi APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VE
 install(TARGETS pdi EXPORT PDI_EXPORT
 		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+install(DIRECTORY "${PDI_SOURCE_DIR}/../include/"
+		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+		FILES_MATCHING PATTERN *.h PATTERN python/*.h EXCLUDE PATTERN fortran/*.h EXCLUDE
 )
 install(FILES
 		"${PDI_BINARY_DIR}/pdi/export.h"
 		"${PDI_BINARY_DIR}/pdi/version.h"
-	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pdi")
+		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pdi"
+)
+
+if("${Astyle_FOUND}")
+	add_custom_target(indent)
+	Astyle_add_indent(pdi_indent
+			OPTIONS_FILE "${PDI_SOURCE_DIR}/../docs/formating.astyle"
+			TEST
+			RECURSIVE
+			${PDI_SOURCE_DIR}/../include/*.h ${PDI_C_SRC})
+	add_dependencies(indent pdi_indent)
+endif()
 
 
 ## Python version
 
 if("${ENABLE_PYTHON}")
-	pybind11_add_module(pdi_python MODULE pdi_python.cxx)
-	set_property(TARGET pdi_python PROPERTY LIBRARY_OUTPUT_NAME pdi)
-	target_link_libraries(pdi_python PUBLIC pdi PRIVATE pybind11::module)
-	set_target_properties(pdi_python PROPERTIES
-			CXX_STANDARD 11
-			CXX_STANDARD_REQUIRED TRUE)
+	add_library(pdi_python python/tools.cxx)
+	target_link_libraries(pdi_python PUBLIC pybind11::pybind11 pdi)
+	target_include_directories(pdi_python PUBLIC
+			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/../include>"
+	)
+	set_property(TARGET pdi_python PROPERTY ENABLE_EXPORTS TRUE)
+	set_property(TARGET pdi_python PROPERTY C_STANDARD 99)
+	set_property(TARGET pdi_python PROPERTY C_STANDARD_REQUIRED TRUE)
+	set_property(TARGET pdi_python PROPERTY C_VISIBILITY_PRESET hidden)
+	set_property(TARGET pdi_python PROPERTY CXX_STANDARD 14)
+	set_property(TARGET pdi_python PROPERTY CXX_STANDARD_REQUIRED TRUE)
+	set_property(TARGET pdi_python PROPERTY CXX_VISIBILITY_PRESET hidden)
+	set_property(TARGET pdi_python PROPERTY POSITION_INDEPENDENT_CODE ON)
+	set_property(TARGET pdi_python PROPERTY VERSION ${PDI_VERSION})
+	set_property(TARGET pdi_python PROPERTY SOVERSION ${PDI_VERSION_MAJOR})
+	set_property(TARGET pdi_python PROPERTY PDI_MAJOR_VERSION ${PDI_VERSION_MAJOR})
+	set_property(TARGET pdi_python APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VERSION)
+	install(TARGETS pdi_python EXPORT PDI_EXPORT
+			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+			ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+			INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+	)
+	install(DIRECTORY "${PDI_SOURCE_DIR}/../include/pdi/python"
+			DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pdi"
+	)
+	
+	pybind11_add_module(pdi_python_module MODULE python/pdi.cxx)
+	target_link_libraries(pdi_python_module PUBLIC pdi_python)
+	set_property(TARGET pdi_python_module PROPERTY LIBRARY_OUTPUT_NAME pdi)
+	set_property(TARGET pdi_python_module PROPERTY ENABLE_EXPORTS TRUE)
+	set_property(TARGET pdi_python_module PROPERTY C_STANDARD 99)
+	set_property(TARGET pdi_python_module PROPERTY C_STANDARD_REQUIRED TRUE)
+	set_property(TARGET pdi_python_module PROPERTY C_VISIBILITY_PRESET hidden)
+	set_property(TARGET pdi_python_module PROPERTY CXX_STANDARD 14)
+	set_property(TARGET pdi_python_module PROPERTY CXX_STANDARD_REQUIRED TRUE)
+	set_property(TARGET pdi_python_module PROPERTY CXX_VISIBILITY_PRESET hidden)
+	set_property(TARGET pdi_python_module PROPERTY POSITION_INDEPENDENT_CODE ON)
 	execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
 			"from distutils import sysconfig;print(sysconfig.get_python_lib(prefix='',plat_specific=True))"
 			OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_STRIP_TRAILING_WHITESPACE
 			RESULT_VARIABLE PDP_SUCCESS
-			OUTPUT_VARIABLE PDP_INSTALL_DIST_PACKAGE
+			OUTPUT_VARIABLE INSTALL_PYDSTPKGDIR
 			ERROR_VARIABLE  PDP_ERROR)
 	if(NOT "${PDP_SUCCESS}" EQUAL 0)
 		message(FATAL_ERROR "Error while locating python DIST_PACKAGE location:\n${PDP_ERROR}")
 	endif()
-	install(TARGETS pdi_python EXPORT PDI_EXPORT
-			LIBRARY DESTINATION "${PDP_INSTALL_DIST_PACKAGE}"
-			ARCHIVE DESTINATION "${PDP_INSTALL_DIST_PACKAGE}"
+	install(TARGETS pdi_python_module EXPORT PDI_EXPORT
+			LIBRARY DESTINATION "${INSTALL_PYDSTPKGDIR}"
+			ARCHIVE DESTINATION "${INSTALL_PYDSTPKGDIR}"
 	)
+
+	if("${Astyle_FOUND}")
+		Astyle_add_indent(python_indent
+				OPTIONS_FILE "${PDI_SOURCE_DIR}/../docs/formating.astyle"
+				TEST
+				RECURSIVE
+				../include/*.h python/pdi.cxx python/tools.cxx)
+		add_dependencies(indent python_indent)
+	endif()
 endif()
 
 ## Fortran version
 
 if("${ENABLE_FORTRAN}")
-find_package(Bpp REQUIRED)
+	bpp_preprocess(OUTPUT PDIF_H SOURCES fortran/pdif.h.bpp)
+	bpp_preprocess(OUTPUT PDI_F90 SOURCES fortran/pdi.f90.bpp)
+	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fortran_inc")
+	add_custom_target(mv_bpp_files 
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PDIF_H} "${PDI_BINARY_DIR}/fortran_inc/pdif.h"
+			DEPENDS ${PDIF_H}
+			VERBATIM
+	)
 
-bpp_preprocess(OUTPUT SRC_PDI_F90_BPP SOURCES pdi_fortran.F90.bpp)
-include_directories("${PDI_BINARY_DIR}")
-
-get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
-add_library(pdi_f90 pdi_fortran.cxx ${SRC_PDI_F90_BPP})
-target_link_libraries(pdi_f90 pdi paraconf::paraconf_f90 MPI::MPI_Fortran)
-set_source_files_properties(${SRC_PDI_F90_BPP} PROPERTIES GENERATED TRUE)
-target_compile_definitions(pdi_f90 INTERFACE PDI_USE_F90_INCLUDE)
-target_include_directories(pdi_f90 INTERFACE 
-		"$<BUILD_INTERFACE:${GENINC}>" 
-		"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/../include/>"
-		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-set_property(TARGET pdi_f90 PROPERTY VERSION ${PDI_VERSION})
-set_property(TARGET pdi_f90 PROPERTY SOVERSION ${PDI_VERSION_MAJOR})
-set_property(TARGET pdi_f90 PROPERTY PDI_MAJOR_VERSION ${PDI_VERSION_MAJOR})
-set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VERSION)
-install(FILES ${SRC_PDI_F90_BPP}
-		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(TARGETS pdi_f90 EXPORT PDI_EXPORT
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-)
+	add_library(pdi_f90 fortran/pdi.cxx ${PDI_F90} fortran/paraconf_wrap.f90 fortran/pdi_c.f90)
+	target_link_libraries(pdi_f90 pdi paraconf::paraconf_f90 MPI::MPI_Fortran)
+	add_dependencies(pdi_f90 mv_bpp_files)
+	target_include_directories(pdi_f90 PUBLIC
+			"$<BUILD_INTERFACE:${PDI_BINARY_DIR}/fortran_inc>"
+	)
+	set_property(TARGET pdi_f90 PROPERTY VERSION ${PDI_VERSION})
+	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${PDI_VERSION_MAJOR})
+	set_property(TARGET pdi_f90 PROPERTY PDI_MAJOR_VERSION ${PDI_VERSION_MAJOR})
+	set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VERSION)
+	set_property(TARGET pdi_f90 PROPERTY Fortran_MODULE_DIRECTORY "${PDI_BINARY_DIR}/fortran_inc/")
+	if(GNU STREQUAL "${CMAKE_Fortran_COMPILER_ID}")
+		set(COMPILER_FID "gcc")
+		string(REGEX REPLACE "\\..*" "" COMPILER_FVER "${CMAKE_Fortran_COMPILER_VERSION}")
+	else()
+		set(COMPILER_FID "${CMAKE_Fortran_COMPILER_ID}")
+		set(COMPILER_FVER "${CMAKE_Fortran_COMPILER_VERSION}")
+	endif()
+	set(INSTALL_FINCLUDEDIR "${CMAKE_INSTALL_LIBDIR}/${COMPILER_FID}/${CMAKE_Fortran_LIBRARY_ARCHITECTURE}/${COMPILER_FVER}/finclude" CACHE PATH "Fortran module files (LIBDIR/${COMPILER_FID}/${CMAKE_Fortran_LIBRARY_ARCHITECTURE}/${COMPILER_FVER}/finclude)")
+	install(TARGETS pdi_f90 EXPORT PDI_EXPORT
+			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+			ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+			INCLUDES DESTINATION "${INSTALL_FINCLUDEDIR}"
+	)
+	install(DIRECTORY "${PDI_BINARY_DIR}/fortran_inc/"
+			DESTINATION "${INSTALL_FINCLUDEDIR}"
+	)
+	install(FILES "${PDI_SOURCE_DIR}/../include/pdi.F90"
+			DESTINATION "${INSTALL_FINCLUDEDIR}"
+	)
 endif()
 
 
@@ -239,12 +300,12 @@ endif()
 
 # Installable config
 
-set(ConfigPackageLocation "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}-${PDI_VERSION}/cmake")
+set(INSTALL_CMAKEDIR "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}-${PDI_VERSION}/cmake" CACHE PATH "cmake modules (DATADIR/${PROJECT_NAME}-${PDI_VERSION}/cmake)")
 write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
 		VERSION "${PDI_VERSION}"
 		COMPATIBILITY AnyNewerVersion
 )
-install(EXPORT PDI_EXPORT NAMESPACE "PDI::" DESTINATION "${ConfigPackageLocation}" FILE "pdi.cmake")
+install(EXPORT PDI_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "pdi.cmake")
 install(FILES
 		../cmake/CMakeFindDependencyMacro.cmake
 		../cmake/FindMPI.cmake
@@ -252,10 +313,8 @@ install(FILES
 		../cmake/FindPackageMessage.cmake
 		../cmake/PDIConfig.cmake
 		"${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
-		DESTINATION "${ConfigPackageLocation}"
+		DESTINATION "${INSTALL_CMAKEDIR}"
 )
-install(DIRECTORY
-		../cmake/FindMPI
-		DESTINATION "${ConfigPackageLocation}"
-		USE_SOURCE_PERMISSIONS
+install(DIRECTORY ../cmake/FindMPI
+		DESTINATION "${INSTALL_CMAKEDIR}"
 )
