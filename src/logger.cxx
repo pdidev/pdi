@@ -129,6 +129,7 @@ void configure_logger(Logger& logger, PC_tree_t config)
 		//didn't found logging tree, set default
 		logger = spdlog::stdout_color_st("logger");
 		set_up_log_format(logger);
+		logger->info("Default logger.");
 		return;
 	}
 	//select default sinks

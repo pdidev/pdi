@@ -202,6 +202,7 @@ Expression::Expression(Expression&&  value) = default;
 
 Expression::Expression(const char* val_str)
 {
+	m_logger->debug("Parsing: {}", val_str);
 	const char* parse_val = val_str;
 	
 	try { // parse as a space enclosed intval

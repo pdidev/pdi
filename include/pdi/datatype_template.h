@@ -34,8 +34,10 @@ namespace PDI {
 
 class PDI_EXPORT Datatype_template
 {
+protected:
 	/// Global logger of PDI
-	Logger logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger")};
+	
 public:
 	/** Destroys the template
 	 */

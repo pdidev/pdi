@@ -76,6 +76,7 @@ public:
 	
 	Datatype_uptr evaluate(Context& ctx) const override
 	{
+		//m_logger->debug("Evaluating scalar template.");
 		return unique_ptr<Scalar_datatype> {new Scalar_datatype{
 				m_kind,
 				static_cast<size_t>(m_size.to_long(ctx)),
@@ -111,6 +112,7 @@ public:
 	
 	Datatype_uptr evaluate(Context& ctx) const override
 	{
+		//m_logger->debug("Evaluating array template.");
 		return unique_ptr<Array_datatype> {new Array_datatype{
 				m_subtype->evaluate(ctx),
 				static_cast<size_t>(m_size.to_long(ctx)),
@@ -156,8 +158,10 @@ public:
 	
 	Datatype_uptr evaluate(Context& ctx) const override
 	{
+		//m_logger->debug("Evaluating record template. Record has {} members.", m_members.size());
 		vector<Record_datatype::Member> evaluated_members;
 		for (auto&& member : m_members) {
+			//m_logger->debug("Adding {} member to record template.", member.m_name);
 			evaluated_members.emplace_back(member.m_displacement.to_long(ctx), member.m_type->evaluate(ctx), member.m_name);
 		}
 		return unique_ptr<Record_datatype> {new Record_datatype{move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx))}};
@@ -184,7 +188,7 @@ int ridx(int ordered_index, Array_order order, int size)
 	return ordered_index;
 }
 
-Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node)
+Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, const Logger& logger)
 {
 	string type;
 	long kind;
@@ -233,7 +237,7 @@ Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node)
 	throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s(kind=%d)'", type.c_str(), kind};
 }
 
-Datatype_template_uptr to_array_datatype_template(PC_tree_t node)
+Datatype_template_uptr to_array_datatype_template(PC_tree_t node, const Logger& logger)
 {
 	// Order: C or fortran ordering, default is C
 	Array_order order = Array_order::C;
@@ -256,11 +260,13 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node)
 	vector<Expression> sizes;
 	PC_tree_t conf_sizes = PC_get(node, ".sizes");
 	if (!PC_status(conf_sizes)) {   // multi dim array
+		//logger->debug("Multidimensional array.");
 		int nsizes = len(conf_sizes);
 		for (int ii = 0; ii < nsizes; ++ii) {
 			sizes.emplace_back(to_string(PC_get(node, ".sizes[%d]", ridx(ii, order, nsizes))));
 		}
 	} else { // else we expect a single dim array
+		//logger->debug("One dimensional array.");
 		sizes.emplace_back(to_string(PC_get(node, ".size")));
 	}
 	
@@ -310,7 +316,9 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node)
 	
 	Datatype_template_uptr res_type = Datatype_template::load(PC_get(node, ".type"));
 	
+	//logger->debug("Array has {} dimensions.", sizes.size());
 	for (size_t ii = 0; ii < sizes.size(); ++ii) {
+		//logger->debug("Dimension {}:   size: {}   start: {}  subsize: {}.", ii, sizes[ii], starts[ii], subsizes[ii]);
 		res_type.reset(new Array_template(move(res_type), move(sizes[ii]), move(starts[ii]), move(subsizes[ii])));
 	}
 	return res_type;
@@ -323,11 +331,14 @@ Datatype_template::~Datatype_template()
 
 Datatype_template_uptr Datatype_template::load(PC_tree_t node)
 {
+	/// Global logger of PDI
+	Logger logger {spdlog::get("logger")};
+	
 	// size or sizes => array
 	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {
-		return to_array_datatype_template(node);
+		return to_array_datatype_template(node, logger);
 	}
-	return to_scalar_datatype_template(node);
+	return to_scalar_datatype_template(node, logger);
 }
 
 } // namespace PDI
