@@ -54,6 +54,14 @@ struct ContextTest : public ::testing::Test {
 	unique_ptr<Context> test_context;
 };
 
+/*
+ * Name:                ContextTest.desc_string_uninitialized
+ *
+ * Tested functions:    PDI::Context::desc(string)
+ *
+ * Description:         Checks if accessesing uninitialzied descriptor
+ * 						creates a new one.
+ */
 TEST_F(ContextTest, desc_string_uninitialized)
 {
 	string desc_name{"test_desc"};
@@ -61,6 +69,14 @@ TEST_F(ContextTest, desc_string_uninitialized)
 	ASSERT_EQ(desc_name, desc.name());
 }
 
+/*
+ * Name:                ContextTest.desc_string_initialized
+ *
+ * Tested functions:    PDI::Context::desc(string)
+ *
+ * Description:         Checks if accessesing a descriptor
+ * 						returns correct one.
+ */
 TEST_F(ContextTest, desc_string_initialized)
 {
 	string desc_name{"desc1"};
@@ -73,6 +89,14 @@ TEST_F(ContextTest, desc_string_initialized)
 	ASSERT_EQ(&desc1, &desc);
 }
 
+/*
+ * Name:                ContextTest.desc_cstring_uninitialized
+ *
+ * Tested functions:    PDI::Context::desc(const char*)
+ *
+ * Description:         Checks if accessesing uninitialzied descriptor
+ * 						creates a new one.
+ */
 TEST_F(ContextTest, desc_cstring_uninitialized)
 {
 	const char* desc_name = "test_desc";
@@ -80,6 +104,14 @@ TEST_F(ContextTest, desc_cstring_uninitialized)
 	ASSERT_STREQ(desc_name, desc.name().c_str());
 }
 
+/*
+ * Name:                ContextTest.desc_cstring_initialized
+ *
+ * Tested functions:    PDI::Context::desc(const char*)
+ *
+ * Description:         Checks if accessesing a descriptor
+ * 						returns correct one.
+ */
 TEST_F(ContextTest, desc_cstring_initialized)
 {
 	const char* desc_name = "desc1";
@@ -92,6 +124,14 @@ TEST_F(ContextTest, desc_cstring_initialized)
 	ASSERT_EQ(&desc1, &desc);
 }
 
+/*
+ * Name:                ContextTest.operator_string_uninitialized
+ *
+ * Tested functions:    PDI::Context::operator[](string)
+ *
+ * Description:         Checks if accessesing uninitialzied descriptor
+ * 						creates a new one.
+ */
 TEST_F(ContextTest, operator_string_uninitialized)
 {
 	string desc_name{"test_desc"};
@@ -99,6 +139,14 @@ TEST_F(ContextTest, operator_string_uninitialized)
 	ASSERT_EQ(desc_name, desc.name());
 }
 
+/*
+ * Name:                ContextTest.operator_string_initialized
+ *
+ * Tested functions:    PDI::Context::operator[](string)
+ *
+ * Description:         Checks if accessesing a descriptor
+ * 						returns correct one.
+ */
 TEST_F(ContextTest, operator_string_initialized)
 {
 	string desc_name{"desc1"};
@@ -111,6 +159,14 @@ TEST_F(ContextTest, operator_string_initialized)
 	ASSERT_EQ(&desc1, &desc);
 }
 
+/*
+ * Name:                ContextTest.operator_cstring_uninitialized
+ *
+ * Tested functions:    PDI::Context::operator[](const char*)
+ *
+ * Description:         Checks if accessesing uninitialzied descriptor
+ * 						creates a new one.
+ */
 TEST_F(ContextTest, operator_cstring_uninitialized)
 {
 	const char* desc_name = "test_desc";
@@ -118,6 +174,14 @@ TEST_F(ContextTest, operator_cstring_uninitialized)
 	ASSERT_STREQ(desc_name, desc.name().c_str());
 }
 
+/*
+ * Name:                ContextTest.operator_cstring_initialized
+ *
+ * Tested functions:    PDI::Context::operator[](const char*)
+ *
+ * Description:         Checks if accessesing a descriptor
+ * 						returns correct one.
+ */
 TEST_F(ContextTest, operator_cstring_initialized)
 {
 	const char* desc_name = "desc1";
@@ -130,6 +194,15 @@ TEST_F(ContextTest, operator_cstring_initialized)
 	ASSERT_EQ(&desc1, &desc);
 }
 
+/*
+ * Name:                ContextTest.iterator
+ *
+ * Tested functions:    PDI::Context::begin(),
+ * 						PDI::Context::end()
+ *
+ * Description:         Checks if tested functions
+ * 						return correct iterators.
+ */
 TEST_F(ContextTest, iterator)
 {
 	//put some descriptors inside context
