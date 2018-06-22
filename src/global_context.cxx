@@ -156,7 +156,7 @@ void Global_context::event(const char* name)
 	for (auto& elmnt : m_plugins) {
 		vector<Error> errors;
 		try {
-			m_logger->debug("Triggering `{}` event on `{}` plugin.", name, elmnt.first);
+			m_logger->debug("Triggering ' event on `{}' plugin.", name, elmnt.first);
 			elmnt.second->event(name);
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const Error& e) {
