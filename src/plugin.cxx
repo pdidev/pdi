@@ -25,7 +25,6 @@
 #include "config.h"
 
 #include <pdi/context.h>
-#include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
 #include "pdi/plugin.h"
