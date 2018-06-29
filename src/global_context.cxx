@@ -95,7 +95,6 @@ Global_context::Global_context(PC_tree_t conf, MPI_Comm* world)
 	// no metadata is not an error
 	PC_tree_t metadata = PC_get(conf, ".metadata");
 	if (!PC_status(metadata)) {
-		m_logger->debug("Loading metadata.");
 		load_data(*this, metadata, true);
 	}
 	
@@ -104,15 +103,13 @@ Global_context::Global_context(PC_tree_t conf, MPI_Comm* world)
 	if (!PC_status(data)) {
 		load_data(*this, data, false);
 	} else {
-		m_logger->warn("No data description in PDI configuration file. PDI has nothing to do.");
+		m_logger->warn("No data description in PDI configuration file");
 	}
 	
 	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
-	m_logger->debug("Choosed {} plugins to load.", nb_plugins);
 	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
 		//TODO: what to do if a single plugin fails to load?
 		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
-		m_logger->debug("Loading {} plugin.", plugin_name);
 		try {
 			m_plugins.emplace(plugin_name, get_plugin_ctr(plugin_name.c_str())(*this, PC_get(conf, ".plugins<%d>", plugin_id), world));
 		} catch (const exception& e) {
@@ -156,7 +153,6 @@ void Global_context::event(const char* name)
 	for (auto& elmnt : m_plugins) {
 		vector<Error> errors;
 		try {
-			m_logger->debug("Triggering ' event on `{}' plugin.", name, elmnt.first);
 			elmnt.second->event(name);
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const Error& e) {

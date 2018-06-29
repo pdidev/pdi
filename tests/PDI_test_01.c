@@ -39,7 +39,7 @@ int main( int argc, char* argv[] )
 	PDI_status_t err = PDI_expose("invalid", &invalid, PDI_INOUT);
 	fprintf(stderr, "err=%d; message=\"%s\"\n", err, PDI_errmsg());
 	assert(err == PDI_ERR_VALUE);
-	assert(!strcmp(PDI_errmsg(), "while referencing `meta2': Cannot access a non shared value: `meta2'."));
+	assert(!strcmp(PDI_errmsg(), "while referencing `meta2': Cannot access a non shared value: `meta2'"));
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
 	return 0;

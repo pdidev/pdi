@@ -36,7 +36,7 @@ class PDI_EXPORT Datatype_template
 {
 protected:
 	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 public:
 	/** Destroys the template

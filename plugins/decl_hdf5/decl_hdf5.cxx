@@ -388,12 +388,15 @@ struct decl_hdf5_plugin: Plugin {
 
 	const Decl_hdf5_cfg m_config;
 	
-	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*):
+	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*, PDI::Logger logger):
 		Plugin {ctx},
 		m_config{config}
 	{
 		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");
+		spdlog::register_logger(logger);
+		m_logger = spdlog::get("logger");
+		m_logger->info("(Decl'HDF5) Plugin loaded successfully");
 	}
 	
 	void data(const char* name, Ref ref) override

@@ -182,7 +182,7 @@ try
 	g_transaction_data.clear();
 	configure_logger(g_logger, conf);
 	g_context.reset(new Global_context{conf, world});
-	g_logger->info("Initialization successful.");
+	g_logger->info("Initialization successful");
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -205,7 +205,7 @@ try
 	g_transaction.clear();
 	g_transaction_data.clear();
 	g_context.reset();
-	g_logger->info("Finalization successful.");
+	g_logger->info("Finalization successful");
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -263,7 +263,6 @@ PDI_status_t PDI_event(const char* name)
 try
 {
 	Paraconf_wrapper fw;
-	g_logger->info("`{}` event called.", name);
 	g_context->event(name);
 	return PDI_OK;
 } catch (const Error& e)
@@ -281,7 +280,6 @@ PDI_status_t PDI_share(const char* name, void* buffer, PDI_inout_t access)
 try
 {
 	Paraconf_wrapper fw;
-	g_logger->info("Sharing `{}`.", name);
 	(*g_context)[name].share(buffer, access & PDI_OUT, access & PDI_IN);
 	return PDI_OK;
 } catch (const Error& e)
@@ -299,7 +297,6 @@ PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
 try
 {
 	Paraconf_wrapper fw;
-	g_logger->info("Accessing `{}`.", name);
 	Data_descriptor& desc = (*g_context)[name];
 	*buffer = desc.share(desc.ref(), inout & PDI_IN, inout & PDI_OUT);
 	return PDI_OK;
@@ -318,7 +315,6 @@ PDI_status_t PDI_release(const char* name)
 try
 {
 	Paraconf_wrapper fw;
-	g_logger->info("Releasing `{}`.", name);
 	(*g_context)[name].release();
 	return PDI_OK;
 } catch (const Error& e)
@@ -336,7 +332,6 @@ PDI_status_t PDI_reclaim(const char* name)
 try
 {
 	Paraconf_wrapper fw;
-	g_logger->info("Reclaiming `{}`.", name);
 	(*g_context)[name].reclaim();
 	return PDI_OK;
 } catch (const Error& e)
@@ -354,7 +349,6 @@ PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access)
 try
 {
 	Paraconf_wrapper fw;
-	g_logger->debug("Exposing `{}`.", name);
 	if (PDI_status_t status = PDI_share(name, data, access)) return status;
 	
 	if (! g_transaction.empty()) {   // defer the reclaim
@@ -378,7 +372,6 @@ PDI_status_t PDI_transaction_begin(const char* name)
 try
 {
 	Paraconf_wrapper fw;
-	g_logger->info("Staring transaction `{}`.", name);
 	if (!g_transaction.empty()) {
 		throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
 	}
@@ -399,7 +392,6 @@ PDI_status_t PDI_transaction_end()
 try
 {
 	Paraconf_wrapper fw;
-	g_logger->info("Ending transaction.");
 	if (g_transaction.empty()) {
 		throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
 	}
