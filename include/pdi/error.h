@@ -43,7 +43,7 @@ class PDI_EXPORT Error:
 	PDI_status_t m_status;
 	
 	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 public:
 	/** Creates a PDI error

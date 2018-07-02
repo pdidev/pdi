@@ -45,7 +45,7 @@ namespace PDI {
 class PDI_EXPORT Ref_base
 {
 	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).

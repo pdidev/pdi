@@ -41,6 +41,7 @@
 #include <pdi/array_datatype.h>
 #include <pdi/context.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>

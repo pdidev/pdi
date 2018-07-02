@@ -31,6 +31,7 @@
 #include <dlfcn.h>
 
 #include "pdi/data_descriptor_impl.h"
+#include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
@@ -52,7 +53,7 @@ using std::vector;
 
 namespace {
 
-typedef unique_ptr<Plugin> (*plugin_loader_f)(Context&, PC_tree_t, MPI_Comm*);
+typedef unique_ptr<Plugin> (*plugin_loader_f)(Context&, PC_tree_t, MPI_Comm*, Logger);
 
 
 void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
@@ -111,7 +112,7 @@ Global_context::Global_context(PC_tree_t conf, MPI_Comm* world)
 		//TODO: what to do if a single plugin fails to load?
 		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
 		try {
-			m_plugins.emplace(plugin_name, get_plugin_ctr(plugin_name.c_str())(*this, PC_get(conf, ".plugins<%d>", plugin_id), world));
+			m_plugins.emplace(plugin_name, get_plugin_ctr(plugin_name.c_str())(*this, PC_get(conf, ".plugins<%d>", plugin_id), world, m_logger));
 		} catch (const exception& e) {
 			throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
 		}

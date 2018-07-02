@@ -324,7 +324,7 @@ Datatype_template::~Datatype_template()
 Datatype_template_uptr Datatype_template::load(PC_tree_t node)
 {
 	/// Global logger of PDI
-	Logger logger {spdlog::get("logger")};
+	Logger logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 	// size or sizes => array
 	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {

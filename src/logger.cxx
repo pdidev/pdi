@@ -124,6 +124,11 @@ static void configure_single_rank(PC_tree_t logging_tree, Logger& logger)
 
 void configure_logger(Logger& logger, PC_tree_t config)
 {
+	//if logger is already defined drop it and read new config
+	if (spdlog::get("logger")) {
+		spdlog::drop("logger");
+	}
+
 	PC_tree_t logging_tree = PC_get(config, ".logging");
 	if (PC_status(logging_tree)) {
 		//didn't found logging tree, set default

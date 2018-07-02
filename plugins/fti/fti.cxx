@@ -39,6 +39,7 @@
 #include <pdi/context.h>
 #include <pdi/datatype.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
@@ -74,7 +75,7 @@ struct fti_plugin: Plugin {
 	
 	unordered_map<string, Event_action> events;
 	
-	fti_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world):
+	fti_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world, PDI::Logger logger):
 		Plugin{ctx}
 	{
 		for ( auto&& iter : ctx) {

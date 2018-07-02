@@ -31,6 +31,7 @@
 
 #include <pdi.h>
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
@@ -55,7 +56,7 @@ struct test_plugin: Plugin {
 	unordered_set<Ref> m_refs;
 	
 	
-	test_plugin(Context& ctx, PC_tree_t, MPI_Comm* world):
+	test_plugin(Context& ctx, PC_tree_t, MPI_Comm* world, PDI::Logger logger):
 		Plugin {ctx}
 	{
 		if ( MPI_Comm_dup(*world, &my_comm) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};

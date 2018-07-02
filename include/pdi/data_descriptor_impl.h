@@ -48,7 +48,7 @@ class PDI_EXPORT Data_descriptor_impl : public Data_descriptor
 	struct PDI_NO_EXPORT Ref_holder;
 	
 	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 	/// The context this descriptor is part of
 	Global_context& m_context;

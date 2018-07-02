@@ -70,7 +70,7 @@ private:
 	size_t m_buffersize;
 	
 	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 public:
 	Record_datatype(std::vector<Member>&& members, size_t size);

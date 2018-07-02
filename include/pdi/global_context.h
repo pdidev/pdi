@@ -49,7 +49,7 @@ private:
 	friend class Data_descriptor_impl;
 	
 	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger")};
+	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 	/// The loaded plugins
 	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;

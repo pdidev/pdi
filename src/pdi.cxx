@@ -129,7 +129,7 @@ PDI_inout_t operator&(PDI_inout_t a, PDI_inout_t b)
 void assert_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		g_logger->error("{}", message);
+		g_logger->error(message);
 		abort();
 	}
 }
@@ -139,7 +139,7 @@ void assert_status(PDI_status_t status, const char* message, void*)
 void warn_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		g_logger->warn("{}", message);
+		g_logger->warn(message);
 	}
 }
 

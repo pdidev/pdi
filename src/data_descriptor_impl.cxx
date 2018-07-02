@@ -97,7 +97,7 @@ Data_descriptor_impl::~Data_descriptor_impl()
 	 * ownership
 	 */
 	if (!m_refs.empty()) {
-		std::cerr<<" *** [PDI] Warning: Remaining "<<m_refs.size()<<" reference(s) to `"<<m_name<<"' in PDI after program end"<<std::endl;
+		m_logger->warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size(), m_name);
 	}
 	if ( metadata()  ) while (!m_refs.empty()) m_refs.pop();
 	if ( !metadata() ) while (!m_refs.empty()) reclaim();
