@@ -32,11 +32,11 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
-"plugins:                                                                            \n"
-"  user_code:                                                                        \n"
-"    on_event:                                                                       \n"
-"      test:                                                                         \n"
-"        test_null: {test_in: $main_out, test_out: $main_in, test_inout: $main_inout}\n";
+    "plugins:                                                                            \n"
+    "  user_code:                                                                        \n"
+    "    on_event:                                                                       \n"
+    "      test:                                                                         \n"
+    "        test_null: {test_in: $main_out, test_out: $main_in, test_inout: $main_inout}\n";
 
 void test_null()
 {
@@ -70,10 +70,10 @@ int main( int argc, char* argv[] )
 	void* data = NULL;
 	
 	PDI_multi_expose("test",
-			"main_in", data, PDI_IN,
-			"main_out", data, PDI_OUT,
-			"main_inout", data, PDI_INOUT,
-			NULL);
+	    "main_in", data, PDI_IN,
+	    "main_out", data, PDI_OUT,
+	    "main_inout", data, PDI_INOUT,
+	    NULL);
 	    
 	PDI_finalize();
 	PC_tree_destroy(&conf);

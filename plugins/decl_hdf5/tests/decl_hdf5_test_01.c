@@ -28,19 +28,19 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
-"metadata:                     \n"
-"  meta0: int                  \n"
-"  meta1: int                  \n"
-"  meta2: int                  \n"
-"  meta3: int                  \n"
-"  meta4: int                  \n"
-"data:                         \n"
-"  test_var: double            \n"
-"plugins:                      \n"
-"  decl_hdf5:                  \n"
-"    file: $meta1.h5           \n"
-"    write: [ test_var, meta2 ]\n"
-;
+    "metadata:                     \n"
+    "  meta0: int                  \n"
+    "  meta1: int                  \n"
+    "  meta2: int                  \n"
+    "  meta3: int                  \n"
+    "  meta4: int                  \n"
+    "data:                         \n"
+    "  test_var: double            \n"
+    "plugins:                      \n"
+    "  decl_hdf5:                  \n"
+    "    file: $meta1.h5           \n"
+    "    write: [ test_var, meta2 ]\n"
+    ;
 
 int main( int argc, char* argv[] )
 {
@@ -56,14 +56,14 @@ int main( int argc, char* argv[] )
 	PDI_init(conf, &world);
 	
 	PDI_multi_expose("testing",
-			"meta0",&value[0], PDI_OUT,
-			"meta1",&value[0], PDI_OUT,
-			"meta2",&value[1], PDI_OUT,
-			"meta3",&value[2], PDI_OUT,
-			"meta4",&value[3], PDI_OUT,
-			"test_var",&test_var, PDI_OUT,
-			NULL);
-	
+	    "meta0",&value[0], PDI_OUT,
+	    "meta1",&value[0], PDI_OUT,
+	    "meta2",&value[1], PDI_OUT,
+	    "meta3",&value[2], PDI_OUT,
+	    "meta4",&value[3], PDI_OUT,
+	    "test_var",&test_var, PDI_OUT,
+	    NULL);
+	    
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();

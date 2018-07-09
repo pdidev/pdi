@@ -31,28 +31,28 @@ const int IMX = 1;
 const int JMX = 5;
 
 const char* CONFIG_YAML =
-"metadata:                            \n"
-"  ni: int                            \n"
-"  nj: int                            \n"
-"data:                                \n"
-"  reals:                             \n"
-"    type: double                     \n"
-"    sizes: [$nj , $ni]               \n"
-"  values:                            \n"
-"    type: int                        \n"
-"    sizes: [$nj , $ni]               \n"
-"                                     \n"
-"plugins:                             \n"
-"  decl_sion:                         \n"
-"    inputs:                          \n"
-"      - event: read_data             \n"
-"        file: test_03_C.sion         \n"
-"        vars: [values, reals]        \n"
-"    outputs:                         \n"
-"      - event: write_data            \n"
-"        file: test_03_C.sion         \n"
-"        vars: [ni, nj, reals, values]\n"
-;
+    "metadata:                            \n"
+    "  ni: int                            \n"
+    "  nj: int                            \n"
+    "data:                                \n"
+    "  reals:                             \n"
+    "    type: double                     \n"
+    "    sizes: [$nj , $ni]               \n"
+    "  values:                            \n"
+    "    type: int                        \n"
+    "    sizes: [$nj , $ni]               \n"
+    "                                     \n"
+    "plugins:                             \n"
+    "  decl_sion:                         \n"
+    "    inputs:                          \n"
+    "      - event: read_data             \n"
+    "        file: test_03_C.sion         \n"
+    "        vars: [values, reals]        \n"
+    "    outputs:                         \n"
+    "      - event: write_data            \n"
+    "        file: test_03_C.sion         \n"
+    "        vars: [ni, nj, reals, values]\n"
+    ;
 
 int main(int argc, char* argv[])
 {
@@ -80,16 +80,16 @@ int main(int argc, char* argv[])
 	
 	// Test that expose works
 	PDI_multi_expose("write_data",
-			"reals",&reals, PDI_OUT,   // output real
-			"values",&values, PDI_OUT, // output integers
-			NULL);
-	
+	    "reals",&reals, PDI_OUT,   // output real
+	    "values",&values, PDI_OUT, // output integers
+	    NULL);
+	    
 	// Exchange should also work
 	PDI_multi_expose("read_data",
-			"reals",&cp_reals, PDI_INOUT, // input real
-			"values",&cp_values, PDI_IN,  // input integers
-			NULL);
-	
+	    "reals",&cp_reals, PDI_INOUT, // input real
+	    "values",&cp_values, PDI_IN,  // input integers
+	    NULL);
+	    
 	// So the data should be the same
 	for (int j=0; j<JMX; ++j) {
 		for (int i=0; i<IMX; ++i) {

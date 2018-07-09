@@ -35,17 +35,17 @@
 #define test_value( var, value, fatal) fct_test_value( var, value, fatal, __func__, __LINE__)
 
 const char* CONFIG_YAML =
-"metadata:                                        \n"
-"data:                                            \n"
-"  test_var: double                               \n"
-"  input: int                                     \n"
-"  output: int                                    \n"
-"plugins:                                         \n"
-"  user_code:                                     \n"
-"    on_event:                                    \n"
-"      testing:                                   \n"
-"        test: {var_in: $input, var_out: $output }\n"
-;
+    "metadata:                                        \n"
+    "data:                                            \n"
+    "  test_var: double                               \n"
+    "  input: int                                     \n"
+    "  output: int                                    \n"
+    "plugins:                                         \n"
+    "  user_code:                                     \n"
+    "    on_event:                                    \n"
+    "      testing:                                   \n"
+    "        test: {var_in: $input, var_out: $output }\n"
+    ;
 
 static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
 {
@@ -85,9 +85,9 @@ int main( int argc, char* argv[] )
 	int in = CST0;
 	int out = CST0;
 	PDI_multi_expose("testing",
-			"input", &in, PDI_OUT, // export data as function input
-			"output", &out, PDI_IN, // import data as function output
-			NULL);
+	    "input", &in, PDI_OUT, // export data as function input
+	    "output", &out, PDI_IN, // import data as function output
+	    NULL);
 	test_value(out, CST1, FATAL);
 	
 	PDI_finalize();

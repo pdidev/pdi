@@ -99,7 +99,7 @@ public:
 #ifdef H5_HAVE_PARALLEL
 				m_communicator = to_string(PC_get(tree, ".communicator"));
 #else
-				throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", to_string(PC_get(tree, ".communicator")).c_str()};
+				throw Error {PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", to_string(PC_get(tree, ".communicator")).c_str()};
 #endif
 			} else if ( key == "datasets" ) {
 				int nb_dataset = len(PC_get(tree, ".datasets"));
@@ -180,9 +180,9 @@ public:
 		m_file{std::move(moved.m_file)},
 		m_when{std::move(moved.m_when)},
 #ifdef H5_HAVE_PARALLEL
-		m_communicator{std::move(moved.m_communicator)},
+		m_communicator {std::move(moved.m_communicator)},
 #endif
-		m_datasets{std::move(moved.m_datasets)},
+		m_datasets {std::move(moved.m_datasets)},
 		m_read{std::move(moved.m_read)},
 		m_write{std::move(moved.m_write)}
 	{

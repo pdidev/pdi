@@ -101,11 +101,8 @@ struct Error_context {
 		return PDI_ERR_SYSTEM;
 	}
 	
-};
+}; // struct Error_context
 
-
-/// The singleton context of PDI
-unique_ptr<Context> g_context;
 
 /// The thread-local error context
 thread_local Error_context g_error_context;
@@ -133,8 +130,8 @@ PDI_inout_t operator&(PDI_inout_t a, PDI_inout_t b)
 void assert_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		if ( g_context ) {
-			g_context->logger()->error(message);
+		if ( Global_context::initialized() ) {
+			Global_context::context().logger()->error(message);
 		} else {
 			int r;
 			MPI_Comm_rank(MPI_COMM_WORLD, &r);
@@ -149,8 +146,8 @@ void assert_status(PDI_status_t status, const char* message, void*)
 void warn_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		if ( g_context ) {
-			g_context->logger()->warn(message);
+		if ( Global_context::initialized() ) {
+			Global_context::context().logger()->warn(message);
 		} else {
 			int r;
 			MPI_Comm_rank(MPI_COMM_WORLD, &r);
@@ -196,8 +193,8 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	g_context.reset(new Global_context{conf, world});
-	g_context->logger()->info("Initialization successful");
+	Global_context::init(conf, world);
+	Global_context::context().logger()->info("Initialization successful");
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -216,8 +213,8 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	g_context->logger()->info("Finalization");
-	g_context.reset();
+	Global_context::context().logger()->info("Finalization");
+	Global_context::finalize();
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -275,7 +272,7 @@ PDI_status_t PDI_event(const char* name)
 try
 {
 	Paraconf_wrapper fw;
-	g_context->event(name);
+	Global_context::context().event(name);
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -292,7 +289,7 @@ PDI_status_t PDI_share(const char* name, void* buffer, PDI_inout_t access)
 try
 {
 	Paraconf_wrapper fw;
-	(*g_context)[name].share(buffer, access & PDI_OUT, access & PDI_IN);
+	Global_context::context()[name].share(buffer, access & PDI_OUT, access & PDI_IN);
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -309,7 +306,7 @@ PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
 try
 {
 	Paraconf_wrapper fw;
-	Data_descriptor& desc = (*g_context)[name];
+	Data_descriptor& desc = Global_context::context()[name];
 	*buffer = desc.share(desc.ref(), inout & PDI_IN, inout & PDI_OUT);
 	return PDI_OK;
 } catch (const Error& e)
@@ -327,7 +324,7 @@ PDI_status_t PDI_release(const char* name)
 try
 {
 	Paraconf_wrapper fw;
-	(*g_context)[name].release();
+	Global_context::context()[name].release();
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -344,7 +341,7 @@ PDI_status_t PDI_reclaim(const char* name)
 try
 {
 	Paraconf_wrapper fw;
-	(*g_context)[name].reclaim();
+	Global_context::context()[name].reclaim();
 	return PDI_OK;
 } catch (const Error& e)
 {

@@ -30,17 +30,17 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
-"metadata:                                        \n"
-"data:                                            \n"
-"  test_var: double                               \n"
-"  input: int                                     \n"
-"  output: int                                    \n"
-"plugins:                                         \n"
-"  user_code:                                     \n"
-"    on_event:                                    \n"
-"      testing:                                   \n"
-"        test: {var_in: $input, var_out: $output }\n"
-;
+    "metadata:                                        \n"
+    "data:                                            \n"
+    "  test_var: double                               \n"
+    "  input: int                                     \n"
+    "  output: int                                    \n"
+    "plugins:                                         \n"
+    "  user_code:                                     \n"
+    "    on_event:                                    \n"
+    "      testing:                                   \n"
+    "        test: {var_in: $input, var_out: $output }\n"
+    ;
 
 void test(void)
 {
@@ -79,10 +79,10 @@ int main( int argc, char* argv[] )
 	int in = 0;
 	int out = 0;
 	PDI_multi_expose("testing",
-			"input", &in, PDI_IN,
-			"output", &out, PDI_IN,
-			NULL);
-	
+	    "input", &in, PDI_IN,
+	    "output", &out, PDI_IN,
+	    NULL);
+	    
 	PDI_errhandler(std_handler); // returning to standard PDI err_handler
 	if ( !has_failed ) {
 		fprintf(stderr, "Error expected but not reported, terminating\n");

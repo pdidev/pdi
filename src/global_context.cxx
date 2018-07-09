@@ -90,6 +90,29 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
 
 } // namespace <anonymous>
 
+unique_ptr<Global_context> Global_context::s_context;
+
+void Global_context::init(PC_tree_t conf, MPI_Comm* world)
+{
+	s_context.reset(new Global_context(conf, world));
+}
+
+bool Global_context::initialized()
+{
+	return static_cast<bool>(s_context);
+}
+
+Global_context& Global_context::context()
+{
+	if (!s_context) throw Error{PDI_ERR_STATE, "PDI not initialized"};
+	return *s_context;
+}
+
+void Global_context::finalize()
+{
+	s_context.reset();
+}
+
 Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
 	m_logger{configure_logger(conf)}
 {

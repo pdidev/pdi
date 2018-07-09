@@ -90,7 +90,7 @@ public:
 #ifdef H5_HAVE_PARALLEL
 				m_communicator = to_string(PC_get(tree, ".communicator"));
 #else
-				throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", to_string(PC_get(tree, ".communicator")).c_str()};
+				throw Error {PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", to_string(PC_get(tree, ".communicator")).c_str()};
 #endif
 			} else if ( key == "memory_selection" ) {
 				m_memory_selection = PC_get(tree, ".memory_selection");

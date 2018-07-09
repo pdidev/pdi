@@ -48,6 +48,9 @@ class PDI_EXPORT Global_context : public Context
 private:
 	friend class Data_descriptor_impl;
 	
+	/// The singleton Context instance
+	static std::unique_ptr<Global_context> s_context;
+	
 	/// Global logger of PDI
 	Logger_sptr m_logger;
 	
@@ -62,6 +65,14 @@ private:
 	Global_context(Global_context&&) = delete;
 	
 public:
+	static void init(PC_tree_t conf, MPI_Comm* world);
+	
+	static bool initialized();
+	
+	static Global_context& context();
+	
+	static void finalize();
+	
 	Global_context(PC_tree_t conf, MPI_Comm* world);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
