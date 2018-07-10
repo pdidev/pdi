@@ -111,6 +111,14 @@ static void configure_single_rank(Logger_sptr logger, PC_tree_t logging_tree)
 
 Logger_sptr configure_logger(PC_tree_t config)
 {
+<<<<<<< 83a38f47a8ff1976c1c03a0e18aaa4e5995704da
+=======
+	//if logger is already defined drop it and read new config
+	if (spdlog::get("logger")) {
+		spdlog::drop("logger");
+	}
+	
+>>>>>>> Added reference datatype
 	PC_tree_t logging_tree = PC_get(config, ".logging");
 	
 	//select default sinks
