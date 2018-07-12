@@ -98,7 +98,7 @@ public:
 				m_communicator_name = to_string(PC_get(tree, ".communicator"));
 				if (m_communicator_name[0] == '$' && m_communicator_name[1] == '(') {
 					m_communicator_name = "$" + m_communicator_name.substr(2, m_communicator_name.size() - 3);
-				} else if (m_communicator_name != "self" && m_communicator_name != "world" && m_communicator_name[0] != '&') {
+				} else if (m_communicator_name != "self" && m_communicator_name != "world" && m_communicator_name[0] != '$') {
 					throw Error{PDI_ERR_CONFIG, "Invalid communicator: %s", m_communicator_name.c_str()};
 				}
 			} else if ( key == "datasets" ) {
@@ -208,7 +208,7 @@ public:
 #endif
 		} else if (m_communicator_name[0] == '$') {
 			auto m_logger = spdlog::get("logger");
-			m_logger->debug("(Decl'HDF5) Got MPI_Comm defined from user code: {}", m_communicator_name.substr(1));
+			m_logger->debug("(Decl'HDF5) Got MPI_Comm (for file) defined from user code: {}", m_communicator_name.substr(1));
 			PDI::Data_descriptor& desc = ctx[m_communicator_name.substr(1)];
 			try {
 				const MPI_Comm* comm = static_cast<const MPI_Comm*>( PDI::Ref_r{desc.ref()}.get() );
@@ -259,7 +259,24 @@ const PDI::Expression& Transfer_cfg::when() const
 MPI_Comm Transfer_cfg::communicator(PDI::Context& ctx) const
 {
 	if ( m_communicator_name == "null") return parent().communicator(ctx);
-	return communicator(ctx);
+	if ( m_communicator_name == "self" ) {
+#ifdef H5_HAVE_PARALLEL
+		return MPI_COMM_SELF;
+	} else if ( m_communicator_name == "world" ) {
+		return MPI_COMM_WORLD;
+#endif
+	} else if (m_communicator_name[0] == '$') {
+		auto m_logger = spdlog::get("logger");
+		m_logger->debug("(Decl'HDF5) Got MPI_Comm (for transfer) defined from user code: {}", m_communicator_name.substr(1));
+		PDI::Data_descriptor& desc = ctx[m_communicator_name.substr(1)];
+		try {
+			const MPI_Comm* comm = static_cast<const MPI_Comm*>( PDI::Ref_r{desc.ref()}.get() );
+			return *comm;
+		} catch (PDI::Error e) {
+			throw PDI::Error{PDI_ERR_TYPE, "Trying to reach MPI_Comm that is not shared: `%s'", m_communicator_name};
+		}
+	}
+	return MPI_COMM_SELF;
 }
 
 } // namespace <anonymous>

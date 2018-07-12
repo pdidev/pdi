@@ -89,7 +89,7 @@ public:
 				m_communicator_name = to_string(PC_get(tree, ".communicator"));
  				if (m_communicator_name[0] == '$' && m_communicator_name[1] == '(') {
 					m_communicator_name = "$" + m_communicator_name.substr(2, m_communicator_name.size() - 3);
-				} else if (m_communicator_name != "self" && m_communicator_name != "world" && m_communicator_name[0] != '&') {
+				} else if (m_communicator_name != "self" && m_communicator_name != "world" && m_communicator_name[0] != '$') {
 					throw Error{PDI_ERR_CONFIG, "Invalid communicator: %s", m_communicator_name.c_str()};
 				}
 			} else if ( key == "memory_selection" ) {
