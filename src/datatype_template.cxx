@@ -37,7 +37,6 @@
 #include "pdi/expression.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/record_datatype.h"
-#include "pdi/reference_datatype.h"
 #include "pdi/scalar_datatype.h"
 
 #include "pdi/datatype_template.h"
@@ -166,27 +165,6 @@ public:
 	
 };
 
-class Reference_template:
-	public Datatype_template
-{
-	Expression m_reference;
-	
-public:
-	Reference_template(Expression expr): m_reference{move(expr)}
-	{}
-	
-	
-	Datatype_template_uptr clone() const override
-	{
-		return unique_ptr<Reference_template> {new Reference_template{m_reference}};
-	}
-	
-	Datatype_uptr evaluate(Context& ctx) const override
-	{
-		return unique_ptr<Reference_datatype> {new Reference_datatype{m_reference.to_string(ctx)}};
-	}
-};
-
 /// ordering of array
 enum class Array_order : uint8_t {
 	C,
@@ -255,10 +233,7 @@ Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, Logger_sptr l
 		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_COMM, sizeof(MPI_Comm)}};
 	} else if (type == "MPI_Datatype") { // MPI datatype
 		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_DATATYPE, sizeof(MPI_Datatype)}};
-	} else if (type[0] == '$') { // reference
-		return unique_ptr<Reference_template> {new Reference_template{Expression{type}}};
 	}
-	
 	
 	throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s(kind=%d)'", type.c_str(), kind};
 }
