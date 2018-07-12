@@ -231,8 +231,6 @@ Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, Logger_sptr l
 		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::FLOAT, kind}};
 	} else if (type == "MPI_Comm") { // MPI communicator
 		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_COMM, sizeof(MPI_Comm)}};
-	} else if (type == "MPI_Datatype") { // MPI datatype
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_DATATYPE, sizeof(MPI_Datatype)}};
 	}
 	
 	throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s(kind=%d)'", type.c_str(), kind};

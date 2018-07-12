@@ -90,9 +90,7 @@ enum class Scalar_kind : uint8_t {
 	UNSIGNED,
 	FLOAT,
 	ADDRESS,
-	MPI_COMM,
-	MPI_DATATYPE,
-	REFERENCE
+	MPI_COMM
 };
 
 /** A parsed value as specified by an expression.
