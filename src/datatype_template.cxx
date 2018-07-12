@@ -252,9 +252,9 @@ Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, Logger_sptr l
 		if (kind == 0) kind = PDI_REAL_DEFAULT_KIND;
 		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::FLOAT, kind}};
 	} else if (type == "MPI_Comm") { // MPI communicator
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_COMM, alignof(MPI_Comm)}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_COMM, sizeof(MPI_Comm)}};
 	} else if (type == "MPI_Datatype") { // MPI datatype
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_DATATYPE, alignof(MPI_Datatype)}};
+		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_DATATYPE, sizeof(MPI_Datatype)}};
 	} else if (type[0] == '$') { // reference
 		return unique_ptr<Reference_template> {new Reference_template{Expression{type}}};
 	}

@@ -52,7 +52,7 @@ class Transfer_cfg
 	
 	std::unique_ptr<PDI::Expression> m_when;
 	
-	MPI_Comm m_communicator;
+	std::string m_communicator_name;
 	
 	Selection_cfg m_memory_selection;
 	
@@ -66,7 +66,7 @@ public:
 	Transfer_cfg(const File_cfg& parent, const std::string& name):
 		m_parent{&parent},
 		m_dataset{name},
-		m_communicator{MPI_COMM_NULL}
+		m_communicator_name{"null"}
 	{
 	}
 	
@@ -86,15 +86,11 @@ public:
 			} else if ( key == "when" ) {
 				m_when.reset(new Expression{to_string(PC_get(tree, ".when"))});
 			} else if ( key == "communicator" ) {
-				string comm = to_string(PC_get(tree, ".communicator"));
-				if ( comm == "self" ) {
-#ifdef H5_HAVE_PARALLEL
-					m_communicator = MPI_COMM_SELF;
-				} else if ( comm == "world" ) {
-					m_communicator = MPI_COMM_WORLD;
-#endif
-				} else {
-					throw Error{PDI_ERR_CONFIG, "Invalid communicator: `%s'", comm.c_str()};
+				m_communicator_name = to_string(PC_get(tree, ".communicator"));
+ 				if (m_communicator_name[0] == '$' && m_communicator_name[1] == '(') {
+					m_communicator_name = "$" + m_communicator_name.substr(2, m_communicator_name.size() - 3);
+				} else if (m_communicator_name != "self" && m_communicator_name != "world" && m_communicator_name[0] != '&') {
+					throw Error{PDI_ERR_CONFIG, "Invalid communicator: %s", m_communicator_name.c_str()};
 				}
 			} else if ( key == "memory_selection" ) {
 				m_memory_selection = PC_get(tree, ".memory_selection");
@@ -125,7 +121,7 @@ public:
 	const PDI::Expression& when() const;
 	
 	// defined in File_cfg header because File_cfg need to be defined for implementation
-	MPI_Comm communicator() const;
+	MPI_Comm communicator(PDI::Context& ctx) const;
 	
 	const Selection_cfg& memory_selection() const
 	{
