@@ -67,6 +67,9 @@ find_package(Astyle)
 if("${BUILD_DOCUMENTATION}")
 	find_package(Doxygen REQUIRED OPTIONAL_COMPONENTS dot)
 endif()
+if("${ENABLE_PYTHON}")
+find_package(pybind11 REQUIRED)
+endif()
 
 
 # Version
@@ -113,7 +116,7 @@ set(PDI_C_SRC
 		expression.cxx
 		logger.cxx
 		paraconf_wrapper.cxx
-		pdi.cxx
+		pdi_c.cxx
 		plugin.cxx
 		record_datatype.cxx
 		ref_any.cxx
@@ -158,6 +161,30 @@ install(FILES
 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pdi")
 
 
+## Python version
+
+if("${ENABLE_PYTHON}")
+	pybind11_add_module(pdi_python MODULE pdi_python.cxx)
+	set_property(TARGET pdi_python PROPERTY LIBRARY_OUTPUT_NAME pdi)
+	target_link_libraries(pdi_python PUBLIC pdi PRIVATE pybind11::module)
+	set_target_properties(pdi_python PROPERTIES
+			CXX_STANDARD 11
+			CXX_STANDARD_REQUIRED TRUE)
+	execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+			"from distutils import sysconfig;print(sysconfig.get_python_lib(prefix='',plat_specific=True))"
+			OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_STRIP_TRAILING_WHITESPACE
+			RESULT_VARIABLE PDP_SUCCESS
+			OUTPUT_VARIABLE PDP_INSTALL_DIST_PACKAGE
+			ERROR_VARIABLE  PDP_ERROR)
+	if(NOT "${PDP_SUCCESS}" EQUAL 0)
+		message(FATAL_ERROR "Error while locating python DIST_PACKAGE location:\n${PDP_ERROR}")
+	endif()
+	install(TARGETS pdi_python EXPORT PDI_EXPORT
+			LIBRARY DESTINATION "${PDP_INSTALL_DIST_PACKAGE}"
+			ARCHIVE DESTINATION "${PDP_INSTALL_DIST_PACKAGE}"
+	)
+endif()
+
 ## Fortran version
 
 if("${ENABLE_FORTRAN}")
@@ -167,7 +194,7 @@ bpp_preprocess(OUTPUT SRC_PDI_F90_BPP SOURCES pdi_fortran.F90.bpp)
 include_directories("${PDI_BINARY_DIR}")
 
 get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
-add_library(pdi_f90 fapi.c ${SRC_PDI_F90_BPP})
+add_library(pdi_f90 pdi_fortran.cxx ${SRC_PDI_F90_BPP})
 target_link_libraries(pdi_f90 pdi paraconf::paraconf_f90 MPI::MPI_Fortran)
 set_source_files_properties(${SRC_PDI_F90_BPP} PROPERTIES GENERATED TRUE)
 target_compile_definitions(pdi_f90 INTERFACE PDI_USE_F90_INCLUDE)

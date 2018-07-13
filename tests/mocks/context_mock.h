@@ -25,10 +25,13 @@
 #ifndef PDI_CONTEXT_MOCK_H_
 #define PDI_CONTEXT_MOCK_H_
 
+#include <memory>
 #include <gmock/gmock.h>
 #include <pdi/context.h>
 #include <pdi/datatype_template.h>
+#include <pdi/logger.h>
 #include <pdi/plugin.h>
+
 
 struct MockContext : public PDI::Context {
 	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));

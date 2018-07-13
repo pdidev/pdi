@@ -49,11 +49,11 @@ class PDI_EXPORT Global_context : public Context
 private:
 	friend class Data_descriptor_impl;
 	
+	/// Global logger of PDI, should be constructed first, destroyed last
+	Logger_sptr m_logger;
+	
 	/// The singleton Context instance
 	static std::unique_ptr<Global_context> s_context;
-	
-	/// Global logger of PDI
-	Logger_sptr m_logger;
 	
 	/// Datatype_template constructors available in PDI
 	std::unordered_map<std::string, Datatype_template_func> m_datatypes;

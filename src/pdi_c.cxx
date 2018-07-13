@@ -60,6 +60,8 @@ using std::exception;
 using std::list;
 using std::make_shared;
 using std::move;
+using std::setfill;
+using std::setw;
 using std::stack;
 using std::string;
 using std::stringstream;
@@ -133,9 +135,7 @@ void assert_status(PDI_status_t status, const char* message, void*)
 		if ( Global_context::initialized() ) {
 			Global_context::context().logger()->error(message);
 		} else {
-			int r;
-			MPI_Comm_rank(MPI_COMM_WORLD, &r);
-			std::cerr << "[PDI]["<<std::setw(6)<<std::setfill('0')<<r<<"] *** Fatal error(uninitialized): " << message << std::endl;
+			cerr << "[PDI][NOINIT] *** Fatal error: " << message << endl;
 		}
 		exit(status);
 	}
@@ -145,14 +145,8 @@ void assert_status(PDI_status_t status, const char* message, void*)
  */
 void warn_status(PDI_status_t status, const char* message, void*)
 {
-	if (status) {
-		if ( Global_context::initialized() ) {
-			Global_context::context().logger()->warn(message);
-		} else {
-			int r;
-			MPI_Comm_rank(MPI_COMM_WORLD, &r);
-			std::cerr << "[PDI]["<<std::setw(6)<<std::setfill('0')<<r<<"] *** warning (uninitialized): " << message << std::endl;
-		}
+	if (status && Global_context::initialized() ) {
+		Global_context::context().logger()->warn(message);
 	}
 }
 

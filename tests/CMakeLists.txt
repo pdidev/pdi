@@ -42,13 +42,18 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 add_executable(PDI_test_01 PDI_test_01.c)
 target_link_libraries(PDI_test_01 pdi)
-add_test(NAME PDI_test_01_run COMMAND PDI_test_01)
+add_test(NAME PDI_test_01 COMMAND PDI_test_01)
 
 
 add_executable(PDI_test_02 PDI_test_02.c)
 target_link_libraries(PDI_test_02 pdi)
 set_target_properties(PDI_test_02 PROPERTIES ENABLE_EXPORTS ON)
-add_test(NAME PDI_test_02_run COMMAND PDI_test_02)
+add_test(NAME PDI_test_02 COMMAND PDI_test_02)
+
+
+if("${ENABLE_PYTHON}")
+	add_test(NAME PDI_test_03 COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_03.py")
+endif()
 
 
 set(PDI_unit_tests_SRC

@@ -42,6 +42,7 @@ option(BUILD_DECL_SION_PLUGIN        "Build decl'SION plug-in" ON )
 option(BUILD_DOCUMENTATION           "Build documentation" ON)
 option(BUILD_FTI_PLUGIN              "Build FTI plug-in." ON)
 option(BUILD_MPI_PLUGIN              "Build MPI plug-in" ON)
+option(ENABLE_PYTHON                 "Enable Python support" ON)
 option(BUILD_SHARED_LIBS             "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING                 "Build tests" ON)
 option(ENABLE_FORTRAN                "Enable Fortran support" ON)
@@ -49,6 +50,7 @@ set(USE_BPP      SYSTEM CACHE STRING "version of BPP to use, SYSTEM and EMBEDDED
 set(USE_FTI      SYSTEM CACHE STRING "version of FTI to use, SYSTEM and EMBEDDED can be used")
 set(USE_GTEST    SYSTEM CACHE STRING "version of Gtest to use, SYSTEM and EMBEDDED can be used")
 set(USE_PARACONF SYSTEM CACHE STRING "version of paraconf to use, SYSTEM and EMBEDDED can be used")
+set(USE_PYBIND11 SYSTEM CACHE STRING "version of pybind11 to use, SYSTEM and EMBEDDED can be used")
 set(USE_SPDLOG   SYSTEM CACHE STRING "version of spdlog to use, SYSTEM and EMBEDDED can be used")
 set(USE_YAML     SYSTEM CACHE STRING "version of yaml to use, SYSTEM and EMBEDDED can be used")
 
@@ -79,6 +81,11 @@ if("${USE_PARACONF}" STREQUAL EMBEDDED)
 	set(PARACONF_PATH "${PDISUPER_SOURCE_DIR}/vendor/libparaconf-0.2.1")
 else()
 	set(PARACONF_PATH "${USE_PARACONF}")
+endif()
+if("${USE_PYBIND11}" STREQUAL EMBEDDED)
+	set(PYBIND11_PATH "${PDISUPER_SOURCE_DIR}/vendor/pybind11-2.2.4")
+else()
+	set(PYBIND11_PATH "${USE_PYBIND11}")
 endif()
 if("${USE_SPDLOG}" STREQUAL EMBEDDED)
 	set(SPDLOG_PATH "${PDISUPER_SOURCE_DIR}/vendor/spdlog-1.1.0")
@@ -127,13 +134,21 @@ if("${BUILD_TESTING}")
 	enable_testing()
 	set_property(DIRECTORY PROPERTY TEST_INCLUDE_FILE "${PDISUPER_BINARY_DIR}/SubTests.cmake")
 	file(WRITE "${PDISUPER_BINARY_DIR}/SubTests.cmake" 
+#TODO: replace these path by the actual path where stuff is installed
 "set(ADDPATH [=[${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib]=])\n"
+"set(PYPATH  [=[${PDISUPER_BINARY_DIR}/staging/lib/python3/dist-packages/]=])\n"
 [===[
 set(LD_LIBRARY_PATH "$ENV{LD_LIBRARY_PATH}")
 if("x${LD_LIBRARY_PATH}x" STREQUAL xx)
 	set(ENV{LD_LIBRARY_PATH} "${ADDPATH}")
 else()
 	set(ENV{LD_LIBRARY_PATH} "${ADDPATH}:${LD_LIBRARY_PATH}")
+endif()
+set(PYTHONPATH "$ENV{PYTHONPATH}")
+if("x${PYTHONPATH}x" STREQUAL xx)
+	set(ENV{PYTHONPATH} "${PYPATH}")
+else()
+	set(ENV{PYTHONPATH} "${PYPATH}:${PYTHONPATH}")
 endif()
 ]===])
 endif()
@@ -229,6 +244,16 @@ if(NOT "${USE_PARACONF}" STREQUAL SYSTEM)
 				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
 		add_dependencies(PARACONF YAML)
 	endif()
+endif()
+
+if("${ENABLE_PYTHON}" AND NOT "${USE_PYBIND11}" STREQUAL SYSTEM)
+	file(MD5 "${PYBIND11_PATH}" HASH) #< trick to prevent no-hash warning
+	ExternalProject_Add(PYBIND11
+			PREFIX "${PDISUPER_BINARY_DIR}/pybind11"
+			URL "${PYBIND11_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF" "-DPYBIND11_TEST:BOOL=OFF"
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+	ExternalProject_Add_StepDependencies(PDI configure PYBIND11)
 endif()
 
 if(NOT "${USE_SPDLOG}" STREQUAL SYSTEM)

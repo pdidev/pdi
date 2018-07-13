@@ -31,6 +31,7 @@
 #pragma clang diagnostic ignored "-Wmissing-prototypes"
 /** A version of PDI_init that takes a Fortran communicator instead of a C one
  */
+extern "C"
 PDI_status_t PDI_EXPORT PDI_init_f(PC_tree_t conf, MPI_Fint* world)
 {
 	MPI_Comm world_C = MPI_Comm_f2c(*world);

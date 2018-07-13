@@ -116,10 +116,10 @@ void Global_context::finalize()
 Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
 	m_logger{configure_logger(conf)}
 {
-	//load basic datatypes
+	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
 	
-	//first load plugins, because they can add datatypes declared in config
+	// first load plugins, because they can add datatypes declared in config
 	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
 	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
 		//TODO: what to do if a single plugin fails to load?
@@ -141,8 +141,6 @@ Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
 	PC_tree_t data = PC_get(conf, ".data");
 	if (!PC_status(data)) {
 		load_data(*this, data, false);
-	} else {
-		m_logger->warn("No data description in PDI configuration file");
 	}
 }
 

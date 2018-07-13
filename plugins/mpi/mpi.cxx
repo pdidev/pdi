@@ -65,7 +65,7 @@ struct mpi_plugin: PDI::Plugin {
 		Plugin{ctx}
 	{
 		set_up_logger(ctx, PC_get(config, ".logging"));
-
+		
 		// create the MPI_Comm datatype
 		PDI::Scalar_datatype mpi_comm_datatype{PDI::Scalar_kind::UNKNOWN, sizeof(MPI_Comm), alignof(MPI_Comm)};
 		
