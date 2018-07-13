@@ -95,7 +95,13 @@ public:
 			} else if ( key == "when" ) {
 				m_when = to_string(PC_get(tree, ".when"));
 			} else if ( key == "communicator" ) {
-				m_communicator = to_string(PC_get(tree, ".communicator"));
+				string comm_name = to_string(PC_get(tree, ".communicator"));
+#ifndef H5_HAVE_PARALLEL
+				if (comm_name != "self") {
+					throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", comm_name.c_str()};
+				}
+#endif
+				m_communicator = comm_name;
 			} else if ( key == "datasets" ) {
 				int nb_dataset = len(PC_get(tree, ".datasets"));
 				for (int dataset_id=0; dataset_id<nb_dataset; ++dataset_id) {
@@ -239,7 +245,6 @@ MPI_Comm Transfer_cfg::communicator(PDI::Context& ctx) const
 	MPI_Comm transfer_comm = m_communicator.to_mpi_comm(ctx);
 	if (transfer_comm == MPI_COMM_NULL) return parent().communicator(ctx);
 	return transfer_comm;
-	
 }
 
 } // namespace <anonymous>

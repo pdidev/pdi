@@ -288,9 +288,7 @@ MPI_Comm Expression::Impl::to_mpi_comm(Context& ctx) const
 	
 	if (auto&& array_type = dynamic_cast<const Array_datatype*>(&comm_ref.type())) {
 		//the comm is a string
-		auto m_logger = spdlog::get("logger");
 		const char* communicator_name = static_cast<const char*>(comm_ref.get());
-		m_logger->debug("Name of communicator defined from user code: {}", communicator_name);
 		if ( !strcmp(communicator_name, "self") ) return MPI_COMM_SELF;
 		if ( !strcmp(communicator_name, "null") ) return MPI_COMM_NULL;
 		if ( !strcmp(communicator_name, "world") ) return MPI_COMM_WORLD;
@@ -300,8 +298,6 @@ MPI_Comm Expression::Impl::to_mpi_comm(Context& ctx) const
 	if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&comm_ref.type())) {
 		if (scalar_type->kind() == Scalar_kind::MPI_COMM) {
 			//the comm is the reference
-			auto m_logger = spdlog::get("logger");
-			m_logger->debug("Got reference to MPI_Comm");
 			try {
 				const MPI_Comm* comm = static_cast<const MPI_Comm*>(comm_ref.get());
 				return *comm;

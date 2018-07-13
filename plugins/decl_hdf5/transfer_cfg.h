@@ -86,7 +86,13 @@ public:
 			} else if ( key == "when" ) {
 				m_when.reset(new Expression{to_string(PC_get(tree, ".when"))});
 			} else if ( key == "communicator" ) {
-				m_communicator = to_string(PC_get(tree, ".communicator"));
+				string comm_name = to_string(PC_get(tree, ".communicator"));
+#ifndef H5_HAVE_PARALLEL
+				if (comm_name != "self") {
+					throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", comm_name.c_str()};
+				}
+#endif
+				m_communicator = comm_name;
 			} else if ( key == "memory_selection" ) {
 				m_memory_selection = PC_get(tree, ".memory_selection");
 			} else if ( key == "dataset_selection" ) {
