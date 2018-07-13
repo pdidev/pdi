@@ -53,7 +53,7 @@ class File_cfg
 	
 	PDI::Expression m_when;
 	
-	std::string m_communicator_name;
+	PDI::Expression m_communicator;
 	
 	std::unordered_map<std::string, PDI::Datatype_template_uptr> m_datasets;
 	
@@ -68,7 +68,7 @@ public:
 	File_cfg(PC_tree_t tree, std::vector<std::string>& events, PDI::Logger_sptr logger):
 		m_file{PDI::to_string(PC_get(tree, ".file"))},
 		m_when{1},
-		m_communicator_name{"self"}
+		m_communicator{"self"}
 	{
 		using PDI::Datatype_template;
 		using PDI::Error;
@@ -95,12 +95,7 @@ public:
 			} else if ( key == "when" ) {
 				m_when = to_string(PC_get(tree, ".when"));
 			} else if ( key == "communicator" ) {
-				m_communicator_name = to_string(PC_get(tree, ".communicator"));
-				if (m_communicator_name[0] == '$' && m_communicator_name[1] == '(') {
-					m_communicator_name = "$" + m_communicator_name.substr(2, m_communicator_name.size() - 3);
-				} else if (m_communicator_name != "self" && m_communicator_name != "world" && m_communicator_name[0] != '$') {
-					throw Error{PDI_ERR_CONFIG, "Invalid communicator: %s", m_communicator_name.c_str()};
-				}
+				m_communicator = to_string(PC_get(tree, ".communicator"));
 			} else if ( key == "datasets" ) {
 				int nb_dataset = len(PC_get(tree, ".datasets"));
 				for (int dataset_id=0; dataset_id<nb_dataset; ++dataset_id) {
@@ -179,7 +174,7 @@ public:
 	File_cfg(File_cfg&& moved):
 		m_file{std::move(moved.m_file)},
 		m_when{std::move(moved.m_when)},
-		m_communicator_name{std::move(moved.m_communicator_name)},
+		m_communicator{std::move(moved.m_communicator)},
 		m_datasets{std::move(moved.m_datasets)},
 		m_read{std::move(moved.m_read)},
 		m_write{std::move(moved.m_write)}
@@ -200,24 +195,7 @@ public:
 	
 	MPI_Comm communicator(PDI::Context& ctx) const
 	{
-		if ( m_communicator_name == "self" ) {
-#ifdef H5_HAVE_PARALLEL
-			return MPI_COMM_SELF;
-		} else if ( m_communicator_name == "world" ) {
-			return MPI_COMM_WORLD;
-#endif
-		} else if (m_communicator_name[0] == '$') {
-			auto m_logger = spdlog::get("logger");
-			m_logger->debug("(Decl'HDF5) Got MPI_Comm (for file) defined from user code: {}", m_communicator_name.substr(1));
-			PDI::Data_descriptor& desc = ctx[m_communicator_name.substr(1)];
-			try {
-				const MPI_Comm* comm = static_cast<const MPI_Comm*>( PDI::Ref_r{desc.ref()}.get() );
-				return *comm;
-			} catch (PDI::Error e) {
-				throw PDI::Error{PDI_ERR_TYPE, "Trying to reach MPI_Comm that is not shared: `%s'", m_communicator_name};
-			}
-		}
-		return MPI_COMM_SELF;
+		return m_communicator.to_mpi_comm(ctx);
 	}
 	
 	const std::unordered_map<std::string, PDI::Datatype_template_uptr>& datasets() const
@@ -258,25 +236,10 @@ const PDI::Expression& Transfer_cfg::when() const
 // defined here because File_cfg need to be defined
 MPI_Comm Transfer_cfg::communicator(PDI::Context& ctx) const
 {
-	if ( m_communicator_name == "null") return parent().communicator(ctx);
-	if ( m_communicator_name == "self" ) {
-#ifdef H5_HAVE_PARALLEL
-		return MPI_COMM_SELF;
-	} else if ( m_communicator_name == "world" ) {
-		return MPI_COMM_WORLD;
-#endif
-	} else if (m_communicator_name[0] == '$') {
-		auto m_logger = spdlog::get("logger");
-		m_logger->debug("(Decl'HDF5) Got MPI_Comm (for transfer) defined from user code: {}", m_communicator_name.substr(1));
-		PDI::Data_descriptor& desc = ctx[m_communicator_name.substr(1)];
-		try {
-			const MPI_Comm* comm = static_cast<const MPI_Comm*>( PDI::Ref_r{desc.ref()}.get() );
-			return *comm;
-		} catch (PDI::Error e) {
-			throw PDI::Error{PDI_ERR_TYPE, "Trying to reach MPI_Comm that is not shared: `%s'", m_communicator_name};
-		}
-	}
-	return MPI_COMM_SELF;
+	MPI_Comm transfer_comm = m_communicator.to_mpi_comm(ctx);
+	if (transfer_comm == MPI_COMM_NULL) return parent().communicator(ctx);
+	return transfer_comm;
+	
 }
 
 } // namespace <anonymous>

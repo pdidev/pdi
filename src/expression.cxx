@@ -80,6 +80,8 @@ struct Expression::Impl {
 	
 	virtual Ref to_ref(Context&) const = 0;
 	
+	virtual MPI_Comm to_mpi_comm(Context&) const;
+	
 	static unique_ptr<Impl> parse_term(char const** val_str);
 	
 	static string parse_id(char const** val_str);
@@ -264,6 +266,11 @@ Ref Expression::to_ref(Context& ctx) const
 	return m_impl->to_ref(ctx);
 }
 
+MPI_Comm Expression::to_mpi_comm(Context& ctx) const
+{
+	return m_impl->to_mpi_comm(ctx);
+}
+
 Expression::Impl::~Impl() = default;
 
 string Expression::Impl::to_string(Context& ctx) const
@@ -272,6 +279,38 @@ string Expression::Impl::to_string(Context& ctx) const
 	stringstream result;
 	result << lres;
 	return result.str();
+}
+
+
+MPI_Comm Expression::Impl::to_mpi_comm(Context& ctx) const
+{
+	Ref_r comm_ref = to_ref(ctx);
+	
+	if (auto&& array_type = dynamic_cast<const Array_datatype*>(&comm_ref.type())) {
+		//the comm is a string
+		auto m_logger = spdlog::get("logger");
+		const char* communicator_name = static_cast<const char*>(comm_ref.get());
+		m_logger->debug("Name of communicator defined from user code: {}", communicator_name);
+		if ( !strcmp(communicator_name, "self") ) return MPI_COMM_SELF;
+		if ( !strcmp(communicator_name, "null") ) return MPI_COMM_NULL;
+		if ( !strcmp(communicator_name, "world") ) return MPI_COMM_WORLD;
+		throw PDI::Error{PDI_ERR_TYPE, "Invalid communicator name: `%s'", communicator_name};
+	}
+	
+	if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&comm_ref.type())) {
+		if (scalar_type->kind() == Scalar_kind::MPI_COMM) {
+			//the comm is the reference
+			auto m_logger = spdlog::get("logger");
+			m_logger->debug("Got reference to MPI_Comm");
+			try {
+				const MPI_Comm* comm = static_cast<const MPI_Comm*>(comm_ref.get());
+				return *comm;
+			} catch (PDI::Error e) {
+				throw PDI::Error{PDI_ERR_TYPE, "Trying to reach MPI_Comm that is not initialized"};
+			}
+		}
+	}
+	throw PDI::Error{PDI_ERR_TYPE, "Defined communicator is not a string nor a reference to MPI_Comm"};
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)

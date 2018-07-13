@@ -167,6 +167,12 @@ public:
 	 */
 	Ref to_ref(Context& ctx) const;
 	
+	/** Evaluates an expression as a MPI_Comm
+	 *
+	 * \return the MPI communicator
+	 */
+	MPI_Comm to_mpi_comm(Context& ctx) const;
+	
 };
 
 } // namespace PDI

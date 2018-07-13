@@ -143,8 +143,6 @@ Ref Ref_base::do_copy(Ref_r ref)
 {
 	if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&ref.type())) {
 		if (scalar_type->kind() == Scalar_kind::MPI_COMM) {
-			auto logger = spdlog::get("logger");
-			logger->debug("MPI_Comm is copied with MPI_Comm_dup!");
 			const MPI_Comm* comm_old = static_cast<const MPI_Comm*>(ref.get());
 			MPI_Comm* comm_copy = new MPI_Comm;
 			MPI_Comm_dup(*comm_old, comm_copy);

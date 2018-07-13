@@ -52,7 +52,7 @@ class Transfer_cfg
 	
 	std::unique_ptr<PDI::Expression> m_when;
 	
-	std::string m_communicator_name;
+	PDI::Expression m_communicator;
 	
 	Selection_cfg m_memory_selection;
 	
@@ -66,7 +66,7 @@ public:
 	Transfer_cfg(const File_cfg& parent, const std::string& name):
 		m_parent{&parent},
 		m_dataset{name},
-		m_communicator_name{"null"}
+		m_communicator{"null"}
 	{
 	}
 	
@@ -86,12 +86,7 @@ public:
 			} else if ( key == "when" ) {
 				m_when.reset(new Expression{to_string(PC_get(tree, ".when"))});
 			} else if ( key == "communicator" ) {
-				m_communicator_name = to_string(PC_get(tree, ".communicator"));
- 				if (m_communicator_name[0] == '$' && m_communicator_name[1] == '(') {
-					m_communicator_name = "$" + m_communicator_name.substr(2, m_communicator_name.size() - 3);
-				} else if (m_communicator_name != "self" && m_communicator_name != "world" && m_communicator_name[0] != '$') {
-					throw Error{PDI_ERR_CONFIG, "Invalid communicator: %s", m_communicator_name.c_str()};
-				}
+				m_communicator = to_string(PC_get(tree, ".communicator"));
 			} else if ( key == "memory_selection" ) {
 				m_memory_selection = PC_get(tree, ".memory_selection");
 			} else if ( key == "dataset_selection" ) {
