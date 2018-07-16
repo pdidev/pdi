@@ -224,6 +224,16 @@ PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t acc
 
 /// \{
 
+/** Performs a transaction. All the data is shared and reclaimed at the end
+ *  of transaction.
+ *
+ * \param[in] name the name of the transaction (an event thus named will be
+ *                 triggered when all data become available)
+ * \param[in] num number of exposed data in transaction
+ * \return an error status
+ */
+PDI_status_t PDI_EXPORT PDI_transaction(const char* name, int num, ...);
+
 /** Begin a transaction. All the ::PDI_expose will be exposed together.
  *
  * This requires a ::PDI_transaction_end to close the transaction.

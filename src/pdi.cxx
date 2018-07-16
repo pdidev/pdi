@@ -376,6 +376,39 @@ try
 	return g_error_context.return_err();
 }
 
+PDI_status_t PDI_transaction(const char* name, int num, ...)
+try
+{
+	va_list ap;
+	unordered_set<string> transaction_data;
+	va_start(ap, num);
+	for (int i=0; i < num; i++) {
+		const char* v_name = va_arg(ap, const char*);
+		void* v_data = va_arg(ap, void*);
+		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
+		PDI_share(v_name, v_data, v_access);
+		transaction_data.emplace(v_name);
+	}
+	
+	va_end(ap);
+
+	PDI_event(name);
+	for (const string& data : transaction_data) {
+		//TODO we should concatenate errors here...
+		PDI_reclaim(data.c_str());
+	}
+} catch (const Error& e)
+{
+	return g_error_context.return_err(e);
+} catch (const exception& e)
+{
+	return g_error_context.return_err(e);
+} catch (...)
+{
+	return g_error_context.return_err();
+}
+
+
 PDI_status_t PDI_transaction_begin(const char* name)
 try
 {
