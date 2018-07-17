@@ -4,25 +4,22 @@ contributions.
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Main library maintainer
-* Overall library design and implementation
-* Test plugin
-* Initial Decl'HDF5 plugins
+* Decl'HDF5 v1 & v3, FTI, test & User-code v2 plugins
 
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Initial FTI plugin
 * Initial Fortran interface
 
+Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
+* Development of unit-tests
+
 Corentin Roussel - CEA (Corentin.roussel@cea.fr)
 * Library maintainer from Sept. 2016 to Feb. 2018
-* Overall library improvement & debug
-* Decl'HDF5 plugin improvement
-* Initial User-code plugin
+* Decl'HDF5 v2 plugin
+* User-code v1 plugin
 
 Karol Sierocinski - PSNC (ksiero@man.poznan.pl)
 * Set-up and development of unit-tests
-
-Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
-* Development of unit-tests
 
 Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
 * Decl'SION plugin

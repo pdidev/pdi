@@ -66,8 +66,10 @@ endif("${ENABLE_FORTRAN}")
 ##########
 # TEST 03: slicing mechanism
 
+if("${ENABLE_FORTRAN}")
 add_test(NAME decl_hdf5_03_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_hdf5_02_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_03_F.yml" "test_03_on")
 set_property(TEST decl_hdf5_03_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+endif("${ENABLE_FORTRAN}")
 
 ##########
 # TEST 04: parallel read/write

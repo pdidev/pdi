@@ -28,7 +28,11 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi_examples LANGUAGES C CXX Fortran)
+project(pdi_examples LANGUAGES C CXX)
+
+if("${ENABLE_FORTRAN}")
+	enable_language(Fortran)
+endif()
 
 # find_package(pdi REQUIRED)
 find_package(MPI REQUIRED)

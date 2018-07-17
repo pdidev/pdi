@@ -31,29 +31,6 @@ include(CheckSymbolExists)
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
 
-# Build options
-
-get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
-if("${ENABLED_LANGUAGES}" MATCHES Fortran)
-	set(FORTRAN_ENABLEABLE ON)
-else()
-	set(FORTRAN_ENABLEABLE OFF)
-endif()
-
-option(BUILD_SHARED_LIBS 
-		"Build pdi as a shared library instead of a static one"
-		ON
-)
-option(ENABLE_FORTRAN
-		"Enable compilation of the Fortran version of the library"
-		${FORTRAN_ENABLEABLE}
-)
-
-if("${ENABLE_FORTRAN}" AND NOT "${FORTRAN_ENABLEABLE}")
-	message(FATAL_ERROR "Fortran language support disabled can not build Fortran lib, set ENABLE_FORTRAN to OFF")
-endif()
-
-
 # Check for some portability stuff and generate config.h
 
 include(DefaultKind)
@@ -65,12 +42,12 @@ set(PDI_VERSION_MODIF "${pdi_VERSION_MODIF}")
 configure_file(config.h.in config.h @ONLY)
 configure_file(version.h.in pdi/version.h @ONLY)
 
-
 # Libraries
 
 install(DIRECTORY ../include/ DESTINATION include)
 
 ## C++ version
+
 add_library(pdi SHARED
 		array_datatype.cxx
 		context.cxx
@@ -119,33 +96,33 @@ install(FILES
 	DESTINATION include/pdi)
 
 ## Fortran version
+
 if("${ENABLE_FORTRAN}")
-	add_subdirectory(../vendor/bpp bpp EXCLUDE_FROM_ALL)
-	
-	bpp_preprocess(OUTPUT SRC_PDI_F90_BPP SOURCES pdi_fortran.h.bpp)
-	include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+add_subdirectory(../vendor/bpp bpp EXCLUDE_FROM_ALL)
 
-	get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
-	add_library(pdi_f90 fapi.c ${SRC_PDI_F90_BPP})
-	target_link_libraries(pdi_f90 pdi paraconf_f90 MPI::MPI_Fortran)
-	set_source_files_properties(${SRC_PDI_F90_BPP} PROPERTIES GENERATED TRUE)
-	target_compile_definitions(pdi_f90 INTERFACE PDI_USE_F90_INCLUDE)
-	target_include_directories(pdi_f90 INTERFACE 
-			"$<BUILD_INTERFACE:${GENINC}>" 
-			"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>"
-			"$<INSTALL_INTERFACE:include>")
-	set_property(TARGET pdi_f90 PROPERTY VERSION ${pdi_VERSION})
-	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
-	set_property(TARGET pdi_f90 PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
-	set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
-	install(FILES ${SRC_PDI_F90_BPP}
-			DESTINATION "include")
-	install(TARGETS pdi_f90 EXPORT PDI_export
-			LIBRARY DESTINATION lib
-			ARCHIVE DESTINATION lib
-	)
+bpp_preprocess(OUTPUT SRC_PDI_F90_BPP SOURCES pdi_fortran.h.bpp)
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+
+get_filename_component(GENINC "${SRC_PDI_F90_BPP}" DIRECTORY)
+add_library(pdi_f90 fapi.c ${SRC_PDI_F90_BPP})
+target_link_libraries(pdi_f90 pdi paraconf_f90 MPI::MPI_Fortran)
+set_source_files_properties(${SRC_PDI_F90_BPP} PROPERTIES GENERATED TRUE)
+target_compile_definitions(pdi_f90 INTERFACE PDI_USE_F90_INCLUDE)
+target_include_directories(pdi_f90 INTERFACE 
+		"$<BUILD_INTERFACE:${GENINC}>" 
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/>"
+		"$<INSTALL_INTERFACE:include>")
+set_property(TARGET pdi_f90 PROPERTY VERSION ${pdi_VERSION})
+set_property(TARGET pdi_f90 PROPERTY SOVERSION ${pdi_VERSION_MAJOR})
+set_property(TARGET pdi_f90 PROPERTY pdi_MAJOR_VERSION ${pdi_VERSION_MAJOR})
+set_property(TARGET pdi_f90 APPEND PROPERTY COMPATIBLE_INTERFACE_STRING pdi_MAJOR_VERSION)
+install(FILES ${SRC_PDI_F90_BPP}
+		DESTINATION "include")
+install(TARGETS pdi_f90 EXPORT PDI_export
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+)
 endif()
-
 
 # Installable config
 

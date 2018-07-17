@@ -28,23 +28,33 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi LANGUAGES CXX C Fortran)
+project(pdi LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 
 # Build options
-option(USE_SYSTEM_PARACONF     "Use an already installed paraconf instead of building the embedded one" OFF )
-option(ENABLE_DECL_HDF5        "Build HDF5 based decl'HDF5 plug-in." ON )
-option(ENABLE_FTI              "Build FTI plug-in." ON )
+option(BUILD_SHARED_LIBS       "Build pdi as a shared library instead of a static one" ON)
+option(ENABLE_DECL_HDF5        "Build HDF5 based decl'HDF5 plug-in." ON)
 option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
-option(RUN_EXAMPLES            "Build and run examples during ctest." ON  )
-option(USE_SYSTEM_GTEST        "Use an already installed gtest and gmock instead of downloading and building." OFF )
+option(ENABLE_FORTRAN          "Enable compilation of the Fortran version of the library" ON)
+option(ENABLE_FTI              "Build FTI plug-in." ON)
+option(RUN_EXAMPLES            "Build and run examples during ctest." ON)
+option(USE_SYSTEM_GTEST        "Use an already installed gtest and gmock instead of downloading and building." OFF)
+option(USE_SYSTEM_PARACONF     "Use an already installed paraconf instead of building the embedded one" OFF)
+
+if("${ENABLE_FORTRAN}")
+	enable_language(Fortran)
+endif()
 
 # Because of plugins, we need PIC code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Find dependencies
-find_package(MPI REQUIRED COMPONENTS C CXX Fortran)
+set(MPI_LANGS C CXX)
+if("${ENABLE_FORTRAN}")
+	list(APPEND MPI_LANGS Fortran)
+endif()
+find_package(MPI REQUIRED COMPONENTS ${MPI_LANGS})
 find_package(Doxygen OPTIONAL_COMPONENTS dot)
 find_package(Astyle)
 if("${USE_SYSTEM_PARACONF}")
