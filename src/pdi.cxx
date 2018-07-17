@@ -376,7 +376,7 @@ try
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_transaction(const char* name, int num, ...)
+PDI_status_t PDI_multi_expose(const char* name, int num, ...)
 try
 {
 	va_list ap;
@@ -389,9 +389,8 @@ try
 		PDI_share(v_name, v_data, v_access);
 		transaction_data.emplace(v_name);
 	}
-	
 	va_end(ap);
-
+	
 	PDI_event(name);
 	for (const string& data : transaction_data) {
 		//TODO we should concatenate errors here...
