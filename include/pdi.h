@@ -224,15 +224,22 @@ PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t acc
 
 /// \{
 
-/** Performs multiple exposes at once. All the data is shared and reclaimed
- *  at the end of transaction.
+/** Performs multiple exposes at once. All the data is shared in order they were specified
+ *  and reclaimed in reversed order after an event is triggered.
  *
- * \param[in] name the name of the transaction (an event thus named will be
- *                 triggered when all data become available)
- * \param[in] num number of exposed data in transaction
+ *  NULL argument indicates an end of the list.
+ *
+ * \param[in] event_name the name of the event that will be triggered when
+ *                       all data become available
+ * \param[in] name the data name
+ * \param[in] data the exposed data
+ * \param[in] access whether the data can be accessed for read or write by PDI
+ * \param[in] ... (additional arguments) additional list of data to expose,
+ *                each should contain name, data and access, NULL argument
+ *                inidactes an end of the list.
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_multi_expose(const char* name, int num, ...);
+PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...);
 
 /** Begin a transaction. All the ::PDI_expose will be exposed together.
  *

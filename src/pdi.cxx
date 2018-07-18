@@ -32,6 +32,7 @@
 #include <exception>
 #include <iomanip>
 #include <iostream>
+#include <list>
 #include <string>
 #include <sstream>
 #include <type_traits>
@@ -376,25 +377,27 @@ try
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_multi_expose(const char* name, int num, ...)
+PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...)
 try
 {
 	va_list ap;
-	unordered_set<string> transaction_data;
-	va_start(ap, num);
-	for (int i=0; i < num; i++) {
-		const char* v_name = va_arg(ap, const char*);
+	std::list<string> transaction_data;
+	PDI_share(name, data, access);
+	transaction_data.emplace_back(name);
+	
+	va_start(ap, access);
+	while (const char* v_name = va_arg(ap, const char*)) {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 		PDI_share(v_name, v_data, v_access);
-		transaction_data.emplace(v_name);
+		transaction_data.emplace_back(v_name);
 	}
 	va_end(ap);
 	
 	PDI_event(name);
-	for (const string& data : transaction_data) {
+	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
 		//TODO we should concatenate errors here...
-		PDI_reclaim(data.c_str());
+		PDI_reclaim(it->c_str());
 	}
 } catch (const Error& e)
 {

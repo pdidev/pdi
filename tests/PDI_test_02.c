@@ -69,9 +69,11 @@ int main( int argc, char* argv[] )
 	PDI_expose("main_inout", data, PDI_INOUT);
 	PDI_transaction_end();
 	
-	PDI_multi_expose("test", 3, "main_in", data, PDI_IN,
+	PDI_multi_expose("test",
+	    "main_in", data, PDI_IN,
 	    "main_out", data, PDI_OUT,
-	    "main_inout", data, PDI_INOUT);
+	    "main_inout", data, PDI_INOUT,
+	    NULL);
 	    
 	PDI_finalize();
 	PC_tree_destroy(&conf);
