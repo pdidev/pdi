@@ -34,7 +34,7 @@ plugins:
       read:
         myrank: {when: $input=1}
     - file: decl_hdf5_test_06_C.h5
-      communicator: world
+      communicator: $MPI_COMM_WORLD
       datasets:
         reals: {type: double, sizes: [$njt, $nit]}
         values: {type: int, sizes: [$njt, $nit]}

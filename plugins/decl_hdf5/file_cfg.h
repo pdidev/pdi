@@ -68,7 +68,7 @@ public:
 	File_cfg(PC_tree_t tree, std::vector<std::string>& events, PDI::Logger_sptr logger):
 		m_file{PDI::to_string(PC_get(tree, ".file"))},
 		m_when{1},
-		m_communicator{"self"}
+		m_communicator{"$MPI_COMM_SELF"}
 	{
 		using PDI::Datatype_template;
 		using PDI::Error;
@@ -97,7 +97,7 @@ public:
 			} else if ( key == "communicator" ) {
 				string comm_name = to_string(PC_get(tree, ".communicator"));
 #ifndef H5_HAVE_PARALLEL
-				if (comm_name != "self") {
+				if (comm_name != "$MPI_COMM_SELF") {
 					throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", comm_name.c_str()};
 				}
 #endif

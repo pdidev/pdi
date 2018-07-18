@@ -22,45 +22,47 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_GLOBAL_CONTEXT_MOCK_H_
-#define PDI_GLOBAL_CONTEXT_MOCK_H_
-
-#include <memory>
-
-#include <gmock/gmock.h>
-#include <pdi/global_context.h>
-#include <pdi/paraconf_wrapper.h>
+#include <pdi/context.h>
 #include <pdi/predef_desc.h>
-#include <pdi/plugin.h>
+#include <pdi/scalar_datatype.h>
+#include <pdi/ref_any.h>
 
-struct MockGlobalContext : public PDI::Global_context {
-	MockGlobalContext(PC_tree_t conf, MPI_Comm* world) :
-		Global_context(conf, world)
-	{}
-	PDI::Paraconf_wrapper fw;
-	
-	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));
-	MOCK_METHOD1(desc, PDI::Data_descriptor&(const char*));
-	
-	MOCK_METHOD1(BracketOp1, PDI::Data_descriptor&(const std::string&));
-	PDI::Data_descriptor& operator [] (const std::string& str) override
-	{
-		return BracketOp1(str);
-	}
-	
-	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char* name));
-	PDI::Data_descriptor& operator [] (const char* str) override
-	{
-		return BracketOp2(str);
-	}
-	
-	MOCK_METHOD0(begin, PDI::Context::Iterator());
-	MOCK_METHOD0(end, PDI::Context::Iterator());
-	
-	MOCK_METHOD1(event, void(const char* name));
-	
-	MOCK_METHOD1(add_predef_desc, void(std::unique_ptr<PDI::Predef_desc> predef_desc));
-};
+namespace PDI {
 
+MPI_Types::MPI_Types(Context& ctx): m_ctx{ctx}
+{
+	// deleter for MPI_Comm
+	auto deleter = [](void* ptr) {
+		auto comm_ptr = static_cast<MPI_Comm*>(ptr);
+		MPI_Comm_free(comm_ptr);
+		delete comm_ptr;
+	};
+	
+	// load MPI_COMM_WORLD
+	MPI_Comm* comm = new MPI_Comm;
+	MPI_Comm_dup(MPI_COMM_WORLD, comm);
+	Ref comm_world_ref{comm, deleter, Datatype_uptr{new Scalar_datatype(Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
+	m_ctx["MPI_COMM_WORLD"].share(comm_world_ref, false, false);
+	
+	// load MPI_COMM_SELF
+	comm = new MPI_Comm;
+	MPI_Comm_dup(MPI_COMM_SELF, comm);
+	Ref comm_self_ref {comm, deleter, Datatype_uptr{new Scalar_datatype(Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
+	m_ctx["MPI_COMM_SELF"].share(comm_self_ref, false, false);
+	
+	// load MPI_COMM_NULL
+	comm = new MPI_Comm;
+	*comm = MPI_COMM_NULL;
+	Ref comm_null_ref {comm, &free, Datatype_uptr{new Scalar_datatype(Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
+	m_ctx["MPI_COMM_NULL"].share(comm_null_ref, false, false);
+}
 
-#endif //PDI_GLOBAL_CONTEXT_MOCK_H_
+MPI_Types::~MPI_Types()
+{
+	// release the communicators
+	m_ctx["MPI_COMM_WORLD"].release();
+	m_ctx["MPI_COMM_SELF"].release();
+	m_ctx["MPI_COMM_NULL"].release();
+}
+
+}

@@ -38,6 +38,7 @@
 #include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/predef_desc.h>
 #include <pdi/ref_any.h>
 
 
@@ -56,6 +57,9 @@ private:
 	
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
+	
+	/// The loaded includes
+	std::unordered_set<std::unique_ptr<Predef_desc>> m_includes;
 	
 	Global_context(const Global_context&) = delete;
 	

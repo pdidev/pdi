@@ -35,8 +35,10 @@
 
 #include <paraconf.h>
 
+#include <pdi/context.h>
 #include <pdi/datatype.h>
 #include <pdi/expression.h>
+#include <pdi/predef_desc.h>
 
 #include "file_cfg.h"
 
@@ -63,6 +65,10 @@ public:
 		using PDI::to_string;
 		using std::string;
 		using std::vector;
+
+		//need to add MPI_Comm type before configuration
+		ctx.add_predef_desc(std::unique_ptr<PDI::Predef_desc>{new PDI::MPI_Types(ctx)});
+
 		if (!PC_status(PC_get(tree, "[0]"))) {
 			int nb_files = len(tree);
 			for (int file_id=0; file_id<nb_files; ++file_id) {

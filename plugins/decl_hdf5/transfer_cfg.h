@@ -66,7 +66,7 @@ public:
 	Transfer_cfg(const File_cfg& parent, const std::string& name):
 		m_parent{&parent},
 		m_dataset{name},
-		m_communicator{"null"}
+		m_communicator{"$MPI_COMM_NULL"}
 	{
 	}
 	
@@ -88,7 +88,7 @@ public:
 			} else if ( key == "communicator" ) {
 				string comm_name = to_string(PC_get(tree, ".communicator"));
 #ifndef H5_HAVE_PARALLEL
-				if (comm_name != "self") {
+				if (comm_name != "$MPI_COMM_SELF") {
 					throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", comm_name.c_str()};
 				}
 #endif

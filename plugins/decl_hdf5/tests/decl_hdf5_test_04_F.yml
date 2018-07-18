@@ -28,7 +28,7 @@ data:
 plugins:
   decl_hdf5:
     file: decl_hdf5_test_04_C.h5
-    communicator: world
+    communicator: $MPI_COMM_WORLD
     datasets:
       reals:
         type: double

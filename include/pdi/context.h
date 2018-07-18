@@ -34,6 +34,7 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/predef_desc.h>
 #include <pdi/ref_any.h>
 #include <pdi/logger.h>
 

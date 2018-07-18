@@ -18,7 +18,7 @@ pdi:
   plugins:
     decl_hdf5:
       file: data.h5
-      communicator: world # the MPI communicator used for HDF5 parallel synchronized write
+      communicator: $MPI_COMM_WORLD # the MPI communicator used for HDF5 parallel synchronized write
       datasets: # type of the datasets to create in file
         data:
           type: double

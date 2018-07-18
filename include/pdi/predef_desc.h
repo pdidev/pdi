@@ -22,45 +22,34 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_GLOBAL_CONTEXT_MOCK_H_
-#define PDI_GLOBAL_CONTEXT_MOCK_H_
+#ifndef PDI_PREDEF_DESC_H_
+#define PDI_PREDEF_DESC_H_
 
-#include <memory>
+#include <pdi/pdi_fwd.h>
 
-#include <gmock/gmock.h>
-#include <pdi/global_context.h>
-#include <pdi/paraconf_wrapper.h>
-#include <pdi/predef_desc.h>
-#include <pdi/plugin.h>
+namespace PDI {
 
-struct MockGlobalContext : public PDI::Global_context {
-	MockGlobalContext(PC_tree_t conf, MPI_Comm* world) :
-		Global_context(conf, world)
-	{}
-	PDI::Paraconf_wrapper fw;
-	
-	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));
-	MOCK_METHOD1(desc, PDI::Data_descriptor&(const char*));
-	
-	MOCK_METHOD1(BracketOp1, PDI::Data_descriptor&(const std::string&));
-	PDI::Data_descriptor& operator [] (const std::string& str) override
-	{
-		return BracketOp1(str);
-	}
-	
-	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char* name));
-	PDI::Data_descriptor& operator [] (const char* str) override
-	{
-		return BracketOp2(str);
-	}
-	
-	MOCK_METHOD0(begin, PDI::Context::Iterator());
-	MOCK_METHOD0(end, PDI::Context::Iterator());
-	
-	MOCK_METHOD1(event, void(const char* name));
-	
-	MOCK_METHOD1(add_predef_desc, void(std::unique_ptr<PDI::Predef_desc> predef_desc));
+/*
+ *  Base predefined desc, every include must inherit from it
+ */
+struct PDI_EXPORT Predef_desc {
+	virtual ~Predef_desc() = default;
 };
 
+/*
+ *  Includes basic types for MPI:
+ *      - MPI_COMM_WORLD, MPI_COMM_SELF, MPI_COMM_NULL
+ */
+class PDI_EXPORT MPI_Types : public Predef_desc
+{
+private:
+	Context& m_ctx;
+	
+public:
+	MPI_Types(Context& ctx);
+	~MPI_Types() override;
+};
 
-#endif //PDI_GLOBAL_CONTEXT_MOCK_H_
+}
+
+#endif

@@ -62,6 +62,7 @@ add_library(pdi SHARED
 		paraconf_wrapper.cxx
 		pdi.cxx
 		plugin.cxx
+		predef_desc.cxx
 		record_datatype.cxx
 		ref_any.cxx
 		scalar_datatype.cxx

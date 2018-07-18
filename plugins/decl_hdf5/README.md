@@ -72,7 +72,7 @@ plugins:
     file: data${coord[0]}x${coord[1]}.h5 # the file in which to write the data (required)
     on_event: newiter                    # the event that triggers these actions (default: trigger on data expose)
     when: "$iter>0 & $iter<11"           # a condition when to actually trigger the actions (default: always true)
-    communicator: self                   # the MPI communicator used for HDF5 parallel synchronized write (default: self, sequential write)
+    communicator: $MPI_COMM_SELF                   # the MPI communicator used for HDF5 parallel synchronized write (default: self, sequential write)
     datasets:                            # a list of datasets inside the file created on first access
       data/array: # a dataset name, datasets referenced but not defined are created just big enough to fit the data
         type: double                    # type of the data in the dataset
@@ -81,7 +81,7 @@ plugins:
       main_field: # name of the data, it contains either a list or a single write to execute
         - dataset: data/array      # a dataset name (default: the data name)
           when: "$iter>0&$iter<11" # a condition when to actually trigger the actions (default: that of the file)
-          communicator: self       # the MPI communicator used for HDF5 parallel synchronized write (default: that of the file)
+          communicator: $MPI_COMM_SELF       # the MPI communicator used for HDF5 parallel synchronized write (default: that of the file)
           memory_selection:
             size:  [$width-2, $height-2] # number of elements to transfer in each dimension (default: size of the full data)
             start: [1, 1]                # coordinate of the start point in memory relative to the shared data (default: 0 in each dimensions)

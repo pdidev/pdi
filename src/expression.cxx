@@ -284,29 +284,19 @@ string Expression::Impl::to_string(Context& ctx) const
 
 MPI_Comm Expression::Impl::to_mpi_comm(Context& ctx) const
 {
-	Ref_r comm_ref = to_ref(ctx);
-	
-	if (auto&& array_type = dynamic_cast<const Array_datatype*>(&comm_ref.type())) {
-		//the comm is a string
-		const char* communicator_name = static_cast<const char*>(comm_ref.get());
-		if ( !strcmp(communicator_name, "self") ) return MPI_COMM_SELF;
-		if ( !strcmp(communicator_name, "null") ) return MPI_COMM_NULL;
-		if ( !strcmp(communicator_name, "world") ) return MPI_COMM_WORLD;
-		throw PDI::Error{PDI_ERR_TYPE, "Invalid communicator name: `%s'", communicator_name};
-	}
-	
-	if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&comm_ref.type())) {
-		if (scalar_type->kind() == Scalar_kind::MPI_COMM) {
-			//the comm is the reference
-			try {
+	try {
+		Ref_r comm_ref = to_ref(ctx);
+		
+		if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&comm_ref.type())) {
+			if (scalar_type->kind() == Scalar_kind::MPI_COMM) {
 				const MPI_Comm* comm = static_cast<const MPI_Comm*>(comm_ref.get());
 				return *comm;
-			} catch (PDI::Error e) {
-				throw PDI::Error{PDI_ERR_TYPE, "Trying to reach MPI_Comm that is not initialized"};
 			}
 		}
+	} catch (Error e) {
+		throw Error{PDI_ERR_TYPE, "Defined communicator is not a reference to MPI_Comm"};
 	}
-	throw PDI::Error{PDI_ERR_TYPE, "Defined communicator is not a string nor a reference to MPI_Comm"};
+	throw Error{PDI_ERR_TYPE, "Trying to cast to MPI_Comm something that is not a MPI_Comm"};
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
