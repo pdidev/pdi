@@ -35,7 +35,6 @@
 
 #include <paraconf.h>
 
-#include <pdi/context.h>
 #include <pdi/datatype.h>
 #include <pdi/expression.h>
 
@@ -68,7 +67,6 @@ public:
 		using PDI::to_string;
 		using std::string;
 		using std::vector;
-
 		if (!PC_status(PC_get(tree, "[0]"))) {
 			int nb_files = len(tree);
 			for (int file_id=0; file_id<nb_files; ++file_id) {
