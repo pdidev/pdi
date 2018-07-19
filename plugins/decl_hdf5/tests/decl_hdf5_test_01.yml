@@ -7,6 +7,7 @@ metadata:
 data:
   test_var: double
 plugins:
+  mpi:
   decl_hdf5:
     file: $meta1.h5
     write: [ test_var, meta2 ]

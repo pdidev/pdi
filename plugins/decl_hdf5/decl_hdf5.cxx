@@ -296,8 +296,13 @@ void read(Context& ctx, const Transfer_cfg& xfer, Ref ref)
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid read_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
+<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	if ( xfer.communicator() != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
+=======
+	if ( xfer.communicator() != "$MPI_COMM_SELF" ) {
+		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(ctx), MPI_INFO_NULL) ) handle_hdf5_err();
+>>>>>>> Replaced predef_desc by mpi plugin
 		if ( 0>H5Pset_dxpl_mpio(read_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
 	}
 #endif
@@ -317,8 +322,13 @@ void write(Context& ctx, const Transfer_cfg& xfer, Ref ref)
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid write_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
+<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	if ( xfer.communicator() != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
+=======
+	if ( xfer.communicator() != "$MPI_COMM_SELF" ) {
+		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(ctx), MPI_INFO_NULL) ) handle_hdf5_err();
+>>>>>>> Replaced predef_desc by mpi plugin
 		if ( 0>H5Pset_dxpl_mpio(write_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
 	}
 #endif
@@ -338,8 +348,13 @@ void execute(Context& ctx, const File_cfg& file_cfg)
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
+<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	if ( file_cfg.communicator() != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, file_cfg.communicator(), MPI_INFO_NULL) ) handle_hdf5_err();
+=======
+	if ( file_cfg.communicator() != "$MPI_COMM_SELF" ) {
+		if ( 0>H5Pset_fapl_mpio(file_lst, file_cfg.communicator(ctx), MPI_INFO_NULL) ) handle_hdf5_err();
+>>>>>>> Replaced predef_desc by mpi plugin
 		if ( 0>H5Pset_dxpl_mpio(xfer_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
 	}
 #endif
@@ -389,7 +404,11 @@ struct decl_hdf5_plugin: Plugin {
 	
 	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*):
 		Plugin {ctx},
+<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 		m_config{config, ctx.logger()}
+=======
+		m_config{config}
+>>>>>>> Replaced predef_desc by mpi plugin
 	{
 		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");

@@ -53,7 +53,7 @@ class File_cfg
 	
 	PDI::Expression m_when;
 	
-	PDI::Expression m_communicator;
+	std::string m_communicator;
 	
 	std::unordered_map<std::string, PDI::Datatype_template_uptr> m_datasets;
 	
@@ -95,13 +95,12 @@ public:
 			} else if ( key == "when" ) {
 				m_when = to_string(PC_get(tree, ".when"));
 			} else if ( key == "communicator" ) {
-				string comm_name = to_string(PC_get(tree, ".communicator"));
+				m_communicator = to_string(PC_get(tree, ".communicator"));
 #ifndef H5_HAVE_PARALLEL
-				if (comm_name != "$MPI_COMM_SELF") {
+				if (m_communicator != "$MPI_COMM_SELF") {
 					throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", comm_name.c_str()};
 				}
 #endif
-				m_communicator = comm_name;
 			} else if ( key == "datasets" ) {
 				int nb_dataset = len(PC_get(tree, ".datasets"));
 				for (int dataset_id=0; dataset_id<nb_dataset; ++dataset_id) {
@@ -199,9 +198,14 @@ public:
 		return m_when;
 	}
 	
+	std::string communicator() const
+	{
+		return m_communicator;
+	}
+
 	MPI_Comm communicator(PDI::Context& ctx) const
 	{
-		return m_communicator.to_mpi_comm(ctx);
+		return PDI::Expression{m_communicator}.to_mpi_comm(ctx);
 	}
 	
 	const std::unordered_map<std::string, PDI::Datatype_template_uptr>& datasets() const
@@ -240,11 +244,16 @@ const PDI::Expression& Transfer_cfg::when() const
 }
 
 // defined here because File_cfg need to be defined
+std::string Transfer_cfg::communicator() const
+{
+	if (m_communicator == "$MPI_COMM_NULL") return parent().communicator();
+	return m_communicator;
+}
+
 MPI_Comm Transfer_cfg::communicator(PDI::Context& ctx) const
 {
-	MPI_Comm transfer_comm = m_communicator.to_mpi_comm(ctx);
-	if (transfer_comm == MPI_COMM_NULL) return parent().communicator(ctx);
-	return transfer_comm;
+	if (m_communicator == "$MPI_COMM_NULL") return parent().communicator(ctx);
+	return PDI::Expression{m_communicator}.to_mpi_comm(ctx);
 }
 
 } // namespace <anonymous>

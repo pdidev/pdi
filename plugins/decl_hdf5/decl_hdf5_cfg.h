@@ -38,7 +38,6 @@
 #include <pdi/context.h>
 #include <pdi/datatype.h>
 #include <pdi/expression.h>
-#include <pdi/predef_desc.h>
 
 #include "file_cfg.h"
 
@@ -58,16 +57,17 @@ class Decl_hdf5_cfg
 	Decl_hdf5_cfg(const Decl_hdf5_cfg&)=delete;
 	
 public:
+<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	Decl_hdf5_cfg(PC_tree_t tree, PDI::Logger_sptr logger)
+=======
+	Decl_hdf5_cfg(PC_tree_t tree)
+>>>>>>> Replaced predef_desc by mpi plugin
 	{
 		using PDI::Error;
 		using PDI::len;
 		using PDI::to_string;
 		using std::string;
 		using std::vector;
-
-		//need to add MPI_Comm type before configuration
-		ctx.add_predef_desc(std::unique_ptr<PDI::Predef_desc>{new PDI::MPI_Types(ctx)});
 
 		if (!PC_status(PC_get(tree, "[0]"))) {
 			int nb_files = len(tree);

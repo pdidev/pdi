@@ -179,10 +179,13 @@ void Global_context::event(const char* name)
 	}
 }
 
+<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 Logger_sptr Global_context::logger() const
 {
 	return m_logger;
 }
 
 
+=======
+>>>>>>> Replaced predef_desc by mpi plugin
 }

@@ -16,6 +16,7 @@ pdi:
     main_field: { sizes: [ '$dsize[0]', '$dsize[1]' ], type: double }
   
   plugins:
+    mpi:
     decl_hdf5:
       file: data.h5
       communicator: $MPI_COMM_WORLD # the MPI communicator used for HDF5 parallel synchronized write

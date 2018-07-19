@@ -38,7 +38,6 @@
 #include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
-#include <pdi/predef_desc.h>
 #include <pdi/ref_any.h>
 
 
@@ -52,15 +51,12 @@ private:
 	/// Global logger of PDI
 	Logger_sptr m_logger;
 	
-	/// The loaded plugins
-	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
-	
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
 	
-	/// The loaded includes
-	std::unordered_set<std::unique_ptr<Predef_desc>> m_includes;
-	
+	/// The loaded plugins - need to be after m_descriptors (to guarantee proper destroy order)
+	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
+
 	Global_context(const Global_context&) = delete;
 	
 	Global_context(Global_context&&) = delete;
@@ -97,8 +93,11 @@ public:
 	 */
 	void event(const char* name) override;
 	
+<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	Logger_sptr logger() const override;
 	
+=======
+>>>>>>> Replaced predef_desc by mpi plugin
 };
 
 } // namespace PDI

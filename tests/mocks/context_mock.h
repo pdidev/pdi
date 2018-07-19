@@ -25,12 +25,9 @@
 #ifndef PDI_CONTEXT_MOCK_H_
 #define PDI_CONTEXT_MOCK_H_
 
-#include <memory>
-
 #include <gmock/gmock.h>
 #include <pdi/context.h>
 #include <pdi/plugin.h>
-#include <pdi/predef_desc.h>
 
 struct MockContext : public PDI::Context {
 	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));
@@ -53,8 +50,11 @@ struct MockContext : public PDI::Context {
 	
 	MOCK_METHOD1(event, void(const char* name));
 	
+<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	MOCK_CONST_METHOD0(logger, PDI::Logger_sptr());
 	
+=======
+>>>>>>> Replaced predef_desc by mpi plugin
 };
 
 

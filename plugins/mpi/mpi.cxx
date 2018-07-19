@@ -22,34 +22,51 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_PREDEF_DESC_H_
-#define PDI_PREDEF_DESC_H_
+#include <mpi.h>
 
+#include <pdi/context.h>
 #include <pdi/pdi_fwd.h>
+#include <pdi/plugin.h>
+#include <pdi/scalar_datatype.h>
 
-namespace PDI {
+struct mpi_plugin: PDI::Plugin {
 
-/*
- *  Base predefined desc, every include must inherit from it
- */
-struct PDI_EXPORT Predef_desc {
-	virtual ~Predef_desc() = default;
-};
-
-/*
- *  Includes basic types for MPI:
- *      - MPI_COMM_WORLD, MPI_COMM_SELF, MPI_COMM_NULL
- */
-class PDI_EXPORT MPI_Types : public Predef_desc
-{
-private:
-	Context& m_ctx;
+	mpi_plugin(PDI::Context& ctx, PC_tree_t, MPI_Comm*, PDI::Logger):
+		Plugin{ctx}
+	{
+		// deleter for MPI_Comm
+		auto deleter = [](void* ptr) {
+			auto comm_ptr = static_cast<MPI_Comm*>(ptr);
+			MPI_Comm_free(comm_ptr);
+			delete comm_ptr;
+		};
+		
+		// load MPI_COMM_WORLD
+		MPI_Comm* comm = new MPI_Comm;
+		MPI_Comm_dup(MPI_COMM_WORLD, comm);
+		PDI::Ref comm_world_ref{comm, deleter, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
+		context()["MPI_COMM_WORLD"].share(comm_world_ref, false, false);
+		
+		// load MPI_COMM_SELF
+		comm = new MPI_Comm;
+		MPI_Comm_dup(MPI_COMM_SELF, comm);
+		PDI::Ref comm_self_ref {comm, deleter, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
+		context()["MPI_COMM_SELF"].share(comm_self_ref, false, false);
+		
+		// load MPI_COMM_NULL
+		comm = new MPI_Comm;
+		*comm = MPI_COMM_NULL;
+		PDI::Ref comm_null_ref {comm, &free, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
+		context()["MPI_COMM_NULL"].share(comm_null_ref, false, false);
+	}
 	
-public:
-	MPI_Types(Context& ctx);
-	~MPI_Types() override;
+	~mpi_plugin()
+	{
+		// release the communicators
+		context()["MPI_COMM_WORLD"].release();
+		context()["MPI_COMM_SELF"].release();
+		context()["MPI_COMM_NULL"].release();
+	}
 };
 
-}
-
-#endif
+PDI_PLUGIN(mpi)

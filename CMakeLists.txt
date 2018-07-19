@@ -34,6 +34,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # Build options
 option(BUILD_SHARED_LIBS       "Build pdi as a shared library instead of a static one" ON)
+option(ENABLE_MPI              "Build MPI plug-in." ON )
 option(ENABLE_DECL_HDF5        "Build HDF5 based decl'HDF5 plug-in." ON)
 option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
 option(ENABLE_FORTRAN          "Enable compilation of the Fortran version of the library" ON)
@@ -93,6 +94,9 @@ add_subdirectory(src/)
 # The plugins
 add_subdirectory(plugins/test/)
 add_subdirectory(plugins/user_code/)
+if(${ENABLE_MPI})
+	add_subdirectory(plugins/mpi/)
+endif()
 if(${ENABLE_DECL_HDF5})
 	add_subdirectory(plugins/decl_hdf5/)
 endif()

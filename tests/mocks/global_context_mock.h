@@ -25,12 +25,9 @@
 #ifndef PDI_GLOBAL_CONTEXT_MOCK_H_
 #define PDI_GLOBAL_CONTEXT_MOCK_H_
 
-#include <memory>
-
 #include <gmock/gmock.h>
 #include <pdi/global_context.h>
 #include <pdi/paraconf_wrapper.h>
-#include <pdi/predef_desc.h>
 #include <pdi/plugin.h>
 
 struct MockGlobalContext : public PDI::Global_context {
@@ -59,7 +56,6 @@ struct MockGlobalContext : public PDI::Global_context {
 	
 	MOCK_METHOD1(event, void(const char* name));
 	
-	MOCK_METHOD1(add_predef_desc, void(std::unique_ptr<PDI::Predef_desc> predef_desc));
 };
 
 
