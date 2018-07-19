@@ -57,6 +57,7 @@ using namespace PDI;
 using std::cerr;
 using std::endl;
 using std::exception;
+using std::list;
 using std::make_shared;
 using std::move;
 using std::stack;
@@ -64,7 +65,6 @@ using std::string;
 using std::stringstream;
 using std::underlying_type;
 using std::unique_ptr;
-using std::unordered_set;
 
 struct Error_context {
 	PDI_errhandler_t handler;
@@ -114,7 +114,7 @@ thread_local Error_context g_error_context;
 string g_transaction;
 
 /// List of data that are part of the current transaction
-unordered_set<string> g_transaction_data;
+list<string> g_transaction_data;
 
 
 /** Logical operator to manipulate PDI_inout_t
@@ -156,7 +156,7 @@ void warn_status(PDI_status_t status, const char* message, void*)
 	}
 }
 
-}
+} // namespace <anonymous>
 
 
 const PDI_errhandler_t PDI_ASSERT_HANDLER = {
@@ -361,7 +361,7 @@ try
 	if (PDI_status_t status = PDI_share(name, data, access)) return status;
 	
 	if (! g_transaction.empty()) {   // defer the reclaim
-		g_transaction_data.emplace(name);
+		g_transaction_data.emplace_back(name);
 	} else { // do the reclaim now
 		if (PDI_status_t status = PDI_reclaim(name)) return status;
 	}
@@ -381,24 +381,32 @@ PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* da
 try
 {
 	va_list ap;
-	std::list<string> transaction_data;
-	PDI_share(name, data, access);
+	list<string> transaction_data;
+	PDI_status_t status;
+	if (status = PDI_share(name, data, access)) return status;
 	transaction_data.emplace_back(name);
 	
 	va_start(ap, access);
 	while (const char* v_name = va_arg(ap, const char*)) {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
-		PDI_share(v_name, v_data, v_access);
+		if (status = PDI_share(v_name, v_data, v_access)) {
+			break;
+		}
 		transaction_data.emplace_back(v_name);
 	}
 	va_end(ap);
 	
-	PDI_event(name);
-	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
-		//TODO we should concatenate errors here...
-		PDI_reclaim(it->c_str());
+	if (!status) { //trigger event only when all data is available
+		status = PDI_event(event_name);
 	}
+	
+	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
+		PDI_status_t r_status = PDI_reclaim(it->c_str());
+		status = !status ? r_status : status; //if it is first error, save its status (try to reclaim other desc anyway)
+	}
+	//the status of the first error is returned
+	return status;
 } catch (const Error& e)
 {
 	return g_error_context.return_err(e);
@@ -439,9 +447,9 @@ try
 		throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
 	}
 	PDI_event(g_transaction.c_str());
-	for (const string& data : g_transaction_data) {
+	for (auto&& it = g_transaction_data.rbegin(); it != g_transaction_data.rend(); it++) {
 		//TODO we should concatenate errors here...
-		PDI_reclaim(data.c_str());
+		PDI_reclaim(it->c_str());
 	}
 	g_transaction_data.clear();
 	g_transaction.clear();

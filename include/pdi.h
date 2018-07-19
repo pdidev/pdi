@@ -249,12 +249,12 @@ PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* nam
  *                 triggered when all data become available)
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_transaction_begin(const char* name);
+PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name);
 
 /** Ends the previously opened transaction.
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_transaction_end(void);
+PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void);
 
 /// \}
 
