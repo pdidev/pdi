@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <mpi.h>
+
 #include <gtest/gtest.h>
 
 #include <global_context_mock.h>
@@ -44,6 +46,8 @@ namespace PDI {
 struct Descriptor_test_handler {
 	static unique_ptr<Data_descriptor> default_desc(MockGlobalContext& mockGlCtx)
 	{
+		int argc = 0; char** argv = {};
+		MPI_Init(&argc, &argv);
 		return unique_ptr<Data_descriptor> {new Data_descriptor_impl{mockGlCtx, "default_desc"}};
 	}
 	
@@ -67,8 +71,8 @@ struct DataDescTest : public ::testing::Test {
 	int array[10];
 	PC_tree_t array_config {PC_parse_string("{ size: 10, type: int }")};
 	PDI::Paraconf_wrapper fw;
-	MockGlobalContext mockGlCtx{PC_parse_string(""), 0};
 	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(mockGlCtx);
+	MockGlobalContext mockGlCtx{PC_parse_string(""), 0};
 };
 
 /*

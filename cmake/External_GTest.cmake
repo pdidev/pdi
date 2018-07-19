@@ -3,7 +3,8 @@ find_package(Threads REQUIRED)
 include(ExternalProject)
 ExternalProject_Add(
   googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
+  URL "${CMAKE_SOURCE_DIR}/vendor/googletest-release-1.8.0.tar"
+  URL_HASH SHA256=b16938c8522e85811d9f9e74e55eddcf084aea7fc6e8ec0cea40fceaacb57a13
   UPDATE_COMMAND ""
   INSTALL_COMMAND ""
   LOG_DOWNLOAD ON

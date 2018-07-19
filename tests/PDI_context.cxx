@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <mpi.h>
+
 #include <gtest/gtest.h>
 
 #include <pdi/context.h>
@@ -41,7 +43,10 @@ struct ContextTest : public ::testing::Test {
 	ContextTest():
 		test_conf{PC_parse_string("")},
 		test_world{0}
-	{}
+	{
+		int argc = 0; char** argv = {};
+		MPI_Init(&argc, &argv);
+	}
 	
 	void SetUp() override
 	{

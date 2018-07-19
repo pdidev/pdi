@@ -35,7 +35,6 @@ if("${ENABLE_FORTRAN}")
 endif()
 
 # find_package(pdi REQUIRED)
-find_package(MPI REQUIRED)
 find_library(LIB_M m DOC "The math library")
 
 # Default standard in the project is C99 & C++11
