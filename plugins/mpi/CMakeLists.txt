@@ -27,11 +27,11 @@ project(pdi_mpi_plugin LANGUAGES CXX)
 
 # The plugin
 add_library(pdi_mpi_plugin MODULE mpi.cxx)
-target_link_libraries(pdi_mpi_plugin pdi)
+target_link_libraries(pdi_mpi_plugin PUBLIC pdi)
 set_target_properties(pdi_mpi_plugin PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Installation
-install(TARGETS pdi_mpi_plugin EXPORT pdi_mpi_pluginTargets LIBRARY DESTINATION lib)
+install(TARGETS pdi_mpi_plugin EXPORT mpiTargets LIBRARY DESTINATION lib)
