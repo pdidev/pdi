@@ -55,12 +55,14 @@ set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
 
 if("${ENABLE_DECL_HDF5}")
 add_test(NAME PDI_example_decl_hdf5_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
-set_property(TEST PDI_example_decl_hdf5_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_hdf5/")
+set_property(TEST PDI_example_decl_hdf5_C APPEND PROPERTY ENVIRONMENT
+	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_hdf5/:${CMAKE_CURRENT_BINARY_DIR}/../plugins/mpi/")
 set_property(TEST PDI_example_decl_hdf5_C PROPERTY TIMEOUT 5)
 
 if("${ENABLE_FORTRAN}")
 add_test(NAME PDI_example_decl_hdf5_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
-set_property(TEST PDI_example_decl_hdf5_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_hdf5/")
+set_property(TEST PDI_example_decl_hdf5_F APPEND PROPERTY ENVIRONMENT
+	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_hdf5/:${CMAKE_CURRENT_BINARY_DIR}/../plugins/mpi/")
 set_property(TEST PDI_example_decl_hdf5_F PROPERTY TIMEOUT 5)
 endif("${ENABLE_FORTRAN}")
 endif("${ENABLE_DECL_HDF5}")

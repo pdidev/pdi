@@ -77,7 +77,8 @@ endif("${ENABLE_FORTRAN}")
 add_executable(decl_hdf5_04_C decl_hdf5_test_04.c)
 target_link_libraries(decl_hdf5_04_C pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04_C.yml")
-set_property(TEST decl_hdf5_04_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+set_property(TEST decl_hdf5_04_C APPEND PROPERTY ENVIRONMENT
+	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../:${CMAKE_CURRENT_BINARY_DIR}/../../mpi/")
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_hdf5_04_F decl_hdf5_test_04.F90)
@@ -85,7 +86,8 @@ target_link_libraries(decl_hdf5_04_F pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_04_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_04_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_04_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04_F.yml")
-set_property(TEST decl_hdf5_04_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+set_property(TEST decl_hdf5_04_F APPEND PROPERTY ENVIRONMENT
+	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../:${CMAKE_CURRENT_BINARY_DIR}/../../mpi/")
 endif("${ENABLE_FORTRAN}")
 
 ##########
@@ -94,7 +96,8 @@ endif("${ENABLE_FORTRAN}")
 add_executable(decl_hdf5_05_C decl_hdf5_test_05.c)
 target_link_libraries(decl_hdf5_05_C pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_05_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_05_C.yml")
-set_property(TEST decl_hdf5_05_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+set_property(TEST decl_hdf5_05_C APPEND PROPERTY ENVIRONMENT
+	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../:${CMAKE_CURRENT_BINARY_DIR}/../../mpi/")
 
 ##########
 # TEST 06: 
@@ -102,4 +105,5 @@ set_property(TEST decl_hdf5_05_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$E
 add_executable(decl_hdf5_06_C decl_hdf5_test_06.c)
 target_link_libraries(decl_hdf5_06_C pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_06_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_06_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_06_C.yml")
-set_property(TEST decl_hdf5_06_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
+set_property(TEST decl_hdf5_06_C APPEND PROPERTY ENVIRONMENT
+	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../:${CMAKE_CURRENT_BINARY_DIR}/../../mpi/")
