@@ -36,6 +36,20 @@ using std::string;
 using std::unique_ptr;
 using std::set;
 
+struct MPI_initializer {
+
+	MPI_initializer()
+	{
+		int argc = 0; char** argv = {};
+		MPI_Init(&argc, &argv);
+	}
+	
+	~MPI_initializer()
+	{
+		MPI_Finalize();
+	}
+};
+
 /*
  * Struct prepared for ContextTest.
  */
@@ -43,10 +57,7 @@ struct ContextTest : public ::testing::Test {
 	ContextTest():
 		test_conf{PC_parse_string("")},
 		test_world{0}
-	{
-		int argc = 0; char** argv = {};
-		MPI_Init(&argc, &argv);
-	}
+	{}
 	
 	void SetUp() override
 	{
@@ -55,6 +66,7 @@ struct ContextTest : public ::testing::Test {
 	
 	Paraconf_wrapper fw;
 	PC_tree_t test_conf;
+	MPI_initializer init_mpi;
 	MPI_Comm test_world;
 	unique_ptr<Context> test_context;
 };

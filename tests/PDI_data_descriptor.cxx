@@ -46,8 +46,6 @@ namespace PDI {
 struct Descriptor_test_handler {
 	static unique_ptr<Data_descriptor> default_desc(MockGlobalContext& mockGlCtx)
 	{
-		int argc = 0; char** argv = {};
-		MPI_Init(&argc, &argv);
 		return unique_ptr<Data_descriptor> {new Data_descriptor_impl{mockGlCtx, "default_desc"}};
 	}
 	
@@ -64,6 +62,20 @@ struct Descriptor_test_handler {
 };
 }
 
+struct MPI_initializer {
+
+	MPI_initializer()
+	{
+		int argc = 0; char** argv = {};
+		MPI_Init(&argc, &argv);
+	}
+	
+	~MPI_initializer()
+	{
+		MPI_Finalize();
+	}
+};
+
 /*
  * Struct prepared for DataDescTest
  */
@@ -71,8 +83,9 @@ struct DataDescTest : public ::testing::Test {
 	int array[10];
 	PC_tree_t array_config {PC_parse_string("{ size: 10, type: int }")};
 	PDI::Paraconf_wrapper fw;
-	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(mockGlCtx);
+	MPI_initializer init_mpi;
 	MockGlobalContext mockGlCtx{PC_parse_string(""), 0};
+	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(mockGlCtx);
 };
 
 /*
