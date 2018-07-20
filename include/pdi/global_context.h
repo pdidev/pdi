@@ -93,11 +93,8 @@ public:
 	 */
 	void event(const char* name) override;
 	
-<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	Logger_sptr logger() const override;
 	
-=======
->>>>>>> Replaced predef_desc by mpi plugin
 };
 
 } // namespace PDI

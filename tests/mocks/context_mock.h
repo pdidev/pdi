@@ -50,11 +50,8 @@ struct MockContext : public PDI::Context {
 	
 	MOCK_METHOD1(event, void(const char* name));
 	
-<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	MOCK_CONST_METHOD0(logger, PDI::Logger_sptr());
 	
-=======
->>>>>>> Replaced predef_desc by mpi plugin
 };
 
 

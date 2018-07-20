@@ -56,11 +56,7 @@ class Decl_hdf5_cfg
 	Decl_hdf5_cfg(const Decl_hdf5_cfg&)=delete;
 	
 public:
-<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	Decl_hdf5_cfg(PC_tree_t tree, PDI::Logger_sptr logger)
-=======
-	Decl_hdf5_cfg(PC_tree_t tree)
->>>>>>> Replaced predef_desc by mpi plugin
 	{
 		using PDI::Error;
 		using PDI::len;

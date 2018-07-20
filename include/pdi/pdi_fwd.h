@@ -34,7 +34,9 @@
 #include <pdi.h>
 
 
-namespace spdlog { class logger; }
+namespace spdlog {
+class logger;
+}
 
 namespace PDI {
 

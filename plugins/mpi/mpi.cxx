@@ -31,7 +31,7 @@
 
 struct mpi_plugin: PDI::Plugin {
 
-	mpi_plugin(PDI::Context& ctx, PC_tree_t, MPI_Comm*, PDI::Logger):
+	mpi_plugin(PDI::Context& ctx, PC_tree_t, MPI_Comm*):
 		Plugin{ctx}
 	{
 		// deleter for MPI_Comm

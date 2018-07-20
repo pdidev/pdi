@@ -96,12 +96,8 @@ public:
 	 */
 	virtual void event(const char* name) = 0;
 	
-<<<<<<< 4bd257caa2335bd5ca5634add863c6d6e5d68da7
 	virtual Logger_sptr logger() const = 0;
 	
-=======
-	virtual ~Context();
->>>>>>> Replaced predef_desc by mpi plugin
 };
 
 } // namespace PDI

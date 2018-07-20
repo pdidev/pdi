@@ -52,9 +52,9 @@ static Logger_sptr select_log_sinks(PC_tree_t logging_tree)
 	}
 	
 	//configure console sink
-	if ( 
-			(!PC_status(PC_get(output_tree, ".console")) || sinks.empty() ) // either there is a console sink specified or no other
-			&& PDI::to_string(PC_get(output_tree, ".console"), "on") != "off" // the console sink is not specifically disabled
+	if (
+	    (!PC_status(PC_get(output_tree, ".console")) || sinks.empty() ) // either there is a console sink specified or no other
+	    && PDI::to_string(PC_get(output_tree, ".console"), "on") != "off" // the console sink is not specifically disabled
 	) {
 		//logging to console is turned on
 #if defined _WIN32 && !defined(__cplusplus_winrt)
