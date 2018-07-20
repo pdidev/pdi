@@ -56,7 +56,7 @@ private:
 	
 	/// The loaded plugins - need to be after m_descriptors (to guarantee proper destroy order)
 	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
-
+	
 	Global_context(const Global_context&) = delete;
 	
 	Global_context(Global_context&&) = delete;

@@ -246,13 +246,13 @@ const PDI::Expression& Transfer_cfg::when() const
 // defined here because File_cfg need to be defined
 std::string Transfer_cfg::communicator() const
 {
-	if (m_communicator == "$MPI_COMM_NULL") return parent().communicator();
+	if (m_communicator.empty()) return parent().communicator();
 	return m_communicator;
 }
 
 MPI_Comm Transfer_cfg::communicator(PDI::Context& ctx) const
 {
-	if (m_communicator == "$MPI_COMM_NULL") return parent().communicator(ctx);
+	if (m_communicator.empty()) return parent().communicator(ctx);
 	return PDI::Expression{m_communicator}.to_mpi_comm(ctx);
 }
 

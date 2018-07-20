@@ -107,3 +107,12 @@ target_link_libraries(decl_hdf5_06_C pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_06_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_06_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_06_C.yml")
 set_property(TEST decl_hdf5_06_C APPEND PROPERTY ENVIRONMENT
 	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../:${CMAKE_CURRENT_BINARY_DIR}/../../mpi/")
+
+##########
+# TEST 07: communicator as a reference
+
+add_executable(decl_hdf5_07_C decl_hdf5_test_07.c)
+target_link_libraries(decl_hdf5_07_C pdi MPI::MPI_C)
+add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 8 "$<TARGET_FILE:decl_hdf5_07_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_07_C.yml")
+set_property(TEST decl_hdf5_07_C APPEND PROPERTY ENVIRONMENT
+	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../:${CMAKE_CURRENT_BINARY_DIR}/../../mpi/")
