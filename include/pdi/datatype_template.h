@@ -56,7 +56,7 @@ public:
 	 * \param node the configuration to read
 	 * \return the type generated
 	 */
-	static Datatype_template_uptr load(PC_tree_t node, Logger logger);
+	static Datatype_template_uptr load(PC_tree_t node, Logger_sptr logger);
 	
 };
 

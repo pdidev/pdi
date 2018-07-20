@@ -65,7 +65,7 @@ class File_cfg
 	File_cfg(const File_cfg&)=delete;
 	
 public:
-	File_cfg(PC_tree_t tree, std::vector<std::string>& events, PDI::Logger logger):
+	File_cfg(PC_tree_t tree, std::vector<std::string>& events, PDI::Logger_sptr logger):
 		m_file{PDI::to_string(PC_get(tree, ".file"))},
 		m_when{1},
 		m_communicator{MPI_COMM_SELF}

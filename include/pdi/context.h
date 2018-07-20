@@ -96,7 +96,7 @@ public:
 	 */
 	virtual void event(const char* name) = 0;
 	
-	virtual Logger logger() const = 0;
+	virtual Logger_sptr logger() const = 0;
 	
 };
 

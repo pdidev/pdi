@@ -49,7 +49,7 @@ private:
 	friend class Data_descriptor_impl;
 	
 	/// Global logger of PDI
-	Logger m_logger;
+	Logger_sptr m_logger;
 	
 	/// The loaded plugins
 	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
@@ -93,7 +93,7 @@ public:
 	 */
 	void event(const char* name) override;
 	
-	Logger logger() const override;
+	Logger_sptr logger() const override;
 	
 };
 

@@ -31,6 +31,7 @@
 
 #include <dlfcn.h>
 #include <link.h>
+#include <spdlog.h>
 
 #include <pdi.h>
 #include <pdi/context.h>
@@ -196,7 +197,7 @@ struct user_code_plugin: Plugin {
 	/// User-code to call on data events
 	unordered_multimap<string, Trigger> data_uc;
 	
-	user_code_plugin(Context& ctx, PC_tree_t conf, MPI_Comm*, PDI::Logger logger):
+	user_code_plugin(Context& ctx, PC_tree_t conf, MPI_Comm*):
 		Plugin{ctx}
 	{
 		// Loading configuration for events

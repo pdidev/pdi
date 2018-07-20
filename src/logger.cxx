@@ -24,11 +24,13 @@
 
 #include <mpi.h>
 
+#include <spdlog.h>
+
 #include "pdi/logger.h"
 
 namespace PDI {
 
-static void set_up_log_format(Logger logger)
+static void set_up_log_format(Logger_sptr logger)
 {
 	int world_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
@@ -37,7 +39,7 @@ static void set_up_log_format(Logger logger)
 	logger->set_pattern(std::string(format));
 }
 
-static Logger select_log_sinks(PC_tree_t logging_tree)
+static Logger_sptr select_log_sinks(PC_tree_t logging_tree)
 {
 	std::vector<spdlog::sink_ptr> sinks;
 	PC_tree_t output_tree = PC_get(logging_tree, ".output");
@@ -66,7 +68,7 @@ static Logger select_log_sinks(PC_tree_t logging_tree)
 }
 
 
-static void read_log_level(Logger logger, PC_tree_t logging_tree)
+static void read_log_level(Logger_sptr logger, PC_tree_t logging_tree)
 {
 	if (!PC_status(PC_get(logging_tree, ".level"))) {
 		std::string level_str {PDI::to_string(PC_get(logging_tree, ".level"))};
@@ -88,7 +90,7 @@ static void read_log_level(Logger logger, PC_tree_t logging_tree)
 	}
 }
 
-static void configure_single_rank(Logger logger, PC_tree_t logging_tree)
+static void configure_single_rank(Logger_sptr logger, PC_tree_t logging_tree)
 {
 	PC_tree_t single_tree = PC_get(logging_tree, ".single");
 	if (!PC_status(single_tree)) {
@@ -107,12 +109,12 @@ static void configure_single_rank(Logger logger, PC_tree_t logging_tree)
 	}
 }
 
-Logger configure_logger(PC_tree_t config)
+Logger_sptr configure_logger(PC_tree_t config)
 {
 	PC_tree_t logging_tree = PC_get(config, ".logging");
 	
 	//select default sinks
-	Logger logger = select_log_sinks(logging_tree);
+	Logger_sptr logger = select_log_sinks(logging_tree);
 	
 	//read default log level
 	read_log_level(logger, logging_tree);

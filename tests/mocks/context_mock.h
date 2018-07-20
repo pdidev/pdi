@@ -50,7 +50,7 @@ struct MockContext : public PDI::Context {
 	
 	MOCK_METHOD1(event, void(const char* name));
 	
-	MOCK_CONST_METHOD0(logger, PDI::Logger());
+	MOCK_CONST_METHOD0(logger, PDI::Logger_sptr());
 	
 };
 

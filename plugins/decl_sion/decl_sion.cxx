@@ -34,6 +34,8 @@
 #include <utility>
 #include <vector>
 
+#include <spdlog.h>
+
 #include <pdi.h>
 #include <pdi/context.h>
 #include <pdi/datatype.h>
@@ -183,7 +185,7 @@ struct decl_sion_plugin: Plugin {
 	unordered_map<string, Named_event> input_events;
 	
 	
-	decl_sion_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world, PDI::Logger logger):
+	decl_sion_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world):
 		Plugin{ctx},
 		output_vars{parse_vars(PC_get(conf, ".outputs"))},
 		input_vars{parse_vars(PC_get(conf, ".inputs"))},

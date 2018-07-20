@@ -34,6 +34,8 @@
 #include <pdi.h>
 
 
+namespace spdlog { class logger; }
+
 namespace PDI {
 
 /** Describes the state of a PDI instanciation, mostly the set of data
@@ -61,6 +63,10 @@ typedef std::unique_ptr<Datatype> Datatype_uptr;
  * template that is used when exposing untyped data
  */
 class Data_descriptor;
+
+/** A shared pointer to a logger instance
+ */
+typedef std::shared_ptr<spdlog::logger> Logger_sptr;
 
 /** A class used as base for all PDI plugins
  */

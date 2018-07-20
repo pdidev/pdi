@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <dlfcn.h>
+#include <spdlog.h>
 
 #include "pdi/data_descriptor_impl.h"
 #include "pdi/logger.h"
@@ -53,7 +54,7 @@ using std::vector;
 
 namespace {
 
-typedef unique_ptr<Plugin> (*plugin_loader_f)(Context&, PC_tree_t, MPI_Comm*, Logger);
+typedef unique_ptr<Plugin> (*plugin_loader_f)(Context&, PC_tree_t, MPI_Comm*, Logger_sptr);
 
 
 void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
@@ -178,7 +179,7 @@ void Global_context::event(const char* name)
 	}
 }
 
-Logger Global_context::logger() const
+Logger_sptr Global_context::logger() const
 {
 	return m_logger;
 }

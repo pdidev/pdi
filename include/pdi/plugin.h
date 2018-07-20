@@ -104,9 +104,9 @@ unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version=0);
 	_Pragma("clang diagnostic push")\
 	_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")\
 	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")\
-	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world, ::PDI::Logger logger) \
+	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf, MPI_Comm *world) \
 	{\
-		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world, logger}};\
+		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf, world}};\
 		::PDI::plugin_api_version(PLUGIN_API_VERSION);\
 		return plugin;\
 	}\

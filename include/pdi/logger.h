@@ -25,13 +25,10 @@
 #ifndef PDI_LOGGER_H_
 #define PDI_LOGGER_H_
 
-#include <spdlog.h>
-
+#include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>
 
 namespace PDI {
-
-typedef std::shared_ptr<spdlog::logger> Logger;
 
 /**
  * Reads configuration tree and sets up the logger.
@@ -39,7 +36,7 @@ typedef std::shared_ptr<spdlog::logger> Logger;
  * \param[in] config configuration tree from config file
  * \return a configured logger
  */
-Logger configure_logger(PC_tree_t config);
+Logger_sptr configure_logger(PC_tree_t config);
 
 } // namespace PDI
 

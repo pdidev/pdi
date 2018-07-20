@@ -56,7 +56,7 @@ class Decl_hdf5_cfg
 	Decl_hdf5_cfg(const Decl_hdf5_cfg&)=delete;
 	
 public:
-	Decl_hdf5_cfg(PC_tree_t tree, PDI::Logger logger)
+	Decl_hdf5_cfg(PC_tree_t tree, PDI::Logger_sptr logger)
 	{
 		using PDI::Error;
 		using PDI::len;

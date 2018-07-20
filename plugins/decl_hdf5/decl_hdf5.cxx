@@ -32,10 +32,10 @@
 #include <utility>
 #include <vector>
 
-#include <unistd.h>
-
 #include <hdf5.h>
 #include <paraconf.h>
+#include <spdlog.h>
+#include <unistd.h>
 
 #include <pdi.h>
 #include <pdi/array_datatype.h>
@@ -387,9 +387,9 @@ struct decl_hdf5_plugin: Plugin {
 
 	const Decl_hdf5_cfg m_config;
 	
-	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*, PDI::Logger logger):
+	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*):
 		Plugin {ctx},
-		m_config{config, logger}
+		m_config{config, ctx.logger()}
 	{
 		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");

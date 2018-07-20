@@ -37,6 +37,8 @@
 #include <type_traits>
 #include <unordered_set>
 
+#include <spdlog.h>
+
 #include "pdi/context.h"
 #include "pdi/global_context.h"
 #include "pdi/data_descriptor.h"

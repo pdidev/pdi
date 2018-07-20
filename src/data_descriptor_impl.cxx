@@ -28,6 +28,8 @@
 #include <memory>
 #include <vector>
 
+#include <spdlog.h>
+
 #include "pdi/context.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"

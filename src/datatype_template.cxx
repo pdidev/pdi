@@ -184,7 +184,7 @@ int ridx(int ordered_index, Array_order order, int size)
 	return ordered_index;
 }
 
-Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, const Logger& logger)
+Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, Logger_sptr logger)
 {
 	string type;
 	long kind;
@@ -233,7 +233,7 @@ Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, const Logger&
 	throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s(kind=%d)'", type.c_str(), kind};
 }
 
-Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger logger)
+Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr logger)
 {
 	// Order: C or fortran ordering, default is C
 	Array_order order = Array_order::C;
@@ -321,7 +321,7 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger logger)
 Datatype_template::~Datatype_template()
 {}
 
-Datatype_template_uptr Datatype_template::load(PC_tree_t node, Logger logger)
+Datatype_template_uptr Datatype_template::load(PC_tree_t node, Logger_sptr logger)
 {
 	// size or sizes => array
 	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {
