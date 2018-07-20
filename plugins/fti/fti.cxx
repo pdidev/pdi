@@ -33,6 +33,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <spdlog.h>
+
 #include <fti.h>
 
 #include <pdi.h>
@@ -73,11 +75,8 @@ struct fti_plugin: Plugin {
 	
 	unordered_map<string, Event_action> events;
 	
-	PDI::Logger m_logger;
-	
-	fti_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world, PDI::Logger logger):
-		Plugin{ctx},
-		m_logger{logger}
+	fti_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world):
+		Plugin{ctx}
 	{
 		for ( auto&& iter : ctx) {
 			try {
@@ -136,7 +135,7 @@ struct fti_plugin: Plugin {
 		FTI_Init(const_cast<char*>(to_string(PC_get(conf, ".config_file")).c_str()), *world);
 		
 		*world = FTI_COMM_WORLD;
-		m_logger->info("(FTI) Plugin loaded successfully");
+		context().logger()->info("(FTI) Plugin loaded successfully");
 	}
 	
 	~fti_plugin()
@@ -167,7 +166,7 @@ struct fti_plugin: Plugin {
 					FTI_Protect(static_cast<int>(protected_var.second), const_cast<void*>(ref.get()), static_cast<long>(size), FTI_CHAR);
 				} else {
 					FTI_Protect(static_cast<int>(protected_var.second), NULL, 0, FTI_CHAR);
-					m_logger->warn("(FTI) Protected variable {} unavailable", protected_var.first);
+					context().logger()->warn("(FTI) Protected variable {} unavailable", protected_var.first);
 				}
 			} else {
 				if ( Ref_w ref = context().desc(protected_var.first).ref() ) {
@@ -176,7 +175,7 @@ struct fti_plugin: Plugin {
 					FTI_Protect(static_cast<int>(protected_var.second), ref.get(), static_cast<long>(size), FTI_CHAR);
 				} else {
 					FTI_Protect(static_cast<int>(protected_var.second), NULL, 0, FTI_CHAR);
-					m_logger->warn("(FTI) Protected variable {} unavailable", protected_var.first);
+					context().logger()->warn("(FTI) Protected variable {} unavailable", protected_var.first);
 				}
 			}
 		}
