@@ -113,6 +113,9 @@ thread_local Error_context g_error_context;
 /// The name of the ongoing transaction or "" if none
 string g_transaction;
 
+/// Status of the ongoing transaction
+PDI_status_t g_transaction_status = PDI_OK;
+
 /// List of data that are part of the current transaction
 list<string> g_transaction_data;
 
@@ -358,9 +361,13 @@ PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access)
 try
 {
 	Paraconf_wrapper fw;
-	if (PDI_status_t status = PDI_share(name, data, access)) return status;
+	if (PDI_status_t status = PDI_share(name, data, access)) {
+		if (!g_transaction.empty() && !g_transaction_status)
+			g_transaction_status = status; //if it is first error in transaction, save its status
+		return status;
+	}
 	
-	if (! g_transaction.empty()) {   // defer the reclaim
+	if (!g_transaction.empty()) {   // defer the reclaim
 		g_transaction_data.emplace_back(name);
 	} else { // do the reclaim now
 		if (PDI_status_t status = PDI_reclaim(name)) return status;
@@ -368,18 +375,28 @@ try
 	return PDI_OK;
 } catch (const Error& e)
 {
-	return g_error_context.return_err(e);
+	PDI_status_t status = g_error_context.return_err(e);
+	if (!g_transaction.empty() && !g_transaction_status)
+		g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
 } catch (const exception& e)
 {
-	return g_error_context.return_err(e);
+	PDI_status_t status = g_error_context.return_err(e);
+	if (!g_transaction.empty() && !g_transaction_status)
+		g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
 } catch (...)
 {
-	return g_error_context.return_err();
+	PDI_status_t status = g_error_context.return_err();
+	if (!g_transaction.empty() && !g_transaction_status)
+		g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
 }
 
 PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...)
 try
 {
+	Paraconf_wrapper fw;
 	va_list ap;
 	list<string> transaction_data;
 	PDI_status_t status;
@@ -427,7 +444,7 @@ try
 		throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
 	}
 	g_transaction = name;
-	return PDI_OK;
+	return g_transaction_status = PDI_OK;
 } catch (const Error& e)
 {
 	return g_error_context.return_err(e);
@@ -446,21 +463,33 @@ try
 	if (g_transaction.empty()) {
 		throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
 	}
-	PDI_event(g_transaction.c_str());
+	
+	if (!g_transaction_status) { //trigger event only when all data is available
+		g_transaction_status = PDI_event(g_transaction.c_str());
+	}
+	
 	for (auto&& it = g_transaction_data.rbegin(); it != g_transaction_data.rend(); it++) {
-		//TODO we should concatenate errors here...
-		PDI_reclaim(it->c_str());
+		PDI_status_t r_status = PDI_reclaim(it->c_str());
+		g_transaction_status = !g_transaction_status ? r_status : g_transaction_status; //if it is first error, save its status (try to reclaim other desc anyway)
 	}
 	g_transaction_data.clear();
 	g_transaction.clear();
-	return PDI_OK;
+	
+	//the status of the first error is returned
+	return g_transaction_status;
 } catch (const Error& e)
 {
-	return g_error_context.return_err(e);
+	PDI_status_t status = g_error_context.return_err(e);
+	g_transaction_status = !g_transaction_status ? status : g_transaction_status; //if it is first error, save its status
+	return g_transaction_status;
 } catch (const exception& e)
 {
-	return g_error_context.return_err(e);
+	PDI_status_t status = g_error_context.return_err(e);
+	g_transaction_status = !g_transaction_status ? status : g_transaction_status; //if it is first error, save its status
+	return g_transaction_status;
 } catch (...)
 {
-	return g_error_context.return_err();
+	PDI_status_t status = g_error_context.return_err();
+	g_transaction_status = !g_transaction_status ? status : g_transaction_status; //if it is first error, save its status
+	return g_transaction_status;
 }
