@@ -25,8 +25,6 @@
 #ifndef PDI_CONTEXT_H_
 #define PDI_CONTEXT_H_
 
-#include <mpi.h>
-
 #include <list>
 #include <memory>
 #include <stack>

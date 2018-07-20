@@ -41,35 +41,27 @@ static Logger select_log_sinks(PC_tree_t logging_tree)
 {
 	std::vector<spdlog::sink_ptr> sinks;
 	PC_tree_t output_tree = PC_get(logging_tree, ".output");
-	//check if there is output_tree and is not empty
-	if (!PC_status(output_tree)) {
 	
-		//configure file sink
-		if (!PC_status(PC_get(output_tree, ".file"))) {
-			std::string filename {PDI::to_string(PC_get(output_tree, ".file"))};
-			auto file_sink = std::make_shared<spdlog::sinks::simple_file_sink_st>(filename);
-			sinks.push_back(file_sink);
-		}
-		
-		//configure console sink
-		if (!PC_status(PC_get(output_tree, ".console"))  && PDI::to_string(PC_get(output_tree, ".console")) != "off") {
-			//logging to console is turned on
-#if defined _WIN32 && !defined(__cplusplus_winrt)
-			sinks.push_back(std::make_shared<spdlog::sinks::wincolor_stdout_sink_st>());
-#else
-			sinks.push_back(std::make_shared<spdlog::sinks::ansicolor_stdout_sink_st>());
-#endif
-		}
+	//configure file sink
+	if (!PC_status(PC_get(output_tree, ".file"))) {
+		std::string filename {PDI::to_string(PC_get(output_tree, ".file"))};
+		auto file_sink = std::make_shared<spdlog::sinks::simple_file_sink_st>(filename);
+		sinks.push_back(file_sink);
 	}
 	
-	if (sinks.empty()) {
-		//if no output tree set console
+	//configure console sink
+	if ( 
+			(!PC_status(PC_get(output_tree, ".console")) || sinks.empty() ) // either there is a console sink specified or no other
+			&& PDI::to_string(PC_get(output_tree, ".console"), "on") != "off" // the console sink is not specifically disabled
+	) {
+		//logging to console is turned on
 #if defined _WIN32 && !defined(__cplusplus_winrt)
 		sinks.push_back(std::make_shared<spdlog::sinks::wincolor_stdout_sink_st>());
 #else
 		sinks.push_back(std::make_shared<spdlog::sinks::ansicolor_stdout_sink_st>());
 #endif
 	}
+	
 	return std::make_shared<spdlog::logger>("logger", begin(sinks), end(sinks));
 }
 
