@@ -33,11 +33,11 @@
 
 #include "pdi.h"
 #include "pdi/array_datatype.h"
+#include "pdi/error.h"
+#include "pdi/expression.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/record_datatype.h"
 #include "pdi/scalar_datatype.h"
-#include "pdi/error.h"
-#include "pdi/expression.h"
 
 #include "pdi/datatype_template.h"
 
@@ -233,7 +233,7 @@ Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, const Logger&
 	throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s(kind=%d)'", type.c_str(), kind};
 }
 
-Datatype_template_uptr to_array_datatype_template(PC_tree_t node, const Logger& logger)
+Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger logger)
 {
 	// Order: C or fortran ordering, default is C
 	Array_order order = Array_order::C;
@@ -308,7 +308,7 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, const Logger& 
 		}
 	}
 	
-	Datatype_template_uptr res_type = Datatype_template::load(PC_get(node, ".type"));
+	Datatype_template_uptr res_type = Datatype_template::load(PC_get(node, ".type"), logger);
 	
 	for (size_t ii = 0; ii < sizes.size(); ++ii) {
 		res_type.reset(new Array_template(move(res_type), move(sizes[ii]), move(starts[ii]), move(subsizes[ii])));
@@ -321,11 +321,8 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, const Logger& 
 Datatype_template::~Datatype_template()
 {}
 
-Datatype_template_uptr Datatype_template::load(PC_tree_t node)
+Datatype_template_uptr Datatype_template::load(PC_tree_t node, Logger logger)
 {
-	/// Global logger of PDI
-	Logger logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
-	
 	// size or sizes => array
 	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {
 		return to_array_datatype_template(node, logger);

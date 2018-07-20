@@ -30,6 +30,7 @@
 
 #include <cstddef>
 #include <exception>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -103,9 +104,6 @@ struct Error_context {
 /// The singleton context of PDI
 unique_ptr<Context> g_context;
 
-/// Logger declaration
-Logger g_logger;
-
 /// The thread-local error context
 thread_local Error_context g_error_context;
 
@@ -129,8 +127,14 @@ PDI_inout_t operator&(PDI_inout_t a, PDI_inout_t b)
 void assert_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		g_logger->error(message);
-		abort();
+		if ( g_context ) {
+			g_context->logger()->error(message);
+		} else {
+			int r;
+			MPI_Comm_rank(MPI_COMM_WORLD, &r);
+			std::cerr << "[PDI]["<<std::setw(6)<<std::setfill('0')<<r<<"] *** Fatal error(uninitialized): " << message << std::endl;
+		}
+		exit(status);
 	}
 }
 
@@ -139,7 +143,13 @@ void assert_status(PDI_status_t status, const char* message, void*)
 void warn_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
-		g_logger->warn(message);
+		if ( g_context ) {
+			g_context->logger()->warn(message);
+		} else {
+			int r;
+			MPI_Comm_rank(MPI_COMM_WORLD, &r);
+			std::cerr << "[PDI]["<<std::setw(6)<<std::setfill('0')<<r<<"] *** warning (uninitialized): " << message << std::endl;
+		}
 	}
 }
 
@@ -180,21 +190,17 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	configure_logger(g_logger, conf);
 	g_context.reset(new Global_context{conf, world});
-	g_logger->info("Initialization successful");
+	g_context->logger()->info("Initialization successful");
 	return PDI_OK;
 } catch (const Error& e)
 {
-	PDI_finalize();
 	return g_error_context.return_err(e);
 } catch (const exception& e)
 {
-	PDI_finalize();
 	return g_error_context.return_err(e);
 } catch (...)
 {
-	PDI_finalize();
 	return g_error_context.return_err();
 }
 
@@ -204,8 +210,8 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
+	g_context->logger()->info("Finalization");
 	g_context.reset();
-	g_logger->info("Finalization successful");
 	return PDI_OK;
 } catch (const Error& e)
 {

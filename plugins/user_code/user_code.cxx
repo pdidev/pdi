@@ -181,11 +181,9 @@ public:
 		try {
 			m_fct();
 		} catch ( const std::exception& e ) {
-			auto logger = spdlog::get("logger");
-			logger->error("(User-code) While calling user code, caught exception: {}", e.what());
+			ctx.logger()->error("(User-code) While calling user code, caught exception: {}", e.what());
 		} catch (...) {
-			auto logger = spdlog::get("logger");
-			logger->error("(User-code) While calling user code, caught exception");
+			ctx.logger()->error("(User-code) While calling user code, caught exception");
 		}
 	}
 	
@@ -232,11 +230,7 @@ struct user_code_plugin: Plugin {
 				}
 			}
 		}
-		if (!spdlog::get("logger")) {
-			spdlog::register_logger(logger);
-		}
-		m_logger = spdlog::get("logger");
-		m_logger->info("(User-code) Plugin loaded successfully");
+		ctx.logger()->info("(User-code) Plugin loaded successfully");
 	}
 	
 	void event(const char* event) override

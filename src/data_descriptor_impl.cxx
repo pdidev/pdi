@@ -30,10 +30,11 @@
 
 #include "pdi/context.h"
 #include "pdi/datatype.h"
-#include "pdi/scalar_datatype.h"
+#include "pdi/error.h"
+#include "pdi/logger.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-#include "pdi/error.h"
+#include "pdi/scalar_datatype.h"
 
 #include "pdi/data_descriptor_impl.h"
 
@@ -97,7 +98,7 @@ Data_descriptor_impl::~Data_descriptor_impl()
 	 * ownership
 	 */
 	if (!m_refs.empty()) {
-		m_logger->warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size(), m_name);
+		m_context.logger()->warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size(), m_name);
 	}
 	if ( metadata()  ) while (!m_refs.empty()) m_refs.pop();
 	if ( !metadata() ) while (!m_refs.empty()) reclaim();
@@ -105,7 +106,7 @@ Data_descriptor_impl::~Data_descriptor_impl()
 
 void Data_descriptor_impl::creation_template(PC_tree_t config)
 {
-	m_type = Datatype::load(config);
+	m_type = Datatype::load(config, m_context.logger());
 	m_config = config;
 }
 

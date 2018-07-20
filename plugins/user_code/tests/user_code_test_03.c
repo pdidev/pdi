@@ -63,9 +63,8 @@ void test(void)
 void succeed_on_failure(PDI_status_t status, const char* message, void* ctx)
 {
 	(void) ctx;
-	fprintf(stderr, "%s ", message);
 	if (status) {
-		fprintf(stderr, "PDI is aborting. This is a success!\n");
+		fprintf(stderr, "PDI is aborting due to `%s'. This is a success!\n", message);
 		exit(0);
 	}
 	return;

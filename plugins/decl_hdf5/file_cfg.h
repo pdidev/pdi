@@ -39,6 +39,7 @@
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 
 #include "transfer_cfg.h"
@@ -64,7 +65,7 @@ class File_cfg
 	File_cfg(const File_cfg&)=delete;
 	
 public:
-	File_cfg(PC_tree_t tree, std::vector<std::string>& events):
+	File_cfg(PC_tree_t tree, std::vector<std::string>& events, PDI::Logger logger):
 		m_file{PDI::to_string(PC_get(tree, ".file"))},
 		m_when{1},
 		m_communicator{MPI_COMM_SELF}
@@ -107,7 +108,7 @@ public:
 			} else if ( key == "datasets" ) {
 				int nb_dataset = len(PC_get(tree, ".datasets"));
 				for (int dataset_id=0; dataset_id<nb_dataset; ++dataset_id) {
-					m_datasets.emplace(to_string(PC_get(tree, ".datasets{%d}", dataset_id)), Datatype_template::load(PC_get(tree, ".datasets<%d>", dataset_id)));
+					m_datasets.emplace(to_string(PC_get(tree, ".datasets{%d}", dataset_id)), Datatype_template::load(PC_get(tree, ".datasets<%d>", dataset_id), logger));
 				}
 			} else if ( key == "write" ) {
 				PC_tree_t write_tree = PC_get(tree, ".write");

@@ -91,7 +91,8 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
 
 } // namespace <anonymous>
 
-Global_context::Global_context(PC_tree_t conf, MPI_Comm* world)
+Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
+	m_logger{configure_logger(conf)}
 {
 	// no metadata is not an error
 	PC_tree_t metadata = PC_get(conf, ".metadata");
@@ -176,5 +177,11 @@ void Global_context::event(const char* name)
 		}
 	}
 }
+
+Logger Global_context::logger() const
+{
+	return m_logger;
+}
+
 
 }

@@ -27,7 +27,6 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
-#include <pdi/logger.h>
 
 namespace PDI {
 
@@ -45,9 +44,6 @@ class PDI_EXPORT Array_datatype:
 	
 	/// Number of actual elements in the array
 	size_t m_subsize;
-	
-	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 public:
 	Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize);

@@ -34,7 +34,6 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
-#include <pdi/logger.h>
 
 
 namespace PDI {
@@ -44,9 +43,6 @@ namespace PDI {
  */
 class PDI_EXPORT Ref_base
 {
-	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
-	
 protected:
 	/** Manipulate and grant access to a buffer depending on the remaining right access (read/write).
 	 */
@@ -106,7 +102,7 @@ protected:
 			assert(m_notifications.empty());
 		}
 		
-	}; // class Ref_count
+	}; // class Referenced
 	
 	
 	/** Pointer on the data content, can be null if the ref is null
@@ -123,9 +119,8 @@ protected:
 		return other.m_content;
 	}
 	
-	/** Symbol should not be exported, but it required to force
-	 *  generation of all 4 variants of `Ref_any::copy`
-	 */
+	// Symbol should not be exported, but it required to force
+	// generation of all 4 variants of `Ref_any::copy`
 	static Ref do_copy(Ref_r ref);
 	
 	/** Constructs a null reference

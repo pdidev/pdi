@@ -34,13 +34,12 @@ namespace PDI {
 typedef std::shared_ptr<spdlog::logger> Logger;
 
 /**
- *  Reads configuration tree and sets up the logger.
+ * Reads configuration tree and sets up the logger.
  *
- *  \param[in] logger logger to configure
- *  \param[in] config configuration tree from config file
- *
+ * \param[in] config configuration tree from config file
+ * \return a configured logger
  */
-void PDI_EXPORT configure_logger(Logger& logger, PC_tree_t config);
+Logger configure_logger(PC_tree_t config);
 
 } // namespace PDI
 

@@ -363,8 +363,7 @@ void execute(Context& ctx, const File_cfg& file_cfg)
 		if ( Ref_w{ref} ) {
 			do_read(ctx, xfer, h5_file, xfer_lst, ref);
 		} else {
-			auto logger = spdlog::get("logger");
-			logger->warn("(Decl'HDF5) Reference to read not available: `{}'", read.first);
+			ctx.logger()->warn("(Decl'HDF5) Reference to read not available: `{}'", read.first);
 		}
 	}
 	
@@ -379,8 +378,7 @@ void execute(Context& ctx, const File_cfg& file_cfg)
 		if ( Ref_r{ref} ) {
 			do_write(ctx, xfer, h5_file, xfer_lst, ref);
 		} else {
-			auto logger = spdlog::get("logger");
-			logger->warn("(Decl'HDF5) Reference to write not available: `{}'", write.first);
+			ctx.logger()->warn("(Decl'HDF5) Reference to write not available: `{}'", write.first);
 		}
 	}
 }
@@ -391,15 +389,11 @@ struct decl_hdf5_plugin: Plugin {
 	
 	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*, PDI::Logger logger):
 		Plugin {ctx},
-		m_config{config}
+		m_config{config, logger}
 	{
 		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");
-		if (!spdlog::get("logger")) {
-			spdlog::register_logger(logger);
-		}
-		m_logger = spdlog::get("logger");
-		m_logger->info("(Decl'HDF5) Plugin loaded successfully");
+		ctx.logger()->info("(Decl'HDF5) Plugin loaded successfully");
 	}
 	
 	void data(const char* name, Ref ref) override

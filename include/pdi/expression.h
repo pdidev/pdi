@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/ref_any.h>
 
@@ -40,9 +39,6 @@ class PDI_EXPORT Expression
 	friend struct Impl;
 	
 	std::unique_ptr<Impl> m_impl;
-	
-	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 	Expression(std::unique_ptr<Impl>);
 	

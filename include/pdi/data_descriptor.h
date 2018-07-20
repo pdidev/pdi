@@ -29,7 +29,6 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype_template.h>
-#include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
 

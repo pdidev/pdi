@@ -37,6 +37,7 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/ref_any.h>
+#include <pdi/logger.h>
 
 
 namespace PDI {
@@ -45,8 +46,6 @@ class PDI_EXPORT Context
 {
 public:
 	/** An iterator used to go through the descriptor store.
-	 *
-	 * Implemented as a wrapper for a map iterator that hides the key part.
 	 */
 	class Iterator
 	{
@@ -64,10 +63,12 @@ public:
 	
 protected:
 	Iterator get_iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
+	
 	Iterator get_iterator(std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator&& data);
 	
 public:
-
+	virtual ~Context();
+	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
 	virtual Data_descriptor& desc(const std::string& name) = 0;
@@ -97,7 +98,8 @@ public:
 	 */
 	virtual void event(const char* name) = 0;
 	
-	virtual ~Context();
+	virtual Logger logger() const = 0;
+	
 };
 
 } // namespace PDI

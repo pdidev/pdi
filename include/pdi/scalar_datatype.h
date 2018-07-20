@@ -27,7 +27,6 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
-#include <pdi/logger.h>
 
 
 namespace PDI {
@@ -43,9 +42,6 @@ class PDI_EXPORT Scalar_datatype:
 	
 	/// Interpretation of the content
 	Scalar_kind m_kind;
-	
-	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
 	
 public:
 	Scalar_datatype(Scalar_kind kind, size_t size);

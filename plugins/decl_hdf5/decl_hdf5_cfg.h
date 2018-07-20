@@ -56,7 +56,7 @@ class Decl_hdf5_cfg
 	Decl_hdf5_cfg(const Decl_hdf5_cfg&)=delete;
 	
 public:
-	Decl_hdf5_cfg(PC_tree_t tree)
+	Decl_hdf5_cfg(PC_tree_t tree, PDI::Logger logger)
 	{
 		using PDI::Error;
 		using PDI::len;
@@ -67,12 +67,12 @@ public:
 			int nb_files = len(tree);
 			for (int file_id=0; file_id<nb_files; ++file_id) {
 				vector<string> events;
-				m_files.emplace_back(PC_get(tree, "[%d]", file_id), events);
+				m_files.emplace_back(PC_get(tree, "[%d]", file_id), events, logger);
 				fill_rw(events);
 			}
 		} else if (!PC_status(PC_get(tree, "{0}"))) {
 			vector<string> events;
-			m_files.emplace_back(tree, events);
+			m_files.emplace_back(tree, events, logger);
 			fill_rw(events);
 		} else {
 			throw Error{PDI_ERR_CONFIG, "Unexpected Decl'HDF5 configuration: `%s'", to_string(tree).c_str()};

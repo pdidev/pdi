@@ -194,11 +194,7 @@ struct decl_sion_plugin: Plugin {
 		if (MPI_Comm_dup(*world, &comm)) {
 			throw Error {PDI_ERR_SYSTEM, "Cannot duplicate MPI communicator"};
 		}
-		if (!spdlog::get("logger")) {
-			spdlog::register_logger(logger);
-		}
-		m_logger = spdlog::get("logger");
-		m_logger->info("(Decl'SION) Plugin loaded successfully");
+		ctx.logger()->info("(Decl'SION) Plugin loaded successfully");
 	}
 	
 	void write_event(const Named_event& event)

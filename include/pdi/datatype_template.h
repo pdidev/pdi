@@ -34,10 +34,6 @@ namespace PDI {
 
 class PDI_EXPORT Datatype_template
 {
-protected:
-	/// Global logger of PDI
-	Logger m_logger {spdlog::get("logger") ? spdlog::get("logger") : spdlog::stdout_color_st("logger")};
-	
 public:
 	/** Destroys the template
 	 */
@@ -60,7 +56,7 @@ public:
 	 * \param node the configuration to read
 	 * \return the type generated
 	 */
-	static Datatype_template_uptr load(PC_tree_t node);
+	static Datatype_template_uptr load(PC_tree_t node, Logger logger);
 	
 };
 
