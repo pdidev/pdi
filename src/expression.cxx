@@ -204,9 +204,8 @@ Expression::Expression(Expression&&  value) = default;
 
 Expression::Expression(const char* val_str)
 {
-	const char* parse_val = val_str;
-	
 	try { // parse as a space enclosed intval
+		const char* parse_val = val_str;
 		while (isspace(*parse_val)) ++parse_val;
 		m_impl = Impl::Operation::parse(&parse_val, 1);
 		while (isspace(*parse_val)) ++parse_val;
@@ -254,6 +253,11 @@ Expression& Expression::operator=(Expression&& value) = default;
 long Expression::to_long(Context& ctx) const
 {
 	return m_impl->to_long(ctx);
+}
+
+Expression::operator bool () const
+{
+	return static_cast<bool>(m_impl);
 }
 
 string Expression::to_string(Context& ctx) const

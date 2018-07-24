@@ -149,6 +149,12 @@ public:
 	 */
 	Expression& operator=(Expression&& expr);
 	
+	/** Checks whether this is an empty expression
+	 *
+	 * \return true if the expression is non-empty
+	 */
+	operator bool () const;
+	
 	/** Evaluates an expression as an integer
 	 *
 	 * \return the integer value

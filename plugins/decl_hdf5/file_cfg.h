@@ -53,7 +53,9 @@ class File_cfg
 	
 	PDI::Expression m_when;
 	
-	std::string m_communicator;
+#ifdef H5_HAVE_PARALLEL
+	PDI::Expression m_communicator;
+#endif
 	
 	std::unordered_map<std::string, PDI::Datatype_template_uptr> m_datasets;
 	
@@ -67,8 +69,7 @@ class File_cfg
 public:
 	File_cfg(PC_tree_t tree, std::vector<std::string>& events, PDI::Logger_sptr logger):
 		m_file{PDI::to_string(PC_get(tree, ".file"))},
-		m_when{1},
-		m_communicator{"$MPI_COMM_SELF"}
+		m_when{1}
 	{
 		using PDI::Datatype_template;
 		using PDI::Error;
@@ -95,11 +96,10 @@ public:
 			} else if ( key == "when" ) {
 				m_when = to_string(PC_get(tree, ".when"));
 			} else if ( key == "communicator" ) {
+#ifdef H5_HAVE_PARALLEL
 				m_communicator = to_string(PC_get(tree, ".communicator"));
-#ifndef H5_HAVE_PARALLEL
-				if (m_communicator != "$MPI_COMM_SELF") {
-					throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", comm_name.c_str()};
-				}
+#else
+				throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", to_string(PC_get(tree, ".communicator")).c_str()};
 #endif
 			} else if ( key == "datasets" ) {
 				int nb_dataset = len(PC_get(tree, ".datasets"));
@@ -179,7 +179,9 @@ public:
 	File_cfg(File_cfg&& moved):
 		m_file{std::move(moved.m_file)},
 		m_when{std::move(moved.m_when)},
+#ifdef H5_HAVE_PARALLEL
 		m_communicator{std::move(moved.m_communicator)},
+#endif
 		m_datasets{std::move(moved.m_datasets)},
 		m_read{std::move(moved.m_read)},
 		m_write{std::move(moved.m_write)}
@@ -198,15 +200,13 @@ public:
 		return m_when;
 	}
 	
-	std::string communicator() const
-	{
-		return m_communicator;
-	}
-
+#ifdef H5_HAVE_PARALLEL
 	MPI_Comm communicator(PDI::Context& ctx) const
 	{
-		return PDI::Expression{m_communicator}.to_mpi_comm(ctx);
+		if (m_communicator) return m_communicator.to_mpi_comm(ctx);
+		return MPI_COMM_SELF;
 	}
+#endif
 	
 	const std::unordered_map<std::string, PDI::Datatype_template_uptr>& datasets() const
 	{
@@ -243,18 +243,14 @@ const PDI::Expression& Transfer_cfg::when() const
 	return *m_when;
 }
 
+#ifdef H5_HAVE_PARALLEL
 // defined here because File_cfg need to be defined
-std::string Transfer_cfg::communicator() const
-{
-	if (m_communicator.empty()) return parent().communicator();
-	return m_communicator;
-}
-
 MPI_Comm Transfer_cfg::communicator(PDI::Context& ctx) const
 {
-	if (m_communicator.empty()) return parent().communicator(ctx);
-	return PDI::Expression{m_communicator}.to_mpi_comm(ctx);
+	if (!m_communicator) return parent().communicator(ctx);
+	return m_communicator.to_mpi_comm(ctx);
 }
+#endif
 
 } // namespace <anonymous>
 

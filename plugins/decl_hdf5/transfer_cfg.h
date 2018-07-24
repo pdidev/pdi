@@ -52,7 +52,9 @@ class Transfer_cfg
 	
 	std::unique_ptr<PDI::Expression> m_when;
 	
-	std::string m_communicator;
+#ifdef H5_HAVE_PARALLEL
+	PDI::Expression m_communicator;
+#endif
 	
 	Selection_cfg m_memory_selection;
 	
@@ -85,11 +87,10 @@ public:
 			} else if ( key == "when" ) {
 				m_when.reset(new Expression{to_string(PC_get(tree, ".when"))});
 			} else if ( key == "communicator" ) {
+#ifdef H5_HAVE_PARALLEL
 				m_communicator = to_string(PC_get(tree, ".communicator"));
-#ifndef H5_HAVE_PARALLEL
-				if (m_communicator != "$MPI_COMM_SELF") {
-					throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", comm_name.c_str()};
-				}
+#else
+				throw Error{PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", to_string(PC_get(tree, ".communicator")).c_str()};
 #endif
 			} else if ( key == "memory_selection" ) {
 				m_memory_selection = PC_get(tree, ".memory_selection");
@@ -119,9 +120,10 @@ public:
 	// defined in File_cfg header because File_cfg need to be defined for implementation
 	const PDI::Expression& when() const;
 	
+#ifdef H5_HAVE_PARALLEL
 	// defined in File_cfg header because File_cfg need to be defined for implementation
-	std::string communicator() const;
 	MPI_Comm communicator(PDI::Context& ctx) const;
+#endif
 	
 	const Selection_cfg& memory_selection() const
 	{

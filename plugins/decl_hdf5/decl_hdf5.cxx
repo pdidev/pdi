@@ -296,7 +296,7 @@ void read(Context& ctx, const Transfer_cfg& xfer, Ref ref)
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid read_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
-	if ( xfer.communicator() != "$MPI_COMM_SELF" && xfer.communicator(ctx) != MPI_COMM_SELF ) {
+	if ( xfer.communicator(ctx) != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(ctx), MPI_INFO_NULL) ) handle_hdf5_err();
 		if ( 0>H5Pset_dxpl_mpio(read_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
 	}
@@ -317,7 +317,7 @@ void write(Context& ctx, const Transfer_cfg& xfer, Ref ref)
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid write_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
-	if ( xfer.communicator() != "$MPI_COMM_SELF" && xfer.communicator(ctx) != MPI_COMM_SELF ) {
+	if ( xfer.communicator(ctx) != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, xfer.communicator(ctx), MPI_INFO_NULL) ) handle_hdf5_err();
 		if ( 0>H5Pset_dxpl_mpio(write_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
 	}
@@ -338,7 +338,7 @@ void execute(Context& ctx, const File_cfg& file_cfg)
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
-	if ( file_cfg.communicator() != "$MPI_COMM_SELF" && file_cfg.communicator(ctx) != MPI_COMM_SELF ) {
+	if ( file_cfg.communicator(ctx) != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, file_cfg.communicator(ctx), MPI_INFO_NULL) ) handle_hdf5_err();
 		if ( 0>H5Pset_dxpl_mpio(xfer_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
 	}
