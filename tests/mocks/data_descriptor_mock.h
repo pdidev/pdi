@@ -22,45 +22,24 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_MOCK_H_
-#define PDI_DATATYPE_MOCK_H_
+#ifndef PDI_DATA_DESCRIPTOR_MOCK_H_
+#define PDI_DATA_DESCRIPTOR_MOCK_H_
 
 #include <gmock/gmock.h>
+#include <pdi/data_descriptor.h>
 
-#include <pdi/datatype.h>
-#include <pdi/pdi_fwd.h>
-
-struct MockDatatype : public PDI::Datatype {
-	PDI::Datatype_template_uptr clone() const override
-	{
-		return PDI::Datatype_template_uptr{clone_proxy()};
-	}
-	
-	PDI::Datatype_uptr clone_type() const override
-	{
-		return PDI::Datatype_uptr{clone_type_proxy()};
-	}
-	
-	PDI::Datatype_uptr densify() const override
-	{
-		return PDI::Datatype_uptr{densify_proxy()};
-	}
-	
-	PDI::Datatype_uptr evaluate(PDI::Context&) const override
-	{
-		return PDI::Datatype_uptr{evaluate_proxy()};
-	}
-	
-	MOCK_CONST_METHOD0(dense, bool());
-	MOCK_CONST_METHOD0(datasize, size_t());
-	MOCK_CONST_METHOD0(buffersize, size_t());
-	MOCK_CONST_METHOD0(alignment, size_t());
-	
-	//proxies are needed to work with unique_ptr<>
-	MOCK_CONST_METHOD0(clone_type_proxy, Datatype*());
-	MOCK_CONST_METHOD0(clone_proxy, Datatype_template*());
-	MOCK_CONST_METHOD0(densify_proxy, Datatype*());
-	MOCK_CONST_METHOD0(evaluate_proxy, Datatype*());
+struct MockDataDescriptor : public PDI::Data_descriptor {
+	MOCK_METHOD1(creation_template, void(PC_tree_t));
+	MOCK_CONST_METHOD0(config, PC_tree_t());
+	MOCK_CONST_METHOD0(metadata, bool());
+	MOCK_METHOD1(metadata, void(bool));
+	MOCK_CONST_METHOD0(name, const std::string&());
+	MOCK_METHOD0(ref, PDI::Ref());
+	MOCK_METHOD3(share, void(void*, bool, bool));
+	MOCK_METHOD3(share, void* (PDI::Ref, bool, bool));
+	MOCK_METHOD0(release, void());
+	MOCK_METHOD0(reclaim, void());
 };
 
-#endif
+
+#endif //PDI_DATA_DESCRIPTOR_MOCK_H_
