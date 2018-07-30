@@ -307,7 +307,7 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr lo
 			}
 			starts.emplace_back(to_string(conf_start));
 		} else {
-			starts = vector<Expression>(sizes.size(), Expression{0});
+			starts = vector<Expression>(sizes.size(), Expression{0l});
 		}
 	}
 	

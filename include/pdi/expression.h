@@ -111,25 +111,7 @@ public:
 	 *
 	 * \param[in] expr the integer value
 	 */
-	Expression(int expr);
-	
-	/** Builds an expression that represents an integer
-	 *
-	 * \param[in] expr the integer value
-	 */
-	Expression(unsigned expr);
-	
-	/** Builds an expression that represents an integer
-	 *
-	 * \param[in] expr the integer value
-	 */
 	Expression(long expr);
-	
-	/** Builds an expression that represents an integer
-	 *
-	 * \param[in] expr the integer value
-	 */
-	Expression(unsigned long expr);
 	
 	/** Destroys an expression
 	 */

@@ -196,9 +196,12 @@ Expression::Expression(unique_ptr<Impl> impl):
 
 Expression::Expression() = default;
 
-Expression::Expression(const Expression& value):
-	m_impl(value.m_impl->clone())
-{}
+Expression::Expression(const Expression& value)
+{
+	if (value)
+		m_impl = value.m_impl->clone();
+		
+}
 
 Expression::Expression(Expression&&  value) = default;
 
@@ -225,26 +228,13 @@ Expression::Expression(long value):
 {
 }
 
-Expression::Expression(int value):
-	Expression(static_cast<long>(value))
-{
-}
-
-Expression::Expression(unsigned value):
-	Expression(static_cast<long>(value))
-{
-}
-
-Expression::Expression(unsigned long value):
-	Expression(static_cast<long>(value))
-{
-}
-
 Expression::~Expression() = default;
 
 Expression& Expression::operator=(const Expression& value)
 {
-	m_impl = value.m_impl->clone();
+	m_impl.reset(nullptr);
+	if (value)
+		m_impl = value.m_impl->clone();
 	return *this;
 }
 
