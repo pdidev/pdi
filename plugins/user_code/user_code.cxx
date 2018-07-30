@@ -53,8 +53,6 @@ using PDI::len;
 using PDI::Plugin;
 using PDI::Expression;
 using PDI::to_string;
-using std::cerr;
-using std::endl;
 using std::exception;
 using std::string;
 using std::unordered_multimap;

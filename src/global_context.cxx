@@ -43,8 +43,6 @@
 
 namespace PDI {
 
-using std::cerr;
-using std::endl;
 using std::exception;
 using std::move;
 using std::string;
@@ -121,16 +119,6 @@ Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
 	}
 }
 
-Global_context::Iterator Global_context::begin()
-{
-	return Context::get_iterator(m_descriptors.begin());
-}
-
-Global_context::Iterator Global_context::end()
-{
-	return Context::get_iterator(m_descriptors.end());
-}
-
 Data_descriptor& Global_context::desc(const char* name)
 {
 	return *(m_descriptors.emplace(name, unique_ptr<Data_descriptor> {new Data_descriptor_impl{*this, name}}).first->second);
@@ -151,6 +139,16 @@ Data_descriptor& Global_context::operator[](const string& name)
 	return desc(name.c_str());
 }
 
+Global_context::Iterator Global_context::begin()
+{
+	return Context::get_iterator(m_descriptors.begin());
+}
+
+Global_context::Iterator Global_context::end()
+{
+	return Context::get_iterator(m_descriptors.end());
+}
+
 void Global_context::event(const char* name)
 {
 	for (auto& elmnt : m_plugins) {
@@ -160,7 +158,7 @@ void Global_context::event(const char* name)
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const Error& e) {
 			errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
-		} catch (const std::exception& e) {
+		} catch (const exception& e) {
 			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
 		} catch (...) {
 			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
@@ -183,6 +181,5 @@ Logger_sptr Global_context::logger() const
 {
 	return m_logger;
 }
-
 
 }

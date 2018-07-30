@@ -24,61 +24,88 @@
 
 #include <mpi.h>
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include <spdlog.h>
 
 #include "pdi/logger.h"
 
-namespace PDI {
+namespace {
 
-static void set_up_log_format(Logger_sptr logger)
+using PDI::Logger_sptr;
+using PDI::len;
+using PDI::to_long;
+using PDI::to_string;
+using spdlog::logger;
+using spdlog::level::level_enum;
+using spdlog::level::debug;
+using spdlog::level::info;
+using spdlog::level::warn;
+using spdlog::level::err;
+using spdlog::level::off;
+using spdlog::sink_ptr;
+using spdlog::sinks::simple_file_sink_st;
+#if defined _WIN32 && !defined(__cplusplus_winrt)
+using spdlog::sinks::wincolor_stdout_sink_st;
+#else
+using spdlog::sinks::ansicolor_stdout_sink_st;
+#endif
+using std::make_shared;
+using std::string;
+using std::unordered_map;
+using std::vector;
+
+void set_up_log_format(Logger_sptr logger)
 {
 	int world_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 	char format[64];
 	snprintf(format, 64, "[PDI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
-	logger->set_pattern(std::string(format));
+	logger->set_pattern(string(format));
 }
 
-static Logger_sptr select_log_sinks(PC_tree_t logging_tree)
+Logger_sptr select_log_sinks(PC_tree_t logging_tree)
 {
-	std::vector<spdlog::sink_ptr> sinks;
+	vector<sink_ptr> sinks;
 	PC_tree_t output_tree = PC_get(logging_tree, ".output");
 	
 	//configure file sink
 	if (!PC_status(PC_get(output_tree, ".file"))) {
-		std::string filename {PDI::to_string(PC_get(output_tree, ".file"))};
-		auto file_sink = std::make_shared<spdlog::sinks::simple_file_sink_st>(filename);
-		sinks.push_back(file_sink);
+		string filename {to_string(PC_get(output_tree, ".file"))};
+		auto file_sink = make_shared<simple_file_sink_st>(filename);
+		sinks.emplace_back(file_sink);
 	}
 	
 	//configure console sink
 	if (
 	    (!PC_status(PC_get(output_tree, ".console")) || sinks.empty() ) // either there is a console sink specified or no other
-	    && PDI::to_string(PC_get(output_tree, ".console"), "on") != "off" // the console sink is not specifically disabled
+	    && to_string(PC_get(output_tree, ".console"), "on") != "off" // the console sink is not specifically disabled
 	) {
 		//logging to console is turned on
 #if defined _WIN32 && !defined(__cplusplus_winrt)
-		sinks.push_back(std::make_shared<spdlog::sinks::wincolor_stdout_sink_st>());
+		sinks.push_back(make_shared<wincolor_stdout_sink_st>());
 #else
-		sinks.push_back(std::make_shared<spdlog::sinks::ansicolor_stdout_sink_st>());
+		sinks.push_back(make_shared<ansicolor_stdout_sink_st>());
 #endif
 	}
 	
-	return std::make_shared<spdlog::logger>("logger", begin(sinks), end(sinks));
+	return make_shared<logger>("PDI_logger", sinks.begin(), sinks.end());
 }
 
-
-static void read_log_level(Logger_sptr logger, PC_tree_t logging_tree)
+void read_log_level(Logger_sptr logger, PC_tree_t logging_tree)
 {
 	if (!PC_status(PC_get(logging_tree, ".level"))) {
-		std::string level_str {PDI::to_string(PC_get(logging_tree, ".level"))};
+		string level_str {to_string(PC_get(logging_tree, ".level"))};
 		
-		std::unordered_map<std::string, spdlog::level::level_enum> level_map = {
-			{"debug", spdlog::level::debug},
-			{"info", spdlog::level::info},
-			{"warn", spdlog::level::warn},
-			{"error", spdlog::level::err},
-			{"off", spdlog::level::off}
+		unordered_map<string, level_enum> level_map = {
+			{"debug", debug},
+			{"info", info},
+			{"warn", warn},
+			{"error", err},
+			{"off", off}
 		};
 		
 		auto level_it = level_map.find(level_str);
@@ -90,7 +117,7 @@ static void read_log_level(Logger_sptr logger, PC_tree_t logging_tree)
 	}
 }
 
-static void configure_single_rank(Logger_sptr logger, PC_tree_t logging_tree)
+void configure_single_rank(Logger_sptr logger, PC_tree_t logging_tree)
 {
 	PC_tree_t single_tree = PC_get(logging_tree, ".single");
 	if (!PC_status(single_tree)) {
@@ -100,7 +127,7 @@ static void configure_single_rank(Logger_sptr logger, PC_tree_t logging_tree)
 		int nb_key = len(single_tree);
 		for (int key_id = 0; key_id < nb_key; ++key_id) {
 			PC_tree_t rank_tree = PC_get(single_tree, "[%d]", key_id);
-			int selected_rank = PDI::to_long(PC_get(rank_tree, ".rank"), -1);
+			int selected_rank = to_long(PC_get(rank_tree, ".rank"), -1);
 			if (selected_rank == world_rank) {
 				read_log_level(logger, rank_tree);
 				break;
@@ -108,6 +135,10 @@ static void configure_single_rank(Logger_sptr logger, PC_tree_t logging_tree)
 		}
 	}
 }
+
+} // namespace <anonymous>
+
+namespace PDI {
 
 Logger_sptr configure_logger(PC_tree_t config)
 {

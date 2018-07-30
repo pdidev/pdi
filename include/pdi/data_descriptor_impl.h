@@ -77,56 +77,25 @@ public:
 	
 	~Data_descriptor_impl() override;
 	
-	/** Sets the creation template used to type raw pointers shared through this descriptor
-	 * \param config the full configuration attached to the descriptor
-	 */
 	void creation_template(PC_tree_t config) override;
 	
-	/** Returns the PC_tree_t config
-	 * \todo remove this and attach this config to the type
-	 * \return the full configuration attached to the descriptor
-	 */
 	PC_tree_t config() const override;
 	
-	/** Return true if the data is a metadata
-	 */
 	bool metadata() const override;
 	
-	/** Sets whether this describes a metadata or not
-	 * \param metadata whether data shared through this descriptor should behave as a metadata
-	 */
 	void metadata(bool metadata) override;
 	
 	const std::string& name() const override;
 	
-	/** Return a reference to the value of the data behind this descriptor
-	 */
 	Ref ref() override;
 	
-	/** Shares some data with PDI
-	 * \param[in,out] data the shared data
-	 * \param read whether read access is granted to other references
-	 * \param write whether write access is granted to other references
-	 */
 	void share(void* data, bool read, bool write) override;
 	
-	/** Shares some data with PDI
-	 * \param[in,out] ref a reference to the shared data
-	 * \param read whether the stored reference should have read access
-	 * \param write whether write access is granted to other references
-	 * \return the just shared buffer
-	 */
 	void* share(Ref ref, bool read, bool write) override;
 	
-	/** Releases ownership of a data shared with PDI. PDI is then responsible to
-	 * free the associated memory whenever necessary.
-	 */
 	void release() override;
 	
-	/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
-	 * free the associated memory whenever necessary.
-	 */
-	void reclaim() override;
+	void* reclaim() override;
 	
 }; // class Data_descriptor
 

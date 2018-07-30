@@ -86,10 +86,11 @@ public:
 	 */
 	virtual void release() = 0;
 	
-	/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
-	 * free the associated memory whenever necessary.
+	/** Reclaims ownership of a data buffer shared with PDI. PDI does not manage
+	 * the buffer memory anymore.
+	 * \return the address of the buffer
 	 */
-	virtual void reclaim() = 0;
+	virtual void* reclaim() = 0;
 	
 }; // class Data_descriptor
 

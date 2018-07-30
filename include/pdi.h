@@ -202,8 +202,8 @@ PDI_status_t  PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t
  */
 PDI_status_t PDI_EXPORT PDI_release(const char* name);
 
-/** Reclaims ownership of a data buffer shared with PDI. PDI is then responsible to
- * free the associated memory whenever necessary.
+/** Reclaims ownership of a data buffer shared with PDI. PDI does not manage
+ * the buffer memory anymore.
  * \param[in] name name of the data to reclaim
  * \return an error status
  * \pre ownership of the data buffer is shared between PDI and the user code

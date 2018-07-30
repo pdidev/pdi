@@ -43,8 +43,6 @@
 
 namespace PDI {
 
-using std::cerr;
-using std::endl;
 using std::exception;
 using std::nothrow;
 using std::stack;
@@ -127,7 +125,7 @@ void Data_descriptor_impl::metadata(bool metadata)
 	m_metadata = metadata;
 }
 
-const std::string& Data_descriptor_impl::name() const
+const string& Data_descriptor_impl::name() const
 {
 	return m_name;
 }
@@ -193,7 +191,7 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const Error& e) {
 			errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
-		} catch (const std::exception& e) {
+		} catch (const exception& e) {
 			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
 		} catch (...) {
 			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
@@ -225,7 +223,7 @@ void Data_descriptor_impl::release()
 	}
 }
 
-void Data_descriptor_impl::reclaim()
+void* Data_descriptor_impl::reclaim()
 {
 	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot reclaim a non shared value"};
 	
@@ -235,7 +233,7 @@ void Data_descriptor_impl::reclaim()
 		// if the content is a metadata, keep a copy
 		m_refs.emplace(new Ref_holder::Impl<true, false>(oldref.copy()));
 	}
-	oldref.release();
+	return oldref.release();
 }
 
 } // namespace PDI
