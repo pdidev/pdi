@@ -133,45 +133,6 @@ TEST_F(EmptyExpressionTest, bool_operator)
 }
 
 /*
- * Name:                EmptyExpressionTest.to_long
- *
- * Tested functions:    PDI::Expression::to_long(Context&)
- *
- * Description:         Checks if expression is correctly evaluated to long.
- */
-TEST_F(EmptyExpressionTest, to_long)
-{
-	Expression exp;
-	ASSERT_EXIT(exp.to_long(context_mock), ::testing::KilledBySignal(SIGSEGV), ".*");
-}
-
-/*
- * Name:                EmptyExpressionTest.to_string
- *
- * Tested functions:    PDI::Expression::to_string(Context&)
- *
- * Description:         Checks if expression is correctly evaluated to string.
- */
-TEST_F(EmptyExpressionTest, to_string)
-{
-	Expression exp;
-	ASSERT_EXIT(exp.to_string(context_mock), ::testing::KilledBySignal(SIGSEGV), ".*");
-}
-
-/*
- * Name:                EmptyExpressionTest.to_ref
- *
- * Tested functions:    PDI::Expression::to_ref(Context&)
- *
- * Description:         Checks if expression is correctly evaluated to ref.
- */
-TEST_F(EmptyExpressionTest, to_ref)
-{
-	Expression exp;
-	ASSERT_EXIT(exp.to_ref(context_mock), ::testing::KilledBySignal(SIGSEGV), ".*");
-}
-
-/*
  * Name:                LongExpressionTest.copy
  *
  * Tested functions:    PDI::Expression::Expression(const Expression&)
