@@ -11,18 +11,18 @@ metadata:
 data:
   reals: 
     type: double
-    sizes: [$nj+2*$njg , $ni+2*$nig]
-    subsizes: [$nj , $ni]
+    sizes: [$nj + 2*$njg, $ni + 2*$nig]
+    subsizes: [$nj, $ni]
     starts: [$njg, $nig]
   values: 
     type: int
-    sizes: [$nj+2*$njg , $ni+2*$nig]
-    subsizes: [$nj , $ni]
+    sizes: [$nj + 2*$njg, $ni + 2*$nig]
+    subsizes: [$nj, $ni]
     starts: [$njg, $nig]
 plugins:
   mpi:
   decl_hdf5:
-    file: decl_hdf5_test_04_C.h5
+    file: decl_hdf5_test_04.h5
     communicator: $MPI_COMM_WORLD
     datasets:
       reals:  {type: double, sizes: [$njt, $nit]}

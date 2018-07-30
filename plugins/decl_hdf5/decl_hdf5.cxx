@@ -91,9 +91,6 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type)
 		h5_start.emplace_back(array_type->start());
 		subtype = &array_type->subtype();
 	}
-	reverse(h5_size.begin(), h5_size.end());
-	reverse(h5_subsize.begin(), h5_subsize.end());
-	reverse(h5_start.begin(), h5_start.end());
 	auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(subtype);
 	if (!scalar_type) throw Error {PDI_ERR_IMPL, "Unexpected type in HDF5"};
 	

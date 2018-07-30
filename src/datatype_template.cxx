@@ -31,10 +31,13 @@
 #include <string>
 #include <vector>
 
+#include <spdlog.h>
+
 #include "pdi.h"
 #include "pdi/array_datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/record_datatype.h"
 #include "pdi/scalar_datatype.h"
@@ -165,25 +168,6 @@ public:
 	
 };
 
-/// ordering of array
-enum class Array_order : uint8_t {
-	C,
-	FORTRAN
-};
-
-/** Return a reordered index, i.e. a C style index given either a C for Fortran
-    *  style one
-    * \param ordered_index the initial C or Fortran ordered index
-    * \param order the style of the initial index (C/Fortran)
-    * \param size the size of the dimension the index accesses
-    * \return the reordered index (C style)
-    */
-int ridx(int ordered_index, Array_order order, int size)
-{
-	if (order == Array_order::FORTRAN) return size - ordered_index - 1;
-	return ordered_index;
-}
-
 Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, Logger_sptr logger)
 {
 	string type;
@@ -238,21 +222,12 @@ Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, Logger_sptr l
 
 Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr logger)
 {
-	// Order: C or fortran ordering, default is C
-	Array_order order = Array_order::C;
 	{
-		string order_str;
-		try {
-			order_str = to_string(PC_get(node, ".order"));
-		} catch (const Error&) {
-			order_str = "c";
-		}
-		if (order_str == "c" || order_str == "C") {
-			order = Array_order::C;
-		} else if (order_str == "fortran" || order_str == "Fortran") {
-			order = Array_order::FORTRAN;
-		} else {
-			throw Error{PDI_ERR_CONFIG, "Incorrect array ordering: `%s'", order_str.c_str()};
+		string order_str = to_string(PC_get(node, ".order"), "");
+		if (order_str == "c" && order_str == "C") {
+			logger->warn("`order: C' for array is the only supported order and its specification is deprecated");
+		} else if (order_str !="" ) {
+			throw Error{PDI_ERR_CONFIG, "Incorrect array ordering: `%s', only C order is supported", order_str.c_str()};
 		}
 	}
 	
@@ -261,7 +236,7 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr lo
 	if (!PC_status(conf_sizes)) {   // multi dim array
 		int nsizes = len(conf_sizes);
 		for (int ii = 0; ii < nsizes; ++ii) {
-			sizes.emplace_back(to_string(PC_get(node, ".sizes[%d]", ridx(ii, order, nsizes))));
+			sizes.emplace_back(to_string(PC_get(node, ".sizes[%d]", ii)));
 		}
 	} else { // else we expect a single dim array
 		sizes.emplace_back(to_string(PC_get(node, ".size")));
@@ -275,7 +250,7 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr lo
 			throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", nsubsizes, sizes.size()};
 		}
 		for (int ii = 0; ii < nsubsizes; ++ii) {
-			subsizes.emplace_back(to_string(PC_get(node, ".subsizes[%d]", ridx(ii, order, nsubsizes))));
+			subsizes.emplace_back(to_string(PC_get(node, ".subsizes[%d]", ii)));
 		}
 	} else {
 		PC_tree_t conf_subsize = PC_get(node, ".subsize");
@@ -297,7 +272,7 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr lo
 			throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", nstarts, sizes.size()};
 		}
 		for (int ii = 0; ii < nstarts; ++ii) {
-			starts.emplace_back(to_string(PC_get(node, ".starts[%d]", ridx(ii, order, nstarts))));
+			starts.emplace_back(to_string(PC_get(node, ".starts[%d]", ii)));
 		}
 	} else {
 		PC_tree_t conf_start = PC_get(node, ".start");
@@ -313,7 +288,7 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr lo
 	
 	Datatype_template_uptr res_type = Datatype_template::load(PC_get(node, ".type"), logger);
 	
-	for (size_t ii = 0; ii < sizes.size(); ++ii) {
+	for (ssize_t ii = sizes.size()-1; ii >=0; --ii) {
 		res_type.reset(new Array_template(move(res_type), move(sizes[ii]), move(starts[ii]), move(subsizes[ii])));
 	}
 	return res_type;
