@@ -61,8 +61,8 @@ struct Data_layout {
 	/// Size of the repeated content including empty space
 	size_t m_size;
 	
-	/// the bits that should be null in an address for alignment
-	uintptr_t m_align_mask;
+	/// number of bits that should be null in an address for alignment
+	uint8_t m_align;
 	
 	/** Copy a buffer whose layout is described by this into a sparse equivalent
 	 * \param to the adress at which to write the dense copy
@@ -71,7 +71,8 @@ struct Data_layout {
 	 */
 	uint8_t* copy(uint8_t* to, const uint8_t* from)
 	{
-		to = reinterpret_cast<uint8_t*>(reinterpret_cast<uintptr_t>(to + m_align_mask) & ~m_align_mask);
+		uint64_t align_mask = (1 << m_align)-1;
+		to = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(to) + align_mask) & ~align_mask);
 		if (m_subcontent.empty() && 1 == m_size) { // optimize for dense blocks
 			memcpy(to, from, m_repeat);
 			return static_cast<uint8_t*>(to) + m_repeat;
@@ -92,7 +93,7 @@ struct Data_layout {
 Data_layout desc(const Datatype& type)
 {
 	if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-		return {scalar_type->datasize(), {}, 1, static_cast<uintptr_t>((1 << scalar_type->alignment()) - 1)};
+		return {scalar_type->datasize(), {}, 1, static_cast<uint8_t>(scalar_type->alignment())};
 	}
 	if (auto&& array_type = dynamic_cast<const Array_datatype*>(&type)) {
 		Data_layout inner = desc(array_type->subtype());
@@ -104,7 +105,7 @@ Data_layout desc(const Datatype& type)
 		} else { // sparse array
 			size_t buffer_size = inner.m_size * inner.m_repeat * size; // the contained buffer size is one element times the buffer size
 			inner.m_repeat *= subsize; // repeat the content as required
-			return {1, {make_pair(inner.m_size* inner.m_repeat * array_type->start(), move(inner))}, buffer_size, 0};
+			return {1, {make_pair(inner.m_size* inner.m_repeat * array_type->start(), move(inner))}, buffer_size, inner.m_align};
 		}
 	}
 	if (auto&& record_type = dynamic_cast<const Record_datatype*>(&type)) {
@@ -113,17 +114,18 @@ Data_layout desc(const Datatype& type)
 			size_t offset = record_type->members().front().displacement();
 			size_t buffersize = record_type->buffersize();
 			if (inner.m_repeat == 1) {   // we can sparsify by adding the offset to all subcontent
-				Data_layout result = {1, {}, record_type->buffersize(), 0};
+				Data_layout result = {1, {}, record_type->buffersize(), inner.m_align};
 				for (auto&& sub : inner.m_subcontent) {
 					result.m_subcontent.emplace(sub.first + offset, move(sub.second)); // add the offset to all members
 				}
 				return result;
 			}
-			return {1, {make_pair(offset, move(inner))}, buffersize, 0};
+			return {1, {make_pair(offset, move(inner))}, buffersize, inner.m_align};
 		}
 		Data_layout result = {1, {}, record_type->buffersize(), 0 };
 		for (auto&& mem : record_type->members()) {
 			Data_layout mem_layout = desc(mem.type());
+			if ( mem_layout.m_align > result.m_align ) result.m_align = mem_layout.m_align;
 			if (mem_layout.m_repeat > 1) {
 				result.m_subcontent.emplace(mem.displacement(), move(mem_layout));
 			} else {
@@ -156,10 +158,12 @@ Ref Ref_base::do_copy(Ref_r ref)
 	}
 	
 	Data_layout ref_desc = desc(ref.type());
-	void* newbuffer{operator new (ref_desc.m_size * ref_desc.m_repeat)};
+	uint64_t align_mask = (1 << ref_desc.m_align)-1;
+	void* newbuffer{operator new (ref_desc.m_size * ref_desc.m_repeat+align_mask)};
 	try {
-		ref_desc.copy(static_cast<uint8_t*>(newbuffer), static_cast<const uint8_t*>(ref.get()));
-		return Ref {newbuffer,  [](void* d){::operator delete (d);}, ref.type().densify(), true, true};
+		uint8_t* to = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(newbuffer) + align_mask) & ~align_mask);
+		ref_desc.copy(to, static_cast<const uint8_t*>(ref.get()));
+		return Ref {to, [newbuffer](void*){::operator delete (newbuffer);}, ref.type().densify(), true, true};
 	} catch (...) {
 		::operator delete (newbuffer);
 		throw;
