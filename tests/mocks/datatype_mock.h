@@ -63,4 +63,4 @@ struct MockDatatype : public PDI::Datatype {
 	MOCK_CONST_METHOD0(evaluate_proxy, Datatype*());
 };
 
-#endif
+#endif //PDI_DATATYPE_MOCK_H_
