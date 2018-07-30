@@ -38,7 +38,7 @@ struct MockDataDescriptor : public PDI::Data_descriptor {
 	MOCK_METHOD3(share, void(void*, bool, bool));
 	MOCK_METHOD3(share, void* (PDI::Ref, bool, bool));
 	MOCK_METHOD0(release, void());
-	MOCK_METHOD0(reclaim, void());
+	MOCK_METHOD0(reclaim, void* ());
 };
 
 
