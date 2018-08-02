@@ -247,7 +247,7 @@ TEST_F(ArrayDatatypeTest, check_datasize)
 TEST_F(ArrayDatatypeTest, check_buffersize)
 {
 	size_t subtype_buffersize = 10;
-	EXPECT_CALL(*this->mockDatatype, datasize()).WillOnce(Return(subtype_buffersize));
+	EXPECT_CALL(*this->mockDatatype, buffersize()).WillOnce(Return(subtype_buffersize));
 	ASSERT_EQ(subtype_buffersize * this->test_size, this->test_array.buffersize());
 }
 

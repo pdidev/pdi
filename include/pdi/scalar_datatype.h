@@ -68,6 +68,12 @@ public:
 	
 	size_t alignment() const override;
 	
+	bool is_POD() const override;
+	
+	void copy_data(void*& to, const void* from) const override;
+	
+	void delete_data(void* ptr) const override;
+	
 };
 
 const Scalar_datatype UNDEF_TYPE = {Scalar_kind::UNKNOWN, 0};

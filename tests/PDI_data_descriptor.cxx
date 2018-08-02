@@ -321,6 +321,7 @@ TEST_F(DataDescTest, share_meta_without_read)
  */
 TEST_F(DataDescTest, multi_read_share_meta)
 {
+	this->m_desc_default->creation_template(array_config);
 	this->m_desc_default->metadata(true);
 	this->m_desc_default->share(this->array, true, false);
 	void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
@@ -335,16 +336,8 @@ TEST_F(DataDescTest, multi_read_share_meta)
 	this->m_desc_default->reclaim();
 	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_NE(this->array, ptr);
-	this->m_desc_default->release();
+	this->m_desc_default->reclaim();
 	
-	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
-	ASSERT_EQ(1, refs_number);
-	
-	this->m_desc_default->release();
-	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
-	ASSERT_EQ(1, refs_number);
-	
-	this->m_desc_default->release();
 	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(1, refs_number);
 }

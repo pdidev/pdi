@@ -161,4 +161,57 @@ size_t Record_datatype::alignment() const
 	return result;
 }
 
+bool Record_datatype::is_POD() const
+{
+	for (auto&& member : m_members) {
+		if (!member.type().is_POD()) return false;
+	}
+	return true;
+}
+
+void Record_datatype::copy_data(void*& to, const void* from) const
+{
+	auto space_to_align = alignment();
+	//size = 0, because we know that 'to' points to allocated memory
+	to = std::align(alignment(), 0, to, space_to_align);
+	if (to == nullptr) {
+		throw Error{PDI_ERR_IMPL, "Could not align the record datatype"};
+	}
+	
+	if (is_POD()) {
+		//dense copy
+		memcpy(to, from, buffersize());
+		to = reinterpret_cast<uint8_t*>(to) + buffersize();
+		return;
+	}
+	
+	for (auto&& member : members()) {
+		space_to_align = alignment();
+		//size = 0, because we know that to points to allocated memory
+		to = std::align(alignment(), 0, to, space_to_align);
+		if (to == nullptr) {
+			throw Error{PDI_ERR_IMPL, "Could not align the record datatype member: %s", member.name().c_str()};
+		}
+		const uint8_t* updated_from_ptr = reinterpret_cast<const uint8_t*>(from) + member.displacement();
+		
+		if (member.type().is_POD()) {
+			//make a dense copy of member
+			memcpy(to, updated_from_ptr, member.type().datasize());
+			to = reinterpret_cast<uint8_t*>(to) + member.type().datasize();
+		} else {
+			//not POD copy
+			member.type().copy_data(to, updated_from_ptr);
+		}
+	}
+}
+
+void Record_datatype::delete_data(void* ptr) const
+{
+	for (auto&& member : members()) {
+		if (!member.type().is_POD()) {
+			member.type().delete_data(reinterpret_cast<uint8_t*>(ptr) + member.displacement());
+		}
+	}
+}
+
 } // namespace PDI

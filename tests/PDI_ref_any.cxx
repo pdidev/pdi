@@ -27,6 +27,7 @@
 
 #include <pdi/array_datatype.h>
 #include <pdi/scalar_datatype.h>
+#include <pdi/record_datatype.h>
 #include <pdi/ref_any.h>
 #include <pdi/pdi_fwd.h>
 
@@ -379,45 +380,41 @@ TEST_F(DenseArrayRefAnyTest, checkDeepCopy)
 /*
  * Struct prepared for SparseArrayRefAnyTest.
  *
- *      NOT SUPPORTED cannot make a deep copy of sparese array.
- *      copy() method is only called for metadata. We assume that metadata should be dense.
- *
  */
-/*
 struct SparseArrayRefAnyTest : public DataRefAnyTest {
-    SparseArrayRefAnyTest() : DataRefAnyTest() {
-        DataRefAnyTest::m_tested_ref->reset();
-
-        for (int i = 0; i < 100; i++) {
-            array_to_share[i] = i;
-        }
-
-        DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void*){},
-                                            datatype->clone_type(), true, true}};
-    }
-
-    Datatype_uptr datatype
-    {
-        new Array_datatype
-        {
-            Datatype_uptr {
-                new Array_datatype
-                {
-                    Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-                    10,
-                    3,
-                    4
-                }
-            },
-            10,
-            3,
-            4
-        }
-    };
-
-    int array_to_share[100]; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
+	int* array_to_share {new int[100]}; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
+	
+	SparseArrayRefAnyTest() : DataRefAnyTest()
+	{
+		EXPECT_CALL(*this->mocked_datatype, delete_data(::testing::_))
+		.Times(1);
+		m_tested_ref->reset();
+		
+		for (int i = 0; i < 100; i++) {
+			array_to_share[i] = i;
+		}
+		
+		m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void* ptr){operator delete (ptr);}, datatype->clone_type(), true, true}};
+	}
+	
+	Datatype_uptr datatype {
+		new Array_datatype
+		{
+			Datatype_uptr {
+				new Array_datatype
+				{
+					Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+					10,
+					3,
+					4
+				}
+			},
+			10,
+			3,
+			4
+		}
+	};
 };
-*/
 
 /*
  * Name:                SparseArrayRefAnyTest.checkDeepCopy
@@ -428,15 +425,175 @@ struct SparseArrayRefAnyTest : public DataRefAnyTest {
  * Description:         Test checks if correct deep copy is created
  *                      on sparse array.
  */
-/* NOT SUPPORTED
-TEST_F(SparseArrayRefAnyTest, checkDeepCopy) {
-    Ref_r changed_ref(*this->m_tested_ref);
-    ASSERT_TRUE(changed_ref);
-
-    Ref_rw cloned_ref(changed_ref.copy());
-    int* cloned_array = static_cast<int*>(cloned_ref.get());
-    for (int i = 0; i < 100; i++) {
-        ASSERT_EQ(this->array_to_share[i], cloned_array[i]);
-    }
+TEST_F(SparseArrayRefAnyTest, checkDeepCopy)
+{
+	Ref_r changed_ref(*this->m_tested_ref);
+	ASSERT_TRUE(changed_ref);
+	
+	Ref_r cloned_ref(changed_ref.copy());
+	const int* cloned_array = static_cast<const int*>(cloned_ref.get());
+	for (int i = 0; i < 16; i++) {
+		std::cerr << i << ": " << cloned_array[i] << std::endl;
+		ASSERT_EQ(this->array_to_share[(i/4 + 3)*10 + (i%4)+3], cloned_array[i]);
+	}
 }
-*/
+
+/*
+ * Struct prepared for DenseRecordRefAnyTest.
+ */
+struct DenseRecordRefAnyTest : public DataRefAnyTest {
+	struct Struct_def {
+		char char_array[25];    //disp = 0
+		long long_scalar;       //disp = 32
+		int int_scalar;         //disp = 40
+	}; //sizeof = 48
+	
+	Struct_def* record_to_share = new Struct_def;
+	
+	DenseRecordRefAnyTest() : DataRefAnyTest()
+	{
+		EXPECT_CALL(*this->mocked_datatype, delete_data(::testing::_))
+		.Times(1);
+		DataRefAnyTest::m_tested_ref->reset();
+		
+		for (int i = 0; i < 25; i++) {
+			record_to_share->char_array[i] = i;
+		}
+		record_to_share->long_scalar = 10;
+		record_to_share->int_scalar = -10;
+		
+		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype->clone_type(), true, true}
+		};
+	}
+	
+	vector<Record_datatype::Member> get_members()
+	{
+		return  {
+			Record_datatype::Member{
+				offsetof(Struct_def, char_array),
+				Datatype_uptr {
+					new Array_datatype
+					{
+						Datatype_uptr{new Scalar_datatype {Scalar_kind::UNSIGNED, sizeof(char)}},
+						25
+					}
+				},
+				"char_array"
+			},
+			Record_datatype::Member{
+				offsetof(Struct_def, long_scalar),
+				Datatype_uptr {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+				"long_scalar"
+			},
+			Record_datatype::Member{
+				offsetof(Struct_def, int_scalar),
+				Datatype_uptr {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+				"int_scalar"
+			}
+		};
+	}
+	
+	Datatype_uptr datatype { new Record_datatype {get_members(), sizeof(Struct_def)} };
+};
+
+TEST_F(DenseRecordRefAnyTest, checkDeepCopy)
+{
+	Ref_r changed_ref(*this->m_tested_ref);
+	ASSERT_TRUE(changed_ref);
+	
+	Ref_r cloned_ref(changed_ref.copy());
+	const Struct_def* cloned_array = static_cast<const Struct_def*>(cloned_ref.get());
+	for (int i = 0; i < 25; i++) {
+		ASSERT_EQ(cloned_array->char_array[i], i);
+	}
+	ASSERT_EQ(cloned_array->long_scalar, 10);
+	ASSERT_EQ(cloned_array->int_scalar, -10);
+}
+
+/*
+ * Struct prepared for SparseRecordRefAnyTest.
+ */
+struct SparseRecordRefAnyTest : public DataRefAnyTest {
+	struct Sparse_struct_def {
+		char char_array[25];    //disp = 0 //buffer: 5 x 5; data: 3 x 3; start: (1, 1)
+		long long_scalar;       //disp = 32
+		int int_scalar;         //disp = 40
+	}; //sizeof = 48
+	
+	struct Dense_struct_def {
+		char char_array[9];     //disp = 0 //buffer: 3 x 3; data: 3 x 3;
+		long long_scalar;       //disp = 24
+		int int_scalar;         //disp = 28
+	}; //sizeof = 32
+	
+	Sparse_struct_def* record_to_share = new Sparse_struct_def;
+	
+	SparseRecordRefAnyTest() : DataRefAnyTest()
+	{
+		EXPECT_CALL(*this->mocked_datatype, delete_data(::testing::_))
+		.Times(1);
+		DataRefAnyTest::m_tested_ref->reset();
+		
+		for (int i = 0; i < 25; i++) {
+			record_to_share->char_array[i] = i;
+		}
+		record_to_share->long_scalar = 10;
+		record_to_share->int_scalar = -10;
+		
+		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype->clone_type(), true, true}
+		};
+	}
+	
+	vector<Record_datatype::Member> get_members()
+	{
+		return  {
+			Record_datatype::Member{
+				offsetof(Sparse_struct_def, char_array),
+				Datatype_uptr {
+					new Array_datatype
+					{
+						Datatype_uptr {
+							new Array_datatype
+							{
+								Datatype_uptr{new Scalar_datatype {Scalar_kind::UNSIGNED, sizeof(char)}},
+								5,
+								1,
+								3
+							}
+						},
+						5,
+						1,
+						3
+					}
+				},
+				"char_array"
+			},
+			Record_datatype::Member{
+				offsetof(Sparse_struct_def, long_scalar),
+				Datatype_uptr {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+				"long_scalar"
+			},
+			Record_datatype::Member{
+				offsetof(Sparse_struct_def, int_scalar),
+				Datatype_uptr {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+				"int_scalar"
+			}
+		};
+	}
+	
+	Datatype_uptr datatype { new Record_datatype {get_members(), sizeof(Sparse_struct_def)} };
+};
+
+TEST_F(SparseRecordRefAnyTest, checkDeepCopy)
+{
+	Ref_r changed_ref(*this->m_tested_ref);
+	ASSERT_TRUE(changed_ref);
+	
+	Ref_r cloned_ref(changed_ref.copy());
+	const Dense_struct_def* cloned_array = static_cast<const Dense_struct_def*>(cloned_ref.get());
+	for (int i = 0; i < 9; i++) {
+		ASSERT_EQ(cloned_array->char_array[i], (i/3+1)*5 + i%3 + 1);
+	}
+	ASSERT_EQ(cloned_array->long_scalar, 10);
+	ASSERT_EQ(cloned_array->int_scalar, -10);
+}

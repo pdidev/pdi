@@ -75,6 +75,28 @@ public:
 	 */
 	virtual size_t alignment() const = 0;
 	
+	/**
+	 * Tells if data can be copied by memcpy()
+	 *
+	 * \return true if data is POD, false otherwise
+	 */
+	virtual bool is_POD() const = 0;
+	
+	/**
+	 * Creates a deep copy of data
+	 *
+	 * \param[in,out] to the pointer to the alocated memory to fill; this pointer moves along with writing data
+	 * \param[in] from the pointer to the copied data
+	 */
+	virtual void copy_data(void*& to, const void* from) const = 0;
+	
+	/**
+	 * Function used to delete the data behind the datatype. This should not deallocate the memory.
+	 *
+	 * \param[in] pointer to the data to free
+	 */
+	virtual void delete_data(void* ptr) const = 0;
+	
 };
 
 } // namespace PDI

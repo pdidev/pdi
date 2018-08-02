@@ -110,7 +110,7 @@ size_t Array_datatype::datasize() const
 
 size_t Array_datatype::buffersize() const
 {
-	return m_size * m_subtype->datasize();
+	return m_size * m_subtype->buffersize();
 }
 
 size_t Array_datatype::alignment() const
@@ -118,5 +118,52 @@ size_t Array_datatype::alignment() const
 	return m_subtype->alignment();
 }
 
+bool Array_datatype::is_POD() const
+{
+	return dense() && m_subtype->is_POD();
+}
+
+void Array_datatype::copy_data(void*& to, const void* from) const
+{
+	//need to align to the aligment of subtype (at some point it will be scalar or record)
+	auto space_to_align = alignment();
+	//size = 0, because we know that 'to' points to allocated memory
+	to = std::align(alignment(), 0, to, space_to_align);
+	if (to == nullptr) {
+		throw Error{PDI_ERR_IMPL, "Could not align the array datatype"};
+	}
+	
+	if (is_POD()) {
+		//dense copy
+		memcpy(to, from, buffersize());
+		to = reinterpret_cast<uint8_t*>(to) + buffersize();
+		return;
+	}
+	
+	auto subtype_buffersize = subtype().buffersize();
+	const uint8_t* updated_from_ptr = (start() * subtype_buffersize) + reinterpret_cast<const uint8_t*>(from);
+	
+	if (subtype().is_POD()) {
+		//make a dense copy of subarray
+		memcpy(to, updated_from_ptr, datasize());
+		to = reinterpret_cast<uint8_t*>(to) + datasize();
+	} else {
+		//not POD copy
+		for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
+			subtype().copy_data(to, updated_from_ptr);
+			updated_from_ptr += subtype_buffersize;
+		}
+	}
+}
+
+void Array_datatype::delete_data(void* ptr) const
+{
+	if (!subtype().is_POD()) {
+		auto subtype_buffersize = subtype().buffersize();
+		for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
+			subtype().delete_data(reinterpret_cast<uint8_t*>(ptr) + subtype_no*subtype_buffersize);
+		}
+	}
+}
 
 } // namespace PDI

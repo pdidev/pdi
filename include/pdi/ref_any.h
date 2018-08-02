@@ -95,7 +95,10 @@ protected:
 		
 		~Referenced()
 		{
-			if (m_buffer) m_delete(this->m_buffer);
+			if (m_buffer) {
+				m_type->delete_data(m_buffer);
+				m_delete(m_buffer);
+			}
 			assert(!m_owners);
 			assert(m_read_locks == 0 || m_read_locks == 1);
 			assert(m_write_locks == 0 || m_write_locks == 1);

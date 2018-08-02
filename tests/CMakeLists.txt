@@ -46,6 +46,13 @@ add_test(NAME PDI_test_02_run COMMAND PDI_test_02 "${CMAKE_CURRENT_SOURCE_DIR}/P
 set_property(TEST PDI_test_02_run APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/user_code/")
 
 ###############
+#   TEST 03   #
+###############
+add_executable(PDI_test_03 PDI_test_03.c)
+target_link_libraries(PDI_test_03 pdi)
+add_test(NAME PDI_test_03_run COMMAND PDI_test_03 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_03.yml")
+
+###############
 # UNIT TESTS  #
 ###############
 if("${USE_SYSTEM_GTEST}")

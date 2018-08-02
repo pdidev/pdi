@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <string>
 
@@ -100,6 +101,27 @@ size_t Scalar_datatype::alignment() const
 {
 	return m_align;
 }
+
+bool Scalar_datatype::is_POD() const
+{
+	return true;
+}
+
+void Scalar_datatype::copy_data(void*& to, const void* from) const
+{
+	;
+	auto space_to_align = alignment();
+	//size = 0, because we know that 'to' points to allocated memory
+	to = std::align(alignment(), 0, to, space_to_align);
+	if (to == nullptr) {
+		throw Error{PDI_ERR_IMPL, "Could not align the scalar datatype"};
+	}
+	
+	memcpy(to, from, buffersize());
+	to = reinterpret_cast<uint8_t*>(to) + buffersize();
+}
+
+void Scalar_datatype::delete_data(void*) const {}
 
 } // namespace PDI
 

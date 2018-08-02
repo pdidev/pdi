@@ -41,134 +41,20 @@
 
 namespace PDI {
 
-using std::map;
-using std::make_pair;
-using std::memcpy;
-using std::move;
-using std::unique_ptr;
-using std::vector;
-
-
-namespace {
-
-struct Data_layout {
-	/// number of time to repeat the content
-	size_t m_repeat;
-	
-	/// offset=>subcontent or 1 byte if empty
-	map<size_t, Data_layout> m_subcontent;
-	
-	/// Size of the repeated content including empty space
-	size_t m_size;
-	
-	/// number of bits that should be null in an address for alignment
-	uint8_t m_align;
-	
-	/** Copy a buffer whose layout is described by this into a sparse equivalent
-	 * \param to the adress at which to write the dense copy
-	 * \param from the adress from which to copy
-	 * \return the address following the just copied data
-	 */
-	uint8_t* copy(uint8_t* to, const uint8_t* from)
-	{
-		uint64_t align_mask = (1 << m_align)-1;
-		to = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(to) + align_mask) & ~align_mask);
-		if (m_subcontent.empty() && 1 == m_size) { // optimize for dense blocks
-			memcpy(to, from, m_repeat);
-			return static_cast<uint8_t*>(to) + m_repeat;
-		}
-		for (size_t ii = 0; ii < m_repeat; ++ii) {
-			if (m_subcontent.empty()) {   // copy one byte
-				*to++ = *from;
-			}
-			for (auto&& mem : m_subcontent) {
-				to = mem.second.copy(to, from + mem.first);
-			}
-			from += m_size;
-		}
-		return to;
-	}
-};
-
-Data_layout desc(const Datatype& type)
-{
-	if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-		return {scalar_type->datasize(), {}, 1, static_cast<uint8_t>(scalar_type->alignment())};
-	}
-	if (auto&& array_type = dynamic_cast<const Array_datatype*>(&type)) {
-		Data_layout inner = desc(array_type->subtype());
-		size_t subsize = array_type->subsize();
-		size_t size = array_type->size();
-		if (subsize == size) {   // dense array
-			inner.m_repeat *= subsize;
-			return inner;
-		} else { // sparse array
-			size_t buffer_size = inner.m_size * inner.m_repeat * size; // the contained buffer size is one element times the buffer size
-			inner.m_repeat *= subsize; // repeat the content as required
-			return {1, {make_pair(inner.m_size* inner.m_repeat * array_type->start(), move(inner))}, buffer_size, inner.m_align};
-		}
-	}
-	if (auto&& record_type = dynamic_cast<const Record_datatype*>(&type)) {
-		if (record_type->members().size() == 1) {   // spurious optim when we have just a potentially sparsified version of the content
-			Data_layout inner = desc(record_type->members().front().type());
-			size_t offset = record_type->members().front().displacement();
-			size_t buffersize = record_type->buffersize();
-			if (inner.m_repeat == 1) {   // we can sparsify by adding the offset to all subcontent
-				Data_layout result = {1, {}, record_type->buffersize(), inner.m_align};
-				for (auto&& sub : inner.m_subcontent) {
-					result.m_subcontent.emplace(sub.first + offset, move(sub.second)); // add the offset to all members
-				}
-				return result;
-			}
-			return {1, {make_pair(offset, move(inner))}, buffersize, inner.m_align};
-		}
-		Data_layout result = {1, {}, record_type->buffersize(), 0 };
-		for (auto&& mem : record_type->members()) {
-			Data_layout mem_layout = desc(mem.type());
-			if ( mem_layout.m_align > result.m_align ) result.m_align = mem_layout.m_align;
-			if (mem_layout.m_repeat > 1) {
-				result.m_subcontent.emplace(mem.displacement(), move(mem_layout));
-			} else {
-				for (auto&& mem_subctnt : mem_layout.m_subcontent) {
-					mem_layout.m_subcontent.emplace(make_pair(mem.displacement() + mem_subctnt.first, move(mem_subctnt.second)));
-				}
-			}
-		}
-		return result;
-	}
-	assert(false && "Unsupported data type");
-}
-
-} // namespace <anonymous>
-
 Ref Ref_base::do_copy(Ref_r ref)
 {
-	if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&ref.type())) {
-		if (scalar_type->kind() == Scalar_kind::MPI_COMM) {
-			const MPI_Comm* comm_old = static_cast<const MPI_Comm*>(ref.get());
-			MPI_Comm* comm_copy = new MPI_Comm;
-			MPI_Comm_dup(*comm_old, comm_copy);
-			auto deleter = [](void* ptr) {
-				auto comm_ptr = static_cast<MPI_Comm*>(ptr);
-				MPI_Comm_free(comm_ptr);
-				delete comm_ptr;
-			};
-			return Ref {comm_copy, deleter, ref.type().clone_type(), true, true};
-		}
-	}
-	
-	Data_layout ref_desc = desc(ref.type());
-	uint64_t align_mask = (1 << ref_desc.m_align)-1;
-	void* newbuffer{operator new (ref_desc.m_size * ref_desc.m_repeat+align_mask)};
+	Datatype_uptr densified_type {ref.type().densify()};
+	void* newbuffer = operator new (densified_type->buffersize());
 	try {
-		uint8_t* to = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(newbuffer) + align_mask) & ~align_mask);
-		ref_desc.copy(to, static_cast<const uint8_t*>(ref.get()));
-		return Ref {to, [newbuffer](void*){::operator delete (newbuffer);}, ref.type().densify(), true, true};
+		void* newbuffer_temp = newbuffer;
+		ref.type().copy_data(newbuffer_temp, ref.get());
 	} catch (...) {
 		::operator delete (newbuffer);
 		throw;
 	}
+	return Ref {newbuffer, [](void* v){operator delete (v);}, std::move(densified_type), true, true};
 }
+
 
 const Datatype& Ref_base::type() const noexcept
 {

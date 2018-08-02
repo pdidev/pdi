@@ -22,49 +22,41 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_MOCK_H_
-#define PDI_DATATYPE_MOCK_H_
+#include <assert.h>
+#include <mpi.h>
 
-#include <gmock/gmock.h>
+#include <paraconf.h>
+#include <pdi.h>
 
-#include <pdi/datatype.h>
-#include <pdi/pdi_fwd.h>
-
-struct MockDatatype : public PDI::Datatype {
-	PDI::Datatype_template_uptr clone() const override
-	{
-		return PDI::Datatype_template_uptr{clone_proxy()};
+void expose_int_array()
+{
+	int sparse_array[1000]; //buffer: 10 x 10 x 10; data: 3 x 4 x 5; start: (1, 2, 3)
+	int* dense_array; //buffer: 3 x 4 x 5
+	
+	for (int i = 0; i < 1000; i++) {
+		sparse_array[i] = i;
 	}
 	
-	PDI::Datatype_uptr clone_type() const override
-	{
-		return PDI::Datatype_uptr{clone_type_proxy()};
+	// metadata expose creates a dense copy inside PDI
+	PDI_expose("my_array", sparse_array, PDI_OUT);
+	PDI_access("my_array", (void**)&dense_array, PDI_IN);
+	
+	for (int i = 0; i < 60; i++) {
+		assert(dense_array[i] == (i/12 + 3)*100 + ((i/3)%4 + 2)*10 + i%3 + 1);
 	}
-	
-	PDI::Datatype_uptr densify() const override
-	{
-		return PDI::Datatype_uptr{densify_proxy()};
-	}
-	
-	PDI::Datatype_uptr evaluate(PDI::Context&) const override
-	{
-		return PDI::Datatype_uptr{evaluate_proxy()};
-	}
-	
-	MOCK_CONST_METHOD0(dense, bool());
-	MOCK_CONST_METHOD0(datasize, size_t());
-	MOCK_CONST_METHOD0(buffersize, size_t());
-	MOCK_CONST_METHOD0(alignment, size_t());
-	
-	//proxies are needed to work with unique_ptr<>
-	MOCK_CONST_METHOD0(clone_type_proxy, Datatype*());
-	MOCK_CONST_METHOD0(clone_proxy, Datatype_template*());
-	MOCK_CONST_METHOD0(densify_proxy, Datatype*());
-	MOCK_CONST_METHOD0(evaluate_proxy, Datatype*());
-	
-	MOCK_CONST_METHOD0(is_POD, bool());
-	MOCK_CONST_METHOD2(copy_data, void(void*& to, const void* from));
-	MOCK_CONST_METHOD1(delete_data, void(void* ptr));
-};
+}
 
-#endif //PDI_DATATYPE_MOCK_H_
+int main(int argc, char* argv[])
+{
+	MPI_Init(&argc, &argv);
+	assert(argc == 2 && "Needs 1 single arg: config file");
+	PC_tree_t conf = PC_parse_path(argv[1]);
+	MPI_Comm world = MPI_COMM_WORLD;
+	PDI_init(conf, &world);
+	
+	expose_int_array();
+	
+	PDI_finalize();
+	MPI_Finalize();
+	return 0;
+}
