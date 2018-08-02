@@ -204,13 +204,9 @@ struct user_code_plugin: Plugin {
 		for (int map_id = 0; map_id < nb_events; map_id++) {
 			string event_name = to_string(PC_get(on_event, "{%d}", map_id));
 			PC_tree_t event = PC_get(on_event, "<%d>", map_id);
-			if (!PC_status(PC_get(event, ".call"))) {
-				events_uc.emplace(event_name, Trigger {to_string(PC_get(event, ".call")), PC_get(event, ".params")});
-			} else {
-				int nb_call = len(event, 0);
-				for (int call_id = 0; call_id < nb_call; ++call_id) {
-					events_uc.emplace(event_name, Trigger {to_string(PC_get(event, "{%d}", call_id)), PC_get(event, "<%d>", call_id)});
-				}
+			int nb_call = len(event, 0);
+			for (int call_id = 0; call_id < nb_call; ++call_id) {
+				events_uc.emplace(event_name, Trigger {to_string(PC_get(event, "{%d}", call_id)), PC_get(event, "<%d>", call_id)});
 			}
 		}
 		
@@ -220,13 +216,9 @@ struct user_code_plugin: Plugin {
 		for (int map_id = 0; map_id < nb_data; map_id++) {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
 			PC_tree_t data = PC_get(on_data, "<%d>", map_id);
-			if (!PC_status(PC_get(data, ".call"))) {
-				events_uc.emplace(data_name, Trigger {to_string(PC_get(data, ".call")), PC_get(data, ".params")});
-			} else {
-				int nb_call = len(data, 0);
-				for (int call_id = 0; call_id < nb_call; ++call_id) {
-					events_uc.emplace(data_name, Trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)});
-				}
+			int nb_call = len(data, 0);
+			for (int call_id = 0; call_id < nb_call; ++call_id) {
+				events_uc.emplace(data_name, Trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)});
 			}
 		}
 		ctx.logger()->info("(User-code) Plugin loaded successfully");

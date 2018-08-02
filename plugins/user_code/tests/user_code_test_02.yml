@@ -7,5 +7,4 @@ plugins:
   user_code:
     on_event:
       testing:      # named event that triggers the call
-        call:  test # function to call
-        params: {var_in: $input, var_out: $output } # var_in=input, var_out=output
+        test: {var_in: $input, var_out: $output } # var_in=input, var_out=output

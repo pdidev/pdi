@@ -7,4 +7,4 @@ plugins:
   user_code:
     on_event:
       testing:      # named event that triggers the call
-        call:  test # function to call
+        test: {} # function to call
