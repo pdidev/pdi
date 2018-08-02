@@ -109,7 +109,6 @@ bool Scalar_datatype::is_POD() const
 
 void Scalar_datatype::copy_data(void*& to, const void* from) const
 {
-	;
 	auto space_to_align = alignment();
 	//size = 0, because we know that 'to' points to allocated memory
 	to = std::align(alignment(), 0, to, space_to_align);

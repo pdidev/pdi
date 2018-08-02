@@ -55,7 +55,6 @@ Ref Ref_base::do_copy(Ref_r ref)
 	return Ref {newbuffer, [](void* v){operator delete (v);}, std::move(densified_type), true, true};
 }
 
-
 const Datatype& Ref_base::type() const noexcept
 {
 	if (!m_content || !m_content->m_buffer) return UNDEF_TYPE;
