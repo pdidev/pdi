@@ -42,7 +42,7 @@ void expose_int_array()
 	PDI_access("my_array", (void**)&dense_array, PDI_IN);
 	
 	for (int i = 0; i < 60; i++) {
-		assert(dense_array[i] == (i/12 + 3)*100 + ((i/3)%4 + 2)*10 + i%3 + 1);
+		assert(dense_array[i] == (i/20 + 1)*100 + (i/5 % 4 + 2)*10 + i%5 + 3);
 	}
 }
 

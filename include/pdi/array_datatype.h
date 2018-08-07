@@ -82,11 +82,11 @@ public:
 	
 	size_t alignment() const override;
 	
-	bool is_POD() const override;
+	bool simple() const override;
 	
-	void copy_data(void*& to, const void* from) const override;
+	void* data_dense_copy(void* to, const void* from) const override;
 	
-	void delete_data(void* ptr) const override;
+	void destroy_data(void* ptr) const override;
 	
 };
 

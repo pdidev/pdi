@@ -118,50 +118,51 @@ size_t Array_datatype::alignment() const
 	return m_subtype->alignment();
 }
 
-bool Array_datatype::is_POD() const
+bool Array_datatype::simple() const
 {
-	return dense() && m_subtype->is_POD();
+	return dense() && m_subtype->simple();
 }
 
-void Array_datatype::copy_data(void*& to, const void* from) const
+void* Array_datatype::data_dense_copy(void* to, const void* from) const
 {
-	//need to align to the aligment of subtype (at some point it will be scalar or record)
-	auto space_to_align = alignment();
-	//size = 0, because we know that 'to' points to allocated memory
-	to = std::align(alignment(), 0, to, space_to_align);
-	if (to == nullptr) {
-		throw Error{PDI_ERR_IMPL, "Could not align the array datatype"};
-	}
-	
-	if (is_POD()) {
+	if (simple()) {
 		//dense copy
 		memcpy(to, from, buffersize());
 		to = reinterpret_cast<uint8_t*>(to) + buffersize();
-		return;
+		return to;
 	}
 	
 	auto subtype_buffersize = subtype().buffersize();
 	const uint8_t* updated_from_ptr = (start() * subtype_buffersize) + reinterpret_cast<const uint8_t*>(from);
 	
-	if (subtype().is_POD()) {
-		//make a dense copy of subarray
+	if (subtype().simple()) {
+		//make a dense copy of scalar subarray
 		memcpy(to, updated_from_ptr, datasize());
 		to = reinterpret_cast<uint8_t*>(to) + datasize();
+		return to;
 	} else {
-		//not POD copy
+		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
+		auto space_to_align = subtype().alignment();
+		//size = 0, because we know that 'to' points to allocated memory
+		to = std::align(subtype().alignment(), 0, to, space_to_align);
+		if (to == nullptr) {
+			throw Error{PDI_ERR_IMPL, "Could not align the array datatype"};
+		}
+		
 		for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
-			subtype().copy_data(to, updated_from_ptr);
+			to = subtype().data_dense_copy(to, updated_from_ptr);
 			updated_from_ptr += subtype_buffersize;
 		}
+		return to;
 	}
 }
 
-void Array_datatype::delete_data(void* ptr) const
+void Array_datatype::destroy_data(void* ptr) const
 {
-	if (!subtype().is_POD()) {
-		auto subtype_buffersize = subtype().buffersize();
+	if (!subtype().simple()) {
 		for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
-			subtype().delete_data(reinterpret_cast<uint8_t*>(ptr) + subtype_no*subtype_buffersize);
+			auto offset = (start() + subtype_no) * subtype().buffersize();
+			subtype().destroy_data(reinterpret_cast<uint8_t*>(ptr) + offset);
 		}
 	}
 }

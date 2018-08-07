@@ -102,25 +102,19 @@ size_t Scalar_datatype::alignment() const
 	return m_align;
 }
 
-bool Scalar_datatype::is_POD() const
+bool Scalar_datatype::simple() const
 {
 	return true;
 }
 
-void Scalar_datatype::copy_data(void*& to, const void* from) const
+void* Scalar_datatype::data_dense_copy(void* to, const void* from) const
 {
-	auto space_to_align = alignment();
-	//size = 0, because we know that 'to' points to allocated memory
-	to = std::align(alignment(), 0, to, space_to_align);
-	if (to == nullptr) {
-		throw Error{PDI_ERR_IMPL, "Could not align the scalar datatype"};
-	}
-	
 	memcpy(to, from, buffersize());
 	to = reinterpret_cast<uint8_t*>(to) + buffersize();
+	return to;
 }
 
-void Scalar_datatype::delete_data(void*) const {}
+void Scalar_datatype::destroy_data(void*) const {}
 
 } // namespace PDI
 

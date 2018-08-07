@@ -78,24 +78,26 @@ public:
 	/**
 	 * Tells if data can be copied by memcpy()
 	 *
-	 * \return true if data is POD, false otherwise
+	 * \return true if data can be copied by memcpy, false otherwise
 	 */
-	virtual bool is_POD() const = 0;
+	virtual bool simple() const = 0;
 	
 	/**
-	 * Creates a deep copy of data
+	 * Creates a dense deep copy of data
 	 *
-	 * \param[in,out] to the pointer to the alocated memory to fill; this pointer moves along with writing data
+	 * \param[in] to the pointer to the alocated memory to fill
 	 * \param[in] from the pointer to the copied data
+	 *
+	 * \return updated `to' pointer
 	 */
-	virtual void copy_data(void*& to, const void* from) const = 0;
+	virtual void* data_dense_copy(void* to, const void* from) const = 0;
 	
 	/**
 	 * Function used to delete the data behind the datatype. This should not deallocate the memory.
 	 *
 	 * \param[in] pointer to the data to free
 	 */
-	virtual void delete_data(void* ptr) const = 0;
+	virtual void destroy_data(void* ptr) const = 0;
 	
 };
 

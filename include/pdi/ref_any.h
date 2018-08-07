@@ -96,7 +96,7 @@ protected:
 		~Referenced()
 		{
 			if (m_buffer) {
-				m_type->delete_data(m_buffer);
+				m_type->destroy_data(m_buffer);
 				m_delete(m_buffer);
 			}
 			assert(!m_owners);

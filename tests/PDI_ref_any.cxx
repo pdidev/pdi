@@ -386,7 +386,7 @@ struct SparseArrayRefAnyTest : public DataRefAnyTest {
 	
 	SparseArrayRefAnyTest() : DataRefAnyTest()
 	{
-		EXPECT_CALL(*this->mocked_datatype, delete_data(::testing::_))
+		EXPECT_CALL(*this->mocked_datatype, destroy_data(::testing::_))
 		.Times(1);
 		m_tested_ref->reset();
 		
@@ -452,7 +452,7 @@ struct DenseRecordRefAnyTest : public DataRefAnyTest {
 	
 	DenseRecordRefAnyTest() : DataRefAnyTest()
 	{
-		EXPECT_CALL(*this->mocked_datatype, delete_data(::testing::_))
+		EXPECT_CALL(*this->mocked_datatype, destroy_data(::testing::_))
 		.Times(1);
 		DataRefAnyTest::m_tested_ref->reset();
 		
@@ -530,7 +530,7 @@ struct SparseRecordRefAnyTest : public DataRefAnyTest {
 	
 	SparseRecordRefAnyTest() : DataRefAnyTest()
 	{
-		EXPECT_CALL(*this->mocked_datatype, delete_data(::testing::_))
+		EXPECT_CALL(*this->mocked_datatype, destroy_data(::testing::_))
 		.Times(1);
 		DataRefAnyTest::m_tested_ref->reset();
 		

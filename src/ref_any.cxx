@@ -44,10 +44,11 @@ namespace PDI {
 Ref Ref_base::do_copy(Ref_r ref)
 {
 	Datatype_uptr densified_type {ref.type().densify()};
-	void* newbuffer = operator new (densified_type->buffersize());
+	
+	//+ (densified_type->alignment() - 1) <- we want to make sure that we fit the data even though the worst alignment occur
+	void* newbuffer = operator new (densified_type->buffersize() + (densified_type->alignment() - 1));
 	try {
-		void* newbuffer_temp = newbuffer;
-		ref.type().copy_data(newbuffer_temp, ref.get());
+		ref.type().data_dense_copy(newbuffer, ref.get());
 	} catch (...) {
 		::operator delete (newbuffer);
 		throw;

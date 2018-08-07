@@ -161,55 +161,44 @@ size_t Record_datatype::alignment() const
 	return result;
 }
 
-bool Record_datatype::is_POD() const
+bool Record_datatype::simple() const
 {
+	if (!dense()) return false;
 	for (auto&& member : m_members) {
-		if (!member.type().is_POD()) return false;
+		if (!member.type().simple()) return false;
 	}
 	return true;
 }
 
-void Record_datatype::copy_data(void*& to, const void* from) const
+void* Record_datatype::data_dense_copy(void* to, const void* from) const
 {
-	auto space_to_align = alignment();
-	//size = 0, because we know that 'to' points to allocated memory
-	to = std::align(alignment(), 0, to, space_to_align);
-	if (to == nullptr) {
-		throw Error{PDI_ERR_IMPL, "Could not align the record datatype"};
-	}
-	
-	if (is_POD()) {
+	if (simple()) {
 		//dense copy
 		memcpy(to, from, buffersize());
 		to = reinterpret_cast<uint8_t*>(to) + buffersize();
-		return;
+		return to;
 	}
 	
 	for (auto&& member : members()) {
-		space_to_align = alignment();
+		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
+		auto space_to_align = member.type().alignment();
 		//size = 0, because we know that to points to allocated memory
-		to = std::align(alignment(), 0, to, space_to_align);
+		to = std::align(member.type().alignment(), 0, to, space_to_align);
 		if (to == nullptr) {
 			throw Error{PDI_ERR_IMPL, "Could not align the record datatype member: %s", member.name().c_str()};
 		}
 		const uint8_t* updated_from_ptr = reinterpret_cast<const uint8_t*>(from) + member.displacement();
 		
-		if (member.type().is_POD()) {
-			//make a dense copy of member
-			memcpy(to, updated_from_ptr, member.type().datasize());
-			to = reinterpret_cast<uint8_t*>(to) + member.type().datasize();
-		} else {
-			//not POD copy
-			member.type().copy_data(to, updated_from_ptr);
-		}
+		to = member.type().data_dense_copy(to, updated_from_ptr);
 	}
+	return to;
 }
 
-void Record_datatype::delete_data(void* ptr) const
+void Record_datatype::destroy_data(void* ptr) const
 {
 	for (auto&& member : members()) {
-		if (!member.type().is_POD()) {
-			member.type().delete_data(reinterpret_cast<uint8_t*>(ptr) + member.displacement());
+		if (!member.type().simple()) {
+			member.type().destroy_data(reinterpret_cast<uint8_t*>(ptr) + member.displacement());
 		}
 	}
 }
