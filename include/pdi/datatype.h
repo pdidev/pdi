@@ -76,9 +76,9 @@ public:
 	virtual size_t alignment() const = 0;
 	
 	/**
-	 * Tells if data can be copied by memcpy()
+	 * Tells if data can be copied as bytes (if type is dense) and doesn't need a destroyer
 	 *
-	 * \return true if data can be copied by memcpy, false otherwise
+	 * \return true if data has trivial copier and destroyer, false otherwise
 	 */
 	virtual bool simple() const = 0;
 	

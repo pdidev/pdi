@@ -163,7 +163,6 @@ size_t Record_datatype::alignment() const
 
 bool Record_datatype::simple() const
 {
-	if (!dense()) return false;
 	for (auto&& member : m_members) {
 		if (!member.type().simple()) return false;
 	}
@@ -172,7 +171,7 @@ bool Record_datatype::simple() const
 
 void* Record_datatype::data_dense_copy(void* to, const void* from) const
 {
-	if (simple()) {
+	if (simple() && dense()) {
 		//dense copy
 		memcpy(to, from, buffersize());
 		to = reinterpret_cast<uint8_t*>(to) + buffersize();

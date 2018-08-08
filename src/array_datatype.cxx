@@ -120,12 +120,12 @@ size_t Array_datatype::alignment() const
 
 bool Array_datatype::simple() const
 {
-	return dense() && m_subtype->simple();
+	return m_subtype->simple();
 }
 
 void* Array_datatype::data_dense_copy(void* to, const void* from) const
 {
-	if (simple()) {
+	if (simple() && dense()) {
 		//dense copy
 		memcpy(to, from, buffersize());
 		to = reinterpret_cast<uint8_t*>(to) + buffersize();
@@ -135,7 +135,7 @@ void* Array_datatype::data_dense_copy(void* to, const void* from) const
 	auto subtype_buffersize = subtype().buffersize();
 	const uint8_t* updated_from_ptr = (start() * subtype_buffersize) + reinterpret_cast<const uint8_t*>(from);
 	
-	if (subtype().simple()) {
+	if (subtype().simple() && subtype().dense()) {
 		//make a dense copy of scalar subarray
 		memcpy(to, updated_from_ptr, datasize());
 		to = reinterpret_cast<uint8_t*>(to) + datasize();
