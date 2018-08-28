@@ -28,118 +28,298 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi LANGUAGES CXX C)
+
+# The header project
+
+project(PDISUPER LANGUAGES)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 
 # Build options
-option(BUILD_SHARED_LIBS       "Build pdi as a shared library instead of a static one" ON)
-option(ENABLE_MPI              "Build MPI plug-in." ON )
-option(ENABLE_DECL_HDF5        "Build HDF5 based decl'HDF5 plug-in." ON)
-option(ENABLE_DECL_SION        "Build SIONlib plug-in." ON )
-option(ENABLE_FORTRAN          "Enable compilation of the Fortran version of the library" ON)
-option(ENABLE_FTI              "Build FTI plug-in." ON)
-option(RUN_EXAMPLES            "Build and run examples during ctest." ON)
-option(USE_SYSTEM_GTEST        "Use an already installed gtest and gmock instead of downloading and building." OFF)
-option(USE_SYSTEM_PARACONF     "Use an already installed paraconf instead of building the embedded one" OFF)
 
-if("${ENABLE_FORTRAN}")
-	enable_language(Fortran)
-endif()
+option(BUILD_DECL_HDF5_PLUGIN        "Build decl'HDF5 plug-in" ON)
+option(BUILD_DECL_SION_PLUGIN        "Build decl'SION plug-in" ON )
+option(BUILD_DOCUMENTATION           "Build documentation" ON)
+option(BUILD_FTI_PLUGIN              "Build FTI plug-in." ON)
+option(BUILD_MPI_PLUGIN              "Build MPI plug-in" ON)
+option(BUILD_SHARED_LIBS             "Build shared libraries rather than static ones" ON)
+option(BUILD_TESTING                 "Build tests" ON)
+option(ENABLE_FORTRAN                "Enable Fortran support" ON)
+set(USE_BPP      SYSTEM CACHE STRING "version of BPP to use, SYSTEM and EMBEDDED can be used")
+set(USE_FTI      SYSTEM CACHE STRING "version of FTI to use, SYSTEM and EMBEDDED can be used")
+set(USE_GTEST    SYSTEM CACHE STRING "version of Gtest to use, SYSTEM and EMBEDDED can be used")
+set(USE_PARACONF SYSTEM CACHE STRING "version of paraconf to use, SYSTEM and EMBEDDED can be used")
+set(USE_SPDLOG   SYSTEM CACHE STRING "version of spdlog to use, SYSTEM and EMBEDDED can be used")
+set(USE_YAML     SYSTEM CACHE STRING "version of yaml to use, SYSTEM and EMBEDDED can be used")
 
-# Because of plugins, we need PIC code
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+## Options handling
 
-# Find dependencies
-set(MPI_LANGS C CXX)
-if("${ENABLE_FORTRAN}")
-	list(APPEND MPI_LANGS Fortran)
-endif()
-find_package(MPI REQUIRED COMPONENTS ${MPI_LANGS})
-find_package(Doxygen OPTIONAL_COMPONENTS dot)
-find_package(Astyle)
-if("${USE_SYSTEM_PARACONF}")
-	find_package(paraconf REQUIRED)
-else()
-	add_subdirectory(vendor/paraconf paraconf)
-endif()
-
-# Enable testing
-include(CTest)
 if("${BUILD_TESTING}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10.0") 
 	message(FATAL_ERROR "Minimum CMake version for tests is 3.10. Please update CMake or turn off testing by adding flag -DBUILD_TESTING=OFF")
 endif()
-
-# Version
-file(READ VERSION pdi_VERSION)
-string(STRIP "${pdi_VERSION}" pdi_VERSION)
-string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${pdi_VERSION}")
-set(pdi_VERSION_MAJOR "${CMAKE_MATCH_1}")
-set(pdi_VERSION_MINOR "${CMAKE_MATCH_2}")
-set(pdi_VERSION_PATCH "${CMAKE_MATCH_3}")
-set(pdi_VERSION_MODIF "${CMAKE_MATCH_5}")
-if("git" STREQUAL "${pdi_VERSION_MODIF}")
-	execute_process(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version-uid" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" OUTPUT_VARIABLE pdi_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT "${BUILD_SHARED_LIBS}") 
+	message(FATAL_ERROR "Building PDI as a static lib is not supported currently")
+endif()
+if("${USE_BPP}" STREQUAL EMBEDDED)
+	set(BPP_PATH "${PDISUPER_SOURCE_DIR}/vendor/bpp-v0.2.6")
+else()
+	set(BPP_PATH "${USE_BPP}")
+endif()
+if("${USE_FTI}" STREQUAL EMBEDDED)
+	set(FTI_PATH "${PDISUPER_SOURCE_DIR}/vendor/fti-1.1")
+else()
+	set(FTI_PATH "${USE_FTI}")
+endif()
+if("${USE_GTEST}" STREQUAL EMBEDDED)
+	set(GTEST_PATH "${PDISUPER_SOURCE_DIR}/vendor/googletest-release-1.8.0")
+else()
+	set(GTEST_PATH "${USE_GTEST}")
+endif()
+if("${USE_PARACONF}" STREQUAL EMBEDDED)
+	set(PARACONF_PATH "${PDISUPER_SOURCE_DIR}/vendor/libparaconf-0.2.1")
+else()
+	set(PARACONF_PATH "${USE_PARACONF}")
+endif()
+if("${USE_SPDLOG}" STREQUAL EMBEDDED)
+	set(SPDLOG_PATH "${PDISUPER_SOURCE_DIR}/vendor/spdlog-1.1.0")
+else()
+	set(SPDLOG_PATH "${USE_SPDLOG}")
+endif()
+if("${USE_YAML}" STREQUAL EMBEDDED)
+	set(YAML_PATH "${PDISUPER_SOURCE_DIR}/vendor/libyaml-0.2.1")
+else()
+	set(YAML_PATH "${USE_YAML}")
 endif()
 
-# Default standard in the project is C99 & C++11
-set(CMAKE_CXX_STANDARD 11)
-set(CXX_STANDARD_REQUIRED TRUE)
-set(CMAKE_C_STANDARD 99)
-set(C_STANDARD_REQUIRED TRUE)
 
-# Main source dir
-add_subdirectory(src/)
+# Includes
+
+include(ExternalProject)
+
+
+# A list of all cache variables to forward to subprojects
+
+list(APPEND CMAKE_PREFIX_PATH "${PDISUPER_BINARY_DIR}/staging" "${PDISUPER_BINARY_DIR}/build-dep")
+list(APPEND CMAKE_BUILD_RPATH "${PDISUPER_BINARY_DIR}/staging/lib")
+get_cmake_property(CACHE_VARIABLES CACHE_VARIABLES)
+set(CMAKE_CACHE_ARGS)
+foreach(CACHE_VARIABLE ${CACHE_VARIABLES})
+	get_property(CACHE_VARIABLE_TYPE CACHE "${CACHE_VARIABLE}" PROPERTY TYPE)
+	if(NOT "${CACHE_VARIABLE_TYPE}" STREQUAL STATIC AND NOT "${CACHE_VARIABLE_TYPE}" STREQUAL INTERNAL)
+		list(APPEND CMAKE_CACHE_ARGS "-D${CACHE_VARIABLE}:${CACHE_VARIABLE_TYPE}=${${CACHE_VARIABLE}}")
+	endif()
+endforeach()
+list(APPEND CMAKE_CACHE_ARGS 
+		"-DCMAKE_BUILD_RPATH:PATH=${CMAKE_BUILD_RPATH}"
+		"-DCMAKE_STAGING_PREFIX:PATH=<INSTALL_DIR>"
+		"-DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}")
+
+set(EP_ENV "$ENV{LD_LIBRARY_PATH}")
+if(NOT "x${EP_ENV}x" STREQUAL "xx")
+	set(EP_ENV ":${EP_ENV}")
+endif()
+set(EP_ENV "LD_LIBRARY_PATH=${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib${EP_ENV}")
+
+
+# Testing
+
+if("${BUILD_TESTING}")
+	enable_testing()
+	set_property(DIRECTORY PROPERTY TEST_INCLUDE_FILE "${PDISUPER_BINARY_DIR}/SubTests.cmake")
+	file(WRITE "${PDISUPER_BINARY_DIR}/SubTests.cmake" 
+"set(ADDPATH [=[${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib]=])\n"
+[===[
+set(LD_LIBRARY_PATH "$ENV{LD_LIBRARY_PATH}")
+if("x${LD_LIBRARY_PATH}x" STREQUAL xx)
+	set(ENV{LD_LIBRARY_PATH} "${ADDPATH}")
+else()
+	set(ENV{LD_LIBRARY_PATH} "${ADDPATH}:${LD_LIBRARY_PATH}")
+endif()
+]===])
+endif()
+function(add_testing EP_NAME)
+	ExternalProject_Get_Property("${EP_NAME}" BINARY_DIR)
+	if("${BUILD_TESTING}")
+		file(APPEND "${PDISUPER_BINARY_DIR}/SubTests.cmake" "subdirs([=[${BINARY_DIR}]=])\n")
+	endif()
+endfunction()
+
+
+# Indentation
+
+add_custom_target(indent)
+function(add_indent_step EP_NAME)
+	if("${CMAKE_GENERATOR}" MATCHES "Make") #< Use recursive make.
+		set(INDENT_COMMAND "\$(MAKE)" indent)
+	else() #< Drive the project with "cmake --build".
+		set(INDENT_COMMAND "${CMAKE_COMMAND}" --build "." --target indent)
+		get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+		if(_isMultiConfig)
+			list(APPEND INDENT_COMMAND --config $<CONFIG>)
+		endif()
+	endif()
+	ExternalProject_Get_Property("${EP_NAME}" BINARY_DIR)
+	ExternalProject_Add_StepTargets("${EP_NAME}" configure)
+	add_custom_command(TARGET indent POST_BUILD
+			COMMAND ${INDENT_COMMAND}
+			WORKING_DIRECTORY "${BINARY_DIR}"
+			COMMENT "Indenting '${EP_NAME}'")
+	add_dependencies(indent "${EP_NAME}-configure")
+endfunction()
+
+
+# Main project
+
+set(PDI_BUILD_COMMAND "${CMAKE_COMMAND}" -E env "${EP_ENV}")
+if("${CMAKE_GENERATOR}" MATCHES "Make") #< Use recursive make.
+	list(APPEND PDI_BUILD_COMMAND "\$(MAKE)")
+else() #< Drive the project with "cmake --build".
+	list(APPEND PDI_BUILD_COMMAND "${CMAKE_COMMAND}" --build ".")
+	get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+	if(_isMultiConfig)
+		list(APPEND PDI_BUILD_COMMAND --config $<CONFIG>)
+	endif()
+endif()
+ExternalProject_Add(PDI
+		PREFIX "${PDISUPER_BINARY_DIR}/pdi"
+		SOURCE_DIR "${PDISUPER_SOURCE_DIR}/src" BUILD_ALWAYS TRUE
+		CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+		BUILD_COMMAND ${PDI_BUILD_COMMAND}
+		INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+add_indent_step(PDI)
+add_testing(PDI)
+
+
+## Main project dependancies
+
+if("${BUILD_TESTING}" AND NOT "${USE_GTEST}" STREQUAL SYSTEM)
+	file(MD5 "${GTEST_PATH}" HASH) #< trick to prevent no-hash warning
+	ExternalProject_Add(GTEST
+			PREFIX "${PDISUPER_BINARY_DIR}/gtest"
+			URL "${GTEST_PATH}" URL_HASH "MD5=${HASH}"
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF" "-DBUILD_SHARED_LIBS:BOOL=OFF" #< set BUILD_SHARED_LIBS=OFF to workaround https://github.com/google/googletest/issues/930
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/build-dep")
+	ExternalProject_Add_StepDependencies(PDI configure GTEST)
+endif()
+
+if("${ENABLE_FORTRAN}" AND NOT "${USE_BPP}" STREQUAL SYSTEM)
+	file(MD5 "${BPP_PATH}" HASH) #< trick to prevent no-hash warning
+	ExternalProject_Add(BPP
+			PREFIX "${PDISUPER_BINARY_DIR}/bpp"
+			URL "${BPP_PATH}" URL_HASH "MD5=${HASH}"
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF"
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/build-dep")
+	ExternalProject_Add_StepDependencies(PDI configure BPP)
+endif()
+
+if(NOT "${USE_PARACONF}" STREQUAL SYSTEM)
+	file(MD5 "${PARACONF_PATH}" HASH) #< trick to prevent no-hash warning
+	ExternalProject_Add(PARACONF
+			PREFIX "${PDISUPER_BINARY_DIR}/paraconf"
+			URL "${PARACONF_PATH}" URL_HASH "MD5=${HASH}"
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE" "-DUSE_SYSTEM_YAML:BOOL=TRUE" "-DBUILD_TESTING:BOOL=OFF"
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+	ExternalProject_Add_StepDependencies(PDI configure PARACONF)
+	if(NOT "${USE_YAML}" STREQUAL SYSTEM)
+		file(MD5 "${YAML_PATH}" HASH) #< trick to prevent no-hash warning
+		ExternalProject_Add(YAML
+				PREFIX "${PDISUPER_BINARY_DIR}/yaml"
+				URL "${YAML_PATH}" URL_HASH "MD5=${HASH}"
+				CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF" "-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
+				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+		add_dependencies(PARACONF YAML)
+	endif()
+endif()
+
+if(NOT "${USE_SPDLOG}" STREQUAL SYSTEM)
+	file(MD5 "${SPDLOG_PATH}" HASH) #< trick to prevent no-hash warning
+	ExternalProject_Add(SPDLOG
+			PREFIX "${PDISUPER_BINARY_DIR}/spdlog"
+			URL "${SPDLOG_PATH}" URL_HASH "MD5=${HASH}"
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF" "-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF" "-DSPDLOG_BUILD_BENCH:BOOL=OFF"
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+	ExternalProject_Add_StepDependencies(PDI configure SPDLOG)
+endif()
+
 
 # The plugins
-add_subdirectory(plugins/test/)
-add_subdirectory(plugins/user_code/)
-if(${ENABLE_MPI})
-	add_subdirectory(plugins/mpi/)
-endif()
-if(${ENABLE_DECL_HDF5})
-	add_subdirectory(plugins/decl_hdf5/)
-endif()
-if(${ENABLE_FTI})
-	add_subdirectory(plugins/fti/)
-endif()
-if(${ENABLE_DECL_SION})
-	add_subdirectory(plugins/decl_sion/)
+
+ExternalProject_Add(TEST_PLUGIN
+		PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-test"
+		SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/test" BUILD_ALWAYS TRUE
+		CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+		INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+		DEPENDS PDI)
+
+ExternalProject_Add(USER_CODE_PLUGIN
+		PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-user_code"
+		SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/user_code" BUILD_ALWAYS TRUE
+		CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+		INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+		DEPENDS PDI)
+add_testing(USER_CODE_PLUGIN)
+
+if("${BUILD_MPI_PLUGIN}")
+	ExternalProject_Add(MPI_PLUGIN
+			PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-mpi"
+			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/mpi" BUILD_ALWAYS TRUE
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+			DEPENDS PDI)
 endif()
 
-# Examples & tests
-if("${BUILD_TESTING}" AND "${RUN_EXAMPLES}") 
-	add_subdirectory(example/)
+if("${BUILD_DECL_HDF5_PLUGIN}")
+	ExternalProject_Add(DECL_HDF5_PLUGIN
+			PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-decl_hdf5"
+			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/decl_hdf5" BUILD_ALWAYS TRUE
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+			DEPENDS PDI)
+	add_testing(DECL_HDF5_PLUGIN)
 endif()
+
+if("${BUILD_DECL_SION_PLUGIN}")
+	ExternalProject_Add(DECL_SION_PLUGIN
+			PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-decl_sion"
+			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/decl_sion" BUILD_ALWAYS TRUE
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+			DEPENDS PDI)
+	add_testing(DECL_SION_PLUGIN)
+endif()
+
+if("${BUILD_FTI_PLUGIN}")
+	ExternalProject_Add(FTI_PLUGIN
+			PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-fti"
+			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/fti" BUILD_ALWAYS TRUE
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+			DEPENDS PDI)
+	if(NOT "${USE_FTI}" STREQUAL SYSTEM)
+		file(MD5 "${FTI_PATH}" HASH) #< trick to prevent no-hash warning
+		ExternalProject_Add(FTI
+				PREFIX "${PDISUPER_BINARY_DIR}/fti"
+				URL "${FTI_PATH}" URL_HASH "MD5=${HASH}"
+				CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DENABLE_EXAMPLES:BOOL=OFF" "-DENABLE_TESTS:BOOL=OFF" "-DENABLE_DOCU:BOOL=OFF"
+				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+		add_dependencies(FTI_PLUGIN FTI)
+	endif()
+endif()
+
+
+# Examples
+
 if("${BUILD_TESTING}")
-	add_subdirectory(tests/)
+	ExternalProject_Add(PDI_EXAMPLE
+			PREFIX "${PDISUPER_BINARY_DIR}/pdi_example"
+			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/example" BUILD_ALWAYS TRUE
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+			INSTALL_COMMAND ""
+			DEPENDS PDI)
+	add_testing(PDI_EXAMPLE)
 endif()
 
-# Source formatting
-if("${ASTYLE_FOUND}")
-	add_custom_target(indent
-		COMMAND Astyle::astyle --suffix=none --options=docs/formating.astyle --recursive src/*.cxx src/*.c include/*.h plugins/*.cxx plugins/*.c example/*.c tests/*.c tests/*.cxx tests/*.h
-		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
-		VERBATIM)
-	file(WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-indent" "#!/bin/bash
-cd '${CMAKE_CURRENT_SOURCE_DIR}'
-FORMATTED=\"\$(
-'${ASTYLE_EXECUTABLE}' --dry-run --suffix=none --options=docs/formating.astyle --recursive 'src/*.cxx' 'src/*.c' 'include/*.h' 'plugins/*.cxx' 'plugins/*.c' 'example/*.c' 'tests/*.c' 'tests/*.cxx' 'tests/*.h' \\
-| grep Formatted \\
-)\"
-NB_FORMATTED=\"\$(echo -n \"\${FORMATTED}\" | wc -l)\"
-echo \"\${NB_FORMATTED} file(s) need formatting:\"
-echo \"\${FORMATTED}\" | sed 's/Formatted/ *** Needs formatting:/'
-test 00 -eq \"0\${NB_FORMATTED}\"
-")
-	file(COPY "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-indent"
-		DESTINATION "${CMAKE_BINARY_DIR}"
-		FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-	
-	add_test(NAME PDI_test_indent COMMAND "${CMAKE_BINARY_DIR}/check-indent")
-endif()
 
-# Documentation
-if ("${DOXYGEN_FOUND}")
-	add_custom_target(doc COMMAND "${DOXYGEN_EXECUTABLE}" doxygen.cfg WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/docs" VERBATIM)
-endif()
+# Installation
+
+install(DIRECTORY "${PDISUPER_BINARY_DIR}/staging/" DESTINATION "." USE_SOURCE_PERMISSIONS)

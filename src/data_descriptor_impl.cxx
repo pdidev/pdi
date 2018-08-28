@@ -28,7 +28,7 @@
 #include <memory>
 #include <vector>
 
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 
 #include "pdi/context.h"
 #include "pdi/datatype.h"

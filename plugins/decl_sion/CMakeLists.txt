@@ -27,16 +27,39 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(pdi_decl_sion_plugin LANGUAGES CXX)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+if("${BUILD_TESTING}")
+	enable_language(C)
+	if("${ENABLE_FORTRAN}")
+		enable_language(Fortran)
+	endif()
+endif()
+
+# Includes
+include(CTest)
+
+# MPI
+set(MPI_LANGS CXX)
+if("${BUILD_TESTING}")
+	list(APPEND MPI_LANGS C)
+	if("${ENABLE_FORTRAN}")
+		list(APPEND MPI_LANGS Fortran)
+	endif()
+endif()
+find_package(MPI REQUIRED COMPONENTS ${MPI_LANGS})
 
 # SIONlib
 find_package(SIONlib REQUIRED)
 
+# PDI
+find_package(PDI REQUIRED)
+
 # The plugin
 add_library(pdi_decl_sion_plugin MODULE decl_sion.cxx)
 set_property(SOURCE decl_sion.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONlib_MPI_C_COMPILE_FLAGS} ")
-target_link_libraries(pdi_decl_sion_plugin PUBLIC pdi ${SIONlib_MPI_C_LIBRARIES})
+target_link_libraries(pdi_decl_sion_plugin PUBLIC PDI::pdi ${SIONlib_MPI_C_LIBRARIES})
 target_include_directories(pdi_decl_sion_plugin PUBLIC ${SIONlib_MPI_C_INCLUDE_DIRS})
 set_target_properties(pdi_decl_sion_plugin PROPERTIES
 		CXX_STANDARD 11
@@ -44,7 +67,7 @@ set_target_properties(pdi_decl_sion_plugin PROPERTIES
 		CXX_VISIBILITY_PRESET hidden)
 
 # Installation
-install(TARGETS pdi_decl_sion_plugin EXPORT decl_sionTargets LIBRARY DESTINATION lib)
+install(TARGETS pdi_decl_sion_plugin LIBRARY DESTINATION lib)
 
 # Tests
 if("${BUILD_TESTING}")

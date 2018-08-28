@@ -34,7 +34,15 @@ if("${ENABLE_FORTRAN}")
 	enable_language(Fortran)
 endif()
 
-# find_package(pdi REQUIRED)
+# Includes
+include(CTest)
+
+set(MPI_LANGS C CXX)
+if("${ENABLE_FORTRAN}")
+	list(APPEND MPI_LANGS Fortran)
+endif()
+find_package(MPI REQUIRED COMPONENTS ${MPI_LANGS})
+find_package(PDI REQUIRED)
 find_library(LIB_M m DOC "The math library")
 
 # Default standard in the project is C99 & C++11
@@ -44,71 +52,59 @@ set(CMAKE_C_STANDARD 99)
 set(C_STANDARD_REQUIRED TRUE)
 
 add_executable(PDI_example_C example.c)
-target_link_libraries(PDI_example_C pdi MPI::MPI_C m)
+target_link_libraries(PDI_example_C PDI::pdi MPI::MPI_C m)
 
 if("${ENABLE_FORTRAN}")
 add_executable(PDI_example_F example.F90)
-target_link_libraries(PDI_example_F pdi_f90 MPI::MPI_Fortran m)
+target_link_libraries(PDI_example_F PDI::pdi_f90 MPI::MPI_Fortran m)
 endif("${ENABLE_FORTRAN}")
 
 set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
 
-if("${ENABLE_DECL_HDF5}")
+if("${BUILD_DECL_HDF5_PLUGIN}")
 add_test(NAME PDI_example_decl_hdf5_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
-set_property(TEST PDI_example_decl_hdf5_C APPEND PROPERTY ENVIRONMENT
-	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_hdf5/:${CMAKE_CURRENT_BINARY_DIR}/../plugins/mpi/")
 set_property(TEST PDI_example_decl_hdf5_C PROPERTY TIMEOUT 5)
 
 if("${ENABLE_FORTRAN}")
 add_test(NAME PDI_example_decl_hdf5_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
-set_property(TEST PDI_example_decl_hdf5_F APPEND PROPERTY ENVIRONMENT
-	"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_hdf5/:${CMAKE_CURRENT_BINARY_DIR}/../plugins/mpi/")
 set_property(TEST PDI_example_decl_hdf5_F PROPERTY TIMEOUT 5)
 endif("${ENABLE_FORTRAN}")
-endif("${ENABLE_DECL_HDF5}")
+endif("${BUILD_DECL_HDF5_PLUGIN}")
 
-if("${ENABLE_DECL_SION}")
+if("${BUILD_DECL_SION_PLUGIN}")
 add_test(NAME PDI_example_decl_sion_variables_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_variables.yml")
-set_property(TEST PDI_example_decl_sion_variables_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_sion/")
 set_property(TEST PDI_example_decl_sion_variables_C PROPERTY TIMEOUT 5)
 
 if("${ENABLE_FORTRAN}")
 add_test(NAME PDI_example_decl_sion_variables_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_variables.yml")
-set_property(TEST PDI_example_decl_sion_variables_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_sion/")
 set_property(TEST PDI_example_decl_sion_variables_F PROPERTY TIMEOUT 5)
 endif("${ENABLE_FORTRAN}")
 
 add_test(NAME PDI_example_decl_sion_files_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_files.yml")
-set_property(TEST PDI_example_decl_sion_files_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_sion/")
 set_property(TEST PDI_example_decl_sion_files_C PROPERTY TIMEOUT 5)
 
 if("${ENABLE_FORTRAN}")
 add_test(NAME PDI_example_decl_sion_files_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_files.yml")
-set_property(TEST PDI_example_decl_sion_files_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/decl_sion/")
 set_property(TEST PDI_example_decl_sion_files_F PROPERTY TIMEOUT 5)
 endif("${ENABLE_FORTRAN}")
-endif("${ENABLE_DECL_SION}")
+endif("${BUILD_DECL_SION_PLUGIN}")
 
-if("${ENABLE_FTI}")
+if("${BUILD_FTI_PLUGIN}")
 add_test(NAME PDI_example_fti_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "mpirun" -n 6 "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
-set_property(TEST PDI_example_fti_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/fti/")
 set_property(TEST PDI_example_fti_C PROPERTY TIMEOUT 180)
 
 if("${ENABLE_FORTRAN}")
 add_test(NAME PDI_example_fti_F COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "mpirun" -n 6 "$<TARGET_FILE:PDI_example_F>" "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
-set_property(TEST PDI_example_fti_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/fti/")
 set_property(TEST PDI_example_fti_F PROPERTY TIMEOUT 180)
 endif("${ENABLE_FORTRAN}")
-endif("${ENABLE_FTI}")
+endif("${BUILD_FTI_PLUGIN}")
 
 add_test(NAME PDI_example_test_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test.yml")
 set_property(TEST PDI_example_test_C PROPERTY DEPENDS PDI_example_test_file)
-set_property(TEST PDI_example_test_C APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/test/")
 set_property(TEST PDI_example_test_C PROPERTY TIMEOUT 5)
 
 if("${ENABLE_FORTRAN}")
 add_test(NAME PDI_example_test_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 3 "$<TARGET_FILE:PDI_example_F>" "${CMAKE_CURRENT_SOURCE_DIR}/test.yml")
 set_property(TEST PDI_example_test_F PROPERTY DEPENDS PDI_example_test_file)
-set_property(TEST PDI_example_test_F APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../plugins/test/")
 set_property(TEST PDI_example_test_F PROPERTY TIMEOUT 5)
 endif("${ENABLE_FORTRAN}")

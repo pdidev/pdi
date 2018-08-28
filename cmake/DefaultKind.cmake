@@ -22,7 +22,8 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.5)
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}")
 
 function(get_default_kind TYPE DEFAULT_KIND_VAR)
 	if(DEFINED "${DEFAULT_KIND_VAR}")

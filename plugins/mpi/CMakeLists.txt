@@ -22,16 +22,23 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(pdi_mpi_plugin LANGUAGES CXX)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+# MPI
+find_package(MPI REQUIRED COMPONENTS CXX)
+
+# PDI
+find_package(PDI REQUIRED)
 
 # The plugin
 add_library(pdi_mpi_plugin MODULE mpi.cxx)
-target_link_libraries(pdi_mpi_plugin PUBLIC pdi)
+target_link_libraries(pdi_mpi_plugin PUBLIC PDI::pdi MPI::MPI_CXX)
 set_target_properties(pdi_mpi_plugin PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Installation
-install(TARGETS pdi_mpi_plugin EXPORT mpiTargets LIBRARY DESTINATION lib)
+install(TARGETS pdi_mpi_plugin LIBRARY DESTINATION lib)

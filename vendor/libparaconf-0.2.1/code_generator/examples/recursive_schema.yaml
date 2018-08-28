@@ -1,0 +1,15 @@
+A1: include('B')
+A2: include('C')
+
+---
+B:
+  _b: any(num(), include('B'))
+
+C:
+  _c1: bool()
+  _c2: include('D')
+
+D:
+  _d1: bool()
+  _d2: list(int(), include('C'))
+  _d3: include('D', required=False)

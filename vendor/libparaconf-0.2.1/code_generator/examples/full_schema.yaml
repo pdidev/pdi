@@ -1,0 +1,47 @@
+node1: num(required=False)
+
+node2: int()
+
+node3:
+  n1: bool(required=False)
+  n2: str(required=True)
+  n3:
+    sub-node-1: num()
+  n4: any(any(num()), any(int(), bool()), required=False)
+
+node4: list(any(int(), str()), bool(), required=False)
+
+node5: map(num())
+
+node6: list(list(int()), str(max=6), list(num(), str()), str(min=10), required=False)
+
+node7: any(list(map(num())), num(min=36))
+
+node8: include('XYZ', required=False)
+
+node9: map(any(num(), include('XYZ')))
+
+node10: enum('str1', 'str2', 36, True, 3.14, required=False)
+
+node11: any(include('mynode1', required=False), int())
+
+node12: include('5my-no/de--2', required=True)
+
+node13: map(include('XYZ'), include('5my-no/de--2'))
+
+node14: any(enum('abc', 'def'))
+
+node15: list()
+
+node16: list(map())
+
+---
+XYZ:
+  n: str(required=False)
+
+mynode1:
+  a: map(any(int(), num()))
+  b: any(int(), num())
+
+5my-no/de--2:
+  c: num(required=True)

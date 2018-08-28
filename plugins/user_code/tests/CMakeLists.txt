@@ -27,28 +27,31 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
+cmake_minimum_required(VERSION 3.10)
+
+set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
+
 
 ###############
 #   TEST 01   #
 ###############
 add_executable(user_code_01_c user_code_test_01.c)
-target_link_libraries(user_code_01_c pdi MPI::MPI_C)
+target_link_libraries(user_code_01_c PDI::pdi MPI::MPI_C)
+set_target_properties(user_code_01_c PROPERTIES ENABLE_EXPORTS TRUE)
 add_test(NAME user_code_01_c COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:user_code_01_c>" "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_01.yml")
-set_property(TEST user_code_01_c APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
  
 ###############
 #   TEST 02   #
 ###############
 add_executable(user_code_02_c user_code_test_02.c)
-target_link_libraries(user_code_02_c pdi MPI::MPI_C)
+target_link_libraries(user_code_02_c PDI::pdi MPI::MPI_C)
+set_target_properties(user_code_02_c PROPERTIES ENABLE_EXPORTS TRUE)
 add_test(NAME user_code_02_c COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:user_code_02_c>" "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_02.yml")
-set_property(TEST user_code_02_c APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")
 
 ###############
 #   TEST 03   #
 ###############
 add_executable(user_code_03_c user_code_test_03.c)
-target_link_libraries(user_code_03_c pdi MPI::MPI_C)
+target_link_libraries(user_code_03_c PDI::pdi MPI::MPI_C)
+set_target_properties(user_code_03_c PROPERTIES ENABLE_EXPORTS TRUE)
 add_test(NAME user_code_03_c COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:user_code_03_c>" "${CMAKE_CURRENT_SOURCE_DIR}/user_code_test_03.yml")
-set_property(TEST user_code_03_c APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${CMAKE_CURRENT_BINARY_DIR}/../")

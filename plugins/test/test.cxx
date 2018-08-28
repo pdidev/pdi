@@ -29,7 +29,7 @@
 #include <string>
 #include <unordered_set>
 
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 
 #include <pdi.h>
 #include <pdi/context.h>

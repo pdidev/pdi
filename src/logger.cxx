@@ -29,7 +29,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/ansicolor_sink.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include "pdi/logger.h"
 
@@ -47,11 +49,11 @@ using spdlog::level::warn;
 using spdlog::level::err;
 using spdlog::level::off;
 using spdlog::sink_ptr;
-using spdlog::sinks::simple_file_sink_st;
+using spdlog::sinks::basic_file_sink_st;
 #if defined _WIN32 && !defined(__cplusplus_winrt)
-using spdlog::sinks::wincolor_stdout_sink_st;
+	using spdlog::sinks::wincolor_stdout_sink_st;
 #else
-using spdlog::sinks::ansicolor_stdout_sink_st;
+	using spdlog::sinks::ansicolor_stdout_sink_st;
 #endif
 using std::make_shared;
 using std::string;
@@ -75,7 +77,7 @@ Logger_sptr select_log_sinks(PC_tree_t logging_tree)
 	//configure file sink
 	if (!PC_status(PC_get(output_tree, ".file"))) {
 		string filename {to_string(PC_get(output_tree, ".file"))};
-		auto file_sink = make_shared<simple_file_sink_st>(filename);
+		auto file_sink = make_shared<basic_file_sink_st>(filename);
 		sinks.emplace_back(file_sink);
 	}
 	

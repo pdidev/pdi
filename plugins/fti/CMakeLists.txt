@@ -27,20 +27,18 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(pdi_fti_plugin LANGUAGES CXX)
 
 # FTI
-option(USE_SYSTEM_FTI "Use an already installed fti instead of building the embedded one" OFF)
-if("${USE_SYSTEM_FTI}")
-	find_package(fti)
-else()
-	add_subdirectory(../../vendor/fti fti EXCLUDE_FROM_ALL)
-endif()
+find_package(FTI REQUIRED)
+
+# PDI
+find_package(PDI REQUIRED)
 
 # The plugin
 add_library(pdi_fti_plugin MODULE fti.cxx)
-target_link_libraries(pdi_fti_plugin pdi fti.shared)
+target_link_libraries(pdi_fti_plugin PDI::pdi fti.shared)
 target_include_directories(pdi_fti_plugin PUBLIC ${FTI_INCLUDE_PATH})
 set_target_properties(pdi_fti_plugin PROPERTIES
 		CXX_STANDARD 11
@@ -48,4 +46,4 @@ set_target_properties(pdi_fti_plugin PROPERTIES
 		CXX_VISIBILITY_PRESET hidden)
 
 # Installation
-install(TARGETS pdi_fti_plugin EXPORT fti_pdi_pluginTargets LIBRARY DESTINATION lib)
+install(TARGETS pdi_fti_plugin LIBRARY DESTINATION lib)

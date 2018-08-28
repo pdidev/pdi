@@ -34,7 +34,7 @@
 #include <utility>
 #include <vector>
 
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 
 #include <pdi.h>
 #include <pdi/context.h>

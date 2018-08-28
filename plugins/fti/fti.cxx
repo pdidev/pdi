@@ -33,7 +33,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 
 #include <fti.h>
 

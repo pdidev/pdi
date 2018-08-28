@@ -34,7 +34,7 @@
 
 #include <hdf5.h>
 #include <paraconf.h>
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 #include <unistd.h>
 
 #include <pdi.h>

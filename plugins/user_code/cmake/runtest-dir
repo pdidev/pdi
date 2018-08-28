@@ -1,0 +1,18 @@
+#!/bin/bash
+
+TMPDIR="$(mktemp -p "${PWD}" -d run-XXXXXXXXXX)"
+function finish {
+  rm -rf "${TMPDIR}"
+}
+trap finish EXIT
+
+while [ '--runtest-dir-copy-file' = "$1" ]
+do
+	shift
+	cp "$1" "${TMPDIR}/"
+	shift
+done
+
+cd "${TMPDIR}"
+
+"$@"

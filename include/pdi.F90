@@ -31,5 +31,5 @@
 #endif
 
 #ifndef PDI_CMAKE_IGNORE_THIS
-include 'pdi_fortran.h'
+include 'pdi_fortran.F90'
 #endif

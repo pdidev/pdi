@@ -27,19 +27,34 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(pdi_user_code_plugin LANGUAGES CXX)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+if("${BUILD_TESTING}")
+	enable_language(C)
+endif()
+
+# Includes
+include(CTest)
+
+# MPI
+if("${BUILD_TESTING}")
+	find_package(MPI REQUIRED COMPONENTS C CXX)
+endif()
+
+# PDI
+find_package(PDI REQUIRED)
 
 # The plugin
 add_library(pdi_user_code_plugin MODULE user_code.cxx)
-target_link_libraries(pdi_user_code_plugin pdi)
+target_link_libraries(pdi_user_code_plugin PDI::pdi)
 set_target_properties(pdi_user_code_plugin PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Installation
-install(TARGETS pdi_user_code_plugin EXPORT user_codeTargets LIBRARY DESTINATION lib)
+install(TARGETS pdi_user_code_plugin LIBRARY DESTINATION lib)
 
 # Tests
 if("${BUILD_TESTING}")

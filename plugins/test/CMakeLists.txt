@@ -27,16 +27,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(pdi_test_plugin LANGUAGES CXX)
+
+# PDI
+find_package(PDI REQUIRED)
 
 # The plugin
 add_library(pdi_test_plugin MODULE test.cxx)
-target_link_libraries(pdi_test_plugin pdi)
+target_link_libraries(pdi_test_plugin PDI::pdi)
 set_target_properties(pdi_test_plugin PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Installation
-install(TARGETS pdi_test_plugin EXPORT test_pluginTargets LIBRARY DESTINATION lib)
+install(TARGETS pdi_test_plugin LIBRARY DESTINATION lib)

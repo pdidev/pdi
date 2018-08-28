@@ -1,0 +1,22 @@
+k-1: include('A')
+k-2: include('B')
+k-3:
+  _k-3-1: list(include('A'), min=3, max=10, required=True)
+  _k-3-2: map(include('B'), min=1, max=50, required=True)
+  _k-3-3: include('C', required=False)
+C: list(include('C'))
+
+
+---
+A:
+  _a-1: int()
+  _a-2: bool()
+
+B:
+  _b-1: include('A', required=False)
+  _b-2: str(required=False)
+  _b-3: num(required=True)
+
+C:
+  _c-1: list(str())
+  _c-2: int(min=0)

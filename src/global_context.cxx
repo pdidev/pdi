@@ -29,7 +29,7 @@
 #include <vector>
 
 #include <dlfcn.h>
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 
 #include "pdi/data_descriptor_impl.h"
 #include "pdi/logger.h"
