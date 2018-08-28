@@ -25,39 +25,18 @@
 #include <mpi.h>
 
 #include <pdi/context.h>
-#include <pdi/pdi_fwd.h>
 #include <pdi/plugin.h>
-#include <pdi/scalar_datatype.h>
+
+#include "mpi_comm_type.h"
+
+namespace {
 
 struct mpi_plugin: PDI::Plugin {
 
 	mpi_plugin(PDI::Context& ctx, PC_tree_t, MPI_Comm*):
 		Plugin{ctx}
 	{
-		// deleter for MPI_Comm
-		auto deleter = [](void* ptr) {
-			auto comm_ptr = static_cast<MPI_Comm*>(ptr);
-			MPI_Comm_free(comm_ptr);
-			delete comm_ptr;
-		};
-		
-		// load MPI_COMM_WORLD
-		MPI_Comm* comm = new MPI_Comm;
-		MPI_Comm_dup(MPI_COMM_WORLD, comm);
-		PDI::Ref comm_world_ref{comm, deleter, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
-		context()["MPI_COMM_WORLD"].share(comm_world_ref, false, false);
-		
-		// load MPI_COMM_SELF
-		comm = new MPI_Comm;
-		MPI_Comm_dup(MPI_COMM_SELF, comm);
-		PDI::Ref comm_self_ref {comm, deleter, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
-		context()["MPI_COMM_SELF"].share(comm_self_ref, false, false);
-		
-		// load MPI_COMM_NULL
-		comm = new MPI_Comm;
-		*comm = MPI_COMM_NULL;
-		PDI::Ref comm_null_ref {comm, &free, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::MPI_COMM, sizeof(MPI_Comm))}, true, false};
-		context()["MPI_COMM_NULL"].share(comm_null_ref, false, false);
+		load_mpi_comm_predefineds(ctx);
 	}
 	
 	~mpi_plugin()
@@ -68,5 +47,7 @@ struct mpi_plugin: PDI::Plugin {
 		context()["MPI_COMM_NULL"].release();
 	}
 };
+
+} // namespace <anonymous>
 
 PDI_PLUGIN(mpi)

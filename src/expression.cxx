@@ -80,8 +80,6 @@ struct Expression::Impl {
 	
 	virtual Ref to_ref(Context&) const = 0;
 	
-	virtual MPI_Comm to_mpi_comm(Context&) const;
-	
 	static unique_ptr<Impl> parse_term(char const** val_str);
 	
 	static string parse_id(char const** val_str);
@@ -260,11 +258,6 @@ Ref Expression::to_ref(Context& ctx) const
 	return m_impl->to_ref(ctx);
 }
 
-MPI_Comm Expression::to_mpi_comm(Context& ctx) const
-{
-	return m_impl->to_mpi_comm(ctx);
-}
-
 Expression::Impl::~Impl() = default;
 
 string Expression::Impl::to_string(Context& ctx) const
@@ -273,24 +266,6 @@ string Expression::Impl::to_string(Context& ctx) const
 	stringstream result;
 	result << lres;
 	return result.str();
-}
-
-
-MPI_Comm Expression::Impl::to_mpi_comm(Context& ctx) const
-{
-	try {
-		Ref_r comm_ref = to_ref(ctx);
-		
-		if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&comm_ref.type())) {
-			if (scalar_type->kind() == Scalar_kind::MPI_COMM) {
-				const MPI_Comm* comm = static_cast<const MPI_Comm*>(comm_ref.get());
-				return *comm;
-			}
-		}
-	} catch (Error e) {
-		throw Error{PDI_ERR_TYPE, "Defined communicator is not a reference to MPI_Comm"};
-	}
-	throw Error{PDI_ERR_TYPE, "Trying to cast to MPI_Comm something that is not a MPI_Comm"};
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,45 +22,46 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
+#ifndef MPI_COMM_TYPE_H_
+#define MPI_COMM_TYPE_H_
 
-#include <cassert>
-#include <cstring>
-#include <cstdint>
-#include <map>
 #include <memory>
-#include <vector>
+#include <mpi.h>
 
-#include "pdi/array_datatype.h"
-#include "pdi/datatype.h"
-#include "pdi/record_datatype.h"
-#include "pdi/scalar_datatype.h"
+#include <pdi/context.h>
+#include <pdi/error.h>
+#include <pdi/pdi_fwd.h>
+#include <pdi/scalar_datatype.h>
 
-#include "pdi/ref_any.h"
+namespace  {
 
-
-namespace PDI {
-
-Ref Ref_base::do_copy(Ref_r ref)
-{
-	Datatype_uptr densified_type {ref.type().densify()};
+void load_mpi_comm_predefineds(PDI::Context& ctx) {
+	// deleter for MPI_Comm
+	auto deleter = [](void* ptr) {
+		auto comm_ptr = static_cast<MPI_Comm*>(ptr);
+		MPI_Comm_free(comm_ptr);
+		delete comm_ptr;
+	};
 	
-	//+ (densified_type->alignment() - 1) <- we want to make sure that we fit the data even though the worst alignment occur
-	void* newbuffer = operator new (densified_type->buffersize() + (densified_type->alignment() - 1));
-	try {
-		ref.type().data_dense_copy(newbuffer, ref.get());
-	} catch (...) {
-		::operator delete (newbuffer);
-		throw;
-	}
-	return Ref {newbuffer, [](void* v){operator delete (v);}, std::move(densified_type), true, true};
+	// load MPI_COMM_WORLD
+	MPI_Comm* comm = new MPI_Comm;
+	MPI_Comm_dup(MPI_COMM_WORLD, comm);
+	PDI::Ref comm_world_ref{comm, deleter, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::UNKNOWN, sizeof(MPI_Comm))}, true, false};
+	ctx["MPI_COMM_WORLD"].share(comm_world_ref, false, false);
+	
+	// load MPI_COMM_SELF
+	comm = new MPI_Comm;
+	MPI_Comm_dup(MPI_COMM_SELF, comm);
+	PDI::Ref comm_self_ref {comm, deleter, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::UNKNOWN, sizeof(MPI_Comm))}, true, false};
+	ctx["MPI_COMM_SELF"].share(comm_self_ref, false, false);
+	
+	// load MPI_COMM_NULL
+	comm = new MPI_Comm;
+	*comm = MPI_COMM_NULL;
+	PDI::Ref comm_null_ref {comm, &free, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::UNKNOWN, sizeof(MPI_Comm))}, true, false};
+	ctx["MPI_COMM_NULL"].share(comm_null_ref, false, false);
 }
 
-
-const Datatype& Ref_base::type() const noexcept
-{
-	if (!m_content || !m_content->m_buffer) return UNDEF_TYPE;
-	return *m_content->m_type;
 }
 
-} // namespace PDI
+#endif // MPI_COMM_TYPE_H_

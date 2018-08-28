@@ -386,7 +386,7 @@ struct decl_hdf5_plugin: Plugin {
 	
 	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*):
 		Plugin {ctx},
-		m_config{config, ctx.logger()}
+		m_config{ctx, config}
 	{
 		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");

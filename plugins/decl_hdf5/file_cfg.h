@@ -67,7 +67,7 @@ class File_cfg
 	File_cfg(const File_cfg&)=delete;
 	
 public:
-	File_cfg(PC_tree_t tree, std::vector<std::string>& events, PDI::Logger_sptr logger):
+	File_cfg(PDI::Context& ctx, PC_tree_t tree, std::vector<std::string>& events):
 		m_file{PDI::to_string(PC_get(tree, ".file"))},
 		m_when{1}
 	{
@@ -104,7 +104,7 @@ public:
 			} else if ( key == "datasets" ) {
 				int nb_dataset = len(PC_get(tree, ".datasets"));
 				for (int dataset_id=0; dataset_id<nb_dataset; ++dataset_id) {
-					m_datasets.emplace(to_string(PC_get(tree, ".datasets{%d}", dataset_id)), Datatype_template::load(PC_get(tree, ".datasets<%d>", dataset_id), logger));
+					m_datasets.emplace(to_string(PC_get(tree, ".datasets{%d}", dataset_id)), Datatype_template::load(PC_get(tree, ".datasets<%d>", dataset_id), ctx.logger()));
 				}
 			} else if ( key == "write" ) {
 				PC_tree_t write_tree = PC_get(tree, ".write");
@@ -203,7 +203,7 @@ public:
 #ifdef H5_HAVE_PARALLEL
 	MPI_Comm communicator(PDI::Context& ctx) const
 	{
-		if (m_communicator) return m_communicator.to_mpi_comm(ctx);
+		if (m_communicator) return *(static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(ctx)}.get()));
 		return MPI_COMM_SELF;
 	}
 #endif
@@ -248,7 +248,7 @@ const PDI::Expression& Transfer_cfg::when() const
 MPI_Comm Transfer_cfg::communicator(PDI::Context& ctx) const
 {
 	if (!m_communicator) return parent().communicator(ctx);
-	return m_communicator.to_mpi_comm(ctx);
+	return *(static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(ctx)}.get()));
 }
 #endif
 
