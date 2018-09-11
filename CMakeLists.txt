@@ -196,7 +196,7 @@ if("${BUILD_TESTING}" AND NOT "${USE_GTEST}" STREQUAL SYSTEM)
 	file(MD5 "${GTEST_PATH}" HASH) #< trick to prevent no-hash warning
 	ExternalProject_Add(GTEST
 			PREFIX "${PDISUPER_BINARY_DIR}/gtest"
-			URL "${GTEST_PATH}" URL_HASH "MD5=${HASH}"
+			URL "${GTEST_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
 			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF" "-DBUILD_SHARED_LIBS:BOOL=OFF" #< set BUILD_SHARED_LIBS=OFF to workaround https://github.com/google/googletest/issues/930
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/build-dep")
 	ExternalProject_Add_StepDependencies(PDI configure GTEST)
@@ -206,7 +206,7 @@ if("${ENABLE_FORTRAN}" AND NOT "${USE_BPP}" STREQUAL SYSTEM)
 	file(MD5 "${BPP_PATH}" HASH) #< trick to prevent no-hash warning
 	ExternalProject_Add(BPP
 			PREFIX "${PDISUPER_BINARY_DIR}/bpp"
-			URL "${BPP_PATH}" URL_HASH "MD5=${HASH}"
+			URL "${BPP_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
 			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF"
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/build-dep")
 	ExternalProject_Add_StepDependencies(PDI configure BPP)
@@ -216,7 +216,7 @@ if(NOT "${USE_PARACONF}" STREQUAL SYSTEM)
 	file(MD5 "${PARACONF_PATH}" HASH) #< trick to prevent no-hash warning
 	ExternalProject_Add(PARACONF
 			PREFIX "${PDISUPER_BINARY_DIR}/paraconf"
-			URL "${PARACONF_PATH}" URL_HASH "MD5=${HASH}"
+			URL "${PARACONF_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
 			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE" "-DUSE_SYSTEM_YAML:BOOL=TRUE" "-DBUILD_TESTING:BOOL=OFF"
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
 	ExternalProject_Add_StepDependencies(PDI configure PARACONF)
@@ -224,7 +224,7 @@ if(NOT "${USE_PARACONF}" STREQUAL SYSTEM)
 		file(MD5 "${YAML_PATH}" HASH) #< trick to prevent no-hash warning
 		ExternalProject_Add(YAML
 				PREFIX "${PDISUPER_BINARY_DIR}/yaml"
-				URL "${YAML_PATH}" URL_HASH "MD5=${HASH}"
+				URL "${YAML_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
 				CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF" "-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
 				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
 		add_dependencies(PARACONF YAML)
@@ -235,7 +235,7 @@ if(NOT "${USE_SPDLOG}" STREQUAL SYSTEM)
 	file(MD5 "${SPDLOG_PATH}" HASH) #< trick to prevent no-hash warning
 	ExternalProject_Add(SPDLOG
 			PREFIX "${PDISUPER_BINARY_DIR}/spdlog"
-			URL "${SPDLOG_PATH}" URL_HASH "MD5=${HASH}"
+			URL "${SPDLOG_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
 			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DBUILD_TESTING:BOOL=OFF" "-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF" "-DSPDLOG_BUILD_BENCH:BOOL=OFF"
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
 	ExternalProject_Add_StepDependencies(PDI configure SPDLOG)
@@ -299,7 +299,7 @@ if("${BUILD_FTI_PLUGIN}")
 		file(MD5 "${FTI_PATH}" HASH) #< trick to prevent no-hash warning
 		ExternalProject_Add(FTI
 				PREFIX "${PDISUPER_BINARY_DIR}/fti"
-				URL "${FTI_PATH}" URL_HASH "MD5=${HASH}"
+				URL "${FTI_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
 				CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DENABLE_EXAMPLES:BOOL=OFF" "-DENABLE_TESTS:BOOL=OFF" "-DENABLE_DOCU:BOOL=OFF"
 				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
 		add_dependencies(FTI_PLUGIN FTI)

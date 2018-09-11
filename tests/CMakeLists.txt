@@ -35,25 +35,22 @@ find_package(GMock REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
 
 add_executable(PDI_test_01 PDI_test_01.c)
 target_link_libraries(PDI_test_01 pdi)
-add_test(NAME PDI_test_01_run COMMAND PDI_test_01 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_01.yml")
+add_test(NAME PDI_test_01_run COMMAND PDI_test_01)
 
 
 add_executable(PDI_test_02 PDI_test_02.c)
 target_link_libraries(PDI_test_02 pdi)
 set_target_properties(PDI_test_02 PROPERTIES ENABLE_EXPORTS ON)
-add_test(NAME PDI_test_02_run COMMAND PDI_test_02 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_02.yml")
+add_test(NAME PDI_test_02_run COMMAND PDI_test_02)
 
 
-add_executable(PDI_test_03 PDI_test_03.c)
-target_link_libraries(PDI_test_03 pdi)
-add_test(NAME PDI_test_03_run COMMAND PDI_test_03 "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_03.yml")
-
-
-add_executable(PDI_unit_tests
+set(PDI_unit_tests_SRC
 		PDI_array_datatype.cxx
 		PDI_context.cxx
 		PDI_data_descriptor.cxx
@@ -64,33 +61,16 @@ add_executable(PDI_unit_tests
 		PDI_record_datatype.cxx
 		PDI_ref_any.cxx
 		PDI_scalar_datatype.cxx)
-target_include_directories(PDI_unit_tests PRIVATE
-		./include/
-		./mocks/)
+add_executable(PDI_unit_tests ${PDI_unit_tests_SRC})
+target_include_directories(PDI_unit_tests PRIVATE include mocks)
 target_link_libraries(PDI_unit_tests pdi Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
-set_target_properties(PDI_unit_tests PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED TRUE)
 gtest_discover_tests(PDI_unit_tests)
 
 
 if("${Astyle_FOUND}")
-	Astyle_add_indent(PDI_tests_indent
+	Astyle_add_indent(PDI_tests_indent TEST
 			OPTIONS_FILE "../docs/formating.astyle"
-			TEST
-			RECURSIVE
-			PDI_test_01.c
-			PDI_test_02.c
-			PDI_test_03.c
-			PDI_array_datatype.cxx
-			PDI_context.cxx
-			PDI_data_descriptor.cxx
-			PDI_error.cxx
-			PDI_expression.cxx
-			PDI_member.cxx
-			PDI_record_datatype_empty.cxx
-			PDI_record_datatype.cxx
-			PDI_ref_any.cxx
-			PDI_scalar_datatype.cxx
-			include/*.h
-			mocks/*.h)
+			PDI_test_01.c PDI_test_02.c ${PDI_unit_tests_SRC}
+			include/*.h mocks/*.h)
 	add_dependencies(indent PDI_tests_indent)
 endif()

@@ -27,20 +27,27 @@
 #include <paraconf.h>
 #include <pdi.h>
 
+const char* CONFIG_YAML =
+    "data:           \n"
+    "  invalid:      \n"
+    "    type: double\n"
+    "    size: $meta2\n"
+    "plugins:        \n"
+    ;
+
 int main( int argc, char* argv[] )
 {
 	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_init(conf, &world);
+	
 	PDI_errhandler(PDI_NULL_HANDLER);
 	double invalid;
 	PDI_status_t err = PDI_expose("invalid", &invalid, PDI_INOUT);
-	fprintf(stderr, "err=%d; message=\"%s\"\n", err, PDI_errmsg());
-	assert(err == PDI_ERR_VALUE);
-	assert(!strcmp(PDI_errmsg(), "while referencing `meta2': Cannot access a non shared value: `meta2'"));
+	if ( err != PDI_ERR_VALUE ) abort();
+	if ( strcmp(PDI_errmsg(), "while referencing `meta2': Cannot access a non shared value: `meta2'") ) abort();
+	
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
-	return 0;
 }

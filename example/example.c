@@ -139,10 +139,10 @@ int main( int argc, char* argv[] )
 	int ii;
 	int next_reduce = 0;
 	for (ii=0;; ++ii) {
-		PDI_transaction_begin("newiter");
-		PDI_expose("iter", &ii, PDI_INOUT);
-		PDI_expose("main_field", cur, PDI_INOUT);
-		PDI_transaction_end();
+		PDI_multi_expose("newiter",
+				"iter", &ii, PDI_INOUT,
+				"main_field", cur, PDI_INOUT,
+				NULL);
 		
 		iter(dsize, cur, next);
 		exchange(cart_com, dsize, next);
@@ -174,5 +174,4 @@ int main( int argc, char* argv[] )
 	free(next);
 	
 	MPI_Finalize();
-	return 0;
 }

@@ -33,6 +33,64 @@
 #define NJ_GHOST 2
 #define DIM 2
 
+const char* CONFIG_YAML =
+"metadata:                                               \n"
+"  input: int                                            \n"
+"  ni: int                                               \n"
+"  nj: int                                               \n"
+"  nig: int                                              \n"
+"  njg: int                                              \n"
+"  nit: int                                              \n"
+"  njt: int                                              \n"
+"  istart: int                                           \n"
+"  jstart: int                                           \n"
+"  rank: int                                             \n"
+"  nproc: int                                            \n"
+"data:                                                   \n"
+"  myrank: int                                           \n"
+"  reals:                                                \n"
+"    type: double                                        \n"
+"    sizes: [$nj +2*$njg , $ni+2*$nig]                   \n"
+"    subsizes: [$nj , $ni]                               \n"
+"    starts: [$njg, $nig]                                \n"
+"    global_sizes: [$njt, $nit]                          \n"
+"    global_starts: [$jstart, $istart]                   \n"
+"  values:                                               \n"
+"    type: int                                           \n"
+"    sizes: [$nj +2*$njg , $ni+2*$nig]                   \n"
+"    subsizes: [$nj , $ni]                               \n"
+"    starts: [$njg, $nig]                                \n"
+"    global_sizes: [$njt, $nit]                          \n"
+"    global_starts: [$jstart, $istart]                   \n"
+"plugins:                                                \n"
+"  mpi:                                                  \n"
+"  decl_hdf5:                                            \n"
+"    - file: decl_hdf5_test_06_C_r${rank}.h5             \n"
+"      write:                                            \n"
+"        myrank: {when: $input=0}                        \n"
+"      read:                                             \n"
+"        myrank: {when: $input=1}                        \n"
+"    - file: decl_hdf5_test_06_C.h5                      \n"
+"      communicator: $MPI_COMM_WORLD                     \n"
+"      datasets:                                         \n"
+"        reals: {type: double, sizes: [$njt, $nit]}      \n"
+"        values: {type: int, sizes: [$njt, $nit]}        \n"
+"      write:                                            \n"
+"        reals:                                          \n"
+"          when: $input=0                                \n"
+"          dataset_selection: {start: [$jstart, $istart]}\n"
+"        values:                                         \n"
+"          when: $input=0                                \n"
+"          dataset_selection: {start: [$jstart, $istart]}\n"
+"      read:                                             \n"
+"        reals:                                          \n"
+"          when: $input=1                                \n"
+"          dataset_selection: {start: [$jstart, $istart]}\n"
+"        values:                                         \n"
+"          when: $input=1                                \n"
+"          dataset_selection: {start: [$jstart, $istart]}\n"
+;
+
 int main(int argc, char* argv[])
 {
 	const int icst = -1; /// constants values in the ghost nodes
@@ -56,17 +114,15 @@ int main(int argc, char* argv[])
 	
 	
 	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_status_t err = PDI_init(conf, &world);
+	PDI_init(conf, &world);
 	int rank; MPI_Comm_rank(world, &rank);
 	{
 		/// setting nb of procs.
 		int size; MPI_Comm_size(world, &size);
 		assert(size == 4 && "Run on 4 procs only.");
-		PDI_expose("nproc",&size, PDI_OUT);
+		PDI_expose("nproc", &size, PDI_OUT);
 	}
 	
 	
@@ -178,5 +234,4 @@ int main(int argc, char* argv[])
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
-	return 0;
 }

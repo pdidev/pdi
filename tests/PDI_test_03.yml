@@ -1,2 +1,0 @@
-metadata:
-  my_array: { sizes: [10, 10, 10], subsizes: [3, 4, 5], starts: [1, 2, 3], type: int }

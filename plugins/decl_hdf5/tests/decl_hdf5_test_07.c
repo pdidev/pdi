@@ -26,6 +26,39 @@
 #include <mpi.h>
 #include <assert.h>
 
+const char* CONFIG_YAML =
+"metadata:                                    \n"
+"  pcoord: { size: 2, type: int }             \n"
+"  my_comm: MPI_Comm                          \n"
+"data:                                        \n"
+"  matrix: { sizes: [ 2, 2 ], type: int }     \n"
+"                                             \n"
+"plugins:                                     \n"
+"  mpi:                                       \n"
+"  decl_hdf5:                                 \n"
+"    file: data.h5                            \n"
+"    communicator: $my_comm                   \n"
+"    datasets:                                \n"
+"      matrix_dataset:                        \n"
+"        type: int                            \n"
+"        sizes: [2, 2]                        \n"
+"    write:                                   \n"
+"      matrix:                                \n"
+"        dataset: matrix_dataset              \n"
+"        memory_selection:                    \n"
+"          size:  [1, 1]                      \n"
+"        dataset_selection:                   \n"
+"          size:  [1, 1]                      \n"
+"          start: ['$pcoord[0]', '$pcoord[1]']\n"
+"    read:                                    \n"
+"      matrix:                                \n"
+"        dataset: matrix_dataset              \n"
+"        memory_selection:                    \n"
+"          size:  [2, 2]                      \n"
+"        dataset_selection:                   \n"
+"          size:  [2, 2]                      \n"
+;
+
 void verify_matrix(int comm_color)
 {
 	int matrix[4];
@@ -45,12 +78,9 @@ void verify_matrix(int comm_color)
 
 int main(int argc, char* argv[])
 {
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	
 	MPI_Init(&argc,&argv);
 	MPI_Comm main_comm = MPI_COMM_WORLD;
-	
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf, &main_comm);
 	
 	int world_size;
@@ -112,5 +142,4 @@ int main(int argc, char* argv[])
 	
 	PDI_finalize();
 	MPI_Finalize();
-	return 0;
 }

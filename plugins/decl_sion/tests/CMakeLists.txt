@@ -32,12 +32,11 @@ cmake_minimum_required(VERSION 3.10)
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 
-###############
-#   TEST 01   #
-###############
+# Testing export of Metatadata and files creation
+
 add_executable(decl_sion_01_c decl_sion_test_01.c)
 target_link_libraries(decl_sion_01_c PDI::pdi MPI::MPI_C)
-add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_sion_01_c>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
+add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_sion_01_c>")
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_01_F decl_sion_test_01.F90)
@@ -47,12 +46,12 @@ set_target_properties(decl_sion_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_
 add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_sion_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
 endif("${ENABLE_FORTRAN}")
 
-###############
-#   TEST 02   #
-###############
+
+# Testing writer/reader with one file per variable
+
 add_executable(decl_sion_02_c decl_sion_test_02.c)
 target_link_libraries(decl_sion_02_c PDI::pdi MPI::MPI_C)
-add_test(NAME decl_sion_02_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_02_c>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02.yml")
+add_test(NAME decl_sion_02_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_02_c>")
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_02_F decl_sion_test_02.F90)
@@ -62,12 +61,12 @@ set_target_properties(decl_sion_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_
 add_test(NAME decl_sion_02_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_02_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02.yml")
 endif("${ENABLE_FORTRAN}")
 
-###############
-#   TEST 03   #
-###############
+
+# Testing writer/reader using the event based mechanism 
+
 add_executable(decl_sion_03_c decl_sion_test_03.c)
 target_link_libraries(decl_sion_03_c PDI::pdi MPI::MPI_C)
-add_test(NAME decl_sion_03_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_03_c>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03.yml")
+add_test(NAME decl_sion_03_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_03_c>")
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_03_F decl_sion_test_03.F90)

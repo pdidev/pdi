@@ -22,82 +22,76 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <mpi.h>
+
 #include <assert.h>
 #include <stdlib.h>
-// #include <unistd.h>
-#include <mpi.h>
+
 #include <pdi.h>
 
-#define FATAL 1
-#define WARN 0
-#define CST0 -1
-#define CST1 1
-#define test_value( var, value, fatal) fct_test_value( var, value, fatal, __func__, __LINE__)
-
-static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
-{
-	if (value != var) {
-		fprintf(stdout, "Test in func %s line %3d, not working: value=%d, var=%d \n", fct, line, value, var);
-		fflush(stdout);
-		if (fatal) abort();
-	} else {
-		fprintf(stdout, "Test in func %s line %3d, working : value =%d = var \n", fct, line, value);
-		fflush(stdout);
-	}
-	return;
-}
+const char* CONFIG_YAML =
+"metadata:                                        \n"
+"data:                                            \n"
+"  test_var: double                               \n"
+"  input: int                                     \n"
+"  output: int                                    \n"
+"plugins:                                         \n"
+"  user_code:                                     \n"
+"    on_event:                                    \n"
+"      testing:                                   \n"
+"        test: {var_in: $input, var_out: $output }\n"
+;
 
 void test(void)
 {
-	int* buffer=NULL;
-	PDI_access("var_in", (void**)&buffer, PDI_IN);
-	test_value(*buffer, CST0, FATAL);
-	PDI_release("var_in");
+	void* buffer;
+	if ( !PDI_access("var_in", &buffer, PDI_IN) ) {
+		PDI_release("var_in");
+	}
 	
-	buffer = NULL;
-	PDI_access("var_out", (void**)&buffer, PDI_OUT);
-	*buffer=CST1;
-	PDI_release("var_out");
+	if ( !PDI_access("var_out", &buffer, PDI_OUT) ) {
+		PDI_release("var_out");
+	}
 }
 
 void succeed_on_failure(PDI_status_t status, const char* message, void* ctx)
 {
-	(void) ctx;
 	if (status) {
-		fprintf(stderr, "PDI is aborting due to `%s'. This is a success!\n", message);
-		exit(0);
+		fprintf(stderr, "PDI error reported: `%s'. This is a success!\n", message);
+		*((int*)ctx) = 1; // has_failed = 1
 	}
-	return;
 }
 
 int main( int argc, char* argv[] )
 {
+	int has_failed = 0;
 	PDI_errhandler_t local_errhandler;
-	local_errhandler.func = &succeed_on_failure;
-	local_errhandler.context = "context";
-	int in,out;
+	local_errhandler.func = succeed_on_failure;
+	local_errhandler.context = &has_failed;
+	
 	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
-	
 	PDI_init(conf, &world);
+	
 	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
 	
-	in=CST0;
-	out=CST0;
-	PDI_transaction_begin("testing");
-	PDI_expose("input", &in, PDI_IN);
-	PDI_expose("output", &out, PDI_IN);
-	PDI_transaction_end();
-	test_value(in, CST1, FATAL);
+	int in = 0;
+	int out = 0;
+	PDI_multi_expose("testing",
+			"input", &in, PDI_IN,
+			"output", &out, PDI_IN,
+			NULL);
 	
 	PDI_errhandler(std_handler); // returning to standard PDI err_handler
-	PDI_finalize();
+	if ( !has_failed ) {
+		fprintf(stderr, "Error expected but not reported, terminating\n");
+		abort();
+		
+	}
 	
+	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
-	abort();
 }
 

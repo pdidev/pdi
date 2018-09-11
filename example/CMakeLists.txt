@@ -47,9 +47,9 @@ find_library(LIB_M m DOC "The math library")
 
 # Default standard in the project is C99 & C++11
 set(CMAKE_CXX_STANDARD 11)
-set(CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_C_STANDARD 99)
-set(C_STANDARD_REQUIRED TRUE)
+set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
 add_executable(PDI_example_C example.c)
 target_link_libraries(PDI_example_C PDI::pdi MPI::MPI_C m)

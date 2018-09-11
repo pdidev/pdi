@@ -27,6 +27,21 @@
 #include <mpi.h>
 #include <pdi.h>
 
+const char* CONFIG_YAML =
+"metadata:                     \n"
+"  meta0: int                  \n"
+"  meta1: int                  \n"
+"  meta2: int                  \n"
+"  meta3: int                  \n"
+"  meta4: int                  \n"
+"data:                         \n"
+"  test_var: double            \n"
+"plugins:                      \n"
+"  decl_hdf5:                  \n"
+"    file: $meta1.h5           \n"
+"    write: [ test_var, meta2 ]\n"
+;
+
 int main( int argc, char* argv[] )
 {
 	int nbuf = 1000;
@@ -36,19 +51,18 @@ int main( int argc, char* argv[] )
 	remove("5.h5");
 	
 	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_init(conf, &world);
 	
-	PDI_transaction_begin("testing");
-	PDI_expose("meta0",&value[0], PDI_OUT);
-	PDI_expose("meta1",&value[0], PDI_OUT);
-	PDI_expose("meta2",&value[1], PDI_OUT);
-	PDI_expose("meta3",&value[2], PDI_OUT);
-	PDI_expose("meta4",&value[3], PDI_OUT);
-	PDI_expose("test_var",&test_var, PDI_OUT);
-	PDI_transaction_end();
+	PDI_multi_expose("testing",
+			"meta0",&value[0], PDI_OUT,
+			"meta1",&value[0], PDI_OUT,
+			"meta2",&value[1], PDI_OUT,
+			"meta3",&value[2], PDI_OUT,
+			"meta4",&value[3], PDI_OUT,
+			"test_var",&test_var, PDI_OUT,
+			NULL);
 	
 	PDI_finalize();
 	PC_tree_destroy(&conf);
@@ -57,7 +71,4 @@ int main( int argc, char* argv[] )
 	FILE* fp = fopen("5.h5", "r");
 	assert( fp != NULL && "File not found.");
 	fclose(fp);
-	remove("5.h5");
-	
-	return 0;
 }

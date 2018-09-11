@@ -27,12 +27,81 @@
 #include <mpi.h>
 #include <pdi.h>
 #include <time.h>
+#include <paraconf.h>
 
 #define IMX 5
 #define JMX 4
 #define NI_GHOST 1
 #define NJ_GHOST 2
 #define DIM 2
+
+
+const char* CONFIG_YAML =
+"metadata:                                             \n"
+"  input: int                                          \n"
+"  ni: int                                             \n"
+"  nj: int                                             \n"
+"  nig: int                                            \n"
+"  njg: int                                            \n"
+"  nit: int                                            \n"
+"  njt: int                                            \n"
+"  istart: int                                         \n"
+"  jstart: int                                         \n"
+"  rank: int                                           \n"
+"  nproc: int                                          \n"
+"data:                                                 \n"
+"  reals:                                              \n"
+"    type: double                                      \n"
+"    sizes: [$nj +2*$njg , $ni+2*$nig]                 \n"
+"    subsizes: [$nj , $ni]                             \n"
+"    starts: [$njg, $nig]                              \n"
+"  values:                                             \n"
+"    type: int                                         \n"
+"    sizes: [$nj +2*$njg , $ni+2*$nig]                 \n"
+"    subsizes: [$nj , $ni]                             \n"
+"    starts: [$njg, $nig]                              \n"
+"  time:                                               \n"
+"    type: double                                      \n"
+"    size: 1                                           \n"
+"  myrank:                                             \n"
+"    type: int                                         \n"
+"    size: 1                                           \n"
+"plugins:                                              \n"
+"  mpi:                                                \n"
+"  decl_hdf5:                                          \n"
+"    file: decl_hdf5_test_05_C.h5                      \n"
+"    communicator: $MPI_COMM_WORLD                     \n"
+"    datasets:                                         \n"
+"      reals: {type: double, sizes: [$njt, $nit]}      \n"
+"      values: {type: int, sizes: [$njt, $nit]}        \n"
+"      myrank: {type: int, size: $nproc}               \n"
+"      time: {type: double, size: $nproc}              \n"
+"    write:                                            \n"
+"      reals:                                          \n"
+"        when: $input=0                                \n"
+"        dataset_selection: {start: [$jstart, $istart]}\n"
+"      values:                                         \n"
+"        when: $input=0                                \n"
+"        dataset_selection: {start: [$jstart, $istart]}\n"
+"      myrank:                                         \n"
+"        when: $input=0                                \n"
+"        dataset_selection: {size: 1, start: $rank}    \n"
+"      time:                                           \n"
+"        when: $input=0                                \n"
+"        dataset_selection: {size: 1, start: $rank}    \n"
+"    read:                                             \n"
+"      reals:                                          \n"
+"        when: $input=1                                \n"
+"        dataset_selection: {start: [$jstart, $istart]}\n"
+"      values:                                         \n"
+"        when: $input=1                                \n"
+"        dataset_selection: {start: [$jstart, $istart]}\n"
+"      myrank:                                         \n"
+"        when: $input=1                                \n"
+"        dataset_selection: {size: 1, start: $rank}    \n"
+"      time:                                           \n"
+"        when: $input=1                                \n"
+"        dataset_selection: {size: 1, start: $rank}    \n";
 
 int main(int argc, char* argv[])
 {
@@ -58,9 +127,7 @@ int main(int argc, char* argv[])
 	
 	
 	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_status_t err = PDI_init(conf, &world);
 	int rank; MPI_Comm_rank(world, &rank);
@@ -122,10 +189,10 @@ int main(int argc, char* argv[])
 	PDI_expose("reals", &reals, PDI_OUT);     // output real
 	PDI_expose("values", &values, PDI_INOUT); // output integers
 	
-	PDI_transaction_begin("useless_name");
-	PDI_expose("myrank", &rank, PDI_OUT);
-	PDI_expose("time", &starting_time, PDI_OUT);
-	PDI_transaction_end();
+	PDI_multi_expose("useless_name",
+			"myrank", &rank, PDI_OUT,
+			"time", &starting_time, PDI_OUT,
+			NULL);
 	
 	input = 1;
 	///  Import should also work
@@ -194,5 +261,4 @@ int main(int argc, char* argv[])
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
-	return 0;
 }

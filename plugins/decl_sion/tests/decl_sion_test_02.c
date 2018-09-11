@@ -27,28 +27,59 @@
 #include <mpi.h>
 #include <pdi.h>
 
-#define IMX 10
-#define JMX 5
+const int IMX = 10;
+const int JMX = 5;
+
+const char* CONFIG_YAML =
+"metadata:                  \n"
+"  input: int               \n"
+"  ni: int                  \n"
+"  nj: int                  \n"
+"data:                      \n"
+"  reals:                   \n"
+"    type: double           \n"
+"    sizes: [$nj , $ni]     \n"
+"  values:                  \n"
+"    type: int              \n"
+"    sizes: [$nj , $ni]     \n"
+"                           \n"
+"plugins:                   \n"
+"  decl_sion:               \n"
+"    outputs:               \n"
+"      - variable: reals    \n"
+"        file: reals_C.sion \n"
+"        select: $input = 0 \n"
+"      - variable: values   \n"
+"        file: values_C.sion\n"
+"        select: $input = 0 \n"
+"      - variable: ni       \n"
+"        file: ni_C.sion    \n"
+"        select: $input = 0 \n"
+"      - variable: nj       \n"
+"        file: nj_C.sion    \n"
+"        select: $input = 0 \n"
+"    inputs:                \n"
+"      - variable: reals    \n"
+"        file: reals_C.sion \n"
+"        select: $input = 1 \n"
+"      - variable: values   \n"
+"        file: values_C.sion\n"
+"        select: $input = 1 \n"
+;
 
 int main(int argc, char* argv[])
 {
 	int values[JMX][IMX], cp_values[JMX][IMX];
 	double reals[JMX][IMX], cp_reals[JMX][IMX];
-	int i, j, input;
-	int ni=IMX,nj=JMX; // PDI only
 	
 	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_init(conf, &world);
-	int rank;
-	MPI_Comm_rank(world, &rank);
 	
 	// Fill arrays
-	for (j=0; j<JMX; ++j) {
-		for (i=0; i<IMX; ++i) {
+	for (int j=0; j<JMX; ++j) {
+		for (int i=0; i<IMX; ++i) {
 			values[j][i]= i;
 			reals[j][i] = (double)(i)+0.1*(i%10);
 			cp_values[j][i]= -1;
@@ -56,37 +87,35 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	input=0;
-	PDI_expose("rank",&rank, PDI_OUT);
+	int input=0;
 	PDI_expose("input",&input, PDI_OUT);
 	// Set size for PDI
-	PDI_expose("ni",&ni, PDI_OUT);
-	PDI_expose("nj",&nj, PDI_OUT);
+	PDI_expose("ni", &IMX, PDI_OUT);
+	PDI_expose("nj", &JMX, PDI_OUT);
 	
 	// Test that export/exchange works
-	PDI_expose("input",&input, PDI_OUT);
-	PDI_expose("reals",&reals, PDI_OUT);      // output real
-	PDI_expose("values",&values, PDI_INOUT);  // output integers
+	PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("reals", &reals, PDI_OUT);      // output real
+	PDI_expose("values", &values, PDI_INOUT);  // output integers
 	
 	input=1;
 	// Import should also work
-	PDI_expose("input",&input, PDI_OUT); // update metadata => decl_sion now import only
-	PDI_expose("reals",&cp_reals, PDI_IN);      // input real
-	PDI_expose("values",&cp_values, PDI_INOUT);  // input integers
+	PDI_expose("input", &input, PDI_OUT); // update metadata => decl_sion now import only
+	PDI_expose("reals", &cp_reals, PDI_IN);      // input real
+	PDI_expose("values", &cp_values, PDI_INOUT); // input integers
 	
 	// So the data should be the same
 	fprintf(stderr,"Data exported | Data imported\n");
-	for (j=0; j<JMX; ++j) {
-		for (i=0; i<IMX; ++i) {
+	for (int j=0; j<JMX; ++j) {
+		for (int i=0; i<IMX; ++i) {
 			fprintf(stderr,"%10d     %4d\n", values[j][i], cp_values[j][i]);
 			fprintf(stderr,"%10.2f     %2.2f\n", reals[j][i], cp_reals[j][i]);
-			assert(values[j][i] ==  cp_values[j][i]);
-			assert(reals[j][i]  ==  cp_reals[j][i]);
+			if ( values[j][i] != cp_values[j][i] ) abort();
+			if ( reals[j][i]  != cp_reals[j][i]  ) abort();
 		}
 	}
 	
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
-	return 0;
 }

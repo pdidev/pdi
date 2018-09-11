@@ -34,6 +34,19 @@
 #define CST1 1
 #define test_value( var, value, fatal) fct_test_value( var, value, fatal, __func__, __LINE__)
 
+const char* CONFIG_YAML =
+"metadata:                                        \n"
+"data:                                            \n"
+"  test_var: double                               \n"
+"  input: int                                     \n"
+"  output: int                                    \n"
+"plugins:                                         \n"
+"  user_code:                                     \n"
+"    on_event:                                    \n"
+"      testing:                                   \n"
+"        test: {var_in: $input, var_out: $output }\n"
+;
+
 static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
 {
 	if (value != var) {
@@ -64,26 +77,21 @@ void test(void)
 
 int main( int argc, char* argv[] )
 {
-	int in,out;
 	MPI_Init(&argc, &argv);
-	assert(argc == 2 && "Needs 1 single arg: config file");
-	
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
-	
 	PDI_init(conf, &world);
 	
-	in=CST0;
-	out=CST0;
-	PDI_transaction_begin("testing");
-	PDI_expose("input", &in, PDI_OUT); // export data as function input
-	PDI_expose("output", &out, PDI_IN); // import data as function output
-	PDI_transaction_end();
+	int in = CST0;
+	int out = CST0;
+	PDI_multi_expose("testing",
+			"input", &in, PDI_OUT, // export data as function input
+			"output", &out, PDI_IN, // import data as function output
+			NULL);
 	test_value(out, CST1, FATAL);
-	PDI_finalize();
 	
+	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
-	return 0;
 }
 

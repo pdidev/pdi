@@ -1,7 +1,0 @@
-metadata:
-  meta1: int
-data: # values that can not be referenced using $syntax
-  invalid:
-    type: double
-    size: $meta2
-plugins:
