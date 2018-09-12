@@ -24,9 +24,9 @@
 
 #include <gtest/gtest.h>
 
-#include <datatype_mock.h>
-
 #include <pdi/record_datatype.h>
+
+#include "mocks/datatype_mock.h"
 
 using namespace PDI;
 using ::testing::Return;

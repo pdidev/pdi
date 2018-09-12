@@ -26,15 +26,14 @@
 
 #include <gtest/gtest.h>
 
-#include <global_context_mock.h>
-
 #include <pdi/array_datatype.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/data_descriptor_impl.h>
 #include <pdi/error.h>
+#include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
 
-#include <pdi/paraconf_wrapper.h>
+#include "mocks/global_context_mock.h"
 
 using namespace PDI;
 using namespace std;

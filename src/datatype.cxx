@@ -29,6 +29,11 @@
 
 namespace PDI {
 
+bool Datatype::operator!=(const Datatype& rhs) const
+{
+	return !(*this == rhs);
+}
+
 Datatype::~Datatype() = default;
 
 } // namespace PDI

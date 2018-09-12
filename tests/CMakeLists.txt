@@ -37,6 +37,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
+set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 
 add_executable(PDI_test_01 PDI_test_01.c)
@@ -60,9 +61,9 @@ set(PDI_unit_tests_SRC
 		PDI_record_datatype_empty.cxx
 		PDI_record_datatype.cxx
 		PDI_ref_any.cxx
-		PDI_scalar_datatype.cxx)
+		PDI_scalar_datatype.cxx
+		PDI_test_parse_types.cxx)
 add_executable(PDI_unit_tests ${PDI_unit_tests_SRC})
-target_include_directories(PDI_unit_tests PRIVATE include mocks)
 target_link_libraries(PDI_unit_tests pdi Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
 gtest_discover_tests(PDI_unit_tests)
 

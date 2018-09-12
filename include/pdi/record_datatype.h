@@ -59,6 +59,14 @@ public:
 		
 		const std::string& name() const;
 		
+		/** Returns true if the members are equal
+		*/
+		bool operator==(const Member& rhs) const;
+		
+		/** Returns true if the members are not equal
+		 */
+		bool operator!=(const Member& rhs) const;
+		
 	};
 	
 private:
@@ -94,6 +102,10 @@ public:
 	void* data_dense_copy(void* to, const void* from) const override;
 	
 	void destroy_data(void* ptr) const override;
+	
+	std::string debug_string() const override;
+	
+	bool operator== (const Datatype&) const override;
 	
 };
 

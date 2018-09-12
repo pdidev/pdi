@@ -43,6 +43,20 @@ public:
 	 */
 	virtual Datatype_uptr clone_type() const = 0;
 	
+	/** Test for equality
+	 *
+	 * \param other the Datatype to compare
+	 * \return true if the datatatypes are equal
+	 */
+	virtual bool operator== (const Datatype& other) const = 0;
+	
+	/** Test for inequality
+	 *
+	 * \param other the Datatype to compare
+	 * \return true if the datatatypes are not equal
+	 */
+	bool operator!=(const Datatype& rhs) const;
+	
 	/** Creates a new datatype as the dense copy of this one
 	 *
 	 * \return the type that is produced
@@ -69,7 +83,7 @@ public:
 	 */
 	virtual size_t buffersize() const = 0;
 	
-	/** Return the required alignment for a type
+	/** Returns the required alignment for a type
 	 *
 	 * \return the size in bytes
 	 */
@@ -98,6 +112,10 @@ public:
 	 * \param[in] pointer to the data to free
 	 */
 	virtual void destroy_data(void* ptr) const = 0;
+	
+	/** Returns the datatype yaml representation as a string
+	 */
+	virtual std::string debug_string() const = 0;
 	
 };
 

@@ -26,7 +26,9 @@
 
 #include <algorithm>
 #include <memory>
+#include <regex>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include "pdi/paraconf_wrapper.h"
@@ -38,9 +40,13 @@
 
 namespace PDI {
 
+using std::endl;
 using std::max;
 using std::move;
+using std::regex;
+using std::regex_replace;
 using std::string;
+using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
@@ -69,6 +75,18 @@ const Datatype& Record_datatype::Member::type() const
 const string& Record_datatype::Member::name() const
 {
 	return m_name;
+}
+
+bool Record_datatype::Member::operator==(const Member& rhs) const
+{
+	return m_displacement ==  rhs.m_displacement
+	    && m_name == rhs.m_name
+	    && *m_type == *rhs.m_type;
+}
+
+bool Record_datatype::Member::operator!=(const Member& rhs) const
+{
+	return !(*this == rhs);
 }
 
 Record_datatype::Record_datatype(vector<Member>&& members, size_t size):
@@ -200,6 +218,34 @@ void Record_datatype::destroy_data(void* ptr) const
 			member.type().destroy_data(reinterpret_cast<uint8_t*>(ptr) + member.displacement());
 		}
 	}
+}
+
+string Record_datatype::debug_string() const
+{
+	stringstream ss;
+	ss << "type: record" << endl
+	    << "dense: " << (dense() ? "true" : "false") << endl
+	    << "buffersize: " << buffersize() << endl
+	    << "datasize: " << datasize() << endl
+	    << "alignment: " << alignment() << endl
+	    << "members: ";
+	for (auto&& member : members()) {
+		auto type_str = member.type().debug_string();
+		type_str = regex_replace(type_str, regex("\n"), "\n\t\t");
+		type_str.insert(0, "\t\t");
+		ss << endl << "\t - name: " << member.name() << endl
+		    << "\t   displacement: " << member.displacement() << endl
+		    << "\t   type: " << endl << type_str;
+	}
+	return ss.str();
+}
+
+bool Record_datatype::operator==(const Datatype& other) const
+{
+	const Record_datatype* rhs = dynamic_cast<const Record_datatype*>(&other);
+	return rhs
+	    && m_buffersize == rhs->m_buffersize
+	    && m_members == rhs->m_members;
 }
 
 } // namespace PDI

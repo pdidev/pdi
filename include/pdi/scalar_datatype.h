@@ -74,6 +74,10 @@ public:
 	
 	void destroy_data(void* ptr) const override;
 	
+	std::string debug_string() const override;
+	
+	bool operator== (const Datatype&) const override;
+	
 };
 
 const Scalar_datatype UNDEF_TYPE = {Scalar_kind::UNKNOWN, 0};

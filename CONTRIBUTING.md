@@ -66,6 +66,13 @@ Prototypes:
 
 ## C++ coding conventions
 
+The auto keyword should be used for types as `auto&&` and only in one of the
+following cases:
+* in iterations either in range based for or to refer to iterators
+* to store objects that can not be typed otherwise (e.g. lambdas)
+* to store the result of an expression specifically specifying the type of the
+  generated value (e.g. a new expression)
+
 Naming:
 * class names *must* begin with an upper case letter and use underscore to
   separate words

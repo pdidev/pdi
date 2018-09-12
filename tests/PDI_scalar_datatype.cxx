@@ -24,9 +24,9 @@
 
 #include <gtest/gtest.h>
 
-#include <context_mock.h>
-
 #include <pdi/scalar_datatype.h>
+
+#include "mocks/context_mock.h"
 
 using namespace PDI;
 using namespace std;

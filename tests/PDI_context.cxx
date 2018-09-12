@@ -28,8 +28,8 @@
 
 #include <pdi/context.h>
 #include <pdi/global_context.h>
-#include <pdi/plugin.h>
 #include <pdi/paraconf_wrapper.h>
+#include <pdi/plugin.h>
 
 using namespace PDI;
 using std::string;

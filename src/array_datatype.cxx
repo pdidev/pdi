@@ -28,7 +28,9 @@
 #include <cassert>
 #include <cstdint>
 #include <memory>
+#include <regex>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include "pdi/paraconf_wrapper.h"
@@ -40,8 +42,12 @@
 
 namespace PDI {
 
+using std::endl;
 using std::max;
+using std::regex;
+using std::regex_replace;
 using std::string;
+using std::stringstream;
 using std::transform;
 using std::unique_ptr;
 using std::vector;
@@ -165,6 +171,35 @@ void Array_datatype::destroy_data(void* ptr) const
 			subtype().destroy_data(reinterpret_cast<uint8_t*>(ptr) + offset);
 		}
 	}
+}
+
+
+string Array_datatype::debug_string() const
+{
+	stringstream ss;
+	auto subtype_str = subtype().debug_string();
+	subtype_str = regex_replace(subtype_str, regex("\n"), "\n\t");
+	subtype_str.insert(subtype_str.begin(), '\t');
+	ss << "type: array" << endl
+	    << "dense: " << (dense() ? "true" : "false") << endl
+	    << "buffersize: " << buffersize() << endl
+	    << "datasize: " << datasize() << endl
+	    << "alignment: " << alignment() << endl
+	    << "size: " << size() << endl
+	    << "start: " << start() << endl
+	    << "subsize: " << subsize() << endl
+	    << "subtype: " << endl << subtype_str;
+	return ss.str();
+}
+
+bool Array_datatype::operator==(const Datatype& other) const
+{
+	const Array_datatype* rhs = dynamic_cast<const Array_datatype*>(&other);
+	return rhs
+	    && *m_subtype == *rhs->m_subtype
+	    && m_size == rhs->m_size
+	    && m_start == rhs->m_start
+	    && m_subsize == rhs->m_subsize;
 }
 
 } // namespace PDI

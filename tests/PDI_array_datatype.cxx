@@ -24,10 +24,10 @@
 
 #include <gtest/gtest.h>
 
-#include <context_mock.h>
-#include <datatype_mock.h>
-
 #include <pdi/array_datatype.h>
+
+#include "mocks/context_mock.h"
+#include "mocks/datatype_mock.h"
 
 using namespace PDI;
 using ::testing::Return;

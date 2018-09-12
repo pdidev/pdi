@@ -22,18 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <limits>
+#include <string>
+#include <type_traits>
+#include <utility>
+
 #include <gtest/gtest.h>
-#include <context_mock.h>
-#include <data_descriptor_mock.h>
 
 #include <pdi/expression.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 
-#include <limits>
-#include <string>
-#include <type_traits>
-#include <utility>
+#include "mocks/context_mock.h"
+#include "mocks/data_descriptor_mock.h"
 
 using PDI::Expression;
 using PDI::Datatype_uptr;

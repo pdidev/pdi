@@ -28,8 +28,10 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <map>
 #include <memory>
 #include <string>
+#include <sstream>
 
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/error.h"
@@ -40,8 +42,11 @@
 
 namespace PDI {
 
+using std::endl;
+using std::map;
 using std::max;
 using std::string;
+using std::stringstream;
 using std::transform;
 using std::unique_ptr;
 
@@ -115,6 +120,34 @@ void* Scalar_datatype::data_dense_copy(void* to, const void* from) const
 }
 
 void Scalar_datatype::destroy_data(void*) const {}
+
+string Scalar_datatype::debug_string() const
+{
+	const map<Scalar_kind, string> kind_map {
+		{Scalar_kind::UNKNOWN,  "unknown"},
+		{Scalar_kind::SIGNED,   "signed"},
+		{Scalar_kind::UNSIGNED, "unsigned"},
+		{Scalar_kind::FLOAT,    "float"},
+		{Scalar_kind::ADDRESS,  "address"},
+	};
+	stringstream ss;
+	ss << "type: scalar" << endl
+	    << "kind: " << kind_map.at(kind()) << endl
+	    << "dense: " << (dense() ? "true" : "false") << endl
+	    << "buffersize: " << buffersize() << endl
+	    << "datasize: " << datasize() << endl
+	    << "alignment: " << alignment();
+	return ss.str();
+}
+
+bool Scalar_datatype::operator==(const Datatype& other) const
+{
+	const Scalar_datatype* rhs = dynamic_cast<const Scalar_datatype*>(&other);
+	return rhs
+	    && m_size == rhs->m_size
+	    && m_align == rhs->m_align
+	    && m_kind == rhs->m_kind;
+}
 
 } // namespace PDI
 

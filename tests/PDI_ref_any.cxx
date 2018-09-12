@@ -31,7 +31,6 @@
 #include <pdi/ref_any.h>
 #include <pdi/pdi_fwd.h>
 
-
 #include "mocks/datatype_mock.h"
 
 using namespace PDI;

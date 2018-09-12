@@ -27,7 +27,7 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/record_datatype.h>
 
-#include <PDI_record_datatype_cases.h>
+#include "PDI_record_datatype_cases.h"
 
 using namespace PDI;
 using namespace std;

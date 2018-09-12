@@ -51,6 +51,11 @@ struct MockDatatype : public PDI::Datatype {
 		return PDI::Datatype_uptr{evaluate_proxy()};
 	}
 	
+	bool operator == (const Datatype& other) const
+	{
+		return equals(other);
+	}
+	
 	MOCK_CONST_METHOD0(dense, bool());
 	MOCK_CONST_METHOD0(datasize, size_t());
 	MOCK_CONST_METHOD0(buffersize, size_t());
@@ -65,6 +70,8 @@ struct MockDatatype : public PDI::Datatype {
 	MOCK_CONST_METHOD0(simple, bool());
 	MOCK_CONST_METHOD2(data_dense_copy, void* (void* to, const void* from));
 	MOCK_CONST_METHOD1(destroy_data, void(void* ptr));
+	MOCK_CONST_METHOD1(equals, bool(const Datatype&));
+	MOCK_CONST_METHOD0(debug_string, std::string());
 };
 
 #endif //PDI_DATATYPE_MOCK_H_
