@@ -37,6 +37,9 @@ endif()
 # Includes
 include(CTest)
 
+# Astyle
+find_package(Astyle)
+
 # MPI
 if("${BUILD_TESTING}")
 	find_package(MPI REQUIRED COMPONENTS C CXX)
@@ -52,6 +55,13 @@ set_target_properties(pdi_user_code_plugin PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
+
+# Indentation
+if("${Astyle_FOUND}")
+	Astyle_add_indent(indent TEST
+			OPTIONS_FILE ../../docs/formating.astyle
+			user_code.cxx tests/*.c)
+endif()
 
 # Installation
 install(TARGETS pdi_user_code_plugin LIBRARY DESTINATION lib)

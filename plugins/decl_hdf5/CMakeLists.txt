@@ -40,6 +40,9 @@ endif()
 # Includes
 include(CTest)
 
+# Astyle
+find_package(Astyle)
+
 # MPI
 set(MPI_COMPONENTS)
 if("${BUILD_TESTING}")
@@ -74,6 +77,13 @@ set_target_properties(pdi_decl_hdf5_plugin PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
+
+# Indentation
+if("${Astyle_FOUND}")
+	Astyle_add_indent(indent TEST
+			OPTIONS_FILE ../../docs/formating.astyle
+			decl_hdf5.cxx *.h tests/*.c)
+endif()
 
 # installation
 install(TARGETS pdi_decl_hdf5_plugin LIBRARY DESTINATION lib)

@@ -29,6 +29,10 @@
 
 cmake_minimum_required(VERSION 3.5)
 project(pdi_test_plugin LANGUAGES CXX)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+# Astyle
+find_package(Astyle)
 
 # PDI
 find_package(PDI REQUIRED)
@@ -40,6 +44,13 @@ set_target_properties(pdi_test_plugin PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
+
+# Indentation
+if("${Astyle_FOUND}")
+	Astyle_add_indent(indent TEST
+			OPTIONS_FILE ../../docs/formating.astyle
+			test.cxx)
+endif()
 
 # Installation
 install(TARGETS pdi_test_plugin LIBRARY DESTINATION lib)

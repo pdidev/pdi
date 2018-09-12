@@ -250,6 +250,7 @@ ExternalProject_Add(TEST_PLUGIN
 		CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
 		INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
 		DEPENDS PDI)
+add_indent_step(TEST_PLUGIN)
 
 ExternalProject_Add(USER_CODE_PLUGIN
 		PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-user_code"
@@ -258,6 +259,7 @@ ExternalProject_Add(USER_CODE_PLUGIN
 		INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
 		DEPENDS PDI)
 add_testing(USER_CODE_PLUGIN)
+add_indent_step(USER_CODE_PLUGIN)
 
 if("${BUILD_MPI_PLUGIN}")
 	ExternalProject_Add(MPI_PLUGIN
@@ -266,6 +268,8 @@ if("${BUILD_MPI_PLUGIN}")
 			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
 			DEPENDS PDI)
+	add_testing(MPI_PLUGIN)
+	add_indent_step(MPI_PLUGIN)
 endif()
 
 if("${BUILD_DECL_HDF5_PLUGIN}")
@@ -276,6 +280,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}")
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
 			DEPENDS PDI)
 	add_testing(DECL_HDF5_PLUGIN)
+	add_indent_step(DECL_HDF5_PLUGIN)
 endif()
 
 if("${BUILD_DECL_SION_PLUGIN}")
@@ -286,6 +291,7 @@ if("${BUILD_DECL_SION_PLUGIN}")
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
 			DEPENDS PDI)
 	add_testing(DECL_SION_PLUGIN)
+	add_indent_step(DECL_SION_PLUGIN)
 endif()
 
 if("${BUILD_FTI_PLUGIN}")
@@ -295,6 +301,7 @@ if("${BUILD_FTI_PLUGIN}")
 			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
 			DEPENDS PDI)
+	add_indent_step(FTI_PLUGIN)
 	if(NOT "${USE_FTI}" STREQUAL SYSTEM)
 		file(MD5 "${FTI_PATH}" HASH) #< trick to prevent no-hash warning
 		ExternalProject_Add(FTI
