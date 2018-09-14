@@ -39,6 +39,7 @@ endif()
 
 # Includes
 include(CTest)
+include(GNUInstallDirs)
 
 # Astyle
 find_package(Astyle)
@@ -77,7 +78,10 @@ if("${Astyle_FOUND}")
 endif()
 
 # Installation
-install(TARGETS pdi_decl_sion_plugin LIBRARY DESTINATION lib)
+install(TARGETS pdi_decl_sion_plugin
+		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)
 
 # Tests
 if("${BUILD_TESTING}")

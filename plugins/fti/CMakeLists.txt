@@ -31,6 +31,9 @@ cmake_minimum_required(VERSION 3.5)
 project(pdi_fti_plugin LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+# Includes
+include(GNUInstallDirs)
+
 # Astyle
 find_package(Astyle)
 
@@ -57,4 +60,7 @@ if("${Astyle_FOUND}")
 endif()
 
 # Installation
-install(TARGETS pdi_fti_plugin LIBRARY DESTINATION lib)
+install(TARGETS pdi_fti_plugin
+		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)

@@ -28,30 +28,27 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi_decl_hdf5_plugin LANGUAGES CXX)
+project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if("${BUILD_TESTING}")
-	enable_language(C)
-	if("${ENABLE_FORTRAN}")
-		enable_language(Fortran)
-	endif()
+if("${BUILD_TESTING}" AND "${ENABLE_FORTRAN}")
+	enable_language(Fortran)
 endif()
 
 # Includes
 include(CTest)
+include(GNUInstallDirs)
 
 # Astyle
 find_package(Astyle)
 
 # MPI
-set(MPI_COMPONENTS)
 if("${BUILD_TESTING}")
 	set(MPI_COMPONENTS REQUIRED COMPONENTS CXX C)
 	if("${ENABLE_FORTRAN}")
 		list(APPEND MPI_COMPONENTS Fortran)
 	endif()
 else()
-	set(MPI_COMPONENTS OPTIONAL_COMPONENTS CXX)
+	set(MPI_COMPONENTS OPTIONAL_COMPONENTS CXX C)
 endif()
 find_package(MPI ${MPI_COMPONENTS})
 
@@ -86,7 +83,10 @@ if("${Astyle_FOUND}")
 endif()
 
 # installation
-install(TARGETS pdi_decl_hdf5_plugin LIBRARY DESTINATION lib)
+install(TARGETS pdi_decl_hdf5_plugin
+		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)
 
 # Tests
 if("${BUILD_TESTING}")
