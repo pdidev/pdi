@@ -33,12 +33,12 @@ Plugins:
     * HDF5 (either sequential or parallel compatible with the chosen MPI)
   * FTI plugin depends on:
     * FTI (distributed with PDI, pass the `-DUSE_FTI=EMBEDDED` option to cmake to use the embedded version)
-  * the decl'SION plugin depends on:
+  * Decl'SION plugin depends on:
     * SIONlib
 
 ## Getting the source
 
-### Latest releas
+### Latest release
 
 You can find a list of release at https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags
 
