@@ -11,22 +11,30 @@ The public plugin API offered by PDI is general and simple enough that one can e
 ## Prerequisites
 
 PDI depends on:
-  * cmake, version >= 3.5 (version >= 3.10 if you want to run tests)
+  * cmake, version >= 3.5
   * a C-99 and C++-14 compiler (gcc-5.4 is tested)
   * a POSIX compatible OS (linux with GNU libc-2.27 is tested)
   * a MPI-2 library (openmpi-1.10.2 is tested)
-  * paraconf (distributed with PDI, pass the `-DUSE_PARACONF=EMBEDDED` option to cmake to use it)
-  * libyaml (distributed with paraconf, pass the `-DUSE_YAML=EMBEDDED` option to cmake to use it)
+  * paraconf (distributed with PDI, pass the `-DUSE_PARACONF=EMBEDDED` option to cmake to use the embedded version)
+  * libyaml (distributed with PDI, pass the `-DUSE_YAML=EMBEDDED` option to cmake to use the embedded version)
+  * spdlog (distributed with PDI, pass the `-DUSE_SPDLOG=EMBEDDED` option to cmake to use the embedded version)
 
 PDI Fortran support depends on:
   * a Fortran-2003 compiler (gfort-5.4 is tested)
-  * BPP (distributed with PDI)
+  * BPP (distributed with PDI, pass the `-DUSE_BPP=EMBEDDED` option to cmake to use it)
   * a python and bash interpreter at compilation
 
+Tests depend on:
+  * cmake, version >= 3.10
+  * gtest and gmock (distributed with PDI, pass the `-DUSE_GTEST=EMBEDDED` option to cmake to use the embedded version)
+
 Plugins:
-  * the decl'HDF5 plugin require a version of HDF5 compatible with the chosen MPI (either sequential or parallel)
-  * the FTI plugin depends on the FTI library that is distributed together with PDI in the `vendor` directory
-  * the decl'SION plugin depends on SIONlib
+  * Decl'HDF5 plugin depends on:
+    * HDF5 (either sequential or parallel compatible with the chosen MPI)
+  * FTI plugin depends on:
+    * FTI (distributed with PDI, pass the `-DUSE_FTI=EMBEDDED` option to cmake to use the embedded version)
+  * the decl'SION plugin depends on:
+    * SIONlib
 
 ## Getting the source
 
