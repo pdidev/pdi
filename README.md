@@ -38,7 +38,7 @@ For example, you can get release 0.2.0
 
 ```
 wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.2.0/pdi-0.2.0.tar.bz2
-tar -xf https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.2.0/pdi-0.2.0.tar.bz2
+tar -xf pdi-0.2.0.tar.bz2
 ```
 
 ### From GIT
