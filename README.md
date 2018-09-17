@@ -21,8 +21,8 @@ PDI depends on:
 
 PDI Fortran support depends on:
   * a Fortran-2003 compiler (gfort-5.4 is tested)
-  * BPP (distributed with PDI, pass the `-DUSE_BPP=EMBEDDED` option to cmake to use it)
   * a python and bash interpreter at compilation
+  * BPP (distributed with PDI, pass the `-DUSE_BPP=EMBEDDED` option to cmake to use it)
 
 Tests depend on:
   * cmake, version >= 3.10
