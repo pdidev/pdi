@@ -30,7 +30,20 @@ Plugins:
 
 ## Getting the source
 
-As of now, the source has to be fetched from git .
+### Latest releas
+
+You can find a list of release at https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags
+
+For example, you can get release 0.2.0
+
+```
+wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.2.0/pdi-0.2.0.tar.bz2
+tar -xf https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.2.0/pdi-0.2.0.tar.bz2
+```
+
+### From GIT
+
+You can fetch the latest source from git .
 
 ```
 git clone --recursive https://gitlab.maisondelasimulation.fr/jbigot/pdi.git
@@ -41,9 +54,14 @@ git clone --recursive https://gitlab.maisondelasimulation.fr/jbigot/pdi.git
 if the sources are stored in the folder `pdi`:
 ```
 cd pdi
-git submodule update --init --recursive 
-cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX=/usr/ .
-make
-make doc
+cmake \
+        -DUSE_BPP=EMBEDDED \
+        -DUSE_FTI=EMBEDDED \
+        -DUSE_GTEST=EMBEDDED \
+        -DUSE_PARACONF=EMBEDDED \
+        -DUSE_SPDLOG=EMBEDDED \
+        -DUSE_YAML=EMBEDDED \
+        -DCMAKE_INSTALL_PREFIX=/usr/ \
+        .
 make install
 ```
