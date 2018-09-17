@@ -38,6 +38,7 @@
 #include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
 
@@ -53,6 +54,9 @@ private:
 	
 	/// Global logger of PDI
 	Logger_sptr m_logger;
+	
+	/// Datatype_template constructors available in PDI
+	std::unordered_map<std::string, Datatype_template_func> m_datatypes;
 	
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
@@ -105,6 +109,10 @@ public:
 	void event(const char* name) override;
 	
 	Logger_sptr logger() const override;
+	
+	Datatype_template_func& datatype(const std::string& name) override;
+	
+	void add_datatype(const std::string& datatype_name, Datatype_template_func datatype_func) override;
 	
 };
 

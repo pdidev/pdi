@@ -128,6 +128,13 @@ TEST_F(DataDescTest, check_metadata_update)
  */
 TEST_F(DataDescTest, creation_template)
 {
+	Datatype_template_func datatype_func = [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}};
+	};
+	EXPECT_CALL(this->mockGlCtx, datatype(::testing::_))
+	.Times(1)
+	.WillOnce(::testing::ReturnRef(datatype_func));
+	
 	Paraconf_wrapper fw;
 	this->m_desc_default->creation_template(array_config);
 	Datatype_uptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, mockGlCtx);
@@ -320,6 +327,13 @@ TEST_F(DataDescTest, share_meta_without_read)
  */
 TEST_F(DataDescTest, multi_read_share_meta)
 {
+	Datatype_template_func datatype_func = [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}};
+	};
+	EXPECT_CALL(this->mockGlCtx, datatype(::testing::_))
+	.Times(1)
+	.WillOnce(::testing::ReturnRef(datatype_func));
+	
 	this->m_desc_default->creation_template(array_config);
 	this->m_desc_default->metadata(true);
 	this->m_desc_default->share(this->array, true, false);

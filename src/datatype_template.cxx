@@ -35,6 +35,7 @@
 
 #include "pdi.h"
 #include "pdi/array_datatype.h"
+#include "pdi/context.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
 #include "pdi/logger.h"
@@ -168,64 +169,25 @@ public:
 	
 };
 
-Datatype_template_uptr to_scalar_datatype_template(PC_tree_t node, Logger_sptr logger)
+
+Datatype_template_uptr to_scalar_datatype_template(Context& ctx, PC_tree_t node)
 {
 	string type;
-	long kind;
 	try {
 		type = to_string(PC_get(node, ".type"));
-		try {
-			kind = to_long(PC_get(node, ".kind"));
-		} catch (const Error&) {
-			kind = 0;
-		}
-	} catch (const Error&) {
+	} catch (Error e) {
 		type = to_string(node);
-		kind = 0;
 	}
-	
-	// For Fortran, we assume kind means number of bytes... TODO: autodetect
-	if (type == "char" && kind == 0) {  // C char
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::UNSIGNED, sizeof(char)}};
-	} else if (type == "int" && kind == 0) {  // C int
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, sizeof(int)}};
-	} else if (type == "int8"  && kind == 0) {  // C int8
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, 1}};
-	} else if (type == "int16"  && kind == 0) {  // C int16
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, 2}};
-	} else if (type == "int32"  && kind == 0) {  // C int32
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, 4}};
-	} else if (type == "int64"  && kind == 0) {  // C int64
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, 8}};
-	} else if (type == "float"  && kind == 0) {  // C float
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::FLOAT, 4}};
-	} else if (type == "double"  && kind == 0) {  // C double
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::FLOAT, 8}};
-	} else if (type == "character") {     // Fortran character
-		if (kind == 0) kind = PDI_CHARACTER_DEFAULT_KIND;
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::UNSIGNED, kind}};
-	} else if (type == "integer") { // Fortran integer
-		if (kind == 0) kind = PDI_INTEGER_DEFAULT_KIND;
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::SIGNED, kind}};
-	} else if (type == "logical") { // Fortran logical
-		if (kind == 0) kind = PDI_LOGICAL_DEFAULT_KIND;
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::UNSIGNED, kind}};
-	} else if (type == "real") { // Fortran real
-		if (kind == 0) kind = PDI_REAL_DEFAULT_KIND;
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::FLOAT, kind}};
-	} else if (type == "MPI_Comm") { // MPI communicator
-		return unique_ptr<Scalar_template> {new Scalar_template{Scalar_kind::MPI_COMM, sizeof(MPI_Comm)}};
-	}
-	
-	throw Error{PDI_ERR_VALUE, "Invalid scalar type: `%s(kind=%d)'", type.c_str(), kind};
+	return ctx.datatype(std::move(type))(node);
 }
 
-Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr logger)
+
+Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 {
 	{
 		string order_str = to_string(PC_get(node, ".order"), "");
 		if (order_str == "c" && order_str == "C") {
-			logger->warn("`order: C' for array is the only supported order and its specification is deprecated");
+			ctx.logger()->warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str !="" ) {
 			throw Error{PDI_ERR_CONFIG, "Incorrect array ordering: `%s', only C order is supported", order_str.c_str()};
 		}
@@ -286,7 +248,7 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr lo
 		}
 	}
 	
-	Datatype_template_uptr res_type = Datatype_template::load(PC_get(node, ".type"), logger);
+	Datatype_template_uptr res_type = Datatype_template::load(ctx, PC_get(node, ".type"));
 	
 	for (ssize_t ii = sizes.size()-1; ii >=0; --ii) {
 		res_type.reset(new Array_template(move(res_type), move(sizes[ii]), move(starts[ii]), move(subsizes[ii])));
@@ -299,13 +261,61 @@ Datatype_template_uptr to_array_datatype_template(PC_tree_t node, Logger_sptr lo
 Datatype_template::~Datatype_template()
 {}
 
-Datatype_template_uptr Datatype_template::load(PC_tree_t node, Logger_sptr logger)
+Datatype_template_uptr Datatype_template::load(Context& ctx, PC_tree_t node)
 {
 	// size or sizes => array
 	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {
-		return to_array_datatype_template(node, logger);
+		return to_array_datatype_template(ctx, node);
 	}
-	return to_scalar_datatype_template(node, logger);
+	return to_scalar_datatype_template(ctx, node);
+}
+
+void Datatype_template::load_basic_datatypes(Context& ctx)
+{
+	// C basic types
+	ctx.add_datatype("char", [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::UNSIGNED, sizeof(char)}};
+	});
+	ctx.add_datatype("int", [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, sizeof(int)}};
+	});
+	ctx.add_datatype("int8", [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 1}};
+	});
+	ctx.add_datatype("int16", [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 2}};
+	});
+	ctx.add_datatype("int32", [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 4}};
+	});
+	ctx.add_datatype("int64", [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 8}};
+	});
+	ctx.add_datatype("float", [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 4}};
+	});
+	ctx.add_datatype("double", [](const PC_tree_t&) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 8}};
+	});
+	
+	// Fortran basic types
+	ctx.add_datatype("character", [](const PC_tree_t& tree) {
+		long kind = to_long(PC_get(tree, ".kind"), PDI_CHARACTER_DEFAULT_KIND);
+		return Datatype_template_uptr{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
+	});
+	ctx.add_datatype("integer", [](const PC_tree_t& tree) {
+		long kind = to_long(PC_get(tree, ".kind"), PDI_INTEGER_DEFAULT_KIND);
+		return Datatype_template_uptr{new Scalar_template{Scalar_kind::SIGNED, kind}};
+	});
+	ctx.add_datatype("logical", [](const PC_tree_t& tree) {
+		long kind = to_long(PC_get(tree, ".kind"), PDI_LOGICAL_DEFAULT_KIND);
+		return Datatype_template_uptr{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
+	});
+	ctx.add_datatype("real", [](const PC_tree_t& tree) {
+		long kind = to_long(PC_get(tree, ".kind"), PDI_REAL_DEFAULT_KIND);
+		return Datatype_template_uptr{new Scalar_template{Scalar_kind::FLOAT, std::move(kind)}};
+	});
+	
 }
 
 } // namespace PDI

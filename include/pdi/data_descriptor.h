@@ -76,7 +76,7 @@ public:
 	/** Shares some data with PDI
 	 * \param[in,out] ref a reference to the shared data
 	 * \param read whether the stored reference should have read access
-	 * \param write whether write access is granted to other references
+	 * \param write whether the stored reference should have write access
 	 * \return the just shared buffer
 	 */
 	virtual void* share(Ref ref, bool read, bool write) = 0;

@@ -25,6 +25,8 @@
 #ifndef PDI_SCALAR_DATATYPE_H_
 #define PDI_SCALAR_DATATYPE_H_
 
+#include <functional>
+
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
 
@@ -37,16 +39,27 @@ class PDI_EXPORT Scalar_datatype:
 	/// Size of the content in bytes or 0 if unknown
 	size_t m_size;
 	
+	/// Size of the densified content in bytes
+	size_t m_dense_size;
+	
 	/// Size of the alignment in bytes
 	size_t m_align;
 	
 	/// Interpretation of the content
 	Scalar_kind m_kind;
 	
+	/// copy function or null for memcpy
+	std::function<void* (void*, const void*)> m_copy;
+	
+	/// destroy function or null for memcpy
+	std::function<void(void*)> m_destroy;
+	
 public:
 	Scalar_datatype(Scalar_kind kind, size_t size);
 	
 	Scalar_datatype(Scalar_kind kind, size_t size, size_t align);
+	
+	Scalar_datatype(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy);
 	
 	/** Interpretation of the content
 	 */

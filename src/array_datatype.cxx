@@ -131,44 +131,34 @@ bool Array_datatype::simple() const
 
 void* Array_datatype::data_dense_copy(void* to, const void* from) const
 {
-	if (simple() && dense()) {
-		//dense copy
-		memcpy(to, from, buffersize());
-		to = reinterpret_cast<uint8_t*>(to) + buffersize();
-		return to;
-	}
-	
-	auto subtype_buffersize = subtype().buffersize();
-	const uint8_t* updated_from_ptr = (start() * subtype_buffersize) + reinterpret_cast<const uint8_t*>(from);
+	size_t subtype_buffersize = subtype().buffersize();
+	from = static_cast<const uint8_t*>(from) + (start() * subtype_buffersize);
 	
 	if (subtype().simple() && subtype().dense()) {
-		//make a dense copy of scalar subarray
-		memcpy(to, updated_from_ptr, datasize());
-		to = reinterpret_cast<uint8_t*>(to) + datasize();
-		return to;
-	} else {
-		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
-		auto space_to_align = subtype().alignment();
-		//size = 0, because we know that 'to' points to allocated memory
-		to = std::align(subtype().alignment(), 0, to, space_to_align);
-		if (to == nullptr) {
-			throw Error{PDI_ERR_IMPL, "Could not align the array datatype"};
-		}
-		
-		for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
-			to = subtype().data_dense_copy(to, updated_from_ptr);
-			updated_from_ptr += subtype_buffersize;
-		}
-		return to;
+		//dense copy
+		memcpy(to, from, datasize());
+		return reinterpret_cast<uint8_t*>(to) + datasize();
 	}
+	
+	size_t subtype_alignment = subtype().alignment();
+	for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
+		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
+		size_t space_to_align = subtype_alignment;
+		//size = 0, because we know that to points to allocated memory
+		to = std::align(subtype_alignment, 0, to, space_to_align);
+		
+		to = subtype().data_dense_copy(to, from);
+		from = reinterpret_cast<const uint8_t*>(from) + subtype_buffersize;
+	}
+	return to;
 }
 
 void Array_datatype::destroy_data(void* ptr) const
 {
 	if (!subtype().simple()) {
-		for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
-			auto offset = (start() + subtype_no) * subtype().buffersize();
-			subtype().destroy_data(reinterpret_cast<uint8_t*>(ptr) + offset);
+		size_t subtype_buffersize = subtype().buffersize();
+		for (size_t subtype_no = start(); subtype_no < start()+subsize(); ++subtype_no) {
+			subtype().destroy_data(reinterpret_cast<uint8_t*>(ptr) + subtype_no*subtype_buffersize);
 		}
 	}
 }

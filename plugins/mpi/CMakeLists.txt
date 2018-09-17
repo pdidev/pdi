@@ -25,6 +25,15 @@
 cmake_minimum_required(VERSION 3.5)
 project(pdi_mpi_plugin LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+if("${BUILD_TESTING}")
+	enable_language(C)
+endif()
+
+# Includes
+include(CTest)
+
+# Astyle
+find_package(Astyle)
 
 # Includes
 include(GNUInstallDirs)
@@ -33,7 +42,11 @@ include(GNUInstallDirs)
 find_package(Astyle)
 
 # MPI
-find_package(MPI REQUIRED COMPONENTS CXX)
+set(MPI_COMPONENTS CXX)
+if("${BUILD_TESTING}")
+	list(APPEND MPI_COMPONENTS C)
+endif()
+find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 
 # PDI
 find_package(PDI REQUIRED)
@@ -58,3 +71,8 @@ install(TARGETS pdi_mpi_plugin
 		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
+
+# Tests
+if("${BUILD_TESTING}")
+	add_subdirectory(tests/)
+endif()

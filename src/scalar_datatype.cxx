@@ -45,6 +45,7 @@ namespace PDI {
 using std::endl;
 using std::map;
 using std::max;
+using std::move;
 using std::string;
 using std::stringstream;
 using std::transform;
@@ -52,14 +53,25 @@ using std::unique_ptr;
 
 Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size):
 	m_size{size},
+	m_dense_size{size},
 	m_align{size},
 	m_kind{kind}
 {}
 
 Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align):
 	m_size{size},
+	m_dense_size{size},
 	m_align{align},
 	m_kind{kind}
+{}
+
+Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy):
+	m_size{size},
+	m_dense_size{dense_size},
+	m_align{align},
+	m_kind{kind},
+	m_copy{move(copy)},
+	m_destroy{move(destroy)}
 {}
 
 Scalar_kind Scalar_datatype::kind() const
@@ -74,12 +86,12 @@ Datatype_template_uptr Scalar_datatype::clone() const
 
 Datatype_uptr Scalar_datatype::clone_type() const
 {
-	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
+	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align, m_dense_size, m_copy, m_destroy}};
 }
 
 Datatype_uptr Scalar_datatype::densify() const
 {
-	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align}};
+	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_dense_size, m_align, m_dense_size, m_copy, m_destroy}};
 }
 
 Datatype_uptr Scalar_datatype::evaluate(Context&) const
@@ -89,7 +101,7 @@ Datatype_uptr Scalar_datatype::evaluate(Context&) const
 
 bool Scalar_datatype::dense() const
 {
-	return true;
+	return m_dense_size == m_size;
 }
 
 size_t Scalar_datatype::datasize() const
@@ -99,7 +111,7 @@ size_t Scalar_datatype::datasize() const
 
 size_t Scalar_datatype::buffersize() const
 {
-	return m_size;
+	return m_dense_size;
 }
 
 size_t Scalar_datatype::alignment() const
@@ -109,17 +121,26 @@ size_t Scalar_datatype::alignment() const
 
 bool Scalar_datatype::simple() const
 {
-	return true;
+	return !m_copy && !m_destroy;
 }
 
 void* Scalar_datatype::data_dense_copy(void* to, const void* from) const
 {
-	memcpy(to, from, buffersize());
-	to = reinterpret_cast<uint8_t*>(to) + buffersize();
+	if ( !m_copy ) {
+		memcpy(to, from, datasize());
+		to = reinterpret_cast<uint8_t*>(to) + datasize();
+	} else {
+		to = m_copy(to, from);
+	}
 	return to;
 }
 
-void Scalar_datatype::destroy_data(void*) const {}
+void Scalar_datatype::destroy_data(void* ptr) const
+{
+	if ( m_destroy ) {
+		m_destroy(ptr);
+	}
+}
 
 string Scalar_datatype::debug_string() const
 {

@@ -116,6 +116,21 @@ void Global_context::finalize()
 Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
 	m_logger{configure_logger(conf)}
 {
+	//load basic datatypes
+	Datatype_template::load_basic_datatypes(*this);
+	
+	//first load plugins, because they can add datatypes declared in config
+	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
+	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
+		//TODO: what to do if a single plugin fails to load?
+		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
+		try {
+			m_plugins.emplace(plugin_name, get_plugin_ctr(plugin_name.c_str())(*this, PC_get(conf, ".plugins<%d>", plugin_id), world, m_logger));
+		} catch (const exception& e) {
+			throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
+		}
+	}
+	
 	// no metadata is not an error
 	PC_tree_t metadata = PC_get(conf, ".metadata");
 	if (!PC_status(metadata)) {
@@ -128,17 +143,6 @@ Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
 		load_data(*this, data, false);
 	} else {
 		m_logger->warn("No data description in PDI configuration file");
-	}
-	
-	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
-	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
-		//TODO: what to do if a single plugin fails to load?
-		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
-		try {
-			m_plugins.emplace(plugin_name, get_plugin_ctr(plugin_name.c_str())(*this, PC_get(conf, ".plugins<%d>", plugin_id), world, m_logger));
-		} catch (const exception& e) {
-			throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
-		}
 	}
 }
 
@@ -203,6 +207,20 @@ void Global_context::event(const char* name)
 Logger_sptr Global_context::logger() const
 {
 	return m_logger;
+}
+
+Datatype_template_func& Global_context::datatype(const std::string& name)
+{
+	auto func_it = m_datatypes.find(name);
+	if (func_it != m_datatypes.end()) {
+		return func_it->second;
+	}
+	throw Error{PDI_ERR_TYPE, "Cannot find datatype `%s'", name.c_str()};
+}
+
+void Global_context::add_datatype(const std::string& datatype_name, Datatype_template_func datatype_func)
+{
+	m_datatypes[datatype_name.c_str()] = std::move(datatype_func);
 }
 
 }

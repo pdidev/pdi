@@ -201,22 +201,17 @@ void* Record_datatype::data_dense_copy(void* to, const void* from) const
 		auto space_to_align = member.type().alignment();
 		//size = 0, because we know that to points to allocated memory
 		to = std::align(member.type().alignment(), 0, to, space_to_align);
-		if (to == nullptr) {
-			throw Error{PDI_ERR_IMPL, "Could not align the record datatype member: %s", member.name().c_str()};
-		}
-		const uint8_t* updated_from_ptr = reinterpret_cast<const uint8_t*>(from) + member.displacement();
-		
-		to = member.type().data_dense_copy(to, updated_from_ptr);
+		const uint8_t* member_from = reinterpret_cast<const uint8_t*>(from) + member.displacement();
+		to = member.type().data_dense_copy(to, member_from);
 	}
 	return to;
 }
 
 void Record_datatype::destroy_data(void* ptr) const
 {
+	if ( simple() ) return;
 	for (auto&& member : members()) {
-		if (!member.type().simple()) {
-			member.type().destroy_data(reinterpret_cast<uint8_t*>(ptr) + member.displacement());
-		}
+		member.type().destroy_data(reinterpret_cast<uint8_t*>(ptr) + member.displacement());
 	}
 }
 

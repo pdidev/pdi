@@ -106,7 +106,7 @@ Data_descriptor_impl::~Data_descriptor_impl()
 
 void Data_descriptor_impl::creation_template(PC_tree_t config)
 {
-	m_type = Datatype::load(config, m_context.logger());
+	m_type = Datatype::load(m_context, config);
 	m_config = config;
 }
 

@@ -44,16 +44,18 @@ namespace PDI {
 Ref Ref_base::do_copy(Ref_r ref)
 {
 	Datatype_uptr densified_type {ref.type().densify()};
-	
-	//+ (densified_type->alignment() - 1) <- we want to make sure that we fit the data even though the worst alignment occur
-	void* newbuffer = operator new (densified_type->buffersize() + (densified_type->alignment() - 1));
+	// no std::aligned_alloc or std::align_val_t in C++14, hand-written version
+	// size + (densified_type->alignment() - 1) <- we want to make sure that we fit the data even though the worst alignment occur
+	size_t size = densified_type->buffersize() + (densified_type->alignment() - 1);
+	void* buffer = operator new (size);
+	void* data = std::align(densified_type->alignment(), densified_type->buffersize(), buffer, size);
 	try {
-		ref.type().data_dense_copy(newbuffer, ref.get());
+		ref.type().data_dense_copy(data, ref.get());
 	} catch (...) {
-		::operator delete (newbuffer);
+		::operator delete (buffer);
 		throw;
 	}
-	return Ref {newbuffer, [](void* v){operator delete (v);}, std::move(densified_type), true, true};
+	return Ref {data, [buffer](void*){operator delete (buffer);}, std::move(densified_type), true, true};
 }
 
 

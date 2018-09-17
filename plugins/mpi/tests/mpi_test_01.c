@@ -22,46 +22,54 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef MPI_COMM_TYPE_H_
-#define MPI_COMM_TYPE_H_
-
-#include <memory>
 #include <mpi.h>
 
-#include <pdi/context.h>
-#include <pdi/error.h>
-#include <pdi/pdi_fwd.h>
-#include <pdi/scalar_datatype.h>
+#include <assert.h>
 
-namespace  {
+#include <paraconf.h>
+#include <pdi.h>
 
-void load_mpi_comm_predefineds(PDI::Context& ctx) {
-	// deleter for MPI_Comm
-	auto deleter = [](void* ptr) {
-		auto comm_ptr = static_cast<MPI_Comm*>(ptr);
-		MPI_Comm_free(comm_ptr);
-		delete comm_ptr;
-	};
+const char* YAML_CONFIG =
+    "metadata:           \n"
+    "  my_array:         \n"
+    "    sizes: [3, 3]   \n"
+    "    subsizes: [2, 2]\n"
+    "    starts: [1, 1]  \n"
+    "    type: MPI_Comm  \n"
+    "plugins:            \n"
+    "  mpi:              \n"
+    ;
+
+int main(int argc, char* argv[])
+{
+	MPI_Init(&argc, &argv);
+	PC_tree_t conf = PC_parse_string(YAML_CONFIG);
+	MPI_Comm world = MPI_COMM_WORLD;
+	PDI_init(conf, &world);
 	
-	// load MPI_COMM_WORLD
-	MPI_Comm* comm = new MPI_Comm;
-	MPI_Comm_dup(MPI_COMM_WORLD, comm);
-	PDI::Ref comm_world_ref{comm, deleter, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::UNKNOWN, sizeof(MPI_Comm))}, true, false};
-	ctx["MPI_COMM_WORLD"].share(comm_world_ref, false, false);
+	MPI_Comm sparse_array[9]; // buffer: 3 x 3; data: 2 x 2; start: 1, 1
+	MPI_Comm* dense_array;    // buffer: 2 x 2
 	
-	// load MPI_COMM_SELF
-	comm = new MPI_Comm;
-	MPI_Comm_dup(MPI_COMM_SELF, comm);
-	PDI::Ref comm_self_ref {comm, deleter, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::UNKNOWN, sizeof(MPI_Comm))}, true, false};
-	ctx["MPI_COMM_SELF"].share(comm_self_ref, false, false);
+	for (int i = 0; i < 9; i++) {
+		MPI_Comm_dup(MPI_COMM_WORLD, sparse_array + i);
+	}
 	
-	// load MPI_COMM_NULL
-	comm = new MPI_Comm;
-	*comm = MPI_COMM_NULL;
-	PDI::Ref comm_null_ref {comm, &free, PDI::Datatype_uptr{new PDI::Scalar_datatype(PDI::Scalar_kind::UNKNOWN, sizeof(MPI_Comm))}, true, false};
-	ctx["MPI_COMM_NULL"].share(comm_null_ref, false, false);
+	// metadata expose creates a dense copy inside PDI
+	PDI_expose("my_array", sparse_array, PDI_OUT);
+	for (int i = 0; i < 9; i++) {
+		MPI_Comm_free(sparse_array + i);
+	}
+	
+	PDI_access("my_array", (void**)&dense_array, PDI_IN);
+	
+	int world_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	for (int i = 0; i < 4; i++) {
+		int comm_rank;
+		MPI_Comm_rank(dense_array[i], &comm_rank);
+		assert(world_rank == comm_rank);
+	}
+	
+	PDI_finalize();
+	MPI_Finalize();
 }
-
-}
-
-#endif // MPI_COMM_TYPE_H_

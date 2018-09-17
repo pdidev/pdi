@@ -27,6 +27,7 @@
 
 #include <gmock/gmock.h>
 #include <pdi/context.h>
+#include <pdi/datatype_template.h>
 #include <pdi/plugin.h>
 
 struct MockContext : public PDI::Context {
@@ -51,6 +52,9 @@ struct MockContext : public PDI::Context {
 	MOCK_METHOD1(event, void(const char* name));
 	
 	MOCK_CONST_METHOD0(logger, PDI::Logger_sptr());
+	
+	MOCK_METHOD1(datatype, PDI::Datatype_template_func&(const std::string& name));
+	MOCK_METHOD2(add_datatype, void(const std::string& datatype_name, PDI::Datatype_template_func datatype));
 	
 };
 

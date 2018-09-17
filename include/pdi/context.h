@@ -25,6 +25,7 @@
 #ifndef PDI_CONTEXT_H_
 #define PDI_CONTEXT_H_
 
+#include <functional>
 #include <list>
 #include <memory>
 #include <stack>
@@ -34,11 +35,14 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/datatype_template.h>
 #include <pdi/ref_any.h>
 #include <pdi/logger.h>
 
 
 namespace PDI {
+
+typedef std::function<Datatype_template_uptr(const PC_tree_t&)> Datatype_template_func;
 
 class PDI_EXPORT Context
 {
@@ -97,6 +101,21 @@ public:
 	virtual void event(const char* name) = 0;
 	
 	virtual Logger_sptr logger() const = 0;
+	
+	/**
+	 *  Returns the datatype_template stored in context
+	 *
+	 * \param[in] name the datatype name
+	 */
+	virtual Datatype_template_func& datatype(const std::string& name) = 0;
+	
+	/**
+	 *  Adds new datatype to the context
+	 *
+	 * \param[in] datatype_name name of the datatype to add
+	 * \param[in] datatype_func function that creates new datatype_template from PC_tree_t
+	 */
+	virtual void add_datatype(const std::string& datatype_name, Datatype_template_func datatype_func) = 0;
 	
 };
 
