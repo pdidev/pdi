@@ -6,54 +6,99 @@ full Decl'HDF5 potential.
 The Decl'HDF5 plugin enables one to read and write data from HDF5 files in a
 declarative way.
 Decl'HDF5 does not support the full HDF5 feature set but offers a simple
-declarative interface to access it.
+declarative interface to access a large subset of it.
 
-## Configuration
+## Configuration grammar
 
-A simple configuration would look like that:
+At its root, the Decl'HDF5 configuration is made of either a single
+`FILE_DESC` or a list of `FILE_DESC`s.
 
-```yaml
-data:
-  my_value: double
-  another_value: int
-plugins:
-  decl_hdf5:
-    file: a_file.h5 # the file in which to write the data
-    write: # a list of dataset to write
-      - my_value # a data reference
-    read:
-      - another_value # a data reference
-```
+### `FILE_DESC`
 
-This configuration would write the data `my_value` and read `another_value` from
-the file `a_file.h5` as soon as they are exposed.
+A `FILE_DESC` specifies a list of actions to execute in one file.
+It is specified by a key/value map that contains at least the `file`
+key.
+Other keys are optional.
+The possible values for the keys are as follow:
+* `file`: a string that can contain $-expressions and specified the
+  name of the file this `FILE_DESC` refers to.
+* `write`: a `DATA_SECTION` that defaults to an empty one.
+  This `DATA_SECTION` describes writes to execute.
+* `write`: a `DATA_SECTION` that defaults to an empty one.
+  This `DATA_SECTION` describes reads to execute.
+* `on_event`: a string identifying an event when the whole file is
+  accessed.
+  If not specified, each data is written when it is exposed and the file
+  is opened and closed every time.
+* `when`: a $-expression specifying a default condition to test before 
+  executing the reads and writes of this `FILE_DESC`.
+  This can be replaced by a more specific condition inside the
+  `DATA_SECTION`.
+* `communicator`: a $-expression referencing a MPI communicator to use
+  for HDF5 parallel synchronized reads and writes.
+  It defaults to MPI_COMM_SELF which stands for sequential writes.
+  In case of data-triggered (vs. event-triggered) reads and writes, this
+  can be replaced inside the `DATA_SECTION`.
+* `datasets`: a key-value map associating a PDI type to string keys.
+  Each string is the name of a dataset to create in the file on first
+  access, with the type described in the value.
 
-### conditional writing
+### `DATA_SECTION`
 
-In order not to read or write data every time it is exposed, one can use the
-`when` keyword to introduce conditionality in the execution of the operation.
+The `DATA_SECTION` describes a set of I/O (read or write) to execute.
+A data section can take multiple forms:
+* a list of strings, each being the name of a PDI data to write
+* a key-value map where each key is the name of a PDI data to write and
+  the value is either a single `DATA_IO_DESC` or a list of
+  `DATA_IO_DESC`s describing the I/O (read or write) to execute.
 
-```yaml
-metadata:
-  iteration_id: int
-data:
-  my_value: double
-  another_value: int
-plugins:
-  decl_hdf5:
-    file: a_file.h5
-    when: $iteration_id = 0
-    write: [ my_value ]
-    read:
-      another_value: # a data reference
-        when: $iteration_id = 1
-```
+The first case behaves as if each data had its `DATA_IO_DESC` specified
+with all default values.
 
-The `when` keyword can be specified at multiple levels of the configuration file
-and the last one seen takes precedence for each I/O operation.
+### `DATA_IO_DESC`
 
+A `DATA_IO_DESC` is a key-velue map describing one  I/O (read or write)
+to execute.
+All keys are optional and have default values.
+The possible values for the keys are as follow:
+* `dataset`: a $-expression identifying the name of the dataset to
+  access in the file.
+  If not specified this defaults to the name of the data.
+  On writing, if the dataset does not exist in the file and is not
+  specified in the `FILE_DESC` then a dataset with the same size as the
+  memory selection is automatically created.
+* `when`: a $-expression specifying a condition to test before executing
+  the I/O operation (read or write).
+  This defaults to the value specified in the `FILE_DESC` if present
+  or to unconditional I/O otherwise.
+* `communicator`: a $-expression referencing a MPI communicator to use
+  for HDF5 parallel synchronized I/O operation (read or write).
+  Specifying communicator at this level is incompatible with
+  event-triggered (vs. data-triggered)
+  This defaults to the value specified in the `FILE_DESC` if present
+  or to sequential (MPI_COMM_SELF) I/O otherwise.
+* `memory_selection`: a `SELECTION_DESC` specifying the selection of
+  data in memory to read or write.
+  It defaults to selecting the whole data.
+* `dataset_selection`: a `SELECTION_DESC` specifying the selection of
+  data in the file data to write or read.
+  This is only valid if the 
 
-### full config
+### `SELECTION_DESC`
+
+A `SELECTION_DESC` is a key-value map that describes the selection of a
+subset of data from a larger set.
+All keys are optional and have default values.
+The possible values for the keys are as follow:
+* `size` is either a single $-expression or a list of $-expressions.
+  It describes the size of the selection in each dimension.
+  If not specified, it defaults to the dimension of the whole data.
+* `start` is either a single $-expression or a list of $-expressions.
+  It describes the number of point to skip in each dimension.
+  If not specified it defaults to 0 in all dimensions.
+  In practice, it can only be specified if `size` is also.
+
+## full configuration example
 
 ```
 metadata: # small values for which PDI keeps a copy
