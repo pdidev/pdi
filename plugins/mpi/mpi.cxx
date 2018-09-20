@@ -23,19 +23,49 @@
  ******************************************************************************/
 
 #include <mpi.h>
+#include <string>
 
 #include <pdi/context.h>
+#include <pdi/logger.h>
 #include <pdi/plugin.h>
+#include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
 
+#include <spdlog/spdlog.h>
 
 namespace {
 
 struct mpi_plugin: PDI::Plugin {
 
-	mpi_plugin(PDI::Context& ctx, PC_tree_t, MPI_Comm*):
+	void set_up_logger(PDI::Context& ctx, PC_tree_t logging_tree)
+	{
+		//set up format
+		int world_rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+		char format[64];
+		snprintf(format, 64, "[PDI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
+		ctx.logger()->set_pattern(std::string(format));
+		
+		//set up single ranks
+		PC_tree_t single_tree = PC_get(logging_tree, ".single");
+		if (!PC_status(single_tree)) {
+			int nb_key = PDI::len(single_tree);
+			for (int key_id = 0; key_id < nb_key; ++key_id) {
+				PC_tree_t rank_tree = PC_get(single_tree, "[%d]", key_id);
+				int selected_rank = PDI::to_long(PC_get(rank_tree, ".rank"), -1);
+				if (selected_rank == world_rank) {
+					PDI::read_log_level(ctx.logger(), rank_tree);
+					break;
+				}
+			}
+		}
+	}
+	
+	mpi_plugin(PDI::Context& ctx, PC_tree_t config, MPI_Comm*):
 		Plugin{ctx}
 	{
+		set_up_logger(ctx, PC_get(config, ".logging"));
+
 		// create the MPI_Comm datatype
 		PDI::Scalar_datatype mpi_comm_datatype{PDI::Scalar_kind::UNKNOWN, sizeof(MPI_Comm), alignof(MPI_Comm)};
 		

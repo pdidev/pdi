@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
-
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -60,14 +58,6 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 
-void set_up_log_format(Logger_sptr logger)
-{
-	int world_rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-	char format[64];
-	snprintf(format, 64, "[PDI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
-	logger->set_pattern(string(format));
-}
 
 Logger_sptr select_log_sinks(PC_tree_t logging_tree)
 {
@@ -97,6 +87,10 @@ Logger_sptr select_log_sinks(PC_tree_t logging_tree)
 	return make_shared<logger>("PDI_logger", sinks.begin(), sinks.end());
 }
 
+} // namespace <anonymous>
+
+namespace PDI {
+
 void read_log_level(Logger_sptr logger, PC_tree_t logging_tree)
 {
 	if (!PC_status(PC_get(logging_tree, ".level"))) {
@@ -119,29 +113,6 @@ void read_log_level(Logger_sptr logger, PC_tree_t logging_tree)
 	}
 }
 
-void configure_single_rank(Logger_sptr logger, PC_tree_t logging_tree)
-{
-	PC_tree_t single_tree = PC_get(logging_tree, ".single");
-	if (!PC_status(single_tree)) {
-		int world_rank;
-		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-		
-		int nb_key = len(single_tree);
-		for (int key_id = 0; key_id < nb_key; ++key_id) {
-			PC_tree_t rank_tree = PC_get(single_tree, "[%d]", key_id);
-			int selected_rank = to_long(PC_get(rank_tree, ".rank"), -1);
-			if (selected_rank == world_rank) {
-				read_log_level(logger, rank_tree);
-				break;
-			}
-		}
-	}
-}
-
-} // namespace <anonymous>
-
-namespace PDI {
-
 Logger_sptr configure_logger(PC_tree_t config)
 {
 	PC_tree_t logging_tree = PC_get(config, ".logging");
@@ -152,11 +123,8 @@ Logger_sptr configure_logger(PC_tree_t config)
 	//read default log level
 	read_log_level(logger, logging_tree);
 	
-	//configure log level of single ranks
-	configure_single_rank(logger, logging_tree);
-	
 	//set up final format of logger
-	set_up_log_format(logger);
+	logger->set_pattern("[PDI][%T] *** %^%l%$: %v");
 	
 	return logger;
 }

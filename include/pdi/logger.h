@@ -31,6 +31,14 @@
 namespace PDI {
 
 /**
+ * Sets logger verbosity level from PC_tree
+ *
+ * \param[in] logger logger to set up
+ * \param[in] config configuration tree from config file
+ */
+void PDI_EXPORT read_log_level(Logger_sptr logger, PC_tree_t logging_tree);
+
+/**
  * Reads configuration tree and sets up the logger.
  *
  * \param[in] config configuration tree from config file
