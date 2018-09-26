@@ -31,10 +31,11 @@
 const char* CONFIG_YAML =
     "metadata:              \n"
     "  my_array:            \n"
-    "    sizes: [10, 10, 10]\n"
-    "    subsizes: [3, 4, 5]\n"
-    "    starts: [1, 2, 3]  \n"
-    "    type: int          \n"
+    "    size: [10, 10, 10] \n"
+    "    subsize: [3, 4, 5] \n"
+    "    start: [1, 2, 3]   \n"
+    "    type: array        \n"
+    "    subtype: int  \n"
     ;
 
 int main(int argc, char* argv[])

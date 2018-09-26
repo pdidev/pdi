@@ -80,7 +80,7 @@ struct MPI_initializer {
  */
 struct DataDescTest : public ::testing::Test {
 	int array[10];
-	PC_tree_t array_config {PC_parse_string("{ size: 10, type: int }")};
+	PC_tree_t array_config {PC_parse_string("{ size: 10, type: array, subtype: int }")};
 	PDI::Paraconf_wrapper fw;
 	MPI_initializer init_mpi;
 	MockGlobalContext mockGlCtx{PC_parse_string(""), 0};

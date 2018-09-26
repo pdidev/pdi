@@ -8,12 +8,12 @@ parallelism: { height: 3, width: 1 }
 # only the following config is passed to PDI
 pdi:
   metadata: # type of small values for which PDI keeps a copy
-    iter: {type: int, size: 1, fti_id: 1 } # current iteration id
-    dsize:  { size: 2, type: int }         # local data size including ghosts/boundary
-    psize:  { size: 2, type: int }         # number of processes in each dimension
-    pcoord: { size: 2, type: int }         # coordinate of the process
+    iter:   { type: array, subtype: int, size: 1, fti_id: 1 } # current iteration id
+    dsize:  { size: 2, type: array, subtype: int }         # local data size including ghosts/boundary
+    psize:  { size: 2, type: array, subtype: int }         # number of processes in each dimension
+    pcoord: { size: 2, type: array, subtype: int }         # coordinate of the process
   data: # type of values for which PDI does not keep a copy
-    main_field: { sizes: [ '$dsize[0]', '$dsize[1]' ], type: double, fti_id: 0 }
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double, fti_id: 0 }
   
   plugins:
     fti:

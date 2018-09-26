@@ -86,9 +86,9 @@ TEST_P(PositiveTypeParseTest, parse)
 	Global_context g_context {this->conf, &this->comm};
 	auto&& params = GetParam();
 	auto&& parsed_datatype = Datatype_template::load(g_context, PC_parse_string(params.first.c_str()))->evaluate(g_context);
-	// ASSERT_TRUE(*parsed_datatype == *params.second) << "When parsing: \"" << params.first << "\"" << std::endl
-	//     << "Expected: \"" << params.second->debug_string() << "\"" << std::endl
-	//     << "Actual: \"" << parsed_datatype->debug_string() << "\"" << std::endl;
+	ASSERT_TRUE(*parsed_datatype == *params.second) << "When parsing: \"" << params.first << "\"" << std::endl
+	    << "Expected: \"" << params.second->debug_string() << "\"" << std::endl
+	    << "Actual: \"" << parsed_datatype->debug_string() << "\"" << std::endl;
 	MPI_Finalize();
 }
 
@@ -165,7 +165,7 @@ vector<param_pair> scalar_types {
 
 vector<param_pair> array_types {
 	{
-		"{size: 10, type: char}",
+		"{size: 10, type: array, subtype: char}",
 		shared_ptr<Datatype> {
 			new Array_datatype {
 				unique_ptr<Datatype> (new Scalar_datatype {
@@ -190,7 +190,7 @@ vector<param_pair> array_types {
 	//  }
 	// },
 	{
-		"{size: 30, subsize: 15, type: char}",
+		"{size: 30, subsize: 15, type: array, subtype: char}",
 		shared_ptr<Datatype> {
 			new Array_datatype {
 				unique_ptr<Datatype> (new Scalar_datatype {
@@ -203,7 +203,7 @@ vector<param_pair> array_types {
 		}
 	},
 	{
-		"{size: 40, start: 20, subsize: 10, type: char}",
+		"{size: 40, start: 20, subsize: 10, type: array, subtype: char}",
 		shared_ptr<Datatype> {
 			new Array_datatype {
 				unique_ptr<Datatype> (new Scalar_datatype {
@@ -216,7 +216,7 @@ vector<param_pair> array_types {
 		}
 	},
 	{
-		"{sizes: [10000, 10000], type: int}",
+		"{size: [10000, 10000], type: array, subtype: int}",
 		shared_ptr<Datatype> {
 			new Array_datatype {
 				unique_ptr<Datatype> (new Array_datatype {
@@ -228,7 +228,7 @@ vector<param_pair> array_types {
 	},
 	// TODO: FIX THE BUG WITH PARSING
 	// {
-	//  "{sizes: [10000, 10000], starts: [512, 512], type: int}",
+	//  "{size: [10000, 10000], start: [512, 512], type: array, subtype: int}",
 	//  shared_ptr<Datatype> {
 	//      new Array_datatype {
 	//          unique_ptr<Datatype> (new Array_datatype {
@@ -241,7 +241,7 @@ vector<param_pair> array_types {
 	//  }
 	// },
 	{
-		"{sizes: [10000, 10000], subsizes: [200, 400], type: int}",
+		"{size: [10000, 10000], subsize: [200, 400], type: array, subtype: int}",
 		shared_ptr<Datatype> {
 			new Array_datatype {
 				unique_ptr<Datatype> (new Array_datatype {
@@ -254,7 +254,7 @@ vector<param_pair> array_types {
 		}
 	},
 	{
-		"{sizes: [10000, 10000], starts: [256, 128], subsizes: [1000, 2000], type: int}",
+		"{size: [10000, 10000], start: [256, 128], subsize: [1000, 2000], type: array, subtype: int}",
 		shared_ptr<Datatype> {
 			new Array_datatype {
 				unique_ptr<Datatype> (new Array_datatype {
@@ -271,8 +271,12 @@ vector<param_pair> array_types {
 vector<string> invalid_data {
 	"",
 	"long",
-	"{sizes: 10, type: char}",
+	"{size: [10, 20], type: array}"
 	"{size: [10, 20], type: char}",
+	"{size: [10, 20], start: [30, 20, 20], type: array, subtype: char}",
+	"{size: [10, 20], subsize: 10, type: array, subtype: char}",
+	"{subsize: 10, start: [30, 20, 20], type: array, subtype: char}",
+	"{sizes: [10, 20], type: array, subtype: char}",
 };
 INSTANTIATE_TEST_CASE_P(ScalarTypes, PositiveTypeParseTest, testing::ValuesIn(scalar_types));
 INSTANTIATE_TEST_CASE_P(ArrayTypes, PositiveTypeParseTest, testing::ValuesIn(array_types));

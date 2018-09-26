@@ -172,6 +172,11 @@ public:
 
 Datatype_template_uptr to_scalar_datatype_template(Context& ctx, PC_tree_t node)
 {
+	//check if someone didn't mean to create an array
+	if (!PC_status(PC_get(node, ".size"))) {
+		ctx.logger()->warn("Scalar type doesn't use `size' property");
+	}
+	
 	string type;
 	try {
 		type = to_string(PC_get(node, ".type"));
@@ -180,6 +185,47 @@ Datatype_template_uptr to_scalar_datatype_template(Context& ctx, PC_tree_t node)
 	}
 	return ctx.datatype(std::move(type))(node);
 }
+
+
+vector<Expression> get_array_property(PC_tree_t node, string property)
+{
+	vector<Expression> prop_vector;
+	PC_tree_t config = PC_get(node, property.c_str());
+	if (!PC_status(PC_get(config, "[0]")) ) {
+		int rank = len(config);
+		for (int i = 0; i < rank; i++) {
+			prop_vector.emplace_back(to_string(PC_get(node, (property + string("[%d]")).c_str(), i)));
+		}
+	} else {
+		string prop = to_string(config, "");
+		if (prop.length() > 0) {
+			prop_vector.emplace_back(prop);
+		}
+	}
+	return prop_vector;
+}
+
+void validate_array(vector<Expression>& size, vector<Expression>& subsize, vector<Expression>& start)
+{
+	if (size.empty()) {
+		throw Error{PDI_ERR_CONFIG, "Array must have defined `size'"};
+	}
+	if (start.empty()) {
+		start = vector<Expression>(size.size(), Expression{0l});
+	}
+	if (subsize.empty()) {
+		subsize = size;
+	}
+	
+	//check if rank of array is correct
+	if (size.size() != subsize.size()) {
+		throw Error{PDI_ERR_CONFIG, "`subsize' must have the same rank as `size': %d != %d", subsize.size(), size.size()};
+	}
+	if (size.size() != start.size()) {
+		throw Error{PDI_ERR_CONFIG, "`start' must have the same rank as `size': %d != %d", start.size(), size.size()};
+	}
+}
+
 
 
 Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
@@ -193,65 +239,21 @@ Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		}
 	}
 	
-	vector<Expression> sizes;
-	PC_tree_t conf_sizes = PC_get(node, ".sizes");
-	if (!PC_status(conf_sizes)) {   // multi dim array
-		int nsizes = len(conf_sizes);
-		for (int ii = 0; ii < nsizes; ++ii) {
-			sizes.emplace_back(to_string(PC_get(node, ".sizes[%d]", ii)));
-		}
-	} else { // else we expect a single dim array
-		sizes.emplace_back(to_string(PC_get(node, ".size")));
+	vector<Expression> array_size = get_array_property(node, ".size");
+	vector<Expression> array_subsize = get_array_property(node, ".subsize");
+	vector<Expression> array_start = get_array_property(node, ".start");
+	
+	validate_array(array_size, array_subsize, array_start);
+	
+	PC_tree_t config_elem = PC_get(node, ".subtype");
+	if (PC_status(config_elem)) {
+		throw Error{PDI_ERR_CONFIG, "Array must have `subtype'"};
 	}
 	
-	vector<Expression> subsizes;
-	PC_tree_t conf_subsizes = PC_get(node, ".subsizes");
-	if (!PC_status(conf_subsizes)) {
-		int nsubsizes = len(conf_subsizes);
-		if (nsubsizes != static_cast<int>(sizes.size())) {
-			throw Error{PDI_ERR_CONFIG, "Invalid size for subsizes %d, %d expected", nsubsizes, sizes.size()};
-		}
-		for (int ii = 0; ii < nsubsizes; ++ii) {
-			subsizes.emplace_back(to_string(PC_get(node, ".subsizes[%d]", ii)));
-		}
-	} else {
-		PC_tree_t conf_subsize = PC_get(node, ".subsize");
-		if (!PC_status(conf_subsize)) {
-			if (sizes.size() != 1) {
-				throw Error{PDI_ERR_CONFIG, "Invalid single subsize for %dD array", sizes.size()};
-			}
-			subsizes.emplace_back(to_string(conf_subsize));
-		} else {
-			subsizes = sizes;
-		}
-	}
+	Datatype_template_uptr res_type = Datatype_template::load(ctx, config_elem);
 	
-	vector<Expression> starts;
-	PC_tree_t conf_starts = PC_get(node, ".starts");
-	if (!PC_status(conf_starts)) {
-		int nstarts = len(conf_starts);
-		if (nstarts != static_cast<int>(sizes.size())) {
-			throw Error{PDI_ERR_CONFIG, "Invalid size for starts %d, %d expected", nstarts, sizes.size()};
-		}
-		for (int ii = 0; ii < nstarts; ++ii) {
-			starts.emplace_back(to_string(PC_get(node, ".starts[%d]", ii)));
-		}
-	} else {
-		PC_tree_t conf_start = PC_get(node, ".start");
-		if (!PC_status(conf_start)) {
-			if (sizes.size() != 1) {
-				throw Error{PDI_ERR_CONFIG, "Invalid single start for %dD array", sizes.size()};
-			}
-			starts.emplace_back(to_string(conf_start));
-		} else {
-			starts = vector<Expression>(sizes.size(), Expression{0l});
-		}
-	}
-	
-	Datatype_template_uptr res_type = Datatype_template::load(ctx, PC_get(node, ".type"));
-	
-	for (ssize_t ii = sizes.size()-1; ii >=0; --ii) {
-		res_type.reset(new Array_template(move(res_type), move(sizes[ii]), move(starts[ii]), move(subsizes[ii])));
+	for (ssize_t ii = array_size.size()-1; ii >=0; --ii) {
+		res_type.reset(new Array_template(move(res_type), move(array_size[ii]), move(array_start[ii]), move(array_subsize[ii])));
 	}
 	return res_type;
 }
@@ -263,10 +265,17 @@ Datatype_template::~Datatype_template()
 
 Datatype_template_uptr Datatype_template::load(Context& ctx, PC_tree_t node)
 {
-	// size or sizes => array
-	if (!PC_status(PC_get(node, ".size")) || !PC_status(PC_get(node, ".sizes"))) {
-		return to_array_datatype_template(ctx, node);
+	if (!PC_status(PC_get(node, ".type"))) {
+		string type = to_string(PC_get(node, ".type"));
+		if (type == "array") {
+			return to_array_datatype_template(ctx, node);
+		}
+		if (type == "record") {
+			throw Error{PDI_ERR_CONFIG, "Record type is not supported"};
+		}
 	}
+	
+	//try parse it as a scalar
 	return to_scalar_datatype_template(ctx, node);
 }
 
@@ -301,19 +310,27 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	// Fortran basic types
 	ctx.add_datatype("character", [](const PC_tree_t& tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_CHARACTER_DEFAULT_KIND);
+		if (kind == 0) kind = PDI_CHARACTER_DEFAULT_KIND;
+		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
 	});
 	ctx.add_datatype("integer", [](const PC_tree_t& tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_INTEGER_DEFAULT_KIND);
+		if (kind == 0) kind = PDI_INTEGER_DEFAULT_KIND;
+		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::SIGNED, kind}};
 	});
 	ctx.add_datatype("logical", [](const PC_tree_t& tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_LOGICAL_DEFAULT_KIND);
+		if (kind == 0) kind = PDI_LOGICAL_DEFAULT_KIND;
+		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
 	});
 	ctx.add_datatype("real", [](const PC_tree_t& tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_REAL_DEFAULT_KIND);
-		return Datatype_template_uptr{new Scalar_template{Scalar_kind::FLOAT, std::move(kind)}};
+		if (kind == 0) kind = PDI_REAL_DEFAULT_KIND;
+		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};
+		return Datatype_template_uptr{new Scalar_template{Scalar_kind::FLOAT, kind}};
 	});
 	
 }

@@ -3,11 +3,13 @@ metadata:
   nj: int
 data: # values that can not be referenced using $syntax
   reals:
-    type: double
-    sizes: [$nj , $ni]
+    type: array
+    subtype: double
+    size: [$nj , $ni]
   values:
-    type: int
-    sizes: [$nj , $ni]
+    type: array
+    subtype: int
+    size: [$nj , $ni]
 
 plugins:
   decl_sion:

@@ -9,24 +9,26 @@ metadata:
   istart: int
   jstart: int
 data:
-  reals: 
-    type: double
-    sizes: [$nj + 2*$njg, $ni + 2*$nig]
-    subsizes: [$nj, $ni]
-    starts: [$njg, $nig]
-  values: 
-    type: int
-    sizes: [$nj + 2*$njg, $ni + 2*$nig]
-    subsizes: [$nj, $ni]
-    starts: [$njg, $nig]
+  reals:
+    type: array
+    subtype: double
+    size: [$nj + 2*$njg, $ni + 2*$nig]
+    subsize: [$nj, $ni]
+    start: [$njg, $nig]
+  values:
+    type: array
+    subtype: int
+    size: [$nj + 2*$njg, $ni + 2*$nig]
+    subsize: [$nj, $ni]
+    start: [$njg, $nig]
 plugins:
   mpi:
   decl_hdf5:
     file: decl_hdf5_test_04.h5
     communicator: $MPI_COMM_WORLD
     datasets:
-      reals:  {type: double, sizes: [$njt, $nit]}
-      values: {type: int, sizes: [$njt, $nit]}
+      reals:  {type: array, subtype: double, size: [$njt, $nit]}
+      values: {type: array, subtype: int, size: [$njt, $nit]}
     write:
       reals:
         when: $input=0

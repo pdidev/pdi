@@ -28,11 +28,12 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
-    "data:           \n"
-    "  invalid:      \n"
-    "    type: double\n"
-    "    size: $meta2\n"
-    "plugins:        \n"
+    "data:                   \n"
+    "  invalid:              \n"
+    "    type: array         \n"
+    "    subtype: double\n"
+    "    size: $meta2        \n"
+    "plugins:                \n"
     ;
 
 int main( int argc, char* argv[] )

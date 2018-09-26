@@ -30,14 +30,15 @@
 #include <pdi.h>
 
 const char* YAML_CONFIG =
-    "metadata:           \n"
-    "  my_array:         \n"
-    "    sizes: [3, 3]   \n"
-    "    subsizes: [2, 2]\n"
-    "    starts: [1, 1]  \n"
-    "    type: MPI_Comm  \n"
-    "plugins:            \n"
-    "  mpi:              \n"
+    "metadata:                 \n"
+    "  my_array:               \n"
+    "    size: [3, 3]          \n"
+    "    subsize: [2, 2]       \n"
+    "    start: [1, 1]         \n"
+    "    subtype: MPI_Comm\n"
+    "    type: array           \n"
+    "plugins:                  \n"
+    "  mpi:                    \n"
     ;
 
 int main(int argc, char* argv[])

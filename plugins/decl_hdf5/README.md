@@ -107,11 +107,12 @@ metadata: # small values for which PDI keeps a copy
   pwidth:  int                    # nb proc. in the x dim
   pheight: int                    # nb proc. in the y dim
   iter:    int                    # curent iteration id
-  coord:   { size: 2, type: int } # coordinate of the process as [x, y]
+  coord:   { type: array, subtype: int, size: 2 } # coordinate of the process as [x, y]
 data:     # values that are not copied by PDI
   main_field:
-    type:  double
-    sizes: [$width, $height]
+    type: array
+    subtype: double
+    size: [$width, $height]
 plugins:
   mpi: # loading MPI_Comm predefines (e.g. $MPI_COMM_WORLD)
   decl_hdf5: # a list of file to write to (can be a single element)
@@ -121,8 +122,9 @@ plugins:
     communicator: $MPI_COMM_SELF         # the MPI communicator used for HDF5 parallel synchronized write (default: $MPI_COMM_SELF, sequential write)
     datasets:                            # a list of datasets inside the file created on first access
       data/array: # a dataset name, datasets referenced but not defined are created just big enough to fit the data
-        type: double                    # type of the data in the dataset
-        sizes: [10, $width-2, $width-2] # size of the dataset
+        type: array
+        subtype: doubl              # type of the data in the dataset
+        size: [10, $width-2, $width-2] # size of the dataset
     write:                               # a list or map of data to write (default: empty)
       main_field: # name of the data, it contains either a list or a single write to execute
         - dataset: data/array      # a dataset name (default: the data name)

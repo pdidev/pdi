@@ -9,11 +9,11 @@ parallelism: { height: 3, width: 1 }
 pdi:
   metadata: # type of small values for which PDI keeps a copy
     iter:   int                    # current iteration id
-    dsize:  { size: 2, type: int } # local data size including ghosts/boundary
-    psize:  { size: 2, type: int } # number of processes in each dimension
-    pcoord: { size: 2, type: int } # coordinate of the process
+    dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
+    pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
   data: # type of values for which PDI does not keep a copy
-    main_field: { sizes: [ '$dsize[0]', '$dsize[1]' ], type: double }
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
   
   plugins:
     decl_sion:
