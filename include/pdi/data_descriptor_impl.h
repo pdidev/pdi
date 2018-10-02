@@ -89,6 +89,8 @@ public:
 	
 	Ref ref() override;
 	
+	bool empty() override;
+	
 	void share(void* data, bool read, bool write) override;
 	
 	void* share(Ref ref, bool read, bool write) override;

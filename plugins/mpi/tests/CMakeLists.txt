@@ -31,7 +31,21 @@ cmake_minimum_required(VERSION 3.10)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
+# MPI plugin test
+add_executable(mpi_01_C mpi_test_01.c)
+target_link_libraries(mpi_01_C PDI::pdi MPI::MPI_C)
+add_test(NAME mpi_01_C COMMAND "mpirun" -n 1 "$<TARGET_FILE:mpi_01_C>")
 
-add_executable(mpi_test_01_c mpi_test_01.c)
-target_link_libraries(mpi_test_01_c PDI::pdi MPI::MPI_C)
-add_test(NAME mpi_test_01_c COMMAND mpi_test_01_c)
+# MPI plugin C predefines test
+add_executable(mpi_02_C mpi_test_02.c)
+target_link_libraries(mpi_02_C PDI::pdi MPI::MPI_C)
+add_test(NAME mpi_02_C COMMAND "mpirun" -n 1 "$<TARGET_FILE:mpi_02_C>")
+
+# MPI plugin Fortran predefines test
+if("${ENABLE_FORTRAN}")
+add_executable(mpi_02_F mpi_test_02.F90)
+target_link_libraries(mpi_02_F PDI::pdi_f90 MPI::MPI_Fortran)
+string(RANDOM TMP_MODULE_DIRECTORY)
+set_target_properties(mpi_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
+add_test(NAME mpi_02_F COMMAND "mpirun" -n 1 "$<TARGET_FILE:mpi_02_F>" "${CMAKE_CURRENT_SOURCE_DIR}/mpi_test_02.yml")
+endif("${ENABLE_FORTRAN}")

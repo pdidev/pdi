@@ -136,6 +136,11 @@ Ref Data_descriptor_impl::ref()
 	return m_refs.top()->ref();
 }
 
+bool Data_descriptor_impl::empty()
+{
+	return m_refs.empty();
+}
+
 void Data_descriptor_impl::share(void* data, bool read, bool write)
 {
 	Ref r{data, &free, m_type->evaluate(m_context), read, write};

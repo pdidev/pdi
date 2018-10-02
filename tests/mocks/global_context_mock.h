@@ -46,7 +46,7 @@ struct MockGlobalContext : public PDI::Global_context {
 		return BracketOp1(str);
 	}
 	
-	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char* name));
+	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char*));
 	PDI::Data_descriptor& operator [] (const char* str) override
 	{
 		return BracketOp2(str);
@@ -55,10 +55,10 @@ struct MockGlobalContext : public PDI::Global_context {
 	MOCK_METHOD0(begin, PDI::Context::Iterator());
 	MOCK_METHOD0(end, PDI::Context::Iterator());
 	
-	MOCK_METHOD1(event, void(const char* name));
+	MOCK_METHOD1(event, void(const char*));
 	
-	MOCK_METHOD1(datatype, PDI::Datatype_template_func&(const std::string& name));
-	MOCK_METHOD2(add_datatype, void(const std::string& datatype_name, PDI::Datatype_template_func datatype));
+	MOCK_METHOD1(datatype, PDI::Datatype_template_func&(const std::string&));
+	MOCK_METHOD2(add_datatype, void(const std::string&, PDI::Datatype_template_func));
 	
 };
 

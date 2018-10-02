@@ -40,7 +40,9 @@ public:
 
 	virtual ~Data_descriptor();
 	
-	/** Sets the creation template used to type raw pointers shared through this descriptor
+	/** Sets the creation template used to type raw pointers shared
+	 *  through this descriptor
+	 *
 	 * \param config the full configuration attached to the descriptor
 	 */
 	virtual void creation_template(PC_tree_t config) = 0;
@@ -56,7 +58,8 @@ public:
 	virtual bool metadata() const = 0;
 	
 	/** Sets whether this describes a metadata or not
-	 * \param metadata whether data shared through this descriptor should behave as a metadata
+	 * \param metadata whether data shared through this descriptor should
+	 *        behave as a metadata
 	 */
 	virtual void metadata(bool metadata) = 0;
 	
@@ -65,6 +68,12 @@ public:
 	/** Return a reference to the value of the data behind this descriptor
 	 */
 	virtual Ref ref() = 0;
+	
+	/** Checks whether this descriptor is empty (contains no reference)
+	 *
+	 * \returns true if empty.
+	 */
+	virtual bool empty() = 0;
 	
 	/** Shares some data with PDI
 	 * \param[in,out] data the shared data

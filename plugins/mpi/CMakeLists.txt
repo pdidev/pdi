@@ -27,15 +27,13 @@ project(pdi_mpi_plugin LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 if("${BUILD_TESTING}")
 	enable_language(C)
+	if("${ENABLE_FORTRAN}")
+		enable_language(Fortran)
+	endif()
 endif()
 
 # Includes
 include(CTest)
-
-# Astyle
-find_package(Astyle)
-
-# Includes
 include(GNUInstallDirs)
 
 # Astyle
@@ -45,6 +43,9 @@ find_package(Astyle)
 set(MPI_COMPONENTS CXX)
 if("${BUILD_TESTING}")
 	list(APPEND MPI_COMPONENTS C)
+	if("${ENABLE_FORTRAN}")
+		list(APPEND MPI_COMPONENTS Fortran)
+	endif()
 endif()
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 

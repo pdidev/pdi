@@ -207,7 +207,7 @@ Logger_sptr Global_context::logger() const
 	return m_logger;
 }
 
-Datatype_template_func& Global_context::datatype(const std::string& name)
+Datatype_template_func& Global_context::datatype(const string& name)
 {
 	auto func_it = m_datatypes.find(name);
 	if (func_it != m_datatypes.end()) {
@@ -216,9 +216,12 @@ Datatype_template_func& Global_context::datatype(const std::string& name)
 	throw Error{PDI_ERR_TYPE, "Cannot find datatype `%s'", name.c_str()};
 }
 
-void Global_context::add_datatype(const std::string& datatype_name, Datatype_template_func datatype_func)
+void Global_context::add_datatype(const string& datatype_name, Datatype_template_func datatype_func)
 {
-	m_datatypes[datatype_name.c_str()] = std::move(datatype_func);
+	if (!m_datatypes.emplace(datatype_name, move(datatype_func)).second) {
+		//if a datatype with the given name already exists
+		throw Error{PDI_ERR_TYPE, "Datatype already defined `%s'", datatype_name.c_str()};
+	}
 }
 
 }
