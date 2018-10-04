@@ -129,6 +129,7 @@ public:
 class Record_template:
 	public Datatype_template
 {
+public:
 	struct Member {
 	
 		/// Offset or distance in byte from the Record_template start
@@ -139,11 +140,16 @@ class Record_template:
 		
 		string m_name;
 		
+		Member(Expression disp, Datatype_template_uptr type, string name):
+			m_displacement{move(disp)},
+			m_type{move(type)},
+			m_name{move(name)}
+		{}
 		
 		Member(const Member& o): m_displacement{o.m_displacement}, m_type{o.m_type->clone()}, m_name{o.m_name} {}
-		
 	};
 	
+private:
 	/// All members in increasing displacement order
 	vector<Member> m_members;
 	
@@ -258,6 +264,42 @@ Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 	return res_type;
 }
 
+vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_node)
+{
+	vector<Record_template::Member> members;
+	
+	int nb_members = len(member_list_node, 0);
+	for (int member_id = 0; member_id < nb_members; member_id++) {
+		//get current member name
+		string member_name = to_string(PC_get(member_list_node, "{%d}", member_id));
+		
+		//get current member
+		PC_tree_t member_node = PC_get(member_list_node, "<%d>", member_id);
+		
+		PC_tree_t disp_conf = PC_get(member_node, ".disp");
+		if (PC_status(disp_conf)) {
+			throw Error{PDI_ERR_CONFIG, "All members must have displacements"};
+		}
+		Expression disp = to_string(disp_conf);
+		
+		members.emplace_back(move(disp), Datatype_template::load(ctx, member_node), move(member_name));
+	}
+	return members;
+}
+
+Datatype_template_uptr to_record_datatype_template(Context& ctx, PC_tree_t node)
+{
+	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
+	if (PC_status(buffersize_conf)) {
+		throw Error{PDI_ERR_CONFIG, "Record must have defined buffersize"};
+	}
+	Expression record_buffersize = to_string(buffersize_conf);
+	
+	PC_tree_t member_list_node = PC_get(node, ".members");
+	
+	return unique_ptr<Record_template> {new Record_template{get_members(ctx, member_list_node), move(record_buffersize)}};
+}
+
 } // namespace <anonymous>
 
 Datatype_template::~Datatype_template()
@@ -271,7 +313,7 @@ Datatype_template_uptr Datatype_template::load(Context& ctx, PC_tree_t node)
 			return to_array_datatype_template(ctx, node);
 		}
 		if (type == "record") {
-			throw Error{PDI_ERR_CONFIG, "Record type is not supported"};
+			return to_record_datatype_template(ctx, node);
 		}
 	}
 	
