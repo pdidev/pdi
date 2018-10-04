@@ -132,7 +132,37 @@ const string& Data_descriptor_impl::name() const
 
 Ref Data_descriptor_impl::ref()
 {
-	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot access a non shared value: `%s'", m_name.c_str()};
+	if (m_refs.empty()) {
+		for (auto& elmnt : m_context.m_plugins) {
+			vector<Error> errors;
+			try {
+				elmnt.second->empty_desc_access(m_name.c_str());
+				//TODO: remove the faulty plugin in case of error?
+			} catch (const Error& e) {
+				errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+			} catch (const exception& e) {
+				errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+			} catch (...) {
+				errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
+			}
+			if ( 1 == errors.size() ) throw Error{errors.front().status(), "While triggering empty desc access `%s' %s", m_name, errors.front().what()};
+			if ( !errors.empty() ) {
+				string errmsg = "multiple errors while triggering empty desc access`";
+				errmsg += m_name;
+				errmsg += "':";
+				for ( auto&& err: errors ) {
+					errmsg += " ";
+					errmsg += err.what();
+				}
+				throw Error{PDI_ERR_PLUGIN, "%s", errmsg.c_str()};
+			}
+		}
+		
+		//at least one plugin should share a Ref
+		if (m_refs.empty()) {
+			throw Error{PDI_ERR_VALUE, "Cannot access a non shared value: `%s'", m_name.c_str()};
+		}
+	}
 	return m_refs.top()->ref();
 }
 

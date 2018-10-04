@@ -56,6 +56,11 @@ public:
 	 */
 	virtual void event(const char* event);
 	
+	/** Notification for accessing empty desc by user
+	 * \param[in] name the name of accessing desc
+	 */
+	virtual void empty_desc_access(const char* name);
+	
 	/** Notification that some data becomes available
 	 * \param name the name of the data made available
 	 * \param ref a reference to the data value

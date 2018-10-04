@@ -42,6 +42,9 @@ Plugin::~Plugin() noexcept(false)
 void Plugin::event(const char*)
 {}
 
+void Plugin::empty_desc_access(const char*)
+{}
+
 void Plugin::data(const char*, Ref)
 {}
 
