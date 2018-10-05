@@ -123,9 +123,9 @@ plugins:
     datasets:                            # a list of datasets inside the file created on first access
       data/array: # a dataset name, datasets referenced but not defined are created just big enough to fit the data
         type: array
-        subtype: doubl              # type of the data in the dataset
+        subtype: double                # type of the data in the dataset
         size: [10, $width-2, $width-2] # size of the dataset
-    write:                               # a list or map of data to write (default: empty)
+    write: # a list or map of data to write (default: empty)
       main_field: # name of the data, it contains either a list or a single write to execute
         - dataset: data/array      # a dataset name (default: the data name)
           when: "$iter>0&$iter<11" # a condition when to actually trigger the actions (default: that of the file)

@@ -134,6 +134,12 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type)
 	return make_tuple(move(h5_space), Raii_hid{h5_type, NULL});
 }
 
+/** Select a part of a HDF5 space based on a selection
+ * \param ctx the context in which to operate
+ * \param h5_space the space to modify
+ * \param select the selection to apply
+ * \param dflt_space a space to match if the selection is empty
+ */
 void select(Context& ctx, hid_t h5_space, const Selection_cfg& select, hid_t dflt_space = -1)
 {
 	int rank = H5Sget_simple_extent_ndims(h5_space);
@@ -234,22 +240,20 @@ void do_write(Context& ctx, const Transfer_cfg& xfer, hid_t h5_file, hid_t write
 	if ( 0>n_data_pts ) handle_hdf5_err();
 	
 	auto&& dataset_type_iter = xfer.parent().datasets().find(dataset_name);
-	Datatype_uptr explicit_dataset_type;
+	Raii_hid h5_file_type, h5_file_space, h5_file_selection;
 	if ( dataset_type_iter != xfer.parent().datasets().end() ) {
-		explicit_dataset_type = dataset_type_iter->second->evaluate(ctx);
+		tie(h5_file_space, h5_file_type) = space(*dataset_type_iter->second->evaluate(ctx));
+		h5_file_selection = make_raii_hid(H5Scopy(h5_file_space), H5Sclose);
+		select(ctx, h5_file_selection, xfer.dataset_selection(), h5_mem_space);
+	} else { //
+		if ( !xfer.dataset_selection().size().empty() ) {
+			throw Error{PDI_ERR_CONFIG, "Dataset selection is invalid in implicit dataset `%s'", dataset_name.c_str()};
+		}
+		h5_file_type = make_raii_hid(h5_mem_type, [](hid_t) {});
+		h5_file_space = make_raii_hid(H5Scopy(h5_mem_space), H5Sclose);
+		h5_file_selection = make_raii_hid(H5Scopy(h5_mem_space), H5Sclose);
 	}
 	
-	const Datatype& file_datatype = ((explicit_dataset_type) ? (
-	            *explicit_dataset_type
-	        ) : (
-	            ref.type()
-	        ));
-	        
-	        
-	Raii_hid h5_file_type, h5_file_space;
-	tie(h5_file_space, h5_file_type) = space(file_datatype);
-	Raii_hid h5_file_selection = make_raii_hid(H5Scopy(h5_file_space), H5Sclose);
-	select(ctx, h5_file_selection, xfer.dataset_selection(), h5_mem_space);
 	
 	hssize_t n_file_pts = H5Sget_select_npoints(h5_file_selection);
 	if ( 0>n_file_pts ) handle_hdf5_err();

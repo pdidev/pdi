@@ -45,15 +45,15 @@ int main(int argc, char* argv[])
 	PDI_access("MPI_COMM_WORLD", (void**)&comm, PDI_IN);
 	assert(MPI_COMM_WORLD == *comm);
 	PDI_release("MPI_COMM_WORLD");
-
+	
 	PDI_access("MPI_COMM_SELF", (void**)&comm, PDI_IN);
 	assert(MPI_COMM_SELF == *comm);
 	PDI_release("MPI_COMM_SELF");
-
+	
 	PDI_access("MPI_COMM_NULL", (void**)&comm, PDI_IN);
 	assert(MPI_COMM_NULL == *comm);
 	PDI_release("MPI_COMM_NULL");
-
+	
 	PDI_finalize();
 	MPI_Finalize();
 }

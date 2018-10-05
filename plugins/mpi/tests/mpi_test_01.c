@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 		assert(world_rank == comm_rank);
 	}
 	PDI_release("my_array");
-
+	
 	PDI_finalize();
 	MPI_Finalize();
 }
