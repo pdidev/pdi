@@ -7,7 +7,9 @@ metadata:
 data: # values that can not be referenced using $syntax
   test_var: double
 plugins:
+  mpi:
   decl_sion:
+    communicator: MPI_COMM_WORLD
     outputs:
       - variable: test_var
         file: test_01_variable_$meta1.sion

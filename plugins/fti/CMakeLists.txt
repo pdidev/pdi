@@ -37,6 +37,9 @@ include(GNUInstallDirs)
 # Astyle
 find_package(Astyle)
 
+# MPI
+find_package(MPI REQUIRED COMPONENTS CXX)
+
 # FTI
 find_package(FTI REQUIRED)
 
@@ -45,7 +48,7 @@ find_package(PDI REQUIRED)
 
 # The plugin
 add_library(pdi_fti_plugin MODULE fti.cxx)
-target_link_libraries(pdi_fti_plugin PDI::pdi fti.shared)
+target_link_libraries(pdi_fti_plugin PDI::pdi MPI::MPI_CXX fti.shared)
 target_include_directories(pdi_fti_plugin PUBLIC ${FTI_INCLUDE_PATH})
 set_target_properties(pdi_fti_plugin PROPERTIES
 		CXX_STANDARD 11

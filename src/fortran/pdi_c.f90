@@ -31,13 +31,12 @@ module PDI_C
 
 interface
 
-  function PDI_init_f_C(treeconf, world) bind(C, name="PDI_init_f")
+  function PDI_init_C(treeconf) bind(C, name="PDI_init")
     use ISO_C_binding
     use paraconf
-    integer(C_int) :: PDI_init_f_C
+    integer(C_int) :: PDI_init_C
     type(PC_tree_t), value :: treeconf
-    integer, intent(INOUT):: world
-  endfunction PDI_init_f_C
+  endfunction PDI_init_C
   
   
   function PDI_finalize_C() bind(C, name="PDI_finalize")

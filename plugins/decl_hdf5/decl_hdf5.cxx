@@ -388,7 +388,7 @@ struct decl_hdf5_plugin: Plugin {
 
 	const Decl_hdf5_cfg m_config;
 	
-	decl_hdf5_plugin(Context& ctx, PC_tree_t config, MPI_Comm*):
+	decl_hdf5_plugin(Context& ctx, PC_tree_t config):
 		Plugin {ctx},
 		m_config{ctx, config}
 	{

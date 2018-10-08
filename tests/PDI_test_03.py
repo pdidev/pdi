@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-from mpi4py import MPI
 import pdi
 import numpy as np
 
-pdi.init(MPI.COMM_WORLD, "")
+pdi.init("")
 
 x = np.zeros([2,3,5])
 for i in range(2):

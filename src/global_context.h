@@ -25,8 +25,6 @@
 #ifndef PDI_GLOBAL_CONTEXT_H_
 #define PDI_GLOBAL_CONTEXT_H_
 
-#include <mpi.h>
-
 #include <list>
 #include <memory>
 #include <stack>
@@ -69,7 +67,7 @@ private:
 	Global_context(Global_context&&) = delete;
 	
 public:
-	static void init(PC_tree_t conf, MPI_Comm* world);
+	static void init(PC_tree_t conf);
 	
 	static bool initialized();
 	
@@ -77,7 +75,7 @@ public:
 	
 	static void finalize();
 	
-	Global_context(PC_tree_t conf, MPI_Comm* world);
+	Global_context(PC_tree_t conf);
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */

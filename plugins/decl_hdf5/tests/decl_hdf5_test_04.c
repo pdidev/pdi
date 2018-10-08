@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	int rank; MPI_Comm_rank(world, &rank);
 	
 	if ( 0 == rank ) {

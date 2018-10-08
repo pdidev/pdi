@@ -182,13 +182,13 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 	return old_handler;
 }
 
-PDI_status_t PDI_init(PC_tree_t conf, MPI_Comm* world)
+PDI_status_t PDI_init(PC_tree_t conf)
 try
 {
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	Global_context::init(conf, world);
+	Global_context::init(conf);
 	Global_context::context().logger()->info("Initialization successful");
 	return PDI_OK;
 } catch (const Error& e)

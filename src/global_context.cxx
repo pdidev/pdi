@@ -53,7 +53,7 @@ using std::vector;
 
 namespace {
 
-typedef unique_ptr<Plugin> (*plugin_loader_f)(Context&, PC_tree_t, MPI_Comm*, Logger_sptr);
+typedef unique_ptr<Plugin> (*plugin_loader_f)(Context&, PC_tree_t, Logger_sptr);
 
 
 void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
@@ -93,9 +93,9 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
 
 unique_ptr<Global_context> Global_context::s_context;
 
-void Global_context::init(PC_tree_t conf, MPI_Comm* world)
+void Global_context::init(PC_tree_t conf)
 {
-	s_context.reset(new Global_context(conf, world));
+	s_context.reset(new Global_context(conf));
 }
 
 bool Global_context::initialized()
@@ -114,7 +114,7 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
-Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
+Global_context::Global_context(PC_tree_t conf):
 	m_logger{configure_logger(conf)}
 {
 	// load basic datatypes
@@ -126,7 +126,7 @@ Global_context::Global_context(PC_tree_t conf, MPI_Comm* world):
 		//TODO: what to do if a single plugin fails to load?
 		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
 		try {
-			m_plugins.emplace(plugin_name, get_plugin_ctr(plugin_name.c_str())(*this, PC_get(conf, ".plugins<%d>", plugin_id), world, m_logger));
+			m_plugins.emplace(plugin_name, get_plugin_ctr(plugin_name.c_str())(*this, PC_get(conf, ".plugins<%d>", plugin_id), m_logger));
 		} catch (const exception& e) {
 			throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': %s", plugin_name.c_str(), e.what()};
 		}

@@ -22,17 +22,14 @@
 ! THE SOFTWARE.
 !******************************************************************************/
 
-include 'paraconf.F90'
-
 program test2
 
+  use MPI
   use paraconf
+  use PDI
 
   implicit none
   
-  include 'mpif.h'
-  include 'pdif.h'
-
   character(len=512) :: strbuf
   integer :: i, j, ierr,  main_comm 
   integer,target :: imx=10, jmx=5, input, rank, nj, ni, nig, njg
@@ -65,7 +62,7 @@ program test2
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
   main_comm = MPI_COMM_WORLD
-  call PDI_init(conf, main_comm)
+  call PDI_init(conf)
   call MPI_Comm_rank(main_comm, rank, ierr)
 
   nj=jmx

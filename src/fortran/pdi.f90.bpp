@@ -37,19 +37,18 @@ include 'pdif.h'
 endmodule PDI
 
 
-subroutine PDI_init(treeconf, world, err)
+subroutine PDI_init(treeconf, err)
 
   use PDI_C
 
   implicit none
 
   type(PC_tree_t), intent(IN) :: treeconf
-  integer, intent(INOUT), target :: world
   integer, intent(OUT), optional :: err
 
   integer :: tmperr
 
-  tmperr = int(PDI_init_f_C(treeconf, world))
+  tmperr = int(PDI_init_C(treeconf))
   
   if(present(err)) then
     err = tmperr

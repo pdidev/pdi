@@ -30,8 +30,6 @@
 #include <utility>
 #include <vector>
 
-#include <mpi.h>
-
 #include <gtest/gtest.h>
 
 #include <spdlog/spdlog.h>
@@ -70,7 +68,6 @@ using param_pair = pair<string, shared_ptr<Datatype>>;
  */
 struct PositiveTypeParseTest : public ::testing::TestWithParam<param_pair> {
 	PC_tree_t conf = PC_parse_string("");
-	MPI_Comm comm = MPI_COMM_NULL;
 	Paraconf_wrapper _;
 };
 
@@ -84,14 +81,12 @@ struct PositiveTypeParseTest : public ::testing::TestWithParam<param_pair> {
  */
 TEST_P(PositiveTypeParseTest, parse)
 {
-	MPI_Init(NULL, NULL);
-	Global_context g_context {this->conf, &this->comm};
+	Global_context g_context {this->conf};
 	auto&& params = GetParam();
 	auto&& parsed_datatype = g_context.datatype(PC_parse_string(params.first.c_str()))->evaluate(g_context);
 	ASSERT_TRUE(*parsed_datatype == *params.second) << "When parsing: \"" << params.first << "\"" << std::endl
 	    << "Expected: \"" << params.second->debug_string() << "\"" << std::endl
 	    << "Actual: \"" << parsed_datatype->debug_string() << "\"" << std::endl;
-	MPI_Finalize();
 }
 
 
@@ -100,7 +95,6 @@ TEST_P(PositiveTypeParseTest, parse)
  */
 struct NegativeTypeParseTest : public ::testing::TestWithParam<string> {
 	PC_tree_t conf = PC_parse_string("");
-	MPI_Comm comm = MPI_COMM_NULL;
 	Paraconf_wrapper _;
 };
 
@@ -115,10 +109,8 @@ struct NegativeTypeParseTest : public ::testing::TestWithParam<string> {
  */
 TEST_P(NegativeTypeParseTest, parse)
 {
-	MPI_Init(NULL, NULL);
-	Global_context g_context {this->conf, &this->comm};
+	Global_context g_context {this->conf};
 	ASSERT_THROW(g_context.datatype(PC_parse_string(GetParam().c_str())), PDI::Error);
-	MPI_Finalize();
 }
 
 vector<param_pair> scalar_types {

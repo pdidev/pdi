@@ -41,11 +41,6 @@ include(GNUInstallDirs)
 # Astyle
 find_package(Astyle)
 
-# MPI
-if("${BUILD_TESTING}")
-	find_package(MPI REQUIRED COMPONENTS C CXX)
-endif()
-
 # PDI
 find_package(PDI REQUIRED)
 

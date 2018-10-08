@@ -34,8 +34,8 @@
 
 
 struct MockGlobalContext : public PDI::Global_context {
-	MockGlobalContext(PC_tree_t conf, MPI_Comm* world) :
-		Global_context(conf, world)
+	MockGlobalContext(PC_tree_t conf) :
+		Global_context(conf)
 	{}
 	PDI::Paraconf_wrapper fw;
 	

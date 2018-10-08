@@ -24,8 +24,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-// #include <unistd.h>
-#include <mpi.h>
 #include <pdi.h>
 
 #define FATAL 1
@@ -77,10 +75,8 @@ void test(void)
 
 int main( int argc, char* argv[] )
 {
-	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	
 	int in = CST0;
 	int out = CST0;
@@ -92,6 +88,5 @@ int main( int argc, char* argv[] )
 	
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-	MPI_Finalize();
 }
 

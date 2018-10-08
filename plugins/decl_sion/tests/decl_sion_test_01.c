@@ -37,7 +37,9 @@ const char* CONFIG_YAML =
     "data:                                     \n"
     "  test_var: double                        \n"
     "plugins:                                  \n"
+    "  mpi:                                    \n"
     "  decl_sion:                              \n"
+    "    communicator: MPI_COMM_WORLD          \n"
     "    outputs:                              \n"
     "      - variable: test_var                \n"
     "        file: test_01_variable_$meta1.sion\n"
@@ -50,8 +52,7 @@ int main(int argc, char* argv[])
 {
 	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	
 	int value[5] = {5,4,3,2,1};
 	double test_var=0;

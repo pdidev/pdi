@@ -80,9 +80,8 @@ void verify_matrix(int comm_color)
 int main(int argc, char* argv[])
 {
 	MPI_Init(&argc,&argv);
-	MPI_Comm main_comm = MPI_COMM_WORLD;
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	PDI_init(conf, &main_comm);
+	PDI_init(conf);
 	
 	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -116,8 +115,6 @@ int main(int argc, char* argv[])
 		PDI_expose("my_comm", &self, PDI_OUT);
 		verify_matrix(comm_color);
 	}
-	// exposing MPI_Comm must be collective
-	PDI_expose("my_comm", &my_comm, PDI_OUT);
 	
 	// for better console output
 	MPI_Barrier(MPI_COMM_WORLD);

@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
-
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -195,7 +193,7 @@ struct user_code_plugin: Plugin {
 	/// User-code to call on data events
 	unordered_multimap<string, Trigger> data_uc;
 	
-	user_code_plugin(Context& ctx, PC_tree_t conf, MPI_Comm*):
+	user_code_plugin(Context& ctx, PC_tree_t conf):
 		Plugin{ctx}
 	{
 		// Loading configuration for events

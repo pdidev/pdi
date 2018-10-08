@@ -122,7 +122,7 @@ int main( int argc, char* argv[] )
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	
 	MPI_Comm main_comm = MPI_COMM_WORLD;
-	PDI_init(PC_get(conf, ".pdi"), &main_comm);
+	PDI_init(PC_get(conf, ".pdi"));
 	
 	int psize_1d;  MPI_Comm_size(main_comm, &psize_1d);
 	int pcoord_1d; MPI_Comm_rank(main_comm, &pcoord_1d);

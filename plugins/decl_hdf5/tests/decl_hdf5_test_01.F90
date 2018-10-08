@@ -22,20 +22,16 @@
 ! THE SOFTWARE.
 !******************************************************************************/
 
-include 'paraconf.F90'
-
 program test1
 
-  use pdi
   use paraconf
+  use PDI
 
   implicit none
-  
-  include 'mpif.h'
 
   integer, pointer :: pmeta0,pmeta1,pmeta2,pmeta3,pmeta4
   integer, target :: meta0,meta1,meta2,meta3,meta4
-  integer :: i, ierr,  main_comm 
+  integer :: i
   integer,dimension(:), allocatable :: buf
   integer :: nbuf=1000
   double precision,target :: test_var=0.0
@@ -43,8 +39,6 @@ program test1
   character(len=512) :: strbuf
   logical :: file_exist
   type(PC_tree_t) :: conf
-
-  call MPI_init(ierr)
 
   meta0=4
   meta1=6
@@ -67,8 +61,7 @@ program test1
   
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
-  main_comm = MPI_COMM_WORLD
-  call PDI_init(conf, main_comm)
+  call PDI_init(conf)
   
   call PDI_transaction_begin("testing")
   call PDI_expose("meta0",pmeta0, PDI_OUT)
@@ -94,8 +87,7 @@ program test1
     print*, "File found."
   else
     print*, "File not found"
-    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+    stop
   endif ! file doesn't exist
-  call MPI_Finalize(ierr)
 
 endprogram  

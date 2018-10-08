@@ -31,42 +31,44 @@ const int IMX = 10;
 const int JMX = 5;
 
 const char* CONFIG_YAML =
-    "metadata:                  \n"
-    "  input: int               \n"
-    "  ni: int                  \n"
-    "  nj: int                  \n"
-    "data:                      \n"
-    "  reals:                   \n"
-    "    type: array            \n"
-    "    subtype: double   \n"
-    "    size: [$nj , $ni]      \n"
-    "  values:                  \n"
-    "    type: array            \n"
-    "    subtype: int      \n"
-    "    size: [$nj , $ni]      \n"
-    "                           \n"
-    "plugins:                   \n"
-    "  decl_sion:               \n"
-    "    outputs:               \n"
-    "      - variable: reals    \n"
-    "        file: reals_C.sion \n"
-    "        select: $input = 0 \n"
-    "      - variable: values   \n"
-    "        file: values_C.sion\n"
-    "        select: $input = 0 \n"
-    "      - variable: ni       \n"
-    "        file: ni_C.sion    \n"
-    "        select: $input = 0 \n"
-    "      - variable: nj       \n"
-    "        file: nj_C.sion    \n"
-    "        select: $input = 0 \n"
-    "    inputs:                \n"
-    "      - variable: reals    \n"
-    "        file: reals_C.sion \n"
-    "        select: $input = 1 \n"
-    "      - variable: values   \n"
-    "        file: values_C.sion\n"
-    "        select: $input = 1 \n"
+    "metadata:                       \n"
+    "  input: int                    \n"
+    "  ni: int                       \n"
+    "  nj: int                       \n"
+    "data:                           \n"
+    "  reals:                        \n"
+    "    type: array                 \n"
+    "    subtype: double             \n"
+    "    size: [$nj , $ni]           \n"
+    "  values:                       \n"
+    "    type: array                 \n"
+    "    subtype: int                \n"
+    "    size: [$nj , $ni]           \n"
+    "                                \n"
+    "plugins:                        \n"
+    "  mpi:                          \n"
+    "  decl_sion:                    \n"
+    "    communicator: MPI_COMM_WORLD\n"
+    "    outputs:                    \n"
+    "      - variable: reals         \n"
+    "        file: reals_C.sion      \n"
+    "        select: $input = 0      \n"
+    "      - variable: values        \n"
+    "        file: values_C.sion     \n"
+    "        select: $input = 0      \n"
+    "      - variable: ni            \n"
+    "        file: ni_C.sion         \n"
+    "        select: $input = 0      \n"
+    "      - variable: nj            \n"
+    "        file: nj_C.sion         \n"
+    "        select: $input = 0      \n"
+    "    inputs:                     \n"
+    "      - variable: reals         \n"
+    "        file: reals_C.sion      \n"
+    "        select: $input = 1      \n"
+    "      - variable: values        \n"
+    "        file: values_C.sion     \n"
+    "        select: $input = 1      \n"
     ;
 
 int main(int argc, char* argv[])
@@ -76,8 +78,7 @@ int main(int argc, char* argv[])
 	
 	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	
 	// Fill arrays
 	for (int j=0; j<JMX; ++j) {
@@ -92,8 +93,8 @@ int main(int argc, char* argv[])
 	int input=0;
 	PDI_expose("input",&input, PDI_OUT);
 	// Set size for PDI
-	PDI_expose("ni", &IMX, PDI_OUT);
-	PDI_expose("nj", &JMX, PDI_OUT);
+	PDI_expose("ni", (int*)&IMX, PDI_OUT);
+	PDI_expose("nj", (int*)&JMX, PDI_OUT);
 	
 	// Test that export/exchange works
 	PDI_expose("input", &input, PDI_OUT);

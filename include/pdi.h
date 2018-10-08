@@ -29,8 +29,6 @@
 #ifndef PDI_H_
 #define PDI_H_
 
-#include <mpi.h>
-
 #include <paraconf.h>
 
 #include <pdi/export.h>
@@ -57,7 +55,7 @@ typedef enum PDI_status_e {
 	PDI_ERR_PLUGIN,
 	/// Implementation limitation (typically an unimplemented feature)
 	PDI_ERR_IMPL,
-	/// A system error occured (OS, MPI, etc.)
+	/// A system error occured (OS, etc.)
 	PDI_ERR_SYSTEM,
 	/** A call to a function has been made at a wrong time (e.g. closing an
 	 *  unopened transaction)
@@ -122,10 +120,9 @@ PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler);
 
 /** Initializes PDI
  * \param[in] conf the configuration
- * \param[in,out] world the main MPI communicator
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf, MPI_Comm* world);
+PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf);
 
 /** Finalizes PDI
  * \return an error status

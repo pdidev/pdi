@@ -56,11 +56,6 @@ include(GNUInstallDirs)
 
 # Dependencies
 
-set(MPI_LANGS C CXX)
-if("${ENABLE_FORTRAN}")
-	list(APPEND MPI_LANGS Fortran)
-endif()
-find_package(MPI REQUIRED COMPONENTS ${MPI_LANGS})
 find_package(paraconf REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(Astyle)
@@ -124,7 +119,7 @@ set(PDI_C_SRC
 )
 add_library(pdi ${PDI_C_SRC})
 generate_export_header(pdi EXPORT_FILE_NAME pdi/export.h)
-target_link_libraries(pdi PUBLIC paraconf::paraconf spdlog::spdlog MPI::MPI_CXX ${CMAKE_DL_LIBS})
+target_link_libraries(pdi PUBLIC paraconf::paraconf spdlog::spdlog ${CMAKE_DL_LIBS})
 target_include_directories(pdi PUBLIC
 		"$<BUILD_INTERFACE:${PDI_BINARY_DIR}>" 
 		"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/../include/>"
@@ -249,8 +244,8 @@ if("${ENABLE_FORTRAN}")
 			VERBATIM
 	)
 
-	add_library(pdi_f90 fortran/pdi.cxx ${PDI_F90} fortran/paraconf_wrap.f90 fortran/pdi_c.f90)
-	target_link_libraries(pdi_f90 pdi paraconf::paraconf_f90 MPI::MPI_Fortran)
+	add_library(pdi_f90 ${PDI_F90} fortran/paraconf_wrap.f90 fortran/pdi_c.f90)
+	target_link_libraries(pdi_f90 pdi paraconf::paraconf_f90)
 	add_dependencies(pdi_f90 mv_bpp_files)
 	target_include_directories(pdi_f90 PUBLIC
 			"$<BUILD_INTERFACE:${PDI_BINARY_DIR}/fortran_inc>"
@@ -315,13 +310,9 @@ write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
 install(EXPORT PDI_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "pdi.cmake")
 install(FILES
 		../cmake/CMakeFindDependencyMacro.cmake
-		../cmake/FindMPI.cmake
 		../cmake/FindPackageHandleStandardArgs.cmake
 		../cmake/FindPackageMessage.cmake
 		../cmake/PDIConfig.cmake
 		"${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
-		DESTINATION "${INSTALL_CMAKEDIR}"
-)
-install(DIRECTORY ../cmake/FindMPI
 		DESTINATION "${INSTALL_CMAKEDIR}"
 )

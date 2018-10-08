@@ -23,14 +23,15 @@
 !******************************************************************************/
 
 program test2
-  use pdi
+
+  use MPI
+  use PDI
 
   implicit none
 
-  include 'mpif.h'
 
   integer, pointer :: comm_ptr
-  integer :: main_comm, ierr
+  integer :: ierr
   character(len=512) :: strbuf
   type(PC_tree_t) :: conf
 
@@ -44,8 +45,7 @@ program test2
   
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
-  main_comm = MPI_COMM_WORLD
-  call PDI_init(conf, main_comm)
+  call PDI_init(conf)
   
   call PDI_access("MPI_COMM_WORLD_F", comm_ptr, PDI_IN);
   if ( comm_ptr .ne. MPI_COMM_WORLD ) then

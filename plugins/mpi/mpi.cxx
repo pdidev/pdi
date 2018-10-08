@@ -86,7 +86,7 @@ struct mpi_plugin: Plugin {
 		predef_desc.reclaim(); // reclaim the reference and let PDI keep a copy (metadata)
 	}
 	
-	mpi_plugin(Context& ctx, PC_tree_t config, MPI_Comm*):
+	mpi_plugin(Context& ctx, PC_tree_t config):
 		Plugin{ctx}
 	{
 		set_up_logger(ctx, PC_get(config, ".logging"));

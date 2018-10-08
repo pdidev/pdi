@@ -52,6 +52,7 @@
 namespace {
 
 using PDI::Context;
+using PDI::Data_descriptor;
 using PDI::Ref;
 using PDI::Ref_r;
 using PDI::Ref_w;
@@ -174,6 +175,8 @@ static uint64_t hash(const uint8_t* data, size_t len)
 
 struct decl_sion_plugin: Plugin {
 
+	string comm_name;
+	
 	MPI_Comm comm;
 	
 	unordered_map<string, Variable_event> output_vars;
@@ -185,16 +188,21 @@ struct decl_sion_plugin: Plugin {
 	unordered_map<string, Named_event> input_events;
 	
 	
-	decl_sion_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world):
+	decl_sion_plugin(Context& ctx, PC_tree_t conf):
 		Plugin{ctx},
+		comm_name{to_string(PC_get(conf, ".communicator"))},
+		comm{MPI_COMM_NULL},
 		output_vars{parse_vars(PC_get(conf, ".outputs"))},
 		input_vars{parse_vars(PC_get(conf, ".inputs"))},
 		output_events{parse_events(PC_get(conf, ".outputs"))},
 		input_events{parse_events(PC_get(conf, ".inputs"))}
 	{
 		if (PC_status(conf)) throw Error {PDI_ERR_CONFIG, "Configuration is invalid"};
-		if (MPI_Comm_dup(*world, &comm)) {
-			throw Error {PDI_ERR_SYSTEM, "Cannot duplicate MPI communicator"};
+		Data_descriptor& comm_desc = ctx.desc(comm_name);
+		if ( !comm_desc.empty() ) {
+			if (MPI_Comm_dup(*(static_cast<const MPI_Comm*>(Ref_r{comm_desc.ref()}.get())), &comm)) {
+				throw Error {PDI_ERR_SYSTEM, "Cannot duplicate MPI communicator"};
+			}
 		}
 		ctx.logger()->info("(Decl'SION) Plugin loaded successfully");
 	}
@@ -432,6 +440,11 @@ struct decl_sion_plugin: Plugin {
 	
 	void data(const char* name, Ref cref) override
 	{
+		if ( name == comm_name ) {
+			if (MPI_Comm_dup(*(static_cast<const MPI_Comm*>(Ref_r{context().desc(name).ref()}.get())), &comm)) {
+				throw Error {PDI_ERR_SYSTEM, "Cannot duplicate MPI communicator"};
+			}
+		}
 		auto&& outvarit = output_vars.find(name);
 		if (outvarit != output_vars.end()) {
 			long select;

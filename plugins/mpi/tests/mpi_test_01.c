@@ -45,8 +45,7 @@ int main(int argc, char* argv[])
 {
 	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(YAML_CONFIG);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	
 	MPI_Comm sparse_array[9]; // buffer: 3 x 3; data: 2 x 2; start: 1, 1
 	MPI_Comm* dense_array;    // buffer: 2 x 2

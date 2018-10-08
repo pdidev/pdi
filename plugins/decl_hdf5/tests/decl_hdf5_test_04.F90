@@ -25,17 +25,15 @@
 #define NI_GHOST 1
 #define NJ_GHOST 1
 
-include 'paraconf.F90'
-
 program test4
 
+  use MPI
   use paraconf
+  use PDI
 
   implicit none
   
-  include 'mpif.h'
-  include 'pdif.h'
-
+  
   character(len=512) :: strbuf
   integer :: i, j, n, ierr,  main_comm 
   integer,target :: imx=5, jmx=4, input, rank, nj, ni, nig, njg, nit, njt, gsi, gei, gsj, gej, nptot
@@ -65,7 +63,7 @@ program test4
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
   main_comm = MPI_COMM_WORLD
-  call PDI_init(conf, main_comm)
+  call PDI_init(conf)
   call MPI_Comm_rank(main_comm, rank, ierr)
   call MPI_Comm_size(main_comm, nptot, ierr)
   

@@ -23,7 +23,6 @@
  ******************************************************************************/
 
 #include <assert.h>
-#include <mpi.h>
 #include <paraconf.h>
 #include <pdi.h>
 
@@ -38,10 +37,7 @@ const char* CONFIG_YAML =
 
 int main( int argc, char* argv[] )
 {
-	MPI_Init(&argc, &argv);
-	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(PC_parse_string(CONFIG_YAML));
 	
 	PDI_errhandler(PDI_NULL_HANDLER);
 	double invalid;
@@ -49,6 +45,5 @@ int main( int argc, char* argv[] )
 	if ( err != PDI_ERR_VALUE ) abort();
 	if ( strcmp(PDI_errmsg(), "while referencing `meta2': Cannot access a non shared value: `meta2'") ) abort();
 	
-	PC_tree_destroy(&conf);
-	MPI_Finalize();
+	PDI_finalize();
 }

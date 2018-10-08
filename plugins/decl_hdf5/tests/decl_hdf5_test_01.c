@@ -24,7 +24,6 @@
 
 #include <assert.h>
 #include <unistd.h>
-#include <mpi.h>
 #include <pdi.h>
 
 const char* CONFIG_YAML =
@@ -50,10 +49,8 @@ int main( int argc, char* argv[] )
 	
 	remove("5.h5");
 	
-	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	
 	PDI_multi_expose("testing",
 	    "meta0",&value[0], PDI_OUT,
@@ -66,7 +63,6 @@ int main( int argc, char* argv[] )
 	    
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-	MPI_Finalize();
 	
 	FILE* fp = fopen("5.h5", "r");
 	assert( fp != NULL && "File not found.");

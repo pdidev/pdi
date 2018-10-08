@@ -22,21 +22,18 @@
 ! THE SOFTWARE.
 !******************************************************************************/
 
-include 'paraconf.F90'
-
 program test1
 
+  use MPI
   use paraconf
+  use PDI
 
   implicit none
   
-  include 'mpif.h'
-  include 'pdif.h'
-
 
   integer, pointer :: pmeta0,pmeta1,pmeta2,pmeta3,pmeta4
   integer, target :: meta0,meta1,meta2,meta3,meta4
-  integer :: i, ierr,  main_comm
+  integer :: i, ierr
   integer,dimension(:), allocatable :: buf
   integer :: nbuf=1000
   double precision,target :: test_var=0.0
@@ -67,8 +64,7 @@ program test1
 
   call get_command_argument(1, strbuf)
   call PC_parse_path(strbuf, conf)
-  main_comm = MPI_COMM_WORLD
-  call PDI_init(conf, main_comm)
+  call PDI_init(conf)
 
   call PDI_transaction_begin("testing")
   call PDI_expose("meta0",pmeta0, PDI_OUT)
@@ -88,13 +84,14 @@ program test1
   test_var=1
   call PDI_transaction_end()
   call PDI_finalize()
+  call MPI_Finalize(ierr)
 
   inquire(file="test_01_variable_6.sion", exist=file_exist) ! values(1)=6
   if( file_exist ) then
     print*, "File found."
   else
     print*, "File not found"
-    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+    STOP
   endif ! file doesn't exist
 
   inquire(file="test_01_event_6.sion", exist=file_exist) ! values(1)=6
@@ -102,9 +99,7 @@ program test1
     print*, "File found."
   else
     print*, "File not found"
-    call MPI_abort(MPI_COMM_WORLD, -1, ierr)
+    STOP
   endif ! file doesn't exist
-
-  call MPI_Finalize(ierr)
 
 endprogram

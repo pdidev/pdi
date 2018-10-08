@@ -37,15 +37,17 @@ const char* CONFIG_YAML =
     "data:                                \n"
     "  reals:                             \n"
     "    type: array                      \n"
-    "    subtype: double             \n"
+    "    subtype: double                  \n"
     "    size: [$nj , $ni]                \n"
     "  values:                            \n"
     "    type: array                      \n"
-    "    subtype: int                \n"
+    "    subtype: int                     \n"
     "    size: [$nj , $ni]                \n"
     "                                     \n"
     "plugins:                             \n"
+    "  mpi:                               \n"
     "  decl_sion:                         \n"
+    "    communicator: MPI_COMM_WORLD     \n"
     "    inputs:                          \n"
     "      - event: read_data             \n"
     "        file: test_03_C.sion         \n"
@@ -63,8 +65,7 @@ int main(int argc, char* argv[])
 	
 	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	
 	// Fill arrays
 	for (int j=0; j<JMX; ++j) {
@@ -77,8 +78,8 @@ int main(int argc, char* argv[])
 	}
 	
 	// Set size for PDI
-	PDI_expose("ni", &IMX, PDI_OUT);
-	PDI_expose("nj", &JMX, PDI_OUT);
+	PDI_expose("ni", (int*)&IMX, PDI_OUT);
+	PDI_expose("nj", (int*)&JMX, PDI_OUT);
 	
 	// Test that expose works
 	PDI_multi_expose("write_data",

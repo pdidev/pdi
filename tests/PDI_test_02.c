@@ -23,7 +23,6 @@
  ******************************************************************************/
 
 #include <assert.h>
-#include <mpi.h>
 
 #include <paraconf.h>
 #include <pdi.h>
@@ -40,10 +39,7 @@ const char* CONFIG_YAML =
 
 int main(int argc, char* argv[])
 {
-	MPI_Init(&argc, &argv);
-	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(PC_parse_string(CONFIG_YAML));
 	
 	int sparse_array[1000]; //buffer: 10 x 10 x 10; data: 3 x 4 x 5; start: (1, 2, 3)
 	int* dense_array; //buffer: 3 x 4 x 5
@@ -61,5 +57,4 @@ int main(int argc, char* argv[])
 	}
 	
 	PDI_finalize();
-	MPI_Finalize();
 }

@@ -121,12 +121,9 @@ PYBIND11_MODULE(pdi, m)
 	
 	m.def("version", pyversion, "Checks PDI API version", "version"_a = pybind11::make_tuple(0,0,0));
 	
-	m.def("init", [](pyobj pycomm, char* conf) {
+	m.def("init", [](char* conf) {
 		Paraconf_wrapper fw;
-		pymod pyMPI = pymod::import("mpi4py.MPI");
-		MPI_Comm comm = MPI_Comm_f2c(pycomm.attr("py2f")().cast<MPI_Fint>());
-		Global_context::init(PC_parse_string(conf), &comm);
-		return pyMPI.attr("Comm").attr("f2py")(MPI_Comm_c2f(comm));
+		Global_context::init(PC_parse_string(conf));
 	}, "Initialize PDI");
 	
 	m.def("event", [](const char* name) {

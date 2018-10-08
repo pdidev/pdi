@@ -36,14 +36,14 @@ set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 add_executable(decl_sion_01_c decl_sion_test_01.c)
 target_link_libraries(decl_sion_01_c PDI::pdi MPI::MPI_C)
-add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_sion_01_c>")
+add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 1 "$<TARGET_FILE:decl_sion_01_c>")
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_01_F decl_sion_test_01.F90)
 target_link_libraries(decl_sion_01_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_sion_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
+add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 1 "$<TARGET_FILE:decl_sion_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
 endif("${ENABLE_FORTRAN}")
 
 

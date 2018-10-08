@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
-
 #include <functional>
 #include <iostream>
 #include <string>
@@ -51,37 +49,22 @@ using std::unordered_set;
 
 struct test_plugin: Plugin {
 
-	MPI_Comm my_comm;
-	
 	unordered_set<Ref> m_refs;
 	
-	test_plugin(Context& ctx, PC_tree_t, MPI_Comm* world):
+	test_plugin(Context& ctx, PC_tree_t):
 		Plugin {ctx}
 	{
-		if ( MPI_Comm_dup(*world, &my_comm) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
-		
-		int rank;
-		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
-		
-		if ( rank == 0 ) context().logger()->info("(Test-plugin) Welcome to the test plugin!");
+		context().logger()->info("(Test-plugin) Welcome to the test plugin!");
 	}
 	
 	~test_plugin()
 	{
-		int rank;
-		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
-		
-		if ( rank == 0 ) context().logger()->info("(Test-plugin) Goodbye from the test plugin!");
-		
-		if ( MPI_Comm_free(&my_comm) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
+		context().logger()->info("(Test-plugin) Goodbye from the test plugin!");
 	}
 	
 	void event(const char* event) override
 	{
-		int rank;
-		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
-		
-		if ( rank == 0 ) context().logger()->info("(Test-plugin) The test plugin received an event: {}", event);
+		context().logger()->info("(Test-plugin) The test plugin received an event: {}", event);
 	}
 	
 	void data(const char* name, Ref ref) override
@@ -93,20 +76,12 @@ struct test_plugin: Plugin {
 		ref_it->on_nullify([=](Ref r) {
 			this->data_end(sname.c_str(), r);
 		});
-		
-		int rank;
-		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
-		
-		if ( rank == 0 ) context().logger()->info("(Test-plugin) =>> data becoming available to the test plugin: {}", name);
+		context().logger()->info("(Test-plugin) =>> data becoming available to the test plugin: {}", name);
 	}
 	
 	void data_end(const char* name, Ref r)
 	{
-		int rank;
-		if ( MPI_Comm_rank(my_comm, &rank) ) throw Error{PDI_ERR_SYSTEM, "MPI error"};
-		m_refs.erase(r);
-		
-		if ( rank == 0 ) context().logger()->info("(Test-plugin) <<= data stop being available to the test plugin: {}", name);
+		context().logger()->info("(Test-plugin) <<= data stop being available to the test plugin: {}", name);
 	}
 	
 }; // struct test_plugin

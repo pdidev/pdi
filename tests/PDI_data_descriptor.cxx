@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
-
 #include <gtest/gtest.h>
 
 #include <pdi/array_datatype.h>
@@ -64,20 +62,6 @@ struct Descriptor_test_handler {
 };
 }
 
-struct MPI_initializer {
-
-	MPI_initializer()
-	{
-		int argc = 0; char** argv = {};
-		MPI_Init(&argc, &argv);
-	}
-	
-	~MPI_initializer()
-	{
-		MPI_Finalize();
-	}
-};
-
 /*
  * Struct prepared for DataDescTest
  */
@@ -86,8 +70,7 @@ struct DataDescTest : public ::testing::Test {
 	PC_tree_t array_config {PC_parse_string("{ size: 10, type: array, subtype: int }")};
 	Array_datatype array_datatype{Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type(), 10};
 	PDI::Paraconf_wrapper fw;
-	MPI_initializer init_mpi;
-	MockGlobalContext mockGlCtx{PC_parse_string(""), 0};
+	MockGlobalContext mockGlCtx{PC_parse_string("")};
 	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(mockGlCtx);
 };
 

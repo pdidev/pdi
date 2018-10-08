@@ -40,12 +40,10 @@ interface
   !=============================================================================
   !< initializes PDI
   !! \param[IN] treeconf the configuration
-  !! \param[IN,OUT] world the main mpi communicator
   !! \param[OUT] err for error status (optional)
-  subroutine PDI_init(treeconf, world, err)
+  subroutine PDI_init(treeconf, err)
     use paraconf
     type(PC_tree_t), intent(IN) :: treeconf
-    integer, intent(INOUT), target :: world
     integer, intent(OUT), optional :: err
   endsubroutine PDI_init
   !=============================================================================

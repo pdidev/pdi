@@ -24,12 +24,12 @@
 
 program PDI_example_f90
 
+  use MPI
   use paraconf
+  use PDI
 
   implicit none
   
-  include 'mpif.h'
-  include 'pdif.h'
 
   character(len=512) :: strbuf
   type(PC_tree_t),target :: conf
@@ -52,7 +52,7 @@ program PDI_example_f90
   call PC_parse_path(strbuf, conf)
 
   main_comm = MPI_COMM_WORLD
-  call PDI_init(PC_get(conf, ".pdi"), main_comm)
+  call PDI_init(PC_get(conf, ".pdi"))
 
   call MPI_Comm_size(main_comm, psize_1d, err)
   call MPI_Comm_rank(main_comm, pcoord_1d, err)

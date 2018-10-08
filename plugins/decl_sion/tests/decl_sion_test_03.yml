@@ -12,7 +12,9 @@ data: # values that can not be referenced using $syntax
     size: [$nj , $ni]
 
 plugins:
+  mpi:
   decl_sion:
+    communicator: MPI_COMM_WORLD
     inputs:
       - event: read_data
         file: test_03_C.sion

@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
-
 #include <assert.h>
 #include <stdlib.h>
 
@@ -69,10 +67,8 @@ int main( int argc, char* argv[] )
 	local_errhandler.func = succeed_on_failure;
 	local_errhandler.context = &has_failed;
 	
-	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	
 	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
 	
@@ -92,6 +88,5 @@ int main( int argc, char* argv[] )
 	
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-	MPI_Finalize();
 }
 

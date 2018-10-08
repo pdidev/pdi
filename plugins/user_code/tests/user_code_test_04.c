@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
-
 #include <assert.h>
 #include <stdio.h>
 
@@ -62,10 +60,8 @@ void test_null()
 
 int main( int argc, char* argv[] )
 {
-	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	MPI_Comm world = MPI_COMM_WORLD;
-	PDI_init(conf, &world);
+	PDI_init(conf);
 	
 	void* data = NULL;
 	
@@ -77,5 +73,4 @@ int main( int argc, char* argv[] )
 	    
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-	MPI_Finalize();
 }
