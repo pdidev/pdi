@@ -38,11 +38,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # Build options
 
 option(BUILD_DECL_HDF5_PLUGIN        "Build decl'HDF5 plug-in" ON)
-option(BUILD_DECL_SION_PLUGIN        "Build decl'SION plug-in" ON )
+option(BUILD_DECL_SION_PLUGIN        "Build decl'SION plug-in" OFF)
 option(BUILD_DOCUMENTATION           "Build documentation" ON)
 option(BUILD_FTI_PLUGIN              "Build FTI plug-in." OFF)
 option(BUILD_MPI_PLUGIN              "Build MPI plug-in" ON)
-option(ENABLE_PYTHON                 "Enable Python support" ON)
+option(ENABLE_PYTHON                 "Enable Python support" OFF)
 option(BUILD_SHARED_LIBS             "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING                 "Build tests" ON)
 option(ENABLE_FORTRAN                "Enable Fortran support" ON)

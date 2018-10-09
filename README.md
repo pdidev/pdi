@@ -17,9 +17,8 @@ IO type, hardware used, etc.)
 
 ## Getting the source
 
-### Latest release
-
-You can find a list of release at https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags
+You can find a list of release at 
+https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags
 
 For example, you can get release 0.2.0
 
@@ -27,14 +26,6 @@ For example, you can get release 0.2.0
 wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.2.0/pdi-0.2.0.tar.bz2
 tar -xf pdi-0.2.0.tar.bz2
 mv pdi-0.2.0 pdi
-```
-
-### From GIT
-
-You can fetch the latest source from git .
-
-```
-git clone --recursive https://gitlab.maisondelasimulation.fr/jbigot/pdi.git
 ```
 
 ## Compilation
@@ -56,34 +47,58 @@ make install
 
 ## Prerequisites
 
+### PDI
+
 PDI depends on:
   * cmake, version >= 3.5
   * a C-99 and C++-14 compiler (gcc-5.4 is tested)
   * a POSIX compatible OS (linux with GNU libc-2.27 is tested)
-  * a MPI-2 library (openmpi-1.10.2 is tested)
-  * paraconf (distributed with PDI, pass the `-DUSE_PARACONF=EMBEDDED` option to
-    cmake to use the embedded version)
+  * paraconf (distributed with PDI, pass the `-DUSE_PARACONF=EMBEDDED` option
+  to cmake to use the embedded version)
   * libyaml (distributed with PDI, pass the `-DUSE_YAML=EMBEDDED` option to
-    cmake to use the embedded version)
+  cmake to use the embedded version)
   * spdlog (distributed with PDI, pass the `-DUSE_SPDLOG=EMBEDDED` option to
-    cmake to use the embedded version)
+  cmake to use the embedded version)
+
+### Fortran support
 
 PDI Fortran support depends on:
   * a Fortran-2003 compiler (gfort-5.4 is tested)
   * a python and bash interpreter at compilation
   * BPP (distributed with PDI, pass the `-DUSE_BPP=EMBEDDED` option to cmake to
-    use it)
+  use the embedded version)
+
+### Python support
+
+PDI Fortran support depends on:
+  * a python3 installation with development headers
+  * pybind11 (distributed with PDI, pass the `-DUSE_PYBIND11=EMBEDDED` option to
+  cmake to use the embedded version)
+
+### Decl'HDF5 plugin
+
+The decl'HDF5 plugin depends on:
+  * HDF5 (either sequential or parallel compatible with the chosen MPI)
+
+### Decl'SION plugin
+
+The decl'SION plugin depends on:
+  * SIONlib compatible with the chosen MPI
+
+### FTI plugin
+
+The FTI plugin depends on:
+  * FTI (distributed with PDI, pass the `-DUSE_FTI=EMBEDDED` option to cmake to
+  use the embedded version)
+
+### MPI plugin
+
+The FTI plugin depends on:
+  * a MPI-2 library (openmpi-1.10.2 is tested)
+
+### Tests
 
 Tests depend on:
   * cmake, version >= 3.10
   * gtest and gmock (distributed with PDI, pass the `-DUSE_GTEST=EMBEDDED`
-    option to cmake to use the embedded version)
-
-Plugins:
-  * Decl'HDF5 plugin depends on:
-    * HDF5 (either sequential or parallel compatible with the chosen MPI)
-  * FTI plugin depends on:
-    * FTI (distributed with PDI, pass the `-DUSE_FTI=EMBEDDED` option to cmake
-      to use the embedded version)
-  * Decl'SION plugin depends on:
-    * SIONlib
+  option to cmake to use the embedded version)
