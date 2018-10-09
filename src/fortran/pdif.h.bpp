@@ -134,7 +134,7 @@ interface PDI_share
   !! a call to either PDI_release or PDI_reclaim.
   !! \param[IN] name the data name
   !! \param[IN,OUT] ptr_data the pointer to the trageted data
-  !! \param[IN] accessf whether the data can be accessed for read or write by
+  !! \param[IN] access whether the data can be accessed for read or write by
   !!            PDI
   !! \param[OUT] err for error status (optional)
   !! \pre the user code owns the data buffer
@@ -143,10 +143,14 @@ interface PDI_share
   !! the access parameter is a binary or of PDI_IN & PDI_OUT.
   !! * PDI_IN means PDI can set the buffer content
   !! * PDI_OUT means the buffer contains data that can be accessed by PDI
-  subroutine PDI_share_${T}_${D}D( name, ptr_data, accessf, err )
+  subroutine PDI_share_${T}_${D}D( name, ptr_data, access, err )
     character(len=*), intent(IN) :: name
-    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
-    integer, intent(IN) :: accessf
+    $(fort_type $T), pointer &
+!$SH     if [ 1 -lt "0$D" ]; then
+    , contiguous &
+!$SH     fi
+    :: ptr_data$(array_desc $D)
+    integer, intent(IN) :: access
     integer, intent(OUT), optional :: err
   endsubroutine PDI_share_${T}_${D}D
   !=============================================================================
@@ -163,14 +167,18 @@ interface PDI_expose
   !=============================================================================
   !< shortly exposes some data to PDI. equivalent to PDI_share + PDI_reclaim.
   !! \param[IN] name the data name
-  !! \param[IN] ptr_data pointer associated with the exposed data
-  !! \param[IN] accessf whether the data can be accessed for read or write by
+  !! \param[IN] data the exposed data
+  !! \param[IN] access whether the data can be accessed for read or write by
   !!            PDI
   !! \param[OUT] err for error status (optional)
-  subroutine PDI_expose_${T}_${D}D(name, ptr_data, accessf, err)
+  subroutine PDI_expose_${T}_${D}D(name, data, access, err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
-    integer, intent(IN) :: accessf
+    $(fort_type $T), target &
+!$SH     if [ 1 -lt "0$D" ]; then
+  , contiguous &
+!$SH     fi
+  :: data$(array_desc $D)
+    integer, intent(IN) :: access
     integer, intent(OUT), optional :: err
   endsubroutine PDI_expose_${T}_${D}D
   !=============================================================================
@@ -188,17 +196,21 @@ interface PDI_access
   !< requests for PDI to access a data buffer.
   !! \param[IN] name the data name
   !! \param[OUT] ptr_data pointer associated with the accessd data
-  !! \param[IN] accessf whether the data can be accessed for read or write by
+  !! \param[IN] access whether the data can be accessed for read or write by
   !!            PDI
   !! \param[OUT] err for error status (optional)
-  subroutine PDI_access_${T}_${D}D(name, ptr_data, accessf, &
+  subroutine PDI_access_${T}_${D}D(name, ptr_data, access, &
 !$SH     if [ 0 -lt "$D" ]; then
       ptr_data_shape, &
 !$SH     fi
       err)
     character(len=*), intent(IN) :: name
-    $(fort_type $T), pointer :: ptr_data$(array_desc $D)
-    integer, intent(IN) :: accessf
+    $(fort_type $T), pointer &
+!$SH     if [ 1 -lt "0$D" ]; then
+  , contiguous &
+!$SH     fi
+  :: ptr_data$(array_desc $D)
+    integer, intent(IN) :: access
 !$SH     if [ 0 -lt "$D" ]; then
     integer, intent(IN) :: ptr_data_shape($D)
 !$SH     fi

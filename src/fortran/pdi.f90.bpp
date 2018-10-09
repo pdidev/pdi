@@ -111,7 +111,11 @@ subroutine PDI_share_${T}_${D}D(name, ptr_data, accessf, err)
   implicit none
 
   character(len=*), intent(IN) :: name
-  $(fort_type $T), pointer :: ptr_data$(array_desc $D)
+  $(fort_type $T), pointer &
+!$SH     if [ 1 -lt "0$D" ]; then
+  , contiguous &
+!$SH     fi
+  :: ptr_data$(array_desc $D)
   integer, intent(IN) :: accessf
   integer, intent(OUT), optional :: err
 
@@ -190,14 +194,18 @@ endsubroutine PDI_reclaim
 !$SH for T in ${FORTTYPES}; do
 !$SH   for D in $(seq 0 ${MAXDIM}); do
 
-subroutine PDI_expose_${T}_${D}D(name, ptr_data, accessf, err)
+subroutine PDI_expose_${T}_${D}D(name, data, accessf, err)
 
   use PDI_C
 
   implicit none
 
   character(len=*), intent(IN) :: name
-  $(fort_type $T), pointer :: ptr_data$(array_desc $D)
+  $(fort_type $T), target &
+!$SH     if [ 1 -lt "0$D" ]; then
+  , contiguous &
+!$SH     fi
+  :: data$(array_desc $D)
   integer, intent(IN) :: accessf
   integer, intent(OUT), optional :: err
 
@@ -210,7 +218,7 @@ subroutine PDI_expose_${T}_${D}D(name, ptr_data, accessf, err)
   C_name(len_trim(name)+1) = C_null_char
 
   tmperr = int(PDI_expose_C(C_loc(C_name), &
-      C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')')), &
+      C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
       accessf))
   
   if(present(err)) then
@@ -235,7 +243,11 @@ subroutine PDI_access_${T}_${D}D(name, ptr_data, accessf, &
   implicit none
 
   character(len=*), intent(IN) :: name
-  $(fort_type $T), pointer :: ptr_data$(array_desc $D)
+  $(fort_type $T), pointer &
+!$SH     if [ 1 -lt "0$D" ]; then
+  , contiguous &
+!$SH     fi
+  :: ptr_data$(array_desc $D)
   integer, intent(IN) :: accessf
 !$SH     if [ 0 -lt "$D" ]; then
   integer, intent(IN) :: ptr_data_shape($D)
