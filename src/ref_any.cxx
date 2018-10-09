@@ -50,7 +50,7 @@ Ref Ref_base::do_copy(Ref_r ref)
 	void* buffer = operator new (size);
 	void* data = std::align(densified_type->alignment(), densified_type->buffersize(), buffer, size);
 	try {
-		ref.type().data_dense_copy(data, ref.get());
+		ref.type().data_to_dense_copy(data, ref.get());
 	} catch (...) {
 		::operator delete (buffer);
 		throw;

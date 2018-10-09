@@ -64,7 +64,7 @@ public:
 	 */
 	virtual void metadata(bool metadata) = 0;
 	
-	/** Access the name of the 
+	/** Access the name of the descriptor
 	 */
 	virtual const std::string& name() const = 0;
 	

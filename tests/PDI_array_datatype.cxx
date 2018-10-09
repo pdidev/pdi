@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 
 #include <pdi/array_datatype.h>
+#include <pdi/scalar_datatype.h>
 
 #include "mocks/context_mock.h"
 #include "mocks/datatype_mock.h"
@@ -264,4 +265,61 @@ TEST_F(ArrayDatatypeTest, check_alignment)
 	size_t subtype_alignment = 1;
 	EXPECT_CALL(*this->mockDatatype, alignment()).WillOnce(Return(subtype_alignment));
 	ASSERT_EQ(subtype_alignment, this->test_array.alignment());
+}
+
+
+/*
+ * Struct prepared for SparseArrayDeepCopyTest.
+ *
+ */
+struct SparseArrayDeepCopyTest : public ::testing::Test {
+
+	int* sparse_array {new int[100]}; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
+	int* dense_array {new int[16]};
+	
+	SparseArrayDeepCopyTest()
+	{
+		for (int i = 0; i < 100; i++) {
+			sparse_array[i] = 0;
+		}
+		for (int i = 0; i < 16; i++) {
+			dense_array[i] = i;
+		}
+	}
+	
+	Datatype_uptr datatype {
+		new Array_datatype
+		{
+			Datatype_uptr {
+				new Array_datatype
+				{
+					Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+					10,
+					3,
+					4
+				}
+			},
+			10,
+			3,
+			4
+		}
+	};
+};
+
+/*
+ * Name:                SparseArrayDeepCopyTest.dense_to_sparse
+ *
+ * Tested functions:    PDI::ArrayDatatypeTest::data_sparse_copy()
+ *
+ * Description:         Test checks if correct copy is returned
+ *
+ */
+TEST_F(SparseArrayDeepCopyTest, dense_to_sparse)
+{
+	this->datatype->data_from_dense_copy(sparse_array, dense_array);
+	for (int i = 3; i < 7; i++) {
+		for (int j = 3; j < 7; j++) {
+			ASSERT_EQ(dense_array[(i-3)*4 + j-3], sparse_array[10*i + j]);
+		}
+	}
 }

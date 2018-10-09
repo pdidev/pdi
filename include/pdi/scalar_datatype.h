@@ -83,7 +83,9 @@ public:
 	
 	bool simple() const override;
 	
-	void* data_dense_copy(void* to, const void* from) const override;
+	void* data_to_dense_copy(void* to, const void* from) const override;
+	
+	void* data_from_dense_copy(void* to, const void* from) const override;
 	
 	void destroy_data(void* ptr) const override;
 	

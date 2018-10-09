@@ -129,7 +129,7 @@ bool Array_datatype::simple() const
 	return m_subtype->simple();
 }
 
-void* Array_datatype::data_dense_copy(void* to, const void* from) const
+void* Array_datatype::data_to_dense_copy(void* to, const void* from) const
 {
 	size_t subtype_buffersize = subtype().buffersize();
 	from = static_cast<const uint8_t*>(from) + (start() * subtype_buffersize);
@@ -147,9 +147,41 @@ void* Array_datatype::data_dense_copy(void* to, const void* from) const
 		//size = 0, because we know that to points to allocated memory
 		to = std::align(subtype_alignment, 0, to, space_to_align);
 		
-		to = subtype().data_dense_copy(to, from);
+		to = subtype().data_to_dense_copy(to, from);
 		from = reinterpret_cast<const uint8_t*>(from) + subtype_buffersize;
 	}
+	return to;
+}
+
+void* Array_datatype::data_from_dense_copy(void* to, const void* from) const
+{
+	uint8_t* original_to = reinterpret_cast<uint8_t*>(to);
+	size_t subtype_buffersize = subtype().buffersize();
+	to = static_cast<uint8_t*>(to) + (start() * subtype_buffersize);
+	
+	if (subtype().simple() && subtype().dense()) {
+		//dense copy
+		memcpy(to, from, datasize());
+		to = original_to + buffersize();
+		return to;
+	}
+	
+	size_t subtype_alignment = subtype().alignment();
+	for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
+		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
+		size_t space_to_align = subtype_alignment;
+		//size = 0, because we know that to points to allocated memory
+		to = std::align(subtype_alignment, 0, to, space_to_align);
+		
+		//cannot use std::aling, becasue `from' is const
+		auto subtype_align = subtype().alignment();
+		int padding = (subtype_align - (reinterpret_cast<const uintptr_t>(from) % subtype_align)) % subtype_align;
+		from = reinterpret_cast<const uint8_t*>(from) + padding;
+		
+		to = subtype().data_from_dense_copy(to, from);
+		from = reinterpret_cast<const uint8_t*>(from) + subtype().datasize();
+	}
+	to = original_to + buffersize();
 	return to;
 }
 

@@ -99,12 +99,22 @@ public:
 	/**
 	 * Creates a dense deep copy of data
 	 *
-	 * \param[in] to the pointer to the alocated memory to fill
-	 * \param[in] from the pointer to the copied data
+	 * \param[in] to the pointer to the allocated memory to fill (dense data)
+	 * \param[in] from the pointer to the copied data (size of buffersize)
 	 *
 	 * \return updated `to' pointer
 	 */
-	virtual void* data_dense_copy(void* to, const void* from) const = 0;
+	virtual void* data_to_dense_copy(void* to, const void* from) const = 0;
+	
+	/**
+	 * Creates a sparse deep copy of dense data
+	 *
+	 * \param[in] to the pointer to the allocated memory to fill (size of buffersize)
+	 * \param[in] from the pointer to the copied data (dense data)
+	 *
+	 * \return updated `to' pointer
+	 */
+	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
 	
 	/**
 	 * Function used to delete the data behind the datatype. This should not deallocate the memory.

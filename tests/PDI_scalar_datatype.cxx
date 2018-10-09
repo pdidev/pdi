@@ -191,3 +191,36 @@ TYPED_TEST(ScalarDatatypeTest, check_evaluate)
 	ASSERT_EQ(this->test_scalar->alignment(), cloned_scalar->alignment());
 	ASSERT_EQ(this->test_scalar->dense(), cloned_scalar->dense());
 }
+
+/*
+ * Struct prepared for ScalarDeepCopyTest.
+ *
+ */
+struct ScalarDeepCopyTest : public ::testing::Test {
+
+	int data_scalar;
+	int copied_scalar;
+	
+	ScalarDeepCopyTest()
+	{
+		data_scalar = 123;
+		copied_scalar = 0;
+	}
+	
+	Datatype_uptr datatype {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}};
+	
+};
+
+/*
+ * Name:                ScalarDeepCopyTest.dense_to_sparse
+ *
+ * Tested functions:    PDI::ScalarDatatype::data_sparse_copy()
+ *
+ * Description:         Test checks if correct copy is returned
+ *
+ */
+TEST_F(ScalarDeepCopyTest, dense_to_sparse)
+{
+	this->datatype->data_from_dense_copy(&copied_scalar, &data_scalar);
+	ASSERT_EQ(copied_scalar, data_scalar);
+}

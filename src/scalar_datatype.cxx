@@ -124,7 +124,7 @@ bool Scalar_datatype::simple() const
 	return !m_copy && !m_destroy;
 }
 
-void* Scalar_datatype::data_dense_copy(void* to, const void* from) const
+void* Scalar_datatype::data_to_dense_copy(void* to, const void* from) const
 {
 	if ( !m_copy ) {
 		memcpy(to, from, datasize());
@@ -133,6 +133,11 @@ void* Scalar_datatype::data_dense_copy(void* to, const void* from) const
 		to = m_copy(to, from);
 	}
 	return to;
+}
+
+void* Scalar_datatype::data_from_dense_copy(void* to, const void* from) const
+{
+	return data_to_dense_copy(to, from);
 }
 
 void Scalar_datatype::destroy_data(void* ptr) const

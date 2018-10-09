@@ -187,7 +187,7 @@ bool Record_datatype::simple() const
 	return true;
 }
 
-void* Record_datatype::data_dense_copy(void* to, const void* from) const
+void* Record_datatype::data_to_dense_copy(void* to, const void* from) const
 {
 	if (simple() && dense()) {
 		//dense copy
@@ -202,8 +202,32 @@ void* Record_datatype::data_dense_copy(void* to, const void* from) const
 		//size = 0, because we know that to points to allocated memory
 		to = std::align(member.type().alignment(), 0, to, space_to_align);
 		const uint8_t* member_from = reinterpret_cast<const uint8_t*>(from) + member.displacement();
-		to = member.type().data_dense_copy(to, member_from);
+		to = member.type().data_to_dense_copy(to, member_from);
 	}
+	return to;
+}
+
+void* Record_datatype::data_from_dense_copy(void* to, const void* from) const
+{
+	uint8_t* original_to = reinterpret_cast<uint8_t*>(to);
+	
+	if (simple() && dense()) {
+		//dense copy
+		memcpy(to, from, datasize());
+		to = original_to + buffersize();
+		return to;
+	}
+	
+	for (auto&& member : members()) {
+		auto member_align = member.type().alignment();
+		int padding = (member_align - (reinterpret_cast<const uintptr_t>(from) % member_align)) % member_align;
+		from = reinterpret_cast<const uint8_t*>(from) + padding;
+		to = original_to + member.displacement();
+		
+		member.type().data_from_dense_copy(to, from);
+		from = reinterpret_cast<const uint8_t*>(from) + member.type().datasize();
+	}
+	to = original_to + buffersize();
 	return to;
 }
 
