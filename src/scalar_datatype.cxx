@@ -51,19 +51,41 @@ using std::stringstream;
 using std::transform;
 using std::unique_ptr;
 
+namespace {
+
+inline bool ispow2(size_t v)
+{
+	return v && !(v & (v-1));
+}
+
+inline bool nulltype(const Scalar_datatype& d)
+{
+	if (d.buffersize()) return false;
+	if (d.datasize()) return false;
+	if (d.alignment() ) return false;
+	if (d.kind()!= Scalar_kind::UNKNOWN ) return false;
+	return true;
+}
+
+}
+
 Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size):
 	m_size{size},
 	m_dense_size{size},
 	m_align{size},
 	m_kind{kind}
-{}
+{
+	if ( !nulltype(*this) && !ispow2(m_align) ) throw Error{PDI_ERR_VALUE, "alignment should be a power of 2"};
+}
 
 Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align):
 	m_size{size},
 	m_dense_size{size},
 	m_align{align},
 	m_kind{kind}
-{}
+{
+	if ( !nulltype(*this) && !ispow2(m_align) ) throw Error{PDI_ERR_VALUE, "alignment should be a power of 2"};
+}
 
 Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy):
 	m_size{size},
@@ -72,7 +94,9 @@ Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, si
 	m_kind{kind},
 	m_copy{move(copy)},
 	m_destroy{move(destroy)}
-{}
+{
+	if ( !nulltype(*this) && !ispow2(m_align) ) throw Error{PDI_ERR_VALUE, "alignment should be a power of 2"};
+}
 
 Scalar_kind Scalar_datatype::kind() const
 {

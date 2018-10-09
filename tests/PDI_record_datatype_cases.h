@@ -38,11 +38,11 @@
  */
 struct Record_interface {
 	//expected values from record functions
-	virtual const bool dense() = 0;
-	virtual const size_t datasize() = 0;
-	virtual const size_t buffersize() = 0;
-	virtual const size_t buffersize_after_densify() = 0;
-	virtual const size_t alignment() = 0;
+	virtual bool dense() = 0;
+	virtual size_t datasize() = 0;
+	virtual size_t buffersize() = 0;
+	virtual size_t buffersize_after_densify() = 0;
+	virtual size_t alignment() = 0;
 	
 	//tested record
 	virtual PDI::Record_datatype* test_record() = 0;
@@ -70,12 +70,12 @@ struct NotAlignedScalarsTest : Record_interface {
 		double d;
 	};
 	
-	const bool dense() override
+	bool dense() override
 	{
 		return true;
 	}
 	
-	const size_t datasize() override
+	size_t datasize() override
 	{
 		return 6 * sizeof(char) +
 		    sizeof(int) +
@@ -86,17 +86,17 @@ struct NotAlignedScalarsTest : Record_interface {
 		    sizeof(double);
 	}
 	
-	const size_t buffersize() override
+	size_t buffersize() override
 	{
 		return sizeof(Not_aligned_structure);
 	}
 	
-	const size_t buffersize_after_densify() override
+	size_t buffersize_after_densify() override
 	{
 		return buffersize();
 	}
 	
-	const size_t alignment() override
+	size_t alignment() override
 	{
 		return std::max({sizeof(char),
 		            sizeof(int),
@@ -193,12 +193,12 @@ struct AlignedScalarsTest : Record_interface {
 		char c;
 	};
 	
-	const bool dense() override
+	bool dense() override
 	{
 		return true;
 	}
 	
-	const size_t datasize() override
+	size_t datasize() override
 	{
 		return sizeof(int) +
 		    sizeof(unsigned int) +
@@ -207,17 +207,17 @@ struct AlignedScalarsTest : Record_interface {
 		    sizeof(char);
 	}
 	
-	const size_t buffersize() override
+	size_t buffersize() override
 	{
 		return sizeof(Aligned_structure);
 	}
 	
-	const size_t buffersize_after_densify() override
+	size_t buffersize_after_densify() override
 	{
 		return buffersize(); //datasize() + (alignof(long) - alignof(char));
 	}
 	
-	const size_t alignment() override
+	size_t alignment() override
 	{
 		return std::max({sizeof(int),
 		            sizeof(unsigned int),
@@ -277,12 +277,12 @@ struct DenseArrayScalarsTest : Record_interface {
 		unsigned long ul[6];
 	};
 	
-	const bool dense() override
+	bool dense() override
 	{
 		return true;
 	}
 	
-	const size_t datasize() override
+	size_t datasize() override
 	{
 		return 3 * sizeof(int) +
 		    4 * sizeof(unsigned int) +
@@ -290,17 +290,17 @@ struct DenseArrayScalarsTest : Record_interface {
 		    6 * sizeof(unsigned long);
 	}
 	
-	const size_t buffersize() override
+	size_t buffersize() override
 	{
 		return sizeof(Dense_array_structure);
 	}
 	
-	const size_t buffersize_after_densify() override
+	size_t buffersize_after_densify() override
 	{
 		return datasize() + (alignof(long) - alignof(int));
 	}
 	
-	const size_t alignment() override
+	size_t alignment() override
 	{
 		return std::max({sizeof(int),
 		            sizeof(unsigned int),
@@ -381,28 +381,28 @@ struct SparseArrayScalarsTest : Record_interface {
 		long l[60]; //buffer: 3 x 20; data: 1 x 20; start (0, 1)
 	};
 	
-	const bool dense() override
+	bool dense() override
 	{
 		return false;
 	}
 	
-	const size_t datasize() override
+	size_t datasize() override
 	{
 		return 4 * 4 * sizeof(int) +
 		    1 * 20 * sizeof(long);
 	}
 	
-	const size_t buffersize() override
+	size_t buffersize() override
 	{
 		return sizeof(Sparse_array_structure);
 	}
 	
-	const size_t buffersize_after_densify() override
+	size_t buffersize_after_densify() override
 	{
 		return datasize();
 	}
 	
-	const size_t alignment() override
+	size_t alignment() override
 	{
 		return std::max({sizeof(int),
 		            sizeof(long)});
@@ -474,28 +474,28 @@ struct DenseRecordsInRecordTest : Record_interface {
 		DenseArrayScalarsTest::Dense_array_structure dense_array_record;
 	};
 	
-	const bool dense() override
+	bool dense() override
 	{
 		return true;
 	}
 	
-	const size_t datasize() override
+	size_t datasize() override
 	{
 		return scalar_structure_test->datasize() + array_structure_test->datasize();
 	}
 	
-	const size_t buffersize() override
+	size_t buffersize() override
 	{
 		return sizeof(Dense_record);
 	}
 	
-	const size_t buffersize_after_densify() override
+	size_t buffersize_after_densify() override
 	{
 		return scalar_structure_test->buffersize_after_densify() +
 		    array_structure_test->buffersize_after_densify();
 	}
 	
-	const size_t alignment() override
+	size_t alignment() override
 	{
 		return std::max({scalar_structure_test->alignment(),
 		            array_structure_test->alignment()});
@@ -547,28 +547,28 @@ struct SparseRecordsInRecordTest : Record_interface {
 		SparseArrayScalarsTest::Sparse_array_structure sparse_array_record;
 	};
 	
-	const bool dense() override
+	bool dense() override
 	{
 		return false;
 	}
 	
-	const size_t datasize() override
+	size_t datasize() override
 	{
 		return scalar_structure_test->datasize() + array_structure_test->datasize();
 	}
 	
-	const size_t buffersize() override
+	size_t buffersize() override
 	{
 		return sizeof(Sparse_record);
 	}
 	
-	const size_t buffersize_after_densify() override
+	size_t buffersize_after_densify() override
 	{
 		return scalar_structure_test->buffersize_after_densify() +
 		    array_structure_test->buffersize_after_densify();
 	}
 	
-	const size_t alignment() override
+	size_t alignment() override
 	{
 		return std::max({scalar_structure_test->alignment(),
 		            array_structure_test->alignment()});

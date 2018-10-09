@@ -90,17 +90,20 @@ Data_descriptor_impl::Data_descriptor_impl(Data_descriptor_impl&&) = default;
 
 Data_descriptor_impl::~Data_descriptor_impl()
 {
-	// release metadata copies we kept
+	// release metadata placeholder
 	if ( metadata() && m_refs.size() == 1) m_refs.pop();
 	
-	/* on error, we might be destroyed while not empty. In that case, don't keep
-	 * ownership
-	 */
+	// on error, we might be destroyed while not empty.
 	if (!m_refs.empty()) {
-		m_context.logger()->warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size(), m_name);
+		m_context.logger()->warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size()-(metadata()?1:0), m_name);
+		// leak the remaining data
+		while ( !m_refs.empty() ) {
+			m_refs.top().release();
+			m_refs.pop();
+		}
 	}
-	if ( metadata()  ) while (!m_refs.empty()) m_refs.pop();
-	if ( !metadata() ) while (!m_refs.empty()) reclaim();
+	
+	assert(m_refs.empty());
 }
 
 void Data_descriptor_impl::default_type(Datatype_template_uptr type)
@@ -120,7 +123,17 @@ bool Data_descriptor_impl::metadata() const
 
 void Data_descriptor_impl::metadata(bool metadata)
 {
+	assert((!m_metadata || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+	if ( !m_refs.empty() ) {
+		throw Error{PDI_ERR_STATE, "Can not change the metadata status of a non-empty descriptor"};
+	}
 	m_metadata = metadata;
+	
+	// for metadata, ensure we have a placeholder ref at stack bottom
+	if ( metadata ) {
+		m_refs.emplace(new Ref_holder::Impl<true, false>(Ref{}));
+	}
+	assert((!m_metadata || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 }
 
 const string& Data_descriptor_impl::name() const
@@ -130,6 +143,7 @@ const string& Data_descriptor_impl::name() const
 
 Ref Data_descriptor_impl::ref()
 {
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	if (m_refs.empty()) {
 		for (auto& elmnt : m_context.m_plugins) {
 			vector<Error> errors;
@@ -161,36 +175,37 @@ Ref Data_descriptor_impl::ref()
 			throw Error{PDI_ERR_VALUE, "Cannot access a non shared value: `%s'", m_name.c_str()};
 		}
 	}
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	return m_refs.top()->ref();
 }
 
 bool Data_descriptor_impl::empty()
 {
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	return m_refs.empty();
 }
 
 void Data_descriptor_impl::share(void* data, bool read, bool write)
 {
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	Ref r{data, &free, m_type->evaluate(m_context), read, write};
 	try {
 		share(r, false, false);
 	} catch (...) {
 		// on error, do not free the data as would be done automatically otherwise
 		r.release();
+		assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 		throw;
 	}
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 }
 
 void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 {
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// metadata must provide read access
 	if (metadata() && !Ref_r(data_ref)) {
 		throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
-	}
-	
-	// for metadata, unlink happens on share
-	if (!m_refs.empty() && metadata()) {
-		m_refs.pop();
 	}
 	
 	// make a reference and put it in the store
@@ -240,32 +255,43 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 		}
 	}
 	
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	return result;
 }
 
 void Data_descriptor_impl::release()
 {
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// move reference out of the store
-	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot release a non shared value"};
+	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw Error{PDI_ERR_STATE, "Cannot release a non shared value"};
 	
 	Ref oldref = ref();
 	m_refs.pop();
-	if (metadata()) {
-		// re-share ourselves & keep a read ref to be used
+	
+	// if only the metadata placeholder ref remains replace it by this one
+	if (metadata() && m_refs.size() == 1) {
+		m_refs.pop();
 		m_refs.emplace(new Ref_holder::Impl<true, false>(oldref));
 	}
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 }
 
 void* Data_descriptor_impl::reclaim()
 {
-	if (m_refs.empty()) throw Error{PDI_ERR_VALUE, "Cannot reclaim a non shared value"};
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw Error{PDI_ERR_STATE, "Cannot reclaim a non shared value"};
 	
 	Ref oldref = ref();
 	m_refs.pop();
-	if (metadata()) {
-		// if the content is a metadata, keep a copy
+	
+	// if only the metadata placeholder ref remains replace it by a copy of this one
+	if (metadata() && m_refs.size() == 1) {
+		m_refs.pop();
 		m_refs.emplace(new Ref_holder::Impl<true, false>(oldref.copy()));
 	}
+	
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+	// finally release the data behind the ref
 	return oldref.release();
 }
 

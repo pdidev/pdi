@@ -175,7 +175,6 @@ public:
 	
 };
 
-
 vector<Expression> get_array_property(PC_tree_t node, string property)
 {
 	vector<Expression> prop_vector;
@@ -198,6 +197,10 @@ void validate_array(vector<Expression>& size, vector<Expression>& subsize, vecto
 {
 	if (size.empty()) {
 		throw Error{PDI_ERR_CONFIG, "Array must have defined `size'"};
+	}
+	if (!start.empty() && subsize.empty()) {
+		throw Error{PDI_ERR_CONFIG, "Array with a `start` property must have a defined `subsize'"};
+		//TODO: handle by setting subsize to size-start
 	}
 	if (start.empty()) {
 		start = vector<Expression>(size.size(), Expression{0l});

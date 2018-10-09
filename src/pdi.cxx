@@ -392,14 +392,14 @@ try
 	va_list ap;
 	list<string> transaction_data;
 	PDI_status_t status;
-	if (status = PDI_share(name, data, access)) return status;
+	if ((status = PDI_share(name, data, access))) return status;
 	transaction_data.emplace_back(name);
 	
 	va_start(ap, access);
 	while (const char* v_name = va_arg(ap, const char*)) {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
-		if (status = PDI_share(v_name, v_data, v_access)) {
+		if ((status = PDI_share(v_name, v_data, v_access))) {
 			break;
 		}
 		transaction_data.emplace_back(v_name);

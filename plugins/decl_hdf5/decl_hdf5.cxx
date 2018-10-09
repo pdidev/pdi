@@ -154,7 +154,7 @@ void select(Context& ctx, hid_t h5_space, const Selection_cfg& select, hid_t dfl
 	});
 	
 	if ( !select.size().empty() ) {
-		if (select.size().size() != rank ) {
+		if (select.size().size() != static_cast<size_t>(rank) ) {
 			throw Error{PDI_ERR_CONFIG, "Invalid selection: %dd selection in %dd array", select.size().size(), rank};
 		}
 		for ( int size_id=0; size_id<rank; ++size_id ) {
@@ -174,7 +174,7 @@ void select(Context& ctx, hid_t h5_space, const Selection_cfg& select, hid_t dfl
 	}
 	
 	if ( !select.start().empty() ) {
-		if ( select.start().size() != rank ) {
+		if ( select.start().size() != static_cast<size_t>(rank) ) {
 			throw Error{PDI_ERR_CONFIG, "Invalid selection: %dd start in %dd array", select.size().size(), rank};
 		}
 		for ( int size_id=0; size_id<rank; ++size_id ) {
@@ -265,11 +265,11 @@ void do_write(Context& ctx, const Transfer_cfg& xfer, hid_t h5_file, hid_t write
 		
 		tie(pr_size, pr_start, pr_subsize) = get_selection(h5_mem_space);
 		stringstream mem_desc;
-		for ( int ii=0; ii< pr_size.size(); ++ii) mem_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
+		for ( size_t ii=0; ii<pr_size.size(); ++ii) mem_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
 		
 		tie(pr_size, pr_start, pr_subsize) = get_selection(h5_file_selection);
 		stringstream file_desc;
-		for ( int ii=0; ii< pr_size.size(); ++ii) file_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
+		for ( size_t ii=0; ii< pr_size.size(); ++ii) file_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
 		
 		throw Error{PDI_ERR_CONFIG, "Incompatible selections while writing `%s': [%s ] -> [%s ]", dataset_name.c_str(), mem_desc.str().c_str(), file_desc.str().c_str()};
 	}

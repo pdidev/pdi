@@ -142,19 +142,19 @@ vector<param_pair> scalar_types {
 	{"character",                   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
 	{"type: character",             shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
 	{"{type: character, kind: 0}",  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
-	{"{type: character, kind: 10}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, 10}}},
+	{"{type: character, kind: 256}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, 256}}},
 	{"integer",                     shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND}}},
 	{"type: integer",               shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND}}},
 	{"{type: integer, kind: 0}",    shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND}}},
-	{"{type: integer, kind: 10}",   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 10}}},
+	{"{type: integer, kind: 256}",   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 256}}},
 	{"logical",                     shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND}}},
 	{"type: logical",               shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND}}},
 	{"{type: logical, kind: 0}",    shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND}}},
-	{"{type: logical, kind: 10}",   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, 10}}},
+	{"{type: logical, kind: 256}",   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, 256}}},
 	{"real",                        shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND}}},
 	{"type: real",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND}}},
 	{"{type: real, kind: 0}",       shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND}}},
-	{"{type: real, kind: 10}",      shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, 10}}},
+	{"{type: real, kind: 256}",      shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, 256}}},
 };
 
 vector<param_pair> array_types {
@@ -169,20 +169,19 @@ vector<param_pair> array_types {
 			}
 		}
 	},
-	// TODO: FIX THE BUG WITH PARSING
-	// {
-	//  "{type: array, size: 20, start: 5, subtype: char}",
-	//  shared_ptr<Datatype> {
-	//      new Array_datatype {
-	//          unique_ptr<Datatype> (new Scalar_datatype {
-	//              Scalar_kind::SIGNED, sizeof(char)
-	//          }),
-	//          20,
-	//          5,
-	//          15
-	//      }
-	//  }
-	// },
+	{
+		"{type: array, size: 20, subsize: 15, start: 5, subtype: char}",
+		shared_ptr<Datatype> {
+			new Array_datatype {
+				unique_ptr<Datatype> (new Scalar_datatype {
+					Scalar_kind::UNSIGNED, sizeof(char)
+				}),
+				20,
+				5,
+				15
+			}
+		}
+	},
 	{
 		"{size: 30, subsize: 15, type: array, subtype: char}",
 		shared_ptr<Datatype> {

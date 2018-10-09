@@ -439,7 +439,7 @@ TEST_P(StringExpressionTest, to_long_cstr)
 	try {
 		long res = std::stol(param);
 		ASSERT_EQ(res, exp.to_long(context_mock));
-	} catch (std::invalid_argument) {
+	} catch (const std::invalid_argument&) {
 		ASSERT_THROW(exp.to_long(context_mock), PDI::Error);
 	}
 }
@@ -458,7 +458,7 @@ TEST_P(StringExpressionTest, to_long_string)
 	try {
 		long res = std::stol(param);
 		ASSERT_EQ(res, exp.to_long(context_mock));
-	} catch (std::invalid_argument) {
+	} catch (const std::invalid_argument& ) {
 		ASSERT_THROW(exp.to_long(context_mock), PDI::Error);
 	}
 }
@@ -506,7 +506,7 @@ TEST_P(StringExpressionTest, to_ref_cstr)
 	try {
 		long res = std::stol(param);
 		ASSERT_EQ(res, *static_cast<const long*>(ref.get()));
-	} catch (std::invalid_argument) {
+	} catch (const std::invalid_argument& ) {
 		ASSERT_STREQ(param, static_cast<const char*>(ref.get()));
 	}
 }
@@ -526,7 +526,7 @@ TEST_P(StringExpressionTest, to_ref_string)
 	try {
 		long res = std::stol(param);
 		ASSERT_EQ(res, *static_cast<const long*>(ref.get()));
-	} catch (std::invalid_argument) {
+	} catch (const std::invalid_argument&) {
 		ASSERT_STREQ(param.c_str(), static_cast<const char*>(ref.get()));
 	}
 }

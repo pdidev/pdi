@@ -141,7 +141,7 @@ void* Array_datatype::data_to_dense_copy(void* to, const void* from) const
 	}
 	
 	size_t subtype_alignment = subtype().alignment();
-	for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
+	for (size_t subtype_no = 0; subtype_no < subsize(); subtype_no++) {
 		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
 		size_t space_to_align = subtype_alignment;
 		//size = 0, because we know that to points to allocated memory

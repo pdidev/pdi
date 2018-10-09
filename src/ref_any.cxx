@@ -44,6 +44,9 @@ namespace PDI {
 Ref Ref_base::do_copy(Ref_r ref)
 {
 	Datatype_uptr densified_type {ref.type().densify()};
+	if ( !densified_type->buffersize() ) {
+		return Ref {};
+	}
 	// no std::aligned_alloc or std::align_val_t in C++14, hand-written version
 	// size + (densified_type->alignment() - 1) <- we want to make sure that we fit the data even though the worst alignment occur
 	size_t size = densified_type->buffersize() + (densified_type->alignment() - 1);

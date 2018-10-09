@@ -38,10 +38,10 @@ using ::testing::Return;
  */
 struct ArrayDatatypeTest : public ::testing::Test {
 	ArrayDatatypeTest():
-		test_size{10},
-		test_start{0},
-		test_subsize{5},
 		mockDatatype {new MockDatatype()},
+	             test_size{10},
+	             test_start{0},
+	             test_subsize{5},
 	             test_array{Datatype_uptr(mockDatatype), test_size, test_start, test_subsize}
 	{}
 	MockDatatype* mockDatatype;

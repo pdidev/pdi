@@ -43,7 +43,6 @@ const char* CONFIG_YAML =
 
 int main( int argc, char* argv[] )
 {
-	int nbuf = 1000;
 	int value[5] = {5,4,3,2,1};
 	double test_var = 0;
 	
