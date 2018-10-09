@@ -27,10 +27,15 @@
 
 #include <gmock/gmock.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/datatype_template.h>
 
 struct MockDataDescriptor : public PDI::Data_descriptor {
-	MOCK_METHOD1(creation_template, void(PC_tree_t));
-	MOCK_CONST_METHOD0(config, PC_tree_t());
+	MOCK_METHOD1(default_type_delegate, void(PDI::Datatype_template*));
+	void default_type(PDI::Datatype_template_uptr type) override
+	{
+		default_type_delegate(type.get());
+	}
+	MOCK_METHOD0(default_type, PDI::Datatype_template_uptr());
 	MOCK_CONST_METHOD0(metadata, bool());
 	MOCK_METHOD1(metadata, void(bool));
 	MOCK_CONST_METHOD0(name, const std::string&());

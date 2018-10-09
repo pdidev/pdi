@@ -27,9 +27,11 @@
 #include <gtest/gtest.h>
 
 #include <pdi/context.h>
-#include <pdi/global_context.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
+
+#include "global_context.h"
+
 
 using namespace PDI;
 using std::string;

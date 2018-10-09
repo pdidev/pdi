@@ -42,8 +42,6 @@
 
 namespace PDI {
 
-typedef std::function<Datatype_template_uptr(const PC_tree_t&)> Datatype_template_func;
-
 class PDI_EXPORT Context
 {
 public:
@@ -62,6 +60,10 @@ public:
 		Iterator& operator++ ();
 		bool operator!= (const Iterator&);
 	};
+	
+	/** A function that parses a PC_tree_t to create a datatype_template
+	 */
+	typedef std::function<Datatype_template_uptr(Context&, PC_tree_t)> Datatype_template_parser;
 	
 protected:
 	Iterator get_iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
@@ -102,20 +104,19 @@ public:
 	
 	virtual Logger_sptr logger() const = 0;
 	
-	/**
-	 *  Returns the datatype_template stored in context
+	/** Creates a new datatype template from a paraconf-style config
+	 * \param[in] node the configuration to read
 	 *
-	 * \param[in] name the datatype name
+	 * \return the type generated
 	 */
-	virtual Datatype_template_func& datatype(const std::string& name) = 0;
+	virtual Datatype_template_uptr datatype(PC_tree_t node) = 0;
 	
-	/**
-	 *  Adds new datatype to the context
+	/** Adds new datatype parser to the context
 	 *
-	 * \param[in] datatype_name name of the datatype to add
-	 * \param[in] datatype_func function that creates new datatype_template from PC_tree_t
+	 * \param[in] name name of the datatype to add
+	 * \param[in] parser function that creates new datatype_template from PC_tree_t
 	 */
-	virtual void add_datatype(const std::string& datatype_name, Datatype_template_func datatype_func) = 0;
+	virtual void add_datatype(const std::string& name, Datatype_template_parser parser) = 0;
 	
 };
 

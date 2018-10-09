@@ -40,10 +40,12 @@
 #include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
 #include <pdi/datatype_template.h>
-#include <pdi/global_context.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
+
+#include "global_context.h"
+
 
 using PDI::Array_datatype;
 using PDI::Datatype;
@@ -85,7 +87,7 @@ TEST_P(PositiveTypeParseTest, parse)
 	MPI_Init(NULL, NULL);
 	Global_context g_context {this->conf, &this->comm};
 	auto&& params = GetParam();
-	auto&& parsed_datatype = Datatype_template::load(g_context, PC_parse_string(params.first.c_str()))->evaluate(g_context);
+	auto&& parsed_datatype = g_context.datatype(PC_parse_string(params.first.c_str()))->evaluate(g_context);
 	ASSERT_TRUE(*parsed_datatype == *params.second) << "When parsing: \"" << params.first << "\"" << std::endl
 	    << "Expected: \"" << params.second->debug_string() << "\"" << std::endl
 	    << "Actual: \"" << parsed_datatype->debug_string() << "\"" << std::endl;
@@ -115,7 +117,7 @@ TEST_P(NegativeTypeParseTest, parse)
 {
 	MPI_Init(NULL, NULL);
 	Global_context g_context {this->conf, &this->comm};
-	ASSERT_THROW(Datatype_template::load(g_context, PC_parse_string(GetParam().c_str())), PDI::Error);
+	ASSERT_THROW(g_context.datatype(PC_parse_string(GetParam().c_str())), PDI::Error);
 	MPI_Finalize();
 }
 
@@ -177,7 +179,7 @@ vector<param_pair> array_types {
 	},
 	// TODO: FIX THE BUG WITH PARSING
 	// {
-	//  "{size: 20, start: 5, type: char}",
+	//  "{type: array, size: 20, start: 5, subtype: char}",
 	//  shared_ptr<Datatype> {
 	//      new Array_datatype {
 	//          unique_ptr<Datatype> (new Scalar_datatype {

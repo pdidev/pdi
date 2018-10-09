@@ -56,7 +56,7 @@ private:
 	static std::unique_ptr<Global_context> s_context;
 	
 	/// Datatype_template constructors available in PDI
-	std::unordered_map<std::string, Datatype_template_func> m_datatypes;
+	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
 	
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
@@ -110,9 +110,9 @@ public:
 	
 	Logger_sptr logger() const override;
 	
-	Datatype_template_func& datatype(const std::string& name) override;
+	Datatype_template_uptr datatype(PC_tree_t node) override;
 	
-	void add_datatype(const std::string& datatype_name, Datatype_template_func datatype_func) override;
+	void add_datatype(const std::string&, Datatype_template_parser) override;
 	
 };
 

@@ -41,7 +41,6 @@
 #include <spdlog/spdlog.h>
 
 #include "pdi/context.h"
-#include "pdi/global_context.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
@@ -49,6 +48,8 @@
 #include "pdi/ref_any.h"
 #include "pdi/error.h"
 #include "pdi/datatype.h"
+
+#include "global_context.h"
 
 
 namespace {

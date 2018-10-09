@@ -52,18 +52,10 @@ public:
 	 */
 	virtual Datatype_uptr evaluate(Context& ctx) const = 0;
 	
-	/** Creates a new datatype from a paraconf-style config
-	 * \param[in] ctx the context with datatype_template container
-	 * \param[in] node the configuration to read
-	 *
-	 * \return the type generated
-	 */
-	static Datatype_template_uptr load(Context& ctx, PC_tree_t node);
-	
 	/**
-	 * Adds to the context the basic C and Fortran datatypes
+	 * Adds to the context the basic Array, Record, C and Fortran datatypes
 	 *
-	 * \param[in,out] ctx the context to add the datatypes
+	 * \param[in,out] ctx the context where to add the datatypes
 	 */
 	static void load_basic_datatypes(Context& ctx);
 	

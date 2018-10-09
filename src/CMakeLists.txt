@@ -128,6 +128,7 @@ target_link_libraries(pdi PUBLIC paraconf::paraconf spdlog::spdlog MPI::MPI_CXX 
 target_include_directories(pdi PUBLIC
 		"$<BUILD_INTERFACE:${PDI_BINARY_DIR}>" 
 		"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/../include/>"
+		PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 )
 set_property(TARGET pdi PROPERTY ENABLE_EXPORTS TRUE)
 set_property(TARGET pdi PROPERTY C_STANDARD 99)
@@ -174,6 +175,7 @@ if("${ENABLE_PYTHON}")
 	target_link_libraries(pdi_python PUBLIC pybind11::pybind11 pdi)
 	target_include_directories(pdi_python PUBLIC
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/../include>"
+			PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 	)
 	set_property(TARGET pdi_python PROPERTY ENABLE_EXPORTS TRUE)
 	set_property(TARGET pdi_python PROPERTY C_STANDARD 99)
@@ -198,6 +200,10 @@ if("${ENABLE_PYTHON}")
 	
 	pybind11_add_module(pdi_python_module MODULE python/pdi.cxx)
 	target_link_libraries(pdi_python_module PUBLIC pdi_python)
+	target_include_directories(pdi_python_module PUBLIC
+			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/../include>"
+			PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+	)
 	set_property(TARGET pdi_python_module PROPERTY LIBRARY_OUTPUT_NAME pdi)
 	set_property(TARGET pdi_python_module PROPERTY ENABLE_EXPORTS TRUE)
 	set_property(TARGET pdi_python_module PROPERTY C_STANDARD 99)
@@ -248,6 +254,7 @@ if("${ENABLE_FORTRAN}")
 	add_dependencies(pdi_f90 mv_bpp_files)
 	target_include_directories(pdi_f90 PUBLIC
 			"$<BUILD_INTERFACE:${PDI_BINARY_DIR}/fortran_inc>"
+			PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 	)
 	set_property(TARGET pdi_f90 PROPERTY VERSION ${PDI_VERSION})
 	set_property(TARGET pdi_f90 PROPERTY SOVERSION ${PDI_VERSION_MAJOR})

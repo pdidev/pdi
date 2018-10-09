@@ -27,9 +27,11 @@
 
 #include <gmock/gmock.h>
 #include <pdi/datatype_template.h>
-#include <pdi/global_context.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
+
+#include "global_context.h"
+
 
 struct MockGlobalContext : public PDI::Global_context {
 	MockGlobalContext(PC_tree_t conf, MPI_Comm* world) :
@@ -57,8 +59,8 @@ struct MockGlobalContext : public PDI::Global_context {
 	
 	MOCK_METHOD1(event, void(const char*));
 	
-	MOCK_METHOD1(datatype, PDI::Datatype_template_func&(const std::string&));
-	MOCK_METHOD2(add_datatype, void(const std::string&, PDI::Datatype_template_func));
+	MOCK_METHOD1(datatype, PDI::Datatype_template_uptr(PC_tree_t));
+	MOCK_METHOD2(add_datatype, void(const std::string&, Datatype_template_parser));
 	
 };
 

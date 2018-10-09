@@ -38,7 +38,7 @@
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
 
-#include "pdi/data_descriptor_impl.h"
+#include "data_descriptor_impl.h"
 
 
 namespace PDI {
@@ -80,7 +80,6 @@ struct Data_descriptor_impl::Ref_holder::Impl: Data_descriptor_impl::Ref_holder 
 
 Data_descriptor_impl::Data_descriptor_impl(Global_context& ctx, const char* name):
 	m_context{ctx},
-	m_config(PC_parse_string("")),
 	m_type{UNDEF_TYPE.clone_type()},
 	m_name{name},
 	m_metadata{false}
@@ -104,15 +103,14 @@ Data_descriptor_impl::~Data_descriptor_impl()
 	if ( !metadata() ) while (!m_refs.empty()) reclaim();
 }
 
-void Data_descriptor_impl::creation_template(PC_tree_t config)
+void Data_descriptor_impl::default_type(Datatype_template_uptr type)
 {
-	m_type = Datatype::load(m_context, config);
-	m_config = config;
+	m_type = move(type);
 }
 
-PC_tree_t Data_descriptor_impl::config() const
+Datatype_template_uptr Data_descriptor_impl::default_type()
 {
-	return m_config;
+	return m_type->clone();
 }
 
 bool Data_descriptor_impl::metadata() const

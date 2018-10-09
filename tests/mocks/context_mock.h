@@ -56,8 +56,8 @@ struct MockContext : public PDI::Context {
 	
 	MOCK_CONST_METHOD0(logger, PDI::Logger_sptr());
 	
-	MOCK_METHOD1(datatype, PDI::Datatype_template_func&(const std::string&));
-	MOCK_METHOD2(add_datatype, void(const std::string&, PDI::Datatype_template_func));
+	MOCK_METHOD1(datatype, PDI::Datatype_template_uptr(PC_tree_t));
+	MOCK_METHOD2(add_datatype, void(const std::string&, Datatype_template_parser));
 	
 };
 

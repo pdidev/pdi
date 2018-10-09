@@ -34,8 +34,9 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype_template.h>
-#include <pdi/global_context.h>
 #include <pdi/ref_any.h>
+
+#include "global_context.h"
 
 
 namespace PDI {
@@ -52,8 +53,6 @@ class PDI_EXPORT Data_descriptor_impl : public Data_descriptor
 	
 	/// References to the values of this descriptor
 	std::stack<std::unique_ptr<Ref_holder>> m_refs;
-	
-	PC_tree_t m_config;
 	
 	Datatype_template_uptr m_type;
 	
@@ -77,9 +76,9 @@ public:
 	
 	~Data_descriptor_impl() override;
 	
-	void creation_template(PC_tree_t config) override;
+	void default_type(Datatype_template_uptr) override;
 	
-	PC_tree_t config() const override;
+	Datatype_template_uptr default_type() override;
 	
 	bool metadata() const override;
 	

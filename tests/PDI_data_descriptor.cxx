@@ -28,17 +28,20 @@
 
 #include <pdi/array_datatype.h>
 #include <pdi/data_descriptor.h>
-#include <pdi/data_descriptor_impl.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
+
+#include <data_descriptor_impl.h>
 
 #include "mocks/global_context_mock.h"
 
 using namespace PDI;
 using namespace std;
 
-using ::testing::ReturnRef;
+using ::testing::_;
+using ::testing::ByMove;
+using ::testing::Return;
 
 namespace PDI {
 //handler to private fields of Descriptor
@@ -81,6 +84,7 @@ struct MPI_initializer {
 struct DataDescTest : public ::testing::Test {
 	int array[10];
 	PC_tree_t array_config {PC_parse_string("{ size: 10, type: array, subtype: int }")};
+	Array_datatype array_datatype{Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type(), 10};
 	PDI::Paraconf_wrapper fw;
 	MPI_initializer init_mpi;
 	MockGlobalContext mockGlCtx{PC_parse_string(""), 0};
@@ -120,23 +124,16 @@ TEST_F(DataDescTest, check_metadata_update)
 }
 
 /*
- * Name:                DataDescTest.creation_template
+ * Name:                DataDescTest.default_type
  *
- * Tested functions:    PDI::Data_descriptor::creation_template(PC_tree_t)
+ * Tested functions:    PDI::Data_descriptor::default_type(PC_tree_t)
  *
  * Description:         Check if config is parsed and type is correctly read by PDI.
  */
-TEST_F(DataDescTest, creation_template)
+TEST_F(DataDescTest, default_type)
 {
-	Datatype_template_func datatype_func = [](const PC_tree_t&) {
-		return Datatype_template_uptr {new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}};
-	};
-	EXPECT_CALL(this->mockGlCtx, datatype(::testing::_))
-	.Times(1)
-	.WillOnce(::testing::ReturnRef(datatype_func));
-	
 	Paraconf_wrapper fw;
-	this->m_desc_default->creation_template(array_config);
+	this->m_desc_default->default_type(array_datatype.clone());
 	Datatype_uptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, mockGlCtx);
 	ASSERT_EQ(10 * sizeof(int), datatype->datasize());
 	ASSERT_EQ(10 * sizeof(int), datatype->buffersize());
@@ -327,14 +324,7 @@ TEST_F(DataDescTest, share_meta_without_read)
  */
 TEST_F(DataDescTest, multi_read_share_meta)
 {
-	Datatype_template_func datatype_func = [](const PC_tree_t&) {
-		return Datatype_template_uptr {new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}};
-	};
-	EXPECT_CALL(this->mockGlCtx, datatype(::testing::_))
-	.Times(1)
-	.WillOnce(::testing::ReturnRef(datatype_func));
-	
-	this->m_desc_default->creation_template(array_config);
+	this->m_desc_default->default_type(array_datatype.clone());
 	this->m_desc_default->metadata(true);
 	this->m_desc_default->share(this->array, true, false);
 	void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);

@@ -176,23 +176,6 @@ public:
 };
 
 
-Datatype_template_uptr to_scalar_datatype_template(Context& ctx, PC_tree_t node)
-{
-	//check if someone didn't mean to create an array
-	if (!PC_status(PC_get(node, ".size"))) {
-		ctx.logger()->warn("Scalar type doesn't use `size' property");
-	}
-	
-	string type;
-	try {
-		type = to_string(PC_get(node, ".type"));
-	} catch (Error e) {
-		type = to_string(node);
-	}
-	return ctx.datatype(std::move(type))(node);
-}
-
-
 vector<Expression> get_array_property(PC_tree_t node, string property)
 {
 	vector<Expression> prop_vector;
@@ -256,7 +239,7 @@ Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		throw Error{PDI_ERR_CONFIG, "Array must have `subtype'"};
 	}
 	
-	Datatype_template_uptr res_type = Datatype_template::load(ctx, config_elem);
+	Datatype_template_uptr res_type = ctx.datatype(config_elem);
 	
 	for (ssize_t ii = array_size.size()-1; ii >=0; --ii) {
 		res_type.reset(new Array_template(move(res_type), move(array_size[ii]), move(array_start[ii]), move(array_subsize[ii])));
@@ -282,7 +265,7 @@ vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_
 		}
 		Expression disp = to_string(disp_conf);
 		
-		members.emplace_back(move(disp), Datatype_template::load(ctx, member_node), move(member_name));
+		members.emplace_back(move(disp), ctx.datatype(member_node), move(member_name));
 	}
 	return members;
 }
@@ -305,70 +288,58 @@ Datatype_template_uptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 Datatype_template::~Datatype_template()
 {}
 
-Datatype_template_uptr Datatype_template::load(Context& ctx, PC_tree_t node)
-{
-	if (!PC_status(PC_get(node, ".type"))) {
-		string type = to_string(PC_get(node, ".type"));
-		if (type == "array") {
-			return to_array_datatype_template(ctx, node);
-		}
-		if (type == "record") {
-			return to_record_datatype_template(ctx, node);
-		}
-	}
-	
-	//try parse it as a scalar
-	return to_scalar_datatype_template(ctx, node);
-}
-
 void Datatype_template::load_basic_datatypes(Context& ctx)
 {
+	// holder types
+	ctx.add_datatype("array", to_array_datatype_template);
+	ctx.add_datatype("record", to_record_datatype_template);
+	
 	// C basic types
-	ctx.add_datatype("char", [](const PC_tree_t&) {
+	ctx.add_datatype("char", [](Context&, PC_tree_t) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::UNSIGNED, sizeof(char)}};
 	});
-	ctx.add_datatype("int", [](const PC_tree_t&) {
+	ctx.add_datatype("int", [](Context&, PC_tree_t) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, sizeof(int)}};
 	});
-	ctx.add_datatype("int8", [](const PC_tree_t&) {
+	ctx.add_datatype("int8", [](Context&, PC_tree_t) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 1}};
 	});
-	ctx.add_datatype("int16", [](const PC_tree_t&) {
+	ctx.add_datatype("int16", [](Context&, PC_tree_t) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 2}};
 	});
-	ctx.add_datatype("int32", [](const PC_tree_t&) {
+	ctx.add_datatype("int32", [](Context&, PC_tree_t) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 4}};
 	});
-	ctx.add_datatype("int64", [](const PC_tree_t&) {
+	ctx.add_datatype("int64", [](Context&, PC_tree_t) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 8}};
 	});
-	ctx.add_datatype("float", [](const PC_tree_t&) {
+	ctx.add_datatype("float", [](Context&, PC_tree_t) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 4}};
 	});
-	ctx.add_datatype("double", [](const PC_tree_t&) {
+	ctx.add_datatype("double", [](Context&, PC_tree_t) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 8}};
 	});
 	
 	// Fortran basic types
-	ctx.add_datatype("character", [](const PC_tree_t& tree) {
+	ctx.add_datatype("character", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_CHARACTER_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_CHARACTER_DEFAULT_KIND;
 		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
 	});
-	ctx.add_datatype("integer", [](const PC_tree_t& tree) {
+	ctx.add_datatype("integer", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_INTEGER_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_INTEGER_DEFAULT_KIND;
 		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::SIGNED, kind}};
 	});
-	ctx.add_datatype("logical", [](const PC_tree_t& tree) {
+	ctx.add_datatype("logical", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_LOGICAL_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_LOGICAL_DEFAULT_KIND;
 		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
 	});
-	ctx.add_datatype("real", [](const PC_tree_t& tree) {
+	ctx.add_datatype("real", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_REAL_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_REAL_DEFAULT_KIND;
 		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};

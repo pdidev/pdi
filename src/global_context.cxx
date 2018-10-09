@@ -31,14 +31,15 @@
 #include <dlfcn.h>
 #include <spdlog/spdlog.h>
 
-#include "pdi/data_descriptor_impl.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 #include "pdi/error.h"
 
-#include "pdi/global_context.h"
+#include "data_descriptor_impl.h"
+
+#include "global_context.h"
 
 
 namespace PDI {
@@ -62,7 +63,7 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 	for (int map_id = 0; map_id < map_len; ++map_id) {
 		Data_descriptor& dsc = ctx.desc(to_string(PC_get(node, "{%d}", map_id)).c_str());
 		dsc.metadata(is_metadata);
-		dsc.creation_template(PC_get(node, "<%d>", map_id));
+		dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
 	}
 }
 
@@ -207,20 +208,33 @@ Logger_sptr Global_context::logger() const
 	return m_logger;
 }
 
-Datatype_template_func& Global_context::datatype(const string& name)
+Datatype_template_uptr Global_context::datatype(PC_tree_t node)
 {
-	auto func_it = m_datatypes.find(name);
-	if (func_it != m_datatypes.end()) {
-		return func_it->second;
+	char* type_c;
+	if ( PC_string(PC_get(node, ".type"), &type_c) ) {
+		if ( PC_string(node, &type_c) ) {
+			throw Error{PDI_ERR_TYPE, "Invalid type descriptor"};
+		}
 	}
-	throw Error{PDI_ERR_TYPE, "Cannot find datatype `%s'", name.c_str()};
+	string type = type_c;
+	
+	// check if someone didn't mean to create an array with the old syntax
+	if ( type != "array" && !PC_status(PC_get(node, ".size"))) {
+		logger()->warn("Non-array type with a `size' property");
+	}
+	
+	auto func_it = m_datatype_parsers.find(type);
+	if (func_it != m_datatype_parsers.end()) {
+		return (func_it->second)(*this, node);
+	}
+	throw Error{PDI_ERR_TYPE, "Cannot find datatype `%s'", type.c_str()};
 }
 
-void Global_context::add_datatype(const string& datatype_name, Datatype_template_func datatype_func)
+void Global_context::add_datatype(const string& name, Datatype_template_parser parser)
 {
-	if (!m_datatypes.emplace(datatype_name, move(datatype_func)).second) {
+	if (!m_datatype_parsers.emplace(name, move(parser)).second) {
 		//if a datatype with the given name already exists
-		throw Error{PDI_ERR_TYPE, "Datatype already defined `%s'", datatype_name.c_str()};
+		throw Error{PDI_ERR_TYPE, "Datatype already defined `%s'", name.c_str()};
 	}
 }
 

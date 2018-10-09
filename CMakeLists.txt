@@ -40,7 +40,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 option(BUILD_DECL_HDF5_PLUGIN        "Build decl'HDF5 plug-in" ON)
 option(BUILD_DECL_SION_PLUGIN        "Build decl'SION plug-in" ON )
 option(BUILD_DOCUMENTATION           "Build documentation" ON)
-option(BUILD_FTI_PLUGIN              "Build FTI plug-in." ON)
+option(BUILD_FTI_PLUGIN              "Build FTI plug-in." OFF)
 option(BUILD_MPI_PLUGIN              "Build MPI plug-in" ON)
 option(ENABLE_PYTHON                 "Enable Python support" ON)
 option(BUILD_SHARED_LIBS             "Build shared libraries rather than static ones" ON)
@@ -320,6 +320,7 @@ if("${BUILD_DECL_SION_PLUGIN}")
 endif()
 
 if("${BUILD_FTI_PLUGIN}")
+	message(FATAL_ERROR "The FTI plugin is disabled until the new-style plugin becomes available")
 	ExternalProject_Add(FTI_PLUGIN
 			PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-fti"
 			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/fti" BUILD_ALWAYS TRUE

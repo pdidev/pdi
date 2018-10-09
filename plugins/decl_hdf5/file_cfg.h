@@ -104,7 +104,7 @@ public:
 			} else if ( key == "datasets" ) {
 				int nb_dataset = len(PC_get(tree, ".datasets"));
 				for (int dataset_id=0; dataset_id<nb_dataset; ++dataset_id) {
-					m_datasets.emplace(to_string(PC_get(tree, ".datasets{%d}", dataset_id)), Datatype_template::load(ctx, PC_get(tree, ".datasets<%d>", dataset_id)));
+					m_datasets.emplace(to_string(PC_get(tree, ".datasets{%d}", dataset_id)), ctx.datatype(PC_get(tree, ".datasets<%d>", dataset_id)));
 				}
 			} else if ( key == "write" ) {
 				PC_tree_t write_tree = PC_get(tree, ".write");

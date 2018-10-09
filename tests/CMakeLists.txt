@@ -70,6 +70,7 @@ set(PDI_unit_tests_SRC
 		PDI_test_parse_types.cxx)
 add_executable(PDI_unit_tests ${PDI_unit_tests_SRC})
 target_link_libraries(PDI_unit_tests pdi Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
+target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)
 
 

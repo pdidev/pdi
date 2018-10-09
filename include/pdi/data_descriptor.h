@@ -40,18 +40,19 @@ public:
 
 	virtual ~Data_descriptor();
 	
-	/** Sets the creation template used to type raw pointers shared
+	/** Set the datatype template used to type raw pointers shared
 	 *  through this descriptor
 	 *
-	 * \param config the full configuration attached to the descriptor
+	 * \param type the datatype template attached to the descriptor
 	 */
-	virtual void creation_template(PC_tree_t config) = 0;
+	virtual void default_type(Datatype_template_uptr type) = 0;
 	
-	/** Returns the PC_tree_t config
-	 * \todo remove this and attach this config to the type
-	 * \return the full configuration attached to the descriptor
+	/** Access the datatype template used to type raw pointers shared
+	 *  through this descriptor
+	 *
+	 * \return the datatype template attached to the descriptor
 	 */
-	virtual PC_tree_t config() const = 0;
+	virtual Datatype_template_uptr default_type() = 0;
 	
 	/** Return true if the data is a metadata
 	 */
@@ -63,6 +64,8 @@ public:
 	 */
 	virtual void metadata(bool metadata) = 0;
 	
+	/** Access the name of the 
+	 */
 	virtual const std::string& name() const = 0;
 	
 	/** Return a reference to the value of the data behind this descriptor

@@ -31,7 +31,6 @@
 #include "pdi/datatype.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/error.h"
-#include "pdi/global_context.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"

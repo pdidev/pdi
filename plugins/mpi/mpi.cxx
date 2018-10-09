@@ -95,7 +95,7 @@ struct mpi_plugin: Plugin {
 		Scalar_datatype mpi_comm_datatype{Scalar_kind::UNKNOWN, sizeof(MPI_Comm), alignof(MPI_Comm)};
 		
 		// share the MPI_Comm datatype, it does not duplicate its content (collective), only copies it!
-		ctx.add_datatype("MPI_Comm", [mpi_comm_datatype](const PC_tree_t&) {
+		ctx.add_datatype("MPI_Comm", [mpi_comm_datatype](Context&, PC_tree_t) {
 			return mpi_comm_datatype.clone();
 		});
 		
@@ -116,7 +116,7 @@ struct mpi_plugin: Plugin {
 		Scalar_datatype mpi_comm_f_datatype{Scalar_kind::UNKNOWN, sizeof(MPI_Fint), alignof(MPI_Fint)};
 		
 		// share the MPI_Comm_f datatype, it does not duplicate its content (collective), only copies it!
-		ctx.add_datatype("MPI_Comm_f", [mpi_comm_f_datatype](const PC_tree_t&) {
+		ctx.add_datatype("MPI_Comm_f", [mpi_comm_f_datatype](Context&, PC_tree_t) {
 			return mpi_comm_f_datatype.clone();
 		});
 		
