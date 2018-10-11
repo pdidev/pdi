@@ -37,22 +37,22 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # Build options
 
-option(BUILD_DECL_HDF5_PLUGIN        "Build decl'HDF5 plug-in" ON)
-option(BUILD_DECL_SION_PLUGIN        "Build decl'SION plug-in" OFF)
-option(BUILD_DOCUMENTATION           "Build documentation" ON)
-option(BUILD_FTI_PLUGIN              "Build FTI plug-in." OFF)
-option(BUILD_MPI_PLUGIN              "Build MPI plug-in" ON)
-option(ENABLE_PYTHON                 "Enable Python support" OFF)
-option(BUILD_SHARED_LIBS             "Build shared libraries rather than static ones" ON)
-option(BUILD_TESTING                 "Build tests" ON)
-option(ENABLE_FORTRAN                "Enable Fortran support" ON)
-set(USE_BPP      SYSTEM CACHE STRING "version of BPP to use, SYSTEM and EMBEDDED can be used")
-set(USE_FTI      SYSTEM CACHE STRING "version of FTI to use, SYSTEM and EMBEDDED can be used")
-set(USE_GTEST    SYSTEM CACHE STRING "version of Gtest to use, SYSTEM and EMBEDDED can be used")
-set(USE_PARACONF SYSTEM CACHE STRING "version of paraconf to use, SYSTEM and EMBEDDED can be used")
-set(USE_PYBIND11 SYSTEM CACHE STRING "version of pybind11 to use, SYSTEM and EMBEDDED can be used")
-set(USE_SPDLOG   SYSTEM CACHE STRING "version of spdlog to use, SYSTEM and EMBEDDED can be used")
-set(USE_YAML     SYSTEM CACHE STRING "version of yaml to use, SYSTEM and EMBEDDED can be used")
+option(BUILD_DECL_HDF5_PLUGIN          "Build decl'HDF5 plug-in" ON)
+option(BUILD_DECL_SION_PLUGIN          "Build decl'SION plug-in" OFF)
+option(BUILD_DOCUMENTATION             "Build documentation" ON)
+option(BUILD_FTI_PLUGIN                "Build FTI plug-in." OFF)
+option(BUILD_MPI_PLUGIN                "Build MPI plug-in" ON)
+option(BUILD_SHARED_LIBS               "Build shared libraries rather than static ones" ON)
+option(BUILD_TESTING                   "Build tests" ON)
+option(ENABLE_FORTRAN                  "Enable Fortran support" ON)
+option(ENABLE_PYTHON                   "Enable Python support" OFF)
+set(USE_BPP      SYSTEM   CACHE STRING "version of BPP to use, SYSTEM and EMBEDDED can be used")
+set(USE_FTI      SYSTEM   CACHE STRING "version of FTI to use, SYSTEM and EMBEDDED can be used")
+set(USE_GTEST    EMBEDDED CACHE STRING "version of Gtest to use, SYSTEM and EMBEDDED can be used")
+set(USE_PARACONF SYSTEM   CACHE STRING "version of paraconf to use, SYSTEM and EMBEDDED can be used")
+set(USE_PYBIND11 SYSTEM   CACHE STRING "version of pybind11 to use, SYSTEM and EMBEDDED can be used")
+set(USE_SPDLOG   SYSTEM   CACHE STRING "version of spdlog to use, SYSTEM and EMBEDDED can be used")
+set(USE_YAML     SYSTEM   CACHE STRING "version of yaml to use, SYSTEM and EMBEDDED can be used")
 
 ## Options handling
 
@@ -78,7 +78,7 @@ else()
 	set(GTEST_PATH "${USE_GTEST}")
 endif()
 if("${USE_PARACONF}" STREQUAL EMBEDDED)
-	set(PARACONF_PATH "${PDISUPER_SOURCE_DIR}/vendor/libparaconf-0.2.1")
+	set(PARACONF_PATH "${PDISUPER_SOURCE_DIR}/vendor/libparaconf-0.3.0")
 else()
 	set(PARACONF_PATH "${USE_PARACONF}")
 endif()
@@ -232,7 +232,7 @@ if(NOT "${USE_PARACONF}" STREQUAL SYSTEM)
 	ExternalProject_Add(PARACONF
 			PREFIX "${PDISUPER_BINARY_DIR}/paraconf"
 			URL "${PARACONF_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
-			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE" "-DUSE_SYSTEM_YAML:BOOL=TRUE" "-DBUILD_TESTING:BOOL=OFF"
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE" "-DUSE_YAML:STRING=SYSTEM" "-DBUILD_TESTING:BOOL=OFF"
 			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
 	ExternalProject_Add_StepDependencies(PDI configure PARACONF)
 	if(NOT "${USE_YAML}" STREQUAL SYSTEM)

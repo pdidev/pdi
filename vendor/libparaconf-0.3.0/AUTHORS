@@ -1,0 +1,9 @@
+Multiple people have contributed to PDI. To show our appreciation for their
+public spirit, we list here in alphabetical order a condensed list of their
+contributions.
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Initial design and implementation
+
+Abel Marin-Lafleche - CEA (abel.marin-lafleche@maisondelasimulation.fr)
+* Improvement of the Fortran API

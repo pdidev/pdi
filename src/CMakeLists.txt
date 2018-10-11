@@ -144,7 +144,7 @@ install(TARGETS pdi EXPORT PDI_EXPORT
 )
 install(DIRECTORY "${PDI_SOURCE_DIR}/../include/"
 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-		FILES_MATCHING PATTERN *.h PATTERN python/*.h EXCLUDE PATTERN fortran/*.h EXCLUDE
+		FILES_MATCHING PATTERN *.h PATTERN python/*.h EXCLUDE
 )
 install(FILES
 		"${PDI_BINARY_DIR}/pdi/export.h"
@@ -232,6 +232,7 @@ if("${ENABLE_PYTHON}")
 	endif()
 endif()
 
+
 ## Fortran version
 
 if("${ENABLE_FORTRAN}")
@@ -244,7 +245,7 @@ if("${ENABLE_FORTRAN}")
 			VERBATIM
 	)
 
-	add_library(pdi_f90 ${PDI_F90} fortran/paraconf_wrap.f90 fortran/pdi_c.f90)
+	add_library(pdi_f90 ${PDI_F90} fortran/pdi_c.f90)
 	target_link_libraries(pdi_f90 pdi paraconf::paraconf_f90)
 	add_dependencies(pdi_f90 mv_bpp_files)
 	target_include_directories(pdi_f90 PUBLIC
