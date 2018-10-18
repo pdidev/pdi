@@ -222,6 +222,9 @@ Datatype_template_uptr Global_context::datatype(PC_tree_t node)
 	if ( type != "array" && !PC_status(PC_get(node, ".size"))) {
 		logger()->warn("Non-array type with a `size' property");
 	}
+	if ( type != "array" && !PC_status(PC_get(node, ".sizes"))) {
+		logger()->warn("Non-array type with a `sizes' property");
+	}
 	
 	auto func_it = m_datatype_parsers.find(type);
 	if (func_it != m_datatype_parsers.end()) {
