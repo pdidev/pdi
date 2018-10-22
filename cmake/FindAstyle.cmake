@@ -85,7 +85,7 @@ function(Astyle_add_indent)
 		message(FATAL_ERROR "Astyle_add_indent called without an OPTIONS_FILE")
 	endif()
 	
-	if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL 3.12.0)
+	if(NOT 3.12.0 VERSION_GREATER "${CMAKE_VERSION}")
 		set(CONFIGURE_DEPENDS CONFIGURE_DEPENDS)
 	else()
 		set(CONFIGURE_DEPENDS)
