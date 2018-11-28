@@ -62,6 +62,7 @@ set(PDI_unit_tests_SRC
 		PDI_data_descriptor.cxx
 		PDI_error.cxx
 		PDI_expression.cxx
+		PDI_initialize_plugins.cxx
 		PDI_member.cxx
 		PDI_record_datatype_empty.cxx
 		PDI_record_datatype.cxx
