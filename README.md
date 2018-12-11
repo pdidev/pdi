@@ -20,12 +20,13 @@ IO type, hardware used, etc.)
 You can find a list of release at 
 https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags
 
-For example, you can get release 0.2.0
+For example, you can get release 0.3.4 (but look for the latest release at
+https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags )
 
 ```
-wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.2.0/pdi-0.2.0.tar.bz2
-tar -xf pdi-0.2.0.tar.bz2
-mv pdi-0.2.0 pdi
+wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.3.4/pdi-0.3.4.tar.bz2
+tar -xf pdi-0.3.4.tar.bz2
+mv pdi-0.3.4 pdi
 ```
 
 ## Compilation
