@@ -7,9 +7,9 @@ pdi.init("")
 
 x = np.zeros([2,3,5])
 for i in range(2):
-	for j in range(3):
-		for k in range(5):
-			x[i][j][k] = k + 10*j + 100*i
+    for j in range(3):
+        for k in range(5):
+            x[i][j][k] = k + 10*j + 100*i
 
 pdi.share("sh", x, pdi.INOUT)
 y = pdi.access("sh", pdi.INOUT)

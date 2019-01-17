@@ -103,3 +103,82 @@ add_test(NAME decl_hdf5_06_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FI
 add_executable(decl_hdf5_07_C decl_hdf5_test_07.c)
 target_link_libraries(decl_hdf5_07_C PDI::pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 8 "$<TARGET_FILE:decl_hdf5_07_C>")
+
+
+# Positive Config tests
+
+if("${BUILD_CFG_VALIDATOR}")
+
+add_test(NAME pos_val_decl_hdf5_test_01 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_01.yml)
+configure_file(pos_val_decl_hdf5_test_01.yml pos_val_decl_hdf5_test_01.yml COPYONLY)
+
+add_test(NAME pos_val_decl_hdf5_test_02 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_02.yml)
+configure_file(pos_val_decl_hdf5_test_02.yml pos_val_decl_hdf5_test_02.yml COPYONLY)
+
+add_test(NAME pos_val_decl_hdf5_test_03 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_03.yml)
+configure_file(pos_val_decl_hdf5_test_03.yml pos_val_decl_hdf5_test_03.yml COPYONLY)
+
+add_test(NAME pos_val_decl_hdf5_test_04 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_04.yml)
+configure_file(pos_val_decl_hdf5_test_04.yml pos_val_decl_hdf5_test_04.yml COPYONLY)
+
+add_test(NAME pos_val_decl_hdf5_test_05 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_05.yml)
+configure_file(pos_val_decl_hdf5_test_05.yml pos_val_decl_hdf5_test_05.yml COPYONLY)
+
+add_test(NAME pos_val_decl_hdf5_test_06 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_06.yml)
+configure_file(pos_val_decl_hdf5_test_06.yml pos_val_decl_hdf5_test_06.yml COPYONLY)
+
+add_test(NAME pos_val_decl_hdf5_test_07 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_07.yml)
+configure_file(pos_val_decl_hdf5_test_07.yml pos_val_decl_hdf5_test_07.yml COPYONLY)
+
+add_test(NAME pos_val_decl_hdf5_test_08 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_08.yml)
+configure_file(pos_val_decl_hdf5_test_08.yml pos_val_decl_hdf5_test_08.yml COPYONLY)
+
+endif()
+
+
+# Negative config tests
+
+if("${BUILD_CFG_VALIDATOR}")
+
+add_test(NAME neg_val_decl_hdf5_test_01 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_01.yml)
+configure_file(neg_val_decl_hdf5_test_01.yml neg_val_decl_hdf5_test_01.yml COPYONLY)
+
+add_test(NAME neg_val_decl_hdf5_test_02 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_02.yml)
+configure_file(neg_val_decl_hdf5_test_02.yml neg_val_decl_hdf5_test_02.yml COPYONLY)
+
+add_test(NAME neg_val_decl_hdf5_test_03 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_03.yml)
+configure_file(neg_val_decl_hdf5_test_03.yml neg_val_decl_hdf5_test_03.yml COPYONLY)
+
+add_test(NAME neg_val_decl_hdf5_test_04 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_04.yml)
+configure_file(neg_val_decl_hdf5_test_04.yml neg_val_decl_hdf5_test_04.yml COPYONLY)
+
+add_test(NAME neg_val_decl_hdf5_test_05 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_05.yml)
+configure_file(neg_val_decl_hdf5_test_05.yml neg_val_decl_hdf5_test_05.yml COPYONLY)
+
+add_test(NAME neg_val_decl_hdf5_test_06 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_06.yml)
+configure_file(neg_val_decl_hdf5_test_06.yml neg_val_decl_hdf5_test_06.yml COPYONLY)
+
+add_test(NAME neg_val_decl_hdf5_test_07 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_07.yml)
+configure_file(neg_val_decl_hdf5_test_07.yml neg_val_decl_hdf5_test_07.yml COPYONLY)
+
+add_test(NAME neg_val_decl_hdf5_test_08 COMMAND ${PYTHON_EXECUTABLE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_08.yml)
+configure_file(neg_val_decl_hdf5_test_08.yml neg_val_decl_hdf5_test_08.yml COPYONLY)
+
+endif()
+

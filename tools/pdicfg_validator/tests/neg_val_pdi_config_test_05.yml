@@ -1,0 +1,8 @@
+pdi:
+  metadata: 
+    dsize:  { size: 2, type: array, subtype: int } 
+    psize:  { size: [2, 4], subtype: int } 
+    pcoord: { size: 2, type: array, subtype: int } 
+  data:
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+    main_field2: { size: '$dsize[0]', type: array, subtype: character }

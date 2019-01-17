@@ -73,6 +73,24 @@ install(TARGETS pdi_mpi_plugin
 		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
+# Configuration validation
+if ("${BUILD_CFG_VALIDATOR}")
+	set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
+	find_package(PythonInterp REQUIRED)
+	execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+			"from distutils import sysconfig;print(sysconfig.get_python_lib(prefix='',plat_specific=True))"
+			OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_STRIP_TRAILING_WHITESPACE
+			RESULT_VARIABLE PDP_SUCCESS
+			OUTPUT_VARIABLE INSTALL_PYDSTPKGDIR
+			ERROR_VARIABLE  PDP_ERROR)
+	if(NOT "${PDP_SUCCESS}" EQUAL 0)
+		message(FATAL_ERROR "Error while locating python DIST_PACKAGE location:\n${PDP_ERROR}")
+	endif()
+	
+	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
+			DESTINATION "${INSTALL_PYDSTPKGDIR}/")
+endif()
+
 # Tests
 if("${BUILD_TESTING}")
 	add_subdirectory(tests/)

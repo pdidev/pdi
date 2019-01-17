@@ -35,12 +35,7 @@ if the sources are stored in the folder `pdi`:
 ```
 cd pdi
 cmake \
-        -DUSE_BPP=EMBEDDED \
-        -DUSE_FTI=EMBEDDED \
-        -DUSE_GTEST=EMBEDDED \
-        -DUSE_PARACONF=EMBEDDED \
-        -DUSE_SPDLOG=EMBEDDED \
-        -DUSE_YAML=EMBEDDED \
+        -DUSE_DEFAULT=EMBEDDED \
         -DCMAKE_INSTALL_PREFIX=/usr/ \
         .
 make install
@@ -54,52 +49,83 @@ PDI depends on:
   * cmake, version >= 3.5
   * a C-99 and C++-14 compiler (gcc-5.4 is tested)
   * a POSIX compatible OS (linux with GNU libc-2.27 is tested)
-  * paraconf (distributed with PDI, pass the `-DUSE_PARACONF=EMBEDDED` option
-  to cmake to use the embedded version)
-  * libyaml (distributed with PDI, pass the `-DUSE_YAML=EMBEDDED` option to
-  cmake to use the embedded version)
-  * spdlog (distributed with PDI, pass the `-DUSE_SPDLOG=EMBEDDED` option to
-  cmake to use the embedded version)
+  * paraconf (distributed with PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or
+  `-DUSE_PARACONF=EMBEDDED` option to cmake to use the embedded version)
+  * libyaml (distributed with PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or
+  `-DUSE_YAML=EMBEDDED` option to cmake to use the embedded version)
+  * spdlog (distributed with PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or
+  `-DUSE_SPDLOG=EMBEDDED` option to cmake to use the embedded version)
 
 ### Fortran support
+
+Fortran support is enabled by default, pass the `-DENABLE_FORTRAN=OFF` option to
+cmake to disable it.
 
 PDI Fortran support depends on:
   * a Fortran-2003 compiler (gfort-5.4 is tested)
   * a python and bash interpreter at compilation
-  * BPP (distributed with PDI, pass the `-DUSE_BPP=EMBEDDED` option to cmake to
-  use the embedded version)
+  * BPP (distributed with PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or
+  `-DUSE_BPP=EMBEDDED` option to cmake to use the embedded version)
 
 ### Python support
 
+Python support is not marked stable yet. Pass the `-DENABLE_UNSTABLE=ON` or
+`-DENABLE_PYTHON=ON` option to cmake to enable it.
+
 PDI Fortran support depends on:
   * a python3 installation with development headers
-  * pybind11 (distributed with PDI, pass the `-DUSE_PYBIND11=EMBEDDED` option to
-  cmake to use the embedded version)
+  * pybind11 (distributed with PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or
+  `-DUSE_PYBIND11=EMBEDDED` option to cmake to use the embedded version)
+
+### pdicfg_validate
+
+PDI configuration validation tool is enabled by default, pass the
+`-DBUILD_CFG_VALIDATOR=OFF` option to cmake to disable it.
+
+PDI configuration validation tool depends on:
+  * a python3 installation
+  * python yaml support (distributed with PDI, pass the `-DUSE_DEFAULT=EMBEDDED`
+  or `-DUSE_PYYAML=EMBEDDED` option to cmake to use the embedded version)
 
 ### Decl'HDF5 plugin
+
+The decl'HDF5 plugin is enabled by default, pass the
+`-DBUILD_DECL_HDF5_PLUGIN=OFF` option to cmake to disable it.
 
 The decl'HDF5 plugin depends on:
   * HDF5 (either sequential or parallel compatible with the chosen MPI)
 
 ### Decl'SION plugin
 
+The decl'SION plugin is not marked stable yet. Pass the `-DENABLE_UNSTABLE=ON`
+or `-DBUILD_DECL_SION_PLUGIN=ON` option to cmake to enable it.
+
 The decl'SION plugin depends on:
   * SIONlib compatible with the chosen MPI
 
 ### FTI plugin
 
+FTI support is currently disabled waiting for the new-style FTI plugin. Pass the
+`-DBUILD_FTI_PLUGIN=ON` option to cmake to enable it anyway (at your own risk).
+
 The FTI plugin depends on:
-  * FTI (distributed with PDI, pass the `-DUSE_FTI=EMBEDDED` option to cmake to
-  use the embedded version)
+  * FTI (distributed with PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or
+  `-DUSE_FTI=EMBEDDED` option to cmake to use the embedded version)
 
 ### MPI plugin
 
-The FTI plugin depends on:
+The MPI plugin is enabled by default, pass the `-DBUILD_MPI_PLUGIN=OFF` option
+to cmake to disable it.
+
+The MPI plugin depends on:
   * a MPI-2 library (openmpi-1.10.2 is tested)
 
 ### Tests
 
+Tests are enabled by default, pass the `-DBUILD_TESTING=OFF` option to cmake to
+disable them.
+
 Tests depend on:
   * cmake, version >= 3.10
-  * gtest and gmock (distributed with PDI, pass the `-DUSE_GTEST=EMBEDDED`
-  option to cmake to use the embedded version)
+  * gtest and gmock (embedded versions used by default, pass the
+  `-DUSE_GTEST=SYSTEM` option to cmake to use the system version)

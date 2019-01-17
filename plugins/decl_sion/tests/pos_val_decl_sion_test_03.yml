@@ -1,0 +1,25 @@
+metadata:
+  ni: int
+  nj: int
+data: # values that can not be referenced using $syntax
+  reals:
+    type: array
+    subtype: double
+    size: [$nj , $ni]
+  values:
+    type: array
+    subtype: int
+    size: [$nj , $ni]
+
+plugins:
+  mpi:
+  decl_sion:
+    communicator: $MPI_COMM_WORLD
+    inputs:
+      - event: read_data
+        file: test_03_C.sion
+        vars: [ values, reals ]
+    outputs:
+      - event: write_data
+        file: test_03_C.sion
+        vars: [ ni, nj, reals, values ]

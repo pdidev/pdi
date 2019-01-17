@@ -29,6 +29,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+
 # The header project
 
 project(PDISUPER LANGUAGES)
@@ -37,22 +38,31 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # Build options
 
-option(BUILD_DECL_HDF5_PLUGIN          "Build decl'HDF5 plug-in" ON)
-option(BUILD_DECL_SION_PLUGIN          "Build decl'SION plug-in" OFF)
-option(BUILD_DOCUMENTATION             "Build documentation" ON)
-option(BUILD_FTI_PLUGIN                "Build FTI plug-in." OFF)
-option(BUILD_MPI_PLUGIN                "Build MPI plug-in" ON)
-option(BUILD_SHARED_LIBS               "Build shared libraries rather than static ones" ON)
-option(BUILD_TESTING                   "Build tests" ON)
-option(ENABLE_FORTRAN                  "Enable Fortran support" ON)
-option(ENABLE_PYTHON                   "Enable Python support" OFF)
-set(USE_BPP      SYSTEM   CACHE STRING "version of BPP to use, SYSTEM and EMBEDDED can be used")
-set(USE_FTI      SYSTEM   CACHE STRING "version of FTI to use, SYSTEM and EMBEDDED can be used")
-set(USE_GTEST    EMBEDDED CACHE STRING "version of Gtest to use, SYSTEM and EMBEDDED can be used")
-set(USE_PARACONF SYSTEM   CACHE STRING "version of paraconf to use, SYSTEM and EMBEDDED can be used")
-set(USE_PYBIND11 SYSTEM   CACHE STRING "version of pybind11 to use, SYSTEM and EMBEDDED can be used")
-set(USE_SPDLOG   SYSTEM   CACHE STRING "version of spdlog to use, SYSTEM and EMBEDDED can be used")
-set(USE_YAML     SYSTEM   CACHE STRING "version of yaml to use, SYSTEM and EMBEDDED can be used")
+option(ENABLE_UNSTABLE                         "Build all features by default including those not stable yet" OFF)
+set(USE_DEFAULT  SYSTEM           CACHE STRING "Default version of libraries to use (SYSTEM or EMBEDDED)")
+
+option(BUILD_CFG_VALIDATOR                     "Build config validation script" ON)
+option(BUILD_DECL_HDF5_PLUGIN                  "Build decl'HDF5 plug-in" ON)
+option(BUILD_DECL_SION_PLUGIN                  "Build decl'SION plug-in" "${ENABLE_UNSTABLE}")
+option(BUILD_DOCUMENTATION                     "Build documentation" ON)
+option(BUILD_FTI_PLUGIN                        "Build FTI plug-in." OFF)
+option(BUILD_MPI_PLUGIN                        "Build MPI plug-in" ON)
+option(BUILD_FLOWVR_PLUGIN                     "Build FlowVR plug-in" "${ENABLE_UNSTABLE}")
+option(BUILD_SHARED_LIBS                       "Build shared libraries rather than static ones" ON)
+option(BUILD_TESTING                           "Build tests" ON)
+option(ENABLE_FORTRAN                          "Enable Fortran support" ON)
+option(ENABLE_PYTHON                           "Enable Python support" "${ENABLE_UNSTABLE}")
+
+set(USE_BPP      "${USE_DEFAULT}" CACHE STRING "version of BPP to use, SYSTEM and EMBEDDED can be used")
+set(USE_FTI      "${USE_DEFAULT}" CACHE STRING "version of FTI to use, SYSTEM and EMBEDDED can be used")
+set(USE_FLOWVR   "${USE_DEFAULT}" CACHE STRING "version of FlowVR to use, SYSTEM and EMBEDDED can be used")
+set(USE_GTEST    EMBEDDED         CACHE STRING "version of Gtest to use, SYSTEM and EMBEDDED can be used")
+set(USE_PARACONF "${USE_DEFAULT}" CACHE STRING "version of paraconf to use, SYSTEM and EMBEDDED can be used")
+set(USE_PYBIND11 "${USE_DEFAULT}" CACHE STRING "version of pybind11 to use, SYSTEM and EMBEDDED can be used")
+set(USE_PYYAML   "${USE_DEFAULT}" CACHE STRING "version of PyYAML to use, SYSTEM and EMBEDDED can be used")
+set(USE_SPDLOG   "${USE_DEFAULT}" CACHE STRING "version of spdlog to use, SYSTEM and EMBEDDED can be used")
+set(USE_YAML     "${USE_DEFAULT}" CACHE STRING "version of yaml to use, SYSTEM and EMBEDDED can be used")
+
 
 ## Options handling
 
@@ -86,6 +96,11 @@ if("${USE_PYBIND11}" STREQUAL EMBEDDED)
 	set(PYBIND11_PATH "${PDISUPER_SOURCE_DIR}/vendor/pybind11-2.2.4")
 else()
 	set(PYBIND11_PATH "${USE_PYBIND11}")
+endif()
+if("${USE_PYYAML}" STREQUAL EMBEDDED)
+	set(PYYAML_PATH "${PDISUPER_SOURCE_DIR}/vendor/PyYAML-3.13")
+else()
+	set(PYYAML_PATH "${USE_PYYAML}")
 endif()
 if("${USE_SPDLOG}" STREQUAL EMBEDDED)
 	set(SPDLOG_PATH "${PDISUPER_SOURCE_DIR}/vendor/spdlog-1.1.0")
@@ -121,11 +136,31 @@ list(APPEND CMAKE_CACHE_ARGS
 		"-DCMAKE_STAGING_PREFIX:PATH=<INSTALL_DIR>"
 		"-DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}")
 
-set(EP_ENV "$ENV{LD_LIBRARY_PATH}")
-if(NOT "x${EP_ENV}x" STREQUAL "xx")
-	set(EP_ENV ":${EP_ENV}")
+set(LIBRARY_PATH "$ENV{LIBRARY_PATH}")
+if(NOT "x${LIBRARY_PATH}x" STREQUAL "xx")
+	set(LIBRARY_PATH ":${LIBRARY_PATH}")
 endif()
-set(EP_ENV "LD_LIBRARY_PATH=${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib${EP_ENV}")
+set(LIBRARY_PATH "${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib${LIBRARY_PATH}")
+
+set(CPATH "$ENV{CPATH}")
+if(NOT "x${CPATH}x" STREQUAL "xx")
+	set(CPATH ":${CPATH}")
+endif()
+set(CPATH "${PDISUPER_BINARY_DIR}/staging/include:${PDISUPER_BINARY_DIR}/build-dep/include${CPATH}")
+
+if("${BUILD_CFG_VALIDATOR}" OR "${ENABLE_PYTHON}")
+	set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
+	find_package(PythonInterp REQUIRED)
+	execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+			"from distutils import sysconfig;print(sysconfig.get_python_lib(prefix=''))"
+			OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_STRIP_TRAILING_WHITESPACE
+			RESULT_VARIABLE PDP_SUCCESS
+			OUTPUT_VARIABLE INSTALL_PYDSTPKGDIR
+			ERROR_VARIABLE  PDP_ERROR)
+	if(NOT "${PDP_SUCCESS}" EQUAL 0)
+		message(FATAL_ERROR "Error while locating python DIST_PACKAGE location:\n${PDP_ERROR}")
+	endif()
+endif()
 
 
 # Testing
@@ -136,7 +171,7 @@ if("${BUILD_TESTING}")
 	file(WRITE "${PDISUPER_BINARY_DIR}/SubTests.cmake" 
 #TODO: replace these path by the actual path where stuff is installed
 "set(ADDPATH [=[${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib]=])\n"
-"set(PYPATH  [=[${PDISUPER_BINARY_DIR}/staging/lib/python3/dist-packages/]=])\n"
+"set(PYPATH  [=[${PDISUPER_BINARY_DIR}/staging/${INSTALL_PYDSTPKGDIR}]=])\n"
 [===[
 set(LD_LIBRARY_PATH "$ENV{LD_LIBRARY_PATH}")
 if("x${LD_LIBRARY_PATH}x" STREQUAL xx)
@@ -185,7 +220,7 @@ endfunction()
 
 # Main project
 
-set(PDI_BUILD_COMMAND "${CMAKE_COMMAND}" -E env "${EP_ENV}")
+set(PDI_BUILD_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${LIBRARY_PATH}")
 if("${CMAKE_GENERATOR}" MATCHES "Make") #< Use recursive make.
 	list(APPEND PDI_BUILD_COMMAND "\$(MAKE)")
 else() #< Drive the project with "cmake --build".
@@ -350,6 +385,33 @@ if("${BUILD_TESTING}")
 			INSTALL_COMMAND ""
 			DEPENDS PDI)
 	add_testing(PDI_EXAMPLE)
+endif()
+
+
+# Configuration validation
+
+if ("${BUILD_CFG_VALIDATOR}")
+	ExternalProject_Add(PDICFG_VALIDATOR
+			PREFIX "${PDISUPER_BINARY_DIR}/pdicfg_validator"
+			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/tools/pdicfg_validator" BUILD_ALWAYS TRUE
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+	add_testing(PDICFG_VALIDATOR)
+	if(NOT "${USE_PYYAML}" STREQUAL SYSTEM)
+		file(MD5 "${PYYAML_PATH}" HASH) #< trick to prevent no-hash warning
+		ExternalProject_Add(PYYAML
+				PREFIX "${PDISUPER_BINARY_DIR}/pyyaml"
+				URL "${PYYAML_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
+				CONFIGURE_COMMAND ""
+				BUILD_IN_SOURCE ON
+				BUILD_COMMAND "${CMAKE_COMMAND}" -E env
+						"CPATH=${CPATH}" "LIBRARY_PATH=${LIBRARY_PATH}"
+						"${PYTHON_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml build
+				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+				#TODO: Detect when on Debian/Ubuntu and "--install-layout deb" is required
+				INSTALL_COMMAND "${PYTHON_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml install --prefix "<INSTALL_DIR>" --install-lib "<INSTALL_DIR>/${INSTALL_PYDSTPKGDIR}")
+		add_dependencies(PDICFG_VALIDATOR PYYAML)
+	endif()
 endif()
 
 

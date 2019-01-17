@@ -1,0 +1,21 @@
+pdi:
+  metadata: 
+    meta_iter:   
+      type: record         
+      buffersize: 816       
+      members:              
+        my_char:           
+          disp: 0          
+          type: char       
+        my_record:         
+          disp: 8          
+          type: record     
+          buffersize: 808  
+          members:         
+            my_char:       
+              disp: 0      
+              type: char   
+            my_array:      
+              disp: 8      
+              subtype: int64
+              size: [10, 10] 

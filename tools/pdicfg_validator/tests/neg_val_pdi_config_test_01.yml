@@ -1,0 +1,27 @@
+pdi:
+  metadata:
+    meta1: char
+    meta2: int
+    meta3: int8
+    meta4: int16
+    meta5: int32
+    meta6: int64
+    meta7: float
+    meta8: double
+    meta9: wrong_type_name
+    meta10: integer
+    meta11: logical
+    meta12: real
+  data:
+    data1: char
+    data2: int
+    data3: int8
+    data4: int16
+    data5: int32
+    data6: int64
+    data7: float
+    data8: double
+    data9: character
+    data10: integer
+    data11: logical
+    data12: real
