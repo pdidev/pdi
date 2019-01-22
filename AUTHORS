@@ -11,15 +11,24 @@ Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Initial Fortran interface
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
-* Development of unit-tests
+* Development of many unit-tests
+* Support for plugin dependencies
+* Support of the multi_expose function
+* Many improvements, bugfixes and cleanups in PDI core
 
 Corentin Roussel - CEA (Corentin.roussel@cea.fr)
-* Library maintainer from Sept. 2016 to Feb. 2018
+* Library co-maintainer from Sept. 2016 to Feb. 2018
 * Decl'HDF5 v2 plugin
 * User-code v1 plugin
 
 Karol Sierocinski - PSNC (ksiero@man.poznan.pl)
 * Set-up and development of unit-tests
+* Configuration validator
+* Support for records in YAML
+* Logging support
+* MPI Plugin
+* Support for complex datatypes
+* Many improvements, bugfixes and cleanups in PDI core
 
 Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
 * Decl'SION plugin
