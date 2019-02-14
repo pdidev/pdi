@@ -410,6 +410,7 @@ if ("${BUILD_CFG_VALIDATOR}")
 				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
 				#TODO: Detect when on Debian/Ubuntu and "--install-layout deb" is required
 				INSTALL_COMMAND "${PYTHON_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml install --prefix "<INSTALL_DIR>" --install-lib "<INSTALL_DIR>/${INSTALL_PYDSTPKGDIR}")
+		add_dependencies(PYYAML YAML)
 		add_dependencies(PDICFG_VALIDATOR PYYAML)
 	endif()
 endif()
