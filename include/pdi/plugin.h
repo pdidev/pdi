@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,6 @@
 #ifndef PDI_PLUGIN_H_
 #define PDI_PLUGIN_H_
 
-#include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 
 #include <unordered_set>
@@ -92,6 +91,10 @@ public:
  */
 unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version=0);
 
+} // namespace PDI
+
+namespace {
+
 /** Checks whether a class contains static method named dependencies at compile time
  */
 template <class T>
@@ -120,7 +123,7 @@ typename std::enable_if<has_dependencies<T>::value, std::pair<std::unordered_set
 	return T::dependencies();
 }
 
-/** Returns dependencies of a plugin
+/**  Returns dependencies of a plugin
  * Overload called if the class doesn't contain dependencies method
  *
  * \returns empty dependencies sets (i.e no dependencies)
@@ -131,7 +134,7 @@ typename std::enable_if<!has_dependencies<T>::value, std::pair<std::unordered_se
 	return {};
 }
 
-} // namespace PDI
+} // namespace <anonymous>
 
 /** Declares a plugin to be used with PDI and its dependencies
  *
@@ -162,7 +165,7 @@ typename std::enable_if<!has_dependencies<T>::value, std::pair<std::unordered_se
 	}\
 	extern "C" ::std::pair<::std::unordered_set<::std::string>, ::std::unordered_set<::std::string>> PDI_EXPORT PDI_plugin_##name##_dependencies() \
 	{\
-		return ::PDI::plugin_dependencies<name##_plugin>();\
+		return ::plugin_dependencies<name##_plugin>();\
 	}\
 	_Pragma("clang diagnostic pop")
 

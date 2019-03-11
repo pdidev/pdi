@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** \file pdi.c
- * Implementation of the PDI public API functions.
- **/
-
 #include "config.h"
 
 #include <cstddef>
@@ -42,7 +38,6 @@
 
 #include "pdi/context.h"
 #include "pdi/data_descriptor.h"
-#include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"

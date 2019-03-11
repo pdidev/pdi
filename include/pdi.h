@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,37 @@
 ******************************************************************************/
 
 /** \file pdi.h
- * PDI C public application API
+ * 
+ * C user API
+ * 
+ * The user facing API is the interface offered by PDI to C application
+ * developers.
+ * 
+ * \defgroup init_final Initialization and finalization
+ * 
+ * The initialization and finalization part of the API is used to setup PDI,
+ * release its resources and check version information.
+ * 
+ * \defgroup annotation Code annotation
+ * 
+ * The code annotation API is the main interface to use in the code.
+ * 
+ * It offers functions that can be called from code with no side effect by
+ * default and that can therefore be considered as annotations.
+ * 
+ * \defgroup error Error handling
+ * 
+ * The error handling API supports checking the error status of PDI.
+ * 
+ * By default, errors in PDI C API are signaled by a return code of type
+ * PDI_status_t and an error message can be retrieved with the PDI_errmsg
+ * function. This default behavior can be changed by replacing the error handler
+ * with the PDI_errhandler function.
+ * 
+ * \defgroup hl_annotation High-level annotations
+ * 
+ * The high-level annotation API offers a higher level of interface for the same
+ * features as the \ref annotation.
  */
 
 #ifndef PDI_H_
@@ -38,7 +68,9 @@
 extern "C" {
 #endif
 
-/// Error handling \{
+/** \addtogroup error
+ * \{
+ */
 
 /** Error codes of PDI
  */
@@ -116,7 +148,12 @@ PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler);
 
 /// \}
 
-/// \{ Initialization / Finalization stuff
+/** \addtogroup init_final Initialization and finalization
+ * 
+ * The initialization and finalization part of the API is used to setup PDI,
+ * release its resources and check version information.
+ * \{
+ */
 
 /** Initializes PDI
  * \param[in] conf the configuration
@@ -129,8 +166,6 @@ PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf);
  */
 PDI_status_t PDI_EXPORT PDI_finalize(void);
 
-/// \}
-
 /** Checks PDI API version
  *
  * \param[out] provided version if non-null it is filled with the provided API version
@@ -140,13 +175,11 @@ PDI_status_t PDI_EXPORT PDI_finalize(void);
  */
 PDI_status_t PDI_EXPORT PDI_version(unsigned long* provided, unsigned long expected);
 
-/** Triggers a PDI "event"
- * \param[in] event the event name
- * \return an error status
- */
-PDI_status_t PDI_EXPORT PDI_event(const char* event);
+/// \}
 
-/// \{ data access
+/** \addtogroup annotation
+ * \{
+ */
 
 /**
  * Access directions
@@ -208,7 +241,17 @@ PDI_status_t PDI_EXPORT PDI_release(const char* name);
  */
 PDI_status_t PDI_EXPORT PDI_reclaim(const char* name);
 
+/** Triggers a PDI "event"
+ * \param[in] event the event name
+ * \return an error status
+ */
+PDI_status_t PDI_EXPORT PDI_event(const char* event);
+
 /// \}
+
+/** \addtogroup hl_annotation
+ * \{
+ */
 
 /** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
  * \param[in] name the data name
@@ -218,8 +261,6 @@ PDI_status_t PDI_EXPORT PDI_reclaim(const char* name);
  * \return an error status
  */
 PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t access);
-
-/// \{
 
 /** Performs multiple exposes at once. All the data is shared in order they were specified
  *  and reclaimed in reversed order after an event is triggered.
@@ -238,10 +279,16 @@ PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t acc
  */
 PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...);
 
-/** Begin a transaction. All the ::PDI_expose will be exposed together.
+/** Begin a transaction in which all PDI_expose calls are grouped.
  *
- * This requires a ::PDI_transaction_end to close the transaction.
+ * This requires a call to PDI_transaction_end to close the transaction.
  *
+ * \deprecated the transaction part of the API is deprecated, the 
+ * PDI_multi_expose function should be used instead.
+ * 
+ * \see PDI_expose the function used to expose data inside the transaction
+ * \see PDI_transaction_end the function used to end the transaction
+ * 
  * \param[in] name the name of the transaction (an event thus named will be
  *                 triggered when all data become available)
  * \return an error status
@@ -249,6 +296,13 @@ PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* nam
 PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name);
 
 /** Ends the previously opened transaction.
+ * 
+ * \deprecated the transaction part of the API is deprecated, the 
+ * PDI_multi_expose function should be used instead.
+ * 
+ * \see PDI_transaction_begin the function used to start the transaction
+ * \see PDI_expose the function used to expose data inside the transaction
+ * 
  * \return an error status
  */
 PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void);

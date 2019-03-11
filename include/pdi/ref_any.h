@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,26 @@
 
 
 namespace PDI {
+
+namespace {
+
+template<bool R, bool W>
+struct Ref_access {
+	typedef void type;
+};
+
+template<bool R>
+struct Ref_access<R, true> {
+	typedef void* type;
+};
+
+template<>
+struct Ref_access<true, false> {
+	typedef const void* type;
+};
+
+} //namespace <anonymous>
+
 
 /** A common base for all references, whatever their access privileges in
  * order to ensure they share the same Data_content and can access each others.
@@ -151,22 +171,6 @@ public:
 	}
 	
 }; // class Data_ref_base
-
-
-template<bool R, bool W>
-struct Ref_access {
-	typedef void type;
-};
-
-template<bool R>
-struct Ref_access<R, true> {
-	typedef void* type;
-};
-
-template<>
-struct Ref_access<true, false> {
-	typedef const void* type;
-};
 
 
 /** A dynamically typed reference to data with automatic memory management and

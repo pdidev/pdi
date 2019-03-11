@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,6 @@
 #include <unordered_set>
 
 #include <pdi/context.h>
-#include <pdi/logger.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/plugin.h>

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,12 @@
 
 namespace PDI {
 
+/** A Datatype is a Datatype_template that accepts no argument.
+ * It represents the memory layout of data and supports some simple operations
+ * on it:
+ * * accessing its content
+ * * cloning and destruction
+ */
 class PDI_EXPORT Datatype:
 	public Datatype_template
 {
@@ -46,16 +52,16 @@ public:
 	/** Test for equality
 	 *
 	 * \param other the Datatype to compare
-	 * \return true if the datatatypes are equal
+	 * \return true if the Datatype's are equal
 	 */
 	virtual bool operator== (const Datatype& other) const = 0;
 	
 	/** Test for inequality
 	 *
 	 * \param other the Datatype to compare
-	 * \return true if the datatatypes are not equal
+	 * \return true if the Datatype's are different
 	 */
-	bool operator!=(const Datatype& rhs) const;
+	bool operator!=(const Datatype& other) const;
 	
 	/** Creates a new datatype as the dense copy of this one
 	 *
@@ -101,7 +107,6 @@ public:
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (dense data)
 	 * \param[in] from the pointer to the copied data (size of buffersize)
-	 *
 	 * \return updated `to' pointer
 	 */
 	virtual void* data_to_dense_copy(void* to, const void* from) const = 0;
@@ -111,7 +116,6 @@ public:
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (size of buffersize)
 	 * \param[in] from the pointer to the copied data (dense data)
-	 *
 	 * \return updated `to' pointer
 	 */
 	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
@@ -119,11 +123,13 @@ public:
 	/**
 	 * Function used to delete the data behind the datatype. This should not deallocate the memory.
 	 *
-	 * \param[in] pointer to the data to free
+	 * \param[in] ptr to the data to free
 	 */
 	virtual void destroy_data(void* ptr) const = 0;
 	
 	/** Returns the datatype yaml representation as a string
+	 * 
+	 * \return the datatype yaml representation as a string
 	 */
 	virtual std::string debug_string() const = 0;
 	

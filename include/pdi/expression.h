@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,13 +51,13 @@ public:
 	
 	/** Copies an expression
 	 *
-	 * \param[in] expression the expression to copy
+	 * \param[in] expr the expression to copy
 	 */
 	Expression(const Expression& expr);
 	
 	/** Moves an expression
 	 *
-	 * \param[in] expression the expression to move`
+	 * \param[in] expr the expression to move`
 	 */
 	Expression(Expression&& expr);
 	

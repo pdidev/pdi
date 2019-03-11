@@ -1,0 +1,15 @@
+pages:
+  only:
+    - master
+  image: jbigot/doxygen
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - mkdir build
+    - cd build
+    - cmake -DUSE_DEFAULT=EMBEDDED -DBUILD_CFG_VALIDATOR=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_MPI_PLUGIN=OFF -DBUILD_TESTING=OFF -DENABLE_FORTRAN=ON -DENABLE_PYTHON=ON ..
+    - make doc
+    - mv pdi/src/PDI-build/docs/html ../public
+  artifacts:
+    paths:
+      - public

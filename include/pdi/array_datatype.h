@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,10 @@
 
 namespace PDI {
 
+/**
+ * an Array_datatype is a Datatype that represents an array: i.e storage
+ * of multiple elements of the same type continuously in memory.
+ */
 class PDI_EXPORT Array_datatype:
 	public Datatype
 {
@@ -46,23 +50,42 @@ class PDI_EXPORT Array_datatype:
 	size_t m_subsize;
 	
 public:
+	/** Construct a new partially filled Array_datatype
+	 * 
+	 * \param[in] subtype the type of the elements contained in the array
+	 * \param size the number of elements the array can store
+	 * \param start the id of the first actual element of the array
+	 * \param subsize the number of actual elements in the array
+	 */
 	Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize);
 	
+	/** Construct a new completely filled Array_datatype
+	 * 
+	 * \param subtype the type of the elements contained in the array
+	 * \param size the number of elements the array can store
+	 */
 	Array_datatype(Datatype_uptr subtype, size_t size);
 	
-	/** Type of the elements contained in the array.
+	/** Type of the elements contained in the array
+	 * 
+	 * \return the type of the elements contained in the array
 	 */
 	const Datatype& subtype() const;
 	
 	/** Number of elements the array can store
+	 * \return the number of elements the array can store
 	 */
 	size_t size() const;
 	
 	/** id of the first actual element of the array
+	 * 
+	 * \return the id of the first actual element of the array
 	 */
 	size_t start() const;
 	
 	/** Number of actual elements in the array
+	 * 
+	 * \return the number of actual elements in the array
 	 */
 	size_t subsize() const;
 	
@@ -84,11 +107,11 @@ public:
 	
 	bool simple() const override;
 	
-	void* data_to_dense_copy(void* to, const void* from) const override;
+	void* data_to_dense_copy(void*, const void*) const override;
 	
-	void* data_from_dense_copy(void* to, const void* from) const override;
+	void* data_from_dense_copy(void*, const void*) const override;
 	
-	void destroy_data(void* ptr) const override;
+	void destroy_data(void*) const override;
 	
 	std::string debug_string() const override;
 	

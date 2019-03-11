@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

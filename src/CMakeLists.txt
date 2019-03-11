@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -28,14 +28,31 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(PDI LANGUAGES CXX C)
+project(PDI
+		LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake")
 
 
 # Build options
 
-option(BUILD_SHARED_LIBS "Build PDI as a shared library instead of a static one" ON)
-option(ENABLE_FORTRAN    "Enable compilation of the Fortran version of PDI" ON)
+option(ENABLE_UNSTABLE        "Build all features by default including those not stable yet" OFF)
+
+option(BUILD_CFG_VALIDATOR    "Build config validation script" ON)
+option(BUILD_DOCUMENTATION    "Build documentation" ON)
+option(BUILD_SHARED_LIBS      "Build shared libraries rather than static ones" ON)
+option(BUILD_TESTING          "Build tests" ON)
+option(ENABLE_FORTRAN         "Enable Fortran support" ON)
+option(ENABLE_PYTHON          "Enable Python support" "${ENABLE_UNSTABLE}")
+
+if("${BUILD_TESTING}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10") 
+	message(FATAL_ERROR "Minimum CMake version to build tests is 3.10. Please update CMake or turn off testing by adding the flag `-DBUILD_TESTING=OFF` to the cmake command line.")
+endif()
+if("${BUILD_DOCUMENTATION}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10") 
+	message(FATAL_ERROR "Minimum CMake version to build documentation is 3.10. Please update CMake or turn off documentation generation by adding the flag `-DBUILD_DOCUMENTATION=OFF` to the cmake command line.")
+endif()
+if(NOT "${BUILD_SHARED_LIBS}") 
+	message(FATAL_ERROR "Building PDI as a static lib is not supported currently")
+endif()
 
 
 # Language support
@@ -49,7 +66,9 @@ endif()
 
 include(CTest)
 include(CMakePackageConfigHelpers)
-include(DefaultKind)
+if("${ENABLE_FORTRAN}")
+	include(DefaultKind)
+endif()
 include(GenerateExportHeader)
 include(GNUInstallDirs)
 
@@ -59,9 +78,6 @@ include(GNUInstallDirs)
 find_package(paraconf REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(Astyle)
-if("${BUILD_DOCUMENTATION}")
-	find_package(Doxygen REQUIRED OPTIONAL_COMPONENTS dot)
-endif()
 if("${ENABLE_PYTHON}")
 	find_package(pybind11 REQUIRED)
 endif()
@@ -80,17 +96,22 @@ set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
 set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
 set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
 if("git" STREQUAL "${PDI_VERSION_MODIF}")
-	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
+	execute_process(COMMAND "${PDI_SOURCE_DIR}/../cmake/version-uid" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
+if(NOT "x${PDI_VERSION_MODIF}x" STREQUAL "xx")
+	set(PDI_VERSION "${PDI_VERSION}-${PDI_VERSION_MODIF}")
 endif()
 
 
 # Check for some portability stuff and generate config.h
 
-get_default_kind(INTEGER   PDI_INTEGER_DEFAULT_KIND)
-get_default_kind(CHARACTER PDI_CHARACTER_DEFAULT_KIND)
-get_default_kind(REAL      PDI_REAL_DEFAULT_KIND)
-get_default_kind(LOGICAL   PDI_LOGICAL_DEFAULT_KIND)
-set(PDI_VERSION_MODIF "${PDI_VERSION_MODIF}")
+if("${ENABLE_FORTRAN}")
+	get_default_kind(INTEGER   PDI_INTEGER_DEFAULT_KIND)
+	get_default_kind(CHARACTER PDI_CHARACTER_DEFAULT_KIND)
+	get_default_kind(REAL      PDI_REAL_DEFAULT_KIND)
+	get_default_kind(LOGICAL   PDI_LOGICAL_DEFAULT_KIND)
+endif()
 configure_file(config.h.in config.h @ONLY)
 configure_file(version.h.in pdi/version.h @ONLY)
 
@@ -99,7 +120,7 @@ configure_file(version.h.in pdi/version.h @ONLY)
 
 ## C version
 
-set(PDI_C_SRC 
+set(PDI_SRC 
 		array_datatype.cxx
 		context.cxx
 		global_context.cxx
@@ -111,11 +132,14 @@ set(PDI_C_SRC
 		expression.cxx
 		logger.cxx
 		paraconf_wrapper.cxx
-		pdi.cxx
 		plugin.cxx
 		record_datatype.cxx
 		ref_any.cxx
 		scalar_datatype.cxx
+)
+set(PDI_C_SRC 
+		${PDI_SRC}
+		pdi.cxx
 )
 add_library(pdi ${PDI_C_SRC})
 generate_export_header(pdi EXPORT_FILE_NAME pdi/export.h)
@@ -282,15 +306,7 @@ endif()
 # Documentation
 
 if("${BUILD_DOCUMENTATION}")
-	configure_file("${PDI_SOURCE_DIR}/../docs/doxygen.cfg.in" "${PDI_BINARY_DIR}/docs/doxygen.cfg" @ONLY)
-	add_custom_command(OUTPUT "${PDI_BINARY_DIR}/docs/html"
-			COMMAND "${CMAKE_COMMAND}" -E remove_directory "${PDI_BINARY_DIR}/docs/html"
-			COMMAND "${CMAKE_COMMAND}" -E make_directory "${PDI_BINARY_DIR}/docs"
-			COMMAND "${CMAKE_COMMAND}" -E chdir "${PDI_BINARY_DIR}/docs" "${DOXYGEN_EXECUTABLE}" "doxygen.cfg"
-			DEPENDS ${PDI_C_SRC}
-	)
-	add_custom_target(doc ALL DEPENDS "${PDI_BINARY_DIR}/docs/html")
-	install(DIRECTORY "${PDI_BINARY_DIR}/docs/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}")
+	add_subdirectory(../docs docs)
 endif()
 
 

@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -66,12 +66,16 @@ set(USE_YAML     "${USE_DEFAULT}" CACHE STRING "version of yaml to use, SYSTEM a
 
 ## Options handling
 
-if("${BUILD_TESTING}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10.0") 
-	message(FATAL_ERROR "Minimum CMake version for tests is 3.10. Please update CMake or turn off testing by adding flag -DBUILD_TESTING=OFF")
+if("${BUILD_TESTING}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10") 
+	message(FATAL_ERROR "Minimum CMake version to build tests is 3.10. Please update CMake or turn off testing by adding the flag `-DBUILD_TESTING=OFF` to the cmake command line.")
+endif()
+if("${BUILD_DOCUMENTATION}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10") 
+	message(FATAL_ERROR "Minimum CMake version to build documentation is 3.10. Please update CMake or turn off documentation generation by adding the flag `-DBUILD_DOCUMENTATION=OFF` to the cmake command line.")
 endif()
 if(NOT "${BUILD_SHARED_LIBS}") 
-	message(FATAL_ERROR "Building PDI as a static lib is not supported currently")
+	message(FATAL_ERROR "Building PDI as a static lib is not supported. Please add the flag `BUILD_SHARED_LIBS=ON` to the cmake command line.")
 endif()
+
 if("${USE_BPP}" STREQUAL EMBEDDED)
 	set(BPP_PATH "${PDISUPER_SOURCE_DIR}/vendor/bpp-v0.2.6")
 else()
@@ -218,6 +222,29 @@ function(add_indent_step EP_NAME)
 endfunction()
 
 
+# Documentation
+
+add_custom_target(doc)
+function(add_doc_step EP_NAME)
+	if("${CMAKE_GENERATOR}" MATCHES "Make") #< Use recursive make.
+		set(DOC_COMMAND "\$(MAKE)" doc)
+	else() #< Drive the project with "cmake --build".
+		set(DOC_COMMAND "${CMAKE_COMMAND}" --build "." --target doc)
+		get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+		if(_isMultiConfig)
+			list(APPEND DOC_COMMAND --config $<CONFIG>)
+		endif()
+	endif()
+	ExternalProject_Get_Property("${EP_NAME}" BINARY_DIR)
+	ExternalProject_Add_StepTargets("${EP_NAME}" doc)
+	add_custom_command(TARGET doc POST_BUILD
+			COMMAND ${DOC_COMMAND}
+			WORKING_DIRECTORY "${BINARY_DIR}"
+			COMMENT "Generating documentation for '${EP_NAME}'")
+	add_dependencies(doc "${EP_NAME}-configure")
+endfunction()
+
+
 # Main project
 
 set(PDI_BUILD_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${LIBRARY_PATH}")
@@ -237,6 +264,7 @@ ExternalProject_Add(PDI
 		BUILD_COMMAND ${PDI_BUILD_COMMAND}
 		INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
 add_indent_step(PDI)
+add_doc_step(PDI)
 add_testing(PDI)
 
 

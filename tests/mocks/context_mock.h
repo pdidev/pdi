@@ -29,7 +29,6 @@
 #include <gmock/gmock.h>
 #include <pdi/context.h>
 #include <pdi/datatype_template.h>
-#include <pdi/logger.h>
 #include <pdi/plugin.h>
 
 

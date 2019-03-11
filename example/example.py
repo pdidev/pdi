@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
