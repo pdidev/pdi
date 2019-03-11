@@ -596,6 +596,7 @@ samp
 	background-color: var(--dsol-bg);
 	word-wrap: break-word;
 	line-height: 125%;
+	font-family: var(--monofont);
 	font-size:  1rem;
 	color: var(--dsol-fg-hl);
 }
