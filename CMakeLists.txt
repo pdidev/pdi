@@ -45,9 +45,10 @@ option(BUILD_CFG_VALIDATOR                     "Build config validation script" 
 option(BUILD_DECL_HDF5_PLUGIN                  "Build decl'HDF5 plug-in" ON)
 option(BUILD_DECL_SION_PLUGIN                  "Build decl'SION plug-in" "${ENABLE_UNSTABLE}")
 option(BUILD_DOCUMENTATION                     "Build documentation" ON)
+option(BUILD_FLOWVR_PLUGIN                     "Build FlowVR plug-in" "${ENABLE_UNSTABLE}")
 option(BUILD_FTI_PLUGIN                        "Build FTI plug-in." OFF)
 option(BUILD_MPI_PLUGIN                        "Build MPI plug-in" ON)
-option(BUILD_FLOWVR_PLUGIN                     "Build FlowVR plug-in" "${ENABLE_UNSTABLE}")
+option(BUILD_PYCALL_PLUGIN                     "Build Pycall plug-in" "${ENABLE_UNSTABLE}")
 option(BUILD_SHARED_LIBS                       "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING                           "Build tests" ON)
 option(ENABLE_FORTRAN                          "Enable Fortran support" ON)
@@ -125,8 +126,9 @@ include(ExternalProject)
 
 # A list of all cache variables to forward to subprojects
 
+include(GNUInstallDirs)
 list(APPEND CMAKE_PREFIX_PATH "${PDISUPER_BINARY_DIR}/staging" "${PDISUPER_BINARY_DIR}/build-dep")
-list(APPEND CMAKE_BUILD_RPATH "${PDISUPER_BINARY_DIR}/staging/lib")
+list(APPEND CMAKE_BUILD_RPATH "${PDISUPER_BINARY_DIR}/staging/${CMAKE_INSTALL_LIBDIR}" "${PDISUPER_BINARY_DIR}/staging/lib")
 get_cmake_property(CACHE_VARIABLES CACHE_VARIABLES)
 set(CMAKE_CACHE_ARGS)
 foreach(CACHE_VARIABLE ${CACHE_VARIABLES})
@@ -144,26 +146,17 @@ set(LIBRARY_PATH "$ENV{LIBRARY_PATH}")
 if(NOT "x${LIBRARY_PATH}x" STREQUAL "xx")
 	set(LIBRARY_PATH ":${LIBRARY_PATH}")
 endif()
-set(LIBRARY_PATH "${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib${LIBRARY_PATH}")
+set(LIBRARY_PATH "${PDISUPER_BINARY_DIR}/staging/${CMAKE_INSTALL_LIBDIR}:${PDISUPER_BINARY_DIR}/build-dep/${CMAKE_INSTALL_LIBDIR}:${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib${LIBRARY_PATH}")
 
 set(CPATH "$ENV{CPATH}")
 if(NOT "x${CPATH}x" STREQUAL "xx")
 	set(CPATH ":${CPATH}")
 endif()
-set(CPATH "${PDISUPER_BINARY_DIR}/staging/include:${PDISUPER_BINARY_DIR}/build-dep/include${CPATH}")
+set(CPATH "${PDISUPER_BINARY_DIR}/staging/${CMAKE_INSTALL_INCLUDEDIR}:${PDISUPER_BINARY_DIR}/build-dep/${CMAKE_INSTALL_INCLUDEDIR}:${PDISUPER_BINARY_DIR}/staging/include:${PDISUPER_BINARY_DIR}/build-dep/include${CPATH}")
 
 if("${BUILD_CFG_VALIDATOR}" OR "${ENABLE_PYTHON}")
 	set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
-	find_package(PythonInterp REQUIRED)
-	execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-			"from distutils import sysconfig;print(sysconfig.get_python_lib(prefix=''))"
-			OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_STRIP_TRAILING_WHITESPACE
-			RESULT_VARIABLE PDP_SUCCESS
-			OUTPUT_VARIABLE INSTALL_PYDSTPKGDIR
-			ERROR_VARIABLE  PDP_ERROR)
-	if(NOT "${PDP_SUCCESS}" EQUAL 0)
-		message(FATAL_ERROR "Error while locating python DIST_PACKAGE location:\n${PDP_ERROR}")
-	endif()
+	find_package(PythonPath REQUIRED)
 endif()
 
 
@@ -174,8 +167,8 @@ if("${BUILD_TESTING}")
 	set_property(DIRECTORY PROPERTY TEST_INCLUDE_FILE "${PDISUPER_BINARY_DIR}/SubTests.cmake")
 	file(WRITE "${PDISUPER_BINARY_DIR}/SubTests.cmake" 
 #TODO: replace these path by the actual path where stuff is installed
-"set(ADDPATH [=[${PDISUPER_BINARY_DIR}/staging/lib:${PDISUPER_BINARY_DIR}/build-dep/lib]=])\n"
-"set(PYPATH  [=[${PDISUPER_BINARY_DIR}/staging/${INSTALL_PYDSTPKGDIR}]=])\n"
+"set(ADDPATH [=[${PDISUPER_BINARY_DIR}/staging/${CMAKE_INSTALL_LIBDIR}:${PDISUPER_BINARY_DIR}/staging/lib]=])\n"
+"set(PYPATH  [=[${PDISUPER_BINARY_DIR}/staging/${PythonPath_INSTALL_SITEARCHDIR}:${PDISUPER_BINARY_DIR}/staging/${PythonPath_INSTALL_SITELIBDIR}]=])\n"
 [===[
 set(LD_LIBRARY_PATH "$ENV{LD_LIBRARY_PATH}")
 if("x${LD_LIBRARY_PATH}x" STREQUAL xx)
@@ -402,6 +395,20 @@ if("${BUILD_FTI_PLUGIN}")
 	endif()
 endif()
 
+if("${BUILD_PYCALL_PLUGIN}")
+	if(NOT "${ENABLE_PYTHON}")
+		message(FATAL_ERROR "the Pycall plugin requires Python support, please pass -DENABLE_PYTHON=ON to cmake")
+	endif()
+	ExternalProject_Add(PYCALL_PLUGIN
+			PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-pycall"
+			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/pycall" BUILD_ALWAYS TRUE
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+			DEPENDS PDI)
+	add_testing(PYCALL_PLUGIN)
+	add_indent_step(PYCALL_PLUGIN)
+endif()
+
 
 # Examples
 
@@ -430,15 +437,17 @@ if ("${BUILD_CFG_VALIDATOR}")
 		ExternalProject_Add(PYYAML
 				PREFIX "${PDISUPER_BINARY_DIR}/pyyaml"
 				URL "${PYYAML_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
-				CONFIGURE_COMMAND ""
+				CONFIGURE_COMMAND "${PYTHON_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml build_ext -I "${CPATH}" -L "${LIBRARY_PATH}"
 				BUILD_IN_SOURCE ON
-				BUILD_COMMAND "${CMAKE_COMMAND}" -E env
-						"CPATH=${CPATH}" "LIBRARY_PATH=${LIBRARY_PATH}"
-						"${PYTHON_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml build
+				BUILD_COMMAND "${PYTHON_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml build
 				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
-				#TODO: Detect when on Debian/Ubuntu and "--install-layout deb" is required
-				INSTALL_COMMAND "${PYTHON_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml install --prefix "<INSTALL_DIR>" --install-lib "<INSTALL_DIR>/${INSTALL_PYDSTPKGDIR}")
-		add_dependencies(PYYAML YAML)
+				INSTALL_COMMAND "${PYTHON_EXECUTABLE}"
+						"<SOURCE_DIR>/setup.py"
+						--with-libyaml
+						install
+						--prefix "<INSTALL_DIR>"
+						--install-purelib "<INSTALL_DIR>/${PythonPath_INSTALL_SITELIBDIR}"
+						--install-platlib "<INSTALL_DIR>/${PythonPath_INSTALL_SITEARCHDIR}")
 		add_dependencies(PDICFG_VALIDATOR PYYAML)
 	endif()
 endif()

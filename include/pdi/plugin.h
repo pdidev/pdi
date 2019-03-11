@@ -22,19 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** \file pdi/plugin.h
- * Main plugin API
- */
-
 #ifndef PDI_PLUGIN_H_
 #define PDI_PLUGIN_H_
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/logger.h>
 
 #include <unordered_set>
 
 namespace PDI {
 
+
+/** The class PDI plugins should implement
+ */
 class PDI_EXPORT Plugin
 {
 	Context& m_context;

@@ -1,6 +1,5 @@
-#=============================================================================
-# Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#*******************************************************************************
+# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -21,38 +20,28 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#=============================================================================
+#*****************************************************************************/
 
-cmake_minimum_required(VERSION 3.5)
-project(pdicfg_validator LANGUAGES)
+from ._pdi import *
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+def expose(name, data, access):
+    share(name, data, access)
+    reclaim(name)
 
-
-# Includes
-
-include(GNUInstallDirs)
-
-
-# Dependencies
-
-set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
-find_package(PythonPath REQUIRED) #< Same as pybind11 to get a coherent version of python with the rest of PDI
-
-
-# Libraries
-
-install(DIRECTORY pdicfg_validator
-		DESTINATION "${PythonPath_INSTALL_SITELIBDIR}/"
-)
-
-install(PROGRAMS pdicfg_validate
-		DESTINATION "${CMAKE_INSTALL_BINDIR}/"
-)
-
-
-# Tests
-
-if("${BUILD_TESTING}")
-	add_subdirectory(tests/)
-endif()
+def multi_expose(event_name, expose_list):
+    exposed = []
+    try:
+        for (name, data, access) in expose_list:
+            share(name, data, access)
+            exposed.append(name)
+        event(event_name)
+    except:
+        pass
+    final_error = ()
+    for name in exposed:
+        try:
+            reclaim(name)
+        except Exception as e:
+            final_error += (e)
+    if (final_error != ()):
+        raise final_error

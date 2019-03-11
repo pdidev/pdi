@@ -80,6 +80,7 @@ find_package(spdlog REQUIRED)
 find_package(Astyle)
 if("${ENABLE_PYTHON}")
 	find_package(pybind11 REQUIRED)
+	find_package(PythonPath REQUIRED)
 endif()
 if("${ENABLE_FORTRAN}")
 	find_package(Bpp REQUIRED)
@@ -223,7 +224,7 @@ if("${ENABLE_PYTHON}")
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/../include>"
 			PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 	)
-	set_property(TARGET pdi_python_module PROPERTY LIBRARY_OUTPUT_NAME pdi)
+	set_property(TARGET pdi_python_module PROPERTY LIBRARY_OUTPUT_NAME "_pdi")
 	set_property(TARGET pdi_python_module PROPERTY ENABLE_EXPORTS TRUE)
 	set_property(TARGET pdi_python_module PROPERTY C_STANDARD 99)
 	set_property(TARGET pdi_python_module PROPERTY C_STANDARD_REQUIRED TRUE)
@@ -232,18 +233,12 @@ if("${ENABLE_PYTHON}")
 	set_property(TARGET pdi_python_module PROPERTY CXX_STANDARD_REQUIRED TRUE)
 	set_property(TARGET pdi_python_module PROPERTY CXX_VISIBILITY_PRESET hidden)
 	set_property(TARGET pdi_python_module PROPERTY POSITION_INDEPENDENT_CODE ON)
-	execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-			"from distutils import sysconfig;print(sysconfig.get_python_lib(prefix='',plat_specific=True))"
-			OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_STRIP_TRAILING_WHITESPACE
-			RESULT_VARIABLE PDP_SUCCESS
-			OUTPUT_VARIABLE INSTALL_PYDSTPKGDIR
-			ERROR_VARIABLE  PDP_ERROR)
-	if(NOT "${PDP_SUCCESS}" EQUAL 0)
-		message(FATAL_ERROR "Error while locating python DIST_PACKAGE location:\n${PDP_ERROR}")
-	endif()
 	install(TARGETS pdi_python_module EXPORT PDI_EXPORT
-			LIBRARY DESTINATION "${INSTALL_PYDSTPKGDIR}"
-			ARCHIVE DESTINATION "${INSTALL_PYDSTPKGDIR}"
+			LIBRARY DESTINATION "${PythonPath_INSTALL_SITEARCHDIR}pdi"
+			ARCHIVE DESTINATION "${PythonPath_INSTALL_SITEARCHDIR}pdi"
+	)
+	install(DIRECTORY python/pdi
+			DESTINATION "${PythonPath_INSTALL_SITELIBDIR}"
 	)
 
 	if("${Astyle_FOUND}")

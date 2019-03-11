@@ -98,8 +98,9 @@ pytup pyversion(pytup pyexpected)
 } // namespace <anonymous>
 
 
-PYBIND11_MODULE(pdi, m)
+PYBIND11_MODULE(_pdi, m)
 {
+	m.attr("__name__") = "pdi._pdi"; // make this a private submodule of pdi
 	m.doc() = "PDI python public application API";
 	
 	static pybind11::exception<Error> exc(m, "Error");
@@ -134,7 +135,7 @@ PYBIND11_MODULE(pdi, m)
 		Paraconf_wrapper fw;
 		Ref r{
 			pybuf.mutable_data(),
-			[pybuf](void*){/* we just keep a pybuf copy to prevent dealloc */},
+			[pybuf](void*){/* keep pybuf copy to prevent deallocation of the underlying memory */},
 			python_type(pybuf),
 			static_cast<bool>(access & PDI_OUT),
 			static_cast<bool>(access & PDI_IN)

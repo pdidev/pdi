@@ -40,17 +40,17 @@ def init(dsize, pcoord):
         dat[:,0] = 1000000
     return dat
 
-def iter(cur, nxt):
-    assert len(cur.shape) == len(nxt.shape) == 2
-    assert cur.shape == nxt.shape
+def iter(cur, next):
+    assert len(cur.shape) == len(next.shape) == 2
+    assert cur.shape == next.shape
 
-    nxt[0,:] = cur[0,:]
-    nxt[:,0] = cur[:,0]
-    nxt[-1,:] = cur[-1,:]
-    nxt[:,-1] = cur[:,-1]
-    for yy in range(1, nxt.shape[0]-1):
-        for xx in range(1, nxt.shape[1]-1):
-            nxt[yy,xx] = cur[yy,xx] * .5 \
+    next[0,:] = cur[0,:]
+    next[:,0] = cur[:,0]
+    next[-1,:] = cur[-1,:]
+    next[:,-1] = cur[:,-1]
+    for yy in range(1, next.shape[0]-1):
+        for xx in range(1, next.shape[1]-1):
+            next[yy,xx] = cur[yy,xx] * .5 \
                         + cur[yy,xx-1] * .125 \
                         + cur[yy,xx+1] * .125 \
                         + cur[yy-1,xx] * .125 \
@@ -90,6 +90,7 @@ exchange.initialized = False
 
 
 if __name__ == '__main__':
+    
     if (len(argv) != 2):
         exit('Usage: {} <config_file>'.format(argv[0]))
     config_path = argv[1]
@@ -100,64 +101,58 @@ if __name__ == '__main__':
         except yaml.YAMLError as exc:
             exit(exc)
 
-    comm = pdi.init(MPI.COMM_WORLD, yaml.dump(config['pdi']))
+    main_comm = MPI.COMM_WORLD
+    pdi.init(yaml.dump(config['pdi']))
 
-    comm_rank = comm.Get_rank()
-    comm_size = comm.Get_size()
+    psize_1d = main_comm.Get_size()
+    pcoord_1d = main_comm.Get_rank()
 
     dsize = np.array(config['datasize'])
     psize = np.array([config['parallelism']['height'], config['parallelism']['width']])
     duration = np.array(config['duration'])
 
     assert dsize[0] % psize[0] == dsize[1] % psize[1] == 0
-    assert psize[0] * psize[1] == comm_size
+    assert psize[0] * psize[1] == psize_1d
     dsize[0] = dsize[0] // psize[0] + 2
     dsize[1] = dsize[1] // psize[1] + 2
 
-    cart_comm = comm.Create_cart(dims=psize, reorder=True)
-    pcoord = np.array(cart_comm.Get_coords(comm_rank))
+    cart_comm = main_comm.Create_cart(dims=psize, reorder=True)
+    pcoord = np.array(cart_comm.Get_coords(pcoord_1d))
     
-    pdi.share('dsize', dsize, pdi.OUT)
-    pdi.reclaim('dsize')
-    pdi.share('psize', psize, pdi.OUT)
-    pdi.reclaim('psize')
-    pdi.share('pcoord', pcoord, pdi.OUT)
-    pdi.reclaim('pcoord')
+    pdi.expose('dsize', dsize, pdi.OUT)
+    pdi.expose('psize', psize, pdi.OUT)
+    pdi.expose('pcoord', pcoord, pdi.OUT)
 
     cur = init(dsize, pcoord)
-    nxt = np.zeros(cur.shape)
+    next = np.zeros(cur.shape)
+
     pdi.event('main_loop')
     start = MPI.Wtime()
-
     ii, next_reduce = np.array(0), np.array(0)
     while(True):
-        pdi.share('iter', ii, pdi.INOUT)
-        pdi.share('main_field', cur, pdi.INOUT)
-        pdi.event('newiter')
-        pdi.reclaim('main_field')
-        pdi.reclaim('iter')
+        pdi.multi_expose('newiter', [
+                         ('iter', ii, pdi.INOUT),
+                         ('main_field', cur, pdi.INOUT)
+                         ])
 
-        iter(cur, nxt)
-        exchange(cart_comm, nxt)
-        nxt, cur = cur, nxt
+        iter(cur, next)
+        exchange(cart_comm, next)
+        next, cur = cur, next
+        
         if (ii >= next_reduce):
             local_time, global_time = np.array(MPI.Wtime() - start), np.array(0.0)
-            comm.Allreduce([local_time, MPI.DOUBLE], [global_time, MPI.DOUBLE], op=MPI.MAX)
+            main_comm.Allreduce([local_time, MPI.DOUBLE], [global_time, MPI.DOUBLE], op=MPI.MAX)
             if (global_time >= duration):
-                if (comm_rank == 0):
+                if (pcoord_1d == 0):
                     print("iter={:7d}; time={:7.3f}; STOP!!!".format(int(ii), float(global_time)))
                 break
             rem_iter = int(.9 * (duration - global_time) * (ii+1) / (global_time + 0.1))
             rem_iter = 1 if rem_iter < 1 else rem_iter
             next_reduce = ii + rem_iter
-            if (comm_rank == 0):
+            if (pcoord_1d == 0):
                 print("iter={:7d}; time={:7.3f}; next_reduce={:7d}".format(int(ii), float(global_time), int(next_reduce)))
         ii+=1
 
     pdi.event('finalization')
-    pdi.share('iter', ii, pdi.OUT)
-    pdi.reclaim('iter')
-    pdi.share('main_field', cur, pdi.OUT)
-    pdi.reclaim('main_field')
-
-    MPI.Finalize()
+    pdi.expose('iter', ii, pdi.OUT)
+    pdi.expose('main_field', cur, pdi.OUT)

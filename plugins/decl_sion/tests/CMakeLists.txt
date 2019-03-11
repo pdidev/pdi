@@ -36,14 +36,14 @@ set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 add_executable(decl_sion_01_c decl_sion_test_01.c)
 target_link_libraries(decl_sion_01_c PDI::pdi MPI::MPI_C)
-add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 1 "$<TARGET_FILE:decl_sion_01_c>")
+add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_01_c>" ${MPIEXEC_POSTFLAGS})
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_01_F decl_sion_test_01.F90)
 target_link_libraries(decl_sion_01_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 1 "$<TARGET_FILE:decl_sion_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
+add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_01_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
 endif("${ENABLE_FORTRAN}")
 
 
@@ -51,14 +51,14 @@ endif("${ENABLE_FORTRAN}")
 
 add_executable(decl_sion_02_c decl_sion_test_02.c)
 target_link_libraries(decl_sion_02_c PDI::pdi MPI::MPI_C)
-add_test(NAME decl_sion_02_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_02_c>")
+add_test(NAME decl_sion_02_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_02_c>" ${MPIEXEC_POSTFLAGS})
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_02_F decl_sion_test_02.F90)
 target_link_libraries(decl_sion_02_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_sion_02_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_02_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02.yml")
+add_test(NAME decl_sion_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02.yml")
 endif("${ENABLE_FORTRAN}")
 
 
@@ -66,14 +66,14 @@ endif("${ENABLE_FORTRAN}")
 
 add_executable(decl_sion_03_c decl_sion_test_03.c)
 target_link_libraries(decl_sion_03_c PDI::pdi MPI::MPI_C)
-add_test(NAME decl_sion_03_c COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_03_c>")
+add_test(NAME decl_sion_03_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_03_c>" ${MPIEXEC_POSTFLAGS})
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_sion_03_F decl_sion_test_03.F90)
 target_link_libraries(decl_sion_03_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_03_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_sion_03_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_sion_03_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03.yml")
+add_test(NAME decl_sion_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_03_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03.yml")
 endif("${ENABLE_FORTRAN}")
 
 

@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,53 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
-project(pdi_user_code_plugin LANGUAGES CXX)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if("${BUILD_TESTING}")
-	enable_language(C)
-endif()
+set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
 
-# Includes
-include(CTest)
-include(GNUInstallDirs)
-
-# Astyle
-find_package(Astyle)
-
-# PDI
-find_package(PDI REQUIRED)
-
-# The plugin
-add_library(pdi_user_code_plugin MODULE user_code.cxx)
-target_link_libraries(pdi_user_code_plugin PDI::pdi)
-set_target_properties(pdi_user_code_plugin PROPERTIES
-		CXX_STANDARD 11
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
-
-# Indentation
-if("${Astyle_FOUND}")
-	Astyle_add_indent(indent TEST
-			OPTIONS_FILE ../../docs/formating.astyle
-			user_code.cxx tests/*.c)
-endif()
-
-# Installation
-install(TARGETS pdi_user_code_plugin
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-)
-
-# Configuration validation
-if ("${BUILD_CFG_VALIDATOR}")
-	set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
-	find_package(PythonPath REQUIRED)
-	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
-			DESTINATION "${PythonPath_INSTALL_SITELIBDIR}/")
-endif()
-
-# Tests
-if("${BUILD_TESTING}")
-	add_subdirectory(tests/)
-endif()
+add_executable(pycall_01_c pycall_test_01.c)
+target_link_libraries(pycall_01_c PDI::pdi)
+add_test(NAME pycall_01_c COMMAND pycall_01_c)

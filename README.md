@@ -37,4 +37,4 @@ make install
 
 If this does not work, if you want to select the features you want or which
 dependencies to install, please look at the 
-[advanced installation instructions](https://pdi.julien-bigot.fr/Installation.html).
+[advanced installation instructions](https://pdi.julien-bigot.fr/master/Installation.html).

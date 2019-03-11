@@ -4,7 +4,7 @@ contributions.
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Main library maintainer
-* Decl'HDF5 v1 & v3, FTI, test & User-code v2 plugins
+* Decl'HDF5 v1 & v3, FTI, pycall, test & User-code v2 plugins
 
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Initial FTI plugin

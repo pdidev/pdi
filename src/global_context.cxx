@@ -80,7 +80,8 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
 	// case where the library was not prelinked
 	if (!plugin_ctor_uncast) {
 		string libname = string{"libpdi_"} + plugin_name + string{"_plugin.so"};
-		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW);
+		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
+		void* lib_handle = dlopen(libname.c_str(), (RTLD_LAZY|RTLD_GLOBAL));
 		if (!lib_handle) {
 			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin file: %s", plugin_name, dlerror()};
 		}

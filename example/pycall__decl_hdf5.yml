@@ -1,0 +1,42 @@
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [60, 12]
+# degree of parallelism
+parallelism: { height: 1, width: 1 }
+
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
+    pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
+  data: # type of values for which PDI does not keep a copy
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+  
+  plugins:
+    mpi:
+    pycall:
+      on_event:
+        newiter:
+          exec: "if iter<10: transformed_field = dat*4; pdi.share('transformed_field', transformed_field, pdi.OUT); pdi.reclaim('transformed_field')"
+          with: { iter: $iter, dat: '$main_field' }
+    decl_hdf5:
+      file: data.h5
+      communicator: $MPI_COMM_WORLD # the MPI communicator used for HDF5 parallel synchronized write
+      datasets: # type of the datasets to create in file
+        data:
+          type: array
+          subtype: double
+          size: [10, '$psize[0]*($dsize[0]-2)', '$psize[1]*($dsize[1]-2)']
+      write:
+        transformed_field: # the name of the data to write
+          dataset: data
+          when: '$iter<10'   # do only write the first 10 iterations (0...9)
+          memory_selection:  # exclude ghosts from the data in memory
+            size:  ['$dsize[0]-2', '$dsize[1]-2']
+            start: [1, 1]
+          dataset_selection: # only write into a single slice in time
+            size:  [1, '$dsize[0]-2', '$dsize[1]-2']
+            start: [$iter, '($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']

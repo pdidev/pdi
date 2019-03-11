@@ -51,21 +51,21 @@ endif("${ENABLE_FORTRAN}")
 
 add_executable(decl_hdf5_02_C decl_hdf5_test_02.c)
 target_link_libraries(decl_hdf5_02_C PDI::pdi MPI::MPI_C)
-add_test(NAME decl_hdf5_02_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_hdf5_02_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
+add_test(NAME decl_hdf5_02_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_hdf5_02_F decl_hdf5_test_02.F90)
 target_link_libraries(decl_hdf5_02_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_hdf5_02_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
+add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
 endif("${ENABLE_FORTRAN}")
 
 
 # slicing mechanism
 
 if("${ENABLE_FORTRAN}")
-add_test(NAME decl_hdf5_03_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 2 "$<TARGET_FILE:decl_hdf5_02_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_03.yml" "test_03_on")
+add_test(NAME decl_hdf5_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_03.yml" "test_03_on")
 endif("${ENABLE_FORTRAN}")
 
 
@@ -73,14 +73,14 @@ endif("${ENABLE_FORTRAN}")
 
 add_executable(decl_hdf5_04_C decl_hdf5_test_04.c)
 target_link_libraries(decl_hdf5_04_C PDI::pdi MPI::MPI_C)
-add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_04_C>")
+add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_C>" ${MPIEXEC_POSTFLAGS})
 
 if("${ENABLE_FORTRAN}")
 add_executable(decl_hdf5_04_F decl_hdf5_test_04.F90)
 target_link_libraries(decl_hdf5_04_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_04_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_hdf5_04_F COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_04_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04.yml")
+add_test(NAME decl_hdf5_04_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04.yml")
 endif("${ENABLE_FORTRAN}")
 
 
@@ -88,21 +88,21 @@ endif("${ENABLE_FORTRAN}")
 
 add_executable(decl_hdf5_05_C decl_hdf5_test_05.c)
 target_link_libraries(decl_hdf5_05_C PDI::pdi MPI::MPI_C)
-add_test(NAME decl_hdf5_05_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_05_C>")
+add_test(NAME decl_hdf5_05_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_05_C>" ${MPIEXEC_POSTFLAGS})
 
 
 # 
 
 add_executable(decl_hdf5_06_C decl_hdf5_test_06.c)
 target_link_libraries(decl_hdf5_06_C PDI::pdi MPI::MPI_C)
-add_test(NAME decl_hdf5_06_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 4 "$<TARGET_FILE:decl_hdf5_06_C>")
+add_test(NAME decl_hdf5_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_06_C>" ${MPIEXEC_POSTFLAGS})
 
 
 # bcommunicator as a reference
 
 add_executable(decl_hdf5_07_C decl_hdf5_test_07.c)
 target_link_libraries(decl_hdf5_07_C PDI::pdi MPI::MPI_C)
-add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "mpirun" -n 8 "$<TARGET_FILE:decl_hdf5_07_C>")
+add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_07_C>" ${MPIEXEC_POSTFLAGS})
 
 
 # Positive Config tests
