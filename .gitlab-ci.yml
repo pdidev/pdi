@@ -10,8 +10,9 @@ pages:
     - cd build
     - cmake -DUSE_DEFAULT=EMBEDDED -DBUILD_CFG_VALIDATOR=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_MPI_PLUGIN=OFF -DBUILD_TESTING=OFF -DENABLE_FORTRAN=ON -DENABLE_PYTHON=ON ..
     - make doc
-    - if [ -z "${CI_COMMIT_TAG}" ]; then mkdir -p "../public/${CI_COMMIT_REF_NAME}"; mv pdi/src/PDI-build/docs/html "../public/${CI_COMMIT_REF_NAME}"; fi
-    - if [ -n "${CI_COMMIT_TAG}" ]; then mkdir -p "../public/${CI_COMMIT_TAG}"; mv pdi/src/PDI-build/docs/html "../public/${CI_COMMIT_TAG}"; fi
+    - mkdir -p "../public/"
+    - if [ -z "${CI_COMMIT_TAG}" ]; then mv pdi/src/PDI-build/docs/html "../public/${CI_COMMIT_REF_NAME}"; fi
+    - if [ -n "${CI_COMMIT_TAG}" ]; then mv pdi/src/PDI-build/docs/html "../public/${CI_COMMIT_TAG}"; fi
   artifacts:
     paths:
       - public
