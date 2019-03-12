@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE gltrace SYSTEM "./gltrace-config.dtd">
+<gltrace>
+  <filelist>
+    <pingresults file="log-results"/>
+    <tracefile file="cubelogfilechiricahua"/>
+    <tracefile file="cubelogfilekanza"/>
+    <tracefile file="cubelogfileyurok"/>
+  </filelist>
+
+  <hostlist>
+    <host id="chiricahua" method="AVERAGE">
+      <logger id="LOG/log-chiricahua"/>
+    </host>
+
+    <host id="kanza" method="AVERAGE">
+      <logger id="LOG/log-kanza"/>
+    </host>
+
+    <host id="yurok" method="AVERAGE">
+      <logger id="LOG/log-yurok"/>
+    </host>
+  </hostlist>
+
+  <objectlist>
+    <module id="affich" host="chiricahua">
+      <display active="YES" pos="1">
+        <line color="LIGHT_GREEN"/>
+        <text color="WHITE" text="affich:chiricahua" pos="up"/>
+      </display>
+    </module>
+
+    <module id="color" host="kanza">
+      <display active="YES" pos="2">
+        <line color="GREEN"/>
+        <text color="WHITE" text="color:kanza" pos="up"/>
+      </display>
+    </module>
+
+    <module id="coor" host="yurok">
+      <display active="YES" pos="0">
+        <line color="GREEN"/>
+        <text color="WHITE" text="coor:yurok" pos="up"/>
+      </display>
+    </module>
+  </objectlist>
+
+  <tracelist>
+    <trace object="color" name="waitBegin">
+      <shot id="1"><datatype/></shot>
+    </trace>
+
+    <trace object="color" name="waitEnd">
+      <shot id="2"><datatype/></shot>
+    </trace>
+
+    <trace object="color" name="outcolor">
+      <shot id="3"><datatype/></shot>
+    </trace>
+
+    <trace object="affich" name="waitBegin">
+      <shot id="4"><datatype/></shot>
+    </trace>
+
+    <trace object="affich" name="waitEnd">
+      <shot id="5"><datatype/></shot>
+    </trace>
+
+    <trace object="affich" name="incoor">
+      <shot id="6"><datatype/></shot>
+    </trace>
+
+    <trace object="affich" name="incolor">
+      <shot id="7"><datatype/></shot>
+    </trace>
+
+    <trace object="coor" name="waitBegin">
+      <shot id="8"><datatype/></shot>
+    </trace>
+
+    <trace object="coor" name="waitEnd">
+      <shot id="9"><datatype/></shot>
+    </trace>
+
+    <trace object="coor" name="outcoor">
+      <shot id="10"/>
+    </trace>
+  </tracelist>
+
+  <eventlist>
+    <event name="color:waitBegin">
+      <trace object="color" name="waitBegin"/>
+      <display>
+        <verticalline color="GREEN" />
+      </display>
+    </event>
+
+    <event name="color:waitEnd">
+      <trace object="color" name="waitEnd"/>
+      <display active="YES">
+        <verticalline color="RED" />
+      </display>
+    </event>
+
+    <event name="color:outcolor">
+      <trace object="color" name="outcolor"/>
+      <display active="YES">
+        <verticalline color="ORANGE" width="0.4"/>
+      </display>
+    </event>
+
+    <event name="affich:waitBegin">
+      <trace object="affich" name="waitBegin"/>
+      <display active="YES">
+        <verticalline color="GREEN" />
+      </display>
+    </event>
+
+    <event name="affich:waitEnd">
+      <trace object="affich" name="waitEnd"/>
+      <display active="YES">
+        <verticalline color="RED"/>
+      </display>
+    </event>
+
+    <event name="affich:incoor">
+      <trace object="affich" name="incoor"/>
+      <display active="YES">
+        <verticalline color="YELLOW" width="0.4"/>
+      </display>
+    </event>
+
+    <event name="affich:incolor">
+      <trace object="affich" name="incolor"/>
+      <display active="YES">
+        <verticalline color="ORANGE" width="0.4"/>
+      </display>
+    </event>
+
+    <event name="coor:waitBegin">
+      <trace object="coor" name="waitBegin"/>
+      <display active="YES">
+        <verticalline color="GREEN"/>
+      </display>
+    </event>
+
+    <event name="coor:waitEnd">
+      <trace object="coor" name="waitEnd"/>
+      <display active="YES">
+        <verticalline color="RED"/>
+      </display>
+    </event>
+
+    <event name="coor:outcoor">
+      <trace object="coor" name="outcoor"/>
+      <display active="YES">
+        <verticalline color="YELLOW" width="0.4" />
+      </display>
+    </event>
+  </eventlist>
+
+  <linklist>
+    <link name="affich:wait">
+      <source name="affich:waitBegin"/>
+      <destination name="affich:waitEnd"/>
+      <match/>
+      <display active="YES">
+        <objectline color="RED"/>
+      </display>
+    </link>
+
+    <link name="coor:wait">
+      <source name="coor:waitBegin"/>
+      <destination name="coor:waitEnd"/>
+      <match/>
+      <display active="YES">
+        <objectline color="RED"/>
+      </display>
+    </link>
+
+    <link name="color:wait">
+      <source name="color:waitBegin"/>
+      <destination name="color:waitEnd"/>
+      <match/>
+      <display active="YES">
+        <objectline color="RED"/>
+      </display>
+    </link>
+
+    <link name="coor:message">
+      <source name="coor:outcoor"/>
+      <destination name="affich:incoor"/>
+      <match/>
+      <display active="YES">
+        <messline src="LIGHT_YELLOW" dest="DARK_YELLOW"/>
+      </display>
+    </link>
+
+    <link name="color:message">
+      <source name="color:outcolor"/>
+      <destination name="affich:incolor"/>
+      <match/>
+      <display active="YES">
+        <messline src="LIGHT_ORANGE" dest="DARK_ORANGE"/>
+      </display>
+    </link>
+  </linklist>
+</gltrace>

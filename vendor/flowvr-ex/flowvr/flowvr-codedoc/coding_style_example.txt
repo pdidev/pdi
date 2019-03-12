@@ -1,0 +1,155 @@
+/******************************************************************
+*                                                                 *
+*       File : <place-file-name-here>                             *
+*                                                                 *
+*                                                                 *
+*       Contact : <author-information-here>                       *
+*                                                                 *
+******************************************************************/
+
+#ifndef __TESTCLASS__
+#define __TESTCLASS__
+
+///////////////////////////////////////////////////////////////////
+// 
+// Documentation styles for FlowVR:
+//
+// see also: http://www.doxygen.nl/docblocks.html
+///////////////////////////////////////////////////////////////////
+
+namespace <namespace-name>
+{
+	namespace <sub-namespace-name>
+	{
+		/** (using JavaDoc style block comments)
+		 * @brief always start with a brief comment. The comment can span several lines
+		 *        as a single empty line ends the brief comment. The brief comment should give
+		 *        a coarse idea about where and when to use the class described here.
+		 *
+		 *  The above empty line ends the brief comment. The remainder of this comment is
+		 *  the long comment and should be outlining more details about the usage of this class.
+		 *  - you can use the '-' to start bullet-lists
+		 *  - this is the second bullet 
+		 *    -# this is a sublist prefixed with a, b, and so on
+		 *    -# more details on list are found here: http://www.doxygen.nl/lists.html
+		 *
+		 * Links can be put directly: http://flowvr.sf.net. A comprehensive list of commands can 
+		 * be found here: http://www.doxygen.nl/commands.html.
+		 *
+		 * we use the ingroup tag here to move the class to a specially given group
+		 * @ingroup tests
+		 *
+		 * General remarks about the outline of a class:
+		 * - please use javadoc style documentation
+		 * - 
+		 * - order attributes according to their visibility in the order: public / protected / private
+		 * - please avoid repetitive documentation of a method (e.g. construction like:
+		 *   string getName() const -> 'returns the name', or TestClass() -> 'Constructor')
+		 * - please always provide a brief description
+		 * - please describe conditions of the input variables for each method (e.g., range,
+		 *   invalid values, implicit structures and the like...)
+		 * - try to give pre- and postconditions for method calls if possible
+		 * - try to document what is not obvious and possible side-effects  
+		 */
+		class TestClass
+		{
+			public:
+			/**
+			 * @brief this is just a test method.
+			 *
+			 * [long description follows] The test method outputs arg1 times string arg2 to stdout.
+			 * It uses <i>printf</i> functionality for this. This method is not thread safe.
+			 * [as you can see, try to document what is NOT obvious about the method, but you think
+			 * could be important.]
+			 * [note also, that we define post and pre conditions here]
+			 *
+			 * @pre  arg1 >= 0
+			 * @post none
+			 *
+			 * @return a value > 0 in case of error, 0 if everything went ok, negative return values
+			 *          are not defined. 
+			 * @param arg1 any non-negative value. Providing a negative value leads to undefined results.
+			 * @param arg2 a (possibly empty) string to repeat arg1 times.
+			 * @see testMethod2
+			 *
+			 * @remark we did not document how the color coding within the string is.
+			 * @todo create documentation for the syntax of the color coding within the string.
+			 *
+			 */
+			int testMethod( int arg1, string arg2 ) const;
+			
+			/**
+			 * @brief macro function that will call testMethod(10, arg1).
+			 *
+			 * This method is just a macro for calling testMethod() with the first parameter
+			 * set to 10. This is a common use case for our scenario.
+			 *
+			 * @return see return value of testMethod
+			 * @param arg1 a (possibly empty) string to be output 10 times
+			 * @see testMethod()
+			 */
+			 int testMethod2( string arg1 ) const;
+			 
+			/**
+			 * @brief macro function the will call testMethod2(arg1) 10 times.
+			 *
+			 * This method is just a macro for calling testMethod2 10 times.
+			 * This is a common use case for out scenario.
+			 *
+			 * @return see return value of testMethod2
+			 * @param arg1 a (possibly empty) string to be output 100 times
+			 * @see testMethod2(), testMethod()
+			 * @bug Sometimes, the output string is only repeated 99 times.
+			 *      Do not rely on this function working too heavily.
+			 * @todo fix the bug given above.
+			 */
+			 
+			 
+			 /**
+			  * @brief the output can be colored, according to this value set
+			  * @see setColor()
+			  */
+			 enum OutputMode
+			 {
+			 	MD_NORMAL,    /**< output with normal colors */
+			 	MD_COLOR_RED, /**< output with console coloring set to red */
+			 	MD_END,       /**< end delimiter, do not use */ 
+			 };
+			 
+			 /**
+			  * @brief switch console console color.
+			  *
+			  * This method can be used to switch console color for the output.
+			  * @deprecated this method is deprecated. The color formatting now is part of
+			  *             the string given.
+			  * @todo remove this method for the upcoming release
+			  * @retval success always true
+			  * @param md the mode to apply for the next output.
+			  * @see OutputMode()
+			  */
+			 bool setColor( OutputMode md );
+			 
+			 /**
+			  * @brief retrieve the current color mode for the text output.
+			  *
+			  * This method can be used to retrieve the current color output as it
+			  * was set using setColor().
+			  *
+			  * @deprecated this method is deprecated. The color formatting is now part
+			  *             of the string given.
+			  * @todo remove this method for the upcoming release.
+			  * @retval color the current color for text output
+			  */
+			 OutputMode getColor() const;
+			  
+			protected:
+			 // protected members go here
+			private:
+			 // private members go here
+		}; // class TestClass
+		
+	} // namespace <sub-namespace-name>
+} // namespace <namespace-name>	
+
+
+#endif // __TESTCLASS__

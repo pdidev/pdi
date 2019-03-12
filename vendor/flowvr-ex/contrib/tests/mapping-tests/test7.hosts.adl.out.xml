@@ -1,0 +1,75 @@
+        <hostlist>
+            <host name="pc2" from="primes_parallel.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_parallel.csv,capture" />
+            </hostlist>
+        <hostlist>
+            <host name="pc3" from="primes_parallel.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc3" from="primes_parallel.csv,visu" />
+            </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_parallel.csv" />
+            <host name="pc1" from="primes_parallel.csv" />
+            <host name="pc1" from="primes_parallel.csv" />
+            <host name="pc1" from="primes_parallel.csv" />
+            <host name="pc1" from="primes_parallel.csv" />
+            <host name="pc1" from="primes_parallel.csv" />
+            <host name="pc1" from="primes_parallel.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute,primes/compute/0" />
+            </hostlist>
+                <hostlist>
+                    <host name="pc1" from="primes_parallel.csv,compute,primes/compute/0,Node" />
+                </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_parallel.csv,compute,primes/compute/0,primes/cPrimesRequest2/Node" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallel.csv,compute,primes/compute/0" />
+            </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_parallel.csv,capture,primes/capture/singleton" />
+            </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_parallel.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_parallel.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                    <hostlist>
+                        <host name="pc3" from="primes_parallel.csv,visu,primes/visu/singleton" />
+                    </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_parallel.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_parallel.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_parallel.csv,capture,primes/capture/singleton" />
+                </hostlist>

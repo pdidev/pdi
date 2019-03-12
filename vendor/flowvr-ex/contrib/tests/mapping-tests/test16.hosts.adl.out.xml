@@ -1,0 +1,42 @@
+        <hostlist>
+            <host name="pc1" from="primes_localhost1.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_localhost1.csv,capture" />
+            </hostlist>
+        <hostlist>
+            <host name="pc2" from="primes_localhost1.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_localhost1.csv,visu" />
+            </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_localhost1.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_localhost1.csv,compute" />
+            </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_localhost1.csv,compute,primes/compute/0" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_localhost1.csv,capture,primes/capture/singleton" />
+            </hostlist>
+                <hostlist>
+                    <host name="pc1" from="primes_localhost1.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc1" from="primes_localhost1.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                    <hostlist>
+                        <host name="pc2" from="primes_localhost1.csv,visu,primes/visu/singleton" />
+                    </hostlist>
+                <hostlist>
+                    <host name="pc1" from="primes_localhost1.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc1" from="primes_localhost1.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc1" from="primes_localhost1.csv,capture,primes/capture/singleton" />
+                </hostlist>

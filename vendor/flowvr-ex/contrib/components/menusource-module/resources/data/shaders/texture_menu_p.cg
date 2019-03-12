@@ -1,0 +1,13 @@
+// Texture Pixel Shader
+// modulate texel and given color
+
+half4 main(
+  half2 ptex0   : TEXCOORD0,
+  half4 pcolor  : COLOR,
+  
+  uniform sampler2D texture
+) : COLOR
+{
+	// return texel modulated with the given color (and alpha) 
+	return tex2D(texture, ptex0) * pcolor;
+}

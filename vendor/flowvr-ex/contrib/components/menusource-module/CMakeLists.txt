@@ -1,0 +1,84 @@
+PROJECT(ceg-renderer)
+
+SET(PROJECT_VERSION_MAJOR "1")
+SET(PROJECT_VERSION_MINOR "0")
+SET(PROJECT_VERSION_PATCH "0")
+SET(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+
+
+#Require cmake 2.8 at least
+IF(DEFINED CMAKE_PATCH_VERSION)
+  CMAKE_MINIMUM_REQUIRED(VERSION "2.8" FATAL_ERROR)
+ELSE(DEFINED CMAKE_PATCH_VERSION)
+  MESSAGE(FATAL_ERROR "Your version of CMake is too old, please use at least cmake 2.6")
+ENDIF(DEFINED CMAKE_PATCH_VERSION)
+
+# Application  Name
+SET(app menusource)
+
+# INSTALLATION DIRECTORIES
+
+SET(INCLUDE_DIR include/flowvr-contrib/components)
+SET(COMP_LIB_DIR share/flowvr-contrib/lib)
+SET(COMP_INSTALL_DIR share/flowvr-contrib)
+SET(BIN_DIR share/flowvr-contrib/bin)
+SET(MODULE_BIN_DIR share/flowvr-contrib/bin)
+SET(MENURENDER_DATA_PREFIX share/flowvr-contrib/menusource/data)
+
+
+
+
+# CHECK FLOWVR DEPENDENCY
+FIND_PACKAGE(FlowVR REQUIRED)
+IF(FLOWVR_FOUND)
+ MESSAGE(STATUS "FlowVR Found")
+ELSE(FLOWVR_FOUND)
+ MESSAGE(SEND_ERROR "FlowVR Not Found")
+ENDIF(FLOWVR_FOUND)
+
+# CHECK FLOWVRRENDER DEPENDENCY
+FIND_PACKAGE(FlowVRRender REQUIRED)
+IF(FLOWVRRENDER_FOUND)
+ MESSAGE(STATUS "FlowVR-Render Found")
+ELSE(FLOWVRRENDER_FOUND)
+ MESSAGE(SEND_ERROR "FlowVR-Render Not Found")
+ENDIF(FLOWVRRENDER_FOUND)
+
+# Configuration Files 
+
+FOREACH(shell sh )
+  CONFIGURE_FILE(config/app-config.${shell}.in ${CMAKE_BINARY_DIR}/${app}-config.${shell} @ONLY)
+  INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/${app}-config.${shell} DESTINATION ${BIN_DIR})
+ENDFOREACH(shell sh )
+
+#INSTALL(FILES config/${app}.csv DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+ADD_SUBDIRECTORY(src)
+
+OPTION(BUILD_FLOWVR_CONTRIB_CEGUI_MENU_EXAMPLE "Example menusource" FALSE)
+MARK_AS_ADVANCED(BUILD_FLOWVR_CONTRIB_MENU_EXAMPLE)
+IF(BUILD_FLOWVR_CONTRIB_MENU_EXAMPLE)
+		ADD_SUBDIRECTORY(example)
+ENDIF(BUILD_FLOWVR_CONTRIB_MENU_EXAMPLE)
+
+
+# INSTALL INCLUDE FILES
+FILE(GLOB include-files ${COMP_INCLUDE_DIR}/*.h) 
+INSTALL(FILES ${include-files} DESTINATION ${COMP_INCLUDE_DIR})
+
+#INSTALL RESSOURCES FILES
+INSTALL(DIRECTORY resources/data/shaders DESTINATION ${MENURENDER_DATA_PREFIX} REGEX ".svn" EXCLUDE )
+INSTALL(DIRECTORY resources/data/menurc  DESTINATION ${MENURENDER_DATA_PREFIX} REGEX ".svn" EXCLUDE )
+
+
+#INSTALL CONFIG FILES
+CONFIGURE_FILE(config/menusource-config.xml.in ${CMAKE_BINARY_DIR}/menusource-config.xml @ONLY)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/menusource-config.xml 
+              
+              config/menusource.xml
+              DESTINATION ${MENURENDER_DATA_PREFIX}/config)
+
+INSTALL(CODE "MESSAGE(STATUS \"!!!Rember to execute \n. ${BIN_DIR}/${app}-config.sh\n to properly run the examples \n(include it in your .bashrc for a permanent installation)\") ")
+
+
+ADD_SUBDIRECTORY(tests)

@@ -1,0 +1,16 @@
+Tests for mapping
+
+
+Based on the script:
+
+test.sh 
+
+execute flowvr, grep hosts on outputs and compare to reference files. 
+
+To generate the reference results. Normally not necessary as the reference files are provided .To do only fi some change in .xml outputs
+
+test-gen.sh
+
+To run the tests:
+
+make-app.sh

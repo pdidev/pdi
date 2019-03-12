@@ -1,0 +1,120 @@
+==========================
+##### FlowVR glGraph #####
+==========================
+
+==============
+(June 8, 2011)
+==============
+\\\\
+Working:
+\\
+
+	+------ Non-hierarchical graphs ( .net.xml ) -----+
+	|
+	|	\\ B-splines correctly generated
+	|
+	|	\\ Everything else should work as the original,
+	|		except mouse control (left/right buttons switched)
+	|
+	+-------------------------------------------------+
+	
+	
+	+------ Hierarchical graphs ( .adl.out.xml ) -----+
+	|	
+	|	\1\ Load a file, generate a graph
+	|	\2\ Moving and zooming
+	|	\3\ ID and host treeviews
+	|	\4\ Snap to component/cluster from treeview
+	|	\5\ Search for component/cluster, snap to result in viewport
+	|	\6\ Export viewport as an image (.jpg)
+	|
+	+-------------------------------------------------+
+	
+\\\\
+Known issues:
+\\
+
+	+------ Platform related -------------------------+
+	|	
+	|	Toolbar doesn't show on MacOS
+	|		-> workaround: load graph from command line and
+	|			use the hotkeys (see documentation or help section).
+	|
+	+-------------------------------------------------+
+
+	+------ Hierarchical graphs ( .adl.out.xml ) -----+
+	|
+	|	\\ Double-clicking the "reload" button yields funny results.
+	|		Moving a little and clicking it again fixes it.
+	|
+	|	\\ Big, big graphs (such as GrImage's virtualization gate)
+	|		could break Graphviz DOT's layout algorithm.
+	|
+	|		A ticket was submitted on Graphviz's bugtracker:
+	|		http://www.graphviz.org/mantisbt/view.php?id=2098
+	|
+	+-------------------------------------------------+
+	
+	
+\\\\
+To-do:
+\\
+
+	+------ Application-wide -------------------------+
+	|
+	|	\\ Use a modern OpenGL API (currently using immediate mode and displaylists)
+	|	\\ GoogleMap-like mouse control
+	|	\\ Component selection and additional info
+	|	\\ remove DOT warning messages (font not found)
+	|	\\ Improve browsing of large graphs
+	|
+	+-------------------------------------------------+
+	
+	
+	+------ Related to .adl.out.xml format -----------+
+	|
+	|	\\ change parameter format from :
+	|			<ParamName>content</ParamName>
+	|		to:
+	|			<parameter id="ParamName">content<parameter>
+	|		
+	|		/!\ this will require some minor changes in adltree.cpp
+	|
+	|		The first format yields parsing errors when given a module such as
+	|		"4DViewsModule", since XML does not allow tags to begin with a digit.
+	|
+	+-------------------------------------------------+
+	
+	
+	
+////
+Figures:
+//
+
+## PROGRAM PIPELINE ##
+
+|==========================|     |=======================|    |==========================|
++--- ADL Interpretation ---+     +--- DOT Translation ---+    +--- Layout computation ---+
+|==========================|     |=======================|    |==========================|
+| Read .adl file, turn it  |---->| Browse that tree and  |    | Open .dot file,          |
+| into a tree structure.   |     | output, line per line,|--->| compute layout using     |----/
++--------------------------+     | a dot file to         |    | libgraph.                |
+                                 | represent it.         |    +--------------------------+
+                                 +-----------------------+
+
+
+     |===========================|
+     +--- Rendering structure ---+
+     |===========================|
+     | Create another tree       |         +--------+
+/--->| structure based on        |-------->| RENDER |
+     | Clusters, Edges and Nodes.|         +--------+
+     | Extract layout info.      |
+     +---------------------------+
+
+
+
+
+
+
+

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# A script to move all string referring to an installation path of a flowvr-
+# compilation run to another path (e.g.: adapt all *-config.sh files.
+#
+# Preconditions: 
+# 1) you have compiled 
+#    flowvr to "@CMAKE_INSTALL_PREFIX@"
+# 2) you moved the directory to <new-directory>
+# 3) you want to run it from that directory
+#  
+# Usage: 
+# 1) cd <new-directory>
+# 2) sh ./relocate.sh
+
+CREATION_DIR=$( echo "@CMAKE_INSTALL_PREFIX@" | sed 's/\//\\\//g' )
+CURRENT=$( pwd | sed 's/\//\\\//g' )
+
+for f in $( find . -name "*.sh" ); do
+	sed s/${CREATION_DIR}/${CURRENT}/g $f > $f.tmp;
+	mv $f.tmp $f;
+done

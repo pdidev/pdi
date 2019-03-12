@@ -1,0 +1,111 @@
+PROJECT(mplayer)
+
+ENABLE_TESTING()
+
+SET(PROJECT_VERSION_MAJOR "1")
+SET(PROJECT_VERSION_MINOR "0")
+SET(PROJECT_VERSION_PATCH "0")
+SET(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+
+
+# CMAKE SETTINGS
+
+#Require cmake 2.8 at least
+IF(DEFINED CMAKE_PATCH_VERSION)
+  CMAKE_MINIMUM_REQUIRED(VERSION "2.8" FATAL_ERROR)
+ELSE(DEFINED CMAKE_PATCH_VERSION)
+  MESSAGE(FATAL_ERROR "Your version of CMake is too old, please use at least cmake 2.6")
+ENDIF(DEFINED CMAKE_PATCH_VERSION)
+
+
+# Application  Name
+
+SET(app mplayer)
+
+# INSTALLATION DIRECTORIES
+
+SET(INCLUDE_DIR include)
+SET(COMP_INCLUDE_DIR include/${app}/components)  # Use namespace to define directory: include/name/space/components
+SET(LIB_DIR lib)
+SET(COMP_LIB_DIR lib)
+SET(BIN_DIR bin)
+SET(MODULE_DIR bin)
+SET(CMAKE_DIR share/${app}/cmake) # Use namespace to define directory: /share/name/space/cmake
+
+
+
+
+# CHECK FLOWVR DEPENDENCY
+
+FIND_PACKAGE(FlowVR REQUIRED)
+IF(FLOWVR_FOUND)
+ MESSAGE(STATUS "FlowVR Found")
+ELSE(FLOWVR_FOUND)
+ MESSAGE(SEND_ERROR "FlowVR Not Found")
+ENDIF(FLOWVR_FOUND)
+
+
+# CHECK FLOWVRRENDER DEPENDENCY
+FIND_PACKAGE(FlowVRRender REQUIRED)
+IF(FLOWVRRENDER_FOUND)
+ MESSAGE(STATUS "FlowVR-Render Found")
+ELSE(FLOWVRRENDER_FOUND)
+ MESSAGE(SEND_ERROR "FlowVR-Render Not Found")
+ENDIF(FLOWVRRENDER_FOUND)
+
+
+OPTION(BUILD_MODULES "build application  module binaries" TRUE)
+
+IF(BUILD_MODULES)
+  
+  #CHECK OPENGL  DEPENDENCY
+  
+  FIND_PACKAGE(OpenGL REQUIRED)
+  IF (OPENGL_FOUND) 
+    MESSAGE(STATUS  "OpenGL Found")
+  ELSE (OPENGL_FOUND) 
+   MESSAGE(FATAL_ERROR "OpenGL Not Found (required to compile modules)")
+   SET(BUILD_MODULE FALSE)
+ ENDIF (OPENGL_FOUND) 
+ 
+ #CHECK GLUT  DEPENDENCY
+ 
+ FIND_PACKAGE(GLUT REQUIRED)
+ IF (GLUT_FOUND) 
+   MESSAGE(STATUS  "GLUT Found")
+ ELSE (GLUT_FOUND) 
+   MESSAGE(FATAL_ERROR  "GLUT Not Found (required to compile modules)")
+   SET(BUILD_MODULE FALSE)
+ ENDIF (GLUT_FOUND) 
+ 
+ # CHECK THREADS DEPENDENCY
+ FIND_PACKAGE(Threads REQUIRED)
+
+ENDIF(BUILD_MODULES)
+
+
+
+
+# Configuration Files 
+
+FOREACH(shell sh)
+  CONFIGURE_FILE(config/app-config.${shell}.in ${app}-config.${shell} @ONLY)
+  INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/${app}-config.${shell} DESTINATION ${BIN_DIR})
+ENDFOREACH(shell sh)
+
+CONFIGURE_FILE(config/appConfig.cmake.in ${app}Config.cmake @ONLY)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/${app}Config.cmake   DESTINATION ${CMAKE_DIR})
+
+
+
+#INSTALL(FILES ${app}.csv example.arch.xml DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+
+ADD_SUBDIRECTORY(src)
+
+
+# INSTALL INCLUDE FILES
+FILE(GLOB include-files ${COMP_INCLUDE_DIR}/*.h) 
+INSTALL(FILES ${include-files} DESTINATION ${COMP_INCLUDE_DIR}$)
+
+INSTALL(CODE "MESSAGE(STATUS \"!!!Rember to include\n          ${BIN_DIR}/flowvr-${app}-config.sh\n into your .bashrc configuration file to properly run the examples\") ")

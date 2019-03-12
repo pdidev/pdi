@@ -1,0 +1,15 @@
+<config>
+	<ports>
+		<port name="pull" direction="in" stamps="segments" export="true"/>		
+	</ports>
+	<stamplists>
+		<stamplist name="segments" from="segment-test-stamps.xml"/>
+	</stamplists>
+	<code>
+		<path name="pull" plugin="pullsegment" in="pull"/>
+	</code>
+	<plugins>
+		<plugin name="pullsegment" so="pullSegmentPlug"/>
+	</plugins>
+	<services/>
+</config>

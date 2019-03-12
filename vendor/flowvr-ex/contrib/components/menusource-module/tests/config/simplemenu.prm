@@ -1,0 +1,39 @@
+# all paths are legal when executing 
+# in ${BALZAC_APP_DIR}/tests
+# ONLY
+
+# global setting for the test: the config prefix
+simplemenu:config-prefix=../balzac/config/
+
+# relative to that: the balzac-configuration to use
+simplemenu:portfile=balzac-autoboundstest.xml
+
+################################################################
+## BALZAC
+################################################################
+simplemenu/balzacbasic:services-Balzac-displayfile=../balzac/config/balzac-config.xml
+simplemenu/balzacbasic/BalzacBasic:plugins-bgimage-IMAGENAME=../balzac/gfx/flowvr-logo.png
+simplemenu/balzacbasic:dbgWait=false
+simplemenu/balzacbasic:initWait=false
+
+################################################################
+## MENU
+################################################################
+simplemenu/menusource:config-prefix=config/
+simplemenu/menusource:portfile=menusource.xml
+simplemenu/menusource:services-menusource-RESOURCECONF=config/cegui-rc.xml
+simplemenu/menusource:services-menusource-LOGLEVEL=4
+simplemenu/menusource:services-menusource-SCRIPT=console.lua
+simplemenu/menusource:services-menusource-WAITSCRIPT=true
+
+
+################################################################
+## SYNC FREQ
+################################################################
+simplemenu/menusource/sync:freq=150
+
+################################################################
+## VIEWER
+################################################################
+simplemenu/ViewerMesh:objFile=bunny2.obj
+simplemenu/ViewerMesh:mtxfile=matrix_transform.mtx

@@ -1,0 +1,49 @@
+FlowVR
+======
+
+Overview
+--------
+
+FlowVR is a middleware library that eases development and execution of
+high performance interactive applications requiring to harness the power of computing nodes distributed in a cluster or grid. 
+FlowVR has been used for virtual reality application, telepresence, multi-camera  real-time 3D modeling, in-situ visualization, 
+steering of parallel molecular dynamics applications, etc.     FlowVR  reuses  and  extends the  data  flow  paradigm
+commonly   used  for   scientific   visualization  environments.    An application  is  seen  as   a  set  of  possibly  distributed  modules
+exchanging  data. Different  module assemblies can be  specified  without modification or recompilation of the modules. The application developper does not have to 
+bother about networking issues. That's the job of FlowVR to manage and optimize data exchanges between modules.  FlowVR supports parallel modules, enabling to 
+harness existing MPI  codes for instance. This  feature is commonly used for in-situ visualization or computational steering. 
+
+FlowVR  is developed at INRIA / LIG   with code contrinbutions 
+from the  LIFO, Universite d'Orleans
+
+
+Installation
+------------
+
+FlowVR uses CMake for compilation.
+Its basic principle is to parse the CMakeLists.txt file, offer you
+compilation options and then generate makefiles accordingly.
+
+Create a BUILD directory, cd to it then call "ccmake ../."
+
+bIf you don't have ccmake or if you haven't installed the dependencies yet,
+it is time to do so using the provided script "flowvr-dep-install.sh".
+
+Choose the options you want to activate then press "c" for configure.
+A summary appears showing you the activated/disabled components, as well
+as any problem encountered. Press "e" to exit the summary. You might have
+to cycle through several configure cycles.
+
+When CMake is ready, it will offer you the option of generating makefiles
+by pressing "g".
+
+All that's left is to call them using "make" and "make install".
+
+
+Documentation
+-------------
+
+For a  more complete and  up-to-date documentation look at  the FlowVR
+documentation available online at:
+
+http://flowvr.sourceforge.net/FlowVRDoc.html

@@ -1,0 +1,28 @@
+FlowVR Base Libraries
+
+This package provides the flowvr-base and flowvr-mod libraries used by
+all other flowvr components. Please refer to INSTALL for installation
+instructions.
+
+
+FlowVR Modules Mini How To
+===========================
+
+A FlowVR module must use flowvr::ModuleAPIFactory::registerModule
+which returns an instance of flowvr::ModuleAPI.
+The method init of ModuleAPI must next be used to declare the
+input/output ports. The methods wait, get, put, alloc are then used to
+implement the main loop of the module. wait returns 0 on errors or
+when the module must be stopped.
+In the end the module must call the close method.
+
+Compilation
+-----------
+
+flowvr uses pkg-config to specify compilation and link parameters. You
+must specify the package name flowvr-mod (or flowvr-mod-debug for the
+debugging version) and --cflags for compilation or --libs for
+link. For example:
+
+  g++ -o get get.cpp `pkg-config flowvr-mod --cflags --libs`
+

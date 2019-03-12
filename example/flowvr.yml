@@ -1,0 +1,47 @@
+# duration in seconds
+duration: 15
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [128, 64]
+# degree of parallelism
+parallelism: { height: 4, width: 1 }
+
+# only the following config is passed to PDI
+pdi:
+  logging:
+    level: info
+
+  metadata: 
+    iter:   int
+    mpi_rank: int
+    mpi_size: int
+    dsize:  { size: 2, type: array, subtype: int }
+    psize:  { size: 2, type: array, subtype: int }
+    pcoord: { size: 2, type: array, subtype: int }
+  data:
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+  
+  plugins:
+    flowvr:
+      component: module
+      init_on: "init"
+      abort_on_finalize: true
+      wait_on: ["newiter", "main_loop"]
+      parallel:
+        set_rank: $mpi_rank
+        set_size: $mpi_size
+      output_ports:
+        heat:
+          data: main_field
+          copy_data_selection:
+            type: array
+            subtype: double
+            size: ['$dsize[0]', '$dsize[1]']
+            subsize: ['$dsize[0] - 2', '$dsize[1] - 2']
+            start: [1, 1]
+          stamps:
+            N:
+              type: {type: array, subtype: int, size: 2}
+              expression: ['$dsize[1] - 2', '$dsize[0] - 2']
+            P:
+              type: {type: array, subtype: int, size: 2}
+              expression: ['$pcoord[1] * ($dsize[1] - 2)' , '$pcoord[0] * ($dsize[0] - 2)']

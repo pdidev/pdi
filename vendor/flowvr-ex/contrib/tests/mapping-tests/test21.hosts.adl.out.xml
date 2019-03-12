@@ -1,0 +1,24 @@
+        <hostlist>
+            <host name="pc1" from="primes_propagecomposite0.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_propagecomposite0.csv,capture" />
+            </hostlist>
+        <hostlist>
+            <host name="pc2" from="primes_propagecomposite0.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_propagecomposite0.csv,visu" />
+            </hostlist>
+        <hostlist>
+            <host name="pc3" from="primes_propagecomposite0.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc3" from="primes_propagecomposite0.csv,composite_test_1" />
+            </hostlist>
+                <hostlist>
+                    <host name="pc3" from="primes_propagecomposite0.csv,composite_test_1,composite_test_2" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc3" from="primes_propagecomposite0.csv,composite_test_1,composite_test_2" />
+                </hostlist>

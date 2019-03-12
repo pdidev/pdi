@@ -1,0 +1,93 @@
+===============================
+	Filters example
+===============================
+What is this?
+=============
+
+This directory contains small test scripts that show how filters work.
+It also shows how to write modules in Python, using the Python module API.
+
+=======
+Running
+=======
+
+They can be tested by running
+
+  python test_merge.py && flowvr test
+
+As usual, you need to have a daemon running.
+Most of the tests use two basic modules.
+
+=============
+parrot.py XYZ
+=============
+
+  waits between 0.1 and 1 s and sends out a message containing XYZ and
+  the number of the message on its "out" port 
+
+=============
+ear.py 
+=============
+  displays all messages it receives on its "in" port
+
+=============
+test_merge.py
+=============
+
+2 parrots are saying A and B, merged by a FilterMerge into a single
+message sent to the ear.
+
+=================
+test_multiplex.py
+=================
+
+Parrots A and B are still speaking, but multiplex sends out the
+messages it receives immediately instead of combining the messages.
+
+===============
+test_discard.py
+===============
+
+A parrot speaks, but part of its messages are filtered out by a
+FilterDiscard controlled by a Master module.
+
+==============
+test_stop.py
+==============
+
+A parrot speaks, but part of its messages are stopped and buffered
+by a FilterStop controlled by a Master module.
+
+==============
+test_rotate.py
+==============
+
+Messages from the parrot are translated to uppercase by 2 translators
+in turn (because they are very slow). Messages are dispatched by a
+FilterRotate and combined by a FilterUnrotate.
+
+===============
+test_scatter.py
+===============
+
+Here a FilterScatter splits each message (a strophe from a poem) in
+parts and feeds each part to a different translator. The parts are
+combined again by a FilterMerge.
+
+===============
+test_maxfreq.py
+===============
+
+A SyncMaxFrequency controls the maximum frequency at which messages
+can go from the parrot to the ear. This is in combination with a
+Greedy. Depending on the Greedy's parameters messages are either:
+
+- transmitted in a FIFO (risking to oveflow memory because they are
+consumed slowly)
+
+- dropped when they are too old
+
+- concatenated to make one big message. 
+
+
+

@@ -1,0 +1,27 @@
+/******* COPYRIGHT ************************************************
+*                                                                 *
+*                             FlowVR                              *
+*                                                                 *
+*-----------------------------------------------------------------*
+* COPYRIGHT (C) 2003-2011                by                       *
+* INRIA and                                                       *
+* Laboratoire d'Informatique Fondamentale d'Orleans               *
+* (FRE 2490). ALL RIGHTS RESERVED.                                *
+*                                                                 *
+*   The source code is  covered by different licences,            *
+*   mainly  GNU LGPL and GNU GPL. Please refer to the             *
+*   copyright.txt file in each subdirectory.                      *
+*                                                                 *
+*-----------------------------------------------------------------*
+*                                                                 *
+*  Original Contributors:                                         *
+*    Jeremie Allard,                                              *
+*    Ronan Gaugne,                                                *
+*    Valerie Gouranton,                                           *
+*    Loick Lecointre,                                             *
+*    Sebastien Limet,                                             *
+*    Bruno Raffin,                                                *
+*    Sophie Robert,                                               *
+*    Emmanuel Melin.                                              *
+*                                                                 * 
+*******************************************************************

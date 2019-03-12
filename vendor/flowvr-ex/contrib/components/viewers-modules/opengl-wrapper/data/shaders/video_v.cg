@@ -1,0 +1,13 @@
+// Video Vertex Shader
+
+void main(
+  float4 position    : POSITION,
+  float2 texcoord0    : TEXCOORD0,
+  uniform float4x4 ModelViewProj,
+  out float4 ppos        : POSITION,
+  out half2 ptex0        : TEXCOORD0)
+{
+//    ppos = position;
+  ppos = mul(ModelViewProj, position);
+  ptex0 = (half2) texcoord0;
+}

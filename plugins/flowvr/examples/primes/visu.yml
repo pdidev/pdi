@@ -1,0 +1,50 @@
+logging:
+  level: info
+
+metadata:
+#tTempPrimeNumbers_shr size
+  tempPrimeNumbersMaxCount: int
+
+data:
+  wait: int
+#trace
+  keysPressedReceviedCount: int
+#connections status
+  primesInConnection: int
+  keysInConnection: int
+#payload
+  tTempPrimeNumbers_shr: {type: array, subtype: int, size: $tempPrimeNumbersMaxCount/4}
+#stamps
+  iterationCounterCapture: int
+  iterationCounterComputes: int
+  lastIterationComputeTime: int
+#keysIn
+  up: int
+  down: int
+  left: int
+  right: int
+
+plugins:
+  flowvr:
+    component: module
+    wait_on_data: wait
+    traces:
+      myTraceKeyPressedNotification:
+        on_data: keysPressedReceviedCount
+    input_ports:
+      keysIn:
+        isConnected: keysInConnection
+        event_button:
+          KEY_UP: up
+          KEY_DOWN: down
+          KEY_LEFT: left
+          KEY_RIGHT: right
+        stamps:
+          it: iterationCounterCapture
+      primesIn:
+        isConnected: primesInConnection
+        data: tTempPrimeNumbers_shr
+        size: tempPrimeNumbersMaxCount
+        stamps:
+          it: iterationCounterComputes
+          computationTimeIt: lastIterationComputeTime

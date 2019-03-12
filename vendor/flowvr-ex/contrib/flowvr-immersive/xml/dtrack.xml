@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="LATIN1" ?>
+<device name="DTrack">
+	<screen id="1">
+		<definition width="1920" height="1080"/>
+		<bottomleft x="-2.4" y="0.0" z="-1.35"/>
+		<bottomright x="" y="0.0" z="-1.35"/>
+		<topleft x="-2.4" y="2.7" z="-1.35"/>
+	</screen>
+	<screen id="2">
+		<definition width="1920" height="1080"/>
+		<bottomleft x="-2.4" y="0.0" z="1.35"/>
+		<bottomright x="" y="0.0" z="1.35"/>
+		<topleft x="-2.4" y="0.0" z="-1.35"/>
+	</screen>
+	<screen id="3">
+		<definition width="1920" height="1080"/>
+		<bottomleft x="-2.4" y="0.0" z="2.4"/>
+		<bottomright x="-2.4" y="0.0" z="-2.4"/>
+		<topleft x="-2.4" y="2.7" z="2.4"/>
+	</screen>
+	<screen id="4">
+		<definition width="1920" height="1080"/>
+		<bottomleft x="2.4" y="0.0" z="-2.4"/>
+		<bottomright x="2.4" y="0.0" z="2.4"/>
+		<topleft x="2.4" y="2.7" z="-2.4"/>
+	</screen>
+	<tracker2cave_mat>
+		<matrix values=""/>
+		<translation x="" y="" z=""/>
+		<rotation>
+			<axis x="" y="" z="" canonical="X||Y||Z"/> 
+			<angle radian="" degree=""/><
+		</rotation>
+	</tracker2cave_mat>
+	<post_mat>
+		<right values=""/>
+		<left values=""/>
+	</post_mat>
+</device>

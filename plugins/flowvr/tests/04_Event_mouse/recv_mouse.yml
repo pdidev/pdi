@@ -1,0 +1,22 @@
+logging:
+  level: debug
+
+data:
+  wait: int
+  pos_xy: {type: array, subtype: float, size: 2}
+  left_button: int
+  right_button: int
+  middle_button: int
+
+plugins:
+  flowvr:
+    component: module
+    wait_on_data: wait
+    abort_on: "abort"
+    input_ports:
+      mouseIn:
+        event_mouse:
+          POS_XY: pos_xy
+          LEFT_BUTTON: left_button
+          RIGHT_BUTTON: right_button
+          MIDDLE_BUTTON: middle_button

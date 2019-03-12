@@ -1,0 +1,4 @@
+#!/bin/sh
+
+export PATH="@MODULE_DIR@:@BIN_DIR@${PATH:+:${PATH}}"
+export @app@_DIR="@CMAKE_DIR@"

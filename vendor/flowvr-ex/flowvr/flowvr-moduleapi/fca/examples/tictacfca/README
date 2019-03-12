@@ -1,0 +1,23 @@
+This is the tictac example for FlowVR.
+In order to start it, do:
+
+* install flowvr and ensure the source the configuration .sh
+* type
+  ./make-app.sh
+  flowvr-demo-tictac.sh
+  
+* in order to stop it, type "STOP" in the console
+
+The flowvr-demo-fluid.sh is located in the bin directory
+of your flowvr installation folder (after installation).
+After sourcing the flowvr-config.sh it should be found.
+
+Please read the FlowVR manual for more details. You can 
+find the documentation as seperate project on the SVN:
+
+svn co https://wiki-flowvr.imag.fr/svn/flowvr-suite/trunk/flowvr-doc 
+       <your_local_repository>
+       
+Have fun,
+
+the FlowVR team.

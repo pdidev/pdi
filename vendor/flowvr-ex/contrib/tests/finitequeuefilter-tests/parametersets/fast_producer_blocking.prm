@@ -1,0 +1,11 @@
+# we set the queue length to a small value to
+# show the effect of the finite queue a bit better
+finitefilterqueuetest:queue_length=5
+
+
+finitefilterqueuetest/drive-sender:freq=10000
+finitefilterqueuetest/drive-receiver:freq=100
+
+# receiver processes on beginIt AND on new message on the inport
+finitefilterqueuetest/receiver:blocking-in=true
+finitefilterqueuetest/receiver:request=1

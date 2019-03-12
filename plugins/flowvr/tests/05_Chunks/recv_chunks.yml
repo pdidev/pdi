@@ -1,0 +1,20 @@
+logging:
+  level: debug
+
+data:
+  wait: int
+  int_array: {type: array, subtype: int, size: 10}
+  char_array: {type: array, subtype: char, size: 10}
+  float_array: {type: array, subtype: float, size: 10}
+
+plugins:
+  flowvr:
+    component: module
+    wait_on_data: wait
+    abort_on: "abort"
+    input_ports:
+      message:
+        chunks:
+          - data: int_array
+          - data: char_array
+          - data: float_array

@@ -1,0 +1,15 @@
+flowvr-appy documentation
+=========================
+
+How to generate the documentation:
+
+** 1) install FlowVR
+** 2) source bin/flowvr-suite-config.sh
+** 3) install Sphinx (version 1 and above)
+
+	sudo apt-get install python-sphinx
+	
+** 4) compile the documentation
+
+	make html
+

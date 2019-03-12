@@ -1,0 +1,585 @@
+<component id="primes">
+    <parameters>
+        <info from="code">Primes connects  capture, compute and visu metamodules</info>
+        <trace from="default value">0</trace>
+        <example from="cmd line">4</example>
+    </parameters>
+    <link compA="primes/capture" portA="keysOut" compB="primes/greedyKeys" portB="in" />
+    <link compA="primes/visu" portA="endIt" compB="primes/greedyKeys" portB="sync" />
+    <link compA="primes/visu" portA="endIt" compB="primes/PresignalPrimesRequest.in" portB="in" />
+    <link compA="primes/compute" portA="primesOut" compB="primes/Merge" portB="in" />
+    <link compA="primes/Merge" portA="out" compB="primes/visu" portB="primesIn" />
+    <link compA="primes/PresignalPrimesRequest" portA="out" compB="primes/cPrimesRequest2" portB="in" />
+    <link compA="primes/cPrimesRequest2" portA="out" compB="primes/compute" portB="beginIt" />
+    <link compA="primes/greedyKeys" portA="out" compB="primes/visu" portB="keysIn" />
+    <link compA="primes/PresignalPrimesRequest.in" portA="out" compB="primes/PresignalPrimesRequest" portB="in" />
+    <component id="primes/capture">
+        <hosts>
+            <host value="localhost" FROM="external (mm)" />
+        </hosts>
+        <port id="beginIt" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <port id="endIt" type="OUTPUT" msgtype="FULL" />
+        <port id="keysOut" type="OUTPUT" msgtype="FULL" />
+        <parameters>
+            <info from="code">Metamodule launching capture  modules</info>
+            <trace from="default value">0</trace>
+            <NB_INSTANCES from="default value">FROM_HOSTS</NB_INSTANCES>
+        </parameters>
+        <link compA="primes/capture/singleton" portA="beginIt" compB="primes/capture" portB="beginIt" />
+        <link compA="primes/capture/singleton" portA="endIt" compB="primes/capture" portB="endIt" />
+        <link compA="primes/capture/singleton" portA="keysOut" compB="primes/capture" portB="keysOut" />
+        <component id="primes/capture/singleton">
+            <hosts>
+                <host value="localhost" FROM="external (mm-singleton)" />
+            </hosts>
+            <port id="beginIt" type="INPUT" msgtype="STAMPS" blockstate="blocking" />
+            <port id="endIt" type="OUTPUT" msgtype="STAMPS" />
+            <port id="keysOut" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Module capture sent key pressed and mouse events on output port</info>
+                <trace from="default value">0</trace>
+            </parameters>
+        </component>
+    </component>
+    <component id="primes/visu">
+        <hosts>
+            <host value="localhost" FROM="external (mm)" />
+        </hosts>
+        <port id="beginIt" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <port id="endIt" type="OUTPUT" msgtype="FULL" />
+        <port id="keysIn" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <port id="primesIn" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <parameters>
+            <info from="code">Metamodule launching visu  modules</info>
+            <trace from="default value">0</trace>
+            <NB_INSTANCES from="default value">FROM_HOSTS</NB_INSTANCES>
+        </parameters>
+        <link compA="primes/visu/singleton" portA="beginIt" compB="primes/visu" portB="beginIt" />
+        <link compA="primes/visu/singleton" portA="endIt" compB="primes/visu" portB="endIt" />
+        <link compA="primes/visu/singleton" portA="keysIn" compB="primes/visu" portB="keysIn" />
+        <link compA="primes/visu/singleton.primesIn" portA="in" compB="primes/visu" portB="primesIn" />
+        <link compA="primes/visu/singleton.primesIn" portA="out" compB="primes/visu/singleton" portB="primesIn" />
+        <component id="primes/visu/singleton">
+            <hosts>
+                <host value="localhost" FROM="external (mm-singleton)" />
+            </hosts>
+            <port id="beginIt" type="INPUT" msgtype="STAMPS" blockstate="blocking" />
+            <port id="endIt" type="OUTPUT" msgtype="STAMPS" />
+            <port id="keysIn" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="primesIn" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <parameters>
+                <info from="code">Module visu render received data on a disk</info>
+                <trace from="default value">0</trace>
+            </parameters>
+        </component>
+        <component id="primes/visu/singleton.primesIn">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Send messages from a port to an another</info>
+                <trace from="default value">0</trace>
+            </parameters>
+        </component>
+    </component>
+    <component id="primes/compute">
+        <hosts>
+            <host value="localhost" FROM="external (mm)" />
+            <host value="localhost" FROM="external (mm)" />
+            <host value="localhost" FROM="external (mm)" />
+            <host value="localhost" FROM="external (mm)" />
+        </hosts>
+        <port id="beginIt" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <port id="endIt" type="OUTPUT" msgtype="FULL" />
+        <port id="primesOut" type="OUTPUT" msgtype="FULL" />
+        <parameters>
+            <info from="code">Metamodule launching compute modules</info>
+            <trace from="default value">0</trace>
+            <NB_INSTANCES from="default value">FROM_HOSTS</NB_INSTANCES>
+        </parameters>
+        <link compA="primes/compute/parallel" portA="beginIt" compB="primes/compute" portB="beginIt" />
+        <link compA="primes/compute/parallel" portA="endIt" compB="primes/compute" portB="endIt" />
+        <link compA="primes/compute/parallel" portA="primesOut" compB="primes/compute" portB="primesOut" />
+        <component id="primes/compute/parallel">
+            <port id="beginIt" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="endIt" type="OUTPUT" msgtype="FULL" />
+            <port id="primesOut" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">N components in parallel</info>
+                <trace from="default value">0</trace>
+            </parameters>
+            <link compA="primes/compute/parallel/0" portA="beginIt" compB="primes/compute/parallel" portB="beginIt" />
+            <link compA="primes/compute/parallel/0" portA="endIt" compB="primes/compute/parallel" portB="endIt" />
+            <link compA="primes/compute/parallel/0" portA="primesOut" compB="primes/compute/parallel" portB="primesOut" />
+            <link compA="primes/compute/parallel/1" portA="beginIt" compB="primes/compute/parallel" portB="beginIt" />
+            <link compA="primes/compute/parallel/1" portA="endIt" compB="primes/compute/parallel" portB="endIt" />
+            <link compA="primes/compute/parallel/1" portA="primesOut" compB="primes/compute/parallel" portB="primesOut" />
+            <link compA="primes/compute/parallel/2" portA="beginIt" compB="primes/compute/parallel" portB="beginIt" />
+            <link compA="primes/compute/parallel/2" portA="endIt" compB="primes/compute/parallel" portB="endIt" />
+            <link compA="primes/compute/parallel/2" portA="primesOut" compB="primes/compute/parallel" portB="primesOut" />
+            <link compA="primes/compute/parallel/3" portA="beginIt" compB="primes/compute/parallel" portB="beginIt" />
+            <link compA="primes/compute/parallel/3" portA="endIt" compB="primes/compute/parallel" portB="endIt" />
+            <link compA="primes/compute/parallel/3" portA="primesOut" compB="primes/compute/parallel" portB="primesOut" />
+            <component id="primes/compute/parallel/0">
+                <hosts>
+                    <host value="localhost" FROM="patternParallel (parent)" />
+                </hosts>
+                <port id="beginIt" type="INPUT" msgtype="STAMPS" blockstate="blocking" />
+                <port id="endIt" type="OUTPUT" msgtype="STAMPS" />
+                <port id="primesOut" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Module cmputing PI decimals and sending them on output port</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+            <component id="primes/compute/parallel/1">
+                <hosts>
+                    <host value="localhost" FROM="patternParallel (parent)" />
+                </hosts>
+                <port id="beginIt" type="INPUT" msgtype="STAMPS" blockstate="blocking" />
+                <port id="endIt" type="OUTPUT" msgtype="STAMPS" />
+                <port id="primesOut" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Module cmputing PI decimals and sending them on output port</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+            <component id="primes/compute/parallel/2">
+                <hosts>
+                    <host value="localhost" FROM="patternParallel (parent)" />
+                </hosts>
+                <port id="beginIt" type="INPUT" msgtype="STAMPS" blockstate="blocking" />
+                <port id="endIt" type="OUTPUT" msgtype="STAMPS" />
+                <port id="primesOut" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Module cmputing PI decimals and sending them on output port</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+            <component id="primes/compute/parallel/3">
+                <hosts>
+                    <host value="localhost" FROM="patternParallel (parent)" />
+                </hosts>
+                <port id="beginIt" type="INPUT" msgtype="STAMPS" blockstate="blocking" />
+                <port id="endIt" type="OUTPUT" msgtype="STAMPS" />
+                <port id="primesOut" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Module cmputing PI decimals and sending them on output port</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+    </component>
+    <component id="primes/Merge">
+        <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <port id="out" type="OUTPUT" msgtype="FULL" />
+        <parameters>
+            <info from="code">Communication pattern that gathers  messages on leave port 'in' &#x09;&#x09;&#x09;&#x09;&#x09;&#x09;&#x09;and forwards them on the  port 'out'. It has 1 parameter: 'TREE_ARITY' &#x09;&#x09;&#x09;&#x09;&#x09;&#x09;&#x09;the arity of the tree.</info>
+            <trace from="default value">0</trace>
+            <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+        </parameters>
+        <link compA="primes/Merge/Node" portA="out" compB="primes/Merge" portB="out" />
+        <link compA="primes/Merge/Tree0" portA="in" compB="primes/Merge" portB="in" />
+        <link compA="primes/Merge/Tree0" portA="out" compB="primes/Merge/Node" portB="in" />
+        <link compA="primes/Merge/Tree1" portA="in" compB="primes/Merge" portB="in" />
+        <link compA="primes/Merge/Tree1" portA="out" compB="primes/Merge/Node" portB="in" />
+        <link compA="primes/Merge/Tree2" portA="in" compB="primes/Merge" portB="in" />
+        <link compA="primes/Merge/Tree2" portA="out" compB="primes/Merge/Node" portB="in" />
+        <link compA="primes/Merge/Tree3" portA="in" compB="primes/Merge" portB="in" />
+        <link compA="primes/Merge/Tree3" portA="out" compB="primes/Merge/Node" portB="in" />
+        <component id="primes/Merge/Node">
+            <hosts>
+                <host value="localhost" FROM="sibling" />
+            </hosts>
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">A shell around a filtermerge component with one input port  masking the actual number of ports  of filtermerge</info>
+                <trace from="default value">0</trace>
+            </parameters>
+            <link compA="primes/Merge/Node/Merge" portA="out" compB="primes/Merge/Node" portB="out" />
+            <link compA="primes/Merge/Node/Merge" portA="in0" compB="primes/Merge/Node" portB="in" />
+            <link compA="primes/Merge/Node/Merge" portA="in1" compB="primes/Merge/Node" portB="in" />
+            <link compA="primes/Merge/Node/Merge" portA="in2" compB="primes/Merge/Node" portB="in" />
+            <link compA="primes/Merge/Node/Merge" portA="in3" compB="primes/Merge/Node" portB="in" />
+            <component id="primes/Merge/Node/Merge">
+                <hosts>
+                    <host value="localhost" FROM="PARENT" />
+                </hosts>
+                <port id="out" type="OUTPUT" msgtype="FULL" />
+                <port id="in0" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="in1" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="in2" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="in3" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <parameters>
+                    <info from="code">Each time it receives a message on each input port, it sends one message consisting of the stamp of the message received on in0 and  the concatenation of the date received on in0, in1, ... inNb-1</info>
+                    <trace from="default value">0</trace>
+                    <nb from="code">4</nb>
+                </parameters>
+                <filterclass>flowvr.plugins.Merge</filterclass>
+            </component>
+        </component>
+        <component id="primes/Merge/Tree0">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Tree pattern used to build communication patterns. It has one 'in' and one 'out' port. It has 1 parameter: 'TREE_ARITY':  the arity of the  tree (inifinty by default). It is defined using 2 templates. Node is the component used on each tree vertex to gather data, Connect is the communication pattern used on the tree edges.</info>
+                <trace from="default value">0</trace>
+                <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+            </parameters>
+            <link compA="primes/Merge/Tree0/cTree" portA="in" compB="primes/Merge/Tree0" portB="in" />
+            <link compA="primes/Merge/Tree0/cTree" portA="out" compB="primes/Merge/Tree0" portB="out" />
+            <component id="primes/Merge/Tree0/cTree">
+                <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+        <component id="primes/Merge/Tree1">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Tree pattern used to build communication patterns. It has one 'in' and one 'out' port. It has 1 parameter: 'TREE_ARITY':  the arity of the  tree (inifinty by default). It is defined using 2 templates. Node is the component used on each tree vertex to gather data, Connect is the communication pattern used on the tree edges.</info>
+                <trace from="default value">0</trace>
+                <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+            </parameters>
+            <link compA="primes/Merge/Tree1/cTree" portA="in" compB="primes/Merge/Tree1" portB="in" />
+            <link compA="primes/Merge/Tree1/cTree" portA="out" compB="primes/Merge/Tree1" portB="out" />
+            <component id="primes/Merge/Tree1/cTree">
+                <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+        <component id="primes/Merge/Tree2">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Tree pattern used to build communication patterns. It has one 'in' and one 'out' port. It has 1 parameter: 'TREE_ARITY':  the arity of the  tree (inifinty by default). It is defined using 2 templates. Node is the component used on each tree vertex to gather data, Connect is the communication pattern used on the tree edges.</info>
+                <trace from="default value">0</trace>
+                <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+            </parameters>
+            <link compA="primes/Merge/Tree2/cTree" portA="in" compB="primes/Merge/Tree2" portB="in" />
+            <link compA="primes/Merge/Tree2/cTree" portA="out" compB="primes/Merge/Tree2" portB="out" />
+            <component id="primes/Merge/Tree2/cTree">
+                <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+        <component id="primes/Merge/Tree3">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Tree pattern used to build communication patterns. It has one 'in' and one 'out' port. It has 1 parameter: 'TREE_ARITY':  the arity of the  tree (inifinty by default). It is defined using 2 templates. Node is the component used on each tree vertex to gather data, Connect is the communication pattern used on the tree edges.</info>
+                <trace from="default value">0</trace>
+                <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+            </parameters>
+            <link compA="primes/Merge/Tree3/cTree" portA="in" compB="primes/Merge/Tree3" portB="in" />
+            <link compA="primes/Merge/Tree3/cTree" portA="out" compB="primes/Merge/Tree3" portB="out" />
+            <component id="primes/Merge/Tree3/cTree">
+                <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+    </component>
+    <component id="primes/PresignalPrimesRequest">
+        <hosts>
+            <host value="localhost" FROM="sibling" />
+        </hosts>
+        <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+        <port id="out" type="OUTPUT" msgtype="STAMPS" />
+        <parameters>
+            <info from="code">Filter that adds nb (a parameter) initial messages, then forward incoming messages to output (used to boot cycles). 1 parameter. 'nb':  number of initial messages</info>
+            <trace from="default value">0</trace>
+            <nb from="default value">1</nb>
+        </parameters>
+        <filterclass>flowvr.plugins.PreSignal</filterclass>
+    </component>
+    <component id="primes/cPrimesRequest2">
+        <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <port id="out" type="OUTPUT" msgtype="FULL" />
+        <parameters>
+            <info from="code">Communication patter that scatter  messages received on 'in'&#x09;&#x09;&#x09;&#x09;&#x09;&#x09;&#x09;port on the 'out' port. It has 1 parameter: 'TREE_ARITY' the arity of &#x09;&#x09;&#x09;&#x09;&#x09;&#x09;&#x09;the scattering tree.</info>
+            <trace from="default value">0</trace>
+            <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+        </parameters>
+        <link compA="primes/cPrimesRequest2/Node" portA="out" compB="primes/cPrimesRequest2/Tree0" portB="in" />
+        <link compA="primes/cPrimesRequest2/Node" portA="out" compB="primes/cPrimesRequest2/Tree1" portB="in" />
+        <link compA="primes/cPrimesRequest2/Node" portA="out" compB="primes/cPrimesRequest2/Tree2" portB="in" />
+        <link compA="primes/cPrimesRequest2/Node" portA="out" compB="primes/cPrimesRequest2/Tree3" portB="in" />
+        <link compA="primes/cPrimesRequest2/Tree0" portA="out" compB="primes/cPrimesRequest2" portB="out" />
+        <link compA="primes/cPrimesRequest2/Tree1" portA="out" compB="primes/cPrimesRequest2" portB="out" />
+        <link compA="primes/cPrimesRequest2/Tree2" portA="out" compB="primes/cPrimesRequest2" portB="out" />
+        <link compA="primes/cPrimesRequest2/Tree3" portA="out" compB="primes/cPrimesRequest2" portB="out" />
+        <link compA="primes/cPrimesRequest2/Node.in" portA="in" compB="primes/cPrimesRequest2" portB="in" />
+        <link compA="primes/cPrimesRequest2/Node.in" portA="out" compB="primes/cPrimesRequest2/Node" portB="in" />
+        <component id="primes/cPrimesRequest2/Node">
+            <hosts>
+                <host value="localhost" FROM="sibling" />
+            </hosts>
+            <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="STAMPS" />
+            <parameters>
+                <info from="code">A filter for routing messages (full or stamps). Just send each message received on 'in' port on  'out' port.  Uses the  FilterPreSignal with parameter 'nb' set to 0 (no presignal) by default. </info>
+                <trace from="default value">0</trace>
+                <nb from="default value">0</nb>
+            </parameters>
+            <filterclass>flowvr.plugins.PreSignal</filterclass>
+        </component>
+        <component id="primes/cPrimesRequest2/Tree0">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Tree pattern used to build communication patterns. It has one 'in' and one 'out' port. It has 1 parameter: 'TREE_ARITY':  the arity of the  tree (inifinty by default). It is defined using 2 templates. Node is the component used on each tree vertex to gather data, Connect is the communication pattern used on the tree edges.</info>
+                <trace from="default value">0</trace>
+                <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+            </parameters>
+            <link compA="primes/cPrimesRequest2/Tree0/cTree" portA="in" compB="primes/cPrimesRequest2/Tree0" portB="in" />
+            <link compA="primes/cPrimesRequest2/Tree0/cTree" portA="out" compB="primes/cPrimesRequest2/Tree0" portB="out" />
+            <component id="primes/cPrimesRequest2/Tree0/cTree">
+                <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="STAMPS" />
+                <parameters>
+                    <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+        <component id="primes/cPrimesRequest2/Tree1">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Tree pattern used to build communication patterns. It has one 'in' and one 'out' port. It has 1 parameter: 'TREE_ARITY':  the arity of the  tree (inifinty by default). It is defined using 2 templates. Node is the component used on each tree vertex to gather data, Connect is the communication pattern used on the tree edges.</info>
+                <trace from="default value">0</trace>
+                <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+            </parameters>
+            <link compA="primes/cPrimesRequest2/Tree1/cTree" portA="in" compB="primes/cPrimesRequest2/Tree1" portB="in" />
+            <link compA="primes/cPrimesRequest2/Tree1/cTree" portA="out" compB="primes/cPrimesRequest2/Tree1" portB="out" />
+            <component id="primes/cPrimesRequest2/Tree1/cTree">
+                <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="STAMPS" />
+                <parameters>
+                    <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+        <component id="primes/cPrimesRequest2/Tree2">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Tree pattern used to build communication patterns. It has one 'in' and one 'out' port. It has 1 parameter: 'TREE_ARITY':  the arity of the  tree (inifinty by default). It is defined using 2 templates. Node is the component used on each tree vertex to gather data, Connect is the communication pattern used on the tree edges.</info>
+                <trace from="default value">0</trace>
+                <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+            </parameters>
+            <link compA="primes/cPrimesRequest2/Tree2/cTree" portA="in" compB="primes/cPrimesRequest2/Tree2" portB="in" />
+            <link compA="primes/cPrimesRequest2/Tree2/cTree" portA="out" compB="primes/cPrimesRequest2/Tree2" portB="out" />
+            <component id="primes/cPrimesRequest2/Tree2/cTree">
+                <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="STAMPS" />
+                <parameters>
+                    <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+        <component id="primes/cPrimesRequest2/Tree3">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Tree pattern used to build communication patterns. It has one 'in' and one 'out' port. It has 1 parameter: 'TREE_ARITY':  the arity of the  tree (inifinty by default). It is defined using 2 templates. Node is the component used on each tree vertex to gather data, Connect is the communication pattern used on the tree edges.</info>
+                <trace from="default value">0</trace>
+                <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+            </parameters>
+            <link compA="primes/cPrimesRequest2/Tree3/cTree" portA="in" compB="primes/cPrimesRequest2/Tree3" portB="in" />
+            <link compA="primes/cPrimesRequest2/Tree3/cTree" portA="out" compB="primes/cPrimesRequest2/Tree3" portB="out" />
+            <component id="primes/cPrimesRequest2/Tree3/cTree">
+                <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="STAMPS" />
+                <parameters>
+                    <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+        </component>
+        <component id="primes/cPrimesRequest2/Node.in">
+            <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="STAMPS" />
+            <parameters>
+                <info from="code">Send just stamps from a port to an another</info>
+                <trace from="default value">0</trace>
+            </parameters>
+        </component>
+    </component>
+    <component id="primes/greedyKeys">
+        <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <port id="out" type="OUTPUT" msgtype="FULL" />
+        <port id="sync" type="INPUT" msgtype="FULL" blockstate="unknown" />
+        <parameters>
+            <info from="code">A communication pattern using the PatternSync component with 6 template parameters.                 &#x09;&#x09;'ComIn_':  the communication pattern on the in port;                 &#x09;&#x09;'ComStamps_': the communication pattern to extract stamps from the in port and send them to the synchronizer;                 &#x09;&#x09;'ComOut_' : the communication pattern on the out port;                 &#x09;&#x09;'ComEndIt_' : the incoming communication pattern to receive  sync signals                 &#x09;&#x09;on the sync port;                 &#x09;&#x09;'Filter_' : the filter type to use;                 &#x09;&#x09;'Synchronizer': the synchronizer type to use. Classically used to set  greedy patterns.                 &#x09;&#x09;All other ports of the PatternSync are reproduced on the parent</info>
+            <trace from="default value">0</trace>
+        </parameters>
+        <link compA="primes/greedyKeys/patternSync" portA="out" compB="primes/greedyKeys/ComOut" portB="in" />
+        <link compA="primes/greedyKeys/ComIn" portA="in" compB="primes/greedyKeys" portB="in" />
+        <link compA="primes/greedyKeys/ComIn" portA="out" compB="primes/greedyKeys/patternSync" portB="in" />
+        <link compA="primes/greedyKeys/ComOut" portA="out" compB="primes/greedyKeys" portB="out" />
+        <link compA="primes/greedyKeys/ComStamps" portA="in" compB="primes/greedyKeys" portB="in" />
+        <link compA="primes/greedyKeys/ComStamps" portA="out" compB="primes/greedyKeys/patternSync" portB="stamps" />
+        <link compA="primes/greedyKeys/ComSync" portA="in" compB="primes/greedyKeys" portB="sync" />
+        <link compA="primes/greedyKeys/ComSync" portA="out" compB="primes/greedyKeys/patternSync" portB="sync" />
+        <component id="primes/greedyKeys/patternSync">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <port id="stamps" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="sync" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <parameters>
+                <info from="code">A pattern with  two templates defining one  synchronizer and a filter (n instances created if the context requires it). The synchronizer waits for messages on the sync port (a presignal is set on the way to avoid deadlocks). It also receives stamps messages on the stamps port. When it receives a sync message, it emits an orer message broadcatsed to the filters. Filters receive full messages from the in port, use the order to process these messages, and send the result on the out port. This pattern is classicaly used for greedy communications. Notice that communication patterns must be added on all ports. If the filter and the synchronizer have other ports they are automatically exposed at this level (port name are prefixed to avoid issues with identical port ids).</info>
+                <trace from="default value">0</trace>
+            </parameters>
+            <link compA="primes/greedyKeys/patternSync/sync" portA="stamps" compB="primes/greedyKeys/patternSync" portB="stamps" />
+            <link compA="primes/greedyKeys/patternSync/sync" portA="order" compB="primes/greedyKeys/patternSync/bcastOrder" portB="in" />
+            <link compA="primes/greedyKeys/patternSync/filter" portA="in" compB="primes/greedyKeys/patternSync" portB="in" />
+            <link compA="primes/greedyKeys/patternSync/filter" portA="out" compB="primes/greedyKeys/patternSync" portB="out" />
+            <link compA="primes/greedyKeys/patternSync/bcastOrder" portA="out" compB="primes/greedyKeys/patternSync/filter" portB="order" />
+            <link compA="primes/greedyKeys/patternSync/cSync" portA="out" compB="primes/greedyKeys/patternSync/sync" portB="endIt" />
+            <link compA="primes/greedyKeys/patternSync/PreSignal" portA="in" compB="primes/greedyKeys/patternSync" portB="sync" />
+            <link compA="primes/greedyKeys/patternSync/PreSignal" portA="out" compB="primes/greedyKeys/patternSync/cSync" portB="in" />
+            <component id="primes/greedyKeys/patternSync/sync">
+                <hosts>
+                    <host value="localhost" FROM="sibling" />
+                </hosts>
+                <port id="endIt" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                <port id="stamps" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                <port id="order" type="OUTPUT" msgtype="STAMPS" />
+                <parameters>
+                    <info from="code">Every time it receives a message on endIt port,                 &#x09;&#x09;it looks for the most recent message received on                 &#x09;&#x09;stamps port and sends to order port  the stamp of                 &#x09;&#x09;this message. Used for implementing  greedy                 &#x09;&#x09;(subsampling) filtering. It uses 4 different parameters.                &#x09;&#x09; min: minimum number of messages left in the queue                 &#x09;&#x09;(0: will not order to repeat previously sent messages.                 &#x09;&#x09;1: will repeat previously forwarded message if                 &#x09;&#x09;nothing newer available). max: maximum number of messages                &#x09;&#x09;that are kept in the queue. buffer: todo. stampname: todo</info>
+                    <trace from="default value">0</trace>
+                    <min from="default value">0</min>
+                    <max from="default value">2147483647</max>
+                    <buffer from="default value">4</buffer>
+                    <stampname from="default value">it</stampname>
+                    <advance from="default value">1</advance>
+                </parameters>
+            </component>
+            <component id="primes/greedyKeys/patternSync/filter">
+                <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="order" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">N components in parallel</info>
+                    <trace from="default value">0</trace>
+                    <INSTANCES_FROM_PORT from="code">out</INSTANCES_FROM_PORT>
+                </parameters>
+                <link compA="primes/greedyKeys/patternSync/filter/0" portA="in" compB="primes/greedyKeys/patternSync/filter" portB="in" />
+                <link compA="primes/greedyKeys/patternSync/filter/0" portA="order" compB="primes/greedyKeys/patternSync/filter" portB="order" />
+                <link compA="primes/greedyKeys/patternSync/filter/0" portA="out" compB="primes/greedyKeys/patternSync/filter" portB="out" />
+                <component id="primes/greedyKeys/patternSync/filter/0">
+                    <hosts>
+                        <host value="localhost" FROM="patternParallel (sibling)" />
+                    </hosts>
+                    <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                    <port id="order" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                    <port id="out" type="OUTPUT" msgtype="FULL" />
+                    <parameters>
+                        <info from="code">Forward on its  output  the messages received on its input having the same it numbers than the ones received on the order port. Discard other messages  (filter usually used with a synchronizer).</info>
+                        <trace from="default value">0</trace>
+                    </parameters>
+                    <filterclass>flowvr.plugins.FilterIt</filterclass>
+                </component>
+            </component>
+            <component id="primes/greedyKeys/patternSync/bcastOrder">
+                <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="FULL" />
+                <parameters>
+                    <info from="code">Communication patter that scatter  messages received on 'in'&#x09;&#x09;&#x09;&#x09;&#x09;&#x09;&#x09;port on the 'out' port. It has 1 parameter: 'TREE_ARITY' the arity of &#x09;&#x09;&#x09;&#x09;&#x09;&#x09;&#x09;the scattering tree.</info>
+                    <trace from="default value">0</trace>
+                    <TREE_ARITY from="default value">4294967295</TREE_ARITY>
+                </parameters>
+                <link compA="primes/greedyKeys/patternSync/bcastOrder/cTree" portA="in" compB="primes/greedyKeys/patternSync/bcastOrder" portB="in" />
+                <link compA="primes/greedyKeys/patternSync/bcastOrder/cTree" portA="out" compB="primes/greedyKeys/patternSync/bcastOrder" portB="out" />
+                <component id="primes/greedyKeys/patternSync/bcastOrder/cTree">
+                    <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                    <port id="out" type="OUTPUT" msgtype="STAMPS" />
+                    <parameters>
+                        <info from="code">Automatic type: FULL/STAMPS status resolved during resolveMsgTypes traverse</info>
+                        <trace from="default value">0</trace>
+                    </parameters>
+                </component>
+            </component>
+            <component id="primes/greedyKeys/patternSync/cSync">
+                <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="STAMPS" />
+                <parameters>
+                    <info from="code">Send just stamps from a port to an another</info>
+                    <trace from="default value">0</trace>
+                </parameters>
+            </component>
+            <component id="primes/greedyKeys/patternSync/PreSignal">
+                <hosts>
+                    <host value="localhost" FROM="sibling" />
+                </hosts>
+                <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+                <port id="out" type="OUTPUT" msgtype="STAMPS" />
+                <parameters>
+                    <info from="code">Filter that adds nb (a parameter) initial messages, then forward incoming messages to output (used to boot cycles). 1 parameter. 'nb':  number of initial messages</info>
+                    <trace from="default value">0</trace>
+                    <nb from="default value">1</nb>
+                </parameters>
+                <filterclass>flowvr.plugins.PreSignal</filterclass>
+            </component>
+        </component>
+        <component id="primes/greedyKeys/ComIn">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Send messages from a port to an another</info>
+                <trace from="default value">0</trace>
+            </parameters>
+        </component>
+        <component id="primes/greedyKeys/ComOut">
+            <port id="in" type="INPUT" msgtype="FULL" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="FULL" />
+            <parameters>
+                <info from="code">Send messages from a port to an another</info>
+                <trace from="default value">0</trace>
+            </parameters>
+        </component>
+        <component id="primes/greedyKeys/ComStamps">
+            <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="STAMPS" />
+            <parameters>
+                <info from="code">Send just stamps from a port to an another</info>
+                <trace from="default value">0</trace>
+            </parameters>
+        </component>
+        <component id="primes/greedyKeys/ComSync">
+            <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+            <port id="out" type="OUTPUT" msgtype="STAMPS" />
+            <parameters>
+                <info from="code">Send just stamps from a port to an another</info>
+                <trace from="default value">0</trace>
+            </parameters>
+        </component>
+    </component>
+    <component id="primes/PresignalPrimesRequest.in">
+        <port id="in" type="INPUT" msgtype="STAMPS" blockstate="unknown" />
+        <port id="out" type="OUTPUT" msgtype="STAMPS" />
+        <parameters>
+            <info from="code">Send just stamps from a port to an another</info>
+            <trace from="default value">0</trace>
+        </parameters>
+    </component>
+</component>

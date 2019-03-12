@@ -1,0 +1,22 @@
+// Texture Vertex Shader
+// respect texture in unit 0 and pass on vertex color in color0
+void main(
+  float4 position     : POSITION,
+  float2 texcoord0    : TEXCOORD0,
+  float4 color0       : COLOR0,
+
+  uniform float4x4 ModelViewProj,
+
+  out float4 ppos        : POSITION,
+  out half2 ptex0        : TEXCOORD0,
+  out half4 pcolor       : COLOR0)
+{
+  // transform vertex by given modelview matrix
+  ppos   = mul(ModelViewProj, position);
+  
+  // select texture coordinate given according to argument textcoord0
+  ptex0  = (half2) texcoord0;
+  
+  // select color according to argument color0
+  pcolor = (half4) color0;
+}

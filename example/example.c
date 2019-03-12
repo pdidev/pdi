@@ -127,6 +127,10 @@ int main( int argc, char* argv[] )
 	int psize_1d;  MPI_Comm_size(main_comm, &psize_1d);
 	int pcoord_1d; MPI_Comm_rank(main_comm, &pcoord_1d);
 	
+	PDI_expose("mpi_rank", &pcoord_1d, PDI_OUT);
+	PDI_expose("mpi_size", &psize_1d, PDI_OUT);
+	PDI_event("init");
+
 	long longval;
 	
 	int dsize[2];

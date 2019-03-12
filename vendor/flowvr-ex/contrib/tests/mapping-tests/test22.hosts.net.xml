@@ -1,0 +1,3 @@
+    <module id="primes/capture/singleton" host="pc1">
+    <module id="primes/visu/singleton" host="pc1">
+    <filter id="primes/mycomp/signaland/SignalAnd" host="pc2">

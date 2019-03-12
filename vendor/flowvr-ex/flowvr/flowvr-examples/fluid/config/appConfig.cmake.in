@@ -1,0 +1,9 @@
+# Cmake file for @app@  application
+# Define the following variables
+# @app@_FOUND if application  found
+# @app@_INCLUDE_DIR   path to include directories for  components 
+# @app@_LIBRARY       path to library of    components 
+
+SET(@app@_FOUND TRUE)
+
+SET(@app@_INCLUDE_DIRS @INCLUDE_DIR@)

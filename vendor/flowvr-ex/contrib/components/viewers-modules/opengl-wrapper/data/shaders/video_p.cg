@@ -1,0 +1,14 @@
+// Video Pixel Shader
+// Texture
+
+half4 main(
+  half2 ptex0   : TEXCOORD0,
+  uniform samplerRECT texture
+) : COLOR
+{
+    if (abs(ptex0.x-0.5) > 0.49 || abs(ptex0.y-0.5) > 0.49)
+	return half4(ptex0.x,ptex0.y,0,1);
+    else
+	return texRECT(texture, ptex0);
+  //return half4(ptex0,0,1);
+}

@@ -1,0 +1,26 @@
+logging:
+  level: info
+
+metadata:
+  tempPrimeNumbersMaxCount: int
+
+data:
+  wait: int
+  parallel_rank: int
+  parallel_size: int
+  tTempPrimeNumbers_shr: {type: array, subtype: int, size: $tempPrimeNumbersMaxCount}
+  lastIterationComputeTime: int
+
+plugins:
+  flowvr:
+    component: module
+    wait_on_data: wait
+    parallel:
+      get_rank: parallel_rank
+      get_size: parallel_size
+    output_ports:
+      primesOut:
+        data: tTempPrimeNumbers_shr
+        size: tempPrimeNumbersMaxCount
+        stamps:
+          computationTimeIt: lastIterationComputeTime

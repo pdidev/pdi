@@ -1,0 +1,74 @@
+#!/bin/bash
+
+setpath=0
+finish=0
+verbose=0
+exec=0
+log=0
+logpath=""
+while [[ $finish != 1 ]]; do
+  if [[ $1 == "-v" ]]; then
+    verbose=1
+    shift 1
+  elif [[ $1 == "-e" ]]; then
+    if [[ $verbose == 1 ]]; then
+      echo SETTING $2 = "$3"
+    fi
+    export $2="$3"
+    shift 3
+  elif [[ $1 == "-E" ]]; then
+    exec=1
+    shift 1
+  elif [[ $1 == "-n" ]]; then
+    setpath=1
+    if [[ $verbose == 1 ]]; then
+      echo "update  setpath : $setpath"
+    fi
+    shift 1
+  elif [[ $1 == "--path" ]]; then
+      path=`echo $2| sed "s+_FLOWVR_PLATFORM_+$FLOWVR_PLATFORM+g"`
+    if [[ $verbose == 1 ]]; then
+      echo CHANGING TO PATH "$path"
+    fi
+    cd $path 2>/dev/null
+    if [[ $? != 0 ]]; then
+        echo "WARNING: path $path doesn't exist on "`uname -n`". Launch command in $HOME directory."
+        cd
+    fi
+    shift 2
+  elif [[ $1 == "-L" ]]; then
+    log=1
+    logpath=$2
+    shift 2
+  else
+    finish=1
+  fi
+done
+
+if [[ $log != 0 ]]; then
+  logfilename="${logpath}-`echo $FLOWVR_MODNAME | sed 's+/+_+g'`"
+  if [[ "$FLOWVR_RANK" != "" ]]; then
+    logfilename="${logfilename}_${FLOWVR_RANK}";
+  fi
+fi
+
+
+if [[ $exec == 1 ]]; then
+  EXEC_CMD="exec "
+else
+  EXEC_CMD="eval "
+fi
+
+if [[ $verbose == 1 ]]; then
+  if [[ $log == 0 ]]; then
+    echo $EXEC_CMD "$@"
+  else
+    echo $EXEC_CMD "$@" \> $logfilename
+  fi
+fi
+
+if [[ $log == 0 ]]; then
+  $EXEC_CMD "$@"
+else
+  $EXEC_CMD "$@" > $logfilename
+fi

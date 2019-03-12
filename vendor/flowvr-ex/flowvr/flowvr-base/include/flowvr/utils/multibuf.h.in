@@ -1,0 +1,63 @@
+/******* COPYRIGHT ************************************************
+*                                                                 *
+*                             FlowVR                              *
+*                                                                 *
+*                                                                 *
+*-----------------------------------------------------------------*
+ * COPYRIGHT (C) 2003-2011                by                       *
+* INRIA                                                           *
+* ALL RIGHTS RESERVED.	                                          *
+*                                                                 *
+* This source is covered by the GNU LGPL, please refer to the     *
+* COPYING file for further information.                           *
+*                                                                 *
+*-----------------------------------------------------------------*
+*                                                                 *
+*  Original Contributors:                                         *
+*    Jeremie Allard,                                              *
+*    Thomas Arcila,                                               *
+*    Jean-Denis Lesage.                                           *
+*    Clement Menier,                                              *
+*    Bruno Raffin                                                 *
+*                                                                 *
+*******************************************************************
+*                                                                 *
+*  Contact :                                                      *
+*                                                                 *
+******************************************************************/
+
+#include <limits.h> // for IOV_MAX
+
+#if @_FLOWVR_OS_HAVE_WRITEV@
+#define FLOWVR_OS_HAVE_WRITEV
+ // use multibuf type by aliasing iovec from system spec
+ #include <sys/uio.h>
+ typedef iovec multibuf;
+#else
+
+ // simulate multibuf by declaring a header of the same type
+ // but include the system definitions we need for size estimations below
+ 
+ #ifndef IOV_MAX
+ #define IOV_MAX 1024
+ #endif
+
+ struct multibuf
+ {
+   void* iov_base;
+   size_t iov_len;
+ };
+
+#endif // FLOWVR_OS_HAVE_WRITEV
+
+#if IOV_MAX == __INT_MAX__ -1 
+ #define WRITEV_MAXBUF 1024
+#else
+ #define WRITEV_MAXBUF IOV_MAX
+#endif
+
+
+// HOST_NAME_MAX stub
+#define FLOWVR_OS_HOST_NAME_MAX @_OS_HOST_NAME_MAX@
+
+

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="LATIN1" ?>
+<device name="joypadCamera" server="Joylin0@localhost">
+	<info>A module designed for the use of a free fly camera via a joypad in flowvr-vrpn applications</info>
+	<input>
+		<buttons type="BUTTONCB">
+			<button id="0" name="Moving speed up"> </button>
+			<button id="1" name="Reset position"> </button>
+			<button id="5" name="Moving up"> </button>
+			<button id="7" name="Moving down"> </button>
+		</buttons>
+		<analog type="ANALOGCB">
+			<!--dpad (croix multidirectionnelle) avec id(entifier) l(eft)r(ight) et t(op)d(own) -->
+			<!--  <dpad idlr="5" idtd="4" name="Translation"> </dpad> -->
+			
+			<!--stick (analogique "boule") idem et "name" le nom -->
+			<stick idtd="0" idlr="1" name="Translation"> </stick>
+			<stick idtd="2" idlr="3" name="Rotation"> </stick>
+			<!--slider (sur certaines manettes, petite manette que l'on peut déplacer de gauche à droite) -->
+			<!-- <slider id="2" name="Slider"> </slider> -->
+		</analog>
+	</input>
+</device>

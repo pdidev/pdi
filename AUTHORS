@@ -22,6 +22,7 @@ Corentin Roussel - CEA (Corentin.roussel@cea.fr)
 * User-code v1 plugin
 
 Karol Sierocinski - PSNC (ksiero@man.poznan.pl)
+* FlowVR plugin
 * Set-up and development of unit-tests
 * Configuration validator
 * Support for records in YAML

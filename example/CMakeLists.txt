@@ -124,6 +124,16 @@ set_property(TEST PDI_example_fti_P PROPERTY TIMEOUT 180)
 endif("${ENABLE_PYTHON}")
 endif("${BUILD_FTI_PLUGIN}")
 
+if("${BUILD_FLOWVR_PLUGIN}")
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+add_executable(flowvr_visu flowvr_visu.c)
+target_link_libraries(flowvr_visu PDI::pdi ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+
+add_test(NAME PDI_example_flowvr_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/flowvr_test.sh" "./flowvr_test.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "$<TARGET_FILE:PDI_example_C>" "$<TARGET_FILE:flowvr_visu>")
+set_property(TEST PDI_example_flowvr_C PROPERTY TIMEOUT 20)
+endif("${BUILD_FLOWVR_PLUGIN}")
+
 add_test(NAME PDI_example_test_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/test.yml")
 set_property(TEST PDI_example_test_C PROPERTY DEPENDS PDI_example_test_file)
 set_property(TEST PDI_example_test_C PROPERTY TIMEOUT 5)

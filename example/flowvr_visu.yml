@@ -1,0 +1,21 @@
+logging:
+  level: info
+
+metadata:
+  main_field_size: int64
+
+data:
+  wait: int
+  main_field: { size: $main_field_size/8, type: array, subtype: double }
+  global_size: { size: 2, type: array, subtype: int }
+
+plugins:
+  flowvr:
+    component: module
+    wait_on_data: wait
+    input_ports:
+      heat:
+        data: main_field
+        size: main_field_size
+        stamps:
+          N: global_size

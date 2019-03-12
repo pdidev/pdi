@@ -1,0 +1,18 @@
+# this example shows consumer and producer at even speed
+# ideally, this means that the consumer can consume every second packet
+
+# we set the queue length to be 10, for no particular reason here
+finitefilterqueuetest:queue_length=10
+
+# set sender and receiver frequence to 100Hz (approximately)
+finitefilterqueuetest/drive-sender:freq=100
+finitefilterqueuetest/drive-receiver:freq=100
+
+# the receiver receives the messages and waits for them
+# remember that blocking in always means the we can end up with
+# a long message queue on the beginIt of the receiver, as we
+# do not sync the driver of the receiver.
+finitefilterqueuetest/receiver:blocking-in=true
+
+# the receiver requests 1 packet at a time
+finitefilterqueuetest/receiver:request=1

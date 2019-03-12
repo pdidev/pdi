@@ -1,0 +1,22 @@
+# plugins-pullsegment -- SEG_ONLY: 
+# Show only messages with segments in
+# TYPE: BOOLEAN ; MODE = OPTIONAL
+segmenttest/pull:plugins-pullsegment-SEGONLY=false
+segmenttest/push:plugins-pushsegment-TIMEOUT=1000
+
+# plugins-pushsegment -- MAX: 
+# Maxmium number of segments
+# TYPE: NUMBER ; MODE = OPTIONAL
+segmenttest:plugins-pushsegment-MAX=0
+# plugins-pushsegment -- MIN: 
+# Minimum number of segments
+# TYPE: NUMBER ; MODE = OPTIONAL
+segmenttest/push:plugins-pushsegment-MIN=0
+# plugins-pushsegment -- RANDOMSEND: 
+# send messages with segments at random
+# TYPE: BOOLEAN ; MODE = OPTIONAL
+segmenttest/push:plugins-pushsegment-RANDOMSEND=false
+# plugins-pushsegment -- SIZE: 
+# sets the size of all segments, random value else
+# TYPE: NUMBER ; MODE = OPTIONAL
+segmenttest/push:plugins-pushsegment-SIZE=10

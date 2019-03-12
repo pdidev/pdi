@@ -1,0 +1,12 @@
+#!/bin/sh
+
+COMPONENTS="@components_STR@"
+
+
+for i in ${COMPONENTS}; do
+  if test -r @INSTALL_PREFIX@/bin/${i}-config.sh; then
+    . "@INSTALL_PREFIX@/bin/${i}-config.sh"
+  else
+    echo "Error: @INSTALL_PREFIX@/bin/${i}-config.sh not found: ${i} environment variables not set"
+  fi
+done

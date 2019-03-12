@@ -1,0 +1,22 @@
+void main(float4 position: POSITION,
+  half2 texcoord0: TEXCOORD0,
+  uniform half4 color,
+  half3 normal   : NORMAL,
+
+  uniform float4 lightpos,
+  uniform float4x4 ModelViewProj,
+  uniform float4x4 ModelView,
+  uniform float4x4 ModelViewI,
+
+  out float4 ppos    : POSITION,
+  out half2 ptex0    : TEXCOORD0,
+  out half3 pnormal  : TEXCOORD1,
+  out half3 plight   : TEXCOORD2,
+  out half4 pcolor   : TEXCOORD3)
+{
+  ppos = mul(ModelViewProj, position);
+  ptex0 = texcoord0;
+  pcolor = color;
+  pnormal = normal; //normalize(mul((float3x3)ModelViewIT, normal));
+  plight = mul(ModelViewI, lightpos)-position;
+}

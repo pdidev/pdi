@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+	<resources>
+		<datapath value="@CMAKE_INSTALL_PREFIX@/@MENURENDER_DATA_PREFIX@/resources/data/menurc/"/>
+		<resourcegroups>
+			<resourcegroup name="schemes" value=""/>
+			<resourcegroup name="imagesets" value=""/>
+			<resourcegroup name="fonts" value=""/>
+			<resourcegroup name="layouts" value=""/>
+			<resourcegroup name="looknfeels" value=""/>
+			<resourcegroup name="lua_scripts" value=""/>
+		</resourcegroups>
+	</resources>
+</config>

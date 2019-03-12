@@ -1,0 +1,49 @@
+SET(FLOWVR_FOUND TRUE)
+
+
+MESSAGE(STATUS "Using ${CMAKE_CURRENT_LIST_FILE}")
+
+
+SET(FLOWVR_PREFIX @CMAKE_BINARY_DIR@ CACHE PATH "Path to FlowVR root")
+
+SET(FLOWVR_APPLICATION @CMAKE_BINARY_DIR@/share/flowvr/cmake/AddFlowVRapplication.cmake)
+
+SET(FLOWVR_base_INCLUDE_DIR @flowvr_base_BINARY_DIR@/include @flowvr_base_SOURCE_DIR@/include)
+SET(FLOWVR_base_LIBRARY @LIBRARY_OUTPUT_PATH@/libflowvr-base@CMAKE_SHARED_LIBRARY_SUFFIX@)
+SET(FLOWVR_base_FOUND TRUE)
+
+SET(FLOWVR_mod_INCLUDE_DIR @flowvr_base_SOURCE_DIR@/include)
+SET(FLOWVR_mod_LIBRARY @LIBRARY_OUTPUT_PATH@/libflowvr-mod@CMAKE_SHARED_LIBRARY_SUFFIX@)
+SET(FLOWVR_mod_FOUND TRUE)
+
+SET(FLOWVR_ftl_INCLUDE_DIR @flowvr_ftl_SOURCE_DIR@/include)
+SET(FLOWVR_ftl_LIBRARY @LIBRARY_OUTPUT_PATH@/libftlm@CMAKE_SHARED_LIBRARY_SUFFIX@)
+SET(FLOWVR_ftl_FOUND TRUE)
+
+SET(FLOWVR_plugd_INCLUDE_DIR @flowvrd_SOURCE_DIR@/include)
+SET(FLOWVR_plugd_LIBRARY @LIBRARY_OUTPUT_PATH@/libflowvr-plugd@CMAKE_SHARED_LIBRARY_SUFFIX@)
+SET(FLOWVR_plugd_FOUND TRUE)
+
+SET(FLOWVR_commands_INCLUDE_DIR @flowvrd_SOURCE_DIR@/include)
+SET(FLOWVR_commands_LIBRARY @LIBRARY_OUTPUT_PATH@/libflowvr-commands@CMAKE_SHARED_LIBRARY_SUFFIX@)
+SET(FLOWVR_commands_FOUND TRUE)
+
+SET(FLOWVR_utils_INCLUDE_DIR @flowvr_utils_SOURCE_DIR@/include)
+SET(FLOWVR_utils_LIBRARY @LIBRARY_OUTPUT_PATH@/libflowvr-utils@CMAKE_SHARED_LIBRARY_SUFFIX@)
+SET(FLOWVR_utils_FOUND TRUE)
+
+SET(FLOWVR_INCLUDE_DIR ${FLOWVR_base_INCLUDE_DIR} 
+                       ${FLOWVR_mod_INCLUDE_DIR} 
+                       ${FLOWVR_ftl_INCLUDE_DIR} 
+                       ${FLOWVR_plugd_INCLUDE_DIR} 
+                       ${FLOWVR_commands_INCLUDE_DIR} 
+                       ${FLOWVR_utils_INCLUDE_DIR}   )
+                       
+SET(FLOWVR_LIBRARY ${FLOWVR_base_LIBRARY} 
+                   ${FLOWVR_mod_LIBRARY} 
+                   ${FLOWVR_ftl_LIBRARY} 
+                   ${FLOWVR_plugd_LIBRARY} 
+                   ${FLOWVR_commands_LIBRARY} 
+                   ${FLOWVR_utils_LIBRARY} )
+
+

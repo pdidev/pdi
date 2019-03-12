@@ -1,0 +1,19 @@
+<routing>
+   <cluster id="miniplatform">
+   <Network netid="eth0" bandwith=1000/>
+   <host>
+	   <id>pc1</id>
+      <Processor type=i686 freq=2000/>
+      <ni netid="eth0">
+         <id>pc1</id>
+      </ni>
+   </host>
+   <host>
+	   <id>pc2</id>
+      <Processor type=i686 freq=2000/>
+      <ni netid="eth0">
+         <id>pc2</id>
+      </ni>
+   </host>
+</cluster>
+</routing>

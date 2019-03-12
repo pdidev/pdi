@@ -1,0 +1,6 @@
+    <module id="primes/capture/singleton" host="localhost">
+    <module id="primes/visu/singleton" host="localhost">
+    <synchronizer id="primes/greedyKeys/patternSync/sync" host="localhost">
+    <filter id="primes/greedyKeys/patternSync/filter/0" host="localhost">
+    <filter id="primes/greedyKeys/patternSync/PreSignal" host="localhost">
+    <synchronizer id="primes/MaxFrequency" host="localhost">

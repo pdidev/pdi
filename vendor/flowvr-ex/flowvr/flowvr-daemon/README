@@ -1,0 +1,45 @@
+
+    FlowVR Deamon and Base Plugins
+
+
+This package contains the flowvrd program and the associated plugins
+and also a basic controller (flowvr-telnet).
+
+flowvrd must be launched on all nodes to be able to run a flowvr
+application.
+
+
+FlowVR Plugins Mini How To
+==========================
+
+A FlowVR deamon plugin must derive from the class
+flowvr::plugd::Object and implements the methods init, createAction,
+doAction, close.
+
+See flowvr-tests/src/plugins/flowvr.tests.Reverse.cpp for an example.
+
+Synchronizor plugins can use the class flowvr::plugins::Synchronizor and
+filters can use the class flowvr::plugins::Filter.
+
+
+Compilation
+-----------
+
+Plugins must be compiled as a shared library with the same name as the
+plugin's class with dots between each namespace (and a -debug suffix
+for the debugging version).
+flowvr uses pkg-config to specify compilation and link parameters. You
+must specify the package name flowvr-plugd (or flowvr-plugd-debug for
+the debugging version) and --cflags for compilation or --libs for
+link. For example:
+
+   g++ -shared -o flowvr.tests.Reverse.so flowvr.tests.Reverse.cpp `pkg-config --cflags --libs flowvr-plugd`
+
+The resulting file must then be located in a directory included in the
+LD_LIBRARY_PATH environment variable when the deamon is launched.
+
+To instanciate a plugin you can pass the command <addobject> (with
+flowvr-telnet). For example:
+
+  <addobject id="f" class="flowvr.tests.Reverse"/>
+

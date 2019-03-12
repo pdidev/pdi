@@ -1,0 +1,23 @@
+<config>
+	<ports exportdefault="true">
+		<port name="devices_in"    direction="in" flags="eventsource"/>		
+		<port name="viewport_in" direction="in" flags="eventsource"/>
+		<port name="script_in"   direction="in" flags="eventsource"/>
+		<port name="response_in" direction="in" flags="eventsource"/>
+		<port name="scene"       direction="out"/>
+		<port name="devices_out"   direction="out"/> 
+		<port name="request_out" direction="out"/>  
+	</ports>
+	<stamplists/>
+	<code>
+		<path name="vpchange" plugin="vpchange" in="viewport_in"/>
+		<path name="devices" plugin="devices" in="devices_in" out="devices_out"/>
+	</code>
+	<plugins>
+		<plugin name="vpchange" so="menuvpchange" service="menusource"/>
+		<plugin name="devices"  so="menudevices"  service="menusource"/>
+	</plugins>
+	<services>
+		<service name="menusource" so="menuservice"/>
+	</services>
+</config>

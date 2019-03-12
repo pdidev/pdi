@@ -1,0 +1,14 @@
+// Terrain Vertex Shader
+// 
+// texcoord0 + color attributes
+
+void main(
+  float4 position    : POSITION,
+  uniform float4x4 ModelViewProj,
+  uniform float2 TextureScale,
+  out float4 ppos    : POSITION,
+  out half2 ptex0    : TEXCOORD0)
+{
+  ppos = mul(ModelViewProj, position);
+  ptex0 = position.xy * TextureScale;
+}

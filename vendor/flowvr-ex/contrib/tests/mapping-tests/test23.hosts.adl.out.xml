@@ -1,0 +1,48 @@
+        <hostlist>
+            <host name="pc2" from="primes_parallelfromport.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_parallelfromport.csv,capture" />
+            </hostlist>
+        <hostlist>
+            <host name="pc3" from="primes_parallelfromport.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc3" from="primes_parallelfromport.csv,visu" />
+            </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_parallelfromport.csv" />
+            <host name="pc2" from="primes_parallelfromport.csv" />
+            <host name="pc3" from="primes_parallelfromport.csv" />
+            <host name="pc4" from="primes_parallelfromport.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallelfromport.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_parallelfromport.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc3" from="primes_parallelfromport.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc4" from="primes_parallelfromport.csv,compute" />
+            </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_parallelfromport.csv,compute,primes/compute/0" />
+            <host name="pc2" from="primes_parallelfromport.csv,compute,primes/compute/1" />
+            <host name="pc3" from="primes_parallelfromport.csv,compute,primes/compute/2" />
+            <host name="pc4" from="primes_parallelfromport.csv,compute,primes/compute/3" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_parallelfromport.csv,compute,primes/compute/0" />
+            </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_parallelfromport.csv,compute,primes/compute/1" />
+            </hostlist>
+            <hostlist>
+                <host name="pc3" from="primes_parallelfromport.csv,compute,primes/compute/2" />
+            </hostlist>
+            <hostlist>
+                <host name="pc4" from="primes_parallelfromport.csv,compute,primes/compute/3" />
+            </hostlist>

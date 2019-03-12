@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes" ?>
+<commands>
+    <dest>localhost</dest>
+    <addobject id="primes/capture/singleton" class="flowvr.plugins.Regulator" />
+    <dest>localhost</dest>
+    <addobject id="primes/visu/singleton" class="flowvr.plugins.Regulator" />
+    <dest>localhost</dest>
+    <addobject id="primes/compute/parallel/0" class="flowvr.plugins.Regulator" />
+    <dest>localhost</dest>
+    <addobject id="primes/compute/parallel/1" class="flowvr.plugins.Regulator" />
+    <dest>localhost</dest>
+    <addobject id="primes/compute/parallel/2" class="flowvr.plugins.Regulator" />
+    <dest>localhost</dest>
+    <addobject id="primes/compute/parallel/3" class="flowvr.plugins.Regulator" />
+    <dest>localhost</dest>
+    <addobject id="primes/Merge/Node/Merge" class="flowvr.plugins.Merge">
+        <parameters>
+            <info>Each time it receives a message on each input port, it sends one message consisting of the stamp of the message received on in0 and  the concatenation of the date received on in0, in1, ... inNb-1</info>
+            <trace>0</trace>
+            <nb>4</nb>
+        </parameters>
+    </addobject>
+    <dest>localhost</dest>
+    <addobject id="primes/PresignalPrimesRequest" class="flowvr.plugins.PreSignal">
+        <parameters>
+            <info>Filter that adds nb (a parameter) initial messages, then forward incoming messages to output (used to boot cycles). 1 parameter. 'nb':  number of initial messages</info>
+            <trace>0</trace>
+            <nb>1</nb>
+        </parameters>
+    </addobject>
+    <dest>localhost</dest>
+    <addobject id="primes/cPrimesRequest2/Node" class="flowvr.plugins.PreSignal">
+        <parameters>
+            <info>A filter for routing messages (full or stamps). Just send each message received on 'in' port on  'out' port.  Uses the  FilterPreSignal with parameter 'nb' set to 0 (no presignal) by default. </info>
+            <trace>0</trace>
+            <nb>0</nb>
+        </parameters>
+    </addobject>
+    <dest>localhost</dest>
+    <addobject id="primes/greedyKeys/patternSync/filter/0" class="flowvr.plugins.FilterIt">
+        <parameters>
+            <info>Forward on its  output  the messages received on its input having the same it numbers than the ones received on the order port. Discard other messages  (filter usually used with a synchronizer).</info>
+            <trace>0</trace>
+        </parameters>
+    </addobject>
+    <dest>localhost</dest>
+    <addobject id="primes/greedyKeys/patternSync/PreSignal" class="flowvr.plugins.PreSignal">
+        <parameters>
+            <info>Filter that adds nb (a parameter) initial messages, then forward incoming messages to output (used to boot cycles). 1 parameter. 'nb':  number of initial messages</info>
+            <trace>0</trace>
+            <nb>1</nb>
+        </parameters>
+    </addobject>
+    <dest>localhost</dest>
+    <addobject id="primes/greedyKeys/patternSync/sync" class="flowvr.plugins.GreedySynchronizor">
+        <parameters>
+            <info>Every time it receives a message on endIt port,                 &#x09;&#x09;it looks for the most recent message received on                 &#x09;&#x09;stamps port and sends to order port  the stamp of                 &#x09;&#x09;this message. Used for implementing  greedy                 &#x09;&#x09;(subsampling) filtering. It uses 4 different parameters.                &#x09;&#x09; min: minimum number of messages left in the queue                 &#x09;&#x09;(0: will not order to repeat previously sent messages.                 &#x09;&#x09;1: will repeat previously forwarded message if                 &#x09;&#x09;nothing newer available). max: maximum number of messages                &#x09;&#x09;that are kept in the queue. buffer: todo. stampname: todo</info>
+            <trace>0</trace>
+            <min>0</min>
+            <max>2147483647</max>
+            <buffer>4</buffer>
+            <stampname>it</stampname>
+            <advance>1</advance>
+        </parameters>
+    </addobject>
+    <flush />
+    <dest>localhost</dest>
+    <addroute id="com0">
+        <source id="primes/Merge/Node/Merge" port="out" messagetype="full" />
+        <action id="primes/visu/singleton" messagetype="full">
+            <port>primesIn</port>
+        </action>
+    </addroute>
+    <addroute id="com1">
+        <source id="primes/compute/parallel/0" port="primesOut" messagetype="full" />
+        <action id="primes/Merge/Node/Merge" messagetype="full">
+            <port>in0</port>
+        </action>
+    </addroute>
+    <addroute id="com2">
+        <source id="primes/compute/parallel/1" port="primesOut" messagetype="full" />
+        <action id="primes/Merge/Node/Merge" messagetype="full">
+            <port>in1</port>
+        </action>
+    </addroute>
+    <addroute id="com3">
+        <source id="primes/compute/parallel/2" port="primesOut" messagetype="full" />
+        <action id="primes/Merge/Node/Merge" messagetype="full">
+            <port>in2</port>
+        </action>
+    </addroute>
+    <addroute id="com4">
+        <source id="primes/compute/parallel/3" port="primesOut" messagetype="full" />
+        <action id="primes/Merge/Node/Merge" messagetype="full">
+            <port>in3</port>
+        </action>
+    </addroute>
+    <addroute id="com5">
+        <source id="primes/capture/singleton" port="keysOut" messagetype="full" />
+        <action id="primes/greedyKeys/patternSync/filter/0" messagetype="full">
+            <port>in</port>
+        </action>
+    </addroute>
+    <addroute id="com6">
+        <source id="primes/greedyKeys/patternSync/filter/0" port="out" messagetype="full" />
+        <action id="primes/visu/singleton" messagetype="full">
+            <port>keysIn</port>
+        </action>
+    </addroute>
+    <addroute id="com7">
+        <source id="primes/cPrimesRequest2/Node" port="out" messagetype="stamps" />
+        <action id="primes/compute/parallel/0" messagetype="stamps">
+            <port>beginIt</port>
+        </action>
+    </addroute>
+    <addroute id="com8">
+        <source id="primes/cPrimesRequest2/Node" port="out" messagetype="stamps" />
+        <action id="primes/compute/parallel/1" messagetype="stamps">
+            <port>beginIt</port>
+        </action>
+    </addroute>
+    <addroute id="com9">
+        <source id="primes/cPrimesRequest2/Node" port="out" messagetype="stamps" />
+        <action id="primes/compute/parallel/2" messagetype="stamps">
+            <port>beginIt</port>
+        </action>
+    </addroute>
+    <addroute id="com10">
+        <source id="primes/cPrimesRequest2/Node" port="out" messagetype="stamps" />
+        <action id="primes/compute/parallel/3" messagetype="stamps">
+            <port>beginIt</port>
+        </action>
+    </addroute>
+    <addroute id="com11">
+        <source id="primes/PresignalPrimesRequest" port="out" messagetype="stamps" />
+        <action id="primes/cPrimesRequest2/Node" messagetype="stamps">
+            <port>in</port>
+        </action>
+    </addroute>
+    <addroute id="com12">
+        <source id="primes/greedyKeys/patternSync/sync" port="order" messagetype="stamps" />
+        <action id="primes/greedyKeys/patternSync/filter/0" messagetype="stamps">
+            <port>order</port>
+        </action>
+    </addroute>
+    <addroute id="com13">
+        <source id="primes/greedyKeys/patternSync/PreSignal" port="out" messagetype="stamps" />
+        <action id="primes/greedyKeys/patternSync/sync" messagetype="stamps">
+            <port>endIt</port>
+        </action>
+    </addroute>
+    <addroute id="com14">
+        <source id="primes/capture/singleton" port="keysOut" messagetype="full" />
+        <action id="primes/greedyKeys/patternSync/sync" messagetype="stamps">
+            <port>stamps</port>
+        </action>
+    </addroute>
+    <addroute id="com15">
+        <source id="primes/visu/singleton" port="endIt" messagetype="stamps" />
+        <action id="primes/greedyKeys/patternSync/PreSignal" messagetype="stamps">
+            <port>in</port>
+        </action>
+    </addroute>
+    <addroute id="com16">
+        <source id="primes/visu/singleton" port="endIt" messagetype="stamps" />
+        <action id="primes/PresignalPrimesRequest" messagetype="stamps">
+            <port>in</port>
+        </action>
+    </addroute>
+    <flush />
+    <dest>localhost</dest>
+    <action id="primes/capture/singleton">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/visu/singleton">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/compute/parallel/0">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/compute/parallel/1">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/compute/parallel/2">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/compute/parallel/3">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/Merge/Node/Merge">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/PresignalPrimesRequest">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/cPrimesRequest2/Node">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/greedyKeys/patternSync/filter/0">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/greedyKeys/patternSync/PreSignal">
+        <start />
+    </action>
+    <dest>localhost</dest>
+    <action id="primes/greedyKeys/patternSync/sync">
+        <start />
+    </action>
+    <flush />
+</commands>

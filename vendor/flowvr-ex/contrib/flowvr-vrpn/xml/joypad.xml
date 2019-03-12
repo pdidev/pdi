@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="LATIN1" ?>
+<device name="joypad" server="Joylin0@localhost">
+	<info>A module designed for the use of a joypad in flowvr-vrpn applications</info>
+	<input>
+		<buttons type="BUTTONCB">
+			<button id="0" name="Reset position"> </button>
+			<button id="1" name="Moving speed up"> </button>
+			<button id="2" name="Moving slow down"> </button>
+			<button id="3" name="Not used"> </button>
+			<button id="4" name="Not used"> </button>
+			<button id="5" name="Not used"> </button>
+			<button id="6" name="Active cone"> </button>
+			<button id="9" name="Moving cone"> </button>
+			<button id="8" name="Stop"> </button>
+			<button id="7" name="Zoom out"> </button>
+			<button id="10" name="Zoom in"> </button>
+		</buttons>
+		<analog type="ANALOGCB">
+			<dpad idlr="5" idtd="5" name="XxY"> </dpad>
+			<stick idtd="0" idlr="1" name="XxZ"> </stick>
+			<slider id="2" name="Slider"> </slider>
+			<stick idtd="3" idlr="4" name="Rotation around Y"> </stick>
+		</analog>
+	</input>
+</device>

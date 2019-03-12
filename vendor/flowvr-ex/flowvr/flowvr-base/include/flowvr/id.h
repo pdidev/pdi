@@ -1,0 +1,51 @@
+/******* COPYRIGHT ************************************************
+*                                                                 *
+*                             FlowVR                              *
+*                         Base Libraries                          *
+*                                                                 *
+*-----------------------------------------------------------------*
+* COPYRIGHT (C) 2003-2011                by                       *
+* INRIA and                                                       *
+* Laboratoire d'Informatique Fondamentale d'Orleans               *
+* (FRE 2490). ALL RIGHTS RESERVED.                                *
+*                                                                 *
+* This source is covered by the GNU LGPL, please refer to the     *
+* COPYING file for further information.                           *
+*                                                                 *
+*-----------------------------------------------------------------*
+*                                                                 *
+*  Original Contributors:                                         *
+*    Jeremie Allard,                                              *
+*    Ronan Gaugne,                                                *
+*    Valerie Gouranton,                                           *
+*    Loick Lecointre,                                             *
+*    Sebastien Limet,                                             *
+*    Bruno Raffin,                                                *
+*    Sophie Robert,                                               *
+*    Emmanuel Melin.                                              *
+*                                                                 * 
+*******************************************************************
+*                                                                 *
+* File: include/flowvr/id.h                                       *
+*                                                                 *
+* Contacts:                                                       *
+*  09/13/2004 Jeremie Allard <Jeremie.Allard@imag.fr>             *
+*                                                                 *
+******************************************************************/
+#ifndef FLOWVR_ID_H
+#define FLOWVR_ID_H
+
+
+namespace flowvr
+{
+
+#ifdef _MSC_VER
+typedef unsigned __int64 ID;
+#else
+typedef unsigned long long ID;
+#endif
+
+
+} // namespace flowvr
+
+#endif

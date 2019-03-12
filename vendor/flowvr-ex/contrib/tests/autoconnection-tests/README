@@ -1,0 +1,11 @@
+Test:
+        - the resolution of AUTO/SAMEAS ports (resolveMsgTypes controller)
+        - the automatic insertion of connections (setConnections controller)
+
+- This is based on the Pirmes exmaple with addition tests.
+- Tests triggered when running cmake using CTEST
+-  Many of these tests are not supposed to lead to application than can actually run correclty, but they should produce correct .net.xml networks 
+
+
+
+

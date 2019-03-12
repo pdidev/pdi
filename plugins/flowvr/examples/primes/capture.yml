@@ -1,0 +1,21 @@
+logging:
+  level: info
+
+data:
+  wait: int
+  up: int
+  down: int
+  left: int
+  right: int
+
+plugins:
+  flowvr:
+    component: module
+    wait_on_data: wait
+    output_ports:
+      keysOut:
+        event_button:
+          KEY_UP: up
+          KEY_DOWN: down
+          KEY_LEFT: left
+          KEY_RIGHT: right

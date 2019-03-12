@@ -1,0 +1,68 @@
+/**
+ * @brief top level namespace 
+ */
+namespace flowvr  
+{
+	/**
+	 * @brief deamon related classes and structures.
+	 */
+	namespace daemon {}
+	 
+	/**
+	 * @brief threads, locking and syncronization, reference counting
+	 */
+	namespace ipc {}
+	
+	/**
+	 * @brief base interfaces for buffer and message handling
+	          for both: conventional memory and sharedmemory.
+	 */    
+	namespace mem {}
+	
+	/**
+	 * @brief state machine of the daemon, using plugins, message queues, base objects for plugins
+	 */
+	namespace plugd {}
+	
+	/**
+	 * @brief application plugins, for example filters and synchronizers
+	 */
+	namespace plugins {}
+	
+	
+	/**
+	 * @brief unsorted functions and utilities, timer, signals, dumps
+	 */
+	namespace utils {}
+	
+	/**
+	 * @brief wrapping namespace for xml functionality, based on external tools (xerces, tinyxml)
+	 */ 
+	namespace xml {} 
+	
+	/**
+	 * @brief library containing code and components to aid the process of module-creation.
+	 */
+	namespace portutils {}	
+} 
+
+
+/**
+ * @brief <b>f</b>lowvr-<b>t</b>oo<b>l</b>s, basic transformation math (vec, quat, matrix), command line handling
+ *        in flowvr-module code, base classes for chunks (joinable, structured messages) (flowvvr-render base-classes).
+ */    
+namespace ftl  
+{
+	/**
+	 * @brief abstract type system that could be used to structure message content, wraps mainly
+ 	 *        ftl defined types (vec, quat, matrix) and C-base types. Includes as well conversion routines
+ 	 *        to and from strings. 
+ 	 */
+	namespace Type {} 
+}
+
+
+ /**
+ * @defgroup Filters
+ * @defgroup Messagehandling
+ */

@@ -1,0 +1,57 @@
+syntax on " colour syntax in Perl,HTML,PHP etc
+
+set incsearch " jumps to search word as you type (annoying but excellent)
+set wildignore=*.o,*.obj,*.bak,*.exe
+set shiftwidth=4
+set softtabstop=4
+
+filetype indent on
+set expandtab
+
+set cindent
+
+set cino=
+
+"set gfn=URW\ Gothic\ L\ Semi-Bold\ 12
+set foldmethod=syntax
+set nocompatible
+
+set makeprg=./maker
+
+"FlowVR stuff!
+"Run daemon!
+map <F10> :!flowvrd & >/dev/null <CR>
+"Killall
+map <F11> :!flowvr-kill & killall -9 flowvrd <CR>
+"Launch app
+command! -nargs=+ Launch :!flowvr -L -s -x <args>
+
+
+function! LoadTemplate()
+      silent! 0r ~/.vim/skel/tmpl.%:e:e
+"      silent! %s/%component_name%/\=expand("%:t:r:r")/g 
+"      silent! %s/%Component_Name%/\=expand("%:t:r:r")/g 
+"      silent %s/%COMPONENT_NAME%/\=expand("%:t:r:r")/g
+        " Highlight %VAR% placeholders with the Todo colour group
+         syn match Todo "%\u\+%" containedIn=ALL
+endfunction
+
+autocmd! BufNewFile * call LoadTemplate()
+        "Jump between %VAR% placeholders in Normal mode with
+        " <Ctrl-p>
+nnoremap <c-p> /%\u.\{-1,}%<cr>c/%/e<cr>
+        "Jump between %VAR% placeholders in Insert mode with
+        " <Ctrl-p>
+inoremap <c-p> <ESC>/%\u.\{-1,}%<cr>c/%/e<cr>
+
+
+"Omnicpp
+set nocp
+filetype plugin on
+map <F12> :!ctags-exuberant -R --c++-kinds=+p --fields=+iaS --extra=+q --languages=c++ .<CR>
+let OmniCpp_ShowPrototypeInAbbr = 1
+autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
+autocmd InsertLeave * if pumvisible() == 0|pclose|endif
+
+
+"setlocal spell spelllang=en_us

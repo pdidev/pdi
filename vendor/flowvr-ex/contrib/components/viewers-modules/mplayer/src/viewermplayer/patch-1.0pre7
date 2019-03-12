@@ -1,0 +1,830 @@
+diff -urN ../MPlayer-1.0pre7/input/flowvr.cpp ./input/flowvr.cpp
+--- ../MPlayer-1.0pre7/input/flowvr.cpp	1970-01-01 01:00:00.000000000 +0100
++++ ./input/flowvr.cpp	2005-11-17 17:41:00.187049675 +0100
+@@ -0,0 +1,72 @@
++
++extern "C" {
++#include "../config.h"
++
++#include "../mp_msg.h"
++#include "../help_mp.h"
++#include "input.h"
++}
++
++#include <flowvr/module.h>
++
++static flowvr::ModuleAPI *flowvr_module;
++static flowvr::InputPort *flowvr_port;
++static int last_it = -1;
++
++extern "C"
++int
++mp_input_flowvr_init(void) {
++  
++  std::vector<flowvr::Port *> ports;
++  flowvr_port = new flowvr::InputPort("in");
++  ports.push_back(flowvr_port);
++
++  flowvr_module = flowvr::initModule(ports,"IN");
++
++  return flowvr_module ? 1 : 0;
++
++}
++
++extern "C"
++int
++mp_input_flowvr_read(int fd, char *dest, int s) {
++  if (!flowvr_module)
++    return MP_INPUT_NOTHING;
++  
++  flowvr::Message m;
++  if (!flowvr_module->wait())
++    return MP_INPUT_DEAD;
++  flowvr_module->get(flowvr_port, m);
++
++  if (!m.valid())
++    return MP_INPUT_NOTHING;
++
++  int it;
++  m.stamps.read(flowvr_port->stamps->it,it);
++  if (last_it == it) 
++    return MP_INPUT_NOTHING;
++  last_it = it;
++
++  int size = (m.data.getSize() > s) ? s : m.data.getSize();
++  
++  if (size == 0)
++    return MP_INPUT_NOTHING;
++
++  memcpy(dest, m.data.getRead<char>(0), size);
++
++  dest[size] = '\0';
++  
++  std::cerr << "FLOWVR: " << dest << std::endl;
++
++  return m.data.getSize();
++
++}
++
++extern "C"
++void
++mp_input_flowvr_close(int fd) {
++
++  if (flowvr_module)
++    flowvr_module->close();
++
++}
+diff -urN ../MPlayer-1.0pre7/input/flowvr.h ./input/flowvr.h
+--- ../MPlayer-1.0pre7/input/flowvr.h	1970-01-01 01:00:00.000000000 +0100
++++ ./input/flowvr.h	2005-11-17 17:41:00.187049675 +0100
+@@ -0,0 +1,8 @@
++int
++mp_input_flowvr_init(void);
++
++int
++mp_input_flowvr_read(int fd, char *dest, int s);
++
++void
++mp_input_flowvr_close(int fd);
+diff -urN ../MPlayer-1.0pre7/input/input.c ./input/input.c
+--- ../MPlayer-1.0pre7/input/input.c	2005-04-15 16:52:33.000000000 +0200
++++ ./input/input.c	2005-11-17 17:41:00.188049526 +0100
+@@ -34,6 +34,8 @@
+ #include <lirc/lircc.h>
+ #endif
+ 
++#include "flowvr.h"
++
+ /// This array defines all known commands.
+ /// The first field is an id used to recognize the command without too many strcmp.
+ /// The second is obviously the command name.
+@@ -243,7 +245,7 @@
+   { 0, NULL }
+ };
+ 
+-// This is the default binding. The content of input.conf overrides these.
++/// This is the default binding. The content of input.conf overrides these.
+ // The first arg is a null terminated array of key codes.
+ // The second is the command
+ 
+@@ -418,7 +420,7 @@
+ static mp_cmd_t* ar_cmd = NULL;
+ static unsigned int ar_delay = 100, ar_rate = 8, last_ar = 0;
+ 
+-static int use_joystick = 1, use_lirc = 1, use_lircc = 1;
++static int use_joystick = 1, use_lirc = 1, use_lircc = 1, use_flowvr = 1;
+ static char* config_file = "input.conf";
+ 
+ static char* js_dev = NULL;
+@@ -449,6 +451,8 @@
+   { "lirc", &use_lirc, CONF_TYPE_FLAG, CONF_GLOBAL, 0, 1, NULL },
+   { "nolircc", &use_lircc, CONF_TYPE_FLAG, CONF_GLOBAL, 1, 0, NULL },
+   { "lircc", &use_lircc, CONF_TYPE_FLAG, CONF_GLOBAL, 0, 1, NULL },
++  { "noflowvr", &use_flowvr, CONF_TYPE_FLAG, CONF_GLOBAL, 1, 0, NULL },
++  { "flowvr", &use_flowvr, CONF_TYPE_FLAG, CONF_GLOBAL, 0, 1, NULL },
+   { NULL, NULL, 0, 0, 0, 0, NULL}
+ };
+ 
+@@ -1509,7 +1513,7 @@
+   file = config_file[0] != '/' ? get_path(config_file) : config_file;
+   if(!file)
+     return;
+-  
++
+   if( !mp_input_parse_config(file)) {
+     // free file if it was allocated by get_path(),
+     // before it gets overwritten
+@@ -1555,6 +1559,12 @@
+   }
+ #endif
+ 
++  if(use_flowvr) {
++    int fd = mp_input_flowvr_init();
++    if(fd > 0)
++      mp_input_add_cmd_fd(fd,0,mp_input_flowvr_read,mp_input_flowvr_close);
++  }
++
+   if(in_file) {
+     struct stat st;
+     if(stat(in_file,&st))
+diff -urN ../MPlayer-1.0pre7/input/Makefile ./input/Makefile
+--- ../MPlayer-1.0pre7/input/Makefile	2004-06-24 14:52:15.000000000 +0200
++++ ./input/Makefile	2005-11-17 17:41:00.188049526 +0100
+@@ -4,9 +4,12 @@
+ LIBNAME = libinput.a
+ 
+ SRCS=input.c joystick.c lirc.c 
++CXX_SRCS=flowvr.cpp
+ OBJS=$(SRCS:.c=.o)
++CXX_OBJS=$(CXX_SRCS:.cpp=.o)
+ 
+ CFLAGS  = $(OPTFLAGS) -I. -I.. $(EXTRA_INC)
++CXXFLAGS  = $(CFLAGS) $(FLOWVR_INC)
+ 
+ .SUFFIXES: .c .o
+ 
+@@ -14,8 +17,11 @@
+ .c.o:
+ 	$(CC) -c $(CFLAGS) -o $@ $<
+ 
+-$(LIBNAME):     $(OBJS)
+-	$(AR) r $(LIBNAME) $(OBJS)
++.cpp.o:
++	$(CXX) -c $(CXXFLAGS) -o $@ $<
++
++$(LIBNAME):     $(OBJS)  $(CXX_OBJS)
++	$(AR) r $(LIBNAME) $(OBJS) $(CXX_OBJS)
+ 	$(RANLIB) $(LIBNAME)
+ 
+ all:    $(LIBNAME)
+diff -urN ../MPlayer-1.0pre7/libvo/Makefile ./libvo/Makefile
+--- ../MPlayer-1.0pre7/libvo/Makefile	2004-10-24 00:43:19.000000000 +0200
++++ ./libvo/Makefile	2005-11-17 17:41:00.188049526 +0100
+@@ -4,23 +4,31 @@
+ LIBNAME = libvo.a
+ 
+ SRCS=geometry.c aspect.c aclib.c osd.c font_load.c gtf.c spuenc.c video_out.c vo_null.c vo_mpegpes.c vo_yuv4mpeg.c $(OPTIONAL_SRCS) sub.c font_load_ft.c
++CXX_SRCS=vo_flowvr.cpp
+ OBJS=$(SRCS:.c=.o)
++CXX_OBJS=$(CXX_SRCS:.cpp=.o)
+ 
+ ifeq ($(VIDIX),yes)
+ SRCS += vosub_vidix.c
+ endif
+ 
+-CFLAGS  = $(OPTFLAGS) -I. -I.. -I../osdep $(FREETYPE_INC) $(SDL_INC) $(X11_INC) $(EXTRA_INC) $(DXR2_INC) $(DIRECTFB_INC) -DMPG12PLAY #-Wall
++CFLAGS  = $(OPTFLAGS) -I. -I.. -I../osdep $(FREETYPE_INC) $(SDL_INC) $(X11_INC) $(EXTRA_INC) $(DXR2_INC) $(DIRECTFB_INC) $(FLOWVR_INC) -DMPG12PLAY #-Wall
+ 
+-.SUFFIXES: .c .o
++CXX = g++
++CXXFLAGS = $(CFLAGS) `pkg-config --cflags flowvr-render`
++
++.SUFFIXES: .c .o .cpp
+ 
+ # .PHONY: all clean
+ 
+ .c.o:
+ 	$(CC) -c $(CFLAGS) -o $@ $<
+ 
+-$(LIBNAME):     $(OBJS)
+-	$(AR) r $(LIBNAME) $(OBJS)
++.cpp.o:
++	$(CXX) -c $(CXXFLAGS) -o $@ $<
++
++$(LIBNAME):     $(OBJS) $(CXX_OBJS)
++	$(AR) r $(LIBNAME) $(OBJS) $(CXX_OBJS)
+ 	$(RANLIB) $(LIBNAME)
+ 
+ vo_mpegpes.o: vo_mpegpes.c
+diff -urN ../MPlayer-1.0pre7/libvo/video_out.c ./libvo/video_out.c
+--- ../MPlayer-1.0pre7/libvo/video_out.c	2004-12-21 21:33:51.000000000 +0100
++++ ./libvo/video_out.c	2005-11-17 17:41:00.188049526 +0100
+@@ -129,6 +129,7 @@
+ #ifdef HAVE_MD5SUM
+ extern vo_functions_t video_out_md5sum;
+ #endif
++extern vo_functions_t video_out_flowvr;
+ 
+ vo_functions_t* video_out_drivers[] =
+ {
+@@ -248,6 +249,7 @@
+ #ifdef HAVE_MD5SUM
+     &video_out_md5sum,
+ #endif
++    &video_out_flowvr,
+         NULL
+ };
+ 
+diff -urN ../MPlayer-1.0pre7/libvo/vo_flowvr.cpp ./libvo/vo_flowvr.cpp
+--- ../MPlayer-1.0pre7/libvo/vo_flowvr.cpp	1970-01-01 01:00:00.000000000 +0100
++++ ./libvo/vo_flowvr.cpp	2005-11-17 17:41:00.189049377 +0100
+@@ -0,0 +1,535 @@
++/* ------------------------------------------------------------------------- */
++
++/* 
++ * vo_pnm.c, PPM/PGM/PGMYUV Video Output Driver for MPlayer
++ *
++ * 
++ * Written by Ivo van Poorten. (C) Copyright 2004, 2005.
++ * Licensed under GNU General Public License version 2.
++ *
++ *
++ * Changelog
++ * 
++ * 2004-01-15   Replaced suboption parser by call to subopt-helper.
++ *              Got rid of stupid malloc_failed function.
++ * 2004-09-16   Second draft. It now acts on VOCTRL_DRAW_IMAGE and does not
++ *              maintain a local copy of the image if the format is YV12.
++ *              Speed improvement and uses less memory.
++ * 2004-09-09   First draft.
++ *
++ *
++ */
++
++/* ------------------------------------------------------------------------- */
++
++/* Global Includes */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <errno.h>
++#include <sys/stat.h>
++
++/* ------------------------------------------------------------------------- */
++
++/* Local Includes */
++
++extern "C" {
++#include "config.h"
++#include "subopt-helper.h"
++#include "mp_msg.h"
++#include "video_out.h"
++#include "video_out_internal.h"
++#include "mplayer.h"			/* for exit_player() */
++#include "help_mp.h"
++}
++
++#include <flowvr/module.h>
++#include <flowvr/render/chunk.h>
++#include <flowvr/render/chunkwriter.h>
++
++/* ------------------------------------------------------------------------- */
++
++/* Defines */
++
++using namespace flowvr::render;
++using flowvr::ID;
++
++/* ------------------------------------------------------------------------- */
++
++/* Info */
++
++static vo_info_t info=
++{
++	"FlowVR",
++	"flowvr",
++	"Clement Menier (Clement.Menier@inrialpes.fr)",
++	""
++};
++
++extern "C"
++LIBVO_EXTERN (flowvr)
++
++/* ------------------------------------------------------------------------- */
++
++/* Global Variables */
++
++static char *flowvr_port_name = NULL;
++static bool front = false;
++
++static flowvr::ModuleAPI *flowvr_module = NULL;
++static flowvr::StampInfo *flowvr_pr_stamp = NULL;
++static float pixel_ratio = 1;
++static ChunkRenderWriter scene;
++static SceneOutputPort *flowvr_scene_port = NULL;
++static ID idP, idT, idTY, idTU, idTV, idVB, idIB, idVS, idPS, idPS_R, idPS_YUV, idPS_YUV_R;
++
++static float ratio = 1;
++static int last_nx=0;
++static int last_ny=0;
++static bool last_rect = false;
++static BBox b;
++static Vec3f position(0,0,0);
++static int dataType[2] = { Type::Vec3f, Type::Vec2f };
++static int gen = 0;
++static bool last_yv12 = false;
++
++struct Vertex
++{
++  Vec3f pos;
++  Vec2f uv;
++};
++
++
++static bool isPow2(int x)
++{
++  return (x&(x-1))==0;
++}
++
++/** \brief Pre-initialisation.
++ *
++ * This function is called before initialising the video output driver. It
++ * parses all suboptions and sets variables accordingly. If an error occurs
++ * (like an option being out of range, not having any value or an unknown
++ * option is stumbled upon) the player will exit.
++ *
++ * \param arg   A string containing all the suboptions passed to the video
++ *              output driver.
++ *
++ * \return 0    All went well.
++ */
++
++static uint32_t preinit(const char *arg)
++{
++
++    opt_t subopts[] = {
++        {"port",        OPT_ARG_MSTRZ,  &flowvr_port_name,     NULL, 0},
++        {NULL, 0, NULL, NULL, 0}
++    };
++
++    const char *info_message = NULL;
++
++    mp_msg(MSGT_VO, MSGL_INFO, "%s: %s\n", info.short_name,
++                                            MSGTR_VO_ParsingSuboptions);
++
++    if (subopt_parse(arg, subopts) != 0) {
++        return (uint32_t)-1;
++    }
++
++    mp_msg(MSGT_VO, MSGL_INFO, "%s: %s\n", info.short_name, "Viewer.");
++
++    if (!flowvr_port_name) flowvr_port_name = strdup("scene");
++
++    std::vector<flowvr::Port*> ports;
++    flowvr_scene_port = new SceneOutputPort(flowvr_port_name);
++    ports.push_back(flowvr_scene_port);
++    flowvr_module = flowvr::initModule(ports,"Render");
++
++    if (flowvr_module) {
++      int matrix = ChunkPrimParam::ModelViewProjection;
++      if (front)
++	matrix = ChunkPrimParam::ChunkPrimParam::Projection;
++      
++      idP = flowvr_module->generateID();
++      idT = flowvr_module->generateID();
++      idTY = flowvr_module->generateID();
++      idTU = flowvr_module->generateID();
++      idTV = flowvr_module->generateID();
++      idVB = flowvr_module->generateID();
++      idIB = flowvr_module->generateID();
++      idVS = flowvr_module->generateID();
++      idPS = flowvr_module->generateID();
++      idPS_R = flowvr_module->generateID();
++      idPS_YUV = flowvr_module->generateID();
++      idPS_YUV_R = flowvr_module->generateID();
++      
++      ChunkTexture* texture = scene.addDefaultTexture(idT);
++      texture->level = 0; // no mipmap
++      texture->gen = 0;
++      
++      ChunkTexture* textureY = scene.addDefaultTexture(idTY);
++      textureY->level = 0; // no mipmap
++      textureY->gen = 0;
++      
++      ChunkTexture* textureU = scene.addDefaultTexture(idTU);
++      textureU->level = 0; // no mipmap
++      textureU->gen = 0;
++      
++      ChunkTexture* textureV = scene.addDefaultTexture(idTV);
++      textureV->level = 0; // no mipmap
++      textureV->gen = 0;
++      
++      gen++;
++      
++      if (!front) b=BBox(Vec3f(-1,-1,0)+position,Vec3f(1,1,0)+position);
++      ChunkVertexBuffer* vb = scene.addVertexBuffer(idVB, 4, 2, dataType, b);
++      vb->gen=gen;
++      Vertex* vertex = (Vertex*)vb->data();
++      vertex[0].pos = Vec3f(-1,-1,0)+position; vertex[0].uv = Vec2f(0,1);
++      vertex[1].pos = Vec3f( 1,-1,0)+position; vertex[1].uv = Vec2f(1,1);
++      vertex[2].pos = Vec3f( 1, 1,0)+position; vertex[2].uv = Vec2f(1,0);
++      vertex[3].pos = Vec3f(-1, 1,0)+position; vertex[3].uv = Vec2f(0,0);
++      
++      ChunkIndexBuffer* ib = scene.addIndexBuffer(idIB, 4, Type::Byte, ChunkIndexBuffer::Quad);
++      unsigned char* ind = (unsigned char*)ib->data();
++      ind[0] = 0;
++      ind[1] = 1;
++      ind[2] = 2;
++      ind[3] = 3;
++      
++      scene.loadVertexShader(idVS, "shaders/video_v.cg");
++      scene.loadPixelShader(idPS, "shaders/video_p.cg");
++      scene.loadPixelShader(idPS_R, "shaders/video_rect_p.cg");
++      scene.loadPixelShader(idPS_YUV, "shaders/video_yuv_p.cg");
++      scene.loadPixelShader(idPS_YUV_R, "shaders/video_yuv_rect_p.cg");
++      
++      scene.addPrimitive(idP,"Video");
++      scene.addParamID(idP, ChunkPrimParam::VSHADER,"",idVS);
++      scene.addParamID(idP, ChunkPrimParam::PSHADER,"",idPS);
++      scene.addParamID(idP, ChunkPrimParam::VBUFFER_ID,"position",idVB);
++      scene.addParamID(idP, ChunkPrimParam::VBUFFER_ID,"texcoord0",idVB);
++      scene.addParamID(idP, ChunkPrimParam::VBUFFER_NUMDATA,"texcoord0",1);
++      scene.addParamID(idP, ChunkPrimParam::IBUFFER_ID,"",idIB);
++      scene.addParamEnum(idP, ChunkPrimParam::PARAMVSHADER, "Proj", ChunkPrimParam::Projection);
++      //scene.addParamEnum(idP, ChunkPrimParam::PARAMVSHADER, "ModelViewProj", ChunkPrimParam::ModelViewProjection);
++      scene.addParamEnum(idP, ChunkPrimParam::PARAMVSHADER, "ModelViewProj", matrix);
++      scene.addParamID(idP, ChunkPrimParam::TEXTURE, "texture", idT);
++      scene.addParamID(idP, ChunkPrimParam::TEXTURE, "textureY", idTY);
++      scene.addParamID(idP, ChunkPrimParam::TEXTURE, "textureU", idTU);
++      scene.addParamID(idP, ChunkPrimParam::TEXTURE, "textureV", idTV);
++      if (front)
++      {
++	scene.addParam(idP,ChunkPrimParam::ORDER,"",-10);
++	scene.addParam(idP,ChunkPrimParam::PARAMOPENGL,"DepthTest",false);
++	scene.addParam(idP,ChunkPrimParam::PARAMOPENGL,"DepthWrite",false);
++      }
++      
++      scene.put(flowvr_scene_port);
++    }
++    
++    
++    mp_msg(MSGT_VO, MSGL_INFO, "%s: %s\n", info.short_name,
++	   MSGTR_VO_SuboptionsParsedOK);
++    return 0;
++}
++
++/* ------------------------------------------------------------------------- */
++
++/* ------------------------------------------------------------------------- */
++
++/** \brief Configure the video output driver.
++ *
++ * This functions configures the video output driver. It determines the
++ * width and height of the image(s) and creates the output directory.
++ *
++ *  \return 0             All went well.
++ */
++
++static uint32_t config(uint32_t width, uint32_t height, uint32_t d_width,
++                       uint32_t d_height, uint32_t fullscreen, char *title,
++                       uint32_t format)
++{
++
++    pixel_ratio = (float(width)/d_width)/(float(height)/d_height);
++
++    if (vo_config_count > 0 ) { /* Already configured */
++        return 0;
++    }
++
++    return 0;
++}
++
++/** \brief Sends a texture on the flowvr output port.
++ *
++ * \param mpi       The image to write.
++ *
++ * \return none     The player will exit if anything goes wrong.
++ */
++
++void flowvr_send_texture(mp_image_t *mpi)
++{
++    bool scratch = true;
++    int nx = mpi->w;
++    int ny = mpi->h;
++    uint8_t *rgbimage = mpi->planes[0];
++
++    if (!flowvr_module) {
++      mp_msg(MSGT_VO, MSGL_ERR, "Image sent %dx%d", nx, ny);
++      return;
++    }
++      
++    if (!flowvr_module->wait())
++        exit_player(MSGTR_Exit_error);
++    
++    int imgtype = ChunkTexture::RGB;
++    int pixtype = Type::Vec3b;
++    
++    ChunkTexture* texture = scene.addTexture(idT, imgtype, pixtype, nx, ny);
++    
++    float newRatio = (float)nx/(float)(ny*pixel_ratio);
++    
++    if (newRatio != ratio)
++    {
++      ratio = newRatio;
++      scratch = false;
++      //scene.addParam(idP,ChunkPrimParam::TRANSFORM_SCALE,"",Vec3f(newRatio,1,1));
++      if (!front) b=BBox(Vec3f(-ratio,-1,0)+position,Vec3f(ratio,1,0)+position);
++      ChunkVertexBuffer* vb = scene.addVertexBuffer(idVB, 4, 2, dataType, b);
++      vb->gen=gen;
++      Vertex* vertex = (Vertex*)vb->data();
++      vertex[0].pos = Vec3f(-ratio,-1,0)+position; vertex[0].uv = Vec2f(0,1);
++      vertex[1].pos = Vec3f( ratio,-1,0)+position; vertex[1].uv = Vec2f(1,1);
++      vertex[2].pos = Vec3f( ratio, 1,0)+position; vertex[2].uv = Vec2f(1,0);
++      vertex[3].pos = Vec3f(-ratio, 1,0)+position; vertex[3].uv = Vec2f(0,0);
++    }
++
++    // Check if power of two and square
++
++    bool rect (nx != ny || !isPow2(nx));
++
++    if (rect)
++    {
++      if (!last_rect || last_yv12) {
++	scratch = false;
++	scene.addParamID(idP, ChunkPrimParam::PSHADER,"",idPS_R);
++      }
++      if (last_nx != nx || last_ny != ny) {
++	scratch = false;
++	scene.addParam(idP, ChunkPrimParam::PARAMPSHADER,"texsize",Vec2f(nx,ny));
++      }
++    }
++    else
++    {
++      if (last_rect || last_yv12) {
++	scratch = false;
++	scene.addParamID(idP, ChunkPrimParam::PSHADER,"",idPS);
++      }
++    }
++
++    texture->level = 0; // no mipmap
++    texture->gen = gen++;
++    // TODO: Optimize
++    memcpy(texture->data(),rgbimage,texture->dataSize());
++
++    scene.put(flowvr_scene_port, scratch);
++
++    last_nx = nx;
++    last_ny = ny;
++    last_rect = rect;
++
++    last_yv12 = false;
++
++}
++
++/** \brief Sends a texture on the flowvr output port.
++ *
++ * \param mpi       The image to write.
++ *
++ * \return none     The player will exit if anything goes wrong.
++ */
++
++void flowvr_send_texture_yv12(mp_image_t *mpi)
++{
++    bool scratch = true;
++    int nx = mpi->w;
++    int ny = mpi->h;
++    uint8_t *planeY = mpi->planes[0];
++    uint8_t *planeU = mpi->planes[1];
++    uint8_t *planeV = mpi->planes[2];
++    uint32_t strideY = mpi->stride[0];
++    uint32_t strideU = mpi->stride[1];
++    uint32_t strideV = mpi->stride[2];
++
++    if (!flowvr_module) {
++      mp_msg(MSGT_VO, MSGL_ERR, "Image sent %dx%d", nx, ny);
++      return;
++    }
++      
++    if (!flowvr_module->wait())
++        exit_player(MSGTR_Exit_error);
++    
++    int imgtype = ChunkTexture::Grayscale;
++    int pixtype = Type::Byte;
++    
++    ChunkTexture* textureY = scene.addTexture(idTY, imgtype, pixtype, nx, ny);
++    ChunkTexture* textureU = scene.addTexture(idTU, imgtype, pixtype, nx/2, ny/2);
++    ChunkTexture* textureV = scene.addTexture(idTV, imgtype, pixtype, nx/2, ny/2);
++    
++    float newRatio = (float)nx/(float)(ny*pixel_ratio);
++    
++    if (newRatio != ratio)
++    {
++      ratio = newRatio;
++      scratch = false;
++      //scene.addParam(idP,ChunkPrimParam::TRANSFORM_SCALE,"",Vec3f(newRatio,1,1));
++      if (!front) b=BBox(Vec3f(-ratio,-1,0)+position,Vec3f(ratio,1,0)+position);
++      ChunkVertexBuffer* vb = scene.addVertexBuffer(idVB, 4, 2, dataType, b);
++      vb->gen=gen;
++      Vertex* vertex = (Vertex*)vb->data();
++      vertex[0].pos = Vec3f(-ratio,-1,0)+position; vertex[0].uv = Vec2f(0,1);
++      vertex[1].pos = Vec3f( ratio,-1,0)+position; vertex[1].uv = Vec2f(1,1);
++      vertex[2].pos = Vec3f( ratio, 1,0)+position; vertex[2].uv = Vec2f(1,0);
++      vertex[3].pos = Vec3f(-ratio, 1,0)+position; vertex[3].uv = Vec2f(0,0);
++    }
++
++    // Check if power of two and square
++
++    bool rect (nx != ny || !isPow2(nx));
++
++    if (rect)
++    {
++      if (!last_rect || !last_yv12) {
++	scratch = false;
++	scene.addParamID(idP, ChunkPrimParam::PSHADER,"",idPS_YUV_R);
++      }
++      if (last_nx != nx || last_ny != ny) {
++	scratch = false;
++	scene.addParam(idP, ChunkPrimParam::PARAMPSHADER,"texsize",Vec2f(nx,ny));
++      }
++    }
++    else
++    {
++      if (last_rect || !last_yv12) {
++	scratch = false;
++	scene.addParamID(idP, ChunkPrimParam::PSHADER,"",idPS_YUV);
++      }
++    }
++
++    textureY->level = 0; // no mipmap
++    textureY->gen = gen++;
++    // TODO: Optimize
++    memcpy(textureY->data(),planeY,textureY->dataSize());
++
++    textureU->level = 0; // no mipmap
++    textureU->gen = gen++;
++    // TODO: Optimize
++    memcpy(textureU->data(),planeU,textureU->dataSize());
++
++    textureV->level = 0; // no mipmap
++    textureV->gen = gen++;
++    // TODO: Optimize
++    memcpy(textureV->data(),planeV,textureV->dataSize());
++
++    scene.put(flowvr_scene_port,scratch);
++
++    last_nx = nx;
++    last_ny = ny;
++    last_rect = rect;
++
++    last_yv12 = true;
++}
++
++/* ------------------------------------------------------------------------- */
++
++static uint32_t draw_image(mp_image_t *mpi)
++{
++    if (mpi->flags & MP_IMGFLAG_PLANAR) { /* Planar */
++      if (mpi->flags & MP_IMGFLAG_YUV) {
++	flowvr_send_texture_yv12(mpi);
++	return VO_TRUE;
++      } else { /* Planar RGB */
++	return VO_FALSE;
++      }
++    } else { /* Packed */
++        if (mpi->flags & MP_IMGFLAG_YUV) { /* Packed YUV */
++            return VO_FALSE;
++        } else { /* Packed RGB */
++	  
++	  flowvr_send_texture(mpi);
++	  return VO_TRUE;
++        }
++    }
++
++    return VO_FALSE;
++}
++
++/* ------------------------------------------------------------------------- */
++
++static uint32_t draw_frame(uint8_t *src[])
++{
++    mp_msg(MSGT_VO, MSGL_V, "%s: draw_frame() is called!\n", info.short_name);
++    return (uint32_t)-1;
++}
++
++/* ------------------------------------------------------------------------- */
++
++static uint32_t draw_slice(uint8_t *src[], int stride[], int w, int h,
++                           int x, int y)
++{
++    return 0;
++}
++
++/* ------------------------------------------------------------------------- */
++
++static uint32_t query_format(uint32_t format)
++{
++    /* Ensure that for PPM we get Packed RGB and for PGM(YUV) we get
++     * Planar YUV */
++    if (format == IMGFMT_RGB24) {
++        return VFCAP_CSP_SUPPORTED|VFCAP_CSP_SUPPORTED_BY_HW;
++    }
++    if (format == IMGFMT_YV12) {
++      return VFCAP_CSP_SUPPORTED|VFCAP_CSP_SUPPORTED_BY_HW;
++    }
++ 
++    return 0;
++}
++
++/* ------------------------------------------------------------------------- */
++
++static uint32_t control(uint32_t request, void *data, ...)
++{
++    switch (request) {
++        case VOCTRL_QUERY_FORMAT:
++            return query_format(*((uint32_t*)data));
++        case VOCTRL_DRAW_IMAGE:
++            return draw_image((mp_image_t *)data);
++    }
++    return (uint32_t)VO_NOTIMPL;
++}
++
++/* ------------------------------------------------------------------------- */
++
++static void uninit(void)
++{
++}
++
++/* ------------------------------------------------------------------------- */
++
++static void check_events(void)
++{
++}
++
++/* ------------------------------------------------------------------------- */
++
++static void draw_osd(void)
++{
++}
++
++/* ------------------------------------------------------------------------- */
++
++static void flip_page (void)
++{
++}
++
++/* ------------------------------------------------------------------------- */
+diff -urN ../MPlayer-1.0pre7/Makefile ./Makefile
+--- ../MPlayer-1.0pre7/Makefile	2005-04-16 22:18:12.000000000 +0200
++++ ./Makefile	2005-11-17 17:41:00.190049229 +0100
+@@ -30,7 +30,7 @@
+ OBJS_MENCODER = $(SRCS_MENCODER:.c=.o)
+ OBJS_MPLAYER = $(SRCS_MPLAYER:.c=.o)
+ 
+-VO_LIBS = $(AA_LIB) $(X_LIB) $(SDL_LIB) $(GGI_LIB) $(MP1E_LIB) $(MLIB_LIB) $(SVGA_LIB) $(DIRECTFB_LIB) $(CACA_LIB)
++VO_LIBS = $(AA_LIB) $(X_LIB) $(SDL_LIB) $(GGI_LIB) $(MP1E_LIB) $(MLIB_LIB) $(SVGA_LIB) $(DIRECTFB_LIB) $(CACA_LIB) $(FLOWVR_LIB)
+ AO_LIBS = $(ARTS_LIB) $(ESD_LIB) $(JACK_LIB) $(NAS_LIB) $(SGIAUDIO_LIB) $(POLYP_LIB)
+ CODEC_LIBS = $(AV_LIB) $(FAME_LIB) $(MAD_LIB) $(VORBIS_LIB) $(THEORA_LIB) $(FAAD_LIB) $(LIBLZO_LIB) $(DECORE_LIB) $(XVID_LIB) $(DTS_LIB) $(PNG_LIB) $(Z_LIB) $(JPEG_LIB) $(ALSA_LIB) $(XMMS_LIB) $(X264_LIB)
+ COMMON_LIBS = libmpcodecs/libmpcodecs.a $(W32_LIB) $(DS_LIB) libaf/libaf.a libmpdemux/libmpdemux.a input/libinput.a postproc/libswscale.a osdep/libosdep.a $(DVDREAD_LIB) $(CODEC_LIBS) $(FREETYPE_LIB) $(TERMCAP_LIB) $(CDPARANOIA_LIB) $(MPLAYER_NETWORK_LIB) $(WIN32_LIB) $(GIF_LIB) $(MACOSX_FRAMEWORKS) $(SMBSUPPORT_LIB) $(FRIBIDI_LIB) $(FONTCONFIG_LIB) $(ENCA_LIB)
+@@ -244,7 +244,7 @@
+     ifeq ($(TARGET_WIN32),yes)
+ 	windres -o osdep/mplayer-rc.o osdep/mplayer.rc
+     endif
+-	$(CC) $(CFLAGS) -o $(PRG) $(OBJS_MPLAYER) libvo/libvo.a libao2/libao2.a $(MENU_LIBS) $(VIDIX_LIBS) $(GUI_LIBS) $(COMMON_LIBS) $(GTK_LIBS) $(VO_LIBS) $(AO_LIBS) $(EXTRA_LIB) $(LIRC_LIB) $(LIRCC_LIB) $(STATIC_LIB) $(ARCH_LIB) $(I18NLIBS) $(MATH_LIB)
++	$(CXX) $(CFLAGS) -o $(PRG) $(OBJS_MPLAYER) libvo/libvo.a libao2/libao2.a $(MENU_LIBS) $(VIDIX_LIBS) $(GUI_LIBS) $(COMMON_LIBS) $(GTK_LIBS) $(VO_LIBS) $(AO_LIBS) $(EXTRA_LIB) $(LIRC_LIB) $(LIRCC_LIB) $(STATIC_LIB) $(ARCH_LIB) $(I18NLIBS) $(MATH_LIB)
+ 
+ mplayer.exe.spec.c: libmpcodecs/libmpcodecs.a
+ 	winebuild -fPIC -o mplayer.exe.spec.c -exe mplayer.exe -mcui \
+@@ -259,7 +259,7 @@
+ 
+ ifeq ($(MENCODER),yes)
+ $(PRG_MENCODER): $(MENCODER_DEP)
+-	$(CC) $(CFLAGS) -o $(PRG_MENCODER) $(OBJS_MENCODER) libmpcodecs/libmpencoders.a $(ENCORE_LIB) $(COMMON_LIBS) $(EXTRA_LIB) $(MLIB_LIB) $(LIRC_LIB) $(LIRCC_LIB) $(ARCH_LIB) $(I18NLIBS) $(MATH_LIB)
++	$(CXX) $(CFLAGS) -o $(PRG_MENCODER) $(OBJS_MENCODER) libmpcodecs/libmpencoders.a $(ENCORE_LIB) $(COMMON_LIBS) $(EXTRA_LIB) $(MLIB_LIB) $(LIRC_LIB) $(LIRCC_LIB) $(ARCH_LIB) $(I18NLIBS) $(MATH_LIB) $(FLOWVR_LIB)
+ endif
+ 
+ codecs.conf.h: $(PRG_CFG) etc/codecs.conf
+diff -urN ../MPlayer-1.0pre7/Makefile.flowvr ./Makefile.flowvr
+--- ../MPlayer-1.0pre7/Makefile.flowvr	1970-01-01 01:00:00.000000000 +0100
++++ ./Makefile.flowvr	2005-11-17 17:41:22.061795883 +0100
+@@ -0,0 +1,19 @@
++MPLAYER-VERSION := 1.0pre7
++
++all: config.mak
++	$(MAKE)
++
++config.mak:
++	./configure --prefix=../../../../modules/mplayer
++	@echo 'CXX = g++' >> config.mak
++	@echo 'FLOWVR_INC = `pkg-config --cflags flowvr flowvr-render`' >> config.mak
++	@echo 'FLOWVR_LIB = `pkg-config --libs flowvr flowvr-render`' >> config.mak
++
++clean:
++	$(MAKE) clean
++
++distclean:
++	$(MAKE) distclean
++
++install:
++	$(MAKE) install
+\ Pas de fin de ligne à la fin du fichier.

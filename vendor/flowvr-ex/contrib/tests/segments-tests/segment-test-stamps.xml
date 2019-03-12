@@ -1,0 +1,10 @@
+<config>
+	<stamplists>
+		<stamplist name="segments">
+			<stamp name="num_segments" type="int"/>
+			<stamp name="sizes" type="array" subtype="int" size="4096"/>
+			<stamp name="signature" type="array" subtype="int" size="8192"/>
+			<stamp name="orig_keep_flag" type="int"/>
+		</stamplist>
+	</stamplists>
+</config>

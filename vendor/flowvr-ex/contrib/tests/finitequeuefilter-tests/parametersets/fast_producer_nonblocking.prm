@@ -1,0 +1,10 @@
+# we set the value to 256, arbitrarily. Note that this
+# number is not reached as the receiver purges the
+# queue of the filer at 100Hz and the sender sends
+# with 10000Hz (max); so the sender can pile up 100 messages
+# between each purging at maximum.
+finitefilterqueuetest:queue_length=256
+finitefilterqueuetest/drive-sender:freq=10000
+finitefilterqueuetest/drive-receiver:freq=100
+finitefilterqueuetest/receiver:blocking-in=false
+finitefilterqueuetest/receiver:request=1

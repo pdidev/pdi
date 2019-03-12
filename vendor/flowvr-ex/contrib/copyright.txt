@@ -1,0 +1,12 @@
+/******************************************************************
+*                                                                 *
+*                    FlowVR -Contrib                              *
+*                                                                 *
+*-----------------------------------------------------------------*
+*                                                                 *
+*   This directory contain contributions from various persons.    *
+*    The source code is  covered by different licences,           *
+*   mainly  GNU LGPL, GNU GPL and similar open source licences.   *
+*    Please refer to the opyright.txt file in each contrib dir.   *
+*                                                                 *
+*******************************************************************

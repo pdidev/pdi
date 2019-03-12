@@ -1,0 +1,15 @@
+<config>
+	<ports>
+		<port name="push" direction="out" stamps="segments" export="true"/>		
+	</ports>
+	<stamplists>
+		<stamplist name="segments" from="segment-test-stamps.xml"/>
+	</stamplists>
+	<code>
+		<path name="push" plugin="pushsegment" out="push"/>
+	</code>
+	<plugins>
+		<plugin name="pushsegment" so="pushSegmentPlug"/>
+	</plugins>
+	<services/>
+</config>

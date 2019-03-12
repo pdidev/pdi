@@ -1,0 +1,12 @@
+        <hostlist>
+            <host name="pc1" from="primes_all1.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_all1.csv,capture" />
+            </hostlist>
+        <hostlist>
+            <host name="pc2" from="primes_all1.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_all1.csv,visu" />
+            </hostlist>

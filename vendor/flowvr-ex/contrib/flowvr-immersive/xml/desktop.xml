@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="LATIN1" ?>
+<device name="DTrack">
+	<screen id="1">
+		<bottomleft x="-40.0" y="-15.0" z="-30.0"/>
+		<bottomright x="0.0" y="-15.0" z="-30.0"/>
+		<topleft x="-40.0" y="15.0" z="-30.0"/>
+	</screen>
+	<screen id="2">
+		<bottomleft x="0.0" y="-15.0" z="-30.0"/>
+		<bottomright x="40.0" y="-15.0" z="-30.0"/>
+		<topleft x="0.0" y="15.0" z="-30.0"/>
+	</screen>
+	<post_mat>
+		<right values="1.0,0.0,0.0,0.04,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0"/>
+		<left values="1.0,0.0,0.0,-0.04,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0"/>
+	</post_mat>
+</device>

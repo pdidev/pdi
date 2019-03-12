@@ -1,0 +1,11 @@
+// Terrain Pixel Shader
+// Texture
+
+half4 main(
+  half2 ptex0   : TEXCOORD0,
+  uniform sampler2D texture
+) : COLOR
+{
+  return tex2D(texture, ptex0);
+  //return half4(ptex0,0,1);
+}

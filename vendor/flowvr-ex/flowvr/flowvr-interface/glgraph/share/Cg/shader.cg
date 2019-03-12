@@ -1,0 +1,60 @@
+struct pixel_in {
+  float3 color : COLOR0;
+  float3 texcoord : TEXCOORD0;
+};
+
+struct pixel_out {
+  float4 color : COLOR;
+};	
+
+
+float
+compute_coeff(float norm)
+{
+  return 0.9*exp(5.0*norm);
+}
+
+float
+compute_norm(float coeff)
+{
+  return ln(coeff)/2.;
+}
+
+pixel_out
+main(pixel_in IN, uniform sampler2D texture : TEXUNIT0)
+{
+  pixel_out OUT;
+
+  float2 texUV = IN.texcoord.xy;
+
+  float norm =  sqrt((texUV.x-.5)*(texUV.x-0.5) + (texUV.y-0.5)*(texUV.y-0.5));
+  float angle;
+  if (texUV.x >= 0.5)
+    angle = acos((texUV.x-0.5)/norm);
+  else
+    angle = 3.1415926536 - acos(-(texUV.x-0.5)/norm);
+  if (texUV.y < 0.5) angle = -angle;
+  
+  float coeff;
+  float radius = 0.25;
+  if (norm > radius)
+     coeff = compute_coeff(norm-radius);
+  else
+     coeff = 0.9;
+  
+  texUV.x = 0.5 + 0.29*coeff*norm*cos(angle);
+  texUV.y = 0.5 + 0.29*coeff*norm*sin(angle);
+  
+  
+  if (texUV.x < 0 || texUV.x > 1 || texUV.y < 0 || texUV.y > 1)
+  {
+     OUT.color = float4(0.8, 0.8, 0.8, 1.0);
+  }
+  else
+  {
+     float3 rgb   = tex2D(texture, texUV).rgb;
+     OUT.color = float4(rgb.rgb, 1.0);
+  }
+
+  return OUT;
+}

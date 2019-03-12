@@ -1,0 +1,30 @@
+  FLOWVR-BASE Installation Notes
+
+
+    Dependencies
+
+You need the usual tools for compilation (make,gcc).
+To compile some FlowVR based tools you need pkg-config.
+For example, on a Mandrake distribution with configured urpmi sources:
+
+  urpmi -a pkgconfig
+
+
+    Compilation
+
+To compile, simply use 'make' in the root directory.
+Executables are generated in bin directory
+Libraries are generated in lib directory
+
+
+    Installation
+
+To execute the programs you must add the lib directory in
+your LD_LIBRARY_PATH:
+
+# change paths and add this in ~/.bashrc
+export LD_LIBRARY_PATH=~/flowvr-base/lib:$LD_LIBRARY_PATH
+export PKG_CONFIG_PATH=~/flowvr-base/lib/pkgconfig:$PKG_CONFIG_PATH
+
+The PKG_CONFIG_PATH is necessary to compile projects that depends
+on FlowVR.

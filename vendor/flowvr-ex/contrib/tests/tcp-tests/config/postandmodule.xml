@@ -1,0 +1,13 @@
+<config>
+	<ports>
+		<port name="out" direction="out"/>		
+	</ports>
+	<stamplists/>
+	<code>
+		<path name="iteration" plugin="iteration" out="out"/>
+	</code>
+	<plugins>
+		<plugin name="iteration" so="simpleoutPlug" service=""/>
+	</plugins>
+	<services/>
+</config>

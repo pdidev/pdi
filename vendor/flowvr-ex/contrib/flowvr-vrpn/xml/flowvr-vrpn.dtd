@@ -1,0 +1,103 @@
+<!ELEMENT device (info?,input,feedback)>
+
+<!ATTLIST device
+   name CDATA #REQUIRED
+   server CDATA #REQUIRED
+>
+
+<!ELEMENT info (#PCDATA)>
+
+<!ELEMENT input (buttons|analog|tracker)+>
+
+<!ELEMENT buttons (button)+>
+
+<!ATTLIST buttons
+   type (BUTTONCB) #REQUIRED
+>
+
+<!ELEMENT button EMPTY>
+<!ATTLIST button
+    id CDATA #REQUIRED
+    name CDATA #REQUIRED
+>
+
+<!ELEMENT analog (dpad|slider|stick)+>
+<!ATTLIST analog
+   type (ANALOGCB) #REQUIRED
+>
+
+<!ELEMENT dpad EMPTY>
+<!ATTLIST dpad 
+     idtd CDATA #REQUIRED
+     idlr CDATA #REQUIRED
+     name CDATA #REQUIRED
+>
+
+<!ELEMENT slider EMPTY>
+<!ATTLIST slider 
+     id CDATA #REQUIRED
+     name CDATA #REQUIRED
+>
+
+<!ELEMENT stick EMPTY>
+<!ATTLIST stick 
+     idtd CDATA #REQUIRED
+     idlr CDATA #REQUIRED
+     name CDATA #REQUIRED
+>
+
+<!ELEMENT tracker (tracker2room?,workspace?,(sensor)+)>
+<!ATTLIST tracker
+    name CDATA #REQUIRED
+>
+
+<!ELEMENT sensor (position|velocity|acceleration|unit2sensor)*>
+<!ATTLIST sensor
+   id CDATA #REQUIRED
+   name CDATA #REQUIRED
+>
+
+<!ELEMENT position EMPTY>
+<!ATTLIST position
+   type (TRACKERCB) #REQUIRED
+>
+
+<!ELEMENT velocity EMPTY>
+<!ATTLIST velocity
+   type (TRACKERVELCB) #REQUIRED
+>
+
+<!ELEMENT acceleration EMPTY>
+<!ATTLIST acceleration
+   type (TRACKERACCCB) #REQUIRED
+>
+
+<!ELEMENT unit2sensor EMPTY>
+<!ATTLIST unit2sensor
+   type (TRACKERUNIT2SENSORCB) #REQUIRED
+>
+
+<!ELEMENT tracker2room EMPTY>
+<!ATTLIST tracker2room
+   type (TRACKERTRACKER2ROOMCB) #REQUIRED
+>
+<!ELEMENT workspace EMPTY>
+<!ATTLIST workspace  
+   type (TRACKERWORKSPACECB) #REQUIRED
+   minX CDATA #REQUIRED
+   minY CDATA #REQUIRED
+   minZ CDATA #REQUIRED
+   maxX CDATA #REQUIRED
+   maxY CDATA #REQUIRED
+   maxZ CDATA #REQUIRED
+>
+
+
+<-- reste le pb de FORCESCPCB -->
+
+<!ELEMENT feedback (force_feedback|analog_feedback|tracker_feedback)>
+<!ELEMENT force_feedback EMPTY>
+<!ATTLIST force_feedback
+  id (plane|trimesh|field) #REQUIRED
+  name  CDATA #REQUIRED
+>

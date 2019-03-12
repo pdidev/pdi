@@ -1,0 +1,5 @@
+<commands>
+    <run metamoduleid="primes/capture/singleton">flowvr-run-ssh -v -e DISPLAY :0 ' localhost ' capture  </run>
+    <run metamoduleid="primes/visu/singleton">flowvr-run-ssh -v -e DISPLAY :0 ' localhost ' visu  </run>
+    <run metamoduleid="primes/compute/parallel">flowvr-run-ssh -v -p ' localhost localhost localhost localhost ' compute  </run>
+</commands>

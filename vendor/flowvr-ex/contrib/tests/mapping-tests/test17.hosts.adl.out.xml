@@ -1,0 +1,63 @@
+        <hostlist>
+            <host name="pc2" from="primes_mapfilter0.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_mapfilter0.csv,capture" />
+            </hostlist>
+        <hostlist>
+            <host name="pc3" from="primes_mapfilter0.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc3" from="primes_mapfilter0.csv,visu" />
+            </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_mapfilter0.csv" />
+            <host name="pc1" from="primes_mapfilter0.csv" />
+            <host name="pc1" from="primes_mapfilter0.csv" />
+            <host name="pc1" from="primes_mapfilter0.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_mapfilter0.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_mapfilter0.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_mapfilter0.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_mapfilter0.csv,compute" />
+            </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_mapfilter0.csv,compute,primes/compute/0" />
+            </hostlist>
+                <hostlist>
+                    <host name="pc1" from="primes_mapfilter0.csv,compute,primes/compute/0,Node" />
+                </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_mapfilter0.csv,compute,primes/compute/0,primes/cPrimesRequest2/Node" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_mapfilter0.csv,compute,primes/compute/0" />
+            </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_mapfilter0.csv,capture,primes/capture/singleton" />
+            </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_mapfilter0.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_mapfilter0.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                    <hostlist>
+                        <host name="pc3" from="primes_mapfilter0.csv,visu,primes/visu/singleton" />
+                    </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_mapfilter0.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_mapfilter0.csv,capture,primes/capture/singleton" />
+                </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_mapfilter0.csv,capture,primes/capture/singleton" />
+                </hostlist>

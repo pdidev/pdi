@@ -1,0 +1,21 @@
+        <hostlist>
+            <host name="pc1" from="primes_signaland.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_signaland.csv,capture" />
+            </hostlist>
+        <hostlist>
+            <host name="pc1" from="primes_signaland.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc1" from="primes_signaland.csv,visu" />
+            </hostlist>
+        <hostlist>
+            <host name="pc2" from="primes_signaland.csv" />
+        </hostlist>
+            <hostlist>
+                <host name="pc2" from="primes_signaland.csv,mycomp" />
+            </hostlist>
+                <hostlist>
+                    <host name="pc2" from="primes_signaland.csv,mycomp,signaland" />
+                </hostlist>

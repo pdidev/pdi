@@ -1,0 +1,58 @@
+# - Try to find LibGVC
+# Once done this will define
+#
+#  LIBGVC_FOUND - system has LibGVC
+#  LIBGVC_INCLUDE_DIR - the LibGVC include directory
+#  LIBGVC_LIBRARIES - Link these to use LibGVC
+#  LIBGVC_DEFINITIONS - Compiler switches required for using LibGVC
+#
+
+
+# use pkg-config to get the directories and then use these values
+# in the FIND_PATH() and FIND_LIBRARY() calls
+INCLUDE(FindPkgConfig) 
+
+pkg_search_module(PKG_LIBGVC  libgvc)
+
+SET(LIBGVC_DEFINITIONS ${PKG_LIBGVC_CFLAGS})
+FIND_PATH(LIBGVC_INCLUDE_DIR NAMES gvc.h
+  PATHS
+  ${PKG_LIBGVC_INCLUDE_DIRS}
+  ENV CPATH
+  /usr/include
+  /usr/local/include
+  PATH_SUFFIXES graphviz
+  NO_DEFAULT_PATH
+)
+
+FIND_LIBRARY(LIBGVC_LIBRARIES NAMES gvc
+  PATHS
+  ${PKG_LIBGVC_LIBRARY_DIRS}
+  ENV LD_LIBRARY_PATH
+  ENV LIBRARY_PATH
+  /usr/lib64
+  /usr/lib
+  /usr/local/lib64
+  /usr/local/lib
+  NO_DEFAULT_PATH
+)
+
+IF(LIBGVC_INCLUDE_DIR AND LIBGVC_LIBRARIES)
+   SET(LIBGVC_FOUND TRUE)
+ELSE(LIBGVC_INCLUDE_DIR AND LIBGVC_LIBRARIES)
+   SET(LIBGVC_FOUND FALSE)
+ENDIF(LIBGVC_INCLUDE_DIR AND LIBGVC_LIBRARIES)
+
+IF(LIBGVC_FOUND)
+  IF(NOT LibGVC_FIND_QUIETLY)
+    MESSAGE(STATUS "Found LibGVC: ${LIBGVC_LIBRARIES}")
+  ENDIF(NOT LibGVC_FIND_QUIETLY)
+ELSE(LIBGVC_FOUND)
+  IF(LibGVC_FIND_REQUIRED)
+    MESSAGE(FATAL_ERROR "Could not find LibGVC")
+  ENDIF(LibGVC_FIND_REQUIRED)
+ENDIF(LIBGVC_FOUND)
+
+# show the LIBGVC_INCLUDE_DIR and LIBGVC_LIBRARIES variables only in the advanced view
+  MARK_AS_ADVANCED(LIBGVC_INCLUDE_DIR LIBGVC_LIBRARIES )
+

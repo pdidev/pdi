@@ -1,0 +1,126 @@
+Starting
+--------
+
+After you successfully build the flowvr-contrib tests and made install, 
+and activated the flowvr environment using the scripts shipped with the
+distribution, and changed to the directory where you found this file, type;
+ 
+ flowvrd --net --top
+ 
+ (start the flowvr daemon)
+
+ Change to a new console for the sake of readability of the output of the
+ daemon, as the top view clutters all of the display. Then
+  
+ ./launch.sh <parameter-file>
+ 
+ The list of available parameter files is listed when you just type 
+  
+  ./launch.sh
+  
+without a parameter. Chose any of the files shown. Not much will happen on
+the console, so the interesting part happens on the top view of the flowvr
+daemon.
+Below you will find a description of what to expect.
+
+Example parametersets for the finite filter queue test.
+Things to note about the different parameter sets.
+Note that the examples all use the frequency filter, which is
+not synchronized with any other component, so it might happen that
+tokens of the filter pile up at other ports.
+
+'Receiver' and 'consumer' are synonyms, 'sender' and 'producer' are synonyms
+in the following text just as well.
+
+
+even_freq_blocking
+------------------
+Producer and consumer have the same update rate, the consumer requests
+always one packet from the finite filter queue and the in port in the
+consumer is set to be blocking.
+
+- you should see the regulators running at approximately the same
+  frequency.
+- after while (sooner or later) some tokens begin to pile up at the
+  beginIt port of the receiver. This is due to the fact that the receiver
+  might "just miss" a beginIt when requesting a new packet to dispatch.
+  As the in port is marked blocking, it has to wait for the next iteration
+  where both ports are set: the beginIt as well as the in port.
+
+even_freq_nonblocking
+---------------------
+Producer and consumer have the same update rate, the consumer requests
+always one packet from the finite filter queue and the in port in the
+consumer is set to be non-blocking.
+
+- you should see the two regulators running at approximately the same
+  frequency.
+- typically no tokens pile up at any port, as the receiver samples
+  upon every income of a message at the beginIt and only pushes a request
+  token to the trigger port when it has received a message on the
+  in port already.
+- when you stop the application, the receiver code outputs the number of
+  polls that did not deliver a new message (empty polls). This should be
+  significantly smaller than the number of received messages.
+  
+fast_consumer_blocking
+----------------------
+Producer and consumer have different update rates, where the consumer is
+fast and the producer is slow, the consumer requests
+always one packet from the finite filter queue and the in port in the
+consumer is set to be blocking.
+
+- you should see tokens piling up at the beginIt port of the receiver.
+  This is due to the fact that the filter puts in tokens at a high
+  rate while the receiver is consuming them at the frequency of
+  the producer.
+- you should see the memory consumption of the deamon go up (this
+  is due to the fact that the messages are piling up in the queue).
+- you should see that the regulators of the modules run approximately
+  at the same speed.
+ 
+fast_consumer_nonblocking
+-------------------------
+Producer and consumer have different update rates, where the consumer
+is fast and the producer is slow, the receiver requests always one packet
+from the finite filter queue and the in port in the consumer is marked
+to be non blocking.
+ 
+- you should see receiver and sender at different update rates.
+  The receiver is faster and computes a large number of beginIt
+  messages.
+- you should not notice any pile up of messages on another component.
+- when you stop the application, the receiver will output the number
+  of empty polls, due to the non-blocking property of its in-port.
+  This number should be much higher than the number of received messages.
+  
+fast_producer_blocking
+----------------------
+Producer and consumer have different update rates, where the producer
+is fast and the consumer is slow. The receiver always requests one message
+from the finite filter queue. The queue length was set to 5 to show the
+effect of the finite filter queue. The receiver in port was set to be
+blocking.
+
+- you should see that the regulator for the sender has a higher update
+  rate than the one for the receiver.
+- you should see less than 4 messages piling up at the finite queue filter,
+  but the total number of messages should be quite high.
+- the number of processed input packages by the receiver should be as high
+  as the number of trigger messages on the trigger port of the finite filter
+  queue
+
+
+fast_producer_nonblocking
+-------------------------
+Producer and consumer have different update rates, where the producer
+is fast and the consumer is slow. The receiver always requests one message
+from the finite filter queue. The queue length was set to 256 to show the
+effect of the finite filter queue. The receiver in port was set to be
+non blocking.
+
+- you should see more packets piling up at the finite filter queue, but
+  not 256, but clearly below. This is due to the fact the unwanted messages
+  are deleted from the queue. So the average number of messages piling
+  up at the finite queue filter is proportional to the ratio between
+  receiver and sender frequency.

@@ -1,0 +1,60 @@
+# - Try to find LibGraph
+# Once done this will define
+#
+#  LIBGRAPH_FOUND - system has LibGraph
+#  LIBGRAPH_INCLUDE_DIR - the LibGraph include directory
+#  LIBGRAPH_LIBRARIES - Link these to use LibGraph
+#  LIBGRAPH_DEFINITIONS - Compiler switches required for using LibGraph
+#  LIBGRAPH_VERSION - LibGraph Version found
+#
+
+
+# use pkg-config to get the directories and then use these values
+# in the FIND_PATH() and FIND_LIBRARY() calls
+INCLUDE(FindPkgConfig)
+pkg_search_module(PKG_LIBGRAPH  libgraph)
+
+SET(LIBGRAPH_DEFINITIONS ${PKG_LIBGRAPH_CFLAGS})
+FIND_PATH(LIBGRAPH_INCLUDE_DIR NAMES graph.h
+  PATHS
+  ${PKG_LIBGRAPH_INCLUDE_DIRS}
+  ENV CPATH
+  /usr/include
+  /usr/local/include
+  PATH_SUFFIXES graphviz
+  NO_DEFAULT_PATH
+)
+
+FIND_LIBRARY(LIBGRAPH_LIBRARIES NAMES graph
+  PATHS
+  ${PKG_LIBGRAPH_LIBRARY_DIRS}
+  ENV LD_LIBRARY_PATH
+  ENV LIBRARY_PATH
+  /usr/lib64
+  /usr/lib
+  /usr/local/lib64
+  /usr/local/lib
+  NO_DEFAULT_PATH
+)
+
+IF(LIBGRAPH_INCLUDE_DIR AND LIBGRAPH_LIBRARIES)
+   SET(LIBGRAPH_FOUND TRUE)
+ELSE(LIBGRAPH_INCLUDE_DIR AND LIBGRAPH_LIBRARIES)
+   SET(LIBGRAPH_FOUND FALSE)
+ENDIF(LIBGRAPH_INCLUDE_DIR AND LIBGRAPH_LIBRARIES)
+
+IF(LIBGRAPH_FOUND)
+  IF(NOT LibGraph_FIND_QUIETLY)
+    MESSAGE(STATUS "Found LibGraph: ${LIBGRAPH_LIBRARIES}")
+  ENDIF(NOT LibGraph_FIND_QUIETLY)
+ELSE(LIBGRAPH_FOUND)
+  IF(LibGraph_FIND_REQUIRED)
+    MESSAGE(FATAL_ERROR "Could not find LibGraph")
+  ENDIF(LibGraph_FIND_REQUIRED)
+ENDIF(LIBGRAPH_FOUND)
+
+EXEC_PROGRAM(${PKG_CONFIG_EXECUTABLE} ARGS libgraph --modversion OUTPUT_VARIABLE LIBGRAPH_VERSION)
+
+# show the LIBGRAPH_INCLUDE_DIR and LIBGRAPH_LIBRARIES variables only in the advanced view
+  MARK_AS_ADVANCED(LIBGRAPH_INCLUDE_DIR LIBGRAPH_LIBRARIES )
+

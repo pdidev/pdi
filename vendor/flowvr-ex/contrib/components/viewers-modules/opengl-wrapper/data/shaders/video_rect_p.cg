@@ -1,0 +1,13 @@
+// Video Pixel Shader
+// Texture
+
+half4 main(
+  half2 ptex0   : TEXCOORD0,
+  uniform samplerRECT texture,
+  uniform half2 texsize
+) : COLOR
+{
+  half4 c = texRECT(texture, ptex0);//, texsize);
+//  c = abs(ddx(c))+abs(ddy(c));
+  return c;
+}

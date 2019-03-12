@@ -1,0 +1,26 @@
+
+  NJ2-KERNEL Installation Notes
+
+
+    Dependencies
+
+You need the usual tools for compilation (make,gcc,pkg-config).
+flowvr-base must be installed and configured.
+
+    Compilation
+
+To compile, simply use 'make' in the root directory.
+Executables are generated in bin
+Libraries are generated in lib
+
+    Installation
+
+To execute the programs you must add the lib directory in
+your LD_LIBRARY_PATH:
+
+# change paths and add this in ~/.bashrc
+export PATH=~/flowvrd/bin:$PATH
+export LD_LIBRARY_PATH=~/flowvrd/lib:$LD_LIBRARY_PATH
+export PKG_CONFIG_PATH=~/flowvrd/lib/pkgconfig:$PKG_CONFIG_PATH
+
+The PKG_CONFIG_PATH is necessary to compile additional plugins.

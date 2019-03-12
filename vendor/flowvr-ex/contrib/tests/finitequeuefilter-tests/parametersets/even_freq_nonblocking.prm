@@ -1,0 +1,8 @@
+# we set the queue length to 256 for no particular reason
+finitefilterqueuetest:queue_length=256
+finitefilterqueuetest/drive-sender:freq=100
+finitefilterqueuetest/drive-receiver:freq=100
+
+# receiver proceeds upon ever new token on the beginIt port
+finitefilterqueuetest/receiver:blocking-in=false
+finitefilterqueuetest/receiver:request=1

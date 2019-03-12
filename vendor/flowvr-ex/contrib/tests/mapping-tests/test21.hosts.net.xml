@@ -1,0 +1,4 @@
+    <module id="primes/capture/singleton" host="pc1">
+    <module id="primes/visu/singleton" host="pc2">
+    <filter id="primes/composite_test_1/composite_test_2/r1" host="pc3">
+    <synchronizer id="primes/composite_test_1/composite_test_2/s2" host="pc3">

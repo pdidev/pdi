@@ -1,0 +1,27 @@
+<CEGUIConfig>
+	<Logging filename="CEGUI.log" level="Insane"/>
+	
+	<ResourceDirectory group="xsd" directory="data/menurc/xsd"/>
+	<ResourceDirectory group="Vanilla" directory="data/menurc/"/>
+	<ResourceDirectory group="scripts" directory="tests/scripts"/>
+	<ResourceDirectory group="test_layouts" directory="tests/layouts"/>
+	
+	<DefaultResourceGroup group="Vanilla"/>
+	<DefaultResourceGroup type="Imageset" group="Vanilla"/>
+	<DefaultResourceGroup type="Font" group="Vanilla"/>
+	<DefaultResourceGroup type="Script" group="scripts"/>
+		
+	<DefaultResourceGroup type="XMLSchema" group="xsd"/>
+	
+	<AutoLoad type="Imageset"  pattern="Vanilla.imageset"/>
+	<AutoLoad type="Font"      pattern="DejaVuSans-10.font"/>
+	<AutoLoad type="Font"      pattern="Batang-26.font"/>
+	<AutoLoad type="Scheme"    pattern="VanillaSkin.scheme"/>
+	<AutoLoad type="LookNFeel" pattern="Vanilla.looknfeel"/>	
+	<AutoLoad type="Layout"    pattern="rootSheet.layout"/>
+	
+	<DefaultFont name="DejaVuSans-10"/>
+	
+		
+	<DefaultGUISheet name="root"/>
+</CEGUIConfig>

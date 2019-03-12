@@ -1,0 +1,337 @@
+<network>
+    <module id="primes/capture/singleton" host="localhost">
+        <input>
+            <port id="beginIt" blockstate="blocking" />
+        </input>
+        <output>
+            <port id="endIt" />
+            <port id="keysOut">
+                <datatype />
+            </port>
+        </output>
+        <parameters>
+            <info>Module capture sent key pressed and mouse events on output port</info>
+            <trace>0</trace>
+        </parameters>
+    </module>
+    <module id="primes/visu/singleton" host="localhost">
+        <input>
+            <port id="beginIt" blockstate="blocking" />
+            <port id="keysIn" blockstate="unknown">
+                <datatype />
+            </port>
+            <port id="primesIn" blockstate="unknown">
+                <datatype />
+            </port>
+        </input>
+        <output>
+            <port id="endIt" />
+        </output>
+        <parameters>
+            <info>Module visu render received data on a disk</info>
+            <trace>0</trace>
+        </parameters>
+    </module>
+    <connection id="primes/visu/singleton.primesIn">
+        <source>
+            <filterid id="primes/Merge/Node/Merge" port="out" />
+        </source>
+        <destination>
+            <moduleid id="primes/visu/singleton" port="primesIn" />
+        </destination>
+    </connection>
+    <module id="primes/compute/parallel/0" host="localhost">
+        <input>
+            <port id="beginIt" blockstate="blocking" />
+        </input>
+        <output>
+            <port id="endIt" />
+            <port id="primesOut">
+                <datatype />
+            </port>
+        </output>
+        <parameters>
+            <info>Module cmputing PI decimals and sending them on output port</info>
+            <trace>0</trace>
+        </parameters>
+    </module>
+    <module id="primes/compute/parallel/1" host="localhost">
+        <input>
+            <port id="beginIt" blockstate="blocking" />
+        </input>
+        <output>
+            <port id="endIt" />
+            <port id="primesOut">
+                <datatype />
+            </port>
+        </output>
+        <parameters>
+            <info>Module cmputing PI decimals and sending them on output port</info>
+            <trace>0</trace>
+        </parameters>
+    </module>
+    <module id="primes/compute/parallel/2" host="localhost">
+        <input>
+            <port id="beginIt" blockstate="blocking" />
+        </input>
+        <output>
+            <port id="endIt" />
+            <port id="primesOut">
+                <datatype />
+            </port>
+        </output>
+        <parameters>
+            <info>Module cmputing PI decimals and sending them on output port</info>
+            <trace>0</trace>
+        </parameters>
+    </module>
+    <module id="primes/compute/parallel/3" host="localhost">
+        <input>
+            <port id="beginIt" blockstate="blocking" />
+        </input>
+        <output>
+            <port id="endIt" />
+            <port id="primesOut">
+                <datatype />
+            </port>
+        </output>
+        <parameters>
+            <info>Module cmputing PI decimals and sending them on output port</info>
+            <trace>0</trace>
+        </parameters>
+    </module>
+    <filter id="primes/Merge/Node/Merge" host="localhost">
+        <input>
+            <port id="in0" blockstate="unknown">
+                <datatype />
+            </port>
+            <port id="in1" blockstate="unknown">
+                <datatype />
+            </port>
+            <port id="in2" blockstate="unknown">
+                <datatype />
+            </port>
+            <port id="in3" blockstate="unknown">
+                <datatype />
+            </port>
+        </input>
+        <output>
+            <port id="out">
+                <datatype />
+            </port>
+        </output>
+        <parameters>
+            <info>Each time it receives a message on each input port, it sends one message consisting of the stamp of the message received on in0 and  the concatenation of the date received on in0, in1, ... inNb-1</info>
+            <trace>0</trace>
+            <nb>4</nb>
+        </parameters>
+        <filterclass>flowvr.plugins.Merge</filterclass>
+    </filter>
+    <connection id="primes/Merge/Tree0/cTree">
+        <source>
+            <moduleid id="primes/compute/parallel/0" port="primesOut" />
+        </source>
+        <destination>
+            <filterid id="primes/Merge/Node/Merge" port="in0" />
+        </destination>
+    </connection>
+    <connection id="primes/Merge/Tree1/cTree">
+        <source>
+            <moduleid id="primes/compute/parallel/1" port="primesOut" />
+        </source>
+        <destination>
+            <filterid id="primes/Merge/Node/Merge" port="in1" />
+        </destination>
+    </connection>
+    <connection id="primes/Merge/Tree2/cTree">
+        <source>
+            <moduleid id="primes/compute/parallel/2" port="primesOut" />
+        </source>
+        <destination>
+            <filterid id="primes/Merge/Node/Merge" port="in2" />
+        </destination>
+    </connection>
+    <connection id="primes/Merge/Tree3/cTree">
+        <source>
+            <moduleid id="primes/compute/parallel/3" port="primesOut" />
+        </source>
+        <destination>
+            <filterid id="primes/Merge/Node/Merge" port="in3" />
+        </destination>
+    </connection>
+    <filter id="primes/PresignalPrimesRequest" host="localhost">
+        <input>
+            <port id="in" blockstate="unknown" />
+        </input>
+        <output>
+            <port id="out" />
+        </output>
+        <parameters>
+            <info>Filter that adds nb (a parameter) initial messages, then forward incoming messages to output (used to boot cycles). 1 parameter. 'nb':  number of initial messages</info>
+            <trace>0</trace>
+            <nb>1</nb>
+        </parameters>
+        <filterclass>flowvr.plugins.PreSignal</filterclass>
+    </filter>
+    <filter id="primes/cPrimesRequest2/Node" host="localhost">
+        <input>
+            <port id="in" blockstate="unknown" />
+        </input>
+        <output>
+            <port id="out" />
+        </output>
+        <parameters>
+            <info>A filter for routing messages (full or stamps). Just send each message received on 'in' port on  'out' port.  Uses the  FilterPreSignal with parameter 'nb' set to 0 (no presignal) by default. </info>
+            <trace>0</trace>
+            <nb>0</nb>
+        </parameters>
+        <filterclass>flowvr.plugins.PreSignal</filterclass>
+    </filter>
+    <connectionstamps id="primes/cPrimesRequest2/Tree0/cTree">
+        <sourcestamps>
+            <filterid id="primes/cPrimesRequest2/Node" port="out" />
+        </sourcestamps>
+        <destinationstamps>
+            <moduleid id="primes/compute/parallel/0" port="beginIt" />
+        </destinationstamps>
+    </connectionstamps>
+    <connectionstamps id="primes/cPrimesRequest2/Tree1/cTree">
+        <sourcestamps>
+            <filterid id="primes/cPrimesRequest2/Node" port="out" />
+        </sourcestamps>
+        <destinationstamps>
+            <moduleid id="primes/compute/parallel/1" port="beginIt" />
+        </destinationstamps>
+    </connectionstamps>
+    <connectionstamps id="primes/cPrimesRequest2/Tree2/cTree">
+        <sourcestamps>
+            <filterid id="primes/cPrimesRequest2/Node" port="out" />
+        </sourcestamps>
+        <destinationstamps>
+            <moduleid id="primes/compute/parallel/2" port="beginIt" />
+        </destinationstamps>
+    </connectionstamps>
+    <connectionstamps id="primes/cPrimesRequest2/Tree3/cTree">
+        <sourcestamps>
+            <filterid id="primes/cPrimesRequest2/Node" port="out" />
+        </sourcestamps>
+        <destinationstamps>
+            <moduleid id="primes/compute/parallel/3" port="beginIt" />
+        </destinationstamps>
+    </connectionstamps>
+    <connectionstamps id="primes/cPrimesRequest2/Node.in">
+        <sourcestamps>
+            <filterid id="primes/PresignalPrimesRequest" port="out" />
+        </sourcestamps>
+        <destinationstamps>
+            <filterid id="primes/cPrimesRequest2/Node" port="in" />
+        </destinationstamps>
+    </connectionstamps>
+    <synchronizer id="primes/greedyKeys/patternSync/sync" host="localhost">
+        <input>
+            <port id="endIt" blockstate="unknown" />
+            <port id="stamps" blockstate="unknown" />
+        </input>
+        <output>
+            <port id="order" />
+        </output>
+        <parameters>
+            <info>Every time it receives a message on endIt port,                 &#x09;&#x09;it looks for the most recent message received on                 &#x09;&#x09;stamps port and sends to order port  the stamp of                 &#x09;&#x09;this message. Used for implementing  greedy                 &#x09;&#x09;(subsampling) filtering. It uses 4 different parameters.                &#x09;&#x09; min: minimum number of messages left in the queue                 &#x09;&#x09;(0: will not order to repeat previously sent messages.                 &#x09;&#x09;1: will repeat previously forwarded message if                 &#x09;&#x09;nothing newer available). max: maximum number of messages                &#x09;&#x09;that are kept in the queue. buffer: todo. stampname: todo</info>
+            <trace>0</trace>
+            <min>0</min>
+            <max>2147483647</max>
+            <buffer>4</buffer>
+            <stampname>it</stampname>
+            <advance>1</advance>
+        </parameters>
+        <synchronizerclass>flowvr.plugins.GreedySynchronizor</synchronizerclass>
+    </synchronizer>
+    <filter id="primes/greedyKeys/patternSync/filter/0" host="localhost">
+        <input>
+            <port id="in" blockstate="unknown">
+                <datatype />
+            </port>
+            <port id="order" blockstate="unknown" />
+        </input>
+        <output>
+            <port id="out">
+                <datatype />
+            </port>
+        </output>
+        <parameters>
+            <info>Forward on its  output  the messages received on its input having the same it numbers than the ones received on the order port. Discard other messages  (filter usually used with a synchronizer).</info>
+            <trace>0</trace>
+        </parameters>
+        <filterclass>flowvr.plugins.FilterIt</filterclass>
+    </filter>
+    <connectionstamps id="primes/greedyKeys/patternSync/bcastOrder/cTree">
+        <sourcestamps>
+            <synchronizerid id="primes/greedyKeys/patternSync/sync" port="order" />
+        </sourcestamps>
+        <destinationstamps>
+            <filterid id="primes/greedyKeys/patternSync/filter/0" port="order" />
+        </destinationstamps>
+    </connectionstamps>
+    <connectionstamps id="primes/greedyKeys/patternSync/cSync">
+        <sourcestamps>
+            <filterid id="primes/greedyKeys/patternSync/PreSignal" port="out" />
+        </sourcestamps>
+        <destinationstamps>
+            <synchronizerid id="primes/greedyKeys/patternSync/sync" port="endIt" />
+        </destinationstamps>
+    </connectionstamps>
+    <filter id="primes/greedyKeys/patternSync/PreSignal" host="localhost">
+        <input>
+            <port id="in" blockstate="unknown" />
+        </input>
+        <output>
+            <port id="out" />
+        </output>
+        <parameters>
+            <info>Filter that adds nb (a parameter) initial messages, then forward incoming messages to output (used to boot cycles). 1 parameter. 'nb':  number of initial messages</info>
+            <trace>0</trace>
+            <nb>1</nb>
+        </parameters>
+        <filterclass>flowvr.plugins.PreSignal</filterclass>
+    </filter>
+    <connection id="primes/greedyKeys/ComIn">
+        <source>
+            <moduleid id="primes/capture/singleton" port="keysOut" />
+        </source>
+        <destination>
+            <filterid id="primes/greedyKeys/patternSync/filter/0" port="in" />
+        </destination>
+    </connection>
+    <connection id="primes/greedyKeys/ComOut">
+        <source>
+            <filterid id="primes/greedyKeys/patternSync/filter/0" port="out" />
+        </source>
+        <destination>
+            <moduleid id="primes/visu/singleton" port="keysIn" />
+        </destination>
+    </connection>
+    <connectionstamps id="primes/greedyKeys/ComStamps">
+        <sourcestamps>
+            <moduleid id="primes/capture/singleton" port="keysOut" />
+        </sourcestamps>
+        <destinationstamps>
+            <synchronizerid id="primes/greedyKeys/patternSync/sync" port="stamps" />
+        </destinationstamps>
+    </connectionstamps>
+    <connectionstamps id="primes/greedyKeys/ComSync">
+        <sourcestamps>
+            <moduleid id="primes/visu/singleton" port="endIt" />
+        </sourcestamps>
+        <destinationstamps>
+            <filterid id="primes/greedyKeys/patternSync/PreSignal" port="in" />
+        </destinationstamps>
+    </connectionstamps>
+    <connectionstamps id="primes/PresignalPrimesRequest.in">
+        <sourcestamps>
+            <moduleid id="primes/visu/singleton" port="endIt" />
+        </sourcestamps>
+        <destinationstamps>
+            <filterid id="primes/PresignalPrimesRequest" port="in" />
+        </destinationstamps>
+    </connectionstamps>
+</network>

@@ -1,0 +1,39 @@
+logging:
+  level: debug
+
+data:
+  wait: int
+  up: int
+  down: int
+  left: int
+  right: int
+  f1: int
+  f4: int
+  f8: int
+  f12: int
+  page_up: int
+  page_down: int
+  page_home: int
+  end: int
+  insert: int
+
+plugins:
+  flowvr:
+    component: module
+    wait_on_data: wait
+    output_ports:
+      keysOut:
+        event_button:
+          KEY_UP: up
+          KEY_DOWN: down
+          KEY_LEFT: left
+          KEY_RIGHT: right
+          KEY_F1: f1
+          KEY_F4: f4
+          KEY_F8: f8
+          KEY_F12: f12
+          KEY_PAGE_UP: page_up
+          KEY_PAGE_DOWN: page_down
+          KEY_HOME: page_home
+          KEY_END: end
+          KEY_INSERT: insert

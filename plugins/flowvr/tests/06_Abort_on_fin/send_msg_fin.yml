@@ -1,0 +1,14 @@
+logging:
+  level: info
+
+data:
+  wait: int
+  message: {type: array, subtype: int, size: 32}
+
+plugins:
+  flowvr:
+    component: module
+    wait_on_data: wait
+    output_ports:
+      message:
+        data: message

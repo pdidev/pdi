@@ -87,6 +87,11 @@ if("${USE_FTI}" STREQUAL EMBEDDED)
 else()
 	set(FTI_PATH "${USE_FTI}")
 endif()
+if("${USE_FLOWVR}" STREQUAL EMBEDDED)
+	set(FLOWVR_PATH "${PDISUPER_SOURCE_DIR}/vendor/flowvr-ex")
+else()
+	set(FLOWVR_PATH "${USE_FLOWVR}")
+endif()
 if("${USE_GTEST}" STREQUAL EMBEDDED)
 	set(GTEST_PATH "${PDISUPER_SOURCE_DIR}/vendor/googletest-release-1.8.0")
 else()
@@ -392,6 +397,44 @@ if("${BUILD_FTI_PLUGIN}")
 				CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DENABLE_EXAMPLES:BOOL=OFF" "-DENABLE_TESTS:BOOL=OFF" "-DENABLE_DOCU:BOOL=OFF"
 				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
 		add_dependencies(FTI_PLUGIN FTI)
+	endif()
+endif()
+
+if("${BUILD_FLOWVR_PLUGIN}")
+	ExternalProject_Add(FLOWVR_PLUGIN
+			PREFIX "${PDISUPER_BINARY_DIR}/pdi_plugin-flowvr"
+			SOURCE_DIR "${PDISUPER_SOURCE_DIR}/plugins/flowvr" BUILD_ALWAYS TRUE
+			CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
+			INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+			DEPENDS PDI)
+	add_testing(FLOWVR_PLUGIN)
+	add_indent_step(FLOWVR_PLUGIN)
+	if(NOT "${USE_FLOWVR}" STREQUAL SYSTEM)
+		file(MD5 "${FLOWVR_PATH}" HASH) #< trick to prevent no-hash warning
+		ExternalProject_Add(FLOWVR
+				PREFIX "${PDISUPER_BINARY_DIR}/flowvr"
+				URL "${FLOWVR_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
+				CMAKE_ARGS -Wno-dev
+				CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DENABLE_EXAMPLES:BOOL=OFF" "-DENABLE_TESTS:BOOL=OFF" "-DENABLE_DOCU:BOOL=OFF"
+				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+		add_dependencies(FLOWVR_PLUGIN FLOWVR)
+	endif()
+	if(NOT "${USE_PYYAML}" STREQUAL SYSTEM)
+		find_package (Python2 COMPONENTS Interpreter)
+		string(SUBSTRING "${Python2_SITELIB}" 5 -1 Python2_SITELIB) # cut the "/usr/" prefix
+		file(MD5 "${PYYAML_PATH}" HASH) #< trick to prevent no-hash warning
+		ExternalProject_Add(PYYAML2.7
+				PREFIX "${PDISUPER_BINARY_DIR}/pyyaml"
+				URL "${PYYAML_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
+				CONFIGURE_COMMAND ""
+				BUILD_IN_SOURCE ON
+				BUILD_COMMAND "${CMAKE_COMMAND}" -E env
+						"CPATH=${CPATH}" "LIBRARY_PATH=${LIBRARY_PATH}"
+						"${Python2_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml build
+				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging/"
+				#TODO: Detect when on Debian/Ubuntu and "--install-layout deb" is required
+				INSTALL_COMMAND "${Python2_EXECUTABLE}" "<SOURCE_DIR>/setup.py" --with-libyaml install --prefix "<INSTALL_DIR>" --install-lib "<INSTALL_DIR>/${Python2_SITELIB}")
+		add_dependencies(FLOWVR_PLUGIN PYYAML2.7)
 	endif()
 endif()
 

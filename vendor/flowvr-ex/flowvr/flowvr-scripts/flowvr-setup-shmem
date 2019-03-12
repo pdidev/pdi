@@ -1,0 +1,73 @@
+#!/bin/bash
+#------------------------------------------------------------------
+# Script to setup temporarily setup the shared memory segment size
+# required by the daemon.
+#
+# Also gives information on how to make the change permanent.
+#------------------------------------------------------------------
+
+SIZE=$1
+
+echo "------------"
+echo "FlowVR Suite"
+echo "------------"
+
+# If no argument is present, use default value
+if [ -n "$SIZE" ]
+then
+	echo "Using given value: $SIZE"
+else
+	SIZE=167772160
+	echo "No size given in argument."
+	echo "Using default value: $SIZE"
+fi
+echo " "
+
+
+# Different behaviour depending on the OS
+OS=`uname -s`
+echo "Detected OS: $OS"
+
+if [ "$OS" == "Linux" ]; then
+	echo "Setting up shared memory segment size.."
+
+	sudo sysctl -w kernel.shmmax=$SIZE
+
+	echo "Segment size set to: $SIZE"
+	echo " "
+	echo "This value will be reset on boot."
+	echo " "
+	echo "To make this change permanent,"
+	echo "edit the /etc/sysctl.conf file and append:"
+	echo " "
+	echo "kernel.shmmax=$SIZE"
+	echo " "
+	echo "For more information, please refer to the \"Getting Started\" guide:"
+elif [ "$OS" == "Darwin" ]; then
+	# Mac OSX
+	echo "Setting up shared memory segment size.."
+
+        SHMMNI=$(sysctl -n  kern.sysv.shmmni)
+        SHMALL=$(( ($SIZE/4096)*$SHMMNI))  # Max overhall shared memory size
+
+	sudo sysctl -w kern.sysv.shmmax=$SIZE
+	sudo sysctl -w kern.sysv.shmall=$SHMALL        
+
+
+	echo "On Mac OSX, you need to edit the /etc/sysctl.conf yourself."
+	echo " "
+	echo "Create and edit the /etc/sysctl.conf file and append: "
+	echo " "
+	echo "kern.sysv.shmmax=$SIZE"
+	echo "kern.sysv.shmall=$SHMALL"
+	echo " "
+	echo "Then, reboot your machine."
+	echo " "
+	echo "For more information, please refer to the \"Getting Started\" guide:"
+else
+	echo "This script does not know the procedure for your particular OS."
+	echo " "
+	echo "To get up and running, please refer to the \"Getting Started\" guide:"
+fi
+echo "https://wiki-flowvr.imag.fr/wiki/GettingStarted"
+echo "------------"

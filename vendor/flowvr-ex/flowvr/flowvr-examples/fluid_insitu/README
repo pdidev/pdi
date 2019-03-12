@@ -1,0 +1,100 @@
+===============================
+	Fluid Insitu
+===============================
+	What does it do?
+===============================
+
+    * Example of in situ processing of data produced by  a parallel MPI simulation code (fluid simulation)
+ 	* Features:
+                - data are extrated from each process of the MPI simulation 
+                - extracted data are asynchronously simplified on each simulation node, on a dedicated core
+                - the simplified data is then gathered on a render node
+                - a glut application render the density with isolines computed on the same node
+
+                - a simple GUI enables the user to control the frequency of data extractions
+===============================
+
+
+
+===============================
+	How to start it
+===============================
+If you do not have it in your $PATH, execute "source bin/flowvr-suite-config.sh"
+at the root of your install directory.
+
+	* Execute "flowvrd &" in your terminal or "flowvrd -t" in a separate terminal.
+		- Only one daemon may run on a given machine.
+		- If you need to bring back a command from the background, run "fg".
+		- To close the daemon, use CTRL-C.
+		
+flowvrd &
+		
+		
+	* Compile the application's modules using the provided makefile.
+	
+./make-app.sh
+
+	* Add relevant folder to your PATH environnemnt variable
+
+source ./bin/fluid_insitu-config.sh 
+		
+	* Generate the application's network:
+                   - The parallel version requires MPI (OpenMPI by default) to be installed
+						You can change the MPI version to use in the python script fluid_insitu.py
+						(replace FlowvrRunOpenMPI with FlowvrRunMVAPICH or FlowvrRunMPICH)
+                   - By default the simulation is parallelized in two times three processes.
+                   - You can change the number of processes by adding/removing hosts in fluid_insitu.py
+						beware of not using "localhost" unless each and every host is "localhost"
+                      'host_simu', 'host_visu', 'simu_per_host'
+
+python fluid_insitu.py
+       
+       
+		
+	* Launch the application using the "flowvr" command.
+
+flowvr fluid_insitu -l
+        
+		The '-l' option redirect module outputs to files. It also prevent some MPI implementation
+		to steal the standard input from the launcher (see https://wiki-flowvr.imag.fr/ticket/236)
+		
+		While the application is running, your terminal will listen
+		to commands for controlling the application flow.
+
+		To get a list of available commands, type "pause", press ENTER to confirm,
+		then type "help" and confirm.
+
+
+	* When you are done, type "stop" and confirm.
+	
+	* If the application has trouble coming to a full halt, run :
+
+flowvr-kill
+
+
+===============================
+	Troubleshooting
+===============================
+
+	* The daemon does start properly
+		1) make sure you've executed the "setup-sharedmemory.sh" script
+			This script sets the shared memory segment size to a big enough value
+			in order to accomodate the daemon.
+			
+		2) check if there isn't a daemon already running
+		3) run "killall flowvrd" if you haven't found any
+		
+	* The application starts, but it doesn't exchange messages
+		- run "flowvr-kill" and try once more
+		
+	
+	If none of these helped, send us an email at "flowvr-devel@lists.sourceforge.net".
+
+
+===============================
+	For more information
+===============================
+	* FlowVR manual		http://flowvr.sourceforge.net/FlowVRDoc.html
+	* FlowVR wiki		https://wiki-flowvr.imag.fr
+	
+

@@ -1,0 +1,77 @@
+/**
+ * @file index.html
+ * @file namespace.html
+ * @mainpage FlowVR Documentation
+ * This is the documentation for the FlowVR base libraries as well as the FlowVR daemon interfaces.
+ * Normally, users should not need to inspect the core level elements in too much detail.
+ * FlowVR is a distributed data-flow oriented middleware.
+ *
+ * <h2>How to read this documentation</h2> 
+ * - The page you are reading currently is the \it mainpage. You can return to this 
+ *   page by clicking on the 'Main Page' tab you see above. 
+ *   Below you find a selection of interfaces that we consider useful for you to know
+ *   when programming FlowVR. It contains some more remarks than the list presented
+ *   when pushing the 'Modules' tab. 
+ * - The 'related pages' tab contains a list of todos, bugs, and deprecated functions.
+ *   The information provided here mainly contains reminders for the developers of FlowVR.
+ *   You should not rely on this information, especially not, if you are looking for a
+ *   particular bug.
+ * - The 'Modules' tab gives an overview of semantically grouped interfaces.
+ * - To get a quick overview of all concepts, check the 'Namespace' tab you see above.
+ *   This is useful when looking for total functionality of all existing code divided 
+ *   by a common theme.
+ * - The 'Classes' tab gives access to a comprehensive list of all classes encountered
+ *   during the generation of this documentation. This might be handy when trying to get
+ *   an overview, or to see the inheritance hierarchy on a global level.
+ * - The 'Files' tab provides access to the sourcefiles used to generate this documentation
+ *   by path.
+ * 
+ * <h2>Distilled sections of interest</h2>
+ * @subpage moduleIface Interfaces for module writers
+ * Checkout the existing interfaces you need when developing single modules.
+ *
+ * @subpage bufferIface Interfaces for messaging
+ * When writing modules and passing messages, it is vital to get access to the messages that are
+ * passed in the dataflow in order to process. 
+ *
+ *
+ * @subpage filterIface Interfaces for filter writers
+ * In case you have subtle questions on how to use filters and their interfaces, or you need to write a
+ * special filter for a specific purpose, this is the page to start with.
+ * 
+ */
+ 
+ 
+/**
+ * @page moduleIface "Interfaces for module writers"
+ * Interfacing with FlowVR needs the implementation of a thin interface that defines the FlowVR
+ * ports needed for message dispatching. A module is regular executable that programmers can layout
+ * on their own. Typically all interfaces needed (and some more) can be found in the flowvr namespace.
+ * But especially check out the following interfaces, as they are used frequently.
+ * - flowvr::ModuleAPIFactory
+ * - flowvr::ModuleAPI
+ * - flowvr::Port
+ * - flowvr::InputPort
+ * - flowvr::OutputPort
+ * - flowvr::StampList
+ * 
+ * When dealing with messages, see @subpage bufferIface but the following interfaces might be handy to know.
+ * - flowvr::Buffer
+ * - flowvr::Message
+ * - flowvr::MessagePut
+ * - flowvr::MessageWrite
+ * - flowvr::Stamps
+ * - flowvr::StampInfo
+ * - flowvr::StampsWrite
+ *
+ */
+ 
+ /**
+  * @page filterIface "Interfaces for filter writers"
+  * <h1>TODO</h1>
+  */
+  
+ /**
+  * @page bufferIface "Interfaces for messages"
+  * <h1>TODO</h1>
+  */

@@ -1,0 +1,119 @@
+#!/bin/bash
+
+detect_term() {
+  local i
+  for i in xterm rxvt konsole gnome-terminal; do
+      if which $i >/dev/null 2>/dev/null; then
+#      echo Found FLOWVR_TERM $i
+      FLOWVR_TERM=$i
+      return 0
+    fi
+  done
+  # default to shell
+  FLOWVR_TERM=sh
+  return 1
+}
+
+run_shell() {
+  exec ${FLOWVR_ENV_CMD} "$@"
+}
+
+run_xtermcompliant() {
+  TERMNAME="$1"
+  shift
+  [ -n "${HOLD}" ] && HOLDNOTSUPPORTED=
+  exec "${TERMNAME}" ${TITLE:+${TITLE_PREFIX} "${TITLE}"} ${TRYHOLD:+${HOLD}} ${CMD_PREFIX} ${FLOWVR_ENV_CMD} "$@" ${TRYHOLD:+${HOLDNOTSUPPORTED}}
+}
+
+usage() {
+  cat << EOT
+Usage: flowvr-term [-T title] [-H] [-e VAR VALUE] [-x VAR] command
+  -T	       : title displayed by the terminal
+  -H	       : do not close terminal when command is finished (if terminal supports it)
+  -e VAR VALUE : sets the variable VAR to VALUE in the environment of the command
+  -x VAR       : propagates the variable VAR in the environment of the command
+
+This program uses the FLOWVR_TERM variable to execute the command.
+It currently supports:
+sh (run in the current shell), xterm, rxvt, konsole, gnome-terminal
+EOT
+  echo "The current (detected) terminal is: $FLOWVR_TERM"
+  exit 0
+}
+
+# Adds to $cmd the options to propagate the value of a variable (does nothing if the variable is not set or null)
+cmdpropenv() {
+  local ret=$(eval echo \${$1});
+  local prep="\${$1:+\"-e $1 \"$ret\"\"}"
+  local pap=`eval echo $prep`
+  FLOWVR_ENV_CMD="$FLOWVR_ENV_CMD $pap"
+}
+
+# Adds to $cmd the options to set a variable (and exports it locally in case...)
+cmdsetenv() {
+  export $1="$2";
+  FLOWVR_ENV_CMD="$FLOWVR_ENV_CMD -e $1 \"$2\"";
+}
+
+if [ ! $FLOWVR_TERM ]; then
+  detect_term
+fi
+CMD_PREFIX=-e
+FLOWVR_ENV_CMD=`which flowvr-run-env`
+TITLE_PREFIX=-T
+
+# We should not need those because of the option -l to the bash of flowvr-run-env
+#cmdpropenv "PATH"
+#cmdpropenv "LD_LIBRARY_PATH"
+#cmdpropenv "DYLD_LIBRARY_PATH"
+
+finished=0
+TRYHOLD=
+HOLDNOTSUPPORTED="; read"
+
+while [ ${finished} != 1 ]; do
+  case "$1" in 
+    -h|--help|"")
+      usage
+      ;;
+    -T)
+      TITLE="$2"
+      shift 2
+      ;;
+    -H)
+      TRYHOLD=1
+      shift
+      ;;
+    -e)
+      cmdsetenv $2 "$3"
+      shift 3
+      ;;
+    -x)
+      cmdpropenv $2
+      shift 2
+      ;;
+    *)
+      finished=1
+      ;;
+  esac
+done
+
+case "${FLOWVR_TERM}" in
+  sh)
+    run_shell "$@"
+    ;;
+  gnome-terminal)
+    CMD_PREFIX=" --disable-factory -x"
+    TITLE_PREFIX=-t
+    ;;
+  konsole)
+    HOLD=--noclose
+    ;;
+  xterm)
+    HOLD=-hold
+    ;;
+  *)
+    HOLD=
+    ;;
+esac
+run_xtermcompliant "${FLOWVR_TERM}" "$@"

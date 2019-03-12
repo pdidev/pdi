@@ -1,0 +1,11 @@
+<hr size="1"/>
+<address style="text-align: right;">
+	<small>
+		<p style="test-align: right;">Generated on $datetime for $projectname</p>  
+  		<p style="test-align: right;">	<a href="http://flowvr.sourceforge.net/">
+  				<img class="footer" src="$relpath$../../flowvr-logo-small.png" alt="FlowVR"/>
+  			</a></p>
+	</small>
+</address>
+</body>
+</html>

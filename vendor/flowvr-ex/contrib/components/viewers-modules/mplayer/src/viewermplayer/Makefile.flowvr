@@ -1,0 +1,26 @@
+MPLAYER-VERSION := 1.0rc1
+
+all: mplayer-flowvr 
+
+MPlayer-$(MPLAYER-VERSION)/config.flowvr.mak: config.mak
+	cp $< $@
+
+mplayer-flowvr: MPlayer-$(MPLAYER-VERSION)/Makefile.flowvr MPlayer-$(MPLAYER-VERSION)/config.flowvr.mak
+	$(MAKE) -C MPlayer-$(MPLAYER-VERSION) -f Makefile.flowvr
+	cp MPlayer-$(MPLAYER-VERSION)/mplayer .
+
+MPlayer-$(MPLAYER-VERSION)/Makefile.flowvr: MPlayer-$(MPLAYER-VERSION).tar.bz2
+	@tar -xjvf $<
+	cd $(@D); patch -p0 < ../patch-$(MPLAYER-VERSION)
+
+clean:
+	$(MAKE) -C MPlayer-$(MPLAYER-VERSION) -f Makefile.flowvr clean
+
+distclean:
+	rm -fr MPlayer-$(MPLAYER-VERSION)
+
+install:
+	$(MAKE) -C MPlayer-$(MPLAYER-VERSION) -f Makefile.flowvr install
+
+MPlayer-$(MPLAYER-VERSION).tar.bz2:
+	wget http://www1.mplayerhq.hu/MPlayer/releases/MPlayer-$(MPLAYER-VERSION).tar.bz2
