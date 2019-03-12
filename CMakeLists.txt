@@ -78,7 +78,7 @@ if(NOT "${BUILD_SHARED_LIBS}")
 endif()
 
 if("${USE_BPP}" STREQUAL EMBEDDED)
-	set(BPP_PATH "${PDISUPER_SOURCE_DIR}/vendor/bpp-v0.2.8")
+	set(BPP_PATH "${PDISUPER_SOURCE_DIR}/vendor/bpp-v0.2.10")
 else()
 	set(BPP_PATH "${USE_BPP}")
 endif()
