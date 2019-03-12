@@ -364,7 +364,7 @@ void execute(Context& ctx, const File_cfg& file_cfg)
 		if ( Ref_w{ref} ) {
 			do_read(ctx, xfer, h5_file, xfer_lst, ref);
 		} else {
-			ctx.logger()->warn("(Decl'HDF5) Reference to read not available: `{}'", read.first);
+			ctx.logger()->warn("Reference to read not available: `{}'", read.first);
 		}
 	}
 	
@@ -379,7 +379,37 @@ void execute(Context& ctx, const File_cfg& file_cfg)
 		if ( Ref_r{ref} ) {
 			do_write(ctx, xfer, h5_file, xfer_lst, ref);
 		} else {
-			ctx.logger()->warn("(Decl'HDF5) Reference to write not available: `{}'", write.first);
+			ctx.logger()->warn("Reference to write not available: `{}'", write.first);
+		}
+	}
+}
+
+void set_up_logger(Context& ctx, PC_tree_t logging_tree)
+{
+	ctx.logger()->set_pattern("[PDI][Decl'HDF5][%T] *** %^%l%$: %v");
+	
+	int mpi_init = 0;
+	MPI_Initialized(&mpi_init);
+	if (mpi_init) {
+		//set up format
+		int world_rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+		char format[64];
+		snprintf(format, 64, "[PDI][Decl'HDF5][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
+		ctx.logger()->set_pattern(string(format));
+		
+		//set up single ranks
+		PC_tree_t single_tree = PC_get(logging_tree, ".single");
+		if (!PC_status(single_tree)) {
+			int nb_key = PDI::len(single_tree);
+			for (int key_id = 0; key_id < nb_key; ++key_id) {
+				PC_tree_t rank_tree = PC_get(single_tree, "[%d]", key_id);
+				int selected_rank = PDI::to_long(PC_get(rank_tree, ".rank"), -1);
+				if (selected_rank == world_rank) {
+					PDI::read_log_level(ctx.logger(), rank_tree);
+					break;
+				}
+			}
 		}
 	}
 }
@@ -394,7 +424,8 @@ struct decl_hdf5_plugin: Plugin {
 	{
 		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");
-		ctx.logger()->info("(Decl'HDF5) Plugin loaded successfully");
+		set_up_logger(ctx, PC_get(config, ".logging"));
+		ctx.logger()->info("Plugin loaded successfully");
 	}
 	
 	void data(const char* name, Ref ref) override
@@ -421,6 +452,11 @@ struct decl_hdf5_plugin: Plugin {
 		for (auto&& file = range.first; file != range.second; ++file) {
 			execute(context(), file->second);
 		}
+	}
+	
+	~decl_hdf5_plugin()
+	{
+		context().logger()->info("Closing plugin");
 	}
 	
 }; // struct decl_hdf5_plugin

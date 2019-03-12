@@ -54,17 +54,18 @@ struct test_plugin: Plugin {
 	test_plugin(Context& ctx, PC_tree_t):
 		Plugin {ctx}
 	{
-		context().logger()->info("(Test-plugin) Welcome to the test plugin!");
+		context().logger()->set_pattern("[PDI][Test-plugin][%T] *** %^%l%$: %v");
+		context().logger()->info("Welcome to the test plugin!");
 	}
 	
 	~test_plugin()
 	{
-		context().logger()->info("(Test-plugin) Goodbye from the test plugin!");
+		context().logger()->info("Goodbye from the test plugin!");
 	}
 	
 	void event(const char* event) override
 	{
-		context().logger()->info("(Test-plugin) The test plugin received an event: {}", event);
+		context().logger()->info("The test plugin received an event: {}", event);
 	}
 	
 	void data(const char* name, Ref ref) override
@@ -76,12 +77,12 @@ struct test_plugin: Plugin {
 		ref_it->on_nullify([=](Ref r) {
 			this->data_end(sname.c_str(), r);
 		});
-		context().logger()->info("(Test-plugin) =>> data becoming available to the test plugin: {}", name);
+		context().logger()->info("=>> data becoming available to the test plugin: {}", name);
 	}
 	
 	void data_end(const char* name, Ref r)
 	{
-		context().logger()->info("(Test-plugin) <<= data stop being available to the test plugin: {}", name);
+		context().logger()->info("<<= data stop being available to the test plugin: {}", name);
 	}
 	
 }; // struct test_plugin

@@ -124,6 +124,7 @@ configure_file(version.h.in pdi/version.h @ONLY)
 set(PDI_SRC 
 		array_datatype.cxx
 		context.cxx
+		context_proxy.cxx
 		global_context.cxx
 		data_descriptor.cxx
 		data_descriptor_impl.cxx

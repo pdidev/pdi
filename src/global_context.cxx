@@ -235,9 +235,11 @@ Global_context::Global_context(PC_tree_t conf):
 		for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
 			//TODO: what to do if a single plugin fails to load?
 			string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
+			PC_tree_t plugin_node = PC_get(conf, ".plugins<%d>", plugin_id);
+			Context_proxy& ctx_proxy = (*m_context_proxy.emplace(plugin_name, Context_proxy{*this, plugin_name, PC_get(plugin_node, ".logging")}).first).second;
 			plugins_info.emplace(piecewise_construct,
 			    forward_as_tuple(plugin_name),
-			    forward_as_tuple(get_plugin_ctr(plugin_name.c_str()), *this, PC_get(conf, ".plugins<%d>", plugin_id), get_plugin_dependencies(plugin_name.c_str()))
+			    forward_as_tuple(get_plugin_ctr(plugin_name.c_str()), ctx_proxy, plugin_node, get_plugin_dependencies(plugin_name.c_str()))
 			);
 		}
 		initialize_plugins(plugins_info, m_plugins);

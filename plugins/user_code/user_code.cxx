@@ -178,9 +178,9 @@ public:
 		try {
 			m_fct();
 		} catch ( const std::exception& e ) {
-			ctx.logger()->error("(User-code) While calling user code, caught exception: {}", e.what());
+			ctx.logger()->error("While calling user code, caught exception: {}", e.what());
 		} catch (...) {
-			ctx.logger()->error("(User-code) While calling user code, caught exception");
+			ctx.logger()->error("While calling user code, caught exception");
 		}
 	}
 	
@@ -219,7 +219,8 @@ struct user_code_plugin: Plugin {
 				events_uc.emplace(data_name, Trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)});
 			}
 		}
-		ctx.logger()->info("(User-code) Plugin loaded successfully");
+		ctx.logger()->set_pattern("[PDI][User-code][%T] *** %^%l%$: %v");
+		ctx.logger()->info("Plugin loaded successfully");
 	}
 	
 	void event(const char* event) override
@@ -238,6 +239,11 @@ struct user_code_plugin: Plugin {
 		for (auto dtit = dtrange.first; dtit != dtrange.second; ++dtit) {
 			dtit->second.call(context());
 		}
+	}
+	
+	~user_code_plugin()
+	{
+		context().logger()->info("Closing plugin");
 	}
 	
 }; // struct user_code_plugin

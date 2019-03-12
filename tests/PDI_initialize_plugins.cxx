@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 
 #include "logger.cxx"
+#include "context_proxy.cxx"
 #include "global_context.cxx"
 
 #include "mocks/plugin_mock.h"

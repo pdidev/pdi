@@ -32,11 +32,12 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <pdi/context.h>
-#include <pdi/pdi_fwd.h>
-#include <pdi/data_descriptor.h>
-#include <pdi/plugin.h>
-#include <pdi/ref_any.h>
+#include "pdi/context.h"
+#include "pdi/context_proxy.h"
+#include "pdi/pdi_fwd.h"
+#include "pdi/data_descriptor.h"
+#include "pdi/plugin.h"
+#include "pdi/ref_any.h"
 
 
 namespace PDI {
@@ -49,6 +50,9 @@ private:
 	/// Global logger of PDI, should be constructed first, destroyed last
 	Logger_sptr m_logger;
 	
+	/// Context proxy map, should be destroyed after m_plugins
+	std::unordered_map<std::string, Context_proxy> m_context_proxy;
+
 	/// The singleton Context instance
 	static std::unique_ptr<Global_context> s_context;
 	
@@ -57,7 +61,7 @@ private:
 	
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
-	
+
 	/// The loaded plugins - need to be after m_descriptors (to guarantee proper destroy order)
 	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
 	

@@ -26,6 +26,7 @@
 #include <string>
 
 #include <pdi/context.h>
+#include <pdi/context_proxy.h>
 #include <pdi/logger.h>
 #include <pdi/plugin.h>
 #include <pdi/paraconf_wrapper.h>
@@ -36,6 +37,7 @@
 namespace {
 
 using PDI::Context;
+using PDI::Context_proxy;
 using PDI::Data_descriptor;
 using PDI::Datatype_uptr;
 using PDI::Error;
@@ -55,7 +57,7 @@ struct mpi_plugin: Plugin {
 		int world_rank;
 		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 		char format[64];
-		snprintf(format, 64, "[PDI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
+		snprintf(format, 64, "[PDI][MPI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
 		ctx.logger()->set_pattern(string(format));
 		
 		//set up single ranks
@@ -70,6 +72,15 @@ struct mpi_plugin: Plugin {
 					break;
 				}
 			}
+		}
+		
+		//set up format for global logger
+		try {
+			Context_proxy& ctx_proxy = dynamic_cast<Context_proxy&>(ctx);
+			snprintf(format, 64, "[PDI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
+			ctx_proxy.pdi_core_logger()->set_pattern(string(format));
+		} catch (std::bad_cast&) {
+			ctx.logger()->warn("Cannot cast Context to Context_proxy");
 		}
 	}
 	
@@ -133,6 +144,11 @@ struct mpi_plugin: Plugin {
 		add_predefined(ctx, "MPI_COMM_NULL_F", &comm_null_f, mpi_comm_f_datatype.clone_type());
 		
 		ctx.logger()->info("(MPI) Plugin loaded successfully");
+	}
+	
+	~mpi_plugin()
+	{
+		context().logger()->info("Closing plugin");
 	}
 	
 };
