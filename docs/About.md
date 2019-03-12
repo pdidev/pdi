@@ -23,8 +23,9 @@ This approach works well for a number of concerns including:
 
 Learn about %PDI:
 * \subpage Installation,
-* \subpage Concepts "core concepts",
+* \subpage Concepts "Core concepts",
 * \subpage Getting_started "First steps",
+* \ref Plugins List of %PDI plugins,
 * User reference documentation:
   - annotation API reference: in [C](modules.html), Fortran and Python,
   - \ref Specification_tree_ref "Specification tree reference",
@@ -36,5 +37,8 @@ Learn about %PDI:
 # Join us
 
 If you are interested, join us!
+* [a PhD. position is available](./PDI_FlowVR_PhD.pdf),
+* 2 engineer positions to work on %PDI are also available, [drop an email if you are insterested](mailto:julien.bigot@cea.fr),
+* and we are always looking for people intereted in an internship, [drop an email if you are insterested](mailto:julien.bigot@cea.fr),
 * get help on [Slack](https://join.slack.com/t/pdidev/shared_invite/enQtNDk5OTY2MDA0Nzg0LWNiNWEwNTU4NThmNzNiZDU0YmIyNzg0M2Q3MGVjNTA4ZDE1YWNjY2ZmZDVlYjQ4Yjg0YWI5NDcxMmUzNGM0YTA),
 * get the code from [Gitlab](https://gitlab.maisondelasimulation.fr/jbigot/pdi).

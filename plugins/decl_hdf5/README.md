@@ -1,4 +1,4 @@
-# The Decl'HDF5 plugin
+\page Decl_HDF5_plugin The Decl'HDF5 plugin
 
 **WARNING** This documentation is a work in progress and does not reflect the
 full Decl'HDF5 potential.
@@ -8,12 +8,12 @@ declarative way.
 Decl'HDF5 does not support the full HDF5 feature set but offers a simple
 declarative interface to access a large subset of it.
 
-## Configuration grammar
+# Configuration grammar
 
 At its root, the Decl'HDF5 configuration is made of either a single
 `FILE_DESC` or a list of `FILE_DESC`s.
 
-### `FILE_DESC`
+## `FILE_DESC`
 
 A `FILE_DESC` specifies a list of actions to execute in one file.
 It is specified by a key/value map that contains at least the `file`
@@ -43,7 +43,7 @@ The possible values for the keys are as follow:
   Each string is the name of a dataset to create in the file on first
   access, with the type described in the value.
 
-### `DATA_SECTION`
+## `DATA_SECTION`
 
 The `DATA_SECTION` describes a set of I/O (read or write) to execute.
 A data section can take multiple forms:
@@ -55,7 +55,7 @@ A data section can take multiple forms:
 The first case behaves as if each data had its `DATA_IO_DESC` specified
 with all default values.
 
-### `DATA_IO_DESC`
+## `DATA_IO_DESC`
 
 A `DATA_IO_DESC` is a key-velue map describing one  I/O (read or write)
 to execute.
@@ -84,7 +84,7 @@ The possible values for the keys are as follow:
   data in the file data to write or read.
   This is only valid if the 
 
-### `SELECTION_DESC`
+## `SELECTION_DESC`
 
 A `SELECTION_DESC` is a key-value map that describes the selection of a
 subset of data from a larger set.
@@ -98,7 +98,7 @@ The possible values for the keys are as follow:
   If not specified it defaults to 0 in all dimensions.
   In practice, it can only be specified if `size` is also.
 
-## full configuration example
+# full configuration example
 
 ```
 metadata: # small values for which PDI keeps a copy
