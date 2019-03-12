@@ -21,6 +21,16 @@
 # THE SOFTWARE.
 ################################################################################
 
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.5)
+   message(FATAL_ERROR "CMake >= 2.6.0 required")
+endif()
+
+cmake_policy(PUSH)
+cmake_policy(VERSION 2.6)
+if("${CMAKE_VERSION}" VERSION_GREATER 2.7)
+	cmake_policy(SET CMP0012 NEW)
+endif()
+
 include(${CMAKE_CURRENT_LIST_DIR}/TestFortType.cmake)
 
 # A function to generate the BPP config.bpp.sh file
@@ -92,3 +102,5 @@ function(bpp_preprocess)
 
 	set(${BPP_PREPROCESS_OUTPUT} "${OUTFILES}" PARENT_SCOPE)
 endfunction()
+
+cmake_policy(POP)

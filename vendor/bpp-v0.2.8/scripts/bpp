@@ -85,7 +85,7 @@ try:
                         unlink(dst)
                     symlink(src, dst)
         else:
-            print 'Warning: Nonexistent include directory "'+incdir+'"'
+            print('Warning: Nonexistent include directory "'+incdir+'"')
 
     with open(join(tmpdir, basename(args[0])+'.sh'), 'w') as tmpfile:
         tmpfile.write("#!/bin/bash\n")
@@ -94,17 +94,18 @@ try:
             tmpfile.write(var+'='+opts.defines[var]+"\n")
         EOCAT='EOCAT_'+str(uuid4()).replace('-','_')
         trigger=compile('^\s*!\$SH\s+')
-        for line in file(args[0]):
-            if trigger.match(line):
-                if not inbash:
-                    tmpfile.write(EOCAT+"\n")
-                    inbash=True
-                tmpfile.write(trigger.sub('', line, 1))
-            else:
-                if inbash:
-                    tmpfile.write("cat<<"+EOCAT+"\n")
-                    inbash=False
-                tmpfile.write(line)
+        with open(args[0]) as infile:
+            for line in infile:
+                if trigger.match(line):
+                    if not inbash:
+                        tmpfile.write(EOCAT+"\n")
+                        inbash=True
+                    tmpfile.write(trigger.sub('', line, 1))
+                else:
+                    if inbash:
+                        tmpfile.write("cat<<"+EOCAT+"\n")
+                        inbash=False
+                    tmpfile.write(line)
         if not inbash:
             tmpfile.write(EOCAT+"\n")
         tmpfile.close()
@@ -113,7 +114,7 @@ try:
             result = call(['bash','-r', basename(tmpfile.name)], stdout=outfile, cwd=tmpdir)
 
 except Exception as e:
-    print e
+    print(e)
     result=-1
 
 rmtree(tmpdir)

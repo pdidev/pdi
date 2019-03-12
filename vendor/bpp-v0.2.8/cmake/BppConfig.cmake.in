@@ -21,6 +21,24 @@
 # THE SOFTWARE.
 ################################################################################
 
-set(BPP_EXE "@BPP_EXE@")
-set(BPP_DEFAULT_INCLUDES "@BPP_DEFAULT_INCLUDES@")
-include("@BPP_CMAKE@")
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.5)
+   message(FATAL_ERROR "CMake >= 2.6.0 required")
+endif()
+cmake_policy(PUSH)
+cmake_policy(VERSION 2.6)
+
+
+# Compute the installation prefix relative to this file.
+get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+if(_IMPORT_PREFIX STREQUAL "/")
+  set(_IMPORT_PREFIX "")
+endif()
+
+set(BPP_EXE "${_IMPORT_PREFIX}/bin/bpp")
+set(BPP_DEFAULT_INCLUDES "-I"  "${_IMPORT_PREFIX}/share/bpp/include/")
+include("${_IMPORT_PREFIX}/share/bpp-@BPP_VERSION@/cmake/Bpp.cmake")
+
+cmake_policy(POP)
