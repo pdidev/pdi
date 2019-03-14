@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 ################################################################################
 # Copyright (c) 2013-2014, Julien Bigot - CEA (julien.bigot@cea.fr)
@@ -87,14 +87,14 @@ try:
         else:
             print('Warning: Nonexistent include directory "'+incdir+'"')
 
-    with open(join(tmpdir, basename(args[0])+'.sh'), 'wb') as tmpfile:
+    with open(join(tmpdir, basename(args[0])+'.sh'), 'w') as tmpfile:
         tmpfile.write("#!/bin/bash\n")
         inbash=True
         for var in opts.defines:
             tmpfile.write(var+'='+opts.defines[var]+"\n")
         EOCAT='EOCAT_'+str(uuid4()).replace('-','_')
         trigger=compile('^\s*!\$SH\s+')
-        with open(args[0], 'rb+') as infile:
+        with open(args[0], 'r+') as infile:
             for line in infile:
                 if trigger.match(line):
                     if not inbash:
