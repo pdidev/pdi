@@ -49,3 +49,8 @@ string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(mpi_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME mpi_02_F COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/mpi_test_02.yml")
 endif("${ENABLE_FORTRAN}")
+
+# MPI plugin C predefines test
+add_executable(mpi_03_C mpi_test_03.c)
+target_link_libraries(mpi_03_C PDI::pdi MPI::MPI_C)
+add_test(NAME mpi_03_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_03_C>" ${MPIEXEC_POSTFLAGS})

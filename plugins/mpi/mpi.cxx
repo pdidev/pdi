@@ -23,7 +23,6 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <string>
 
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
@@ -31,8 +30,11 @@
 #include <pdi/plugin.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
-
 #include <spdlog/spdlog.h>
+#include <string>
+#include <unordered_set>
+
+#include "mpi_comm_transtyper.h"
 
 namespace {
 
@@ -50,7 +52,8 @@ using PDI::to_long;
 using std::string;
 
 struct mpi_plugin: Plugin {
-
+	MPI_Comm_transtyper m_transtyper;
+	
 	void set_up_logger(Context& ctx, PC_tree_t logging_tree)
 	{
 		//set up format
@@ -98,7 +101,8 @@ struct mpi_plugin: Plugin {
 	}
 	
 	mpi_plugin(Context& ctx, PC_tree_t config):
-		Plugin{ctx}
+		Plugin{ctx},
+		m_transtyper{ctx, PC_get(config, ".transtype")}
 	{
 		set_up_logger(ctx, PC_get(config, ".logging"));
 		
@@ -146,6 +150,11 @@ struct mpi_plugin: Plugin {
 		ctx.logger()->info("(MPI) Plugin loaded successfully");
 	}
 	
+	void data(const char* name, PDI::Ref ref) override
+	{
+		m_transtyper.data(name, ref);
+	}
+
 	~mpi_plugin()
 	{
 		context().logger()->info("Closing plugin");
