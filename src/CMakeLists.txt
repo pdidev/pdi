@@ -256,12 +256,7 @@ endif()
 ## Fortran version
 
 if("${ENABLE_FORTRAN}")
-    
-    message(WARNING "\n\nPlease include anything below \\/ \\/ \\/\n\n  --8<----------------\n")
-    message(AUTHOR_WARNING "Will generate PDIF_H")
 	bpp_preprocess(OUTPUT PDIF_H SOURCES fortran/pdif.h.bpp)
-    message(AUTHOR_WARNING "Generated PDIF_H=${PDIF_H}")
-    message(WARNING "\n  --8<----------------\n\nPlease include anything above /\\ /\\ /\\ \n\n")
 	bpp_preprocess(OUTPUT PDI_F90 SOURCES fortran/pdi.f90.bpp)
 	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fortran_inc")
 	add_custom_target(mv_bpp_files
