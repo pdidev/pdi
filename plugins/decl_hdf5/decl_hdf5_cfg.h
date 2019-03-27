@@ -26,8 +26,6 @@
 #ifndef DECL_HDF5_AST_H_
 #define DECL_HDF5_AST_H_
 
-#include <mpi.h>
-
 #include <string>
 #include <unordered_map>
 #include <utility>

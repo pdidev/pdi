@@ -22,7 +22,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#ifdef H5_HAVE_PARALLEL
 #include <mpi.h>
+#endif
 
 #include <algorithm>
 #include <iostream>
@@ -388,6 +390,7 @@ void set_up_logger(Context& ctx, PC_tree_t logging_tree)
 {
 	ctx.logger()->set_pattern("[PDI][Decl'HDF5][%T] *** %^%l%$: %v");
 	
+#ifdef H5_HAVE_PARALLEL
 	int mpi_init = 0;
 	MPI_Initialized(&mpi_init);
 	if (mpi_init) {
@@ -412,6 +415,7 @@ void set_up_logger(Context& ctx, PC_tree_t logging_tree)
 			}
 		}
 	}
+#endif
 }
 
 struct decl_hdf5_plugin: Plugin {

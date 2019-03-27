@@ -26,8 +26,6 @@
 #ifndef DECL_HDF5_SELECTION_CFG_H_
 #define DECL_HDF5_SELECTION_CFG_H_
 
-#include <mpi.h>
-
 #include <string>
 #include <vector>
 

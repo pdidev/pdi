@@ -26,7 +26,9 @@
 #ifndef DECL_HDF5_TRANSFER_CFG_H_
 #define DECL_HDF5_TRANSFER_CFG_H_
 
+#ifdef H5_HAVE_PARALLEL
 #include <mpi.h>
+#endif
 
 #include <memory>
 #include <string>
