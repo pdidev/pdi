@@ -128,7 +128,7 @@ public:
 	virtual void destroy_data(void* ptr) const = 0;
 	
 	/** Returns the datatype yaml representation as a string
-	 * 
+	 *
 	 * \return the datatype yaml representation as a string
 	 */
 	virtual std::string debug_string() const = 0;

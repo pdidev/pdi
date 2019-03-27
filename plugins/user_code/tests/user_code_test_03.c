@@ -87,6 +87,5 @@ int main( int argc, char* argv[] )
 	}
 	
 	PDI_finalize();
-	PC_tree_destroy(&conf);
 }
 

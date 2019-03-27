@@ -154,7 +154,7 @@ struct mpi_plugin: Plugin {
 	{
 		m_transtyper.data(name, ref);
 	}
-
+	
 	~mpi_plugin()
 	{
 		context().logger()->info("Closing plugin");

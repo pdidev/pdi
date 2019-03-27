@@ -23,35 +23,35 @@
 ******************************************************************************/
 
 /** \file pdi.h
- * 
+ *
  * C user API
- * 
+ *
  * The user facing API is the interface offered by PDI to C application
  * developers.
- * 
+ *
  * \defgroup init_final Initialization and finalization
- * 
+ *
  * The initialization and finalization part of the API is used to setup PDI,
  * release its resources and check version information.
- * 
+ *
  * \defgroup annotation Code annotation
- * 
+ *
  * The code annotation API is the main interface to use in the code.
- * 
+ *
  * It offers functions that can be called from code with no side effect by
  * default and that can therefore be considered as annotations.
- * 
+ *
  * \defgroup error Error handling
- * 
+ *
  * The error handling API supports checking the error status of PDI.
- * 
+ *
  * By default, errors in PDI C API are signaled by a return code of type
  * PDI_status_t and an error message can be retrieved with the PDI_errmsg
  * function. This default behavior can be changed by replacing the error handler
  * with the PDI_errhandler function.
- * 
+ *
  * \defgroup hl_annotation High-level annotations
- * 
+ *
  * The high-level annotation API offers a higher level of interface for the same
  * features as the \ref annotation.
  */
@@ -149,7 +149,7 @@ PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler);
 /// \}
 
 /** \addtogroup init_final Initialization and finalization
- * 
+ *
  * The initialization and finalization part of the API is used to setup PDI,
  * release its resources and check version information.
  * \{
@@ -283,12 +283,12 @@ PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* nam
  *
  * This requires a call to PDI_transaction_end to close the transaction.
  *
- * \deprecated the transaction part of the API is deprecated, the 
+ * \deprecated the transaction part of the API is deprecated, the
  * PDI_multi_expose function should be used instead.
- * 
+ *
  * \see PDI_expose the function used to expose data inside the transaction
  * \see PDI_transaction_end the function used to end the transaction
- * 
+ *
  * \param[in] name the name of the transaction (an event thus named will be
  *                 triggered when all data become available)
  * \return an error status
@@ -296,13 +296,13 @@ PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* nam
 PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name);
 
 /** Ends the previously opened transaction.
- * 
- * \deprecated the transaction part of the API is deprecated, the 
+ *
+ * \deprecated the transaction part of the API is deprecated, the
  * PDI_multi_expose function should be used instead.
- * 
+ *
  * \see PDI_transaction_begin the function used to start the transaction
  * \see PDI_expose the function used to expose data inside the transaction
- * 
+ *
  * \return an error status
  */
 PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void);

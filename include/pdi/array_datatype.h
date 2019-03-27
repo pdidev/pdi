@@ -51,7 +51,7 @@ class PDI_EXPORT Array_datatype:
 	
 public:
 	/** Construct a new partially filled Array_datatype
-	 * 
+	 *
 	 * \param[in] subtype the type of the elements contained in the array
 	 * \param size the number of elements the array can store
 	 * \param start the id of the first actual element of the array
@@ -60,14 +60,14 @@ public:
 	Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize);
 	
 	/** Construct a new completely filled Array_datatype
-	 * 
+	 *
 	 * \param subtype the type of the elements contained in the array
 	 * \param size the number of elements the array can store
 	 */
 	Array_datatype(Datatype_uptr subtype, size_t size);
 	
 	/** Type of the elements contained in the array
-	 * 
+	 *
 	 * \return the type of the elements contained in the array
 	 */
 	const Datatype& subtype() const;
@@ -78,13 +78,13 @@ public:
 	size_t size() const;
 	
 	/** id of the first actual element of the array
-	 * 
+	 *
 	 * \return the id of the first actual element of the array
 	 */
 	size_t start() const;
 	
 	/** Number of actual elements in the array
-	 * 
+	 *
 	 * \return the number of actual elements in the array
 	 */
 	size_t subsize() const;

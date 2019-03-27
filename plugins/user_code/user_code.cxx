@@ -216,7 +216,7 @@ struct user_code_plugin: Plugin {
 			PC_tree_t data = PC_get(on_data, "<%d>", map_id);
 			int nb_call = len(data, 0);
 			for (int call_id = 0; call_id < nb_call; ++call_id) {
-				events_uc.emplace(data_name, Trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)});
+				data_uc.emplace(data_name, Trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)});
 			}
 		}
 		ctx.logger()->set_pattern("[PDI][User-code][%T] *** %^%l%$: %v");
@@ -234,7 +234,7 @@ struct user_code_plugin: Plugin {
 	
 	void data(const char* name, Ref) override
 	{
-		auto&& dtrange = events_uc.equal_range(name);
+		auto&& dtrange = data_uc.equal_range(name);
 		// invoke all required functions
 		for (auto dtit = dtrange.first; dtit != dtrange.second; ++dtit) {
 			dtit->second.call(context());
