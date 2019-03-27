@@ -8,4 +8,4 @@ then
 	exit
 fi
 
-date '+%s'
+date -u '+prerelease-%F:%H:%M'

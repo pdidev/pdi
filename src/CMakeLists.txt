@@ -321,7 +321,13 @@ endif()
 
 # Installable config
 
-set(INSTALL_CMAKEDIR "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}-${PDI_VERSION}/cmake" CACHE PATH "cmake modules (DATADIR/${PROJECT_NAME}-${PDI_VERSION}/cmake)")
+set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}-${PDI_VERSION}" CACHE PATH "PDI data directory (DATADIR/${PROJECT_NAME}-${PDI_VERSION})")
+configure_file(../tools/env.bash.in env.bash @ONLY)
+install(FILES "${PDI_BINARY_DIR}/env.bash"
+		DESTINATION "${INSTALL_PDIDATADIR}"
+)
+
+set(INSTALL_CMAKEDIR "${INSTALL_PDIDATADIR}/cmake" CACHE PATH "cmake modules (PDIDATADIR/cmake)")
 write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
 		VERSION "${PDI_VERSION}"
 		COMPATIBILITY AnyNewerVersion
