@@ -323,6 +323,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	});
 	
 	// Fortran basic types
+#ifdef ENABLE_FORTRAN
 	ctx.add_datatype("character", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_CHARACTER_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_CHARACTER_DEFAULT_KIND;
@@ -347,7 +348,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		else if (kind < 0) throw Error{PDI_ERR_CONFIG, "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::FLOAT, kind}};
 	});
-	
+#endif
 }
 
 } // namespace PDI

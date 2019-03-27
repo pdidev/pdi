@@ -139,6 +139,7 @@ vector<param_pair> scalar_types {
 	{"type: double",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}}},
 	{"{type: double, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}}},
 	
+#ifdef ENABLE_FORTRAN
 	{"character",                   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
 	{"type: character",             shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
 	{"{type: character, kind: 0}",  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
@@ -155,6 +156,7 @@ vector<param_pair> scalar_types {
 	{"type: real",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND}}},
 	{"{type: real, kind: 0}",       shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND}}},
 	{"{type: real, kind: 256}",      shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, 256}}},
+#endif
 };
 
 vector<param_pair> array_types {
