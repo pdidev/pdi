@@ -1,0 +1,288 @@
+/*!
+\page api_page API Overview
+
+Note
+====
+
+This is a general API description which gives a good overview over
+SIONlib's most commonly used functions. For a description of the basic
+description of the basic strategies see the \ref fileformat_page
+"file format description". For a more in-depth introduction please see
+the [SIONlib tutorial slides]
+(http://apps.fz-juelich.de/jsc/sionlib/html/sionlib_tutorial_2013.pdf).
+
+API description
+===============
+
+Parallel interface
+------------------
+
+- \ref sion_paropen_mpi_description "sion_paropen_mpi"
+- \ref sion_parclose_mpi_description "sion_parclose_mpi"
+
+Serial interface
+----------------
+
+- \ref sion_open_description "sion_open"
+- \ref sion_open_rank_description "sion_open_rank"
+- \ref sion_close_description "sion_close"
+- \ref sion_get_locations_description "sion_get_locations"
+
+Common interface
+----------------
+
+- \ref sion_ensure_free_space_description "sion_ensure_free_space"
+- \ref sion_feof_description "sion_feof"
+- \ref sion_bytes_avail_in_block_description "sion_bytes_avail_in_block"
+- \ref sion_seek_description "sion_seek"
+- \ref sion_seek_fp_description "sion_seek_fp"
+- \ref sion_fwrite_description "sion_fwrite"
+- \ref sion_fread_description "sion_fread"
+
+\anchor sion_paropen_mpi_description
+sion_paropen_mpi
+----------------
+
+This function opens a sion file for writing or reading data. The
+chunksizes are communicated globally which enables each task to
+calculate the correct offset to prevent different ranks from trying to
+access the same parts of the file. Hence this call is *collective and
+needs to be called by all processes at the same time*. With this
+information globally available following calls of `sion_fwrite` and
+`sion_fread` do not need any communication.
+
+In write-mode SIONlib will create one or more physical files on disk
+containing data of all tasks (see also \ref fileformat_page). The
+number has to be defined by the parameters `numfiles` or `lComm`. If
+`numfiles` is greater than zero the tasks in `gComm` will be split to
+numfiles groups. The new communicator will be returned afterwards by
+parameter `lcomm`. If `numfiles` is less than zero, the communicator
+`lcomm` has to be a local communicator. Tasks which are in the same
+local communicator will write to the same physical file. All tasks in
+`gComm` have to be a member of one of the local communicators also.
+
+On each task the function opens one of the physical files with the
+POSIX or ANSI C open command mode and sets the file pointer to a
+task-specific position.
+
+Important: all parameters of the sion_open function are always
+pointers. The reason for this is that most of the parameter are input
+values if the file is opened for writing and are output parameters if
+the file is opened for reading.
+
+For a list and description of the arguments please see
+sion_paropen_mpi().
+
+\anchor sion_parclose_mpi_description
+sion_parclose_mpi
+-----------------
+
+This function closes the sion file in parallel on all tasks involved
+in opening the sion file. Therefore the local communicator, defined at
+sion_paropen_mpi, will be used internally to collect all the meta data
+from each task and to append it to the sion file on task zero of the
+local communicator. This function has to be called collectively on all
+tasks of the global communicator given at opening time.
+ 
+There is currently no fault tolerance in the meta-data handling. The
+variable size meta-data (meta data block 2, see \ref fileformat_page)
+is held in memory on each task and is not written to disk before
+calling this function. This means, that the file cannot be read again
+if it was not closed correctly, e.g. because the disk space limit was
+reached before. This is a trade-off for the possibility so avoid any
+kind of communication between the open and the close calls.
+
+For a list and description of the arguments please see
+sion_parclose_mpi().
+
+\anchor sion_ensure_free_space_description
+sion_ensure_free_space
+----------------------
+
+This function ensures that there is enough space available for writing
+the requested number of bytes to the sion file.
+`sion_ensure_free_space` allocates a new block at the end of the sion
+file of size chunksize if there is not enough space to write the
+requested number of bytes in the current block.
+
+This procedure is only be needed if the caller function from the user
+program do not count the number of bytes written. It is a task local
+function, which can be called independently from other MPI tasks. In
+some cases the function moves the file pointer to a new position and
+also flushes the local file pointer.
+
+For a list and description of the arguments please see
+sion_ensure_free_space().
+
+\anchor sion_feof_description
+sion_feof
+---------
+
+This function indicates whether the end of file is reached for this
+task or not. This means the file pointer points behind the last byte
+of last chunk of this task. If all bytes of the current chunk are
+already read and there are more chunks available for this task,
+sion_feof will advance the file pointer to the start position of the
+next chunk in the sion file. The function is a task local function,
+which can be called independently from other MPI tasks and does not
+invoke any communication.
+
+For a list and description of the arguments please see sion_feof().
+
+\anchor sion_bytes_avail_in_block_description
+sion_bytes_avail_in_block
+-------------------------
+
+This function returns the number of bytes currently available in the
+current chunk (bytes not read). This function is a local function,
+which can be called independently from other MPI tasks.
+
+For a list and description of the arguments please see
+sion_bytes_avail_in_block().
+
+\anchor sion_open_rank_description
+sion_open_rank
+--------------
+
+This function opens a sion file for a specific rank. It can be used to
+open the sion file independently from each task (e.g. if no MPI is
+available or only a subset of tasks chunks are needed).
+
+Using this function the meta data at beginning of the sion file is
+read by each task instead of just once and distribute (sion_open).
+sion_open_rank only reads the task specific meta data of the meta data
+block at the end of the sion file. (For more information on the file
+format see \ref fileformat_page).
+
+All metadata will be read and stored in internal data structures.
+
+Warning: Only read operations are currently supported.
+
+For a list and description of the arguments please see
+sion_open_rank().
+
+\anchor sion_open_description
+sion_open
+---------
+
+This function opens all tasks of a sion file in serial mode. The
+meta-data of all tasks will be loaded into memory, which allows
+accessing different parts of the file by using sion_seek_fp(), for
+example to switch between ranks. Default position of the file pointer
+is in front of the first byte of the first task.
+
+In the case of multi-file sion files sion_open() internally opens each
+physical file with sion_open recursively. For each physical file
+sion_open manages an individual sion file descriptor and data
+structure.
+
+For a list and description of the arguments please see sion_open().
+
+\anchor sion_close_description
+sion_close
+----------
+
+This function closes a sion file which was opened in serial mode with
+sion_open() or sion_open_rank().  In write mode this function will
+also save all meta data to the meta data block of the sion file at the
+beginning and the end of the file.
+
+The function is a task local function, which can be called
+independently from other MPI tasks.
+
+For a list and description of the arguments please see sion_close().
+
+\anchor sion_get_locations_description
+sion_get_locations
+------------------
+
+Returns pointers to internal fields, containing the number of chunks
+written by each task (sion_chunkcount) and their sizes
+(sion_chunksizes).  This function is only needed if the sion file was
+opened for reading in serial mode.
+
+For a list and description of the arguments please see
+sion_get_locations().
+
+\anchor sion_seek_description
+sion_seek
+---------
+
+This function sets the file pointer to a new position according to the
+specified parameters. It can only be used when the sion file was
+opened for reading in serial mode. In Write mode currently only the
+rank can be modified! SION_CURRENT_BLK and SION_CURRENT_POS are
+required.
+
+For a list and description of the arguments please see sion_seek().
+
+\anchor sion_seek_fp_description
+sion_seek_fp
+------------
+
+Like `sion_seek` but exporting the file pointer. This is a legacy
+function for compatibility. For new code use \ref
+sion_seek_description "sion_seek" instead.
+
+For a list and description of the arguments please see sion_seek_fp().
+
+\anchor sion_fwrite_description
+sion_fwrite
+-----------
+
+This is the basic function for writing data to the underlying storage.
+
+Internally it calls \ref sion_ensure_free_space_description
+"sion_ensure_free_space" to ensure that there is enough space left in
+the current chunk to write the requested number of bytes.
+
+For a list and description of the arguments please see sion_fwrite().
+
+\anchor sion_fread_description
+sion_fread
+----------
+
+This is the basic function for reading data from the underlying
+storage.
+
+Internally it potentially executes multiple reads until either the
+requested number of elements or all available data is read from the
+file. This makes this function useful for reading more than a single
+chunk at a time without the need to loop over the chunks on the user
+side.
+
+For a list and description of the arguments please see sion_fread().
+
+\anchor file_mode_description
+The `file_mode` argument
+========================
+
+The file mode is a string that contains a comma-separated list of key
+value pairs, where for some keys the values are optional. Beyond the
+mandatory information, whether the file should be opened in write
+`"w"` or read `"r"` mode, there are additional options that can be
+passed with the file mode string.
+
+- `"w"`, `"bw"` or `"wb"`: open file in write mode
+- `"r"`, `"br"` or `"rb"`: open file in read mode
+- `"ansi"` or `"posix"`: use ANSI C or POSIX interface for the file
+  access. ANSI C offers internal buffering and is the default.
+- `"collective"`: use \ref collective_page "collective operations"
+- `"collectivemerge"` or `"cmerge"`: use \ref collective_page
+  "collective operations" with collective merge mode
+- `"keyval[=MODE]"`: open file in key value mode. The different values
+  for `MODE` are described on the key value mode \ref keyval_page
+  "page". The default is `default`.
+- `"endianness=MODE"`: force the file to be opened with endianness
+  `MODE`. Possible values are `big` and `little`. The current system's
+  endianness is used by default.
+
+Example:
+- `file_mode = "w,posix"` opens the file for writing in POSIX mode
+- `file_mode = "w,keyval=inline"` opens the file for writing in key
+  mode using the `inline` method for storing the additional key value
+  data. (`inline` currently is the default mode)
+- see \ref collective_page "collective operations" for examples of how
+  to use file_mode to enable collective operations
+
+*/

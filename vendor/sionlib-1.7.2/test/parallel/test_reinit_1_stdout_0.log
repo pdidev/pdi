@@ -1,0 +1,37 @@
+on rank 0: starting Test with SION_COLLSIZE=4
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: END of TEST A write coll
+on rank 0: sid           =3
+on rank 0: numfiles      =1
+on rank 0: chunksize     =1000
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_reinit.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST D.1 read collective from collective file
+siondump: sid:                       0
+siondump: filename:                  test_reinit.out               
+siondump: prefix:                    test_reinit.out               
+siondump: number of tasks:           4
+siondump: filesystem blocksize:      100 bytes (  0.00 MB)
+siondump: file set:                  No
+siondump: file number:               0
+siondump: number of files:           1
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           1
+siondump: size of chunks:                                4000 bytes  (    0.00 MB)
+siondump: datasize in file (aggr.):                      4000 bytes  (    0.00 MB)
+siondump: size of full chunks:                           4000 bytes  (    0.00 MB) #      4
+siondump: size of partly filled chunks:                     0 bytes  (    0.00 MB) #      0
+siondump: size of empty chunks:                             0 bytes  (    0.00 MB) #      0
+siondump: overhead compared to task-local file:             0 bytes  (    0.00 MB)
+siondump: file usage (user data/chunk size):       100.000000%
+siondump: fsblocks, size of used blocks:                 4000 bytes  (    0.00 MB, 40 blocks)
+siondump: fsblocks, size of fully used blocks:           4000 bytes  (    0.00 MB, 40 blocks)
+siondump: fsblocks, size of partly used blocks:             0 bytes of            0 bytes (  0.00 MB of   0.00 MB, 0 blocks)
+siondump: fsblocks, used fsblocks/chunk size:       100.000000%
+siondump: fsblocks, user data/used blocks:          100.000000%

@@ -1,0 +1,14 @@
+on rank 0: new API: aid=0
+on rank 0: END of TEST 0
+on rank 0: bytes_written=128
+on rank 0: bwrote= 16 blocksum=    1056 
+on rank 0: END of TEST B write
+on rank 0: sid           =3
+on rank 0: numfiles      =1
+on rank 0: chunksize     =200
+on rank 0: globalrank    =0
+on rank 0: end of data for key 4711 
+on rank 0: end of data for key 4712 
+on rank 0: end of data for key 4713 
+on rank 0: end of data for key 4714 
+on rank 0: END of TEST B read collective

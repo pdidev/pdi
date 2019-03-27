@@ -1,0 +1,61 @@
+on rank 0: END of TEST A (keyval) create
+on rank 0: create bytes_written=245
+on rank 0: END of TEST B (normal) create
+on rank 0: sid           =1
+on rank 0: numfiles      =1
+on rank 0: chunksize     =200
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_keyval.out
+on rank 0: keyvalmode    =SION_KEYVAL_INLINE
+on rank 0: END of TEST B read collective
+on rank 0: sid           =3
+on rank 0: numfiles      =1
+on rank 0: chunksize     =200
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_keys.out
+on rank 0: ITERATOR
+on rank 0: END of TEST D read iterative
+on rank 0: sid           =2
+on rank 0: numfiles      =1
+on rank 0: chunksize     =200
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_keys.out
+on rank 0: key=  4711 len=10 bread=10 val=EFGHIJKLMN
+on rank 0: key=  4711 len=10 bread=9 val=FGHIJKLMNN
+on rank 0: key=  4711 len=10 bread=8 val=KLMNOPQR
+on rank 0: key=  4711 len=10 bread=5 val=OPQRS
+on rank 0: key=  4711 len=10 bread=8 val=GHIJKLMN
+on rank 0: key=  4711 len=8 bread=4 val=HIJK
+on rank 0: END of TEST D read iterative
+on rank 0: sid           =1
+on rank 0: numfiles      =1
+on rank 0: chunksize     =200
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_keys.out
+on rank 0: key_full_scan returns 1 
+on rank 0: key=  4711 len=10 bread=10 val=EFGHIJKLMN
+on rank 0: key=  4711 len=10 bread=9 val=FGHIJKLMNN
+on rank 0: key=  4711 len=10 bread=8 val=KLMNOPQR
+on rank 0: key=  4711 len=10 bread=5 val=OPQRS
+on rank 0: key=  4711 len=10 bread=8 val=GHIJKLMN
+on rank 0: key=  4711 len=8 bread=4 val=HIJK
+on rank 0: END of TEST E read iterative
+on rank 0: sid           =5
+on rank 0: numfiles      =1
+on rank 0: chunksize     =200
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_keys.out
+on rank 0: key_full_scan returns 1 
+on rank 0: key_list_iterator_reset returns 1 
+on rank 0: key[00]=4711: #blocks=    10 totalsize=       100
+on rank 0: key[01]=5611: #blocks=     1 totalsize=        10
+on rank 0: key[02]=5612: #blocks=     1 totalsize=        11
+on rank 0: key[03]=5613: #blocks=     1 totalsize=        12
+on rank 0: key[04]=5614: #blocks=     1 totalsize=        13
+on rank 0: key[05]=5615: #blocks=     1 totalsize=        14
+on rank 0: key[06]=5616: #blocks=     1 totalsize=        15
+on rank 0: key[07]=5617: #blocks=     1 totalsize=        16
+on rank 0: key[08]=5618: #blocks=     1 totalsize=        17
+on rank 0: key[09]=5619: #blocks=     1 totalsize=        18
+on rank 0: key[10]=5620: #blocks=     1 totalsize=        19
+on rank 0: END of TEST F read iterative

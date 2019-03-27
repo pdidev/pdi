@@ -1,0 +1,216 @@
+.NOTPARALLEL:
+
+TOPDIR = ..
+
+include Makefile.defs.fe
+include $(TOPDIR)/mf/common.defs
+
+all: allfe allbe
+
+install: installfe installbe
+
+installtests: install installtestsfe installtestsbe
+
+checkinst: install checkinstfe checkinstbe
+
+clean: cleanfe cleanbe
+
+relink: setupfe mklinksfe chklinksfe setupbe mklinksbe chklinksbe
+
+test: testfe testbe
+
+packtest: packtestfe packtestbe
+
+setup: setupfe setupbe
+
+setupfe:
+	@if test ! -d buildfe; then ${MAKE} setupfe-real; fi
+
+setupfe-real: mk-build-dirfe buildfe/lndir mklinksfe
+
+mk-build-dirfe:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow Frontend  Build Directories   +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir buildfe
+
+mklinksfe:
+	cd buildfe; ./lndir ../../src
+	-mkdir buildfe/mf
+	cd buildfe/mf; ../lndir ../../../mf
+	cd buildfe; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd buildfe; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd buildfe; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd buildfe; rm -f Makefile.defs; \
+		echo "DSUF=/fe" > Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs.fe' >> Makefile.defs
+	-mkdir buildfe/examples
+	cd buildfe/examples; ../lndir ../../../examples
+	-mkdir buildfe/test
+	cd buildfe/test; ../lndir ../../../test
+	cd buildfe/test; rm -f RealMakefile; ln -s ../../../mf/RealMakefile .
+
+chklinksfe:
+	$(TOPDIR)/config/cleanlinks.sh buildfe
+
+setupbe:
+	@if test ! -d buildbe; then ${MAKE} setupbe-real; fi
+
+setupbe-real: mk-build-dirbe buildbe/lndir mklinksbe
+
+mk-build-dirbe:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow Backend  Build Directories    +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir buildbe
+
+mklinksbe:
+	cd buildbe; ../buildfe/lndir ../../src
+	-mkdir buildbe/mf
+	cd buildbe/mf; ../lndir ../../../mf
+	cd buildbe; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd buildbe; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd buildbe; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd buildbe; rm -f Makefile.defs; \
+		echo "DSUF=/be" > Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs.be' >> Makefile.defs
+	-mkdir buildbe/examples
+	cd buildbe/examples; ../lndir ../../../examples
+	-mkdir buildbe/test
+	cd buildbe/test; ../lndir ../../../test
+	cd buildbe/test; rm -f RealMakefile; ln -s ../../../mf/RealMakefile .
+
+chklinksbe:
+	$(TOPDIR)/config/cleanlinks.sh buildbe
+
+buildfe/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) -O0 $(TOPDIR)/config/lndir.c -o buildfe/lndir
+
+buildbe/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) -O0 $(TOPDIR)/config/lndir.c -o buildbe/lndir
+
+realclean:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Removing Shadow Build Directories                 +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	rm -rf buildfe buildbe
+
+allfe: setupfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building Front-End Version                        +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile all-fe DSUF="/fe"
+
+installfe: allfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Front-End Version                      +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile install-fe DSUF="/fe"
+
+installtestsfe: installfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Front-End Version Tests                +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile installtests-fe DSUF="/fe"
+
+checkinstfe: installtestsfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Check Installation Front-End                       +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile checkinst-fe DSUF="/fe"
+
+testfe: allfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Testing Front-End Version                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile test-fe DSUF="/fe"
+
+packtestfe: allfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Packtesting Front-End Version                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile packtest-fe DSUF="/fe"
+
+cleanfe:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  cleaning Front-End Version                        +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile clean DSUF="/fe"
+
+allbe: setupbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building Back-End Version                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile all-be DSUF="/be"
+
+installbe: allbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Back-End Version                       +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile install-be DSUF="/be"
+
+installtestsbe: installbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Back-End Version Tests                 +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile installtests-be DSUF="/be"
+
+checkinstbe: installtestsbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Check Installation Back-End                       +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile checkinst-be DSUF="/be"
+
+testbe: allbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Testing Back-End Version                          +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile test-be DSUF="/be"
+
+packtestbe: allbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Packtesting Back-End Version                          +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile packtest-be DSUF="/be"
+
+cleanbe:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  cleaning Back-End Version                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile clean DSUF="/be"

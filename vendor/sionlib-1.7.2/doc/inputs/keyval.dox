@@ -1,0 +1,188 @@
+/*!
+
+\defgroup keyval SIONlib Key Value
+\ref keyval_page
+\defgroup keyval_api SIONlib API Key Value
+\ingroup keyval
+@{
+API doc for key value feature of SIONlib.
+@}
+
+\page keyval_page Key Value Documentation
+
+Introduction
+============
+
+The use of hybrid applications (MPI+OpenMP) suggests a new structural
+layer to be available in SIONlib. Key-value pairs allow convenient
+saving and especially loading of multiple pieces of data within one
+single rank.
+
+Implementations
+===============
+
+In general the keys are of data type `uint64`, while the data is of
+data type `void *`. All Implementations need to store the amount of
+data actually written for the specific key. During reads the current
+position inside a key's data needs to be stored.
+
+In order to prevent additional global communication keys are local for
+each.
+
+Enabling Key Value Mode
+-------------------------
+
+Enabling a SIONlib file for usage with the key-value is done by
+passing the keyword _keyval_ to the open function with the value
+choosing the method, e.g. `keyval=inline` for the inline
+implementation.
+
+Opening a SIONlib file for read mode is possible using the keyval mode
+"keyval=unknown". Subsequent calls of `sion_get_keyval_mode(int sid,
+int foo)`
+
+~~~{.c}
+int sion_get_keyval_mode (int sid);
+~~~
+
+return the mode which can be compared to constants like
+SION_KEYVAL_INLINE for inline mode.
+
+Using an open call without keyval argument fails on a file which is
+written using keyval.
+
+General Interface
+-----------------
+
+The general interface is
+
+~~~{.c}
+size_t sion_fwrite_key (void*    data,
+                        uint64_t key,
+                        size_t   size,
+                        size_t   nitems,
+                        int      sid);
+size_t sion_fread_key (void*    data,
+                       uint64_t key,
+                       size_t   size,
+                       size_t   nitems,
+                       int      sid);
+~~~
+
+Key Information Management
+--------------------------
+
+In order to prevent a full search through all previous data for every
+key read from a SIONlib file and to keep track of the remaining bytes
+for a key, some caching and management is needed. Every matching or
+non-matching key which is read from file is added to the "key manager"
+which hold data of
+
+- the key itself
+- the offset of the key
+- the length of corresponding data
+- the number of bytes left unread from the key
+
+Besides managing the pieces of information it also offers an interface
+for iterating over all available keys which is especially useful for
+dumping data of all keys.
+
+The key manager saves information about keys in the "key value
+table". This hash table consists of two columns of types
+
+- `uint64`
+- `void *`
+
+which hold the key and the according bucket, respectively. The buckets
+use linked lists in order to store the actual data.
+
+The key manager resides inside the corresponding SIONlib file
+descriptor and is pointed by siondesc->keyvalptr.
+
+Inline
+------
+
+### Implementation Details
+
+From the output point of view the most straight forward implementation
+is writing the (key, length, data) inside a chunk.
+
+~~~
++---------------------+---------------------+---------------------+
+| k_0 | l_0 | d_0 ... | k_1 | l_1 | d_1 ... | k_2 | l_2 | d_2 ... |
++-----------------------------------------------------------------+ ...
+|                             c_0                                 |
++-----------------------------------------------------------------+
+~~~
+
+symbol | description
+------ | -----------
+k_i    | key i
+d_i    | data associated to k_i
+l_i    | length of d_i
+c_i    | chunk i
+
+### Advantages
+
+- Simple output implementation
+- Additional data structures are contained inside the existing ones
+
+### Disadvantages
+
+- Yields a performance penalty if keys are small and read / written
+  consecutively
+- Since the key information is directly attached to the corresponding
+  data, this format efficiently yields larger data sizes, which is not
+  obvious for the user and might result in large unused disk space
+- Key manager is needed and might grow significantly large if many
+  keys are used
+
+Dense (not implemented yet)
+---------------------------
+
+### Implementation Details
+
+For consecutive read and write operations separating the data and the
+key information is preferable. Caching key information makes it
+possible to write a compact block of information filling up the gaps
+that are left during output of the associated data.
+
+The chunks are not shown in proportional size.
+
+~~~
++-----+-----------------------------------------------+
+| o_0 | d_0   d_1   d_2 | (k_0 l_0 o_1) (k_1 l_1 o_2) |
++-----------------------------------------------------+...
+      |                      c_0                      |
+      +-----------------------------------------------+
+
+   +-----------+-------------------------------------------+
+   | d_3   d_4 | (k_2 l_2 o_3) (k_3 l_3 o_4) (k_4 l_4 o_5) |
+...+-----------+-------------------------------------------+...
+   |    c_1    |                    c_2                    |
+   +-----------+-------------------------------------------+
+~~~
+
+symbol | description
+------ | -----------
+k_i    | key i
+o_i    | offset of key i
+d_i    | data associated to k_i
+l_i    | length of d_i
+c_i    | chunk i
+
+The rules for writing the key information are
+- data never follows key information
+- key information is written at the first possible position
+
+### Advantages
+
+- Allows efficient read / write of consecutive keys.
+
+### Disadvantages
+
+- Needs key manager
+- Needs more bookkeeping than inline implementation
+
+@}
+*/

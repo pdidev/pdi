@@ -1,0 +1,9 @@
+sid=sion_open( ...,chunksize, &fileptr)
+
+rank_loop: {
+    sion_seek(sid,rank,SION_CURRENT_BLK,SION_CURRENT_POS);
+
+    sion_ensure_free_space(sid,nbytes);
+    fwrite(...,fileptr)
+}
+sion_close(id);

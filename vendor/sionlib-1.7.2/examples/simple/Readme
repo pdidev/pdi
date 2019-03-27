@@ -1,0 +1,2 @@
+This folder contains simple example code for C and Fortran to show the
+usage of SIONlib's MPI API and serial API (currently only C).

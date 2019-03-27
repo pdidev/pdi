@@ -1,0 +1,6 @@
+on MPI rank 0, OMP thread 0: ensure_free_space (100) rc = 1
+on MPI rank 0, OMP thread 0: ensure_free_space (50) rc = 1
+on MPI rank 0, OMP thread 0: ensure_free_space (100) rc = 1
+on MPI rank 0, OMP thread 0: ensure_free_space (100) rc = 1
+on MPI rank 0, OMP thread 0: ensure_free_space (50) rc = 1
+on MPI rank 0, OMP thread 0: ensure_free_space (100) rc = 1

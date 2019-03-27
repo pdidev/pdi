@@ -1,0 +1,347 @@
+/*!
+\page generic_api_page Generic API
+
+SIONlib generic API
+===================
+
+Date: 5.09.2013
+
+Introduction
+------------
+
+The generic API of SIONlib is designed to implement a user-defined
+SIONlib parallel API. This new feature of SIONlib enables also SIONlib
+for those application, not using one of the SIONlib standard
+communication layers like MPI, OpenMP, or hybrid (MPI+OpenMP).
+
+SIONlib requires only a few communication functions to collect and
+distributed meta-data information during open- and close-call among
+the parallel tasks. Most of these communication functions are
+collective operation like bcast, gather, or scatter.
+
+
+Communications Groups
+---------------------
+
+According to the existing SIONlib standard communication layer,
+SIONlib uses two different groups of tasks:
+
+- Global
+  - This communication group includes all tasks which will be part of
+    the SIONlib file operation (e.g. MPI_COMM_WORLD).
+- Local
+  - SIONlib uses this communination group to collect those tasks which
+    accesses same physical file.
+
+A data structure has to be defined and allocated for the global
+commgroup before sion_open call and a pointer to the data structure
+has to be passed to sion_open as a parameter.
+
+The local commgroup has to be created during sion file
+open. Therefore, a callback function fore create and free such a
+commgroup has to be registered.  The callback functions for
+communication will get a pointer to one of these commgroup data
+structures afterwards as a parameter.
+
+SIONlib uses both commgroups for communication: the global commgroup
+for example to collect and distribute task-to-file mapping
+information. The local commgroup will be used to collect and
+distribute file meta information (e.g. chunksizes).  Callback
+functions are therefore required to be able to perform the implemented
+communication operation on both commgroup.
+
+The second, local communication group will be defined by SIONlib
+according to the parameters filenumber, numfiles, lrank and lsize
+given by each task to the sion_generic_paropen call. For the
+definition of the commgroup SIONlib also uses a callback function
+internally, which has to create the commgroup and store the data into
+the corresponding data structure.
+
+Remarks:
+- The communination groups are not dynamic. This means, the
+  communication groups must not be changed after a file is opened.
+
+Usage
+-----
+
+For using the generic SIONlib API the following steps are required:
+
+### Definition phase
+
+- Definition of callback functions and commgroups
+- Registration of callback functions and commgroups
+
+### I/O-operation phase
+
+- Parallel open of SIONlib file
+- I/O-operations (read/write, ..)
+- Parallel close of SIONlib file
+
+Overview SIONlib generic functions
+----------------------------------
+
+- Create new api:
+  \code
+  aid = sion_generic_create_api(char *name)
+  \endcode
+  The only parameter of this function is a name for that API which
+  will be used in debugging messages for example.
+
+  Return parameter is an integer value containing an API descriptor.
+
+- Free new api:
+  \code
+  sion_generic_free_api(int aid)
+  \endcode
+  Frees internal data structures for this API.
+
+- Register callbacks to create and free local communication group
+  \code
+  sion_generic_register_create_local_commgroup_cb(int aid, <fnct pointer> );
+  sion_generic_register_free_local_commgroup_cb(int aid, <fnct pointer> );
+  \endcode
+  See call back function description below for the interface of the required call
+  back functions (create_lcg_cb).
+
+- Register callbacks for communication:
+  \code
+  sion_generic_register_barrier_cb(int aid, <fnct pointer> );
+  sion_generic_register_bcastr_cb(int aid, <fnct pointer> );
+  sion_generic_register_gatherr_cb(int aid, <fnct pointer> );
+  sion_generic_register_scatterr_cb(int aid, <fnct pointer> );
+  sion_generic_register_gathervr_cb(int aid, <fnct pointer> );
+  sion_generic_register_scattervr_cb(int aid, <fnct pointer> );
+  \endcode
+  See call back function description below for the interface of the required call
+  back functions.
+
+- File open:
+  \code
+  int sion_generic_paropen(int         aid,
+                           char       *fname,
+                           const char *file_mode,
+                           sion_int64 *chunksize,
+                           sion_int32 *fsblksize,
+                           void       *gcommgroup,
+                           int         grank,
+                           int         gsize,
+                           int        *filenumber,
+                           int        *numFiles,
+                           int        *lrank,
+                           int        *lsize,
+                           FILE      **fileptr,
+                           char      **newfname);
+  \endcode
+  - WRITE-Mode
+    - The parameter gcommgroup, grank, gsize, filenumber, numfiles,
+      lrank, lsize are input parameter. However these have to be
+      defined as variables and initialized before call.
+  - READ-Mode
+    - grank, gsize are input parameter
+    - filenumber, numfiles, lrank, lsize are output parameter and will
+      be read from SIONlib file meta data
+    - The data container of the SIONlib file (chunks) from file will
+      be mapped to tasks according to the order given by the global
+      commgroup.
+
+- File open: (mapped)
+  \code
+  int sion_generic_paropen_mapped(int         aid,
+                                  char       *fname,
+                                  const char *file_mode,
+                                  int        *numFiles,
+                                  void       *gcommgroup,
+                                  int         grank,
+                                  int         gsize,
+                                  int         *nlocaltasks,
+                                  int        **globalranks,
+                                  sion_int64 **chunksizes,
+                                  int        **mapping_filenrs,
+                                  int        **mapping_lranks,
+                                  sion_int32 *fsblksize,
+                                  FILE      **fileptr );
+  int sion_generic_parclose_mapped(int sid);
+  \endcode
+
+  REMARKS:
+  - each task specifies a set of globalranks which should opened on
+    this task
+  - nlocaltasks gives the number of these globalranks
+  - globalranks is a array containing these globalranks
+  - chunksize is a array containing the chunksize for each globalrank
+    which is locally opened
+  - mapping_filenrs and mapping_lranks are arrays and contain the
+    filenumber and the local rank in the file for each globalrank
+    which is locally opened
+
+  - WRITE-Mode
+    - The parameter gcommgroup, grank, gsize, numFiles, nlocaltasks,
+      globalranks, chunksizes, mapping_filenrs, mapping_lranks,
+      fsblksize are input parameters. However these have to be defined
+      as variables and initialized before call.
+
+  - READ-Mode
+    - The parameter gcommgroup, grank, gsize, numfiles, nlocaltasks,
+      globalranks are input parameter.
+
+- File close:
+  \code
+  sion_generic_parclose(sid)
+  \endcode
+
+- File reinit:
+  \code
+  sion_generic_parreinit(sid, ...)
+  \endcode
+
+Callbacks API
+-------------
+
+- Data types
+  - `_SION_INT32`: signed int 32 bit
+  - `_SION_INT64`: signed int 64 bit
+  - `_SION_CHAR`:  character
+- create_lcg_cb:
+  \code
+  int create_lcg_cb(void** local_commgroup,
+                    void*  global_commgroup,
+                    int    grank,
+                    int    gsize,
+                    int    lrank,
+                    int    lsize,
+                    int    filenumber,
+                    int    numfiles)
+  \endcode
+  - creates data structures (commgroup) for local communication group
+  - only local_commgroup is output parameter: pointer to new data
+    structure
+  - will be called as soon as all information is available (e.g. after
+    read of mapping during paropen)
+- free_lcg_cb:
+  \code
+  int free_lcg_cb(void *local_commgroup)
+  \endcode
+  - free data structure which local_commgroup points on
+- Barrier:
+  \code
+  int sion_barrier_cb_sample(void* commgroup)
+  \endcode
+  - performs a barrier on all tasks described with commdata (local or
+    global)
+  - blocks until all processes have reached this routine
+- Bcast:
+  \code
+  int sion_bcastr_cb_sample(void* data,
+                            void* commgroup,
+                            int   datatype,
+                            int   nelem,
+                            int   root)
+  \endcode
+  - performs a broadcast operation from task \<root> to all other
+    tasks described with commdata (local or global)
+  - replicates data on \<root> at memory position <*data> of size
+    \<nelem> to memory position <*data> of all other tasks
+- Gather:
+  \code
+  int sion_gatherr_cb_sample(void* indata,
+                             void* outdata,
+                             void* commgroup,
+                             int   datatype,
+                             int   nelem,
+                             int   root)
+  \endcode
+  - performs a gather operation on all tasks described with commdata
+    (local or global)
+  - collects nelem of data type \<datatype> from each tasks from
+    memory at *indata and stores data of tasks on task \<root> in
+    memory at position *outdata
+  - nelem has same the value on each task, outdata is the of size
+    \<nelem> * \<ntasks>
+  - on \<root> indata and outdata are not overlapping
+- Gatherv:
+  \code
+  int sion_gathervr_cb_sample(void* indata,
+                              void* outdata,
+                              void* commdata,
+                              int   datatype,
+                              int*  count,
+                              int   nelem,
+                              int   root)
+  \endcode
+  - performs a gather operation on all tasks described with commdata
+    (local or global)
+  - collects nelem of data type \<datatype> from each tasks from
+    memory at *indata and stores data of tasks on task \<root> in
+    memory at position *outdata
+  - nelem can be different among tasks (or zero), size of outdata is
+    sum of \<nelem> on each task
+  - count is an array containing the number of elems per task, this
+    array will only to be provided on \<root>, otherwise NULL
+  - on \<root> indata and outdata are not overlapping
+- Scatter:
+  \code
+  int sion_scatter_cb_sample(void* indata,
+                             void* outdata,
+                             void* commgroup,
+                             int   datatype,
+                             int   nelem,
+                             int   root)
+  \endcode
+  - performs a scatter operation on all tasks described with commgroup
+    (local or global)
+  - distributes nelem of data type \<datatype> to each tasks from
+    memory at *outdata+offset on task \<root> and stores data in
+    memory at position *indata
+  - nelem has same value on each task, outdata is of size \<nelem> *
+    \<ntasks>
+  - on \<root> indata and outdata are not overlapping
+- Scatterv:
+  \code
+  int sion_scatterv_cb_sample(void* indata,
+                              void* outdata,
+                              void* commgroup,
+                              int   datatype,
+                              int*  count,
+                              int   nelem,
+                              int   root)
+  \endcode
+  - performs a scatter operation on all tasks described with commgroup
+    (local or global)
+  - distributes nelem of data type \<datatype> to each tasks from
+    memory at *outdata+offset on task \<root> and stores data in
+    memory at position *indata
+  - count is an array containing the number of elems per task, this
+    array must only be provided on \<root>, otherwise NULL
+  - nelem can be different among tasks (or zero), size of outdata is
+    sum of \<nelem> on each task
+  - on \<root> indata and outdata are not overlapping
+
+Example
+-------
+
+An example can be found in the parallel test section of the SIONlib
+distribution:
+
+- \<topdir>/test/serial/test_genapi_1.c (generic API, only create and link test)
+- \<topdir>/test/parallel/test_genapi_1.c (generic API)
+- \<topdir>/test/parallel/test_genapi_2.c (generic mapped API)
+
+The example defines a SIONlib generic API and performs some I/O tests with
+the new API. Internally the API uses MPI to implement the communication
+operations.
+
+ToDos & Open Issues
+-------------------
+
+- Testing ...
+- The default parallel interface for MPI implements some special
+  collective write/read operation which requires internally some
+  point-to-point operation.  To use these collective write operation
+  from within the generic interface of SIONlib, two new callback
+  functions have to be defined and registered (send/recv).  The
+  definition of these callbacks will be optional. If not defined, the
+  generic collective read and write functions will then use the
+  non-collective SIONlib write/read operations internally.
+- Implementation of the generic versions of sion_paropen_mapped ...
+
+*/

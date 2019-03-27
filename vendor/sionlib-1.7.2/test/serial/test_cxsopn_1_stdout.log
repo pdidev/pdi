@@ -1,0 +1,4 @@
+TEST C read: rank=0 chunk_sizes=1000 rc=1000
+TEST C read: rank=1 chunk_sizes=1260 rc=1260
+TEST C read: rank=2 chunk_sizes=1520 rc=1520
+TEST C read: rank=3 chunk_sizes=1770 rc=1770

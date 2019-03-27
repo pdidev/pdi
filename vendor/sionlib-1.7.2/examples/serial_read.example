@@ -1,0 +1,12 @@
+sid=sion_open( ...,chunksize, &fileptr)                   
+        
+sion_get_locations(sid,&size,&blocks,&globalskip,&start_of_varheader,
+                       &sion_localsizes,&sion_globalranks,
+                       &sion_chunkcount,&sion_chunksizes);
+
+loop: { 
+   sion_seek(sid,rank,blknr,pos);
+         
+   fread(...,fileptr) 
+}
+sion_close(id);                                

@@ -1,0 +1,8 @@
+sid=sion_paropen_mpi( ... ,&chunksize, comm, &fileptr, ...) # collective
+
+while((!sion_feof(sid))) {                                  # non-collective
+      btoread=sion_bytes_avail_in_block(sid);               # non-collective
+      bread=fread(localbuffer,1,btoread,fileptr);     
+}             
+
+sion_parclose_mpi(sid);                                     # collective

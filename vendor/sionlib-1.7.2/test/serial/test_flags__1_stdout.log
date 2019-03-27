@@ -1,0 +1,47 @@
+flags = wb,buffered,keyfoo=valfoo,keybar=valbar,posix,ansi,k=v1=v2,l=
+key = 'wb'  |  val = ''
+key = 'buffered'  |  val = ''
+key = 'keyfoo'  |  val = 'valfoo'
+key = 'keybar'  |  val = 'valbar'
+key = 'posix'  |  val = ''
+key = 'ansi'  |  val = ''
+key = 'k'  |  val = 'v1=v2'
+key = 'l'  |  val = ''
+_sion_flags_get(store, "wb") = entry
+entry->value = ""
+_sion_flags_get(store, "buffered") = entry
+entry->value = ""
+_sion_flags_get(store, "keyfoo") = entry
+entry->value = "valfoo"
+_sion_flags_get(store, "keybar") = entry
+entry->value = "valbar"
+_sion_flags_get(store, "k") = entry
+entry->value = "v1=v2"
+_sion_flags_get(store, "kl") = NULL
+_sion_flags_get(store, "w") = NULL
+_sion_flags_get(store, "l") = entry
+entry->value = ""
+mask = 0x405
+flag = '', mask = 0x1
+flag = 'w', mask = 0x401
+flag = 'wb', mask = 0x401
+flag = 'bw', mask = 0x401
+flag = 'r', mask = 0x801
+flag = 'rb', mask = 0x801
+flag = 'br', mask = 0x801
+flag = 'buffered', mask = 0x5
+flag = 'compress', mask = 0x9
+flag = 'collective', mask = 0x11
+flag = 'collectivemerge', mask = 0x21
+flag = 'cmerge', mask = 0x21
+flag = 'keyval', mask = 0x1001
+flag = 'keyval=default', mask = 0x1001
+flag = 'keyval=inline', mask = 0x1001
+flag = 'keyval=', mask = 0x1001
+flag = 'keyval=meta', mask = 0x1
+flag = 'keyval=hash', mask = 0x1
+flag = 'keyval=non', mask = 0x1
+flag = 'keyval=unknown', mask = 0x1
+flag = 'endianness', mask = 0x20001
+flag = 'endianness=big', mask = 0x60001
+flag = 'posix', mask = 0x2

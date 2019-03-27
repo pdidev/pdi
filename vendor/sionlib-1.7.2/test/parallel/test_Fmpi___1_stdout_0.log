@@ -1,0 +1,38 @@
+on MPI rank 0:  ===============================
+on MPI rank 0:  Calculations of mandelbrot set.
+on MPI rank 0:  ===============================
+on MPI rank 0:  Running with    4 ranks.
+siondump: sid:                       0
+siondump: filename:                  mandelbrot.sion               
+siondump: prefix:                    mandelbrot.sion               
+siondump: number of tasks:           4
+siondump: filesystem blocksize:      1000 bytes (  0.00 MB)
+siondump: file set:                  No
+siondump: file number:               0
+siondump: number of files:           1
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           1
+siondump: size of chunks:                             3841000 bytes  (    3.66 MB)
+siondump: datasize in file (aggr.):                   3840014 bytes  (    3.66 MB)
+siondump: size of full chunks:                        2880000 bytes  (    2.75 MB) #      3
+siondump: size of partly filled chunks:                960014 bytes  (    0.92 MB) #      1
+siondump: size of empty chunks:                             0 bytes  (    0.00 MB) #      0
+siondump: overhead compared to task-local file:           986 bytes  (    0.00 MB)
+siondump: file usage (user data/chunk size):        99.974330%
+siondump: fsblocks, size of used blocks:              3841000 bytes  (    3.66 MB, 3841 blocks)
+siondump: fsblocks, size of fully used blocks:        3840000 bytes  (    3.66 MB, 3840 blocks)
+siondump: fsblocks, size of partly used blocks:            14 bytes of         1000 bytes (  0.00 MB of   0.00 MB, 1 blocks)
+siondump: fsblocks, used fsblocks/chunk size:       100.000000%
+siondump: fsblocks, user data/used blocks:           99.974330%
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                      BLK000    
+Task 00: size=    960014 B glblrnk=   0 #blks= 1 lsz=    961000 B:    960014 
+Task 01: size=    960000 B glblrnk=   1 #blks= 1 lsz=    960000 B:    960000 
+Task 02: size=    960000 B glblrnk=   2 #blks= 1 lsz=    960000 B:    960000 
+Task 03: size=    960000 B glblrnk=   3 #blks= 1 lsz=    960000 B:    960000 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------

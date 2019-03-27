@@ -1,0 +1,185 @@
+on rank 0: new API: aid=0
+on rank 0: END of TEST 0
+on rank 0: END of TEST B multiple files
+on rank 0: END of TEST C multiple files
+on rank 0:  65 | A
+on rank 0: end of data for key 4711 
+on rank 0:  66 | B
+on rank 0: end of data for key 4712 
+on rank 0:  67 | C
+on rank 0: end of data for key 4713 
+on rank 0:  68 | D
+on rank 0: end of data for key 4714 
+on rank 0:  69 | E
+on rank 0: end of data for key 4715 
+on rank 0:  70 | F
+on rank 0: end of data for key 4716 
+on rank 0:  71 | G
+on rank 0: end of data for key 4717 
+on rank 0:  72 | H
+on rank 0: end of data for key 4718 
+on rank 0:  73 | I
+on rank 0: end of data for key 4719 
+on rank 0:  74 | J
+on rank 0: end of data for key 4720 
+on rank 0:  75 | K
+on rank 0: end of data for key 4721 
+on rank 0:  76 | L
+on rank 0: end of data for key 4722 
+on rank 0:  77 | M
+on rank 0: end of data for key 4723 
+on rank 0:  78 | N
+on rank 0: end of data for key 4724 
+on rank 0:  79 | O
+on rank 0: end of data for key 4725 
+on rank 0:  80 | P
+on rank 0: end of data for key 4726 
+on rank 0:  81 | Q
+on rank 0: end of data for key 4727 
+on rank 0:  82 | R
+on rank 0: end of data for key 4728 
+on rank 0:  83 | S
+on rank 0: end of data for key 4729 
+on rank 0:  84 | T
+on rank 0: end of data for key 4730 
+on rank 0: end of data for key 4731 
+on rank 0: sizeof(3)=(23480bytes, 3fds)
+on rank 0: END of TEST D multiple files
+on rank 0:  65 | A
+on rank 0: end of data for key 4711 
+on rank 0:  66 | B
+on rank 0: end of data for key 4712 
+on rank 0:  67 | C
+on rank 0: end of data for key 4713 
+on rank 0:  68 | D
+on rank 0: end of data for key 4714 
+on rank 0:  69 | E
+on rank 0: end of data for key 4715 
+on rank 0:  70 | F
+on rank 0: end of data for key 4716 
+on rank 0:  71 | G
+on rank 0: end of data for key 4717 
+on rank 0:  72 | H
+on rank 0: end of data for key 4718 
+on rank 0:  73 | I
+on rank 0: end of data for key 4719 
+on rank 0:  74 | J
+on rank 0: end of data for key 4720 
+on rank 0:  75 | K
+on rank 0: end of data for key 4721 
+on rank 0:  76 | L
+on rank 0: end of data for key 4722 
+on rank 0:  77 | M
+on rank 0: end of data for key 4723 
+on rank 0:  78 | N
+on rank 0: end of data for key 4724 
+on rank 0:  79 | O
+on rank 0: end of data for key 4725 
+on rank 0:  80 | P
+on rank 0: end of data for key 4726 
+on rank 0:  81 | Q
+on rank 0: end of data for key 4727 
+on rank 0:  82 | R
+on rank 0: end of data for key 4728 
+on rank 0:  83 | S
+on rank 0: end of data for key 4729 
+on rank 0:  84 | T
+on rank 0: end of data for key 4730 
+on rank 0: end of data for key 4731 
+on rank 0: sizeof(1)=(39440bytes, 2fds)
+on rank 0: END of TEST E multiple files
+on rank 0:  65 | A
+on rank 0: end of data for key 4711 
+on rank 0:  66 | B
+on rank 0: end of data for key 4712 
+on rank 0:  67 | C
+on rank 0: end of data for key 4713 
+on rank 0:  68 | D
+on rank 0: end of data for key 4714 
+on rank 0:  69 | E
+on rank 0: end of data for key 4715 
+on rank 0:  70 | F
+on rank 0: end of data for key 4716 
+on rank 0:  71 | G
+on rank 0: end of data for key 4717 
+on rank 0:  72 | H
+on rank 0: end of data for key 4718 
+on rank 0:  73 | I
+on rank 0: end of data for key 4719 
+on rank 0:  74 | J
+on rank 0: end of data for key 4720 
+on rank 0:  75 | K
+on rank 0: end of data for key 4721 
+on rank 0:  76 | L
+on rank 0: end of data for key 4722 
+on rank 0:  77 | M
+on rank 0: end of data for key 4723 
+on rank 0:  78 | N
+on rank 0: end of data for key 4724 
+on rank 0:  79 | O
+on rank 0: end of data for key 4725 
+on rank 0:  80 | P
+on rank 0: end of data for key 4726 
+on rank 0:  81 | Q
+on rank 0: end of data for key 4727 
+on rank 0:  82 | R
+on rank 0: end of data for key 4728 
+on rank 0:  83 | S
+on rank 0: end of data for key 4729 
+on rank 0:  84 | T
+on rank 0: end of data for key 4730 
+on rank 0: end of data for key 4731 
+on rank 0: sizeof(2)=(23480bytes, 1fds)
+on rank 0: END of TEST F multiple files
+on rank 0: sizeof(3)=(2200bytes, 1fds)
+on rank 0: END of TEST G multiple files
+on rank 0: sizeof(1)=(2128bytes, 0fds)
+on rank 0: END of TEST H multiple files
+on rank 0: sizeof(2)=(3288bytes, 2fds)
+on rank 0: END of TEST I multiple files
+on rank 0: dup, new_sid       =2
+on rank 0:  65 | A
+on rank 0: end of data for key 4711 
+on rank 0:  66 | B
+on rank 0: end of data for key 4712 
+on rank 0:  67 | C
+on rank 0: end of data for key 4713 
+on rank 0:  68 | D
+on rank 0: end of data for key 4714 
+on rank 0:  69 | E
+on rank 0: end of data for key 4715 
+on rank 0:  70 | F
+on rank 0: end of data for key 4716 
+on rank 0:  71 | G
+on rank 0: end of data for key 4717 
+on rank 0:  72 | H
+on rank 0: end of data for key 4718 
+on rank 0:  73 | I
+on rank 0: end of data for key 4719 
+on rank 0:  74 | J
+on rank 0: end of data for key 4720 
+on rank 0:  75 | K
+on rank 0: end of data for key 4721 
+on rank 0:  76 | L
+on rank 0: end of data for key 4722 
+on rank 0:  77 | M
+on rank 0: end of data for key 4723 
+on rank 0:  78 | N
+on rank 0: end of data for key 4724 
+on rank 0:  79 | O
+on rank 0: end of data for key 4725 
+on rank 0:  80 | P
+on rank 0: end of data for key 4726 
+on rank 0:  81 | Q
+on rank 0: end of data for key 4727 
+on rank 0:  82 | R
+on rank 0: end of data for key 4728 
+on rank 0:  83 | S
+on rank 0: end of data for key 4729 
+on rank 0:  84 | T
+on rank 0: end of data for key 4730 
+on rank 0: end of data for key 4731 
+on rank 0: sizeof(2)=(23480 bytes, 3 fds)
+on rank 0: dedup(2)
+on rank 0: sizeof(3)=(2456 bytes, 3 fds)
+on rank 0: END of TEST J multiple files

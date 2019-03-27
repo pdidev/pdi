@@ -1,0 +1,65 @@
+on MPI rank 0, OMP thread 0: END of TEST A 2 files
+on MPI rank 0, OMP thread 0: bytes_written=100
+on MPI rank 0, OMP thread 0: block=0           bwrote=100 blocksum=    6500 
+on MPI rank 0, OMP thread 0: bytes_written=150
+on MPI rank 0, OMP thread 0: block=1           bwrote= 50 blocksum=    3300 
+on MPI rank 0, OMP thread 0: bytes_written=250
+on MPI rank 0, OMP thread 0: block=2           bwrote=100 blocksum=    6700 
+on MPI rank 0, OMP thread 0: END of TEST B write
+on MPI rank 0, OMP thread 0: numfiles      =3
+on MPI rank 0, OMP thread 0: chunksize     =112
+on MPI rank 0, OMP thread 0: globalrank    =0
+on MPI rank 0, OMP thread 0: newfname      =testB.out
+on MPI rank 0, OMP thread 0: block=0           bytes_avail=100
+on MPI rank 0, OMP thread 0: block=0           bread=100 blocksum=    6500 
+on MPI rank 0, OMP thread 0: block=1           bytes_avail=50
+on MPI rank 0, OMP thread 0: block=1           bread= 50 blocksum=    3300 
+on MPI rank 0, OMP thread 0: block=2           bytes_avail=100
+on MPI rank 0, OMP thread 0: block=2           bread=100 blocksum=    6700 
+on MPI rank 0, OMP thread 0: END of TEST B read collective
+siondump: sid:                       1
+siondump: filename:                  testB.out                     
+siondump: prefix:                    testB.out                     
+siondump: number of tasks:           8
+siondump: filesystem blocksize:      16 bytes (  0.00 MB)
+siondump: file set:                  Yes
+siondump: file number:               0
+siondump: number of files:           3
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           3
+siondump: size of chunks:                                2688 bytes  (    0.00 MB)
+siondump: datasize in file (aggr.):                      2000 bytes  (    0.00 MB)
+siondump: size of full chunks:                              0 bytes  (    0.00 MB) #      0
+siondump: size of partly filled chunks:                  2000 bytes  (    0.00 MB) #     24
+siondump: size of empty chunks:                             0 bytes  (    0.00 MB) #      0
+siondump: overhead compared to task-local file:           688 bytes  (    0.00 MB)
+siondump: file usage (user data/chunk size):        74.404762%
+siondump: fsblocks, size of used blocks:                 2304 bytes  (    0.00 MB, 144 blocks)
+siondump: fsblocks, size of fully used blocks:           1920 bytes  (    0.00 MB, 120 blocks)
+siondump: fsblocks, size of partly used blocks:            80 bytes of          384 bytes (  0.00 MB of   0.00 MB, 24 blocks)
+siondump: fsblocks, used fsblocks/chunk size:        85.714286%
+siondump: fsblocks, user data/used blocks:           86.805556%
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                      BLK000    BLK001    BLK002    
+Task 00: size=       250 B glblrnk=   0 #blks= 3 lsz=       112 B:       100        50       100 
+Task 01: size=       250 B glblrnk=   1 #blks= 3 lsz=       112 B:       100        50       100 
+Task 02: size=       250 B glblrnk=   2 #blks= 3 lsz=       112 B:       100        50       100 
+Task 03: size=       250 B glblrnk=   3 #blks= 3 lsz=       112 B:       100        50       100 
+Task 04: size=       250 B glblrnk=   4 #blks= 3 lsz=       112 B:       100        50       100 
+Task 05: size=       250 B glblrnk=   5 #blks= 3 lsz=       112 B:       100        50       100 
+Task 06: size=       250 B glblrnk=   6 #blks= 3 lsz=       112 B:       100        50       100 
+Task 07: size=       250 B glblrnk=   7 #blks= 3 lsz=       112 B:       100        50       100 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------
+siondump: number of files:           3
+siondump: file   1:                    testB.out 
+siondump: file   2:                    testB.out.000001 
+siondump: file   3:                    testB.out.000002 
+------------------------------------------------------------
+  mapping: [00000 -> (f000,t000)] [00001 -> (f000,t001)] [00002 -> (f001,t000)] [00003 -> (f001,t001)] [00004 -> (f002,t000)] [00005 -> (f002,t001)] [00006 -> (f002,t002)] [00007 -> (f002,t003)] 
+------------------------------------------------------------

@@ -1,0 +1,6 @@
+MPIENABLE = 1
+MPICC     = $(CC)
+MPICXX    = $(CXX)
+MPIF90    = $(F90)
+MPILIB    = -lmpi
+MPITESTRUN = mpirun -np 4

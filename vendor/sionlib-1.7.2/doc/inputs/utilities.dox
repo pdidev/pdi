@@ -1,0 +1,196 @@
+/*!
+\defgroup util Utilities
+\ref util_page
+
+\page util_page Utilities for managing of SIONlib files
+
+---
+
+| Utitity    | Description                                  |
+|------------|----------------------------------------------|
+| siondump   | Dump meta data information of a SIONlib file |
+| sionsplit  | Split one SIONlib file into separate files   |
+| siondefrag | De-fragment a SIONlib file                   |
+| sioncat    | Extract all data or data of one tasks        |
+| sionconfig | Print compiler and linker flags              |
+| partest    | Benchmark using SIONlib                      |
+
+---
+
+siondump
+--------
+
+Usage: siondump options \<sionfn>
+
+Dump meta data information of a SIONlib file \<sionfn>.
+
+Options:
+|    |                                                 |
+|----|-------------------------------------------------|
+| -a | print all information about all blocks          |
+| -m | print all mapping information                   |
+| -l | print all sizes in number of bytes              |
+| -k | print key-value statistic for each task         |
+| -K | print key-value list for each task              |
+| -S | print size of internal data structure in memory |
+| -V | show version number of SIONlib                  |
+| -v | verbose mode                                    |
+| -h | show this help                                  |
+
+sionsplit
+---------
+
+Usage: sionsplit options \<sionfn> \<prefix>
+
+Split SIONlib file \<sionfn> into separate files.
+
+Example:
+\code
+sionsplit data.sion data/file_
+\endcode
+creates files
+\code
+data/file_00000, data/file_00001, ...
+\endcode
+
+Options:
+|           |                                                      |
+|-----------|------------------------------------------------------|
+| -v        | verbose mode                                         |
+| -g        | use global rank for numbering files                  |
+| -d \<num> | number of digits for filename generation (default 5) |
+| -V        | show version of SIONlib                              |
+| -h        | show this help                                       |
+
+sioncat
+-------
+
+Usage: sioncat options \<sionfn>
+
+sioncat \<sionfn> extracts data from SIONlib file \<sionfn>. With -t
+the output can be restricted to a single task and with -b to a single
+block. sioncat does not extract any SIONlib meta data.
+
+
+Options:
+|               |                                                       |
+|---------------|-------------------------------------------------------|
+| -v            | verbose mode                                          |
+| -t \<tasknum> | write only data of task \<tasknum>                    |
+| -b \<blknum>  | write only data of block \<blknum>                    |
+| -o \<outfile> | file data will be written to, if not specified stdout |
+|               | is used                                               |
+| -V            | show version of SIONlib                               |
+
+siondefrag
+----------
+
+Usage: siondefrag options \<insionfn> \<outfn>
+
+Creates a new SIONlib file \<outfn> from an existing \<insionfn>. The
+resulting file has only one chunk. This can be used to make SIONlib
+files less sparse (e.g. by using -q 1 which effectively removes file
+system block alignment).
+
+Options:
+|                 |                                                  |
+|-----------------|------------------------------------------------- |
+| -Q \<fsblksize> | filessystem blocksize for new sion file in MB    |
+|                 | (default from input file)                        |
+| -q \<fsblksize> | filessystem blocksize for new sion file in bytes |
+| -v              | verbose mode                                     |
+| -V              | show version of SIONlib                          |
+| -h              | show this help                                   |
+
+sionconfig
+----------
+
+Usage: sionconfig
+
+Print compiler and linker flags SIONlib.
+
+Options:
+|                                             |                             |
+|---------------------------------------------|-----------------------------|
+| (--com\|--ser\|--omp\|--mpi\|--ompi\|--gen) | select SIONlib API          |
+| (--cflags\|--libs\|--path)                  | select output of sionconfig |
+| [--32\|--64]                                | Precision                   |
+| [--be] [--fe] [--mic]                       | Cross compile               |
+| [--gcc]                                     | for GCC Compiler            |
+| [--c\|--f77\|--f90\|--cxx]                  | Language selection          |
+| [-V\|--version\|-h]                         | Version, Help               |
+
+partest
+-------
+
+Usage: partest options
+
+Partest is a benchmarking tool using SIONlib.
+
+Options:
+|                                                      |                                    |
+|------------------------------------------------------|------------------------------------|
+| Sion File Settings:                                  |                                    |
+|  [-f filename]          (--filename[=])              | filename of direct access file     |
+|  [-n \<number of files>] (--numfiles[=])             | number of files (def: 1)           |
+|  [-r \<chunksize>]       (--chunksize[=])            | sion chunk size (see size format)  |
+|  [-q \<fsblksize>]       (--fsblksize[=])            | size of filesystem blocks (see     |
+|                                                      | size format)                       |
+| Test Configuration:                                  |                                    |
+|  [-T \<type>]            (--testtype[=])             | type of test                       |
+|                                                      | (0:SION, standard),                |
+|                                                      | (1: SION:, independant read),      |
+|                                                      | (2:MPI IO), (3: Task-Local-File)   |
+|  [-b \<bufsize>]         (--bufsize[=])              | size of blocks written in ONE      |
+|                                                      | fwrite (see size format)           |
+|  [-g \<totalsize>]       (--totalsize[=])            | global total size of data written  |
+|                                                      | (see size format)                  |
+|  [-s \<localsize>]       (--localsize[=])            | local size of data written by each |
+|                                                      | processor (see size format)        |
+|  [-F \<factor>]          (--factor[=])               | factor for random size             |
+|                                                      | (0.0 to 1.0, def: 0.0)             |
+|  [-R (0\|1)]             (--read[=])                 | switch read  off/on                |
+|  [-W (0\|1\|2)]           (--write[=])               | switch write off, on, or double    |
+|                                                      | write                              |
+| Special Test Options:                                |                                    |
+|  [-v]                   (--verbose[=](0\|1))         | verbose print info for each        |
+|                                                      | task                               |
+|  [-C]                   (--nochecksum[=](0\|1))      | suppress checksum                  |
+|  [-d]                   (--debugtask[=](0\|1))       | debug task 0                       |
+|  [-D]                   (--Debugtask[=](0\|1))       | debug task n                       |
+|  [-L]                   (--posix[=](0\|1))           | use POSIX calls instead of         |
+|                                                      | ANSI calls                         |
+|  [-M]                   (--collwrite[=](0\|1))       | use collective write if            |
+|                                                      | possible                           |
+|  [-m]                   (--collread[=](0\|1))        | use collective read if             |
+|                                                      | possible                           |
+|  [-Z \<offset>]          (--taskoffset[=])           | shift tasks numbering for          |
+|                                                      | reading by offset to prevent       |
+|                                                      | data caching of file-system        |
+|                                                      | (default: 0)                       |
+|  [-O \<bytes>]           (--byteoffset[=])           | start offset, write \<bytes>       |
+|                                                      | first before using blksize         |
+|                                                      | (default: 0)                       |
+|  [-j <\#tasks>]          (--serialized[=])           | serialize I/O, only I/O of         |
+|                                                      | \#tasks are running in parallel    |
+|                                                      | (-1 -> all tasks in parallel,      |
+|                                                      | -2 -> use transactions,            |
+|                                                      | -def: -1)                          |
+|  [-X]                   (--unlinkfiles[=](0\|1))     | remove files after test            |
+|  Blue Gene/L, Blue Gene/P , Blue Gene/Q:             |                                    |
+|  [-P \<mode>]           (--bgionode[=](0\|1\|2))     | order tasks by BG I/O-node         |
+|                                                      | (0 none, 1 ION, 2 IOB)             |
+|  [-Y \<sort>]           (--bgtaskperionode[=])       | number of tasks per BG             |
+|                                                      | I/O-node                           |
+|  [-p \<numtasks>]       (--bgtasksort[=](0\|1))      | sort task inside local             |
+|                                                      | communicator (0 distance to        |
+|                                                      | ION, 1 global rank)                |
+|  MPI-IO, GPFS options:                               |                                    |
+|  [-w]                   (--hintlargeblock[=](0\|1))  | Hint MPI-IO, IBM, Large            |
+|                                                      | Block IO                           |
+|  [-Q \<size>]           (--hintiobufsize[=])         | Hint MPI-IO, IBM, IO               |
+|                                                      | bufsize in KB                      |
+|  [-x]                   (--hintsparseacess[=](0\|1)) | Hint MPI-IO, IBM, sparse           |
+|                                                      | access                             |
+
+*/

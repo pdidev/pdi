@@ -1,0 +1,138 @@
+#------------------------------------------------------------------------------
+# Dependencies
+# (automatically generated using 'make depend')
+#------------------------------------------------------------------------------
+
+sion_fortran.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_fd.h \
+	../lib/sion_file.h \
+	../lib/sion_filedesc.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_fortran.c \
+	sion_fortran.h
+sion_fortran_mpi.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_fd.h \
+	../lib/sion_file.h \
+	../lib/sion_filedesc.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_fortran_mpi.c \
+	sion_fortran_mpi.h
+sion_fortran_omp.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_fd.h \
+	../lib/sion_file.h \
+	../lib/sion_filedesc.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_omp.h \
+	../parlib/sion_ompi.h \
+	sion_fortran_omp.c \
+	sion_fortran_omp.h
+sion_fortran_ompi.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_fd.h \
+	../lib/sion_file.h \
+	../lib/sion_filedesc.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_fortran_ompi.c \
+	sion_fortran_ompi.h
+sion_fortran_writeread_f77.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_fd.h \
+	../lib/sion_file.h \
+	../lib/sion_filedesc.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_fortran_writeread_f77.c \
+	sion_fortran_writeread_f77.h
+sion_fortran_writeread_f90.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_fd.h \
+	../lib/sion_file.h \
+	../lib/sion_filedesc.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_fortran_writeread_f90.c \
+	sion_fortran_writeread_f90.h
+sion_fortran_writeread_mpi_f77.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_fd.h \
+	../lib/sion_file.h \
+	../lib/sion_filedesc.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_fortran_writeread_mpi_f77.c \
+	sion_fortran_writeread_mpi_f77.h
+sion_fortran_writeread_mpi_f90.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_fd.h \
+	../lib/sion_file.h \
+	../lib/sion_filedesc.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_fortran_writeread_mpi_f90.c \
+	sion_fortran_writeread_mpi_f90.h

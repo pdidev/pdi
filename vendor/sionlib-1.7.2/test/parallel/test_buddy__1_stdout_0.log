@@ -1,0 +1,76 @@
+on rank  0: END of TEST A
+on rank  0: bwrote=    0 overall blocksum=       0 
+on rank  0: bwrote=  500 overall blocksum=   32500 
+on rank  0: bwrote= 1000 overall blocksum=   97500 
+on rank  0: bytes_written=1500
+on rank  0: io_info [nfiles=2]
+on rank  0: io_info [#00: fn=testB.out                      size=  1500 role=SION_ROLE_WRITER    ]
+on rank  0: io_info [#01: fn=testB.out_BUDDY_00.000001      size=     0 role=SION_ROLE_COLLECTOR ]
+on rank  0: global blocksum = 1749040
+on rank  0: END of TEST B write coll
+on rank  0: sid           =4
+on rank  0: numfiles      =5
+on rank  0: chunksize     =1200
+on rank  0: globalrank    =0
+on rank  0: newfname      =testB.out
+on rank  0: block=0           bytes_avail=500
+on rank  0: block=0           bread=500 overall blocksum=   32500 
+on rank  0: block=1           bytes_avail=1000
+on rank  0: block=1           bread=1000 overall blocksum=   97500 
+on rank  0: global blocksum = 1749040
+on rank  0: END of TEST C read collective
+on rank  0: sid           =5
+on rank  0: numfiles      =5
+on rank  0: chunksize     =1200
+on rank  0: globalrank    =0
+on rank  0: newfname      =testB.out
+on rank  0: block=0           bytes_avail=500
+on rank  0: block=0           bread=500 overall blocksum=   32500 
+on rank  0: block=1           bytes_avail=1000
+on rank  0: block=1           bread=1000 overall blocksum=   97500 
+on rank  0: global blocksum = 1749040
+on rank  0: END of TEST D read collective
+on rank  0: sid           =1
+on rank  0: numfiles      =5
+on rank  0: chunksize     =1200
+on rank  0: globalrank    =0
+on rank  0: newfname      =testB.out
+on rank  0: block=0           bytes_avail=500
+on rank  0: block=0           bread=500 overall blocksum=   32500 
+on rank  0: block=1           bytes_avail=1000
+on rank  0: block=1           bread=1000 overall blocksum=   97500 
+on rank  0: global blocksum = 1749040
+on rank  0: END of TEST E read collective
+on rank  0: sid           =4
+on rank  0: numfiles      =5
+on rank  0: chunksize     =1200
+on rank  0: globalrank    =0
+on rank  0: newfname      =testB.out
+on rank  0: block=0           bytes_avail=500
+on rank  0: block=0           bread=500 overall blocksum=   32500 
+on rank  0: block=1           bytes_avail=1000
+on rank  0: block=1           bread=1000 overall blocksum=   97500 
+on rank  0: global blocksum = 1749040
+on rank  0: END of TEST F read collective
+on rank  0: sid           =1
+on rank  0: numfiles      =5
+on rank  0: chunksize     =1200
+on rank  0: globalrank    =0
+on rank  0: newfname      =testB.out
+on rank  0: block=0           bytes_avail=500
+on rank  0: block=0           bread=500 overall blocksum=   32500 
+on rank  0: block=1           bytes_avail=1000
+on rank  0: block=1           bread=1000 overall blocksum=   97500 
+on rank  0: global blocksum = 1749040
+on rank  0: END of TEST G read collective
+on rank  0: sid           =4
+on rank  0: numfiles      =5
+on rank  0: chunksize     =1200
+on rank  0: globalrank    =0
+on rank  0: newfname      =testB.out
+on rank  0: block=0           bytes_avail=500
+on rank  0: block=0           bread=500 overall blocksum=   32500 
+on rank  0: block=1           bytes_avail=1000
+on rank  0: block=1           bread=1000 overall blocksum=   97500 
+on rank  0: global blocksum = 1749040
+on rank  0: END of TEST H read collective

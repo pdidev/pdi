@@ -1,0 +1,51 @@
+/*!
+
+\mainpage
+
+Overview
+========
+
+SIONlib is a library for writing and reading binary data to/from
+several thousands of processors into one or a small number of physical
+files. For parallel access to files only the open and close functions
+are collective while writing and reading file can be done
+asynchronously. SIONlib provides a SIONlib file handle which
+substitutes the C file pointer.
+
+SIONlib provides a simplified file handling for parallel programs
+which formerly read or write binary data in parallel into separate
+files (task-local files). After opening the file with SIONlib, the I/O
+can be done with the SIONlib equivalents to standard C-I/O
+functionality (fwrite -> sion_fwrite, fread -> sion_fread) which have
+the same syntax as their C counterparts. Instead of maintaining
+thousands of separate files, there is only one large file containing
+all data.
+
+Given that each processor writes its data to same file, SIONlib
+assigns different regions (e.g., data blocks) of the file to a
+processor. Hence, for each processor, SIONlib needs the estimated (or
+known) data size which will be written to the file (chunk
+size). SIONlib can also handle extensions (additional chunks), if the
+end of a data block is reached.
+
+Both, the estimated chunk size and file system block size are used to
+calculate the individual start position inside the file for each
+processor. Ensuring contention-free access to file system blocks
+enables efficient parallel writing and reading.
+
+SIONlib is a joint project of
+- [Forschungszentrum Jülich](http://www.fz-juelich.de/),
+  [Jülich Supercomputing Centre (JSC)](http://www.fz-juelich.de/ias/jsc/)
+- [German Research School for Simulation Sciences](http://www.grs-sim.de/)
+- [Laboratory for Parallel Programming](https://www.parallel.informatik.tu-darmstadt.de/parallel-programming/)
+
+Documentation
+=============
+
+- [List of all documentation](pages.html)
+- [Download](http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/SIONlib/sionlib-download_node.html)
+- \ref installation_page
+- \ref release_notes_page
+- \ref api_page
+
+*/

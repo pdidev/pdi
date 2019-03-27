@@ -1,0 +1,86 @@
+/*!
+\defgroup resiliency Resiliency
+\ref resiliency_page
+
+\page resiliency_page Using SIONlib for Resiliency
+
+Introduction
+============
+
+Growing to exascale the need for resiliency features arises since the
+probability for any node to fail increases with the number of nodes
+(assuming a constant mean time between failure).
+
+Resiliency using SIONlib
+========================
+
+Checkpointing
+-------------
+
+The typical use of SIONlib is for creating checkpoints of the
+application. From the application side the data that should to be
+written needs to be serialized. This binary data can then be saved to
+persistent storage.
+
+In terms of resiliency this is the most simple way to save the global
+state of the application. The main advantage is that these checkpoints
+can be used as ordinary restart points for the application independent
+of the termination of the application happens in purpose or due to a
+failure of a node. Since for larger applications the probability of
+failure increases, the cost of this kind of resiliency will at some
+point be to high.
+
+Therefore it is useful to save checkpoints on a caching layer close to
+the node in order to decrease the time spent in initializing the
+restart. This can be achieved by some local storage, which does not
+need to be visible globally. Here each node just reads its local data
+which is needed for the restart.
+
+Buddy checkpointing
+-------------------
+
+For more catastrophic failures of nodes, which do not let all nodes
+restart immediately a concept of buddy checkpointing offers a possible
+solution, which is still faster than a full classical checkpoint. In
+order to be able to restart without the need of accessing the global
+file system, each node holds its own checkpoint and another one from a
+buddy node.
+
+\code
++-----------------+    +-----------------+           +---------------------+
+|       n_0       | -> |       n_1       | -> ... -> |       n_k           |
+|-----------------|    |-----------------|           |---------------------|
+| data_0 | data_k |    | data_1 | data_0 |           | data_k | data_[k-1] |
++-----------------+    +-----------------+           +---------------------+
+   ^                                                          |
+   |                                                          |
+   +----------------------------------------------------------+
+\endcode
+
+With this strategy each of the nodes which are able to rerun the
+application is able to restart from its last local checkpoint, while a
+possible spare node, which replaces a failed one, can receive its
+checkpoint from its buddy node.
+
+It is important to note that each node also needs to save its own
+checkpoint since otherwise the spare node can receive its data, but
+the buddy of the failed node will loose its checkpoint.
+
+### Implementation
+
+The implementation in SIONlib will use individual files for each of
+the copies of the data. Using this approach is quite similar to the
+multi-file approach SIONlib uses for splitting one logical sion file
+into multiple physical files. The advantage of using individual files
+for its own data and for its buddy's is the ability to work with each
+of these like usual multi-files without need of handling it in a
+special way.
+
+Enabling buddy checkpointing will be done via an additional flag
+"buddycheckpoint". On systems on which SIONlib can exploit some sort
+of caching layer which is faster than the connection to the global
+storage, this higher performance can be used by SIONlib to decrease
+the time needed for a recovery after failure. The according flag
+"localcache" is used to make SIONlib try to use the caching layer.
+
+*/

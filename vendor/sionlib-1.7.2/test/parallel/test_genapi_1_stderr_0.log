@@ -1,0 +1,3 @@
+on rank 0: ensure_free_space (100) rc = 1
+on rank 0: ensure_free_space (50) rc = 1
+on rank 0: ensure_free_space (100) rc = 1

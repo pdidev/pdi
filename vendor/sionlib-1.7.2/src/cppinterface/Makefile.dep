@@ -1,0 +1,71 @@
+#------------------------------------------------------------------------------
+# Dependencies
+# (automatically generated using 'make depend')
+#------------------------------------------------------------------------------
+
+sion_cxx_base.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_cxx.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_cxx_base.cpp \
+	sion_cxx_base.hpp \
+	sion_cxx_common.hpp \
+	sion_cxx_mpi.hpp \
+	sion_cxx_ompi.hpp
+sion_cxx_common.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_cxx.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_cxx_base.hpp \
+	sion_cxx_common.cpp \
+	sion_cxx_common.hpp \
+	sion_cxx_mpi.hpp \
+	sion_cxx_ompi.hpp
+sion_cxx_mpi.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_cxx.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_cxx_base.hpp \
+	sion_cxx_common.hpp \
+	sion_cxx_mpi.cpp \
+	sion_cxx_mpi.hpp \
+	sion_cxx_ompi.hpp
+sion_cxx_serial.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_cxx.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion_cxx_base.hpp \
+	sion_cxx_common.hpp \
+	sion_cxx_mpi.hpp \
+	sion_cxx_ompi.hpp \
+	sion_cxx_serial.cpp \
+	sion_cxx_serial.hpp

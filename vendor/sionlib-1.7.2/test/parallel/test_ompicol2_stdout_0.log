@@ -1,0 +1,74 @@
+on MPI rank 0, OMP thread 0: globalrank=0
+on MPI rank 0, OMP thread 0: bytes_written=100
+on MPI rank 0, OMP thread 0: block=0           bwrote=100 blocksum=    6500 
+on MPI rank 0, OMP thread 0: bytes_written=150
+on MPI rank 0, OMP thread 0: block=1           bwrote= 50 blocksum=    3300 
+on MPI rank 0, OMP thread 0: bytes_written=250
+on MPI rank 0, OMP thread 0: block=2           bwrote=100 blocksum=    6700 
+on MPI rank 0, OMP thread 0: END of TEST B write
+on MPI rank 0, OMP thread 0: numfiles      =3
+on MPI rank 0, OMP thread 0: chunksize     =100
+on MPI rank 0, OMP thread 0: globalrank    =0
+on MPI rank 0, OMP thread 0: newfname      =testB.out
+on MPI rank 0, OMP thread 0: block=0           bytes_avail=100
+on MPI rank 0, OMP thread 0: block=0           bread=100 blocksum=    6500 
+on MPI rank 0, OMP thread 0: block=1           bytes_avail=50
+on MPI rank 0, OMP thread 0: block=1           bread= 50 blocksum=    3300 
+on MPI rank 0, OMP thread 0: block=2           bytes_avail=100
+on MPI rank 0, OMP thread 0: block=2           bread=100 blocksum=    6700 
+on MPI rank 0, OMP thread 0: END of TEST B read collective
+siondump: sid:                       1
+siondump: filename:                  testB.out                     
+siondump: prefix:                    testB.out                     
+siondump: number of tasks:           16
+siondump: filesystem blocksize:      16 bytes (  0.00 MB)
+siondump: file set:                  Yes
+siondump: file number:               0
+siondump: number of files:           3
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           3
+siondump: size of chunks:                                4800 bytes  (    0.00 MB)
+siondump: datasize in file (aggr.):                      4000 bytes  (    0.00 MB)
+siondump: size of full chunks:                           3200 bytes  (    0.00 MB) #     32
+siondump: size of partly filled chunks:                   800 bytes  (    0.00 MB) #     16
+siondump: size of empty chunks:                             0 bytes  (    0.00 MB) #      0
+siondump: overhead compared to task-local file:           800 bytes  (    0.00 MB)
+siondump: file usage (user data/chunk size):        83.333333%
+siondump: fsblocks, size of used blocks:                 4608 bytes  (    0.00 MB, 288 blocks)
+siondump: fsblocks, size of fully used blocks:           3840 bytes  (    0.00 MB, 240 blocks)
+siondump: fsblocks, size of partly used blocks:           160 bytes of          768 bytes (  0.00 MB of   0.00 MB, 48 blocks)
+siondump: fsblocks, used fsblocks/chunk size:        96.000000%
+siondump: fsblocks, user data/used blocks:           86.805556%
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                      BLK000    BLK001    BLK002    
+Task 00: size=       250 B glblrnk=   0 #blks= 3 lsz=       100 B:       100        50       100 
+Task 01: size=       250 B glblrnk=   1 #blks= 3 lsz=       100 B:       100        50       100 
+Task 02: size=       250 B glblrnk=   2 #blks= 3 lsz=       100 B:       100        50       100 
+Task 03: size=       250 B glblrnk=   3 #blks= 3 lsz=       100 B:       100        50       100 
+Task 04: size=       250 B glblrnk=   4 #blks= 3 lsz=       100 B:       100        50       100 
+Task 05: size=       250 B glblrnk=   5 #blks= 3 lsz=       100 B:       100        50       100 
+Task 06: size=       250 B glblrnk=   6 #blks= 3 lsz=       100 B:       100        50       100 
+Task 07: size=       250 B glblrnk=   7 #blks= 3 lsz=       100 B:       100        50       100 
+Task 08: size=       250 B glblrnk=   8 #blks= 3 lsz=       100 B:       100        50       100 
+Task 09: size=       250 B glblrnk=   9 #blks= 3 lsz=       100 B:       100        50       100 
+Task 10: size=       250 B glblrnk=  10 #blks= 3 lsz=       100 B:       100        50       100 
+Task 11: size=       250 B glblrnk=  11 #blks= 3 lsz=       100 B:       100        50       100 
+Task 12: size=       250 B glblrnk=  12 #blks= 3 lsz=       100 B:       100        50       100 
+Task 13: size=       250 B glblrnk=  13 #blks= 3 lsz=       100 B:       100        50       100 
+Task 14: size=       250 B glblrnk=  14 #blks= 3 lsz=       100 B:       100        50       100 
+Task 15: size=       250 B glblrnk=  15 #blks= 3 lsz=       100 B:       100        50       100 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------
+siondump: number of files:           3
+siondump: file   1:                    testB.out 
+siondump: file   2:                    testB.out.000001 
+siondump: file   3:                    testB.out.000002 
+------------------------------------------------------------
+  mapping: [00000 -> (f000,t000)] [00001 -> (f000,t001)] [00002 -> (f000,t002)] [00003 -> (f000,t003)] [00004 -> (f001,t000)] [00005 -> (f001,t001)] [00006 -> (f001,t002)] [00007 -> (f001,t003)] [00008 -> (f002,t000)] [00009 -> (f002,t001)] [00010 -> (f002,t002)] [00011 -> (f002,t003)] [00012 -> (f002,t004)] [00013 -> (f002,t005)] [00014 -> (f002,t006)] [00015 -> (f002,t007)] 
+        
+------------------------------------------------------------

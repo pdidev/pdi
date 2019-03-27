@@ -1,0 +1,7 @@
+on rank 0: greet start
+on rank 0: greet
+on rank 0: greet finished
+on rank 0: test_data start
+on rank 0: test_data finished
+on rank 0: keyval_test start
+on rank 0: keyval_test finished

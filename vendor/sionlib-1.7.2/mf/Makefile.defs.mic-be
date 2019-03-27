@@ -1,0 +1,139 @@
+#------------------------------------------------------------------------------
+# SIONlib Makefile Definitions (Makefile.defs.mic-be)
+#------------------------------------------------------------------------------
+
+CFGKEY = linux-intel-intel2-mic
+CONFIG = Linux Intel Xeon Phi cluster with Intel compilers and Intel2 MPI
+
+PREFIX = $(TOPDIR)/../../install/sionlib_mic
+
+#------------------------------------------------------------------------------
+# Platform Settings
+#------------------------------------------------------------------------------
+PREC   = 64
+PFLAG  =
+AFLAG  =
+
+PLAT     = linux
+#PLAT_LDIR   = -DPFORM_LDIR=\"/tmp\"
+MACHINE  = -DMACHINE=\"Linux\ Intel\ Xeon\ Phi\"
+PLAT_CONF= $(MACHINE) $(PLAT_LDIR)
+PLATCC   = $(MPICC)
+
+LARGEFILE=-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -D__USE_LARGEFILE64 -D__USE_FILE_OFFSET64
+
+#------------------------------------------------------------------------------
+# SIONlib General Settings
+#------------------------------------------------------------------------------
+OPTFLAGS = -mmic -g
+CC       = icc
+CFLAGS   = -std=c99 $(OPTFLAGS) $(SION_PLATFORM) $(LARGEFILE)
+CXX      = icpc
+CXXFLAGS = $(OPTFLAGS) $(SION_PLATFORM) -O3 -mieee-fp -wd161 $(LARGEFILE)
+F77      = ifort
+F90      = $(F77)
+FFLAGS   = $(OPTFLAGS)
+FPP      = -fpp2
+FDOPT    = -D
+LDFLAGS  = $(OPTFLAGS) 
+
+
+#------------------------------------------------------------------------------
+# SIONlib Settings
+#------------------------------------------------------------------------------
+
+SION_PLATFORM    = -D_SION_MIC
+ARCH             = MIC
+
+# Library Naming Scheme: see Makefile.defs.linux-gomp
+SION_LIBNAME_COM = sioncommic_$(PREC)
+SION_LIBNAME_SER = sionsermic_$(PREC)
+SION_LIBNAME_GEN = siongenmic_$(PREC)
+SION_LIBNAME_OMP     = sionompmic_$(PREC)
+SION_LIBNAME_MPI     = sionmpimic_$(PREC)
+SION_LIBNAME_OMPI    = sionompimic_$(PREC)
+
+PARUTILENABLE    = 1
+
+FORTRANENABLE    = 1
+FORTRANNAMES     = -D_FORTRANUNDERSCORE
+SION_LIBNAME_F77_SER = sionsermic_f77_$(PREC)
+SION_LIBNAME_F77_MPI = sionmpimic_f77_$(PREC)
+SION_LIBNAME_F90_SER = sionsermic_f90_$(PREC)
+SION_LIBNAME_F90_MPI = sionmpimic_f90_$(PREC)
+SION_MODPATH = modmic_$(PREC)
+
+CXXENABLE            = 1
+SION_LIBNAME_CXX_SER = sionsermic_cxx_$(PREC)
+SION_LIBNAME_CXX_MPI = sionmpimic_cxx_$(PREC)
+
+PYTHONENABLE    = 0
+
+SION_DEBUG       = 
+
+#------------------------------------------------------------------------------
+# MPI Settings
+#------------------------------------------------------------------------------
+
+MPIENABLE = 1
+MPICC     = mpiicc
+MPICXX    = mpiicpc
+MPIF77    = mpiifort
+MPIF90    = mpiifort
+MPILIB    = 
+MPITESTRUN = mpiexec.hydra -host mic0 -n 4
+MPITESTEXECPARM = 
+
+
+#------------------------------------------------------------------------------
+# OpenMP Settings
+#------------------------------------------------------------------------------
+
+OMPENABLE  = 1
+OMPCC      = $(CC)
+OMPCXX     = $(CXX)
+OMPF77     = $(F77) 
+OMPF90     = $(F90) 
+OMPFLAG    = -openmp
+
+#------------------------------------------------------------------------------
+# Hybrid MPI/OpenMP Settings
+#------------------------------------------------------------------------------
+
+HYBENABLE  = 1
+HYBCC      = $(MPICC)
+HYBCXX     = $(MPICXX)
+HYBF77     = $(MPIF77)
+HYBF90     = $(MPIF90)
+HYBFLAG    = $(OMPFLAG)
+
+#------------------------------------------------------------------------------
+# Compression Support
+#------------------------------------------------------------------------------
+
+SZLIB          = szlib
+SZLIB_OPTFLAGS = -O3
+SZLIB_CFLAGS   = -I$(TOPDIR)/utils/szlib -DELG_COMPRESSED -DCUBE_COMPRESSED
+SZLIB_LIBPATH  = -L$(TOPDIR)/utils/szlib
+SZLIB_LIB      = -lsc.z
+
+#------------------------------------------------------------------------------
+# SIONlib HINTS library
+#------------------------------------------------------------------------------
+GPFS_HINTS_LIB  = -L/usr/lpp/mmfs/lib -lgpfs
+GPFS_HINTS_INC  = -I/usr/lpp/mmfs/include
+LINUX_HINTS_LIB = -L/usr/lib
+LINUX_HINTS_INC = -I/usr/include
+
+HINTSDEF=
+HINTSINC=
+HINTSLIB=
+
+#------------------------------------------------------------------------------
+# SIONlib Cache Settings
+#------------------------------------------------------------------------------
+
+CACHEFLAGS=
+CACHELIB=
+#CACHEFLAGS=-D_SION_CACHE
+#CACHELIB=-lrt

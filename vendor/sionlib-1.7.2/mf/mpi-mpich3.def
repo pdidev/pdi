@@ -1,0 +1,7 @@
+MPIENABLE = 1
+MPICC     = MPICH_CC="$(CC)" mpicc
+MPICXX    = MPICH_CXX="$(CXX)" mpicxx
+MPIF77    = MPICH_FC="$(F77)" mpif77
+MPIF90    = MPICH_FC="$(F90)" mpif90
+MPILIB    = 
+MPITESTRUN = mpiexec -np 4 --envall

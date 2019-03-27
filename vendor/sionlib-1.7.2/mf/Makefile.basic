@@ -1,0 +1,93 @@
+.NOTPARALLEL:
+
+TOPDIR = .
+
+include Makefile.defs
+TOPDIR = ..
+
+include $(TOPDIR)/mf/common.defs
+
+BSUF=
+
+all: setup
+	cd build; $(MAKE) -f RealMakefile all
+
+test: all
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  run Tests                                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build; $(MAKE) -f RealMakefile test
+
+comptest: all
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  compile Tests                                     +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build; $(MAKE) -f RealMakefile comptest
+
+packtest: all
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  run Packtests                                     +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build; $(MAKE) -f RealMakefile packtest
+
+depend: all
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  run make depend                                   +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build; $(MAKE) -f RealMakefile depend
+
+install: all
+	cd build; $(MAKE) -f RealMakefile install
+
+installtests: all install
+	cd build; $(MAKE) -f RealMakefile installtests
+
+checkinst: all install
+	cd build; $(MAKE) -f RealMakefile checkinst
+
+clean:
+	cd build; $(MAKE) -f RealMakefile clean
+
+relink: setup mklinks chklinks
+
+setup:
+	@if test ! -d build; then $(MAKE) setup-real; fi
+
+setup-real: mk-build-dir build/lndir mklinks
+
+mk-build-dir:
+	@echo ""
+	@echo "++++++++++ SETUP ++++++++++++++++++++++++++++++"
+	-mkdir build
+
+mklinks:
+	cd build; ./lndir ../../src
+	-mkdir build/mf
+	cd build/mf; ../lndir ../../../mf
+	cd build; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd build; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd build; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd build; rm -f Makefile.defs; ln -s ../Makefile.defs Makefile.defs
+	-mkdir build/examples
+	cd build/examples; ../lndir ../../../examples
+	-mkdir build/test
+	cd build/test; ../lndir ../../../test
+	cd build/test; rm -f RealMakefile; ln -s ../../../mf/RealMakefile .
+
+chklinks:
+	$(TOPDIR)/config/cleanlinks.sh build
+
+build/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o build/lndir
+
+realclean:
+	rm -rf build

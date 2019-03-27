@@ -1,0 +1,30 @@
+on rank 0: bytes_written=991 blocksum=64415
+on rank 1: bytes_written=1191 blocksum=78606
+on rank 0: bytes_written=991 blocksum=64415
+on rank 1: bytes_written=1191 blocksum=78606
+TEST B read: rank=0 chunksizes=1000  bread=991 blocksum=64415
+TEST B read: rank=1 chunksizes=1200  bread=1191 blocksum=78606
+TEST B read: rank=2 chunksizes=1400  bread=0 blocksum=0
+TEST B read: rank=3 chunksizes=1600  bread=0 blocksum=0
+TEST B read: rank=0 chunksizes=1000  bread=991 blocksum=64415
+TEST B read: rank=1 chunksizes=1200  bread=1191 blocksum=78606
+TEST B read: rank=2 chunksizes=1400  bread=0 blocksum=0
+TEST B read: rank=3 chunksizes=1600  bread=0 blocksum=0
+TEST C: rank = 1, iteration = 0, pos = 1, newblocknr = 0, newposinblk = 0, btoread = 1191
+TEST C: rank = 1, iteration = 0, pos = 0, newblocknr = 1, newposinblk = 1191, btoread = 0
+TEST C: rank = 1, iteration = 0, pos = -1, newblocknr = 1, newposinblk = 1190, btoread = 1
+TEST C: rank = 1, iteration = 0, pos = -1190, newblocknr = 1, newposinblk = 1, btoread = 1190
+TEST C: rank = 1, iteration = 0, pos = -1191, newblocknr = 1, newposinblk = 0, btoread = 1191
+TEST C: rank = 1, iteration = 0, pos = -1192, newblocknr = 0, newposinblk = 1190, btoread = 1
+TEST C: rank = 1, iteration = 0, pos = -2381, newblocknr = 0, newposinblk = 1, btoread = 1190
+TEST C: rank = 1, iteration = 0, pos = -2382, newblocknr = 0, newposinblk = 0, btoread = 1191
+TEST C: rank = 1, iteration = 0, pos = -2383, newblocknr = 0, newposinblk = 0, btoread = 1191
+TEST C: rank = 1, iteration = 1, pos = 1, newblocknr = 0, newposinblk = 0, btoread = 1191
+TEST C: rank = 1, iteration = 1, pos = 0, newblocknr = 1, newposinblk = 1191, btoread = 0
+TEST C: rank = 1, iteration = 1, pos = -1, newblocknr = 1, newposinblk = 1190, btoread = 1
+TEST C: rank = 1, iteration = 1, pos = -1190, newblocknr = 1, newposinblk = 1, btoread = 1190
+TEST C: rank = 1, iteration = 1, pos = -1191, newblocknr = 1, newposinblk = 0, btoread = 1191
+TEST C: rank = 1, iteration = 1, pos = -1192, newblocknr = 0, newposinblk = 1190, btoread = 1
+TEST C: rank = 1, iteration = 1, pos = -2381, newblocknr = 0, newposinblk = 1, btoread = 1190
+TEST C: rank = 1, iteration = 1, pos = -2382, newblocknr = 0, newposinblk = 0, btoread = 1191
+TEST C: rank = 1, iteration = 1, pos = -2383, newblocknr = 0, newposinblk = 0, btoread = 1191

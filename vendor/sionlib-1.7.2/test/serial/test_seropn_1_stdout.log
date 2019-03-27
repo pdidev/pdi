@@ -1,0 +1,16 @@
+on rank 0: bytes_written=991 blocksum=64415
+on rank 1: bytes_written=1191 blocksum=78606
+on rank 2: bytes_written=1391 blocksum=93197
+on rank 3: bytes_written=1591 blocksum=108188
+on rank 0: bytes_written=991 blocksum=64415
+on rank 1: bytes_written=1191 blocksum=78606
+on rank 2: bytes_written=1391 blocksum=93197
+on rank 3: bytes_written=1591 blocksum=108188
+TESTC read: rank=0 chunksizes=1000  bread=991 blocksum=64415
+TESTC read: rank=1 chunksizes=1200  bread=1191 blocksum=78606
+TESTC read: rank=2 chunksizes=1400  bread=1391 blocksum=93197
+TESTC read: rank=3 chunksizes=1600  bread=1591 blocksum=108188
+TESTC read: rank=0 chunksizes=1000  bread=991 blocksum=64415
+TESTC read: rank=1 chunksizes=1200  bread=1191 blocksum=78606
+TESTC read: rank=2 chunksizes=1400  bread=1391 blocksum=93197
+TESTC read: rank=3 chunksizes=1600  bread=1591 blocksum=108188

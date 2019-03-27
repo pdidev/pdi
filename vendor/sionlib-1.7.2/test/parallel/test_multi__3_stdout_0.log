@@ -1,0 +1,52 @@
+on rank 0: bytes_written=100
+on rank 0: block=0           bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=150
+on rank 0: block=1           bwrote= 50 blocksum=    3300 
+on rank 0: bytes_written=250
+on rank 0: block=2           bwrote=100 blocksum=    6700 
+on rank 0: END of TEST A write
+on rank 0: open(name="testA.out", "rb", &numTasks, &numFiles, &chunksizes, &blocksize, &ranks, &mainFileptr)==3
+on rank 0: seek_fp(fileId=3,0,0,0,&fileptr)==1
+on rank 0: END of TEST A write
+siondump: sid:                       1
+siondump: filename:                  testA.out                     
+siondump: prefix:                    testA.out                     
+siondump: number of tasks:           4
+siondump: filesystem blocksize:      10 bytes (  0.00 MB)
+siondump: file set:                  Yes
+siondump: file number:               0
+siondump: number of files:           3
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           3
+siondump: size of chunks:                                1200 bytes  (    0.00 MB)
+siondump: datasize in file (aggr.):                      1000 bytes  (    0.00 MB)
+siondump: size of full chunks:                            800 bytes  (    0.00 MB) #      8
+siondump: size of partly filled chunks:                   200 bytes  (    0.00 MB) #      4
+siondump: size of empty chunks:                             0 bytes  (    0.00 MB) #      0
+siondump: overhead compared to task-local file:           200 bytes  (    0.00 MB)
+siondump: file usage (user data/chunk size):        83.333333%
+siondump: fsblocks, size of used blocks:                 1000 bytes  (    0.00 MB, 100 blocks)
+siondump: fsblocks, size of fully used blocks:           1000 bytes  (    0.00 MB, 100 blocks)
+siondump: fsblocks, size of partly used blocks:             0 bytes of            0 bytes (  0.00 MB of   0.00 MB, 0 blocks)
+siondump: fsblocks, used fsblocks/chunk size:        83.333333%
+siondump: fsblocks, user data/used blocks:          100.000000%
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                      BLK000    BLK001    BLK002    
+Task 00: size=       250 B glblrnk=   0 #blks= 3 lsz=       100 B:       100        50       100 
+Task 01: size=       250 B glblrnk=   1 #blks= 3 lsz=       100 B:       100        50       100 
+Task 02: size=       250 B glblrnk=   2 #blks= 3 lsz=       100 B:       100        50       100 
+Task 03: size=       250 B glblrnk=   3 #blks= 3 lsz=       100 B:       100        50       100 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------
+siondump: number of files:           3
+siondump: file   1:                    testA.out 
+siondump: file   2:                    testA.out.000001 
+siondump: file   3:                    testA.out.000002 
+------------------------------------------------------------
+  mapping: [00000 -> (f000,t000)] [00001 -> (f001,t000)] [00002 -> (f002,t000)] [00003 -> (f002,t001)] 
+------------------------------------------------------------

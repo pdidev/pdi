@@ -1,0 +1,167 @@
+.NOTPARALLEL:
+
+TOPDIR = ..
+
+include Makefile.defs
+include $(TOPDIR)/mf/common.defs
+
+all: all32 all64
+
+test: all
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  run Tests                                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build32; $(MAKE) -f RealMakefile test-ser
+	cd build64; $(MAKE) -f RealMakefile test-ser
+	cd build32; $(MAKE) -f RealMakefile test-par
+	cd build64; $(MAKE) -f RealMakefile test-par
+
+install: install32 install64 
+
+installtests: install installtests64
+
+clean: clean32 clean64
+
+relink: setup32 mklinks32 chklinks32 setup64 mklinks64 chklinks64
+
+setup: setup32 setup64
+
+setup32: 
+	@if test ! -d build32; then $(MAKE) setup32-real; fi
+
+setup32-real: mk-build-dir32 build32/lndir mklinks32
+
+mk-build-dir32:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow 32-bit Build Directories      +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir build32
+
+mklinks32:
+	cd build32; ./lndir ../../src
+	-mkdir build32/mf
+	cd build32/mf; ../lndir ../../../mf
+	cd build32; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd build32; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd build32; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd build32; rm -f Makefile.defs; \
+		echo "PREC=32"  > Makefile.defs; \
+		echo "DSUF=/32" >> Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs' >> Makefile.defs
+	-mkdir build32/examples
+	cd build32/examples; ../lndir ../../../examples
+	-mkdir build32/test
+	cd build32/test; ../lndir ../../../test
+
+chklinks32:
+	$(TOPDIR)/mf/cleanlinks.sh build32
+
+setup64:
+	@if test ! -d build64; then $(MAKE) setup64-real; fi
+
+setup64-real: mk-build-dir64 build64/lndir mklinks64
+
+mk-build-dir64:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow 64-bit Build Directories      +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir build64
+
+mklinks64:
+	cd build64; ../build32/lndir ../../src
+	-mkdir build64/mf
+	cd build64/mf; ../lndir ../../../mf
+	cd build64; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd build64; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd build64; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd build64; rm -f Makefile.defs; \
+		echo "PREC=64"  > Makefile.defs; \
+		echo "DSUF=/64" >> Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs' >> Makefile.defs
+	cd build64; rm -f qt.pro.defs; ln -s ../qt.pro.defs qt.pro.defs
+	cd build64; rm -f mpi-support.defs; ln -s ../mpi-support.defs
+	-mkdir build64/examples
+	cd build64/examples; ../lndir ../../../examples
+	-mkdir build64/test
+	cd build64/test; ../lndir ../../../test
+
+chklinks64:
+	$(TOPDIR)/mf/cleanlinks.sh build64
+
+build32/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o build32/lndir
+
+build64/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o build64/lndir
+
+realclean:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Removing Shadow Build Directories                 +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	rm -rf build32 build64
+	
+all32: setup32
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building 32bit Version                            +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build32; $(MAKE) -f RealMakefile all PREC=32
+
+install32: all32
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing 32bit Version                          +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build32; $(MAKE) -f RealMakefile install PREC=32 DSUF="/32"
+
+clean32:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Cleaning 32bit Version                            +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build32; $(MAKE) -f RealMakefile clean PREC=32
+
+all64: setup64
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building 64bit Version                            +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build64; $(MAKE) -f RealMakefile all-64 PREC=64
+
+install64: all64
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing 64bit Version                          +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build64; $(MAKE) -f RealMakefile install-64 PREC=64 DSUF="/64"
+
+installtests64: install64
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing 64bit Version Tests                    +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build64; $(MAKE) -f RealMakefile installtests-64 PREC=64 DSUF="/64"
+
+clean64:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Cleaning 64bit Version                            +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd build64; $(MAKE) -f RealMakefile clean PREC=64

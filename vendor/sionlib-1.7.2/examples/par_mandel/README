@@ -1,0 +1,5 @@
+
+make
+
+mpiexec -np 4 ./mandelmpi -v -t 0 -w 4096 -h 4096 -x -.59 -.54 -.58 -.53 -i 1024 -b 128
+./mandelseq

@@ -1,0 +1,150 @@
+#------------------------------------------------------------------------------
+# SIONlib Makefile Definitions (Makefile.defs.bgq-be)
+#------------------------------------------------------------------------------
+
+CFGKEY = bgq
+CONFIG = IBM BlueGene/Q
+
+PREFIX = $(TOPDIR)/../../install/sionlib_bgq
+
+#------------------------------------------------------------------------------
+# Platform Settings
+#------------------------------------------------------------------------------
+# don't let it overwrite from configure (multi-platform)
+BGPREC   = 64
+PREC     = ${BGPREC}  
+PFLAG  =
+AFLAG  =
+PLAT     = bgq
+MACHINE  = -DMACHINE=\"IBM\ BG/Q\"
+PLAT_LDIR   = -DPFORM_LDIR=\".\"
+PLATCC   = mpicc -O -I/bgsys/drivers/ppcfloor/arch/include
+PLAT_CONF= $(MACHINE) $(PLAT_LDIR)
+BGQ_SYS = /bgsys/drivers/ppcfloor
+BG_INCLUDE=-I$(BGQ_SYS)/comm/include -I$(BGQ_SYS)/arch/include -I$(BGQ_SYS) -I/bgsys/drivers/ppcfloor/spi/include/kernel/cnk
+BGQPERSINC=$(BG_INCLUDE) -L$(BGQ_SYS)/lib
+LARGEFILE=-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -D__USE_LARGEFILE64 -D__USE_FILE_OFFSET64
+
+#------------------------------------------------------------------------------
+# SIONlib General Settings
+#------------------------------------------------------------------------------
+OPTFLAGS =
+CC       = /bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc
+CFLAGS   = -std=c99 $(OPTFLAGS) $(LARGEFILE) $(BGQPERSINC)
+CXX      = /bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++
+CXXFLAGS = $(OPTFLAGS) -O3 -qarch=450d -qtune=450 $(LARGEFILE)
+F77      = /bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gfortran -fno-underscoring
+F90      = /bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gfortran -fno-underscoring -ffree-form
+FFLAGS   = $(OPTFLAGS) $(BGQPERSINC) 
+FPP      = -qsuffix=cpp=F90
+FDOPT    = -WF,-D
+LDFLAGS  = $(OPTFLAGS) $(BGQPERSINC)
+UTILLIB  = 
+
+#------------------------------------------------------------------------------
+# SIONlib Settings
+#------------------------------------------------------------------------------
+
+SION_PLATFORM    = -D_SION_BGQ
+ARCH             = BGQ
+
+# Library Naming Scheme: see Makefile.defs.linux-gomp
+SION_LIBNAME_COM = sioncomgcc_$(BGPREC)
+SION_LIBNAME_SER = sionsergcc_$(BGPREC)
+SION_LIBNAME_GEN = siongengcc_$(BGPREC)
+SION_LIBNAME_OMP     = sionompgcc_$(BGPREC)
+SION_LIBNAME_MPI     = sionmpigcc_$(BGPREC)
+SION_LIBNAME_OMPI    = sionompigcc_$(BGPREC)
+
+PARUTILENABLE    = 1
+
+FORTRANENABLE    = 1
+FORTRANNAMES     = -D_FORTRANNOUNDERSCORE
+SION_LIBNAME_F77_SER = sionsergcc_f77_$(BGPREC)
+SION_LIBNAME_F77_MPI = sionmpigcc_f77_$(BGPREC)
+SION_LIBNAME_F90_SER = sionsergcc_f90_$(BGPREC)
+SION_LIBNAME_F90_MPI = sionmpigcc_f90_$(BGPREC)
+SION_MODPATH = modgcc_$(BGPREC)
+
+CXXENABLE            = 1
+SION_LIBNAME_CXX_SER = sionsergcc_cxx_$(BGPREC)
+SION_LIBNAME_CXX_MPI = sionmpigcc_cxx_$(BGPREC)
+
+PYTHONENABLE    = 0
+
+SION_DEBUG       = 
+
+#------------------------------------------------------------------------------
+# MPI Settings
+#------------------------------------------------------------------------------
+
+MPIENABLE = 1
+MPICC     = mpigcc
+MPICXX    = mpig++
+MPIF77    = mpigfortran 
+MPIF90    = mpigfortran -ffree-form
+MPILIB    =
+PMPILIB   = ${MPILIB}
+FMPILIB   = 
+FMPIOBJ   = 
+MPITEST   = mpi_test mpi_test2
+MPIFTEST  = mpi_ftest
+MPIFLAG = -DSION_MPI
+MPITESTRUN = runjob -n 4 -p 1 --exp_env SION_ERROR_MSG_RANK --exp_env SION_DEBUG --exp_env SION_DEBUG_MASK --exp_env SION_DEBUG_RANK1 --exp_env SION_DEBUG_RANK2 --exp_env SION_DEBUG_SILENT --exp_env OMP_NUM_THREADS :
+MPI_CONFIG_TARGETS  = 
+
+#------------------------------------------------------------------------------
+# OpenMP Settings
+#------------------------------------------------------------------------------
+
+OMPENABLE  = 1
+OMPCC      = $(CC)
+OMPCXX     = $(CXX)
+OMPF77     = $(F77)
+OMPF90     = $(F90)
+OMPFLAG    = -fopenmp
+# There is no OpenMP support for the compiler
+
+#------------------------------------------------------------------------------
+# Hybrid MPI/OpenMP Settings
+#------------------------------------------------------------------------------
+
+HYBENABLE  = 1
+HYBCC      = $(MPICC)
+HYBCXX     = $(MPICXX)
+HYBF77     = $(MPIF77)
+HYBF90     = $(MPIF90)
+HYBFLAG    = -fopenmp
+# There is no OpenMP support for the compiler
+
+#------------------------------------------------------------------------------
+# Compression Support
+#------------------------------------------------------------------------------
+
+SZLIB          = szlib
+SZLIB_OPTFLAGS = -O3
+SZLIB_CFLAGS   = -I$(TOPDIR)/utils/szlib -DELG_COMPRESSED
+SZLIB_LIBPATH  = -L$(TOPDIR)/utils/szlib
+SZLIB_LIB      = -lsc.z
+
+#------------------------------------------------------------------------------
+# SIONlib HINTS library
+#------------------------------------------------------------------------------
+GPFS_HINTS_LIB  = -L/usr/lpp/mmfs/lib -lgpfs
+GPFS_HINTS_INC  = -I/usr/lpp/mmfs/include
+LINUX_HINTS_LIB = -L/usr/lib
+LINUX_HINTS_INC = -I/usr/include
+
+HINTSDEF=
+HINTSINC=
+HINTSLIB=
+
+#------------------------------------------------------------------------------
+# SIONlib Cache Settings
+#------------------------------------------------------------------------------
+
+CACHEFLAGS=
+CACHELIB=
+#CACHEFLAGS=-D_SION_CACHE
+#CACHELIB=-lrt
+

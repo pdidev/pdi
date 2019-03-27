@@ -1,0 +1,210 @@
+on rank 0: starting Test with SION_COLLSIZE=
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: END of TEST A1 write coll
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: END of TEST A2 write coll
+on rank 0: chunksize     =2500
+on rank 0: chunksize     =1000
+on rank 0: END of TEST A3 write coll
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: END of TEST B write coll
+on rank 0: sid           =2
+on rank 0: numfiles      =1
+on rank 0: chunksize     =2500
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_coll1.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST C.1 read individual call from collective file
+on rank 0: sid           =1
+on rank 0: numfiles      =1
+on rank 0: chunksize     =2500
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_indiv.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST C.2 read individual call from individual file
+on rank 0: sid           =3
+on rank 0: numfiles      =1
+on rank 0: chunksize     =2500
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_coll1.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST D.1 read collective from collective file
+on rank 0: sid           =2
+on rank 0: numfiles      =1
+on rank 0: chunksize     =2500
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_coll1.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST D.2 read collective from collective file
+on rank 0: sid           =1
+on rank 0: numfiles      =1
+on rank 0: chunksize     =2500
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_indiv.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST D.3 read collective from individual file
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: bytes_written=2000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: bytes_written=3000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: bytes_written=3500
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=4000
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=4500
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=5000
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=5500
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=6000
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=6750
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=7500
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=8250
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=9000
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=9750
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=10500
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: END of TEST E write coll sequence
+on rank 0: sid           =1
+on rank 0: numfiles      =1
+on rank 0: chunksize     =2500
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_coll_sequence.out
+on rank 0: block=1           bread=1000 blocksum=   65000 
+on rank 0: block=2           bread=1000 blocksum=   65000 
+on rank 0: block=3           bread=1000 blocksum=   65000 
+on rank 0: block=4           bread=500 blocksum=   32500 
+on rank 0: block=5           bread=500 blocksum=   32500 
+on rank 0: block=6           bread=500 blocksum=   32500 
+on rank 0: block=7           bread=500 blocksum=   32500 
+on rank 0: block=8           bread=500 blocksum=   32500 
+on rank 0: block=9           bread=500 blocksum=   32500 
+on rank 0: block=10           bread=750 blocksum=   48750 
+on rank 0: block=11           bread=750 blocksum=   48750 
+on rank 0: block=12           bread=750 blocksum=   48750 
+on rank 0: block=13           bread=750 blocksum=   48750 
+on rank 0: block=14           bread=750 blocksum=   48750 
+on rank 0: block=15           bread=750 blocksum=   48750 
+on rank 0: END of TEST F read collective from collective file
+on rank 0: starting Test with SION_COLLSIZE=4
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: END of TEST A1 write coll
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: END of TEST A2 write coll
+on rank 0: chunksize     =1000
+on rank 0: chunksize     =1000
+on rank 0: END of TEST A3 write coll
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: END of TEST B write coll
+on rank 0: sid           =2
+on rank 0: numfiles      =1
+on rank 0: chunksize     =1000
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_coll1.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST C.1 read individual call from collective file
+on rank 0: sid           =1
+on rank 0: numfiles      =1
+on rank 0: chunksize     =1000
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_indiv.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST C.2 read individual call from individual file
+on rank 0: sid           =3
+on rank 0: numfiles      =1
+on rank 0: chunksize     =1000
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_coll1.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST D.1 read collective from collective file
+on rank 0: sid           =2
+on rank 0: numfiles      =1
+on rank 0: chunksize     =1000
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_coll1.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST D.2 read collective from collective file
+on rank 0: sid           =1
+on rank 0: numfiles      =1
+on rank 0: chunksize     =1000
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_indiv.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST D.3 read collective from individual file
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: bytes_written=2000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: bytes_written=3000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: bytes_written=3500
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=4000
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=4500
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=5000
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=5500
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=6000
+on rank 0: bwrote=500 blocksum=   32500 
+on rank 0: bytes_written=6750
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=7500
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=8250
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=9000
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=9750
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: bytes_written=10500
+on rank 0: bwrote=750 blocksum=   48750 
+on rank 0: END of TEST E write coll sequence
+on rank 0: sid           =1
+on rank 0: numfiles      =1
+on rank 0: chunksize     =1000
+on rank 0: globalrank    =0
+on rank 0: newfname      =test_coll_sequence.out
+on rank 0: block=1           bread=1000 blocksum=   65000 
+on rank 0: block=2           bread=1000 blocksum=   65000 
+on rank 0: block=3           bread=1000 blocksum=   65000 
+on rank 0: block=4           bread=500 blocksum=   32500 
+on rank 0: block=5           bread=500 blocksum=   32500 
+on rank 0: block=6           bread=500 blocksum=   32500 
+on rank 0: block=7           bread=500 blocksum=   32500 
+on rank 0: block=8           bread=500 blocksum=   32500 
+on rank 0: block=9           bread=500 blocksum=   32500 
+on rank 0: block=10           bread=750 blocksum=   48750 
+on rank 0: block=11           bread=750 blocksum=   48750 
+on rank 0: block=12           bread=750 blocksum=   48750 
+on rank 0: block=13           bread=750 blocksum=   48750 
+on rank 0: block=14           bread=750 blocksum=   48750 
+on rank 0: block=15           bread=750 blocksum=   48750 
+on rank 0: END of TEST F read collective from collective file

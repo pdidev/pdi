@@ -1,0 +1,8 @@
+sid=sion_paropen_mpi( ... ,chunksize, comm, &fileptr, ...) # collective
+
+loop: { 
+        sion_ensure_free_space(sid,nbytes);                # non-collective
+        fwrite(data,1,nbytes,fileptr)
+      }
+
+sion_parclose_mpi(sid);                                    # collective

@@ -1,0 +1,58 @@
+on OMP thread 0: (PROLOG) lock_counter  =8 
+on OMP thread 0: (PROLOG) unlock_counter=8 
+on OMP thread 0: END of TEST A 2 files
+on OMP thread 0: (TEST A) lock_counter  =85 
+on OMP thread 0: (TEST A) unlock_counter=85 
+on OMP thread 0: bytes_written=100
+on OMP thread 0: block=0           bwrote=100 blocksum=    6500 
+on OMP thread 0: bytes_written=150
+on OMP thread 0: block=1           bwrote= 50 blocksum=    3300 
+on OMP thread 0: bytes_written=250
+on OMP thread 0: block=2           bwrote=100 blocksum=    6700 
+on OMP thread 0: chunksize     =112
+on OMP thread 0: thread_num    =0
+on OMP thread 0: newfname      =testB.out
+on OMP thread 0: block=0           bytes_avail=100
+on OMP thread 0: block=0           bread=100 blocksum=    6500 
+on OMP thread 0: block=1           bytes_avail=50
+on OMP thread 0: block=1           bread= 50 blocksum=    3300 
+on OMP thread 0: block=2           bytes_avail=100
+on OMP thread 0: block=2           bread=100 blocksum=    6700 
+on OMP thread 0: END of TEST B read collective
+on OMP thread 0: END of last OMP barrier
+on OMP thread 0: (END) lock_counter  =303 
+on OMP thread 0: (END) unlock_counter=303 
+siondump: sid:                       0
+siondump: filename:                  testB.out                     
+siondump: prefix:                    testB.out                     
+siondump: number of tasks:           4
+siondump: filesystem blocksize:      16 bytes (  0.00 MB)
+siondump: file set:                  No
+siondump: file number:               0
+siondump: number of files:           1
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           3
+siondump: size of chunks:                                1344 bytes  (    0.00 MB)
+siondump: datasize in file (aggr.):                      1000 bytes  (    0.00 MB)
+siondump: size of full chunks:                              0 bytes  (    0.00 MB) #      0
+siondump: size of partly filled chunks:                  1000 bytes  (    0.00 MB) #     12
+siondump: size of empty chunks:                             0 bytes  (    0.00 MB) #      0
+siondump: overhead compared to task-local file:           344 bytes  (    0.00 MB)
+siondump: file usage (user data/chunk size):        74.404762%
+siondump: fsblocks, size of used blocks:                 1152 bytes  (    0.00 MB, 72 blocks)
+siondump: fsblocks, size of fully used blocks:            960 bytes  (    0.00 MB, 60 blocks)
+siondump: fsblocks, size of partly used blocks:            40 bytes of          192 bytes (  0.00 MB of   0.00 MB, 12 blocks)
+siondump: fsblocks, used fsblocks/chunk size:        85.714286%
+siondump: fsblocks, user data/used blocks:           86.805556%
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                      BLK000    BLK001    BLK002    
+Task 00: size=       250 B glblrnk=   0 #blks= 3 lsz=       112 B:       100        50       100 
+Task 01: size=       250 B glblrnk=   1 #blks= 3 lsz=       112 B:       100        50       100 
+Task 02: size=       250 B glblrnk=   2 #blks= 3 lsz=       112 B:       100        50       100 
+Task 03: size=       250 B glblrnk=   3 #blks= 3 lsz=       112 B:       100        50       100 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------

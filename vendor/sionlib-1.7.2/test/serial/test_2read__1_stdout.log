@@ -1,0 +1,6 @@
+currentchunk=0, currentpos=1
+currentchunk=0, currentpos=2
+read value A
+currentchunk=0, currentpos=1
+read value B
+currentchunk=0, currentpos=2

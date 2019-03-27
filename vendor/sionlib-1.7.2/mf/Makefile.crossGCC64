@@ -1,0 +1,445 @@
+.NOTPARALLEL:
+
+TOPDIR = ..
+
+include Makefile.defs.fe
+include $(TOPDIR)/mf/common.defs
+
+all: allfe allfe64 allfegcc allfegcc64 allbe allbegcc 
+
+test: all
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  run Tests                                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile test-ser
+	cd buildfe64; $(MAKE) -f RealMakefile test-ser
+	cd buildfegcc; $(MAKE) -f RealMakefile test-ser
+	cd buildfegcc64; $(MAKE) -f RealMakefile test-ser
+	cd buildbe; $(MAKE) -f RealMakefile test-par
+	cd buildbegcc; $(MAKE) -f RealMakefile test-par
+
+comptest: all
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  run Comptests                                     +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile comptest-ser
+	cd buildfe64; $(MAKE) -f RealMakefile comptest-ser
+	cd buildfegcc; $(MAKE) -f RealMakefile comptest-ser
+	cd buildfegcc64; $(MAKE) -f RealMakefile comptest-ser
+	cd buildbe; $(MAKE) -f RealMakefile comptest-par
+	cd buildbegcc; $(MAKE) -f RealMakefile comptest-par
+
+packtest: all
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  run Packtests                                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile packtest-ser
+	cd buildfe64; $(MAKE) -f RealMakefile packtest-ser
+	cd buildfegcc; $(MAKE) -f RealMakefile packtest-ser
+	cd buildfegcc64; $(MAKE) -f RealMakefile packtest-ser
+	cd buildbe; $(MAKE) -f RealMakefile packtest-par
+	cd buildbegcc; $(MAKE) -f RealMakefile packtest-par
+
+install: installfe installfe64 installfegcc installfegcc64 installbe installbegcc 
+
+installtests: install installtestsfe installtestsbe
+
+checkinst: install checkinstfe checkinstbe
+
+clean: cleanfe cleanfe64 cleanfegcc cleanfegcc64 cleanbe cleanbegcc
+
+relink: setupfe mklinksfe chklinksfe setupfe64 mklinksfe64 chklinksfe64 setupfegcc mklinksfegcc chklinksfegcc setupfegcc64 mklinksfegcc64 chklinksfegcc64 setupbe mklinksbe chklinksbe setupbegcc mklinksbegcc chklinksbegcc 
+
+setup: setupfe setupfe64 setupfegcc setupfegcc64 setupbe setupbegcc
+
+setupfe:
+	@if test ! -d buildfe; then ${MAKE} setupfe-real; fi
+
+setupfe-real: mk-build-dirfe buildfe/lndir mklinksfe
+
+mk-build-dirfe:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow Frontend  Build Directories   +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir buildfe
+
+mklinksfe:
+	cd buildfe; ./lndir ../../src
+	-mkdir buildfe/mf
+	cd buildfe/mf; ../lndir ../../../mf
+	cd buildfe; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd buildfe; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd buildfe; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd buildfe; rm -f Makefile.defs; \
+		echo "DSUF=/fe" > Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs.fe' >> Makefile.defs
+	-mkdir buildfe/examples
+	cd buildfe/examples; ../lndir ../../../examples
+	-mkdir buildfe/test
+	cd buildfe/test; ../lndir ../../../test
+
+chklinksfe:
+	$(TOPDIR)/config/cleanlinks.sh buildfe
+
+setupfe64:
+	@if test ! -d buildfe64; then ${MAKE} setupfe64-real; fi
+
+setupfe64-real: mk-build-dirfe64 buildfe64/lndir mklinksfe64
+
+mk-build-dirfe64:
+	@echo ""
+	@echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow Frontend Build Directories (64)    +"
+	@echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir buildfe64
+
+mklinksfe64:
+	cd buildfe64; ./lndir ../../src
+	-mkdir buildfe64/mf
+	cd buildfe64/mf; ../lndir ../../../mf
+	cd buildfe64; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd buildfe64; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd buildfe64; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd buildfe64; rm -f Makefile.defs; \
+		echo "DSUF=/fe64" > Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs.fe64' >> Makefile.defs
+	-mkdir buildfe64/test
+	cd buildfe64/test; ../lndir ../../../test
+
+chklinksfe64:
+	$(TOPDIR)/config/cleanlinks.sh buildfe64
+
+setupfegcc:
+	@if test ! -d buildfegcc; then ${MAKE} setupfegcc-real; fi
+
+setupfegcc-real: mk-build-dirfegcc buildfegcc/lndir mklinksfegcc
+
+mk-build-dirfegcc:
+	@echo ""
+	@echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow Frontend  Build Directories (GCC)  +"
+	@echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir buildfegcc
+
+mklinksfegcc:
+	cd buildfegcc; ./lndir ../../src
+	-mkdir buildfegcc/mf
+	cd buildfegcc/mf; ../lndir ../../../mf
+	cd buildfegcc; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd buildfegcc; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd buildfegcc; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd buildfegcc; rm -f Makefile.defs; \
+		echo "DSUF=/fegcc" > Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs.fegcc' >> Makefile.defs
+	-mkdir buildfegcc/test
+	cd buildfegcc/test; ../lndir ../../../test
+
+chklinksfegcc:
+	$(TOPDIR)/config/cleanlinks.sh buildfegcc
+
+setupfegcc64:
+	@if test ! -d buildfegcc64; then ${MAKE} setupfegcc64-real; fi
+
+setupfegcc64-real: mk-build-dirfegcc64 buildfegcc64/lndir mklinksfegcc64
+
+mk-build-dirfegcc64:
+	@echo ""
+	@echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow Frontend  Build Directories (GCC64)+"
+	@echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir buildfegcc64
+
+mklinksfegcc64:
+	cd buildfegcc64; ./lndir ../../src
+	-mkdir buildfegcc64/mf
+	cd buildfegcc64/mf; ../lndir ../../../mf
+	cd buildfegcc64; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd buildfegcc64; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd buildfegcc64; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd buildfegcc64; rm -f Makefile.defs; \
+		echo "DSUF=/fegcc" > Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs.fegcc64' >> Makefile.defs
+	-mkdir buildfegcc64/test
+	cd buildfegcc64/test; ../lndir ../../../test
+
+chklinksfegcc64:
+	$(TOPDIR)/config/cleanlinks.sh buildfegcc64
+
+setupbe:
+	@if test ! -d buildbe; then ${MAKE} setupbe-real; fi
+
+setupbe-real: mk-build-dirbe buildbe/lndir mklinksbe
+
+mk-build-dirbe:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow Backend  Build Directories    +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir buildbe
+
+mklinksbe:
+	cd buildbe; ../buildfe/lndir ../../src
+	-mkdir buildbe/mf
+	cd buildbe/mf; ../lndir ../../../mf
+	cd buildbe; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd buildbe; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd buildbe; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd buildbe; rm -f Makefile.defs; \
+		echo "DSUF=/be" > Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs.be' >> Makefile.defs
+	-mkdir buildbe/test
+	cd buildbe/test; ../lndir ../../../test
+
+chklinksbe:
+	$(TOPDIR)/config/cleanlinks.sh buildbe
+
+setupbegcc:
+	@if test ! -d buildbegcc; then ${MAKE} setupbegcc-real; fi
+
+setupbegcc-real: mk-build-dirbegcc buildbegcc/lndir mklinksbegcc
+
+mk-build-dirbegcc:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Initializing Shadow Backend gcc Build Directories +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	-mkdir buildbegcc
+
+mklinksbegcc:
+	cd buildbegcc; ../buildfe/lndir ../../src
+	-mkdir buildbegcc/mf
+	cd buildbegcc/mf; ../lndir ../../../mf
+	cd buildbegcc; rm -f RealMakefile; ln -s ../../mf/RealMakefile .
+	cd buildbegcc; rm -f GNUmakefile; ln -s RealMakefile GNUmakefile
+	cd buildbegcc; rm -f Makefile; \
+		ln -s ../../mf/Makefile.redirect Makefile
+	cd buildbegcc; rm -f Makefile.defs; \
+		echo "DSUF=/begcc" > Makefile.defs; \
+		echo 'include $$(TOPDIR)/../Makefile.defs.begcc' >> Makefile.defs
+	-mkdir buildbegcc/test
+	cd buildbegcc/test; ../lndir ../../../test
+
+chklinksbegcc:
+	$(TOPDIR)/config/cleanlinks.sh buildbegcc
+
+buildfe/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o buildfe/lndir
+
+buildfe64/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o buildfe64/lndir
+
+buildfegcc/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o buildfegcc/lndir
+
+buildfegcc64/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o buildfegcc64/lndir
+
+buildbe/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o buildbe/lndir
+
+buildbegcc/lndir: $(TOPDIR)/config/lndir.c
+	$(CC) $(TOPDIR)/config/lndir.c -o buildbegcc/lndir
+
+realclean:
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Removing Shadow Build Directories                 +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	rm -rf buildfe buildbe
+
+allfe: setupfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building Front-End Version                        +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile all-fe DSUF="/fe"
+
+installfe: allfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Front-End Version                      +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile install-fe DSUF="/fe"
+
+installtestsfe: installfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Front-End Version Tests                +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile installtests-fe DSUF="/fe"
+
+checkinstfe: installtestsfe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Check Installation Front-End                       +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile checkinst-fe DSUF="/fe"
+
+cleanfe: 
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  cleaning Front-End Version                        +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe; $(MAKE) -f RealMakefile clean DSUF="/fe"
+
+allfe64: setupfe64
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building Front-End Version (64)                  +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe64; $(MAKE) -f RealMakefile all-fe64 DSUF="/fe"
+
+installfe64: allfe64
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Front-End Version (64)                +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe64; $(MAKE) -f RealMakefile install-fe64 DSUF="/fe64"
+
+cleanfe64: 
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  cleaning Front-End Version (64)                  +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfe64; $(MAKE) -f RealMakefile clean DSUF="/fe64"
+
+allfegcc: setupfegcc
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building Front-End Version (GCC)                  +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfegcc; $(MAKE) -f RealMakefile all-fegcc DSUF="/fegcc"
+
+installfegcc: allfegcc
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Front-End Version (GCC)                +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfegcc; $(MAKE) -f RealMakefile install-fegcc DSUF="/fegcc"
+
+cleanfegcc: 
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  cleaning Front-End Version (GCC)                  +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfegcc; $(MAKE) -f RealMakefile clean DSUF="/fegcc"
+
+allfegcc64: setupfegcc64
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building Front-End Version (GCC64)                +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfegcc64; $(MAKE) -f RealMakefile all-fegcc64 DSUF="/fegcc64"
+
+installfegcc64: allfegcc64
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Front-End Version (GCC64)              +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfegcc64; $(MAKE) -f RealMakefile install-fegcc64 DSUF="/fegcc64"
+
+cleanfegcc64: 
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  cleaning Front-End Version (GCC64)                +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildfegcc64; $(MAKE) -f RealMakefile clean DSUF="/fegcc64"
+
+allbe: setupbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building Back-End Version                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile all-be DSUF="/be"
+
+installbe: allbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Back-End Version                       +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile install-be DSUF="/be"
+
+installtestsbe: installbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Back-End Version Tests                 +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile installtests-be DSUF="/be"
+
+checkinstbe: installtestsbe
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Check Installation Back-End                       +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile checkinst-be DSUF="/be"
+
+cleanbe: 
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  cleaning Back-End Version                         +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbe; $(MAKE) -f RealMakefile clean DSUF="/be"
+
+
+allbegcc: setupbegcc
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Building Back-End gcc Version                     +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbegcc; $(MAKE) -f RealMakefile all-begcc DSUF="/begcc"
+
+installbegcc: allbegcc
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  Installing Back-End gcc Version                   +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbegcc; $(MAKE) -f RealMakefile install-begcc DSUF="/begcc"
+
+cleanbegcc: 
+	@echo ""
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo "+  cleaning Back-End gcc Version                     +"
+	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	@echo ""
+	cd buildbegcc; $(MAKE) -f RealMakefile clean DSUF="/begcc"
+

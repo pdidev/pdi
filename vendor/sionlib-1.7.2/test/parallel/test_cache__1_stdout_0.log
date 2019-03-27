@@ -1,0 +1,12 @@
+on rank 0 starting Test with SION_CACHESIZE=1048576
+on rank 0: bytes_written=1000
+on rank 0: bwrote=1000 blocksum=   65000 
+on rank 0: END of TEST B write
+on rank 0: sid           =3
+on rank 0: numfiles      =1
+on rank 0: chunksize     =1000
+on rank 0: globalrank    =0
+on rank 0: newfname      =testB.out
+on rank 0: block=0           bytes_avail=1000
+on rank 0: block=0           bread=1000 blocksum=   65000 
+on rank 0: END of TEST B read collective

@@ -1,0 +1,5 @@
+# BGP
+# MPIRUN="mpirun -np 32"
+# OpenMPI on Linux-SMP system
+MPIRUN="@MPITESTRUN@"
+MPIRUNEXECPARM="@MPITESTEXECPARM@"

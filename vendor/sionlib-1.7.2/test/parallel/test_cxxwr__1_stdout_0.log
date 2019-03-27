@@ -1,0 +1,5 @@
+on rank 0: END of TEST A
+on rank 0: read in data: 0
+on rank 0: read in data: 0
+on rank 0: read in data: 2
+on rank 0: END of TEST B

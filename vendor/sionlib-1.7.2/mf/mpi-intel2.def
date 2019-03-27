@@ -1,0 +1,8 @@
+MPIENABLE = 1
+MPICC     = mpicc -cc="$(CC)"
+MPICXX    = mpicxx -cxx="$(CXX)"
+MPIF90    = mpif90 -f90="$(F90)"
+MPIF77    = mpif77 -f77="$(F77)"
+MPILIB    = 
+MPITESTRUN = mpiexec -np 4 -envall
+MPITESTEXECPARM = 

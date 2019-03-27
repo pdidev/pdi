@@ -52,15 +52,18 @@ option(BUILD_PYCALL_PLUGIN                     "Build Pycall plug-in" "${ENABLE_
 option(BUILD_SHARED_LIBS                       "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING                           "Build tests" ON)
 option(ENABLE_FORTRAN                          "Enable Fortran support" ON)
+option(ENABLE_HDF5_PARALLEL                    "Enable HDF5 parallel build" ON)
 option(ENABLE_PYTHON                           "Enable Python support" "${ENABLE_UNSTABLE}")
 
 set(USE_BPP      EMBEDDED         CACHE STRING "version of BPP to use, SYSTEM and EMBEDDED can be used")
 set(USE_FTI      "${USE_DEFAULT}" CACHE STRING "version of FTI to use, SYSTEM and EMBEDDED can be used")
 set(USE_FLOWVR   "${USE_DEFAULT}" CACHE STRING "version of FlowVR to use, SYSTEM and EMBEDDED can be used")
 set(USE_GTEST    EMBEDDED         CACHE STRING "version of Gtest to use, SYSTEM and EMBEDDED can be used")
+set(USE_HDF5 	 "${USE_DEFAULT}" CACHE STRING "version of HDF5 to use, SYSTEM and EMBEDDED can be used")
 set(USE_PARACONF "${USE_DEFAULT}" CACHE STRING "version of paraconf to use, SYSTEM and EMBEDDED can be used")
 set(USE_PYBIND11 "${USE_DEFAULT}" CACHE STRING "version of pybind11 to use, SYSTEM and EMBEDDED can be used")
 set(USE_PYYAML   "${USE_DEFAULT}" CACHE STRING "version of PyYAML to use, SYSTEM and EMBEDDED can be used")
+set(USE_SIONLIB  "${USE_DEFAULT}" CACHE STRING "version of SIONlib to use, SYSTEM and EMBEDDED can be used")
 set(USE_SPDLOG   "${USE_DEFAULT}" CACHE STRING "version of spdlog to use, SYSTEM and EMBEDDED can be used")
 set(USE_YAML     "${USE_DEFAULT}" CACHE STRING "version of yaml to use, SYSTEM and EMBEDDED can be used")
 
@@ -97,6 +100,11 @@ if("${USE_GTEST}" STREQUAL EMBEDDED)
 else()
 	set(GTEST_PATH "${USE_GTEST}")
 endif()
+if("${USE_HDF5}" STREQUAL EMBEDDED)
+	set(HDF5_PATH "${PDISUPER_SOURCE_DIR}/vendor/hdf5-1.10.5")
+else()
+	set(HDF5_PATH "${USE_HDF5}")
+endif()
 if("${USE_PARACONF}" STREQUAL EMBEDDED)
 	set(PARACONF_PATH "${PDISUPER_SOURCE_DIR}/vendor/libparaconf-0.3.0")
 else()
@@ -111,6 +119,11 @@ if("${USE_PYYAML}" STREQUAL EMBEDDED)
 	set(PYYAML_PATH "${PDISUPER_SOURCE_DIR}/vendor/PyYAML-3.13")
 else()
 	set(PYYAML_PATH "${USE_PYYAML}")
+endif()
+if("${USE_SIONLIB}" STREQUAL EMBEDDED)
+	set(SIONLIB_PATH "${PDISUPER_SOURCE_DIR}/vendor/sionlib-1.7.2")
+else()
+	set(SIONLIB_PATH "${USE_SIONLIB}")
 endif()
 if("${USE_SPDLOG}" STREQUAL EMBEDDED)
 	set(SPDLOG_PATH "${PDISUPER_SOURCE_DIR}/vendor/spdlog-1.3.1")
@@ -381,6 +394,20 @@ if("${BUILD_DECL_HDF5_PLUGIN}")
 			DEPENDS PDI)
 	add_testing(DECL_HDF5_PLUGIN)
 	add_indent_step(DECL_HDF5_PLUGIN)
+	if(NOT "${USE_HDF5}" STREQUAL SYSTEM)
+		if("${CMAKE_VERSION}" VERSION_LESS "3.10") 
+			message(FATAL_ERROR "Minimum CMake version to build HDF5 is 3.10. Please update CMake or use system version of HDF5 by adding the flag `-DUSE_HDF5=SYSTEM` to the cmake command line.")
+		endif()
+
+		file(MD5 "${HDF5_PATH}" HASH) #< trick to prevent no-hash warning		
+		ExternalProject_Add(HDF5
+				PREFIX "${PDISUPER_BINARY_DIR}/hdf5"
+				URL "${HDF5_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
+				CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS} "-DHDF5_ENABLE_PARALLEL:BOOL=${ENABLE_HDF5_PARALLEL}" "-DHDF5_BUILD_CPP_LIB:BOOL=OFF" 
+				"-DHDF5_BUILD_EXAMPLES:BOOL=OFF" "-DHDF5_BUILD_HL_LIB:BOOL=OFF" "-DHDF5_BUILD_TOOLS:BOOL=OFF" "-DBUILD_TESTING:BOOL=OFF"
+				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging")
+		add_dependencies(DECL_HDF5_PLUGIN HDF5)
+	endif()
 endif()
 
 if("${BUILD_DECL_SION_PLUGIN}")
@@ -393,6 +420,16 @@ if("${BUILD_DECL_SION_PLUGIN}")
 			DEPENDS PDI)
 	add_testing(DECL_SION_PLUGIN)
 	add_indent_step(DECL_SION_PLUGIN)
+	if(NOT "${USE_SIONLIB}" STREQUAL SYSTEM)
+		file(MD5 "${SIONLIB_PATH}" HASH) #< trick to prevent no-hash warning		
+		ExternalProject_Add(SIONLIB
+				PREFIX "${PDISUPER_BINARY_DIR}/sionlib"
+				URL "${SIONLIB_PATH}" URL_HASH "MD5=${HASH}" EXCLUDE_FROM_ALL 1
+				INSTALL_DIR "${PDISUPER_BINARY_DIR}/staging"
+				BUILD_IN_SOURCE 1
+				CONFIGURE_COMMAND "<SOURCE_DIR>/configure" --prefix="<INSTALL_DIR>" --disable-fortran --disable-parutils --disable-cxx)
+		add_dependencies(DECL_SION_PLUGIN SIONLIB)
+	endif()
 endif()
 
 if("${BUILD_FTI_PLUGIN}")
@@ -458,6 +495,7 @@ if("${BUILD_FLOWVR_PLUGIN}")
 						--install-purelib "<INSTALL_DIR>/${Python2_INSTALL_SITELIBDIR}"
 						--install-platlib "<INSTALL_DIR>/${Python2_INSTALL_SITEARCHDIR}")
 		add_dependencies(FLOWVR_PLUGIN PYYAML2.7)
+		add_dependencies(PYYAML2.7 YAML)
 	endif()
 endif()
 
@@ -518,6 +556,7 @@ if ("${BUILD_CFG_VALIDATOR}")
 						--install-purelib "<INSTALL_DIR>/${PythonPath_INSTALL_SITELIBDIR}"
 						--install-platlib "<INSTALL_DIR>/${PythonPath_INSTALL_SITEARCHDIR}")
 		add_dependencies(PDICFG_VALIDATOR PYYAML)
+		add_dependencies(PYYAML YAML)
 	endif()
 endif()
 

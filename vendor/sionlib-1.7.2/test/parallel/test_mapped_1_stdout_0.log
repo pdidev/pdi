@@ -1,0 +1,81 @@
+on rank 0: starting Test with SION_COLLSIZE=
+on rank 0: END of TEST A write mapped
+on rank 0/( 0 -->  0): bytes_written=500 (500) blocksum=32500
+on rank 0/( 1 -->  4): bytes_written=504 (504) blocksum=32760
+on rank 0/( 2 -->  8): bytes_written=508 (508) blocksum=33020
+on rank 0/( 3 --> 12): bytes_written=512 (512) blocksum=33280
+on rank 0/( 4 --> 16): bytes_written=516 (516) blocksum=33540
+on rank 0/( 0 -->  0): bytes_written=1000 (500) blocksum=32500
+on rank 0/( 1 -->  4): bytes_written=1008 (504) blocksum=32760
+on rank 0/( 2 -->  8): bytes_written=1016 (508) blocksum=33020
+on rank 0/( 3 --> 12): bytes_written=1024 (512) blocksum=33280
+on rank 0/( 4 --> 16): bytes_written=1032 (516) blocksum=33540
+on rank 0: END of TEST B multiple files
+on rank 0/( 0 -->  0): bytes_read=500  blocksum=32500
+on rank 0/( 1 -->  4): bytes_read=504  blocksum=32760
+on rank 0/( 2 -->  8): bytes_read=508  blocksum=33020
+on rank 0/( 3 --> 12): bytes_read=512  blocksum=33280
+on rank 0/( 4 --> 16): bytes_read=516  blocksum=33540
+on rank 0/( 0 -->  0): bytes_read=500  blocksum=32500
+on rank 0/( 1 -->  4): bytes_read=504  blocksum=32760
+on rank 0/( 2 -->  8): bytes_read=508  blocksum=33020
+on rank 0/( 3 --> 12): bytes_read=512  blocksum=33280
+on rank 0/( 4 --> 16): bytes_read=516  blocksum=33540
+on rank 0: END of TEST C multiple files
+on rank 0/( 0 -->  0): bytes_read=500  blocksum=32500
+on rank 0/( 1 -->  1): bytes_read=501  blocksum=33066
+on rank 0/( 2 -->  2): bytes_read=502  blocksum=33634
+on rank 0/( 3 -->  3): bytes_read=503  blocksum=34204
+on rank 0/( 4 -->  4): bytes_read=504  blocksum=32760
+on rank 0/( 5 -->  5): bytes_read=505  blocksum=33330
+on rank 0/( 6 -->  6): bytes_read=506  blocksum=33902
+on rank 0/( 7 -->  7): bytes_read=507  blocksum=34476
+on rank 0/( 0 -->  0): bytes_read=500  blocksum=32500
+on rank 0/( 1 -->  1): bytes_read=501  blocksum=33066
+on rank 0/( 2 -->  2): bytes_read=502  blocksum=33634
+on rank 0/( 3 -->  3): bytes_read=503  blocksum=34204
+on rank 0/( 4 -->  4): bytes_read=504  blocksum=32760
+on rank 0/( 5 -->  5): bytes_read=505  blocksum=33330
+on rank 0/( 6 -->  6): bytes_read=506  blocksum=33902
+on rank 0/( 7 -->  7): bytes_read=507  blocksum=34476
+on rank 0: END of TEST D multiple files
+on rank 0/( 0 -->  0): bytes_read=500  blocksum=32500
+on rank 0/( 1 -->  1): bytes_read=501  blocksum=33066
+on rank 0/( 2 -->  2): bytes_read=502  blocksum=33634
+on rank 0/( 3 -->  3): bytes_read=503  blocksum=34204
+on rank 0/( 4 -->  4): bytes_read=504  blocksum=32760
+on rank 0/( 0 -->  0): bytes_read=500  blocksum=32500
+on rank 0/( 1 -->  1): bytes_read=501  blocksum=33066
+on rank 0/( 2 -->  2): bytes_read=502  blocksum=33634
+on rank 0/( 3 -->  3): bytes_read=503  blocksum=34204
+on rank 0/( 4 -->  4): bytes_read=504  blocksum=32760
+on rank 0: END of TEST D multiple files
+siondump: sid:                       1
+siondump: filename:                  test_mappedB.out              
+siondump: prefix:                    test_mappedB.out              
+siondump: number of tasks:           20
+siondump: filesystem blocksize:      100 bytes (  0.00 MB)
+siondump: file set:                  Yes
+siondump: file number:               0
+siondump: number of files:           3
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           2
+siondump: size of chunks:                               39000 bytes  (    0.04 MB)
+siondump: datasize in file (aggr.):                     20380 bytes  (    0.02 MB)
+siondump: size of full chunks:                           1000 bytes  (    0.00 MB) #      1
+siondump: size of partly filled chunks:                 19380 bytes  (    0.02 MB) #     38
+siondump: size of empty chunks:                          1000 bytes  (    0.00 MB) #      1
+siondump: overhead compared to task-local file:         18620 bytes  (    0.02 MB)
+siondump: file usage (user data/chunk size):        52.256410%
+siondump: fsblocks, size of used blocks:                23800 bytes  (    0.02 MB, 238 blocks)
+siondump: fsblocks, size of fully used blocks:          20000 bytes  (    0.02 MB, 200 blocks)
+siondump: fsblocks, size of partly used blocks:           380 bytes of         3800 bytes (  0.00 MB of   0.00 MB, 38 blocks)
+siondump: fsblocks, used fsblocks/chunk size:        61.025641%
+siondump: fsblocks, user data/used blocks:           85.630252%
+siondump: number of files:           3
+siondump: file   1:                    test_mappedB.out 
+siondump: file   2:                    test_mappedB.out.000001 
+siondump: file   3:                    test_mappedB.out.000002 

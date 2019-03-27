@@ -1,0 +1,8 @@
+sid=sion_open_rank( ... ,&chunksize, rank, &fileptr, ...)   # non-collective
+
+while((!sion_feof(sid))) {                                  # non-collective
+      btoread=sion_bytes_avail_in_block(sid);               # non-collective
+      bread=fread(localbuffer,1,btoread,fileptr);     
+}             
+
+sion_close(sid);                                            # non-collective

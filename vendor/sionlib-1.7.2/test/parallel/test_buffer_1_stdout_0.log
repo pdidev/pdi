@@ -1,0 +1,23 @@
+on rank 0 starting Test with SION_BUFFERSIZE=-1
+on rank 0: bytes_written=100
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=200
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=300
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=400
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=500
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=600
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=700
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=800
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=900
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=1000
+on rank 0: bwrote=100 blocksum=    6500 
+on rank 0: END of TEST B write
+on rank 0: END of TEST B read collective

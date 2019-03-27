@@ -1,0 +1,11 @@
+on rank 0: END of TEST A
+on rank 0: numfiles       =      1 , -1
+on rank 0: chunksize      =      100 , 100
+on rank 0: globalrank     =      0 , 0
+on rank 0: newfname       =      testB.out , testB.out
+on rank 0: END of TEST B
+on rank 0: numfiles       =      4 , 4
+on rank 0: chunksize      =      100 , 100
+on rank 0: globalrank     =      0 , 0
+on rank 0: newfname       =      testC.out , testC.out
+on rank 0: END of TEST C

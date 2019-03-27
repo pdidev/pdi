@@ -1,0 +1,171 @@
+#------------------------------------------------------------------------------
+# Dependencies
+# (automatically generated using 'make depend')
+#------------------------------------------------------------------------------
+
+omp_partest_sionfile.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_platform.h \
+	../lib/sion_printts.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	omp_partest_sionfile.c \
+	ompi_partest.h \
+	partest_opts.h
+ompi_partest.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_platform.h \
+	../lib/sion_printts.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	ompi_partest.c \
+	ompi_partest.h \
+	partest_opts.h
+ompi_partest_sionfile.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_platform.h \
+	../lib/sion_printts.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	ompi_partest.h \
+	ompi_partest_sionfile.c \
+	partest_opts.h
+partest.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_platform.h \
+	../lib/sion_printts.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	partest.c \
+	partest.h \
+	partest_opts.h \
+	partest_split_comm.h \
+	partest_util.h
+partest_mpiio.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_platform.h \
+	../lib/sion_printts.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	partest.h \
+	partest_mpiio.c \
+	partest_opts.h \
+	partest_split_comm.h \
+	partest_util.h
+partest_opts.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	partest.h \
+	partest_opts.c \
+	partest_opts.h \
+	partest_split_comm.h
+partest_sionfile.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_platform.h \
+	../lib/sion_printts.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	partest.h \
+	partest_opts.h \
+	partest_sionfile.c \
+	partest_split_comm.h \
+	partest_util.h
+partest_split_comm.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	partest_opts.h \
+	partest_split_comm.c \
+	partest_split_comm.h \
+	partest_util.h
+partest_tasklocalfile.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_debug.h \
+	../lib/sion_file.h \
+	../lib/sion_platform.h \
+	../lib/sion_printts.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	partest.h \
+	partest_opts.h \
+	partest_split_comm.h \
+	partest_tasklocalfile.c \
+	partest_util.h
+partest_util.o: \
+	../lib/sion.h \
+	../lib/sion_common.h \
+	../lib/sion_const.h \
+	../lib/sion_datatypes.h \
+	../lib/sion_platform.h \
+	../lib/sion_serial.h \
+	../parlib/sion_datatypes_mpi.h \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	partest_opts.h \
+	partest_split_comm.h \
+	partest_util.c \
+	partest_util.h

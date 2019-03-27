@@ -1,0 +1,45 @@
+on MPI rank      0, OMP thread      0: nthreads=     2
+on MPI rank      0, OMP thread      0: wrote=  1000
+on MPI rank      0, OMP thread      0: read=   1000
+on MPI rank      0, OMP thread      0: sum=    1111010.98633
+on MPI rank      0, OMP thread      0: nfiles=       1
+on MPI rank      0, OMP thread      0: chunksize= 2000000
+on MPI rank      0, OMP thread      0: fsblksize= 1000000
+siondump: sid:                       0
+siondump: filename:                  testB.out                     
+siondump: prefix:                    testB.out                     
+siondump: number of tasks:           8
+siondump: filesystem blocksize:      1000000 bytes (  0.95 MB)
+siondump: file set:                  No
+siondump: file number:               0
+siondump: number of files:           1
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           1
+siondump: size of chunks:                            16000000 bytes  (   15.26 MB)
+siondump: datasize in file (aggr.):                     64000 bytes  (    0.06 MB)
+siondump: size of full chunks:                              0 bytes  (    0.00 MB) #      0
+siondump: size of partly filled chunks:                 64000 bytes  (    0.06 MB) #      8
+siondump: size of empty chunks:                             0 bytes  (    0.00 MB) #      0
+siondump: overhead compared to task-local file:      15936000 bytes  (   15.20 MB)
+siondump: file usage (user data/chunk size):         0.400000%
+siondump: fsblocks, size of used blocks:              8000000 bytes  (    7.63 MB, 8 blocks)
+siondump: fsblocks, size of fully used blocks:              0 bytes  (    0.00 MB, 0 blocks)
+siondump: fsblocks, size of partly used blocks:         64000 bytes of      8000000 bytes (  0.06 MB of   7.63 MB, 8 blocks)
+siondump: fsblocks, used fsblocks/chunk size:        50.000000%
+siondump: fsblocks, user data/used blocks:            0.800000%
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                      BLK000    
+Task 00: size=      8000 B glblrnk=   0 #blks= 1 lsz=   2000000 B:      8000 
+Task 01: size=      8000 B glblrnk=   1 #blks= 1 lsz=   2000000 B:      8000 
+Task 02: size=      8000 B glblrnk=   2 #blks= 1 lsz=   2000000 B:      8000 
+Task 03: size=      8000 B glblrnk=   3 #blks= 1 lsz=   2000000 B:      8000 
+Task 04: size=      8000 B glblrnk=   4 #blks= 1 lsz=   2000000 B:      8000 
+Task 05: size=      8000 B glblrnk=   5 #blks= 1 lsz=   2000000 B:      8000 
+Task 06: size=      8000 B glblrnk=   6 #blks= 1 lsz=   2000000 B:      8000 
+Task 07: size=      8000 B glblrnk=   7 #blks= 1 lsz=   2000000 B:      8000 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------

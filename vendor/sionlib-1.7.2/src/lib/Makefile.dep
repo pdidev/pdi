@@ -1,0 +1,560 @@
+#------------------------------------------------------------------------------
+# Dependencies
+# (automatically generated using 'make depend')
+#------------------------------------------------------------------------------
+
+sion_buffer.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_buffer.c \
+	sion_buffer.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_serial.h
+sion_cache.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_cache.c \
+	sion_cache.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_serial.h
+sion_common.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_buffer.h \
+	sion_common.c \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_dup.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_hints.h \
+	sion_internal.h \
+	sion_internal_seek.h \
+	sion_internal_startptr.h \
+	sion_lock.h \
+	sion_metadata.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h \
+	sion_tools.h
+sion_convert.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_convert.c \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_platform.h \
+	sion_serial.h
+sion_debug.o: \
+	sion_debug.c \
+	sion_debug.h \
+	sion_lock.h
+sion_dup.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_buffer.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_dup.c \
+	sion_dup.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_keyvalue.h \
+	sion_metadata.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h
+sion_fd.o: \
+	sion_fd.c \
+	sion_fd.h \
+	sion_lock.h
+sion_file.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.c \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_serial.h
+sion_filedesc.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.c \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_keyvalue_keymngr.h \
+	sion_keyvalue_table.h \
+	sion_platform.h \
+	sion_serial.h
+sion_hints.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_hints.c \
+	sion_hints.h \
+	sion_hints_gpfs.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_serial.h
+sion_hints_gpfs.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_hints_gpfs.c \
+	sion_hints_gpfs.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_serial.h
+sion_hints_linux.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_hints_linux.c \
+	sion_hints_linux.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_serial.h
+sion_internal.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_buffer.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_hints.h \
+	sion_internal.c \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_keyvalue.h \
+	sion_metadata.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h \
+	sion_tools.h
+sion_internal_collstat.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_collstat.c \
+	sion_internal_collstat.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_serial.h
+sion_internal_seek.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_buffer.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_seek.c \
+	sion_internal_seek.h \
+	sion_internal_startptr.h \
+	sion_metadata.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h
+sion_internal_startptr.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_hints.h \
+	sion_internal.h \
+	sion_internal_collstat.h \
+	sion_internal_startptr.c \
+	sion_internal_startptr.h \
+	sion_metadata.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h \
+	sion_tools.h
+sion_keyvalue.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_seek.h \
+	sion_internal_startptr.h \
+	sion_keyvalue.c \
+	sion_keyvalue.h \
+	sion_keyvalue_inline.h \
+	sion_metadata.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h \
+	sion_tools.h
+sion_keyvalue_inline.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_seek.h \
+	sion_internal_startptr.h \
+	sion_keyvalue.h \
+	sion_keyvalue_inline.c \
+	sion_keyvalue_inline.h \
+	sion_keyvalue_keymngr.h \
+	sion_keyvalue_table.h \
+	sion_metadata.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h \
+	sion_tools.h
+sion_keyvalue_keymngr.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_keyvalue_keymngr.c \
+	sion_keyvalue_keymngr.h \
+	sion_keyvalue_table.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h
+sion_keyvalue_table.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_keyvalue_table.c \
+	sion_keyvalue_table.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h
+sion_lock.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_lock.c \
+	sion_lock.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h
+sion_metadata.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_metadata.c \
+	sion_metadata.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.h
+sion_printts.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_platform.h \
+	sion_printts.c \
+	sion_printts.h \
+	sion_serial.h
+sion_serial.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_printts.h \
+	sion_serial.c \
+	sion_serial.h
+sion_tools.o: \
+	../cppinterface/sion_cxx_base.hpp \
+	../cppinterface/sion_cxx_common.hpp \
+	../cppinterface/sion_cxx_mpi.hpp \
+	../cppinterface/sion_cxx_ompi.hpp \
+	../parlib/sion_generic.h \
+	../parlib/sion_mpi.h \
+	../parlib/sion_ompi.h \
+	sion.h \
+	sion_common.h \
+	sion_const.h \
+	sion_cxx.h \
+	sion_datatypes.h \
+	sion_debug.h \
+	sion_fd.h \
+	sion_file.h \
+	sion_filedesc.h \
+	sion_internal.h \
+	sion_internal_startptr.h \
+	sion_platform.h \
+	sion_serial.h \
+	sion_tools.c \
+	sion_tools.h

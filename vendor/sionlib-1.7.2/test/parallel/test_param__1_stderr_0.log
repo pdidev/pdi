@@ -1,0 +1,2 @@
+SION_ERROR_RETURN on rank 0, rc=-1: sion_paropen_mpi: No lComm variable given
+SION_ERROR_RETURN on rank 0, rc=-1: sion_paropen_mpi: No numFiles variable given

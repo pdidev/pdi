@@ -1,0 +1,9 @@
+MPIENABLE = 1
+MPICC     = mpiicc
+MPICXX    = mpiicpc
+MPIF77    = mpiifort
+MPIF90    = mpiifort 
+MPILIB    = 
+
+MPITESTRUN = poe
+MPITESTEXECPARM = -procs 4 -nodes 1

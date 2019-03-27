@@ -1,0 +1,45 @@
+
+  ===============================
+  Calculations of mandelbrot set.
+  ===============================
+  Converting mandelbrot.sion to mandelbrot.ppm 
+
+  Converting points from task      0
+  File created with      4 tasks
+  ppmtype: P3
+  xmaxpoints:     80
+  ymaxpoints:     80
+  colorlimit:      1
+  Reading data from task      0
+  Reading data from task      1
+  Reading data from task      2
+  Reading data from task      3
+siondump: sid:                       0
+siondump: filename:                  test_Fsropn_1.sion            
+siondump: prefix:                    mandelbrot.sion               
+siondump: number of tasks:           4
+siondump: filesystem blocksize:      1000 bytes (  0.00 MB)
+siondump: file set:                  No
+siondump: file number:               0
+siondump: number of files:           1
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           1
+siondump: size of chunks:                               40000 bytes  (    0.04 MB)
+siondump: datasize in file (aggr.):                     38414 bytes  (    0.04 MB)
+siondump: size of full chunks:                              0 bytes  (    0.00 MB) #      0
+siondump: size of partly filled chunks:                 38414 bytes  (    0.04 MB) #      4
+siondump: size of empty chunks:                             0 bytes  (    0.00 MB) #      0
+siondump: overhead compared to task-local file:          1586 bytes  (    0.00 MB)
+siondump: file usage (user data/chunk size):        96.035000%
+siondump: fsblocks, size of used blocks:                40000 bytes  (    0.04 MB, 40 blocks)
+siondump: fsblocks, size of fully used blocks:          36000 bytes  (    0.03 MB, 36 blocks)
+siondump: fsblocks, size of partly used blocks:          2414 bytes of         4000 bytes (  0.00 MB of   0.00 MB, 4 blocks)
+siondump: fsblocks, used fsblocks/chunk size:       100.000000%
+siondump: fsblocks, user data/used blocks:           96.035000%
+Task 00: size=      9614 B glblrnk=   0 #blks= 1 lsz=     10000 B:      9614 
+Task 01: size=      9600 B glblrnk=   1 #blks= 1 lsz=     10000 B:      9600 
+Task 02: size=      9600 B glblrnk=   2 #blks= 1 lsz=     10000 B:      9600 
+Task 03: size=      9600 B glblrnk=   3 #blks= 1 lsz=     10000 B:      9600 

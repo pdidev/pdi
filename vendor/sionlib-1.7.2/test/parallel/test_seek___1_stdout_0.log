@@ -1,0 +1,23 @@
+on rank 0: END of TEST A empty file
+on rank 0: bytes_written=1000
+on rank 0: bytes_written=1332
+on rank 0: bytes_written=1844
+on rank 0: bytes_written=1884
+on rank 0: END of TEST A small file with different chunks
+on rank 0: currentchunknr=0
+on rank 0: currentpos    =0
+on rank 0: maxchunks     =2
+on rank 0: chunksize[0] = 1000
+on rank 0: chunksize[1] = 884
+on rank 0: bytes_read=200
+on rank 0: bytes_read=1076 read=This is a small test for seek!
+on rank 0: bytes_read=1276
+on rank 0: bytes_read=1076 read=This is a small test for seek!
+on rank 0: bytes_read=1060 read=small test
+on rank 0: END of TEST B
+on rank 0: bytes_read=200
+on rank 0: bytes_read=1076 read=This is a small test for seek! (absolute)
+on rank 0: bytes_read=1276
+on rank 0: bytes_read=1076 read=This is a small test for seek! (absolute)
+on rank 0: bytes_read=1060 read=small test (absolute)
+on rank 0: END of TEST C

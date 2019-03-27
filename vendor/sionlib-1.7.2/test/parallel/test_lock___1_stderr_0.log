@@ -1,0 +1,5 @@
+on OMP thread 0: user callbacks defined: rc=0
+on OMP thread 0: user callbacks defined: rc=1
+on OMP thread 0: ensure_free_space (100) rc = 1
+on OMP thread 0: ensure_free_space (50) rc = 1
+on OMP thread 0: ensure_free_space (100) rc = 1

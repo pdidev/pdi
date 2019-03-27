@@ -1,0 +1,41 @@
+MKDIR = $(TOPDIR)/../config/mkinstalldirs
+INSTALL = $(TOPDIR)/../config/install-sh
+
+# for SIONlib: all installed files have different names
+
+#BINDIR = ${PREFIX}/bin$(DSUF)
+#LIBDIR = ${PREFIX}/lib$(DSUF)
+#INCDIR = ${PREFIX}/include$(DSUF)
+
+BINDIR = ${PREFIX}/bin
+LIBDIR = ${PREFIX}/lib
+INCDIR = ${PREFIX}/include
+TESTDIR = ${PREFIX}/tests
+
+DOCDIR = ${PREFIX}/doc
+
+#NOSRC = -nosrc
+
+C_AR = $(SX)ar
+
+# for cube makefile compatibility
+CCC       = $(CC)
+CCFLAGS   = $(PFLAG) $(CFLAGS)
+CCXX      = $(ECXX)
+CCXXFLAGS = $(CXXFLAGS)
+CCXXLIBS  = $(ECXXLIBS)
+CLDFLAGS  = $(SFLAG) $(LDFLAGS)
+AR        = $(ECXX_AR)
+ARFLAGS   = $(AFLAG) $(ECXX_ARFLAGS)
+CUBEVER   = 3.0
+
+
+ifeq ($(MPIENABLE),1)
+	MPIMFLAG = -DSION_MPI
+endif
+ifeq ($(OMPENABLE),1)
+	OMPMFLAG = -DSION_OMP
+endif
+ifeq ($(HYBENABLE),1)
+	HYBMFLAG = -DSION_OMPI
+endif

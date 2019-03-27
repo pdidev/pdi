@@ -1,0 +1,36 @@
+TEST A: wrote=      1000
+TEST A: read =      1000
+TEST A: same endianness
+TEST A: sum=    1111000.00000
+TEST A: nfiles=          1
+TEST A: chunksizes=    8000    8000
+TEST A: fsblksize=    1000
+siondump: sid:                       0
+siondump: filename:                  testA.out                     
+siondump: prefix:                    testA.out                     
+siondump: number of tasks:           4
+siondump: filesystem blocksize:      1000 bytes (  0.00 MB)
+siondump: file set:                  No
+siondump: file number:               1
+siondump: number of files:           1
+siondump: flag1:                     214748364800 (50+0)
+siondump: flag2:                     0
+siondump: keyval:                    50 (SION_KEYVAL_NONE)
+siondump: file format version:       5
+siondump: number of blocks:           1
+siondump: size of chunks:                               32000 bytes  (    0.03 MB)
+siondump: datasize in file (aggr.):                      8000 bytes  (    0.01 MB)
+siondump: size of full chunks:                           8000 bytes  (    0.01 MB) #      1
+siondump: size of partly filled chunks:                     0 bytes  (    0.00 MB) #      0
+siondump: size of empty chunks:                         24000 bytes  (    0.02 MB) #      3
+siondump: overhead compared to task-local file:         24000 bytes  (    0.02 MB)
+siondump: file usage (user data/chunk size):        25.000000%
+siondump: fsblocks, size of used blocks:                 8000 bytes  (    0.01 MB, 8 blocks)
+siondump: fsblocks, size of fully used blocks:           8000 bytes  (    0.01 MB, 8 blocks)
+siondump: fsblocks, size of partly used blocks:             0 bytes of            0 bytes (  0.00 MB of   0.00 MB, 0 blocks)
+siondump: fsblocks, used fsblocks/chunk size:        25.000000%
+siondump: fsblocks, user data/used blocks:          100.000000%
+Task 00: size=      8000 B glblrnk=   1 #blks= 1 lsz=      8000 B:      8000 
+Task 01: size=         0 B glblrnk=   2 #blks= 1 lsz=      8000 B:         0 
+Task 02: size=         0 B glblrnk=   3 #blks= 1 lsz=      8000 B:         0 
+Task 03: size=         0 B glblrnk=   4 #blks= 1 lsz=      8000 B:         0 

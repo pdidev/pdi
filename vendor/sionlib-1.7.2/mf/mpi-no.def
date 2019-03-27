@@ -1,0 +1,6 @@
+MPIENABLE = 0
+MPICC     = $(CC)
+MPICXX    = $(CXX)
+MPIF90    = $(F90)
+MPILIB    = 
+MPITESTRUN = 

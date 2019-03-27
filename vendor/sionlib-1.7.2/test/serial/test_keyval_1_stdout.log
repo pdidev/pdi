@@ -1,0 +1,60 @@
+on rank 0: bytes_written=480 blocksum=16080
+on rank 1: bytes_written=480 blocksum=17280
+on rank 2: bytes_written=480 blocksum=18480
+on rank 3: bytes_written=480 blocksum=19680
+on rank 0: seek to task
+on rank 0: end of data for key 4711 
+on rank 0: end of data for key 4712 
+on rank 0: end of data for key 4713 
+on rank 0: end of data for key 4714 
+on rank 0: end of data for key 4715 
+on rank 0: blocksum=16080
+on rank 1: seek to task
+on rank 1: end of data for key 4716 
+on rank 1: end of data for key 4717 
+on rank 1: end of data for key 4718 
+on rank 1: end of data for key 4719 
+on rank 1: end of data for key 4720 
+on rank 1: blocksum=17280
+on rank 2: seek to task
+on rank 2: end of data for key 4721 
+on rank 2: end of data for key 4722 
+on rank 2: end of data for key 4723 
+on rank 2: end of data for key 4724 
+on rank 2: end of data for key 4725 
+on rank 2: blocksum=18480
+on rank 3: seek to task
+on rank 3: end of data for key 4726 
+on rank 3: end of data for key 4727 
+on rank 3: end of data for key 4728 
+on rank 3: end of data for key 4729 
+on rank 3: end of data for key 4730 
+on rank 3: blocksum=19680
+on rank 0: bytes_written=480 blocksum=16080
+on rank 1: bytes_written=480 blocksum=17280
+on rank 2: bytes_written=480 blocksum=18480
+on rank 3: bytes_written=480 blocksum=19680
+on rank 0: end of data for key 4711 
+on rank 0: end of data for key 4712 
+on rank 0: end of data for key 4713 
+on rank 0: end of data for key 4714 
+on rank 0: end of data for key 4715 
+on rank 0: blocksum=16080
+on rank 1: end of data for key 4711 
+on rank 1: end of data for key 4712 
+on rank 1: end of data for key 4713 
+on rank 1: end of data for key 4714 
+on rank 1: end of data for key 4715 
+on rank 1: blocksum=17280
+on rank 2: end of data for key 4711 
+on rank 2: end of data for key 4712 
+on rank 2: end of data for key 4713 
+on rank 2: end of data for key 4714 
+on rank 2: end of data for key 4715 
+on rank 2: blocksum=18480
+on rank 3: end of data for key 4711 
+on rank 3: end of data for key 4712 
+on rank 3: end of data for key 4713 
+on rank 3: end of data for key 4714 
+on rank 3: end of data for key 4715 
+on rank 3: blocksum=19680

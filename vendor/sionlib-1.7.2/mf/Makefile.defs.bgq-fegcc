@@ -1,0 +1,141 @@
+#------------------------------------------------------------------------------
+# SIONlib Makefile Definitions (Makefile.defs.bgq-fegcc)
+#------------------------------------------------------------------------------
+
+CFGKEY = bgq
+CONFIG = IBM BlueGene/P
+
+PREFIX = $(TOPDIR)/../../install/sionlib_bgq
+
+#------------------------------------------------------------------------------
+# Platform Settings
+#------------------------------------------------------------------------------
+# don't let it overwrite from configure (multi-platform)
+BGPREC   = 32
+PREC     = ${BGPREC}  
+PFLAG  =
+AFLAG  =
+
+PLAT     = generic
+MACHINE  = -DMACHINE=\"IBM\ BG/Q\"
+PLAT_LDIR   = -DPFORM_LDIR=\".\"
+PLAT_CONF= $(MACHINE) $(PLAT_LDIR)
+PLATCC   = gcc -m$(BGPREC)
+LARGEFILE=-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -D__USE_LARGEFILE64 -D__USE_FILE_OFFSET64
+
+#------------------------------------------------------------------------------
+# SIONlib General Settings
+#------------------------------------------------------------------------------
+OPTFLAGS = -g
+CC       = gcc -m$(BGPREC)
+CFLAGS   = -std=c99 $(OPTFLAGS) $(LARGEFILE)
+CXX      = g++ -m$(BGPREC)
+CXXFLAGS = $(OPTFLAGS) -O3 $(LARGEFILE)
+F77      = gfortran -m$(BGPREC)
+F90      = gfortran -m$(BGPREC)
+FFLAGS   = $(OPTFLAGS) 
+FPP      =
+FDOPT    = -WF,-D
+LDFLAGS  = $(OPTFLAGS)  
+UTILLIB  =
+
+#------------------------------------------------------------------------------
+# SIONlib Settings
+#------------------------------------------------------------------------------
+SION_PLATFORM    = -D_SION_LINUX 
+ARCH             = LINUX
+
+# Library Naming Scheme: see Makefile.defs.linux-gomp
+SION_LIBNAME_COM = sioncomfegcc_$(BGPREC)
+SION_LIBNAME_SER = sionserfegcc_$(BGPREC)
+SION_LIBNAME_GEN = siongenfegcc_$(BGPREC)
+SION_LIBNAME_OMP     = sionompfegcc_$(BGPREC)
+SION_LIBNAME_MPI     = sionmpifegcc_$(BGPREC)
+SION_LIBNAME_OMPI    = sionompifegcc_$(BGPREC)
+
+PARUTILENABLE    = 1
+
+FORTRANENABLE    = 1
+FORTRANNAMES     = -D_FORTRANUNDERSCORE
+SION_LIBNAME_F77_SER = sionserfegcc_f77_$(BGPREC)
+SION_LIBNAME_F77_MPI = sionmpifegcc_f77_$(BGPREC)
+SION_LIBNAME_F90_SER = sionserfegcc_f90_$(BGPREC)
+SION_LIBNAME_F90_MPI = sionmpifegcc_f90_$(BGPREC)
+SION_MODPATH = modfegcc_$(BGPREC)
+
+CXXENABLE            = 1
+SION_LIBNAME_CXX_SER = sionserfegcc_cxx_$(BGPREC)
+SION_LIBNAME_CXX_MPI = sionmpifegcc_cxx_$(BGPREC)
+
+PYTHONENABLE    = 0
+
+SION_DEBUG       = 
+
+#------------------------------------------------------------------------------
+# MPI Settings
+#------------------------------------------------------------------------------
+
+MPIENABLE = 0
+
+#------------------------------------------------------------------------------
+# OpenMP Settings
+#------------------------------------------------------------------------------
+
+OMPENABLE = 0
+
+#------------------------------------------------------------------------------
+# Hybrid MPI/OpenMP Settings
+#------------------------------------------------------------------------------
+
+HYBENABLE  = 0
+
+
+#------------------------------------------------------------------------------
+# Compression Support
+#------------------------------------------------------------------------------
+
+SZLIB          = szlib
+SZLIB_OPTFLAGS = -O3
+SZLIB_CFLAGS   = -I$(TOPDIR)/utils/szlib -DELG_COMPRESSED -DCUBE_COMPRESSED
+SZLIB_LIBPATH  = -L$(TOPDIR)/utils/szlib
+SZLIB_LIB      = -lsc.z
+
+#------------------------------------------------------------------------------
+# MPI Settings
+#------------------------------------------------------------------------------
+
+MPIENABLE = 0
+
+#------------------------------------------------------------------------------
+# OpenMP Settings
+#------------------------------------------------------------------------------
+
+OMPENABLE = 0
+
+#------------------------------------------------------------------------------
+# Hybrid MPI/OpenMP Settings
+#------------------------------------------------------------------------------
+
+HYBENABLE  = 0
+
+#------------------------------------------------------------------------------
+# SIONlib HINTS library
+#------------------------------------------------------------------------------
+GPFS_HINTS_LIB  = -L/usr/lpp/mmfs/lib -lgpfs
+GPFS_HINTS_INC  = -I/usr/lpp/mmfs/include
+LINUX_HINTS_LIB = -L/usr/lib
+LINUX_HINTS_INC = -I/usr/include
+
+HINTSDEF=
+HINTSINC=
+HINTSLIB=
+
+
+#------------------------------------------------------------------------------
+# SIONlib Cache Settings
+#------------------------------------------------------------------------------
+
+CACHEFLAGS=
+CACHELIB=
+#CACHEFLAGS=-D_SION_CACHE
+#CACHELIB=-lrt

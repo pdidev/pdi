@@ -1,0 +1,37 @@
+/*!
+
+\ref further_docs_refs
+
+\page further_docs_refs Further Documentation and References
+
+- Frings, W.; Wolf, F.; Petkov, V. (2009),\n
+  <A HREF="http://scyourway.supercomputing.org/conference/view/pap172">Scalable Massively Parallel I/O to Task-Local Files</A>,
+  <A HREF="http://apps.fz-juelich.de/jsc-pubsystem/pub-webpages/general/get_attach.php?pubid=115">PDF</A>,\n
+  Proceedings of the Conference on High Performance Computing Networking, Storage and Analysis,\n
+  Portland, Oregon, November 14 - 20, 2009, SC'09, SESSION: Technical papers, Article No. 17,
+  New York, ACM, 2009.ISBN 978-1-60558-744-8. - S. 1 - 11,\n
+  DOI: <a href="http://dx.doi.org/10.1145/1654059.1654077">10.1145/1654059.1654077</a>
+
+- Frings, W.; Hennecke, M. (2011),\n
+  A system level view of Petascale I/O on IBM Blue Gene/P,\n
+  Computer Science - Research and Development, 26 (2011) 3-4, 275-283\n
+  DOI: <A HREF="http://dx.doi.org/10.1007/s00450-011-0154-4">10.1007/s00450-011-0154-4</A>
+
+- <A HREF="http://apps.fz-juelich.de/jsc/sionlib/html/sionlib_tutorial_2017.pdf">SIONlib: Tutorial Slides, PDF</A> (March 17)
+
+- Freche, J.; Frings, W.; Sutmann, G.  (2010),\n
+  High Throughput Parallel-I/O using SIONlib for Mesoscopic Particle Dynamics Simulations on Massively Parallel Computers,\n
+  Parallel Computing: From Multicores and GPU's to Petascale,\n
+  ed.: B. Chapman, F. Desprez, G.R. Joubert, A. Lichnewsky, F. Peters and T. Priol,\n
+  Amsterdam, IOS Press, 2010. Advances in Parallel Computing Volume 19. - 978-1-60750-529-7. - S. 371 - 378,\n
+  DOI: <a href="http://dx.doi.org/10.3233/978-1-60750-530-3-371">10.3233/978-1-60750-530-3-371</a>
+
+- <A HREF="http://www.fz-juelich.de/jsc/docs/autoren2008/bolten2">SIONlib -
+  Scalable I/O library for Native Parallel Access to Binary Files</A>,\n
+  Technical Report FZJ-JSC-IB-2008-07, Reports of Guest Student Program 2008, page 93
+
+- <A HREF="http://apps.fz-juelich.de/jsc/sionlib/html/9_Poster_sionlib_130109_neu.pdf">SIONlib: Scalable parallel I/O
+  for task-local files, PDF</A>
+  Poster/Flyer (January 09)
+
+*/

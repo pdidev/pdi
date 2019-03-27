@@ -1,0 +1,417 @@
+#------------------------------------------------------------------------------
+# General Settings
+#------------------------------------------------------------------------------
+
+SHELL  = /bin/sh
+TOPDIR = .
+
+include Makefile.defs
+include mf/common.defs
+
+.NOTPARALLEL:
+
+.PHONY: all all-64 all-fe all-be all- \
+        all-utils all-parutils all-libs all-parlibs \
+        all-test all-test-ser all-test-par \
+        install install-64 install-fe install-be install-  \
+        install-utils install-parutils install-libs install-parlibs install-examples \
+        install-config clean \
+	test test-fe test-be test-32 test-64 test-ser test-par coverage-summary \
+	targets-endmarker
+
+
+#------------------------------------------------------------------------------
+# Rules
+#------------------------------------------------------------------------------
+
+all: all-libs all-parlibs all-utils all-parutils all-cppinterface all-fortraninterface \
+     all-pythoninterface targets-endmarker
+
+all-64: all-libs all-parlibs all-utils all-parutils all-cppinterface all-fortraninterface \
+        all-pythoninterface targets-endmarker
+
+all-fe: all-libs all-parlibs all-utils  $(EXTRA_BUILD_TARGETS) all-cppinterface all-fortraninterface \
+        all-pythoninterface targets-endmarker
+
+all-fe64: all-libs all-parlibs all-utils all-cppinterface all-fortraninterface \
+          all-pythoninterface targets-endmarker
+
+all-fegcc: all-libs all-parlibs all-utils all-cppinterface all-fortraninterface \
+           all-pythoninterface targets-endmarker
+
+all-fegcc64: all-libs all-parlibs all-utils all-cppinterface all-fortraninterface \
+           all-pythoninterface targets-endmarker
+
+all-be: all-parlibs all-parutils all-cppinterface all-fortraninterface \
+        all-pythoninterface targets-endmarker
+
+all-begcc: all-parlibs all-parutils all-cppinterface all-fortraninterface \
+        all-pythoninterface targets-endmarker
+
+all-utils: all-libs
+	@echo "++++++++++ UTILS ++++++++++++++++++++++++++++++"
+	@if test -d utils; then (cd utils; $(MAKE) all ); fi
+
+all-parutils: all-parlibs all-cppinterface all-fortraninterface all-pythoninterface
+ifeq ($(PARUTILENABLE),1)
+	@echo "++++++++++ PARUTILS +++++++++++++++++++++++++++"
+	@if test -d parutils; then (cd parutils; $(MAKE) all ); fi
+endif
+
+all-libs:
+	@echo "++++++++++ LIBS +++++++++++++++++++++++++++++++"
+	@if test -d lib; then ( cd lib; $(MAKE) all ); fi
+
+all-parlibs: all-libs
+	@echo "++++++++++ PARLIBS ++++++++++++++++++++++++++++"
+	@if test -d parlib; then ( cd parlib; $(MAKE) all ); fi
+
+all-cppinterface: all-parlibs
+ifeq ($(CXXENABLE),1)
+	@echo "++++++++++ CPPINTERFACE +++++++++++++++++++++++"
+	@if test -d cppinterface; then ( cd cppinterface; $(MAKE) all ); fi
+endif
+
+all-fortraninterface: all-parlibs
+ifeq ($(FORTRANENABLE),1)
+	@echo "++++++++++ FORTRANINTERFACE +++++++++++++++++++"
+	@if test -d fortraninterface; then ( cd fortraninterface; $(MAKE) all ); fi
+endif
+
+all-pythoninterface: all-parlibs
+ifeq ($(PYTHONENABLE),1)
+	@echo "++++++++++ PYTHONINTERFACE ++++++++++++++++++++"
+	@if test -d pythoninterface; then ( cd pythoninterface; $(MAKE) all ); fi
+endif
+
+
+all-test: all-test-ser all-test-par \
+        targets-endmarker
+
+all-test-ser: all-libs
+	@echo "++++++++++ Test Serial ++++++++++++++++++++++++"
+	@if test -d test/serial; then ( cd test/serial; $(MAKE) all ); fi
+
+all-test-par: all-parlibs
+	@echo "++++++++++ Test Parallel ++++++++++++++++++++++"
+	@if test -d test/parallel; then ( cd test/parallel; $(MAKE) all ); fi
+
+all-packtest: all-packtest-ser all-packtest-par \
+        targets-endmarker
+
+all-packtest-ser: 
+	@echo "++++++++++ Packtest Serial ++++++++++++++++++++"
+	@if test -d test/serial; then ( cd test/serial; $(MAKE) all ); fi
+
+all-packtest-par: 
+	@echo "++++++++++ Packtest Parallel ++++++++++++++++++"
+	@if test -d test/parallel; then ( cd test/parallel; $(MAKE) all ); fi
+
+
+all-:
+
+
+install: install-path install-libs install-parlibs install-utils install-parutils  \
+         install-config install-examples install-cppinterface install-fortraninterface \
+         install-pythoninterface targets-endmarker
+
+installtests: install-sertests install-partests targets-endmarker
+
+checkinst: checkinst-sertests checkinst-partests targets-endmarker
+
+install-64: install-path install-libs install-parlibs install-utils install-parutils \
+	    install-config install-examples install-cppinterface install-fortraninterface \
+            install-pythoninterface targets-endmarker
+
+installtests-64: install-sertests install-partests targets-endmarker
+
+checkinst-64: checkinst-sertests checkinst-partests targets-endmarker
+
+
+install-fe: install-path install-libs install-parlibs install-utils \
+	    $(EXTRA_INSTALL_TARGETS) \
+	    install-examples install-cppinterface install-fortraninterface \
+            install-pythoninterface targets-endmarker
+
+installtests-fe: install-sertests targets-endmarker
+
+checkinst-fe: checkinst-sertests targets-endmarker
+
+
+install-fe64: install-path install-libs install-parlibs install-cppinterface install-fortraninterface \
+	      install-pythoninterface targets-endmarker
+
+installtests-fe64: install-sertests targets-endmarker
+
+checkinst-fe64: checkinst-sertests targets-endmarker
+
+
+install-fegcc: install-path install-libs install-parlibs install-cppinterface install-fortraninterface  \
+	       install-pythoninterface targets-endmarker
+
+installtests-fegcc: install-sertests targets-endmarker
+
+checkinst-fegcc: checkinst-sertests targets-endmarker
+
+
+install-fegcc64: install-path install-libs install-parlibs install-cppinterface install-fortraninterface \
+	       install-pythoninterface targets-endmarker
+
+installtests-fegcc64: install-sertests targets-endmarker
+
+
+install-be: install-path install-libs install-parlibs install-parutils \
+	    install-config install-cppinterface install-fortraninterface \
+            install-pythoninterface targets-endmarker
+
+installtests-be: install-partests targets-endmarker
+
+checkinst-be: checkinst-partests targets-endmarker
+
+
+install-begcc: install-path install-libs install-parlibs \
+	    install-config install-cppinterface install-fortraninterface \
+            install-pythoninterface targets-endmarker
+
+installtests-begcc: install-partests targets-endmarker
+
+checkinst-begcc: checkinst-partests targets-endmarker
+
+install-utils:
+	@if test -d utils; then ( cd utils; $(MAKE) install ); fi
+
+install-parutils:
+ifeq ($(PARUTILENABLE),1)
+	@if test -d parutils; then ( cd parutils; $(MAKE) install ); fi
+endif
+
+install-cppinterface:
+ifeq ($(CXXENABLE),1)
+	@if test -d cppinterface; then ( cd cppinterface; $(MAKE) install ); fi
+endif
+
+install-fortraninterface:
+ifeq ($(FORTRANENABLE),1)
+	@if test -d fortraninterface; then ( cd fortraninterface; $(MAKE) install ); fi
+endif
+
+install-pythoninterface:
+ifeq ($(PYTHONENABLE),1)
+	@if test -d pythoninterface; then ( cd pythoninterface; $(MAKE) install ); fi
+endif
+
+install-libs:
+	@if test -d lib; then ( cd lib; $(MAKE) install ); fi
+
+install-parlibs:
+	@if test -d parlib; then ( cd parlib; $(MAKE) install ); fi
+
+install-sertests:
+	@if test -d test/serial; then ( cd test/serial; $(MAKE) install ); fi
+
+install-partests:
+	@if test -d test/parallel; then ( cd test/parallel; $(MAKE) install ); fi
+
+checkinst-sertests:
+	@if test -d test/serial; then ( cd test/serial; $(MAKE) checkinst ); fi
+
+checkinst-partests:
+	@if test -d test/parallel; then ( cd test/parallel; $(MAKE) checkinst ); fi
+
+install-config:
+	@if test -d utils; then ( cd utils; $(MAKE) install-config ); fi
+
+install-path:
+	-mkdir -p $(PREFIX)/bin
+	-mkdir -p $(PREFIX)/lib
+	-mkdir -p $(PREFIX)/include
+
+install-examples_dummy:
+
+install-examples:
+	@echo
+	@echo "++++++++++ EXAMPLES +++++++++++++++++++++++++++"
+	$(MKDIR) -m 755 ${PREFIX}/examples
+	@list='examples/*.example'; for p in $$list; do \
+		echo "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples" ; \
+		eval "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples" ; \
+	done
+	@echo "++++++++++ EXAMPLES/simple ++++++++++++++++++++"
+	$(MKDIR) -m 755 ${PREFIX}/examples/simple
+	@list='examples/simple/Makefile examples/simple/sionser.c examples/simple/sionpar.c examples/simple/sionfortran.f90 examples/simple/Readme'; for p in $$list; do \
+		echo "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples/simple" ; \
+		eval "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples/simple" ; \
+	done
+	@if test -f ../Makefile.defs.be; then \
+		$(INSTALL) -c -m 644 ../Makefile.defs.be ${PREFIX}/examples/simple/Makefile.defs; \
+	else \
+		sed -e 's/DEFAULTPREC/PREC/' ../Makefile.defs > ${PREFIX}/examples/simple/Makefile.defs; \
+		chmod 644 ${PREFIX}/examples/simple/Makefile.defs; \
+	fi
+	@echo "++++++++++ EXAMPLES/par_mandel ++++++++++++++++"
+	$(MKDIR) -m 755 ${PREFIX}/examples/par_mandel
+	@list='examples/par_mandel/Makefile examples/par_mandel/*.h examples/par_mandel/*.c examples/par_mandel/README'; for p in $$list; do \
+		echo "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples/par_mandel" ; \
+		eval "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples/par_mandel" ; \
+	done
+ifeq ($(FORTRANENABLE),1)
+	@echo "++++++++++ EXAMPLES/par_mandel_fortran ++++++++"
+	$(MKDIR) -m 755 ${PREFIX}/examples/par_mandel_fortran
+	@list='examples/par_mandel_fortran/Makefile examples/par_mandel_fortran/*.f90 examples/par_mandel_fortran/*.h examples/par_mandel_fortran/*.c examples/par_mandel_fortran/README'; for p in $$list; do \
+		echo "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples/par_mandel_fortran" ; \
+		eval "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples/par_mandel_fortran" ; \
+	done
+endif
+	@echo "++++++++++ EXAMPLES/mp2c ++++++++++++++++++++++"
+	$(MKDIR) -m 755 ${PREFIX}/examples/mp2c
+	@list='examples/mp2c/Makefile examples/mp2c/sionmp2c.f90 examples/mp2c/mp2c_slv.res examples/mp2c/Readme'; for p in $$list; do \
+		echo "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples/mp2c" ; \
+		eval "$(INSTALL) -c -m 644 $$p ${PREFIX}/examples/mp2c" ; \
+	done
+	@if test -f ../Makefile.defs.fe; then \
+		$(INSTALL) -c -m 644 ../Makefile.defs.fe ${PREFIX}/examples/mp2c/Makefile.defs; \
+	else \
+		sed -e 's/DEFAULTPREC/PREC/' ../Makefile.defs > ${PREFIX}/examples/mp2c/Makefile.defs; \
+		chmod 644 ${PREFIX}/examples/mp2c/Makefile.defs; \
+	fi
+
+install-doc:
+	@echo
+	@echo "++++++++++ DOCUMENTATION ++++++++++++++++++++++"
+	$(MKDIR) -m 755 ${DOCDIR}/manuals
+	$(INSTALL) -c -m 644 COPYRIGHT              $(DOCDIR)
+	$(INSTALL) -c -m 644 LICENSE                $(DOCDIR)
+	$(INSTALL) -c -m 644 README.1st             $(DOCDIR)
+	$(INSTALL) -c -m 644 OPEN_ISSUES            $(DOCDIR)
+	$(INSTALL) -c -m 644 doc/UserGuide.pdf      $(DOCDIR)/manuals
+	$(INSTALL) -c -m 644 doc/QuickReference.pdf $(DOCDIR)/manuals
+
+install-:
+
+
+comptest: comptest-ser comptest-par targets-endmarker
+
+comptest-64: comptest-ser comptest-par targets-endmarker
+
+comptest-fe: comptest-ser targets-endmarker
+
+comptest-fegcc: comptest-ser targets-endmarker
+
+comptest-fegcc64: comptest-ser targets-endmarker
+
+comptest-fe64: comptest-ser targets-endmarker
+
+comptest-be: comptest-par targets-endmarker
+
+comptest-begcc: comptest-par targets-endmarker
+
+comptest-ser: all-test-ser
+
+comptest-par: all-test-par
+
+test-:
+
+
+test: test-ser test-par coverage-summary targets-endmarker
+
+test-64: test-ser test-par targets-endmarker
+
+test-fe: test-ser targets-endmarker
+
+test-fegcc: test-ser targets-endmarker
+
+test-fegcc64: test-ser targets-endmarker
+
+test-fe64: test-ser targets-endmarker
+
+test-be: test-par targets-endmarker
+
+test-begcc: test-par targets-endmarker
+
+test-ser: all-test-ser
+	@echo "++++++++++ TEST Serial ++++++++++++++++++++++++"
+	@if test -d test/serial; then (cd test/serial; $(MAKE) test ); fi
+
+test-par: all-test-par
+	@echo "++++++++++ TEST Parallel ++++++++++++++++++++++"
+	@if test -d test/parallel; then (cd test/parallel; $(MAKE) test ); fi
+
+test-:
+
+coverage-summary:
+	if [ -d test -a "${COVERAGE}" = "kcov" ] && type kcov 2>&1 > /dev/null; then (cd test; kcov --merge kcov_output serial/kcov_output parallel/kcov_output ); fi
+	if [ -d test -a "${COVERAGE}" = "gcovr" ] && type gcovr 2>&1 > /dev/null; then (cd test; gcovr --html --html-details --gcov-filter="sion_.*" -r ../ -o gcovr_report.html ); fi
+
+packtest: packtest-ser packtest-par targets-endmarker
+
+packtest-64: packtest-ser packtest-par targets-endmarker
+
+packtest-fe: packtest-ser targets-endmarker
+
+packtest-fegcc: packtest-ser targets-endmarker
+
+packtest-fegcc64: packtest-ser targets-endmarker
+
+packtest-fe64: packtest-ser targets-endmarker
+
+packtest-be: packtest-par targets-endmarker
+
+packtest-begcc: packtest-par targets-endmarker
+
+packtest-ser: all-packtest-ser
+	@echo "++++++++++ PACKTEST Serial ++++++++++++++++++++"
+	@if test -d test/serial; then (cd test/serial; $(MAKE) packtest ); fi
+
+packtest-par: all-packtest-par
+	@echo "++++++++++ PACKTEST Parallel ++++++++++++++++++"
+	@if test -d test/parallel; then (cd test/parallel; $(MAKE) packtest ); fi
+
+packtest-:
+
+
+depend: depend-libs depend-parlibs depend-utils depend-parutils depend-cppinterface depend-fortraninterface \
+     targets-endmarker
+
+depend-libs: 
+	@echo "++++++++++ Depend LIBS ++++++++++++++++++++++++"
+	@if test -d lib; then (cd lib; $(MAKE) depend ); fi
+
+depend-parlibs: 
+	@echo "++++++++++ Depend PARLIBS +++++++++++++++++++++"
+	@if test -d parlib; then (cd parlib; $(MAKE) depend ); fi
+
+depend-utils: 
+	@echo "++++++++++ Depend UTILS +++++++++++++++++++++++"
+	@if test -d utils; then (cd utils; $(MAKE) depend ); fi
+
+depend-parutils: 
+ifeq ($(PARUTILENABLE),1)
+	@echo "++++++++++ Depend PARUTILS ++++++++++++++++++++"
+	@if test -d parutils; then (cd parutils; $(MAKE) depend ); fi
+endif
+
+depend-cppinterface: 
+ifeq ($(CXXENABLE),1)
+	@echo "++++++++++ Depend CPPINTERFACE ++++++++++++++++"
+	@if test -d cppinterface; then (cd cppinterface; $(MAKE) depend ); fi
+endif
+
+depend-fortraninterface: 
+ifeq ($(FORTRANENABLE),1)
+	@echo "++++++++++ Depend FORTRANINTERFACE ++++++++++++"
+	@if test -d fortraninterface; then (cd fortraninterface; $(MAKE) depend ); fi
+endif
+
+targets-endmarker:
+
+
+clean:
+	@if test -d utils; then ( cd utils; $(MAKE) clean ); fi
+	@if test -d parutils; then ( cd parutils; $(MAKE) clean ); fi
+	@if test -d lib; then ( cd lib; $(MAKE) clean ); fi
+	@if test -d parlib; then ( cd parlib; $(MAKE) clean ); fi
+	@if test -d cppinterface; then ( cd cppinterface; $(MAKE) clean ); fi
+	@if test -d fortraninterface; then ( cd fortraninterface; $(MAKE) clean ); fi
+	@if test -d pythoninterface; then ( cd pythoninterface; $(MAKE) clean ); fi
+	@if test -d test/serial; then ( cd test/serial; $(MAKE) clean ); fi
+	@if test -d test/parallel; then ( cd test/parallel; $(MAKE) clean ); fi

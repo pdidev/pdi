@@ -1,0 +1,36 @@
+on rank 0: new API: aid=0
+on rank 0: END of TEST 0
+on rank 0: END of TEST B
+on rank 0: bytes_written=100
+on rank 0: block=0           bwrote=100 blocksum=    6500 
+on rank 0: bytes_written=150
+on rank 0: block=1           bwrote= 50 blocksum=    3300 
+on rank 0: bytes_written=250
+on rank 0: block=2           bwrote=100 blocksum=    6700 
+on rank 0: END of TEST C (write)
+on rank 0: chunksize=100
+on rank 0: fsblksize=10
+on rank 0: filenumber=0
+on rank 0: numfiles=2
+on rank 0: globalrank    =0
+on rank 0: block=0           bytes_avail=100
+on rank 0: block=0           bread=100 blocksum=    6500 
+on rank 0: block=1           bytes_avail=50
+on rank 0: block=1           bread= 50 blocksum=    3300 
+on rank 0: block=2           bytes_avail=100
+on rank 0: block=2           bread=100 blocksum=    6700 
+on rank 0: END of TEST C (read)
+on rank 0: chunksize=100
+on rank 0: fsblksize=10
+on rank 0: filenumber=0
+on rank 0: numfiles=2
+on rank 0: globalrank    =0
+on rank 0: dup, new_sid       =1
+on rank 0: block=0           bytes_avail=100
+on rank 0: block=0           bread=100 blocksum=    6500 
+on rank 0: block=1           bytes_avail=50
+on rank 0: block=1           bread= 50 blocksum=    3300 
+on rank 0: block=2           bytes_avail=100
+on rank 0: block=2           bread=100 blocksum=    6700 
+on rank 0: dedup(1)
+on rank 0: END of TEST D (read)

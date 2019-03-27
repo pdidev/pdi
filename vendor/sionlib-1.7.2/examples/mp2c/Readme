@@ -1,0 +1,16 @@
+# Readme for SIONlib MP2C example
+# -------------------------------
+#
+# Run the tests with the following command
+#
+# show the original ASCII input
+cat mp2c_slv.res
+
+# convert ASCII file 'mp2c_slv.res' to SIONlib file 'sion_out.sion'
+./sionmp2c -S -f sion_out.sion
+
+# convert SIONlib file 'sion_out.sion' back to ASCII file 'converted.res'
+./sionmp2c -A -f sion_out.sion -o converted.res
+
+# show converted file
+cat converted.res
