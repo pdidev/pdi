@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
 #include <mpi.h>
 #endif
@@ -34,7 +35,6 @@
 #include <utility>
 #include <vector>
 
-#include <hdf5.h>
 #include <paraconf.h>
 #include <spdlog/spdlog.h>
 #include <unistd.h>

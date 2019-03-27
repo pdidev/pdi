@@ -260,7 +260,6 @@ if("${ENABLE_FORTRAN}")
 	bpp_preprocess(OUTPUT PDI_F90 SOURCES fortran/pdi.f90.bpp)
 	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fortran_inc")
 	add_custom_target(mv_bpp_files
-			COMMENT "!!! Making sure `${PDI_BINARY_DIR}/fortran_inc/pdif.h' is up to date with `${PDIF_H}' !!!"
 			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PDIF_H}" "${PDI_BINARY_DIR}/fortran_inc/pdif.h"
 			DEPENDS "${PDIF_H}"
 			VERBATIM

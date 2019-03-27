@@ -34,6 +34,8 @@ if("${BUILD_TESTING}" AND "${ENABLE_FORTRAN}")
 	enable_language(Fortran)
 endif()
 
+option(ENABLE_HDF5_PARALLEL "Enable HDF5 parallel build" ON)
+
 # Includes
 include(CTest)
 include(GNUInstallDirs)
@@ -41,25 +43,26 @@ include(GNUInstallDirs)
 # Astyle
 find_package(Astyle)
 
-# MPI
-if("${BUILD_TESTING}")
-	set(MPI_COMPONENTS REQUIRED COMPONENTS CXX C)
-	if("${ENABLE_FORTRAN}")
-		list(APPEND MPI_COMPONENTS Fortran)
-	endif()
-else()
-	set(MPI_COMPONENTS OPTIONAL_COMPONENTS CXX C)
-endif()
-find_package(MPI ${MPI_COMPONENTS})
-
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
-set(HDF5_PREFER_PARALLEL TRUE)
+set(HDF5_PREFER_PARALLEL "${ENABLE_HDF5_PARALLEL}")
 find_package(HDF5 REQUIRED COMPONENTS C)
-if(NOT "${HDF5_IS_PARALLEL}")
-	message(WARNING "Sequential HDF5 only found, decl'HDF5 will not work in parallel")
-else()
-	set(HDF5_C_LIBRARIES ${HDF5_C_LIBRARIES} MPI::MPI_CXX)
+if("${ENABLE_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
+	message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DENABLE_HDF5_PARALLEL=OFF to disable parallel HDF5")
+endif()
+if(NOT "${ENABLE_HDF5_PARALLEL}" AND "${HDF5_IS_PARALLEL}")
+	message(FATAL_ERROR "Parallel HDF5 disabled, parallel HDF5 only found. Please set -DENABLE_HDF5_PARALLEL=ON to enable parallel HDF5")
+endif()
+
+# MPI
+if("${BUILD_TESTING}" OR "${ENABLE_HDF5_PARALLEL}")
+	if("${BUILD_TESTING}" AND "${ENABLE_FORTRAN}")
+		set(MPI_COMPONENTS Fortran)
+	endif()
+	find_package(MPI REQUIRED COMPONENTS CXX C ${MPI_COMPONENTS})
+	if("${ENABLE_HDF5_PARALLEL}")
+		list(APPEND HDF5_C_LIBRARIES MPI::MPI_CXX)
+	endif()
 endif()
 
 # PDI
@@ -67,7 +70,7 @@ find_package(PDI REQUIRED)
 
 # The plugin
 add_library(pdi_decl_hdf5_plugin MODULE decl_hdf5.cxx)
-target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::pdi ${HDF5_C_LIBRARIES} ${HDF5_C_HL_LIBRARIES})
+target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::pdi ${HDF5_C_LIBRARIES})
 target_include_directories(pdi_decl_hdf5_plugin PRIVATE ${HDF5_INCLUDE_DIRS})
 target_compile_definitions(pdi_decl_hdf5_plugin PRIVATE ${HDF5_DEFINITIONS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES
