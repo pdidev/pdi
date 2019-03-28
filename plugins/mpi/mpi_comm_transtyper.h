@@ -116,27 +116,27 @@ public:
         auto source_mpi_comm_type = get_mpi_comm_type(source_datatype);
         auto transtyped_mpi_comm_type = get_mpi_comm_type(transtyped_datatype);
         
-        if (source_mpi_comm_type == MPI_Comm_type::INVALID || transtyped_mpi_comm_type == MPI_Comm_type::INVALID) {
-            return {};
-        }
-        
-        if (transtyped_mpi_comm_type == MPI_Comm_type::C) {
-            if (Ref_r rref = ref) {
-                void* ptr = new MPI_Comm;
-                convert_comm(rref.get(), source_mpi_comm_type, ptr, transtyped_mpi_comm_type);
-                return Ref{ptr, [](void* ptr) {delete static_cast<MPI_Comm*>(ptr);}, transtyped_datatype.clone_type(), true, writable};
-            } else {
-                return Ref{new MPI_Comm, [](void* ptr) {delete static_cast<MPI_Comm*>(ptr);}, transtyped_datatype.clone_type(), false, writable};
-            }
-        } else if (transtyped_mpi_comm_type == MPI_Comm_type::FORTRAN) {
-            if (Ref_r rref = ref) {
-                void* ptr = new MPI_Fint;
-                convert_comm(rref.get(), source_mpi_comm_type, ptr, transtyped_mpi_comm_type);
-                return Ref{ptr, [](void* ptr) {delete static_cast<MPI_Fint*>(ptr);}, transtyped_datatype.clone_type(), true, writable};
-            } else {
-                return Ref{new MPI_Fint, [](void* ptr) {delete static_cast<MPI_Fint*>(ptr);}, transtyped_datatype.clone_type(), false, writable};
+        if (source_mpi_comm_type != MPI_Comm_type::INVALID) {
+            if (transtyped_mpi_comm_type == MPI_Comm_type::C) {
+                if (Ref_r rref = ref) {
+                    void* ptr = new MPI_Comm;
+                    convert_comm(rref.get(), source_mpi_comm_type, ptr, transtyped_mpi_comm_type);
+                    return Ref{ptr, [](void* ptr) {delete static_cast<MPI_Comm*>(ptr);}, transtyped_datatype.clone_type(), true, writable};
+                } else {
+                    return Ref{new MPI_Comm, [](void* ptr) {delete static_cast<MPI_Comm*>(ptr);}, transtyped_datatype.clone_type(), false, writable};
+                }
+            } else if (transtyped_mpi_comm_type == MPI_Comm_type::FORTRAN) {
+                if (Ref_r rref = ref) {
+                    void* ptr = new MPI_Fint;
+                    convert_comm(rref.get(), source_mpi_comm_type, ptr, transtyped_mpi_comm_type);
+                    return Ref{ptr, [](void* ptr) {delete static_cast<MPI_Fint*>(ptr);}, transtyped_datatype.clone_type(), true, writable};
+                } else {
+                    return Ref{new MPI_Fint, [](void* ptr) {delete static_cast<MPI_Fint*>(ptr);}, transtyped_datatype.clone_type(), false, writable};
+                }
             }
         }
+
+        return {};
     }
 
     void data(const char* name, PDI::Ref ref) 
