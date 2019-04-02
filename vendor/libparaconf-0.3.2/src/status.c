@@ -40,8 +40,6 @@ typedef struct errctx_s {
 	
 	char *buffer;
 	
-	long buffer_size;
-	
 } errctx_t;
 
 static pthread_key_t context_key;
@@ -78,7 +76,6 @@ static errctx_t *get_context()
 	if ( !context ) {
 		context = malloc(sizeof(errctx_t));
 		context->buffer = NULL;
-		context->buffer_size = 0;
 		context->handler = PC_ASSERT_HANDLER;
 		pthread_setspecific(context_key, context);
 	}
@@ -94,16 +91,15 @@ PC_status_t PC_make_err(PC_status_t status, const char *message, ...)
 	
 	errctx_t *ctx = get_context();
 	
+	char* oldbuf = ctx->buffer; // might be used as one of the va_args
 	va_start(ap, message);
-	int realsize = vsnprintf(ctx->buffer, ctx->buffer_size, message, ap);
+	int buffer_size = vsnprintf(NULL, 0, message, ap)+1;
 	va_end(ap);
-	if ( realsize >= ctx->buffer_size ) {
-		ctx->buffer_size = realsize+1;
-		ctx->buffer = realloc(ctx->buffer, ctx->buffer_size);
-		va_start(ap, message);
-		vsnprintf(ctx->buffer, ctx->buffer_size, message, ap);
-		va_end(ap);
-	}
+	ctx->buffer = malloc(buffer_size);
+	va_start(ap, message);
+	vsnprintf(ctx->buffer, buffer_size, message, ap);
+	va_end(ap);
+	free(oldbuf);
 	if ( ctx->handler.func ) ctx->handler.func(status, ctx->buffer, ctx->handler.context);
 	return status;
 }
