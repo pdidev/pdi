@@ -14,14 +14,14 @@ external dependencies are:
   * CMake-3.10 together with a C-99, a C++-14 and a Fortran-2003 compiler,
   * the HDF5 and MPI libraries for the plugins.
   
-For example, release 0.5.0 can be installed by following these instructions (but
+For example, release 0.5.1 can be installed by following these instructions (but
 look for the latest release at
 https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags)
 
 ```bash
-wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.5.0/pdi-0.5.0.tar.bz2
-tar -xjf pdi-0.5.0.tar.bz2
-cd pdi-0.5.0
+wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.5.1/pdi-0.5.1.tar.bz2
+tar -xjf pdi-0.5.1.tar.bz2
+cd pdi-0.5.1
 cmake -DUSE_DEFAULT=EMBEDDED -DCMAKE_INSTALL_PREFIX=/usr/ .
 make install
 ```
