@@ -60,7 +60,7 @@ PC_tree_t PC_parse_path( const char *path )
 	restree = PC_parse_file(conf_file);
 	PC_errhandler(handler);
 	if ( PC_status(restree) ) { // aka PC_catch
-		PC_handle_err_tree(PC_make_err(restree.status, "Error while opening file `%s`, %s", path, PC_errmsg()), err1);
+		PC_handle_err_tree(PC_make_err(restree.status, "can not parse file `%s`\n%s", path, PC_errmsg()), err1);
 	}
 	
 	fclose(conf_file);
@@ -91,18 +91,18 @@ PC_tree_t PC_parse_string(const char* document)
 	if ( !yaml_parser_load(&conf_parser, conf_doc) ) {
 		if ( conf_parser.context ) {
 			PC_handle_err_tree(PC_make_err(PC_INVALID_FORMAT,
-					"%lu:%lu: Error: %s \n%lu:%lu: Error: %s",
-					(unsigned long) conf_parser.problem_mark.line,
-					(unsigned long) conf_parser.problem_mark.column,
+					"%s\n  line %lu, column %lu\n%s\n  line %lu, column %lu",
+					conf_parser.context,
+					(unsigned long) conf_parser.context_mark.line+1,
+					(unsigned long) conf_parser.context_mark.column+1,
 					conf_parser.problem,
-					(unsigned long) conf_parser.context_mark.line,
-					(unsigned long) conf_parser.context_mark.column,
-					conf_parser.context), err1);
+					(unsigned long) conf_parser.problem_mark.line+1,
+					(unsigned long) conf_parser.problem_mark.column+1), err1);
 		} else {
-			PC_handle_err_tree(PC_make_err(PC_INVALID_FORMAT, "%lu:%lu: Error: %s",
-					(unsigned long) conf_parser.problem_mark.line,
-					(unsigned long) conf_parser.problem_mark.column,
-					conf_parser.problem), err1);
+			PC_handle_err_tree(PC_make_err(PC_INVALID_FORMAT, "%s\n  line %lu, column %lu",
+					conf_parser.problem,
+					(unsigned long) conf_parser.problem_mark.line+1,
+					(unsigned long) conf_parser.problem_mark.column+1), err1);
 		}
 	}
 	
