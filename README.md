@@ -28,9 +28,9 @@ If you have the following dependencies:
 
 you can install the default PDI distribution using the following instructions:
 ```
-wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.3.4/pdi-0.3.4.tar.bz2
-tar -xjf pdi-0.3.4.tar.bz2
-cd pdi-0.3.4
+wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.5.0/pdi-0.5.0.tar.bz2
+tar -xjf pdi-0.5.0.tar.bz2
+cd pdi-0.5.0
 cmake -DUSE_DEFAULT=EMBEDDED -DCMAKE_INSTALL_PREFIX=/usr/ .
 make install
 ```
