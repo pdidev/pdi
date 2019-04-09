@@ -223,7 +223,7 @@ void Global_context::finalize()
 }
 
 Global_context::Global_context(PC_tree_t conf):
-	m_logger{configure_logger(conf)}
+	m_logger{configure_logger(PC_get(conf, ".logging"))}
 {
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);

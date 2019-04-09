@@ -115,13 +115,11 @@ void read_log_level(Logger_sptr logger, PC_tree_t logging_tree)
 
 Logger_sptr configure_logger(PC_tree_t config)
 {
-	PC_tree_t logging_tree = PC_get(config, ".logging");
-	
 	//select default sinks
-	Logger_sptr logger = select_log_sinks(logging_tree);
+	Logger_sptr logger = select_log_sinks(config);
 	
 	//read default log level
-	read_log_level(logger, logging_tree);
+	read_log_level(logger, config);
 	
 	//set up final format of logger
 	logger->set_pattern("[PDI][%T] *** %^%l%$: %v");
