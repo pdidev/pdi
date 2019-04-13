@@ -70,8 +70,12 @@ protected:
 		for (int chunk_id = 0; chunk_id < nb_chunk; chunk_id++) {
 			PC_tree_t chunk_node = PC_get(chunks_node, "[%d]", chunk_id);
 			
-			std::string chunk_desc = PDI::to_string(PC_get(chunk_node, ".data"));
-			m_chunk_descs.push_back(chunk_desc);
+			m_chunk_descs.emplace_back(PDI::to_string(PC_get(chunk_node, ".data")));
+		}
+		for (const std::string& data_name : m_chunk_descs) {
+			m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+				this->empty_desc_access(name);
+			}, data_name);
 		}
 	}
 	
@@ -94,6 +98,8 @@ protected:
 		m_sharing_chunks = other.m_sharing_chunks;
 		return *this;
 	}
+	
+	virtual void empty_desc_access(const std::string& data_name) = 0;
 	
 	virtual ~Payload_chunk() = default;
 	
@@ -123,22 +129,6 @@ class Input_payload_chunk : public Input_payload, public Payload_chunk
 		}
 	}
 	
-	// size_t subtype_size(std::string desc) const
-	// {
-	//  if (!m_ctx[desc].ref()) {
-	//      int* init_value = (int*) malloc (sizeof(int));
-	//      *init_value = 0;
-	//      m_ctx[desc].share(init_value, true, false);
-	//      m_ctx[desc].release();
-	//  }
-	//  PDI::Datatype_uptr datatype_uptr = m_ctx[desc].default_type()->evaluate(m_ctx);
-	//  PDI::Array_datatype* array_datatype = dynamic_cast<PDI::Array_datatype*>(datatype_uptr.get());
-	//  if (array_datatype) {
-	//      return array_datatype->subtype().buffersize();
-	//  }
-	//  return 1;
-	// }
-	
 public:
 	Input_payload_chunk (PDI::Context& ctx, std::string name, PC_tree_t config, flowvr::InputPort* parent_port):
 		Payload_chunk(ctx, name, config, parent_port),
@@ -167,67 +157,55 @@ public:
 	}
 	
 	/**
-	 *  Called if user accessing data descriptor
-	 *
-	 *  \param[in] data_name descriptor name
-	 */
-	bool data(const char* data_name, const PDI::Ref_w& ref) const override
-	{
-		return false;
-	}
-	
-	/**
 	 *  Share the reference to the flowvr memory to the data_name descriptor
 	 *
 	 *  \param[in] data_name name of shared descriptor
 	 */
-	void share(const char* data_name) override
+	void empty_desc_access(const std::string& data_name) override
 	{
 		auto chunk_it = std::find(m_chunk_descs.begin(), m_chunk_descs.end(), data_name);
-		if (chunk_it != m_chunk_descs.end()) {
-			std::string chunk_desc = *chunk_it;
-			int chunk_id = std::distance(m_chunk_descs.begin(), chunk_it);
-			
-			auto chunk_size_desc_it = m_chunk_size_desc.find(chunk_desc);
-			if (chunk_size_desc_it != m_chunk_size_desc.end()) {
-				std::string data_size_desc = chunk_size_desc_it->second;
-				//update size descriptor if exists
-				long size = static_cast<long>(m_chunk_info.chunks_sizes[chunk_id]);
-				if (!chunk_size_desc_it->second.empty()) {
-					m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Sharing size descriptor `{}' = {}", m_name, data_size_desc, size);
-					m_ctx[data_size_desc].share(&size, true, false);
-					m_ctx[data_size_desc].reclaim();
-					m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share size descriptor complete ", m_name);
-				}
-				
+		std::string chunk_desc = *chunk_it;
+		int chunk_id = std::distance(m_chunk_descs.begin(), chunk_it);
+		
+		auto chunk_size_desc_it = m_chunk_size_desc.find(chunk_desc);
+		if (chunk_size_desc_it != m_chunk_size_desc.end()) {
+			std::string data_size_desc = chunk_size_desc_it->second;
+			//update size descriptor if exists
+			long size = static_cast<long>(m_chunk_info.chunks_sizes[chunk_id]);
+			if (!chunk_size_desc_it->second.empty()) {
+				m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Sharing size descriptor `{}' = {}", m_name, data_size_desc, size);
+				m_ctx[data_size_desc].share(&size, true, false);
+				m_ctx[data_size_desc].reclaim();
+				m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share size descriptor complete ", m_name);
 			}
 			
-			size_t offset = sizeof(size_t) * (1 + m_chunk_info.chunk_count) ; //m_chunk_info
-			for (int i = 0; i < chunk_id; i++) {
-				offset += m_chunk_info.chunks_sizes[i];
-			}
-			
-			if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
-				if (m_flowvr_buffer.unique(flowvr::Buffer::ALLSEGMENTS) ) {
-					m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (read/write) `{}'", m_name, chunk_desc);
-					m_sharing_chunks = true;
-					m_ctx[chunk_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess() + offset), true, true);
-					m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (read/write) complete `{}'", m_name, chunk_desc);
-				} else {
-					if (m_flowvr_buffer.valid()) {
-						m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (read only) `{}'", m_name, chunk_desc);
-						m_sharing_chunks = true;
-						m_ctx[chunk_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess() + offset), true, false);
-						m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (read only) complete `{}'", m_name, chunk_desc);
-					}
-				}
-			} else {
-				m_ctx.logger()->warn("(FlowVR) Input Chunk Payload ({}): Flowvr data `{}' is empty or not valid", m_name, chunk_desc);
-				m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Sharing (nullptr) `{}'", m_name, chunk_desc);
+		}
+		
+		size_t offset = sizeof(size_t) * (1 + m_chunk_info.chunk_count) ; //m_chunk_info
+		for (int i = 0; i < chunk_id; i++) {
+			offset += m_chunk_info.chunks_sizes[i];
+		}
+		
+		if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
+			if (m_flowvr_buffer.unique(flowvr::Buffer::ALLSEGMENTS) ) {
+				m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (read/write) `{}'", m_name, chunk_desc);
 				m_sharing_chunks = true;
-				m_ctx[chunk_desc].share(PDI::Ref(nullptr, nullptr, PDI::UNDEF_TYPE.clone_type(), true, false), false, false);
-				m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (nullptr) complete `{}'", m_name, chunk_desc);
+				m_ctx[chunk_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess() + offset), true, true);
+				m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (read/write) complete `{}'", m_name, chunk_desc);
+			} else {
+				if (m_flowvr_buffer.valid()) {
+					m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (read only) `{}'", m_name, chunk_desc);
+					m_sharing_chunks = true;
+					m_ctx[chunk_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess() + offset), true, false);
+					m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (read only) complete `{}'", m_name, chunk_desc);
+				}
 			}
+		} else {
+			m_ctx.logger()->warn("(FlowVR) Input Chunk Payload ({}): Flowvr data `{}' is empty or not valid", m_name, chunk_desc);
+			m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Sharing (nullptr) `{}'", m_name, chunk_desc);
+			m_sharing_chunks = true;
+			m_ctx[chunk_desc].share(PDI::Ref(nullptr, nullptr, PDI::UNDEF_TYPE.clone_type(), true, false), false, false);
+			m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Share (nullptr) complete `{}'", m_name, chunk_desc);
 		}
 	}
 	
@@ -310,55 +288,43 @@ public:
 	}
 	
 	/**
-	 *  Called if user accessing data descriptor
-	 *
-	 *  \param[in] data_name descriptor name
-	 */
-	bool data(const char* data_name, const PDI::Ref_r& ref) override
-	{
-		return false;
-	}
-	
-	/**
 	 *  Allocate the flowvr memory and share the reference to it
 	 *
 	 *  \param[in] data_name name of shared descriptor
 	 */
-	void share(const char* data_name) override
+	void empty_desc_access(const std::string& data_name) override
 	{
-		auto chunk_it = std::find(m_chunk_descs.begin(), m_chunk_descs.end(), data_name);
-		if (chunk_it != m_chunk_descs.end()) {
-			if (m_chunk_info.chunk_count == 0) { //if not allocated -> allocate
-				m_chunk_info.chunk_count = m_chunk_descs.size();
-				m_chunk_info.chunks_sizes.reset(new size_t[m_chunk_info.chunk_count]);
-				size_t buffersize = sizeof(size_t) * (1 + m_chunk_info.chunk_count) ; //m_chunk_info
-				for (int i = 0; i < m_chunk_info.chunk_count; i++) {
-					m_chunk_info.chunks_sizes[i] = m_ctx[m_chunk_descs[i]].default_type()->evaluate(m_ctx)->buffersize();
-					buffersize += m_chunk_info.chunks_sizes[i];
-				}
-				m_flowvr_buffer = m_parent_port->getModule()->alloc(buffersize);
-				m_ctx.logger()->debug("(FlowVR) Output Chunk Payload ({}): Allocated {} B", m_name, buffersize);
-				
-				//write count and sizes
-				flowvr::ubyte* buffer_shr = m_flowvr_buffer.writeAccess();
-				memcpy(buffer_shr, &m_chunk_info.chunk_count, sizeof(size_t));
-				
-				for (int i = 0; i < m_chunk_info.chunk_count; i++) {
-					memcpy(buffer_shr + (i+1) * (sizeof(size_t)), &m_chunk_info.chunks_sizes[i], sizeof(size_t));
-				}
+		if (m_chunk_info.chunk_count == 0) { //if not allocated -> allocate
+			m_chunk_info.chunk_count = m_chunk_descs.size();
+			m_chunk_info.chunks_sizes.reset(new size_t[m_chunk_info.chunk_count]);
+			size_t buffersize = sizeof(size_t) * (1 + m_chunk_info.chunk_count) ; //m_chunk_info
+			for (int i = 0; i < m_chunk_info.chunk_count; i++) {
+				m_chunk_info.chunks_sizes[i] = m_ctx[m_chunk_descs[i]].default_type()->evaluate(m_ctx)->buffersize();
+				buffersize += m_chunk_info.chunks_sizes[i];
 			}
+			m_flowvr_buffer = m_parent_port->getModule()->alloc(buffersize);
+			m_ctx.logger()->debug("(FlowVR) Output Chunk Payload ({}): Allocated {} B", m_name, buffersize);
 			
-			int chunk_id = std::distance(m_chunk_descs.begin(), chunk_it);
-			size_t offset = sizeof(size_t) * (1 + m_chunk_info.chunk_count) ; //m_chunk_info
-			for (int i = 0; i < chunk_id; i++) {
-				offset += m_chunk_info.chunks_sizes[i];
+			//write count and sizes
+			flowvr::ubyte* buffer_shr = m_flowvr_buffer.writeAccess();
+			memcpy(buffer_shr, &m_chunk_info.chunk_count, sizeof(size_t));
+			
+			for (int i = 0; i < m_chunk_info.chunk_count; i++) {
+				memcpy(buffer_shr + (i+1) * (sizeof(size_t)), &m_chunk_info.chunks_sizes[i], sizeof(size_t));
 			}
-			
-			m_ctx.logger()->debug("(FlowVR) Output Chunk Payload ({}): Sharing `{}'", m_name, data_name);
-			m_sharing_chunks = true;
-			m_ctx[data_name].share(m_flowvr_buffer.writeAccess() + offset, false, true);
-			m_ctx.logger()->debug("(FlowVR) Output Chunk Payload ({}): Share complete `{}'", m_name, data_name);
 		}
+		
+		auto chunk_it = std::find(m_chunk_descs.begin(), m_chunk_descs.end(), data_name);
+		int chunk_id = std::distance(m_chunk_descs.begin(), chunk_it);
+		size_t offset = sizeof(size_t) * (1 + m_chunk_info.chunk_count) ; //m_chunk_info
+		for (int i = 0; i < chunk_id; i++) {
+			offset += m_chunk_info.chunks_sizes[i];
+		}
+		
+		m_ctx.logger()->debug("(FlowVR) Output Chunk Payload ({}): Sharing `{}'", m_name, data_name);
+		m_sharing_chunks = true;
+		m_ctx[data_name].share(m_flowvr_buffer.writeAccess() + offset, false, true);
+		m_ctx.logger()->debug("(FlowVR) Output Chunk Payload ({}): Share complete `{}'", m_name, data_name);
 	}
 	
 	/**

@@ -2,7 +2,6 @@ logging:
   level: info
 
 data:
-  wait: int
   message: {type: array, subtype: int, size: 32}
 
 plugins:

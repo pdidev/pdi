@@ -82,13 +82,6 @@ public:
 	virtual void write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) const = 0;
 	
 	/**
-	 *  Called if user accessing data descriptor. Write to or read from it.
-	 *
-	 *  \param[in] data_name descriptor name
-	 */
-	virtual bool data(const char* data_name, const PDI::Ref& ref) = 0;
-	
-	/**
 	 *  \return name of this stamp
 	 */
 	std::string get_name() const

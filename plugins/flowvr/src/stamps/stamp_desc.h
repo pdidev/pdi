@@ -47,11 +47,9 @@ namespace  {
 class Stamp_desc_int : public Stamp_base
 {
 	int m_value;
-	std::string m_data_desc;
 public:
 	Stamp_desc_int(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, std::string data_desc):
-		Stamp_base{ctx, parent_port, name},
-		m_data_desc{data_desc}
+		Stamp_base{ctx, parent_port, name}
 	{
 		if (!m_name.compare("it")) {
 			m_stamp_info = &m_parent_port->stamps->it;
@@ -60,6 +58,9 @@ public:
 		} else {
 			m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeInt::create());
 		}
+		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->data(name, ref);
+		}, data_desc);
 		m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Created", m_name);
 	}
 	
@@ -85,38 +86,32 @@ public:
 		}
 	}
 	
-	bool data(const char* data_name, const PDI::Ref& ref) override
+	void data(const std::string& data_name, const PDI::Ref& ref)
 	{
-		if (data_name == m_data_desc) {
-			PDI::Ref_w ref_w{ref};
-			if (ref_w) {
-				//can write to desc, put value to it
-				*static_cast<int*>(ref_w.get()) = m_value;
-				m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Desc `{}' = {}", m_name, data_name, m_value);
-				return true;
-			}
-			PDI::Ref_r ref_r{ref};
-			if (ref_r) {
-				//can read from desc, update m_value
-				m_value = *static_cast<const int*>(ref_r.get());
-				m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Stamp = {} from `{}'", m_name, m_value, data_name);
-			}
-			return true;
+		if (PDI::Ref_w ref_w{ref}) {
+			//can write to desc, put value to it
+			*static_cast<int*>(ref_w.get()) = m_value;
+			m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Desc `{}' = {}", m_name, data_name, m_value);
 		}
-		return false;
+		if (PDI::Ref_r ref_r{ref}) {
+			//can read from desc, update m_value
+			m_value = *static_cast<const int*>(ref_r.get());
+			m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Stamp = {} from `{}'", m_name, m_value, data_name);
+		}
 	}
 };
 
 class Stamp_desc_float : public Stamp_base
 {
 	float m_value;
-	std::string m_data_desc;
 public:
 	Stamp_desc_float(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, std::string data_desc):
-		Stamp_base{ctx, parent_port, name},
-		m_data_desc{data_desc}
+		Stamp_base{ctx, parent_port, name}
 	{
 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeFloat::create());
+		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->data(name, ref);
+		}, data_desc);
 		m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Created", m_name);
 	}
 	
@@ -142,42 +137,36 @@ public:
 		}
 	}
 	
-	bool data(const char* data_name, const PDI::Ref& ref) override
+	void data(const std::string& data_name, const PDI::Ref& ref)
 	{
-		if (data_name == m_data_desc) {
-			PDI::Ref_w ref_w{ref};
-			if (ref_w) {
-				//can write to desc, put value to it
-				*static_cast<float*>(ref_w.get()) = m_value;
-				m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Desc `{}' = {}", m_name, data_name, m_value);
-				return true;
-			}
-			PDI::Ref_r ref_r{ref};
-			if (ref_r) {
-				//can read from desc, update m_value
-				m_value = *static_cast<const float*>(ref_r.get());
-				m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Stamp = {} from `{}'", m_name, m_value, data_name);
-			}
-			return true;
+		if (PDI::Ref_w ref_w{ref}) {
+			//can write to desc, put value to it
+			*static_cast<float*>(ref_w.get()) = m_value;
+			m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Desc `{}' = {}", m_name, data_name, m_value);
 		}
-		return false;
+		if (PDI::Ref_r ref_r{ref}) {
+			//can read from desc, update m_value
+			m_value = *static_cast<const float*>(ref_r.get());
+			m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Stamp = {} from `{}'", m_name, m_value, data_name);
+		}
 	}
 };
 
 class Stamp_desc_string : public Stamp_base
 {
 	std::string m_value;
-	std::string m_data_desc;
 public:
 	Stamp_desc_string(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, std::string data_desc):
-		Stamp_base{ctx, parent_port, name},
-		m_data_desc{data_desc}
+		Stamp_base{ctx, parent_port, name}
 	{
 		if (!m_name.compare("source")) {
 			m_stamp_info = &parent_port->stamps->source;
 		} else {
 			m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeString::create());
 		}
+		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->data(name, ref);
+		}, data_desc);
 		m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Created", m_name);
 	}
 	
@@ -203,39 +192,33 @@ public:
 		}
 	}
 	
-	bool data(const char* data_name, const PDI::Ref& ref) override
+	void data(const std::string& data_name, const PDI::Ref& ref)
 	{
-		if (data_name == m_data_desc) {
-			PDI::Ref_w ref_w{ref};
-			if (ref_w) {
-				//can write to desc, put value to it
-				memcpy(ref_w.get(), m_value.c_str(), m_value.size() + 1); // +1 for '\0'
-				m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Desc `{}' = {}", m_name, data_name, m_value);
-				return true;
-			}
-			PDI::Ref_r ref_r{ref};
-			if (ref_r) {
-				//can read from desc, update m_value
-				m_value = static_cast<const char*>(ref_r.get());
-				m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Stamp = {} from `{}'", m_name, m_value, data_name);
-			}
-			return true;
+		if (PDI::Ref_w ref_w{ref}) {
+			//can write to desc, put value to it
+			memcpy(ref_w.get(), m_value.c_str(), m_value.size() + 1); // +1 for '\0'
+			m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Desc `{}' = {}", m_name, data_name, m_value);
 		}
-		return false;
+		if (PDI::Ref_r ref_r{ref}) {
+			//can read from desc, update m_value
+			m_value = static_cast<const char*>(ref_r.get());
+			m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Stamp = {} from `{}'", m_name, m_value, data_name);
+		}
 	}
 };
 
 class Stamp_desc_int_array : public Stamp_base
 {
 	std::vector<int> m_value;
-	std::string m_data_desc;
 public:
 	Stamp_desc_int_array(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, std::string data_desc, long size):
 		Stamp_base{ctx, parent_port, name},
-		m_data_desc{data_desc},
 		m_value(size)
 	{
 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeArray::create(size, flowvr::TypeInt::create()));
+		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->data(name, ref);
+		}, data_desc);
 		m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): Created with size = {}", m_name, size);
 	}
 	
@@ -265,39 +248,33 @@ public:
 		}
 	}
 	
-	bool data(const char* data_name, const PDI::Ref& ref) override
+	void data(const std::string& data_name, const PDI::Ref& ref)
 	{
-		if (data_name == m_data_desc) {
-			PDI::Ref_w ref_w{ref};
-			if (ref_w) {
-				//can write to desc, put value to it
-				memcpy(ref_w.get(), m_value.data(), m_value.size() * sizeof(int));
-				m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): `{}' update from stamp", m_name, data_name);
-				return true;
-			}
-			PDI::Ref_r ref_r{ref};
-			if (ref_r) {
-				//can read from desc, update m_value
-				memcpy(m_value.data(), ref_r.get(), m_value.size() * sizeof(int));
-				m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): Stamp update from `{}'", m_name, data_name);
-			}
-			return true;
+		if (PDI::Ref_w ref_w{ref}) {
+			//can write to desc, put value to it
+			memcpy(ref_w.get(), m_value.data(), m_value.size() * sizeof(int));
+			m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): `{}' update from stamp", m_name, data_name);
 		}
-		return false;
+		if (PDI::Ref_r ref_r{ref}) {
+			//can read from desc, update m_value
+			memcpy(m_value.data(), ref_r.get(), m_value.size() * sizeof(int));
+			m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): Stamp update from `{}'", m_name, data_name);
+		}
 	}
 };
 
 class Stamp_desc_float_array : public Stamp_base
 {
 	std::vector<float> m_value;
-	std::string m_data_desc;
 public:
 	Stamp_desc_float_array(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, std::string data_desc, long size):
 		Stamp_base{ctx, parent_port, name},
-		m_data_desc{data_desc},
 		m_value(size)
 	{
 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeArray::create(size, flowvr::TypeFloat::create()));
+		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->data(name, ref);
+		}, data_desc);
 		m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Created with size = {}", m_name, size);
 	}
 	
@@ -327,25 +304,18 @@ public:
 		}
 	}
 	
-	bool data(const char* data_name, const PDI::Ref& ref) override
+	void data(const std::string& data_name, const PDI::Ref& ref)
 	{
-		if (data_name == m_data_desc) {
-			PDI::Ref_w ref_w{ref};
-			if (ref_w) {
-				//can write to desc, put value to it
-				memcpy(ref_w.get(), m_value.data(), m_value.size() * sizeof(float));
-				m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): `{}' update from stamp", m_name, data_name);
-				return true;
-			}
-			PDI::Ref_r ref_r{ref};
-			if (ref_r) {
-				//can read from desc, update m_value
-				memcpy(m_value.data(), ref_r.get(), m_value.size() * sizeof(float));
-				m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Stamp update from `{}'", m_name, data_name);
-			}
-			return true;
+		if (PDI::Ref_w ref_w{ref}) {
+			//can write to desc, put value to it
+			memcpy(ref_w.get(), m_value.data(), m_value.size() * sizeof(float));
+			m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): `{}' update from stamp", m_name, data_name);
 		}
-		return false;
+		if (PDI::Ref_r ref_r{ref}) {
+			//can read from desc, update m_value
+			memcpy(m_value.data(), ref_r.get(), m_value.size() * sizeof(float));
+			m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Stamp update from `{}'", m_name, data_name);
+		}
 	}
 };
 

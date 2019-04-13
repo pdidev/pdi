@@ -90,7 +90,7 @@ protected:
 			
 			const auto& name_to_key_it = m_name_to_flowvr_key.find(key);
 			if (name_to_key_it == m_name_to_flowvr_key.end()) {
-				throw PDI::Error{PDI_ERR_CONFIG, "%s is not valid event button KEY", key};
+				throw PDI::Error{PDI_ERR_CONFIG, "%s is not valid event button KEY", key.c_str()};
 			}
 			
 			m_key_desc.emplace(name_to_key_it->second, desc);
@@ -145,6 +145,11 @@ public:
 		Payload_button_event{ctx, name, config, parent_port},
 		m_flowvr_input_port{parent_port}
 	{
+		for (const auto& desc_value : m_desc_value_map) {
+			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				this->data(name, ref);
+			}, desc_value.first);
+		}
 		m_ctx.logger()->debug("(FlowVR) Input Button Payload ({}): Created", m_name);
 	}
 	
@@ -169,28 +174,16 @@ public:
 	 *
 	 *  \param[in] data_name descriptor name
 	 */
-	bool data(const char* data_name, const PDI::Ref_w& ref) const override
+	void data(const std::string& data_name, const PDI::Ref_w& ref) const
 	{
-		const auto& desc_value = m_desc_value_map.find(data_name);
-		if (desc_value != m_desc_value_map.end()) {
-			if (ref) {
-				m_ctx.logger()->debug("(FlowVR) Input Button Payload ({}): Copy key value = {} to `{}' descriptor", m_name, desc_value->second.second, data_name);
-				*static_cast<int*>(ref.get()) = desc_value->second.second;
-			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Button Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name};
-			}
-			return true;
+		if (ref) {
+			const auto& desc_value = m_desc_value_map.find(data_name);
+			*static_cast<int*>(ref.get()) = desc_value->second.second;
+			m_ctx.logger()->debug("(FlowVR) Input Button Payload ({}): Copy key value = {} to `{}' descriptor", m_name, desc_value->second.second, data_name);
+		} else {
+			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Button Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
 		}
-		return false;
 	}
-	
-	/**
-	 *  Do nothing on share
-	 *
-	 *  \param[in] data_name name of shared descriptor
-	 */
-	void share(const char* data_name) override
-	{}
 	
 	/**
 	 *  Get message, update keys descriptors state.
@@ -241,6 +234,11 @@ public:
 		Payload_button_event{ctx, name, config, parent_port},
 		m_flowvr_output_port{parent_port}
 	{
+		for (const auto& desc_value : m_desc_value_map) {
+			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				this->data(name, ref);
+			}, desc_value.first);
+		}
 		m_ctx.logger()->debug("(FlowVR) Output Button Payload ({}): Created", m_name);
 	}
 	
@@ -267,28 +265,16 @@ public:
 	 *
 	 *  \param[in] data_name descriptor name
 	 */
-	bool data(const char* data_name, const PDI::Ref_r& ref) override
+	void data(const std::string& data_name, const PDI::Ref_r& ref)
 	{
-		const auto& desc_value = m_desc_value_map.find(data_name);
-		if (desc_value != m_desc_value_map.end()) {
-			if (ref) {
-				desc_value->second.second = *static_cast<const int*>(ref.get());
-				m_ctx.logger()->debug("(FlowVR) Output Button Payload ({}): Copied key value = {} from `{}' descriptor", m_name, desc_value->second.second, data_name);
-			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Button Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name};
-			}
-			return true;
+		if (ref) {
+			const auto& desc_value = m_desc_value_map.find(data_name);
+			desc_value->second.second = *static_cast<const int*>(ref.get());
+			m_ctx.logger()->debug("(FlowVR) Output Button Payload ({}): Copied key value = {} from `{}' descriptor", m_name, desc_value->second.second, data_name);
+		} else {
+			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Button Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
 		}
-		return false;
 	}
-	
-	/**
-	 *  Do nothing on share
-	 *
-	 *  \param[in] data_name name of shared descriptor
-	 */
-	void share(const char* data_name) override
-	{}
 	
 	/**
 	 *  Get keys descriptors state, put message

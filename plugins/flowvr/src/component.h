@@ -35,22 +35,6 @@ class Component
 	PDI::Context& m_context;
 	
 public:
-	/** Notification for a named event
-	 * \param[in] event the event name
-	 */
-	virtual void event(const char* event_name) {};
-	
-	/** Notification that some data becomes available
-	 * \param[in] name the name of the data made available
-	 * \param[in] ref a reference to the data value
-	 */
-	virtual void data(const char* data_name, const PDI::Ref& ref) {};
-	
-	/** Notification for accessing empty desc by user
-	 * \param[in] name the name of accessing desc
-	 */
-	virtual void empty_desc_access(const char* data_name) {};
-	
 	Component(PDI::Context& ctx):
 		m_context{ctx}
 	{}

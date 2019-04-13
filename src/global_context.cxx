@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <vector>
@@ -258,6 +259,10 @@ Global_context::Global_context(PC_tree_t conf):
 	if (!PC_status(data)) {
 		load_data(*this, data, false);
 	}
+	
+	for (auto&& init_callback : m_init_callbacks) {
+		init_callback();
+	}
 }
 
 Data_descriptor& Global_context::desc(const char* name)
@@ -292,29 +297,39 @@ Global_context::Iterator Global_context::end()
 
 void Global_context::event(const char* name)
 {
-	for (auto&& elmnt : m_plugins) {
-		vector<Error> errors;
+	std::vector<std::reference_wrapper<const std::function<void(const std::string&)>>> event_callbacks;
+	//add named callbacks
+	auto callback_it_pair = m_named_event_callbacks.equal_range(name);
+	for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
+		event_callbacks.emplace_back(std::cref(it->second));
+	}
+	//add the unnamed callbacks
+	for (auto it = m_event_callbacks.begin(); it != m_event_callbacks.end(); it++) {
+		event_callbacks.emplace_back(std::cref(*it));
+	}
+	//call gathered callbacks
+	vector<Error> errors;
+	for (const std::function<void(const std::string&)>& callback : event_callbacks) {
 		try {
-			elmnt.second->event(name);
+			callback(name);
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const Error& e) {
-			errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+			errors.emplace_back(e);
 		} catch (const exception& e) {
-			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+			errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 		} catch (...) {
-			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
+			errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error");
 		}
-		if ( 1 == errors.size() ) throw Error{errors.front().status(), "While triggering named event `%s' %s", name, errors.front().what()};
-		if ( !errors.empty() ) {
-			string errmsg = "multiple errors while triggering named event `";
-			errmsg += name;
-			errmsg += "':";
-			for ( auto&& err: errors ) {
-				errmsg += " ";
-				errmsg += err.what();
-			}
-			throw Error{PDI_ERR_PLUGIN, "%s", errmsg.c_str()};
+	}
+	if (!errors.empty()) {
+		if (1 == errors.size()) {
+			throw Error{errors.front().status(), "Error while triggering event `%s': %s", name, errors.front().what()};
 		}
+		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering event `" + string(name) + "':\n";
+		for (auto&& err: errors) {
+			errmsg += string(err.what()) + "\n";
+		}
+		throw Error{PDI_ERR_SYSTEM, "%s", errmsg.c_str()};
 	}
 }
 
@@ -355,5 +370,63 @@ void Global_context::add_datatype(const string& name, Datatype_template_parser p
 		throw Error{PDI_ERR_TYPE, "Datatype already defined `%s'", name.c_str()};
 	}
 }
+
+std::function<void()> Global_context::add_init_callback(const std::function<void()>& callback)
+{
+	m_init_callbacks.emplace_back(callback);
+	auto it = --m_init_callbacks.end();
+	return [it, this]() {
+		this->m_init_callbacks.erase(it);
+	};
+}
+
+std::function<void()> Global_context::add_data_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name)
+{
+	if (name.empty()) {
+		m_data_callbacks.emplace_back(callback);
+		auto it = --m_data_callbacks.end();
+		return [it, this]() {
+			this->m_data_callbacks.erase(it);
+		};
+	} else {
+		auto it = m_named_data_callbacks.emplace(name, callback);
+		return [it, this]() {
+			this->m_named_data_callbacks.erase(it);
+		};
+	}
+}
+
+std::function<void()> Global_context::add_event_callback(const std::function<void(const std::string&)>& callback, const std::string& name)
+{
+	if (name.empty()) {
+		m_event_callbacks.emplace_back(callback);
+		auto it = --m_event_callbacks.end();
+		return [it, this]() {
+			this->m_event_callbacks.erase(it);
+		};
+	} else {
+		auto it = m_named_event_callbacks.emplace(name, callback);
+		return [it, this]() {
+			this->m_named_event_callbacks.erase(it);
+		};
+	}
+}
+
+std::function<void()> Global_context::add_empty_desc_access_callback(const std::function<void(const std::string&)>& callback, const std::string& name)
+{
+	if (name.empty()) {
+		m_empty_desc_access_callbacks.emplace_back(callback);
+		auto it = --m_empty_desc_access_callbacks.end();
+		return [it, this]() {
+			this->m_empty_desc_access_callbacks.erase(it);
+		};
+	} else {
+		auto it = m_named_empty_desc_access_callbacks.emplace(name, callback);
+		return [it, this]() {
+			this->m_named_empty_desc_access_callbacks.erase(it);
+		};
+	}
+}
+
 
 }

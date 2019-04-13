@@ -147,12 +147,11 @@ struct mpi_plugin: Plugin {
 		MPI_Fint comm_null_f = MPI_Comm_c2f(MPI_COMM_NULL);
 		add_predefined(ctx, "MPI_COMM_NULL_F", &comm_null_f, mpi_comm_f_datatype.clone_type());
 		
+		ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->m_transtyper.data(name.c_str(), ref);
+		});
+		
 		ctx.logger()->info("(MPI) Plugin loaded successfully");
-	}
-	
-	void data(const char* name, PDI::Ref ref) override
-	{
-		m_transtyper.data(name, ref);
 	}
 	
 	~mpi_plugin()

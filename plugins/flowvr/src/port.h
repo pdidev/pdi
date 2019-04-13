@@ -50,7 +50,6 @@ protected:
 	PDI::Context& m_ctx;
 	
 	std::string m_name;             // name of the port
-	std::string m_connected_desc;   // isConnected descriptor name
 	
 	std::unique_ptr<flowvr::Port> m_flowvr_port;
 	std::vector<Stamp> m_stamps;    // stamps signed to this port (every message is stamped with this stamps)
@@ -64,7 +63,9 @@ protected:
 	{
 		PC_tree_t isConnected_node = PC_get(config, ".isConnected");
 		if (!PC_status(isConnected_node)) {
-			m_connected_desc = PDI::to_string(isConnected_node);
+			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				this->get_status(name, ref);
+			}, PDI::to_string(isConnected_node));
 		}
 	}
 	
@@ -80,7 +81,6 @@ protected:
 	Port(Port&& other):
 		m_ctx{other.m_ctx},
 		m_name{std::move(other.m_name)},
-		m_connected_desc{std::move(other.m_connected_desc)},
 		m_flowvr_port{std::move(other.m_flowvr_port)},
 		m_stamps{std::move(other.m_stamps)}
 	{}
@@ -91,7 +91,6 @@ protected:
 	{
 		m_ctx = other.m_ctx;
 		m_name = std::move(other.m_name);
-		m_connected_desc = std::move(other.m_connected_desc);
 		m_flowvr_port = std::move(other.m_flowvr_port);
 		m_stamps = std::move(other.m_stamps);
 		return *this;
@@ -140,6 +139,21 @@ protected:
 	{
 		for (Stamp& stamp : m_stamps) {
 			stamp.read_from_flowvr_stamp(read_stamps);
+		}
+	}
+	
+	/**
+	 *  Writes the connection status
+	 *
+	 *  \param[in] data_name name of descriptor
+	 *  \param[in] status_ref reference where to write connection status
+	 */
+	void get_status(const std::string& data_name, PDI::Ref_w ref)
+	{
+		if (ref) {
+			*static_cast<int*>(ref.get()) = m_flowvr_port->isConnected();
+		} else {
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Port (%s): Unable to get write permissions for `%s'", m_name.c_str(), data_name.c_str()};
 		}
 	}
 	

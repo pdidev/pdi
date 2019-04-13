@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -144,29 +145,39 @@ Ref Data_descriptor_impl::ref()
 {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	if (m_refs.empty()) {
-		for (auto& elmnt : m_context.m_plugins) {
-			vector<Error> errors;
+		std::vector<std::reference_wrapper<const std::function<void(const std::string&)>>> empty_desc_callbacks;
+		//add named callbacks
+		auto callback_it_pair = m_context.m_named_empty_desc_access_callbacks.equal_range(m_name);
+		for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
+			empty_desc_callbacks.emplace_back(std::cref(it->second));
+		}
+		//add the unnamed callbacks
+		for (auto it = m_context.m_empty_desc_access_callbacks.begin(); it != m_context.m_empty_desc_access_callbacks.end(); it++) {
+			empty_desc_callbacks.emplace_back(std::cref(*it));
+		}
+		//call gathered callbacks
+		vector<Error> errors;
+		for (const std::function<void(const std::string&)>& callback : empty_desc_callbacks) {
 			try {
-				elmnt.second->empty_desc_access(m_name.c_str());
+				callback(m_name);
 				//TODO: remove the faulty plugin in case of error?
 			} catch (const Error& e) {
-				errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+				errors.emplace_back(e);
 			} catch (const exception& e) {
-				errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+				errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 			} catch (...) {
-				errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
+				errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error");
 			}
-			if ( 1 == errors.size() ) throw Error{errors.front().status(), "While triggering empty desc access `%s' %s", m_name, errors.front().what()};
-			if ( !errors.empty() ) {
-				string errmsg = "multiple errors while triggering empty desc access`";
-				errmsg += m_name;
-				errmsg += "':";
-				for ( auto&& err: errors ) {
-					errmsg += " ";
-					errmsg += err.what();
-				}
-				throw Error{PDI_ERR_PLUGIN, "%s", errmsg.c_str()};
+		}
+		if (!errors.empty()) {
+			if (1 == errors.size()) {
+				throw Error{errors.front().status(), "Error while triggering empty desc access `%s': %s", m_name, errors.front().what()};
 			}
+			string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering empty desc access `" + m_name + "':\n";
+			for (auto&& err: errors) {
+				errmsg += string(err.what()) + "\n";
+			}
+			throw Error{PDI_ERR_SYSTEM, "%s", errmsg.c_str()};
 		}
 		
 		//at least one plugin should share a Ref
@@ -231,27 +242,39 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
 	}
 	
-	for (auto& elmnt : m_context.m_plugins) {
-		vector<Error> errors;
+	std::vector<std::reference_wrapper<const std::function<void(const std::string&, Ref)>>> data_callbacks;
+	//add named callbacks
+	auto callback_it_pair = m_context.m_named_data_callbacks.equal_range(m_name);
+	for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
+		data_callbacks.emplace_back(std::cref(it->second));
+	}
+	//add the unnamed callbacks
+	for (auto it = m_context.m_data_callbacks.begin(); it != m_context.m_data_callbacks.end(); it++) {
+		data_callbacks.emplace_back(std::cref(*it));
+	}
+	//call gathered callbacks
+	vector<Error> errors;
+	for (const std::function<void(const std::string&, Ref)>& callback : data_callbacks) {
 		try {
-			elmnt.second->data(m_name.c_str(), ref());
+			callback(m_name, ref());
 			//TODO: remove the faulty plugin in case of error?
 		} catch (const Error& e) {
-			errors.emplace_back(e.status(), "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+			errors.emplace_back(e);
 		} catch (const exception& e) {
-			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s': %s", elmnt.first.c_str(), e.what());
+			errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 		} catch (...) {
-			errors.emplace_back(PDI_ERR_SYSTEM, "for plugin `%s'", elmnt.first.c_str());
+			errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error");
 		}
-		if ( 1 == errors.size() ) throw Error{errors.front().status(), "While triggering data event `%s' %s", m_name.c_str(), errors.front().what()};
-		if ( !errors.empty() ) {
-			string errmsg = "multiple errors while triggering data event `"+m_name+"':";
-			for ( auto&& err: errors ) {
-				errmsg += " ";
-				errmsg += err.what();
-			}
-			throw Error{PDI_ERR_PLUGIN, "%s", errmsg.c_str()};
+	}
+	if (!errors.empty()) {
+		if (1 == errors.size()) {
+			throw Error{errors.front().status(), "Error while triggering data share `%s': %s", m_name, errors.front().what()};
 		}
+		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering data share `" + m_name + "':\n";
+		for (auto&& err: errors) {
+			errmsg += string(err.what()) + "\n";
+		}
+		throw Error{PDI_ERR_SYSTEM, "%s", errmsg.c_str()};
 	}
 	
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");

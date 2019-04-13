@@ -49,10 +49,10 @@ class Output_port : public Port
 	std::unique_ptr<Output_payload> m_payload; // payload handler
 	flowvr::OutputPort* m_flowvr_output_port;  // pointer to flowvr::Port (to avoid dynamic_cast every time)
 	
-	std::vector<std::reference_wrapper<const Stamp>> m_stamps_to_put; //all stamps exluding: it, num, source
+	std::vector<std::reference_wrapper<const Stamp>> m_stamps_to_put; //all stamps excluding: it, num, source
 	
 	/**
-	 *  Fills stamps to put vector (all stamps exluding: it, num, source)
+	 *  Fills stamps to put vector (all stamps excluding: it, num, source)
 	 */
 	void init_stamps_to_put()
 	{
@@ -123,44 +123,6 @@ public:
 		m_flowvr_output_port = other.m_flowvr_output_port;
 		m_stamps_to_put = other.m_stamps_to_put;
 		return *this;
-	}
-	
-	/**
-	 *  Called if user accessing data descriptor. Pass it to payload.
-	 *
-	 *  \param[in] data_name descriptor name
-	 */
-	bool data(const char* data_name, const PDI::Ref& ref)
-	{
-	
-		for (Stamp& stamp: m_stamps) {
-			if (stamp.data(data_name, ref)) {
-				return true;
-			}
-		}
-		if (m_payload->data(data_name, ref)) {
-			return true;
-		}
-		if (m_connected_desc == data_name) {
-			PDI::Ref_w ref_w{ref};
-			if (ref_w) {
-				*static_cast<int*>(ref_w.get()) = m_flowvr_port->isConnected();
-			} else {
-				throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Port ({}): Unable to get write permissions for `{}'", m_name, m_connected_desc};
-			}
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 *  Called if user accessing empty descriptor. Pass it to payload.
-	 *
-	 *  \param[in] data_name empty descriptor name
-	 */
-	void share(const char* data_name) const
-	{
-		m_payload->share(data_name);
 	}
 	
 	/**

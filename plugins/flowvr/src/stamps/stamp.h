@@ -47,7 +47,7 @@
 namespace  {
 
 class Stamp
-{	
+{
 	PDI::Context& m_ctx;
 	std::unique_ptr<Stamp_base> m_stamp; // stamp holder
 	
@@ -94,7 +94,7 @@ class Stamp
 		}
 		throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Stamp must be int, float, array of ints, floats or chars"};
 	}
-
+	
 	/**
 	 *  Sets up stamp as expression
 	 *
@@ -112,7 +112,7 @@ class Stamp
 		} catch (PDI::Error e) {
 			type = PDI::to_string(type_node);
 		}
-
+		
 		if (type == "int") {
 			PDI::Expression expr = PDI::to_string(expr_node);
 			m_stamp.reset(new Stamp_expr_int(m_ctx, parent_port, std::move(name), std::move(expr)));
@@ -200,16 +200,6 @@ public:
 	void write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) const
 	{
 		m_stamp->write_to_flowvr_stamp(write_stamp);
-	}
-	
-	/**
-	 *  Called if user accessing data descriptor.
-	 *
-	 *  \param[in] data_name descriptor name
-	 */
-	bool data(const char* data_name, const PDI::Ref& ref) const
-	{
-		return m_stamp->data(data_name, ref);
 	}
 	
 	/**

@@ -74,7 +74,7 @@ protected:
 			
 			const auto& name_to_key_it = m_name_to_flowvr_key.find(key);
 			if (name_to_key_it == m_name_to_flowvr_key.end()) {
-				throw PDI::Error{PDI_ERR_CONFIG, "%s is not valid event mouse KEY", key};
+				throw PDI::Error{PDI_ERR_CONFIG, "%s is not valid event mouse KEY", key.c_str()};
 			}
 			
 			if (key == "POS_XY") {
@@ -143,6 +143,14 @@ public:
 		Payload_mouse_event{ctx, name, config, parent_port},
 		m_flowvr_input_port{parent_port}
 	{
+		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->data_pos_xy(name, ref);
+		}, m_desc_pos_xy.first);
+		for (const auto& desc_value : m_desc_value_map) {
+			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				this->data(name, ref);
+			}, desc_value.first);
+		}
 		m_ctx.logger()->debug("(FlowVR) Input Mouse Payload ({}): Created", m_name);
 	}
 	
@@ -167,37 +175,31 @@ public:
 	 *
 	 *  \param[in] data_name descriptor name
 	 */
-	bool data(const char* data_name, const PDI::Ref_w& ref) const override
+	void data_pos_xy(const std::string& data_name, const PDI::Ref_w& ref) const
 	{
-		if (data_name == m_desc_pos_xy.first) {
-			if (ref) {
-				m_ctx.logger()->debug("(FlowVR) Input Mouse Payload ({}): Copy mouse position to `{}'", m_name, data_name);
-				memcpy(ref.get(), m_desc_pos_xy.second.second, 2 * sizeof(float));
-			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Mouse Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name};
-			}
-			return true;
+		if (ref) {
+			m_ctx.logger()->debug("(FlowVR) Input Mouse Payload ({}): Copy mouse position to `{}'", m_name, data_name);
+			memcpy(ref.get(), m_desc_pos_xy.second.second, 2 * sizeof(float));
+		} else {
+			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Mouse Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
 		}
-		const auto& desc_value = m_desc_value_map.find(data_name);
-		if (desc_value != m_desc_value_map.end()) {
-			if (ref) {
-				m_ctx.logger()->debug("(FlowVR) Input Mouse Payload ({}): Copy mouse button state to `{}'", m_name, data_name);
-				*static_cast<int*>(ref.get()) = desc_value->second.second;
-			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Mouse Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name};
-			}
-			return true;
-		}
-		return false;
 	}
 	
 	/**
-	 *  Do nothing on share
+	 *  Called if user accessing data descriptor
 	 *
-	 *  \param[in] data_name name of shared descriptor
+	 *  \param[in] data_name descriptor name
 	 */
-	void share(const char* data_name) override
-	{}
+	void data(const std::string& data_name, const PDI::Ref_w& ref) const
+	{
+		if (ref) {
+			const auto& desc_value = m_desc_value_map.find(data_name);
+			*static_cast<int*>(ref.get()) = desc_value->second.second;
+			m_ctx.logger()->debug("(FlowVR) Input Mouse Payload ({}): Copy mouse button state to `{}'", m_name, data_name);
+		} else {
+			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Mouse Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
+		}
+	}
 	
 	/**
 	 *  Get message, update keys descriptors state.
@@ -206,7 +208,6 @@ public:
 	 */
 	flowvr::Stamps get_message() override
 	{
-	
 		flowvr::Message msg_to_get;
 		m_parent_port->getModule()->get(m_flowvr_input_port, msg_to_get);
 		
@@ -267,6 +268,14 @@ public:
 		Payload_mouse_event{ctx, name, config, parent_port},
 		m_flowvr_output_port{parent_port}
 	{
+		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->data_pos_xy(name, ref);
+		}, m_desc_pos_xy.first);
+		for (const auto& desc_value : m_desc_value_map) {
+			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				this->data(name, ref);
+			}, desc_value.first);
+		}
 		m_ctx.logger()->debug("(FlowVR) Output Mouse Payload ({}): Created", m_name);
 	}
 	
@@ -293,37 +302,31 @@ public:
 	 *
 	 *  \param[in] data_name descriptor name
 	 */
-	bool data(const char* data_name, const PDI::Ref_r& ref) override
+	void data_pos_xy(const std::string& data_name, const PDI::Ref_r& ref)
 	{
-		if (data_name == m_desc_pos_xy.first) {
-			if (ref) {
-				m_ctx.logger()->debug("(FlowVR) Output Mouse Payload ({}): Copy mouse position to `{}'", m_name, data_name);
-				memcpy(m_desc_pos_xy.second.second, ref.get(), 2 * sizeof(float));
-			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Mouse Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name};
-			}
-			return true;
+		if (ref) {
+			m_ctx.logger()->debug("(FlowVR) Output Mouse Payload ({}): Copy mouse position to `{}'", m_name, data_name);
+			memcpy(m_desc_pos_xy.second.second, ref.get(), 2 * sizeof(float));
+		} else {
+			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Mouse Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
 		}
-		const auto& desc_value = m_desc_value_map.find(data_name);
-		if (desc_value != m_desc_value_map.end()) {
-			if (ref) {
-				m_ctx.logger()->debug("(FlowVR) Output Mouse Payload ({}): Copy mouse button state to `{}'", m_name, data_name);
-				desc_value->second.second = *static_cast<const int*>(ref.get());
-			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Mouse Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name};
-			}
-			return true;
-		}
-		return false;
 	}
 	
 	/**
-	 *  Do nothing on share
+	 *  Called if user accessing data descriptor
 	 *
-	 *  \param[in] data_name name of shared descriptor
+	 *  \param[in] data_name descriptor name
 	 */
-	void share(const char* data_name) override
-	{}
+	void data(const std::string& data_name, const PDI::Ref_r& ref)
+	{
+		if (ref) {
+			const auto& desc_value = m_desc_value_map.find(data_name);
+			desc_value->second.second = *static_cast<const int*>(ref.get());
+			m_ctx.logger()->debug("(FlowVR) Output Mouse Payload ({}): Copy mouse button state to `{}'", m_name, data_name);
+		} else {
+			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Mouse Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
+		}
+	}
 	
 	/**
 	 *  Get keys descriptors state, put message

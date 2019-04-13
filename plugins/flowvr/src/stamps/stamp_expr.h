@@ -72,42 +72,33 @@ public:
 			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Int STAMP (%s): Cannot write stamp to message", m_name.c_str()};
 		}
 	}
-	
-	bool data(const char* data_name, const PDI::Ref& ref) override
-	{
-		return false;
-	}
 };
 
 // class Stamp_expr_float : public Stamp_base
 // {
-// 	PDI::Expression m_value;
+//  PDI::Expression m_value;
 // public:
-// 	Stamp_expr_float(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, PDI::Expression expression):
-// 		Stamp_base{ctx, parent_port, name},
-// 		m_value{expression}
-// 	{
-// 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeFloat::create());
-// 		m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Created", m_name);
-// 	}
-	
-// 	void read_from_flowvr_stamp(const flowvr::Stamps& read_stamp) override
-// 	{}
-	
-// 	void write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) const override
-// 	{
-// 		bool status = write_stamp.write(*m_stamp_info, static_cast<float>(m_value.to_double(m_ctx)));
-// 		if (status) {
-// 			m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_double(m_ctx));
-// 		} else {
-// 			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float STAMP (%s): Cannot write stamp to message", m_name.c_str()};
-// 		}
-// 	}
-	
-// 	bool data(const char* data_name, const PDI::Ref& ref) override
-// 	{
-// 		return false;
-// 	}
+//  Stamp_expr_float(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, PDI::Expression expression):
+//      Stamp_base{ctx, parent_port, name},
+//      m_value{expression}
+//  {
+//      m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeFloat::create());
+//      m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Created", m_name);
+//  }
+
+//  void read_from_flowvr_stamp(const flowvr::Stamps& read_stamp) override
+//  {}
+
+//  void write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) const override
+//  {
+//      bool status = write_stamp.write(*m_stamp_info, static_cast<float>(m_value.to_double(m_ctx)));
+//      if (status) {
+//          m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_double(m_ctx));
+//      } else {
+//          throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float STAMP (%s): Cannot write stamp to message", m_name.c_str()};
+//      }
+//  }
+
 // };
 
 class Stamp_expr_string : public Stamp_base
@@ -138,11 +129,6 @@ public:
 			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) String STAMP (%s): Cannot write stamp to message", m_name.c_str()};
 		}
 	}
-	
-	bool data(const char* data_name, const PDI::Ref& ref) override
-	{
-		return false;
-	}
 };
 
 class Stamp_expr_int_array : public Stamp_base
@@ -171,44 +157,34 @@ public:
 			}
 		}
 	}
-	
-	bool data(const char* data_name, const PDI::Ref& ref) override
-	{
-		return false;
-	}
 };
 
 // class Stamp_expr_float_array : public Stamp_base
 // {
-// 	std::vector<PDI::Expression> m_value;
+//  std::vector<PDI::Expression> m_value;
 // public:
-// 	Stamp_expr_float_array(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, std::vector<PDI::Expression> expression):
-// 		Stamp_base{ctx, parent_port, name},
-// 		m_value{expression}
-// 	{
-// 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeArray::create(m_value.size(), flowvr::TypeFloat::create()));
-// 		m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Created with size = {}", m_name, m_value.size());
-// 	}
-	
-// 	void read_from_flowvr_stamp(const flowvr::Stamps& read_stamp) override
-// 	{}
-	
-// 	void write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) const override
-// 	{
-// 		for (int stamp_id = 0; stamp_id < m_value.size(); stamp_id++) {
-// 			bool status = write_stamp.write((*m_stamp_info)[stamp_id], static_cast<float>(m_value[stamp_id].to_double(m_ctx)));
-// 			if (status) {
-// 				m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id].to_double(m_ctx));
-// 			} else {
-// 				throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float array STAMP (%s): Cannot write stamp to message", m_name.c_str()};
-// 			}
-// 		}
-// 	}
-	
-// 	bool data(const char* data_name, const PDI::Ref& ref) override
-// 	{
-// 		return false;
-// 	}
+//  Stamp_expr_float_array(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name, std::vector<PDI::Expression> expression):
+//      Stamp_base{ctx, parent_port, name},
+//      m_value{expression}
+//  {
+//      m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeArray::create(m_value.size(), flowvr::TypeFloat::create()));
+//      m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Created with size = {}", m_name, m_value.size());
+//  }
+
+//  void read_from_flowvr_stamp(const flowvr::Stamps& read_stamp) override
+//  {}
+
+//  void write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) const override
+//  {
+//      for (int stamp_id = 0; stamp_id < m_value.size(); stamp_id++) {
+//          bool status = write_stamp.write((*m_stamp_info)[stamp_id], static_cast<float>(m_value[stamp_id].to_double(m_ctx)));
+//          if (status) {
+//              m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id].to_double(m_ctx));
+//          } else {
+//              throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float array STAMP (%s): Cannot write stamp to message", m_name.c_str()};
+//          }
+//      }
+//  }
 // };
 
 } // namespace <anonymous>

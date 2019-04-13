@@ -51,22 +51,6 @@ public:
 	
 	virtual ~Plugin() noexcept(false);
 	
-	/** Notification for a named event
-	 * \param[in] event the event name
-	 */
-	virtual void event(const char* event);
-	
-	/** Notification for accessing empty desc by user
-	 * \param[in] name the name of accessing desc
-	 */
-	virtual void empty_desc_access(const char* name);
-	
-	/** Notification that some data becomes available
-	 * \param name the name of the data made available
-	 * \param ref a reference to the data value
-	 */
-	virtual void data(const char* name, Ref ref);
-	
 	/** Provides access to the PDI context for this plugin instance
 	 */
 	Context& context();

@@ -56,32 +56,6 @@ class Trace
 		m_on_data = PDI::to_string(on_data_node);
 	}
 	
-	std::pair<std::string, long> load_stamp_type(PDI::Context& ctx, std::string data_desc)
-	{
-		size_t stamp_size = 1; //default for scalars
-		
-		const PDI::Datatype_uptr stamp_datatype = ctx[data_desc].default_type()->evaluate(ctx);
-		const PDI::Scalar_datatype* scalar_datatype = dynamic_cast<PDI::Scalar_datatype*>(stamp_datatype.get());
-		const PDI::Array_datatype* array_datatype = dynamic_cast<PDI::Array_datatype*>(stamp_datatype.get());
-		
-		if (array_datatype) {
-			stamp_size = array_datatype->size();
-			scalar_datatype = dynamic_cast<const PDI::Scalar_datatype*>(&array_datatype->subtype());
-		}
-		
-		if (scalar_datatype) {
-			PDI::Scalar_kind stamp_kind = scalar_datatype->kind();
-			if (scalar_datatype->kind() == PDI::Scalar_kind::SIGNED && scalar_datatype->buffersize() == sizeof(int)) {
-				return {"int", stamp_size};
-			} else if (scalar_datatype->kind() == PDI::Scalar_kind::FLOAT  && scalar_datatype->buffersize() == sizeof(float)) {
-				return {"float", stamp_size};
-			} else if (array_datatype && scalar_datatype->kind() == PDI::Scalar_kind::UNSIGNED && scalar_datatype->buffersize() == sizeof(char)) {
-				return {"string", 1};
-			}
-		}
-		throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Stamp must be int, float, array of ints, floats or chars"};
-	}
-	
 	/**
 	 *  Reads config, create proper trace type.
 	 *
@@ -111,25 +85,19 @@ class Trace
 				m_trace.reset(new Trace_string(ctx, name));
 			}
 		}
-		throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) `%s' has not supported type for Trace", name};
+		throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) `%s' has not supported type for Trace", name.c_str()};
 	}
 	
 public:
 	Trace(PDI::Context& ctx, std::string name, PC_tree_t config)
 	{
 		load_on_data(config);
-		
 		load_trace(ctx, name);
+		ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			this->write(name, ref);
+		}, m_on_data);
 		
 		ctx.logger()->debug("(FlowVR) Trace ({}): On_data: {} ", name, m_on_data);
-	}
-	
-	/**
-	 *  \return descriptor name of this trace
-	 */
-	std::string get_on_data()
-	{
-		return m_on_data;
 	}
 	
 	/**
@@ -145,9 +113,13 @@ public:
 	 *
 	 *  \param[in] ref_r Ref where from get the trace value
 	 */
-	void write(const PDI::Ref_r& ref_r)
+	void write(const std::string& data_name, const PDI::Ref_r ref_r)
 	{
-		m_trace->write(ref_r);
+		if (ref_r) {
+			m_trace->write(ref_r);
+		} else {
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Trace (%s): Unable to get read permissions for `%s'", data_name.c_str()};
+		}
 	}
 	
 private:

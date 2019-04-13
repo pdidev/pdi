@@ -36,20 +36,6 @@ namespace  {
 
 struct Input_payload {
 	/**
-	 *  Called if user accessing empty descriptor
-	 *
-	 *  \param[in] data_name empty descriptor name
-	 */
-	virtual void share(const char* data_name) = 0;
-	
-	/**
-	 *  Called if user accessing data descriptor
-	 *
-	 *  \param[in] data_name descriptor name
-	 */
-	virtual bool data(const char* data_name, const PDI::Ref_w& ref) const = 0;
-	
-	/**
 	 *  Receives a message payload
 	 *
 	 *  \return flowvr::Stamps from received message
@@ -60,20 +46,6 @@ struct Input_payload {
 };
 
 struct Output_payload {
-	/**
-	 *  Called if user accessing empty descriptor
-	 *
-	 *  \param[in] data_name empty descriptor name
-	 */
-	virtual void share(const char* data_name) = 0;
-	
-	/**
-	 *  Called if user accessing data descriptor
-	 *
-	 *  \param[in] data_name descriptor name
-	 */
-	virtual bool data(const char* data_name, const PDI::Ref_r& ref) = 0;
-	
 	/**
 	 *  Send a message with payload
 	 *

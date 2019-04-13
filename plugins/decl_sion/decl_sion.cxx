@@ -204,6 +204,13 @@ struct decl_sion_plugin: Plugin {
 				throw Error {PDI_ERR_SYSTEM, "Cannot duplicate MPI communicator"};
 			}
 		}
+		ctx.add_data_callback([this](const std::string& name, Ref ref) {
+			this->data(name, ref);
+		});
+		
+		ctx.add_event_callback([this](const std::string& name) {
+			this->event(name);
+		});
 		set_up_logger(PC_get(conf, ".logging"));
 		ctx.logger()->info("Plugin loaded successfully");
 	}
@@ -444,7 +451,7 @@ struct decl_sion_plugin: Plugin {
 		}
 	}
 	
-	void event(const char* event) override
+	void event(const std::string& event)
 	{
 		auto&& outevit = output_events.find(event);
 		if (outevit != output_events.end()) {
@@ -469,7 +476,7 @@ struct decl_sion_plugin: Plugin {
 		}
 	}
 	
-	void data(const char* name, Ref cref) override
+	void data(const std::string& name, Ref cref)
 	{
 		if ( name == comm_name ) {
 			if (MPI_Comm_dup(*(static_cast<const MPI_Comm*>(Ref_r{context().desc(name).ref()}.get())), &comm)) {
@@ -484,7 +491,7 @@ struct decl_sion_plugin: Plugin {
 			} catch (Error&) {
 				select = 0;
 			}
-			if (select) write_var(cref, name, outvarit->second);
+			if (select) write_var(cref, name.c_str(), outvarit->second);
 		}
 		
 		auto&& invarit = input_vars.find(name);
@@ -495,7 +502,7 @@ struct decl_sion_plugin: Plugin {
 			} catch (Error&) {
 				select = 0;
 			}
-			if (select) read_var(cref, name, invarit->second);
+			if (select) read_var(cref, name.c_str(), invarit->second);
 		}
 	}
 	

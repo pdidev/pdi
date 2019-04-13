@@ -39,15 +39,6 @@ Plugin::Plugin(Context& ctx):
 Plugin::~Plugin() noexcept(false)
 {}
 
-void Plugin::event(const char*)
-{}
-
-void Plugin::empty_desc_access(const char*)
-{}
-
-void Plugin::data(const char*, Ref)
-{}
-
 Context& Plugin::context()
 {
 	return m_context;

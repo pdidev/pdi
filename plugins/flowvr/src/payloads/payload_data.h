@@ -119,6 +119,14 @@ public:
 		m_parent_input_port{parent_port}
 	{
 		load_data_size_desc(config);
+		if (!m_data_desc.empty()) {
+			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				this->copy_data_to_ref(name, ref);
+			}, m_data_desc);
+			m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+				this->empty_desc_access(name);
+			}, m_data_desc);
+		}
 		m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Created", m_name);
 	}
 	
@@ -143,36 +151,27 @@ public:
 	}
 	
 	/**
-	 *  Called if user accessing data descriptor
+	 *  Called if user shares data descriptor
 	 *
 	 *  \param[in] data_name descriptor name
+	 *  \param[in] ref reference where to copy data
 	 */
-	bool data(const char* data_name, const PDI::Ref_w& ref) const override
+	void copy_data_to_ref(const std::string& data_name, const PDI::Ref_w& ref) const
 	{
-		if (data_name == m_data_size_desc) {
-			//already up to date
-			return true;
-		}
-		if (data_name == m_data_desc) {
-			if (!m_sharing_buffer) { // if buffer is not shared, copy it
-				if (ref) {
-					if (ref.get() != m_flowvr_buffer.readAccess()) {
-						if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
-							m_ctx.logger()->debug("(FlowVR) Input Data Payload  ({}): Copy data from FlowVR memory to `{}' descriptor", m_name, data_name);
-							if (m_data_selection) {
-								m_data_selection->evaluate(m_ctx)->data_from_dense_copy(ref.get(), m_flowvr_buffer.readAccess());
-							} else {
-								m_ctx[m_data_desc].default_type()->evaluate(m_ctx)->data_from_dense_copy(ref.get(), m_flowvr_buffer.readAccess());
-							}
-						}
+		if (!m_sharing_buffer) { // if buffer is not shared, copy it
+			if (ref) {
+				if (ref.get() != m_flowvr_buffer.readAccess() && m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
+					m_ctx.logger()->debug("(FlowVR) Input Data Payload  ({}): Copy data from FlowVR memory to `{}' descriptor", m_name, data_name);
+					if (m_data_selection) {
+						m_data_selection->evaluate(m_ctx)->data_from_dense_copy(ref.get(), m_flowvr_buffer.readAccess());
+					} else {
+						m_ctx[m_data_desc].default_type()->evaluate(m_ctx)->data_from_dense_copy(ref.get(), m_flowvr_buffer.readAccess());
 					}
-				} else {
-					throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Data Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name};
 				}
+			} else {
+				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Data Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
 			}
-			return true;
 		}
-		return false;
 	}
 	
 	/**
@@ -180,30 +179,28 @@ public:
 	 *
 	 *  \param[in] data_name name of shared descriptor
 	 */
-	void share(const char* data_name) override
+	void empty_desc_access(const std::string& data_name)
 	{
-		if (m_data_desc == data_name) {
-			if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
-				if (m_flowvr_buffer.unique(flowvr::Buffer::ALLSEGMENTS)) {
-					m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Sharing (read/write) `{}'", m_name, m_data_desc);
-					m_sharing_buffer = true;
-					m_ctx[m_data_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess()), true, true);
-					m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Share complete (read/write) `{}'", m_name, m_data_desc);
-				} else {
-					if (m_flowvr_buffer.valid()) {
-						m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Share (read only) `{}'", m_name, m_data_desc);
-						m_sharing_buffer = true;
-						m_ctx[m_data_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess()), true, false);
-						m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Share complete (read only) `{}'", m_name, m_data_desc);
-					}
-				}
-			} else {
-				m_ctx.logger()->warn("(FlowVR) Input Data Payload ({}): Flowvr data {} is empty or not valid", m_name, m_data_desc);
-				m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Sharing (nullptr) `{}'", m_name, m_data_desc);
+		if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
+			if (m_flowvr_buffer.unique(flowvr::Buffer::ALLSEGMENTS)) {
+				m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Sharing (read/write) `{}'", m_name, m_data_desc);
 				m_sharing_buffer = true;
-				m_ctx[m_data_desc].share(PDI::Ref(nullptr, nullptr, PDI::UNDEF_TYPE.clone_type(), true, false), false, false);
-				m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Share complete (nullptr) `{}'", m_name, m_data_desc);
+				m_ctx[m_data_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess()), true, true);
+				m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Share complete (read/write) `{}'", m_name, m_data_desc);
+			} else {
+				if (m_flowvr_buffer.valid()) {
+					m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Share (read only) `{}'", m_name, m_data_desc);
+					m_sharing_buffer = true;
+					m_ctx[m_data_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess()), true, false);
+					m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Share complete (read only) `{}'", m_name, m_data_desc);
+				}
 			}
+		} else {
+			m_ctx.logger()->warn("(FlowVR) Input Data Payload ({}): Flowvr data {} is empty or not valid", m_name, m_data_desc);
+			m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Sharing (nullptr) `{}'", m_name, m_data_desc);
+			m_sharing_buffer = true;
+			m_ctx[m_data_desc].share(PDI::Ref(nullptr, nullptr, PDI::UNDEF_TYPE.clone_type(), true, false), false, false);
+			m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Share complete (nullptr) `{}'", m_name, m_data_desc);
 		}
 	}
 	
@@ -293,10 +290,18 @@ public:
 			if (data_pool == "const") {
 				m_flowvr_buffer_pool.reset(new flowvr::BufferPool());
 			} else {
-				throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Payload ({}): `data_size' can be only const", m_name};
+				throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Payload ({}): `data_size' can be only const", m_name.c_str()};
 			}
 		}
 		
+		if (!m_data_desc.empty()) {
+			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				this->copy_data_from_ref(name, ref);
+			}, m_data_desc);
+			m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+				this->empty_desc_access(name);
+			}, m_data_desc);
+		}
 		m_ctx.logger()->debug("(FlowVR) Output Data Payload ({}): Created", m_name);
 	}
 	
@@ -321,35 +326,32 @@ public:
 	}
 	
 	/**
-	 *  Called if user accessing data descriptor
+	 *  Called if user shares data descriptor
 	 *
 	 *  \param[in] data_name descriptor name
+	 *  \param[in] ref reference from we make a copy data
 	 */
-	bool data(const char* data_name, const PDI::Ref_r& ref) override
+	void copy_data_from_ref(const std::string& data_name, const PDI::Ref_r& ref)
 	{
-		if (data_name == m_data_desc) { // if buffer is not shared, copy it
-			if (!m_sharing_buffer) {
-				if (ref) {
-					if (m_flowvr_buffer.empty()) {
-						alloc_buffer();
-					}
-					if (ref.get() != m_flowvr_buffer.writeAccess()) {
-						if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
-							m_ctx.logger()->debug("(FlowVR) Output Payload ({}): Copy data from `{}' descriptor to flowvr memory", m_name, data_name);
-							if (m_data_selection) {
-								m_data_selection->evaluate(m_ctx)->data_to_dense_copy(m_flowvr_buffer.writeAccess(), ref.get());
-							} else {
-								m_ctx[m_data_desc].default_type()->evaluate(m_ctx)->data_to_dense_copy(m_flowvr_buffer.writeAccess(), ref.get());
-							}
+		if (!m_sharing_buffer) { // if buffer is not shared, copy it
+			if (ref) {
+				if (m_flowvr_buffer.empty()) {
+					alloc_buffer();
+				}
+				if (ref.get() != m_flowvr_buffer.writeAccess()) {
+					if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
+						m_ctx.logger()->debug("(FlowVR) Output Payload ({}): Copy data from `{}' descriptor to flowvr memory", m_name, data_name);
+						if (m_data_selection) {
+							m_data_selection->evaluate(m_ctx)->data_to_dense_copy(m_flowvr_buffer.writeAccess(), ref.get());
+						} else {
+							m_ctx[m_data_desc].default_type()->evaluate(m_ctx)->data_to_dense_copy(m_flowvr_buffer.writeAccess(), ref.get());
 						}
 					}
-				} else {
-					throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Data Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name};
 				}
+			} else {
+				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Data Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
 			}
-			return true;
 		}
-		return false;
 	}
 	
 	/**
@@ -357,17 +359,15 @@ public:
 	 *
 	 *  \param[in] data_name name of shared descriptor
 	 */
-	void share(const char* data_name) override
+	void empty_desc_access(const std::string& data_name)
 	{
-		if (m_data_desc == data_name) {
-			if (m_flowvr_buffer.empty()) {
-				alloc_buffer();
-			}
-			m_ctx.logger()->debug("(FlowVR) Output Data Payload ({}): Sharing `{}'", m_name, m_data_desc);
-			m_sharing_buffer = true; //must be before share (to not copy data)
-			m_ctx[data_name].share(m_flowvr_buffer.writeAccess(), false, true);
-			m_ctx.logger()->debug("(FlowVR) Output Data Payload ({}): Share complete `{}'", m_name, m_data_desc);
+		if (m_flowvr_buffer.empty()) {
+			alloc_buffer();
 		}
+		m_ctx.logger()->debug("(FlowVR) Output Data Payload ({}): Sharing `{}'", m_name, m_data_desc);
+		m_sharing_buffer = true; //must be before share (to not copy data)
+		m_ctx[data_name].share(m_flowvr_buffer.writeAccess(), false, true);
+		m_ctx.logger()->debug("(FlowVR) Output Data Payload ({}): Share complete `{}'", m_name, m_data_desc);
 	}
 	
 	/**

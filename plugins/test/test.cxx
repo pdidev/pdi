@@ -54,6 +54,12 @@ struct test_plugin: Plugin {
 	test_plugin(Context& ctx, PC_tree_t):
 		Plugin {ctx}
 	{
+		ctx.add_data_callback([this](const std::string& name, Ref ref) {
+			this->data(name, ref);
+		});
+		ctx.add_event_callback([this](const std::string& name) {
+			this->context().logger()->info("The test plugin received an event: {}", name);
+		});
 		context().logger()->set_pattern("[PDI][Test-plugin][%T] *** %^%l%$: %v");
 		context().logger()->info("Welcome to the test plugin!");
 	}
@@ -63,24 +69,19 @@ struct test_plugin: Plugin {
 		context().logger()->info("Goodbye from the test plugin!");
 	}
 	
-	void event(const char* event) override
-	{
-		context().logger()->info("The test plugin received an event: {}", event);
-	}
-	
-	void data(const char* name, Ref ref) override
+	void data(const std::string& name, Ref ref)
 	{
 		// store a copy of the reference because we need to keep it for notification
 		auto ref_it = m_refs.emplace(ref).first;
 		// register to be notified when the reference becomes invalid (on the copy we keep)
 		string sname = name; // store the name in a string to reuse it
 		ref_it->on_nullify([=](Ref r) {
-			this->data_end(sname.c_str(), r);
+			this->data_end(sname, r);
 		});
 		context().logger()->info("=>> data becoming available to the test plugin: {}", name);
 	}
 	
-	void data_end(const char* name, Ref r)
+	void data_end(const std::string& name, Ref r)
 	{
 		context().logger()->info("<<= data stop being available to the test plugin: {}", name);
 	}

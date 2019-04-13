@@ -34,6 +34,7 @@
 #include <ftl/chunkwriter.h>
 
 #include <pdi/context.h>
+#include <pdi/context_proxy.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
@@ -57,22 +58,10 @@ class Module : public Component
 	
 	bool m_fisrt_wait;          // on first wait cannot read messages
 	std::string m_module_name;  // name of the module (optional)
-	
-	std::string m_wait_data;    // descriptor name of flowvr::wait value
-	std::vector<std::string> m_wait_event;  // events on which call wait
-	std::vector<std::string> m_status_data;  // descriptor names of flowvr::status value
-	std::vector<std::string> m_abort_event; // event names for flowvr::abort()
-	
 	bool m_abort_on_finalze; // if true call abort on finalize
-	
-	std::string m_get_parallel_rank_data; // descriptor name of flowvr::rank value
-	std::string m_get_parallel_size_data; // descriptor name of flowvr::size value
-	int m_set_parallel_rank; // parallel rank
-	int m_set_parallel_size; // parallel world size
 	
 	std::vector<Input_port> m_input_ports;   // input ports of this module
 	std::vector<Output_port> m_output_ports; // output ports of this module
-	
 	std::vector<Trace> m_traces; // traces of this module
 	
 	/*
@@ -90,10 +79,13 @@ private:
 	 */
 	void load_desc_names(PC_tree_t config)
 	{
-		PC_tree_t wait_node = PC_get(config, ".wait_on_data");
-		if (!PC_status(wait_node)) {
-			m_wait_data = PDI::to_string(wait_node);
-			context().logger()->debug("(FlowVR) Module: wait_on_data = {}", m_wait_data);
+		PC_tree_t wait_on_data_node = PC_get(config, ".wait_on_data");
+		if (!PC_status(wait_on_data_node)) {
+			std::string wait_data = PDI::to_string(wait_on_data_node);
+			context().logger()->debug("(FlowVR) Module: wait_on_data = {}", wait_data);
+			context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				this->wait(name, ref);
+			}, wait_data);
 		}
 		
 		PC_tree_t wait_on_node = PC_get(config, ".wait_on");
@@ -102,10 +94,16 @@ private:
 			if (!PC_status(PC_get(wait_on_node, "[0]"))) {
 				int nb_event = PDI::len(wait_on_node);
 				for (int event_id = 0; event_id < nb_event; event_id++) {
-					m_wait_event.emplace_back(PDI::to_string(PC_get(wait_on_node, "[%d]", event_id)));
+					std::string wait_event = PDI::to_string(PC_get(wait_on_node, "[%d]", event_id));
+					context().add_event_callback([this](const std::string& name) {
+						this->wait();
+					}, wait_event);
 				}
 			} else {
-				m_wait_event.emplace_back(PDI::to_string(wait_on_node));
+				std::string wait_event = PDI::to_string(wait_on_node);
+				context().add_event_callback([this](const std::string& name) {
+					this->wait();
+				}, wait_event);
 			}
 		}
 		
@@ -114,50 +112,56 @@ private:
 			if (!PC_status(PC_get(status_node, "[0]"))) {
 				int nb_status = PDI::len(status_node);
 				for (int status_id = 0; status_id < nb_status; status_id++) {
-					m_status_data.emplace_back(PDI::to_string(PC_get(status_node, "[%d]", status_id)));
+					std::string status_data = PDI::to_string(PC_get(status_node, "[%d]", status_id));
+					context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+						this->status(ref);
+					}, status_data);
 				}
 			} else {
-				m_status_data.emplace_back(PDI::to_string(status_node));
+				std::string status_data = PDI::to_string(status_node);
+				context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+					this->status(ref);
+				}, status_data);
 			}
 		}
 		
 		PC_tree_t parallel_node = PC_get(config, ".parallel");
 		if (!PC_status(parallel_node)) {
-			int set_rank = -1;
-			int set_size = -1;
-			
 			PC_tree_t set_rank_node = PC_get(parallel_node, ".set_rank");
-			if (!PC_status(set_rank_node)) {
-				set_rank = PDI::Expression(PDI::to_string(set_rank_node)).to_long(context());
-			}
-			
 			PC_tree_t set_size_node = PC_get(parallel_node, ".set_size");
-			if (!PC_status(set_size_node)) {
-				set_size = PDI::Expression(PDI::to_string(set_size_node)).to_long(context());
-			}
-			
-			if (set_rank != -1) {
-				if (set_size == -1) {
+			if (!PC_status(set_rank_node)) {
+				if (!PC_status(set_size_node)) {
+					int set_rank = PDI::Expression(PDI::to_string(set_rank_node)).to_long(context());
+					int set_size = PDI::Expression(PDI::to_string(set_size_node)).to_long(context());
+					flowvr::Parallel::init(set_rank, set_size);
+					context().logger()->debug("(FlowVR) Module: Parallel: rank = {}, size = {}", set_rank, set_size);
+				} else {
 					throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Module: `set_rank' is defined, but `set_size' is not"};
 				}
-				flowvr::Parallel::init(set_rank, set_size);
-				context().logger()->debug("(FlowVR) Module: Parallel: rank = {}, size = {}", set_rank, set_size);
-			} else if (set_size != -1) {
-				throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Module: `set_size' is defined, but `set_rank' is not"};
 			} else {
-				flowvr::Parallel::init(true);
+				if (!PC_status(set_size_node)) {
+					throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Module: `set_size' is defined, but `set_rank' is not"};
+				} else {
+					flowvr::Parallel::init(true);
+				}
 			}
 			
 			PC_tree_t get_rank_node = PC_get(parallel_node, ".get_rank");
 			if (!PC_status(get_rank_node)) {
-				m_get_parallel_rank_data = PDI::to_string(get_rank_node);
-				context().logger()->debug("(FlowVR) Module: Parallel rank = {}", m_get_parallel_rank_data);
+				std::string get_parallel_rank_data = PDI::to_string(get_rank_node);
+				context().logger()->debug("(FlowVR) Module: Parallel rank = {}", get_parallel_rank_data);
+				context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+					this->get_parallel_rank(name, ref);
+				}, get_parallel_rank_data);
 			}
 			
 			PC_tree_t get_size_node = PC_get(parallel_node, ".get_size");
 			if (!PC_status(get_size_node)) {
-				m_get_parallel_size_data = PDI::to_string(get_size_node);
-				context().logger()->debug("(FlowVR) Module: Parallel size = {}", m_get_parallel_size_data);
+				std::string get_parallel_size_data = PDI::to_string(get_size_node);
+				context().logger()->debug("(FlowVR) Module: Parallel size = {}", get_parallel_size_data);
+				context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+					this->get_parallel_size(name, ref);
+				}, get_parallel_size_data);
 			}
 		}
 		
@@ -166,15 +170,21 @@ private:
 			if (!PC_status(PC_get(abort_node, "[0]"))) {
 				int nb_abort = PDI::len(abort_node);
 				for (int abort_id = 0; abort_id < nb_abort; abort_id++) {
-					m_abort_event.emplace_back(PDI::to_string(PC_get(abort_node, "[%d]", abort_id)));
+					std::string abort_event = PDI::to_string(PC_get(abort_node, "[%d]", abort_id));
+					context().add_event_callback([this](const std::string& name) {
+						this->abort(name);
+					}, abort_event);
 				}
 			} else {
-				m_abort_event.emplace_back(PDI::to_string(abort_node));
+				std::string abort_event = PDI::to_string(abort_node);
+				context().add_event_callback([this](const std::string& name) {
+					this->abort(name);
+				}, abort_event);
 			}
 		}
 		
 		PC_tree_t abort_on_fin_node = PC_get(config, ".abort_on_finalize");
-		if (!PC_status(abort_on_fin_node) && PDI::to_string(abort_on_fin_node) == "true") {
+		if (!PC_status(abort_on_fin_node) && PDI::to_bool(abort_on_fin_node)) {
 			m_abort_on_finalze = true;
 			context().logger()->debug("(FlowVR) Module: Abort on finalize = true");
 		}
@@ -314,13 +324,7 @@ public:
 		Component(std::move(other)),
 		m_fisrt_wait{other.m_fisrt_wait},
 		m_flowvr_module{std::move(other.m_flowvr_module)},
-		m_wait_data{std::move(other.m_wait_data)},
-		m_wait_event{std::move(other.m_wait_event)},
-		m_status_data{std::move(other.m_status_data)},
-		m_abort_event{std::move(other.m_abort_event)},
 		m_abort_on_finalze{other.m_abort_on_finalze},
-		m_get_parallel_rank_data{std::move(other.m_get_parallel_rank_data)},
-		m_get_parallel_size_data{std::move(other.m_get_parallel_size_data)},
 		m_input_ports{std::move(other.m_input_ports)},
 		m_output_ports{std::move(other.m_output_ports)},
 		m_traces{std::move(other.m_traces)}
@@ -333,13 +337,7 @@ public:
 		Component::operator = (std::move(other));
 		m_fisrt_wait = other.m_fisrt_wait;
 		m_flowvr_module = std::move(other.m_flowvr_module);
-		m_wait_data = std::move(other.m_wait_data);
-		m_wait_event = std::move(other.m_wait_event);
-		m_status_data = std::move(other.m_status_data);
-		m_abort_event = std::move(other.m_abort_event);
 		m_abort_on_finalze = other.m_abort_on_finalze;
-		m_get_parallel_rank_data = std::move(other.m_get_parallel_rank_data);
-		m_get_parallel_size_data = std::move(other.m_get_parallel_size_data);
 		m_input_ports = std::move(other.m_input_ports);
 		m_output_ports = std::move(other.m_output_ports);
 		m_traces = std::move(other.m_traces);
@@ -389,31 +387,23 @@ private:
 		return wait_status;
 	}
 	
-public:
-
-	void event(const char* event_name) override
+	/**
+	 *  Aborts flowvr
+	 *
+	 *  \param[in] abort_event name of the abort event
+	 */
+	void abort(const std::string& abort_event)
 	{
-		for (std::string abort_event : m_abort_event) {
-			if (!abort_event.compare(event_name)) {
-				context().logger()->warn("(FlowVR) Module ({}): Got `{}' abort event. Aborting...", m_module_name, abort_event);
-				m_flowvr_module->abort();
-				return;
-			}
-		}
-		for (std::string wait_event : m_wait_event) {
-			if (!wait_event.compare(event_name)) {
-				context().logger()->debug("(FlowVR) Module ({}): Wait from `{}' event", m_module_name, wait_event);
-				wait();
-				return;
-			}
-		}
+		context().logger()->warn("(FlowVR) Module ({}): Got `{}' abort event. Aborting...", m_module_name, abort_event);
+		m_flowvr_module->abort();
 	}
+	
 	/*
-	 * End of "Handle flowvr abort"
+	 * End of "Handle flowvr abort and wait"
 	 **************************************************************************/
 	
 	/**************************************************************************
-	 * Handle all exposes to flowvr: wait, status
+	 * Handle all exposes to flowvr: wait, status, parallel ranks
 	 */
 private:
 	/**
@@ -435,104 +425,56 @@ private:
 	 *
 	 *  \param[in] wait_ref reference where to save wait status
 	 */
-	void wait(PDI::Ref_w wait_ref)
+	void wait(const std::string& data_name, PDI::Ref_w wait_ref)
 	{
 		if (!wait_ref) {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to get write permissions for `%s'", m_module_name.c_str(), m_wait_data.c_str()};
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to get write permissions for `%s'", m_module_name.c_str(), data_name.c_str()};
 		}
 		*static_cast<int*>(wait_ref.get()) = wait();
 	}
 	
-public:
-	void data(const char* data_name, const PDI::Ref& ref) override
-	{
-		if (m_wait_data == data_name) {
-			wait(ref);
-			return;
-		}
-		
-		//pass data_name to ports
-		for (auto& port : m_output_ports) {
-			if (port.data(data_name, ref)) {
-				return;
-			}
-		}
-		
-		for (auto& port : m_input_ports) {
-			if (port.data(data_name, ref)) {
-				return;
-			}
-		}
-		
-		//update traces if this is trace descriptor
-		for (auto& trace : m_traces) {
-			if (!trace.get_on_data().compare(data_name)) {
-				trace.write(ref);
-				return;
-			}
-		}
-		
-		for (const std::string& status_data : m_status_data) {
-			if (!status_data.compare(data_name)) {
-				status(ref);
-				return;
-			}
-		}
-		
-		if (m_get_parallel_rank_data == data_name) {
-			if (flowvr::Parallel::isParallel() == false) {
-				throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to write parallel rank to `%s', because flowVR is not set to parallel", m_module_name.c_str(), data_name};
-			}
-			PDI::Ref_w rank_ref_w{ref};
-			if (rank_ref_w) {
-				*static_cast<int*>(rank_ref_w.get()) = flowvr::Parallel::getRank();
-			} else {
-				throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to get write permissions for `%s'", m_module_name.c_str(), data_name};
-			}
-			return;
-		}
-		
-		if (m_get_parallel_size_data == data_name) {
-			if (flowvr::Parallel::isParallel() == false) {
-				throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to write parallel rank, because flowVR is not set to parallel", m_module_name.c_str()};
-			}
-			PDI::Ref_w size_ref_w{ref};
-			if (size_ref_w) {
-				*static_cast<int*>(size_ref_w.get()) = flowvr::Parallel::getNbProc();
-			} else {
-				throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to get write permissions for `%s'", m_module_name.c_str(), data_name};
-			}
-			return;
-		}
-	}
-	
-	/*
-	 * End of "Handle all exposes to flowvr: wait, status"
-	 **************************************************************************/
-	
-	/**************************************************************************
-	 * Share pointers to allocated flowvr memory
-	 */
-public:
 	/**
-	 *  Called if user accessing empty descriptor. Pass it to ports.
+	 *  Saves parallel rank to Ref
 	 *
-	 *  \param[in] data_name empty descriptor name
+	 *  \param[in] data_name name of the descriptor
+	 *  \param[in] rank_ref_w reference where to write parallel rank
 	 */
-	void empty_desc_access(const char* data_name) override
+	void get_parallel_rank(const std::string& data_name, PDI::Ref_w rank_ref_w)
 	{
-		for (auto& port : m_output_ports) {
-			port.share(data_name);
+		if (flowvr::Parallel::isParallel() == false) {
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to write parallel rank to `%s', because flowVR is not set to parallel", m_module_name.c_str(), data_name.c_str()};
 		}
-		
-		for (const auto& port : m_input_ports) {
-			port.share(data_name);
+		if (rank_ref_w) {
+			*static_cast<int*>(rank_ref_w.get()) = flowvr::Parallel::getRank();
+		} else {
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to get write permissions for `%s'", m_module_name.c_str(), data_name.c_str()};
 		}
 	}
+	
+	/**
+	 *  Saves parallel size to Ref
+	 *
+	 *  \param[in] data_name name of the descriptor
+	 *  \param[in] size_ref_w reference where to write parallel size
+	 */
+	void get_parallel_size(const std::string& data_name, PDI::Ref_w size_ref_w)
+	{
+		if (flowvr::Parallel::isParallel() == false) {
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to write parallel rank, because flowVR is not set to parallel", m_module_name.c_str()};
+		}
+		if (size_ref_w) {
+			*static_cast<int*>(size_ref_w.get()) = flowvr::Parallel::getNbProc();
+		} else {
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to get write permissions for `%s'", m_module_name.c_str(), data_name.c_str()};
+		}
+	}
+	
 	/*
-	 * End of "Share pointers to allocated flowvr memory"
+	 * End of "Handle all exposes to flowvr: wait, status, parallel ranks"
 	 **************************************************************************/
 	
+public:
+
 	~Module()
 	{
 		if (m_abort_on_finalze) {

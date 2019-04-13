@@ -43,7 +43,7 @@ set_target_properties(pdi_flowvr_plugin PROPERTIES
 if("${Astyle_FOUND}")
 	Astyle_add_indent(indent TEST
 			OPTIONS_FILE ../../../docs/formating.astyle
-			flowvr.cxx payloads/*.h *.h)
+			flowvr.cxx stamps/*.h payloads/*.h *.h)
 endif()
 
 # Installation

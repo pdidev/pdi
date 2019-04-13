@@ -155,12 +155,6 @@ public:
 }; // class Trigger
 
 struct pycall_plugin: Plugin {
-	/// Trigger to call on named events
-	unordered_multimap<string, Trigger> events_triggers;
-	
-	/// Trigger to call on data events
-	unordered_multimap<string, Trigger> data_triggers;
-	
 	pybind11::scoped_interpreter interpreter;
 	
 	pycall_plugin(Context& ctx, PC_tree_t conf):
@@ -170,9 +164,11 @@ struct pycall_plugin: Plugin {
 		PC_tree_t on_event = PC_get(conf, ".on_event");
 		int nb_events = len(on_event, 0);
 		for (int map_id = 0; map_id < nb_events; map_id++) {
-			string event_name = to_string(PC_get(on_event, "{%d}", map_id));
 			PC_tree_t event = PC_get(on_event, "<%d>", map_id);
-			events_triggers.emplace(event_name, Trigger {to_string(PC_get(event, ".exec")), PC_get(event, ".with")});
+			Trigger event_trigger {to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
+			ctx.add_event_callback([&ctx, event_trigger](const std::string&) mutable {
+				event_trigger.call(ctx);
+			}, to_string(PC_get(on_event, "{%d}", map_id)));
 		}
 		
 		// Loading configuration for data
@@ -180,27 +176,10 @@ struct pycall_plugin: Plugin {
 		int nb_data = len(on_data, 0);
 		for (int map_id = 0; map_id < nb_data; map_id++) {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
-			PC_tree_t data = PC_get(on_data, "<%d>", map_id);
-			data_triggers.emplace(data_name, Trigger {to_string(data), data_name});
-		}
-		
-	}
-	
-	void event(const char* event) override
-	{
-		auto&& evrange = events_triggers.equal_range(event);
-		// invoke all required functions
-		for (auto evit = evrange.first; evit != evrange.second; ++evit) {
-			evit->second.call(context());
-		}
-	}
-	
-	void data(const char* name, Ref) override
-	{
-		auto&& dtrange = data_triggers.equal_range(name);
-		// invoke all required functions
-		for (auto dtit = dtrange.first; dtit != dtrange.second; ++dtit) {
-			dtit->second.call(context());
+			Trigger data_trigger {to_string(PC_get(on_data, "<%d>", map_id)), data_name};
+			ctx.add_event_callback([&ctx, data_trigger](const std::string&) mutable {
+				data_trigger.call(ctx);
+			}, data_name);
 		}
 	}
 	

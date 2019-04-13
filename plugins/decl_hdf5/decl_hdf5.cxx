@@ -24,7 +24,7 @@
 
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
+	#include <mpi.h>
 #endif
 
 #include <algorithm>
@@ -428,11 +428,17 @@ struct decl_hdf5_plugin: Plugin {
 	{
 		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");
+		ctx.add_data_callback([this](const std::string& name, Ref ref) {
+			this->data(name, ref);
+		});
+		ctx.add_event_callback([this](const std::string& name) {
+			this->event(name);
+		});
 		set_up_logger(ctx, PC_get(config, ".logging"));
 		ctx.logger()->info("Plugin loaded successfully");
 	}
 	
-	void data(const char* name, Ref ref) override
+	void data(const std::string& name, Ref ref)
 	{
 		Hdf5_error_handler _;
 		if (Ref_r{ref}) {
@@ -449,7 +455,7 @@ struct decl_hdf5_plugin: Plugin {
 		}
 	}
 	
-	void event(const char* event) override
+	void event(const std::string& event)
 	{
 		Hdf5_error_handler _;
 		auto range = m_config.events().equal_range(event);

@@ -117,6 +117,41 @@ public:
 	 */
 	virtual void add_datatype(const std::string& name, Datatype_template_parser parser) = 0;
 	
+	/** Adds new init callback to context
+	 *
+	 * \param[in] callback function to call when data and metadata are loaded
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> add_init_callback(const std::function<void()>& callback) = 0;
+	
+	/** Adds new data callback to context
+	 *
+	 * \param[in] callback function to call when data is being available
+	 * \param[in] name the name of the data on which call the callback, if not specified it's called on any data
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> add_data_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}) = 0;
+	
+	/** Adds new event callback to context
+	 *
+	 * \param[in] callback function to call when event is called
+	 * \param[in] name the name of the event on which call the callback, if not specified it's called on any event
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> add_event_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) = 0;
+	
+	/** Adds new empty desc access callback to context
+	 *
+	 * \param[in] callback function to call when event is called
+	 * \param[in] name the name of the data on which call the callback, if not specified it's called on any data
+	 *
+	 * \return function that removes callback
+	 */
+	virtual std::function<void()> add_empty_desc_access_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) = 0;
+	
 };
 
 } // namespace PDI

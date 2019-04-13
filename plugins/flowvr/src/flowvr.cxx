@@ -37,9 +37,6 @@ namespace {
 
 struct flowvr_plugin: PDI::Plugin {
 private:
-	bool m_init;
-	std::vector<std::string> m_init_on;
-	PC_tree_t m_config;
 	std::vector<std::unique_ptr<Component>> m_flowvr_components;
 	
 	void create_component(PC_tree_t component_node)
@@ -55,104 +52,34 @@ private:
 		}
 	}
 	
-	void add_init_on(PC_tree_t init_on_node)
+	void load_init_event(PC_tree_t component_node)
 	{
+		PC_tree_t init_on_node = PC_get(component_node, ".init_on");
 		if (!PC_status(init_on_node)) {
 			std::string event_name = PDI::to_string(init_on_node);
-			context().logger()->debug("(FlowVR) Wait on `{}' event", event_name);
-			m_init_on.emplace_back(std::move(event_name));
-		}
-	}
-	
-	void get_init_on()
-	{
-		//check if load multiple components
-		if (!PC_status(PC_get(m_config, "[0]"))) {
-			int nb_comp = PDI::len(m_config);
-			for (int comp_id = 0; comp_id < nb_comp; comp_id++) {
-				add_init_on(PC_get(m_config, "[%d].init_on", comp_id));
-			}
+			context().logger()->debug("(FlowVR) Init on `{}' event", event_name);
+			context().add_event_callback([this, component_node](const std::string& name) {
+				this->create_component(component_node);
+			}, event_name);
 		} else {
-			add_init_on(PC_get(m_config, ".init_on"));
-		}
-	}
-	
-	void init_flowvr()
-	{
-		if (!m_init) {
-			//check if load multiple components
-			if (!PC_status(PC_get(m_config, "[0]"))) {
-				int nb_comp = PDI::len(m_config);
-				for (int comp_id = 0; comp_id < nb_comp; comp_id++) {
-					create_component(PC_get(m_config, "[%d]", comp_id));
-				}
-			} else {
-				create_component(m_config);
-			}
-			
-			m_init = true;
-			context().logger()->info("(FlowVR) Plugin initialized successfully");
+			context().add_init_callback([this, component_node]() {
+				this->create_component(component_node);
+			});
 		}
 	}
 	
 public:
 	flowvr_plugin(PDI::Context& ctx, PC_tree_t config):
-		Plugin{ctx},
-		m_init{false},
-		m_config{config}
+		Plugin{ctx}
 	{
 		//FlowVR reads types of data descriptors, but data is read after plugins. That's why cannot init flowvr in constructor.
-		get_init_on();
-	}
-	
-	/** Notification for a named event
-	 * \param[in] event the event name
-	 */
-	void event(const char* event_name) override
-	{
-		for (const std::string& wait_on : m_init_on) {
-			if (wait_on == event_name) {
-				init_flowvr();
+		if (!PC_status(PC_get(config, "[0]"))) {    //check if load multiple components
+			int nb_comp = PDI::len(config);
+			for (int comp_id = 0; comp_id < nb_comp; comp_id++) {
+				load_init_event(PC_get(config, "[%d]", comp_id));
 			}
-		}
-		if (m_init_on.empty()) { //if init_on, need to init on event
-			init_flowvr();
-		}
-		if (m_init) {
-			for (auto& component : m_flowvr_components) {
-				component->event(event_name);
-			}
-		}
-	}
-	
-	/** Notification that some data becomes available
-	 * \param[in] name the name of the data made available
-	 * \param[in] ref a reference to the data value
-	 */
-	void data(const char* data_name, PDI::Ref ref) override
-	{
-		if (m_init_on.empty()) { //if init_on, need to init on event
-			init_flowvr();
-		}
-		if (m_init) {
-			for (auto& component : m_flowvr_components) {
-				component->data(data_name, ref);
-			}
-		}
-	}
-	
-	/** Notification for accessing empty desc by user
-	 * \param[in] name the name of accessing desc
-	 */
-	void empty_desc_access(const char* data_name) override
-	{
-		if (m_init_on.empty()) { //if init_on, need to init on event
-			init_flowvr();
-		}
-		if (m_init) {
-			for (auto& component : m_flowvr_components) {
-				component->empty_desc_access(data_name);
-			}
+		} else {
+			load_init_event(config);
 		}
 	}
 	

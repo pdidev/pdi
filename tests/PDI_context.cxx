@@ -27,6 +27,7 @@
 #include <pdi/context.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
+#include <pdi/scalar_datatype.h>
 
 #include "global_context.h"
 
@@ -220,4 +221,404 @@ TEST_F(ContextTest, iterator)
 	}
 }
 
-//TODO? Test Context::event() somehow
+/*
+ * Name:                ContextTest.add_event
+ *
+ * Tested functions:    PDI::Context::add_event_callback
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on event.
+ *
+ */
+TEST_F(ContextTest, add_event)
+{
+	int x = 0;
+	this->test_context->add_event_callback([&x](const std::string&) {
+		x += 42;
+	}, "event");
+	ASSERT_EQ(x, 0);
+	this->test_context->event("event");
+	ASSERT_EQ(x, 42);
+	this->test_context->event("event");
+	ASSERT_EQ(x, 84);
+}
+
+/*
+ * Name:                ContextTest.remove_event
+ *
+ * Tested functions:    PDI::Context::add_event_callback
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on event
+ *                      and removes it.
+ *
+ */
+TEST_F(ContextTest, remove_event)
+{
+	int x = 0;
+	auto erase_f = this->test_context->add_event_callback([&x](const std::string&) {
+		x += 42;
+	}, "event");
+	ASSERT_EQ(x, 0);
+	this->test_context->event("event");
+	ASSERT_EQ(x, 42);
+	erase_f();
+	this->test_context->event("event");
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                ContextTest.add_remove_event
+ *
+ * Tested functions:    PDI::Context::add_event_callback
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on event
+ *                      and removes it several times.
+ *
+ */
+TEST_F(ContextTest, add_remove_event)
+{
+	int x = 0;
+	int y = 0;
+	auto erase_x = this->test_context->add_event_callback([&x](const std::string&) {
+		x += 42;
+	}, "event_x");
+	auto erase_y = this->test_context->add_event_callback([&y](const std::string&) {
+		y += 53;
+	}, "event_y");
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->event("event_x");
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+	this->test_context->event("event_y");
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+	erase_x();
+	this->test_context->event("event_x");
+	this->test_context->event("event_y");
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 106);
+	auto erase_x_2 = this->test_context->add_event_callback([&x](const std::string&) {
+		x += 42;
+	}, "event_x_2");
+	this->test_context->event("event_x_2");
+	this->test_context->event("event_y");
+	ASSERT_EQ(x, 84);
+	ASSERT_EQ(y, 159);
+	erase_y();
+	this->test_context->event("event_x_2");
+	this->test_context->event("event_y");
+	ASSERT_EQ(x, 126);
+	ASSERT_EQ(y, 159);
+	erase_x_2();
+	ASSERT_EQ(x, 126);
+	ASSERT_EQ(y, 159);
+}
+
+/*
+ * Name:                ContextTest.add_data_callback
+ *
+ * Tested functions:    PDI::Context::add_data_callback
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data share.
+ *
+ */
+TEST_F(ContextTest, add_data_callback)
+{
+	string data_x {"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	this->test_context->add_data_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                ContextTest.add_named_data_callback
+ *
+ * Tested functions:    PDI::Context::add_data_callback
+ *
+ *
+ * Description:         Checks if named callback is
+ *                      correctly called on data share.
+ *
+ */
+TEST_F(ContextTest, add_named_data_callback)
+{
+	string data_x {"data_x"};
+	string data_y {"data_y"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	int y = 0;
+	this->test_context->add_data_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	}, "data_x");
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+}
+
+/*
+ * Name:                ContextTest.remove_data_callback
+ *
+ * Tested functions:    PDI::Context::add_data_callback
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on share
+ *                      and removes it.
+ */
+TEST_F(ContextTest, remove_data_callback)
+{
+	string data_x {"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	auto erase_x = this->test_context->add_data_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	erase_x();
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                ContextTest.remove_named_data_callback
+ *
+ * Tested functions:    PDI::Context::add_data_callback
+ *
+ *
+ * Description:         Checks if named callback is
+ *                      correctly called on data share.
+ *
+ */
+TEST_F(ContextTest, remove_named_data_callback)
+{
+	string data_x {"data_x"};
+	string data_y {"data_y"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	int y = 0;
+	auto erase_x = this->test_context->add_data_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	}, "data_x");
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+	erase_x();
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+}
+
+/*
+ * Name:                ContextTest.add_remove_data_callback
+ *
+ * Tested functions:    PDI::Context::add_data_callback
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on share
+ *                      and removes it several times.
+ *
+ */
+TEST_F(ContextTest, add_remove_data_callback)
+{
+	string data_x {"data_x"};
+	string data_y {"data_y"};
+	Data_descriptor& desc_x = this->test_context->desc(data_x);
+	Data_descriptor& desc_y = this->test_context->desc(data_y);
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	int y = 0;
+	auto erase_x = this->test_context->add_data_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += std::stoi(name);
+	});
+	auto erase_y = this->test_context->add_data_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* y = static_cast<int*>(ref_write.get());
+		*y += std::stoi(name) + 1;
+	});
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("1").share(&x, true, true);
+	this->test_context->desc("1").reclaim();
+	ASSERT_EQ(x, 3);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("2").share(&y, true, true);
+	this->test_context->desc("2").reclaim();
+	ASSERT_EQ(x, 3);
+	ASSERT_EQ(y, 5);
+	erase_x();
+	this->test_context->desc("3").share(&x, true, true);
+	this->test_context->desc("3").reclaim();
+	ASSERT_EQ(x, 7);
+	ASSERT_EQ(y, 5);
+	this->test_context->desc("4").share(&y, true, true);
+	this->test_context->desc("4").reclaim();
+	ASSERT_EQ(x, 7);
+	ASSERT_EQ(y, 10);
+	erase_y();
+	this->test_context->desc("5").share(&x, true, true);
+	this->test_context->desc("6").share(&y, true, true);
+	this->test_context->desc("5").reclaim();
+	this->test_context->desc("6").reclaim();
+	ASSERT_EQ(x, 7);
+	ASSERT_EQ(y, 10);
+}
+
+/*
+ * Name:                ContextTest.add_remove_named_data_callback
+ *
+ * Tested functions:    PDI::Context::add_data_callback
+ *
+ *
+ * Description:         Checks if named callback is
+ *                      correctly called on share
+ *                      and removes it several times.
+ *
+ */
+TEST_F(ContextTest, add_remove_named_data_callback)
+{
+	string data_x {"data_x"};
+	string data_y {"data_y"};
+	Data_descriptor& desc_x = this->test_context->desc(data_x);
+	Data_descriptor& desc_y = this->test_context->desc(data_y);
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	int y = 0;
+	auto erase_x = this->test_context->add_data_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	}, "data_x");
+	auto erase_y = this->test_context->add_data_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* y = static_cast<int*>(ref_write.get());
+		*y += 53;
+		ASSERT_STREQ(name.c_str(), "data_y");
+	}, "data_y");
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_y").share(&y, true, true);
+	this->test_context->desc("data_y").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+	erase_x();
+	this->test_context->desc("data_x").share(&x, true, true);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+	this->test_context->desc("data_y").share(&y, true, true);
+	this->test_context->desc("data_y").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 106);
+	erase_y();
+	this->test_context->desc("data_y").share(&y, true, true);
+	this->test_context->desc("data_y").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 106);
+}
+
+/*
+ * Name:                ContextTest.add_empty_desc_callback
+ *
+ * Tested functions:    PDI::Context::add_empty_desc_access_callback
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on empty desc access.
+ */
+TEST_F(ContextTest, add_empty_desc_callback)
+{
+	string data_x {"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->add_empty_desc_access_callback([this](const std::string& name) {
+		int* x = new int;
+		*x = 42;
+		this->test_context->desc(name).share(x, true, true);
+	});
+	Ref_r ref_read {this->test_context->desc(data_x).ref()};
+	int x = *static_cast<const int*>(ref_read.get());
+	ASSERT_EQ(x, 42);
+	int* data = static_cast<int*>(this->test_context->desc(data_x).reclaim());
+	delete data;
+}
+
+/*
+ * Name:                ContextTest.remove_empty_desc_callback
+ *
+ * Tested functions:    PDI::Context::add_empty_desc_access_callback
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on empty desc access
+ *                      and removes it.
+ */
+TEST_F(ContextTest, remove_empty_desc_callback)
+{
+	string data_x {"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	auto erase_x = this->test_context->add_empty_desc_access_callback([this](const std::string& name) {
+		int* x = new int;
+		*x = 42;
+		this->test_context->desc(name).share(x, true, true);
+	});
+	Ref_r ref_read {this->test_context->desc(data_x).ref()};
+	int x = *static_cast<const int*>(ref_read.get());
+	ASSERT_EQ(x, 42);
+	int* data = static_cast<int*>(this->test_context->desc(data_x).reclaim());
+	delete data;
+	erase_x();
+	try {
+		Ref ref_x {this->test_context->desc(data_x).ref()};
+		FAIL();
+	} catch (Error e) {
+		ASSERT_EQ(e.status(), PDI_ERR_VALUE);
+	}
+}

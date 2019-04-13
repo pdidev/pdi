@@ -28,7 +28,7 @@
 
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
-#include <mpi.h>
+	#include <mpi.h>
 #endif
 
 #include <memory>

@@ -187,12 +187,6 @@ public:
 }; // class Trigger
 
 struct user_code_plugin: Plugin {
-	/// User-code to call on named events
-	unordered_multimap<string, Trigger> events_uc;
-	
-	/// User-code to call on data events
-	unordered_multimap<string, Trigger> data_uc;
-	
 	user_code_plugin(Context& ctx, PC_tree_t conf):
 		Plugin{ctx}
 	{
@@ -204,7 +198,10 @@ struct user_code_plugin: Plugin {
 			PC_tree_t event = PC_get(on_event, "<%d>", map_id);
 			int nb_call = len(event, 0);
 			for (int call_id = 0; call_id < nb_call; ++call_id) {
-				events_uc.emplace(event_name, Trigger {to_string(PC_get(event, "{%d}", call_id)), PC_get(event, "<%d>", call_id)});
+				Trigger event_trigger {to_string(PC_get(event, "{%d}", call_id)), PC_get(event, "<%d>", call_id)};
+				ctx.add_event_callback([&ctx, event_trigger](const std::string&  name) mutable {
+					event_trigger.call(ctx);
+				}, event_name);
 			}
 		}
 		
@@ -216,29 +213,14 @@ struct user_code_plugin: Plugin {
 			PC_tree_t data = PC_get(on_data, "<%d>", map_id);
 			int nb_call = len(data, 0);
 			for (int call_id = 0; call_id < nb_call; ++call_id) {
-				data_uc.emplace(data_name, Trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)});
+				Trigger data_trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)};
+				ctx.add_data_callback([&ctx, data_trigger](const std::string& name, Ref ref) mutable {
+					data_trigger.call(ctx);
+				}, data_name);
 			}
 		}
 		ctx.logger()->set_pattern("[PDI][User-code][%T] *** %^%l%$: %v");
 		ctx.logger()->info("Plugin loaded successfully");
-	}
-	
-	void event(const char* event) override
-	{
-		auto&& evrange = events_uc.equal_range(event);
-		// invoke all required functions
-		for (auto evit = evrange.first; evit != evrange.second; ++evit) {
-			evit->second.call(context());
-		}
-	}
-	
-	void data(const char* name, Ref) override
-	{
-		auto&& dtrange = data_uc.equal_range(name);
-		// invoke all required functions
-		for (auto dtit = dtrange.first; dtit != dtrange.second; ++dtit) {
-			dtit->second.call(context());
-		}
 	}
 	
 	~user_code_plugin()
