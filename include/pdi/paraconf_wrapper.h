@@ -29,6 +29,7 @@
 #ifndef PDI_PARACONF_WRAPPER_H_
 #define PDI_PARACONF_WRAPPER_H_
 
+#include <functional>
 #include <string>
 
 #include <paraconf.h>
@@ -154,6 +155,28 @@ bool PDI_EXPORT to_bool(PC_tree_t tree);
  * \return the boolean value of the scalar node
  */
 bool PDI_EXPORT to_bool(PC_tree_t tree, bool dflt);
+
+/** Iterates and apply the provided function to all elements of a PC list
+ *
+ * \param tree the tree containing the list
+ * \param operation the operation to apply to each element of the tree
+ */
+void PDI_EXPORT each(PC_tree_t tree, std::function<void(PC_tree_t)> operation);
+
+/** Iterates and apply the provided function to all elements of a PC list or
+ * directly to the provided element if it is not a list
+ *
+ * \param tree the tree containing the list or the single element
+ * \param operation the operation to apply to the elements
+ */
+void PDI_EXPORT opt_each(PC_tree_t tree, std::function<void(PC_tree_t)> operation);
+
+/** Iterates and apply the provided function to all elements of a PC mapping
+ *
+ * \param tree the tree containing the mapping
+ * \param operation the operation to apply to each element of the tree
+ */
+void PDI_EXPORT each(PC_tree_t tree, std::function<void(PC_tree_t,PC_tree_t)> operation);
 
 } // namespace PDI
 

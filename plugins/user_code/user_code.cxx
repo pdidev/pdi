@@ -46,8 +46,9 @@ namespace {
 using PDI::Context;
 using PDI::Data_descriptor;
 using PDI::Ref;
+using PDI::each;
 using PDI::Error;
-using PDI::len;
+using PDI::opt_each;
 using PDI::Plugin;
 using PDI::Expression;
 using PDI::to_string;
@@ -157,12 +158,9 @@ public:
 		m_fct = reinterpret_cast<ptr_fct_t>(fct_uncast);
 		
 		if (!PC_status(PC_get(params, "{0}"))) {   // parameters
-			int nparams = len(params);
-			for (int ii = 0; ii < nparams; ii++) {
-				string alias_name = to_string(PC_get(params, "{%d}", ii));
-				string var = to_string(PC_get(params, "<%d>", ii));
-				m_aliases.emplace_back(alias_name, var);
-			}
+			each(params, [&](PC_tree_t alias, PC_tree_t var) {
+				m_aliases.emplace_back(to_string(alias), to_string(var));
+			});
 		}
 	}
 	
@@ -190,36 +188,34 @@ struct user_code_plugin: Plugin {
 	user_code_plugin(Context& ctx, PC_tree_t conf):
 		Plugin{ctx}
 	{
+		ctx.logger()->set_pattern("[PDI][User-code][%T] *** %^%l%$: %v");
+		
 		// Loading configuration for events
 		PC_tree_t on_event = PC_get(conf, ".on_event");
-		int nb_events = len(on_event, 0);
-		for (int map_id = 0; map_id < nb_events; map_id++) {
-			string event_name = to_string(PC_get(on_event, "{%d}", map_id));
-			PC_tree_t event = PC_get(on_event, "<%d>", map_id);
-			int nb_call = len(event, 0);
-			for (int call_id = 0; call_id < nb_call; ++call_id) {
-				Trigger event_trigger {to_string(PC_get(event, "{%d}", call_id)), PC_get(event, "<%d>", call_id)};
-				ctx.add_event_callback([&ctx, event_trigger](const std::string&  name) mutable {
-					event_trigger.call(ctx);
-				}, event_name);
-			}
-		}
+		if (!PC_status(on_event)) each(on_event, [&](PC_tree_t event_name, PC_tree_t events) {
+			opt_each(events, [&](PC_tree_t one_event) {
+				each(one_event, [&](PC_tree_t function_name, PC_tree_t parameters) {
+					Trigger event_trigger{to_string(function_name), parameters};
+					ctx.add_event_callback([&ctx, event_trigger](const std::string&  name) mutable {
+						event_trigger.call(ctx);
+					}, to_string(event_name));
+				});
+			});
+		});
 		
 		// Loading configuration for data
 		PC_tree_t on_data = PC_get(conf, ".on_data");
-		int nb_data = len(on_data, 0);
-		for (int map_id = 0; map_id < nb_data; map_id++) {
-			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
-			PC_tree_t data = PC_get(on_data, "<%d>", map_id);
-			int nb_call = len(data, 0);
-			for (int call_id = 0; call_id < nb_call; ++call_id) {
-				Trigger data_trigger {to_string(PC_get(data, "{%d}", call_id)), PC_get(data, "<%d>", call_id)};
-				ctx.add_data_callback([&ctx, data_trigger](const std::string& name, Ref ref) mutable {
-					data_trigger.call(ctx);
-				}, data_name);
-			}
-		}
-		ctx.logger()->set_pattern("[PDI][User-code][%T] *** %^%l%$: %v");
+		if (!PC_status(on_data)) each(on_data, [&](PC_tree_t data_name, PC_tree_t datas) {
+			opt_each(datas, [&](PC_tree_t one_data) {
+				each(one_data, [&](PC_tree_t function_name, PC_tree_t parameters) {
+					Trigger data_trigger{to_string(function_name), parameters};
+					ctx.add_data_callback([&ctx, data_trigger](const std::string& name, Ref ref) mutable {
+						data_trigger.call(ctx);
+					}, to_string(data_name));
+				});
+			});
+		});
+		
 		ctx.logger()->info("Plugin loaded successfully");
 	}
 	

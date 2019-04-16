@@ -127,4 +127,30 @@ bool to_bool(PC_tree_t tree, bool dflt)
 	return result;
 }
 
+void each(PC_tree_t tree, std::function<void(PC_tree_t)> operation)
+{
+	int nb_elem = len(tree);
+	for (int elem_id=0; elem_id<nb_elem; ++elem_id) {
+		operation(PC_get(tree, "[%d]", elem_id));
+	}
+}
+
+void opt_each(PC_tree_t tree, std::function<void(PC_tree_t)> operation)
+{
+	if ( !PC_status(PC_get(tree, "[0]")) ) {
+		each(tree, operation);
+	} else {
+		operation(tree);
+	}
+	
+}
+
+void each(PC_tree_t tree, std::function<void(PC_tree_t,PC_tree_t)> operation)
+{
+	int nb_elem = len(tree);
+	for (int elem_id=0; elem_id<nb_elem; ++elem_id) {
+		operation(PC_get(tree, "{%d}", elem_id), PC_get(tree, "<%d>", elem_id));
+	}
+}
+
 } // namespace PDI
