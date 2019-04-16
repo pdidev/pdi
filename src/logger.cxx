@@ -23,7 +23,6 @@
  ******************************************************************************/
 
 #include <memory>
-#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -87,41 +86,62 @@ Logger_sptr select_log_sinks(PC_tree_t logging_tree)
 	return make_shared<logger>("PDI_logger", sinks.begin(), sinks.end());
 }
 
+/**
+ * Sets logger verbosity level from PC_tree
+ *
+ * \param[in] logger logger to set up
+ * \param[in] logging_tree configuration tree from config file
+ * \param[in] name name
+ */
+void read_log_level(Logger_sptr logger, PC_tree_t level_tree, const string& name)
+{
+	string level_str = "info";
+	
+	if (!PC_status(PC_get(level_tree, "{0}"))) {
+		PC_tree_t module_level = PC_get(level_tree, ".%s", name.c_str());
+		if (!PC_status(module_level)) {
+			level_str = to_string(module_level);
+		} else {
+			PC_tree_t global_level = PC_get(level_tree, ".global");
+			if (!PC_status(global_level)) {
+				level_str = to_string(global_level);
+			}
+		}
+	} else {
+		if (!PC_status(level_tree)) {
+			level_str = to_string(level_tree);
+		}
+	}
+	
+	const unordered_map<string, level_enum> level_map = {
+		{"debug", debug},
+		{"info", info},
+		{"warn", warn},
+		{"error", err},
+		{"off", off}
+	};
+	
+	auto level_it = level_map.find(level_str);
+	if (level_it != level_map.end()) {
+		logger->set_level(level_map.find(level_str)->second);
+	} else {
+		logger->warn("Invalid logging level: {}. Available: 'debug', 'info', 'warn', 'error', 'off'.", level_str);
+	}
+}
+
 } // namespace <anonymous>
 
 namespace PDI {
 
-void read_log_level(Logger_sptr logger, PC_tree_t logging_tree)
-{
-	if (!PC_status(PC_get(logging_tree, ".level"))) {
-		string level_str {to_string(PC_get(logging_tree, ".level"))};
-		
-		unordered_map<string, level_enum> level_map = {
-			{"debug", debug},
-			{"info", info},
-			{"warn", warn},
-			{"error", err},
-			{"off", off}
-		};
-		
-		auto level_it = level_map.find(level_str);
-		if (level_it != level_map.end()) {
-			logger->set_level(level_map.find(level_str)->second);
-		} else {
-			logger->warn("Invalid logging level: {}. Available: 'debug', 'info', 'warn', 'error', 'off'.", level_str);
-		}
-	}
-}
-
-Logger_sptr configure_logger(PC_tree_t config)
+Logger_sptr configure_logger(PC_tree_t config, const string& name)
 {
 	//select default sinks
 	Logger_sptr logger = select_log_sinks(config);
 	
-	//read default log level
-	read_log_level(logger, config);
+	//read default log level for logger
+	read_log_level(logger, PC_get(config, ".level"), name);
 	
-	//set up final format of logger
+	//set up default format of logger
 	logger->set_pattern("[PDI][%T] *** %^%l%$: %v");
 	
 	return logger;

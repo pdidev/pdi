@@ -30,15 +30,10 @@
 
 namespace PDI {
 
-Context_proxy::Context_proxy(Context& ctx, std::string plugin_name, PC_tree_t plugin_logging):
+Context_proxy::Context_proxy(Context& ctx, std::string plugin_name, PC_tree_t logging_tree):
 	m_real_context{ctx},
-	m_plugin_logger{ctx.logger()->clone(plugin_name)}
-{
-	// check if logger level was specified for plugin
-	if (!PC_status(PC_get(plugin_logging, ".level"))) {
-		read_log_level(m_plugin_logger, plugin_logging);
-	}
-}
+	m_plugin_logger{configure_logger(logging_tree, plugin_name)}
+{}
 
 Data_descriptor& Context_proxy::desc(const std::string& name)
 {

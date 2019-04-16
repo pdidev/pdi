@@ -38,7 +38,7 @@ class PDI_EXPORT Context_proxy : public Context
 	Context& m_real_context;
 	Logger_sptr m_plugin_logger;
 public:
-	Context_proxy(Context& ctx, std::string plugin_name, PC_tree_t plugin_logging);
+	Context_proxy(Context& ctx, std::string plugin_name, PC_tree_t logging_tree);
 	
 	/** Context::desc proxy for plugins
 	 */

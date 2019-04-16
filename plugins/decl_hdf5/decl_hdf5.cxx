@@ -400,20 +400,6 @@ void set_up_logger(Context& ctx, PC_tree_t logging_tree)
 		char format[64];
 		snprintf(format, 64, "[PDI][Decl'HDF5][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
 		ctx.logger()->set_pattern(string(format));
-		
-		//set up single ranks
-		PC_tree_t single_tree = PC_get(logging_tree, ".single");
-		if (!PC_status(single_tree)) {
-			int nb_key = PDI::len(single_tree);
-			for (int key_id = 0; key_id < nb_key; ++key_id) {
-				PC_tree_t rank_tree = PC_get(single_tree, "[%d]", key_id);
-				int selected_rank = PDI::to_long(PC_get(rank_tree, ".rank"), -1);
-				if (selected_rank == world_rank) {
-					PDI::read_log_level(ctx.logger(), rank_tree);
-					break;
-				}
-			}
-		}
 	}
 #endif
 }

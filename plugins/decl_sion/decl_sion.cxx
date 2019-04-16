@@ -228,20 +228,6 @@ struct decl_sion_plugin: Plugin {
 			char format[64];
 			snprintf(format, 64, "[PDI][Decl'SION][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
 			context().logger()->set_pattern(string(format));
-			
-			//set up single ranks
-			PC_tree_t single_tree = PC_get(logging_tree, ".single");
-			if (!PC_status(single_tree)) {
-				int nb_key = PDI::len(single_tree);
-				for (int key_id = 0; key_id < nb_key; ++key_id) {
-					PC_tree_t rank_tree = PC_get(single_tree, "[%d]", key_id);
-					int selected_rank = PDI::to_long(PC_get(rank_tree, ".rank"), -1);
-					if (selected_rank == world_rank) {
-						PDI::read_log_level(context().logger(), rank_tree);
-						break;
-					}
-				}
-			}
 		}
 	}
 	

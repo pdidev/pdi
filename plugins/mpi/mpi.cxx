@@ -45,7 +45,6 @@ using PDI::Datatype_uptr;
 using PDI::Error;
 using PDI::len;
 using PDI::Plugin;
-using PDI::read_log_level;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
 using PDI::to_long;
@@ -62,20 +61,6 @@ struct mpi_plugin: Plugin {
 		char format[64];
 		snprintf(format, 64, "[PDI][MPI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
 		ctx.logger()->set_pattern(string(format));
-		
-		//set up single ranks
-		PC_tree_t single_tree = PC_get(logging_tree, ".single");
-		if (!PC_status(single_tree)) {
-			int nb_key = len(single_tree);
-			for (int key_id = 0; key_id < nb_key; ++key_id) {
-				PC_tree_t rank_tree = PC_get(single_tree, "[%d]", key_id);
-				int selected_rank = to_long(PC_get(rank_tree, ".rank"), -1);
-				if (selected_rank == world_rank) {
-					read_log_level(ctx.logger(), rank_tree);
-					break;
-				}
-			}
-		}
 		
 		//set up format for global logger
 		try {

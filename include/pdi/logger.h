@@ -25,26 +25,21 @@
 #ifndef PDI_LOGGER_H_
 #define PDI_LOGGER_H_
 
+#include <string>
+
 #include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>
 
 namespace PDI {
 
 /**
- * Sets logger verbosity level from PC_tree
- *
- * \param[in] logger logger to set up
- * \param[in] logging_tree configuration tree from config file
- */
-void PDI_EXPORT read_log_level(Logger_sptr logger, PC_tree_t logging_tree);
-
-/**
  * Reads configuration tree and sets up the logger.
  *
  * \param[in] config configuration tree from config file
+ * \param[in] name name of the module (e.g. global, test, decl_hdf5)
  * \return a configured logger
  */
-Logger_sptr PDI_EXPORT configure_logger(PC_tree_t config);
+Logger_sptr PDI_EXPORT configure_logger(PC_tree_t config, const std::string& name);
 
 } // namespace PDI
 
