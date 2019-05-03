@@ -23,78 +23,74 @@
  ******************************************************************************/
 
 
-#ifndef DECL_HDF5_SELECTION_CFG_H_
-#define DECL_HDF5_SELECTION_CFG_H_
+#ifndef DECL_HDF5_SELECTION_H_
+#define DECL_HDF5_SELECTION_H_
 
-#include <string>
 #include <vector>
 
 #include <paraconf.h>
 
-#include <pdi/error.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
-#include <pdi/paraconf_wrapper.h>
 
 
-namespace {
+namespace decl_hdf5 {
 
-class Selection_cfg
+/** This identifies a selection in an (array) Datatype
+ */
+class Selection
 {
+	/// The size of the selection in each dimension or empty for default
 	std::vector<PDI::Expression> m_size;
 	
+	/// The first included point in each dimension or empty for default
 	std::vector<PDI::Expression> m_start;
 	
 public:
-
-	Selection_cfg() = default;
+	/** The default constructor for an empty selection (everything selected)
+	 */
+	Selection() = default;
 	
-	Selection_cfg(PC_tree_t tree)
-	{
-		using PDI::Error;
-		using PDI::len;
-		using PDI::to_string;
-		using std::string;
-		int nb_key = len(tree);
-		for (int key_id=0; key_id<nb_key; ++key_id) {
-			string key = to_string(PC_get(tree, "{%d}", key_id));
-			if ( key == "size" ) {
-				PC_tree_t size_tree = PC_get(tree, ".size");
-				if ( !PC_status(PC_get(size_tree, "[0]")) ) {
-					int nb_size = len(size_tree);
-					for (int size_id=0; size_id<nb_size; ++size_id) {
-						m_size.emplace_back(to_string(PC_get(size_tree, "[%d]", size_id)));
-					}
-				} else {
-					m_size.emplace_back(to_string(size_tree));
-				}
-			} else if ( key == "start" ) {
-				PC_tree_t start_tree = PC_get(tree, ".start");
-				if ( !PC_status(PC_get(start_tree, "[0]")) ) {
-					int nb_start = len(start_tree);
-					for (int size_id=0; size_id< nb_start; ++size_id) {
-						m_start.emplace_back(to_string(PC_get(start_tree, "[%d]", size_id)));
-					}
-				} else {
-					m_start.emplace_back(to_string(start_tree));
-				}
-			} else {
-				throw Error{PDI_ERR_CONFIG, "Invalid configuration key in selection: `%s'", key.c_str()};
-			}
-		}
-	}
+	/** Builds a selection from a yaml tree.
+	 *
+	 * The tree should be a mapping with two optional keys:
+	 * - size: a list (or scalar in 1D) of expressions or nothing for default
+	 * - start: a list (or scalar in 1D) of expressions or nothing for default
+	 *   if absent
+	 *
+	 * \param tree the tree representing the selection.
+	 */
+	Selection(PC_tree_t tree);
 	
+	/** Accesses the size of the selection in each dimension or nothing for
+	 * default.
+	 *
+	 * \return the size of the selection in each dimension or nothing for default
+	 */
 	const std::vector<PDI::Expression>& size() const
 	{
 		return m_size;
 	}
 	
+	/** Accesses the first included point in each dimension or nothing for
+	 * default.
+	 *
+	 * \return The first included point in each dimension or nothing for default
+	 */
 	const std::vector<PDI::Expression>& start() const
 	{
 		return m_start;
 	}
 	
+	/** Select a part of a HDF5 space based on a selection
+	 * \param ctx the context in which to operate
+	 * \param h5_space the space to modify
+	 * \param dflt_space a space to match if the selection is empty
+	 */
+	void apply(PDI::Context& ctx, hid_t h5_space, hid_t dflt_space = -1) const;
+	
 };
 
-} // namespace <anonymous>
+} // namespace decl_hdf5
 
-#endif // DECL_HDF5_SELECTION_CFG_H_
+#endif // DECL_HDF5_SELECTION_H_

@@ -128,7 +128,7 @@ plugins:
     write: # a list or map of data to write (default: empty)
       main_field: # name of the data, it contains either a list or a single write to execute
         - dataset: data/array      # a dataset name (default: the data name)
-          when: "$iter>0&$iter<11" # a condition when to actually trigger the actions (default: that of the file)
+          when: "$iter>0&$iter<11" # an additional condition when to actually trigger the actions (default: always true)
           communicator: $MPI_COMM_SELF   # the MPI communicator used for HDF5 parallel synchronized write (default: that of the file)
           memory_selection:
             size:  [$width-2, $height-2] # number of elements to transfer in each dimension (default: size of the full data)

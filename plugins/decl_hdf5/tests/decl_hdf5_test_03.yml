@@ -10,7 +10,7 @@ data:
     type: array
     subtype: double
     size: [$nj, $ni]
-    subsize: [$nj - (2*$nj_ghost), $ni - (2*$ni_ghost)]
+    subsize: [ '$nj - (2*$nj_ghost)', '$ni - (2*$ni_ghost)' ]
     start: [$nj_ghost, $ni_ghost] # offset
   values: 
     type: array
@@ -20,9 +20,9 @@ data:
     start: [$nj_ghost, $ni_ghost] # offset
 plugins:
   decl_hdf5:
-    - file: decl_hdf5_test_03_r${rank}.h5
-      when: $input = 0
+    - file: 'decl_hdf5_test_03_r${rank}.h5'
+      when: '$input = 0'
       write: [ reals, values, ni, nj ]
-    - file: decl_hdf5_test_03_r${rank}.h5
-      when: $input = 1
+    - file: 'decl_hdf5_test_03_r${rank}.h5'
+      when: '$input = 1'
       read: [ reals, values ]

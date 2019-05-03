@@ -72,8 +72,8 @@ program test2
 
   do j=1,nj
     do i=1,ni
-       values(i,j) = i
-       reals(i,j)  = i*1.1
+       values(i,j) = i+10*j
+       reals(i,j)  = i*1+j*.1
        cp_values(i,j) = icst
        cp_reals(i,j)  = rcst
     enddo

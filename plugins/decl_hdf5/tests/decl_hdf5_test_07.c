@@ -27,43 +27,44 @@
 #include <assert.h>
 
 const char* CONFIG_YAML =
-    "metadata:                                                   \n"
+    "metadata:                                              \n"
     "  pcoord: { type: array, size: 2, subtype: int }       \n"
-    "  my_comm: MPI_Comm                                         \n"
-    "data:                                                       \n"
-    "  matrix: { type: array, size: [ 2, 2 ], subtype: int }\n"
-    "                                                            \n"
-    "plugins:                                                    \n"
-    "  mpi:                                                      \n"
-    "  decl_hdf5:                                                \n"
-    "    file: data.h5                                           \n"
-    "    communicator: $my_comm                                  \n"
-    "    datasets:                                               \n"
-    "      matrix_dataset:                                       \n"
-    "        type: array                                         \n"
+    "  my_comm: MPI_Comm                                    \n"
+    "data:                                                  \n"
+    "  matrix_in: {type: array, size: [2, 2], subtype: int} \n"
+    "  matrix_out: {type: array, size: [2, 2], subtype: int}\n"
+    "                                                       \n"
+    "plugins:                                               \n"
+    "  mpi:                                                 \n"
+    "  decl_hdf5:                                           \n"
+    "    file: data.h5                                      \n"
+    "    communicator: $my_comm                             \n"
+    "    datasets:                                          \n"
+    "      matrix_dataset:                                  \n"
+    "        type: array                                    \n"
     "        subtype: int                                   \n"
-    "        size: [2, 2]                                        \n"
-    "    write:                                                  \n"
-    "      matrix:                                               \n"
-    "        dataset: matrix_dataset                             \n"
-    "        memory_selection:                                   \n"
-    "          size:  [1, 1]                                     \n"
-    "        dataset_selection:                                  \n"
-    "          size:  [1, 1]                                     \n"
-    "          start: ['$pcoord[0]', '$pcoord[1]']               \n"
-    "    read:                                                   \n"
-    "      matrix:                                               \n"
-    "        dataset: matrix_dataset                             \n"
-    "        memory_selection:                                   \n"
-    "          size:  [2, 2]                                     \n"
-    "        dataset_selection:                                  \n"
-    "          size:  [2, 2]                                     \n"
+    "        size: [2, 2]                                   \n"
+    "    write:                                             \n"
+    "      matrix_out:                                      \n"
+    "        dataset: matrix_dataset                        \n"
+    "        memory_selection:                              \n"
+    "          size:  [1, 1]                                \n"
+    "        dataset_selection:                             \n"
+    "          size:  [1, 1]                                \n"
+    "          start: ['$pcoord[0]', '$pcoord[1]']          \n"
+    "    read:                                              \n"
+    "      matrix_in:                                       \n"
+    "        dataset: matrix_dataset                        \n"
+    "        memory_selection:                              \n"
+    "          size:  [2, 2]                                \n"
+    "        dataset_selection:                             \n"
+    "          size:  [2, 2]                                \n"
     ;
 
 void verify_matrix(int comm_color)
 {
 	int matrix[4];
-	PDI_expose("matrix", matrix, PDI_IN);
+	PDI_expose("matrix_in", matrix, PDI_IN);
 	if (comm_color) {
 		for (int i = 0; i < 4; i++) {
 			printf("m[%d] = %d\n", i, matrix[i]);
@@ -106,7 +107,7 @@ int main(int argc, char* argv[])
 	if (comm_color) {
 		int matrix = world_rank;
 		printf("Exposing: %d\n", world_rank);
-		PDI_expose("matrix", &matrix, PDI_OUT);
+		PDI_expose("matrix_out", &matrix, PDI_OUT);
 	}
 	
 	// verify file
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
 	if (!comm_color) {
 		int matrix = world_rank;
 		printf("Exposing: %d\n", world_rank);
-		PDI_expose("matrix", &matrix, PDI_OUT);
+		PDI_expose("matrix_out", &matrix, PDI_OUT);
 	}
 	
 	// wait for second half of processes
