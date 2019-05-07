@@ -171,7 +171,7 @@ Ref Data_descriptor_impl::ref()
 		}
 		if (!errors.empty()) {
 			if (1 == errors.size()) {
-				throw Error{errors.front().status(), "Error while triggering empty desc access `%s': %s", m_name, errors.front().what()};
+				throw Error{errors.front().status(), "Error while triggering empty desc access `%s': %s", m_name.c_str(), errors.front().what()};
 			}
 			string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering empty desc access `" + m_name + "':\n";
 			for (auto&& err: errors) {
