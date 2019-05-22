@@ -1,54 +1,41 @@
 \page FlowVR_plugin The FlowVR plugin
 
-The FlowVR plugin hides FlowVR API calls and logic. Properly created PDI
-configuration file allows user to care only about proper input/output calls.
+The [FlowVR](http://flowvr.sourceforge.net) plugin lets you write FlowVR modules
+ without knowing any specific FlowVR API calls. Properly created PDI configuration
+  file allows you to care only about proper input/output calls.
 
 FlowVR plugin does not support the full FlowVR feature set.
 
-## **Configuration elements**
+# Configuration elements
 
-### **Plugin node**
+## FlowVR plugin tree
+
+The root of FlowVR plugin configuration (named `flowvr`), is a dictionary that contains the following trees:
+|subtree|
+|:----|
+|\ref component_node|
+|\ref wait_on_data_node (*recommended*)|
+|\ref wait_on_node (*optional*)|
+|\ref status_node (*optional*)|
+|\ref abort_on_node (*optional*)|
+
+### component {#component_node}
+
+For now only available component is `module`, but this can be expanded to `filter` and `synchronizer` in the future.
+Code example:
 
 ```yaml
 plugins:
   flowvr:
+    component: module
 ```
 
-- `flowvr` name of the plugin, must be children of `plugins` node
+### wait_on_data {#wait_on_data_node}
 
-### **Component node**
-
-Available components: `module`
-
-Case 1:
-
-```yaml
-flowvr:
-  component: module
-  ...
-```
-
-- `flowvr` has single subtree in which `component` is defined
-- only one module will be loaded by calling `PDI_init`
-
-Case 2:
-
-```yaml
-flowvr:
-  - component: module
-    ...
-  - component: module
-    ...
-```
-
-- `flowvr` has an array in which `component`s are defined
-- `PDI_init` will load all defined modules
-
-### **Component descriptors**
-
-FlowVR does not define any default descriptors. **User has to define all descriptors** in `data` tree outside flowvr tree.
-
-#### **wait_on_data**
+ The plugin will call `wait` funciton every time given descriptors will be shared with `PDI_IN`
+ access direction. This descritor must be an integer type and the status returned from this call
+ will be written as a response.
+ Code example:
 
 ```yaml
 data:
@@ -60,13 +47,12 @@ plugins:
     wait_on_data: wait_desc
 ```
 
-- `wait_on_data` holds name of the descriptor (data)
-- `wait_desc` is a descriptor where PDI will write value returned by module `wait` method
-- `wait_desc` must be an integer
-- every time user use `wait desc` (by `PDI_expose`) PDI will call `wait` on FlowVR module
-- `wait_desc` must be called with write access: `PDI_expose("wait_desc", &wait, PDI_IN)`
+### wait_on {#wait_on_node}
 
-#### **wait_on**
+`wait_on` in `flowvr` tree defines on which events the plugin calls the `wait` function.
+The value can be either single event name or the array of events names (both examples presented below).
+This method of calling `wait` should be avoided if possible, because it's not returning the wait status.
+Code examples:
 
 ```yaml
 plugins:
@@ -75,10 +61,6 @@ plugins:
     wait_on: "wait_event"
 ```
 
-- `wait_on` holds name of the event on which PDI should abort FlowVR module
-- should be avoided if possible (not returning the wait status)
-- `wait_on` can be an array of events:
-
 ```yaml
 plugins:
   flowvr:
@@ -86,32 +68,25 @@ plugins:
     wait_on: ["wait_event_1", "wait_event_2"]
 ```
 
-#### **status**
+### status {#status_node}
+
+Defining `status` tree inside `flowvr` node will result in returning the status of the module to the given
+descripor. The same as the `wait_on` it can be a single name or an array of names.
+Code example:
 
 ```yaml
 data:
   wait_desc: int
-  status_desc_1: int
-  status_desc_2: int
-  status_desc_3: int
+  status_desc: int
 
 plugins:
   flowvr:
-    - component: module_1
-      wait_on_data: wait_desc
-      status: status_desc_1
-    - component: module_2
-      wait_on_data: wait_desc
-      status: [status_desc_2, status_desc_3]
+    component: module_1
+    wait_on_data: wait_desc
+    status: status_desc
 ```
 
-- `status` holds name (or array of names) of the descriptor (data)
-- `status_desc_x` is a descriptor where PDI will write value returned by module `status` method
-- `status_desc_x` must be an integer
-- every time user use `status_desc_x` (by PDI_expose) PDI will call `status` on FlowVR module
-- `status_desc_x` must be called with write access: `PDI_expose("status_desc_x", &status_x, PDI_IN)`
-
-#### **abort_on**
+### abort_on {#abort_on_node}
 
 ```yaml
 data:
@@ -129,7 +104,7 @@ plugins:
 
 - `abort_on` holds names (or array of names) of the event on which PDI will call `abort` method
 
-### **parallel**
+## parallel
 
 ```yaml
 data:
@@ -167,7 +142,40 @@ plugins:
 - `$par_rank_desc` is a value of rank process to pass to flowvr
 - `$par_size_desc` is a value of world size to pass to flowvr
 
-### **Input_ports**
+
+
+
+Case 1:
+
+```yaml
+plugins:
+  flowvr:
+    component: module
+  ...
+```
+
+- `flowvr` has single subtree in which `component` is defined
+- only one module will be loaded by calling `PDI_init`
+
+Case 2:
+
+```yaml
+flowvr:
+  - component: module
+    ...
+  - component: module
+    ...
+```
+
+- `flowvr` has an array in which `component`s are defined
+- `PDI_init` will load all defined modules
+
+## Component descriptors
+
+FlowVR does not define any default descriptors. **User has to define all descriptors** in `data` tree outside flowvr tree.
+
+
+## Input_ports
 
 ```yaml
 flowvr:
@@ -178,7 +186,7 @@ flowvr:
 
 - `input_ports` each port will be set as `flowvr input port` of the module
 
-### **Output_ports**
+## Output_ports
 
 ```yaml
 flowvr:
@@ -189,7 +197,7 @@ flowvr:
 
 - `output_ports` each port will be set as `flowvr output port` of the module
 
-### **Input_port message**
+## Input_port message
 
 Default type of input port. Flowvr message consists of:
 
@@ -242,7 +250,7 @@ The `received_size` will hold the size of received array, but plugin will set it
 **after** user access the `data_descriptor_name` descriptor. The `size` property of descriptor
 should be divided by size of element.
 
-### **Output_port message**
+## Output_port message
 
 Default type of output port. Flowvr message consists of:
 
@@ -301,7 +309,7 @@ flowvr:
 
 `copy_data_selection` has to containt a valid PDI type
 
-### **Stamp**
+## Stamp
 
 ```yaml
 data:
@@ -324,7 +332,7 @@ flowvr:
   - `array of chars`
 - `descriptor_name` is the name of the descriptor where FlowVR plugin will read/write stamp value
 
-### ***Stamp as expression***
+## Stamp as expression
 
 For output port user can define stamp as expression value (stamp need type definition in this case):
 
@@ -344,7 +352,7 @@ flowvr:
 
 For now only int and string stamps are supported as expression.
 
-### **Input_port chunks**
+## Input_port chunks
 
 Chunks allows user to put multiple data in single message.
 
@@ -377,7 +385,7 @@ flowvr:
 
 - `chunks` indicates that message will hold many data
 
-### **Output_port chunks**
+## Output_port chunks
 
 ```yaml
 data:
@@ -397,7 +405,7 @@ flowvr:
 
 - `chunks` indicates that message will hold many data
 
-### **Input_port event button**
+## Input_port event button
 
 Only when port has a child node named `event_button`. Flowvr message consists of:
 
@@ -433,7 +441,7 @@ flowvr:
   - `up, down, left, right` are the name of the descriptor from where plugin will read the state of the buttons
   - `stamps` the stamps that will be signed to each message received by this port
 
-### **Output_port button event**
+## Output_port button event
 
 Only when port has a child node named `event_button`. Flowvr message consists of:
 
@@ -469,7 +477,7 @@ flowvr:
   - `up, down, left, right` are the name of the descriptor where plugin will write the state of the buttons
   - `stamps` the stamps that will be signed to each message sent by this port
 
-#### **Full list of predefined keys**
+### Full list of predefined keys
 
 - KEY_F1 -> F1
 - KEY_F2 -> F2
@@ -493,7 +501,7 @@ flowvr:
 - KEY_END -> End
 - KEY_INSERT -> Insert
 
-### **Input_port event mouse**
+## Input_port event mouse
 
 Only when port has a child node named `event_mouse`. Flowvr message consists of:
 
@@ -528,7 +536,7 @@ flowvr:
   - `MIDDLE_BUTTON` is the predefined name of the `middle mouse button` (always of type `int`)
   - `stamps` the stamps that will be signed to each message received by this port
 
-### **Output_port mouse event**
+## Output_port mouse event
 
 Only when port has a child node named `event_mouse`. Flowvr message consists of:
 
@@ -563,7 +571,7 @@ flowvr:
   - `MIDDLE_BUTTON` is the predefined name of the `middle mouse button` (always of type `int`)
   - `stamps` the stamps that will be signed to each message sent by this port
 
-### **Traces**
+## Traces
 
 ```yaml
 data:
@@ -585,7 +593,7 @@ The following instruction writes trace:
   PDI_expose("trace_descriptor", &trace_value, PDI_OUT);
 ```
 
-## **Reading and writing data**
+# Reading and writing data
 
 FlowVR plugin uses 2 ways to handle data reading and writing:
 
@@ -593,7 +601,7 @@ FlowVR plugin uses 2 ways to handle data reading and writing:
 
 2. Copy the data from shared memory to descriptor - needs the data copy (convenient for small messages).
 
-### **Read data from FlowVR message by access the shared memory**
+## Read data from FlowVR message by access the shared memory
 
 ```yaml
 data:
@@ -614,7 +622,7 @@ PDI_access("text_shr", (void**)&text_shr, PDI_IN);
 PDI_release("text_shr"); // really important to release descriptors
 ```
 
-### **Write data from FlowVR message by access the shared memory**
+## Write data from FlowVR message by access the shared memory
 
 ```yaml
 data:
@@ -635,7 +643,7 @@ PDI_access("text_shr", (void**)&text_shr, PDI_OUT);
 PDI_release("text_shr"); // really important to release descriptors
 ```
 
-### **Read data from FlowVR message by copy from the shared memory**
+## Read data from FlowVR message by copy from the shared memory
 
 ```yaml
 data:
@@ -652,7 +660,7 @@ char text[4];
 PDI_expose("text", text, PDI_IN);
 ```
 
-### **Write data to FlowVR message by copy to the shared memory**
+## Write data to FlowVR message by copy to the shared memory
 
 ```yaml
 data:
@@ -669,7 +677,7 @@ char text[4];
 PDI_expose("text", text, PDI_OUT);
 ```
 
-### **Write data to FlowVR message by copy the subset of data to the shared memory**
+## Write data to FlowVR message by copy the subset of data to the shared memory
 
 ```yaml
 data:
@@ -687,11 +695,11 @@ int my_array[400];
 PDI_expose("my_array", my_array, PDI_OUT); // copies only 100 elements
 ```
 
-## **Reading and writing stamps**
+# Reading and writing stamps
 
 Stamps are always copied from descriptor to flowvr message.
 
-### **Read stamp from FlowVR message**
+## Read stamp from FlowVR message
 
 ```yaml
 data:
@@ -708,7 +716,7 @@ int stamp_it = some_value;
 PDI_expose("stamp_it", &stamp_it, PDI_IN);
 ```
 
-### **Write stamp from FlowVR message**
+## Write stamp from FlowVR message
 
 ```yaml
 data:
@@ -726,9 +734,9 @@ int user_stamp = some_value;
 PDI_expose("user_stamp", &user_stamp, PDI_OUT);
 ```
 
-## **Reading and writing mouse event**
+# Reading and writing mouse event
 
-### **Write mouse event from FlowVR message**
+## Write mouse event from FlowVR message
 
 ```yaml
 data:
@@ -751,7 +759,7 @@ int left_button = 1;
 PDI_expose("left_button", &left_button, PDI_OUT);
 ```
 
-### **Read mouse event from FlowVR message**
+## Read mouse event from FlowVR message
 
 ```yaml
 data:
@@ -774,7 +782,7 @@ int left_button;
 PDI_expose("left_button", &left_button, PDI_IN);
 ```
 
-### **Write button event from FlowVR message**
+## Write button event from FlowVR message
 
 ```yaml
 data:
@@ -797,7 +805,7 @@ int down_state = 1;
 PDI_expose("down", &down_state, PDI_OUT);
 ```
 
-### **Read button event from FlowVR message**
+## Read button event from FlowVR message
 
 ```yaml
 data:
@@ -820,7 +828,7 @@ int down_state;
 PDI_expose("down", &down_state, PDI_IN);
 ```
 
-## **Examples**
+# Examples
 
 Path to the examples:
 
@@ -830,14 +838,14 @@ Path to the examples:
 
 Original flowvr source files are in directiories `flowvr_original`.
 
-### **Running the application**
+## Running the application
 
 1. Go to examples folder: `cd pdi_plugin-flowvr/src/FLOWVR_PLUGIN-build/examples`
 2. Run `source flowvr-config.sh`. Now your environment is ready.
 3. Run flowvr deamon on your system (best in new terminal, repeat 1. and 2.): `flowvrd --top`
 4. Inside `$example_name` directory generate the flowvr configuration files by: `python $example_name.py` and run example by: `flowvr $example_name`
 
-### **Tictac example**
+## Tictac example
 
 Consists of 2 modules:
 
@@ -848,7 +856,7 @@ Consists of 2 modules:
   - sends message with:
     - `data` (payload):
       ```yaml
-      type: {type: array, subtype: char, size: 4} # "tic" or "tac"
+      type: {type: array, subtype: char, size: 4}  #"tic" or "tac"
       ```
     - `stamps`:
       - `it` (predefined flowvr stamp)
@@ -871,11 +879,11 @@ Consists of 2 modules:
       type: {type: array, subtype: char, size: 256}
       ```
 
-#### **Network of the application:**
+### #Network of the application:
 
 <img src="images/tictac_net.jpg" alt="drawing" width="300"/>
 
-### **Bundle example**
+### Bundle example
 
 Consists of 3 modules:
 
@@ -905,11 +913,11 @@ Consists of 3 modules:
       type: {type: array, subtype: char, size: 256}
       ```
 
-#### **Network of the application:**
+### Network of the application:
 
 <img src="images/bundle_net.jpg" alt="drawing" width="500"/>
 
-### **Primes example**
+## Primes example
 
 Consists of 3 modules:
 
@@ -951,11 +959,11 @@ Consists of 3 modules:
   - has `input ports` named `primesIn` and `keysIn`
   - receive message sent by `capture` and `compute` modules
 
-#### **Network of the application:**
+### Network of the application:
 
 <img src="images/primes_net.jpg" alt="drawing" width="700"/>
 
-### **Fluid example**
+## Fluid example
 
 Consists of 2 modules:
 
@@ -997,6 +1005,6 @@ Consists of 2 modules:
       ```
       Here `velocitySize` must be preceded with `$` to let plugin to write the size there. The `velocitySize` descriptor will store a valid size **after** accessing the `velocity` descriptor, because only then plugin will write size.
 
-#### **Network of the application:**
+### Network of the application:
 
 <img src="images/fluid_net.jpg" alt="drawing" width="500"/>
