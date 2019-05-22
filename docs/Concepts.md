@@ -1,61 +1,137 @@
 \page Concepts Core Concepts
 
-%PDI supports calling libraries from the 
-\ref Specification_tree "specification tree" instead of from the code.
-Each library call described in the \ref Specification_tree "specification tree"
-relies on:
-* the \ref Data_store "data store" for data transfer,
-* the \ref Event_subsystem "event subsystem" for control transfer.
+%PDI offers to exchange data between he application code and various external data
+handlers, such as for example the file-system for I/O or another code for
+code-coupling.
 
+Before using %PDI, it is however a good idea to understand the three core concepts
+that make this possible.
 
+Each data exchange is a two-step process.
+The PDI-enabled application makes its data available through the
+\ref Data_store "data store".
+The \ref Event_subsystem "event subsystem" then notifies interested external data
+handlers about this change in the store.
+Once notified, each data handler (implemented as a plugin) can look in the store and
+use the data accessible from there.
 
-\section Specification_tree Specification tree
-
-The specification tree is a file written in the
-[YAML](https://en.wikipedia.org/wiki/YAML) format and provided to %PDI at
-\ref PDI_init "initialization".
-The specification tree is the place where one defines which plugins to load in
-order to access libraries, and what library calls to make.
+The orchestration of these exchanges, the description of what data can be put in the
+store, what each handler should do with it, etc. is described in the 
+\ref Specification_tree "specification tree".
 
 
 
 \section Data_store Data store
 
-The data store handles *data transfer* between the code and libraries.
-
-Data transfer is the action of making data available to another part of the
-code.
+The data store is the mechanism offered by %PDI to handle *data transfer* between the
+application code and external data handlers.
+Data transfer is the action of making data available to another part of the code.
 For example, in a function call the list of parameters determines data transfer.
 
-In %PDI, the store offers this service.
-The store is a set of references where each reference is made of:
-* a unique identifier (a string),
+%PDI data store is somewhat similar to a file-system or a document store with some
+specific properties:
+* unlike in traditional file-systems, data stored in %PDI store is typed, one can
+  differentiate between a record with named members and an array for example;
+* each process contains a distinct instance of the store, inter-process
+  communications might be offered by data handlers accessing objects in the store
+  and exchanging them between process boundaries, but not by %PDI itself;
+* storing an object in %PDI store is cheap as it does not triggers any copy, instead
+  the store holds a reference to the exact same object in memory as that manipulated
+  by the code;
+* to prevent invalid concurrent accesses to the objects, the stores offers a mutual
+  exclusion mechanism where only one handler can access the object for write but
+  concurrent read access is possible.
+
+This approach makes it possible to exchange data between very weakly coupled code
+modules.
+Each module can add or access objects in the store and does not need to know which 
+other module created it or how.
+
+In summary, the store hold a set of object references, each identified by a name and
+that contains:
 * the address of the buffer storing the data (a pointer),
 * the description of the type of the data (memory layout and interpretation),
 * a RW-lock to ensure exclusive access.
-
-Buffers referenced in the store are available for access from the libraries.
-On can use them from the \ref Specification_tree "specification tree".
 
 
 
 \section Event_subsystem Event subsystem
 
-While the data store handles data transfer between the simulation code and
-libraries, the event system handles *control* transfer.
+While the \ref Data_store "data store" handles data transfer between the application
+code and external data handlers, the event subsystem handles *control* transfer.
 Control transfer is the action of passing the CPU control to another part of the
 code.
-For example, a function call is a way to transfer control, creating a thread is
+For example, calling a function is a way to transfer control, creating a thread is
 another way.
 
-In %PDI, this is handled by events that are emitted:
-* when a new reference is made available in the store,
-* when a \ref PDI_event "named event" is emitted by the code,
-* when accessing a non-existing reference in the store.
+The event subsystem makes it possible to observe the store and to be notified when it
+is accessed; thus complementing the store with a way for data handler to implement
+their expected behavior.
+Notifications are emitted when:
+* a reference becomes available in the store,
+* a reference ceases to be available in the store,
+* someone accesses a reference that is not int the store,
+* a \ref PDI_event "named event" is emitted.
 
-Libraries can be notified when an event is emitted and take action at that time.
-Control transfer in %PDI is synchronous (same as a function call), but plugins
-can choose to implement any other behavior on top of that such as the creation
-of a thread for asynchronous execution for example.
+To ensure minimal overhead, the %PDI event subsystem is synchronous by default (like
+a function call).
+Plugins can implement other behaviors on top of that.
+For example, a plugin could create a thread for asynchronous execution.
 
+This approach makes it possible to exchange data between very weakly coupled code
+modules.
+Each module can execute specific code when the required data becomes available and
+does not need to know which other module created it or how.
+
+
+
+\section Specification_tree Specification tree
+
+The combination of data transfer offered by the \ref Data_store "data store" and
+control transfer offered by the \ref Event_subsystem "event subsystem" offers the
+basis for weak coupling of multiple independent modules.
+The specification tree builds on this basis and orchestrates the interaction between
+the multiple modules used in an execution.
+
+The specification tree is specified in a file written in the
+[YAML](https://en.wikipedia.org/wiki/YAML) format and provided to %PDI at
+\ref PDI_init "initialization".
+This makes it possible to change the list of modules to load and their interactions
+without having to recompile any code.
+
+The specification tree structure is described in details in its
+\ref Specification_tree_ref "reference documentation".
+It contains two main subparts:
+* the data types description,
+* the plugin list configuration.
+
+The data types description defines the type of data expected in the store.
+This is most useful for non-reflexive statically typed languages (C, C++, Fortran)
+for which this information can not be automatically extracted at execution.
+The types can be expressed in function of the value of other data through
+`$-expressions`.
+For example, a given object might be described as an array of `N` `doubles` where `N`
+is an integer available elsewhere in the store.
+
+The plugin list configuration defines the list of plugins to load and a configuration
+for each of them.
+Each plugin can accept a different way of specifying the configuration, but in any
+case, this is where the orchestration of interactions is specified.
+The \ref user_code_plugin "user-code plugin" is somewhat specific in that instead of
+providing a service itself, it enables the application to react to events and
+implement specific code handle data from the store.
+
+
+
+\section Conclusion
+
+To summarize, interactions between weakly coupled modules in %PDI go through the
+\ref Data_store "data store" that acts somewhat like a file-system.
+One can share data buffers in this store to make them available to other modules.
+When a buffer becomes available in the store, the
+\ref Event_subsystem "event subsystem" notifies interested modules so that they can
+use the data.
+The plugins loaded and configured through the
+\ref Specification_tree "specification tree" offer various reusable services through
+that mechanism such as data write to disk, fault tolerance, code coupling, etc.
 
