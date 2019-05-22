@@ -1475,3 +1475,16 @@ span.lineno
 {
 	display: none;
 }
+
+div.image img[src="tictac_net.jpg"]{ 
+    max-width:300px; 
+}
+div.image img[src="bundle_net.jpg"]{ 
+    max-width:400px; 
+}
+div.image img[src="fluid_net.jpg"]{ 
+    max-width:700px; 
+}
+div.image img[src="primes_net.jpg"]{ 
+    max-width:700px; 
+}
