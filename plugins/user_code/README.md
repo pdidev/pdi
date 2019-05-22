@@ -1,0 +1,3 @@
+\page user_code_plugin The user-code plugin
+
+Lorem ipsum...

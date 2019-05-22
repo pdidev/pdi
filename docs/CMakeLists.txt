@@ -83,6 +83,7 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_SOURCE_DIR}/../hands_on/README.md"
 		"${PDI_BINARY_DIR}/fortran_inc/"
 		"${PDI_SOURCE_DIR}/../plugins/decl_hdf5/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/flowvr/README.md")
+		"${PDI_SOURCE_DIR}/../plugins/flowvr/README.md"
+		"${PDI_SOURCE_DIR}/../plugins/user_code/README.md")
 add_dependencies(doc doxygen_doc)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}/html")

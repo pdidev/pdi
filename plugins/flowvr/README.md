@@ -1,4 +1,4 @@
-# The FlowVR plugin
+\page FlowVR_plugin The FlowVR plugin
 
 The FlowVR plugin hides FlowVR API calls and logic. Properly created PDI
 configuration file allows user to care only about proper input/output calls.

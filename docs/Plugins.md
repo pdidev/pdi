@@ -8,4 +8,4 @@ Here is a list of %PDI plugins:
 * MPI plugin
 * Pycall plugin
 * test plugin
-* user_code plugin
+* \subpage user_code_plugin user_code plugin
