@@ -3,7 +3,7 @@
 The user-code plugin enables one to call a user-defined function 
 when a specified event occur or certain data becomes available.
 
-# Configuration grammar
+\section conf_grammar_node Configuration grammar
 
 The root of `user-code` plugin is a dictionary that contains the following keys:
 
@@ -18,24 +18,47 @@ will cause the specified functions to be called,
 * the `on_event` key specifies the list of events on which to call the specified functions,
 * additional keys are ignored.
 
-## on_data {#on_data_node}
+\subsection on_data_node on_data
 
 A \ref on_data_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`".*"` (*optional*)|*anything*|
+|`".*"` (*optional*)|a \ref function_list_node|
 
 * each key identifies the name of a descriptor, which will trigger specified functions when it becomes available.
 
-## on_event {#on_event_node}
+\subsection on_event_node on_event
 
 A \ref on_event_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`".*"` (*optional*)|*anything*|
+|`".*"` (*optional*)|a \ref function_list_node|
 
 * each key identifies the name of an event, which will trigger specified functions when it occurs.
 
-## function
+\subsection function_list_node function_list
+
+A \ref function_list_node is a dictionary that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a \ref function_param_list_node|
+
+* each key identifies the name of a function, which will be called on specified event or data.
+
+\subsection function_param_list_node function_param_list
+
+A \ref function_list_node is a dictionary that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a $-expression referencing a data|
+
+* each key identifies the name of a descriptor alias, which will be available during function execution.
+
+\section full_config_example_node Full configuration example
+```yaml                   
+TODO
+```
