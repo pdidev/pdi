@@ -1,0 +1,3 @@
+\page First_steps First steps with %PDI
+
+Lorem Ipsum...
