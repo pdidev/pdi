@@ -1,6 +1,6 @@
 \page Concepts Core Concepts
 
-%PDI offers to exchange data between he application code and various external data
+%PDI offers to exchange data between the application code and various external data
 handlers, such as for example the file-system for I/O or another code for
 code-coupling.
 
@@ -19,7 +19,7 @@ The orchestration of these exchanges, the description of what data can be put in
 store, what each handler should do with it, etc. is described in the 
 \ref Specification_tree "specification tree".
 
-
+\image html PDI_schema.jpg PDI structure schema
 
 \section Data_store Data store
 
@@ -70,7 +70,7 @@ their expected behavior.
 Notifications are emitted when:
 * a reference becomes available in the store,
 * a reference ceases to be available in the store,
-* someone accesses a reference that is not int the store,
+* someone accesses a reference that is not in the store,
 * a \ref PDI_event "named event" is emitted.
 
 To ensure minimal overhead, the %PDI event subsystem is synchronous by default (like

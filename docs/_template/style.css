@@ -1476,6 +1476,11 @@ span.lineno
 	display: none;
 }
 
+.image
+{
+	text-align: center;
+}
+
 div.image img[src="tictac_net.jpg"]{ 
     max-width:300px; 
 }
