@@ -103,9 +103,9 @@ void hello_world(void)
 int main(int argc, char* argv[])
 {
     PC_tree_t conf = PC_parse_path("hello_world.yml");
-	PDI_init(conf);
+    PDI_init(conf);
     PDI_event("print");
-	PDI_finalize();
+    PDI_finalize();
     return 0;
 }
 ```
@@ -137,18 +137,18 @@ void print_number(void)
 {
     void* input; PDI_access("input", &input, PDI_IN);
     printf("I've got number %d.\n", *((int*)input));
-	PDI_release("input");
+    PDI_release("input");
 }
 
 int main(int argc, char* argv[])
 {
     PC_tree_t conf = PC_parse_path("print_number.yml");
-	PDI_init(conf);
+    PDI_init(conf);
     int number = 42;
     PDI_share("number", &number, PDI_OUT);
     PDI_event("print");
     PDI_reclaim("number");
-	PDI_finalize();
+    PDI_finalize();
     return 0;
 }
 ```
@@ -181,17 +181,17 @@ void print_number(void)
 {
     void* input; PDI_access("input", &input, PDI_IN);
     printf("I've got number %d.\n", *((int*)input));
-	PDI_release("input");
+    PDI_release("input");
 }
 
 int main(int argc, char* argv[])
 {
     PC_tree_t conf = PC_parse_path("print_number.yml");
-	PDI_init(conf);
+    PDI_init(conf);
     int number = 42;
     PDI_expose("number", &number, PDI_OUT);
     //PDI_event is no longer necessary and PDI_share/PDI_reclaim can be simplified to PDI_expose
-	PDI_finalize();
+    PDI_finalize();
     return 0;
 }
 ```
@@ -227,18 +227,18 @@ void add_ten(void)
 {
     void* input; PDI_access("input", &input, PDI_OUT);
     *((int*)input) += 10;
-	PDI_release("input");
+    PDI_release("input");
 }
 
 int main(int argc, char* argv[])
 {
     PC_tree_t conf = PC_parse_path("adding_to_number.yml");
-	PDI_init(conf);
+    PDI_init(conf);
     int number = 42;
     printf("Before expose, number = %d.\n", number);
     PDI_expose("number", &number, PDI_IN);
     printf("After expose, number = %d.\n", number);
-	PDI_finalize();
+    PDI_finalize();
     return 0;
 }
 ```
@@ -278,7 +278,7 @@ void sum_and_multiply(void)
     void* product; PDI_access("product", &product, PDI_OUT);
     *((int*)sum) = *((int*)number1) + *((int*)number2);
     *((int*)product) = *((int*)number1) * *((int*)number2);
-	PDI_release("number1");
+    PDI_release("number1");
     PDI_release("number2");
     PDI_release("sum");
     PDI_release("product");
@@ -287,7 +287,7 @@ void sum_and_multiply(void)
 int main(int argc, char* argv[])
 {
     PC_tree_t conf = PC_parse_path("calculate.yml");
-	PDI_init(conf);
+    PDI_init(conf);
     int foo = 4, bar = 5, res1 = 0, res2 = 0;
     PDI_multi_expose("calculate", 
         "foo", &number, PDI_OUT,
@@ -295,7 +295,7 @@ int main(int argc, char* argv[])
         "res1", &number, PDI_IN
         "res2", &number, PDI_IN);
     printf("After calculation, foo = %d, bar = %d, res1 = %d, res2 = %d.\n", foo, bar, res1, res2);
-	PDI_finalize();
+    PDI_finalize();
     return 0;
 }
 ```
