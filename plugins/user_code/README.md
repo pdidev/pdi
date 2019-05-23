@@ -304,7 +304,7 @@ void sum_and_multiply(void)
 
 int main(int argc, char* argv[])
 {
-    PC_tree_t conf = PC_parse_path("file.yml");
+    PC_tree_t conf = PC_parse_path("calculate.yml");
     PDI_init(conf);
     int foo = 4, bar = 5, res1 = 0, res2 = 0;
     printf("Before calculation, foo = %d, bar = %d, res1 = %d, res2 = %d.\n", foo, bar, res1, res2);
@@ -343,5 +343,7 @@ After calculation, foo = 4, bar = 5, res1 = 9, res2 = 20.
 [PDI][User-code][13:58:20] *** info: Closing plugin
 ```
 \section important_notes_node Important notes
+ * Make sure to compile your program with `Wl,--export-dynamic` or `-rdynamic` flag
+ (in CMake set `ENABLE_EXPORTS` to `TRUE` using `set_target_properties` command) in order to generate necessary symbols.
  * Make sure you use the proper access rights in your function in \ref PDI_access (PDI_IN for reading, PDI_OUT for writing).
  * Descriptor aliases enables one to use different descriptors without the need to recompile the code.
