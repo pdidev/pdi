@@ -47,7 +47,7 @@ A \ref function_list_node is a dictionary that contains the following keys:
 |`".*"` (*optional*)|a \ref function_param_list_node|
 
 * each key identifies the name of a function, which will be called on specified event or data,
-* **NOTE**: these functions **can not** take any arguments or return any value (i.e. thier type must be `void(void)`).
+* **NOTE**: these functions **can not** take any arguments or return any value (i.e. their type must be `void(void)`).
 
 \subsection function_param_list_node function_param_list
 
@@ -59,7 +59,7 @@ A \ref function_param_list_node is a dictionary that contains the following keys
 
 * each key identifies the name of a descriptor alias, which will be available during function execution.
 
-\section full_config_example_node Specification tree example
+\section full_spec_tree_example_node Specification tree example
 
 ```yaml                   
 data:
@@ -87,7 +87,7 @@ This section shows a simple examples with the use of a `user-code` plugin.
 
 \subsection hello_world_node Hello world!
 
-First, we will call simple function without the use of descripors to print "Hello world!"
+First, we will call simple function without the use of descriptors to print "Hello world!"
 on "print" event.
 
 hello_world.c:
