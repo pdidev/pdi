@@ -3,83 +3,15 @@
 The user-code plugin enables one to call a user-defined function 
 when a specified event occur or certain data becomes available.
 
-\section conf_grammar_node Configuration grammar
+\section important_notes_node Important notes
 
-The root of `user-code` plugin is a dictionary that contains the following keys:
-
-|key|value|
-|:--|:----|
-|`"on_data"`  (*optional*)|a \ref on_data_node |
-|`"on_event"` (*optional*)|a \ref on_event_node|
-|`".*"`       (*optional*)| *anything*         |
-
-* the `on_data` key specifies the list of descriptors that, when they become available, 
-will cause the specified functions to be called,
-* the `on_event` key specifies the list of events on which to call the specified functions,
-* additional keys are ignored.
-
-\subsection on_data_node on_data
-
-A \ref on_data_node is a dictionary that contains the following keys:
-
-|key|value|
-|:--|:----|
-|`".*"` (*optional*)|a \ref function_list_node|
-
-* each key identifies the name of a descriptor, which will trigger specified functions when it becomes available.
-
-\subsection on_event_node on_event
-
-A \ref on_event_node is a dictionary that contains the following keys:
-
-|key|value|
-|:--|:----|
-|`".*"` (*optional*)|a \ref function_list_node|
-
-* each key identifies the name of an event, which will trigger specified functions when it occurs.
-
-\subsection function_list_node function_list
-
-A \ref function_list_node is a dictionary that contains the following keys:
-
-|key|value|
-|:--|:----|
-|`".*"` (*optional*)|a \ref function_param_list_node|
-
-* each key identifies the name of a function, which will be called on specified event or data,
-* **NOTE**: these functions **can not** take any arguments or return any value (i.e. their type must be `void(void)`).
-
-\subsection function_param_list_node function_param_list
-
-A \ref function_param_list_node is a dictionary that contains the following keys:
-
-|key|value|
-|:--|:----|
-|`".*"` (*optional*)|a $-expression referencing a data|
-
-* each key identifies the name of a descriptor alias, which will be available during function execution.
-
-\section full_spec_tree_example_node Specification tree example
-
-```yaml                   
-data:
-    desc1: int                          
-    desc2: float                   
-    desc3: double                  
-plugins:                       
-    user_code:                   
-        on_data:                   
-            desc1:                 
-                fun1: {in: $desc2, out: $desc3}
-            desc2:
-                fun2: {}
-                fun3: {out: $desc2}
-        on_event:                  
-            event1:                 
-                fun2: {}
-            event2:
-                fun4: {param1: $desc2, param2: $desc1, param3: $desc3}
-```
+* Make sure to compile your program with `Wl,--export-dynamic` or `-rdynamic`
+  flag (in CMake set `ENABLE_EXPORTS` to `TRUE` using `set_target_properties`
+  command) in order to generate necessary symbols.
+* Make sure you use the proper access rights in your function in \ref PDI_access
+  (PDI_IN for reading, PDI_OUT for writing).
+* Descriptor aliases enables one to use different descriptors without the need
+  to recompile the code.
 
 \section use_examples_node Use examples
 
@@ -342,8 +274,81 @@ After calculation, foo = 4, bar = 5, res1 = 9, res2 = 20.
 [PDI][13:58:20] *** info: Finalization
 [PDI][User-code][13:58:20] *** info: Closing plugin
 ```
-\section important_notes_node Important notes
- * Make sure to compile your program with `Wl,--export-dynamic` or `-rdynamic` flag
- (in CMake set `ENABLE_EXPORTS` to `TRUE` using `set_target_properties` command) in order to generate necessary symbols.
- * Make sure you use the proper access rights in your function in \ref PDI_access (PDI_IN for reading, PDI_OUT for writing).
- * Descriptor aliases enables one to use different descriptors without the need to recompile the code.
+
+\section conf_grammar_node Configuration grammar
+
+The root of `user-code` plugin is a dictionary that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"on_data"`  (*optional*)|a \ref on_data_node |
+|`"on_event"` (*optional*)|a \ref on_event_node|
+|`".*"`       (*optional*)| *anything*         |
+
+* the `on_data` key specifies the list of descriptors that, when they become available, 
+will cause the specified functions to be called,
+* the `on_event` key specifies the list of events on which to call the specified functions,
+* additional keys are ignored.
+
+\subsection on_data_node on_data
+
+A \ref on_data_node is a dictionary that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a \ref function_list_node|
+
+* each key identifies the name of a descriptor, which will trigger specified functions when it becomes available.
+
+\subsection on_event_node on_event
+
+A \ref on_event_node is a dictionary that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a \ref function_list_node|
+
+* each key identifies the name of an event, which will trigger specified functions when it occurs.
+
+\subsection function_list_node function_list
+
+A \ref function_list_node is a dictionary that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a \ref function_param_list_node|
+
+* each key identifies the name of a function, which will be called on specified event or data,
+* **NOTE**: these functions **can not** take any arguments or return any value (i.e. their type must be `void(void)`).
+
+\subsection function_param_list_node function_param_list
+
+A \ref function_param_list_node is a dictionary that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a $-expression referencing a data|
+
+* each key identifies the name of a descriptor alias, which will be available during function execution.
+
+\section full_spec_tree_example_node Specification tree example
+
+```yaml                   
+data:
+    desc1: int                          
+    desc2: float                   
+    desc3: double                  
+plugins:                       
+    user_code:                   
+        on_data:                   
+            desc1:                 
+                fun1: {in: $desc2, out: $desc3}
+            desc2:
+                fun2: {}
+                fun3: {out: $desc2}
+        on_event:                  
+            event1:                 
+                fun2: {}
+            event2:
+                fun4: {param1: $desc2, param2: $desc1, param3: $desc3}
+```
