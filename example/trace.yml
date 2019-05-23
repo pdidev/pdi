@@ -16,5 +16,5 @@ pdi:
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
   
   plugins:
-    test: ~
+    trace: ~
 

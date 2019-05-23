@@ -3,14 +3,22 @@
 Here we will introduce you to the %PDI functions and what you should expect them to do.
 
 \section fs_hello_event Hello Event
-As mentioned in \ref Specification_tree we have to provide specification tree to instruct %PDI what data we will share and what to do with it. We want to show what happens on each %PDI API call. We will use \ref test_plugin, which is very simple plugin that just prints every information it gets. Let's create a specification tree named `hello_event.yml` that will load test plugin:
 
+As mentioned in \ref Specification_tree we have to provide specification tree to
+instruct %PDI what data we will share and what to do with it.
+We want to show what happens on each %PDI API call. We will use
+\ref trace_plugin, which is very simple plugin that just prints every
+information it gets.
+Let's create a specification tree named `hello_event.yml` that will load trace
+plugin:
 ```yaml
 plugins:
-  test: ~
+  trace: ~
 ```
 
-Yes, that is whole specification tree. Test plugin prints everything, so there is no need to specify what we want it to do.
+Yes, that is whole specification tree.
+Trace plugin prints everything, so there is no need to specify what we want it
+to do.
 
 We need to write a source code of our application:
 ```C
@@ -26,27 +34,27 @@ int main(int argc, char* argv[]) {
 
 Let's analyze what happens in each line. Firstly we have PDI_init() function which take parameter of type `PC_tree_t`. It's a tree structure parsed from some YAML file, in our case we parse it with `paraconf` library build in %PDI. To parse a file we need to call `PC_parse_path` function passing file path as argument. The next step is to call an event in %PDI named "Hello World Event". At the end we have to call PDI_finalize(). The output from this program is presented below:
 ```
-[PDI][Test-plugin][10:25:28] *** info: Welcome to the test plugin!
+[PDI][Trace-plugin][10:25:28] *** info: Welcome!
 [PDI][10:25:28] *** info: Initialization successful
-[PDI][Test-plugin][10:25:28] *** info: The test plugin received an event: Hello World Event
+[PDI][Trace-plugin][10:25:28] *** info: !!!                            named event: Hello World Event
 [PDI][10:25:28] *** info: Finalization
-[PDI][Test-plugin][10:25:28] *** info: Goodbye from the test plugin!
+[PDI][Trace-plugin][10:25:28] *** info: Goodbye!
 ```
-The first line indicates that plugin has loaded successfully. The second is %PDI message, that tells it managed to create all descriptors and load all defined plugins. Then we have message from loaded test plugin which printed the event name it has received. The next information is from %PDI and indicates that finalization has started and now it will deallocate resources. Last message is from test plugin destructor. 
+The first line indicates that plugin has loaded successfully. The second is %PDI message, that tells it managed to create all descriptors and load all defined plugins. Then we have message from loaded trace plugin which printed the event name it has received. The next information is from %PDI and indicates that finalization has started and now it will deallocate resources. Last message is from trace plugin destructor. 
 
 \subsection fs_hello_data Hello Data
 In \ref fs_hello_event we learned how to call an event. In this chapter we will see how to share and reclaim data.
 
-Firstly we have to create a specification tree named `hello_data.yml` with `data` and test plugin tree declared:
+Firstly we have to create a specification tree named `hello_data.yml` with `data` and trace plugin tree declared:
 
 ```yaml
 data:
   world: int
 plugins:
-  test: ~
+  trace: ~
 ```
 
-We have declared test plugin and one descriptor named `world` of integer type.
+We have declared trace plugin and one descriptor named `world` of integer type.
 Now let's write our program:
 
 ```C
@@ -72,12 +80,12 @@ Let's analyze new functions:
 
 The output from our application:
 ```
-[PDI][Test-plugin][10:59:35] *** info: Welcome to the test plugin!
+[PDI][Trace-plugin][10:59:35] *** info: Welcome!
 [PDI][10:59:35] *** info: Initialization successful
-[PDI][Test-plugin][10:59:35] *** info: =>> data becoming available to the test plugin: world
-[PDI][Test-plugin][10:59:35] *** info: <<= data stop being available to the test plugin: world
+[PDI][Trace-plugin][10:59:35] *** info: =>>   data becoming available in the store: world
+[PDI][Trace-plugin][10:59:35] *** info: <<= data stop being available in the store: world
 [PDI][10:59:35] *** info: Finalization
-[PDI][Test-plugin][10:59:35] *** info: Goodbye from the test plugin!
+[PDI][Trace-plugin][10:59:35] *** info: Goodbye!
 ```
 
 As we can see from the logs above, when we called `PDI_share` plugin gained access to the shared variable and after `PDI_reclaim` the variable has become no longer available for the plugin. The share notification gives plugin possibility to operate on data dependently what has been declared in specification tree.
@@ -146,10 +154,10 @@ data:
   my_string: {type: array, subtype: char, size: 32}
 
 plugin:
-  test: ~
+  trace: ~
 ```
 
-We have defined 3 descriptors and test plugin. Now it's time for our application:
+We have defined 3 descriptors and trace plugin. Now it's time for our application:
 ```c
 int main(int argc, char* argv[]) {
     PDI_init(PC_parse_path("hello_multi_expose.yml"));
@@ -178,17 +186,17 @@ As the last argument we have to pass `NULL`.
 The output of the execution:
 
 ```
-[PDI][Test-plugin][14:14:51] *** info: Welcome to the test plugin!
+[PDI][Trace-plugin][14:14:51] *** info: Welcome!
 [PDI][14:14:51] *** info: Initialization successful
-[PDI][Test-plugin][14:14:51] *** info: =>> data becoming available to the test plugin: my_int
-[PDI][Test-plugin][14:14:51] *** info: =>> data becoming available to the test plugin: my_float
-[PDI][Test-plugin][14:14:51] *** info: =>> data becoming available to the test plugin: my_string
-[PDI][Test-plugin][14:14:51] *** info: The test plugin received an event: event_between
-[PDI][Test-plugin][14:14:51] *** info: <<= data stop being available to the test plugin: my_string
-[PDI][Test-plugin][14:14:51] *** info: <<= data stop being available to the test plugin: my_float
-[PDI][Test-plugin][14:14:51] *** info: <<= data stop being available to the test plugin: my_int
+[PDI][Trace-plugin][14:14:51] *** info: =>>   data becoming available in the store: my_int
+[PDI][Trace-plugin][14:14:51] *** info: =>>   data becoming available in the store: my_float
+[PDI][Trace-plugin][14:14:51] *** info: =>>   data becoming available in the store: my_string
+[PDI][Trace-plugin][14:14:51] *** info: !!!                            named event: event_between
+[PDI][Trace-plugin][14:14:51] *** info: <<= data stop being available in the store: my_string
+[PDI][Trace-plugin][14:14:51] *** info: <<= data stop being available in the store: my_float
+[PDI][Trace-plugin][14:14:51] *** info: <<= data stop being available in the store: my_int
 [PDI][14:14:51] *** info: Finalization
-[PDI][Test-plugin][14:14:51] *** info: Goodbye from the test plugin!
+[PDI][Trace-plugin][14:14:51] *** info: Goodbye!
 ```
 
-The logs from test plugin confirm the execution order we were expecting.
+The logs from trace plugin confirm the execution order we were expecting.
