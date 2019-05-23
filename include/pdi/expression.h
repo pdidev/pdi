@@ -64,21 +64,7 @@ public:
 	/** Builds (i.e. parse) an expression from a string
 	 *
 	 * The grammar of an expression is as follow:
-	 * ```
-	 * EXPRESSION     := OR_OPERATION | STRING_LITERAL
-	 * STRING_LITERAL := ( CHAR | '\' '\' | '\' '$' | REFERENCE | '$' '(' OR_OPERATION ')' )*
-	 * OR_OPERATION   := AND_OPERATION ( '|' AND_OPERATION )*
-	 * AND_OPERATION  := EQ_OPERATION ( '&' EQ_OPERATION )*
-	 * EQ_OPERATION   := ADD_OPERATION ( '=' ADD_OPERATION )*
-	 * ADD_OPERATION  := MULT_OPERATION ( ( '+' | '-' ) MULT_OPERATION )*
-	 * MULT_OPERATION := TERM ( ( '*' | '/' | '%' ) TERM )*
-	 * TERM           := ( INT_LITERAL | REFERENCE | '(' OR_OPERATION ')' )
-	 * REFERENCE      := '$' ( IREFERENCE | '{' IREFERENCE '}' )
-	 * IREFERENCE     := ID ( '[' OR_OPERATION ']' )*
-	 * INT_LITERAL ~= (0x)? [0-9]+ ( \.  )
-	 * ID          ~= [a-zA-Z_][a-zA-Z0-9_]*
-	 * CHAR        ~= [^$\\]
-	 * ```
+	 * \include docs/expression_grammar.in.txt
 	 *
 	 * \param[in] expr the string to parse
 	 */
@@ -87,21 +73,7 @@ public:
 	/** Builds (i.e. parse) an expression from a string
 	 *
 	 * The grammar of an expression is as follow:
-	 * ```
-	 * EXPRESSION     := OR_OPERATION | STRING_LITERAL
-	 * STRING_LITERAL := ( CHAR | '\' '\' | '\' '$' | REFERENCE | '$' '(' OR_OPERATION ')' )*
-	 * OR_OPERATION   := AND_OPERATION ( '|' AND_OPERATION )*
-	 * AND_OPERATION  := EQ_OPERATION ( '&' EQ_OPERATION )*
-	 * EQ_OPERATION   := ADD_OPERATION ( '=' ADD_OPERATION )*
-	 * ADD_OPERATION  := MULT_OPERATION ( ( '+' | '-' ) MULT_OPERATION )*
-	 * MULT_OPERATION := TERM ( ( '*' | '/' | '%' ) TERM )*
-	 * TERM           := ( INT_LITERAL | REFERENCE | '(' OR_OPERATION ')' )
-	 * REFERENCE      := '$' ( IREFERENCE | '{' IREFERENCE '}' )
-	 * IREFERENCE     := ID ( '[' OR_OPERATION ']' )*
-	 * INT_LITERAL ~= (0x)? [0-9]+ ( \.  )
-	 * ID          ~= [a-zA-Z_][a-zA-Z0-9_]*
-	 * CHAR        ~= [^$\\]
-	 * ```
+	 * \include docs/expression_grammar.in.txt
 	 *
 	 * \param[in] expr the string to parse
 	 */
