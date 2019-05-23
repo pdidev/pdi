@@ -50,7 +50,7 @@ A \ref function_list_node is a dictionary that contains the following keys:
 
 \subsection function_param_list_node function_param_list
 
-A \ref function_list_node is a dictionary that contains the following keys:
+A \ref function_param_list_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -60,5 +60,21 @@ A \ref function_list_node is a dictionary that contains the following keys:
 
 \section full_config_example_node Full configuration example
 ```yaml                   
-TODO
+data:
+    desc1: int                          
+    desc2: float                   
+    desc3: double                  
+plugins:                       
+    user_code:                   
+        on_data:                   
+            desc1:                 
+                fun1: {in: $desc2, out: $desc3}
+            desc2:
+                fun2: {}
+                fun3: {out: $desc2}
+        on_event:                  
+            event1:                 
+                fun2: {}
+            event2:
+                fun4: {param1: $desc2, param2: $desc1, param3: $desc3}
 ```
