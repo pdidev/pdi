@@ -2,14 +2,50 @@
 
 The %PDI specification tree is expressed in
 [YAML](https://en.wikipedia.org/wiki/YAML).
-As such, it is a tree that contains three types of nodes:
+As such, it is a tree that contains 3 distinct kinds of nodes:
+* scalars,
 * sequences,
-* mappings,
-* scalars.
+* mappings.
 
-The scalars act as the leaves of the tree and take a string value.
+A **scalar** is a leave in the tree, represented as a string.
 Some form of scalars can be interpreted as a boolean, integer or floating-point
 valued.
+Simple examples of scalars include for example (see the
+[YAML specification](https://yaml.org/spec/1.2/spec.html#id2760844) for the
+complete syntax):
+* `"hello"`,
+* `world`,
+* `3`,
+* `5.7`.
+
+A **sequence** is an ordered list of sub-nodes (that can themselves be scalars,
+sequences or mappings).
+Two main syntaxes are available for sequences (see the 
+[YAML specification](https://yaml.org/spec/1.2/spec.html#id2759963) for the
+complete syntax).
+* in-line sequence: `[1, 2, 3, hello, "world"]`
+* multi-line sequence:
+```
+- 1
+- 2
+- 3
+- hello
+- world
+```
+
+A **mapping** is an unordered list of key-value pairs (whose elements can
+themselves be scalars, sequences or mappings).
+Two main syntaxes are available for mapping (see the 
+[YAML specification](https://yaml.org/spec/1.2/spec.html#id2759963) for the
+complete syntax).
+* in-line mapping: `{1: one, 2: "two", "three": 3}`
+* multi-line mapping:
+```
+1: one
+2: two
+"three": 3
+```
+
 
 # specification tree root {#root_node}
 
@@ -17,8 +53,8 @@ The \ref root_node is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"data"` (*optional*)|a \ref data_seq_node|
-|`"metadata"` (*optional*)|a \ref data_seq_node|
+|`"data"` (*optional*)|a \ref data_map_node|
+|`"metadata"` (*optional*)|a \ref data_map_node|
 |`"plugins"` (*optional*)|a \ref plugin_seq_node|
 |`".*"` (*optional*)| *anything* |
 
@@ -36,16 +72,43 @@ A \ref array_type_node is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"type"`|`"array"`|
-|`"size"`|a \ref intval_or_seq_node|
+|`"size"`|a \ref intexpr_or_seq_node|
 |`"subtype"` (*optional*)|a \ref datatype_node|
-|`"subsize"` (*optional*)|a \ref intval_or_seq_node|
-|`"start"` (*optional*)|a \ref intval_or_seq_node|
+|`"subsize"` (*optional, deprecated*)|a \ref intexpr_or_seq_node|
+|`"start"` (*optional, deprecated*)|a \ref intexpr_or_seq_node|
 
 A \ref array_type_node represents a potentially multi-dimensional array where:
 * the value associated to the `size` key represents the size of the array in
   each dimension (C order),
 * the value associated to the `subtype` key represents the type of the elements
   in the array,
+* the value associated to the `subsize` key represents the number of elements to
+  actually use in each dimension (slicing), if specified it **must** have the
+  same number of elements as `size`, this defaults to the full array size in
+  each dimension,
+* the value associated to the `start` key represents the index of the first
+  element to actually use in each dimension (slicing), if specified it **must**
+  have the same number of elements as `size`, this defaults to the first (0)
+  element in each dimension.
+
+**Examples:**
+
+```python
+type: array
+subtype: double
+size: 5
+```
+
+```python
+type: array
+subtype:
+  type: array
+  subtype: int
+  size: 3
+size: [ '$size_1d', '$size_2d' ]
+subsize: [ '$size_1d - 2', '$size_2d - 2' ]
+start: [ '1', '1' ]
+```
 
 # char_type {#char_type_node}
 
@@ -57,6 +120,12 @@ A \ref char_type_node is a **mapping** that contains the following keys:
 
 A \ref char_type_node represents the C `char` datatype; it accepts no parameter.
 
+**Example:**
+
+```python
+type: char
+```
+
 # character_type {#character_type_node}
 
 A \ref character_type_node is a **mapping** that contains the following keys:
@@ -64,11 +133,22 @@ A \ref character_type_node is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"type"`|`"character"`|
-|`"kind"` (*optional*)|an integer-valued \ref expression_node|
+|`"kind"` (*optional*)|a \ref expression_node "integer-valued $-expression"|
 
 A \ref character_type_node represents the Fortran `character` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`character(kind=...)`).
+
+**Examples:**
+
+```python
+type: character
+```
+
+```python
+type: character
+kind: 4
+```
 
 # datatype {#datatype_node}
 
@@ -89,13 +169,17 @@ A \ref datatype_node can be **any of**:
 * a \ref record_type_node,
 * a \ref simple_datatype_node.
 
-All these are dictionaries (except for `simple_datatype`) with a `type` key
-whose value disambiguate between them, other keys act as parameters to the type.
-Plugins can add new datatypes that follow the same pattern.
+Amongst these, \ref simple_datatype_node is the only scalar.
+All others are dictionaries with a `type` key used for disambiguation between
+them.
+Plugins can add new options that follow the same pattern.
 
-# data_seq {#data_seq_node}
+A \ref datatype_node represents the memory layout and interpretation for data
+exposed by the user in the \ref Data_store "data store".
 
-A \ref data_seq_node is a **mapping** that contains the following keys:
+# data_map {#data_map_node}
+
+A \ref data_map_node is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -103,6 +187,12 @@ A \ref data_seq_node is a **mapping** that contains the following keys:
 
 * each key identifies the name of a buffer exposed to PDI associated to its
 type.
+
+**Example:**
+
+```python
+type: 
+```
 
 # double_type {#double_type_node}
 
@@ -115,17 +205,36 @@ A \ref double_type_node is a **mapping** that contains the following keys:
 A \ref double_type_node represents the C `double` type.
 It accepts no parameter.
 
-# expression {#expression_node}
+# $-expression {#expression_node}
 
 A \ref expression_node is a **scalar** whose content matches the following
 grammar:
 
 \include docs/expression_grammar.in.txt
 
-If the \ref expression_node is an `OPERATION` is can be interpreted as 
-integer-valued.
+The rules for evaluating an expression are close to those of BASH for example.
 
+In addition to raw text, a `STRING_LITERAL` can contain references to the string
+value of some data in the store as well as the result of an operation by
+enclosing it inside a dollar-parenthesis `$()`.
 
+An `OPERATION` can include logical and arithmetic operators grouped by
+parenthesis.
+The basic terms manipulated in an operation can be integer literals or
+references to the integer value of some data in the store.
+
+A `REFERENCE` is introduced by a dollar `$` sign and optionally enclosed in
+curly braces `{`, `}`.
+A direct reference is possible as well as sub-references to array elements using
+the square brackets `[`, `]` operator.
+
+The value-type of an `EXPRESSION` is as follow:
+* if it's a `REFERENCE`, it has the  type of the referenced data in the store,
+* if it's a `OPERATION`, it is integer-valued,
+* if it's a `STRING_LITERAL`, it is string-valued.
+
+In addition, an integer can be interpreted as a string or as a boolean value
+where zero is interpreted as false and any other value as true.
 
 # float_type {#float_type_node}
 
@@ -204,29 +313,36 @@ A \ref integer_type_node is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"type"`|`"integer"`|
-|`"kind"` (*optional*)|an integer-valued \ref expression_node|
+|`"kind"` (*optional*)|a \ref expression_node "integer-valued $-expression"|
 
 A \ref integer_type_node represents the Fortran `integer` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`integer(kind=...)`).
 If missing, the default kind of the Fortran implementation is used.
 
-# intval {#intval_node}
+# intexpr_seq {#intexpr_seq_node}
 
-A \ref intval_node is... TODO.
+A \ref intexpr_seq_node is a **sequence** where each element of the sequence is
+a \ref expression_node "integer-valued $-expression".
 
-# intval_seq {#intval_seq_node}
+# intexpr_or_seq {#intexpr_or_seq_node}
 
-A \ref intval_seq_node is a **sequence** where each element of the sequence is a
-interger-valued \ref expression_node.
+A \ref intexpr_or_seq_node can be **any of**:
+* a \ref expression_node "integer-valued $-expression",
+* a \ref intexpr_seq_node.
 
-# intval_or_seq {#intval_or_seq_node}
+In that context, a simple \ref expression_node is interpreted as a shortcut for
+a sequence containing a single \ref expression_node.
 
-A \ref intval_or_seq_node can be **any of**:
-* an interger-valued \ref expression_node,
-* a \ref intval_seq_node.
+For example, the following value:
+```
+"$x + 2"
+```
 
-TODO
+is interpreted as if it was:
+```
+[ "$x + 2" ]
+```
 
 # logical_type {#logical_type_node}
 
@@ -235,16 +351,37 @@ A \ref logical_type_node is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"type"`|`"logical"`|
-|`"kind"` (*optional*)|an integer-valued \ref expression_node|
+|`"kind"` (*optional*)|a \ref expression_node "integer-valued $-expression"|
 
 A \ref logical_type_node represents the Fortran `logical` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`logical(kind=...)`).
 If missing, the default kind of the Fortran implementation is used.
 
-# member_seq {#member_seq_node}
+# member_desc {#member_desc_node}
 
-TODO
+A \ref member_desc_node is a **mapping** that contains the following keys:
+|key|value|
+|:--|:----|
+|`"disp"`|a \ref expression_node "integer-valued $-expression"|
+|`"type"`|a **scalar** |
+|`".*"` (*optional*)| *anything* |
+
+* the value associated to the `disp` key identifies the displacement in bytes
+  from the base address of the record and the address of this specific member,
+* the value associated to the `type` key identifies the 
+  \ref datatype_node "type" of this record, all other keys required for this
+  \ref datatype_node must be present.
+
+# members_map {#members_map_node}
+
+A \ref members_map_node is a **mapping** that contains the following keys:
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a \ref member_desc_node|
+
+* each key identifies the name of a member of the record and the value
+  associated to it describes the member itself.
 
 # plugin_seq {#plugin_seq_node}
 
@@ -254,7 +391,7 @@ A \ref plugin_seq_node is a **mapping** that contains the following keys:
 |`".*"` (*optional*)| *anything* |
 
 * each key identifies the name of a plugin to load associated to its
-configuration; the content of the configuration depends on the plugin.
+  configuration; the content of the configuration depends on the plugin.
 
 Have a look at the \ref Plugins "plugins" documentation to see the specification
 tree they accept.
@@ -266,7 +403,7 @@ A \ref real_type_node is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"type"`|`"real"`|
-|`"kind"` (*optional*)|an integer-valued \ref expression_node|
+|`"kind"` (*optional*)|a \ref expression_node "integer-valued $-expression"|
 
 A \ref real_type_node represents the Fortran `real` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
@@ -280,11 +417,14 @@ A \ref record_type_node is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"type"`|`"record"`|
-|`"buffersize"`|a \ref intval_or_seq_node|
-|`"members"` (*optional*)|a \ref member_seq_node|
+|`"buffersize"`|a \ref expression_node "integer-valued $-expression"|
+|`"members"` (*optional*)|a \ref members_map_node|
 
-A \ref record_type_node represents a potentially multi-dimensional array where:
-* TODO
+A \ref record_type_node represents a "record", *aka* C "struct", C++ "class",
+Fortran "derived type" where:
+* the value associated to the `buffersize` key represents the overall size of
+  the record, including potential padding,
+* the value associated to the `members` key lists all members of the record.
 
 # simple_datatype {#simple_datatype_node}
 

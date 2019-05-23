@@ -1,5 +1,7 @@
-/* parsing as an OPERATION is preferred over STRING_LITERAL */
-EXPRESSION     := OPERATION | STRING_LITERAL
+/* parsing as a REFERENCE is preferred over OPERATION
+   parsing as an OPERATION is preferred over STRING_LITERAL
+*/
+EXPRESSION     := REFERENCE | OPERATION | STRING_LITERAL
 
 STRING_LITERAL := ( CHAR | '\' '\' | '\' '$'
                   | REFERENCE
