@@ -65,6 +65,17 @@ keeps references for `data`,
 configuration,
 * additional sections are ignored.
 
+**Example:**
+
+```python
+metadata:
+  
+data:
+  array
+subtype: double
+size: 5
+```
+
 # array_type {#array_type_node}
 
 A \ref array_type_node is a **mapping** that contains the following keys:
@@ -232,6 +243,9 @@ references to the integer value of some data in the store.
 
 A `REFERENCE` is introduced by a dollar `$` sign and optionally enclosed in
 curly braces `{`, `}`.
+Its value is that of the data or metadata with the associated name.
+It is always a good idea to have referenced values in the metadata section as it
+prevents dangling references.
 A direct reference is possible as well as sub-references to array elements using
 the square brackets `[`, `]` operator.
 
@@ -246,7 +260,15 @@ where zero is interpreted as false and any other value as true.
 **Examples:**
 
 ```python
-TODO
+'$my_data'
+```
+
+```python
+'($my_data + 3) % 6'
+```
+
+```python
+'my name is ${my_name}'
 ```
 
 # float_type {#float_type_node}
@@ -349,6 +371,12 @@ A \ref int8_type_node represents the C `int8_t` type from the
 `<stdtypes.h>` header.
 It accepts no parameter.
 
+**Example:**
+
+```python
+type: int8
+```
+
 # integer_type {#integer_type_node}
 
 A \ref integer_type_node is a **mapping** that contains the following keys:
@@ -363,10 +391,27 @@ The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`integer(kind=...)`).
 If missing, the default kind of the Fortran implementation is used.
 
+**Examples:**
+
+```python
+type: integer
+```
+
+```python
+type: integer
+kind: 2
+```
+
 # intexpr_seq {#intexpr_seq_node}
 
 A \ref intexpr_seq_node is a **sequence** where each element of the sequence is
 a \ref expression_node "integer-valued $-expression".
+
+**Example:**
+
+```python
+[ 1, '2', '$size', '$other_size + 2' ]
+```
 
 # intexpr_or_seq {#intexpr_or_seq_node}
 
@@ -401,6 +446,17 @@ The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`logical(kind=...)`).
 If missing, the default kind of the Fortran implementation is used.
 
+**Examples:**
+
+```python
+type: logical
+```
+
+```python
+type: logical
+kind: 1
+```
+
 # member_desc {#member_desc_node}
 
 A \ref member_desc_node is a **mapping** that contains the following keys:
@@ -416,6 +472,8 @@ A \ref member_desc_node is a **mapping** that contains the following keys:
   \ref datatype_node "type" of this record, all other keys required for this
   \ref datatype_node must be present.
 
+See \ref record_type_node for an example.
+
 # members_map {#members_map_node}
 
 A \ref members_map_node is a **mapping** that contains the following keys:
@@ -425,6 +483,8 @@ A \ref members_map_node is a **mapping** that contains the following keys:
 
 * each key identifies the name of a member of the record and the value
   associated to it describes the member itself.
+
+See \ref record_type_node for an example.
 
 # plugin_seq {#plugin_seq_node}
 
@@ -439,6 +499,8 @@ A \ref plugin_seq_node is a **mapping** that contains the following keys:
 Have a look at the \ref Plugins "plugins" documentation to see the specification
 tree they accept.
 
+See \ref root_node for an example.
+
 # real_type {#real_type_node}
 
 A \ref real_type_node is a **mapping** that contains the following keys:
@@ -452,6 +514,17 @@ A \ref real_type_node represents the Fortran `real` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`real(kind=...)`).
 If missing, the default kind of the Fortran implementation is used.
+
+**Examples:**
+
+```python
+type: real
+```
+
+```python
+type: real
+kind: 8
+```
 
 # record_type {#record_type_node}
 
@@ -469,6 +542,20 @@ Fortran "derived type" where:
   the record, including potential padding,
 * the value associated to the `members` key lists all members of the record.
 
+**Example:**
+
+```python
+type: record
+buffersize: 8
+members:
+  first_int:
+    disp: 0
+    type: int32
+  seconf_int:
+    disp: 4
+    type: int32
+```
+
 # simple_datatype {#simple_datatype_node}
 
 A \ref simple_datatype_node is a **scalar**.
@@ -481,6 +568,7 @@ For example, the following value:
 ```
 "my_type"
 ```
+
 is interpreted as if it was:
 ```
 { type: "my_type" }
