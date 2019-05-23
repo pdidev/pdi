@@ -191,7 +191,8 @@ type.
 **Example:**
 
 ```python
-type: 
+my_data_1: int
+my_data_2: {type: array, subtype: double, size: 5}
 ```
 
 # double_type {#double_type_node}
@@ -204,6 +205,12 @@ A \ref double_type_node is a **mapping** that contains the following keys:
 
 A \ref double_type_node represents the C `double` type.
 It accepts no parameter.
+
+**Example:**
+
+```python
+type: double
+```
 
 # $-expression {#expression_node}
 
@@ -236,6 +243,12 @@ The value-type of an `EXPRESSION` is as follow:
 In addition, an integer can be interpreted as a string or as a boolean value
 where zero is interpreted as false and any other value as true.
 
+**Examples:**
+
+```python
+TODO
+```
+
 # float_type {#float_type_node}
 
 A \ref float_type_node is a **mapping** that contains the following keys:
@@ -247,6 +260,12 @@ A \ref float_type_node is a **mapping** that contains the following keys:
 A \ref float_type_node represents the C `float` type.
 It accepts no parameter.
 
+**Example:**
+
+```python
+type: float
+```
+
 # int_type {#int_type_node}
 
 A \ref int_type_node is a **mapping** that contains the following keys:
@@ -257,6 +276,12 @@ A \ref int_type_node is a **mapping** that contains the following keys:
 
 A \ref int_type_node represents the C `int` type.
 It accepts no parameter.
+
+**Example:**
+
+```python
+type: int
+```
 
 # int16_type {#int16_type_node}
 
@@ -270,6 +295,12 @@ A \ref int16_type_node represents the C `int16_t` type from
 the `<stdtypes.h>` header.
 It accepts no parameter.
 
+**Example:**
+
+```python
+type: int16
+```
+
 # int32_type {#int32_type_node}
 
 A \ref int32_type_node is a **mapping** that contains the following keys:
@@ -282,6 +313,12 @@ A \ref int32_type_node represents the C `int32_t` type from
 the `<stdtypes.h>` header.
 It accepts no parameter.
 
+**Example:**
+
+```python
+type: int32
+```
+
 # int64_type {#int64_type_node}
 
 A \ref int64_type_node is a **mapping** that contains the following keys:
@@ -293,6 +330,12 @@ A \ref int64_type_node is a **mapping** that contains the following keys:
 A \ref int64_type_node represents the C `int64_t` type from
 the `<stdtypes.h>` header.
 It accepts no parameter.
+
+**Example:**
+
+```python
+type: int64
+```
 
 # int8_type {#int8_type_node}
 
