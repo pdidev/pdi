@@ -209,10 +209,10 @@ The `payload` is defined by user by a specific key in port definition:
 
 |key|message type|
 |:----|:----|
-|"data"|\ref data_message|
-|"chunks"|\ref chunks_message|
-|"event_button"|\ref button_message|
-|"event_mouse"|\ref mouse_message|
+|"data"|\ref data_payload|
+|"chunks"|\ref chunks_payload|
+|"event_button"|\ref button_payload|
+|"event_mouse"|\ref mouse_payload|
 
 If none of the message type will be given, plugin will create a STAMP port (message has no payload).
 `stamps` are described in \ref stamp section.
@@ -361,7 +361,7 @@ flowvr:
         KEY_RIGHT: right
 ```
 
-\subsection mouse_message Event mouse message
+\subsection mouse_payload Event mouse payload
 
 Requires `event_mouse` key in a port tree. The payload holds the values of the mouse keys
 pressed and cursor position during iteration. The button state is saved in descriptors of integer type
@@ -805,7 +805,7 @@ Consists of 2 modules:
   - sends message with:
     - data (payload): `type: {type: array, subtype: float, size: 3}`
   - very important is how to get a number of elements received by `velocity` and  `density` ports:
-    - `type: {type: array, subtype: char, size: $velocitySize} #velocitySize is defined as metadata`
+    - `type: {type: array, subtype: char, size: $velocitySize} # velocitySize is defined as metadata`
     Here `velocitySize` must be preceded with `$` to let plugin to write the size there. The `velocitySize` descriptor will store a valid size **after** accessing the `velocity` descriptor, because only then plugin will write size.
 
 **Network of the application:**
