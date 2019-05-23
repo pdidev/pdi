@@ -59,7 +59,7 @@ The \ref root_node is a **mapping** that contains the following keys:
 |`".*"` (*optional*)| *anything* |
 
 * the `data` and `metadata` sections specify the type of the data in buffers
-exposed by the application; for `metadata`, PDI keeps a copy while it only
+exposed by the application; for `metadata`, %PDI keeps a copy while it only
 keeps references for `data`,
 * the `plugin` section specifies the list of plugins to load and their
 configuration,
@@ -196,7 +196,7 @@ A \ref data_map_node is a **mapping** that contains the following keys:
 |:--|:----|
 |`".*"` (*optional*)|a \ref datatype_node|
 
-* each key identifies the name of a buffer exposed to PDI associated to its
+* each key identifies the name of a buffer exposed to %PDI associated to its
 type.
 
 **Example:**
