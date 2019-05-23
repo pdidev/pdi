@@ -16,65 +16,65 @@ keeps references for `data`,
 configuration,
 * additional sections are ignored.
 
-# array {#array_node}
+# array_type {#array_type_node}
 
-A \ref array_node is a dictionary that contains the following keys:
+A \ref array_type_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"array"`|
-|`"size"`|a \ref integer_or_list_node|
+|`"size"`|a \ref intval_or_list_node|
 |`"subtype"` (*optional*)|a \ref datatype_node|
-|`"subsize"` (*optional*)|a \ref integer_or_list_node|
-|`"start"` (*optional*)|a \ref integer_or_list_node|
+|`"subsize"` (*optional*)|a \ref intval_or_list_node|
+|`"start"` (*optional*)|a \ref intval_or_list_node|
 
-A \ref array_node represents a potentially multi-dimensional array where:
+A \ref array_type_node represents a potentially multi-dimensional array where:
 * the value associated to the `size` key represents the size of the array in
   each dimension (C order),
 * the value associated to the `subtype` key represents the type of the elements
   in the array,
 
-# char {#char_node}
+# char_type {#char_type_node}
 
-A `char` is a dictionary that contains the following keys:
+A \ref char_type_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"char"`|
 
-A `char` represents the C `char` datatype; it accepts no parameter.
+A \ref char_type_node represents the C `char` datatype; it accepts no parameter.
 
-# character {#character_node}
+# character_type {#character_type_node}
 
-A `character` is a dictionary that contains the following keys:
+A \ref character_type_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"character"`|
 |`"kind"` (*optional*)|an [Integer expression](\ref expression_node)|
 
-A `character` represents the Fortran `character` datatype.
+A \ref character_type_node represents the Fortran `character` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`character(kind=...)`).
 
 # datatype {#datatype_node}
 
-A `datatype` can be any of:
-* a \ref array_node,
-* a \ref char_node,
-* a \ref character_node,
-* a \ref double_node,
-* a \ref float_node,
-* a \ref int_node,
-* a \ref int8_node,
-* a \ref int16_node,
-* a \ref int32_node,
-* a \ref int64_node,
-* a \ref integer_node,
-* a \ref logical_node,
-* a \ref real_node,
-* a \ref record_node,
-* a \ref simple_datatype_node,
+A \ref datatype_node can be any of:
+* a \ref array_type_node,
+* a \ref char_type_node,
+* a \ref character_type_node,
+* a \ref double_type_node,
+* a \ref float_type_node,
+* a \ref int_type_node,
+* a \ref int16_type_node,
+* a \ref int32_type_node,
+* a \ref int64_type_node,
+* a \ref int8_type_node,
+* a \ref integer_type_node,
+* a \ref logical_type_node,
+* a \ref real_type_node,
+* a \ref record_type_node,
+* a \ref simple_datatype_node.
 
 All these are dictionaries (except for `simple_datatype`) with a `type` key
 whose value disambiguate between them, other keys act as parameters to the type.
@@ -82,7 +82,7 @@ Plugins can add new datatypes that follow the same pattern.
 
 # data_list {#data_list_node}
 
-A `data_list` is a dictionary that contains the following keys:
+A \ref data_list_node is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -91,7 +91,7 @@ A `data_list` is a dictionary that contains the following keys:
 * each key identifies the name of a buffer exposed to PDI associated to its
 type.
 
-# double {#double_node}
+# double_type {#double_type_node}
 
 A `double` is a dictionary that contains the following keys:
 
@@ -102,7 +102,11 @@ A `double` is a dictionary that contains the following keys:
 A `double` is a datatype that represents the C `double` type.
 It accepts no parameter.
 
-# float {#float_node}
+# expression {#expression_node}
+
+TODO
+
+# float_type {#float_type_node}
 
 A `float` is a dictionary that contains the following keys:
 
@@ -113,7 +117,7 @@ A `float` is a dictionary that contains the following keys:
 A `float` is a datatype that represents the C `float` type.
 It accepts no parameter.
 
-# int {#int_node}
+# int_type {#int_type_node}
 
 A `int` is a dictionary that contains the following keys:
 
@@ -124,19 +128,7 @@ A `int` is a dictionary that contains the following keys:
 A `int` is a datatype that represents the C `int` type.
 It accepts no parameter.
 
-# int8 {#int8_node}
-
-A `int8` is a dictionary that contains the following keys:
-
-|key|value|
-|:--|:----|
-|`"type"`|`"int8"`|
-
-A `int8` is a datatype that represents the C `int8_t` type from the
-`<stdtypes.h>` header.
-It accepts no parameter.
-
-# int16 {#int16_node}
+# int16_type {#int16_type_node}
 
 A `int` is a dictionary that contains the following keys:
 
@@ -148,7 +140,7 @@ A `int16` is a datatype that represents the C `int16_t` type from the
 `<stdtypes.h>` header.
 It accepts no parameter.
 
-# int32 {#int32_node}
+# int32_type {#int32_type_node}
 
 A `int32` is a dictionary that contains the following keys:
 
@@ -160,7 +152,7 @@ A `int32` is a datatype that represents the C `int32_t` type from the
 `<stdtypes.h>` header.
 It accepts no parameter.
 
-# int64 {#int64_node}
+# int64_type {#int64_type_node}
 
 A `int64` is a dictionary that contains the following keys:
 
@@ -172,7 +164,19 @@ A `int64` is a datatype that represents the C `int64_t` type from the
 `<stdtypes.h>` header.
 It accepts no parameter.
 
-# integer {#integer_node}
+# int8_type {#int8_type_node}
+
+A `int8` is a dictionary that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int8"`|
+
+A `int8` is a datatype that represents the C `int8_t` type from the
+`<stdtypes.h>` header.
+It accepts no parameter.
+
+# integer_type {#integer_type_node}
 
 A `integer` is a dictionary that contains the following keys:
 
@@ -185,7 +189,23 @@ A `integer` represents the Fortran `integer` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`integer(kind=...)`).
 
-# logical {#logical_node}
+# intval {#intval_node}
+
+A \ref intval_node is... TODO.
+
+# intval_list {#intval_list_node}
+
+A \ref intval_list_node is a list... TODO.
+
+# intval_or_list {#intval_or_list_node}
+
+A \ref intval_or_list_node can be any of:
+* a \ref intval_node,
+* a \ref intval_list_node.
+
+TODO
+
+# logical_type {#logical_type_node}
 
 A `logical` is a dictionary that contains the following keys:
 
@@ -198,6 +218,10 @@ A `logical` represents the Fortran `logical` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`logical(kind=...)`).
 
+# member_list {#member_list_node}
+
+TODO
+
 # plugin_list {#plugin_list_node}
 
 A `plugin_list` is a dictionary that contains the following keys:
@@ -208,7 +232,7 @@ A `plugin_list` is a dictionary that contains the following keys:
 * each key identifies the name of a plugin to load associated to its
 configuration; the content of the configuration depends on the plugin.
 
-# real {#real_node}
+# real_type {#real_type_node}
 
 A `real` is a dictionary that contains the following keys:
 
@@ -221,23 +245,21 @@ A `real` represents the Fortran `real` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`real(kind=...)`).
 
-# record {#record_node}
+# record_type {#record_type_node}
 
 A `record` is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"record"`|
-|`"buffersize"`|a \ref integer_or_list_node|
+|`"buffersize"`|a \ref intval_or_list_node|
 |`"members"` (*optional*)|a \ref member_list_node|
 
 A `record` represents a potentially multi-dimensional array where:
 
 # simple_datatype {#simple_datatype_node}
 
-A `simple_datatype` is a `scalar`.
-
-The `simple_datatype` is interpreted as a shortcut for a dictionary with a
+A `simple_datatype` is interpreted as a shortcut for a dictionary with a
 single key `type` whose value is the provided scalar and therefore another
 \ref datatype_node.
 

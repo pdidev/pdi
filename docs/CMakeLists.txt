@@ -29,7 +29,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-find_package(Doxygen REQUIRED OPTIONAL_COMPONENTS dot)
+find_package(Doxygen 1.8.13 REQUIRED OPTIONAL_COMPONENTS dot)
 
 add_custom_target(doc ALL)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")
