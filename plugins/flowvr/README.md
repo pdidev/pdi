@@ -634,7 +634,7 @@ int left_button;
 PDI_expose("left_button", &left_button, PDI_IN);
 ```
 
-\subsection write_mouse Write button event from FlowVR message
+\subsection write_button Write button event from FlowVR message
 
 ```yaml
 data:

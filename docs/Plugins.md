@@ -7,5 +7,5 @@ Here is a list of %PDI plugins:
 * FTI plugin
 * MPI plugin
 * Pycall plugin
-* test plugin
+* \subpage test_plugin "test plugin"
 * \subpage user_code_plugin "user-code plugin"

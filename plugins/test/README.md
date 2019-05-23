@@ -1,0 +1,3 @@
+\page test_plugin Test plugin
+
+Lorem ipsum...

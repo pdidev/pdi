@@ -29,6 +29,8 @@
 
 cmake_minimum_required(VERSION 3.10)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 find_package(Doxygen 1.8.13 REQUIRED OPTIONAL_COMPONENTS dot)
 
 add_custom_target(doc ALL)
@@ -87,6 +89,7 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_BINARY_DIR}/fortran_inc/"
 		"${PDI_SOURCE_DIR}/../plugins/decl_hdf5/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/flowvr/README.md"
+		"${PDI_SOURCE_DIR}/../plugins/test/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/user_code/README.md")
 add_dependencies(doc doxygen_doc)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}/html")
