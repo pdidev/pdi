@@ -1,5 +1,7 @@
 \page First_steps First steps with %PDI
 
+Here we will inroduce you to the %PDI functions and what you should expect them to do.
+
 \section fs_hello_event Hello Event
 As mentioned in \ref Specification_tree we have to provide specification tree to instuct %PDI what data we will share and what to do with it. We want to show what happens on each %PDI API call. We will use \ref test_plugin, which is very simple plugin that just print every information it gets. Let's create a specification tree named `hello_event.yml' that will load test plugin to %PDI:
 
@@ -65,7 +67,7 @@ int main(int argc, char* argv[]) {
 ```
 
 Let's analyse new functions:
-- PDI_share shares access to the variable with %PDI. The first argument is a descriptor name and indicates what data we are sharing. The second one is pointer to our variable and the last one is access direction. `PDI_OUT` lets plugin to read from the descriptor, `PDI_IN` to write to the descriptor, `PDI_INOUT` gives both rights. 
+- PDI_share shares access to the variable with %PDI. The first argument is a descriptor name and indicates what data we are sharing. The second one is pointer to our variable and the last one is access direction. `PDI_OUT` means data direction from application to %PDI, `PDI_IN` is a direction from %PDI to the program, `PDI_INOUT` includes both directions. 
 - PDI_reclaim reclaims the share which means that %PDI will no longer have access to shared variable. As an argument it takes name of the descriptor.
 
 The output from our application:
@@ -82,35 +84,37 @@ As we can see from the logs above, when we called `PDI_share` plugin gained acce
 
 The same exact result we can achive with `PDI_expose` which is just `PDI_share` call and right after `PDI_reclaim` is called.
 
-```
+```c
     PDI_share("world", &my_world, PDI_OUT);
     PDI_reclaim("world");
 ```
-is the same as:
-```
+
+is the same a1s:
+```c
     PDI_expose("world", &my_world, PDI_OUT);
 ```
 
 \subsection fs_access Hello Access
-Now we will try to access a descriptor we have shared earlier with %PDI. In this case we won't need any plugin. We want to define string in our `world_access.yml`:
+Now we will try to access a descriptor we share with %PDI. In this case we won't need any plugin. We want to define string in our `world_access.yml`:
 ```yaml
 data:
   my_message: {type: array, subtype: char, size: 32}
 ```
 
 Now let's write some simple program:
+
 ```c
 
 void print_secret_msg() {
-    char message[32];
-    PDI_access("my_message", (void**)message, PDI_IN);
+    char* message;
+    PDI_access("my_message", (void**)&message, PDI_IN);
     printf("%s\n", message);
     PDI_release("my_message");
 }
 
 int main(int argc, char* argv[]) {
     PDI_init(PC_parse_path("hello_data.yml"));
-    char* secret_msg = "Watermelon is the best fruit";
+    char* secret_msg = "Watermelon is the tastiest fruit";
     PDI_share("my_message", secret_msg, PDI_OUT);
 
     print_secret_msg();
@@ -120,3 +124,70 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 ```
+
+We will focus on `print_secret_msg` function. If you don't understand what happens in `main` function, please see \ref fs_hello_data example. `PDI_access` sets our pointer to the data location. We need to pass `PDI_IN` because data flows from PDI to our application. We also want to use `PDI_release`, because `PDI_reclaim` would end the sharing status of this descriptor and we reclaim this data later in `main` function.
+Output from the program:
+
+```
+[PDI][13:42:31] *** info: Initialization successful
+Watermelon is the tastiest fruit
+[PDI][13:42:31] *** info: Finalization
+```
+
+As you can see, we manage to access data descriptor from function only by passing its name and correct direction access.
+
+\subsection fs_mulitexpose Hello multi expose
+In some cases we would want to expose many descriptors at once. For this we have multiexpose which shares all the given descriptors, then call given event and then reclaim all passed data. Let's look at the example.
+
+```yaml
+data:
+  my_int: int
+  my_float: float
+  my_string: {type: array, subtype: char, size: 32}
+
+plugin:
+  test: ~
+```
+
+We have defined 3 descriptors and test plugin. Now it's time for our application:
+```c
+int main(int argc, char* argv[]) {
+    PDI_init(PC_parse_path("hello_multi_expose.yml"));
+    int x = 0;
+    float y = 0;
+    char* z = "RGB = Really Gawky Biscuit";
+
+    PDI_multi_expose("event_between", 
+                     "my_int", &x, PDI_OUT,
+                     "my_float", &y, PDI_OUT,
+                     "my_string", &z, PDI_OUT,
+                     NULL);
+
+    PDI_finalize();
+    return 0;
+}
+```
+
+First arguemnt of the `PDI_multi_expose` is the event name we want to call when all the descriptors are shared. After this we pass in loop:
+- name of the descriptor 
+- pointer to data
+- direction access
+As the last argument we have to pass `NULL`.
+
+The output of the execution:
+
+```
+[PDI][Test-plugin][14:14:51] *** info: Welcome to the test plugin!
+[PDI][14:14:51] *** info: Initialization successful
+[PDI][Test-plugin][14:14:51] *** info: =>> data becoming available to the test plugin: my_int
+[PDI][Test-plugin][14:14:51] *** info: =>> data becoming available to the test plugin: my_float
+[PDI][Test-plugin][14:14:51] *** info: =>> data becoming available to the test plugin: my_string
+[PDI][Test-plugin][14:14:51] *** info: The test plugin received an event: event_between
+[PDI][Test-plugin][14:14:51] *** info: <<= data stop being available to the test plugin: my_string
+[PDI][Test-plugin][14:14:51] *** info: <<= data stop being available to the test plugin: my_float
+[PDI][Test-plugin][14:14:51] *** info: <<= data stop being available to the test plugin: my_int
+[PDI][14:14:51] *** info: Finalization
+[PDI][Test-plugin][14:14:51] *** info: Goodbye from the test plugin!
+```
+
+The logs from test plugin confirm the execution order we expected.
