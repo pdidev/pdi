@@ -121,7 +121,11 @@ plugins:
 
 output:
 ```console
+[PDI][User-code][13:40:55] *** info: Plugin loaded successfully
+[PDI][13:40:55] *** info: Initialization successful
 Hello world!
+[PDI][13:40:55] *** info: Finalization
+[PDI][User-code][13:40:55] *** info: Closing plugin
 ```
 
 \subsection handling_input_node Handling input
@@ -166,7 +170,12 @@ plugins:
 
 output:
 ```console
+[PDI][User-code][13:49:30] *** info: Plugin loaded successfully
+[PDI][13:49:30] *** info: Initialization successful
 I've got number 42.
+[PDI][13:49:30] *** info: Finalization
+[PDI][User-code][13:49:30] *** info: Closing plugin
+
 ```
 
 We can simplify this example by using `on_data` to print value of number
@@ -209,7 +218,11 @@ plugins:
 
 output does not change:
 ```console
+[PDI][User-code][13:52:15] *** info: Plugin loaded successfully
+[PDI][13:52:15] *** info: Initialization successful
 I've got number 42.
+[PDI][13:52:15] *** info: Finalization
+[PDI][User-code][13:52:15] *** info: Closing plugin
 ```
 
 \subsection handling_output_node Handling output
@@ -256,8 +269,13 @@ plugins:
 
 output:
 ```console
+[PDI][User-code][13:53:51] *** info: Plugin loaded successfully
+[PDI][13:53:51] *** info: Initialization successful
 Before expose, number = 42.
 After expose, number = 52.
+[PDI][13:53:51] *** info: Finalization
+[PDI][User-code][13:53:51] *** info: Closing plugin
+
 ```
 
 \subsection multiple_inout_data_node Multiple input/output data
@@ -286,14 +304,15 @@ void sum_and_multiply(void)
 
 int main(int argc, char* argv[])
 {
-    PC_tree_t conf = PC_parse_path("calculate.yml");
+    PC_tree_t conf = PC_parse_path("file.yml");
     PDI_init(conf);
     int foo = 4, bar = 5, res1 = 0, res2 = 0;
+    printf("Before calculation, foo = %d, bar = %d, res1 = %d, res2 = %d.\n", foo, bar, res1, res2);
     PDI_multi_expose("calculate", 
-        "foo", &number, PDI_OUT,
-        "bar", &number, PDI_OUT,
-        "res1", &number, PDI_IN
-        "res2", &number, PDI_IN);
+        "foo", &foo, PDI_OUT,
+        "bar", &bar, PDI_OUT,
+        "res1", &res1, PDI_IN,
+        "res2", &res2, PDI_IN, NULL);
     printf("After calculation, foo = %d, bar = %d, res1 = %d, res2 = %d.\n", foo, bar, res1, res2);
     PDI_finalize();
     return 0;
@@ -316,7 +335,12 @@ plugins:
 
 output:
 ```console
-After calculation, foo = 4, bar = 5, res1 = 9, res2 = 20.\n
+[PDI][User-code][13:58:20] *** info: Plugin loaded successfully
+[PDI][13:58:20] *** info: Initialization successful
+Before calculation, foo = 4, bar = 5, res1 = 0, res2 = 0.
+After calculation, foo = 4, bar = 5, res1 = 9, res2 = 20.
+[PDI][13:58:20] *** info: Finalization
+[PDI][User-code][13:58:20] *** info: Closing plugin
 ```
 \section important_notes_node Important notes
  * Make sure you use the proper access rights in your function in \ref PDI_access (PDI_IN for reading, PDI_OUT for writing).
