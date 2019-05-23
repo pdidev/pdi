@@ -1,9 +1,9 @@
 \page First_steps First steps with %PDI
 
-Here we will inroduce you to the %PDI functions and what you should expect them to do.
+Here we will introduce you to the %PDI functions and what you should expect them to do.
 
 \section fs_hello_event Hello Event
-As mentioned in \ref Specification_tree we have to provide specification tree to instuct %PDI what data we will share and what to do with it. We want to show what happens on each %PDI API call. We will use \ref test_plugin, which is very simple plugin that just print every information it gets. Let's create a specification tree named `hello_event.yml' that will load test plugin to %PDI:
+As mentioned in \ref Specification_tree we have to provide specification tree to instruct %PDI what data we will share and what to do with it. We want to show what happens on each %PDI API call. We will use \ref test_plugin, which is very simple plugin that just prints every information it gets. Let's create a specification tree named `hello_event.yml` that will load test plugin:
 
 ```yaml
 plugins:
@@ -12,7 +12,7 @@ plugins:
 
 Yes, that is whole specification tree. Test plugin prints everything, so there is no need to specify what we want it to do.
 
-Now we need to write a source code of our application:
+We need to write a source code of our application:
 ```C
 #include <pdi.h>
 
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-Let's analyse what happens in each line. Firstly we have `PDI_init` function which take parameter of type `PC_tree_t`. It's a structure parsed from some YAML file, in our case we parse it with `paraconf` library build in %PDI. To parse a file we need to call `PC_parse_path` function passing file path as argument. The next step is to call an event in %PDI named "Hello World Event". At the end we have to call `PDI_finalize()`. The output from this program is presented below:
+Let's analyze what happens in each line. Firstly we have PDI_init() function which take parameter of type `PC_tree_t`. It's a tree structure parsed from some YAML file, in our case we parse it with `paraconf` library build in %PDI. To parse a file we need to call `PC_parse_path` function passing file path as argument. The next step is to call an event in %PDI named "Hello World Event". At the end we have to call PDI_finalize(). The output from this program is presented below:
 ```
 [PDI][Test-plugin][10:25:28] *** info: Welcome to the test plugin!
 [PDI][10:25:28] *** info: Initialization successful
@@ -32,7 +32,7 @@ Let's analyse what happens in each line. Firstly we have `PDI_init` function whi
 [PDI][10:25:28] *** info: Finalization
 [PDI][Test-plugin][10:25:28] *** info: Goodbye from the test plugin!
 ```
-The first line indicates that plugin has loaded succesfully. The second is %PDI message, that it maneged to create all descriptors and load all defined plugins. Then we have message from loaded test plugin which printed the event name it has received. The next information is from %PDI and indicates that finalization has started and now it will dealocate resources. Last message is from test plugin destructor.
+The first line indicates that plugin has loaded successfully. The second is %PDI message, that tells it managed to create all descriptors and load all defined plugins. Then we have message from loaded test plugin which printed the event name it has received. The next information is from %PDI and indicates that finalization has started and now it will deallocate resources. Last message is from test plugin destructor. 
 
 \subsection fs_hello_data Hello Data
 In \ref fs_hello_event we learned how to call an event. In this chapter we will see how to share and reclaim data.
@@ -66,9 +66,9 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-Let's analyse new functions:
-- PDI_share shares access to the variable with %PDI. The first argument is a descriptor name and indicates what data we are sharing. The second one is pointer to our variable and the last one is access direction. `PDI_OUT` means data direction from application to %PDI, `PDI_IN` is a direction from %PDI to the program, `PDI_INOUT` includes both directions. 
-- PDI_reclaim reclaims the share which means that %PDI will no longer have access to shared variable. As an argument it takes name of the descriptor.
+Let's analyze new functions:
+- `PDI_share` shares access to the variable with %PDI. The first argument is a descriptor name and indicates what data we are sharing. The second one is pointer to our variable and the last one is access direction. `PDI_OUT` means data direction from application to %PDI, `PDI_IN` is a direction from %PDI to the program, `PDI_INOUT` includes both directions. 
+- `PDI_reclaim` reclaims the share which means that %PDI will no longer have access to shared variable. As an argument it takes name of the descriptor.
 
 The output from our application:
 ```
@@ -82,7 +82,7 @@ The output from our application:
 
 As we can see from the logs above, when we called `PDI_share` plugin gained access to the shared variable and after `PDI_reclaim` the variable has become no longer available for the plugin. The share notification gives plugin possibility to operate on data dependently what has been declared in specification tree.
 
-The same exact result we can achive with `PDI_expose` which is just `PDI_share` call and right after `PDI_reclaim` is called.
+The same exact result we can achieve with `PDI_expose` which is just `PDI_share` call and right after `PDI_reclaim` is called.
 
 ```c
     PDI_share("world", &my_world, PDI_OUT);
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-We will focus on `print_secret_msg` function. If you don't understand what happens in `main` function, please see \ref fs_hello_data example. `PDI_access` sets our pointer to the data location. We need to pass `PDI_IN` because data flows from PDI to our application. We also want to use `PDI_release`, because `PDI_reclaim` would end the sharing status of this descriptor and we reclaim this data later in `main` function.
+We will focus on `print_secret_msg` function. If you don't understand what happens in `main` function, please see \ref fs_hello_data example. `PDI_access` sets our pointer to the data location. We need to pass `PDI_IN` because data flows from %PDI to our application. We also want to use `PDI_release`, because `PDI_reclaim` would end the sharing status of this descriptor and we reclaim this data later in `main` function.
 Output from the program:
 
 ```
@@ -136,8 +136,8 @@ Watermelon is the tastiest fruit
 
 As you can see, we manage to access data descriptor from function only by passing its name and correct direction access.
 
-\subsection fs_mulitexpose Hello multi expose
-In some cases we would want to expose many descriptors at once. For this we have multiexpose which shares all the given descriptors, then call given event and then reclaim all passed data. Let's look at the example.
+\subsection fs_multiexpose Hello multi expose
+In some cases we would want to expose many descriptors at once. For this we have multi expose which shares all the given descriptors, then call given event and then reclaim all passed data. Let's look at the example.
 
 ```yaml
 data:
@@ -168,9 +168,10 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-First arguemnt of the `PDI_multi_expose` is the event name we want to call when all the descriptors are shared. After this we pass in loop:
-- name of the descriptor 
-- pointer to data
+First argument of the `PDI_multi_expose` is the event name we want to call when all the descriptors are shared. After this we pass in loop:
+
+- name of the descriptor
+- pointer to the data
 - direction access
 As the last argument we have to pass `NULL`.
 
@@ -190,4 +191,4 @@ The output of the execution:
 [PDI][Test-plugin][14:14:51] *** info: Goodbye from the test plugin!
 ```
 
-The logs from test plugin confirm the execution order we expected.
+The logs from test plugin confirm the execution order we were expecting.
