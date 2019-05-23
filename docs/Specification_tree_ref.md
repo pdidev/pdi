@@ -7,7 +7,7 @@ As such, it is a tree that contains 3 distinct kinds of nodes:
 * sequences,
 * mappings.
 
-A **scalar** is a leave in the tree, represented as a string.
+A **scalar** is a leaf in the tree, represented as a string.
 Some form of scalars can be interpreted as a boolean, integer or floating-point
 valued.
 Simple examples of scalars include for example (see the
@@ -49,7 +49,7 @@ complete syntax).
 
 # specification tree root {#root_node}
 
-The \ref root_node is a **mapping** that contains the following keys:
+The *specification tree root* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -78,7 +78,7 @@ size: 5
 
 # array_type {#array_type_node}
 
-A \ref array_type_node is a **mapping** that contains the following keys:
+A *array_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -88,7 +88,7 @@ A \ref array_type_node is a **mapping** that contains the following keys:
 |`"subsize"` (*optional, deprecated*)|a \ref intexpr_or_seq_node|
 |`"start"` (*optional, deprecated*)|a \ref intexpr_or_seq_node|
 
-A \ref array_type_node represents a potentially multi-dimensional array where:
+A *array_type_node* represents a potentially multi-dimensional array where:
 * the value associated to the `size` key represents the size of the array in
   each dimension (C order),
 * the value associated to the `subtype` key represents the type of the elements
@@ -113,9 +113,8 @@ size: 5
 ```python
 type: array
 subtype:
-  type: array
-  subtype: int
-  size: 3
+  type: character
+  kind: 4
 size: [ '$size_1d', '$size_2d' ]
 subsize: [ '$size_1d - 2', '$size_2d - 2' ]
 start: [ '1', '1' ]
@@ -123,13 +122,13 @@ start: [ '1', '1' ]
 
 # char_type {#char_type_node}
 
-A \ref char_type_node is a **mapping** that contains the following keys:
+A *char_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"char"`|
 
-A \ref char_type_node represents the C `char` datatype; it accepts no parameter.
+A *char_type* represents the C `char` datatype; it accepts no parameter.
 
 **Example:**
 
@@ -139,14 +138,14 @@ type: char
 
 # character_type {#character_type_node}
 
-A \ref character_type_node is a **mapping** that contains the following keys:
+A *character_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"character"`|
 |`"kind"` (*optional*)|a \ref expression_node "integer-valued $-expression"|
 
-A \ref character_type_node represents the Fortran `character` datatype.
+A *character_type_node* represents the Fortran `character` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`character(kind=...)`).
 
@@ -163,7 +162,7 @@ kind: 4
 
 # datatype {#datatype_node}
 
-A \ref datatype_node can be **any of**:
+A *datatype* can be **any of**:
 * a \ref array_type_node,
 * a \ref char_type_node,
 * a \ref character_type_node,
@@ -185,12 +184,12 @@ All others are dictionaries with a `type` key used for disambiguation between
 them.
 Plugins can add new options that follow the same pattern.
 
-A \ref datatype_node represents the memory layout and interpretation for data
+A *datatype* represents the memory layout and interpretation for data
 exposed by the user in the \ref Data_store "data store".
 
 # data_map {#data_map_node}
 
-A \ref data_map_node is a **mapping** that contains the following keys:
+A *data_map* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -208,13 +207,13 @@ my_data_2: {type: array, subtype: double, size: 5}
 
 # double_type {#double_type_node}
 
-A \ref double_type_node is a **mapping** that contains the following keys:
+A *double_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"double"`|
 
-A \ref double_type_node represents the C `double` type.
+A *double_type* represents the C `double` type.
 It accepts no parameter.
 
 **Example:**
@@ -225,7 +224,7 @@ type: double
 
 # $-expression {#expression_node}
 
-A \ref expression_node is a **scalar** whose content matches the following
+A *$-expression* is a **scalar** whose content matches the following
 grammar:
 
 \include docs/expression_grammar.in.txt
@@ -273,7 +272,7 @@ where zero is interpreted as false and any other value as true.
 
 # float_type {#float_type_node}
 
-A \ref float_type_node is a **mapping** that contains the following keys:
+A *float_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -290,7 +289,7 @@ type: float
 
 # int_type {#int_type_node}
 
-A \ref int_type_node is a **mapping** that contains the following keys:
+A *int_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -307,7 +306,7 @@ type: int
 
 # int16_type {#int16_type_node}
 
-A \ref int16_type_node is a **mapping** that contains the following keys:
+A *int16_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -325,7 +324,7 @@ type: int16
 
 # int32_type {#int32_type_node}
 
-A \ref int32_type_node is a **mapping** that contains the following keys:
+A *int32_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -343,13 +342,13 @@ type: int32
 
 # int64_type {#int64_type_node}
 
-A \ref int64_type_node is a **mapping** that contains the following keys:
+A *int64_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"int64"`|
 
-A \ref int64_type_node represents the C `int64_t` type from
+A *int64_type* represents the C `int64_t` type from
 the `<stdtypes.h>` header.
 It accepts no parameter.
 
@@ -361,7 +360,7 @@ type: int64
 
 # int8_type {#int8_type_node}
 
-A \ref int8_type_node is a **mapping** that contains the following keys:
+A *int8_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -379,14 +378,14 @@ type: int8
 
 # integer_type {#integer_type_node}
 
-A \ref integer_type_node is a **mapping** that contains the following keys:
+A *integer_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"integer"`|
 |`"kind"` (*optional*)|a \ref expression_node "integer-valued $-expression"|
 
-A \ref integer_type_node represents the Fortran `integer` datatype.
+A *integer_type* represents the Fortran `integer` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`integer(kind=...)`).
 If missing, the default kind of the Fortran implementation is used.
@@ -404,7 +403,7 @@ kind: 2
 
 # intexpr_seq {#intexpr_seq_node}
 
-A \ref intexpr_seq_node is a **sequence** where each element of the sequence is
+A *intexpr_seq* is a **sequence** where each element of the sequence is
 a \ref expression_node "integer-valued $-expression".
 
 **Example:**
@@ -415,7 +414,7 @@ a \ref expression_node "integer-valued $-expression".
 
 # intexpr_or_seq {#intexpr_or_seq_node}
 
-A \ref intexpr_or_seq_node can be **any of**:
+A *intexpr_or_seq* can be **any of**:
 * a \ref expression_node "integer-valued $-expression",
 * a \ref intexpr_seq_node.
 
@@ -434,14 +433,14 @@ is interpreted as if it was:
 
 # logical_type {#logical_type_node}
 
-A \ref logical_type_node is a **mapping** that contains the following keys:
+A *logical_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"logical"`|
 |`"kind"` (*optional*)|a \ref expression_node "integer-valued $-expression"|
 
-A \ref logical_type_node represents the Fortran `logical` datatype.
+A *logical_type* represents the Fortran `logical` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`logical(kind=...)`).
 If missing, the default kind of the Fortran implementation is used.
@@ -459,11 +458,11 @@ kind: 1
 
 # member_desc {#member_desc_node}
 
-A \ref member_desc_node is a **mapping** that contains the following keys:
+A *member_desc* is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"disp"`|a \ref expression_node "integer-valued $-expression"|
-|`"type"`|a **scalar** |
+|`"type"`|a `scalar`, `array` or `record` |
 |`".*"` (*optional*)| *anything* |
 
 * the value associated to the `disp` key identifies the displacement in bytes
@@ -472,11 +471,27 @@ A \ref member_desc_node is a **mapping** that contains the following keys:
   \ref datatype_node "type" of this record, all other keys required for this
   \ref datatype_node must be present.
 
-See \ref record_type_node for an example.
+**Examples:**
+
+```python
+my_char:
+      disp: 0
+      type: int64
+```
+
+```python
+    my_array:
+      disp: 8
+      type: array
+      subtype: int64
+      size: [10, 10]
+```
+
+See \ref record_type_node for more examples.
 
 # members_map {#members_map_node}
 
-A \ref members_map_node is a **mapping** that contains the following keys:
+A *members_map* is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`".*"` (*optional*)|a \ref member_desc_node|
@@ -488,7 +503,7 @@ See \ref record_type_node for an example.
 
 # plugin_seq {#plugin_seq_node}
 
-A \ref plugin_seq_node is a **mapping** that contains the following keys:
+A *plugin_seq* is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`".*"` (*optional*)| *anything* |
@@ -503,14 +518,14 @@ See \ref root_node for an example.
 
 # real_type {#real_type_node}
 
-A \ref real_type_node is a **mapping** that contains the following keys:
+A *real_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
 |`"type"`|`"real"`|
 |`"kind"` (*optional*)|a \ref expression_node "integer-valued $-expression"|
 
-A \ref real_type_node represents the Fortran `real` datatype.
+A *real_type* represents the Fortran `real` datatype.
 The value associated to the `kind` key corresponds to the Fortran *kind*
 parameter (`real(kind=...)`).
 If missing, the default kind of the Fortran implementation is used.
@@ -528,7 +543,7 @@ kind: 8
 
 # record_type {#record_type_node}
 
-A \ref record_type_node is a **mapping** that contains the following keys:
+A *record_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
@@ -558,7 +573,7 @@ members:
 
 # simple_datatype {#simple_datatype_node}
 
-A \ref simple_datatype_node is a **scalar**.
+A *simple_datatype* is a **scalar**.
 
 It is interpreted as a shortcut for a mapping with a
 single key `type` whose value is the provided scalar and therefore another
