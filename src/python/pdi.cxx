@@ -126,6 +126,11 @@ PYBIND11_MODULE(_pdi, m)
 		Global_context::init(PC_parse_string(conf));
 	}, "Initialize PDI");
 	
+	m.def("finalize", []() {
+		Paraconf_wrapper fw;
+		Global_context::finalize();
+	}, "Finalize PDI");
+	
 	m.def("event", [](const char* name) {
 		Paraconf_wrapper fw;
 		Global_context::context().event(name);

@@ -156,3 +156,4 @@ if __name__ == '__main__':
     pdi.event('finalization')
     pdi.expose('iter', ii, pdi.OUT)
     pdi.expose('main_field', cur, pdi.OUT)
+    pdi.finalize()
