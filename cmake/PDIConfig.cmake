@@ -27,7 +27,6 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}")
 
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeFindDependencyMacro.cmake)
 
-find_dependency(MPI COMPONENTS CXX)
 find_dependency(paraconf)
 find_dependency(spdlog)
 
