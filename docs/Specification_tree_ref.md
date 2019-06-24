@@ -55,7 +55,7 @@ The *specification tree root* is a **mapping** that contains the following keys:
 |:--|:----|
 |`"data"` (*optional*)|a \ref data_map_node|
 |`"metadata"` (*optional*)|a \ref data_map_node|
-|`"plugins"` (*optional*)|a \ref plugin_seq_node|
+|`"plugins"` (*optional*)|a \ref plugin_map_node|
 |`".*"` (*optional*)| *anything* |
 
 * the `data` and `metadata` sections specify the type of the data in buffers
@@ -69,11 +69,15 @@ configuration,
 
 ```python
 metadata:
-  
+  my_metadata: int
 data:
-  array
-subtype: double
-size: 5
+  my_data:
+    type: array
+    subtype: double
+    size: 5
+plugins:
+  decl_hdf5: #...
+  mpi: #...
 ```
 
 # array_type {#array_type_node}
@@ -112,12 +116,8 @@ size: 5
 
 ```python
 type: array
-subtype:
-  type: character
-  kind: 4
+subtype: { type: character, kind: 4 }
 size: [ '$size_1d', '$size_2d' ]
-subsize: [ '$size_1d - 2', '$size_2d - 2' ]
-start: [ '1', '1' ]
 ```
 
 # char_type {#char_type_node}
@@ -501,9 +501,9 @@ A *members_map* is a **mapping** that contains the following keys:
 
 See \ref record_type_node for an example.
 
-# plugin_seq {#plugin_seq_node}
+# plugin_map {#plugin_map_node}
 
-A *plugin_seq* is a **mapping** that contains the following keys:
+A *plugin_map* is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`".*"` (*optional*)| *anything* |
