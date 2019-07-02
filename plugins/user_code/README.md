@@ -1,6 +1,6 @@
 \page user_code_plugin The user-code plugin
 
-The user-code plugin enables one to call a user-defined function 
+The `user-code` plugin enables one to call a user-defined function 
 when a specified event occur or certain data becomes available.
 
 \section important_notes_node Important notes
@@ -12,6 +12,17 @@ when a specified event occur or certain data becomes available.
   (PDI_IN for reading, PDI_OUT for writing).
 * Descriptor aliases enables one to use different descriptors without the need
   to recompile the code.
+
+\section dependencies_node Dependencies between the code and the specification tree
+
+To ensure proper work of the `user-code` plugin, there are several conventions to follow in the application 
+code and the specification tree.
+
+First, each function name in specification tree must be a valid function name (watch out for [name mangling](https://en.wikipedia.org/wiki/Name_mangling)).
+
+Second, these functions **can not** take any arguments or return any value (i.e. their type must be `void(void)`). Use descriptors for passing input/output variables instead.
+
+Third, function's symbols **must** be exported to make them accessible by `user-code` plugin. To do this, compile your program as described in \ref important_notes_node.
 
 \section use_examples_node Use examples
 
