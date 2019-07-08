@@ -46,6 +46,10 @@ namespace  {
 struct Chunk_info {
 	size_t chunk_count;
 	std::unique_ptr<size_t[]> chunks_sizes; // array[chunk_count]
+	Chunk_info():
+		chunk_count{0},
+		chunks_sizes{nullptr}
+	{}
 };
 
 class Payload_chunk
