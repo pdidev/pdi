@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ -n "$PYTHONPATH" ]; then
+	export PYTHONPATH="$(readlink -f "$(dirname "$0")"):$PYTHONPATH"
+else
+	export PYTHONPATH="$(readlink -f "$(dirname "$0")")"
+fi
+
+if [ -n "$LD_LIBRARY_PATH" ]; then
+	export LD_LIBRARY_PATH="$(readlink -f "$(dirname "$0")"):$LD_LIBRARY_PATH"
+else
+	export LD_LIBRARY_PATH="$(readlink -f "$(dirname "$0")")"
+fi
+
+# run the provided command
+exec "$@"
+

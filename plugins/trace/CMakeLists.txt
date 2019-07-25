@@ -31,11 +31,15 @@ cmake_minimum_required(VERSION 3.5)
 project(pdi_trace_plugin LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+option(BUILD_INDENT "Enable automatic code indentation" OFF)
+
 # Includes
 include(GNUInstallDirs)
 
 # Astyle
-find_package(Astyle)
+if("${BUILD_INDENT}")
+	find_package(Astyle 3.1 REQUIRED)
+endif()
 
 # PDI
 find_package(PDI REQUIRED)
@@ -44,15 +48,15 @@ find_package(PDI REQUIRED)
 add_library(pdi_trace_plugin MODULE trace.cxx)
 target_link_libraries(pdi_trace_plugin PDI::pdi)
 set_target_properties(pdi_trace_plugin PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
-if("${Astyle_FOUND}")
+if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
-			OPTIONS_FILE ../../docs/formating.astyle
-			trace.cxx)
+		OPTIONS_FILE ../../pdi/docs/formating.astyle
+		trace.cxx)
 endif()
 
 # Installation
@@ -63,8 +67,7 @@ install(TARGETS pdi_trace_plugin
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
-	set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
-	find_package(PythonPath REQUIRED)
+	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
-			DESTINATION "${PythonPath_INSTALL_SITELIBDIR}/")
+			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()

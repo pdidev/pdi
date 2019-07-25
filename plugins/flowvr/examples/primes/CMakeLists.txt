@@ -24,6 +24,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 

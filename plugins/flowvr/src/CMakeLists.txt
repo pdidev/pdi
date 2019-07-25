@@ -35,15 +35,15 @@ add_library(pdi_flowvr_plugin MODULE flowvr.cxx)
 target_link_libraries(pdi_flowvr_plugin PDI::pdi ${FLOWVR_base_LIBRARY} ${FLOWVR_ftl_LIBRARY} ${FLOWVR_mod_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(pdi_flowvr_plugin PUBLIC ${FLOWVR_INCLUDE_DIR})
 set_target_properties(pdi_flowvr_plugin PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
-if("${Astyle_FOUND}")
+if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
-			OPTIONS_FILE ../../../docs/formating.astyle
-			flowvr.cxx stamps/*.h payloads/*.h *.h)
+		OPTIONS_FILE ../../../pdi/docs/formating.astyle
+		flowvr.cxx stamps/*.h payloads/*.h *.h)
 endif()
 
 # Installation

@@ -26,7 +26,7 @@ add_executable(send_wait_event send_wait_event.cxx)
 target_link_libraries(send_wait_event PDI::pdi)
 configure_file(send_wait_event.yml send_wait_event.yml COPYONLY)
 set_target_properties(send_wait_event PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
 
@@ -34,7 +34,7 @@ add_executable(recv_wait_event recv_wait_event.cxx)
 target_link_libraries(recv_wait_event PDI::pdi)
 configure_file(recv_wait_event.yml recv_wait_event.yml COPYONLY)
 set_target_properties(recv_wait_event PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/wait_event.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh

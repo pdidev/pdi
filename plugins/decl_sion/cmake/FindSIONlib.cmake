@@ -17,8 +17,10 @@ function (interrogate_sionconfig api lang)
     RESULT_VARIABLE SIONCONFIG_RETURN)
 
   if (NOT "${SIONCONFIG_RETURN}" EQUAL 0)
-    message(STATUS "Unable to interrogate sionconfig (${SIONCONFIG})")
-    message(STATUS ${SIONCONFIG_OUTPUT})
+    if (NOT ${SIONlib_FIND_QUIETLY})
+      message(STATUS "Unable to interrogate sionconfig (${SIONCONFIG})")
+      message(STATUS ${SIONCONFIG_OUTPUT})
+    endif()
     set(SIONCONFIG_OUTPUT)
   endif ()
 
@@ -43,6 +45,7 @@ function (interrogate_sionconfig api lang)
 
     set(SIONlib_${api}_${lang}_COMPILE_FLAGS ${SIONlib_COMPILE_FLAGS_WORK} CACHE STRING "SIONlib ${api} API ${lang} compilation flags" FORCE)
     set(SIONlib_${api}_${lang}_INCLUDE_DIRS ${SIONlib_INCLUDE_DIRS_WORK} CACHE STRING "SIONlib ${api} API ${lang} include path" FORCE)
+	mark_as_advanced(SIONlib_${api}_${lang}_COMPILE_FLAGS SIONlib_${api}_${lang}_INCLUDE_DIRS)
   endif ()
 
   execute_process(
@@ -52,8 +55,10 @@ function (interrogate_sionconfig api lang)
     RESULT_VARIABLE SIONCONFIG_RETURN)
 
   if (NOT "${SIONCONFIG_RETURN}" EQUAL 0)
-    message(STATUS "Unable to interrogate sionconfig (${SIONCONFIG})")
-    message(STATUS ${SIONCONFIG_OUTPUT})
+    if (NOT ${SIONlib_FIND_QUIETLY})
+      message(STATUS "Unable to interrogate sionconfig (${SIONCONFIG})")
+      message(STATUS ${SIONCONFIG_OUTPUT})
+    endif()
     set(SIONCONFIG_OUTPUT)
   endif ()
 
@@ -92,6 +97,7 @@ function (interrogate_sionconfig api lang)
 
     set(SIONlib_${api}_${lang}_LIBRARIES ${SIONlib_LIBRARIES_WORK} CACHE STRING "SIONlib ${api} API ${lang} libraries to link against" FORCE)
     set(SIONlib_LIB "SIONlib_LIB-NOTFOUND" CACHE INTERNAL "Scratch variable for SIONlib lib detection" FORCE)
+	mark_as_advanced(SIONlib_${api}_${lang}_LIBRARIES SIONlib_LIB)
   endif ()
 endfunction ()
 

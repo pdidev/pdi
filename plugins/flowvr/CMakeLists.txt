@@ -27,15 +27,22 @@ cmake_minimum_required(VERSION 3.5)
 project(pdi_flowvr_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-# Includes
+option(BUILD_INDENT "Enable automatic code indentation" OFF)
+
 include(CTest)
+
 include(GNUInstallDirs)
 
 # Astyle
-find_package(Astyle)
+if("${BUILD_INDENT}")
+	find_package(Astyle 3.1 REQUIRED)
+endif()
 
 # PDI
 find_package(PDI REQUIRED)
+
+# TODO: PyYAML
+# find_package(Py2YAML REQUIRED)
 
 # FlowVR
 find_package(FlowVR REQUIRED)

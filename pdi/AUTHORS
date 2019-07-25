@@ -1,0 +1,33 @@
+Multiple people have contributed to PDI. To show our appreciation for their
+public spirit, we list here in alphabetical order a condensed list of their
+contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* PDI maintainer
+* Design and initial implementation
+
+Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
+* Initial Fortran interface
+
+Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Development of many unit-tests
+* Support for plugin dependencies
+* Support of the multi_expose function
+* Many improvements, bugfixes and cleanups
+
+Corentin Roussel - CEA (Corentin.roussel@cea.fr)
+* Co-maintainer from Sept. 2016 to Feb. 2018
+
+Karol Sierociński - PSNC (ksiero@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Set-up and development of unit-tests
+* Support for records in YAML
+* Logging support
+* Support for complex datatypes
+* Many improvements, bugfixes and cleanups

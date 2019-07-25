@@ -1,0 +1,25 @@
+Multiple people have contributed to the user-code plugin. To show our appreciation for their
+public spirit, we list here in alphabetical order a condensed list of their
+contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* User-code plugin maintainer
+* Rework of user-code v2 plugin
+* Adapted to moving PDI API & style
+
+Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Documentation writer
+
+Corentin Roussel - CEA (Corentin.roussel@cea.fr)
+* Design and initial implementation
+
+Karol Sierociński - PSNC (ksiero@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Schema validator
+* Logging improvement

@@ -38,13 +38,13 @@ add_executable(decl_hdf5_01_C decl_hdf5_test_01.c)
 target_link_libraries(decl_hdf5_01_C PDI::pdi)
 add_test(NAME decl_hdf5_01_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_C>")
 
-if("${ENABLE_FORTRAN}")
+if("${BUILD_FORTRAN}")
 add_executable(decl_hdf5_01_F decl_hdf5_test_01.F90)
 target_link_libraries(decl_hdf5_01_F PDI::pdi_f90)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_01_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_01.yml")
-endif("${ENABLE_FORTRAN}")
+endif("${BUILD_FORTRAN}")
 
 
 # PDI_import/PDI_export
@@ -53,20 +53,20 @@ add_executable(decl_hdf5_02_C decl_hdf5_test_02.c)
 target_link_libraries(decl_hdf5_02_C PDI::pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_02_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
 
-if("${ENABLE_FORTRAN}")
+if("${BUILD_FORTRAN}")
 add_executable(decl_hdf5_02_F decl_hdf5_test_02.F90)
 target_link_libraries(decl_hdf5_02_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
-endif("${ENABLE_FORTRAN}")
+endif("${BUILD_FORTRAN}")
 
 
 # slicing mechanism
 
-if("${ENABLE_FORTRAN}")
+if("${BUILD_FORTRAN}")
 add_test(NAME decl_hdf5_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_03.yml" "test_03_on")
-endif("${ENABLE_FORTRAN}")
+endif("${BUILD_FORTRAN}")
 
 
 # parallel read/write
@@ -75,13 +75,13 @@ add_executable(decl_hdf5_04_C decl_hdf5_test_04.c)
 target_link_libraries(decl_hdf5_04_C PDI::pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_C>" ${MPIEXEC_POSTFLAGS})
 
-if("${ENABLE_FORTRAN}")
+if("${BUILD_FORTRAN}")
 add_executable(decl_hdf5_04_F decl_hdf5_test_04.F90)
 target_link_libraries(decl_hdf5_04_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_04_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_04_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04.yml")
-endif("${ENABLE_FORTRAN}")
+endif("${BUILD_FORTRAN}")
 
 
 # scalars default options
@@ -109,35 +109,35 @@ add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NU
 
 if("${BUILD_CFG_VALIDATOR}")
 
-add_test(NAME pos_val_decl_hdf5_test_01 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_hdf5_test_01 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_01.yml)
 configure_file(pos_val_decl_hdf5_test_01.yml pos_val_decl_hdf5_test_01.yml COPYONLY)
 
-add_test(NAME pos_val_decl_hdf5_test_02 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_hdf5_test_02 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_02.yml)
 configure_file(pos_val_decl_hdf5_test_02.yml pos_val_decl_hdf5_test_02.yml COPYONLY)
 
-add_test(NAME pos_val_decl_hdf5_test_03 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_hdf5_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_03.yml)
 configure_file(pos_val_decl_hdf5_test_03.yml pos_val_decl_hdf5_test_03.yml COPYONLY)
 
-add_test(NAME pos_val_decl_hdf5_test_04 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_hdf5_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_04.yml)
 configure_file(pos_val_decl_hdf5_test_04.yml pos_val_decl_hdf5_test_04.yml COPYONLY)
 
-add_test(NAME pos_val_decl_hdf5_test_05 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_hdf5_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_05.yml)
 configure_file(pos_val_decl_hdf5_test_05.yml pos_val_decl_hdf5_test_05.yml COPYONLY)
 
-add_test(NAME pos_val_decl_hdf5_test_06 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_hdf5_test_06 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_06.yml)
 configure_file(pos_val_decl_hdf5_test_06.yml pos_val_decl_hdf5_test_06.yml COPYONLY)
 
-add_test(NAME pos_val_decl_hdf5_test_07 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_hdf5_test_07 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_07.yml)
 configure_file(pos_val_decl_hdf5_test_07.yml pos_val_decl_hdf5_test_07.yml COPYONLY)
 
-add_test(NAME pos_val_decl_hdf5_test_08 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_hdf5_test_08 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_08.yml)
 configure_file(pos_val_decl_hdf5_test_08.yml pos_val_decl_hdf5_test_08.yml COPYONLY)
 
@@ -148,35 +148,35 @@ endif()
 
 if("${BUILD_CFG_VALIDATOR}")
 
-add_test(NAME neg_val_decl_hdf5_test_01 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_hdf5_test_01 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_01.yml)
 configure_file(neg_val_decl_hdf5_test_01.yml neg_val_decl_hdf5_test_01.yml COPYONLY)
 
-add_test(NAME neg_val_decl_hdf5_test_02 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_hdf5_test_02 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_02.yml)
 configure_file(neg_val_decl_hdf5_test_02.yml neg_val_decl_hdf5_test_02.yml COPYONLY)
 
-add_test(NAME neg_val_decl_hdf5_test_03 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_hdf5_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_03.yml)
 configure_file(neg_val_decl_hdf5_test_03.yml neg_val_decl_hdf5_test_03.yml COPYONLY)
 
-add_test(NAME neg_val_decl_hdf5_test_04 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_hdf5_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_04.yml)
 configure_file(neg_val_decl_hdf5_test_04.yml neg_val_decl_hdf5_test_04.yml COPYONLY)
 
-add_test(NAME neg_val_decl_hdf5_test_05 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_hdf5_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_05.yml)
 configure_file(neg_val_decl_hdf5_test_05.yml neg_val_decl_hdf5_test_05.yml COPYONLY)
 
-add_test(NAME neg_val_decl_hdf5_test_06 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_hdf5_test_06 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_06.yml)
 configure_file(neg_val_decl_hdf5_test_06.yml neg_val_decl_hdf5_test_06.yml COPYONLY)
 
-add_test(NAME neg_val_decl_hdf5_test_07 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_hdf5_test_07 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_07.yml)
 configure_file(neg_val_decl_hdf5_test_07.yml neg_val_decl_hdf5_test_07.yml COPYONLY)
 
-add_test(NAME neg_val_decl_hdf5_test_08 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_hdf5_test_08 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_08.yml)
 configure_file(neg_val_decl_hdf5_test_08.yml neg_val_decl_hdf5_test_08.yml COPYONLY)
 

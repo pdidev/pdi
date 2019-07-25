@@ -26,7 +26,7 @@ add_executable(send_msg send_msg.cxx)
 target_link_libraries(send_msg PDI::pdi)
 configure_file(send_msg.yml send_msg.yml COPYONLY)
 set_target_properties(send_msg PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
 
@@ -34,7 +34,7 @@ add_executable(recv_msg recv_msg.cxx)
 target_link_libraries(recv_msg PDI::pdi)
 configure_file(recv_msg.yml recv_msg.yml COPYONLY)
 set_target_properties(recv_msg PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/send_recv_msg.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh

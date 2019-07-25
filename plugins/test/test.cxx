@@ -62,6 +62,7 @@ struct test_plugin: Plugin {
 		});
 		context().logger()->set_pattern("[PDI][Test-plugin][%T] *** %^%l%$: %v");
 		context().logger()->info("Welcome to the test plugin!");
+		context().logger()->warn("The test plugin is deprecated, use the `trace' plugin instead!");
 	}
 	
 	~test_plugin()

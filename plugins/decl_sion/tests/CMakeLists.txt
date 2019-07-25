@@ -38,13 +38,13 @@ add_executable(decl_sion_01_c decl_sion_test_01.c)
 target_link_libraries(decl_sion_01_c PDI::pdi MPI::MPI_C)
 add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_01_c>" ${MPIEXEC_POSTFLAGS})
 
-if("${ENABLE_FORTRAN}")
+if("${BUILD_FORTRAN}")
 add_executable(decl_sion_01_F decl_sion_test_01.F90)
 target_link_libraries(decl_sion_01_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_01_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
-endif("${ENABLE_FORTRAN}")
+endif("${BUILD_FORTRAN}")
 
 
 # Testing writer/reader with one file per variable
@@ -53,13 +53,13 @@ add_executable(decl_sion_02_c decl_sion_test_02.c)
 target_link_libraries(decl_sion_02_c PDI::pdi MPI::MPI_C)
 add_test(NAME decl_sion_02_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_02_c>" ${MPIEXEC_POSTFLAGS})
 
-if("${ENABLE_FORTRAN}")
+if("${BUILD_FORTRAN}")
 add_executable(decl_sion_02_F decl_sion_test_02.F90)
 target_link_libraries(decl_sion_02_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02.yml")
-endif("${ENABLE_FORTRAN}")
+endif("${BUILD_FORTRAN}")
 
 
 # Testing writer/reader using the event based mechanism 
@@ -68,28 +68,28 @@ add_executable(decl_sion_03_c decl_sion_test_03.c)
 target_link_libraries(decl_sion_03_c PDI::pdi MPI::MPI_C)
 add_test(NAME decl_sion_03_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_03_c>" ${MPIEXEC_POSTFLAGS})
 
-if("${ENABLE_FORTRAN}")
+if("${BUILD_FORTRAN}")
 add_executable(decl_sion_03_F decl_sion_test_03.F90)
 target_link_libraries(decl_sion_03_F PDI::pdi_f90 MPI::MPI_Fortran)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_03_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_03_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03.yml")
-endif("${ENABLE_FORTRAN}")
+endif("${BUILD_FORTRAN}")
 
 
 # Positive config tests
 
 if("${BUILD_CFG_VALIDATOR}")
 
-add_test(NAME pos_val_decl_sion_test_01 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_sion_test_01 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion.py pos_val_decl_sion_test_01.yml)
 configure_file(pos_val_decl_sion_test_01.yml pos_val_decl_sion_test_01.yml COPYONLY)
 
-add_test(NAME pos_val_decl_sion_test_02 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_sion_test_02 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion.py pos_val_decl_sion_test_02.yml)
 configure_file(pos_val_decl_sion_test_02.yml pos_val_decl_sion_test_02.yml COPYONLY)
 
-add_test(NAME pos_val_decl_sion_test_03 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME pos_val_decl_sion_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion.py pos_val_decl_sion_test_03.yml)
 configure_file(pos_val_decl_sion_test_03.yml pos_val_decl_sion_test_03.yml COPYONLY)
 
@@ -100,27 +100,27 @@ endif()
 
 if("${BUILD_CFG_VALIDATOR}")
 
-add_test(NAME neg_val_decl_sion_test_01 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_sion_test_01 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_01.yml)
 configure_file(neg_val_decl_sion_test_01.yml neg_val_decl_sion_test_01.yml COPYONLY)
 
-add_test(NAME neg_val_decl_sion_test_02 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_sion_test_02 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_02.yml)
 configure_file(neg_val_decl_sion_test_02.yml neg_val_decl_sion_test_02.yml COPYONLY)
 
-add_test(NAME neg_val_decl_sion_test_03 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_sion_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_03.yml)
 configure_file(neg_val_decl_sion_test_03.yml neg_val_decl_sion_test_03.yml COPYONLY)
 
-add_test(NAME neg_val_decl_sion_test_04 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_sion_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_04.yml)
 configure_file(neg_val_decl_sion_test_04.yml neg_val_decl_sion_test_04.yml COPYONLY)
 
-add_test(NAME neg_val_decl_sion_test_05 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_sion_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_05.yml)
 configure_file(neg_val_decl_sion_test_05.yml neg_val_decl_sion_test_05.yml COPYONLY)
 
-add_test(NAME neg_val_decl_sion_test_06 COMMAND ${PYTHON_EXECUTABLE} 
+add_test(NAME neg_val_decl_sion_test_06 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
 	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_06.yml)
 configure_file(neg_val_decl_sion_test_06.yml neg_val_decl_sion_test_06.yml COPYONLY)
 

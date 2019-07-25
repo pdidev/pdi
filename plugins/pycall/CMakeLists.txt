@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -28,20 +28,22 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi_pycall_plugin LANGUAGES CXX)
+project(pdi_pycall_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if("${BUILD_TESTING}")
-	enable_language(C)
-endif()
 
-# Includes
+option(BUILD_INDENT "Enable automatic code indentation" OFF)
+
 include(CTest)
 
 # Astyle
-find_package(Astyle)
+if("${BUILD_INDENT}")
+	find_package(Astyle 3.1 REQUIRED)
+endif()
+
+find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
-find_package(pybind11 REQUIRED)
+find_package(pybind11 2.3.0 REQUIRED)
 
 # PDI
 find_package(PDI REQUIRED)
@@ -50,15 +52,15 @@ find_package(PDI REQUIRED)
 add_library(pdi_pycall_plugin MODULE pycall.cxx)
 target_link_libraries(pdi_pycall_plugin PDI::pdi_python pybind11::embed)
 set_target_properties(pdi_pycall_plugin PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
-if("${Astyle_FOUND}")
+if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
-			OPTIONS_FILE ../../docs/formating.astyle
-			pycall.cxx)
+		OPTIONS_FILE ../../pdi/docs/formating.astyle
+		pycall.cxx)
 endif()
 
 # Installation

@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 from flowvrapp import *
 from filters import *
 from pdi_flowvr import Module_PDI

@@ -28,22 +28,21 @@ project(pdicfg_validator LANGUAGES)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-
-# Includes
+include(CTest)
 
 include(GNUInstallDirs)
 
 
 # Dependencies
 
-set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
-find_package(PythonPath REQUIRED) #< Same as pybind11 to get a coherent version of python with the rest of PDI
+find_package(Python3Path REQUIRED COMPONENTS Interpreter)
+find_package(Py3YAML REQUIRED)
 
 
 # Libraries
 
 install(DIRECTORY pdicfg_validator
-		DESTINATION "${PythonPath_INSTALL_SITELIBDIR}/"
+		DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/"
 )
 
 install(PROGRAMS pdicfg_validate

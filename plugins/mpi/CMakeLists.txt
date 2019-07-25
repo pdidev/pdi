@@ -23,27 +23,30 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi_mpi_plugin LANGUAGES CXX)
+project(pdi_mpi_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if("${BUILD_TESTING}")
-	enable_language(C)
-	if("${ENABLE_FORTRAN}")
-		enable_language(Fortran)
-	endif()
+
+option(BUILD_FORTRAN "Enable Fortran support" ON)
+option(BUILD_INDENT  "Enable automatic code indentation" OFF)
+
+include(CTest)
+
+if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
+	enable_language(Fortran)
 endif()
 
-# Includes
-include(CTest)
 include(GNUInstallDirs)
 
 # Astyle
-find_package(Astyle)
+if("${BUILD_INDENT}")
+	find_package(Astyle 3.1 REQUIRED)
+endif()
 
 # MPI
 set(MPI_COMPONENTS CXX)
 if("${BUILD_TESTING}")
 	list(APPEND MPI_COMPONENTS C)
-	if("${ENABLE_FORTRAN}")
+	if("${BUILD_FORTRAN}")
 		list(APPEND MPI_COMPONENTS Fortran)
 	endif()
 endif()
@@ -56,15 +59,15 @@ find_package(PDI REQUIRED)
 add_library(pdi_mpi_plugin MODULE mpi.cxx)
 target_link_libraries(pdi_mpi_plugin PUBLIC PDI::pdi MPI::MPI_CXX)
 set_target_properties(pdi_mpi_plugin PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
-if("${Astyle_FOUND}")
+if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
-			OPTIONS_FILE ../../docs/formating.astyle
-			mpi.cxx tests/*.c)
+		OPTIONS_FILE ../../pdi/docs/formating.astyle
+		mpi.cxx tests/*.c)
 endif()
 
 # Installation
@@ -75,10 +78,9 @@ install(TARGETS pdi_mpi_plugin
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
-	set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
-	find_package(PythonPath REQUIRED)
+	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
-			DESTINATION "${PythonPath_INSTALL_SITELIBDIR}/")
+			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()
 
 # Tests

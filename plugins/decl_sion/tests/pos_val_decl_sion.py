@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #=============================================================================
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.

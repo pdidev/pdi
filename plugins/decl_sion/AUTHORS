@@ -1,0 +1,27 @@
+Multiple people have contributed to the Decl'SION plugin. To show our
+appreciation for their public spirit, we list here in alphabetical order a
+condensed list of their contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Refactoring to match the new PDI API and style
+* Run tests that depend on the filesystem in their own temporary directory
+* Buildsystem update
+
+Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Embedded versions of SIONlib
+* Multiple code cleanups
+
+Karol Sierociński - PSNC (ksiero@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Schema validator
+* Multiple code cleanups
+* Logging improvement
+
+Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
+* Design and initial implementation

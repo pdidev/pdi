@@ -30,22 +30,27 @@
 cmake_minimum_required(VERSION 3.5)
 project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if("${BUILD_TESTING}" AND "${ENABLE_FORTRAN}")
+
+option(BUILD_FORTRAN       "Enable Fortran support" ON)
+option(BUILD_HDF5_PARALLEL "Enable HDF5 parallel build" ON)
+option(BUILD_INDENT        "Enable automatic code indentation" OFF)
+
+include(CTest)
+
+if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 	enable_language(Fortran)
 endif()
 
-option(ENABLE_HDF5_PARALLEL "Enable HDF5 parallel build" ON)
-
-# Includes
-include(CTest)
 include(GNUInstallDirs)
 
 # Astyle
-find_package(Astyle)
+if("${BUILD_INDENT}")
+	find_package(Astyle 3.1 REQUIRED)
+endif()
 
 # MPI
-if("${BUILD_TESTING}" OR "${ENABLE_HDF5_PARALLEL}")
-	if("${BUILD_TESTING}" AND "${ENABLE_FORTRAN}")
+if("${BUILD_TESTING}" OR "${BUILD_HDF5_PARALLEL}")
+	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 		set(MPI_COMPONENTS Fortran)
 	endif()
 	find_package(MPI REQUIRED COMPONENTS CXX C ${MPI_COMPONENTS})
@@ -53,15 +58,15 @@ endif()
 
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
-set(HDF5_PREFER_PARALLEL "${ENABLE_HDF5_PARALLEL}")
-find_package(HDF5 REQUIRED COMPONENTS C)
-if("${ENABLE_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
-	message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DENABLE_HDF5_PARALLEL=OFF to disable parallel HDF5")
+set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
+find_package(HDF5 1.8.0 REQUIRED COMPONENTS C)
+if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
+	message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
 endif()
-if(NOT "${ENABLE_HDF5_PARALLEL}" AND "${HDF5_IS_PARALLEL}")
-	message(FATAL_ERROR "Parallel HDF5 disabled, parallel HDF5 only found. Please set -DENABLE_HDF5_PARALLEL=ON to enable parallel HDF5")
+if(NOT "${BUILD_HDF5_PARALLEL}" AND "${HDF5_IS_PARALLEL}")
+	message(FATAL_ERROR "Parallel HDF5 disabled, parallel HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=ON to enable parallel HDF5")
 endif()
-if("${ENABLE_HDF5_PARALLEL}")
+if("${BUILD_HDF5_PARALLEL}")
 	list(APPEND HDF5_C_LIBRARIES MPI::MPI_CXX)
 endif()
 
@@ -79,15 +84,15 @@ target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::pdi ${HDF5_C_LIBRARIES})
 target_include_directories(pdi_decl_hdf5_plugin PRIVATE ${HDF5_INCLUDE_DIRS})
 target_compile_definitions(pdi_decl_hdf5_plugin PRIVATE ${HDF5_DEFINITIONS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
-if("${Astyle_FOUND}")
+if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
-			OPTIONS_FILE ../../docs/formating.astyle
-			*.cxx *.h tests/*.c)
+		OPTIONS_FILE ../../pdi/docs/formating.astyle
+		*.cxx *.h tests/*.c)
 endif()
 
 # installation
@@ -98,10 +103,9 @@ install(TARGETS pdi_decl_hdf5_plugin
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
-	set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
-	find_package(PythonPath REQUIRED)
+	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
-			DESTINATION "${PythonPath_INSTALL_SITELIBDIR}/")
+			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()
 
 # Tests

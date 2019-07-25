@@ -1,0 +1,32 @@
+Multiple people have contributed to the Decl'HDF5 plugin. To show our
+appreciation for their public spirit, we list here in alphabetical order a
+condensed list of their contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Decl'HDF5 plugin maintainer
+* Design and initial implementation
+* Plugin v3 update
+* Multiple updates to match PDI API updates
+* Run tests that depend on the filesystem in their own temporary directory
+* Buildsystem
+
+Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Bugfixes
+* Support for embedded HDF5
+
+Corentin Roussel - CEA (Corentin.roussel@cea.fr)
+* Co-maintainer from Sept. 2016 to Feb. 2018
+* Plugin v2 update
+
+Karol Sierociński - PSNC (ksiero@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Bugfixes in plugin and buildystem
+* Schema validator implementation
+* Updates to match PDI API updates
+* Unified logs for plugins

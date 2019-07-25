@@ -1,0 +1,20 @@
+Multiple people have contributed to the Test plugin. To show our appreciation
+for their public spirit, we list here in alphabetical order a condensed list of
+their contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Trace plugin maintainer
+* Design and initial implementation
+
+Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Minor adaptations for new PDI API
+
+Karol Sierociński - PSNC (ksiero@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Minor adaptations for new PDI API

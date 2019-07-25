@@ -1,0 +1,26 @@
+Multiple people have contributed to PDI. To show our appreciation for their
+public spirit, we list here in alphabetical order a condensed list of their
+contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Rework plugin v2
+* Updated to match new PDI API & style
+* Buildsystem update
+
+Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
+* Design and initial implementation
+
+Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* FTI plugin maintainer
+* Buildsystem fix
+
+Karol Sierociński - PSNC (ksiero@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
+* Improved logging system
+* Schema validator

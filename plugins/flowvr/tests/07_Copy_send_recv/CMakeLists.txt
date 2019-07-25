@@ -26,7 +26,7 @@ add_executable(send_copy send_copy.cxx)
 target_link_libraries(send_copy PDI::pdi)
 configure_file(send_copy.yml send_copy.yml COPYONLY)
 set_target_properties(send_copy PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
 
@@ -34,7 +34,7 @@ add_executable(recv_copy recv_copy.cxx)
 target_link_libraries(recv_copy PDI::pdi)
 configure_file(recv_copy.yml recv_copy.yml COPYONLY)
 set_target_properties(recv_copy PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/copy_send_recv.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh

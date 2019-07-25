@@ -28,34 +28,37 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi_decl_sion_plugin LANGUAGES CXX)
+project(pdi_decl_sion_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if("${BUILD_TESTING}")
-	enable_language(C)
-	if("${ENABLE_FORTRAN}")
-		enable_language(Fortran)
-	endif()
+
+option(BUILD_FORTRAN "Enable Fortran support" ON)
+option(BUILD_INDENT  "Enable automatic code indentation" OFF)
+
+include(CTest)
+
+if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
+	enable_language(Fortran)
 endif()
 
-# Includes
-include(CTest)
 include(GNUInstallDirs)
 
 # Astyle
-find_package(Astyle)
+if("${BUILD_INDENT}")
+	find_package(Astyle 3.1 REQUIRED)
+endif()
 
 # MPI
 set(MPI_LANGS CXX)
 if("${BUILD_TESTING}")
 	list(APPEND MPI_LANGS C)
-	if("${ENABLE_FORTRAN}")
+	if("${BUILD_FORTRAN}")
 		list(APPEND MPI_LANGS Fortran)
 	endif()
 endif()
 find_package(MPI REQUIRED COMPONENTS ${MPI_LANGS})
 
 # SIONlib
-find_package(SIONlib REQUIRED)
+find_package(SIONlib 1.7.2 REQUIRED)
 
 # PDI
 find_package(PDI REQUIRED)
@@ -66,15 +69,15 @@ set_property(SOURCE decl_sion.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONl
 target_link_libraries(pdi_decl_sion_plugin PUBLIC PDI::pdi MPI::MPI_CXX ${SIONlib_MPI_C_LIBRARIES})
 target_include_directories(pdi_decl_sion_plugin PUBLIC ${SIONlib_MPI_C_INCLUDE_DIRS})
 set_target_properties(pdi_decl_sion_plugin PROPERTIES
-		CXX_STANDARD 11
+		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
-if("${Astyle_FOUND}")
+if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
-			OPTIONS_FILE ../../docs/formating.astyle
-			decl_sion.cxx tests/*.c)
+		OPTIONS_FILE ../../pdi/docs/formating.astyle
+		decl_sion.cxx tests/*.c)
 endif()
 
 # Installation
@@ -85,10 +88,9 @@ install(TARGETS pdi_decl_sion_plugin
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
-	set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4)
-	find_package(PythonPath REQUIRED)
+	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
-			DESTINATION "${PythonPath_INSTALL_SITELIBDIR}/")
+			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()
 
 # Tests
