@@ -60,6 +60,7 @@ protected:
 	
 	std::string m_name;
 	std::vector<std::string> m_chunk_descs; //name of the descriptors where to read/write data
+	std::vector<std::function<void()>> m_callbacks_remove;
 	Chunk_info m_chunk_info;
 	bool m_sharing_chunks;
 	
@@ -77,9 +78,9 @@ protected:
 			m_chunk_descs.emplace_back(PDI::to_string(PC_get(chunk_node, ".data")));
 		}
 		for (const std::string& data_name : m_chunk_descs) {
-			m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+			m_callbacks_remove.emplace_back(m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
 				this->empty_desc_access(name);
-			}, data_name);
+			}, data_name));
 		}
 	}
 	
@@ -105,7 +106,12 @@ protected:
 	
 	virtual void empty_desc_access(const std::string& data_name) = 0;
 	
-	virtual ~Payload_chunk() = default;
+	virtual ~Payload_chunk()
+	{
+		for (auto& func : m_callbacks_remove) {
+			func();
+		}
+	}
 	
 }; // Payload_chunk
 

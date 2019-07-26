@@ -54,6 +54,8 @@ protected:
 	std::unique_ptr<flowvr::Port> m_flowvr_port;
 	std::vector<Stamp> m_stamps;    // stamps signed to this port (every message is stamped with this stamps)
 	
+	std::function<void()> m_remove_callback;
+	
 	/**
 	 *  Load descriptor `isConnected' name
 	 *
@@ -63,7 +65,7 @@ protected:
 	{
 		PC_tree_t isConnected_node = PC_get(config, ".isConnected");
 		if (!PC_status(isConnected_node)) {
-			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_remove_callback = m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->get_status(name, ref);
 			}, PDI::to_string(isConnected_node));
 		}
@@ -166,7 +168,12 @@ public:
 		return m_flowvr_port.get();
 	}
 	
-	virtual ~Port() = default;
+	virtual ~Port()
+	{
+		if (m_remove_callback) {
+			m_remove_callback();
+		}
+	}
 	
 }; // class Port
 

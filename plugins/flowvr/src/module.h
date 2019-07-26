@@ -58,6 +58,7 @@ class Module : public Component
 	
 	bool m_fisrt_wait;          // on first wait cannot read messages
 	std::string m_module_name;  // name of the module (optional)
+	bool m_silent_abort;
 	bool m_abort_on_finalze; // if true call abort on finalize
 	
 	std::vector<Input_port> m_input_ports;   // input ports of this module
@@ -96,13 +97,29 @@ private:
 				for (int event_id = 0; event_id < nb_event; event_id++) {
 					std::string wait_event = PDI::to_string(PC_get(wait_on_node, "[%d]", event_id));
 					context().add_event_callback([this](const std::string& name) {
-						this->wait();
+						if (this->wait() == 0) {
+							m_input_ports.clear();
+							m_output_ports.clear();
+							m_traces.clear();
+							m_flowvr_module.reset();
+							if (this->m_silent_abort == false) {
+								throw PDI::Error {PDI_ERR_SYSTEM, "(FlowVR) Module (%s): Received abort signal from FlowVR", this->m_module_name.c_str()};
+							}
+						}
 					}, wait_event);
 				}
 			} else {
 				std::string wait_event = PDI::to_string(wait_on_node);
 				context().add_event_callback([this](const std::string& name) {
-					this->wait();
+					if (this->wait() == 0) {
+						m_input_ports.clear();
+						m_output_ports.clear();
+						m_traces.clear();
+						m_flowvr_module.reset();
+						if (this->m_silent_abort == false) {
+							throw PDI::Error {PDI_ERR_SYSTEM, "(FlowVR) Module (%s): Received abort signal from FlowVR", this->m_module_name.c_str()};
+						}
+					}
 				}, wait_event);
 			}
 		}
@@ -181,6 +198,12 @@ private:
 					this->abort(name);
 				}, abort_event);
 			}
+		}
+		
+		PC_tree_t silent_abort_node = PC_get(config, ".silent_abort");
+		if (!PC_status(silent_abort_node) && PDI::to_bool(silent_abort_node)) {
+			m_silent_abort = true;
+			context().logger()->debug("(FlowVR) Module: Silent abort = true");
 		}
 		
 		PC_tree_t abort_on_fin_node = PC_get(config, ".abort_on_finalize");
@@ -306,6 +329,7 @@ public:
 	Module(PDI::Context& ctx, PC_tree_t config):
 		Component{ctx},
 		m_fisrt_wait{true},
+		m_silent_abort{false},
 		m_abort_on_finalze{false}
 	{
 		load_desc_names(config);
@@ -343,6 +367,14 @@ public:
 		m_traces = std::move(other.m_traces);
 		return *this;
 	}
+	
+	operator bool()
+	{
+		if (m_flowvr_module && m_flowvr_module->getStatus()) {
+			return true;
+		}
+		return false;
+	}
 	/*
 	 * End of "FlowVR initialization"
 	 **************************************************************************/
@@ -358,6 +390,7 @@ private:
 	 */
 	int wait()
 	{
+		if (!m_flowvr_module) return 0;
 		if (!m_fisrt_wait) {
 			//put all messages
 			for (auto& port : m_output_ports) {
@@ -394,6 +427,7 @@ private:
 	 */
 	void abort(const std::string& abort_event)
 	{
+		if (!m_flowvr_module) return;
 		context().logger()->warn("(FlowVR) Module ({}): Got `{}' abort event. Aborting...", m_module_name, abort_event);
 		m_flowvr_module->abort();
 	}
@@ -413,6 +447,10 @@ private:
 	 */
 	void status(PDI::Ref_w status_ref)
 	{
+		if (!m_flowvr_module) {
+			if (status_ref) *static_cast<int*>(status_ref.get()) = 0;
+			return;
+		}
 		if (status_ref) {
 			*static_cast<int*>(status_ref.get()) = m_flowvr_module->getStatus();
 		} else {
@@ -441,6 +479,7 @@ private:
 	 */
 	void get_parallel_rank(const std::string& data_name, PDI::Ref_w rank_ref_w)
 	{
+		if (!m_flowvr_module) return;
 		if (flowvr::Parallel::isParallel() == false) {
 			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to write parallel rank to `%s', because flowVR is not set to parallel", m_module_name.c_str(), data_name.c_str()};
 		}
@@ -459,6 +498,7 @@ private:
 	 */
 	void get_parallel_size(const std::string& data_name, PDI::Ref_w size_ref_w)
 	{
+		if (!m_flowvr_module) return;
 		if (flowvr::Parallel::isParallel() == false) {
 			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module (%s): Unable to write parallel rank, because flowVR is not set to parallel", m_module_name.c_str()};
 		}
@@ -477,7 +517,7 @@ public:
 
 	~Module()
 	{
-		if (m_abort_on_finalze) {
+		if (m_abort_on_finalze && m_flowvr_module) {
 			context().logger()->debug("(FlowVR) Module ({}): Abort on finalize", m_module_name);
 			m_flowvr_module->abort();
 		}

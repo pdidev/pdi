@@ -52,6 +52,8 @@ protected:
 	
 	flowvr::StampInfo* m_stamp_info; //value doesn't own the stampInfo - flowvr module does
 	
+	std::vector<std::function<void()>> m_callbacks_remove;
+	
 	Stamp_base(PDI::Context& ctx, const flowvr::Port* parent_port, std::string name):
 		m_ctx{ctx},
 		m_parent_port{parent_port},
@@ -95,6 +97,13 @@ public:
 	flowvr::StampInfo* get_stamp_info() const
 	{
 		return m_stamp_info;
+	}
+	
+	virtual ~Stamp_base()
+	{
+		for (auto& func : m_callbacks_remove) {
+			func();
+		}
 	}
 }; // class Value
 

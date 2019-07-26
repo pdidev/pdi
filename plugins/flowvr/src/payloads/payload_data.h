@@ -51,6 +51,7 @@ protected:
 	std::string m_data_desc; //name of the descriptor where to read/write data
 	bool m_sharing_buffer; // true if plugin is sharing buffer
 	PDI::Datatype_template_uptr m_data_selection; //type for data_selection to copy
+	std::vector<std::function<void()>> m_callbacks_remove;
 	
 	Payload_data(PDI::Context& ctx, std::string name, PC_tree_t config, flowvr::Port* parent_port):
 		m_ctx{ctx},
@@ -91,7 +92,12 @@ protected:
 		return *this;
 	}
 	
-	virtual ~Payload_data() = default;
+	virtual ~Payload_data()
+	{
+		for (auto& func : m_callbacks_remove) {
+			func();
+		}
+	}
 	
 }; // Payload_data
 
@@ -120,12 +126,12 @@ public:
 	{
 		load_data_size_desc(config);
 		if (!m_data_desc.empty()) {
-			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->copy_data_to_ref(name, ref);
-			}, m_data_desc);
-			m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+			}, m_data_desc));
+			m_callbacks_remove.emplace_back(m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
 				this->empty_desc_access(name);
-			}, m_data_desc);
+			}, m_data_desc));
 		}
 		m_ctx.logger()->debug("(FlowVR) Input Data Payload ({}): Created", m_name);
 	}
@@ -295,12 +301,12 @@ public:
 		}
 		
 		if (!m_data_desc.empty()) {
-			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->copy_data_from_ref(name, ref);
-			}, m_data_desc);
-			m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+			}, m_data_desc));
+			m_callbacks_remove.emplace_back(m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
 				this->empty_desc_access(name);
-			}, m_data_desc);
+			}, m_data_desc));
 		}
 		m_ctx.logger()->debug("(FlowVR) Output Data Payload ({}): Created", m_name);
 	}

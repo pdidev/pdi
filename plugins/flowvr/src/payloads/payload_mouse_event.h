@@ -58,6 +58,7 @@ protected:
 	std::unordered_map<unsigned char, std::string> m_key_desc; // loaded keys (defined in config)
 	std::pair<std::string, std::pair<unsigned char, float[2]>> m_desc_pos_xy;
 	std::unordered_map<std::string, std::pair<unsigned char, bool>> m_desc_value_map;
+	std::vector<std::function<void()>> m_callbacks_remove;
 	
 	/**
 	 *  Load defined descriptors keys
@@ -128,7 +129,12 @@ protected:
 	
 public:
 
-	virtual ~Payload_mouse_event() = default;
+	virtual ~Payload_mouse_event()
+	{
+		for (auto& func : m_callbacks_remove) {
+			func();
+		}
+	}
 	
 }; // class Payload_mouse_event
 
@@ -143,13 +149,13 @@ public:
 		Payload_mouse_event{ctx, name, config, parent_port},
 		m_flowvr_input_port{parent_port}
 	{
-		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+		m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->data_pos_xy(name, ref);
-		}, m_desc_pos_xy.first);
+		}, m_desc_pos_xy.first));
 		for (const auto& desc_value : m_desc_value_map) {
-			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->data(name, ref);
-			}, desc_value.first);
+			}, desc_value.first));
 		}
 		m_ctx.logger()->debug("(FlowVR) Input Mouse Payload ({}): Created", m_name);
 	}
@@ -268,13 +274,13 @@ public:
 		Payload_mouse_event{ctx, name, config, parent_port},
 		m_flowvr_output_port{parent_port}
 	{
-		m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+		m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->data_pos_xy(name, ref);
-		}, m_desc_pos_xy.first);
+		}, m_desc_pos_xy.first));
 		for (const auto& desc_value : m_desc_value_map) {
-			m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->data(name, ref);
-			}, desc_value.first);
+			}, desc_value.first));
 		}
 		m_ctx.logger()->debug("(FlowVR) Output Mouse Payload ({}): Created", m_name);
 	}
