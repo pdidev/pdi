@@ -29,29 +29,33 @@ project(pdicfg_validator LANGUAGES)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include(CTest)
-
 include(GNUInstallDirs)
 
-
-# Dependencies
 
 find_package(Python3Path REQUIRED COMPONENTS Interpreter)
 find_package(Py3YAML REQUIRED)
 
 
-# Libraries
-
 install(DIRECTORY pdicfg_validator
 		DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/"
 )
 
-install(PROGRAMS pdicfg_validate
-		DESTINATION "${CMAKE_INSTALL_BINDIR}/"
+file(RELATIVE_PATH PDICFG_MODULE_PATH "/invalid/${CMAKE_INSTALL_BINDIR}" "/invalid/${Python3Path_INSTALL_SITELIBDIR}/")
+configure_file("pdicfg_validate" "pdicfg_validate" @ONLY)
+install(PROGRAMS "${CMAKE_BINARY_DIR}/pdicfg_validate"
+	DESTINATION "${CMAKE_INSTALL_BINDIR}/"
 )
+add_executable(pdicfg_validate IMPORTED GLOBAL)
+set_target_properties(pdicfg_validate PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validate")
 
-
-# Tests
 
 if("${BUILD_TESTING}")
 	add_subdirectory(tests/)
 endif()
+
+
+configure_file(cmake/PDIcfgConfig.cmake.in PDIcfgConfig.cmake @ONLY)
+install(FILES "${CMAKE_BINARY_DIR}/PDIcfgConfig.cmake"
+		DESTINATION "${CMAKE_INSTALL_DATADIR}/pdicfg/cmake"
+		COMPONENT Development
+)

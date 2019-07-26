@@ -26,12 +26,15 @@
 # THE SOFTWARE.
 #=============================================================================
 
-from pdicfg_validator import run_test
 import sys
+import os.path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),'@PDICFG_MODULE_PATH@')))
+
+from pdicfg_validator import run_test
 
 if __name__ == "__main__":
-	if len(sys.argv) != 2:
-		print("\033[31mInvalid argument.\033[0m Proper execution:\tpython validate.py config.yml")
-		exit(1)
-
-	run_test(sys.argv[1])
+    if len(sys.argv) != 2:
+        print("Invalid argument. Proper execution:\n\t"+sys.argv[0]+" config.yml")
+        exit(1)
+    
+    run_test(sys.argv[1])

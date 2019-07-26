@@ -77,52 +77,32 @@ add_test(NAME decl_sion_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NU
 endif("${BUILD_FORTRAN}")
 
 
-# Positive config tests
+# Config tests
 
 if("${BUILD_CFG_VALIDATOR}")
+find_package(PDIcfg REQUIRED)
 
-add_test(NAME pos_val_decl_sion_test_01 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion.py pos_val_decl_sion_test_01.yml)
-configure_file(pos_val_decl_sion_test_01.yml pos_val_decl_sion_test_01.yml COPYONLY)
+# Positive tests
+add_test(NAME pos_val_decl_sion_test_01 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion_test_01.yml")
+add_test(NAME pos_val_decl_sion_test_02 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion_test_02.yml")
+add_test(NAME pos_val_decl_sion_test_03 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion_test_03.yml")
 
-add_test(NAME pos_val_decl_sion_test_02 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion.py pos_val_decl_sion_test_02.yml)
-configure_file(pos_val_decl_sion_test_02.yml pos_val_decl_sion_test_02.yml COPYONLY)
-
-add_test(NAME pos_val_decl_sion_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_sion.py pos_val_decl_sion_test_03.yml)
-configure_file(pos_val_decl_sion_test_03.yml pos_val_decl_sion_test_03.yml COPYONLY)
-
-endif()
-
-
-# Negative config tests
-
-if("${BUILD_CFG_VALIDATOR}")
-
-add_test(NAME neg_val_decl_sion_test_01 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_01.yml)
-configure_file(neg_val_decl_sion_test_01.yml neg_val_decl_sion_test_01.yml COPYONLY)
-
-add_test(NAME neg_val_decl_sion_test_02 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_02.yml)
-configure_file(neg_val_decl_sion_test_02.yml neg_val_decl_sion_test_02.yml COPYONLY)
-
-add_test(NAME neg_val_decl_sion_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_03.yml)
-configure_file(neg_val_decl_sion_test_03.yml neg_val_decl_sion_test_03.yml COPYONLY)
-
-add_test(NAME neg_val_decl_sion_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_04.yml)
-configure_file(neg_val_decl_sion_test_04.yml neg_val_decl_sion_test_04.yml COPYONLY)
-
-add_test(NAME neg_val_decl_sion_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_05.yml)
-configure_file(neg_val_decl_sion_test_05.yml neg_val_decl_sion_test_05.yml COPYONLY)
-
-add_test(NAME neg_val_decl_sion_test_06 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion.py neg_val_decl_sion_test_06.yml)
-configure_file(neg_val_decl_sion_test_06.yml neg_val_decl_sion_test_06.yml COPYONLY)
+# Negative tests
+add_test(NAME neg_val_decl_sion_test_01 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion_test_01.yml")
+add_test(NAME neg_val_decl_sion_test_02 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion_test_02.yml")
+add_test(NAME neg_val_decl_sion_test_03 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion_test_03.yml")
+add_test(NAME neg_val_decl_sion_test_04 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion_test_04.yml")
+add_test(NAME neg_val_decl_sion_test_05 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion_test_05.yml")
+add_test(NAME neg_val_decl_sion_test_06 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_sion_test_06.yml")
+set_tests_properties( 
+	neg_val_decl_sion_test_01
+	neg_val_decl_sion_test_02
+	neg_val_decl_sion_test_03
+	neg_val_decl_sion_test_04
+	neg_val_decl_sion_test_05
+	neg_val_decl_sion_test_06
+	PROPERTIES
+	WILL_FAIL TRUE)
 
 endif()
 

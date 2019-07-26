@@ -57,10 +57,10 @@ def val_size_value(value, data_refs_list):
     if isinstance(value, int):
         pass
     elif isinstance(value, float):
-        raise NameError('\033[31mSize cannot be a float: ' + value + "\033[0m")
+        raise NameError('Size cannot be a float: ' + value)
     else:
         if not add_to_data_ref(value, data_refs_list):
-            raise NameError("\033[31m`" + str(value) + "' is not valid value\033[0m")
+            raise NameError("`" + str(value) + "' is not valid value")
 
 # validate size property (scalar/reference or list of scalars/references)
 def val_size(size, data_refs_list):
@@ -73,9 +73,9 @@ def val_size(size, data_refs_list):
 # validate array (check required properties and values)
 def val_array(value, data_refs_list):
     if 'size' not in value:
-        raise NameError("\033[31mArray must have `size' property: " + str(value) + "\033[0m")
+        raise NameError("Array must have `size' property: " + str(value))
     if 'subtype' not in value:
-        raise NameError("\033[31mArray must have `subtype' property: " + str(value) + "\033[0m")
+        raise NameError("Array must have `subtype' property: " + str(value))
     val_size(value['size'], data_refs_list)
     if 'subsize' in value:
         val_size(value['subsize'], data_refs_list)
@@ -85,17 +85,17 @@ def val_array(value, data_refs_list):
 # validate record member (must have disp and consist desc structure)
 def val_member(member, data_refs_list):
     if 'disp' not in member:
-        raise NameError("\033[31mMember must have `disp' property: " + str(member) + "\033[0m")
+        raise NameError("Member must have `disp' property: " + str(member))
     val_size(member['disp'], data_refs_list)
     val_desc(member, data_refs_list)
 
 # validate record (must have buffersize and members)
 def val_record(value, data_refs_list):
     if 'buffersize' not in value:
-        raise NameError("\033[31mRecord must have `buffersize' property: " + str(value) + "\033[0m")
+        raise NameError("Record must have `buffersize' property: " + str(value))
     val_size(value['buffersize'], data_refs_list)
     if 'members' not in value:
-        raise NameError("\033[31mRecord must have `members' property: " + str(value) + "\033[0m")
+        raise NameError("Record must have `members' property: " + str(value))
     for member in value['members'].values():
         val_member(member, data_refs_list)
 
@@ -110,7 +110,7 @@ def val_desc(value, data_refs_list):
     elif value['type'] == 'record':
         val_record(value, data_refs_list)
     else:
-        raise NameError('\033[31mInvalid descriptor type in: ' + str(value) + "\033[0m")        
+        raise NameError('Invalid descriptor type in: ' + str(value))        
 
 # validate PDI data node
 def val_data(data_root, data_list, data_refs_list):
@@ -130,7 +130,7 @@ def val_metadata(metadata_root, metadata_list, data_refs_list):
 def check_data_refs(data_list, metadata_list, data_refs):
     for ref in data_refs:
         if ref not in (data_list + metadata_list):
-            raise NameError('\033[31mReference: `$' + ref + "' is not referencing any data nor metadata\033[0m")
+            raise NameError('Reference: `$' + ref + "' is not referencing any data nor metadata")
 
 # validate all plugins
 def val_plugins(plugins_root, data_list, metadata_list, data_refs_list):
@@ -173,4 +173,4 @@ def run_test(config_file_name):
         
         check_data_refs(data_list, metadata_list, data_refs_list)
         
-        print("\033[1;32m" + sys.argv[1] + "\033[0;32m is a valid PDI configuration file\033[0m")
+        print("\033[1;32m" + sys.argv[1] + "\033[0;32m is a valid PDI configuration file")

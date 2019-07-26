@@ -105,80 +105,41 @@ target_link_libraries(decl_hdf5_07_C PDI::pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_07_C>" ${MPIEXEC_POSTFLAGS})
 
 
-# Positive Config tests
+# Config tests
 
 if("${BUILD_CFG_VALIDATOR}")
+find_package(PDIcfg REQUIRED)
 
-add_test(NAME pos_val_decl_hdf5_test_01 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_01.yml)
-configure_file(pos_val_decl_hdf5_test_01.yml pos_val_decl_hdf5_test_01.yml COPYONLY)
-
-add_test(NAME pos_val_decl_hdf5_test_02 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_02.yml)
-configure_file(pos_val_decl_hdf5_test_02.yml pos_val_decl_hdf5_test_02.yml COPYONLY)
-
-add_test(NAME pos_val_decl_hdf5_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_03.yml)
-configure_file(pos_val_decl_hdf5_test_03.yml pos_val_decl_hdf5_test_03.yml COPYONLY)
-
-add_test(NAME pos_val_decl_hdf5_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_04.yml)
-configure_file(pos_val_decl_hdf5_test_04.yml pos_val_decl_hdf5_test_04.yml COPYONLY)
-
-add_test(NAME pos_val_decl_hdf5_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_05.yml)
-configure_file(pos_val_decl_hdf5_test_05.yml pos_val_decl_hdf5_test_05.yml COPYONLY)
-
-add_test(NAME pos_val_decl_hdf5_test_06 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_06.yml)
-configure_file(pos_val_decl_hdf5_test_06.yml pos_val_decl_hdf5_test_06.yml COPYONLY)
-
-add_test(NAME pos_val_decl_hdf5_test_07 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_07.yml)
-configure_file(pos_val_decl_hdf5_test_07.yml pos_val_decl_hdf5_test_07.yml COPYONLY)
-
-add_test(NAME pos_val_decl_hdf5_test_08 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5.py pos_val_decl_hdf5_test_08.yml)
-configure_file(pos_val_decl_hdf5_test_08.yml pos_val_decl_hdf5_test_08.yml COPYONLY)
-
-endif()
-
+# Positive tests
+add_test(NAME pos_val_decl_hdf5_test_01 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_01.yml")
+add_test(NAME pos_val_decl_hdf5_test_02 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_02.yml")
+add_test(NAME pos_val_decl_hdf5_test_03 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_03.yml")
+add_test(NAME pos_val_decl_hdf5_test_04 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_04.yml")
+add_test(NAME pos_val_decl_hdf5_test_05 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_05.yml")
+add_test(NAME pos_val_decl_hdf5_test_06 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_06.yml")
+add_test(NAME pos_val_decl_hdf5_test_07 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_07.yml")
+add_test(NAME pos_val_decl_hdf5_test_08 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_08.yml")
 
 # Negative config tests
-
-if("${BUILD_CFG_VALIDATOR}")
-
-add_test(NAME neg_val_decl_hdf5_test_01 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_01.yml)
-configure_file(neg_val_decl_hdf5_test_01.yml neg_val_decl_hdf5_test_01.yml COPYONLY)
-
-add_test(NAME neg_val_decl_hdf5_test_02 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_02.yml)
-configure_file(neg_val_decl_hdf5_test_02.yml neg_val_decl_hdf5_test_02.yml COPYONLY)
-
-add_test(NAME neg_val_decl_hdf5_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_03.yml)
-configure_file(neg_val_decl_hdf5_test_03.yml neg_val_decl_hdf5_test_03.yml COPYONLY)
-
-add_test(NAME neg_val_decl_hdf5_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_04.yml)
-configure_file(neg_val_decl_hdf5_test_04.yml neg_val_decl_hdf5_test_04.yml COPYONLY)
-
-add_test(NAME neg_val_decl_hdf5_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_05.yml)
-configure_file(neg_val_decl_hdf5_test_05.yml neg_val_decl_hdf5_test_05.yml COPYONLY)
-
-add_test(NAME neg_val_decl_hdf5_test_06 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_06.yml)
-configure_file(neg_val_decl_hdf5_test_06.yml neg_val_decl_hdf5_test_06.yml COPYONLY)
-
-add_test(NAME neg_val_decl_hdf5_test_07 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_07.yml)
-configure_file(neg_val_decl_hdf5_test_07.yml neg_val_decl_hdf5_test_07.yml COPYONLY)
-
-add_test(NAME neg_val_decl_hdf5_test_08 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" 
-	${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5.py neg_val_decl_hdf5_test_08.yml)
-configure_file(neg_val_decl_hdf5_test_08.yml neg_val_decl_hdf5_test_08.yml COPYONLY)
+add_test(NAME neg_val_decl_hdf5_test_01 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_01.yml")
+add_test(NAME neg_val_decl_hdf5_test_02 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_02.yml")
+add_test(NAME neg_val_decl_hdf5_test_03 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_03.yml")
+add_test(NAME neg_val_decl_hdf5_test_04 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_04.yml")
+add_test(NAME neg_val_decl_hdf5_test_05 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_05.yml")
+add_test(NAME neg_val_decl_hdf5_test_06 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_06.yml")
+add_test(NAME neg_val_decl_hdf5_test_07 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_07.yml")
+add_test(NAME neg_val_decl_hdf5_test_08 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_08.yml")
+set_tests_properties( 
+	neg_val_decl_hdf5_test_01
+	neg_val_decl_hdf5_test_02
+	neg_val_decl_hdf5_test_03
+	neg_val_decl_hdf5_test_04
+	neg_val_decl_hdf5_test_05
+	neg_val_decl_hdf5_test_06
+	neg_val_decl_hdf5_test_07
+	neg_val_decl_hdf5_test_08
+	PROPERTIES
+	WILL_FAIL TRUE)
 
 endif()
 

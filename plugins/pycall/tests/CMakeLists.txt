@@ -31,4 +31,4 @@ set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
 
 add_executable(pycall_01_c pycall_test_01.c)
 target_link_libraries(pycall_01_c PDI::pdi)
-add_test(NAME pycall_01_c COMMAND pycall_01_c)
+add_test(NAME pycall_01_c COMMAND PDI::pdirun "$<TARGET_FILE:pycall_01_c>")
