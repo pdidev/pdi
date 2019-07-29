@@ -77,7 +77,7 @@ gtest_discover_tests(PDI_unit_tests)
 
 if("${Astyle_FOUND}")
 	Astyle_add_indent(PDI_tests_indent TEST
-			OPTIONS_FILE "../docs/formating.astyle"
+			OPTIONS_FILE "${PDI_SOURCE_DIR}/docs/formating.astyle"
 			PDI_test_01.c PDI_test_02.c ${PDI_unit_tests_SRC}
 			include/*.h mocks/*.h)
 	add_dependencies(indent PDI_tests_indent)

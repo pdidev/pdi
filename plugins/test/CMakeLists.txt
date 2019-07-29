@@ -55,7 +55,7 @@ set_target_properties(pdi_test_plugin PROPERTIES
 # Indentation
 if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
-		OPTIONS_FILE ../../pdi/docs/formating.astyle
+		OPTIONS_FILE formating.astyle
 		test.cxx)
 endif()
 
