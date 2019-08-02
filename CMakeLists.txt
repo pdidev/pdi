@@ -144,14 +144,42 @@ if("${BUILD_FTI_PLUGIN}")
 	message(FATAL_ERROR "The FTI plugin is disabled until the new-style plugin becomes available")
 endif()
 
-if("${BUILD_TESTING}" OR "${BUILD_DOCUMENTATION}")
-	if("${CMAKE_VERSION}" VERSION_LESS "3.10")
-		message(FATAL_ERROR "Minimum CMake version to build tests is 3.10. Please update CMake or turn off testing by adding the flag `-DBUILD_TESTING=OFF` to the cmake command line.")
+if("${CMAKE_VERSION}" VERSION_LESS "3.10")
+	if("${BUILD_TESTING}")
+		message(FATAL_ERROR
+			"Testing is enabled but the cmake version is less than 3.10.\n"
+			"    you have the following options:\n"
+			"     * install and use a more recent version of cmake (3.10 at least)"
+			"     * disable testing => pass `-DBUILD_TESTING=OFF' to cmake\n"
+		)
+	endif()
+	if("${BUILD_DOCUMENTATION}")
+		message(FATAL_ERROR
+			"Documentation building is enabled but the cmake version is less than 3.10.\n"
+			"    you have the following options:\n"
+			"     * install and use a more recent version of cmake (3.10 at least)"
+			"     * disable documentation build => pass `-DBUILD_DOCUMENTATION=OFF' to cmake\n"
+		)
 	endif()
 endif()
 
 if("${BUILD_PYCALL_PLUGIN}" AND NOT "${BUILD_PYTHON}")
-	message(FATAL_ERROR "The Pycall plugin requires Python support, please either pass -DBUILD_PYTHON=ON or -DBUILD_PYCALL_PLUGIN=OFF to cmake")
+	message(FATAL_ERROR
+		"The Pycall plugin is enabled but Python support is disabled.\n"
+		"    you have the following options:\n"
+		"     * enable Python support => pass `-DBUILD_PYTHON=ON' to cmake\n"
+		"     * do not build the Pycall plugin => pass `-DBUILD_PYCALL_PLUGIN=OFF' to cmake"
+	)
+endif()
+
+if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}" AND NOT "${BUILD_MPI_PLUGIN}")
+	message(FATAL_ERROR
+		"Parallel support is enabled for the Decl'HDF5 plugin but the MPI plugin is disabled.\n"
+		"    you have the following options:\n"
+		"     * build the MPI plugin => pass `-DBUILD_MPI_PLUGIN=ON' to cmake\n"
+		"     * build Decl'HDF5 without parallel support => pass `-DBUILD_HDF5_PARALLEL=OFF' to cmake\n"
+		"     * do not build the Decl'HDF5 at all => pass `-DBUILD_DECL_HDF5_PLUGIN=OFF' to cmake"
+	)
 endif()
 
 
@@ -183,8 +211,6 @@ if("${BUILD_FORTRAN}") # and (paraconf or PDI)
 	sbuild_add_dependency(BPP EMBEDDED
 		BUILD_DEPENDENCY
 		EMBEDDED_PATH "vendor/bpp-v0.3.0"
-		CMAKE_CACHE_ARGS
-			"-DBUILD_TESTING:BOOL=OFF"
 		VERSION 0.3.0
 	)
 endif()
@@ -309,7 +335,7 @@ endif()
 
 if("${BUILD_PYTHON}")
 	sbuild_add_dependency(Python3Path SYSTEM COMPONENTS Interpreter Development)
-elseif("${BUILD_FORTRAN}" OR "${BUILD_CFG_VALIDATOR}")
+elseif("${BUILD_CFG_VALIDATOR}")
 	sbuild_add_dependency(Python3Path SYSTEM COMPONENTS Interpreter)
 endif()
 
@@ -375,6 +401,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}")
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/hdf5-1.10.5"
 		COMPONENTS C
+		MODULE_VARS HDF5_IS_PARALLEL
 		CMAKE_CACHE_ARGS
 			"-DHDF5_ENABLE_PARALLEL:BOOL=${BUILD_HDF5_PARALLEL}"
 			"-DHDF5_BUILD_CPP_LIB:BOOL=OFF"
@@ -384,6 +411,25 @@ if("${BUILD_DECL_HDF5_PLUGIN}")
 			"-DBUILD_TESTING:BOOL=OFF"
 		VERSION 1.8.0
 	)
+	if("${HDF5_FOUND}")
+		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
+			message(FATAL_ERROR
+				"You requested a parallel HDF5 build (-DBUILD_HDF5_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
+				"    you have the following options:\n"
+				"     * build with this sequential HDF5 => pass `-DBUILD_HDF5_PARALLEL=OFF' to cmake\n"
+				"     * build the EMBEDDED HDF5 from PDI distribution => pass `-DUSE_HDF5=EMBEDDED' to cmake\n"
+				"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
+			)
+		endif()
+	elseif("${CMAKE_VERSION}" VERSION_LESS 3.10)
+		message(FATAL_ERROR
+			"The EMBEDDED version of HDF5 is requested but the cmake version is less than 3.10.\n"
+			"    you have the following options:\n"
+			"     * install and use a more recent version of cmake (3.10 at least)"
+			"     * use a SYSTEM version of HDF5 => pass `-DUSE_HDF5=SYSTEM' to cmake\n"
+			"     * disable the Decl'HDF5 plugin => pass `-DBUILD_DECL_HDF5_PLUGIN=OFF' to cmake"
+		)
+	endif()
 endif()
 
 
