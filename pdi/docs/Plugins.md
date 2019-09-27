@@ -9,3 +9,4 @@ Here is a list of %PDI plugins:
 * Pycall plugin
 * \subpage trace_plugin "trace plugin"
 * \subpage user_code_plugin "user-code plugin"
+* \subpage how_to_create_plugin "How to create a plugin"
