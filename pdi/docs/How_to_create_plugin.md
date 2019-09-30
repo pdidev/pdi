@@ -417,3 +417,4 @@ gcc example_use.cxx -o example_use -lpdi -lparaconf
 ./example_use
 
 You can see example of the program that uses this plugin on this [slides](https://docs.google.com/presentation/d/1jT416oALDkquBBgq_XkVrU48o4qx72wGHUPb4emXJw4).
+
