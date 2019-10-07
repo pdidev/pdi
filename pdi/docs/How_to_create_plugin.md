@@ -76,7 +76,7 @@ And a program:
 
 int main()
 {
-    PDI_init(PC_parse_path("spec_tree.yaml));
+    PDI_init(PC_parse_path("spec_tree.yaml"));
     int some_integer = 0;
     PDI_expose("some_integer", &some_integer, PDI_OUT);
     PDI_finalize();
