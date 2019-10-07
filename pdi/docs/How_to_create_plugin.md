@@ -148,7 +148,7 @@ private:
     }
 
     void handle_special_event(const std::string& event_name) {
-        std::cout << "Special event `" << event_name << "'called." << std::endl;
+        std::cout << "Special event `" << event_name << "' called." << std::endl;
     } 
 }
 
