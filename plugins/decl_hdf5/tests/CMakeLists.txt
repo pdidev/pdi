@@ -105,6 +105,15 @@ target_link_libraries(decl_hdf5_07_C PDI::pdi MPI::MPI_C)
 add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_07_C>" ${MPIEXEC_POSTFLAGS})
 
 
+add_executable(decl_hdf5_08_C decl_hdf5_test_08.c)
+target_link_libraries(decl_hdf5_08_C PDI::pdi)
+add_test(NAME decl_hdf5_08_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_08_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_08.yml")
+
+add_executable(decl_hdf5_09_C decl_hdf5_test_09.c)
+target_link_libraries(decl_hdf5_09_C PDI::pdi)
+add_test(NAME decl_hdf5_09_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_09_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_09.yml")
+
+
 # Config tests
 
 if("${BUILD_CFG_VALIDATOR}")
