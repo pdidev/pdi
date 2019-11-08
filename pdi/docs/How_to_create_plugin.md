@@ -39,7 +39,7 @@ std::function<void()> add_data_callback(const std::function<void(const std::stri
 ```
 
 The first argument is the function to be called when user shares the data.
-If the second parameter given is the function, that will be called only on specified data name.
+If the second parameter (name) is given, the function will be called only on a specified data name.
 Returns a function that removes the callback from PDI::Context container.
 
 Example of adding new callback:
