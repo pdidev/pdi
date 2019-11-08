@@ -9,7 +9,7 @@ plugins:
   example:
     ...
 ```
-The given example will load example plugin and pass its subtree to the plugins constructor.
+The given example will load example plugin and pass its subtree to the plugin's constructor.
 
 The plugin has to inherit from PDI::Plugin and have a constructor with arguments PDI::Context& and PC_tree_t.
 
