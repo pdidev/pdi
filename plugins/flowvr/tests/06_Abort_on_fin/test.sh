@@ -33,11 +33,14 @@ DAEMON_PID=$!
 # echo "DAEMON PID = $DAEMON_PID"
 
 python abort_on_fin.py
-flowvr -a abort_on_fin > /dev/null
+flowvr -a abort_on_fin
 
 FLOWVR_STATUS=$?
 # echo "FLOWVR_STATUS = $FLOWVR_STATUS"
 
 kill $DAEMON_PID
+
+# in case flowvr daemon didn't unbind the socket
+service network restart
 
 exit $FLOWVR_STATUS

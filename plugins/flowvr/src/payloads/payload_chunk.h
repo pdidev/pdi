@@ -257,8 +257,8 @@ public:
 			if (!m_ctx[chunk_desc].empty() && m_sharing_chunks) {
 				m_ctx.logger()->debug("(FlowVR) Input Chunk Payload ({}): Destroing chunk, reclaiming {}", m_name, chunk_desc);
 				m_ctx[chunk_desc].reclaim(); // have to reclaim (this is flowvr shared buffer)
-				m_sharing_chunks = false;
 			}
+			m_sharing_chunks = false;
 		}
 	}
 	
@@ -375,8 +375,8 @@ public:
 			if (!m_ctx[chunk_desc].empty() && m_sharing_chunks) {
 				m_ctx.logger()->debug("(FlowVR) Output Chunk Payload ({}): Destroing payload, reclaiming {}", m_name, chunk_desc);
 				m_ctx[chunk_desc].reclaim(); // have to reclaim (this is flowvr shared buffer)
-				m_sharing_chunks = false;
 			}
+			m_sharing_chunks = false;
 		}
 	}
 	

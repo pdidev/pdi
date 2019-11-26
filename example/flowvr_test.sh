@@ -33,4 +33,7 @@ FLOWVR_STATUS=$?
 
 kill $DAEMON_PID
 
+# in case flowvr daemon didn't unbind the socket
+service network restart
+
 exit $FLOWVR_STATUS

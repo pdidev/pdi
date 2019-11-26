@@ -1,5 +1,5 @@
 logging:
-  level: info
+  level: debug
 
 data:
   message: {type: array, subtype: int, size: 32}

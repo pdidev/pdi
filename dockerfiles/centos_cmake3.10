@@ -1,0 +1,27 @@
+FROM pdireg/centos_base
+
+LABEL cmake=3.10.3 \
+      doxygen=1.8.15
+
+# CMAKE 3.10.3
+RUN wget https://cmake.org/files/v3.10/cmake-3.10.3.tar.gz \
+    && tar -xzf /cmake-3.10.3.tar.gz
+RUN cd cmake-3.10.3 \
+    && ./configure --prefix=/usr/local/ \
+    && make -j 2 \
+    && make install \
+    && rm -rf /cmake-3.10.3.tar.gz /cmake-3.10.3
+
+# DOXYGEN 1.8.15
+RUN wget http://doxygen.nl/files/doxygen-1.8.15.src.tar.gz \
+    && tar -xzf /doxygen-1.8.15.src.tar.gz
+RUN yum install -y flex bison \
+    && mkdir doxygen-1.8.15/build && cd doxygen-1.8.15/build \
+    && cmake .. \
+    && make -j 2 \
+    && make install \
+    && rm -rf doxygen-1.8.15.src.tar.gz /doxygen-1.8.15
+
+# PDI tests dependencies
+RUN yum install -y openssh-server openssh-clients && pip3 install numpy mpi4py
+

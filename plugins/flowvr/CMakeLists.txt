@@ -54,7 +54,7 @@ add_subdirectory(src/)
 add_subdirectory(tools/python_script)
 
 # Examples
-if("${BUILD_TESTING}")
+if("${BUILD_FLOWVR_TESTING}")
 	add_subdirectory(examples/)
 	add_subdirectory(tests/)
 endif()

@@ -1,0 +1,59 @@
+FROM pdireg/centos_cmake3.10
+
+LABEL astyle=3.1 \
+      bpp=0.3.0 \
+      flowvr=2.2.0 \
+      fti=1.1 \
+      paraconf=0.4.0 \
+      pybind11=2.3.0 \
+      sionlib=1.7.2 \
+      spdlog=1.3.1
+
+COPY vendor /vendor
+
+RUN cd /vendor \
+    && for tar in astyle_3.1_linux.tar \
+                  bpp-v0.3.0.tar \
+                  flowvr-ex.tar \
+                  fti-1.1.tar \
+                  libparaconf-0.4.0.tar \
+                  pybind11-2.3.0.tar \
+                  sionlib-1.7.2.tar \
+                  spdlog-1.3.1.tar;do tar -xvf ${tar};done
+
+# Copy fixed Astyle CMakeLists.txt
+COPY vendor/astyle/CMakeLists.txt /vendor/astyle/CMakeLists.txt
+
+# ASYTLE 3.1
+RUN cd /vendor/astyle/build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DBUILD_SHARED_LIBS=OFF .. && make -j 2 && make install \
+# BPP 0.3.0
+    && mkdir /vendor/bpp-v0.3.0/build \
+    && cd /vendor/bpp-v0.3.0/build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DBUILD_TESTING=OFF .. && make -j 2 && make install \
+# FLOWVR 2.2.0
+    && mkdir /vendor/flowvr-ex-relocatable_cmake/build \
+    && cd /vendor/flowvr-ex-relocatable_cmake/build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_DOCU=OFF -DOpenGL_GL_PREFERENCE=LEGACY .. && make -j 2 && make install \
+# PARACONF 0.4.0
+    && mkdir /vendor/libparaconf-0.4.0/build \
+    && cd /vendor/libparaconf-0.4.0/build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF .. && make -j 2 && make install \
+# FTI 1.1
+    && mkdir /vendor/fti-1.1/build \
+    && cd /vendor/fti-1.1/build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_DOCU=OFF .. && make -j 2 && make install \
+# SPDLOG 1.3.1
+    && mkdir /vendor/spdlog-1.3.1/build \
+    && cd /vendor/spdlog-1.3.1/build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLES=OFF -DSPDLOG_BUILD_BENCH=OFF .. && make -j 2 && make install \
+# PYBIND11 2.3.0
+    && mkdir /vendor/pybind11-2.3.0/build \
+    && cd /vendor/pybind11-2.3.0/build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DPYBIND11_TEST=OFF .. && make -j 2 && make install \
+# SIONLIB 1.7.2
+    && cd /vendor/sionlib-1.7.2 \
+    && ./configure --prefix=/libs --disable-fortran --disable-parutils --disable-cxx && cd build-linux-gomp-openmpi && make -j 2 && make install \
+# CLEANUP
+    && rm -rf /vendor
+

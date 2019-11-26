@@ -62,9 +62,6 @@ private:
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
 
-	/// The loaded plugins - need to be after m_descriptors (to guarantee proper destroy order)
-	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
-	
 	/** 
 	 *  Callbacks called after init
 	 * 
@@ -114,6 +111,9 @@ private:
 	 */
 	std::multimap<std::string, std::function<void(const std::string&)>> m_named_empty_desc_access_callbacks;
 
+    /// The loaded plugins - need to be last (to guarantee proper destroy order)
+	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
+    
 	Global_context(const Global_context&) = delete;
 	
 	Global_context(Global_context&&) = delete;

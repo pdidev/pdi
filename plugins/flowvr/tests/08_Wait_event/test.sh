@@ -33,11 +33,14 @@ DAEMON_PID=$!
 # echo "DAEMON PID = $DAEMON_PID"
 
 python wait_event.py
-flowvr -a wait_event > /dev/null
+flowvr -a wait_event
 
 FLOWVR_STATUS=$?
 # echo "FLOWVR_STATUS = $FLOWVR_STATUS"
 
 kill $DAEMON_PID
+
+# in case flowvr daemon didn't unbind the socket
+service network restart
 
 exit $FLOWVR_STATUS

@@ -33,11 +33,14 @@ DAEMON_PID=$!
 # echo "DAEMON PID = $DAEMON_PID"
 
 python send_recv_msg.py
-flowvr -a send_recv_msg > /dev/null
+flowvr -a send_recv_msg
 
 FLOWVR_STATUS=$?
 # echo "FLOWVR_STATUS = $FLOWVR_STATUS"
 
 kill $DAEMON_PID
+
+# in case flowvr daemon didn't unbind the socket
+service network restart
 
 exit $FLOWVR_STATUS
