@@ -79,34 +79,34 @@ hid_t get_h5_type(const Datatype& type)
 		return H5Tarray_create2(get_h5_type(*subtype), dims.size(), &dims[0]);
 	} else if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
 		switch (scalar_type->kind()) {
-			case Scalar_kind::UNSIGNED: {
-				switch (scalar_type->datasize()) {
-					case 1: return H5T_NATIVE_UINT8;
-					case 2: return H5T_NATIVE_UINT16;
-					case 4: return H5T_NATIVE_UINT32;
-					case 8: return H5T_NATIVE_UINT64;
-					default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #%ld", scalar_type->datasize()};
-				}
+		case Scalar_kind::UNSIGNED: {
+			switch (scalar_type->datasize()) {
+			case 1: return H5T_NATIVE_UINT8;
+			case 2: return H5T_NATIVE_UINT16;
+			case 4: return H5T_NATIVE_UINT32;
+			case 8: return H5T_NATIVE_UINT64;
+			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #%ld", scalar_type->datasize()};
 			}
-			case Scalar_kind::SIGNED: {
-				switch (scalar_type->datasize()) {
-					case 1: return H5T_NATIVE_INT8;
-					case 2: return H5T_NATIVE_INT16;
-					case 4: return H5T_NATIVE_INT32;
-					case 8: return H5T_NATIVE_INT64;
-					default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #%ld", scalar_type->datasize()};
-				}
+		}
+		case Scalar_kind::SIGNED: {
+			switch (scalar_type->datasize()) {
+			case 1: return H5T_NATIVE_INT8;
+			case 2: return H5T_NATIVE_INT16;
+			case 4: return H5T_NATIVE_INT32;
+			case 8: return H5T_NATIVE_INT64;
+			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #%ld", scalar_type->datasize()};
 			}
-			case Scalar_kind::FLOAT: {
-				switch (scalar_type->datasize()) {
-					case 4:  return H5T_NATIVE_FLOAT;
-					case 8:  return H5T_NATIVE_DOUBLE;
-					case 16: return H5T_NATIVE_LDOUBLE;
-					default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #%ld", scalar_type->datasize()};
-				}
+		}
+		case Scalar_kind::FLOAT: {
+			switch (scalar_type->datasize()) {
+			case 4:  return H5T_NATIVE_FLOAT;
+			case 8:  return H5T_NATIVE_DOUBLE;
+			case 16: return H5T_NATIVE_LDOUBLE;
+			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #%ld", scalar_type->datasize()};
 			}
-			case Scalar_kind::ADDRESS: case Scalar_kind::UNKNOWN:
-				throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};
+		}
+		case Scalar_kind::ADDRESS: case Scalar_kind::UNKNOWN:
+			throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};
 		}
 	} else {
 		throw Error {PDI_ERR_IMPL, "Unexpected type in HDF5"};
@@ -136,7 +136,7 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
 		vector<hsize_t> h5_subsize;
 		vector<hsize_t> h5_start;
 		const Datatype* subtype = &type;
-
+		
 		while (auto&& array_type = dynamic_cast<const Array_datatype*>(subtype)) {
 			++rank;
 			if ( dense ) {
@@ -153,10 +153,10 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
 		if (!subtype->dense()) {
 			throw Error {PDI_ERR_CONFIG, "The top array datatype is the only one that can be sparse in dataset"};
 		}
-
+		
 		Raii_hid h5_space = make_raii_hid(H5Screate_simple(rank, &h5_size[0], NULL), H5Sclose);
 		if ( 0>H5Sselect_hyperslab(h5_space, H5S_SELECT_SET, &h5_start[0], NULL, &h5_subsize[0], NULL) ) handle_hdf5_err();
-
+		
 		return make_tuple(move(h5_space), Raii_hid{get_h5_type(*subtype), H5Tclose});
 	} else {
 		if (!type.dense()) {

@@ -43,16 +43,16 @@ int main( int argc, char* argv[] )
 	PDI_init(PC_parse_path(argv[1]));
 	int input = 0;
 	PDI_expose("input", &input, PDI_OUT);
-
+	
 	// write record to file
 	PDI_expose("array_of_record", rec, PDI_OUT);
-
+	
 	// load record from file
 	input = 1;
 	PDI_expose("input", &input, PDI_OUT);
 	struct Record rec_read[2];
 	PDI_expose("array_of_record", rec_read, PDI_IN);
-
+	
 	// check values
 	for (int i = 1; i < 3; i++) {
 		assert(rec[i].id == i);

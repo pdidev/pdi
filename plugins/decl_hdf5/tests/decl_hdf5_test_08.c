@@ -39,7 +39,7 @@ struct Record {
 int main( int argc, char* argv[] )
 {
 	struct Record outer_record;
-
+	
 	// init data
 	outer_record.id = 24;
 	for (int i = 0; i < 4; i++) {
@@ -47,12 +47,12 @@ int main( int argc, char* argv[] )
 		outer_record.value[i].y = 2*i;
 		outer_record.value[i].z = 3*i;
 	}
-
+	
 	PDI_init(PC_parse_path(argv[1]));
 	int input = 0;
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("outer_record", &outer_record, PDI_OUT);
-
+	
 	// reset record
 	outer_record.id = 0;
 	for (int i = 0; i < 4; i++) {
@@ -60,12 +60,12 @@ int main( int argc, char* argv[] )
 		outer_record.value[i].y = 0;
 		outer_record.value[i].z = 0;
 	}
-
+	
 	// load record from file
 	input = 1;
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("outer_record", &outer_record, PDI_IN);
-
+	
 	// check values
 	printf("%d != %d\n", outer_record.id, 24);
 	assert(outer_record.id == 24);
