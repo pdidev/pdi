@@ -27,7 +27,7 @@ Learn about %PDI:
 
 # Use PDI and get help
 
-* get the code from **Gitlab**: https://gitlab.maisondelasimulation.fr/jbigot/pdi ,
+* get the code from **Gitlab**: [https://gitlab.maisondelasimulation.fr/jbigot/pdi](https://gitlab.maisondelasimulation.fr/jbigot/pdi),
 * get help on **Slack**: [https://bit.ly/2OPmhA9](https://join.slack.com/t/pdidev/shared_invite/enQtNDk5OTY2MDA0Nzg0LTlkM2U1MGQwZmM3OGM1MjA0M2VlMzUyNWNjODhkNmI4MjMwZmQxMTM1ODc2ODI4MjY4ODNmNDhmY2QzOWI4Nzk).
 
 
@@ -36,4 +36,4 @@ Learn about %PDI:
 You can work with us to make a better %PDI:
 * a 3-years engineer position: ["Improvement and integration of the PDI library for High-performance code coupling"](http://www.maisondelasimulation.fr/en/emploi/3-years-engineer-position-improvement-and-integration-of-the-pdi-library-for-high-performance-code-coupling-2/),
 * a 2-years post-doc position: ["Data-driven code-coupling at Exascale"](http://www.maisondelasimulation.fr/en/emploi/2-years-post-doc-position-data-driven-code-coupling-at-exascale-2/),
-* and we are always looking for people intereted in an internship, [drop an email if you are insterested](mailto:julien.bigot@cea.fr).
+* and we are always looking for people interested in an internship, [drop an email if you are insterested](mailto:julien.bigot@cea.fr).
