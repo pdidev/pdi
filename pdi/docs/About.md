@@ -25,11 +25,15 @@ Learn about %PDI:
   - \ref PDI "API for plugin developers".
 
 
-# Join us
+# Use PDI and get help
 
-If you are interested, join us!
-* [a PhD. position is available](./PDI_FlowVR_PhD.pdf),
-* 2 engineer positions to work on %PDI are also available, [drop an email if you are insterested](mailto:julien.bigot@cea.fr),
-* and we are always looking for people intereted in an internship, [drop an email if you are insterested](mailto:julien.bigot@cea.fr),
-* get help on [Slack](https://join.slack.com/t/pdidev/shared_invite/enQtNDk5OTY2MDA0Nzg0LWNiNWEwNTU4NThmNzNiZDU0YmIyNzg0M2Q3MGVjNTA4ZDE1YWNjY2ZmZDVlYjQ4Yjg0YWI5NDcxMmUzNGM0YTA),
-* get the code from [Gitlab](https://gitlab.maisondelasimulation.fr/jbigot/pdi).
+* get the code from **Gitlab**: https://gitlab.maisondelasimulation.fr/jbigot/pdi,
+* get help on **Slack**: [https://bit.ly/2OPmhA9](https://join.slack.com/t/pdidev/shared_invite/enQtNDk5OTY2MDA0Nzg0LTlkM2U1MGQwZmM3OGM1MjA0M2VlMzUyNWNjODhkNmI4MjMwZmQxMTM1ODc2ODI4MjY4ODNmNDhmY2QzOWI4Nzk).
+
+
+# Join the team
+
+You can work with us to make a better %PDI:
+* a 3-years engineer position: ["Improvement and integration of the PDI library for High-performance code coupling"](http://www.maisondelasimulation.fr/en/emploi/3-years-engineer-position-improvement-and-integration-of-the-pdi-library-for-high-performance-code-coupling-2/),
+* a 2-years post-doc position: ["Data-driven code-coupling at Exascale"](http://www.maisondelasimulation.fr/en/emploi/2-years-post-doc-position-data-driven-code-coupling-at-exascale-2/),
+* and we are always looking for people intereted in an internship, [drop an email if you are insterested](mailto:julien.bigot@cea.fr).
