@@ -71,48 +71,54 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 		dsc.metadata(is_metadata);
 		dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
 	}
+	if (is_metadata) {
+		ctx.logger()->trace("Loaded {} metadata", map_len);
+	} else {
+		ctx.logger()->trace("Loaded {} data", map_len);
+	}
+	
 }
 
-plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const char* plugin_name)
+plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const string& plugin_name)
 {
-	string plugin_symbol = string{"PDI_plugin_"} + plugin_name + string{"_loader"};
+	string plugin_symbol = "PDI_plugin_" + plugin_name + "_loader";
 	void* plugin_ctor_uncast = dlsym(NULL, plugin_symbol.c_str());
 	
 	// case where the library was not prelinked
 	if (!plugin_ctor_uncast) {
-		string libname = string{"libpdi_"} + plugin_name + string{"_plugin.so"};
+		string libname = "libpdi_" + plugin_name + "_plugin.so";
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 		void* lib_handle = dlopen(libname.c_str(), (RTLD_LAZY|RTLD_GLOBAL));
 		if (!lib_handle) {
-			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin file: %s", plugin_name, dlerror()};
+			throw Error{PDI_ERR_PLUGIN, "Unable to load `{}' plugin file: {}", plugin_name, dlerror()};
 		}
 		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol.c_str());
 	}
 	
 	if (!plugin_ctor_uncast) {
-		throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin from file: %s", plugin_name, dlerror()};
+		throw Error{PDI_ERR_PLUGIN, "Unable to load `{}' plugin from file: {}", plugin_name, dlerror()};
 	}
 	
 	return reinterpret_cast<plugin_loader_f>(plugin_ctor_uncast);
 }
 
-plugin_dependencies_f PDI_NO_EXPORT get_plugin_dependencies(const char* plugin_name)
+plugin_dependencies_f PDI_NO_EXPORT get_plugin_dependencies(const string& plugin_name)
 {
-	string plugin_symbol = string{"PDI_plugin_"} + plugin_name + string{"_dependencies"};
+	string plugin_symbol = "PDI_plugin_" + plugin_name + "_dependencies";
 	void* plugin_deps_uncast = dlsym(NULL, plugin_symbol.c_str());
 	
 	// case where the library was not prelinked
 	if (!plugin_deps_uncast) {
-		string libname = string{"libpdi_"} + plugin_name + string{"_plugin.so"};
+		string libname = "libpdi_" + plugin_name + "_plugin.so";
 		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW);
 		if (!lib_handle) {
-			throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin file: %s", plugin_name, dlerror()};
+			throw Error{PDI_ERR_PLUGIN, "Unable to load `{}' plugin file: {}", plugin_name, dlerror()};
 		}
 		plugin_deps_uncast = dlsym(lib_handle, plugin_symbol.c_str());
 	}
 	
 	if (!plugin_deps_uncast) {
-		throw Error{PDI_ERR_PLUGIN, "Unable to load `%s' plugin dependencies from file: %s", plugin_name, dlerror()};
+		throw Error{PDI_ERR_PLUGIN, "Unable to load `{}' plugin dependencies from file: {}", plugin_name, dlerror()};
 	}
 	
 	return reinterpret_cast<plugin_dependencies_f>(plugin_deps_uncast);
@@ -184,7 +190,7 @@ void initialize_plugins(map<string, Plugin_load_info>& plugins_info, unordered_m
 		for (auto&& req_plugin : plugin_dependencies.first) {
 			auto&& req_plugin_info_it = plugins_info.find(req_plugin);
 			if (req_plugin_info_it == plugins_info.end()) {
-				throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `%s': required plugin `%s' is not loaded", plugin_info.first.c_str(), req_plugin.c_str()};
+				throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `{}': required plugin `{}' is not loaded", plugin_info.first, req_plugin};
 			}
 		}
 		for (auto&& pre_plugin: plugin_dependencies.second) {
@@ -233,31 +239,37 @@ Global_context::Global_context(PC_tree_t conf):
 	map<string, Plugin_load_info> plugins_info;
 	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
 	try {
+		m_logger->trace("Plugins to load: {}", nb_plugins);
 		for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
 			//TODO: what to do if a single plugin fails to load?
 			string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
 			PC_tree_t plugin_node = PC_get(conf, ".plugins<%d>", plugin_id);
 			Context_proxy& ctx_proxy = (*m_context_proxy.emplace(plugin_name, Context_proxy{*this, plugin_name, PC_get(conf, ".logging")}).first).second;
+			m_logger->trace("Creating {} plugin", plugin_name);
 			plugins_info.emplace(piecewise_construct,
 			    forward_as_tuple(plugin_name),
-			    forward_as_tuple(get_plugin_ctr(plugin_name.c_str()), ctx_proxy, plugin_node, get_plugin_dependencies(plugin_name.c_str()))
+			    forward_as_tuple(get_plugin_ctr(plugin_name), ctx_proxy, plugin_node, get_plugin_dependencies(plugin_name))
 			);
 		}
 		initialize_plugins(plugins_info, m_plugins);
 	} catch (const exception& e) {
-		throw Error{PDI_ERR_SYSTEM, "Error while loading plugins: %s", e.what()};
+		throw Error{PDI_ERR_SYSTEM, "Error while loading plugins: {}", e.what()};
 	}
 	
 	// no metadata is not an error
 	PC_tree_t metadata = PC_get(conf, ".metadata");
 	if (!PC_status(metadata)) {
 		load_data(*this, metadata, true);
+	} else {
+		m_logger->debug("Metadata is not defined in specification tree");
 	}
 	
 	// no data is spurious, but not an error
 	PC_tree_t data = PC_get(conf, ".data");
 	if (!PC_status(data)) {
 		load_data(*this, data, false);
+	} else {
+		m_logger->warn("Data is not defined in specification tree");
 	}
 	
 	for (auto&& init_callback : m_init_callbacks) {
@@ -307,6 +319,7 @@ void Global_context::event(const char* name)
 	for (auto it = m_event_callbacks.begin(); it != m_event_callbacks.end(); it++) {
 		event_callbacks.emplace_back(std::cref(*it));
 	}
+	m_logger->trace("Calling `{}' event. Callbacks to call: {}", name, event_callbacks.size());
 	//call gathered callbacks
 	vector<Error> errors;
 	for (const std::function<void(const std::string&)>& callback : event_callbacks) {
@@ -323,13 +336,13 @@ void Global_context::event(const char* name)
 	}
 	if (!errors.empty()) {
 		if (1 == errors.size()) {
-			throw Error{errors.front().status(), "Error while triggering event `%s': %s", name, errors.front().what()};
+			throw Error{errors.front().status(), "Error while triggering event `{}': {}", name, errors.front().what()};
 		}
 		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering event `" + string(name) + "':\n";
 		for (auto&& err: errors) {
 			errmsg += string(err.what()) + "\n";
 		}
-		throw Error{PDI_ERR_SYSTEM, "%s", errmsg.c_str()};
+		throw Error{PDI_ERR_SYSTEM, "{}", errmsg};
 	}
 }
 
@@ -360,14 +373,14 @@ Datatype_template_uptr Global_context::datatype(PC_tree_t node)
 	if (func_it != m_datatype_parsers.end()) {
 		return (func_it->second)(*this, node);
 	}
-	throw Error{PDI_ERR_TYPE, "Cannot find datatype `%s'", type.c_str()};
+	throw Error{PDI_ERR_TYPE, "Cannot find datatype `{}'", type};
 }
 
 void Global_context::add_datatype(const string& name, Datatype_template_parser parser)
 {
 	if (!m_datatype_parsers.emplace(name, move(parser)).second) {
 		//if a datatype with the given name already exists
-		throw Error{PDI_ERR_TYPE, "Datatype already defined `%s'", name.c_str()};
+		throw Error{PDI_ERR_TYPE, "Datatype already defined `{}'", name};
 	}
 }
 

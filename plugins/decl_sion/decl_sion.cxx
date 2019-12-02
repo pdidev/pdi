@@ -40,6 +40,7 @@
 #include <pdi/context.h>
 #include <pdi/datatype.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/error.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
@@ -101,7 +102,7 @@ Expression parse_property(PC_tree_t conf, const char* entry_name, const char* pr
 			return to_string(PC_get(conf, property_name));
 		}
 	} catch (...) {
-		throw Error {PDI_ERR_CONFIG, "Property '%s' not found for entry '%s'.\n", property_name, entry_name};
+		throw Error {PDI_ERR_CONFIG, "Property '{}' not found for entry '{}'", property_name, entry_name};
 	}
 }
 
@@ -137,7 +138,7 @@ Named_event::Named_event(PC_tree_t entry, const string& name):
 {
 	PC_tree_t entry_vars = PC_get(entry, ".vars");
 	int nvar = len(entry_vars);
-	if (nvar <= 0) throw Error{PDI_ERR_CONFIG, "No variables specified for event '%s'.\n", name.c_str()};
+	if (nvar <= 0) throw Error{PDI_ERR_CONFIG, "No variables specified for event '{}'", name};
 	
 	for (int i = 0; i < nvar; ++i) {
 		vars.emplace_back(to_string(PC_get(entry_vars, "[%d]", i)));
@@ -237,10 +238,10 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			if (Ref_r ref = context().desc(var).ref()) {
 				if (!ref.type().dense()) {
-					throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", var.c_str()};
+					throw Error {PDI_ERR_IMPL, "Sparse data type of variable '{}' is not supported", var};
 				}
 			} else {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
+				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
 			}
 		}
 		
@@ -250,7 +251,7 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			const Ref& ref = context().desc(var).ref();
 			if (!ref) {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
+				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
 			}
 			chunksize += ref.type().datasize();
 		}
@@ -263,7 +264,7 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			Ref_r ref = context().desc(var).ref();
 			if (!ref) {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
+				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
 			}
 			
 			uint64_t key = hash(reinterpret_cast<const uint8_t*>(var.c_str()), var.size());
@@ -303,10 +304,10 @@ struct decl_sion_plugin: Plugin {
 			Ref cref = context().desc(var).ref();
 			if (Ref_w ref = cref) {
 				if (!ref.type().dense()) {
-					throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", var.c_str()};
+					throw Error {PDI_ERR_IMPL, "Sparse data type of variable '{}' is not supported", var};
 				}
 			} else {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
+				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
 			}
 		}
 		
@@ -321,7 +322,7 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			Ref_w ref = context().desc(var).ref();
 			if (!ref) {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", var.c_str()};
+				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
 			}
 			
 			uint64_t key = hash(reinterpret_cast<const uint8_t*>(var.c_str()), var.size());
@@ -329,7 +330,7 @@ struct decl_sion_plugin: Plugin {
 			for (int j = 0; ; ++j) {
 				if (SION_SUCCESS != sion_seek_key(sid, key, 4 * j, 0)) {
 					sion_parclose_mpi(sid);
-					throw Error {PDI_ERR_SYSTEM, "Could not find variable '%s' for reading in file '%s' on try #%d", var.c_str(), file.c_str(), j + 1};
+					throw Error {PDI_ERR_SYSTEM, "Could not find variable '{}' for reading in file '{}' on try #{}", var, file, j + 1};
 				}
 				
 				uint64_t name_size;
@@ -361,7 +362,7 @@ struct decl_sion_plugin: Plugin {
 			
 			if (data_size != data_size_from_file) {
 				sion_parclose_mpi(sid);
-				throw Error {PDI_ERR_SYSTEM, "Size of data for variable '%s' in file '%s' does not match memory size (%" PRIu64 " (file) vs. %zu (memory)).\n", var.c_str(), file.c_str(), data_size_from_file, data_size};
+				throw Error {PDI_ERR_SYSTEM, "Size of data for variable '{}' in file '{}' does not match memory size ({} (file) vs. {} (memory))", var, file, data_size_from_file, data_size};
 			}
 			
 			if (SION_SUCCESS != sion_fread_key(ref.get(), key, data_size, 1, sid)) {
@@ -379,12 +380,12 @@ struct decl_sion_plugin: Plugin {
 	{
 		Ref_r ref = cref;
 		if (!ref) {
-			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", name};
+			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", name};
 		}
 		
 		// check that data type is dense
 		if (!ref.type().dense()) {
-			throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported", name};
+			throw Error {PDI_ERR_IMPL, "Sparse data type of variable '{}' is not supported", name};
 		}
 		
 		// open file
@@ -410,12 +411,12 @@ struct decl_sion_plugin: Plugin {
 	{
 		Ref_w ref = cref;
 		if (!ref) {
-			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '%s'", name};
+			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", name};
 		}
 		
 		// check that data type is dense
 		if (!ref.type().dense()) {
-			throw Error {PDI_ERR_IMPL, "Sparse data type of variable '%s' is not supported"};
+			throw Error {PDI_ERR_IMPL, "Sparse data type of variable '{}' is not supported", name};
 		}
 		
 		// open file

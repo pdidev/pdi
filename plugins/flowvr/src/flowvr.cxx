@@ -48,7 +48,7 @@ private:
 		if (component_str == "module") {
 			m_flowvr_components.emplace_back(new Module(context(), component_node));
 		} else {
-			throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Component `%s' is invalid. Available options: `module'", component_str};
+			throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Component `{}' is invalid. Available options: `module'", component_str};
 		}
 	}
 	

@@ -34,31 +34,10 @@
 
 namespace PDI {
 
-Error::Error(PDI_status_t errcode, const char* message, va_list ap):
-	m_status(errcode)
-{
-	va_list ap2; va_copy(ap2, ap);
-	// resize to contain the string + terminating null byte
-	m_what.resize(vsnprintf(NULL, 0, message, ap)+1);
-	vsnprintf(&m_what[0], m_what.size(), message, ap2);
-	// remove the terminating null byte
-	m_what.resize(m_what.size() - 1);
-}
-
-Error::Error(PDI_status_t errcode, const char* message, ...):
-	m_status(errcode)
-{
-	va_list ap;
-	va_start(ap, message);
-	// resize to contain the string + terminating null byte
-	m_what.resize(vsnprintf(NULL, 0, message, ap)+1);
-	va_end(ap);
-	va_start(ap, message);
-	vsnprintf(&m_what[0], m_what.size(), message, ap);
-	// remove the terminating null byte
-	m_what.resize(m_what.size() - 1);
-	va_end(ap);
-}
+Error::Error(PDI_status_t errcode, const char* fmt):
+	m_status{errcode},
+	m_what{fmt}
+{}
 
 const char* Error::what() const noexcept
 {

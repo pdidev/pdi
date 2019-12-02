@@ -175,7 +175,7 @@ public:
 					}
 				}
 			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Data Payload (%s): Cannot get write access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
+				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Data Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
 			}
 		}
 	}
@@ -355,7 +355,7 @@ public:
 					}
 				}
 			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Data Payload (%s): Cannot get read access to `%s' descriptor", m_name.c_str(), data_name.c_str()};
+				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Data Payload ({}): Cannot get read access to `{}' descriptor", m_name, data_name};
 			}
 		}
 	}

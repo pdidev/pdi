@@ -77,7 +77,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
-			throw Error {PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", to_string(value).c_str()};
+			throw Error {PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
 		} else if ( key == "datasets" ) {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
@@ -88,7 +88,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if ( key == "read" ) {
 			// will read in pass 2
 		} else {
-			throw Error{PDI_ERR_CONFIG, "Unknown key in HDF5 file configuration: `%s'", key.c_str()};
+			throw Error{PDI_ERR_CONFIG, "Unknown key in HDF5 file configuration: `{}'", key};
 		}
 	});
 	

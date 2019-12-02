@@ -85,7 +85,7 @@ class Trace
 				m_trace.reset(new Trace_string(ctx, name));
 			}
 		}
-		throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) `%s' has not supported type for Trace", name.c_str()};
+		throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) `{}' has not supported type for Trace", name};
 	}
 	
 public:
@@ -118,7 +118,7 @@ public:
 		if (ref_r) {
 			m_trace->write(ref_r);
 		} else {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Trace (%s): Unable to get read permissions for `%s'", data_name.c_str()};
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Trace: Unable to get read permissions for `{}'", data_name};
 		}
 	}
 	

@@ -76,7 +76,7 @@ struct mpi_plugin: Plugin {
 	{
 		Data_descriptor& predef_desc = ctx.desc(name);
 		if (!predef_desc.empty()) {
-			throw Error{PDI_ERR_IMPL, "Predefined descriptor already defined `%s'", name.c_str()};
+			throw Error{PDI_ERR_IMPL, "Predefined descriptor already defined `{}'", name};
 		}
 		
 		predef_desc.metadata(true);

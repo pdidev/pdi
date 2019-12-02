@@ -320,10 +320,10 @@ void write_data(const std::string& data_name, PDI::Ref_r ref_r) {
     struct stat status;
     if (!stat(tmp_path.c_str(), &status) && status.st_size == ref_r.type().datasize()) {
         if (!stat(m_data_to_path_map[data_name].c_str()) && std::remove(m_data_to_path_map[data_name].c_str())) {
-            throw PDI::Error {PDI_ERR_SYSTEM, "Cannot remove old file %s", m_data_to_path_map[data_name].c_str()};
+            throw PDI::Error {PDI_ERR_SYSTEM, "Cannot remove old file {}", m_data_to_path_map[data_name]};
         }
         if (std::rename(tmp_path.c_str(), m_data_to_path_map[data_name].c_str())) {
-            throw PDI::Error {PDI_ERR_SYSTEM, "Cannot rename temporary file %s", tmp_path.c_str()};
+            throw PDI::Error {PDI_ERR_SYSTEM, "Cannot rename temporary file {}", tmp_path};
         }
     } else {
         throw PDI::Error {PDI_ERR_SYSTEM, "Data write not complete"};

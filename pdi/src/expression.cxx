@@ -275,7 +275,7 @@ unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
 		++term;
 		while (isspace(*term)) ++term;
 		unique_ptr<Expression::Impl> result = Operation::parse(&term, 1);
-		if (*term != ')')  throw Error {PDI_ERR_VALUE, "Expected ')', found '%c'", *term};
+		if (*term != ')')  throw Error {PDI_ERR_VALUE, "Expected ')', found '{}'", *term};
 		++term;
 		while (isspace(*term)) ++term;
 		*val_str = term;
@@ -296,7 +296,7 @@ string Expression::Impl::parse_id(char const** val_str)
 	        || (*id >= 'A' && *id <= 'Z')
 	        || (*id == '_')
 	    )) {
-		throw Error {PDI_ERR_VALUE, "Invalid first ID character: %c", *id};
+		throw Error {PDI_ERR_VALUE, "Invalid first ID character: {}", *id};
 	}
 	++id;
 	size_t id_len = 1;
@@ -345,7 +345,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** v
 	
 	unique_ptr<Int_literal> result {new Int_literal{strtol(constval, const_cast<char**>(&constval), 0)}};
 	if (*val_str == constval) {
-		throw Error {PDI_ERR_VALUE, "Expected integer, found `%s'", constval};
+		throw Error {PDI_ERR_VALUE, "Expected integer, found `{}'", constval};
 	}
 	while (isspace(*constval)) ++constval;
 	
@@ -370,7 +370,7 @@ string Expression::Impl::String_literal::to_string(Context& ctx) const
 
 long Expression::Impl::String_literal::to_long(Context& ctx) const
 {
-	throw Error {PDI_ERR_VALUE, "Can not interpret `%s' as an integer value", to_string(ctx).c_str()};
+	throw Error {PDI_ERR_VALUE, "Can not interpret `{}' as an integer value", to_string(ctx)};
 }
 
 Ref Expression::Impl::String_literal::to_ref(Context& ctx) const
@@ -470,7 +470,7 @@ try
 			case 8:
 				return static_cast<const int64_t*>(ref.get())[idx];
 			default:
-				throw Error(PDI_ERR_VALUE, "Unexpected int size: %ld", static_cast<long>(scalar_type->kind()));
+				throw Error(PDI_ERR_VALUE, "Unexpected int size: {}", static_cast<long>(scalar_type->kind()));
 			}
 		} else if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
 			switch (scalar_type->datasize()) {
@@ -483,7 +483,7 @@ try
 			case 8:
 				return static_cast<const uint64_t*>(ref.get())[idx];
 			default:
-				throw Error(PDI_ERR_VALUE, "Unexpected uint size: %ld", static_cast<long>(scalar_type->kind()));
+				throw Error(PDI_ERR_VALUE, "Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
 			}
 		}
 		throw Error {PDI_ERR_VALUE, "Expected integer scalar"};
@@ -491,7 +491,7 @@ try
 	throw Error {PDI_ERR_RIGHT, "Unable to grant access for value reference"};
 } catch (const Error& e)
 {
-	throw Error {e.status(), "while referencing `%s': %s", m_referenced.c_str(), e.what()};
+	throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 }
 
 Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
@@ -513,7 +513,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	const char* ref = *val_str;
 	unique_ptr<Reference_expression> result{new Reference_expression};
 	
-	if (*ref != '$') throw Error {PDI_ERR_VALUE, "Expected '$', got %c", *ref};
+	if (*ref != '$') throw Error {PDI_ERR_VALUE, "Expected '$', got {}", *ref};
 	++ref;
 	
 	bool has_curly_brace = false;
@@ -532,7 +532,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 		while (isspace(*ref)) ++ref;
 		result->m_idx.emplace_back(Expression{Operation::parse(&ref, 1)});
 		if (*ref != ']')  {
-			throw Error {PDI_ERR_VALUE, "Expected ']', found %c", *ref};
+			throw Error {PDI_ERR_VALUE, "Expected ']', found {}", *ref};
 		}
 		++ref;
 		while (isspace(*ref)) ++ref;
@@ -540,7 +540,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	
 	if (has_curly_brace) {
 		if (*ref != '}') {
-			throw Error {PDI_ERR_VALUE, "Expected '}', found %c", *ref};
+			throw Error {PDI_ERR_VALUE, "Expected '}}', found {}", *ref};
 		}
 		++ref;
 		while (isspace(*ref)) ++ref;
@@ -655,7 +655,7 @@ Expression::Impl::Operation::Operator Expression::Impl::Operation::parse_operato
 	const char* c_op = *val_str;
 	int found_level = op_level(c_op);
 	if (found_level == 0) {
-		throw Error {PDI_ERR_VALUE, "Expected operator, found '%c'", *c_op};
+		throw Error {PDI_ERR_VALUE, "Expected operator, found '{}'", *c_op};
 	}
 	if (found_level != level) {
 		throw Error {PDI_ERR_VALUE, "Mixing operator priority"};

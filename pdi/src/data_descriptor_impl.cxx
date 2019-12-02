@@ -155,6 +155,7 @@ Ref Data_descriptor_impl::ref()
 		for (auto it = m_context.m_empty_desc_access_callbacks.begin(); it != m_context.m_empty_desc_access_callbacks.end(); it++) {
 			empty_desc_callbacks.emplace_back(std::cref(*it));
 		}
+		m_context.logger()->trace("Calling `{}' empty desc access. Callbacks to call: {}", m_name, empty_desc_callbacks.size());
 		//call gathered callbacks
 		vector<Error> errors;
 		for (const std::function<void(const std::string&)>& callback : empty_desc_callbacks) {
@@ -171,18 +172,18 @@ Ref Data_descriptor_impl::ref()
 		}
 		if (!errors.empty()) {
 			if (1 == errors.size()) {
-				throw Error{errors.front().status(), "Error while triggering empty desc access `%s': %s", m_name.c_str(), errors.front().what()};
+				throw Error{errors.front().status(), "Error while triggering empty desc access `{}': {}", m_name, errors.front().what()};
 			}
 			string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering empty desc access `" + m_name + "':\n";
 			for (auto&& err: errors) {
 				errmsg += string(err.what()) + "\n";
 			}
-			throw Error{PDI_ERR_SYSTEM, "%s", errmsg.c_str()};
+			throw Error{PDI_ERR_SYSTEM, "{}", errmsg};
 		}
 		
 		//at least one plugin should share a Ref
 		if (m_refs.empty()) {
-			throw Error{PDI_ERR_VALUE, "Cannot access a non shared value: `%s'", m_name.c_str()};
+			throw Error{PDI_ERR_VALUE, "Cannot access a non shared value: `{}'", m_name};
 		}
 	}
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
@@ -200,6 +201,7 @@ void Data_descriptor_impl::share(void* data, bool read, bool write)
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	Ref r{data, &free, m_type->evaluate(m_context), read, write};
 	try {
+		m_context.logger()->trace("Sharing `{}' Ref with rights: R = {}, W = {}", m_name, read, write);
 		share(r, false, false);
 	} catch (...) {
 		// on error, do not free the data as would be done automatically otherwise
@@ -252,6 +254,7 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 	for (auto it = m_context.m_data_callbacks.begin(); it != m_context.m_data_callbacks.end(); it++) {
 		data_callbacks.emplace_back(std::cref(*it));
 	}
+	m_context.logger()->trace("Calling `{}' share. Callbacks to call: {}", m_name, data_callbacks.size());
 	//call gathered callbacks
 	vector<Error> errors;
 	for (const std::function<void(const std::string&, Ref)>& callback : data_callbacks) {
@@ -268,13 +271,13 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 	}
 	if (!errors.empty()) {
 		if (1 == errors.size()) {
-			throw Error{errors.front().status(), "Error while triggering data share `%s': %s", m_name, errors.front().what()};
+			throw Error{errors.front().status(), "Error while triggering data share `{}': {}", m_name, errors.front().what()};
 		}
 		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering data share `" + m_name + "':\n";
 		for (auto&& err: errors) {
 			errmsg += string(err.what()) + "\n";
 		}
-		throw Error{PDI_ERR_SYSTEM, "%s", errmsg.c_str()};
+		throw Error{PDI_ERR_SYSTEM, "{}", errmsg};
 	}
 	
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
@@ -285,7 +288,7 @@ void Data_descriptor_impl::release()
 {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// move reference out of the store
-	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw Error{PDI_ERR_STATE, "Cannot release a non shared value"};
+	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw Error{PDI_ERR_STATE, "Cannot release a non shared value: `{}'", m_name};
 	
 	Ref oldref = ref();
 	m_refs.pop();
@@ -301,7 +304,7 @@ void Data_descriptor_impl::release()
 void* Data_descriptor_impl::reclaim()
 {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw Error{PDI_ERR_STATE, "Cannot reclaim a non shared value"};
+	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw Error{PDI_ERR_STATE, "Cannot reclaim a non shared value: `{}'", m_name};
 	
 	Ref oldref = ref();
 	m_refs.pop();

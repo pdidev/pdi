@@ -85,7 +85,7 @@ hid_t get_h5_type(const Datatype& type)
 			case 2: return H5T_NATIVE_UINT16;
 			case 4: return H5T_NATIVE_UINT32;
 			case 8: return H5T_NATIVE_UINT64;
-			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #%ld", scalar_type->datasize()};
+			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #{}", scalar_type->datasize()};
 			}
 		}
 		case Scalar_kind::SIGNED: {
@@ -94,7 +94,7 @@ hid_t get_h5_type(const Datatype& type)
 			case 2: return H5T_NATIVE_INT16;
 			case 4: return H5T_NATIVE_INT32;
 			case 8: return H5T_NATIVE_INT64;
-			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #%ld", scalar_type->datasize()};
+			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #{}", scalar_type->datasize()};
 			}
 		}
 		case Scalar_kind::FLOAT: {
@@ -102,11 +102,11 @@ hid_t get_h5_type(const Datatype& type)
 			case 4:  return H5T_NATIVE_FLOAT;
 			case 8:  return H5T_NATIVE_DOUBLE;
 			case 16: return H5T_NATIVE_LDOUBLE;
-			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #%ld", scalar_type->datasize()};
+			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #{}", scalar_type->datasize()};
 			}
 		}
 		case Scalar_kind::ADDRESS: case Scalar_kind::UNKNOWN:
-			throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #%d", scalar_type->kind()};
+			throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #{}", static_cast<uint8_t>(scalar_type->kind())};
 		}
 	} else {
 		throw Error {PDI_ERR_IMPL, "Unexpected type in HDF5"};
@@ -124,7 +124,7 @@ void handle_hdf5_err(const char* message)
 	if ( h5_errmsg.empty() ) h5_errmsg = "HDF5 error";
 	
 	if ( !message ) message = "";
-	throw Error{PDI_ERR_SYSTEM, "%s%s", message, h5_errmsg.c_str()};
+	throw Error{PDI_ERR_SYSTEM, "{} {}", message, h5_errmsg};
 }
 
 tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)

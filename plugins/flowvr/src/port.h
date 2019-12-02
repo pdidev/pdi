@@ -155,7 +155,7 @@ protected:
 		if (ref) {
 			*static_cast<int*>(ref.get()) = m_flowvr_port->isConnected();
 		} else {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Port (%s): Unable to get write permissions for `%s'", m_name.c_str(), data_name.c_str()};
+			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Port ({}): Unable to get write permissions for `{}'", m_name, data_name};
 		}
 	}
 	

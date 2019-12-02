@@ -237,7 +237,7 @@ try
 	) {
 		throw Error{
 			PDI_ERR_PLUGIN,
-			"Invalid PDI API version: %lu.%lu.%lu, PDI provided version is %lu.%lu.%lu",
+			"Invalid PDI API version: {}.{}.{}, PDI provided version is {}.{}.{}",
 			expected_major,
 			expected_minor,
 			expected_patch,
@@ -246,6 +246,7 @@ try
 			PDI_VERSION_PATCH
 		};
 	}
+	Global_context::context().logger()->trace("PDI API version: {}.{}.{}");
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -391,9 +392,11 @@ try
 	transaction_data.emplace_back(name);
 	
 	va_start(ap, access);
+	int i = 0;
 	while (const char* v_name = va_arg(ap, const char*)) {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
+		Global_context::context().logger()->trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
 		if ((status = PDI_share(v_name, v_data, v_access))) {
 			break;
 		}
@@ -402,10 +405,13 @@ try
 	va_end(ap);
 	
 	if (!status) { //trigger event only when all data is available
+		Global_context::context().logger()->trace("Multi expose: Calling event `{}'", event_name);
 		status = PDI_event(event_name);
 	}
 	
+	i = 0;
 	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
+		Global_context::context().logger()->trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
 		PDI_status_t r_status = PDI_reclaim(it->c_str());
 		status = !status ? r_status : status; //if it is first error, save its status (try to reclaim other desc anyway)
 	}

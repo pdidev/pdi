@@ -32,6 +32,8 @@
 
 #include <pdi/pdi_fwd.h>
 
+#include <spdlog/fmt/fmt.h>
+
 namespace PDI {
 
 class PDI_EXPORT Error:
@@ -44,13 +46,17 @@ class PDI_EXPORT Error:
 public:
 	/** Creates a PDI error
 	 * \param[in] errcode the error code of the error to create
-	 * \param[in] message an errror message as a printf-style format
-	 * \param[in] ... the printf-style parameters for the message
+	 * \param[in] fmt an errror message as a python-style format
+	 * \param[in] args the python-style parameters for the message
 	 * \see printf
 	 */
-	Error(PDI_status_t errcode = PDI_OK, const char* message = "", ...);
+	template<typename... Args>
+	Error(PDI_status_t errcode, const char* fmt, const Args& ... args):
+		m_status{errcode},
+		m_what{fmt::format(fmt, args...)}
+	{}
 	
-	Error(PDI_status_t errcode, const char* message, va_list args);
+	Error(PDI_status_t errcode, const char* fmt);
 	
 	const char* what() const noexcept override;
 	

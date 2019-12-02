@@ -40,6 +40,7 @@ using PDI::to_long;
 using PDI::to_string;
 using spdlog::logger;
 using spdlog::level::level_enum;
+using spdlog::level::trace;
 using spdlog::level::debug;
 using spdlog::level::info;
 using spdlog::level::warn;
@@ -114,19 +115,23 @@ void read_log_level(Logger_sptr logger, PC_tree_t level_tree, const string& name
 	}
 	
 	const unordered_map<string, level_enum> level_map = {
+		{"trace", trace},
 		{"debug", debug},
 		{"info", info},
 		{"warn", warn},
 		{"error", err},
 		{"off", off}
 	};
-	
+#ifndef NDEBUG //if DEBUG
+	logger->set_level(trace);
+#else //if RELEASE
 	auto level_it = level_map.find(level_str);
 	if (level_it != level_map.end()) {
 		logger->set_level(level_map.find(level_str)->second);
 	} else {
-		logger->warn("Invalid logging level: {}. Available: 'debug', 'info', 'warn', 'error', 'off'.", level_str);
+		logger->warn("Invalid logging level: {}. Available: 'trace', 'debug', 'info', 'warn', 'error', 'off'.", level_str);
 	}
+#endif
 }
 
 } // namespace <anonymous>

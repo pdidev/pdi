@@ -60,7 +60,7 @@ unsigned long plugin_api_version(unsigned long expected_version)
 	) {
 		throw Error{
 			PDI_ERR_PLUGIN,
-			"Invalid plugin API version: %lu.%lu.%lu, PDI provided version is %lu.%lu.%lu",
+			"Invalid plugin API version: {}.{}.{}, PDI provided version is {}.{}.{}",
 			expected_major,
 			expected_minor,
 			expected_patch,

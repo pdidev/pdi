@@ -210,10 +210,10 @@ void validate_array(vector<Expression>& size, vector<Expression>& subsize, vecto
 	
 	//check if rank of array is correct
 	if (size.size() != subsize.size()) {
-		throw Error{PDI_ERR_CONFIG, "`subsize' must have the same rank as `size': %d != %d", subsize.size(), size.size()};
+		throw Error{PDI_ERR_CONFIG, "`subsize' must have the same rank as `size': {} != {}", subsize.size(), size.size()};
 	}
 	if (size.size() != start.size()) {
-		throw Error{PDI_ERR_CONFIG, "`start' must have the same rank as `size': %d != %d", start.size(), size.size()};
+		throw Error{PDI_ERR_CONFIG, "`start' must have the same rank as `size': {} != {}", start.size(), size.size()};
 	}
 }
 
@@ -226,7 +226,7 @@ Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		if (order_str == "c" && order_str == "C") {
 			ctx.logger()->warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str !="" ) {
-			throw Error{PDI_ERR_CONFIG, "Incorrect array ordering: `%s', only C order is supported", order_str.c_str()};
+			throw Error{PDI_ERR_CONFIG, "Incorrect array ordering: `{}', only C order is supported", order_str};
 		}
 	}
 	

@@ -63,7 +63,7 @@ Selection::Selection(PC_tree_t tree)
 				m_start.emplace_back(to_string(start));
 			});
 		} else {
-			throw Error{PDI_ERR_CONFIG, "Invalid configuration key in selection: `%s'", key.c_str()};
+			throw Error{PDI_ERR_CONFIG, "Invalid configuration key in selection: `{}'", key};
 		}
 	});
 }
@@ -83,7 +83,7 @@ void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 	
 	if ( !m_size.empty() ) {
 		if (m_size.size() != static_cast<size_t>(rank) ) {
-			throw Error{PDI_ERR_CONFIG, "Invalid selection: %dd selection in %dd array", m_size.size(), rank};
+			throw Error{PDI_ERR_CONFIG, "Invalid selection: {} selection in {} array", m_size.size(), rank};
 		}
 		for ( int size_id=0; size_id<rank; ++size_id ) {
 			h5_subsize[size_id] = m_size[size_id].to_long(ctx);
@@ -91,7 +91,7 @@ void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 	} else if (dflt_space != -1 ) {
 		int dflt_rank = H5Sget_simple_extent_ndims(dflt_space);
 		if (dflt_rank != rank ) {
-			throw Error{PDI_ERR_CONFIG, "Invalid default selection: %dd selection in %dd array", dflt_rank, rank};
+			throw Error{PDI_ERR_CONFIG, "Invalid default selection: {} selection in {} array", dflt_rank, rank};
 		}
 		
 		vector<hsize_t> dflt_start(rank);
@@ -103,7 +103,7 @@ void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 	
 	if ( !m_start.empty() ) {
 		if ( m_start.size() != static_cast<size_t>(rank) ) {
-			throw Error{PDI_ERR_CONFIG, "Invalid selection: %dd start in %dd array", m_size.size(), rank};
+			throw Error{PDI_ERR_CONFIG, "Invalid selection: {} start in {} array", m_size.size(), rank};
 		}
 		for ( int size_id=0; size_id<rank; ++size_id ) {
 			h5_start[size_id] += m_start[size_id].to_long(ctx);

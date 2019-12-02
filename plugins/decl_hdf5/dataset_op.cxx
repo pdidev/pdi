@@ -100,14 +100,14 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 #ifdef H5_HAVE_PARALLEL
 			m_communicator = to_string(value);
 #else
-			throw Error {PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `%s'", to_string(value).c_str()};
+			throw Error {PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
 		} else if ( key == "memory_selection" ) {
 			m_memory_selection = value;
 		} else if ( key == "dataset_selection" ) {
 			m_dataset_selection = value;
 		} else {
-			throw Error{PDI_ERR_CONFIG, "Unknown key for HDF5 dataset configuration: `%s'", key.c_str()};
+			throw Error{PDI_ERR_CONFIG, "Unknown key for HDF5 dataset configuration: `{}'", key};
 		}
 	});
 }
@@ -165,7 +165,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	} else {
 		if ( !m_dataset_selection.size().empty() ) {
-			throw Error{PDI_ERR_CONFIG, "Dataset selection is invalid in implicit dataset `%s'", dataset_name.c_str()};
+			throw Error{PDI_ERR_CONFIG, "Dataset selection is invalid in implicit dataset `{}'", dataset_name};
 		}
 		tie(h5_file_space, h5_file_type) = space(ref.type(), true);
 	}
@@ -187,7 +187,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 		stringstream file_desc;
 		for ( size_t ii=0; ii< pr_size.size(); ++ii) file_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
 		
-		throw Error{PDI_ERR_CONFIG, "Incompatible selections while writing `%s': [%s ] -> [%s ]", dataset_name.c_str(), mem_desc.str().c_str(), file_desc.str().c_str()};
+		throw Error{PDI_ERR_CONFIG, "Incompatible selections while writing `{}': [{} ] -> [{} ]", dataset_name, mem_desc.str(), file_desc.str()};
 	}
 	
 	Raii_hid set_lst = make_raii_hid(H5Pcreate(H5P_LINK_CREATE), H5Pclose);

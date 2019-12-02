@@ -116,7 +116,7 @@ ExposedAlias::ExposedAlias(Context& ctx, const Alias& alias):
 	try {
 		m_desc->share(alias.m_value.to_ref(ctx), false, false);
 	} catch (const Error& e) {
-		throw Error {e.status(), "Could not alias `%s' because %s", alias.m_name.c_str(), e.what()};
+		throw Error {e.status(), "Could not alias `{}' because {}", alias.m_name, e.what()};
 	}
 }
 
@@ -148,12 +148,12 @@ public:
 		if (!fct_uncast) { // force loading from the main exe
 			void* exe_handle = dlopen(NULL, RTLD_NOW);
 			if (!exe_handle) {
-				throw Error {PDI_ERR_SYSTEM, "Unable to dlopen the main executable: %s", dlerror()};
+				throw Error {PDI_ERR_SYSTEM, "Unable to dlopen the main executable: {}", dlerror()};
 			}
 			fct_uncast = dlsym(exe_handle, funcname.c_str());
 		}
 		if (!fct_uncast) {
-			throw Error {PDI_ERR_SYSTEM, "Unable to load user function `%s': %s", funcname.c_str(), dlerror()};
+			throw Error {PDI_ERR_SYSTEM, "Unable to load user function `{}': {}", funcname, dlerror()};
 		}
 		m_fct = reinterpret_cast<ptr_fct_t>(fct_uncast);
 		
