@@ -1,59 +1,98 @@
 FROM pdidev/centos_cmake3.10
 
-LABEL astyle=3.1 \
-      bpp=0.3.0 \
-      flowvr=2.2.0 \
-      fti=1.1 \
-      paraconf=0.4.0 \
-      pybind11=2.3.0 \
-      sionlib=1.7.2 \
-      spdlog=1.3.1
+USER 1001
 
-COPY vendor /vendor
+RUN . /etc/profile \
+ && wget https://github.com/yaml/libyaml/archive/0.2.2.tar.gz \
+ && tar -xzf 0.2.2.tar.gz \
+ && cd libyaml-0.2.2 \
+ && cmake3 -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DINSTALL_CMAKE_DIR=share/yaml/cmake . \
+ && make -j 2
 
-RUN cd /vendor \
-    && for tar in astyle_3.1_linux.tar \
-                  bpp-v0.3.0.tar \
-                  flowvr-ex.tar \
-                  fti-1.1.tar \
-                  libparaconf-0.4.0.tar \
-                  pybind11-2.3.0.tar \
-                  sionlib-1.7.2.tar \
-                  spdlog-1.3.1.tar;do tar -xvf ${tar};done
+USER 0
 
-# Copy fixed Astyle CMakeLists.txt
-COPY vendor/astyle/CMakeLists.txt /vendor/astyle/CMakeLists.txt
+RUN cd /opt/app-root/src/libyaml-0.2.2 \
+ && make install
 
-# ASYTLE 3.1
-RUN cd /vendor/astyle/build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DBUILD_SHARED_LIBS=OFF .. && make -j 2 && make install \
-# BPP 0.3.0
-    && mkdir /vendor/bpp-v0.3.0/build \
-    && cd /vendor/bpp-v0.3.0/build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DBUILD_TESTING=OFF .. && make -j 2 && make install \
-# FLOWVR 2.2.0
-    && mkdir /vendor/flowvr-ex-relocatable_cmake/build \
-    && cd /vendor/flowvr-ex-relocatable_cmake/build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_DOCU=OFF -DOpenGL_GL_PREFERENCE=LEGACY .. && make -j 2 && make install \
-# PARACONF 0.4.0
-    && mkdir /vendor/libparaconf-0.4.0/build \
-    && cd /vendor/libparaconf-0.4.0/build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF .. && make -j 2 && make install \
-# FTI 1.1
-    && mkdir /vendor/fti-1.1/build \
-    && cd /vendor/fti-1.1/build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_DOCU=OFF .. && make -j 2 && make install \
-# SPDLOG 1.3.1
-    && mkdir /vendor/spdlog-1.3.1/build \
-    && cd /vendor/spdlog-1.3.1/build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLES=OFF -DSPDLOG_BUILD_BENCH=OFF .. && make -j 2 && make install \
-# PYBIND11 2.3.0
-    && mkdir /vendor/pybind11-2.3.0/build \
-    && cd /vendor/pybind11-2.3.0/build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/libs -DPYBIND11_TEST=OFF .. && make -j 2 && make install \
-# SIONLIB 1.7.2
-    && cd /vendor/sionlib-1.7.2 \
-    && ./configure --prefix=/libs --disable-fortran --disable-parutils --disable-cxx && cd build-linux-gomp-openmpi && make -j 2 && make install \
-# CLEANUP
-    && rm -rf /vendor
+USER 1001
+
+RUN . /etc/profile \
+ && wget https://sourceforge.net/projects/astyle/files/astyle/astyle%203.1/astyle_3.1_linux.tar.gz \
+ && tar -xzf astyle_3.1_linux.tar.gz \
+ && cd astyle \
+ && cmake3 -DCMAKE_INSTALL_PREFIX=/libs -DBUILD_SHARED_LIBS=OFF . \
+ && make -j 2
+
+RUN . /etc/profile \
+ && wget https://gitlab.maisondelasimulation.fr/jbigot/bpp/-/archive/v0.3.0/bpp-v0.3.0.tar.gz \
+ && tar -xzf bpp-v0.3.0.tar.gz \
+ && cd bpp-v0.3.0 \
+ && cmake3 -DCMAKE_INSTALL_PREFIX=/libs . \
+ && make -j 2
+
+RUN . /etc/profile \
+ && wget https://gitlab.inria.fr/flowvr/flowvr-ex/-/archive/relocatable_cmake/flowvr-ex-relocatable_cmake.tar.gz \
+ && tar -xzf  flowvr-ex-relocatable_cmake.tar.gz \
+ && cd flowvr-ex-relocatable_cmake \
+ && cmake3 -DCMAKE_INSTALL_PREFIX=/libs -DOpenGL_GL_PREFERENCE=LEGACY . \
+ && make -j 2
+
+RUN . /etc/profile \
+ && wget https://gitlab.maisondelasimulation.fr/jbigot/libparaconf/-/archive/0.4.0/libparaconf-0.4.0.tar.gz \
+ && tar -xzf libparaconf-0.4.0.tar.gz\
+ && cd libparaconf-0.4.0/paraconf \
+ && cmake3 -DCMAKE_INSTALL_PREFIX=/libs -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF . \
+ && make -j 2
+
+RUN . /etc/profile \
+ && wget https://github.com/leobago/fti/archive/1.3.tar.gz \
+ && tar -xzf 1.3.tar.gz \
+ && cd fti-1.3 \
+ && cmake3 -DCMAKE_INSTALL_PREFIX=/libs -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_DOCU=OFF . \
+ && make -j 2
+
+RUN . /etc/profile \
+ && wget https://github.com/gabime/spdlog/archive/v1.4.2.tar.gz \
+ && tar -xzf v1.4.2.tar.gz \
+ && cd spdlog-1.4.2 \
+ && cmake3 -DCMAKE_INSTALL_PREFIX=/libs -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLES=OFF -DSPDLOG_BUILD_BENCH=OFF . \
+ && make -j 2
+
+RUN . /etc/profile \
+ && wget https://github.com/pybind/pybind11/archive/v2.4.3.tar.gz \
+ && tar -xzf v2.4.3.tar.gz \
+ && cd pybind11-2.4.3 \
+ && cmake3 -DCMAKE_INSTALL_PREFIX=/libs -DPYBIND11_TEST=OFF . \
+ && make -j 2
+
+RUN . /etc/profile \
+ && wget -O sionlib-1.7.2.tar.gz 'http://apps.fz-juelich.de/jsc/sionlib/download.php?version=1.7.6' \
+ && tar -xzf sionlib-1.7.2.tar.gz \
+ && cd sionlib \
+ && ./configure --prefix=/libs --disable-fortran --disable-parutils --disable-cxx \
+ && cd build-linux-gomp-openmpi \
+ && make -j 2
+
+USER 0
+
+RUN cd /opt/app-root/src/astyle \
+ && make install \
+ && cd /opt/app-root/src/bpp-v0.3.0 \
+ && make install \
+ && cd /opt/app-root/src/flowvr-ex-relocatable_cmake \
+ && make install \
+ && cd /opt/app-root/src/libparaconf-0.4.0/paraconf \
+ && make install \
+ && cd /opt/app-root/src/fti-1.3 \
+ && make install \
+ && cd /opt/app-root/src/spdlog-1.4.2 \
+ && make install \
+ && cd /opt/app-root/src/pybind11-2.4.3 \
+ && make install \
+ && cd /opt/app-root/src/sionlib \
+ && make install
+
+USER 1001
+
+RUN rm -r *
 

@@ -1,52 +1,14 @@
 FROM centos/devtoolset-6-toolchain-centos7
 
 USER 0
-WORKDIR /
 
-LABEL gcc=6.3.1 \
-      g++=6.3.1 \
-      gfortran=6.3.1 \
-      make=3.82 \
-      perl=5.16.3 \
-      openmpi=4.0.1 \
-      python3=3.7.4
+RUN yum install -y make perl wget sudo which file flex bison \
+                   python3-devel python-devel python-pip python3-pip pyyaml openmpi3-devel \
+                   hwloc-devel freeglut-devel
 
-# MAKE 3.82
-# PERL 5.16.3
-RUN yum install -y make perl wget
+RUN echo module load mpi >> /etc/profile.d/sh.local
 
-# OPENMPI 4.0.2
-# TODO: replace 4.0.x version with 4.0.2 on release
-RUN wget https://download.open-mpi.org/nightly/open-mpi/v4.0.x/openmpi-v4.0.x-201908300241-2d515f7.tar.gz \
-    && tar -xzf /openmpi-v4.0.x-201908300241-2d515f7.tar.gz \
-    && mv /openmpi-v4.0.x-201908300241-2d515f7 /openmpi-4.0.2
-RUN cd /openmpi-4.0.2 \
-    && ./configure \
-    && make -j 2 \
-    && make install \
-    && rm -rf /openmpi-v4.0.x-201908300241-2d515f7.tar.gz /openmpi-4.0.2
+USER 1001
 
-ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64 \
-    OMPI_MCA_rmaps_base_oversubscribe=1 \
-    OMPI_ALLOW_RUN_AS_ROOT=1 \
-    OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-
-# PYTHON 3.7.4
-RUN wget https://www.python.org/ftp/python/3.7.4/Python-3.7.4.tgz \
-    && tar -xzf /Python-3.7.4.tgz
-RUN yum install -y openssl-devel libffi-devel \
-    && cd /Python-3.7.4 \
-    && ./configure --with-ensurepip=install --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib" \
-    && make -j 2 \
-    && make install \
-    && rm -rf /Python-3.7.4.tar.xz /Python-3.7.4
-
-# PDI dependency
-RUN yum install -y sudo libyaml-devel epel-release \
-    && pip3 install pyyaml \
-# FlowVR dependency
-    && yum install -y hwloc-devel freeglut-devel python-devel python-pip \
-    && pip install pyyaml \
-# SIONlib dependency
-    && yum install -y which file
-
+ENV OMPI_MCA_rmaps_base_oversubscribe=1
+RUN pip3 install --user pyyaml
