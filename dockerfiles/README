@@ -10,17 +10,17 @@ Docker images:
       + python3 3.7.4
 
 2. centos_cmake3.5
-      FROM pdireg/centos_base
+      FROM pdidev/centos_base
       + cmake 3.5.2
       + hdf5 1.10.5
 
 3. centos_cmake3.10
-      FROM pdireg/centos_base
+      FROM pdidev/centos_base
       + cmake 3.10.3
       + doxygen 1.8.15
 
 4. centos_libs
-      FROM pdireg/centos_cmake3.10
+      FROM pdidev/centos_cmake3.10
       + astyle 3.1
       + bpp 0.3.0
       + flowvr 2.2.0
@@ -31,11 +31,11 @@ Docker images:
       + spdlog 1.3.1
 
 5. centos_libs_cmake3.5
-      FROM pdireg/centos_cmake3.5
+      FROM pdidev/centos_cmake3.5
       COPY libs FROM centos_libs
 
 6. centos_libs_cmake3.10
-      FROM pdireg/centos_cmake3.10
+      FROM pdidev/centos_cmake3.10
       COPY libs FROM centos_libs
       + hdf5 1.10.5
 
@@ -50,21 +50,21 @@ centos_base -----> centos_cmake3.5 ----------------------> centos_libs_cmake3.5
 
 ---------------------------------------------------------------------------------------
 Build all images:
-sudo docker build --no-cache -t pdireg/centos_base -f centos_base .
-sudo docker build --no-cache -t pdireg/centos_cmake3.5 -f centos_cmake3.5 .
-sudo docker build --no-cache -t pdireg/centos_cmake3.10 -f centos_cmake3.10 .
-sudo docker build --no-cache -t pdireg/centos_libs -f centos_libs ..
-sudo docker build --no-cache -t pdireg/centos_libs_cmake3.5 -f centos_libs_cmake3.5 .
-sudo docker build --no-cache -t pdireg/centos_libs_cmake3.10 -f centos_libs_cmake3.10 .
+sudo docker build --no-cache -t pdidev/centos_base -f centos_base .
+sudo docker build --no-cache -t pdidev/centos_cmake3.5 -f centos_cmake3.5 .
+sudo docker build --no-cache -t pdidev/centos_cmake3.10 -f centos_cmake3.10 .
+sudo docker build --no-cache -t pdidev/centos_libs -f centos_libs ..
+sudo docker build --no-cache -t pdidev/centos_libs_cmake3.5 -f centos_libs_cmake3.5 .
+sudo docker build --no-cache -t pdidev/centos_libs_cmake3.10 -f centos_libs_cmake3.10 .
 
 ---------------------------------------------------------------------------------------
-Push all images to pdireg hub:
-sudo docker push pdireg/centos_base
-sudo docker push pdireg/centos_cmake3.5
-sudo docker push pdireg/centos_cmake3.10
-sudo docker push pdireg/centos_libs
-sudo docker push pdireg/centos_libs_cmake3.5
-sudo docker push pdireg/centos_libs_cmake3.10
+Push all images to pdidev hub:
+sudo docker push pdidev/centos_base
+sudo docker push pdidev/centos_cmake3.5
+sudo docker push pdidev/centos_cmake3.10
+sudo docker push pdidev/centos_libs
+sudo docker push pdidev/centos_libs_cmake3.5
+sudo docker push pdidev/centos_libs_cmake3.10
 
 ---------------------------------------------------------------------------------------
 Docker image to PDI build:

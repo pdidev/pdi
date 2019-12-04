@@ -1,4 +1,4 @@
-FROM pdireg/centos_base
+FROM pdidev/centos_base
 
 LABEL cmake=3.10.3 \
       doxygen=1.8.15
