@@ -7,7 +7,7 @@ stages:
 
 # Best chance for errors
 cmake3.10_system_build:
-  image: pdireg/centos_libs_cmake3.10
+  image: pdidev/centos_libs_cmake3.10
   stage: build
   script:
     - mkdir build_sys_3.10 && cd build_sys_3.10 && cmake .. -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM && make -j 2
@@ -21,7 +21,7 @@ cmake3.10_system_build:
      expire_in: 60 mins 
 
 cmake3.10_system_test:
-  image: pdireg/centos_libs_cmake3.10
+  image: pdidev/centos_libs_cmake3.10
   stage: test
   dependencies: [cmake3.10_system_build]
   script: export PYTHONPATH=/usr/local/lib/flowvr/python:$CI_PROJECT_DIR/build_sys_3.10/staging/lib64/flowvr/python:$PYTHONPATH && cd $CI_PROJECT_DIR/build_sys_3.10 && ctest --output-on-failure
@@ -30,7 +30,7 @@ cmake3.10_system_test:
 
 # Check the rest if first tests have passed
 cmake3.10_embedded_build:
-  image: pdireg/centos_cmake3.10
+  image: pdidev/centos_cmake3.10
   stage: build_rest
   dependencies: [cmake3.10_system_test] # needs from gitlab 12.2
   script:
@@ -45,7 +45,7 @@ cmake3.10_embedded_build:
      expire_in: 10 mins
 
 cmake3.10_embedded_test:
-  image: pdireg/centos_cmake3.10
+  image: pdidev/centos_cmake3.10
   stage: test_rest
   dependencies: [cmake3.10_embedded_build]
   script: export PYTHONPATH=$CI_PROJECT_DIR/build_emb_3.10/staging/lib64/flowvr/python:$PYTHONPATH && cd $CI_PROJECT_DIR/build_emb_3.10 && ctest --output-on-failure
@@ -53,7 +53,7 @@ cmake3.10_embedded_test:
     refs: [master, merge_requests]
 
 cmake3.5_system_build:
-  image: pdireg/centos_libs_cmake3.5
+  image: pdidev/centos_libs_cmake3.5
   stage: build_rest
   dependencies: [cmake3.10_system_test] # needs from gitlab 12.2
   script:
@@ -62,7 +62,7 @@ cmake3.5_system_build:
     refs: [master, merge_requests]
 
 cmake3.5_embedded_build:
-  image: pdireg/centos_cmake3.5
+  image: pdidev/centos_cmake3.5
   stage: build_rest
   dependencies: [cmake3.10_system_test] # needs from gitlab 12.2
   script:
@@ -75,7 +75,7 @@ pages:
     refs:
       - master
       - /^[0-9]*\.[0-9]*\.[0-9]*$/
-  image: pdireg/centos_libs_cmake3.10
+  image: pdidev/centos_libs_cmake3.10
   dependencies: [cmake3.10_system_build]
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
