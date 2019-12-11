@@ -200,15 +200,15 @@ include(SuperBuild)
 
 ## Fortran
 
-if("${BUILD_FORTRAN}") # and (BPP or paraconf or PDI or ...)
+if("${BUILD_FORTRAN}") # and (Bpp or paraconf or PDI or ...)
 	enable_language(Fortran)
 endif()
 
 
-## BPP
+## Bpp
 
 if("${BUILD_FORTRAN}") # and (paraconf or PDI)
-	sbuild_add_dependency(BPP EMBEDDED
+	sbuild_add_dependency(Bpp EMBEDDED
 		BUILD_DEPENDENCY
 		EMBEDDED_PATH "vendor/bpp-v0.3.0"
 		VERSION 0.3.0
@@ -269,7 +269,7 @@ sbuild_add_dependency(yaml "${USE_DEFAULT}"
 set(PARACONF_DEPENDS_LIST "yaml")
 set(PARACONF_COMPONENTS "C")
 if("${BUILD_FORTRAN}")
-	list(APPEND PARACONF_DEPENDS_LIST "BPP")
+	list(APPEND PARACONF_DEPENDS_LIST "Bpp")
 	list(APPEND PARACONF_COMPONENTS "f90")
 endif()
 # if ( PDI or ... )
@@ -539,7 +539,7 @@ if("${BUILD_TESTING}")
 	list(APPEND PDI_DEPENDS_LIST GTest)
 endif()
 if("${BUILD_FORTRAN}")
-	list(APPEND PDI_DEPENDS_LIST BPP)
+	list(APPEND PDI_DEPENDS_LIST Bpp)
 endif()
 if("${BUILD_PYTHON}")
 	list(APPEND PDI_DEPENDS_LIST pybind11)
