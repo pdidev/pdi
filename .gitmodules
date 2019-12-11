@@ -1,3 +1,7 @@
 [submodule "hands_on"]
 	path = hands_on
 	url = ../../pdidev/PDI_hands-on.git
+[submodule "dockerfiles"]
+	path = dockerfiles
+	url = ../../pdidev/dockerfiles.git
+	branch = master
