@@ -41,8 +41,7 @@ pages:
     - mkdir build
     - cd build
     - cmake -DDIST_PROFILE=User -DBUILD_DOCUMENTATION=ON -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM ..
-    - make -j 2 PDI_pkg-configure
-    - make -C PDI/src/PDI_pkg-build doc
+    - make -j 2 PDI_pkg
     - cd
     - mkdir -p "$CI_PROJECT_DIR/public/"
     - if [ -z "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/PDI/html "$CI_PROJECT_DIR/public/${CI_COMMIT_REF_NAME}"; fi
