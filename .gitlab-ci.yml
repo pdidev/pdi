@@ -1,88 +1,48 @@
 stages:
-  - build
   - test
-  - build_rest
-  - test_rest
   - pages
+  - external
 
-# Best chance for errors
-cmake3.10_system_build:
-  image: pdidev/centos_libs_cmake3.10
-  stage: build
-  script:
-    - mkdir build_sys_3.10 && cd build_sys_3.10 && cmake .. -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM && make -j 2
-  only:
-    refs: [master, merge_requests]
-  artifacts:
-     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME-sys_3.10"
-     paths: [$CI_PROJECT_DIR/build_sys_3.10]
-     when: on_success
-# No `after scirpt' option. See: https://gitlab.com/gitlab-org/gitlab-ce/issues/19505
-     expire_in: 60 mins 
-
-cmake3.10_system_test:
-  image: pdidev/centos_libs_cmake3.10
-  stage: test
-  dependencies: [cmake3.10_system_build]
-  script: export PYTHONPATH=/usr/local/lib/flowvr/python:$CI_PROJECT_DIR/build_sys_3.10/staging/lib64/flowvr/python:$PYTHONPATH && cd $CI_PROJECT_DIR/build_sys_3.10 && ctest --output-on-failure
-  only:
-    refs: [master, merge_requests]
-
-# Check the rest if first tests have passed
-cmake3.10_embedded_build:
-  image: pdidev/centos_cmake3.10
-  stage: build_rest
-  dependencies: [cmake3.10_system_test] # needs from gitlab 12.2
-  script:
-    - mkdir build_emb_3.10 && cd build_emb_3.10 && cmake .. -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED && make -j 2
-  only:
-    refs: [master, merge_requests]
-  artifacts:
-     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME-emb_3.10"
-     paths: [$CI_PROJECT_DIR/build_emb_3.10]
-     when: on_success
-# No `after scirpt' option. See: https://gitlab.com/gitlab-org/gitlab-ce/issues/19505
-     expire_in: 10 mins
-
-cmake3.10_embedded_test:
-  image: pdidev/centos_cmake3.10
-  stage: test_rest
-  dependencies: [cmake3.10_embedded_build]
-  script: export PYTHONPATH=$CI_PROJECT_DIR/build_emb_3.10/staging/lib64/flowvr/python:$PYTHONPATH && cd $CI_PROJECT_DIR/build_emb_3.10 && ctest --output-on-failure
-  only:
-    refs: [master, merge_requests]
-
-cmake3.5_system_build:
-  image: pdidev/centos_libs_cmake3.5
-  stage: build_rest
-  dependencies: [cmake3.10_system_test] # needs from gitlab 12.2
-  script:
-    - mkdir build_sys_3.5 && cd build_sys_3.5 && cmake .. -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF && make -j 2
-  only:
-    refs: [master, merge_requests]
-
-cmake3.5_embedded_build:
+cmake3.5_embedded:
+  only: [ master, merge_requests ]
   image: pdidev/centos_cmake3.5
-  stage: build_rest
-  dependencies: [cmake3.10_system_test] # needs from gitlab 12.2
   script:
-    - mkdir build_emb_3.5 && cd build_emb_3.5 && cmake .. -DDIST_PROFILE=Devel -DUSE_DEFAULT=AUTO -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF && make -j 2
-  only:
-    refs: [master, merge_requests]
+    - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
+    - make -j 2
+
+cmake3.5_system:
+  only: [ master, merge_requests ]
+  image: pdidev/centos_libs_cmake3.5
+  script:
+    - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
+    - make -j 2
+
+cmake3.10_embedded:
+  only: [ master, merge_requests ]
+  image: pdidev/centos_cmake3.10
+  script:
+    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED .
+    - make -j 2
+    - ctest -j 2 --output-on-failure
+
+cmake3.10_system:
+  only: [ master, merge_requests ]
+  image: pdidev/centos_libs_cmake3.10
+  script:
+    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM .
+    - make -j 2
+    - ctest -j 2 --output-on-failure
 
 pages:
-  only:
-    refs:
-      - master
-      - /^[0-9]*\.[0-9]*\.[0-9]*$/
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
   image: pdidev/centos_libs_cmake3.10
-  dependencies: [cmake3.10_system_build]
-  variables:
-    GIT_SUBMODULE_STRATEGY: recursive
+  variables: { GIT_SUBMODULE_STRATEGY: recursive }
   script:
+    - mkdir build
+    - cd build
+    - cmake -DDIST_PROFILE=User -DBUILD_DOCUMENTATION=ON -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM ..
+    - make -j 2
     - mkdir -p "public/"
-    - if [ -z "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build_sys_3.10/staging/share/doc/PDI/html "public/${CI_COMMIT_REF_NAME}"; fi
-    - if [ -n "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build_sys_3.10/staging/share/doc/PDI/html "public/${CI_COMMIT_TAG}"; fi
-  artifacts:
-    paths:
-      - public
+    - if [ -z "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/PDI/html "public/${CI_COMMIT_REF_NAME}"; fi
+    - if [ -n "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/PDI/html "public/${CI_COMMIT_TAG}"; fi
+  artifacts: { paths: [ public ] }

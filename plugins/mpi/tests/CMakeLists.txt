@@ -31,6 +31,27 @@ cmake_minimum_required(VERSION 3.10)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
+if("${BUILD_FORTRAN}")
+	if(NOT "${MPI_Fortran_HAVE_F90_MODULE}")
+		if("${MPI_Fortran_HAVE_F77_HEADER}")
+			file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/mpi.F90" [=[
+module mpi
+implicit none
+include "mpif.h"
+end module
+]=])
+			add_library(MPI_with_mod STATIC "${CMAKE_CURRENT_BINARY_DIR}/mpi.F90")
+			target_link_libraries(MPI_with_mod MPI::MPI_Fortran)
+		else()
+			message(FATAL_ERROR "Unable to compile a MPI program either with F90 module or F77 include")
+		endif()
+	else()
+		add_library(MPI_with_mod INTERFACE)
+		target_link_libraries(MPI_with_mod INTERFACE MPI::MPI_Fortran)
+	endif()
+endif()
+
+
 # MPI plugin test
 add_executable(mpi_01_C mpi_test_01.c)
 target_link_libraries(mpi_01_C PDI::pdi MPI::MPI_C)
@@ -44,7 +65,7 @@ add_test(NAME mpi_02_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXE
 # MPI plugin Fortran predefines test
 if("${BUILD_FORTRAN}")
 add_executable(mpi_02_F mpi_test_02.F90)
-target_link_libraries(mpi_02_F PDI::pdi_f90 MPI::MPI_Fortran)
+target_link_libraries(mpi_02_F PDI::pdi_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(mpi_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME mpi_02_F COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/mpi_test_02.yml")
