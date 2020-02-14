@@ -1,0 +1,389 @@
+/*!
+\page release_notes_page Release notes & Copyright
+
+Copyright
+=========
+
+\verbatim
+Copyright (c) 2008-2019, Forschungszentrum Juelich GmbH, Federal
+Republic of Germany
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+* Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+
+* Neither the name of the Forschungszentrum Juelich GmbH nor the names 
+  of its contributors may be used to endorse or promote products derived 
+  from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+\endverbatim
+
+Release Notes
+=============
+
+--> see http://www.fz-juelich.de/jsc/sionlib/
+
+SIONlib Version 1.7.6: (November 2019)
+--------------------------------------
+
+- Bugfixes
+  - Fix sionconfig for installations that use SIONfwd
+
+SIONlib Version 1.7.5: (November 2019)
+--------------------------------------
+
+- New features
+  - I/O forwarding based on SIONfwd (see \ref io_forwarding)
+- Updates
+  - MSA-aware collective I/O collector selection plug-in based on matching hostnames against regexes
+  - Partest can now make use of MSA-aware collective I/O
+
+SIONlib Version 1.7.4: (April 2019)
+-----------------------------------
+
+- Bugfixes
+  - Include support for PGI compiler in release tarballs
+
+SIONlib Version 1.7.3: (April 2019)
+-----------------------------------
+
+- Updates
+  - Add Modular Supercomputer Architecture-Aware collective operations
+  - Make read and write functions CUDA aware
+  - Add support for PGI compiler on Linux systems
+- Bugfixes
+  - Update references to additional documentation in README
+
+SIONlib Version 1.7.2: (April 2018)
+-----------------------------------
+
+- Updates
+  - Add support for GCC 7 and beyond
+  - SIONlib is now compiled in strict C99 mode on compilers that support it
+  - The test suite can now collect coverage data via gcov or kcov
+- Bugfixes
+  - Fix an issue that could make read or write operations hang indefinitely
+  - Make documentation of the `do_swap` (formerly `aflag`) parameter of `sion_swap` and its internal interpretation consistent
+
+SIONlib Version 1.7.1: (November 2016)
+--------------------------------------
+
+- Updates
+  - Add support for GCC 6 to the build system
+  - Add tests for the Fortran interface
+- Bugfixes
+  - Fixed problems with missing symbols in the Fortran 90 OpenMP
+    and hybrid interface
+  - Fixed a duplicate typedef in public headers
+  - Fixed a missing include in public headers
+
+SIONlib Version 1.7.0: (October 2016)
+--------------------------------------
+
+- New features
+  - Added resiliency feature (buddy checkpointing)
+    - See "Using SIONlib for Resiliency"
+- Updates
+  - Parts of the documentation have been expanded
+  - Fortran interface exports SION_SUCCESS
+- Bugfixes
+  - Plugged memory leaks in error handling
+
+SIONlib Version 1.6.2: (May 2016)
+--------------------------------------
+
+- Updates
+  - Parts of the documentation have been updated
+- Bugfixes
+  - Fixed problem passing file system block size == 0
+  - Fixed build problem on Cray (added missing file)
+
+SIONlib Version 1.6.1: (November 2015)
+--------------------------------------
+
+- New features
+  - Added option to set SION_COLLSIZE during open call (instead of
+    using the environment variable). (see \ref collective_page)
+  - Added possibility to seek relative to the end of a file
+  - Added support for mpich3
+  - Added new collective mode which drops data origin
+    - Increases performance for collective writes
+    - Can be used e.g. if data is self describing
+    - See \ref collective_merge_description "collective merge mode"
+  - Collective operations are now available for hybrid applications
+    (OpenMP and MPI)
+- Updates
+  - Updated documentation
+  - Better support for K computer
+  - Improved hybrid interface
+  - Restructuring of interface layers
+    - All parallel APIs (MPI, OpenMP and hybrid) now base on the
+      generic API
+- Bugfixes
+  - Fixed compatibility with GCC 5.X
+  - Minor bugfixes
+
+SIONlib Version 1.5.5: (March 2015) bug fix release
+---------------------------------------------------
+
+- Updates/Bugfixes:
+  - API change: int sion_get_sizeof(int sid) -> int
+    sion_get_sizeof(int sid, int *numbytes, int *numfds)
+  - bug fix: fixed problem in serial open of multifile and seeking
+    with default position
+  - memory optimization for key-value structures
+  - optimization of paropen_mapped: reduced number of files opened
+  - improved support for K Computer and Cray systems
+  - added fsion_endianness_swap_needed(sid) convenience function to
+    fortran
+
+SIONlib Version 1.5.4: (January 2015)
+-------------------------------------
+- New features:
+  - added new options for key-value mode in
+    - siondefrag
+    - siondesplit
+
+- Updates/Bugfixes:
+  - bug fix: removed memory leaks in key-value structures
+  - bug fix: fixed problem with values exceeding chunk boundaries
+
+SIONlib Version 1.5.3: (November 2014)
+--------------------------------------
+- New features:
+  - added new functions for locking in the generic interface
+    - sion_lock_register_lock_callbacks
+    - sion_lock_user_callbacks_defined
+  - added new options to "siondump"
+    - -k: print statistics about key-values for each task
+    - -K: print list of key-values for each task
+  - added convenience function "sion_endianness_swap_needed" for
+    checking whether system and file endianness differ
+  - added example par_mandel
+
+- Updates/Bugfixes:
+  - improved support for K computer
+  - fixed incorrect errors shown for "sioncat"
+  - endianness will now be preserved by "siondefrag"
+  - fixed typo in fortran interface ("endianess" to "endianness"),
+    both now map to the same function
+  - fixed issues in build system
+  - fixed issues with "sion_dup"
+  - fixed wrong error code of "sion_dedup"
+  - fixed issues in key value mode
+  - added svn revision to sionversion output
+
+SIONlib Version 1.5.2: (September 2014)
+---------------------------------------
+- Updates/Bugfixes 1.5.2:
+  - fixed errormessages when reading keys in reversed order
+
+SIONlib Version 1.5p1: (June 2014)
+- Updates/Bugfixes 1.5p1:
+  - changes in fortran interface: size and number of elements changed
+    from integer*4 to integer*8
+  - added more checks of input parameters for sion_fread
+  - changed open mode "r+" to increase performance
+
+SIONlib Version 1.5rc1: (first release candidate April 2014)
+------------------------------------------------------------
+- New features in 1.5rc1:
+  - change to Fortran-API: some parameter of function are changed to
+    integer*8 (e.g. size and nitems of fsion_write())
+  - key-value interface: changed to dense writing to chunks, meta data
+    and data could be distributed to subsequent chunks
+  - key-value interface: new iterator functions to read key,value
+    pairs in write order
+  - key-value interface: key-value moder is now stored in meta-data
+    and will be reported by siondump
+  - sion_dup: now available for generic and mapped interface
+
+- Updates/Bugfixes 1.5rc1:
+  - bug fix: Removed further memory leaks
+  - bug fix: fix problems with buffer mode
+
+SIONlib Version 1.5beta1: (Mar 2014)
+------------------------------------
+- New features in 1.5beta1:
+  - New key-value interface for saving data associated with a key,
+    e.g. for saving data from different threads inside a single
+    rank. The implementation features:
+    - Simple interface
+    - Works with generic mapped files
+    - Stable ordering
+    - Iterating over all available keys and values
+
+- Updates/Bugfixes 1.5beta1:
+  bug fix: Removed memory leaks
+
+SIONlib Version 1.4p3: (Nov 2013)
+---------------------------------
+- New features in 1.4p3:
+  - New generic API to implement SIONlib API using own communication
+    layer(s)
+  - New API functions for open existent or create new SION files using
+    different number of tasks in file and application
+    (sion_paropen_mapped_mpi)
+  - Language support for Fortran90
+  - Language support for C++ (API preview)
+
+- Updates/Bugfixes 1.4p3:
+  - Re-organization of libraries and header files: different libraries
+    for MPI, OpenMPI, Hybrid, generic, serial use cases
+  - Update Makefiles: make checkinst, make packinst, make depend, ...
+  - return codes of functions are now defined with constants:
+    SION_SUCCESS, SION_NOT_SUCCESS, SION_ID_UNDEF, SION_ID_NOT_VALID,
+    SION_SIZE_NOT_VALID, ...
+  - bug fix: Optimization for BG/Q: disable fsync
+  - bug fix: thread-safe handling of sion file descriptor management
+  - improved support for Cray system
+  - bug fixes: Fortran length field, partest, packtest,  ...
+
+SIONlib Version 1.3p7: (March 2013)
+-----------------------------------
+- New features in 1.3p7:
+  - IBM BG/Q (optimisation for hybrid MPI/OpenMPI)
+
+- Updates/Bugfixes 1.3p7:
+  - support for intelpoe and intel2 configuration
+  - add more functions to Fortran API
+  - bugfix: character length field for C-functions of Fortran API
+
+SIONlib Version 1.3p5: (March 2012)
+-----------------------------------
+- Updates/Bugfixes 1.3p5:
+  - IBM BG/Q / Cray XK6 support
+  - bug fixes
+
+SIONlib Version 1.3p4: (Aug 2011)
+---------------------------------
+- New features in 1.3p4:
+  - new tool: sionversion: shows version number
+  - more support for collective write/read functions
+- Updates/Bugfixes 1.3p4:
+  - internal optimization, if fileptr is not used by application
+  - bug fixes
+
+SIONlib Version 1.3p2: (July 2011)
+----------------------------------
+- New features in 1.3p2:
+  - SION debug supports now OpenMP
+
+- Updates/Bugfixes 1.3p2:
+  - sionconfig changed for Linux default, library name contains now
+    precision
+  - sion_fread: check feof before read data, move to next chunk if
+    necessary
+  - correct handling of second_fp, needed for compression libraries
+  - serial read fileptr parameter was not set in each case
+
+SIONlib Version 1.3p1: (June 2011)
+----------------------------------
+- New features in 1.3p1:
+  - Support for OpenMP and hybrid programs (MPI+OpenMP)
+  - internal I/O layer using POSIX or ANSI-C calls
+  - experimental: collective I/O (MPI)
+  - partest: new option handling
+
+- Updates/Bugfixes 1.3p1:
+  - several fixes
+
+SIONlib Version 1.2p2: (May 2010)
+---------------------------------
+- New features in 1.2p2:
+  - Multi-File support in serial tools and API
+  - New installation process with configure tool
+  - make test (serial and parallel)
+  - New serial tool: sioncat
+
+- Updates/Bugfixes 1.2p1:
+  - Restructured source code
+  - sion.h cleaned, contains now only public interface
+  - several fixes
+
+SIONlib Version 1.1p9: (November 2009)
+--------------------------------------
+- Updates/Bugfixes 1.1p9:
+  -Fortran interface updated
+
+SIONlib Version 1.1p8: (November 2009)
+--------------------------------------
+- New Features in 1.1p8:
+  - new option -X to partest: remove files after using
+
+- Updates/Bugfixes 1.1p8:
+  - bug fix: determines now right physical file distribution if local
+    commicator is used and global rank 0 is different to local rank 0
+  - bug fix in siondump: print now correct filename for first file
+  - removed double open of file for write in sion_open
+  - fixes for performance improvements on IBM Blue Gene/P
+
+SIONlib Version 1.1p7: (September 2009)
+---------------------------------------
+- New Features in 1.1p7:
+  - additional function to get information about SION-file
+    (e.g. sion_get_current_location, sion_get_bytes_written,
+    sion_get_bytes_read)
+  - error handling enhanced
+  - Fortran interface enhanced
+  - siondump: new option -m (print map)
+  - partest: new option -Z _offset_, read data from other task to
+    prevent cache effect in measurement
+   
+- Updates/Bugfixes 1.1p7:
+  - more tests on different platforms
+  - fixes for performance improvements on IBM Blue Gene/P
+  - partest: increased MAX_PE to 288k
+
+SIONlib Version 1.1p6: (May 5th 2009)
+-------------------------------------
+- New Features in 1.1p6:
+  - new wrapper functions sion_fwrite, sion_fread (beta)
+  - automatic determination of file system block size, if parameter is
+    -1
+
+SIONlib Version 1.1p5 (beta): (February 4th 2009)
+-------------------------------------------------
+
+- first down-loadable version 1.1p5 of sionlib (beta)
+
+- New Features in 1.1p5:
+  - Multifile option (one sionfile consists of serveral phsical files)
+    is implemented and tested
+  - Fortran Interface is implemented and tested
+  - parallel benchmarking programs partest and fpartest for sionlib
+    and MPI/IO available
+  - sionlib with Fortran Interface is used in production code PEPC
+  - Doxygen documentation available
+  - simple parallel example program,
+  - serial utilities: sionsplit, siondump and sionmerge
+  -  examples programs for converting application specific data to
+     sionlib files
+
+- Tests:
+  - tests on Blue Gene/P up to 64k cores, 2 TB files --> 90% of Peak
+    bandwidth
+  - tests on IBM Power 6 and Linux-Systems
+  - first functional tests on Cray XT4
+
+*/

@@ -1,0 +1,21 @@
+GIT_TOPDIR = $(TOPDIR)/../..
+
+GIT_HASH = $(shell git log -n1 --pretty=format:%h $(GIT_TOPDIR) 2>/dev/null)
+GIT_MODIFIED = $(if $(shell git status -suno 2>/dev/null),M,)
+GIT_REV = $(GIT_HASH)$(GIT_MODIFIED)
+
+ifeq "$(GIT_REV)" ""
+GIT_REV = $(shell cat $(GIT_TOPDIR)/.revision 2>/dev/null)
+
+ifeq "$(GIT_REV)" ""
+GIT_REV = Unknown
+endif
+
+endif
+
+.PHONY: gitversion
+
+all: gitversion
+
+gitversion:
+	@echo $(GIT_REV) > $(GIT_TOPDIR)/.revision

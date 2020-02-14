@@ -1,0 +1,141 @@
+/****************************************************************************
+**  SIONLIB     http://www.fz-juelich.de/jsc/sionlib                       **
+*****************************************************************************
+**  Copyright (c) 2008-2019                                                **
+**  Forschungszentrum Juelich, Juelich Supercomputing Centre               **
+**                                                                         **
+**  See the file COPYRIGHT in the package base directory for details       **
+****************************************************************************/
+
+----------------------------------------------------------------------
+SIONlib - Scalable I/O library for parallel access to task-local files
+          Version: 1.7.6
+W. Frings, 2019-11-20
+
+SIONlib is a library for writing and reading binary data
+to/from from several thousands of processors into one or a small number of
+physical files. The library provides global open and close functions
+for accessing one file for writing and reading in parallel. Only these
+function are collective, writing and reading to/from this file can be
+done asynchronously.  sionlib provides a sion file handle and also an
+file pointer (FILE *) which allows to use the standard C file I/O
+operations (POSIX). This file pointer points to a unique position in
+the file.
+
+SIONlib provides a simplified file handling for a parallel program
+that formerly had to read or write binary data in parallel into
+separate files (task-local files). After opening the file with
+sionlib, the I/O can be done with the standard C-I/O functionality
+(fwrite, fread) without changing the existing program. Instead of
+maintaining thousands of separate files for storing the data, there is
+only one large file containing all the data.
+
+SIONlib requires information on the BLOCKSIZE of the underlying filesystem,
+i.e., the BLOCKSIZE is the smallest part of a file which can be locked. For
+instance, IBM GPFS has blocksizes of one ore two Megabytes.
+
+Given that each processor writes its data to same file, sionlib
+assigns different regions (e.g., data blocks) of the file to a
+processor. Hence, for each processor, sionlib needs the estimated data
+size which would be written to the file (chunk size). sionlib can also
+handle extensions (additional chunks), if the end of a data block is
+reached.
+
+Both, the estimated chunk size and filesystem's blocksize are
+used to calculate the individual start position in the file for each
+processor. While a certain block of the file is locked only by one
+processor, efficient parallel writing and reading is feasible.
+
+SIONlib provides two different interfaces: one for parallel access
+using MPI and one for sequential access which is also used internally
+by the SIONlib utilities.
+
+
+Installation:
+-------------
+ The installation procedure is described in:
+
+	   ./doc/inputs/installation.dox
+
+        or https://apps.fz-juelich.de/jsc/sionlib/docu/installation_page.html
+
+SION API:
+---------
+ The SIONlib interface is described in:
+
+	   ./doc/inputs/api.dox
+
+        or https://apps.fz-juelich.de/jsc/sionlib/docu/api_page.html
+
+
+Templates and Examples:
+-----------------------
+ C-Templates and examples for using SIONlib in serial and parallel codes can be found in:
+
+	   ./examples/*.example
+	   ./examples/simple
+
+	   ./doc/inputs/examples.dox
+
+        or https://apps.fz-juelich.de/jsc/sionlib/docu/examples.html
+
+File data format:
+-----------------
+ The internal format of SION-files is described in:
+
+	   ./doc/inputs/fileformat.dox
+
+        or https://apps.fz-juelich.de/jsc/sionlib/docu/fileformat_page.html
+
+
+Utilities:
+----------
+
+ Utilities for managing SION-files and test SIONlib are described in:
+
+	   ./doc/inputs/utilities.dox
+
+        or https://apps.fz-juelich.de/jsc/sionlib/docu/util_page.html
+
+
+Debugging:
+----------
+
+If the sources are compiled with the option -DEBUG debugging can be
+switched on by environment variables, for example:
+
+export SION_DEBUG=SION.log
+export SION_DEBUG_MASK=1023
+export SION_DEBUG_RANK1=0
+export SION_DEBUG_RANK2=2
+
+Variables:
+        SION_DEBUG            file name prefix, will be appended by task number
+        SION_DEBUG_MASK       level of detail:
+                                  1 -> sion user function entries and exits
+                                  2 -> sion internal function entries and exits
+                                  8 -> high frequently called sion user function
+                                       entries and exits (sion_feof, sion_ensure_free_space, ...)
+                                 16 -> high frequently called sion user function entries
+                                       and exits (internal steps)
+                                 32 -> high frequently called sion internal function (internal steps)
+                                128 -> timings (top level)
+                                256 -> timings (low level)
+                                512 -> elg lib
+                               1024 -> gz lib
+                               2048 -> higher frequently called sion internal function (internal steps)
+                              The value of SION_DEBUG_MASK can be combination of the values above (logical or)
+        SION_DEBUG_RANK1      rank of the first MPI task who should do debugging
+        SION_DEBUG_RANK2      rank of a second MPI task who should do debugging
+
+
+Contact:
+--------
+
+sionlib_jsc@fz-juelich.de
+
+
+License:
+--------
+
+See the file COPYRIGHT in the package base directory for details

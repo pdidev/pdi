@@ -1,0 +1,221 @@
+/*!
+\defgroup collective Collective
+\ref collective_page
+
+\page collective_page Collective write/read calls (sion_coll_fwrite, ...)
+
+Introduction
+============
+
+Collective I/O calls use an I/O schema similar to MPI-I/O two-stage
+I/O: Tasks will be divided into collectors and sender. Each collector
+collects and writes data of its own tasks and a number of following
+tasks to the SION-file. Each sender will only send its own data to the
+corresponding collector task.
+
+Advantages of this methods are the reduced number of writer tasks,
+which could be lead e.g. to a better efficiency of the I/O nodes and a
+more densely packing of the chunks in the SION file. The reason for
+this is that the alignment to file system blocks boundaries is only
+needed per collector.
+
+The number of collectors depends on the chunksize requested by each
+task and can also be set by environment variables (see below). The
+main goal is to use enough senders per collector so that the collector
+can write a full file system block.
+
+Usage
+=====
+
+In order to use collective I/O in SIONlib two changes to normal
+SIONlib output are needed.
+
+- The write call sion_fwrite() has to be replaced by its collective
+  counterpart sion_coll_fwrite()
+- Either of the following
+  - The environment variable `SION_COLLSIZE` or `SION_COLLNUM` (see
+    below) needs to be set, or
+  - the file needs to be opend with `...,collective,collsize=NUM,...`
+    added to the file_mode, where `NUM` has the same meaning as the
+    value of the environment variable `SION_COLLSIZE`.
+
+If both, the environment variable `SION_COLLSIZE` and the open flag
+are set, the environment variable overwrites the value chosen in the
+flags.
+
+Parameters
+==========
+
+Environment
+- `SION_COLLDEBUG`
+- `SION_COLLSIZE`
+  - `-1`: collector is computed by SIONlib and depends on chunksizes
+    and file system blocksize
+  - `0`: collective is not used
+  - `> 0`: number of tasks to be collected by one (master) task
+- `SION_COLLNUM`
+  - `> 0`: roughly the number of collectors to use
+
+Procedure to determine collectors and senders
+=============================================
+- If `SION_COLLSIZE` set: -> `sion_filedesc->collsize`
+- If not check if `SION_COLLNUM` set: ->
+  \code
+  numcoll = max(SION_COLLNUM, ntasks);
+  sion_filedesc->collsize = sion_filedesc->ntasks / numcoll;
+  \endcode
+- in calculate_startpointer: not less than one fsblksize per collector
+  \code
+  max_num_collectors  = (int) (gsize / sion_filedesc->fsblksize);
+  \endcode
+- `sion_filedesc->collsize > 0`: number of collectors or sender /
+  collector given by user
+  \code
+  num_collectors = min(sion_filedesc->ntasks /
+  sion_filedesc->collsize, max_num_collectors);
+  \endcode
+- `sion_filedesc->collsize < 0`: SIONlib computes number of collectors
+  \code
+  num_collectors = min(max_num_collectors, ntasks); # given by data
+  size and fsblksize
+  \endcode
+- limit number of collectors according table:
+  \code
+  if ((sion_filedesc->ntasks >= 512) && (num_collectors > 32))
+  num_collectors = 32;
+  \endcode
+
+| sion_filedesc->ntasks >= | num_collectors > | -> num_collectors = |
+|--------------------------|------------------|---------------------|
+|                      256 |               16 |                  16 |
+|                      128 |                8 |                   8 |
+|                       64 |                8 |                   8 |
+|                       32 |                8 |                   8 |
+|                       16 |                8 |                   4 |
+
+Collective Modes
+================
+
+Normal write mode (for comparison)
+-----------------------------------
+
+\code
+          +-----+               +-----+               +-----+               +-----+
+tasks     | t_0 |               | t_1 |               | t_2 |               | t_3 |
+          +-----+               +-----+               +-----+               +-----+
+             |                     |                     |                     |
+             V                     V                     V                     V
+          +---------------------+---------------------+---------------------+---------------------+
+FS blocks | d_0 |               | d_1 |               | d_2 |               | d_3 |               |
+          +---------------------+---------------------+---------------------+---------------------+
+\endcode
+
+Each chunk is extended to at least one file system block. This
+prevents contention between different tasks trying to write to the
+same file system block, but also is a potential wast of space if the
+data actually written is very small.
+
+\anchor collective_standard_description
+Standard collective write mode
+------------------------------
+
+\code
+          +-----+               +-----+               +-----+               +-----+
+tasks     | t_0 |<------+       | t_1 |               | t_2 |               | t_3 |
+          +-----+       |       +-----+               +-----+               +-----+
+             |          |          |                     |                     |
+             |          |          V                     V                     |
+             |          +----------+----------<----------+                     |
+             |                                                                 |
+             |                     +---------------------<---------------------+
+             |                     |
+             V                     V
+          +---------------------+---------------------+---------------------+---------------------+
+FS blocks | d_0 | d_1 | d_2 |   | d_3 |               |                     |                     |
+          +---------------------+---------------------+---------------------+---------------------+
+\endcode
+
+The standard collective write mode tries to collect data from
+different tasks for a better usage of the available space and a
+reduction of the processes actually writing to the file system (see
+introduction).
+
+\anchor collective_merge_description
+Merge collective write mode
+---------------------------
+
+\code
+          +-----+               +-----+               +-----+               +-----+
+tasks     | t_0 |<------+       | t_1 |               | t_2 |               | t_3 |
+          +-----+       |       +-----+               +-----+               +-----+
+             |          |          |                     |                     |
+             |          |          V                     V                     |
+             |          +----------+----------<----------+                     |
+             |                                                                 |
+             |                     +---------------------<---------------------+
+             |                     |
+             V                     V
+          +---------------------+---------------------+---------------------+---------------------+
+FS blocks | ----- d_0 ----- |   | d_3 |               |                     |                     |
+          +---------------------+---------------------+---------------------+---------------------+
+\endcode
+
+Merge collective write behaves like the standard collective write but
+represents all the collected data as it would belong to the collector
+and leaves the collected chunks empty.
+
+It is enabled using `"...,collectivemerge,..."` or `"...,cmerge,..."` in
+file mode.
+
+\anchor collective_msa_description
+Modular Supercomputer Architecture aware mode
+---------------------------------------------
+
+On heterogeneous systems, like modular supercomputers, certain nodes might
+be more suitable to take on the role of a collector than others. The MSA
+aware collective mode modifies the behavior described above by adding a
+step that renumbers the tasks trying to open a file before splitting them
+into local per-file communication context to ensure that enough suitable
+candidates are available in every context.
+
+This makes the mapping of tasks in the original communication context to
+logical files less direct, but still deterministic. In MSA aware mode, all
+collective groups, `0,...,n - 1` are of size `collsize` with the possible exception of the
+last one if the number of tasks is not divisible by `collsize`. Tasks are
+split into two categories based on whether they are suitable candidates for
+being collectors. Collectors are taken from the category of suitable candidates
+in order of ascending rank number until enough collectors have been
+determined. The remaining candidates join the sender category and from there
+form groups with collectors also in order of ascending rank number. Groups
+are distributed across files in a round robin fashion, group 0 goes into
+file 0, group 1 into file 1, etc., wrap around to file 0 if there are more
+groups than files.
+
+The positioning of blocks within the physical files matches that of
+\ref collective_standard_description "the standard mode described above".
+
+MSA aware collective mode is enabled by specifying the "...,collmsa,..." flag
+when opening a file.
+
+### Collector selection plug-ins
+
+Collector candidates are selected using the plug-in selected when building
+SIONlib using the `--msa=...` argument of the `configure` script.
+
+The `hostname-regex` plug-in allows candidates to be selected based on a
+regular expression that can be configured using environment variables and which
+is then matched against the hostname (via `gethostname()`) of the system. The
+regular expression can be supplied through the environment variables
+`SION_MSA_COLLECTOR_HOSTNAME_REGEX` or `SION_MSA_COLLECTOR_HOSTNAME_EREGEX`
+which are interpreted as POSIX basic or extended regular expressions
+respectively (see `re_format(7)`).
+
+The `deep-est-sdv` plugin uses a fixed pattern that it matches the hostname
+against. It is superceded by the `hostname-regex` plug-in.
+
+Sources
+=======
+- `_sion_coll_check_env()` in `sion_internal_par.c`
+- `_sion_calculate_startpointers_collective()` in  `sion_internal_startptr.c`
+
+*/

@@ -1,0 +1,19 @@
+/****************************************************************************
+**  SIONLIB     http://www.fz-juelich.de/jsc/sionlib                       **
+*****************************************************************************
+**  Copyright (c) 2008-2019                                                **
+**  Forschungszentrum Juelich, Juelich Supercomputing Centre               **
+**                                                                         **
+**  See the file COPYRIGHT in the package base directory for details       **
+****************************************************************************/
+
+-------------------------------------------------------------------------
+sionlib - Scalable I/O native library for parallel access to binary files
+          Version: 1.7.6
+W. Frings, 2019-11-20
+
+The release information is given in:
+	 ./doc/sionlib_release.txt
+	 ./doc/html/sionlib_release.html
+
+or http://www.fz-juelich.de/jsc/sionlib/release/

@@ -1,0 +1,171 @@
+/*!
+\defgroup installation Installation
+\ref installation_page
+
+\page installation_page Installation, debugging and error messages
+
+Installing SIONlib
+==================
+
+In the package root directory, run "./configure [options]". The
+following options are available:
+
+| Option                                               | Description                                             |
+|------------------------------------------------------|---------------------------------------------------------|
+| [--prefix=DIR]                                       | Installation directory (default: ./install/\<platform>) |
+| [--compiler=(gnu\|pgi\|intel\|path\|ibm\|sun)]       | Compiler (Linux only)                                   |
+| [--mpi=(mpich\|mpich2\|lam\|openmpi\|intel\|intel2\| | MPI-Lib  (Linux/Solaris only)                           |
+|         hp\|scali\|mpibull2\|sun)]                   |                                                         |
+| [--msa=(hostname-regex\|deep-est-sdv)]               | MSA aware collective operations for the given system    |
+| [--force-(basic\|32\|64\|32-64\|cross)]              | Force basic, 32-bit, 64-bit,                            |
+|                                                      | 32-bit and 64-bit, or cross-compiling                   |
+|                                                      | installation                                            |
+| [--disable-(mpi\|omp\|ompi)]                         | Disable MPI, OpenMP, or hybrid                          |
+| [--disable-fortran]                                  | Disable Fortran support                                 |
+| [--disable-cxx]                                      | Disable C++ support                                     |
+| [--enable-python=(2\|3)]                             | Enable Python support                                   |
+| [--disable-mic]                                      | Disable compilation for MICs                            |
+| [--disable-parutils]                                 | Disable compilation of parutils (used for benchmarking) |
+| [--enable-debug]                                     | enable SIONlib debug                                    |
+| [--enable-cuda]                                      | enable CUDA aware interface                             |
+| [--enable-cuda=/path/to/cuda]                        | ditto and specify CUDA installation path                |
+| [--enable-sionfwd]                                   | enable I/O forwarding with SIONfwd                      |
+| [--enable-sionfwd=/path/to/sionfwd]                  | ditto and specify SIONfwd installation path             |
+| [--disable-pthreads]                                 | configure SIONlib not to use pthreads for locking       |
+
+On systems where multiple MPI libraries and compilers might be
+available, it might be necessary to specify which of the MPI libraries
+or compilers to use. In this case, configure will tell you which
+versions it found and how to specify the desired choice: configure
+currently can only do this on Linux systems.
+
+configure creates a "build configuration" for each unique platform and
+stores it in a subdirectory "build-###" where ### describes the
+attributes needed (e.g., operating system, MPI version, compiler) to
+define the platform. See the output of "configure" for the name of
+your build configuration.
+
+If your system (IBM Blue Gene, etc.) is used through extra
+compilation front-end nodes and building executables is done by
+cross-compilation, you need to build and install a
+cross-instrumentation version of SIONlib. Under normal circumstances
+configure should recognize this automatically.
+
+Next, change your current working directory to the build configuration
+subdirectory
+
+\code
+% cd build-###
+\endcode
+
+As all of the following text is referring to files and commands
+executed inside the build configuration subdirectory. Modify the
+Makefile Definition File (Makefile.defs) if necessary.
+
+\code
+% make
+\endcode
+
+Builds SIONlib.
+
+\code
+% make test
+\endcode
+
+performs serial and parallel tests of SIONlib. The parallel tests need
+an environment where MPI programs can be started. The command
+(e.g. mpiexec) can be changed in the Makefile Definition File.
+
+\code
+% make install
+\endcode
+
+Installs utilities, libraries, include files, documentation and
+examples in $(PREFIX).
+
+The installation of SIONlib builds a number of libraries. In order to
+simplify the correct choice of paths and libraries the utility
+sionconfig outputs the correct combination of options for compiling
+(--cflags) or linking (--libs):
+
+\code
+Usage: sionconfig
+Print compiler and linker flags SIONlib.
+  (--com|--ser|--omp|--mpi|--ompi|--gen)   select SIONlib API
+  (--cflags|--libs|--path)                 select output of sionconfig
+  [--32|--64]                              Precision
+  [--be] [--fe] [--mic]                    Cross compile
+  [--gcc]                                  for GCC Compiler
+  [--c|--f77|--f90|--cxx]                  Language selection
+  [-V|--version|-h]                        Version, Help
+\endcode
+
+Example:
+\code
+LDFLAGS += `../../bin/sionconfig --libs --mpi --be`
+CFLAGS += `../../bin/sionconfig --cflags --mpi --be`
+\endcode
+
+
+Debugging SIONlib I/O
+=====================
+
+If SIONlib is compiled with `DSION_DEBUG` the library supports
+debugging of SIONlib related I/O events. There are four environment
+variables steering SIONlib debugging:
+
+- SION_DEBUG= _file_
+  - Enables debugging, debug messages will be written to _file_.
+    _stdout_ or _stderr_ are also possible.
+
+- SION_DEBUG_MASK= _mask_
+  - Sets binary mask for selecting debug messages. The mask works
+    bitwise, following debugging messages levels can be selected, by
+    adding levels to the mask:
+    | mask | description                                                      |
+    |------|------------------------------------------------------------------|
+    |    1 | sion user function entries and exits                             |
+    |    2 | sion internal function entries and exits                         |
+    |    8 | high frequently called sion user function entries and exits      |
+    |   16 | high frequently called sion internal function entries and exits  |
+    |   32 | internal steps of sion internal function                         |
+    |   64 | internal steps of sion user function                             |
+    |  128 | timings (top level)                                              |
+    |  256 | timings (low level)                                              |
+    |  512 | print filedesc structure contents                                |
+    | 2048 | higher frequently called sion internal function (internal steps) |
+    Since it is used as bitmask the values have to be bitwise 'or'ed
+    which for powers of 2 is identical to adding them.
+    
+    Examples:
+    - 65 = 1 + 64 enables messages for enter and exit events of user
+      functions and debugging of internal steps of SIONlib user
+      functions
+    - 1023 = 1 + 2 + ... + 512 shows all lower level debug messages
+      including timings (since 4 is not used 1019 would do the same)
+
+- SION_DEBUG_RANK1= _rank_
+  - Selects first rank of parallel program for printing debug
+    messages. Rank number will be appended to filename specified in
+    SION_DEBUG.
+
+- SION_DEBUG_RANK2= _rank_
+  - Selects second rank of parallel program for printing debug
+    messages. Rank number will be appended to filename specified in
+    SION_DEBUG.
+
+Error messages of SIONlib
+=========================
+
+There are different level of error message levels (SION_ERROR_RETURN,
+SION_ERROR_WARN, SION_ERROR_ABORT and SION_ERROR_UNKNOWN). Depending
+on the level a warning message will be printed, the corresponding call
+will be returned with 0 or negative return code, or the program will
+be aborted. To limit the messages to one rank of a parallel program
+following environment variable could be set:
+
+- SION_ERROR_MSG_RANK= _rank_
+  - selects one rank of parallel program for printing warning/error
+    messages.
+
+*/

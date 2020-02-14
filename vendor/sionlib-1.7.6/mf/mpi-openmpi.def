@@ -1,0 +1,7 @@
+MPIENABLE = 1
+MPICC     = OMPI_CC="$(CC)" mpicc
+MPICXX    = OMPI_CXX="$(CXX)" mpicxx
+MPIF77    = OMPI_FC="$(F77)" mpif77
+MPIF90    = OMPI_FC="$(F90)" mpif90
+MPILIB    = 
+MPITESTRUN = mpirun -np 4 --oversubscribe

@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# This script is just for a quick  FlowVR test. 
+
+
+# for debugging
+#set -v 
+#set -x
+
+
+
+# agressive cleanup function  to make sure we leave a clean env once out. 
+cleanup()
+{
+    echo -en '\n===== Kill started processes  ====\n'
+    cd ${FLOWVR_PREFIX}/share/flowvr/examples/@DEMO_LOWER@
+#    flowvr-kill
+    killall `ls bin`  flowvr flowvrd
+#    rm @DEMO_LOWER@.net.xml @DEMO_LOWER@.cmd.xml @DEMO_LOWER@.run.xml
+    return $?
+}
+  
+
+# run if user hits control-c
+control_c()
+{
+  echo -en "\n*** Clean and exit ***\n"
+  cleanup
+  exit $?
+}
+
+
+# If something goes wrong we expect the user to ctrl-c or  similar. To leave a clean env, we trap 
+# the  signal and call the cleanup function.
+
+# Trap keyboard interrupt (control-c)
+trap control_c INT HUP QUIT
+
+
+FLOWVR_PREFIX="@INSTALL_PREFIX@"
+
+
+
+# path to .xml files is relative, so go to correct directory
+echo -en "\n====== cd ${FLOWVR_PREFIX}/share/flowvr/examples/@DEMO_LOWER@  ======\n"
+
+cd ${FLOWVR_PREFIX}/share/flowvr/examples/@DEMO_LOWER@
+    
+echo -en "\n===== Compile modules ======\n"
+
+./make-app.sh
+
+echo -en "\n===== Generate the application network ======\n"
+
+python @DEMO_LOWER@.py
+
+
+echo  -en "\n===== Launch FlowVR-Daemon =====\n"
+
+# WARNING UGLY FIX: "${FLOWVR_PREFIX}/lib:$DYLD_LIBRARY_PATH" instead of "${FLOWVR_PREFIX}/lib" to avoid issue with hwlock not found by the daemon. But unset the intended protection by setting a clean env. Best would be  to review in deep flowvr to use rpath instead of LD_LIB.
+env -i PATH=$PATH USER=$USER HOME=$HOME DYLD_LIBRARY_PATH="${FLOWVR_PREFIX}/lib:$DYLD_LIBRARY_PATH"  LD_LIBRARY_PATH="${FLOWVR_PREFIX}/lib:$LD_LIBRARY_PATH"   FLOWVR_PREFIX="${FLOWVR_PREFIX}" "${FLOWVR_PREFIX}/bin/flowvrd" &
+
+sleep 1
+
+echo -en "\n===== Launch @DEMO@ ======\n"
+
+#use the -i option to make sure the environment is not polluted by previous FlowVR installations
+
+flowvrargs="@DEMO_LOWER@"
+
+DEMO_ENV="DISPLAY=$DISPLAY \
+       USER=$USER \
+       HOME=$HOME \
+       DYLD_LIBRARY_PATH=${FLOWVR_PREFIX}/lib:$DYLD_LIBRARY_PATH \
+       LD_LIBRARY_PATH=${FLOWVR_PREFIX}/lib:$LD_LIBRARY_PATH \
+       PATH=${FLOWVR_PREFIX}/bin:${FLOWVR_PREFIX}/share/flowvr/examples/@DEMO_LOWER@/bin:$PATH \
+       FLOWVR_PID_LOG_DIR=${HOME}/.flowvr"
+
+
+#simply print the environement variables
+env -i $DEMO_ENV
+
+# The env applies only to the first command to execute. All other will be executed with the current shell. So do not insert commands like echo here. 
+env -i $DEMO_ENV "${FLOWVR_PREFIX}/bin/flowvr" $flowvrargs  &
+
+
+
+echo  -en "\n===== Press enter  to  stop  =====\n"
+
+#  wait for keyboard input, celan and exit
+read
+cleanup
+
+
+

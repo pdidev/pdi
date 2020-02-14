@@ -1,0 +1,45 @@
+on rank 0: bytes_written=128
+on rank 0: bwrote= 16 blocksum=    1056 
+on rank 0: END of TEST B write
+on rank 0: sid           =3
+on rank 0: numfiles      =1
+on rank 0: chunksize     =200
+on rank 0: globalrank    =0
+on rank 0: newfname      =testB.out
+on rank 0: key = 4711
+on rank 0:  65 | A
+on rank 0:  66 | B
+on rank 0: end of data for key 4711 
+on rank 0: key = 4712
+on rank 0:  66 | B
+on rank 0: end of data for key 4712 
+on rank 0: key = 4713
+on rank 0:  67 | C
+on rank 0: end of data for key 4713 
+on rank 0: key = 4714
+on rank 0: end of data for key 4714 
+on rank 0: END of TEST B read keyval order
+on rank 0: sid           =2
+on rank 0: numfiles      =1
+on rank 0: chunksize     =200
+on rank 0: globalrank    =0
+on rank 0: newfname      =testB.out
+on rank 0: ITERATOR Loop1
+on rank 0: key = 4711
+on rank 0:  65 | A
+on rank 0: key = 4712
+on rank 0:  66 | B
+on rank 0: key = 4713
+on rank 0:  67 | C
+on rank 0: key = 4711
+on rank 0:  66 | B
+on rank 0: ITERATOR Loop2
+on rank 0: key = 4711
+on rank 0:  65 | A
+on rank 0: key = 4712
+on rank 0:  66 | B
+on rank 0: key = 4713
+on rank 0:  67 | C
+on rank 0: key = 4711
+on rank 0:  66 | B
+on rank 0: END of TEST C read iterative

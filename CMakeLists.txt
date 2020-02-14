@@ -384,7 +384,7 @@ endif()
 
 if("${BUILD_FLOWVR_PLUGIN}")
 	sbuild_add_dependency(FlowVR "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/flowvr-ex"
+		EMBEDDED_PATH "vendor/flowvr-ex-02074ec43f05e94201f51a45fac7976b55800d3b"
 		CMAKE_CACHE_ARGS
 			"-DENABLE_EXAMPLES:BOOL=OFF"
 			"-DENABLE_TESTS:BOOL=OFF"
@@ -512,7 +512,7 @@ endif()
 
 if("${BUILD_DECL_SION_PLUGIN}")
 	sbuild_add_dependency(SIONlib "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/sionlib-1.7.2"
+		EMBEDDED_PATH "vendor/sionlib-1.7.6"
 		BUILD_IN_SOURCE 1
 		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
 			--prefix="<INSTALL_DIR>"

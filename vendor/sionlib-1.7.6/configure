@@ -1,0 +1,979 @@
+#!/bin/sh
+
+# BUILD system (adapted from SCALASCA build system, http://www.scalasca.org)
+
+# General settings
+PROJECT="SIONlib"
+LOGFILE="/tmp/sionlib-config-$$.log"
+
+
+####################
+# Helper functions #
+####################
+
+usage () {
+  cat > /dev/tty <<[[EOT]]
+usage  : $0 [options]
+options: [--prefix=DIR]                                  # Installation directory (default: ./install/<platform>)
+         [--compiler=(gnu|pgi|intel|path|ibm|sun)]       # Compiler (Linux only)
+         [--mpi=(mpich|mpich2|lam|openmpi|intel|intel2|  # MPI-Lib  (Linux/Solaris only)
+	         hp|scali|mpibull2|sun)]
+         [--force-(basic|32|64|32-64|cross)]             # Force basic, 32-bit, 64-bit,
+                                                         # 32-bit and 64-bit, or cross-compiling
+                                                         # installation
+         [--msa=(hostname-regex|deep-est-sdv)]           # Build with optimized collectives for MSA
+         [--disable-(mpi|omp|ompi)]                      # Disable MPI, OpenMP, or hybrid
+         [--disable-fortran]                             # Disable Fortran support
+         [--disable-cxx]                                 # Disable C++ support
+         [--enable-python=(2|3)]                         # Enable Python support
+         [--disable-mic]                                 # Disable compilation for MICs
+         [--disable-parutils]                            # Disable compilation of parutils (used for benchmarking)
+	 [--enable-debug]                                # enable SIONlib debug
+	 [--enable-kcov]                                 # collect test suite coverage data with kcov (if available)
+	 [--enable-gcovr]                                # collect test suite coverage data with gcovr (if available)
+         [--enable-cuda]                                 # enable CUDA aware interface
+         [--enable-cuda=/path/to/cuda]                   # ditto and specify CUDA installation path
+         [--enable-sionfwd]                              # enable I/O forwarding with SIONfwd
+         [--enable-sionfwd=/path/to/sionfwd]             # ditto and specify SIONfwd installation path
+	 [--disable-pthreads]                            # configure SIONlib not to use pthreads for locking
+[[EOT]]
+}
+
+CFGecho () {
+  echo "$1" | tee -a ${LOGFILE}
+}
+
+ErrorAndExit () {
+  echo "ERROR: $1"
+  exit 1
+}
+
+ConfigGNUmake () {
+  echo ""
+  echo "#------------------------------------------------------------------------------"
+  echo "# GNU Make Support"
+  echo "#-----------------------------------------------------------------------------"
+  echo ""
+  echo "MAKE = ${MK}"
+
+}
+
+ForceAbsolutePath () {
+  case "$2" in
+    /* )
+      ;;
+    *)
+      ErrorAndExit "Expected an absolute path for $1"
+      ;;
+  esac
+}
+
+CheckWithDirectoryParameter () {
+  if [ ! -d $2 ]
+  then
+    ErrorAndExit "--with-$1: Directory $2 not found."
+  elif [ ! -r $2/$3 ]
+  then
+    ErrorAndExit "--with-$1: $2/$3 not found."
+  fi
+  ForceAbsolutePath "--with-$1" $2
+}
+
+ExtractSuffix () {
+  case $1 in
+    B:*) VAR=`echo $1 | sed -e 's/^B://'`
+         SSUF=".be";;
+    F:*) VAR=`echo $1 | sed -e 's/^F://'`
+         SSUF=".fe";;
+    *:*) echo "Warning: Ignoring variable with unknown qualifier ${VAR}"
+         SSUF="";;
+      *) SSUF="";;
+  esac
+}
+
+
+########
+# TODO #
+########
+# System recognition
+# - Makefile.defs.fujitsu
+# - Makefile.defs.hitachi
+# - Makefile.defs.tru64
+
+
+########################
+# Command line parsing #
+########################
+
+PREFIX=""
+COMP=""
+GFORTRAN=""
+PDTDIR=""
+SLOG2DIR=""
+SZLIB=""
+SIONLIB=""
+MPI=""
+MSA=""
+HYBRID="yes"
+DISABLE=""
+FORCE=""
+PREC=""
+DEFPREC=""
+LIBS=""
+SIONDEBUG="no"
+COVERAGE=""
+PTHREADSUPPORT="yes"
+ENABLE_HINTS=""
+NOFOR=""
+NOCXX=""
+PYVER=""
+NOMIC=""
+NOPARUTIL=""
+ALLOWCOMP=""
+ALLOWMPI=""
+CUDA=""
+SIONFWD=""
+CFGSEDSCRIPT=/tmp/config-$$.sed
+
+for arg in "$@"
+do
+  case ${arg} in
+  --help)
+          usage
+          exit 1
+          ;;
+  --prefix=*)
+          PREFIX=`echo $arg | sed -e 's/--prefix=//'`
+          PREFIX=`eval echo ${PREFIX}`    # tilde and variable expansion
+          ForceAbsolutePath "--prefix" "${PREFIX}"
+          ;;
+  --compiler=*)
+          COMP=`echo $arg | sed -e 's/--compiler=//'`
+          ;;
+  --mpi=*)
+          MPI=`echo $arg | sed -e 's/--mpi=//'`
+          ;;
+  --msa=*)
+          MSA=`echo $arg | sed -e 's/--msa=//'`
+          ;;
+  --disable-zlib)
+          SZLIB="no"
+          ;;
+  --disable-debug)
+          SIONDEBUG="no"
+          ;;
+  --enable-debug)
+          SIONDEBUG="yes"
+          ;;
+  --disable-kcov)
+	  COVERAGE=""
+	  ;;
+  --enable-kcov)
+	  COVERAGE="kcov"
+	  ;;
+  --disable-gcovr)
+	  COVERAGE=""
+	  ;;
+  --enable-gcovr)
+	  COVERAGE="gcovr"
+	  ;;
+  --enable-pthreads)
+          PTHREADSUPPORT="yes"
+          ;;
+  --disable-pthreads)
+          PTHREADSUPPORT="no"
+          ;;
+  --disable-fortran)
+          NOFOR="yes"
+          ;;
+  --disable-cxx)
+          NOCXX="yes"
+          ;;
+  --enable-python=*)
+          PYVER=`echo $arg | sed -e 's/--enable-python=//'`
+          ;;
+  --disable-mic)
+          NOMIC="yes"
+          ;;
+  --disable-parutils)
+          NOPARUTIL="yes"
+          ;;
+  --disable-*)
+          NO=`echo $arg | sed -e 's/--disable-//'`
+          case ${NO} in
+            mpi) if [ "${DISABLE}" = "omp" -o "${DISABLE}" = "ompi" ]
+                 then
+                   DISABLE=ompi
+                 else
+                   DISABLE=mpi
+                 fi
+                 ;;
+            omp|openmp) if [ "${DISABLE}" = "mpi" -o "${DISABLE}" = "ompi" ]
+                 then
+                   DISABLE=ompi
+                 else
+                   DISABLE=omp
+                 fi
+                 ;;
+            ompi) DISABLE=ompi
+                 ;;
+            *)   ErrorAndExit "--disable: Unknown feature '${NO}'"
+                 ;;
+          esac
+          ;;
+  --enable-hints-*)
+          NO=`echo $arg | sed -e 's/--enable-hints-//'`
+          case ${NO} in
+            gpfs) 
+                  ENABLE_HINTS=1
+                  ENABLE_HINTS_GPFS=1
+                 ;;
+            linux) 
+                  ENABLE_HINTS=1
+                  ENABLE_HINTS_LINUX=1
+                 ;;
+            *)   ErrorAndExit "--enable-hints: Unknown feature '${NO}'"
+                 ;;
+          esac
+          ;;
+  --force-*)
+          FRC=`echo $arg | sed -e 's/--force-//'`
+          case ${FRC} in
+            basic|32-64|cross) FORCE=${FRC}
+                 ;;
+            32|64) FORCE=basic
+                 PREC=${FRC}
+                 ;;
+            *)   ErrorAndExit "--force: Unknown feature '${FRC}'"
+                 ;;
+          esac
+          ;;
+  --enable-cuda)
+          CUDA="system"
+          ;;
+  --enable-cuda=*)
+          CUDA=`echo $arg | sed -e 's/--enable-cuda=//'`
+          ;;
+  --enable-sionfwd)
+          SIONFWD="system"
+          ;;
+  --enable-sionfwd=*)
+          SIONFWD=`echo $arg | sed -e 's/--enable-sionfwd=//'`
+          ;;
+
+  #*** BEGIN deprecated configure options ***
+  #*** END deprecated configure options ***
+
+  *)      # -- Check for VAR=VALUE Makefile.def change requests
+          if echo ${arg} | grep -q '^[A-Z][A-Z0-9_:]*=.*$'
+          then
+            # [B:|F:] VARIABLE = VALUE
+            VAR=`echo ${arg} | sed -e 's/\(^[A-Z][A-Z0-9_:]*\)=.*$/\1/'`
+            VAL=`echo ${arg} | sed -e 's/^[A-Z][A-Z0-9_:]*=\(.*$\)/\1/'`
+            ExtractSuffix ${VAR}
+            echo "s|^#*${VAR}.*$|${VAR} = ${VAL}|" >> ${CFGSEDSCRIPT}${SSUF}
+          elif echo ${arg} | grep -q '^[A-Z][A-Z0-9_:]*+=.*$'
+          then
+            # [B:|F:] VARIABLE += VALUE
+            VAR=`echo ${arg} | sed -e 's/\(^[A-Z][A-Z0-9_:]*\)+=.*$/\1/'`
+            VAL=`echo ${arg} | sed -e 's/^[A-Z][A-Z0-9_:]*+=\(.*$\)/\1/'`
+            ExtractSuffix ${VAR}
+            echo "s|^#*\(${VAR}.*\)$|\1 ${VAL}|" >> ${CFGSEDSCRIPT}${SSUF}
+          else
+            ErrorAndExit "unknown option '${arg}'"
+          fi
+          ;;
+  esac
+done
+
+
+# Installation prefix checks
+if [ -n "${PREFIX}" ]
+then
+    if [ -d ${PREFIX} ]
+    then
+	if [ -w ${PREFIX} ]
+	then
+	    CFGecho "WARNING: Installation directory ${PREFIX} exists."
+	    CFGecho "         Existing content will be overwritten when installing."
+	    CFGecho ""
+	else
+	    CFGecho "WARNING: Installation directory ${PREFIX} not writable."
+	    CFGecho ""
+	fi
+    elif touch ${PREFIX} 2> /dev/null
+    then
+	rm ${PREFIX}
+    else
+	CFGecho "WARNING: Installation directory ${PREFIX} not writable."
+	CFGecho ""
+    fi
+else
+    CFGecho "Default Installation directory ./install/sionlib_<platform>"
+    CFGecho ""
+fi
+
+
+########################
+# Platform recognition #
+# -> determine MD + MF #
+########################
+
+SYSTEM=`uname -s`
+MD=""
+MDF=""
+MDF64=""
+MDFG=""
+MDB=""
+MF=Makefile.basic
+SWCLOCK=""
+MMTIMER=""
+
+case ${SYSTEM} in
+  Linux) MK=make
+         ;;
+  *)     . config/select-gmake.sh
+         ;;
+esac
+
+case ${SYSTEM} in
+  Linux) CPU=`uname -m`
+         if [ ${CPU} = "ia64" -a -f /etc/sgi-release ]
+         then
+           CFGMSG="SGI Altix with Intel compilers"
+           MD=Makefile.defs.sgi-intel
+           if [ -e /usr/include/sn/mmtimer.h ]
+           then
+             MMTIMER=yes
+           fi
+         elif [ ${CPU} = "x86_64" -a -f /opt/pce/bin/xd1launcher ]
+         then
+           CFGMSG="Cray XD1 with PGI compilers"
+           MD=Makefile.defs.linux-pgi
+         elif [ ${CPU} = "ppc64" -a -d /bgsys/drivers/ppcfloor/hwi ]
+         then
+           CFGMSG="IBM BlueGene/Q"
+           MDF=Makefile.defs.bgq-fe
+           MDF64=Makefile.defs.bgq-fe64
+           MDFG=Makefile.defs.bgq-fegcc
+           MDFG64=Makefile.defs.bgq-fegcc64
+           MDB=Makefile.defs.bgq-be
+           MDBG=Makefile.defs.bgq-begcc
+           MD=${MDB}
+           MF=Makefile.crossGCC64
+         elif [ ${CPU} = "ppc64" -a -d /bgsys ]
+         then
+           CFGMSG="IBM BlueGene/P"
+           MDF=Makefile.defs.bgp-fe
+           MDF64=Makefile.defs.bgp-fe64
+           MDFG=Makefile.defs.bgp-fegcc
+           MDFG64=Makefile.defs.bgp-fegcc64
+           MDB=Makefile.defs.bgp-be
+           MDBG=Makefile.defs.bgp-begcc
+           MD=${MDB}
+           MF=Makefile.crossGCC64
+         elif [ ${CPU} = "x86_64" -a -d /opt/FJSVtclang ]
+         then
+           CFGMSG="K Computer"
+           MDF=Makefile.defs.k-fe
+           MDB=Makefile.defs.k-be
+           MD=${MDB}
+           MF=Makefile.cross
+           ISKCOMPUTER="yes"
+         elif [ ${CPU} = "x86_64" -a -d /opt/FJSVfxlang ]
+         then
+           CFGMSG="Fujitsu FX10"
+           MDF=Makefile.defs.fx10-fe
+           MDB=Makefile.defs.fx10-be
+           MD=${MDB}
+           MF=Makefile.cross
+         elif [ ${CPU} = "x86_64" -a \( -d /opt/intel/mic -a -z "${NOMIC}" \) ]
+         then
+           CFGMSG="Intel Xeon Phi (MIC)"
+           MDF=Makefile.defs.mic-fe
+           MDB=Makefile.defs.mic-be
+           MD=${MDB}
+           MF=Makefile.cross
+	 elif [ ${CPU} = "mips64" -a -d /opt/sicortex ]
+	 then
+	   CFGMSG="SiCortex (native)"
+           MD=Makefile.defs.sicortex-native
+           MF=Makefile.32-64
+	 elif [ -d /SX ]
+	 then
+	   CFGMSG="NEC SX"
+	   MDF=Makefile.defs.necsx-fe
+	   MDB=Makefile.defs.necsx-be
+           MD=${MDB}
+           MF=Makefile.cross
+         else
+           ALLOWCOMP="yes"
+           ALLOWMPI="yes"
+           if [ -z "${COMP}" ]
+           then
+             . config/select-compiler.sh
+           fi
+           . config/determine-compiler-version.sh
+           if [ -z "${MPI}" ]
+           then
+             if [ "${DISABLE}" != "mpi" -a "${DISABLE}" != "ompi" ]
+	     then
+               . config/select-mpi.sh
+	     fi
+           fi
+           if [ -z "${MPI}" ]
+           then
+             if [ "${DISABLE}" = "omp" -o "${DISABLE}" = "ompi" ]
+             then
+               DISABLE=ompi
+             else
+               DISABLE=mpi
+             fi
+             MPI=no
+           elif [ ! -f "mf/mpi-${MPI}.def" ]
+           then
+               DISABLE=mpi
+           fi
+
+           CMSG="Linux cluster with"
+           case ${COMP} in
+             pgi) CFGMSG="${CMSG} PGI compilers and ${MPI} MPI"
+                  MD=Makefile.defs.linux-pgi
+                  ;;
+             intel|intel2) CFGMSG="${CMSG} Intel compilers and ${MPI} MPI"
+                  MD=Makefile.defs.linux-intel
+                  ;;
+             path) CFGMSG="${CMSG} PathScale compilers and ${MPI} MPI"
+                  MD=Makefile.defs.linux-pathscale
+                  ;;
+             ibm) CFGMSG="${CMSG} IBM compilers and ${MPI} MPI"
+                  MD=Makefile.defs.linux-ibm
+                  ;;
+             sun) CFGMSG="${CMSG} Sun compilers and ${MPI} MPI"
+                  MD=Makefile.defs.linux-sun
+                  ;;
+             gomp|gnu) CFGMSG="${CMSG} GNU compilers and ${MPI} MPI"
+                  MD=Makefile.defs.linux-gnu
+                  GFORTRAN=`which gfortran 2> /dev/null`
+                  case ${COMPVER} in
+                  0.*|1.*|2.*|3.*|4.0.*|4.1.*) ;;
+                  *)
+                      MD=Makefile.defs.linux-gomp
+                      GFORTRAN="yes"
+                      ;;
+                  esac
+                  ;;
+             *)   ErrorAndExit "Unknown compiler '${COMP}'"
+                  ;;
+           esac
+         fi
+
+         ;;
+  SunOS) CMSG="Solaris cluster with Sun compilers"
+         MD=Makefile.defs.sun
+         CPU=`uname -p`
+         ALLOWMPI="yes"
+         if [ ${CPU} = "sparc" ]
+         then
+           MF=Makefile.32-64
+         fi
+         if [ -z "${MPI}" ]
+         then
+           if [ "${DISABLE}" != "mpi" -a "${DISABLE}" != "ompi" ]
+           then
+             MPIDIRS=`ls -d /opt/SUNWhpc/HPC?.?`
+             NMPIS=`echo "${MPIDIRS}" | wc -l`
+             if [ ${NMPIS} -ne 1 ]; then
+               CFGecho "INFO: Cannot determine MPI library"
+               CFGecho "INFO: Select MPI using --mpi=sun|openmpi"
+               CFGecho "INFO: ClusterTools < 7 need \"sun\", ClusterTools >= 7 need \"openmpi\""
+               exit 1
+             else
+               SMPIVER=`echo "${MPIDIRS}" | sed -e 's/^.*HPC\([0-9][0-9]*\).*$/\1/'`
+               if [ ${SMPIVER} -lt 7 ]; then
+                 MPI=sun
+               else
+                 MPI=openmpi
+               fi
+             fi
+           fi
+         fi
+         if [ -z "${MPI}" ]
+         then
+           if [ "${DISABLE}" = "omp" -o "${DISABLE}" = "ompi" ]
+           then
+             DISABLE=ompi
+           else
+             DISABLE=mpi
+           fi
+           MPI=no
+         elif [ ! -f "mf/mpi-${MPI}.def" ]
+         then
+             DISABLE=mpi
+         fi
+         CFGMSG="${CMSG} and ${MPI} MPI"
+         ;;
+  IRIX64) CFGMSG="SGI cluster with IRIX compilers"
+         MD=Makefile.defs.sgi-mips
+         MF=Makefile.32-64
+         ;;
+  AIX)   CFGMSG="AIX cluster with IBM compilers"
+         MD=Makefile.defs.ibm
+         MF=Makefile.32-64
+         if [ -e /usr/include/swclock.h ]
+         then
+           if lsdev -l sni0 | grep Available > /dev/null 2>&1
+           then
+             SWCLOCK=yes
+           elif lsdev -l css0 | grep Available > /dev/null 2>&1
+           then
+             SWCLOCK=yes
+           fi
+         fi
+         ;;
+  UNICOS/mp) CFGMSG="Cray X1 system"
+         MD=Makefile.defs.crayx1
+         ;;
+  sn*)   CFGMSG="Cray T3E system"
+         MD=Makefile.defs.crayt3e
+         ;;
+  Darwin) CFGMSG="Darwin system"
+	 MD=Makefile.defs.darwin
+	 ;;
+  *)     CFGecho "WARNING: Do not know how to configure system '${SYSTEM}'"
+         CFGecho "         Using generic configuration"
+         MD=Makefile.defs.generic
+         ;;
+esac
+
+if grep '^#OMPFTEST' mf/${MD} > /dev/null 2>&1
+then
+  CFGecho "INFO: Cannot detect OpenMP support"
+  CFGecho ""
+  if [ -z "${DISABLE}" ]
+  then
+    DISABLE=omp
+  elif [ ${DISABLE} = "mpi" ]
+  then
+    DISABLE=ompi
+  fi
+fi
+
+CFGecho "Configuration for ${CFGMSG}"
+
+if [ -n "${COMP}" -a "${ALLOWCOMP}" != "yes" ]
+then
+  CFGecho "WARNING: Option --compiler=${COMP} not implemented for this platform."
+  CFGecho ""
+  COMP=""
+fi
+
+if [ -n "${MPI}" -a "${ALLOWMPI}" != "yes" ]
+then
+  CFGecho "WARNING: Option --mpi=${MPI} not implemented for this platform."
+  CFGecho ""
+  MPI=""
+fi
+
+# handle -force option
+if [ -n "${FORCE}" ]
+then
+  if [ ${FORCE} = "32-64" -o \( ${FORCE} = "basic" -a -n "${PREC}" \) ]
+  then
+    if grep '^PFLAG *=$' mf/${MD} > /dev/null 2>&1
+    then
+      CFGecho "- WARNING: ${FRC}-bit compilation mode not yet defined for this platform"
+      CFGecho "           Option --force-${FRC} ignored"
+
+      PREC=""
+      FRC=""
+      FORCE=""
+    else
+      MF=Makefile.${FORCE}
+    fi
+  elif [ ${FORCE} = "cross" -a \( -z "${MDF}" -o -z "${MDB}" \) ]
+  then
+    CFGecho "- WARNING: cross compilation mode not yet defined for this platform"
+    CFGecho "           Option --force-cross ignored"
+  else
+    MF=Makefile.${FORCE}
+  fi
+fi
+
+# determine default precision
+if [ -z "${PREC}" ]
+then
+  cat > conftest.c <<[[EOT]]
+  int main() { return 0; }
+[[EOT]]
+  cat > Makefile.conftest <<[[EOT]]
+include mf/${MD}
+
+conftest: conftest.c
+	@\$(CC) conftest.c -o conftest
+[[EOT]]
+  make -f Makefile.conftest conftest
+  if file conftest | grep 64 > /dev/null 2>&1
+  then
+    DEFPREC=64
+  else
+    DEFPREC=32
+
+    # Overwrite default precision to 64 bit on NEC SX
+    if [ "${CFGMSG}" = "NEC SX" ]
+    then
+      DEFPREC=64
+    fi
+  fi
+  PREC=${DEFPREC}
+  rm -f conftest.c conftest.o conftest Makefile.conftest
+fi
+
+
+###############################
+# Analysis Requirement Checks #
+###############################
+
+
+#########################
+# Configuration setup   #
+#########################
+if [ -n "${MDB}" ]
+then
+  CFG=`echo ${MDB} | sed -e 's/Makefile\.defs\.//' -e 's/-be//'`
+elif [ -n "${MD}" ]
+then
+  CFG=`echo ${MD} | sed -e 's/Makefile\.defs\.//'`
+else
+  ErrorAndExit "Cannot determine suitable build configuration (Makefile.defs)"
+fi
+if [ -n "${MPI}" ]
+then
+  if [ ${MPI} = "no" ]; then CFG="${CFG}-nompi"; else CFG="${CFG}-${MPI}"; fi
+# else
+#  CFG="${CFG}-nompi";
+fi
+case ${MF} in
+  Makefile.basic) case ${FRC} in
+                    32-64|32|64) CFG="${CFG}-${FRC}" ;;
+                  esac
+                  ;;
+  Makefile.32-64) CFG="${CFG}-32-64"
+                  ;;
+esac
+
+BDIR="build-${CFG}"
+if [ -d ${BDIR} -o -f ${BDIR} ]
+then
+  echo "WARNING: Old configuration found (${BDIR})."
+  echo "Continue and replace (y/n) ?"
+  read ANSWER
+  if [ "${ANSWER}x" != "yx" ]
+  then
+    exit 1
+  else
+    rm -rf ${BDIR}
+    echo ""
+  fi
+fi
+CFGecho "- Setting up build configuration (${BDIR})"
+mkdir ${BDIR}
+cd ${BDIR}
+
+
+#########################
+# Package configuration #
+#########################
+
+ln -s ../config ./config
+
+# Generate files using templates
+if [ -n "${MD}" ]
+then
+  CFGecho "- Generating GNUmakefile (using ${MF})"
+  ln -s ../mf/${MF} GNUmakefile || exit 1
+  ln -s ../mf/Makefile.redirect Makefile
+  if [ -z "${MDF}" ]
+  then
+    CFGecho "- Generating Makefile.defs (using ${MD} + optional.defs + lock.defs)"
+    cp ../mf/${MD} Makefile.defs || exit 1
+    cat ../mf/lock.defs >> Makefile.defs
+    cat ../mf/optional.defs >> Makefile.defs
+    ConfigGNUmake >> Makefile.defs
+  fi
+fi
+
+if [ -n "${MDF}" ]
+then
+  CFGecho "- Generating Makefile.defs.fe (using ${MDF} + optional.defs + lock.defs)"
+  cp ../mf/${MDF} Makefile.defs.fe || exit 1
+  echo ""            >> Makefile.defs.fe
+  echo "SYSKIND=fe"  >> Makefile.defs.fe
+  echo ""            >> Makefile.defs.fe
+  cat ../mf/lock.defs >> Makefile.defs.fe
+  cat ../mf/optional.defs >> Makefile.defs.fe
+  ConfigGNUmake >> Makefile.defs.fe
+  CFGecho "- Generating Makefile.defs.be (using ${MDB})"
+  cp ../mf/${MDB} Makefile.defs.be || exit 1
+  echo ""            >> Makefile.defs.be
+  echo "SYSKIND=be"  >> Makefile.defs.be
+  echo ""            >> Makefile.defs.be
+  cat ../mf/lock.defs >> Makefile.defs.be
+  cat ../mf/optional.defs >> Makefile.defs.be
+  ConfigGNUmake >> Makefile.defs.be
+fi
+
+if [ -n "${MDBG}" ]
+then
+  CFGecho "- Generating Makefile.defs.begcc (using ${MDBG} + optional.defs + lock.defs)"
+  cp ../mf/${MDBG} Makefile.defs.begcc || exit 1
+  echo ""            >> Makefile.defs.begcc
+  echo "SYSKIND=fe"  >> Makefile.defs.begcc
+  echo ""            >> Makefile.defs.begcc
+  cat ../mf/lock.defs >> Makefile.defs.begcc
+  cat ../mf/optional.defs >> Makefile.defs.begcc
+  ConfigGNUmake >> Makefile.defs.begcc
+fi
+
+if [ -n "${MDFG}" ]
+then
+  CFGecho "- Generating Makefile.defs.fegcc (using ${MDFG} + optional.defs + lock.defs)"
+  cp ../mf/${MDFG} Makefile.defs.fegcc || exit 1
+  echo ""            >> Makefile.defs.fegcc
+  echo "SYSKIND=fe"  >> Makefile.defs.fegcc
+  echo ""            >> Makefile.defs.fegcc
+  cat ../mf/lock.defs >> Makefile.defs.fegcc
+  cat ../mf/optional.defs >> Makefile.defs.fegcc
+  ConfigGNUmake >> Makefile.defs.fegcc
+fi
+
+if [ -n "${MDF64}" ]
+then
+  CFGecho "- Generating Makefile.defs.fe64 (using ${MDF64} + optional.defs + lock.defs)"
+  cp ../mf/${MDF64} Makefile.defs.fe64 || exit 1
+  echo ""            >> Makefile.defs.fe64
+  echo "SYSKIND=fe"  >> Makefile.defs.fe64
+  echo ""            >> Makefile.defs.fe64
+  cat ../mf/lock.defs >> Makefile.defs.fe64
+  cat ../mf/optional.defs >> Makefile.defs.fe64
+  ConfigGNUmake >> Makefile.defs.fe64
+fi
+
+if [ -n "${MDFG64}" ]
+then
+  CFGecho "- Generating Makefile.defs.fegcc64 (using ${MDFG64} + optional.defs + lock.defs)"
+  cp ../mf/${MDFG64} Makefile.defs.fegcc64 || exit 1
+  echo ""            >> Makefile.defs.fegcc64
+  echo "SYSKIND=fe"  >> Makefile.defs.fegcc64
+  echo ""            >> Makefile.defs.fegcc64
+  cat ../mf/lock.defs >> Makefile.defs.fegcc64
+  cat ../mf/optional.defs >> Makefile.defs.fegcc64
+  ConfigGNUmake >> Makefile.defs.fegcc64
+fi
+
+
+# Final MPI config
+if [ "${DISABLE}" != "mpi" -a "${DISABLE}" != "ompi" ]
+then
+  if [ -z "${MDF}" ]
+  then
+    echo "include Makefile.defs" > Makefile.conftest
+    MPILIB=`grep '^MPILIB ' Makefile.defs \
+           | sed -e 's/^.*= //' -e 's/ .*$//' -e 's/-l/lib/' | tr -d '\n'`
+     MPICC=`grep '^MPICC '  Makefile.defs \
+           | sed -e 's/^.*= //' -e 's/ .*$//' | tr -d '\n'`
+  else
+    echo "include Makefile.defs.be" > Makefile.conftest
+    MPILIB=`grep '^MPILIB ' Makefile.defs.be \
+           | sed -e 's/^.*= //' -e 's/ .*$//' -e 's/-l/lib/' | tr -d '\n'`
+     MPICC=`grep '^MPICC '  Makefile.defs.be \
+           | sed -e 's/^.*= //' -e 's/ .*$//' | tr -d '\n'`
+  fi
+  if [ -n "${MPI}" ]
+  then
+    if [ -f "../mf/mpi-${MPI}.def" ]
+    then
+      echo "include ../mf/mpi-${MPI}.def" >> Makefile.conftest
+      MPILIB=`grep '^MPILIB ' ../mf/mpi-${MPI}.def \
+             | sed -e 's/^.*= //' -e 's/ .*$//' -e 's/-l//' | tr -d '\n'`
+       MPICC=`grep '^MPICC '  ../mf/mpi-${MPI}.def \
+             | sed -e 's/^.*= //' -e 's/ .*$//' | tr -d '\n'`
+
+    fi
+  fi
+  PMPILIB="libp${MPILIB}"
+  MPILIB="lib${MPILIB}"
+
+  cat >> Makefile.conftest <<[[EOT]]
+
+conftest: conftest.c
+
+conftest: conftest.c
+	@\$(MPICC) -E conftest.c | grep '/mpi.h"' | head -1 > mpiconf1.txt
+	@\$(MPICC) -E conftest.c > mpiconf2.txt
+[[EOT]]
+
+  # Determine location of mpi.h and MPI library
+  cat > conftest.c <<[[EOT]]
+#include <mpi.h>
+#ifdef ROMIO_VERSION
+MPIO_Request mior;
+#endif
+[[EOT]]
+  make -f Makefile.conftest conftest
+  MPIINCDIR=`cat mpiconf1.txt | sed -e 's#^.* "##' -e 's#/mpi.h".*##'`
+  rm -f conftest.c Makefile.conftest mpiconf1.txt mpiconf2.txt
+
+  if [ -n "${MPIINCDIR}" ]
+  then
+    MPIDIR=`dirname ${MPIINCDIR}`
+    # IBM POE's MPI header files are sometimes located one directory
+    # level deeper than usual...
+    if [ "`basename ${MPIDIR}`" = "include" -a "${MPI}" = "ibmpoe" ]
+    then
+      MPIDIR=`dirname ${MPIDIR}`
+    fi
+    MPILIBDIR="${MPIDIR}/lib"
+    MPILIB64DIR="${MPIDIR}/lib64"
+    PDTMPIINC="-I${MPIINCDIR}"
+
+    if [ ! -d "${MPILIBDIR}" -a ! -d "${MPILIB64DIR}" ]
+    then
+      MPICMD=`which ${MPICC} 2> /dev/null`
+      MPIBINDIR=`dirname ${MPICMD}`
+      MPIDIR=`dirname ${MPIBINDIR}`
+      MPILIBDIR="${MPIDIR}/lib"
+      MPILIB64DIR="${MPIDIR}/lib64"
+    fi
+
+    for ml in \
+        ${MPILIB64DIR}/${PMPILIB}.a        ${MPILIB64DIR}/${PMPILIB}.so \
+        ${MPILIB64DIR}/${MPILIB}.a         ${MPILIB64DIR}/${MPILIB}.so \
+        ${MPILIBDIR}/lib64/${PMPILIB}.a    ${MPILIBDIR}/lib64/${PMPILIB}.so \
+        ${MPILIBDIR}/lib64/${MPILIB}.a     ${MPILIBDIR}/lib64/${MPILIB}.so \
+        ${MPILIBDIR}/libmpi64/${PMPILIB}.a ${MPILIBDIR}/libmpi64/${PMPILIB}.so \
+        ${MPILIBDIR}/libmpi64/${MPILIB}.a  ${MPILIBDIR}/libmpi64/${MPILIB}.so \
+        ${MPILIBDIR}/${PMPILIB}.a          ${MPILIBDIR}/${PMPILIB}.so \
+        ${MPILIBDIR}/${MPILIB}.a           ${MPILIBDIR}/${MPILIB}.so \
+        ${MPILIBDIR}/libmpi/${PMPILIB}.a   ${MPILIBDIR}/libmpi/${PMPILIB}.so \
+        ${MPILIBDIR}/libmpi/${MPILIB}.a    ${MPILIBDIR}/libmpi/${MPILIB}.so \
+        NOT-FOUND
+    do
+      if [ -r "${ml}" ]
+      then
+        MPILIB="${ml}"
+        break
+      fi
+    done
+    if [ ${ml} = "NOT-FOUND" ]
+    then
+      MPILIB=""
+    fi
+  else
+    PDTMPIINC=""
+  fi
+
+  # call script to configure MPI adapter
+#  . ./config/config-mpi.sh
+
+
+fi
+
+# Transform generated files based on configuration determined
+if [ -z "${MDF}" ]
+then
+  CF=Makefile.defs . ../config/config-makedefs.sh
+else
+if [ -n "${MDFG}" ]
+then
+  PREC="32" CF=Makefile.defs.fe . ../config/config-makedefs.sh
+  PREC="64" CF=Makefile.defs.fe64 . ../config/config-makedefs.sh
+  PREC="32" CF=Makefile.defs.fegcc . ../config/config-makedefs.sh
+  PREC="64" CF=Makefile.defs.fegcc64 . ../config/config-makedefs.sh
+  PREC="32" CF=Makefile.defs.be . ../config/config-makedefs.sh
+  PREC="32" CF=Makefile.defs.begcc . ../config/config-makedefs.sh
+else
+  CF=Makefile.defs.fe . ../config/config-makedefs.sh
+  CF=Makefile.defs.be . ../config/config-makedefs.sh
+fi
+fi
+
+# Apply var=value change requests
+for SSUF in "" ".fe" ".fe64"  ".fegcc"  ".fegcc64" ".be" ".begcc"
+do
+  if [ -s ${CFGSEDSCRIPT}${SSUF} -a -w Makefile.defs${SSUF} ]
+  then
+    sed -f ${CFGSEDSCRIPT}${SSUF} Makefile.defs${SSUF} > sed.out && \
+        mv sed.out Makefile.defs${SSUF} || exit 1
+    rm -f ${CFGSEDSCRIPT}${SSUF}
+  fi
+done
+
+########################
+# Print final comments #
+########################
+
+if [ "${MF}" = "Makefile.32-64" -a -n "${LIBS}" ]
+then
+  CFGecho ""
+  CFGecho "NOTE: Configured for automatic 32-bit/64-bit installation"
+  CFGecho "      but you specified to use the external packages:${LIBS}"
+  CFGecho "      Please make sure that"
+  CFGecho "      - These packages are available in 32-bit and 64-bit versions"
+  CFGecho "      - The Makefile.defs settings for these packages matches the installation"
+fi
+
+if [ "${SIONDEBUG}" = "yes" ]
+then
+  CFGecho "NOTE: Configured for generating DEBUG messages"
+fi
+
+if [ -n "${COVERAGE}" ]
+then
+  CFGecho "NOTE: Configured for collecting test coverage data"
+fi
+
+if [ "${PTHREADSUPPORT}" = "yes" ]
+then
+  CFGecho "NOTE: Configured for PTHREADS support (using mutex_lock/unlock)"
+fi
+
+if [ "${PTHREADSUPPORT}" = "no" ]
+then
+  CFGecho "NOTE: Disable PTHREADS support (using mutex_lock/unlock)"
+fi
+
+if [ "${MF}" = "Makefile.cross" -a -n "${LIBS}" ]
+then
+  CFGecho ""
+  CFGecho "NOTE: Configured for automatic frontend/backend installation"
+  CFGecho "      but you specified to use the external packages:${LIBS}"
+  CFGecho "      Please make sure that"
+  CFGecho "      - The Makefile.defs.fe and Makefile.defs.be settings"
+  CFGecho "        for these packages matches the installation"
+fi
+
+
+#Save configuration info
+echo "% $0 $@" > configure.log
+echo "" >> configure.log
+cat ${LOGFILE} >> configure.log
+rm ${LOGFILE}
+
+echo ""
+echo "####################################################################"
+echo "CONFIGURATION COMPLETE"
+echo ""
+echo "Next steps:"
+echo " - cd ${BDIR}"
+if [ -n "${MDF}" ]
+then
+echo " - [optional] Edit Makefile.defs.fe/be for further configuration"
+else
+echo " - [optional] Edit Makefile.defs for further configuration"
+fi
+echo " - ${MK}"
+echo " - ${MK} install"
+echo "####################################################################"
+
+exit 0
