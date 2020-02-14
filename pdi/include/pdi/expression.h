@@ -85,6 +85,12 @@ public:
 	 */
 	Expression(long expr);
 	
+	/** Builds an expression that represents a float
+	 *
+	 * \param[in] expr the flaot value
+	 */
+	Expression(double expr);
+	
 	/** Destroys an expression
 	 */
 	~Expression();
@@ -114,6 +120,12 @@ public:
 	 * \return the integer value
 	 */
 	long to_long(Context& ctx) const;
+	
+	/** Evaluates an expression as a float
+	 *
+	 * \return the float value
+	 */
+	double to_double(Context& ctx) const;
 	
 	/** Evaluates an expression as a string
 	 *

@@ -62,7 +62,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 	
 	// pass 1: file-level optional values
 	
-	Expression default_when = 1;
+	Expression default_when = 1L;
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		string key = to_string(key_tree);
 		if ( key == "file" ) {

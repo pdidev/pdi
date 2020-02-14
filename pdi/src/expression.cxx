@@ -28,6 +28,7 @@
 #include <cctype>
 #include <cstdint>
 #include <cstdlib>
+#include <iomanip>
 #include <sstream>
 #include <utility>
 #include <vector>
@@ -57,6 +58,10 @@ struct Expression::Impl {
 	 */
 	struct Int_literal;
 	
+	/** An expression made of a float literal
+	 */
+	struct Float_literal;
+	
 	/** An expression made of a string literal (with potential dollar refs)
 	 */
 	struct String_literal;
@@ -75,6 +80,8 @@ struct Expression::Impl {
 	virtual unique_ptr<Impl> clone() const = 0;
 	
 	virtual long to_long(Context&) const = 0;
+	
+	virtual double to_double(Context& ctx) const = 0;
 	
 	virtual string to_string(Context&) const;
 	
@@ -96,6 +103,26 @@ struct Expression::Impl::Int_literal: Impl {
 	unique_ptr<Impl> clone() const override;
 	
 	long to_long(Context&) const override;
+	
+	double to_double(Context& ctx) const override;
+	
+	Ref to_ref(Context&) const override;
+	
+	static unique_ptr<Impl> parse(char const** val_str);
+	
+};
+
+struct Expression::Impl::Float_literal: Impl {
+
+	double m_value;
+	
+	Float_literal(double value);
+	
+	unique_ptr<Impl> clone() const override;
+	
+	long to_long(Context&) const override;
+	
+	double to_double(Context& ctx) const override;
 	
 	Ref to_ref(Context&) const override;
 	
@@ -121,6 +148,8 @@ struct Expression::Impl::String_literal: Impl {
 	
 	long to_long(Context& ctx) const override;
 	
+	double to_double(Context& ctx) const override;
+	
 	string to_string(Context& ctx) const override;
 	
 	Ref to_ref(Context& ctx) const override;
@@ -141,6 +170,8 @@ struct Expression::Impl::Reference_expression: Impl {
 	unique_ptr<Impl> clone() const override;
 	
 	long to_long(Context& ctx) const override;
+	
+	double to_double(Context& ctx) const override;
 	
 	Ref to_ref(Context& ctx) const override;
 	
@@ -177,6 +208,8 @@ struct Expression::Impl::Operation: Impl {
 	
 	long to_long(Context& ctx) const override;
 	
+	double to_double(Context& ctx) const override;
+	
 	Ref to_ref(Context& ctx) const override;
 	
 	static unique_ptr<Impl> parse(char const** val_str, int level);
@@ -187,6 +220,7 @@ struct Expression::Impl::Operation: Impl {
 	
 };
 
+// *** Expression definition ***
 
 Expression::Expression(unique_ptr<Impl> impl):
 	m_impl(move(impl))
@@ -226,6 +260,11 @@ Expression::Expression(long value):
 {
 }
 
+Expression::Expression(double value):
+	m_impl{new Expression::Impl::Float_literal{value}}
+{
+}
+
 Expression::~Expression() = default;
 
 Expression& Expression::operator=(const Expression& value)
@@ -243,6 +282,11 @@ long Expression::to_long(Context& ctx) const
 	return m_impl->to_long(ctx);
 }
 
+double Expression::to_double(Context& ctx) const
+{
+	return m_impl->to_double(ctx);
+}
+
 Expression::operator bool () const
 {
 	return static_cast<bool>(m_impl);
@@ -258,13 +302,20 @@ Ref Expression::to_ref(Context& ctx) const
 	return m_impl->to_ref(ctx);
 }
 
+// *** Expression::Impl definition ***
+
 Expression::Impl::~Impl() = default;
 
 string Expression::Impl::to_string(Context& ctx) const
 {
 	long lres = to_long(ctx);
+	double dres = to_double(ctx);
 	stringstream result;
-	result << lres;
+	if (static_cast<double>(lres) == dres) {
+		result << lres;
+	} else {
+		result << std::setprecision(17) << dres;
+	}
 	return result.str();
 }
 
@@ -282,6 +333,8 @@ unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
 		return result;
 	} else if (**val_str == '$') {
 		return Reference_expression::parse(val_str);
+	} else if (std::string(*val_str).find(".") != std::string::npos) {
+		return Float_literal::parse(val_str);
 	} else {
 		return Int_literal::parse(val_str);
 	}
@@ -316,11 +369,18 @@ string Expression::Impl::parse_id(char const** val_str)
 	return result;
 }
 
+// *** Expression::Impl::Int_literal definition ***
+
 Expression::Impl::Int_literal::Int_literal(long value) : m_value(value) {}
 
 long Expression::Impl::Int_literal::to_long(Context&) const
 {
 	return m_value;
+}
+
+double Expression::Impl::Int_literal::to_double(Context&) const
+{
+	return static_cast<double>(m_value);
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::Int_literal::clone() const
@@ -353,6 +413,52 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** v
 	return result;
 }
 
+// *** Expression::Impl::Float_literal definition ***
+
+Expression::Impl::Float_literal::Float_literal(double value) : m_value(value) {}
+
+unique_ptr<Expression::Impl> Expression::Impl::Float_literal::clone() const
+{
+	return unique_ptr<Float_literal> {new Float_literal{*this}};
+}
+
+long Expression::Impl::Float_literal::to_long(Context&) const
+{
+	return static_cast<long>(m_value);
+}
+
+double Expression::Impl::Float_literal::to_double(Context& ctx) const
+{
+	return m_value;
+}
+
+Ref Expression::Impl::Float_literal::to_ref(Context&) const
+{
+	return Ref {
+		new double{m_value},
+		[](void* v){delete static_cast<double*>(v);},
+		unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
+		true,
+		true
+	};
+}
+
+unique_ptr<Expression::Impl> Expression::Impl::Float_literal::parse(char const** val_str)
+{
+	const char* constval = *val_str;
+	
+	unique_ptr<Float_literal> result {new Float_literal{strtod(constval, const_cast<char**>(&constval))}};
+	if (*val_str == constval) {
+		throw Error {PDI_ERR_VALUE, "Expected double, found `{}'", constval};
+	}
+	while (isspace(*constval)) ++constval;
+	
+	*val_str = constval;
+	return result;
+}
+
+// *** Expression::Impl::String_literal definition ***
+
 unique_ptr<Expression::Impl> Expression::Impl::String_literal::clone() const
 {
 	return unique_ptr<String_literal> {new String_literal{*this}};
@@ -371,6 +477,11 @@ string Expression::Impl::String_literal::to_string(Context& ctx) const
 long Expression::Impl::String_literal::to_long(Context& ctx) const
 {
 	throw Error {PDI_ERR_VALUE, "Can not interpret `{}' as an integer value", to_string(ctx)};
+}
+
+double Expression::Impl::String_literal::to_double(Context& ctx) const
+{
+	throw Error {PDI_ERR_VALUE, "Can not interpret `{}' as an double value", to_string(ctx)};
 }
 
 Ref Expression::Impl::String_literal::to_ref(Context& ctx) const
@@ -436,6 +547,8 @@ unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const*
 	return result;
 }
 
+// *** Expression::Impl::Reference_expression definition ***
+
 unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::clone() const
 {
 	return unique_ptr<Reference_expression> {new Reference_expression{*this}};
@@ -485,8 +598,80 @@ try
 			default:
 				throw Error(PDI_ERR_VALUE, "Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
 			}
+		} else if (scalar_type->kind() == Scalar_kind::FLOAT) {
+			switch (scalar_type->datasize()) {
+			case 4:
+				return static_cast<long>(static_cast<const float*>(ref.get())[idx]);
+			case 8:
+				return static_cast<long>(static_cast<const double*>(ref.get())[idx]);
+			default:
+				throw Error(PDI_ERR_VALUE, "Unexpected float size: {}", static_cast<long>(scalar_type->kind()));
+			}
 		}
 		throw Error {PDI_ERR_VALUE, "Expected integer scalar"};
+	}
+	throw Error {PDI_ERR_RIGHT, "Unable to grant access for value reference"};
+} catch (const Error& e)
+{
+	throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
+}
+
+
+double Expression::Impl::Reference_expression::to_double(Context& ctx) const
+try
+{
+	if (Ref_r ref = ctx.desc(m_referenced.c_str()).ref()) {
+		const Datatype* type = &ref.type();
+		long stride = 1;
+		long idx = 0;
+		for (auto&& ii : m_idx) {
+			auto&& array_type = dynamic_cast<const Array_datatype*>(type);
+			if (!array_type) throw Error {PDI_ERR_VALUE, "Accessing non-array data with an index"};
+			idx += (array_type->start() + ii.to_long(ctx)) * stride;
+			stride *= array_type->size();
+			type = &array_type->subtype();
+		}
+		
+		auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(type);
+		if (!scalar_type) throw Error {PDI_ERR_VALUE, "Expected scalar found invalid type instead"};
+		
+		if (scalar_type->kind() == Scalar_kind::FLOAT) {
+			switch (scalar_type->datasize()) {
+			case 4:
+				return static_cast<const float*>(ref.get())[idx];
+			case 8:
+				return static_cast<const double*>(ref.get())[idx];
+			default:
+				throw Error(PDI_ERR_VALUE, "Unexpected float size: {}", static_cast<long>(scalar_type->kind()));
+			}
+		} else if (scalar_type->kind() == Scalar_kind::SIGNED) {
+			switch (scalar_type->datasize()) {
+			case 1:
+				return static_cast<double>(static_cast<const int8_t*>(ref.get())[idx]);
+			case 2:
+				return static_cast<double>(static_cast<const int16_t*>(ref.get())[idx]);
+			case 4:
+				return static_cast<double>(static_cast<const int32_t*>(ref.get())[idx]);
+			case 8:
+				return static_cast<double>(static_cast<const int64_t*>(ref.get())[idx]);
+			default:
+				throw Error(PDI_ERR_VALUE, "Unexpected int size: {}", static_cast<long>(scalar_type->kind()));
+			}
+		} else if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
+			switch (scalar_type->datasize()) {
+			case 1:
+				return static_cast<double>(static_cast<const uint8_t*>(ref.get())[idx]);
+			case 2:
+				return static_cast<double>(static_cast<const uint16_t*>(ref.get())[idx]);
+			case 4:
+				return static_cast<double>(static_cast<const uint32_t*>(ref.get())[idx]);
+			case 8:
+				return static_cast<double>(static_cast<const uint64_t*>(ref.get())[idx]);
+			default:
+				throw Error(PDI_ERR_VALUE, "Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
+			}
+		}
+		throw Error {PDI_ERR_VALUE, "Expected float scalar"};
 	}
 	throw Error {PDI_ERR_RIGHT, "Unable to grant access for value reference"};
 } catch (const Error& e)
@@ -497,13 +682,27 @@ try
 Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 {
 	if (!m_idx.empty()) {
-		return Ref {
-			new long{to_long(ctx)},
-			[](void* v){delete static_cast<long*>(v);},
-			unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
-			true,
-			true
-		};
+		try {
+			return Ref {
+				new long{to_long(ctx)},
+				[](void* v){delete static_cast<long*>(v);},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
+				true,
+				true
+			};
+		} catch (const Error& e) {
+			if (e.status() == PDI_ERR_VALUE) {
+				return Ref {
+					new double{to_double(ctx)},
+					[](void* v){delete static_cast<double*>(v);},
+					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
+					true,
+					true
+				};
+			} else {
+				throw;
+			}
+		}
 	}
 	return ctx.desc(m_referenced.c_str()).ref();
 }
@@ -550,6 +749,8 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	return result;
 }
 
+// *** Expression::Impl::Operation definition ***
+
 long Expression::Impl::Operation::to_long(Context& ctx) const
 {
 	long computed_value = m_first_operand.to_long(ctx);
@@ -592,15 +793,71 @@ long Expression::Impl::Operation::to_long(Context& ctx) const
 	return computed_value;
 }
 
+double Expression::Impl::Operation::to_double(Context& ctx) const
+{
+	double computed_value = m_first_operand.to_double(ctx);
+	for (auto&& op: m_operands) {
+		double operand = op.second.to_double(ctx);
+		switch (op.first) {
+		case PLUS: {
+			computed_value += operand;
+		} break;
+		case MINUS: {
+			computed_value -= operand;
+		} break;
+		case MULT: {
+			computed_value *= operand;
+		} break;
+		case DIV: {
+			computed_value /= operand;
+		} break;
+		case MOD: {
+			throw Error(PDI_ERR_VALUE, "Cannot use modulus operator on float values");
+		} break;
+		case EQUAL: {
+			computed_value = (computed_value == operand);
+		} break;
+		case AND: {
+			computed_value = computed_value && operand;
+		} break;
+		case OR: {
+			computed_value = computed_value || operand;
+		} break;
+		case GT: {
+			computed_value = (computed_value > operand);
+		} break;
+		case LT: {
+			computed_value = (computed_value < operand);
+		} break;
+		}
+	}
+	
+	return computed_value;
+}
+
 Ref Expression::Impl::Operation::to_ref(Context& ctx) const
 {
-	return Ref {
-		new long{to_long(ctx)},
-		[](void* v){delete static_cast<long*>(v);},
-		unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
-		true,
-		true
-	};
+	try {
+		return Ref {
+			new long{to_long(ctx)},
+			[](void* v){delete static_cast<long*>(v);},
+			unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
+			true,
+			true
+		};
+	} catch (const Error& e) {
+		if (e.status() == PDI_ERR_VALUE) {
+			return Ref {
+				new double{to_double(ctx)},
+				[](void* v){delete static_cast<double*>(v);},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
+				true,
+				true
+			};
+		} else {
+			throw;
+		}
+	}
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::Operation::clone() const

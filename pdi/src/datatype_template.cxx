@@ -298,28 +298,28 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	
 	// C basic types
 	ctx.add_datatype("char", [](Context&, PC_tree_t) {
-		return Datatype_template_uptr {new Scalar_template{Scalar_kind::UNSIGNED, sizeof(char)}};
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::UNSIGNED, (long)sizeof(char)}};
 	});
 	ctx.add_datatype("int", [](Context&, PC_tree_t) {
-		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, sizeof(int)}};
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, (long)sizeof(int)}};
 	});
 	ctx.add_datatype("int8", [](Context&, PC_tree_t) {
-		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 1}};
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 1L}};
 	});
 	ctx.add_datatype("int16", [](Context&, PC_tree_t) {
-		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 2}};
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 2L}};
 	});
 	ctx.add_datatype("int32", [](Context&, PC_tree_t) {
-		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 4}};
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 4L}};
 	});
 	ctx.add_datatype("int64", [](Context&, PC_tree_t) {
-		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 8}};
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, 8L}};
 	});
 	ctx.add_datatype("float", [](Context&, PC_tree_t) {
-		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 4}};
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 4L}};
 	});
 	ctx.add_datatype("double", [](Context&, PC_tree_t) {
-		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 8}};
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 8L}};
 	});
 	
 	// Fortran basic types

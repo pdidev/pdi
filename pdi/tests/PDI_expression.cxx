@@ -58,11 +58,19 @@ struct LongExpressionTest : public testing::TestWithParam<long> {
 	MockContext context_mock;
 };
 
+struct DoubleExpressionTest : public testing::TestWithParam<double> {
+	MockContext context_mock;
+};
+
 struct StringExpressionTest : public testing::TestWithParam<const char*> {
 	MockContext context_mock;
 };
 
 struct AdvancedExpressionTest: public testing::Test {
+	MockContext context_mock;
+};
+
+struct AdvancedDoubleExpressionTest: public testing::Test {
 	MockContext context_mock;
 };
 
@@ -231,6 +239,21 @@ TEST_P(LongExpressionTest, to_long)
 }
 
 /*
+ * Name:                LongExpressionTest.to_double
+ *
+ * Tested functions:    PDI::Expression::to_double(Context&)
+ *
+ * Description:         Checks if expression is correctly evaluated to double.
+ */
+TEST_P(LongExpressionTest, to_double)
+{
+	long param = GetParam();
+	Expression exp{param};
+	
+	ASSERT_EQ(static_cast<double>(param), exp.to_double(context_mock));
+}
+
+/*
  * Name:                LongExpressionTest.to_string
  *
  * Tested functions:    PDI::Expression::to_string(Context&)
@@ -257,6 +280,147 @@ TEST_P(LongExpressionTest, to_ref)
 	Expression exp{param};
 	Ref_r ref {exp.to_ref(context_mock)};
 	ASSERT_EQ(param, *static_cast<const long*>(ref.get()));
+}
+
+/*
+ * Name:                DoubleExpressionTest.copy
+ *
+ * Tested functions:    PDI::Expression::Expression(const Expression&)
+ *
+ * Description:         Checks if expression copy is correctly created.
+ */
+TEST_P(DoubleExpressionTest, copy)
+{
+	double param = GetParam();
+	Expression exp{param};
+	Expression copy{exp};
+	
+	ASSERT_EQ(exp.to_double(context_mock), copy.to_double(context_mock));
+}
+
+/*
+ * Name:                DoubleExpressionTest.copy_operator
+ *
+ * Tested functions:    PDI::Expression::operator =(const Expression&)
+ *
+ * Description:         Checks if expression copy is correctly created.
+ */
+TEST_P(DoubleExpressionTest, copy_operator)
+{
+	double param = GetParam();
+	Expression exp{param};
+	Expression copy;
+	copy = exp;
+	
+	ASSERT_EQ(exp.to_double(context_mock), copy.to_double(context_mock));
+}
+
+/*
+ * Name:                DoubleExpressionTest.move
+ *
+ * Tested functions:    PDI::Expression::Expression(Expression&&)
+ *
+ * Description:         Checks if expression move is correctly executed.
+ */
+TEST_P(DoubleExpressionTest, move)
+{
+	double param = GetParam();
+	Expression exp{param};
+	double result = exp.to_double(context_mock);
+	Expression copy{std::move(exp)};
+	
+	ASSERT_EQ(result, copy.to_double(context_mock));
+}
+
+/*
+ * Name:                DoubleExpressionTest.move_operator
+ *
+ * Tested functions:    PDI::Expression::operator =(Expression&&)
+ *
+ * Description:         Checks if expression move is correctly executed.
+ */
+TEST_P(DoubleExpressionTest, move_operator)
+{
+	double param = GetParam();
+	Expression exp{param};
+	double result = exp.to_double(context_mock);
+	Expression copy;
+	copy = std::move(exp);
+	
+	ASSERT_EQ(result, copy.to_double(context_mock));
+}
+
+/*
+ * Name:                DoubleExpressionTest.bool_operator
+ *
+ * Tested functions:    PDI::Expression::operator bool()
+ *
+ * Description:         Checks if non-empty expression evaluates to true.
+ */
+TEST_P(DoubleExpressionTest, bool_operator)
+{
+	double param = GetParam();
+	Expression exp{param};
+	ASSERT_TRUE(exp);
+}
+
+/*
+ * Name:                DoubleExpressionTest.to_long
+ *
+ * Tested functions:    PDI::Expression::to_long(Context&)
+ *
+ * Description:         Checks if expression is correctly evaluated to long.
+ */
+TEST_P(DoubleExpressionTest, to_long)
+{
+	double param = GetParam();
+	Expression exp{param};
+	
+	ASSERT_EQ(static_cast<long>(param), exp.to_long(context_mock));
+}
+
+/*
+ * Name:                DoubleExpressionTest.to_double
+ *
+ * Tested functions:    PDI::Expression::to_double(Context&)
+ *
+ * Description:         Checks if expression is correctly evaluated to double.
+ */
+TEST_P(DoubleExpressionTest, to_double)
+{
+	double param = GetParam();
+	Expression exp{param};
+	
+	ASSERT_DOUBLE_EQ(param, exp.to_double(context_mock));
+}
+
+/*
+ * Name:                DoubleExpressionTest.to_string
+ *
+ * Tested functions:    PDI::Expression::to_string(Context&)
+ *
+ * Description:         Checks if expression is correctly evaluated to string.
+ */
+TEST_P(DoubleExpressionTest, to_string)
+{
+	double param = GetParam();
+	Expression exp{param};
+	ASSERT_DOUBLE_EQ(param, stod(exp.to_string(context_mock)));
+}
+
+/*
+ * Name:                DoubleExpressionTest.to_ref
+ *
+ * Tested functions:    PDI::Expression::to_ref(Context&)
+ *
+ * Description:         Checks if expression is correctly evaluated to ref.
+ */
+TEST_P(DoubleExpressionTest, to_ref)
+{
+	double param = GetParam();
+	Expression exp{param};
+	Ref_r ref {exp.to_ref(context_mock)};
+	ASSERT_DOUBLE_EQ(param, *static_cast<const double*>(ref.get()));
 }
 
 /*
@@ -445,6 +609,25 @@ TEST_P(StringExpressionTest, to_long_cstr)
 }
 
 /*
+ * Name:                StringExpressionTest.to_double_cstr
+ *
+ * Tested functions:    PDI::Expression::to_double(Context&)
+ *
+ * Description:         Checks if expression is correctly evaluated to double.
+ */
+TEST_P(StringExpressionTest, to_double_cstr)
+{
+	const char* param = GetParam();
+	Expression exp{param};
+	try {
+		double res = std::stod(param);
+		ASSERT_EQ(res, exp.to_double(context_mock));
+	} catch (const std::invalid_argument&) {
+		ASSERT_THROW(exp.to_double(context_mock), PDI::Error);
+	}
+}
+
+/*
  * Name:                StringExpressionTest.to_long_string
  *
  * Tested functions:    PDI::Expression::to_long(Context&)
@@ -460,6 +643,25 @@ TEST_P(StringExpressionTest, to_long_string)
 		ASSERT_EQ(res, exp.to_long(context_mock));
 	} catch (const std::invalid_argument& ) {
 		ASSERT_THROW(exp.to_long(context_mock), PDI::Error);
+	}
+}
+
+/*
+ * Name:                StringExpressionTest.to_double_string
+ *
+ * Tested functions:    PDI::Expression::to_double(Context&)
+ *
+ * Description:         Checks if expression is correctly evaluated to long.
+ */
+TEST_P(StringExpressionTest, to_double_string)
+{
+	string param = GetParam();
+	Expression exp{param};
+	try {
+		double res = std::stod(param);
+		ASSERT_EQ(res, exp.to_double(context_mock));
+	} catch (const std::invalid_argument& ) {
+		ASSERT_THROW(exp.to_double(context_mock), PDI::Error);
 	}
 }
 
@@ -578,6 +780,49 @@ TEST_F(AdvancedExpressionTest, operators)
 }
 
 /*
+ * Name:                AdvancedExpressionTest.operators
+ *
+ * Tested functions:    PDI::Expression::to_double(Context&)
+ *
+ * Description:         Checks if operators are evaluated correctly.
+ */
+TEST_F(AdvancedDoubleExpressionTest, operators)
+{
+	//pairs of strings to parse and expected value
+	vector<pair<string, double>> checks {
+		{"2.1+2.2", 4.3},
+		{"4.2-2.2", 2.0},
+		{"6.0/2.0", 3.0},
+		{"5.0/2.0", 2.5},
+		{"4.0=2.0", 0.0},
+		{"2.0=2.0", 1.0},
+		{"3.0&0.0", 0.0},
+		{"4.0&2.0", 1.0},
+		{"0.0&12.0", 0.0},
+		{"0.0&0.0", 0.0},
+		{"-5.0|0.0", 1.0},
+		{"-7.0|-9.0", 1.0},
+		{"0.0|-1234.0", 1.0},
+		{"0.0|0.0", 0.0},
+		{"-5.0 > -7.0", 1.0},
+		{"-6.0 > -3.0", 0.0},
+		{"5.0 > 7.0", 0.0},
+		{"6.0 > 3.0", 1.0},
+		{"3.0 > 3.0", 0.0},
+		{"-5.0 < -7.0", 0.0},
+		{"-6.0 < -3.0", 1.0},
+		{"5.0 < 7.0", 1.0},
+		{"6.0 < 3.0", 0.0},
+		{"3.0 < 3.0", 0.0}
+	};
+	
+	for (auto&& entry : checks) {
+		Expression exp{entry.first};
+		ASSERT_DOUBLE_EQ(entry.second, exp.to_double(context_mock)) << "'" << entry.first << "' should be: " << entry.second << " is: " << exp.to_double(context_mock);
+	}
+}
+
+/*
  * Name:                AdvancedExpressionTest.operator_precedence
  *
  * Tested functions:    PDI::Expression::to_string(Context&)
@@ -689,5 +934,7 @@ TEST_F(AdvancedExpressionTest, reference_in_operation)
 }
 
 INSTANTIATE_TEST_CASE_P(, LongExpressionTest, ::testing::Values(numeric_limits<long>::min(), -1l, 0l, 1l, numeric_limits<long>::max()));
+
+INSTANTIATE_TEST_CASE_P(, DoubleExpressionTest, ::testing::Values(numeric_limits<double>::min(), -1.0, 0.0, 1.0, numeric_limits<double>::max()));
 
 INSTANTIATE_TEST_CASE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c","", "-100000", "0", "100000"));
