@@ -1261,6 +1261,8 @@ a[id]
 	font-weight: 300;
 	font-size: 1.2rem;
 	color: var(--lsit-fg-ul);
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 #projectbrief
@@ -1278,6 +1280,18 @@ a[id]
 	color: var(--lsit-fg-ul);
 }
 
+@media screen and (max-width: 25rem)
+{
+	#projectbrief
+	{
+		display: none;
+	}
+
+	#projectnumber
+	{
+		display: block;
+	}
+}
 
 
 /**********
@@ -1311,7 +1325,6 @@ a[id]
 	background-color: var(--dsit-bg-hl);
 }
 
-#tabs li.current,
 #tabs li:hover
 {
 	background-color: var(--dsit-bg);
@@ -1331,6 +1344,106 @@ a[id]
 #tabs li:hover a
 {
 	text-decoration: none;
+}
+
+#gitlab-ribbon a
+{
+	transition: 0.5s;
+}
+
+@media screen and (min-width: 40rem)
+{
+	#tabs #gitlab-ribbon
+	{
+		float: none;
+		border: 0 none transparent;
+		position: absolute;
+		display: block;
+		top: -6rem;
+		right: .1rem;
+		width: 16rem;
+		overflow: hidden;
+		height: 16rem;
+		z-index: 9999;
+		background-color: transparent;
+	}
+	
+	#tabs #gitlab-ribbon:hover
+	{
+		background-color: transparent;
+	}
+	
+	#tabs #gitlab-ribbon a
+	{
+		letter-spacing: normal;
+		background: var(--site-lblue);
+		color: var(--site-white);
+		text-decoration: none;
+		font-family: arial,sans-serif;
+		text-align: center;
+		font-weight: bold;
+		padding: 5px 40px;
+		font-size: 1rem;
+		line-height: 2rem;
+		width: 14rem;
+		position: absolute;
+		top: .5rem;
+		right: 0;
+		box-shadow: 4px 4px 10px rgba(0,0,0,0.8);
+	}
+
+	#tabs #gitlab-ribbon a:hover
+	{
+		background: var(--site-dblue);
+		color: var(--site-white);
+	}
+
+	#tabs #gitlab-ribbon a::before, #gitlab-ribbon a::after
+	{
+		content:"";
+		width: 100%;
+		display: block;
+		position: absolute;
+		top: 1px;
+		left: 0;
+		height: 1px;
+		background: #eee;
+	}
+
+	#tabs #gitlab-ribbon a::after
+	{
+		bottom: 1px;
+		top: auto;
+	}
+}
+
+@media screen and (min-width: 60rem)
+{
+	#tabs #gitlab-ribbon
+	{
+		position: fixed;
+		display: block;
+		top: 0;
+		right: 0;
+		width: 14rem;
+		overflow: hidden;
+		height: 14rem;
+		z-index: 9999;
+	}
+	
+	#tabs #gitlab-ribbon a
+	{
+		width: 14rem;
+		position: fixed;
+		top: 2.25rem;
+		right: -3.75rem;
+		transform: rotate(45deg);
+		-webkit-transform: rotate(45deg);
+		-ms-transform: rotate(45deg);
+		-moz-transform: rotate(45deg);
+		-o-transform: rotate(45deg);
+		box-shadow: 4px 4px 10px rgba(0,0,0,0.8);
+	}
 }
 
 

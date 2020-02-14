@@ -97,7 +97,7 @@ The same exact result we can achieve with `PDI_expose` which is just `PDI_share`
     PDI_reclaim("world");
 ```
 
-is the same a1s:
+is the same as:
 ```c
     PDI_expose("world", &my_world, PDI_OUT);
 ```
@@ -111,7 +111,8 @@ data:
 
 Now let's write some simple program:
 
-```c
+```C
+#include <pdi.h>
 
 void print_secret_msg() {
     char* message;
@@ -121,7 +122,7 @@ void print_secret_msg() {
 }
 
 int main(int argc, char* argv[]) {
-    PDI_init(PC_parse_path("hello_data.yml"));
+    PDI_init(PC_parse_path("world_access.yml"));
     char* secret_msg = "Watermelon is the tastiest fruit";
     PDI_share("my_message", secret_msg, PDI_OUT);
 
@@ -158,7 +159,9 @@ plugin:
 ```
 
 We have defined 3 descriptors and trace plugin. Now it's time for our application:
-```c
+```C
+#include <pdi.h>
+
 int main(int argc, char* argv[]) {
     PDI_init(PC_parse_path("hello_multi_expose.yml"));
     int x = 0;

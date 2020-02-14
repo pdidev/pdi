@@ -57,7 +57,7 @@ public:
 	
 	/** Moves an expression
 	 *
-	 * \param[in] expr the expression to move`
+	 * \param[in] expr the expression to move
 	 */
 	Expression(Expression&& expr);
 	
