@@ -15,15 +15,15 @@ external dependencies are:
   * compilers for C (99), C++ (14) and Fortran (2003),
   * MPI
   
-For example, release 0.5.1 can be installed by following these instructions (but
+For example, release 0.6.0 can be installed by following these instructions (but
 look for the latest release at
-https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags)
+https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags)
 
 ```bash
 # download
-wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.5.1/pdi-0.5.1.tar.bz2
-tar -xjf pdi-0.5.1.tar.bz2
-cd pdi-0.5.1
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.0/pdi-0.6.0.tar.bz2
+tar -xjf pdi-0.6.0.tar.bz2
+cd pdi-0.6.0
 # configuration
 cmake -DCMAKE_INSTALL_PREFIX=/usr/ .
 # compilation and installation
@@ -39,14 +39,14 @@ to your needs, keep reading.
 As of now, PDI must be compiled from source.
 
 To download the sources, have a look at the list of all releases from:
-https://gitlab.maisondelasimulation.fr/jbigot/pdi/tags
+https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags
 
-For example, release 0.5.1 can be downloaded and extracted by following these
+For example, release 0.6.0 can be downloaded and extracted by following these
 instructions:
 ```bash
-wget https://gitlab.maisondelasimulation.fr/jbigot/pdi/-/archive/0.5.1/pdi-0.5.1.tar.bz2
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.0/pdi-0.6.0.tar.bz2
 tar -xjf pdi-master.tar.bz2
-cd pdi-0.5.1
+cd pdi-0.6.0
 ```
 
 
