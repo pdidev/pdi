@@ -270,6 +270,7 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 		}
 	}
 	if (!errors.empty()) {
+		m_refs.pop();
 		if (1 == errors.size()) {
 			throw Error{errors.front().status(), "Error while triggering data share `{}': {}", m_name, errors.front().what()};
 		}
