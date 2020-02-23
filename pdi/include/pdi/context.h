@@ -26,12 +26,9 @@
 #define PDI_CONTEXT_H_
 
 #include <functional>
-#include <list>
 #include <memory>
-#include <stack>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/data_descriptor.h>

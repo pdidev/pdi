@@ -25,6 +25,8 @@
 #ifndef PDI_DATATYPE_H_
 #define PDI_DATATYPE_H_
 
+#include <string>
+
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype_template.h>
 

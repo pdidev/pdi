@@ -26,6 +26,7 @@
 #define PDI_EXPRESSION_H_
 
 #include <memory>
+#include <string>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/ref_any.h>
