@@ -26,6 +26,7 @@
 #define PDI_SCALAR_DATATYPE_H_
 
 #include <functional>
+#include <string>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>

@@ -28,8 +28,8 @@
 #include "context.h"
 #include "pdi_fwd.h"
 
+#include <functional>
 #include <string>
-#include <unordered_map>
 
 namespace PDI {
 

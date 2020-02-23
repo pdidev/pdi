@@ -25,10 +25,14 @@
 #ifndef PDI_PLUGIN_H_
 #define PDI_PLUGIN_H_
 
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <unordered_set>
+#include <utility>
+
 #include <pdi/pdi_fwd.h>
 #include <pdi/logger.h>
-
-#include <unordered_set>
 
 namespace PDI {
 

@@ -25,6 +25,7 @@
 #ifndef PDI_RECORD_DATATYPE_H_
 #define PDI_RECORD_DATATYPE_H_
 
+#include <string>
 #include <vector>
 
 #include <pdi/pdi_fwd.h>
