@@ -438,11 +438,13 @@ endif()
 if("${BUILD_PYTHON}")
 	find_package(Python3 QUIET REQUIRED COMPONENTS Interpreter Development)
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency")
+	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules")
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/pybind11-2.3.0"
 		CMAKE_CACHE_ARGS
 			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
+			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
 		VERSION 2.3.0
 	)
 endif()
