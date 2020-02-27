@@ -1,5 +1,4 @@
-logging:
-  level: debug
+logging: trace
 
 data:
   wait: int

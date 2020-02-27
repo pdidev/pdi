@@ -42,7 +42,7 @@ using std::set;
  */
 struct ContextTest : public ::testing::Test {
 	ContextTest():
-		test_conf{PC_parse_string("")}
+		test_conf{PC_parse_string("logging: trace")}
 	{}
 	
 	void SetUp() override

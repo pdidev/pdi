@@ -1,6 +1,3 @@
-logging:
-  level: info
-
 metadata:
   main_field_size: int64
 

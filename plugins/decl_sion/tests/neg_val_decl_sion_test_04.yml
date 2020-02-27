@@ -1,3 +1,4 @@
+logging: trace
 metadata:
   meta0: int
   meta1: int

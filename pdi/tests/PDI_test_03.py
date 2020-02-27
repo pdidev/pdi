@@ -3,7 +3,7 @@
 import pdi
 import numpy as np
 
-pdi.init("")
+pdi.init("logging: trace")
 
 x = np.zeros([2,3,5])
 for i in range(2):

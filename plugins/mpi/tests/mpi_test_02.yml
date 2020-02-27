@@ -1,2 +1,3 @@
+logging: trace
 plugins:
   mpi:

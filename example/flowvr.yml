@@ -7,9 +7,6 @@ parallelism: { height: 4, width: 1 }
 
 # only the following config is passed to PDI
 pdi:
-  logging:
-    level: info
-
   metadata: 
     iter:   int
     mpi_rank: int

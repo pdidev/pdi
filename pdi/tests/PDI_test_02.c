@@ -28,6 +28,7 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
+    "logging: trace         \n"
     "metadata:              \n"
     "  my_array:            \n"
     "    size: [10, 10, 10] \n"

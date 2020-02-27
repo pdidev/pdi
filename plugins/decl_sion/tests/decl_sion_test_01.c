@@ -28,6 +28,7 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
+    "logging: trace                            \n"
     "metadata:                                 \n"
     "  meta0: int                              \n"
     "  meta1: int                              \n"

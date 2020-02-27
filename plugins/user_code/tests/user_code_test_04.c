@@ -30,6 +30,7 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
+    "logging: trace                                                                      \n"
     "plugins:                                                                            \n"
     "  user_code:                                                                        \n"
     "    on_event:                                                                       \n"

@@ -33,6 +33,7 @@
 #define test_value( var, value, fatal) fct_test_value( var, value, fatal, __func__, __LINE__)
 
 const char* CONFIG_YAML =
+    "logging: trace    \n"
     "metadata:         \n"
     "data:             \n"
     "  test_var: double\n"

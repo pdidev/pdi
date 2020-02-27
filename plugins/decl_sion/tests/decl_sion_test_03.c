@@ -31,6 +31,7 @@ const int IMX = 1;
 const int JMX = 5;
 
 const char* CONFIG_YAML =
+    "logging: trace                       \n"
     "metadata:                            \n"
     "  ni: int                            \n"
     "  nj: int                            \n"

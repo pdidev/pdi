@@ -30,6 +30,8 @@
 #include <spdlog/sinks/ansicolor_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
+#include <pdi/error.h>
+
 #include "pdi/logger.h"
 
 namespace {
@@ -94,9 +96,10 @@ Logger_sptr select_log_sinks(PC_tree_t logging_tree)
  * \param[in] logging_tree configuration tree from config file
  * \param[in] name name
  */
-void read_log_level(Logger_sptr logger, PC_tree_t level_tree, const string& name)
+void read_log_level(Logger_sptr logger, PC_tree_t config, const string& name)
 {
 	string level_str = "info";
+	PC_tree_t level_tree = PC_get(config, ".level");
 	
 	if (!PC_status(PC_get(level_tree, "{0}"))) {
 		PC_tree_t module_level = PC_get(level_tree, ".%s", name.c_str());
@@ -111,6 +114,14 @@ void read_log_level(Logger_sptr logger, PC_tree_t level_tree, const string& name
 	} else {
 		if (!PC_status(level_tree)) {
 			level_str = to_string(level_tree);
+		} else {
+			try {
+				level_str = to_string(config);
+			} catch (const PDI::Error& e) {
+				if (e.status() != PDI_ERR_CONFIG) {
+					throw;
+				}
+			}
 		}
 	}
 	
@@ -122,16 +133,12 @@ void read_log_level(Logger_sptr logger, PC_tree_t level_tree, const string& name
 		{"error", err},
 		{"off", off}
 	};
-#ifndef NDEBUG //if DEBUG
-	logger->set_level(trace);
-#else //if RELEASE
 	auto level_it = level_map.find(level_str);
 	if (level_it != level_map.end()) {
 		logger->set_level(level_map.find(level_str)->second);
 	} else {
 		logger->warn("Invalid logging level: {}. Available: 'trace', 'debug', 'info', 'warn', 'error', 'off'.", level_str);
 	}
-#endif
 }
 
 } // namespace <anonymous>
@@ -144,7 +151,7 @@ Logger_sptr configure_logger(PC_tree_t config, const string& name)
 	Logger_sptr logger = select_log_sinks(config);
 	
 	//read default log level for logger
-	read_log_level(logger, PC_get(config, ".level"), name);
+	read_log_level(logger, config, name);
 	
 	//set up default format of logger
 	logger->set_pattern("[PDI][%T] *** %^%l%$: %v");

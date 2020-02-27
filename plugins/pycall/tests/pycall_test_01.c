@@ -30,6 +30,7 @@
 int main( int argc, char* argv[] )
 {
 	PC_tree_t conf = PC_parse_string(
+		"logging: trace                                 \n"
 		"data: {a: {type: array, subtype: int, size: 3}}\n"
 		"plugins:\n"
 		"  pycall:\n"

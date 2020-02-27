@@ -1,5 +1,4 @@
-logging:
-  level: debug
+logging: trace
 
 data:
   message: {type: array, subtype: int, size: 32}

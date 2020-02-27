@@ -67,7 +67,7 @@ using param_pair = pair<string, shared_ptr<Datatype>>;
  * Struct prepared for PositiveTypeParseTest.
  */
 struct PositiveTypeParseTest : public ::testing::TestWithParam<param_pair> {
-	PC_tree_t conf = PC_parse_string("");
+	PC_tree_t conf = PC_parse_string("logging: trace");
 	Paraconf_wrapper _;
 };
 

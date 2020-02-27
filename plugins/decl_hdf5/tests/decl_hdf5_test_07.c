@@ -27,6 +27,7 @@
 #include <assert.h>
 
 const char* CONFIG_YAML =
+    "logging: trace                                         \n"
     "metadata:                                              \n"
     "  pcoord: { type: array, size: 2, subtype: int }       \n"
     "  my_comm: MPI_Comm                                    \n"

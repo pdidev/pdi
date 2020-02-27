@@ -30,6 +30,7 @@
 #include <pdi.h>
 
 const char* YAML_CONFIG =
+    "logging: trace            \n"
     "plugins:                  \n"
     "  mpi:                    \n"
     ;

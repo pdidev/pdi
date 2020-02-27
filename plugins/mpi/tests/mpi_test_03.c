@@ -30,8 +30,7 @@
 #include <pdi.h>
 
 const char* YAML_CONFIG =
-    "logging:                       \n"
-    "  level: debug                 \n"
+    "logging: trace                 \n"
     "metadata:                      \n"
     "  m_mpi_comm: MPI_Comm         \n"
     "  m_mpi_comm_f: MPI_Comm_f     \n"

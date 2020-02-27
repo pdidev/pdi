@@ -34,6 +34,7 @@
 #define DIM 2
 
 const char* CONFIG_YAML =
+    "logging: trace                                        \n"
     "metadata:                                             \n"
     "  input: int                                          \n"
     "  ni: int                                             \n"

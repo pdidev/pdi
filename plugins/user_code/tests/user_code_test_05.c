@@ -30,6 +30,7 @@
 int which_event_ran = 0;
 
 const char* CONFIG_YAML =
+    "logging: trace                 \n"
     "metadata:                      \n"
     "data:                          \n"
     "  test_var: double             \n"

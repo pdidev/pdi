@@ -1,4 +1,5 @@
 pdi:
+  logging: trace
   metadata:
     iter: int
     dsize:  { size: 2, type: array, subtype: int }

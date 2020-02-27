@@ -30,6 +30,7 @@
 #include <pdi.h>
 
 const char* YAML_CONFIG =
+    "logging: trace            \n"
     "metadata:                 \n"
     "  my_array:               \n"
     "    size: [3, 3]          \n"

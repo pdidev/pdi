@@ -27,6 +27,7 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
+    "logging: trace          \n"
     "data:                   \n"
     "  invalid:              \n"
     "    type: array         \n"
