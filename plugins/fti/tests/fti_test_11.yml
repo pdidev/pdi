@@ -1,0 +1,29 @@
+logging:
+  level: debug
+
+metadata:
+  rank: int
+
+data:
+  file1_status: int
+  file2_status: int
+  file3_status: int
+
+plugins:
+  mpi:
+  fti:
+    config_file: fti_config_05.ini
+    send_file:
+      - on_event: send_one_file
+        file:
+          src: ./dummy_file$rank
+          dest: ./dummy_file${rank}_sent
+          status: file1_status
+      - on_event: [send_two_files, dummy_event]
+        file:
+          - src: ./first_file$rank
+            dest: ./first_file${rank}_sent
+            status: file2_status
+          - src: ./second_file$rank
+            dest: ./second_file${rank}_sent
+            status: file3_status

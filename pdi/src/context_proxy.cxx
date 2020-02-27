@@ -110,4 +110,9 @@ std::function<void()> Context_proxy::add_empty_desc_access_callback(const std::f
 	return m_real_context.add_empty_desc_access_callback(callback, name);
 }
 
+void Context_proxy::finalize_and_exit()
+{
+	m_real_context.finalize_and_exit();
+}
+
 } //namespace PDI

@@ -149,6 +149,7 @@ public:
 	 */
 	virtual std::function<void()> add_empty_desc_access_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) = 0;
 	
+	virtual void finalize_and_exit() = 0;
 };
 
 } // namespace PDI

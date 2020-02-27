@@ -1,0 +1,10 @@
+data:
+  fti_status: int
+
+plugins:
+  mpi:
+  fti:
+    communicator: MPI_COMM_WORLD
+    config_file: fti_config_02.ini
+    status: fti_status
+    init_on: init

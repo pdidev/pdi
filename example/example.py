@@ -104,6 +104,15 @@ if __name__ == '__main__':
 
     main_comm = MPI.COMM_WORLD
     pdi.init(yaml.dump(config['pdi']))
+    main_comm_f = np.array(main_comm.py2f())
+    pdi.expose('mpi_comm', main_comm_f, pdi.INOUT)
+    main_comm = main_comm.f2py(main_comm_f)
+
+    fti_head = np.array(0)
+    pdi.expose('fti_head', fti_head, pdi.IN)
+    if fti_head == 1:
+        pdi.finalize()
+        exit()
 
     psize_1d = main_comm.Get_size()
     pcoord_1d = main_comm.Get_rank()

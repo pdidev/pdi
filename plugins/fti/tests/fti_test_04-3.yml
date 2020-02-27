@@ -1,0 +1,18 @@
+data:
+  fti_status: int
+  test: int
+  array: {type: array, size: 10, subtype: int}
+  array2D: {type: array, size: [3, 3], subtype: int}
+
+plugins:
+  mpi:
+  fti:
+    config_file: fti_config_03.ini
+    status: fti_status
+    dataset:
+      0: test
+      1: array
+      2: array2D
+    recover_on: recover
+    checkpoint:
+      L3_on: ckpt

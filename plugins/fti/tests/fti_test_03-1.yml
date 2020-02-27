@@ -1,0 +1,12 @@
+metadata:
+  my_comm: MPI_Comm
+
+data:
+  fti_status: int
+
+plugins:
+  mpi:
+  fti:
+    communicator: my_comm
+    config_file: fti_config_01.ini
+    status: fti_status

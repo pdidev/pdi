@@ -1,0 +1,22 @@
+data:
+  fti_status: int
+  test: int
+  array: {type: array, size: 10, subtype: int}
+  array2D: {type: array, size: [3, 3], subtype: int}
+
+plugins:
+  mpi:
+  fti:
+    config_file: fti_config_03.ini
+    status: fti_status
+    dataset: 
+      0: array
+      1: array2D
+      2: test
+    recover_var:
+      - on_event: recover_test
+        var: 2
+      - on_event: [recover_arrays, dummy_event]
+        var: [0, 1]
+    checkpoint:
+      L1_on: ckpt

@@ -441,5 +441,10 @@ std::function<void()> Global_context::add_empty_desc_access_callback(const std::
 	}
 }
 
+void Global_context::finalize_and_exit()
+{
+	Global_context::finalize();
+	exit(0);
+}
 
 }

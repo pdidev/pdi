@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2018-2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,187 +24,304 @@
  ******************************************************************************/
 
 #include <mpi.h>
-
+#include <fti.h>
 #include <cassert>
-#include <iostream>
-#include <limits>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
 #include <spdlog/spdlog.h>
 
-#include <fti.h>
-
-#include <pdi.h>
 #include <pdi/context.h>
-#include <pdi/datatype.h>
-#include <pdi/data_descriptor.h>
-#include <pdi/logger.h>
-#include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
+#include "fti_cfg.h"
+#include "fti_wrapper.h"
 
 namespace {
 
+using PDI::Datatype;
 using PDI::Context;
-using PDI::Ref;
-using PDI::Ref_r;
-using PDI::Ref_w;
 using PDI::Error;
-using PDI::len;
 using PDI::Plugin;
-using PDI::to_long;
-using PDI::to_string;
-using std::make_pair;
-using std::numeric_limits;
+using PDI::Ref;
+using PDI::Ref_w;
+using PDI::Ref_r;
+
+using std::get;
+using std::pair;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
-using std::vector;
+
+using namespace fti;
 
 struct fti_plugin: Plugin {
 
-	enum Event_action
-	{ NO_EVENT=0, RECOVER, SNAPSHOT, CHECKPOINT, RESTART_STATUS };
+	const Fti_cfg m_config;
 	
-	unordered_map<string, long> fti_protected;
+	int m_ckpt_id;
 	
-	unordered_map<string, Event_action> events;
+	unique_ptr<Fti_wrapper> m_fti;
 	
-	fti_plugin(Context& ctx, PC_tree_t conf, MPI_Comm* world):
-		Plugin{ctx}
+	unordered_map<string, int> m_stage_status;
+	
+	static pair<unordered_set<string>, unordered_set<string>> dependencies()
 	{
-		for ( auto&& iter : ctx) {
-			try {
-				fti_protected.emplace(iter.name(), to_long(PC_get(iter.config(), ".fti_id")));
-			} catch ( const Error& ) {}
-		}
-		
-		PC_tree_t snapshot_on = PC_get(conf, ".snapshot_on");
-		if ( !PC_status(snapshot_on) ) {
-			try {
-				events.emplace(to_string(snapshot_on), SNAPSHOT);
-			} catch ( const Error& ) {
-				int nb_event = len(snapshot_on, 0);
-				for ( int ii=0; ii<nb_event; ++ii ) {
-					events.emplace(to_string(PC_get(snapshot_on, "[%d]", ii)), SNAPSHOT);
-				}
-			}
-		}
-		
-		PC_tree_t recover_on = PC_get(conf, ".recover_on");
-		if ( !PC_status(recover_on) ) {
-			try {
-				events.emplace(to_string(recover_on), RECOVER);
-			} catch ( const Error& ) {
-				int nb_event = len(recover_on, 0);
-				for ( int ii=0; ii<nb_event; ++ii ) {
-					events.emplace(to_string(PC_get(recover_on, "[%d]", ii)), RECOVER);
-				}
-			}
-		}
-		
-		PC_tree_t checkpoint_on = PC_get(conf, ".checkpoint_on");
-		if ( !PC_status(checkpoint_on) ) {
-			try {
-				events.emplace(to_string(checkpoint_on), CHECKPOINT);
-			} catch ( const Error& ) {
-				int nb_event = len(checkpoint_on, 0);
-				for ( int ii=0; ii<nb_event; ++ii ) {
-					events.emplace(to_string(PC_get(checkpoint_on, "[%d]", ii)), CHECKPOINT);
-				}
-			}
-		}
-		
-		PC_tree_t restart_status = PC_get(conf, ".datastart.restart_status");
-		if ( !PC_status(restart_status) ) {
-			try {
-				events.emplace(to_string(restart_status), RESTART_STATUS);
-			} catch ( const Error& ) {
-				int nb_event = len(restart_status, 0);
-				for ( int ii=0; ii<nb_event; ++ii ) {
-					events.emplace(to_string(PC_get(restart_status, "[%d]", ii)), RESTART_STATUS);
-				}
-			}
-		}
-		
-		FTI_Init(const_cast<char*>(to_string(PC_get(conf, ".config_file")).c_str()), *world);
-		
-		*world = FTI_COMM_WORLD;
-		context().logger()->info("(FTI) Plugin loaded successfully");
+		return {{"mpi"}, {"mpi"}};
 	}
 	
-	~fti_plugin()
+	void protect_for_read()
 	{
-		FTI_Finalize();
-	}
-	
-	void event(const char* event_name) override
-	{
-		auto&& evit = events.find(event_name);
-		if ( evit == events.end() ) return;
-		
-		Event_action event = evit->second;
-		if ( event == RESTART_STATUS ) return;
-		
-		/* the direction we need to access the data depending on whether this is a
-		    *           recovery or a checkpoint write */
-		bool output = true;
-		if ( ( event == SNAPSHOT && FTI_Status() ) || event == RECOVER ) {
-			output = false;
-		}
-		
-		for ( auto&& protected_var: fti_protected ) {
-			if ( output ) {
-				if ( Ref_r ref = context().desc(protected_var.first).ref() ) {
-					size_t size = ref.type().datasize();
-					//TODO: handle non-contiguous data correctly
-					FTI_Protect(static_cast<int>(protected_var.second), const_cast<void*>(ref.get()), static_cast<long>(size), FTI_CHAR);
-				} else {
-					FTI_Protect(static_cast<int>(protected_var.second), NULL, 0, FTI_CHAR);
-					context().logger()->warn("(FTI) Protected variable {} unavailable", protected_var.first);
+		for (auto&& data: m_config.dataset()) {
+			if (Ref_r ref = context().desc(data.second).ref()) {
+				const Datatype& type = ref.type();
+				if (!type.dense()) {
+					context().logger()->warn("Sparse types are not supported (`{}')", data.second);
+					continue;
 				}
+				m_fti->protect(data.first, const_cast<void*>(ref.get()), type.datasize(), FTI_CHAR);
 			} else {
-				if ( Ref_w ref = context().desc(protected_var.first).ref() ) {
-					size_t size = ref.type().datasize();
-					//TODO: handle non-contiguous data correctly
-					FTI_Protect(static_cast<int>(protected_var.second), ref.get(), static_cast<long>(size), FTI_CHAR);
-				} else {
-					FTI_Protect(static_cast<int>(protected_var.second), NULL, 0, FTI_CHAR);
-					context().logger()->warn("(FTI) Protected variable {} unavailable", protected_var.first);
-				}
+				context().logger()->warn("Protected variable `{}' (id: {}) not available for reading", data.second, data.first);
+				m_fti->protect(data.first, nullptr, 0, FTI_CHAR);
 			}
 		}
-		switch ( event ) {
-		case SNAPSHOT:
-			FTI_Snapshot();
-			break;
-		case RECOVER:
-			FTI_Recover();
-			break;
-		case CHECKPOINT:
-			FTI_Checkpoint(numeric_limits<int>::max(), 4);
-			break;
-		case RESTART_STATUS: case NO_EVENT:
-			assert(0 && "Unexpected event type");
-		}
 	}
 	
-	void data(const char* name, Ref cref) override
+	void protect_for_write()
 	{
-		auto&& evit = events.find(name);
-		if ( evit == events.end() ) return;
-		if ( evit->second != RESTART_STATUS )  return;
-		if ( Ref_w ref = cref ) {
-			*static_cast<int*>(ref.get()) = FTI_Status();
+		for (auto&& data: m_config.dataset()) {
+			if (Ref_w ref = context().desc(data.second).ref()) {
+				const Datatype& type = ref.type();
+				if (!type.dense()) {
+					context().logger()->warn("Sparse types are not supported (`{}')", data.second);
+					continue;
+				}
+				m_fti->protect(data.first, ref.get(), type.datasize(), FTI_CHAR);
+			} else {
+				context().logger()->warn("Protected variable `{}' (id: {}) not available for writing", data.second, data.first);
+				m_fti->protect(data.first, nullptr, 0, FTI_CHAR);
+			}
 		}
 	}
 	
+	fti_plugin(Context& ctx, PC_tree_t config):
+		Plugin{ctx},
+		m_config{ctx, config},
+		m_ckpt_id{0}
+	{
+		context().logger()->set_pattern("[PDI][FTI][%T] *** %^%l%$: %v");
+		for (auto&& desc: m_config.descs()) {
+			switch (desc.second) {
+			case Desc_type::MPI_COMM: {
+				context().add_data_callback([this](const string& name, Ref ref) {
+					if (Ref_r rref = ref) {
+						if (!m_config.init_on_event()) {
+							if (!m_fti) {
+								m_fti.reset(new Fti_wrapper{context(), m_config,
+								        *static_cast<const MPI_Comm*>(rref.get())});
+								context().logger()->info("Plugin initialized successfully");
+							} else {
+								context().logger()->warn("Trying to initialize plugin again after plugin initialization");
+							}
+						}
+					}
+					if (Ref_w wref = ref) {
+						if (!m_fti) {
+							context().logger()->warn("Trying to get FTI_COMM_WORLD before plugin initialization (`{}')", name);
+						} else {
+							context().logger()->debug("Writing FTI_COMM_WORLD to `{}'", name);
+							*static_cast<MPI_Comm*>(wref.get()) = m_fti->fti_comm_world();
+						}
+					}
+				},
+				desc.first);
+			} break;
+			case Desc_type::STATUS: {
+				context().add_data_callback([this](const string& name, Ref ref) {
+					if (Ref_w wref = ref) {
+						if (!m_fti) {
+							context().logger()->warn("Trying to get FTI_status before plugin initialization (`{}')", name);
+							return;
+						}
+						*static_cast<int*>(wref.get()) = m_fti->status();
+					}
+				},
+				desc.first);
+			} break;
+			case Desc_type::DATA_SIZE: {
+				int desc_id = m_config.dataset_sizes().at(desc.first);
+				context().add_data_callback([this, desc_id](const string& name, Ref ref) {
+					if (Ref_w wref = ref) {
+						if (!m_fti) {
+							context().logger()->warn("Trying to get size of variable (id: {}) before plugin initialization (`{}')", desc_id, name);
+							return;
+						}
+						*static_cast<long*>(wref.get()) = m_fti->stored_size(desc_id);
+					}
+				},
+				desc.first);
+			} break;
+			case Desc_type::HEAD: {
+				context().add_data_callback([this](const string& name, Ref ref) {
+					if (Ref_w wref = ref) {
+						if (!m_fti) {
+							context().logger()->warn("Trying to get head status before plugin initialization (`{}')", name);
+							return;
+						}
+						*static_cast<int*>(wref.get()) = m_fti->head();
+					}
+				},
+				desc.first);
+			} break;
+			case Desc_type::STAGE_DIR: {
+				context().add_data_callback([this](const string& name, Ref ref) {
+					if (Ref_w wref = ref) {
+						if (!m_fti) {
+							context().logger()->warn("Trying to get stage dir before plugin initialization (`{}')", name);
+							return;
+						}
+						m_fti->stage_dir(static_cast<char*>(wref.get()), wref.type().datasize());
+					}
+				},
+				desc.first);
+			} break;
+			case Desc_type::STAGE_STATUS: {
+				context().add_data_callback([this](const string& name, Ref ref) {
+					if (Ref_w wref = ref) {
+						if (!m_fti) {
+							context().logger()->warn("Trying to get stage status before plugin initialization (`{}')", name);
+							return;
+						}
+						auto&& status = m_stage_status.find(name);
+						if (status != m_stage_status.end()) {
+							context().logger()->debug("Getting stage status (`{}' id: `{}')", name, status->second);
+							*static_cast<int*>(wref.get()) = m_fti->stage_status(status->second);
+						} else {
+							context().logger()->debug("Could not find stage status (`{}')", name);
+							*static_cast<int*>(wref.get()) = FTI_SI_NINI;
+						}
+					}
+				},
+				desc.first);
+			} break;
+			default:
+				assert(false &&  "Unexpected desc type");
+			}
+		}
+		
+		for (auto&& event: m_config.events()) {
+			switch (event.second) {
+			case Event_type::INIT: {
+				context().add_event_callback([this](const string& event_name) {
+					if (!m_fti) {
+						MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{context()[m_config.communicator()].ref()}.get());
+						m_fti.reset(new Fti_wrapper{context(), m_config, comm});
+						context().logger()->info("Plugin initialized successfully");
+					} else {
+						context().logger()->warn("Trying to initialize plugin again after plugin initialization (`{}')", event_name);
+					}
+				},
+				event.first);
+			} break;
+			case Event_type::SEND_FILE: {
+				context().add_event_callback([this](const string& event_name) {
+					if (!m_fti) {
+						context().logger()->warn("Trying to send file before plugin initialization (`{}')", event_name);
+						return;
+					}
+					for (auto&& file: m_config.send_file().at(event_name)) {
+						string src = get<0>(file).to_string(context());
+						string dest = get<1>(file).to_string(context());
+						string status = get<2>(file);
+						context().logger()->debug("FTI_SendFile, src: `{}', dest: `{}', status: `{}'", src, dest, status);
+						int file_id = m_fti->send_file(const_cast<char*>(src.c_str()), const_cast<char*>(dest.c_str()));
+						if (file_id == FTI_NSCS) {
+							context().logger()->warn("Could not send file `{}' to `{}'", src, dest);
+						} else if (!status.empty()) {
+							m_stage_status[status] = file_id;
+						}
+					}
+				},
+				event.first);
+			} break;
+			case Event_type::RECOVER_VAR: {
+				context().add_event_callback([this](const string& event_name) {
+					if (!m_fti) {
+						context().logger()->warn("Trying to recover variable before plugin initialization (`{}')", event_name);
+						return;
+					}
+					for (auto&& var_id: m_config.recover_var().at(event_name)) {
+						string desc_name = m_config.dataset().at(var_id);
+						if (Ref_w ref = context().desc(desc_name).ref()) {
+							const Datatype& type = ref.type();
+							if (!type.dense()) {
+								context().logger()->warn("Sparse types are not supported (`{}')", desc_name);
+								continue;
+							}
+							context().logger()->debug("FTI_Recover, var id: `{}', desc `{}'", var_id, desc_name);
+							m_fti->protect(var_id, ref.get(), type.datasize(), FTI_CHAR);
+							m_fti->recover_var(var_id);
+						} else {
+							context().logger()->warn("Variable `{}' (id: {}) unavailable", desc_name, var_id);
+						}
+					}
+				},
+				event.first);
+			} break;
+			case Event_type::RECOVER: {
+				context().add_event_callback([this](const string& event_name) {
+					if (!m_fti) {
+						context().logger()->warn("Trying to recover before plugin initialization (`{}')", event_name);
+						return;
+					}
+					protect_for_write();
+					m_fti->recover();
+				},
+				event.first);
+			} break;
+			case Event_type::SNAPSHOT: {
+				context().add_event_callback([this](const string& event_name) {
+					if (!m_fti) {
+						context().logger()->warn("Trying to snapshot before plugin initialization (`{}')", event_name);
+						return;
+					}
+					if (m_fti->status()) {
+						protect_for_write();
+					} else {
+						protect_for_read();
+					}
+					m_fti->snapshot();
+				},
+				event.first);
+			} break;
+			case Event_type::CHECKPOINT_L1:
+			case Event_type::CHECKPOINT_L2:
+			case Event_type::CHECKPOINT_L3:
+			case Event_type::CHECKPOINT_L4: {
+				Event_type event_type = event.second;
+				context().add_event_callback([this, event_type](const string& event_name) {
+					if (!m_fti) {
+						context().logger()->warn("Trying to checkpoint before plugin initialization (`{}')", event_name);
+						return;
+					}
+					protect_for_read();
+					m_fti->checkpoint(++m_ckpt_id, static_cast<int>(event_type));
+				},
+				event.first);
+			} break;
+			default:
+				assert(false &&  "Unexpected event type");
+			}
+		}
+		
+		context().logger()->info("Plugin loaded successfully");
+		auto&& comm_desc = context()[m_config.communicator()];
+		if (!m_config.init_on_event() && !comm_desc.empty()) {
+			MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{comm_desc.ref()}.get());
+			m_fti.reset(new Fti_wrapper{context(), m_config, comm});
+			context().logger()->info("Plugin initialized successfully");
+		}
+	}
 }; // struct fti_plugin
 
 } // namespace <anonymous>

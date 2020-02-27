@@ -171,6 +171,8 @@ public:
 	std::function<void()> add_event_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) override;
 	
 	std::function<void()> add_empty_desc_access_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) override;
+
+	void finalize_and_exit() override;
 };
 
 } // namespace PDI

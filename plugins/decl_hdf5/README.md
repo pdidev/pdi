@@ -100,7 +100,7 @@ The possible values for the keys are as follow:
 
 # full configuration example
 
-```
+```yaml
 metadata: # small values for which PDI keeps a copy
   width:   int                    # per proc. width including ghost
   height:  int                    # per proc. height including ghost

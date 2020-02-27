@@ -1,0 +1,7 @@
+data:
+  fti_stage_dir: {type: array, subtype: char, size: 256}
+plugins:
+  mpi:
+  fti:
+    config_file: fti_config_05.ini
+    stage_dir: fti_stage_dir

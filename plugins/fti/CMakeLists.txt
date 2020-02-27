@@ -1,6 +1,6 @@
 #=============================================================================
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-#
+# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2018-2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,13 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi_fti_plugin LANGUAGES CXX)
+project(pdi_fti_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-option(BUILD_INDENT "Enable automatic code indentation" OFF)
+option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
+option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 
-# Includes
+include(CTest)
 include(GNUInstallDirs)
 
 # Astyle
@@ -42,28 +43,33 @@ if("${BUILD_INDENT}")
 endif()
 
 # MPI
-find_package(MPI REQUIRED COMPONENTS CXX)
+find_package(MPI REQUIRED COMPONENTS C CXX)
 
 # FTI
-find_package(FTI 1.1 REQUIRED)
+find_package(FTI REQUIRED 1.3)
 
 # PDI
 find_package(PDI REQUIRED)
 
 # The plugin
-add_library(pdi_fti_plugin MODULE fti.cxx)
-target_link_libraries(pdi_fti_plugin PDI::pdi MPI::MPI_CXX fti.shared)
+add_library(pdi_fti_plugin MODULE 
+		fti.cxx
+		fti_cfg.cxx
+		fti_wrapper.cxx)
+target_link_libraries(pdi_fti_plugin MPI::MPI_CXX PDI::pdi fti.shared)
 target_include_directories(pdi_fti_plugin PUBLIC ${FTI_INCLUDE_PATH})
 set_target_properties(pdi_fti_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
+		CXX_VISIBILITY_PRESET hidden
+)
 
 # Indentation
-if("${BUILD_INDENT}")
+if("${Astyle_FOUND}")
 	Astyle_add_indent(indent TEST
-		OPTIONS_FILE formating.astyle
-		fti.cxx)
+			OPTIONS_FILE formating.astyle
+			*.cxx *.h tests/*.c
+	)
 endif()
 
 # Installation
@@ -77,4 +83,9 @@ if ("${BUILD_CFG_VALIDATOR}")
 	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
 			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
+endif()
+
+# Tests
+if("${BUILD_TESTING}")
+	add_subdirectory(tests/)
 endif()

@@ -1,0 +1,15 @@
+metadata:
+  array_size: int64
+data:
+  fti_size: int64
+  array: {type: array, subtype: int, size: $array_size}
+
+plugins:
+  mpi:
+  fti:
+    config_file: fti_config_03.ini
+    dataset: 
+      0: { name: array, size: fti_size }
+    recover_on: recover
+    checkpoint:
+      L1_on: ckpt

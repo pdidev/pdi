@@ -61,6 +61,7 @@ struct MockContext : public PDI::Context {
 	MOCK_METHOD2(add_data_callback, std::function<void()>(const std::function<void(const std::string&, PDI::Ref)>&, const std::string& name));
 	MOCK_METHOD2(add_event_callback,std::function<void()>(const std::function<void(const std::string&)>&, const std::string& name));
 	MOCK_METHOD2(add_empty_desc_access_callback, std::function<void()>(const std::function<void(const std::string&)>&, const std::string& name));
+	MOCK_METHOD0(finalize_and_exit, void());
 };
 
 
