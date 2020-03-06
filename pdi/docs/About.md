@@ -25,9 +25,9 @@ Learn about %PDI:
   - \ref PDI "API for plugin developers".
 
 
-# Get help
+# Get support
 
-* get help on **Slack**: [https://bit.ly/2OPmhA9](https://join.slack.com/t/pdidev/shared_invite/enQtNDk5OTY2MDA0Nzg0LTlkM2U1MGQwZmM3OGM1MjA0M2VlMzUyNWNjODhkNmI4MjMwZmQxMTM1ODc2ODI4MjY4ODNmNDhmY2QzOWI4Nzk).
+Get help on **Slack**: [https://bit.ly/2OPmhA9](https://join.slack.com/t/pdidev/shared_invite/enQtNDk5OTY2MDA0Nzg0LTlkM2U1MGQwZmM3OGM1MjA0M2VlMzUyNWNjODhkNmI4MjMwZmQxMTM1ODc2ODI4MjY4ODNmNDhmY2QzOWI4Nzk).
 
 
 # Join the team
