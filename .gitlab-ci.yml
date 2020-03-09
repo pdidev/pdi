@@ -8,30 +8,30 @@ cmake3.5_embedded:
   image: pdidevel/centos_cmake3.5
   script:
     - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
-    - make -j 2
+    - make
 
 cmake3.5_system:
   only: [ master, merge_requests ]
   image: pdidevel/centos_libs_cmake3.5
   script:
     - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
-    - make -j 2
+    - make
 
 cmake3.10_embedded:
   only: [ master, merge_requests ]
   image: pdidevel/centos_cmake3.10
   script:
     - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED .
-    - make -j 2
-    - ctest -j 2 --output-on-failure
+    - make
+    - ctest --output-on-failure
 
 cmake3.10_system:
   only: [ master, merge_requests ]
   image: pdidevel/centos_libs_cmake3.10
   script:
     - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM .
-    - make -j 2
-    - ctest -j 2 --output-on-failure
+    - make
+    - ctest --output-on-failure
 
 pages:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
@@ -41,7 +41,7 @@ pages:
     - mkdir build
     - cd build
     - cmake -DDIST_PROFILE=User -DBUILD_DOCUMENTATION=ON -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM ..
-    - make -j 2 PDI_pkg
+    - make PDI_pkg
     - cd
     - mkdir -p "$CI_PROJECT_DIR/public/"
     - if [ -z "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/PDI/html "$CI_PROJECT_DIR/public/${CI_COMMIT_REF_NAME}"; fi
