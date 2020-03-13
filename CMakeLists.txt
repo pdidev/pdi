@@ -270,7 +270,7 @@ if("${BUILD_FORTRAN}")
 endif()
 # if ( PDI or ... )
 sbuild_add_dependency(paraconf "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/libparaconf-0.4.0"
+	EMBEDDED_PATH "vendor/libparaconf-0.4.4"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	SOURCE_SUBDIR "paraconf"
 	CMAKE_CACHE_ARGS
