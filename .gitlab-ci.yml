@@ -2,7 +2,7 @@ stages:
   - test
   - pages
   - external
-
+  
 cmake3.5_embedded:
   only: [ master, merge_requests ]
   image: pdidevel/centos_cmake3.5:latest
