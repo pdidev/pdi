@@ -11,11 +11,11 @@ dependancies and examples.
 You can find a list of release at 
 https://gitlab.maisondelasimulation.fr/jbigot/libparaconf/tags
 
-For example, you can get release 0.4.0:
+For example, you can get release 0.4.2:
 ```
-wget https://gitlab.maisondelasimulation.fr/jbigot/libparaconf/-/archive/0.4.0/libparaconf-0.4.0.tar.bz2
-tar -xjf libparaconf-0.4.0.tar.bz2
-mv libparaconf-0.4.0 libparaconf
+wget https://gitlab.maisondelasimulation.fr/jbigot/libparaconf/-/archive/0.4.2/libparaconf-0.4.2.tar.bz2
+tar -xjf libparaconf-0.4.2.tar.bz2
+mv libparaconf-0.4.2 libparaconf
 ```
 
 
@@ -25,11 +25,13 @@ if the sources are stored in the folder `libparaconf`:
 ```
 cd libparaconf
 cmake \
-        -DUSE_YAML=EMBEDDED \
         -DCMAKE_INSTALL_PREFIX=/usr/ \
         .
 make install
 ```
+
+Change `-DCMAKE_INSTALL_PREFIX=/usr/` to something else if you want to install
+somewhere else than in `/usr/`.
 
 ## Prerequisites
 
@@ -38,8 +40,7 @@ The paraconf distribution depends on:
   * a C-99 compiler (gcc-5.4 is tested)
   * a POSIX compatible OS (linux with GNU libc-2.27 is tested)
   * [libyaml](https://pyyaml.org/wiki/LibYAML) (distributed with Paraconf
-    distribution, pass the `-DUSE_YAML=EMBEDDED` option to cmake to use the
-    embedded version)
+    distribution)
 
 Paraconf Fortran support depends on:
   * a Fortran-2003 compiler (gfort-5.4 is tested)

@@ -87,7 +87,7 @@ message(STATUS " **Feature**: ${FEATURE_ENABLED} TESTING (-DBUILD_TESTING=${BUIL
 
 ### Include sub-projects find modules
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" "${CMAKE_CURRENT_SOURCE_DIR}/paraconf/cmake")
 
 
 
@@ -99,7 +99,7 @@ include(SuperBuild)
 
 ## Fortran
 
-if("${ENABLE_FORTRAN}") # and (BPP or paraconf or PDI or ...)
+if("${ENABLE_FORTRAN}")
 	enable_language(Fortran)
 endif()
 
