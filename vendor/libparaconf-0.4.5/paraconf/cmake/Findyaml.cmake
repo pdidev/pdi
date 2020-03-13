@@ -66,7 +66,9 @@ function(_yaml_Find_Pkgconfig)
 					IMPORTED_LOCATION ${yaml_LIBRARIES}
 					INTERFACE_INCLUDE_DIRECTORIES ${yaml_INCLUDE_DIRS})
 		endif()
+		set(yaml_VERSION "${yaml_VERSION}" PARENT_SCOPE)
 	endif()
+	
 endfunction(_yaml_Find_Pkgconfig)
 
 unset(yaml_FOUND)
