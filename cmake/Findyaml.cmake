@@ -48,12 +48,15 @@ function(_yaml_Find_Pkgconfig)
 	find_package(PkgConfig QUIET REQUIRED)
 	
 	if( NOT "x${yaml_FIND_VERSION}" STREQUAL "x")
-		pkg_search_module(yaml QUIET yaml>=${yaml_FIND_VERSION} yaml-0.1>=${yaml_FIND_VERSION})
+ 		pkg_search_module(yaml QUIET yaml>=${yaml_FIND_VERSION} yaml-0.1>=${yaml_FIND_VERSION})
+		if ( NOT "${yaml_FOUND}" )
+			pkg_search_module(yaml QUIET yaml yaml-0.1)
+		endif()
 	else()
 		pkg_search_module(yaml QUIET yaml yaml-0.1)
 	endif()
 	
-	if ( "${yaml_FOUND}" )
+	if ( "${yaml_FOUND}" AND "${yaml_VERSION}" VERSION_GREATER "0${yaml_FIND_VERSION}" )
 	
 		find_library (yaml_LIBRARIES NAMES ${yaml_LIBRARIES}
 			HINTS ${yaml_LIBRARY_DIRS}
@@ -66,16 +69,9 @@ function(_yaml_Find_Pkgconfig)
 					IMPORTED_LOCATION ${yaml_LIBRARIES}
 					INTERFACE_INCLUDE_DIRECTORIES ${yaml_INCLUDE_DIRS})
 		endif()
-		if("${yaml_VERSION}" VERSION_GREATER 0)
-			set(yaml_VERSION "${yaml_VERSION}" PARENT_SCOPE)
-		elseif("${yaml_yaml_VERSION}" VERSION_GREATER 0)
-			set(yaml_VERSION "${yaml_yaml_VERSION}" PARENT_SCOPE)
-		elseif("${yaml_yaml-0.1_VERSION}" VERSION_GREATER 0)
-			set(yaml_VERSION "${yaml_yaml-0.1_VERSION}" PARENT_SCOPE)
-		else()
-			unset(yaml_VERSION PARENT_SCOPE)
-		endif()
 	endif()
+	
+	set(yaml_VERSION "${yaml_VERSION}" PARENT_SCOPE)
 	
 endfunction(_yaml_Find_Pkgconfig)
 
