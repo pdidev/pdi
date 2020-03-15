@@ -35,6 +35,7 @@ cmake3.10_system:
 
 pages:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
+  stage: pages
   image: pdidevel/centos_libs_cmake3.10:latest
   variables: { GIT_SUBMODULE_STRATEGY: recursive }
   script:
@@ -46,6 +47,11 @@ pages:
     - mkdir -p "$CI_PROJECT_DIR/public/"
     - if [ -z "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/PDI/html "$CI_PROJECT_DIR/public/${CI_COMMIT_REF_NAME}"; fi
     - if [ -n "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/PDI/html "$CI_PROJECT_DIR/public/${CI_COMMIT_TAG}"; fi
+  artifacts: { paths: [ public ] }
+
+pages-deploy:
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
+  stage: .post
+  script:
     - |
         curl -s -u "jbigot:${GITHUB_SITE_DEPLOY_KEY}" -H 'Accept: application/vnd.github.v3+json' -X POST "https://api.github.com/repos/pdidev/pdidev.github.io/dispatches" -d '{ "event_type": "do_gitlab_deploy" }'
-  artifacts: { paths: [ public ] }
