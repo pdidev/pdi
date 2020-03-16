@@ -69,7 +69,7 @@ option(BUILD_DECL_HDF5_PLUGIN "Build decl'HDF5 plug-in" ON)
 option(BUILD_DECL_SION_PLUGIN "Build decl'SION plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_FLOWVR_PLUGIN    "Build FlowVR plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_FORTRAN          "Enable Fortran support" ON)
-option(BUILD_FTI_PLUGIN       "Build FTI plug-in." "${BUILD_UNSTABLE}")
+option(BUILD_FTI_PLUGIN       "Build FTI plug-in." "OFF")
 option(BUILD_HDF5_PARALLEL    "Enable HDF5 parallel build" ON)
 option(BUILD_MPI_PLUGIN       "Build MPI plug-in" ON)
 option(BUILD_PYCALL_PLUGIN    "Build Pycall plug-in" "${BUILD_UNSTABLE}")
@@ -119,6 +119,7 @@ if("${BUILD_FLOWVR_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/flowvr/cmake")
 endif()
 if("${BUILD_FTI_PLUGIN}")
+	message(WARNING "The FTI plugin is currently disabled as its stability is problematic")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/fti/cmake")
 endif()
 if("${BUILD_MPI_PLUGIN}")
@@ -365,14 +366,12 @@ endif()
 
 if("${BUILD_FTI_PLUGIN}")
 	sbuild_add_dependency(FTI "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/fti-1.3"
+		EMBEDDED_PATH "vendor/fti-1.3+fix-cmake"
 		CMAKE_CACHE_ARGS
 			"-DENABLE_FORTRAN:BOOL=OFF"
 			"-DENABLE_EXAMPLES:BOOL=OFF"
 			"-DENABLE_TESTS:BOOL=OFF"
 			"-DENABLE_DOCU:BOOL=OFF"
-			# define NO_OPENSSL to workaround https://github.com/leobago/fti/issues/255
-			"-DNO_OPENSSL:BOOL=ON"
 		VERSION 1.3
 	)
 endif()
