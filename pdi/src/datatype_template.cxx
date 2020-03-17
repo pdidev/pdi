@@ -39,6 +39,7 @@
 #include "pdi/error.h"
 #include "pdi/expression.h"
 #include "pdi/paraconf_wrapper.h"
+#include "pdi/pointer_datatype.h"
 #include "pdi/record_datatype.h"
 #include "pdi/scalar_datatype.h"
 
@@ -174,6 +175,27 @@ public:
 	
 };
 
+class Pointer_template:
+	public Datatype_template
+{
+	Datatype_template_uptr m_subtype;
+	
+public:
+	Pointer_template(Datatype_template_uptr subtype): m_subtype{std::move(subtype)} {}
+	
+	Datatype_template_uptr clone() const override
+	{
+		return unique_ptr<Pointer_template> {new Pointer_template{m_subtype->clone()}};
+	}
+	
+	Datatype_uptr evaluate(Context& ctx) const override
+	{
+		return unique_ptr<Pointer_datatype> {new Pointer_datatype{m_subtype->evaluate(ctx)}};
+	}
+	
+};
+
+
 vector<Expression> get_array_property(PC_tree_t node, string property)
 {
 	vector<Expression> prop_vector;
@@ -285,6 +307,15 @@ Datatype_template_uptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 	return unique_ptr<Record_template> {new Record_template{get_members(ctx, member_list_node), move(record_buffersize)}};
 }
 
+Datatype_template_uptr to_pointer_datatype_template(Context& ctx, PC_tree_t node)
+{
+	PC_tree_t subtype_conf = PC_get(node, ".subtype");
+	if (PC_status(subtype_conf)) {
+		throw Error{PDI_ERR_CONFIG, "Pointer must have defined subtype"};
+	}
+	return unique_ptr<Pointer_template> {new Pointer_template{ctx.datatype(subtype_conf)}};
+}
+
 } // namespace <anonymous>
 
 Datatype_template::~Datatype_template()
@@ -349,6 +380,9 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::FLOAT, kind}};
 	});
 #endif // BUILD_FORTRAN
+	
+	// after all other basic types are loaded
+	ctx.add_datatype("pointer", to_pointer_datatype_template);
 }
 
 } // namespace PDI

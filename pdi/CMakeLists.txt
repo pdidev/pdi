@@ -145,6 +145,7 @@ set(PDI_SRC
 		src/logger.cxx
 		src/paraconf_wrapper.cxx
 		src/plugin.cxx
+		src/pointer_datatype.cxx
 		src/record_datatype.cxx
 		src/ref_any.cxx
 		src/scalar_datatype.cxx

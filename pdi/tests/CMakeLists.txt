@@ -64,6 +64,7 @@ set(PDI_unit_tests_SRC
 		PDI_expression.cxx
 		PDI_initialize_plugins.cxx
 		PDI_member.cxx
+		PDI_pointer_datatype.cxx
 		PDI_record_datatype_empty.cxx
 		PDI_record_datatype.cxx
 		PDI_ref_any.cxx

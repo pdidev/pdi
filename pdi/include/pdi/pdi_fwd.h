@@ -90,8 +90,7 @@ enum class Scalar_kind : uint8_t {
 	UNKNOWN,
 	SIGNED,
 	UNSIGNED,
-	FLOAT,
-	ADDRESS
+	FLOAT
 };
 
 /** A parsed value as specified by an expression.

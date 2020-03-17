@@ -138,9 +138,6 @@ Datatype_uptr python_type(pybind11::array& a)
 	case 'e': case 'f': case 'd': case 'g':
 		k = Scalar_kind::FLOAT;
 		break;
-	case 'P':
-		k = Scalar_kind::ADDRESS;
-		break;
 	default:
 		throw Error{PDI_ERR_IMPL, "Unexpected python type descriptor: {}", a.dtype().kind()};
 	}

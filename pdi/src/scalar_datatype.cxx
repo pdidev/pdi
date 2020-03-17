@@ -177,8 +177,7 @@ string Scalar_datatype::debug_string() const
 		{Scalar_kind::UNKNOWN,  "unknown"},
 		{Scalar_kind::SIGNED,   "signed"},
 		{Scalar_kind::UNSIGNED, "unsigned"},
-		{Scalar_kind::FLOAT,    "float"},
-		{Scalar_kind::ADDRESS,  "address"},
+		{Scalar_kind::FLOAT,    "float"}
 	};
 	stringstream ss;
 	ss << "type: scalar" << endl

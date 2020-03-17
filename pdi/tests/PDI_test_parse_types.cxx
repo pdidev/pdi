@@ -39,6 +39,7 @@
 #include <pdi/datatype.h>
 #include <pdi/datatype_template.h>
 #include <pdi/paraconf_wrapper.h>
+#include <pdi/pointer_datatype.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
 
@@ -50,6 +51,7 @@ using PDI::Datatype;
 using PDI::Datatype_template;
 using PDI::Global_context;
 using PDI::Paraconf_wrapper;
+using PDI::Pointer_datatype;
 using PDI::Record_datatype;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
@@ -451,6 +453,128 @@ vector<param_pair> record_types {
 	}
 };
 
+vector<param_pair> pointer_types {
+	{
+		"{type: pointer, subtype: int}", shared_ptr<Datatype>{
+			new Pointer_datatype {
+				unique_ptr<Datatype>{
+					new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}
+				}
+			}
+		}
+	},
+	{
+		"{type: pointer, subtype: {type: pointer, subtype: int}}", shared_ptr<Datatype>{
+			new Pointer_datatype {
+				unique_ptr<Datatype>{
+					new Pointer_datatype {
+						unique_ptr<Datatype>{
+							new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}
+						}
+					}
+				}
+			}
+		}
+	},
+	{
+		"{type: pointer, subtype: {type: array, subtype: int, size: 32}}", shared_ptr<Datatype>{
+			new Pointer_datatype {
+				unique_ptr<Datatype>{
+					new Array_datatype {
+						unique_ptr<Datatype>{
+							new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}
+						},
+						32
+					}
+				}
+			}
+		}
+	},
+	{
+		"{type: array, subtype: {type: pointer, subtype: int}, size: 32}", shared_ptr<Datatype>{
+			new Array_datatype {
+				unique_ptr<Datatype>{
+					new Pointer_datatype {
+						unique_ptr<Datatype>{
+							new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}
+						}
+					}
+				},
+				32
+			}
+		}
+	},
+	{
+		"type: pointer     \n"
+		"subtype:          \n"
+		"  type: record    \n"
+		"  buffersize: 8   \n"
+		"  members:        \n"
+		"     my_char:     \n"
+		"       disp: 0    \n"
+		"       type: char \n"
+		"     my_int:      \n"
+		"       disp: 4    \n"
+		"       type: int  \n",
+		shared_ptr<Datatype> {
+			new Pointer_datatype {
+				unique_ptr<Datatype> {
+					new Record_datatype {
+						vector<Record_datatype::Member> {
+							Record_datatype::Member{
+								0,
+								unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
+								"my_char"
+							},
+							Record_datatype::Member{
+								4,
+								unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+								"my_int"
+							}
+						},
+						8
+					}
+				}
+			}
+		}
+	},
+	{
+		"type: record       \n"
+		"buffersize: 16     \n"
+		"members:           \n"
+		"   my_ptr:         \n"
+		"     disp: 0       \n"
+		"     type: pointer \n"
+		"     subtype: char \n"
+		"   my_int:         \n"
+		"     disp: 8       \n"
+		"     type: int     \n",
+		shared_ptr<Datatype> {
+			new Record_datatype {
+				vector<Record_datatype::Member> {
+					Record_datatype::Member{
+						0,
+						unique_ptr<Datatype> {
+							new Pointer_datatype {
+								unique_ptr<Datatype> {
+									new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}
+								}
+							},
+						},
+						"my_ptr"
+					},
+					Record_datatype::Member{
+						8,
+						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+						"my_int"
+					}
+				},
+				16
+			}
+		}
+	}
+};
+
 vector<string> invalid_data {
 	"",
 	"long",
@@ -466,5 +590,6 @@ vector<string> invalid_data {
 INSTANTIATE_TEST_CASE_P(ScalarTypes, PositiveTypeParseTest, testing::ValuesIn(scalar_types));
 INSTANTIATE_TEST_CASE_P(ArrayTypes, PositiveTypeParseTest, testing::ValuesIn(array_types));
 INSTANTIATE_TEST_CASE_P(RecordTypes, PositiveTypeParseTest, testing::ValuesIn(record_types));
+INSTANTIATE_TEST_CASE_P(PointerTypes, PositiveTypeParseTest, testing::ValuesIn(pointer_types));
 
 INSTANTIATE_TEST_CASE_P(, NegativeTypeParseTest, testing::ValuesIn(invalid_data));

@@ -105,7 +105,7 @@ hid_t get_h5_type(const Datatype& type)
 			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #{}", scalar_type->datasize()};
 			}
 		}
-		case Scalar_kind::ADDRESS: case Scalar_kind::UNKNOWN:
+		case Scalar_kind::UNKNOWN:
 			throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #{}", static_cast<uint8_t>(scalar_type->kind())};
 		}
 	} else {
