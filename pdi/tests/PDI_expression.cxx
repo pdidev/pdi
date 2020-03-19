@@ -29,6 +29,7 @@
 
 #include <gtest/gtest.h>
 
+#include <pdi/array_datatype.h>
 #include <pdi/expression.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
@@ -36,10 +37,12 @@
 #include "mocks/context_mock.h"
 #include "mocks/data_descriptor_mock.h"
 
+using PDI::Array_datatype;
 using PDI::Expression;
 using PDI::Datatype_uptr;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
+using PDI::Ref;
 using PDI::Ref_r;
 using std::numeric_limits;
 using std::string;
@@ -881,13 +884,33 @@ using ::testing::ReturnRef;
  */
 TEST_F(AdvancedExpressionTest, simple_reference)
 {
-
 	MockDataDescriptor desc_mock;
 	long value = 10l;
 	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{new long{value}, &free, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp{"$simple"};
 	ASSERT_EQ(value, exp.to_long(context_mock));
+}
+
+/*
+ * Name:                AdvancedExpressionTest.string_ref
+ *
+ * Tested functions:    PDI::Expression::to_string(Context&)
+ *
+ * Description:         Checks if expression reference is correctly evaluated.
+ */
+TEST_F(AdvancedExpressionTest, string_ref)
+{
+	MockDataDescriptor desc_mock;
+	char string_value[] = "a_string_example";
+	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{string_value, [](void*) {}, Datatype_uptr{ new Array_datatype{ Datatype_uptr{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}, sizeof(string_value)-1 }}, true, true }));
+	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
+	Expression exp_str{"$simple"};
+	ASSERT_EQ(string_value, exp_str.to_string(context_mock));
+	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{ string_value, [](void*) {}, Datatype_uptr{ new Array_datatype{ Datatype_uptr{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}, sizeof(string_value)-1 }}, true, true }));
+	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
+	Expression exp_str2{"<${simple}>"};
+	ASSERT_EQ("<a_string_example>", exp_str2.to_string(context_mock));
 }
 
 /*

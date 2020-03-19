@@ -308,6 +308,16 @@ Expression::Impl::~Impl() = default;
 
 string Expression::Impl::to_string(Context& ctx) const
 {
+	Ref_r raw_data = to_ref(ctx);
+	if ( const Array_datatype* referenced_type = dynamic_cast<const Array_datatype*>(&raw_data.type()) ) {
+		if ( const Scalar_datatype* scal_type = dynamic_cast<const Scalar_datatype*>(&referenced_type->subtype()) ) {
+			if ( scal_type->datasize() == 1 && (
+			        scal_type->kind() == Scalar_kind::SIGNED
+			        || scal_type->kind() == Scalar_kind::UNSIGNED ) ) {
+				return string{static_cast<const char*>(raw_data.get()), referenced_type->size() };
+			}
+		}
+	}
 	long lres = to_long(ctx);
 	double dres = to_double(ctx);
 	stringstream result;
