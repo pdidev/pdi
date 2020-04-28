@@ -314,7 +314,7 @@ string Expression::Impl::to_string(Context& ctx) const
 			if ( scal_type->datasize() == 1 && (
 			        scal_type->kind() == Scalar_kind::SIGNED
 			        || scal_type->kind() == Scalar_kind::UNSIGNED ) ) {
-				return string{static_cast<const char*>(raw_data.get()), referenced_type->size() };
+				return string{static_cast<const char*>(raw_data.get())};
 			}
 		}
 	}
