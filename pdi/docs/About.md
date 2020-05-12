@@ -11,23 +11,29 @@ tolerance, logging,  inclusion as part of code-coupling, inclusion as part of an
 ensemble run, etc.
 
 
-# Documentation
+# User documentation
 
-Learn about %PDI:
-* \subpage Installation,
-* \subpage Concepts "Core concepts",
-* \subpage First_steps "First steps",
-* Understand \subpage Philosophy "PDI philosophy",
-* \ref Plugins "List of PDI plugins",
-* User reference documentation:
-  - [C annotation API](modules.html) and its bindings in Fortran and Python,
-  - \ref Specification_tree_ref "Specification tree",
-  - \ref PDI "API for plugin developers".
+1. \subpage Concepts "Core concepts"
+2. \subpage Installation "Installation"
+3. \subpage First_steps "First steps"
+4. \subpage PDI_example "PDI example"
+5. \ref Hands_on "Hands-on"
+6. \subpage Plugins "List of PDI plugins"
+7. [C API reference](modules.html)
+8. \subpage Specification_tree_ref "Specification tree reference"
+
+
+# Developer documentation
+
+1. \subpage how_to_create_plugin "Plugin creation tutorial"
+2. \subpage PDI "API for plugin developers"
 
 
 # Get support
 
-Get help on **Slack**: [https://bit.ly/2OPmhA9](https://join.slack.com/t/pdidev/shared_invite/enQtNDk5OTY2MDA0Nzg0LTlkM2U1MGQwZmM3OGM1MjA0M2VlMzUyNWNjODhkNmI4MjMwZmQxMTM1ODc2ODI4MjY4ODNmNDhmY2QzOWI4Nzk).
+If you have any problem with installation, running or understanding PDI,
+please contact us on our [**Slack channel** https://bit.ly/2OPmhA9](https://join.slack.com/t/pdidev/shared_invite/enQtNDk5OTY2MDA0Nzg0LTlkM2U1MGQwZmM3OGM1MjA0M2VlMzUyNWNjODhkNmI4MjMwZmQxMTM1ODc2ODI4MjY4ODNmNDhmY2QzOWI4Nzk).
+We will be happy to help ( ဖ‿ဖ)人(စ‿စ )
 
 
 # Join the team

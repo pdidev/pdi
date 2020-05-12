@@ -1,226 +1,213 @@
 \page Installation Installation
 
-PDI is distributed along some plugins and most of its dependencies in what is
-known as the **PDI distribution**.
+%PDI is distributed along some plugins and most of its dependencies in what is
+known as the **%PDI distribution**.
 It can be easily compiled from its source code.
 
 
-# Default PDI installation
+\section downloading_distribution Downloading PDI distribution
 
-Installing the *default PDI distribution* is fairly easy.
+As of now, %PDI must be compiled from source.
+
+To download the sources, have a look at the list of all releases from:  
+
+https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags
+
+For example, release 0.6.1 can be downloaded by following these instructions:
+```bash
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.1/pdi-0.6.1.tar.bz2
+tar -xjf pdi-0.6.1.tar.bz2 && rm pdi-0.6.1.tar.bz2
+```
+
+\section default_installation Default installation
+
+Installing the *default %PDI distribution* is fairly easy.
 Most dependencies are embedded in the distribution and the only required
 external dependencies are:
-  * a POSIX compatible OS with a python interpreter,
-  * CMake-3.5
-  * compilers for C (99), C++ (14) and Fortran (2003),
-  * MPI
+   * [cmake](https://cmake.org), version >= 3.5,
+   * a C-99 and C++-14 compiler ([gcc](https://gcc.gnu.org/) 5.4 is tested),
+   * a POSIX compatible OS ([linux](https://www.kernel.org/) with
+   [GNU libc](https://www.gnu.org/software/libc/) 2.27 is tested).
   
 For example, release 0.6.1 can be installed by following these instructions (but
 look for the latest release at
-https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags)
+https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags):
 
 ```bash
-# download
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.1/pdi-0.6.1.tar.bz2
-tar -xjf pdi-0.6.1.tar.bz2
-cd pdi-0.6.1
-# configuration
-cmake -DCMAKE_INSTALL_PREFIX=/usr/ .
-# compilation and installation
-make install
+mkdir pdi-0.6.1/build && cd pdi-0.6.1/build
+cmake ..       # configuration
+make install   # compilation and installation
 ```
+
+\warning The `cmake` command must be followed by the path to the `pdi`
+directory, here `..` because we have just created and moved to the `build`
+subdirectory.
 
 If the default installation fails or if you need an installation better tailored
 to your needs, keep reading.
 
+\section configuration Configuration
 
-# Downloading the distribution
-
-As of now, PDI must be compiled from source.
-
-To download the sources, have a look at the list of all releases from:
-https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags
-
-For example, release 0.6.1 can be downloaded and extracted by following these
-instructions:
-```bash
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.1/pdi-0.6.1.tar.bz2
-tar -xjf pdi-master.tar.bz2
-cd pdi-0.6.1
-```
-
-
-# Configuration and compilation
-
-The PDI distribution is compiled using Cmake.
-In addition to PDI itself, the distribution includes PDI plugins.
-
-PDI depends on:
-* [cmake](https://cmake.org), version >= 3.5
-* a C-99 and C++-14 compiler ([gcc](https://gcc.gnu.org/) 5.4 is tested)
-* a POSIX compatible OS ([linux](https://www.kernel.org/) with
-  [GNU libc](https://www.gnu.org/software/libc/) 2.27 is tested)
-* [paraconf](https://gitlab.maisondelasimulation.fr/jbigot/libparaconf)
-  (distributed with PDI, see below)
-* [libyaml](https://pyyaml.org/wiki/LibYAML) (distributed with PDI, see below)
-* [spdlog](https://github.com/gabime/spdlog) (distributed with PDI, see below)
-
-Once inside `pdi` directory, the compilation can be done using the following
-commands:
-```bash
-mkdir build
-cd build
-cmake ..
-make -j
-make install
-```
+The %PDI distribution is compiled using CMake.
+In addition to %PDI itself, the distribution includes %PDI plugins.
 
 The `cmake` command is used for configuration.
 It accepts options to enable or disable each element of the distribution and to
-configure them with the `-D` syntax.
+configure them with the `-D` syntax (set `VALUE` to the `FLAG` by: `-DFLAG=VALUE`).
 
-For example, the installation directory can be changed with the following
-command:
+For example, the installation directory can be changed with the following command:
 ```bash
-cmake -DCMAKE_INSTALL_PREFIX=/usr/ ..
+cmake -DCMAKE_INSTALL_PREFIX=/home/user/ ..
 ```
 
-\warning the `cmake` command must be followed by the path to the `pdi`
-directory, here `..` because we have just created and moved to the `build`
-subdirectory.
+\subsection list_of_compilation_flags PDI compilation flags
 
-The following boolean build options are available, each option should be set to
-either `ON` or `OFF`:
-<dl>
-<dt>`BUILD_UNSTABLE`</dt>
-   <dd>Build all features by default including those not stable yet</dd>
-<dt>`BUILD_CFG_VALIDATOR`</dt>
-   <dd>Build config validation script</dd>
-<dt>`BUILD_DECL_HDF5_PLUGIN`</dt>
-   <dd>Build decl'HDF5 plug-in</dd>
-<dt>`BUILD_DECL_SION_PLUGIN`</dt>
-   <dd>Build decl'SION plug-in</dd>
-<dt>`BUILD_DOCUMENTATION`</dt>
-   <dd>Build documentation</dd>
-<dt>`BUILD_MPI_PLUGIN`</dt>
-   <dd>Build MPI plug-in</dd>
-<dt>`BUILD_FLOWVR_PLUGIN`</dt>
-   <dd>Build FlowVR plug-in</dd>
-<dt>`BUILD_TESTING`</dt>
-   <dd>Build tests</dd>
-<dt>`BUILD_FORTRAN`</dt>
-   <dd>Enable Fortran support</dd>
-<dt>`BUILD_PYTHON`</dt>
-   <dd>Enable Python support</dd>
-</dl>
+|Flag           |Default value |Description                                  |
+|:--------------|:-------------|:--------------------------------------------|
+|`DIST_PROFILE` |`User`        |Compilation profile (`Devel` for developers).|
 
-The following dependency inclusion options are available, each one can be set to
-either `SYSTEM`, `EMBEDDED` or a path:
-<dl>
-<dt>`USE_DEFAULT`</dt>
-   <dd>Default version of libraries to use</dd>
-<dt>`USE_BPP`</dt>
-   <dd>version of BPP to use</dd>
-<dt>`USE_FLOWVR`</dt>
-   <dd>version of FlowVR to use</dd>
-<dt>`USE_GTEST`</dt>
-   <dd>version of Gtest to use</dd>
-<dt>`USE_PARACONF`</dt>
-   <dd>version of paraconf to use</dd>
-<dt>`USE_PYBIND11`</dt>
-   <dd>version of pybind11 to use</dd>
-<dt>`USE_PYYAML`</dt>
-   <dd>version of PyYAML to use</dd>
-<dt>`USE_SPDLOG`</dt>
-   <dd>version of spdlog to use</dd>
-<dt>`USE_YAML`</dt>
-   <dd>version of yaml to use</dd>
-</dl>
+\subsubsection user_profile_plugin_flags User profile plugin flags
+|Flag                     |Default value |Description              |
+|:------------------------|:-------------|:------------------------|
+|`BUILD_DECL_HDF5_PLUGIN` |`ON`          |Build decl'HDF5 plug-in. |
+|`BUILD_MPI_PLUGIN`       |`ON`          |Build MPI plug-in.       |
+|`BUILD_FLOWVR_PLUGIN`    |`OFF`         |Build FlowVR plug-in.    |
+|`BUILD_FTI_PLUGIN`       |`OFF`         |Build FTI plug-in.       |
+|`BUILD_PYCALL_PLUGIN`    |`OFF`         |Build Pycall plug-in.    |
+|`BUILD_DECL_SION_PLUGIN` |`OFF`         |Build decl'SION plug-in. |
+
+\subsubsection user_profile_other_flags User profile other flags
+|Flag                   |Default value |Description                                                  |
+|:----------------------|:-------------|:------------------------------------------------------------|
+|`BUILD_FORTRAN`        |`ON`          |Enable Fortran support.                                      |
+|`BUILD_PYTHON`         |`OFF`         |Enable Python support.                                       |
+|`BUILD_DOCUMENTATION`  |`OFF`         |Build documentation.                                         |
+|`BUILD_TESTING`        |`OFF`         |Build tests.                                                 |
+|`BUILD_CFG_VALIDATOR`  |`OFF`         |Build config validation script.                              |
+|`BUILD_UNSTABLE`       |`OFF`         |Build all features by default including those not stable yet.|
+
+\subsubsection user_dependency_flags Dependency inclusion options
+
+|Flag                   |Default Value       | Description                                          |
+|:----------------------|:-------------------|:-----------------------------------------------------|
+|`USE_DEFAULT`          |`AUTO`              |Detect missing dependencies and build them with %PDI. |
+
+|Flag                   |Value               | Description                                  |
+|:----------------------|:-------------------|:---------------------------------------------|
+|`USE_DEFAULT`          |`SYSTEM`/`EMBEDDED` |Use system libraries or build them with %PDI. |
+|`USE_YAML`             |`SYSTEM`/`EMBEDDED` |Use system libyaml or build it with %PDI.     |
+|`USE_PARACONF`         |`SYSTEM`/`EMBEDDED` |Use system libparaconf or build it with %PDI. |
+|`USE_SPDLOG`           |`SYSTEM`/`EMBEDDED` |Use system spdlog or build it with %PDI.      |
+|`USE_HDF5`             |`SYSTEM`/`EMBEDDED` |Use system HDF5 or build it with %PDI.        |
+|`USE_FTI`              |`SYSTEM`/`EMBEDDED` |Use system FTI or build it with %PDI.         |
+|`USE_FLOWVR`           |`SYSTEM`/`EMBEDDED` |Use system FlowVR or build it with %PDI.      |
+|`USE_SIONLIB`          |`SYSTEM`/`EMBEDDED` |Use system SIONlib or build it with %PDI.     |
+|`USE_PYBIND11`         |`SYSTEM`/`EMBEDDED` |Use system pybind11 or build it with %PDI.    |
 
 
-## Fortran support
+\subsubsection pdi_dependecies PDI dependencies
+|Dependency  |Distributed with %PDI |Source                                                           |
+|:-----------|:--------------------|:-----------------------------------------------------------------|
+|`paraconf`  |`YES`                |[Link](https://gitlab.maisondelasimulation.fr/jbigot/libparaconf) |
+|`libyaml`   |`YES`                |[Link](https://pyyaml.org/wiki/LibYAML)                           |
+|`spdlog`    |`YES`                |[Link](https://github.com/gabime/spdlog)                          |
 
-Fortran support is enabled by default, pass the `-DBUILD_FORTRAN=OFF` option to
-cmake to disable it.
+\subsubsection fortan_support Fortran support
 
-PDI Fortran support depends on:
-  * a Fortran-2003 compiler ([GNU Fortran](https://gcc.gnu.org/fortran/) 5.4 is
-    tested)
-  * a [python](https://www.python.org/) and
-    [bash](https://www.gnu.org/software/bash/) interpreter at compilation
-  * [BPP](https://gitlab.maisondelasimulation.fr/jbigot/bpp) (distributed with
-    PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or `-DUSE_BPP=EMBEDDED` option to
-    cmake to use the embedded version)
+%PDI Fortran support dependencies:
+|Dependency              |Distributed with %PDI |Source                                                    |
+|:-----------------------|:---------------------|:---------------------------------------------------------|
+|`Fortran-2003 compiler` |`NO`                  |[Link](https://gcc.gnu.org/fortran/)                      |
+|`python`                |`NO`                  |[Link](https://www.python.org/)                           |
+|`bash`                  |`NO`                  |[Link](https://www.gnu.org/software/bash/)                |
+|`BPP`                   |`YES`                 |[Link](https://gitlab.maisondelasimulation.fr/jbigot/bpp) |
 
+\subsubsection python_support Python support
 
-## PDI configuration validation tool
+Python support is **marked as unstable**.
 
-PDI configuration validation tool (pdicfg_validate) is enabled by default, pass
-the `-DBUILD_CFG_VALIDATOR=OFF` option to cmake to disable it.
+PDI Python support dependencies:
+|Dependency              |Distributed with %PDI |Source                                                    |
+|:-----------------------|:---------------------|:---------------------------------------------------------|
+|`python`                |`NO`                  |[Link](https://www.python.org/)                           |
+|`pybind11`              |`YES`                 |[Link](https://pybind11.readthedocs.io/en/stable)         |
 
-PDI configuration validation tool depends on:
-  * a [python](https://www.python.org/)3 interpreter
-  * [python YAML](https://pyyaml.org/) support (distributed with PDI, pass the
-    `-DUSE_DEFAULT=EMBEDDED` or `-DUSE_PYYAML=EMBEDDED` option to cmake to use
-    the embedded version)
+\subsection decl_hdf5_plugin Decl'HDF5 plugin
 
+Decl'HDF5 plugin dependencies:
+|Dependency              |Distributed with %PDI |Source                                                    |
+|:-----------------------|:---------------------|:---------------------------------------------------------|
+|`HDF5`                  |`YES`                  |[Link](https://www.hdfgroup.org/solutions/hdf5/)         |
 
-## Tests
+To build parallel HDF5 with PDI use flag:
+|Flag                  |Value |
+|:---------------------|:-----|
+|`BUILD_HDF5_PARALLEL` |`YES` |
 
-Tests are enabled by default, pass the `-DBUILD_TESTING=OFF` option to cmake to
-disable them.
+\subsection mpi_plugin MPI plugin
 
-Tests depend on:
-  * [cmake](https://cmake.org), version >= 3.10
-  * [Google Test framework](https://github.com/google/googletest) (the embedded
-    version is used by default, pass the `-DUSE_GTEST=SYSTEM` option to cmake to
-    use the system version)
+MPI plugin dependencies:
+|Dependency |Distributed with %PDI |Source                                                                |
+|:----------|:---------------------|:---------------------------------------------------------------------|
+|`MPI`      |`NO`                  |[OpenMPI](https://www.open-mpi.org/), [MPICH](https://www.mpich.org/) |
 
+\subsection flowvr_plugin FlowVR plugin
 
-## Python support
+FlowVR plugin is **marked as unstable**.
 
-Python support is **not marked stable yet**. Pass the `-DBUILD_UNSTABLE=ON` or
-`-DBUILD_PYTHON=ON` option to cmake to enable it.
+FlowVR plugin dependencies:
+|Dependency |Distributed with %PDI |Source                                           |
+|:----------|:---------------------|:------------------------------------------------|
+|`FlowVR`   |`YES`                 |[Link](https://gitlab.inria.fr/flowvr/flowvr-ex) |
 
-PDI Fortran support depends on:
-  * a [python](https://www.python.org/)3 installation with development headers
-  * [pybind11](https://pybind11.readthedocs.io/en/stable/) (distributed with
-    PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or `-DUSE_PYBIND11=EMBEDDED` option
-    to cmake to use the embedded version)
+\subsection fti_plugin FTI plugin
 
+FTI plugin is **marked as unstable**.
 
-## Decl'HDF5 plugin
+FTI plugin dependencies:
+|Dependency              |Distributed with %PDI |Source                                  |
+|:-----------------------|:---------------------|:---------------------------------------|
+|`FTI`                   |`YES`                  |[Link](https://github.com/leobago/fti) |
 
-The decl'HDF5 plugin is enabled by default, pass the
-`-DBUILD_DECL_HDF5_PLUGIN=OFF` option to cmake to disable it.
+\subsection pycall_plugin Pycall plugin
 
-The decl'HDF5 plugin depends on:
-  * HDF5 (either sequential or parallel compatible with the chosen MPI)
+Pycall plugin is **marked as unstable**.
 
-
-## Decl'SION plugin
-
-The decl'SION plugin is not marked stable yet. Pass the `-DBUILD_UNSTABLE=ON`
-or `-DBUILD_DECL_SION_PLUGIN=ON` option to cmake to enable it.
-
-The decl'SION plugin depends on:
-  * SIONlib compatible with the chosen MPI
-
-
-## FTI plugin
-
-FTI support is currently disabled waiting for the new-style FTI plugin. Pass the
-`-DBUILD_FTI_PLUGIN=ON` option to cmake to enable it anyway (at your own risk).
-
-The FTI plugin depends on:
-  * FTI (distributed with PDI, pass the `-DUSE_DEFAULT=EMBEDDED` or
-  `-DUSE_FTI=EMBEDDED` option to cmake to use the embedded version)
+Pycall plugin dependencies:
+|Dependency              |Distributed with %PDI |Source                                  |
+|:-----------------------|:---------------------|:---------------------------------------|
+|`python`                |`NO`                  |[Link](https://www.python.org/)                           |
+|`pybind11`              |`YES`                 |[Link](https://pybind11.readthedocs.io/en/stable)         |
 
 
-## MPI plugin
+\subsection decl_sion_plugin Decl'SION plugin
 
-The MPI plugin is enabled by default, pass the `-DBUILD_MPI_PLUGIN=OFF` option
-to cmake to disable it.
+Decl'SION plugin is **marked as unstable**.
 
-The MPI plugin depends on:
-  * a MPI-2 library (openmpi-1.10.2 is tested)
+Decl'SION plugin dependencies:
+|Dependency              |Distributed with %PDI |Source                                                                                      |
+|:-----------------------|:---------------------|:-------------------------------------------------------------------------------------------|
+|`SIONlib`               |`YES`                  |[Link](https://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/SIONlib/_node.html) |
+
+\subsection tests_dependencies Tests
+
+Tests dependencies:
+|Dependency              |Distributed with %PDI |Source                                       |
+|:-----------------------|:---------------------|:--------------------------------------------|
+|`Google Test framework` |`YES`                 |[Link](https://github.com/google/googletest) |
+|`cmake >= 3.10`         |`NO`                  |[Link](https://www.cmake.org/)               |
+
+\subsection documentation_dependencies Documentation
+
+Documentation dependencies:
+|Dependency          |Distributed with %PDI |Source                         |
+|:-------------------|:---------------------|:------------------------------|
+|`doxygen >= 1.8.15` |`YES`                 |[Link](http://www.doxygen.nl/) |
+
+\subsection pdiconf_validator PDI configuration validation tool
+
+%PDI configuration validation tool dependencies:
+|Dependency              |Distributed with %PDI |Source                          |
+|:-----------------------|:---------------------|:-------------------------------|
+|`python`                |`NO`                  |[Link](https://www.python.org/) |
+|`python YAML`           |`NO`                  |[Link](https://pyyaml.org/)     |

@@ -1,5 +1,21 @@
 \page Concepts Core Concepts
 
+\section pdi_philosophy Philosophy of PDI 
+Similarly to aspect-oriented programming, PDI distinguishes between core concerns and cross-cutting concerns.
+
+Core concerns are the aspects of the code that fulfill its main goal. We consider as core concerns of a simulation code the aspects handled in the main loop that generate elements needed as input of the next iteration of the loop.
+
+Cross-cutting concerns are the aspect of the code that are not core concerns. We consider as cross-cutting concerns of a simulation code:
+
+the aspects handled before the simulation main loop such as parameters reading, data initialization, etc,
+the aspects handled after the simulation main loop, such as result post-processing, storage to disk, visualization, etc,
+the aspects handled during the simulation main loop, but whose execution is not required for the next iteration of the loop, such as fault tolerance, logging, etc.
+The simulation could run with none of the cross-cutting concerns implemented (even if this would be completely useless with no result ever saved). The deactivation of a core concern on the other hand would lead to a failure of the simulation.
+
+PDI supports calling libraries from the specification tree instead of from the code. This is well suited for cross-cutting concerns but means that the code has no control over what and how these aspects are handled which does not fit the needs of core concerns.
+
+\section PDI_description PDI description
+
 %PDI offers to exchange data between the application code and various external data
 handlers, such as for example the file-system for I/O or another code for
 code-coupling.

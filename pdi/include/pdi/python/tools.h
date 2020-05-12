@@ -41,4 +41,3 @@ Datatype_uptr PDI_EXPORT python_type(pybind11::array& a);
 } // namespace PDI
 
 #endif // PDI_PYTHON_TOOLS_H_
-

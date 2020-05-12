@@ -84,9 +84,11 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_BINARY_DIR}/fortran_inc/"
 		"${PDI_SOURCE_DIR}/include/pdi.h"
 		"${PDI_SOURCE_DIR}/include/pdi/"
+		"${PDI_SOURCE_DIR}/../example/README.md"
 		"${PDI_SOURCE_DIR}/../hands_on/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/decl_hdf5/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/flowvr/README.md"
+		"${PDI_SOURCE_DIR}/../plugins/fti/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/trace/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/user_code/README.md")
 add_dependencies(doc doxygen_doc)
