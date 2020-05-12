@@ -25,10 +25,14 @@
 #ifndef PDI_EXPRESSION_H_
 #define PDI_EXPRESSION_H_
 
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 
 namespace PDI {
@@ -36,8 +40,6 @@ namespace PDI {
 class PDI_EXPORT Expression
 {
 	struct PDI_NO_EXPORT Impl;
-	
-	friend struct Impl;
 	
 	std::unique_ptr<Impl> m_impl;
 	
@@ -92,6 +94,12 @@ public:
 	 */
 	Expression(double expr);
 	
+	/** Builds an expression that is parsed from PC_tree_t
+	 *
+	 * \param[in] expr the PC_tree_t value
+	 */
+	Expression(PC_tree_t expr);
+	
 	/** Destroys an expression
 	 */
 	~Expression();
@@ -136,10 +144,18 @@ public:
 	
 	/** Evaluates an expression as a data reference
 	 *
+	 * \param ctx the context in which to evaluate the expression
 	 * \return the data reference
 	 */
 	Ref to_ref(Context& ctx) const;
 	
+	/** Evaluates an expression as a data reference
+	 *
+	 * \param ctx the context in which to evaluate the expression
+	 * \param type the type of the created Ref
+	 * \return the data reference
+	 */
+	Ref to_ref(Context& ctx, const Datatype& type) const;
 };
 
 } // namespace PDI

@@ -156,6 +156,28 @@ bool PDI_EXPORT to_bool(PC_tree_t tree);
  */
 bool PDI_EXPORT to_bool(PC_tree_t tree, bool dflt);
 
+
+/** Checks if the tree is a list
+ *
+ * \param[in] tree the node
+ * \return true if tree is a list, false otherwise
+ */
+bool PDI_EXPORT is_list(PC_tree_t tree);
+
+/** Checks if the tree is a map
+ *
+ * \param[in] tree the node
+ * \return true if tree is a map, false otherwise
+ */
+bool PDI_EXPORT is_map(PC_tree_t tree);
+
+/** Checks if the tree is a scalar
+ *
+ * \param[in] tree the node
+ * \return true if tree is a scalar, false otherwise
+ */
+bool PDI_EXPORT is_scalar(PC_tree_t tree);
+
 /** Iterates and apply the provided function to all elements of a PC list
  *
  * \param tree the tree containing the list

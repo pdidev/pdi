@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,48 +22,43 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_ERROR_H_
-#define PDI_ERROR_H_
+#ifndef PDI_EXPRESSION_IMPL_SEQUENCE_H_
+#define PDI_EXPRESSION_IMPL_SEQUENCE_H_
 
-#include <exception>
-#include <string>
+#include <memory>
 
-#include <paraconf.h>
-
-#include <pdi/pdi_fwd.h>
-
-#include <spdlog/fmt/fmt.h>
+#include "pdi/context.h"
+#include "pdi/datatype.h"
+#include "../impl.h"
 
 namespace PDI {
 
-class PDI_EXPORT Error:
-	public std::exception
-{
-	std::string m_what;
+/** An expression implemented by a a sequence
+ */
+struct PDI_NO_EXPORT Expression::Impl::Sequence : public Expression::Impl {
 	
-	PDI_status_t m_status;
+	std::vector<std::unique_ptr<Expression>> m_value;
 	
-public:
-	/** Creates a PDI error
-	 * \param[in] errcode the error code of the error to create
-	 * \param[in] fmt an errror message as a python-style format
-	 * \param[in] args the python-style parameters for the message
-	 * \see printf
-	 */
-	template<typename... Args>
-	Error(PDI_status_t errcode, const char* fmt, const Args& ... args):
-		m_what{fmt::format(fmt, args...)},
-		m_status{errcode}
-	{}
+	Sequence(PC_tree_t value);
+
+	Sequence(const std::vector<std::unique_ptr<Expression>>& value);
+
+	std::unique_ptr<Impl> clone() const override;
 	
-	Error(PDI_status_t errcode, const char* fmt);
+	long to_long(Context& ctx) const override;
 	
-	const char* what() const noexcept override;
+	double to_double(Context& ctx) const override;
 	
-	PDI_status_t status() const noexcept;
+	std::string to_string(Context& ctx) const override;
 	
+	Ref to_ref(Context& ctx) const override;
+
+	Ref to_ref(Context& ctx, const Datatype& type) const override;
+	
+	size_t copy_value(Context& ctx, void* buffer, const Datatype& type) const override;
 };
+
 
 } // namespace PDI
 
-#endif // PDI_ERROR_H_
+#endif //PDI_EXPRESSION_IMPL_SEQUENCE_H_

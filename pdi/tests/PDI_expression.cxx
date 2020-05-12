@@ -30,8 +30,10 @@
 #include <gtest/gtest.h>
 
 #include <pdi/array_datatype.h>
+#include <pdi/datatype.h>
 #include <pdi/expression.h>
 #include <pdi/ref_any.h>
+#include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
 
 #include "mocks/context_mock.h"
@@ -961,3 +963,269 @@ INSTANTIATE_TEST_CASE_P(, LongExpressionTest, ::testing::Values(numeric_limits<l
 INSTANTIATE_TEST_CASE_P(, DoubleExpressionTest, ::testing::Values(numeric_limits<double>::min(), -1.0, 0.0, 1.0, numeric_limits<double>::max()));
 
 INSTANTIATE_TEST_CASE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c","", "-100000", "0", "100000"));
+
+TEST(PCTreeToRefDefault, scalar_value_long)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PC_tree_t tree = PC_parse_string("4");
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
+	// ASSERT_EQ(4, *static_cast<long*>(ref.get()));
+}
+
+TEST(PCTreeToRefDefault, array_value_long)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PC_tree_t tree = PC_parse_string("[1, 2, 3, 4]");
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
+	ASSERT_EQ(1, static_cast<long*>(ref.get())[0]);
+	ASSERT_EQ(2, static_cast<long*>(ref.get())[1]);
+	ASSERT_EQ(3, static_cast<long*>(ref.get())[2]);
+	ASSERT_EQ(4, static_cast<long*>(ref.get())[3]);
+}
+
+TEST(PCTreeToRefDefault, array_value_string)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PC_tree_t tree = PC_parse_string("\"abcd\"");
+	
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
+	ASSERT_EQ('a', static_cast<char*>(ref.get())[0]);
+	ASSERT_EQ('b', static_cast<char*>(ref.get())[1]);
+	ASSERT_EQ('c', static_cast<char*>(ref.get())[2]);
+	ASSERT_EQ('d', static_cast<char*>(ref.get())[3]);
+}
+
+TEST(PCTreeToRefDefault, array_value_float)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PC_tree_t tree = PC_parse_string("[1.1, 2.2, 3.3, 4.4]");
+	
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
+	ASSERT_EQ(1.1, static_cast<double*>(ref.get())[0]);
+	ASSERT_EQ(2.2, static_cast<double*>(ref.get())[1]);
+	ASSERT_EQ(3.3, static_cast<double*>(ref.get())[2]);
+	ASSERT_EQ(4.4, static_cast<double*>(ref.get())[3]);
+}
+
+TEST(PCTreeToRefDefault, record_value)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PC_tree_t tree = PC_parse_string("{x: 42, y: [1, 2, 3, 4]}");
+	
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
+	const PDI::Record_datatype* record_type = dynamic_cast<const PDI::Record_datatype*>(&ref.type());
+	
+	long* x;
+	long* y;
+	if (record_type->members()[0].name() == "x") {
+		// x is the first member
+		x = static_cast<long*>(ref.get());
+		y = x + 1;
+	} else {
+		// y is the first member
+		y = static_cast<long*>(ref.get());
+		x = y + 4;
+	}
+	ASSERT_EQ(42, *x);
+	ASSERT_EQ(1, y[0]);
+	ASSERT_EQ(2, y[1]);
+	ASSERT_EQ(3, y[2]);
+	ASSERT_EQ(4, y[3]);
+}
+
+TEST(PCTreeToRefDefault, record_value_string)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PC_tree_t tree = PC_parse_string("{y: 123456789, x: \"a b c d e f g h i j k\"}");
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
+	const PDI::Record_datatype* record_type = dynamic_cast<const PDI::Record_datatype*>(&ref.type());
+	
+	char* x;
+	long* y;
+	
+	if (record_type->members()[0].name() == "x") {
+		// x is the first member
+		x = static_cast<char*>(ref.get());
+		y = reinterpret_cast<long*>(x + 24);
+	} else {
+		// y is the first member
+		y = static_cast<long*>(ref.get());
+		x = reinterpret_cast<char*>(y + 1);
+	}
+	
+	ASSERT_STREQ("a b c d e f g h i j k", x);
+	ASSERT_EQ(123456789, *y);
+}
+
+TEST(PCTreeToRef, scalar_value_unsigned_char)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Scalar_datatype type {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned char)};
+	PC_tree_t tree = PC_parse_string("4");
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	ASSERT_EQ(4, *static_cast<unsigned char*>(ref.get()));
+}
+
+TEST(PCTreeToRef, scalar_value_short)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Scalar_datatype type {PDI::Scalar_kind::SIGNED, sizeof(short)};
+	PC_tree_t tree = PC_parse_string("4");
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	ASSERT_EQ(4, *static_cast<short*>(ref.get()));
+}
+
+TEST(PCTreeToRef, scalar_value_int)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Scalar_datatype type {PDI::Scalar_kind::SIGNED, sizeof(int)};
+	PC_tree_t tree = PC_parse_string("4");
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	ASSERT_EQ(4, *static_cast<int*>(ref.get()));
+}
+
+TEST(PCTreeToRef, scalar_value_long)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Scalar_datatype type {PDI::Scalar_kind::SIGNED, sizeof(long)};
+	PC_tree_t tree = PC_parse_string("4");
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	ASSERT_EQ(4, *static_cast<long*>(ref.get()));
+}
+
+TEST(PCTreeToRef, array_value_long)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Array_datatype type {Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::SIGNED, sizeof(long)}}, 4};
+	PC_tree_t tree = PC_parse_string("[1, 2, 3, 4]");
+	
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	long* array = static_cast<long*>(ref.get());
+	ASSERT_EQ(1, array[0]);
+	ASSERT_EQ(2, array[1]);
+	ASSERT_EQ(3, array[2]);
+	ASSERT_EQ(4, array[3]);
+}
+
+TEST(PCTreeToRef, array_value_string)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Array_datatype type {Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::UNSIGNED, sizeof(char)}}, 5};
+	PC_tree_t tree = PC_parse_string("\"abcd\"");
+	
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	ASSERT_EQ('a', static_cast<char*>(ref.get())[0]);
+	ASSERT_EQ('b', static_cast<char*>(ref.get())[1]);
+	ASSERT_EQ('c', static_cast<char*>(ref.get())[2]);
+	ASSERT_EQ('d', static_cast<char*>(ref.get())[3]);
+}
+
+TEST(PCTreeToRef, array_value_float)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Array_datatype type {Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::FLOAT, sizeof(double)}}, 4};
+	PC_tree_t tree = PC_parse_string("[1.1, 2.2, 3.3, 4.4]");
+	
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	ASSERT_EQ(1.1, static_cast<double*>(ref.get())[0]);
+	ASSERT_EQ(2.2, static_cast<double*>(ref.get())[1]);
+	ASSERT_EQ(3.3, static_cast<double*>(ref.get())[2]);
+	ASSERT_EQ(4.4, static_cast<double*>(ref.get())[3]);
+}
+
+TEST(PCTreeToRef, record_value)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Record_datatype type {
+		std::vector<PDI::Record_datatype::Member> {
+			PDI::Record_datatype::Member {0, PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::UNSIGNED, sizeof(char)}}, "char"},
+			PDI::Record_datatype::Member {2, PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::SIGNED, sizeof(short)}}, "short"},
+			PDI::Record_datatype::Member {8, PDI::Datatype_uptr{new PDI::Array_datatype{PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::SIGNED, sizeof(long)}}, 4}}, "long"}
+		},
+		40
+	};
+	PC_tree_t tree = PC_parse_string("{char: 42, short: 84, long: [1, 2, 3, 4]}");
+	
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	
+	struct Test_record {
+		unsigned char x;
+		short y;
+		long z[4];
+	};
+	Test_record* result = static_cast<Test_record*>(ref.get());
+	ASSERT_EQ(42, result->x);
+	ASSERT_EQ(84, result->y);
+	ASSERT_EQ(1, result->z[0]);
+	ASSERT_EQ(2, result->z[1]);
+	ASSERT_EQ(3, result->z[2]);
+	ASSERT_EQ(4, result->z[3]);
+}
+
+TEST(PCTreeToRef, record_value_string)
+{
+	PDI::Paraconf_wrapper _pw;
+	MockContext ctx_mock;
+	
+	PDI::Record_datatype type {
+		std::vector<PDI::Record_datatype::Member> {
+			PDI::Record_datatype::Member {0, PDI::Datatype_uptr{new PDI::Array_datatype{PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::UNSIGNED, sizeof(char)}}, 25}}, "string"},
+			PDI::Record_datatype::Member {32, PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::SIGNED, sizeof(long)}}, "long"}
+		},
+		40
+	};
+	PC_tree_t tree = PC_parse_string("{string: \"a b c d e f g h i j k\", long: 123456789}");
+	
+	PDI::Expression ex(tree);
+	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
+	
+	struct Test_record {
+		char x[25];
+		long y;
+	};
+	Test_record* result = static_cast<Test_record*>(ref.get());
+	ASSERT_STREQ("a b c d e f g h i j k", result->x);
+	ASSERT_EQ(123456789, result->y);
+}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,48 +22,62 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_ERROR_H_
-#define PDI_ERROR_H_
+#ifndef PDI_EXPRESSION_IMPL_OPERATION_H_
+#define PDI_EXPRESSION_IMPL_OPERATION_H_
 
-#include <exception>
-#include <string>
+#include <memory>
 
-#include <paraconf.h>
-
-#include <pdi/pdi_fwd.h>
-
-#include <spdlog/fmt/fmt.h>
+#include "pdi/context.h"
+#include "pdi/datatype.h"
+#include "../impl.h"
 
 namespace PDI {
 
-class PDI_EXPORT Error:
-	public std::exception
-{
-	std::string m_what;
+/** An expression implemented by a an operation
+ */
+struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
+	/** The binary operators that can be used in expressions
+		*/
+	enum Operator {
+		PLUS = '+',
+		MINUS = '-',
+		MULT = '*',
+		DIV = '/',
+		MOD = '%',
+		EQUAL = '=',
+		AND = '&',
+		OR = '|',
+		GT = '>',
+		LT = '<'
+	};
 	
-	PDI_status_t m_status;
+	using Operand = std::pair<Operator, std::unique_ptr<Expression>>;
 	
-public:
-	/** Creates a PDI error
-	 * \param[in] errcode the error code of the error to create
-	 * \param[in] fmt an errror message as a python-style format
-	 * \param[in] args the python-style parameters for the message
-	 * \see printf
-	 */
-	template<typename... Args>
-	Error(PDI_status_t errcode, const char* fmt, const Args& ... args):
-		m_what{fmt::format(fmt, args...)},
-		m_status{errcode}
-	{}
 	
-	Error(PDI_status_t errcode, const char* fmt);
+	std::unique_ptr<Expression> m_first_operand;
 	
-	const char* what() const noexcept override;
+	std::vector<Operand> m_operands;
 	
-	PDI_status_t status() const noexcept;
 	
+	std::unique_ptr<Impl> clone() const override;
+	
+	long to_long(Context& ctx) const override;
+	
+	double to_double(Context& ctx) const override;
+
+	Ref to_ref(Context& ctx) const override;
+	
+	Ref to_ref(Context& ctx, const Datatype& type) const override;
+	
+	size_t copy_value(Context& ctx, void* buffer, const Datatype& type) const override;
+	
+	static std::unique_ptr<Impl> parse(char const** val_str, int level);
+	
+	static int op_level(const char* op);
+	
+	static Operator parse_operator(char const** val_str, int level);
 };
 
 } // namespace PDI
 
-#endif // PDI_ERROR_H_
+#endif //PDI_EXPRESSION_IMPL_OPERATION_H_

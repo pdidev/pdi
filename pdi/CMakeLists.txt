@@ -131,28 +131,33 @@ configure_file(src/version.h.in pdi/version.h @ONLY)
 
 ## C version
 
-set(PDI_SRC 
+set(PDI_C_SRC
 		src/array_datatype.cxx
 		src/context.cxx
 		src/context_proxy.cxx
-		src/global_context.cxx
 		src/data_descriptor.cxx
 		src/data_descriptor_impl.cxx
 		src/datatype.cxx
 		src/datatype_template.cxx
 		src/error.cxx
 		src/expression.cxx
+		src/expression/impl.cxx
+		src/expression/impl/float_literal.cxx
+		src/expression/impl/int_literal.cxx
+		src/expression/impl/mapping.cxx
+		src/expression/impl/operation.cxx
+		src/expression/impl/reference_expression.cxx
+		src/expression/impl/sequence.cxx
+		src/expression/impl/string_literal.cxx
+		src/global_context.cxx
 		src/logger.cxx
 		src/paraconf_wrapper.cxx
+		src/pdi.cxx
 		src/plugin.cxx
 		src/pointer_datatype.cxx
 		src/record_datatype.cxx
 		src/ref_any.cxx
 		src/scalar_datatype.cxx
-)
-set(PDI_C_SRC 
-		${PDI_SRC}
-		src/pdi.cxx
 )
 add_library(pdi ${PDI_C_SRC})
 generate_export_header(pdi EXPORT_FILE_NAME pdi/export.h)

@@ -127,6 +127,23 @@ bool to_bool(PC_tree_t tree, bool dflt)
 	return result;
 }
 
+bool is_list(PC_tree_t tree)
+{
+	return tree.node->type == YAML_SEQUENCE_NODE;
+}
+
+bool is_map(PC_tree_t tree)
+{
+	return tree.node->type == YAML_MAPPING_NODE;
+}
+
+bool is_scalar(PC_tree_t tree)
+{
+	return tree.node->type == YAML_SCALAR_NODE;
+}
+
+
+
 void each(PC_tree_t tree, std::function<void(PC_tree_t)> operation)
 {
 	int nb_elem = len(tree);
