@@ -74,6 +74,7 @@ option(BUILD_HDF5_PARALLEL    "Build Decl'HDF5 in parallel mode" ON)
 option(BUILD_MPI_PLUGIN       "Build MPI plug-in" ON)
 option(BUILD_PYCALL_PLUGIN    "Build Pycall plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_PYTHON           "Build with Python support" "${BUILD_UNSTABLE}")
+option(BUILD_SET_VALUE_PLUGIN "Build set_value plug-in" ON)
 option(BUILD_SHARED_LIBS      "Build shared libraries rather than static ones" ON)
 option(BUILD_TEST_PLUGIN      "Build Test plugin" ON)
 option(BUILD_TRACE_PLUGIN     "Build Trace plugin" ON)
@@ -609,6 +610,12 @@ sbuild_add_module(PYCALL_PLUGIN
 	SUBSTEPS indent test
 )
 
+sbuild_add_module(SET_VALUE_PLUGIN
+	ENABLE_BUILD "${BUILD_SET_VALUE_PLUGIN}"
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/set_value"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
+)
 
 sbuild_add_module(TEST_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TEST_PLUGIN

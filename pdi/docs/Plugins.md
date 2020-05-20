@@ -6,6 +6,7 @@
 |\subpage FlowVR_plugin "FlowVR plugin"               |Write FlowVR modules without knowing any specific FlowVR API calls.|
 |\subpage trace_plugin "trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
 |\subpage user_code_plugin "user-code plugin"         |Call your function on event or when data becomes available         |
+|\subpage set_value_plugin "set_value plugin"         |Set values to data and metadata from yaml file.                    |
 |\subpage FTI_plugin "FTI plugin"                     |Perform checkpoints using FTI library.                             |
 |\subpage pycall_plugin "Pycall plugin"               |Call python scripts from C application                             |
 |MPI plugin                                           |Enables MPI support in %PDI and plugins.                           |

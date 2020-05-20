@@ -1,0 +1,21 @@
+logging: trace
+data:
+  record_data:
+    type: record
+    buffersize: 20 
+    members:
+      scalar_data: 
+        disp: 0
+        type: int
+      array_data:
+        disp: 4
+        type: array
+        size: 4
+        subtype: int
+plugins:
+  set_value:
+    on_init:
+      - share:
+        - record_data:
+            scalar_data: 4
+            array_data: [2, 3, 4, 5]

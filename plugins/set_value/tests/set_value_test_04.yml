@@ -1,0 +1,27 @@
+logging:
+  level: trace
+metadata:
+  array_metadata:
+    type: array
+    size: $array_size
+    subtype: int
+data:
+  array_size: int
+
+plugins:
+  set_value:
+    on_init:
+      - share:
+        - array_size: 0
+      - set:
+        - array_size: 4
+      - expose:
+        - array_metadata: [1, 2, 3, 4]
+      - set:
+        - array_size: 6
+    on_event:
+      update_array:
+        - expose:
+          - array_metadata: [9, 8, 7, 6, 5, 4]
+        - set:
+          - array_size: 0

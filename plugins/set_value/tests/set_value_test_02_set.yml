@@ -1,0 +1,84 @@
+logging:
+  level: trace
+data:
+  value_char:
+    type: char
+  char_array:
+    size: 3 
+    subtype: char
+    type: array
+  value_short:
+    type: int16
+  short_array:
+    size: 3
+    subtype: int16
+    type: array
+  value_int:
+    type: int
+  int_array:
+    size: 3
+    subtype: int
+    type: array
+  value_long:
+    type: int64
+  long_array:
+    size: 3
+    subtype: int64
+    type: array
+  value_float:
+    type: float
+  float_array:
+    size: 3
+    subtype: float
+    type: array
+  value_double:
+    type: double
+  double_array:
+    size: 3
+    subtype: double
+    type: array
+plugins:
+  set_value:
+    on_data:
+      value_char:
+        - set:
+          - value_char: 42
+      char_array:
+        - set:
+          - char_array: [0, 1, 2]
+      value_short:
+        - set:
+          - value_short: 4242
+      short_array:
+        - set:
+          - short_array: [3, 4, 5]
+      value_int:
+        - set:
+          - value_int: 424242
+      int_array:
+        - set:
+          - int_array: [6, 7, 8]
+      value_long:
+        - set:
+          - value_long: 424242424242
+      long_array:
+        - set:
+          - long_array: [9, 10, 11]
+      value_float:
+        - set:
+          - value_float: 3.14159265
+      float_array:
+        - set:
+          - float_array:
+            - 1.23456789
+            - 12.3456789
+            - 123.456789
+      value_double:
+        - set:
+          - value_double: 3.14159265
+      double_array:
+        - set:
+          - double_array:
+            - 1.23456789
+            - 12.3456789
+            - 123.456789
