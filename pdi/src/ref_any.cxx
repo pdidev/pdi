@@ -41,7 +41,7 @@
 
 namespace PDI {
 
-Ref Ref_base::do_copy(Ref_r ref)
+Ref Reference_base::do_copy(Ref_r ref)
 {
 	Datatype_uptr densified_type {ref.type().densify()};
 	if ( !densified_type->buffersize() ) {
@@ -62,9 +62,9 @@ Ref Ref_base::do_copy(Ref_r ref)
 }
 
 
-const Datatype& Ref_base::type() const noexcept
+const Datatype& Reference_base::type() const noexcept
 {
-	if (!m_content || !m_content->m_buffer) return UNDEF_TYPE;
+	if (!m_content || !m_content->m_data) return UNDEF_TYPE;
 	return *m_content->m_type;
 }
 

@@ -41,20 +41,22 @@ using ::testing::Return;
 /*
  * Struct prepared for DataRefAnyTest.
  */
-struct DataRefAnyTest : public ::testing::Test, Ref_base {
-	DataRefAnyTest()
+struct DataRefAnyTest : public ::testing::Test, Reference_base {
+	DataRefAnyTest():
+		m_data {new int[1024]}
 	{
-		EXPECT_CALL(*this->mocked_datatype, datasize())
-		.Times(1)
-		.WillOnce(Return(1024));
+		for (int i = 0; i < 1024; i++) {
+			m_data[i] = i;
+		}
 		
-		m_tested_ref = unique_ptr<Ref> {new Ref{&m_data, [](void* d){ *((bool*) d) = false;  },
-			Datatype_uptr{mocked_datatype}, true, true}
+		Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+		Array_datatype array_type {int_type.clone_type(), 32};
+		m_tested_ref = unique_ptr<Ref> {new Ref{m_data.get(), [](void* d){*static_cast<int*>(d)=-1;},
+			array_type.clone_type(), true, true}
 		};
 	}
 	
-	MockDatatype* mocked_datatype {new MockDatatype()};
-	bool m_data {true};
+	unique_ptr<int[]> m_data;
 	
 	unique_ptr<Ref> m_tested_ref;
 };
@@ -69,9 +71,10 @@ struct DataRefAnyTest : public ::testing::Test, Ref_base {
 TEST_F(DataRefAnyTest, newReferenceConstructor)
 {
 	ASSERT_TRUE(*this->m_tested_ref);
-	ASSERT_EQ(1, Ref_base::get_content(*this->m_tested_ref)->m_owners);
-	ASSERT_EQ(0, Ref_base::get_content(*this->m_tested_ref)->m_read_locks);
-	ASSERT_EQ(0, Ref_base::get_content(*this->m_tested_ref)->m_write_locks);
+	ASSERT_EQ(1, Reference_base::get_content(*this->m_tested_ref)->m_owners);
+	ASSERT_EQ(1, Reference_base::get_content(*this->m_tested_ref)->m_buffer->m_owners);
+	ASSERT_EQ(0, Reference_base::get_content(*this->m_tested_ref)->m_buffer->m_read_locks);
+	ASSERT_EQ(0, Reference_base::get_content(*this->m_tested_ref)->m_buffer->m_write_locks);
 }
 
 /*
@@ -88,9 +91,10 @@ TEST_F(DataRefAnyTest, copyConstructor)
 	ASSERT_TRUE(copied_ref);
 	ASSERT_TRUE(*this->m_tested_ref);
 	ASSERT_EQ(*this->m_tested_ref, copied_ref);
-	ASSERT_EQ(2, Ref_base::get_content(copied_ref)->m_owners);
-	ASSERT_EQ(0, Ref_base::get_content(copied_ref)->m_read_locks);
-	ASSERT_EQ(0, Ref_base::get_content(copied_ref)->m_write_locks);
+	ASSERT_EQ(2, Reference_base::get_content(copied_ref)->m_owners);
+	ASSERT_EQ(1, Reference_base::get_content(copied_ref)->m_buffer->m_owners);
+	ASSERT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
+	ASSERT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
 }
 
 /*
@@ -106,10 +110,11 @@ TEST_F(DataRefAnyTest, moveConstructor)
 	Ref moved_ref(move(*this->m_tested_ref));
 	ASSERT_TRUE(moved_ref);
 	ASSERT_FALSE(*this->m_tested_ref);
-	ASSERT_EQ(nullptr, Ref_base::get_content(*this->m_tested_ref));
-	ASSERT_EQ(1, Ref_base::get_content(moved_ref)->m_owners);
-	ASSERT_EQ(0, Ref_base::get_content(moved_ref)->m_read_locks);
-	ASSERT_EQ(0, Ref_base::get_content(moved_ref)->m_write_locks);
+	ASSERT_EQ(nullptr, Reference_base::get_content(*this->m_tested_ref));
+	ASSERT_EQ(1, Reference_base::get_content(moved_ref)->m_owners);
+	ASSERT_EQ(1, Reference_base::get_content(moved_ref)->m_buffer->m_owners);
+	ASSERT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_read_locks);
+	ASSERT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_write_locks);
 }
 
 /*
@@ -124,8 +129,7 @@ TEST_F(DataRefAnyTest, moveConstructor)
 TEST_F(DataRefAnyTest, unlinkToDestroy)
 {
 	this->m_tested_ref->reset();
-	ASSERT_FALSE(*this->m_tested_ref);
-	ASSERT_FALSE(this->m_data);
+	ASSERT_EQ(this->m_data[0], -1);
 }
 
 /*
@@ -142,22 +146,24 @@ TEST_F(DataRefAnyTest, unlinkButNotDestroy)
 	Ref copied_ref(*this->m_tested_ref);
 	ASSERT_TRUE(*this->m_tested_ref);
 	ASSERT_EQ(*this->m_tested_ref, copied_ref);
-	ASSERT_EQ(2, Ref_base::get_content(copied_ref)->m_owners);
+	ASSERT_EQ(2, Reference_base::get_content(copied_ref)->m_owners);
+	ASSERT_EQ(1, Reference_base::get_content(copied_ref)->m_buffer->m_owners);
 	
 	this->m_tested_ref->reset();
 	
 	ASSERT_FALSE(*this->m_tested_ref);
 	ASSERT_TRUE(copied_ref);
-	ASSERT_TRUE(this->m_data);
-	ASSERT_EQ(1, Ref_base::get_content(copied_ref)->m_owners);
-	ASSERT_EQ(0, Ref_base::get_content(copied_ref)->m_read_locks);
-	ASSERT_EQ(0, Ref_base::get_content(copied_ref)->m_write_locks);
+	ASSERT_EQ(this->m_data[0], 0);
+	ASSERT_EQ(1, Reference_base::get_content(copied_ref)->m_owners);
+	ASSERT_EQ(1, Reference_base::get_content(copied_ref)->m_buffer->m_owners);
+	ASSERT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
+	ASSERT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
 	
 	copied_ref.reset();
 	
 	ASSERT_FALSE(*this->m_tested_ref);
 	ASSERT_FALSE(copied_ref);
-	ASSERT_FALSE(this->m_data);
+	ASSERT_EQ(this->m_data[0], -1);
 }
 
 /*
@@ -167,21 +173,21 @@ TEST_F(DataRefAnyTest, unlinkButNotDestroy)
  *                      PDI::Ref_any::unlink()
  *
  * Description:         Test checks if correct address is
- *                      returned od get().
+ *                      returned from get().
  */
 TEST_F(DataRefAnyTest, getAccess)
 {
 	Ref_r copied_ref_r(*this->m_tested_ref);
 	ASSERT_TRUE(copied_ref_r);
 	const void* ptr_r = copied_ref_r.get();
-	ASSERT_EQ(&this->m_data, ptr_r);
+	ASSERT_EQ(this->m_data.get(), ptr_r);
 	
 	copied_ref_r.reset();
 	
 	Ref_rw copied_ref_rw(*this->m_tested_ref);
 	ASSERT_TRUE(copied_ref_rw);
 	void* ptr_rw = copied_ref_rw.get();
-	ASSERT_EQ(&this->m_data, ptr_rw);
+	ASSERT_EQ(this->m_data.get(), ptr_rw);
 }
 
 /*
@@ -194,9 +200,9 @@ TEST_F(DataRefAnyTest, getAccess)
  */
 TEST_F(DataRefAnyTest, releaseTest)
 {
-	ASSERT_EQ(&this->m_data, this->m_tested_ref->release());
+	ASSERT_EQ(this->m_data.get(), this->m_tested_ref->release());
 	ASSERT_FALSE(*this->m_tested_ref);
-	ASSERT_TRUE(this->m_data);
+	ASSERT_EQ(this->m_data[0], 0);
 }
 
 /*
@@ -213,13 +219,227 @@ TEST_F(DataRefAnyTest, nullifyTest)
 	char c;
 	void* address = &c;
 	this->m_tested_ref->on_nullify([address](Ref whoCalled) {
-		Ref_base::get_content(whoCalled)->m_buffer = address;
+		Reference_base::get_content(whoCalled)->m_data = address;
 	});
 	Ref otherRef(*this->m_tested_ref);
 	void* recvAddress = otherRef.release();
 	ASSERT_EQ(address, recvAddress);
-	ASSERT_TRUE(this->m_data);
+	ASSERT_EQ(this->m_data[0], 0);
 }
+
+/*
+ * Name:                DataRefAnyTest.content
+ *
+ * Tested functions:    PDI::Ref_any::Ref_any()
+ */
+TEST_F(DataRefAnyTest, content)
+{
+	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 1);
+	
+	Ref_r sub {*this->m_tested_ref, 4*sizeof(int), int_type.clone_type()};
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 2);
+	ASSERT_NE(get_content(sub), get_content(*this->m_tested_ref));
+	ASSERT_EQ(get_content(sub)->m_buffer, get_content(*this->m_tested_ref)->m_buffer);
+	ASSERT_EQ(get_content(sub)->m_owners, 1);
+	ASSERT_EQ(get_content(sub)->m_buffer->m_owners, 2);
+	
+	
+	this->m_tested_ref->reset();
+	ASSERT_EQ(get_content(sub)->m_owners, 1);
+	ASSERT_EQ(get_content(sub)->m_buffer->m_owners, 1);
+	
+	ASSERT_EQ(4, *static_cast<const int*>(sub.get()));
+	sub.reset();
+	ASSERT_EQ(this->m_data[0], -1);
+}
+
+/*
+ * Name:                DataRefAnyTest.content_chain
+ *
+ * Tested functions:    PDI::Ref_any::Ref_any()
+ */
+TEST_F(DataRefAnyTest, content_chain)
+{
+	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	Array_datatype subarray {int_type.clone_type(), 4};
+	
+	Ref_r sub_array_ref {*this->m_tested_ref, 16*sizeof(int), subarray.clone_type()}; // array [16:20]
+	Ref_r sub_scalar_ref {sub_array_ref, 0L, int_type.clone_type()}; // array[16]
+	
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(sub_array_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(sub_array_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(sub_scalar_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(sub_scalar_ref)->m_owners, 1);
+	
+	ASSERT_EQ(get_content(sub_array_ref)->m_buffer, get_content(*this->m_tested_ref)->m_buffer);
+	ASSERT_EQ(get_content(sub_array_ref)->m_buffer, get_content(sub_scalar_ref)->m_buffer);
+	
+	ASSERT_NE(get_content(sub_array_ref), get_content(*this->m_tested_ref));
+	ASSERT_NE(get_content(sub_array_ref), get_content(sub_scalar_ref));
+	
+	this->m_tested_ref->reset();
+	ASSERT_EQ(get_content(sub_array_ref)->m_buffer->m_owners, 2);
+	
+	ASSERT_EQ(16, static_cast<const int*>(sub_array_ref.get())[0]);
+	ASSERT_EQ(17, static_cast<const int*>(sub_array_ref.get())[1]);
+	ASSERT_EQ(18, static_cast<const int*>(sub_array_ref.get())[2]);
+	ASSERT_EQ(19, static_cast<const int*>(sub_array_ref.get())[3]);
+	sub_array_ref.reset();
+	
+	ASSERT_EQ(16, *static_cast<const int*>(sub_scalar_ref.get()));
+	ASSERT_EQ(get_content(sub_scalar_ref)->m_buffer->m_owners, 1);
+	
+	sub_scalar_ref.reset();
+	ASSERT_EQ(-1, this->m_data[0]);
+}
+
+/*
+ * Name:                DataRefAnyTest.content_record
+ *
+ * Tested functions:    PDI::Ref_any::Ref_any()
+ */
+TEST_F(DataRefAnyTest, content_record)
+{
+	Scalar_datatype char_type {Scalar_kind::SIGNED, sizeof(char)};
+	struct Record {
+		char x;
+		int y[32];
+	};
+	
+	std::vector<Record_datatype::Member> members;
+	members.emplace_back(offsetof(Record, x), char_type.clone_type(), "x");
+	members.emplace_back(offsetof(Record, y), this->m_tested_ref->type().clone_type(), "y");
+	Record_datatype record_type {std::move(members), sizeof(Record)};
+	
+	Record data;
+	data.x = 42;
+	for (int i = 0; i < 32; i++) {
+		data.y[i] = i;
+	}
+	
+	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type.clone_type(), true, true};
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 1);
+	
+	Ref_r data_x_ref {base_ref, 0L, char_type.clone_type()}; // data.x
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	
+	Ref_r data_y_ref (base_ref, offsetof(Record, y), this->m_tested_ref->type().clone_type());
+	for (int i = 0; i < 32; i++) {
+		ASSERT_EQ(i, static_cast<const int*>(data_y_ref.get())[i]);
+	}
+	
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(data_y_ref)->m_owners, 1);
+	
+	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	
+	Ref data_y_scalar_ref {data_y_ref, 12*sizeof(int), int_type.clone_type()};
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_y_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 1);
+	
+	if (Ref_w failed {data_y_scalar_ref}) {
+		FAIL();
+	}
+	if (Ref_w failed {base_ref}) {
+		FAIL();
+	}
+	
+	Ref_r data_y_scalar_ref_r {data_y_scalar_ref};
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_y_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
+	ASSERT_EQ(12, *static_cast<const int*>(data_y_scalar_ref_r.get()));
+	
+	data_y_ref.reset();
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
+	ASSERT_EQ(42, *static_cast<const int*>(data_x_ref.get()));
+	
+	data_x_ref.reset();
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
+	
+	base_ref.reset();
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
+	
+	data_y_scalar_ref.reset();
+	ASSERT_EQ(get_content(data_y_scalar_ref_r)->m_buffer->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref_r)->m_owners, 1);
+	ASSERT_EQ(42, data.x);
+	
+	data_y_scalar_ref_r.reset();
+	
+	ASSERT_EQ(-1, data.x);
+}
+
+/*
+ * Name:                DataRefAnyTest.content_deep_copy
+ *
+ * Tested functions:    PDI::Ref_any::do_copy()
+ */
+TEST_F(DataRefAnyTest, content_deep_copy)
+{
+	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 1);
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
+	
+	Ref_r sub {*this->m_tested_ref, 4*sizeof(int), int_type.clone_type()};
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
+	ASSERT_NE(get_content(sub), get_content(*this->m_tested_ref));
+	ASSERT_EQ(get_content(sub)->m_buffer, get_content(*this->m_tested_ref)->m_buffer);
+	ASSERT_EQ(get_content(sub)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(sub)->m_owners, 1);
+	
+	Ref_r copied = do_copy(sub);
+	ASSERT_EQ(copied.type().buffersize(), sub.type().buffersize());
+	ASSERT_NE(copied.get(), sub.get());
+	ASSERT_EQ(*static_cast<const int*>(copied.get()), *static_cast<const int*>(sub.get()));
+	
+	this->m_tested_ref->reset();
+	ASSERT_EQ(get_content(sub)->m_buffer->m_owners, 1);
+	ASSERT_EQ(get_content(sub)->m_owners, 1);
+	
+	ASSERT_EQ(4, *static_cast<const int*>(sub.get()));
+	sub.reset();
+	ASSERT_EQ(this->m_data[0], -1);
+	
+	ASSERT_EQ(4, *static_cast<const int*>(copied.get()));
+}
+
 
 /*
  * Struct prepared for DataRefAnyTypedTest.
@@ -300,22 +520,23 @@ TYPED_TEST(DataRefAnyTypedTest, chmodConstructor)
 	
 	ASSERT_TRUE(*this->m_tested_ref);
 	ASSERT_EQ(*this->m_tested_ref, chref);
-	ASSERT_EQ(2, Ref_base::get_content(chref)->m_owners);
+	ASSERT_EQ(2, Reference_base::get_content(chref)->m_owners);
+	ASSERT_EQ(1, Reference_base::get_content(chref)->m_buffer->m_owners);
 	
 	if (this->locks & 2) {
 		//if granted with write access
-		ASSERT_EQ(1, Ref_base::get_content(chref)->m_read_locks);
-		ASSERT_EQ(1, Ref_base::get_content(chref)->m_write_locks);
+		ASSERT_EQ(1, Reference_base::get_content(chref)->m_buffer->m_read_locks);
+		ASSERT_EQ(1, Reference_base::get_content(chref)->m_buffer->m_write_locks);
 	} else {
 		//if not granted with write access
 		if (this->locks & 1) {
 			//if granted with read access
-			ASSERT_EQ(0, Ref_base::get_content(chref)->m_read_locks);
-			ASSERT_EQ(1, Ref_base::get_content(chref)->m_write_locks);
+			ASSERT_EQ(0, Reference_base::get_content(chref)->m_buffer->m_read_locks);
+			ASSERT_EQ(1, Reference_base::get_content(chref)->m_buffer->m_write_locks);
 		} else {
 			//if not granted with read access
-			ASSERT_EQ(0, Ref_base::get_content(chref)->m_read_locks);
-			ASSERT_EQ(0, Ref_base::get_content(chref)->m_write_locks);
+			ASSERT_EQ(0, Reference_base::get_content(chref)->m_buffer->m_read_locks);
+			ASSERT_EQ(0, Reference_base::get_content(chref)->m_buffer->m_write_locks);
 		}
 	}
 }
@@ -385,8 +606,6 @@ struct SparseArrayRefAnyTest : public DataRefAnyTest {
 	
 	SparseArrayRefAnyTest() : DataRefAnyTest()
 	{
-		EXPECT_CALL(*this->mocked_datatype, destroy_data(::testing::_))
-		.Times(1);
 		m_tested_ref->reset();
 		
 		for (int i = 0; i < 100; i++) {
@@ -451,8 +670,6 @@ struct DenseRecordRefAnyTest : public DataRefAnyTest {
 	
 	DenseRecordRefAnyTest() : DataRefAnyTest()
 	{
-		EXPECT_CALL(*this->mocked_datatype, destroy_data(::testing::_))
-		.Times(1);
 		DataRefAnyTest::m_tested_ref->reset();
 		
 		for (int i = 0; i < 25; i++) {
@@ -529,8 +746,6 @@ struct SparseRecordRefAnyTest : public DataRefAnyTest {
 	
 	SparseRecordRefAnyTest() : DataRefAnyTest()
 	{
-		EXPECT_CALL(*this->mocked_datatype, destroy_data(::testing::_))
-		.Times(1);
 		DataRefAnyTest::m_tested_ref->reset();
 		
 		for (int i = 0; i < 25; i++) {
