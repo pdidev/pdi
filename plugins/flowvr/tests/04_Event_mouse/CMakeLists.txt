@@ -23,7 +23,7 @@
 #=============================================================================
 
 add_executable(send_mouse send_mouse.cxx)
-target_link_libraries(send_mouse PDI::pdi)
+target_link_libraries(send_mouse PDI::PDI_C)
 configure_file(send_mouse.yml send_mouse.yml COPYONLY)
 set_target_properties(send_mouse PROPERTIES
 		CXX_STANDARD 14
@@ -31,7 +31,7 @@ set_target_properties(send_mouse PROPERTIES
 
 
 add_executable(recv_mouse recv_mouse.cxx)
-target_link_libraries(recv_mouse PDI::pdi)
+target_link_libraries(recv_mouse PDI::PDI_C)
 configure_file(recv_mouse.yml recv_mouse.yml COPYONLY)
 set_target_properties(recv_mouse PROPERTIES
 		CXX_STANDARD 14

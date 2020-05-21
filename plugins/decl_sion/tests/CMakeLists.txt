@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -56,12 +56,12 @@ endif()
 # Testing export of Metatadata and files creation
 
 add_executable(decl_sion_01_c decl_sion_test_01.c)
-target_link_libraries(decl_sion_01_c PDI::pdi MPI::MPI_C)
+target_link_libraries(decl_sion_01_c PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_01_c>" ${MPIEXEC_POSTFLAGS})
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_sion_01_F decl_sion_test_01.F90)
-target_link_libraries(decl_sion_01_F PDI::pdi_f90 MPI_with_mod)
+target_link_libraries(decl_sion_01_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_01_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
@@ -71,12 +71,12 @@ endif("${BUILD_FORTRAN}")
 # Testing writer/reader with one file per variable
 
 add_executable(decl_sion_02_c decl_sion_test_02.c)
-target_link_libraries(decl_sion_02_c PDI::pdi MPI::MPI_C)
+target_link_libraries(decl_sion_02_c PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_sion_02_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_02_c>" ${MPIEXEC_POSTFLAGS})
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_sion_02_F decl_sion_test_02.F90)
-target_link_libraries(decl_sion_02_F PDI::pdi_f90 MPI_with_mod)
+target_link_libraries(decl_sion_02_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02.yml")
@@ -86,12 +86,12 @@ endif("${BUILD_FORTRAN}")
 # Testing writer/reader using the event based mechanism 
 
 add_executable(decl_sion_03_c decl_sion_test_03.c)
-target_link_libraries(decl_sion_03_c PDI::pdi MPI::MPI_C)
+target_link_libraries(decl_sion_03_c PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_sion_03_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_03_c>" ${MPIEXEC_POSTFLAGS})
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_sion_03_F decl_sion_test_03.F90)
-target_link_libraries(decl_sion_03_F PDI::pdi_f90 MPI_with_mod)
+target_link_libraries(decl_sion_03_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_03_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_03_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03.yml")

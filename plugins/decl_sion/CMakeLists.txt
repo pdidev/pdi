@@ -38,6 +38,7 @@ include(CTest)
 
 if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 	enable_language(Fortran)
+	set(PDI_COMPONENTS f90)
 endif()
 
 include(GNUInstallDirs)
@@ -61,12 +62,12 @@ find_package(MPI REQUIRED COMPONENTS ${MPI_LANGS})
 find_package(SIONlib 1.7.2 REQUIRED)
 
 # PDI
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS plugins ${PDI_COMPONENTS})
 
 # The plugin
 add_library(pdi_decl_sion_plugin MODULE decl_sion.cxx)
 set_property(SOURCE decl_sion.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONlib_MPI_C_COMPILE_FLAGS} ")
-target_link_libraries(pdi_decl_sion_plugin PUBLIC PDI::pdi MPI::MPI_CXX ${SIONlib_MPI_C_LIBRARIES})
+target_link_libraries(pdi_decl_sion_plugin PUBLIC PDI::PDI_plugins MPI::MPI_CXX ${SIONlib_MPI_C_LIBRARIES})
 target_include_directories(pdi_decl_sion_plugin PUBLIC ${SIONlib_MPI_C_INCLUDE_DIRS})
 set_target_properties(pdi_decl_sion_plugin PROPERTIES
 		CXX_STANDARD 14

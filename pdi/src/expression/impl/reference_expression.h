@@ -50,7 +50,7 @@ struct PDI_NO_EXPORT Expression::Impl::Reference_expression: Expression::Impl {
 	double to_double(Context& ctx) const override;
 	
 	Ref to_ref(Context& ctx) const override;
-
+	
 	Ref to_ref(Context& ctx, const Datatype& type) const override;
 	
 	size_t copy_value(Context& ctx, void* buffer, const Datatype& type) const override;

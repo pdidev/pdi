@@ -1,7 +1,8 @@
 # The PDI distribution
 
-This is the PDI distribution, including PDI (the Portable Data Interface), some
-plugins and their dependencies.
+This is the PDI source distribution, including PDI (the PDI Data Interface) and
+its bindings for Fortran and python, the PDI plugins, the PDI configuration
+validator, examples and tests, as well as most dependencies of all those.
 
 PDI is a library that aims to decouple high-performance simulation codes from
 Input/Output concerns.
@@ -24,20 +25,33 @@ The on-line PDI documentation is available at https://pdi.julien-bigot.fr
 
 # Installation
 
-If you have the following dependencies:
-  * a POSIX compatible OS with a bash and python interpreter,
-  * cmake-3.5+, a C99, C++-14 and Fortran-2003 compiler,
-  * HDF5 and MPI,
+**The recommended approach to install PDI is to use the stable pre-compiled binary
+packages for Debian, Fedora and Ubuntu available at
+https://github.com/pdidev/pkgs/tree/repo .**
 
-you can install the default PDI distribution using the following instructions 
-(replace `-DCMAKE_INSTALL_PREFIX=/usr/` by the actual place where you want to
-install):
+On other distributions, in case you do not have root acces, or if you want a
+more recent version, the **%PDI source distribution** can be easily downloaded
+and compiled.
+
+If you have the following dependencies:
+* [cmake](https://cmake.org), version >= 3.5,
+* a C 99, C++ 14 and Fortran 95 compiler ([gcc](https://gcc.gnu.org/) 5.4 is
+  tested),
+* a POSIX compatible OS with a [bash](https://www.gnu.org/software/bash/) and
+  [python](https://www.python.org/) interpreter
+  ([linux](https://www.kernel.org/) with
+  [GNU libc](https://www.gnu.org/software/libc/) 2.27 is tested),
+* a MPI implementation.
+
+you can install the default PDI source distribution using the following
+instructions (replace `-DCMAKE_INSTALL_PREFIX=/usr/` by the actual place where
+you want to install):
 ```
 wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.1/pdi-0.6.1.tar.bz2
 tar -xjf pdi-0.6.1.tar.bz2
 cd pdi-0.6.1
 cmake -DCMAKE_INSTALL_PREFIX=/usr/ .
-make install
+make -j install
 ```
 
 If this does not work, if you want to select the features you want or which

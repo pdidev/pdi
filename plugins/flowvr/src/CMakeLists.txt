@@ -32,7 +32,7 @@ find_package(FlowVR REQUIRED)
 
 # The plugin
 add_library(pdi_flowvr_plugin MODULE flowvr.cxx)
-target_link_libraries(pdi_flowvr_plugin PDI::pdi ${FLOWVR_base_LIBRARY} ${FLOWVR_ftl_LIBRARY} ${FLOWVR_mod_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(pdi_flowvr_plugin PDI::PDI_plugins ${FLOWVR_base_LIBRARY} ${FLOWVR_ftl_LIBRARY} ${FLOWVR_mod_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(pdi_flowvr_plugin PUBLIC ${FLOWVR_INCLUDE_DIR})
 set_target_properties(pdi_flowvr_plugin PROPERTIES
 		CXX_STANDARD 14

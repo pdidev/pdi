@@ -37,7 +37,7 @@ namespace PDI {
  */
 struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 	/** The binary operators that can be used in expressions
-		*/
+	    */
 	enum Operator {
 		PLUS = '+',
 		MINUS = '-',
@@ -64,7 +64,7 @@ struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 	long to_long(Context& ctx) const override;
 	
 	double to_double(Context& ctx) const override;
-
+	
 	Ref to_ref(Context& ctx) const override;
 	
 	Ref to_ref(Context& ctx, const Datatype& type) const override;

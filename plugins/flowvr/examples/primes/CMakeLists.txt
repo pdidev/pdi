@@ -29,15 +29,15 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
 add_executable(compute compute.cxx)
-target_link_libraries(compute PDI::pdi)
+target_link_libraries(compute PDI::PDI_C)
 configure_file(compute.yml compute.yml COPYONLY)
 
 add_executable(capture capture.cxx)
-target_link_libraries(capture PDI::pdi ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(capture PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 configure_file(capture.yml capture.yml COPYONLY)
 
 add_executable(visu visu.cxx)
-target_link_libraries(visu PDI::pdi ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(visu PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 configure_file(visu.yml visu.yml COPYONLY)
 
 

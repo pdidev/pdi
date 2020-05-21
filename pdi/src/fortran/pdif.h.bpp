@@ -59,7 +59,7 @@ interface
   
   
   !=============================================================================
-  !< triggers a PDI “event”
+  !< triggers a PDI "event"
   !! \param[IN] event the event name
   !! \param[OUT] err for error status (optional)
   subroutine PDI_event(event, err)

@@ -23,7 +23,7 @@
 #=============================================================================
 
 add_executable(send_chunks send_chunks.cxx)
-target_link_libraries(send_chunks PDI::pdi)
+target_link_libraries(send_chunks PDI::PDI_C)
 configure_file(send_chunks.yml send_chunks.yml COPYONLY)
 set_target_properties(send_chunks PROPERTIES
 		CXX_STANDARD 14
@@ -31,7 +31,7 @@ set_target_properties(send_chunks PROPERTIES
 
 
 add_executable(recv_chunks recv_chunks.cxx)
-target_link_libraries(recv_chunks PDI::pdi)
+target_link_libraries(recv_chunks PDI::PDI_C)
 configure_file(recv_chunks.yml recv_chunks.yml COPYONLY)
 set_target_properties(recv_chunks PROPERTIES
 		CXX_STANDARD 14

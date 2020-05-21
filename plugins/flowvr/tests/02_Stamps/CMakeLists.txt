@@ -23,7 +23,7 @@
 #=============================================================================
 
 add_executable(send_stamp send_stamp.cxx)
-target_link_libraries(send_stamp PDI::pdi)
+target_link_libraries(send_stamp PDI::PDI_C)
 configure_file(send_stamp.yml send_stamp.yml COPYONLY)
 set_target_properties(send_stamp PROPERTIES
 		CXX_STANDARD 14
@@ -31,7 +31,7 @@ set_target_properties(send_stamp PROPERTIES
 
 
 add_executable(recv_stamp recv_stamp.cxx)
-target_link_libraries(recv_stamp PDI::pdi)
+target_link_libraries(recv_stamp PDI::PDI_C)
 configure_file(recv_stamp.yml recv_stamp.yml COPYONLY)
 set_target_properties(recv_stamp PROPERTIES
 		CXX_STANDARD 14

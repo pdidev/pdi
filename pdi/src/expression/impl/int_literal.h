@@ -36,7 +36,7 @@ namespace PDI {
 /** An expression implemented by a a integer literal
  */
 struct PDI_NO_EXPORT Expression::Impl::Int_literal : public Expression::Impl {
-	
+
 	long m_value;
 	
 	Int_literal(long value);
@@ -46,7 +46,7 @@ struct PDI_NO_EXPORT Expression::Impl::Int_literal : public Expression::Impl {
 	long to_long(Context& ctx) const override;
 	
 	double to_double(Context& ctx) const override;
-
+	
 	Ref to_ref(Context& ctx) const override;
 	
 	Ref to_ref(Context& ctx, const Datatype& type) const override;

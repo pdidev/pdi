@@ -23,7 +23,7 @@
 #=============================================================================
 
 add_executable(send_msg send_msg.cxx)
-target_link_libraries(send_msg PDI::pdi)
+target_link_libraries(send_msg PDI::PDI_C)
 configure_file(send_msg.yml send_msg.yml COPYONLY)
 set_target_properties(send_msg PROPERTIES
 		CXX_STANDARD 14
@@ -31,7 +31,7 @@ set_target_properties(send_msg PROPERTIES
 
 
 add_executable(recv_msg recv_msg.cxx)
-target_link_libraries(recv_msg PDI::pdi)
+target_link_libraries(recv_msg PDI::PDI_C)
 configure_file(recv_msg.yml recv_msg.yml COPYONLY)
 set_target_properties(recv_msg PROPERTIES
 		CXX_STANDARD 14

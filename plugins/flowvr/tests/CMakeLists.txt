@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 
 add_subdirectory(01_Send_recv_msg/)
 add_subdirectory(02_Stamps/)

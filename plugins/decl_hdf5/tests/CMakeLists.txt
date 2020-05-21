@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -56,12 +56,12 @@ endif()
 # Metatadata export using filename
 
 add_executable(decl_hdf5_01_C decl_hdf5_test_01.c)
-target_link_libraries(decl_hdf5_01_C PDI::pdi)
+target_link_libraries(decl_hdf5_01_C PDI::PDI_C)
 add_test(NAME decl_hdf5_01_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_C>")
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_hdf5_01_F decl_hdf5_test_01.F90)
-target_link_libraries(decl_hdf5_01_F PDI::pdi_f90)
+target_link_libraries(decl_hdf5_01_F PDI::PDI_f90)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_01_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_01.yml")
@@ -71,12 +71,12 @@ endif("${BUILD_FORTRAN}")
 # PDI_import/PDI_export
 
 add_executable(decl_hdf5_02_C decl_hdf5_test_02.c)
-target_link_libraries(decl_hdf5_02_C PDI::pdi MPI::MPI_C)
+target_link_libraries(decl_hdf5_02_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_02_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_hdf5_02_F decl_hdf5_test_02.F90)
-target_link_libraries(decl_hdf5_02_F PDI::pdi_f90 MPI_with_mod)
+target_link_libraries(decl_hdf5_02_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
@@ -93,12 +93,12 @@ endif("${BUILD_FORTRAN}")
 # parallel read/write
 
 add_executable(decl_hdf5_04_C decl_hdf5_test_04.c)
-target_link_libraries(decl_hdf5_04_C PDI::pdi MPI::MPI_C)
+target_link_libraries(decl_hdf5_04_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_C>" ${MPIEXEC_POSTFLAGS})
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_hdf5_04_F decl_hdf5_test_04.F90)
-target_link_libraries(decl_hdf5_04_F PDI::pdi_f90 MPI_with_mod)
+target_link_libraries(decl_hdf5_04_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_hdf5_04_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_hdf5_04_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04.yml")
@@ -108,30 +108,30 @@ endif("${BUILD_FORTRAN}")
 # scalars default options
 
 add_executable(decl_hdf5_05_C decl_hdf5_test_05.c)
-target_link_libraries(decl_hdf5_05_C PDI::pdi MPI::MPI_C)
+target_link_libraries(decl_hdf5_05_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_05_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_05_C>" ${MPIEXEC_POSTFLAGS})
 
 
 # 
 
 add_executable(decl_hdf5_06_C decl_hdf5_test_06.c)
-target_link_libraries(decl_hdf5_06_C PDI::pdi MPI::MPI_C)
+target_link_libraries(decl_hdf5_06_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_06_C>" ${MPIEXEC_POSTFLAGS})
 
 
 # bcommunicator as a reference
 
 add_executable(decl_hdf5_07_C decl_hdf5_test_07.c)
-target_link_libraries(decl_hdf5_07_C PDI::pdi MPI::MPI_C)
+target_link_libraries(decl_hdf5_07_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_07_C>" ${MPIEXEC_POSTFLAGS})
 
 
 add_executable(decl_hdf5_08_C decl_hdf5_test_08.c)
-target_link_libraries(decl_hdf5_08_C PDI::pdi)
+target_link_libraries(decl_hdf5_08_C PDI::PDI_C)
 add_test(NAME decl_hdf5_08_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_08_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_08.yml")
 
 add_executable(decl_hdf5_09_C decl_hdf5_test_09.c)
-target_link_libraries(decl_hdf5_09_C PDI::pdi)
+target_link_libraries(decl_hdf5_09_C PDI::PDI_C)
 add_test(NAME decl_hdf5_09_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_09_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_09.yml")
 
 

@@ -23,7 +23,7 @@
 #=============================================================================
 
 add_executable(send_button send_button.cxx)
-target_link_libraries(send_button PDI::pdi)
+target_link_libraries(send_button PDI::PDI_C)
 configure_file(send_button.yml send_button.yml COPYONLY)
 set_target_properties(send_button PROPERTIES
 		CXX_STANDARD 14
@@ -31,7 +31,7 @@ set_target_properties(send_button PROPERTIES
 
 
 add_executable(recv_button recv_button.cxx)
-target_link_libraries(recv_button PDI::pdi)
+target_link_libraries(recv_button PDI::PDI_C)
 configure_file(recv_button.yml recv_button.yml COPYONLY)
 set_target_properties(recv_button PROPERTIES
 		CXX_STANDARD 14

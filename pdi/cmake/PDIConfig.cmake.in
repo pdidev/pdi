@@ -25,72 +25,114 @@
 cmake_minimum_required(VERSION 3.5)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}")
 
-
-# by default, if no component is specified, look for all
-if("xx" STREQUAL "x${PDI_FIND_COMPONENTS}x")
-	set(PDI_FIND_COMPONENTS C f90 python)
-	set(PDI_FIND_REQUIRED_C TRUE)
-	set(PDI_FIND_REQUIRED_f90 FALSE)
-	set(PDI_FIND_REQUIRED_python FALSE)
-endif()
-
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeFindDependencyMacro.cmake)
 
-set(PARACONF_COMPONENTS @PARACONF_COMPONENTS@)
-find_dependency(paraconf 0.4.0 COMPONENTS ${PARACONF_COMPONENTS})
-find_dependency(spdlog 1.3.1)
-
-include("${CMAKE_CURRENT_LIST_DIR}/pdi.cmake")
-
-if(NOT TARGET PDI::pdi)
-	set(PDI_FOUND "FALSE")
-	if(NOT "${PDI_FIND_QUIETLY}")
-		message(WARNING "PDI: required component \"C\" not found")
-	endif()
-endif()
 
 # Compute the installation prefix relative to this file.
+
+set(_PDI_INSTALL_CMAKEDIR "@INSTALL_CMAKEDIR@")
 get_filename_component(_PDI_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
-get_filename_component(_PDI_IMPORT_PREFIX "${_PDI_IMPORT_PREFIX}" PATH)
-get_filename_component(_PDI_IMPORT_PREFIX "${_PDI_IMPORT_PREFIX}" PATH)
-get_filename_component(_PDI_IMPORT_PREFIX "${_PDI_IMPORT_PREFIX}" PATH)
+while(NOT "${_PDI_INSTALL_CMAKEDIR}" STREQUAL "")
+	get_filename_component(_PDI_IMPORT_PREFIX "${_PDI_IMPORT_PREFIX}" PATH)
+	get_filename_component(_PDI_INSTALL_CMAKEDIR "${_PDI_INSTALL_CMAKEDIR}" PATH)
+endwhile()
 if(_PDI_IMPORT_PREFIX STREQUAL "/")
   set(_PDI_IMPORT_PREFIX "")
 endif()
 
-set(PDI_pdirun_EXECUTABLE "${_PDI_IMPORT_PREFIX}/@CMAKE_INSTALL_BINDIR@/pdirun" CACHE PATH "path to the pdirun executable")
+
+# Normalize the component names
+
+if("Fortran" IN_LIST PDI_FIND_COMPONENTS)
+	list(REMOVE_ITEM PDI_FIND_COMPONENTS "Fortran")
+	list(APPEND PDI_FIND_COMPONENTS "f90")
+	set(PDI_FIND_REQUIRED_f90 "${PDI_FIND_REQUIRED_Fortran}")
+endif()
+
+
+# by default, if no component is specified, look for all but only require C
+
+set(_PDI_FIND_QUIETLY_OPTIONAL "${PDI_FIND_QUIETLY}")
+if("xx" STREQUAL "x${PDI_FIND_COMPONENTS}x")
+	set(PDI_FIND_COMPONENTS C f90)
+	set(PDI_FIND_REQUIRED_C TRUE)
+	set(PDI_FIND_REQUIRED_f90 FALSE)
+	set(PDI_FIND_REQUIRED_python FALSE)
+	set(_PDI_FIND_QUIETLY_OPTIONAL TRUE)
+endif()
+
+
+# Add dependencies
+
+if("pysupport" IN_LIST PDI_FIND_COMPONENTS)
+	list(INSERT PDI_FIND_COMPONENTS 0 "plugins")
+endif()
+list(INSERT PDI_FIND_COMPONENTS 0 "C")
+
+
+# The executable
+
+set(PDI_pdirun_EXECUTABLE "${_PDI_IMPORT_PREFIX}/@CMAKE_INSTALL_BINDIR@/pdirun")
 add_executable(PDI::pdirun IMPORTED)
 set_target_properties(PDI::pdirun PROPERTIES IMPORTED_LOCATION "${PDI_pdirun_EXECUTABLE}")
 
-# currently, only f90 & python are supported
-list(REMOVE_ITEM PDI_FIND_COMPONENTS "C")
+
+# The other targets
+
 foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
-	if("${_PDI_ONE_COMPONENT}" STREQUAL "f90")
-		if(NOT TARGET "PDI::pdi_f90")
-			if("${PDI_FIND_REQUIRED_f90}")
-				set(PDI_FOUND "FALSE")
-			endif()
+	include("${CMAKE_CURRENT_LIST_DIR}/PDI_${_PDI_ONE_COMPONENT}.cmake" OPTIONAL)
+endforeach()
+
+
+# Check the components
+
+foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
+	if("@BUILD_PYTHON@" AND "x${_PDI_ONE_COMPONENT}" STREQUAL "xpython")
+		# python is available, nothing to import, pdirun looks for it
+	elseif(NOT TARGET "PDI::PDI_${_PDI_ONE_COMPONENT}")
+		if("${PDI_FIND_REQUIRED_${_PDI_ONE_COMPONENT}}")
+			set(PDI_FOUND "FALSE")
 			if(NOT "${PDI_FIND_QUIETLY}")
-				message(WARNING "PDI: component \"f90\" not found")
+				message(WARNING "PDI: required component \"${_PDI_ONE_COMPONENT}\" not found")
 			endif()
-		endif()
-	elseif("${_PDI_ONE_COMPONENT}" STREQUAL "python")
-		if(TARGET "PDI::pdi_python")
-			find_dependency(pybind11 2.3.0)
-			set(PDI_PYTHON_PATH "${_PDI_IMPORT_PREFIX}/@Python3Path_INSTALL_SITEARCHDIR@" CACHE STRING "Path to PDI python library")
 		else()
-			if("${PDI_FIND_REQUIRED_python}")
-				set(PDI_FOUND "FALSE")
-				if(NOT "${PDI_FIND_QUIETLY}")
-					message(WARNING "PDI: required component \"python\" not found")
-				endif()
-			else()
-				if(NOT "${PDI_FIND_QUIETLY}")
-					message("PDI: optional component \"python\" not found")
-				endif()
+			if(NOT "${_PDI_FIND_QUIETLY_OPTIONAL}")
+				message("PDI: optional component \"${_PDI_ONE_COMPONENT}\" not found")
 			endif()
 		endif()
 	endif()
 endforeach()
 
+
+# Add aliases
+
+add_library(PDI_C INTERFACE)
+target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
+add_library(PDI::pdi ALIAS PDI_C)
+if(TARGET "PDI::PDI_f90")
+	add_library(PDI_f90 INTERFACE)
+	target_link_libraries(PDI_f90 INTERFACE PDI::PDI_f90)
+	add_library(PDI::PDI_Fortran ALIAS PDI_f90)
+	add_library(PDI::pdi_f90 ALIAS PDI_f90)
+endif()
+
+
+# Import our dependencies, for Paraconf, require f90 if is was required from us
+
+if(TARGET PDI::PDI_plugins)
+	find_dependency(spdlog 1.3.1)
+endif()
+if(TARGET PDI::PDI_pysupport)
+	find_dependency(pybind11 2.3.0)
+endif()
+if(TARGET PDI::PDI_f90)
+	find_dependency(paraconf 0.4.0 COMPONENTS C f90)
+else()
+	find_dependency(paraconf 0.4.0 COMPONENTS C)
+endif()
+
+unset(_PDI_FIND_QUIETLY_OPTIONAL)
 unset(_PDI_IMPORT_PREFIX)
+unset(_PDI_INCLUDE_OPTIONAL)
+unset(_PDI_INSTALL_CMAKEDIR)
+unset(_PDI_ONE_COMPONENT)

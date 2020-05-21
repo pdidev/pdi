@@ -25,10 +25,10 @@
 INCLUDE_DIRECTORIES(../include)
 
 add_executable(gldens gldens.cxx)
-target_link_libraries(gldens PDI::pdi ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(gldens PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 configure_file(gldens.yml ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/gldens.yml COPYONLY)
 
 add_executable(fluid fluid.cxx Vec3D.cpp Turbulent.cpp TurbulentBase.cpp)
-target_link_libraries(fluid PDI::pdi ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(fluid PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 configure_file(fluid.yml ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/fluid.yml COPYONLY)
 

@@ -42,11 +42,11 @@ if("${BUILD_INDENT}")
 endif()
 
 # PDI
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS plugins)
 
 # The plugin
 add_library(pdi_trace_plugin MODULE trace.cxx)
-target_link_libraries(pdi_trace_plugin PDI::pdi)
+target_link_libraries(pdi_trace_plugin PDI::PDI_plugins)
 set_target_properties(pdi_trace_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE

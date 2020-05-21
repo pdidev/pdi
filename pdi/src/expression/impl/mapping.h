@@ -36,11 +36,11 @@ namespace PDI {
 /** An expression implemented by a a mapping
  */
 struct PDI_NO_EXPORT Expression::Impl::Mapping : public Expression::Impl {
-	
+
 	std::unordered_map<std::string, std::unique_ptr<Expression>> m_value;
 	
 	Mapping(PC_tree_t value);
-
+	
 	Mapping(const std::unordered_map<std::string, std::unique_ptr<Expression>>& value);
 	
 	std::unique_ptr<Impl> clone() const override;
@@ -50,7 +50,7 @@ struct PDI_NO_EXPORT Expression::Impl::Mapping : public Expression::Impl {
 	double to_double(Context& ctx) const override;
 	
 	std::string to_string(Context& ctx) const override;
-
+	
 	Ref to_ref(Context& ctx) const override;
 	
 	Ref to_ref(Context& ctx, const Datatype& type) const override;

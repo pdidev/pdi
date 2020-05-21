@@ -25,11 +25,11 @@
 cmake_minimum_required(VERSION 3.5)
 
 add_executable(put put.cxx)
-target_link_libraries(put PDI::pdi)
+target_link_libraries(put PDI::PDI_C)
 configure_file(put.yml put.yml COPYONLY)
 
 add_executable(get get.cxx)
-target_link_libraries(get PDI::pdi)
+target_link_libraries(get PDI::PDI_C)
 configure_file(get.yml get.yml COPYONLY)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tictac.py

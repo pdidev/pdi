@@ -36,13 +36,13 @@ namespace PDI {
 /** An expression implemented by a a sequence
  */
 struct PDI_NO_EXPORT Expression::Impl::Sequence : public Expression::Impl {
-	
+
 	std::vector<std::unique_ptr<Expression>> m_value;
 	
 	Sequence(PC_tree_t value);
-
+	
 	Sequence(const std::vector<std::unique_ptr<Expression>>& value);
-
+	
 	std::unique_ptr<Impl> clone() const override;
 	
 	long to_long(Context& ctx) const override;
@@ -52,7 +52,7 @@ struct PDI_NO_EXPORT Expression::Impl::Sequence : public Expression::Impl {
 	std::string to_string(Context& ctx) const override;
 	
 	Ref to_ref(Context& ctx) const override;
-
+	
 	Ref to_ref(Context& ctx, const Datatype& type) const override;
 	
 	size_t copy_value(Context& ctx, void* buffer, const Datatype& type) const override;

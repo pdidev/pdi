@@ -35,6 +35,8 @@ option(BUILD_INDENT "Enable automatic code indentation" OFF)
 
 include(CTest)
 
+include(GNUInstallDirs)
+
 # Astyle
 if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)
@@ -46,11 +48,11 @@ find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 2.3.0 REQUIRED)
 
 # PDI
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS pysupport)
 
 # The plugin
 add_library(pdi_pycall_plugin MODULE pycall.cxx)
-target_link_libraries(pdi_pycall_plugin PDI::pdi_python pybind11::embed)
+target_link_libraries(pdi_pycall_plugin PDI::PDI_pysupport pybind11::embed)
 set_target_properties(pdi_pycall_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
@@ -64,7 +66,10 @@ if("${BUILD_INDENT}")
 endif()
 
 # Installation
-install(TARGETS pdi_pycall_plugin LIBRARY DESTINATION lib)
+install(TARGETS pdi_pycall_plugin
+		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)
 
 # Tests
 if("${BUILD_TESTING}")

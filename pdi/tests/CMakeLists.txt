@@ -41,12 +41,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 
 add_executable(PDI_test_01 PDI_test_01.c)
-target_link_libraries(PDI_test_01 pdi)
+target_link_libraries(PDI_test_01 PDI::PDI_plugins)
 add_test(NAME PDI_test_01 COMMAND PDI_test_01)
 
 
 add_executable(PDI_test_02 PDI_test_02.c)
-target_link_libraries(PDI_test_02 pdi)
+target_link_libraries(PDI_test_02 PDI::PDI_plugins)
 set_target_properties(PDI_test_02 PROPERTIES ENABLE_EXPORTS ON)
 add_test(NAME PDI_test_02 COMMAND PDI_test_02)
 
@@ -71,7 +71,7 @@ set(PDI_unit_tests_SRC
 		PDI_scalar_datatype.cxx
 		PDI_test_parse_types.cxx)
 add_executable(PDI_unit_tests ${PDI_unit_tests_SRC})
-target_link_libraries(PDI_unit_tests pdi Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
+target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)
 

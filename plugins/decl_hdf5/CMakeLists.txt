@@ -39,6 +39,7 @@ include(CTest)
 
 if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 	enable_language(Fortran)
+	set(PDI_COMPONENTS f90)
 endif()
 
 include(GNUInstallDirs)
@@ -71,7 +72,7 @@ if("${BUILD_HDF5_PARALLEL}")
 endif()
 
 # PDI
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS plugins ${PDI_COMPONENTS})
 
 # The plugin
 add_library(pdi_decl_hdf5_plugin MODULE
@@ -80,7 +81,7 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		file_op.cxx
 		hdf5_wrapper.cxx
 		selection.cxx)
-target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::pdi ${HDF5_C_LIBRARIES})
+target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_C_LIBRARIES})
 target_include_directories(pdi_decl_hdf5_plugin PRIVATE ${HDF5_INCLUDE_DIRS})
 target_compile_definitions(pdi_decl_hdf5_plugin PRIVATE ${HDF5_DEFINITIONS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES

@@ -33,6 +33,7 @@ include(CTest)
 
 if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 	enable_language(Fortran)
+	set(PDI_COMPONENTS f90)
 endif()
 
 include(GNUInstallDirs)
@@ -53,11 +54,11 @@ endif()
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 
 # PDI
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS plugins ${PDI_COMPONENTS})
 
 # The plugin
 add_library(pdi_mpi_plugin MODULE mpi.cxx)
-target_link_libraries(pdi_mpi_plugin PUBLIC PDI::pdi MPI::MPI_CXX)
+target_link_libraries(pdi_mpi_plugin PUBLIC PDI::PDI_plugins MPI::MPI_CXX)
 set_target_properties(pdi_mpi_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE

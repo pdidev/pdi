@@ -23,7 +23,7 @@
 #=============================================================================
 
 add_executable(send_wait_event send_wait_event.cxx)
-target_link_libraries(send_wait_event PDI::pdi)
+target_link_libraries(send_wait_event PDI::PDI_C)
 configure_file(send_wait_event.yml send_wait_event.yml COPYONLY)
 set_target_properties(send_wait_event PROPERTIES
 		CXX_STANDARD 14
@@ -31,7 +31,7 @@ set_target_properties(send_wait_event PROPERTIES
 
 
 add_executable(recv_wait_event recv_wait_event.cxx)
-target_link_libraries(recv_wait_event PDI::pdi)
+target_link_libraries(recv_wait_event PDI::PDI_C)
 configure_file(recv_wait_event.yml recv_wait_event.yml COPYONLY)
 set_target_properties(recv_wait_event PROPERTIES
 		CXX_STANDARD 14

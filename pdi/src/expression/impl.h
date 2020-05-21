@@ -40,7 +40,7 @@
 namespace PDI {
 
 struct PDI_NO_EXPORT Expression::Impl {
-	
+
 	/** An expression implemented by a a integer literal
 	 */
 	struct Int_literal;
@@ -70,7 +70,7 @@ struct PDI_NO_EXPORT Expression::Impl {
 	struct Mapping;
 	
 	/** The destructor
-	 * 
+	 *
 	 */
 	virtual ~Impl();
 	
@@ -80,35 +80,35 @@ struct PDI_NO_EXPORT Expression::Impl {
 	virtual std::unique_ptr<Impl> clone() const = 0;
 	
 	/** Interprets this expression as an integer value if possible, throws otherwise
-     * 
+	 *
 	 * \param ctx the context in which to evaluate the expression
 	 * \return the integer value as a long
 	 */
 	virtual long to_long(Context& ctx) const = 0;
 	
 	/** Interprets this expression as a floating point value if possible, throws otherwise
-     * 
+	 *
 	 * \param ctx the context in which to evaluate the expression
 	 * \return the floating point value as a double
 	 */
 	virtual double to_double(Context& ctx) const = 0;
 	
 	/** Interprets this expression as a string value if possible, throws otherwise
-     * 
+	 *
 	 * \param ctx the context in which to evaluate the expression
 	 * \return the string point value as a std::string
 	 */
 	virtual std::string to_string(Context& ctx) const;
 	
 	/** Interprets this expression as a string value if possible, throws otherwise
-     * 
+	 *
 	 * \param ctx the context in which to evaluate the expression
 	 * \return the data reference
 	 */
 	virtual Ref to_ref(Context& ctx) const = 0;
-
+	
 	/** Interprets this expression as a string value if possible, throws otherwise
-     * 
+	 *
 	 * \param ctx the context in which to evaluate the expression
 	 * \param type the type of the created Ref
 	 * \return the data reference
@@ -116,7 +116,7 @@ struct PDI_NO_EXPORT Expression::Impl {
 	virtual Ref to_ref(Context& ctx, const Datatype& type) const = 0;
 	
 	/** Copy value with given type of Expression to buffer
-     * 
+	 *
 	 * \param ctx the context in which to evaluate subexpressions
 	 * \param buffer the memory where to copy data
 	 * \param type type of the data to copy
@@ -125,42 +125,42 @@ struct PDI_NO_EXPORT Expression::Impl {
 	virtual size_t copy_value(Context& ctx, void* buffer, const Datatype& type) const = 0;
 	
 	/** Parse a double value as Impl
-     * 
+	 *
 	 * \param value double value to parse
 	 * \return unique_ptr with parsed Impl
 	 */
 	static std::unique_ptr<Impl> parse(double value);
 	
 	/** Parse a long value as Impl
-     * 
+	 *
 	 * \param value long value to parse
 	 * \return unique_ptr with parsed Impl
 	 */
 	static std::unique_ptr<Impl> parse(long value);
 	
 	/** Parse a PC_tree value as Impl
-     * 
+	 *
 	 * \param value PC_tree value to parse
 	 * \return unique_ptr with parsed Impl
 	 */
 	static std::unique_ptr<Impl> parse(PC_tree_t value);
 	
 	/** Parse a string value as Impl
-     * 
+	 *
 	 * \param value string value to parse
 	 * \return unique_ptr with parsed Impl
 	 */
 	static std::unique_ptr<Impl> parse(const char* val_str);
 	
 	/** Parse a string term as Impl
-     * 
+	 *
 	 * \param value string value to parse
 	 * \return unique_ptr with parsed Impl depending on string content
 	 */
 	static std::unique_ptr<Impl> parse_term(char const** val_str);
 	
 	/** Parse a string as a ID name
-     * 
+	 *
 	 * \param value string value to parse
 	 * \return string with ID name
 	 */

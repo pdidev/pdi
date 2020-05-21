@@ -1017,7 +1017,16 @@ dl.attention
 {
 	border-left: .6rem solid;
 	padding-left: .6rem;
+}
+
+dl.warning
+{
 	border-color: var(--sol-red);
+}
+
+dl.attention
+{
+	border-color: var(--sol-yellow);
 }
 
 dl.pre,
@@ -1356,17 +1365,18 @@ a[id]
 {
 	#tabs #gitlab-ribbon
 	{
+		position: fixed;
+		width: 0;
+		height: 0;
+		display: block;
+		top: 0;
+		right: 0;
+		overflow: hidden;
+		z-index: 9999;
 		float: none;
 		border: 0 none transparent;
-		position: absolute;
-		display: block;
-		top: -6rem;
-		right: .1rem;
-		width: 16rem;
-		overflow: hidden;
-		height: 16rem;
-		z-index: 9999;
 		background-color: transparent;
+		overflow: visible;
 	}
 	
 	#tabs #gitlab-ribbon:hover
@@ -1376,14 +1386,16 @@ a[id]
 	
 	#tabs #gitlab-ribbon a
 	{
+		z-index: 9999;
 		letter-spacing: normal;
 		background: var(--site-lblue);
 		color: var(--site-white);
-		text-decoration: none;
+		text-decoratio
+		height: 18rem;n: none;
 		font-family: arial,sans-serif;
 		text-align: center;
 		font-weight: bold;
-		padding: 5px 40px;
+		padding: 5px 1.5rem;
 		font-size: 1rem;
 		line-height: 2rem;
 		width: 14rem;
@@ -1418,26 +1430,25 @@ a[id]
 	}
 }
 
-@media screen and (min-width: 60rem)
+@media screen and (min-width: 74rem)
 {
 	#tabs #gitlab-ribbon
 	{
 		position: fixed;
+		width: 0;
+		height: 0;
 		display: block;
 		top: 0;
 		right: 0;
-		width: 14rem;
 		overflow: hidden;
-		height: 14rem;
 		z-index: 9999;
 	}
 	
 	#tabs #gitlab-ribbon a
 	{
-		width: 14rem;
 		position: fixed;
-		top: 2.25rem;
-		right: -3.75rem;
+		top: 2.4rem;
+		right: -3.1rem;
 		transform: rotate(45deg);
 		-webkit-transform: rotate(45deg);
 		-ms-transform: rotate(45deg);

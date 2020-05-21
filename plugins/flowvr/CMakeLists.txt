@@ -39,7 +39,7 @@ if("${BUILD_INDENT}")
 endif()
 
 # PDI
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS plugins)
 
 # TODO: PyYAML
 # find_package(Py2YAML REQUIRED)

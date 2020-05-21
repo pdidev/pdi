@@ -25,9 +25,9 @@
 cmake_minimum_required(VERSION 3.5)
 
 add_executable(getMultiple getMultiple.cxx)
-target_link_libraries(getMultiple PDI::pdi)
+target_link_libraries(getMultiple PDI::PDI_C)
 configure_file(getMultiple.yml ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/getMultiple.yml COPYONLY)
 
 add_executable(putMultiple putMultiple.cxx)
-target_link_libraries(putMultiple PDI::pdi)
+target_link_libraries(putMultiple PDI::PDI_C)
 configure_file(putMultiple.yml ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/putMultiple.yml COPYONLY)

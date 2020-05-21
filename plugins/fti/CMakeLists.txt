@@ -49,14 +49,14 @@ find_package(MPI REQUIRED COMPONENTS C CXX)
 find_package(FTI REQUIRED 1.3)
 
 # PDI
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS plugins)
 
 # The plugin
 add_library(pdi_fti_plugin MODULE 
 		fti.cxx
 		fti_cfg.cxx
 		fti_wrapper.cxx)
-target_link_libraries(pdi_fti_plugin MPI::MPI_CXX PDI::pdi fti.shared)
+target_link_libraries(pdi_fti_plugin MPI::MPI_CXX PDI::PDI_plugins fti.shared)
 target_include_directories(pdi_fti_plugin PUBLIC ${FTI_INCLUDE_PATH})
 set_target_properties(pdi_fti_plugin PROPERTIES
 		CXX_STANDARD 14

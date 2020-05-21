@@ -28,31 +28,30 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.5)
-project(pdi_examples LANGUAGES C CXX)
+project(pdi_examples LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+set(MPI_COMPONENTS C)
+set(PDI_COMPONENTS C)
 
 if("${BUILD_FORTRAN}")
 	enable_language(Fortran)
+	list(APPEND MPI_COMPONENTS Fortran)
+	list(APPEND PDI_COMPONENTS f90)
 endif()
 
 if("${BUILD_PYTHON}")
 	find_package(Python3 REQUIRED COMPONENTS Interpreter)
+	list(APPEND PDI_COMPONENTS python)
 endif()
 
 # Includes
 include(CTest)
-
-set(MPI_LANGS C CXX)
-if("${BUILD_FORTRAN}")
-	list(APPEND MPI_LANGS Fortran)
-endif()
-find_package(MPI REQUIRED COMPONENTS ${MPI_LANGS})
-find_package(PDI REQUIRED)
+find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
+find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 find_library(LIB_M m DOC "The math library")
 
 # Default standard in the project is C99 & C++14
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
@@ -78,11 +77,11 @@ endif()
 
 
 add_executable(PDI_example_C example.c)
-target_link_libraries(PDI_example_C PDI::pdi MPI::MPI_C m)
+target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
 
 if("${BUILD_FORTRAN}")
 add_executable(PDI_example_F example.F90)
-target_link_libraries(PDI_example_F PDI::pdi_f90 MPI_with_mod m)
+target_link_libraries(PDI_example_F PDI::PDI_f90 MPI_with_mod m)
 endif("${BUILD_FORTRAN}")
 
 set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
@@ -99,7 +98,7 @@ set_property(TEST PDI_example_decl_hdf5_F PROPERTY PROCESSORS 3)
 endif("${BUILD_FORTRAN}")
 
 if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_decl_hdf5_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "${PDI_pdirun_EXECUTABLE}" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
+add_test(NAME PDI_example_decl_hdf5_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")
 set_property(TEST PDI_example_decl_hdf5_P PROPERTY TIMEOUT 5)
 set_property(TEST PDI_example_decl_hdf5_P PROPERTY PROCESSORS 3)
 set_property(TEST PDI_example_decl_hdf5_P PROPERTY DISABLED TRUE) #TODO: python tests randomly deadlock currently
@@ -118,7 +117,7 @@ set_property(TEST PDI_example_decl_sion_variables_F PROPERTY PROCESSORS 3)
 endif("${BUILD_FORTRAN}")
 
 if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_decl_sion_variables_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "${PDI_pdirun_EXECUTABLE}" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_variables.yml")
+add_test(NAME PDI_example_decl_sion_variables_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_variables.yml")
 set_property(TEST PDI_example_decl_sion_variables_P PROPERTY TIMEOUT 5)
 set_property(TEST PDI_example_decl_sion_variables_P PROPERTY PROCESSORS 3)
 set_property(TEST PDI_example_decl_sion_variables_P PROPERTY DISABLED TRUE) #TODO: python tests randomly deadlock currently
@@ -135,7 +134,7 @@ set_property(TEST PDI_example_decl_sion_files_F PROPERTY PROCESSORS 3)
 endif("${BUILD_FORTRAN}")
 
 if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_decl_sion_files_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "${PDI_pdirun_EXECUTABLE}" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_files.yml")
+add_test(NAME PDI_example_decl_sion_files_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_files.yml")
 set_property(TEST PDI_example_decl_sion_files_P PROPERTY TIMEOUT 5)
 set_property(TEST PDI_example_decl_sion_files_P PROPERTY PROCESSORS 3)
 set_property(TEST PDI_example_decl_sion_files_P PROPERTY DISABLED TRUE) #TODO: python tests randomly deadlock currently
@@ -154,7 +153,7 @@ set_property(TEST PDI_example_fti_F PROPERTY PROCESSORS 6)
 endif("${BUILD_FORTRAN}")
 
 if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_fti_P COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "${PDI_pdirun_EXECUTABLE}" "${PYTHON_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/fti_transtype.yml")
+add_test(NAME PDI_example_fti_P COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${PYTHON_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/fti_transtype.yml")
 set_property(TEST PDI_example_fti_P PROPERTY TIMEOUT 180)
 set_property(TEST PDI_example_fti_P PROPERTY PROCESSORS 6)
 set_property(TEST PDI_example_fti_P PROPERTY DISABLED TRUE) #TODO: python tests randomly deadlock currently
@@ -168,7 +167,7 @@ set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 add_executable(flowvr_visu flowvr_visu.c)
-target_link_libraries(flowvr_visu PDI::pdi ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(flowvr_visu PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
 add_test(NAME PDI_example_flowvr_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/flowvr_test.sh" "./flowvr_test.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "$<TARGET_FILE:PDI_example_C>" "$<TARGET_FILE:flowvr_visu>" "${FLOWVR_PREFIX}")
 set_property(TEST PDI_example_flowvr_C PROPERTY TIMEOUT 60)
@@ -186,7 +185,7 @@ set_property(TEST PDI_example_trace_F PROPERTY PROCESSORS 3)
 endif("${BUILD_FORTRAN}")
 
 if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_trace_P COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "${PDI_pdirun_EXECUTABLE}" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")
+add_test(NAME PDI_example_trace_P COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")
 set_property(TEST PDI_example_trace_P PROPERTY TIMEOUT 5)
 set_property(TEST PDI_example_trace_P PROPERTY PROCESSORS 3)
 set_property(TEST PDI_example_trace_P PROPERTY DISABLED TRUE) #TODO: python tests randomly deadlock currently

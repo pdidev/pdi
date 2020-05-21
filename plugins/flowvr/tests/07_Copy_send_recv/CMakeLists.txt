@@ -23,7 +23,7 @@
 #=============================================================================
 
 add_executable(send_copy send_copy.cxx)
-target_link_libraries(send_copy PDI::pdi)
+target_link_libraries(send_copy PDI::PDI_C)
 configure_file(send_copy.yml send_copy.yml COPYONLY)
 set_target_properties(send_copy PROPERTIES
 		CXX_STANDARD 14
@@ -31,7 +31,7 @@ set_target_properties(send_copy PROPERTIES
 
 
 add_executable(recv_copy recv_copy.cxx)
-target_link_libraries(recv_copy PDI::pdi)
+target_link_libraries(recv_copy PDI::PDI_C)
 configure_file(recv_copy.yml recv_copy.yml COPYONLY)
 set_target_properties(recv_copy PROPERTIES
 		CXX_STANDARD 14
