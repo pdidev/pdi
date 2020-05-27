@@ -297,7 +297,8 @@ if("${BUILD_PYTHON}")
 			DESTINATION "${Python3Path_INSTALL_SITEARCHDIR}"
 			COMPONENT Runtime
 	)
-	file(COPY src/python/pdi DESTINATION "${CMAKE_BINARY_DIR}")
+	configure_file("src/python/pdi/__init__.py" "pdi" COPYONLY)
+
 endif()
 
 
