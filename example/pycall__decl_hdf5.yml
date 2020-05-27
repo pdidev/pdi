@@ -20,8 +20,11 @@ pdi:
     pycall:
       on_event:
         newiter:
-          exec: "if iter<10: transformed_field = dat*4; pdi.share('transformed_field', transformed_field, pdi.OUT); pdi.reclaim('transformed_field')"
           with: { iter: $iter, dat: '$main_field' }
+          exec: |
+            if iter<10:
+               transformed_field = dat*4
+               pdi.expose('transformed_field', transformed_field, pdi.OUT)
     decl_hdf5:
       file: data.h5
       communicator: $MPI_COMM_WORLD # the MPI communicator used for HDF5 parallel synchronized write
