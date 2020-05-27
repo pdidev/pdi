@@ -382,7 +382,7 @@ TEST_F(DataRefAnyTest, content_record)
 	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 3);
 	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
-	ASSERT_EQ(42, *static_cast<const int*>(data_x_ref.get()));
+	ASSERT_EQ(42, *static_cast<const char*>(data_x_ref.get()));
 	
 	data_x_ref.reset();
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 2);
