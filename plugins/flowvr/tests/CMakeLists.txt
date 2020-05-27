@@ -24,6 +24,19 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+# Add the plugin path to LD_LIBRARY_PATH
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
+file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
+     CONTENT "
+set(LD_LIBRARY_PATH \"\$ENV{LD_LIBRARY_PATH}\")\n
+if(\"x\${LD_LIBRARY_PATH}x\" STREQUAL xx)\n
+set(ENV{LD_LIBRARY_PATH} \"\$<TARGET_FILE_DIR:pdi_flowvr_plugin>\")\n
+else()\n
+set(ENV{LD_LIBRARY_PATH} \"\$<TARGET_FILE_DIR:pdi_flowvr_plugin>:\${LD_LIBRARY_PATH}\")\n
+endif()
+"
+)
+
 add_subdirectory(01_Send_recv_msg/)
 add_subdirectory(02_Stamps/)
 add_subdirectory(03_Event_button/)

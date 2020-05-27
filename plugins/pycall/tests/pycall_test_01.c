@@ -36,8 +36,10 @@ int main( int argc, char* argv[] )
 		"  pycall:\n"
 		"    on_event:\n"
 		"      testing:\n"
-		"        exec: \"print(' * [P] I received    $a =',a); a[1]=7; print(' * [P] changed it to $a =',a);\"\n"
-		"        with: { a: $a }\n"
+		"        with: { a_python: $a }\n"
+		"        exec: \"print(' * [P] I received    $a =',a_python); a_python[1]=7; print(' * [P] changed it to $a =',a_python);\"\n"
+		"    on_data:\n"
+		"      a: print(' * [P] I received    $a =',a); a[1]=7; print(' * [P] changed it to $a =',a);\"\n"
 	);
 	PDI_init(conf);
 	
@@ -47,6 +49,7 @@ int main( int argc, char* argv[] )
 	
 	PDI_share("a", a, PDI_INOUT);
 	PDI_event("testing");
+	PDI_event("testing2");
 	PDI_reclaim("a");
 	
 	printf(" * [C] now I see     $a = [%d %d %d]\n", a[0], a[1], a[2]);

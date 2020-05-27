@@ -31,6 +31,19 @@ cmake_minimum_required(VERSION 3.5)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
+# Add the plugin path to LD_LIBRARY_PATH
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
+file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
+     CONTENT "
+set(LD_LIBRARY_PATH \"\$ENV{LD_LIBRARY_PATH}\")\n
+if(\"x\${LD_LIBRARY_PATH}x\" STREQUAL xx)\n
+set(ENV{LD_LIBRARY_PATH} \"\$<TARGET_FILE_DIR:pdi_fti_plugin>\")\n
+else()\n
+set(ENV{LD_LIBRARY_PATH} \"\$<TARGET_FILE_DIR:pdi_fti_plugin>:\${LD_LIBRARY_PATH}\")\n
+endif()
+"
+)
+
 ##########
 # FTI init by event test 
 
