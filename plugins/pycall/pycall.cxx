@@ -91,9 +91,6 @@ public:
 	void expose(Context& ctx, pydict pyscope)
 	{
 		Ref r = m_value.to_ref(ctx);
-		
-		PDI::Data_descriptor& desc = ctx.desc(m_name);
-		
 		pyscope[m_name.c_str()] = to_python(r);
 	}
 	
@@ -165,10 +162,24 @@ struct pycall_plugin: Plugin {
 		int nb_events = len(on_event, 0);
 		for (int map_id = 0; map_id < nb_events; map_id++) {
 			PC_tree_t event = PC_get(on_event, "<%d>", map_id);
-			Trigger event_trigger {to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
-			ctx.add_event_callback([&ctx, event_trigger](const std::string&) mutable {
-				event_trigger.call(ctx);
-			}, to_string(PC_get(on_event, "{%d}", map_id)));
+			if (PDI::is_list(event)) {
+				size_t len = PDI::len(event);
+				std::vector<Trigger> triggers;
+				for (int i = 0; i < len; i++) {
+					triggers.emplace_back(to_string(PC_get(event, "[%d].exec", i)), PC_get(event, "[%d].with", i));
+				}
+				ctx.add_event_callback([&ctx, triggers](const std::string&) mutable {
+					for (auto&& trigger : triggers)
+					{
+						trigger.call(ctx);
+					}
+				}, to_string(PC_get(on_event, "{%d}", map_id)));
+			} else {
+				Trigger event_trigger {to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
+				ctx.add_event_callback([&ctx, event_trigger](const std::string&) mutable {
+					event_trigger.call(ctx);
+				}, to_string(PC_get(on_event, "{%d}", map_id)));
+			}
 		}
 		
 		// Loading configuration for data
@@ -177,7 +188,7 @@ struct pycall_plugin: Plugin {
 		for (int map_id = 0; map_id < nb_data; map_id++) {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
 			Trigger data_trigger {to_string(PC_get(on_data, "<%d>", map_id)), data_name};
-			ctx.add_event_callback([&ctx, data_trigger](const std::string&) mutable {
+			ctx.add_data_callback([&ctx, data_trigger](const std::string&, Ref) mutable {
 				data_trigger.call(ctx);
 			}, data_name);
 		}
