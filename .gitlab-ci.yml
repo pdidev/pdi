@@ -2,7 +2,7 @@ stages:
   - test
   - pages
   - external
-  
+
 cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.5:latest
@@ -29,21 +29,35 @@ cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.10:latest
   script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM .
+    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM .
     - make
     - ctest --output-on-failure
 
-ubuntu_xenial_embedded:
+xenial_cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
-  image: pdidevel/ubuntu_xenial:latest
+  image: pdidevel/xenial_cmake3.5:latest
+  script:
+    - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
+    - make
+
+xenial_cmake3.5_system:
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
+  image: pdidevel/xenial_libs_cmake3.5:latest
+  script:
+    - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
+    - make
+
+xenial_cmake3.10_embedded:
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
+  image: pdidevel/xenial_cmake3.10:latest
   script:
     - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED .
     - make
     - ctest --output-on-failure
 
-ubuntu_xenial_system:
+xenial_cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
-  image: pdidevel/ubuntu_xenial_libs:latest
+  image: pdidevel/xenial_libs_cmake3.10:latest
   script:
     - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM .
     - make
@@ -57,7 +71,7 @@ pages:
   script:
     - mkdir build
     - cd build
-    - cmake -DDIST_PROFILE=User -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_MPI_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DBUILD_DOCUMENTATION=ON -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM ..
+    - cmake -DDIST_PROFILE=User -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_MPI_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DBUILD_DOCUMENTATION=ON -DUSE_DEFAULT=SYSTEM ..
     - make PDI_pkg
     - mkdir -p "$CI_PROJECT_DIR/public/"
     - if [ -z "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/pdi/html "$CI_PROJECT_DIR/public/${CI_COMMIT_REF_NAME}"; fi
