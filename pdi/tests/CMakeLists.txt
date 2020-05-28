@@ -41,12 +41,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 
 add_executable(PDI_test_01 PDI_test_01.c)
-target_link_libraries(PDI_test_01 PDI::PDI_plugins)
+target_link_libraries(PDI_test_01 PDI::PDI_C)
 add_test(NAME PDI_test_01 COMMAND PDI_test_01)
 
 
 add_executable(PDI_test_02 PDI_test_02.c)
-target_link_libraries(PDI_test_02 PDI::PDI_plugins)
+target_link_libraries(PDI_test_02 PDI::PDI_C)
 set_target_properties(PDI_test_02 PROPERTIES ENABLE_EXPORTS ON)
 add_test(NAME PDI_test_02 COMMAND PDI_test_02)
 
@@ -77,9 +77,12 @@ gtest_discover_tests(PDI_unit_tests)
 
 
 if("${Astyle_FOUND}")
-	Astyle_add_indent(PDI_tests_indent TEST
+	Astyle_add_indent(PDI_tests_indent
 			OPTIONS_FILE "${PDI_SOURCE_DIR}/docs/formating.astyle"
-			PDI_test_01.c PDI_test_02.c ${PDI_unit_tests_SRC}
-			include/*.h mocks/*.h)
+			TEST
+			RECURSIVE
+			"${CMAKE_CURRENT_SOURCE_DIR}/**/*.c"
+			"${CMAKE_CURRENT_SOURCE_DIR}/**/*.cxx"
+			"${CMAKE_CURRENT_SOURCE_DIR}/**/*.h")
 	add_dependencies(indent PDI_tests_indent)
 endif()
