@@ -4,21 +4,21 @@ stages:
   - external
   
 cmake3.5_embedded:
-  only: [ master, merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.5:latest
   script:
     - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
     - make
 
 cmake3.5_system:
-  only: [ master, merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.5:latest
   script:
     - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
     - make
 
 cmake3.10_embedded:
-  only: [ master, merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.10:latest
   script:
     - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED .
@@ -26,15 +26,31 @@ cmake3.10_embedded:
     - ctest --output-on-failure
 
 cmake3.10_system:
-  only: [ master, merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.10:latest
   script:
     - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM .
     - make
     - ctest --output-on-failure
 
+ubuntu_xenial_embedded:
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
+  image: pdidevel/ubuntu_xenial:latest
+  script:
+    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED .
+    - make
+    - ctest --output-on-failure
+
+ubuntu_xenial_system:
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
+  image: pdidevel/ubuntu_xenial_libs:latest
+  script:
+    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM .
+    - make
+    - ctest --output-on-failure
+
 pages:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   stage: pages
   image: pdidevel/centos_libs_cmake3.10:latest
   variables: { GIT_SUBMODULE_STRATEGY: recursive }

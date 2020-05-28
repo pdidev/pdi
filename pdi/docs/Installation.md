@@ -94,9 +94,12 @@ The following flags define which features of the distribution to enable or not.
 |Flag                     |Default|Description|
 |:------------------------|:------|:----------|
 |`BUILD_FORTRAN`          |`ON`   |Build the Fortran interface.|
-|`BUILD_DECL_HDF5_PLUGIN` |`ON`   |Build the decl'HDF5 plug-in.|
+|`BUILD_DECL_HDF5_PLUGIN` |`ON`   |Build the Decl'HDF5 plug-in.|
 |`BUILD_HDF5_PARALLEL`    |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
 |`BUILD_MPI_PLUGIN`       |`ON`   |Build the MPI plug-in.|
+|`BUILD_TEST_PLUGIN`      |`ON`   |Build the Test plug-in.|
+|`BUILD_TRACE_PLUGIN`     |`ON`   |Build the Trace plug-in.|
+|`BUILD_USER_CODE_PLUGIN` |`ON`   |Build the User-code plug-in.|
 |`BUILD_PYTHON`           |`OFF`  |Build the Python interface.|
 |`BUILD_DECL_SION_PLUGIN` |`OFF`  |Build the decl'SION plug-in.|
 |`BUILD_FLOWVR_PLUGIN`    |`OFF`  |Build the FlowVR plug-in.|

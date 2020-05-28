@@ -65,16 +65,19 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 # Modules to build
 
 option(BUILD_CFG_VALIDATOR    "Build config validation script" "${BUILD_UNSTABLE}")
-option(BUILD_DECL_HDF5_PLUGIN "Build decl'HDF5 plug-in" ON)
-option(BUILD_DECL_SION_PLUGIN "Build decl'SION plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
+option(BUILD_DECL_SION_PLUGIN "Build Decl'SION plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_FLOWVR_PLUGIN    "Build FlowVR plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_FORTRAN          "Enable Fortran support" ON)
+option(BUILD_FORTRAN          "Build with Fortran support" ON)
 option(BUILD_FTI_PLUGIN       "Build FTI plug-in." "OFF")
-option(BUILD_HDF5_PARALLEL    "Enable HDF5 parallel build" ON)
+option(BUILD_HDF5_PARALLEL    "Build Decl'HDF5 in parallel mode" ON)
 option(BUILD_MPI_PLUGIN       "Build MPI plug-in" ON)
 option(BUILD_PYCALL_PLUGIN    "Build Pycall plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_PYTHON           "Enable Python support" "${BUILD_UNSTABLE}")
+option(BUILD_PYTHON           "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SHARED_LIBS      "Build shared libraries rather than static ones" ON)
+option(BUILD_TEST_PLUGIN      "Build Test plugin" ON)
+option(BUILD_TRACE_PLUGIN     "Build Trace plugin" ON)
+option(BUILD_USER_CODE_PLUGIN "Build User-code plugin" ON)
 
 
 
@@ -559,27 +562,6 @@ if("${BUILD_CFG_VALIDATOR}")
 endif()
 
 
-sbuild_add_module(TEST_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/test"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent
-)
-
-
-sbuild_add_module(TRACE_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent
-)
-
-
-sbuild_add_module(USER_CODE_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
-)
-
-
 sbuild_add_module(MPI_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_MPI_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi"
@@ -623,6 +605,30 @@ sbuild_add_module(FLOWVR_PLUGIN
 sbuild_add_module(PYCALL_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_PYCALL_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
+)
+
+
+sbuild_add_module(TEST_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_TEST_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/test"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent
+)
+
+
+sbuild_add_module(TRACE_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_TRACE_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent
+)
+
+
+sbuild_add_module(USER_CODE_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_USER_CODE_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
 	DEPENDS PDI ${ASTYLE_DEPENDENCY}
 	SUBSTEPS indent test
 )
