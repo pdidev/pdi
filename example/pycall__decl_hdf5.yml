@@ -20,9 +20,9 @@ pdi:
     pycall:
       on_event:
         newiter:
-          with: { iter: $iter, dat: '$main_field' }
+          with: { newiter: $iter, dat: '$main_field' }
           exec: |
-            if iter<10:
+            if newiter<10:
                transformed_field = dat*4
                pdi.expose('transformed_field', transformed_field, pdi.OUT)
     decl_hdf5:

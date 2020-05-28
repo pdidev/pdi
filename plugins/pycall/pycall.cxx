@@ -152,11 +152,15 @@ public:
 }; // class Trigger
 
 struct pycall_plugin: Plugin {
-	pybind11::scoped_interpreter interpreter;
-	
+	//Determine if python interpreter is initialized by the plugin.
+	bool interpreter_initialized_in_plugin = false;
 	pycall_plugin(Context& ctx, PC_tree_t conf):
 		Plugin{ctx}
 	{
+		if ( ! Py_IsInitialized() ) {
+			pybind11::initialize_interpreter();
+			interpreter_initialized_in_plugin = true;
+		}
 		// Loading configuration for events
 		PC_tree_t on_event = PC_get(conf, ".on_event");
 		int nb_events = len(on_event, 0);
@@ -194,6 +198,10 @@ struct pycall_plugin: Plugin {
 		}
 	}
 	
+	~pycall_plugin()
+	{
+		if (interpreter_initialized_in_plugin) pybind11::finalize_interpreter();
+	}
 }; // struct pycall_plugin
 
 } // namespace <anonymous>
