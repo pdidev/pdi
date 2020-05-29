@@ -100,7 +100,7 @@ struct set_value_plugin: PDI::Plugin {
 	{
 		//set up format
 		char format[64];
-		snprintf(format, 64, "[PDI][Set_value][%%T] *** %%^%%l%%$: %%v");
+		sprintf(format, "[PDI][Set_value][%%T] *** %%^%%l%%$: %%v");
 		context().logger()->set_pattern(std::string(format));
 	}
 	
@@ -108,6 +108,8 @@ struct set_value_plugin: PDI::Plugin {
 		PDI::Plugin{ctx}
 	{
 		set_up_logger();
+		
+		// initialize after all descriptors are loaded, user can set value on_init
 		context().add_init_callback([this, config]() {
 			this->load_config(config);
 		});

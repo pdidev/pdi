@@ -26,15 +26,9 @@ cmake_minimum_required(VERSION 3.5)
 project(pdi_set_value_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-option(BUILD_FORTRAN "Enable Fortran support" ON)
 option(BUILD_INDENT  "Enable automatic code indentation" OFF)
 
 include(CTest)
-
-if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
-	enable_language(Fortran)
-endif()
-
 include(GNUInstallDirs)
 
 # Astyle

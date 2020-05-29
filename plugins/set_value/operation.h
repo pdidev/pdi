@@ -39,6 +39,8 @@ public:
     Operation(PDI::Context& ctx);
 
     virtual void execute() = 0;
+
+    virtual ~Operation() = default;
 };
 
 } // namespace <anonymous>
