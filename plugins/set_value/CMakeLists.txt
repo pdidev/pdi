@@ -37,7 +37,7 @@ if("${BUILD_INDENT}")
 endif()
 
 # PDI
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED plugins)
 
 # The plugin
 
@@ -48,7 +48,7 @@ add_library(pdi_set_value_plugin MODULE set_value.cxx
 										share_operation.cxx
 										expose_operation.cxx
 										)
-target_link_libraries(pdi_set_value_plugin PUBLIC PDI::pdi)
+target_link_libraries(pdi_set_value_plugin PUBLIC PDI::PDI_plugins)
 set_target_properties(pdi_set_value_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE

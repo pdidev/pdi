@@ -27,37 +27,37 @@ cmake_minimum_required(VERSION 3.10)
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 add_executable(set_value_01_C_expose set_value_test_01_expose.c)
-target_link_libraries(set_value_01_C_expose PDI::pdi)
+target_link_libraries(set_value_01_C_expose PDI::PDI_C)
 add_test(NAME set_value_01_C_expose COMMAND "$<TARGET_FILE:set_value_01_C_expose>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_01_expose.yml")
 
 add_executable(set_value_01_C_share set_value_test_01_share.c)
-target_link_libraries(set_value_01_C_share PDI::pdi)
+target_link_libraries(set_value_01_C_share PDI::PDI_C)
 add_test(NAME set_value_01_C_share COMMAND "$<TARGET_FILE:set_value_01_C_share>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_01_share.yml")
 
 add_executable(set_value_01_C_set set_value_test_01_set.c)
-target_link_libraries(set_value_01_C_set PDI::pdi)
+target_link_libraries(set_value_01_C_set PDI::PDI_C)
 add_test(NAME set_value_01_C_set COMMAND "$<TARGET_FILE:set_value_01_C_set>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_01_set.yml")
 
 add_executable(set_value_02_C_expose set_value_test_02_expose.c)
-target_link_libraries(set_value_02_C_expose PDI::pdi)
+target_link_libraries(set_value_02_C_expose PDI::PDI_C)
 add_test(NAME set_value_02_C_expose COMMAND "$<TARGET_FILE:set_value_02_C_expose>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_02_expose.yml")
 
 add_executable(set_value_02_C_share set_value_test_02_share.c)
-target_link_libraries(set_value_02_C_share PDI::pdi)
+target_link_libraries(set_value_02_C_share PDI::PDI_C)
 add_test(NAME set_value_02_C_share COMMAND "$<TARGET_FILE:set_value_02_C_share>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_02_share.yml")
 
 add_executable(set_value_02_C_set set_value_test_02_set.c)
-target_link_libraries(set_value_02_C_set PDI::pdi)
+target_link_libraries(set_value_02_C_set PDI::PDI_C)
 add_test(NAME set_value_02_C_set COMMAND "$<TARGET_FILE:set_value_02_C_set>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_02_set.yml")
 
 add_executable(set_value_03_C_expose set_value_test_03_expose.c)
-target_link_libraries(set_value_03_C_expose PDI::pdi)
+target_link_libraries(set_value_03_C_expose PDI::PDI_C)
 add_test(NAME set_value_03_C_expose COMMAND "$<TARGET_FILE:set_value_03_C_expose>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_03_expose.yml")
 
 add_executable(set_value_03_C_share_set set_value_test_03_share_set.c)
-target_link_libraries(set_value_03_C_share_set PDI::pdi)
+target_link_libraries(set_value_03_C_share_set PDI::PDI_C)
 add_test(NAME set_value_03_C_share_set COMMAND "$<TARGET_FILE:set_value_03_C_share_set>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_03_share_set.yml")
 
 add_executable(set_value_04 set_value_test_04.c)
-target_link_libraries(set_value_04 PDI::pdi)
+target_link_libraries(set_value_04 PDI::PDI_C)
 add_test(NAME set_value_04 COMMAND "$<TARGET_FILE:set_value_04>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_04.yml")
