@@ -39,26 +39,28 @@
 
 namespace PDI {
 
+using std::move;
+using std::string;
+using std::unique_ptr;
+using std::vector;
+
 Expression::Impl::Sequence::Sequence(PC_tree_t value)
 {
 	size_t size = PDI::len(value);
 	m_value.reserve(size);
 	for (int i = 0; i < size; i++) {
-		m_value.emplace_back(new Expression(PC_get(value, "[%d]", i)));
+		m_value.emplace_back(Expression{parse(PC_get(value, "[%d]", i))});
 	}
 }
 
-Expression::Impl::Sequence::Sequence(const std::vector<std::unique_ptr<Expression>>& value)
+Expression::Impl::Sequence::Sequence(const vector<Expression>& value):
+	m_value(value)
 {
-	m_value.reserve(value.size());
-	for (int i = 0; i < value.size(); i++) {
-		m_value.emplace_back(new Expression{*value[i]});
-	}
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Sequence::clone() const
+unique_ptr<Expression::Impl> Expression::Impl::Sequence::clone() const
 {
-	return std::unique_ptr<Expression::Impl> {new Expression::Impl::Sequence(m_value)};
+	return unique_ptr<Impl> {new Expression::Impl::Sequence(m_value)};
 }
 
 long Expression::Impl::Sequence::to_long(Context& ctx) const
@@ -71,11 +73,11 @@ double Expression::Impl::Sequence::to_double(Context& ctx) const
 	throw Error {PDI_ERR_VALUE, "Cannot interpret Array_expression as a double value"};
 }
 
-std::string Expression::Impl::Sequence::to_string(Context& ctx) const
+string Expression::Impl::Sequence::to_string(Context& ctx) const
 {
-	std::string result;
+	string result;
 	for (const auto& element : m_value) {
-		result += element->to_string(ctx);
+		result += element.to_string(ctx);
 	}
 	return result;
 }
@@ -92,11 +94,11 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 		};
 		return result;
 	}
-	Datatype_uptr subtype = m_value[0]->to_ref(ctx).type().clone_type();
+	Datatype_uptr subtype = m_value[0].to_ref(ctx).type().clone_type();
 	Ref_rw result {
 		aligned_alloc(subtype->alignment(), subtype->buffersize() * m_value.size()),
 		[](void* v){free(v);},
-		Datatype_uptr(new Array_datatype{std::move(subtype), m_value.size()}),
+		Datatype_uptr(new Array_datatype{move(subtype), m_value.size()}),
 		true,
 		true
 	};
@@ -124,7 +126,7 @@ size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, const 
 		size_t offset = 0;
 		for (int i = 0; i < m_value.size(); i++) {
 			void* to = static_cast<uint8_t*>(buffer) + offset;
-			offset += m_value[i]->m_impl->copy_value(ctx, to, array_type->subtype());
+			offset += m_value[i].m_impl->copy_value(ctx, to, array_type->subtype());
 		}
 		if (offset != array_type->buffersize()) {
 			throw Error {PDI_ERR_VALUE, "Array literal copy incomplete: copied {} B of {} B", offset, array_type->buffersize()};

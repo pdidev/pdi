@@ -37,11 +37,13 @@
 
 namespace PDI {
 
+using std::unique_ptr;
+
 Expression::Impl::Float_literal::Float_literal(double value) : m_value(value) {}
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Float_literal::clone() const
+unique_ptr<Expression::Impl> Expression::Impl::Float_literal::clone() const
 {
-	return std::unique_ptr<Float_literal> {new Float_literal{*this}};
+	return unique_ptr<Float_literal> {new Float_literal{*this}};
 }
 
 long Expression::Impl::Float_literal::to_long(Context&) const
@@ -60,7 +62,7 @@ Ref Expression::Impl::Float_literal::to_ref(Context& ctx) const
 	Ref_rw result {
 		aligned_alloc(alignof(double), sizeof(double)),
 		[](void* v){free(v);},
-		std::unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
+		unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
 		true,
 		true
 	};
@@ -111,11 +113,11 @@ size_t Expression::Impl::Float_literal::copy_value(Context& ctx, void* buffer, c
 	throw Error{PDI_ERR_VALUE, "Cannot copy Float_literal as a non float datatype."};
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Float_literal::parse(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::Float_literal::parse(char const** val_str)
 {
 	const char* constval = *val_str;
 	
-	std::unique_ptr<Float_literal> result {new Float_literal{strtod(constval, const_cast<char**>(&constval))}};
+	unique_ptr<Float_literal> result {new Float_literal{strtod(constval, const_cast<char**>(&constval))}};
 	if (*val_str == constval) {
 		throw Error {PDI_ERR_VALUE, "Expected double, found `{}'", constval};
 	}

@@ -50,6 +50,7 @@
 
 namespace PDI {
 
+using std::setprecision;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
@@ -74,12 +75,12 @@ string Expression::Impl::to_string(Context& ctx) const
 	if (static_cast<double>(lres) == dres) {
 		result << lres;
 	} else {
-		result << std::setprecision(17) << dres;
+		result << setprecision(17) << dres;
 	}
 	return result.str();
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
+unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
 {
 	if (PDI::is_map(value)) {
 		return unique_ptr<Impl> {new Mapping{value}};
@@ -90,12 +91,12 @@ std::unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
 	}
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::parse(char const* val_str)
+unique_ptr<Expression::Impl> Expression::Impl::parse(char const* val_str)
 {
 	try { // parse as a space enclosed intval
 		const char* parse_val = val_str;
 		while (isspace(*parse_val)) ++parse_val;
-		std::unique_ptr<Expression::Impl> result = Impl::Operation::parse(&parse_val, 1);
+		unique_ptr<Expression::Impl> result = Impl::Operation::parse(&parse_val, 1);
 		while (isspace(*parse_val)) ++parse_val;
 		if (!*parse_val) return result; // take this if we parsed the whole string, otherwise, parse as a string
 	} catch (Error&) {}
@@ -103,13 +104,13 @@ std::unique_ptr<Expression::Impl> Expression::Impl::parse(char const* val_str)
 	return Impl::String_literal::parse(&val_str);
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
 {
 	if (**val_str == '(') {
 		const char* term = *val_str;
 		++term;
 		while (isspace(*term)) ++term;
-		std::unique_ptr<Expression::Impl> result = Operation::parse(&term, 1);
+		unique_ptr<Expression::Impl> result = Operation::parse(&term, 1);
 		if (*term != ')')  throw Error {PDI_ERR_VALUE, "Expected ')', found '{}'", *term};
 		++term;
 		while (isspace(*term)) ++term;

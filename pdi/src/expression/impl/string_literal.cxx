@@ -41,21 +41,19 @@
 
 namespace PDI {
 
-std::unique_ptr<Expression::Impl> Expression::Impl::String_literal::clone() const
+using std::string;
+using std::unique_ptr;
+
+unique_ptr<Expression::Impl> Expression::Impl::String_literal::clone() const
 {
-	std::unique_ptr<String_literal> result {new String_literal};
-	result->m_start = m_start;
-	for (const auto& element : m_values) {
-		result->m_values.emplace_back(new Expression{*element.first}, element.second);
-	}
-	return result;
+	return unique_ptr<String_literal> {new String_literal(*this)};
 }
 
-std::string Expression::Impl::String_literal::to_string(Context& ctx) const
+string Expression::Impl::String_literal::to_string(Context& ctx) const
 {
-	std::string result = m_start;
+	string result = m_start;
 	for (auto&& subval : m_values) {
-		result += subval.first->to_string(ctx);
+		result += subval.first.to_string(ctx);
 		result += subval.second;
 	}
 	return result;
@@ -73,7 +71,7 @@ double Expression::Impl::String_literal::to_double(Context& ctx) const
 
 Ref Expression::Impl::String_literal::to_ref(Context& ctx) const
 {
-	std::string value = to_string(ctx);
+	string value = to_string(ctx);
 	// copy because string does not provide a release call
 	void* str = malloc(sizeof(char) * (value.length() + 1));
 	memcpy(str, value.c_str(), value.length() + 1);
@@ -81,9 +79,9 @@ Ref Expression::Impl::String_literal::to_ref(Context& ctx) const
 	return Ref {
 		str,
 		[](void* v){free(v);},
-		std::unique_ptr<Array_datatype>{
+		unique_ptr<Array_datatype>{
 			new Array_datatype{
-				std::unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}},
 				value.length() + 1
 			}
 		},
@@ -118,7 +116,7 @@ size_t Expression::Impl::String_literal::copy_value(Context& ctx, void* buffer, 
 	if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&type)) {
 		if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&array_type->subtype())) {
 			if (scalar_type->buffersize() == sizeof(char)) {
-				std::string value = to_string(ctx);
+				string value = to_string(ctx);
 				memcpy(buffer, value.c_str(), value.size()+1);
 				return type.buffersize();
 			}
@@ -127,13 +125,13 @@ size_t Expression::Impl::String_literal::copy_value(Context& ctx, void* buffer, 
 	throw Error{PDI_ERR_VALUE, "Cannot copy String_literal as a non chars array datatype."};
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const** val_str)
 {
 	const char* str = *val_str;
 	
-	std::unique_ptr<String_literal> result{new String_literal};
+	unique_ptr<String_literal> result{new String_literal};
 	
-	std::string* curstr = &result->m_start;
+	string* curstr = &result->m_start;
 	while (*str) {
 		size_t sz = 0;
 		while (str[sz] != '\\' && str[sz] != '$' && str[sz]) ++sz;
@@ -148,11 +146,11 @@ std::unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char c
 			switch (str[1]) {
 			case '(': { // remove the dollar, parse the term starting with the parenthesis (the operation)
 				++str;
-				result->m_values.emplace_back(new Expression{parse_term(&str)}, "");
+				result->m_values.emplace_back(Expression{parse_term(&str)}, "");
 				curstr = &result->m_values.back().second;
 			} break;
 			default: { // parse the term starting with the dollar (the ref)
-				result->m_values.emplace_back(new Expression{Reference_expression::parse(&str)}, "");
+				result->m_values.emplace_back(Expression{Reference_expression::parse(&str)}, "");
 				curstr = &result->m_values.back().second;
 			} break;
 			}

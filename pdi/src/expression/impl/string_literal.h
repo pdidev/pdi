@@ -39,7 +39,7 @@ struct PDI_NO_EXPORT Expression::Impl::String_literal : public Expression::Impl 
 
 	/** A Subvalue contains another value to insert and the string following it
 	 */
-	using Subvalue = std::pair<std::unique_ptr<Expression>, std::string>;
+	using Subvalue = std::pair<Expression, std::string>;
 	
 	/// a char string containing the beginning str_value
 	std::string m_start;

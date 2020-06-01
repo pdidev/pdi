@@ -37,11 +37,13 @@
 
 namespace PDI {
 
+using std::unique_ptr;
+
 long Expression::Impl::Operation::to_long(Context& ctx) const
 {
 	long computed_value = m_first_operand->to_long(ctx);
 	for (auto&& op: m_operands) {
-		long operand = op.second->to_long(ctx);
+		long operand = op.second.to_long(ctx);
 		switch (op.first) {
 		case PLUS: {
 			computed_value += operand;
@@ -83,7 +85,7 @@ double Expression::Impl::Operation::to_double(Context& ctx) const
 {
 	double computed_value = m_first_operand->to_double(ctx);
 	for (auto&& op: m_operands) {
-		double operand = op.second->to_double(ctx);
+		double operand = op.second.to_double(ctx);
 		switch (op.first) {
 		case PLUS: {
 			computed_value += operand;
@@ -127,7 +129,7 @@ Ref Expression::Impl::Operation::to_ref(Context& ctx) const
 		Ref_rw result {
 			aligned_alloc(alignof(long), sizeof(long)),
 			[](void* v){free(v);},
-			std::unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
+			unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
 			true,
 			true
 		};
@@ -138,7 +140,7 @@ Ref Expression::Impl::Operation::to_ref(Context& ctx) const
 			Ref_rw result {
 				aligned_alloc(alignof(double), sizeof(double)),
 				[](void* v){free(v);},
-				std::unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
 				true,
 				true
 			};
@@ -174,9 +176,9 @@ size_t from_long_cpy(void* buffer, long value_long)
 size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, const Datatype& type) const
 {
 	if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-		if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED && type.buffersize() == (long)sizeof(char)) {
+		if (scalar_type->kind() == Scalar_kind::UNSIGNED && type.buffersize() == (long)sizeof(char)) {
 			return from_long_cpy<unsigned char>(buffer, to_long(ctx));
-		} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
+		} else if (scalar_type->kind() == Scalar_kind::SIGNED) {
 			switch (type.buffersize()) {
 			case 1L:
 				return from_long_cpy<signed char>(buffer, to_long(ctx));
@@ -189,7 +191,7 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, const
 			default:
 				break;
 			}
-		} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
+		} else if (scalar_type->kind() == Scalar_kind::FLOAT) {
 			switch (type.buffersize()) {
 			case 4L: {
 				float value = static_cast<float>(to_double(ctx));
@@ -209,35 +211,34 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, const
 	throw Error {PDI_ERR_VALUE, "Cannot copy operation expression value: non scalar datatype"};
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Operation::clone() const
+unique_ptr<Expression::Impl> Expression::Impl::Operation::clone() const
 {
-	std::unique_ptr<Operation> result {new Operation};
+	unique_ptr<Operation> result {new Operation};
 	result->m_first_operand.reset(new Expression{*m_first_operand});
 	for (const auto& element : m_operands) {
-		result->m_operands.emplace_back(element.first, new Expression{*element.second});
+		result->m_operands.emplace_back(element.first, element.second);
 	}
 	return result;
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Operation::parse(char const** val_str, int level)
+unique_ptr<Expression::Impl> Expression::Impl::Operation::parse(char const** val_str, int level)
 {
 	// a level 7 operation is a term
 	if (level == 7) return parse_term(val_str);
 	
 	const char* exprval = *val_str;
-	std::unique_ptr<Expression::Impl> result = parse(&exprval, level + 1);
+	unique_ptr<Impl> result = parse(&exprval, level + 1);
 	
 	// we only build the Operation if needed, otherwise we return the previous
 	// expression directly
-	std::unique_ptr<Operation> expr = NULL;
+	unique_ptr<Operation> expr = NULL;
 	while (op_level(exprval) == level) {
 		if (!expr) {
 			expr.reset(new Operation);
 			expr->m_first_operand.reset(new Expression{move(result)});
 		}
 		Operator oper = parse_operator(&exprval, level);
-		std::unique_ptr<Expression::Impl> operand = parse(&exprval, level + 1);
-		expr->m_operands.emplace_back(oper, new Expression{move(operand)});
+		expr->m_operands.emplace_back(oper, Expression{parse(&exprval, level + 1)});
 	}
 	
 	*val_str = exprval;

@@ -51,7 +51,7 @@ struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 		LT = '<'
 	};
 	
-	using Operand = std::pair<Operator, std::unique_ptr<Expression>>;
+	using Operand = std::pair<Operator, Expression>;
 	
 	
 	std::unique_ptr<Expression> m_first_operand;

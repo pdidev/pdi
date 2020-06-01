@@ -38,6 +38,8 @@
 
 namespace PDI {
 
+using std::unique_ptr;
+
 Expression::Impl::Int_literal::Int_literal(long value) : m_value(value) {}
 
 long Expression::Impl::Int_literal::to_long(Context&) const
@@ -50,9 +52,9 @@ double Expression::Impl::Int_literal::to_double(Context&) const
 	return static_cast<double>(m_value);
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Int_literal::clone() const
+unique_ptr<Expression::Impl> Expression::Impl::Int_literal::clone() const
 {
-	return std::unique_ptr<Int_literal> {new Int_literal{*this}};
+	return unique_ptr<Int_literal> {new Int_literal{*this}};
 }
 
 Ref Expression::Impl::Int_literal::to_ref(Context& ctx) const
@@ -61,7 +63,7 @@ Ref Expression::Impl::Int_literal::to_ref(Context& ctx) const
 	Ref_rw result {
 		aligned_alloc(alignof(long), sizeof(long)),
 		[](void* v){free(v);},
-		std::unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
+		unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
 		true,
 		true
 	};
@@ -121,11 +123,11 @@ size_t Expression::Impl::Int_literal::copy_value(Context& ctx, void* buffer, con
 	throw Error{PDI_ERR_VALUE, "Cannot copy Int_literal as a non integer datatype."};
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** val_str)
 {
 	const char* constval = *val_str;
 	
-	std::unique_ptr<Int_literal> result {new Int_literal{strtol(constval, const_cast<char**>(&constval), 0)}};
+	unique_ptr<Int_literal> result {new Int_literal{strtol(constval, const_cast<char**>(&constval), 0)}};
 	if (*val_str == constval) {
 		throw Error {PDI_ERR_VALUE, "Expected integer, found `{}'", constval};
 	}

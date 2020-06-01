@@ -40,24 +40,31 @@
 
 namespace PDI {
 
+using std::max;
+using std::move;
+using std::string;
+using std::unique_ptr;
+using std::unordered_map;
+using std::vector;
+
 Expression::Impl::Mapping::Mapping(PC_tree_t value)
 {
-	size_t size = PDI::len(value);
+	size_t size = len(value);
 	for (int i = 0; i < size; i++) {
-		m_value.emplace(PDI::to_string(PC_get(value, "{%d}", i)), new Expression{PC_get(value, "<%d>", i)});
+		m_value.emplace(PDI::to_string(PC_get(value, "{%d}", i)), Expression{parse(PC_get(value, "<%d>", i))});
 	}
 }
 
-Expression::Impl::Mapping::Mapping(const std::unordered_map<std::string, std::unique_ptr<Expression>>& value)
+Expression::Impl::Mapping::Mapping(const unordered_map< string, Expression >& value)
 {
 	for (const auto& element : value) {
-		m_value.emplace(element.first, new Expression{*element.second});
+		m_value.emplace(element.first, element.second);
 	}
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Mapping::clone() const
+unique_ptr<Expression::Impl> Expression::Impl::Mapping::clone() const
 {
-	return std::unique_ptr<Expression::Impl> {new Expression::Impl::Mapping(m_value)};
+	return unique_ptr<Impl> {new Expression::Impl::Mapping(m_value)};
 }
 
 long Expression::Impl::Mapping::to_long(Context& ctx) const
@@ -70,21 +77,21 @@ double Expression::Impl::Mapping::to_double(Context& ctx) const
 	throw Error {PDI_ERR_VALUE, "Cannot interpret Map_expression as a double value"};
 }
 
-std::string Expression::Impl::Mapping::to_string(Context& ctx) const
+string Expression::Impl::Mapping::to_string(Context& ctx) const
 {
 	throw Error {PDI_ERR_VALUE, "Cannot interpret Map_expression as a string value"};
 }
 
 Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 {
-	std::vector<Record_datatype::Member> members;
+	vector<Record_datatype::Member> members;
 	size_t displacement = 0;
 	size_t record_alignment = 1;
 	for (const auto& element: m_value) {
-		Ref_rw element_ref {element.second->to_ref(ctx)};
+		Ref_rw element_ref {element.second.to_ref(ctx)};
 		
 		size_t alignment = element_ref.type().alignment();
-		record_alignment = std::max(record_alignment, alignment);
+		record_alignment = max(record_alignment, alignment);
 		
 		// align the next member
 		displacement += (alignment - (displacement % alignment)) % alignment;
@@ -97,7 +104,7 @@ Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 	Ref_rw result {
 		aligned_alloc(record_alignment, displacement),
 		[](void* v){free(v);},
-		Datatype_uptr(new Record_datatype{std::move(members), displacement}),
+		Datatype_uptr(new Record_datatype{move(members), displacement}),
 		true,
 		true
 	};
@@ -127,7 +134,7 @@ size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, const D
 			});
 			if (member_it != record_type->members().end()) {
 				void* to = static_cast<uint8_t*>(buffer) + member_it->displacement();
-				element.second->m_impl->copy_value(ctx, to, member_it->type());
+				element.second.m_impl->copy_value(ctx, to, member_it->type());
 			} else {
 				throw Error {PDI_ERR_VALUE, "Trying to reference non-existing member: {}", element.first};
 			}

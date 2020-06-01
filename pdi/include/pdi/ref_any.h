@@ -102,9 +102,7 @@ protected:
 		
 		/** Constructs a new buffer descriptor
 		 *
-		 * \param buffer the actual content
 		 * \param deleter the function to use to deallocate the buffer memory
-		 * \param type the content type, this takes ownership of the type
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */

@@ -36,12 +36,12 @@ namespace PDI {
 /** An expression implemented by a a reference to a data
  */
 struct PDI_NO_EXPORT Expression::Impl::Reference_expression: Expression::Impl {
+
 	/// The referenced data
 	std::string m_referenced;
 	
 	/// Indexes in case the referenced data is an array
 	std::vector<Expression> m_idx;
-	
 	
 	std::unique_ptr<Impl> clone() const override;
 	

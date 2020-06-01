@@ -40,9 +40,11 @@
 
 namespace PDI {
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::clone() const
+using std::unique_ptr;
+
+unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::clone() const
 {
-	return std::unique_ptr<Reference_expression> {new Reference_expression{*this}};
+	return unique_ptr<Reference_expression> {new Reference_expression{*this}};
 }
 
 long Expression::Impl::Reference_expression::to_long(Context& ctx) const
@@ -177,7 +179,7 @@ Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 			Ref_rw result {
 				aligned_alloc(alignof(long), sizeof(long)),
 				[](void* v){free(v);},
-				std::unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
 				true,
 				true
 			};
@@ -188,7 +190,7 @@ Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 				Ref_rw result {
 					aligned_alloc(alignof(double), sizeof(double)),
 					[](void* v){free(v);},
-					std::unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
+					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
 					true,
 					true
 				};
@@ -277,10 +279,10 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 	}
 }
 
-std::unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char const** val_str)
 {
 	const char* ref = *val_str;
-	std::unique_ptr<Reference_expression> result{new Reference_expression};
+	unique_ptr<Reference_expression> result{new Reference_expression};
 	
 	if (*ref != '$') throw Error {PDI_ERR_VALUE, "Expected '$', got {}", *ref};
 	++ref;

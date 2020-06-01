@@ -37,11 +37,11 @@ namespace PDI {
  */
 struct PDI_NO_EXPORT Expression::Impl::Sequence : public Expression::Impl {
 
-	std::vector<std::unique_ptr<Expression>> m_value;
+	std::vector<Expression> m_value;
 	
 	Sequence(PC_tree_t value);
 	
-	Sequence(const std::vector<std::unique_ptr<Expression>>& value);
+	Sequence(const std::vector<Expression>& value);
 	
 	std::unique_ptr<Impl> clone() const override;
 	

@@ -37,11 +37,11 @@ namespace PDI {
  */
 struct PDI_NO_EXPORT Expression::Impl::Mapping : public Expression::Impl {
 
-	std::unordered_map<std::string, std::unique_ptr<Expression>> m_value;
+	std::unordered_map<std::string, Expression> m_value;
 	
 	Mapping(PC_tree_t value);
 	
-	Mapping(const std::unordered_map<std::string, std::unique_ptr<Expression>>& value);
+	Mapping(const std::unordered_map< std::string, PDI::Expression >& value);
 	
 	std::unique_ptr<Impl> clone() const override;
 	
