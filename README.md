@@ -74,5 +74,5 @@ The PDI distribution is made of the following submodules:
 * `plugins/trace/`: the Trace plugin,
 * `tools/pdicfg_validator/`: the PDIcfg-validator tool,
 * `example/`: PDI examples,
-* `hands_on/`: the PDI hands-on,
+* `tutorial/`: the PDI tutorial,
 * `vendor/`: source for PDI dependencies.

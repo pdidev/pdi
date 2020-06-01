@@ -47,9 +47,6 @@ set(DOXYGEN_GENERATE_TREEVIEW YES)
 set(DOXYGEN_HTML_FOOTER "${CMAKE_CURRENT_SOURCE_DIR}/_template/footer.html")
 set(DOXYGEN_HTML_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/_template/header.html")
 set(DOXYGEN_HTML_STYLESHEET "${CMAKE_CURRENT_SOURCE_DIR}/_template/style.css")
-set(DOXYGEN_HTML_EXTRA_FILES
-# 	"${CMAKE_CURRENT_SOURCE_DIR}/_template/navtree.js"
-	"${CMAKE_CURRENT_SOURCE_DIR}/PDI_FlowVR_PhD.pdf")
 set(DOXYGEN_HTML_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/html")
 set(DOXYGEN_HTML_TIMESTAMP YES)
 set(DOXYGEN_INCLUDE_GRAPH NO)
@@ -85,7 +82,7 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_SOURCE_DIR}/include/pdi.h"
 		"${PDI_SOURCE_DIR}/include/pdi/"
 		"${PDI_SOURCE_DIR}/../example/README.md"
-		"${PDI_SOURCE_DIR}/../hands_on/README.md"
+		"${PDI_SOURCE_DIR}/../tutorial/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/decl_hdf5/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/flowvr/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/fti/README.md"
