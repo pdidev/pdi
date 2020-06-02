@@ -73,4 +73,5 @@ int main(int argc, char* argv[])
 	
 	PDI_finalize();
 	MPI_Finalize();
+	return 0;
 }

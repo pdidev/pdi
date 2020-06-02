@@ -57,10 +57,6 @@ int main(int argc, char* argv[])
 	
 	// metadata expose creates a dense copy inside PDI
 	PDI_expose("my_array", sparse_array, PDI_OUT);
-	for (int i = 0; i < 9; i++) {
-		MPI_Comm_free(sparse_array + i);
-	}
-	
 	PDI_access("my_array", (void**)&dense_array, PDI_IN);
 	
 	int world_rank;
@@ -72,6 +68,11 @@ int main(int argc, char* argv[])
 	}
 	PDI_release("my_array");
 	
+	for (int i = 0; i < 9; i++) {
+		MPI_Comm_free(sparse_array + i);
+	}
+	
 	PDI_finalize();
 	MPI_Finalize();
+	return 0;
 }
