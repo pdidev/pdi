@@ -7,8 +7,8 @@
 |\subpage trace_plugin "trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
 |\subpage user_code_plugin "user-code plugin"         |Call your function on event or when data becomes available         |
 |\subpage FTI_plugin "FTI plugin"                     |Perform checkpoints using FTI library.                             |
+|\subpage pycall_plugin "Pycall plugin"               |Call python scripts from C application                             |
 |MPI plugin                                           |Enables MPI support in %PDI and plugins.                           |
-|Pycall plugin                                        |Call python scripts from C application                             |
 |Decl'SION plugin                                     |Read and write data from SIONlib files in a declarative way.       |
 
 

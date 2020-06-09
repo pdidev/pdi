@@ -81,12 +81,18 @@ private:
 	Expression m_value;
 	
 public:
+	/** Python alias for descriptors
+	 * \param name alias name for python
+	 * \param var expression value for this alias
+	 */
 	Alias(const string& name, const string& var):
 		m_name {name},
 		m_value {var}
 	{}
 	
-	/** exposes the alias
+	/** Exposes the alias
+	 * \param ctx the PDI context for this alias
+	 * \param pyscope python dictionary
 	 */
 	void expose(Context& ctx, pydict pyscope)
 	{
@@ -107,7 +113,11 @@ class Trigger
 	vector<Alias> m_aliases;
 	
 public:
-	/// parse tree to initialiaze this instance
+
+	/** Parse tree to initialiaze this instance
+	 * \param code python code to call
+	 * \param with aliases of descriptors for python code
+	 */
 	Trigger(string code, PC_tree_t with):
 		m_code{move(code)}
 	{
@@ -121,7 +131,10 @@ public:
 		}
 	}
 	
-	/// parse tree to initialiaze this instance
+	/** Parse tree to initialiaze this instance
+	 * \param code python code to call
+	 * \param with alias of descriptor for python code
+	 */
 	Trigger(string code, string with):
 		m_code{move(code)}
 	{
@@ -129,7 +142,9 @@ public:
 		m_aliases.emplace_back(with, var);
 	}
 	
-	/// call the function that has been registered
+	/** Call the function that has been registered
+	 * \param ctx the PDI context for this trigger
+	 */
 	void call(Context& ctx)
 	{
 		// a python context we fill with exposed variables

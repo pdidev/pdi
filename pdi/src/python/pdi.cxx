@@ -64,7 +64,11 @@ using namespace pybind11::literals;
 using std::move;
 using std::vector;
 
-
+/** Check API version of PDI and python
+ *
+ * \param pyexpected tuple with expected PDI version
+ * \return python tulpe with PDI version
+ */
 pytup pyversion(pytup pyexpected)
 {
 	Paraconf_wrapper fw;
@@ -97,7 +101,10 @@ pytup pyversion(pytup pyexpected)
 
 } // namespace <anonymous>
 
-
+/** Macro that creates entry point in python interpreter
+ * \param _pdi name of the module
+ * \param m macro argument that defines a variable of type py::module
+ */
 PYBIND11_MODULE(_pdi, m)
 {
 	m.attr("__name__") = "pdi._pdi"; // make this a private submodule of pdi

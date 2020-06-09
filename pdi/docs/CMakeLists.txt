@@ -87,6 +87,7 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_SOURCE_DIR}/../plugins/flowvr/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/fti/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/trace/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/user_code/README.md")
+		"${PDI_SOURCE_DIR}/../plugins/user_code/README.md"
+		"${PDI_SOURCE_DIR}/../plugins/pycall/README.md")
 add_dependencies(doc doxygen_doc)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}/html")

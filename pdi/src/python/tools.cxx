@@ -45,7 +45,11 @@ using namespace pybind11::literals;
 using std::move;
 using std::vector;
 
-
+/** Function takes reference that is converted to python numpy array
+ *
+ * \param r PDI reference to convert
+ * \return converted python numpy array from PDI reference
+ */
 pybind11::array to_python(Ref r)
 {
 	ssize_t ndim = 0;
@@ -119,6 +123,11 @@ pybind11::array to_python(Ref r)
 	return result;
 }
 
+/** Function takes python numpy array and converts it into PDI datatype
+ *
+ * \param a python numpy array data
+ * \return PDI datatype of python object
+ */
 Datatype_uptr python_type(pybind11::array& a)
 {
 	//TODO: handle non C-order arrays

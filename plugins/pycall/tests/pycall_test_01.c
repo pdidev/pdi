@@ -37,9 +37,9 @@ int main( int argc, char* argv[] )
 		"    on_event:\n"
 		"      testing:\n"
 		"        with: { a_python: $a }\n"
-		"        exec: \"print(' * [P] I received    $a =',a_python); a_python[1]=7; print(' * [P] changed it to $a =',a_python);\"\n"
+		"        exec: \"print(' * [P] I received    $a =',a_python, flush=True); a_python[1]=7; print(' * [P] changed it to $a =',a_python, flush=True);\"\n"
 		"    on_data:\n"
-		"      a: print(' * [P] I received    $a =',a); a[1]=7; print(' * [P] changed it to $a =',a);\"\n"
+		"      a: \"print(' * [P] I received    $a =',a, flush=True); a[1]=7; print(' * [P] changed it to $a =',a, flush=True);\"\n"
 	);
 	PDI_init(conf);
 	
@@ -49,7 +49,6 @@ int main( int argc, char* argv[] )
 	
 	PDI_share("a", a, PDI_INOUT);
 	PDI_event("testing");
-	PDI_event("testing2");
 	PDI_reclaim("a");
 	
 	printf(" * [C] now I see     $a = [%d %d %d]\n", a[0], a[1], a[2]);
