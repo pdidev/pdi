@@ -71,6 +71,7 @@ The PDI distribution is made of the following submodules:
 * `plugins/decl_sion/`: the Decl'SION plugin,
 * `plugins/fti/`: the FTI plugin,
 * `plugins/pycall/`: the Pycall plugin,
+* `plugins/set_value/`: the Set value plugin,
 * `plugins/trace/`: the Trace plugin,
 * `tools/pdicfg_validator/`: the PDIcfg-validator tool,
 * `example/`: PDI examples,

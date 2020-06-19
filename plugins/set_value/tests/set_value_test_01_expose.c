@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 {
 	PDI_init(PC_parse_path(argv[1]));
 	Record_data* record;
-	PDI_access("record_data", &record, PDI_IN);
+	PDI_access("record_data", (void**)&record, PDI_IN);
 	printf("Scalar: %d\n", record->scalar_data);
 	assert(record->scalar_data == 4);
 	for (int i = 0; i < 4; i++) {
