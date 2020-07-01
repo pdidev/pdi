@@ -177,7 +177,8 @@ A *datatype* can be **any of**:
 * a \ref logical_type_node,
 * a \ref real_type_node,
 * a \ref record_type_node,
-* a \ref simple_datatype_node.
+* a \ref simple_datatype_node,
+* a \ref struct_type_node.
 
 Amongst these, \ref simple_datatype_node is the only scalar.
 All others are dictionaries with a `type` key used for disambiguation between
@@ -456,13 +457,45 @@ type: logical
 kind: 1
 ```
 
-# member_desc {#member_desc_node}
+# struct_member_desc {#struct_member_desc_node}
 
-A *member_desc* is a **mapping** that contains the following keys:
+A *struct_member_desc* is a **mapping** that contains the following keys:
+|key|value|
+|:--|:----|
+|`"type"`|a `scalar`, `array`, `record` or `struct` |
+|`".*"` (*optional*)| *anything* |
+
+* the value associated to the `type` key identifies the 
+  \ref datatype_node "type" of this member, all other keys required for this
+  \ref datatype_node must be present.
+
+**Examples:**
+
+```python
+type: struct
+members:
+  my_char: char
+```
+
+```python
+type: struct
+members:
+  my_long: int64
+  my_array:
+    type: array
+    subtype: int64
+    size: [10, 10]
+```
+
+See \ref struct_type_node for more examples.
+
+# record_member_desc {#record_member_desc_node}
+
+A *record_member_desc* is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"disp"`|a \ref expression_node "integer-valued $-expression"|
-|`"type"`|a `scalar`, `array` or `record` |
+|`"type"`|a `scalar`, `array`, `record` or `struct` |
 |`".*"` (*optional*)| *anything* |
 
 * the value associated to the `disp` key identifies the displacement in bytes
@@ -474,27 +507,48 @@ A *member_desc* is a **mapping** that contains the following keys:
 **Examples:**
 
 ```python
-my_char:
-      disp: 0
-      type: int64
+type: record
+buffersize: 1
+members:
+  my_char:
+        disp: 0
+        type: char
 ```
 
 ```python
-    my_array:
-      disp: 8
-      type: array
-      subtype: int64
-      size: [10, 10]
+type: record
+buffersize: 808 
+members:
+  my_long:
+    disp: 0
+    type: int64
+  my_array:
+    disp: 8
+    type: array
+    subtype: int64
+    size: [10, 10]
 ```
 
 See \ref record_type_node for more examples.
 
-# members_map {#members_map_node}
+# struct_members_map {#struct_members_map_node}
 
-A *members_map* is a **mapping** that contains the following keys:
+A *struct_members_map* is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
-|`".*"` (*optional*)|a \ref member_desc_node|
+|`".*"` (*optional*)|a \ref struct_member_desc_node|
+
+* each key identifies the name of a member of the struct and the value
+  associated to it describes the member itself.
+
+See \ref struct_type_node for an example.
+
+# record_members_map {#record_members_map_node}
+
+A *record_members_map* is a **mapping** that contains the following keys:
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a \ref record_member_desc_node|
 
 * each key identifies the name of a member of the record and the value
   associated to it describes the member itself.
@@ -541,6 +595,27 @@ type: real
 kind: 8
 ```
 
+# struct_type {#struct_type_node}
+
+A *struct_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"struct"`|
+|`"members"` (*optional*)|a \ref struct_members_map_node|
+
+A \ref struct_type_node represents a "struct", *aka* C "struct", C++ "class".
+Buffersize and members displacemnts will be calculated by the %PDI.
+
+**Example:**
+
+```python
+type: struct
+members:
+  first_int: int32
+  seconf_int: int32
+```
+
 # record_type {#record_type_node}
 
 A *record_type* is a **mapping** that contains the following keys:
@@ -549,13 +624,13 @@ A *record_type* is a **mapping** that contains the following keys:
 |:--|:----|
 |`"type"`|`"record"`|
 |`"buffersize"`|a \ref expression_node "integer-valued $-expression"|
-|`"members"` (*optional*)|a \ref members_map_node|
+|`"members"` (*optional*)|a \ref record_members_map_node|
 
-A \ref record_type_node represents a "record", *aka* C "struct", C++ "class",
-Fortran "derived type" where:
+A \ref record_type_node represents a "record" where:
 * the value associated to the `buffersize` key represents the overall size of
   the record, including potential padding,
-* the value associated to the `members` key lists all members of the record.
+* the value associated to the `members` key lists all members of the record with
+  given displacements.
 
 **Example:**
 

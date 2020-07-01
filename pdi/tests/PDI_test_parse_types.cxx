@@ -453,6 +453,174 @@ vector<param_pair> record_types {
 	}
 };
 
+vector<param_pair> struct_types {
+	{
+		"type: struct    \n"
+		"members:        \n"
+		"   my_char: char\n"
+		"   my_int: int  \n",
+		shared_ptr<Datatype> {
+			new Record_datatype {
+				vector<Record_datatype::Member> {
+					Record_datatype::Member{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
+						"my_char"
+					},
+					Record_datatype::Member{
+						4,
+						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+						"my_int"
+					}
+				},
+				8
+			}
+		}
+	},
+	{
+		"type: struct            \n"
+		"members:                \n"
+		"   my_char: char        \n"
+		"   my_array:            \n"
+		"     type: array        \n"
+		"     subtype: int64     \n"
+		"     size: [10, 10]     \n",
+		shared_ptr<Datatype> {
+			new Record_datatype {
+				vector<Record_datatype::Member> {
+					Record_datatype::Member{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
+						"my_char"
+					},
+					Record_datatype::Member{
+						8,
+						unique_ptr<Datatype> {
+							new Array_datatype
+							{
+								unique_ptr<Datatype> {
+									new Array_datatype
+									{
+										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+										10
+									}
+								},
+								10
+							}
+						},
+						"my_array"
+					}
+				},
+				808
+			}
+		}
+	},
+	{
+		"type: struct            \n"
+		"members:                \n"
+		"   my_char: char        \n"
+		"   my_array:            \n"
+		"     type: array        \n"
+		"     subtype: int64     \n"
+		"     size: [10, 10]     \n"
+		"     start: [2, 3]      \n"
+		"     subsize: [6, 5]    \n",
+		shared_ptr<Datatype> {
+			new Record_datatype {
+				vector<Record_datatype::Member> {
+					Record_datatype::Member{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
+						"my_char"
+					},
+					Record_datatype::Member{
+						8,
+						unique_ptr<Datatype> {
+							new Array_datatype
+							{
+								unique_ptr<Datatype> {
+									new Array_datatype
+									{
+										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+										10,
+										3,
+										5
+									}
+								},
+								10,
+								2,
+								6
+							}
+						},
+						"my_array"
+					}
+				},
+				808
+			}
+		}
+	},
+	{
+		"type: struct                \n"
+		"members:                    \n"
+		"   my_char: char            \n"
+		"   my_record:               \n"
+		"     type: struct           \n"
+		"     members:               \n"
+		"       my_char:             \n"
+		"         type: char         \n"
+		"       my_array:            \n"
+		"         type: array        \n"
+		"         subtype: int64     \n"
+		"         size: [10, 10]     \n"
+		,
+		shared_ptr<Datatype> {
+			new Record_datatype {
+				vector<Record_datatype::Member> {
+					Record_datatype::Member{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
+						"my_char"
+					},
+					Record_datatype::Member{
+						8,
+						unique_ptr<Datatype> {
+							new Record_datatype {
+								vector<Record_datatype::Member> {
+									Record_datatype::Member{
+										0,
+										unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
+										"my_char"
+									},
+									Record_datatype::Member{
+										8,
+										unique_ptr<Datatype> {
+											new Array_datatype
+											{
+												unique_ptr<Datatype> {
+													new Array_datatype
+													{
+														unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+														10
+													}
+												},
+												10
+											}
+										},
+										"my_array"
+									}
+								},
+								808
+							}
+						},
+						"my_record"
+					}
+				},
+				816
+			}
+		}
+	}
+};
+
 vector<param_pair> pointer_types {
 	{
 		"{type: pointer, subtype: int}", shared_ptr<Datatype>{
@@ -590,6 +758,7 @@ vector<string> invalid_data {
 INSTANTIATE_TEST_CASE_P(ScalarTypes, PositiveTypeParseTest, testing::ValuesIn(scalar_types));
 INSTANTIATE_TEST_CASE_P(ArrayTypes, PositiveTypeParseTest, testing::ValuesIn(array_types));
 INSTANTIATE_TEST_CASE_P(RecordTypes, PositiveTypeParseTest, testing::ValuesIn(record_types));
+INSTANTIATE_TEST_CASE_P(StructTypes, PositiveTypeParseTest, testing::ValuesIn(struct_types));
 INSTANTIATE_TEST_CASE_P(PointerTypes, PositiveTypeParseTest, testing::ValuesIn(pointer_types));
 
 INSTANTIATE_TEST_CASE_P(, NegativeTypeParseTest, testing::ValuesIn(invalid_data));

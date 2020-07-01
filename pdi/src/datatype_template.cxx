@@ -175,6 +175,62 @@ public:
 	
 };
 
+class Struct_template:
+	public Datatype_template
+{
+public:
+	struct Member {
+		/// Type of the contained member
+		Datatype_template_uptr m_type;
+		string m_name;
+		
+		Member(Datatype_template_uptr type, string name):
+			m_type{move(type)},
+			m_name{move(name)}
+		{}
+		
+		Member(const Member& o):
+			m_type{o.m_type->clone()},
+			m_name{o.m_name}
+		{}
+	};
+	
+private:
+	vector<Member> m_members;
+	
+public:
+	Struct_template(vector<Member>&& members):
+		m_members(std::move(members))
+	{}
+	
+	Datatype_template_uptr clone() const override
+	{
+		return unique_ptr<Struct_template> {new Struct_template{vector<Member>(m_members)}};
+	}
+	
+	Datatype_uptr evaluate(Context& ctx) const override
+	{
+		vector<Record_datatype::Member> evaluated_members;
+		size_t displacement = 0;
+		size_t struct_alignment = 0;
+		for (auto&& member : m_members) {
+			Datatype_uptr member_type {member.m_type->evaluate(ctx)};
+			size_t alignment = member_type->alignment();
+			// align the next member as requested
+			displacement += (alignment - (displacement % alignment)) % alignment;
+			evaluated_members.emplace_back(displacement, move(member_type), member.m_name);
+			displacement += evaluated_members.back().type().buffersize();
+			struct_alignment = max(struct_alignment, alignment);
+		}
+		//add padding at the end of struct
+		displacement += (struct_alignment - (displacement % struct_alignment)) % struct_alignment;
+		
+		// ensure the record size is at least 1 to have a unique address
+		displacement = max<size_t>(1, displacement);
+		return unique_ptr<Record_datatype> {new Record_datatype{move(evaluated_members), displacement}};
+	}
+};
+
 class Pointer_template:
 	public Datatype_template
 {
@@ -307,6 +363,25 @@ Datatype_template_uptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 	return unique_ptr<Record_template> {new Record_template{get_members(ctx, member_list_node), move(record_buffersize)}};
 }
 
+Datatype_template_uptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
+{
+	vector<Struct_template::Member> members;
+	PC_tree_t member_list_node = PC_get(node, ".members");
+	
+	int nb_members = len(member_list_node, 0);
+	for (int member_id = 0; member_id < nb_members; member_id++) {
+		//get current member name
+		string member_name = to_string(PC_get(member_list_node, "{%d}", member_id));
+		
+		//get current member
+		PC_tree_t member_node = PC_get(member_list_node, "<%d>", member_id);
+		
+		members.emplace_back(ctx.datatype(member_node), move(member_name));
+	}
+	
+	return unique_ptr<Struct_template> {new Struct_template{std::move(members)}};
+}
+
 Datatype_template_uptr to_pointer_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t subtype_conf = PC_get(node, ".subtype");
@@ -325,7 +400,9 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 {
 	// holder types
 	ctx.add_datatype("array", to_array_datatype_template);
+	ctx.add_datatype("struct", to_struct_datatype_template);
 	ctx.add_datatype("record", to_record_datatype_template);
+	ctx.add_datatype("pointer", to_pointer_datatype_template);
 	
 	// C basic types
 	ctx.add_datatype("char", [](Context&, PC_tree_t) {
@@ -380,9 +457,6 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::FLOAT, kind}};
 	});
 #endif // BUILD_FORTRAN
-	
-	// after all other basic types are loaded
-	ctx.add_datatype("pointer", to_pointer_datatype_template);
 }
 
 } // namespace PDI
