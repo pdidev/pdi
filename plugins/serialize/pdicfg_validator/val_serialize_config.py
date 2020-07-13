@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,6 +22,8 @@
 # THE SOFTWARE.
 #=============================================================================
 
-# validates trace plugin node
-def val_trace(trace_root, data_list, metadata_list, data_refs):
-    pass
+# validates serialize plugin node
+
+def val_serialize(serialize_root, data_list, metadata_list, data_refs_list):
+    for key, value in serialize_root.items():
+        data_refs_list.append(key)

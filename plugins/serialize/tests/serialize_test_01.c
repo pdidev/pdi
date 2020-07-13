@@ -22,72 +22,36 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_POINTER_DATATYPE_H_
-#define PDI_POINTER_DATATYPE_H_
+#include <pdi.h>
+#include <assert.h>
 
-#include <functional>
-
-#include <pdi/pdi_fwd.h>
-#include <pdi/datatype.h>
-
-
-namespace PDI {
-
-class PDI_EXPORT Pointer_datatype:
-	public Datatype
+int main(int argc, char* argv[])
 {
-	Datatype_uptr m_subtype;
+	PDI_init(PC_parse_path(argv[1]));
 	
-	/// copy function or null for memcpy
-	std::function<void* (void*, const void*)> m_copy;
+	int int_scalar = 42;
+	double double_scalar = 42.42;
 	
-	/// destroy function or null for memcpy
-	std::function<void(void*)> m_destroy;
+	PDI_share("int_scalar", &int_scalar, PDI_OUT);
+	PDI_share("double_scalar", &double_scalar, PDI_OUT);
 	
-public:
-
-	Pointer_datatype(Datatype_uptr subtype);
+	int* int_serialized;
+	double* double_serialized;
+	PDI_access("int_serialized", (void**)&int_serialized, PDI_IN);
+	PDI_access("double_serialized", (void**)&double_serialized, PDI_IN);
 	
-	Pointer_datatype(Datatype_uptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy);
+	printf("%d ?= %d\n", int_scalar, *int_serialized);
+	assert(int_scalar == *int_serialized);
 	
-	/** Type of the pointed element
-	 *
-	 * \return the type of the pointed element
-	 */
-	const Datatype& subtype() const;
+	printf("%f ?= %f\n", double_scalar, *double_serialized);
+	assert(double_scalar == *double_serialized);
 	
-	Datatype_template_uptr clone() const override;
+	PDI_release("int_serialized");
+	PDI_release("double_serialized");
 	
-	Datatype_uptr clone_type() const override;
+	PDI_reclaim("int_scalar");
+	PDI_reclaim("double_scalar");
 	
-	Datatype_uptr densify() const override;
-	
-	Datatype_uptr evaluate(Context&) const override;
-	
-	bool dense() const override;
-	
-	size_t datasize() const override;
-	
-	size_t buffersize() const override;
-	
-	size_t alignment() const override;
-	
-	bool simple() const override;
-	
-	void* data_to_dense_copy(void* to, const void* from) const override;
-	
-	void* data_from_dense_copy(void* to, const void* from) const override;
-	
-	void destroy_data(void* ptr) const override;
-	
-	std::string debug_string() const override;
-	
-	bool operator== (const Datatype&) const override;
-	
-	Datatype_uptr dereference() const;
-	
-};
-
-} // namespace PDI
-
-#endif // PDI_POINTER_DATATYPE_H_
+	PDI_finalize();
+	return 0;
+}

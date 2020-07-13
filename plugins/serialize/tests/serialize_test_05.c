@@ -22,72 +22,34 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_POINTER_DATATYPE_H_
-#define PDI_POINTER_DATATYPE_H_
+#include <pdi.h>
+#include <assert.h>
 
-#include <functional>
+#include "serialize_test.h"
 
-#include <pdi/pdi_fwd.h>
-#include <pdi/datatype.h>
-
-
-namespace PDI {
-
-class PDI_EXPORT Pointer_datatype:
-	public Datatype
+int main(int argc, char* argv[])
 {
-	Datatype_uptr m_subtype;
+	PDI_init(PC_parse_path(argv[1]));
 	
-	/// copy function or null for memcpy
-	std::function<void* (void*, const void*)> m_copy;
+	Vector vector;
+	alloc_vector(&vector);
+	init_vector(&vector);
 	
-	/// destroy function or null for memcpy
-	std::function<void(void*)> m_destroy;
+	print_vector(&vector);
 	
-public:
-
-	Pointer_datatype(Datatype_uptr subtype);
+	PDI_share("vector_data", &vector, PDI_OUT);
 	
-	Pointer_datatype(Datatype_uptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy);
+	VectorSerialized* vector_serialized;
+	PDI_access("vector_data_serialized", (void**)&vector_serialized, PDI_IN);
 	
-	/** Type of the pointed element
-	 *
-	 * \return the type of the pointed element
-	 */
-	const Datatype& subtype() const;
+	assert_eq_vector_serialized(&vector, vector_serialized);
 	
-	Datatype_template_uptr clone() const override;
+	PDI_release("vector_data_serialized");
 	
-	Datatype_uptr clone_type() const override;
+	PDI_reclaim("vector_data");
 	
-	Datatype_uptr densify() const override;
+	free_vector(&vector);
 	
-	Datatype_uptr evaluate(Context&) const override;
-	
-	bool dense() const override;
-	
-	size_t datasize() const override;
-	
-	size_t buffersize() const override;
-	
-	size_t alignment() const override;
-	
-	bool simple() const override;
-	
-	void* data_to_dense_copy(void* to, const void* from) const override;
-	
-	void* data_from_dense_copy(void* to, const void* from) const override;
-	
-	void destroy_data(void* ptr) const override;
-	
-	std::string debug_string() const override;
-	
-	bool operator== (const Datatype&) const override;
-	
-	Datatype_uptr dereference() const;
-	
-};
-
-} // namespace PDI
-
-#endif // PDI_POINTER_DATATYPE_H_
+	PDI_finalize();
+	return 0;
+}

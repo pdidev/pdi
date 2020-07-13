@@ -1,0 +1,37 @@
+logging: trace
+metadata:
+  input: int
+data:
+  scalar_data: int
+  array_data:
+    type: array
+    subtype: int
+    size: 8
+    subsize: 4
+    start: 2
+  record_data:
+    type: record
+    buffersize: 16
+    members:
+      a:
+        disp: 0
+        type: int
+      b:
+        disp: 8
+        type: pointer
+        subtype: int
+
+plugins:
+  trace: ~
+  serialize:
+    scalar_data: scalar_data_serialized
+    array_data: array_data_serialized
+    record_data: record_data_serialized
+  decl_hdf5:
+    - file: serialize_test_06.h5
+      when: $input=0
+      write: [scalar_data_serialized, array_data_serialized, record_data_serialized]
+    - file: serialize_test_06.h5
+      when: $input=1
+      read: [scalar_data_serialized, array_data_serialized, record_data_serialized]
+

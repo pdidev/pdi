@@ -1,0 +1,29 @@
+logging: trace
+metadata:
+  # defined as metadata only for test purpose
+  dense_int_array: 
+    type: array
+    subtype: int
+    size: [4, 2]
+  dense_double_array:
+    type: array
+    subtype: int
+    size: [4, 2]
+data:
+  sparse_int_array: 
+    type: array
+    subtype: int
+    size: [8, 4]
+    start: [2, 1]
+    subsize: [4, 2]
+  sparse_double_array:
+    type: array
+    subtype: double
+    size: [8, 4]
+    start: [2, 1]
+    subsize: [4, 2]
+plugins:
+  trace: ~
+  serialize:
+    sparse_int_array: dense_int_array
+    sparse_double_array: dense_double_array

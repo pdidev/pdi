@@ -43,6 +43,11 @@ Pointer_datatype::Pointer_datatype(Datatype_uptr subtype, std::function<void* (v
 	m_destroy{move(destroy)}
 {}
 
+const Datatype& Pointer_datatype::subtype() const
+{
+	return *m_subtype;
+}
+
 Datatype_template_uptr Pointer_datatype::clone() const
 {
 	return clone_type();

@@ -22,72 +22,54 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_POINTER_DATATYPE_H_
-#define PDI_POINTER_DATATYPE_H_
+#include <pdi.h>
+#include <assert.h>
 
-#include <functional>
+#include "serialize_test.h"
 
-#include <pdi/pdi_fwd.h>
-#include <pdi/datatype.h>
-
-
-namespace PDI {
-
-class PDI_EXPORT Pointer_datatype:
-	public Datatype
+void write_grid()
 {
-	Datatype_uptr m_subtype;
+	Grid data_write;
+	alloc_grid(&data_write);
+	init_grid(&data_write);
 	
-	/// copy function or null for memcpy
-	std::function<void* (void*, const void*)> m_copy;
+	int input = 0;
+	PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("grid_data", &data_write, PDI_OUT);
 	
-	/// destroy function or null for memcpy
-	std::function<void(void*)> m_destroy;
-	
-public:
+	free_grid(&data_write);
+}
 
-	Pointer_datatype(Datatype_uptr subtype);
+void check_read_grid(const Grid* data_read)
+{
+	Grid data;
+	alloc_grid(&data);
+	init_grid(&data);
 	
-	Pointer_datatype(Datatype_uptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy);
-	
-	/** Type of the pointed element
-	 *
-	 * \return the type of the pointed element
-	 */
-	const Datatype& subtype() const;
-	
-	Datatype_template_uptr clone() const override;
-	
-	Datatype_uptr clone_type() const override;
-	
-	Datatype_uptr densify() const override;
-	
-	Datatype_uptr evaluate(Context&) const override;
-	
-	bool dense() const override;
-	
-	size_t datasize() const override;
-	
-	size_t buffersize() const override;
-	
-	size_t alignment() const override;
-	
-	bool simple() const override;
-	
-	void* data_to_dense_copy(void* to, const void* from) const override;
-	
-	void* data_from_dense_copy(void* to, const void* from) const override;
-	
-	void destroy_data(void* ptr) const override;
-	
-	std::string debug_string() const override;
-	
-	bool operator== (const Datatype&) const override;
-	
-	Datatype_uptr dereference() const;
-	
-};
+	assert_eq_grid(data_read, &data);
+	free_grid(&data);
+}
 
-} // namespace PDI
+void read_grid()
+{
+	Grid data_read;
+	alloc_grid(&data_read);
+	
+	int input = 1;
+	PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("grid_data", &data_read, PDI_IN);
+	
+	check_read_grid(&data_read);
+	free_grid(&data_read);
+}
 
-#endif // PDI_POINTER_DATATYPE_H_
+int main(int argc, char* argv[])
+{
+	PDI_init(PC_parse_path(argv[1]));
+	
+	write_grid();
+	read_grid();
+	
+	PDI_finalize();
+	return 0;
+}
