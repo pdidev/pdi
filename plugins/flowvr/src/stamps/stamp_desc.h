@@ -72,7 +72,7 @@ public:
 			m_value = stamp_value;
 			m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Update from message: Stamp = {}", m_name, stamp_value);
 		} else {
-			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Int STAMP ({}): Cannot read stamp value from message", m_name};
+			throw PDI::Unavailable_error{"(FlowVR) Int STAMP ({}): Cannot read stamp value from message", m_name};
 		}
 	}
 	
@@ -82,7 +82,7 @@ public:
 		if (status) {
 			m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Message update: Message.stamps.{} = {}", m_name, m_name, m_value);
 		} else {
-			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Int STAMP ({}): Cannot write stamp to message", m_name};
+			throw PDI::Unavailable_error{"(FlowVR) Int STAMP ({}): Cannot write stamp to message", m_name};
 		}
 	}
 	
@@ -123,7 +123,7 @@ public:
 			m_value = stamp_value;
 			m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Update from message: Stamp = {}", m_name, stamp_value);
 		} else {
-			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float STAMP ({}): Cannot read stamp value from message", m_name};
+			throw PDI::Unavailable_error{"(FlowVR) Float STAMP ({}): Cannot read stamp value from message", m_name};
 		}
 	}
 	
@@ -133,7 +133,7 @@ public:
 		if (status) {
 			m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Message update: Message.stamps.{} = {}", m_name, m_name, m_value);
 		} else {
-			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float STAMP ({}): Cannot write stamp to message", m_name};
+			throw PDI::Unavailable_error{"(FlowVR) Float STAMP ({}): Cannot write stamp to message", m_name};
 		}
 	}
 	
@@ -178,7 +178,7 @@ public:
 			m_value = stamp_value;
 			m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Update from message: Stamp = {}", m_name, stamp_value);
 		} else {
-			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float STAMP ({}): Cannot read stamp value from message", m_name};
+			throw PDI::Unavailable_error{"(FlowVR) Float STAMP ({}): Cannot read stamp value from message", m_name};
 		}
 	}
 	
@@ -188,7 +188,7 @@ public:
 		if (status) {
 			m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Message update: Message.stamps.{} = {}", m_name, m_name, m_value);
 		} else {
-			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) String STAMP ({}): Cannot write stamp to message", m_name};
+			throw PDI::Unavailable_error{"(FlowVR) String STAMP ({}): Cannot write stamp to message", m_name};
 		}
 	}
 	
@@ -231,7 +231,7 @@ public:
 				m_value[stamp_id] = stamp_value;
 				m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): Update from message: Stamp[{}] = {}", m_name, stamp_id, stamp_value);
 			} else {
-				throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Int array STAMP ({}): Cannot read stamp value from message. Index = {}", m_name, stamp_id};
+				throw PDI::Unavailable_error{"(FlowVR) Int array STAMP ({}): Cannot read stamp value from message. Index = {}", m_name, stamp_id};
 			}
 		}
 	}
@@ -243,7 +243,7 @@ public:
 			if (status) {
 				m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id]);
 			} else {
-				throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Int array STAMP ({}): Cannot write stamp to message", m_name};
+				throw PDI::Unavailable_error{"(FlowVR) Int array STAMP ({}): Cannot write stamp to message", m_name};
 			}
 		}
 	}
@@ -287,7 +287,7 @@ public:
 				m_value[stamp_id] = stamp_value;
 				m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Update from message: Stamp[{}] = {}", m_name, stamp_id, stamp_value);
 			} else {
-				throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Int array STAMP ({}): Cannot read stamp value from message. Index = {}", m_name, stamp_id};
+				throw PDI::Unavailable_error{"(FlowVR) Int array STAMP ({}): Cannot read stamp value from message. Index = {}", m_name, stamp_id};
 			}
 		}
 	}
@@ -299,7 +299,7 @@ public:
 			if (status) {
 				m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id]);
 			} else {
-				throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float array STAMP ({}): Cannot write stamp to message", m_name};
+				throw PDI::Unavailable_error{"(FlowVR) Float array STAMP ({}): Cannot write stamp to message", m_name};
 			}
 		}
 	}

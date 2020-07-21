@@ -42,13 +42,13 @@ private:
 	void create_component(PC_tree_t component_node)
 	{
 		if (PC_status(component_node)) {
-			throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Component type must be defined. Available options: `module'"};
+			throw PDI::Config_error{"(FlowVR) Component type must be defined. Available options: `module'"};
 		}
 		std::string component_str = PDI::to_string(PC_get(component_node, ".component"));
 		if (component_str == "module") {
 			m_flowvr_components.emplace_back(new Module(context(), component_node));
 		} else {
-			throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Component `{}' is invalid. Available options: `module'", component_str};
+			throw PDI::Config_error {"(FlowVR) Component `{}' is invalid. Available options: `module'", component_str};
 		}
 	}
 	

@@ -83,7 +83,7 @@ public:
 
     void convert_comm(const void* source, MPI_Comm_type source_type, void* dest, MPI_Comm_type dest_type)
     {
-        using PDI::Error;
+        using PDI::Impl_error;
 
         if (dest_type == MPI_Comm_type::C) {
             if (source_type == MPI_Comm_type::C)
@@ -91,16 +91,16 @@ public:
             else if (source_type == MPI_Comm_type::FORTRAN)
                 *static_cast<MPI_Comm*>(dest) = MPI_Comm_f2c(*static_cast<const MPI_Fint*>(source));
             else
-                throw Error{PDI_ERR_IMPL, "(MPI) Converting unknown MPI communicator type"};
+                throw Impl_error{"(MPI) Converting unknown MPI communicator type"};
         } else if (dest_type == MPI_Comm_type::FORTRAN) {
             if (source_type == MPI_Comm_type::C)
                 *static_cast<MPI_Fint*>(dest) = MPI_Comm_c2f(*static_cast<const MPI_Comm*>(source));
             else if (source_type == MPI_Comm_type::FORTRAN)
                 *static_cast<MPI_Fint*>(dest) = *static_cast<const MPI_Fint*>(source);
             else
-                throw Error{PDI_ERR_IMPL, "(MPI) Converting unknown MPI communicator type"};
+                throw Impl_error{"(MPI) Converting unknown MPI communicator type"};
         } else {
-            throw Error{PDI_ERR_IMPL, "(MPI) Converting to unknown MPI communicator type"};
+            throw Impl_error{"(MPI) Converting to unknown MPI communicator type"};
         }
     }
 
@@ -180,7 +180,7 @@ public:
                 } else if (transtype_mpi_comm_type == MPI_Comm_type::FORTRAN) {
                     ptr = unique_ptr<void, void(*)(void*)>{transtype_desc.reclaim(), [](void* ptr) {delete static_cast<MPI_Fint*>(ptr);}};
                 } else {
-                    throw PDI::Error{PDI_ERR_IMPL, "(MPI) Unexpected MPI Communicator when transtyping back"};
+                    throw PDI::Impl_error{"(MPI) Unexpected MPI Communicator when transtyping back"};
                 }
                 this->m_ctx.logger()->debug("(MPI) Transtype back `{}' to `{}'", transtype_desc.name(), source_desc.name());    
                 convert_comm(ptr.get(), transtype_mpi_comm_type, wref.get(), get_mpi_comm_type(*source_desc.default_type()->evaluate(this->m_ctx)));

@@ -61,12 +61,12 @@ string Expression::Impl::String_literal::to_string(Context& ctx) const
 
 long Expression::Impl::String_literal::to_long(Context& ctx) const
 {
-	throw Error {PDI_ERR_VALUE, "Can not interpret `{}' as an integer value", to_string(ctx)};
+	throw Value_error{"Can not interpret `{}' as an integer value", to_string(ctx)};
 }
 
 double Expression::Impl::String_literal::to_double(Context& ctx) const
 {
-	throw Error {PDI_ERR_VALUE, "Can not interpret `{}' as an double value", to_string(ctx)};
+	throw Value_error{"Can not interpret `{}' as an double value", to_string(ctx)};
 }
 
 Ref Expression::Impl::String_literal::to_ref(Context& ctx) const
@@ -93,7 +93,7 @@ Ref Expression::Impl::String_literal::to_ref(Context& ctx) const
 Ref Expression::Impl::String_literal::to_ref(Context& ctx, const Datatype& type) const
 {
 	if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret String_literal as a scalar datatype."};
+		throw Value_error{"Cannot interpret String_literal as a scalar datatype."};
 	} else if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&type)) {
 		Ref_rw result {
 			aligned_alloc(array_type->alignment(), array_type->buffersize()),
@@ -105,9 +105,9 @@ Ref Expression::Impl::String_literal::to_ref(Context& ctx, const Datatype& type)
 		copy_value(ctx, result.get(), result.type());
 		return result;
 	} else if (const Record_datatype* record_type = dynamic_cast<const Record_datatype*>(&type)) {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret String_literal as a record datatype."};
+		throw Value_error{"Cannot interpret String_literal as a record datatype."};
 	} else {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret String_literal as given datatype."};
+		throw Value_error{"Cannot interpret String_literal as given datatype."};
 	}
 }
 
@@ -122,7 +122,7 @@ size_t Expression::Impl::String_literal::copy_value(Context& ctx, void* buffer, 
 			}
 		}
 	}
-	throw Error{PDI_ERR_VALUE, "Cannot copy String_literal as a non chars array datatype."};
+	throw Value_error{"Cannot copy String_literal as a non chars array datatype."};
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const** val_str)
@@ -157,7 +157,7 @@ unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const*
 		} break;
 		case 0: {} break;
 		default: {
-			throw Error {PDI_ERR_IMPL, "Unexpected error!!!"};
+			throw Impl_error{"Unexpected error!!!"};
 		}
 		}
 	}

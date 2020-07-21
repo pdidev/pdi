@@ -69,17 +69,17 @@ unique_ptr<Expression::Impl> Expression::Impl::Mapping::clone() const
 
 long Expression::Impl::Mapping::to_long(Context& ctx) const
 {
-	throw Error {PDI_ERR_VALUE, "Cannot interpret Map_expression as a long value"};
+	throw Value_error{"Cannot interpret Map_expression as a long value"};
 }
 
 double Expression::Impl::Mapping::to_double(Context& ctx) const
 {
-	throw Error {PDI_ERR_VALUE, "Cannot interpret Map_expression as a double value"};
+	throw Value_error{"Cannot interpret Map_expression as a double value"};
 }
 
 string Expression::Impl::Mapping::to_string(Context& ctx) const
 {
-	throw Error {PDI_ERR_VALUE, "Cannot interpret Map_expression as a string value"};
+	throw Value_error{"Cannot interpret Map_expression as a string value"};
 }
 
 Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
@@ -136,12 +136,12 @@ size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, const D
 				void* to = static_cast<uint8_t*>(buffer) + member_it->displacement();
 				element.second.m_impl->copy_value(ctx, to, member_it->type());
 			} else {
-				throw Error {PDI_ERR_VALUE, "Trying to reference non-existing member: {}", element.first};
+				throw Value_error{"Trying to reference non-existing member: {}", element.first};
 			}
 		}
 		return type.buffersize();
 	} else {
-		throw Error {PDI_ERR_VALUE, "Map literal cannot copy value of not record datatype"};
+		throw Value_error{"Map literal cannot copy value of not record datatype"};
 	}
 }
 

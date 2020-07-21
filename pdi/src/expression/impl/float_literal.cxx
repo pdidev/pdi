@@ -83,11 +83,11 @@ Ref Expression::Impl::Float_literal::to_ref(Context& ctx, const Datatype& type) 
 		copy_value(ctx, result.get(), result.type());
 		return result;
 	} else if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&type)) {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret Float_literal as an array datatype."};
+		throw Value_error{"Cannot interpret Float_literal as an array datatype."};
 	} else if (const Record_datatype* record_type = dynamic_cast<const Record_datatype*>(&type)) {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret Float_literal as a record datatype."};
+		throw Value_error{"Cannot interpret Float_literal as a record datatype."};
 	} else {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret Float_literal as given datatype."};
+		throw Value_error{"Cannot interpret Float_literal as given datatype."};
 	}
 }
 
@@ -110,7 +110,7 @@ size_t Expression::Impl::Float_literal::copy_value(Context& ctx, void* buffer, c
 			}
 		}
 	}
-	throw Error{PDI_ERR_VALUE, "Cannot copy Float_literal as a non float datatype."};
+	throw Value_error{"Cannot copy Float_literal as a non float datatype."};
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::Float_literal::parse(char const** val_str)
@@ -119,7 +119,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Float_literal::parse(char const**
 	
 	unique_ptr<Float_literal> result {new Float_literal{strtod(constval, const_cast<char**>(&constval))}};
 	if (*val_str == constval) {
-		throw Error {PDI_ERR_VALUE, "Expected double, found `{}'", constval};
+		throw Value_error{"Expected double, found `{}'", constval};
 	}
 	while (isspace(*constval)) ++constval;
 	

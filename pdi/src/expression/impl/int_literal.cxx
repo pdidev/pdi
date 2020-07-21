@@ -84,11 +84,11 @@ Ref Expression::Impl::Int_literal::to_ref(Context& ctx, const Datatype& type) co
 		copy_value(ctx, result.get(), result.type());
 		return result;
 	} else if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&type)) {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret Int_literal as an array datatype."};
+		throw Value_error{"Cannot interpret Int_literal as an array datatype."};
 	} else if (const Record_datatype* record_type = dynamic_cast<const Record_datatype*>(&type)) {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret Int_literal as a record datatype."};
+		throw Value_error{"Cannot interpret Int_literal as a record datatype."};
 	} else {
-		throw Error{PDI_ERR_VALUE, "Cannot interpret Int_literal as given datatype."};
+		throw Value_error{"Cannot interpret Int_literal as given datatype."};
 	}
 }
 
@@ -120,7 +120,7 @@ size_t Expression::Impl::Int_literal::copy_value(Context& ctx, void* buffer, con
 			}
 		}
 	}
-	throw Error{PDI_ERR_VALUE, "Cannot copy Int_literal as a non integer datatype."};
+	throw Value_error{"Cannot copy Int_literal as a non integer datatype."};
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** val_str)
@@ -129,7 +129,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** v
 	
 	unique_ptr<Int_literal> result {new Int_literal{strtol(constval, const_cast<char**>(&constval), 0)}};
 	if (*val_str == constval) {
-		throw Error {PDI_ERR_VALUE, "Expected integer, found `{}'", constval};
+		throw Value_error{"Expected integer, found `{}'", constval};
 	}
 	while (isspace(*constval)) ++constval;
 	

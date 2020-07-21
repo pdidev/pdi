@@ -92,7 +92,7 @@ protected:
 			
 			const auto& name_to_key_it = m_name_to_flowvr_key.find(key);
 			if (name_to_key_it == m_name_to_flowvr_key.end()) {
-				throw PDI::Error{PDI_ERR_CONFIG, "{} is not valid event button KEY", key};
+				throw PDI::Config_error{"{} is not valid event button KEY", key};
 			}
 			
 			m_key_desc.emplace(name_to_key_it->second, desc);
@@ -188,7 +188,7 @@ public:
 			*static_cast<int*>(ref.get()) = desc_value->second.second;
 			m_ctx.logger()->debug("(FlowVR) Input Button Payload ({}): Copy key value = {} to `{}' descriptor", m_name, desc_value->second.second, data_name);
 		} else {
-			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Button Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Input Button Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
 		}
 	}
 	
@@ -279,7 +279,7 @@ public:
 			desc_value->second.second = *static_cast<const int*>(ref.get());
 			m_ctx.logger()->debug("(FlowVR) Output Button Payload ({}): Copied key value = {} from `{}' descriptor", m_name, desc_value->second.second, data_name);
 		} else {
-			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Button Payload ({): Cannot get read access to `{}' descriptor", m_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Output Button Payload ({): Cannot get read access to `{}' descriptor", m_name, data_name};
 		}
 	}
 	

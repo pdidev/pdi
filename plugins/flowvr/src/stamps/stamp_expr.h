@@ -69,7 +69,7 @@ public:
 		if (status) {
 			m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_long(m_ctx));
 		} else {
-			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Int STAMP ({}): Cannot write stamp to message", m_name};
+			throw PDI::Unavailable_error{"(FlowVR) Int STAMP ({}): Cannot write stamp to message", m_name};
 		}
 	}
 };
@@ -95,7 +95,7 @@ public:
 //      if (status) {
 //          m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_double(m_ctx));
 //      } else {
-//          throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float STAMP ({}): Cannot write stamp to message", m_name};
+//          throw PDI::Unavailable_error{"(FlowVR) Float STAMP ({}): Cannot write stamp to message", m_name};
 //      }
 //  }
 
@@ -126,7 +126,7 @@ public:
 		if (status) {
 			m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_string(m_ctx));
 		} else {
-			throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) String STAMP ({}): Cannot write stamp to message", m_name};
+			throw PDI::Unavailable_error{"(FlowVR) String STAMP ({}): Cannot write stamp to message", m_name};
 		}
 	}
 };
@@ -153,7 +153,7 @@ public:
 			if (status) {
 				m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id].to_long(m_ctx));
 			} else {
-				throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Int array STAMP ({}): Cannot write stamp to message", m_name};
+				throw PDI::Unavailable_error{"(FlowVR) Int array STAMP ({}): Cannot write stamp to message", m_name};
 			}
 		}
 	}
@@ -181,7 +181,7 @@ public:
 //          if (status) {
 //              m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id].to_double(m_ctx));
 //          } else {
-//              throw PDI::Error{PDI_UNAVAILABLE, "(FlowVR) Float array STAMP ({}): Cannot write stamp to message", m_name};
+//              throw PDI::Unavailable_error{"(FlowVR) Float array STAMP ({}): Cannot write stamp to message", m_name};
 //          }
 //      }
 //  }

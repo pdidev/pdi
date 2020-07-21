@@ -103,7 +103,7 @@ private:
 							m_traces.clear();
 							m_flowvr_module.reset();
 							if (this->m_silent_abort == false) {
-								throw PDI::Error {PDI_ERR_SYSTEM, "(FlowVR) Module ({}): Received abort signal from FlowVR", this->m_module_name};
+								throw PDI::System_error{"(FlowVR) Module ({}): Received abort signal from FlowVR", this->m_module_name};
 							}
 						}
 					}, wait_event);
@@ -117,7 +117,7 @@ private:
 						m_traces.clear();
 						m_flowvr_module.reset();
 						if (this->m_silent_abort == false) {
-							throw PDI::Error {PDI_ERR_SYSTEM, "(FlowVR) Module ({}): Received abort signal from FlowVR", this->m_module_name};
+							throw PDI::System_error{"(FlowVR) Module ({}): Received abort signal from FlowVR", this->m_module_name};
 						}
 					}
 				}, wait_event);
@@ -153,11 +153,11 @@ private:
 					flowvr::Parallel::init(set_rank, set_size);
 					context().logger()->debug("(FlowVR) Module: Parallel: rank = {}, size = {}", set_rank, set_size);
 				} else {
-					throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Module: `set_rank' is defined, but `set_size' is not"};
+					throw PDI::Config_error{"(FlowVR) Module: `set_rank' is defined, but `set_size' is not"};
 				}
 			} else {
 				if (!PC_status(set_size_node)) {
-					throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Module: `set_size' is defined, but `set_rank' is not"};
+					throw PDI::Config_error{"(FlowVR) Module: `set_size' is defined, but `set_rank' is not"};
 				} else {
 					flowvr::Parallel::init(true);
 				}
@@ -454,7 +454,7 @@ private:
 		if (status_ref) {
 			*static_cast<int*>(status_ref.get()) = m_flowvr_module->getStatus();
 		} else {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module ({}): Unable to get write permissions for `status'", m_module_name};
+			throw PDI::Right_error{"(FlowVR) Module ({}): Unable to get write permissions for `status'", m_module_name};
 		}
 	}
 	
@@ -466,7 +466,7 @@ private:
 	void wait(const std::string& data_name, PDI::Ref_w wait_ref)
 	{
 		if (!wait_ref) {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module ({}): Unable to get write permissions for `{}'", m_module_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Module ({}): Unable to get write permissions for `{}'", m_module_name, data_name};
 		}
 		*static_cast<int*>(wait_ref.get()) = wait();
 	}
@@ -481,12 +481,12 @@ private:
 	{
 		if (!m_flowvr_module) return;
 		if (flowvr::Parallel::isParallel() == false) {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module ({}): Unable to write parallel rank to `{}', because flowVR is not set to parallel", m_module_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Module ({}): Unable to write parallel rank to `{}', because flowVR is not set to parallel", m_module_name, data_name};
 		}
 		if (rank_ref_w) {
 			*static_cast<int*>(rank_ref_w.get()) = flowvr::Parallel::getRank();
 		} else {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module ({}): Unable to get write permissions for `{}'", m_module_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Module ({}): Unable to get write permissions for `{}'", m_module_name, data_name};
 		}
 	}
 	
@@ -500,12 +500,12 @@ private:
 	{
 		if (!m_flowvr_module) return;
 		if (flowvr::Parallel::isParallel() == false) {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module ({}): Unable to write parallel rank, because flowVR is not set to parallel", m_module_name};
+			throw PDI::Right_error{"(FlowVR) Module ({}): Unable to write parallel rank, because flowVR is not set to parallel", m_module_name};
 		}
 		if (size_ref_w) {
 			*static_cast<int*>(size_ref_w.get()) = flowvr::Parallel::getNbProc();
 		} else {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Module ({}): Unable to get write permissions for `{}'", m_module_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Module ({}): Unable to get write permissions for `{}'", m_module_name, data_name};
 		}
 	}
 	

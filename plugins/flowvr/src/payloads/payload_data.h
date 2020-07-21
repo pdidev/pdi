@@ -175,7 +175,7 @@ public:
 					}
 				}
 			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Data Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
+				throw PDI::Right_error{"(FlowVR) Input Data Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
 			}
 		}
 	}
@@ -296,7 +296,7 @@ public:
 			if (data_pool == "const") {
 				m_flowvr_buffer_pool.reset(new flowvr::BufferPool());
 			} else {
-				throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Payload ({}): `data_size' can be only const", m_name.c_str()};
+				throw PDI::Config_error{"(FlowVR) Payload ({}): `data_size' can be only const", m_name.c_str()};
 			}
 		}
 		
@@ -355,7 +355,7 @@ public:
 					}
 				}
 			} else {
-				throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Data Payload ({}): Cannot get read access to `{}' descriptor", m_name, data_name};
+				throw PDI::Right_error{"(FlowVR) Output Data Payload ({}): Cannot get read access to `{}' descriptor", m_name, data_name};
 			}
 		}
 	}

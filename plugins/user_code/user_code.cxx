@@ -48,6 +48,7 @@ using PDI::Data_descriptor;
 using PDI::Ref;
 using PDI::each;
 using PDI::Error;
+using PDI::System_error;
 using PDI::opt_each;
 using PDI::Plugin;
 using PDI::Expression;
@@ -148,12 +149,12 @@ public:
 		if (!fct_uncast) { // force loading from the main exe
 			void* exe_handle = dlopen(NULL, RTLD_NOW);
 			if (!exe_handle) {
-				throw Error {PDI_ERR_SYSTEM, "Unable to dlopen the main executable: {}", dlerror()};
+				throw System_error{"Unable to dlopen the main executable: {}", dlerror()};
 			}
 			fct_uncast = dlsym(exe_handle, funcname.c_str());
 		}
 		if (!fct_uncast) {
-			throw Error {PDI_ERR_SYSTEM, "Unable to load user function `{}': {}", funcname, dlerror()};
+			throw System_error{"Unable to load user function `{}': {}", funcname, dlerror()};
 		}
 		m_fct = reinterpret_cast<ptr_fct_t>(fct_uncast);
 		

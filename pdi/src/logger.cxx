@@ -36,6 +36,7 @@
 
 namespace {
 
+using PDI::Config_error;
 using PDI::Logger_sptr;
 using PDI::len;
 using PDI::to_long;
@@ -117,10 +118,8 @@ void read_log_level(Logger_sptr logger, PC_tree_t config, const string& name)
 		} else {
 			try {
 				level_str = to_string(config);
-			} catch (const PDI::Error& e) {
-				if (e.status() != PDI_ERR_CONFIG) {
-					throw;
-				}
+			} catch (const Config_error& e) {
+				//do nothing on this exception
 			}
 		}
 	}

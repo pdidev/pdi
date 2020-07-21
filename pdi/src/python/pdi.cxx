@@ -84,8 +84,7 @@ pytup pyversion(pytup pyexpected)
 	        || expected_minor > PDI_VERSION_MINOR
 	    )
 	) {
-		throw Error{
-			PDI_ERR_PLUGIN,
+		throw Plugin_error{
 			"Invalid PDI API version: %lu.%lu.%lu, PDI provided version is %lu.%lu.%lu",
 			expected_major,
 			expected_minor,

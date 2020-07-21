@@ -43,6 +43,7 @@ using PDI::Context_proxy;
 using PDI::Data_descriptor;
 using PDI::Datatype_uptr;
 using PDI::Error;
+using PDI::Impl_error;
 using PDI::len;
 using PDI::Plugin;
 using PDI::Scalar_datatype;
@@ -76,7 +77,7 @@ struct mpi_plugin: Plugin {
 	{
 		Data_descriptor& predef_desc = ctx.desc(name);
 		if (!predef_desc.empty()) {
-			throw Error{PDI_ERR_IMPL, "Predefined descriptor already defined `{}'", name};
+			throw Impl_error{"Predefined descriptor already defined `{}'", name};
 		}
 		
 		predef_desc.metadata(true);

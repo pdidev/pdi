@@ -75,7 +75,7 @@ protected:
 			
 			const auto& name_to_key_it = m_name_to_flowvr_key.find(key);
 			if (name_to_key_it == m_name_to_flowvr_key.end()) {
-				throw PDI::Error{PDI_ERR_CONFIG, "{} is not valid event mouse KEY", key};
+				throw PDI::Config_error{"{} is not valid event mouse KEY", key};
 			}
 			
 			if (key == "POS_XY") {
@@ -187,7 +187,7 @@ public:
 			m_ctx.logger()->debug("(FlowVR) Input Mouse Payload ({}): Copy mouse position to `{}'", m_name, data_name);
 			memcpy(ref.get(), m_desc_pos_xy.second.second, 2 * sizeof(float));
 		} else {
-			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Mouse Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Input Mouse Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
 		}
 	}
 	
@@ -203,7 +203,7 @@ public:
 			*static_cast<int*>(ref.get()) = desc_value->second.second;
 			m_ctx.logger()->debug("(FlowVR) Input Mouse Payload ({}): Copy mouse button state to `{}'", m_name, data_name);
 		} else {
-			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Input Mouse Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Input Mouse Payload ({}): Cannot get write access to `{}' descriptor", m_name, data_name};
 		}
 	}
 	
@@ -314,7 +314,7 @@ public:
 			m_ctx.logger()->debug("(FlowVR) Output Mouse Payload ({}): Copy mouse position to `{}'", m_name, data_name);
 			memcpy(m_desc_pos_xy.second.second, ref.get(), 2 * sizeof(float));
 		} else {
-			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Mouse Payload ({}): Cannot get read access to `{}' descriptor", m_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Output Mouse Payload ({}): Cannot get read access to `{}' descriptor", m_name, data_name};
 		}
 	}
 	
@@ -330,7 +330,7 @@ public:
 			desc_value->second.second = *static_cast<const int*>(ref.get());
 			m_ctx.logger()->debug("(FlowVR) Output Mouse Payload ({}): Copy mouse button state to `{}'", m_name, data_name);
 		} else {
-			throw PDI::Error{PDI_ERR_RIGHT, "(FlowVR) Output Mouse Payload ({}): Cannot get read access to `{}' descriptor", m_name, data_name};
+			throw PDI::Right_error{"(FlowVR) Output Mouse Payload ({}): Cannot get read access to `{}' descriptor", m_name, data_name};
 		}
 	}
 	

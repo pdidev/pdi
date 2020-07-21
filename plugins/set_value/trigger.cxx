@@ -38,7 +38,7 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node):
     m_ctx{ctx}
 {
 	if (!PDI::is_list(operation_list_node)) {
-		throw PDI::Error {PDI_ERR_CONFIG, "Operations must be defined as a list"};
+		throw PDI::Config_error{"Operations must be defined as a list"};
 	}
 
 	size_t operations_count = PDI::len(operation_list_node);
@@ -48,7 +48,7 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node):
 		PC_tree_t operation_values = PC_get(value_map, "<0>");
 
 		if (!PDI::is_list(operation_values)) {
-			throw PDI::Error {PDI_ERR_CONFIG, "Operation value must be a list of values"};
+			throw PDI::Config_error{"Operation value must be a list of values"};
 		}
 
 		if (operation == "set") {
@@ -58,7 +58,7 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node):
 		} else if (operation == "expose") {
 			m_operations.emplace_back(new Expose_operation{m_ctx, operation_values});
 		} else {
-			throw PDI::Error {PDI_ERR_CONFIG, "Unknown operation: {}", operation};
+			throw PDI::Config_error{"Unknown operation: {}", operation};
 		}
 	}
 }

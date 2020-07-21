@@ -56,14 +56,14 @@ try
 		long idx = 0;
 		for (auto&& ii : m_idx) {
 			auto&& array_type = dynamic_cast<const Array_datatype*>(type);
-			if (!array_type) throw Error {PDI_ERR_VALUE, "Accessing non-array data with an index"};
+			if (!array_type) throw Value_error{"Accessing non-array data with an index"};
 			idx += (array_type->start() + ii.to_long(ctx)) * stride;
 			stride *= array_type->size();
 			type = &array_type->subtype();
 		}
 		
 		auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(type);
-		if (!scalar_type) throw Error {PDI_ERR_VALUE, "Expected scalar found invalid type instead"};
+		if (!scalar_type) throw Value_error{"Expected scalar found invalid type instead"};
 		
 		if (scalar_type->kind() == Scalar_kind::SIGNED) {
 			switch (scalar_type->datasize()) {
@@ -76,7 +76,7 @@ try
 			case 8:
 				return static_cast<const int64_t*>(ref.get())[idx];
 			default:
-				throw Error(PDI_ERR_VALUE, "Unexpected int size: {}", static_cast<long>(scalar_type->kind()));
+				throw Value_error("Unexpected int size: {}", static_cast<long>(scalar_type->kind()));
 			}
 		} else if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
 			switch (scalar_type->datasize()) {
@@ -89,7 +89,7 @@ try
 			case 8:
 				return static_cast<const uint64_t*>(ref.get())[idx];
 			default:
-				throw Error(PDI_ERR_VALUE, "Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
+				throw Value_error("Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
 			}
 		} else if (scalar_type->kind() == Scalar_kind::FLOAT) {
 			switch (scalar_type->datasize()) {
@@ -98,12 +98,12 @@ try
 			case 8:
 				return static_cast<long>(static_cast<const double*>(ref.get())[idx]);
 			default:
-				throw Error(PDI_ERR_VALUE, "Unexpected float size: {}", static_cast<long>(scalar_type->kind()));
+				throw Value_error("Unexpected float size: {}", static_cast<long>(scalar_type->kind()));
 			}
 		}
-		throw Error {PDI_ERR_VALUE, "Expected integer scalar"};
+		throw Value_error{"Expected integer scalar"};
 	}
-	throw Error {PDI_ERR_RIGHT, "Unable to grant access for value reference"};
+	throw Right_error{"Unable to grant access for value reference"};
 } catch (const Error& e)
 {
 	throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
@@ -119,14 +119,14 @@ try
 		long idx = 0;
 		for (auto&& ii : m_idx) {
 			auto&& array_type = dynamic_cast<const Array_datatype*>(type);
-			if (!array_type) throw Error {PDI_ERR_VALUE, "Accessing non-array data with an index"};
+			if (!array_type) throw Value_error{"Accessing non-array data with an index"};
 			idx += (array_type->start() + ii.to_long(ctx)) * stride;
 			stride *= array_type->size();
 			type = &array_type->subtype();
 		}
 		
 		auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(type);
-		if (!scalar_type) throw Error {PDI_ERR_VALUE, "Expected scalar found invalid type instead"};
+		if (!scalar_type) throw Value_error{"Expected scalar found invalid type instead"};
 		
 		if (scalar_type->kind() == Scalar_kind::FLOAT) {
 			switch (scalar_type->datasize()) {
@@ -135,7 +135,7 @@ try
 			case 8:
 				return static_cast<const double*>(ref.get())[idx];
 			default:
-				throw Error(PDI_ERR_VALUE, "Unexpected float size: {}", static_cast<long>(scalar_type->kind()));
+				throw Value_error("Unexpected float size: {}", static_cast<long>(scalar_type->kind()));
 			}
 		} else if (scalar_type->kind() == Scalar_kind::SIGNED) {
 			switch (scalar_type->datasize()) {
@@ -148,7 +148,7 @@ try
 			case 8:
 				return static_cast<double>(static_cast<const int64_t*>(ref.get())[idx]);
 			default:
-				throw Error(PDI_ERR_VALUE, "Unexpected int size: {}", static_cast<long>(scalar_type->kind()));
+				throw Value_error("Unexpected int size: {}", static_cast<long>(scalar_type->kind()));
 			}
 		} else if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
 			switch (scalar_type->datasize()) {
@@ -161,12 +161,12 @@ try
 			case 8:
 				return static_cast<double>(static_cast<const uint64_t*>(ref.get())[idx]);
 			default:
-				throw Error(PDI_ERR_VALUE, "Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
+				throw Value_error("Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
 			}
 		}
-		throw Error {PDI_ERR_VALUE, "Expected float scalar"};
+		throw Value_error{"Expected float scalar"};
 	}
-	throw Error {PDI_ERR_RIGHT, "Unable to grant access for value reference"};
+	throw Right_error{"Unable to grant access for value reference"};
 } catch (const Error& e)
 {
 	throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
@@ -185,20 +185,16 @@ Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 			};
 			*static_cast<long*>(result.get()) = to_long(ctx);
 			return result;
-		} catch (const Error& e) {
-			if (e.status() == PDI_ERR_VALUE) {
-				Ref_rw result {
-					aligned_alloc(alignof(double), sizeof(double)),
-					[](void* v){free(v);},
-					unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
-					true,
-					true
-				};
-				*static_cast<double*>(result.get()) = to_double(ctx);
-				return result;
-			} else {
-				throw;
-			}
+		} catch (const Value_error& e) {
+			Ref_rw result {
+				aligned_alloc(alignof(double), sizeof(double)),
+				[](void* v){free(v);},
+				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
+				true,
+				true
+			};
+			*static_cast<double*>(result.get()) = to_double(ctx);
+			return result;
 		}
 	}
 	return ctx.desc(m_referenced.c_str()).ref();
@@ -233,13 +229,13 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 				memcpy(buffer, reference.get(), type.buffersize());
 				return type.buffersize();
 			} else {
-				throw Error {PDI_ERR_VALUE,
-				    "Cannot copy reference expression value: reference buffersize ({}) != type bufferize ({})",
-				    reference.type().buffersize(),
-				    type.buffersize()};
+				throw Value_error{
+					"Cannot copy reference expression value: reference buffersize ({}) != type bufferize ({})",
+					reference.type().buffersize(),
+					type.buffersize()};
 			}
 		} else {
-			throw Error {PDI_ERR_VALUE, "Cannot copy reference expression value: cannot get read access to reference"};
+			throw Value_error{"Cannot copy reference expression value: cannot get read access to reference"};
 		}
 	} else {
 		if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
@@ -275,7 +271,7 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 				}
 			}
 		}
-		throw Error {PDI_ERR_VALUE, "Cannot copy reference expression value: non scalar datatype for indexed reference"};
+		throw Value_error{"Cannot copy reference expression value: non scalar datatype for indexed reference"};
 	}
 }
 
@@ -284,7 +280,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	const char* ref = *val_str;
 	unique_ptr<Reference_expression> result{new Reference_expression};
 	
-	if (*ref != '$') throw Error {PDI_ERR_VALUE, "Expected '$', got {}", *ref};
+	if (*ref != '$') throw Value_error{"Expected '$', got {}", *ref};
 	++ref;
 	
 	bool has_curly_brace = false;
@@ -303,7 +299,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 		while (isspace(*ref)) ++ref;
 		result->m_idx.emplace_back(Expression{Operation::parse(&ref, 1)});
 		if (*ref != ']')  {
-			throw Error {PDI_ERR_VALUE, "Expected ']', found {}", *ref};
+			throw Value_error{"Expected ']', found {}", *ref};
 		}
 		++ref;
 		while (isspace(*ref)) ++ref;
@@ -311,7 +307,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	
 	if (has_curly_brace) {
 		if (*ref != '}') {
-			throw Error {PDI_ERR_VALUE, "Expected '}}', found {}", *ref};
+			throw Value_error{"Expected '}}', found {}", *ref};
 		}
 		++ref;
 		while (isspace(*ref)) ++ref;

@@ -90,13 +90,13 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const string& plugin_name)
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 		void* lib_handle = dlopen(libname.c_str(), (RTLD_LAZY|RTLD_GLOBAL));
 		if (!lib_handle) {
-			throw Error{PDI_ERR_PLUGIN, "Unable to load `{}' plugin file: {}", plugin_name, dlerror()};
+			throw Plugin_error{"Unable to load `{}' plugin file: {}", plugin_name, dlerror()};
 		}
 		plugin_ctor_uncast = dlsym(lib_handle, plugin_symbol.c_str());
 	}
 	
 	if (!plugin_ctor_uncast) {
-		throw Error{PDI_ERR_PLUGIN, "Unable to load `{}' plugin from file: {}", plugin_name, dlerror()};
+		throw Plugin_error{"Unable to load `{}' plugin from file: {}", plugin_name, dlerror()};
 	}
 	
 	return reinterpret_cast<plugin_loader_f>(plugin_ctor_uncast);
@@ -112,13 +112,13 @@ plugin_dependencies_f PDI_NO_EXPORT get_plugin_dependencies(const string& plugin
 		string libname = "libpdi_" + plugin_name + "_plugin.so";
 		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW);
 		if (!lib_handle) {
-			throw Error{PDI_ERR_PLUGIN, "Unable to load `{}' plugin file: {}", plugin_name, dlerror()};
+			throw Plugin_error{"Unable to load `{}' plugin file: {}", plugin_name, dlerror()};
 		}
 		plugin_deps_uncast = dlsym(lib_handle, plugin_symbol.c_str());
 	}
 	
 	if (!plugin_deps_uncast) {
-		throw Error{PDI_ERR_PLUGIN, "Unable to load `{}' plugin dependencies from file: {}", plugin_name, dlerror()};
+		throw Plugin_error{"Unable to load `{}' plugin dependencies from file: {}", plugin_name, dlerror()};
 	}
 	
 	return reinterpret_cast<plugin_dependencies_f>(plugin_deps_uncast);
@@ -167,7 +167,7 @@ void initialize_plugin(map<string, Plugin_load_info>::iterator& plugin_info, uno
 	case Init_state::INITIALIZED:
 		return;
 	case Init_state::INITIALIZING_PRE_DEPS:
-		throw Error{PDI_ERR_IMPL, "Error while initializing plugin: circular dependency between plugins"};
+		throw Impl_error{"Error while initializing plugin: circular dependency between plugins"};
 	case Init_state::UNINITIALIZED:
 		plugin_info->second.m_state = Init_state::INITIALIZING_PRE_DEPS;
 		for (auto&& pre_plugin : plugin_info->second.m_pre_dependencies) {
@@ -190,7 +190,7 @@ void initialize_plugins(map<string, Plugin_load_info>& plugins_info, unordered_m
 		for (auto&& req_plugin : plugin_dependencies.first) {
 			auto&& req_plugin_info_it = plugins_info.find(req_plugin);
 			if (req_plugin_info_it == plugins_info.end()) {
-				throw Error{PDI_ERR_SYSTEM, "Error while loading plugin `{}': required plugin `{}' is not loaded", plugin_info.first, req_plugin};
+				throw System_error{"Error while loading plugin `{}': required plugin `{}' is not loaded", plugin_info.first, req_plugin};
 			}
 		}
 		for (auto&& pre_plugin: plugin_dependencies.second) {
@@ -220,7 +220,7 @@ bool Global_context::initialized()
 
 Global_context& Global_context::context()
 {
-	if (!s_context) throw Error{PDI_ERR_STATE, "PDI not initialized"};
+	if (!s_context) throw State_error{"PDI not initialized"};
 	return *s_context;
 }
 
@@ -253,7 +253,7 @@ Global_context::Global_context(PC_tree_t conf):
 		}
 		initialize_plugins(plugins_info, m_plugins);
 	} catch (const exception& e) {
-		throw Error{PDI_ERR_SYSTEM, "Error while loading plugins: {}", e.what()};
+		throw System_error{"Error while loading plugins: {}", e.what()};
 	}
 	
 	// no metadata is not an error
@@ -342,7 +342,7 @@ void Global_context::event(const char* name)
 		for (auto&& err: errors) {
 			errmsg += string(err.what()) + "\n";
 		}
-		throw Error{PDI_ERR_SYSTEM, "{}", errmsg};
+		throw System_error{errmsg.c_str()};
 	}
 }
 
@@ -356,7 +356,7 @@ Datatype_template_uptr Global_context::datatype(PC_tree_t node)
 	char* type_c;
 	if ( PC_string(PC_get(node, ".type"), &type_c) ) {
 		if ( PC_string(node, &type_c) ) {
-			throw Error{PDI_ERR_TYPE, "Invalid type descriptor"};
+			throw Type_error{"Invalid type descriptor"};
 		}
 	}
 	string type = type_c;
@@ -373,14 +373,14 @@ Datatype_template_uptr Global_context::datatype(PC_tree_t node)
 	if (func_it != m_datatype_parsers.end()) {
 		return (func_it->second)(*this, node);
 	}
-	throw Error{PDI_ERR_TYPE, "Cannot find datatype `{}'", type};
+	throw Type_error{"Cannot find datatype `{}'", type};
 }
 
 void Global_context::add_datatype(const string& name, Datatype_template_parser parser)
 {
 	if (!m_datatype_parsers.emplace(name, move(parser)).second) {
 		//if a datatype with the given name already exists
-		throw Error{PDI_ERR_TYPE, "Datatype already defined `{}'", name};
+		throw Type_error{"Datatype already defined `{}'", name};
 	}
 }
 

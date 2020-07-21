@@ -53,14 +53,14 @@ void Set_operation::execute()
 		PDI::Ref_r value_ref {PDI::Expression{data_to_set.second}.to_ref(context(), existing_ref.type())};
 		if (PDI::Ref_w existing_ref_w {existing_ref}) {
 			if (existing_ref_w.type().buffersize() != value_ref.type().buffersize()) {
-				throw PDI::Error {PDI_ERR_VALUE, "Cannot set value to exisitng reference. Existing buffersize = {}, value buffersize = {}",
+				throw PDI::Value_error{"Cannot set value to exisitng reference. Existing buffersize = {}, value buffersize = {}",
 					existing_ref_w.type().buffersize(),
 					value_ref.type().buffersize()};
 			}
 			context().logger()->trace("Copy value to {} with size {} B", data_to_set.first, value_ref.type().buffersize());
 			memcpy(existing_ref_w.get(), value_ref.get(), existing_ref_w.type().buffersize());
 		} else {
-			throw PDI::Error {PDI_ERR_RIGHT, "Cannot get write access for `{}' to set values", data_to_set.first};
+			throw PDI::Right_error{"Cannot get write access for `{}' to set values", data_to_set.first};
 		}
 	}
 }

@@ -125,7 +125,7 @@ void Data_descriptor_impl::metadata(bool metadata)
 {
 	assert((!m_metadata || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	if ( !m_refs.empty() ) {
-		throw Error{PDI_ERR_STATE, "Can not change the metadata status of a non-empty descriptor"};
+		throw State_error{"Can not change the metadata status of a non-empty descriptor"};
 	}
 	m_metadata = metadata;
 	
@@ -178,12 +178,12 @@ Ref Data_descriptor_impl::ref()
 			for (auto&& err: errors) {
 				errmsg += string(err.what()) + "\n";
 			}
-			throw Error{PDI_ERR_SYSTEM, "{}", errmsg};
+			throw System_error{errmsg.c_str()};
 		}
 		
 		//at least one plugin should share a Ref
 		if (m_refs.empty()) {
-			throw Error{PDI_ERR_VALUE, "Cannot access a non shared value: `{}'", m_name};
+			throw Value_error{"Cannot access a non shared value: `{}'", m_name};
 		}
 	}
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
@@ -217,7 +217,7 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// metadata must provide read access
 	if (metadata() && !Ref_r(data_ref)) {
-		throw Error{PDI_ERR_RIGHT, "Metadata sharing must offer read access"};
+		throw Right_error{"Metadata sharing must offer read access"};
 	}
 	
 	// make a reference and put it in the store
@@ -241,7 +241,7 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 	
 	if (data_ref && !ref()) {
 		m_refs.pop();
-		throw Error{PDI_ERR_RIGHT, "Unable to grant requested rights"};
+		throw Right_error{"Unable to grant requested rights"};
 	}
 	
 	std::vector<std::reference_wrapper<const std::function<void(const std::string&, Ref)>>> data_callbacks;
@@ -278,7 +278,7 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 		for (auto&& err: errors) {
 			errmsg += string(err.what()) + "\n";
 		}
-		throw Error{PDI_ERR_SYSTEM, "{}", errmsg};
+		throw System_error{errmsg.c_str()};
 	}
 	
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
@@ -289,7 +289,7 @@ void Data_descriptor_impl::release()
 {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// move reference out of the store
-	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw Error{PDI_ERR_STATE, "Cannot release a non shared value: `{}'", m_name};
+	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw State_error{"Cannot release a non shared value: `{}'", m_name};
 	
 	Ref oldref = ref();
 	m_refs.pop();
@@ -305,7 +305,7 @@ void Data_descriptor_impl::release()
 void* Data_descriptor_impl::reclaim()
 {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw Error{PDI_ERR_STATE, "Cannot reclaim a non shared value: `{}'", m_name};
+	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw State_error{"Cannot reclaim a non shared value: `{}'", m_name};
 	
 	Ref oldref = ref();
 	m_refs.pop();

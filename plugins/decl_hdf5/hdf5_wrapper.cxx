@@ -41,6 +41,10 @@
 using PDI::Array_datatype;
 using PDI::Datatype;
 using PDI::Error;
+using PDI::Config_error;
+using PDI::Impl_error;
+using PDI::System_error;
+using PDI::Type_error;
 using PDI::Scalar_datatype;
 using PDI::Record_datatype;
 using PDI::Scalar_kind;
@@ -85,7 +89,7 @@ hid_t get_h5_type(const Datatype& type)
 			case 2: return H5T_NATIVE_UINT16;
 			case 4: return H5T_NATIVE_UINT32;
 			case 8: return H5T_NATIVE_UINT64;
-			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 signed: #{}", scalar_type->datasize()};
+			default: throw Type_error{"Invalid size for HDF5 signed: #{}", scalar_type->datasize()};
 			}
 		}
 		case Scalar_kind::SIGNED: {
@@ -94,7 +98,7 @@ hid_t get_h5_type(const Datatype& type)
 			case 2: return H5T_NATIVE_INT16;
 			case 4: return H5T_NATIVE_INT32;
 			case 8: return H5T_NATIVE_INT64;
-			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 unsigned: #{}", scalar_type->datasize()};
+			default: throw Type_error{"Invalid size for HDF5 unsigned: #{}", scalar_type->datasize()};
 			}
 		}
 		case Scalar_kind::FLOAT: {
@@ -102,13 +106,13 @@ hid_t get_h5_type(const Datatype& type)
 			case 4:  return H5T_NATIVE_FLOAT;
 			case 8:  return H5T_NATIVE_DOUBLE;
 			case 16: return H5T_NATIVE_LDOUBLE;
-			default: throw Error {PDI_ERR_TYPE, "Invalid size for HDF5 float: #{}", scalar_type->datasize()};
+			default: throw Type_error{"Invalid size for HDF5 float: #{}", scalar_type->datasize()};
 			}
 		}
-		default: throw Error {PDI_ERR_TYPE, "Invalid type for HDF5: #{}", static_cast<uint8_t>(scalar_type->kind())};
+		default: throw Type_error{"Invalid type for HDF5: #{}", static_cast<uint8_t>(scalar_type->kind())};
 		}
 	} else {
-		throw Error {PDI_ERR_IMPL, "Unexpected type in HDF5"};
+		throw Impl_error{"Unexpected type in HDF5"};
 	}
 }
 
@@ -123,7 +127,7 @@ void handle_hdf5_err(const char* message)
 	if ( h5_errmsg.empty() ) h5_errmsg = "HDF5 error";
 	
 	if ( !message ) message = "";
-	throw Error{PDI_ERR_SYSTEM, "{} {}", message, h5_errmsg};
+	throw System_error{"{} {}", message, h5_errmsg};
 }
 
 tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
@@ -150,7 +154,7 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
 			subtype = &array_type->subtype();
 		}
 		if (!subtype->dense()) {
-			throw Error {PDI_ERR_CONFIG, "The top array datatype is the only one that can be sparse in dataset"};
+			throw Config_error{"The top array datatype is the only one that can be sparse in dataset"};
 		}
 		
 		Raii_hid h5_space = make_raii_hid(H5Screate_simple(rank, &h5_size[0], NULL), H5Sclose);
@@ -159,7 +163,7 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
 		return make_tuple(move(h5_space), Raii_hid{get_h5_type(*subtype), H5Tclose});
 	} else {
 		if (!type.dense()) {
-			throw Error {PDI_ERR_CONFIG, "The top array datatype is the only one that can be sparse in dataset"};
+			throw Config_error{"The top array datatype is the only one that can be sparse in dataset"};
 		}
 		return make_tuple(make_raii_hid(H5Screate(H5S_SCALAR), H5Sclose), make_raii_hid(get_h5_type(type), H5Tclose));
 	}

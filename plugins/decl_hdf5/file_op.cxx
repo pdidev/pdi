@@ -43,6 +43,7 @@
 using PDI::Context;
 using PDI::each;
 using PDI::Error;
+using PDI::Config_error;
 using PDI::Expression;
 using PDI::opt_each;
 using PDI::Ref_r;
@@ -77,7 +78,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
-			throw Error {PDI_ERR_CONFIG, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+			throw Config_error {"Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
 		} else if ( key == "datasets" ) {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
@@ -88,7 +89,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if ( key == "read" ) {
 			// will read in pass 2
 		} else {
-			throw Error{PDI_ERR_CONFIG, "Unknown key in HDF5 file configuration: `{}'", key};
+			throw Config_error{"Unknown key in HDF5 file configuration: `{}'", key};
 		}
 	});
 	
@@ -143,7 +144,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		// check the dataset ops don't have specific communicators set
 		for (auto&& one_dset_op: dset_ops) {
 			if ( one_dset_op.communicator() ) {
-				throw Error{PDI_ERR_CONFIG, "Communicator can not be set at the dataset level for event triggered I/O"};
+				throw Config_error{"Communicator can not be set at the dataset level for event triggered I/O"};
 			}
 		}
 #endif

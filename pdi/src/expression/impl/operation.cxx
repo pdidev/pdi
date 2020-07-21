@@ -100,7 +100,7 @@ double Expression::Impl::Operation::to_double(Context& ctx) const
 			computed_value /= operand;
 		} break;
 		case MOD: {
-			throw Error(PDI_ERR_VALUE, "Cannot use modulus operator on float values");
+			throw Value_error("Cannot use modulus operator on float values");
 		} break;
 		case EQUAL: {
 			computed_value = (computed_value == operand);
@@ -135,20 +135,16 @@ Ref Expression::Impl::Operation::to_ref(Context& ctx) const
 		};
 		*static_cast<long*>(result.get()) = to_long(ctx);
 		return result;
-	} catch (const Error& e) {
-		if (e.status() == PDI_ERR_VALUE) {
-			Ref_rw result {
-				aligned_alloc(alignof(double), sizeof(double)),
-				[](void* v){free(v);},
-				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
-				true,
-				true
-			};
-			*static_cast<double*>(result.get()) = to_double(ctx);
-			return result;
-		} else {
-			throw;
-		}
+	} catch (const Value_error& e) {
+		Ref_rw result {
+			aligned_alloc(alignof(double), sizeof(double)),
+			[](void* v){free(v);},
+			unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
+			true,
+			true
+		};
+		*static_cast<double*>(result.get()) = to_double(ctx);
+		return result;
 	}
 }
 
@@ -208,7 +204,7 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, const
 			}
 		}
 	}
-	throw Error {PDI_ERR_VALUE, "Cannot copy operation expression value: non scalar datatype"};
+	throw Value_error{"Cannot copy operation expression value: non scalar datatype"};
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::Operation::clone() const
@@ -267,10 +263,10 @@ Expression::Impl::Operation::Operator Expression::Impl::Operation::parse_operato
 	const char* c_op = *val_str;
 	int found_level = op_level(c_op);
 	if (found_level == 0) {
-		throw Error {PDI_ERR_VALUE, "Expected operator, found '{}'", *c_op};
+		throw Value_error{"Expected operator, found '{}'", *c_op};
 	}
 	if (found_level != level) {
-		throw Error {PDI_ERR_VALUE, "Mixing operator priority"};
+		throw Value_error{"Mixing operator priority"};
 	}
 	Operator op = static_cast<Operator>(*c_op);
 	++c_op;

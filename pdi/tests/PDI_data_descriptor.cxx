@@ -134,7 +134,7 @@ TEST_F(DataDescTest, catch_empty_exception)
 	try {
 		this->m_desc_default->ref();
 		FAIL();
-	} catch (const Error& err) {
+	} catch (const Value_error& err) {
 		ASSERT_EQ(PDI_status_t::PDI_ERR_VALUE, err.status());
 	}
 }

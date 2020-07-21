@@ -74,7 +74,7 @@ pybind11::array to_python(Ref r)
 		switch (scalar_type->datasize()) {
 		case sizeof(float): pytype = pybind11::dtype::of<float>(); break;
 		case sizeof(double): pytype = pybind11::dtype::of<double>(); break;
-		default: throw Error{PDI_ERR_TYPE, "Unable to pass {} bytes floating point value to python", scalar_type->datasize()};
+		default: throw Type_error{"Unable to pass {} bytes floating point value to python", scalar_type->datasize()};
 		}
 	} break;
 	case Scalar_kind::SIGNED: {
@@ -83,7 +83,7 @@ pybind11::array to_python(Ref r)
 		case sizeof(int16_t): pytype = pybind11::dtype::of<int16_t>(); break;
 		case sizeof(int32_t): pytype = pybind11::dtype::of<int32_t>(); break;
 		case sizeof(int64_t): pytype = pybind11::dtype::of<int64_t>(); break;
-		default: throw Error{PDI_ERR_TYPE, "Unable to pass {} bytes integer value to python", scalar_type->datasize()};
+		default: throw Type_error{"Unable to pass {} bytes integer value to python", scalar_type->datasize()};
 		}
 	} break;
 	case Scalar_kind::UNSIGNED: {
@@ -92,10 +92,10 @@ pybind11::array to_python(Ref r)
 		case sizeof(uint16_t): pytype = pybind11::dtype::of<uint16_t>(); break;
 		case sizeof(uint32_t): pytype = pybind11::dtype::of<uint32_t>(); break;
 		case sizeof(uint64_t): pytype = pybind11::dtype::of<uint64_t>(); break;
-		default: throw Error{PDI_ERR_TYPE, "Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
+		default: throw Type_error{"Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
 		}
 	} break;
-	default: throw Error{PDI_ERR_TYPE, "Unable to pass value of unexpected type to python"};
+	default: throw Type_error{"Unable to pass value of unexpected type to python"};
 	}
 	
 	ssize_t cumulated_stride = 1;
@@ -148,7 +148,7 @@ Datatype_uptr python_type(pybind11::array& a)
 		k = Scalar_kind::FLOAT;
 		break;
 	default:
-		throw Error{PDI_ERR_IMPL, "Unexpected python type descriptor: {}", a.dtype().kind()};
+		throw Impl_error{"Unexpected python type descriptor: {}", a.dtype().kind()};
 	}
 	
 	Datatype_uptr result{new Scalar_datatype{k, static_cast<size_t>(a.dtype().itemsize())}};

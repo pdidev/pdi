@@ -111,7 +111,7 @@ unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
 		++term;
 		while (isspace(*term)) ++term;
 		unique_ptr<Expression::Impl> result = Operation::parse(&term, 1);
-		if (*term != ')')  throw Error {PDI_ERR_VALUE, "Expected ')', found '{}'", *term};
+		if (*term != ')')  throw Value_error{"Expected ')', found '{}'", *term};
 		++term;
 		while (isspace(*term)) ++term;
 		*val_str = term;
@@ -134,7 +134,7 @@ string Expression::Impl::parse_id(char const** val_str)
 	        || (*id >= 'A' && *id <= 'Z')
 	        || (*id == '_')
 	    )) {
-		throw Error {PDI_ERR_VALUE, "Invalid first ID character: {}", *id};
+		throw Value_error{"Invalid first ID character: {}", *id};
 	}
 	++id;
 	size_t id_len = 1;

@@ -618,7 +618,7 @@ TEST_F(ContextTest, remove_empty_desc_callback)
 	try {
 		Ref ref_x {this->test_context->desc(data_x).ref()};
 		FAIL();
-	} catch (Error e) {
+	} catch (Value_error e) {
 		ASSERT_EQ(e.status(), PDI_ERR_VALUE);
 	}
 }

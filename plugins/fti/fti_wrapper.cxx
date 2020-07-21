@@ -45,7 +45,7 @@ void add_predefined(Context& ctx, const std::string& name, void* data, Datatype_
 {
 	Data_descriptor& predef_desc = ctx.desc(name);
 	if (!predef_desc.empty()) {
-		throw Error{PDI_ERR_IMPL, "Predefined descriptor already defined `%s'", name.c_str()};
+		throw Impl_error{"Predefined descriptor already defined `%s'", name.c_str()};
 	}
 	
 	predef_desc.metadata(true);
@@ -63,7 +63,7 @@ Fti_wrapper::Fti_wrapper(Context& ctx, const Fti_cfg& config, MPI_Comm comm):
 {
 	int status = FTI_Init(const_cast<char*>(config.config(ctx).c_str()), comm);
 	if (status != FTI_SCES && status != FTI_HEAD) {
-		throw Error{PDI_ERR_PLUGIN, "Cannot initialize FTI library"};
+		throw Plugin_error{"Cannot initialize FTI library"};
 	}
 	if (status == FTI_HEAD) m_head = true;
 	

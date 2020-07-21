@@ -92,7 +92,7 @@ class Stamp
 				return;
 			}
 		}
-		throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Stamp must be int, float, array of ints, floats or chars"};
+		throw PDI::Config_error{"(FlowVR) Stamp must be int, float, array of ints, floats or chars"};
 	}
 	
 	/**
@@ -120,7 +120,7 @@ class Stamp
 		}
 		//until expression double added
 		if (type == "float") {
-			throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Float expression stamp is not yet supported"};
+			throw PDI::Config_error{"(FlowVR) Float expression stamp is not yet supported"};
 			PDI::Expression expr = PDI::to_string(expr_node);
 			// m_stamp.reset(new Stamp_expr_float(m_ctx, parent_port, std::move(name), std::move(expr)));
 			return;
@@ -137,7 +137,7 @@ class Stamp
 				m_stamp.reset(new Stamp_expr_int_array(m_ctx, parent_port, std::move(name), std::move(expressions)));
 			} else if (subtype_str == "float") {
 				//until expression double added
-				throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Float expression stamp is not yet supported"};
+				throw PDI::Config_error{"(FlowVR) Float expression stamp is not yet supported"};
 				size = PDI::Expression(PDI::to_string(PC_get(type_node, ".size"))).to_long(m_ctx);
 				std::vector<PDI::Expression> expressions;
 				for (int expr_id = 0; expr_id < size; expr_id++) {
@@ -149,7 +149,7 @@ class Stamp
 				m_stamp.reset(new Stamp_expr_string(m_ctx, parent_port, std::move(name), std::move(expr)));
 				return;
 			} else {
-				throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) Stamp must be int, float, array of ints, floats or chars"};
+				throw PDI::Config_error{"(FlowVR) Stamp must be int, float, array of ints, floats or chars"};
 			}
 		}
 	}

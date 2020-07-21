@@ -38,7 +38,7 @@ namespace {
 void do_pc(PC_status_t status)
 {
 	if (status) {
-		throw Error{PDI_ERR_CONFIG, "Configuration error #{}: {}", static_cast<int>(status), PC_errmsg()};
+		throw Config_error{"Configuration error #{}: {}", static_cast<int>(status), PC_errmsg()};
 	}
 }
 

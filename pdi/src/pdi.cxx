@@ -235,8 +235,7 @@ try
 	        || expected_minor > PDI_VERSION_MINOR
 	    )
 	) {
-		throw Error{
-			PDI_ERR_PLUGIN,
+		throw Plugin_error{
 			"Invalid PDI API version: {}.{}.{}, PDI provided version is {}.{}.{}",
 			expected_major,
 			expected_minor,
@@ -434,7 +433,7 @@ try
 {
 	Paraconf_wrapper fw;
 	if (!g_transaction.empty()) {
-		throw Error{PDI_ERR_STATE, "Transaction already in progress, cannot start a new one"};
+		throw State_error{"Transaction already in progress, cannot start a new one"};
 	}
 	g_transaction = name;
 	return g_transaction_status = PDI_OK;
@@ -454,7 +453,7 @@ try
 {
 	Paraconf_wrapper fw;
 	if (g_transaction.empty()) {
-		throw Error{PDI_ERR_STATE, "No transaction in progress, cannot end one"};
+		throw State_error{"No transaction in progress, cannot end one"};
 	}
 	
 	if (!g_transaction_status) { //trigger event only when all data is available

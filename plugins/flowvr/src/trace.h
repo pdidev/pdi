@@ -51,7 +51,7 @@ class Trace
 	{
 		PC_tree_t on_data_node = PC_get(config, ".on_data");
 		if (PC_status(on_data_node)) {
-			throw PDI::Error{PDI_ERR_CONFIG, "Trace must have defined `on_data'"};
+			throw PDI::Config_error{"Trace must have defined `on_data'"};
 		}
 		m_on_data = PDI::to_string(on_data_node);
 	}
@@ -85,7 +85,7 @@ class Trace
 				m_trace.reset(new Trace_string(ctx, name));
 			}
 		}
-		throw PDI::Error {PDI_ERR_CONFIG, "(FlowVR) `{}' has not supported type for Trace", name};
+		throw PDI::Config_error{"(FlowVR) `{}' has not supported type for Trace", name};
 	}
 	
 public:
@@ -118,7 +118,7 @@ public:
 		if (ref_r) {
 			m_trace->write(ref_r);
 		} else {
-			throw PDI::Error {PDI_ERR_RIGHT, "(FlowVR) Trace: Unable to get read permissions for `{}'", data_name};
+			throw PDI::Right_error{"(FlowVR) Trace: Unable to get read permissions for `{}'", data_name};
 		}
 	}
 	

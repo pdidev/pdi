@@ -44,7 +44,6 @@ int main( int argc, char* argv[] )
 	double invalid;
 	PDI_status_t err = PDI_expose("invalid", &invalid, PDI_INOUT);
 	if ( err != PDI_ERR_VALUE ) abort();
-	if ( strcmp(PDI_errmsg(), "while referencing `meta2': Cannot access a non shared value: `meta2'") ) abort();
-	
+	if ( strcmp(PDI_errmsg(), "while referencing `meta2': Value_error: Cannot access a non shared value: `meta2'") ) abort();
 	PDI_finalize();
 }

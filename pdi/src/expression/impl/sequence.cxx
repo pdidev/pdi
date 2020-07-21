@@ -65,12 +65,12 @@ unique_ptr<Expression::Impl> Expression::Impl::Sequence::clone() const
 
 long Expression::Impl::Sequence::to_long(Context& ctx) const
 {
-	throw Error {PDI_ERR_VALUE, "Cannot interpret Array_expression as a long value"};
+	throw Value_error{"Cannot interpret Array_expression as a long value"};
 }
 
 double Expression::Impl::Sequence::to_double(Context& ctx) const
 {
-	throw Error {PDI_ERR_VALUE, "Cannot interpret Array_expression as a double value"};
+	throw Value_error{"Cannot interpret Array_expression as a double value"};
 }
 
 string Expression::Impl::Sequence::to_string(Context& ctx) const
@@ -129,11 +129,11 @@ size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, const 
 			offset += m_value[i].m_impl->copy_value(ctx, to, array_type->subtype());
 		}
 		if (offset != array_type->buffersize()) {
-			throw Error {PDI_ERR_VALUE, "Array literal copy incomplete: copied {} B of {} B", offset, array_type->buffersize()};
+			throw Value_error{"Array literal copy incomplete: copied {} B of {} B", offset, array_type->buffersize()};
 		}
 		return offset;
 	} else {
-		throw Error {PDI_ERR_VALUE, "Array literal cannot copy value of not array datatype"};
+		throw Value_error{"Array literal cannot copy value of not array datatype"};
 	}
 }
 

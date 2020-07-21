@@ -323,7 +323,7 @@ public:
 		Reference_base()
 	{
 		if (type->datasize() && !data && (readable||writable)) {
-			throw Error{PDI_ERR_TYPE, "Referencing null data with non-null size"};
+			throw Type_error{"Referencing null data with non-null size"};
 		}
 		if (data) {
 			link(new Referenced_data(data, freefunc, std::move(type), readable,  writable));
@@ -435,7 +435,7 @@ public:
 	 */
 	typename Ref_access<R, W>::type get() const
 	{
-		if (is_null()) throw Error{PDI_ERR_RIGHT, "Trying to dereference a null reference"};
+		if (is_null()) throw Right_error{"Trying to dereference a null reference"};
 		return m_content->m_data;
 	}
 	

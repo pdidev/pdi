@@ -64,6 +64,69 @@ public:
 	
 };
 
+struct PDI_EXPORT Unavailable_error : public Error {
+	template<typename... Args>
+	Unavailable_error(const char* fmt, const Args& ... args):
+		Error(PDI_UNAVAILABLE, ("Unavailable_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
+struct PDI_EXPORT Config_error : public Error {
+	template<typename... Args>
+	Config_error(const char* fmt, const Args& ... args):
+		Error(PDI_ERR_CONFIG, ("Config_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
+struct PDI_EXPORT Value_error : public Error {
+	template<typename... Args>
+	Value_error(const char* fmt, const Args& ... args):
+		Error(PDI_ERR_VALUE, ("Value_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
+struct PDI_EXPORT Plugin_error : public Error {
+	template<typename... Args>
+	Plugin_error(const char* fmt, const Args& ... args):
+		Error(PDI_ERR_PLUGIN, ("Plugin_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
+struct PDI_EXPORT Impl_error : public Error {
+	template<typename... Args>
+	Impl_error(const char* fmt, const Args& ... args):
+		Error(PDI_ERR_IMPL, ("Impl_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
+struct PDI_EXPORT System_error : public Error {
+	template<typename... Args>
+	System_error(const char* fmt, const Args& ... args):
+		Error(PDI_ERR_SYSTEM, ("System_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
+struct PDI_EXPORT State_error : public Error {
+	template<typename... Args>
+	State_error(const char* fmt, const Args& ... args):
+		Error(PDI_ERR_STATE, ("State_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
+struct PDI_EXPORT Right_error : public Error {
+	template<typename... Args>
+	Right_error(const char* fmt, const Args& ... args):
+		Error(PDI_ERR_RIGHT, ("Right_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
+struct PDI_EXPORT Type_error : public Error {
+	template<typename... Args>
+	Type_error(const char* fmt, const Args& ... args):
+		Error(PDI_ERR_TYPE, ("Type_error: " + std::string(fmt)).c_str(), args...)
+	{}
+};
+
 } // namespace PDI
 
 #endif // PDI_ERROR_H_

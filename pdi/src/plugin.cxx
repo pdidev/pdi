@@ -58,8 +58,7 @@ unsigned long plugin_api_version(unsigned long expected_version)
 	        || expected_minor > PLUGIN_API_VERSION_MINOR
 	    )
 	) {
-		throw Error{
-			PDI_ERR_PLUGIN,
+		throw Plugin_error{
 			"Invalid plugin API version: {}.{}.{}, PDI provided version is {}.{}.{}",
 			expected_major,
 			expected_minor,

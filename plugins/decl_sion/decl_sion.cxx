@@ -58,6 +58,10 @@ using PDI::Ref;
 using PDI::Ref_r;
 using PDI::Ref_w;
 using PDI::Error;
+using PDI::Config_error;
+using PDI::Impl_error;
+using PDI::Right_error;
+using PDI::System_error;
 using PDI::len;
 using PDI::Plugin;
 using PDI::to_string;
@@ -102,7 +106,7 @@ Expression parse_property(PC_tree_t conf, const char* entry_name, const char* pr
 			return to_string(PC_get(conf, property_name));
 		}
 	} catch (...) {
-		throw Error {PDI_ERR_CONFIG, "Property '{}' not found for entry '{}'", property_name, entry_name};
+		throw Config_error{"Property '{}' not found for entry '{}'", property_name, entry_name};
 	}
 }
 
@@ -138,7 +142,7 @@ Named_event::Named_event(PC_tree_t entry, const string& name):
 {
 	PC_tree_t entry_vars = PC_get(entry, ".vars");
 	int nvar = len(entry_vars);
-	if (nvar <= 0) throw Error{PDI_ERR_CONFIG, "No variables specified for event '{}'", name};
+	if (nvar <= 0) throw Config_error{"No variables specified for event '{}'", name};
 	
 	for (int i = 0; i < nvar; ++i) {
 		vars.emplace_back(to_string(PC_get(entry_vars, "[%d]", i)));
@@ -198,11 +202,11 @@ struct decl_sion_plugin: Plugin {
 		output_events{parse_events(PC_get(conf, ".outputs"))},
 		input_events{parse_events(PC_get(conf, ".inputs"))}
 	{
-		if (PC_status(conf)) throw Error {PDI_ERR_CONFIG, "Configuration is invalid"};
+		if (PC_status(conf)) throw Config_error{"Configuration is invalid"};
 		Data_descriptor& comm_desc = ctx.desc(comm_name);
 		if ( !comm_desc.empty() ) {
 			if (MPI_Comm_dup(*(static_cast<const MPI_Comm*>(Ref_r{comm_desc.ref()}.get())), &comm)) {
-				throw Error {PDI_ERR_SYSTEM, "Cannot duplicate MPI communicator"};
+				throw System_error{"Cannot duplicate MPI communicator"};
 			}
 		}
 		ctx.add_data_callback([this](const std::string& name, Ref ref) {
@@ -238,10 +242,10 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			if (Ref_r ref = context().desc(var).ref()) {
 				if (!ref.type().dense()) {
-					throw Error {PDI_ERR_IMPL, "Sparse data type of variable '{}' is not supported", var};
+					throw Impl_error{"Sparse data type of variable '{}' is not supported", var};
 				}
 			} else {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
+				throw Right_error{"Dataset unavailable '{}'", var};
 			}
 		}
 		
@@ -251,7 +255,7 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			const Ref& ref = context().desc(var).ref();
 			if (!ref) {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
+				throw Right_error{"Dataset unavailable '{}'", var};
 			}
 			chunksize += ref.type().datasize();
 		}
@@ -264,7 +268,7 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			Ref_r ref = context().desc(var).ref();
 			if (!ref) {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
+				throw Right_error{"Dataset unavailable '{}'", var};
 			}
 			
 			uint64_t key = hash(reinterpret_cast<const uint8_t*>(var.c_str()), var.size());
@@ -272,28 +276,28 @@ struct decl_sion_plugin: Plugin {
 			uint64_t name_size = var.size();
 			if (SION_SUCCESS != sion_fwrite_key(&name_size, key, sizeof(name_size), 1, sid)) {
 				sion_parclose_mpi(sid);
-				throw Error {PDI_ERR_SYSTEM, "Error while writing name size in SION file"};
+				throw System_error{"Error while writing name size in SION file"};
 			}
 			
 			if (SION_SUCCESS != sion_fwrite_key(var.c_str(), key, var.size(), 1, sid)) {
 				sion_parclose_mpi(sid);
-				throw Error {PDI_ERR_SYSTEM, "Error while writing name in SION file"};
+				throw System_error{"Error while writing name in SION file"};
 			}
 			
 			uint64_t data_size = ref.type().datasize();
 			if (SION_SUCCESS != sion_fwrite_key(&data_size, key, sizeof(data_size), 1, sid)) {
 				sion_parclose_mpi(sid);
-				throw Error {PDI_ERR_SYSTEM, "Error while writing data size in SION file"};
+				throw System_error{"Error while writing data size in SION file"};
 			}
 			
 			if (SION_SUCCESS != sion_fwrite_key(ref.get(), key, data_size, 1, sid)) {
 				sion_parclose_mpi(sid);
-				throw Error {PDI_ERR_SYSTEM, "Error while writing data in SION file"};
+				throw System_error{"Error while writing data in SION file"};
 			}
 		}
 		
 		if (SION_SUCCESS != sion_parclose_mpi(sid)) {
-			throw Error {PDI_ERR_SYSTEM, "Error while closing SION file"};
+			throw System_error{"Error while closing SION file"};
 		}
 	}
 	
@@ -304,10 +308,10 @@ struct decl_sion_plugin: Plugin {
 			Ref cref = context().desc(var).ref();
 			if (Ref_w ref = cref) {
 				if (!ref.type().dense()) {
-					throw Error {PDI_ERR_IMPL, "Sparse data type of variable '{}' is not supported", var};
+					throw Impl_error{"Sparse data type of variable '{}' is not supported", var};
 				}
 			} else {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
+				throw Right_error{"Dataset unavailable '{}'", var};
 			}
 		}
 		
@@ -322,7 +326,7 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			Ref_w ref = context().desc(var).ref();
 			if (!ref) {
-				throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", var};
+				throw Right_error{"Dataset unavailable '{}'", var};
 			}
 			
 			uint64_t key = hash(reinterpret_cast<const uint8_t*>(var.c_str()), var.size());
@@ -330,13 +334,13 @@ struct decl_sion_plugin: Plugin {
 			for (int j = 0; ; ++j) {
 				if (SION_SUCCESS != sion_seek_key(sid, key, 4 * j, 0)) {
 					sion_parclose_mpi(sid);
-					throw Error {PDI_ERR_SYSTEM, "Could not find variable '{}' for reading in file '{}' on try #{}", var, file, j + 1};
+					throw System_error{"Could not find variable '{}' for reading in file '{}' on try #{}", var, file, j + 1};
 				}
 				
 				uint64_t name_size;
 				if (SION_SUCCESS != sion_fread_key(&name_size, key, sizeof(uint64_t), 1, sid)) {
 					sion_parclose_mpi(sid);
-					throw Error {PDI_ERR_SYSTEM, "Error while reading name size in SION file"};
+					throw System_error{"Error while reading name size in SION file"};
 				}
 				// Collision (size of name does not match), this is not the data you are looking for.
 				if (var.size() != name_size) continue;
@@ -344,7 +348,7 @@ struct decl_sion_plugin: Plugin {
 				string name(var.size(), '*');
 				if (SION_SUCCESS != sion_fread_key(&name[0], key, var.size(), 1, sid)) {
 					sion_parclose_mpi(sid);
-					throw Error {PDI_ERR_SYSTEM, "Error while reading name in SION file"};
+					throw System_error{"Error while reading name in SION file"};
 				}
 				// Collision (names do not match), this is not the data you are looking for.
 				if (var != name) continue;
@@ -357,22 +361,22 @@ struct decl_sion_plugin: Plugin {
 			uint64_t data_size_from_file;
 			if (SION_SUCCESS != sion_fread_key(&data_size_from_file, key, sizeof(data_size_from_file), 1, sid)) {
 				sion_parclose_mpi(sid);
-				throw Error {PDI_ERR_SYSTEM, "Error while reading data size in SION file"};
+				throw System_error{"Error while reading data size in SION file"};
 			}
 			
 			if (data_size != data_size_from_file) {
 				sion_parclose_mpi(sid);
-				throw Error {PDI_ERR_SYSTEM, "Size of data for variable '{}' in file '{}' does not match memory size ({} (file) vs. {} (memory))", var, file, data_size_from_file, data_size};
+				throw System_error{"Size of data for variable '{}' in file '{}' does not match memory size ({} (file) vs. {} (memory))", var, file, data_size_from_file, data_size};
 			}
 			
 			if (SION_SUCCESS != sion_fread_key(ref.get(), key, data_size, 1, sid)) {
 				sion_parclose_mpi(sid);
-				throw Error {PDI_ERR_SYSTEM, "Error while reading data in SION file"};
+				throw System_error{"Error while reading data in SION file"};
 			}
 		}
 		
 		if (SION_SUCCESS != sion_parclose_mpi(sid)) {
-			throw Error {PDI_ERR_SYSTEM, "Error while closing SION file"};
+			throw System_error{"Error while closing SION file"};
 		}
 	}
 	
@@ -380,12 +384,12 @@ struct decl_sion_plugin: Plugin {
 	{
 		Ref_r ref = cref;
 		if (!ref) {
-			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", name};
+			throw Right_error{"Dataset unavailable '{}'", name};
 		}
 		
 		// check that data type is dense
 		if (!ref.type().dense()) {
-			throw Error {PDI_ERR_IMPL, "Sparse data type of variable '{}' is not supported", name};
+			throw Impl_error{"Sparse data type of variable '{}' is not supported", name};
 		}
 		
 		// open file
@@ -398,12 +402,12 @@ struct decl_sion_plugin: Plugin {
 		
 		// write data to file
 		if (SION_SUCCESS != sion_fwrite(ref.get(), data_size, 1, sid)) {
-			throw Error {PDI_ERR_SYSTEM, "Error while writing data to SION file"};
+			throw System_error{"Error while writing data to SION file"};
 		}
 		
 		// close file
 		if (SION_SUCCESS != sion_parclose_mpi(sid)) {
-			throw Error {PDI_ERR_SYSTEM, "Error while writing data to SION file"};
+			throw System_error{"Error while writing data to SION file"};
 		}
 	}
 	
@@ -411,12 +415,12 @@ struct decl_sion_plugin: Plugin {
 	{
 		Ref_w ref = cref;
 		if (!ref) {
-			throw Error {PDI_ERR_RIGHT, "Dataset unavailable '{}'", name};
+			throw Right_error{"Dataset unavailable '{}'", name};
 		}
 		
 		// check that data type is dense
 		if (!ref.type().dense()) {
-			throw Error {PDI_ERR_IMPL, "Sparse data type of variable '{}' is not supported", name};
+			throw Impl_error{"Sparse data type of variable '{}' is not supported", name};
 		}
 		
 		// open file
@@ -429,12 +433,12 @@ struct decl_sion_plugin: Plugin {
 		
 		// read data from file
 		if (SION_SUCCESS != sion_fread(ref.get(), data_size, 1, sid)) {
-			throw Error {PDI_ERR_SYSTEM, "Error while reading data from SION file"};
+			throw System_error{"Error while reading data from SION file"};
 		}
 		
 		// close file
 		if (SION_SUCCESS != sion_parclose_mpi(sid)) {
-			throw Error {PDI_ERR_SYSTEM, "Error while closing SION file"};
+			throw System_error{"Error while closing SION file"};
 		}
 	}
 	
@@ -467,7 +471,7 @@ struct decl_sion_plugin: Plugin {
 	{
 		if ( name == comm_name ) {
 			if (MPI_Comm_dup(*(static_cast<const MPI_Comm*>(Ref_r{context().desc(name).ref()}.get())), &comm)) {
-				throw Error {PDI_ERR_SYSTEM, "Cannot duplicate MPI communicator"};
+				throw System_error{"Cannot duplicate MPI communicator"};
 			}
 		}
 		auto&& outvarit = output_vars.find(name);
