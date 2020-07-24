@@ -92,7 +92,7 @@ struct serialize_plugin: PDI::Plugin {
 		} else if (const PDI::Pointer_datatype* pointer_type = dynamic_cast<const PDI::Pointer_datatype*>(type)) {
 			return serialize_type(&pointer_type->subtype());
 		} else {
-			throw PDI::Error{PDI_ERR_TYPE, "Serialize plugin: Unsupported type: {}", type->debug_string()};
+			throw PDI::Type_error{"Serialize plugin: Unsupported type: {}", type->debug_string()};
 		}
 	}
 	
@@ -147,7 +147,7 @@ struct serialize_plugin: PDI::Plugin {
 		} else if (const PDI::Pointer_datatype* pointer_type = dynamic_cast<const PDI::Pointer_datatype*>(type)) {
 			return serialize_copy(&pointer_type->subtype(), to, reinterpret_cast<void*>(*static_cast<const uintptr_t*>(from)));
 		} else {
-			throw PDI::Error{PDI_ERR_TYPE, "Serialize plugin: Unsupported type: {}", type->debug_string()};
+			throw PDI::Type_error{"Serialize plugin: Unsupported type: {}", type->debug_string()};
 		}
 	}
 	
@@ -193,7 +193,7 @@ struct serialize_plugin: PDI::Plugin {
 		} else if (const PDI::Pointer_datatype* pointer_type = dynamic_cast<const PDI::Pointer_datatype*>(type)) {
 			return deserialize_copy(&pointer_type->subtype(), reinterpret_cast<void*>(*static_cast<const uintptr_t*>(to)), from);
 		} else {
-			throw PDI::Error{PDI_ERR_TYPE, "Serialize plugin: Unsupported type: {}", type->debug_string()};
+			throw PDI::Type_error{"Serialize plugin: Unsupported type: {}", type->debug_string()};
 		}
 	}
 	
@@ -222,7 +222,7 @@ struct serialize_plugin: PDI::Plugin {
 			context().logger()->trace("Copy data to `{}' descriptor", serialized_name);
 			size_t bytes_copied = serialize_copy(&ref.type(), PDI::Ref_w{serialized_ref}.get(), ref_rw.get());
 			if (bytes_copied != serialized_type->datasize()) {
-				throw PDI::Error{PDI_ERR_VALUE, "Serialize plugin: `{}' Serialized {} B of {} B", desc_name, bytes_copied, serialized_type->buffersize()};
+				throw PDI::Value_error{"Serialize plugin: `{}' Serialized {} B of {} B", desc_name, bytes_copied, serialized_type->buffersize()};
 			}
 			
 			context().logger()->trace("Exposing `{}' PDI_INOUT", serialized_name);
@@ -233,7 +233,7 @@ struct serialize_plugin: PDI::Plugin {
 			context().logger()->trace("Copy data back to `{}' descriptor", desc_name);
 			bytes_copied = deserialize_copy(&ref.type(), ref_rw.get(), PDI::Ref_r{serialized_ref}.get());
 			if (bytes_copied != serialized_type->datasize()) {
-				throw PDI::Error{PDI_ERR_VALUE, "Serialize plugin: `{}' Deserialized {} B of {} B", desc_name, bytes_copied, serialized_type->buffersize()};
+				throw PDI::Value_error{"Serialize plugin: `{}' Deserialized {} B of {} B", desc_name, bytes_copied, serialized_type->buffersize()};
 			}
 			
 		} else if (PDI::Ref_r ref_r = ref) {
@@ -251,7 +251,7 @@ struct serialize_plugin: PDI::Plugin {
 			context().logger()->trace("Copy data to `{}' descriptor", serialized_name);
 			size_t bytes_copied = serialize_copy(&ref.type(), PDI::Ref_w{serialized_ref}.get(), ref_r.get());
 			if (bytes_copied != serialized_type->datasize()) {
-				throw PDI::Error{PDI_ERR_VALUE, "Serialize plugin: `{}' Serialized {} B of {} B ", desc_name, bytes_copied, serialized_type->buffersize()};
+				throw PDI::Value_error{"Serialize plugin: `{}' Serialized {} B of {} B ", desc_name, bytes_copied, serialized_type->buffersize()};
 			}
 			context().logger()->trace("Exposing `{}' PDI_OUT", serialized_name);
 			context().desc(serialized_name).share(serialized_ref, true, false);
@@ -274,7 +274,7 @@ struct serialize_plugin: PDI::Plugin {
 			// deserialize_copy
 			size_t bytes_copied = deserialize_copy(&ref.type(), ref_w.get(), PDI::Ref_w{serialized_ref}.get());
 			if (bytes_copied != serialized_type->datasize()) {
-				throw PDI::Error{PDI_ERR_VALUE, "Serialize plugin: `{}' Deserialized {} B of {} B", desc_name, bytes_copied, serialized_type->buffersize()};
+				throw PDI::Value_error{"Serialize plugin: `{}' Deserialized {} B of {} B", desc_name, bytes_copied, serialized_type->buffersize()};
 			}
 		}
 	}
