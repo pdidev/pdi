@@ -161,7 +161,6 @@ endif("${BUILD_PYTHON}")
 endif("${BUILD_FTI_PLUGIN}")
 
 if("${BUILD_FLOWVR_PLUGIN}" AND NOT "$ENV{MPI_LIB}" MATCHES "mpich") #disable MPI FlowVR with mpich for now
-message(STATUS "MPI_LIB = $ENV{MPI_LIB}")
 find_package(FlowVR REQUIRED)
 
 set(OpenGL_GL_PREFERENCE LEGACY)
@@ -174,6 +173,7 @@ add_test(NAME PDI_example_flowvr_C COMMAND PDI::pdirun "${RUNTEST_DIR}" "--runte
 set_property(TEST PDI_example_flowvr_C PROPERTY TIMEOUT 60)
 set_property(TEST PDI_example_flowvr_C PROPERTY PROCESSORS 4)
 set_property(TEST PDI_example_flowvr_C PROPERTY RESOURCE_LOCK flowvrd)
+set_property(TEST PDI_example_flowvr_C PROPERTY DISABLED TRUE)
 endif("${BUILD_FLOWVR_PLUGIN}")
 
 add_test(NAME PDI_example_trace_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")

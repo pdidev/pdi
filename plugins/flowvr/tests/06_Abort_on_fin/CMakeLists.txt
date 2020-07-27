@@ -44,3 +44,4 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/abort_on_fin.py ${CMAKE_CURRENT_SOURCE_DIR
 add_test(NAME flowvr_06_Abort_on_fin COMMAND PDI::pdirun "./test.sh")
 set_property(TEST flowvr_06_Abort_on_fin PROPERTY TIMEOUT 5)
 set_property(TEST flowvr_06_Abort_on_fin PROPERTY RESOURCE_LOCK flowvrd)
+set_property(TEST flowvr_06_Abort_on_fin PROPERTY DISABLED TRUE)

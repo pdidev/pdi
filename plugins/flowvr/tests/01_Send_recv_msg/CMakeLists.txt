@@ -44,3 +44,4 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/send_recv_msg.py ${CMAKE_CURRENT_SOURCE_DI
 add_test(NAME flowvr_01_Send_recv_msg COMMAND PDI::pdirun "./test.sh")
 set_property(TEST flowvr_01_Send_recv_msg PROPERTY TIMEOUT 5)
 set_property(TEST flowvr_01_Send_recv_msg PROPERTY RESOURCE_LOCK flowvrd)
+set_property(TEST flowvr_01_Send_recv_msg PROPERTY DISABLED TRUE)
