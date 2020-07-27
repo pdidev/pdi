@@ -50,7 +50,7 @@ struct serialize_plugin: PDI::Plugin {
 	
 	/** Serializes data type
 	 *
-	 * \param type type to serialized (convert all sparse arrays and evaluate pointers)
+	 * \param type type to serialize (convert all sparse arrays and evaluate pointers)
 	 * \return serialized data type
 	 */
 	PDI::Datatype_uptr serialize_type(const PDI::Datatype* type)

@@ -1,7 +1,7 @@
 \page serialize_plugin Serialize plugin
 
-The Serialized plugin allows to serialize shared data. The plugin will convert all
-arrays from sparse to dense and dereference all the pointers.
+Serialize plugin allows to serialize shared data. The plugin will convert all
+arrays from sparse to dense and dereference all pointers.
 
 \warning For now the plugin will only `expose` serialized data. This unables to use the plugin
 with `PDI_multiexpose`. This will be implemented in future updates.

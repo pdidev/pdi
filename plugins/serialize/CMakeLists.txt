@@ -41,14 +41,13 @@ find_package(PDI REQUIRED plugins)
 
 # The plugin
 
-add_library(pdi_serialize_plugin MODULE serialize.cxx
-										)
-										
+add_library(pdi_serialize_plugin MODULE serialize.cxx)
+
 target_link_libraries(pdi_serialize_plugin PUBLIC PDI::PDI_plugins)
 set_target_properties(pdi_serialize_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
+						CXX_STANDARD 14
+						CXX_STANDARD_REQUIRED TRUE
+						CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")
@@ -60,8 +59,7 @@ endif()
 # Installation
 install(TARGETS pdi_serialize_plugin
 		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-)
+		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
