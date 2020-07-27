@@ -32,7 +32,7 @@ flowvrd > /dev/null &
 DAEMON_PID=$!
 # echo "DAEMON PID = $DAEMON_PID"
 
-python chunks.py
+python3 chunks.py
 flowvr -a chunks
 
 FLOWVR_STATUS=$?

@@ -29,4 +29,4 @@ add_subdirectory(fluid/)
 add_subdirectory(primes/)
 add_subdirectory(tictac/)
 
-configure_file(flowvr-config.sh flowvr-config.sh COPYONLY)
+configure_file(flowvr-config.sh flowvr-config.sh @ONLY)

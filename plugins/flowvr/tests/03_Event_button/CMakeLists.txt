@@ -41,6 +41,6 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/event_button.py ${CMAKE_CURRENT_SOURCE_DIR
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_03_Event_button COMMAND "test.sh")
+add_test(NAME flowvr_03_Event_button COMMAND PDI::pdirun "./test.sh")
 set_property(TEST flowvr_03_Event_button PROPERTY TIMEOUT 5)
-
+set_property(TEST flowvr_03_Event_button PROPERTY RESOURCE_LOCK flowvrd)

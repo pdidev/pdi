@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     with open(config_path, 'r') as config_file:
         try:    
-            config = yaml.load(config_file)
+            config = yaml.safe_load(config_file)
         except yaml.YAMLError as exc:
             exit(exc)
 

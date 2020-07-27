@@ -160,7 +160,8 @@ set_property(TEST PDI_example_fti_P PROPERTY DISABLED TRUE) #TODO: python tests 
 endif("${BUILD_PYTHON}")
 endif("${BUILD_FTI_PLUGIN}")
 
-if("${BUILD_FLOWVR_PLUGIN}" AND "${BUILD_FLOWVR_TESTING}")
+if("${BUILD_FLOWVR_PLUGIN}" AND NOT "$ENV{MPI_LIB}" MATCHES "mpich") #disable MPI FlowVR with mpich for now
+message(STATUS "MPI_LIB = $ENV{MPI_LIB}")
 find_package(FlowVR REQUIRED)
 
 set(OpenGL_GL_PREFERENCE LEGACY)
@@ -169,10 +170,11 @@ find_package(GLUT REQUIRED)
 add_executable(flowvr_visu flowvr_visu.c)
 target_link_libraries(flowvr_visu PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
-add_test(NAME PDI_example_flowvr_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/flowvr_test.sh" "./flowvr_test.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "$<TARGET_FILE:PDI_example_C>" "$<TARGET_FILE:flowvr_visu>" "${FLOWVR_PREFIX}")
+add_test(NAME PDI_example_flowvr_C COMMAND PDI::pdirun "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/flowvr_test.sh" "./flowvr_test.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "$<TARGET_FILE:PDI_example_C>" "$<TARGET_FILE:flowvr_visu>" "${FLOWVR_PREFIX}")
 set_property(TEST PDI_example_flowvr_C PROPERTY TIMEOUT 60)
 set_property(TEST PDI_example_flowvr_C PROPERTY PROCESSORS 4)
-endif("${BUILD_FLOWVR_PLUGIN}" AND "${BUILD_FLOWVR_TESTING}")
+set_property(TEST PDI_example_flowvr_C PROPERTY RESOURCE_LOCK flowvrd)
+endif("${BUILD_FLOWVR_PLUGIN}")
 
 add_test(NAME PDI_example_trace_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")
 set_property(TEST PDI_example_trace_C PROPERTY TIMEOUT 5)

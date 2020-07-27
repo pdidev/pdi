@@ -33,7 +33,7 @@ include(GNUInstallDirs)
 
 
 find_package(Python3Path REQUIRED COMPONENTS Interpreter)
-find_package(Py3YAML REQUIRED)
+find_package(PyYAML REQUIRED)
 
 
 install(DIRECTORY pdicfg_validator

@@ -32,7 +32,7 @@ flowvrd > /dev/null &
 DAEMON_PID=$!
 # echo "DAEMON PID = $DAEMON_PID"
 
-python abort_on_fin.py
+python3 abort_on_fin.py
 flowvr -a abort_on_fin
 
 FLOWVR_STATUS=$?

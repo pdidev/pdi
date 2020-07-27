@@ -41,5 +41,6 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/stamps.py ${CMAKE_CURRENT_SOURCE_DIR}/test
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_02_Stamps COMMAND "test.sh")
+add_test(NAME flowvr_02_Stamps COMMAND PDI::pdirun "./test.sh")
 set_property(TEST flowvr_02_Stamps PROPERTY TIMEOUT 5)
+set_property(TEST flowvr_02_Stamps PROPERTY RESOURCE_LOCK flowvrd)

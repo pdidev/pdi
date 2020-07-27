@@ -1,7 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 from flowvrapp import *
 from filters import *
 from pdi_flowvr import Module_PDI
+import os
 import sys
 
 class FilterMerge2D(Filter):
@@ -17,7 +18,13 @@ prefix = 'PDI_example_flowvr'
 compute_yaml = str(sys.argv[1]) + "/flowvr.yml"
 visu_yaml = str(sys.argv[1]) + "/flowvr_visu.yml"
 
-computerun = FlowvrRunMPI(str(sys.argv[2]) + " " + compute_yaml, hosts = hosts, prefix = prefix, mpistack = "openmpi", rankfile = "./rankfile.txt") #use openmpi, mpich, mvapich or intel
+if os.environ.get('MPI_LIB') == "mpich":
+  computerun = FlowvrRunMPICH(str(sys.argv[2]) + " " + compute_yaml, hosts = hosts, prefix = prefix)
+elif os.environ.get('MPI_LIB') == "mvapich":
+  computerun = FlowvrRunMVAPICH(str(sys.argv[2]) + " " + compute_yaml, hosts = hosts, prefix = prefix)
+else: # assume openmpi
+  computerun = FlowvrRunOpenMPI(str(sys.argv[2]) + " " + compute_yaml, hosts = hosts, prefix = prefix)
+
 compute_modules = []
 compute_output_ports = []
 for i in range(4):

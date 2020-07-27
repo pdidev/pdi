@@ -32,7 +32,7 @@ flowvrd > /dev/null &
 DAEMON_PID=$!
 # echo "DAEMON PID = $DAEMON_PID"
 
-python stamps.py
+python3 stamps.py
 flowvr -a stamps
 
 FLOWVR_STATUS=$?

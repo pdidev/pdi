@@ -41,9 +41,6 @@ endif()
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
 
-# TODO: PyYAML
-# find_package(Py2YAML REQUIRED)
-
 # FlowVR
 find_package(FlowVR REQUIRED)
 
@@ -51,10 +48,10 @@ find_package(FlowVR REQUIRED)
 add_subdirectory(src/)
 
 # Python script
-add_subdirectory(tools/python_script)
+add_subdirectory(tools)
 
 # Examples
-if("${BUILD_FLOWVR_TESTING}")
+if("${BUILD_TESTING}")
 	add_subdirectory(examples/)
 	add_subdirectory(tests/)
 endif()

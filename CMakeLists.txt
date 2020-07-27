@@ -253,7 +253,7 @@ endif()
 
 ## Yaml
 
-# if ( paraconf or Py2YAML or Py3YAML )
+# if ( paraconf or PyYAML )
 sbuild_add_dependency(yaml "${USE_DEFAULT}"
 	EMBEDDED_PATH "vendor/libyaml-0.2.2"
 	CMAKE_CACHE_ARGS
@@ -324,18 +324,11 @@ if("${BUILD_INDENT}")
 endif()
 
 
-## Python2
-
-if("${BUILD_FLOWVR_PLUGIN}")
-	sbuild_add_dependency(Python2 SYSTEM COMPONENTS Interpreter)
-endif()
-
-
 ## Python3
 
 if("${BUILD_PYTHON}")
 	sbuild_add_dependency(Python3Path SYSTEM COMPONENTS Interpreter Development)
-elseif("${BUILD_CFG_VALIDATOR}")
+elseif("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
 	sbuild_add_dependency(Python3Path SYSTEM COMPONENTS Interpreter)
 endif()
 
@@ -384,12 +377,13 @@ endif()
 
 if("${BUILD_FLOWVR_PLUGIN}")
 	sbuild_add_dependency(FlowVR "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/flowvr-ex-02074ec43f05e94201f51a45fac7976b55800d3b"
+		EMBEDDED_PATH "vendor/flowvr-ex-v2.3.0"
 		CMAKE_CACHE_ARGS
 			"-DENABLE_EXAMPLES:BOOL=OFF"
 			"-DENABLE_TESTS:BOOL=OFF"
 			"-DENABLE_DOCU:BOOL=OFF"
 			"-DOpenGL_GL_PREFERENCE:STRING=LEGACY"
+		# VERSION 2.3 Finding FlowVR version doesn't work with 2.3
 	)
 endif()
 
@@ -450,62 +444,29 @@ if("${BUILD_PYTHON}")
 endif()
 
 
-## Py2YAML
+## PyYAML
 
-sbuild_get_env(CPATH CPATH)
-sbuild_get_env(LIBRARY_PATH LIBRARY_PATH)
-if("${BUILD_FLOWVR_PLUGIN}")
-	#TODO: installing python libraries doesn't work ATM, installing to a prefix is not supported, virtualenv or such should be used
-	sbuild_add_dependency(Py2YAML SYSTEM #"${USE_DEFAULT}"
-# 		EMBEDDED_PATH "vendor/PyYAML-5.1"
-# 		CONFIGURE_COMMAND "${Python2_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
-# 			--without-libyaml
-# 			build_ext
-# 			-I "${CPATH}"
-# 			-L "${LIBRARY_PATH}"
-# 		BUILD_IN_SOURCE ON
-# 		BUILD_COMMAND "${Python2_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
-# 			--without-libyaml
-# 			build
-# 		INSTALL_COMMAND "${Python2_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
-# 			--without-libyaml
-# 			install
-# 			--prefix "<INSTALL_DIR>"
-# 			--install-purelib "<INSTALL_DIR>/${Python2_INSTALL_SITELIBDIR}"
-# 			--install-platlib "<INSTALL_DIR>/${Python2_INSTALL_SITEARCHDIR}"
-	)
-endif()
-
-
-## Py3YAML
-
-if("${BUILD_CFG_VALIDATOR}")
-# 	if("${BUILD_PYTHON}")
-# 		set(Py3YAML_WITH_LIBYAML "--with-libyaml")
-# 		set(Py3YAML_DEPENDS DEPENDS yaml)
-# 	else()
-# 		set(Py3YAML_WITH_LIBYAML "--without-libyaml")
-# 		set(Py3YAML_DEPENDS)
-# 	endif()
-	#TODO: installing python libraries doesn't work ATM, installing to a prefix is not supported, virtualenv or such should be used
-	sbuild_add_dependency(Py3YAML SYSTEM #"${USE_DEFAULT}"
-# 		EMBEDDED_PATH "vendor/PyYAML-5.1"
-# 		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
-# 			"${Py3YAML_WITH_LIBYAML}"
-# 			build_ext
-# 			-I "${CPATH}"
-# 			-L "${LIBRARY_PATH}"
-# 		BUILD_IN_SOURCE ON
-# 		BUILD_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
-# 			"${Py3YAML_WITH_LIBYAML}"
-# 			build
-# 		INSTALL_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
-# 			"${Py3YAML_WITH_LIBYAML}"
-# 			install
-# 			--prefix "<INSTALL_DIR>"
-# 			--install-purelib "<INSTALL_DIR>/${Python3Path_INSTALL_SITELIBDIR}"
-# 			--install-platlib "<INSTALL_DIR>/${Python3Path_INSTALL_SITEARCHDIR}"
-# 		${Py3YAML_DEPENDS}
+if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
+	sbuild_get_env(CPATH CPATH)
+	sbuild_get_env(LIBRARY_PATH LIBRARY_PATH)
+	sbuild_add_dependency(PyYAML "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/PyYAML-5.3.1"
+		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
+			"--with-libyaml"
+			build_ext
+			-I "${CPATH}"
+			-L "${LIBRARY_PATH}"
+		BUILD_IN_SOURCE ON
+		BUILD_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
+			"--with-libyaml"
+			build
+		INSTALL_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
+			"--with-libyaml"
+			install
+			--prefix "<INSTALL_DIR>"
+			--install-purelib "<INSTALL_DIR>/${Python3Path_INSTALL_SITELIBDIR}"
+			--install-platlib "<INSTALL_DIR>/${Python3Path_INSTALL_SITEARCHDIR}"
+		DEPENDS yaml
 	)
 endif()
 
@@ -556,7 +517,7 @@ sbuild_add_module(PDI
 sbuild_add_module(PDICFG_VALIDATOR
 	ENABLE_BUILD_FLAG BUILD_CFG_VALIDATOR
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tools/pdicfg_validator"
-	DEPENDS Py3YAML
+	DEPENDS PyYAML
 	SUBSTEPS test
 )
 if("${BUILD_CFG_VALIDATOR}")
@@ -599,7 +560,7 @@ sbuild_add_module(FTI_PLUGIN
 sbuild_add_module(FLOWVR_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_FLOWVR_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/flowvr"
-	DEPENDS PDI FlowVR ${ASTYLE_DEPENDENCY} #TODO: Py2YAML
+	DEPENDS PDI FlowVR PyYAML ${ASTYLE_DEPENDENCY}
 	SUBSTEPS indent test
 )
 

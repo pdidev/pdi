@@ -2,6 +2,7 @@
 
 if [ "$#" -ne 4 ]; then
 	echo "Error, expected 4 arguments:\n    $0 <PDI_EXAMPLE_DIR> <PDI_example_C> <flowvr_visu> <FLOWVR_PREFIX>"
+	exit
 fi
 
 PDI_EXAMPLE_DIR="$1"
@@ -17,12 +18,6 @@ export DYLD_LIBRARY_PATH="${FLOWVR_PREFIX}/lib${DYLD_LIBRARY_PATH:+:${DYLD_LIBRA
 export PYTHONPATH="${FLOWVR_PREFIX}/lib/flowvr/python:${PYTHONPATH}"
 
 export FLOWVR_PID_LOG_DIR="./.flowvr"
-
-# needed to force flowvr to not use `--bind-to hwthread' mpirun flag
-echo "rank 0=localhost slot=0:0" >> rankfile.txt
-echo "rank 1=localhost slot=0:0" >> rankfile.txt
-echo "rank 2=localhost slot=0:0" >> rankfile.txt
-echo "rank 3=localhost slot=0:0" >> rankfile.txt
 
 flowvrd > flowvrd.log &
 DAEMON_PID=$!

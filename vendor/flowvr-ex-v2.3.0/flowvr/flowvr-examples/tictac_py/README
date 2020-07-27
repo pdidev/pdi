@@ -1,0 +1,86 @@
+
+===============================
+	TicTac-FlowVR
+===============================
+
+
+==============================
+   Diff with the base TicTac example
+===============================
+
+This TicTac version uses  python  modules instead of c modules
+
+
+==============================
+	What does it do?
+===============================
+ 	* A module "put" alternatively sends "tic" and "tac" strings on its output port.
+ 	* Another module "get" receives the messages on its input port and reads them.
+===============================
+
+
+===============================
+	How to start it
+===============================
+You can start it by executing "flowvr-demo-tictac.sh".
+If you do not have it in your $PATH, execute "source bin/flowvr-suite-config.sh"
+at the root of your install directory.
+
+In order to start it manually:
+
+	* Execute "flowvrd &" in your terminal or "flowvrd" in a separate terminal.
+		- Only one daemon may run on a given machine.
+		- If you need to bring back a command from the background, run "fg".
+		- To close the daemon, use CTRL-C.
+		
+flowvrd &
+		
+		
+	* Generate the application's network using the provided py-flowvrapp script.
+	
+python tictac.py
+		
+	* Launch the application using the "flowvr" command.
+		flowvr tictac
+		
+		
+		While the application is running, your terminal will listen
+		to commands for controlling the application flow.
+
+		To get a list of available commands, type "pause", press ENTER to confirm,
+		then type "help" and confirm.
+
+
+	* When you are done, type "stop" and confirm.
+	
+	* If the application has trouble coming to a full halt, run :
+
+flowvr-kill
+
+
+===============================
+	Troubleshooting
+===============================
+
+	* The daemon won't start properly
+		1) make sure you've executed the "setup-sharedmemory.sh" script
+			This script sets the shared memory segment size to a big enough value
+			in order to accomodate the daemon.
+			
+		2) check if there isn't a daemon already running
+		3) run "killall flowvrd" if you haven't found any
+		
+	* The application starts, but it doesn't exchange messages
+		- run "flowvr-kill" and try once more
+		
+	
+	If none of these helped, send us an email at "flowvr-devel@lists.sourceforge.net".
+
+
+===============================
+	For more information
+===============================
+	* FlowVR manual		http://flowvr.sourceforge.net/FlowVRDoc.html
+	* FlowVR wiki		https://wiki-flowvr.imag.fr
+	
+

@@ -41,6 +41,6 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/wait_event.py ${CMAKE_CURRENT_SOURCE_DIR}/
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_08_Wait_event COMMAND "test.sh")
+add_test(NAME flowvr_08_Wait_event COMMAND PDI::pdirun "./test.sh")
 set_property(TEST flowvr_08_Wait_event PROPERTY TIMEOUT 5)
-
+set_property(TEST flowvr_08_Wait_event PROPERTY RESOURCE_LOCK flowvrd)

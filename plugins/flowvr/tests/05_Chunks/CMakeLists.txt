@@ -41,6 +41,6 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/chunks.py ${CMAKE_CURRENT_SOURCE_DIR}/test
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_05_Chunks COMMAND "test.sh")
+add_test(NAME flowvr_05_Chunks COMMAND PDI::pdirun "./test.sh")
 set_property(TEST flowvr_05_Chunks PROPERTY TIMEOUT 5)
-
+set_property(TEST flowvr_05_Chunks PROPERTY RESOURCE_LOCK flowvrd)

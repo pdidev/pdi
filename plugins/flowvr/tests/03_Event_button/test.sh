@@ -32,7 +32,7 @@ flowvrd > /dev/null &
 DAEMON_PID=$!
 # echo "DAEMON PID = $DAEMON_PID"
 
-python event_button.py
+python3 event_button.py
 flowvr -a event_button
 
 FLOWVR_STATUS=$?

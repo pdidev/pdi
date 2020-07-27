@@ -1,18 +1,22 @@
 #!/bin/sh
 
-if [ -z "${PDI_STAGING}" ]; then
-	#guess the PDI staging location
-	export PDI_STAGING=$(readlink -f ../../../../staging/)
-fi
+export FLOWVR_PREFIX="$(dirname "$(echo "@FLOWVR_INCLUDE_DIR@" | sed 's/.*;//')")"
 
-export PATH="${PDI_STAGING}/bin:${PATH}"
-export LD_LIBRARY_PATH="${PDI_STAGING}/lib/:${LD_LIBRARY_PATH}"
-export PYTHONPATH="${PDI_STAGING}/lib/pdi/python:${PYTHONPATH}"
+export PATH="${FLOWVR_PREFIX}/share/flowvr/modules/bin:\
+${FLOWVR_PREFIX}/bin\
+${PATH:+:${PATH}}"
 
-export FLOWVR_PREFIX="${PDI_STAGING}"
-export PATH="${PDI_STAGING}/share/flowvr/modules/bin${PATH:+:${PATH}}"
-export FLOWVR_DATA_PATH="${PDI_STAGING}/share/flowvr-render/data${FLOWVR_DATA_PATH:+:${FLOWVR_DATA_PATH}}"
-export DYLD_LIBRARY_PATH="${PDI_STAGING}/lib${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}"
-export FLOWVR_PID_LOG_DIR="./.flowvr"
-export FlowVR_DIR="${PDI_STAGING}/share/flowvr/cmake"
-export PYTHONPATH=${PDI_STAGING}/lib/flowvr/python/:${PYTHONPATH}
+export FLOWVR_DATA_PATH="\
+${FLOWVR_PREFIX}/share/flowvr-render/data\
+${FLOWVR_DATA_PATH:+:${FLOWVR_DATA_PATH}}\
+"
+
+export LD_LIBRARY_PATH="${FLOWVR_PREFIX}/lib\
+${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+
+export DYLD_LIBRARY_PATH="${FLOWVR_PREFIX}/lib\
+${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}"
+
+export FLOWVR_PID_LOG_DIR="@CMAKE_CURRENT_BINARY_DIR@/flowvr-dir"
+
+export PYTHONPATH="${FLOWVR_PREFIX}/lib/flowvr/python:${PYTHONPATH}"

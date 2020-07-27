@@ -32,7 +32,7 @@ flowvrd > /dev/null &
 DAEMON_PID=$!
 # echo "DAEMON PID = $DAEMON_PID"
 
-python copy_send_recv.py
+python3 copy_send_recv.py
 flowvr -a copy_send_recv
 
 FLOWVR_STATUS=$?

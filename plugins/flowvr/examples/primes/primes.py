@@ -8,7 +8,7 @@ from traces import * # for trace capture
 from pdi_flowvr import Module_PDI
 
 #Usage:
-#python primes.py 8 "machine1 machine2"
+#python3 primes.py 8 "machine1 machine2"
 # 8 -> the exemple used (value between 1 to 8)
 # "machine1 machine2" -> list of hosts where to deploy the application (only valid for exemplae 8)
 

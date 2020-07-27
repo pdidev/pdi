@@ -24,7 +24,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-# Add the plugin path to LD_LIBRARY_PATH
+# Add the plugin path to LD_LIBRARY_PATH & PYTHONPATH
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
 file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
      CONTENT "
@@ -33,6 +33,12 @@ if(\"x\${LD_LIBRARY_PATH}x\" STREQUAL xx)\n
 set(ENV{LD_LIBRARY_PATH} \"\$<TARGET_FILE_DIR:pdi_flowvr_plugin>\")\n
 else()\n
 set(ENV{LD_LIBRARY_PATH} \"\$<TARGET_FILE_DIR:pdi_flowvr_plugin>:\${LD_LIBRARY_PATH}\")\n
+endif()
+set(PYTHONPATH \"\$ENV{PYTHONPATH}\")\n
+if(\"x\${PYTHONPATH}x\" STREQUAL xx)\n
+set(ENV{PYTHONPATH} \"${pdi_flowvr_plugin_SOURCE_DIR}/tools\")\n
+else()\n
+set(ENV{PYTHONPATH} \"${pdi_flowvr_plugin_SOURCE_DIR}/tools:\${PYTHONPATH}\")\n
 endif()
 "
 )
@@ -46,4 +52,4 @@ add_subdirectory(06_Abort_on_fin/)
 add_subdirectory(07_Copy_send_recv/)
 add_subdirectory(08_Wait_event/)
 
-configure_file(flowvr-config.sh flowvr-config.sh COPYONLY)
+configure_file(flowvr-config.sh flowvr-config.sh @ONLY)
