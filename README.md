@@ -64,6 +64,7 @@ The PDI distribution is made of the following submodules:
 * `CMakeLists.txt`, `LICENSE`, `cmake/`, `README.md`: distribution specific files,
 * `pdi/` : the PDI library,
 * `plugins/decl_hdf5/`: the Decl'HDF5 plugin,
+* `plugins/decl_netcdf/`: the Decl'NetCDF plugin,
 * `plugins/flowvr/`: the FlowVR plugin,
 * `plugins/mpi/`: the MPI plugin,
 * `plugins/test/`: the Test plugin (deprecated),

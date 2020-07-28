@@ -1,0 +1,37 @@
+logging: trace
+data:
+  iter: int
+  int_matrix:
+    type: array
+    subtype: int
+    size: [8, 8]
+
+plugins:
+  decl_netcdf:
+    - file: "test_07.nc"
+      on_event: "write"
+      variables:
+        int_matrix_var:
+          type: array
+          subtype: int
+          size: [0, 8, 8]
+          dimensions: ["iter", "height", "width"]
+      write: 
+        int_matrix:
+          variable: int_matrix_var
+          variable_selection:
+            start: ["$iter", 0, 0]
+            subsize: [1, 8, 8]
+    - file: "test_07.nc"
+      on_event: "read"
+      variables:
+        int_matrix_var:
+          type: array
+          subtype: int
+          size: [0, 8, 8]
+      read:
+        int_matrix:
+          variable: int_matrix_var
+          variable_selection:
+            start: ["$iter", 0, 0]
+            subsize: [1, 8, 8]

@@ -64,22 +64,23 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 
 # Modules to build
 
-option(BUILD_CFG_VALIDATOR    "Build config validation script" "${BUILD_UNSTABLE}")
-option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
-option(BUILD_DECL_SION_PLUGIN "Build Decl'SION plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_FLOWVR_PLUGIN    "Build FlowVR plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_FORTRAN          "Build with Fortran support" ON)
-option(BUILD_FTI_PLUGIN       "Build FTI plug-in." "OFF")
-option(BUILD_HDF5_PARALLEL    "Build Decl'HDF5 in parallel mode" ON)
-option(BUILD_MPI_PLUGIN       "Build MPI plug-in" ON)
-option(BUILD_PYCALL_PLUGIN    "Build Pycall plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_PYTHON           "Build with Python support" "${BUILD_UNSTABLE}")
-option(BUILD_SET_VALUE_PLUGIN "Build Set_value plug-in" ON)
-option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
-option(BUILD_SHARED_LIBS      "Build shared libraries rather than static ones" ON)
-option(BUILD_TEST_PLUGIN      "Build Test plugin" ON)
-option(BUILD_TRACE_PLUGIN     "Build Trace plugin" ON)
-option(BUILD_USER_CODE_PLUGIN "Build User-code plugin" ON)
+option(BUILD_CFG_VALIDATOR      "Build config validation script" "${BUILD_UNSTABLE}")
+option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
+option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_DECL_SION_PLUGIN   "Build Decl'SION plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_FLOWVR_PLUGIN      "Build FlowVR plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_FORTRAN            "Build with Fortran support" ON)
+option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "OFF")
+option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
+option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
+option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
+option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
+option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
+option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
+option(BUILD_TEST_PLUGIN        "Build Test plugin" ON)
+option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
+option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 
 
 
@@ -116,6 +117,9 @@ if("${BUILD_CFG_VALIDATOR}")
 endif()
 if("${BUILD_DECL_HDF5_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake")
+endif()
+if("${BUILD_DECL_NETCDF_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
 endif()
 if("${BUILD_DECL_SION_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_sion/cmake")
@@ -198,6 +202,10 @@ endif()
 
 include(GNUInstallDirs)
 include(SuperBuild)
+sbuild_get_env(SBUILD_PATH PATH)
+sbuild_get_env(SBUILD_CPATH CPATH)
+sbuild_get_env(SBUILD_LIBRARY_PATH LIBRARY_PATH)
+sbuild_get_env(SBUILD_LD_LIBRARY_PATH LD_LIBRARY_PATH)
 
 
 ## Fortran
@@ -247,6 +255,7 @@ if(NOT "x${MPI_COMPONENTS}x" STREQUAL xx)
 	list(REMOVE_DUPLICATES MPI_COMPONENTS)
 	sbuild_add_dependency(MPI SYSTEM
 		COMPONENTS ${MPI_COMPONENTS}
+		MODULE_VARS MPI_C_COMPILER
 	)
 endif()
 
@@ -390,19 +399,41 @@ endif()
 
 ## HDF5
 
-if("${BUILD_DECL_HDF5_PLUGIN}")
-	set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
+if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
+	set(HDF5_CONFIGURE_OPTS)
+	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+		list(APPEND HDF5_CONFIGURE_OPTS "--enable-build-mode=debug")
+	else()
+		list(APPEND HDF5_CONFIGURE_OPTS "--enable-build-mode=production")
+	endif()
+	if("${BUILD_HDF5_PARALLEL}")
+		set(HDF5_PREFER_PARALLEL "ON")
+		list(APPEND HDF5_CONFIGURE_OPTS "--enable-parallel")
+	else()
+		set(HDF5_PREFER_PARALLEL "OFF")
+		list(APPEND HDF5_CONFIGURE_OPTS "--disable-parallel")
+	endif()
+	if("${BUILD_DECL_NETCDF_PLUGIN}")
+		set(HDF5_COMPONENTS C HL)
+		list(APPEND HDF5_CONFIGURE_OPTS "--enable-hl")
+	else()
+		set(HDF5_COMPONENTS C)
+		list(APPEND HDF5_CONFIGURE_OPTS "--disable-hl")
+	endif()
+	
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/hdf5-1.10.5"
-		COMPONENTS C
-		MODULE_VARS HDF5_IS_PARALLEL
-		CMAKE_CACHE_ARGS
-			"-DHDF5_ENABLE_PARALLEL:BOOL=${BUILD_HDF5_PARALLEL}"
-			"-DHDF5_BUILD_CPP_LIB:BOOL=OFF"
-			"-DHDF5_BUILD_EXAMPLES:BOOL=OFF"
-			"-DHDF5_BUILD_HL_LIB:BOOL=OFF"
-			"-DHDF5_BUILD_TOOLS:BOOL=OFF"
-			"-DBUILD_TESTING:BOOL=OFF"
+		EMBEDDED_PATH "vendor/hdf5-1.12.0"
+		COMPONENTS ${HDF5_COMPONENTS}
+		MODULE_VARS HDF5_IS_PARALLEL HDF5_C_INCLUDE_DIRS HDF5_C_LIBRARIES
+		BUILD_IN_SOURCE 1
+		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
+			#TODO:  prefix should point to the final install dir, we should use a staging mechanism
+			"--prefix=<INSTALL_DIR>"
+			"--disable-tests"
+			"--disable-static"
+			"--disable-tools"
+			"--disable-sharedlib-rpath"
+			${HDF5_CONFIGURE_OPTS}
 		VERSION 1.8.0
 	)
 	if("${HDF5_FOUND}")
@@ -415,15 +446,43 @@ if("${BUILD_DECL_HDF5_PLUGIN}")
 				"     * use another version of HDF5 from the system => pass `-DHDF5_ROOT=/path/to/hdf5/root/' to cmake"
 			)
 		endif()
-	elseif("${CMAKE_VERSION}" VERSION_LESS 3.10)
-		message(FATAL_ERROR
-			"The EMBEDDED version of HDF5 is requested but the cmake version is less than 3.10.\n"
-			"    you have the following options:\n"
-			"     * install and use a more recent version of cmake (3.10 at least)"
-			"     * use a SYSTEM version of HDF5 => pass `-DUSE_HDF5=SYSTEM' to cmake\n"
-			"     * disable the Decl'HDF5 plugin => pass `-DBUILD_DECL_HDF5_PLUGIN=OFF' to cmake"
-		)
 	endif()
+endif()
+
+
+## NetCDF
+
+if("${BUILD_DECL_NETCDF_PLUGIN}")
+	if("${BUILD_HDF5_PARALLEL}")
+		set(NETCDF_CC "${MPI_C_COMPILER}")
+	else()
+		set(NETCDF_CC "${CMAKE_C_COMPILER}")
+	endif()
+	set(NETCDF_CPATH "${SBUILD_CPATH}")
+	set(NETCDF_LIBRARY_PATH "${SBUILD_LIBRARY_PATH}")
+	if("${HDF5_FOUND}")
+		string(REPLACE ";" ":" NETCDF_CPATH "${SBUILD_CPATH}:${HDF5_C_INCLUDE_DIRS}")
+		foreach(LIB IN LISTS HDF5_C_LIBRARIES)
+			get_filename_component(LIB_DIR "${LIB}" DIRECTORY)
+			set(NETCDF_LIBRARY_PATH "${NETCDF_LIBRARY_PATH}:${LIB_DIR}")
+		endforeach()
+	endif()
+	
+	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/netcdf-c-4.7.1"
+		DEPENDS HDF5
+		BUILD_IN_SOURCE 1
+		ENV "CC=${NETCDF_CC}" "CPATH=${NETCDF_CPATH}" "LIBRARY_PATH=${NETCDF_LIBRARY_PATH}"
+		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
+			#TODO:  prefix should point to the final install dir, we should use a staging mechanism
+			--prefix=<INSTALL_DIR>
+			--disable-static
+			--enable-netcdf-4 
+			--disable-dap
+			--disable-utilities
+			--disable-testsets
+		VERSION 4.0.0
+	)
 endif()
 
 
@@ -478,7 +537,7 @@ if("${BUILD_DECL_SION_PLUGIN}")
 		EMBEDDED_PATH "vendor/sionlib-1.7.6"
 		BUILD_IN_SOURCE 1
 		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
-			--prefix="<INSTALL_DIR>"
+			--prefix=<INSTALL_DIR>
 			--disable-fortran
 			--disable-parutils
 			--disable-cxx
@@ -548,6 +607,12 @@ sbuild_add_module(DECL_SION_PLUGIN
 	SUBSTEPS indent test
 )
 
+sbuild_add_module(DECL_NETCDF_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf"
+	DEPENDS PDI NetCDF ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY}
+	SUBSTEPS indent test
+)
 
 sbuild_add_module(FTI_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_FTI_PLUGIN

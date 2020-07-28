@@ -1,0 +1,14 @@
+logging: trace
+metadata:
+  input: int
+data:
+  int_scalar: int
+  int_array: {type: array, subtype: int, size: 32}
+plugins:
+  decl_netcdf:
+    - file: "test_01.nc"
+      when: "${input}=0"
+      write: [int_scalar, int_array]
+    - file: "test_01.nc"
+      when: "${input}=1"
+      read: [int_scalar, int_array]

@@ -3,21 +3,21 @@ stages:
   - pages
   - external
 
-cmake3.5_embedded:
+centos_cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.5:latest
   script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED -DUSE_HDF5=SYSTEM -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
+    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
     - make
 
-cmake3.5_system:
+centos_cmake3.5_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.5:latest
   script:
-    - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
+    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
     - make
 
-cmake3.10_embedded:
+centos_cmake3.10_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.10:latest
   script:
@@ -25,7 +25,7 @@ cmake3.10_embedded:
     - make
     - ctest --output-on-failure
 
-cmake3.10_system:
+centos_cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.10:latest
   script:

@@ -105,6 +105,19 @@ set_property(TEST PDI_example_decl_hdf5_P PROPERTY DISABLED TRUE) #TODO: python 
 endif("${BUILD_PYTHON}")
 endif("${BUILD_DECL_HDF5_PLUGIN}")
 
+if("${BUILD_DECL_NETCDF_PLUGIN}")
+add_test(NAME PDI_example_decl_netcdf_C_serial COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_serial.yml")
+set_property(TEST PDI_example_decl_netcdf_C_serial PROPERTY TIMEOUT 5)
+set_property(TEST PDI_example_decl_netcdf_C_serial PROPERTY PROCESSORS 1)
+
+add_test(NAME PDI_example_decl_netcdf_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf.yml")
+set_property(TEST PDI_example_decl_netcdf_C PROPERTY TIMEOUT 5)
+set_property(TEST PDI_example_decl_netcdf_C PROPERTY PROCESSORS 3)
+set_property(TEST PDI_example_decl_netcdf_C PROPERTY DISABLED TRUE) #TODO: netcdf parallel #define NC_HAS_PARALLEL4
+
+endif("${BUILD_DECL_NETCDF_PLUGIN}")
+
+
 if("${BUILD_DECL_SION_PLUGIN}")
 add_test(NAME PDI_example_decl_sion_variables_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_variables.yml")
 set_property(TEST PDI_example_decl_sion_variables_C PROPERTY TIMEOUT 5)

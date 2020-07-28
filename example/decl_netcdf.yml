@@ -1,0 +1,34 @@
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [60, 12]
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
+
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
+    pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
+  data: # type of values for which PDI does not keep a copy
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+  
+  plugins:
+    mpi:
+    decl_netcdf:
+      file: data_${mpi_rank}.nc
+      communicator: $MPI_COMM_WORLD # the MPI communicator used for HDF5 parallel synchronized write
+      variables: # type of the datasets to create in file
+        data:
+          type: array
+          subtype: double
+          size: [10, '$psize[0]*$dsize[0]', '$psize[1]*$dsize[1]']
+      write:
+        main_field: # the name of the data to write
+          variable: data
+          when: '$iter<10'   # do only write the first 10 iterations (0...9)
+          variable_selection: # only write into a single slice in time
+            size:  [1, '$dsize[0]', '$dsize[1]']
+            start: [$iter, '$dsize[0]*$pcoord[0]', '$dsize[1]*$pcoord[1]']

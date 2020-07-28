@@ -3,6 +3,7 @@
 |Plugin                                               |Description                                                        |
 |:----------------------------------------------------|:------------------------------------------------------------------|
 |\subpage Decl_HDF5_plugin "Decl'HDF5 plugin"         |Read and write data from HDF5 files in a declarative way.          |
+|\subpage Decl_NetCDF_plugin "Decl'NetCDF plugin"     |Read and write data from NetCDF files in a declarative way.        |
 |\subpage FlowVR_plugin "FlowVR plugin"               |Write FlowVR modules without knowing any specific FlowVR API calls.|
 |\subpage trace_plugin "trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
 |\subpage user_code_plugin "user-code plugin"         |Call your function on event or when data becomes available.        |
