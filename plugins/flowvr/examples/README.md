@@ -6,11 +6,13 @@
 
 In case you have not installed PDI:
 
-1. From your build directory, go to `pdi_plugin-flowvr/src/FLOWVR_PLUGIN-build/examples/`
+1. Build PDI with `-DBUILD_TESTING=ON` cmake flag
 
-2. Call `source flowvr-config.sh`
+2. From your build directory, go to `build/FLOWVR_PLUGIN/src/FLOWVR_PLUGIN_pkg-build/examples`
 
-3. Your environment is ready to run examples
+3. Call `source flowvr-config.sh`
+
+4. Your environment is ready to run examples
 
 In case you want to run `flowvr-config.sh` from different directory:
 

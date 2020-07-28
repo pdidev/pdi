@@ -234,7 +234,7 @@ data:
 flowvr:
   ...
   output_ports:
-    port_name:
+    some_port_name:
       data: data_desc
 ```
 
@@ -253,7 +253,7 @@ plugins:
   flowvr:
     ...
     input_ports:
-      port_name:
+      some_port_name:
         data: data_descriptor_name
         size: received_size
 ```
@@ -268,7 +268,7 @@ data:
 flowvr:
   ...
   output_ports:
-    port_name:
+    some_port_name:
       data: data_descriptor_name
       copy_data_selection:
         type: array
@@ -301,7 +301,7 @@ data:
 flowvr:
   ...
   output_ports:
-    port_name:
+    some_port_name:
       chunks:
         - data: chunk_1_name
         - data: chunk_2_name
@@ -353,7 +353,7 @@ data:
 flowvr:
   ...
   output_ports:
-    port_name:
+    some_port_name:
       event_button:
         KEY_UP: up
         KEY_DOWN: down
@@ -387,7 +387,7 @@ data:
 flowvr:
   ...
   output_ports:
-    port_name:
+    some_port_name:
       event_mouse:
         POS_XY: pos_xy
         LEFT_BUTTON: left_button
@@ -418,7 +418,7 @@ data:
 flowvr:
   ...
   output_ports:
-    port_name:
+    some_port_name:
       data: data_desc
       stamps:
         stamp_1_name: stamp_1_desc
@@ -435,7 +435,7 @@ metadata:
 flowvr:
   ...
   output_ports:
-    port_name:
+    some_port_name:
       stamps:
         stamp_name:
           type: int
