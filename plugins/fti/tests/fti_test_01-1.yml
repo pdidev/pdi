@@ -1,6 +1,6 @@
+logging: trace
 data:
   fti_status: int
-
 plugins:
   mpi:
   fti:

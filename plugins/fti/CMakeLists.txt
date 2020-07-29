@@ -46,7 +46,7 @@ endif()
 find_package(MPI REQUIRED COMPONENTS C CXX)
 
 # FTI
-find_package(FTI REQUIRED 1.3)
+find_package(FTI REQUIRED 1.4)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)

@@ -1,10 +1,10 @@
+logging: trace
 data:
   fti_status: int
   fti_head: int
   test: int
   array: {type: array, size: 10, subtype: int}
   array2D: {type: array, size: [3, 3], subtype: int}
-
 plugins:
   mpi:
   fti:

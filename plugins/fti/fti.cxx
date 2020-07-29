@@ -250,6 +250,7 @@ struct fti_plugin: Plugin {
 						context().logger()->warn("Trying to recover variable before plugin initialization (`{}')", event_name);
 						return;
 					}
+					FTI_RecoverVarInit();
 					for (auto&& var_id: m_config.recover_var().at(event_name)) {
 						string desc_name = m_config.dataset().at(var_id);
 						if (Ref_w ref = context().desc(desc_name).ref()) {
@@ -265,6 +266,7 @@ struct fti_plugin: Plugin {
 							context().logger()->warn("Variable `{}' (id: {}) unavailable", desc_name, var_id);
 						}
 					}
+					FTI_RecoverVarFinalize();
 				},
 				event.first);
 			} break;

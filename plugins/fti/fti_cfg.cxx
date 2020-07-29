@@ -32,6 +32,7 @@
 using PDI::Context;
 using PDI::Config_error;
 using PDI::Expression;
+using PDI::Impl_error;
 using PDI::len;
 using PDI::to_long;
 using PDI::to_string;
@@ -247,7 +248,6 @@ Fti_cfg::Fti_cfg(Context& ctx, PC_tree_t tree):
 				});
 			}
 		} else if (key == "send_file") {
-			throw Impl_error{"send_file not supported yet"}; //FTI bug
 			PC_tree_t send_file_tree = PC_get(tree, ".send_file");
 			if (!PC_status(PC_get(send_file_tree, "[0]"))) {
 				int nb_data = len(send_file_tree);

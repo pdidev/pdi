@@ -35,7 +35,8 @@
 using PDI::Context;
 using PDI::Data_descriptor;
 using PDI::Datatype_uptr;
-using PDI::Error;
+using PDI::Impl_error;
+using PDI::Plugin_error;
 
 using std::string;
 

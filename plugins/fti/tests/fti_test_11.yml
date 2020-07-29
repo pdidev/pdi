@@ -1,14 +1,10 @@
-logging:
-  level: debug
-
+logging: trace
 metadata:
   rank: int
-
 data:
   file1_status: int
   file2_status: int
   file3_status: int
-
 plugins:
   mpi:
   fti:

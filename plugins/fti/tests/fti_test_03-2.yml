@@ -1,9 +1,8 @@
+logging: trace
 metadata:
   my_comm: MPI_Comm
-
 data:
   fti_status: int
-
 plugins:
   mpi:
   fti:

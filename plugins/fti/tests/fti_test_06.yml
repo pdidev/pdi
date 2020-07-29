@@ -1,3 +1,4 @@
+logging: trace
 data:
   fti_head: int
 plugins:

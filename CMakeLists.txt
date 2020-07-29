@@ -62,6 +62,7 @@ endif()
 set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can be 1) EMBEDDED to use the provided version, 2) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 3) AUTO to use SYSTEM if available and EMBEDDED otherwise")
 
 
+
 # Modules to build
 
 option(BUILD_CFG_VALIDATOR      "Build config validation script" "${BUILD_UNSTABLE}")
@@ -128,7 +129,6 @@ if("${BUILD_FLOWVR_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/flowvr/cmake")
 endif()
 if("${BUILD_FTI_PLUGIN}")
-	message(WARNING "The FTI plugin is currently disabled as its stability is problematic")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/fti/cmake")
 endif()
 if("${BUILD_MPI_PLUGIN}")
@@ -371,13 +371,13 @@ endif()
 
 if("${BUILD_FTI_PLUGIN}")
 	sbuild_add_dependency(FTI "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/fti-1.3+fix-cmake"
+		EMBEDDED_PATH "vendor/fti-1.4"
 		CMAKE_CACHE_ARGS
 			"-DENABLE_FORTRAN:BOOL=OFF"
 			"-DENABLE_EXAMPLES:BOOL=OFF"
 			"-DENABLE_TESTS:BOOL=OFF"
 			"-DENABLE_DOCU:BOOL=OFF"
-		VERSION 1.3
+		VERSION 1.3 # 1.4 still has 1.3 version defined
 	)
 endif()
 
