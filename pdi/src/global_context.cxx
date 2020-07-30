@@ -37,6 +37,7 @@
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 #include "pdi/error.h"
+#include "pdi/version.h"
 
 #include "data_descriptor_impl.h"
 
@@ -79,14 +80,43 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 	
 }
 
+string PDI_NO_EXPORT get_plugin_lib_so_path(const std::string& plugin_name)
+{
+	void* libpdi_handle = dlopen("libpdi.so", RTLD_NOW);
+	if (libpdi_handle == NULL) {
+		throw System_error{"Unable to load libpdi.so file: {}", dlerror()};
+	}
+	void* pdi_init_addr = dlsym(libpdi_handle, "PDI_init");
+	if (pdi_init_addr == NULL) {
+		throw System_error{"Unable to get PDI_init symbol from libpdi.so file: {}", dlerror()};
+	}
+	
+	Dl_info libpdi_info;
+	int status = dladdr(pdi_init_addr, &libpdi_info);
+	if (status == 0) {
+		throw System_error{"Unable to get addr from libpdi.so file: {}", dlerror()};
+	}
+	std::string libpdi_path = libpdi_info.dli_fname;
+	libpdi_path = libpdi_path.substr(0, libpdi_path.find_last_of('/') + 1);
+	dlclose(libpdi_handle);
+
+	string plugin_lib_so_path = libpdi_path + "pdi/plugins/" + 
+								std::to_string(PDI_VERSION_MAJOR) +
+								"." + std::to_string(PDI_VERSION_MINOR) +
+								"." + std::to_string(PDI_VERSION_PATCH) +
+								"/libpdi_" + plugin_name + "_plugin.so";
+
+	return plugin_lib_so_path;
+}
+
 plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const string& plugin_name)
 {
 	string plugin_symbol = "PDI_plugin_" + plugin_name + "_loader";
 	void* plugin_ctor_uncast = dlsym(NULL, plugin_symbol.c_str());
-	
 	// case where the library was not prelinked
 	if (!plugin_ctor_uncast) {
-		string libname = "libpdi_" + plugin_name + "_plugin.so";
+		std::string libname = get_plugin_lib_so_path(plugin_name);
+		
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 		void* lib_handle = dlopen(libname.c_str(), (RTLD_LAZY|RTLD_GLOBAL));
 		if (!lib_handle) {
@@ -109,7 +139,7 @@ plugin_dependencies_f PDI_NO_EXPORT get_plugin_dependencies(const string& plugin
 	
 	// case where the library was not prelinked
 	if (!plugin_deps_uncast) {
-		string libname = "libpdi_" + plugin_name + "_plugin.so";
+		std::string libname = get_plugin_lib_so_path(plugin_name);
 		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW);
 		if (!lib_handle) {
 			throw Plugin_error{"Unable to load `{}' plugin file: {}", plugin_name, dlerror()};
