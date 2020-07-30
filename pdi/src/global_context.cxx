@@ -24,12 +24,14 @@
 
 #include "config.h"
 
+#include <cstdlib>
 #include <functional>
 #include <map>
 #include <memory>
 #include <vector>
 
 #include <dlfcn.h>
+#include <unistd.h>
 #include <spdlog/spdlog.h>
 
 #include "pdi/logger.h"
@@ -82,6 +84,43 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 
 string PDI_NO_EXPORT get_plugin_lib_so_path(const std::string& plugin_name)
 {
+	// STEP 1: get path from PDI_PLUGIN_PATH
+	if (const char* const_pdi_plugin_path = std::getenv("PDI_PLUGIN_PATH")) {
+		char* pdi_plugin_path_start = new char[strlen(const_pdi_plugin_path)];
+		
+		char* pdi_plugin_path = pdi_plugin_path_start;
+		strcpy(pdi_plugin_path, const_pdi_plugin_path);
+		
+		char* current = pdi_plugin_path;
+		while (*current != '\0') {
+			if (*current == ':' && current != pdi_plugin_path_start) {
+				if (*(current - 1) == '\\') {
+					// move rest of string one char left
+					for (int i = 0; i < strlen(current) + 1; i++) {
+						*(current + i - 1) = *(current + i);
+					}
+				} else {
+					*current = '\0';
+					string path_to_check = string(pdi_plugin_path) + "/libpdi_" + plugin_name + "_plugin.so";
+					if (access(path_to_check.c_str(), F_OK) == 0) {
+						return path_to_check;
+					}
+					pdi_plugin_path = current + 1;
+				}
+			}
+			current++;
+		}
+		if (strlen(pdi_plugin_path)) {
+			string path_to_check = string(pdi_plugin_path) + "/libpdi_" + plugin_name + "_plugin.so";
+			if (access(path_to_check.c_str(), F_OK) == 0) {
+				return path_to_check;
+			}
+		}
+	
+		delete[] pdi_plugin_path_start;
+	}
+
+	// STEP 2: get from relative path to libpdi.so
 	void* libpdi_handle = dlopen("libpdi.so", RTLD_NOW);
 	if (libpdi_handle == NULL) {
 		throw System_error{"Unable to load libpdi.so file: {}", dlerror()};
