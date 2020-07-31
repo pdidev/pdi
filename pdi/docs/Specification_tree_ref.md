@@ -56,6 +56,7 @@ The *specification tree root* is a **mapping** that contains the following keys:
 |`"data"` (*optional*)|a \ref data_map_node|
 |`"metadata"` (*optional*)|a \ref data_map_node|
 |`"plugins"` (*optional*)|a \ref plugin_map_node|
+|`"plugin_path"` (*optional*)|a \ref plugin_path_map_node|
 |`".*"` (*optional*)| *anything* |
 
 * the `data` and `metadata` sections specify the type of the data in buffers
@@ -662,4 +663,18 @@ For example, the following value:
 is interpreted as if it was:
 ```
 { type: "my_type" }
+```
+
+# plugin_path {#plugin_path_map_node}
+
+A path to directory where %PDI should search for plugins. It can be single path:
+
+```yaml
+plugin_path: "/home/user123/plugins"
+```
+
+or array of paths (%PDI will take first match):
+
+```yaml
+plugin_path: ["/home/user123/plugins", "/usr/lib/pdi/plugins"]
 ```

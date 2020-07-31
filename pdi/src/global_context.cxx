@@ -82,9 +82,29 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 	
 }
 
-string PDI_NO_EXPORT get_plugin_lib_so_path(const std::string& plugin_name)
+string PDI_NO_EXPORT get_plugin_lib_so_path(const std::string& plugin_name, PC_tree_t plugin_path_node)
 {
-	// STEP 1: get path from PDI_PLUGIN_PATH
+	// STEP 1: get path from yaml file
+	if (!PC_status(plugin_path_node)) {
+		if (is_list(plugin_path_node)) {
+			int len = PDI::len(plugin_path_node);
+			for (int i = 0; i < len; i++) {
+				string path_to_check = PDI::to_string(PC_get(plugin_path_node, "[%d]", i)) + "/libpdi_" + plugin_name + "_plugin.so";
+				if (access(path_to_check.c_str(), F_OK) == 0) {
+					return path_to_check;
+				}
+			}
+		} else if (is_scalar(plugin_path_node)) {
+			string path_to_check = PDI::to_string(plugin_path_node) + "/libpdi_" + plugin_name + "_plugin.so";
+			if (access(path_to_check.c_str(), F_OK) == 0) {
+				return path_to_check;
+			}
+		} else {
+			throw Config_error{"plugin_path must be a single path or an array of paths"};
+		}
+	}
+
+	// STEP 2: get path from PDI_PLUGIN_PATH
 	if (const char* const_pdi_plugin_path = std::getenv("PDI_PLUGIN_PATH")) {
 		char* pdi_plugin_path_start = new char[strlen(const_pdi_plugin_path)];
 		
@@ -120,7 +140,7 @@ string PDI_NO_EXPORT get_plugin_lib_so_path(const std::string& plugin_name)
 		delete[] pdi_plugin_path_start;
 	}
 
-	// STEP 2: get from relative path to libpdi.so
+	// STEP 3: get from relative path to libpdi.so
 	void* libpdi_handle = dlopen("libpdi.so", RTLD_NOW);
 	if (libpdi_handle == NULL) {
 		throw System_error{"Unable to load libpdi.so file: {}", dlerror()};
@@ -148,13 +168,13 @@ string PDI_NO_EXPORT get_plugin_lib_so_path(const std::string& plugin_name)
 	return plugin_lib_so_path;
 }
 
-plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const string& plugin_name)
+plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const string& plugin_name, PC_tree_t plugin_path_node)
 {
 	string plugin_symbol = "PDI_plugin_" + plugin_name + "_loader";
 	void* plugin_ctor_uncast = dlsym(NULL, plugin_symbol.c_str());
 	// case where the library was not prelinked
 	if (!plugin_ctor_uncast) {
-		std::string libname = get_plugin_lib_so_path(plugin_name);
+		std::string libname = get_plugin_lib_so_path(plugin_name,  plugin_path_node);
 		
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 		void* lib_handle = dlopen(libname.c_str(), (RTLD_LAZY|RTLD_GLOBAL));
@@ -171,14 +191,14 @@ plugin_loader_f PDI_NO_EXPORT get_plugin_ctr(const string& plugin_name)
 	return reinterpret_cast<plugin_loader_f>(plugin_ctor_uncast);
 }
 
-plugin_dependencies_f PDI_NO_EXPORT get_plugin_dependencies(const string& plugin_name)
+plugin_dependencies_f PDI_NO_EXPORT get_plugin_dependencies(const string& plugin_name, PC_tree_t plugin_path_node)
 {
 	string plugin_symbol = "PDI_plugin_" + plugin_name + "_dependencies";
 	void* plugin_deps_uncast = dlsym(NULL, plugin_symbol.c_str());
 	
 	// case where the library was not prelinked
 	if (!plugin_deps_uncast) {
-		std::string libname = get_plugin_lib_so_path(plugin_name);
+		std::string libname = get_plugin_lib_so_path(plugin_name, plugin_path_node);
 		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW);
 		if (!lib_handle) {
 			throw Plugin_error{"Unable to load `{}' plugin file: {}", plugin_name, dlerror()};
@@ -317,7 +337,7 @@ Global_context::Global_context(PC_tree_t conf):
 			m_logger->trace("Creating {} plugin", plugin_name);
 			plugins_info.emplace(piecewise_construct,
 			    forward_as_tuple(plugin_name),
-			    forward_as_tuple(get_plugin_ctr(plugin_name), ctx_proxy, plugin_node, get_plugin_dependencies(plugin_name))
+			    forward_as_tuple(get_plugin_ctr(plugin_name, PC_get(conf, ".plugin_path")), ctx_proxy, plugin_node, get_plugin_dependencies(plugin_name, PC_get(conf, ".plugin_path")))
 			);
 		}
 		initialize_plugins(plugins_info, m_plugins);
