@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -172,7 +172,7 @@ set_property(TEST PDI_example_fti_P PROPERTY DISABLED TRUE) #TODO: python tests 
 endif("${BUILD_PYTHON}")
 endif("${BUILD_FTI_PLUGIN}")
 
-if("${BUILD_FLOWVR_PLUGIN}") 
+if("${BUILD_FLOWVR_PLUGIN}")
 find_package(FlowVR REQUIRED)
 
 set(OpenGL_GL_PREFERENCE LEGACY)
@@ -181,7 +181,7 @@ find_package(GLUT REQUIRED)
 add_executable(flowvr_visu flowvr_visu.c)
 target_link_libraries(flowvr_visu PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
-add_test(NAME PDI_example_flowvr_C COMMAND PDI::pdirun "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/flowvr_test.sh" "./flowvr_test.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "$<TARGET_FILE:PDI_example_C>" "$<TARGET_FILE:flowvr_visu>" "${FLOWVR_PREFIX}")
+add_test(NAME PDI_example_flowvr_C COMMAND PDI::pdirun "${RUNTEST_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/flowvr_test.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "$<TARGET_FILE:PDI_example_C>" "$<TARGET_FILE:flowvr_visu>")
 set_property(TEST PDI_example_flowvr_C PROPERTY TIMEOUT 60)
 set_property(TEST PDI_example_flowvr_C PROPERTY PROCESSORS 4)
 set_property(TEST PDI_example_flowvr_C PROPERTY RESOURCE_LOCK flowvrd)
