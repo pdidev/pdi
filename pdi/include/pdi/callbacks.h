@@ -63,6 +63,20 @@ class PDI_EXPORT Callbacks
 	std::multimap<std::string, std::function<void(const std::string&, Ref)>> m_named_data_callbacks;
 	
 	/**
+	 *  Callbacks called when any data is reclaimed/released.
+	 *
+	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
+	 */
+	std::list<std::function<void(const std::string&, Ref)>> m_data_remove_callbacks;
+	
+	/**
+	 *  Callbacks called when specified data is reclaimed/released.
+	 *
+	 *  This must be an ordered multimap, because valid iterators are needed to properly remove the callback by plugin
+	 */
+	std::multimap<std::string, std::function<void(const std::string&, Ref)>> m_named_data_remove_callbacks;
+	
+	/**
 	 *  Callbacks called on any event
 	 *
 	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
@@ -111,6 +125,15 @@ public:
 	 */
 	std::function<void()> add_data_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {});
 	
+	/** Adds new data callback to context
+	 *
+	 * \param[in] callback function to call when data is reclaimed/released
+	 * \param[in] name the name of the data on which call the callback, if not specified it's called on any data
+	 *
+	 * \return function that removes callback
+	 */
+	std::function<void()> add_data_remove_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {});
+	
 	/** Adds new event callback to context
 	 *
 	 * \param[in] callback function to call when event is called
@@ -137,6 +160,12 @@ public:
 	 *  \param ref shared reference
 	 */
 	void call_data_callbacks(const std::string& name, Ref ref) const;
+	
+	/** Calls data remove callbacks
+	 *  \param name name of the descriptor that will be reclaimed/released
+	 *  \param ref reference that will be reclaimed/released
+	 */
+	void call_data_remove_callbacks(const std::string& name, Ref ref) const;
 	
 	/** Calls event callbacks
 	 *  \param name name of the event

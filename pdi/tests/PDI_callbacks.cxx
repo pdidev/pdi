@@ -456,3 +456,184 @@ TEST_F(CallbacksTest, remove_empty_desc_callback)
 		ASSERT_EQ(e.status(), PDI_ERR_VALUE);
 	}
 }
+
+/*
+ * Name:                CallbacksTest.callbacks().add_data_remove_callback_reclaim
+ *
+ * Tested functions:    PDI::Context::callbacks().add_data_remove_callback_reclaim
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data reclaim.
+ *
+ */
+TEST_F(CallbacksTest, add_data_remove_callback_reclaim)
+{
+	string data_x {"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	this->test_context->desc("data_x").share(&x, true, true);
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                CallbacksTest.callbacks().add_data_remove_callback_release
+ *
+ * Tested functions:    PDI::Context::callbacks().add_data_remove_callback_release
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data release.
+ *
+ */
+TEST_F(CallbacksTest, add_data_remove_callback_release)
+{
+	string data_x {"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	this->test_context->callbacks().add_data_remove_callback([&x](const std::string& name, Ref ref) {
+		x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	void* memory_to_free = malloc(sizeof(int));
+	this->test_context->desc("data_x").share(memory_to_free, true, true);
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").release();
+	ASSERT_EQ(x, 42);
+}
+
+/*
+ * Name:                CallbacksTest.callbacks().add_named_data_remove_callback_reclaim
+ *
+ * Tested functions:    PDI::Context::callbacks().add_named_data_remove_callback_reclaim
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data reclaim.
+ *
+ */
+TEST_F(CallbacksTest, add_named_data_remove_callback_reclaim)
+{
+	string data_x {"data_x"};
+	string data_y {"data_y"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	int y = 0;
+	this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	}, "data_x");
+	this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* y = static_cast<int*>(ref_write.get());
+		*y += 42;
+		ASSERT_STREQ(name.c_str(), "data_y");
+	}, "data_y");
+	this->test_context->desc("data_x").share(&x, true, true);
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+}
+
+/*
+ * Name:                CallbacksTest.callbacks().add_named_data_remove_callback_release
+ *
+ * Tested functions:    PDI::Context::callbacks().add_named_data_remove_callback_release
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data release.
+ *
+ */
+TEST_F(CallbacksTest, add_named_data_remove_callback_release)
+{
+	string data_x {"data_x"};
+	string data_y {"data_y"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	void* memory_to_free = malloc(sizeof(int));
+	int y = 0;
+	this->test_context->callbacks().add_data_remove_callback([&x](const std::string& name, Ref ref) {
+		x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	}, "data_x");
+	this->test_context->callbacks().add_data_remove_callback([&y](const std::string& name, Ref ref) {
+		y += 42;
+		ASSERT_STREQ(name.c_str(), "data_y");
+	}, "data_y");
+	this->test_context->desc("data_x").share(memory_to_free, true, true);
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").release();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+}
+
+/*
+ * Name:                CallbacksTest.callbacks().add_data_remove_callback_reclaim_remove
+ *
+ * Tested functions:    PDI::Context::callbacks().add_data_remove_callback_reclaim_remove
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data reclaim.
+ *
+ */
+TEST_F(CallbacksTest, add_data_remove_callback_reclaim_remove)
+{
+	string data_x {"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	auto remove_callback = this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
+		Ref_w ref_write {ref};
+		int* x = static_cast<int*>(ref_write.get());
+		*x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	this->test_context->desc("data_x").share(&x, true, true);
+	ASSERT_EQ(x, 0);
+	remove_callback();
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 0);
+}
+
+/*
+ * Name:                CallbacksTest.callbacks().add_data_remove_callback_release_remove
+ *
+ * Tested functions:    PDI::Context::callbacks().add_data_remove_callback_release_remove
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data release.
+ *
+ */
+TEST_F(CallbacksTest, add_data_remove_callback_release_remove)
+{
+	string data_x {"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	int x = 0;
+	auto remove_callback = this->test_context->callbacks().add_data_remove_callback([&x](const std::string& name, Ref ref) {
+		x += 42;
+		ASSERT_STREQ(name.c_str(), "data_x");
+	});
+	void* memory_to_free = malloc(sizeof(int));
+	this->test_context->desc("data_x").share(memory_to_free, true, true);
+	ASSERT_EQ(x, 0);
+	remove_callback();
+	this->test_context->desc("data_x").release();
+	ASSERT_EQ(x, 0);
+}

@@ -68,6 +68,22 @@ function<void()> Callbacks::add_data_callback(const function<void(const string&,
 	}
 }
 
+function<void()> Callbacks::add_data_remove_callback(const function<void(const string&, Ref)>& callback, const string& name)
+{
+	if (name.empty()) {
+		m_data_remove_callbacks.emplace_back(callback);
+		auto it = --m_data_remove_callbacks.end();
+		return [it, this]() {
+			this->m_data_remove_callbacks.erase(it);
+		};
+	} else {
+		auto it = m_named_data_remove_callbacks.emplace(name, callback);
+		return [it, this]() {
+			this->m_named_data_remove_callbacks.erase(it);
+		};
+	}
+}
+
 function<void()> Callbacks::add_event_callback(const function<void(const string&)>& callback, const string& name)
 {
 	if (name.empty()) {
@@ -147,6 +163,44 @@ void Callbacks::call_data_callbacks(const string& name, Ref ref) const
 	}
 }
 
+void Callbacks::call_data_remove_callbacks(const string& name, Ref ref) const
+{
+	std::vector<std::reference_wrapper<const std::function<void(const std::string&, Ref)>>> data_remove_callbacks;
+	//add named callbacks
+	auto callback_it_pair = m_named_data_remove_callbacks.equal_range(name);
+	for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
+		data_remove_callbacks.emplace_back(std::cref(it->second));
+	}
+	//add the unnamed callbacks
+	for (auto it = m_data_remove_callbacks.begin(); it != m_data_remove_callbacks.end(); it++) {
+		data_remove_callbacks.emplace_back(std::cref(*it));
+	}
+	m_context.logger()->trace("Calling `{}' data remove. Callbacks to call: {}", name, data_remove_callbacks.size());
+	//call gathered callbacks
+	vector<Error> errors;
+	for (const std::function<void(const std::string&, Ref)>& callback : data_remove_callbacks) {
+		try {
+			callback(name, ref);
+			//TODO: remove the faulty plugin in case of error?
+		} catch (const Error& e) {
+			errors.emplace_back(e);
+		} catch (const exception& e) {
+			errors.emplace_back(PDI_ERR_SYSTEM, e.what());
+		} catch (...) {
+			errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error");
+		}
+	}
+	if (!errors.empty()) {
+		if (1 == errors.size()) {
+			throw Error{errors.front().status(), "Error while triggering data share `{}': {}", name, errors.front().what()};
+		}
+		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering data share `" + name + "':\n";
+		for (auto&& err: errors) {
+			errmsg += string(err.what()) + "\n";
+		}
+		throw System_error{errmsg.c_str()};
+	}
+}
 
 void Callbacks::call_event_callbacks(const string& name) const
 {

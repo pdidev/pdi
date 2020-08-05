@@ -227,6 +227,8 @@ void Data_descriptor_impl::release()
 	// move reference out of the store
 	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw State_error{"Cannot release a non shared value: `{}'", m_name};
 	
+	m_context.callbacks().call_data_remove_callbacks(m_name, ref());
+
 	Ref oldref = ref();
 	m_refs.pop();
 	
@@ -243,6 +245,8 @@ void* Data_descriptor_impl::reclaim()
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	if (m_refs.empty() || (m_refs.size()==1 && metadata())) throw State_error{"Cannot reclaim a non shared value: `{}'", m_name};
 	
+	m_context.callbacks().call_data_remove_callbacks(m_name, ref());
+
 	Ref oldref = ref();
 	m_refs.pop();
 	
