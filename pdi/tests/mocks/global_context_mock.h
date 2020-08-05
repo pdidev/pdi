@@ -26,6 +26,7 @@
 #define PDI_GLOBAL_CONTEXT_MOCK_H_
 
 #include <gmock/gmock.h>
+#include <pdi/callbacks.h>
 #include <pdi/datatype_template.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
@@ -61,10 +62,7 @@ struct MockGlobalContext : public PDI::Global_context {
 	
 	MOCK_METHOD1(datatype, PDI::Datatype_template_uptr(PC_tree_t));
 	MOCK_METHOD2(add_datatype, void(const std::string&, Datatype_template_parser));
-	MOCK_METHOD1(add_init_callback, std::function<void()>(const std::function<void()>&));
-	MOCK_METHOD2(add_data_callback, std::function<void()>(const std::function<void(const std::string&, PDI::Ref)>&, const std::string& name));
-	MOCK_METHOD2(add_event_callback,std::function<void()>(const std::function<void(const std::string&)>&, const std::string& name));
-	MOCK_METHOD2(add_empty_desc_access_callback, std::function<void()>(const std::function<void(const std::string&)>&, const std::string& name));
+	MOCK_METHOD0(callbacks, PDI::Callbacks&());
 	MOCK_METHOD0(finalize_and_exit, void());
 	
 };

@@ -25,8 +25,9 @@
 #ifndef PDI_CONTEXT_PROXY_H_
 #define PDI_CONTEXT_PROXY_H_
 
-#include "context.h"
-#include "pdi_fwd.h"
+#include <pdi/pdi_fwd.h>
+#include <pdi/context.h>
+#include <pdi/callbacks.h>
 
 #include <functional>
 #include <string>
@@ -84,13 +85,9 @@ public:
 	 */
 	void add_datatype(const std::string& name, Datatype_template_parser parser) override;
 	
-	std::function<void()> add_init_callback(const std::function<void()>& callback) override;
-	
-	std::function<void()> add_data_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}) override;
-	
-	std::function<void()> add_event_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) override;
-	
-	std::function<void()> add_empty_desc_access_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) override;
+	/** Context::callbacks proxy for plugins
+	 */
+	Callbacks& callbacks() override;
 	
 	void finalize_and_exit() override;
 };

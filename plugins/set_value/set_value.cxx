@@ -72,7 +72,7 @@ struct set_value_plugin: PDI::Plugin {
 				PC_tree_t value_node = PC_get(on_event, "<%d>", i);
 				m_triggers_list.emplace_back(context(), value_node);
 				set_value::Trigger& trigger = m_triggers_list.back();
-				context().add_event_callback([&trigger](const std::string&) {
+				context().callbacks().add_event_callback([&trigger](const std::string&) {
 					trigger.execute();
 				}, event_name);
 			}
@@ -86,7 +86,7 @@ struct set_value_plugin: PDI::Plugin {
 				PC_tree_t value_node = PC_get(on_data, "<%d>", i);
 				m_triggers_list.emplace_back(context(), value_node);
 				set_value::Trigger& trigger = m_triggers_list.back();
-				context().add_data_callback([&trigger](const std::string&, PDI::Ref) {
+				context().callbacks().add_data_callback([&trigger](const std::string&, PDI::Ref) {
 					trigger.execute();
 				}, data_name);
 			}
@@ -110,7 +110,7 @@ struct set_value_plugin: PDI::Plugin {
 		set_up_logger();
 		
 		// initialize after all descriptors are loaded, user can set value on_init
-		context().add_init_callback([this, config]() {
+		context().callbacks().add_init_callback([this, config]() {
 			this->load_config(config);
 		});
 		context().logger()->info("Plugin loaded successfully");

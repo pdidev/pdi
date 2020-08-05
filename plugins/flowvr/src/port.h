@@ -65,7 +65,7 @@ protected:
 	{
 		PC_tree_t isConnected_node = PC_get(config, ".isConnected");
 		if (!PC_status(isConnected_node)) {
-			m_remove_callback = m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_remove_callback = m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->get_status(name, ref);
 			}, PDI::to_string(isConnected_node));
 		}

@@ -54,10 +54,10 @@ struct trace_plugin: Plugin {
 	trace_plugin(Context& ctx, PC_tree_t):
 		Plugin {ctx}
 	{
-		ctx.add_data_callback([this](const std::string& name, Ref ref) {
+		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
 			this->data(name, ref);
 		});
-		ctx.add_event_callback([this](const std::string& name) {
+		ctx.callbacks().add_event_callback([this](const std::string& name) {
 			this->context().logger()->info("!!!                            named event: {}", name);
 		});
 		context().logger()->set_pattern("[PDI][Trace-plugin][%T] *** %^%l%$: %v");

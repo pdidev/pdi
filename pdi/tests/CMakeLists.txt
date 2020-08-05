@@ -59,6 +59,7 @@ endif()
 
 set(PDI_unit_tests_SRC
 		PDI_array_datatype.cxx
+		PDI_callbacks.cxx
 		PDI_context.cxx
 		PDI_data_descriptor.cxx
 		PDI_error.cxx

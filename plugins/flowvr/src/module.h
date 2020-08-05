@@ -84,7 +84,7 @@ private:
 		if (!PC_status(wait_on_data_node)) {
 			std::string wait_data = PDI::to_string(wait_on_data_node);
 			context().logger()->debug("(FlowVR) Module: wait_on_data = {}", wait_data);
-			context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			context().callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->wait(name, ref);
 			}, wait_data);
 		}
@@ -96,7 +96,7 @@ private:
 				int nb_event = PDI::len(wait_on_node);
 				for (int event_id = 0; event_id < nb_event; event_id++) {
 					std::string wait_event = PDI::to_string(PC_get(wait_on_node, "[%d]", event_id));
-					context().add_event_callback([this](const std::string& name) {
+					context().callbacks().add_event_callback([this](const std::string& name) {
 						if (this->wait() == 0) {
 							m_input_ports.clear();
 							m_output_ports.clear();
@@ -110,7 +110,7 @@ private:
 				}
 			} else {
 				std::string wait_event = PDI::to_string(wait_on_node);
-				context().add_event_callback([this](const std::string& name) {
+				context().callbacks().add_event_callback([this](const std::string& name) {
 					if (this->wait() == 0) {
 						m_input_ports.clear();
 						m_output_ports.clear();
@@ -130,13 +130,13 @@ private:
 				int nb_status = PDI::len(status_node);
 				for (int status_id = 0; status_id < nb_status; status_id++) {
 					std::string status_data = PDI::to_string(PC_get(status_node, "[%d]", status_id));
-					context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+					context().callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 						this->status(ref);
 					}, status_data);
 				}
 			} else {
 				std::string status_data = PDI::to_string(status_node);
-				context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				context().callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 					this->status(ref);
 				}, status_data);
 			}
@@ -167,7 +167,7 @@ private:
 			if (!PC_status(get_rank_node)) {
 				std::string get_parallel_rank_data = PDI::to_string(get_rank_node);
 				context().logger()->debug("(FlowVR) Module: Parallel rank = {}", get_parallel_rank_data);
-				context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				context().callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 					this->get_parallel_rank(name, ref);
 				}, get_parallel_rank_data);
 			}
@@ -176,7 +176,7 @@ private:
 			if (!PC_status(get_size_node)) {
 				std::string get_parallel_size_data = PDI::to_string(get_size_node);
 				context().logger()->debug("(FlowVR) Module: Parallel size = {}", get_parallel_size_data);
-				context().add_data_callback([this](const std::string& name, PDI::Ref ref) {
+				context().callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 					this->get_parallel_size(name, ref);
 				}, get_parallel_size_data);
 			}
@@ -188,13 +188,13 @@ private:
 				int nb_abort = PDI::len(abort_node);
 				for (int abort_id = 0; abort_id < nb_abort; abort_id++) {
 					std::string abort_event = PDI::to_string(PC_get(abort_node, "[%d]", abort_id));
-					context().add_event_callback([this](const std::string& name) {
+					context().callbacks().add_event_callback([this](const std::string& name) {
 						this->abort(name);
 					}, abort_event);
 				}
 			} else {
 				std::string abort_event = PDI::to_string(abort_node);
-				context().add_event_callback([this](const std::string& name) {
+				context().callbacks().add_event_callback([this](const std::string& name) {
 					this->abort(name);
 				}, abort_event);
 			}

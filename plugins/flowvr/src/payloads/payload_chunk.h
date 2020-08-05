@@ -78,7 +78,7 @@ protected:
 			m_chunk_descs.emplace_back(PDI::to_string(PC_get(chunk_node, ".data")));
 		}
 		for (const std::string& data_name : m_chunk_descs) {
-			m_callbacks_remove.emplace_back(m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+			m_callbacks_remove.emplace_back(m_ctx.callbacks().add_empty_desc_access_callback([this](const std::string& name) {
 				this->empty_desc_access(name);
 			}, data_name));
 		}

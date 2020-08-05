@@ -116,10 +116,10 @@ public:
 			}
 		});
 		
-		ctx.add_data_callback([this](const std::string& name, Ref ref) {
+		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
 			this->data(name, ref);
 		});
-		ctx.add_event_callback([this](const std::string& name) {
+		ctx.callbacks().add_event_callback([this](const std::string& name) {
 			this->event(name);
 		});
 		

@@ -32,27 +32,23 @@
 
 #include <data_descriptor_impl.h>
 
-#include "mocks/global_context_mock.h"
+#include "global_context.h"
 
 using namespace PDI;
 using namespace std;
 
-using ::testing::_;
-using ::testing::ByMove;
-using ::testing::Return;
-
 namespace PDI {
 //handler to private fields of Descriptor
 struct Descriptor_test_handler {
-	static unique_ptr<Data_descriptor> default_desc(MockGlobalContext& mockGlCtx)
+	static unique_ptr<Data_descriptor> default_desc(Global_context& global_ctx)
 	{
-		return unique_ptr<Data_descriptor> {new Data_descriptor_impl{mockGlCtx, "default_desc"}};
+		return unique_ptr<Data_descriptor> {new Data_descriptor_impl{global_ctx, "default_desc"}};
 	}
 	
-	static Datatype_uptr desc_get_type(unique_ptr<Data_descriptor>& desc, MockGlobalContext& mockGlCtx)
+	static Datatype_uptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
 	{
 		Datatype_template_uptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type->clone();
-		return desc_template->evaluate(mockGlCtx);
+		return desc_template->evaluate(global_ctx);
 	}
 	
 	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc)
@@ -70,8 +66,8 @@ struct DataDescTest : public ::testing::Test {
 	PC_tree_t array_config {PC_parse_string("{ size: 10, type: array, subtype: int }")};
 	Array_datatype array_datatype{Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type(), 10};
 	PDI::Paraconf_wrapper fw;
-	MockGlobalContext mockGlCtx{PC_parse_string("")};
-	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(mockGlCtx);
+	Global_context global_ctx{PC_parse_string("")};
+	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
 };
 
 /*
@@ -83,7 +79,7 @@ struct DataDescTest : public ::testing::Test {
  */
 TEST_F(DataDescTest, check_default_fields)
 {
-	Datatype_uptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, mockGlCtx);
+	Datatype_uptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
 	Scalar_datatype* default_scalar = static_cast<Scalar_datatype*>(desc_type.release());
 	ASSERT_EQ(Scalar_kind::UNKNOWN, default_scalar->kind());
 	ASSERT_EQ(0, default_scalar->datasize());
@@ -117,7 +113,7 @@ TEST_F(DataDescTest, default_type)
 {
 	Paraconf_wrapper fw;
 	this->m_desc_default->default_type(array_datatype.clone());
-	Datatype_uptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, mockGlCtx);
+	Datatype_uptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
 	ASSERT_EQ(10 * sizeof(int), datatype->datasize());
 	ASSERT_EQ(10 * sizeof(int), datatype->buffersize());
 }

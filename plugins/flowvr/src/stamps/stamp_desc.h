@@ -58,7 +58,7 @@ public:
 		} else {
 			m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeInt::create());
 		}
-		m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+		m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->data(name, ref);
 		}, data_desc));
 		m_ctx.logger()->debug("(FlowVR) Int STAMP ({}): Created", m_name);
@@ -109,7 +109,7 @@ public:
 		Stamp_base{ctx, parent_port, name}
 	{
 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeFloat::create());
-		m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+		m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->data(name, ref);
 		}, data_desc));
 		m_ctx.logger()->debug("(FlowVR) Float STAMP ({}): Created", m_name);
@@ -164,7 +164,7 @@ public:
 		} else {
 			m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeString::create());
 		}
-		m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+		m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->data(name, ref);
 		}, data_desc));
 		m_ctx.logger()->debug("(FlowVR) String STAMP ({}): Created", m_name);
@@ -216,7 +216,7 @@ public:
 		m_value(size)
 	{
 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeArray::create(size, flowvr::TypeInt::create()));
-		m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+		m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->data(name, ref);
 		}, data_desc));
 		m_ctx.logger()->debug("(FlowVR) Int array STAMP ({}): Created with size = {}", m_name, size);
@@ -272,7 +272,7 @@ public:
 		m_value(size)
 	{
 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeArray::create(size, flowvr::TypeFloat::create()));
-		m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+		m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->data(name, ref);
 		}, data_desc));
 		m_ctx.logger()->debug("(FlowVR) Float array STAMP ({}): Created with size = {}", m_name, size);

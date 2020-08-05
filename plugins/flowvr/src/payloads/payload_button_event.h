@@ -153,7 +153,7 @@ public:
 		m_flowvr_input_port{parent_port}
 	{
 		for (const auto& desc_value : m_desc_value_map) {
-			m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->data(name, ref);
 			}, desc_value.first));
 		}
@@ -242,7 +242,7 @@ public:
 		m_flowvr_output_port{parent_port}
 	{
 		for (const auto& desc_value : m_desc_value_map) {
-			m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->data(name, ref);
 			}, desc_value.first));
 		}

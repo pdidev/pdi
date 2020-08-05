@@ -32,6 +32,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "pdi/callbacks.h"
 #include "pdi/context.h"
 #include "pdi/context_proxy.h"
 #include "pdi/pdi_fwd.h"
@@ -62,54 +63,8 @@ private:
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
 
-	/** 
-	 *  Callbacks called after init
-	 * 
-	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
-	 */
-	std::list<std::function<void()>> m_init_callbacks;
-
-	/** 
-	 *  Callbacks called when any data is available
-	 * 
-	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
-	 */
-	std::list<std::function<void(const std::string&, Ref)>> m_data_callbacks;
-
-	/**
-	 *  Callbacks called when specified data is available.
-	 * 
-	 *  This must be an ordered multimap, because valid iterators are needed to properly remove the callback by plugin
-	 */
-	std::multimap<std::string, std::function<void(const std::string&, Ref)>> m_named_data_callbacks;
-
-	/** 
-	 *  Callbacks called on any event
-	 * 
-	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
-	 */
-	std::list<std::function<void(const std::string&)>> m_event_callbacks;
-
-	/**
-	 *  Callbacks called on specified event
-	 * 
-	 *  This must be an ordered multimap, because valid iterators are needed to properly remove the callback by plugin
-	 */
-	std::multimap<std::string, std::function<void(const std::string&)>> m_named_event_callbacks;
-
-	/** 
-	 *  Callbacks called on any empty desc access
-	 * 
-	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
-	 */
-	std::list<std::function<void(const std::string&)>> m_empty_desc_access_callbacks;
-
-	/**
-	 *  Callbacks called on specified empty desc access
-	 * 
-	 *  This must be an ordered multimap, because valid iterators are needed to properly remove the callback by plugin
-	 */
-	std::multimap<std::string, std::function<void(const std::string&)>> m_named_empty_desc_access_callbacks;
+	/// Callbacks of the context
+	Callbacks m_callbacks;
 
     /// The loaded plugins - need to be last (to guarantee proper destroy order)
 	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
@@ -164,13 +119,7 @@ public:
 	
 	void add_datatype(const std::string&, Datatype_template_parser) override;
 	
-	std::function<void()> add_init_callback(const std::function<void()>& callback) override;
-	
-	std::function<void()> add_data_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {}) override;
-	
-	std::function<void()> add_event_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) override;
-	
-	std::function<void()> add_empty_desc_access_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {}) override;
+	Callbacks& callbacks() override;
 
 	void finalize_and_exit() override;
 };

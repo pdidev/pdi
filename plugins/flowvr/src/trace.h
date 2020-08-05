@@ -93,7 +93,7 @@ public:
 	{
 		load_on_data(config);
 		load_trace(ctx, name);
-		ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+		ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->write(name, ref);
 		}, m_on_data);
 		

@@ -126,10 +126,10 @@ public:
 	{
 		load_data_size_desc(config);
 		if (!m_data_desc.empty()) {
-			m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->copy_data_to_ref(name, ref);
 			}, m_data_desc));
-			m_callbacks_remove.emplace_back(m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+			m_callbacks_remove.emplace_back(m_ctx.callbacks().add_empty_desc_access_callback([this](const std::string& name) {
 				this->empty_desc_access(name);
 			}, m_data_desc));
 		}
@@ -301,10 +301,10 @@ public:
 		}
 		
 		if (!m_data_desc.empty()) {
-			m_callbacks_remove.emplace_back(m_ctx.add_data_callback([this](const std::string& name, PDI::Ref ref) {
+			m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->copy_data_from_ref(name, ref);
 			}, m_data_desc));
-			m_callbacks_remove.emplace_back(m_ctx.add_empty_desc_access_callback([this](const std::string& name) {
+			m_callbacks_remove.emplace_back(m_ctx.callbacks().add_empty_desc_access_callback([this](const std::string& name) {
 				this->empty_desc_access(name);
 			}, m_data_desc));
 		}

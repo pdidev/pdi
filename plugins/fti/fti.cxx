@@ -113,7 +113,7 @@ struct fti_plugin: Plugin {
 		for (auto&& desc: m_config.descs()) {
 			switch (desc.second) {
 			case Desc_type::MPI_COMM: {
-				context().add_data_callback([this](const string& name, Ref ref) {
+				context().callbacks().add_data_callback([this](const string& name, Ref ref) {
 					if (Ref_r rref = ref) {
 						if (!m_config.init_on_event()) {
 							if (!m_fti) {
@@ -137,7 +137,7 @@ struct fti_plugin: Plugin {
 				desc.first);
 			} break;
 			case Desc_type::STATUS: {
-				context().add_data_callback([this](const string& name, Ref ref) {
+				context().callbacks().add_data_callback([this](const string& name, Ref ref) {
 					if (Ref_w wref = ref) {
 						if (!m_fti) {
 							context().logger()->warn("Trying to get FTI_status before plugin initialization (`{}')", name);
@@ -150,7 +150,7 @@ struct fti_plugin: Plugin {
 			} break;
 			case Desc_type::DATA_SIZE: {
 				int desc_id = m_config.dataset_sizes().at(desc.first);
-				context().add_data_callback([this, desc_id](const string& name, Ref ref) {
+				context().callbacks().add_data_callback([this, desc_id](const string& name, Ref ref) {
 					if (Ref_w wref = ref) {
 						if (!m_fti) {
 							context().logger()->warn("Trying to get size of variable (id: {}) before plugin initialization (`{}')", desc_id, name);
@@ -162,7 +162,7 @@ struct fti_plugin: Plugin {
 				desc.first);
 			} break;
 			case Desc_type::HEAD: {
-				context().add_data_callback([this](const string& name, Ref ref) {
+				context().callbacks().add_data_callback([this](const string& name, Ref ref) {
 					if (Ref_w wref = ref) {
 						if (!m_fti) {
 							context().logger()->warn("Trying to get head status before plugin initialization (`{}')", name);
@@ -174,7 +174,7 @@ struct fti_plugin: Plugin {
 				desc.first);
 			} break;
 			case Desc_type::STAGE_DIR: {
-				context().add_data_callback([this](const string& name, Ref ref) {
+				context().callbacks().add_data_callback([this](const string& name, Ref ref) {
 					if (Ref_w wref = ref) {
 						if (!m_fti) {
 							context().logger()->warn("Trying to get stage dir before plugin initialization (`{}')", name);
@@ -186,7 +186,7 @@ struct fti_plugin: Plugin {
 				desc.first);
 			} break;
 			case Desc_type::STAGE_STATUS: {
-				context().add_data_callback([this](const string& name, Ref ref) {
+				context().callbacks().add_data_callback([this](const string& name, Ref ref) {
 					if (Ref_w wref = ref) {
 						if (!m_fti) {
 							context().logger()->warn("Trying to get stage status before plugin initialization (`{}')", name);
@@ -212,7 +212,7 @@ struct fti_plugin: Plugin {
 		for (auto&& event: m_config.events()) {
 			switch (event.second) {
 			case Event_type::INIT: {
-				context().add_event_callback([this](const string& event_name) {
+				context().callbacks().add_event_callback([this](const string& event_name) {
 					if (!m_fti) {
 						MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{context()[m_config.communicator()].ref()}.get());
 						m_fti.reset(new Fti_wrapper{context(), m_config, comm});
@@ -224,7 +224,7 @@ struct fti_plugin: Plugin {
 				event.first);
 			} break;
 			case Event_type::SEND_FILE: {
-				context().add_event_callback([this](const string& event_name) {
+				context().callbacks().add_event_callback([this](const string& event_name) {
 					if (!m_fti) {
 						context().logger()->warn("Trying to send file before plugin initialization (`{}')", event_name);
 						return;
@@ -245,7 +245,7 @@ struct fti_plugin: Plugin {
 				event.first);
 			} break;
 			case Event_type::RECOVER_VAR: {
-				context().add_event_callback([this](const string& event_name) {
+				context().callbacks().add_event_callback([this](const string& event_name) {
 					if (!m_fti) {
 						context().logger()->warn("Trying to recover variable before plugin initialization (`{}')", event_name);
 						return;
@@ -271,7 +271,7 @@ struct fti_plugin: Plugin {
 				event.first);
 			} break;
 			case Event_type::RECOVER: {
-				context().add_event_callback([this](const string& event_name) {
+				context().callbacks().add_event_callback([this](const string& event_name) {
 					if (!m_fti) {
 						context().logger()->warn("Trying to recover before plugin initialization (`{}')", event_name);
 						return;
@@ -282,7 +282,7 @@ struct fti_plugin: Plugin {
 				event.first);
 			} break;
 			case Event_type::SNAPSHOT: {
-				context().add_event_callback([this](const string& event_name) {
+				context().callbacks().add_event_callback([this](const string& event_name) {
 					if (!m_fti) {
 						context().logger()->warn("Trying to snapshot before plugin initialization (`{}')", event_name);
 						return;
@@ -301,7 +301,7 @@ struct fti_plugin: Plugin {
 			case Event_type::CHECKPOINT_L3:
 			case Event_type::CHECKPOINT_L4: {
 				Event_type event_type = event.second;
-				context().add_event_callback([this, event_type](const string& event_name) {
+				context().callbacks().add_event_callback([this, event_type](const string& event_name) {
 					if (!m_fti) {
 						context().logger()->warn("Trying to checkpoint before plugin initialization (`{}')", event_name);
 						return;

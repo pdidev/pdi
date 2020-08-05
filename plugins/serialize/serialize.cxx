@@ -289,7 +289,7 @@ struct serialize_plugin: PDI::Plugin {
 			std::string desc_name = PDI::to_string(key);
 			this->m_desc_to_serialize.emplace(desc_name, PDI::Expression(PDI::to_string(value)));
 			context().logger()->trace("`{}' will be serialized", desc_name);
-			this->context().add_data_callback([this](const std::string& desc_name, PDI::Ref ref)
+			this->context().callbacks().add_data_callback([this](const std::string& desc_name, PDI::Ref ref)
 			{
 				this->serialize(desc_name, ref);
 			}, desc_name);

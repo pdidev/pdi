@@ -197,7 +197,7 @@ struct user_code_plugin: Plugin {
 			opt_each(events, [&](PC_tree_t one_event) {
 				each(one_event, [&](PC_tree_t function_name, PC_tree_t parameters) {
 					Trigger event_trigger{to_string(function_name), parameters};
-					ctx.add_event_callback([&ctx, event_trigger](const std::string&  name) mutable {
+					ctx.callbacks().add_event_callback([&ctx, event_trigger](const std::string&  name) mutable {
 						event_trigger.call(ctx);
 					}, to_string(event_name));
 				});
@@ -210,7 +210,7 @@ struct user_code_plugin: Plugin {
 			opt_each(datas, [&](PC_tree_t one_data) {
 				each(one_data, [&](PC_tree_t function_name, PC_tree_t parameters) {
 					Trigger data_trigger{to_string(function_name), parameters};
-					ctx.add_data_callback([&ctx, data_trigger](const std::string& name, Ref ref) mutable {
+					ctx.callbacks().add_data_callback([&ctx, data_trigger](const std::string& name, Ref ref) mutable {
 						data_trigger.call(ctx);
 					}, to_string(data_name));
 				});

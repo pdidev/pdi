@@ -58,11 +58,11 @@ private:
 		if (!PC_status(init_on_node)) {
 			std::string event_name = PDI::to_string(init_on_node);
 			context().logger()->debug("(FlowVR) Init on `{}' event", event_name);
-			context().add_event_callback([this, component_node](const std::string& name) {
+			context().callbacks().add_event_callback([this, component_node](const std::string& name) {
 				this->create_component(component_node);
 			}, event_name);
 		} else {
-			context().add_init_callback([this, component_node]() {
+			context().callbacks().add_init_callback([this, component_node]() {
 				this->create_component(component_node);
 			});
 		}

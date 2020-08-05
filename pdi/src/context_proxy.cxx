@@ -90,24 +90,9 @@ void Context_proxy::add_datatype(const std::string& name, Datatype_template_pars
 	m_real_context.add_datatype(name, std::move(parser));
 }
 
-std::function<void()> Context_proxy::add_init_callback(const std::function<void()>& callback)
+Callbacks& Context_proxy::callbacks()
 {
-	return m_real_context.add_init_callback(callback);
-}
-
-std::function<void()> Context_proxy::add_data_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name)
-{
-	return m_real_context.add_data_callback(callback, name);
-}
-
-std::function<void()> Context_proxy::add_event_callback(const std::function<void(const std::string&)>& callback, const std::string& name)
-{
-	return m_real_context.add_event_callback(callback, name);
-}
-
-std::function<void()> Context_proxy::add_empty_desc_access_callback(const std::function<void(const std::string&)>& callback, const std::string& name)
-{
-	return m_real_context.add_empty_desc_access_callback(callback, name);
+	return m_real_context.callbacks();
 }
 
 void Context_proxy::finalize_and_exit()
