@@ -6,7 +6,7 @@ arrays from sparse to dense and dereference all pointers.
 The serialized data will be shared as long the user data is shared.
 
 1. In case of the share with `PDI_OUT`: plugin will serialize and share serialized data on `PDI_share` of given descriptor.
-2. In case of the share with `PDI_IN`: the plugin will deserialize data on `PDI_reclaim` of given descriptor
+2. In case of the share with `PDI_IN`: plugin will deserialize data on `PDI_reclaim` of given descriptor
 (to be sure that the serialized data have been writen to buffer by other plugin (e.g. done on event)).
 3. In case of the share with `PDI_INOUT`: plugin will do step 1. on `PDI_share` and step 2. on `PDI_reclaim`.
 
