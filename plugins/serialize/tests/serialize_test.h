@@ -320,7 +320,7 @@ void print_subvector(const Subvector* s1)
 	printf("Subvector address: %p\n", s1);
 	printf("Subgrinds size: %d\n", s1->data_size);
 	printf("Data:\n");
-	for (int i = 0; i < s1->data_size; i++) {
+	for (int i = 0; i < Subvector_data_size; i++) {
 		printf("%f ", s1->data[i]);
 	}
 	printf("\nAllocated: %d\n", s1->allocated);
@@ -330,7 +330,7 @@ void print_subvector(const Subvector* s1)
 
 void alloc_subvector(Subvector* s1)
 {
-	s1->data = (double*) malloc(sizeof(double) * Subvector_data_size);
+	s1->data = (double*) calloc(Subvector_data_size, sizeof(double));
 	s1->data_space = (Subregion*) malloc(sizeof(Subregion));
 }
 

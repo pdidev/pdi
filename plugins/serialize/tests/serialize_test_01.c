@@ -52,6 +52,18 @@ int main(int argc, char* argv[])
 	PDI_reclaim("int_scalar");
 	PDI_reclaim("double_scalar");
 	
+	PDI_errhandler(PDI_NULL_HANDLER);
+	PDI_status_t status = PDI_access("int_serialized", (void**)&int_serialized, PDI_IN);
+	if (status == PDI_OK) {
+		printf("Serialized data was not released");
+		exit(1);
+	}
+	status = PDI_access("double_serialized", (void**)&double_serialized, PDI_IN);
+	if (status == PDI_OK) {
+		printf("Serialized data was not released");
+		exit(1);
+	}
+	
 	PDI_finalize();
 	return 0;
 }

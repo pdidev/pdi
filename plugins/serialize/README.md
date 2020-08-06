@@ -3,8 +3,12 @@
 Serialize plugin allows to serialize shared data. The plugin will convert all
 arrays from sparse to dense and dereference all pointers.
 
-\warning For now the plugin will only `expose` serialized data. This unables to use the plugin
-with `PDI_multiexpose`. This will be implemented in future updates.
+The serialized data will be shared as long the user data is shared.
+
+1. In case of the share with `PDI_OUT`: plugin will serialize and share serialized data on `PDI_share` of given descriptor.
+2. In case of the share with `PDI_IN`: the plugin will deserialize data on `PDI_reclaim` of given descriptor
+(to be sure that the serialized data have been writen to buffer by other plugin (e.g. done on event)).
+3. In case of the share with `PDI_INOUT`: plugin will do step 1. on `PDI_share` and step 2. on `PDI_reclaim`.
 
 \section serialize_configuration Configuration grammar
 
@@ -28,7 +32,7 @@ plugins:
   serialize:
     sparse_array: dense_array
 ```
-On each `sparse_array` data share, the plugin will expose serialized data under the `dense_array` name.
+On each `sparse_array` data share, the plugin will share serialized data under the `dense_array` name.
 The `dense_array` will be of type:
 ```yaml
 type: array
@@ -51,7 +55,7 @@ plugins:
   serialize:
     pointer_to_sparse_array: dense_array
 ```
-On each `pointer_to_sparse_array` data share, the plugin will expose serialized data under the `dense_array` name.
+On each `pointer_to_sparse_array` data share, the plugin will share serialized data under the `dense_array` name.
 The `dense_array` again will be of type:
 ```yaml
 type: array

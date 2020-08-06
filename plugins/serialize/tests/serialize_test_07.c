@@ -32,11 +32,10 @@ void write_subvector()
 	Subvector data_write;
 	alloc_subvector(&data_write);
 	init_subvector(&data_write);
-	
-	int input = 0;
-	PDI_expose("input", &input, PDI_OUT);
-	PDI_expose("subvector", &data_write, PDI_OUT);
-	
+	PDI_multi_expose("write",
+	    "subvector", &data_write, PDI_OUT,
+	    NULL);
+	    
 	free_subvector(&data_write);
 }
 
@@ -55,9 +54,9 @@ void read_subvector()
 	Subvector data_read;
 	alloc_subvector(&data_read);
 	
-	int input = 1;
-	PDI_expose("input", &input, PDI_OUT);
-	PDI_expose("subvector", &data_read, PDI_IN);
+	PDI_share("subvector", &data_read, PDI_IN);
+	PDI_event("read");
+	PDI_reclaim("subvector");
 	
 	check_read_subvector(&data_read);
 	free_subvector(&data_read);

@@ -84,9 +84,13 @@
         type: int
 
 logging: trace
-metadata:
-  input: int
 data:
+  int_array:
+    type: array
+    subtype: int
+    size: [10, 10]
+    subsize: [8, 8]
+    start: [1, 1]
   vector_data:
     type: record
     buffersize: 40
@@ -117,11 +121,12 @@ data:
 plugins:
   serialize:
     vector_data: vector_data_serialized
+    int_array: int_array_serialized
   decl_hdf5:
     - file: serialize_test_09.h5
-      when: $input=0
-      write: [vector_data_serialized]
+      on_event: write
+      write: [vector_data_serialized, int_array_serialized]
     - file: serialize_test_09.h5
-      when: $input=1
-      read: [vector_data_serialized]
+      on_event: read
+      read: [vector_data_serialized, int_array_serialized]
 

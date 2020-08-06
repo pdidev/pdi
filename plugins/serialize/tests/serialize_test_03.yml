@@ -1,15 +1,4 @@
 logging: trace
-metadata:
-  # defined as metadata only for test purpose
-  pointer_serialized: double
-  pointer_to_array_serialized:
-    type: array
-    subtype: int
-    size: 8
-  pointer_array_serialized:
-    type: array
-    subtype: int
-    size: 8
 data:
   pointer: 
     type: pointer

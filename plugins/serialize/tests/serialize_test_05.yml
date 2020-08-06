@@ -84,8 +84,6 @@
         type: int
 
 logging: trace
-metadata:
-  vector_data_serialized: int
 data:
   vector_data:
     type: record

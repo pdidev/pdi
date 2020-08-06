@@ -39,8 +39,6 @@
         disp: 24
         type: int
 logging: trace
-metadata:
-  input: int
 data:
   subvector: *Subvector
 plugins:
@@ -49,9 +47,9 @@ plugins:
     subvector: subvector_serialized
   decl_hdf5:
     - file: serialize_test_07.h5
-      when: $input=0
+      on_event: write
       write: [subvector_serialized]
     - file: serialize_test_07.h5
-      when: $input=1
+      on_event: read
       read: [subvector_serialized]
 

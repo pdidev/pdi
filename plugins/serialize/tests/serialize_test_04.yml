@@ -1,21 +1,4 @@
 logging: trace
-metadata:
-  # defined as metadata only for test purpose
-  record_serialized:
-    type: record
-    buffersize: 48
-    members:
-      scalar_member:
-        disp: 0
-        type: int
-      array_member:
-        disp: 8
-        type: array
-        subtype: double
-        size: 4
-      pointer_member:
-        disp: 40
-        type: int
 data:
   record:
     type: record

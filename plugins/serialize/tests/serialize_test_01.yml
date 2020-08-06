@@ -1,8 +1,4 @@
 logging: trace
-metadata:
-  # defined as metadata only for test purpose
-  int_serialized: int
-  double_serialized: double
 data:
   int_scalar: int
   double_scalar: double
