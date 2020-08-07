@@ -118,6 +118,20 @@ public:
 	 */
 	Expression& operator=(Expression&& expr);
 	
+	/** Summation operator of an expression
+	 *
+	 * \param[in] value the expression to add
+	 * \return Expression as a result of sum
+	 */
+	Expression operator+(const Expression& expr);
+	
+	/** Multiplication operator of an expression
+	 *
+	 * \param[in] value the expression to multiply
+	 * \return Expression as a result of multiplication
+	 */
+	Expression operator*(const Expression& expr);
+	
 	/** Checks whether this is an empty expression
 	 *
 	 * \return true if the expression is non-empty

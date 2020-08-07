@@ -54,7 +54,7 @@ struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 	using Operand = std::pair<Operator, Expression>;
 	
 	
-	std::unique_ptr<Expression> m_first_operand;
+	Expression m_first_operand;
 	
 	std::vector<Operand> m_operands;
 	

@@ -41,7 +41,7 @@ using std::unique_ptr;
 
 long Expression::Impl::Operation::to_long(Context& ctx) const
 {
-	long computed_value = m_first_operand->to_long(ctx);
+	long computed_value = m_first_operand.to_long(ctx);
 	for (auto&& op: m_operands) {
 		long operand = op.second.to_long(ctx);
 		switch (op.first) {
@@ -83,7 +83,7 @@ long Expression::Impl::Operation::to_long(Context& ctx) const
 
 double Expression::Impl::Operation::to_double(Context& ctx) const
 {
-	double computed_value = m_first_operand->to_double(ctx);
+	double computed_value = m_first_operand.to_double(ctx);
 	for (auto&& op: m_operands) {
 		double operand = op.second.to_double(ctx);
 		switch (op.first) {
@@ -210,7 +210,7 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, const
 unique_ptr<Expression::Impl> Expression::Impl::Operation::clone() const
 {
 	unique_ptr<Operation> result {new Operation};
-	result->m_first_operand.reset(new Expression{*m_first_operand});
+	result->m_first_operand = m_first_operand;
 	for (const auto& element : m_operands) {
 		result->m_operands.emplace_back(element.first, element.second);
 	}
@@ -231,7 +231,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Operation::parse(char const** val
 	while (op_level(exprval) == level) {
 		if (!expr) {
 			expr.reset(new Operation);
-			expr->m_first_operand.reset(new Expression{move(result)});
+			expr->m_first_operand = move(result);
 		}
 		Operator oper = parse_operator(&exprval, level);
 		expr->m_operands.emplace_back(oper, Expression{parse(&exprval, level + 1)});

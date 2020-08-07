@@ -31,10 +31,14 @@
 
 #include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
+#include <pdi/error.h>
 #include <pdi/expression.h>
 #include <pdi/ref_any.h>
+#include <pdi/paraconf_wrapper.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
+
+#include "global_context.h"
 
 #include "mocks/context_mock.h"
 #include "mocks/data_descriptor_mock.h"
@@ -42,6 +46,7 @@
 using PDI::Array_datatype;
 using PDI::Expression;
 using PDI::Datatype_uptr;
+using PDI::Error;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
 using PDI::Ref;
@@ -1228,4 +1233,210 @@ TEST(PCTreeToRef, record_value_string)
 	Test_record* result = static_cast<Test_record*>(ref.get());
 	ASSERT_STREQ("a b c d e f g h i j k", result->x);
 	ASSERT_EQ(123456789, result->y);
+}
+
+/*
+ * Struct prepared for CallbacksTest.
+ */
+struct ExpresionOperators : public ::testing::Test {
+	ExpresionOperators():
+		test_conf{PC_parse_string("data: {x : int, y : int}")}
+	{}
+	
+	void SetUp() override
+	{
+		test_context.reset(new PDI::Global_context{test_conf});
+	}
+	
+	PDI::Paraconf_wrapper fw;
+	PC_tree_t test_conf;
+	std::unique_ptr<PDI::Context> test_context;
+};
+
+/*
+ * Name:                ExpresionOperators.empty_expr
+ *
+ * Tested functions:    PDI::Expression::operator+
+ *
+ *
+ * Description:         Checks if cannot add empty expression.
+ *
+ */
+TEST_F(ExpresionOperators, empty_expr)
+{
+	Expression first {"2"};
+	Expression second;
+	try {
+		Expression result = first + second;
+		FAIL();
+	} catch (const Error& e) {}
+}
+
+/*
+ * Name:                ExpresionOperators.add_two_expr
+ *
+ * Tested functions:    PDI::Expression::operator+
+ *
+ *
+ * Description:         Checks if sum of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, add_two_expr)
+{
+	Expression first {"2"};
+	Expression second {"2"};
+	Expression result = first + second;
+	if (!result) {
+		throw;
+	}
+	ASSERT_EQ(4, result.to_long(*test_context));
+}
+
+/*
+ * Name:                ExpresionOperators.add_two_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator+
+ *
+ *
+ * Description:         Checks if sum of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, add_two_ref_expr)
+{
+	int x = 42;
+	int y = 24;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"$y"};
+	Expression result = first + second;
+	ASSERT_EQ(66, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionOperators.add_tree_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator+
+ *
+ *
+ * Description:         Checks if sum of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, add_tree_ref_expr)
+{
+	int x = 42;
+	int y = 24;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"22"};
+	Expression third {"$y"};
+	Expression result = first + second + third;
+	ASSERT_EQ(88, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionOperators.multiply_two_expr
+ *
+ * Tested functions:    PDI::Expression::operator+
+ *
+ *
+ * Description:         Checks if multiplication of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, multiply_two_expr)
+{
+	Expression first {"2"};
+	Expression second {"2"};
+	Expression result = first * second;
+	ASSERT_EQ(4, result.to_long(*test_context));
+}
+
+/*
+ * Name:                ExpresionOperators.multiply_two_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator+
+ *
+ *
+ * Description:         Checks if multiplication of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, multiply_two_ref_expr)
+{
+	int x = 4;
+	int y = 7;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"$y"};
+	Expression result = first * second;
+	ASSERT_EQ(28, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionOperators.multiply_tree_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator+
+ *
+ *
+ * Description:         Checks if multiplication of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, multiply_tree_ref_expr)
+{
+	int x = 4;
+	int y = 2;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"5"};
+	Expression third {"$y"};
+	Expression result = first * second * third;
+	ASSERT_EQ(40, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionOperators.comlex_tree_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator+
+ *
+ *
+ * Description:         Checks if sum and multiplication of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, sum_multiply_tree_ref_expr)
+{
+	int x = 4;
+	int y = 2;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"5"};
+	Expression third {"$y"};
+	
+	Expression result = first * second + third;
+	ASSERT_EQ(22, result.to_long(*test_context));
+
+	result = first + second * third;
+	ASSERT_EQ(14, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
 }

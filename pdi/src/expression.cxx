@@ -41,6 +41,7 @@
 #include "expression/impl.h"
 #include "expression/impl/float_literal.h"
 #include "expression/impl/int_literal.h"
+#include "expression/impl/operation.h"
 
 #include "pdi/expression.h"
 
@@ -98,6 +99,37 @@ Expression& Expression::operator=(const Expression& value)
 }
 
 Expression& Expression::operator=(Expression&& value) = default;
+
+
+Expression Expression::operator+(const Expression& expr)
+{
+	if (!(*this) || !expr) {
+		throw Value_error{"Cannot add empty expression to another expression"};
+	}
+	
+	Expression::Impl::Operation* sum_impl = new Expression::Impl::Operation;
+	sum_impl->m_first_operand = *this;
+	sum_impl->m_operands.emplace_back(Expression::Impl::Operation::Operator::PLUS, expr);
+
+	Expression result;
+	result.m_impl.reset(sum_impl);
+	return result;
+}
+
+Expression Expression::operator*(const Expression& expr)
+{
+	if (!(*this) || !expr) {
+		throw Value_error{"Cannot multiply empty expression with another expression"};
+	}
+	
+	Expression::Impl::Operation* mul_impl = new Expression::Impl::Operation;
+	mul_impl->m_first_operand = *this;
+	mul_impl->m_operands.emplace_back(Expression::Impl::Operation::Operator::MULT, expr);
+
+	Expression result;
+	result.m_impl.reset(mul_impl);
+	return result;
+}
 
 long Expression::to_long(Context& ctx) const
 {
