@@ -6,32 +6,22 @@ stages:
 centos_cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.5:latest
-  script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
-    - make
+  script: sh tools/build_scripts/centos_cmake3.5_embedded.sh
 
 centos_cmake3.5_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.5:latest
-  script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
-    - make
+  script: sh tools/build_scripts/centos_cmake3.5_system.sh
 
 centos_cmake3.10_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.10:latest
-  script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED .
-    - make
-    - ctest --output-on-failure
+  script: sh tools/build_scripts/centos_cmake3.10_embedded.sh
 
 centos_cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.10:latest
-  script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM .
-    - make
-    - ctest --output-on-failure
+  script: sh tools/build_scripts/centos_cmake3.10_system.sh
 
 centos_cmake3.10_pdi_plugin_path:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
@@ -44,38 +34,28 @@ centos_cmake3.10_pdi_plugin_path:
 xenial_cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_cmake3.5:latest
-  script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED -DUSE_SIONlib=SYSTEM -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
-    - make
+  script: sh tools/build_scripts/xenial_cmake3.5_embedded.sh
 
 xenial_cmake3.5_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.5:latest
-  script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
-    - make
+  script: sh tools/build_scripts/xenial_cmake3.5_system.sh
 
 xenial_cmake3.10_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_cmake3.10:latest
-  script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED -DUSE_SIONlib=SYSTEM .
-    - make
-    - ctest --output-on-failure
+  script: sh tools/build_scripts/xenial_cmake3.10_embedded.sh
 
 xenial_cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.10:latest
-  script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM .
-    - make
-    - ctest --output-on-failure
+  script: sh tools/build_scripts/xenial_cmake3.10_system.sh
 
 xenial_cmake3.10_pdi_plugin_path:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.10:latest
   script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM -DPDI_PLUGIN_PATH=/home/default/plugins .
+    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DPDI_PLUGIN_PATH=/home/default/plugins .
     - make
     - PDI_PLUGIN_PATH=/home/default/plugins ctest --output-on-failure
 
