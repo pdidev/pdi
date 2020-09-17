@@ -165,6 +165,11 @@ string PDI_NO_EXPORT get_plugin_lib_so_path(const std::string& plugin_name, PC_t
 								"." + std::to_string(PDI_VERSION_PATCH) +
 								"/libpdi_" + plugin_name + "_plugin.so";
 
+	// STEP 4: plugin .so is in different place, try to find it separately (last hope)
+	if (access(plugin_lib_so_path.c_str(), F_OK) != 0) {
+		plugin_lib_so_path = "libpdi_" + plugin_name + "_plugin.so";
+	}
+
 	return plugin_lib_so_path;
 }
 
