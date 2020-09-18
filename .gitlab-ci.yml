@@ -3,61 +3,71 @@ stages:
   - pages
   - external
 
+.shared_script: &shared_script
+  - export DOCKER_RUNNER=gitlab
+  - sh tools/build_scripts/build_and_run.sh
+
 centos_cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.5:latest
-  script: sh tools/build_scripts/centos_cmake3.5_embedded.sh
+  script: 
+    - *shared_script
 
 centos_cmake3.5_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.5:latest
-  script: sh tools/build_scripts/centos_cmake3.5_system.sh
+  script: 
+    - *shared_script
 
 centos_cmake3.10_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.10:latest
-  script: sh tools/build_scripts/centos_cmake3.10_embedded.sh
+  script: 
+    - *shared_script
 
 centos_cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.10:latest
-  script: sh tools/build_scripts/centos_cmake3.10_system.sh
+  script: 
+    - *shared_script
 
 centos_cmake3.10_pdi_plugin_path:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.10:latest
   script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DPDI_PLUGIN_PATH=/home/default/plugins .
-    - make
-    - PDI_PLUGIN_PATH=/home/default/plugins ctest --output-on-failure
+    - export PDI_PLUGIN_PATH=/home/default/plugins
+    - *shared_script
     
 xenial_cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_cmake3.5:latest
-  script: sh tools/build_scripts/xenial_cmake3.5_embedded.sh
+  script: 
+    - *shared_script
 
 xenial_cmake3.5_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.5:latest
-  script: sh tools/build_scripts/xenial_cmake3.5_system.sh
+  script: 
+    - *shared_script
 
 xenial_cmake3.10_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_cmake3.10:latest
-  script: sh tools/build_scripts/xenial_cmake3.10_embedded.sh
+  script: 
+    - *shared_script
 
 xenial_cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.10:latest
-  script: sh tools/build_scripts/xenial_cmake3.10_system.sh
+  script: 
+    - *shared_script
 
 xenial_cmake3.10_pdi_plugin_path:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.10:latest
   script:
-    - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DPDI_PLUGIN_PATH=/home/default/plugins .
-    - make
-    - PDI_PLUGIN_PATH=/home/default/plugins ctest --output-on-failure
+    - export PDI_PLUGIN_PATH=/home/default/plugins
+    - *shared_script
 
 pages:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
