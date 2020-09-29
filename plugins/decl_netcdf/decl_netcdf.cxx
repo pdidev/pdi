@@ -26,7 +26,7 @@
 
 #include <netcdf_meta.h> // includes NC_HAS_PARALLEL4 define
 #ifdef NC_HAS_PARALLEL4
-    #include <mpi.h>
+	#include <mpi.h>
 #endif
 
 #include <spdlog/spdlog.h>
@@ -40,9 +40,9 @@ namespace {
 
 class decl_netcdf_plugin : public PDI::Plugin
 {
-    std::vector<decl_netcdf::Dnc_file_context> m_files;
-
-    /// Set-up the plugin-specific logger
+	std::vector<decl_netcdf::Dnc_file_context> m_files;
+	
+	/// Set-up the plugin-specific logger
 	void set_up_logger()
 	{
 		context().logger()->set_pattern("[PDI][Decl'NetCDF][%T] *** %^%l%$: %v");
@@ -60,27 +60,27 @@ class decl_netcdf_plugin : public PDI::Plugin
 		}
 #endif
 	}
-
+	
 public:
-    decl_netcdf_plugin(PDI::Context& ctx, PC_tree_t config):
-        Plugin(ctx)
-    {
-        set_up_logger();
-
-        if (PDI::is_list(config)) {
-            int len = PDI::len(config);
-            // allocate memory for all elements, because Dnc_file has callbacks with their pointers
-            m_files.reserve(len);
-            for (int i = 0; i < len; i++) {
-                m_files.emplace_back(context(), PC_get(config, "[%d]", i));
-            }
-        } else {
-            m_files.emplace_back(context(), config);
-        }
-        context().logger()->info("Plugin loaded successfully");
-    }
-
-    ~decl_netcdf_plugin()
+	decl_netcdf_plugin(PDI::Context& ctx, PC_tree_t config):
+		Plugin(ctx)
+	{
+		set_up_logger();
+		
+		if (PDI::is_list(config)) {
+			int len = PDI::len(config);
+			// allocate memory for all elements, because Dnc_file has callbacks with their pointers
+			m_files.reserve(len);
+			for (int i = 0; i < len; i++) {
+				m_files.emplace_back(context(), PC_get(config, "[%d]", i));
+			}
+		} else {
+			m_files.emplace_back(context(), config);
+		}
+		context().logger()->info("Plugin loaded successfully");
+	}
+	
+	~decl_netcdf_plugin()
 	{
 		context().logger()->info("Closing plugin");
 	}

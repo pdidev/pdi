@@ -38,36 +38,36 @@ namespace decl_netcdf {
 /// Represents NetCDF attribute. Created from config.
 class Dnc_attribute
 {
-    /// Context of this attribute
-    PDI::Context& m_ctx;
-
-    /// Name of this attribute
-    std::string m_name;
-
-    /// Value of this attribute
-    PDI::Expression m_value;
-    
+	/// Context of this attribute
+	PDI::Context& m_ctx;
+	
+	/// Name of this attribute
+	std::string m_name;
+	
+	/// Value of this attribute
+	PDI::Expression m_value;
+	
 public:
 
-    /** Creates NetCDF attribute information from yaml
-     *
-     * \param ctx Context of this I/O
-     * \param name Name of this attribute
-     * \param config Configuration node of this attribute
-     */
-    Dnc_attribute(PDI::Context& ctx, const std::string& name, PC_tree_t config);
-
-    /** Getter for attribute name
-     *  
-     * \return name of the attribute
-     */
-    const std::string& name() const;
-
-    /** Getter for value
-     *  
-     * \return Ref created from value
-     */
-    PDI::Ref value() const;
+	/** Creates NetCDF attribute information from yaml
+	 *
+	 * \param ctx Context of this I/O
+	 * \param name Name of this attribute
+	 * \param config Configuration node of this attribute
+	 */
+	Dnc_attribute(PDI::Context& ctx, const std::string& name, PC_tree_t config);
+	
+	/** Getter for attribute name
+	 *
+	 * \return name of the attribute
+	 */
+	const std::string& name() const;
+	
+	/** Getter for value
+	 *
+	 * \return Ref created from value
+	 */
+	PDI::Ref value() const;
 };
 
 } // namespace decl_netcdf

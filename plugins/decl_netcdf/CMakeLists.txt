@@ -82,7 +82,7 @@ set_target_properties(pdi_decl_netcdf_plugin PROPERTIES
 # Indentation
 if("${Astyle_FOUND}")
 	Astyle_add_indent(indent TEST
-			OPTIONS_FILE ../../docs/formating.astyle
+			OPTIONS_FILE formating.astyle
 			*.cxx *.h)
 endif()
 
