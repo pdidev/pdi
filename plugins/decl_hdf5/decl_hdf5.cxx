@@ -128,6 +128,7 @@ public:
 	
 	~decl_hdf5_plugin()
 	{
+		if ( 0>H5close() ) handle_hdf5_err("Cannot finalize HDF5 library");
 		context().logger()->info("Closing plugin");
 	}
 	

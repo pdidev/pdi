@@ -68,7 +68,7 @@ herr_t raii_walker(unsigned n, const H5E_error2_t* err_desc, void* client_data)
 hid_t get_h5_type(const Datatype& type)
 {
 	if (auto&& record_type = dynamic_cast<const Record_datatype*>(&type)) {
-		hid_t h5_type = H5Tcreate (H5T_COMPOUND, record_type->datasize());
+		hid_t h5_type = H5Tcreate (H5T_COMPOUND, record_type->buffersize());
 		for (const auto& member : record_type->members()) {
 			H5Tinsert(h5_type, member.name().c_str(), member.displacement(), get_h5_type(member.type()));
 		}
