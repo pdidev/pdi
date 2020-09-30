@@ -1,0 +1,11 @@
+data:
+    x: int
+    y: {type: array, subtype: float, size: 8}
+plugins:
+    decl_hdf5:
+        - file: "hdf5_event.h5"
+          on_event: "write"
+          write: ["x", "y"]
+        - file: "hdf5_event.h5"
+          on_event: "read"
+          read: ["x", "y"]

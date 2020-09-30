@@ -50,6 +50,9 @@ target_link_libraries(PDI_test_02 PDI::PDI_C)
 set_target_properties(PDI_test_02 PROPERTIES ENABLE_EXPORTS ON)
 add_test(NAME PDI_test_02 COMMAND PDI_test_02)
 
+if("${BUILD_FORTRAN}")
+	add_subdirectory(fortran/)
+endif()
 
 if("${BUILD_PYTHON}")
 	add_test(NAME PDI_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_03.py")

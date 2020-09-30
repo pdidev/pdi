@@ -44,44 +44,12 @@ endif()
 "
 )
 
-if("${BUILD_FORTRAN}")
-	if(NOT "${MPI_Fortran_HAVE_F90_MODULE}")
-		if("${MPI_Fortran_HAVE_F77_HEADER}")
-			file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/mpi.F90" [=[
-module mpi
-implicit none
-include "mpif.h"
-end module
-]=])
-			add_library(MPI_with_mod STATIC "${CMAKE_CURRENT_BINARY_DIR}/mpi.F90")
-			target_link_libraries(MPI_with_mod MPI::MPI_Fortran)
-		else()
-			message(FATAL_ERROR "Unable to compile a MPI program either with F90 module or F77 include")
-		endif()
-	else()
-		add_library(MPI_with_mod INTERFACE)
-		target_link_libraries(MPI_with_mod INTERFACE MPI::MPI_Fortran)
-	endif()
-endif()
-
-
-
 # Metatadata export using filename
 
 add_executable(decl_hdf5_01_C decl_hdf5_test_01.c)
 target_link_libraries(decl_hdf5_01_C PDI::PDI_C)
 add_test(NAME decl_hdf5_01_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_C>")
 set_property(TEST decl_hdf5_01_C PROPERTY TIMEOUT 15)
-
-if("${BUILD_FORTRAN}")
-add_executable(decl_hdf5_01_F decl_hdf5_test_01.F90)
-target_link_libraries(decl_hdf5_01_F PDI::PDI_f90)
-string(RANDOM TMP_MODULE_DIRECTORY)
-set_target_properties(decl_hdf5_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_hdf5_01_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_01.yml")
-set_property(TEST decl_hdf5_01_F PROPERTY TIMEOUT 15)
-endif("${BUILD_FORTRAN}")
-
 
 # PDI_import/PDI_export
 
@@ -90,24 +58,7 @@ target_link_libraries(decl_hdf5_02_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_02_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
 set_property(TEST decl_hdf5_02_C PROPERTY TIMEOUT 15)
 
-if("${BUILD_FORTRAN}")
-add_executable(decl_hdf5_02_F decl_hdf5_test_02.F90)
-target_link_libraries(decl_hdf5_02_F PDI::PDI_f90 MPI_with_mod)
-string(RANDOM TMP_MODULE_DIRECTORY)
-set_target_properties(decl_hdf5_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
-set_property(TEST decl_hdf5_02_F PROPERTY TIMEOUT 15)
-endif("${BUILD_FORTRAN}")
-
-
 # slicing mechanism
-
-if("${BUILD_FORTRAN}")
-add_test(NAME decl_hdf5_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_03.yml" "test_03_on")
-set_property(TEST decl_hdf5_03_F PROPERTY TIMEOUT 15)
-endif("${BUILD_FORTRAN}")
-
-
 
 # parallel read/write
 
@@ -115,16 +66,6 @@ add_executable(decl_hdf5_04_C decl_hdf5_test_04.c)
 target_link_libraries(decl_hdf5_04_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_C>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST decl_hdf5_04_C PROPERTY TIMEOUT 15)
-
-if("${BUILD_FORTRAN}")
-add_executable(decl_hdf5_04_F decl_hdf5_test_04.F90)
-target_link_libraries(decl_hdf5_04_F PDI::PDI_f90 MPI_with_mod)
-string(RANDOM TMP_MODULE_DIRECTORY)
-set_target_properties(decl_hdf5_04_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-add_test(NAME decl_hdf5_04_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04.yml")
-set_property(TEST decl_hdf5_04_F PROPERTY TIMEOUT 15)
-endif("${BUILD_FORTRAN}")
-
 
 # scalars default options
 
@@ -156,6 +97,12 @@ add_executable(decl_hdf5_09_C decl_hdf5_test_09.c)
 target_link_libraries(decl_hdf5_09_C PDI::PDI_C)
 add_test(NAME decl_hdf5_09_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_09_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_09.yml")
 set_property(TEST decl_hdf5_09_C PROPERTY TIMEOUT 15)
+
+
+if("${BUILD_FORTRAN}")
+	add_subdirectory(fortran/)
+endif("${BUILD_FORTRAN}")
+
 
 # Config tests
 
