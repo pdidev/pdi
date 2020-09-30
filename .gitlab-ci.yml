@@ -10,25 +10,25 @@ stages:
 centos_cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.5:latest
-  script: 
+  script:
     - *shared_script
 
 centos_cmake3.5_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.5:latest
-  script: 
+  script:
     - *shared_script
 
 centos_cmake3.10_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_cmake3.10:latest
-  script: 
+  script:
     - *shared_script
 
 centos_cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/centos_libs_cmake3.10:latest
-  script: 
+  script:
     - *shared_script
 
 centos_cmake3.10_pdi_plugin_path:
@@ -37,29 +37,29 @@ centos_cmake3.10_pdi_plugin_path:
   script:
     - export PDI_PLUGIN_PATH=/home/default/plugins
     - *shared_script
-    
+
 xenial_cmake3.5_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_cmake3.5:latest
-  script: 
+  script:
     - *shared_script
 
 xenial_cmake3.5_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.5:latest
-  script: 
+  script:
     - *shared_script
 
 xenial_cmake3.10_embedded:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_cmake3.10:latest
-  script: 
+  script:
     - *shared_script
 
 xenial_cmake3.10_system:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.10:latest
-  script: 
+  script:
     - *shared_script
 
 xenial_cmake3.10_pdi_plugin_path:

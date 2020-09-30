@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+import os
+import pathlib
+import random
+import string
+import subprocess
+import sys
+import yaml
+
+PDI_DIR = pathlib.Path(__file__).parent.parent.parent.absolute()
+
+def gen_script(command_list):
+    if isinstance(command_list, str):
+        return command_list
+    return "; ".join([gen_script(scr) for scr in command_list])
+
+def main():
+    if len(sys.argv) != 3:
+        print("** Error, expecting 2 arguments, got "+str(len(sys.argv)-1), file=sys.stderr)
+        print("\nUsage: "+sys.argv[0]+" <DOCKER_RUNNER> <test_name>", file=sys.stderr)
+        sys.exit(1)
+    
+    docker_runner=sys.argv[1] 
+    test_name=sys.argv[2]
+    
+    gitlab_ci = yaml.load(open(PDI_DIR/".gitlab-ci.yml"), Loader=yaml.BaseLoader)
+    
+    image = gitlab_ci[test_name]["image"]
+    script = gen_script(["set -e", "cd /builds/pdidev/pdi", gitlab_ci[test_name]["script"]])
+    volume_name = ''.join(random.choice(string.ascii_letters) for i in range(32))
+    
+    # Pull the user-specified image
+    subprocess.run(["docker", "image", "pull", image], check=True)
+    
+    # Get the UID required from the image
+    image_info = yaml.load(subprocess.run(["docker", "image", "inspect", image], capture_output=True, check=True).stdout, Loader=yaml.BaseLoader)
+    uid = int(image_info[0]["Config"]["User"])
+    
+    # Create a volume
+    subprocess.run(["docker", "volume", "create", volume_name], capture_output=True, check=True)
+    
+    try:
+        # Populate the volume with the data (and chown it to the right UID)
+        subprocess.run(["docker", "run", "--read-only", "--rm",
+                        "-v", str(PDI_DIR)+":/data/:ro",
+                        "--mount", "source="+volume_name+",destination=/builds/pdidev/",
+                        "-u", "0:0",
+                        "alpine:3",
+                        "/bin/sh", "-c",
+                        "cp -fa /data /builds/pdidev/pdi && chown -R "+ str(uid) +" /builds/pdidev/pdi",
+                        ], check=True)
+        
+        # Run the user-specified image with the just populated volume
+        subprocess.run(["docker", "run", "--rm",
+                        "--mount", "source="+volume_name+",destination=/builds/pdidev/",
+                        "-e", "DOCKER_RUNNER="+docker_runner,
+                        image,
+                        "bash", "-c", script
+                        ], check=True)
+    finally:
+        # Remove the volume
+        subprocess.run(["docker", "volume", "rm", volume_name], capture_output=True)
+        
+
+if __name__ == "__main__":
+    main()
