@@ -9,7 +9,7 @@ cd "$(mktemp -d || exit 1)"
 
 CMAKE_FLAGS=""
 
-CMAKE_VERSION="$(cmake --version | grep 'cmake version' | sed 's/[^0-9]*//')"
+CMAKE_VERSION="$(cmake --version | grep -o 'version [0-9]\+.[0-9]\+.[0-9]\+' | sed 's/[^0-9]*//')"
 CMAKE_VERSION_MAJOR="${CMAKE_VERSION%%\.*}"
 CMAKE_VERSION_MINOR="${CMAKE_VERSION%\.*}";CMAKE_VERSION_MINOR="${CMAKE_VERSION_MINOR#*\.}"
 
