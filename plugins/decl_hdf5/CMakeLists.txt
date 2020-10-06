@@ -93,7 +93,7 @@ set_target_properties(pdi_decl_hdf5_plugin PROPERTIES
 if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
 		OPTIONS_FILE formating.astyle
-		*.cxx *.h tests/*.c)
+		*.cxx *.h tests/*.c tests/compatibility_tests/*.c)
 endif()
 
 # installation

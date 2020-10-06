@@ -142,3 +142,4 @@ set_tests_properties(
 
 endif()
 
+add_subdirectory("compatibility_tests/")
