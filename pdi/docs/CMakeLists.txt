@@ -78,7 +78,7 @@ doxygen_add_docs(doxygen_doc
 		"${CMAKE_CURRENT_SOURCE_DIR}"
 		"${PDI_BINARY_DIR}/pdi/export.h"
 		"${PDI_BINARY_DIR}/pdi/version.h"
-		"${PDI_BINARY_DIR}/fortran_inc/"
+		"${PDI_BINARY_DIR}/fmoddir/pdif.h"
 		"${PDI_SOURCE_DIR}/include/pdi.h"
 		"${PDI_SOURCE_DIR}/include/pdi/"
 		"${PDI_SOURCE_DIR}/../example/README.md"

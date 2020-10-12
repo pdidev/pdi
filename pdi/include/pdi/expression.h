@@ -120,14 +120,14 @@ public:
 	
 	/** Summation operator of an expression
 	 *
-	 * \param[in] value the expression to add
+	 * \param[in] expr the expression to add
 	 * \return Expression as a result of sum
 	 */
 	Expression operator+(const Expression& expr);
 	
 	/** Multiplication operator of an expression
 	 *
-	 * \param[in] value the expression to multiply
+	 * \param[in] expr the expression to multiply
 	 * \return Expression as a result of multiplication
 	 */
 	Expression operator*(const Expression& expr);

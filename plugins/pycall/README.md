@@ -19,8 +19,8 @@ plugins:
 \subsection pycall_plugin_tree Plugin tree
 
 The root of plugin configuration (named `pycall`), is a dictionary that contains the following keys:
-- \ref on_event
-- \ref on_data
+- \ref pycall_on_event
+- \ref pycall_on_data
 
 \subsection pycall_on_event on_event
 

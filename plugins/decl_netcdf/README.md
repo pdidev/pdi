@@ -213,9 +213,7 @@ The `write` subtree can have 2 definitions:
     decl_netcdf:
       file: "file_name.nc"
       write: data_name
-  ```
-  .
-  ```yaml
+  #-------------------------------------
   plugins:
     decl_netcdf:
       file: "file_name.nc"
@@ -227,7 +225,7 @@ The `write` subtree can have 2 definitions:
   |key                  |value                                                                |            |
   |:--------------------|:--------------------------------------------------------------------|------------|
   |`when`               |\ref decl_netcdf_io_when                                             |*optional*  |
-  |`variable`           |variable name to write (may be defined in \ref decl_netcdf_variable) |*optional*  |
+  |`variable`           |variable name to write (may be defined in \ref decl_netcdf_variables)|*optional*  |
   |`variable_selection` |\ref decl_netcdf_var_selection                                       |*optional*  |
 
   Configuration example:
@@ -285,9 +283,7 @@ The `read` subtree can have 2 definitions:
     decl_netcdf:
       file: "file_name.nc"
       read: data_name
-  ```
-  .
-  ```yaml
+  #-------------------------------------
   plugins:
     decl_netcdf:
       file: "file_name.nc"
@@ -299,7 +295,7 @@ The `read` subtree can have 2 definitions:
   |key                  |value                                                                |            |
   |:--------------------|:--------------------------------------------------------------------|------------|
   |`when`               |\ref decl_netcdf_io_when                                             |*optional*  |
-  |`variable`           |variable name to read (may be defined in \ref decl_netcdf_variable)  |*optional*  |
+  |`variable`           |variable name to read (may be defined in \ref decl_netcdf_variables) |*optional*  |
   |`variable_selection` |\ref decl_netcdf_var_selection                                       |*optional*  |
 
   Configuration example:
