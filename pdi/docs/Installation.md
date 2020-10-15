@@ -22,10 +22,10 @@ The %PDI source distribution includes:
 To download the sources, have a look at the list of all releases from:
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags
 
-For example, release 0.6.1 can be downloaded by following these instructions:
+For example, release 0.6.2 can be downloaded by following these instructions:
 ```bash
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.1/pdi-0.6.1.tar.bz2
-tar -xjf pdi-0.6.1.tar.bz2
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.2/pdi-0.6.2.tar.bz2
+tar -xjf pdi-0.6.2.tar.bz2
 ```
 
 \section default_installation Default installation
@@ -46,12 +46,12 @@ external dependencies are:
   [GNU libc](https://www.gnu.org/software/libc/) 2.27 is tested),
 * a MPI implementation.
 
-For example, release 0.6.1 can be installed by following these instructions (but
+For example, release 0.6.2 can be installed by following these instructions (but
 look for the latest release at
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags):
 
 ```bash
-mkdir pdi-0.6.1/build && cd pdi-0.6.1/build
+mkdir pdi-0.6.2/build && cd pdi-0.6.2/build
 cmake -DCMAKE_INSTALL_PREFIX=/usr/ ..       # configuration
 make install   # compilation and installation
 ```
