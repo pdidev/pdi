@@ -1,7 +1,15 @@
+# Short description of the MR
+
+!!!INSERT YOUR DESCRIPTION HERE!!!
+
 # List of things to check before making a MR
 
 Before merging your code, please check the following:
 
+* [ ] you have added a line describing your changes to the Changelog;
+* [ ] you have added any new or changed yaml config format to the validation script;
+* [ ] you have added unit tests for any new or improved feature;
+* [ ] you have checked pdi/docs/CheckList.md
 * you have checked your code format:
   - [ ] you have checked that you respect all conventions specified in CONTRIBUTING.md;
   - [ ] you have checked that the indentation and formating conforms to the docs/formating.astyle;
@@ -12,14 +20,12 @@ Before merging your code, please check the following:
 * you have updated the AUTHORS file:
   - [ ] you have added yourself to the AUTHORS file;
   - [ ] if this is a new contribution, you have added it to the AUTHORS file;
-* [ ] you have added a line describing your changes to the Changelog;
 * you have added everything to the user documentation:
   - [ ] any new CMake configuration option;
   - [ ] any change in the yaml config;
   - [ ] any change to the public or plugin API;
   - [ ] any other new or changed user-facing feature;
-* [ ] you have added any new or changed yaml config format to the validation script;
-* [ ] you have added unit tests for any new or improved feature;
+  - [ ] any change to the dependencies;
 * you have correctly linked your MR to one or more issues:
   - [ ] your MR solves an identified issue;
   - [ ] your commit contain the `Fix #issue` keyword to autoclose the issue when merged;
