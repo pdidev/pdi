@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 		PDI_expose("fti_status", &status, PDI_IN);
 		assert(status == 0);
 		
-		sleep(70);
+		sleep(10);
 		PDI_multi_expose("snapshot",
 		    "test", &test, PDI_OUT,
 		    "array", array, PDI_OUT,

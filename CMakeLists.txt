@@ -71,7 +71,7 @@ option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_DECL_SION_PLUGIN   "Build Decl'SION plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_FLOWVR_PLUGIN      "Build FlowVR plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
-option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "OFF")
+option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "${BUILD_UNSTABLE}")
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
 option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
@@ -375,13 +375,13 @@ endif()
 
 if("${BUILD_FTI_PLUGIN}")
 	sbuild_add_dependency(FTI "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/fti-1.4"
+		EMBEDDED_PATH "vendor/fti-1.5.1"
 		CMAKE_CACHE_ARGS
 			"-DENABLE_FORTRAN:BOOL=OFF"
 			"-DENABLE_EXAMPLES:BOOL=OFF"
 			"-DENABLE_TESTS:BOOL=OFF"
 			"-DENABLE_DOCU:BOOL=OFF"
-		VERSION 1.3 # 1.4 still has 1.3 version defined
+		VERSION 1.5.1
 	)
 endif()
 
@@ -678,11 +678,14 @@ sbuild_add_module(USER_CODE_PLUGIN
 	SUBSTEPS indent test
 )
 
+if ("${BUILD_FLOWVR_PLUGIN}")
+	set(FLOWVR_DEPENDENCY FlowVR)
+endif()
 
 sbuild_add_module(PDI_EXAMPLE
 	ENABLE_BUILD_FLAG BUILD_TESTING
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/example"
-	DEPENDS PDI
+	DEPENDS PDI ${FLOWVR_DEPENDENCY}
 	INSTALL_COMMAND ""
 	SUBSTEPS test
 )

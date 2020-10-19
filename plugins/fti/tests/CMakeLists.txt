@@ -156,7 +156,6 @@ add_test(NAME fti_09_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMA
 add_executable(fti_10_C fti_test_10.c)
 target_link_libraries(fti_10_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME fti_10_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config_03.ini" "mpirun" -n 6 "$<TARGET_FILE:fti_10_C>" "${CMAKE_CURRENT_SOURCE_DIR}/fti_test_10.yml")
-set_property(TEST fti_10_C PROPERTY DISABLED TRUE) #TODO: wait for FTI team help with RecoverVar
 
 ##########
 # FTI send_file test (probably bugged in current FTI version)

@@ -156,18 +156,18 @@ endif("${BUILD_DECL_SION_PLUGIN}")
 
 if("${BUILD_FTI_PLUGIN}")
 add_test(NAME PDI_example_fti_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
-set_property(TEST PDI_example_fti_C PROPERTY TIMEOUT 180)
+set_property(TEST PDI_example_fti_C PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_fti_C PROPERTY PROCESSORS 6)
 
 if("${BUILD_FORTRAN}")
 add_test(NAME PDI_example_fti_F COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/fti_transtype.yml")
-set_property(TEST PDI_example_fti_F PROPERTY TIMEOUT 180)
+set_property(TEST PDI_example_fti_F PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_fti_F PROPERTY PROCESSORS 6)
 endif("${BUILD_FORTRAN}")
 
 if("${BUILD_PYTHON}")
 add_test(NAME PDI_example_fti_P COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${PYTHON_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/fti_transtype.yml")
-set_property(TEST PDI_example_fti_P PROPERTY TIMEOUT 180)
+set_property(TEST PDI_example_fti_P PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_fti_P PROPERTY PROCESSORS 6)
 set_property(TEST PDI_example_fti_P PROPERTY DISABLED TRUE) #TODO: python tests randomly deadlock currently
 endif("${BUILD_PYTHON}")

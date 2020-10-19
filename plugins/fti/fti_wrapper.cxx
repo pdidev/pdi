@@ -141,12 +141,12 @@ int Fti_wrapper::checkpoint(int id, int level)
 	return FTI_Checkpoint(id, level);
 }
 
-int Fti_wrapper::init_type(FTIT_type* type, long size)
+int Fti_wrapper::init_type(fti_id_t* type, long size)
 {
 	return FTI_InitType(type, size);
 }
 
-int Fti_wrapper::protect(int id, void* ptr, long count, FTIT_type type)
+int Fti_wrapper::protect(int id, void* ptr, long count, fti_id_t type)
 {
 	return FTI_Protect(id, ptr, count, type);
 }
@@ -196,14 +196,14 @@ int Fti_wrapper::status()
 	return FTI_Status();
 }
 
-void Fti_wrapper::add_complex_field(FTIT_complexType* definition, FTIT_type* type, size_t offset, int rank, int* dim_len, int id, char* name)
+int Fti_wrapper::add_vector_field(fti_id_t composite_type_id, char* name, fti_id_t type_id, size_t offset, int ndims, int* dim_sizes)
 {
-	return FTI_AddComplexField(definition, type, offset, rank, dim_len, id, name);
+	return FTI_AddVectorField(composite_type_id, name, type_id, offset, ndims, dim_sizes);
 }
 
-void Fti_wrapper::add_simple_field(FTIT_complexType* definition, FTIT_type* type, size_t offset, int id, char* name)
+int Fti_wrapper::add_scalar_field(fti_id_t composite_type_id, char* name, fti_id_t type_id, size_t offset)
 {
-	return FTI_AddSimpleField(definition, type, offset, id, name);
+	return FTI_AddScalarField(composite_type_id, name, type_id, offset);
 }
 
 int Fti_wrapper::define_dataset(int id, int rank, int* dim_len, char* name, FTIT_H5Group* h5_group)
@@ -211,9 +211,9 @@ int Fti_wrapper::define_dataset(int id, int rank, int* dim_len, char* name, FTIT
 	return FTI_DefineDataset(id, rank, dim_len, name, h5_group);
 }
 
-int Fti_wrapper::init_complex_type(FTIT_type* type, FTIT_complexType* definition, int len, size_t size, char* name, FTIT_H5Group* h5_group)
+fti_id_t Fti_wrapper::init_composite_type(char* name, size_t size, FTIT_H5Group* h5_group)
 {
-	return FTI_InitComplexType(type, definition, len, size, name, h5_group);
+	return FTI_InitCompositeType(name, size, h5_group);
 }
 
 int Fti_wrapper::init_group(FTIT_H5Group* h5_group, char* name, FTIT_H5Group* parent)

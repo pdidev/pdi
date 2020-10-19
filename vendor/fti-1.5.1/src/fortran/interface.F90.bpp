@@ -1,0 +1,943 @@
+!$SH source fortran.bpp.sh
+
+!$SH # the maximum dimension of array handled here
+!$SH MAXDIM=7
+
+!$SH # Returns the FTI type associated to the type descriptor $1
+!$SH function fti_type {
+!$SH   echo "FTI_${1}"
+!$SH }
+
+!> \file interface.F90
+!! \brief Fortran interface for the FTI checkpoint library
+
+!> Modul: FTI
+
+module FTI
+
+  use ISO_C_BINDING
+
+  private
+
+
+  !> Token returned if a FTI function succeeds.
+  integer, parameter :: FTI_SCES = 0
+  !> Token returned if a FTI function fails.
+  integer, parameter :: FTI_NSCS = -1
+
+  integer, parameter :: FTI_ATTRIBUTE_NAME = 1
+  integer, parameter :: FTI_ATTRIBUTE_DIM = 2
+
+!$SH for T in ${FORTTYPES}; do
+  integer :: $(fti_type ${T})
+!$SH done
+
+
+
+  public :: FTI_SCES, FTI_NSCS, &
+        FTI_ATTRIBUTE_NAME, FTI_ATTRIBUTE_DIM, &
+!$SH for T in ${FORTTYPES}; do
+      $(fti_type ${T}), &
+!$SH done
+      FTI_Init, FTI_Status, FTI_InitType, FTI_Protect,  &
+      FTI_Checkpoint, FTI_Recover, FTI_Snapshot, FTI_Finalize, &
+			FTI_GetStoredSize, FTI_Realloc, FTI_RecoverVar, &
+      FTI_AddScalarField, FTI_AddVectorField, FTI_InitCompositeType, &
+      FTI_InitICP, FTI_AddVarICP, FTI_FinalizeICP, FTI_setIDFromString, &
+      FTI_getIDFromString, FTI_SetAttribute
+
+
+
+  interface
+
+    function FTI_Init_impl(config_file, global_comm) &
+            bind(c, name='FTI_Init_fort_wrapper')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_Init_impl
+      character(c_char), intent(IN) :: config_file(*)
+      integer(c_int), intent(INOUT) :: global_comm
+
+    endfunction FTI_Init_impl
+
+  endinterface
+
+  interface
+
+    function FTI_SetAttribute_string_impl(id, attribute, flag) &
+            bind(c, name='FTI_SetAttribute_string_wrapper')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_SetAttribute_string_impl
+      integer(c_int), value :: id
+      character(c_char), intent(IN) :: attribute(*)
+      integer(c_int), value :: flag
+
+    endfunction FTI_SetAttribute_string_impl
+    
+    function FTI_SetAttribute_long_array_impl(id, ndims, attribute, flag) &
+            bind(c, name='FTI_SetAttribute_long_array_wrapper')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_SetAttribute_string_impl
+      integer(c_int), value :: id
+      integer(c_int), value :: ndims
+      integer(c_int64_t), intent(IN) :: attribute(*)
+      integer(c_int), value :: flag
+
+    endfunction FTI_SetAttribute_long_array_impl
+
+  endinterface
+
+  interface FTI_SetAttribute
+    
+    module procedure FTI_SetAttribute_string
+    module procedure FTI_SetAttribute_long_array
+    module procedure FTI_SetAttribute_int_long_array
+
+  endinterface FTI_SetAttribute
+
+  interface 
+
+    function FTI_setIDFromString_impl(name) &
+              bind(c, name='FTI_setIDFromString')
+
+      use ISO_C_BINDING
+      integer (c_int) :: FTI_setIDFromString_impl
+      character(c_char), intent(IN) :: name(*)
+
+    endfunction FTI_setIDFromString_impl
+
+  endinterface
+
+  interface 
+
+    function FTI_getIDFromString_impl(name) &
+              bind(c, name='FTI_getIDFromString')
+
+      use ISO_C_BINDING
+      integer (c_int) :: FTI_getIDFromString_impl
+      character(c_char), intent(IN) :: name(*)
+
+    endfunction FTI_getIDFromString_impl
+
+  endinterface
+
+
+  interface
+
+    function FTI_Status_impl() &
+            bind(c, name='FTI_Status')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_Status_impl
+
+    endfunction FTI_Status_impl
+
+  endinterface
+
+
+
+  interface
+
+    function FTI_InitType_impl(size_F) &
+            bind(c, name='FTI_InitType_wrapper')
+
+      use ISO_C_BINDING
+
+      integer(c_int)                :: FTI_InitType_impl
+      integer(c_size_t), value      :: size_F
+
+    endfunction FTI_InitType_impl
+
+  endinterface
+
+  interface
+    function FTI_InitPrimitiveType_impl(name, size_F) &
+            bind(c, name='FTI_InitPrimitiveType_C')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_InitPrimitiveType_impl
+      character(c_char), intent(IN) :: name(*)
+      integer(c_size_t), value :: size_F
+
+    endfunction FTI_InitPrimitiveType_impl
+
+  endinterface
+
+	interface
+
+		function FTI_GetStoredSize_impl(id_F) &
+						bind(c, name='FTI_GetStoredSize')
+
+			use ISO_C_BINDING
+
+			integer(c_long)				:: FTI_GetStoredSize_impl
+			integer(c_int), value	:: id_F
+
+		endfunction FTI_GetStoredSize_impl
+
+	endinterface
+
+  interface
+
+    function FTI_Realloc_impl(id_F, ptr) &
+            bind(c, name='FTI_Realloc')
+
+      use ISO_C_BINDING
+
+      type(c_ptr)               :: FTI_Realloc_impl
+      integer(c_int), value     :: id_F
+      type(c_ptr), value        :: ptr
+
+    endfunction FTI_Realloc_impl
+
+  endinterface
+
+  interface
+
+    function FTI_Protect_impl(id_F, ptr, count_F, tid) &
+            bind(c, name='FTI_Protect')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_Protect_impl
+
+      integer(c_int),  value :: id_F
+      type(c_ptr),     value :: ptr
+      integer(c_long), value :: count_F
+      integer(c_int),  value :: tid
+
+    endfunction FTI_Protect_impl
+
+  endinterface
+
+  interface
+
+    function FTI_Checkpoint_impl(id_F, level) &
+            bind(c, name='FTI_Checkpoint')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_Checkpoint_impl
+      integer(c_int), value :: id_F
+      integer(c_int), value :: level
+
+    endfunction FTI_Checkpoint_impl
+
+  endinterface
+
+  interface
+
+    function FTI_InitICP_impl(id_F, level, activate) &
+            bind(c, name='FTI_InitICP')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_InitICP_impl
+      integer(c_int), value :: id_F
+      integer(c_int), value :: level
+      logical(c_bool), value :: activate
+
+    endfunction FTI_InitICP_impl
+
+  endinterface
+
+  interface
+
+    function FTI_AddVarICP_impl(id_F) &
+            bind(c, name='FTI_AddVarICP')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_AddVarICP_impl
+      integer(c_int), value :: id_F
+
+    endfunction FTI_AddVarICP_impl
+
+  endinterface
+
+  interface
+
+    function FTI_FinalizeICP_impl() &
+            bind(c, name='FTI_FinalizeICP')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_FinalizeICP_impl
+
+    endfunction FTI_FinalizeICP_impl
+
+  endinterface
+
+  interface
+
+    function FTI_Recover_impl() &
+            bind(c, name='FTI_Recover')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_Recover_impl
+
+    endfunction FTI_Recover_impl
+
+  endinterface
+
+
+  interface
+
+    function FTI_RecoverVar_impl(id) &
+            bind(c, name='FTI_RecoverVar')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_RecoverVar_impl
+      integer(c_int), value :: id
+
+    endfunction FTI_RecoverVar_impl
+
+  endinterface
+
+
+  interface
+
+    function FTI_Snapshot_impl() &
+            bind(c, name='FTI_Snapshot')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_Snapshot_impl
+
+    endfunction FTI_Snapshot_impl
+
+  endinterface
+
+
+
+  interface
+
+    function FTI_Finalize_impl() &
+            bind(c, name='FTI_Finalize')
+
+      use ISO_C_BINDING
+
+      integer(c_int) :: FTI_Finalize_impl
+
+    endfunction FTI_Finalize_impl
+
+  endinterface
+
+
+  interface FTI_Realloc
+
+    module procedure FTI_Realloc_Ptr
+
+  endinterface FTI_Realloc
+
+
+  interface FTI_Protect
+
+    module procedure FTI_Protect_Ptr
+!$SH for T in ${FORTTYPES}; do
+!$SH   for D in $(seq 0 ${MAXDIM}); do
+    module procedure FTI_Protect_${T}${D}
+!$SH   done
+!$SH done
+
+  endinterface FTI_Protect
+
+  interface
+
+    function FTI_InitCompositeType_impl(name, size) &
+            bind(c, name='FTI_InitCompositeType_wrapper')
+
+      use ISO_C_BINDING
+
+      integer(c_int)                :: FTI_InitCompositeType_impl
+
+      integer(c_size_t), value      :: size
+      character(c_char), INTENT(IN) :: name(*)
+
+    endfunction FTI_InitCompositeType_impl
+
+  endinterface
+
+  interface
+
+    function FTI_AddScalarField_impl(complex_tid, name, field_tid, offset) &
+            bind(c, name='FTI_AddScalarField')
+
+      use ISO_C_BINDING
+
+      integer(c_int)                :: FTI_AddScalarField_impl
+
+      integer(c_int),    value      :: complex_tid
+      character(c_char), intent(in) :: name(*)
+      integer(c_int),    value      :: field_tid
+      integer(c_size_t), value      :: offset
+
+    endfunction FTI_AddScalarField_impl
+
+  endinterface
+
+  interface
+
+    function FTI_AddVectorField_impl(complex_tid, name, field_tid, offset, ndims, dimLength) &
+            bind(c, name='FTI_AddVectorField')
+
+      use ISO_C_BINDING
+
+      integer(c_int)                :: FTI_AddVectorField_impl
+
+      integer(c_int),    value      :: complex_tid
+      character(c_char), INTENT(IN) :: name(*)
+      integer(c_int),    value      :: field_tid
+      integer(c_long),   value      :: offset
+      integer(c_int),    value      :: ndims
+      integer(c_int),    INTENT(IN) :: dimLength(*)
+
+    endfunction FTI_AddVectorField_impl
+
+  endinterface
+
+contains
+
+  !> This function initializes the FTI context and prepares the heads to wait
+  !! for checkpoints. FTI processes should never get out of this function. In
+  !! case of a restart, checkpoint files should be recovered and in place at the
+  !! end of this function.
+  !! \brief     Initializes FTI
+  !! \param     config_File     (IN)    FTI configuration file.
+  !! \param     global_Comm     (INOUT) Main MPI communicator of the application.
+  !! \param     err             (OUT)   Token for error handling.
+  !! \return    integer         FTI_SCES if successful.
+  subroutine FTI_Init(config_file, global_comm, err)
+
+    include 'mpif.h'
+
+    character(len=*), intent(IN) :: config_file
+    integer, intent(INOUT) :: global_comm
+    integer, intent(OUT) :: err
+
+    character, target, dimension(1:len_trim(config_file)+1) :: config_file_c
+    integer :: ii, ll
+    integer(c_int) :: global_comm_c
+
+    !! Convert from Fortran string to C string
+    ll = len_trim(config_file)
+    do ii = 1, ll
+      config_file_c(ii) = config_file(ii:ii)
+    enddo
+    config_file_c(ll+1) = c_null_char
+
+    global_comm_c = int(global_comm, c_int)
+    err = int(FTI_Init_impl(config_file_c, global_comm_c))
+    global_comm = int(global_comm_c)
+    if (err /= FTI_SCES ) then
+      return
+    endif
+
+!$SH for T in ${FORTTYPES}; do
+    $(fti_type ${T}) = FTI_InitPrimitiveType("${T}", int($(fort_sizeof ${T})_C_int/8_c_int, C_int))
+!$SH done
+
+  endsubroutine FTI_Init
+  
+  subroutine FTI_SetAttribute_string(id, attribute, flag, err)
+
+    integer, intent(IN) :: id
+    character(len=*), intent(IN) :: attribute
+    integer, intent(IN) :: flag
+    integer, intent(OUT) :: err
+
+    character, target, dimension(1:len_trim(attribute)+1) :: attribute_c
+    integer :: ii, ll
+    integer(c_int) :: id_c
+    integer(c_int) :: flag_c
+
+    ll = len_trim(attribute)
+    do ii = 1, ll
+      attribute_c(ii) = attribute(ii:ii)
+    enddo
+    attribute_c(ll+1) = c_null_char
+    id_c = int(id, c_int)
+    flag_c = int(flag, c_int)
+    err = int(FTI_SetAttribute_string_impl(id_c, attribute_c, flag_c))
+    if (err /= FTI_SCES ) then
+      return
+    endif
+
+  endsubroutine FTI_SetAttribute_string
+
+  subroutine FTI_SetAttribute_long_array(id, attribute, flag, err)
+
+    integer, intent(IN) :: id
+    integer(8), intent(IN) :: attribute(:)
+    integer, intent(IN) :: flag
+    integer, intent(OUT) :: err
+
+    integer :: ii, ll
+    integer(c_int) :: id_c
+    integer(c_int) :: flag_c
+    integer(c_int) :: ndims_c
+    integer(c_int64_t), target, dimension(1:size(attribute)) :: attribute_c
+    ndims_c = int(size(attribute), c_int)
+
+    ll = size(attribute)
+    do ii = 1, ll
+      attribute_c(ii) = int(attribute(ii),c_int64_t)
+    enddo
+    id_c = int(id, c_int)
+    flag_c = int(flag, c_int)
+    err = int(FTI_SetAttribute_long_array_impl(id_c, ndims_c, attribute_c, flag_c))
+    if (err /= FTI_SCES ) then
+      return
+    endif
+
+  endsubroutine FTI_SetAttribute_long_array
+
+  subroutine FTI_SetAttribute_int_long_array(id, attribute, flag, err)
+
+    integer, intent(IN) :: id
+    integer(4), intent(IN) :: attribute(:)
+    integer, intent(IN) :: flag
+    integer, intent(OUT) :: err
+
+    integer :: ii, ll
+    integer(c_int) :: id_c
+    integer(c_int) :: flag_c
+    integer(c_int) :: ndims_c
+    integer(c_int64_t), target, dimension(1:size(attribute)) :: attribute_c
+    ndims_c = int(size(attribute), c_int)
+
+    ll = size(attribute)
+    do ii = 1, ll
+      attribute_c(ii) = int(attribute(ii),c_int64_t)
+    enddo
+    id_c = int(id, c_int)
+    flag_c = int(flag, c_int)
+    err = int(FTI_SetAttribute_long_array_impl(id_c, ndims_c, attribute_c, flag_c))
+    if (err /= FTI_SCES ) then
+      return
+    endif
+
+  endsubroutine FTI_SetAttribute_int_long_array
+
+  !>  This function returns the current status of the recovery flag.
+  !!  \brief    It returns the current status of the recovery flag.
+  !!  \param    status  (OUT)   status token of the recovery flag.
+  !!  \return   integer         FTI_Exec.reco.
+  subroutine FTI_Status(status)
+
+    integer, intent(OUT) :: status
+
+    status = int(FTI_Status_impl())
+
+  endsubroutine FTI_Status
+
+  subroutine FTI_setIDFromString(name, id)
+
+    character(len=*), intent(IN)  ::name
+    integer, intent(OUT) :: id
+    character, target, dimension(1:len_trim(name)+1) :: name_c
+    integer :: ii, ll
+    ll = len_trim(name)
+    do ii = 1, ll
+      name_c(ii) = name(ii:ii)
+    enddo
+    name_c(ll+1) = c_null_char
+  
+    id = FTI_setIDFromString_impl(name_c)
+  end subroutine FTI_setIDFromString
+
+  subroutine FTI_getIDFromString(name, id)
+
+    character(len=*), intent(IN)  ::name
+    integer, intent(OUT) :: id
+    character, target, dimension(1:len_trim(name)+1) :: name_c
+    integer :: ii, ll
+    ll = len_trim(name)
+    do ii = 1, ll
+      name_c(ii) = name(ii:ii)
+    enddo
+    name_c(ll+1) = c_null_char
+  
+    id = FTI_getIDFromString_impl(name_c)
+  end subroutine FTI_getIDFromString
+
+
+  !>  
+  !!  \brief    Registers a new data type in FTI runtime.
+  !!  \param    size_F  (IN)    The data type size in bytes.
+  !!  \return   fti_id_t        A handle to represent the new type.
+  function FTI_InitType(size_F) result(ret)
+    integer(c_size_t), intent(IN) :: size_F
+    integer             :: ret
+
+    ret = int(FTI_InitType_impl(size_F))
+  endfunction FTI_InitType
+
+  !>  This method first try to associate the Fortran primitive type to a C type.
+  !!  It does so by parsing the type mnemonic and then its size.
+  !!  Integers and logicals are mapped to integers of size 1, 2, 4 and 8.
+  !!  Reals are mapped to float, real and long real.
+  !!  Character is mapped to char regardless of size (byte array).
+  !!  If there is no direct correlation between C an Fortran, create a new type.
+  !!  
+  !!  WARNING: We assume that C and Fortran types share the same binary format.
+  !!  For instance, the C float is defined by the IEEE 754 format.
+  !!  We would assume that Fortran real(4) types are also encoded as IEEE 754.
+  !!  This is usually the case but might be an error source on some compilers.
+  !!
+  !!  \brief    Registers a Fortran primitive in FTI type system
+  !!  \param    name    (IN)    Fortran data type mnemonic string
+  !!  \param    size_F  (IN)    The data type size in bytes.
+  !!  \return   integer         A handle for the new data type
+  function FTI_InitPrimitiveType(name, size_F) result(ret)
+
+    character(len=*), intent(IN)    :: name
+    integer,          intent(IN)    :: size_F
+    integer                         :: ret, ii, ll
+    character, target, dimension(1:len_trim(name)+1) :: name_c
+
+    !! Transform from Fortran string to C string
+    ll = len_trim(name)
+    do ii = 1, ll
+      name_c(ii) = name(ii:ii)
+    enddo
+    name_c(ll+1) = c_null_char
+
+    ret = int(FTI_InitPrimitiveType_impl(name_c, int(size_F, c_size_t)))
+  endfunction FTI_InitPrimitiveType
+
+  !>  This function returns size of variable of given ID that is saved in metadata.
+  !!  This may be different from size of variable that is in the program. If this
+  !!  function it's called when recovery it returns size from metadata file, if it's
+  !!  called after checkpoint it returns size saved in temporary metadata. If there
+  !!  is no size saved in metadata it returns 0.
+  !!  \brief    Returns size saved in metadata of variable
+  !!  \param    id_F    (IN)    Variable ID.
+  !!  \param    size    (OUT)   Size of variable or 0 if size not saved.
+  !!  \return   long            Returns size of variable or 0 if size not saved.
+  subroutine FTI_GetStoredSize(id_F, size)
+
+  	integer, intent(IN)	:: id_F
+  	integer(8)					:: size
+
+  	size = int(FTI_GetStoredSize_impl(int(id_F,c_int)))
+
+  endsubroutine FTI_GetStoredSize
+
+  !>  This function loads the checkpoint data size from the metadata
+  !!  file, reallacates memory and updates data size information.
+  !!  \brief    Reallocates dataset to last checkpoint size.
+  !!  \param    id_F    (IN)    Variable ID.
+  !!  \param    ptr     (INOUT) C-Pointer to the variable.
+  !!  \param    ierr    (OUT)   Token for error handling.
+  !!  \return   pointer         Pointer if successful, NULL otherwise
+  subroutine FTI_Realloc_Ptr(id_F, ptr, ierr)
+
+    integer, intent(IN)  :: id_F
+    type(c_ptr)          :: ptr
+    integer, intent(OUT) :: ierr
+
+    ierr = 0
+
+    ptr = FTI_Realloc_impl(id_F, ptr)
+    if (.not. c_associated(ptr)) then
+        ierr = -1
+    end if
+
+  endsubroutine FTI_Realloc_Ptr
+
+  !>  This function stores a pointer to a data structure, its size, its ID,
+  !!  its number of elements and the type of the elements. This list of
+  !!  structures is the data that will be stored during a checkpoint and
+  !!  loaded during a recovery. It resets the pointer to a data structure,
+  !!  its size, its number of elements and the type of the elements if the
+  !!  dataset was already previously registered.
+  !!  \brief    It sets/resets the pointer and type to a protected variable.
+  !!  \param    id_F    (IN)    ID for searches and update.
+  !!  \param    ptr     (IN)    C-Pointer to the data structure.
+  !!  \param    count_F (IN)    Number of elements in the data structure.
+  !!  \param    tid     (IN)    Type handle for the protected data structure.
+  !!  \param    err     (OUT)   Token for error handling.
+  !!  \return   integer         FTI_SCES if successful.
+  subroutine FTI_Protect_Ptr(id_F, ptr, count_F, tid, err)
+
+    integer, intent(IN) :: id_F
+    type(c_ptr), value :: ptr
+    integer, intent(IN) :: count_F
+    type(integer), intent(IN) :: tid
+    integer, intent(OUT) :: err
+
+    err = int(FTI_Protect_impl(int(id_F, c_int), ptr, int(count_F, c_long), tid))
+
+  endsubroutine FTI_Protect_Ptr
+!$SH for T in ${FORTTYPES}; do
+
+  !>  This function stores a pointer to a data structure, its size, its ID,
+  !!  its number of elements and the type of the elements. This list of
+  !!  structures is the data that will be stored during a checkpoint and
+  !!  loaded during a recovery. It resets the pointer to a data structure,
+  !!  its size, its number of elements and the type of the elements if the
+  !!  dataset was already previously registered.
+  !!  \brief    It sets/resets the pointer and type to a protected variable.
+  !!  \param    id_F    (IN)    ID for searches and update.
+  !!  \param    data    (IN)    data field to protect.
+  !!  \param    err     (OUT)   Token for error handling.
+  !!  \return   integer         FTI_SCES if successful.
+  subroutine FTI_Protect_${T}0(id_F, data, err)
+
+    integer, intent(IN) :: id_F
+    $(fort_type ${T}), pointer :: data
+    integer, intent(OUT) :: err
+
+    call FTI_Protect_Ptr(id_F, c_loc(data), 1, $(fti_type ${T}), err)
+
+  endsubroutine FTI_Protect_${T}0
+
+!$SH   for D in $(seq 1 ${MAXDIM}); do
+  !>  This function stores a pointer to a data structure, its size, its ID,
+  !!  its number of elements and the type of the elements. This list of
+  !!  structures is the data that will be stored during a checkpoint and
+  !!  loaded during a recovery. It resets the pointer to a data structure,
+  !!  its size, its number of elements and the type of the elements if the
+  !!  dataset was already previously registered.
+  !!  \brief    It sets/resets the pointer and type to a protected variable.
+  !!  \param    id_F    (IN)    ID for searches and update.
+  !!  \param    data    (IN)    data field to protect.
+  !!  \param    err     (OUT)   Token for error handling.
+  !!  \return   integer         FTI_SCES if successful.
+  subroutine FTI_Protect_${T}${D}(id_F, data, err)
+
+    integer, intent(IN) :: id_F
+    $(fort_type ${T}), pointer :: data$(str_repeat ':' 1 ${D} ',' '(' ')')
+    integer, intent(OUT) :: err
+
+    ! workaround, we take the address of the first array element and hope for
+    ! the best since not much better can be done
+    call FTI_Protect_Ptr(id_F, &
+            c_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n' '(' ')')), &
+            size(data), $(fti_type ${T}), err)
+
+  endsubroutine FTI_Protect_${T}${D}
+
+!$SH   done
+!$SH done
+  !>  This function starts by blocking on a receive if the previous ckpt. was
+  !!  offline. Then, it updates the ckpt. information. It writes down the ckpt.
+  !!  data, creates the metadata and the post-processing work. This function
+  !!  is complementary with the FTI_Listen function in terms of communications.
+  !!  \brief    It takes the checkpoint and triggers the post-ckpt. work.
+  !!  \param    id_F    (IN)    Checkpoint ID.
+  !!  \param    level   (IN)    Checkpoint level.
+  !!  \param    err     (INOUT) Token for error handling.
+  !!  \return   integer         FTI_SCES if successful.
+  subroutine FTI_Checkpoint(id_F, level, err)
+
+    integer, intent(IN) :: id_F
+    integer, intent(IN) :: level
+    integer, intent(OUT) :: err
+
+    err = int(FTI_Checkpoint_impl(int(id_F, c_int), int(level, c_int)))
+
+  endsubroutine FTI_Checkpoint
+  
+  subroutine FTI_InitICP(id_F, level, activate, err)
+
+    integer, intent(IN) :: id_F
+    integer, intent(IN) :: level
+    logical, intent(IN) :: activate
+    integer, intent(OUT) :: err
+
+    err = int(FTI_InitICP_impl(int(id_F, c_int), int(level, c_int), logical(activate, c_bool)))
+
+  endsubroutine FTI_InitICP
+  
+  subroutine FTI_AddVarICP(id_F, err)
+
+    integer, intent(IN) :: id_F
+    integer, intent(OUT) :: err
+
+    err = int(FTI_AddVarICP_impl(int(id_F, c_int)))
+
+  endsubroutine FTI_AddVarICP
+  
+  subroutine FTI_FinalizeICP(err)
+
+    integer, intent(OUT) :: err
+
+    err = int(FTI_FinalizeICP_impl())
+
+  endsubroutine FTI_FinalizeICP
+
+  !>  This function loads the checkpoint data from the checkpoint file and
+  !!  it updates some basic checkpoint information.
+  !!  \brief    It loads the checkpoint data.
+  !!  \param    err     (INOUT) Token for error handling.
+  !!  \return   integer         FTI_SCES if successful.
+  subroutine FTI_Recover(err)
+
+    integer, intent(OUT) :: err
+
+    err = int(FTI_Recover_impl())
+
+  endsubroutine FTI_Recover
+
+  !>  During a restart process, this function recovers the variable specified
+  !!  by the given id. No effect during a regular execution.
+  !!  The variable must have already been protected, otherwise, FTI_NSCS is returned.
+  !!  Improvements to be done:
+  !!  Open checkpoint file at FTI_Init, close it at FTI_Snapshot
+  !!  Maintain a variable accumulating the offset as variable are protected during
+  !!  the restart to avoid doing the loop to calculate the offset in the
+  !!  checkpoint file.
+  !!  \brief    During the restart, recovers the given variable
+  !!  \param    id      (IN)    ID of variable to recover
+  !!  \param    err     (INOUT) Token for error handling.
+  !!  \return   integer         FTI_SCES if successful.
+  subroutine FTI_RecoverVar(id,err)
+
+    integer, intent(IN) :: id
+    integer, intent(OUT) :: err
+
+    err = int(FTI_RecoverVar_impl(id))
+
+  endsubroutine FTI_RecoverVar
+
+  !>  This function loads the checkpoint data from the checkpoint file in case
+  !!  of restart. Otherwise, it checks if the current iteration requires
+  !!  checkpointing, if it does it checks which checkpoint level, write the
+  !!  data in the files and it communicates with the head of the node to inform
+  !!  that a checkpoint has been taken. Checkpoint ID and counters are updated.
+  !!  \brief    Takes an FTI snapshot or recovers the data if it is a restart.
+  !!  \param    err     (INOUT) Token for error handling.
+  !!  \return   integer         FTI_SCES if successful.
+  subroutine FTI_Snapshot(err)
+
+    integer, intent(OUT) :: err
+
+    err = int(FTI_Snapshot_impl())
+
+  endsubroutine FTI_Snapshot
+
+  !>  This function notifies the FTI processes that the execution is over, frees
+  !!  some data structures and it closes. If this function is not called on the
+  !!  application processes the FTI processes will never finish (deadlock).
+  !!  \brief    It closes FTI properly on the application processes.
+  !!  \param    err     (INOUT) Token for error handling.
+  !!  \return   integer FTI_SCES if successful.
+  subroutine FTI_Finalize(err)
+
+    integer, intent(OUT) :: err
+
+    err = int(FTI_Finalize_impl())
+
+  endsubroutine FTI_Finalize
+
+  !>  Adds a scalar field to a composite data type at a given offset.
+  !!  Note that FTI does not check for memory boundaries within the data type.
+  !!  Specifying a wrong offset leads to undefined behavior.
+  !!  This can be avoided using the offsetof() macro.
+  !!
+  !!  \brief    Adds a scalar field to a composite data type.
+  !!  \param    complex_tid (IN) The composite data type handle
+  !!  \param    name        (IN) An optional field name
+  !!  \param    field_tid   (IN) The field data type handle
+  !!  \param    offset      (IN) Offset of the field (use offsetof)
+  !!  \return   integer          FTI_SCES when successfull or FTI_NSCS
+  function FTI_AddScalarField(complex_tid, name, field_tid, offset) result(ret)
+
+    integer                      :: ret
+
+    integer,           value      :: complex_tid
+    character(len=*),  intent(IN) :: name
+    integer,           value      :: field_tid
+    integer(c_size_t),    value      :: offset
+
+    character, target, dimension(1:len_trim(name)+1) :: name_c
+    integer                                          :: ii, ll
+
+    !! Convert from Fortran string to C string
+    ll = len_trim(name)
+    do ii = 1, ll
+      name_c(ii) = name(ii:ii)
+    enddo
+    name_c(ll+1) = c_null_char
+    !print *, "Adding field ", name_c, " of type ", int(field_tid, c_int), " to complex ", int(complex_tid, c_int)
+    ret = int(FTI_AddScalarField_impl(int(complex_tid, c_int), name_c, int(field_tid, c_int), offset))
+
+  endfunction
+
+  !>  Adds an N-dimensional array field to a complex data type at a given offset.
+  !!  Note that FTI does not check for memory boundaries within the data type.
+  !!  Specifying a wrong offset leads to undefined behavior.
+  !!  This can be avoided using the offsetof() macro.
+  !!
+  !!  \brief    Adds a complex field to a complex data type.
+  !!  \param    complex_tid (IN) The complex data type handle
+  !!  \param    name        (IN) The field name
+  !!  \param    field_tid   (IN) The field data type handle
+  !!  \param    offset      (IN) Offset of the field (use offsetof)
+  !!  \param    ndims       (IN) The number of dimensions for the field
+  !!  \param    dim_length  (IN) Array of lengths for each dimension
+  !!  \return   integer          FTI_SCES when successful, FTI_NSCS otherwise
+  function FTI_AddVectorField(complex_tid, name, field_tid, offset, ndims, dim_length) result(ret)
+
+    integer                     :: ret
+
+    integer,           value :: complex_tid
+    character(len=*),  intent(IN) :: name
+    integer,           value      :: field_tid
+    integer(c_size_t), value      :: offset
+    integer,           value      :: ndims
+    integer,           intent(IN) :: dim_length(*)
+
+    character, target, dimension(1:len_trim(name)+1) :: name_c
+    integer                                          :: ii, ll
+
+    !! Convert from Fortran string to C string
+    ll = len_trim(name)
+    do ii = 1, ll
+      name_c(ii) = name(ii:ii)
+    enddo
+    name_c(ll+1) = c_null_char
+
+    ret = int(FTI_AddVectorField_impl(int(complex_tid, c_int), name_c, int(field_tid, c_int), offset, &
+        int(ndims, c_int), dim_length))
+
+  endfunction FTI_AddVectorField
+
+!>  Creates a composite data type that can contain other data types.
+!!  The components can be added using FTI_AddScalarField and FTI_AddVectorField.
+!!
+!!  \brief    Initializes an empty composite data type.
+!!  \param    name   (IN)    An optional type name
+!!  \param    size   (IN)    The total size of the composite data type
+!!  \return   integer        A handle to represent the new type
+function FTI_InitCompositeType(name, size) result(ret)
+  integer                                          :: ret
+
+  character(len=*), intent(IN)                     :: name
+  integer(c_size_t), intent(IN)                    :: size
+
+  integer                                          :: ii, ll
+  character, target, dimension(1:len_trim(name)+1) :: name_c
+
+  !! Convert from Fortran string to C string
+  ll = len_trim(name)
+  do ii = 1, ll
+    name_c(ii) = name(ii:ii)
+  enddo
+  name_c(ll+1) = c_null_char
+  ret = int(FTI_InitCompositeType_impl(name_c, size))
+endfunction FTI_InitCompositeType
+
+endmodule FTI
+ 

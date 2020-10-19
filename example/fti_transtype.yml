@@ -1,5 +1,5 @@
 # duration in seconds
-duration: 65
+duration: 10
 # global [height, width] (excluding boundary conditions or ghosts)
 datasize: [420, 60]
 # degree of parallelism

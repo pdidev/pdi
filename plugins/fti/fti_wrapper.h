@@ -52,9 +52,9 @@ public:
 	
 	int checkpoint(int id, int level);
 	
-	int init_type(FTIT_type* type, long size);
+	int init_type(fti_id_t* type_id, long size);
 	
-	int protect(int id, void* ptr, long count, FTIT_type type);
+	int protect(int id, void* ptr, long count, fti_id_t type_id);
 	
 	int recover();
 	
@@ -74,13 +74,13 @@ public:
 	
 	int status();
 	
-	void add_complex_field(FTIT_complexType* definition, FTIT_type* type, size_t offset, int rank, int* dim_len, int id, char* name);
+	int add_vector_field(fti_id_t composite_type_id, char* name, fti_id_t type_id, size_t offset, int ndims, int* dim_sizes);
 	
-	void add_simple_field(FTIT_complexType* definition, FTIT_type* type, size_t offset, int id, char* name);
+	int add_scalar_field(fti_id_t composite_type_id, char* name, fti_id_t type_id, size_t offset);
 	
 	int define_dataset(int id, int rank, int* dim_len, char* name, FTIT_H5Group* h5_group);
 	
-	int init_complex_type(FTIT_type* type, FTIT_complexType* definition, int len, size_t size, char* name, FTIT_H5Group* h5_group);
+	fti_id_t init_composite_type(char* name, size_t size, FTIT_H5Group* h5_group);
 	
 	int init_group(FTIT_H5Group* h5_group, char* name, FTIT_H5Group* parent);
 	
