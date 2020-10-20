@@ -1,6 +1,5 @@
 !******************************************************************************
-! Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-! alternatives (CEA)
+! Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without
@@ -146,7 +145,7 @@ interface PDI_share
   subroutine PDI_share_${T}_${D}D( name, ptr_data, access, err )
     character(len=*), intent(IN) :: name
     $(fort_type $T), pointer &
-!$SH     if [ 1 -lt "0$D" ]; then
+!$SH     if [ "$D" -gt 0 ]; then
     , contiguous &
 !$SH     fi
     :: ptr_data$(array_desc $D)
@@ -174,7 +173,7 @@ interface PDI_expose
   subroutine PDI_expose_${T}_${D}D(name, data, access, err)
     character(len=*), intent(IN) :: name
     $(fort_type $T), target &
-!$SH     if [ 1 -lt "0$D" ]; then
+!$SH     if [ "$D" -gt 0 ]; then
   , contiguous &
 !$SH     fi
   :: data$(array_desc $D)
@@ -200,7 +199,7 @@ interface PDI_access
   !!            PDI
   !! \param[OUT] err for error status (optional)
   subroutine PDI_access_${T}_${D}D(name, ptr_data, access, &
-!$SH     if [ 0 -lt "$D" ]; then
+!$SH     if [ "$D" -gt 0 ]; then
       ptr_data_shape, &
 !$SH     fi
       err)

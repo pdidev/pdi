@@ -1,5 +1,6 @@
 !*******************************************************************************
 ! Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+! Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without
@@ -27,13 +28,13 @@ program hdf5_event
     use PDI
     implicit none
 
-    character(len=512)     :: strbuf
-    type(PC_tree_t),target :: conf
-    integer                :: i
-    integer,target         :: x
-    integer,pointer        :: px
-    real(4), target        :: y(8)
-    real(4), pointer       :: py(:)
+    character(len=512)           :: strbuf
+    type(PC_tree_t),target       :: conf
+    integer                      :: i
+    integer,target               :: x
+    integer,pointer              :: px
+    real(4), target              :: y(8)
+    real(4), pointer, contiguous :: py(:)
 
     call get_command_argument(1, strbuf)
     call PC_parse_path(strbuf, conf)

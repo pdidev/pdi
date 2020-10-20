@@ -1,5 +1,6 @@
 !*******************************************************************************
 ! Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+! Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without
@@ -35,7 +36,7 @@ program access
     integer, pointer               :: px, pxaccess
     type(c_ptr)                    :: cpx, cpxaccess
     real(4), target                :: y(8)
-    real(4), pointer               :: py(:), pyaccess(:)
+    real(4), pointer, contiguous   :: py(:), pyaccess(:)
     type(c_ptr)                    :: cpy, cpyaccess
 
     call get_command_argument(1, strbuf)

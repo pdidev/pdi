@@ -1,5 +1,6 @@
 !*******************************************************************************
 ! Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+! Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without
@@ -33,7 +34,7 @@ program share
     integer, target                :: x
     real(4), target, dimension(8)  :: y
     integer, pointer               :: px
-    real(4), pointer, dimension(:) :: py
+    real(4), pointer, contiguous   :: py(:)
 
     call get_command_argument(1, strbuf)
     call PC_parse_path(strbuf, conf)
