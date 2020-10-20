@@ -25,6 +25,8 @@
 #ifndef PDI_RECORD_DATATYPE_CASES_H_
 #define PDI_RECORD_DATATYPE_CASES_H_
 
+#include <algorithm>
+
 #include <pdi/pdi_fwd.h>
 #include <pdi/array_datatype.h>
 #include <pdi/scalar_datatype.h>
