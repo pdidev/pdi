@@ -27,13 +27,13 @@ program hdf5_transaction
     use PDI
     implicit none
 
-    character(len=512)     :: strbuf
-    type(PC_tree_t),target :: conf
-    integer                :: i
-    integer,target         :: x
-    integer,pointer        :: px
-    real(4), target        :: y(8)
-    real(4), pointer       :: py(:)
+    character(len=512)           :: strbuf
+    type(PC_tree_t),target       :: conf
+    integer                      :: i
+    integer,target               :: x
+    integer,pointer              :: px
+    real(4), target              :: y(8)
+    real(4), pointer, contiguous :: py(:)
 
     call get_command_argument(1, strbuf)
     call PC_parse_path(strbuf, conf)

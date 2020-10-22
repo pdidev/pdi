@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +39,19 @@
 namespace PDI {
 
 using std::unique_ptr;
+
+Expression::Impl::Operation::Operation()
+{}
+
+Expression::Impl::Operation::Operation(Expression first_operand, Operator op, Expression secend_operand)
+{
+	if (!first_operand || !secend_operand) {
+		throw Value_error{"Cannot call operation on empty expression with another expression"};
+	}
+	
+	m_first_operand = first_operand;
+	m_operands.emplace_back(op, secend_operand);
+}
 
 long Expression::Impl::Operation::to_long(Context& ctx) const
 {

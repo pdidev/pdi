@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1344,9 +1344,80 @@ TEST_F(ExpresionOperators, add_tree_ref_expr)
 }
 
 /*
+ * Name:                ExpresionOperators.sub_two_expr
+ *
+ * Tested functions:    PDI::Expression::operator-
+ *
+ *
+ * Description:         Checks if subtraction of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, sub_two_expr)
+{
+	Expression first {"4"};
+	Expression second {"2"};
+	Expression result = first - second;
+	if (!result) {
+		throw;
+	}
+	ASSERT_EQ(2, result.to_long(*test_context));
+}
+
+/*
+ * Name:                ExpresionOperators.sub_two_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator-
+ *
+ *
+ * Description:         Checks if subtraction of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, sub_two_ref_expr)
+{
+	int x = 42;
+	int y = 40;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"$y"};
+	Expression result = first - second;
+	ASSERT_EQ(2, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionOperators.sub_tree_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator-
+ *
+ *
+ * Description:         Checks if subtraction of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, sub_tree_ref_expr)
+{
+	int x = 42;
+	int y = 20;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"10"};
+	Expression third {"$y"};
+	Expression result = first - second - third;
+	ASSERT_EQ(12, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
  * Name:                ExpresionOperators.multiply_two_expr
  *
- * Tested functions:    PDI::Expression::operator+
+ * Tested functions:    PDI::Expression::operator*
  *
  *
  * Description:         Checks if multiplication of expressions is correct.
@@ -1363,7 +1434,7 @@ TEST_F(ExpresionOperators, multiply_two_expr)
 /*
  * Name:                ExpresionOperators.multiply_two_ref_expr
  *
- * Tested functions:    PDI::Expression::operator+
+ * Tested functions:    PDI::Expression::operator*
  *
  *
  * Description:         Checks if multiplication of expressions is correct.
@@ -1388,7 +1459,7 @@ TEST_F(ExpresionOperators, multiply_two_ref_expr)
 /*
  * Name:                ExpresionOperators.multiply_tree_ref_expr
  *
- * Tested functions:    PDI::Expression::operator+
+ * Tested functions:    PDI::Expression::operator*
  *
  *
  * Description:         Checks if multiplication of expressions is correct.
@@ -1414,7 +1485,7 @@ TEST_F(ExpresionOperators, multiply_tree_ref_expr)
 /*
  * Name:                ExpresionOperators.comlex_tree_ref_expr
  *
- * Tested functions:    PDI::Expression::operator+
+ * Tested functions:    PDI::Expression::operator*
  *
  *
  * Description:         Checks if sum and multiplication of expressions is correct.
@@ -1436,6 +1507,130 @@ TEST_F(ExpresionOperators, sum_multiply_tree_ref_expr)
 
 	result = first + second * third;
 	ASSERT_EQ(14, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionOperators.divide_two_expr
+ *
+ * Tested functions:    PDI::Expression::operator/
+ *
+ *
+ * Description:         Checks if division of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, divide_two_expr)
+{
+	Expression first {"4"};
+	Expression second {"2"};
+	Expression result = first / second;
+	ASSERT_EQ(2, result.to_long(*test_context));
+}
+
+/*
+ * Name:                ExpresionOperators.divide_two_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator/
+ *
+ *
+ * Description:         Checks if division of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, divide_two_ref_expr)
+{
+	int x = 8;
+	int y = 4;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"$y"};
+	Expression result = first / second;
+	ASSERT_EQ(2, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionOperators.divide_tree_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator/
+ *
+ *
+ * Description:         Checks if division of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, divide_tree_ref_expr)
+{
+	int x = 16;
+	int y = 2;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"4"};
+	Expression third {"$y"};
+	Expression result = first / second / third;
+	ASSERT_EQ(2, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionOperators.comlex_tree_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator/
+ *
+ *
+ * Description:         Checks if sum and multiplication of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, sum_divide_tree_ref_expr)
+{
+	int x = 16;
+	int y = 2;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"4"};
+	Expression third {"$y"};
+	
+	Expression result = first / second + third;
+	ASSERT_EQ(6, result.to_long(*test_context));
+
+	result = first + second / third;
+	ASSERT_EQ(18, result.to_long(*test_context));
+
+	test_context->desc("x").reclaim();
+	test_context->desc("y").reclaim();
+}
+
+
+/*
+ * Name:                ExpresionOperators.mod_two_ref_expr
+ *
+ * Tested functions:    PDI::Expression::operator%
+ *
+ *
+ * Description:         Checks if mod of expressions is correct.
+ *
+ */
+TEST_F(ExpresionOperators, mod_two_ref_expr)
+{
+	int x = 42;
+	int y = 10;
+	test_context->desc("x").share(&x, true, false);
+	test_context->desc("y").share(&y, true, false);
+
+	Expression first {"$x"};
+	Expression second {"$y"};
+	Expression result = first % second;
+	ASSERT_EQ(2, result.to_long(*test_context));
 
 	test_context->desc("x").reclaim();
 	test_context->desc("y").reclaim();

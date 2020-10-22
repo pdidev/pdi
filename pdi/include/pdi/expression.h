@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -123,14 +124,35 @@ public:
 	 * \param[in] expr the expression to add
 	 * \return Expression as a result of sum
 	 */
-	Expression operator+(const Expression& expr);
+	Expression operator+(const Expression& expr) const;
 	
 	/** Multiplication operator of an expression
 	 *
 	 * \param[in] expr the expression to multiply
 	 * \return Expression as a result of multiplication
 	 */
-	Expression operator*(const Expression& expr);
+	Expression operator*(const Expression& expr) const;
+	
+	/** Subtraction operator of an expression
+	 *
+	 * \param[in] value the expression to subtract
+	 * \return Expression as a result of subtraction
+	 */
+	Expression operator-(const Expression& expr) const;
+	
+	/** Division operator of an expression
+	 *
+	 * \param[in] value the expression to divide
+	 * \return Expression as a result of division
+	 */
+	Expression operator/(const Expression& expr) const;
+	
+	/** Modulo operator of an expression
+	 *
+	 * \param[in] value the expression to use modulo
+	 * \return Expression as a result of modulo
+	 */
+	Expression operator%(const Expression& expr) const;
 	
 	/** Checks whether this is an empty expression
 	 *

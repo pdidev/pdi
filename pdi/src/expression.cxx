@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +47,8 @@
 #include "pdi/expression.h"
 
 namespace PDI {
+
+using std::unique_ptr;
 
 Expression::Expression(std::unique_ptr<Impl> impl):
 	m_impl(move(impl))
@@ -101,34 +104,29 @@ Expression& Expression::operator=(const Expression& value)
 Expression& Expression::operator=(Expression&& value) = default;
 
 
-Expression Expression::operator+(const Expression& expr)
+Expression Expression::operator+(const Expression& expr) const
 {
-	if (!(*this) || !expr) {
-		throw Value_error{"Cannot add empty expression to another expression"};
-	}
-	
-	Expression::Impl::Operation* sum_impl = new Expression::Impl::Operation;
-	sum_impl->m_first_operand = *this;
-	sum_impl->m_operands.emplace_back(Expression::Impl::Operation::Operator::PLUS, expr);
-
-	Expression result;
-	result.m_impl.reset(sum_impl);
-	return result;
+	return unique_ptr<Expression::Impl>{new Expression::Impl::Operation(*this, Expression::Impl::Operation::Operator::PLUS, expr)};
 }
 
-Expression Expression::operator*(const Expression& expr)
+Expression Expression::operator*(const Expression& expr) const
 {
-	if (!(*this) || !expr) {
-		throw Value_error{"Cannot multiply empty expression with another expression"};
-	}
-	
-	Expression::Impl::Operation* mul_impl = new Expression::Impl::Operation;
-	mul_impl->m_first_operand = *this;
-	mul_impl->m_operands.emplace_back(Expression::Impl::Operation::Operator::MULT, expr);
+	return unique_ptr<Expression::Impl>{new Expression::Impl::Operation(*this, Expression::Impl::Operation::Operator::MULT, expr)};;
+}
 
-	Expression result;
-	result.m_impl.reset(mul_impl);
-	return result;
+Expression Expression::operator-(const Expression& expr) const
+{
+	return unique_ptr<Expression::Impl>{new Expression::Impl::Operation(*this, Expression::Impl::Operation::Operator::MINUS, expr)};;
+}
+
+Expression Expression::operator/(const Expression& expr) const
+{
+	return unique_ptr<Expression::Impl>{new Expression::Impl::Operation(*this, Expression::Impl::Operation::Operator::DIV, expr)};;
+}
+
+Expression Expression::operator%(const Expression& expr) const
+{
+	return unique_ptr<Expression::Impl>{new Expression::Impl::Operation(*this, Expression::Impl::Operation::Operator::MOD, expr)};;
 }
 
 long Expression::to_long(Context& ctx) const
