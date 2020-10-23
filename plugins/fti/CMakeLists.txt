@@ -1,6 +1,6 @@
 #=============================================================================
-# Copyright (C) 2015-2018 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-# Copyright (C) 2018-2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ endif()
 find_package(MPI REQUIRED COMPONENTS C CXX)
 
 # FTI
-find_package(FTI REQUIRED 1.4)
+find_package(FTI REQUIRED 1.5.1)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
