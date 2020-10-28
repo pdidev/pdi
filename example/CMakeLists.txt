@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-#
+# Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -173,7 +173,7 @@ set_property(TEST PDI_example_fti_P PROPERTY DISABLED TRUE) #TODO: python tests 
 endif("${BUILD_PYTHON}")
 endif("${BUILD_FTI_PLUGIN}")
 
-if("${BUILD_FLOWVR_PLUGIN}" AND NOT "$ENV{MPI_LIB}" MATCHES "mpich") #disable MPI FlowVR with mpich for now
+if("${BUILD_FLOWVR_PLUGIN}") 
 find_package(FlowVR REQUIRED)
 
 set(OpenGL_GL_PREFERENCE LEGACY)
@@ -187,7 +187,7 @@ set_property(TEST PDI_example_flowvr_C PROPERTY TIMEOUT 60)
 set_property(TEST PDI_example_flowvr_C PROPERTY PROCESSORS 4)
 set_property(TEST PDI_example_flowvr_C PROPERTY RESOURCE_LOCK flowvrd)
 set_property(TEST PDI_example_flowvr_C PROPERTY DISABLED TRUE)
-endif("${BUILD_FLOWVR_PLUGIN}" AND NOT "$ENV{MPI_LIB}" MATCHES "mpich")
+endif("${BUILD_FLOWVR_PLUGIN}")
 
 add_test(NAME PDI_example_trace_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")
 set_property(TEST PDI_example_trace_C PROPERTY TIMEOUT 5)
