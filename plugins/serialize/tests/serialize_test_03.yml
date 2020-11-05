@@ -16,7 +16,6 @@ data:
       subtype: int
     size: 8
 plugins:
-  trace: ~
   serialize:
     pointer: pointer_serialized
     pointer_to_array: pointer_to_array_serialized

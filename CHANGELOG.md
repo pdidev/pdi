@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* A new `tests` sub-project contains tests that depend on multiple plugins
 
 ### Changed
 * Fortran support now requires version 1.0.6 of Zpp minimum

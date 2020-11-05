@@ -107,50 +107,50 @@ typedef struct {
 
 static void init_subregion(Subregion* subregion, int value)
 {
-    subregion->ix = value; subregion->iy = value; subregion->iz = value;
-    subregion->nx = value; subregion->ny = value; subregion->nz = value;
-    subregion->sx = value; subregion->sy = value; subregion->sz = value;
-    subregion->rx = value; subregion->ry = value; subregion->rz = value;
-    subregion->level = value; subregion->process = value;
+	subregion->ix = value; subregion->iy = value; subregion->iz = value;
+	subregion->nx = value; subregion->ny = value; subregion->nz = value;
+	subregion->sx = value; subregion->sy = value; subregion->sz = value;
+	subregion->rx = value; subregion->ry = value; subregion->rz = value;
+	subregion->level = value; subregion->process = value;
 }
 
 static void init_subregion_array(SubregionArray* subregion_array, int size, int value)
 {
-    for (int i = 0; i < size; i++) {
-        init_subregion(subregion_array->subregions[i], i + value);
-    }
-    subregion_array->size = size;
+	for (int i = 0; i < size; i++) {
+		init_subregion(subregion_array->subregions[i], i + value);
+	}
+	subregion_array->size = size;
 }
 
 static void init_grid(Grid* grid)
 {
-    for (int i = 0; i < Grid_size; i++) {
-        init_subregion_array(&grid->subgrids[i], SubregionArray_size, 10);
-        init_subregion_array(&grid->all_subgrids[i], SubregionArray_size, 100);
-        init_subregion_array(&grid->neighbors[i], SubregionArray_size, 200);
-    }
-    grid->size = Grid_size;
+	for (int i = 0; i < Grid_size; i++) {
+		init_subregion_array(&grid->subgrids[i], SubregionArray_size, 10);
+		init_subregion_array(&grid->all_subgrids[i], SubregionArray_size, 100);
+		init_subregion_array(&grid->neighbors[i], SubregionArray_size, 200);
+	}
+	grid->size = Grid_size;
 }
 
 static void init_subvector(Subvector* subvector)
 {
-    for (int i = 0; i < Subvector_data_size; i++) {
-        subvector->data[i] = (double) i;
-    }
-    subvector->allocated = 1;
-    init_subregion(subvector->data_space, 42);
-    subvector->data_size = Subvector_data_size;
+	for (int i = 0; i < Subvector_data_size; i++) {
+		subvector->data[i] = (double) i;
+	}
+	subvector->allocated = 1;
+	init_subregion(subvector->data_space, 42);
+	subvector->data_size = Subvector_data_size;
 }
 
 static void init_vector(Vector* vector)
 {
-    for (int i = 0; i < Vector_data_size; i++) {
-        init_subvector(vector->subvectors[i]);
-    }
-    vector->data_size = Vector_data_size;
-    init_grid(vector->grid);
-    init_subregion_array(vector->data_space, SubregionArray_size, 0);
-    vector->size = Vector_size;
+	for (int i = 0; i < Vector_data_size; i++) {
+		init_subvector(vector->subvectors[i]);
+	}
+	vector->data_size = Vector_data_size;
+	init_grid(vector->grid);
+	init_subregion_array(vector->data_space, SubregionArray_size, 0);
+	vector->size = Vector_size;
 }
 
 // #################### SUBREGION ####################
@@ -172,7 +172,7 @@ void assert_eq_subregion(const Subregion* s1, const Subregion* s2)
 	printf("l: %d ?== %d\n", s1->level, s2->level);
 	printf("p: %d ?== %d\n", s1->process, s2->process);
 	fflush(stdout);
-
+	
 	assert(s1->ix == s2->ix);
 	assert(s1->iy == s2->iy);
 	assert(s1->iz == s2->iz);
@@ -290,7 +290,7 @@ void alloc_grid(Grid* grid)
 		alloc_subregion_array(&grid->subgrids[i]);
 		// grid->subgrids[i].subregions = (Subregion**) malloc(sizeof(Subregion) * SubregionArray_size);
 		// for (int j = 0; j < SubregionArray_size; j++) {
-		// 	grid->subgrids[i].subregions[j] = (Subregion*) malloc(sizeof(Subregion));
+		//  grid->subgrids[i].subregions[j] = (Subregion*) malloc(sizeof(Subregion));
 		// }
 	}
 	grid->all_subgrids = (SubregionArray*) malloc(sizeof(SubregionArray) * Grid_size);

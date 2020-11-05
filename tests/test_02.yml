@@ -42,7 +42,6 @@ logging: trace
 data:
   subvector: *Subvector
 plugins:
-  trace: ~
   serialize:
     subvector: subvector_serialized
   decl_hdf5:

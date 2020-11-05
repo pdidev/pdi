@@ -13,7 +13,6 @@ data:
     start: [2, 1]
     subsize: [4, 2]
 plugins:
-  trace: ~
   serialize:
     sparse_int_array: dense_int_array
     sparse_double_array: dense_double_array

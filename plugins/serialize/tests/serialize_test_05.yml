@@ -113,7 +113,6 @@ data:
         disp: 32
         type: int
 plugins:
-  trace: ~
   serialize:
     vector_data: vector_data_serialized
 

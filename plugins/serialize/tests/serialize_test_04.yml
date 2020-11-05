@@ -19,6 +19,5 @@ data:
         type: pointer
         subtype: int
 plugins:
-  trace: ~
   serialize:
     record: record_serialized

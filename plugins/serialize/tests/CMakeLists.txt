@@ -60,18 +60,3 @@ add_executable(serialize_05_C serialize_test_05.c)
 target_link_libraries(serialize_05_C PDI::PDI_C)
 add_test(NAME serialize_05_C COMMAND "$<TARGET_FILE:serialize_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_05.yml")
 
-add_executable(serialize_06_C serialize_test_06.c)
-target_link_libraries(serialize_06_C PDI::PDI_C)
-add_test(NAME serialize_06_C COMMAND "$<TARGET_FILE:serialize_06_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_06.yml")
-
-add_executable(serialize_07_C serialize_test_07.c)
-target_link_libraries(serialize_07_C PDI::PDI_C)
-add_test(NAME serialize_07_C COMMAND "$<TARGET_FILE:serialize_07_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_07.yml")
-
-add_executable(serialize_08_C serialize_test_08.c)
-target_link_libraries(serialize_08_C PDI::PDI_C)
-add_test(NAME serialize_08_C COMMAND "$<TARGET_FILE:serialize_08_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_08.yml")
-
-add_executable(serialize_09_C serialize_test_09.c)
-target_link_libraries(serialize_09_C PDI::PDI_C)
-add_test(NAME serialize_09_C COMMAND "$<TARGET_FILE:serialize_09_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_09.yml")

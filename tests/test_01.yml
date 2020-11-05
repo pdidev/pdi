@@ -22,7 +22,6 @@ data:
         subtype: int
 
 plugins:
-  trace: ~
   serialize:
     scalar_data: scalar_data_serialized
     array_data: array_data_serialized

@@ -25,7 +25,7 @@
 #include <pdi.h>
 #include <assert.h>
 
-#include "serialize_test.h"
+#include "test.h"
 
 void write_vector()
 {
