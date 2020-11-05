@@ -1,0 +1,8 @@
+#!/usr/bin/env -S python -B
+from sys import path
+from os.path import dirname, join
+
+if __name__ == '__main__':
+    path.insert(0, dirname(dirname(__file__)))
+    from zpp import main
+    main()

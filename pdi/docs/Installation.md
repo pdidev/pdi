@@ -12,21 +12,18 @@ and compiled.
 
 The %PDI source distribution includes:
 * the %PDI core and its bindings for Fortran and python,
-* all %PDI plugins,
+* many %PDI plugins,
 * the %PDI configuration validator,
 * examples and tests,
 * most dependencies of all the above.
 
 \section downloading_distribution Downloading PDI source distribution
 
-To download the sources, have a look at the list of all releases from:
+To download the sources, have a look at the list of all releases at
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags
 
-For example, release 0.6.3 can be downloaded by following these instructions:
-```bash
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.3/pdi-0.6.3.tar.bz2
-tar -xjf pdi-0.6.3.tar.bz2
-```
+For example, release 0.6.3 can be downloaded from
+https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.3/pdi-0.6.3.tar.bz2
 
 \section default_installation Default installation
 
@@ -37,21 +34,26 @@ distribution considered stable enough for production use.
 Installing the default %PDI source distribution is fairly easy.
 Most dependencies are embedded in the distribution and the only required
 external dependencies are:
-* [cmake](https://cmake.org), version >= 3.5,
-* a C 99, C++ 14 and Fortran 95 compiler ([gcc](https://gcc.gnu.org/) 5.4 is
-  tested),
-* a POSIX compatible OS with a [bash](https://www.gnu.org/software/bash/) and
-  [python](https://www.python.org/) interpreter
-  ([linux](https://www.kernel.org/) with
-  [GNU libc](https://www.gnu.org/software/libc/) 2.27 is tested),
-* a MPI implementation.
+* a POSIX compatible OS such as GNU/linux,
+* [cmake](https://cmake.org/) version 3.5 or above,
+* a C 99, C++ 14 and Fortran 95 compiler such as [gcc](https://gcc.gnu.org/) 5.4 or above,
+* a [python](https://www.python.org/) interpreter (with venv), version 3.6 or above,
+* a [bash](https://www.gnu.org/software/bash/) interpreter,
+* a [MPI](https://www.mpi-forum.org/) 2 implementation.
+
+\attention
+This list of dependecies can be further reduced by limiting the set of features
+compiled.
 
 For example, release 0.6.3 can be installed by following these instructions (but
 look for the latest release at
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags):
 
 ```bash
-mkdir pdi-0.6.3/build && cd pdi-0.6.3/build
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.3/pdi-0.6.3.tar.bz2
+tar -xjf pdi-0.6.3.tar.bz2
+mkdir pdi-0.6.3/build
+cd pdi-0.6.3/build
 cmake -DCMAKE_INSTALL_PREFIX=/usr/ ..       # configuration
 make install   # compilation and installation
 ```
@@ -125,7 +127,7 @@ The following flags define whether to:
 |Flag          |Default   |Description|
 |:-------------|:---------|:----------|
 |`USE_Astyle`  |`AUTO`    |the [astyle](http://astyle.sourceforge.net/) tool.|
-|`USE_Bpp`     |`EMBEDDED`|the [bpp/zpp](https://github.com/jbigot/zpp) preprocessor.|
+|`USE_Zpp`     |`EMBEDDED`|the [zpp](https://github.com/jbigot/zpp) preprocessor.|
 |`USE_Doxygen` |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
 |`USE_FlowVR`  |`AUTO`    |the [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) framework.|
 |`USE_FTI`     |`AUTO`    |the [FTI](https://github.com/leobago/fti) library.|
@@ -144,6 +146,7 @@ All dependencies are provided in the distribution unless specified otherwise.
 
 Dependencies of **%PDI**:
 
+* a POSIX compatible OS such as GNU/linux,
 * **[cmake](https://cmake.org/) version 3.5 or above (not provided)**,
 * **a C 99 and C++ 14 compiler such as [gcc](https://gcc.gnu.org/) 5.4 or above (not provided)**,
 * the [paraconf](https://github.com/pdidev/paraconf) library version 0.4 or above,
@@ -154,9 +157,9 @@ Dependencies of **the Fortran API**:
 
 * the PDI library,
 * **a Fortran 95 compiler such as [gcc](https://gcc.gnu.org/) 5.4 or above (not provided)**,
-* **a [python](https://www.python.org/) interpreter version 2.7 or above (not provided)**,
+* **a [python](https://www.python.org/) interpreter (with venv), version 3.6 or above (not provided)**,
 * **a [bash](https://www.gnu.org/software/bash/) interpreter (not provided)**,
-* the [bpp/zpp](https://github.com/jbigot/zpp) preprocessor version 0.3.0 or above.
+* the [zpp](https://github.com/jbigot/zpp) preprocessor version 0.3.0 or above.
 
 Dependencies of **the Decl'HDF5 plugin**:
 

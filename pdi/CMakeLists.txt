@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -99,12 +99,12 @@ if("${BUILD_INDENT}")
 endif()
 if("${BUILD_PYTHON}")
 	find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
-	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency")
-	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules")
+	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
+	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	find_package(pybind11 2.3.0 REQUIRED)
 endif()
 if("${BUILD_FORTRAN}")
-	find_package(Bpp 0.3.0 REQUIRED)
+	find_package(Zpp 1.0.6 REQUIRED)
 endif()
 
 
@@ -306,17 +306,17 @@ endif()
 # Fortran API library
 
 if("${BUILD_FORTRAN}")
-	bpp_preprocess(OUTPUT PDIF_H SOURCES src/fortran/pdif.h.bpp)
-	bpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.f90.bpp)
+	zpp_preprocess(OUTPUT PDIF_H SOURCES src/fortran/pdif.h.zpp)
+	zpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.f90.zpp)
 	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fmoddir")
-	add_custom_target(mv_bpp_files # we put in in fmoddir because pdif.h is compiler dependant
+	add_custom_target(mv_zpp_files # we put in in fmoddir because pdif.h is compiler dependant
 			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PDIF_H}" "${PDI_BINARY_DIR}/fmoddir/pdif.h"
 			DEPENDS "${PDIF_H}"
 			VERBATIM
 	)
 	add_library(PDI_f90 ${PDI_F90} src/fortran/pdi_c.f90)
 	target_link_libraries(PDI_f90 PUBLIC PDI::PDI_C paraconf::paraconf_f90 PRIVATE PDI::PDI_plugins)
-	add_dependencies(PDI_f90 mv_bpp_files)
+	add_dependencies(PDI_f90 mv_zpp_files)
 	target_include_directories(PDI_f90 PUBLIC
 			"$<BUILD_INTERFACE:${PDI_BINARY_DIR}/fmoddir>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"

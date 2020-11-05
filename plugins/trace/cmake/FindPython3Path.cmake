@@ -48,11 +48,14 @@ foreach(_Python3Path_COMPONENT ${Python3Path_FIND_COMPONENTS})
 		list(APPEND Python3Path_OPTIONAL_COMPONENTS "${_Python3Path_COMPONENT}")
 	endif()
 endforeach()
+if(NOT "xx" STREQUAL "x${Python3Path_COMPONENTS_PARAM}x")
+	set(Python3Path_COMPONENTS_PARAM COMPONENTS ${Python3Path_COMPONENTS_PARAM})
+endif()
 if(NOT "xx" STREQUAL "x${Python3Path_OPTIONAL_COMPONENTS}x")
 	list(APPEND Python3Path_COMPONENTS_PARAM OPTIONAL_COMPONENTS ${Python3Path_OPTIONAL_COMPONENTS})
 endif()
 
-find_package(Python3 ${_Python3Path_QUIET} ${_Python3Path_REQUIRED} ${Python3Path_COMPONENTS_PARAM})
+find_package(Python3 ${Python3Path_FIND_VERSION} ${_Python3Path_QUIET} ${_Python3Path_REQUIRED} ${Python3Path_COMPONENTS_PARAM})
 
 if("${Python3_FOUND}")
 	# retrieve various package installation directories

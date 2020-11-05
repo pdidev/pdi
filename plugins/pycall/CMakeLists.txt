@@ -45,6 +45,8 @@ endif()
 find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
+set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
+set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 find_package(pybind11 2.3.0 REQUIRED)
 
 # PDI

@@ -1,0 +1,4 @@
+include AUTHORS LICENSE.txt README.md
+include zpp/*.mk
+graft zpp/include
+graft zpp/cmake

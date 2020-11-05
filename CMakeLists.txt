@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -214,18 +214,31 @@ sbuild_get_env(SBUILD_LD_LIBRARY_PATH LD_LIBRARY_PATH)
 
 ## Fortran
 
-if("${BUILD_FORTRAN}") # and (Bpp or paraconf or PDI or ...)
+if("${BUILD_FORTRAN}") # and (paraconf or PDI or ...)
 	enable_language(Fortran)
 endif()
 
 
-## Bpp
+## Python3
 
-if("${BUILD_FORTRAN}") # and PDI
-	sbuild_add_dependency(Bpp EMBEDDED
+if("${BUILD_PYTHON}")
+	find_package(Python3Path 3.5 REQUIRED COMPONENTS Interpreter Development)
+elseif("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}" OR "${BUILD_FORTRAN}")
+	find_package(Python3Path 3.5 REQUIRED COMPONENTS Interpreter)
+endif()
+
+
+## Zpp
+
+if("${BUILD_FORTRAN}")
+	sbuild_add_dependency(Zpp EMBEDDED
 		BUILD_DEPENDENCY
-		EMBEDDED_PATH "vendor/bpp-v0.3.0"
-		VERSION 0.3.0
+		EMBEDDED_PATH "vendor/zpp-1.0.6"
+		VERSION 1.0.0
+		BUILD_IN_SOURCE ON
+		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "<INSTALL_DIR>/lib/zpp-venv"
+		BUILD_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" build
+		INSTALL_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" install "--install-data=<INSTALL_DIR>"
 	)
 endif()
 
@@ -334,15 +347,6 @@ if("${BUILD_INDENT}")
 		CMAKE_CACHE_ARGS "-DBUILD_SHARED_LIBS:BOOL=OFF"
 		VERSION 3.1
 	)
-endif()
-
-
-## Python3
-
-if("${BUILD_PYTHON}")
-	sbuild_add_dependency(Python3Path SYSTEM COMPONENTS Interpreter Development)
-elseif("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
-	sbuild_add_dependency(Python3Path SYSTEM COMPONENTS Interpreter)
 endif()
 
 
@@ -493,9 +497,8 @@ endif()
 ## PyBind11
 
 if("${BUILD_PYTHON}")
-	find_package(Python3 QUIET REQUIRED COMPONENTS Interpreter Development)
-	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency")
-	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules")
+	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
+	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/pybind11-2.3.0"
 		CMAKE_CACHE_ARGS
@@ -565,7 +568,7 @@ if("${BUILD_TESTING}")
 	list(APPEND PDI_DEPENDS_LIST GTest)
 endif()
 if("${BUILD_FORTRAN}")
-	list(APPEND PDI_DEPENDS_LIST Bpp)
+	list(APPEND PDI_DEPENDS_LIST Zpp)
 endif()
 if("${BUILD_PYTHON}")
 	list(APPEND PDI_DEPENDS_LIST pybind11)
