@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,6 +41,7 @@ endif()
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
+set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 
 # FlowVR
 find_package(FlowVR REQUIRED)

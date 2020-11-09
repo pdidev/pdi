@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,15 +28,15 @@ cmake_minimum_required(VERSION 3.5)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
-# Add the plugin path to LD_LIBRARY_PATH
+# Add the plugin path to PDI_PLUGIN_PATH
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
 file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
      CONTENT "
-set(LD_LIBRARY_PATH \"\$ENV{LD_LIBRARY_PATH}\")\n
-if(\"x\${LD_LIBRARY_PATH}x\" STREQUAL xx)\n
-set(ENV{LD_LIBRARY_PATH} \"\$<TARGET_FILE_DIR:pdi_decl_netcdf_plugin>\")\n
+set(PDI_PLUGIN_PATH \"\$ENV{PDI_PLUGIN_PATH}\")\n
+if(\"x\${PDI_PLUGIN_PATH}x\" STREQUAL xx)\n
+set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_decl_netcdf_plugin>\")\n
 else()\n
-set(ENV{LD_LIBRARY_PATH} \"\$<TARGET_FILE_DIR:pdi_decl_netcdf_plugin>:\${LD_LIBRARY_PATH}\")\n
+set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_decl_netcdf_plugin>:\${PDI_PLUGIN_PATH}\")\n
 endif()
 "
 )

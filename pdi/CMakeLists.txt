@@ -32,6 +32,24 @@ project(PDI LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
 
+# Version
+
+file(READ VERSION PDI_VERSION)
+string(STRIP "${PDI_VERSION}" PDI_VERSION)
+string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
+set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
+set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
+set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
+set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
+if("git" STREQUAL "${PDI_VERSION_MODIF}")
+	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
+if(NOT "x${PDI_VERSION_MODIF}x" STREQUAL "xx")
+	set(PDI_VERSION "${PDI_VERSION}-${PDI_VERSION_MODIF}")
+endif()
+
+
 # Build options
 
 option(BUILD_UNSTABLE     "Build all features by default including those not stable yet" OFF)
@@ -84,6 +102,7 @@ include(GNUInstallDirs)
 set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
 set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
 set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
+set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
 
 
 # Dependencies
@@ -108,25 +127,13 @@ if("${BUILD_FORTRAN}")
 endif()
 
 
-# Version
-
-file(READ VERSION PDI_VERSION)
-string(STRIP "${PDI_VERSION}" PDI_VERSION)
-string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
-set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
-set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
-set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
-set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
-if("git" STREQUAL "${PDI_VERSION_MODIF}")
-	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
-if(NOT "x${PDI_VERSION_MODIF}x" STREQUAL "xx")
-	set(PDI_VERSION "${PDI_VERSION}-${PDI_VERSION_MODIF}")
-endif()
-
-
 # Check for some portability stuff and generate config.h
+
+if(IS_ABSOLUTE "${INSTALL_PDIPLUGINDIR}")
+	set(PDI_DEFAULT_PLUGIN_PATH "${INSTALL_PDIPLUGINDIR}")
+else()
+	file(RELATIVE_PATH PDI_DEFAULT_PLUGIN_PATH "/${CMAKE_INSTALL_LIBDIR}" "/${INSTALL_PDIPLUGINDIR}" )
+endif()
 
 if("${BUILD_FORTRAN}")
 	get_default_kind(INTEGER   PDI_INTEGER_DEFAULT_KIND)
@@ -164,10 +171,12 @@ set(PDI_C_SRC
 		src/paraconf_wrapper.cxx
 		src/pdi.cxx
 		src/plugin.cxx
+		src/plugin_store.cxx
 		src/pointer_datatype.cxx
 		src/record_datatype.cxx
 		src/ref_any.cxx
 		src/scalar_datatype.cxx
+		src/string_tools.cxx
 )
 add_library(PDI_C ${PDI_C_SRC})
 generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME pdi/export.h)

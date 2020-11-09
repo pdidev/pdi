@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,6 +23,7 @@
 #=============================================================================
 
 import importlib
+import os
 import yaml
 import sys
 import re
@@ -146,7 +147,28 @@ def val_plugins(plugins_root, data_list, metadata_list, data_refs_list):
                 print("Type 'echo $PYTHONPATH'. It should contain: '$PATH_TO_PDI_PYTHON'")
                 print("If it's not there add it by: export PYTHONPATH=$PATH_TO_PDI_PYTHON/pdicfg_validator:$PYTHONPATH")
                 print("Default PATH_TO_PDI_PYTHON is /usr/local/lib/python3/dist-packages")
-                raise        
+                raise
+
+def val_plugin_path(plugin_path):
+    plugin_path_list = plugin_path.split(os.pathsep)
+    clear_path_list = []
+    concatenate = False
+    for path in plugin_path_list:
+        if (path[-1] == "\\"):
+            if concatenate:
+                clear_path_list[-1] += path[:-1] + ":"
+            else:
+                clear_path_list.append(path[:-1] + ":")
+            concatenate = True
+        else:
+            if concatenate:
+                clear_path_list[-1] += path
+            else:
+                clear_path_list.append(path)
+            concatenate = False
+    for path in clear_path_list:
+        if not os.path.exists(path):
+            raise NameError("'" + path + "' is not valid or existing path")
 
 def run_test(config_file_name):
     # list of declared data
@@ -171,6 +193,9 @@ def run_test(config_file_name):
         if 'metadata' in pdi_root:
             val_metadata(pdi_root.get('metadata', False), metadata_list, data_refs_list)
         
+        if 'plugin_path' in pdi_root:
+            val_plugin_path(pdi_root.get('plugin_path'))
+
         check_data_refs(data_list, metadata_list, data_refs_list)
         
         print("\033[1;32m" + sys.argv[1] + "\033[0;32m is a valid PDI configuration file")

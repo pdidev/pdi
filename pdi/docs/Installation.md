@@ -139,6 +139,27 @@ The following flags define whether to:
 |`USE_spdlog`  |`AUTO`    |the [spdlog](https://github.com/gabime/spdlog) library.|
 |`USE_yaml`    |`AUTO`    |the [yaml](https://github.com/jbigot/zpp) library.|
 
+
+The following flags define where to install %PDI, those prefixed with `CMAKE_`
+are provided and documented by the
+[GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)
+cmake module.
+
+
+
+|Flag          |Default   |Description|
+|:-------------|:---------|:----------|
+|`INSTALL_CMAKEDIR`|`PDIDATADIR/cmake`|Cmake modules.|
+|`INSTALL_FMODDIR`|`LIBDIR/pdi/finclude/${COMPILER_VERSION}`|Fortran modules|
+|`INSTALL_PDIDATADIR`|`DATADIR/pdi`|PDI data|
+|`INSTALL_PDIPLUGINDIR`|`LIBDIR/pdi/plugins_${PDI_VERSION}`|PDI plugins|
+|`CMAKE_INSTALL_BINDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|user executables|
+|`CMAKE_INSTALL_DATADIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|read-only architecture-independent data|
+|`CMAKE_INSTALL_DOCDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|documentation root|
+|`CMAKE_INSTALL_INCLUDEDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|C header files|
+|`CMAKE_INSTALL_LIBDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|object code libraries|
+|`CMAKE_INSTALL_PREFIX`|see [CMake doc](https://cmake.org/cmake/help/v3.19/variable/CMAKE_INSTALL_PREFIX.html)|Installation base|
+
 \section dependecies List of dependencies
 
 Here is a list of all dependencies required by one feature or another.

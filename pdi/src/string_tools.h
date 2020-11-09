@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +11,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  * * Neither the name of CEA nor the names of its contributors may be used to
- *   endorse or promote products derived from this software without specific 
+ *   endorse or promote products derived from this software without specific
  *   prior written permission.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -22,15 +23,27 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-/** Definitions of default values for Fortran kind.
- * \{
- */
-#cmakedefine BUILD_FORTRAN
-#cmakedefine PDI_LOGICAL_DEFAULT_KIND   @PDI_LOGICAL_DEFAULT_KIND@
-#cmakedefine PDI_REAL_DEFAULT_KIND      @PDI_REAL_DEFAULT_KIND@
-#cmakedefine PDI_INTEGER_DEFAULT_KIND   @PDI_INTEGER_DEFAULT_KIND@
-#cmakedefine PDI_CHARACTER_DEFAULT_KIND @PDI_CHARACTER_DEFAULT_KIND@
-/// \}
+#ifndef PDI_STRING_TOOLS_H_
+#define PDI_STRING_TOOLS_H_
 
-/// The default plugin path
-#cmakedefine PDI_DEFAULT_PLUGIN_PATH    "@PDI_DEFAULT_PLUGIN_PATH@"
+#include <string>
+#include <vector>
+
+#include <pdi/plugin.h>
+
+namespace PDI {
+
+/** Parse and unescape array of colon separated string
+ * 
+ * The backslash character is used for escaping. Only the following characters can be escaped:
+ * - backslash: to get a raw backslash,
+ * - colon (:): to get a raw colon that is not interpreted as a separator
+ * 
+ * \param unescaped the colon separated string array
+ * \result the actuall arra of unescaped strings
+ */
+std::vector<std::string> string_array_parse(const std::string& unescaped);
+
+}
+
+#endif // PDI_STRING_TOOLS_H_

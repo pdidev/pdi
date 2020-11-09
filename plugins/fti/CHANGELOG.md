@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* Install in the path specified by the `INSTALL_PDIPLUGINDIR` cmake variable
 
 ### Changed
-* FTI plugin requires 1.5.1 FTI library version
+* Now requires version 1.5.1 of the FTI library
 
 ### Deprecated
 

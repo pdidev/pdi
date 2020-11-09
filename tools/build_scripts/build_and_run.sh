@@ -59,7 +59,7 @@ fi
 
 if [ -n "${PDI_PLUGIN_PATH}" ]
 then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DPDI_PLUGIN_PATH=${PDI_PLUGIN_PATH}"
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
 fi
 
 if [ "xdocker-ubuntu-xenial" = "x${PDI_SYSTEM}" ]
@@ -77,7 +77,7 @@ make -j
 if [ "${CMAKE_VERSION_MAJOR}" -gt 3 -o "${CMAKE_VERSION_MINOR}" -ge 10 ]
 then
 	#TODO: Fix this workaround, where we skip centos tests on github because they fail
-	if [ "${DOCKER_RUNNER}" != github -o "${PDI_SYSTEM}" != "docker-centos-7" ]
+	if [ "x${DOCKER_RUNNER}" != "xgithub" -o "x${PDI_SYSTEM}" != "xdocker-centos-7" ]
 	then
 		ctest --output-on-failure
 	fi

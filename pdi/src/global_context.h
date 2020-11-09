@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,8 @@
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 
+#include "plugin_store.h"
+
 
 namespace PDI {
 
@@ -47,28 +49,25 @@ class PDI_EXPORT Global_context : public Context
 {
 private:
 	friend class Data_descriptor_impl;
-	
-	/// Global logger of PDI, should be constructed first, destroyed last
-	Logger_sptr m_logger;
-	
-	/// Context proxy map, should be destroyed after m_plugins
-	std::unordered_map<std::string, Context_proxy> m_context_proxy;
 
 	/// The singleton Context instance
 	static std::unique_ptr<Global_context> s_context;
 	
+	/// Global logger of PDI, should be constructed first, destroyed last
+	Logger_sptr m_logger;
+	
 	/// Datatype_template constructors available in PDI
 	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
-	
+
 	/// Descriptors of the data
 	std::unordered_map<std::string, std::unique_ptr<Data_descriptor>> m_descriptors;
+
+	/// The plugins, this should be late in the list to be destroyed early
+	Plugin_store m_plugins;
 
 	/// Callbacks of the context
 	Callbacks m_callbacks;
 
-    /// The loaded plugins - need to be last (to guarantee proper destroy order)
-	std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
-    
 	Global_context(const Global_context&) = delete;
 	
 	Global_context(Global_context&&) = delete;

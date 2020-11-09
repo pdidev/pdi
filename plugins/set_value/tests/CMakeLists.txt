@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,6 +26,19 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
+
+# Add the plugin path to PDI_PLUGIN_PATH
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
+file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
+     CONTENT "
+set(PDI_PLUGIN_PATH \"\$ENV{PDI_PLUGIN_PATH}\")\n
+if(\"x\${PDI_PLUGIN_PATH}x\" STREQUAL xx)\n
+set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_set_value_plugin>\")\n
+else()\n
+set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_set_value_plugin>:\${PDI_PLUGIN_PATH}\")\n
+endif()
+"
+)
 
 add_executable(set_value_01_C_expose set_value_test_01_expose.c)
 target_link_libraries(set_value_01_C_expose PDI::PDI_C)

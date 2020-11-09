@@ -4,8 +4,8 @@ contributions.
 
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
-* PDI maintainer
 * Design and initial implementation
+* Maintainer
 
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Initial Fortran interface
@@ -14,7 +14,6 @@ Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* FTI v3 plugin
 * Development of many unit-tests
 * Support for plugin dependencies
 * Support of the multi_expose function

@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -56,14 +57,11 @@ if("${BUILD_INDENT}")
 		serialize.cxx tests/*.c)
 endif()
 
-# Installation
-if ("${PDI_PLUGIN_PATH}" STREQUAL "")
-	set(PDI_PLUGIN_PATH "${CMAKE_INSTALL_LIBDIR}/pdi/plugins/${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
-endif()
-
+# installation
+set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_serialize_plugin
-		LIBRARY DESTINATION "${PDI_PLUGIN_PATH}"
-		ARCHIVE DESTINATION "${PDI_PLUGIN_PATH}")
+		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
+)
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")

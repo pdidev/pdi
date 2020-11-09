@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -67,7 +67,7 @@ set(PDI_unit_tests_SRC
 		PDI_data_descriptor.cxx
 		PDI_error.cxx
 		PDI_expression.cxx
-		PDI_initialize_plugins.cxx
+# 		PDI_initialize_plugins.cxx
 		PDI_member.cxx
 		PDI_pointer_datatype.cxx
 		PDI_record_datatype_empty.cxx

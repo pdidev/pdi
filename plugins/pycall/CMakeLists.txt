@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -67,14 +67,10 @@ if("${BUILD_INDENT}")
 		pycall.cxx)
 endif()
 
-# Installation
-if ("${PDI_PLUGIN_PATH}" STREQUAL "")
-	set(PDI_PLUGIN_PATH "${CMAKE_INSTALL_LIBDIR}/pdi/plugins/${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
-endif()
-
+# installation
+set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_pycall_plugin
-		LIBRARY DESTINATION "${PDI_PLUGIN_PATH}"
-		ARCHIVE DESTINATION "${PDI_PLUGIN_PATH}"
+		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
 )
 
 # Tests
