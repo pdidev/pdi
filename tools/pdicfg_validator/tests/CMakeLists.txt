@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #=============================================================================
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 
 # Positive tests
 add_test(NAME pos_val_pdicfg_test_01 COMMAND pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_pdicfg_test_01.yml")
