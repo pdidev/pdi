@@ -23,69 +23,40 @@
  ******************************************************************************/
 
 #include <assert.h>
-#include <hdf5.h>
 #include <pdi.h>
 #include <unistd.h>
 
-#define FILE "hdf5_comp_test_01.h5"
+#define FILE "dataset_test.h5"
 
-int HDF5_write()
+int main()
 {
-	hid_t file_id = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	if (file_id < 0) {
-		return 1;
-	}
-	
-	hsize_t coords[2] = {5, 10};
-	hid_t dataspace_id = H5Screate_simple(2, coords, NULL);
-	if (dataspace_id < 0) {
-		return 1;
-	}
-	
-	int dset_data[5][10];
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 10; j++) {
-			dset_data[i][j] = i * 10 + j;
-		}
-	}
-	
-	hid_t dataset_id = H5Dcreate2(file_id, "/array_data", H5T_NATIVE_INT, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	if (dataset_id < 0) {
-		return 1;
-	}
-	
-	herr_t status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset_data);
-	
-	status = H5Sclose(dataspace_id);
-	if (status < 0) {
-		return 1;
-	}
-	status = H5Dclose(dataset_id);
-	if (status < 0) {
-		return 1;
-	}
-	status = H5Fclose(file_id);
-	if (file_id < 0) {
-		return 1;
-	}
-	
-	return 0;
-}
-
-int PDI_read()
-{
+	printf("PDI dataset_read_test started\n");
 	const char* CONFIG_YAML =
-	    "logging: trace                                               \n"
-	    "data:                                                        \n"
-	    "  array_data: { size: [5, 10], type: array, subtype: int }   \n"
-	    "plugins:                                                     \n"
-	    "  decl_hdf5:                                                 \n"
-	    "    file: hdf5_comp_test_01.h5                               \n"
-	    "    read: [ array_data ]                                     \n"
+	    "logging: trace                                                 \n"
+	    "data:                                                          \n"
+	    "  array_data: { size: [5, 10], type: array, subtype: int }     \n"
+	    "plugins:                                                       \n"
+	    "  decl_hdf5:                                                   \n"
+	    "    file: dataset_test.h5                                      \n"
+	    "    datasets:                                                  \n"
+	    "      array_data: {type: array, subtype: int, size: [5, 10]}   \n"
+	    "    read:                                                      \n"
+	    "      array_data:                                              \n"
+	    "        - memory_selection:                                    \n"
+	    "            size: [5, 5]                                       \n"
+	    "          dataset_selection:                                   \n"
+	    "            size: [5, 5]                                       \n"
+	    "            start: [0, 5]                                      \n"
+	    "        - memory_selection:                                    \n"
+	    "            size: [5, 5]                                       \n"
+	    "            start: [0, 5]                                      \n"
+	    "          dataset_selection:                                   \n"
+	    "            size: [5, 5]                                       \n"
 	    ;
 	    
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
+	
 	int test_array[5][10];
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
@@ -102,22 +73,10 @@ int PDI_read()
 			}
 		}
 	}
-	
+
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-	return 0;
-}
-
-int main()
-{
-	int status = HDF5_write();
-	if (status != 0) {
-		return status;
-	}
-	status = PDI_read();
-	if (status != 0) {
-		return status;
-	}
 	
+	printf("PDI dataset_read_test finalized\n");
 	return 0;
 }

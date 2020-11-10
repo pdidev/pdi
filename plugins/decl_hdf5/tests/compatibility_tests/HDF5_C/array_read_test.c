@@ -22,63 +22,15 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//MPI test PDI write, HDF5 read
-
 #include <assert.h>
 #include <hdf5.h>
-#include <mpi.h>
-#include <pdi.h>
 #include <unistd.h>
 
-#define FILE "hdf5_mpi_comp_test_02.h5"
+#define FILE "array_test.h5"
 
-int PDI_write(int mpi_rank)
+int main()
 {
-	const char* CONFIG_YAML =
-	    "logging: trace                                               \n"
-	    "metadata:                                                    \n"
-	    "  mpi_rank: int                                              \n"
-	    "data:                                                        \n"
-	    "  array_data: { size: [5, 5], type: array, subtype: int }    \n"
-	    "plugins:                                                     \n"
-	    "  mpi: ~                                                     \n"
-	    "  decl_hdf5:                                                 \n"
-	    "    communicator: $MPI_COMM_WORLD                            \n"
-	    "    file: hdf5_mpi_comp_test_02.h5                           \n"
-	    "    datasets:                                                \n"
-	    "      array_data: {type: array, subtype: int, size: [5, 10]} \n"
-	    "    write:                                                   \n"
-	    "      array_data:                                            \n"
-	    "        - memory_selection:                                  \n"
-	    "            size: [5, 5]                                     \n"
-	    "          dataset_selection:                                 \n"
-	    "            size: [5, 5]                                     \n"
-	    "            start: [0, $mpi_rank * 5]                        \n"
-	    ;
-	    
-	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	PDI_init(conf);
-	
-	PDI_expose("mpi_rank", &mpi_rank, PDI_OUT);
-	
-	int test_array[5][5];
-	
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
-			test_array[i][j] = i * 10 + j + 5 * mpi_rank;
-		}
-	}
-	
-	PDI_expose("array_data", test_array, PDI_OUT);
-	
-	PDI_finalize();
-	PC_tree_destroy(&conf);
-	
-	return 0;
-}
-
-int HDF5_read()
-{
+	printf("HDF5 array_read_test started\n");
 	hid_t file_id = H5Fopen(FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id < 0) {
 		return 1;
@@ -90,12 +42,16 @@ int HDF5_read()
 			dset_data[i][j] = 0;
 		}
 	}
-	
+
 	hid_t dataset_id = H5Dopen2(file_id, "array_data", H5P_DEFAULT);
 	if (dataset_id < 0) {
 		return 1;
 	}
+	
 	herr_t status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset_data);
+	if (status < 0) {
+		return 1;
+	}
 	
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
@@ -114,30 +70,7 @@ int HDF5_read()
 	if (file_id < 0) {
 		return 1;
 	}
-	
-	return 0;
-}
 
-int main()
-{
-	MPI_Init(NULL, NULL);
-	int mpi_rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-	
-	int status = PDI_write(mpi_rank);
-	if (status != 0) {
-		return status;
-	}
-	MPI_Barrier(MPI_COMM_WORLD);
-	
-	if (mpi_rank == 0) {
-		status = HDF5_read();
-		if (status != 0) {
-			return status;
-		}
-	}
-	
-	MPI_Finalize();
-	
+	printf("HDF5_C array_read_test finalized\n");
 	return 0;
 }

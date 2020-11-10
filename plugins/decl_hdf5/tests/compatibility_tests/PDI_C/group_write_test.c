@@ -23,79 +23,14 @@
  ******************************************************************************/
 
 #include <assert.h>
-#include <hdf5.h>
 #include <pdi.h>
 #include <unistd.h>
 
-#define FILE "hdf5_group_comp_test_01.h5"
+#define FILE "group_test.h5"
 
-int HDF5_write()
+int main()
 {
-	hid_t file_id = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	if (file_id < 0) {
-		return 1;
-	}
-	
-	hsize_t coords[2] = {5, 10};
-	hid_t dataspace_id = H5Screate_simple(2, coords, NULL);
-	if (dataspace_id < 0) {
-		return 1;
-	}
-	
-	int dset_data[5][10];
-	int dset_data_second[5][10];
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 10; j++) {
-			dset_data[i][j] = i * 10 + j;
-			dset_data_second[i][j] = (i * 10 + j) * 10;
-		}
-	}
-	
-	hid_t group_id = H5Gcreate2(file_id,"group", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	hid_t group_second_id = H5Gcreate2(file_id, "group_second", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	
-	hid_t dataset_id = H5Dcreate2(group_id, "array_data", H5T_STD_I32BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	if (dataset_id < 0) {
-		return 1;
-	}
-	hid_t dataset_id_second = H5Dcreate2(group_second_id, "array_data", H5T_STD_I32BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	if (dataset_id_second < 0) {
-		return 1;
-	}
-	herr_t status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset_data);
-	status = H5Dwrite(dataset_id_second, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset_data_second);
-	
-	
-	status = H5Sclose(dataspace_id);
-	if (status < 0) {
-		return 1;
-	}
-	status = H5Dclose(dataset_id);
-	if (status < 0) {
-		return 1;
-	}
-	status = H5Dclose(dataset_id_second);
-	if (status < 0) {
-		return 1;
-	}
-	status = H5Gclose(group_id);
-	if (status < 0) {
-		return 1;
-	}
-	status = H5Gclose(group_second_id);
-	if (status < 0) {
-		return 1;
-	}
-	status = H5Fclose(file_id);
-	if (status < 0) {
-		return 1;
-	}
-	
-	return 0;
-}
-
-int PDI_read()
-{
+	printf("PDI group_write_test started\n");
 	const char* CONFIG_YAML =
 	    "logging: trace                                                       \n"
 	    "data:                                                                \n"
@@ -103,8 +38,8 @@ int PDI_read()
 	    "  array_data_second: { size: [5, 10], type: array, subtype: int }    \n"
 	    "plugins:                                                             \n"
 	    "  decl_hdf5:                                                         \n"
-	    "    file: hdf5_group_comp_test_01.h5                                 \n"
-	    "    on_event: read_event                                             \n"
+	    "    file: group_test.h5                                              \n"
+	    "    on_event: write_event                                            \n"
 	    "    datasets:                                                        \n"
 	    "      group/array_data:                                              \n"
 	    "        size: [5, 10]                                                \n"
@@ -114,63 +49,34 @@ int PDI_read()
 	    "        size: [5, 10]                                                \n"
 	    "        type: array                                                  \n"
 	    "        subtype: int                                                 \n"
-	    "    read:                                                            \n"
+	    "    write:                                                           \n"
 	    "      array_data:                                                    \n"
 	    "        - dataset: group/array_data                                  \n"
 	    "      array_data_second:                                             \n"
 	    "        - dataset: group_second/array_data                           \n"
 	    ;
 	    
-	    
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 	
 	int test_array[5][10];
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 10; j++) {
-			test_array[i][j] = 0;
-		}
-	}
 	int test_array_second[5][10];
+	
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
-			test_array_second[i][j] = 0;
+			test_array[i][j] = i * 10 + j;
+			test_array_second[i][j] = (i * 10 + j) * 10;
 		}
 	}
 	
-	PDI_multi_expose( "read_event",
-	    "array_data", test_array, PDI_IN,
-	    "array_data_second", test_array_second, PDI_IN,
+	PDI_multi_expose( "write_event",
+	    "array_data", test_array, PDI_OUT,
+	    "array_data_second", test_array_second, PDI_OUT,
 	    NULL);
 	    
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 10; j++) {
-			if (test_array[i][j] != i * 10 + j) {
-				fprintf(stderr, "[%d][%d] %d != %d\n ", i, j, test_array[i][j], i * 10 + j);
-				return 1;
-			} else if (test_array_second[i][j] != (i * 10 + j) * 10) {
-				fprintf(stderr, "[%d][%d] %d != %d\n ", i, j, test_array_second[i][j], i * 10 + j);
-				return 1;
-			}
-		}
-	}
-	
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	
-	return 0;
-}
-
-int main()
-{
-	int status = HDF5_write();
-	if (status !=0) {
-		return status;
-	}
-	status = PDI_read();
-	if (status !=0) {
-		return status;
-	}
-	
+	printf("PDI group_write_test finalized\n");
 	return 0;
 }

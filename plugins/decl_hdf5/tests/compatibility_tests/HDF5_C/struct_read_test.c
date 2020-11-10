@@ -24,55 +24,19 @@
 
 #include <assert.h>
 #include <hdf5.h>
-#include <pdi.h>
+#include <stdlib.h>
 #include <unistd.h>
 
-#define FILE "hdf5_comp_test_06.h5"
+#define FILE "struct_test.h5"
 
 typedef struct test_struct {
 	char a;
 	int b[5][10];
 } test_struct;
 
-void PDI_write()
+int main()
 {
-	const char* CONFIG_YAML =
-	    "logging: trace                                 \n"
-	    "data:                                          \n"
-	    "  test_struct:                                 \n"
-	    "    type: struct                               \n"
-	    "    members:                                   \n"
-	    "      a_name: char                             \n"
-	    "      b_name:                                  \n"
-	    "        type: array                            \n"
-	    "        size: [5, 10]                          \n"
-	    "        subtype: int                           \n"
-	    "plugins:                                       \n"
-	    "  decl_hdf5:                                   \n"
-	    "  - file: hdf5_comp_test_06.h5                 \n"
-	    "    write: [test_struct]                       \n"
-	    ;
-	    
-	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
-	PDI_init(conf);
-	
-	test_struct record_data;
-	
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 10; j++) {
-			record_data.b[i][j] = i * 10 + j;
-		}
-	}
-	record_data.a = 'a';
-	
-	PDI_expose("test_struct", &record_data, PDI_OUT);
-	
-	PDI_finalize();
-	PC_tree_destroy(&conf);
-}
-
-void HDF5_read()
-{
+	printf("HDF5 struct_read_test started\n");
 	hid_t file_id = H5Fopen(FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id < 0) {
 		exit(1);
@@ -121,7 +85,6 @@ void HDF5_read()
 		}
 	}
 	
-	
 	status = H5Tclose(test_struct_id);
 	if (status < 0) {
 		exit(1);
@@ -141,12 +104,7 @@ void HDF5_read()
 	if (file_id < 0) {
 		exit(1);
 	}
-}
-
-int main()
-{
-	PDI_write();
-	HDF5_read();
 	
+	printf("HDF5_C struct_read_test finalized\n");
 	return 0;
 }
