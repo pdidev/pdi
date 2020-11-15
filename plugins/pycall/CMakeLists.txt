@@ -54,7 +54,8 @@ find_package(PDI REQUIRED COMPONENTS pysupport)
 
 # The plugin
 add_library(pdi_pycall_plugin MODULE pycall.cxx)
-target_link_libraries(pdi_pycall_plugin PDI::PDI_pysupport pybind11::embed)
+# link against Python3::Python to workaround https://github.com/pybind/pybind11/issues/2664
+target_link_libraries(pdi_pycall_plugin PDI::PDI_pysupport pybind11::embed Python3::Python)
 set_target_properties(pdi_pycall_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
