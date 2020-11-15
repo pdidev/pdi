@@ -50,11 +50,11 @@ vector<string> string_array_parse(const string& unescaped) {
 			return result;
 		} else if ( unescaped[end] == ':' ) {
 			// we reached a separator, let's add the part before it to the last element of the list and start a new element
-			result.back().append(unescaped.substr(start, end));
+			result.back().append(unescaped.substr(start, end-start));
 			result.push_back("");
 		} else if ( unescaped[end] == '\\' ) {
 			// we reached an escaping backslash, first let's add the unescaped part before it to the last element of the list and start a new element 
-			result.back().append(unescaped.substr(start, end));
+			result.back().append(unescaped.substr(start, end-start));
 			// then the actual behaviour depends on the next (escaped) char
 			++end;
 			if ( end >= unescaped.size() ) {
