@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,11 +45,13 @@ foreach(test_name array dataset group mpi struct variables)
             set(write_test_name "${write_prefix}${test_name}_write_test")
             set(read_test_name "${read_prefix}${test_name}_read_test")
             if ("${test_name}" STREQUAL "mpi")
-                set(mpi_case_cmd "mpirun -n 2 ")
+                set(MPI_CASE_CMD "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}")
+                set(MPI_POST_CMD " ${MPIEXEC_POSTFLAGS}")
             else()
-                set(mpi_case_cmd "")
+                set(MPI_CASE_CMD)
+                set(MPI_POST_CMD)
             endif()
-            add_test(NAME "${write_test_name}__${read_test_name}" COMMAND "${RUNTEST_DIR}" "/bin/bash" "-c" "${mpi_case_cmd}$<TARGET_FILE:${write_test_name}> && ${mpi_case_cmd}$<TARGET_FILE:${read_test_name}>")    
+            add_test(NAME "${write_test_name}__${read_test_name}" COMMAND "${RUNTEST_DIR}" "/bin/bash" "-exc" "${MPI_CASE_CMD}$<TARGET_FILE:${write_test_name}>${MPI_POST_CMD} && ${MPI_CASE_CMD}$<TARGET_FILE:${read_test_name}>${MPI_POST_CMD}")
         endforeach(read_prefix)
     endforeach(write_prefix)
 endforeach(test_name)

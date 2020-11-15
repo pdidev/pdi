@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +36,6 @@ int main()
 	MPI_Init(NULL, NULL);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-	int status;
 	
 	const char* CONFIG_YAML =
 		"logging: trace                                               \n"
@@ -83,9 +83,6 @@ int main()
 	
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-	if (status != 0) {
-		return status;
-	}
 	
 	MPI_Finalize();
 
