@@ -92,6 +92,38 @@ File organization:
 * No implementation should be provided in header files, even `= default`
   implementations
 
+## Logging
+
+Logging should be done using the spdlog library and exceptions. The standard C++
+`cerr`, `clog` and `cout` should never be used except to diagnose issues that
+appear before or after the initialization of spdlog.
+
+The log levels should be used as follow, the first category that applies should
+be used:
+* **fatal error** an invalid situation has been detected by the library (invalid
+  user input, invalid hardware behaviour, etc.), the library has no way to
+  recover. This is reported by throwing an exception.
+* **error** an invalid situation has been detected by the library (invalid
+  user input, invalid hardware behaviour, etc.), the library will work-around
+  this, but the user must definitely correct this.
+* **warning** a very likely invalid situation has been detected by the library
+  (user input that is technically valid, but very unusual for example), this is
+  not technically incorrect so the library will continue as planned, but the
+  user should definitely be notified.
+* **info** a normal situation of the execution is likely useful for the user to
+  understand the behaviour of the library after the fact, this should be limited
+  to a few important steps of the execution. This should not include or
+  require any knowledge about the internal working of the library.
+* **debug** a normal situation of the execution might be useful for the user to
+  understand the behaviour of the library when specifically looking to diagnose
+  an unexpected behaviour. For example, a default value is used because the user
+  didn't provide a specific value for a given call. This should not include or
+  require any knowledge about the internal working of the library.
+* **trace** a normal situation of the execution might be useful for the
+  developers to diagnose the behaviour of the library. This typically requires
+  knowledge about the internal working of the library to be correctly
+  understood.
+
 ## Indentation
 
 A astyle configuration file is provided with in `docs/indent.astyle`.
