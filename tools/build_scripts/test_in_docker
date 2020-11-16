@@ -46,19 +46,8 @@ def gen_script(command_list):
         return command_list
     return "; ".join([gen_script(scr) for scr in command_list])
 
-def main():
-    if len(sys.argv) != 3:
-        print("** Error, expecting 2 arguments, got "+str(len(sys.argv)-1), file=sys.stderr)
-        print("\nUsage: "+sys.argv[0]+" <DOCKER_RUNNER> <test_name>", file=sys.stderr)
-        sys.exit(1)
-    
-    docker_runner=sys.argv[1] 
-    test_name=sys.argv[2]
-    
-    gitlab_ci = yaml.load(open(PDI_DIR/".gitlab-ci.yml"), Loader=yaml.BaseLoader)
-    
-    image = gitlab_ci[test_name]["image"]
-    script = gen_script(["set -e", "cd /builds/pdidev/pdi", gitlab_ci[test_name]["script"]])
+def launch_docker_test(docker_runner, image, script):
+    # Generate a random name for our temporary docker volume
     volume_name = ''.join(random.choice(string.ascii_letters) for i in range(32))
     
     # Pull the user-specified image
@@ -84,15 +73,32 @@ def main():
         
         # Run the user-specified image with the just populated volume
         subprocess.run(["docker", "run", "--rm",
-                        "--mount", "source="+volume_name+",destination=/builds/pdidev/",
+                        "--mount", "source="+volume_name+",destination=/builds/pdidev/,readonly",
                         "-e", "DOCKER_RUNNER="+docker_runner,
+                        "-e", "MAKEFLAGS",
                         image,
                         "bash", "-c", script
                         ], check=True)
     finally:
         # Remove the volume
         subprocess.run(["docker", "volume", "rm", volume_name], capture_output=True)
-        
+    
+
+def main():
+    if len(sys.argv) != 3:
+        print("** Error, expecting 2 arguments, got "+str(len(sys.argv)-1), file=sys.stderr)
+        print("\nUsage: "+sys.argv[0]+" <DOCKER_RUNNER> <test_name>", file=sys.stderr)
+        sys.exit(1)
+    
+    docker_runner=sys.argv[1] 
+    test_name=sys.argv[2]
+    
+    gitlab_ci = yaml.load(open(PDI_DIR/".gitlab-ci.yml"), Loader=yaml.BaseLoader)
+    
+    image = gitlab_ci[test_name]["image"]
+    script = gen_script(["set -e", "cd /builds/pdidev/pdi", gitlab_ci[test_name]["script"]])
+    
+    launch_docker_test(docker_runner, image, script)
 
 if __name__ == "__main__":
     main()

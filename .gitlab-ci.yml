@@ -35,6 +35,7 @@ stages:
 
 .shared_script: &shared_script
   - export DOCKER_RUNNER=gitlab
+  - export MAKEFLAGS='-j 2'
   - sh tools/build_scripts/build_and_run.sh
 
 centos_cmake3.5_embedded:

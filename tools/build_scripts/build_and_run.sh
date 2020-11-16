@@ -73,7 +73,11 @@ then
 fi
 
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-make -j
+if [ -z "${MAKEFLAGS}" ]
+then
+	export MAKEFLAGS='-j'
+fi
+make
 if [ "${CMAKE_VERSION_MAJOR}" -gt 3 -o "${CMAKE_VERSION_MINOR}" -ge 10 ]
 then
 	#TODO: Fix this workaround, where we skip centos tests on github because they fail
