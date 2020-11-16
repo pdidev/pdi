@@ -33,6 +33,7 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/fmt/fmt.h>
 
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
@@ -49,6 +50,8 @@
 
 namespace PDI {
 
+using fmt::format;
+using fmt::join;
 using std::exception;
 using std::forward_as_tuple;
 using std::map;
@@ -175,29 +178,40 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 
 void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 {
+	vector<string> load_errors;
+	
 	// try using expected path
 	for ( auto&& path: m_plugin_path ) {
-		m_ctx.logger()->trace("Trying to load `libpdi_{}_plugin.so' from `{}': `{}'", plugin_name, path, path + "/libpdi_" + plugin_name + "_plugin.so");
 		string libname = path + "/libpdi_" + plugin_name + "_plugin.so";
-		
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW|RTLD_GLOBAL);
 		if (lib_handle) {
+			m_ctx.logger()->trace("Loaded `{}'", libname);
 			return lib_handle;
+		} else {
+			const string error_msg = dlerror();
+			m_ctx.logger()->debug("Unable to load {}", error_msg);
+			load_errors.push_back(format("\n  * unable to load {}", error_msg));
 		}
 	}
 	
 	// try system path
-	m_ctx.logger()->trace("Trying to load `libpdi_{}_plugin.so' from system path", plugin_name);
 	string libname = string("libpdi_") + plugin_name + "_plugin.so";
-	
 	// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 	void* lib_handle = dlopen(libname.c_str(), RTLD_NOW|RTLD_GLOBAL);
 	if (lib_handle) {
+		m_ctx.logger()->trace("Loaded `{}' from system path", libname);
 		return lib_handle;
+	} else {
+		const string error_msg = dlerror();
+		m_ctx.logger()->debug("Unable to load from system path {}", plugin_name, error_msg);
+		load_errors.push_back(format("\n  * unable to load from system path {}", error_msg));
 	}
 	
-	throw Plugin_error{"Unable to load library file for plugin `{}': {}", plugin_name, dlerror()};
+	throw Plugin_error{"Unable to load plugin `{}': {}"
+		, plugin_name
+		, join(load_errors, ", ")
+	};
 }
 
 Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf):

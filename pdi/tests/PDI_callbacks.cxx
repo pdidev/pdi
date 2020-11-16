@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -452,7 +453,7 @@ TEST_F(CallbacksTest, remove_empty_desc_callback)
 	try {
 		Ref ref_x {this->test_context->desc(data_x).ref()};
 		FAIL();
-	} catch (Value_error e) {
+	} catch (Value_error& e) {
 		ASSERT_EQ(e.status(), PDI_ERR_VALUE);
 	}
 }
