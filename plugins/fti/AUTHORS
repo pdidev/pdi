@@ -4,7 +4,7 @@ their contributions.
 
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
-* Version 2 of the plugin
+* (Re-)design v2
 * Updated to match new PDI API & style
 * Buildsystem update
 
@@ -15,13 +15,14 @@ Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* Version 3 of the plugin
-* Maintainer from Jan. 2019 to Sep. 2020
+* Maintainer (Jan. 2019 - Sep. 2020)
+* (Re-)design v3
 * Buildsystem fix
 
 Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
+* Maintainer (Nov. 2020 - ...)
 * Improved logging system
 * Schema validator

@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * A new `tests` sub-project contains tests that depend on multiple plugins
 
 ### Changed
+* Python support now depends on python 3
+* Fortran support now requires python 3.5 with venv support
 * Fortran support now requires version 1.0.6 of Zpp minimum
 * Bundle version 1.0.6 of Zpp
 

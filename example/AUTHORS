@@ -3,29 +3,33 @@ for their public spirit, we list here in alphabetical order a condensed list of
 their contributions.
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
-* Example maintainer
+* Maintainer (Dec. 2014 - ...)
 * Design and initial implementation
 * Initial C & Python examples
-* trace & pycall plugins examples
+* Added trace & pycall examples
 * Buildsystem
 
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
-* Initial Fortran example implementation
-* Initial FTI example
+* Added Fortran example
+* Added FTI example
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
+The scientific/academic work is financed from financial resources for science
+in the years 2016 - 2018 granted for the realization of the international
+project co-financed by Polish Ministry of Science and Higher Education.
 * Updated Python example
 
 Corentin Roussel - CEA (Corentin.roussel@cea.fr)
-* Co-maintainer from Sept. 2016 to Feb. 2018
+* Co-maintainer (Sep. 2016 - Feb. 2018)
 * Updated examples to match PDI API updates
 
 Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
+* Co-maintainer (Nov. 2020 - ...)
 * Updated examples to match new PDI config. format
-* FlowVR examples
+* Added FlowVR examples
 
 Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
-* SIONlib plugin examples
+* Added SIONlib examples

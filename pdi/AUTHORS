@@ -5,7 +5,7 @@ contributions.
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Design and initial implementation
-* Maintainer
+* Maintainer (Dec. 2014 - ...)
 
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Initial Fortran interface
@@ -20,14 +20,20 @@ project co-financed by Polish Ministry of Science and Higher Education.
 * Many improvements, bugfixes and cleanups
 
 Corentin Roussel - CEA (Corentin.roussel@cea.fr)
-* Co-maintainer from Sept. 2016 to Feb. 2018
+* Co-maintainer (Sep. 2016 - Feb. 2018)
 
 Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
+* Co-maintainer (Nov. 2020 - ...)
 * Set-up and development of unit-tests
 * Support for records in YAML
 * Logging support
 * Support for complex datatypes
+* Callback mechanism
 * Many improvements, bugfixes and cleanups
+
+Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
+* Error subclasses
+* Support for C struct in yaml

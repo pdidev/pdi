@@ -1,11 +1,11 @@
-Multiple people have contributed to the user-code plugin. To show our appreciation for their
-public spirit, we list here in alphabetical order a condensed list of their
-contributions.
+Multiple people have contributed to PDI user-code plugin. To show our
+appreciation for their public spirit, we list here in alphabetical order a
+condensed list of their contributions.
 
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
-* User-code plugin maintainer
-* Rework of user-code v2 plugin
+* Maintainer (Dec. 2017 - ...)
+* (Re-)design v2
 * Adapted to moving PDI API & style
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)

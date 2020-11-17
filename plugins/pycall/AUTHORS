@@ -1,8 +1,11 @@
-Multiple people have contributed to the Pycall plugin. To show our appreciation for their
-public spirit, we list here in alphabetical order a condensed list of their
-contributions.
+Multiple people have contributed to PDI Pycall plugin. To show our appreciation
+for their public spirit, we list here in alphabetical order a condensed list of
+their contributions.
 
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
-* Pycall plugin maintainer
+* Maintainer (Mar. 2019 - ...)
 * Design and initial implementation
+
+Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
+* Plugin documentation

@@ -1,20 +1,27 @@
-Multiple people have contributed to PDI Trace plugin. To show our appreciation
-for their public spirit, we list here in alphabetical order a condensed list of
-their contributions.
+Multiple people have contributed to the PDI distribution. To show our
+appreciation for their public spirit, we list here in alphabetical order a
+condensed list of their contributions.
+
+Please note this is the list for the distribution mechanism of PDI. The list for
+each sub-project (including PDI itself) is located in the dedicated sub-project
+AUTHORS file.
 
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
-* Maintainer (May 2019 - ...)
+* Maintainer (Dec. 2014 - ...)
 * Design and initial implementation
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* Minor adaptations for new PDI API
+* Many improvements, bugfixes and cleanups
+
+Corentin Roussel - CEA (Corentin.roussel@cea.fr)
+* Co-maintainer (Sep. 2016 - Feb. 2018)
 
 Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* Minor adaptations for new PDI API
+* Many improvements, bugfixes and cleanups
