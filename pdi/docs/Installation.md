@@ -3,7 +3,7 @@
 \warning
 The recommended approach to install %PDI is to use the stable pre-compiled
 binary packages for Debian, Fedora and Ubuntu available at
-https://github.com/pdidev/pkgs/tree/repo .
+[https://github.com/pdidev/repo](https://github.com/pdidev/repo).
 
 \warning
 On other distributions, in case you do not have root acces, or if you want a
