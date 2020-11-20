@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,25 +43,90 @@
 
 namespace PDI {
 
+using std::align;
 using std::endl;
 using std::max;
+using std::move;
+using std::pair;
 using std::regex;
 using std::regex_replace;
 using std::string;
 using std::stringstream;
+using std::to_string;
 using std::transform;
 using std::unique_ptr;
 using std::vector;
 
+Array_datatype::Index_accessor::Index_accessor(size_t index):
+	m_index{index}
+{}
+
+string Array_datatype::Index_accessor::access_kind() const 
+{
+	return "index access [" + to_string(m_index) + "]";
+}
+
+pair<void*, Datatype_uptr> Array_datatype::Index_accessor::access(const Array_datatype& array_type,
+										void* from,
+										vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+										vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+{
+	if (m_index < array_type.subsize()) {
+		from = reinterpret_cast<uint8_t*>(from) + array_type.subtype().buffersize() * (array_type.start() + m_index);
+		if (remaining_begin == remaining_end) {
+			return {from, array_type.subtype().clone_type()};
+		} else {
+			return array_type.subtype().subaccess_by_iterators(from, remaining_begin, remaining_end);	
+		}
+	} else {
+		throw Value_error {"Subaccess array index out of range: {} >= {}", m_index, array_type.subsize()};
+	}
+}
+
+Array_datatype::Slice_accessor::Slice_accessor(size_t start, size_t end):
+	m_start{start},
+	m_end{end}
+{}
+
+string Array_datatype::Slice_accessor::access_kind() const 
+{
+	return "slice access [" + to_string(m_start) + ":" + to_string(m_end) + "]";
+}
+
+pair<void*, Datatype_uptr> Array_datatype::Slice_accessor::access(const Array_datatype& array_type,
+										void* from,
+										vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+										vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+{
+	if (m_end <= array_type.subsize()) {
+		Datatype_uptr new_type {new Array_datatype{array_type.subtype().clone_type(), this->size()}};
+		from = reinterpret_cast<uint8_t*>(from) + array_type.subtype().buffersize() * (array_type.start() + m_start);
+		if (remaining_begin == remaining_end) {
+			return {from, move(new_type)};
+		} else {
+			return new_type->subaccess_by_iterators(from, remaining_begin, remaining_end);
+		}
+	} else {
+		throw Value_error {"Subaccess array slice out of range: [{}:{}] > {}", m_start, 
+																				m_end,
+																				array_type.subsize()};
+	}
+}
+
+size_t Array_datatype::Slice_accessor::size() const
+{
+	return m_end - m_start;
+}
+
 Array_datatype::Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize):
-	m_subtype {std::move(subtype)},
-	m_size{std::move(size)},
-	m_start{std::move(start)},
-	m_subsize{std::move(subsize)}
+	m_subtype {move(subtype)},
+	m_size{move(size)},
+	m_start{move(start)},
+	m_subsize{move(subsize)}
 {}
 
 Array_datatype::Array_datatype(Datatype_uptr subtype, size_t size):
-	Array_datatype{std::move(subtype), size, 0, std::move(size)}
+	Array_datatype{move(subtype), size, 0, move(size)}
 {}
 
 const Datatype& Array_datatype::subtype() const
@@ -145,7 +211,7 @@ void* Array_datatype::data_to_dense_copy(void* to, const void* from) const
 		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
 		size_t space_to_align = subtype_alignment;
 		//size = 0, because we know that to points to allocated memory
-		to = std::align(subtype_alignment, 0, to, space_to_align);
+		to = align(subtype_alignment, 0, to, space_to_align);
 		
 		to = subtype().data_to_dense_copy(to, from);
 		from = reinterpret_cast<const uint8_t*>(from) + subtype_buffersize;
@@ -171,9 +237,9 @@ void* Array_datatype::data_from_dense_copy(void* to, const void* from) const
 		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
 		size_t space_to_align = subtype_alignment;
 		//size = 0, because we know that to points to allocated memory
-		to = std::align(subtype_alignment, 0, to, space_to_align);
+		to = align(subtype_alignment, 0, to, space_to_align);
 		
-		//cannot use std::aling, becasue `from' is const
+		//cannot use std::align, becasue `from' is const
 		auto subtype_align = subtype().alignment();
 		int padding = (subtype_align - (reinterpret_cast<const uintptr_t>(from) % subtype_align)) % subtype_align;
 		from = reinterpret_cast<const uint8_t*>(from) + padding;
@@ -183,6 +249,13 @@ void* Array_datatype::data_from_dense_copy(void* to, const void* from) const
 	}
 	to = original_to + buffersize();
 	return to;
+}
+
+pair<void*, Datatype_uptr> Array_datatype::subaccess_by_iterators(void* from,
+												vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+												vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+{
+	return remaining_begin->get()->access(*this, from, ++remaining_begin, remaining_end);
 }
 
 void Array_datatype::destroy_data(void* ptr) const

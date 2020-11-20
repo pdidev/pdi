@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,15 +41,47 @@
 
 namespace PDI {
 
+using std::align;
 using std::endl;
+using std::find_if;
 using std::max;
 using std::move;
+using std::pair;
 using std::regex;
 using std::regex_replace;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
+
+Record_datatype::Member_accessor::Member_accessor(const string& member_name):
+	m_member_name{member_name}
+{}
+
+string Record_datatype::Member_accessor::access_kind() const 
+{
+	return "member access `" + m_member_name + "'";
+}
+
+pair<void*, Datatype_uptr> Record_datatype::Member_accessor::access(const Record_datatype& record_type,
+											void* from,
+											vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+											vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+{
+	auto member_it = find_if(record_type.members().begin(), record_type.members().end(), [this](const Member& member) {
+		return this->m_member_name == member.name();
+	});
+	if (member_it == record_type.members().end()) {
+		throw Value_error {"Record subaccess error: no member named {}", m_member_name};
+	}
+	from = reinterpret_cast<uint8_t*>(from) + member_it->displacement();
+	
+	if (remaining_begin == remaining_end) {
+		return {from, member_it->type().clone_type()};
+	} else {
+		return member_it->type().subaccess_by_iterators(from, remaining_begin, remaining_end);
+	}
+}
 
 Record_datatype::Member::Member(size_t displacement, Datatype_uptr type, const string& name):
 	m_displacement{displacement},
@@ -200,7 +233,7 @@ void* Record_datatype::data_to_dense_copy(void* to, const void* from) const
 		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
 		auto space_to_align = member.type().alignment();
 		//size = 0, because we know that to points to allocated memory
-		to = std::align(member.type().alignment(), 0, to, space_to_align);
+		to = align(member.type().alignment(), 0, to, space_to_align);
 		const uint8_t* member_from = reinterpret_cast<const uint8_t*>(from) + member.displacement();
 		to = member.type().data_to_dense_copy(to, member_from);
 	}
@@ -229,6 +262,13 @@ void* Record_datatype::data_from_dense_copy(void* to, const void* from) const
 	}
 	to = original_to + buffersize();
 	return to;
+}
+
+pair<void*, Datatype_uptr> Record_datatype::subaccess_by_iterators(void* from,
+												vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+												vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+{
+	return remaining_begin->get()->access(*this, from, ++remaining_begin, remaining_end);
 }
 
 void Record_datatype::destroy_data(void* ptr) const

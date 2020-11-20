@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -322,4 +322,220 @@ TEST_F(SparseArrayDeepCopyTest, dense_to_sparse)
 			ASSERT_EQ(dense_array[(i-3)*4 + j-3], sparse_array[10*i + j]);
 		}
 	}
+}
+
+/*
+ * Struct prepared for ArrayAccessSequenceTest.
+ *
+ */
+struct ArrayAccessSequenceTest : public ::testing::Test {
+
+	Array_datatype m_array_type;
+	std::unique_ptr<int[]> m_array;
+	
+	ArrayAccessSequenceTest():
+		m_array_type{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 16 },
+	m_array{new int[16]}
+	{
+		for (int i = 0; i < 16; i++) {
+			m_array[i] = i;
+		}
+	}
+};
+
+/*
+ * Name:                ArrayAccessSequenceTest.access_single_element
+ *
+ * Tested functions:    PDI::Array_datatype::subaccess
+ *
+ * Description:         Test checks if passing array return correct subtype and value.
+ */
+TEST_F(ArrayAccessSequenceTest, access_single_element)
+{
+	std::pair<void*, Datatype_uptr> data = m_array_type.subaccess(m_array.get(), Array_datatype::Index_accessor{5});
+	ASSERT_EQ(m_array[5], *static_cast<int*>(data.first));
+	
+	ASSERT_NE(m_array_type, *data.second);
+	Scalar_datatype scalar_type {Scalar_kind::SIGNED,sizeof(int)};
+	ASSERT_EQ(scalar_type, *data.second);
+}
+
+/*
+ * Name:                ArrayAccessSequenceTest.access_sequence_subtype_begin
+ *
+ * Tested functions:    PDI::Array_datatype::subaccess
+ *
+ * Description:         Test checks if passing array return correct subtype and values.
+ */
+TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_begin)
+{
+	std::pair<void*, Datatype_uptr> data = m_array_type.subaccess(m_array.get(), Array_datatype::Slice_accessor{0, 3}); //"[0:3]"
+	for (int i = 0; i < 3; i++) {
+		ASSERT_EQ(m_array[i], static_cast<int*>(data.first)[i]);
+	}
+	ASSERT_NE(m_array_type, *data.second);
+	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 3 };
+	ASSERT_EQ(array_test, *data.second);
+}
+
+/*
+ * Name:                ArrayAccessSequenceTest.access_sequence_subtype_middle
+ *
+ * Tested functions:    PDI::Array_datatype::subaccess
+ *
+ * Description:         Test checks if passing array return correct subtype and values.
+ */
+TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_middle)
+{
+	std::pair<void*, Datatype_uptr> data = m_array_type.subaccess(m_array.get(), Array_datatype::Slice_accessor{5, 7});
+	for (int i = 0; i < 2; i++) {
+		ASSERT_EQ(m_array[i+5], static_cast<int*>(data.first)[i]);
+	}
+	ASSERT_NE(m_array_type, *data.second);
+	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 2 };
+	ASSERT_EQ(array_test, *data.second);
+}
+
+/*
+ * Name:                ArrayAccessSequenceTest.access_sequence_subtype_end
+ *
+ * Tested functions:    PDI::Array_datatype::subaccess
+ *
+ * Description:         Test checks if passing array return correct subtype and values.
+ */
+TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_end)
+{
+	std::pair<void*, Datatype_uptr> data = m_array_type.subaccess(m_array.get(), Array_datatype::Slice_accessor{12, 16});
+	for (int i = 0; i < 4; i++) {
+		ASSERT_EQ(m_array[i+12], static_cast<int*>(data.first)[i]);
+	}
+	ASSERT_NE(m_array_type, *data.second);
+	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 4 };
+	ASSERT_EQ(array_test, *data.second);
+}
+
+/*
+ * Name:                ArrayAccessSimpleSequenceTest.access_sequence_subtype_sparse_data
+ *
+ * Tested functions:    PDI::Array_datatype::subaccess
+ *
+ * Description:         Test checks if passing sparse array return correct subtype and values.
+ */
+TEST(ArrayAccessSimpleSequenceTest, access_sequence_subtype_sparse_data)
+{
+	int sparse_array[16];
+	{
+		for (int i = 0; i < 16; i++) {
+			sparse_array[i] = i;
+		}
+	}
+	
+	Array_datatype sparse_array_type{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 16, 2, 4};
+	
+	std::pair<void*, Datatype_uptr> data = sparse_array_type.subaccess(sparse_array, Array_datatype::Slice_accessor{0, 2});
+	for (int i = 0; i < 2; i++) {
+		ASSERT_EQ(sparse_array[i+2], static_cast<int*>(data.first)[i]);
+	}
+}
+
+/*
+ * Struct prepared for ArrayAccessAdvancedSequenceTest.
+ *
+ */
+struct ArrayAccessAdvancedSequenceTest : public ::testing::Test {
+
+	Array_datatype m_sparse_matrix_type;
+	std::unique_ptr<int[]> m_sparse_matrix;
+	
+	ArrayAccessAdvancedSequenceTest():
+		m_sparse_matrix_type{Datatype_uptr{new Array_datatype{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 8, 1, 4 }}, 8, 1, 4},
+	m_sparse_matrix{new int[64]}
+	{
+		for (int i = 0; i < 64; i++) {
+			m_sparse_matrix[i] = i;
+		}
+	}
+};
+
+/*
+ * Name:                ArrayAccessAdvancedSequenceTest.access_sequence_subtype_sparse_data
+ *
+ * Tested functions:    PDI::Array_datatype::get_subtype_ptr
+ *
+ * Description:         Test checks if passing sparse 2D array return correct subtype and values.
+ */
+TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data)
+{
+	std::pair<void*, Datatype_uptr> data {m_sparse_matrix.get(), m_sparse_matrix_type.clone_type()};
+	std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
+	accessors.emplace_back(new Array_datatype::Index_accessor{0});
+	accessors.emplace_back(new Array_datatype::Slice_accessor{0, 4});
+	for (auto&& accessor : accessors) {
+		data = data.second->subaccess(data.first, *accessor);
+	}
+	for (int i = 0; i < 4 ; i++) {
+		ASSERT_EQ(m_sparse_matrix[i+9], static_cast<int*>(data.first)[i]);
+	}
+	ASSERT_NE(m_sparse_matrix_type, *data.second);
+	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 4 };
+	ASSERT_EQ(array_test, *data.second);
+}
+
+/*
+ * Name:                ArrayAccessAdvancedSequenceTest.access_sequence_subtype_sparse_data_vector
+ *
+ * Tested functions:    PDI::Array_datatype::get_subtype_ptr
+ *
+ * Description:         Test checks if passing sparse 2D array return correct subtype and values.
+ */
+TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data_vector)
+{
+	std::pair<void*, Datatype_uptr> data {m_sparse_matrix.get(), m_sparse_matrix_type.clone_type()};
+	std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
+	accessors.emplace_back(new Array_datatype::Index_accessor{0});
+	accessors.emplace_back(new Array_datatype::Slice_accessor{0, 4});
+	data = data.second->subaccess(data.first, accessors);
+	for (int i = 0; i < 4 ; i++) {
+		ASSERT_EQ(m_sparse_matrix[i+9], static_cast<int*>(data.first)[i]);
+	}
+	ASSERT_NE(m_sparse_matrix_type, *data.second);
+	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 4 };
+	ASSERT_EQ(array_test, *data.second);
+}
+
+/*
+ * Name:                ArrayAccessAdvancedSequenceTest.access_sequence_subtype_sparse_data_second
+ *
+ * Tested functions:    PDI::Array_datatype::get_subtype_ptr
+ *
+ * Description:         Test checks if passing sparse 2D array return correct subtype and values.
+ */
+TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data_second)
+{
+	std::pair<void*, Datatype_uptr> data = m_sparse_matrix_type.subaccess(m_sparse_matrix.get(), Array_datatype::Index_accessor{1});
+	for (int i = 0; i < 8 ; i++) {
+		ASSERT_EQ(m_sparse_matrix[i+16], static_cast<int*>(data.first)[i]);
+	}
+	ASSERT_NE(m_sparse_matrix_type, *data.second);
+	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 8, 1, 4};
+	ASSERT_EQ(array_test, *data.second);
+}
+
+/*
+ * Name:                ArrayAccessAdvancedSequenceTest.access_sequence_subtype_sparse_data_third
+ *
+ * Tested functions:    PDI::Array_datatype::get_subtype_ptr
+ *
+ * Description:         Test checks if passing sparse 2D array return correct subtype and values.
+ */
+TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data_third)
+{
+	std::pair<void*, Datatype_uptr> data {m_sparse_matrix.get(), m_sparse_matrix_type.clone_type()};
+	std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
+	data = data.second->subaccess(data.first, Array_datatype::Index_accessor{0});
+	data = data.second->subaccess(data.first, Array_datatype::Index_accessor{0});
+	ASSERT_EQ(m_sparse_matrix[9], static_cast<int*>(data.first)[0]);
+	ASSERT_NE(m_sparse_matrix_type, *data.second);
+	Scalar_datatype scalar_test{Scalar_kind::SIGNED, sizeof(int)};
+	ASSERT_EQ(scalar_test, *data.second);
 }

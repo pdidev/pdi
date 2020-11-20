@@ -51,6 +51,22 @@ class Context;
  */
 class Datatype;
 
+/** Array datatype derived from Datatype
+    */
+class Array_datatype;
+
+/** Pointer datatype derived from Datatype
+    */
+class Pointer_datatype;
+
+/** Record datatype derived from Datatype
+    */
+class Record_datatype;
+
+/** Scalar datatype derived from Datatype
+    */
+class Scalar_datatype;
+
 /** A PDI datatype template
  *
  * A template can be evaluated into a datatype by resolving its references

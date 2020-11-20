@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 * Added expression arithmetic operators
 * The `PDI_DEFAULT_PLUGINDIR` cmake variable provides the default plugin installation path
+* Subaccess methods for array, record and pointer datatypes
 
 #### Changed
 

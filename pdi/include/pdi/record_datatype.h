@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +43,27 @@ class PDI_EXPORT Record_datatype:
 	public Datatype
 {
 public:
+	/** Member accessor for record datatype
+	 */
+	class Member_accessor : public Accessor_base
+	{
+		/// Name of the member that will be returned
+		std::string m_member_name;
+		
+		std::string access_kind() const override;
+	public:
+		/** Construct a new member accessor
+		 *
+		 * \param member_name name of the member that will be returned
+		 */
+		Member_accessor(const std::string& member_name);
+		
+		std::pair<void*, Datatype_uptr> access(const Record_datatype& record_type,
+		    void* from,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+	};
+	
 	/** A Member is one of the elements inside a Record_datatype
 	 */
 	class Member
@@ -147,6 +169,10 @@ public:
 	
 	void* data_from_dense_copy(void* to, const void*) const override;
 	
+	std::pair<void*, Datatype_uptr> subaccess_by_iterators(void* from,
+	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+	    
 	void destroy_data(void*) const override;
 	
 	std::string debug_string() const override;

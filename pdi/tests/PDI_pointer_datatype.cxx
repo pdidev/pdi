@@ -113,3 +113,102 @@ TEST_F(PointerDatatypeTest, record_equality)
 		FAIL();
 	}
 }
+
+/*
+ * Name:                PointerAccessSequenceTest.pointer_to_record_with_pointer_to_array_of_scalars_subtype_check
+ *
+ * Tested functions:    PDI::pointer_datatype::subaccess
+ *
+ * Description:         Test checks if returned subtype and data are correct
+ */
+TEST(PointerAccessSequenceTest, pointer_to_record_with_pointer_to_array_of_scalars_subtype_check)
+{
+	struct Simple_record_t {
+		char m_char;
+		int* m_pointer;
+	};
+	
+	Simple_record_t simple_record;
+	simple_record.m_pointer = new int[10];
+	for (int i = 0; i < 10; i++) {
+		simple_record.m_pointer[i] = i;
+	}
+	Scalar_datatype char_type {Scalar_kind::UNSIGNED,sizeof(char)};
+	Scalar_datatype int_type {Scalar_kind::SIGNED,sizeof(int)};
+	Array_datatype array_type{int_type.clone_type(), 10};
+	Pointer_datatype ptr_array_type{array_type.clone_type()};
+	
+	std::vector<Record_datatype::Member> members;
+	members.emplace_back(offsetof(Simple_record_t, m_char), char_type.clone_type(), "m_char");
+	members.emplace_back(offsetof(Simple_record_t, m_pointer), ptr_array_type.clone_type(), "m_pointer");
+	Record_datatype record_type{std::move(members),sizeof(Simple_record_t)};
+	Pointer_datatype ptr_record_type{record_type.clone_type()};
+	Simple_record_t* value_ptr = &simple_record;
+	
+	
+	std::pair<void*, Datatype_uptr> data = ptr_record_type.subaccess(&value_ptr, Pointer_datatype::Accessor{});
+	ASSERT_EQ(value_ptr, data.first);
+	ASSERT_EQ(record_type, *data.second);
+
+	std::pair<void*, Datatype_uptr> char_data = ptr_record_type.subaccess(&value_ptr, Record_datatype::Member_accessor{"m_char"});
+	ASSERT_EQ(&simple_record.m_char, char_data.first);
+	ASSERT_EQ(char_type, *char_data.second);
+
+	std::pair<void*, Datatype_uptr> ptr_data = data.second->subaccess(data.first, Record_datatype::Member_accessor{"m_pointer"});
+	ASSERT_EQ(&simple_record.m_pointer, ptr_data.first);
+	ASSERT_EQ(ptr_array_type, *ptr_data.second);
+
+	std::pair<void*, Datatype_uptr> ptr_ptr_data = ptr_data.second->subaccess(ptr_data.first, Pointer_datatype::Accessor{});
+	ASSERT_EQ(simple_record.m_pointer, ptr_ptr_data.first);
+	ASSERT_EQ(array_type, *ptr_ptr_data.second);
+
+	std::pair<void*, Datatype_uptr> array_ptr_ptr_data = ptr_ptr_data.second->subaccess(ptr_ptr_data.first, Array_datatype::Index_accessor{2});
+	ASSERT_EQ(int_type, *array_ptr_ptr_data.second);
+	ASSERT_EQ(&(simple_record.m_pointer[2]), array_ptr_ptr_data.first);
+	
+	delete[] simple_record.m_pointer;
+}
+
+/*
+ * Name:                PointerAccessSequenceTest.pointer_to_record_with_pointer_to_array_of_scalars_subtype_check_vector
+ *
+ * Tested functions:    PDI::pointer_datatype::subaccess
+ *
+ * Description:         Test checks if returned subtype and data are correct
+ */
+TEST(PointerAccessSequenceTest, pointer_to_record_with_pointer_to_array_of_scalars_subtype_check_vector)
+{
+	struct Simple_record_t {
+		char m_char;
+		int* m_pointer;
+	};
+	
+	Simple_record_t simple_record;
+	simple_record.m_pointer = new int[10];
+	for (int i = 0; i < 10; i++) {
+		simple_record.m_pointer[i] = i;
+	}
+	Scalar_datatype char_type {Scalar_kind::UNSIGNED,sizeof(char)};
+	Scalar_datatype int_type {Scalar_kind::SIGNED,sizeof(int)};
+	Array_datatype array_type{int_type.clone_type(), 10};
+	Pointer_datatype ptr_array_type{array_type.clone_type()};
+	
+	std::vector<Record_datatype::Member> members;
+	members.emplace_back(offsetof(Simple_record_t, m_char), char_type.clone_type(), "m_char");
+	members.emplace_back(offsetof(Simple_record_t, m_pointer), ptr_array_type.clone_type(), "m_pointer");
+	Record_datatype record_type{std::move(members),sizeof(Simple_record_t)};
+	Pointer_datatype ptr_record_type{record_type.clone_type()};
+	Simple_record_t* value_ptr = &simple_record;
+	
+	std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
+	accessors.emplace_back(new Pointer_datatype::Accessor{});
+	accessors.emplace_back(new Record_datatype::Member_accessor{"m_pointer"});
+	accessors.emplace_back(new Pointer_datatype::Accessor{});
+	accessors.emplace_back(new Array_datatype::Index_accessor{2});
+
+	std::pair<void*, Datatype_uptr> array_ptr_ptr_data = ptr_record_type.subaccess(&value_ptr, accessors);
+	ASSERT_EQ(int_type, *array_ptr_ptr_data.second);
+	ASSERT_EQ(&(simple_record.m_pointer[2]), array_ptr_ptr_data.first);
+	
+	delete[] simple_record.m_pointer;
+}

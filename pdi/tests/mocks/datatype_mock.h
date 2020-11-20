@@ -51,6 +51,14 @@ struct MockDatatype : public PDI::Datatype {
 		return PDI::Datatype_uptr{evaluate_proxy()};
 	}
 	
+	std::pair<void*, PDI::Datatype_uptr> subaccess(void* from,
+	    std::vector<std::unique_ptr<Accessor_base>>::iterator remaining_begin,
+	    std::vector<std::unique_ptr<Accessor_base>>::iterator remaining_end) const
+	{
+		std::pair<void*, PDI::Datatype*> result = subaccess_proxy(from, remaining_begin, remaining_end);
+		return {result.first, PDI::Datatype_uptr{result.second}};
+	}
+	
 	bool operator == (const Datatype& other) const
 	{
 		return equals(other);
@@ -66,7 +74,10 @@ struct MockDatatype : public PDI::Datatype {
 	MOCK_CONST_METHOD0(clone_proxy, Datatype_template*());
 	MOCK_CONST_METHOD0(densify_proxy, Datatype*());
 	MOCK_CONST_METHOD0(evaluate_proxy, Datatype*());
-	
+	MOCK_CONST_METHOD3(subaccess_proxy, std::pair<void*, Datatype*> (void* from,
+	        std::vector<std::unique_ptr<Accessor_base>>::iterator remaining_begin,
+	        std::vector<std::unique_ptr<Accessor_base>>::iterator remaining_end));
+	        
 	MOCK_CONST_METHOD0(simple, bool());
 	MOCK_CONST_METHOD2(data_to_dense_copy, void* (void* to, const void* from));
 	MOCK_CONST_METHOD2(data_from_dense_copy, void* (void* to, const void* from));

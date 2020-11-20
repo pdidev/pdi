@@ -26,6 +26,7 @@
 #define PDI_POINTER_DATATYPE_H_
 
 #include <functional>
+#include <vector>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
@@ -36,16 +37,29 @@ namespace PDI {
 class PDI_EXPORT Pointer_datatype:
 	public Datatype
 {
+	/// Type of data that pointer is pointing
 	Datatype_uptr m_subtype;
 	
-	/// copy function or null for memcpy
+	/// Copy function or null for memcpy
 	std::function<void* (void*, const void*)> m_copy;
 	
-	/// destroy function or null for memcpy
+	/// Destroy function or null for memcpy
 	std::function<void(void*)> m_destroy;
 	
 public:
-
+	/** Accessor for pointer datatype
+	 */
+	class Accessor: public Accessor_base
+	{
+		std::string access_kind() const override;
+		
+	public:
+		std::pair<void*, Datatype_uptr> access(const Pointer_datatype& pointer_type,
+		    void* from,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+	};
+	
 	Pointer_datatype(Datatype_uptr subtype);
 	
 	Pointer_datatype(Datatype_uptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy);
@@ -78,6 +92,10 @@ public:
 	
 	void* data_from_dense_copy(void* to, const void* from) const override;
 	
+	std::pair<void*, Datatype_uptr> subaccess_by_iterators(void* from,
+	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+	    
 	void destroy_data(void* ptr) const override;
 	
 	std::string debug_string() const override;

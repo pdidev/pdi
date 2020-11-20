@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,7 +26,10 @@
 #ifndef PDI_DATATYPE_H_
 #define PDI_DATATYPE_H_
 
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype_template.h>
@@ -43,6 +47,55 @@ class PDI_EXPORT Datatype:
 	public Datatype_template
 {
 public:
+	/** Base class for datatype accesssors, that allow to get pointer to subtype
+	 */
+	struct Accessor_base {
+		/** Access function for array datatype
+		 * \param type a datatype to get access
+		 * \param from pointer to data of type datatype
+		 * \param remaining_begin iterator to the beginning of remaining accessors
+		 * \param remaining_end iterator to the end of remaining accessors
+		 * \return string that inform what access is made
+		 */
+		virtual std::pair<void*, Datatype_uptr> access(const Array_datatype& type,
+		    void* from,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const;
+		    
+		/** Access function for pointer datatype
+		 * \param type a datatype to get access
+		 * \param from pointer to data of type datatype
+		 * \param remaining_begin iterator to the beginning of remaining accessors
+		 * \param remaining_end iterator to the end of remaining accessors
+		 * \return string that inform what access is made
+		 */
+		virtual std::pair<void*, Datatype_uptr> access(const Pointer_datatype& type,
+		    void* from,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const;
+		    
+		/** Access function for record datatype
+		 * \param type a datatype to get access
+		 * \param from pointer to data of type datatype
+		 * \param remaining_begin iterator to the beginning of remaining accessors
+		 * \param remaining_end iterator to the end of remaining accessors
+		 * \return string that inform what access is made
+		 */
+		virtual std::pair<void*, Datatype_uptr> access(const Record_datatype& type,
+		    void* from,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const;
+		    
+		/** Returns access kind as string
+		 * \return string that inform what access is made
+		 */
+		virtual std::string access_kind() const = 0;
+		
+		/** Destroys the accessor
+		*/
+		virtual ~Accessor_base() = default;
+	};
+	
 	~Datatype() override;
 	
 	/** Creates a new datatype as an exact copy of this one
@@ -122,6 +175,36 @@ public:
 	 */
 	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
 	
+	/**
+	 * Creates datatype of subtype and returns it with a moved pointer
+	 *
+	 * \param[in] from the pointer to the data
+	 * \param[in] accessor accessor to get subtype of datatype
+	 * \return pointer with offset and new datatype
+	 */
+	std::pair<void*, Datatype_uptr> subaccess(void* from, const Accessor_base& accessor) const;
+	
+	/**
+	 * Creates datatype of subtype and returns it with a moved pointer
+	 *
+	 * \param[in] from the pointer to the data
+	 * \param[in] accessors accessors to get nested subtype of datatype
+	 * \return pointer with offset and new datatype
+	 */
+	std::pair<void*, Datatype_uptr> subaccess(void* from, const std::vector<std::unique_ptr<Accessor_base>>& accessors) const;
+	
+	/**
+	 * Creates datatype of subtype and returns it with a moved pointer
+	 *
+	 * \param[in] from the pointer to the data
+	 * \param[in] remaining_begin iterator to the begin of remaining accessors
+	 * \param[in] remaining_end iterator to the end of remaining accessors
+	 * \return pointer moved by offset and new datatype
+	 */
+	virtual std::pair<void*, Datatype_uptr> subaccess_by_iterators(void* from,
+	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const;
+	    
 	/**
 	 * Function used to delete the data behind the datatype. This should not deallocate the memory.
 	 *

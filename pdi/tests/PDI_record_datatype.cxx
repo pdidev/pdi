@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/pointer_datatype.h>
 #include <pdi/record_datatype.h>
 
 #include "PDI_record_datatype_cases.h"
@@ -253,5 +254,99 @@ TEST_F(RecordDeepCopyTest, dense_to_sparse)
 		for (int j = 2; j < 7; j++) {
 			ASSERT_EQ(this->dense_record.my_long_array[5*(i-5) + j-2], this->sparse_record.my_long_array[i*10 + j]);
 		}
+	}
+}
+
+/*
+ * Name:                RecordAccessSequenceTest.invalid_subtype_access_sequence_check
+ *
+ * Tested functions:    PDI::Record_datatype::subaccess
+ *
+ * Description:         Test checks if returned subtype and data are correct
+ */
+TEST(RecordAccessSequenceTest, invalid_subtype_access_sequence_check)
+{
+
+	struct Simple_record_t {
+		int m_array[5];
+		char m_char;
+		long m_long;
+	};
+	
+	Simple_record_t simple_record;
+	
+	for (int i = 0; i < 5; i++) {
+		simple_record.m_array[i] = i;
+	}
+	
+	simple_record.m_char = 5;
+	simple_record.m_long = 987654;
+	std::vector<Record_datatype::Member> members;
+	Array_datatype array_data{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}}, 5};
+	Scalar_datatype char_data{Scalar_kind::UNSIGNED, sizeof(char)};
+	Scalar_datatype long_data{Scalar_kind::SIGNED, sizeof(long)};
+	
+	members.emplace_back(offsetof(Simple_record_t, m_array), array_data.clone_type(), "array");
+	members.emplace_back(offsetof(Simple_record_t, m_char), char_data.clone_type(), "char");
+	members.emplace_back(offsetof(Simple_record_t, m_long), long_data.clone_type(), "long");
+	
+	Record_datatype record_type{std::move(members),sizeof(Simple_record_t)};
+	
+	std::pair<void*, Datatype_uptr> data = record_type.subaccess(&simple_record, Record_datatype::Member_accessor{"array"});
+	ASSERT_EQ(array_data, *data.second);
+	for (int i = 0; i < 5 ; i++) {
+		ASSERT_EQ(simple_record.m_array[i], static_cast<int*>(data.first)[i]);
+	}
+	
+	data = record_type.subaccess(&simple_record, Record_datatype::Member_accessor{"char"});
+	ASSERT_EQ(char_data, *data.second);
+	ASSERT_EQ(&simple_record.m_char, data.first);
+	
+	data = record_type.subaccess(&simple_record, Record_datatype::Member_accessor{"long"});
+	ASSERT_EQ(long_data, *data.second);
+	ASSERT_EQ(&simple_record.m_long, data.first);
+}
+
+/*
+ * Name:                RecordAccessSequenceTest.subtype_and_value_check_for_record_of_arrays_with_pointers
+ *
+ * Tested functions:    PDI::Record_datatype::subaccess
+ *
+ * Description:         Test checks if returned subtype and data are correct
+ */
+TEST(RecordAccessSequenceTest, subtype_and_value_check_for_record_of_arrays_with_pointers)
+{
+	struct Simple_record_t {
+		int* m_array[10];
+	};
+	
+	Simple_record_t simple_record;
+	
+	for (int i = 0; i < 10; i++) {
+		simple_record.m_array[i] = new int;
+		*simple_record.m_array[i] = i;
+	}
+	
+	std::vector<Record_datatype::Member> members;
+	Scalar_datatype scalar_type{Scalar_kind::SIGNED, sizeof(int)};
+	Pointer_datatype pointer_type{scalar_type.clone_type()};
+	Array_datatype array_type{pointer_type.clone_type(), 10};
+	members.emplace_back(offsetof(Simple_record_t, m_array), array_type.clone_type(), "array");
+	Record_datatype record_type{std::move(members), sizeof(Simple_record_t)};
+		
+	std::pair<void*, Datatype_uptr> data = record_type.subaccess(&simple_record, Record_datatype::Member_accessor{"array"});
+	ASSERT_EQ(simple_record.m_array, data.first);
+	ASSERT_EQ(array_type, *data.second);
+	for (int i = 0; i < 10 ; i++) {
+		ASSERT_EQ(*simple_record.m_array[i], *(static_cast<int**>(data.first)[i]));
+	}
+	
+	data = data.second->subaccess(data.first, Array_datatype::Index_accessor{3});
+	data = data.second->subaccess(data.first, Pointer_datatype::Accessor{});
+	ASSERT_EQ(3, *static_cast<int*>(data.first));
+	ASSERT_EQ(scalar_type, *data.second);
+	
+	for (int i = 0; i < 10; i++) {
+		delete simple_record.m_array[i];
 	}
 }
