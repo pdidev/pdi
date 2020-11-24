@@ -15,15 +15,15 @@ external dependencies are:
   * compilers for C (99), C++ (14) and Fortran (2003),
   * MPI
   
-For example, release 0.6.3 can be installed by following these instructions (but
+For example, release 0.6.4 can be installed by following these instructions (but
 look for the latest release at
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags)
 
 ```bash
 # download
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.3/pdi-0.6.3.tar.bz2
-tar -xjf pdi-0.6.3.tar.bz2
-cd pdi-0.6.3
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.4/pdi-0.6.4.tar.bz2
+tar -xjf pdi-0.6.4.tar.bz2
+cd pdi-0.6.4
 # configuration
 cmake -DCMAKE_INSTALL_PREFIX=/usr/ .
 # compilation and installation
@@ -41,12 +41,12 @@ As of now, PDI must be compiled from source.
 To download the sources, have a look at the list of all releases from:
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags
 
-For example, release 0.6.3 can be downloaded and extracted by following these
+For example, release 0.6.4 can be downloaded and extracted by following these
 instructions:
 ```bash
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.3/pdi-0.6.3.tar.bz2
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.4/pdi-0.6.4.tar.bz2
 tar -xjf pdi-master.tar.bz2
-cd pdi-0.6.3
+cd pdi-0.6.4
 ```
 
 
