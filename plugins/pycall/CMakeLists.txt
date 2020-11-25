@@ -45,9 +45,13 @@ endif()
 find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
+# Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set
+set(_pdi_pycall_plugin_Python3_FOUND "${Python3_FOUND}")
+unset(Python3_FOUND)
 set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 find_package(pybind11 2.3.0 REQUIRED)
+set(Python3_FOUND "${_pdi_pycall_plugin_Python3_FOUND}")
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS pysupport)

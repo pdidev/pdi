@@ -306,110 +306,123 @@ if ("Interpreter" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS)
 
   set (_${_PYTHON_PREFIX}_HINTS "${${_PYTHON_PREFIX}_ROOT_DIR}" ENV ${_PYTHON_PREFIX}_ROOT_DIR)
 
-  # look-up for various versions and locations
-  foreach (_${_PYTHON_PREFIX}_VERSION IN LISTS _${_PYTHON_PREFIX}_FIND_VERSIONS)
-    string (REPLACE "." "" _${_PYTHON_PREFIX}_VERSION_NO_DOTS ${_${_PYTHON_PREFIX}_VERSION})
-
-    _python_get_frameworks (_${_PYTHON_PREFIX}_FRAMEWORK_PATHS ${_${_PYTHON_PREFIX}_VERSION})
-
-    # Apple frameworks handling
-    if (APPLE AND _${_PYTHON_PREFIX}_FIND_FRAMEWORK STREQUAL "FIRST")
-      find_program (${_PYTHON_PREFIX}_EXECUTABLE
-                    NAMES python${_${_PYTHON_PREFIX}_VERSION}
-                          python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
-                    NAMES_PER_DIR
-                    PATHS ${_${_PYTHON_PREFIX}_FRAMEWORK_PATHS}
-                    PATH_SUFFIXES bin
-                    NO_CMAKE_PATH
-                    NO_CMAKE_ENVIRONMENT_PATH
-                    NO_SYSTEM_ENVIRONMENT_PATH
-                    NO_CMAKE_SYSTEM_PATH)
+  if (DEFINED ${_PYTHON_PREFIX}_EXECUTABLE AND IS_ABSOLUTE "${${_PYTHON_PREFIX}_EXECUTABLE}")
+    set (_${_PYTHON_PREFIX}_EXECUTABLE "${${_PYTHON_PREFIX}_EXECUTABLE}" CACHE INTERNAL "")
+  elseif (DEFINED _${_PYTHON_PREFIX}_EXECUTABLE)
+    # check version validity
+    if (${_PYTHON_PREFIX}_FIND_VERSION_EXACT)
+      _python_validate_interpreter (${${_PYTHON_PREFIX}_FIND_VERSION} EXACT CHECK_EXISTS)
+    else()
+      _python_validate_interpreter (${${_PYTHON_PREFIX}_FIND_VERSION} CHECK_EXISTS)
     endif()
+  endif()
 
-    # Windows registry
-    if (WIN32 AND _${_PYTHON_PREFIX}_FIND_REGISTRY STREQUAL "FIRST")
-      find_program (${_PYTHON_PREFIX}_EXECUTABLE
+  if (NOT _${_PYTHON_PREFIX}_EXECUTABLE)
+    # look-up for various versions and locations
+    foreach (_${_PYTHON_PREFIX}_VERSION IN LISTS _${_PYTHON_PREFIX}_FIND_VERSIONS)
+      string (REPLACE "." "" _${_PYTHON_PREFIX}_VERSION_NO_DOTS ${_${_PYTHON_PREFIX}_VERSION})
+  
+      _python_get_frameworks (_${_PYTHON_PREFIX}_FRAMEWORK_PATHS ${_${_PYTHON_PREFIX}_VERSION})
+  
+      # Apple frameworks handling
+      if (APPLE AND _${_PYTHON_PREFIX}_FIND_FRAMEWORK STREQUAL "FIRST")
+        find_program (_${_PYTHON_PREFIX}_EXECUTABLE
+                      NAMES python${_${_PYTHON_PREFIX}_VERSION}
+                            python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
+                      NAMES_PER_DIR
+                      PATHS ${_${_PYTHON_PREFIX}_FRAMEWORK_PATHS}
+                      PATH_SUFFIXES bin
+                      NO_CMAKE_PATH
+                      NO_CMAKE_ENVIRONMENT_PATH
+                      NO_SYSTEM_ENVIRONMENT_PATH
+                      NO_CMAKE_SYSTEM_PATH)
+      endif()
+  
+      # Windows registry
+      if (WIN32 AND _${_PYTHON_PREFIX}_FIND_REGISTRY STREQUAL "FIRST")
+        find_program (_${_PYTHON_PREFIX}_EXECUTABLE
+                      NAMES python${_${_PYTHON_PREFIX}_VERSION}
+                            python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
+                            python
+                            ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES}
+                      NAMES_PER_DIR
+                      HINTS ${_${_PYTHON_PREFIX}_HINTS}
+                      PATHS [HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
+                            [HKEY_CURRENT_USER\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH}\\InstallPath]
+                            [HKEY_CURRENT_USER\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH2}\\InstallPath]
+                            [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
+                            [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH}\\InstallPath]
+                            [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH2}\\InstallPath]
+                            [HKEY_LOCAL_MACHINE\\SOFTWARE\\IronPython\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
+                      PATH_SUFFIXES bin ${_${_PYTHON_PREFIX}_IRON_PYTHON_PATH_SUFFIXES}
+                      NO_SYSTEM_ENVIRONMENT_PATH
+                      NO_CMAKE_SYSTEM_PATH)
+      endif()
+  
+      # try using HINTS
+      find_program (_${_PYTHON_PREFIX}_EXECUTABLE
                     NAMES python${_${_PYTHON_PREFIX}_VERSION}
                           python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
                           python
                           ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES}
                     NAMES_PER_DIR
                     HINTS ${_${_PYTHON_PREFIX}_HINTS}
-                    PATHS [HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
-                          [HKEY_CURRENT_USER\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH}\\InstallPath]
-                          [HKEY_CURRENT_USER\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH2}\\InstallPath]
-                          [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
-                          [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH}\\InstallPath]
-                          [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH2}\\InstallPath]
-                          [HKEY_LOCAL_MACHINE\\SOFTWARE\\IronPython\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
-                    PATH_SUFFIXES bin ${_${_PYTHON_PREFIX}_IRON_PYTHON_PATH_SUFFIXES}
+                    PATH_SUFFIXES bin
                     NO_SYSTEM_ENVIRONMENT_PATH
                     NO_CMAKE_SYSTEM_PATH)
-    endif()
-
-    # try using HINTS
-    find_program (${_PYTHON_PREFIX}_EXECUTABLE
-                  NAMES python${_${_PYTHON_PREFIX}_VERSION}
-                        python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
-                        python
-                        ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES}
-                  NAMES_PER_DIR
-                  HINTS ${_${_PYTHON_PREFIX}_HINTS}
-                  PATH_SUFFIXES bin
-                  NO_SYSTEM_ENVIRONMENT_PATH
-                  NO_CMAKE_SYSTEM_PATH)
-    # try using standard paths.
-    # NAMES_PER_DIR is not defined on purpose to have a chance to find
-    # expected version.
-    # For example, typical systems have 'python' for version 2.* and 'python3'
-    # for version 3.*. So looking for names per dir will find, potentially,
-    # systematically 'python' (i.e. version 2) even if version 3 is searched.
-    find_program (${_PYTHON_PREFIX}_EXECUTABLE
-                  NAMES python${_${_PYTHON_PREFIX}_VERSION}
-                        python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
-                        python
-                        ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES})
-
-    # Apple frameworks handling
-    if (APPLE AND _${_PYTHON_PREFIX}_FIND_FRAMEWORK STREQUAL "LAST")
-      find_program (${_PYTHON_PREFIX}_EXECUTABLE
-                    NAMES python${_${_PYTHON_PREFIX}_VERSION}
-                          python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
-                    NAMES_PER_DIR
-                    PATHS ${_${_PYTHON_PREFIX}_FRAMEWORK_PATHS}
-                    PATH_SUFFIXES bin
-                    NO_DEFAULT_PATH)
-    endif()
-
-    # Windows registry
-    if (WIN32 AND _${_PYTHON_PREFIX}_FIND_REGISTRY STREQUAL "LAST")
-      find_program (${_PYTHON_PREFIX}_EXECUTABLE
+      # try using standard paths.
+      # NAMES_PER_DIR is not defined on purpose to have a chance to find
+      # expected version.
+      # For example, typical systems have 'python' for version 2.* and 'python3'
+      # for version 3.*. So looking for names per dir will find, potentially,
+      # systematically 'python' (i.e. version 2) even if version 3 is searched.
+      find_program (_${_PYTHON_PREFIX}_EXECUTABLE
                     NAMES python${_${_PYTHON_PREFIX}_VERSION}
                           python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
                           python
-                          ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES}
-                    NAMES_PER_DIR
-                    PATHS [HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
-                          [HKEY_CURRENT_USER\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH}\\InstallPath]
-                          [HKEY_CURRENT_USER\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH2}\\InstallPath]
-                          [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
-                          [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH}\\InstallPath]
-                          [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH2}\\InstallPath]
-                          [HKEY_LOCAL_MACHINE\\SOFTWARE\\IronPython\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
-                    PATH_SUFFIXES bin ${_${_PYTHON_PREFIX}_IRON_PYTHON_PATH_SUFFIXES}
-                    NO_DEFAULT_PATH)
-    endif()
+                          ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES})
+  
+      # Apple frameworks handling
+      if (APPLE AND _${_PYTHON_PREFIX}_FIND_FRAMEWORK STREQUAL "LAST")
+        find_program (_${_PYTHON_PREFIX}_EXECUTABLE
+                      NAMES python${_${_PYTHON_PREFIX}_VERSION}
+                            python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
+                      NAMES_PER_DIR
+                      PATHS ${_${_PYTHON_PREFIX}_FRAMEWORK_PATHS}
+                      PATH_SUFFIXES bin
+                      NO_DEFAULT_PATH)
+      endif()
+  
+      # Windows registry
+      if (WIN32 AND _${_PYTHON_PREFIX}_FIND_REGISTRY STREQUAL "LAST")
+        find_program (_${_PYTHON_PREFIX}_EXECUTABLE
+                      NAMES python${_${_PYTHON_PREFIX}_VERSION}
+                            python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
+                            python
+                            ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES}
+                      NAMES_PER_DIR
+                      PATHS [HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
+                            [HKEY_CURRENT_USER\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH}\\InstallPath]
+                            [HKEY_CURRENT_USER\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH2}\\InstallPath]
+                            [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
+                            [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH}\\InstallPath]
+                            [HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\ContinuumAnalytics\\Anaconda${_${_PYTHON_PREFIX}_VERSION_NO_DOTS}-${_${_PYTHON_PREFIX}_ARCH2}\\InstallPath]
+                            [HKEY_LOCAL_MACHINE\\SOFTWARE\\IronPython\\${_${_PYTHON_PREFIX}_VERSION}\\InstallPath]
+                      PATH_SUFFIXES bin ${_${_PYTHON_PREFIX}_IRON_PYTHON_PATH_SUFFIXES}
+                      NO_DEFAULT_PATH)
+      endif()
+  
+      _python_validate_interpreter (${_${_PYTHON_PREFIX}_VERSION})
+      if (_${_PYTHON_PREFIX}_EXECUTABLE)
+        break()
+      endif()
+    endforeach()
+  endif()
 
-    _python_validate_interpreter (${_${_PYTHON_PREFIX}_VERSION})
-    if (${_PYTHON_PREFIX}_EXECUTABLE)
-      break()
-    endif()
-  endforeach()
-
-  if (NOT ${_PYTHON_PREFIX}_EXECUTABLE)
+  if (NOT _${_PYTHON_PREFIX}_EXECUTABLE)
     # No specific version found. Retry with generic names
     # try using HINTS
-    find_program (${_PYTHON_PREFIX}_EXECUTABLE
+    find_program (_${_PYTHON_PREFIX}_EXECUTABLE
                   NAMES python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
                         python
                         ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES}
@@ -423,13 +436,15 @@ if ("Interpreter" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS)
     # For example, typical systems have 'python' for version 2.* and 'python3'
     # for version 3.*. So looking for names per dir will find, potentially,
     # systematically 'python' (i.e. version 2) even if version 3 is searched.
-    find_program (${_PYTHON_PREFIX}_EXECUTABLE
+    find_program (_${_PYTHON_PREFIX}_EXECUTABLE
                   NAMES python${_${_PYTHON_PREFIX}_REQUIRED_VERSION_MAJOR}
                         python
                         ${_${_PYTHON_PREFIX}_IRON_PYTHON_NAMES})
 
     _python_validate_interpreter ()
   endif()
+  
+  set (${_PYTHON_PREFIX}_EXECUTABLE "${_${_PYTHON_PREFIX}_EXECUTABLE}" CACHE FILEPATH "${_PYTHON_PREFIX} Interpreter")
 
   # retrieve exact version of executable found
   if (${_PYTHON_PREFIX}_EXECUTABLE)

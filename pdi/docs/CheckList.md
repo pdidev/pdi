@@ -11,8 +11,8 @@ To publish a small fix as a patch release:
 * merge the version branch into master
 * in the merge commit:
   - keep the content of `pdi/VERSION` from master (next with `-git` suffix)
-  - keep the content of `pdi/VERSION` from master except with the version
-    updated to the just released one
+  - keep the content of `pdi/docs/Installation.md` from master except with the
+    version updated to the just released one
 * push all that
 
 ## New minor or major release

@@ -155,7 +155,7 @@ if("${CMAKE_VERSION}" VERSION_LESS "3.10")
 		message(FATAL_ERROR
 			"Testing is enabled but the cmake version is less than 3.10.\n"
 			"    you have the following options:\n"
-			"     * install and use a more recent version of cmake (3.10 at least)"
+			"     * install and use a more recent version of cmake (3.10 at least)\n"
 			"     * disable testing => pass `-DBUILD_TESTING=OFF' to cmake\n"
 		)
 	endif()
@@ -163,7 +163,7 @@ if("${CMAKE_VERSION}" VERSION_LESS "3.10")
 		message(FATAL_ERROR
 			"Documentation building is enabled but the cmake version is less than 3.10.\n"
 			"    you have the following options:\n"
-			"     * install and use a more recent version of cmake (3.10 at least)"
+			"     * install and use a more recent version of cmake (3.10 at least)\n"
 			"     * disable documentation build => pass `-DBUILD_DOCUMENTATION=OFF' to cmake\n"
 		)
 	endif()
@@ -493,6 +493,9 @@ endif()
 ## PyBind11
 
 if("${BUILD_PYTHON}")
+	# Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set
+	set(_PDI_DIST_Python3_FOUND "${Python3_FOUND}")
+	unset(Python3_FOUND)
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
@@ -503,6 +506,7 @@ if("${BUILD_PYTHON}")
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
 		VERSION 2.3.0
 	)
+	set(Python3_FOUND "${_PDI_DIST_Python3_FOUND}")
 endif()
 
 
