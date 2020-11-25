@@ -5,21 +5,21 @@ stages:
 
 cmake3.5_embedded:
   only: [ master, merge_requests ]
-  image: pdidev/centos_cmake3.5
+  image: pdidevel/centos_cmake3.5
   script:
     - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
     - make -j 2
 
 cmake3.5_system:
   only: [ master, merge_requests ]
-  image: pdidev/centos_libs_cmake3.5
+  image: pdidevel/centos_libs_cmake3.5
   script:
     - cmake -DDIST_PROFILE=Devel -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF .
     - make -j 2
 
 cmake3.10_embedded:
   only: [ master, merge_requests ]
-  image: pdidev/centos_cmake3.10
+  image: pdidevel/centos_cmake3.10
   script:
     - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=EMBEDDED .
     - make -j 2
@@ -27,7 +27,7 @@ cmake3.10_embedded:
 
 cmake3.10_system:
   only: [ master, merge_requests ]
-  image: pdidev/centos_libs_cmake3.10
+  image: pdidevel/centos_libs_cmake3.10
   script:
     - cmake -DDIST_PROFILE=Devel -DUSE_DEFAULT=SYSTEM -DUSE_Bpp=SYSTEM .
     - make -j 2
@@ -35,7 +35,7 @@ cmake3.10_system:
 
 pages:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
-  image: pdidev/centos_libs_cmake3.10
+  image: pdidevel/centos_libs_cmake3.10
   variables: { GIT_SUBMODULE_STRATEGY: recursive }
   script:
     - mkdir build
