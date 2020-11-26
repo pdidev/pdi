@@ -86,14 +86,14 @@ int main(int argc, char* argv[])
 	//float
 	float* value_float;
 	PDI_access("value_float", (void**)&value_float, PDI_IN);
-	assert(*value_float == 3.14159265f);
+	assert(*value_float == 3.141592f);
 	PDI_release("value_float");
 	
 	float* float_array;
 	PDI_access("float_array", (void**)&float_array, PDI_IN);
-	assert(float_array[0] == 1.23456789f);
-	assert(float_array[1] == 12.3456789f);
-	assert(float_array[2] == 123.456789f);
+	assert(float_array[0] == 1.234567f);
+	assert(float_array[1] == 12.34567f);
+	assert(float_array[2] == 123.4567f);
 	PDI_release("float_array");
 	
 	//double

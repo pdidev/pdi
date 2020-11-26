@@ -1,0 +1,29 @@
+logging: trace
+data:
+  outer_struct:
+    type: struct
+    members:
+      scalar: int
+      inner_struct:
+        type: struct
+        members:
+          scalar: int
+          array:
+            type: array
+            size: 4
+            subtype: int
+      array:
+        type: array
+        size: 4
+        subtype: int64
+      
+plugins:
+  set_value:
+    on_init:
+      - share:
+        - outer_struct:
+            scalar: 4
+            inner_struct:
+              scalar: 8
+              array: [0, 1, 2, 3]
+            array: [4, 5, 6, 7]

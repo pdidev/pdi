@@ -1,5 +1,6 @@
 /*******************************************************************************
 * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -35,15 +36,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
-#include "pdi/array_datatype.h"
 #include "pdi/context.h"
-#include "pdi/datatype.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/error.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-#include "pdi/scalar_datatype.h"
+#include "pdi/python/python_ref_wrapper.h"
 #include "pdi/python/tools.h"
 
 #include "global_context.h"
@@ -163,8 +162,8 @@ PYBIND11_MODULE(_pdi, m)
 	m.def("access", [](const char* name, PDI_inout_t inout) {
 		Paraconf_wrapper fw;
 		Data_descriptor& desc = Global_context::context()[name];
-		pyarr result = to_python(desc.ref());
-		desc.share(desc.ref(), inout & PDI_IN, inout & PDI_OUT);
+		pybind11::object result = to_python(desc.ref());
+		desc.share(desc.ref(), false, false);
 		if (!(inout & PDI_OUT)) pybind11::detail::array_descriptor_proxy(result.ptr())->flags &= ~pybind11::detail::npy_api::NPY_ARRAY_WRITEABLE_;
 		return result;
 	}, "Requests for PDI to access a data buffer");
@@ -178,4 +177,9 @@ PYBIND11_MODULE(_pdi, m)
 		Paraconf_wrapper fw;
 		Global_context::context()[name].reclaim();
 	}, "Reclaims ownership of a data buffer shared with PDI. PDI does not manage the buffer memory anymore.");
+	
+	pybind11::class_<Python_ref_wrapper>(m, "ref")
+	.def("__getattribute__", &Python_ref_wrapper::getattribute) // get member
+	.def("__setattr__", &Python_ref_wrapper::setattribute)      // set member
+	.def("__getitem__", &Python_ref_wrapper::getitem);          // [] operator
 }

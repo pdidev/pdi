@@ -63,8 +63,8 @@ pdi.share("f", f, pdi.IN)
 
 f_returned = pdi.access("f", pdi.OUT)
 f_returned[0] = -1
-f_returned[0] = -2
-f_returned[0] = -3
+f_returned[1] = -2
+f_returned[2] = -3
 assert f_returned[0] == f[0]
 assert f_returned[1] == f[1]
 assert f_returned[2] == f[2]

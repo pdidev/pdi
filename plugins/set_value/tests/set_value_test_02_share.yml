@@ -49,11 +49,11 @@ plugins:
         - int_array: [6, 7, 8]
         - value_long: 424242424242
         - long_array: [9, 10, 11]
-        - value_float: 3.14159265
+        - value_float: 3.141592
         - float_array:
-          - 1.23456789
-          - 12.3456789
-          - 123.456789
+          - 1.234567
+          - 12.34567
+          - 123.4567
         - value_double: 3.14159265
         - double_array:
           - 1.23456789

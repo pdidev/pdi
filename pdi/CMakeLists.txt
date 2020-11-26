@@ -258,7 +258,7 @@ if("${BUILD_PYTHON}")
 	
 	# C++ python support library
 	
-	add_library(PDI_pysupport src/python/tools.cxx)
+	add_library(PDI_pysupport src/python/python_ref_wrapper.cxx src/python/tools.cxx)
 	target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_plugins pybind11::pybind11)
 	target_include_directories(PDI_pysupport PUBLIC
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"

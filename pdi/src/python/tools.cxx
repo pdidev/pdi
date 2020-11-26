@@ -1,5 +1,6 @@
 /*******************************************************************************
 * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -33,9 +34,12 @@
 #include "pdi/error.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
+#include "pdi/pointer_datatype.h"
+#include "pdi/record_datatype.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
 
+#include "pdi/python/python_ref_wrapper.h"
 #include "pdi/python/tools.h"
 
 
@@ -45,13 +49,33 @@ using namespace pybind11::literals;
 using std::move;
 using std::vector;
 
-/** Function takes reference that is converted to python numpy array
- *
- * \param r PDI reference to convert
- * \return converted python numpy array from PDI reference
+namespace {
+
+/** Tells if type has record inside
+ *  \param type type to check
+ *  \return true if has record inside, false otherwise
  */
-pybind11::array to_python(Ref r)
+bool has_record_inside(const Datatype* type)
 {
+	if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(type)) {
+		return has_record_inside(&array_type->subtype());
+	} else if (const Pointer_datatype* pointer_type = dynamic_cast<const Pointer_datatype*>(type)) {
+		return has_record_inside(&pointer_type->subtype());
+	} else if (dynamic_cast<const Record_datatype*>(type)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+} // namespace <anonymous>
+
+pybind11::object to_python(Ref r)
+{
+	if (has_record_inside(&r.type())) {
+		return pybind11::cast(Python_ref_wrapper{r});
+	}
+	
 	ssize_t ndim = 0;
 	vector<ssize_t> starts;
 	vector<ssize_t> shape;
@@ -123,12 +147,7 @@ pybind11::array to_python(Ref r)
 	return result;
 }
 
-/** Function takes python numpy array and converts it into PDI datatype
- *
- * \param a python numpy array data
- * \return PDI datatype of python object
- */
-Datatype_uptr python_type(pybind11::array& a)
+Datatype_uptr python_type(const pybind11::array& a)
 {
 	//TODO: handle non C-order arrays
 	vector<size_t> sizes(a.ndim());
