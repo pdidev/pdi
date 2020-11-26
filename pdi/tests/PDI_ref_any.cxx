@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -228,18 +228,18 @@ TEST_F(DataRefAnyTest, nullifyTest)
 }
 
 /*
- * Name:                DataRefAnyTest.content
+ * Name:                DataRefAnyTest.get_content
  *
  * Tested functions:    PDI::Ref_any::Ref_any()
  */
-TEST_F(DataRefAnyTest, content)
+TEST_F(DataRefAnyTest, get_content)
 {
 	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
 	
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 1);
 	
-	Ref_r sub {*this->m_tested_ref, 4*sizeof(int), int_type.clone_type()};
+	Ref_r sub {*this->m_tested_ref, Array_datatype::Index_accessor{4}};
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 2);
 	ASSERT_NE(get_content(sub), get_content(*this->m_tested_ref));
@@ -267,8 +267,8 @@ TEST_F(DataRefAnyTest, content_chain)
 	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
 	Array_datatype subarray {int_type.clone_type(), 4};
 	
-	Ref_r sub_array_ref {*this->m_tested_ref, 16*sizeof(int), subarray.clone_type()}; // array [16:20]
-	Ref_r sub_scalar_ref {sub_array_ref, 0L, int_type.clone_type()}; // array[16]
+	Ref_r sub_array_ref {*this->m_tested_ref, Array_datatype::Slice_accessor{16, 20}}; // array [16:20]
+	Ref_r sub_scalar_ref {sub_array_ref, Array_datatype::Index_accessor{0}}; // array[16]
 	
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 3);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
@@ -326,14 +326,22 @@ TEST_F(DataRefAnyTest, content_record)
 	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type.clone_type(), true, true};
 	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 1);
+
+	{
+		std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
+		accessors.emplace_back(new Record_datatype::Member_accessor{"y"});
+		accessors.emplace_back(new Array_datatype::Index_accessor{12});
+		Ref_r result {base_ref, accessors};
+		ASSERT_EQ(12, *static_cast<const int*>(result.get()));
+	}
 	
-	Ref_r data_x_ref {base_ref, 0L, char_type.clone_type()}; // data.x
+	Ref_r data_x_ref{base_ref, Record_datatype::Member_accessor{"x"}}; // data.x
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 2);
 	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 2);
 	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
 	
-	Ref_r data_y_ref (base_ref, offsetof(Record, y), this->m_tested_ref->type().clone_type());
+	Ref_r data_y_ref {base_ref, Record_datatype::Member_accessor{"y"}}; // data.y
 	for (int i = 0; i < 32; i++) {
 		ASSERT_EQ(i, static_cast<const int*>(data_y_ref.get())[i]);
 	}
@@ -347,7 +355,7 @@ TEST_F(DataRefAnyTest, content_record)
 	
 	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
 	
-	Ref data_y_scalar_ref {data_y_ref, 12*sizeof(int), int_type.clone_type()};
+	Ref data_y_scalar_ref {data_y_ref, Array_datatype::Index_accessor{12}};
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 4);
 	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 4);
@@ -416,7 +424,7 @@ TEST_F(DataRefAnyTest, content_deep_copy)
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 1);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
 	
-	Ref_r sub {*this->m_tested_ref, 4*sizeof(int), int_type.clone_type()};
+	Ref_r sub {*this->m_tested_ref, Array_datatype::Index_accessor{4}};
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 2);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
 	ASSERT_NE(get_content(sub), get_content(*this->m_tested_ref));
@@ -438,6 +446,179 @@ TEST_F(DataRefAnyTest, content_deep_copy)
 	ASSERT_EQ(this->m_data[0], -1);
 	
 	ASSERT_EQ(4, *static_cast<const int*>(copied.get()));
+}
+
+/*
+ * Name:                DataRefAnyTest.index_access
+ *
+ * Tested functions:    PDI::Ref_any::operator[](size_t)
+ */
+TEST_F(DataRefAnyTest, ref_index_access)
+{
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 1);
+	
+	Ref_r sub = (*m_tested_ref)[4];
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 2);
+	ASSERT_NE(get_content(sub), get_content(*this->m_tested_ref));
+	ASSERT_EQ(get_content(sub)->m_buffer, get_content(*this->m_tested_ref)->m_buffer);
+	ASSERT_EQ(get_content(sub)->m_owners, 1);
+	ASSERT_EQ(get_content(sub)->m_buffer->m_owners, 2);
+	
+	
+	this->m_tested_ref->reset();
+	ASSERT_EQ(get_content(sub)->m_owners, 1);
+	ASSERT_EQ(get_content(sub)->m_buffer->m_owners, 1);
+	
+	ASSERT_EQ(4, *static_cast<const int*>(sub.get()));
+	sub.reset();
+	ASSERT_EQ(this->m_data[0], -1);
+}
+
+/*
+ * Name:                DataRefAnyTest.member_access
+ *
+ * Tested functions:    PDI::Ref_any::operator[](std::string)
+ */
+TEST_F(DataRefAnyTest, ref_member_access)
+{
+	Scalar_datatype char_type {Scalar_kind::SIGNED, sizeof(char)};
+	struct Record {
+		char x;
+		int y[32];
+	};
+	
+	std::vector<Record_datatype::Member> members;
+	members.emplace_back(offsetof(Record, x), char_type.clone_type(), "x");
+	members.emplace_back(offsetof(Record, y), this->m_tested_ref->type().clone_type(), "y");
+	Record_datatype record_type {std::move(members), sizeof(Record)};
+	
+	Record data;
+	data.x = 42;
+	for (int i = 0; i < 32; i++) {
+		data.y[i] = i;
+	}
+	
+	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type.clone_type(), true, true};
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 1);
+	
+	Ref_r data_x_ref = base_ref["x"];
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	
+	Ref_r data_y_ref = base_ref["y"];
+	for (int i = 0; i < 32; i++) {
+		ASSERT_EQ(i, static_cast<const int*>(data_y_ref.get())[i]);
+	}
+	
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(data_y_ref)->m_owners, 1);
+	
+	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	
+	Ref data_y_scalar_ref = data_y_ref[12];
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_y_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 1);
+	
+	if (Ref_w failed {data_y_scalar_ref}) {
+		FAIL();
+	}
+	if (Ref_w failed {base_ref}) {
+		FAIL();
+	}
+	
+	Ref_r data_y_scalar_ref_r {data_y_scalar_ref};
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_y_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 4);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
+	ASSERT_EQ(12, *static_cast<const int*>(data_y_scalar_ref_r.get()));
+	
+	data_y_ref.reset();
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 3);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
+	ASSERT_EQ(42, *static_cast<const char*>(data_x_ref.get()));
+	
+	data_x_ref.reset();
+	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 2);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
+	
+	base_ref.reset();
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_buffer->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref)->m_owners, 2);
+	
+	data_y_scalar_ref.reset();
+	ASSERT_EQ(get_content(data_y_scalar_ref_r)->m_buffer->m_owners, 1);
+	ASSERT_EQ(get_content(data_y_scalar_ref_r)->m_owners, 1);
+	ASSERT_EQ(42, data.x);
+	
+	data_y_scalar_ref_r.reset();
+	
+	ASSERT_EQ(-1, data.x);
+}
+
+/*
+ * Name:                DataRefAnyTest.wrong_index_access
+ *
+ * Tested functions:    PDI::Ref_any::operator[]
+ */
+TEST_F(DataRefAnyTest, wrong_index_access)
+{
+	try {
+	(*m_tested_ref)["example"];
+		FAIL();
+	} catch (const Type_error& e) {}
+	try {
+		Ref sub = (*m_tested_ref)[4];
+		sub["example"];
+		FAIL();
+	} catch (const Type_error& e) {}
+	try {
+		Ref sub = (*m_tested_ref)[4];
+		sub[4];
+		FAIL();
+	} catch (const Type_error& e) {}
+	try {
+		Scalar_datatype char_type {Scalar_kind::SIGNED, sizeof(char)};
+		struct Record {
+			char x;
+			int y[32];
+		};
+		
+		std::vector<Record_datatype::Member> members;
+		members.emplace_back(offsetof(Record, x), char_type.clone_type(), "x");
+		members.emplace_back(offsetof(Record, y), this->m_tested_ref->type().clone_type(), "y");
+		Record_datatype record_type {std::move(members), sizeof(Record)};
+		
+		Record data;
+		Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type.clone_type(), true, true};
+		base_ref[4];
+		FAIL();
+	} catch (const Type_error& e) {}
 }
 
 

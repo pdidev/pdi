@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,15 +26,18 @@
 #ifndef PDI_REF_ANY_H_
 #define PDI_REF_ANY_H_
 
+#include <algorithm>
 #include <cassert>
 #include <functional>
 #include <memory>
 #include <new>
 #include <unordered_map>
 
+#include <pdi/array_datatype.h>
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
+#include <pdi/record_datatype.h>
 
 
 namespace PDI {
@@ -332,21 +336,35 @@ public:
 	
 	/** Creates a subreference from reference
 	 *
-	 * \deprecated offset/type will be replace by datatype access sequence
-	 *
 	 * \param other source reference
-	 * \param offset _dataoffset of the new memory address
-	 * \param type the type of the subreferenced data
+	 * \param accessor accessor to use to create subreference
 	 */
-	Ref_any(Ref other, size_t offset, Datatype_uptr type):
+	Ref_any(Ref other, const Datatype::Accessor_base& accessor):
 		Reference_base()
 	{
 		if (other) {
-			Referenced_data* other_content = get_content(other);
+			std::pair<void*, Datatype_uptr> subref_info = other.type().subaccess(get_content(other)->m_data, accessor);
 			link(new Referenced_data(
-			        other_content->m_buffer,
-			        static_cast<int8_t*>(other_content->m_data) + offset,
-			        std::move(type)));
+			        get_content(other)->m_buffer,
+			        subref_info.first,
+			        std::move(subref_info.second)));
+		}
+	}
+	
+	/** Creates a subreference from reference
+	 *
+	 * \param other source reference
+	 * \param accessors vector of accessor to use to create subreference
+	 */
+	Ref_any(Ref other, const std::vector<std::unique_ptr<Datatype::Accessor_base>>& accessors):
+		Reference_base()
+	{
+		if (other) {
+			std::pair<void*, Datatype_uptr> subref_info = other.type().subaccess(get_content(other)->m_data, accessors);
+			link(new Referenced_data(
+			        get_content(other)->m_buffer,
+			        subref_info.first,
+			        std::move(subref_info.second)));
 		}
 	}
 	
@@ -418,6 +436,55 @@ public:
 	{
 		is_null();
 		return m_content >= get_content(o);
+	}
+	
+	/** Create a sub-reference to a member in case the content behind the ref is a record
+	 *
+	 * \param member_name member to make a subref for
+	 * \return created subreference
+	 */
+	Ref operator[] (const std::string& member_name) const
+	{
+		if (is_null()) {
+			throw Type_error{"Cannot access member from empty Ref: `{}'", member_name};
+		}
+		return Ref{*this, Record_datatype::Member_accessor{member_name}};
+	}
+	
+	/** Create a sub-reference to a member in case the content behind the ref is a record
+	 *
+	 * \param member_name member to make a subref for
+	 * \return created subreference
+	 */
+	Ref operator[] (const char* member_name) const
+	{
+		return this->operator[](std::string(member_name));
+	}
+	
+	/** Create a sub-reference to the content at a given index in case the content behind the ref is an array
+	 *
+	 * \param index index to make a subref for
+	 * \return created subreference
+	 */
+	Ref operator[] (std::size_t index) const
+	{
+		if (is_null()) {
+			throw Type_error{"Cannot access array index from empty Ref: `{}'", index};
+		}
+		return Ref{*this, Array_datatype::Index_accessor{index}};
+	}
+	
+	/** Create a sub-reference to the content at a given slice in case the content behind the ref is an array
+	 *
+	 * \param slice pair with start and end index
+	 * \return created subreference
+	 */
+	Ref operator[] (std::pair<std::size_t, std::size_t> slice) const
+	{
+		if (is_null()) {
+			throw Type_error{"Cannot access array slice from empty Ref: `{}'", index};
+		}
+		return Ref{*this, Array_datatype::Slice_accessor{slice.first, slice.second}};
 	}
 	
 	/** Offers access to the referenced raw data

@@ -62,6 +62,11 @@ pair<void*, Datatype_uptr> Pointer_datatype::Accessor::access(const Pointer_data
 	}
 }
 
+unique_ptr<Datatype::Accessor_base> Pointer_datatype::Accessor::clone() const
+{
+	return unique_ptr<Accessor_base>{new Accessor{}};
+}
+
 Pointer_datatype::Pointer_datatype(Datatype_uptr subtype):
 	m_subtype{move(subtype)}
 {}

@@ -66,6 +66,11 @@ string Array_datatype::Index_accessor::access_kind() const
 	return "index access [" + to_string(m_index) + "]";
 }
 
+unique_ptr<Datatype::Accessor_base> Array_datatype::Index_accessor::clone() const
+{
+	return unique_ptr<Accessor_base>{new Index_accessor{m_index}};
+}
+
 pair<void*, Datatype_uptr> Array_datatype::Index_accessor::access(const Array_datatype& array_type,
 										void* from,
 										vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
@@ -111,6 +116,11 @@ pair<void*, Datatype_uptr> Array_datatype::Slice_accessor::access(const Array_da
 																				m_end,
 																				array_type.subsize()};
 	}
+}
+
+unique_ptr<Datatype::Accessor_base> Array_datatype::Slice_accessor::clone() const
+{
+	return unique_ptr<Accessor_base>{new Slice_accessor{m_start, m_end}};
 }
 
 size_t Array_datatype::Slice_accessor::size() const

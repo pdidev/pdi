@@ -91,6 +91,11 @@ public:
 		 */
 		virtual std::string access_kind() const = 0;
 		
+		/** Creates and returns clone of accessor
+		 * \return clone of accessor
+		 */
+		virtual std::unique_ptr<Accessor_base> clone() const = 0;
+		
 		/** Destroys the accessor
 		*/
 		virtual ~Accessor_base() = default;

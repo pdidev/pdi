@@ -58,6 +58,8 @@ public:
 		    void* from,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+		    
+		std::unique_ptr<Accessor_base> clone() const override;
 	};
 	
 	Pointer_datatype(Datatype_uptr subtype);

@@ -83,6 +83,11 @@ pair<void*, Datatype_uptr> Record_datatype::Member_accessor::access(const Record
 	}
 }
 
+unique_ptr<Datatype::Accessor_base> Record_datatype::Member_accessor::clone() const
+{
+	return unique_ptr<Accessor_base>{new Member_accessor{m_member_name}};
+}
+
 Record_datatype::Member::Member(size_t displacement, Datatype_uptr type, const string& name):
 	m_displacement{displacement},
 	m_type{move(type)},

@@ -75,6 +75,8 @@ public:
 		    void* from,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+		    
+		std::unique_ptr<Accessor_base> clone() const override;
 	};
 	
 	/** Accessor to get a slice of an array, returns array of the same subtype
@@ -105,6 +107,8 @@ public:
 		    void* from,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+		    
+		std::unique_ptr<Accessor_base> clone() const override;
 	};
 	
 	/** Construct a new partially filled Array_datatype

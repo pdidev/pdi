@@ -65,11 +65,9 @@ pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Record_datatype
 
 pair<void*, Datatype_uptr> Datatype::subaccess(void* from, const Accessor_base& accessor) const
 {
-	vector<unique_ptr<Accessor_base>> accessors {};
-	accessors.emplace_back(const_cast<Accessor_base*>(&accessor));
-	pair<void*, Datatype_uptr> result = subaccess_by_iterators(from, accessors.cbegin(), accessors.cend());
-	accessors.begin()->release();
-	return result;
+	vector<unique_ptr<Accessor_base>> accessors;
+	accessors.emplace_back(accessor.clone());
+	return subaccess_by_iterators(from, accessors.cbegin(), accessors.cend());
 }
 
 pair<void*, Datatype_uptr> Datatype::subaccess(void* from, const vector<unique_ptr<Accessor_base>>& accessors) const

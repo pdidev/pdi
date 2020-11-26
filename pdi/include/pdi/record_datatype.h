@@ -62,6 +62,8 @@ public:
 		    void* from,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+		    
+		std::unique_ptr<Accessor_base> clone() const override;
 	};
 	
 	/** A Member is one of the elements inside a Record_datatype
