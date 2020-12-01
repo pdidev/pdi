@@ -37,11 +37,11 @@ set_target_properties(recv_msg PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/send_recv_msg.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/send_recv_msg.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_01_Send_recv_msg COMMAND PDI::pdirun "./test.sh")
-set_property(TEST flowvr_01_Send_recv_msg PROPERTY TIMEOUT 5)
+add_test(NAME flowvr_01_Send_recv_msg COMMAND PDI::pdirun "../run_flowvr_test.sh" "send_recv_msg")
+set_property(TEST flowvr_01_Send_recv_msg PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_01_Send_recv_msg PROPERTY RESOURCE_LOCK flowvrd)
 set_property(TEST flowvr_01_Send_recv_msg PROPERTY DISABLED TRUE)

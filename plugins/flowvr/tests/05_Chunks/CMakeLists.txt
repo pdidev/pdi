@@ -37,11 +37,11 @@ set_target_properties(recv_chunks PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/chunks.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/chunks.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_05_Chunks COMMAND PDI::pdirun "./test.sh")
-set_property(TEST flowvr_05_Chunks PROPERTY TIMEOUT 5)
+add_test(NAME flowvr_05_Chunks COMMAND PDI::pdirun "../run_flowvr_test.sh" "chunks")
+set_property(TEST flowvr_05_Chunks PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_05_Chunks PROPERTY RESOURCE_LOCK flowvrd)
 set_property(TEST flowvr_05_Chunks PROPERTY DISABLED TRUE)

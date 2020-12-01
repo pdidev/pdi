@@ -5,7 +5,6 @@ data:
 
 plugins:
   flowvr:
-    component: module
     abort_on: "abort"
     wait_on: ["wait", "wait_loop"]
     input_ports:

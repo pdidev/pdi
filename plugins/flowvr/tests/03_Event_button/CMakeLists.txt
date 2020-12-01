@@ -37,11 +37,11 @@ set_target_properties(recv_button PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/event_button.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/event_button.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_03_Event_button COMMAND PDI::pdirun "./test.sh")
-set_property(TEST flowvr_03_Event_button PROPERTY TIMEOUT 5)
+add_test(NAME flowvr_03_Event_button COMMAND PDI::pdirun "../run_flowvr_test.sh" "event_button")
+set_property(TEST flowvr_03_Event_button PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_03_Event_button PROPERTY RESOURCE_LOCK flowvrd)
 set_property(TEST flowvr_03_Event_button PROPERTY DISABLED TRUE)

@@ -10,7 +10,7 @@ The [FlowVR](http://flowvr.sourceforge.net) plugin lets you write FlowVR modules
 \subsection flowvr_tree FlowVR plugin tree
 
 The root of FlowVR plugin configuration (named `flowvr`), is a dictionary that contains the following keys:
-- \ref component_node
+- \ref component_node (*optional*)
 - \ref wait_on_data_node (*recommended*)
 - \ref wait_on_node (*optional*)
 - \ref status_node (*optional*)
@@ -21,7 +21,7 @@ The root of FlowVR plugin configuration (named `flowvr`), is a dictionary that c
 
 \subsubsection component_node component
 
-For now only available component is `module`, but this can be expanded to `filter` and `synchronizer` in the future.
+For now, only available component is `module` and this is a default value, but this can be expanded to `filter` and `synchronizer` in the future.
 Configuration example:
 
 ```yaml

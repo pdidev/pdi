@@ -37,11 +37,11 @@ set_target_properties(recv_stamp PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/stamps.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/stamps.py
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_02_Stamps COMMAND PDI::pdirun "./test.sh")
-set_property(TEST flowvr_02_Stamps PROPERTY TIMEOUT 5)
+add_test(NAME flowvr_02_Stamps COMMAND PDI::pdirun "../run_flowvr_test.sh" "stamps")
+set_property(TEST flowvr_02_Stamps PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_02_Stamps PROPERTY RESOURCE_LOCK flowvrd)
 set_property(TEST flowvr_02_Stamps PROPERTY DISABLED TRUE)

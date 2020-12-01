@@ -37,11 +37,11 @@ set_target_properties(recv_wait_event PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/wait_event.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/wait_event.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_08_Wait_event COMMAND PDI::pdirun "./test.sh")
-set_property(TEST flowvr_08_Wait_event PROPERTY TIMEOUT 5)
+add_test(NAME flowvr_08_Wait_event COMMAND PDI::pdirun "../run_flowvr_test.sh" "wait_event")
+set_property(TEST flowvr_08_Wait_event PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_08_Wait_event PROPERTY RESOURCE_LOCK flowvrd)
 set_property(TEST flowvr_08_Wait_event PROPERTY DISABLED TRUE)

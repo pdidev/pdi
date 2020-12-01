@@ -390,13 +390,13 @@ endif()
 
 if("${BUILD_FLOWVR_PLUGIN}")
 	sbuild_add_dependency(FlowVR "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/flowvr-ex-v2.3.0"
+		EMBEDDED_PATH "vendor/flowvr-ex-v2.3.2"
 		CMAKE_CACHE_ARGS
 			"-DENABLE_EXAMPLES:BOOL=OFF"
 			"-DENABLE_TESTS:BOOL=OFF"
 			"-DENABLE_DOCU:BOOL=OFF"
 			"-DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-		# VERSION 2.3 Finding FlowVR version doesn't work with 2.3
+		# VERSION 2.3.2 Finding FlowVR version doesn't work with 2.3
 	)
 endif()
 

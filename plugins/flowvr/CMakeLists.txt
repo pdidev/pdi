@@ -47,7 +47,7 @@ set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${P
 find_package(FlowVR REQUIRED)
 
 # The plugin
-add_subdirectory(src/)
+add_subdirectory(plugin/)
 
 # Python script
 add_subdirectory(tools)

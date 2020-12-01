@@ -22,13 +22,20 @@ export FLOWVR_PID_LOG_DIR="./.flowvr"
 flowvrd > flowvrd.log &
 DAEMON_PID=$!
 
-$1/flowvr.py $1 $2 $3
+# give daemon time to open
+sleep 2
+
+python3 $1/flowvr.py $1 $2 $3
 flowvr -a flowvr > flowvr.log
+
+# save test status
 FLOWVR_STATUS=$?
 
+# kill daemon
 kill $DAEMON_PID
 
-# in case flowvr daemon didn't unbind the socket
-service network restart
+# give daemon time to close
+sleep 2
 
+# exit with test status
 exit $FLOWVR_STATUS

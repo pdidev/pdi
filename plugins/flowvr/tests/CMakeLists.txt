@@ -53,4 +53,4 @@ add_subdirectory(06_Abort_on_fin/)
 add_subdirectory(07_Copy_send_recv/)
 add_subdirectory(08_Wait_event/)
 
-configure_file(flowvr-config.sh flowvr-config.sh @ONLY)
+configure_file(run_flowvr_test.sh run_flowvr_test.sh @ONLY)

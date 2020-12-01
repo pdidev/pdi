@@ -207,7 +207,7 @@ Dependencies of **the Decl'SION plugin**:
 Dependencies of **the FlowVR plugin**:
 
 * the PDI library,
-* [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex).
+* [FlowVR 2.3.2](https://gitlab.inria.fr/flowvr/flowvr-ex) version or above.
 
 Dependencies of **the FTI plugin**:
 

@@ -37,11 +37,11 @@ set_target_properties(recv_mouse PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/event_mouse.py ${CMAKE_CURRENT_SOURCE_DIR}/test.sh
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/event_mouse.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Test
-add_test(NAME flowvr_04_Event_mouse COMMAND PDI::pdirun "./test.sh")
-set_property(TEST flowvr_04_Event_mouse PROPERTY TIMEOUT 5)
+add_test(NAME flowvr_04_Event_mouse COMMAND PDI::pdirun "../run_flowvr_test.sh" "event_mouse")
+set_property(TEST flowvr_04_Event_mouse PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_04_Event_mouse PROPERTY RESOURCE_LOCK flowvrd)
 set_property(TEST flowvr_04_Event_mouse PROPERTY DISABLED TRUE)
