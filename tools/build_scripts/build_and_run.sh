@@ -83,6 +83,6 @@ then
 	#TODO: Fix this workaround, where we skip centos tests on github because they fail
 	if [ "x${DOCKER_RUNNER}" != "xgithub" -o "x${PDI_SYSTEM}" != "xdocker-centos-7" ]
 	then
-		ctest --output-on-failure
+		ctest --output-on-failure --timeout 180
 	fi
 fi
