@@ -46,12 +46,13 @@ def gen_script(command_list):
         return command_list
     return "; ".join([gen_script(scr) for scr in command_list])
 
-def launch_docker_test(docker_runner, image, script):
+def launch_docker_test(docker_runner, image, script, no_pull=False):
     # Generate a random name for our temporary docker volume
     volume_name = ''.join(random.choice(string.ascii_letters) for i in range(32))
     
     # Pull the user-specified image
-    subprocess.run(["docker", "image", "pull", image], check=True)
+    if not no_pull:
+        subprocess.run(["docker", "image", "pull", image], check=True)
     
     # Get the UID required from the image
     image_info = yaml.load(subprocess.run(["docker", "image", "inspect", image], capture_output=True, check=True).stdout, Loader=yaml.BaseLoader)
@@ -85,20 +86,27 @@ def launch_docker_test(docker_runner, image, script):
     
 
 def main():
-    if len(sys.argv) != 3:
-        print("** Error, expecting 2 arguments, got "+str(len(sys.argv)-1), file=sys.stderr)
-        print("\nUsage: "+sys.argv[0]+" <DOCKER_RUNNER> <test_name>", file=sys.stderr)
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print("** Error, expecting 2 or 3 arguments, got "+str(len(sys.argv)-1), file=sys.stderr)
+        print("\nUsage: "+sys.argv[0]+" <DOCKER_RUNNER> <test_name> [--no-pull]", file=sys.stderr)
+        sys.exit(1)
+    
+    if len(sys.argv) == 4 and sys.argv[3] != '--no-pull':
+        print("** Error, unknown option: `"+str(sys.argv[3])+"'", file=sys.stderr)
+        print("\nUsage: "+sys.argv[0]+" <DOCKER_RUNNER> <test_name> [--no-pull]", file=sys.stderr)
         sys.exit(1)
     
     docker_runner=sys.argv[1] 
     test_name=sys.argv[2]
+    
+    no_pull=(len(sys.argv) == 4 and sys.argv[3] == '--no-pull')
     
     gitlab_ci = yaml.load(open(PDI_DIR/".gitlab-ci.yml"), Loader=yaml.BaseLoader)
     
     image = gitlab_ci[test_name]["image"]
     script = gen_script(["set -e", "cd /builds/pdidev/pdi", gitlab_ci[test_name]["script"]])
     
-    launch_docker_test(docker_runner, image, script)
+    launch_docker_test(docker_runner, image, script, no_pull)
 
 if __name__ == "__main__":
     main()
