@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Install plugins as specified by the `INSTALL_PDIPLUGINDIR` cmake variable
 * Improved error reporting when loading plugins
 * Support for accessing record datatype from Python
+* Support loading plugins in standard path relative to LD_LIBRARY_PATH
 
 #### Changed
 * Fortran support now requires version 1.0.6 of Zpp minimum

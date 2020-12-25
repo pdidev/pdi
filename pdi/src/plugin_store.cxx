@@ -180,7 +180,7 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 {
 	vector<string> load_errors;
 	
-	// try using expected path
+	// STEP 1: try using expected path
 	for ( auto&& path: m_plugin_path ) {
 		string libname = path + "/libpdi_" + plugin_name + "_plugin.so";
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
@@ -195,7 +195,22 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 		}
 	}
 	
-	// try system path
+	// STEP 2: get from relative path to system path
+	if /* constexpr */ (PDI_DEFAULT_PLUGIN_PATH[0] != '/') {
+		string libname = (PDI_DEFAULT_PLUGIN_PATH "/libpdi_") + plugin_name + "_plugin.so";
+		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
+		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW|RTLD_GLOBAL);
+		if (lib_handle) {
+			m_ctx.logger()->trace("Loaded `{}' relative to system path", libname);
+			return lib_handle;
+		} else {
+			const string error_msg = dlerror();
+			m_ctx.logger()->debug("Unable to load relative to system path {}", plugin_name, error_msg);
+			load_errors.push_back(format("\n  * unable to load relative to system path {}", error_msg));
+		}
+	}
+	
+	// STEP 3: try system path
 	string libname = string("libpdi_") + plugin_name + "_plugin.so";
 	// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 	void* lib_handle = dlopen(libname.c_str(), RTLD_NOW|RTLD_GLOBAL);
