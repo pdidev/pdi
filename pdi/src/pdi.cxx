@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,6 +148,8 @@ void warn_status(PDI_status_t status, const char* message, void*)
 
 } // namespace <anonymous>
 
+extern "C"
+{
 
 const PDI_errhandler_t PDI_ASSERT_HANDLER = {
 	&assert_status,
@@ -427,8 +429,7 @@ try
 	return g_error_context.return_err();
 }
 
-
-PDI_status_t PDI_transaction_begin(const char* name)
+PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name)
 try
 {
 	Paraconf_wrapper fw;
@@ -448,7 +449,7 @@ try
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_transaction_end()
+PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end()
 try
 {
 	Paraconf_wrapper fw;
@@ -485,3 +486,5 @@ try
 	g_transaction_status = !g_transaction_status ? status : g_transaction_status; //if it is first error, save its status
 	return g_transaction_status;
 }
+
+} // extern "C"

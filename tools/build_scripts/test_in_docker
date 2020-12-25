@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #=============================================================================
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -28,9 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-
-
-
+import argparse
 import os
 import pathlib
 import random
@@ -87,27 +85,25 @@ def launch_docker_test(docker_runner, image, script, no_pull=False):
     
 
 def main():
-    if len(sys.argv) < 3 or len(sys.argv) > 4:
-        print("** Error, expecting 2 or 3 arguments, got "+str(len(sys.argv)-1), file=sys.stderr)
-        print("\nUsage: "+sys.argv[0]+" <DOCKER_RUNNER> <test_name> [--no-pull]", file=sys.stderr)
-        sys.exit(1)
-    
-    if len(sys.argv) == 4 and sys.argv[3] != '--no-pull':
-        print("** Error, unknown option: `"+str(sys.argv[3])+"'", file=sys.stderr)
-        print("\nUsage: "+sys.argv[0]+" <DOCKER_RUNNER> <test_name> [--no-pull]", file=sys.stderr)
-        sys.exit(1)
-    
-    docker_runner=sys.argv[1] 
-    test_name=sys.argv[2]
-    
-    no_pull=(len(sys.argv) == 4 and sys.argv[3] == '--no-pull')
+    parser = argparse.ArgumentParser(add_help=False, description='Runs a docker job described in a .gitlab-ci.yml file.')
+    parser.add_argument('--no-pull', '-p', dest='pull', action='store_false', default=True,
+                        help='do not force-pull the docker images and use the local cache if possible')
+    parser.add_argument('--pull', dest='pull', action='store_true',
+                        help='cancels a previous --no-pull')
+    parser.add_argument('--help', '-h', action='help',
+                        help='show this help message and exit')
+    parser.add_argument('runner_name', metavar='DOCKER_RUNNER', nargs='?', default='local',
+                        help='name for the docker runner')
+    parser.add_argument('test_name', default='local',
+                        help='name of the test in the .gitlab-ci.yml file')
+    args = parser.parse_args()
     
     gitlab_ci = yaml.load(open(PDI_DIR/".gitlab-ci.yml"), Loader=yaml.BaseLoader)
     
-    image = gitlab_ci[test_name]["image"]
-    script = gen_script(["set -e", "cd /builds/pdidev/pdi", gitlab_ci[test_name]["script"]])
+    image = gitlab_ci[args.test_name]["image"]
+    script = gen_script(["set -e", "cd /builds/pdidev/pdi", gitlab_ci[args.test_name]["script"]])
     
-    launch_docker_test(docker_runner, image, script, no_pull)
+    launch_docker_test(args.runner_name, image, script, not args.pull)
 
 if __name__ == "__main__":
     main()

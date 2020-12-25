@@ -79,7 +79,7 @@ option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
-option(BUILD_TEST_PLUGIN        "Build Test plugin" ON)
+option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_UNSTABLE}")
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 

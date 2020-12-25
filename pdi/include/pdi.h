@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -279,6 +279,8 @@ PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t acc
  */
 PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...);
 
+#ifdef PDI_WITH_DEPRECATED
+
 /** Begin a transaction in which all PDI_expose calls are grouped.
  *
  * This requires a call to PDI_transaction_end to close the transaction.
@@ -306,6 +308,8 @@ PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name);
  * \return an error status
  */
 PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void);
+
+#endif // PDI_WITH_DEPRECATED
 
 /// \}
 

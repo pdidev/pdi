@@ -33,6 +33,9 @@ option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
 option(BUILD_INDENT           "Enable automatic code indentation" OFF)
 option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 
+# Includes
+include(CTest)
+
 # Astyle
 if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)
