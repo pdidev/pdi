@@ -1,6 +1,6 @@
-# Checklists
+\page Checklists Checklists
 
-## New patch release
+# New patch release
 
 To publish a small fix as a patch release:
 * make your changes based on the version branch (`v${X}.${Y}`)
@@ -15,7 +15,7 @@ To publish a small fix as a patch release:
     version updated to the just released one
 * push all that
 
-## New minor or major release
+# New minor or major release
 
 To publish a new minor or major release:
 * start from the master branch
@@ -29,7 +29,7 @@ To publish a new minor or major release:
   - change the version in `pdi/docs/Installation.md` to the just released one
 * push all that
 
-## Dependency change
+# Dependency change
 
 When changing the list of dependencies or just the version of one dependency:
 * update `pdi/docs/Installation.md`,

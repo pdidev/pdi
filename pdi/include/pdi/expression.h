@@ -135,21 +135,21 @@ public:
 	
 	/** Subtraction operator of an expression
 	 *
-	 * \param[in] value the expression to subtract
+	 * \param[in] expr the expression to subtract
 	 * \return Expression as a result of subtraction
 	 */
 	Expression operator-(const Expression& expr) const;
 	
 	/** Division operator of an expression
 	 *
-	 * \param[in] value the expression to divide
+	 * \param[in] expr the expression to divide
 	 * \return Expression as a result of division
 	 */
 	Expression operator/(const Expression& expr) const;
 	
 	/** Modulo operator of an expression
 	 *
-	 * \param[in] value the expression to use modulo
+	 * \param[in] expr the expression to use modulo
 	 * \return Expression as a result of modulo
 	 */
 	Expression operator%(const Expression& expr) const;
