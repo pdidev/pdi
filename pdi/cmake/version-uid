@@ -1,11 +1,21 @@
 #!/bin/sh
+set -e
 export LC_ALL=C
 
-GIT_VERSION="$(git rev-parse --verify --short=9 HEAD 2> /dev/null)"
-if [ -n "$GIT_VERSION" ]
+PRE_RELEASE="${1-alpha}"
+WORK_DIR="${2-.}"
+GIT_EXE="${GIT_EXE-"$(which git 2> /dev/null || true)"}"
+
+if [ git = "${PRE_RELEASE}" ]
 then
-	echo "pre_git-${GIT_VERSION}"
-	exit
+	PRE_RELEASE=alpha
 fi
 
-date -u '+pre_date-%F-%H_%M'
+if [ -x "${GIT_EXE}" ]
+then
+	GIT_DATE="$("${GIT_EXE}" -C "${WORK_DIR}" show -s --format=%cs HEAD)"
+	GIT_SHA1="$("${GIT_EXE}" -C "${WORK_DIR}" rev-parse --verify --short=7 HEAD)"
+	echo "-${PRE_RELEASE}.${GIT_DATE}.${GIT_SHA1}"
+else
+	date -u "+-${PRE_RELEASE}.%F"
+fi

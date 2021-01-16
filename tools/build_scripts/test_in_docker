@@ -77,7 +77,7 @@ def launch_docker_test(docker_runner, image, script, no_pull=False):
                         "--mount", "source="+volume_name+",destination=/builds/pdidev/,readonly",
                         "-e", "DOCKER_RUNNER="+docker_runner,
                         "-e", "MAKEFLAGS",
-                        "--shm-size=1g",
+                        "--shm-size=5g",
                         image,
                         "bash", "-c", script
                         ], check=True)

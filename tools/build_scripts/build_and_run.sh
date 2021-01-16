@@ -37,7 +37,9 @@ cd "$(dirname "$0")/" # build_scripts
 cd "../.."  # PDI distrib dir
 SRCDIR="$(pwd)"
 
-cd "$(mktemp -d || exit 1)"
+cd "$(mktemp -d)"
+
+
 
 CMAKE_FLAGS=""
 
@@ -47,12 +49,12 @@ CMAKE_VERSION_MINOR="${CMAKE_VERSION%\.*}";CMAKE_VERSION_MINOR="${CMAKE_VERSION_
 
 if [ "xprovided" = "x${PDI_LIBS}" ]
 then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM"
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM -DUSE_Zpp=SYSTEM -DUSE_Gtest=SYSTEM"
 else
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=EMBEDDED"
 fi
 
-if [ "${CMAKE_VERSION_MAJOR}" -eq 3 -a "${CMAKE_VERSION_MINOR}" -lt 10 ]
+if [ "${CMAKE_VERSION_MAJOR}" -eq 3 ] && [ "${CMAKE_VERSION_MINOR}" -lt 10 ]
 then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF"
 fi
@@ -62,27 +64,26 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
 fi
 
+#TODO: Workaround for https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/195
 if [ "xdocker-ubuntu-xenial" = "x${PDI_SYSTEM}" ]
 then
-	#TODO: Fix this workaround, where we always preinstall Sionlib on ubuntu because autoinstall fails
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_SIONlib=SYSTEM"
-	if [ "xprovided" = "x${PDI_LIBS}" ]
-	then
-		CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_Zpp=SYSTEM"
-	fi
 fi
 
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+
+
+
 if [ -z "${MAKEFLAGS}" ]
 then
 	export MAKEFLAGS='-j'
 fi
+
 make
-if [ "${CMAKE_VERSION_MAJOR}" -gt 3 -o "${CMAKE_VERSION_MINOR}" -ge 10 ]
+
+
+
+if [ "${CMAKE_VERSION_MAJOR}" -gt 3 ] || [ "${CMAKE_VERSION_MINOR}" -ge 10 ]
 then
-	#TODO: Fix this workaround, where we skip centos tests on github because they fail
-	if [ "x${DOCKER_RUNNER}" != "xgithub" -o "x${PDI_SYSTEM}" != "xdocker-centos-7" ]
-	then
-		ctest --output-on-failure --timeout 180
-	fi
+	ctest --output-on-failure --timeout 180
 fi
