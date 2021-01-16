@@ -14,13 +14,14 @@ ensemble run, etc.
 # User documentation
 
 1. \subpage Installation "Installation"
-2. \subpage Concepts "Core concepts"
-3. \subpage First_steps "First steps"
-4. \ref Hands_on "Tutorial"
-5. \subpage PDI_example "PDI example"
-6. [C API reference](modules.html)
-7. \subpage Specification_tree_ref "Specification tree reference"
-8. \subpage Plugins "List of PDI plugins"
+2. \subpage PDI_usage "PDI usage"
+3. \subpage Concepts "Core concepts"
+4. \subpage First_steps "First steps"
+5. \subpage Hands_on "Tutorial"
+6. \subpage PDI_example "PDI example"
+7. [C API reference](modules.html)
+8. \subpage Specification_tree_ref "Specification tree reference"
+9. \subpage Plugins "List of PDI plugins"
 
 
 # Developer documentation
