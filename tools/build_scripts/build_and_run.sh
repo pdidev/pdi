@@ -41,7 +41,7 @@ cd "$(mktemp -d)"
 
 
 
-CMAKE_FLAGS=""
+CMAKE_FLAGS="-DBUILD_DOCUMENTATION=OFF"
 
 CMAKE_VERSION="$(cmake --version | grep -o 'version [0-9]\+.[0-9]\+.[0-9]\+' | sed 's/[^0-9]*//')"
 CMAKE_VERSION_MAJOR="${CMAKE_VERSION%%\.*}"
@@ -56,7 +56,7 @@ fi
 
 if [ "${CMAKE_VERSION_MAJOR}" -eq 3 ] && [ "${CMAKE_VERSION_MINOR}" -lt 10 ]
 then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_DOCUMENTATION=OFF -DBUILD_TESTING=OFF"
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_TESTING=OFF"
 fi
 
 if [ -n "${PDI_PLUGIN_PATH}" ]
