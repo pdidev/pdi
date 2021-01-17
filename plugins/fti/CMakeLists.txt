@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -57,7 +57,6 @@ add_library(pdi_fti_plugin MODULE
 		fti_cfg.cxx
 		fti_wrapper.cxx)
 target_link_libraries(pdi_fti_plugin MPI::MPI_CXX PDI::PDI_plugins fti.shared)
-target_include_directories(pdi_fti_plugin PUBLIC ${FTI_INCLUDE_PATH})
 set_target_properties(pdi_fti_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE

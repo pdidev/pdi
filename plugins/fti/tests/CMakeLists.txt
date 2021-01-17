@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -182,6 +182,6 @@ set_property(TEST fti_10_C PROPERTY TIMEOUT 5)
 # FTI send_file test (probably bugged in current FTI version)
 
 add_executable(fti_11_C fti_test_11.c)
-target_link_libraries(fti_11_C PDI::PDI_C MPI::MPI_C)
+target_link_libraries(fti_11_C PDI::PDI_C MPI::MPI_C fti.shared)
 add_test(NAME fti_11_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config_05.ini" "mpirun" -n 6 "$<TARGET_FILE:fti_11_C>" "${CMAKE_CURRENT_SOURCE_DIR}/fti_test_11.yml")
 set_property(TEST fti_11_C PROPERTY TIMEOUT 5)
