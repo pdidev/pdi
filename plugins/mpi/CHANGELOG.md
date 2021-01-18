@@ -4,6 +4,14 @@ All notable changes to the MPI plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [unreleased]
+
+### Fixed
+* Fixed an issue where transtyping would fail when the size of the integer used
+  for the Fortran size is different from that of a Fortran integer:
+  [#293](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/293)
+
+
 ## [1.5.0] - 2022-03-30
 
 ### Changed
