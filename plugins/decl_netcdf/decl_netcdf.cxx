@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -25,7 +26,7 @@
 #include <vector>
 
 #include <netcdf_meta.h> // includes NC_HAS_PARALLEL4 define
-#ifdef NC_HAS_PARALLEL4
+#if NC_HAS_PARALLEL4
 	#include <mpi.h>
 #endif
 
@@ -47,7 +48,7 @@ class decl_netcdf_plugin : public PDI::Plugin
 	{
 		context().logger()->set_pattern("[PDI][Decl'NetCDF][%T] *** %^%l%$: %v");
 		
-#ifdef NC_HAS_PARALLEL4
+#if NC_HAS_PARALLEL4
 		int mpi_init = 0;
 		MPI_Initialized(&mpi_init);
 		if (mpi_init) {

@@ -1,6 +1,6 @@
 #=============================================================================
-# Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,31 +44,37 @@ endif()
 add_executable(decl_netcdf_01_C decl_netcdf_test_01.c)
 target_link_libraries(decl_netcdf_01_C PDI::PDI_C)
 add_test(NAME decl_netcdf_01_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_01_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_01.yml")
+set_property(TEST decl_netcdf_01_C PROPERTY TIMEOUT 5)
 
 add_executable(decl_netcdf_02_C decl_netcdf_test_02.c)
 target_link_libraries(decl_netcdf_02_C PDI::PDI_C)
 add_test(NAME decl_netcdf_02_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_02_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_02.yml")
+set_property(TEST decl_netcdf_02_C PROPERTY TIMEOUT 5)
 
 add_executable(decl_netcdf_03_C decl_netcdf_test_03.c)
 target_link_libraries(decl_netcdf_03_C PDI::PDI_C)
 add_test(NAME decl_netcdf_03_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_03_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_03.yml")
+set_property(TEST decl_netcdf_03_C PROPERTY TIMEOUT 5)
 
 add_executable(decl_netcdf_04_C decl_netcdf_test_04.c)
 target_link_libraries(decl_netcdf_04_C PDI::PDI_C)
 add_test(NAME decl_netcdf_04_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_04.yml")
+set_property(TEST decl_netcdf_04_C PROPERTY TIMEOUT 5)
 
 add_executable(decl_netcdf_05_C decl_netcdf_test_05.c)
 target_link_libraries(decl_netcdf_05_C PDI::PDI_C)
 add_test(NAME decl_netcdf_05_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_05.yml")
+set_property(TEST decl_netcdf_05_C PROPERTY TIMEOUT 5)
 
-if("${NC_HAS_PARALLEL}")
-     find_package(MPI REQUIRED COMPONENTS CXX C ${MPI_COMPONENTS})
+if("PARALLEL" IN_LIST NetCDF_FEATURES)
+     find_package(MPI REQUIRED COMPONENTS C)
      add_executable(decl_netcdf_06_C decl_netcdf_test_06.c)
      target_link_libraries(decl_netcdf_06_C PDI::PDI_C MPI::MPI_C)
-     add_test(NAME decl_netcdf_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS}  "$<TARGET_FILE:decl_netcdf_06_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_06.yml")
-     set_property(TEST decl_netcdf_06_C PROPERTY DISABLED TRUE) #TODO: netcdf parallel #define NC_HAS_PARALLEL4
+     add_test(NAME decl_netcdf_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS}  "$<TARGET_FILE:decl_netcdf_06_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_06.yml")
+     set_property(TEST decl_netcdf_06_C PROPERTY TIMEOUT 5)
 endif()
 
 add_executable(decl_netcdf_07_C decl_netcdf_test_07.c)
 target_link_libraries(decl_netcdf_07_C PDI::PDI_C)
 add_test(NAME decl_netcdf_07_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_07_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_07.yml")
+set_property(TEST decl_netcdf_07_C PROPERTY TIMEOUT 5)

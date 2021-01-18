@@ -27,42 +27,42 @@
 
 // Tests simple write and read of scalar and array depending on event
 int main(int argc, char* argv[])
-{	
+{
 	PDI_init(PC_parse_path(argv[1]));
-
-    // init data
-    int int_scalar = 42;
-    int int_array[32];
-    for (int i = 0; i < 32; i++) {
-        int_array[i] = i;
-    }
-
-    // write data
-    PDI_multi_expose("write",
-                     "int_scalar", &int_scalar, PDI_OUT,
-                     "int_array", int_array, PDI_OUT,
-                     NULL);
-
-    // zero data
-    int_scalar = 0;
-    for (int i = 0; i < 32; i++) {
-        int_array[i] = 0;
-    }
-
-    // read data
-    PDI_multi_expose("read",
-                     "int_scalar", &int_scalar, PDI_IN,
-                     "int_array", int_array, PDI_IN,
-                     NULL);
-
-    // verify
-    printf("%d ?= %d\n", int_scalar, 42);
-    assert(int_scalar == 42);
-    for (int i = 0; i < 32; i++) {
-        printf("%d ?= %d\n", int_array[i], i);
-        assert(int_array[i] == i);
-    }
-
-    PDI_finalize();
-    return 0;
+	
+	// init data
+	int int_scalar = 42;
+	int int_array[32];
+	for (int i = 0; i < 32; i++) {
+		int_array[i] = i;
+	}
+	
+	// write data
+	PDI_multi_expose("write",
+	    "int_scalar", &int_scalar, PDI_OUT,
+	    "int_array", int_array, PDI_OUT,
+	    NULL);
+	    
+	// zero data
+	int_scalar = 0;
+	for (int i = 0; i < 32; i++) {
+		int_array[i] = 0;
+	}
+	
+	// read data
+	PDI_multi_expose("read",
+	    "int_scalar", &int_scalar, PDI_IN,
+	    "int_array", int_array, PDI_IN,
+	    NULL);
+	    
+	// verify
+	printf("%d ?= %d\n", int_scalar, 42);
+	assert(int_scalar == 42);
+	for (int i = 0; i < 32; i++) {
+		printf("%d ?= %d\n", int_array[i], i);
+		assert(int_array[i] == i);
+	}
+	
+	PDI_finalize();
+	return 0;
 }

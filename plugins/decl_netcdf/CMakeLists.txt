@@ -84,7 +84,8 @@ set_target_properties(pdi_decl_netcdf_plugin PROPERTIES
 if("${Astyle_FOUND}")
 	Astyle_add_indent(indent TEST
 			OPTIONS_FILE formating.astyle
-			*.cxx *.h)
+			*.cxx *.h
+			tests/*.c)
 endif()
 
 # installation

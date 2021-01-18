@@ -92,12 +92,18 @@ function(_NetCDF_target_from_flags CFLAGS INCLUDE_DIRECTORIES COMPILE_DEFINITION
 	foreach(ARG IN LISTS COMPILE_ARGS)
 		if("${ARG}" MATCHES "^-I(.*)$")
 			# include directory
+			if(NOT EXISTS "${CMAKE_MATCH_1}")
+				continue()
+			endif()
 			list(APPEND INCLUDE_DIRECTORIES "${CMAKE_MATCH_1}")
 		elseif("${ARG}" MATCHES "^-D(.*)$")
 			# compile definition
 			list(APPEND COMPILE_DEFINITIONS "-D${CMAKE_MATCH_1}")
 		elseif("${ARG}" MATCHES "^-L(.*)$")
 			# library search path
+			if(NOT EXISTS "${CMAKE_MATCH_1}")
+				continue()
+			endif()
 			list(APPEND LIBRARY_DIRS "${CMAKE_MATCH_1}")
 		elseif("${ARG}" MATCHES "^-l(.*)$")
 			# library name
@@ -222,9 +228,14 @@ endfunction()
 
 
 function(_NetCDF_find_CFGSCRIPT CFGSCRIPT)
-	find_program(_NetCDF_CFGSCRIPT "${CFGSCRIPT}")
-	set(CFGSCRIPT "${_NetCDF_CFGSCRIPT}")
-	unset(_NetCDF_CFGSCRIPT CACHE)
+	if(NOT IS_ABSOLUTE "${CFGSCRIPT}")
+		find_program(_NetCDF_CFGSCRIPT "${CFGSCRIPT}")
+		set(CFGSCRIPT "${_NetCDF_CFGSCRIPT}")
+		unset(_NetCDF_CFGSCRIPT CACHE)
+	endif()
+	if(NOT EXISTS "${CFGSCRIPT}")
+		return()
+	endif()
 	
 	execute_process(COMMAND "${CFGSCRIPT}" "--version"
 		OUTPUT_VARIABLE NetCDF_VERSION

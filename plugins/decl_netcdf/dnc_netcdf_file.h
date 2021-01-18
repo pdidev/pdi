@@ -44,9 +44,14 @@ class Dnc_netcdf_file
 	/// Context of this opened file
 	PDI::Context& m_ctx;
 	
+	/// Filename of this NetCDF file
 	std::string m_filename;
 	
+	/// NetCDF file ID
 	nc_id m_file_id;
+	
+	/// MPI communicator for this file
+	PDI::Expression m_communicator;
 	
 	/// Groups in NetCDF file
 	std::unordered_map<std::string, nc_id> m_groups;

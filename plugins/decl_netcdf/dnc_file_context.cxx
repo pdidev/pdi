@@ -320,7 +320,7 @@ void Dnc_file_context::execute()
 		int i = 0;
 		for (auto&& write : m_write) {
 			Dnc_variable* variable = variables_to_put[i]; // order of loop iteration is the same as was on define loop
-			m_ctx.logger()->warn("{}: Putting desc `{}' to variable `{}'", i, write.first, variables_to_put[i]->path());
+			m_ctx.logger()->trace("{}: Putting desc `{}' to variable `{}'", i, write.first, variables_to_put[i]->path());
 			nc_file->put_variable(*variable, write.second, m_ctx.desc(write.first).ref());
 			i++;
 		}

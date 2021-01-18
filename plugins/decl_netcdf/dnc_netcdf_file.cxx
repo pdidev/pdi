@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -24,7 +25,7 @@
 
 #include <netcdf.h>
 #include <netcdf_meta.h> // includes NC_HAS_PARALLEL4 define
-#ifdef NC_HAS_PARALLEL4
+#if NC_HAS_PARALLEL4
 	#include <netcdf_par.h>
 	#include <mpi.h>
 #endif
@@ -155,12 +156,13 @@ nc_type nc_scalar_type(const PDI::Scalar_datatype& scalar_type)
 
 Dnc_netcdf_file::Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename, int rights_flag, PDI::Expression mpi_comm_expr):
 	m_ctx{ctx},
-	m_filename{filename}
+	m_filename{filename},
+	m_communicator{std::move(mpi_comm_expr)}
 {
-	if (mpi_comm_expr) {
-#ifdef NC_HAS_PARALLEL4
+	if (m_communicator) {
+#if NC_HAS_PARALLEL4
 		// open/create in parallel
-		const MPI_Comm* communicator = static_cast<const MPI_Comm*>(PDI::Ref_r{mpi_comm_expr.to_ref(m_ctx)}.get());
+		const MPI_Comm* communicator = static_cast<const MPI_Comm*>(PDI::Ref_r{m_communicator.to_ref(m_ctx)}.get());
 		MPI_Info mpi_info = MPI_INFO_NULL;
 		m_ctx.logger()->debug("Openning `{}' file in parallel mode", m_filename);
 		if (nc_open_par(m_filename.c_str(), rights_flag | NC_NETCDF4, *communicator, mpi_info, &m_file_id) != NC_NOERR) {
@@ -172,9 +174,6 @@ Dnc_netcdf_file::Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename,
 				nc_try(nc_redef(m_file_id), "File opened to write, but cannot get define mode");
 			}
 		}
-		
-		nc_try(nc_var_par_access(m_file_id, NC_GLOBAL, NC_COLLECTIVE),
-		    "Cannot change the access of a variable to parallel");
 #else
 		throw PDI::Error {PDI_ERR_SYSTEM, "Decl_netcdf plugin: MPI communicator defined, but NetCDF is not parallel"};
 #endif
@@ -390,6 +389,11 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 	}
 	
 	m_variables.emplace(variable.path(), var_id);
+	
+	if (m_communicator) {
+		nc_try(nc_var_par_access(dest_id, var_id, NC_COLLECTIVE),
+		    "Cannot change the access of `{}' variable to parallel", variable_name);
+	}
 	
 	// set the attributes
 	m_ctx.logger()->trace("Putting attributes ({}), to `{}' variable", variable.attributes().size(), variable_name);

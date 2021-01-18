@@ -28,41 +28,41 @@
 
 // Tests infinite dimension
 int main(int argc, char* argv[])
-{	
+{
 	PDI_init(PC_parse_path(argv[1]));
-    
-    int int_matrix[8][8];
-    for (int iter = 0; iter < 32; iter++) {
-        // init data
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                int_matrix[i][j] = iter*100 + i*8 + j;
-            }
-        }
-
-        // write data
-        PDI_multi_expose("write",
-                         "iter", &iter, PDI_OUT,
-                         "int_matrix", int_matrix, PDI_OUT,
-                         NULL);
-    }
-
-    for (int iter = 0; iter < 32; iter++) {
-        // read data
-        PDI_multi_expose("read",
-                         "iter", &iter, PDI_OUT,
-                         "int_matrix", int_matrix, PDI_IN,
-                         NULL);
-
-        // verify
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                printf("[%d][%d] %d ?= %d\n", i, j, int_matrix[i][j], iter*100 + i*8 + j);
-                assert(int_matrix[i][j] == iter*100 + i*8 + j);
-            }
-        }
-    }
-    
-    PDI_finalize();
-    return 0;
+	
+	int int_matrix[8][8];
+	for (int iter = 0; iter < 32; iter++) {
+		// init data
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				int_matrix[i][j] = iter*100 + i*8 + j;
+			}
+		}
+		
+		// write data
+		PDI_multi_expose("write",
+		    "iter", &iter, PDI_OUT,
+		    "int_matrix", int_matrix, PDI_OUT,
+		    NULL);
+	}
+	
+	for (int iter = 0; iter < 32; iter++) {
+		// read data
+		PDI_multi_expose("read",
+		    "iter", &iter, PDI_OUT,
+		    "int_matrix", int_matrix, PDI_IN,
+		    NULL);
+		    
+		// verify
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				printf("[%d][%d] %d ?= %d\n", i, j, int_matrix[i][j], iter*100 + i*8 + j);
+				assert(int_matrix[i][j] == iter*100 + i*8 + j);
+			}
+		}
+	}
+	
+	PDI_finalize();
+	return 0;
 }
