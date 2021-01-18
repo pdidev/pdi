@@ -298,7 +298,7 @@ program access
     call PDI_init(conf)
 
     my_value = 42
-    p_my_value = my_value
+    p_my_value => my_value
     call PDI_share("my_value", p_my_value, PDI_OUT)
 
     secret_msg = "Watermelon is the tastiest fruit"

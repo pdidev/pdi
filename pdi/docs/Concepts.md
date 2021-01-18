@@ -39,7 +39,7 @@ store, what each handler should do with it, etc. is described in the
 
 \section Data_store Data store
 
-The data store is the mechanism offered by %PDI to handle *data transfer* between the
+The data store is the mechanism provided by %PDI to handle *data transfer* between the
 application code and external data handlers.
 Data transfer is the action of making data available to another part of the code.
 For example, in a function call the list of parameters determines data transfer.
@@ -103,8 +103,8 @@ does not need to know which other module created it or how.
 
 \section Specification_tree Specification tree
 
-The combination of data transfer offered by the \ref Data_store "data store" and
-control transfer offered by the \ref Event_subsystem "event subsystem" offers the
+The combination of the data transfer provided by the \ref Data_store "data store" and
+the control transfer provided by the \ref Event_subsystem "event subsystem" offers the
 basis for weak coupling of multiple independent modules.
 The specification tree builds on this basis and orchestrates the interaction between
 the multiple modules used in an execution.
