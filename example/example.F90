@@ -1,5 +1,5 @@
 !*******************************************************************************
-! Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+! Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ program PDI_example_f90
   main_comm = MPI_COMM_WORLD
   call PDI_init(PC_get(conf, ".pdi"))
   
-  call PDI_expose("mpi_comm", main_comm, PDI_INOUT);
+  call PDI_expose("mpi_comm_F", main_comm, PDI_INOUT);
 
   call PDI_expose("fti_head", fti_head, PDI_IN)
   if ( fti_head == 1) then

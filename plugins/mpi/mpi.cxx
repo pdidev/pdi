@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -24,15 +25,17 @@
 
 #include <mpi.h>
 
+#include <string>
+#include <unordered_set>
+
+#include <spdlog/spdlog.h>
+
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
 #include <pdi/logger.h>
 #include <pdi/plugin.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
-#include <spdlog/spdlog.h>
-#include <string>
-#include <unordered_set>
 
 #include "mpi_comm_transtyper.h"
 
@@ -41,6 +44,7 @@ namespace {
 using PDI::Context;
 using PDI::Context_proxy;
 using PDI::Data_descriptor;
+using PDI::Datatype;
 using PDI::Datatype_uptr;
 using PDI::Error;
 using PDI::Impl_error;
@@ -52,9 +56,15 @@ using PDI::to_long;
 using std::string;
 
 struct mpi_plugin: Plugin {
+	/// the MPI_Comm datatype
+	Scalar_datatype m_mpi_comm_datatype{Scalar_kind::UNKNOWN, sizeof(MPI_Comm), alignof(MPI_Comm)};
+	
+	/// the MPI_Comm_f datatype
+	Scalar_datatype m_mpi_comm_f_datatype{Scalar_kind::SIGNED, sizeof(MPI_Fint)};
+	
 	MPI_Comm_transtyper m_transtyper;
 	
-	void set_up_logger(Context& ctx, PC_tree_t logging_tree)
+	void set_up_logger(Context& ctx, PC_tree_t)
 	{
 		//set up format
 		int world_rank;
@@ -88,56 +98,49 @@ struct mpi_plugin: Plugin {
 	
 	mpi_plugin(Context& ctx, PC_tree_t config):
 		Plugin{ctx},
-		m_transtyper{ctx, PC_get(config, ".transtype")}
+		m_transtyper{ctx, PC_get(config, ".transtype"), m_mpi_comm_datatype, m_mpi_comm_f_datatype}
 	{
 		set_up_logger(ctx, PC_get(config, ".logging"));
 		
-		// create the MPI_Comm datatype
-		Scalar_datatype mpi_comm_datatype{Scalar_kind::UNKNOWN, sizeof(MPI_Comm), alignof(MPI_Comm)};
-		
 		// share the MPI_Comm datatype, it does not duplicate its content (collective), only copies it!
-		ctx.add_datatype("MPI_Comm", [mpi_comm_datatype](Context&, PC_tree_t) {
-			return mpi_comm_datatype.clone();
+		ctx.add_datatype("MPI_Comm", [this](Context&, PC_tree_t) {
+			return m_mpi_comm_datatype.clone();
 		});
 		
 		//load MPI_COMM_WORLD
 		MPI_Comm comm_world = MPI_COMM_WORLD;
-		add_predefined(ctx, "MPI_COMM_WORLD", &comm_world, mpi_comm_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_WORLD", &comm_world, m_mpi_comm_datatype.clone_type());
 		
 		//load MPI_COMM_SELF
 		MPI_Comm comm_self = MPI_COMM_SELF;
-		add_predefined(ctx, "MPI_COMM_SELF", &comm_self, mpi_comm_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_SELF", &comm_self, m_mpi_comm_datatype.clone_type());
 		
 		//load MPI_COMM_NULL
 		MPI_Comm comm_null = MPI_COMM_NULL;
-		add_predefined(ctx, "MPI_COMM_NULL", &comm_null, mpi_comm_datatype.clone_type());
-		
-		
-		// create the MPI_Comm_f datatype
-		Scalar_datatype mpi_comm_f_datatype{Scalar_kind::UNKNOWN, sizeof(MPI_Fint), alignof(MPI_Fint)};
+		add_predefined(ctx, "MPI_COMM_NULL", &comm_null, m_mpi_comm_datatype.clone_type());
 		
 		// share the MPI_Comm_f datatype, it does not duplicate its content (collective), only copies it!
-		ctx.add_datatype("MPI_Comm_f", [mpi_comm_f_datatype](Context&, PC_tree_t) {
-			return mpi_comm_f_datatype.clone();
+		ctx.add_datatype("MPI_Comm_f", [this](Context&, PC_tree_t) {
+			return m_mpi_comm_f_datatype.clone();
 		});
 		
 		//load MPI_COMM_WORLD_F
 		MPI_Fint comm_world_f = MPI_Comm_c2f(MPI_COMM_WORLD);
-		add_predefined(ctx, "MPI_COMM_WORLD_F", &comm_world_f, mpi_comm_f_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_WORLD_F", &comm_world_f, m_mpi_comm_f_datatype.clone_type());
 		
 		//load MPI_COMM_SELF_F
 		MPI_Fint comm_self_f = MPI_Comm_c2f(MPI_COMM_SELF);
-		add_predefined(ctx, "MPI_COMM_SELF_F", &comm_self_f, mpi_comm_f_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_SELF_F", &comm_self_f, m_mpi_comm_f_datatype.clone_type());
 		
 		//load MPI_COMM_NULL_F
 		MPI_Fint comm_null_f = MPI_Comm_c2f(MPI_COMM_NULL);
-		add_predefined(ctx, "MPI_COMM_NULL_F", &comm_null_f, mpi_comm_f_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_NULL_F", &comm_null_f, m_mpi_comm_f_datatype.clone_type());
 		
 		ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->m_transtyper.data(name.c_str(), ref);
 		});
 		
-		ctx.logger()->info("(MPI) Plugin loaded successfully");
+		ctx.logger()->info("Plugin loaded successfully");
 	}
 	
 	~mpi_plugin()

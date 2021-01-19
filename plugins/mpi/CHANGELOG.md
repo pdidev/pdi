@@ -15,5 +15,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Workaround issue #291: MPI transtype fails when sizeof(MPI_Comm) == sizeof(MPI_Fint)
 
 ### Security

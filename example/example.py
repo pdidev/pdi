@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #=============================================================================
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -105,8 +105,8 @@ if __name__ == '__main__':
     main_comm = MPI.COMM_WORLD
     pdi.init(yaml.dump(config['pdi']))
     main_comm_f = np.array(main_comm.py2f())
-    pdi.expose('mpi_comm', main_comm_f, pdi.INOUT)
-    main_comm = main_comm.f2py(main_comm_f)
+    pdi.expose('mpi_comm_F', main_comm_f, pdi.INOUT)
+    main_comm = MPI.Comm.f2py(main_comm_f)
 
     fti_head = np.array(0)
     pdi.expose('fti_head', fti_head, pdi.IN)

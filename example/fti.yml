@@ -17,9 +17,12 @@ pdi:
     fti_head: int
     fti_status: int
     mpi_comm: MPI_Comm
+    mpi_comm_F: MPI_Comm_f
 
   plugins:
     mpi:
+      transtype:
+        mpi_comm_F: mpi_comm
     fti:
       config_file: fti_config.ini
       communicator: mpi_comm

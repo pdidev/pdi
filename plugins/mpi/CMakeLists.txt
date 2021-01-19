@@ -69,7 +69,8 @@ set_target_properties(pdi_mpi_plugin PROPERTIES
 if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
 		OPTIONS_FILE formating.astyle
-		mpi.cxx tests/*.c)
+		*.cxx *.h
+		tests/*.c)
 endif()
 
 # installation
