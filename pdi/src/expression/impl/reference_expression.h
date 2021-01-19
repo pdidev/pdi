@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,15 +34,36 @@
 
 namespace PDI {
 
+/// Forward declaration of base class for expression reference accessors
+struct Accessor_expression;
+
 /** An expression implemented by a a reference to a data
  */
-struct PDI_NO_EXPORT Expression::Impl::Reference_expression: Expression::Impl {
-
+class PDI_NO_EXPORT Expression::Impl::Reference_expression : public Expression::Impl
+{
 	/// The referenced data
 	std::string m_referenced;
 	
-	/// Indexes in case the referenced data is an array
-	std::vector<Expression> m_idx;
+	/// Subelements (sequence of index and member accessors)
+	std::vector<std::unique_ptr<Accessor_expression>> m_subelements;
+	
+public:
+	/** Creates empty reference expression
+	 */
+	Reference_expression();
+	
+	/** Copies reference expression
+	 *
+	 * \param[in] other the reference expression to copy
+	 */
+	Reference_expression(const Reference_expression& other);
+	
+	/** Copies reference expression
+	 *
+	 * \param[in] other the reference expression to copy
+	 * \return copy of reference expression
+	 */
+	Reference_expression& operator=(const Reference_expression& other);
 	
 	std::unique_ptr<Impl> clone() const override;
 	

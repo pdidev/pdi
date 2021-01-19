@@ -9,5 +9,5 @@ data:
   test_var: double
 plugins:
   decl_hdf5:
-    file: $meta1.h5
+    file: ${meta1}.h5
     write: [ test_var, meta2 ]

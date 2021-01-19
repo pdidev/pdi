@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,7 +23,13 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <iomanip>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
@@ -40,7 +47,101 @@
 
 namespace PDI {
 
+using std::is_same;
+using std::pair;
+using std::setprecision;
+using std::string;
+using std::stringstream;
 using std::unique_ptr;
+using std::vector;
+
+/// Base class for expression reference accessors
+struct Accessor_expression {
+
+	/** Returns datatype accessor evaluated from the expression
+	 * \param ctx context of the reference expression
+	 * \return unique pointer with datatype accessor
+	 */
+	virtual std::unique_ptr<Datatype::Accessor_base> access(Context& ctx) const = 0;
+	
+	/** Clones expression reference accessor
+	 * \return clone of this expression reference accessor
+	 */
+	virtual std::unique_ptr<Accessor_expression> clone() const = 0;
+	
+	/** Destroys expression accessor
+	 */
+	virtual ~Accessor_expression() = default;
+};
+
+/// Accessor used to access array element
+class Index_accessor_expression : public Accessor_expression
+{
+	/// Expression to evaluate as index accessor
+	Expression m_expression;
+	
+public:
+	/** Creates new index accessors used for array access
+	 * \param expression expression to evaluate as index accessor
+	 */
+	Index_accessor_expression(Expression expression):
+		m_expression{expression}
+	{}
+	
+	std::unique_ptr<Datatype::Accessor_base> access(Context& ctx) const override
+	{
+		return unique_ptr<Datatype::Accessor_base> {new Array_datatype::Index_accessor{static_cast<size_t>(m_expression.to_long(ctx))}};
+	}
+	
+	std::unique_ptr<Accessor_expression> clone() const override
+	{
+		return unique_ptr<Accessor_expression> {new Index_accessor_expression{m_expression}};
+	}
+};
+
+/// Accessor used to access record member
+class Member_accessor_expression : public Accessor_expression
+{
+	/// Expression to evaluate as member accessor
+	Expression m_expression;
+	
+public:
+	/** Creates new member accessors used for record member access
+	 * \param expression expression to evaluate as member accessor
+	 */
+	Member_accessor_expression(Expression expression):
+		m_expression{expression}
+	{}
+	
+	std::unique_ptr<Datatype::Accessor_base> access(Context& ctx) const override
+	{
+		return unique_ptr<Datatype::Accessor_base> {new Record_datatype::Member_accessor{m_expression.to_string(ctx)}};
+	}
+	
+	std::unique_ptr<Accessor_expression> clone() const override
+	{
+		return unique_ptr<Accessor_expression> {new Member_accessor_expression{m_expression}};
+	}
+};
+
+Expression::Impl::Reference_expression::Reference_expression() = default;
+
+Expression::Impl::Reference_expression::Reference_expression(const Reference_expression& other):
+	m_referenced{other.m_referenced}
+{
+	for (auto&& accessor : other.m_subelements) {
+		m_subelements.emplace_back(accessor->clone());
+	}
+}
+
+Expression::Impl::Reference_expression& Expression::Impl::Reference_expression::operator=(const Reference_expression& other)
+{
+	m_referenced = other.m_referenced;
+	for (auto&& accessor : other.m_subelements) {
+		m_subelements.emplace_back(accessor->clone());
+	}
+	return *this;
+}
 
 unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::clone() const
 {
@@ -48,156 +149,36 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::clone() con
 }
 
 long Expression::Impl::Reference_expression::to_long(Context& ctx) const
-try
 {
-	if (Ref_r ref = ctx.desc(m_referenced.c_str()).ref()) {
-		const Datatype* type = &ref.type();
-		long stride = 1;
-		long idx = 0;
-		for (auto&& ii : m_idx) {
-			auto&& array_type = dynamic_cast<const Array_datatype*>(type);
-			if (!array_type) throw Value_error{"Accessing non-array data with an index"};
-			idx += (array_type->start() + ii.to_long(ctx)) * stride;
-			stride *= array_type->size();
-			type = &array_type->subtype();
+	try {
+		if (Ref_r ref = to_ref(ctx)) {
+			return ref.scalar_value<long>();
 		}
-		
-		auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(type);
-		if (!scalar_type) throw Value_error{"Expected scalar found invalid type instead"};
-		
-		if (scalar_type->kind() == Scalar_kind::SIGNED) {
-			switch (scalar_type->datasize()) {
-			case 1:
-				return static_cast<const int8_t*>(ref.get())[idx];
-			case 2:
-				return static_cast<const int16_t*>(ref.get())[idx];
-			case 4:
-				return static_cast<const int32_t*>(ref.get())[idx];
-			case 8:
-				return static_cast<const int64_t*>(ref.get())[idx];
-			default:
-				throw Value_error("Unexpected int size: {}", static_cast<long>(scalar_type->kind()));
-			}
-		} else if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
-			switch (scalar_type->datasize()) {
-			case 1:
-				return static_cast<const uint8_t*>(ref.get())[idx];
-			case 2:
-				return static_cast<const uint16_t*>(ref.get())[idx];
-			case 4:
-				return static_cast<const uint32_t*>(ref.get())[idx];
-			case 8:
-				return static_cast<const uint64_t*>(ref.get())[idx];
-			default:
-				throw Value_error("Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
-			}
-		} else if (scalar_type->kind() == Scalar_kind::FLOAT) {
-			switch (scalar_type->datasize()) {
-			case 4:
-				return static_cast<long>(static_cast<const float*>(ref.get())[idx]);
-			case 8:
-				return static_cast<long>(static_cast<const double*>(ref.get())[idx]);
-			default:
-				throw Value_error("Unexpected float size: {}", static_cast<long>(scalar_type->kind()));
-			}
-		}
-		throw Value_error{"Expected integer scalar"};
+		throw Right_error{"Unable to grant access for value reference"};
+	} catch (const Error& e) {
+		throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
-	throw Right_error{"Unable to grant access for value reference"};
-} catch (const Error& e)
-{
-	throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 }
 
-
 double Expression::Impl::Reference_expression::to_double(Context& ctx) const
-try
 {
-	if (Ref_r ref = ctx.desc(m_referenced.c_str()).ref()) {
-		const Datatype* type = &ref.type();
-		long stride = 1;
-		long idx = 0;
-		for (auto&& ii : m_idx) {
-			auto&& array_type = dynamic_cast<const Array_datatype*>(type);
-			if (!array_type) throw Value_error{"Accessing non-array data with an index"};
-			idx += (array_type->start() + ii.to_long(ctx)) * stride;
-			stride *= array_type->size();
-			type = &array_type->subtype();
+	try {
+		if (Ref_r ref = to_ref(ctx)) {
+			return ref.scalar_value<double>();
 		}
-		
-		auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(type);
-		if (!scalar_type) throw Value_error{"Expected scalar found invalid type instead"};
-		
-		if (scalar_type->kind() == Scalar_kind::FLOAT) {
-			switch (scalar_type->datasize()) {
-			case 4:
-				return static_cast<const float*>(ref.get())[idx];
-			case 8:
-				return static_cast<const double*>(ref.get())[idx];
-			default:
-				throw Value_error("Unexpected float size: {}", static_cast<long>(scalar_type->kind()));
-			}
-		} else if (scalar_type->kind() == Scalar_kind::SIGNED) {
-			switch (scalar_type->datasize()) {
-			case 1:
-				return static_cast<double>(static_cast<const int8_t*>(ref.get())[idx]);
-			case 2:
-				return static_cast<double>(static_cast<const int16_t*>(ref.get())[idx]);
-			case 4:
-				return static_cast<double>(static_cast<const int32_t*>(ref.get())[idx]);
-			case 8:
-				return static_cast<double>(static_cast<const int64_t*>(ref.get())[idx]);
-			default:
-				throw Value_error("Unexpected int size: {}", static_cast<long>(scalar_type->kind()));
-			}
-		} else if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
-			switch (scalar_type->datasize()) {
-			case 1:
-				return static_cast<double>(static_cast<const uint8_t*>(ref.get())[idx]);
-			case 2:
-				return static_cast<double>(static_cast<const uint16_t*>(ref.get())[idx]);
-			case 4:
-				return static_cast<double>(static_cast<const uint32_t*>(ref.get())[idx]);
-			case 8:
-				return static_cast<double>(static_cast<const uint64_t*>(ref.get())[idx]);
-			default:
-				throw Value_error("Unexpected uint size: {}", static_cast<long>(scalar_type->kind()));
-			}
-		}
-		throw Value_error{"Expected float scalar"};
+		throw Right_error {"Unable to grant read access for value reference"};
+	} catch (const Error& e) {
+		throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
-	throw Right_error{"Unable to grant access for value reference"};
-} catch (const Error& e)
-{
-	throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 }
 
 Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 {
-	if (!m_idx.empty()) {
-		try {
-			Ref_rw result {
-				aligned_alloc(alignof(long), sizeof(long)),
-				[](void* v){free(v);},
-				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
-				true,
-				true
-			};
-			*static_cast<long*>(result.get()) = to_long(ctx);
-			return result;
-		} catch (const Value_error& e) {
-			Ref_rw result {
-				aligned_alloc(alignof(double), sizeof(double)),
-				[](void* v){free(v);},
-				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
-				true,
-				true
-			};
-			*static_cast<double*>(result.get()) = to_double(ctx);
-			return result;
-		}
+	Ref ref = ctx.desc(m_referenced.c_str()).ref();
+	for (auto&& accessor : m_subelements) {
+		ref = Ref{ref, *accessor->access(ctx)};
 	}
-	return ctx.desc(m_referenced.c_str()).ref();
+	return ref;
 }
 
 Ref Expression::Impl::Reference_expression::to_ref(Context& ctx, const Datatype& type) const
@@ -214,64 +195,60 @@ Ref Expression::Impl::Reference_expression::to_ref(Context& ctx, const Datatype&
 }
 
 template<class T>
-size_t from_long_cpy(void* buffer, long value_long)
+size_t from_ref_cpy(void* buffer, Ref_r ref)
 {
-	T value = static_cast<T>(value_long);
+	T value = ref.scalar_value<T>();
 	memcpy(buffer, &value, sizeof(T));
 	return sizeof(T);
 }
 
 size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* buffer, const Datatype& type) const
 {
-	if (m_idx.empty()) {
-		if (Ref_r reference = ctx.desc(m_referenced.c_str()).ref()) {
-			if (reference.type().buffersize() == type.buffersize()) {
-				memcpy(buffer, reference.get(), type.buffersize());
+	if (Ref_r ref_r = to_ref(ctx)) {
+		if (m_subelements.empty()) {
+			if (ref_r.type().buffersize() == type.buffersize()) {
+				memcpy(buffer, ref_r.get(), type.buffersize());
 				return type.buffersize();
 			} else {
 				throw Value_error{
 					"Cannot copy reference expression value: reference buffersize ({}) != type bufferize ({})",
-					reference.type().buffersize(),
+					ref_r.type().buffersize(),
 					type.buffersize()};
 			}
 		} else {
-			throw Value_error{"Cannot copy reference expression value: cannot get read access to reference"};
-		}
-	} else {
-		if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-			if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED && type.buffersize() == (long)sizeof(char)) {
-				return from_long_cpy<unsigned char>(buffer, to_long(ctx));
-			} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
-				switch (type.buffersize()) {
-				case 1L:
-					return from_long_cpy<signed char>(buffer, to_long(ctx));
-				case 2L:
-					return from_long_cpy<short>(buffer, to_long(ctx));
-				case 4L:
-					return from_long_cpy<int>(buffer, to_long(ctx));
-				case 8L:
-					return from_long_cpy<long>(buffer, to_long(ctx));
-				default:
-					break;
-				}
-			} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
-				switch (type.buffersize()) {
-				case 4L: {
-					float value = static_cast<float>(to_double(ctx));
-					memcpy(buffer, &value, sizeof(float));
-					return sizeof(float);
-				}
-				case 8L: {
-					double value = to_double(ctx);
-					memcpy(buffer, &value, sizeof(double));
-					return sizeof(double);
-				}
-				default:
-					break;
+			if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
+				if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED && type.buffersize() == (long)sizeof(char)) {
+					return from_ref_cpy<unsigned char>(buffer, ref_r);
+				} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
+					switch (type.buffersize()) {
+					case 1L:
+						return from_ref_cpy<signed char>(buffer, ref_r);
+					case 2L:
+						return from_ref_cpy<short>(buffer, ref_r);
+					case 4L:
+						return from_ref_cpy<int>(buffer, ref_r);
+					case 8L:
+						return from_ref_cpy<long>(buffer, ref_r);
+					default:
+						break;
+					}
+				} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
+					switch (type.buffersize()) {
+					case 4L: {
+						return from_ref_cpy<float>(buffer, ref_r);
+					}
+					case 8L: {
+						return from_ref_cpy<double>(buffer, ref_r);
+					}
+					default:
+						break;
+					}
 				}
 			}
+			throw Value_error{"Cannot copy reference expression value: non scalar datatype for indexed reference"};
 		}
-		throw Value_error{"Cannot copy reference expression value: non scalar datatype for indexed reference"};
+	} else {
+		throw Value_error{"Cannot copy reference expression value: cannot get read access to reference"};
 	}
 }
 
@@ -294,14 +271,20 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	
 	while (isspace(*ref)) ++ref;
 	
-	while (*ref == '[') {
-		++ref;
-		while (isspace(*ref)) ++ref;
-		result->m_idx.emplace_back(Expression{Operation::parse(&ref, 1)});
-		if (*ref != ']')  {
-			throw Value_error{"Expected ']', found {}", *ref};
+	while (*ref == '[' || *ref == '.') {
+		if (*ref == '[') {
+			++ref;
+			while (isspace(*ref)) ++ref;
+			result->m_subelements.emplace_back(new Index_accessor_expression{Expression{Operation::parse(&ref, 1)}});
+			if (*ref != ']')  {
+				throw Value_error{"Expected ']', found {}", *ref};
+			}
+			++ref;
+		} else { // *ref == '.'
+			++ref;
+			while (isspace(*ref)) ++ref;
+			result->m_subelements.emplace_back(new Member_accessor_expression{Expression{parse_id(&ref)}});
 		}
-		++ref;
 		while (isspace(*ref)) ++ref;
 	}
 	

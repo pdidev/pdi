@@ -23,9 +23,11 @@
  ******************************************************************************/
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -45,15 +47,20 @@
 
 using PDI::Array_datatype;
 using PDI::Expression;
+using PDI::Context;
 using PDI::Datatype_uptr;
 using PDI::Error;
+using PDI::Global_context;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
+using PDI::Paraconf_wrapper;
 using PDI::Ref;
 using PDI::Ref_r;
 using std::numeric_limits;
 using std::string;
+using std::to_string;
 using std::pair;
+using std::unique_ptr;
 using std::vector;
 
 /*
@@ -1634,4 +1641,227 @@ TEST_F(ExpresionOperators, mod_two_ref_expr)
 
 	test_context->desc("x").reclaim();
 	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionMemberAccess.access_simple_member
+ *
+ * Tested functions:    PDI::Expression::to_long
+ *                      PDI::Expression::to_double
+ *
+ *
+ * Description:         Checks if mod of expressions is correct.
+ *
+ */
+TEST(ExpresionMemberAccess, access_simple_member)
+{
+	Paraconf_wrapper fw;
+	PC_tree_t config = PC_parse_string(
+	"logging: trace                    \n"
+	"data:                             \n"
+	"    record_data:                  \n"
+	"        type: struct              \n"
+	"        members:                  \n"
+	"            a: char               \n"
+	"            b: int16              \n"
+	"            c: int                \n"
+	"            d: int64              \n"
+	"            e: float              \n"
+	"            f: double             \n"
+	);
+	
+	struct Test {
+		char a;
+		short b;
+		int c;
+		long d;
+		float e;
+		double f;
+	};
+
+	Test test;
+	test.a = 1;
+	test.b = 12;
+	test.c = 123;
+	test.d = 1234;
+	test.e = 1234.5;
+	test.f = 1234.56;
+
+	unique_ptr<Context> ctx {new Global_context{config}};
+	
+	ctx->desc("record_data").share(&test, true, false);
+
+	ASSERT_EQ(Expression{"${record_data.a}"}.to_long(*ctx), 1L);
+	ASSERT_EQ(Expression{"${record_data.b}"}.to_long(*ctx), 12L);
+	ASSERT_EQ(Expression{"${record_data.c}"}.to_long(*ctx), 123L);
+	ASSERT_EQ(Expression{"${record_data.d}"}.to_long(*ctx), 1234L);
+	ASSERT_EQ(Expression{"${record_data.e}"}.to_double(*ctx), 1234.5);
+	ASSERT_EQ(Expression{"${record_data.f}"}.to_double(*ctx), 1234.56);
+
+	ctx->desc("record_data").reclaim();
+}
+
+/*
+ * Name:                ExpresionMemberAccess.access_string_member
+ *
+ * Tested functions:    PDI::Expression::to_string
+ *
+ *
+ * Description:         Checks if mod of expressions is correct.
+ *
+ */
+TEST(ExpresionMemberAccess, access_string_member)
+{
+	Paraconf_wrapper fw;
+	PC_tree_t config = PC_parse_string(
+	"logging: trace                    \n"
+	"data:                             \n"
+	"    record_data:                  \n"
+	"        type: struct              \n"
+	"        members:                  \n"
+	"            string:               \n"
+	"                type: array       \n"
+	"                subtype: char     \n"
+	"                size: 32          \n"
+	);
+	
+	struct Test {
+		char string[32];
+	};
+
+	Test test;
+	strcpy(test.string, "abcdefgh");
+
+	unique_ptr<Context> ctx {new Global_context{config}};
+	
+	ctx->desc("record_data").share(&test, true, false);
+
+	ASSERT_STREQ(Expression{"${record_data.string}"}.to_string(*ctx).c_str(), test.string);
+
+	ctx->desc("record_data").reclaim();
+}
+
+/*
+ * Name:                ExpresionMemberAccess.access_array_record
+ *
+ * Tested functions:    PDI::Expression::to_long
+ *                      PDI::Expression::to_double
+ *
+ *
+ * Description:         Checks if mod of expressions is correct.
+ *
+ */
+TEST(ExpresionMemberAccess, access_array_record)
+{
+	Paraconf_wrapper fw;
+	PC_tree_t config = PC_parse_string(
+	"logging: trace                       \n"
+	"data:                                \n"
+	"    array_data:                      \n"
+	"        type: array                  \n"
+	"        size: 32                     \n"
+	"        subtype:                     \n"
+	"            type: struct             \n"
+	"            members:                 \n"
+	"                scalar: char         \n"
+	"                array:               \n"
+	"                    type: array      \n"
+	"                    subtype: int     \n"
+	"                    size: 32         \n"
+	);
+	
+	struct Record {
+		char scalar;
+		int array[32];
+	};
+
+	Record array_record[32];
+	for (int i = 0; i < 32; i++) {
+		array_record[i].scalar = i;
+		for (int j = 0; j < 32; j++) {
+			array_record[i].array[j] = i + j;
+		}
+	}
+
+	unique_ptr<Context> ctx {new Global_context{config}};
+	
+	ctx->desc("array_data").share(array_record, true, false);
+
+	for (int i = 0; i < 32; i++) {
+		ASSERT_EQ(Expression{"${array_data[" + to_string(i) + "].scalar}"}.to_long(*ctx), static_cast<long>(i));
+		for (int j = 0; j < 32; j++) {
+			ASSERT_EQ(Expression{"${array_data[" + to_string(i) + "].array[" + to_string(j) + "]}"}.to_long(*ctx), static_cast<long>(i + j));
+		}
+	}
+
+	ctx->desc("array_data").reclaim();
+}
+
+
+/*
+ * Name:                ExpresionMemberAccess.access_complex_member
+ *
+ * Tested functions:    PDI::Expression::to_long
+ *                      PDI::Expression::to_double
+ *
+ *
+ * Description:         Checks if mod of expressions is correct.
+ *
+ */
+TEST(ExpresionMemberAccess, access_complex_member)
+{
+	Paraconf_wrapper fw;
+	PC_tree_t config = PC_parse_string(
+	"logging: trace                       \n"
+	"data:                                \n"
+	"    record_data:                     \n"
+	"        type: struct                 \n"
+	"        members:                     \n"
+	"            array:                   \n"
+	"                type: array          \n"
+	"                subtype: int         \n"
+	"                size: 32             \n"
+	"            subrecord:               \n"
+	"                type: struct         \n"
+	"                members:             \n"
+	"                    scalar: char     \n"
+	"                    array:           \n"
+	"                        type: array  \n"
+	"                        subtype: int \n"
+	"                        size: 32     \n"
+	);
+	
+	struct Subrecord {
+		char scalar;
+		int array[32];
+	};
+
+	struct Record {
+		int array[32];
+		Subrecord subrecord;
+	};
+
+	Record record;
+	for (int i = 0; i < 32; i++) {
+		record.array[i] = i;
+	}
+	record.subrecord.scalar = 42;
+	for (int i = 0; i < 32; i++) {
+		record.subrecord.array[i] = i;
+	}
+	
+
+	unique_ptr<Context> ctx {new Global_context{config}};
+	
+	ctx->desc("record_data").share(&record, true, false);
+
+	for (int i = 0; i < 32; i++) {
+		ASSERT_EQ(Expression{"${record_data.array[" + to_string(i) + "]}"}.to_long(*ctx), static_cast<long>(i));
+	}
+	ASSERT_EQ(Expression{"${record_data.subrecord.scalar}"}.to_long(*ctx), 42L);
+	for (int i = 0; i < 32; i++) {
+		ASSERT_EQ(Expression{"${record_data.subrecord.array[" + to_string(i) + "]}"}.to_long(*ctx), static_cast<long>(i));
+	}
+
+	ctx->desc("record_data").reclaim();
 }

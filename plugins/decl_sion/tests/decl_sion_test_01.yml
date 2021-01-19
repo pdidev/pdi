@@ -13,7 +13,7 @@ plugins:
     communicator: MPI_COMM_WORLD
     outputs:
       - variable: test_var
-        file: test_01_variable_$meta1.sion
+        file: test_01_variable_${meta1}.sion
       - event: testing
-        file: test_01_event_$meta1.sion
+        file: test_01_event_${meta1}.sion
         vars: [ test_var ]

@@ -59,7 +59,7 @@ struct PDI_NO_EXPORT Expression::Impl {
 	
 	/** An expression implemented by a a reference to a data
 	 */
-	struct Reference_expression;
+	class Reference_expression;
 	
 	/** An expression implemented by a a sequence literal
 	 */

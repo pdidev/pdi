@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,25 +29,25 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML =
-    "logging: trace                            \n"
-    "metadata:                                 \n"
-    "  meta0: int                              \n"
-    "  meta1: int                              \n"
-    "  meta2: int                              \n"
-    "  meta3: int                              \n"
-    "  meta4: int                              \n"
-    "data:                                     \n"
-    "  test_var: double                        \n"
-    "plugins:                                  \n"
-    "  mpi:                                    \n"
-    "  decl_sion:                              \n"
-    "    communicator: MPI_COMM_WORLD          \n"
-    "    outputs:                              \n"
-    "      - variable: test_var                \n"
-    "        file: test_01_variable_$meta1.sion\n"
-    "      - event: testing                    \n"
-    "        file: test_01_event_$meta1.sion   \n"
-    "        vars: [ test_var ]                \n"
+    "logging: trace                               \n"
+    "metadata:                                    \n"
+    "  meta0: int                                 \n"
+    "  meta1: int                                 \n"
+    "  meta2: int                                 \n"
+    "  meta3: int                                 \n"
+    "  meta4: int                                 \n"
+    "data:                                        \n"
+    "  test_var: double                           \n"
+    "plugins:                                     \n"
+    "  mpi:                                       \n"
+    "  decl_sion:                                 \n"
+    "    communicator: MPI_COMM_WORLD             \n"
+    "    outputs:                                 \n"
+    "      - variable: test_var                   \n"
+    "        file: test_01_variable_${meta1}.sion \n"
+    "      - event: testing                       \n"
+    "        file: test_01_event_${meta1}.sion    \n"
+    "        vars: [ test_var ]                   \n"
     ;
 
 int main(int argc, char* argv[])

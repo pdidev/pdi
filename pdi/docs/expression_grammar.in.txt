@@ -22,7 +22,7 @@ TERM           := ( INT_LITERAL | REFERENCE | '(' OPERATION ')' )
 
 REFERENCE      := '$' ( IREFERENCE | '{' IREFERENCE '}' )
 
-IREFERENCE     := ID ( '[' OPERATION ']' )*
+IREFERENCE     := ID ( '[' OPERATION ']' | '.' ID )*
 
 
 

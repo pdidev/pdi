@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Improved error reporting when loading plugins
 * Support for accessing record datatype from Python
 * Support loading plugins in standard path relative to LD_LIBRARY_PATH
+* Support for accessing members in $-expressions
 
 #### Changed
 * Fortran support now requires version 1.0.6 of Zpp minimum

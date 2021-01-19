@@ -33,6 +33,7 @@ project co-financed by Polish Ministry of Science and Higher Education.
 * Support for complex datatypes
 * Callback mechanism
 * Many improvements, bugfixes and cleanups
+* Support for member subreference
 
 Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
 * Error subclasses

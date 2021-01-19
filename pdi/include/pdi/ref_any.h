@@ -38,6 +38,7 @@
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/record_datatype.h>
+#include <pdi/scalar_datatype.h>
 
 
 namespace PDI {
@@ -375,7 +376,7 @@ public:
 		reset();
 	}
 	
-	Ref_any& operator= (Ref_any&& other) const noexcept
+	Ref_any& operator= (Ref_any&& other) noexcept
 	{
 		// self-copy: nothing to do
 		if (&other ==  this) return *this;
@@ -514,6 +515,47 @@ public:
 	{
 		if (is_null()) return nullptr;
 		return m_content->m_data;
+	}
+	
+	/** Returns a scalar value of type T taken from the data buffer
+	 *  \return value taken from the data buffer
+	 */
+	template<class T>
+	T scalar_value()
+	{
+		static_assert(R, "Cannot get scalar_value from Ref without read access");
+		if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type())) {
+			if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED && scalar_type->buffersize() == sizeof(char)) {
+				return *static_cast<const unsigned char*>(m_content->m_data);
+			} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
+				switch (scalar_type->buffersize()) {
+				case 1L:
+					return *static_cast<const signed char*>(m_content->m_data);
+				case 2L:
+					return *static_cast<const short*>(m_content->m_data);
+				case 4L:
+					return *static_cast<const int*>(m_content->m_data);
+				case 8L:
+					return *static_cast<const long*>(m_content->m_data);
+				default:
+					throw Type_error{"Unknown size of integer datatype"};
+				}
+			} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
+				switch (type().buffersize()) {
+				case 4L: {
+					return *static_cast<const float*>(m_content->m_data);
+				}
+				case 8L: {
+					return *static_cast<const double*>(m_content->m_data);
+				}
+				default:
+					throw Type_error{"Unknown size of float datatype"};
+				}
+			} else {
+				throw Type_error{"Unknown datatype to get value"};
+			}
+		}
+		throw Type_error{"Expected scalar, found invalid type instead: {}", type().debug_string()};
 	}
 	
 	/** Checks whether this is a null reference

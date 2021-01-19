@@ -247,8 +247,9 @@ curly braces `{`, `}`.
 Its value is that of the data or metadata with the associated name.
 It is always a good idea to have referenced values in the metadata section as it
 prevents dangling references.
-A direct reference is possible as well as sub-references to array elements using
-the square brackets `[`, `]` operator.
+A direct reference is possible as well as sub-references to:
+* array elements using the square brackets `[`, `]` operator,
+* record member using dot `.` operator.
 
 The value-type of an `EXPRESSION` is as follow:
 * if it's a `REFERENCE`, it has the  type of the referenced data in the store,
@@ -266,6 +267,10 @@ where zero is interpreted as false and any other value as true.
 
 ```python
 '($my_data + 3) % 6'
+```
+
+```python
+'${my_data.subarray[0]} * 42'
 ```
 
 ```python
