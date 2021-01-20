@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -390,10 +390,12 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 	
 	m_variables.emplace(variable.path(), var_id);
 	
+#if NC_HAS_PARALLEL4
 	if (m_communicator) {
 		nc_try(nc_var_par_access(dest_id, var_id, NC_COLLECTIVE),
 		    "Cannot change the access of `{}' variable to parallel", variable_name);
 	}
+#endif
 	
 	// set the attributes
 	m_ctx.logger()->trace("Putting attributes ({}), to `{}' variable", variable.attributes().size(), variable_name);
