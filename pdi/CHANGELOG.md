@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fortran support now requires version 1.0.6 of Zpp minimum
 * Python support now depends on python 3
 * Require the CONTIGUOUS attribute for all Fortran arrays (including 1D)
+* Default logger level for plugin is the logger level of PDI core
 
 #### Deprecated
 

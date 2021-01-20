@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
 #define PDI_LOGGER_H_
 
 #include <string>
+#include <spdlog/spdlog.h>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>
@@ -37,10 +38,13 @@ namespace PDI {
  *
  * \param[in] config configuration tree from config file
  * \param[in] name name of the module (e.g. global, test, decl_hdf5)
+ * \param[in] level default level of the logger
  * \return a configured logger
  */
-Logger_sptr PDI_EXPORT configure_logger(PC_tree_t config, const std::string& name);
-
+Logger_sptr PDI_EXPORT configure_logger(PC_tree_t config,
+    const std::string& name,
+    spdlog::level::level_enum level = spdlog::level::info);
+    
 } // namespace PDI
 
 #endif // PDI_LOGGER_H_

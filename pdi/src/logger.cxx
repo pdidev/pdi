@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,7 +119,8 @@ void read_log_level(Logger_sptr logger, PC_tree_t config, const string& name)
 			try {
 				level_str = to_string(config);
 			} catch (const Config_error& e) {
-				//do nothing on this exception
+				// level is not defined
+				return;
 			}
 		}
 	}
@@ -144,12 +145,14 @@ void read_log_level(Logger_sptr logger, PC_tree_t config, const string& name)
 
 namespace PDI {
 
-Logger_sptr configure_logger(PC_tree_t config, const string& name)
+Logger_sptr configure_logger(PC_tree_t config, const string& name, spdlog::level::level_enum level)
 {
 	//select default sinks
 	Logger_sptr logger = select_log_sinks(config);
 	
-	//read default log level for logger
+	logger->set_level(level);
+
+	// try to read log level from yaml
 	read_log_level(logger, config, name);
 	
 	//set up default format of logger

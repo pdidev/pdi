@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ namespace PDI {
 
 Context_proxy::Context_proxy(Context& ctx, std::string plugin_name, PC_tree_t logging_tree):
 	m_real_context{ctx},
-	m_plugin_logger{configure_logger(logging_tree, plugin_name)}
+	m_plugin_logger{configure_logger(logging_tree, plugin_name, ctx.logger()->level())}
 {}
 
 Data_descriptor& Context_proxy::desc(const std::string& name)
