@@ -49,11 +49,7 @@
  * PDI_status_t and an error message can be retrieved with the PDI_errmsg
  * function. This default behavior can be changed by replacing the error handler
  * with the PDI_errhandler function.
- *
- * \defgroup hl_annotation High-level annotations
- *
- * The high-level annotation API offers a higher level of interface for the same
- * features as the \ref annotation.
+ * 
  */
 
 #ifndef PDI_H_
@@ -246,12 +242,6 @@ PDI_status_t PDI_EXPORT PDI_reclaim(const char* name);
  * \return an error status
  */
 PDI_status_t PDI_EXPORT PDI_event(const char* event);
-
-/// \}
-
-/** \addtogroup hl_annotation
- * \{
- */
 
 /** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
  * \param[in] name the data name
