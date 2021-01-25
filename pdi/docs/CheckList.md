@@ -25,7 +25,7 @@ To publish a new minor or major release:
 * tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`
 * merge the version branch into master
 * in the merge commit:
-  - change the version in `pdi/VERSION` to the next one with the `-git` suffix
+  - change the version in `pdi/VERSION` to the next one with the `-alpha` suffix
   - change the version in `pdi/docs/Installation.md` to the just released one
 * push all that
 
