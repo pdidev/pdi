@@ -1,5 +1,5 @@
 # Changelog for PDI
-All notable changes to this project will be documented in this file.
+All notable changes to the PDI library will be documented in this file.
 
 Please note this is the list for the distribution mechanism of PDI. The list for
 each sub-project (including PDI itself) is located in the dedicated sub-project
@@ -9,6 +9,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### For users
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
+
+## [1.0.0] - 2021-01-28
 
 ### For users
 
@@ -26,15 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Require the CONTIGUOUS attribute for all Fortran arrays (including 1D)
 * Default logger level for plugin is the logger level of PDI core
 
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Added the CONTIGUOUS attribute to all Fortran arrays in tests
-
-#### Security
-
 
 
 ### For plugin developers
@@ -45,13 +72,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Subaccess methods for array, record and pointer datatypes
 * Ref operator[] for getting subref by index and member name
 * Documentation of coupling PDI with user application
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
-#### Fixed
-
-#### Security

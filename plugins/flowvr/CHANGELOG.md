@@ -1,9 +1,24 @@
-# Changelog for PDI
-All notable changes to this project will be documented in this file.
+# Changelog for PDI FlowVR plugin
+All notable changes to the FlowVR plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+
+## [1.0.0] - 2021-01-28
 
 ### Added
 * Install in the path specified by the `INSTALL_PDIPLUGINDIR` cmake variable
@@ -15,11 +30,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Silent abort default value is true
 * Logs messages are more clear
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 * Calling put if module already got abort signal
-
-### Security
