@@ -39,38 +39,38 @@ stages:
   - sh tools/build_scripts/build_and_run.sh
 
 xenial_cmake3.5_embedded:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*(-.*)$/', merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_cmake3.5:v1
   script:
     - *shared_script
 
 xenial_cmake3.5_system:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*(-.*)$/', merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.5:v1
   script:
     - *shared_script
 
 xenial_cmake3.10_embedded:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*(-.*)$/', merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_cmake3.10:v1
   script:
     - *shared_script
 
 xenial_cmake3.10_system:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*(-.*)$/', merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.10:v1
   script:
     - *shared_script
 
 xenial_cmake3.10_pdi_plugin_path:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*(-.*)$/', merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   image: pdidevel/xenial_libs_cmake3.10:v1
   script:
     - export PDI_PLUGIN_PATH=/tmp/plugins
     - *shared_script
 
 pages:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*(-.*)$/', merge_requests ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
   stage: pages
   image: pdidevel/xenial_libs_cmake3.10:v1
   variables: { GIT_SUBMODULE_STRATEGY: recursive }
@@ -85,7 +85,7 @@ pages:
   artifacts: { paths: [ public ] }
 
 pages-deploy:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*(-.*)$/' ]
+  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
   stage: .post
   image: curlimages/curl
   script:
