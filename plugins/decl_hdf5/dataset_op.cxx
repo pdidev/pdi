@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,23 +92,25 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 	Dataset_op{dir, name, default_when}
 {
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-		string key = to_string(key_tree);
-		if ( key == "dataset" ) {
-			m_dataset= to_string(value);
-		} else if ( key == "when" ) {
-			m_when = to_string(value);
-		} else if ( key == "communicator" ) {
+		if (!PC_status(value)) {
+			string key = to_string(key_tree);
+			if ( key == "dataset" ) {
+				m_dataset= to_string(value);
+			} else if ( key == "when" ) {
+				m_when = to_string(value);
+			} else if ( key == "communicator" ) {
 #ifdef H5_HAVE_PARALLEL
-			m_communicator = to_string(value);
+				m_communicator = to_string(value);
 #else
-			throw Config_error {"Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+				throw Config_error {"Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
-		} else if ( key == "memory_selection" ) {
-			m_memory_selection = value;
-		} else if ( key == "dataset_selection" ) {
-			m_dataset_selection = value;
-		} else {
-			throw Config_error{"Unknown key for HDF5 dataset configuration: `{}'", key};
+			} else if ( key == "memory_selection" ) {
+				m_memory_selection = value;
+			} else if ( key == "dataset_selection" ) {
+				m_dataset_selection = value;
+			} else {
+				throw Config_error{"Unknown key for HDF5 dataset configuration: `{}'", key};
+			}
 		}
 	});
 }

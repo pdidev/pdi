@@ -40,7 +40,9 @@ const char* CONFIG_YAML =
     "plugins:                      \n"
     "  decl_hdf5:                  \n"
     "    file: ${meta1}.h5         \n"
-    "    write: [ test_var, meta2 ]\n"
+    "    write:                    \n"
+    "        test_var: ~           \n"
+    "        meta2: ~              \n"
     ;
 
 int main( int argc, char* argv[] )
