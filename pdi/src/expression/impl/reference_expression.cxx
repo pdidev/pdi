@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -217,18 +217,29 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 			}
 		} else {
 			if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-				if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED && type.buffersize() == (long)sizeof(char)) {
-					return from_ref_cpy<unsigned char>(buffer, ref_r);
+				if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
+					switch (scalar_type->buffersize()) {
+					case 1L:
+						return from_ref_cpy<uint8_t>(buffer, ref_r);
+					case 2L:
+						return from_ref_cpy<uint16_t>(buffer, ref_r);
+					case 4L:
+						return from_ref_cpy<uint32_t>(buffer, ref_r);
+					case 8L:
+						return from_ref_cpy<uint64_t>(buffer, ref_r);
+					default:
+						throw Type_error{"Unknown size of integer datatype"};
+					}
 				} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
 					switch (type.buffersize()) {
 					case 1L:
-						return from_ref_cpy<signed char>(buffer, ref_r);
+						return from_ref_cpy<int8_t>(buffer, ref_r);
 					case 2L:
-						return from_ref_cpy<short>(buffer, ref_r);
+						return from_ref_cpy<int16_t>(buffer, ref_r);
 					case 4L:
-						return from_ref_cpy<int>(buffer, ref_r);
+						return from_ref_cpy<int32_t>(buffer, ref_r);
 					case 8L:
-						return from_ref_cpy<long>(buffer, ref_r);
+						return from_ref_cpy<int64_t>(buffer, ref_r);
 					default:
 						break;
 					}

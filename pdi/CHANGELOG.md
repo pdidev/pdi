@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
+* Fixed errors that would appear when using unsigned values (including Fortran
+  logical) in $-expressions.
 
 #### Security
 

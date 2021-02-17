@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -525,18 +525,29 @@ public:
 	{
 		static_assert(R, "Cannot get scalar_value from Ref without read access");
 		if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type())) {
-			if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED && scalar_type->buffersize() == sizeof(char)) {
-				return *static_cast<const unsigned char*>(m_content->m_data);
+			if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
+				switch (scalar_type->buffersize()) {
+				case 1L:
+					return *static_cast<const uint8_t*>(m_content->m_data);
+				case 2L:
+					return *static_cast<const uint16_t*>(m_content->m_data);
+				case 4L:
+					return *static_cast<const uint32_t*>(m_content->m_data);
+				case 8L:
+					return *static_cast<const uint64_t*>(m_content->m_data);
+				default:
+					throw Type_error{"Unknown size of unsigned integer datatype"};
+				}
 			} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
 				switch (scalar_type->buffersize()) {
 				case 1L:
-					return *static_cast<const signed char*>(m_content->m_data);
+					return *static_cast<const int8_t*>(m_content->m_data);
 				case 2L:
-					return *static_cast<const short*>(m_content->m_data);
+					return *static_cast<const int16_t*>(m_content->m_data);
 				case 4L:
-					return *static_cast<const int*>(m_content->m_data);
+					return *static_cast<const int32_t*>(m_content->m_data);
 				case 8L:
-					return *static_cast<const long*>(m_content->m_data);
+					return *static_cast<const int64_t*>(m_content->m_data);
 				default:
 					throw Type_error{"Unknown size of integer datatype"};
 				}
