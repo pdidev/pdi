@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,4 +44,5 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/event_button.py
 add_test(NAME flowvr_03_Event_button COMMAND PDI::pdirun "../run_flowvr_test.sh" "event_button")
 set_property(TEST flowvr_03_Event_button PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_03_Event_button PROPERTY RESOURCE_LOCK flowvrd)
+set_property(TEST flowvr_03_Event_button PROPERTY PROCESSORS 3)
 set_property(TEST flowvr_03_Event_button PROPERTY DISABLED TRUE)

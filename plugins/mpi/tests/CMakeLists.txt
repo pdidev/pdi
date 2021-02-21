@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
 #
@@ -69,11 +70,13 @@ endif()
 add_executable(mpi_01_C mpi_test_01.c)
 target_link_libraries(mpi_01_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME mpi_01_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_01_C>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST mpi_01_C PROPERTY PROCESSORS 1)
 
 # MPI plugin C predefines test
 add_executable(mpi_02_C mpi_test_02.c)
 target_link_libraries(mpi_02_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME mpi_02_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_02_C>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST mpi_02_C PROPERTY PROCESSORS 1)
 
 # MPI plugin Fortran predefines test
 if("${BUILD_FORTRAN}")
@@ -82,9 +85,11 @@ target_link_libraries(mpi_02_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(mpi_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME mpi_02_F COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/mpi_test_02.yml")
+set_property(TEST mpi_02_F PROPERTY PROCESSORS 1)
 endif("${BUILD_FORTRAN}")
 
 # MPI plugin C predefines test
 add_executable(mpi_03_C mpi_test_03.c)
 target_link_libraries(mpi_03_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME mpi_03_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:mpi_03_C>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST mpi_03_C PROPERTY PROCESSORS 1)

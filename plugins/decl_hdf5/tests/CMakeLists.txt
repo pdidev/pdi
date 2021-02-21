@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
 #
@@ -57,6 +58,7 @@ add_executable(decl_hdf5_02_C decl_hdf5_test_02.c)
 target_link_libraries(decl_hdf5_02_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_02_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
 set_property(TEST decl_hdf5_02_C PROPERTY TIMEOUT 15)
+set_property(TEST decl_hdf5_02_C PROPERTY PROCESSORS 2)
 
 # slicing mechanism
 
@@ -66,6 +68,7 @@ add_executable(decl_hdf5_04_C decl_hdf5_test_04.c)
 target_link_libraries(decl_hdf5_04_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_C>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST decl_hdf5_04_C PROPERTY TIMEOUT 15)
+set_property(TEST decl_hdf5_04_C PROPERTY PROCESSORS 4)
 
 # scalars default options
 
@@ -73,6 +76,7 @@ add_executable(decl_hdf5_05_C decl_hdf5_test_05.c)
 target_link_libraries(decl_hdf5_05_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_05_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_05_C>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST decl_hdf5_05_C PROPERTY TIMEOUT 15)
+set_property(TEST decl_hdf5_05_C PROPERTY PROCESSORS 4)
 
 # 
 
@@ -80,6 +84,7 @@ add_executable(decl_hdf5_06_C decl_hdf5_test_06.c)
 target_link_libraries(decl_hdf5_06_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_06_C>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST decl_hdf5_06_C PROPERTY TIMEOUT 15)
+set_property(TEST decl_hdf5_06_C PROPERTY PROCESSORS 4)
 
 # bcommunicator as a reference
 
@@ -87,6 +92,7 @@ add_executable(decl_hdf5_07_C decl_hdf5_test_07.c)
 target_link_libraries(decl_hdf5_07_C PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_07_C>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST decl_hdf5_07_C PROPERTY TIMEOUT 15)
+set_property(TEST decl_hdf5_07_C PROPERTY PROCESSORS 8)
 
 add_executable(decl_hdf5_08_C decl_hdf5_test_08.c)
 target_link_libraries(decl_hdf5_08_C PDI::PDI_C)

@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-# Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -72,6 +72,7 @@ if("PARALLEL" IN_LIST NetCDF_FEATURES)
      target_link_libraries(decl_netcdf_06_C PDI::PDI_C MPI::MPI_C)
      add_test(NAME decl_netcdf_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS}  "$<TARGET_FILE:decl_netcdf_06_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_06.yml")
      set_property(TEST decl_netcdf_06_C PROPERTY TIMEOUT 5)
+     set_property(TEST decl_netcdf_06_C PROPERTY PROCESSORS 4)
 endif()
 
 add_executable(decl_netcdf_07_C decl_netcdf_test_07.c)
