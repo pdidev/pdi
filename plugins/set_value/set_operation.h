@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,8 @@ namespace set_value {
 
 class Set_operation : public Operation
 {
-     // map of data to set (change the values under the Ref)
-    std::unordered_map<std::string, PC_tree_t> m_data_to_set;
+    /// map of data to set (change the values under the Ref)
+    std::vector<std::pair<std::string, PC_tree_t>> m_data_to_set;
 
 public:
 

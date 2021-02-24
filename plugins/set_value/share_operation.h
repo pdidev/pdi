@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,11 +38,11 @@ namespace set_value {
 
 class Share_operation : public Operation
 {
-    // desc names that was shared
+    /// desc names that was shared
     std::set<std::string> m_data_to_release;
 
-    // map of data to share (shared new Ref (created from Expression))
-    std::unordered_map<std::string, PC_tree_t> m_data_to_share;
+    /// map of data to share (shared new Ref (created from Expression))
+    std::vector<std::pair<std::string, PC_tree_t>> m_data_to_share;
 
 public:
 

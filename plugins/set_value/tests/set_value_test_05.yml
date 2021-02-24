@@ -1,0 +1,15 @@
+logging:
+  level: trace
+metadata:
+  value_int:
+    type: int
+  int_array:
+    size: $value_int
+    subtype: int
+    type: array
+plugins:
+  set_value:
+    on_init:
+      - expose:
+        - value_int: 4
+        - int_array: [6, 7, 8, 9]
