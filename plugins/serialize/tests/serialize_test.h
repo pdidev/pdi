@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*
- * Structures from ParFlow (DO NOT CHANGE -> The same values are in CONFIG YAML)
- */
-#define SubregionArray_size 64
-#define Grid_size 32
-#define Subvector_data_size 16
-#define Vector_data_size 8
-#define Vector_size 4
+#define SUBREGIONARRAY_SIZE 64
+#define GRID_SIZE 32
+#define SUBVECTOR_DATA_SIZE 16
+#define VECTOR_DATA_SIZE 8
+#define VECTOR_SIZE 4
 
 typedef struct {
 	int ix, iy, iz;        /* Bottom-lower-left corner in index-space */
@@ -78,26 +75,26 @@ typedef struct _Vector {
 
 // Serialized types:
 typedef struct {
-	Subregion   subregions[SubregionArray_size];    /* Array of pointers to subregions */
+	Subregion   subregions[SUBREGIONARRAY_SIZE];    /* Array of pointers to subregions */
 	int         size;          /* Size of subgregion array */
 } SubregionArraySerialized;
 
 typedef struct {
-	SubregionArraySerialized subgrids[Grid_size];
-	SubregionArraySerialized all_subgrids[Grid_size];
-	SubregionArraySerialized neighbors[Grid_size];
+	SubregionArraySerialized subgrids[GRID_SIZE];
+	SubregionArraySerialized all_subgrids[GRID_SIZE];
+	SubregionArraySerialized neighbors[GRID_SIZE];
 	int size;
 } GridSerialized;
 
 typedef struct {
-	double                         data[Subvector_data_size];          /* Pointer to subvector data */
+	double                         data[SUBVECTOR_DATA_SIZE];          /* Pointer to subvector data */
 	int                            allocated;     /* Was this data allocated? */
 	Subregion                      data_space;    /* Pointer to data space */
 	int                            data_size;     /* Number of elements in vector, includes ghost points */
 } SubvectorSerialized;
 
 typedef struct {
-	SubvectorSerialized      subvectors[Vector_data_size];    /* Array of pointers to subvectors */
+	SubvectorSerialized      subvectors[VECTOR_DATA_SIZE];    /* Array of pointers to subvectors */
 	int                        data_size;     /* Number of elements in vector. All subvectors. includes ghost points */
 	GridSerialized           grid;          /* Grid that this vector is on */
 	SubregionArraySerialized data_space;    /* Description of Vector data */
@@ -124,33 +121,33 @@ static void init_subregion_array(SubregionArray* subregion_array, int size, int 
 
 static void init_grid(Grid* grid)
 {
-    for (int i = 0; i < Grid_size; i++) {
-        init_subregion_array(&grid->subgrids[i], SubregionArray_size, 10);
-        init_subregion_array(&grid->all_subgrids[i], SubregionArray_size, 100);
-        init_subregion_array(&grid->neighbors[i], SubregionArray_size, 200);
+    for (int i = 0; i < GRID_SIZE; i++) {
+        init_subregion_array(&grid->subgrids[i], SUBREGIONARRAY_SIZE, 10);
+        init_subregion_array(&grid->all_subgrids[i], SUBREGIONARRAY_SIZE, 100);
+        init_subregion_array(&grid->neighbors[i], SUBREGIONARRAY_SIZE, 200);
     }
-    grid->size = Grid_size;
+    grid->size = GRID_SIZE;
 }
 
 static void init_subvector(Subvector* subvector)
 {
-    for (int i = 0; i < Subvector_data_size; i++) {
+    for (int i = 0; i < SUBVECTOR_DATA_SIZE; i++) {
         subvector->data[i] = (double) i;
     }
     subvector->allocated = 1;
     init_subregion(subvector->data_space, 42);
-    subvector->data_size = Subvector_data_size;
+    subvector->data_size = SUBVECTOR_DATA_SIZE;
 }
 
 static void init_vector(Vector* vector)
 {
-    for (int i = 0; i < Vector_data_size; i++) {
+    for (int i = 0; i < VECTOR_DATA_SIZE; i++) {
         init_subvector(vector->subvectors[i]);
     }
-    vector->data_size = Vector_data_size;
+    vector->data_size = VECTOR_DATA_SIZE;
     init_grid(vector->grid);
-    init_subregion_array(vector->data_space, SubregionArray_size, 0);
-    vector->size = Vector_size;
+    init_subregion_array(vector->data_space, SUBREGIONARRAY_SIZE, 0);
+    vector->size = VECTOR_SIZE;
 }
 
 // #################### SUBREGION ####################
@@ -212,7 +209,7 @@ void print_subregion(const Subregion* subregion)
 
 void assert_eq_subregion_array(const SubregionArray* s1, const SubregionArray* s2)
 {
-	for (int i = 0; i < SubregionArray_size; i++) {
+	for (int i = 0; i < SUBREGIONARRAY_SIZE; i++) {
 		assert_eq_subregion(s1->subregions[i], s2->subregions[i]);
 	}
 	assert(s1->size == s2->size);
@@ -220,7 +217,7 @@ void assert_eq_subregion_array(const SubregionArray* s1, const SubregionArray* s
 
 void assert_eq_subregion_array_serialized(const SubregionArray* subregion_referenced, const SubregionArraySerialized* subregion_serialized)
 {
-	for (int i = 0; i < SubregionArray_size; i++) {
+	for (int i = 0; i < SUBREGIONARRAY_SIZE; i++) {
 		assert_eq_subregion(subregion_referenced->subregions[i], &subregion_serialized->subregions[i]);
 	}
 	assert(subregion_referenced->size == subregion_serialized->size);
@@ -229,7 +226,7 @@ void assert_eq_subregion_array_serialized(const SubregionArray* subregion_refere
 void print_subregion_array(const SubregionArray* subregion_array)
 {
 	printf("  Subregion size: %d\n", subregion_array->size);
-	for (int i = 0; i < SubregionArray_size; i++) {
+	for (int i = 0; i < SUBREGIONARRAY_SIZE; i++) {
 		printf("  Subregion[%d]: ", i);
 		print_subregion(subregion_array->subregions[i]);
 	}
@@ -237,15 +234,15 @@ void print_subregion_array(const SubregionArray* subregion_array)
 
 void alloc_subregion_array(SubregionArray* subregion_array)
 {
-	subregion_array->subregions = (Subregion**) malloc(sizeof(Subregion*) * SubregionArray_size);
-	for (int i = 0; i < SubregionArray_size; i++) {
+	subregion_array->subregions = (Subregion**) malloc(sizeof(Subregion*) * SUBREGIONARRAY_SIZE);
+	for (int i = 0; i < SUBREGIONARRAY_SIZE; i++) {
 		subregion_array->subregions[i] = (Subregion*) malloc(sizeof(Subregion));
 	}
 }
 
 void free_subregion_array(SubregionArray* subregion_array)
 {
-	for (int i = 0; i < SubregionArray_size; i++) {
+	for (int i = 0; i < SUBREGIONARRAY_SIZE; i++) {
 		free(subregion_array->subregions[i]);
 	}
 	free(subregion_array->subregions);
@@ -255,7 +252,7 @@ void free_subregion_array(SubregionArray* subregion_array)
 
 void assert_eq_grid(const Grid* g1, const Grid* g2)
 {
-	for (int i = 0; i < Grid_size; i++) {
+	for (int i = 0; i < GRID_SIZE; i++) {
 		assert_eq_subregion_array(&g1->subgrids[i], &g2->subgrids[i]);
 		assert_eq_subregion_array(&g1->all_subgrids[i], &g2->all_subgrids[i]);
 		assert_eq_subregion_array(&g1->neighbors[i], &g2->neighbors[i]);
@@ -265,7 +262,7 @@ void assert_eq_grid(const Grid* g1, const Grid* g2)
 
 void assert_eq_grid_serialized(const Grid* grid_referenced, const GridSerialized* grid_serialized)
 {
-	for (int i = 0; i < Grid_size; i++) {
+	for (int i = 0; i < GRID_SIZE; i++) {
 		assert_eq_subregion_array_serialized(&grid_referenced->subgrids[i], &grid_serialized->subgrids[i]);
 		assert_eq_subregion_array_serialized(&grid_referenced->all_subgrids[i], &grid_serialized->all_subgrids[i]);
 		assert_eq_subregion_array_serialized(&grid_referenced->neighbors[i], &grid_serialized->neighbors[i]);
@@ -277,7 +274,7 @@ void print_grid(const Grid* grid)
 {
 	printf("Grid address: %p\n", grid);
 	printf("Subgrinds size: %d\n", grid->size);
-	for (int i = 0; i < Grid_size; i++) {
+	for (int i = 0; i < GRID_SIZE; i++) {
 		printf("Subgrinds[%d]: ", i);
 		print_subregion_array(&grid->subgrids[i]);
 	}
@@ -285,37 +282,37 @@ void print_grid(const Grid* grid)
 
 void alloc_grid(Grid* grid)
 {
-	grid->subgrids = (SubregionArray*) malloc(sizeof(SubregionArray) * Grid_size);
-	for (int i = 0; i < Grid_size; i++) {
+	grid->subgrids = (SubregionArray*) malloc(sizeof(SubregionArray) * GRID_SIZE);
+	for (int i = 0; i < GRID_SIZE; i++) {
 		alloc_subregion_array(&grid->subgrids[i]);
-		// grid->subgrids[i].subregions = (Subregion**) malloc(sizeof(Subregion) * SubregionArray_size);
-		// for (int j = 0; j < SubregionArray_size; j++) {
+		// grid->subgrids[i].subregions = (Subregion**) malloc(sizeof(Subregion) * SUBREGIONARRAY_SIZE);
+		// for (int j = 0; j < SUBREGIONARRAY_SIZE; j++) {
 		// 	grid->subgrids[i].subregions[j] = (Subregion*) malloc(sizeof(Subregion));
 		// }
 	}
-	grid->all_subgrids = (SubregionArray*) malloc(sizeof(SubregionArray) * Grid_size);
-	for (int i = 0; i < Grid_size; i++) {
+	grid->all_subgrids = (SubregionArray*) malloc(sizeof(SubregionArray) * GRID_SIZE);
+	for (int i = 0; i < GRID_SIZE; i++) {
 		alloc_subregion_array(&grid->all_subgrids[i]);
 	}
-	grid->neighbors = (SubregionArray*) malloc(sizeof(SubregionArray) * Grid_size);
-	for (int i = 0; i < Grid_size; i++) {
+	grid->neighbors = (SubregionArray*) malloc(sizeof(SubregionArray) * GRID_SIZE);
+	for (int i = 0; i < GRID_SIZE; i++) {
 		alloc_subregion_array(&grid->neighbors[i]);
 	}
 }
 
 void free_grid(Grid* grid)
 {
-	for (int i = 0; i < Grid_size; i++) {
+	for (int i = 0; i < GRID_SIZE; i++) {
 		free_subregion_array(&grid->subgrids[i]);
 	}
 	free(grid->subgrids);
 	
-	for (int i = 0; i < Grid_size; i++) {
+	for (int i = 0; i < GRID_SIZE; i++) {
 		free_subregion_array(&grid->all_subgrids[i]);
 	}
 	free(grid->all_subgrids);
 	
-	for (int i = 0; i < Grid_size; i++) {
+	for (int i = 0; i < GRID_SIZE; i++) {
 		free_subregion_array(&grid->neighbors[i]);
 	}
 	free(grid->neighbors);
@@ -325,7 +322,7 @@ void free_grid(Grid* grid)
 
 void assert_eq_subvector(const Subvector* s1, const Subvector* s2)
 {
-	for (int i = 0; i < Subvector_data_size; i++) {
+	for (int i = 0; i < SUBVECTOR_DATA_SIZE; i++) {
 		assert(s1->data[i] == s2->data[i]);
 	}
 	assert(s1->allocated == s2->allocated);
@@ -335,7 +332,7 @@ void assert_eq_subvector(const Subvector* s1, const Subvector* s2)
 
 void assert_eq_subvector_serialized(const Subvector* subvector_referenced, const SubvectorSerialized* subvector_serialized)
 {
-	for (int i = 0; i < Subvector_data_size; i++) {
+	for (int i = 0; i < SUBVECTOR_DATA_SIZE; i++) {
 		assert(subvector_referenced->data[i] == subvector_serialized->data[i]);
 	}
 	assert(subvector_referenced->allocated == subvector_serialized->allocated);
@@ -348,7 +345,7 @@ void print_subvector(const Subvector* s1)
 	printf("Subvector address: %p\n", s1);
 	printf("Subgrinds size: %d\n", s1->data_size);
 	printf("Data:\n");
-	for (int i = 0; i < Subvector_data_size; i++) {
+	for (int i = 0; i < SUBVECTOR_DATA_SIZE; i++) {
 		printf("%f ", s1->data[i]);
 	}
 	printf("\nAllocated: %d\n", s1->allocated);
@@ -358,7 +355,7 @@ void print_subvector(const Subvector* s1)
 
 void alloc_subvector(Subvector* s1)
 {
-	s1->data = (double*) calloc(Subvector_data_size, sizeof(double));
+	s1->data = (double*) calloc(SUBVECTOR_DATA_SIZE, sizeof(double));
 	s1->data_space = (Subregion*) malloc(sizeof(Subregion));
 }
 
@@ -391,7 +388,7 @@ void print_vector(const Vector* v1)
 	printf("Vector address: %p\n", v1);
 	printf("Subgrinds size: %d\n", v1->data_size);
 	printf("subvectors:\n");
-	for (int i = 0; i < Vector_data_size; i++) {
+	for (int i = 0; i < VECTOR_DATA_SIZE; i++) {
 		print_subvector(v1->subvectors[i]);
 	}
 	printf("\nData_size: %d\n", v1->data_size);
@@ -405,8 +402,8 @@ void print_vector(const Vector* v1)
 
 void alloc_vector(Vector* v1)
 {
-	v1->subvectors = (Subvector**) malloc(sizeof(Subvector) * Vector_data_size);
-	for (int i = 0; i < Vector_data_size; i++) {
+	v1->subvectors = (Subvector**) malloc(sizeof(Subvector) * VECTOR_DATA_SIZE);
+	for (int i = 0; i < VECTOR_DATA_SIZE; i++) {
 		v1->subvectors[i] = (Subvector*) malloc(sizeof(Subvector));
 		alloc_subvector(v1->subvectors[i]);
 	}
@@ -418,7 +415,7 @@ void alloc_vector(Vector* v1)
 
 void free_vector(Vector* v1)
 {
-	for (int i = 0; i < Vector_data_size; i++) {
+	for (int i = 0; i < VECTOR_DATA_SIZE; i++) {
 		free_subvector(v1->subvectors[i]);
 		free(v1->subvectors[i]);
 		

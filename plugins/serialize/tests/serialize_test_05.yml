@@ -26,7 +26,7 @@
           type: pointer
           subtype:
               type: array
-              size: 16
+              size: $subvector_data_size
               subtype: double
         allocated:
           disp: 8
@@ -47,7 +47,7 @@
         type: pointer
         subtype:
           type: array
-          size: 64
+          size: $subregionarray_size
           subtype:
             type: pointer
             subtype: *Subregion
@@ -63,27 +63,32 @@
         type: pointer
         subtype:
             type: array
-            size: 32
+            size: $grid_size
             subtype: *SubregionArray
       all_subgrids:
           disp: 8
           type: pointer
           subtype:
             type: array
-            size: 32
+            size: $grid_size
             subtype: *SubregionArray
       neighbors:
           disp: 16
           type: pointer
           subtype:
             type: array
-            size: 32
+            size: $grid_size
             subtype: *SubregionArray
       size:
         disp: 24
         type: int
 
 logging: trace
+metadata:
+  subregionarray_size: int
+  grid_size: int
+  subvector_data_size: int
+  vector_data_size: int
 data:
   vector_data:
     type: record
@@ -94,7 +99,7 @@ data:
         type: pointer
         subtype:
           type: array
-          size: 8
+          size: $vector_data_size
           subtype:
             type: pointer
             subtype: *Subvector

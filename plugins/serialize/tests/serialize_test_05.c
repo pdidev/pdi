@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,16 @@
 int main(int argc, char* argv[])
 {
 	PDI_init(PC_parse_path(argv[1]));
+	
+	int subregionarray_size = SUBREGIONARRAY_SIZE;
+	int grid_size = GRID_SIZE;
+	int subvector_data_size = SUBVECTOR_DATA_SIZE;
+	int vector_data_size = VECTOR_DATA_SIZE;
+	
+	PDI_expose("subregionarray_size", &subregionarray_size, PDI_OUT);
+	PDI_expose("grid_size", &grid_size, PDI_OUT);
+	PDI_expose("subvector_data_size", &subvector_data_size, PDI_OUT);
+	PDI_expose("vector_data_size", &vector_data_size, PDI_OUT);
 	
 	Vector vector;
 	alloc_vector(&vector);
