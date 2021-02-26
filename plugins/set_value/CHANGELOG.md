@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Wrong trigger order of set/share/expose operations
 
 ### Security
 
@@ -22,6 +23,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 * Install in the path specified by the `INSTALL_PDIPLUGINDIR` cmake variable
-
-### Fixed
-* Wrong trigger order of set/share/expose operations
