@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,11 +42,11 @@ int main()
 	    "  test_struct:                                 \n"
 	    "    type: struct                               \n"
 	    "    members:                                   \n"
-	    "      a_name: char                             \n"
-	    "      b_name:                                  \n"
-	    "        type: array                            \n"
-	    "        size: [5, 10]                          \n"
-	    "        subtype: int                           \n"
+	    "      - a_name: char                           \n"
+	    "      - b_name:                                \n"
+	    "          type: array                          \n"
+	    "          size: [5, 10]                        \n"
+	    "          subtype: int                         \n"
 	    "plugins:                                       \n"
 	    "  decl_hdf5:                                   \n"
 	    "  - file: struct_test.h5                       \n"

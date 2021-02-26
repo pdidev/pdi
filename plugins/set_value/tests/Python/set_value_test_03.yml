@@ -3,19 +3,19 @@ data:
   outer_struct:
     type: struct
     members:
-      scalar: int
-      inner_struct:
-        type: struct
-        members:
-          scalar: int
-          array:
-            type: array
-            size: 4
-            subtype: int
-      array:
-        type: array
-        size: 4
-        subtype: int64
+      - scalar: int
+      - inner_struct:
+          type: struct
+          members:
+            - scalar: int
+            - array:
+                type: array
+                size: 4
+                subtype: int
+      - array:
+          type: array
+          size: 4
+          subtype: int64
       
 plugins:
   set_value:

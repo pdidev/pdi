@@ -2,15 +2,16 @@
 
 The %PDI specification tree is expressed in
 [YAML](https://en.wikipedia.org/wiki/YAML).
-As such, it is a tree that contains 3 distinct kinds of nodes:
+It is a tree that contains the following distinct kinds of nodes:
 * scalars,
 * sequences,
-* mappings.
+* mappings,
+* ordered mappings.
 
 A **scalar** is a leaf in the tree, represented as a string.
-Some form of scalars can be interpreted as a boolean, integer or floating-point
+Some forms of scalars can be interpreted as boolean, integer or floating-point
 valued.
-Simple examples of scalars include for example (see the
+Simple examples of scalars include (see the
 [YAML specification](https://yaml.org/spec/1.2/spec.html#id2760844) for the
 complete syntax):
 * `"hello"`,
@@ -46,6 +47,22 @@ complete syntax).
 "three": 3
 ```
 
+An **ordered mapping** is represented as a sequence of mappings containing a
+single key-value pair each.
+There can be no duplicates in the keys.
+The sub-nodes can be scalars, sequences or mappings.
+Unlike in a normal mapping, the order of elements in an ordered mapping is
+meaningful.
+Two main syntaxes are available for ordered mapping (see the 
+[YAML specification](https://yaml.org/spec/1.2/spec.html#id2759963) for the
+complete syntax).
+* in-line ordered mapping: `[{1: one}, {2: "two"}, {"three": 3}]`
+* multi-line ordered mapping:
+```
+- 1: one
+- 2: two
+- "three": 3
+```
 
 # specification tree root {#root_node}
 
@@ -480,17 +497,17 @@ A *struct_member_desc* is a **mapping** that contains the following keys:
 ```python
 type: struct
 members:
-  my_char: char
+  - my_char: char
 ```
 
 ```python
 type: struct
 members:
-  my_long: int64
-  my_array:
-    type: array
-    subtype: int64
-    size: [10, 10]
+  - my_long: int64
+  - my_array:
+      type: array
+      subtype: int64
+      size: [10, 10]
 ```
 
 See \ref struct_type_node for more examples.
@@ -537,14 +554,14 @@ members:
 
 See \ref record_type_node for more examples.
 
-# struct_members_map {#struct_members_map_node}
+# struct_members_omap {#struct_members_omap_node}
 
-A *struct_members_map* is a **mapping** that contains the following keys:
+A *struct_members_omap* is an **ordered mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`".*"` (*optional*)|a \ref struct_member_desc_node|
 
-* each key identifies the name of a member of the struct and the value
+* each key identifies the name of a member and the value
   associated to it describes the member itself.
 
 See \ref struct_type_node for an example.
@@ -608,7 +625,7 @@ A *struct_type* is a **mapping** that contains the following keys:
 |key|value|
 |:--|:----|
 |`"type"`|`"struct"`|
-|`"members"` (*optional*)|a \ref struct_members_map_node|
+|`"members"` (*optional*)|a \ref struct_members_omap_node|
 
 A \ref struct_type_node represents a "struct", *aka* C "struct", C++ "class".
 Buffersize and members displacemnts will be calculated by the %PDI.
@@ -618,8 +635,8 @@ Buffersize and members displacemnts will be calculated by the %PDI.
 ```python
 type: struct
 members:
-  first_int: int32
-  seconf_int: int32
+  - first_int: int32
+  - seconf_int: int32
 ```
 
 # record_type {#record_type_node}
