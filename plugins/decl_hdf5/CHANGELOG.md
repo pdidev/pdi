@@ -22,3 +22,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 * Install in the path specified by the `INSTALL_PDIPLUGINDIR` cmake variable
+
+### Fixed
+* Parse empty read/write dataset yaml subtree

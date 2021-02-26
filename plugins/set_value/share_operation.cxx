@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ Share_operation::Share_operation(PDI::Context& ctx, PC_tree_t list_of_values):
 		PC_tree_t value_element = PC_get(list_of_values, "[%d]", i);
 		std::string data_name {PDI::to_string(PC_get(value_element, "{0}"))};
 		context().logger()->trace("\t {}: {}", i, data_name);
-		m_data_to_share.emplace(std::move(data_name), PC_get(value_element, "<0>"));
+		m_data_to_share.emplace_back(std::move(data_name), PC_get(value_element, "<0>"));
 	}
 }
 

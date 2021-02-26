@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
 #
@@ -71,6 +72,7 @@ endif()
 add_executable(decl_sion_01_c decl_sion_test_01.c)
 target_link_libraries(decl_sion_01_c PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_sion_01_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_01_c>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST decl_sion_01_c PROPERTY PROCESSORS 1)
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_sion_01_F decl_sion_test_01.F90)
@@ -78,6 +80,7 @@ target_link_libraries(decl_sion_01_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_01_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_01_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_01_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_01.yml")
+set_property(TEST decl_sion_01_F PROPERTY PROCESSORS 1)
 endif("${BUILD_FORTRAN}")
 
 
@@ -86,6 +89,7 @@ endif("${BUILD_FORTRAN}")
 add_executable(decl_sion_02_c decl_sion_test_02.c)
 target_link_libraries(decl_sion_02_c PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_sion_02_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_02_c>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST decl_sion_02_c PROPERTY PROCESSORS 2)
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_sion_02_F decl_sion_test_02.F90)
@@ -93,6 +97,7 @@ target_link_libraries(decl_sion_02_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_02.yml")
+set_property(TEST decl_sion_02_c PROPERTY PROCESSORS 2)
 endif("${BUILD_FORTRAN}")
 
 
@@ -101,6 +106,7 @@ endif("${BUILD_FORTRAN}")
 add_executable(decl_sion_03_c decl_sion_test_03.c)
 target_link_libraries(decl_sion_03_c PDI::PDI_C MPI::MPI_C)
 add_test(NAME decl_sion_03_c COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_03_c>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST decl_sion_03_c PROPERTY PROCESSORS 2)
 
 if("${BUILD_FORTRAN}")
 add_executable(decl_sion_03_F decl_sion_test_03.F90)
@@ -108,6 +114,7 @@ target_link_libraries(decl_sion_03_F PDI::PDI_f90 MPI_with_mod)
 string(RANDOM TMP_MODULE_DIRECTORY)
 set_target_properties(decl_sion_03_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
 add_test(NAME decl_sion_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_sion_03_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_test_03.yml")
+set_property(TEST decl_sion_03_F PROPERTY PROCESSORS 2)
 endif("${BUILD_FORTRAN}")
 
 

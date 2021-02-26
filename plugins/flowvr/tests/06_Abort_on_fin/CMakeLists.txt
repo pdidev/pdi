@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,4 +44,5 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/abort_on_fin.py
 add_test(NAME flowvr_06_Abort_on_fin COMMAND PDI::pdirun "../run_flowvr_test.sh" "abort_on_fin")
 set_property(TEST flowvr_06_Abort_on_fin PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_06_Abort_on_fin PROPERTY RESOURCE_LOCK flowvrd)
+set_property(TEST flowvr_06_Abort_on_fin PROPERTY PROCESSORS 3)
 set_property(TEST flowvr_06_Abort_on_fin PROPERTY DISABLED TRUE)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,8 @@ namespace set_value {
 
 class Expose_operation : public Operation
 {
-   // map of data to expose (expose new Ref (created from Expression))
-    std::unordered_map<std::string, PC_tree_t> m_data_to_expose;
+    /// map of data to expose (expose new Ref (created from Expression))
+    std::vector<std::pair<std::string, PC_tree_t>> m_data_to_expose;
 
 public:
 

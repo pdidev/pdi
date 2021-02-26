@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,4 +44,5 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/send_recv_msg.py
 add_test(NAME flowvr_01_Send_recv_msg COMMAND PDI::pdirun "../run_flowvr_test.sh" "send_recv_msg")
 set_property(TEST flowvr_01_Send_recv_msg PROPERTY TIMEOUT 20)
 set_property(TEST flowvr_01_Send_recv_msg PROPERTY RESOURCE_LOCK flowvrd)
+set_property(TEST flowvr_01_Send_recv_msg PROPERTY PROCESSORS 3)
 set_property(TEST flowvr_01_Send_recv_msg PROPERTY DISABLED TRUE)

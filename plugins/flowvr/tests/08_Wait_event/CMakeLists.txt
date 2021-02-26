@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,4 +44,5 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/wait_event.py
 add_test(NAME flowvr_08_Wait_event COMMAND PDI::pdirun "../run_flowvr_test.sh" "wait_event")
 set_property(TEST flowvr_08_Wait_event PROPERTY TIMEOUT 10)
 set_property(TEST flowvr_08_Wait_event PROPERTY RESOURCE_LOCK flowvrd)
+set_property(TEST flowvr_08_Wait_event PROPERTY PROCESSORS 3)
 set_property(TEST flowvr_08_Wait_event PROPERTY DISABLED TRUE)
