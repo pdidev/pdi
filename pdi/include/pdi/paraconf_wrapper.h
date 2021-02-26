@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -198,7 +198,15 @@ void PDI_EXPORT opt_each(PC_tree_t tree, std::function<void(PC_tree_t)> operatio
  * \param tree the tree containing the mapping
  * \param operation the operation to apply to each element of the tree
  */
-void PDI_EXPORT each(PC_tree_t tree, std::function<void(PC_tree_t,PC_tree_t)> operation);
+void PDI_EXPORT each(PC_tree_t tree, std::function<void (PC_tree_t,PC_tree_t)> operation);
+
+/** Iterates and apply the provided function to all elements of a PC ordered
+ *  mapping
+ *
+ * \param tree the tree containing the ordered mapping
+ * \param operation the operation to apply to each element of the tree
+ */
+void PDI_EXPORT each_in_omap(PC_tree_t tree, std::function<void (PC_tree_t,PC_tree_t)> operation);
 
 } // namespace PDI
 

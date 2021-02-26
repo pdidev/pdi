@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -457,8 +457,8 @@ vector<param_pair> struct_types {
 	{
 		"type: struct    \n"
 		"members:        \n"
-		"   my_char: char\n"
-		"   my_int: int  \n",
+		"   - my_char: char\n"
+		"   - my_int: int  \n",
 		shared_ptr<Datatype> {
 			new Record_datatype {
 				vector<Record_datatype::Member> {
@@ -480,11 +480,11 @@ vector<param_pair> struct_types {
 	{
 		"type: struct            \n"
 		"members:                \n"
-		"   my_char: char        \n"
-		"   my_array:            \n"
-		"     type: array        \n"
-		"     subtype: int64     \n"
-		"     size: [10, 10]     \n",
+		"   - my_char: char        \n"
+		"   - my_array:            \n"
+		"       type: array        \n"
+		"       subtype: int64     \n"
+		"       size: [10, 10]     \n",
 		shared_ptr<Datatype> {
 			new Record_datatype {
 				vector<Record_datatype::Member> {
@@ -516,15 +516,15 @@ vector<param_pair> struct_types {
 		}
 	},
 	{
-		"type: struct            \n"
-		"members:                \n"
-		"   my_char: char        \n"
-		"   my_array:            \n"
-		"     type: array        \n"
-		"     subtype: int64     \n"
-		"     size: [10, 10]     \n"
-		"     start: [2, 3]      \n"
-		"     subsize: [6, 5]    \n",
+		"type: struct              \n"
+		"members:                  \n"
+		"   - my_char: char        \n"
+		"   - my_array:            \n"
+		"       type: array        \n"
+		"       subtype: int64     \n"
+		"       size: [10, 10]     \n"
+		"       start: [2, 3]      \n"
+		"       subsize: [6, 5]    \n",
 		shared_ptr<Datatype> {
 			new Record_datatype {
 				vector<Record_datatype::Member> {
@@ -562,16 +562,16 @@ vector<param_pair> struct_types {
 	{
 		"type: struct                \n"
 		"members:                    \n"
-		"   my_char: char            \n"
-		"   my_record:               \n"
-		"     type: struct           \n"
-		"     members:               \n"
-		"       my_char:             \n"
-		"         type: char         \n"
-		"       my_array:            \n"
-		"         type: array        \n"
-		"         subtype: int64     \n"
-		"         size: [10, 10]     \n"
+		"   - my_char: char            \n"
+		"   - my_record:               \n"
+		"       type: struct           \n"
+		"       members:               \n"
+		"         - my_char:             \n"
+		"             type: char         \n"
+		"         - my_array:            \n"
+		"             type: array        \n"
+		"             subtype: int64     \n"
+		"             size: [10, 10]     \n"
 		,
 		shared_ptr<Datatype> {
 			new Record_datatype {

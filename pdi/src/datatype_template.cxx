@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -366,19 +367,9 @@ Datatype_template_uptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 Datatype_template_uptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
 {
 	vector<Struct_template::Member> members;
-	PC_tree_t member_list_node = PC_get(node, ".members");
-	
-	int nb_members = len(member_list_node, 0);
-	for (int member_id = 0; member_id < nb_members; member_id++) {
-		//get current member name
-		string member_name = to_string(PC_get(member_list_node, "{%d}", member_id));
-		
-		//get current member
-		PC_tree_t member_node = PC_get(member_list_node, "<%d>", member_id);
-		
-		members.emplace_back(ctx.datatype(member_node), move(member_name));
-	}
-	
+	each_in_omap(PC_get(node, ".members"), [&](PC_tree_t member_name, PC_tree_t member_value_node){
+			members.emplace_back(ctx.datatype(member_value_node), to_string(member_name));
+	});
 	return unique_ptr<Struct_template> {new Struct_template{std::move(members)}};
 }
 

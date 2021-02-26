@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1662,12 +1662,12 @@ TEST(ExpresionMemberAccess, access_simple_member)
 	"    record_data:                  \n"
 	"        type: struct              \n"
 	"        members:                  \n"
-	"            a: char               \n"
-	"            b: int16              \n"
-	"            c: int                \n"
-	"            d: int64              \n"
-	"            e: float              \n"
-	"            f: double             \n"
+	"            - a: char             \n"
+	"            - b: int16            \n"
+	"            - c: int              \n"
+	"            - d: int64            \n"
+	"            - e: float            \n"
+	"            - f: double           \n"
 	);
 	
 	struct Test {
@@ -1719,10 +1719,10 @@ TEST(ExpresionMemberAccess, access_string_member)
 	"    record_data:                  \n"
 	"        type: struct              \n"
 	"        members:                  \n"
-	"            string:               \n"
-	"                type: array       \n"
-	"                subtype: char     \n"
-	"                size: 32          \n"
+	"            - string:             \n"
+	"                  type: array     \n"
+	"                  subtype: char   \n"
+	"                  size: 32        \n"
 	);
 	
 	struct Test {
@@ -1763,11 +1763,11 @@ TEST(ExpresionMemberAccess, access_array_record)
 	"        subtype:                     \n"
 	"            type: struct             \n"
 	"            members:                 \n"
-	"                scalar: char         \n"
-	"                array:               \n"
-	"                    type: array      \n"
-	"                    subtype: int     \n"
-	"                    size: 32         \n"
+	"                - scalar: char       \n"
+	"                - array:             \n"
+	"                      type: array    \n"
+	"                      subtype: int   \n"
+	"                      size: 32       \n"
 	);
 	
 	struct Record {
@@ -1812,23 +1812,23 @@ TEST(ExpresionMemberAccess, access_complex_member)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
-	"logging: trace                       \n"
-	"data:                                \n"
-	"    record_data:                     \n"
-	"        type: struct                 \n"
-	"        members:                     \n"
-	"            array:                   \n"
-	"                type: array          \n"
-	"                subtype: int         \n"
-	"                size: 32             \n"
-	"            subrecord:               \n"
-	"                type: struct         \n"
-	"                members:             \n"
-	"                    scalar: char     \n"
-	"                    array:           \n"
-	"                        type: array  \n"
-	"                        subtype: int \n"
-	"                        size: 32     \n"
+	"logging: trace                           \n"
+	"data:                                    \n"
+	"    record_data:                         \n"
+	"        type: struct                     \n"
+	"        members:                         \n"
+	"            - array:                     \n"
+	"                type: array              \n"
+	"                subtype: int             \n"
+	"                size: 32                 \n"
+	"            - subrecord:                 \n"
+	"                  type: struct           \n"
+	"                  members:               \n"
+	"                      - scalar: char     \n"
+	"                      - array:           \n"
+	"                            type: array  \n"
+	"                            subtype: int \n"
+	"                            size: 32     \n"
 	);
 	
 	struct Subrecord {

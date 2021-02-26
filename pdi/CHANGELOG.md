@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
+* Handle the members in a yaml `struct` definition as an ordered mapping instead
+  of a plain mapping.
 
 #### Security
 

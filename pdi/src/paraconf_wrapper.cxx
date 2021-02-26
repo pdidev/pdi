@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -167,6 +167,29 @@ void each(PC_tree_t tree, std::function<void(PC_tree_t,PC_tree_t)> operation)
 	int nb_elem = len(tree);
 	for (int elem_id=0; elem_id<nb_elem; ++elem_id) {
 		operation(PC_get(tree, "{%d}", elem_id), PC_get(tree, "<%d>", elem_id));
+	}
+}
+
+void each_in_omap(PC_tree_t tree, std::function<void(PC_tree_t,PC_tree_t)> operation)
+{
+	int nb_elem = len(tree);
+	if ( !is_list(tree) ) {
+		if ( is_scalar(tree) ) {
+			throw Config_error{"Expected an ordered mapping, found a scalar"};
+		} else if ( is_map(tree) ) {
+			throw Config_error{"Expected an ordered mapping, found a (unordered) mapping"};
+		} else {
+			throw Config_error{"Expected an ordered mapping, invalid element found"};
+		}
+	}
+	for (int elem_id=0; elem_id<nb_elem; ++elem_id) {
+		PC_tree_t elem = PC_get(tree, "[%d]", elem_id);
+		if ( !is_map(elem) ) {
+			throw Config_error{"Invalid ordered mapping found (no key)"};
+		} else if ( len(elem) != 1 ) {
+			throw Config_error{"Invalid ordered mapping found (multiple keys)"};
+		}
+		operation(PC_get(elem, "{0}"), PC_get(elem, "<0>"));
 	}
 }
 

@@ -75,9 +75,10 @@ def val_size(size, data_refs_list):
 def val_array(value, data_refs_list):
     if 'size' not in value:
         raise NameError("Array must have `size' property: " + str(value))
+    val_size(value['size'], data_refs_list)
     if 'subtype' not in value:
         raise NameError("Array must have `subtype' property: " + str(value))
-    val_size(value['size'], data_refs_list)
+    val_desc(value['subtype'], data_refs_list)
     if 'subsize' in value:
         val_size(value['subsize'], data_refs_list)
     if 'start' in value:
@@ -100,6 +101,14 @@ def val_record(value, data_refs_list):
     for member in value['members'].values():
         val_member(member, data_refs_list)
 
+# validate struct (must have members)
+def val_struct(value, data_refs_list):
+    if 'members' not in value:
+        raise NameError("Struct must have `members' property: " + str(value))
+    for member_node in value['members']:
+        for member_value in member_node.values():
+            val_desc(member_value, data_refs_list)
+
 # validate descriptor
 def val_desc(value, data_refs_list):
     if value in scalar_types:
@@ -110,6 +119,8 @@ def val_desc(value, data_refs_list):
         val_array(value, data_refs_list)
     elif value['type'] == 'record':
         val_record(value, data_refs_list)
+    elif value['type'] == 'struct':
+        val_struct(value, data_refs_list)
     else:
         raise NameError('Invalid descriptor type in: ' + str(value))        
 

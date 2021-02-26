@@ -6,11 +6,11 @@ data:
     subtype:
       type: struct
       members:
-        scalar: int
-        inner_array:
-          type: array
-          size: 4
-          subtype: int
+        - scalar: int
+        - inner_array:
+            type: array
+            size: 4
+            subtype: int
 
 plugins:
   set_value:
