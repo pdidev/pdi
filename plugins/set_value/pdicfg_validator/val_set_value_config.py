@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,14 +29,20 @@ def val_desc_value(list_of_desc_value, data_list, data_refs_list):
         for desc in desc_value.keys():
             data_refs_list.append(desc)
 
-# pdi_operation -> "set", "share", "expose"
+# pdi_operation -> "set", "share", "expose", "event", "release"
 def val_pdi_operation(list_of_pdi_operations, data_list, data_refs_list):
     for operation_map in list_of_pdi_operations:
         for key, value in operation_map.items():
-            if key not in ["set", "share", "expose"]:
+            if key == "event":
+                continue
+            if key not in ["set", "share", "expose", "release"]:
                 raise NameError("\033[31m(Set value) Invlaid pdi operation: " + key + ". Available operations: set, share, expose\033[0m")
             if isinstance(value, list):
-                val_desc_value(value, data_list, data_refs_list)
+                if key == "release":
+                    for desc in value:
+                      data_refs_list.append(desc)
+                else:
+                    val_desc_value(value, data_list, data_refs_list)
             else:
                 raise NameError("\033[31m(Set value) Descripotrs names must be in a list\033[0m")
     
@@ -45,7 +51,7 @@ def val_on_init(on_init_node, data_list, data_refs_list):
         if isinstance(on_init_node, list):
             val_pdi_operation(on_init_node, data_list, data_refs_list)
         else:
-            raise NameError("\033[31m(Set value) on_init must a list of operations\033[0m")
+            raise NameError("\033[31m(Set value) on_init must be a list of operations\033[0m")
 
 def val_on_data(on_data_node, data_list, data_refs_list):
     if on_data_node:
@@ -54,7 +60,7 @@ def val_on_data(on_data_node, data_list, data_refs_list):
             if isinstance(value, list):
                 val_pdi_operation(value, data_list, data_refs_list)
             else:
-                raise NameError("\033[31m(Set value) Each on_data subnode must a list of operations\033[0m")
+                raise NameError("\033[31m(Set value) Each on_data subnode must be a list of operations\033[0m")
 
 def val_on_event(on_event_node, data_list, data_refs_list):
     if on_event_node:
@@ -62,9 +68,18 @@ def val_on_event(on_event_node, data_list, data_refs_list):
             if isinstance(value, list):
                 val_pdi_operation(value, data_list, data_refs_list)
             else:
-                raise NameError("\033[31m(Set value) Each on_event subnode must a list of operations\033[0m")
+                raise NameError("\033[31m(Set value) Each on_event subnode must be a list of operations\033[0m")
+
+def val_on_finalize(on_finalize_node, data_list, data_refs_list):
+    if on_finalize_node:
+        if isinstance(on_finalize_node, list):
+            val_pdi_operation(on_finalize_node, data_list, data_refs_list)
+        else:
+            raise NameError("\033[31m(Set value) on_finalize must be a list of operations\033[0m")
+
 
 def val_set_value(set_value_root, data_list, metadata_list, data_refs_list):
     val_on_init(set_value_root.get("on_init", False), data_list, data_refs_list)
     val_on_data(set_value_root.get("on_data", False), data_list, data_refs_list)
     val_on_event(set_value_root.get("on_event", False), data_list, data_refs_list)
+    val_on_finalize(set_value_root.get("on_finalize", False), data_list, data_refs_list)

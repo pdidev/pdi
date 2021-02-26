@@ -25,3 +25,5 @@ plugins:
           - array_metadata: [9, 8, 7, 6, 5, 4]
         - set:
           - array_size: 0
+    on_finalize:
+      - release: [array_size]

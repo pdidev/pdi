@@ -72,13 +72,17 @@ add_executable(set_value_03_C_share_set set_value_test_03_share_set.c)
 target_link_libraries(set_value_03_C_share_set PDI::PDI_C)
 add_test(NAME set_value_03_C_share_set COMMAND "$<TARGET_FILE:set_value_03_C_share_set>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_03_share_set.yml")
 
-add_executable(set_value_04 set_value_test_04.c)
-target_link_libraries(set_value_04 PDI::PDI_C)
-add_test(NAME set_value_04 COMMAND "$<TARGET_FILE:set_value_04>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_04.yml")
+add_executable(set_value_04_C set_value_test_04.c)
+target_link_libraries(set_value_04_C PDI::PDI_C)
+add_test(NAME set_value_04_C COMMAND "$<TARGET_FILE:set_value_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_04.yml")
 
-add_executable(set_value_05 set_value_test_05.c)
-target_link_libraries(set_value_05 PDI::PDI_C)
-add_test(NAME set_value_05 COMMAND "$<TARGET_FILE:set_value_05>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_05.yml")
+add_executable(set_value_05_C set_value_test_05.c)
+target_link_libraries(set_value_05_C PDI::PDI_C)
+add_test(NAME set_value_05_C COMMAND "$<TARGET_FILE:set_value_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_05.yml")
+
+add_executable(set_value_06_C set_value_test_06.c)
+target_link_libraries(set_value_06_C PDI::PDI_C)
+add_test(NAME set_value_06_C COMMAND "$<TARGET_FILE:set_value_06_C>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_06.yml")
 
 if("${BUILD_PYTHON}")
 	add_subdirectory(Python/)

@@ -25,3 +25,5 @@ plugins:
             inner_array: [21, 22, 23, 24]
           - scalar: 30
             inner_array: [31, 32, 33, 34]
+    on_finalize:
+      - release: [outer_array]

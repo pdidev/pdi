@@ -59,3 +59,18 @@ plugins:
           - 1.23456789
           - 12.3456789
           - 123.456789
+    on_finalize:
+      - release: 
+        - value_char
+        - char_array
+        - value_short
+        - short_array
+        - value_int
+        - int_array
+        - value_long
+        - long_array
+        - value_float
+        - float_array
+        - value_double
+        - double_array
+

@@ -40,12 +40,15 @@ class Set_operation : public Operation
     std::vector<std::pair<std::string, PC_tree_t>> m_data_to_set;
 
 public:
-
+    /** Creates set operation
+     * \param[in] ctx context of the operation
+     * \param[in] list_of_values yaml config tree of operation
+     */
     Set_operation(PDI::Context& ctx, PC_tree_t list_of_values);
     
     void execute() override;
 };
 
-} // namespace <anonymous>
+} // namespace set_value
 
 #endif //SET_VALUE_SET_OPERATION_H_

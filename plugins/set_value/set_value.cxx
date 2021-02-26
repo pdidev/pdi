@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,9 @@ struct set_value_plugin: PDI::Plugin {
 	// Trigger sets/shares/exposes values
 	std::list<set_value::Trigger> m_triggers_list;
 	
+	/// Trigger on plugin finalize
+	std::vector<set_value::Trigger> m_trigger_on_finalize;
+	
 	/** Creates Triggers and adds init/event/callbacks from PC_tree_t
 	 * \param[in] config set_value plugin config node
 	 */
@@ -91,6 +94,11 @@ struct set_value_plugin: PDI::Plugin {
 				}, data_name);
 			}
 		}
+		
+		PC_tree_t on_finalize = PC_get(config, ".on_finalize");
+		if (!PC_status(on_finalize)) {
+			m_trigger_on_finalize.emplace_back(context(), on_finalize);
+		}
 	}
 	
 	/** Sets logger format for plugin.
@@ -119,11 +127,14 @@ struct set_value_plugin: PDI::Plugin {
 	
 	~set_value_plugin()
 	{
+		for (auto&& trigger : m_trigger_on_finalize) {
+			trigger.execute();
+		}
 		context().logger()->info("Closing plugin");
 	}
 	
 };
 
-} // namespace <anonymous>
+} // namespace set_value
 
 PDI_PLUGIN(set_value)

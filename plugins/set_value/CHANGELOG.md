@@ -6,8 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* support for new operation types to the plugin:
+  - `event` to trigger a named event,
+  - `release` to release data
+* support to trigger operations on finalization
 
 ### Changed
+* Shared data are not released by default on finalize
 
 ### Deprecated
 

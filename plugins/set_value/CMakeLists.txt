@@ -48,6 +48,8 @@ add_library(pdi_set_value_plugin MODULE set_value.cxx
 										set_operation.cxx
 										share_operation.cxx
 										expose_operation.cxx
+										event_operation.cxx
+										release_operation.cxx
 										)
 target_link_libraries(pdi_set_value_plugin PUBLIC PDI::PDI_plugins)
 set_target_properties(pdi_set_value_plugin PROPERTIES

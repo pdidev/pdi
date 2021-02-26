@@ -46,13 +46,16 @@ class Share_operation : public Operation
 
 public:
 
+    /** Creates share operation
+     * \param[in] ctx context of the operation
+     * \param[in] list_of_values yaml config tree of operation
+     */
     Share_operation(PDI::Context& ctx, PC_tree_t list_of_values);
     
     void execute() override;
 
-    ~Share_operation();
 };
 
-} // namespace <anonymous>
+} // namespace set_value
 
 #endif //SET_VALUE_SHARE_OPERATION_H_

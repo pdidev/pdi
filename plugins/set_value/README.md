@@ -3,10 +3,13 @@
 The Set_value plugin allows setting values to data and metadata descriptors from
 the yaml file.
 
-There are 3 main features:
+Here are main features of the plugins:
+
 1. Share data - plugin will share new allocated data with given values
-2. Expose data - plugin will expose new allocated data with given values
-3. Set data - plugin will set given values to the already shared data
+2. Release data - plugin will release shared data
+3. Expose data - plugin will expose new allocated data with given values
+4. Set data - plugin will set given values to the already shared data
+5. Calling an event - plugin will call an event
 
 \section set_value_configuration Configuration grammar
 
@@ -17,6 +20,7 @@ At its root, the Set_value configuration is made of:
 |`"on_init"` (*optional*)|a list of \ref value_operation|
 |`"on_event"` (*optional*)|an \ref on_event_map_node|
 |`"on_data"` (*optional*)|an \ref on_data_map_node|
+|`"on_finalize"` (*optional*)|a list of \ref value_operation|
 
 \subsection on_init_list_node on_init
 
@@ -30,6 +34,8 @@ plugins:
       - set: ... # value_list
       - share: ... # value_list
       - expose: ... # value_list
+      - release: ... # value_list
+      - event: ... # value
 ```
 
 \subsection on_event_map_node on_event
@@ -49,10 +55,14 @@ plugins:
         - set: ... # value_list
         - share: ... # value_list
         - expose: ... # value_list
+        - release: ... # value_list
+        - event: ... # value
       event_2_name:
         - set: ... # value_list
         - share: ... # value_list
         - expose: ... # value_list
+        - release: ... # value_list
+        - event: ... # value
 ```
 
 \subsection on_data_map_node on_data
@@ -76,31 +86,50 @@ plugins:
         - set: ... # value_list
         - share: ... # value_list
         - expose: ... # value_list
+        - release: ... # value_list
+        - event: ... # value
       metadata_1_name:
         - set: ... # value_list
         - share: ... # value_list
         - expose: ... # value_list
+        - release: ... # value_list
+        - event: ... # value
+```
+
+\subsection on_finalize_list_node on_finalize
+
+Specifies a list of operation to do in \ref PDI_finalize function.
+`on_finalize` is a list of \ref value_operation s.
+
+```yaml
+plugins:
+  set_value:
+    on_finalize:
+      - set: ... # value_list
+      - share: ... # value_list
+      - expose: ... # value_list
+      - release: ... # value_list
+      - event: ... # value
 ```
 
 \subsection value_operation value operation
-Defines what operation to do with given \ref value_list.
-The order of the operation is important and will be called in the
-same order as defined in yaml file.
+A value operation is specified as a key-value pair (a **mapping** whose content
+is a single key-value pair).
+It defines an operation to execute inside a \ref value_list.
 
 |key|value|
 |:--|:----|
 |`"set"` (*optional*)|a \ref value_list|
 |`"share"` (*optional*)|a \ref value_list|
 |`"expose"` (*optional*)|a \ref value_list|
+|`"release"` (*optional*)|a list with data to release|
+|`"event"` (*optional*)|an event name to call|
 
 **Share warning**  
 
 Share is always done with read and write rights.
 Plugin allocates memory by `malloc`. If you reclaim the data, you should
-free it with `free` instruction. If you don't reclaim or release data, 
-plugin will try to release all descriptors that has shared before
-(failure is not an error, so user can reclaim the shared data).
-
+free it with `free` instruction.
 
 \subsection value_list value list
 Is a list of the
@@ -216,6 +245,8 @@ plugins:
           - record_data:
             - scalar_data: 3
             - array_data: [1, 2, 3]
+    on_finalize:
+      - release: [record_data]
 ```
 
 \section old_to_new Using old values to set new
@@ -242,6 +273,8 @@ plugins:
         - set:
           - value_int: "$value_int + 1"
           - int_array: ["$int_array[0] + 1", "$int_array[1] + 1", "$int_array[2] + 1"]
+    on_finalize:
+      - release: [value_int, int_array]
 ```
 After calling `init` and `increment` event, `value_int` will be equal 1, and `int_array` to [2, 3, 4].
 

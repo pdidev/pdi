@@ -27,3 +27,5 @@ plugins:
               scalar: 8
               array: [0, 1, 2, 3]
             array: [4, 5, 6, 7]
+    on_finalize:
+      - release: [outer_struct]

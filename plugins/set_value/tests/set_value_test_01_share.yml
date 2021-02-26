@@ -19,3 +19,5 @@ plugins:
         - record_data:
             scalar_data: 4
             array_data: [2, 3, 4, 5]
+    on_finalize:
+      - release: ["record_data"]

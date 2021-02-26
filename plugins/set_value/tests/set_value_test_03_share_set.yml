@@ -80,3 +80,18 @@ plugins:
           - value_double: "$value_double + 1"
           - double_array: ["$double_array[0] + 1", "$double_array[1] + 1", "$double_array[2] + 1"]
           - string: "abcd"
+    on_finalize:
+      - release: 
+        - value_char
+        - char_array
+        - value_short
+        - short_array
+        - value_int
+        - int_array
+        - value_long
+        - long_array
+        - value_float
+        - float_array
+        - value_double
+        - double_array
+        - string

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,34 +25,28 @@
 #include <spdlog/spdlog.h>
 
 #include <pdi/context.h>
-#include <pdi/expression.h>
-#include <pdi/ref_any.h>
 
-#include "share_operation.h"
+#include "release_operation.h"
 
 namespace set_value {
 
-Share_operation::Share_operation(PDI::Context& ctx, PC_tree_t list_of_values):
+Release_operation::Release_operation(PDI::Context& ctx, PC_tree_t release_value_node):
     Operation{ctx}
 {
-	size_t list_size = PDI::len(list_of_values);
-	context().logger()->debug("Share operation count: {}", list_size);
+	size_t list_size = PDI::len(release_value_node);
+	context().logger()->debug("Release operation count: {}", list_size);
 	for (int i = 0; i < list_size; i++) {
-		PC_tree_t value_element = PC_get(list_of_values, "[%d]", i);
-		std::string data_name {PDI::to_string(PC_get(value_element, "{0}"))};
-		context().logger()->trace("\t {}: {}", i, data_name);
-		m_data_to_share.emplace_back(std::move(data_name), PC_get(value_element, "<0>"));
+		std::string data_to_release = PDI::to_string(PC_get(release_value_node, "[%d]", i));
+		context().logger()->trace("\t {}: {}", i, data_to_release);
+		m_data_to_release.emplace_back(data_to_release);
 	}
 }
 
-void Share_operation::execute()
+void Release_operation::execute()
 {
-    for (auto& data_to_share : m_data_to_share) {
-		PDI::Data_descriptor& data_desc = context().desc(data_to_share.first);
-		PDI::Ref value_ref {PDI::Expression{data_to_share.second}.to_ref(context(), *data_desc.default_type()->evaluate(context()))};
-		context().logger()->trace("Sharing {} with size {} B", data_to_share.first, value_ref.type().buffersize());
-		data_desc.share(value_ref, false, false);
-		m_data_to_release.emplace(data_to_share.first);
+	for (auto&& data_to_release : m_data_to_release) {
+		context().logger()->trace("Calling {} data release", data_to_release);
+		context().desc(data_to_release).release();
 	}
 }
 

@@ -56,4 +56,4 @@ void Expose_operation::execute()
 	}
 }
 
-}  // namespace <anonymous>
+}  // namespace set_value
