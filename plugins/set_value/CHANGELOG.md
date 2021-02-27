@@ -14,9 +14,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Wrong trigger order of set/share/expose operations
 
 ### Security
+
+
+## [1.0.1] - 2021-02-27
+
+### Fixed
+* Fixed a bug where the order of set/share/expose operations specified in YAML
+  would not be respected.
 
 
 ## [1.0.0] - 2021-01-28

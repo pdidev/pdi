@@ -47,9 +47,9 @@ you can install the default PDI source distribution using the following
 instructions (replace `-DCMAKE_INSTALL_PREFIX=/usr/` by the actual place where
 you want to install):
 ```
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/0.6.4/pdi-0.6.4.tar.bz2
-tar -xjf pdi-0.6.4.tar.bz2
-cd pdi-0.6.4
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.0.1/pdi-1.0.1.tar.bz2
+tar -xjf pdi-1.0.1.tar.bz2
+cd pdi-1.0.1
 cmake -DCMAKE_INSTALL_PREFIX=/usr/ .
 make -j install
 ```

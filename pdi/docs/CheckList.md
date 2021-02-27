@@ -6,6 +6,7 @@ To publish a small fix as a patch release:
 * make your changes based on the version branch (`v${X}.${Y}`)
 * change the version in `pdi/VERSION`
 * change the version in `pdi/docs/Installation.md`
+* change the version in `README.md`
 * go over all `CHANGELOG.md` files and mark the just released version
 * commit (or better, make a MR) in the version branch
 * tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`
