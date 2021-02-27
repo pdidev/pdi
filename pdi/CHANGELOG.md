@@ -21,8 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
-* Handle the members in a yaml `struct` definition as an ordered mapping instead
-  of a plain mapping.
 
 #### Security
 
@@ -38,10 +36,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
-* Fixed errors that would appear when using unsigned values (including Fortran
-  logical) in $-expressions.
 
 #### Security
+
+
+
+
+## [1.0.1] - 2021-02-27
+
+### For users
+
+#### Fixed
+* Handle the members in a yaml `struct` definition as an ordered mapping instead
+  of a plain mapping.
+* Fixed errors that would appear when using unsigned values (including Fortran
+  logical) in $-expressions.
 
 
 

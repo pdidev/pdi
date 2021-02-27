@@ -14,9 +14,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Parse empty read/write dataset yaml subtree
 
 ### Security
+
+
+## [1.0.1] - 2021-02-27
+
+### Fixed
+* Fixed a bug where a null value for a read/write dataset yaml subtree would
+  lead to an error.
 
 
 ## [1.0.0] - 2021-01-28
