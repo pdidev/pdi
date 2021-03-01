@@ -60,7 +60,7 @@ struct trace_plugin: Plugin {
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
 			this->context().logger()->info("!!!                            named event: {}", name);
 		});
-		context().logger()->set_pattern("[PDI][Trace-plugin][%T] *** %^%l%$: %v");
+		context().logger()->set_pattern("[PDI][Trace-plugin] *** %^%l%$: %v");
 		context().logger()->info("Welcome!");
 	}
 	
