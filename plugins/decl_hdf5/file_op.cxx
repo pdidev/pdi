@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +28,9 @@
 	#include <mpi.h>
 #endif
 
+#include <memory>
 #include <utility>
+#include <unordered_map>
 
 #include <spdlog/spdlog.h>
 
@@ -47,9 +50,12 @@ using PDI::Config_error;
 using PDI::Expression;
 using PDI::opt_each;
 using PDI::Ref_r;
+using PDI::Ref_w;
 using PDI::to_string;
 using std::move;
 using std::string;
+using std::unique_ptr;
+using std::unordered_map;
 using std::vector;
 
 namespace decl_hdf5 {
@@ -97,29 +103,53 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 	// pass 2 read & writes
 	
 	vector<Dataset_op> dset_ops;
+	vector<Attribute_op> attr_ops;
+	unordered_map<string, Expression> dset_size_ops;
 	
 	PC_tree_t read_tree = PC_get(tree, ".read");
 	if ( !PC_status(PC_get(read_tree, "[0]")) ) { // it's a list of names only
 		each(read_tree, [&](PC_tree_t tree) {
-			dset_ops.emplace_back(Dataset_op::READ, to_string(tree), default_when);
+			string dset_string = to_string(tree);
+			if (dset_string.find("#") == string::npos) {
+				dset_ops.emplace_back(Dataset_op::READ, to_string(tree), default_when);
+			} else {
+				attr_ops.emplace_back(Attribute_op::READ, to_string(tree), default_when);
+			}
 		});
 	} else if ( !PC_status(read_tree) ) { // it's a name:{config...} mapping
 		each(read_tree, [&](PC_tree_t name, PC_tree_t config) {
 			opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-				dset_ops.emplace_back(Dataset_op::READ, to_string(name), default_when, value);
+				if (!PC_status(PC_get(value, ".attribute"))) {
+					attr_ops.emplace_back(Attribute_op::READ, to_string(name), default_when, value);
+				} else if (!PC_status(PC_get(value, ".size_of"))) {
+					dset_size_ops.emplace(to_string(name), to_string(PC_get(value, ".size_of")));
+				} else {
+					dset_ops.emplace_back(Dataset_op::READ, to_string(name), default_when, value);
+				}
 			});
 		});
 	}
 	PC_tree_t write_tree = PC_get(tree, ".write");
 	if ( !PC_status(PC_get(write_tree, "[0]")) ) { // it's a list of names only
 		each(write_tree, [&](PC_tree_t tree) {
-			dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when);
+			string dset_string = to_string(tree);
+			if (dset_string.find("#") == string::npos) {
+				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when);
+			} else {
+				attr_ops.emplace_back(Attribute_op::WRITE, to_string(tree), default_when);
+			}
 		});
 	} else if ( !PC_status(write_tree) ) { // it's a name:{config...} mapping
 		each(write_tree, [&](PC_tree_t name, PC_tree_t config) {
-			opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-				dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value);
-			});
+			if (!PC_status(PC_get(config, ".attribute"))) {
+				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
+					attr_ops.emplace_back(Attribute_op::WRITE, to_string(name), default_when, value);
+				});
+			} else {
+				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
+					dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value);
+				});
+			}
 		});
 	}
 	
@@ -139,6 +169,16 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			one_op.m_dset_ops.emplace_back(one_dset_op);
 			result.emplace_back(move(one_op));
 		}
+		for (auto&& one_attr_op: attr_ops) {
+			File_op one_op = template_op;
+			one_op.m_attr_ops.emplace_back(one_attr_op);
+			result.emplace_back(move(one_op));
+		}
+		for (auto&& one_dset_size_op: dset_size_ops) {
+			File_op one_op = template_op;
+			one_op.m_dset_size_ops.emplace(one_dset_size_op.first, one_dset_size_op.second);
+			result.emplace_back(move(one_op));
+		}
 	} else {
 #ifdef H5_HAVE_PARALLEL
 		// check the dataset ops don't have specific communicators set
@@ -149,6 +189,8 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		}
 #endif
 		template_op.m_dset_ops = move(dset_ops);
+		template_op.m_attr_ops = move(attr_ops);
+		template_op.m_dset_size_ops = move(dset_size_ops);
 		result.emplace_back(move(template_op));
 	}
 	
@@ -161,7 +203,9 @@ File_op::File_op(const File_op& other):
 #ifdef H5_HAVE_PARALLEL
 	m_communicator {other.m_communicator},
 #endif
-	m_dset_ops {other.m_dset_ops}
+	m_dset_ops {other.m_dset_ops},
+	m_attr_ops {other.m_attr_ops},
+	m_dset_size_ops {other.m_dset_size_ops}
 {
 	for (auto&& dataset: other.m_datasets) {
 		m_datasets.emplace(dataset.first, dataset.second->clone());
@@ -175,8 +219,8 @@ File_op::File_op(Expression&& file):
 void File_op::execute(Context& ctx)
 {
 	// first gather the ops we actually want to do
-	std::vector<Dataset_op> dset_reads;
-	std::vector<Dataset_op> dset_writes;
+	vector<Dataset_op> dset_reads;
+	vector<Dataset_op> dset_writes;
 	
 	for ( auto&& one_dset_op: m_dset_ops ) {
 		try {
@@ -192,8 +236,24 @@ void File_op::execute(Context& ctx)
 		}
 	}
 	
+	vector<Attribute_op> attr_reads;
+	vector<Attribute_op> attr_writes;
+	
+	for ( auto&& one_attr_op: m_attr_ops ) {
+		try {
+			if ( one_attr_op.when().to_long(ctx) ) {
+				if ( one_attr_op.direction() == Attribute_op::READ ) {
+					attr_reads.push_back(one_attr_op);
+				} else {
+					attr_writes.push_back(one_attr_op);
+				}
+			}
+		} catch (const Error& e) {
+			ctx.logger()->warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
+		}
+	}
 	// nothing to do if no op is selected
-	if ( dset_reads.empty() && dset_writes.empty() ) return;
+	if ( dset_reads.empty() && dset_writes.empty() && attr_reads.empty() && attr_writes.empty() && m_dset_size_ops.empty() ) return;
 	
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
@@ -209,9 +269,9 @@ void File_op::execute(Context& ctx)
 #endif
 	
 	hid_t h5_file_raw = -1;
-	if ( !dset_writes.empty() && !dset_reads.empty() ) {
+	if ( (!dset_writes.empty() || !attr_writes.empty()) && (!dset_reads.empty() || !attr_reads.empty()) ) {
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
-	} else if ( !dset_writes.empty() ) {
+	} else if ( !dset_writes.empty() || !attr_writes.empty() ) {
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
 		if (0>h5_file_raw) {
 			h5_file_raw = H5Fcreate(m_file.to_string(ctx).c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
@@ -226,6 +286,32 @@ void File_op::execute(Context& ctx)
 	}
 	for (auto&& one_dset_op: dset_reads ) {
 		one_dset_op.execute(ctx, h5_file, xfer_lst, m_datasets);
+	}
+	for (auto&& one_attr_op: attr_writes ) {
+		one_attr_op.execute(ctx, h5_file);
+	}
+	for (auto&& one_attr_op: attr_reads ) {
+		one_attr_op.execute(ctx, h5_file);
+	}
+	for (auto&& one_dset_size_op: m_dset_size_ops) {
+		Ref_w ref_w = ctx[one_dset_size_op.first].ref();
+		if (!ref_w) {
+			ctx.logger()->warn("Data `{}' to read size of dataset not available", one_dset_size_op.first);
+			return;
+		}
+		Raii_hid dset_id = make_raii_hid(H5Dopen(h5_file, one_dset_size_op.second.to_string(ctx).c_str(), H5P_DEFAULT), H5Dclose);
+		Raii_hid dset_space_id = make_raii_hid(H5Dget_space(dset_id), H5Sclose);
+		if (H5Sis_simple(dset_space_id)) {
+			int ndims = H5Sget_simple_extent_ndims(dset_space_id);
+			unique_ptr<hsize_t[]> dims {new hsize_t[ndims]};
+			H5Sget_simple_extent_dims(dset_space_id, dims.get(), NULL);
+			for (int i = 0; i < ndims; i++) {
+				*(static_cast<long*>(ref_w.get()) + i) = dims[i];
+			}
+		} else {
+			// not an array
+			*static_cast<long*>(ref_w.get()) = 0L;
+		}
 	}
 }
 

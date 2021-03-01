@@ -24,7 +24,7 @@ The possible values for the keys are as follow:
   name of the file this `FILE_DESC` refers to.
 * `write`: a `DATA_SECTION` that defaults to an empty one.
   This `DATA_SECTION` describes writes to execute.
-* `write`: a `DATA_SECTION` that defaults to an empty one.
+* `read`: a `DATA_SECTION` that defaults to an empty one.
   This `DATA_SECTION` describes reads to execute.
 * `on_event`: a string identifying an event when the whole file is
   accessed.
@@ -47,7 +47,13 @@ The possible values for the keys are as follow:
 
 The `DATA_SECTION` describes a set of I/O (read or write) to execute.
 A data section can take multiple forms:
-* a list of strings, each being the name of a PDI data to write
+* a list of strings, each being either:
+  - the name of a PDI data to write in a dataset with the same name ( e.g.
+    `data`, where `data` is both a PDI data and the HDF5 dataset name)
+  - the name of a PDI data to write in an attribute of the same name preceded by
+    a `#` and the name of the dataset or datagroup to which the attribute
+    applies ( e.g. `dset#attr`, where `attr` is both a PDI data and the HDF5
+    attribute name applied to the `dset` dataset)
 * a key-value map where each key is the name of a PDI data to write and
   the value is either a single `DATA_IO_DESC` or a list of
   `DATA_IO_DESC`s describing the I/O (read or write) to execute.
@@ -67,6 +73,14 @@ The possible values for the keys are as follow:
   On writing, if the dataset does not exist in the file and is not
   specified in the `FILE_DESC` then a dataset with the same size as the
   memory selection is automatically created.
+* `attribute`: a $-expression identifying the path of the attribute to access in
+  the file. The path is specified as a `/`-separated path to the object on which
+  the attribute is set (a dataset or a datagroup) followed by a `#` sign and the
+  name of the attribute itself (e.g. `group/dset#attr`). If the `attribute` key
+  is specified, then only the `when` key can also be specified, no other key can
+  be present.
+* `size_of`: a $-expression identifying the path of the dataset that size should
+   be written to data descriptor.
 * `when`: a $-expression specifying a condition to test before executing
   the I/O operation (read or write).
   This defaults to the value specified in the `FILE_DESC` if present
@@ -83,6 +97,12 @@ The possible values for the keys are as follow:
 * `dataset_selection`: a `SELECTION_DESC` specifying the selection of
   data in the file data to write or read.
   This is only valid if the 
+* `attributes`: a key-value map specifying the set of attributes to read from
+  (respectively, write to) the file when the associated dataset is read
+  (respectively, written).
+  Each key is the name of an attribute of the dataset.
+  Each value is a $-expression (evaluated when the dataset is accessed)
+  specifying the value to the attribute.
 
 ## `SELECTION_DESC`
 
@@ -136,6 +156,10 @@ plugins:
           dataset_selection:
             size:  [1, $width-2, $width-2] # number of elements to transfer in each dimension, must amount to the same number as the memory selection (default: size of memory slab)
             start: [$iter, 0, 0]           # coordinate of the start point in the file relative to the dataset (default: 0 in each dimensions)
+          attributes:
+            size: ($width-2)*($width-2)
+            width: $width-2
+            height: $width-2
     read: # a list or map of data to read, similar to write (default: empty)
       - another_value
 ```

@@ -108,11 +108,25 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				m_memory_selection = value;
 			} else if ( key == "dataset_selection" ) {
 				m_dataset_selection = value;
+			} else if ( key == "attributes" ) {
+				// pass
 			} else {
 				throw Config_error{"Unknown key for HDF5 dataset configuration: `{}'", key};
 			}
 		}
 	});
+	
+	// need to know the final dataset expression
+	PC_tree_t attribute_tree = PC_get(tree, ".attributes");
+	if (!PC_status(attribute_tree)) {
+		each(attribute_tree, [&](PC_tree_t attr_key, PC_tree_t attr_value) {
+			Attribute_op::Direction attr_dir = Attribute_op::Direction::WRITE;
+			if (dir == Direction::READ) {
+				attr_dir = Attribute_op::Direction::READ;
+			}
+			m_attributes.emplace_back(attr_dir, m_dataset, to_string(attr_key), Expression{to_string(attr_value)});
+		});
+	}
 }
 
 void Dataset_op::execute(Context& ctx, hid_t h5_file, hid_t xfer_lst, const unordered_map<string, Datatype_template_uptr>& dsets)
@@ -143,6 +157,9 @@ void Dataset_op::do_read(Context& ctx, hid_t h5_file, hid_t read_lst)
 	
 	if ( 0>H5Dread(h5_set, h5_mem_type, h5_mem_space, h5_file_space, read_lst, ref) ) handle_hdf5_err();
 	
+	for (auto&& attr : m_attributes) {
+		attr.execute(ctx, h5_file);
+	}
 }
 
 void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_uptr>& dsets)
@@ -203,6 +220,10 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	Raii_hid h5_set = make_raii_hid(h5_set_raw, H5Dclose);
 	
 	if ( 0>H5Dwrite(h5_set, h5_mem_type, h5_mem_space, h5_file_space, write_lst, ref) ) handle_hdf5_err();
+	
+	for (auto&& attr : m_attributes) {
+		attr.execute(ctx, h5_file);
+	}
 }
 
 } // namespace decl_hdf5

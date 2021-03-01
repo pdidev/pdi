@@ -28,6 +28,7 @@ in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
 * Co-maintainer (Nov. 2020 - ...)
 * Record datatype support
+* Attributes support
 * Multiple bugfixes
 * Schema validator implementation
 * Updates to match PDI API updates

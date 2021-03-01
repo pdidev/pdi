@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
 #
@@ -76,6 +77,7 @@ find_package(PDI REQUIRED COMPONENTS plugins ${PDI_COMPONENTS})
 
 # The plugin
 add_library(pdi_decl_hdf5_plugin MODULE
+		attribute_op.cxx
 		dataset_op.cxx
 		decl_hdf5.cxx
 		file_op.cxx

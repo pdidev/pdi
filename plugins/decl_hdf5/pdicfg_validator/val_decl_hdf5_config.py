@@ -42,7 +42,6 @@ def val_datasets(datasets_node, data_refs_list):
             datasets.append(key)
             val_desc(value, data_refs_list)
 
-
 def val_read_write_value(key, value_node, data_refs_list):
     #if dataset is not define, it's key value
     dataset_name = value_node.get("dataset", key)
@@ -63,6 +62,12 @@ def val_read_write_value(key, value_node, data_refs_list):
     
     if value_node.get("communicator", False):
         val_comm(value_node["communicator"], data_refs_list)
+    if value_node.get("attribute", False):
+        add_to_data_ref(value_node["attribute"], data_refs_list)
+    if value_node.get("attributes", False):
+        print(value_node["attributes"])
+        for key, value in value_node["attributes"].items():
+            add_to_data_ref(value, data_refs_list)
 
 def val_read_write(read_write_node, data_refs_list):
     if isinstance(read_write_node, list):

@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +41,7 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
 
+#include "attribute_op.h"
 #include "dataset_op.h"
 
 
@@ -66,6 +68,12 @@ class File_op
 	
 	/// the dataset operations
 	std::vector<Dataset_op> m_dset_ops;
+	
+	/// attributes of this file (for groups and datasets)
+	std::vector<Attribute_op> m_attr_ops;
+	
+	/// map of descriptors to datasets name to get their sizes
+	std::unordered_map<std::string, PDI::Expression> m_dset_size_ops;
 	
 public:
 	/** Parse a "file" subtree to create one or multiple File_op's.
@@ -97,6 +105,24 @@ public:
 	const std::vector<Dataset_op>& dataset_ops() const
 	{
 		return m_dset_ops;
+	}
+	
+	/** Returns the attribute operations
+	 *
+	 * \return attribute operations
+	 */
+	const std::vector<Attribute_op>& attribute_ops() const
+	{
+		return m_attr_ops;
+	}
+	
+	/** Returns the dataset size operations
+	 *
+	 * \return dataset size operations
+	 */
+	const std::unordered_map<std::string, PDI::Expression>& dataset_size_ops() const
+	{
+		return m_dset_size_ops;
 	}
 	
 #ifdef H5_HAVE_PARALLEL

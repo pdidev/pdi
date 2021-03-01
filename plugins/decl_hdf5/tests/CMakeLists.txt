@@ -104,6 +104,20 @@ target_link_libraries(decl_hdf5_09_C PDI::PDI_C)
 add_test(NAME decl_hdf5_09_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_09_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_09.yml")
 set_property(TEST decl_hdf5_09_C PROPERTY TIMEOUT 15)
 
+add_executable(decl_hdf5_11_C decl_hdf5_test_11.c)
+target_link_libraries(decl_hdf5_11_C PDI::PDI_C)
+add_test(NAME decl_hdf5_11_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_11_C>")
+set_property(TEST decl_hdf5_11_C PROPERTY TIMEOUT 15)
+
+add_executable(decl_hdf5_12_C decl_hdf5_test_12.c)
+target_link_libraries(decl_hdf5_12_C PDI::PDI_C)
+add_test(NAME decl_hdf5_12_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_12_C>")
+set_property(TEST decl_hdf5_12_C PROPERTY TIMEOUT 15)
+
+add_executable(decl_hdf5_13_C decl_hdf5_test_13.c)
+target_link_libraries(decl_hdf5_13_C PDI::PDI_C)
+add_test(NAME decl_hdf5_13_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_13_C>")
+set_property(TEST decl_hdf5_13_C PROPERTY TIMEOUT 15)
 
 if("${BUILD_FORTRAN}")
 	add_subdirectory(fortran/)

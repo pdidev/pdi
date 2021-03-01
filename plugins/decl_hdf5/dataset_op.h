@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +40,7 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
 
+#include "attribute_op.h"
 #include "selection.h"
 
 
@@ -77,6 +79,9 @@ private:
 	
 	/// a selection in-dataset
 	Selection m_dataset_selection;
+	
+	/// attributes of this dataset
+	std::vector<Attribute_op> m_attributes;
 	
 public:
 	/** Builds a Dataset_op from its yaml config
