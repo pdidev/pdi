@@ -3,11 +3,10 @@ All notable changes to the Decl'HDF5 plugin will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
 ## [Unreleased]
 
 ### Added
-* Support for reading and writing attributes of datasets & datagroups
-* Getting dataset size before reading it
 
 ### Changed
 
@@ -18,6 +17,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.1.0] - 2021-03-02
+
+### Added
+* Support for reading and writing attributes of datasets & datagroups
+* Getting dataset size before reading it
 
 
 ## [1.0.1] - 2021-02-27

@@ -23,13 +23,14 @@ To publish a new minor or major release:
 * start from the master branch
 * change the version in `pdi/VERSION`
 * change the version in `pdi/docs/Installation.md`
+* change the version in `README.md`
 * go over all `CHANGELOG.md` files and mark the just released version
 * commit these changes into a new version branch (`v${X}.${Y}`)
 * tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`
 * merge the version branch into master
 * in the merge commit:
   - change the version in `pdi/VERSION` to the next one with the `-alpha` suffix
-  - change the version in `pdi/docs/Installation.md` to the just released one
+  - add an `[Unreleased]` section at the top of all `CHANGELOG.md` files
 * push all that
 
 # Dependency change
