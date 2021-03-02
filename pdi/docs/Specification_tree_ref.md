@@ -1,68 +1,6 @@
 \page Specification_tree_ref Specification tree Reference
 
-The %PDI specification tree is expressed in
-[YAML](https://en.wikipedia.org/wiki/YAML).
-It is a tree that contains the following distinct kinds of nodes:
-* scalars,
-* sequences,
-* mappings,
-* ordered mappings.
-
-A **scalar** is a leaf in the tree, represented as a string.
-Some forms of scalars can be interpreted as boolean, integer or floating-point
-valued.
-Simple examples of scalars include (see the
-[YAML specification](https://yaml.org/spec/1.2/spec.html#id2760844) for the
-complete syntax):
-* `"hello"`,
-* `world`,
-* `3`,
-* `5.7`.
-
-A **sequence** is an ordered list of sub-nodes (that can themselves be scalars,
-sequences or mappings).
-Two main syntaxes are available for sequences (see the 
-[YAML specification](https://yaml.org/spec/1.2/spec.html#id2759963) for the
-complete syntax).
-* in-line sequence: `[1, 2, 3, hello, "world"]`
-* multi-line sequence:
-```
-- 1
-- 2
-- 3
-- hello
-- world
-```
-
-A **mapping** is an unordered list of key-value pairs (whose elements can
-themselves be scalars, sequences or mappings).
-Two main syntaxes are available for mapping (see the 
-[YAML specification](https://yaml.org/spec/1.2/spec.html#id2759963) for the
-complete syntax).
-* in-line mapping: `{1: one, 2: "two", "three": 3}`
-* multi-line mapping:
-```
-1: one
-2: two
-"three": 3
-```
-
-An **ordered mapping** is represented as a sequence of mappings containing a
-single key-value pair each.
-There can be no duplicates in the keys.
-The sub-nodes can be scalars, sequences or mappings.
-Unlike in a normal mapping, the order of elements in an ordered mapping is
-meaningful.
-Two main syntaxes are available for ordered mapping (see the 
-[YAML specification](https://yaml.org/spec/1.2/spec.html#id2759963) for the
-complete syntax).
-* in-line ordered mapping: `[{1: one}, {2: "two"}, {"three": 3}]`
-* multi-line ordered mapping:
-```
-- 1: one
-- 2: two
-- "three": 3
-```
+The %PDI specification tree is expressed in \subpage YAML.
 
 # specification tree root {#root_node}
 

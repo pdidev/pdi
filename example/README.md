@@ -1,30 +1,38 @@
-\page PDI_example %PDI example
+\page PDI_example %PDI examples
 
-%PDI example application can be found in repository in the `example` directory.
-The source code is written in C, Fortran and Python.
+The example is made of a single source file (one version in each supported
+programming language), this file loads its configuration and %PDI specification
+tree from a \ref YAML file specified on the command line.
+Just by replacing the configuration file, the example program will use different
+%PDI plugins, different libraries and different I/O operations.
 
-The example has a single source file (for each supported programming language),
-but specification tree to each plugin. Just by replacing the configuration file,
-the example program will use different libraries and different I/O operations.
+The example implements implements a simple
+[Heat equation](https://en.wikipedia.org/wiki/Heat_equation) solver using an
+explicit forward finite difference scheme parallelized with MPI in 2 dimensions.
 
-The example implements simple [Heat equation](https://en.wikipedia.org/wiki/Heat_equation) 
-algorithm in 2 dimensional space.
+\section heat_algorithm Code algorithm
 
-\section heat_algorithm Heat algorithm
-Each element in a matrix is a point with temperature. In each iteration every cell is calculated by
-an weighted average of itself and neighbour cells (top, bottom, left and right):
+The data is stored in a 2D array in which each point represents the temperature.
+In every iteration, the value at the next iteration of each cell is computed by
+applying a cross stencil using the values of the cell and of its neighbours
+(top, bottom, left and right) at the current iteration:
 
 ```C
-matrix[i][j] = 0.500 * matrix[i][j] + 
-               0.125 * matrix[i-1][j] +
-               0.125 * matrix[i+1][j] +
-               0.125 * matrix[i][j-1] +
-               0.125 * matrix[i][j+1]; 
+data[i][j] = 0.500 * data[i][j]
+           + 0.125 * data[i-1][j]
+           + 0.125 * data[i+1][j]
+           + 0.125 * data[i][j-1]
+           + 0.125 * data[i][j+1];
 ```
-To not override the cells while processing we need to create temporary matrix to save results and then move result to original matrix (`cur` and `next` in source file). Above calculations are written in `iter` function.
 
-Now we can add a MPI to our algorithm.
-Let's split that matrix by MPI processes. Each process will compute part of global matrix.
+In order not to override the cells while processing we use two arrays to store
+the values, one for the current iteration (`cur` in the code) and one for the
+next iteration (`next` in the code).
+These computations are written in the `iter` function.
+
+This code is parallelized with MPI .
+Let's split that matrix by MPI processes.
+Each process will compute part of global matrix.
 
 For example: matrix 16 x 16 integers and 16 MPI processes gives submatrices of 4 x 4 integers for every process.
 We have to add to our global matrix one row above and below, column to the left and right to be able to compute border cells. In our example row on the top has some value (”x”) bigger than 0 (representing source of heat):
@@ -39,6 +47,7 @@ MPI processes need to exchange information about their local matrix border cells
 All the communications instructions are written in `exchange` function.
 
 \section pdi_integration PDI integration
+
 Now, when we know the algorithm, we can focus on analysing `decl_hdf5.yaml` specification tree.
  Fisrt 3 maps defined will not
 be seen to %PDI:
