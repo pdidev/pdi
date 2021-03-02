@@ -15,6 +15,9 @@ To publish a small fix as a patch release:
   - keep the content of `pdi/VERSION` from master (next with `-alpha` suffix)
   - keep the content of `README.md` and `pdi/docs/Installation.md` from master
     except with the version updated to the just released one
+* make a new commit in the version branch (`v${X}.${Y}`)
+  - change the version in `pdi/VERSION` by increasing the patch and add the
+    `-alpha` suffix
 * push all that
 
 # New minor or major release
@@ -29,8 +32,12 @@ To publish a new minor or major release:
 * tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`
 * merge the version branch into master
 * in the merge commit:
-  - change the version in `pdi/VERSION` to the next one with the `-alpha` suffix
+  - change the version in `pdi/VERSION` by increasing the minor and add the
+    `-alpha` suffix
   - add an `[Unreleased]` section at the top of all `CHANGELOG.md` files
+* make a new commit in the version branch (`v${X}.${Y}`)
+  - change the version in `pdi/VERSION` by increasing the patch and add the
+    `-alpha` suffix
 * push all that
 
 # Dependency change
