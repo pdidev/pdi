@@ -92,5 +92,9 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_SOURCE_DIR}/../plugins/pycall/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/serialize/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/set_value/README.md")
+configure_file(
+		"${CMAKE_CURRENT_SOURCE_DIR}/2021-03-03_PDI_Training.pdf"
+		"${CMAKE_CURRENT_BINARY_DIR}/html/2021-03-03_PDI_Training.pdf"
+		COPYONLY)
 add_dependencies(doc doxygen_doc)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}/html")
