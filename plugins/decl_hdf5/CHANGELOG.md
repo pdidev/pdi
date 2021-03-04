@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 * Add more verbose log messages for the `trace` level
+* Writing and reading data to/from dataset of different dimensions if number of elements match.
 
 ### Changed
 

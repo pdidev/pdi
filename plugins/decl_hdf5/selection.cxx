@@ -92,14 +92,19 @@ void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 	} else if (dflt_space != -1 ) {
 		int dflt_rank = H5Sget_simple_extent_ndims(dflt_space);
 		if (dflt_rank != rank ) {
-			throw Config_error{m_selection_tree, "Invalid default selection: {} selection in {} array", dflt_rank, rank};
+			if (H5Sget_select_npoints(h5_space) == H5Sget_select_npoints(dflt_space)) {
+				// if ranks differ but number of elements are the same, select whole dataset
+			} else {
+				throw Config_error{m_selection_tree, "Invalid default selection: {} selection in {} array", dflt_rank, rank};
+			}
+		} else {
+			// ranks match, get memory size selection as dataset size selection
+			vector<hsize_t> dflt_start(rank);
+			if ( 0>H5Sget_select_bounds(dflt_space, &dflt_start[0], &h5_subsize[0] ) ) handle_hdf5_err();
+			transform( dflt_start.begin(), dflt_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end) {
+				return end-start+1;
+			});
 		}
-		
-		vector<hsize_t> dflt_start(rank);
-		if ( 0>H5Sget_select_bounds(dflt_space, &dflt_start[0], &h5_subsize[0] ) ) handle_hdf5_err();
-		transform( dflt_start.begin(), dflt_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end) {
-			return end-start+1;
-		});
 	}
 	
 	if ( !m_start.empty() ) {

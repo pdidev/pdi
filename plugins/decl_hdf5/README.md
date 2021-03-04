@@ -112,11 +112,20 @@ All keys are optional and have default values.
 The possible values for the keys are as follow:
 * `size` is either a single $-expression or a list of $-expressions.
   It describes the size of the selection in each dimension.
-  If not specified, it defaults to the dimension of the whole data.
+  
 * `start` is either a single $-expression or a list of $-expressions.
-  It describes the number of point to skip in each dimension.
-  If not specified it defaults to 0 in all dimensions.
-  In practice, it can only be specified if `size` is also.
+  It describes the number of point to skip at the beginning in each dimension.
+  
+Memory selection default values:
+* If the `size` is not specified, it defaults to size of the whole data in each dimension.
+* If the `start` is not specified it defaults to 0 in all dimensions.
+
+Dataset selection default values:
+* If the `size` is not specified:
+  * if the number of dimensions match that of the memory, the size defaults to
+    that of the memory,
+  * otherwise, the size default to the whole dataset.
+* If the `start` is not specified it defaults to 0 in all dimensions.
 
 # full configuration example
 

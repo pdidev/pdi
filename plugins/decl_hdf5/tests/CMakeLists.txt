@@ -119,6 +119,11 @@ target_link_libraries(decl_hdf5_13_C PDI::PDI_C)
 add_test(NAME decl_hdf5_13_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_13_C>")
 set_property(TEST decl_hdf5_13_C PROPERTY TIMEOUT 15)
 
+add_executable(decl_hdf5_14_C decl_hdf5_test_14.c)
+target_link_libraries(decl_hdf5_14_C PDI::PDI_C)
+add_test(NAME decl_hdf5_14_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_14_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_14.yml")
+set_property(TEST decl_hdf5_14_C PROPERTY TIMEOUT 15)
+
 if("${BUILD_FORTRAN}")
 	add_subdirectory(fortran/)
 endif("${BUILD_FORTRAN}")
