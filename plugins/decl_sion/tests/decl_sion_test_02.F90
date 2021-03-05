@@ -34,8 +34,8 @@ program test2
   character(len=512) :: strbuf
   integer :: i, j, ierr,  main_comm
   integer,target :: imx=10, jmx=5, input, rank, nj, ni, nig, njg
-  double precision, pointer, dimension(:,:) :: reals, cp_reals
-  integer, pointer, dimension(:,:) :: values, cp_values
+  double precision, pointer, contiguous, dimension(:,:) :: reals, cp_reals
+  integer, pointer, contiguous, dimension(:,:) :: values, cp_values
 
   integer, pointer :: iptr
   type(PC_tree_t) :: conf
