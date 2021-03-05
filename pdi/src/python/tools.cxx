@@ -157,13 +157,13 @@ Datatype_uptr python_type(const pybind11::array& a)
 	}
 	Scalar_kind k;
 	switch (a.dtype().kind()) {
-	case 'c': case 'b': case '?': case 'h': case 'i': case 'l': case 'q': case 'n':
+	case 'i':
 		k = Scalar_kind::SIGNED;
 		break;
-	case 'B': case 'H': case 'I': case 'L': case 'Q': case 'N':
+	case 'u': case 'b':
 		k = Scalar_kind::UNSIGNED;
 		break;
-	case 'e': case 'f': case 'd': case 'g':
+	case 'f':
 		k = Scalar_kind::FLOAT;
 		break;
 	default:
