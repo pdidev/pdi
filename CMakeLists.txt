@@ -542,6 +542,7 @@ endif()
 if("${BUILD_DECL_SION_PLUGIN}")
 	sbuild_add_dependency(SIONlib "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/sionlib-1.7.6"
+		DEPENDS MPI_COMPONENTS
 		BUILD_IN_SOURCE 1
 		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
 			--prefix=<INSTALL_DIR>
