@@ -254,6 +254,7 @@ void File_op::execute(Context& ctx)
 	}
 	// nothing to do if no op is selected
 	if ( dset_reads.empty() && dset_writes.empty() && attr_reads.empty() && attr_writes.empty() && m_dset_size_ops.empty() ) return;
+	std::string filename = m_file.to_string(ctx);
 	
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
@@ -265,21 +266,26 @@ void File_op::execute(Context& ctx)
 	if ( comm != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL) ) handle_hdf5_err();
 		if ( 0>H5Pset_dxpl_mpio(xfer_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
+		ctx.logger()->debug("Opening `{}' file in parallel mode", filename);
 	}
 #endif
 	
 	hid_t h5_file_raw = -1;
 	if ( (!dset_writes.empty() || !attr_writes.empty()) && (!dset_reads.empty() || !attr_reads.empty()) ) {
+		ctx.logger()->trace("Opening `{}' file to read and write", filename);
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
 	} else if ( !dset_writes.empty() || !attr_writes.empty() ) {
+		ctx.logger()->trace("Opening `{}' file to write", filename);
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
 		if (0>h5_file_raw) {
-			h5_file_raw = H5Fcreate(m_file.to_string(ctx).c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
+			ctx.logger()->trace("Cannot open `{}' file, creating new file", filename);
+			h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
 		}
 	} else {
-		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDONLY, file_lst);
+		ctx.logger()->trace("Opening `{}' file to read", filename);
+		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_lst);
 	}
-	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose);
+	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
 	
 	for (auto&& one_dset_op: dset_writes ) {
 		one_dset_op.execute(ctx, h5_file, xfer_lst, m_datasets);
@@ -294,12 +300,16 @@ void File_op::execute(Context& ctx)
 		one_attr_op.execute(ctx, h5_file);
 	}
 	for (auto&& one_dset_size_op: m_dset_size_ops) {
+		string dataset_name = one_dset_size_op.second.to_string(ctx);
+		ctx.logger()->trace("Getting size of `{}' dataset", dataset_name);
 		Ref_w ref_w = ctx[one_dset_size_op.first].ref();
 		if (!ref_w) {
 			ctx.logger()->warn("Data `{}' to read size of dataset not available", one_dset_size_op.first);
 			return;
 		}
-		Raii_hid dset_id = make_raii_hid(H5Dopen(h5_file, one_dset_size_op.second.to_string(ctx).c_str(), H5P_DEFAULT), H5Dclose);
+		
+		ctx.logger()->trace("Opening `{}' dataset", dataset_name);
+		Raii_hid dset_id = make_raii_hid(H5Dopen(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose);
 		Raii_hid dset_space_id = make_raii_hid(H5Dget_space(dset_id), H5Sclose);
 		if (H5Sis_simple(dset_space_id)) {
 			int ndims = H5Sget_simple_extent_ndims(dset_space_id);
@@ -312,7 +322,10 @@ void File_op::execute(Context& ctx)
 			// not an array
 			*static_cast<long*>(ref_w.get()) = 0L;
 		}
+		
+		ctx.logger()->trace("Getting size of `{}' dataset finished", dataset_name);
 	}
+	ctx.logger()->trace("All operations done in `{}'. Closing the file.", filename);
 }
 
 } // namespace decl_hdf5

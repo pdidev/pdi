@@ -84,6 +84,33 @@ tuple<vector<hsize_t>, vector<hsize_t>, vector<hsize_t>> get_selection(hid_t sel
 	return make_tuple(move(size), move(start), move(subsize));
 }
 
+/** Validates that memory space and dataset space number of elements match
+ */
+void validate_dataspaces(hid_t h5_mem_space, hid_t h5_file_space, const std::string dataset_name)
+{
+	hssize_t n_data_pts = H5Sget_select_npoints(h5_mem_space);
+	if ( 0>n_data_pts ) handle_hdf5_err();
+	
+	hssize_t n_file_pts = H5Sget_select_npoints(h5_file_space);
+	if ( 0>n_file_pts ) handle_hdf5_err();
+	
+	if (n_data_pts != n_file_pts) {
+		vector<hsize_t> pr_size;
+		vector<hsize_t> pr_subsize;
+		vector<hsize_t> pr_start;
+		
+		tie(pr_size, pr_start, pr_subsize) = get_selection(h5_mem_space);
+		stringstream mem_desc;
+		for ( size_t ii=0; ii<pr_size.size(); ++ii) mem_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
+		
+		tie(pr_size, pr_start, pr_subsize) = get_selection(h5_file_space);
+		stringstream file_desc;
+		for ( size_t ii=0; ii< pr_size.size(); ++ii) file_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
+		
+		throw Config_error{"Incompatible selections while writing `{}': [{} ] -> [{} ]", dataset_name, mem_desc.str(), file_desc.str()};
+	}
+}
+
 } // namespace <anonymous>
 
 namespace decl_hdf5 {
@@ -137,51 +164,61 @@ void Dataset_op::execute(Context& ctx, hid_t h5_file, hid_t xfer_lst, const unor
 
 void Dataset_op::do_read(Context& ctx, hid_t h5_file, hid_t read_lst)
 {
+	string dataset_name = m_dataset.to_string(ctx);
+	ctx.logger()->trace("Preparing for reading `{}' dataset", dataset_name);
+	
 	Ref_w ref = ctx[m_value].ref();
 	if ( !ref ) {
-		ctx.logger()->warn("Reference to read not available: `{}'", m_value);
+		ctx.logger()->warn("Cannot read `{}' dataset: `{}' data not available", dataset_name, m_value);
 		return;
 	}
 	
-	string dataset_name = m_dataset.to_string(ctx);
-	
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
+	ctx.logger()->trace("Applying `{}' memory selection", dataset_name);
 	m_memory_selection.apply(ctx, h5_mem_space);
 	
-	Raii_hid h5_set = make_raii_hid(H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose);
+	ctx.logger()->trace("Opening `{}' dataset", dataset_name);
+	Raii_hid h5_set = make_raii_hid(H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose, ("Cannot open `" + dataset_name + "' dataset").c_str());
 	
-	Raii_hid h5_file_space = make_raii_hid(H5Dget_space(h5_set), H5Sclose);
+	ctx.logger()->trace("Inquiring `{}' dataset dataspace", dataset_name);
+	Raii_hid h5_file_space = make_raii_hid(H5Dget_space(h5_set), H5Sclose, ("Cannot inquire `" + dataset_name + "' dataset dataspace").c_str());
 	
+	ctx.logger()->trace("Applying `{}' dataset selection", dataset_name);
 	m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	
+	ctx.logger()->trace("Validating `{}' dataset dataspaces selection", dataset_name);
+	validate_dataspaces(h5_mem_space, h5_file_space, dataset_name);
+	
+	ctx.logger()->trace("Reading `{}' dataset", dataset_name);
 	if ( 0>H5Dread(h5_set, h5_mem_type, h5_mem_space, h5_file_space, read_lst, ref) ) handle_hdf5_err();
 	
 	for (auto&& attr : m_attributes) {
 		attr.execute(ctx, h5_file);
 	}
+	ctx.logger()->trace("`{}' dataset read finished", dataset_name);
 }
 
 void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_uptr>& dsets)
 {
+	string dataset_name = m_dataset.to_string(ctx);
+	ctx.logger()->trace("Preparing for writing `{}' dataset", dataset_name);
 	Ref_r ref = ctx[m_value].ref();
 	if ( !ref ) {
-		ctx.logger()->warn("Reference to write not available: `{}'", m_value);
+		ctx.logger()->warn("Cannot write `{}' dataset: `{}' data not available", dataset_name, m_value);
 		return;
 	}
-	string dataset_name = m_dataset.to_string(ctx);
 	
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
+	ctx.logger()->trace("Applying `{}' memory selection", dataset_name);
 	m_memory_selection.apply(ctx, h5_mem_space);
-	
-	hssize_t n_data_pts = H5Sget_select_npoints(h5_mem_space);
-	if ( 0>n_data_pts ) handle_hdf5_err();
 	
 	auto&& dataset_type_iter = dsets.find(dataset_name);
 	Raii_hid h5_file_type, h5_file_space;
 	if ( dataset_type_iter != dsets.end() ) {
 		tie(h5_file_space, h5_file_type) = space(*dataset_type_iter->second->evaluate(ctx));
+		ctx.logger()->trace("Applying `{}' dataset selection", dataset_name);
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	} else {
 		if ( !m_dataset_selection.size().empty() ) {
@@ -190,40 +227,27 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 		tie(h5_file_space, h5_file_type) = space(ref.type(), true);
 	}
 	
-	
-	hssize_t n_file_pts = H5Sget_select_npoints(h5_file_space);
-	if ( 0>n_file_pts ) handle_hdf5_err();
-	
-	if ( n_data_pts != n_file_pts ) {
-		vector<hsize_t> pr_size;
-		vector<hsize_t> pr_subsize;
-		vector<hsize_t> pr_start;
-		
-		tie(pr_size, pr_start, pr_subsize) = get_selection(h5_mem_space);
-		stringstream mem_desc;
-		for ( size_t ii=0; ii<pr_size.size(); ++ii) mem_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
-		
-		tie(pr_size, pr_start, pr_subsize) = get_selection(h5_file_space);
-		stringstream file_desc;
-		for ( size_t ii=0; ii< pr_size.size(); ++ii) file_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
-		
-		throw Config_error{"Incompatible selections while writing `{}': [{} ] -> [{} ]", dataset_name, mem_desc.str(), file_desc.str()};
-	}
+	ctx.logger()->trace("Validating `{}' dataset dataspaces selection", dataset_name);
+	validate_dataspaces(h5_mem_space, h5_file_space, dataset_name);
 	
 	Raii_hid set_lst = make_raii_hid(H5Pcreate(H5P_LINK_CREATE), H5Pclose);
 	if ( 0>H5Pset_create_intermediate_group(set_lst, 1) ) handle_hdf5_err();
 	
+	ctx.logger()->trace("Opening `{}' dataset", dataset_name);
 	hid_t h5_set_raw = H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT);
 	if ( 0 > h5_set_raw ) {
+		ctx.logger()->trace("Cannot open `{}' dataset, creating", dataset_name);
 		h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, H5P_DEFAULT, H5P_DEFAULT);
 	}
 	Raii_hid h5_set = make_raii_hid(h5_set_raw, H5Dclose);
 	
+	ctx.logger()->trace("Writing `{}' dataset", dataset_name);
 	if ( 0>H5Dwrite(h5_set, h5_mem_type, h5_mem_space, h5_file_space, write_lst, ref) ) handle_hdf5_err();
 	
 	for (auto&& attr : m_attributes) {
 		attr.execute(ctx, h5_file);
 	}
+	ctx.logger()->trace("`{}' dataset write finished", dataset_name);
 }
 
 } // namespace decl_hdf5
