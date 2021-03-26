@@ -127,7 +127,8 @@ public:
 Expression::Impl::Reference_expression::Reference_expression() = default;
 
 Expression::Impl::Reference_expression::Reference_expression(const Reference_expression& other):
-	m_referenced{other.m_referenced}
+	m_referenced{other.m_referenced},
+	m_fmt_format{other.m_fmt_format}
 {
 	for (auto&& accessor : other.m_subelements) {
 		m_subelements.emplace_back(accessor->clone());
@@ -137,6 +138,7 @@ Expression::Impl::Reference_expression::Reference_expression(const Reference_exp
 Expression::Impl::Reference_expression& Expression::Impl::Reference_expression::operator=(const Reference_expression& other)
 {
 	m_referenced = other.m_referenced;
+	m_fmt_format = other.m_fmt_format;
 	for (auto&& accessor : other.m_subelements) {
 		m_subelements.emplace_back(accessor->clone());
 	}
@@ -170,6 +172,47 @@ double Expression::Impl::Reference_expression::to_double(Context& ctx) const
 	} catch (const Error& e) {
 		throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
+}
+
+std::string Expression::Impl::Reference_expression::to_string(Context& ctx) const
+{
+	string result;
+	Ref_r raw_data = to_ref(ctx);
+	if ( const Array_datatype* referenced_type = dynamic_cast<const Array_datatype*>(&raw_data.type()) ) {
+		if ( const Scalar_datatype* scal_type = dynamic_cast<const Scalar_datatype*>(&referenced_type->subtype()) ) {
+			if ( scal_type->datasize() == 1 && (
+			        scal_type->kind() == Scalar_kind::SIGNED || scal_type->kind() == Scalar_kind::UNSIGNED ) ) {
+				result = string{static_cast<const char*>(raw_data.get()), referenced_type->size()};
+				if (!m_fmt_format.empty()) {
+					result = fmt::format("{" + m_fmt_format + "}", result.c_str());
+				}
+			}
+		} else {
+			throw Type_error{"Cannot evaluate as string an array of non char elements"};
+		}
+	} else {
+		long lres = to_long(ctx);
+		double dres = to_double(ctx);
+		if (static_cast<double>(lres) == dres) {
+			if (m_fmt_format.empty()) {
+				stringstream ss_result;
+				ss_result << lres;
+				result = ss_result.str();
+			} else {
+				result = fmt::format("{" + m_fmt_format + "}", lres);
+			}
+		} else {
+			if (m_fmt_format.empty()) {
+				stringstream ss_result;
+				ss_result << setprecision(17) << dres;
+				result = ss_result.str();
+			} else {
+				result = fmt::format("{" + m_fmt_format + "}", dres);
+			}
+		}
+	}
+	
+	return result;
 }
 
 Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
@@ -297,6 +340,16 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 			result->m_subelements.emplace_back(new Member_accessor_expression{Expression{parse_id(&ref)}});
 		}
 		while (isspace(*ref)) ++ref;
+	}
+	
+	if (*ref == ':') {
+		string fmt_format = ref;
+		size_t found_end = fmt_format.find_first_of("}");
+		if (found_end == string::npos) {
+			found_end = fmt_format.length();
+		}
+		result->m_fmt_format = fmt_format.substr(0, found_end);
+		ref += found_end;
 	}
 	
 	if (has_curly_brace) {

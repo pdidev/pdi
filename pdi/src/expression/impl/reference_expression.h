@@ -44,6 +44,9 @@ class PDI_NO_EXPORT Expression::Impl::Reference_expression : public Expression::
 	/// The referenced data
 	std::string m_referenced;
 	
+	/// fmt format of referenced data in to_string (starting with `:')
+	std::string m_fmt_format;
+	
 	/// Subelements (sequence of index and member accessors)
 	std::vector<std::unique_ptr<Accessor_expression>> m_subelements;
 	
@@ -70,6 +73,8 @@ public:
 	long to_long(Context& ctx) const override;
 	
 	double to_double(Context& ctx) const override;
+	
+	std::string to_string(Context& ctx) const override;
 	
 	Ref to_ref(Context& ctx) const override;
 	

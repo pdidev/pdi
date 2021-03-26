@@ -1644,6 +1644,84 @@ TEST_F(ExpresionOperators, mod_two_ref_expr)
 }
 
 /*
+ * Struct prepared for CallbacksTest.
+ */
+struct ExpresionFMTFormat : public ::testing::Test {
+	ExpresionFMTFormat():
+		test_conf{PC_parse_string("data: {x : int, y : double, z: {type: array, subtype: char, size: 16}}")}
+	{}
+	
+	void SetUp() override
+	{
+		test_context.reset(new PDI::Global_context{test_conf});
+	}
+	
+	PDI::Paraconf_wrapper fw;
+	PC_tree_t test_conf;
+	std::unique_ptr<PDI::Context> test_context;
+};
+
+/*
+ * Name:                ExpresionFMTFormat.fmt_int_ref
+ *
+ * Tested functions:    PDI::Expression::to_string
+ *
+ *
+ * Description:         Checks if fmt operator of expressions works correct.
+ *
+ */
+TEST_F(ExpresionFMTFormat, fmt_int_ref)
+{
+	int x = 42;
+	test_context->desc("x").share(&x, true, false);
+	ASSERT_STREQ("00042", Expression{"${x:05d}"}.to_string(*test_context).c_str());
+	ASSERT_STREQ("00042", Expression{"$x:05d"}.to_string(*test_context).c_str());
+	ASSERT_STREQ("2a", Expression{"${x:x}"}.to_string(*test_context).c_str());
+	ASSERT_STREQ("0x00002a", Expression{"${x:#08x}"}.to_string(*test_context).c_str());
+	ASSERT_STREQ("52", Expression{"${x:o}"}.to_string(*test_context).c_str());
+	ASSERT_STREQ("101010", Expression{"${x:b}"}.to_string(*test_context).c_str());
+
+	test_context->desc("x").reclaim();
+}
+
+/*
+ * Name:                ExpresionFMTFormat.fmt_float_ref
+ *
+ * Tested functions:    PDI::Expression::to_string
+ *
+ *
+ * Description:         Checks if fmt operator of expressions works correct.
+ *
+ */
+TEST_F(ExpresionFMTFormat, fmt_float_ref)
+{
+	double y = 42.424242;
+	test_context->desc("y").share(&y, true, false);
+	ASSERT_STREQ("42.42424", Expression{"${y:1.5f}"}.to_string(*test_context).c_str());
+	ASSERT_STREQ("+42.424242", Expression{"${y:+f}"}.to_string(*test_context).c_str());
+	ASSERT_STREQ("+42.424242", Expression{"$y:+f"}.to_string(*test_context).c_str());
+	test_context->desc("y").reclaim();
+}
+
+/*
+ * Name:                ExpresionFMTFormat.fmt_string_ref
+ *
+ * Tested functions:    PDI::Expression::to_string
+ *
+ *
+ * Description:         Checks if fmt operator of expressions works correct.
+ *
+ */
+TEST_F(ExpresionFMTFormat, fmt_string_ref)
+{
+	char z[16] = "sometext";
+	test_context->desc("z").share(z, true, false);
+	ASSERT_STREQ("       sometext", Expression{"${z:>15s}"}.to_string(*test_context).c_str());
+	test_context->desc("z").reclaim();
+}
+
+
+/*
  * Name:                ExpresionMemberAccess.access_simple_member
  *
  * Tested functions:    PDI::Expression::to_long

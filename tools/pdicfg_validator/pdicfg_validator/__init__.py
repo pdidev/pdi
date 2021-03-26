@@ -44,9 +44,9 @@ scalar_types = ['char',
 
 # adds all references from string to data_refs list
 def add_to_data_ref(string, data_refs_list):
-    desc_name_re = re.compile(r'\$\{(\w+)\}')
+    desc_name_re = re.compile(r'\$\{(\w+)(?:\}|\:\w+\})')
     if not desc_name_re.search(str(string)):
-        desc_name_re = re.compile(r'\$(\w+)')
+        desc_name_re = re.compile(r'\$(\w+)(?:\:\w+)?')
     if desc_name_re.search(str(string)):
         for match in desc_name_re.findall(str(string)):
             data_refs_list.append(match)

@@ -202,6 +202,9 @@ curly braces `{`, `}`.
 Its value is that of the data or metadata with the associated name.
 It is always a good idea to have referenced values in the metadata section as it
 prevents dangling references.
+Value formatting can be applied using a FMT `format_spec` string by adding a
+column `:` followed by the `format_spec` after a column just before the closing
+bracket `}` (see: https://fmt.dev/latest/syntax.html#grammar-token-format_spec).
 A direct reference is possible as well as sub-references to:
 * array elements using the square brackets `[`, `]` operator,
 * record member using dot `.` operator.
@@ -230,6 +233,13 @@ where zero is interpreted as false and any other value as true.
 
 ```python
 'my name is ${my_name}'
+```
+
+```python
+'${my_data:05d}'
+'${my_data:b}'
+'${my_data:1.5f}'
+'${my_data:>15s}'
 ```
 
 # float_type {#float_type_node}
