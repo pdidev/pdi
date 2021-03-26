@@ -38,7 +38,7 @@ void Payload_mouse_event::load_key_desc(PC_tree_t config)
 		
 		const auto& name_to_key_it = m_name_to_flowvr_key.find(key);
 		if (name_to_key_it == m_name_to_flowvr_key.end()) {
-			throw PDI::Config_error{"{} is not valid event mouse KEY", key};
+			throw PDI::Config_error{PC_get(keys_node, "{%d}", key_id), "{} is not valid event mouse KEY", key};
 		}
 		
 		if (key == "POS_XY") {

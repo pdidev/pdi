@@ -175,27 +175,28 @@ Logger_sptr Global_context::logger() const
 
 Datatype_template_uptr Global_context::datatype(PC_tree_t node)
 {
-	char* type_c;
-	if ( PC_string(PC_get(node, ".type"), &type_c) ) {
-		if ( PC_string(node, &type_c) ) {
-			throw Type_error{"Invalid type descriptor"};
-		}
+	string type;
+	try {
+		type = to_string(PC_get(node, ".type"));
+	} catch (const Error& e) {
+		type = to_string(node);
 	}
-	string type = type_c;
 	
 	// check if someone didn't mean to create an array with the old syntax
-	if ( type != "array" && !PC_status(PC_get(node, ".size"))) {
-		logger()->warn("Non-array type with a `size' property");
-	}
-	if ( type != "array" && !PC_status(PC_get(node, ".sizes"))) {
-		logger()->warn("Non-array type with a `sizes' property");
+	if (type != "array") {
+		if (!PC_status(PC_get(node, ".size"))) {
+			logger()->warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line);
+		}
+		if (!PC_status(PC_get(node, ".sizes"))) {
+			logger()->warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
+		}
 	}
 	
 	auto&& func_it = m_datatype_parsers.find(type);
 	if (func_it != m_datatype_parsers.end()) {
 		return (func_it->second)(*this, node);
 	}
-	throw Type_error{"Cannot find datatype `{}'", type};
+	throw Config_error{node, "Unknown data type: `{}'", type};
 }
 
 void Global_context::add_datatype(const string& name, Datatype_template_parser parser)

@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### For users
 
 #### Added
+* Made error messages regarding yaml more informative by adding information
+  about the location of the error in the file (line number)
 
 #### Changed
 

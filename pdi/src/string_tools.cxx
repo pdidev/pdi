@@ -59,13 +59,13 @@ vector<string> string_array_parse(const string& unescaped) {
 			++end;
 			if ( end >= unescaped.size() ) {
 				// the end of string was escaped, this is an error
-				throw Config_error("Unable to escape content ending in \\");
+				throw Value_error("Unable to escape content ending in \\");
 			} else if (unescaped[end] == '\\' || unescaped[end] == ':' ) {
 				// we have an expected escaped char, let's add it raw to the last element of the list
 				result.back().push_back(unescaped[end]);
 			} else {
 				// other characters can not be escaped
-				throw Config_error("Unable to escape `{}'", (result.back()+unescaped[end]));
+				throw Value_error("Unable to escape `{}'", (result.back()+unescaped[end]));
 			}
 		} else { // we should never reach this
 			assert(!"Only '\\', ':' or end of string should be found");

@@ -65,7 +65,7 @@ void Stamp::load_stamp_desc_type(const flowvr::Port* parent_port, const std::str
 			return;
 		}
 	}
-	throw PDI::Config_error{"FlowVR stamp must be int, float, array of ints, floats or chars"};
+	throw PDI::Type_error{"FlowVR stamp must be int, float, array of ints, floats or chars"};
 }
 
 void Stamp::load_stamp_expr(const flowvr::Port* parent_port, const std::string& name, PC_tree_t expr_node, PC_tree_t type_node)
@@ -111,7 +111,7 @@ void Stamp::load_stamp_expr(const flowvr::Port* parent_port, const std::string& 
 			m_stamp.reset(new Stamp_expr_string(m_ctx, parent_port, std::move(name), std::move(expr)));
 			return;
 		} else {
-			throw PDI::Config_error{"FlowVR stamp must be int, float, array of ints, floats or chars"};
+			throw PDI::Type_error{"FlowVR stamp must be int, float, array of ints, floats or chars"};
 		}
 	}
 }

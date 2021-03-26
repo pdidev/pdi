@@ -84,7 +84,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
-			throw Config_error {"Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+			throw Config_error {key_tree, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
 		} else if ( key == "datasets" ) {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
@@ -95,7 +95,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if ( key == "read" ) {
 			// will read in pass 2
 		} else {
-			throw Config_error{"Unknown key in HDF5 file configuration: `{}'", key};
+			throw Config_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
 		}
 	});
 	
@@ -113,7 +113,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			if (dset_string.find("#") == string::npos) {
 				dset_ops.emplace_back(Dataset_op::READ, to_string(tree), default_when);
 			} else {
-				attr_ops.emplace_back(Attribute_op::READ, to_string(tree), default_when);
+				attr_ops.emplace_back(Attribute_op::READ, tree, default_when);
 			}
 		});
 	} else if ( !PC_status(read_tree) ) { // it's a name:{config...} mapping
@@ -136,7 +136,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			if (dset_string.find("#") == string::npos) {
 				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when);
 			} else {
-				attr_ops.emplace_back(Attribute_op::WRITE, to_string(tree), default_when);
+				attr_ops.emplace_back(Attribute_op::WRITE, tree, default_when);
 			}
 		});
 	} else if ( !PC_status(write_tree) ) { // it's a name:{config...} mapping
@@ -184,7 +184,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		// check the dataset ops don't have specific communicators set
 		for (auto&& one_dset_op: dset_ops) {
 			if ( one_dset_op.communicator() ) {
-				throw Config_error{"Communicator can not be set at the dataset level for event triggered I/O"};
+				throw Config_error{tree, "Communicator can not be set at the dataset level for event triggered I/O"};
 			}
 		}
 #endif

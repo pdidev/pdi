@@ -33,7 +33,7 @@ void Trace::load_on_data(PC_tree_t config)
 {
 	PC_tree_t on_data_node = PC_get(config, ".on_data");
 	if (PC_status(on_data_node)) {
-		throw PDI::Config_error{"Trace must have defined `on_data'"};
+		throw PDI::Config_error{config, "Trace must have defined `on_data'"};
 	}
 	m_on_data = PDI::to_string(on_data_node);
 }
@@ -60,7 +60,7 @@ void Trace::load_trace(PDI::Context& ctx, const std::string& name)
 			m_trace.reset(new Trace_string(ctx, name));
 		}
 	}
-	throw PDI::Config_error{"{} trace has not supported type for Trace", name};
+	throw PDI::Type_error{"{} trace has not supported type for Trace", name};
 }
 
 Trace::Trace(PDI::Context& ctx, const std::string& name, PC_tree_t config)

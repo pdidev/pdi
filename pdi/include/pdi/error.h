@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,6 +28,7 @@
 
 #include <exception>
 #include <string>
+#include <sstream>
 
 #include <paraconf.h>
 
@@ -40,11 +42,18 @@ class PDI_EXPORT Error:
 	public std::exception
 {
 protected:
+	/// status of the error
 	PDI_status_t m_status;
 	
+	/// message of the error
 	std::string m_what;
 	
 public:
+	/** Creates a PDI error without a message
+	 * \param[in] errcode the error code of the error to create
+	 */
+	Error(PDI_status_t errcode);
+	
 	/** Creates a PDI error
 	 * \param[in] errcode the error code of the error to create
 	 * \param[in] format_str an errror message as a python-style format
@@ -57,10 +66,17 @@ public:
 		m_what{fmt::format(format_str, std::forward<Args>(args)...)}
 	{}
 	
-	Error(PDI_status_t errcode, const char* fmt);
+	/** Creates a PDI error
+	 * \param[in] errcode the error code of the error to create
+	 * \param[in] message an errror message
+	 */
+	Error(PDI_status_t errcode, const char* message);
 	
 	const char* what() const noexcept override;
 	
+	/** Returns status of the error
+	 * \return status of the error
+	 */
 	PDI_status_t status() const noexcept;
 	
 };
@@ -84,9 +100,22 @@ class PDI_EXPORT Config_error:
 {
 public:
 	template<typename S, typename... Args>
-	Config_error(const S& format_str, Args&& ... args):
-		Error(PDI_ERR_CONFIG, std::string("Config_error: ") + format_str, std::forward<Args>(args)...)
-	{}
+	Config_error(PC_tree_t tree, const S& format_str, Args&& ... args):
+		Error(PDI_ERR_CONFIG)
+	{
+		std::ostringstream err_msg;
+		if (!PC_status(tree) && tree.node) {
+			if (tree.node->start_mark.line == tree.node->end_mark.line) {
+				err_msg << "Config_error in line " << tree.node->start_mark.line + 1 << ": ";
+			} else {
+				err_msg << "Config_error in lines " << tree.node->start_mark.line + 1 << " - " << tree.node->end_mark.line << ": ";
+			}
+		} else {
+			err_msg << "Config_error: ";
+		}
+		err_msg << fmt::format(format_str, std::forward<Args>(args)...);
+		m_what = err_msg.str();
+	}
 	
 	Config_error(Config_error&&) = default;
 	

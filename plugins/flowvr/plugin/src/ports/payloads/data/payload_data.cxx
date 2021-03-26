@@ -42,7 +42,7 @@ Payload_data::Payload_data(PDI::Context& ctx, const std::string& name, PC_tree_t
 	PC_tree_t data_node = PC_get(config, ".data");
 	if (!PC_status(data_node)) {
 		m_data_desc = PDI::to_string(data_node);
-		m_ctx.logger()->debug("(FlowVR) Data Payload ({}): Data descriptor = {}", m_name, m_data_desc);
+		m_ctx.logger()->debug("Data Payload ({}): Data descriptor = {}", m_name, m_data_desc);
 		PC_tree_t data_selection_node = PC_get(config, ".copy_data_selection");
 		if (!PC_status(data_selection_node)) {
 			m_data_selection = m_ctx.datatype(data_selection_node);

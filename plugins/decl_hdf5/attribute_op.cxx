@@ -46,13 +46,14 @@ using std::string;
 using std::tie;
 
 
-Attribute_op::Attribute_op(Direction direction, const string& attr_path, Expression when):
+Attribute_op::Attribute_op(Direction direction, PC_tree_t attr_path_tree, Expression when):
 	m_direction{direction},
 	m_when{move(when)}
 {
+	string attr_path = to_string(attr_path_tree);
 	size_t pos = attr_path.find('#');
 	if (pos == string::npos) {
-		throw Config_error{"Attribute path must contain `#' sign to separate group/dataset from attribute name"};
+		throw Config_error{attr_path_tree, "Attribute path must contain `#' sign to separate group/dataset from attribute name"};
 	}
 	m_object_path = Expression{attr_path.substr(0, pos)};
 	m_name = attr_path.substr(pos + 1);
@@ -81,7 +82,7 @@ Attribute_op::Attribute_op(Direction direction, const string& desc, Expression w
 		} else if ( key == "when" ) {
 			m_when = to_string(value);
 		} else {
-			throw Config_error{"Unknown key for HDF5 attribute configuration: `{}'", key};
+			throw Config_error{key_tree, "Unknown key for HDF5 attribute configuration: `{}'", key};
 		}
 	});
 }

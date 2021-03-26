@@ -221,7 +221,9 @@ Fti_cfg::Fti_cfg(Context& ctx, PC_tree_t tree):
 					PC_tree_t ckpt_tree = PC_get(checkpoint_tree, ".L4_on");
 					load_events(m_events, ctx, ckpt_tree, Event_type::CHECKPOINT_L4);
 				} else {
-					throw Config_error{"Unknown key for FTI checkpoint configuration: `%s'", subkey.c_str()};
+					throw Config_error{PC_get(checkpoint_tree, "{%d}", subkey_id),
+					    "Unknown key for FTI checkpoint configuration: `%s'",
+					    subkey.c_str()};
 				}
 			}
 		} else if (key == "recover_var") {
@@ -273,11 +275,11 @@ Fti_cfg::Fti_cfg(Context& ctx, PC_tree_t tree):
 		} else if (key == "head") {
 			load_desc(m_descs, ctx, to_string(PC_get(tree, ".head")), Desc_type::HEAD);
 		} else {
-			throw Config_error{"Unknown key for FTI configuration: `%s'", key.c_str()};
+			throw Config_error{PC_get(tree, "{%d}", key_id), "Unknown key for FTI configuration: `%s'", key.c_str()};
 		}
 	}
 	if (!m_config_file) {
-		throw Config_error{"Missing `config_file' key for FTI configuration"};
+		throw Config_error{tree, "Missing `config_file' key for FTI configuration"};
 	}
 }
 

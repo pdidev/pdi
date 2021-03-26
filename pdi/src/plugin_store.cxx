@@ -156,7 +156,7 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 			m_ctx.logger()->trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_path_node));
 			m_plugin_path.push_back(PDI::to_string(plugin_path_node));
 		} else {
-			throw Config_error{"plugin_path must be a single path or an array of paths"};
+			throw Config_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
 		}
 	}
 
@@ -250,6 +250,8 @@ void Plugin_store::load_plugins()
 			//TODO: what to do if a single plugin fails to load?
 			plugin.second->ensure_loaded(m_plugins);
 		}
+	} catch (const Error& e) {
+		throw;
 	} catch (const exception& e) {
 		throw System_error{"Error while loading plugins: {}", e.what()};
 	}

@@ -41,7 +41,6 @@
 using PDI::Array_datatype;
 using PDI::Datatype;
 using PDI::Error;
-using PDI::Config_error;
 using PDI::Impl_error;
 using PDI::System_error;
 using PDI::Type_error;
@@ -154,7 +153,7 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
 			subtype = &array_type->subtype();
 		}
 		if (!subtype->dense()) {
-			throw Config_error{"The top array datatype is the only one that can be sparse in dataset"};
+			throw Type_error{"The top array datatype is the only one that can be sparse in dataset"};
 		}
 		
 		Raii_hid h5_space = make_raii_hid(H5Screate_simple(rank, &h5_size[0], NULL), H5Sclose);
@@ -163,7 +162,7 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
 		return make_tuple(move(h5_space), Raii_hid{get_h5_type(*subtype), H5Tclose});
 	} else {
 		if (!type.dense()) {
-			throw Config_error{"The top array datatype is the only one that can be sparse in dataset"};
+			throw Type_error{"The top array datatype is the only one that can be sparse in dataset"};
 		}
 		return make_tuple(make_raii_hid(H5Screate(H5S_SCALAR), H5Sclose), make_raii_hid(get_h5_type(type), H5Tclose));
 	}

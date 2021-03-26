@@ -64,11 +64,11 @@ public:
 	/** Creates HDF5 attribute operation
 	 *
 	 * \param direction direction of I/O (READ or WRITE)
-	 * \param attr_path object path with attribute name separated by #
+	 * \param attr_path_tree tree with object path with attribute name separated by #
 	 * \param when a condition to check before doing the transfer
 	 */
 	Attribute_op(Direction direction,
-	    const std::string& attr_path,
+	    PC_tree_t attr_path_tree,
 	    PDI::Expression when);
 	    
 	/** Creates HDF5 attribute operation

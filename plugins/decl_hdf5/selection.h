@@ -40,6 +40,9 @@ namespace decl_hdf5 {
  */
 class Selection
 {
+	/// The tree representing the selection
+	PC_tree_t m_selection_tree;
+	
 	/// The size of the selection in each dimension or empty for default
 	std::vector<PDI::Expression> m_size;
 	
@@ -80,6 +83,16 @@ public:
 	const std::vector<PDI::Expression>& start() const
 	{
 		return m_start;
+	}
+	
+	/** Accesses the first included point in each dimension or nothing for
+	 * default.
+	 *
+	 * \return The first included point in each dimension or nothing for default
+	 */
+	PC_tree_t selection_tree() const
+	{
+		return m_selection_tree;
 	}
 	
 	/** Select a part of a HDF5 space based on a selection

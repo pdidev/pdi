@@ -56,7 +56,7 @@ Output_payload_data::Output_payload_data(PDI::Context& ctx, const std::string& n
 		if (data_pool == "const") {
 			m_flowvr_buffer_pool.reset(new flowvr::BufferPool());
 		} else {
-			throw PDI::Config_error{"{} port: `data_size' can be only const", m_name.c_str()};
+			throw PDI::Config_error{data_pool_node, "{} port: `data_size' can be only const", m_name.c_str()};
 		}
 	}
 	

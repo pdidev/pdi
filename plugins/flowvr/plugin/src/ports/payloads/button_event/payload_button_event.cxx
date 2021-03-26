@@ -39,7 +39,7 @@ void Payload_button_event::load_key_desc(PC_tree_t config)
 		
 		const auto& name_to_key_it = m_name_to_flowvr_key.find(key);
 		if (name_to_key_it == m_name_to_flowvr_key.end()) {
-			throw PDI::Config_error{"{} is not valid event button KEY", key};
+			throw PDI::Config_error{PC_get(keys_node, "{%d}", key_id), "{} is not valid event button KEY", key};
 		}
 		
 		m_key_desc.emplace(name_to_key_it->second, desc);

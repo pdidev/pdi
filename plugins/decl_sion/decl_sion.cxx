@@ -106,7 +106,7 @@ Expression parse_property(PC_tree_t conf, const char* entry_name, const char* pr
 			return to_string(PC_get(conf, property_name));
 		}
 	} catch (...) {
-		throw Config_error{"Property '{}' not found for entry '{}'", property_name, entry_name};
+		throw Config_error{PC_get(conf, property_name), "Property '{}' not found for entry '{}'", property_name, entry_name};
 	}
 }
 
@@ -142,7 +142,7 @@ Named_event::Named_event(PC_tree_t entry, const string& name):
 {
 	PC_tree_t entry_vars = PC_get(entry, ".vars");
 	int nvar = len(entry_vars);
-	if (nvar <= 0) throw Config_error{"No variables specified for event '{}'", name};
+	if (nvar <= 0) throw Config_error{entry_vars, "No variables specified for event '{}'", name};
 	
 	for (int i = 0; i < nvar; ++i) {
 		vars.emplace_back(to_string(PC_get(entry_vars, "[%d]", i)));
@@ -202,7 +202,7 @@ struct decl_sion_plugin: Plugin {
 		output_events{parse_events(PC_get(conf, ".outputs"))},
 		input_events{parse_events(PC_get(conf, ".inputs"))}
 	{
-		if (PC_status(conf)) throw Config_error{"Configuration is invalid"};
+		if (PC_status(conf)) throw Config_error{conf, "Configuration is invalid"};
 		Data_descriptor& comm_desc = ctx.desc(comm_name);
 		if ( !comm_desc.empty() ) {
 			if (MPI_Comm_dup(*(static_cast<const MPI_Comm*>(Ref_r{comm_desc.ref()}.get())), &comm)) {

@@ -86,7 +86,7 @@ tuple<vector<hsize_t>, vector<hsize_t>, vector<hsize_t>> get_selection(hid_t sel
 
 /** Validates that memory space and dataset space number of elements match
  */
-void validate_dataspaces(hid_t h5_mem_space, hid_t h5_file_space, const std::string dataset_name)
+void validate_dataspaces(PC_tree_t selectree, hid_t h5_mem_space, hid_t h5_file_space, const std::string dataset_name)
 {
 	hssize_t n_data_pts = H5Sget_select_npoints(h5_mem_space);
 	if ( 0>n_data_pts ) handle_hdf5_err();
@@ -107,7 +107,8 @@ void validate_dataspaces(hid_t h5_mem_space, hid_t h5_file_space, const std::str
 		stringstream file_desc;
 		for ( size_t ii=0; ii< pr_size.size(); ++ii) file_desc << " ("<< pr_start[ii]<<"-"<<(pr_start[ii]+pr_subsize[ii]-1)<<"/0-"<< (pr_size[ii]-1)<<")";
 		
-		throw Config_error{"Incompatible selections while writing `{}': [{} ] -> [{} ]", dataset_name, mem_desc.str(), file_desc.str()};
+		
+		throw Config_error{selectree, "Incompatible selections while writing `{}': [{} ] -> [{} ]", dataset_name, mem_desc.str(), file_desc.str()};
 	}
 }
 
@@ -129,7 +130,7 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 #ifdef H5_HAVE_PARALLEL
 				m_communicator = to_string(value);
 #else
-				throw Config_error {"Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+				throw Config_error {value, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
 			} else if ( key == "memory_selection" ) {
 				m_memory_selection = value;
@@ -138,7 +139,7 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 			} else if ( key == "attributes" ) {
 				// pass
 			} else {
-				throw Config_error{"Unknown key for HDF5 dataset configuration: `{}'", key};
+				throw Config_error{key_tree, "Unknown key for HDF5 dataset configuration: `{}'", key};
 			}
 		}
 	});
@@ -188,7 +189,7 @@ void Dataset_op::do_read(Context& ctx, hid_t h5_file, hid_t read_lst)
 	m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	
 	ctx.logger()->trace("Validating `{}' dataset dataspaces selection", dataset_name);
-	validate_dataspaces(h5_mem_space, h5_file_space, dataset_name);
+	validate_dataspaces(m_dataset_selection.selection_tree(), h5_mem_space, h5_file_space, dataset_name);
 	
 	ctx.logger()->trace("Reading `{}' dataset", dataset_name);
 	if ( 0>H5Dread(h5_set, h5_mem_type, h5_mem_space, h5_file_space, read_lst, ref) ) handle_hdf5_err();
@@ -222,13 +223,13 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	} else {
 		if ( !m_dataset_selection.size().empty() ) {
-			throw Config_error{"Dataset selection is invalid in implicit dataset `{}'", dataset_name};
+			throw Config_error{m_dataset_selection.selection_tree(), "Dataset selection is invalid in implicit dataset `{}'", dataset_name};
 		}
 		tie(h5_file_space, h5_file_type) = space(ref.type(), true);
 	}
 	
 	ctx.logger()->trace("Validating `{}' dataset dataspaces selection", dataset_name);
-	validate_dataspaces(h5_mem_space, h5_file_space, dataset_name);
+	validate_dataspaces(m_dataset_selection.selection_tree(), h5_mem_space, h5_file_space, dataset_name);
 	
 	Raii_hid set_lst = make_raii_hid(H5Pcreate(H5P_LINK_CREATE), H5Pclose);
 	if ( 0>H5Pset_create_intermediate_group(set_lst, 1) ) handle_hdf5_err();

@@ -103,11 +103,11 @@ void Module::load_desc_names(PC_tree_t config)
 				flowvr::Parallel::init(set_rank, set_size);
 				context().logger()->debug("Parallel: rank = {}, size = {}", set_rank, set_size);
 			} else {
-				throw PDI::Config_error{"`set_rank' is defined, but `set_size' is not"};
+				throw PDI::Config_error{set_rank_node, "`set_rank' is defined, but `set_size' is not"};
 			}
 		} else {
 			if (!PC_status(set_size_node)) {
-				throw PDI::Config_error{"`set_size' is defined, but `set_rank' is not"};
+				throw PDI::Config_error{set_size_node, "`set_size' is defined, but `set_rank' is not"};
 			} else {
 				flowvr::Parallel::init(true);
 			}

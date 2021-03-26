@@ -40,7 +40,7 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node):
     m_ctx{ctx}
 {
 	if (!PDI::is_list(operation_list_node)) {
-		throw PDI::Config_error{"Operations must be defined as a list"};
+		throw PDI::Config_error{operation_list_node, "Operations must be defined as a list"};
 	}
 
 	size_t operations_count = PDI::len(operation_list_node);
@@ -60,7 +60,7 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node):
 		} else if (operation == "release") {
 			m_operations.emplace_back(new Release_operation{m_ctx, operation_value});
 		} else {
-			throw PDI::Config_error{"Unknown operation: {}", operation};
+			throw PDI::Config_error{PC_get(value_map, "{0}"), "Unknown operation: {}", operation};
 		}
 	}
 }

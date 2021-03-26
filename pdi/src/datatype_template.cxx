@@ -271,13 +271,13 @@ vector<Expression> get_array_property(PC_tree_t node, string property)
 	return prop_vector;
 }
 
-void validate_array(vector<Expression>& size, vector<Expression>& subsize, vector<Expression>& start)
+void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>& subsize, vector<Expression>& start)
 {
 	if (size.empty()) {
-		throw Config_error{"Array must have defined `size'"};
+		throw Config_error{node, "Array must have defined `size'"};
 	}
 	if (!start.empty() && subsize.empty()) {
-		throw Config_error{"Array with a `start` property must have a defined `subsize'"};
+		throw Config_error{node, "Array with a `start` property must have a defined `subsize'"};
 		//TODO: handle by setting subsize to size-start
 	}
 	if (start.empty()) {
@@ -289,10 +289,10 @@ void validate_array(vector<Expression>& size, vector<Expression>& subsize, vecto
 	
 	//check if rank of array is correct
 	if (size.size() != subsize.size()) {
-		throw Config_error{"`subsize' must have the same rank as `size': {} != {}", subsize.size(), size.size()};
+		throw Config_error{node, "`subsize' must have the same rank as `size': {} != {}", subsize.size(), size.size()};
 	}
 	if (size.size() != start.size()) {
-		throw Config_error{"`start' must have the same rank as `size': {} != {}", start.size(), size.size()};
+		throw Config_error{node, "`start' must have the same rank as `size': {} != {}", start.size(), size.size()};
 	}
 }
 
@@ -305,7 +305,7 @@ Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		if (order_str == "c" && order_str == "C") {
 			ctx.logger()->warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str !="" ) {
-			throw Config_error{"Incorrect array ordering: `{}', only C order is supported", order_str};
+			throw Config_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
 		}
 	}
 	
@@ -313,11 +313,11 @@ Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 	vector<Expression> array_subsize = get_array_property(node, ".subsize");
 	vector<Expression> array_start = get_array_property(node, ".start");
 	
-	validate_array(array_size, array_subsize, array_start);
+	validate_array(node, array_size, array_subsize, array_start);
 	
 	PC_tree_t config_elem = PC_get(node, ".subtype");
 	if (PC_status(config_elem)) {
-		throw Config_error{"Array must have `subtype'"};
+		throw Config_error{node, "Array must have `subtype'"};
 	}
 	
 	Datatype_template_uptr res_type = ctx.datatype(config_elem);
@@ -342,7 +342,7 @@ vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_
 		
 		PC_tree_t disp_conf = PC_get(member_node, ".disp");
 		if (PC_status(disp_conf)) {
-			throw Config_error{"All members must have displacements"};
+			throw Config_error{member_node, "All members must have displacements"};
 		}
 		Expression disp = to_string(disp_conf);
 		
@@ -355,7 +355,7 @@ Datatype_template_uptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
 	if (PC_status(buffersize_conf)) {
-		throw Config_error{"Record must have defined buffersize"};
+		throw Config_error{node, "Record must have defined buffersize"};
 	}
 	Expression record_buffersize = to_string(buffersize_conf);
 	
@@ -377,7 +377,7 @@ Datatype_template_uptr to_pointer_datatype_template(Context& ctx, PC_tree_t node
 {
 	PC_tree_t subtype_conf = PC_get(node, ".subtype");
 	if (PC_status(subtype_conf)) {
-		throw Config_error{"Pointer must have defined subtype"};
+		throw Config_error{node, "Pointer must have defined subtype"};
 	}
 	return unique_ptr<Pointer_template> {new Pointer_template{ctx.datatype(subtype_conf)}};
 }
@@ -426,25 +426,25 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	ctx.add_datatype("character", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_CHARACTER_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_CHARACTER_DEFAULT_KIND;
-		else if (kind < 0) throw Config_error{"`kind' of the datatype cannot be less than 0"};
+		else if (kind < 0) throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
 	});
 	ctx.add_datatype("integer", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_INTEGER_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_INTEGER_DEFAULT_KIND;
-		else if (kind < 0) throw Config_error{"`kind' of the datatype cannot be less than 0"};
+		else if (kind < 0) throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::SIGNED, kind}};
 	});
 	ctx.add_datatype("logical", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_LOGICAL_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_LOGICAL_DEFAULT_KIND;
-		else if (kind < 0) throw Config_error{"`kind' of the datatype cannot be less than 0"};
+		else if (kind < 0) throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::UNSIGNED, kind}};
 	});
 	ctx.add_datatype("real", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_REAL_DEFAULT_KIND);
 		if (kind == 0) kind = PDI_REAL_DEFAULT_KIND;
-		else if (kind < 0) throw Config_error{"`kind' of the datatype cannot be less than 0"};
+		else if (kind < 0) throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_uptr{new Scalar_template{Scalar_kind::FLOAT, kind}};
 	});
 #endif // BUILD_FORTRAN
