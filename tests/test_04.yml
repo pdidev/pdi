@@ -1,5 +1,42 @@
-.types:
-  - &Subregion
+types:
+  subvector:
+    type: record
+    buffersize: 32
+    members:
+        data:
+          disp: 0
+          type: pointer
+          subtype:
+              type: array
+              size: 16
+              subtype: double
+        allocated:
+          disp: 8
+          type: int
+        data_space:
+          disp: 16
+          type: pointer
+          subtype: subregion
+        data_size:
+          disp: 24
+          type: int
+  subregionArray:
+    type: record 
+    buffersize: 16
+    members:
+      subregions:
+        disp: 0
+        type: pointer
+        subtype:
+          type: array
+          size: 64
+          subtype:
+            type: pointer
+            subtype: subregion
+      size:
+        disp: 8
+        type: int
+  subregion:
     type: record
     buffersize: 56
     members:
@@ -17,44 +54,7 @@
         rz:      {disp: 44, type: int}
         level:   {disp: 48, type: int}
         process: {disp: 52, type: int}
-  - &Subvector
-    type: record
-    buffersize: 32
-    members:
-        data:
-          disp: 0
-          type: pointer
-          subtype:
-              type: array
-              size: 16
-              subtype: double
-        allocated:
-          disp: 8
-          type: int
-        data_space:
-          disp: 16
-          type: pointer
-          subtype: *Subregion
-        data_size:
-          disp: 24
-          type: int
-  - &SubregionArray
-    type: record 
-    buffersize: 16
-    members:
-      subregions:
-        disp: 0
-        type: pointer
-        subtype:
-          type: array
-          size: 64
-          subtype:
-            type: pointer
-            subtype: *Subregion
-      size:
-        disp: 8
-        type: int
-  - &Grid
+  grid:
     type: record
     buffersize: 32
     members:
@@ -64,34 +64,25 @@
         subtype:
             type: array
             size: 32
-            subtype: *SubregionArray
+            subtype: subregionArray
       all_subgrids:
           disp: 8
           type: pointer
           subtype:
             type: array
             size: 32
-            subtype: *SubregionArray
+            subtype: subregionArray
       neighbors:
           disp: 16
           type: pointer
           subtype:
             type: array
             size: 32
-            subtype: *SubregionArray
+            subtype: subregionArray
       size:
         disp: 24
         type: int
-
-logging: trace
-data:
-  int_array:
-    type: array
-    subtype: int
-    size: [10, 10]
-    subsize: [8, 8]
-    start: [1, 1]
-  vector_data:
+  vector:
     type: record
     buffersize: 40
     members:
@@ -103,21 +94,30 @@ data:
           size: 8
           subtype:
             type: pointer
-            subtype: *Subvector
+            subtype: subvector
       data_size:
         disp: 8
         type: int
       grid:
         disp: 16
         type: pointer
-        subtype: *Grid
+        subtype: grid
       data_space:
         disp: 24
         type: pointer
-        subtype: *SubregionArray
+        subtype: subregionArray
       size:
         disp: 32
         type: int
+logging: trace
+data:
+  int_array:
+    type: array
+    subtype: int
+    size: [10, 10]
+    subsize: [8, 8]
+    start: [1, 1]
+  vector_data: vector
 plugins:
   serialize:
     vector_data: vector_data_serialized
@@ -129,4 +129,3 @@ plugins:
     - file: serialize_test_09.h5
       on_event: read
       read: [vector_data_serialized, int_array_serialized]
-

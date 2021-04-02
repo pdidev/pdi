@@ -27,3 +27,4 @@
 def val_serialize(serialize_root, data_list, metadata_list, data_refs_list):
     for key, value in serialize_root.items():
         data_refs_list.append(key)
+        data_list.append(value)

@@ -109,7 +109,7 @@ def val_struct(value, data_refs_list):
         for member_value in member_node.values():
             val_desc(member_value, data_refs_list)
 
-# validate descriptor
+# validate type
 def val_desc(value, data_refs_list):
     if value in scalar_types:
         pass
@@ -121,8 +121,10 @@ def val_desc(value, data_refs_list):
         val_record(value, data_refs_list)
     elif value['type'] == 'struct':
         val_struct(value, data_refs_list)
+    elif value['type'] == 'pointer':
+        val_desc(value['subtype'], data_refs_list)
     else:
-        raise NameError('Invalid descriptor type in: ' + str(value))        
+        raise NameError('Invalid type: ' + str(value))        
 
 # validate PDI data node
 def val_data(data_root, data_list, data_refs_list):
@@ -181,6 +183,23 @@ def val_plugin_path(plugin_path):
         if not os.path.exists(path):
             raise NameError("'" + path + "' is not valid or existing path")
 
+def val_descs_node(types_node, data_refs_list):
+    resolved_types_count = 0
+    resolved_type = True
+    while resolved_type:
+        resolved_type = False
+        for key, value in types_node.items():
+            if key not in scalar_types:
+                try:
+                    val_desc(value, data_refs_list)
+                    scalar_types.append(key)
+                    resolved_type = True
+                    resolved_types_count += 1
+                except BaseException as e:
+                    pass
+    if resolved_types_count != len(types_node):
+        raise NameError("Cannot define all datatypes from types tree. Loaded successfuly: " + str(scalar_types))
+
 def run_test(config_file_name):
     # list of declared data
     data_list = []
@@ -194,6 +213,9 @@ def run_test(config_file_name):
     with open(config_file_name, 'r') as config_file:
         root = yaml.load(config_file)
         pdi_root = root.get('pdi', root) # if file has pdi subtree use it
+
+        if 'types' in pdi_root:
+            val_descs_node(pdi_root.get('types'), data_refs_list)
 
         if 'plugins' in pdi_root:
             val_plugins(pdi_root.get('plugins', False), data_list, metadata_list, data_refs_list)

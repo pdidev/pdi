@@ -8,12 +8,14 @@ The *specification tree root* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
+|`"types"` (*optional*)|a \ref types_map_node|
 |`"data"` (*optional*)|a \ref data_map_node|
 |`"metadata"` (*optional*)|a \ref data_map_node|
 |`"plugins"` (*optional*)|a \ref plugin_map_node|
 |`"plugin_path"` (*optional*)|a \ref plugin_path_map_node|
 |`".*"` (*optional*)| *anything* |
 
+* the `types` section specifies user-defined datatypes
 * the `data` and `metadata` sections specify the type of the data in buffers
 exposed by the application; for `metadata`, %PDI keeps a copy while it only
 keeps references for `data`,
@@ -134,7 +136,8 @@ A *datatype* can be **any of**:
 * a \ref real_type_node,
 * a \ref record_type_node,
 * a \ref simple_datatype_node,
-* a \ref struct_type_node.
+* a \ref struct_type_node,
+* any user-defined datatype name.
 
 Amongst these, \ref simple_datatype_node is the only scalar.
 All others are dictionaries with a `type` key used for disambiguation between
@@ -513,6 +516,16 @@ A *struct_members_omap* is an **ordered mapping** that contains the following ke
   associated to it describes the member itself.
 
 See \ref struct_type_node for an example.
+
+# types_map {#types_map_node}
+
+A *types_map* is a **mapping** that contains the following keys:
+|key|value|
+|:--|:----|
+|`".*"` (*optional*)|a \ref datatype_node|
+
+* each key identifies the name of new user-defined datatype and the value
+  associated to it describes the type
 
 # record_members_map {#record_members_map_node}
 

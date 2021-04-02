@@ -450,4 +450,17 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 #endif // BUILD_FORTRAN
 }
 
+void Datatype_template::load_user_datatypes(Context& ctx, PC_tree_t types_tree)
+{
+	if (!PC_status(types_tree)) {
+		int types_len;
+		PC_len(types_tree, &types_len);
+		for (int i = 0; i < types_len; i++) {
+			ctx.add_datatype(to_string(PC_get(types_tree, "{%d}", i)), [datatype_tree = PC_get(types_tree, "<%d>", i)](Context& ctx, PC_tree_t) {
+				return ctx.datatype(datatype_tree);
+			});
+		}
+	}
+}
+
 } // namespace PDI

@@ -110,6 +110,8 @@ Global_context::Global_context(PC_tree_t conf):
 {
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
+	// load user datatypes
+	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
 	
 	m_plugins.load_plugins();
 	

@@ -58,6 +58,14 @@ public:
 	 */
 	static void load_basic_datatypes(Context& ctx);
 	
+	/**
+	 * Adds to the context the user defined datatypes
+	 *
+	 * \param[in,out] ctx the context where to add the datatypes
+	 * \param[in] tree with defined types
+	 */
+	static void load_user_datatypes(Context& ctx, PC_tree_t types_tree);
+	
 };
 
 } // namespace PDI
