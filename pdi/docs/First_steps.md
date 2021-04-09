@@ -39,7 +39,7 @@ program event
     use PDI
     implicit none
 
-    type(PC_tree_t),target :: conf
+    type(PC_tree_t), target :: conf
 
     call PC_parse_path("hello_event.yml", conf)
     call PDI_init(conf)
@@ -61,7 +61,7 @@ Let's analyze what happens in each line. Firstly we have PDI_init() function whi
 ```
 The first line indicates that plugin has loaded successfully. The second is %PDI message, that tells it managed to create all descriptors and load all defined plugins. Then we have message from loaded trace plugin which printed the event name it has received. The next information is from %PDI and indicates that finalization has started and now it will deallocate resources. Last message is from trace plugin destructor. 
 
-\subsection fs_hello_data Hello Data
+\section fs_hello_data Hello Data
 In \ref fs_hello_event we learned how to call an event. In this chapter we will see how to share and reclaim data.
 
 Firstly we have to create a specification tree named `hello_data.yml` with `data` and trace plugin tree declared:
@@ -103,7 +103,7 @@ program data
     type(PC_tree_t),target :: conf
     integer, target        :: my_world
     integer, pointer       :: p_my_world
-
+    
     call PC_parse_path("hello_data.yml", conf)
     call PDI_init(conf)
 
@@ -151,15 +151,15 @@ is the same as:
 
 Fortran source code:
 ```Fortran
-    call PDI_share("world", p_my_world, PDI_OUT)
+    call PDI_share("world", my_world, PDI_OUT)
     call PDI_reclaim("world");
 ```
 is the same as:
 ```Fortran
-    call PDI_expose("world", p_my_world, PDI_OUT)
+    call PDI_expose("world", my_world, PDI_OUT)
 ```
 
-\subsection fs_access Hello Access
+\section fs_access Hello Access
 Now we will try to access a descriptor we share with %PDI. In this case we won't need any plugin. We want to define int and a string in our `world_access.yml`:
 ```yaml
 data:
@@ -204,59 +204,52 @@ int main(int argc, char* argv[]) {
 Fortran source code:
 ```Fortran
 subroutine print_secret_msg
-    use iso_c_binding, only: c_ptr, c_f_pointer
-    
-    integer, pointer       :: p_value
-    type(c_ptr)            :: p_value_accessed
-    character, pointer     :: p_message(:)
-    type(c_ptr)            :: p_message_accessed
-    integer                :: p_message_ranks(1)
+  use pdi
+  implicit none
 
-    call PDI_access("my_value", p_value_accessed, PDI_IN)
-    c_f_pointer(p_value_accessed, p_value)
-    print *, p_value
-    call PDI_release("my_value")
+  integer, pointer               :: p_val
+  character, pointer, contiguous :: p_msg(:)
+  integer                        :: msg_ranks(1)
 
-    ! In case of accessing arrays, PDI_access takes additional array argument with dimensions sizes
-    p_message_ranks(1) = 512
-    call PDI_access("my_message", p_message_accessed, PDI_IN, p_message_ranks)
-    c_f_pointer(p_message_accessed, p_message, 512)
-    print *, p_message
-    call PDI_release("my_message")
+  call pdi_access("value", p_val, pdi_in)
+  print *, "PDI value: ", p_val
+  call pdi_release("value")
 
-    return
-end
+  ! In case of accessing arrays, PDI_access takes additional array argument with dimensions sizes
+  msg_ranks(1) = 32
+  call PDI_access("message", p_msg, pdi_in, msg_ranks)
+  print *, "PDI message: ", p_msg
+  call pdi_release("message")
+  return
+end subroutine print_secret_msg
 
 program access
-    use paraconf
-    use PDI
-    implicit none
-
-    type(PC_tree_t),target :: conf
-    integer, target        :: my_value
-    integer, pointer       :: p_my_value
-    character, target      :: secret_msg(512)
-    character, pointer     :: p_secret_msg(:)
-    
-    call PC_parse_path("world_access.yml", conf)
-    call PDI_init(conf)
-
-    my_value = 42
-    p_my_value => my_value
-    call PDI_share("my_value", p_my_value, PDI_OUT)
-
-    secret_msg = "Watermelon is the tastiest fruit"
-    p_secret_msg => secret_msg
-    call PDI_share("my_message", p_secret_msg, PDI_OUT)
-
-    call print_secret_msg();
-
-    call PDI_reclaim("my_message");
-    call PDI_reclaim("my_value");
-
-    call PDI_finalize()
-
+  use paraconf
+  use pdi
+  implicit none
+  type(pc_tree_t),target          :: conf
+  integer, target                 :: my_value
+  integer, pointer                :: p_my_value
+  character, target               :: secret_message(28)
+  character, pointer, contiguous  :: p_secret_message(:)
+  call pc_parse_path("hello_access.yml", conf)
+  call pdi_init(conf)
+  my_value = 42
+  p_my_value => my_value
+  call pdi_share("value", p_my_value, pdi_out)
+  secret_message = (/ "O", "r", "a", "n", "g", "e", " ", "i", "s",&
+        " ", "t", "h", "e", " ", "t", "a", "s", "t", "i", "e", "s",&
+        "t", " ", "f", "r", "u", "i", "t" /)
+  p_secret_message => secret_message
+  call pdi_share("message", p_secret_message, pdi_out)
+  print *, "My value: ", my_value
+  print *, "My message: ", secret_message
+  call print_secret_msg()
+  call pdi_reclaim("message")
+  call pdi_reclaim("value")
+  call pdi_finalize()
 end program access
+
 ```
 
 We will focus on `print_secret_msg` function. If you don't understand what happens in `main` function, please see \ref fs_hello_data example. `PDI_access` sets our pointer to the data location. We need to pass `PDI_IN` because data flows from %PDI to our application. We also want to use `PDI_release`, because `PDI_reclaim` would end the sharing status of this descriptor and we reclaim this data later in `main` function.
@@ -264,13 +257,14 @@ Output from the program:
 
 ```
 [PDI][13:42:31] *** info: Initialization successful
+42
 Watermelon is the tastiest fruit
 [PDI][13:42:31] *** info: Finalization
 ```
 
 As you can see, we manage to access data descriptor from function only by passing its name and correct direction access.
 
-\subsection fs_multiexpose Hello multi expose
+\section fs_multiexpose Hello multi expose
 In some cases we would want to expose many descriptors at once. For this we have multi expose which shares all the given descriptors, then call given event and then reclaim all passed data. Let's look at the example.
 
 ```yaml
@@ -279,7 +273,7 @@ data:
   my_float: float
   my_string: {type: array, subtype: char, size: 32}
 
-plugin:
+plugins:
   trace: ~
 ```
 
@@ -321,31 +315,23 @@ program transaction
     use PDI
     implicit none
 
-    type(PC_tree_t),target :: conf
-    integer, target        :: my_int
-    float, target          :: my_float
-    character, target      :: my_string(32)
-    integer, pointer       :: p_my_int
-    float, pointer         :: p_my_float
-    string, pointer        :: p_my_string(:)
+    type(PC_tree_t)   :: conf
+    integer           :: my_int
+    real              :: my_float
+    character(len=32) :: my_string
 
     call PC_parse_path("hello_transaction.yml", conf)
     call PDI_init(conf)
 
     my_int = 0
-    p_my_int => my_int
-
     my_float = 0
-    p_my_float => my_float
-
     my_string = "RGB = Really Gawky Biscuit";
-    p_my_string => my_string
     
     call PDI_transaction_begin("event_between")
     
-    call PDI_expose("my_int", p_my_int, PDI_OUT)
-    call PDI_expose("my_float", p_my_float, PDI_OUT)
-    call PDI_expose("my_string", p_my_string, PDI_OUT)
+    call PDI_expose("my_int", my_int, PDI_OUT)
+    call PDI_expose("my_float", my_float, PDI_OUT)
+    call PDI_expose("my_string", my_string, PDI_OUT)
     
     call PDI_transaction_end()
 
