@@ -17,8 +17,7 @@ tree_2: {subtree_1: scalar_1, subtree_2: scalar_2}
 ```
 
 Represents the following tree:
-
-![Graphical representation of the YAML Tree](yaml_example.jpg).
+![Graphical representation of the YAML Tree](yaml_example.jpg)
 
 This tree contains the following kinds of nodes:
 * scalars,

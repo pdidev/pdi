@@ -1,0 +1,4 @@
+data:
+  world: int
+plugins:
+  trace: ~

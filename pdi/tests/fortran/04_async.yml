@@ -1,0 +1,5 @@
+metadata:
+  intarray: {type: array, subtype: int, size: 10}
+data:
+  my_value: int
+  my_message: {type: array, subtype: char, size: 32}

@@ -1,0 +1,3 @@
+data:
+  my_value: int
+  my_message: {type: array, subtype: char, size: 32}

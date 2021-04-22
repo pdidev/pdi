@@ -23,23 +23,23 @@
 	--site-lblue:  #3b83c3;
 	--site-hblue:  #F7F8FB;
 	
-	--sol-base03:  #002b36;
-	--sol-base02:  #073642;
-	--sol-base01:  #586e75;
-	--sol-base00:  #657b83;
-	--sol-base0:   #839496;
-	--sol-base1:   #93a1a1;
-	--sol-base2:   #eee8d5;
-	--sol-base3:   #fdf6e3;
+	--sola-base03:  #002b36;
+	--sola-base02:  #073642;
+	--sola-base01:  #586e75;
+	--sola-base00:  #657b83;
+	--sola-base0:   #839496;
+	--sola-base1:   #93a1a1;
+	--sola-base2:   #eee8d5;
+	--sola-base3:   #fdf6e3;
 	
-	--sol-yellow:  #b58900;
-	--sol-orange:  #cb4b16;
-	--sol-red:     #dc322f;
-	--sol-magenta: #d33682;
-	--sol-violet:  #6c71c4;
-	--sol-blue:    #268bd2;
-	--sol-cyan:    #2aa198;
-	--sol-green:   #859900;
+	--sola-yellow:  #b58900;
+	--sola-orange:  #cb4b16;
+	--sola-red:     #dc322f;
+	--sola-magenta: #d33682;
+	--sola-violet:  #6c71c4;
+	--sola-blue:    #268bd2;
+	--sola-cyan:    #2aa198;
+	--sola-green:   #859900;
 	
 	--lsit-bg:     var(--site-white);
 	--lsit-bg-hl:  var(--site-hblue);
@@ -52,17 +52,17 @@
 	--dsit-fg:     white;
 	--dsit-fg-hl:  white;
 	
-	--lsol-bg:     var(--sol-base3);
-	--lsol-fg:     var(--sol-base00);
-	--lsol-bg-hl:  var(--sol-base2);
-	--lsol-fg-hl:  var(--sol-base01);
-	--lsol-fg-ul:  var(--sol-base1);
+	--lsol-bg:     var(--sola-base3);
+	--lsol-fg:     var(--sola-base00);
+	--lsol-bg-hl:  var(--sola-base2);
+	--lsol-fg-hl:  var(--sola-base01);
+	--lsol-fg-ul:  var(--sola-base1);
 	
-	--dsol-fg-hl:  var(--sol-base1);
-	--dsol-fg:     var(--sol-base0);
-	--dsol-fg-ul:  var(--sol-base01);
-	--dsol-bg-hl:  var(--sol-base02);
-	--dsol-bg:     var(--sol-base03);
+	--dsol-fg-hl:  var(--sola-base1);
+	--dsol-fg:     var(--sola-base0);
+	--dsol-fg-ul:  var(--sola-base01);
+	--dsol-bg-hl:  var(--sola-base02);
+	--dsol-bg:     var(--sola-base03);
 	
 	
 	--vspace: .5rem;
@@ -689,7 +689,7 @@ div.directory
 	font-family: var(--monofont);
 	font-size: .8rem;
 	font-weight: 800;
-	color: var(--sol-blue);
+	color: var(--sola-blue);
 }
 
 .directory td.desc
@@ -706,7 +706,7 @@ div.directory
 
 .memberdecls a.el
 {
-	color: var(--sol-blue);
+	color: var(--sola-blue);
 }
 
 .memberdecls tr
@@ -970,7 +970,7 @@ table.params td
 
 .paramtype
 {
-	color: var(--sol-blue);
+	color: var(--sola-blue);
 }
 
 .paramkey
@@ -987,19 +987,19 @@ table.params td
 
 .paramname
 {
-	color: var(--sol-red);
+	color: var(--sola-red);
 	font-style: italic;
 }
 
 .exception .paramname
 {
-	color: var(--sol-blue);
+	color: var(--sola-blue);
 	font-style: inherit;
 }
 
 .paramname code
 {
-	color: var(--sol-yellow);
+	color: var(--sola-yellow);
 	background-color: inherit;
 	border: none;
 	font-style: italic;
@@ -1009,7 +1009,7 @@ dl.note
 {
 	border-left: .6rem solid;
 	padding-left: .6rem;
-	border-color: var(--sol-violet);
+	border-color: var(--sola-violet);
 }
 
 dl.warning,
@@ -1021,12 +1021,12 @@ dl.attention
 
 dl.warning
 {
-	border-color: var(--sol-red);
+	border-color: var(--sola-red);
 }
 
 dl.attention
 {
-	border-color: var(--sol-yellow);
+	border-color: var(--sola-yellow);
 }
 
 dl.pre,
@@ -1035,35 +1035,35 @@ dl.invariant
 {
 	border-left: .6rem solid;
 	padding-left: .6rem;
-	border-color: var(--sol-green);
+	border-color: var(--sola-green);
 }
 
 dl.deprecated
 {
 	border-left: .6rem solid;
 	padding-left: .6rem;
-	border-color: var(--sol-yellow);
+	border-color: var(--sola-yellow);
 }
 
 dl.todo
 {
 	border-left: .6rem solid;
 	padding-left: .6rem;
-	border-color: var(--sol-cyan);
+	border-color: var(--sola-cyan);
 }
 
 dl.test
 {
 	border-left: .6rem solid;
 	padding-left: .6rem;
-	border-color: var(--sol-blue);
+	border-color: var(--sola-blue);
 }
 
 dl.bug
 {
 	border-left: .6rem solid;
 	padding-left: .6rem;
-	border-color: var(--sol-red);
+	border-color: var(--sola-red);
 }
 
 
@@ -1605,6 +1605,48 @@ span.lineno
 {
 	text-align: center;
 }
+
+
+
+/**********
+ * Syntax highlighting
+ **********/
+
+.preprocessor,
+.comment,
+.line,
+a.line,
+a.line:hover,
+a.line:active,
+a.line:visited
+{
+	color:  var(--dsol-fg-ul);
+	text-decoration: none;
+}
+.code,
+a.code,
+a.code:hover,
+a.code:active,
+a.code:visited
+{
+	color:  var(--sola-cyan);
+}
+.keyword,
+.keywordtype,
+.keywordflow
+{
+	color:  var(--sola-blue);
+}
+.stringliteral
+{
+	color:  var(--sola-yellow);
+}
+
+
+
+/**********
+ * Hacks
+ **********/
 
 div.image img[src="tictac_net.jpg"]{ 
     max-width:300px; 

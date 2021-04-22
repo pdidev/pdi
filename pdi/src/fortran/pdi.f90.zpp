@@ -1,5 +1,6 @@
 !******************************************************************************
 ! Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+! Copyright (C) 2021 Centre national de la recherche scientifique (CNRS)
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without
@@ -104,18 +105,14 @@ endsubroutine PDI_event
 !$SH for T in ${FORTTYPES}; do
 !$SH   for D in $(seq 0 ${MAXDIM}); do
 
-subroutine PDI_share_${T}_${D}D(name, ptr_data, accessf, err)
+subroutine PDI_share_${T}_${D}D(name, data, accessf, err)
 
   use PDI_C
 
   implicit none
 
   character(len=*), intent(IN) :: name
-  $(fort_type $T), pointer &
-!$SH     if [ "$D" -gt 0 ]; then
-  , contiguous &
-!$SH     fi
-  :: ptr_data$(array_desc $D)
+  $(fort_type $T), target, asynchronous :: data$(array_desc $D)
   integer, intent(IN) :: accessf
   integer, intent(OUT), optional :: err
 
@@ -128,7 +125,7 @@ subroutine PDI_share_${T}_${D}D(name, ptr_data, accessf, err)
   C_name(len_trim(name)+1) = C_null_char
   
   tmperr = int(PDI_share_C(C_loc(C_name), &
-      C_loc(ptr_data$(str_repeat 'lbound(ptr_data, @N)' 1 ${D} $',&\n ' '(' ')')), &
+      C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
       accessf))
   
   if(present(err)) then
@@ -201,11 +198,7 @@ subroutine PDI_expose_${T}_${D}D(name, data, accessf, err)
   implicit none
 
   character(len=*), intent(IN) :: name
-  $(fort_type $T), target &
-!$SH     if [ "$D" -gt 0 ]; then
-  , contiguous &
-!$SH     fi
-  :: data$(array_desc $D)
+  $(fort_type $T), target, asynchronous :: data$(array_desc $D)
   integer, intent(IN) :: accessf
   integer, intent(OUT), optional :: err
 

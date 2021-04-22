@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   about the location of the error in the file (line number)
 
 #### Changed
+* The `PDI_share` and `PDI_expose` subroutines of the Fortran API now accept
+  non-pointer and non-contiguous data
 
 #### Deprecated
 
@@ -28,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 * Handle byte and unsigned integer arrays from Python API
+* [Fortran] Fix an issue where in transactions, de-allocated temporary data copy
+  might be referenced by PDI (issue #228)
 
 #### Security
 
