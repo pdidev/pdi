@@ -66,6 +66,7 @@ xenial_cmake3.10_pdi_plugin_path:
 
 pages:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
+  stage: build
   image: pdidevel/xenial_libs_cmake3.10:v1
   variables: { GIT_SUBMODULE_STRATEGY: recursive }
   script:
