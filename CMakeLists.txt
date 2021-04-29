@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -405,6 +405,7 @@ endif()
 
 if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	set(HDF5_CONFIGURE_OPTS)
+	set(HDF5_BUILD_ENV)
 	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 		list(APPEND HDF5_CONFIGURE_OPTS "--enable-build-mode=debug")
 	else()
@@ -413,6 +414,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	if("${BUILD_HDF5_PARALLEL}")
 		set(HDF5_PREFER_PARALLEL "ON")
 		list(APPEND HDF5_CONFIGURE_OPTS "--enable-parallel")
+		set(HDF5_BUILD_ENV "env" "CC=${MPI_C_COMPILER}")
 	else()
 		set(HDF5_PREFER_PARALLEL "OFF")
 		list(APPEND HDF5_CONFIGURE_OPTS "--disable-parallel")
@@ -430,7 +432,8 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		COMPONENTS ${HDF5_COMPONENTS}
 		MODULE_VARS HDF5_IS_PARALLEL HDF5_C_INCLUDE_DIRS HDF5_C_LIBRARIES
 		BUILD_IN_SOURCE 1
-		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
+		CONFIGURE_COMMAND ${HDF5_BUILD_ENV}
+			"<SOURCE_DIR>/configure"
 			#TODO:  prefix should point to the final install dir, we should use a staging mechanism
 			"--prefix=<INSTALL_DIR>"
 			"--disable-tests"

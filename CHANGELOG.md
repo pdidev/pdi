@@ -11,8 +11,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* $-expression FMT formatting in specification file
-* User-defined datatypes in specification file
 
 ### Changed
 
@@ -21,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Fix an issue where embedded HDF5 would not compile with parallel support
+  (Cf. #336)
 
 ### Security
 

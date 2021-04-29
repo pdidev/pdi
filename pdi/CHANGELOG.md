@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 * Made error messages regarding yaml more informative by adding information
   about the location of the error in the file (line number)
+* Support $-expression formatting using {fmt} https://github.com/fmtlib/fmt
+* Support user-defined types aliases in specification file
 
 #### Changed
 * The `PDI_share` and `PDI_expose` subroutines of the Fortran API now accept
