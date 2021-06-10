@@ -23,15 +23,16 @@ program access
   use pdi
   implicit none      
 
-  type(pc_tree_t),target  :: conf
-  integer                 :: my_value
-  character(LEN=32)      :: secret_message
+  type(pc_tree_t)  :: conf
+  integer          :: my_value
+  character        :: secret_message(32)
 
   call pc_parse_path("hello_access.yml", conf)
   call pdi_init(conf) 
 
   my_value = 42
-  secret_message = "Watermelon is the tastiest fruit"                                 
+  secret_message = (/'W','a','t','e','r','m','e','l','o','n',' ','i','s',' ','t','h','e',' ',&
+       't','a','s','t','i','e','s','t',' ','f','r','u','i','t'/)                                 
   print *, "My value: ", my_value
   print *, "My message: ", secret_message
 

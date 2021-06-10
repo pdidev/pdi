@@ -1,0 +1,16 @@
+metadata:
+  size: int
+data:
+  string1: {type: array, subtype: char, size: '$size'}
+plugins:
+  decl_hdf5:
+    - file: file_07.h5
+      on_event: "write_into_file"
+      write:
+        string1: #{dataset: string1}
+          
+    - file: file_07.h5
+      on_event: "read_from_file"
+      read:
+        string1:
+    

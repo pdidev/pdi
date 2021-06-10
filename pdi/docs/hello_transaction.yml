@@ -1,0 +1,7 @@
+data:
+  my_int: int
+  my_float: float
+  my_string: {type: array, subtype: char, size: 32}
+
+plugins:
+  trace: ~

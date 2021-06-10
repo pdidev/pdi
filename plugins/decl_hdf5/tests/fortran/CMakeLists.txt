@@ -89,3 +89,8 @@ add_executable(decl_hdf5_06_F decl_hdf5_test_06.F90)
 target_link_libraries(decl_hdf5_06_F PDI::PDI_f90)
 add_test(NAME decl_hdf5_06_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_06_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_06.yml")
 set_property(TEST decl_hdf5_06_F PROPERTY TIMEOUT 5)
+
+add_executable(decl_hdf5_07_F decl_hdf5_test_07.F90)
+target_link_libraries(decl_hdf5_07_F PDI::PDI_f90)
+add_test(NAME decl_hdf5_07_F COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_07_F>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_07.yml")
+set_property(TEST decl_hdf5_07_F PROPERTY TIMEOUT 5)
