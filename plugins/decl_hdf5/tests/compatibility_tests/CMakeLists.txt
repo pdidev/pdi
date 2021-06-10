@@ -27,9 +27,12 @@ cmake_minimum_required(VERSION 3.5)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../../cmake/runtest-dir")
 
-find_package(MPI REQUIRED)
+set(ALL_TEST_NAMES array dataset group struct variables)
+if("${BUILD_HDF5_PARALLEL}")
+    list(APPEND ALL_TEST_NAMES mpi)
+endif()
 
-foreach(test_name array dataset group mpi struct variables)
+foreach(test_name )
     foreach(io_operation write read)
         add_executable("HDF5_C_${test_name}_${io_operation}_test" "HDF5_C/${test_name}_${io_operation}_test.c")
         target_link_libraries("HDF5_C_${test_name}_${io_operation}_test" ${HDF5_C_LIBRARIES})
@@ -37,7 +40,11 @@ foreach(test_name array dataset group mpi struct variables)
         target_compile_definitions("HDF5_C_${test_name}_${io_operation}_test" PRIVATE ${HDF5_DEFINITIONS})
 
         add_executable("PDI_C_${test_name}_${io_operation}_test" "PDI_C/${test_name}_${io_operation}_test.c")
-        target_link_libraries("PDI_C_${test_name}_${io_operation}_test" PDI::PDI_C MPI::MPI_C)
+        target_link_libraries("PDI_C_${test_name}_${io_operation}_test" PDI::PDI_C)
+        if ("${test_name}" STREQUAL "mpi")
+            target_link_libraries("HDF5_C_${test_name}_${io_operation}_test" MPI::MPI_C)
+            target_link_libraries("PDI_C_${test_name}_${io_operation}_test"  MPI::MPI_C)
+        endif()
     endforeach(io_operation)
 
     foreach(write_prefix HDF5_C_ PDI_C_)
