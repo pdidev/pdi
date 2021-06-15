@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [Unreleased]
+## [1.2.0]
 
 
 ### For users
@@ -19,38 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 * Made error messages regarding yaml more informative by adding information
   about the location of the error in the file (line number)
+  [#314](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/314)
 * Support $-expression formatting using {fmt} https://github.com/fmtlib/fmt
+  [#303](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/303)
 * Support user-defined types aliases in specification file
+  [#330](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/330)
 
 #### Changed
 * The `PDI_share` and `PDI_expose` subroutines of the Fortran API now accept
   non-pointer and non-contiguous data
-
-#### Deprecated
-
-#### Removed
+  [#228](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/228)
 
 #### Fixed
 * Handle byte and unsigned integer arrays from Python API
-* [Fortran] Fix an issue where in transactions, de-allocated temporary data copy
-  might be referenced by PDI (issue #228)
-
-#### Security
-
-
-### For plugin developers
-
-#### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
-#### Fixed
-
-#### Security
+  [#320](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/320),
+  [#322](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/322)
+* Fix a Fortran issue where in transactions, de-allocated temporary data copy
+  could be referenced by PDI
+  [#228](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/228)
 
 
 

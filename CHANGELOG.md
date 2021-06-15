@@ -8,21 +8,11 @@ changes for PDI library proper are in [`pdi/CHANGELOG.md`](pdi/CHANGELOG.md).
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
+## [1.2.0]
 
 ### Fixed
 * Fix an issue where embedded HDF5 would not compile with parallel support
-  (Cf. #336)
-
-### Security
+  [#336](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/336)
 
 
 ## [1.0.0] - 2021-01-28
