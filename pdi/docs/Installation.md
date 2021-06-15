@@ -20,7 +20,7 @@ The %PDI source distribution includes:
 \section downloading_distribution Downloading PDI source distribution
 
 To download the sources, have a look at the list of all releases at
-https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags
+https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases
 
 For example, release 1.2.0 can be downloaded from
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.2.0/pdi-1.2.0.tar.bz2
@@ -47,7 +47,7 @@ compiled.
 
 For example, release 1.2.0 can be installed by following these instructions (but
 look for the latest release at
-https://gitlab.maisondelasimulation.fr/pdidev/pdi/tags):
+https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases ):
 
 ```bash
 wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.2.0/pdi-1.2.0.tar.bz2
