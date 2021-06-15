@@ -7,9 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* Add more verbose log messages for the `trace` level
-* Support writing and reading data to/from dataset of different dimensions if
-  the number of elements matches
 
 ### Changed
 
@@ -18,11 +15,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Correctly include MPI in tests and do not run MPI-based tests when HDF5 is
-  built in sequential version
-  https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/274
 
 ### Security
+
+
+## [1.2.0]
+
+### Added
+* Add more verbose log messages for the `trace` level
+  [#306](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/306)
+* Support writing and reading data to/from dataset of different dimensions if
+  the number of elements matches
+  [#308](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/308)
+
+### Fixed
+* Correctly include MPI in tests and do not run MPI-based tests when HDF5 is
+  built in sequential version
+  [#274](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/274)
 
 
 ## [1.1.0] - 2021-03-02

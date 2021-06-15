@@ -30,14 +30,11 @@ To publish a new minor or major release:
 * go over all `CHANGELOG.md` files and mark the just released version
 * commit these changes into a new version branch (`v${X}.${Y}`)
 * tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`
-* merge the version branch into master
+* merge the version branch into master `git merge --no-ff "v${X}.${Y}"`
 * in the merge commit:
   - change the version in `pdi/VERSION` by increasing the minor and add the
     `-alpha` suffix
   - add an `[Unreleased]` section at the top of all `CHANGELOG.md` files
-* make a new commit in the version branch (`v${X}.${Y}`)
-  - change the version in `pdi/VERSION` by increasing the patch and add the
-    `-alpha` suffix
 * push all that
 
 # Dependency change

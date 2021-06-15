@@ -19,10 +19,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Fix an issue where embedded HDF5 would not compile with parallel support
-  (Cf. #336)
 
 ### Security
+
+
+## [1.2.0]
+
+### Fixed
+* Fix an issue where embedded HDF5 would not compile with parallel support
+  [#336](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/336)
 
 
 ## [1.0.0] - 2021-01-28
