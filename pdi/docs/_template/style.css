@@ -1253,16 +1253,16 @@ a[id]
 #projectname
 {
 	display: block;
-	height: 3rem;
+	height: 2.75rem;
 	margin: 0 0 0 6rem;
 	padding: .5rem 0 0 0;
 	border: none;
-	line-height: 2.75rem;
-	font-size: 2.75rem;
+	line-height: 2.5rem;
+	font-size: 2.5rem;
 	font-family: var(--defaultfont);
-	letter-spacing: .02rem;
+	letter-spacing: .1rem;
 	font-weight: 900;
-	color: var(--lsit-fg-hl);
+	color: var(--lsit-fg-ul);
 }
 
 #projectnumber
@@ -1271,6 +1271,7 @@ a[id]
 	font-weight: 300;
 	font-size: 1.2rem;
 	color: var(--lsit-fg-ul);
+	letter-spacing: normal;
 	overflow: hidden;
 	white-space: nowrap;
 }
@@ -1278,16 +1279,23 @@ a[id]
 #projectbrief
 {
 	display: block;
-	height: 2rem;
+	height: 2.25rem;
 	margin: 0 0 0 6rem;
 	padding: .5rem 0 .5rem 0;
 	border: none;
-	line-height: 1.25rem;
-	font-size: 1.2rem;
+	line-height: 1.5rem;
+	font-size: 1.5rem;
 	font-family: var(--defaultfont);
-	letter-spacing: .03rem;
-	font-weight: 300;
+	font-weight: 600;
+	color: var(--lsit-fg-hl);
+}
+
+#projectbrief .acronym
+{
 	color: var(--lsit-fg-ul);
+	font-weight: 900;
+	letter-spacing: .1rem;
+	text-transform: uppercase;
 }
 
 @media screen and (max-width: 25rem)
