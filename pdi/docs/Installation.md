@@ -54,7 +54,7 @@ wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.1.0/pdi-1.1.0
 tar -xjf pdi-1.1.0.tar.bz2
 mkdir pdi-1.1.0/build
 cd pdi-1.1.0/build
-cmake -DCMAKE_INSTALL_PREFIX=/usr/ ..       # configuration
+cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
 make install   # compilation and installation
 ```
 
@@ -63,8 +63,9 @@ The `cmake` command must be followed by the path to the `pdi` directory, here
 `..` because we have just created and moved to the `build` subdirectory.
 
 \attention
-The `-DCMAKE_INSTALL_PREFIX=/usr/` flag is used to specify where to install the
-distribution, flags are \ref cmake_config "discussed in more detail below".
+The `-DCMAKE_INSTALL_PREFIX="${HOME}/.local/"` flag is used to specify where to
+install the distribution, flags are
+\ref cmake_config "discussed in more detail below".
 
 If the default installation fails or if you need an installation better tailored
 to your needs, keep reading.

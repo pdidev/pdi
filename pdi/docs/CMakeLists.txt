@@ -109,7 +109,15 @@ set(DOXYGEN_IMAGE_PATH
 		"${CMAKE_CURRENT_SOURCE_DIR}/images"
 		"${PDI_SOURCE_DIR}/../plugins/flowvr/images")
 doxygen_add_docs(doxygen_doc
-		"${CMAKE_CURRENT_SOURCE_DIR}"
+		"${CMAKE_CURRENT_SOURCE_DIR}/About.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Concepts.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/First_steps.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/How_to_create_plugin.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Installation.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Plugins.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Specification_tree_ref.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Using_PDI.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Yaml.md"
 		"${PDI_BINARY_DIR}/pdi/export.h"
 		"${PDI_BINARY_DIR}/pdi/version.h"
 		"${PDI_BINARY_DIR}/fmoddir/pdif.h"

@@ -40,7 +40,7 @@ then
 	PRE_RELEASE=alpha
 fi
 
-if [ -x "${GIT_EXE}" ]
+if [ -x "${GIT_EXE}" -C "${WORK_DIR}" ]
 then
 	GIT_DATE="$("${GIT_EXE}" -C "${WORK_DIR}" show -s --format=%ci HEAD | sed 's/ .*//')"
 	GIT_SHA1="$("${GIT_EXE}" -C "${WORK_DIR}" rev-parse --verify --short=7 HEAD)"
