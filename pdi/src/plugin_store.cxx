@@ -190,8 +190,8 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 			return lib_handle;
 		} else {
 			const string error_msg = dlerror();
-			m_ctx.logger()->debug("Unable to load {}", error_msg);
-			load_errors.push_back(format("\n  * unable to load {}", error_msg));
+			m_ctx.logger()->debug("Unable to load `{}' {}", libname, error_msg);
+			load_errors.push_back(format("\n  * unable to load `{}' {}", libname, error_msg));
 		}
 	}
 	
@@ -205,8 +205,8 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 			return lib_handle;
 		} else {
 			const string error_msg = dlerror();
-			m_ctx.logger()->debug("Unable to load relative to system path {}", plugin_name, error_msg);
-			load_errors.push_back(format("\n  * unable to load relative to system path {}", error_msg));
+			m_ctx.logger()->debug("Unable to load `{}' relative to system path {}", libname, error_msg);
+			load_errors.push_back(format("\n  * unable to load `{}' relative to system path {}", libname, error_msg));
 		}
 	}
 	
@@ -219,8 +219,8 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 		return lib_handle;
 	} else {
 		const string error_msg = dlerror();
-		m_ctx.logger()->debug("Unable to load from system path {}", plugin_name, error_msg);
-		load_errors.push_back(format("\n  * unable to load from system path {}", error_msg));
+		m_ctx.logger()->debug("Unable to load `{}' from system path {}", libname, error_msg);
+		load_errors.push_back(format("\n  * unable to load `{}' from system path {}", libname, error_msg));
 	}
 	
 	throw Plugin_error{"Unable to load plugin `{}': {}"
