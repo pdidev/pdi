@@ -111,6 +111,7 @@ set(DOXYGEN_IMAGE_PATH
 doxygen_add_docs(doxygen_doc
 		"${CMAKE_CURRENT_SOURCE_DIR}/About.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Concepts.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/FAQ.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/First_steps.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/How_to_create_plugin.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Installation.md"

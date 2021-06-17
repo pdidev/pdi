@@ -40,10 +40,11 @@ then
 	PRE_RELEASE=alpha
 fi
 
-if [ -x "${GIT_EXE}" -C "${WORK_DIR}" ]
+if [ -x "${GIT_EXE}" ]
 then
-	GIT_DATE="$("${GIT_EXE}" -C "${WORK_DIR}" show -s --format=%ci HEAD | sed 's/ .*//')"
-	GIT_SHA1="$("${GIT_EXE}" -C "${WORK_DIR}" rev-parse --verify --short=7 HEAD)"
+	cd "${WORK_DIR}"
+	GIT_DATE="$("${GIT_EXE}" show -s --format=%ci HEAD | sed 's/ .*//')"
+	GIT_SHA1="$("${GIT_EXE}" rev-parse --verify --short=7 HEAD)"
 	echo "-${PRE_RELEASE}.${GIT_DATE}.${GIT_SHA1}"
 else
 	date -u "+-${PRE_RELEASE}.%F"
