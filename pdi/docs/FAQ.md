@@ -5,15 +5,14 @@
 The Intel compiler is a complex beast for C++.
 It does not provide a full compilation environment but relies on GNU C++
 library.
-Hence on a supercomputer, you typically need to load a GCC module before using
-Intel C++ compiler.
-
-Please note however that it is fully compatible with the GNU compiler for C &
-C++.
+Hence on a machine using environment modules (such as supercomputers), you
+will typically need to load a GCC module before using Intel C++ compiler.
+It is however fully compatible with the GNU compiler for C & C++.
 Only the Fortran compiler uses a different module format.
 
-Hence if you don't use PDI from Fortran, we strongly advise to compile it with
-GCC even if you compile the code that use it with Intel compiler.
+\attention
+If you don't use PDI from Fortran, we strongly advise to compile PDI with GCC
+even if you compile the code that use PDI with Intel compiler.
 
 Otherwise, to use PDI from a code compiled with IFort, you have 3 options (by
 order of recommendation):
