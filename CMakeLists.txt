@@ -436,6 +436,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			"<SOURCE_DIR>/configure"
 			#TODO:  prefix should point to the final install dir, we should use a staging mechanism
 			"--prefix=<INSTALL_DIR>"
+			"--libdir=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}"
 			"--disable-tests"
 			"--disable-static"
 			"--disable-tools"
