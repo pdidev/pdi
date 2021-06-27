@@ -32,6 +32,8 @@ cmake_minimum_required(VERSION 3.5)
 project(pdi_decl_netcdf_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
+
 # Includes
 include(CTest)
 include(GNUInstallDirs)

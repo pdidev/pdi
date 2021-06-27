@@ -32,6 +32,7 @@ cmake_minimum_required(VERSION 3.5)
 project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_HDF5_PARALLEL "Enable HDF5 parallel build" ON)
 option(BUILD_INDENT        "Enable automatic code indentation" OFF)
