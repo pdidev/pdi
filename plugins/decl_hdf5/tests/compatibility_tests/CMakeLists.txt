@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
@@ -32,7 +32,7 @@ if("${BUILD_HDF5_PARALLEL}")
     list(APPEND ALL_TEST_NAMES mpi)
 endif()
 
-foreach(test_name )
+foreach(test_name ${ALL_TEST_NAMES})
     foreach(io_operation write read)
         add_executable("HDF5_C_${test_name}_${io_operation}_test" "HDF5_C/${test_name}_${io_operation}_test.c")
         target_link_libraries("HDF5_C_${test_name}_${io_operation}_test" ${HDF5_C_LIBRARIES})

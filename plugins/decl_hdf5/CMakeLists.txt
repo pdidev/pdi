@@ -38,7 +38,7 @@ option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 
 include(CTest)
 
-if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
+if("${BUILD_FORTRAN}")
 	enable_language(Fortran)
 	set(PDI_COMPONENTS f90)
 endif()
@@ -51,8 +51,8 @@ if("${BUILD_INDENT}")
 endif()
 
 # MPI
-if("${BUILD_TESTING}" OR "${BUILD_HDF5_PARALLEL}")
-	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
+if("${BUILD_HDF5_PARALLEL}")
+	if("${BUILD_FORTRAN}")
 		set(MPI_COMPONENTS Fortran)
 	endif()
 	find_package(MPI REQUIRED COMPONENTS CXX C ${MPI_COMPONENTS})
