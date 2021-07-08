@@ -21,7 +21,7 @@ pdi:
 
   plugins:
     mpi:
-      transtype:
+      Comm_f2c:
         mpi_comm_F: mpi_comm
     fti:
       config_file: fti_config.ini

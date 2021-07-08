@@ -39,8 +39,9 @@ const char* YAML_CONFIG =
     "  mpi_comm_f: MPI_Comm_f       \n"
     "plugins:                       \n"
     "  mpi:                         \n"
-    "    transtype:                 \n"
+    "    Comm_c2f:                  \n"
     "      mpi_comm: m_mpi_comm_f   \n"
+    "    Comm_f2c:                  \n"
     "      mpi_comm_f: m_mpi_comm   \n"
     ;
 

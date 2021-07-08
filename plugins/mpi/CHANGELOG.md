@@ -9,12 +9,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+* Communicator transtyping now uses the specific `Comm_c2f` keyworkd for C to
+  Fortran transtyping and `Comm_f2c` for Fortran to C transtyping instead of 
+  `transtype` for both directions
 
 ### Deprecated
+* `transtype` map key in specification tree for communicator transtyping
 
 ### Removed
 
 ### Fixed
+* Fixed an issue for `MPI_Comm` transtyping when the memory layout of the C &
+  Fortran types were the same:
+  https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/291
 
 ### Security
 
