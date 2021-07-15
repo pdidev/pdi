@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -117,15 +117,17 @@ public:
 	 * \param size the number of elements the array can store
 	 * \param start the id of the first actual element of the array
 	 * \param subsize the number of actual elements in the array
+	 * \param attributes attributes of the array
 	 */
-	Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize);
+	Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {});
 	
 	/** Construct a new completely filled Array_datatype
 	 *
 	 * \param subtype the type of the elements contained in the array
 	 * \param size the number of elements the array can store
+	 * \param attributes attributes of the array
 	 */
-	Array_datatype(Datatype_uptr subtype, size_t size);
+	Array_datatype(Datatype_uptr subtype, size_t size, const Attributes_map& attributes = {});
 	
 	/** Type of the elements contained in the array
 	 *

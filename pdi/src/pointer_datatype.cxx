@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,11 +67,13 @@ unique_ptr<Datatype::Accessor_base> Pointer_datatype::Accessor::clone() const
 	return unique_ptr<Accessor_base>{new Accessor{}};
 }
 
-Pointer_datatype::Pointer_datatype(Datatype_uptr subtype):
+Pointer_datatype::Pointer_datatype(Datatype_uptr subtype, const Attributes_map& attributes):
+	Datatype(attributes),
 	m_subtype{move(subtype)}
 {}
 
-Pointer_datatype::Pointer_datatype(Datatype_uptr subtype, function<void* (void*, const void*)> copy, function<void(void*)> destroy):
+Pointer_datatype::Pointer_datatype(Datatype_uptr subtype, function<void* (void*, const void*)> copy, function<void(void*)> destroy, const Attributes_map& attributes):
+	Datatype(attributes),
 	m_subtype{move(subtype)},
 	m_copy{move(copy)},
 	m_destroy{move(destroy)}
@@ -89,12 +91,12 @@ Datatype_template_uptr Pointer_datatype::clone() const
 
 Datatype_uptr Pointer_datatype::clone_type() const
 {
-	return unique_ptr<Pointer_datatype> {new Pointer_datatype{m_subtype->clone_type(), m_copy, m_destroy}};
+	return unique_ptr<Pointer_datatype> {new Pointer_datatype{m_subtype->clone_type(), m_copy, m_destroy, m_attributes}};
 }
 
 Datatype_uptr Pointer_datatype::densify() const
 {
-	return unique_ptr<Pointer_datatype> {new Pointer_datatype{m_subtype->densify(), m_copy, m_destroy}};
+	return unique_ptr<Pointer_datatype> {new Pointer_datatype{m_subtype->densify(), m_copy, m_destroy, m_attributes}};
 }
 
 Datatype_uptr Pointer_datatype::evaluate(Context& ctx) const
@@ -172,6 +174,14 @@ string Pointer_datatype::debug_string() const
 	    << "datasize: " << datasize() << endl
 	    << "alignment: " << alignment() << endl
 	    << "subtype: " << endl << m_subtype->debug_string();
+	if (!m_attributes.empty()) {
+		ss << endl << "attributes: " << endl;
+		auto it = m_attributes.begin();
+		for (; next(it) != m_attributes.end(); it++) {
+			ss << "\t" << it->first << ", ";
+		}
+		ss << "\t" << it->first;
+	}
 	return ss.str();
 }
 

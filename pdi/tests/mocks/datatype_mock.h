@@ -31,6 +31,10 @@
 #include <pdi/pdi_fwd.h>
 
 struct MockDatatype : public PDI::Datatype {
+	MockDatatype():
+		PDI::Datatype()
+	{}
+	
 	PDI::Datatype_template_uptr clone() const override
 	{
 		return PDI::Datatype_template_uptr{clone_proxy()};

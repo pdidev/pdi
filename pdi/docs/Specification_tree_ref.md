@@ -147,6 +147,22 @@ Plugins can add new options that follow the same pattern.
 A *datatype* represents the memory layout and interpretation for data
 exposed by the user in the \ref Data_store "data store".
 
+Optional attributes can be added to any *datatype*.
+An attribute is identified by a key that starts with the `+` character.
+The value can be anything(**scalar**, **sequence** or **mapping**).
+
+Example:
+
+```yaml
+...
+  data_name:
+    type: int
+    +first_attr: attr_value_1
+    +second_attr: [attr, value]
+    +third_attr: {key_0: 0, key_1: 1}
+...
+```
+
 # data_map {#data_map_node}
 
 A *data_map* is a **mapping** that contains the following keys:

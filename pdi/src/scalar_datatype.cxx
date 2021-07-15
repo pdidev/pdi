@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +70,8 @@ inline bool nulltype(const Scalar_datatype& d)
 
 }
 
-Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size):
+Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, const Attributes_map& attributes):
+	Datatype(attributes),
 	m_size{size},
 	m_dense_size{size},
 	m_align{size},
@@ -78,7 +80,8 @@ Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size):
 	if ( !nulltype(*this) && !ispow2(m_align) ) throw Value_error{"alignment should be a power of 2"};
 }
 
-Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align):
+Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes):
+	Datatype(attributes),
 	m_size{size},
 	m_dense_size{size},
 	m_align{align},
@@ -87,7 +90,8 @@ Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align):
 	if ( !nulltype(*this) && !ispow2(m_align) ) throw Value_error{"alignment should be a power of 2"};
 }
 
-Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy):
+Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes):
+	Datatype(attributes),
 	m_size{size},
 	m_dense_size{dense_size},
 	m_align{align},
@@ -110,12 +114,12 @@ Datatype_template_uptr Scalar_datatype::clone() const
 
 Datatype_uptr Scalar_datatype::clone_type() const
 {
-	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align, m_dense_size, m_copy, m_destroy}};
+	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align, m_dense_size, m_copy, m_destroy, m_attributes}};
 }
 
 Datatype_uptr Scalar_datatype::densify() const
 {
-	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_dense_size, m_align, m_dense_size, m_copy, m_destroy}};
+	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_dense_size, m_align, m_dense_size, m_copy, m_destroy, m_attributes}};
 }
 
 Datatype_uptr Scalar_datatype::evaluate(Context&) const
@@ -186,6 +190,14 @@ string Scalar_datatype::debug_string() const
 	    << "buffersize: " << buffersize() << endl
 	    << "datasize: " << datasize() << endl
 	    << "alignment: " << alignment();
+	if (!m_attributes.empty()) {
+		ss << endl << "attributes: " << endl;
+		auto it = m_attributes.begin();
+		for (; next(it) != m_attributes.end(); it++) {
+			ss << "\t" << it->first << ", ";
+		}
+		ss << "\t" << it->first;
+	}
 	return ss.str();
 }
 

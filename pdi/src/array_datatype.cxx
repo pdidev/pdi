@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -128,15 +128,16 @@ size_t Array_datatype::Slice_accessor::size() const
 	return m_end - m_start;
 }
 
-Array_datatype::Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize):
+Array_datatype::Array_datatype(Datatype_uptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes):
+	Datatype(attributes),
 	m_subtype {move(subtype)},
 	m_size{move(size)},
 	m_start{move(start)},
 	m_subsize{move(subsize)}
 {}
 
-Array_datatype::Array_datatype(Datatype_uptr subtype, size_t size):
-	Array_datatype{move(subtype), size, 0, move(size)}
+Array_datatype::Array_datatype(Datatype_uptr subtype, size_t size, const Attributes_map& attributes):
+	Array_datatype{move(subtype), size, 0, move(size), attributes}
 {}
 
 const Datatype& Array_datatype::subtype() const
@@ -166,12 +167,12 @@ Datatype_template_uptr Array_datatype::clone() const
 
 Datatype_uptr Array_datatype::clone_type() const
 {
-	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->clone_type(), m_size, m_start, m_subsize}};
+	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->clone_type(), m_size, m_start, m_subsize, m_attributes}};
 }
 
 Datatype_uptr Array_datatype::densify() const
 {
-	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->densify(), m_subsize}};
+	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->densify(), m_subsize, m_attributes}};
 }
 
 Datatype_uptr Array_datatype::evaluate(Context&) const
@@ -294,6 +295,14 @@ string Array_datatype::debug_string() const
 	    << "start: " << start() << endl
 	    << "subsize: " << subsize() << endl
 	    << "subtype: " << endl << subtype_str;
+	if (!m_attributes.empty()) {
+		ss << endl << "attributes: " << endl;
+		auto it = m_attributes.begin();
+		for (; next(it) != m_attributes.end(); it++) {
+			ss << "\t" << it->first << ", ";
+		}
+		ss << "\t" << it->first;
+	}
 	return ss.str();
 }
 

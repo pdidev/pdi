@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@
 #include <utility>
 #include <vector>
 
-#include <pdi/pdi_fwd.h>
 #include <pdi/paraconf_wrapper.h>
-#include <pdi/ref_any.h>
+
+#include <pdi/pdi_fwd.h>
 
 namespace PDI {
 

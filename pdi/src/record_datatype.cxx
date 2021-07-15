@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,8 @@ bool Record_datatype::Member::operator!=(const Member& rhs) const
 	return !(*this == rhs);
 }
 
-Record_datatype::Record_datatype(vector<Member>&& members, size_t size):
+Record_datatype::Record_datatype(vector<Member>&& members, size_t size, const Attributes_map& attributes):
+	Datatype(attributes),
 	m_members{move(members)},
 	m_buffersize{move(size)}
 {}
@@ -144,7 +145,7 @@ Datatype_template_uptr Record_datatype::clone() const
 
 Datatype_uptr Record_datatype::clone_type() const
 {
-	return unique_ptr<Record_datatype> {new Record_datatype{vector<Member>(m_members), m_buffersize}};
+	return unique_ptr<Record_datatype> {new Record_datatype{vector<Member>(m_members), m_buffersize, m_attributes}};
 }
 
 Datatype_uptr Record_datatype::densify() const
@@ -300,6 +301,14 @@ string Record_datatype::debug_string() const
 		ss << endl << "\t - name: " << member.name() << endl
 		    << "\t   displacement: " << member.displacement() << endl
 		    << "\t   type: " << endl << type_str;
+	}
+	if (!m_attributes.empty()) {
+		ss << endl << "attributes: " << endl;
+		auto it = m_attributes.begin();
+		for (; next(it) != m_attributes.end(); it++) {
+			ss << "\t" << it->first << ", ";
+		}
+		ss << "\t" << it->first;
 	}
 	return ss.str();
 }

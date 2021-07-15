@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -141,8 +141,9 @@ public:
 	 * \param members the members for the newly created Record_datatype in
 	 *        increasing displacement order
 	 * \param size the total size of the buffer containing all members
+	 * \param attributes attributes of the record datatype
 	 */
-	Record_datatype(std::vector<Member>&& members, size_t size);
+	Record_datatype(std::vector<Member>&& members, size_t size, const Attributes_map& attributes = {});
 	
 	/** Accesses the members in increasing displacement order
 	 */

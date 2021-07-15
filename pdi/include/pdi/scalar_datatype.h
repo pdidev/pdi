@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,11 +57,33 @@ class PDI_EXPORT Scalar_datatype:
 	std::function<void(void*)> m_destroy;
 	
 public:
-	Scalar_datatype(Scalar_kind kind, size_t size);
+	/** Creates new scalar datatype
+	 *
+	 * \param[in] kind kind of the scalar datatype
+	 * \param[in] size buffersize of the scalar datatype
+	 * \param[in] attributes attributes of the scalar datatype
+	 */
+	Scalar_datatype(Scalar_kind kind, size_t size, const Attributes_map& attributes = {});
 	
-	Scalar_datatype(Scalar_kind kind, size_t size, size_t align);
+	/** Creates new scalar datatype
+	 *
+	 * \param[in] kind kind of the scalar datatype
+	 * \param[in] size buffersize of the scalar datatype
+	 * \param[in] align alignment of the scalar datatype
+	 * \param[in] attributes attributes of the scalar datatype
+	 */
+	Scalar_datatype(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes = {});
 	
-	Scalar_datatype(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy);
+	/** Creates new scalar datatype
+	 *
+	 * \param[in] kind kind of the scalar datatype
+	 * \param[in] size buffersize of the scalar datatype
+	 * \param[in] dense_size dense size of the scalar datatype
+	 * \param[in] copy function that copies data of this datatype
+	 * \param[in] destroy function that destroys data of this datatype (doesn't deallocate memory)
+	 * \param[in] attributes attributes of the scalar datatype
+	 */
+	Scalar_datatype(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
 	
 	/** Interpretation of the content
 	 */

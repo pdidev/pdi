@@ -66,6 +66,7 @@ set(PDI_unit_tests_SRC
 		PDI_callbacks.cxx
 		PDI_context.cxx
 		PDI_data_descriptor.cxx
+		PDI_datatype_attributes.cxx
 		PDI_error.cxx
 		PDI_expression.cxx
 # 		PDI_initialize_plugins.cxx

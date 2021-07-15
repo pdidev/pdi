@@ -67,7 +67,7 @@ struct serialize_plugin: PDI::Plugin {
 		if (const PDI::Scalar_datatype* scalar_type = dynamic_cast<const PDI::Scalar_datatype*>(type)) {
 			return type->clone_type();
 		} else if (const PDI::Array_datatype* array_type = dynamic_cast<const PDI::Array_datatype*>(type)) {
-			return PDI::Datatype_uptr{new PDI::Array_datatype(serialize_type(&array_type->subtype()), array_type->subsize())};
+			return PDI::Datatype_uptr{new PDI::Array_datatype(serialize_type(&array_type->subtype()), array_type->subsize(), array_type->attributes())};
 		} else if (const PDI::Record_datatype* record_type = dynamic_cast<const PDI::Record_datatype*>(type)) {
 			std::vector<PDI::Record_datatype::Member> serialized_members;
 			size_t displacement = 0;
@@ -97,7 +97,7 @@ struct serialize_plugin: PDI::Plugin {
 			size_t spacing = (alignment - (displacement % alignment)) % alignment;
 			serialized_buffersize += spacing;
 			
-			return PDI::Datatype_uptr{new PDI::Record_datatype{move(serialized_members), serialized_buffersize}};
+			return PDI::Datatype_uptr{new PDI::Record_datatype{move(serialized_members), serialized_buffersize, record_type->attributes()}};
 		} else if (const PDI::Pointer_datatype* pointer_type = dynamic_cast<const PDI::Pointer_datatype*>(type)) {
 			return serialize_type(&pointer_type->subtype());
 		} else {

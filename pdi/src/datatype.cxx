@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,6 +90,10 @@ pair<void*, Datatype_uptr> Datatype::subaccess_by_iterators(void* from,
 		throw Type_error{"Invalid subaccess using accessors: {}\n To type: {}", join(access_kinds, "; "), debug_string()};
 	}
 }
+
+Datatype::Datatype(const Attributes_map& attributes):
+	Datatype_template(attributes)
+{}
 
 bool Datatype::operator!=(const Datatype& rhs) const
 {

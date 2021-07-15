@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -100,6 +100,12 @@ public:
 		*/
 		virtual ~Accessor_base() = default;
 	};
+	
+	/** Creates a new datatype
+	 *
+	 * \param[in] attributes attributes of the datatype
+	 */
+	Datatype(const Attributes_map& attributes = {});
 	
 	~Datatype() override;
 	

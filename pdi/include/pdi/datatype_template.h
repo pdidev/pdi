@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,15 +26,39 @@
 #ifndef PDI_DATATYPE_TEMPLATE_H_
 #define PDI_DATATYPE_TEMPLATE_H_
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include <paraconf.h>
 
+#include <pdi/expression.h>
 #include <pdi/pdi_fwd.h>
 
 namespace PDI {
 
+using Attributes_map = std::unordered_map<std::string, Expression>;
+
 class PDI_EXPORT Datatype_template
 {
+protected:
+	Attributes_map m_attributes;
+	
 public:
+	/** Creates datatype template with given attributes
+	 *
+	 * \param attributes attributes of datatype template
+	 */
+	Datatype_template(const Attributes_map& attributes = {});
+	
+	/** Creates datatype template
+	 *
+	 * If attributes are defined in datatype_tree, they will be included in datatype template
+	 *
+	 * \param datatype_tree datatype tree
+	 */
+	Datatype_template(PC_tree_t datatype_tree);
+	
 	/** Destroys the template
 	 */
 	virtual ~Datatype_template();
@@ -50,6 +75,19 @@ public:
 	 * \return the evaluated type that is produced
 	 */
 	virtual Datatype_uptr evaluate(Context& ctx) const = 0;
+	
+	/** Returns attribute of given name as Expression
+	 * \param attribute_key attribute to get
+	 *
+	 * \return value of attribute as Expression
+	 */
+	Expression attribute(const std::string& attribute_name) const;
+	
+	/** Returns all attributes as a unordered map
+	 *
+	 * \return all attributes as a unordered map
+	 */
+	const Attributes_map& attributes() const;
 	
 	/**
 	 * Adds to the context the basic Array, Record, C and Fortran datatypes

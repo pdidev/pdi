@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,9 +62,21 @@ public:
 		std::unique_ptr<Accessor_base> clone() const override;
 	};
 	
-	Pointer_datatype(Datatype_uptr subtype);
+	/** Creates new pointer datatype
+	 *
+	 * \param[in] subtype subtype of the pointer datatype
+	 * \param[in] attributes attributes of the pointer datatype
+	 */
+	Pointer_datatype(Datatype_uptr subtype, const Attributes_map& attributes = {});
 	
-	Pointer_datatype(Datatype_uptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy);
+	/** Creates new pointer datatype
+	 *
+	 * \param[in] subtype subtype of the pointer datatype
+	 * \param[in] copy function that copies data of this datatype
+	 * \param[in] destroy function that destroys data of this datatype (doesn't deallocate memory)
+	 * \param[in] attributes attributes of the pointer datatype
+	 */
+	Pointer_datatype(Datatype_uptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
 	
 	/** Type of the pointed element
 	 *
