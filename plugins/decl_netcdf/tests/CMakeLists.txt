@@ -79,3 +79,13 @@ add_executable(decl_netcdf_07_C decl_netcdf_test_07.c)
 target_link_libraries(decl_netcdf_07_C PDI::PDI_C)
 add_test(NAME decl_netcdf_07_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_07_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_07.yml")
 set_property(TEST decl_netcdf_07_C PROPERTY TIMEOUT 5)
+
+add_executable(decl_netcdf_08_C decl_netcdf_test_08.c)
+target_link_libraries(decl_netcdf_08_C PDI::PDI_C)
+add_test(NAME decl_netcdf_08_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_08_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_08.yml")
+set_property(TEST decl_netcdf_08_C PROPERTY TIMEOUT 5)
+
+add_executable(decl_netcdf_09_C decl_netcdf_test_09.c)
+target_link_libraries(decl_netcdf_09_C PDI::PDI_C)
+add_test(NAME decl_netcdf_09_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_09_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_09.yml")
+set_property(TEST decl_netcdf_09_C PROPERTY TIMEOUT 5)

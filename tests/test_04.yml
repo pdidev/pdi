@@ -123,9 +123,9 @@ plugins:
     vector_data: vector_data_serialized
     int_array: int_array_serialized
   decl_hdf5:
-    - file: serialize_test_09.h5
+    - file: test_04.h5
       on_event: write
       write: [vector_data_serialized, int_array_serialized]
-    - file: serialize_test_09.h5
+    - file: test_04.h5
       on_event: read
       read: [vector_data_serialized, int_array_serialized]

@@ -254,6 +254,25 @@ The `write` subtree can have 2 definitions:
             subsize: [4, 4]
   ```
 
+\warning To write a record datatype, `decl_netcdf.type` type attribute must be defined with compound type name.
+
+  Record write configuration example:
+  ```yaml
+  data:
+    particle:
+      type: struct
+      +decl_netcdf.type: particle_xyz
+      members:
+        - x: double
+        - y: double
+        - z: double
+
+  plugins:
+    decl_netcdf:
+      file: "file_name.nc"
+      write: [particle]
+  ```
+
 \subsubsection decl_netcdf_var_selection subtree
 
 Defines the part of file NetCDF variable where from read/to write the data. The hyperslab will be created from given `start` and `subsize` (`count`) lists.

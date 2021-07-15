@@ -87,18 +87,13 @@ std::vector<std::string> split_to_groups(const std::string& path)
  *
  * \return scalar type of the type
  */
-const PDI::Scalar_datatype* get_variable_stride(const PDI::Datatype* type, std::vector<size_t>& stride)
+const PDI::Datatype* get_variable_stride(const PDI::Datatype* type, std::vector<size_t>& stride)
 {
 	while (auto&& array_type = dynamic_cast<const PDI::Array_datatype*>(type)) {
 		stride.emplace_back(array_type->size());
 		type = &array_type->subtype();
 	}
-	
-	if (auto&& scalar_type = dynamic_cast<const PDI::Scalar_datatype*>(type)) {
-		return scalar_type;
-	} else {
-		throw PDI::Error{PDI_ERR_TYPE, "Decl_netcdf plugin: Record datatype is not supported"};
-	}
+	return type;
 }
 
 /** Wraps the calling of netcdf call with status checking
@@ -148,7 +143,7 @@ nc_type nc_scalar_type(const PDI::Scalar_datatype& scalar_type)
 		}
 		break;
 	default:
-		throw PDI::Error{PDI_ERR_TYPE, "Decl_netcdf plugin: Unsupported unknown scalar datatype"};
+		throw PDI::Error{PDI_ERR_TYPE, "Decl_netcdf plugin: Unsupported unknown scalar datatype: {}", scalar_type.debug_string()};
 	}
 }
 
@@ -314,6 +309,87 @@ int get_dimension_id(PDI::Context& ctx, int nc_dest_id, const std::string& dim_n
 
 } // namespace <anonymous> for Dnc_netcdf_file::define_variable
 
+nc_type Dnc_netcdf_file::define_compound_type(const PDI::Record_datatype* record_type)
+{
+	nc_type type_id;
+	std::string compound_type_name;
+	try {
+		compound_type_name = record_type->attribute("decl_netcdf.type").to_string(m_ctx);
+	} catch (const std::exception& e) {
+		throw PDI::Value_error{"Cannot get `decl_netcdf.type' attribute from: {}", record_type->debug_string()};
+	}
+	
+	int status = nc_inq_typeid(m_file_id, compound_type_name.c_str(), &type_id);
+	if (status == NC_NOERR) {
+		m_ctx.logger()->trace("{} type already defined: (nc_type = {})", compound_type_name, type_id);
+		return type_id;
+	}
+	
+	
+	/* support types in non-root groups? - netCDF 4.7.4 does not support it correctly
+	    std::string group_path;
+	    std::string compound_type_name;
+	    std::tie(group_path, compound_type_name) = split_group_and_variable(compound_type_path);
+	    define_group(Dnc_group{m_ctx, group_path});
+	    // get dest_id
+	    auto group_it = m_groups.find(group_path);
+	    if (group_it == m_groups.end()) {
+	    throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Cannot find group that should be created: {}", group_path};
+	    }
+	    nc_id dest_id = group_it->second;
+	*/
+	
+	// HAVE TO DEFINE SUB COMPOUND TYPE BEFOER CALLING nc_def_compound
+	for (auto&& member : record_type->members()) {
+		const PDI::Datatype* type = &member.type();
+		while (auto&& array_type = dynamic_cast<const PDI::Array_datatype*>(type)) {
+			type = &array_type->subtype();
+		}
+		if (auto&& member_record_type = dynamic_cast<const PDI::Record_datatype*>(type)) {
+			m_ctx.logger()->debug("From {}: defining compound member: {}", compound_type_name, member.name());
+			define_compound_type(member_record_type);
+		}
+	}
+	
+	m_ctx.logger()->debug("Defining new compound type: {} ({} B)", compound_type_name, record_type->buffersize());
+	nc_try(nc_def_compound(m_file_id, record_type->buffersize(), compound_type_name.c_str(), &type_id),
+	    "Cannot define record type");
+	    
+	for (auto&& member : record_type->members()) {
+		if (auto&& array_type = dynamic_cast<const PDI::Array_datatype*>(&member.type())) {
+			// member is an array
+			m_ctx.logger()->trace("Inserting array member: {}, disp: {}", member.name(), member.displacement());
+			std::vector<int> sizes;
+			const PDI::Datatype* type = &member.type();
+			while (auto&& array_type = dynamic_cast<const PDI::Array_datatype*>(type)) {
+				sizes.emplace_back(array_type->size());
+				type = &array_type->subtype();
+			}
+			nc_type member_type_id;
+			if (auto&& scalar_type = dynamic_cast<const PDI::Scalar_datatype*>(type)) {
+				member_type_id = nc_scalar_type(*scalar_type);
+			} else if (auto&& member_record_type = dynamic_cast<const PDI::Record_datatype*>(type)) {
+				member_type_id = define_compound_type(member_record_type);
+			} else {
+				throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Not supported datatype: {}", type->debug_string()};
+			}
+			nc_insert_array_compound(m_file_id, type_id, member.name().c_str(), member.displacement(), member_type_id, sizes.size(), sizes.data());
+		} else if (auto&& member_record_type = dynamic_cast<const PDI::Record_datatype*>(&member.type())) {
+			// member is a record, HAVE TO INSERT ALL MEMBERS THE SAME ORDER AS IT IS IN members VECTOR
+			m_ctx.logger()->trace("Inserting record member: {}, disp: {}", member.name(), member.displacement());
+			nc_insert_compound(m_file_id, type_id, member.name().c_str(), member.displacement(), define_compound_type(member_record_type));
+		} else if (auto&& scalar_type = dynamic_cast<const PDI::Scalar_datatype*>(&member.type())) {
+			// member is a scalar
+			m_ctx.logger()->trace("Inserting scalar member: {}, disp: {}", member.name(), member.displacement());
+			nc_insert_compound(m_file_id, type_id, member.name().c_str(), member.displacement(), nc_scalar_type(*scalar_type));
+		} else {
+			throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Not supported datatype: {}", member.type().debug_string()};
+		}
+	}
+	m_ctx.logger()->trace("Complete defining new compound type: {} (nc_type = {}): ", compound_type_name, type_id, record_type->debug_string());
+	return type_id;
+}
+
 void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 {
 	if (m_variables.find(variable.path()) != m_variables.end()) {
@@ -339,53 +415,64 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 	}
 	int dest_id = group_it->second;
 	
-	// get variable type
-	PDI::Datatype_uptr variable_type = variable.type();
-	if (!variable_type) {
-		throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Variable {}: No type defined", variable.path()};
-	}
-	if (!variable_type->dense()) {
-		throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Variable {}: Data must be dense (continuous memory)", variable.path()};
-	}
-	m_ctx.logger()->trace("Variable `{}' type: {}", variable_name, variable_type->debug_string());
-	
-	// get variable stride and scalar datatype
-	std::vector<size_t> var_stride;
-	const PDI::Scalar_datatype* var_scalar_type = get_variable_stride(variable_type.get(), var_stride);
-	nc_type type_id = nc_scalar_type(*var_scalar_type);
-	
-	// get variable dimensions
-	m_ctx.logger()->trace("Defining dimensions of {} variable:", variable.path());
-	std::vector<nc_id> dimensions_ids;
-	std::vector<std::string> dimensions_names = variable.dimensions_names();
-	if (dimensions_names.empty()) {
-		m_ctx.logger()->trace("\t (arbitrary names)");
-		// define arbitrary dimensions names
-		for (int i = 0; i < var_stride.size(); i++) {
-			std::string dim_name = variable_name + "_" + std::to_string(i);
-			m_ctx.logger()->trace("\t {}[{}]", dim_name, var_stride[i]);
-			dimensions_ids.emplace_back(get_dimension_id(m_ctx, dest_id, dim_name, var_stride[i]));
-		}
-	} else {
-		if (var_stride.size() != dimensions_names.size()) {
-			throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Variable type dimension ({}) != defined variable dimensions ({})", var_stride.size(), dimensions_names.size()};
-		}
-		
-		for (int i = 0; i < dimensions_names.size(); i++) {
-			std::string dim_name = dimensions_names[i];
-			m_ctx.logger()->trace("\t {}[{}]", dim_name, var_stride[i]);
-			dimensions_ids.emplace_back(get_dimension_id(m_ctx, dest_id, dim_name, var_stride[i]));
-		}
-	}
-	
-	// define NetCDF variable
 	nc_id var_id;
 	if (nc_inq_varid(dest_id, variable_name.c_str(), &var_id) == NC_NOERR) {
-		m_ctx.logger()->debug("Variable `{}' already defined in (nc_id = {}) of scalar_type (nc_id = {})", variable.path(), dest_id, type_id);
+		// variable already defined
+		m_ctx.logger()->debug("Variable `{}' already defined in (nc_id = {})", variable.path(), dest_id);
 	} else {
-		m_ctx.logger()->trace("Defining variable `{}' in (nc_id = {}) of scalar_type (nc_id = {})", variable.path(), dest_id, type_id);
+		// get variable type
+		PDI::Datatype_uptr variable_type = variable.type();
+		if (!variable_type) {
+			throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Variable {}: No type defined", variable.path()};
+		}
+		if (!variable_type->dense()) {
+			throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Variable {}: Data must be dense (continuous memory)", variable.path()};
+		}
+		m_ctx.logger()->trace("Preparing variable `{}'", variable_name);
+		
+		const PDI::Datatype* type = variable_type.get();
+		std::vector<size_t> sizes;
+		while (auto&& array_type = dynamic_cast<const PDI::Array_datatype*>(type)) {
+			sizes.emplace_back(array_type->size());
+			type = &array_type->subtype();
+		}
+		nc_type type_id;
+		if (auto&& scalar_type = dynamic_cast<const PDI::Scalar_datatype*>(type)) {
+			type_id = nc_scalar_type(*scalar_type);
+		} else if (auto&& record_type = dynamic_cast<const PDI::Record_datatype*>(type)) {
+			type_id = define_compound_type(record_type);
+		} else {
+			throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Not supported datatype: {}", type->debug_string()};
+		}
+		
+		// get variable dimensions
+		m_ctx.logger()->trace("Defining dimensions of {} variable:", variable.path());
+		std::vector<nc_id> dimensions_ids;
+		std::vector<std::string> dimensions_names = variable.dimensions_names();
+		if (dimensions_names.empty()) {
+			m_ctx.logger()->trace("\t (arbitrary names)");
+			// define arbitrary dimensions names
+			for (int i = 0; i < sizes.size(); i++) {
+				std::string dim_name = variable_name + "_" + std::to_string(i);
+				m_ctx.logger()->trace("\t {}[{}]", dim_name, sizes[i]);
+				dimensions_ids.emplace_back(get_dimension_id(m_ctx, dest_id, dim_name, sizes[i]));
+			}
+		} else {
+			if (sizes.size() != dimensions_names.size()) {
+				throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Variable type dimension ({}) != defined variable dimensions ({})", sizes.size(), dimensions_names.size()};
+			}
+			
+			for (int i = 0; i < dimensions_names.size(); i++) {
+				std::string dim_name = dimensions_names[i];
+				m_ctx.logger()->trace("\t {}[{}]", dim_name, sizes[i]);
+				dimensions_ids.emplace_back(get_dimension_id(m_ctx, dest_id, dim_name, sizes[i]));
+			}
+		}
+		
+		m_ctx.logger()->trace("Defining variable `{}' in (nc_id = {}) of type (nc_id = {})", variable.path(), dest_id, type_id);
 		nc_try(nc_def_var(dest_id, variable_name.c_str(), type_id, dimensions_ids.size(), dimensions_ids.data(), &var_id),
 		    "Cannot define `{}' variable in (nc_id = {})", variable_name, dest_id);
+		m_ctx.logger()->trace("Variable `{}' defined (var_id = {})", variable.path(), var_id);
 	}
 	
 	m_variables.emplace(variable.path(), var_id);
@@ -501,7 +588,7 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	std::vector<size_t> var_count = write.get_dims_count(var_stride);
 	
 	// write variable
-	m_ctx.logger()->trace("Putting variable `{}'", variable_name);
+	m_ctx.logger()->trace("Putting variable `{}' (var_id = {})", variable_name, var_id);
 	
 	if (var_stride.empty()) {
 		nc_try(nc_put_var(dest_id, var_id, ref_r.get()),
@@ -510,6 +597,7 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 		nc_try(nc_put_vara(dest_id, var_id, var_start.data(), var_count.data(), ref_r.get()),
 		    "Decl_netcdf plugin: Cannot write `{}' to (nc_id = {})", dest_id);
 	}
+	m_ctx.logger()->trace("Variable `{}' written", variable_name);
 }
 
 void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w)

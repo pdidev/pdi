@@ -46,7 +46,7 @@ class Dnc_variable
 	/// Name of this variable
 	std::string m_path;
 	
-	/// Type of this attribute. Can be nullptr.
+	/// Type of this variable. Can be nullptr.
 	PDI::Datatype_template_uptr m_type;
 	
 	/// Dimensions names of this variable

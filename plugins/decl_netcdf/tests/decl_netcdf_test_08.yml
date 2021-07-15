@@ -1,0 +1,23 @@
+logging: trace
+data:
+  record:
+    type: struct
+    +decl_netcdf.type: record_type
+    members:
+      - int_scalar: int
+      - double_array: 
+          type: array
+          subtype: double
+          size: 32
+plugins:
+  decl_netcdf:
+    - file: "test_08.nc"
+      on_event: "write"
+      write: 
+        record:
+          variable: /data/record
+    - file: "test_08.nc"
+      on_event: "read"
+      read:
+        record:
+          variable: /data/record

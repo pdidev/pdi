@@ -59,6 +59,16 @@ class Dnc_netcdf_file
 	/// Variables in NetCDF file
 	std::unordered_map<std::string, nc_id> m_variables;
 	
+	/** Defines compound type in the netcdf file
+	 *
+	 * If type is already defined, the nc_type of it is returned
+	 *
+	 * \param record_type record datatype to define in nc file
+	 *
+	 * \return nc_type of compound type
+	 */
+	nc_type define_compound_type(const PDI::Record_datatype* record_type);
+	
 	/** Puts attribute to the file
 	 *
 	 * \param dest_id file nc_id or group nc_id in which the attribute will be put

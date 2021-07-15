@@ -1,0 +1,111 @@
+types:
+  subvector:
+    type: struct
+    +decl_netcdf.type: subvector
+    members:
+      - data:
+          type: pointer
+          subtype:
+              type: array
+              size: 16
+              subtype: double
+      - allocated: int
+      - data_space:
+          type: pointer
+          subtype: subregion
+      - data_size:
+          type: int
+  subregionArray:
+    type: struct
+    +decl_netcdf.type: subregionArray
+    members:
+      - subregions:
+          type: pointer
+          subtype:
+            type: array
+            size: 64
+            subtype:
+              type: pointer
+              subtype: subregion
+      - size: int
+  subregion:
+    type: struct
+    +decl_netcdf.type: subregion
+    members:
+      - ix: int
+      - iy: int
+      - iz: int
+      - nx: int
+      - ny: int
+      - nz: int
+      - sx: int
+      - sy: int
+      - sz: int
+      - rx: int
+      - ry: int
+      - rz: int
+      - level: int
+      - process: int
+  grid:
+    type: struct
+    +decl_netcdf.type: grid
+    members:
+      - subgrids:
+          type: pointer
+          subtype:
+              type: array
+              size: 32
+              subtype: subregionArray
+      - all_subgrids:
+          type: pointer
+          subtype:
+            type: array
+            size: 32
+            subtype: subregionArray
+      - neighbors:
+          type: pointer
+          subtype:
+            type: array
+            size: 32
+            subtype: subregionArray
+      - size: int
+  vector:
+    type: struct
+    +decl_netcdf.type: vector
+    members:
+      - subvectors:
+          type: pointer
+          subtype:
+            type: array
+            size: 8
+            subtype:
+              type: pointer
+              subtype: subvector
+      - data_size: int
+      - grid:
+          type: pointer
+          subtype: grid
+      - data_space:
+          type: pointer
+          subtype: subregionArray
+      - size: int
+logging: trace
+data:
+  int_array:
+    type: array
+    subtype: int
+    size: [10, 10]
+    subsize: [8, 8]
+    start: [1, 1]
+  vector_data: vector
+plugins:
+  serialize:
+    vector_data: vector_data_serialized
+    int_array: int_array_serialized
+  decl_netcdf:
+    - file: test_05.nc
+      on_event: write
+      write: [vector_data_serialized, int_array_serialized]
+    - file: test_05.nc
+      on_event: read
+      read: [vector_data_serialized, int_array_serialized]

@@ -62,6 +62,10 @@ add_executable(test_04_C test_04.c)
 target_link_libraries(test_04_C PDI::PDI_C)
 add_test(NAME test_04_C COMMAND "$<TARGET_FILE:test_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_04.yml")
 
+add_executable(test_05_C test_05.c)
+target_link_libraries(test_05_C PDI::PDI_C)
+add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_05.yml")
+
 endif("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
 # Indentation

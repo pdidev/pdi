@@ -1,0 +1,26 @@
+logging: trace
+data:
+  outer_record:
+    type: struct
+    +decl_netcdf.type: nc_outer_record
+    members:
+      - char_scalar: char
+      - int_array: {type: array, subtype: int, size: 32}
+      - inner_record:
+          type: struct
+          +decl_netcdf.type: nc_inner_record
+          members:
+            - int_scalar: int
+            - double_array: {type: array, subtype: double, size: 32}
+plugins:
+  decl_netcdf:
+    - file: "test_09.nc"
+      on_event: "write"
+      write:
+        outer_record:
+          variable: /data/outer_record
+    - file: "test_09.nc"
+      on_event: "read"
+      read:
+        outer_record:
+          variable: /data/outer_record
