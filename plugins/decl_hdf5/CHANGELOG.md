@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Support building tests when building in sequential with no MPI present
+  (second try)
+  [#348](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/348)
 
 ### Security
 
@@ -23,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 * When building serial decl_hdf5, enabling tests does not require MPI
+  [#348](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/348)
 
 
 ## [1.2.0]

@@ -1,4 +1,5 @@
 #=============================================================================
+# Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -70,13 +71,11 @@ if("${BUILD_HDF5_PARALLEL}")
     add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/../decl_hdf5_test_02.yml")
     set_property(TEST decl_hdf5_02_F PROPERTY TIMEOUT 15)
     set_property(TEST decl_hdf5_02_F PROPERTY PROCESSORS 2)
-endif()
 
-add_test(NAME decl_hdf5_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/../decl_hdf5_test_03.yml" "test_03_on")
-set_property(TEST decl_hdf5_03_F PROPERTY TIMEOUT 15)
-set_property(TEST decl_hdf5_03_F PROPERTY PROCESSORS 2)
+    add_test(NAME decl_hdf5_03_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/../decl_hdf5_test_03.yml" "test_03_on")
+    set_property(TEST decl_hdf5_03_F PROPERTY TIMEOUT 15)
+    set_property(TEST decl_hdf5_03_F PROPERTY PROCESSORS 2)
 
-if("${BUILD_HDF5_PARALLEL}")
     add_executable(decl_hdf5_04_F decl_hdf5_test_04.F90)
     target_link_libraries(decl_hdf5_04_F PDI::PDI_f90 MPI_with_mod)
     string(RANDOM TMP_MODULE_DIRECTORY)
@@ -84,7 +83,7 @@ if("${BUILD_HDF5_PARALLEL}")
     add_test(NAME decl_hdf5_04_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_04.yml")
     set_property(TEST decl_hdf5_04_F PROPERTY TIMEOUT 15)
     set_property(TEST decl_hdf5_04_F PROPERTY PROCESSORS 4)
-endif()
+endif("${BUILD_HDF5_PARALLEL}")
 
 add_executable(decl_hdf5_05_F decl_hdf5_test_05.F90)
 target_link_libraries(decl_hdf5_05_F PDI::PDI_f90)
