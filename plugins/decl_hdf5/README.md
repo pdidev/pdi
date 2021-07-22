@@ -42,6 +42,7 @@ The possible values for the keys are as follow:
 * `datasets`: a key-value map associating a PDI type to string keys.
   Each string is the name of a dataset to create in the file on first
   access, with the type described in the value.
+* `collision_policy`: a string identifying a \ref COLLISION_POLICY
 
 ## `DATA_SECTION`
 
@@ -103,6 +104,7 @@ The possible values for the keys are as follow:
   Each key is the name of an attribute of the dataset.
   Each value is a $-expression (evaluated when the dataset is accessed)
   specifying the value to the attribute.
+* `collision_policy`: a string identifying a \ref COLLISION_POLICY.
 
 ## `SELECTION_DESC`
 
@@ -127,6 +129,22 @@ Dataset selection default values:
   * otherwise, the size default to the whole dataset.
 * If the `start` is not specified it defaults to 0 in all dimensions.
 
+## `COLLISION_POLICY`
+
+A `COLLISION_POLICY` is a string that identifies what to do when writing to a
+file or dataset that already exists.
+Available policies are listed below:
+* `skip` - do not do anything
+* `skip_and_warn` - do not do anything, only generate a warning message
+* `error` - do not do anything, only throw an error
+* `write_into` - [**default**] write into the existing file/dataset (potentially
+  overwriting existing data in it)
+* `write_into_and_warn` - write into the existing file/dataset (potentially
+  overwriting existing data in it) and generate a warning message
+* `replace` - delete the existing file/dataset and create a new one
+* `replace_and_warn` - delete the existing file/dataset, create a new one, but
+  generate a warning message
+
 # full configuration example
 
 ```yaml
@@ -146,6 +164,7 @@ plugins:
   mpi: # loading MPI_Comm predefines (e.g. $MPI_COMM_WORLD)
   decl_hdf5: # a list of file to write to (can be a single element)
     file: data${coord[0]}x${coord[1]}.h5 # the file in which to write the data (required)
+    collision_policy: write_into_and_warn # print a warning if file or any of dataset already exist
     on_event: newiter                    # the event that triggers these actions (default: trigger on data expose)
     when: "$iter>0 & $iter<11"           # a condition when to actually trigger the actions (default: always true)
     communicator: $MPI_COMM_SELF         # the MPI communicator used for HDF5 parallel synchronized write (default: $MPI_COMM_SELF, sequential write)

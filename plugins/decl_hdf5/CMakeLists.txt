@@ -81,6 +81,7 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		attribute_op.cxx
 		dataset_op.cxx
 		decl_hdf5.cxx
+		collision_policy.cxx
 		file_op.cxx
 		hdf5_wrapper.cxx
 		selection.cxx)

@@ -59,6 +59,7 @@ def val_read_write_value(key, value_node, data_refs_list):
                         add_to_data_ref(element, data_refs_list)
                 else:
                     add_to_data_ref(value, data_refs_list)
+    val_collision_policy(value_node.get("collision_policy", False))
     
     if value_node.get("communicator", False):
         val_comm(value_node["communicator"], data_refs_list)
@@ -77,9 +78,18 @@ def val_read_write(read_write_node, data_refs_list):
         for key, value in read_write_node.items():
             val_read_write_value(key, value, data_refs_list)
 
+def val_collision_policy(collision_policy_node):
+    if collision_policy_node:
+        if (collision_policy_node.upper() not in ['SKIP', 'SKIP_AND_WARN',
+                                                  'WRITE_INTO', 'WRITE_INTO_AND_WARN',
+                                                  'REPLACE', 'REPLACE_AND_WARN',
+                                                  'ERROR']):
+            raise NameError("\033[31m(Decl'HDF5) Unknown collision policy: " + collision_policy_node + ".\033[0m")
+
 def val_decl_hdf5_root(decl_hdf5_root, data_refs_list):
     val_file_name(decl_hdf5_root.get("file", False), data_refs_list)
     val_comm(decl_hdf5_root.get("communicator", False), data_refs_list)
+    val_collision_policy(decl_hdf5_root.get("collision_policy", False))
     val_datasets(decl_hdf5_root.get("datasets", False), data_refs_list)
     if decl_hdf5_root.get("write", False):
         val_read_write(decl_hdf5_root["write"], data_refs_list)

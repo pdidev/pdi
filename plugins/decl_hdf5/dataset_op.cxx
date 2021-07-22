@@ -56,7 +56,9 @@ using PDI::Config_error;
 using PDI::Expression;
 using PDI::Ref_r;
 using PDI::Ref_w;
+using PDI::System_error;
 using PDI::to_string;
+using std::function;
 using std::string;
 using std::stringstream;
 using std::tie;
@@ -116,8 +118,16 @@ void validate_dataspaces(PC_tree_t selectree, hid_t h5_mem_space, hid_t h5_file_
 
 namespace decl_hdf5 {
 
-Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_tree_t tree):
-	Dataset_op{dir, name, default_when}
+Dataset_op::Dataset_op(Direction dir, std::string name, PDI::Expression default_when, Collision_policy file_collision_policy):
+	m_collision_policy{file_collision_policy},
+	m_direction{dir},
+	m_dataset{name},
+	m_value{name},
+	m_when{default_when}
+{}
+
+Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_tree_t tree, Collision_policy file_collision_policy):
+	Dataset_op{dir, name, default_when, file_collision_policy}
 {
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		if (!PC_status(value)) {
@@ -138,6 +148,8 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				m_dataset_selection = value;
 			} else if ( key == "attributes" ) {
 				// pass
+			} else if ( key == "collision_policy" ) {
+				m_collision_policy = to_collision_policy(to_string(value));
 			} else {
 				throw Config_error{key_tree, "Unknown key for HDF5 dataset configuration: `{}'", key};
 			}
@@ -239,6 +251,36 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	if ( 0 > h5_set_raw ) {
 		ctx.logger()->trace("Cannot open `{}' dataset, creating", dataset_name);
 		h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, H5P_DEFAULT, H5P_DEFAULT);
+	} else {
+		// Dataset exists -> collision
+		function<void(const char*, const std::string&)> notify = [&](const char* message, const std::string& filename) {
+			ctx.logger()->trace("Dataset collision `{}': {}", filename, message);
+		};
+		if (m_collision_policy & Collision_policy::WARNING) {
+			notify = [&](const char* message, const std::string& filename) {
+				ctx.logger()->warn("Dataset collision `{}': {}", filename, message);
+			};
+		}
+		
+		if (m_collision_policy & Collision_policy::SKIP) {
+			notify("Skipping", dataset_name);
+			H5Dclose(h5_set_raw);
+			return;
+		} else if (m_collision_policy == Collision_policy::REPLACE) {
+			notify("Deleting old dataset and creating a new one", dataset_name);
+			H5Dclose(h5_set_raw);
+			if (0>H5Ldelete(h5_file, dataset_name.c_str(), H5P_DEFAULT)) handle_hdf5_err();;
+			h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, H5P_DEFAULT, H5P_DEFAULT);
+			if (h5_set_raw < 0) {
+				throw System_error{"Dataset collision `{}': Cannot create a dataset after deleting old one", dataset_name};
+			}
+		} else if (m_collision_policy == Collision_policy::ERROR) {
+			H5Dclose(h5_set_raw);
+			throw System_error{"Dataset collision `{}': Dataset already exists", dataset_name};
+		} else {
+			// m_collision_policy & Collision_policy::WRITE_INTO == 1
+			notify("Writing into exisiting dataset", dataset_name);
+		}
 	}
 	Raii_hid h5_set = make_raii_hid(h5_set_raw, H5Dclose);
 	

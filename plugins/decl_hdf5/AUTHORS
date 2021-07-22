@@ -33,6 +33,7 @@ project co-financed by Polish Ministry of Science and Higher Education.
 * Schema validator implementation
 * Updates to match PDI API updates
 * Unified logs
+* Filename and dataset name collision policy
 
 Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
 * Many tests, including compatibility tests

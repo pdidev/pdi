@@ -51,8 +51,10 @@ using PDI::Expression;
 using PDI::opt_each;
 using PDI::Ref_r;
 using PDI::Ref_w;
+using PDI::System_error;
 using PDI::to_string;
 using std::move;
+using std::function;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -74,6 +76,8 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		string key = to_string(key_tree);
 		if ( key == "file" ) {
 			// already read in pass 0
+		} else if ( key == "collision_policy" ) {
+			template_op.m_collision_policy = to_collision_policy(to_string(value));
 		} else if ( key == "on_event" ) {
 			opt_each(value, [&](PC_tree_t event_tree) {
 				template_op.m_event.emplace_back(to_string(event_tree));
@@ -134,7 +138,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		each(write_tree, [&](PC_tree_t tree) {
 			string dset_string = to_string(tree);
 			if (dset_string.find("#") == string::npos) {
-				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when);
+				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when, template_op.m_collision_policy);
 			} else {
 				attr_ops.emplace_back(Attribute_op::WRITE, tree, default_when);
 			}
@@ -198,6 +202,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 }
 
 File_op::File_op(const File_op& other):
+	m_collision_policy{other.m_collision_policy},
 	m_file{other.m_file},
 	m_event{other.m_event},
 #ifdef H5_HAVE_PARALLEL
@@ -212,7 +217,8 @@ File_op::File_op(const File_op& other):
 	}
 }
 
-File_op::File_op(Expression&& file):
+File_op::File_op(Expression&& file, Collision_policy collision_policy):
+	m_collision_policy{collision_policy},
 	m_file{move(file)}
 {}
 
@@ -280,6 +286,35 @@ void File_op::execute(Context& ctx)
 		if (0>h5_file_raw) {
 			ctx.logger()->trace("Cannot open `{}' file, creating new file", filename);
 			h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
+		} else {
+			// File exists -> collision
+			function<void(const char*, const std::string&)> notify = [&](const char* message, const std::string& filename) {
+				ctx.logger()->trace("File `{}' already exists: {}", filename, message);
+			};
+			if (m_collision_policy & Collision_policy::WARNING) {
+				notify = [&](const char* message, const std::string& filename) {
+					ctx.logger()->warn("File `{}' already exists: {}", filename, message);
+				};
+			}
+			
+			if (m_collision_policy & Collision_policy::SKIP) {
+				notify("Skipping", filename);
+				H5Fclose(h5_file_raw);
+				return;
+			} else if (m_collision_policy & Collision_policy::REPLACE) {
+				notify("Deleting old file and creating a new one", filename);
+				H5Fclose(h5_file_raw);
+				if (remove(filename.c_str()) != 0) {
+					throw System_error{"Filename collision `{}': Cannot delete old file", filename};
+				}
+				h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
+			} else if (m_collision_policy & Collision_policy::ERROR) {
+				H5Fclose(h5_file_raw);
+				throw System_error{"Filename collision `{}': File already exists", filename};
+			} else {
+				// m_collision_policy & Collision_policy::WRITE_INTO == 1
+				notify("Writing into existing file", filename);
+			}
 		}
 	} else {
 		ctx.logger()->trace("Opening `{}' file to read", filename);

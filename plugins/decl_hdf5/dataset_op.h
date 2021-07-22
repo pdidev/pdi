@@ -41,6 +41,7 @@
 #include <pdi/expression.h>
 
 #include "attribute_op.h"
+#include "collision_policy.h"
 #include "selection.h"
 
 
@@ -57,6 +58,9 @@ public:
 	enum Direction { READ, WRITE };
 	
 private:
+	/// What to do when dataset already exists (default = OVERWRITE)
+	Collision_policy m_collision_policy;
+	
 	/// direction of the transfer (read or write)
 	Direction m_direction;
 	
@@ -90,14 +94,7 @@ public:
 	 * \param name the value name
 	 * \param default_when the default "when" clause as read from the file level (optional)
 	 */
-	Dataset_op(Direction dir, std::string name, PDI::Expression default_when):
-		m_direction{dir},
-		m_dataset{name},
-		m_value{name},
-		m_when{default_when}
-	{
-	}
-	
+	Dataset_op(Direction dir, std::string name, PDI::Expression default_when, Collision_policy file_collision_policy = Collision_policy::WRITE_INTO);
 	/** Builds a Dataset_op from its yaml config
 	 *
 	 * \param dir the operation direction
@@ -105,7 +102,7 @@ public:
 	 * \param default_when the default "when" clause as read from the file level (optional)
 	 * \param tree the configuration tree
 	 */
-	Dataset_op(Direction dir, std::string name, PDI::Expression default_when, PC_tree_t tree);
+	Dataset_op(Direction dir, std::string name, PDI::Expression default_when, PC_tree_t tree, Collision_policy collision_policy = Collision_policy::WRITE_INTO);
 	
 	/** Accesses the direction of the transfer (read or write).
 	 *

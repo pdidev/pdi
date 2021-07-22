@@ -42,6 +42,7 @@
 #include <pdi/expression.h>
 
 #include "attribute_op.h"
+#include "collision_policy.h"
 #include "dataset_op.h"
 
 
@@ -52,6 +53,9 @@ namespace decl_hdf5 {
  */
 class File_op
 {
+	/// What to do when file already exists (default = OVERWRITE)
+	Collision_policy m_collision_policy;
+	
 	/// the file where the operation takes place (mandatory)
 	PDI::Expression m_file;
 	
@@ -91,7 +95,7 @@ public:
 	
 	File_op(const File_op&);
 	
-	File_op(PDI::Expression&& file);
+	File_op(PDI::Expression&& file, Collision_policy collision_policy = Collision_policy::WRITE_INTO);
 	
 	/** a list of events that trigger this operation
 	 */
