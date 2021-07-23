@@ -133,6 +133,12 @@ target_link_libraries(decl_hdf5_15_C PDI::PDI_C)
 add_test(NAME decl_hdf5_15_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_15_C>")
 set_property(TEST decl_hdf5_15_C PROPERTY TIMEOUT 15)
 
+add_executable(decl_hdf5_16_C decl_hdf5_test_16.c)
+target_link_libraries(decl_hdf5_16_C PDI::PDI_C ${HDF5_C_LIBRARIES})
+target_include_directories(decl_hdf5_16_C PRIVATE ${HDF5_INCLUDE_DIRS})
+add_test(NAME decl_hdf5_16_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_16_C>")
+set_property(TEST decl_hdf5_16_C PROPERTY TIMEOUT 15)
+
 if("${BUILD_FORTRAN}")
 	add_subdirectory(fortran/)
 endif("${BUILD_FORTRAN}")

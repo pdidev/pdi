@@ -43,6 +43,19 @@ The possible values for the keys are as follow:
   Each string is the name of a dataset to create in the file on first
   access, with the type described in the value.
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY
+* `deflate`: an integer value (from 0 to 9) defining the default deflate (GNU
+  gzip) compression level to use for datasets created in this file.
+  This can be overriden on a per dataset basis.
+  By default, the deflate filter is deactivated.
+  See https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDeflate
+  for more information.
+* `fletcher`: an integer value interpreted as a boolean (0 is false, non 0
+  values are true) that defines whether to activate the Fletcher32 checksum
+  filter by default for datasets created in this file.
+  This can be overriden on a per dataset basis.
+  By default, the Fletcher32 checksum filter is deactivated.
+  See https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
+  for more information.
 
 ## `DATA_SECTION`
 
@@ -105,6 +118,31 @@ The possible values for the keys are as follow:
   Each value is a $-expression (evaluated when the dataset is accessed)
   specifying the value to the attribute.
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY.
+* `chunking`: a \ref intexpr_or_seq that defines the size of the chunks used to
+  the dataset in a chunked layout.
+  The \ref intexpr_or_seq must have the same dimension as the dataset type.
+  This can be overriden by the `decl_hdf5.chunking` attribute in the dataset
+  type.
+  By default, no chunking is activated.
+  See https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetChunk
+  for more information.
+* `deflate`: an integer value (from 0 to 9) defining the deflate (GNU gzip)
+  compression level to use or `-1` for no filter for datasets created by this
+  I/O.
+  This can be overriden by the `decl_hdf5.deflate` attribute in the dataset
+  type.
+  By default, the deflate filter is deactivated.
+  See https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetDeflate
+  for more information.
+* `fletcher`: an integer value interpreted as a boolean (0 is false, non 0
+  values are true) that defines whether to activate the Fletcher32 checksum
+  filter by default for datasets created in this file.
+  This can be overriden by the `decl_hdf5.fletcher` attribute in the dataset
+  type.
+  By default, the Fletcher32 checksum filter is deactivated.
+  See
+  https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
+  for more information.
 
 ## `SELECTION_DESC`
 

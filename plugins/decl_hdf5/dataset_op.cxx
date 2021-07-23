@@ -35,18 +35,22 @@
 
 #include <spdlog/spdlog.h>
 
+#include <pdi/pdi_fwd.h>
+#include <pdi/array_datatype.h>
 #include <pdi/context.h>
 #include <pdi/datatype_template.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
+#include <pdi/scalar_datatype.h>
 
 #include "hdf5_wrapper.h"
 #include "selection.h"
 
 #include "dataset_op.h"
 
+using PDI::Array_datatype;
 using PDI::Context;
 using PDI::each;
 using PDI::Datatype;
@@ -56,7 +60,10 @@ using PDI::Config_error;
 using PDI::Expression;
 using PDI::Ref_r;
 using PDI::Ref_w;
+using PDI::Scalar_datatype;
 using PDI::System_error;
+using PDI::Type_error;
+using PDI::Value_error;
 using PDI::to_string;
 using std::function;
 using std::string;
@@ -146,6 +153,12 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				m_memory_selection = value;
 			} else if ( key == "dataset_selection" ) {
 				m_dataset_selection = value;
+			} else if ( key == "chunking") {
+				m_chunking = value;
+			} else if ( key == "deflate") {
+				m_deflate = value;
+			} else if ( key == "fletcher") {
+				m_fletcher = value;
 			} else if ( key == "attributes" ) {
 				// pass
 			} else if ( key == "collision_policy" ) {
@@ -166,6 +179,24 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 			}
 			m_attributes.emplace_back(attr_dir, m_dataset, to_string(attr_key), Expression{to_string(attr_value)});
 		});
+	}
+}
+
+void Dataset_op::deflate(Context& ctx, Expression level)
+{
+	if (m_deflate) {
+		ctx.logger()->warn("deflate defined at file and dataset level (the dataset deflate setting will be used)");
+	} else {
+		m_deflate = level;
+	}
+}
+
+void Dataset_op::fletcher(Context& ctx, Expression value)
+{
+	if (m_fletcher) {
+		ctx.logger()->warn("fletcher defined at file and dataset level (the dataset fletcher setting will be used)");
+	} else {
+		m_fletcher = value;
 	}
 }
 
@@ -212,6 +243,80 @@ void Dataset_op::do_read(Context& ctx, hid_t h5_file, hid_t read_lst)
 	ctx.logger()->trace("`{}' dataset read finished", dataset_name);
 }
 
+hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_type, const string& dataset_name)
+{
+	hid_t dset_plist = H5Pcreate(H5P_DATASET_CREATE);
+	// chunking
+	Ref_r chunking_ref;
+	try {
+		chunking_ref = dataset_type->attribute("decl_hdf5.chunking").to_ref(ctx);
+		ctx.logger()->trace("Getting `{}' dataset chunking from type attribute", dataset_name);
+	} catch (const Type_error& e) {
+		// no chunking attribute, check dataset option
+		if (m_chunking) {
+			ctx.logger()->trace("Getting `{}' dataset chunking from dataset operation", dataset_name);
+			chunking_ref = m_chunking.to_ref(ctx);
+		}
+	}
+	if (chunking_ref) {
+		ctx.logger()->trace("Setting `{}' dataset chunking:", dataset_name);
+		vector<hsize_t> sizes;
+		const Datatype* ref_type = &chunking_ref.type();
+		if (auto&& array_type = dynamic_cast<const Array_datatype*>(ref_type)) {
+			for (size_t i = 0; i < array_type->size(); i++) {
+				sizes.emplace_back(Ref_r{chunking_ref[i]}.scalar_value<hsize_t>());
+			}
+		} else {
+			// assume it is a scalar
+			sizes.emplace_back(chunking_ref.scalar_value<size_t>());
+		}
+		
+		if ( 0 > H5Pset_chunk(dset_plist, sizes.size(), sizes.data())) {
+			handle_hdf5_err(fmt::format("Cannot set `{}' dataset chunking", dataset_name).c_str());
+		}
+	}
+	
+	// deflate
+	unsigned int deflate_level = -1;
+	try {
+		deflate_level = dataset_type->attribute("decl_hdf5.deflate").to_long(ctx);
+		ctx.logger()->trace("Getting `{}' dataset deflate from type attribute", dataset_name);
+	} catch (const Type_error& e) {
+		// no deflate attribute, check dataset option
+		if (m_deflate) {
+			ctx.logger()->trace("Getting `{}' dataset deflate from dataset operation", dataset_name);
+			deflate_level = m_deflate.to_long(ctx);
+		}
+	}
+	if (deflate_level != -1) {
+		ctx.logger()->trace("Setting `{}' dataset deflate to {}", dataset_name, deflate_level);
+		if ( 0 > H5Pset_deflate(dset_plist, deflate_level) ) {
+			handle_hdf5_err(fmt::format("Cannot set `{}' dataset deflate", dataset_name).c_str());
+		}
+	}
+	
+	// fletcher
+	long fletcher = -1;
+	try {
+		fletcher = dataset_type->attribute("decl_hdf5.fletcher").to_long(ctx);
+		ctx.logger()->trace("Getting `{}' dataset fletcher from type attribute", dataset_name);
+	} catch (const Type_error& e) {
+		// no fletcher attribute, check dataset option
+		if (m_fletcher) {
+			ctx.logger()->trace("Getting `{}' dataset fletcher from dataset operation", dataset_name);
+			fletcher = m_fletcher.to_long(ctx);
+		}
+	}
+	if (fletcher != -1) {
+		ctx.logger()->trace("Setting `{}' dataset fletcher", dataset_name);
+		if ( 0 > H5Pset_fletcher32(dset_plist) ) {
+			handle_hdf5_err(fmt::format("Cannot set `{}' dataset fletcher", dataset_name).c_str());
+		}
+	}
+	
+	return dset_plist;
+}
+
 void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_uptr>& dsets)
 {
 	string dataset_name = m_dataset.to_string(ctx);
@@ -228,16 +333,19 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	m_memory_selection.apply(ctx, h5_mem_space);
 	
 	auto&& dataset_type_iter = dsets.find(dataset_name);
+	Datatype_uptr dataset_type;
 	Raii_hid h5_file_type, h5_file_space;
 	if ( dataset_type_iter != dsets.end() ) {
-		tie(h5_file_space, h5_file_type) = space(*dataset_type_iter->second->evaluate(ctx));
+		dataset_type = dataset_type_iter->second->evaluate(ctx);
+		tie(h5_file_space, h5_file_type) = space(*dataset_type);
 		ctx.logger()->trace("Applying `{}' dataset selection", dataset_name);
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	} else {
 		if ( !m_dataset_selection.size().empty() ) {
 			throw Config_error{m_dataset_selection.selection_tree(), "Dataset selection is invalid in implicit dataset `{}'", dataset_name};
 		}
-		tie(h5_file_space, h5_file_type) = space(ref.type(), true);
+		dataset_type = ref.type().clone_type();
+		tie(h5_file_space, h5_file_type) = space(*dataset_type, true);
 	}
 	
 	ctx.logger()->trace("Validating `{}' dataset dataspaces selection", dataset_name);
@@ -248,9 +356,10 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	
 	ctx.logger()->trace("Opening `{}' dataset", dataset_name);
 	hid_t h5_set_raw = H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT);
+	Raii_hid dset_plist = make_raii_hid(dataset_creation_plist(ctx, dataset_type.get(), dataset_name), H5Pclose);
 	if ( 0 > h5_set_raw ) {
 		ctx.logger()->trace("Cannot open `{}' dataset, creating", dataset_name);
-		h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, H5P_DEFAULT, H5P_DEFAULT);
+		h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, dset_plist, H5P_DEFAULT);
 	} else {
 		// Dataset exists -> collision
 		function<void(const char*, const std::string&)> notify = [&](const char* message, const std::string& filename) {
@@ -270,7 +379,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 			notify("Deleting old dataset and creating a new one", dataset_name);
 			H5Dclose(h5_set_raw);
 			if (0>H5Ldelete(h5_file, dataset_name.c_str(), H5P_DEFAULT)) handle_hdf5_err();;
-			h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, H5P_DEFAULT, H5P_DEFAULT);
+			h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, dset_plist, H5P_DEFAULT);
 			if (h5_set_raw < 0) {
 				throw System_error{"Dataset collision `{}': Cannot create a dataset after deleting old one", dataset_name};
 			}

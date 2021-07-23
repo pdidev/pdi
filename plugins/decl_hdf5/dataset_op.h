@@ -38,6 +38,7 @@
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/context.h>
 #include <pdi/expression.h>
 
 #include "attribute_op.h"
@@ -84,8 +85,27 @@ private:
 	/// a selection in-dataset
 	Selection m_dataset_selection;
 	
+	/// chunking property set from yaml
+	PDI::Expression m_chunking;
+	
+	/// deflate property set from yaml
+	PDI::Expression m_deflate;
+	
+	/// fletcher property set from yaml
+	PDI::Expression m_fletcher;
+	
 	/// attributes of this dataset
 	std::vector<Attribute_op> m_attributes;
+	
+	/** Creates dataset plist to pass to H5D_create
+	 *
+	 * \param ctx the context in which to operate
+	 * \param dataset_type type of the dataset
+	 * \param dataset_name name of the dataset
+	 *
+	 * \return dataset creation plist hid_t
+	 */
+	hid_t dataset_creation_plist(PDI::Context& ctx, const PDI::Datatype* dataset_type, const std::string& dataset_name);
 	
 public:
 	/** Builds a Dataset_op from its yaml config
@@ -150,6 +170,20 @@ public:
 		return m_communicator;
 	}
 #endif
+	
+	/** Set deflate dataset level
+	 *
+	 * \param ctx the context in which to operate
+	 * \param level level of the deflate
+	 */
+	void deflate(PDI::Context& ctx, PDI::Expression level);
+	
+	/** Set fletcher dataset
+	 *
+	 * \param ctx the context in which to operate
+	 * \param value turn on fletcher if true, turn off if false
+	 */
+	void fletcher(PDI::Context& ctx, PDI::Expression value);
 	
 	/** Executes the requested operation.
 	 *

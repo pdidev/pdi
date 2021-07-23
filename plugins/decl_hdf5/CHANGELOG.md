@@ -9,7 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 * Support specifying a policy when the file or dataset to write to already
   exists [#121](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/121)
-
+* Support for dataset chunking, deflate and fletcher32 filters
+  [#324](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/324)
 
 ### Changed
 

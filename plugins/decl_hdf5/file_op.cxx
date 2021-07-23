@@ -70,7 +70,8 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 	
 	
 	// pass 1: file-level optional values
-	
+	Expression deflate;
+	Expression fletcher;
 	Expression default_when = 1L;
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		string key = to_string(key_tree);
@@ -94,6 +95,10 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
 				template_op.m_datasets.emplace(to_string(dset_name), ctx.datatype(dset_type));
 			});
+		} else if ( key == "deflate" ) {
+			deflate = value;
+		} else if ( key == "fletcher" ) {
+			fletcher = value;
 		} else if ( key == "write" ) {
 			// will read in pass 2
 		} else if ( key == "read" ) {
@@ -139,6 +144,12 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			string dset_string = to_string(tree);
 			if (dset_string.find("#") == string::npos) {
 				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when, template_op.m_collision_policy);
+				if (deflate) {
+					dset_ops.back().deflate(ctx, deflate.to_long(ctx));
+				}
+				if (fletcher) {
+					dset_ops.back().fletcher(ctx, fletcher.to_long(ctx));
+				}
 			} else {
 				attr_ops.emplace_back(Attribute_op::WRITE, tree, default_when);
 			}
@@ -151,7 +162,13 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 				});
 			} else {
 				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-					dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value);
+					dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value, template_op.m_collision_policy);
+					if (deflate) {
+						dset_ops.back().deflate(ctx, deflate.to_long(ctx));
+					}
+					if (fletcher) {
+						dset_ops.back().fletcher(ctx, fletcher.to_long(ctx));
+					}
 				});
 			}
 		});
