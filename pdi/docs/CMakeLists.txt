@@ -31,39 +31,6 @@ cmake_minimum_required(VERSION 3.10)
 
 find_package(Doxygen 1.8.13 REQUIRED OPTIONAL_COMPONENTS dot)
 
-if("${BUILD_FORTRAN}")
-	add_executable(hello_access.f90 hello_access.f90)
-	target_link_libraries(hello_access.f90 PDI::PDI_Fortran)
-
-	add_executable(hello_data.f90 hello_data.f90)
-	target_link_libraries(hello_data.f90 PDI::PDI_Fortran)
-
-	add_executable(hello_event.f90 hello_event.f90)
-	target_link_libraries(hello_event.f90 PDI::PDI_Fortran)
-
-	add_executable(hello_expose.f90 hello_expose.f90)
-	target_link_libraries(hello_expose.f90 PDI::PDI_Fortran)
-
-	add_executable(hello_multi_expose.f90 hello_multi_expose.f90)
-	target_link_libraries(hello_multi_expose.f90 PDI::PDI_Fortran)
-endif()
-
-add_executable(hello_access_C hello_access.c)
-target_link_libraries(hello_access_C PDI::PDI_C)
-
-add_executable(hello_data_C hello_data.c)
-target_link_libraries(hello_data_C PDI::PDI_C)
-
-add_executable(hello_event_C hello_event.c)
-target_link_libraries(hello_event_C PDI::PDI_C)
-
-add_executable(hello_expose_C hello_expose.c)
-target_link_libraries(hello_expose_C PDI::PDI_C)
-
-add_executable(hello_multi_expose_C hello_multi_expose.c)
-target_link_libraries(hello_multi_expose_C PDI::PDI_C)
-
-
 add_custom_target(doc ALL)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")
 
@@ -135,5 +102,6 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_SOURCE_DIR}/../plugins/pycall/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/serialize/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/set_value/README.md")
+add_subdirectory(First_steps)
 add_dependencies(doc doxygen_doc)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}/html")
