@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Support building tests when building in sequential with no MPI present
   (second try)
   [#348](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/348)
+* Fixed compilation with GCC-11
+  [#353](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/353)
 
 ### Security
 
