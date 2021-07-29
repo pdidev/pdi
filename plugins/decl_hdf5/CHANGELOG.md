@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   exists [#121](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/121)
 * Support for dataset chunking, deflate and fletcher32 filters
   [#324](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/324)
+* `logging` spdlog pattern can be set from specification tree
+  [#317](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/317)
 
 ### Changed
 

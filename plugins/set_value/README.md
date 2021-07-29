@@ -17,6 +17,7 @@ At its root, the Set_value configuration is made of:
 
 |key|value|
 |:--|:----|
+|`"logging"` (*optional*)|a \ref logging_node|
 |`"on_init"` (*optional*)|a list of \ref value_operation|
 |`"on_event"` (*optional*)|an \ref on_event_map_node|
 |`"on_data"` (*optional*)|an \ref on_data_map_node|

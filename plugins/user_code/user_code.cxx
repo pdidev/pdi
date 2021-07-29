@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +30,6 @@
 
 #include <dlfcn.h>
 #include <link.h>
-#include <spdlog/spdlog.h>
 
 #include <pdi.h>
 #include <pdi/context.h>
@@ -189,8 +189,6 @@ struct user_code_plugin: Plugin {
 	user_code_plugin(Context& ctx, PC_tree_t conf):
 		Plugin{ctx}
 	{
-		ctx.logger()->set_pattern("[PDI][User-code][%T] *** %^%l%$: %v");
-		
 		// Loading configuration for events
 		PC_tree_t on_event = PC_get(conf, ".on_event");
 		if (!PC_status(on_event)) each(on_event, [&](PC_tree_t event_name, PC_tree_t events) {
@@ -223,6 +221,15 @@ struct user_code_plugin: Plugin {
 	~user_code_plugin()
 	{
 		context().logger()->info("Closing plugin");
+	}
+	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "User-code";
 	}
 	
 }; // struct user_code_plugin

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,6 @@
 #include <pdi/record_datatype.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
-
-#include <spdlog/spdlog.h>
 
 namespace {
 
@@ -342,18 +340,9 @@ struct serialize_plugin: PDI::Plugin {
 		});
 	}
 	
-	/// Sets logger format for plugin.
-	void set_up_logger()
-	{
-		char format[64];
-		sprintf(format, "[PDI][Serialize][%%T] *** %%^%%l%%$: %%v");
-		context().logger()->set_pattern(std::string(format));
-	}
-	
 	serialize_plugin(PDI::Context& ctx, PC_tree_t config):
 		PDI::Plugin{ctx}
 	{
-		set_up_logger();
 		load_config(config);
 		context().logger()->info("Plugin loaded successfully");
 	}
@@ -362,6 +351,15 @@ struct serialize_plugin: PDI::Plugin {
 	~serialize_plugin()
 	{
 		context().logger()->info("Closing plugin");
+	}
+	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "Serialize";
 	}
 	
 };

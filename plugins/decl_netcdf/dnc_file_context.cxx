@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,6 @@
 
 #include <netcdf.h>
 #include <set>
-#include <spdlog/spdlog.h>
-
 
 #include "dnc_netcdf_file.h"
 

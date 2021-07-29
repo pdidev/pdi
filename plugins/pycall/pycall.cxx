@@ -158,9 +158,9 @@ public:
 		try {
 			pybind11::exec(m_code, pyscope);
 		} catch ( const std::exception& e ) {
-			cerr << " *** [PDI/PyCall] Error: while calling python, caught exception: "<<e.what()<<endl;
+			ctx.logger()->error("while calling python, caught exception: {}", e.what());
 		} catch (...) {
-			cerr << " *** [PDI/PyCall] Error: while calling python, caught exception"<<endl;
+			ctx.logger()->error("while calling python, caught exception");
 		}
 	}
 	
@@ -175,7 +175,9 @@ struct pycall_plugin: Plugin {
 		if ( ! Py_IsInitialized() ) {
 			pybind11::initialize_interpreter();
 			interpreter_initialized_in_plugin = true;
+			ctx.logger()->debug("Python interpreter is initialized by the plugin");
 		}
+		
 		// Loading configuration for events
 		PC_tree_t on_event = PC_get(conf, ".on_event");
 		int nb_events = len(on_event, 0);
@@ -215,8 +217,21 @@ struct pycall_plugin: Plugin {
 	
 	~pycall_plugin()
 	{
-		if (interpreter_initialized_in_plugin) pybind11::finalize_interpreter();
+		if (interpreter_initialized_in_plugin) {
+			context().logger()->debug("Finalizing python interpreter");
+			pybind11::finalize_interpreter();
+		}
 	}
+	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "PyCall";
+	}
+	
 }; // struct pycall_plugin
 
 } // namespace <anonymous>

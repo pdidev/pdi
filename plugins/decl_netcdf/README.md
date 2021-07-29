@@ -17,6 +17,7 @@ Decl'NetCDF plugin allows you to:
 The root of Decl'NetCDF plugin configuration (named `decl_netcdf`), is a dictionary or a list of dictionaries that contains the following subtrees:
 |key            |value                      |            |
 |:--------------|:--------------------------|:-----------|
+|`logging`      |\ref logging_node          |*optional*  |
 |`file`         |\ref decl_netcdf_file      |*mandatory* |
 |`communicator` |\ref decl_netcdf_comm      |*optional*  |
 |`on_event`     |\ref decl_netcdf_on_event  |*optional*  |

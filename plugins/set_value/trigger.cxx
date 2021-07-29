@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <spdlog/spdlog.h>
-
 #include <pdi/error.h>
 
 #include "event_operation.h"

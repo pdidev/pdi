@@ -30,14 +30,17 @@
 #include <spdlog/sinks/ansicolor_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
+#include <pdi/context.h>
 #include <pdi/error.h>
+#include <pdi/expression.h>
 
 #include "pdi/logger.h"
 
 namespace {
 
-using PDI::Config_error;
-using PDI::Logger_sptr;
+using PDI::Context;
+using PDI::Error;
+using PDI::Expression;
 using PDI::len;
 using PDI::to_long;
 using PDI::to_string;
@@ -57,12 +60,19 @@ using spdlog::sinks::basic_file_sink_st;
 	using spdlog::sinks::ansicolor_stdout_sink_st;
 #endif
 using std::make_shared;
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::vector;
 
-
-Logger_sptr select_log_sinks(PC_tree_t logging_tree)
+/**
+ * Creates logger with sinks defined in config
+ *
+ * \param[in] logging_tree configuration tree from config file
+ * 
+ * \return created logger
+ */
+shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging_tree)
 {
 	vector<sink_ptr> sinks;
 	PC_tree_t output_tree = PC_get(logging_tree, ".output");
@@ -87,7 +97,7 @@ Logger_sptr select_log_sinks(PC_tree_t logging_tree)
 #endif
 	}
 	
-	return make_shared<logger>("PDI_logger", sinks.begin(), sinks.end());
+	return make_shared<logger>(logger_name, sinks.begin(), sinks.end());
 }
 
 /**
@@ -95,33 +105,20 @@ Logger_sptr select_log_sinks(PC_tree_t logging_tree)
  *
  * \param[in] logger logger to set up
  * \param[in] logging_tree configuration tree from config file
- * \param[in] name name
  */
-void read_log_level(Logger_sptr logger, PC_tree_t config, const string& name)
+void read_log_level(shared_ptr<logger> logger, PC_tree_t logging_tree)
 {
-	string level_str = "info";
-	PC_tree_t level_tree = PC_get(config, ".level");
-	
-	if (!PC_status(PC_get(level_tree, "{0}"))) {
-		PC_tree_t module_level = PC_get(level_tree, ".%s", name.c_str());
-		if (!PC_status(module_level)) {
-			level_str = to_string(module_level);
-		} else {
-			PC_tree_t global_level = PC_get(level_tree, ".global");
-			if (!PC_status(global_level)) {
-				level_str = to_string(global_level);
-			}
-		}
+	string level_str;
+
+	PC_tree_t level_tree = PC_get(logging_tree, ".level");
+	if (!PC_status(level_tree)) {
+		level_str = to_string(level_tree);
 	} else {
-		if (!PC_status(level_tree)) {
-			level_str = to_string(level_tree);
-		} else {
-			try {
-				level_str = to_string(config);
-			} catch (const Config_error& e) {
-				// level is not defined
-				return;
-			}
+		try {
+			level_str = to_string(logging_tree);
+		} catch (const Error& e) {
+			// level is not defined
+			return;
 		}
 	}
 	
@@ -141,24 +138,120 @@ void read_log_level(Logger_sptr logger, PC_tree_t config, const string& name)
 	}
 }
 
+std::string evaluate_refs_in_pattern(string pattern)
+{
+	for (size_t start_pos = pattern.find("%{"); start_pos != string::npos; start_pos = pattern.find("%{")) {
+		// transform `%{ref}' to `${ref}'
+		pattern[start_pos] = '$';
+		std::pair<Expression, long> parse_result = Expression::parse_reference(pattern.substr(start_pos).c_str());
+
+		// don't have context to evaluate -> remove whole expression
+		pattern = pattern.substr(0, start_pos) + pattern.substr(start_pos + parse_result.second);
+	}
+	return pattern;
+}
+
+std::string evaluate_refs_in_pattern(PDI::Context& ctx, string pattern)
+{
+	for (size_t start_pos = pattern.find("%{"); start_pos != string::npos; start_pos = pattern.find("%{")) {
+		// transform `%{ref}' to `${ref}'
+		pattern[start_pos] = '$';
+		std::pair<Expression, long> parse_result = Expression::parse_reference(pattern.substr(start_pos).c_str());
+		pattern = pattern.substr(0, start_pos) + parse_result.first.to_string(ctx) + pattern.substr(start_pos + parse_result.second);
+	}
+	return pattern;
+}
+
 } // namespace <anonymous>
 
 namespace PDI {
 
-Logger_sptr configure_logger(PC_tree_t config, const string& name, spdlog::level::level_enum level)
+Logger::Logger(const string& logger_name, PC_tree_t config, level_enum level)
 {
-	//select default sinks
-	Logger_sptr logger = select_log_sinks(config);
-	
-	logger->set_level(level);
+	setup(logger_name, config, level);
+}
+
+Logger::Logger(Logger& parent_logger, const std::string& logger_name, PC_tree_t config):
+	Logger(logger_name, config, parent_logger.level())
+{
+	parent_logger.m_default_pattern_observers.emplace_back(*this);
+	default_pattern(parent_logger.pattern());
+}
+
+void Logger::setup(const string& logger_name, PC_tree_t config, level_enum level)
+{
+	m_logger = select_log_sinks(logger_name, config);
+	m_logger->set_level(level);
 
 	// try to read log level from yaml
-	read_log_level(logger, config, name);
-	
-	//set up default format of logger
-	logger->set_pattern("[PDI][%T] *** %^%l%$: %v");
-	
-	return logger;
+	read_log_level(m_logger, config);
+
+	// overwrite pattern if defined in yaml
+	PC_tree_t pattern_tree = PC_get(config, ".pattern");
+	if (!PC_status(pattern_tree)) {
+		m_pattern = to_string(pattern_tree);
+		for (auto&& observer : m_default_pattern_observers) {
+			observer.get().default_pattern(m_pattern);
+		}
+		m_pattern_from_config = true;
+	}
+	m_logger->set_pattern(evaluate_refs_in_pattern(m_pattern));
 }
 
+void Logger::setup(Logger& parent_logger, const string& logger_name, PC_tree_t config)
+{
+	setup(logger_name, config, parent_logger.level());
+	parent_logger.m_default_pattern_observers.emplace_back(*this);
+	default_pattern(parent_logger.pattern());
 }
+
+void Logger::pattern(const string& pattern)
+{
+	m_pattern = pattern;
+	m_logger->set_pattern(m_pattern);
+	for (auto&& observer : m_default_pattern_observers) {
+		observer.get().default_pattern(m_pattern);
+	}
+	m_logger->set_pattern(evaluate_refs_in_pattern(m_pattern));
+}
+
+void Logger::default_pattern(const string& pattern)
+{
+	if (!m_pattern_from_config) {
+		m_pattern = pattern;
+		m_logger->set_pattern(evaluate_refs_in_pattern(m_pattern));
+		for (auto&& observer : m_default_pattern_observers) {
+			observer.get().default_pattern(m_pattern);
+		}
+	}
+}
+
+const string& Logger::pattern() const
+{
+	return m_pattern;
+}
+
+void Logger::level(level_enum log_level)
+{
+	m_logger->set_level(log_level);
+}
+
+level_enum Logger::level() const
+{
+	return m_logger->level();
+}
+
+void Logger::evaluate_pattern(Context& ctx) const
+{
+	m_logger->set_pattern(evaluate_refs_in_pattern(ctx, m_pattern));
+	for (auto&& observer : m_default_pattern_observers) {
+		observer.get().evaluate_pattern(ctx);
+	}
+}
+
+std::shared_ptr<spdlog::logger> Logger::real_logger()
+{
+	return m_logger;
+}
+
+} // namespace PDI

@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,8 +28,6 @@
 #include <string>
 #include <unordered_set>
 
-#include <spdlog/spdlog.h>
-
 #include <pdi.h>
 #include <pdi/context.h>
 #include <pdi/logger.h>
@@ -51,7 +50,7 @@ struct trace_plugin: Plugin {
 
 	unordered_set<Ref> m_refs;
 	
-	trace_plugin(Context& ctx, PC_tree_t):
+	trace_plugin(Context& ctx, PC_tree_t config):
 		Plugin {ctx}
 	{
 		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
@@ -60,7 +59,6 @@ struct trace_plugin: Plugin {
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
 			this->context().logger()->info("!!!                            named event: {}", name);
 		});
-		context().logger()->set_pattern("[PDI][Trace-plugin] *** %^%l%$: %v");
 		context().logger()->info("Welcome!");
 	}
 	
@@ -84,6 +82,15 @@ struct trace_plugin: Plugin {
 	void data_end(const std::string& name, Ref r)
 	{
 		context().logger()->info("<<= data stop being available in the store: {}", name);
+	}
+	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "Trace";
 	}
 	
 }; // struct trace_plugin

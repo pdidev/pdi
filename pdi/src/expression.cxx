@@ -43,11 +43,13 @@
 #include "expression/impl/float_literal.h"
 #include "expression/impl/int_literal.h"
 #include "expression/impl/operation.h"
+#include "expression/impl/reference_expression.h"
 
 #include "pdi/expression.h"
 
 namespace PDI {
 
+using std::move;
 using std::unique_ptr;
 
 Expression::Expression(std::unique_ptr<Impl> impl):
@@ -157,6 +159,13 @@ Ref Expression::to_ref(Context& ctx) const
 Ref Expression::to_ref(Context& ctx, const Datatype& type) const
 {
 	return m_impl->to_ref(ctx, type);
+}
+
+std::pair<Expression, long> Expression::parse_reference(const char* reference_str)
+{
+	const char* reference_str_to_parse = reference_str;
+	unique_ptr<Expression::Impl> reference_impl = Expression::Impl::Reference_expression::parse(&reference_str_to_parse);
+	return {move(reference_impl), reference_str_to_parse - reference_str};
 }
 
 } // namespace PDI

@@ -30,8 +30,6 @@
 	#include <mpi.h>
 #endif
 
-#include <spdlog/spdlog.h>
-
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 
@@ -43,31 +41,10 @@ class decl_netcdf_plugin : public PDI::Plugin
 {
 	std::vector<decl_netcdf::Dnc_file_context> m_files;
 	
-	/// Set-up the plugin-specific logger
-	void set_up_logger()
-	{
-		context().logger()->set_pattern("[PDI][Decl'NetCDF][%T] *** %^%l%$: %v");
-		
-#if NC_HAS_PARALLEL4
-		int mpi_init = 0;
-		MPI_Initialized(&mpi_init);
-		if (mpi_init) {
-			//set up format
-			int world_rank;
-			MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-			char format[64];
-			snprintf(format, 64, "[PDI][Decl'NetCDF][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
-			context().logger()->set_pattern(std::string(format));
-		}
-#endif
-	}
-	
 public:
 	decl_netcdf_plugin(PDI::Context& ctx, PC_tree_t config):
 		Plugin(ctx)
 	{
-		set_up_logger();
-		
 		if (PDI::is_list(config)) {
 			int len = PDI::len(config);
 			// allocate memory for all elements, because Dnc_file has callbacks with their pointers
@@ -84,6 +61,15 @@ public:
 	~decl_netcdf_plugin()
 	{
 		context().logger()->info("Closing plugin");
+	}
+	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "Decl'NetCDF";
 	}
 };
 

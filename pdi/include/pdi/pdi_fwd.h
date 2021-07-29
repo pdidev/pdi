@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,11 +33,6 @@
 #include <memory>
 
 #include <pdi.h>
-
-
-namespace spdlog {
-class logger;
-}
 
 namespace PDI {
 
@@ -81,10 +77,6 @@ typedef std::unique_ptr<Datatype> Datatype_uptr;
  * template that is used when exposing untyped data
  */
 class Data_descriptor;
-
-/** A shared pointer to a logger instance
- */
-typedef std::shared_ptr<spdlog::logger> Logger_sptr;
 
 /** A class used as base for all PDI plugins
  */

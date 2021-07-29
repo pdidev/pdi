@@ -5,21 +5,22 @@ The [FlowVR](http://flowvr.sourceforge.net) plugin lets you write FlowVR modules
   file allows you to care only about proper input/output calls, but this plugin does
   not support the full FlowVR feature set.
 
-\section configuration Configuration elements
+\section flowvr_configuration Configuration elements
 
 \subsection flowvr_tree FlowVR plugin tree
 
 The root of FlowVR plugin configuration (named `flowvr`), is a dictionary that contains the following keys:
-- \ref component_node (*optional*)
-- \ref wait_on_data_node (*recommended*)
-- \ref wait_on_node (*optional*)
-- \ref status_node (*optional*)
-- \ref abort_on_node (*optional*)
-- \ref init_on_node (*optional*)
-- \ref input_ports (*optional*)
-- \ref output_ports (*optional*)
+- \ref logging_node (*optional*)
+- \ref flowvr_component_node (*optional*)
+- \ref flowvr_wait_on_data_node (*recommended*)
+- \ref flowvr_wait_on_node (*optional*)
+- \ref flowvr_status_node (*optional*)
+- \ref flowvr_abort_on_node (*optional*)
+- \ref flowvr_init_on_node (*optional*)
+- \ref flowvr_input_ports (*optional*)
+- \ref flowvr_output_ports (*optional*)
 
-\subsubsection component_node component
+\subsubsection flowvr_component_node component
 
 For now, only available component is `module` and this is a default value, but this can be expanded to `filter` and `synchronizer` in the future.
 Configuration example:
@@ -30,7 +31,7 @@ plugins:
     component: module
 ```
 
-\subsubsection wait_on_data_node wait_on_data
+\subsubsection flowvr_wait_on_data_node wait_on_data
 
  The plugin will call `wait` funciton every time given descriptors will be shared with `PDI_IN`
  access direction. This descriptor must be an integer type and the status returned from this call
@@ -47,7 +48,7 @@ plugins:
     wait_on_data: wait_desc
 ```
 
-\subsubsection wait_on_node wait_on
+\subsubsection flowvr_wait_on_node wait_on
 
 Defines on which events the plugin calls the `wait` function. The value can be either single event
 name or the array of events names (both examples presented below). This method of calling `wait`
@@ -67,7 +68,7 @@ plugins:
     wait_on: ["wait_event_1", "wait_event_2"]
 ```
 
-\subsubsection status_node status
+\subsubsection flowvr_status_node status
 
 %PDI will copy the status of the module to the given descriptor. The same as the `wait_on` it can be a single
 name or an array of names. Configuration example:
@@ -84,7 +85,7 @@ plugins:
     status: status_desc
 ```
 
-\subsubsection abort_on_node abort_on
+\subsubsection flowvr_abort_on_node abort_on
 
 Defines on which events the plugin calls the `abort` function which will stop the flowvr application.
 The value can be either single event name or the array of events names. Configuration examples:
@@ -100,7 +101,7 @@ plugins:
     abort_on: "abort_event"
 ```
 
-\subsubsection init_on_node init_on
+\subsubsection flowvr_init_on_node init_on
 
 Defining this subtree tells %PDI that the plugin should be initialized not on `PDI_init`, but on given event.
 
@@ -115,7 +116,7 @@ plugins:
     init_on: "init_event"
 ```
 
-\subsubsection parallel_node parallel
+\subsubsection flowvr_parallel_node parallel
 
 This node can be for reading rank and size of the world, but also can be for setting this values.
 `get_rank` will copy process's rank to given descriptor on share, `get_size` will save the 
@@ -154,7 +155,7 @@ plugins:
       set_size: $size_desc
 ```
 
-\subsubsection several_modules Several modules
+\subsubsection flowvr_several_modules Several modules
 
 Single program can run several modules at once. To make it work just create array of modules in `flowvr` tree.
 Configuration example:
@@ -173,11 +174,11 @@ flowvr:
     ...
 ```
 
-\subsection ports Ports
+\subsection flowvr_ports Ports
 
-\subsubsection input_ports input_ports
+\subsubsection flowvr_input_ports input_ports
 
-Input ports are defined in `input_ports` tree. Each port is defined by name and \ref message it will receive.
+Input ports are defined in `input_ports` tree. Each port is defined by name and \ref flowvr_message it will receive.
 You can add `event_port: true` to define this as event port (non-blocking).
 
 ```yaml
@@ -191,9 +192,9 @@ flowvr:
       ...
 ```
 
-\subsubsection output_ports output_ports
+\subsubsection flowvr_output_ports output_ports
 
-Output ports are defined in `output_ports` tree. Each port is defined by name and \ref message it will send.
+Output ports are defined in `output_ports` tree. Each port is defined by name and \ref flowvr_message it will send.
 ```yaml
 flowvr:
   ...
@@ -202,22 +203,22 @@ flowvr:
     port_name_2: ...
 ```
 
-\subsection message Message
+\subsection flowvr_message Message
 
 Flowvr message consists of payload and stamps.
 The `payload` is defined by user by a specific key in port definition:
 
 |key|message type|
 |:----|:----|
-|"data"|\ref data_payload|
-|"chunks"|\ref chunks_payload|
-|"event_button"|\ref button_payload|
-|"event_mouse"|\ref mouse_payload|
+|"data"|\ref flowvr_data_payload|
+|"chunks"|\ref flowvr_chunks_payload|
+|"event_button"|\ref flowvr_button_payload|
+|"event_mouse"|\ref flowvr_mouse_payload|
 
 If none of the message type will be given, plugin will create a STAMP port (message has no payload).
-`stamps` are described in \ref stamp section.
+`stamps` are described in \ref flowvr_stamp section.
 
-\subsubsection data_payload Data payload
+\subsubsection flowvr_data_payload Data payload
 Requires `data` key in a port tree. This configuration means that module will send simple buffer.
 The plugin doesn't know the type of sending data. The value of `data` key is the name of
 the descriptor where:
@@ -278,10 +279,10 @@ flowvr:
         start: [1, 1]
 ```
 
-\subsection chunks_payload Chunk payload
+\subsection flowvr_chunks_payload Chunk payload
 
 Requires `chunks` key in a port tree. This configuration means that module will send several buffers in
-one payload. Value of the `chunks` key is the list of \ref data_payload.
+one payload. Value of the `chunks` key is the list of \ref flowvr_data_payload.
 
 ---
 WARNING
@@ -308,7 +309,7 @@ flowvr:
         - data: chunk_3_name
 ```
 
-\subsection button_payload Event button payload
+\subsection flowvr_button_payload Event button payload
 
 Requires `event_button` key in a port tree. The payload holds the values of the keyboard keys
 pressed during iteration.
@@ -361,7 +362,7 @@ flowvr:
         KEY_RIGHT: right
 ```
 
-\subsection mouse_payload Event mouse payload
+\subsection flowvr_mouse_payload Event mouse payload
 
 Requires `event_mouse` key in a port tree. The payload holds the values of the mouse keys
 pressed and cursor position during iteration. The button state is saved in descriptors of integer type
@@ -395,7 +396,7 @@ flowvr:
         MIDDLE_BUTTON: middle_button
 ```
 
-\subsection stamp Stamp
+\subsection flowvr_stamp Stamp
 
 The `stamps` key must be defined in a port tree. The value of `stamps` is simply a map with the stamp
 name and descriptor name. The given descriptor must have a valid %PDI type, limited to:
@@ -407,7 +408,7 @@ name and descriptor name. The given descriptor must have a valid %PDI type, limi
 - `array of chars`
 
 
-Example of message with \ref data_payload and 2 stamps:
+Example of message with \ref flowvr_data_payload and 2 stamps:
 
 ```yaml
 data:
@@ -444,7 +445,7 @@ flowvr:
 
 For now only int and string stamps are supported as expression.
 
-\section c_api Reading and writing data examples
+\section flowvr_c_api Reading and writing data examples
 
 FlowVR plugin uses 2 ways to handle data reading and writing:
 
@@ -453,7 +454,7 @@ FlowVR plugin uses 2 ways to handle data reading and writing:
 2. Copy the data from shared memory to descriptor - needs the data copy (convenient for small
  messages or sparse data types).
 
-\subsection read_shared Read data from FlowVR message by access the shared memory
+\subsection flowvr_read_shared Read data from FlowVR message by access the shared memory
 
 ```yaml
 data:
@@ -474,7 +475,7 @@ PDI_access("text_shr", (void**)&text_shr, PDI_IN);
 PDI_release("text_shr"); // really important to release descriptors
 ```
 
-\subsection write_shared Write data from FlowVR message by access the shared memory
+\subsection flowvr_write_shared Write data from FlowVR message by access the shared memory
 
 ```yaml
 data:
@@ -495,7 +496,7 @@ PDI_access("text_shr", (void**)&text_shr, PDI_OUT);
 PDI_release("text_shr"); // really important to release descriptors
 ```
 
-\subsection read_copy Read data from FlowVR message by copy from the shared memory
+\subsection flowvr_read_copy Read data from FlowVR message by copy from the shared memory
 
 ```yaml
 data:
@@ -512,7 +513,7 @@ char text[4];
 PDI_expose("text", text, PDI_IN);
 ```
 
-\subsection write_copy Write data to FlowVR message by copy to the shared memory
+\subsection flowvr_write_copy Write data to FlowVR message by copy to the shared memory
 
 ```yaml
 data:
@@ -529,7 +530,7 @@ char text[4];
 PDI_expose("text", text, PDI_OUT);
 ```
 
-\subsection wrtie_sparse Write data to FlowVR message by copy the subset of data to the shared memory
+\subsection flowvr_wrtie_sparse Write data to FlowVR message by copy the subset of data to the shared memory
 
 ```yaml
 data:
@@ -547,11 +548,11 @@ int my_array[400];
 PDI_expose("my_array", my_array, PDI_OUT); // copies only 100 elements
 ```
 
-\section Reading and writing stamps examples
+\section flowvr_reading_writing_stamps Reading and writing stamps examples
 
 Stamps are always copied from descriptor to flowvr message.
 
-\subsection read_stamp Read stamp from FlowVR message
+\subsection flowvr_read_stamp Read stamp from FlowVR message
 
 ```yaml
 data:
@@ -568,7 +569,7 @@ int stamp_it = some_value;
 PDI_expose("stamp_it", &stamp_it, PDI_IN);
 ```
 
-\subsection write_stamp Write stamp from FlowVR message
+\subsection flowvr_write_stamp Write stamp from FlowVR message
 
 ```yaml
 data:
@@ -586,9 +587,9 @@ int user_stamp = some_value;
 PDI_expose("user_stamp", &user_stamp, PDI_OUT);
 ```
 
-\section mouse_button_event Reading and writing mouse and button event examples
+\section flowvr_mouse_button_event Reading and writing mouse and button event examples
 
-\subsection write_mouse Write mouse event from FlowVR message
+\subsection flowvr_write_mouse Write mouse event from FlowVR message
 
 ```yaml
 data:
@@ -611,7 +612,7 @@ int left_button = 1;
 PDI_expose("left_button", &left_button, PDI_OUT);
 ```
 
-\subsection read_mouse Read mouse event from FlowVR message
+\subsection flowvr_read_mouse Read mouse event from FlowVR message
 
 ```yaml
 data:
@@ -634,7 +635,7 @@ int left_button;
 PDI_expose("left_button", &left_button, PDI_IN);
 ```
 
-\subsection write_button Write button event from FlowVR message
+\subsection flowvr_write_button Write button event from FlowVR message
 
 ```yaml
 data:
@@ -657,7 +658,7 @@ int down_state = 1;
 PDI_expose("down", &down_state, PDI_OUT);
 ```
 
-\subsection read_button Read button event from FlowVR message
+\subsection flowvr_read_button Read button event from FlowVR message
 
 ```yaml
 data:
@@ -680,7 +681,7 @@ int down_state;
 PDI_expose("down", &down_state, PDI_IN);
 ```
 
-\section flowvr_examples FlowVR examples reworked for %PDI
+\section flowvr_flowvr_examples FlowVR examples reworked for %PDI
 
 Path to the examples:
 
@@ -690,14 +691,14 @@ Path to the examples:
 
 Original flowvr source files are in directories `flowvr_original`.
 
-\subsection run_app Running the application
+\subsection flowvr_run_app Running the application
 
 1. Go to examples folder: `cd pdi_plugin-flowvr/src/FLOWVR_PLUGIN-build/examples`
 2. Run `source flowvr-config.sh`. Now your environment is ready.
 3. Run flowvr daemon on your system (best in new terminal, repeat 1. and 2.): `flowvrd --top`
 4. Inside `$example_name` directory generate the flowvr configuration files by: `python $example_name.py` and run example by: `flowvr $example_name`
 
-\subsection tictac Tictac example
+\subsection flowvr_tictac Tictac example
 
 Consists of 2 modules:
 
@@ -723,7 +724,7 @@ Consists of 2 modules:
 
 \image html tictac_net.jpg
 
-\subsubsection bundle Bundle example
+\subsubsection flowvr_bundle Bundle example
 
 Consists of 3 modules:
 
@@ -747,7 +748,7 @@ Consists of 3 modules:
 
 \image html bundle_net.jpg
 
-\subsection primes Primes example
+\subsection flowvr_primes Primes example
 
 Consists of 3 modules:
 
@@ -781,7 +782,7 @@ Consists of 3 modules:
 
 \image html primes_net.jpg
 
-\subsection fluid Fluid example
+\subsection flowvr_fluid Fluid example
 
 Consists of 2 modules:
 

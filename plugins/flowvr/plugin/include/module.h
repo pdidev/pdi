@@ -112,8 +112,9 @@ private:
 	void initialize_flowvr_module();
 	
 	/** Updates logger to show module
+	 * \param[in] logging_tree logging yaml tree
 	 */
-	void update_logger();
+	void update_logger(PC_tree_t logging_tree);
 	
 public:
 	/** Creates new flowvr module

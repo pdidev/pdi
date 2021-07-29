@@ -11,7 +11,7 @@
 |\subpage set_value_plugin "set_value plugin"         |Set values to data and metadata from yaml file.                    |
 |\subpage FTI_plugin "FTI plugin"                     |Perform checkpoints using FTI library.                             |
 |\subpage pycall_plugin "Pycall plugin"               |Call python scripts from C application                             |
-|MPI plugin                                           |Enables MPI support in %PDI and plugins.                           |
+|\subpage mpi_plugin "MPI plugin"                     |Enables MPI support in %PDI and plugins.                           |
 |Decl'SION plugin                                     |Read and write data from SIONlib files in a declarative way.       |
 
 

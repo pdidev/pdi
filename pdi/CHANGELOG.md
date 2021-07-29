@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 * Improved error messages when failing to load a plugin
+* support setting the logging format from the specification tree
+  [#317](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/317)
 
 #### Changed
 

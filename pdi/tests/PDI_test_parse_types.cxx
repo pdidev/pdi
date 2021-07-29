@@ -32,9 +32,6 @@
 
 #include <gtest/gtest.h>
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-
 #include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
 #include <pdi/datatype_template.h>

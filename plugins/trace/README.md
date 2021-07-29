@@ -6,7 +6,7 @@ The trace plugin is intended to generate a trace of what happens in
 The plugin is very simple; just list its name in the 
 \ref Specification_tree "specification tree" and you're done.
 
-```python
+```yaml
 data: #...
 metadata: #...
 plugins:

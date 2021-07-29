@@ -51,8 +51,12 @@ be accessed using `PDI_access`.
 # Configuration grammar
 
 At its root, the FTI configuration is made of several nodes:
-`checkpoint`, `communicator`, `config_file`, `dataset`, `init_on`,
+`logging`, `checkpoint`, `communicator`, `config_file`, `dataset`, `init_on`,
 `recover_on`, `recover_var`, `send_file`, `snapshot_on` and `status`.
+
+## logging
+
+A `logging` specifies logging properties: \ref logging_node .
 
 ## checkpoint
 

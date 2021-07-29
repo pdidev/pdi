@@ -32,8 +32,6 @@
 #include <utility>
 #include <unordered_map>
 
-#include <spdlog/spdlog.h>
-
 #include <pdi/context.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
@@ -103,6 +101,8 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			// will read in pass 2
 		} else if ( key == "read" ) {
 			// will read in pass 2
+		} else if ( key == "logging" ) {
+			// pass
 		} else {
 			throw Config_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
 		}

@@ -192,6 +192,14 @@ public:
 	 * \return the data reference
 	 */
 	Ref to_ref(Context& ctx, const Datatype& type) const;
+	
+	/** Parses a string that starts with `$` and represents a reference expression
+	 *
+	 * \param[in] reference_str string that represents a reference expression
+	 *
+	 * \return resulted reference exrpession and number of bytes read from reference_str
+	 */
+	static std::pair<Expression, long> parse_reference(const char* reference_str);
 };
 
 } // namespace PDI

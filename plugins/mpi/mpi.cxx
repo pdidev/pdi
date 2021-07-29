@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,6 @@
 #include <mpi.h>
 
 #include <string>
-
-#include <spdlog/spdlog.h>
 
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
@@ -182,18 +180,11 @@ struct mpi_plugin: Plugin {
 	
 	void set_up_logger(Context& ctx, PC_tree_t)
 	{
-		//set up format
-		int world_rank;
-		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-		char format[64];
-		snprintf(format, 64, "[PDI][MPI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
-		ctx.logger()->set_pattern(string(format));
-		
-		//set up format for global logger
+		// pdi global logger
 		try {
 			Context_proxy& ctx_proxy = dynamic_cast<Context_proxy&>(ctx);
-			snprintf(format, 64, "[PDI][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
-			ctx_proxy.pdi_core_logger()->set_pattern(string(format));
+			ctx_proxy.pdi_core_logger()->default_pattern("[%T][%{MPI_COMM_WORLD_rank:06d}][%n] *** %^%l%$: %v");
+			ctx_proxy.pdi_core_logger()->evaluate_pattern(ctx);
 		} catch (std::bad_cast&) {
 			ctx.logger()->warn("Cannot cast Context to Context_proxy");
 		}
@@ -215,6 +206,11 @@ struct mpi_plugin: Plugin {
 	mpi_plugin(Context& ctx, PC_tree_t config):
 		Plugin{ctx}
 	{
+		int world_rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+		add_predefined(ctx, "MPI_COMM_WORLD_rank", &world_rank, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}});
+		
+		// logger requires MPI_COMM_WORLD.rank data
 		set_up_logger(ctx, PC_get(config, ".logging"));
 		
 		// share the MPI_Comm datatype, it does not duplicate its content (collective), only copies it!
@@ -261,6 +257,14 @@ struct mpi_plugin: Plugin {
 		context().logger()->info("Closing plugin");
 	}
 	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "MPI";
+	}
 };
 
 } // namespace <anonymous>

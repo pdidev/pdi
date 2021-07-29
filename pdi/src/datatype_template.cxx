@@ -32,8 +32,6 @@
 #include <string>
 #include <vector>
 
-#include <spdlog/spdlog.h>
-
 #include "pdi.h"
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"

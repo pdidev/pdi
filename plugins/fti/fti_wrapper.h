@@ -42,7 +42,7 @@ class Fti_wrapper
 	Fti_wrapper& operator=(const Fti_wrapper&) = delete;
 	
 public:
-	Fti_wrapper(PDI::Context& ctx, const Fti_cfg& config, MPI_Comm comm);
+	Fti_wrapper(PDI::Context& ctx, const Fti_cfg& config, MPI_Comm comm, PC_tree_t logging_tree);
 	
 	bool head();
 	

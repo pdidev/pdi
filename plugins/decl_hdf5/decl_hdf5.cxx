@@ -33,7 +33,6 @@
 #include <vector>
 
 #include <paraconf.h>
-#include <spdlog/spdlog.h>
 
 #include <pdi/context.h>
 #include <pdi/logger.h>
@@ -52,6 +51,7 @@ using PDI::opt_each;
 using PDI::Plugin;
 using PDI::Ref;
 using PDI::to_long;
+using PDI::to_string;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -69,36 +69,12 @@ class decl_hdf5_plugin:
 	/// the file operations to execute on data, we use a map of vector vs. multimap to conserve order
 	unordered_map<string, vector<File_op>> m_data;
 	
-	/** Set-up the plugin-specific logger
-	 *
-	 * \param logging_tree the logging specific config
-	 */
-	void set_up_logger(PC_tree_t logging_tree)
-	{
-		context().logger()->set_pattern("[PDI][Decl'HDF5][%T] *** %^%l%$: %v");
-		
-#ifdef H5_HAVE_PARALLEL
-		int mpi_init = 0;
-		MPI_Initialized(&mpi_init);
-		if (mpi_init) {
-			//set up format
-			int world_rank;
-			MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-			char format[64];
-			snprintf(format, 64, "[PDI][Decl'HDF5][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
-			context().logger()->set_pattern(string(format));
-		}
-#endif
-	}
-	
 public:
 	decl_hdf5_plugin(Context& ctx, PC_tree_t config):
 		Plugin {ctx}
 	{
 		Hdf5_error_handler _;
 		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");
-		set_up_logger(PC_get(config, ".logging"));
-		
 		opt_each(config, [&](PC_tree_t elem) {
 			for (auto&& op: File_op::parse(ctx, elem)) {
 				auto&& events = op.event();
@@ -155,6 +131,15 @@ public:
 		for (auto&& op: m_events[event]) {
 			op.execute(context());
 		}
+	}
+	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "Decl'HDF5";
 	}
 	
 }; // class decl_hdf5_plugin

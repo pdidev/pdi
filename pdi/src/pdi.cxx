@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +34,6 @@
 #include <sstream>
 #include <type_traits>
 #include <unordered_set>
-
-#include <spdlog/spdlog.h>
 
 #include "pdi/context.h"
 #include "pdi/data_descriptor.h"
@@ -186,7 +185,6 @@ try
 	g_transaction.clear();
 	g_transaction_data.clear();
 	Global_context::init(conf);
-	Global_context::context().logger()->info("Initialization successful");
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -205,7 +203,6 @@ try
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	Global_context::context().logger()->info("Finalization");
 	Global_context::finalize();
 	return PDI_OK;
 } catch (const Error& e)

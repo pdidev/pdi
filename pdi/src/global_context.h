@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,11 +33,12 @@
 #include <string>
 #include <unordered_map>
 
+#include "pdi/pdi_fwd.h"
 #include "pdi/callbacks.h"
 #include "pdi/context.h"
 #include "pdi/context_proxy.h"
-#include "pdi/pdi_fwd.h"
 #include "pdi/data_descriptor.h"
+#include "pdi/logger.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 
@@ -52,9 +54,9 @@ private:
 
 	/// The singleton Context instance
 	static std::unique_ptr<Global_context> s_context;
-	
+
 	/// Global logger of PDI, should be constructed first, destroyed last
-	Logger_sptr m_logger;
+	Logger m_logger;
 	
 	/// Datatype_template constructors available in PDI
 	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
@@ -111,8 +113,8 @@ public:
 	 * \param[in] name the event name
 	 */
 	void event(const char* name) override;
-	
-	Logger_sptr logger() const override;
+
+	Logger* logger() override;
 	
 	Datatype_template_uptr datatype(PC_tree_t node) override;
 	
@@ -121,6 +123,8 @@ public:
 	Callbacks& callbacks() override;
 
 	void finalize_and_exit() override;
+
+	~Global_context() override;
 };
 
 } // namespace PDI

@@ -216,7 +216,6 @@ void Module::load_traces(PC_tree_t config)
 
 void Module::load_module_name(PC_tree_t config)
 {
-	char format[128];
 	PC_tree_t name_node = PC_get(config, ".name");
 	if (!PC_status(name_node)) {
 		m_module_name = PDI::Expression{PDI::to_string(name_node)}.to_string(context());
@@ -225,17 +224,10 @@ void Module::load_module_name(PC_tree_t config)
 		if (!PC_status(instance_name_node)) {
 			m_instance_name = PDI::Expression{PDI::to_string(instance_name_node)}.to_string(context());
 			context().logger()->info("New module name set: {}/{}", m_module_name, m_instance_name);
-			snprintf(format, 128, "[PDI][%s][%%T] *** %%^%%l%%$: %%v", m_module_name + "/" + m_instance_name);
 		} else {
 			context().logger()->info("New module name set: {}", m_module_name);
-			snprintf(format, 128, "[PDI][%s][%%T] *** %%^%%l%%$: %%v", m_module_name);
 		}
-	} else {
-		// update logger with no module name
-		snprintf(format, 128, "[PDI][FlowVR Module][%%T] *** %%^%%l%%$: %%v");
 	}
-	context().logger()->set_pattern(std::string(format));
-	context().logger()->debug("Logger updated");
 }
 
 void Module::initialize_flowvr_module()
@@ -268,15 +260,18 @@ void Module::initialize_flowvr_module()
 	context().logger()->debug("Initialized flowvr module");
 }
 
-void Module::update_logger()
+void Module::update_logger(PC_tree_t logging_tree)
 {
-	if (m_module_name.empty()) {
-		char format[128];
-		m_module_name = m_flowvr_module->getID().substr(m_flowvr_module->getID().find_last_of("/") + 1);
-		snprintf(format, 128, "[PDI][%s][%%T] *** %%^%%l%%$: %%v", m_flowvr_module->getID().c_str());
-		context().logger()->set_pattern(std::string(format));
-		context().logger()->debug("Logger updated");
+	char format[256];
+	if (m_flowvr_module && m_module_name.empty()) {
+		snprintf(format, 256, "FlowVR/%s", m_flowvr_module->getID().substr(m_flowvr_module->getID().find_last_of("/") + 1));
+	} else if (!m_module_name.empty()) {
+		snprintf(format, 256, "FlowVR/%s", m_module_name);
+	} else {
+		return;
 	}
+	context().logger()->default_pattern("[%T][" + std::string(format) + "] *** %^%l%$: %v");
+	context().logger()->debug("Logger updated");
 }
 
 Module::Module(PDI::Context& ctx, PC_tree_t config):
@@ -286,6 +281,7 @@ Module::Module(PDI::Context& ctx, PC_tree_t config):
 	m_abort_on_finalze{false}
 {
 	load_module_name(config);
+	update_logger(PC_get(config, ".logging"));
 	
 	load_desc_names(config);
 	load_input_ports(config);
@@ -294,7 +290,8 @@ Module::Module(PDI::Context& ctx, PC_tree_t config):
 	
 	initialize_flowvr_module();
 	
-	update_logger();
+	// update logger again in case of flowvr default name
+	update_logger(PC_get(config, ".logging"));
 	context().logger()->info("Module initialization succeed");
 }
 

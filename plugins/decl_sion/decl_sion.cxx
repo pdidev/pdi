@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2008-2016 Forschungszentrum Juelich, Juelich Supercomputing Centre
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +34,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include <spdlog/spdlog.h>
 
 #include <pdi.h>
 #include <pdi/context.h>
@@ -216,24 +215,7 @@ struct decl_sion_plugin: Plugin {
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
 			this->event(name);
 		});
-		set_up_logger(PC_get(conf, ".logging"));
 		ctx.logger()->info("Plugin loaded successfully");
-	}
-	
-	void set_up_logger(PC_tree_t logging_tree)
-	{
-		context().logger()->set_pattern("[PDI][Decl'SION][%T] *** %^%l%$: %v");
-		
-		int mpi_init = 0;
-		MPI_Initialized(&mpi_init);
-		if (mpi_init) {
-			//set up format
-			int world_rank;
-			MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-			char format[64];
-			snprintf(format, 64, "[PDI][Decl'SION][%06d][%%T] *** %%^%%l%%$: %%v", world_rank);
-			context().logger()->set_pattern(string(format));
-		}
 	}
 	
 	void write_event(const Named_event& event)
@@ -500,6 +482,15 @@ struct decl_sion_plugin: Plugin {
 	~decl_sion_plugin()
 	{
 		context().logger()->info("Closing plugin");
+	}
+	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "Decl'SION";
 	}
 	
 }; // struct decl_sion_plugin

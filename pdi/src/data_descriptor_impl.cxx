@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,8 +29,6 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-
-#include <spdlog/spdlog.h>
 
 #include "pdi/context.h"
 #include "pdi/datatype.h"

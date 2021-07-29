@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,6 @@
 
 #include <dlfcn.h>
 #include <unistd.h>
-#include <spdlog/spdlog.h>
 
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
@@ -104,8 +104,8 @@ void Global_context::finalize()
 }
 
 Global_context::Global_context(PC_tree_t conf):
-	m_logger{configure_logger(PC_get(conf, ".logging"), "global")},
-	m_plugins{*this, conf},
+	m_logger{"PDI", PC_get(conf, ".logging")},
+	m_plugins{*this, conf}, 
 	m_callbacks{*this}
 {
 	// load basic datatypes
@@ -115,12 +115,15 @@ Global_context::Global_context(PC_tree_t conf):
 	
 	m_plugins.load_plugins();
 	
+	// evaluate pattern after loading plugins
+	m_logger.evaluate_pattern(*this);
+
 	// no metadata is not an error
 	PC_tree_t metadata = PC_get(conf, ".metadata");
 	if (!PC_status(metadata)) {
 		load_data(*this, metadata, true);
 	} else {
-		m_logger->debug("Metadata is not defined in specification tree");
+		m_logger.debug("Metadata is not defined in specification tree");
 	}
 	
 	// no data is spurious, but not an error
@@ -128,11 +131,12 @@ Global_context::Global_context(PC_tree_t conf):
 	if (!PC_status(data)) {
 		load_data(*this, data, false);
 	} else {
-		m_logger->warn("Data is not defined in specification tree");
+		m_logger.warn("Data is not defined in specification tree");
 	}
 	
 	
 	m_callbacks.call_init_callbacks();
+	m_logger.info("Initialization successful");
 }
 
 Data_descriptor& Global_context::desc(const char* name)
@@ -170,9 +174,9 @@ void Global_context::event(const char* name)
 	m_callbacks.call_event_callbacks(name);
 }
 
-Logger_sptr Global_context::logger() const
+Logger* Global_context::logger()
 {
-	return m_logger;
+	return &m_logger;
 }
 
 Datatype_template_uptr Global_context::datatype(PC_tree_t node)
@@ -218,6 +222,11 @@ void Global_context::finalize_and_exit()
 {
 	Global_context::finalize();
 	exit(0);
+}
+
+Global_context::~Global_context()
+{
+	m_logger.info("Finalization");
 }
 
 }

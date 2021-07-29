@@ -19,6 +19,7 @@ plugins:
 \subsection pycall_plugin_tree Plugin tree
 
 The root of plugin configuration (named `pycall`), is a dictionary that contains the following keys:
+- \ref logging_node
 - \ref pycall_on_event
 - \ref pycall_on_data
 
@@ -70,14 +71,14 @@ Full example of pycall plugin. For siplicity yaml file was included with c code 
 
 Yaml file named your_file:
 ```yaml
-logging: trace                                 
-    data: {a: {type: array, subtype: int, size: 3}}
-    plugins:
-      pycall:
-        on_event:
-          testing:
-            with: { a_python: $a }
-            exec: \"print(' * [P] I received    $a =',a_python); a_python[1]=7; print(' * [P] changed it to $a =',a_python);\"
+logging: trace
+data: {a: {type: array, subtype: int, size: 3}}
+plugins:
+  pycall:
+    on_event:
+      testing:
+        with: { a_python: $a }
+        exec: \"print(' * [P] I received    $a =',a_python); a_python[1]=7; print(' * [P] changed it to $a =',a_python);\"
 ```
 
 C++ code:

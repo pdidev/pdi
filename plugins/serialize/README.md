@@ -16,9 +16,10 @@ The serialize configuration is made of only:
 
 |key                    |value                |
 |:----------------------|:--------------------|
+|`logging`              |\ref logging_node|
 |data name to serialize |serialized data name |
 
-Here is an example:
+\subsection serialize_plugin_examples Plugin examples
 
 ```yaml
 data:
@@ -30,6 +31,7 @@ data:
     subsize: 4
 plugins:
   serialize:
+    logging: debug
     sparse_array: dense_array
 ```
 On each `sparse_array` data share, the plugin will share serialized data under the `dense_array` name.

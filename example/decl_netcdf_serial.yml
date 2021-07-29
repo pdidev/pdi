@@ -7,7 +7,6 @@ parallelism: { height: 1, width: 1 }
 
 # only the following config is passed to PDI
 pdi:
-  logging: trace
   metadata: # type of small values for which PDI keeps a copy
     iter:   int                    # current iteration id
     mpi_rank: int                  # mpi rank

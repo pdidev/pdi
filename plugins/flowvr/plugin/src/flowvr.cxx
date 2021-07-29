@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,6 @@
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
-
-#include <spdlog/spdlog.h>
 
 #include "component.h"
 #include "module.h"

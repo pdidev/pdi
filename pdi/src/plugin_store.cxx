@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +33,6 @@
 
 #include <dlfcn.h>
 #include <unistd.h>
-#include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
 
 #include "pdi/logger.h"
@@ -67,19 +67,21 @@ using std::vector;
 
 Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, string name, PC_tree_t conf):
 	m_config{conf},
-	m_ctx{ctx, name, PC_get(conf, ".logging")},
+	m_ctx{ctx},
 	m_name{name},
 	m_state{PRELOADED}
 {
-	m_ctx.logger()->trace("Pre-loading plugin `{}'", name);
+	ctx.logger()->trace("Pre-loading plugin `{}'", name);
 	
 	string ctor_symbol = "PDI_plugin_" + name + "_loader";
 	string deps_symbol = "PDI_plugin_" + name + "_dependencies";
+	string pretty_name_symbol = "PDI_plugin_" + name + "_pretty_name";
 	
 	// case where the library was prelinked
 	m_ctr = reinterpret_cast<plugin_factory_f>(dlsym(NULL, ctor_symbol.c_str()));
 	m_deps = reinterpret_cast<plugin_deps_f>(dlsym(NULL, deps_symbol.c_str()));
-	
+	auto pretty_name_f = reinterpret_cast<std::string(*)()>(dlsym(NULL, pretty_name_symbol.c_str()));
+
 	// case where the library was not prelinked
 	void* lib_handle = NULL;
 	if (!m_ctr || !m_deps) {
@@ -99,6 +101,14 @@ Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, st
 			throw Plugin_error{"Unable to load plugin dependencies for `{}': {}", name, dlerror()};
 		}
 	}
+	if (!pretty_name_f) {
+		pretty_name_f = reinterpret_cast<std::string(*)()>(dlsym(lib_handle, pretty_name_symbol.c_str()));
+		if (!m_deps) {
+			throw Plugin_error{"Unable to load plugin pretty name for `{}': {}", name, dlerror()};
+		}
+	}
+
+	m_ctx.setup_logger(pretty_name_f(), PC_get(conf, ".logging"));
 }
 
 void Plugin_store::Stored_plugin::ensure_loaded(map<string, shared_ptr<Stored_plugin>>& plugins)

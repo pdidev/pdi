@@ -42,8 +42,6 @@
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
 
-#include <spdlog/spdlog.h>
-
 #include "trigger.h"
 
 namespace {
@@ -101,22 +99,9 @@ struct set_value_plugin: PDI::Plugin {
 		}
 	}
 	
-	/** Sets logger format for plugin.
-	 *
-	 */
-	void set_up_logger()
-	{
-		//set up format
-		char format[64];
-		sprintf(format, "[PDI][Set_value][%%T] *** %%^%%l%%$: %%v");
-		context().logger()->set_pattern(std::string(format));
-	}
-	
 	set_value_plugin(PDI::Context& ctx, PC_tree_t config):
 		PDI::Plugin{ctx}
 	{
-		set_up_logger();
-		
 		// initialize after all descriptors are loaded, user can set value on_init
 		context().callbacks().add_init_callback([this, config]() {
 			this->load_config(config);
@@ -133,6 +118,14 @@ struct set_value_plugin: PDI::Plugin {
 		context().logger()->info("Closing plugin");
 	}
 	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "Set-value";
+	}
 };
 
 } // namespace set_value

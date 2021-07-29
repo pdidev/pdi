@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2018-2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,6 @@
 #include <fti.h>
 #include <cassert>
 
-#include <spdlog/spdlog.h>
-
 #include <pdi/context.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
@@ -45,6 +43,7 @@ using PDI::Plugin;
 using PDI::Ref;
 using PDI::Ref_w;
 using PDI::Ref_r;
+using PDI::to_string;
 
 using std::get;
 using std::pair;
@@ -109,16 +108,15 @@ struct fti_plugin: Plugin {
 		m_config{ctx, config},
 		m_ckpt_id{0}
 	{
-		context().logger()->set_pattern("[PDI][FTI][%T] *** %^%l%$: %v");
 		for (auto&& desc: m_config.descs()) {
 			switch (desc.second) {
 			case Desc_type::MPI_COMM: {
-				context().callbacks().add_data_callback([this](const string& name, Ref ref) {
+				context().callbacks().add_data_callback([this, config](const string& name, Ref ref) {
 					if (Ref_r rref = ref) {
 						if (!m_config.init_on_event()) {
 							if (!m_fti) {
 								m_fti.reset(new Fti_wrapper{context(), m_config,
-								        *static_cast<const MPI_Comm*>(rref.get())});
+								        *static_cast<const MPI_Comm*>(rref.get()), PC_get(config, ".logging")});
 								context().logger()->info("Plugin initialized successfully");
 							} else {
 								context().logger()->warn("Trying to initialize plugin again after plugin initialization");
@@ -212,10 +210,10 @@ struct fti_plugin: Plugin {
 		for (auto&& event: m_config.events()) {
 			switch (event.second) {
 			case Event_type::INIT: {
-				context().callbacks().add_event_callback([this](const string& event_name) {
+				context().callbacks().add_event_callback([this, config](const string& event_name) {
 					if (!m_fti) {
 						MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{context()[m_config.communicator()].ref()}.get());
-						m_fti.reset(new Fti_wrapper{context(), m_config, comm});
+						m_fti.reset(new Fti_wrapper{context(), m_config, comm, PC_get(config, ".logging")});
 						context().logger()->info("Plugin initialized successfully");
 					} else {
 						context().logger()->warn("Trying to initialize plugin again after plugin initialization (`{}')", event_name);
@@ -320,10 +318,20 @@ struct fti_plugin: Plugin {
 		auto&& comm_desc = context()[m_config.communicator()];
 		if (!m_config.init_on_event() && !comm_desc.empty()) {
 			MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{comm_desc.ref()}.get());
-			m_fti.reset(new Fti_wrapper{context(), m_config, comm});
+			m_fti.reset(new Fti_wrapper{context(), m_config, comm, PC_get(config, ".logging")});
 			context().logger()->info("Plugin initialized successfully");
 		}
 	}
+	
+	/** Pretty name for the plugin that will be shown in the logger
+	 *
+	 * \return pretty name of the plugin
+	 */
+	static std::string pretty_name()
+	{
+		return "FTI";
+	}
+	
 }; // struct fti_plugin
 
 } // namespace <anonymous>

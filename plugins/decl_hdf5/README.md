@@ -20,6 +20,7 @@ It is specified by a key/value map that contains at least the `file`
 key.
 Other keys are optional.
 The possible values for the keys are as follow:
+* `logging`: \ref logging_node
 * `file`: a string that can contain $-expressions and specified the
   name of the file this `FILE_DESC` refers to.
 * `write`: a `DATA_SECTION` that defaults to an empty one.

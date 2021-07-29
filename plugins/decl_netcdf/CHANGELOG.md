@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 * Record datatype support
+* `logging` spdlog pattern can be set from specification tree
+  [#317](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/317)
 
 ### Changed
 

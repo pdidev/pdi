@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018-2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,21 +22,26 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
+#include <pdi/context_proxy.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 
 #include <fti.h>
-#include <spdlog/spdlog.h>
 
 #include "fti_wrapper.h"
 
 using PDI::Context;
+using PDI::Context_proxy;
 using PDI::Data_descriptor;
 using PDI::Datatype_uptr;
 using PDI::Impl_error;
 using PDI::Plugin_error;
+using PDI::Scalar_datatype;
+using PDI::Scalar_kind;
+using PDI::to_string;
 
 using std::string;
 
@@ -59,7 +64,7 @@ void add_predefined(Context& ctx, const std::string& name, void* data, Datatype_
 
 namespace fti {
 
-Fti_wrapper::Fti_wrapper(Context& ctx, const Fti_cfg& config, MPI_Comm comm):
+Fti_wrapper::Fti_wrapper(Context& ctx, const Fti_cfg& config, MPI_Comm comm, PC_tree_t logging_tree):
 	m_head{false}
 {
 	int status = FTI_Init(const_cast<char*>(config.config(ctx).c_str()), comm);
@@ -70,15 +75,22 @@ Fti_wrapper::Fti_wrapper(Context& ctx, const Fti_cfg& config, MPI_Comm comm):
 	
 	int fti_world_rank;
 	MPI_Comm_rank(FTI_COMM_WORLD, &fti_world_rank);
-	char format[64];
 	
-	//setup logger
+	
+	//load FTI_COMM_WORLD.rank
+	add_predefined(ctx, "FTI_COMM_WORLD_rank", &fti_world_rank, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}});
+	string fti_rank_name = "FTI %{FTI_COMM_WORLD_rank:06d}";
 	if (m_head) {
-		snprintf(format, 64, "[PDI][FTI][%06d (HEAD)][%%T] *** %%^%%l%%$: %%v", fti_world_rank);
-	} else {
-		snprintf(format, 64, "[PDI][FTI][%06d][%%T] *** %%^%%l%%$: %%v", fti_world_rank);
+		fti_rank_name = "FTI %{FTI_COMM_WORLD_rank:06d} (HEAD)";
 	}
-	ctx.logger()->set_pattern(format);
+	// pdi global logger
+	try {
+		Context_proxy& ctx_proxy = dynamic_cast<Context_proxy&>(ctx);
+		ctx_proxy.pdi_core_logger()->default_pattern("[%T][" + fti_rank_name + "][%n] *** %^%l%$: %v");
+		ctx_proxy.pdi_core_logger()->evaluate_pattern(ctx);
+	} catch (std::bad_cast&) {
+		ctx.logger()->warn("Cannot cast Context to Context_proxy");
+	}
 	
 	if (m_head) {
 		auto found_it = std::find_if(config.descs().begin(), config.descs().end(),

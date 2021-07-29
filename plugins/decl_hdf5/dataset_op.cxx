@@ -33,8 +33,6 @@
 #include <tuple>
 #include <vector>
 
-#include <spdlog/spdlog.h>
-
 #include <pdi/pdi_fwd.h>
 #include <pdi/array_datatype.h>
 #include <pdi/context.h>

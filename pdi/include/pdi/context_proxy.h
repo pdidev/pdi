@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
 #include <pdi/callbacks.h>
+#include <pdi/logger.h>
 
 #include <functional>
 #include <string>
@@ -36,10 +37,29 @@ namespace PDI {
 
 class PDI_EXPORT Context_proxy : public Context
 {
+	/// Real context of this proxy
 	Context& m_real_context;
-	Logger_sptr m_plugin_logger;
+	
+	/// Logger of the plugin
+	Logger m_plugin_logger;
 public:
-	Context_proxy(Context& ctx, std::string plugin_name, PC_tree_t logging_tree);
+	/** Creates Context proxy without plugin logger
+	 * \param[in] ctx context to make a proxy
+	 */
+	Context_proxy(Context& ctx);
+	
+	/** Creates Context proxy
+	 * \param[in] ctx context to make a proxy
+	 * \param[in] logger_name name of the logger (will be used in logger pattern)
+	 * \param[in] logging_tree logging yaml tree of the plugin
+	 */
+	Context_proxy(Context& ctx, const std::string& logger_name, PC_tree_t logging_tree);
+	
+	/** Sets up logger
+	 * \param[in] logger_name name of the logger (will be used in logger pattern)
+	 * \param[in] logging_tree logging yaml tree of the plugin
+	 */
+	void setup_logger(const std::string& logger_name, PC_tree_t logging_tree);
 	
 	/** Context::desc proxy for plugins
 	 */
@@ -66,16 +86,22 @@ public:
 	Iterator end() override;
 	
 	/** Context::event proxy for plugins
+	 *
+	 *  \param[in] name name of the event
 	 */
 	void event(const char* name) override;
 	
-	/** Returns local logger
+	/** Returns plugin logger
+	 *
+	 *  \return plugin logger
 	 */
-	Logger_sptr logger() const override;
+	Logger* logger() override;
 	
-	/** Context::logger proxy for plugins
+	/** Returns pdi core logger
+	 *
+	 * \return pdi core logger
 	 */
-	Logger_sptr pdi_core_logger() const;
+	Logger* pdi_core_logger();
 	
 	/** Context::datatype proxy for plugins
 	 */

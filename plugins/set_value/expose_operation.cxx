@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <spdlog/spdlog.h>
-
 #include <pdi/context.h>
 #include <pdi/expression.h>
 #include <pdi/ref_any.h>

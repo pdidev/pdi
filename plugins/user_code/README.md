@@ -292,9 +292,10 @@ The root of `user-code` plugin is a dictionary that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"on_data"`  (*optional*)|a \ref on_data_node |
-|`"on_event"` (*optional*)|a \ref on_event_node|
-|`".*"`       (*optional*)| *anything*         |
+|`"logging"`  (*optional*)|a \ref logging_node|
+|`"on_data"`  (*optional*)|a \ref on_data_node    |
+|`"on_event"` (*optional*)|a \ref on_event_node   |
+|`".*"`       (*optional*)| *anything*            |
 
 * the `on_data` key specifies the list of descriptors that, when they become available, 
 will cause the specified functions to be called,

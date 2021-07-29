@@ -970,6 +970,20 @@ TEST_F(AdvancedExpressionTest, reference_in_operation)
 	ASSERT_EQ((value1 + value2) * 2, exp.to_long(context_mock));
 }
 
+/*
+ * Name:                ExpressionTest.parse_reference
+ *
+ * Tested functions:    PDI::Expression::parse_reference(const char*)
+ *
+ * Description:         Checks if expression correctly parses a reference expression.
+ */
+TEST_F(AdvancedExpressionTest, parse_reference)
+{
+	string ref_expr_str = "${testing}1234";
+	auto parse_result = Expression::parse_reference(ref_expr_str.c_str());
+	ASSERT_EQ(10L, parse_result.second);
+}
+
 INSTANTIATE_TEST_CASE_P(, LongExpressionTest, ::testing::Values(numeric_limits<long>::min(), -1l, 0l, 1l, numeric_limits<long>::max()));
 
 INSTANTIATE_TEST_CASE_P(, DoubleExpressionTest, ::testing::Values(numeric_limits<double>::min(), -1.0, 0.0, 1.0, numeric_limits<double>::max()));
@@ -984,7 +998,7 @@ TEST(PCTreeToRefDefault, scalar_value_long)
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
-	// ASSERT_EQ(4, *static_cast<long*>(ref.get()));
+	ASSERT_EQ(4, ref.scalar_value<int>());
 }
 
 TEST(PCTreeToRefDefault, array_value_long)

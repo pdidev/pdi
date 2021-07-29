@@ -22,20 +22,31 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <spdlog/spdlog.h>
-
 #include "pdi/context.h"
 #include "pdi/context_proxy.h"
 #include "pdi/logger.h"
 
+using std::move;
+using std::string;
+
 namespace PDI {
 
-Context_proxy::Context_proxy(Context& ctx, std::string plugin_name, PC_tree_t logging_tree):
-	m_real_context{ctx},
-	m_plugin_logger{configure_logger(logging_tree, plugin_name, ctx.logger()->level())}
+
+Context_proxy::Context_proxy(Context& ctx):
+	m_real_context{ctx}
 {}
 
-Data_descriptor& Context_proxy::desc(const std::string& name)
+Context_proxy::Context_proxy(Context& ctx, const string& logger_name, PC_tree_t logging_tree):
+	m_real_context{ctx},
+	m_plugin_logger{*m_real_context.logger(), logger_name, logging_tree}
+{}
+
+void Context_proxy::setup_logger(const string& logger_name, PC_tree_t logging_tree)
+{
+	m_plugin_logger.setup(*m_real_context.logger(), logger_name, logging_tree);
+}
+
+Data_descriptor& Context_proxy::desc(const string& name)
 {
 	return m_real_context.desc(name);
 }
@@ -45,7 +56,7 @@ Data_descriptor& Context_proxy::desc(const char* name)
 	return m_real_context.desc(name);
 }
 
-Data_descriptor& Context_proxy::operator[](const std::string& name)
+Data_descriptor& Context_proxy::operator[](const string& name)
 {
 	return m_real_context[name];
 }
@@ -70,24 +81,24 @@ void Context_proxy::event(const char* name)
 	m_real_context.event(name);
 }
 
-Logger_sptr Context_proxy::logger() const
+Logger* Context_proxy::logger()
 {
-	return m_plugin_logger;
+	return &m_plugin_logger;
 }
 
-Logger_sptr Context_proxy::pdi_core_logger() const
+Logger* Context_proxy::pdi_core_logger()
 {
 	return m_real_context.logger();
 }
 
 Datatype_template_uptr Context_proxy::datatype(PC_tree_t node)
 {
-	return m_real_context.datatype(std::move(node));
+	return m_real_context.datatype(move(node));
 }
 
-void Context_proxy::add_datatype(const std::string& name, Datatype_template_parser parser)
+void Context_proxy::add_datatype(const string& name, Datatype_template_parser parser)
 {
-	m_real_context.add_datatype(name, std::move(parser));
+	m_real_context.add_datatype(name, move(parser));
 }
 
 Callbacks& Context_proxy::callbacks()

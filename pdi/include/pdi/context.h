@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +35,7 @@
 #include <pdi/callbacks.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype_template.h>
+#include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
 
@@ -102,7 +104,7 @@ public:
 	/** Logger getter
 	 * \return logger
 	 */
-	virtual Logger_sptr logger() const = 0;
+	virtual Logger* logger() = 0;
 	
 	/** Callbacks of the context
 	 * \return context callbacks
