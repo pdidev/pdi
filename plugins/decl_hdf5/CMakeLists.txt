@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -39,7 +39,7 @@ option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 
 include(CTest)
 
-if("${BUILD_FORTRAN}")
+if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 	enable_language(Fortran)
 	set(PDI_COMPONENTS f90)
 endif()
@@ -53,7 +53,7 @@ endif()
 
 # MPI
 if("${BUILD_HDF5_PARALLEL}")
-	if("${BUILD_FORTRAN}")
+	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 		set(MPI_COMPONENTS Fortran)
 	endif()
 	find_package(MPI REQUIRED COMPONENTS CXX C ${MPI_COMPONENTS})

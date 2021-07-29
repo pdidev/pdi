@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#353](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/353)
 * Correctly detect parallel HDF5 built with cmake
   [#356](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/356)
+* Do not depend on Fortran if testing is not enabled
+  [#358](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/358)
 
 ### Security
 
