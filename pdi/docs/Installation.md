@@ -172,8 +172,8 @@ Dependencies of **%PDI**:
 * **[cmake](https://cmake.org/) version 3.5 or above (not provided)**,
 * **a C 99 and C++ 14 compiler such as [gcc](https://gcc.gnu.org/) 5.4 or above (not provided)**,
 * the [paraconf](https://github.com/pdidev/paraconf) library version 0.4 or above,
-* the [libyaml](https://pyyaml.org/wiki/LibYAML) library version 0.1 or above,
-* the [spdlog](https://github.com/gabime/spdlog) library.
+* the [libyaml](https://pyyaml.org/wiki/LibYAML) library version 0.2.2 or above,
+* the [spdlog](https://github.com/gabime/spdlog) library version 1.3.1 or above.
 
 Dependencies of **the Fortran API**:
 
@@ -208,7 +208,8 @@ Dependencies of **the Decl'SION plugin**:
 Dependencies of **the FlowVR plugin**:
 
 * the PDI library,
-* [FlowVR 2.3.2](https://gitlab.inria.fr/flowvr/flowvr-ex) version or above.
+* **the [python YAML](https://pyyaml.org/) module (not provided)**.
+* [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) version 2.3.2 or above.
 
 Dependencies of **the FTI plugin**:
 
