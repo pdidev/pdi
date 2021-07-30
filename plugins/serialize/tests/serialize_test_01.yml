@@ -1,8 +1,0 @@
-logging: trace
-data:
-  int_scalar: int
-  double_scalar: double
-plugins:
-  serialize:
-    int_scalar: int_serialized
-    double_scalar: double_serialized

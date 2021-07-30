@@ -35,5 +35,6 @@ project co-financed by Polish Ministry of Science and Higher Education.
 * Unified logs
 * Filename and dataset name collision policy
 
-Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
+Kacper Sinkiewicz - PSNC (ksinkiewicz@man.poznan.pl)
 * Many tests, including compatibility tests
+* Test refactoring using GTEST

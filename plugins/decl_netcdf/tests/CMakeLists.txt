@@ -24,7 +24,11 @@
 #=============================================================================
 
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
+
+find_package(GTest 1.8.0 REQUIRED)
+
+set(CMAKE_CXX_STANDARD 11)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -41,44 +45,19 @@ endif()
 "
 )
 
-add_executable(decl_netcdf_01_C decl_netcdf_test_01.c)
-target_link_libraries(decl_netcdf_01_C PDI::PDI_C)
-add_test(NAME decl_netcdf_01_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_01_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_01.yml")
-set_property(TEST decl_netcdf_01_C PROPERTY TIMEOUT 5)
 
-add_executable(decl_netcdf_02_C decl_netcdf_test_02.c)
-target_link_libraries(decl_netcdf_02_C PDI::PDI_C)
-add_test(NAME decl_netcdf_02_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_02_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_02.yml")
-set_property(TEST decl_netcdf_02_C PROPERTY TIMEOUT 5)
-
-add_executable(decl_netcdf_03_C decl_netcdf_test_03.c)
-target_link_libraries(decl_netcdf_03_C PDI::PDI_C)
-add_test(NAME decl_netcdf_03_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_03_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_03.yml")
-set_property(TEST decl_netcdf_03_C PROPERTY TIMEOUT 5)
-
-add_executable(decl_netcdf_04_C decl_netcdf_test_04.c)
-target_link_libraries(decl_netcdf_04_C PDI::PDI_C)
-add_test(NAME decl_netcdf_04_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_04.yml")
-set_property(TEST decl_netcdf_04_C PROPERTY TIMEOUT 5)
-
-add_executable(decl_netcdf_05_C decl_netcdf_test_05.c)
-target_link_libraries(decl_netcdf_05_C PDI::PDI_C)
-add_test(NAME decl_netcdf_05_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_05.yml")
-set_property(TEST decl_netcdf_05_C PROPERTY TIMEOUT 5)
+add_executable(decl_netcdf_tests decl_netcdf_tests.cxx)
+target_link_libraries(decl_netcdf_tests PDI::PDI_plugins Threads::Threads GTest::GTest GTest::Main)
+gtest_discover_tests(decl_netcdf_tests)
 
 if("PARALLEL" IN_LIST NetCDF_FEATURES)
      find_package(MPI REQUIRED COMPONENTS C)
-     add_executable(decl_netcdf_06_C decl_netcdf_test_06.c)
-     target_link_libraries(decl_netcdf_06_C PDI::PDI_C MPI::MPI_C)
-     add_test(NAME decl_netcdf_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS}  "$<TARGET_FILE:decl_netcdf_06_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_06.yml")
-     set_property(TEST decl_netcdf_06_C PROPERTY TIMEOUT 5)
-     set_property(TEST decl_netcdf_06_C PROPERTY PROCESSORS 4)
+     add_executable(netcdf_mpi_tests decl_netcdf_mpi_tests.c)
+     target_link_libraries(netcdf_mpi_tests PDI::PDI_C MPI::MPI_C)
+     add_test(NAME netcdf_mpi_tests COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS}  "$<TARGET_FILE:netcdf_mpi_tests>" ${MPIEXEC_POSTFLAGS})
+     set_property(TEST netcdf_mpi_tests PROPERTY TIMEOUT 5)
+     set_property(TEST netcdf_mpi_tests PROPERTY PROCESSORS 4)
 endif()
-
-add_executable(decl_netcdf_07_C decl_netcdf_test_07.c)
-target_link_libraries(decl_netcdf_07_C PDI::PDI_C)
-add_test(NAME decl_netcdf_07_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_07_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_07.yml")
-set_property(TEST decl_netcdf_07_C PROPERTY TIMEOUT 5)
 
 add_executable(decl_netcdf_08_C decl_netcdf_test_08.c)
 target_link_libraries(decl_netcdf_08_C PDI::PDI_C)

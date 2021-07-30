@@ -24,7 +24,6 @@
 
 #include <pdi.h>
 #include <mpi.h>
-#include <assert.h>
 
 const char* CONFIG_YAML =
     "logging: trace                                         \n"
@@ -62,19 +61,23 @@ const char* CONFIG_YAML =
     "          size:  [2, 2]                                \n"
     ;
 
-void verify_matrix(int comm_color)
+void verify_matrix(int comm_color, int world_rank)
 {
 	int matrix[4];
 	PDI_expose("matrix_in", matrix, PDI_IN);
 	if (comm_color) {
 		for (int i = 0; i < 4; i++) {
-			printf("m[%d] = %d\n", i, matrix[i]);
-			assert(matrix[i] == i);
+			if (matrix[i] != i) {
+				printf("[%d]: m[%d] != %d\n", world_rank, i, matrix[i]);
+				MPI_Abort(MPI_COMM_WORLD, -1);
+			}
 		}
 	} else {
 		for (int i = 0; i < 4; i++) {
-			printf("m[%d] = %d\n", i, matrix[i]);
-			assert(matrix[i] == (i+4));
+			if (matrix[i] != i+4) {
+				printf("[%d]: m[%d] != %d\n", world_rank, i+4, matrix[i]);
+				MPI_Abort(MPI_COMM_WORLD, -1);
+			}
 		}
 	}
 }
@@ -87,7 +90,10 @@ int main(int argc, char* argv[])
 	
 	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-	assert(world_size == 8);
+	if (world_size != 8) {
+		printf("world_size must be 8 instead of %d.", world_size);
+		MPI_Abort(MPI_COMM_WORLD, -1);
+	}
 	
 	int world_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
@@ -115,7 +121,7 @@ int main(int argc, char* argv[])
 	if (world_rank == 0) {
 		MPI_Comm self = MPI_COMM_SELF;
 		PDI_expose("my_comm", &self, PDI_OUT);
-		verify_matrix(comm_color);
+		verify_matrix(comm_color, world_rank);
 	}
 	
 	// for better console output
@@ -135,7 +141,7 @@ int main(int argc, char* argv[])
 	if (world_rank == 0) {
 		MPI_Comm self = MPI_COMM_SELF;
 		PDI_expose("my_comm", &self, PDI_OUT);
-		verify_matrix(!comm_color);
+		verify_matrix(!comm_color, world_rank);
 	}
 	
 	MPI_Comm_free(&my_comm);

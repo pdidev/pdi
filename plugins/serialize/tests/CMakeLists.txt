@@ -23,7 +23,10 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
+find_package(GTest 1.8.0 REQUIRED)
+
+set(CMAKE_CXX_STANDARD 11)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -40,23 +43,6 @@ endif()
 "
 )
 
-add_executable(serialize_01_C serialize_test_01.c)
-target_link_libraries(serialize_01_C PDI::PDI_C)
-add_test(NAME serialize_01_C COMMAND "$<TARGET_FILE:serialize_01_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_01.yml")
-
-add_executable(serialize_02_C serialize_test_02.c)
-target_link_libraries(serialize_02_C PDI::PDI_C)
-add_test(NAME serialize_02_C COMMAND "$<TARGET_FILE:serialize_02_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_02.yml")
-
-add_executable(serialize_03_C serialize_test_03.c)
-target_link_libraries(serialize_03_C PDI::PDI_C)
-add_test(NAME serialize_03_C COMMAND "$<TARGET_FILE:serialize_03_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_03.yml")
-
-add_executable(serialize_04_C serialize_test_04.c)
-target_link_libraries(serialize_04_C PDI::PDI_C)
-add_test(NAME serialize_04_C COMMAND "$<TARGET_FILE:serialize_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_04.yml")
-
-add_executable(serialize_05_C serialize_test_05.c)
-target_link_libraries(serialize_05_C PDI::PDI_C)
-add_test(NAME serialize_05_C COMMAND "$<TARGET_FILE:serialize_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/serialize_test_05.yml")
-
+add_executable(serialize_tests serialize_tests.cxx)
+target_link_libraries(serialize_tests PDI::PDI_C GTest::GTest GTest::Main)
+gtest_discover_tests(serialize_tests)

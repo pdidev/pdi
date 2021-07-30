@@ -68,7 +68,7 @@ if("${BUILD_HDF5_PARALLEL}")
     target_link_libraries(decl_hdf5_02_F PDI::PDI_f90 MPI_with_mod)
     string(RANDOM TMP_MODULE_DIRECTORY)
     set_target_properties(decl_hdf5_02_F PROPERTIES Fortran_MODULE_DIRECTORY "${TMP_MODULE_DIRECTORY}")
-    add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/../decl_hdf5_test_02.yml")
+    add_test(NAME decl_hdf5_02_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/../decl_hdf5_mpi_test_01.yml")
     set_property(TEST decl_hdf5_02_F PROPERTY TIMEOUT 15)
     set_property(TEST decl_hdf5_02_F PROPERTY PROCESSORS 2)
 

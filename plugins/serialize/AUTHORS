@@ -9,3 +9,6 @@ in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
 * Maintainer (Jul. 2020 - ...)
 * Design and initial implementation
+
+Kacper Sinkiewicz - PSNC (ksinkiewicz@man.poznan.pl)
+* Test refactoring using GTEST

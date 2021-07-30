@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#317](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/317)
 
 ### Changed
+* Refactored tests, testing now depend on cmake 3.10 & gtest
+  [#236](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/236)
 
 ### Deprecated
 

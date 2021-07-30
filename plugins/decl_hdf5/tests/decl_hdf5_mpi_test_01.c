@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +48,7 @@ int main( int argc, char* argv[] )
 	int rank; MPI_Comm_rank(world, &rank);
 	
 	char filename[4096];
-	snprintf(filename, 4096, "decl_hdf5_test_02_C_r%d.h5", rank);
+	snprintf(filename, 4096, "decl_hdf5_mpi_test_01_C_r%d.h5", rank);
 	remove(filename);
 	
 	// Fill arrays
@@ -84,8 +85,11 @@ int main( int argc, char* argv[] )
 		for (i=0; i<IMX; ++i) {
 			fprintf(stderr,"%10d     %4d\n", values[j][i], cp_values[j][i]);
 			fprintf(stderr,"%10.2f     %2.2f\n", reals[j][i], cp_reals[j][i]);
-			assert( values[j][i] ==  cp_values[j][i]);
-			assert( reals[j][i]  ==  cp_reals[j][i] );
+			if (values[j][i] != cp_values[j][i] || reals[j][i] != cp_reals[j][i]) {
+				fprintf(stderr,"[%d]: values[%d][%d] = %10d should be equal to cp_values[%d][%d] = %4d\n", rank, j, i, values[j][i], j, i, cp_values[j][i]);
+				fprintf(stderr,"[%d]: reals[%d][%d] = %11.2f should be equal to cp_reals[%d][%d] = %5.2f\n", rank, j, i, reals[j][i], j, i, cp_reals[j][i]);
+				MPI_Abort(MPI_COMM_WORLD, -1);
+			}
 		}
 	}
 	

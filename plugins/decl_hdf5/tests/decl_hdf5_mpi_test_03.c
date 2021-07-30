@@ -22,10 +22,11 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
 #include <unistd.h>
 #include <mpi.h>
 #include <pdi.h>
+#include <time.h>
+#include <paraconf.h>
 
 #define IMX 5
 #define JMX 4
@@ -33,62 +34,74 @@
 #define NJ_GHOST 2
 #define DIM 2
 
+
 const char* CONFIG_YAML =
-    "logging: trace                                                        \n"
-    "metadata:                                                             \n"
-    "  input: int                                                          \n"
-    "  ni: int                                                             \n"
-    "  nj: int                                                             \n"
-    "  nig: int                                                            \n"
-    "  njg: int                                                            \n"
-    "  nit: int                                                            \n"
-    "  njt: int                                                            \n"
-    "  istart: int                                                         \n"
-    "  jstart: int                                                         \n"
-    "  rank: int                                                           \n"
-    "  nproc: int                                                          \n"
-    "data:                                                                 \n"
-    "  myrank: int                                                         \n"
-    "  reals:                                                              \n"
-    "    type: array                                                       \n"
-    "    subtype: double                                              \n"
-    "    size: [$nj +2*$njg , $ni+2*$nig]                                  \n"
-    "    subsize: [$nj , $ni]                                              \n"
-    "    start: [$njg, $nig]                                               \n"
-    "  values:                                                             \n"
-    "    type: array                                                       \n"
-    "    subtype: int                                                 \n"
-    "    size: [$nj +2*$njg , $ni+2*$nig]                                  \n"
-    "    subsize: [$nj , $ni]                                              \n"
-    "    start: [$njg, $nig]                                               \n"
-    "plugins:                                                              \n"
-    "  mpi:                                                                \n"
-    "  decl_hdf5:                                                          \n"
-    "    - file: decl_hdf5_test_06_C_r${rank}.h5                           \n"
-    "      write:                                                          \n"
-    "        myrank: {when: $input=0}                                      \n"
-    "      read:                                                           \n"
-    "        myrank: {when: $input=1}                                      \n"
-    "    - file: decl_hdf5_test_06_C.h5                                    \n"
-    "      communicator: $MPI_COMM_WORLD                                   \n"
-    "      datasets:                                                       \n"
-    "        reals: {type: array, subtype: double, size: [$njt, $nit]}\n"
-    "        values: {type: array, subtype: int, size: [$njt, $nit]}  \n"
-    "      write:                                                          \n"
-    "        reals:                                                        \n"
-    "          when: $input=0                                              \n"
-    "          dataset_selection: {start: [$jstart, $istart]}              \n"
-    "        values:                                                       \n"
-    "          when: $input=0                                              \n"
-    "          dataset_selection: {start: [$jstart, $istart]}              \n"
-    "      read:                                                           \n"
-    "        reals:                                                        \n"
-    "          when: $input=1                                              \n"
-    "          dataset_selection: {start: [$jstart, $istart]}              \n"
-    "        values:                                                       \n"
-    "          when: $input=1                                              \n"
-    "          dataset_selection: {start: [$jstart, $istart]}              \n"
-    ;
+    "logging: trace                                                      \n"
+    "metadata:                                                           \n"
+    "  input: int                                                        \n"
+    "  ni: int                                                           \n"
+    "  nj: int                                                           \n"
+    "  nig: int                                                          \n"
+    "  njg: int                                                          \n"
+    "  nit: int                                                          \n"
+    "  njt: int                                                          \n"
+    "  istart: int                                                       \n"
+    "  jstart: int                                                       \n"
+    "  rank: int                                                         \n"
+    "  nproc: int                                                        \n"
+    "data:                                                               \n"
+    "  reals:                                                            \n"
+    "    type: array                                                     \n"
+    "    subtype: double                                                 \n"
+    "    size: [$nj +2*$njg , $ni+2*$nig]                                \n"
+    "    subsize: [$nj , $ni]                                            \n"
+    "    start: [$njg, $nig]                                             \n"
+    "  values:                                                           \n"
+    "    type: array                                                     \n"
+    "    subtype: int                                                    \n"
+    "    size: [$nj +2*$njg , $ni+2*$nig]                                \n"
+    "    subsize: [$nj , $ni]                                            \n"
+    "    start: [$njg, $nig]                                             \n"
+    "  time:                                                             \n"
+    "    type: double                                                    \n"
+    "  myrank:                                                           \n"
+    "    type: int                                                       \n"
+    "plugins:                                                            \n"
+    "  mpi:                                                              \n"
+    "  decl_hdf5:                                                        \n"
+    "    file: decl_hdf5_mpi_test_03_C.h5                                \n"
+    "    communicator: $MPI_COMM_WORLD                                   \n"
+    "    datasets:                                                       \n"
+    "      reals: {type: array, subtype: double, size: [$njt, $nit]}     \n"
+    "      values: {type: array, subtype: int, size: [$njt, $nit]}       \n"
+    "      myrank: {type: array, subtype: int, size: $nproc}             \n"
+    "      time: {type: array, subtype: double, size: $nproc}            \n"
+    "    write:                                                          \n"
+    "      reals:                                                        \n"
+    "        when: $input=0                                              \n"
+    "        dataset_selection: {start: [$jstart, $istart]}              \n"
+    "      values:                                                       \n"
+    "        when: $input=0                                              \n"
+    "        dataset_selection: {start: [$jstart, $istart]}              \n"
+    "      myrank:                                                       \n"
+    "        when: $input=0                                              \n"
+    "        dataset_selection: {size: 1, start: $rank}                  \n"
+    "      time:                                                         \n"
+    "        when: $input=0                                              \n"
+    "        dataset_selection: {size: 1, start: $rank}                  \n"
+    "    read:                                                           \n"
+    "      reals:                                                        \n"
+    "        when: $input=1                                              \n"
+    "        dataset_selection: {start: [$jstart, $istart]}              \n"
+    "      values:                                                       \n"
+    "        when: $input=1                                              \n"
+    "        dataset_selection: {start: [$jstart, $istart]}              \n"
+    "      myrank:                                                       \n"
+    "        when: $input=1                                              \n"
+    "        dataset_selection: {size: 1, start: $rank}                  \n"
+    "      time:                                                         \n"
+    "        when: $input=1                                              \n"
+    "        dataset_selection: {size: 1, start: $rank}                  \n";
 
 int main(int argc, char* argv[])
 {
@@ -101,6 +114,7 @@ int main(int argc, char* argv[])
 	double reals[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] = {{0}},  cp_reals[JMX + 2*NJ_GHOST][IMX + NI_GHOST * 2] = {{0}};
 	int i, j, input;
 	int nit, njt;
+	double starting_time = time(NULL); // random value
 	
 	/// MPI and parallel data or info
 	int dims[DIM], coord[DIM], periodic[DIM];
@@ -117,13 +131,23 @@ int main(int argc, char* argv[])
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_init(conf);
 	int rank; MPI_Comm_rank(world, &rank);
+	
+	if ( 0 == rank ) {
+		remove("decl_hdf5_mpi_test_03_C.h5");
+	}
+	
 	{
 		/// setting nb of procs.
 		int size; MPI_Comm_size(world, &size);
-		assert(size == 4 && "Run on 4 procs only.");
-		PDI_expose("nproc", &size, PDI_OUT);
+		if (size != 4) {
+			printf("Run on 4 procs only.");
+			MPI_Abort(MPI_COMM_WORLD, -1);
+		}
+		PDI_expose("nproc",&size, PDI_OUT);
 	}
-	
+	PDI_expose("rank", &rank, PDI_OUT);
+	input = 0;
+	PDI_expose("input", &input, PDI_OUT);
 	
 	MPI_Cart_create(world, DIM, dims, periodic, 0, &comm2D);
 	MPI_Cart_coords(comm2D, rank, DIM, coord);
@@ -163,27 +187,34 @@ int main(int argc, char* argv[])
 	}
 	
 	input = 0;
-	PDI_expose("rank", &rank, PDI_OUT);
-	PDI_expose("input", &input, PDI_OUT);
-	PDI_expose("myrank", &rank, PDI_OUT);
-	fprintf(stderr, "decl'HDF5 should export rank = %d\n ", rank);
-	
 	///  Test that export/exchange works
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("reals", &reals, PDI_OUT);     // output real
 	PDI_expose("values", &values, PDI_INOUT); // output integers
 	
+	PDI_multi_expose("useless_name",
+	    "myrank", &rank, PDI_OUT,
+	    "time", &starting_time, PDI_OUT,
+	    NULL);
+	    
 	input = 1;
-	///  Parallel HDF5 import
+	///  Import should also work
 	PDI_expose("input", &input, PDI_OUT); // update metadata => HDF5 now import only
 	PDI_expose("reals", &cp_reals, PDI_IN);     // input real
 	PDI_expose("values", &cp_values, PDI_INOUT);  // input integers
 	
-	// decl'HDF5 import
-	int cp_rank; cp_rank = -1;
-	PDI_expose("myrank", &cp_rank, PDI_IN);
-	fprintf(stderr, "decl'HDF5 should export rank = %d\n ", cp_rank);
-	if ( rank != cp_rank) MPI_Abort( MPI_COMM_WORLD, -1);
+	{
+		/// Testing scalar import
+		int test;
+		double tmp;
+		PDI_expose("time",&tmp, PDI_IN);
+		PDI_expose("myrank",&test, PDI_IN);
+		if ( (starting_time != tmp) || (test != rank)) {
+			fprintf(stderr, "Float   : %6f vs %6f (out/in)\n", starting_time, tmp);
+			fprintf(stderr, "Integer : %6d vs %6d (out/in)\n", rank, test);
+			MPI_Abort(MPI_COMM_WORLD, -1);
+		}
+	}
 	
 	/// So the data should be the same
 	fprintf(stderr, "Data exported | Data imported\n");

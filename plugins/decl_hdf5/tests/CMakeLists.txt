@@ -28,8 +28,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
+find_package(GTest 1.8.0 REQUIRED)
 
+set(CMAKE_CXX_STANDARD 11)
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 # Add the plugin path to PDI_PLUGIN_PATH
@@ -45,99 +47,59 @@ endif()
 "
 )
 
-# Metatadata export using filename
-
-add_executable(decl_hdf5_01_C decl_hdf5_test_01.c)
-target_link_libraries(decl_hdf5_01_C PDI::PDI_C)
-add_test(NAME decl_hdf5_01_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_01_C>")
-set_property(TEST decl_hdf5_01_C PROPERTY TIMEOUT 15)
+add_executable(decl_hdf5_tests decl_hdf5_tests.cxx)
+target_link_libraries(decl_hdf5_tests PDI::PDI_C GTest::GTest GTest::Main)
+gtest_discover_tests(decl_hdf5_tests)
 
 # PDI_import/PDI_export
 if("${BUILD_HDF5_PARALLEL}")
-	add_executable(decl_hdf5_02_C decl_hdf5_test_02.c)
-	target_link_libraries(decl_hdf5_02_C PDI::PDI_C MPI::MPI_C)
-	add_test(NAME decl_hdf5_02_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_02_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_02.yml")
-	set_property(TEST decl_hdf5_02_C PROPERTY TIMEOUT 15)
-	set_property(TEST decl_hdf5_02_C PROPERTY PROCESSORS 2)
+	add_executable(decl_hdf5_mpi_01_C decl_hdf5_mpi_test_01.c)
+	target_link_libraries(decl_hdf5_mpi_01_C PDI::PDI_C MPI::MPI_C)
+	add_test(NAME decl_hdf5_mpi_01_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_01_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_mpi_test_01.yml")
+	set_property(TEST decl_hdf5_mpi_01_C PROPERTY TIMEOUT 15)
+	set_property(TEST decl_hdf5_mpi_01_C PROPERTY PROCESSORS 2)
 endif()
-# slicing mechanism
 
 # parallel read/write
-
 if("${BUILD_HDF5_PARALLEL}")
-	add_executable(decl_hdf5_04_C decl_hdf5_test_04.c)
-	target_link_libraries(decl_hdf5_04_C PDI::PDI_C MPI::MPI_C)
-	add_test(NAME decl_hdf5_04_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_04_C>" ${MPIEXEC_POSTFLAGS})
-	set_property(TEST decl_hdf5_04_C PROPERTY TIMEOUT 15)
-	set_property(TEST decl_hdf5_04_C PROPERTY PROCESSORS 4)
+	add_executable(decl_hdf5_mpi_02_C decl_hdf5_mpi_test_02.c)
+	target_link_libraries(decl_hdf5_mpi_02_C PDI::PDI_C MPI::MPI_C)
+	add_test(NAME decl_hdf5_mpi_02_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_02_C>" ${MPIEXEC_POSTFLAGS})
+	set_property(TEST decl_hdf5_mpi_02_C PROPERTY TIMEOUT 15)
+	set_property(TEST decl_hdf5_mpi_02_C PROPERTY PROCESSORS 4)
 endif()
+
 # scalars default options
+if("${BUILD_HDF5_PARALLEL}")
+	add_executable(decl_hdf5_mpi_03_C decl_hdf5_mpi_test_03.c)
+	target_link_libraries(decl_hdf5_mpi_03_C PDI::PDI_C MPI::MPI_C)
+	add_test(NAME decl_hdf5_mpi_03_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_03_C>" ${MPIEXEC_POSTFLAGS})
+	set_property(TEST decl_hdf5_mpi_03_C PROPERTY TIMEOUT 15)
+	set_property(TEST decl_hdf5_mpi_03_C PROPERTY PROCESSORS 4)
+endif()
 
 if("${BUILD_HDF5_PARALLEL}")
-	add_executable(decl_hdf5_05_C decl_hdf5_test_05.c)
-	target_link_libraries(decl_hdf5_05_C PDI::PDI_C MPI::MPI_C)
-	add_test(NAME decl_hdf5_05_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_05_C>" ${MPIEXEC_POSTFLAGS})
-	set_property(TEST decl_hdf5_05_C PROPERTY TIMEOUT 15)
-	set_property(TEST decl_hdf5_05_C PROPERTY PROCESSORS 4)
+	add_executable(decl_hdf5_mpi_04_C decl_hdf5_mpi_test_04.c)
+	target_link_libraries(decl_hdf5_mpi_04_C PDI::PDI_C MPI::MPI_C)
+	add_test(NAME decl_hdf5_mpi_04_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_04_C>" ${MPIEXEC_POSTFLAGS})
+	set_property(TEST decl_hdf5_mpi_04_C PROPERTY TIMEOUT 15)
+	set_property(TEST decl_hdf5_mpi_04_C PROPERTY PROCESSORS 4)
 endif()
-# 
-if("${BUILD_HDF5_PARALLEL}")
-	add_executable(decl_hdf5_06_C decl_hdf5_test_06.c)
-	target_link_libraries(decl_hdf5_06_C PDI::PDI_C MPI::MPI_C)
-	add_test(NAME decl_hdf5_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_06_C>" ${MPIEXEC_POSTFLAGS})
-	set_property(TEST decl_hdf5_06_C PROPERTY TIMEOUT 15)
-	set_property(TEST decl_hdf5_06_C PROPERTY PROCESSORS 4)
-endif()
+
 # bcommunicator as a reference
-
 if("${BUILD_HDF5_PARALLEL}")
-	add_executable(decl_hdf5_07_C decl_hdf5_test_07.c)
-	target_link_libraries(decl_hdf5_07_C PDI::PDI_C MPI::MPI_C)
-	add_test(NAME decl_hdf5_07_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_07_C>" ${MPIEXEC_POSTFLAGS})
-	set_property(TEST decl_hdf5_07_C PROPERTY TIMEOUT 15)
-	set_property(TEST decl_hdf5_07_C PROPERTY PROCESSORS 8)
+	add_executable(decl_hdf5_mpi_05_C decl_hdf5_mpi_test_05.c)
+	target_link_libraries(decl_hdf5_mpi_05_C PDI::PDI_C MPI::MPI_C)
+	add_test(NAME decl_hdf5_mpi_05_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_05_C>" ${MPIEXEC_POSTFLAGS})
+	set_property(TEST decl_hdf5_mpi_05_C PROPERTY TIMEOUT 15)
+	set_property(TEST decl_hdf5_mpi_05_C PROPERTY PROCESSORS 8)
 endif()
 
-add_executable(decl_hdf5_08_C decl_hdf5_test_08.c)
-target_link_libraries(decl_hdf5_08_C PDI::PDI_C)
-add_test(NAME decl_hdf5_08_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_08_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_08.yml")
-set_property(TEST decl_hdf5_08_C PROPERTY TIMEOUT 15)
-
-add_executable(decl_hdf5_09_C decl_hdf5_test_09.c)
-target_link_libraries(decl_hdf5_09_C PDI::PDI_C)
-add_test(NAME decl_hdf5_09_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_09_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_09.yml")
-set_property(TEST decl_hdf5_09_C PROPERTY TIMEOUT 15)
-
-add_executable(decl_hdf5_11_C decl_hdf5_test_11.c)
-target_link_libraries(decl_hdf5_11_C PDI::PDI_C)
-add_test(NAME decl_hdf5_11_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_11_C>")
-set_property(TEST decl_hdf5_11_C PROPERTY TIMEOUT 15)
-
-add_executable(decl_hdf5_12_C decl_hdf5_test_12.c)
-target_link_libraries(decl_hdf5_12_C PDI::PDI_C)
-add_test(NAME decl_hdf5_12_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_12_C>")
-set_property(TEST decl_hdf5_12_C PROPERTY TIMEOUT 15)
-
-add_executable(decl_hdf5_13_C decl_hdf5_test_13.c)
-target_link_libraries(decl_hdf5_13_C PDI::PDI_C)
-add_test(NAME decl_hdf5_13_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_13_C>")
-set_property(TEST decl_hdf5_13_C PROPERTY TIMEOUT 15)
-
-add_executable(decl_hdf5_14_C decl_hdf5_test_14.c)
-target_link_libraries(decl_hdf5_14_C PDI::PDI_C)
-add_test(NAME decl_hdf5_14_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_14_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5_test_14.yml")
-set_property(TEST decl_hdf5_14_C PROPERTY TIMEOUT 15)
-
-add_executable(decl_hdf5_15_C decl_hdf5_test_15.c)
-target_link_libraries(decl_hdf5_15_C PDI::PDI_C)
-add_test(NAME decl_hdf5_15_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_15_C>")
-set_property(TEST decl_hdf5_15_C PROPERTY TIMEOUT 15)
-
-add_executable(decl_hdf5_16_C decl_hdf5_test_16.c)
-target_link_libraries(decl_hdf5_16_C PDI::PDI_C ${HDF5_C_LIBRARIES})
-target_include_directories(decl_hdf5_16_C PRIVATE ${HDF5_INCLUDE_DIRS})
-add_test(NAME decl_hdf5_16_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_16_C>")
-set_property(TEST decl_hdf5_16_C PROPERTY TIMEOUT 15)
+add_executable(decl_hdf5_IO_options_C decl_hdf5_test_IO_options.c)
+target_link_libraries(decl_hdf5_IO_options_C PDI::PDI_C ${HDF5_C_LIBRARIES})
+target_include_directories(decl_hdf5_IO_options_C PRIVATE ${HDF5_INCLUDE_DIRS})
+add_test(NAME decl_hdf5_IO_options_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_IO_options_C>")
+set_property(TEST decl_hdf5_IO_options_C PROPERTY TIMEOUT 15)
 
 if("${BUILD_FORTRAN}")
 	add_subdirectory(fortran/)
