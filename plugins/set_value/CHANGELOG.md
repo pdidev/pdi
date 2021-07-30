@@ -7,7 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* `logging` spdlog pattern can be set from specification tree
 
 ### Changed
 
@@ -18,6 +17,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.3.0] - 2021-07-30
+
+### Added
+* `logging` spdlog pattern can be set from specification tree
+  [#317](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/317)
 
 
 ## [1.1.0] - 2021-03-02
