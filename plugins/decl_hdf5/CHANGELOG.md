@@ -4,7 +4,7 @@ All notable changes to the Decl'HDF5 plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
+## [1.3.0] - 2021-07-30
 
 ### Added
 * Support specifying a policy when the file or dataset to write to already
@@ -18,10 +18,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Refactored tests, testing now depend on cmake 3.10 & gtest
   [#236](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/236)
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 * Support building tests when building in sequential with no MPI present
   (second try)
@@ -33,17 +29,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Do not depend on Fortran if testing is not enabled
   [#358](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/358)
 
-### Security
 
-
-## [1.2.2]
+## [1.2.2] - 2021-07-06
 
 ### Fixed
 * When building serial decl_hdf5, enabling tests does not require MPI
   [#348](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/348)
 
 
-## [1.2.0]
+## [1.2.0] - 2021-06-15
 
 ### Added
 * Add more verbose log messages for the `trace` level
