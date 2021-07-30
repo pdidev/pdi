@@ -158,9 +158,9 @@ public:
 		try {
 			pybind11::exec(m_code, pyscope);
 		} catch ( const std::exception& e ) {
-			ctx.logger()->error("while calling python, caught exception: {}", e.what());
+			ctx.logger().error("while calling python, caught exception: {}", e.what());
 		} catch (...) {
-			ctx.logger()->error("while calling python, caught exception");
+			ctx.logger().error("while calling python, caught exception");
 		}
 	}
 	
@@ -175,7 +175,7 @@ struct pycall_plugin: Plugin {
 		if ( ! Py_IsInitialized() ) {
 			pybind11::initialize_interpreter();
 			interpreter_initialized_in_plugin = true;
-			ctx.logger()->debug("Python interpreter is initialized by the plugin");
+			ctx.logger().debug("Python interpreter is initialized by the plugin");
 		}
 		
 		// Loading configuration for events
@@ -218,7 +218,7 @@ struct pycall_plugin: Plugin {
 	~pycall_plugin()
 	{
 		if (interpreter_initialized_in_plugin) {
-			context().logger()->debug("Finalizing python interpreter");
+			context().logger().debug("Finalizing python interpreter");
 			pybind11::finalize_interpreter();
 		}
 	}

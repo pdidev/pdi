@@ -215,7 +215,7 @@ struct decl_sion_plugin: Plugin {
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
 			this->event(name);
 		});
-		ctx.logger()->info("Plugin loaded successfully");
+		ctx.logger().info("Plugin loaded successfully");
 	}
 	
 	void write_event(const Named_event& event)
@@ -481,7 +481,7 @@ struct decl_sion_plugin: Plugin {
 	
 	~decl_sion_plugin()
 	{
-		context().logger()->info("Closing plugin");
+		context().logger().info("Closing plugin");
 	}
 	
 	/** Pretty name for the plugin that will be shown in the logger

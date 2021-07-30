@@ -36,7 +36,7 @@ Stamp_desc_float_array::Stamp_desc_float_array(PDI::Context& ctx, const flowvr::
 	m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 		this->data(name, ref);
 	}, data_desc));
-	m_ctx.logger()->debug("{} stamp: Float array descriptor created with size = {}", m_name, size);
+	m_ctx.logger().debug("{} stamp: Float array descriptor created with size = {}", m_name, size);
 }
 
 void Stamp_desc_float_array::read_from_flowvr_stamp(const flowvr::Stamps& read_stamp)
@@ -46,7 +46,7 @@ void Stamp_desc_float_array::read_from_flowvr_stamp(const flowvr::Stamps& read_s
 		bool status = read_stamp.read((*m_stamp_info)[stamp_id], stamp_value);
 		if (status) {
 			m_value[stamp_id] = stamp_value;
-			m_ctx.logger()->trace("{} stamp: Update from message: Stamp[{}] = {}", m_name, stamp_id, stamp_value);
+			m_ctx.logger().trace("{} stamp: Update from message: Stamp[{}] = {}", m_name, stamp_id, stamp_value);
 		} else {
 			throw PDI::Unavailable_error{"{} stamp: Cannot read stamp value from message. Index = {}", m_name, stamp_id};
 		}
@@ -58,7 +58,7 @@ void Stamp_desc_float_array::write_to_flowvr_stamp(flowvr::StampsWrite& write_st
 	for (int stamp_id = 0; stamp_id < m_value.size(); stamp_id++) {
 		bool status = write_stamp.write((*m_stamp_info)[stamp_id], m_value[stamp_id]);
 		if (status) {
-			m_ctx.logger()->trace("{} stamp: Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id]);
+			m_ctx.logger().trace("{} stamp: Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id]);
 		} else {
 			throw PDI::Unavailable_error{"{} stamp: Cannot write stamp to message", m_name};
 		}
@@ -70,12 +70,12 @@ void Stamp_desc_float_array::data(const std::string& data_name, const PDI::Ref& 
 	if (PDI::Ref_w ref_w{ref}) {
 		//can write to desc, put value to it
 		memcpy(ref_w.get(), m_value.data(), m_value.size() * sizeof(float));
-		m_ctx.logger()->trace("{} stamp: `{}' update from stamp", m_name, data_name);
+		m_ctx.logger().trace("{} stamp: `{}' update from stamp", m_name, data_name);
 	}
 	if (PDI::Ref_r ref_r{ref}) {
 		//can read from desc, update m_value
 		memcpy(m_value.data(), ref_r.get(), m_value.size() * sizeof(float));
-		m_ctx.logger()->trace("{} stamp: Stamp update from `{}'", m_name, data_name);
+		m_ctx.logger().trace("{} stamp: Stamp update from `{}'", m_name, data_name);
 	}
 }
 

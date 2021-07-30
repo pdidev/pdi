@@ -33,7 +33,7 @@ Stamp_expr_int_array::Stamp_expr_int_array(PDI::Context& ctx, const flowvr::Port
 	m_value{expression}
 {
 	m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeArray::create(m_value.size(), flowvr::TypeInt::create()));
-	m_ctx.logger()->debug("{} stamp: Int array expression created", m_name);
+	m_ctx.logger().debug("{} stamp: Int array expression created", m_name);
 }
 
 void Stamp_expr_int_array::read_from_flowvr_stamp(const flowvr::Stamps& read_stamp)
@@ -44,7 +44,7 @@ void Stamp_expr_int_array::write_to_flowvr_stamp(flowvr::StampsWrite& write_stam
 	for (int stamp_id = 0; stamp_id < m_value.size(); stamp_id++) {
 		bool status = write_stamp.write((*m_stamp_info)[stamp_id], static_cast<int>(m_value[stamp_id].to_long(m_ctx)));
 		if (status) {
-			m_ctx.logger()->debug("{} stamp: Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id].to_long(m_ctx));
+			m_ctx.logger().debug("{} stamp: Message update: Message.stamps.{}[{}] = {}", m_name, m_name, stamp_id, m_value[stamp_id].to_long(m_ctx));
 		} else {
 			throw PDI::Unavailable_error{"{} stamp: Cannot write stamp to message", m_name};
 		}

@@ -34,12 +34,12 @@ Event_operation::Event_operation(PDI::Context& ctx, PC_tree_t event_value_node):
     Operation{ctx}
 {
 	m_event_to_call = PDI::to_string(event_value_node);
-	context().logger()->debug("Event operation loaded: {}", m_event_to_call);
+	context().logger().debug("Event operation loaded: {}", m_event_to_call);
 }
 
 void Event_operation::execute()
 {
-	context().logger()->trace("Calling {} event", m_event_to_call);
+	context().logger().trace("Calling {} event", m_event_to_call);
 	context().event(m_event_to_call.c_str());
 }
 

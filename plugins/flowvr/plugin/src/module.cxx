@@ -33,7 +33,7 @@ void Module::load_desc_names(PC_tree_t config)
 	PC_tree_t wait_on_data_node = PC_get(config, ".wait_on_data");
 	if (!PC_status(wait_on_data_node)) {
 		std::string wait_data = PDI::to_string(wait_on_data_node);
-		context().logger()->debug("wait_on_data = {}", wait_data);
+		context().logger().debug("wait_on_data = {}", wait_data);
 		context().callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 			this->wait(name, ref);
 		}, wait_data);
@@ -41,7 +41,7 @@ void Module::load_desc_names(PC_tree_t config)
 	
 	PC_tree_t wait_on_node = PC_get(config, ".wait_on");
 	if (!PC_status(wait_on_node)) {
-		context().logger()->warn("Wait is called as an event. Use `wait_on_data` if possible to check wait status.");
+		context().logger().warn("Wait is called as an event. Use `wait_on_data` if possible to check wait status.");
 		if (!PC_status(PC_get(wait_on_node, "[0]"))) {
 			int nb_event = PDI::len(wait_on_node);
 			for (int event_id = 0; event_id < nb_event; event_id++) {
@@ -101,7 +101,7 @@ void Module::load_desc_names(PC_tree_t config)
 				int set_rank = PDI::Expression(PDI::to_string(set_rank_node)).to_long(context());
 				int set_size = PDI::Expression(PDI::to_string(set_size_node)).to_long(context());
 				flowvr::Parallel::init(set_rank, set_size);
-				context().logger()->debug("Parallel: rank = {}, size = {}", set_rank, set_size);
+				context().logger().debug("Parallel: rank = {}, size = {}", set_rank, set_size);
 			} else {
 				throw PDI::Config_error{set_rank_node, "`set_rank' is defined, but `set_size' is not"};
 			}
@@ -116,7 +116,7 @@ void Module::load_desc_names(PC_tree_t config)
 		PC_tree_t get_rank_node = PC_get(parallel_node, ".get_rank");
 		if (!PC_status(get_rank_node)) {
 			std::string get_parallel_rank_data = PDI::to_string(get_rank_node);
-			context().logger()->debug("Parallel rank desc = {}", get_parallel_rank_data);
+			context().logger().debug("Parallel rank desc = {}", get_parallel_rank_data);
 			context().callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->get_parallel_rank(name, ref);
 			}, get_parallel_rank_data);
@@ -125,7 +125,7 @@ void Module::load_desc_names(PC_tree_t config)
 		PC_tree_t get_size_node = PC_get(parallel_node, ".get_size");
 		if (!PC_status(get_size_node)) {
 			std::string get_parallel_size_data = PDI::to_string(get_size_node);
-			context().logger()->debug("Parallel size desc = {}", get_parallel_size_data);
+			context().logger().debug("Parallel size desc = {}", get_parallel_size_data);
 			context().callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 				this->get_parallel_size(name, ref);
 			}, get_parallel_size_data);
@@ -153,15 +153,15 @@ void Module::load_desc_names(PC_tree_t config)
 	PC_tree_t silent_abort_node = PC_get(config, ".silent_abort");
 	if (!PC_status(silent_abort_node)) {
 		m_silent_abort = PDI::to_bool(silent_abort_node);
-		context().logger()->debug("Silent abort changed to: {}", m_silent_abort);
+		context().logger().debug("Silent abort changed to: {}", m_silent_abort);
 	}
 	
 	PC_tree_t abort_on_fin_node = PC_get(config, ".abort_on_finalize");
 	if (!PC_status(abort_on_fin_node)) {
 		m_abort_on_finalze = PDI::to_bool(abort_on_fin_node);
-		context().logger()->debug("Abort on finalize changed to: {}", m_abort_on_finalze);
+		context().logger().debug("Abort on finalize changed to: {}", m_abort_on_finalze);
 	}
-	context().logger()->debug("Loaded basic configuration");
+	context().logger().debug("Loaded basic configuration");
 }
 
 void Module::load_input_ports(PC_tree_t config)
@@ -174,9 +174,9 @@ void Module::load_input_ports(PC_tree_t config)
 			PC_tree_t port_node = PC_get(input_node, "<%d>", port_id);
 			m_input_ports.emplace_back(Input_port(context(), port_name, port_node));
 		}
-		context().logger()->info("Loaded {} input ports", nb_ports);
+		context().logger().info("Loaded {} input ports", nb_ports);
 	} else {
-		context().logger()->debug("No input ports to load");
+		context().logger().debug("No input ports to load");
 	}
 	
 }
@@ -191,9 +191,9 @@ void Module::load_output_ports(PC_tree_t config)
 			PC_tree_t port_node = PC_get(output_node, "<%d>", port_id);
 			m_output_ports.emplace_back(Output_port(context(), port_name, port_node));
 		}
-		context().logger()->info("Loaded {} output ports", nb_ports);
+		context().logger().info("Loaded {} output ports", nb_ports);
 	} else {
-		context().logger()->debug("No output ports to load");
+		context().logger().debug("No output ports to load");
 	}
 }
 
@@ -207,9 +207,9 @@ void Module::load_traces(PC_tree_t config)
 			PC_tree_t trace_node = PC_get(traces_node, "<%d>", trace_id);
 			m_traces.emplace_back(Trace(context(), trace_name, trace_node));
 		}
-		context().logger()->info("Loaded {} traces", nb_traces);
+		context().logger().info("Loaded {} traces", nb_traces);
 	} else {
-		context().logger()->debug("No traces to load");
+		context().logger().debug("No traces to load");
 	}
 	
 }
@@ -223,9 +223,9 @@ void Module::load_module_name(PC_tree_t config)
 		PC_tree_t instance_name_node = PC_get(config, ".instance_instance_name");
 		if (!PC_status(instance_name_node)) {
 			m_instance_name = PDI::Expression{PDI::to_string(instance_name_node)}.to_string(context());
-			context().logger()->info("New module name set: {}/{}", m_module_name, m_instance_name);
+			context().logger().info("New module name set: {}/{}", m_module_name, m_instance_name);
 		} else {
-			context().logger()->info("New module name set: {}", m_module_name);
+			context().logger().info("New module name set: {}", m_module_name);
 		}
 	}
 }
@@ -257,7 +257,7 @@ void Module::initialize_flowvr_module()
 		});
 	}
 	
-	context().logger()->debug("Initialized flowvr module");
+	context().logger().debug("Initialized flowvr module");
 }
 
 void Module::update_logger(PC_tree_t logging_tree)
@@ -270,8 +270,8 @@ void Module::update_logger(PC_tree_t logging_tree)
 	} else {
 		return;
 	}
-	context().logger()->default_pattern("[%T][" + std::string(format) + "] *** %^%l%$: %v");
-	context().logger()->debug("Logger updated");
+	context().logger().default_pattern("[%T][" + std::string(format) + "] *** %^%l%$: %v");
+	context().logger().debug("Logger updated");
 }
 
 Module::Module(PDI::Context& ctx, PC_tree_t config):
@@ -292,7 +292,7 @@ Module::Module(PDI::Context& ctx, PC_tree_t config):
 	
 	// update logger again in case of flowvr default name
 	update_logger(PC_get(config, ".logging"));
-	context().logger()->info("Module initialization succeed");
+	context().logger().info("Module initialization succeed");
 }
 
 Module::Module(Module&& other):
@@ -323,26 +323,26 @@ int Module::wait()
 		//put all messages
 		for (auto& port : m_output_ports) {
 			if (port.isConnected()) {
-				context().logger()->debug("Putting message to `{}' output port", port.name());
+				context().logger().debug("Putting message to `{}' output port", port.name());
 				port.put_message();
 			} else {
-				context().logger()->warn("Cannot put message to `{}' output port. Port not connected");
+				context().logger().warn("Cannot put message to `{}' output port. Port not connected");
 			}
 		}
 	}
 	
-	context().logger()->debug("Calling flowvr_module->wait()");
+	context().logger().debug("Calling flowvr_module->wait()");
 	int wait_status = m_flowvr_module->wait();
-	context().logger()->debug("flowvr_module->wait() returned status: {}", wait_status);
+	context().logger().debug("flowvr_module->wait() returned status: {}", wait_status);
 	
 	//get all messages
 	if (wait_status) {
 		for (auto& port : m_input_ports) {
 			if (port.isConnected()) {
-				context().logger()->debug("Getting message from `{}' input port", port.name());
+				context().logger().debug("Getting message from `{}' input port", port.name());
 				port.get_message();
 			} else {
-				context().logger()->warn("Cannot get message from `{}' input port. Port not connected");
+				context().logger().warn("Cannot get message from `{}' input port. Port not connected");
 			}
 		}
 	}
@@ -355,7 +355,7 @@ void Module::abort(const std::string& abort_event)
 	if (!m_flowvr_module || !m_flowvr_module->getStatus()) {
 		throw PDI::State_error{"Cannot call abort() on closed module"};
 	}
-	context().logger()->info("Got `{}' abort event. Aborting FlowVR application...", abort_event);
+	context().logger().info("Got `{}' abort event. Aborting FlowVR application...", abort_event);
 	m_flowvr_module->abort();
 }
 
@@ -418,20 +418,20 @@ void Module::get_parallel_size(const std::string& data_name, PDI::Ref_w size_ref
 Module::~Module()
 {
 	if (m_abort_on_finalze) {
-		context().logger()->info("Closing module. Aborting on finalize...");
+		context().logger().info("Closing module. Aborting on finalize...");
 		m_flowvr_module->abort();
 	} else {
-		context().logger()->info("Closing module...");
+		context().logger().info("Closing module...");
 	}
 	//must be before flowvr (correct destroy order)
 	m_flowvr_module.reset();
-	context().logger()->debug("Closing traces");
+	context().logger().debug("Closing traces");
 	m_traces.clear();
-	context().logger()->debug("Closing plugins intput ports");
+	context().logger().debug("Closing plugins intput ports");
 	m_input_ports.clear();
-	context().logger()->debug("Closing plugins output ports");
+	context().logger().debug("Closing plugins output ports");
 	m_output_ports.clear();
-	context().logger()->info("Module closed successfully");
+	context().logger().info("Module closed successfully");
 }
 
 } // namespace _flowvr_plugin

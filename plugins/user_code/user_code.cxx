@@ -177,9 +177,9 @@ public:
 		try {
 			m_fct();
 		} catch ( const std::exception& e ) {
-			ctx.logger()->error("While calling user code, caught exception: {}", e.what());
+			ctx.logger().error("While calling user code, caught exception: {}", e.what());
 		} catch (...) {
-			ctx.logger()->error("While calling user code, caught exception");
+			ctx.logger().error("While calling user code, caught exception");
 		}
 	}
 	
@@ -215,12 +215,12 @@ struct user_code_plugin: Plugin {
 			});
 		});
 		
-		ctx.logger()->info("Plugin loaded successfully");
+		ctx.logger().info("Plugin loaded successfully");
 	}
 	
 	~user_code_plugin()
 	{
-		context().logger()->info("Closing plugin");
+		context().logger().info("Closing plugin");
 	}
 	
 	/** Pretty name for the plugin that will be shown in the logger

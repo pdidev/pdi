@@ -38,7 +38,7 @@ void Input_payload_chunk::load_chunk_size_desc(PC_tree_t chunks_node)
 		PC_tree_t size_node = PC_get(chunk_node, ".size");
 		if (!PC_status(size_node)) {
 			chunk_size = PDI::to_string(size_node);
-			m_ctx.logger()->debug("{} port: Data size of `{}' = {}", m_name, chunk_desc, chunk_size);
+			m_ctx.logger().debug("{} port: Data size of `{}' = {}", m_name, chunk_desc, chunk_size);
 		}
 		m_chunk_size_desc.insert({chunk_desc, chunk_size});
 	}
@@ -49,7 +49,7 @@ Input_payload_chunk::Input_payload_chunk(PDI::Context& ctx, const std::string& n
 	m_parent_input_port{parent_port}
 {
 	load_chunk_size_desc(PC_get(config, ".chunks"));
-	m_ctx.logger()->debug("{} port: Created chunk payload", m_name);
+	m_ctx.logger().debug("{} port: Created chunk payload", m_name);
 }
 
 Input_payload_chunk::Input_payload_chunk(Input_payload_chunk&& other):
@@ -78,10 +78,10 @@ void Input_payload_chunk::empty_desc_access(const std::string& data_name)
 		//update size descriptor if exists
 		long size = static_cast<long>(m_chunk_info.chunks_sizes[chunk_id]);
 		if (!chunk_size_desc_it->second.empty()) {
-			m_ctx.logger()->trace("{} port: Sharing size descriptor `{}' = {}", m_name, data_size_desc, size);
+			m_ctx.logger().trace("{} port: Sharing size descriptor `{}' = {}", m_name, data_size_desc, size);
 			m_ctx[data_size_desc].share(&size, true, false);
 			m_ctx[data_size_desc].reclaim();
-			m_ctx.logger()->trace("{} port: Share size descriptor complete ", m_name);
+			m_ctx.logger().trace("{} port: Share size descriptor complete ", m_name);
 		}
 		
 	}
@@ -93,24 +93,24 @@ void Input_payload_chunk::empty_desc_access(const std::string& data_name)
 	
 	if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
 		if (m_flowvr_buffer.unique(flowvr::Buffer::ALLSEGMENTS) ) {
-			m_ctx.logger()->trace("{} port: Share (read/write) `{}'", m_name, chunk_desc);
+			m_ctx.logger().trace("{} port: Share (read/write) `{}'", m_name, chunk_desc);
 			m_sharing_chunks = true;
 			m_ctx[chunk_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess() + offset), true, true);
-			m_ctx.logger()->trace("{} port: Share (read/write) complete `{}'", m_name, chunk_desc);
+			m_ctx.logger().trace("{} port: Share (read/write) complete `{}'", m_name, chunk_desc);
 		} else {
 			if (m_flowvr_buffer.valid()) {
-				m_ctx.logger()->trace("{} port: Share (read only) `{}'", m_name, chunk_desc);
+				m_ctx.logger().trace("{} port: Share (read only) `{}'", m_name, chunk_desc);
 				m_sharing_chunks = true;
 				m_ctx[chunk_desc].share(const_cast<flowvr::ubyte*>(m_flowvr_buffer.readAccess() + offset), true, false);
-				m_ctx.logger()->trace("{} port: Share (read only) complete `{}'", m_name, chunk_desc);
+				m_ctx.logger().trace("{} port: Share (read only) complete `{}'", m_name, chunk_desc);
 			}
 		}
 	} else {
-		m_ctx.logger()->warn("{} port: Flowvr data `{}' is empty or not valid", m_name, chunk_desc);
-		m_ctx.logger()->trace("{} port: Sharing (nullptr) `{}'", m_name, chunk_desc);
+		m_ctx.logger().warn("{} port: Flowvr data `{}' is empty or not valid", m_name, chunk_desc);
+		m_ctx.logger().trace("{} port: Sharing (nullptr) `{}'", m_name, chunk_desc);
 		m_sharing_chunks = true;
 		m_ctx[chunk_desc].share(PDI::Ref(nullptr, nullptr, PDI::UNDEF_TYPE.clone_type(), true, false), false, false);
-		m_ctx.logger()->trace("{} port: Share (nullptr) complete `{}'", m_name, chunk_desc);
+		m_ctx.logger().trace("{} port: Share (nullptr) complete `{}'", m_name, chunk_desc);
 	}
 }
 
@@ -119,7 +119,7 @@ flowvr::Stamps Input_payload_chunk::get_message()
 	for (std::string chunk_desc : m_chunk_descs) {
 		if (!chunk_desc.empty()) {
 			if (!m_ctx[chunk_desc].empty()) {
-				m_ctx.logger()->trace("{} port: Reclaiming {}", m_name, chunk_desc);
+				m_ctx.logger().trace("{} port: Reclaiming {}", m_name, chunk_desc);
 				m_ctx[chunk_desc].reclaim(); // have to reclaim (this is flowvr shared buffer)
 				m_sharing_chunks = false;
 			}
@@ -129,7 +129,7 @@ flowvr::Stamps Input_payload_chunk::get_message()
 	
 	flowvr::Message msg_to_get;
 	m_parent_port->getModule()->get(m_parent_input_port, msg_to_get);
-	m_ctx.logger()->trace("{} port: Got message chunk", m_name);
+	m_ctx.logger().trace("{} port: Got message chunk", m_name);
 	m_flowvr_buffer = msg_to_get.data;
 	
 	m_chunk_info.chunk_count = *((size_t*)m_flowvr_buffer.readAccess());
@@ -145,7 +145,7 @@ Input_payload_chunk::~Input_payload_chunk()
 {
 	for (std::string chunk_desc : m_chunk_descs) {
 		if (!m_ctx[chunk_desc].empty() && m_sharing_chunks) {
-			m_ctx.logger()->debug("{} port: Destroing chunk, reclaiming {}", m_name, chunk_desc);
+			m_ctx.logger().debug("{} port: Destroing chunk, reclaiming {}", m_name, chunk_desc);
 			m_ctx[chunk_desc].reclaim(); // have to reclaim (this is flowvr shared buffer)
 		}
 		m_sharing_chunks = false;

@@ -37,7 +37,7 @@ Input_payload_button_event::Input_payload_button_event(PDI::Context& ctx, const 
 			this->data(name, ref);
 		}, desc_value.first));
 	}
-	m_ctx.logger()->debug("{} port: Created input data payload", m_name);
+	m_ctx.logger().debug("{} port: Created input data payload", m_name);
 }
 
 Input_payload_button_event::Input_payload_button_event(Input_payload_button_event&& other):
@@ -57,7 +57,7 @@ void Input_payload_button_event::data(const std::string& data_name, const PDI::R
 	if (ref) {
 		const auto& desc_value = m_desc_value_map.find(data_name);
 		*static_cast<int*>(ref.get()) = desc_value->second.second;
-		m_ctx.logger()->trace("{} port: Copy key value = {} to `{}' descriptor", m_name, desc_value->second.second, data_name);
+		m_ctx.logger().trace("{} port: Copy key value = {} to `{}' descriptor", m_name, desc_value->second.second, data_name);
 	} else {
 		throw PDI::Right_error{"{} port: Cannot get write access to `{}' descriptor", m_name, data_name};
 	}
@@ -80,7 +80,7 @@ flowvr::Stamps Input_payload_button_event::get_message()
 		if (chunk_button->val) {
 			const auto& key_to_desc = m_key_desc.find(key);
 			if (key_to_desc == m_key_desc.end()) {
-				m_ctx.logger()->warn("{} port: Got unknown `{}' button", m_name, key);
+				m_ctx.logger().warn("{} port: Got unknown `{}' button", m_name, key);
 				continue;
 			}
 			

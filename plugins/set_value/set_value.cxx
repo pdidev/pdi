@@ -106,7 +106,7 @@ struct set_value_plugin: PDI::Plugin {
 		context().callbacks().add_init_callback([this, config]() {
 			this->load_config(config);
 		});
-		context().logger()->info("Plugin loaded successfully");
+		context().logger().info("Plugin loaded successfully");
 	}
 	
 	
@@ -115,7 +115,7 @@ struct set_value_plugin: PDI::Plugin {
 		for (auto&& trigger : m_trigger_on_finalize) {
 			trigger.execute();
 		}
-		context().logger()->info("Closing plugin");
+		context().logger().info("Closing plugin");
 	}
 	
 	/** Pretty name for the plugin that will be shown in the logger

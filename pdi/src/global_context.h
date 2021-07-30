@@ -114,7 +114,7 @@ public:
 	 */
 	void event(const char* name) override;
 
-	Logger* logger() override;
+	Logger& logger() override;
 	
 	Datatype_template_uptr datatype(PC_tree_t node) override;
 	

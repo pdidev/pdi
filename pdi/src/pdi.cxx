@@ -128,7 +128,7 @@ void assert_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
 		if ( Global_context::initialized() ) {
-			Global_context::context().logger()->error(message);
+			Global_context::context().logger().error(message);
 		} else {
 			cerr << "[PDI][NOINIT] *** Fatal error: " << message << endl;
 		}
@@ -141,7 +141,7 @@ void assert_status(PDI_status_t status, const char* message, void*)
 void warn_status(PDI_status_t status, const char* message, void*)
 {
 	if (status && Global_context::initialized() ) {
-		Global_context::context().logger()->warn(message);
+		Global_context::context().logger().warn(message);
 	}
 }
 
@@ -244,7 +244,7 @@ try
 			PDI_VERSION_PATCH
 		};
 	}
-	Global_context::context().logger()->trace("PDI API version: {}.{}.{}");
+	Global_context::context().logger().trace("PDI API version: {}.{}.{}");
 	return PDI_OK;
 } catch (const Error& e)
 {
@@ -394,7 +394,7 @@ try
 	while (const char* v_name = va_arg(ap, const char*)) {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
-		Global_context::context().logger()->trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
+		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
 		if ((status = PDI_share(v_name, v_data, v_access))) {
 			break;
 		}
@@ -403,13 +403,13 @@ try
 	va_end(ap);
 	
 	if (!status) { //trigger event only when all data is available
-		Global_context::context().logger()->trace("Multi expose: Calling event `{}'", event_name);
+		Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
 		status = PDI_event(event_name);
 	}
 	
 	i = 0;
 	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
-		Global_context::context().logger()->trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
+		Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
 		PDI_status_t r_status = PDI_reclaim(it->c_str());
 		status = !status ? r_status : status; //if it is first error, save its status (try to reclaim other desc anyway)
 	}

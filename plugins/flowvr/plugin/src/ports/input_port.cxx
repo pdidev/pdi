@@ -78,7 +78,7 @@ Input_port::Input_port (PDI::Context& ctx, const std::string& name, PC_tree_t co
 	
 	load_payload(config);
 	
-	m_ctx.logger()->debug("{} port is an input port with {} stamps", m_name, m_stamps.size());
+	m_ctx.logger().debug("{} port is an input port with {} stamps", m_name, m_stamps.size());
 }
 
 Input_port::Input_port(Input_port&& other):

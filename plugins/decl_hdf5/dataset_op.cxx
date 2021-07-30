@@ -183,7 +183,7 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 void Dataset_op::deflate(Context& ctx, Expression level)
 {
 	if (m_deflate) {
-		ctx.logger()->warn("deflate defined at file and dataset level (the dataset deflate setting will be used)");
+		ctx.logger().warn("deflate defined at file and dataset level (the dataset deflate setting will be used)");
 	} else {
 		m_deflate = level;
 	}
@@ -192,7 +192,7 @@ void Dataset_op::deflate(Context& ctx, Expression level)
 void Dataset_op::fletcher(Context& ctx, Expression value)
 {
 	if (m_fletcher) {
-		ctx.logger()->warn("fletcher defined at file and dataset level (the dataset fletcher setting will be used)");
+		ctx.logger().warn("fletcher defined at file and dataset level (the dataset fletcher setting will be used)");
 	} else {
 		m_fletcher = value;
 	}
@@ -207,38 +207,38 @@ void Dataset_op::execute(Context& ctx, hid_t h5_file, hid_t xfer_lst, const unor
 void Dataset_op::do_read(Context& ctx, hid_t h5_file, hid_t read_lst)
 {
 	string dataset_name = m_dataset.to_string(ctx);
-	ctx.logger()->trace("Preparing for reading `{}' dataset", dataset_name);
+	ctx.logger().trace("Preparing for reading `{}' dataset", dataset_name);
 	
 	Ref_w ref = ctx[m_value].ref();
 	if ( !ref ) {
-		ctx.logger()->warn("Cannot read `{}' dataset: `{}' data not available", dataset_name, m_value);
+		ctx.logger().warn("Cannot read `{}' dataset: `{}' data not available", dataset_name, m_value);
 		return;
 	}
 	
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
-	ctx.logger()->trace("Applying `{}' memory selection", dataset_name);
+	ctx.logger().trace("Applying `{}' memory selection", dataset_name);
 	m_memory_selection.apply(ctx, h5_mem_space);
 	
-	ctx.logger()->trace("Opening `{}' dataset", dataset_name);
+	ctx.logger().trace("Opening `{}' dataset", dataset_name);
 	Raii_hid h5_set = make_raii_hid(H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose, ("Cannot open `" + dataset_name + "' dataset").c_str());
 	
-	ctx.logger()->trace("Inquiring `{}' dataset dataspace", dataset_name);
+	ctx.logger().trace("Inquiring `{}' dataset dataspace", dataset_name);
 	Raii_hid h5_file_space = make_raii_hid(H5Dget_space(h5_set), H5Sclose, ("Cannot inquire `" + dataset_name + "' dataset dataspace").c_str());
 	
-	ctx.logger()->trace("Applying `{}' dataset selection", dataset_name);
+	ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
 	m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	
-	ctx.logger()->trace("Validating `{}' dataset dataspaces selection", dataset_name);
+	ctx.logger().trace("Validating `{}' dataset dataspaces selection", dataset_name);
 	validate_dataspaces(m_dataset_selection.selection_tree(), h5_mem_space, h5_file_space, dataset_name);
 	
-	ctx.logger()->trace("Reading `{}' dataset", dataset_name);
+	ctx.logger().trace("Reading `{}' dataset", dataset_name);
 	if ( 0>H5Dread(h5_set, h5_mem_type, h5_mem_space, h5_file_space, read_lst, ref) ) handle_hdf5_err();
 	
 	for (auto&& attr : m_attributes) {
 		attr.execute(ctx, h5_file);
 	}
-	ctx.logger()->trace("`{}' dataset read finished", dataset_name);
+	ctx.logger().trace("`{}' dataset read finished", dataset_name);
 }
 
 hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_type, const string& dataset_name)
@@ -248,16 +248,16 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	Ref_r chunking_ref;
 	try {
 		chunking_ref = dataset_type->attribute("decl_hdf5.chunking").to_ref(ctx);
-		ctx.logger()->trace("Getting `{}' dataset chunking from type attribute", dataset_name);
+		ctx.logger().trace("Getting `{}' dataset chunking from type attribute", dataset_name);
 	} catch (const Type_error& e) {
 		// no chunking attribute, check dataset option
 		if (m_chunking) {
-			ctx.logger()->trace("Getting `{}' dataset chunking from dataset operation", dataset_name);
+			ctx.logger().trace("Getting `{}' dataset chunking from dataset operation", dataset_name);
 			chunking_ref = m_chunking.to_ref(ctx);
 		}
 	}
 	if (chunking_ref) {
-		ctx.logger()->trace("Setting `{}' dataset chunking:", dataset_name);
+		ctx.logger().trace("Setting `{}' dataset chunking:", dataset_name);
 		vector<hsize_t> sizes;
 		const Datatype* ref_type = &chunking_ref.type();
 		if (auto&& array_type = dynamic_cast<const Array_datatype*>(ref_type)) {
@@ -278,16 +278,16 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	unsigned int deflate_level = -1;
 	try {
 		deflate_level = dataset_type->attribute("decl_hdf5.deflate").to_long(ctx);
-		ctx.logger()->trace("Getting `{}' dataset deflate from type attribute", dataset_name);
+		ctx.logger().trace("Getting `{}' dataset deflate from type attribute", dataset_name);
 	} catch (const Type_error& e) {
 		// no deflate attribute, check dataset option
 		if (m_deflate) {
-			ctx.logger()->trace("Getting `{}' dataset deflate from dataset operation", dataset_name);
+			ctx.logger().trace("Getting `{}' dataset deflate from dataset operation", dataset_name);
 			deflate_level = m_deflate.to_long(ctx);
 		}
 	}
 	if (deflate_level != -1) {
-		ctx.logger()->trace("Setting `{}' dataset deflate to {}", dataset_name, deflate_level);
+		ctx.logger().trace("Setting `{}' dataset deflate to {}", dataset_name, deflate_level);
 		if ( 0 > H5Pset_deflate(dset_plist, deflate_level) ) {
 			handle_hdf5_err(fmt::format("Cannot set `{}' dataset deflate", dataset_name).c_str());
 		}
@@ -297,16 +297,16 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	long fletcher = -1;
 	try {
 		fletcher = dataset_type->attribute("decl_hdf5.fletcher").to_long(ctx);
-		ctx.logger()->trace("Getting `{}' dataset fletcher from type attribute", dataset_name);
+		ctx.logger().trace("Getting `{}' dataset fletcher from type attribute", dataset_name);
 	} catch (const Type_error& e) {
 		// no fletcher attribute, check dataset option
 		if (m_fletcher) {
-			ctx.logger()->trace("Getting `{}' dataset fletcher from dataset operation", dataset_name);
+			ctx.logger().trace("Getting `{}' dataset fletcher from dataset operation", dataset_name);
 			fletcher = m_fletcher.to_long(ctx);
 		}
 	}
 	if (fletcher != -1) {
-		ctx.logger()->trace("Setting `{}' dataset fletcher", dataset_name);
+		ctx.logger().trace("Setting `{}' dataset fletcher", dataset_name);
 		if ( 0 > H5Pset_fletcher32(dset_plist) ) {
 			handle_hdf5_err(fmt::format("Cannot set `{}' dataset fletcher", dataset_name).c_str());
 		}
@@ -318,16 +318,16 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_uptr>& dsets)
 {
 	string dataset_name = m_dataset.to_string(ctx);
-	ctx.logger()->trace("Preparing for writing `{}' dataset", dataset_name);
+	ctx.logger().trace("Preparing for writing `{}' dataset", dataset_name);
 	Ref_r ref = ctx[m_value].ref();
 	if ( !ref ) {
-		ctx.logger()->warn("Cannot write `{}' dataset: `{}' data not available", dataset_name, m_value);
+		ctx.logger().warn("Cannot write `{}' dataset: `{}' data not available", dataset_name, m_value);
 		return;
 	}
 	
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
-	ctx.logger()->trace("Applying `{}' memory selection", dataset_name);
+	ctx.logger().trace("Applying `{}' memory selection", dataset_name);
 	m_memory_selection.apply(ctx, h5_mem_space);
 	
 	auto&& dataset_type_iter = dsets.find(dataset_name);
@@ -336,7 +336,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	if ( dataset_type_iter != dsets.end() ) {
 		dataset_type = dataset_type_iter->second->evaluate(ctx);
 		tie(h5_file_space, h5_file_type) = space(*dataset_type);
-		ctx.logger()->trace("Applying `{}' dataset selection", dataset_name);
+		ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	} else {
 		if ( !m_dataset_selection.size().empty() ) {
@@ -346,26 +346,26 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 		tie(h5_file_space, h5_file_type) = space(*dataset_type, true);
 	}
 	
-	ctx.logger()->trace("Validating `{}' dataset dataspaces selection", dataset_name);
+	ctx.logger().trace("Validating `{}' dataset dataspaces selection", dataset_name);
 	validate_dataspaces(m_dataset_selection.selection_tree(), h5_mem_space, h5_file_space, dataset_name);
 	
 	Raii_hid set_lst = make_raii_hid(H5Pcreate(H5P_LINK_CREATE), H5Pclose);
 	if ( 0>H5Pset_create_intermediate_group(set_lst, 1) ) handle_hdf5_err();
 	
-	ctx.logger()->trace("Opening `{}' dataset", dataset_name);
+	ctx.logger().trace("Opening `{}' dataset", dataset_name);
 	hid_t h5_set_raw = H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT);
 	Raii_hid dset_plist = make_raii_hid(dataset_creation_plist(ctx, dataset_type.get(), dataset_name), H5Pclose);
 	if ( 0 > h5_set_raw ) {
-		ctx.logger()->trace("Cannot open `{}' dataset, creating", dataset_name);
+		ctx.logger().trace("Cannot open `{}' dataset, creating", dataset_name);
 		h5_set_raw = H5Dcreate2(h5_file, dataset_name.c_str(), h5_file_type, h5_file_space, set_lst, dset_plist, H5P_DEFAULT);
 	} else {
 		// Dataset exists -> collision
 		function<void(const char*, const std::string&)> notify = [&](const char* message, const std::string& filename) {
-			ctx.logger()->trace("Dataset collision `{}': {}", filename, message);
+			ctx.logger().trace("Dataset collision `{}': {}", filename, message);
 		};
 		if (m_collision_policy & Collision_policy::WARNING) {
 			notify = [&](const char* message, const std::string& filename) {
-				ctx.logger()->warn("Dataset collision `{}': {}", filename, message);
+				ctx.logger().warn("Dataset collision `{}': {}", filename, message);
 			};
 		}
 		
@@ -391,13 +391,13 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	}
 	Raii_hid h5_set = make_raii_hid(h5_set_raw, H5Dclose);
 	
-	ctx.logger()->trace("Writing `{}' dataset", dataset_name);
+	ctx.logger().trace("Writing `{}' dataset", dataset_name);
 	if ( 0>H5Dwrite(h5_set, h5_mem_type, h5_mem_space, h5_file_space, write_lst, ref) ) handle_hdf5_err();
 	
 	for (auto&& attr : m_attributes) {
 		attr.execute(ctx, h5_file);
 	}
-	ctx.logger()->trace("`{}' dataset write finished", dataset_name);
+	ctx.logger().trace("`{}' dataset write finished", dataset_name);
 }
 
 } // namespace decl_hdf5

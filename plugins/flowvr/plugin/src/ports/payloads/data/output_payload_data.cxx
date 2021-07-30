@@ -36,7 +36,7 @@ void Output_payload_data::alloc_buffer()
 	} else {
 		datasize = m_ctx[m_data_desc].default_type()->evaluate(m_ctx)->datasize();
 	}
-	m_ctx.logger()->debug("{} port: Allocating {} B", m_name, datasize);
+	m_ctx.logger().debug("{} port: Allocating {} B", m_name, datasize);
 	if (m_flowvr_buffer_pool) {
 		m_flowvr_buffer = m_flowvr_buffer_pool->alloc(m_parent_output_port->getModule()->getAllocator(), datasize);
 	} else {
@@ -66,7 +66,7 @@ Output_payload_data::Output_payload_data(PDI::Context& ctx, const std::string& n
 			this->empty_desc_access(name);
 		}, m_data_desc));
 	}
-	m_ctx.logger()->debug("{} port: Created data payload", m_name);
+	m_ctx.logger().debug("{} port: Created data payload", m_name);
 }
 
 Output_payload_data::Output_payload_data(Output_payload_data&& other):
@@ -94,7 +94,7 @@ void Output_payload_data::copy_data_from_ref(const std::string& data_name, const
 			}
 			if (ref.get() != m_flowvr_buffer.writeAccess()) {
 				if (m_flowvr_buffer.valid() && !m_flowvr_buffer.empty()) {
-					m_ctx.logger()->debug("{} port: Copy data from `{}' descriptor to flowvr memory", m_name, data_name);
+					m_ctx.logger().debug("{} port: Copy data from `{}' descriptor to flowvr memory", m_name, data_name);
 					if (m_data_selection) {
 						m_data_selection->evaluate(m_ctx)->data_to_dense_copy(m_flowvr_buffer.writeAccess(), ref.get());
 					} else {
@@ -113,10 +113,10 @@ void Output_payload_data::empty_desc_access(const std::string& data_name)
 	if (m_flowvr_buffer.empty()) {
 		alloc_buffer();
 	}
-	m_ctx.logger()->debug("{} port: Sharing `{}'", m_name, m_data_desc);
+	m_ctx.logger().debug("{} port: Sharing `{}'", m_name, m_data_desc);
 	m_sharing_buffer = true; //must be before share (to not copy data)
 	m_ctx[data_name].share(m_flowvr_buffer.writeAccess(), false, true);
-	m_ctx.logger()->debug("{} port: Share complete `{}'", m_name, m_data_desc);
+	m_ctx.logger().debug("{} port: Share complete `{}'", m_name, m_data_desc);
 }
 
 flowvr::Stamps Output_payload_data::put_message(const flowvr::StampsWrite& stamps)
@@ -130,17 +130,17 @@ flowvr::Stamps Output_payload_data::put_message(const flowvr::StampsWrite& stamp
 		msg_to_put.data = m_flowvr_buffer;
 	}
 	
-	m_ctx.logger()->debug("{} port: Putting message", m_name);
+	m_ctx.logger().debug("{} port: Putting message", m_name);
 	m_parent_port->getModule()->put(m_parent_output_port, msg_to_put);
 	
 	if (!m_data_desc.empty()) {
 		m_flowvr_buffer.clear();
 	}
 	if (m_sharing_buffer) {
-		m_ctx.logger()->debug("{} port: Reclaiming `{}'", m_name, m_data_desc);
+		m_ctx.logger().debug("{} port: Reclaiming `{}'", m_name, m_data_desc);
 		m_ctx[m_data_desc].reclaim(); // have to reclaim (this is flowvr shared buffer)
 		m_sharing_buffer = false;
-		m_ctx.logger()->debug("{} port: Reclaim complete `{}'", m_name, m_data_desc);
+		m_ctx.logger().debug("{} port: Reclaim complete `{}'", m_name, m_data_desc);
 	}
 	return msg_to_put.stamps;
 }
@@ -149,10 +149,10 @@ Output_payload_data::~Output_payload_data()
 {
 	if (!m_ctx[m_data_desc].empty()) {
 		if (m_sharing_buffer) {
-			m_ctx.logger()->debug("{} port: Reclaiming `{}'", m_name, m_data_desc);
+			m_ctx.logger().debug("{} port: Reclaiming `{}'", m_name, m_data_desc);
 			m_ctx[m_data_desc].reclaim(); // have to reclaim (this is flowvr shared buffer)
 			m_sharing_buffer = false;
-			m_ctx.logger()->debug("{} port: Reclaim complete `{}'", m_name, m_data_desc);
+			m_ctx.logger().debug("{} port: Reclaim complete `{}'", m_name, m_data_desc);
 		}
 	}
 }

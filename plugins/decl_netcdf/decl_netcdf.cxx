@@ -55,12 +55,12 @@ public:
 		} else {
 			m_files.emplace_back(context(), config);
 		}
-		context().logger()->info("Plugin loaded successfully");
+		context().logger().info("Plugin loaded successfully");
 	}
 	
 	~decl_netcdf_plugin()
 	{
-		context().logger()->info("Closing plugin");
+		context().logger().info("Closing plugin");
 	}
 	
 	/** Pretty name for the plugin that will be shown in the logger

@@ -78,7 +78,7 @@ Output_port::Output_port(PDI::Context& ctx, std::string name, PC_tree_t config):
 	
 	load_payload(config);
 	
-	m_ctx.logger()->debug("{} port is an output port with {} stamps", m_name, m_stamps.size());
+	m_ctx.logger().debug("{} port is an output port with {} stamps", m_name, m_stamps.size());
 }
 
 

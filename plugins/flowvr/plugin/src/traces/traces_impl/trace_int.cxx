@@ -30,7 +30,7 @@ Trace_int::Trace_int(PDI::Context& ctx, const std::string& name):
 	Trace_base{ctx},
 	m_flowvr_trace{new flowvr::TypedTrace<int>(name)}
 {
-	m_ctx.logger()->debug("{} trace: Int trace created", m_flowvr_trace->getName());
+	m_ctx.logger().debug("{} trace: Int trace created", m_flowvr_trace->getName());
 }
 
 flowvr::Trace* Trace_int::get() const
@@ -41,7 +41,7 @@ flowvr::Trace* Trace_int::get() const
 void Trace_int::write(const PDI::Ref_r& ref_r)
 {
 	const int value = *static_cast<const int*>(ref_r.get());
-	m_ctx.logger()->debug("{} trace: Writing {}", m_flowvr_trace->getName(), value);
+	m_ctx.logger().debug("{} trace: Writing {}", m_flowvr_trace->getName(), value);
 	m_flowvr_trace->write(value);
 }
 	

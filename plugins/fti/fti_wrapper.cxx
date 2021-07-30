@@ -86,10 +86,10 @@ Fti_wrapper::Fti_wrapper(Context& ctx, const Fti_cfg& config, MPI_Comm comm, PC_
 	// pdi global logger
 	try {
 		Context_proxy& ctx_proxy = dynamic_cast<Context_proxy&>(ctx);
-		ctx_proxy.pdi_core_logger()->default_pattern("[%T][" + fti_rank_name + "][%n] *** %^%l%$: %v");
-		ctx_proxy.pdi_core_logger()->evaluate_pattern(ctx);
+		ctx_proxy.pdi_core_logger().default_pattern("[%T][" + fti_rank_name + "][%n] *** %^%l%$: %v");
+		ctx_proxy.pdi_core_logger().evaluate_pattern(ctx);
 	} catch (std::bad_cast&) {
-		ctx.logger()->warn("Cannot cast Context to Context_proxy");
+		ctx.logger().warn("Cannot cast Context to Context_proxy");
 	}
 	
 	if (m_head) {
@@ -116,11 +116,11 @@ Fti_wrapper::Fti_wrapper(Context& ctx, const Fti_cfg& config, MPI_Comm comm, PC_
 			}
 			
 			// no head flag defined -> do not return HEAD process
-			ctx.logger()->info("Finalizing (this process won't return to the application)");
+			ctx.logger().info("Finalizing (this process won't return to the application)");
 			MPI_Finalize();
 			ctx.finalize_and_exit();
 		} else {
-			ctx.logger()->debug("Returning after FTI_Init");
+			ctx.logger().debug("Returning after FTI_Init");
 		}
 	}
 	

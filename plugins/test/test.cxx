@@ -57,15 +57,15 @@ struct test_plugin: Plugin {
 			this->data(name, ref);
 		});
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
-			this->context().logger()->info("The test plugin received an event: {}", name);
+			this->context().logger().info("The test plugin received an event: {}", name);
 		});
-		context().logger()->info("Welcome to the test plugin!");
-		context().logger()->warn("The test plugin is deprecated, use the `trace' plugin instead!");
+		context().logger().info("Welcome to the test plugin!");
+		context().logger().warn("The test plugin is deprecated, use the `trace' plugin instead!");
 	}
 	
 	~test_plugin()
 	{
-		context().logger()->info("Goodbye from the test plugin!");
+		context().logger().info("Goodbye from the test plugin!");
 	}
 	
 	void data(const std::string& name, Ref ref)
@@ -77,12 +77,12 @@ struct test_plugin: Plugin {
 		ref_it->on_nullify([=](Ref r) {
 			this->data_end(sname, r);
 		});
-		context().logger()->info("=>> data becoming available to the test plugin: {}", name);
+		context().logger().info("=>> data becoming available to the test plugin: {}", name);
 	}
 	
 	void data_end(const std::string& name, Ref r)
 	{
-		context().logger()->info("<<= data stop being available to the test plugin: {}", name);
+		context().logger().info("<<= data stop being available to the test plugin: {}", name);
 	}
 	
 	/** Pretty name for the plugin that will be shown in the logger

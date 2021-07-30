@@ -255,7 +255,7 @@ void File_op::execute(Context& ctx)
 				}
 			}
 		} catch (const Error& e) {
-			ctx.logger()->warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
+			ctx.logger().warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
 		}
 	}
 	
@@ -272,7 +272,7 @@ void File_op::execute(Context& ctx)
 				}
 			}
 		} catch (const Error& e) {
-			ctx.logger()->warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
+			ctx.logger().warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
 		}
 	}
 	// nothing to do if no op is selected
@@ -289,28 +289,28 @@ void File_op::execute(Context& ctx)
 	if ( comm != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL) ) handle_hdf5_err();
 		if ( 0>H5Pset_dxpl_mpio(xfer_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
-		ctx.logger()->debug("Opening `{}' file in parallel mode", filename);
+		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
 	}
 #endif
 	
 	hid_t h5_file_raw = -1;
 	if ( (!dset_writes.empty() || !attr_writes.empty()) && (!dset_reads.empty() || !attr_reads.empty()) ) {
-		ctx.logger()->trace("Opening `{}' file to read and write", filename);
+		ctx.logger().trace("Opening `{}' file to read and write", filename);
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
 	} else if ( !dset_writes.empty() || !attr_writes.empty() ) {
-		ctx.logger()->trace("Opening `{}' file to write", filename);
+		ctx.logger().trace("Opening `{}' file to write", filename);
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
 		if (0>h5_file_raw) {
-			ctx.logger()->trace("Cannot open `{}' file, creating new file", filename);
+			ctx.logger().trace("Cannot open `{}' file, creating new file", filename);
 			h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
 		} else {
 			// File exists -> collision
 			function<void(const char*, const std::string&)> notify = [&](const char* message, const std::string& filename) {
-				ctx.logger()->trace("File `{}' already exists: {}", filename, message);
+				ctx.logger().trace("File `{}' already exists: {}", filename, message);
 			};
 			if (m_collision_policy & Collision_policy::WARNING) {
 				notify = [&](const char* message, const std::string& filename) {
-					ctx.logger()->warn("File `{}' already exists: {}", filename, message);
+					ctx.logger().warn("File `{}' already exists: {}", filename, message);
 				};
 			}
 			
@@ -334,7 +334,7 @@ void File_op::execute(Context& ctx)
 			}
 		}
 	} else {
-		ctx.logger()->trace("Opening `{}' file to read", filename);
+		ctx.logger().trace("Opening `{}' file to read", filename);
 		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_lst);
 	}
 	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
@@ -353,14 +353,14 @@ void File_op::execute(Context& ctx)
 	}
 	for (auto&& one_dset_size_op: m_dset_size_ops) {
 		string dataset_name = one_dset_size_op.second.to_string(ctx);
-		ctx.logger()->trace("Getting size of `{}' dataset", dataset_name);
+		ctx.logger().trace("Getting size of `{}' dataset", dataset_name);
 		Ref_w ref_w = ctx[one_dset_size_op.first].ref();
 		if (!ref_w) {
-			ctx.logger()->warn("Data `{}' to read size of dataset not available", one_dset_size_op.first);
+			ctx.logger().warn("Data `{}' to read size of dataset not available", one_dset_size_op.first);
 			return;
 		}
 		
-		ctx.logger()->trace("Opening `{}' dataset", dataset_name);
+		ctx.logger().trace("Opening `{}' dataset", dataset_name);
 		Raii_hid dset_id = make_raii_hid(H5Dopen(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose);
 		Raii_hid dset_space_id = make_raii_hid(H5Dget_space(dset_id), H5Sclose);
 		if (H5Sis_simple(dset_space_id)) {
@@ -375,9 +375,9 @@ void File_op::execute(Context& ctx)
 			*static_cast<long*>(ref_w.get()) = 0L;
 		}
 		
-		ctx.logger()->trace("Getting size of `{}' dataset finished", dataset_name);
+		ctx.logger().trace("Getting size of `{}' dataset finished", dataset_name);
 	}
-	ctx.logger()->trace("All operations done in `{}'. Closing the file.", filename);
+	ctx.logger().trace("All operations done in `{}'. Closing the file.", filename);
 }
 
 } // namespace decl_hdf5

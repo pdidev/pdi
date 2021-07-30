@@ -30,7 +30,7 @@ Trace_string::Trace_string(PDI::Context& ctx, const std::string& name):
 	Trace_base{ctx},
 	m_flowvr_trace{new flowvr::TypedTrace<std::string>(name)}
 {
-	m_ctx.logger()->debug("{} trace: String trace created", m_flowvr_trace->getName());
+	m_ctx.logger().debug("{} trace: String trace created", m_flowvr_trace->getName());
 }
 
 flowvr::Trace* Trace_string::get() const
@@ -42,7 +42,7 @@ void Trace_string::write(const PDI::Ref_r& ref_r)
 {
 	const char* value_char = static_cast<const char*>(ref_r.get());
 	const std::string value{value_char};
-	m_ctx.logger()->trace("{} trace: Writing {}", m_flowvr_trace->getName(), value);
+	m_ctx.logger().trace("{} trace: Writing {}", m_flowvr_trace->getName(), value);
 	m_flowvr_trace->write(value);
 }
 

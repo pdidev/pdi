@@ -61,7 +61,7 @@ private:
 		PC_tree_t init_on_node = PC_get(component_node, ".init_on");
 		if (!PC_status(init_on_node)) {
 			std::string event_name = PDI::to_string(init_on_node);
-			context().logger()->debug("Init on `{}' event", event_name);
+			context().logger().debug("Init on `{}' event", event_name);
 			context().callbacks().add_event_callback([this, component_node](const std::string& name) {
 				this->create_component(component_node);
 			}, event_name);
@@ -89,7 +89,7 @@ public:
 	
 	~flowvr_plugin()
 	{
-		context().logger()->info("Closing plugin");
+		context().logger().info("Closing plugin");
 	}
 };
 

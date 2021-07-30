@@ -30,7 +30,7 @@ Trace_float::Trace_float(PDI::Context& ctx, const std::string& name):
 	Trace_base{ctx},
 	m_flowvr_trace{new flowvr::TypedTrace<float>(name)}
 {
-	m_ctx.logger()->debug("{} trace: Float trace created", m_flowvr_trace->getName());
+	m_ctx.logger().debug("{} trace: Float trace created", m_flowvr_trace->getName());
 }
 
 flowvr::Trace* Trace_float::get() const
@@ -41,7 +41,7 @@ flowvr::Trace* Trace_float::get() const
 void Trace_float::write(const PDI::Ref_r& ref_r)
 {
 	const float value = *static_cast<const float*>(ref_r.get());
-	m_ctx.logger()->debug("{} trace: Writing {}", m_flowvr_trace->getName(), value);
+	m_ctx.logger().debug("{} trace: Writing {}", m_flowvr_trace->getName(), value);
 	m_flowvr_trace->write(value);
 }
 

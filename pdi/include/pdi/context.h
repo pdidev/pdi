@@ -104,7 +104,7 @@ public:
 	/** Logger getter
 	 * \return logger
 	 */
-	virtual Logger* logger() = 0;
+	virtual Logger& logger() = 0;
 	
 	/** Callbacks of the context
 	 * \return context callbacks

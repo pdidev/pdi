@@ -35,7 +35,7 @@ Stamp_desc_float::Stamp_desc_float(PDI::Context& ctx, const flowvr::Port* parent
 	m_callbacks_remove.emplace_back(m_ctx.callbacks().add_data_callback([this](const std::string& name, PDI::Ref ref) {
 		this->data(name, ref);
 	}, data_desc));
-	m_ctx.logger()->debug("{} stamp: Float descriptor created", m_name);
+	m_ctx.logger().debug("{} stamp: Float descriptor created", m_name);
 }
 
 void Stamp_desc_float::read_from_flowvr_stamp(const flowvr::Stamps& read_stamp)
@@ -44,7 +44,7 @@ void Stamp_desc_float::read_from_flowvr_stamp(const flowvr::Stamps& read_stamp)
 	bool status = read_stamp.read(*m_stamp_info, stamp_value);
 	if (status) {
 		m_value = stamp_value;
-		m_ctx.logger()->trace("{} stamp: Update from message: Stamp = {}", m_name, stamp_value);
+		m_ctx.logger().trace("{} stamp: Update from message: Stamp = {}", m_name, stamp_value);
 	} else {
 		throw PDI::Unavailable_error{"{} stamp: Cannot read stamp value from message", m_name};
 	}
@@ -54,7 +54,7 @@ void Stamp_desc_float::write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) c
 {
 	bool status = write_stamp.write(*m_stamp_info, m_value);
 	if (status) {
-		m_ctx.logger()->trace("{} stamp: Message update: Message.stamps.{} = {}", m_name, m_name, m_value);
+		m_ctx.logger().trace("{} stamp: Message update: Message.stamps.{} = {}", m_name, m_name, m_value);
 	} else {
 		throw PDI::Unavailable_error{"{} stamp: Cannot write stamp to message", m_name};
 	}
@@ -65,12 +65,12 @@ void Stamp_desc_float::data(const std::string& data_name, const PDI::Ref& ref)
 	if (PDI::Ref_w ref_w{ref}) {
 		//can write to desc, put value to it
 		*static_cast<float*>(ref_w.get()) = m_value;
-		m_ctx.logger()->trace("{} stamp: Desc `{}' = {}", m_name, data_name, m_value);
+		m_ctx.logger().trace("{} stamp: Desc `{}' = {}", m_name, data_name, m_value);
 	}
 	if (PDI::Ref_r ref_r{ref}) {
 		//can read from desc, update m_value
 		m_value = *static_cast<const float*>(ref_r.get());
-		m_ctx.logger()->trace("{} stamp: Stamp = {} from `{}'", m_name, m_value, data_name);
+		m_ctx.logger().trace("{} stamp: Stamp = {} from `{}'", m_name, m_value, data_name);
 	}
 }
 

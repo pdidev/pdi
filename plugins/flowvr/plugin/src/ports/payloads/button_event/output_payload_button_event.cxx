@@ -37,7 +37,7 @@ Output_payload_button_event::Output_payload_button_event(PDI::Context& ctx, cons
 			this->data(name, ref);
 		}, desc_value.first));
 	}
-	m_ctx.logger()->debug("{} port: Created output data payload", m_name);
+	m_ctx.logger().debug("{} port: Created output data payload", m_name);
 }
 
 Output_payload_button_event::Output_payload_button_event(Output_payload_button_event&& other):
@@ -59,7 +59,7 @@ void Output_payload_button_event::data(const std::string& data_name, const PDI::
 	if (ref) {
 		const auto& desc_value = m_desc_value_map.find(data_name);
 		desc_value->second.second = *static_cast<const int*>(ref.get());
-		m_ctx.logger()->trace("{} port: Copied key value = {} from `{}' descriptor", m_name, desc_value->second.second, data_name);
+		m_ctx.logger().trace("{} port: Copied key value = {} from `{}' descriptor", m_name, desc_value->second.second, data_name);
 	} else {
 		throw PDI::Right_error{"{} port: Cannot get read access to `{}' descriptor", m_name, data_name};
 	}

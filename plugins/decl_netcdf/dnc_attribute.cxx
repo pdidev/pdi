@@ -31,7 +31,7 @@ Dnc_attribute::Dnc_attribute(PDI::Context& ctx, const std::string& name, PC_tree
 	m_name{name}
 {
 	m_value = PDI::Expression{PDI::to_string(config)};
-	m_ctx.logger()->trace("`{}' attribute created", name);
+	m_ctx.logger().trace("`{}' attribute created", name);
 }
 
 const std::string& Dnc_attribute::name() const

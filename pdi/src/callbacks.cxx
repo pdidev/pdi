@@ -134,7 +134,7 @@ void Callbacks::call_data_callbacks(const string& name, Ref ref) const
 	for (auto it = m_data_callbacks.begin(); it != m_data_callbacks.end(); it++) {
 		data_callbacks.emplace_back(std::cref(*it));
 	}
-	m_context.logger()->trace("Calling `{}' share. Callbacks to call: {}", name, data_callbacks.size());
+	m_context.logger().trace("Calling `{}' share. Callbacks to call: {}", name, data_callbacks.size());
 	//call gathered callbacks
 	vector<Error> errors;
 	for (const std::function<void(const std::string&, Ref)>& callback : data_callbacks) {
@@ -173,7 +173,7 @@ void Callbacks::call_data_remove_callbacks(const string& name, Ref ref) const
 	for (auto it = m_data_remove_callbacks.begin(); it != m_data_remove_callbacks.end(); it++) {
 		data_remove_callbacks.emplace_back(std::cref(*it));
 	}
-	m_context.logger()->trace("Calling `{}' data remove. Callbacks to call: {}", name, data_remove_callbacks.size());
+	m_context.logger().trace("Calling `{}' data remove. Callbacks to call: {}", name, data_remove_callbacks.size());
 	//call gathered callbacks
 	vector<Error> errors;
 	for (const std::function<void(const std::string&, Ref)>& callback : data_remove_callbacks) {
@@ -212,7 +212,7 @@ void Callbacks::call_event_callbacks(const string& name) const
 	for (auto it = m_event_callbacks.begin(); it != m_event_callbacks.end(); it++) {
 		event_callbacks.emplace_back(cref(*it));
 	}
-	m_context.logger()->trace("Calling `{}' event. Callbacks to call: {}", name, event_callbacks.size());
+	m_context.logger().trace("Calling `{}' event. Callbacks to call: {}", name, event_callbacks.size());
 	//call gathered callbacks
 	std::vector<Error> errors;
 	for (const function<void(const string&)>& callback : event_callbacks) {
@@ -251,7 +251,7 @@ void Callbacks::call_empty_desc_access_callbacks(const string& name) const
 	for (auto it = m_empty_desc_access_callbacks.begin(); it != m_empty_desc_access_callbacks.end(); it++) {
 		empty_desc_callbacks.emplace_back(std::cref(*it));
 	}
-	m_context.logger()->trace("Calling `{}' empty desc access. Callbacks to call: {}", name, empty_desc_callbacks.size());
+	m_context.logger().trace("Calling `{}' empty desc access. Callbacks to call: {}", name, empty_desc_callbacks.size());
 	//call gathered callbacks
 	vector<Error> errors;
 	for (const std::function<void(const std::string&)>& callback : empty_desc_callbacks) {

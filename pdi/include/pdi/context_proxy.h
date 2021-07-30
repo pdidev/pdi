@@ -95,13 +95,13 @@ public:
 	 *
 	 *  \return plugin logger
 	 */
-	Logger* logger() override;
+	Logger& logger() override;
 	
 	/** Returns pdi core logger
 	 *
 	 * \return pdi core logger
 	 */
-	Logger* pdi_core_logger();
+	Logger& pdi_core_logger();
 	
 	/** Context::datatype proxy for plugins
 	 */

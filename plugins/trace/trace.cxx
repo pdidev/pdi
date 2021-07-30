@@ -57,14 +57,14 @@ struct trace_plugin: Plugin {
 			this->data(name, ref);
 		});
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
-			this->context().logger()->info("!!!                            named event: {}", name);
+			this->context().logger().info("!!!                            named event: {}", name);
 		});
-		context().logger()->info("Welcome!");
+		context().logger().info("Welcome!");
 	}
 	
 	~trace_plugin()
 	{
-		context().logger()->info("Goodbye!");
+		context().logger().info("Goodbye!");
 	}
 	
 	void data(const std::string& name, Ref ref)
@@ -76,12 +76,12 @@ struct trace_plugin: Plugin {
 		ref_it->on_nullify([=](Ref r) {
 			this->data_end(sname, r);
 		});
-		context().logger()->info("=>>   data becoming available in the store: {}", name);
+		context().logger().info("=>>   data becoming available in the store: {}", name);
 	}
 	
 	void data_end(const std::string& name, Ref r)
 	{
-		context().logger()->info("<<= data stop being available in the store: {}", name);
+		context().logger().info("<<= data stop being available in the store: {}", name);
 	}
 	
 	/** Pretty name for the plugin that will be shown in the logger

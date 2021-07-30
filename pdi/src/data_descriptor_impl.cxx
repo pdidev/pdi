@@ -94,7 +94,7 @@ Data_descriptor_impl::~Data_descriptor_impl()
 	
 	// on error, we might be destroyed while not empty.
 	if (!m_refs.empty()) {
-		m_context.logger()->warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size()-(metadata()?1:0), m_name);
+		m_context.logger().warn("Remaining {} reference(s) to `{}' in PDI after program end", m_refs.size()-(metadata()?1:0), m_name);
 		// leak the remaining data
 		while ( !m_refs.empty() ) {
 			m_refs.top().release();
@@ -166,7 +166,7 @@ void Data_descriptor_impl::share(void* data, bool read, bool write)
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	Ref r{data, &free, m_type->evaluate(m_context), read, write};
 	try {
-		m_context.logger()->trace("Sharing `{}' Ref with rights: R = {}, W = {}", m_name, read, write);
+		m_context.logger().trace("Sharing `{}' Ref with rights: R = {}, W = {}", m_name, read, write);
 		share(r, false, false);
 	} catch (...) {
 		// on error, do not free the data as would be done automatically otherwise

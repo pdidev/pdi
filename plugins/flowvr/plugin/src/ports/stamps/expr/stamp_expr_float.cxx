@@ -33,7 +33,7 @@ Stamp_expr_float::Stamp_expr_float(PDI::Context& ctx, const flowvr::Port* parent
 	m_value{expression}
 {
 	m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeFloat::create());
-	m_ctx.logger()->debug("{} stamp: Float expression created", m_name);
+	m_ctx.logger().debug("{} stamp: Float expression created", m_name);
 }
 
 void Stamp_expr_float::read_from_flowvr_stamp(const flowvr::Stamps& read_stamp)
@@ -43,7 +43,7 @@ void Stamp_expr_float::write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) c
 {
 	bool status = write_stamp.write(*m_stamp_info, static_cast<float>(m_value.to_double(m_ctx)));
 	if (status) {
-		m_ctx.logger()->debug("{} stamp: Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_double(m_ctx));
+		m_ctx.logger().debug("{} stamp: Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_double(m_ctx));
 	} else {
 		throw PDI::Unavailable_error{"{} stamp: Cannot write stamp to message", m_name};
 	}

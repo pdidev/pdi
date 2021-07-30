@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 #### Changed
+* Logger getter in Context now returns a reference instead of pointer
+  [#354](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/354)
 
 #### Deprecated
 

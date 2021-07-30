@@ -108,13 +108,13 @@ public:
 			this->event(name);
 		});
 		
-		ctx.logger()->info("Plugin loaded successfully");
+		ctx.logger().info("Plugin loaded successfully");
 	}
 	
 	~decl_hdf5_plugin()
 	{
 		if ( 0>H5close() ) handle_hdf5_err("Cannot finalize HDF5 library");
-		context().logger()->info("Closing plugin");
+		context().logger().info("Closing plugin");
 	}
 	
 	void data(const std::string& name, Ref ref)

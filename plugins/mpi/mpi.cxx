@@ -66,7 +66,7 @@ using std::string;
 void transtype_C_to_F(Context& ctx, const string& c_comm_desc, const string& fortran_comm_desc)
 {
 	ctx.callbacks().add_data_callback([&ctx, fortran_comm_desc](const string& c_comm_desc, Ref ref) {
-		ctx.logger()->debug("Transtype `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
+		ctx.logger().debug("Transtype `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
 		Datatype_uptr mpi_comm_f_type = ctx.datatype(PC_parse_string("MPI_Comm_f"))->evaluate(ctx);
 		Ref fortran_comm_ref {new MPI_Fint, [](void* p){delete static_cast<MPI_Fint*>(p);}, std::move(mpi_comm_f_type), true, true};
 		if (Ref_r ref_r{ref}) {
@@ -78,9 +78,9 @@ void transtype_C_to_F(Context& ctx, const string& c_comm_desc, const string& for
 	}, c_comm_desc);
 	
 	ctx.callbacks().add_data_remove_callback([&ctx, fortran_comm_desc](const std::string& c_comm_desc, Ref c_comm_ref) {
-		ctx.logger()->debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
+		ctx.logger().debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
 		if (Ref_w c_comm_ref_w{c_comm_ref}) {
-			ctx.logger()->debug("Transtype back `{}' to `{}' (F->C)", fortran_comm_desc, c_comm_desc);
+			ctx.logger().debug("Transtype back `{}' to `{}' (F->C)", fortran_comm_desc, c_comm_desc);
 			if (Ref_r fortran_comm_ref_r = ctx.desc(fortran_comm_desc).ref()) {
 				*static_cast<MPI_Comm*>(c_comm_ref_w.get()) = MPI_Comm_f2c(*static_cast<const MPI_Fint*>(fortran_comm_ref_r.get()));
 			} else {
@@ -101,7 +101,7 @@ void transtype_C_to_F(Context& ctx, const string& c_comm_desc, const string& for
 void transtype_F_to_C(Context& ctx, const string& fortran_comm_desc, const string& c_comm_desc)
 {
 	ctx.callbacks().add_data_callback([&ctx, c_comm_desc](const string& fortran_comm_desc, Ref ref) {
-		ctx.logger()->debug("Transtype `{}' to `{}` (F->C)", fortran_comm_desc, c_comm_desc);
+		ctx.logger().debug("Transtype `{}' to `{}` (F->C)", fortran_comm_desc, c_comm_desc);
 		Datatype_uptr mpi_comm_type = ctx.datatype(PC_parse_string("MPI_Comm"))->evaluate(ctx);
 		Ref c_comm_ref {new MPI_Comm, [](void* p){delete static_cast<MPI_Comm*>(p);}, move(mpi_comm_type), true, true};
 		if (Ref_r ref_r{ref}) {
@@ -113,9 +113,9 @@ void transtype_F_to_C(Context& ctx, const string& fortran_comm_desc, const strin
 	}, fortran_comm_desc);
 	
 	ctx.callbacks().add_data_remove_callback([&ctx, c_comm_desc](const string& fortran_comm_desc, Ref fortran_comm_ref) {
-		ctx.logger()->debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
+		ctx.logger().debug("`{}' no longer available, reclaim transtyped `{}'", fortran_comm_desc, c_comm_desc);
 		if (Ref_w fortran_comm_ref_w{fortran_comm_ref}) {
-			ctx.logger()->debug("Transtype back `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
+			ctx.logger().debug("Transtype back `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
 			if (Ref_r c_comm_ref_r = ctx.desc(c_comm_desc).ref()) {
 				*static_cast<MPI_Fint*>(fortran_comm_ref_w.get()) = MPI_Comm_c2f(*static_cast<const MPI_Comm*>(c_comm_ref_r.get()));
 			} else {
@@ -137,7 +137,7 @@ void MPI_Comm_transtype(Context& ctx, PC_tree_t tree, const Scalar_datatype& C_m
 {
 	PC_tree_t transtype_tree = PC_get(tree, ".transtype");
 	if (!PC_status(transtype_tree)) {
-		ctx.logger()->warn("`transtype' key is deprecated when transtyping C/Fortran MPI communicator, please use Comm_c2f/Comm_f2c");
+		ctx.logger().warn("`transtype' key is deprecated when transtyping C/Fortran MPI communicator, please use Comm_c2f/Comm_f2c");
 		if (C_mpi_comm_type == F_mpi_comm_type) {
 			throw Value_error{"Transtype failed, cannot detect the direction of transtype"};
 		}
@@ -183,10 +183,10 @@ struct mpi_plugin: Plugin {
 		// pdi global logger
 		try {
 			Context_proxy& ctx_proxy = dynamic_cast<Context_proxy&>(ctx);
-			ctx_proxy.pdi_core_logger()->default_pattern("[%T][%{MPI_COMM_WORLD_rank:06d}][%n] *** %^%l%$: %v");
-			ctx_proxy.pdi_core_logger()->evaluate_pattern(ctx);
+			ctx_proxy.pdi_core_logger().default_pattern("[%T][%{MPI_COMM_WORLD_rank:06d}][%n] *** %^%l%$: %v");
+			ctx_proxy.pdi_core_logger().evaluate_pattern(ctx);
 		} catch (std::bad_cast&) {
-			ctx.logger()->warn("Cannot cast Context to Context_proxy");
+			ctx.logger().warn("Cannot cast Context to Context_proxy");
 		}
 	}
 	
@@ -249,12 +249,12 @@ struct mpi_plugin: Plugin {
 		
 		MPI_Comm_transtype(ctx, config, m_mpi_comm_datatype, m_mpi_comm_f_datatype);
 		
-		ctx.logger()->info("Plugin loaded successfully");
+		ctx.logger().info("Plugin loaded successfully");
 	}
 	
 	~mpi_plugin()
 	{
-		context().logger()->info("Closing plugin");
+		context().logger().info("Closing plugin");
 	}
 	
 	/** Pretty name for the plugin that will be shown in the logger

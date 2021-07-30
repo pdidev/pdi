@@ -71,7 +71,7 @@ bool load_events(unordered_map<string, Event_type>& events, Context& ctx, PC_tre
 				insterted = true;
 				if (on_load_func) on_load_func(result.first->first);
 			} else {
-				ctx.logger()->warn("Duplicate event name `{}' in `{}' (previously defined in `{}')", result.first->first, event_names.at(event_type), event_names.at(result.first->second));
+				ctx.logger().warn("Duplicate event name `{}' in `{}' (previously defined in `{}')", result.first->first, event_names.at(event_type), event_names.at(result.first->second));
 			}
 		}
 	} else {
@@ -80,7 +80,7 @@ bool load_events(unordered_map<string, Event_type>& events, Context& ctx, PC_tre
 			insterted = true;
 			if (on_load_func) on_load_func(result.first->first);
 		} else {
-			ctx.logger()->warn("Duplicate event name `{}' in `{}' (previously defined in `{}')", result.first->first, event_names.at(event_type), event_names.at(result.first->second));
+			ctx.logger().warn("Duplicate event name `{}' in `{}' (previously defined in `{}')", result.first->first, event_names.at(event_type), event_names.at(result.first->second));
 		}
 	}
 	return insterted;
@@ -99,7 +99,7 @@ bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const stri
 	
 	auto&& result = descs.emplace(name, desc_type);
 	if (!result.second) {
-		ctx.logger()->warn("Duplicate use of a descriptor `{}' in `{}' (previously used in `{}')", name, desc_names.at(desc_type), desc_names.at(result.first->second));
+		ctx.logger().warn("Duplicate use of a descriptor `{}' in `{}' (previously used in `{}')", name, desc_names.at(desc_type), desc_names.at(result.first->second));
 	}
 	return result.second;
 }
@@ -112,7 +112,7 @@ unordered_set<int> load_vars(Context& ctx, PC_tree_t tree)
 		for (int var_id = 0; var_id < nb_vars; var_id++) {
 			auto&& result = vars.emplace(to_long(PC_get(tree, "[%d]", var_id)));
 			if (!result.second) {
-				ctx.logger()->warn("Duplicate variable id `{}' in `recover_var'", *result.first);
+				ctx.logger().warn("Duplicate variable id `{}' in `recover_var'", *result.first);
 			}
 		}
 	} else {
@@ -186,12 +186,12 @@ Fti_cfg::Fti_cfg(Context& ctx, PC_tree_t tree):
 							}
 						}
 					} else {
-						ctx.logger()->warn("Duplicate dataset id (`{}')", dataset_id);
+						ctx.logger().warn("Duplicate dataset id (`{}')", dataset_id);
 					}
 				} else {
 					auto&& result = m_dataset.emplace(dataset_id, to_string(data_tree));
 					if (!result.second) {
-						ctx.logger()->warn("Duplicate dataset id (`{}')", dataset_id);
+						ctx.logger().warn("Duplicate dataset id (`{}')", dataset_id);
 					}
 				}
 			}

@@ -37,7 +37,7 @@ Stamp_expr_string::Stamp_expr_string(PDI::Context& ctx, const flowvr::Port* pare
 	} else {
 		m_stamp_info = new flowvr::StampInfo(m_name, flowvr::TypeString::create());
 	}
-	m_ctx.logger()->debug("{} stamp: String expression created", m_name);
+	m_ctx.logger().debug("{} stamp: String expression created", m_name);
 }
 
 void Stamp_expr_string::read_from_flowvr_stamp(const flowvr::Stamps& read_stamp)
@@ -47,7 +47,7 @@ void Stamp_expr_string::write_to_flowvr_stamp(flowvr::StampsWrite& write_stamp) 
 {
 	bool status = write_stamp.write(*m_stamp_info, m_value.to_string(m_ctx));
 	if (status) {
-		m_ctx.logger()->debug("{} stamp: Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_string(m_ctx));
+		m_ctx.logger().debug("{} stamp: Message update: Message.stamps.{} = {}", m_name, m_name, m_value.to_string(m_ctx));
 	} else {
 		throw PDI::Unavailable_error{"{} stamp: Cannot write stamp to message", m_name};
 	}

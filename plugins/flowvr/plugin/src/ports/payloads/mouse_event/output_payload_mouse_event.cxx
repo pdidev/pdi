@@ -41,7 +41,7 @@ Output_payload_mouse_event::Output_payload_mouse_event(PDI::Context& ctx, const 
 			this->data(name, ref);
 		}, desc_value.first));
 	}
-	m_ctx.logger()->debug("{} port: Created mouse event payload", m_name);
+	m_ctx.logger().debug("{} port: Created mouse event payload", m_name);
 }
 
 Output_payload_mouse_event::Output_payload_mouse_event(Output_payload_mouse_event&& other):
@@ -61,7 +61,7 @@ Output_payload_mouse_event& Output_payload_mouse_event::operator=(Output_payload
 void Output_payload_mouse_event::data_pos_xy(const std::string& data_name, const PDI::Ref_r& ref)
 {
 	if (ref) {
-		m_ctx.logger()->debug("{} port: Copy mouse position to `{}'", m_name, data_name);
+		m_ctx.logger().debug("{} port: Copy mouse position to `{}'", m_name, data_name);
 		memcpy(m_desc_pos_xy.second.second, ref.get(), 2 * sizeof(float));
 	} else {
 		throw PDI::Right_error{"{} port: Cannot get read access to `{}' descriptor", m_name, data_name};
@@ -73,7 +73,7 @@ void Output_payload_mouse_event::data(const std::string& data_name, const PDI::R
 	if (ref) {
 		const auto& desc_value = m_desc_value_map.find(data_name);
 		desc_value->second.second = *static_cast<const int*>(ref.get());
-		m_ctx.logger()->debug("{} port: Copy mouse button state to `{}'", m_name, data_name);
+		m_ctx.logger().debug("{} port: Copy mouse button state to `{}'", m_name, data_name);
 	} else {
 		throw PDI::Right_error{"{} port: Cannot get read access to `{}' descriptor", m_name, data_name};
 	}
@@ -85,12 +85,12 @@ flowvr::Stamps Output_payload_mouse_event::put_message(const flowvr::StampsWrite
 	
 	for (const auto& desc_value: m_desc_value_map) {
 		if (desc_value.second.second) { //if pressed
-			m_ctx.logger()->debug("{} port: Pressed key with descriptor `{}'", m_name, desc_value.first);
+			m_ctx.logger().debug("{} port: Pressed key with descriptor `{}'", m_name, desc_value.first);
 			mouse_keys = mouse_keys | desc_value.second.first;
 		}
 	}
 	
-	m_ctx.logger()->debug("{} port: Mouse position [{}, {}]", m_name, m_desc_pos_xy.second.second[0], m_desc_pos_xy.second.second[1]);
+	m_ctx.logger().debug("{} port: Mouse position [{}, {}]", m_name, m_desc_pos_xy.second.second[0], m_desc_pos_xy.second.second[1]);
 	m_chunk_event_writer.addEventMouse(mouse_keys, m_desc_pos_xy.second.second);
 	flowvr::Message msg = m_chunk_event_writer.put(m_flowvr_output_port, stamps);
 	return msg.stamps;

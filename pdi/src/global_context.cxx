@@ -71,9 +71,9 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 		dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
 	}
 	if (is_metadata) {
-		ctx.logger()->trace("Loaded {} metadata", map_len);
+		ctx.logger().trace("Loaded {} metadata", map_len);
 	} else {
-		ctx.logger()->trace("Loaded {} data", map_len);
+		ctx.logger().trace("Loaded {} data", map_len);
 	}
 	
 }
@@ -174,9 +174,9 @@ void Global_context::event(const char* name)
 	m_callbacks.call_event_callbacks(name);
 }
 
-Logger* Global_context::logger()
+Logger& Global_context::logger()
 {
-	return &m_logger;
+	return m_logger;
 }
 
 Datatype_template_uptr Global_context::datatype(PC_tree_t node)
@@ -191,10 +191,10 @@ Datatype_template_uptr Global_context::datatype(PC_tree_t node)
 	// check if someone didn't mean to create an array with the old syntax
 	if (type != "array") {
 		if (!PC_status(PC_get(node, ".size"))) {
-			logger()->warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line);
+			logger().warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line);
 		}
 		if (!PC_status(PC_get(node, ".sizes"))) {
-			logger()->warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
+			logger().warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
 		}
 	}
 	
