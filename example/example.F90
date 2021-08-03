@@ -56,6 +56,7 @@ program PDI_example_f90
   
   call PDI_expose("mpi_comm_F", main_comm, PDI_INOUT);
 
+  fti_head = 0;
   call PDI_expose("fti_head", fti_head, PDI_IN)
   if ( fti_head == 1) then
     call PDI_finalize()
