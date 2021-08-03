@@ -32,7 +32,7 @@ To publish a new minor or major release:
 * change the version in `README.md`
 * go over all `CHANGELOG.md` files and mark the just released version
 * commit these changes into a new version branch (`v${X}.${Y}`)
-* tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`
+* tag the new release: `git tag -m "PDI release ${X}.${Y}.0" -s "${X}.${Y}.0"`
 * merge the version branch into master `git merge --no-ff "v${X}.${Y}"`
 * in the merge commit:
   - change the version in `pdi/VERSION` by increasing the minor and add the
