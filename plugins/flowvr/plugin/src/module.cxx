@@ -262,15 +262,15 @@ void Module::initialize_flowvr_module()
 
 void Module::update_logger(PC_tree_t logging_tree)
 {
-	char format[256];
+	std::string format;
 	if (m_flowvr_module && m_module_name.empty()) {
-		snprintf(format, 256, "FlowVR/%s", m_flowvr_module->getID().substr(m_flowvr_module->getID().find_last_of("/") + 1));
+		format = fmt::format("FlowVR/{}", m_flowvr_module->getID().substr(m_flowvr_module->getID().find_last_of("/") + 1));
 	} else if (!m_module_name.empty()) {
-		snprintf(format, 256, "FlowVR/%s", m_module_name);
+		format = fmt::format("FlowVR/{}", m_module_name);
 	} else {
 		return;
 	}
-	context().logger().default_pattern("[%T][" + std::string(format) + "] *** %^%l%$: %v");
+	context().logger().default_pattern("[%T][" + format + "] *** %^%l%$: %v");
 	context().logger().debug("Logger updated");
 }
 
