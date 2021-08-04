@@ -101,7 +101,7 @@ const PDI::Datatype* get_variable_stride(const PDI::Datatype* type, std::vector<
  * \param message a context message to use in case of error
  */
 template<typename... Args>
-void nc_try(int status, const char* message_if_error = NULL, const Args& ... args)
+void nc_try(int status, const char* message_if_error, const Args& ... args)
 {
 	if (status != NC_NOERR) {
 		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: {} : ({}) {}", fmt::format(message_if_error, args...), status, nc_strerror(status)};

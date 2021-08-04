@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Removed (unsupported by Clang < 11.0) default argument from function parameter
+  before parameter pack.
+  [#370](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/370)
 
 ### Security
 
