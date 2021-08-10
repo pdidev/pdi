@@ -139,6 +139,16 @@ vector<param_pair> scalar_types {
 	{"double",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}}},
 	{"type: double",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}}},
 	{"{type: double, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}}},
+	{"size_t",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(size_t)}}},
+	{"type: size_t",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(size_t)}}},
+	{"{type: size_t, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(size_t)}}},
+	{"ptrdiff_t",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(ptrdiff_t)}}},
+	{"type: ptrdiff_t",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(ptrdiff_t)}}},
+	{"{type: ptrdiff_t, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(ptrdiff_t)}}},
+	{"byte",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNKNOWN, 1}}},
+	{"type: byte",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNKNOWN, 1}}},
+	{"{type: byte, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNKNOWN, 1}}},
+
 	
 #ifdef BUILD_FORTRAN
 	{"character",                   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},

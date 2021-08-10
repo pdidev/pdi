@@ -38,6 +38,7 @@ project co-financed by Polish Ministry of Science and Higher Education.
 Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
 * Error subclasses
 * Support for C struct in yaml
+* Support for size_t, ptrdiff_t, byte
 
 Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * Fortran interface fixes

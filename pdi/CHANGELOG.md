@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   different types.
   [#364](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/364)
 
+* Support for size_t, ptrdiff_t and byte types.
+  [#351](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/351)
+
 #### Changed
 
 #### Deprecated

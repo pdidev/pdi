@@ -88,6 +88,27 @@ size: [ '$size_1d', '$size_2d' ]
 ```
 
 
+# byte_type {#byte_type_node}
+
+A *byte_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"byte"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref byte_type_node represents the C++ `byte` type.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+**Example:**
+
+```python
+type: byte
+```
+
+
 # char_type {#char_type_node}
 
 A *char_type* is a **mapping** that contains the following keys:
@@ -160,6 +181,7 @@ my_data_2: {type: array, subtype: double, size: 5}
 
 A *datatype* can be **any of**:
 * a \ref array_type_node,
+* a \ref byte_type_node,
 * a \ref char_type_node,
 * a \ref character_type_node,
 * a \ref double_type_node,
@@ -171,9 +193,11 @@ A *datatype* can be **any of**:
 * a \ref int8_type_node,
 * a \ref integer_type_node,
 * a \ref logical_type_node,
+* a \ref ptrdiff_t_type_node,
 * a \ref real_type_node,
 * a \ref record_type_node,
 * a \ref simple_datatype_node,
+* a \ref size_t_type_node,
 * a \ref struct_type_node,
 * a \ref tuple_type_node,
 * any user-defined datatype name.
@@ -665,6 +689,27 @@ plugin_path: ["/home/user123/plugins", "/usr/lib/pdi/plugins"]
 ```
 
 
+# ptrdiff_t_type {#ptrdiff_t_type_node}
+
+A *ptrdiff_t_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"ptrdiff_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref ptrdiff_t_type_node represents the C `ptrdiff_t` type from the
+`<stddef.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+**Example:**
+
+```python
+type: ptrdiff_t
+```
+
 # real_type {#real_type_node}
 
 A *real_type* is a **mapping** that contains the following keys:
@@ -780,6 +825,28 @@ For example, the following value:
 is interpreted as if it was:
 ```
 { type: "my_type" }
+```
+
+
+# size_t_type {#size_t_type_node}
+
+A *size_t_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"size_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref size_t_type_node represents the C `size_t` type from the `<stddef.h>`
+header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+**Example:**
+
+```python
+type: size_t
 ```
 
 

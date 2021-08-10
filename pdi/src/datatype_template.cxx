@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -669,6 +670,15 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	});
 	ctx.add_datatype("double", [](Context&, PC_tree_t tree) {
 		return Datatype_template_uptr {new Scalar_template{Scalar_kind::FLOAT, 8L, tree}};
+	});
+	ctx.add_datatype("size_t", [](Context&, PC_tree_t tree) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::UNSIGNED, (long)sizeof(size_t), tree}};
+	});
+	ctx.add_datatype("ptrdiff_t", [](Context&, PC_tree_t tree) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::SIGNED, (long)sizeof(ptrdiff_t), tree}};
+	});
+	ctx.add_datatype("byte", [](Context&, PC_tree_t tree) {
+		return Datatype_template_uptr {new Scalar_template{Scalar_kind::UNKNOWN, 1L, tree}};
 	});
 	
 	// Fortran basic types
