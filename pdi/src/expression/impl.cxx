@@ -80,6 +80,19 @@ string Expression::Impl::to_string(Context& ctx) const
 	return result.str();
 }
 
+Ref Expression::Impl::to_ref(Context& ctx, const Datatype& type) const
+{
+	Ref_rw result {
+		aligned_alloc(type.alignment(), type.buffersize()),
+		[](void* v){free(v);},
+		type.clone_type(),
+		true,
+		true
+	};
+	copy_value(ctx, result.get(), type);
+	return result;
+}
+
 unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
 {
 	if (PDI::is_map(value)) {

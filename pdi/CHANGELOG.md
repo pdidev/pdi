@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### For plugin developers
 
 #### Added
+* Expression to_ref refactored to use copy_value method
+  [#270](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/270)
 
 #### Changed
 

@@ -100,20 +100,20 @@ struct PDI_NO_EXPORT Expression::Impl {
 	 */
 	virtual std::string to_string(Context& ctx) const;
 	
-	/** Interprets this expression as a string value if possible, throws otherwise
+	/** Interprets this expression as a reference
 	 *
 	 * \param ctx the context in which to evaluate the expression
 	 * \return the data reference
 	 */
 	virtual Ref to_ref(Context& ctx) const = 0;
 	
-	/** Interprets this expression as a string value if possible, throws otherwise
+	/** Interprets this expression as a reference with a given type
 	 *
 	 * \param ctx the context in which to evaluate the expression
 	 * \param type the type of the created Ref
 	 * \return the data reference
 	 */
-	virtual Ref to_ref(Context& ctx, const Datatype& type) const = 0;
+	Ref to_ref(Context& ctx, const Datatype& type) const;
 	
 	/** Copy value with given type of Expression to buffer
 	 *

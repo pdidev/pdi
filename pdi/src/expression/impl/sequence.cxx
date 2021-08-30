@@ -137,20 +137,7 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 		result_type.reset(new Tuple_datatype{move(tuple_elements), displacement});
 	}
 	
-	return to_ref(ctx, *result_type);
-}
-
-Ref Expression::Impl::Sequence::to_ref(Context& ctx, const Datatype& type) const
-{
-	Ref_rw result {
-		aligned_alloc(type.alignment(), type.buffersize()),
-		[](void* v){free(v);},
-		type.clone_type(),
-		true,
-		true
-	};
-	copy_value(ctx, result.get(), result.type());
-	return result;
+	return Impl::to_ref(ctx, *result_type);
 }
 
 size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, const Datatype& type) const

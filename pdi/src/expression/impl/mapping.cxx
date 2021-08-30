@@ -101,28 +101,7 @@ Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 	//add padding at the end of record
 	displacement += (record_alignment - (displacement % record_alignment)) % record_alignment;
 	
-	Ref_rw result {
-		aligned_alloc(record_alignment, displacement),
-		[](void* v){free(v);},
-		Datatype_uptr(new Record_datatype{move(members), displacement}),
-		true,
-		true
-	};
-	copy_value(ctx, result.get(), result.type());
-	return result;
-}
-
-Ref Expression::Impl::Mapping::to_ref(Context& ctx, const Datatype& type) const
-{
-	Ref_rw result {
-		aligned_alloc(type.alignment(), type.buffersize()),
-		[](void* v){free(v);},
-		type.clone_type(),
-		true,
-		true
-	};
-	copy_value(ctx, result, result.type());
-	return result;
+	return Impl::to_ref(ctx, Record_datatype{move(members), displacement});
 }
 
 size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, const Datatype& type) const

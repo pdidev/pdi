@@ -85,43 +85,7 @@ double Expression::Impl::String_literal::to_double(Context& ctx) const
 Ref Expression::Impl::String_literal::to_ref(Context& ctx) const
 {
 	string value = to_string(ctx);
-	// copy because string does not provide a release call
-	void* str = malloc(sizeof(char) * (value.length() + 1));
-	memcpy(str, value.c_str(), value.length() + 1);
-	
-	return Ref {
-		str,
-		[](void* v){free(v);},
-		unique_ptr<Array_datatype>{
-			new Array_datatype{
-				unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}},
-				value.length() + 1
-			}
-		},
-		true,
-		true
-	};
-}
-
-Ref Expression::Impl::String_literal::to_ref(Context& ctx, const Datatype& type) const
-{
-	if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-		throw Value_error{"Cannot interpret String_literal as a scalar datatype."};
-	} else if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&type)) {
-		Ref_rw result {
-			aligned_alloc(array_type->alignment(), array_type->buffersize()),
-			[](void* v){free(v);},
-			array_type->clone_type(),
-			true,
-			true
-		};
-		copy_value(ctx, result.get(), result.type());
-		return result;
-	} else if (const Record_datatype* record_type = dynamic_cast<const Record_datatype*>(&type)) {
-		throw Value_error{"Cannot interpret String_literal as a record datatype."};
-	} else {
-		throw Value_error{"Cannot interpret String_literal as given datatype."};
-	}
+	return Impl::to_ref(ctx, Array_datatype{Datatype_uptr{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}, value.length() + 1});
 }
 
 size_t Expression::Impl::String_literal::copy_value(Context& ctx, void* buffer, const Datatype& type) const

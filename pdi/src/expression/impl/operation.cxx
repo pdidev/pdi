@@ -140,39 +140,11 @@ double Expression::Impl::Operation::to_double(Context& ctx) const
 Ref Expression::Impl::Operation::to_ref(Context& ctx) const
 {
 	try {
-		Ref_rw result {
-			aligned_alloc(alignof(long), sizeof(long)),
-			[](void* v){free(v);},
-			unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
-			true,
-			true
-		};
-		*static_cast<long*>(result.get()) = to_long(ctx);
-		return result;
+		to_long(ctx);
+		return Impl::to_ref(ctx, Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)});
 	} catch (const Value_error& e) {
-		Ref_rw result {
-			aligned_alloc(alignof(double), sizeof(double)),
-			[](void* v){free(v);},
-			unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}},
-			true,
-			true
-		};
-		*static_cast<double*>(result.get()) = to_double(ctx);
-		return result;
+		return Impl::to_ref(ctx, Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)});
 	}
-}
-
-Ref Expression::Impl::Operation::to_ref(Context& ctx, const Datatype& type) const
-{
-	Ref_rw result {
-		aligned_alloc(type.alignment(), type.buffersize()),
-		[](void* v){free(v);},
-		type.clone_type(),
-		true,
-		true
-	};
-	copy_value(ctx, result.get(), result.type());
-	return result;
 }
 
 template<class T>

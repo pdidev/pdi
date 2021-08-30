@@ -78,8 +78,6 @@ public:
 	
 	Ref to_ref(Context& ctx) const override;
 	
-	Ref to_ref(Context& ctx, const Datatype& type) const override;
-	
 	size_t copy_value(Context& ctx, void* buffer, const Datatype& type) const override;
 	
 	static std::unique_ptr<Impl> parse(char const** val_str);

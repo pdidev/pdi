@@ -224,19 +224,6 @@ Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 	return ref;
 }
 
-Ref Expression::Impl::Reference_expression::to_ref(Context& ctx, const Datatype& type) const
-{
-	Ref_rw result {
-		aligned_alloc(type.alignment(), type.buffersize()),
-		[](void* v){free(v);},
-		type.clone_type(),
-		true,
-		true
-	};
-	copy_value(ctx, result.get(), result.type());
-	return result;
-}
-
 template<class T>
 size_t from_ref_cpy(void* buffer, Ref_r ref)
 {

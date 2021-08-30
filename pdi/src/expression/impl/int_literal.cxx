@@ -60,37 +60,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::clone() const
 
 Ref Expression::Impl::Int_literal::to_ref(Context& ctx) const
 {
-	// create long datatype as default
-	Ref_rw result {
-		aligned_alloc(alignof(long), sizeof(long)),
-		[](void* v){free(v);},
-		unique_ptr<Scalar_datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},
-		true,
-		true
-	};
-	*static_cast<long*>(result.get()) = m_value;
-	return result;
-}
-
-Ref Expression::Impl::Int_literal::to_ref(Context& ctx, const Datatype& type) const
-{
-	if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-		Ref_rw result {
-			aligned_alloc(scalar_type->alignment(), scalar_type->buffersize()),
-			[](void* v){free(v);},
-			scalar_type->clone_type(),
-			true,
-			true
-		};
-		copy_value(ctx, result.get(), result.type());
-		return result;
-	} else if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&type)) {
-		throw Value_error{"Cannot interpret Int_literal as an array datatype."};
-	} else if (const Record_datatype* record_type = dynamic_cast<const Record_datatype*>(&type)) {
-		throw Value_error{"Cannot interpret Int_literal as a record datatype."};
-	} else {
-		throw Value_error{"Cannot interpret Int_literal as given datatype."};
-	}
+	return Impl::to_ref(ctx, Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)});
 }
 
 template<class T>
