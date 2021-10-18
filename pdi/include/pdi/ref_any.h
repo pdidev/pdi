@@ -185,10 +185,9 @@ protected:
 			m_owners{0}
 		{
 			assert(data);
-			Datatype* cloned_type = m_type->clone_type().release(); // cannot use uptr, because std::function must be CopyConstructible
+			std::shared_ptr<Datatype> cloned_type = m_type->clone_type(); // cannot use uptr, because std::function must be CopyConstructible
 			m_buffer = new Referenced_buffer{[data, freefunc, cloned_type]() mutable {
 					cloned_type->destroy_data(data);
-					delete (cloned_type);
 					freefunc(data);
 				}, readable, writable};
 			m_buffer->m_owners++;

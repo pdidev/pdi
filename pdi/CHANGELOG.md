@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
+* Fixed a memory leak of Datatype object when data was reclaimed
+  [#379](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/379)
 
 #### Security
 
