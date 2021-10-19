@@ -23,14 +23,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <functional>
-#include <iostream>
 #include <string>
-#include <unordered_set>
 
-#include <pdi.h>
 #include <pdi/context.h>
-#include <pdi/logger.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
@@ -39,24 +34,21 @@ namespace {
 
 using PDI::Context;
 using PDI::Ref;
-using PDI::Error;
 using PDI::Plugin;
-using std::bind;
-using std::reference_wrapper;
 using std::string;
-using std::unordered_set;
 
 struct trace_plugin: Plugin {
 
-	unordered_set<Ref> m_refs;
-	
 	trace_plugin(Context& ctx, PC_tree_t config):
 		Plugin {ctx}
 	{
-		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
-			this->data(name, ref);
+		ctx.callbacks().add_data_callback([this](const string& name, Ref ref) {
+			this->context().logger().info("=>>   data becoming available in the store: {}", name);
 		});
-		ctx.callbacks().add_event_callback([this](const std::string& name) {
+		ctx.callbacks().add_data_remove_callback([this](const string& name, Ref ref) {
+			this->context().logger().info("<<= data stop being available in the store: {}", name);
+		});
+		ctx.callbacks().add_event_callback([this](const string& name) {
 			this->context().logger().info("!!!                            named event: {}", name);
 		});
 		context().logger().info("Welcome!");
@@ -67,28 +59,11 @@ struct trace_plugin: Plugin {
 		context().logger().info("Goodbye!");
 	}
 	
-	void data(const std::string& name, Ref ref)
-	{
-		// store a copy of the reference because we need to keep it for notification
-		auto ref_it = m_refs.emplace(ref).first;
-		// register to be notified when the reference becomes invalid (on the copy we keep)
-		string sname = name; // store the name in a string to reuse it
-		ref_it->on_nullify([=](Ref r) {
-			this->data_end(sname, r);
-		});
-		context().logger().info("=>>   data becoming available in the store: {}", name);
-	}
-	
-	void data_end(const std::string& name, Ref r)
-	{
-		context().logger().info("<<= data stop being available in the store: {}", name);
-	}
-	
 	/** Pretty name for the plugin that will be shown in the logger
 	 *
 	 * \return pretty name of the plugin
 	 */
-	static std::string pretty_name()
+	static string pretty_name()
 	{
 		return "Trace";
 	}

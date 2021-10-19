@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Unnecessary linear increase in heap size. Plugin now uses internal PDI callback
+  to know when data is no longer shared.
+  [#380](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/380)
 
 ### Security
 
