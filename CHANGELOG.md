@@ -8,21 +8,6 @@ changes for PDI library proper are in [`pdi/CHANGELOG.md`](pdi/CHANGELOG.md).
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-
-
 ## [1.2.1] - 2021-06-18
 
 ### Fixed

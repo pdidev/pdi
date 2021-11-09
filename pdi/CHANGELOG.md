@@ -9,42 +9,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-
-## [Unreleased]
+## [1.4.0] - 2021-11-09
 
 
 ### For users
-
-#### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
 
 #### Fixed
 * Fixed a memory leak of Datatype object when data was reclaimed
   [#379](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/379)
 
-#### Security
-
 
 ### For plugin developers
-
-#### Added
 
 #### Changed
 * Logger getter in Context now returns a reference instead of pointer
   [#354](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/354)
-
-#### Deprecated
-
-#### Removed
-
-#### Fixed
-
-#### Security
 
 
 

@@ -4,22 +4,12 @@ All notable changes to the FlowVR plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
+## [1.4.0] - 2021-11-09
 
 ### Fixed
 * A bug where `sprintf` function got a std::string instead of const char*.
   This led to error when compiling with Clang.
   [#350](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/350)
-
-### Security
 
 
 ## [1.3.0] - 2021-07-30

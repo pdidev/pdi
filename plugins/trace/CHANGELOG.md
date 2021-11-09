@@ -4,22 +4,12 @@ All notable changes to the Trace plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
+## [1.4.0] - 2021-11-09
 
 ### Fixed
 * Unnecessary linear increase in heap size. Plugin now uses internal PDI callback
   to know when data is no longer shared.
   [#380](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/380)
-
-### Security
 
 
 ## [1.3.0] - 2021-07-30
