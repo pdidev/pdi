@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,7 @@ endif()
 foreach(test_name ${ALL_TEST_NAMES})
     foreach(io_operation write read)
         add_executable("HDF5_C_${test_name}_${io_operation}_test" "HDF5_C/${test_name}_${io_operation}_test.c")
-        target_link_libraries("HDF5_C_${test_name}_${io_operation}_test" ${HDF5_C_LIBRARIES})
-        target_include_directories("HDF5_C_${test_name}_${io_operation}_test" PRIVATE ${HDF5_INCLUDE_DIRS})
-        target_compile_definitions("HDF5_C_${test_name}_${io_operation}_test" PRIVATE ${HDF5_DEFINITIONS})
+        target_link_libraries("HDF5_C_${test_name}_${io_operation}_test" ${HDF5_DEPS})
 
         add_executable("PDI_C_${test_name}_${io_operation}_test" "PDI_C/${test_name}_${io_operation}_test.c")
         target_link_libraries("PDI_C_${test_name}_${io_operation}_test" PDI::PDI_C)

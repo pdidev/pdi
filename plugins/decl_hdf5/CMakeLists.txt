@@ -51,14 +51,6 @@ if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)
 endif()
 
-# MPI
-if("${BUILD_HDF5_PARALLEL}")
-	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
-		set(MPI_COMPONENTS Fortran)
-	endif()
-	find_package(MPI REQUIRED COMPONENTS CXX C ${MPI_COMPONENTS})
-endif()
-
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
 set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
@@ -66,11 +58,15 @@ find_package(HDF5 1.8.0 REQUIRED COMPONENTS C)
 if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 	message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
 endif()
-if(NOT "${BUILD_HDF5_PARALLEL}" AND "${HDF5_IS_PARALLEL}")
-	message(FATAL_ERROR "Parallel HDF5 disabled, parallel HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=ON to enable parallel HDF5")
-endif()
-if("${BUILD_HDF5_PARALLEL}")
-	list(APPEND HDF5_C_LIBRARIES MPI::MPI_CXX)
+set(HDF5_DEPS hdf5::hdf5)
+
+# MPI
+if("${HDF5_IS_PARALLEL}")
+	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
+		set(MPI_COMPONENTS Fortran)
+	endif()
+	find_package(MPI REQUIRED COMPONENTS CXX C ${MPI_COMPONENTS})
+	set(HDF5_DEPS hdf5::hdf5 MPI::MPI_C MPI::MPI_CXX)
 endif()
 
 # PDI
@@ -85,9 +81,7 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		file_op.cxx
 		hdf5_wrapper.cxx
 		selection.cxx)
-target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_C_LIBRARIES})
-target_include_directories(pdi_decl_hdf5_plugin PRIVATE ${HDF5_INCLUDE_DIRS})
-target_compile_definitions(pdi_decl_hdf5_plugin PRIVATE ${HDF5_DEFINITIONS})
+target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE

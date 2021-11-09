@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,8 @@ includes:
 
 :NetCDF_CFGSCRIPT: The config script to use.
 
+:NetCDF_FIND_DEBUG: Set to true to get extra debugging output.
+
 :NetCDF_FIND_STRATEGIES: A list of strategies to use in order to find NetCDF,
   defaults to: `CMAKE` `CFGSCRIPT` `PKGCONFIG` `FALLBACK`.
 
@@ -75,6 +77,9 @@ endmacro()
 macro(_NetCDF_public_vars)
 	foreach(_NetCDF_VAR  NetCDF_FOUND NetCDF_VERSION NetCDF_INCLUDE_DIRECTORIES NetCDF_COMPILE_DEFINITIONS NetCDF_COMPILE_OPTIONS NetCDF_LINK_LIBRARIES NetCDF_FEATURES)
 		set("${_NetCDF_VAR}" "${${_NetCDF_VAR}}" PARENT_SCOPE)
+		if(NetCDF_FIND_DEBUG)
+			message(STATUS "${_NetCDF_VAR}: ${${_NetCDF_VAR}}")
+		endif()
 	endforeach()
 endmacro()
 
@@ -98,7 +103,7 @@ function(_NetCDF_target_from_flags CFLAGS INCLUDE_DIRECTORIES COMPILE_DEFINITION
 			list(APPEND INCLUDE_DIRECTORIES "${CMAKE_MATCH_1}")
 		elseif("${ARG}" MATCHES "^-D(.*)$")
 			# compile definition
-			list(APPEND COMPILE_DEFINITIONS "-D${CMAKE_MATCH_1}")
+			list(APPEND COMPILE_DEFINITIONS "${CMAKE_MATCH_1}")
 		elseif("${ARG}" MATCHES "^-L(.*)$")
 			# library search path
 			if(NOT EXISTS "${CMAKE_MATCH_1}")
@@ -263,6 +268,9 @@ function(_NetCDF_find_CFGSCRIPT CFGSCRIPT)
 			set(NetCDF_FOUND "FALSE" PARENT_SCOPE)
 			return()
 		endif()
+		if(NetCDF_FIND_DEBUG)
+			message(STATUS "${CFGSCRIPT} ${${INFO}_OPT} returns ${${INFO}}")
+		endif()
 	endforeach()
 	_NetCDF_target_from_flags("${CFLAGS}" "${INCLUDE_DIRECTORIES}" "" "${LDFLAGS}" "${LIBRARY_DIRS}" "")
 	
@@ -338,19 +346,6 @@ function(_NetCDF_find STRATEGIES)
 endfunction()
 
 _NetCDF_find("${NetCDF_FIND_STRATEGIES}")
-if("PARALLEL" IN_LIST NetCDF_FEATURES)
-	find_package(MPI REQUIRED COMPONENTS C)
-	set(HDF5_PREFER_PARALLEL TRUE)
-	list(APPEND NetCDF_LINK_LIBRARIES MPI::MPI_C)
-endif()
-#TODO: FindHDF5 fails when called multiple times
-# if("HDF5" IN_LIST NetCDF_FEATURES)
-# 	find_package(HDF5 REQUIRED COMPONENTS C)
-# 	list(APPEND NetCDF_LINK_LIBRARIES ${HDF5_C_LIBRARIES})
-# 	list(APPEND NetCDF_INCLUDE_DIRECTORIES ${HDF5_C_INCLUDE_DIRECTORIES})
-# 	list(APPEND NetCDF_COMPILE_OPTIONS ${HDF5_C_DEFINITIONS})
-# endif()
-
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(NetCDF
@@ -359,6 +354,25 @@ find_package_handle_standard_args(NetCDF
 )
 
 if("${NetCDF_FOUND}")
+	if("HDF5" IN_LIST NetCDF_FEATURES)
+		set(HDF5_USE_STATIC_LIBRARIES OFF)
+		if("PARALLEL" IN_LIST NetCDF_FEATURES)
+			set(HDF5_PREFER_PARALLEL ON)
+		endif()
+		find_package(HDF5 1.8.0 REQUIRED COMPONENTS C)
+		if("PARALLEL" IN_LIST NetCDF_FEATURES AND NOT "${HDF5_IS_PARALLEL}")
+			message(ERROR "Parallel HDF5 required by NetCDF, sequential HDF5 only found.")
+		endif()
+		list(APPEND NetCDF_LINK_LIBRARIES hdf5::hdf5)
+		if(${HDF5_IS_PARALLEL})
+			find_package(MPI REQUIRED COMPONENTS C)
+			list(APPEND NetCDF_LINK_LIBRARIES MPI::MPI_C)
+		endif()
+	elseif("PARALLEL" IN_LIST NetCDF_FEATURES)
+		find_package(MPI REQUIRED COMPONENTS C)
+		list(APPEND NetCDF_LINK_LIBRARIES MPI::MPI_C)
+	endif()
+
 	if(NOT TARGET NetCDF::NetCDF)
 		add_library(NetCDF::NetCDF INTERFACE IMPORTED)
 	endif()

@@ -4,6 +4,12 @@ All notable changes to the Decl'HDF5 plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [1.4.1] - 2021-11-10
+
+### Changed
+* updated FindHDF5 to a backport from CMake 3.21.
+
+
 ## [1.3.0] - 2021-07-30
 
 ### Added
