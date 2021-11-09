@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 
+
 ## [1.2.1] - 2021-06-18
 
 ### Fixed
