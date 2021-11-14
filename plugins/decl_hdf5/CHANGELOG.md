@@ -15,9 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Correctly handle the case where the elements in the array specifying chunking 
+  would be of different types.
+  [#355](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/355)
 
 ### Security
-
 
 
 ## [1.3.0] - 2021-07-30

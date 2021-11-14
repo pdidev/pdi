@@ -42,6 +42,7 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
+#include <pdi/tuple_datatype.h>
 
 #include "hdf5_wrapper.h"
 #include "selection.h"
@@ -60,6 +61,7 @@ using PDI::Ref_r;
 using PDI::Ref_w;
 using PDI::Scalar_datatype;
 using PDI::System_error;
+using PDI::Tuple_datatype;
 using PDI::Type_error;
 using PDI::Value_error;
 using PDI::to_string;
@@ -260,13 +262,18 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 		ctx.logger().trace("Setting `{}' dataset chunking:", dataset_name);
 		vector<hsize_t> sizes;
 		const Datatype* ref_type = &chunking_ref.type();
-		if (auto&& array_type = dynamic_cast<const Array_datatype*>(ref_type)) {
+		if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(ref_type)) {
+			sizes.emplace_back(chunking_ref.scalar_value<size_t>());
+		} else if (auto&& array_type = dynamic_cast<const Array_datatype*>(ref_type)) {
 			for (size_t i = 0; i < array_type->size(); i++) {
 				sizes.emplace_back(Ref_r{chunking_ref[i]}.scalar_value<hsize_t>());
 			}
+		} else if (auto&& tuple_type = dynamic_cast<const Tuple_datatype*>(ref_type)) {
+			for (size_t i = 0; i < tuple_type->size(); i++) {
+				sizes.emplace_back(Ref_r{chunking_ref[i]}.scalar_value<hsize_t>());
+			}
 		} else {
-			// assume it is a scalar
-			sizes.emplace_back(chunking_ref.scalar_value<size_t>());
+			throw Type_error{"Chunking must be a scalar, an array or a tuple"};
 		}
 		
 		if ( 0 > H5Pset_chunk(dset_plist, sizes.size(), sizes.data())) {

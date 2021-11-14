@@ -33,6 +33,7 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
+#include <pdi/tuple_datatype.h>
 
 namespace PDI {
 
@@ -76,6 +77,11 @@ public:
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
 		    
+		std::pair<void*, Datatype_uptr> access(const Tuple_datatype& tuple_type,
+		    void* from,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+		    
 		std::unique_ptr<Accessor_base> clone() const override;
 	};
 	
@@ -104,6 +110,11 @@ public:
 		Slice_accessor(size_t start, size_t end);
 		
 		std::pair<void*, Datatype_uptr> access(const Array_datatype& array_type,
+		    void* from,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
+		    
+		std::pair<void*, Datatype_uptr> access(const Tuple_datatype& tuple_type,
 		    void* from,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;

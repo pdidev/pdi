@@ -109,6 +109,13 @@ def val_struct(value, data_refs_list):
         for member_value in member_node.values():
             val_desc(member_value, data_refs_list)
 
+# validate tuple (must have elements)
+def val_tuple(value, data_refs_list):
+    if 'elements' not in value:
+        raise NameError("Tuple must have `elements' property: " + str(value))
+    for element_node in value['elements']:
+        val_desc(element_node, data_refs_list)
+
 # validate type
 def val_desc(value, data_refs_list):
     if value in scalar_types:
@@ -121,6 +128,8 @@ def val_desc(value, data_refs_list):
         val_record(value, data_refs_list)
     elif value['type'] == 'struct':
         val_struct(value, data_refs_list)
+    elif value['type'] == 'tuple':
+        val_tuple(value, data_refs_list)
     elif value['type'] == 'pointer':
         val_desc(value['subtype'], data_refs_list)
     else:

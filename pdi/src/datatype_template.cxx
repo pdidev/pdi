@@ -41,6 +41,7 @@
 #include "pdi/pointer_datatype.h"
 #include "pdi/record_datatype.h"
 #include "pdi/scalar_datatype.h"
+#include "pdi/tuple_datatype.h"
 
 #include "pdi/datatype_template.h"
 
@@ -308,6 +309,108 @@ public:
 	
 };
 
+class Tuple_template:
+	public Datatype_template
+{
+public:
+	struct Element {
+	
+		/// Offset or distance in byte from the Tuple_template start
+		Expression m_displacement;
+		
+		/// Type of the contained member
+		Datatype_template_uptr m_type;
+		
+		/** Creates new Element template with only type defined
+		 * 
+		 * \param[in] type type of the element
+		 */
+		Element(Datatype_template_uptr type):
+			m_type{move(type)}
+		{}
+
+		/** Creates new Element template with only type defined
+		 * 
+		 * \param[in] disp displacement of the element
+		 * \param[in] type type of the element
+		 */
+		Element(Expression disp, Datatype_template_uptr type):
+			m_displacement{move(disp)},
+			m_type{move(type)}
+		{}
+		
+		/** Creates a copy of an element template
+		 * 
+		 * \param[in] o an element to copy
+		 */
+		Element(const Element& o): m_displacement{o.m_displacement}, m_type{o.m_type->clone()} {}
+	};
+	
+private:
+	/// All elements in increasing displacement order
+	vector<Element> m_elements;
+	
+	/// The total size of the buffer containing all elements
+	Expression m_buffersize;
+	
+public:
+	Tuple_template(vector<Element>&& elements, PC_tree_t datatype_tree):
+		Datatype_template(datatype_tree),
+		m_elements{move(elements)}
+	{}
+
+	Tuple_template(vector<Element>&& elements, Expression&& size, PC_tree_t datatype_tree):
+		Datatype_template(datatype_tree),
+		m_elements{move(elements)},
+		m_buffersize{move(size)}
+	{}
+
+	Tuple_template(vector<Element>&& elements, Expression&& size, const Attributes_map& attributes = {}):
+		Datatype_template(attributes),
+		m_elements{move(elements)},
+		m_buffersize{move(size)}
+	{}
+	
+	Datatype_template_uptr clone() const override
+	{
+		return unique_ptr<Tuple_template> {new Tuple_template{vector<Element>(m_elements), Expression{m_buffersize}, m_attributes}};
+	}
+	
+	Datatype_uptr evaluate(Context& ctx) const override
+	{
+		size_t tuple_buffersize;
+		vector<Tuple_datatype::Element> evaluated_elements;
+		if (m_elements[0].m_displacement) {
+			// if one element has displacement, all have (and buffersize is defined)
+			tuple_buffersize = static_cast<size_t>(m_buffersize.to_long(ctx));
+			for (auto&& element : m_elements) {
+				evaluated_elements.emplace_back(element.m_displacement.to_long(ctx), element.m_type->evaluate(ctx));
+			}
+		} else {
+			// if one element doesn't have displacement, no element has (and buffersize is not defined)
+			size_t displacement = 0;
+			size_t tuple_alignment = 0;
+			for (auto&& element : m_elements) {
+				Datatype_uptr element_type {element.m_type->evaluate(ctx)};
+				size_t alignment = element_type->alignment();
+				// align the next element as requested
+				displacement += (alignment - (displacement % alignment)) % alignment;
+				evaluated_elements.emplace_back(displacement, move(element_type));
+				displacement += evaluated_elements.back().type().buffersize();
+				tuple_alignment = max(tuple_alignment, alignment);
+			}
+			//add padding at the end of tuple
+			displacement += (tuple_alignment - (displacement % tuple_alignment)) % tuple_alignment;
+			
+			// ensure the tuple size is at least 1 to have a unique address
+			displacement = max<size_t>(1, displacement);
+			tuple_buffersize = displacement;
+		}
+
+		
+		return unique_ptr<Tuple_datatype> {new Tuple_datatype{move(evaluated_elements), tuple_buffersize, m_attributes}};
+	}
+};
 
 vector<Expression> get_array_property(PC_tree_t node, string property)
 {
@@ -382,6 +485,63 @@ Datatype_template_uptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		res_type.reset(new Array_template(move(res_type), move(array_size[ii]), move(array_start[ii]), move(array_subsize[ii]), node));
 	}
 	return res_type;
+}
+
+vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t elements_node, bool buffersize_defined)
+{
+	int displacement_counter = 0;
+	vector<Tuple_template::Element> result;
+	int nb_elements = len(elements_node, 0);
+	if (is_list(elements_node)) {
+		for (int element_id = 0; element_id < nb_elements; element_id++) {
+			// get element type
+			PC_tree_t element_node = PC_get(elements_node, "[%d]", element_id);
+			
+			// get element displacement
+			PC_tree_t disp_conf = PC_get(element_node, ".disp");
+			Expression disp;
+			if (!PC_status(disp_conf)) {
+				disp = to_string(disp_conf);
+				displacement_counter++;
+			}
+			result.emplace_back(disp, ctx.datatype(element_node));
+		}
+	} else {
+		throw Config_error{elements_node, "Tuple elements subtree must be a seqence or ordered mapping"};
+	}
+
+	// check if non or all of elements have diplacement defined
+	if (displacement_counter != 0 && displacement_counter != nb_elements) {
+		throw Config_error{elements_node, "None or all of tuple elements must to have `disp' defined"};
+	}
+
+	// buffersize defined, but no displacement in elements
+	if (buffersize_defined && displacement_counter == 0) {
+		throw Config_error{elements_node, "If tuple buffersize is defined, all `disp' must be defined also"};
+	}
+
+	// buffersize not defined, but displacement is defined in elements
+	if (!buffersize_defined && displacement_counter != 0) {
+		throw Config_error{elements_node, "If tuple buffersize is not defined, `disp' cannot be defined also"};
+	}
+
+	return result;
+}
+
+Datatype_template_uptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
+{
+	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
+	Expression tuple_buffersize;
+	if (!PC_status(buffersize_conf)) {
+		tuple_buffersize = to_string(buffersize_conf);
+	}	
+
+	PC_tree_t elements_node = PC_get(node, ".elements");
+	if (PC_status(elements_node)) {
+		throw Config_error{node, "Tuple datatype must have `elements' subtree"};
+	}
+	bool tuple_buffersize_defined = static_cast<bool>(tuple_buffersize);
+	return unique_ptr<Tuple_template> {new Tuple_template{get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), move(tuple_buffersize), node}};
 }
 
 vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_node)
@@ -483,6 +643,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	ctx.add_datatype("struct", to_struct_datatype_template);
 	ctx.add_datatype("record", to_record_datatype_template);
 	ctx.add_datatype("pointer", to_pointer_datatype_template);
+	ctx.add_datatype("tuple", to_tuple_datatype_template);
 	
 	// C basic types
 	ctx.add_datatype("char", [](Context&, PC_tree_t tree) {

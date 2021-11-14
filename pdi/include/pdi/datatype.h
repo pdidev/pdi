@@ -57,10 +57,10 @@ public:
 		 * \param remaining_end iterator to the end of remaining accessors
 		 * \return string that inform what access is made
 		 */
-		virtual std::pair<void*, Datatype_uptr> access(const Array_datatype& type,
+		virtual std::pair<void*, Datatype_uptr> access ( const Array_datatype& type,
 		    void* from,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const;
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
 		    
 		/** Access function for pointer datatype
 		 * \param type a datatype to get access
@@ -69,10 +69,10 @@ public:
 		 * \param remaining_end iterator to the end of remaining accessors
 		 * \return string that inform what access is made
 		 */
-		virtual std::pair<void*, Datatype_uptr> access(const Pointer_datatype& type,
+		virtual std::pair<void*, Datatype_uptr> access ( const Pointer_datatype& type,
 		    void* from,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const;
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
 		    
 		/** Access function for record datatype
 		 * \param type a datatype to get access
@@ -81,10 +81,22 @@ public:
 		 * \param remaining_end iterator to the end of remaining accessors
 		 * \return string that inform what access is made
 		 */
-		virtual std::pair<void*, Datatype_uptr> access(const Record_datatype& type,
+		virtual std::pair<void*, Datatype_uptr> access ( const Record_datatype& type,
 		    void* from,
 		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const;
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
+		    
+		/** Access function for tuple datatype
+		 * \param type a datatype to get access
+		 * \param from pointer to data of type datatype
+		 * \param remaining_begin iterator to the beginning of remaining accessors
+		 * \param remaining_end iterator to the end of remaining accessors
+		 * \return string that inform what access is made
+		 */
+		virtual std::pair<void*, Datatype_uptr> access ( const Tuple_datatype& type,
+		    void* from,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
 		    
 		/** Returns access kind as string
 		 * \return string that inform what access is made
@@ -105,9 +117,11 @@ public:
 	 *
 	 * \param[in] attributes attributes of the datatype
 	 */
-	Datatype(const Attributes_map& attributes = {});
+	Datatype ( const Attributes_map& attributes = {} );
 	
 	~Datatype() override;
+	
+	virtual Datatype_template_uptr clone() const override;
 	
 	/** Creates a new datatype as an exact copy of this one
 	 *
@@ -120,14 +134,14 @@ public:
 	 * \param other the Datatype to compare
 	 * \return true if the Datatype's are equal
 	 */
-	virtual bool operator== (const Datatype& other) const = 0;
+	virtual bool operator== ( const Datatype& other ) const = 0;
 	
 	/** Test for inequality
 	 *
 	 * \param other the Datatype to compare
 	 * \return true if the Datatype's are different
 	 */
-	bool operator!=(const Datatype& other) const;
+	bool operator!= ( const Datatype& other ) const;
 	
 	/** Creates a new datatype as the dense copy of this one
 	 *
@@ -175,7 +189,7 @@ public:
 	 * \param[in] from the pointer to the copied data (size of buffersize)
 	 * \return updated `to' pointer
 	 */
-	virtual void* data_to_dense_copy(void* to, const void* from) const = 0;
+	virtual void* data_to_dense_copy ( void* to, const void* from ) const = 0;
 	
 	/**
 	 * Creates a sparse deep copy of dense data
@@ -184,7 +198,7 @@ public:
 	 * \param[in] from the pointer to the copied data (dense data)
 	 * \return updated `to' pointer
 	 */
-	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
+	virtual void* data_from_dense_copy ( void* to, const void* from ) const = 0;
 	
 	/**
 	 * Creates datatype of subtype and returns it with a moved pointer
@@ -193,7 +207,7 @@ public:
 	 * \param[in] accessor accessor to get subtype of datatype
 	 * \return pointer with offset and new datatype
 	 */
-	std::pair<void*, Datatype_uptr> subaccess(void* from, const Accessor_base& accessor) const;
+	std::pair<void*, Datatype_uptr> subaccess ( void* from, const Accessor_base& accessor ) const;
 	
 	/**
 	 * Creates datatype of subtype and returns it with a moved pointer
@@ -202,7 +216,7 @@ public:
 	 * \param[in] accessors accessors to get nested subtype of datatype
 	 * \return pointer with offset and new datatype
 	 */
-	std::pair<void*, Datatype_uptr> subaccess(void* from, const std::vector<std::unique_ptr<Accessor_base>>& accessors) const;
+	std::pair<void*, Datatype_uptr> subaccess ( void* from, const std::vector<std::unique_ptr<Accessor_base>>& accessors ) const;
 	
 	/**
 	 * Creates datatype of subtype and returns it with a moved pointer
@@ -212,16 +226,16 @@ public:
 	 * \param[in] remaining_end iterator to the end of remaining accessors
 	 * \return pointer moved by offset and new datatype
 	 */
-	virtual std::pair<void*, Datatype_uptr> subaccess_by_iterators(void* from,
+	virtual std::pair<void*, Datatype_uptr> subaccess_by_iterators ( void* from,
 	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const;
+	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
 	    
 	/**
 	 * Function used to delete the data behind the datatype. This should not deallocate the memory.
 	 *
 	 * \param[in] ptr to the data to free
 	 */
-	virtual void destroy_data(void* ptr) const = 0;
+	virtual void destroy_data ( void* ptr ) const = 0;
 	
 	/** Returns the datatype yaml representation as a string
 	 *
@@ -234,3 +248,5 @@ public:
 } // namespace PDI
 
 #endif // PDI_DATATYPE_H_
+
+

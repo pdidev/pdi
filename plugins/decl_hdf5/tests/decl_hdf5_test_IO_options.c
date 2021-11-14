@@ -183,6 +183,9 @@ int PDI_write_chunked()
 {
 	const char* CONFIG_YAML =
 	    "logging: trace                                                                \n"
+	    "metadata:                                                                     \n"
+	    "  x: int64                                                                    \n"
+	    "  y: int                                                                      \n"
 	    "data:                                                                         \n"
 	    "  array_data: { size: 100, type: array, subtype: int, +decl_hdf5.chunking: 10}\n"
 	    "  matrix_data: { size: [100, 100], type: array, subtype: float }              \n"
@@ -191,11 +194,16 @@ int PDI_write_chunked()
 	    "    file: decl_hdf5_test_16_chunked.h5                                        \n"
 	    "    write:                                                                    \n"
 	    "      array_data:                                                             \n"
-	    "      matrix_data: {chunking: [10, 10]}                                       \n"
+	    "      matrix_data: {chunking: [$x, $y]}                                       \n"
 	    ;
 	    
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
+	
+	long x = 10L;
+	int y = 10;
+	PDI_expose("x", &x, PDI_OUT);
+	PDI_expose("y", &y, PDI_OUT);
 	
 	int array_data[100];
 	for (int i = 0; i < 100; i++) {

@@ -76,7 +76,8 @@ set(PDI_unit_tests_SRC
 		PDI_record_datatype.cxx
 		PDI_ref_any.cxx
 		PDI_scalar_datatype.cxx
-		PDI_test_parse_types.cxx)
+		PDI_test_parse_types.cxx
+		PDI_tuple_datatype.cxx)
 add_executable(PDI_unit_tests ${PDI_unit_tests_SRC})
 target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")

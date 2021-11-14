@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* Support for tuple datatype serialization. It is an array-like structure
+  that can store different type elements.
+  [#364](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/364)
 
 ### Changed
 
@@ -17,7 +20,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
-
 
 
 ## [1.3.0] - 2021-07-30

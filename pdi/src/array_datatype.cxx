@@ -63,7 +63,7 @@ Array_datatype::Index_accessor::Index_accessor(size_t index):
 
 string Array_datatype::Index_accessor::access_kind() const 
 {
-	return "index access [" + to_string(m_index) + "]";
+	return "array index access [" + to_string(m_index) + "]";
 }
 
 unique_ptr<Datatype::Accessor_base> Array_datatype::Index_accessor::clone() const
@@ -88,6 +88,23 @@ pair<void*, Datatype_uptr> Array_datatype::Index_accessor::access(const Array_da
 	}
 }
 
+pair<void*, Datatype_uptr> Array_datatype::Index_accessor::access(const Tuple_datatype& tuple_type,
+										void* from,
+										vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+										vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+{
+	if (m_index < tuple_type.size()) {
+		from = reinterpret_cast<uint8_t*>(from) + tuple_type.elements()[m_index].offset();
+		if (remaining_begin == remaining_end) {
+			return pair<void*, Datatype_uptr>{from, tuple_type.elements()[m_index].type().clone_type()};
+		} else {
+			return tuple_type.elements()[m_index].type().subaccess_by_iterators(from, remaining_begin, remaining_end);	
+		}
+	} else {
+		throw Value_error {"Subaccess tuple index out of range: {} >= {}", m_index, tuple_type.size()};
+	}
+}
+
 Array_datatype::Slice_accessor::Slice_accessor(size_t start, size_t end):
 	m_start{start},
 	m_end{end}
@@ -95,7 +112,7 @@ Array_datatype::Slice_accessor::Slice_accessor(size_t start, size_t end):
 
 string Array_datatype::Slice_accessor::access_kind() const 
 {
-	return "slice access [" + to_string(m_start) + ":" + to_string(m_end) + "]";
+	return "array slice access [" + to_string(m_start) + ":" + to_string(m_end) + "]";
 }
 
 pair<void*, Datatype_uptr> Array_datatype::Slice_accessor::access(const Array_datatype& array_type,
@@ -115,6 +132,41 @@ pair<void*, Datatype_uptr> Array_datatype::Slice_accessor::access(const Array_da
 		throw Value_error {"Subaccess array slice out of range: [{}:{}] > {}", m_start, 
 																				m_end,
 																				array_type.subsize()};
+	}
+}
+
+
+pair<void*, Datatype_uptr> Array_datatype::Slice_accessor::access(const Tuple_datatype& tuple_type,
+										void* from,
+										vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+										vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+{
+	if (m_end <= tuple_type.size()) {
+		vector<Tuple_datatype::Element> new_elements;
+		for (size_t i = m_start; i < m_end; i++) {
+			new_elements.emplace_back(tuple_type.elements()[i].offset() - tuple_type.elements()[m_start].offset(),
+				tuple_type.elements()[i].type().clone_type());
+		}
+		size_t new_buffersize = 0UL;
+		if (m_end == tuple_type.size()) {
+			// m_end is the last element
+			new_buffersize = tuple_type.buffersize() - tuple_type.elements()[m_start].offset();
+		} else {
+			// m_end is not the last element
+			new_buffersize = tuple_type.elements()[m_end + 1].offset() - tuple_type.elements()[m_start].offset();
+		}
+
+		Datatype_uptr new_tuple {new Tuple_datatype{move(new_elements), new_buffersize}};
+		from = reinterpret_cast<uint8_t*>(from) + tuple_type.elements()[m_start].offset();
+		if (remaining_begin == remaining_end) {
+			return {from, move(new_tuple)};
+		} else {
+			return new_tuple->subaccess_by_iterators(from, remaining_begin, remaining_end);
+		}
+	} else {
+		throw Value_error {"Subaccess tuple slice out of range: [{}:{}] > {}", m_start, 
+																				m_end,
+																				tuple_type.size()};
 	}
 }
 

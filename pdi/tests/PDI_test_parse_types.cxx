@@ -39,6 +39,7 @@
 #include <pdi/pointer_datatype.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
+#include <pdi/tuple_datatype.h>
 
 #include "global_context.h"
 
@@ -52,6 +53,7 @@ using PDI::Pointer_datatype;
 using PDI::Record_datatype;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
+using PDI::Tuple_datatype;
 
 using std::map;
 using std::pair;
@@ -740,6 +742,246 @@ vector<param_pair> pointer_types {
 	}
 };
 
+vector<param_pair> tuple_types {
+	{
+		"type: tuple    \n"
+		"elements:        \n"
+		"   - char\n"
+		"   - int  \n",
+		shared_ptr<Datatype> {
+			new Tuple_datatype {
+				vector<Tuple_datatype::Element> {
+					Tuple_datatype::Element{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
+					},
+					Tuple_datatype::Element{
+						4,
+						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}}
+					}
+				},
+				8
+			}
+		}
+	},
+	{
+		"type: tuple       \n"
+		"buffersize: 13    \n"
+		"elements:         \n"
+		"   - type: char   \n"
+		"     disp: 0      \n"
+		"   - type: int    \n"
+		"     disp: 1      \n"
+		"   - type: double \n"
+		"     disp: 5      \n",
+		shared_ptr<Datatype> {
+			new Tuple_datatype {
+				vector<Tuple_datatype::Element> {
+					Tuple_datatype::Element{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
+					},
+					Tuple_datatype::Element{
+						1,
+						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}}
+					},
+					Tuple_datatype::Element{
+						5,
+						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::FLOAT, sizeof(double)}}
+					}
+				},
+				13
+			}
+		}
+	},
+	{
+		"type: tuple             \n"
+		"elements:               \n"
+		"   - char               \n"
+		"   - type: array        \n"
+		"     subtype: int64     \n"
+		"     size: [10, 10]     \n",
+		shared_ptr<Datatype> {
+			new Tuple_datatype {
+				vector<Tuple_datatype::Element> {
+					Tuple_datatype::Element{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
+					},
+					Tuple_datatype::Element{
+						8,
+						unique_ptr<Datatype> {
+							new Array_datatype
+							{
+								unique_ptr<Datatype> {
+									new Array_datatype
+									{
+										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+										10
+									}
+								},
+								10
+							}
+						}
+					}
+				},
+				808
+			}
+		}
+	},
+	{
+		"type: tuple             \n"
+		"elements:               \n"
+		"   - char               \n"
+		"   - type: array        \n"
+		"     subtype: int64     \n"
+		"     size: [10, 10]     \n"
+		"     start: [2, 3]      \n"
+		"     subsize: [6, 5]    \n",
+		shared_ptr<Datatype> {
+			new Tuple_datatype {
+				vector<Tuple_datatype::Element> {
+					Tuple_datatype::Element{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
+					},
+					Tuple_datatype::Element{
+						8,
+						unique_ptr<Datatype> {
+							new Array_datatype
+							{
+								unique_ptr<Datatype> {
+									new Array_datatype
+									{
+										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+										10,
+										3,
+										5
+									}
+								},
+								10,
+								2,
+								6
+							}
+						}
+					}
+				},
+				808
+			}
+		}
+	},
+	{
+		"type: tuple                   \n"
+		"elements:                     \n"
+		"   - char                     \n"
+		"   - type: struct             \n"
+		"     members:                 \n"
+		"       - my_char:             \n"
+		"           type: char         \n"
+		"       - my_array:            \n"
+		"           type: array        \n"
+		"           subtype: int64     \n"
+		"           size: [10, 10]     \n"
+		,
+		shared_ptr<Datatype> {
+			new Tuple_datatype {
+				vector<Tuple_datatype::Element> {
+					Tuple_datatype::Element{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
+					},
+					Tuple_datatype::Element{
+						8,
+						unique_ptr<Datatype> {
+							new Record_datatype {
+								vector<Record_datatype::Member> {
+									Record_datatype::Member{
+										0,
+										unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
+										"my_char"
+									},
+									Record_datatype::Member{
+										8,
+										unique_ptr<Datatype> {
+											new Array_datatype
+											{
+												unique_ptr<Datatype> {
+													new Array_datatype
+													{
+														unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+														10
+													}
+												},
+												10
+											}
+										},
+										"my_array"
+									}
+								},
+								808
+							}
+						}
+					}
+				},
+				816
+			}
+		}
+	},
+	{
+		"type: tuple                     \n"
+		"elements:                       \n"
+		"   - char                       \n"
+		"   - type: tuple              \n"
+		"     elements:                \n"
+		"       - type: char           \n"
+		"       - type: array          \n"
+		"         subtype: int64       \n"
+		"         size: [10, 10]       \n"
+		,
+		shared_ptr<Datatype> {
+			new Tuple_datatype {
+				vector<Tuple_datatype::Element> {
+					Tuple_datatype::Element{
+						0,
+						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
+					},
+					Tuple_datatype::Element{
+						8,
+						unique_ptr<Datatype> {
+							new Tuple_datatype {
+								vector<Tuple_datatype::Element> {
+									Tuple_datatype::Element{
+										0,
+										unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
+									},
+									Tuple_datatype::Element{
+										8,
+										unique_ptr<Datatype> {
+											new Array_datatype
+											{
+												unique_ptr<Datatype> {
+													new Array_datatype
+													{
+														unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+														10
+													}
+												},
+												10
+											}
+										}
+									}
+								},
+								808
+							}
+						}
+					}
+				},
+				816
+			}
+		}
+	}
+};
+
 vector<string> invalid_data {
 	"",
 	"long",
@@ -750,12 +992,16 @@ vector<string> invalid_data {
 	"{subsize: 10, start: [30, 20, 20], type: array, subtype: char}",
 	"{sizes: [10, 20], type: array, subtype: char}",
 	"{type: record, members: {my_char: {disp: 0, type: char}, my_int: {disp: 4, type: int} }}",
-	"{type: record, buffersize: 8, members: {my_char: {type: char}, my_int: {disp: 4, type: int} }}"
+	"{type: record, buffersize: 8, members: {my_char: {type: char}, my_int: {disp: 4, type: int} }}",
+	"{type: tuple, buffersize: 13, elements: [char, int, double]}",
+	"{type: tuple, elements: [{type: char, disp: 0}, {type: int, disp: 4}, {type: double, disp: 8}]}",
+	"{type: tuple, elements: [{type: char, disp: 0}, {type: int}, {type: double, disp: 8}]}"
 };
 INSTANTIATE_TEST_CASE_P(ScalarTypes, PositiveTypeParseTest, testing::ValuesIn(scalar_types));
 INSTANTIATE_TEST_CASE_P(ArrayTypes, PositiveTypeParseTest, testing::ValuesIn(array_types));
 INSTANTIATE_TEST_CASE_P(RecordTypes, PositiveTypeParseTest, testing::ValuesIn(record_types));
 INSTANTIATE_TEST_CASE_P(StructTypes, PositiveTypeParseTest, testing::ValuesIn(struct_types));
+INSTANTIATE_TEST_CASE_P(TupleTypes, PositiveTypeParseTest, testing::ValuesIn(tuple_types));
 INSTANTIATE_TEST_CASE_P(PointerTypes, PositiveTypeParseTest, testing::ValuesIn(pointer_types));
 
 INSTANTIATE_TEST_CASE_P(, NegativeTypeParseTest, testing::ValuesIn(invalid_data));

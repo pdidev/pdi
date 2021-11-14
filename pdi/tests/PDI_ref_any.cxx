@@ -793,7 +793,7 @@ struct SparseArrayRefAnyTest : public DataRefAnyTest {
 			array_to_share[i] = i;
 		}
 		
-		m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void* ptr){operator delete (ptr);}, datatype->clone_type(), true, true}};
+		m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void* ptr){operator delete[] (ptr);}, datatype->clone_type(), true, true}};
 	}
 	
 	Datatype_uptr datatype {

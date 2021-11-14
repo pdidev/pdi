@@ -43,7 +43,7 @@ class Context;
 
 /** A PDI datatype
  *
- * A datatype is either a scalar, an array, or a record.
+ * A datatype is either: an array, a scalar, a pointer, a record or a tuple.
  */
 class Datatype;
 
@@ -62,6 +62,10 @@ class Record_datatype;
 /** Scalar datatype derived from Datatype
     */
 class Scalar_datatype;
+
+/** Tuple datatype derived from Datatype
+    */
+class Tuple_datatype;
 
 /** A PDI datatype template
  *

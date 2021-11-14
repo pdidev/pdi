@@ -179,6 +179,7 @@ set(PDI_C_SRC
 		src/ref_any.cxx
 		src/scalar_datatype.cxx
 		src/string_tools.cxx
+		src/tuple_datatype.cxx
 )
 add_library(PDI_C ${PDI_C_SRC})
 generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME pdi/export.h)

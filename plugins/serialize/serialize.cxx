@@ -39,6 +39,7 @@
 #include <pdi/record_datatype.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
+#include <pdi/tuple_datatype.h>
 
 namespace {
 
@@ -68,23 +69,23 @@ struct serialize_plugin: PDI::Plugin {
 			return PDI::Datatype_uptr{new PDI::Array_datatype(serialize_type(&array_type->subtype()), array_type->subsize(), array_type->attributes())};
 		} else if (const PDI::Record_datatype* record_type = dynamic_cast<const PDI::Record_datatype*>(type)) {
 			std::vector<PDI::Record_datatype::Member> serialized_members;
-			size_t displacement = 0;
+			size_t offset = 0;
 			size_t alignment = 0;
 			size_t serialized_buffersize = 0;
 			for (auto&& member : record_type->members()) {
 				PDI::Datatype_uptr serialized_type = serialize_type(&member.type());
 				
 				size_t member_alignment = serialized_type->alignment();
-				size_t spacing = (member_alignment - (displacement % member_alignment)) % member_alignment;
+				size_t spacing = (member_alignment - (offset % member_alignment)) % member_alignment;
 				
-				// add space to displacement and buffersize
-				displacement += spacing;
+				// add space to offset and buffersize
+				offset += spacing;
 				serialized_buffersize += spacing;
 				
-				serialized_members.emplace_back(displacement, serialized_type->clone_type(), member.name());
+				serialized_members.emplace_back(offset, serialized_type->clone_type(), member.name());
 				
-				// move displacement by the buffersize
-				displacement += serialized_type->buffersize();
+				// move offset by the buffersize
+				offset += serialized_type->buffersize();
 				serialized_buffersize += serialized_type->buffersize();
 				
 				// serialized alignment (for final spacing)
@@ -92,12 +93,42 @@ struct serialize_plugin: PDI::Plugin {
 			}
 			
 			// check the spacing at the end of record
-			size_t spacing = (alignment - (displacement % alignment)) % alignment;
+			size_t spacing = (alignment - (offset % alignment)) % alignment;
 			serialized_buffersize += spacing;
 			
 			return PDI::Datatype_uptr{new PDI::Record_datatype{move(serialized_members), serialized_buffersize, record_type->attributes()}};
 		} else if (const PDI::Pointer_datatype* pointer_type = dynamic_cast<const PDI::Pointer_datatype*>(type)) {
 			return serialize_type(&pointer_type->subtype());
+		} else if (const PDI::Tuple_datatype* tuple_type = dynamic_cast<const PDI::Tuple_datatype*>(type)) {
+			std::vector<PDI::Tuple_datatype::Element> serialized_elements;
+			size_t offset = 0;
+			size_t alignment = 0;
+			size_t serialized_buffersize = 0;
+			for (auto&& element : tuple_type->elements()) {
+				PDI::Datatype_uptr serialized_type = serialize_type(&element.type());
+				
+				size_t element_alignment = serialized_type->alignment();
+				size_t spacing = (element_alignment - (offset % element_alignment)) % element_alignment;
+				
+				// add space to offset and buffersize
+				offset += spacing;
+				serialized_buffersize += spacing;
+				
+				serialized_elements.emplace_back(offset, serialized_type->clone_type());
+				
+				// move offset by the buffersize
+				offset += serialized_type->buffersize();
+				serialized_buffersize += serialized_type->buffersize();
+				
+				// serialized alignment (for final spacing)
+				alignment = std::max(alignment, element_alignment);
+			}
+			
+			// check the spacing at the end of tuple
+			size_t spacing = (alignment - (offset % alignment)) % alignment;
+			serialized_buffersize += spacing;
+			
+			return PDI::Datatype_uptr{new PDI::Tuple_datatype{move(serialized_elements), serialized_buffersize, tuple_type->attributes()}};
 		} else {
 			throw PDI::Type_error{"Serialize plugin: Unsupported type: {}", type->debug_string()};
 		}
@@ -153,6 +184,23 @@ struct serialize_plugin: PDI::Plugin {
 			return all_bytes_copied;
 		} else if (const PDI::Pointer_datatype* pointer_type = dynamic_cast<const PDI::Pointer_datatype*>(type)) {
 			return serialize_copy(&pointer_type->subtype(), to, reinterpret_cast<void*>(*static_cast<const uintptr_t*>(from)));
+		} else if (const PDI::Tuple_datatype* tuple_type = dynamic_cast<const PDI::Tuple_datatype*>(type)) {
+			PDI::Datatype_uptr tuple_serialized_uptr {serialize_type(tuple_type)};
+			PDI::Tuple_datatype* tuple_serialized = dynamic_cast<PDI::Tuple_datatype*>(tuple_serialized_uptr.get());
+			
+			int element_no = 0;
+			size_t all_bytes_copied = 0;
+			uint8_t* original_to = static_cast<uint8_t*>(to);
+			for (auto&& element : tuple_type->elements()) {
+				//size = 0, because we know that to points to allocated memory
+				to = original_to + tuple_serialized->elements()[element_no].offset();
+				const uint8_t* element_from = static_cast<const uint8_t*>(from) + element.offset();
+				
+				size_t bytes_copied = serialize_copy(&element.type(), to, element_from);
+				all_bytes_copied += bytes_copied;
+				element_no++;
+			}
+			return all_bytes_copied;
 		} else {
 			throw PDI::Type_error{"Serialize plugin: Unsupported type: {}", type->debug_string()};
 		}
@@ -199,6 +247,21 @@ struct serialize_plugin: PDI::Plugin {
 			return all_bytes_copied;
 		} else if (const PDI::Pointer_datatype* pointer_type = dynamic_cast<const PDI::Pointer_datatype*>(type)) {
 			return deserialize_copy(&pointer_type->subtype(), reinterpret_cast<void*>(*static_cast<const uintptr_t*>(to)), from);
+		} else if (const PDI::Tuple_datatype* tuple_type = dynamic_cast<const PDI::Tuple_datatype*>(type)) {
+			PDI::Datatype_uptr tuple_serialized_uptr {serialize_type(tuple_type)};
+			PDI::Tuple_datatype* tuple_serialized = dynamic_cast<PDI::Tuple_datatype*>(tuple_serialized_uptr.get());
+			
+			int element_no = 0;
+			size_t all_bytes_copied = 0;
+			for (auto&& element : tuple_type->elements()) {
+				uint8_t* element_to = static_cast<uint8_t*>(to) + element.offset();
+				const uint8_t* element_from = static_cast<const uint8_t*>(from) + tuple_serialized->elements()[element_no].offset();
+				
+				size_t bytes_copied = deserialize_copy(&element.type(), element_to, element_from);
+				all_bytes_copied += bytes_copied;
+				element_no++;
+			}
+			return all_bytes_copied;
 		} else {
 			throw PDI::Type_error{"Serialize plugin: Unsupported type: {}", type->debug_string()};
 		}

@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,14 +32,15 @@
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
-#include "pdi/record_datatype.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
+#include "pdi/tuple_datatype.h"
 
 #include "sequence.h"
 
 namespace PDI {
 
+using std::max;
 using std::move;
 using std::string;
 using std::unique_ptr;
@@ -94,17 +96,48 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 		};
 		return result;
 	}
-	Datatype_uptr subtype = m_value[0].to_ref(ctx).type().clone_type();
-	Ref_rw result {
-		aligned_alloc(subtype->alignment(), subtype->buffersize() * m_value.size()),
-		[](void* v){free(v);},
-		Datatype_uptr(new Array_datatype{move(subtype), m_value.size()}),
-		true,
-		true
-	};
 	
-	copy_value(ctx, result.get(), result.type());
-	return result;
+	// get subtypes and alignment
+	std::vector<Datatype_uptr> subtypes;
+	size_t result_alignment = 0;
+	for (auto&& element : m_value) {
+		subtypes.emplace_back(element.to_ref(ctx).type().clone_type());
+		result_alignment = max<size_t>(result_alignment, subtypes.back()->alignment());
+	}
+	
+	// check if all elements are the same, if true then it is an array
+	bool array_datatype = true;
+	Datatype_uptr result_type;
+	for (int i = 1; i < subtypes.size(); i++) {
+		if (*subtypes[0] != *subtypes[i]) {
+			array_datatype = false;
+			break;
+		}
+	}
+	
+	// create the datatype
+	if (array_datatype) {
+		result_type.reset(new Array_datatype{std::move(subtypes[0]), m_value.size()});
+	} else {
+		//tuple datatype
+		size_t displacement = 0;
+		vector<Tuple_datatype::Element> tuple_elements;
+		for (auto&& element_type : subtypes) {
+			size_t alignment = element_type->alignment();
+			// align the next element as requested
+			displacement += (alignment - (displacement % alignment)) % alignment;
+			tuple_elements.emplace_back(displacement, element_type->clone_type());
+			displacement += tuple_elements.back().type().buffersize();
+		}
+		//add padding at the end of tuple
+		displacement += (result_alignment - (displacement % result_alignment)) % result_alignment;
+		
+		// ensure the tuple size is at least 1 to have a unique address
+		displacement = max<size_t>(1, displacement);
+		result_type.reset(new Tuple_datatype{move(tuple_elements), displacement});
+	}
+	
+	return to_ref(ctx, *result_type);
 }
 
 Ref Expression::Impl::Sequence::to_ref(Context& ctx, const Datatype& type) const
@@ -132,8 +165,16 @@ size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, const 
 			throw Value_error{"Array literal copy incomplete: copied {} B of {} B", offset, array_type->buffersize()};
 		}
 		return offset;
+	} else if (const Tuple_datatype* tuple_type = dynamic_cast<const Tuple_datatype*>(&type)) {
+		size_t bytes_copied = 0;
+		for (int i = 0; i < m_value.size(); i++) {
+			bytes_copied += m_value[i].m_impl->copy_value(ctx,
+			        static_cast<uint8_t*>(buffer) + tuple_type->elements()[i].offset(),
+			        tuple_type->elements()[i].type());
+		}
+		return tuple_type->buffersize();
 	} else {
-		throw Value_error{"Array literal cannot copy value of not array datatype"};
+		throw Value_error{"Sequence literal cannot copy a value whose type is neither array nor tuple"};
 	}
 }
 

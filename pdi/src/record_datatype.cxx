@@ -252,7 +252,7 @@ void* Record_datatype::data_from_dense_copy(void* to, const void* from) const
 	
 	if (simple() && dense()) {
 		//dense copy
-		memcpy(to, from, datasize());
+		memcpy(to, from, buffersize());
 		to = original_to + buffersize();
 		return to;
 	}

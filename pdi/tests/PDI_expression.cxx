@@ -900,7 +900,7 @@ TEST_F(AdvancedExpressionTest, simple_reference)
 {
 	MockDataDescriptor desc_mock;
 	long value = 10l;
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{new long{value}, &free, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}));
+	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{new long{value}, [](void* p){operator delete(p);}, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp{"$simple"};
 	ASSERT_EQ(value, exp.to_long(context_mock));
@@ -962,8 +962,8 @@ TEST_F(AdvancedExpressionTest, reference_in_operation)
 	MockDataDescriptor desc_mock;
 	long value1 = 10l;
 	long value2 = 20l;
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{new long{value1}, &free, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}))
-	.WillOnce(Return(Ref_r{new long{value2}, &free, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}));
+	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{new long{value1}, [](void*p){operator delete(p);}, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}))
+	.WillOnce(Return(Ref_r{new long{value2}, [](void*p){operator delete(p);}, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("value1")))).WillOnce(ReturnRef(desc_mock));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("value2")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp{"(${value1} + $value2) * 2"};

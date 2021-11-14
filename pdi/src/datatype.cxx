@@ -32,7 +32,8 @@
 #include "pdi/datatype.h"
 
 
-namespace PDI {
+namespace PDI
+{
 
 using fmt::join;
 using std::pair;
@@ -41,28 +42,37 @@ using std::unique_ptr;
 using std::vector;
 
 pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Array_datatype& type,
-																void* from,
-																vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-																vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+		void* from,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
 {
 	throw Type_error{"Invalid {} access to an array datatype", access_kind()};
 }
 
 pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Pointer_datatype& type,
-																void* from,
-																vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-																vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+		void* from,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
 {
 	throw Type_error{"Invalid {} access to a pointer datatype", access_kind()};
 }
 
 pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Record_datatype& type,
-																void* from,
-																vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-																vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+		void* from,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
 {
 	throw Type_error{"Invalid {} access to a record datatype", access_kind()};
 }
+
+pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Tuple_datatype& type,
+		void* from,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+{
+	throw Type_error{"Invalid {} access to a tuple datatype", access_kind()};
+}
+
 
 pair<void*, Datatype_uptr> Datatype::subaccess(void* from, const Accessor_base& accessor) const
 {
@@ -77,8 +87,8 @@ pair<void*, Datatype_uptr> Datatype::subaccess(void* from, const vector<unique_p
 }
 
 pair<void*, Datatype_uptr> Datatype::subaccess_by_iterators(void* from,
-											vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-											vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
+		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
 {
 	if (remaining_begin == remaining_end) {
 		throw Type_error{"Invalid subaccess to type: {}", debug_string()};
@@ -101,5 +111,10 @@ bool Datatype::operator!=(const Datatype& rhs) const
 }
 
 Datatype::~Datatype() = default;
+
+Datatype_template_uptr Datatype::clone() const
+{
+	return clone_type();
+};
 
 } // namespace PDI

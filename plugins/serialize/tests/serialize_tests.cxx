@@ -881,3 +881,228 @@ TEST(serialize_test, 05) {
 	
 	PDI_finalize();
 }
+
+/*
+ * Name:                serialize_test.06
+ *
+ * Description:         tuple serialization
+ */
+TEST(serialize_test, 06) { 
+
+	const char* CONFIG_YAML =
+	"logging: trace                   \n"
+	"data:                            \n"
+	"  tuple:                         \n"
+	"    type: tuple                  \n"
+	"    elements:                    \n"
+	"      - int                      \n"
+	"      - type: array              \n"
+	"        subtype: double          \n"
+	"        size: 8                  \n"
+	"        start: 2                 \n"
+	"        subsize: 4               \n"
+	"      - type: pointer            \n"
+	"        subtype: int             \n"
+	"plugins:                         \n"
+	"  serialize:                     \n"
+	"    tuple: tuple_serialized      \n"
+	;
+
+	struct Record {
+		int scalar_member;
+		double array_member[8];
+		int* pointer_member;
+	} typedef Record;
+
+	struct Record_serialized {
+		int scalar_member;
+		double array_member[4];
+		int pointer_member;
+	} typedef Record_serialized;
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+	
+	// initialize data
+	Record record;
+	record.scalar_member = 42;
+	for (int i = 0; i < 8; i++) {
+		record.array_member[i] = 42.123 + i;
+	}
+	int pointed_scalar = 50;
+	record.pointer_member = &pointed_scalar;
+	
+	// share
+	PDI_share("tuple", &record, PDI_OUT);
+	
+	Record_serialized* record_serialized;
+	PDI_access("tuple_serialized", (void**)&record_serialized, PDI_IN);
+	
+	printf("%d ?== %d\n", record.scalar_member, record_serialized->scalar_member);
+	EXPECT_EQ(record.scalar_member, record_serialized->scalar_member);
+	for (int i = 0; i < 4; i++) {
+		printf("[%d] %f ?== %f\n", i, record.array_member[i + 2], record_serialized->array_member[i]);
+		EXPECT_EQ(record.array_member[i + 2], record_serialized->array_member[i]);
+	}
+	printf("%d ?== %d\n", *record.pointer_member, record_serialized->pointer_member);
+	EXPECT_EQ(*record.pointer_member, record_serialized->pointer_member);
+	
+	PDI_release("tuple_serialized");
+	PDI_reclaim("tuple");
+	
+	PDI_finalize();
+}
+
+/*
+ * Name:                serialize_test.07
+ *
+ * Description:         complex tuple datatype serialization
+ */
+TEST(serialize_test, 07) { 
+
+	const char* CONFIG_YAML =
+	".types:                                     \n"
+	"  - &Subregion                              \n"
+	"    type: record                            \n"
+	"    buffersize: 56                          \n"
+	"    members:                                \n"
+	"        ix:      {disp: 0, type: int}       \n"
+	"        iy:      {disp: 4, type: int}       \n"
+	"        iz:      {disp: 8, type: int}       \n"
+	"        nx:      {disp: 12, type: int}      \n"
+	"        ny:      {disp: 16, type: int}      \n"
+	"        nz:      {disp: 20, type: int}      \n"
+	"        sx:      {disp: 24, type: int}      \n"
+	"        sy:      {disp: 28, type: int}      \n"
+	"        sz:      {disp: 32, type: int}      \n"
+	"        rx:      {disp: 36, type: int}      \n"
+	"        ry:      {disp: 40, type: int}      \n"
+	"        rz:      {disp: 44, type: int}      \n"
+	"        level:   {disp: 48, type: int}      \n"
+	"        process: {disp: 52, type: int}      \n"
+	"  - &Subvector                              \n"
+	"    type: record                            \n"
+	"    buffersize: 32                          \n"
+	"    members:                                \n"
+	"        data:                               \n"
+	"          disp: 0                           \n"
+	"          type: pointer                     \n"
+	"          subtype:                          \n"
+	"              type: array                   \n"
+	"              size: $subvector_data_size    \n"
+	"              subtype: double               \n"
+	"        allocated:                          \n"
+	"          disp: 8                           \n"
+	"          type: int                         \n"
+	"        data_space:                         \n"
+	"          disp: 16                          \n"
+	"          type: pointer                     \n"
+	"          subtype: *Subregion               \n"
+	"        data_size:                          \n"
+	"          disp: 24                          \n"
+	"          type: int                         \n"
+	"  - &SubregionArray                         \n"
+	"    type: record                            \n"
+	"    buffersize: 16                          \n"
+	"    members:                                \n"
+	"      subregions:                           \n"
+	"        disp: 0                             \n"
+	"        type: pointer                       \n"
+	"        subtype:                            \n"
+	"          type: array                       \n"
+	"          size: $subregionarray_size        \n"
+	"          subtype:                          \n"
+	"            type: pointer                   \n"
+	"            subtype: *Subregion             \n"
+	"      size:                                 \n"
+	"        disp: 8                             \n"
+	"        type: int                           \n"
+	"  - &Grid                                   \n"
+	"    type: record                            \n"
+	"    buffersize: 32                          \n"
+	"    members:                                \n"
+	"      subgrids:                             \n"
+	"        disp: 0                             \n"
+	"        type: pointer                       \n"
+	"        subtype:                            \n"
+	"            type: array                     \n"
+	"            size: $grid_size                \n"
+	"            subtype: *SubregionArray        \n"
+	"      all_subgrids:                         \n"
+	"          disp: 8                           \n"
+	"          type: pointer                     \n"
+	"          subtype:                          \n"
+	"            type: array                     \n"
+	"            size: $grid_size                \n"
+	"            subtype: *SubregionArray        \n"
+	"      neighbors:                            \n"
+	"          disp: 16                          \n"
+	"          type: pointer                     \n"
+	"          subtype:                          \n"
+	"            type: array                     \n"
+	"            size: $grid_size                \n"
+	"            subtype: *SubregionArray        \n"
+	"      size:                                 \n"
+	"        disp: 24                            \n"
+	"        type: int                           \n"
+	"                                            \n"
+	"logging: trace                              \n"
+	"metadata:                                   \n"
+	"  subregionarray_size: int                  \n"
+	"  grid_size: int                            \n"
+	"  subvector_data_size: int                  \n"
+	"  vector_data_size: int                     \n"
+	"data:                                       \n"
+	"  vector_data:                              \n"
+	"    type: tuple                             \n"
+	"    elements:                               \n"
+	"      - type: pointer                       \n"
+	"        subtype:                            \n"
+	"          type: array                       \n"
+	"          size: $vector_data_size           \n"
+	"          subtype:                          \n"
+	"            type: pointer                   \n"
+	"            subtype: *Subvector             \n"
+	"      - int                                 \n"
+	"      - type: pointer                       \n"
+	"        subtype: *Grid                      \n"
+	"      - type: pointer                       \n"
+	"        subtype: *SubregionArray            \n"
+	"      - int                                 \n"
+	"plugins:                                    \n"
+	"  serialize:                                \n"
+	"    vector_data: vector_data_serialized     \n"
+	;
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+	
+	int subregionarray_size = SUBREGIONARRAY_SIZE;
+	int grid_size = GRID_SIZE;
+	int subvector_data_size = SUBVECTOR_DATA_SIZE;
+	int vector_data_size = VECTOR_DATA_SIZE;
+	
+	PDI_expose("subregionarray_size", &subregionarray_size, PDI_OUT);
+	PDI_expose("grid_size", &grid_size, PDI_OUT);
+	PDI_expose("subvector_data_size", &subvector_data_size, PDI_OUT);
+	PDI_expose("vector_data_size", &vector_data_size, PDI_OUT);
+	
+	Vector vector;
+	alloc_vector(&vector);
+	init_vector(&vector);
+	
+	print_vector(&vector);
+	
+	PDI_share("vector_data", &vector, PDI_OUT);
+	
+	VectorSerialized* vector_serialized;
+	PDI_access("vector_data_serialized", (void**)&vector_serialized, PDI_IN);
+	
+	expect_eq_vector_serialized(&vector, vector_serialized);
+	
+	PDI_release("vector_data_serialized");
+	
+	PDI_reclaim("vector_data");
+	
+	free_vector(&vector);
+	
+	PDI_finalize();
+}
