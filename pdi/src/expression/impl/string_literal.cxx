@@ -1,6 +1,8 @@
 /*******************************************************************************
  * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,6 +27,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
@@ -41,6 +44,7 @@
 
 namespace PDI {
 
+using std::unordered_set;
 using std::string;
 using std::unique_ptr;
 
@@ -61,7 +65,16 @@ string Expression::Impl::String_literal::to_string(Context& ctx) const
 
 long Expression::Impl::String_literal::to_long(Context& ctx) const
 {
-	throw Value_error{"Can not interpret `{}' as an integer value", to_string(ctx)};
+	static const unordered_set<string> true_values{"y", "Y", "yes", "Yes", "YES", "true", "True", "TRUE", "on", "On", "ON"};
+	static const unordered_set<string> false_values{"n", "N", "no", "No", "NO", "false", "False", "FALSE", "Off", "Off", "OFF"};
+	string src_string = to_string(ctx);
+	if (true_values.find(src_string) != true_values.end() ) {
+		return 1L;
+	}
+	if (false_values.find(src_string) != false_values.end() ) {
+		return 0L;
+	}
+	throw Value_error{"Can not interpret `{}' as an integer value", src_string};
 }
 
 double Expression::Impl::String_literal::to_double(Context& ctx) const
@@ -134,7 +147,9 @@ unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const*
 	string* curstr = &result->m_start;
 	while (*str) {
 		size_t sz = 0;
-		while (str[sz] != '\\' && str[sz] != '$' && str[sz]) ++sz;
+		while (str[sz] != '\\' && str[sz] != '$' && str[sz]) {
+			++sz;
+		}
 		curstr->append(str, sz);
 		str += sz;
 		switch (*str) {

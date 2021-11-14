@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Support for size_t, ptrdiff_t and byte types.
   [#351](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/351)
 
+* Support for string boolean types in yaml.
+  [#362](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/362)
+
 #### Changed
 
 #### Deprecated

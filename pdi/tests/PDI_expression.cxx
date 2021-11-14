@@ -1957,3 +1957,45 @@ TEST(ExpresionMemberAccess, access_complex_member)
 
 	ctx->desc("record_data").reclaim();
 }
+
+/*
+ * Name:                StringExpressionBoolTest.to_long_boolean_string)
+ *
+ * Tested functions:    PDI::Expression::to_long(Context&)
+ *
+ * Description:         Checks if expression is correctly evaluated to long when string represents a boolean.
+ */
+TEST(StringExpressionBoolTest, to_long_boolean_string)
+{
+	MockContext context_mock;
+
+	const vector<string> v_pos{"y", "Y", "yes", "Yes", "YES", "true", "True", "TRUE", "on", "On", "ON"};
+	for (auto&& string_value : v_pos) {
+		ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
+	}
+	const vector<string> v_neg{"n", "N", "no", "No", "NO", "false", "False", "FALSE", "Off", "Off", "OFF"};
+	for (auto&& string_value : v_neg) {
+		ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 0);
+	}
+
+	const vector<string> v_fpos{"y1", "YY", "yEs", "Yess", "YE5", "tru", "TrUe", "TRRUE", "onn", "0n", "ONN"};
+	for (auto&& string_value : v_fpos) {
+		try {
+			ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
+			FAIL();
+		} catch (PDI::Error& e) {
+			// ok
+		}
+	}
+
+	const vector<string> v_fneg{"n1", "nO", "N0", "Nope", "NOO", "faLse", "Fals", "FaLSE", "OfF", "0f", "FF"};
+	for (auto&& string_value : v_fneg) {
+		try {
+			ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
+			FAIL();
+		} catch (PDI::Error& e) {
+			// ok
+		}
+	}
+
+}

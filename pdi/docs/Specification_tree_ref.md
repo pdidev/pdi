@@ -303,6 +303,12 @@ The value-type of an `EXPRESSION` is as follow:
 In addition, an integer can be interpreted as a string or as a boolean value
 where zero is interpreted as false and any other value as true.
 
+The following strings can also be interpreted as a boolean integer values:
+* true (1): `y`, `Y`, `yes`, `Yes`, `YES`, `true`, `True`, `TRUE`, `on`, `On`,
+  `ON`.
+* false (0): `n`, `N`, `no`, `No`, `NO`, `false`, `False`, `FALSE`, `Off`,
+  `Off`, `OFF`.
+
 ## Example:
 
 ```python
