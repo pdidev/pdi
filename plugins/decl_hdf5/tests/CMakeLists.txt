@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -96,8 +96,7 @@ if("${BUILD_HDF5_PARALLEL}")
 endif()
 
 add_executable(decl_hdf5_IO_options_C decl_hdf5_test_IO_options.c)
-target_link_libraries(decl_hdf5_IO_options_C PDI::PDI_C ${HDF5_C_LIBRARIES})
-target_include_directories(decl_hdf5_IO_options_C PRIVATE ${HDF5_INCLUDE_DIRS})
+target_link_libraries(decl_hdf5_IO_options_C PDI::PDI_C  ${HDF5_DEPS})
 add_test(NAME decl_hdf5_IO_options_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_IO_options_C>")
 set_property(TEST decl_hdf5_IO_options_C PROPERTY TIMEOUT 15)
 

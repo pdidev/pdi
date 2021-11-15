@@ -4,19 +4,14 @@ All notable changes to the Decl'NetCDF plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
+## [1.4.1] - 2021-11-10
 
 ### Changed
-
-### Deprecated
-
-### Removed
+* updated FindHDF5 to a backport from CMake 3.21.
 
 ### Fixed
-
-### Security
+* fixed a bug where macro definitions imposed by NetCDF would lead to duplicate
+  `-D`, hence preventing compilation.
 
 
 ## [1.4.0] - 2021-11-09

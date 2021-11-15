@@ -4,22 +4,10 @@ All notable changes to the Decl'HDF5 plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
+## [1.4.1] - 2021-11-10
 
 ### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-* Correctly handle the case where the elements in the array specifying chunking 
-  would be of different types.
-  [#355](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/355)
-
-### Security
+* updated FindHDF5 to a backport from CMake 3.21.
 
 
 ## [1.3.0] - 2021-07-30

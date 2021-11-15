@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -44,39 +44,19 @@ find_package(Astyle)
 # NetCDF
 find_package(NetCDF REQUIRED 4.0.0)
 
-# MPI
-if("PARALLEL" IN_LIST NetCDF_FEATURES)
-	find_package(MPI REQUIRED COMPONENTS CXX)
-	set(HDF5_PREFER_PARALLEL TRUE)
-endif()
-
-# HDF5
-#TODO: This should be in the FindNetCDF, but FindHDF5 fails when called multiple times
-if("HDF5" IN_LIST NetCDF_FEATURES)
-	find_package(HDF5 REQUIRED COMPONENTS C)
-endif()
-
 # PDI
-find_package(PDI REQUIRED COMPONENTS plugins ${PDI_COMPONENTS})
+find_package(PDI REQUIRED COMPONENTS plugins)
 
 # The plugin
-add_library(pdi_decl_netcdf_plugin MODULE decl_netcdf.cxx
-                                          dnc_attribute.cxx
-                                          dnc_file_context.cxx
-                                          dnc_group.cxx
-                                          dnc_io.cxx
-                                          dnc_netcdf_file.cxx
-                                          dnc_variable.cxx)
+add_library(pdi_decl_netcdf_plugin MODULE
+		decl_netcdf.cxx
+		dnc_attribute.cxx
+		dnc_file_context.cxx
+		dnc_group.cxx
+		dnc_io.cxx
+		dnc_netcdf_file.cxx
+		dnc_variable.cxx)
 target_link_libraries(pdi_decl_netcdf_plugin PUBLIC PDI::PDI_plugins NetCDF::NetCDF)
-#TODO: This should be in the FindNetCDF, but FindHDF5 fails when called multiple times
-if("HDF5" IN_LIST NetCDF_FEATURES)
-	target_link_libraries(pdi_decl_netcdf_plugin PUBLIC ${HDF5_C_LIBRARIES})
-	target_include_directories(pdi_decl_netcdf_plugin PUBLIC ${HDF5_C_INCLUDE_DIRECTORIES})
-	target_compile_definitions(pdi_decl_netcdf_plugin PUBLIC ${HDF5_C_DEFINITIONS})
-endif()
-if("PARALLEL" IN_LIST NetCDF_FEATURES)
-	target_link_libraries(pdi_decl_netcdf_plugin PUBLIC MPI::MPI_CXX)
-endif()
 set_target_properties(pdi_decl_netcdf_plugin PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED TRUE
