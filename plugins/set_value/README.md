@@ -37,6 +37,7 @@ plugins:
       - expose: ... # value_list
       - release: ... # value_list
       - event: ... # value
+      - logger: ... # logger_map
 ```
 
 \subsection on_event_map_node on_event
@@ -125,6 +126,8 @@ It defines an operation to execute inside a \ref value_list.
 |`"expose"` (*optional*)|a \ref value_list|
 |`"release"` (*optional*)|a list with data to release|
 |`"event"` (*optional*)|an event name to call|
+|`"logger"` (*optional*)|a \ref logger_map|
+
 
 **Share warning**  
 
@@ -210,6 +213,14 @@ set_value:
           member_2: 3 # int member
           member_1: [1, 2, 3] # array of ints member
 ```
+
+\subsection logger_map logger map
+Defines settings for global PDI logger.
+|key|value|
+|:--|:----|
+|`"level"` (*optional*)   |level to set to the logger|
+|`"pattern"` (*optional*) |pattern to set to the logger|
+|`"evaluate"` (*optional*) |if true evaluate the logger pattern|
 
 \section full_config full configuration example
 

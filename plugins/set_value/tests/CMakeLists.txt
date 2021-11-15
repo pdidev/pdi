@@ -84,6 +84,10 @@ add_executable(set_value_06_C set_value_test_06.c)
 target_link_libraries(set_value_06_C PDI::PDI_C)
 add_test(NAME set_value_06_C COMMAND "$<TARGET_FILE:set_value_06_C>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_06.yml")
 
+add_executable(set_value_07_C set_value_test_07.c)
+target_link_libraries(set_value_07_C PDI::PDI_C)
+add_test(NAME set_value_07_C COMMAND "$<TARGET_FILE:set_value_07_C>" "${CMAKE_CURRENT_SOURCE_DIR}/set_value_test_07.yml")
+
 if("${BUILD_PYTHON}")
 	add_subdirectory(Python/)
 endif()

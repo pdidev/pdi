@@ -26,6 +26,7 @@
 
 #include "event_operation.h"
 #include "expose_operation.h"
+#include "logger_operation.h"
 #include "set_operation.h"
 #include "share_operation.h"
 #include "release_operation.h"
@@ -57,6 +58,8 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node):
 			m_operations.emplace_back(new Event_operation{m_ctx, operation_value});
 		} else if (operation == "release") {
 			m_operations.emplace_back(new Release_operation{m_ctx, operation_value});
+		} else if (operation == "logger") {
+			m_operations.emplace_back(new Logger_operation{m_ctx, operation_value});
 		} else {
 			throw PDI::Config_error{PC_get(value_map, "{0}"), "Unknown operation: {}", operation};
 		}

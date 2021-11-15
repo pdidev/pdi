@@ -1,0 +1,12 @@
+logging: debug
+plugins:
+  set_value:
+    on_event:
+      trace_level:
+        - logger:
+            level: trace
+            pattern: "[%T][%n] ### %^%l%$: %v"
+      info_level:
+        - logger:
+            level: info
+            pattern: "[%T][%n] @@@ %^%l%$: %v"

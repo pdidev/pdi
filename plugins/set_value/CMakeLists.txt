@@ -45,6 +45,7 @@ find_package(PDI REQUIRED plugins)
 
 add_library(pdi_set_value_plugin MODULE set_value.cxx
 										trigger.cxx
+										logger_operation.cxx
 										operation.cxx
 										set_operation.cxx
 										share_operation.cxx
