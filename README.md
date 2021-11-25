@@ -21,7 +21,7 @@ IO type, hardware used, etc.)
 
 # Documentation
 
-The on-line PDI documentation is available at https://pdi.julien-bigot.fr
+The on-line PDI documentation is available at https://pdi.dev
 
 # Installation
 
