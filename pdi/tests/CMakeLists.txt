@@ -58,6 +58,11 @@ if("${BUILD_PYTHON}")
 	add_test(NAME PDI_test_03 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_03.py")
 	add_test(NAME PDI_test_04 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_04.py")
 	add_test(NAME PDI_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_05.py")
+
+	add_executable(PDI_python_tools_unit_tests PDI_python_tools.cxx)
+	target_link_libraries(PDI_python_tools_unit_tests PDI::PDI_pysupport pybind11::embed Python3::Python Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
+	target_include_directories(PDI_python_tools_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
+	gtest_discover_tests(PDI_python_tools_unit_tests)
 endif()
 
 

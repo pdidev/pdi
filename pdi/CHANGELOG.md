@@ -9,6 +9,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+
+## [1.4.2] - 2021-11-30
+
+
+### For users
+
+#### Fixed
+* Fixed a bug where sparse array data was not cast correctly to Python.
+  [#382](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/382)
+
 ## [1.4.0] - 2021-11-09
 
 
