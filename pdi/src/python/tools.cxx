@@ -128,11 +128,11 @@ pybind11::object to_python(Ref r)
 		cumulated_stride = *stride;
 	}
 	
-	int64_t* ptr;
+	uint8_t* ptr;
 	if (Ref_w r_w{r}) {
-		ptr = static_cast<int64_t*>(r_w.get());
+		ptr = static_cast<uint8_t*>(r_w.get());
 	} else if (Ref_r r_r{r}) {
-		ptr = static_cast<int64_t*>(const_cast<void*>(r_r.get()));
+		ptr = static_cast<uint8_t*>(const_cast<void*>(r_r.get()));
 		//      pybind11::detail::array_descriptor_proxy(result.ptr())->flags &= ~pybind11::detail::npy_api::NPY_ARRAY_WRITEABLE_;
 	}
 	for ( int ii=0; ii<ndim; ++ii ) {
