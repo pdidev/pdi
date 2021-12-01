@@ -23,6 +23,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 
+## [1.4.3] - 2021-11-30
+
+### Fixed
+* Fix an issue where HDF5 installed with cmake would not be correctly detected
+  [#356](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/346)
+
+
 ## [1.2.1] - 2021-06-18
 
 ### Fixed
