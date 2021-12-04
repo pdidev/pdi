@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -230,7 +230,7 @@ File_op::File_op(const File_op& other):
 	m_dset_size_ops {other.m_dset_size_ops}
 {
 	for (auto&& dataset: other.m_datasets) {
-		m_datasets.emplace(dataset.first, dataset.second->clone());
+		m_datasets.emplace(dataset.first, dataset.second);
 	}
 }
 

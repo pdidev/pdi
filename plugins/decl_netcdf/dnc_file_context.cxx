@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -218,7 +218,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			// ensure that variable has a type
 			if (!variable->type()) {
 				// TODO: undo the type for defined variables
-				variable->type(ref.type().clone_type());
+				variable->type(ref.type());
 			}
 			
 			// define variable
@@ -246,7 +246,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			// ensure that variable has a type
 			if (!variable->type()) {
 				// TODO: undo the type for defined variables
-				variable->type(ref.type().clone_type());
+				variable->type(ref.type());
 			}
 			
 			// read variable (could be done in get_variable, but we want to be coherent with write)
@@ -282,7 +282,7 @@ void Dnc_file_context::execute()
 				// ensure that variable has a type
 				if (!variable->type()) {
 					// TODO: undo the type for defined variables
-					variable->type(m_ctx.desc(read.first).ref().type().clone_type());
+					variable->type(m_ctx.desc(read.first).ref().type());
 				}
 				
 				// read this variable
@@ -304,7 +304,7 @@ void Dnc_file_context::execute()
 				// ensure that variable has a type
 				if (!variable->type()) {
 					// TODO: undo the type for defined variables
-					variable->type(m_ctx.desc(write.first).ref().type().clone_type());
+					variable->type(m_ctx.desc(write.first).ref().type());
 				}
 				
 				// define this variable

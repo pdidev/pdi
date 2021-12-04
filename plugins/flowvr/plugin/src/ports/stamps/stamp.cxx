@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -31,17 +32,19 @@
 
 namespace _flowvr_plugin {
 
+using std::dynamic_pointer_cast;
+
 void Stamp::load_stamp_desc_type(const flowvr::Port* parent_port, const std::string& name, const std::string& data_desc)
 {
 	size_t stamp_size = 1; //default for scalars
 	
-	const PDI::Datatype_uptr stamp_datatype = m_ctx[data_desc].default_type()->evaluate(m_ctx);
-	const PDI::Scalar_datatype* scalar_datatype = dynamic_cast<PDI::Scalar_datatype*>(stamp_datatype.get());
-	const PDI::Array_datatype* array_datatype = dynamic_cast<PDI::Array_datatype*>(stamp_datatype.get());
+	const PDI::Datatype_sptr stamp_datatype = m_ctx[data_desc].default_type()->evaluate(m_ctx);
+	auto&& scalar_datatype = dynamic_pointer_cast<const PDI::Scalar_datatype>(stamp_datatype);
+	auto&& array_datatype = dynamic_pointer_cast<const PDI::Array_datatype>(stamp_datatype);
 	
 	if (array_datatype) {
 		stamp_size = array_datatype->size();
-		scalar_datatype = dynamic_cast<const PDI::Scalar_datatype*>(&array_datatype->subtype());
+		scalar_datatype = dynamic_pointer_cast<const PDI::Scalar_datatype>(array_datatype->subtype());
 	}
 	
 	if (scalar_datatype) {

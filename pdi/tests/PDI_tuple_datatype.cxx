@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -111,29 +112,9 @@ TYPED_TEST(TupleDatatypeTest, check_alignment)
  */
 TYPED_TEST(TupleDatatypeTest, check_densify)
 {
-	Datatype_uptr newTuple {this->test_structure->test_tuple()->densify()};
+	Datatype_sptr newTuple {this->test_structure->test_tuple()->densify()};
 	ASSERT_EQ(this->test_structure->datasize(), newTuple->datasize());
 	ASSERT_EQ(this->test_structure->buffersize_after_densify(), newTuple->buffersize());
-}
-
-/*
- * Name:                TupleDatatypeTest/<structname>.check_clone_type
- *
- * Tested functions:    PDI::Tuple_datatype::clone_type()
- *
- * Description:         Test checks if correct clone_typeis created.
- *
- */
-TYPED_TEST(TupleDatatypeTest, check_clone_type)
-{
-	Datatype_uptr cloned_tuple {this->test_structure->test_tuple()->clone_type()};
-	unique_ptr<Tuple_datatype> newTuple {static_cast<Tuple_datatype*>(cloned_tuple.release())};
-	
-	ASSERT_EQ(this->test_structure->test_tuple()->buffersize(), newTuple->buffersize());
-	ASSERT_EQ(this->test_structure->test_tuple()->datasize(), newTuple->datasize());
-	ASSERT_EQ(this->test_structure->test_tuple()->alignment(), newTuple->alignment());
-	ASSERT_EQ(this->test_structure->dense(), newTuple->dense());
-	ASSERT_EQ(this->test_structure->test_tuple()->elements().size(), newTuple->elements().size());
 }
 
 /*
@@ -176,57 +157,43 @@ struct TupleDeepCopyTest : public ::testing::Test {
 	Dense_tuple_t dense_tuple;
 	Sparse_tuple_t sparse_tuple;
 	
-	Datatype_uptr datatype {
-		new Tuple_datatype {
-			vector<Tuple_datatype::Element> {
-				Tuple_datatype::Element{
-					0,
-					unique_ptr<Datatype> {
-						new Array_datatype
-						{
-							unique_ptr<Datatype> {
-								new Array_datatype
-								{
-									unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-									5,
-									1,
-									3
-								}
-							},
-							5,
-							1,
-							3
-						}
-					}
-				},
-				Tuple_datatype::Element{
-					100,
-					unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
-				},
-				Tuple_datatype::Element{
-					104,
-					unique_ptr<Datatype> {
-						new Array_datatype
-						{
-							unique_ptr<Datatype> {
-								new Array_datatype
-								{
-									unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-									10,
-									2,
-									5
-								}
-							},
-							10,
-							5,
-							2,
-						}
-					}
-				}
+	Datatype_sptr datatype = Tuple_datatype::make(
+		vector<Tuple_datatype::Element> {
+			Tuple_datatype::Element{
+				0,
+				Array_datatype::make(
+					Array_datatype::make(
+						Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+						5,
+						1,
+						3
+					),
+					5,
+					1,
+					3
+				)
 			},
-			908
-		}
-	};
+			Tuple_datatype::Element{
+				100,
+				Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
+			},
+			Tuple_datatype::Element{
+				104,
+				Array_datatype::make(
+					Array_datatype::make(
+						Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+						10,
+						2,
+						5
+					),
+					10,
+					5,
+					2
+				)
+			}
+		},
+		908
+	);
 	
 };
 
@@ -279,28 +246,28 @@ TEST(TupleAccessSequenceTest, invalid_subtype_access_sequence_check)
 	simple_tuple.m_char = 5;
 	simple_tuple.m_long = 987654;
 	std::vector<Tuple_datatype::Element> elements;
-	Array_datatype array_data{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}}, 5};
-	Scalar_datatype char_data{Scalar_kind::UNSIGNED, sizeof(char)};
-	Scalar_datatype long_data{Scalar_kind::SIGNED, sizeof(long)};
+	auto&& array_data = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 5);
+	auto&& char_data = Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char));
+	auto&& long_data = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long));
 	
-	elements.emplace_back(offsetof(Simple_tuple_t, m_array), array_data.clone_type());
-	elements.emplace_back(offsetof(Simple_tuple_t, m_char), char_data.clone_type());
-	elements.emplace_back(offsetof(Simple_tuple_t, m_long), long_data.clone_type());
+	elements.emplace_back(offsetof(Simple_tuple_t, m_array), array_data);
+	elements.emplace_back(offsetof(Simple_tuple_t, m_char), char_data);
+	elements.emplace_back(offsetof(Simple_tuple_t, m_long), long_data);
 	
-	Tuple_datatype tuple_type{std::move(elements),sizeof(Simple_tuple_t)};
+	auto&& tuple_type = Tuple_datatype::make(std::move(elements),sizeof(Simple_tuple_t));
 	
-	std::pair<void*, Datatype_uptr> data = tuple_type.subaccess(&simple_tuple, Array_datatype::Index_accessor{0UL});
-	ASSERT_EQ(array_data, *data.second);
+	std::pair<void*, Datatype_sptr> data = tuple_type->index(0, &simple_tuple);
+	ASSERT_EQ(*array_data, *data.second);
 	for (int i = 0; i < 5 ; i++) {
 		ASSERT_EQ(simple_tuple.m_array[i], static_cast<int*>(data.first)[i]);
 	}
 	
-	data = tuple_type.subaccess(&simple_tuple, Array_datatype::Index_accessor{1UL});
-	ASSERT_EQ(char_data, *data.second);
+	data = tuple_type->index(1, &simple_tuple);
+	ASSERT_EQ(*char_data, *data.second);
 	ASSERT_EQ(&simple_tuple.m_char, data.first);
 	
-	data = tuple_type.subaccess(&simple_tuple, Array_datatype::Index_accessor{2UL});
-	ASSERT_EQ(long_data, *data.second);
+	data = tuple_type->index(2, &simple_tuple);
+	ASSERT_EQ(*long_data, *data.second);
 	ASSERT_EQ(&simple_tuple.m_long, data.first);
 }
 
@@ -325,23 +292,23 @@ TEST(TupleAccessSequenceTest, subtype_and_value_check_for_tuple_of_arrays_with_p
 	}
 	
 	std::vector<Tuple_datatype::Element> elements;
-	Scalar_datatype scalar_type{Scalar_kind::SIGNED, sizeof(int)};
-	Pointer_datatype pointer_type{scalar_type.clone_type()};
-	Array_datatype array_type{pointer_type.clone_type(), 10};
-	elements.emplace_back(offsetof(Simple_tuple_t, m_array), array_type.clone_type());
-	Tuple_datatype tuple_type{std::move(elements), sizeof(Simple_tuple_t)};
+	auto&& scalar_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	auto&& pointer_type= Pointer_datatype::make(scalar_type);
+	auto&& array_type = Array_datatype::make(pointer_type, 10);
+	elements.emplace_back(offsetof(Simple_tuple_t, m_array), array_type);
+	auto&& tuple_type = Tuple_datatype::make(std::move(elements), sizeof(Simple_tuple_t));
 		
-	std::pair<void*, Datatype_uptr> data = tuple_type.subaccess(&simple_tuple, Array_datatype::Index_accessor{0UL});
+	std::pair<void*, Datatype_sptr> data = tuple_type->index(0, &simple_tuple);
 	ASSERT_EQ(simple_tuple.m_array, data.first);
-	ASSERT_EQ(array_type, *data.second);
+	ASSERT_EQ(*array_type, *data.second);
 	for (int i = 0; i < 10 ; i++) {
 		ASSERT_EQ(*simple_tuple.m_array[i], *(static_cast<int**>(data.first)[i]));
 	}
 	
-	data = data.second->subaccess(data.first, Array_datatype::Index_accessor{3UL});
-	data = data.second->subaccess(data.first, Pointer_datatype::Accessor{});
+	data = data.second->index(3, data.first);
+	data = data.second->dereference(data.first);
 	ASSERT_EQ(3, *static_cast<int*>(data.first));
-	ASSERT_EQ(scalar_type, *data.second);
+	ASSERT_EQ(*scalar_type, *data.second);
 	
 	for (int i = 0; i < 10; i++) {
 		delete simple_tuple.m_array[i];
@@ -378,31 +345,31 @@ TEST(TupleSliceAccessSequenceTest, slice_access_check)
 	simple_tuple.m_char = 5;
 	simple_tuple.m_long = 987654;
 	std::vector<Tuple_datatype::Element> elements;
-	Array_datatype array_data{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}}, 5};
-	Scalar_datatype char_data{Scalar_kind::UNSIGNED, sizeof(char)};
-	Scalar_datatype long_data{Scalar_kind::SIGNED, sizeof(long)};
+	auto&& array_data = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 5);
+	auto&& char_data = Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char));
+	auto&& long_data = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long));
 	
-	elements.emplace_back(offsetof(Simple_tuple_t, m_array), array_data.clone_type());
-	elements.emplace_back(offsetof(Simple_tuple_t, m_char), char_data.clone_type());
-	elements.emplace_back(offsetof(Simple_tuple_t, m_long), long_data.clone_type());
+	elements.emplace_back(offsetof(Simple_tuple_t, m_array), array_data);
+	elements.emplace_back(offsetof(Simple_tuple_t, m_char), char_data);
+	elements.emplace_back(offsetof(Simple_tuple_t, m_long), long_data);
 	
-	Tuple_datatype tuple_type{std::move(elements), sizeof(Simple_tuple_t)};
+	auto&& tuple_type = Tuple_datatype::make(std::move(elements), sizeof(Simple_tuple_t));
 	
-	std::pair<void*, Datatype_uptr> data = tuple_type.subaccess(&simple_tuple, Array_datatype::Slice_accessor{1UL, 3UL});
+	std::pair<void*, Datatype_sptr> data = tuple_type->slice(1, 3, &simple_tuple);
 
 	std::vector<Tuple_datatype::Element> result_elements;
-	result_elements.emplace_back(0, char_data.clone_type());
-	result_elements.emplace_back(offsetof(Simple_tuple_t, m_long) - offsetof(Simple_tuple_t, m_char), long_data.clone_type());
-	Tuple_datatype result_type{std::move(result_elements), sizeof(Simple_tuple_t) - offsetof(Simple_tuple_t, m_char)};
+	result_elements.emplace_back(0, char_data);
+	result_elements.emplace_back(offsetof(Simple_tuple_t, m_long) - offsetof(Simple_tuple_t, m_char), long_data);
+	auto&& result_type = Tuple_datatype::make(std::move(result_elements), sizeof(Simple_tuple_t) - offsetof(Simple_tuple_t, m_char));
 
 	ASSERT_EQ(&simple_tuple.m_char, data.first);
-	ASSERT_EQ(result_type, *data.second) << result_type.debug_string() << "\n\n" << data.second->debug_string();
+	ASSERT_EQ(*result_type, *data.second) << result_type->debug_string() << "\n\n" << data.second->debug_string();
 	
-	data = result_type.subaccess(&simple_tuple.m_char, Array_datatype::Index_accessor{0UL});
-	ASSERT_EQ(char_data, *data.second) << char_data.debug_string() << "\n\n" << data.second->debug_string();
+	data = result_type->index(0, &simple_tuple.m_char);
+	ASSERT_EQ(*char_data, *data.second) << char_data->debug_string() << "\n\n" << data.second->debug_string();
 	ASSERT_EQ(data.first, &simple_tuple.m_char);
 	
-	data = result_type.subaccess(&simple_tuple.m_char, Array_datatype::Index_accessor{1UL});
-	ASSERT_EQ(long_data, *data.second) << long_data.debug_string() << "\n\n" << data.second->debug_string();
+	data = result_type->index(1, &simple_tuple.m_char);
+	ASSERT_EQ(*long_data, *data.second) << long_data->debug_string() << "\n\n" << data.second->debug_string();
 	ASSERT_EQ(data.first, &simple_tuple.m_long);
 }

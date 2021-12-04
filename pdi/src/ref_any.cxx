@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ namespace PDI {
 
 Ref Reference_base::do_copy(Ref_r ref)
 {
-	Datatype_uptr densified_type {ref.type().densify()};
+	Datatype_sptr densified_type {ref.type()->densify()};
 	if ( !densified_type->buffersize() ) {
 		return Ref {};
 	}
@@ -53,7 +53,7 @@ Ref Reference_base::do_copy(Ref_r ref)
 	void* buffer = operator new (size);
 	void* data = std::align(densified_type->alignment(), densified_type->buffersize(), buffer, size);
 	try {
-		ref.type().data_to_dense_copy(data, ref.get());
+		ref.type()->data_to_dense_copy(data, ref.get());
 	} catch (...) {
 		::operator delete (buffer);
 		throw;
@@ -62,10 +62,10 @@ Ref Reference_base::do_copy(Ref_r ref)
 }
 
 
-const Datatype& Reference_base::type() const noexcept
+Datatype_sptr Reference_base::type() const noexcept
 {
 	if (!m_content || !m_content->m_data) return UNDEF_TYPE;
-	return *m_content->m_type;
+	return m_content->m_type;
 }
 
 } // namespace PDI

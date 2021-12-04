@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -57,12 +58,12 @@ const std::string& Dnc_variable::path() const
 	return m_path;
 }
 
-void Dnc_variable::type(PDI::Datatype_uptr type)
+void Dnc_variable::type(PDI::Datatype_sptr type)
 {
 	m_type = std::move(type);
 }
 
-PDI::Datatype_uptr Dnc_variable::type() const
+PDI::Datatype_sptr Dnc_variable::type() const
 {
 	if (m_type) {
 		return m_type->evaluate(m_ctx);

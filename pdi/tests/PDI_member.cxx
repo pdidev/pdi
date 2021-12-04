@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -34,58 +35,47 @@ using ::testing::Return;
 /*
  * Member is int with displacement = 8 and named "intMember"
  */
-struct ScalarMemberTest : public ::testing::Test {
-	ScalarMemberTest()
-	{
-		test_displacement = 8;
-		test_name = "intMember";
-		test_member = std::unique_ptr<Record_datatype::Member> {new Record_datatype::Member(test_displacement, Datatype_uptr{mocked_datatype}, test_name)};
-	}
+struct ScalarMemberTest: ::testing::Test {
 	
 	//displacement of member
-	size_t test_displacement;
+	size_t test_displacement = 8;
 	
-	MockDatatype* mocked_datatype {new MockDatatype()};
+	Datatype_sptr mocked_datatype = std::make_shared<MockDatatype>();
 	
 	//name of the member
-	std::string test_name;
+	std::string test_name = "intMember";
 	
-	std::unique_ptr<Record_datatype::Member> test_member;
-	Record_datatype::Member* test_member_copy;
+	Record_datatype::Member test_member = {test_displacement, mocked_datatype, test_name};
 };
 
 /*
  * Name:                ScalarMemberTest.check_fields
  *
- * Tested functions:    PDI::Record_datatype::Member::Member(size_t displacement, Datatype_uptr type, const string& name)
+ * Tested functions:    PDI::Record_datatype::Member::Member(size_t displacement, Datatype_sptr type, const string& name)
  *
  * Description:         Test checks values of fields.
  *
  */
 TEST_F(ScalarMemberTest, check_fields)
 {
-	ASSERT_EQ(8, test_member->displacement());
-	ASSERT_EQ(this->test_name, test_member->name());
-	ASSERT_EQ(this->mocked_datatype, &test_member->type());
+	ASSERT_EQ(test_displacement, test_member.displacement());
+	ASSERT_EQ(test_name, test_member.name());
+	ASSERT_EQ(mocked_datatype, test_member.type());
 }
 
 
 /*
- * Name:                ScalarMemberTest.check_clone_constructor
+ * Name:                ScalarMemberTest.check_copy_constructor 
  *
  * Tested functions:    PDI::Record_datatype::Member::Member(const Member&)
  *
- * Description:         Test checks clone constructor.
+ * Description:         Test copy constructor.
  *
  */
-TEST_F(ScalarMemberTest, check_clone_constructor)
+TEST_F(ScalarMemberTest, check_copy_constructor)
 {
-	MockDatatype* cloned_type {new MockDatatype()};
-	EXPECT_CALL(*mocked_datatype, clone_type_proxy())
-	.WillOnce(Return(cloned_type));
-	
-	Record_datatype::Member cloned {*test_member};
-	ASSERT_EQ(cloned.displacement(), test_member->displacement());
-	ASSERT_EQ(cloned.name(), test_member->name());
-	ASSERT_EQ(&cloned.type(), cloned_type);
+	Record_datatype::Member copy {test_member};
+	ASSERT_EQ(copy.displacement(), test_member.displacement());
+	ASSERT_EQ(copy.name(), test_member.name());
+	ASSERT_EQ(copy.type(), test_member.type());
 }

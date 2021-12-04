@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -79,7 +79,7 @@ struct Data_descriptor_impl::Ref_holder::Impl: Data_descriptor_impl::Ref_holder 
 
 Data_descriptor_impl::Data_descriptor_impl(Global_context& ctx, const char* name):
 	m_context{ctx},
-	m_type{UNDEF_TYPE.clone_type()},
+	m_type{UNDEF_TYPE},
 	m_name{name},
 	m_metadata{false}
 {
@@ -105,14 +105,14 @@ Data_descriptor_impl::~Data_descriptor_impl()
 	assert(m_refs.empty());
 }
 
-void Data_descriptor_impl::default_type(Datatype_template_uptr type)
+void Data_descriptor_impl::default_type(Datatype_template_ptr type)
 {
 	m_type = move(type);
 }
 
-Datatype_template_uptr Data_descriptor_impl::default_type()
+Datatype_template_ptr Data_descriptor_impl::default_type()
 {
-	return m_type->clone();
+	return m_type;
 }
 
 bool Data_descriptor_impl::metadata() const

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 * All rights reserved.
 *
@@ -46,6 +46,7 @@
 namespace PDI {
 
 using namespace pybind11::literals;
+using std::dynamic_pointer_cast;
 using std::move;
 using std::vector;
 
@@ -55,13 +56,13 @@ namespace {
  *  \param type type to check
  *  \return true if has record inside, false otherwise
  */
-bool has_record_inside(const Datatype* type)
+bool has_record_inside(Datatype_sptr type)
 {
-	if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(type)) {
-		return has_record_inside(&array_type->subtype());
-	} else if (const Pointer_datatype* pointer_type = dynamic_cast<const Pointer_datatype*>(type)) {
-		return has_record_inside(&pointer_type->subtype());
-	} else if (dynamic_cast<const Record_datatype*>(type)) {
+	if (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(type)) {
+		return has_record_inside(array_type->subtype());
+	} else if (auto&& pointer_type = dynamic_pointer_cast<const Pointer_datatype>(type)) {
+		return has_record_inside(pointer_type->subtype());
+	} else if (dynamic_pointer_cast<const Record_datatype>(type)) {
 		return true;
 	} else {
 		return false;
@@ -72,7 +73,7 @@ bool has_record_inside(const Datatype* type)
 
 pybind11::object to_python(Ref r)
 {
-	if (has_record_inside(&r.type())) {
+	if (has_record_inside(r.type())) {
 		return pybind11::cast(Python_ref_wrapper{r});
 	}
 	
@@ -81,15 +82,15 @@ pybind11::object to_python(Ref r)
 	vector<ssize_t> shape;
 	vector<ssize_t> strides;
 	
-	const Datatype* subtype = &r.type();
-	while (auto&& array_type = dynamic_cast<const Array_datatype*>(subtype)) {
+	auto&& subtype = r.type();
+	while (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(subtype)) {
 		shape.emplace_back(array_type->subsize());
 		if ( ndim ) strides.emplace_back(array_type->size());
 		starts.emplace_back(array_type->start());
 		++ndim;
-		subtype = &array_type->subtype();
+		subtype = array_type->subtype();
 	}
-	auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(subtype);
+	auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(subtype);
 	if ( ndim ) strides.emplace_back(scalar_type->buffersize());
 	
 	pybind11::dtype pytype;
@@ -147,7 +148,7 @@ pybind11::object to_python(Ref r)
 	return result;
 }
 
-Datatype_uptr python_type(const pybind11::array& a)
+Datatype_sptr python_type(const pybind11::array& a)
 {
 	//TODO: handle non C-order arrays
 	vector<size_t> sizes(a.ndim());
@@ -170,9 +171,9 @@ Datatype_uptr python_type(const pybind11::array& a)
 		throw Impl_error{"Unexpected python type descriptor: {}", a.dtype().kind()};
 	}
 	
-	Datatype_uptr result{new Scalar_datatype{k, static_cast<size_t>(a.dtype().itemsize())}};
+	Datatype_sptr result = Scalar_datatype::make(k, static_cast<size_t>(a.dtype().itemsize()));
 	for ( int ii=a.ndim()-1; ii>=0; --ii ) {
-		result.reset(new Array_datatype{move(result), sizes[ii], 0, static_cast<size_t>(a.shape(ii))});
+		result = Array_datatype::make(move(result), sizes[ii], 0, static_cast<size_t>(a.shape(ii)));
 	}
 	return result;
 }

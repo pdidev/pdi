@@ -1,6 +1,6 @@
 /*******************************************************************************
+ * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
- * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -168,7 +168,7 @@ TEST_F(CallbacksTest, add_remove_event)
 TEST_F(CallbacksTest, add_data_callback)
 {
 	string data_x {"data_x"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x). default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
 		Ref_w ref_write {ref};
@@ -196,8 +196,8 @@ TEST_F(CallbacksTest, add_named_data_callback)
 {
 	string data_x {"data_x"};
 	string data_y {"data_y"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
-	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
 	this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
@@ -227,7 +227,7 @@ TEST_F(CallbacksTest, add_named_data_callback)
 TEST_F(CallbacksTest, remove_data_callback)
 {
 	string data_x {"data_x"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	auto erase_x = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
 		Ref_w ref_write {ref};
@@ -259,8 +259,8 @@ TEST_F(CallbacksTest, remove_named_data_callback)
 {
 	string data_x {"data_x"};
 	string data_y {"data_y"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
-	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
 	auto erase_x = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
@@ -299,8 +299,8 @@ TEST_F(CallbacksTest, add_remove_data_callback)
 	string data_y {"data_y"};
 	Data_descriptor& desc_x = this->test_context->desc(data_x);
 	Data_descriptor& desc_y = this->test_context->desc(data_y);
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
-	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
 	auto erase_x = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
@@ -358,8 +358,8 @@ TEST_F(CallbacksTest, add_remove_named_data_callback)
 	string data_y {"data_y"};
 	Data_descriptor& desc_x = this->test_context->desc(data_x);
 	Data_descriptor& desc_y = this->test_context->desc(data_y);
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
-	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
 	auto erase_x = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
@@ -412,7 +412,7 @@ TEST_F(CallbacksTest, add_remove_named_data_callback)
 TEST_F(CallbacksTest, add_empty_desc_callback)
 {
 	string data_x {"data_x"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->callbacks().add_empty_desc_access_callback([this](const std::string& name) {
 		int* x = new int;
 		*x = 42;
@@ -438,7 +438,7 @@ TEST_F(CallbacksTest, add_empty_desc_callback)
 TEST_F(CallbacksTest, remove_empty_desc_callback)
 {
 	string data_x {"data_x"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	auto erase_x = this->test_context->callbacks().add_empty_desc_access_callback([this](const std::string& name) {
 		int* x = new int;
 		*x = 42;
@@ -471,7 +471,7 @@ TEST_F(CallbacksTest, remove_empty_desc_callback)
 TEST_F(CallbacksTest, add_data_remove_callback_reclaim)
 {
 	string data_x {"data_x"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
 		Ref_w ref_write {ref};
@@ -498,7 +498,7 @@ TEST_F(CallbacksTest, add_data_remove_callback_reclaim)
 TEST_F(CallbacksTest, add_data_remove_callback_release)
 {
 	string data_x {"data_x"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	this->test_context->callbacks().add_data_remove_callback([&x](const std::string& name, Ref ref) {
 		x += 42;
@@ -525,8 +525,8 @@ TEST_F(CallbacksTest, add_named_data_remove_callback_reclaim)
 {
 	string data_x {"data_x"};
 	string data_y {"data_y"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
-	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
 	this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
@@ -563,8 +563,8 @@ TEST_F(CallbacksTest, add_named_data_remove_callback_release)
 {
 	string data_x {"data_x"};
 	string data_y {"data_y"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
-	this->test_context->desc(data_y).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	void* memory_to_free = malloc(sizeof(int));
 	int y = 0;
@@ -597,7 +597,7 @@ TEST_F(CallbacksTest, add_named_data_remove_callback_release)
 TEST_F(CallbacksTest, add_data_remove_callback_reclaim_remove)
 {
 	string data_x {"data_x"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	auto remove_callback = this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
 		Ref_w ref_write {ref};
@@ -625,7 +625,7 @@ TEST_F(CallbacksTest, add_data_remove_callback_reclaim_remove)
 TEST_F(CallbacksTest, add_data_remove_callback_release_remove)
 {
 	string data_x {"data_x"};
-	this->test_context->desc(data_x).default_type(Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type());
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	auto remove_callback = this->test_context->callbacks().add_data_remove_callback([&x](const std::string& name, Ref ref) {
 		x += 42;

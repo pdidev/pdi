@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -36,29 +37,11 @@
 #include <vector>
 
 /*
- * All tuples must inherit from this interface
- * for proper testing in tests/PDI_tuple_datatype.cxx
- */
-struct Tuple_interface {
-	//expected values from tuple functions
-	virtual bool dense() = 0;
-	virtual size_t datasize() = 0;
-	virtual size_t buffersize() = 0;
-	virtual size_t buffersize_after_densify() = 0;
-	virtual size_t alignment() = 0;
-	
-	//tested tuple
-	virtual PDI::Tuple_datatype* test_tuple() = 0;
-	
-	virtual ~Tuple_interface() {}
-};
-
-/*
  * Struct prepared for TupleNotAlignedScalarsTest.
  * Order of the fields in Not_aligned_structure is important
  * to test padding sizes.
  */
-struct TupleNotAlignedScalarsTest : Tuple_interface {
+struct TupleNotAlignedScalarsTest {
 	//frame of the structure
 	struct Not_aligned_structure {
 		char c1;
@@ -75,12 +58,12 @@ struct TupleNotAlignedScalarsTest : Tuple_interface {
 		double d;
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return true;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return 6 * sizeof(char) +
 		    sizeof(int) +
@@ -91,17 +74,17 @@ struct TupleNotAlignedScalarsTest : Tuple_interface {
 		    sizeof(double);
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Not_aligned_structure);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return buffersize();
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({sizeof(char),
 		            sizeof(int),
@@ -111,65 +94,65 @@ struct TupleNotAlignedScalarsTest : Tuple_interface {
 		            sizeof(float),
 		            sizeof(double)});
 	}
-	PDI::Tuple_datatype* test_tuple() override
+	std::shared_ptr<PDI::Tuple_datatype> test_tuple()
 	{
-		return &m_test_tuple;
+		return m_test_tuple;
 	}
 	
 	//tuple with scalar members (which are not aligned)
-	PDI::Tuple_datatype m_test_tuple {
+	std::shared_ptr<PDI::Tuple_datatype> m_test_tuple = PDI::Tuple_datatype::make(
 		std::vector<PDI::Tuple_datatype::Element> {
 			{
 				offsetof(Not_aligned_structure, c1),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char))
 			},
 			{
 				offsetof(Not_aligned_structure, i),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(int)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int))
 			},
 			{
 				offsetof(Not_aligned_structure, c2),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char))
 			},
 			{
 				offsetof(Not_aligned_structure, u),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int))
 			},
 			{
 				offsetof(Not_aligned_structure, c3),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char))
 			},
 			{
 				offsetof(Not_aligned_structure, l),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(long)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long))
 			},
 			{
 				offsetof(Not_aligned_structure, c4),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char))
 			},
 			{
 				offsetof(Not_aligned_structure, ul),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long))
 			},
 			{
 				offsetof(Not_aligned_structure, c5),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char))
 			},
 			{
 				offsetof(Not_aligned_structure, f),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::FLOAT, sizeof(float)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::FLOAT, sizeof(float))
 			},
 			{
 				offsetof(Not_aligned_structure, c6),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char))
 			},
 			{
 				offsetof(Not_aligned_structure, d),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::FLOAT, sizeof(double)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::FLOAT, sizeof(double))
 			},
 		},
 		sizeof(Not_aligned_structure)
-	};
+	);
 };
 
 /*
@@ -177,7 +160,7 @@ struct TupleNotAlignedScalarsTest : Tuple_interface {
  * Order of the fields in Aligned_structure is important
  * to test padding sizes.
  */
-struct TupleAlignedScalarsTest : Tuple_interface {
+struct TupleAlignedScalarsTest {
 	struct Aligned_structure {
 		int i;
 		unsigned int u;
@@ -186,12 +169,12 @@ struct TupleAlignedScalarsTest : Tuple_interface {
 		char c;
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return true;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return sizeof(int) +
 		    sizeof(unsigned int) +
@@ -200,17 +183,17 @@ struct TupleAlignedScalarsTest : Tuple_interface {
 		    sizeof(char);
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Aligned_structure);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return buffersize(); //datasize() + (alignof(long) - alignof(char));
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({sizeof(int),
 		            sizeof(unsigned int),
@@ -219,37 +202,37 @@ struct TupleAlignedScalarsTest : Tuple_interface {
 		            sizeof(char)});
 	}
 	
-	PDI::Tuple_datatype* test_tuple() override
+	std::shared_ptr<PDI::Tuple_datatype> test_tuple()
 	{
-		return &m_test_tuple;
+		return m_test_tuple;
 	}
 	
 	//tuple with scalar members (which are aligned)
-	PDI::Tuple_datatype m_test_tuple {
+	std::shared_ptr<PDI::Tuple_datatype> m_test_tuple = PDI::Tuple_datatype::make(
 		std::vector<PDI::Tuple_datatype::Element> {
 			{
 				offsetof(Aligned_structure, i),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(int)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int))
 			},
 			{
 				offsetof(Aligned_structure, u),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int))
 			},
 			{
 				offsetof(Aligned_structure, l),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(long)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long))
 			},
 			{
 				offsetof(Aligned_structure, ul),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long))
 			},
 			{
 				offsetof(Aligned_structure, c),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}}
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char))
 			}
 		},
 		sizeof(Aligned_structure)
-	};
+	);
 };
 
 /*
@@ -257,7 +240,7 @@ struct TupleAlignedScalarsTest : Tuple_interface {
  * Order of the fields in Dense_array_structure is important
  * to test padding sizes.
  */
-struct DenseArrayScalarsTest : Tuple_interface {
+struct DenseArrayScalarsTest {
 	struct Dense_array_structure {
 		int i[3];
 		unsigned int u[4];
@@ -265,12 +248,12 @@ struct DenseArrayScalarsTest : Tuple_interface {
 		unsigned long ul[6];
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return true;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return 3 * sizeof(int) +
 		    4 * sizeof(unsigned int) +
@@ -278,17 +261,17 @@ struct DenseArrayScalarsTest : Tuple_interface {
 		    6 * sizeof(unsigned long);
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Dense_array_structure);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return datasize() + (alignof(long) - alignof(int));
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({sizeof(int),
 		            sizeof(unsigned int),
@@ -296,62 +279,46 @@ struct DenseArrayScalarsTest : Tuple_interface {
 		            sizeof(unsigned long)});
 	}
 	
-	PDI::Tuple_datatype* test_tuple() override
+	std::shared_ptr<PDI::Tuple_datatype> test_tuple()
 	{
-		return &m_test_tuple;
+		return m_test_tuple;
 	}
 	
 	//tuple with arrays (which are dense) containing scalars
-	PDI::Tuple_datatype m_test_tuple {
+	std::shared_ptr<PDI::Tuple_datatype> m_test_tuple = PDI::Tuple_datatype::make(
 		std::vector<PDI::Tuple_datatype::Element> {
 			{
 				offsetof(Dense_array_structure, i),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(int)}},
-						3
-					}
-				}
+				PDI::Array_datatype::make(
+					PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int)),
+					3
+				)
 			},
 			{
 				offsetof(Dense_array_structure, u),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)}},
-						4
-					}
-				}
+				PDI::Array_datatype::make(
+					PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)),
+					4
+				)
 			},
 			{
 				offsetof(Dense_array_structure, l),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(long)}},
-						5
-					}
-				}
+				PDI::Array_datatype::make(
+					PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)),
+					5
+				)
 			},
 			
 			{
 				offsetof(Dense_array_structure, ul),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)}},
-						6
-					}
-				}
+				PDI::Array_datatype::make(
+					PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)),
+					6
+				)
 			}
 		},
 		sizeof(Dense_array_structure)
-	};
+	);
 };
 
 /*
@@ -359,90 +326,76 @@ struct DenseArrayScalarsTest : Tuple_interface {
  * Order of the fields in Sparse_structure is important
  * to test padding sizes.
  */
-struct TupleSparseArrayScalarsTest : Tuple_interface {
+struct TupleSparseArrayScalarsTest {
 	struct Sparse_array_structure {
 		int i[100]; //buffer: 10 x 10; data: 4 x 4; start: (4, 4)
 		long l[60]; //buffer: 3 x 20; data: 1 x 20; start (0, 1)
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return false;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return 4 * 4 * sizeof(int) +
 		    1 * 20 * sizeof(long);
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Sparse_array_structure);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return datasize();
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({sizeof(int),
 		            sizeof(long)});
 	}
 	
-	PDI::Tuple_datatype* test_tuple() override
+	std::shared_ptr<PDI::Tuple_datatype> test_tuple()
 	{
-		return &m_test_tuple;
+		return m_test_tuple;
 	}
 	
 	//tuple with arrays (which are sparse) containing scalars
-	PDI::Tuple_datatype m_test_tuple {
+	std::shared_ptr<PDI::Tuple_datatype> m_test_tuple = PDI::Tuple_datatype::make(
 		std::vector<PDI::Tuple_datatype::Element> {
 			{
 				offsetof(Sparse_array_structure, i),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr {
-							new PDI::Array_datatype
-							{
-								PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(int)}},
-								10,
-								3,
-								4
-							}
-						},
+				PDI::Array_datatype::make(
+					PDI::Array_datatype::make(
+						PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int)),
 						10,
 						3,
 						4
-					}
-				}
+					),
+					10,
+					3,
+					4
+				)
 			},
 			{
 				offsetof(Sparse_array_structure, l),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr {
-							new PDI::Array_datatype
-							{
-								PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(long)}},
-								20
-							}
-						},
-						3,
-						1,
-						1
-					}
-				}
+				PDI::Array_datatype::make(
+					PDI::Array_datatype::make(
+						PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)),
+						20
+					),
+					3,
+					1,
+					1
+				)
 			}
 		},
 		sizeof(Sparse_array_structure)
-	};
+	);
 };
 
 /*
@@ -450,42 +403,42 @@ struct TupleSparseArrayScalarsTest : Tuple_interface {
  * Order of the fields in Dense_tuple is important
  * to test padding sizes.
  */
-struct DenseTuplesInTupleTest : Tuple_interface {
+struct DenseTuplesInTupleTest {
 	struct Dense_tuple {
 		TupleAlignedScalarsTest::Aligned_structure aligned_scalar_tuple;
 		DenseArrayScalarsTest::Dense_array_structure dense_array_tuple;
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return true;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return scalar_structure_test->datasize() + array_structure_test->datasize();
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Dense_tuple);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return scalar_structure_test->buffersize_after_densify() +
 		    array_structure_test->buffersize_after_densify();
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({scalar_structure_test->alignment(),
 		            array_structure_test->alignment()});
 	}
 	
-	PDI::Tuple_datatype* test_tuple() override
+	std::shared_ptr<PDI::Tuple_datatype> test_tuple()
 	{
-		return &m_test_tuple;
+		return m_test_tuple;
 	}
 	
 	std::unique_ptr<TupleAlignedScalarsTest> scalar_structure_test {new TupleAlignedScalarsTest()};
@@ -495,25 +448,25 @@ struct DenseTuplesInTupleTest : Tuple_interface {
 	 * tuple with tuples (which are dense) which contain dense
 	 * structures (scalars and arrays from previous tests)
 	 */
-	PDI::Tuple_datatype m_test_tuple {
+	std::shared_ptr<PDI::Tuple_datatype> m_test_tuple = PDI::Tuple_datatype::make(
 		std::vector<PDI::Tuple_datatype::Element> {
 			{
 				offsetof(Dense_tuple, aligned_scalar_tuple),
-				PDI::Datatype_uptr
+				PDI::Datatype_sptr
 				{
-					scalar_structure_test->test_tuple()->clone_type()
+					scalar_structure_test->test_tuple()
 				}
 			},
 			{
 				offsetof(Dense_tuple, dense_array_tuple),
-				PDI::Datatype_uptr
+				PDI::Datatype_sptr
 				{
-					array_structure_test->test_tuple()->clone_type()
+					array_structure_test->test_tuple()
 				}
 			}
 		},
 		sizeof(Dense_tuple)
-	};
+	);
 };
 
 /*
@@ -521,42 +474,42 @@ struct DenseTuplesInTupleTest : Tuple_interface {
  * Order of the fields in Sparse_tuple is important
  * to test padding sizes.
  */
-struct SparseTuplesInTupleTest : Tuple_interface {
+struct SparseTuplesInTupleTest {
 	struct Sparse_tuple {
 		TupleNotAlignedScalarsTest::Not_aligned_structure not_aligned_scalar_tuple;
 		TupleSparseArrayScalarsTest::Sparse_array_structure sparse_array_tuple;
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return false;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return scalar_structure_test->datasize() + array_structure_test->datasize();
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Sparse_tuple);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return scalar_structure_test->buffersize_after_densify() +
 		    array_structure_test->buffersize_after_densify();
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({scalar_structure_test->alignment(),
 		            array_structure_test->alignment()});
 	}
 	
-	PDI::Tuple_datatype* test_tuple() override
+	std::shared_ptr<PDI::Tuple_datatype> test_tuple()
 	{
-		return &m_test_tuple;
+		return m_test_tuple;
 	}
 	
 	std::unique_ptr<TupleNotAlignedScalarsTest> scalar_structure_test {new TupleNotAlignedScalarsTest()};
@@ -566,25 +519,25 @@ struct SparseTuplesInTupleTest : Tuple_interface {
 	 * tuple with tuples (which are dense) which contain sparse
 	 * structures (scalars and arrays from previous tests)
 	 */
-	PDI::Tuple_datatype m_test_tuple {
+	std::shared_ptr<PDI::Tuple_datatype> m_test_tuple = PDI::Tuple_datatype::make(
 		std::vector<PDI::Tuple_datatype::Element> {
 			{
 				offsetof(Sparse_tuple, not_aligned_scalar_tuple),
-				PDI::Datatype_uptr
+				PDI::Datatype_sptr
 				{
-					scalar_structure_test->test_tuple()->clone_type()
+					scalar_structure_test->test_tuple()
 				}
 			},
 			{
 				offsetof(Sparse_tuple, sparse_array_tuple),
-				PDI::Datatype_uptr
+				PDI::Datatype_sptr
 				{
-					array_structure_test->test_tuple()->clone_type()
+					array_structure_test->test_tuple()
 				}
 			}
 		},
 		sizeof(Sparse_tuple)
-	};
+	);
 };
 
 #endif // PDI_TUPLE_DATATYPE_TEST_H_

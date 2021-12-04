@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -49,10 +50,10 @@ struct DataRefAnyTest : public ::testing::Test, Reference_base {
 			m_data[i] = i;
 		}
 		
-		Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
-		Array_datatype array_type {int_type.clone_type(), 32};
+		auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+		auto&& array_type = Array_datatype::make(int_type, 32);
 		m_tested_ref = unique_ptr<Ref> {new Ref{m_data.get(), [](void* d){*static_cast<int*>(d)=-1;},
-			array_type.clone_type(), true, true}
+			array_type, true, true}
 		};
 	}
 	
@@ -234,12 +235,12 @@ TEST_F(DataRefAnyTest, nullifyTest)
  */
 TEST_F(DataRefAnyTest, get_content)
 {
-	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 	
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 1);
 	
-	Ref_r sub {*this->m_tested_ref, Array_datatype::Index_accessor{4}};
+	Ref_r sub = (*this->m_tested_ref)[4];
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 2);
 	ASSERT_NE(get_content(sub), get_content(*this->m_tested_ref));
@@ -264,11 +265,11 @@ TEST_F(DataRefAnyTest, get_content)
  */
 TEST_F(DataRefAnyTest, content_chain)
 {
-	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
-	Array_datatype subarray {int_type.clone_type(), 4};
+	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	auto&& subarray= Array_datatype::make(int_type, 4);
 	
-	Ref_r sub_array_ref {*this->m_tested_ref, Array_datatype::Slice_accessor{16, 20}}; // array [16:20]
-	Ref_r sub_scalar_ref {sub_array_ref, Array_datatype::Index_accessor{0}}; // array[16]
+	Ref_r sub_array_ref = (*this->m_tested_ref)[std::pair<size_t, size_t>(16, 20)]; // array [16:20]
+	Ref_r sub_scalar_ref = sub_array_ref[0]; // array[16]
 	
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 3);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
@@ -306,16 +307,16 @@ TEST_F(DataRefAnyTest, content_chain)
  */
 TEST_F(DataRefAnyTest, content_record)
 {
-	Scalar_datatype char_type {Scalar_kind::SIGNED, sizeof(char)};
+	auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
 	struct Record {
 		char x;
 		int y[32];
 	};
 	
 	std::vector<Record_datatype::Member> members;
-	members.emplace_back(offsetof(Record, x), char_type.clone_type(), "x");
-	members.emplace_back(offsetof(Record, y), this->m_tested_ref->type().clone_type(), "y");
-	Record_datatype record_type {std::move(members), sizeof(Record)};
+	members.emplace_back(offsetof(Record, x), char_type, "x");
+	members.emplace_back(offsetof(Record, y), this->m_tested_ref->type(), "y");
+	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Record));
 	
 	Record data;
 	data.x = 42;
@@ -323,25 +324,22 @@ TEST_F(DataRefAnyTest, content_record)
 		data.y[i] = i;
 	}
 	
-	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type.clone_type(), true, true};
+	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type, true, true};
 	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 1);
 
 	{
-		std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
-		accessors.emplace_back(new Record_datatype::Member_accessor{"y"});
-		accessors.emplace_back(new Array_datatype::Index_accessor{12});
-		Ref_r result {base_ref, accessors};
+		Ref_r result = base_ref["y"][12];
 		ASSERT_EQ(12, *static_cast<const int*>(result.get()));
 	}
 	
-	Ref_r data_x_ref{base_ref, Record_datatype::Member_accessor{"x"}}; // data.x
+	Ref_r data_x_ref = base_ref["x"]; // data.x
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 2);
 	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 2);
 	ASSERT_EQ(get_content(data_x_ref)->m_owners, 1);
 	
-	Ref_r data_y_ref {base_ref, Record_datatype::Member_accessor{"y"}}; // data.y
+	Ref_r data_y_ref = base_ref["y"]; // data.y
 	for (int i = 0; i < 32; i++) {
 		ASSERT_EQ(i, static_cast<const int*>(data_y_ref.get())[i]);
 	}
@@ -353,9 +351,9 @@ TEST_F(DataRefAnyTest, content_record)
 	ASSERT_EQ(get_content(data_y_ref)->m_buffer->m_owners, 3);
 	ASSERT_EQ(get_content(data_y_ref)->m_owners, 1);
 	
-	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 	
-	Ref data_y_scalar_ref {data_y_ref, Array_datatype::Index_accessor{12}};
+	Ref data_y_scalar_ref = data_y_ref[12];
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 4);
 	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(data_x_ref)->m_buffer->m_owners, 4);
@@ -419,12 +417,12 @@ TEST_F(DataRefAnyTest, content_record)
  */
 TEST_F(DataRefAnyTest, content_deep_copy)
 {
-	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 	
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 1);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
 	
-	Ref_r sub {*this->m_tested_ref, Array_datatype::Index_accessor{4}};
+	Ref_r sub = (*this->m_tested_ref)[4];
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_buffer->m_owners, 2);
 	ASSERT_EQ(get_content(*this->m_tested_ref)->m_owners, 1);
 	ASSERT_NE(get_content(sub), get_content(*this->m_tested_ref));
@@ -433,7 +431,7 @@ TEST_F(DataRefAnyTest, content_deep_copy)
 	ASSERT_EQ(get_content(sub)->m_owners, 1);
 	
 	Ref_r copied = do_copy(sub);
-	ASSERT_EQ(copied.type().buffersize(), sub.type().buffersize());
+	ASSERT_EQ(copied.type()->buffersize(), sub.type()->buffersize());
 	ASSERT_NE(copied.get(), sub.get());
 	ASSERT_EQ(*static_cast<const int*>(copied.get()), *static_cast<const int*>(sub.get()));
 	
@@ -483,16 +481,16 @@ TEST_F(DataRefAnyTest, ref_index_access)
  */
 TEST_F(DataRefAnyTest, ref_member_access)
 {
-	Scalar_datatype char_type {Scalar_kind::SIGNED, sizeof(char)};
+	auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
 	struct Record {
 		char x;
 		int y[32];
 	};
 	
 	std::vector<Record_datatype::Member> members;
-	members.emplace_back(offsetof(Record, x), char_type.clone_type(), "x");
-	members.emplace_back(offsetof(Record, y), this->m_tested_ref->type().clone_type(), "y");
-	Record_datatype record_type {std::move(members), sizeof(Record)};
+	members.emplace_back(offsetof(Record, x), char_type, "x");
+	members.emplace_back(offsetof(Record, y), this->m_tested_ref->type(), "y");
+	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Record));
 	
 	Record data;
 	data.x = 42;
@@ -500,7 +498,7 @@ TEST_F(DataRefAnyTest, ref_member_access)
 		data.y[i] = i;
 	}
 	
-	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type.clone_type(), true, true};
+	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type, true, true};
 	ASSERT_EQ(get_content(base_ref)->m_owners, 1);
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 1);
 	
@@ -522,7 +520,7 @@ TEST_F(DataRefAnyTest, ref_member_access)
 	ASSERT_EQ(get_content(data_y_ref)->m_buffer->m_owners, 3);
 	ASSERT_EQ(get_content(data_y_ref)->m_owners, 1);
 	
-	Scalar_datatype int_type {Scalar_kind::SIGNED, sizeof(int)};
+	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 	
 	Ref data_y_scalar_ref = data_y_ref[12];
 	ASSERT_EQ(get_content(base_ref)->m_buffer->m_owners, 4);
@@ -603,19 +601,19 @@ TEST_F(DataRefAnyTest, wrong_index_access)
 		FAIL();
 	} catch (const Type_error& e) {}
 	try {
-		Scalar_datatype char_type {Scalar_kind::SIGNED, sizeof(char)};
+		auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
 		struct Record {
 			char x;
 			int y[32];
 		};
 		
 		std::vector<Record_datatype::Member> members;
-		members.emplace_back(offsetof(Record, x), char_type.clone_type(), "x");
-		members.emplace_back(offsetof(Record, y), this->m_tested_ref->type().clone_type(), "y");
-		Record_datatype record_type {std::move(members), sizeof(Record)};
+		members.emplace_back(offsetof(Record, x), char_type, "x");
+		members.emplace_back(offsetof(Record, y), this->m_tested_ref->type(), "y");
+		auto&& record_type = Record_datatype::make(std::move(members), sizeof(Record));
 		
 		Record data;
-		Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type.clone_type(), true, true};
+		Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type, true, true};
 		base_ref[4];
 		FAIL();
 	} catch (const Type_error& e) {}
@@ -736,22 +734,17 @@ struct DenseArrayRefAnyTest : public DataRefAnyTest {
 		}
 		
 		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void*){},
-			datatype->clone_type(), true, true}
+			datatype, true, true}
 		};
 	}
 	
-	Datatype_uptr datatype {
-		new Array_datatype
-		{
-			Datatype_uptr {
-				new Array_datatype
-				{
-					Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-					10
-				}
-			},
+	Datatype_sptr datatype {
+		Array_datatype::make(
+			Array_datatype::make(
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+				10),
 			10
-		}
+		)
 	};
 	
 	int array_to_share[100]; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
@@ -793,25 +786,21 @@ struct SparseArrayRefAnyTest : public DataRefAnyTest {
 			array_to_share[i] = i;
 		}
 		
-		m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void* ptr){operator delete[] (ptr);}, datatype->clone_type(), true, true}};
+		m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void* ptr){operator delete[] (ptr);}, datatype, true, true}};
 	}
 	
-	Datatype_uptr datatype {
-		new Array_datatype
-		{
-			Datatype_uptr {
-				new Array_datatype
-				{
-					Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-					10,
-					3,
-					4
-				}
-			},
+	Datatype_sptr datatype {
+		Array_datatype::make(
+			Array_datatype::make(
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+				10,
+				3,
+				4
+			),
 			10,
 			3,
 			4
-		}
+						)
 	};
 };
 
@@ -859,7 +848,7 @@ struct DenseRecordRefAnyTest : public DataRefAnyTest {
 		record_to_share->long_scalar = 10;
 		record_to_share->int_scalar = -10;
 		
-		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype->clone_type(), true, true}
+		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype, true, true}
 		};
 	}
 	
@@ -868,29 +857,26 @@ struct DenseRecordRefAnyTest : public DataRefAnyTest {
 		return  {
 			Record_datatype::Member{
 				offsetof(Struct_def, char_array),
-				Datatype_uptr {
-					new Array_datatype
-					{
-						Datatype_uptr{new Scalar_datatype {Scalar_kind::UNSIGNED, sizeof(char)}},
-						25
-					}
-				},
+				Array_datatype::make(
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					25
+				),
 				"char_array"
 			},
 			Record_datatype::Member{
 				offsetof(Struct_def, long_scalar),
-				Datatype_uptr {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
 				"long_scalar"
 			},
 			Record_datatype::Member{
 				offsetof(Struct_def, int_scalar),
-				Datatype_uptr {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
 				"int_scalar"
 			}
 		};
 	}
 	
-	Datatype_uptr datatype { new Record_datatype {get_members(), sizeof(Struct_def)} };
+	Datatype_sptr datatype { Record_datatype::make(get_members(), sizeof(Struct_def)) };
 };
 
 TEST_F(DenseRecordRefAnyTest, checkDeepCopy)
@@ -935,7 +921,7 @@ struct SparseRecordRefAnyTest : public DataRefAnyTest {
 		record_to_share->long_scalar = 10;
 		record_to_share->int_scalar = -10;
 		
-		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype->clone_type(), true, true}
+		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype, true, true}
 		};
 	}
 	
@@ -944,39 +930,33 @@ struct SparseRecordRefAnyTest : public DataRefAnyTest {
 		return  {
 			Record_datatype::Member{
 				offsetof(Sparse_struct_def, char_array),
-				Datatype_uptr {
-					new Array_datatype
-					{
-						Datatype_uptr {
-							new Array_datatype
-							{
-								Datatype_uptr{new Scalar_datatype {Scalar_kind::UNSIGNED, sizeof(char)}},
-								5,
-								1,
-								3
-							}
-						},
+				Array_datatype::make(
+					Array_datatype::make(
+						Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
 						5,
 						1,
 						3
-					}
-				},
+					),
+					5,
+					1,
+					3
+				),
 				"char_array"
 			},
 			Record_datatype::Member{
 				offsetof(Sparse_struct_def, long_scalar),
-				Datatype_uptr {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
 				"long_scalar"
 			},
 			Record_datatype::Member{
 				offsetof(Sparse_struct_def, int_scalar),
-				Datatype_uptr {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
 				"int_scalar"
 			}
 		};
 	}
 	
-	Datatype_uptr datatype { new Record_datatype {get_members(), sizeof(Sparse_struct_def)} };
+	Datatype_sptr datatype { Record_datatype::make(get_members(), sizeof(Sparse_struct_def)) };
 };
 
 TEST_F(SparseRecordRefAnyTest, checkDeepCopy)

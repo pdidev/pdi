@@ -55,7 +55,8 @@ The possible values for the keys are as follow:
   filter by default for datasets created in this file.
   This can be overriden on a per dataset basis.
   By default, the Fletcher32 checksum filter is deactivated.
-  See https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
+  See
+  https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
 
 ## `DATA_SECTION`
@@ -119,9 +120,9 @@ The possible values for the keys are as follow:
   Each value is a $-expression (evaluated when the dataset is accessed)
   specifying the value to the attribute.
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY.
-* `chunking`: a \ref intexpr_or_seq that defines the size of the chunks used to
-  the dataset in a chunked layout.
-  The \ref intexpr_or_seq must have the same dimension as the dataset type.
+* `chunking`: a \ref intexpr_or_seq_node that defines the size of the chunks
+  used to the dataset in a chunked layout.
+  The \ref intexpr_or_seq_node must have the same dimension as the dataset type.
   This can be overriden by the `decl_hdf5.chunking` attribute in the dataset
   type.
   By default, no chunking is activated.
@@ -158,7 +159,8 @@ The possible values for the keys are as follow:
   It describes the number of point to skip at the beginning in each dimension.
   
 Memory selection default values:
-* If the `size` is not specified, it defaults to size of the whole data in each dimension.
+* If the `size` is not specified, it defaults to size of the whole data in each
+  dimension.
 * If the `start` is not specified it defaults to 0 in all dimensions.
 
 Dataset selection default values:
@@ -168,7 +170,7 @@ Dataset selection default values:
   * otherwise, the size default to the whole dataset.
 * If the `start` is not specified it defaults to 0 in all dimensions.
 
-## `COLLISION_POLICY`
+## `COLLISION_POLICY` {#COLLISION_POLICY}
 
 A `COLLISION_POLICY` is a string that identifies what to do when writing to a
 file or dataset that already exists.

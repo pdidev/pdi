@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -67,7 +68,7 @@ class Dnc_netcdf_file
 	 *
 	 * \return nc_type of compound type
 	 */
-	nc_type define_compound_type(const PDI::Record_datatype* record_type);
+	nc_type define_compound_type(std::shared_ptr<const PDI::Record_datatype> record_type);
 	
 	/** Puts attribute to the file
 	 *

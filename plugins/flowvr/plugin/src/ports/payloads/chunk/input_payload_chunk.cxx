@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -109,7 +110,7 @@ void Input_payload_chunk::empty_desc_access(const std::string& data_name)
 		m_ctx.logger().warn("{} port: Flowvr data `{}' is empty or not valid", m_name, chunk_desc);
 		m_ctx.logger().trace("{} port: Sharing (nullptr) `{}'", m_name, chunk_desc);
 		m_sharing_chunks = true;
-		m_ctx[chunk_desc].share(PDI::Ref(nullptr, nullptr, PDI::UNDEF_TYPE.clone_type(), true, false), false, false);
+		m_ctx[chunk_desc].share(PDI::Ref(nullptr, nullptr, PDI::UNDEF_TYPE, true, false), false, false);
 		m_ctx.logger().trace("{} port: Share (nullptr) complete `{}'", m_name, chunk_desc);
 	}
 }

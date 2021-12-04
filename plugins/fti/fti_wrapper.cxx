@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -36,7 +37,7 @@
 using PDI::Context;
 using PDI::Context_proxy;
 using PDI::Data_descriptor;
-using PDI::Datatype_uptr;
+using PDI::Datatype_sptr;
 using PDI::Impl_error;
 using PDI::Plugin_error;
 using PDI::Scalar_datatype;
@@ -47,7 +48,7 @@ using std::string;
 
 namespace {
 
-void add_predefined(Context& ctx, const std::string& name, void* data, Datatype_uptr type)
+void add_predefined(Context& ctx, const std::string& name, void* data, Datatype_sptr type)
 {
 	Data_descriptor& predef_desc = ctx.desc(name);
 	if (!predef_desc.empty()) {
@@ -78,7 +79,7 @@ Fti_wrapper::Fti_wrapper(Context& ctx, const Fti_cfg& config, MPI_Comm comm, PC_
 	
 	
 	//load FTI_COMM_WORLD.rank
-	add_predefined(ctx, "FTI_COMM_WORLD_rank", &fti_world_rank, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}});
+	add_predefined(ctx, "FTI_COMM_WORLD_rank", &fti_world_rank, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	string fti_rank_name = "FTI %{FTI_COMM_WORLD_rank:06d}";
 	if (m_head) {
 		fti_rank_name = "FTI %{FTI_COMM_WORLD_rank:06d} (HEAD)";

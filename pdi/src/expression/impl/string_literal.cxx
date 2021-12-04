@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * All rights reserved.
+ * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -44,8 +43,10 @@
 
 namespace PDI {
 
-using std::unordered_set;
+using std::dynamic_pointer_cast;
+using std::make_shared;
 using std::string;
+using std::unordered_set;
 using std::unique_ptr;
 
 unique_ptr<Expression::Impl> Expression::Impl::String_literal::clone() const
@@ -85,17 +86,17 @@ double Expression::Impl::String_literal::to_double(Context& ctx) const
 Ref Expression::Impl::String_literal::to_ref(Context& ctx) const
 {
 	string value = to_string(ctx);
-	return Impl::to_ref(ctx, Array_datatype{Datatype_uptr{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}, value.length() + 1});
+	return Impl::to_ref(ctx, Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), value.length() + 1));
 }
 
-size_t Expression::Impl::String_literal::copy_value(Context& ctx, void* buffer, const Datatype& type) const
+size_t Expression::Impl::String_literal::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const
 {
-	if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&type)) {
-		if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&array_type->subtype())) {
+	if (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(type)) {
+		if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) {
 			if (scalar_type->buffersize() == sizeof(char)) {
 				string value = to_string(ctx);
 				memcpy(buffer, value.c_str(), value.size()+1);
-				return type.buffersize();
+				return type->buffersize();
 			}
 		}
 	}

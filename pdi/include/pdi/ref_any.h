@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -149,7 +149,7 @@ protected:
 		void* m_data;
 		
 		/// Type of the data
-		Datatype_uptr m_type;
+		Datatype_sptr m_type;
 		
 		/// Number of references to this data
 		int m_owners;
@@ -160,7 +160,7 @@ protected:
 		 * \param data the data location
 		 * \param type the type of the data
 		 */
-		Referenced_data(Referenced_buffer* buffer, void* data, Datatype_uptr type):
+		Referenced_data(Referenced_buffer* buffer, void* data, Datatype_sptr type):
 			m_buffer{buffer},
 			m_data{data},
 			m_type{std::move(type)},
@@ -179,17 +179,17 @@ protected:
 		 * \param readable the maximum allowed access to the underlying content
 		 * \param writable the maximum allowed access to the underlying content
 		 */
-		Referenced_data(void* data, std::function<void(void*)> freefunc, Datatype_uptr type, bool readable, bool writable):
+		Referenced_data(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable):
 			m_data{data},
-			m_type{std::move(type)},
+			m_type{type},
 			m_owners{0}
 		{
 			assert(data);
-			std::shared_ptr<Datatype> cloned_type = m_type->clone_type(); // cannot use uptr, because std::function must be CopyConstructible
-			m_buffer = new Referenced_buffer{[data, freefunc, cloned_type]() mutable {
-					cloned_type->destroy_data(data);
-					freefunc(data);
-				}, readable, writable};
+			m_buffer = new Referenced_buffer{[data, freefunc, type]()
+			{
+				type->destroy_data(data);
+				freefunc(data);
+			}, readable, writable};
 			m_buffer->m_owners++;
 		}
 		
@@ -244,7 +244,7 @@ protected:
 public:
 	/** accesses the type of the referenced raw data
 	 */
-	const Datatype& type() const noexcept;
+	Datatype_sptr type() const noexcept;
 	
 	size_t hash() const noexcept
 	{
@@ -272,6 +272,9 @@ class PDI_EXPORT Ref_any:
 	public Reference_base
 {
 public:
+	template<bool OR, bool OW>
+	friend class Ref_any;
+	
 	/** Constructs a null reference
 	 */
 	Ref_any() = default;
@@ -323,7 +326,7 @@ public:
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Ref_any(void* data, std::function<void(void*)> freefunc, Datatype_uptr type, bool readable, bool writable):
+	Ref_any(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable):
 		Reference_base()
 	{
 		if (type->datasize() && !data && (readable||writable)) {
@@ -331,40 +334,6 @@ public:
 		}
 		if (data) {
 			link(new Referenced_data(data, freefunc, std::move(type), readable,  writable));
-		}
-	}
-	
-	/** Creates a subreference from reference
-	 *
-	 * \param other source reference
-	 * \param accessor accessor to use to create subreference
-	 */
-	Ref_any(Ref other, const Datatype::Accessor_base& accessor):
-		Reference_base()
-	{
-		if (other) {
-			std::pair<void*, Datatype_uptr> subref_info = other.type().subaccess(get_content(other)->m_data, accessor);
-			link(new Referenced_data(
-			        get_content(other)->m_buffer,
-			        subref_info.first,
-			        std::move(subref_info.second)));
-		}
-	}
-	
-	/** Creates a subreference from reference
-	 *
-	 * \param other source reference
-	 * \param accessors vector of accessor to use to create subreference
-	 */
-	Ref_any(Ref other, const std::vector<std::unique_ptr<Datatype::Accessor_base>>& accessors):
-		Reference_base()
-	{
-		if (other) {
-			std::pair<void*, Datatype_uptr> subref_info = other.type().subaccess(get_content(other)->m_data, accessors);
-			link(new Referenced_data(
-			        get_content(other)->m_buffer,
-			        subref_info.first,
-			        std::move(subref_info.second)));
 		}
 	}
 	
@@ -445,10 +414,7 @@ public:
 	 */
 	Ref operator[] (const std::string& member_name) const
 	{
-		if (is_null()) {
-			throw Type_error{"Cannot access member from empty Ref: `{}'", member_name};
-		}
-		return Ref{*this, Record_datatype::Member_accessor{member_name}};
+		return this->operator[](member_name.c_str());
 	}
 	
 	/** Create a sub-reference to a member in case the content behind the ref is a record
@@ -458,7 +424,16 @@ public:
 	 */
 	Ref operator[] (const char* member_name) const
 	{
-		return this->operator[](std::string(member_name));
+		if (is_null()) {
+			throw Type_error{"Cannot access member from empty Ref: `{}'", member_name};
+		}
+		std::pair<void*, Datatype_sptr> subref_info = type()->member(member_name, m_content->m_data);
+		Ref result;
+		result.link(new Referenced_data(
+		        m_content->m_buffer,
+		        subref_info.first,
+		        std::move(subref_info.second)));
+		return result;
 	}
 	
 	/** Create a sub-reference to the content at a given index in case the content behind the ref is an array
@@ -466,12 +441,19 @@ public:
 	 * \param index index to make a subref for
 	 * \return created subreference
 	 */
-	Ref operator[] (std::size_t index) const
+	template<class T>
+	std::enable_if_t<std::is_integral<T>::value, Ref> operator[] (T index) const
 	{
 		if (is_null()) {
 			throw Type_error{"Cannot access array index from empty Ref: `{}'", index};
 		}
-		return Ref{*this, Array_datatype::Index_accessor{index}};
+		std::pair<void*, Datatype_sptr> subref_info = type()->index(index, m_content->m_data);
+		Ref result;
+		result.link(new Referenced_data(
+		        m_content->m_buffer,
+		        subref_info.first,
+		        std::move(subref_info.second)));
+		return result;
 	}
 	
 	/** Create a sub-reference to the content at a given slice in case the content behind the ref is an array
@@ -482,9 +464,15 @@ public:
 	Ref operator[] (std::pair<std::size_t, std::size_t> slice) const
 	{
 		if (is_null()) {
-			throw Type_error{"Cannot access array slice from empty Ref: `{}'", index};
+			throw Type_error("Cannot access array slice from empty Ref: `{}:{}'", slice.first, slice.second);
 		}
-		return Ref{*this, Array_datatype::Slice_accessor{slice.first, slice.second}};
+		std::pair<void*, Datatype_sptr> subref_info = type()->slice(slice.first, slice.second, m_content->m_data);
+		Ref result;
+		result.link(new Referenced_data(
+		        m_content->m_buffer,
+		        subref_info.first,
+		        std::move(subref_info.second)));
+		return result;
 	}
 	
 	/** Offers access to the referenced raw data
@@ -523,7 +511,7 @@ public:
 	T scalar_value()
 	{
 		static_assert(R, "Cannot get scalar_value from Ref without read access");
-		if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type())) {
+		if (auto&& scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(type())) {
 			if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
 				switch (scalar_type->buffersize()) {
 				case 1L:
@@ -551,7 +539,7 @@ public:
 					throw Type_error{"Unknown size of integer datatype"};
 				}
 			} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
-				switch (type().buffersize()) {
+				switch (type()->buffersize()) {
 				case 4L: {
 					return *static_cast<const float*>(m_content->m_data);
 				}
@@ -565,7 +553,7 @@ public:
 				throw Type_error{"Unknown datatype to get value"};
 			}
 		}
-		throw Type_error{"Expected scalar, found invalid type instead: {}", type().debug_string()};
+		throw Type_error{"Expected scalar, found invalid type instead: {}", type()->debug_string()};
 	}
 	
 	/** Checks whether this is a null reference

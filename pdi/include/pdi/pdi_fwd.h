@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -73,9 +73,9 @@ class Tuple_datatype;
  */
 class Datatype_template;
 
-typedef std::unique_ptr<Datatype_template> Datatype_template_uptr;
+using Datatype_template_ptr = std::shared_ptr<const Datatype_template>;
 
-typedef std::unique_ptr<Datatype> Datatype_uptr;
+using Datatype_sptr = std::shared_ptr<const Datatype>;
 
 /** A data descriptors with a name and a value, it contains an implicit type
  * template that is used when exposing untyped data
@@ -97,7 +97,7 @@ typedef Ref_any<false, true> Ref_w;
 typedef Ref_any<true, true> Ref_rw;
 
 /** Different possible interpretations for a scalar
-    */
+ */
 enum class Scalar_kind : uint8_t {
 	UNKNOWN,
 	SIGNED,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -53,8 +53,8 @@ using PDI::Array_datatype;
 using PDI::Context;
 using PDI::each;
 using PDI::Datatype;
-using PDI::Datatype_template_uptr;
-using PDI::Datatype_uptr;
+using PDI::Datatype_template_ptr;
+using PDI::Datatype_sptr;
 using PDI::Config_error;
 using PDI::Expression;
 using PDI::Ref_r;
@@ -65,6 +65,7 @@ using PDI::Tuple_datatype;
 using PDI::Type_error;
 using PDI::Value_error;
 using PDI::to_string;
+using std::dynamic_pointer_cast;
 using std::function;
 using std::string;
 using std::stringstream;
@@ -200,7 +201,7 @@ void Dataset_op::fletcher(Context& ctx, Expression value)
 	}
 }
 
-void Dataset_op::execute(Context& ctx, hid_t h5_file, hid_t xfer_lst, const unordered_map<string, Datatype_template_uptr>& dsets)
+void Dataset_op::execute(Context& ctx, hid_t h5_file, hid_t xfer_lst, const unordered_map<string, Datatype_template_ptr>& dsets)
 {
 	if (m_direction == READ) do_read(ctx, h5_file, xfer_lst);
 	else do_write(ctx, h5_file, xfer_lst, dsets);
@@ -261,14 +262,14 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	if (chunking_ref) {
 		ctx.logger().trace("Setting `{}' dataset chunking:", dataset_name);
 		vector<hsize_t> sizes;
-		const Datatype* ref_type = &chunking_ref.type();
-		if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(ref_type)) {
+		Datatype_sptr ref_type = chunking_ref.type();
+		if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(ref_type)) {
 			sizes.emplace_back(chunking_ref.scalar_value<size_t>());
-		} else if (auto&& array_type = dynamic_cast<const Array_datatype*>(ref_type)) {
+		} else if (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(ref_type)) {
 			for (size_t i = 0; i < array_type->size(); i++) {
 				sizes.emplace_back(Ref_r{chunking_ref[i]}.scalar_value<hsize_t>());
 			}
-		} else if (auto&& tuple_type = dynamic_cast<const Tuple_datatype*>(ref_type)) {
+		} else if (auto&& tuple_type = dynamic_pointer_cast<const Tuple_datatype>(ref_type)) {
 			for (size_t i = 0; i < tuple_type->size(); i++) {
 				sizes.emplace_back(Ref_r{chunking_ref[i]}.scalar_value<hsize_t>());
 			}
@@ -322,7 +323,7 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	return dset_plist;
 }
 
-void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_uptr>& dsets)
+void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_ptr>& dsets)
 {
 	string dataset_name = m_dataset.to_string(ctx);
 	ctx.logger().trace("Preparing for writing `{}' dataset", dataset_name);
@@ -338,19 +339,19 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	m_memory_selection.apply(ctx, h5_mem_space);
 	
 	auto&& dataset_type_iter = dsets.find(dataset_name);
-	Datatype_uptr dataset_type;
+	Datatype_sptr dataset_type;
 	Raii_hid h5_file_type, h5_file_space;
 	if ( dataset_type_iter != dsets.end() ) {
 		dataset_type = dataset_type_iter->second->evaluate(ctx);
-		tie(h5_file_space, h5_file_type) = space(*dataset_type);
+		tie(h5_file_space, h5_file_type) = space(dataset_type);
 		ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	} else {
 		if ( !m_dataset_selection.size().empty() ) {
 			throw Config_error{m_dataset_selection.selection_tree(), "Dataset selection is invalid in implicit dataset `{}'", dataset_name};
 		}
-		dataset_type = ref.type().clone_type();
-		tie(h5_file_space, h5_file_type) = space(*dataset_type, true);
+		dataset_type = ref.type();
+		tie(h5_file_space, h5_file_type) = space(dataset_type, true);
 	}
 	
 	ctx.logger().trace("Validating `{}' dataset dataspaces selection", dataset_name);

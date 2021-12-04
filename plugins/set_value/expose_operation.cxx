@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -47,8 +48,8 @@ void Expose_operation::execute()
 {
     for (auto& data_to_expose : m_data_to_expose) {
 		PDI::Data_descriptor& data_desc = context().desc(data_to_expose.first);
-		PDI::Ref value_ref {PDI::Expression{data_to_expose.second}.to_ref(context(), *data_desc.default_type()->evaluate(context()))};
-		context().logger().trace("Exposing {} with size {} B", data_to_expose.first, value_ref.type().buffersize());
+		PDI::Ref value_ref {PDI::Expression{data_to_expose.second}.to_ref(context(), data_desc.default_type()->evaluate(context()))};
+		context().logger().trace("Exposing {} with size {} B", data_to_expose.first, value_ref.type()->buffersize());
 		data_desc.share(value_ref, false, false);
 		context().desc(data_to_expose.first).release();
 	}

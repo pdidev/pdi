@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -113,7 +113,7 @@ struct PDI_NO_EXPORT Expression::Impl {
 	 * \param type the type of the created Ref
 	 * \return the data reference
 	 */
-	Ref to_ref(Context& ctx, const Datatype& type) const;
+	Ref to_ref(Context& ctx, Datatype_sptr type) const;
 	
 	/** Copy value with given type of Expression to buffer
 	 *
@@ -122,7 +122,7 @@ struct PDI_NO_EXPORT Expression::Impl {
 	 * \param type type of the data to copy
 	 * \return number of copied bytes to buffer
 	 */
-	virtual size_t copy_value(Context& ctx, void* buffer, const Datatype& type) const = 0;
+	virtual size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const = 0;
 	
 	/** Parse a double value as Impl
 	 *

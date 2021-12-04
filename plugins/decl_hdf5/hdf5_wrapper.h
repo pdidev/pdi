@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -188,7 +188,7 @@ Raii_hid make_raii_hid(hid_t value, Destroyer&& dst, const char* message=NULL)
  * \param select whether to create a dense type instead of a type with a selection
  * \return a tuple containing the Raii_hid for (dataspace, datatype)
  */
-std::tuple<Raii_hid, Raii_hid> space(const PDI::Datatype& type, bool dense=false);
+std::tuple<Raii_hid, Raii_hid> space(PDI::Datatype_sptr type, bool dense=false);
 
 } // namespace decl_hdf5
 

@@ -41,7 +41,7 @@ using PDI::Context;
 using PDI::Context_proxy;
 using PDI::Data_descriptor;
 using PDI::Datatype;
-using PDI::Datatype_uptr;
+using PDI::Datatype_sptr;
 using PDI::Error;
 using PDI::Impl_error;
 using PDI::len;
@@ -67,7 +67,7 @@ void transtype_C_to_F(Context& ctx, const string& c_comm_desc, const string& for
 {
 	ctx.callbacks().add_data_callback([&ctx, fortran_comm_desc](const string& c_comm_desc, Ref ref) {
 		ctx.logger().debug("Transtype `{}' to `{}' (C->F)", c_comm_desc, fortran_comm_desc);
-		Datatype_uptr mpi_comm_f_type = ctx.datatype(PC_parse_string("MPI_Comm_f"))->evaluate(ctx);
+		Datatype_sptr mpi_comm_f_type = ctx.datatype(PC_parse_string("MPI_Comm_f"))->evaluate(ctx);
 		Ref fortran_comm_ref {new MPI_Fint, [](void* p){delete static_cast<MPI_Fint*>(p);}, std::move(mpi_comm_f_type), true, true};
 		if (Ref_r ref_r{ref}) {
 			*static_cast<MPI_Fint*>(Ref_w{fortran_comm_ref}.get()) = MPI_Comm_c2f(*static_cast<const MPI_Comm*>(ref_r.get()));
@@ -102,7 +102,7 @@ void transtype_F_to_C(Context& ctx, const string& fortran_comm_desc, const strin
 {
 	ctx.callbacks().add_data_callback([&ctx, c_comm_desc](const string& fortran_comm_desc, Ref ref) {
 		ctx.logger().debug("Transtype `{}' to `{}` (F->C)", fortran_comm_desc, c_comm_desc);
-		Datatype_uptr mpi_comm_type = ctx.datatype(PC_parse_string("MPI_Comm"))->evaluate(ctx);
+		Datatype_sptr mpi_comm_type = ctx.datatype(PC_parse_string("MPI_Comm"))->evaluate(ctx);
 		Ref c_comm_ref {new MPI_Comm, [](void* p){delete static_cast<MPI_Comm*>(p);}, move(mpi_comm_type), true, true};
 		if (Ref_r ref_r{ref}) {
 			*static_cast<MPI_Comm*>(Ref_w{c_comm_ref}.get()) = MPI_Comm_f2c(*static_cast<const MPI_Fint*>(ref_r.get()));
@@ -133,19 +133,19 @@ void transtype_F_to_C(Context& ctx, const string& fortran_comm_desc, const strin
  * \param C_mpi_comm_type C mpi comm datatype
  * \param F_mpi_comm_type Fortran mpi comm datatype
  */
-void MPI_Comm_transtype(Context& ctx, PC_tree_t tree, const Scalar_datatype& C_mpi_comm_type, const Scalar_datatype& F_mpi_comm_type)
+void MPI_Comm_transtype(Context& ctx, PC_tree_t tree, std::shared_ptr<const Scalar_datatype> C_mpi_comm_type, std::shared_ptr<const Scalar_datatype> F_mpi_comm_type)
 {
 	PC_tree_t transtype_tree = PC_get(tree, ".transtype");
 	if (!PC_status(transtype_tree)) {
 		ctx.logger().warn("`transtype' key is deprecated when transtyping C/Fortran MPI communicator, please use Comm_c2f/Comm_f2c");
-		if (C_mpi_comm_type == F_mpi_comm_type) {
+		if (*C_mpi_comm_type == *F_mpi_comm_type) {
 			throw Value_error{"Transtype failed, cannot detect the direction of transtype"};
 		}
 		int len; PC_len(transtype_tree, &len);
 		for (int i = 0; i < len; i++) {
 			string src_desc = to_string(PC_get(transtype_tree, "{%d}", i));
 			string dst_desc = to_string(PC_get(transtype_tree, "<%d>", i));
-			if (*ctx.desc(src_desc).default_type()->evaluate(ctx) == C_mpi_comm_type) {
+			if (*ctx.desc(src_desc).default_type()->evaluate(ctx) == *C_mpi_comm_type) {
 				/// src is C_comm, dst is F_comm
 				transtype_C_to_F(ctx, src_desc, dst_desc);
 			} else {
@@ -173,10 +173,10 @@ void MPI_Comm_transtype(Context& ctx, PC_tree_t tree, const Scalar_datatype& C_m
 
 struct mpi_plugin: Plugin {
 	/// the MPI_Comm datatype
-	Scalar_datatype m_mpi_comm_datatype{Scalar_kind::UNKNOWN, sizeof(MPI_Comm), alignof(MPI_Comm)};
+	std::shared_ptr<Scalar_datatype> m_mpi_comm_datatype = Scalar_datatype::make(Scalar_kind::UNKNOWN, sizeof(MPI_Comm), alignof(MPI_Comm));
 	
 	/// the MPI_Comm_f datatype
-	Scalar_datatype m_mpi_comm_f_datatype{Scalar_kind::SIGNED, sizeof(MPI_Fint)};
+	std::shared_ptr<Scalar_datatype> m_mpi_comm_f_datatype = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(MPI_Fint));
 	
 	void set_up_logger(Context& ctx, PC_tree_t)
 	{
@@ -190,7 +190,7 @@ struct mpi_plugin: Plugin {
 		}
 	}
 	
-	void add_predefined(Context& ctx, const string& name, void* data, Datatype_uptr type)
+	void add_predefined(Context& ctx, const string& name, void* data, Datatype_sptr type)
 	{
 		Data_descriptor& predef_desc = ctx.desc(name);
 		if (!predef_desc.empty()) {
@@ -208,44 +208,44 @@ struct mpi_plugin: Plugin {
 	{
 		int world_rank;
 		MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-		add_predefined(ctx, "MPI_COMM_WORLD_rank", &world_rank, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}});
+		add_predefined(ctx, "MPI_COMM_WORLD_rank", &world_rank, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 		
 		// logger requires MPI_COMM_WORLD.rank data
 		set_up_logger(ctx, PC_get(config, ".logging"));
 		
 		// share the MPI_Comm datatype, it does not duplicate its content (collective), only copies it!
 		ctx.add_datatype("MPI_Comm", [this](Context&, PC_tree_t) {
-			return m_mpi_comm_datatype.clone();
+			return m_mpi_comm_datatype;
 		});
 		
 		//load MPI_COMM_WORLD
 		MPI_Comm comm_world = MPI_COMM_WORLD;
-		add_predefined(ctx, "MPI_COMM_WORLD", &comm_world, m_mpi_comm_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_WORLD", &comm_world, m_mpi_comm_datatype);
 		
 		//load MPI_COMM_SELF
 		MPI_Comm comm_self = MPI_COMM_SELF;
-		add_predefined(ctx, "MPI_COMM_SELF", &comm_self, m_mpi_comm_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_SELF", &comm_self, m_mpi_comm_datatype);
 		
 		//load MPI_COMM_NULL
 		MPI_Comm comm_null = MPI_COMM_NULL;
-		add_predefined(ctx, "MPI_COMM_NULL", &comm_null, m_mpi_comm_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_NULL", &comm_null, m_mpi_comm_datatype);
 		
 		// share the MPI_Comm_f datatype, it does not duplicate its content (collective), only copies it!
 		ctx.add_datatype("MPI_Comm_f", [this](Context&, PC_tree_t) {
-			return m_mpi_comm_f_datatype.clone();
+			return m_mpi_comm_f_datatype;
 		});
 		
 		//load MPI_COMM_WORLD_F
 		MPI_Fint comm_world_f = MPI_Comm_c2f(MPI_COMM_WORLD);
-		add_predefined(ctx, "MPI_COMM_WORLD_F", &comm_world_f, m_mpi_comm_f_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_WORLD_F", &comm_world_f, m_mpi_comm_f_datatype);
 		
 		//load MPI_COMM_SELF_F
 		MPI_Fint comm_self_f = MPI_Comm_c2f(MPI_COMM_SELF);
-		add_predefined(ctx, "MPI_COMM_SELF_F", &comm_self_f, m_mpi_comm_f_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_SELF_F", &comm_self_f, m_mpi_comm_f_datatype);
 		
 		//load MPI_COMM_NULL_F
 		MPI_Fint comm_null_f = MPI_Comm_c2f(MPI_COMM_NULL);
-		add_predefined(ctx, "MPI_COMM_NULL_F", &comm_null_f, m_mpi_comm_f_datatype.clone_type());
+		add_predefined(ctx, "MPI_COMM_NULL_F", &comm_null_f, m_mpi_comm_f_datatype);
 		
 		MPI_Comm_transtype(ctx, config, m_mpi_comm_datatype, m_mpi_comm_f_datatype);
 		

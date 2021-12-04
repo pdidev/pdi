@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -37,84 +37,61 @@ namespace PDI
 
 using fmt::join;
 using std::pair;
+using std::static_pointer_cast;
 using std::string;
 using std::unique_ptr;
 using std::vector;
 
-pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Array_datatype& type,
-		void* from,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
-{
-	throw Type_error{"Invalid {} access to an array datatype", access_kind()};
-}
-
-pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Pointer_datatype& type,
-		void* from,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
-{
-	throw Type_error{"Invalid {} access to a pointer datatype", access_kind()};
-}
-
-pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Record_datatype& type,
-		void* from,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
-{
-	throw Type_error{"Invalid {} access to a record datatype", access_kind()};
-}
-
-pair<void*, Datatype_uptr> Datatype::Accessor_base::access(const Tuple_datatype& type,
-		void* from,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
-{
-	throw Type_error{"Invalid {} access to a tuple datatype", access_kind()};
-}
-
-
-pair<void*, Datatype_uptr> Datatype::subaccess(void* from, const Accessor_base& accessor) const
-{
-	vector<unique_ptr<Accessor_base>> accessors;
-	accessors.emplace_back(accessor.clone());
-	return subaccess_by_iterators(from, accessors.cbegin(), accessors.cend());
-}
-
-pair<void*, Datatype_uptr> Datatype::subaccess(void* from, const vector<unique_ptr<Accessor_base>>& accessors) const
-{
-	return subaccess_by_iterators(from, accessors.begin(), accessors.end());
-}
-
-pair<void*, Datatype_uptr> Datatype::subaccess_by_iterators(void* from,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
-{
-	if (remaining_begin == remaining_end) {
-		throw Type_error{"Invalid subaccess to type: {}", debug_string()};
-	} else {
-		vector<string> access_kinds;
-		for (auto it = remaining_begin; it != remaining_end; it++) {
-			access_kinds.emplace_back(remaining_begin->get()->access_kind());
-		}
-		throw Type_error{"Invalid subaccess using accessors: {}\n To type: {}", join(access_kinds, "; "), debug_string()};
-	}
-}
 
 Datatype::Datatype(const Attributes_map& attributes):
 	Datatype_template(attributes)
 {}
+
+Datatype::~Datatype() = default;
 
 bool Datatype::operator!=(const Datatype& rhs) const
 {
 	return !(*this == rhs);
 }
 
-Datatype::~Datatype() = default;
-
-Datatype_template_uptr Datatype::clone() const
+Datatype_sptr Datatype::index ( size_t ) const
 {
-	return clone_type();
-};
+	throw Type_error{"unable to access element by index in {}", debug_string()};
+}
+
+std::pair<void*, Datatype_sptr> Datatype::index ( size_t, void* ) const
+{
+	throw Type_error{"unable to access element by index in {}", debug_string()};
+}
+
+Datatype_sptr Datatype::slice ( size_t, size_t ) const
+{
+	throw Type_error{"unable to access slice in {}", debug_string()};
+}
+
+std::pair<void*, Datatype_sptr> Datatype::slice ( size_t, size_t, void* ) const
+{
+	throw Type_error{"unable to access slice in {}", debug_string()};
+}
+
+Datatype_sptr Datatype::member ( const char* ) const
+{
+	throw Type_error{"unable to access member in {}", debug_string()};
+}
+
+std::pair<void*, Datatype_sptr> Datatype::member ( const char*, void* ) const
+{
+	throw Type_error{"unable to access member in {}", debug_string()};
+}
+
+Datatype_sptr Datatype::dereference () const
+{
+	throw Type_error{"unable to dereference {}", debug_string()};
+}
+
+std::pair<void*, Datatype_sptr> Datatype::dereference ( void* ) const
+{
+	throw Type_error{"unable to dereference {}", debug_string()};
+}
 
 } // namespace PDI

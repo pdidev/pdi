@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -42,13 +43,13 @@ struct RecordDatatypeEmptyTest : public ::testing::Test {
 		test_size = sizeof(EmptyStructure);
 		
 		vector<Record_datatype::Member> test_members;
-		test_record = unique_ptr<Record_datatype> {new Record_datatype(move(test_members), test_size)};
+		test_record = Record_datatype::make(move(test_members), test_size);
 	}
 	
 	//size used to create Record_datatype
 	size_t test_size;
 	
-	unique_ptr<Record_datatype> test_record;
+	shared_ptr<Record_datatype> test_record;
 };
 
 /*
@@ -83,51 +84,6 @@ TEST_F(RecordDatatypeEmptyTest, check_if_empty_members)
 }
 
 /*
- * Name:                RecordDatatypeEmptyTest.check_clone_type
- *
- * Tested functions:    PDI::Record_datatype::clone_type()
- *
- * Description:         Test checks if correct clone is created.
- *
- */
-TEST_F(RecordDatatypeEmptyTest, check_clone_type)
-{
-	Datatype_uptr cloned_datatype {this->test_record->clone_type()};
-	
-	//need to cast to unique_ptr<Record_datatype> to get the members()
-	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype.release())};
-	unique_ptr<Record_datatype> cloned_record {ptr};
-	
-	ASSERT_EQ(true, this->test_record->members().empty());
-	ASSERT_EQ(true, cloned_record->members().empty());
-	ASSERT_EQ(this->test_record->datasize(), cloned_record->datasize());
-	ASSERT_EQ(this->test_record->buffersize(), cloned_record->buffersize());
-	ASSERT_EQ(this->test_record->alignment(), cloned_record->alignment());
-}
-
-/*
- * Name:                RecordDatatypeEmptyTest.check_clone
- *
- * Tested functions:    PDI::Record_datatype::clone()
- *
- * Description:         Test checks if correct clone is created.
- *
- */
-TEST_F(RecordDatatypeEmptyTest, check_clone)
-{
-	Datatype_template_uptr cloned_datatype {this->test_record->clone()};
-	
-	//need to cast to unique_ptr<Record_datatype> to get the members()
-	MockContext mockCtx;
-	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype->evaluate(mockCtx).release())};
-	unique_ptr<Record_datatype> cloned_record {ptr};
-	
-	ASSERT_EQ(this->test_record->datasize(), cloned_record->datasize());
-	ASSERT_EQ(this->test_record->buffersize(), cloned_record->buffersize());
-	ASSERT_EQ(this->test_record->alignment(), cloned_record->alignment());
-}
-
-/*
  * Name:                RecordDatatypeEmptyTest.check_densify
  *
  * Tested functions:    PDI::Record_datatype::densify()
@@ -137,17 +93,12 @@ TEST_F(RecordDatatypeEmptyTest, check_clone)
  */
 TEST_F(RecordDatatypeEmptyTest, check_densify)
 {
-	Datatype_uptr densified_uptr = this->test_record->densify();
+	auto&& densified = static_pointer_cast<const Record_datatype>(test_record->densify());
 	
-	//need to cast to unique_ptr<Record_datatype> to get the members()
-	Record_datatype* ptr {static_cast<Record_datatype*>(densified_uptr.release())};
-	unique_ptr<Record_datatype> densified_record {ptr};
-	
-	ASSERT_EQ(true, this->test_record->members().empty());
-	ASSERT_EQ(true, densified_record->members().empty());
-	ASSERT_EQ(this->test_record->datasize(), densified_record->datasize());
-	ASSERT_EQ(this->test_record->buffersize(), densified_record->buffersize());
-	ASSERT_EQ(this->test_record->alignment(), densified_record->alignment());
+	ASSERT_EQ(test_record->members().empty(), densified->members().empty());
+	ASSERT_EQ(test_record->datasize(), densified->datasize());
+	ASSERT_EQ(test_record->buffersize(), densified->buffersize());
+	ASSERT_EQ(test_record->alignment(), densified->alignment());
 }
 
 /*
@@ -155,21 +106,17 @@ TEST_F(RecordDatatypeEmptyTest, check_densify)
  *
  * Tested functions:    PDI::Record_datatype::evaluate()
  *
- * Description:         Test checks if correct clone is created on evaluation.
+ * Description:         Test checks if correct evaluation is created.
  *
  */
 TEST_F(RecordDatatypeEmptyTest, check_evaluate)
 {
 	MockContext mockCtx;
-	Datatype_uptr cloned_datatype {this->test_record->evaluate(mockCtx)};
 	
-	//need to cast to unique_ptr<Record_datatype> to get the members()
-	Record_datatype* ptr {static_cast<Record_datatype*>(cloned_datatype.release())};
-	unique_ptr<Record_datatype> densified_record {ptr};
+	auto&& evaluated = static_pointer_cast<const Record_datatype>(test_record->evaluate(mockCtx));
 	
-	ASSERT_EQ(true, this->test_record->members().empty());
-	ASSERT_EQ(true, densified_record->members().empty());
-	ASSERT_EQ(this->test_record->datasize(), densified_record->datasize());
-	ASSERT_EQ(this->test_record->buffersize(), densified_record->buffersize());
-	ASSERT_EQ(this->test_record->alignment(), densified_record->alignment());
+	ASSERT_EQ(test_record->members().empty(), evaluated->members().empty());
+	ASSERT_EQ(test_record->datasize(), evaluated->datasize());
+	ASSERT_EQ(test_record->buffersize(), evaluated->buffersize());
+	ASSERT_EQ(test_record->alignment(), evaluated->alignment());
 }

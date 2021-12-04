@@ -40,7 +40,7 @@ using std::unique_ptr;
 using PDI::Context;
 using PDI::Global_context;
 using PDI::Paraconf_wrapper;
-using PDI::Datatype_uptr;
+using PDI::Datatype_sptr;
 using PDI::Ref;
 
 
@@ -52,7 +52,7 @@ TEST(Python, ref_to_python)
 	Paraconf_wrapper _;
 	unique_ptr<Context> ctx {new Global_context{PC_parse_string("logging: off")}};
 
-	Datatype_uptr type = ctx->datatype(PC_parse_string("{type: array, subtype: int, size: [10, 6, 3], subsize: [3, 2, 1], start: [3, 2, 1]}"))->evaluate(*ctx);
+	Datatype_sptr type = ctx->datatype(PC_parse_string("{type: array, subtype: int, size: [10, 6, 3], subsize: [3, 2, 1], start: [3, 2, 1]}"))->evaluate(*ctx);
 
 	int data[10][6][3];
 

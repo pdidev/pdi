@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -38,81 +38,16 @@
 namespace PDI {
 
 /** A Datatype is a Datatype_template that accepts no argument.
+ *
  * It represents the memory layout of data and supports some simple operations
  * on it:
  * * accessing its content
- * * cloning and destruction
+ * * data copy and destruction
  */
 class PDI_EXPORT Datatype:
 	public Datatype_template
 {
 public:
-	/** Base class for datatype accesssors, that allow to get pointer to subtype
-	 */
-	struct Accessor_base {
-		/** Access function for array datatype
-		 * \param type a datatype to get access
-		 * \param from pointer to data of type datatype
-		 * \param remaining_begin iterator to the beginning of remaining accessors
-		 * \param remaining_end iterator to the end of remaining accessors
-		 * \return string that inform what access is made
-		 */
-		virtual std::pair<void*, Datatype_uptr> access ( const Array_datatype& type,
-		    void* from,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
-		    
-		/** Access function for pointer datatype
-		 * \param type a datatype to get access
-		 * \param from pointer to data of type datatype
-		 * \param remaining_begin iterator to the beginning of remaining accessors
-		 * \param remaining_end iterator to the end of remaining accessors
-		 * \return string that inform what access is made
-		 */
-		virtual std::pair<void*, Datatype_uptr> access ( const Pointer_datatype& type,
-		    void* from,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
-		    
-		/** Access function for record datatype
-		 * \param type a datatype to get access
-		 * \param from pointer to data of type datatype
-		 * \param remaining_begin iterator to the beginning of remaining accessors
-		 * \param remaining_end iterator to the end of remaining accessors
-		 * \return string that inform what access is made
-		 */
-		virtual std::pair<void*, Datatype_uptr> access ( const Record_datatype& type,
-		    void* from,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
-		    
-		/** Access function for tuple datatype
-		 * \param type a datatype to get access
-		 * \param from pointer to data of type datatype
-		 * \param remaining_begin iterator to the beginning of remaining accessors
-		 * \param remaining_end iterator to the end of remaining accessors
-		 * \return string that inform what access is made
-		 */
-		virtual std::pair<void*, Datatype_uptr> access ( const Tuple_datatype& type,
-		    void* from,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
-		    
-		/** Returns access kind as string
-		 * \return string that inform what access is made
-		 */
-		virtual std::string access_kind() const = 0;
-		
-		/** Creates and returns clone of accessor
-		 * \return clone of accessor
-		 */
-		virtual std::unique_ptr<Accessor_base> clone() const = 0;
-		
-		/** Destroys the accessor
-		*/
-		virtual ~Accessor_base() = default;
-	};
-	
 	/** Creates a new datatype
 	 *
 	 * \param[in] attributes attributes of the datatype
@@ -120,14 +55,6 @@ public:
 	Datatype ( const Attributes_map& attributes = {} );
 	
 	~Datatype() override;
-	
-	virtual Datatype_template_uptr clone() const override;
-	
-	/** Creates a new datatype as an exact copy of this one
-	 *
-	 * \return the dense type that is produced
-	 */
-	virtual Datatype_uptr clone_type() const = 0;
 	
 	/** Test for equality
 	 *
@@ -147,7 +74,7 @@ public:
 	 *
 	 * \return the type that is produced
 	 */
-	virtual Datatype_uptr densify() const = 0;
+	virtual Datatype_sptr densify() const = 0;
 	
 	/** Indicate if the datatype is dense or not
 	 *
@@ -175,15 +102,13 @@ public:
 	 */
 	virtual size_t alignment() const = 0;
 	
-	/**
-	 * Tells if data can be copied as bytes (if type is dense) and doesn't need a destroyer
+	/** Tells if data can be copied as bytes (if type is dense) and doesn't need a destroyer
 	 *
 	 * \return true if data has trivial copier and destroyer, false otherwise
 	 */
 	virtual bool simple() const = 0;
 	
-	/**
-	 * Creates a dense deep copy of data
+	/** Creates a dense deep copy of data
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (dense data)
 	 * \param[in] from the pointer to the copied data (size of buffersize)
@@ -191,8 +116,7 @@ public:
 	 */
 	virtual void* data_to_dense_copy ( void* to, const void* from ) const = 0;
 	
-	/**
-	 * Creates a sparse deep copy of dense data
+	/** Creates a sparse deep copy of dense data
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (size of buffersize)
 	 * \param[in] from the pointer to the copied data (dense data)
@@ -200,38 +124,69 @@ public:
 	 */
 	virtual void* data_from_dense_copy ( void* to, const void* from ) const = 0;
 	
-	/**
-	 * Creates datatype of subtype and returns it with a moved pointer
+	/** Access the type of the element at the provided index
 	 *
-	 * \param[in] from the pointer to the data
-	 * \param[in] accessor accessor to get subtype of datatype
-	 * \return pointer with offset and new datatype
+	 * \param index the index where to look
+	 * \return the Datatype of the indexed sub-element
 	 */
-	std::pair<void*, Datatype_uptr> subaccess ( void* from, const Accessor_base& accessor ) const;
+	virtual Datatype_sptr index ( size_t index ) const;
 	
-	/**
-	 * Creates datatype of subtype and returns it with a moved pointer
+	/** Access the type and value of the element at the provided index
 	 *
-	 * \param[in] from the pointer to the data
-	 * \param[in] accessors accessors to get nested subtype of datatype
-	 * \return pointer with offset and new datatype
+	 * \param index the index where to look
+	 * \param data the address of the element to index
+	 * \return the Datatype and address of the indexed sub-element
 	 */
-	std::pair<void*, Datatype_uptr> subaccess ( void* from, const std::vector<std::unique_ptr<Accessor_base>>& accessors ) const;
+	virtual std::pair<void*, Datatype_sptr> index ( size_t index, void* data ) const;
 	
-	/**
-	 * Creates datatype of subtype and returns it with a moved pointer
+	/** Access the type of the elements slice between the provided indices
 	 *
-	 * \param[in] from the pointer to the data
-	 * \param[in] remaining_begin iterator to the begin of remaining accessors
-	 * \param[in] remaining_end iterator to the end of remaining accessors
-	 * \return pointer moved by offset and new datatype
+	 * \param start_index the index where to start
+	 * \param end_index the index where to end
+	 * \return the Datatype of the slice
 	 */
-	virtual std::pair<void*, Datatype_uptr> subaccess_by_iterators ( void* from,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end ) const;
-	    
-	/**
-	 * Function used to delete the data behind the datatype. This should not deallocate the memory.
+	virtual Datatype_sptr slice ( size_t start_index, size_t end_index ) const;
+	
+	/** Access the type and value of the elements slice between the provided indices
+	 *
+	 * \param start_index the index where to start
+	 * \param end_index the index where to end
+	 * \param data the address of the element to slice
+	 * \return the Datatype and address of the slice
+	 */
+	virtual std::pair<void*, Datatype_sptr> slice ( size_t start_index, size_t end_index, void* data ) const;
+	
+	/** Access the type of the member with the provided name
+	 *
+	 * \param name the name of the member to access
+	 * \return the Datatype of the member
+	 */
+	virtual Datatype_sptr member ( const char* name ) const;
+	
+	/** Access the type and value of the member with the provided name
+	 *
+	 * \param name the name of the member to access
+	 * \param data the address of the element whose member to access
+	 * \return the Datatype and address of the member
+	 */
+	virtual std::pair<void*, Datatype_sptr> member ( const char* name, void* data ) const;
+	
+	/** Access the type referenced by this
+	 *
+	 * \return the Datatype referenced
+	 */
+	virtual Datatype_sptr dereference () const;
+	
+	/** Access the type and value referenced by this
+	 *
+	 * \param data the address of the reference
+	 * \return the Datatype and address referenced
+	 */
+	virtual std::pair<void*, Datatype_sptr> dereference ( void* data ) const;
+	
+	/** Delete data whose type is described by the Datatype.
+	 *
+	 * This does not deallocate the buffer used to store the data.
 	 *
 	 * \param[in] ptr to the data to free
 	 */

@@ -7,6 +7,7 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * (Re-)design v2
 * Updated to match new PDI API & style
 * Buildsystem update
+* Ported to the new Datatype system
 
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Design and initial implementation

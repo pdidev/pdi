@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2008-2016 Forschungszentrum Juelich, Juelich Supercomputing Centre
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
@@ -223,7 +224,7 @@ struct decl_sion_plugin: Plugin {
 		// check that data is available and data type is dense
 		for (auto&& var : event.vars) {
 			if (Ref_r ref = context().desc(var).ref()) {
-				if (!ref.type().dense()) {
+				if (!ref.type()->dense()) {
 					throw Impl_error{"Sparse data type of variable '{}' is not supported", var};
 				}
 			} else {
@@ -239,7 +240,7 @@ struct decl_sion_plugin: Plugin {
 			if (!ref) {
 				throw Right_error{"Dataset unavailable '{}'", var};
 			}
-			chunksize += ref.type().datasize();
+			chunksize += ref.type()->datasize();
 		}
 		
 		sion_int32 blksize = -1;
@@ -266,7 +267,7 @@ struct decl_sion_plugin: Plugin {
 				throw System_error{"Error while writing name in SION file"};
 			}
 			
-			uint64_t data_size = ref.type().datasize();
+			uint64_t data_size = ref.type()->datasize();
 			if (SION_SUCCESS != sion_fwrite_key(&data_size, key, sizeof(data_size), 1, sid)) {
 				sion_parclose_mpi(sid);
 				throw System_error{"Error while writing data size in SION file"};
@@ -289,7 +290,7 @@ struct decl_sion_plugin: Plugin {
 		for (auto&& var : event.vars) {
 			Ref cref = context().desc(var).ref();
 			if (Ref_w ref = cref) {
-				if (!ref.type().dense()) {
+				if (!ref.type()->dense()) {
 					throw Impl_error{"Sparse data type of variable '{}' is not supported", var};
 				}
 			} else {
@@ -339,7 +340,7 @@ struct decl_sion_plugin: Plugin {
 				break;
 			}
 			
-			size_t data_size = ref.type().datasize();
+			size_t data_size = ref.type()->datasize();
 			uint64_t data_size_from_file;
 			if (SION_SUCCESS != sion_fread_key(&data_size_from_file, key, sizeof(data_size_from_file), 1, sid)) {
 				sion_parclose_mpi(sid);
@@ -370,13 +371,13 @@ struct decl_sion_plugin: Plugin {
 		}
 		
 		// check that data type is dense
-		if (!ref.type().dense()) {
+		if (!ref.type()->dense()) {
 			throw Impl_error{"Sparse data type of variable '{}' is not supported", name};
 		}
 		
 		// open file
 		int n_files = static_cast<int>(var.n_files.to_long(context()));
-		size_t data_size = ref.type().datasize();
+		size_t data_size = ref.type()->datasize();
 		sion_int64 chunksize = static_cast<sion_int64>(data_size);
 		sion_int32 blksize = -1;
 		int rank; MPI_Comm_rank(comm, &rank);
@@ -401,13 +402,13 @@ struct decl_sion_plugin: Plugin {
 		}
 		
 		// check that data type is dense
-		if (!ref.type().dense()) {
+		if (!ref.type()->dense()) {
 			throw Impl_error{"Sparse data type of variable '{}' is not supported", name};
 		}
 		
 		// open file
 		int n_files = 1;
-		size_t data_size = ref.type().datasize();
+		size_t data_size = ref.type()->datasize();
 		sion_int64 chunksize = 0;
 		sion_int32 blksize = -1;
 		int rank; MPI_Comm_rank(comm, &rank);

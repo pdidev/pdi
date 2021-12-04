@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -44,9 +44,13 @@
 namespace PDI {
 
 using std::endl;
+using std::function;
 using std::map;
+using std::make_shared;
 using std::max;
 using std::move;
+using std::shared_ptr;
+using std::static_pointer_cast;
 using std::string;
 using std::stringstream;
 using std::transform;
@@ -107,24 +111,14 @@ Scalar_kind Scalar_datatype::kind() const
 	return m_kind;
 }
 
-Datatype_template_uptr Scalar_datatype::clone() const
-{
-	return clone_type();
-}
-
-Datatype_uptr Scalar_datatype::clone_type() const
-{
-	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_size, m_align, m_dense_size, m_copy, m_destroy, m_attributes}};
-}
-
-Datatype_uptr Scalar_datatype::densify() const
+Datatype_sptr Scalar_datatype::densify() const
 {
 	return unique_ptr<Scalar_datatype> {new Scalar_datatype{m_kind, m_dense_size, m_align, m_dense_size, m_copy, m_destroy, m_attributes}};
 }
 
-Datatype_uptr Scalar_datatype::evaluate(Context&) const
+Datatype_sptr Scalar_datatype::evaluate(Context&) const
 {
-	return clone_type();
+	return static_pointer_cast<const Datatype>(this->shared_from_this());
 }
 
 bool Scalar_datatype::dense() const
@@ -210,5 +204,36 @@ bool Scalar_datatype::operator==(const Datatype& other) const
 	    && m_kind == rhs->m_kind;
 }
 
+struct Scalar_datatype::Shared_enabler : public Scalar_datatype {
+	Shared_enabler(Scalar_kind kind, size_t size, const Attributes_map& attributes={}):
+		Scalar_datatype(kind, size, attributes)
+	{}
+	
+	Shared_enabler(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes={}):
+		Scalar_datatype(kind, size, align, attributes)
+	{}
+	
+	Shared_enabler(Scalar_kind kind, size_t size, size_t align, size_t dense_size, function<void* (void*, const void*)> copy, function<void (void*)> destroy, const Attributes_map& attributes={}):
+		Scalar_datatype(kind, size, align, dense_size, copy, destroy, attributes)
+	{}
+};
+
+shared_ptr<Scalar_datatype> Scalar_datatype::make(Scalar_kind kind, size_t size, const Attributes_map& attributes)
+{
+	return make_shared<Shared_enabler>(kind, size, attributes);
+}
+
+shared_ptr<Scalar_datatype> Scalar_datatype::make(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes)
+{
+	return make_shared<Shared_enabler>(kind, size, align, attributes);
+}
+
+shared_ptr<Scalar_datatype> Scalar_datatype::make(Scalar_kind kind, size_t size, size_t align, size_t dense_size, function<void* (void*, const void*)> copy, function<void (void*)> destroy, const Attributes_map& attributes)
+{
+	return make_shared<Shared_enabler>(kind, size, align, dense_size, copy, destroy, attributes);
+}
+
 } // namespace PDI
+
+
 

@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -45,9 +46,9 @@ struct Descriptor_test_handler {
 		return unique_ptr<Data_descriptor> {new Data_descriptor_impl{global_ctx, "default_desc"}};
 	}
 	
-	static Datatype_uptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
+	static Datatype_sptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
 	{
-		Datatype_template_uptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type->clone();
+		Datatype_template_ptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type;
 		return desc_template->evaluate(global_ctx);
 	}
 	
@@ -64,7 +65,7 @@ struct Descriptor_test_handler {
 struct DataDescTest : public ::testing::Test {
 	int array[10];
 	PC_tree_t array_config {PC_parse_string("{ size: 10, type: array, subtype: int }")};
-	Array_datatype array_datatype{Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}.clone_type(), 10};
+	shared_ptr<Array_datatype> array_datatype{Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10)};
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("")};
 	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
@@ -79,10 +80,10 @@ struct DataDescTest : public ::testing::Test {
  */
 TEST_F(DataDescTest, check_default_fields)
 {
-	Datatype_uptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
-	Scalar_datatype* default_scalar = static_cast<Scalar_datatype*>(desc_type.release());
+	Datatype_sptr desc_type = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
+	shared_ptr<const Scalar_datatype> default_scalar = static_pointer_cast<const Scalar_datatype>(desc_type);
 	ASSERT_EQ(Scalar_kind::UNKNOWN, default_scalar->kind());
-	ASSERT_EQ(0, default_scalar->datasize());
+	ASSERT_EQ(0, desc_type->datasize());
 	ASSERT_STREQ("default_desc", this->m_desc_default->name().c_str());
 	ASSERT_FALSE(this->m_desc_default->metadata());
 }
@@ -112,8 +113,8 @@ TEST_F(DataDescTest, check_metadata_update)
 TEST_F(DataDescTest, default_type)
 {
 	Paraconf_wrapper fw;
-	this->m_desc_default->default_type(array_datatype.clone());
-	Datatype_uptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
+	this->m_desc_default->default_type(array_datatype);
+	Datatype_sptr datatype = Descriptor_test_handler::desc_get_type(this->m_desc_default, global_ctx);
 	ASSERT_EQ(10 * sizeof(int), datatype->datasize());
 	ASSERT_EQ(10 * sizeof(int), datatype->buffersize());
 }
@@ -303,7 +304,7 @@ TEST_F(DataDescTest, share_meta_without_read)
  */
 TEST_F(DataDescTest, multi_read_share_meta)
 {
-	this->m_desc_default->default_type(array_datatype.clone());
+	this->m_desc_default->default_type(array_datatype);
 	ASSERT_EQ(0, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
 	this->m_desc_default->metadata(true);
 	ASSERT_EQ(1, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));

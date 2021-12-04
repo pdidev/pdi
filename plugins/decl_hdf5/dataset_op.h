@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -193,12 +193,12 @@ public:
 	 *                 parallel HDF5 required property.
 	 * \param dsets the type of the explicitly typed datasets
 	 */
-	void execute(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::unordered_map<std::string, PDI::Datatype_template_uptr>& dsets);
+	void execute(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::unordered_map<std::string, PDI::Datatype_template_ptr>& dsets);
 	
 private:
 	void do_read(PDI::Context& ctx, hid_t h5_file, hid_t read_lst);
 	
-	void do_write(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::unordered_map<std::string, PDI::Datatype_template_uptr>& dsets);
+	void do_write(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::unordered_map<std::string, PDI::Datatype_template_ptr>& dsets);
 };
 
 } // namespace decl_hdf5

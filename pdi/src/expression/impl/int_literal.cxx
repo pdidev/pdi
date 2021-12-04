@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -39,6 +39,8 @@
 
 namespace PDI {
 
+using std::dynamic_pointer_cast;
+using std::make_shared;
 using std::unique_ptr;
 
 Expression::Impl::Int_literal::Int_literal(long value) : m_value(value) {}
@@ -60,7 +62,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::clone() const
 
 Ref Expression::Impl::Int_literal::to_ref(Context& ctx) const
 {
-	return Impl::to_ref(ctx, Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)});
+	return Impl::to_ref(ctx, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)));
 }
 
 template<class T>
@@ -71,9 +73,9 @@ size_t from_long_cpy(void* buffer, long value_long)
 	return sizeof(T);
 }
 
-size_t Expression::Impl::Int_literal::copy_value(Context& ctx, void* buffer, const Datatype& type) const
+size_t Expression::Impl::Int_literal::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const
 {
-	if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
+	if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
 		if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
 			switch (scalar_type->buffersize()) {
 			case 1L:
@@ -88,7 +90,7 @@ size_t Expression::Impl::Int_literal::copy_value(Context& ctx, void* buffer, con
 				throw Type_error{"Unknown size of integer datatype"};
 			}
 		} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
-			switch (type.buffersize()) {
+			switch (type->buffersize()) {
 			case 1L:
 				return from_long_cpy<int8_t>(buffer, m_value);
 			case 2L:
@@ -102,7 +104,7 @@ size_t Expression::Impl::Int_literal::copy_value(Context& ctx, void* buffer, con
 			}
 		}
 	}
-	throw Value_error{"Cannot copy Int_literal as a non integer datatype."};
+	throw Value_error{"Cannot copy Int_literal as a non integer datatype->"};
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** val_str)

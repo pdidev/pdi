@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -36,7 +37,8 @@ using namespace std;
 template <class T>
 struct RecordDatatypeTest : public ::testing::Test {
 	RecordDatatypeTest() : test_structure{new T} {}
-	unique_ptr<Record_interface> test_structure;
+	virtual ~RecordDatatypeTest() = default;
+	unique_ptr<T> test_structure;
 };
 
 typedef ::testing::Types<AlignedScalarsTest,
@@ -111,29 +113,9 @@ TYPED_TEST(RecordDatatypeTest, check_alignment)
  */
 TYPED_TEST(RecordDatatypeTest, check_densify)
 {
-	Datatype_uptr newRecord {this->test_structure->test_record()->densify()};
+	Datatype_sptr newRecord {this->test_structure->test_record()->densify()};
 	ASSERT_EQ(this->test_structure->datasize(), newRecord->datasize());
 	ASSERT_EQ(this->test_structure->buffersize_after_densify(), newRecord->buffersize());
-}
-
-/*
- * Name:                RecordDatatypeTest/<structname>.check_clone_type
- *
- * Tested functions:    PDI::Record_datatype::clone_type()
- *
- * Description:         Test checks if correct clone_typeis created.
- *
- */
-TYPED_TEST(RecordDatatypeTest, check_clone_type)
-{
-	Datatype_uptr cloned_record {this->test_structure->test_record()->clone_type()};
-	unique_ptr<Record_datatype> newRecord {static_cast<Record_datatype*>(cloned_record.release())};
-	
-	ASSERT_EQ(this->test_structure->test_record()->buffersize(), newRecord->buffersize());
-	ASSERT_EQ(this->test_structure->test_record()->datasize(), newRecord->datasize());
-	ASSERT_EQ(this->test_structure->test_record()->alignment(), newRecord->alignment());
-	ASSERT_EQ(this->test_structure->dense(), newRecord->dense());
-	ASSERT_EQ(this->test_structure->test_record()->members().size(), newRecord->members().size());
 }
 
 /*
@@ -176,59 +158,47 @@ struct RecordDeepCopyTest : public ::testing::Test {
 	Dense_record_t dense_record;
 	Sparse_record_t sparse_record;
 	
-	Datatype_uptr datatype {
-		new Record_datatype {
+	Datatype_sptr datatype {
+		Record_datatype::make(
 			vector<Record_datatype::Member> {
 				Record_datatype::Member{
 					0,
-					unique_ptr<Datatype> {
-						new Array_datatype
-						{
-							unique_ptr<Datatype> {
-								new Array_datatype
-								{
-									unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-									5,
-									1,
-									3
-								}
-							},
+					Array_datatype::make(
+						Array_datatype::make(
+							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
 							5,
 							1,
 							3
-						}
-					},
+						),
+						5,
+						1,
+						3
+					),
 					"my_int_array"
 				},
 				Record_datatype::Member{
 					100,
-					unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
 					"my_char"
 				},
 				Record_datatype::Member{
 					104,
-					unique_ptr<Datatype> {
-						new Array_datatype
-						{
-							unique_ptr<Datatype> {
-								new Array_datatype
-								{
-									unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-									10,
-									2,
-									5
-								}
-							},
+					Array_datatype::make(
+						Array_datatype::make(
+							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
 							10,
-							5,
 							2,
-						}
-					},
+							5
+						),
+						10,
+						5,
+						2
+					),
 					"my_long_array"
 				}
 			},
 			908
-		}
+		)
 	};
 	
 };
@@ -282,28 +252,28 @@ TEST(RecordAccessSequenceTest, invalid_subtype_access_sequence_check)
 	simple_record.m_char = 5;
 	simple_record.m_long = 987654;
 	std::vector<Record_datatype::Member> members;
-	Array_datatype array_data{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}}, 5};
-	Scalar_datatype char_data{Scalar_kind::UNSIGNED, sizeof(char)};
-	Scalar_datatype long_data{Scalar_kind::SIGNED, sizeof(long)};
+	auto&& array_data = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 5);
+	auto&& char_data = Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char));
+	auto&& long_data = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long));
 	
-	members.emplace_back(offsetof(Simple_record_t, m_array), array_data.clone_type(), "array");
-	members.emplace_back(offsetof(Simple_record_t, m_char), char_data.clone_type(), "char");
-	members.emplace_back(offsetof(Simple_record_t, m_long), long_data.clone_type(), "long");
+	members.emplace_back(offsetof(Simple_record_t, m_array), array_data, "array");
+	members.emplace_back(offsetof(Simple_record_t, m_char), char_data, "char");
+	members.emplace_back(offsetof(Simple_record_t, m_long), long_data, "long");
 	
-	Record_datatype record_type{std::move(members),sizeof(Simple_record_t)};
+	auto&& record_type = Record_datatype::make(std::move(members),sizeof(Simple_record_t));
 	
-	std::pair<void*, Datatype_uptr> data = record_type.subaccess(&simple_record, Record_datatype::Member_accessor{"array"});
-	ASSERT_EQ(array_data, *data.second);
+	std::pair<void*, Datatype_sptr> data = record_type->member("array", &simple_record);
+	ASSERT_EQ(*array_data, *data.second);
 	for (int i = 0; i < 5 ; i++) {
 		ASSERT_EQ(simple_record.m_array[i], static_cast<int*>(data.first)[i]);
 	}
 	
-	data = record_type.subaccess(&simple_record, Record_datatype::Member_accessor{"char"});
-	ASSERT_EQ(char_data, *data.second);
+	data = record_type->member("char", &simple_record);
+	ASSERT_EQ(*char_data, *data.second);
 	ASSERT_EQ(&simple_record.m_char, data.first);
 	
-	data = record_type.subaccess(&simple_record, Record_datatype::Member_accessor{"long"});
-	ASSERT_EQ(long_data, *data.second);
+	data = record_type->member("long", &simple_record);
+	ASSERT_EQ(*long_data, *data.second);
 	ASSERT_EQ(&simple_record.m_long, data.first);
 }
 
@@ -328,23 +298,23 @@ TEST(RecordAccessSequenceTest, subtype_and_value_check_for_record_of_arrays_with
 	}
 	
 	std::vector<Record_datatype::Member> members;
-	Scalar_datatype scalar_type{Scalar_kind::SIGNED, sizeof(int)};
-	Pointer_datatype pointer_type{scalar_type.clone_type()};
-	Array_datatype array_type{pointer_type.clone_type(), 10};
-	members.emplace_back(offsetof(Simple_record_t, m_array), array_type.clone_type(), "array");
-	Record_datatype record_type{std::move(members), sizeof(Simple_record_t)};
+	auto&& scalar_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	auto&& pointer_type = Pointer_datatype::make(scalar_type);
+	auto&& array_type = Array_datatype::make(pointer_type, 10);
+	members.emplace_back(offsetof(Simple_record_t, m_array), array_type, "array");
+	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Simple_record_t));
 		
-	std::pair<void*, Datatype_uptr> data = record_type.subaccess(&simple_record, Record_datatype::Member_accessor{"array"});
+	std::pair<void*, Datatype_sptr> data = record_type->member("array", &simple_record);
 	ASSERT_EQ(simple_record.m_array, data.first);
-	ASSERT_EQ(array_type, *data.second);
+	ASSERT_EQ(*array_type, *data.second);
 	for (int i = 0; i < 10 ; i++) {
 		ASSERT_EQ(*simple_record.m_array[i], *(static_cast<int**>(data.first)[i]));
 	}
 	
-	data = data.second->subaccess(data.first, Array_datatype::Index_accessor{3});
-	data = data.second->subaccess(data.first, Pointer_datatype::Accessor{});
+	data = data.second->index(3, data.first);
+	data = data.second->dereference(data.first);
 	ASSERT_EQ(3, *static_cast<int*>(data.first));
-	ASSERT_EQ(scalar_type, *data.second);
+	ASSERT_EQ(*scalar_type, *data.second);
 	
 	for (int i = 0; i < 10; i++) {
 		delete simple_record.m_array[i];

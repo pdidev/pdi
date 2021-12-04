@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -37,8 +38,11 @@ namespace PDI {
 class PDI_EXPORT Pointer_datatype:
 	public Datatype
 {
+	// Required to make_shared due to private ctor
+	struct Shared_enabler;
+	
 	/// Type of data that pointer is pointing
-	Datatype_uptr m_subtype;
+	Datatype_sptr m_subtype;
 	
 	/// Copy function or null for memcpy
 	std::function<void* (void*, const void*)> m_copy;
@@ -47,50 +51,15 @@ class PDI_EXPORT Pointer_datatype:
 	std::function<void(void*)> m_destroy;
 	
 public:
-	/** Accessor for pointer datatype
-	 */
-	class Accessor: public Accessor_base
-	{
-		std::string access_kind() const override;
-		
-	public:
-		std::pair<void*, Datatype_uptr> access(const Pointer_datatype& pointer_type,
-		    void* from,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
-		    
-		std::unique_ptr<Accessor_base> clone() const override;
-	};
-	
-	/** Creates new pointer datatype
-	 *
-	 * \param[in] subtype subtype of the pointer datatype
-	 * \param[in] attributes attributes of the pointer datatype
-	 */
-	Pointer_datatype(Datatype_uptr subtype, const Attributes_map& attributes = {});
-	
-	/** Creates new pointer datatype
-	 *
-	 * \param[in] subtype subtype of the pointer datatype
-	 * \param[in] copy function that copies data of this datatype
-	 * \param[in] destroy function that destroys data of this datatype (doesn't deallocate memory)
-	 * \param[in] attributes attributes of the pointer datatype
-	 */
-	Pointer_datatype(Datatype_uptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
-	
 	/** Type of the pointed element
 	 *
 	 * \return the type of the pointed element
 	 */
-	const Datatype& subtype() const;
+	Datatype_sptr subtype() const;
 	
-	Datatype_template_uptr clone() const override;
+	Datatype_sptr densify() const override;
 	
-	Datatype_uptr clone_type() const override;
-	
-	Datatype_uptr densify() const override;
-	
-	Datatype_uptr evaluate(Context&) const override;
+	Datatype_sptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	
@@ -106,17 +75,61 @@ public:
 	
 	void* data_from_dense_copy(void* to, const void* from) const override;
 	
-	std::pair<void*, Datatype_uptr> subaccess_by_iterators(void* from,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
-	    
+	Datatype_sptr index ( size_t index ) const override;
+	
+	std::pair<void*, Datatype_sptr> index ( size_t index, void* data ) const override;
+	
+	Datatype_sptr slice ( size_t start_index, size_t end_index ) const override;
+	
+	std::pair<void*, Datatype_sptr> slice ( size_t start_index, size_t end_index, void* data ) const override;
+	
+	Datatype_sptr member ( const char* name ) const override;
+	
+	std::pair<void*, Datatype_sptr> member ( const char* name, void* data ) const override;
+	
+	Datatype_sptr dereference () const override;
+	
+	std::pair<void*, Datatype_sptr> dereference ( void* data ) const override;
+	
 	void destroy_data(void* ptr) const override;
 	
 	std::string debug_string() const override;
 	
 	bool operator== (const Datatype&) const override;
 	
-	Datatype_uptr dereference() const;
+private:
+	/** Creates new pointer datatype
+	 *
+	 * \param[in] subtype subtype of the pointer datatype
+	 * \param[in] attributes attributes of the pointer datatype
+	 */
+	Pointer_datatype(Datatype_sptr subtype, const Attributes_map& attributes = {});
+	
+	/** Creates new pointer datatype
+	 *
+	 * \param[in] subtype subtype of the pointer datatype
+	 * \param[in] copy function that copies data of this datatype
+	 * \param[in] destroy function that destroys data of this datatype (doesn't deallocate memory)
+	 * \param[in] attributes attributes of the pointer datatype
+	 */
+	Pointer_datatype(Datatype_sptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
+	
+public:
+	/** Creates new pointer datatype
+	 *
+	 * \param[in] subtype subtype of the pointer datatype
+	 * \param[in] attributes attributes of the pointer datatype
+	 */
+	static std::shared_ptr<Pointer_datatype> make(Datatype_sptr subtype, const Attributes_map& attributes = {});
+	
+	/** Creates new pointer datatype
+	 *
+	 * \param[in] subtype subtype of the pointer datatype
+	 * \param[in] copy function that copies data of this datatype
+	 * \param[in] destroy function that destroys data of this datatype (doesn't deallocate memory)
+	 * \param[in] attributes attributes of the pointer datatype
+	 */
+	static std::shared_ptr<Pointer_datatype> make(Datatype_sptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
 	
 };
 

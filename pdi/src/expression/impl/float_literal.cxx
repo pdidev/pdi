@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,8 @@
 namespace PDI {
 
 using std::unique_ptr;
+using std::make_shared;
+using std::dynamic_pointer_cast;
 
 Expression::Impl::Float_literal::Float_literal(double value) : m_value(value) {}
 
@@ -58,14 +60,14 @@ double Expression::Impl::Float_literal::to_double(Context& ctx) const
 
 Ref Expression::Impl::Float_literal::to_ref(Context& ctx) const
 {
-	return Impl::to_ref(ctx, Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)});
+	return Impl::to_ref(ctx, Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(double)));
 }
 
-size_t Expression::Impl::Float_literal::copy_value(Context& ctx, void* buffer, const Datatype& type) const
+size_t Expression::Impl::Float_literal::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const
 {
-	if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
+	if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
 		if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
-			switch (type.buffersize()) {
+			switch (type->buffersize()) {
 			case 4L: {
 				float value = static_cast<float>(m_value);
 				memcpy(buffer, &value, sizeof(float));

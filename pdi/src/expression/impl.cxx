@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@
 
 namespace PDI {
 
+using std::dynamic_pointer_cast;
 using std::setprecision;
 using std::string;
 using std::stringstream;
@@ -60,8 +61,8 @@ Expression::Impl::~Impl() = default;
 string Expression::Impl::to_string(Context& ctx) const
 {
 	Ref_r raw_data = to_ref(ctx);
-	if ( const Array_datatype* referenced_type = dynamic_cast<const Array_datatype*>(&raw_data.type()) ) {
-		if ( const Scalar_datatype* scal_type = dynamic_cast<const Scalar_datatype*>(&referenced_type->subtype()) ) {
+	if ( auto&& referenced_type = dynamic_pointer_cast<const Array_datatype>(raw_data.type()) ) {
+		if ( auto&& scal_type = dynamic_pointer_cast<const Scalar_datatype>(referenced_type->subtype()) ) {
 			if ( scal_type->datasize() == 1 && (
 			        scal_type->kind() == Scalar_kind::SIGNED
 			        || scal_type->kind() == Scalar_kind::UNSIGNED ) ) {
@@ -80,12 +81,12 @@ string Expression::Impl::to_string(Context& ctx) const
 	return result.str();
 }
 
-Ref Expression::Impl::to_ref(Context& ctx, const Datatype& type) const
+Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 {
 	Ref_rw result {
-		aligned_alloc(type.alignment(), type.buffersize()),
+		aligned_alloc(type->alignment(), type->buffersize()),
 		[](void* v){free(v);},
-		type.clone_type(),
+		type,
 		true,
 		true
 	};

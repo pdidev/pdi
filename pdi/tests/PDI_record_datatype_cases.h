@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -35,27 +36,11 @@
 #include <vector>
 
 /*
- * All records must inherit from this interface
- * for proper testing in tests/PDI_record_datatype.cxx
- */
-struct Record_interface {
-	//expected values from record functions
-	virtual bool dense() = 0;
-	virtual size_t datasize() = 0;
-	virtual size_t buffersize() = 0;
-	virtual size_t buffersize_after_densify() = 0;
-	virtual size_t alignment() = 0;
-	
-	//tested record
-	virtual PDI::Record_datatype* test_record() = 0;
-};
-
-/*
  * Struct prepared for NotAlignedScalarsTest.
  * Order of the fields in Not_aligned_structure is important
  * to test padding sizes.
  */
-struct NotAlignedScalarsTest : Record_interface {
+struct NotAlignedScalarsTest {
 	//frame of the structure
 	struct Not_aligned_structure {
 		char c1;
@@ -72,12 +57,12 @@ struct NotAlignedScalarsTest : Record_interface {
 		double d;
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return true;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return 6 * sizeof(char) +
 		    sizeof(int) +
@@ -88,17 +73,17 @@ struct NotAlignedScalarsTest : Record_interface {
 		    sizeof(double);
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Not_aligned_structure);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return buffersize();
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({sizeof(char),
 		            sizeof(int),
@@ -108,77 +93,78 @@ struct NotAlignedScalarsTest : Record_interface {
 		            sizeof(float),
 		            sizeof(double)});
 	}
-	PDI::Record_datatype* test_record() override
+	
+	std::shared_ptr<PDI::Record_datatype> test_record()
 	{
-		return &m_test_record;
+		return m_test_record;
 	}
 	
 	//record with scalar members (which are not aligned)
-	PDI::Record_datatype m_test_record {
+	std::shared_ptr<PDI::Record_datatype> m_test_record = PDI::Record_datatype::make(
 		std::vector<PDI::Record_datatype::Member> {
 			{
 				offsetof(Not_aligned_structure, c1),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char)),
 				"c1"
 			},
 			{
 				offsetof(Not_aligned_structure, i),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(int)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int)),
 				"i"
 			},
 			{
 				offsetof(Not_aligned_structure, c2),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char)),
 				"c2"
 			},
 			{
 				offsetof(Not_aligned_structure, u),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)),
 				"u"
 			},
 			{
 				offsetof(Not_aligned_structure, c3),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char)),
 				"c3"
 			},
 			{
 				offsetof(Not_aligned_structure, l),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(long)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)),
 				"l"
 			},
 			{
 				offsetof(Not_aligned_structure, c4),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char)),
 				"c4"
 			},
 			{
 				offsetof(Not_aligned_structure, ul),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)),
 				"ul"
 			},
 			{
 				offsetof(Not_aligned_structure, c5),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char)),
 				"c5"
 			},
 			{
 				offsetof(Not_aligned_structure, f),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::FLOAT, sizeof(float)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::FLOAT, sizeof(float)),
 				"f"
 			},
 			{
 				offsetof(Not_aligned_structure, c6),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char)),
 				"c6"
 			},
 			{
 				offsetof(Not_aligned_structure, d),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::FLOAT, sizeof(double)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::FLOAT, sizeof(double)),
 				"d"
 			},
 		},
 		sizeof(Not_aligned_structure)
-	};
+	);
 };
 
 /*
@@ -186,7 +172,7 @@ struct NotAlignedScalarsTest : Record_interface {
  * Order of the fields in Aligned_structure is important
  * to test padding sizes.
  */
-struct AlignedScalarsTest : Record_interface {
+struct AlignedScalarsTest {
 	struct Aligned_structure {
 		int i;
 		unsigned int u;
@@ -195,12 +181,12 @@ struct AlignedScalarsTest : Record_interface {
 		char c;
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return true;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return sizeof(int) +
 		    sizeof(unsigned int) +
@@ -209,17 +195,17 @@ struct AlignedScalarsTest : Record_interface {
 		    sizeof(char);
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Aligned_structure);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return buffersize(); //datasize() + (alignof(long) - alignof(char));
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({sizeof(int),
 		            sizeof(unsigned int),
@@ -228,42 +214,42 @@ struct AlignedScalarsTest : Record_interface {
 		            sizeof(char)});
 	}
 	
-	PDI::Record_datatype* test_record() override
+	std::shared_ptr<PDI::Record_datatype> test_record()
 	{
-		return &m_test_record;
+		return m_test_record;
 	}
 	
 	//record with scalar members (which are aligned)
-	PDI::Record_datatype m_test_record {
+	std::shared_ptr<PDI::Record_datatype> m_test_record {PDI::Record_datatype::make(
 		std::vector<PDI::Record_datatype::Member> {
 			{
 				offsetof(Aligned_structure, i),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(int)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int)),
 				"i"
 			},
 			{
 				offsetof(Aligned_structure, u),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)),
 				"u"
 			},
 			{
 				offsetof(Aligned_structure, l),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(long)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)),
 				"l"
 			},
 			{
 				offsetof(Aligned_structure, ul),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)),
 				"ul"
 			},
 			{
 				offsetof(Aligned_structure, c),
-				PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(char)}},
+				PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(char)),
 				"c"
 			}
 		},
 		sizeof(Aligned_structure)
-	};
+	)};
 };
 
 /*
@@ -271,7 +257,7 @@ struct AlignedScalarsTest : Record_interface {
  * Order of the fields in Dense_array_structure is important
  * to test padding sizes.
  */
-struct DenseArrayScalarsTest : Record_interface {
+struct DenseArrayScalarsTest {
 	struct Dense_array_structure {
 		int i[3];
 		unsigned int u[4];
@@ -279,12 +265,12 @@ struct DenseArrayScalarsTest : Record_interface {
 		unsigned long ul[6];
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return true;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return 3 * sizeof(int) +
 		    4 * sizeof(unsigned int) +
@@ -292,17 +278,17 @@ struct DenseArrayScalarsTest : Record_interface {
 		    6 * sizeof(unsigned long);
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Dense_array_structure);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return datasize() + (alignof(long) - alignof(int));
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({sizeof(int),
 		            sizeof(unsigned int),
@@ -310,66 +296,50 @@ struct DenseArrayScalarsTest : Record_interface {
 		            sizeof(unsigned long)});
 	}
 	
-	PDI::Record_datatype* test_record() override
+	std::shared_ptr<PDI::Record_datatype> test_record()
 	{
-		return &m_test_record;
+		return m_test_record;
 	}
 	
 	//record with arrays (which are dense) containing scalars
-	PDI::Record_datatype m_test_record {
+	std::shared_ptr<PDI::Record_datatype> m_test_record {PDI::Record_datatype::make(
 		std::vector<PDI::Record_datatype::Member> {
 			{
 				offsetof(Dense_array_structure, i),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(int)}},
-						3
-					}
-				},
+				PDI::Array_datatype::make(
+					PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int)),
+					3
+				),
 				"i"
 			},
 			{
 				offsetof(Dense_array_structure, u),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)}},
-						4
-					}
-				},
+				PDI::Array_datatype::make(
+					PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned int)),
+					4
+				),
 				"u"
 			},
 			{
 				offsetof(Dense_array_structure, l),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(long)}},
-						5
-					}
-				},
+				PDI::Array_datatype::make(
+					PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)),
+					5
+				),
 				"l"
 			},
 			
 			{
 				offsetof(Dense_array_structure, ul),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)}},
-						6
-					}
-				},
+				PDI::Array_datatype::make(
+					PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned long)),
+					6
+				),
 				"ul"
 			}
 		},
 		sizeof(Dense_array_structure)
-	};
+	)};
 };
 
 /*
@@ -377,92 +347,81 @@ struct DenseArrayScalarsTest : Record_interface {
  * Order of the fields in Sparse_structure is important
  * to test padding sizes.
  */
-struct SparseArrayScalarsTest : Record_interface {
+struct SparseArrayScalarsTest {
 	struct Sparse_array_structure {
 		int i[100]; //buffer: 10 x 10; data: 4 x 4; start: (4, 4)
 		long l[60]; //buffer: 3 x 20; data: 1 x 20; start (0, 1)
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return false;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return 4 * 4 * sizeof(int) +
 		    1 * 20 * sizeof(long);
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Sparse_array_structure);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return datasize();
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({sizeof(int),
 		            sizeof(long)});
 	}
 	
-	PDI::Record_datatype* test_record() override
+	std::shared_ptr<PDI::Record_datatype> test_record()
 	{
-		return &m_test_record;
+		return m_test_record;
 	}
 	
 	//record with arrays (which are sparse) containing scalars
-	PDI::Record_datatype m_test_record {
+	std::shared_ptr<PDI::Record_datatype> m_test_record { PDI::Record_datatype::make(
 		std::vector<PDI::Record_datatype::Member> {
 			{
 				offsetof(Sparse_array_structure, i),
-				PDI::Datatype_uptr
+				PDI::Datatype_sptr
 				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr {
-							new PDI::Array_datatype
-							{
-								PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(int)}},
-								10,
-								3,
-								4
-							}
-						},
+					PDI::Array_datatype::make(
+						PDI::Array_datatype::make(
+							PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int)),
+							10,
+							3,
+							4
+						),
 						10,
 						3,
 						4
-					}
+					)
 				},
 				"i"
 			},
 			{
 				offsetof(Sparse_array_structure, l),
-				PDI::Datatype_uptr
-				{
-					new PDI::Array_datatype
-					{
-						PDI::Datatype_uptr {
-							new PDI::Array_datatype
-							{
-								PDI::Datatype_uptr{new PDI::Scalar_datatype {PDI::Scalar_kind::SIGNED, sizeof(long)}},
-								20
-							}
-						},
-						3,
-						1,
-						1
-					}
-				},
+				PDI::Array_datatype::make(
+					PDI::Array_datatype::make(
+						PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)),
+						20
+					),
+					3,
+					1,
+					1
+				),
 				"l"
 			}
 		},
 		sizeof(Sparse_array_structure)
-	};
+	)};
 };
 
 /*
@@ -470,42 +429,42 @@ struct SparseArrayScalarsTest : Record_interface {
  * Order of the fields in Dense_record is important
  * to test padding sizes.
  */
-struct DenseRecordsInRecordTest : Record_interface {
+struct DenseRecordsInRecordTest {
 	struct Dense_record {
 		AlignedScalarsTest::Aligned_structure aligned_scalar_record;
 		DenseArrayScalarsTest::Dense_array_structure dense_array_record;
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return true;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return scalar_structure_test->datasize() + array_structure_test->datasize();
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Dense_record);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return scalar_structure_test->buffersize_after_densify() +
 		    array_structure_test->buffersize_after_densify();
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({scalar_structure_test->alignment(),
 		            array_structure_test->alignment()});
 	}
 	
-	PDI::Record_datatype* test_record() override
+	std::shared_ptr<PDI::Record_datatype> test_record()
 	{
-		return &m_test_record;
+		return m_test_record;
 	}
 	
 	std::unique_ptr<AlignedScalarsTest> scalar_structure_test {new AlignedScalarsTest()};
@@ -515,27 +474,27 @@ struct DenseRecordsInRecordTest : Record_interface {
 	 * record with records (which are dense) which contain dense
 	 * structures (scalars and arrays from previous tests)
 	 */
-	PDI::Record_datatype m_test_record {
+	std::shared_ptr<PDI::Record_datatype> m_test_record {PDI::Record_datatype::make(
 		std::vector<PDI::Record_datatype::Member> {
 			{
 				offsetof(Dense_record, aligned_scalar_record),
-				PDI::Datatype_uptr
+				PDI::Datatype_sptr
 				{
-					scalar_structure_test->test_record()->clone_type()
+					scalar_structure_test->test_record()
 				},
 				"dense_scalar_record"
 			},
 			{
 				offsetof(Dense_record, dense_array_record),
-				PDI::Datatype_uptr
+				PDI::Datatype_sptr
 				{
-					array_structure_test->test_record()->clone_type()
+					array_structure_test->test_record()
 				},
 				"dense_array_record"
 			}
 		},
 		sizeof(Dense_record)
-	};
+	)};
 };
 
 /*
@@ -543,42 +502,42 @@ struct DenseRecordsInRecordTest : Record_interface {
  * Order of the fields in Sparse_record is important
  * to test padding sizes.
  */
-struct SparseRecordsInRecordTest : Record_interface {
+struct SparseRecordsInRecordTest {
 	struct Sparse_record {
 		NotAlignedScalarsTest::Not_aligned_structure not_aligned_scalar_record;
 		SparseArrayScalarsTest::Sparse_array_structure sparse_array_record;
 	};
 	
-	bool dense() override
+	bool dense()
 	{
 		return false;
 	}
 	
-	size_t datasize() override
+	size_t datasize()
 	{
 		return scalar_structure_test->datasize() + array_structure_test->datasize();
 	}
 	
-	size_t buffersize() override
+	size_t buffersize()
 	{
 		return sizeof(Sparse_record);
 	}
 	
-	size_t buffersize_after_densify() override
+	size_t buffersize_after_densify()
 	{
 		return scalar_structure_test->buffersize_after_densify() +
 		    array_structure_test->buffersize_after_densify();
 	}
 	
-	size_t alignment() override
+	size_t alignment()
 	{
 		return std::max({scalar_structure_test->alignment(),
 		            array_structure_test->alignment()});
 	}
 	
-	PDI::Record_datatype* test_record() override
+	std::shared_ptr<PDI::Record_datatype> test_record()
 	{
-		return &m_test_record;
+		return m_test_record;
 	}
 	
 	std::unique_ptr<NotAlignedScalarsTest> scalar_structure_test {new NotAlignedScalarsTest()};
@@ -588,27 +547,21 @@ struct SparseRecordsInRecordTest : Record_interface {
 	 * record with records (which are dense) which contain sparse
 	 * structures (scalars and arrays from previous tests)
 	 */
-	PDI::Record_datatype m_test_record {
+	std::shared_ptr<PDI::Record_datatype> m_test_record {PDI::Record_datatype::make(
 		std::vector<PDI::Record_datatype::Member> {
 			{
 				offsetof(Sparse_record, not_aligned_scalar_record),
-				PDI::Datatype_uptr
-				{
-					scalar_structure_test->test_record()->clone_type()
-				},
+				scalar_structure_test->test_record(),
 				"sparse_scalar_record"
 			},
 			{
 				offsetof(Sparse_record, sparse_array_record),
-				PDI::Datatype_uptr
-				{
-					array_structure_test->test_record()->clone_type()
-				},
+				array_structure_test->test_record(),
 				"sparse_array_record"
 			}
 		},
 		sizeof(Sparse_record)
-	};
+	)};
 };
 
 #endif // PDI_RECORD_DATATYPE_TEST_H_

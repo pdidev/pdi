@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -39,7 +39,7 @@ namespace PDI {
 
 using Attributes_map = std::unordered_map<std::string, Expression>;
 
-class PDI_EXPORT Datatype_template
+class PDI_EXPORT Datatype_template: public std::enable_shared_from_this<Datatype_template>
 {
 protected:
 	Attributes_map m_attributes;
@@ -63,21 +63,15 @@ public:
 	 */
 	virtual ~Datatype_template();
 	
-	/** Creates a new datatype as an exact copy of this one
-	 *
-	 * \return the dense type that is produced
-	 */
-	virtual Datatype_template_uptr clone() const = 0;
-	
 	/** Creates a new datatype by resolving the value of all metadata references
 	 *
 	 * \param ctx the context in which to evaluate this template
 	 * \return the evaluated type that is produced
 	 */
-	virtual Datatype_uptr evaluate(Context& ctx) const = 0;
+	virtual Datatype_sptr evaluate(Context& ctx) const = 0;
 	
 	/** Returns attribute of given name as Expression
-	 * \param attribute_key attribute to get
+	 * \param attribute_name attribute to get
 	 *
 	 * \return value of attribute as Expression
 	 */

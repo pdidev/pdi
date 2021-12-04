@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,14 +47,14 @@ public:
 	 *
 	 * \param type the datatype template attached to the descriptor
 	 */
-	virtual void default_type(Datatype_template_uptr type) = 0;
+	virtual void default_type(Datatype_template_ptr type) = 0;
 	
 	/** Access the datatype template used to type raw pointers shared
 	 *  through this descriptor
 	 *
 	 * \return the datatype template attached to the descriptor
 	 */
-	virtual Datatype_template_uptr default_type() = 0;
+	virtual Datatype_template_ptr default_type() = 0;
 	
 	/** Return true if the data is a metadata
 	 */

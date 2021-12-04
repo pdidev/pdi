@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -47,6 +47,7 @@
 
 namespace PDI {
 
+using std::dynamic_pointer_cast;
 using std::is_same;
 using std::pair;
 using std::setprecision;
@@ -58,11 +59,13 @@ using std::vector;
 /// Base class for expression reference accessors
 struct Accessor_expression {
 
-	/** Returns datatype accessor evaluated from the expression
-	 * \param ctx context of the reference expression
-	 * \return unique pointer with datatype accessor
+	/** Accesses a type according to this Accessor_expression
+	 *
+	 * \param ctx in which to evaluate the expression
+	 * \param ref the data to access
+	 * \return The sub-type
 	 */
-	virtual std::unique_ptr<Datatype::Accessor_base> access(Context& ctx) const = 0;
+	virtual Ref access ( Context& ctx, Ref ref ) const = 0;
 	
 	/** Clones expression reference accessor
 	 * \return clone of this expression reference accessor
@@ -88,9 +91,9 @@ public:
 		m_expression{expression}
 	{}
 	
-	std::unique_ptr<Datatype::Accessor_base> access(Context& ctx) const override
+	Ref access ( Context& ctx, Ref ref ) const override
 	{
-		return unique_ptr<Datatype::Accessor_base> {new Array_datatype::Index_accessor{static_cast<size_t>(m_expression.to_long(ctx))}};
+		return ref[m_expression.to_long(ctx)];
 	}
 	
 	std::unique_ptr<Accessor_expression> clone() const override
@@ -113,9 +116,9 @@ public:
 		m_expression{expression}
 	{}
 	
-	std::unique_ptr<Datatype::Accessor_base> access(Context& ctx) const override
+	Ref access ( Context& ctx, Ref ref ) const override
 	{
-		return unique_ptr<Datatype::Accessor_base> {new Record_datatype::Member_accessor{m_expression.to_string(ctx)}};
+		return ref[m_expression.to_string(ctx)];
 	}
 	
 	std::unique_ptr<Accessor_expression> clone() const override
@@ -178,8 +181,8 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 {
 	string result;
 	Ref_r raw_data = to_ref(ctx);
-	if ( const Array_datatype* referenced_type = dynamic_cast<const Array_datatype*>(&raw_data.type()) ) {
-		if ( const Scalar_datatype* scal_type = dynamic_cast<const Scalar_datatype*>(&referenced_type->subtype()) ) {
+	if ( auto&& referenced_type = dynamic_pointer_cast<const Array_datatype>(raw_data.type()) ) {
+		if ( auto&& scal_type = dynamic_pointer_cast<const Scalar_datatype>(referenced_type->subtype()) ) {
 			if ( scal_type->datasize() == 1 && (
 			        scal_type->kind() == Scalar_kind::SIGNED || scal_type->kind() == Scalar_kind::UNSIGNED ) ) {
 				result = string{static_cast<const char*>(raw_data.get()), referenced_type->size()};
@@ -217,11 +220,11 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 
 Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 {
-	Ref ref = ctx.desc(m_referenced.c_str()).ref();
+	Ref result = ctx.desc(m_referenced.c_str()).ref();
 	for (auto&& accessor : m_subelements) {
-		ref = Ref{ref, *accessor->access(ctx)};
+		result = accessor->access(ctx, result);
 	}
-	return ref;
+	return result;
 }
 
 template<class T>
@@ -232,21 +235,21 @@ size_t from_ref_cpy(void* buffer, Ref_r ref)
 	return sizeof(T);
 }
 
-size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* buffer, const Datatype& type) const
+size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const
 {
 	if (Ref_r ref_r = to_ref(ctx)) {
 		if (m_subelements.empty()) {
-			if (ref_r.type().buffersize() == type.buffersize()) {
-				memcpy(buffer, ref_r.get(), type.buffersize());
-				return type.buffersize();
+			if (ref_r.type()->buffersize() == type->buffersize()) {
+				memcpy(buffer, ref_r.get(), type->buffersize());
+				return type->buffersize();
 			} else {
 				throw Value_error{
 					"Cannot copy reference expression value: reference buffersize ({}) != type bufferize ({})",
-					ref_r.type().buffersize(),
-					type.buffersize()};
+					ref_r.type()->buffersize(),
+					type->buffersize()};
 			}
 		} else {
-			if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
+			if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
 				if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
 					switch (scalar_type->buffersize()) {
 					case 1L:
@@ -261,7 +264,7 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 						throw Type_error{"Unknown size of integer datatype"};
 					}
 				} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
-					switch (type.buffersize()) {
+					switch (type->buffersize()) {
 					case 1L:
 						return from_ref_cpy<int8_t>(buffer, ref_r);
 					case 2L:
@@ -274,7 +277,7 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 						break;
 					}
 				} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
-					switch (type.buffersize()) {
+					switch (type->buffersize()) {
 					case 4L: {
 						return from_ref_cpy<float>(buffer, ref_r);
 					}

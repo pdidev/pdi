@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -38,6 +38,8 @@
 
 namespace PDI {
 
+using std::dynamic_pointer_cast;
+using std::make_shared;
 using std::unique_ptr;
 
 Expression::Impl::Operation::Operation()
@@ -141,9 +143,9 @@ Ref Expression::Impl::Operation::to_ref(Context& ctx) const
 {
 	try {
 		to_long(ctx);
-		return Impl::to_ref(ctx, Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)});
+		return Impl::to_ref(ctx, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)));
 	} catch (const Value_error& e) {
-		return Impl::to_ref(ctx, Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)});
+		return Impl::to_ref(ctx, Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(double)));
 	}
 }
 
@@ -155,13 +157,13 @@ size_t from_long_cpy(void* buffer, long value_long)
 	return sizeof(T);
 }
 
-size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, const Datatype& type) const
+size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const
 {
-	if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
-		if (scalar_type->kind() == Scalar_kind::UNSIGNED && type.buffersize() == (long)sizeof(char)) {
+	if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
+		if (scalar_type->kind() == Scalar_kind::UNSIGNED && type->buffersize() == (long)sizeof(char)) {
 			return from_long_cpy<unsigned char>(buffer, to_long(ctx));
 		} else if (scalar_type->kind() == Scalar_kind::SIGNED) {
-			switch (type.buffersize()) {
+			switch (type->buffersize()) {
 			case 1L:
 				return from_long_cpy<signed char>(buffer, to_long(ctx));
 			case 2L:
@@ -174,7 +176,7 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, const
 				break;
 			}
 		} else if (scalar_type->kind() == Scalar_kind::FLOAT) {
-			switch (type.buffersize()) {
+			switch (type->buffersize()) {
 			case 4L: {
 				float value = static_cast<float>(to_double(ctx));
 				memcpy(buffer, &value, sizeof(float));

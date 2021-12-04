@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -35,73 +36,45 @@
 
 namespace PDI {
 
+using std::dynamic_pointer_cast;
 using std::endl;
 using std::function;
+using std::make_shared;
 using std::move;
 using std::pair;
+using std::shared_ptr;
+using std::static_pointer_cast;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
-string Pointer_datatype::Accessor::access_kind() const 
-{
-	return "pointer access";
-}
 
-pair<void*, Datatype_uptr> Pointer_datatype::Accessor::access(const Pointer_datatype& pointer_type,
-									void* from,
-									vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-									vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
-{
-	from = *reinterpret_cast<void**>(from);
-	if (remaining_begin == remaining_end) {
-		return {from, pointer_type.subtype().clone_type()};
-	} else {
-		return pointer_type.subtype().subaccess_by_iterators(from, remaining_begin, remaining_end);
-	}
-}
-
-unique_ptr<Datatype::Accessor_base> Pointer_datatype::Accessor::clone() const
-{
-	return unique_ptr<Accessor_base>{new Accessor{}};
-}
-
-Pointer_datatype::Pointer_datatype(Datatype_uptr subtype, const Attributes_map& attributes):
+Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, const Attributes_map& attributes):
 	Datatype(attributes),
 	m_subtype{move(subtype)}
 {}
 
-Pointer_datatype::Pointer_datatype(Datatype_uptr subtype, function<void* (void*, const void*)> copy, function<void(void*)> destroy, const Attributes_map& attributes):
+Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, function<void* (void*, const void*)> copy, function<void(void*)> destroy, const Attributes_map& attributes):
 	Datatype(attributes),
 	m_subtype{move(subtype)},
 	m_copy{move(copy)},
 	m_destroy{move(destroy)}
 {}
 
-const Datatype& Pointer_datatype::subtype() const
+Datatype_sptr Pointer_datatype::subtype() const
 {
-	return *m_subtype;
+	return m_subtype;
 }
 
-Datatype_template_uptr Pointer_datatype::clone() const
-{
-	return clone_type();
-}
-
-Datatype_uptr Pointer_datatype::clone_type() const
-{
-	return unique_ptr<Pointer_datatype> {new Pointer_datatype{m_subtype->clone_type(), m_copy, m_destroy, m_attributes}};
-}
-
-Datatype_uptr Pointer_datatype::densify() const
+Datatype_sptr Pointer_datatype::densify() const
 {
 	return unique_ptr<Pointer_datatype> {new Pointer_datatype{m_subtype->densify(), m_copy, m_destroy, m_attributes}};
 }
 
-Datatype_uptr Pointer_datatype::evaluate(Context& ctx) const
+Datatype_sptr Pointer_datatype::evaluate(Context&) const
 {
-	return clone_type();
+	return static_pointer_cast<const Datatype>(this->shared_from_this());
 }
 
 bool Pointer_datatype::dense() const
@@ -145,19 +118,6 @@ void* Pointer_datatype::data_from_dense_copy(void* to, const void* from) const
 	return data_to_dense_copy(to, from);
 }
 
-
-pair<void*, Datatype_uptr> Pointer_datatype::subaccess_by_iterators(void* from,
-															vector<unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-															vector<unique_ptr<Accessor_base>>::const_iterator remaining_end) const
-{
-	if (const Pointer_datatype::Accessor* pointer_accessor = dynamic_cast<const Pointer_datatype::Accessor*>(remaining_begin->get())) {
-		return remaining_begin->get()->access(*this, from, ++remaining_begin, remaining_end);
-	} else {
-		from = *reinterpret_cast<void**>(from);
-		return subtype().subaccess_by_iterators(from, remaining_begin, remaining_end);
-	}	
-}
-
 void Pointer_datatype::destroy_data(void* ptr) const
 {
 	if ( m_destroy ) {
@@ -187,14 +147,71 @@ string Pointer_datatype::debug_string() const
 
 bool Pointer_datatype::operator==(const Datatype& other) const
 {
-	const Pointer_datatype* rhs = dynamic_cast<const Pointer_datatype*>(&other);
+	auto&& rhs = dynamic_cast<const Pointer_datatype*>(&other);
 	return rhs && *m_subtype == *rhs->m_subtype;
 }
 
-Datatype_uptr Pointer_datatype::dereference() const
+std::pair<void*, Datatype_sptr> Pointer_datatype::index(size_t index, void* data) const
 {
-	return m_subtype->clone_type();
+	return m_subtype->index(index, *static_cast<void**>(data));
+}
+
+std::pair<void*, Datatype_sptr> Pointer_datatype::member(const char* name, void* data) const
+{
+	return m_subtype->member(name, *static_cast<void**>(data));
+}
+
+std::pair<void*, Datatype_sptr> Pointer_datatype::slice(size_t start_index, size_t end_index, void* data) const
+{
+	return m_subtype->slice(start_index, end_index, *static_cast<void**>(data));
+}
+
+Datatype_sptr Pointer_datatype::index(size_t index) const
+{
+	return m_subtype->index(index);
+}
+
+Datatype_sptr Pointer_datatype::member(const char* name) const
+{
+	return m_subtype->member(name);
+}
+
+Datatype_sptr Pointer_datatype::slice(size_t start_index, size_t end_index) const
+{
+	return m_subtype->slice(start_index, end_index);
+}
+
+Datatype_sptr Pointer_datatype::dereference () const
+{
+	return subtype();
+}
+
+std::pair<void*, Datatype_sptr> Pointer_datatype::dereference ( void* data ) const
+{
+	data = *static_cast<void**>(data);
+	return {data, subtype()};
+}
+
+struct Pointer_datatype::Shared_enabler : public Pointer_datatype {
+	Shared_enabler (Datatype_sptr subtype, const Attributes_map& attributes):
+		Pointer_datatype(subtype, attributes)
+	{}
+	
+	Shared_enabler (Datatype_sptr subtype, function<void* (void*, const void*)> copy, function<void (void*)> destroy, const Attributes_map& attributes):
+		Pointer_datatype(subtype, copy, destroy, attributes)
+	{}
+};
+
+shared_ptr<Pointer_datatype> Pointer_datatype::make(Datatype_sptr subtype, const Attributes_map& attributes)
+{
+	return make_shared<Shared_enabler>(subtype, attributes);
+}
+
+shared_ptr<Pointer_datatype> Pointer_datatype::make(Datatype_sptr subtype, function<void* (void*, const void*)> copy, function<void (void*)> destroy, const Attributes_map& attributes)
+{
+	return make_shared<Shared_enabler>(subtype, copy, destroy, attributes);
 }
 
 } // namespace PDI
+
 

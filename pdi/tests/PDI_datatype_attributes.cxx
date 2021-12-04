@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -47,7 +48,7 @@ TEST(TypeAttrTest, simple_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: test } }")};
-	Datatype_template_uptr result = global_ctx.datatype(PC_parse_string("attr_array"));
+	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test"));
 
 	auto attr_map = result->attributes();
@@ -66,17 +67,17 @@ TEST(TypeAttrTest, inner_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {inner_attr: {type: int, +attr: test_inner }, outer_attr: {type: array, subtype: inner_attr, size: 10, +attr: test_outer} }")};
-	Datatype_template_uptr result = global_ctx.datatype(PC_parse_string("outer_attr"));
+	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("outer_attr"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_outer"));
 
 	auto outer_attr_map = result->attributes();
 	ASSERT_EQ(outer_attr_map.at("attr").to_string(global_ctx), string("test_outer"));
 
-	Datatype_uptr evaluated = result->evaluate(global_ctx);
-	Array_datatype* array_type = dynamic_cast<Array_datatype*>(evaluated.get());
-	ASSERT_EQ(array_type->subtype().attribute("attr").to_string(global_ctx), string("test_inner"));
+	Datatype_sptr evaluated = result->evaluate(global_ctx);
+	auto&& array_type = static_pointer_cast<const Array_datatype>(evaluated);
+	ASSERT_EQ(array_type->subtype()->attribute("attr").to_string(global_ctx), string("test_inner"));
 
-	auto inner_attr_map = array_type->subtype().attributes();
+	auto inner_attr_map = array_type->subtype()->attributes();
 	ASSERT_EQ(inner_attr_map.at("attr").to_string(global_ctx), string("test_inner"));
 };
 
@@ -92,22 +93,21 @@ TEST(TypeAttrTest, member_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {member_type: {type: int, +attr: test_member}, record_type: {type: struct, members: [first_member: member_type, second_member: member_type], +attr: test_record}}")};
-	Datatype_template_uptr result = global_ctx.datatype(PC_parse_string("record_type"));
+	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("record_type"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_record"));
 
 	auto record_attr_map = result->attributes();
 	ASSERT_EQ(record_attr_map.at("attr").to_string(global_ctx), string("test_record"));
 
-	Datatype_uptr evaluated = result->evaluate(global_ctx);
-	Record_datatype* record_type = dynamic_cast<Record_datatype*>(evaluated.get());
-	ASSERT_EQ(record_type->members()[0].type().attribute("attr").to_string(global_ctx), string("test_member"));
+	auto&& record_type = static_pointer_cast<const Record_datatype>(result->evaluate(global_ctx));
+	ASSERT_EQ(record_type->members()[0].type()->attribute("attr").to_string(global_ctx), string("test_member"));
 
-	auto member_attr_map = record_type->members()[0].type().attributes();
+	auto member_attr_map = record_type->members()[0].type()->attributes();
 	ASSERT_EQ(member_attr_map.at("attr").to_string(global_ctx), string("test_member"));
 
-	ASSERT_EQ(record_type->members()[1].type().attribute("attr").to_string(global_ctx), string("test_member"));
+	ASSERT_EQ(record_type->members()[1].type()->attribute("attr").to_string(global_ctx), string("test_member"));
 
-	auto member2_attr_map = record_type->members()[1].type().attributes();
+	auto member2_attr_map = record_type->members()[1].type()->attributes();
 	ASSERT_EQ(member2_attr_map.at("attr").to_string(global_ctx), string("test_member"));
 };
 
@@ -123,17 +123,16 @@ TEST(TypeAttrTest, ptr_inner_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {inner_attr: {type: int, +attr: test_inner }, outer_attr: {type: pointer, subtype: inner_attr, +attr: test_outer} }")};
-	Datatype_template_uptr result = global_ctx.datatype(PC_parse_string("outer_attr"));
+	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("outer_attr"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_outer"));
 
 	auto outer_attr_map = result->attributes();
 	ASSERT_EQ(outer_attr_map.at("attr").to_string(global_ctx), string("test_outer"));
 
-	Datatype_uptr evaluated = result->evaluate(global_ctx);
-	Pointer_datatype* pointer_type = dynamic_cast<Pointer_datatype*>(evaluated.get());
-	ASSERT_EQ(pointer_type->subtype().attribute("attr").to_string(global_ctx), string("test_inner"));
+	auto&& pointer_type = static_pointer_cast<const Pointer_datatype>(result->evaluate(global_ctx));
+	ASSERT_EQ(pointer_type->subtype()->attribute("attr").to_string(global_ctx), string("test_inner"));
 
-	auto inner_attr_map = pointer_type->subtype().attributes();
+	auto inner_attr_map = pointer_type->subtype()->attributes();
 	ASSERT_EQ(inner_attr_map.at("attr").to_string(global_ctx), string("test_inner"));
 };
 
@@ -150,7 +149,7 @@ TEST(TypeAttrTest, array_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: [test0, test1] } }")};
-	Datatype_template_uptr result = global_ctx.datatype(PC_parse_string("attr_array"));
+	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	Ref_r attr_ref_0 = result->attribute("attr").to_ref(global_ctx).operator[](0UL);
 	Ref_r attr_ref_1 = result->attribute("attr").to_ref(global_ctx).operator[](1UL);
 	ASSERT_STREQ(static_cast<const char*>(attr_ref_0.get()), "test0");
@@ -169,7 +168,7 @@ TEST(TypeAttrTest, map_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: {key: value} } }")};
-	Datatype_template_uptr result = global_ctx.datatype(PC_parse_string("attr_array"));
+	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	Ref_r attr_ref_value = result->attribute("attr").to_ref(global_ctx).operator[]("key");
 	ASSERT_STREQ(static_cast<const char*>(attr_ref_value.get()), "value");
 };
@@ -186,7 +185,7 @@ TEST(TypeAttrTest, array_in_map_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: {key: [value0, value1]} } }")};
-	Datatype_template_uptr result = global_ctx.datatype(PC_parse_string("attr_array"));
+	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	Ref_r map_attr_ref_value = result->attribute("attr").to_ref(global_ctx).operator[]("key");
 	Ref_r attr_ref_0 = map_attr_ref_value.operator[](0UL);
 	Ref_r attr_ref_1 = map_attr_ref_value.operator[](1UL);
@@ -206,7 +205,7 @@ TEST(DataAttrTest, simple_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {attr_int: {type: int, +attr: test}}")};
-	Datatype_template_uptr result = global_ctx["attr_int"].default_type();
+	Datatype_template_ptr result = global_ctx["attr_int"].default_type();
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test"));
 
 	auto attr_map = result->attributes();
@@ -225,17 +224,16 @@ TEST(DataAttrTest, inner_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("{types: {inner_attr: {type: int, +attr: test_inner }}, data: {outer_attr: {type: array, subtype: inner_attr, size: 10, +attr: test_outer}}}")};
-	Datatype_template_uptr result = global_ctx["outer_attr"].default_type();
+	Datatype_template_ptr result = global_ctx["outer_attr"].default_type();
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_outer"));
 
 	auto outer_attr_map = result->attributes();
 	ASSERT_EQ(outer_attr_map.at("attr").to_string(global_ctx), string("test_outer"));
 
-	Datatype_uptr evaluated = result->evaluate(global_ctx);
-	Array_datatype* array_type = dynamic_cast<Array_datatype*>(evaluated.get());
-	ASSERT_EQ(array_type->subtype().attribute("attr").to_string(global_ctx), string("test_inner"));
+	auto&& array_type = dynamic_pointer_cast<const Array_datatype>(result->evaluate(global_ctx));
+	ASSERT_EQ(array_type->subtype()->attribute("attr").to_string(global_ctx), string("test_inner"));
 
-	auto inner_attr_map = array_type->subtype().attributes();
+	auto inner_attr_map = array_type->subtype()->attributes();
 	ASSERT_EQ(inner_attr_map.at("attr").to_string(global_ctx), string("test_inner"));
 };
 
@@ -251,22 +249,21 @@ TEST(DataAttrTest, member_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {record_data: {type: struct, members: [first_member: {type: int, +attr: test_member}, second_member: {type: int, +attr: test_member}], +attr: test_record}}")};
-	Datatype_template_uptr result = global_ctx["record_data"].default_type();
+	Datatype_template_ptr result = global_ctx["record_data"].default_type();
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_record"));
 
 	auto record_attr_map = result->attributes();
 	ASSERT_EQ(record_attr_map.at("attr").to_string(global_ctx), string("test_record"));
 
-	Datatype_uptr evaluated = result->evaluate(global_ctx);
-	Record_datatype* record_type = dynamic_cast<Record_datatype*>(evaluated.get());
-	ASSERT_EQ(record_type->members()[0].type().attribute("attr").to_string(global_ctx), string("test_member"));
+	auto&& record_type = static_pointer_cast<const Record_datatype>(result->evaluate(global_ctx));
+	ASSERT_EQ(record_type->members()[0].type()->attribute("attr").to_string(global_ctx), string("test_member"));
 
-	auto member_attr_map = record_type->members()[0].type().attributes();
+	auto member_attr_map = record_type->members()[0].type()->attributes();
 	ASSERT_EQ(member_attr_map.at("attr").to_string(global_ctx), string("test_member"));
 
-	ASSERT_EQ(record_type->members()[1].type().attribute("attr").to_string(global_ctx), string("test_member"));
+	ASSERT_EQ(record_type->members()[1].type()->attribute("attr").to_string(global_ctx), string("test_member"));
 
-	auto member2_attr_map = record_type->members()[1].type().attributes();
+	auto member2_attr_map = record_type->members()[1].type()->attributes();
 	ASSERT_EQ(member2_attr_map.at("attr").to_string(global_ctx), string("test_member"));
 };
 
@@ -282,17 +279,16 @@ TEST(DataAttrTest, ptr_inner_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {outer_attr: {type: pointer, subtype: {type: int, +attr: test_inner}, +attr: test_outer} }")};
-	Datatype_template_uptr result = global_ctx["outer_attr"].default_type();
+	Datatype_template_ptr result = global_ctx["outer_attr"].default_type();
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_outer"));
 
 	auto outer_attr_map = result->attributes();
 	ASSERT_EQ(outer_attr_map.at("attr").to_string(global_ctx), string("test_outer"));
 
-	Datatype_uptr evaluated = result->evaluate(global_ctx);
-	Pointer_datatype* pointer_type = dynamic_cast<Pointer_datatype*>(evaluated.get());
-	ASSERT_EQ(pointer_type->subtype().attribute("attr").to_string(global_ctx), string("test_inner"));
+	auto&& pointer_type = static_pointer_cast<const Pointer_datatype>(result->evaluate(global_ctx));
+	ASSERT_EQ(pointer_type->subtype()->attribute("attr").to_string(global_ctx), string("test_inner"));
 
-	auto inner_attr_map = pointer_type->subtype().attributes();
+	auto inner_attr_map = pointer_type->subtype()->attributes();
 	ASSERT_EQ(inner_attr_map.at("attr").to_string(global_ctx), string("test_inner"));
 };
 
@@ -309,7 +305,7 @@ TEST(DataAttrTest, array_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {attr_array: {type: array, subtype: int, size: 10, +attr: [test0, test1] } }")};
-	Datatype_template_uptr result = global_ctx["attr_array"].default_type();
+	Datatype_template_ptr result = global_ctx["attr_array"].default_type();
 	Ref_r attr_ref_0 = result->attribute("attr").to_ref(global_ctx).operator[](0UL);
 	Ref_r attr_ref_1 = result->attribute("attr").to_ref(global_ctx).operator[](1UL);
 	ASSERT_STREQ(static_cast<const char*>(attr_ref_0.get()), "test0");
@@ -328,7 +324,7 @@ TEST(DataAttrTest, map_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {attr_array: {type: array, subtype: int, size: 10, +attr: {key: value} } }")};
-	Datatype_template_uptr result = global_ctx["attr_array"].default_type();
+	Datatype_template_ptr result = global_ctx["attr_array"].default_type();
 	Ref_r attr_ref_value = result->attribute("attr").to_ref(global_ctx).operator[]("key");
 	ASSERT_STREQ(static_cast<const char*>(attr_ref_value.get()), "value");
 };
@@ -346,9 +342,9 @@ TEST(DataAttrTest, array_in_map_attr)
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {value: int, attr_array: {type: array, subtype: int, size: 10, +attr: {key: [$value, $value+1]} } }")};
 	int value = 42;
-	Scalar_datatype value_type {Scalar_kind::SIGNED, sizeof(int)};
-	global_ctx["value"].share(Ref{(void*)&value, free, value_type.clone_type(), true, true}, false, false);
-	Datatype_template_uptr result = global_ctx["attr_array"].default_type();
+	auto&& value_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	global_ctx["value"].share(Ref{(void*)&value, free, value_type, true, true}, false, false);
+	Datatype_template_ptr result = global_ctx["attr_array"].default_type();
 	Ref_r map_attr_ref_value = result->attribute("attr").to_ref(global_ctx).operator[]("key");
 	Ref_r attr_ref_0 = map_attr_ref_value.operator[](0UL);
 	Ref_r attr_ref_1 = map_attr_ref_value.operator[](1UL);

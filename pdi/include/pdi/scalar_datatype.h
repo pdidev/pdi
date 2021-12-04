@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -38,6 +38,9 @@ namespace PDI {
 class PDI_EXPORT Scalar_datatype:
 	public Datatype
 {
+	// Required to make_shared due to private ctor
+	struct Shared_enabler;
+	
 	/// Size of the content in bytes or 0 if unknown
 	size_t m_size;
 	
@@ -57,6 +60,35 @@ class PDI_EXPORT Scalar_datatype:
 	std::function<void(void*)> m_destroy;
 	
 public:
+	/** Interpretation of the content
+	 */
+	Scalar_kind kind() const;
+	
+	Datatype_sptr densify() const override;
+	
+	Datatype_sptr evaluate(Context&) const override;
+	
+	bool dense() const override;
+	
+	size_t datasize() const override;
+	
+	size_t buffersize() const override;
+	
+	size_t alignment() const override;
+	
+	bool simple() const override;
+	
+	void* data_to_dense_copy(void* to, const void* from) const override;
+	
+	void* data_from_dense_copy(void* to, const void* from) const override;
+	
+	void destroy_data(void* ptr) const override;
+	
+	std::string debug_string() const override;
+	
+	bool operator== (const Datatype&) const override;
+	
+private:
 	/** Creates new scalar datatype
 	 *
 	 * \param[in] kind kind of the scalar datatype
@@ -85,41 +117,38 @@ public:
 	 */
 	Scalar_datatype(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
 	
-	/** Interpretation of the content
+public:
+	/** Creates new scalar datatype
+	 *
+	 * \param[in] kind kind of the scalar datatype
+	 * \param[in] size buffersize of the scalar datatype
+	 * \param[in] attributes attributes of the scalar datatype
 	 */
-	Scalar_kind kind() const;
+	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, const Attributes_map& attributes = {});
 	
-	Datatype_template_uptr clone() const override;
+	/** Creates new scalar datatype
+	 *
+	 * \param[in] kind kind of the scalar datatype
+	 * \param[in] size buffersize of the scalar datatype
+	 * \param[in] align alignment of the scalar datatype
+	 * \param[in] attributes attributes of the scalar datatype
+	 */
+	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes = {});
 	
-	Datatype_uptr clone_type() const override;
-	
-	Datatype_uptr densify() const override;
-	
-	Datatype_uptr evaluate(Context&) const override;
-	
-	bool dense() const override;
-	
-	size_t datasize() const override;
-	
-	size_t buffersize() const override;
-	
-	size_t alignment() const override;
-	
-	bool simple() const override;
-	
-	void* data_to_dense_copy(void* to, const void* from) const override;
-	
-	void* data_from_dense_copy(void* to, const void* from) const override;
-	
-	void destroy_data(void* ptr) const override;
-	
-	std::string debug_string() const override;
-	
-	bool operator== (const Datatype&) const override;
-	
+	/** Creates new scalar datatype
+	 *
+	 * \param[in] kind kind of the scalar datatype
+	 * \param[in] size buffersize of the scalar datatype
+	 * \param[in] align alignment of the scalar datatype
+	 * \param[in] dense_size dense size of the scalar datatype
+	 * \param[in] copy function that copies data of this datatype
+	 * \param[in] destroy function that destroys data of this datatype (doesn't deallocate memory)
+	 * \param[in] attributes attributes of the scalar datatype
+	 */
+	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, size_t align, size_t dense_size, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
 };
 
-const Scalar_datatype UNDEF_TYPE = {Scalar_kind::UNKNOWN, 0};
+const auto UNDEF_TYPE = Scalar_datatype::make(Scalar_kind::UNKNOWN, 0);
 
 } // namespace PDI
 

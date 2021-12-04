@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -31,24 +32,27 @@
 #include "mocks/datatype_mock.h"
 
 using namespace PDI;
+using std::make_shared;
+using std::shared_ptr;
+using std::static_pointer_cast;
 using ::testing::Return;
+
+namespace PDI{
+inline void PrintTo(Datatype_sptr dt, ::std::ostream *os)
+{
+	*os << dt->debug_string();
+}
+}
 
 /*
  * Struct prepared for ArrayDatatypeTest.
  */
 struct ArrayDatatypeTest : public ::testing::Test {
-	ArrayDatatypeTest():
-		mockDatatype {new MockDatatype()},
-	             test_size{10},
-	             test_start{0},
-	             test_subsize{5},
-	             test_array{Datatype_uptr(mockDatatype), test_size, test_start, test_subsize}
-	{}
-	MockDatatype* mockDatatype;
-	size_t test_size;
-	size_t test_start;
-	size_t test_subsize;
-	Array_datatype test_array;
+	shared_ptr<MockDatatype> test_subtype = std::make_shared<MockDatatype>();
+	size_t test_size = 10;
+	size_t test_start = 0;
+	size_t test_subsize = 5;
+	shared_ptr<Array_datatype> test_array = Array_datatype::make(test_subtype, test_size, test_start, test_subsize);
 };
 
 /*
@@ -64,16 +68,16 @@ struct ArrayDatatypeTest : public ::testing::Test {
  */
 TEST_F(ArrayDatatypeTest, check_fields)
 {
-	ASSERT_EQ(this->test_size, this->test_array.size());
-	ASSERT_EQ(this->test_start, this->test_array.start());
-	ASSERT_EQ(this->test_subsize, this->test_array.subsize());
-	ASSERT_EQ(static_cast<Datatype*>(this->mockDatatype), &this->test_array.subtype());
+	EXPECT_EQ(this->test_size, this->test_array->size());
+	EXPECT_EQ(this->test_start, this->test_array->start());
+	EXPECT_EQ(this->test_subsize, this->test_array->subsize());
+	EXPECT_EQ(this->test_subtype, this->test_array->subtype());
 }
 
 /*
  * Name:                ArrayDatatypeTest.check_less_args
  *
- * Tested functions:    PDI::ArrayDatatypeTest::Array_datatype(Datatype_uptr, size_t)
+ * Tested functions:    PDI::ArrayDatatypeTest::Array_datatype(Datatype_sptr, size_t)
  *
  * Description:         Test checks if constructor with less arguments correctly
  *                      assign values to other fields.
@@ -82,52 +86,10 @@ TEST_F(ArrayDatatypeTest, check_fields)
 TEST_F(ArrayDatatypeTest, check_less_args)
 {
 	size_t size = 10;
-	Array_datatype array{Datatype_uptr{new MockDatatype()}, size};
-	ASSERT_EQ(size, array.size());
-	ASSERT_EQ(0, array.start());
-	ASSERT_EQ(size, array.subsize());
-}
-
-/*
- * Name:                ArrayDatatypeTest.check_clone
- *
- * Tested functions:    PDI::ArrayDatatypeTest::clone()
- *
- * Description:         Test checks if correct clone is created.
- *
- */
-TEST_F(ArrayDatatypeTest, check_clone)
-{
-	MockDatatype* new_datatype = new MockDatatype();
-	EXPECT_CALL(*this->mockDatatype, clone_type_proxy()).WillOnce(Return(new_datatype));
-	
-	Datatype_template_uptr cloned_datatype {this->test_array.clone()};
-	MockContext mockCtx;
-	std::unique_ptr<Array_datatype> cloned_array {static_cast<Array_datatype*>(cloned_datatype->evaluate(mockCtx).release())};
-	ASSERT_EQ(this->test_array.size(), cloned_array->size());
-	ASSERT_EQ(this->test_array.start(), cloned_array->start());
-	ASSERT_EQ(this->test_array.subsize(), cloned_array->subsize());
-}
-
-/*
- * Name:                ArrayDatatypeTest.check_clone_type
- *
- * Tested functions:    PDI::ArrayDatatypeTest::clone_type()
- *
- * Description:         Test checks if correct clone is created.
- *
- */
-TEST_F(ArrayDatatypeTest, check_clone_type)
-{
-	MockDatatype* new_datatype = new MockDatatype();
-	EXPECT_CALL(*this->mockDatatype, clone_type_proxy()).WillOnce(Return(new_datatype));
-	
-	Datatype_uptr cloned_datatype {this->test_array.clone_type()};
-	std::unique_ptr<Array_datatype> cloned_array {static_cast<Array_datatype*>(cloned_datatype.release())};
-	ASSERT_EQ(this->test_array.size(), cloned_array->size());
-	ASSERT_EQ(this->test_array.start(), cloned_array->start());
-	ASSERT_EQ(this->test_array.subsize(), cloned_array->subsize());
-	ASSERT_EQ(new_datatype, &cloned_array->subtype());
+	auto&& array=Array_datatype::make(Datatype_sptr{new MockDatatype()}, size);
+	EXPECT_EQ(size, array->size());
+	EXPECT_EQ(0, array->start());
+	EXPECT_EQ(size, array->subsize());
 }
 
 /*
@@ -135,20 +97,20 @@ TEST_F(ArrayDatatypeTest, check_clone_type)
  *
  * Tested functions:    PDI::ArrayDatatypeTest::densify()
  *
- * Description:         Test checks if correct densified clone is created.
+ * Description:         Test checks if correct densified version is created.
  *
  */
 TEST_F(ArrayDatatypeTest, check_densify)
 {
-	MockDatatype* new_datatype = new MockDatatype();
-	EXPECT_CALL(*this->mockDatatype, densify_proxy()).WillOnce(Return(new_datatype));
+	EXPECT_CALL(*test_subtype, densify()).WillOnce(Return(test_subtype));
+	auto&& densified_array = static_pointer_cast<const Array_datatype>(this->test_array->densify());
 	
-	Datatype_uptr cloned_datatype {this->test_array.densify()};
-	std::unique_ptr<Array_datatype> cloned_array {static_cast<Array_datatype*>(cloned_datatype.release())};
-	ASSERT_EQ(this->test_array.subsize(), cloned_array->size());
-	ASSERT_EQ(0, cloned_array->start());
-	ASSERT_EQ(this->test_array.subsize(), cloned_array->subsize());
-	ASSERT_EQ(new_datatype, &cloned_array->subtype());
+	EXPECT_EQ(test_array->subsize(), densified_array->size());
+	EXPECT_EQ(test_array->start(), densified_array->start());
+	EXPECT_EQ(test_array->subsize(), densified_array->subsize());
+	EXPECT_EQ(test_array->subtype(), densified_array->subtype());
+	
+	testing::Mock::VerifyAndClearExpectations(test_subtype.get());
 }
 
 /*
@@ -156,21 +118,18 @@ TEST_F(ArrayDatatypeTest, check_densify)
  *
  * Tested functions:    PDI::ArrayDatatypeTest::evaluate()
  *
- * Description:         Test checks if correct clone is created on evaluation.
+ * Description:         Test checks if correct evaluation is created.
  *
  */
 TEST_F(ArrayDatatypeTest, check_evaluate)
 {
-	MockDatatype* new_datatype = new MockDatatype();
-	EXPECT_CALL(*this->mockDatatype, clone_type_proxy()).WillOnce(Return(new_datatype));
-	
 	MockContext mockCtx;
-	Datatype_uptr cloned_datatype {this->test_array.evaluate(mockCtx)};
-	std::unique_ptr<Array_datatype> cloned_array {static_cast<Array_datatype*>(cloned_datatype.release())};
-	ASSERT_EQ(this->test_array.size(), cloned_array->size());
-	ASSERT_EQ(this->test_array.start(), cloned_array->start());
-	ASSERT_EQ(this->test_array.subsize(), cloned_array->subsize());
-	ASSERT_EQ(new_datatype, &cloned_array->subtype());
+	auto&& evaluated_array = static_pointer_cast<const Array_datatype>(this->test_array->evaluate(mockCtx));
+	
+	EXPECT_EQ(this->test_array->size(), evaluated_array->size());
+	EXPECT_EQ(this->test_array->start(), evaluated_array->start());
+	EXPECT_EQ(this->test_array->subsize(), evaluated_array->subsize());
+	EXPECT_EQ(this->test_array->subtype(), evaluated_array->subtype());
 }
 
 /*
@@ -184,8 +143,8 @@ TEST_F(ArrayDatatypeTest, check_evaluate)
  */
 TEST_F(ArrayDatatypeTest, check_dense_false_array)
 {
-	EXPECT_CALL(*this->mockDatatype, dense()).Times(0);
-	ASSERT_EQ(false, this->test_array.dense());
+	EXPECT_CALL(*this->test_subtype, dense()).Times(0);
+	EXPECT_EQ(false, this->test_array->dense());
 }
 
 /*
@@ -201,8 +160,8 @@ TEST_F(ArrayDatatypeTest, check_dense_false_subtype)
 {
 	MockDatatype* mocksparse = new MockDatatype();
 	EXPECT_CALL(*mocksparse, dense()).WillOnce(Return(false));
-	Array_datatype dense_array {Datatype_uptr(mocksparse), 10};
-	ASSERT_EQ(false, dense_array.dense());
+	auto&& dense_array = Array_datatype::make(Datatype_sptr(mocksparse), 10);
+	EXPECT_EQ(false, dense_array->dense());
 }
 
 /*
@@ -218,8 +177,8 @@ TEST_F(ArrayDatatypeTest, check_dense_true)
 {
 	MockDatatype* mocksparse = new MockDatatype();
 	EXPECT_CALL(*mocksparse, dense()).WillOnce(Return(true));
-	Array_datatype dense_array{Datatype_uptr(mocksparse), 10};
-	ASSERT_EQ(true, dense_array.dense());
+	auto&& dense_array = Array_datatype::make(Datatype_sptr(mocksparse), 10);
+	EXPECT_EQ(true, dense_array->dense());
 }
 
 /*
@@ -233,8 +192,8 @@ TEST_F(ArrayDatatypeTest, check_dense_true)
 TEST_F(ArrayDatatypeTest, check_datasize)
 {
 	size_t subtype_datasize = 5;
-	EXPECT_CALL(*this->mockDatatype, datasize()).WillOnce(Return((subtype_datasize)));
-	ASSERT_EQ(subtype_datasize * this->test_subsize, this->test_array.datasize());
+	EXPECT_CALL(*this->test_subtype, datasize()).WillOnce(Return((subtype_datasize)));
+	EXPECT_EQ(subtype_datasize * this->test_subsize, this->test_array->datasize());
 }
 
 /*
@@ -248,8 +207,8 @@ TEST_F(ArrayDatatypeTest, check_datasize)
 TEST_F(ArrayDatatypeTest, check_buffersize)
 {
 	size_t subtype_buffersize = 10;
-	EXPECT_CALL(*this->mockDatatype, buffersize()).WillOnce(Return(subtype_buffersize));
-	ASSERT_EQ(subtype_buffersize * this->test_size, this->test_array.buffersize());
+	EXPECT_CALL(*this->test_subtype, buffersize()).WillOnce(Return(subtype_buffersize));
+	EXPECT_EQ(subtype_buffersize * this->test_size, this->test_array->buffersize());
 }
 
 /*
@@ -263,8 +222,8 @@ TEST_F(ArrayDatatypeTest, check_buffersize)
 TEST_F(ArrayDatatypeTest, check_alignment)
 {
 	size_t subtype_alignment = 1;
-	EXPECT_CALL(*this->mockDatatype, alignment()).WillOnce(Return(subtype_alignment));
-	ASSERT_EQ(subtype_alignment, this->test_array.alignment());
+	EXPECT_CALL(*this->test_subtype, alignment()).WillOnce(Return(subtype_alignment));
+	EXPECT_EQ(subtype_alignment, this->test_array->alignment());
 }
 
 
@@ -276,7 +235,7 @@ struct SparseArrayDeepCopyTest : public ::testing::Test {
 
 	int* sparse_array {new int[100]}; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
 	int* dense_array {new int[16]};
-	
+
 	SparseArrayDeepCopyTest()
 	{
 		for (int i = 0; i < 100; i++) {
@@ -286,23 +245,19 @@ struct SparseArrayDeepCopyTest : public ::testing::Test {
 			dense_array[i] = i;
 		}
 	}
-	
-	Datatype_uptr datatype {
-		new Array_datatype
-		{
-			Datatype_uptr {
-				new Array_datatype
-				{
-					Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-					10,
-					3,
-					4
-				}
-			},
+
+	Datatype_sptr datatype {
+		Array_datatype::make(
+			Array_datatype::make(
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+				10,
+				3,
+				4
+			),
 			10,
 			3,
 			4
-		}
+		)
 	};
 };
 
@@ -319,7 +274,7 @@ TEST_F(SparseArrayDeepCopyTest, dense_to_sparse)
 	this->datatype->data_from_dense_copy(sparse_array, dense_array);
 	for (int i = 3; i < 7; i++) {
 		for (int j = 3; j < 7; j++) {
-			ASSERT_EQ(dense_array[(i-3)*4 + j-3], sparse_array[10*i + j]);
+			EXPECT_EQ(dense_array[(i-3)*4 + j-3], sparse_array[10*i + j]);
 		}
 	}
 }
@@ -330,12 +285,12 @@ TEST_F(SparseArrayDeepCopyTest, dense_to_sparse)
  */
 struct ArrayAccessSequenceTest : public ::testing::Test {
 
-	Array_datatype m_array_type;
+	std::shared_ptr<Array_datatype> m_array_type;
 	std::unique_ptr<int[]> m_array;
-	
+
 	ArrayAccessSequenceTest():
-		m_array_type{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 16 },
-	m_array{new int[16]}
+		m_array_type{Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int)), 16) },
+		m_array{new int[16]}
 	{
 		for (int i = 0; i < 16; i++) {
 			m_array[i] = i;
@@ -352,12 +307,10 @@ struct ArrayAccessSequenceTest : public ::testing::Test {
  */
 TEST_F(ArrayAccessSequenceTest, access_single_element)
 {
-	std::pair<void*, Datatype_uptr> data = m_array_type.subaccess(m_array.get(), Array_datatype::Index_accessor{5});
-	ASSERT_EQ(m_array[5], *static_cast<int*>(data.first));
-	
-	ASSERT_NE(m_array_type, *data.second);
-	Scalar_datatype scalar_type {Scalar_kind::SIGNED,sizeof(int)};
-	ASSERT_EQ(scalar_type, *data.second);
+	std::pair<void*, Datatype_sptr> data = m_array_type->index(5, m_array.get());
+	EXPECT_EQ(m_array.get()+5, data.first);
+	auto&& scalar_type = Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int));
+	EXPECT_EQ(*scalar_type, *data.second);
 }
 
 /*
@@ -369,13 +322,10 @@ TEST_F(ArrayAccessSequenceTest, access_single_element)
  */
 TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_begin)
 {
-	std::pair<void*, Datatype_uptr> data = m_array_type.subaccess(m_array.get(), Array_datatype::Slice_accessor{0, 3}); //"[0:3]"
-	for (int i = 0; i < 3; i++) {
-		ASSERT_EQ(m_array[i], static_cast<int*>(data.first)[i]);
-	}
-	ASSERT_NE(m_array_type, *data.second);
-	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 3 };
-	ASSERT_EQ(array_test, *data.second);
+	std::pair<void*, Datatype_sptr> data = m_array_type->slice(0, 3, m_array.get()); //"[0:3]"
+	EXPECT_EQ(m_array.get(), data.first);
+	auto&& array_test = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int)), 3);
+	EXPECT_EQ(*array_test, *data.second);
 }
 
 /*
@@ -387,13 +337,10 @@ TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_begin)
  */
 TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_middle)
 {
-	std::pair<void*, Datatype_uptr> data = m_array_type.subaccess(m_array.get(), Array_datatype::Slice_accessor{5, 7});
-	for (int i = 0; i < 2; i++) {
-		ASSERT_EQ(m_array[i+5], static_cast<int*>(data.first)[i]);
-	}
-	ASSERT_NE(m_array_type, *data.second);
-	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 2 };
-	ASSERT_EQ(array_test, *data.second);
+	std::pair<void*, Datatype_sptr> data = m_array_type->slice(5, 7, m_array.get());
+	EXPECT_EQ(m_array.get()+5, data.first);
+	auto&& array_test = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int)), 2 );
+	EXPECT_EQ(*array_test, *data.second);
 }
 
 /*
@@ -405,13 +352,10 @@ TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_middle)
  */
 TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_end)
 {
-	std::pair<void*, Datatype_uptr> data = m_array_type.subaccess(m_array.get(), Array_datatype::Slice_accessor{12, 16});
-	for (int i = 0; i < 4; i++) {
-		ASSERT_EQ(m_array[i+12], static_cast<int*>(data.first)[i]);
-	}
-	ASSERT_NE(m_array_type, *data.second);
-	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 4 };
-	ASSERT_EQ(array_test, *data.second);
+	std::pair<void*, Datatype_sptr> data = m_array_type->slice(12, 16, m_array.get());
+	EXPECT_EQ(m_array.get()+12, data.first);
+	auto&& array_test = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int)), 4);
+	EXPECT_EQ(*array_test, *data.second);
 }
 
 /*
@@ -424,18 +368,11 @@ TEST_F(ArrayAccessSequenceTest, access_sequence_subtype_end)
 TEST(ArrayAccessSimpleSequenceTest, access_sequence_subtype_sparse_data)
 {
 	int sparse_array[16];
-	{
-		for (int i = 0; i < 16; i++) {
-			sparse_array[i] = i;
-		}
-	}
-	
-	Array_datatype sparse_array_type{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 16, 2, 4};
-	
-	std::pair<void*, Datatype_uptr> data = sparse_array_type.subaccess(sparse_array, Array_datatype::Slice_accessor{0, 2});
-	for (int i = 0; i < 2; i++) {
-		ASSERT_EQ(sparse_array[i+2], static_cast<int*>(data.first)[i]);
-	}
+
+	auto&& sparse_array_type = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 16, 2, 4);
+
+	std::pair<void*, Datatype_sptr> data = sparse_array_type->slice(0, 2, sparse_array);
+	EXPECT_EQ(sparse_array+2, data.first);
 }
 
 /*
@@ -444,18 +381,34 @@ TEST(ArrayAccessSimpleSequenceTest, access_sequence_subtype_sparse_data)
  */
 struct ArrayAccessAdvancedSequenceTest : public ::testing::Test {
 
-	Array_datatype m_sparse_matrix_type;
-	std::unique_ptr<int[]> m_sparse_matrix;
-	
-	ArrayAccessAdvancedSequenceTest():
-		m_sparse_matrix_type{Datatype_uptr{new Array_datatype{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 8, 1, 4 }}, 8, 1, 4},
-	m_sparse_matrix{new int[64]}
+	static constexpr size_t s_size[2] { 8, 8 };
+	static constexpr size_t s_start[2] { 1, 1 };
+	static constexpr size_t s_subsize[2] { 4, 4 };
+	std::shared_ptr<Array_datatype> m_sparse_matrix_type = Array_datatype::make(
+		Array_datatype::make(
+			Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int)),
+			s_size[1],
+			s_start[1],
+			s_subsize[1]
+		),
+		s_size[0],
+		s_start[0],
+		s_subsize[0]
+	);
+	std::unique_ptr<int[]> m_sparse_matrix{new int[s_size[0]*s_size[1]]};
+	int* m_matrix_data_start = m_sparse_matrix.get()+s_size[1]*s_start[0]+s_start[0];
+
+	ArrayAccessAdvancedSequenceTest()
 	{
 		for (int i = 0; i < 64; i++) {
 			m_sparse_matrix[i] = i;
 		}
 	}
 };
+
+constexpr size_t ArrayAccessAdvancedSequenceTest::s_size[2];
+constexpr size_t ArrayAccessAdvancedSequenceTest::s_start[2];
+constexpr size_t ArrayAccessAdvancedSequenceTest::s_subsize[2];
 
 /*
  * Name:                ArrayAccessAdvancedSequenceTest.access_sequence_subtype_sparse_data
@@ -466,19 +419,17 @@ struct ArrayAccessAdvancedSequenceTest : public ::testing::Test {
  */
 TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data)
 {
-	std::pair<void*, Datatype_uptr> data {m_sparse_matrix.get(), m_sparse_matrix_type.clone_type()};
-	std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
-	accessors.emplace_back(new Array_datatype::Index_accessor{0});
-	accessors.emplace_back(new Array_datatype::Slice_accessor{0, 4});
-	for (auto&& accessor : accessors) {
-		data = data.second->subaccess(data.first, *accessor);
-	}
-	for (int i = 0; i < 4 ; i++) {
-		ASSERT_EQ(m_sparse_matrix[i+9], static_cast<int*>(data.first)[i]);
-	}
-	ASSERT_NE(m_sparse_matrix_type, *data.second);
-	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 4 };
-	ASSERT_EQ(array_test, *data.second);
+	constexpr size_t idx0 = 1;
+	constexpr std::pair<size_t,size_t> slc1 = {2,4};
+	
+	std::pair<void*, Datatype_sptr> data = m_sparse_matrix_type->index(idx0, m_sparse_matrix.get());
+	data = data.second->slice(slc1.first, slc1.second, data.first);
+	
+	const void* expected_address = m_matrix_data_start+idx0*s_size[1]+slc1.first;
+	EXPECT_EQ(expected_address, data.first) << static_cast<uint8_t*>(data.first) - static_cast<const uint8_t*>(expected_address)<<" bytes off";
+	
+	auto&& array_test = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int)), slc1.second-slc1.first);
+	EXPECT_EQ(*array_test, *data.second);
 }
 
 /*
@@ -490,17 +441,17 @@ TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data)
  */
 TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data_vector)
 {
-	std::pair<void*, Datatype_uptr> data {m_sparse_matrix.get(), m_sparse_matrix_type.clone_type()};
-	std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
-	accessors.emplace_back(new Array_datatype::Index_accessor{0});
-	accessors.emplace_back(new Array_datatype::Slice_accessor{0, 4});
-	data = data.second->subaccess(data.first, accessors);
-	for (int i = 0; i < 4 ; i++) {
-		ASSERT_EQ(m_sparse_matrix[i+9], static_cast<int*>(data.first)[i]);
-	}
-	ASSERT_NE(m_sparse_matrix_type, *data.second);
-	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 4 };
-	ASSERT_EQ(array_test, *data.second);
+	constexpr size_t idx0 = 1;
+	constexpr std::pair<size_t,size_t> slc1 = {2,4};
+	
+	std::pair<void*, Datatype_sptr> data = m_sparse_matrix_type->index(idx0, m_sparse_matrix.get());
+	data = data.second->slice(slc1.first, slc1.second, data.first);
+	
+	const void* expected_address = m_matrix_data_start+idx0*s_size[1]+slc1.first;
+	EXPECT_EQ(expected_address, data.first) << static_cast<uint8_t*>(data.first) - static_cast<const uint8_t*>(expected_address)<<" bytes off";
+	
+	auto&& array_test = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int)), slc1.second-slc1.first);
+	EXPECT_EQ(*array_test, *data.second);
 }
 
 /*
@@ -512,13 +463,10 @@ TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data_vect
  */
 TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data_second)
 {
-	std::pair<void*, Datatype_uptr> data = m_sparse_matrix_type.subaccess(m_sparse_matrix.get(), Array_datatype::Index_accessor{1});
-	for (int i = 0; i < 8 ; i++) {
-		ASSERT_EQ(m_sparse_matrix[i+16], static_cast<int*>(data.first)[i]);
-	}
-	ASSERT_NE(m_sparse_matrix_type, *data.second);
-	Array_datatype array_test{Datatype_uptr{new Scalar_datatype {Scalar_kind::SIGNED,sizeof(int)}}, 8, 1, 4};
-	ASSERT_EQ(array_test, *data.second);
+	std::pair<void*, Datatype_sptr> data = m_sparse_matrix_type->index(1, m_sparse_matrix.get());
+	EXPECT_EQ(m_sparse_matrix.get()+16, data.first);
+	auto&& array_test = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int)), 8, 1, 4);
+	EXPECT_EQ(*array_test, *data.second);
 }
 
 /*
@@ -530,12 +478,11 @@ TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data_seco
  */
 TEST_F(ArrayAccessAdvancedSequenceTest, access_sequence_subtype_sparse_data_third)
 {
-	std::pair<void*, Datatype_uptr> data {m_sparse_matrix.get(), m_sparse_matrix_type.clone_type()};
-	std::vector<std::unique_ptr<Datatype::Accessor_base>> accessors;
-	data = data.second->subaccess(data.first, Array_datatype::Index_accessor{0});
-	data = data.second->subaccess(data.first, Array_datatype::Index_accessor{0});
-	ASSERT_EQ(m_sparse_matrix[9], static_cast<int*>(data.first)[0]);
-	ASSERT_NE(m_sparse_matrix_type, *data.second);
-	Scalar_datatype scalar_test{Scalar_kind::SIGNED, sizeof(int)};
-	ASSERT_EQ(scalar_test, *data.second);
+	std::pair<void*, Datatype_sptr> data {m_sparse_matrix.get(), m_sparse_matrix_type};
+	data = data.second->index(0, data.first);
+	data = data.second->index(0, data.first);
+	EXPECT_EQ(m_sparse_matrix.get()+9, data.first);
+	auto&& scalar_test = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	EXPECT_EQ(*scalar_test, *data.second);
 }
+

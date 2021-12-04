@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -36,7 +36,7 @@
 
 namespace {
 
-using PDI::Datatype;
+using PDI::Datatype_sptr;
 using PDI::Context;
 using PDI::Error;
 using PDI::Plugin;
@@ -73,12 +73,12 @@ struct fti_plugin: Plugin {
 	{
 		for (auto&& data: m_config.dataset()) {
 			if (Ref_r ref = context().desc(data.second).ref()) {
-				const Datatype& type = ref.type();
-				if (!type.dense()) {
+				const Datatype_sptr type = ref.type();
+				if (!type->dense()) {
 					context().logger().warn("Sparse types are not supported (`{}')", data.second);
 					continue;
 				}
-				m_fti->protect(data.first, const_cast<void*>(ref.get()), type.datasize(), FTI_CHAR);
+				m_fti->protect(data.first, const_cast<void*>(ref.get()), type->datasize(), FTI_CHAR);
 			} else {
 				context().logger().warn("Protected variable `{}' (id: {}) not available for reading", data.second, data.first);
 				m_fti->protect(data.first, nullptr, 0, FTI_CHAR);
@@ -90,12 +90,12 @@ struct fti_plugin: Plugin {
 	{
 		for (auto&& data: m_config.dataset()) {
 			if (Ref_w ref = context().desc(data.second).ref()) {
-				const Datatype& type = ref.type();
-				if (!type.dense()) {
+				const Datatype_sptr type = ref.type();
+				if (!type->dense()) {
 					context().logger().warn("Sparse types are not supported (`{}')", data.second);
 					continue;
 				}
-				m_fti->protect(data.first, ref.get(), type.datasize(), FTI_CHAR);
+				m_fti->protect(data.first, ref.get(), type->datasize(), FTI_CHAR);
 			} else {
 				context().logger().warn("Protected variable `{}' (id: {}) not available for writing", data.second, data.first);
 				m_fti->protect(data.first, nullptr, 0, FTI_CHAR);
@@ -178,7 +178,7 @@ struct fti_plugin: Plugin {
 							context().logger().warn("Trying to get stage dir before plugin initialization (`{}')", name);
 							return;
 						}
-						m_fti->stage_dir(static_cast<char*>(wref.get()), wref.type().datasize());
+						m_fti->stage_dir(static_cast<char*>(wref.get()), wref.type()->datasize());
 					}
 				},
 				desc.first);
@@ -252,13 +252,13 @@ struct fti_plugin: Plugin {
 					for (auto&& var_id: m_config.recover_var().at(event_name)) {
 						string desc_name = m_config.dataset().at(var_id);
 						if (Ref_w ref = context().desc(desc_name).ref()) {
-							const Datatype& type = ref.type();
-							if (!type.dense()) {
+							const Datatype_sptr type = ref.type();
+							if (!type->dense()) {
 								context().logger().warn("Sparse types are not supported (`{}')", desc_name);
 								continue;
 							}
 							context().logger().debug("FTI_Recover, var id: `{}', desc `{}'", var_id, desc_name);
-							m_fti->protect(var_id, ref.get(), type.datasize(), FTI_CHAR);
+							m_fti->protect(var_id, ref.get(), type->datasize(), FTI_CHAR);
 							m_fti->recover_var(var_id);
 						} else {
 							context().logger().warn("Variable `{}' (id: {}) unavailable", desc_name, var_id);

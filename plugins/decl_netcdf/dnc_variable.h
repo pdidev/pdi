@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -47,7 +48,7 @@ class Dnc_variable
 	std::string m_path;
 	
 	/// Type of this variable. Can be nullptr.
-	PDI::Datatype_template_uptr m_type;
+	PDI::Datatype_template_ptr m_type;
 	
 	/// Dimensions names of this variable
 	std::vector<PDI::Expression> m_dimensions_names;
@@ -74,13 +75,13 @@ public:
 	 *
 	 * \param type type of this variable
 	 */
-	void type(PDI::Datatype_uptr type);
+	void type(PDI::Datatype_sptr type);
 	
 	/** Getter for variable type
 	 *
 	 * \return type of the variable if defined
 	 */
-	PDI::Datatype_uptr type() const;
+	PDI::Datatype_sptr type() const;
 	
 	/** Getter for variable dimensions
 	 *

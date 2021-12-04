@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -115,122 +116,105 @@ TEST_P(NegativeTypeParseTest, parse)
 }
 
 vector<param_pair> scalar_types {
-	{"char",                    shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}},
-	{"type: char",              shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}},
-	{"{type: char, kind: 0}",   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}},
-	{"int",                     shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}}},
-	{"type: int",               shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}}},
-	{"{type: int, kind: 0}",    shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}}},
-	{"int8",                    shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 1}}},
-	{"type: int8",              shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 1}}},
-	{"{type: int8, kind: 0}",   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 1}}},
-	{"int16",                   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 2}}},
-	{"type: int16",             shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 2}}},
-	{"{type: int16, kind: 0}",  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 2}}},
-	{"int32",                   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 4}}},
-	{"type: int32",             shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 4}}},
-	{"{type: int32, kind: 0}",  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 4}}},
-	{"int64",                   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 8}}},
-	{"type: int64",             shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 8}}},
-	{"{type: int64, kind: 0}",  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 8}}},
-	{"float",                   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(float)}}},
-	{"type: float",             shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(float)}}},
-	{"{type: float, kind: 0}",  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(float)}}},
-	{"double",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}}},
-	{"type: double",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}}},
-	{"{type: double, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, sizeof(double)}}},
-	{"size_t",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(size_t)}}},
-	{"type: size_t",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(size_t)}}},
-	{"{type: size_t, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(size_t)}}},
-	{"ptrdiff_t",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(ptrdiff_t)}}},
-	{"type: ptrdiff_t",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(ptrdiff_t)}}},
-	{"{type: ptrdiff_t, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(ptrdiff_t)}}},
-	{"byte",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNKNOWN, 1}}},
-	{"type: byte",            shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNKNOWN, 1}}},
-	{"{type: byte, kind: 0}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNKNOWN, 1}}},
+	{"char",                    Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))},
+	{"type: char",              Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))},
+	{"{type: char, kind: 0}",   Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))},
+	{"int",                     Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))},
+	{"type: int",               Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))},
+	{"{type: int, kind: 0}",    Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))},
+	{"int8",                    Scalar_datatype::make(Scalar_kind::SIGNED, 1)},
+	{"type: int8",              Scalar_datatype::make(Scalar_kind::SIGNED, 1)},
+	{"{type: int8, kind: 0}",   Scalar_datatype::make(Scalar_kind::SIGNED, 1)},
+	{"int16",                   Scalar_datatype::make(Scalar_kind::SIGNED, 2)},
+	{"type: int16",             Scalar_datatype::make(Scalar_kind::SIGNED, 2)},
+	{"{type: int16, kind: 0}",  Scalar_datatype::make(Scalar_kind::SIGNED, 2)},
+	{"int32",                   Scalar_datatype::make(Scalar_kind::SIGNED, 4)},
+	{"type: int32",             Scalar_datatype::make(Scalar_kind::SIGNED, 4)},
+	{"{type: int32, kind: 0}",  Scalar_datatype::make(Scalar_kind::SIGNED, 4)},
+	{"int64",                   Scalar_datatype::make(Scalar_kind::SIGNED, 8)},
+	{"type: int64",             Scalar_datatype::make(Scalar_kind::SIGNED, 8)},
+	{"{type: int64, kind: 0}",  Scalar_datatype::make(Scalar_kind::SIGNED, 8)},
+	{"float",                   Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(float))},
+	{"type: float",             Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(float))},
+	{"{type: float, kind: 0}",  Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(float))},
+	{"double",                  Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(double))},
+	{"type: double",            Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(double))},
+	{"{type: double, kind: 0}", Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(double))},
+	{"size_t",                  Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(size_t))},
+	{"type: size_t",            Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(size_t))},
+	{"{type: size_t, kind: 0}", Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(size_t))},
+	{"ptrdiff_t",                  Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(ptrdiff_t))},
+	{"type: ptrdiff_t",            Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(ptrdiff_t))},
+	{"{type: ptrdiff_t, kind: 0}", Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(ptrdiff_t))},
+	{"byte",                  Scalar_datatype::make(Scalar_kind::UNKNOWN, 1)},
+	{"type: byte",            Scalar_datatype::make(Scalar_kind::UNKNOWN, 1)},
+	{"{type: byte, kind: 0}", Scalar_datatype::make(Scalar_kind::UNKNOWN, 1)},
 
 	
 #ifdef BUILD_FORTRAN
-	{"character",                   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
-	{"type: character",             shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
-	{"{type: character, kind: 0}",  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND}}},
-	{"{type: character, kind: 256}", shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, 256}}},
-	{"integer",                     shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND}}},
-	{"type: integer",               shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND}}},
-	{"{type: integer, kind: 0}",    shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND}}},
-	{"{type: integer, kind: 256}",   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::SIGNED, 256}}},
-	{"logical",                     shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND}}},
-	{"type: logical",               shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND}}},
-	{"{type: logical, kind: 0}",    shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND}}},
-	{"{type: logical, kind: 256}",   shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::UNSIGNED, 256}}},
-	{"real",                        shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND}}},
-	{"type: real",                  shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND}}},
-	{"{type: real, kind: 0}",       shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND}}},
-	{"{type: real, kind: 256}",      shared_ptr<Datatype>{new Scalar_datatype{Scalar_kind::FLOAT, 256}}},
+	{"character",                   Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND)},
+	{"type: character",             Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND)},
+	{"{type: character, kind: 0}",  Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_CHARACTER_DEFAULT_KIND)},
+	{"{type: character, kind: 256}", Scalar_datatype::make(Scalar_kind::UNSIGNED, 256)},
+	{"integer",                     Scalar_datatype::make(Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND)},
+	{"type: integer",               Scalar_datatype::make(Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND)},
+	{"{type: integer, kind: 0}",    Scalar_datatype::make(Scalar_kind::SIGNED, PDI_INTEGER_DEFAULT_KIND)},
+	{"{type: integer, kind: 256}",   Scalar_datatype::make(Scalar_kind::SIGNED, 256)},
+	{"logical",                     Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND)},
+	{"type: logical",               Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND)},
+	{"{type: logical, kind: 0}",    Scalar_datatype::make(Scalar_kind::UNSIGNED, PDI_LOGICAL_DEFAULT_KIND)},
+	{"{type: logical, kind: 256}",   Scalar_datatype::make(Scalar_kind::UNSIGNED, 256)},
+	{"real",                        Scalar_datatype::make(Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND)},
+	{"type: real",                  Scalar_datatype::make(Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND)},
+	{"{type: real, kind: 0}",       Scalar_datatype::make(Scalar_kind::FLOAT, PDI_REAL_DEFAULT_KIND)},
+	{"{type: real, kind: 256}",      Scalar_datatype::make(Scalar_kind::FLOAT, 256)},
 #endif // BUILD_FORTRAN
 };
 
 vector<param_pair> array_types {
 	{
 		"{size: 10, type: array, subtype: char}",
-		shared_ptr<Datatype> {
-			new Array_datatype {
-				unique_ptr<Datatype> (new Scalar_datatype {
-					Scalar_kind::UNSIGNED, sizeof(char)
-				}),
-				10
-			}
-		}
+		Array_datatype::make(
+			Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+			10
+		)
 	},
 	{
 		"{type: array, size: 20, subsize: 15, start: 5, subtype: char}",
-		shared_ptr<Datatype> {
-			new Array_datatype {
-				unique_ptr<Datatype> (new Scalar_datatype {
-					Scalar_kind::UNSIGNED, sizeof(char)
-				}),
-				20,
-				5,
-				15
-			}
-		}
+		Array_datatype::make(
+			Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+			20,
+			5,
+			15
+		)
 	},
 	{
 		"{size: 30, subsize: 15, type: array, subtype: char}",
-		shared_ptr<Datatype> {
-			new Array_datatype {
-				unique_ptr<Datatype> (new Scalar_datatype {
-					Scalar_kind::UNSIGNED, sizeof(char)
-				}),
-				30,
-				0,
-				15
-			}
-		}
+		Array_datatype::make(
+			Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+			30,
+			0,
+			15
+		)
 	},
 	{
 		"{size: 40, start: 20, subsize: 10, type: array, subtype: char}",
-		shared_ptr<Datatype> {
-			new Array_datatype {
-				unique_ptr<Datatype> (new Scalar_datatype {
-					Scalar_kind::UNSIGNED, sizeof(char)
-				}),
-				40,
-				20,
-				10
-			}
-		}
+		Array_datatype::make(
+			Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+			40,
+			20,
+			10
+		)
 	},
 	{
 		"{size: [10000, 10000], type: array, subtype: int}",
-		shared_ptr<Datatype> {
-			new Array_datatype {
-				unique_ptr<Datatype> (new Array_datatype {
-					unique_ptr<Datatype>(new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}), 10000
-				}),
-				10000,
-			}
-		}
+		Array_datatype::make(
+			Array_datatype::make(
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+				10000
+			),
+			10000
+		)
 	},
 	// TODO: FIX THE BUG WITH PARSING
 	// {
@@ -248,29 +232,21 @@ vector<param_pair> array_types {
 	// },
 	{
 		"{size: [10000, 10000], subsize: [200, 400], type: array, subtype: int}",
-		shared_ptr<Datatype> {
-			new Array_datatype {
-				unique_ptr<Datatype> (new Array_datatype {
-					unique_ptr<Datatype>(new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}), 10000, 0, 400
-				}),
-				10000,
-				0,
-				200
-			}
-		}
+		Array_datatype::make(
+			Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10000, 0, 400),
+			10000,
+			0,
+			200
+		)
 	},
 	{
 		"{size: [10000, 10000], start: [256, 128], subsize: [1000, 2000], type: array, subtype: int}",
-		shared_ptr<Datatype> {
-			new Array_datatype {
-				unique_ptr<Datatype> (new Array_datatype {
-					unique_ptr<Datatype>(new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}), 10000, 128, 2000
-				}),
-				10000,
-				256,
-				1000
-			}
-		}
+		Array_datatype::make(
+			Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10000, 128, 2000),
+			10000,
+			256,
+			1000
+		)
 	}
 };
 
@@ -285,23 +261,21 @@ vector<param_pair> record_types {
 		"   my_int:      \n"
 		"     disp: 4    \n"
 		"     type: int  \n",
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-						"my_char"
-					},
-					Record_datatype::Member{
-						4,
-						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-						"my_int"
-					}
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					"my_char"
 				},
-				8
-			}
-		}
+				Record_datatype::Member{
+					4,
+					Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+					"my_int"
+				}
+			},
+			8
+		)
 	},
 	{
 		"type: record            \n"
@@ -315,35 +289,27 @@ vector<param_pair> record_types {
 		"     type: array        \n"
 		"     subtype: int64\n"
 		"     size: [10, 10]     \n",
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-						"my_char"
-					},
-					Record_datatype::Member{
-						8,
-						unique_ptr<Datatype> {
-							new Array_datatype
-							{
-								unique_ptr<Datatype> {
-									new Array_datatype
-									{
-										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-										10
-									}
-								},
-								10
-							}
-						},
-						"my_array"
-					}
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					"my_char"
 				},
-				808
-			}
-		}
+				Record_datatype::Member{
+					8,
+					Array_datatype::make(
+						Array_datatype::make(
+							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+							10
+						),
+						10
+					),
+					"my_array"
+				}
+			},
+			808
+		)
 	},
 	{
 		"type: record            \n"
@@ -359,39 +325,31 @@ vector<param_pair> record_types {
 		"     size: [10, 10]     \n"
 		"     start: [2, 3]      \n"
 		"     subsize: [6, 5]    \n",
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-						"my_char"
-					},
-					Record_datatype::Member{
-						8,
-						unique_ptr<Datatype> {
-							new Array_datatype
-							{
-								unique_ptr<Datatype> {
-									new Array_datatype
-									{
-										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-										10,
-										3,
-										5
-									}
-								},
-								10,
-								2,
-								6
-							}
-						},
-						"my_array"
-					}
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					"my_char"
 				},
-				808
-			}
-		}
+				Record_datatype::Member{
+					8,
+					Array_datatype::make(
+						Array_datatype::make(
+							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+							10,
+							3,
+							5
+						),
+						10,
+						2,
+						6
+					),
+					"my_array"
+				}
+			},
+			808
+		)
 	},
 	{
 		"type: record                \n"
@@ -414,51 +372,41 @@ vector<param_pair> record_types {
 		"         subtype: int64\n"
 		"         size: [10, 10]     \n"
 		,
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-						"my_char"
-					},
-					Record_datatype::Member{
-						8,
-						unique_ptr<Datatype> {
-							new Record_datatype {
-								vector<Record_datatype::Member> {
-									Record_datatype::Member{
-										0,
-										unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-										"my_char"
-									},
-									Record_datatype::Member{
-										8,
-										unique_ptr<Datatype> {
-											new Array_datatype
-											{
-												unique_ptr<Datatype> {
-													new Array_datatype
-													{
-														unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-														10
-													}
-												},
-												10
-											}
-										},
-										"my_array"
-									}
-								},
-								808
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					"my_char"
+				},
+				Record_datatype::Member{
+					8,
+					Record_datatype::make(
+						vector<Record_datatype::Member> {
+							Record_datatype::Member{
+								0,
+								Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+								"my_char"
+							},
+							Record_datatype::Member{
+								8,
+								Array_datatype::make(
+									Array_datatype::make(
+										Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+										10
+									),
+									10
+								),
+								"my_array"
 							}
 						},
-						"my_record"
-					}
-				},
-				816
-			}
-		}
+						808
+					),
+					"my_record"
+				}
+			},
+			816
+		)
 	}
 };
 
@@ -468,23 +416,21 @@ vector<param_pair> struct_types {
 		"members:        \n"
 		"   - my_char: char\n"
 		"   - my_int: int  \n",
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-						"my_char"
-					},
-					Record_datatype::Member{
-						4,
-						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-						"my_int"
-					}
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					"my_char"
 				},
-				8
-			}
-		}
+				Record_datatype::Member{
+					4,
+					Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+					"my_int"
+				}
+			},
+			8
+		)
 	},
 	{
 		"type: struct            \n"
@@ -494,35 +440,27 @@ vector<param_pair> struct_types {
 		"       type: array        \n"
 		"       subtype: int64     \n"
 		"       size: [10, 10]     \n",
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-						"my_char"
-					},
-					Record_datatype::Member{
-						8,
-						unique_ptr<Datatype> {
-							new Array_datatype
-							{
-								unique_ptr<Datatype> {
-									new Array_datatype
-									{
-										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-										10
-									}
-								},
-								10
-							}
-						},
-						"my_array"
-					}
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					"my_char"
 				},
-				808
-			}
-		}
+				Record_datatype::Member{
+					8,
+					Array_datatype::make(
+						Array_datatype::make(
+							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+							10
+						),
+						10
+					),
+					"my_array"
+				}
+			},
+			808
+		)
 	},
 	{
 		"type: struct              \n"
@@ -534,39 +472,31 @@ vector<param_pair> struct_types {
 		"       size: [10, 10]     \n"
 		"       start: [2, 3]      \n"
 		"       subsize: [6, 5]    \n",
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-						"my_char"
-					},
-					Record_datatype::Member{
-						8,
-						unique_ptr<Datatype> {
-							new Array_datatype
-							{
-								unique_ptr<Datatype> {
-									new Array_datatype
-									{
-										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-										10,
-										3,
-										5
-									}
-								},
-								10,
-								2,
-								6
-							}
-						},
-						"my_array"
-					}
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					"my_char"
 				},
-				808
-			}
-		}
+				Record_datatype::Member{
+					8,
+					Array_datatype::make(
+						Array_datatype::make(
+							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+							10,
+							3,
+							5
+						),
+						10,
+						2,
+						6
+					),
+					"my_array"
+				}
+			},
+			808
+		)
 	},
 	{
 		"type: struct                \n"
@@ -580,106 +510,77 @@ vector<param_pair> struct_types {
 		"         - my_array:            \n"
 		"             type: array        \n"
 		"             subtype: int64     \n"
-		"             size: [10, 10]     \n"
-		,
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-						"my_char"
-					},
-					Record_datatype::Member{
-						8,
-						unique_ptr<Datatype> {
-							new Record_datatype {
-								vector<Record_datatype::Member> {
-									Record_datatype::Member{
-										0,
-										unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-										"my_char"
-									},
-									Record_datatype::Member{
-										8,
-										unique_ptr<Datatype> {
-											new Array_datatype
-											{
-												unique_ptr<Datatype> {
-													new Array_datatype
-													{
-														unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-														10
-													}
-												},
-												10
-											}
-										},
-										"my_array"
-									}
-								},
-								808
+		"             size: [10, 10]     \n",
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+					"my_char"
+				},
+				Record_datatype::Member{
+					8,
+					Record_datatype::make(
+						vector<Record_datatype::Member> {
+							Record_datatype::Member{
+								0,
+								Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+								"my_char"
+							},
+							Record_datatype::Member{
+								8,
+								Array_datatype::make(
+									Array_datatype::make(
+										Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+										10
+									),
+									10
+								),
+								"my_array"
 							}
 						},
-						"my_record"
-					}
-				},
-				816
-			}
-		}
+						808
+					),
+					"my_record"
+				}
+			},
+			816
+		)
 	}
 };
 
 vector<param_pair> pointer_types {
 	{
-		"{type: pointer, subtype: int}", shared_ptr<Datatype>{
-			new Pointer_datatype {
-				unique_ptr<Datatype>{
-					new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}
-				}
-			}
-		}
+		"{type: pointer, subtype: int}", 
+		Pointer_datatype::make(
+			Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))
+		)
 	},
 	{
-		"{type: pointer, subtype: {type: pointer, subtype: int}}", shared_ptr<Datatype>{
-			new Pointer_datatype {
-				unique_ptr<Datatype>{
-					new Pointer_datatype {
-						unique_ptr<Datatype>{
-							new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}
-						}
-					}
-				}
-			}
-		}
+		"{type: pointer, subtype: {type: pointer, subtype: int}}",
+		Pointer_datatype::make(
+			Pointer_datatype::make(
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))
+			)
+		)
 	},
 	{
-		"{type: pointer, subtype: {type: array, subtype: int, size: 32}}", shared_ptr<Datatype>{
-			new Pointer_datatype {
-				unique_ptr<Datatype>{
-					new Array_datatype {
-						unique_ptr<Datatype>{
-							new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}
-						},
-						32
-					}
-				}
-			}
-		}
-	},
-	{
-		"{type: array, subtype: {type: pointer, subtype: int}, size: 32}", shared_ptr<Datatype>{
-			new Array_datatype {
-				unique_ptr<Datatype>{
-					new Pointer_datatype {
-						unique_ptr<Datatype>{
-							new Scalar_datatype{Scalar_kind::SIGNED, sizeof(int)}
-						}
-					}
-				},
+		"{type: pointer, subtype: {type: array, subtype: int, size: 32}}",
+		Pointer_datatype::make(
+			Array_datatype::make(
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
 				32
-			}
-		}
+			)
+		)
+	},
+	{
+		"{type: array, subtype: {type: pointer, subtype: int}, size: 32}",
+		Array_datatype::make(
+			Pointer_datatype::make(
+				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))
+			),
+			32
+		)
 	},
 	{
 		"type: pointer     \n"
@@ -693,27 +594,23 @@ vector<param_pair> pointer_types {
 		"     my_int:      \n"
 		"       disp: 4    \n"
 		"       type: int  \n",
-		shared_ptr<Datatype> {
-			new Pointer_datatype {
-				unique_ptr<Datatype> {
-					new Record_datatype {
-						vector<Record_datatype::Member> {
-							Record_datatype::Member{
-								0,
-								unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-								"my_char"
-							},
-							Record_datatype::Member{
-								4,
-								unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-								"my_int"
-							}
-						},
-						8
+		Pointer_datatype::make(
+			Record_datatype::make(
+				vector<Record_datatype::Member> {
+					Record_datatype::Member{
+						0,
+						Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+						"my_char"
+					},
+					Record_datatype::Member{
+						4,
+						Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+						"my_int"
 					}
-				}
-			}
-		}
+				},
+				8
+			)
+		)
 	},
 	{
 		"type: record       \n"
@@ -726,29 +623,23 @@ vector<param_pair> pointer_types {
 		"   my_int:         \n"
 		"     disp: 8       \n"
 		"     type: int     \n",
-		shared_ptr<Datatype> {
-			new Record_datatype {
-				vector<Record_datatype::Member> {
-					Record_datatype::Member{
-						0,
-						unique_ptr<Datatype> {
-							new Pointer_datatype {
-								unique_ptr<Datatype> {
-									new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}
-								}
-							},
-						},
-						"my_ptr"
-					},
-					Record_datatype::Member{
-						8,
-						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}},
-						"my_int"
-					}
+		Record_datatype::make(
+			vector<Record_datatype::Member> {
+				Record_datatype::Member{
+					0,
+					Pointer_datatype::make(
+						Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
+					),
+					"my_ptr"
 				},
-				16
-			}
-		}
+				Record_datatype::Member{
+					8,
+					Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+					"my_int"
+				}
+			},
+			16
+		)
 	}
 };
 
@@ -758,21 +649,19 @@ vector<param_pair> tuple_types {
 		"elements:        \n"
 		"   - char\n"
 		"   - int  \n",
-		shared_ptr<Datatype> {
-			new Tuple_datatype {
-				vector<Tuple_datatype::Element> {
-					Tuple_datatype::Element{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
-					},
-					Tuple_datatype::Element{
-						4,
-						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}}
-					}
+		Tuple_datatype::make(
+			vector<Tuple_datatype::Element> {
+				Tuple_datatype::Element{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
 				},
-				8
-			}
-		}
+				Tuple_datatype::Element{
+					4,
+					Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))
+				}
+			},
+			8
+		)
 	},
 	{
 		"type: tuple       \n"
@@ -784,25 +673,23 @@ vector<param_pair> tuple_types {
 		"     disp: 1      \n"
 		"   - type: double \n"
 		"     disp: 5      \n",
-		shared_ptr<Datatype> {
-			new Tuple_datatype {
-				vector<Tuple_datatype::Element> {
-					Tuple_datatype::Element{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
-					},
-					Tuple_datatype::Element{
-						1,
-						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::SIGNED, sizeof(int)}}
-					},
-					Tuple_datatype::Element{
-						5,
-						unique_ptr<Datatype> {new Scalar_datatype {Scalar_kind::FLOAT, sizeof(double)}}
-					}
+		Tuple_datatype::make(
+			vector<Tuple_datatype::Element> {
+				Tuple_datatype::Element{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
 				},
-				13
-			}
-		}
+				Tuple_datatype::Element{
+					1,
+					Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))
+				},
+				Tuple_datatype::Element{
+					5,
+					Scalar_datatype::make(Scalar_kind::FLOAT, sizeof(double))
+				}
+			},
+			13
+		)
 	},
 	{
 		"type: tuple             \n"
@@ -811,33 +698,22 @@ vector<param_pair> tuple_types {
 		"   - type: array        \n"
 		"     subtype: int64     \n"
 		"     size: [10, 10]     \n",
-		shared_ptr<Datatype> {
-			new Tuple_datatype {
-				vector<Tuple_datatype::Element> {
-					Tuple_datatype::Element{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
-					},
-					Tuple_datatype::Element{
-						8,
-						unique_ptr<Datatype> {
-							new Array_datatype
-							{
-								unique_ptr<Datatype> {
-									new Array_datatype
-									{
-										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-										10
-									}
-								},
-								10
-							}
-						}
-					}
+		Tuple_datatype::make(
+			vector<Tuple_datatype::Element> {
+				Tuple_datatype::Element{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
 				},
-				808
-			}
-		}
+				Tuple_datatype::Element{
+					8,
+					Array_datatype::make(
+						Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)), 10),
+						10
+					)
+				}
+			},
+			808
+		)
 	},
 	{
 		"type: tuple             \n"
@@ -848,37 +724,29 @@ vector<param_pair> tuple_types {
 		"     size: [10, 10]     \n"
 		"     start: [2, 3]      \n"
 		"     subsize: [6, 5]    \n",
-		shared_ptr<Datatype> {
-			new Tuple_datatype {
-				vector<Tuple_datatype::Element> {
-					Tuple_datatype::Element{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
-					},
-					Tuple_datatype::Element{
-						8,
-						unique_ptr<Datatype> {
-							new Array_datatype
-							{
-								unique_ptr<Datatype> {
-									new Array_datatype
-									{
-										unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-										10,
-										3,
-										5
-									}
-								},
-								10,
-								2,
-								6
-							}
-						}
-					}
+		Tuple_datatype::make(
+			vector<Tuple_datatype::Element> {
+				Tuple_datatype::Element{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
 				},
-				808
-			}
-		}
+				Tuple_datatype::Element{
+					8,
+					Array_datatype::make(
+						Array_datatype::make(
+							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+							10,
+							3,
+							5
+						),
+						10,
+						2,
+						6
+					)
+				}
+			},
+			808
+		)
 	},
 	{
 		"type: tuple                   \n"
@@ -893,49 +761,39 @@ vector<param_pair> tuple_types {
 		"           subtype: int64     \n"
 		"           size: [10, 10]     \n"
 		,
-		shared_ptr<Datatype> {
-			new Tuple_datatype {
-				vector<Tuple_datatype::Element> {
-					Tuple_datatype::Element{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
-					},
-					Tuple_datatype::Element{
-						8,
-						unique_ptr<Datatype> {
-							new Record_datatype {
-								vector<Record_datatype::Member> {
-									Record_datatype::Member{
-										0,
-										unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} },
-										"my_char"
-									},
-									Record_datatype::Member{
-										8,
-										unique_ptr<Datatype> {
-											new Array_datatype
-											{
-												unique_ptr<Datatype> {
-													new Array_datatype
-													{
-														unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-														10
-													}
-												},
-												10
-											}
-										},
-										"my_array"
-									}
-								},
-								808
-							}
-						}
-					}
+		Tuple_datatype::make(
+			vector<Tuple_datatype::Element> {
+				Tuple_datatype::Element{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
 				},
-				816
-			}
-		}
+				Tuple_datatype::Element{
+					8,
+					Record_datatype::make(
+						vector<Record_datatype::Member> {
+							Record_datatype::Member{
+								0,
+								Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
+								"my_char"
+							},
+							Record_datatype::Member{
+								8,
+								Array_datatype::make(
+									Array_datatype::make(
+										Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+										10
+									),
+									10
+								),
+								"my_array"
+							}
+						},
+						808
+					)
+				}
+			},
+			816
+		)
 	},
 	{
 		"type: tuple                     \n"
@@ -948,47 +806,37 @@ vector<param_pair> tuple_types {
 		"         subtype: int64       \n"
 		"         size: [10, 10]       \n"
 		,
-		shared_ptr<Datatype> {
-			new Tuple_datatype {
-				vector<Tuple_datatype::Element> {
-					Tuple_datatype::Element{
-						0,
-						unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
-					},
-					Tuple_datatype::Element{
-						8,
-						unique_ptr<Datatype> {
-							new Tuple_datatype {
-								vector<Tuple_datatype::Element> {
-									Tuple_datatype::Element{
-										0,
-										unique_ptr<Datatype> { new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)} }
-									},
-									Tuple_datatype::Element{
-										8,
-										unique_ptr<Datatype> {
-											new Array_datatype
-											{
-												unique_ptr<Datatype> {
-													new Array_datatype
-													{
-														unique_ptr<Datatype>{new Scalar_datatype {Scalar_kind::SIGNED, sizeof(long)}},
-														10
-													}
-												},
-												10
-											}
-										}
-									}
-								},
-								808
-							}
-						}
-					}
+		Tuple_datatype::make(
+			vector<Tuple_datatype::Element> {
+				Tuple_datatype::Element{
+					0,
+					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
 				},
-				816
-			}
-		}
+				Tuple_datatype::Element{
+					8,
+					Tuple_datatype::make(
+						vector<Tuple_datatype::Element> {
+							Tuple_datatype::Element{
+								0,
+								Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char))
+							},
+							Tuple_datatype::Element{
+								8,
+								Array_datatype::make(
+									Array_datatype::make(
+										Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+										10
+									),
+									10
+								)
+							}
+						},
+						808
+					)
+				}
+			},
+			816
+		)
 	}
 };
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -116,7 +116,7 @@ public:
 
 	Logger& logger() override;
 	
-	Datatype_template_uptr datatype(PC_tree_t node) override;
+	Datatype_template_ptr datatype(PC_tree_t node) override;
 	
 	void add_datatype(const std::string&, Datatype_template_parser) override;
 	

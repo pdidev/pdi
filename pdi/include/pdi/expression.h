@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -191,7 +191,7 @@ public:
 	 * \param type the type of the created Ref
 	 * \return the data reference
 	 */
-	Ref to_ref(Context& ctx, const Datatype& type) const;
+	Ref to_ref(Context& ctx, Datatype_sptr type) const;
 	
 	/** Parses a string that starts with `$` and represents a reference expression
 	 *

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -68,7 +68,7 @@ class File_op
 #endif
 	
 	/// type of the datasets for which an explicit type is specified
-	std::unordered_map<std::string, PDI::Datatype_template_uptr> m_datasets;
+	std::unordered_map<std::string, PDI::Datatype_template_ptr> m_datasets;
 	
 	/// the dataset operations
 	std::vector<Dataset_op> m_dset_ops;

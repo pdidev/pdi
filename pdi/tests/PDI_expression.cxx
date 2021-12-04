@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -48,7 +49,7 @@
 using PDI::Array_datatype;
 using PDI::Expression;
 using PDI::Context;
-using PDI::Datatype_uptr;
+using PDI::Datatype_sptr;
 using PDI::Error;
 using PDI::Global_context;
 using PDI::Scalar_datatype;
@@ -900,7 +901,13 @@ TEST_F(AdvancedExpressionTest, simple_reference)
 {
 	MockDataDescriptor desc_mock;
 	long value = 10l;
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{new long{value}, [](void* p){operator delete(p);}, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}));
+	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{
+		new long{value},
+		[](void* p){operator delete(p);},
+		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+		true,
+		true
+	}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp{"$simple"};
 	ASSERT_EQ(value, exp.to_long(context_mock));
@@ -917,11 +924,23 @@ TEST_F(AdvancedExpressionTest, string_ref)
 {
 	MockDataDescriptor desc_mock;
 	char string_value[] = "a_string_example";
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{string_value, [](void*) {}, Datatype_uptr{ new Array_datatype{ Datatype_uptr{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}, sizeof(string_value)-1 }}, true, true }));
+	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{
+		string_value,
+		[](void*) {},
+		Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), sizeof(string_value)-1),
+		true,
+		true
+	}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp_str{"$simple"};
 	ASSERT_EQ(string_value, exp_str.to_string(context_mock));
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{ string_value, [](void*) {}, Datatype_uptr{ new Array_datatype{ Datatype_uptr{new Scalar_datatype{Scalar_kind::UNSIGNED, sizeof(char)}}, sizeof(string_value)-1 }}, true, true }));
+	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{
+		string_value,
+		[](void*) {},
+		Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), sizeof(string_value)-1),
+		true,
+		true
+	}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp_str2{"<${simple}>"};
 	ASSERT_EQ("<a_string_example>", exp_str2.to_string(context_mock));
@@ -962,8 +981,19 @@ TEST_F(AdvancedExpressionTest, reference_in_operation)
 	MockDataDescriptor desc_mock;
 	long value1 = 10l;
 	long value2 = 20l;
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{new long{value1}, [](void*p){operator delete(p);}, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}))
-	.WillOnce(Return(Ref_r{new long{value2}, [](void*p){operator delete(p);}, Datatype_uptr{new Scalar_datatype{Scalar_kind::SIGNED, sizeof(long)}},true, true}));
+	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{
+		new long{value1},
+		[](void*p){operator delete(p);},
+		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+		true,
+		true
+	})).WillOnce(Return(Ref_r{
+		new long{value2},
+		[](void*p){operator delete(p);},
+		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+		true,
+		true
+	}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("value1")))).WillOnce(ReturnRef(desc_mock));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("value2")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp{"(${value1} + $value2) * 2"};
@@ -1054,7 +1084,7 @@ TEST(PCTreeToRefDefault, record_value)
 	
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
-	const PDI::Record_datatype* record_type = dynamic_cast<const PDI::Record_datatype*>(&ref.type());
+	auto&& record_type = std::dynamic_pointer_cast<const PDI::Record_datatype>(ref.type());
 	
 	long* x;
 	long* y;
@@ -1082,7 +1112,7 @@ TEST(PCTreeToRefDefault, record_value_string)
 	PC_tree_t tree = PC_parse_string("{y: 123456789, x: \"a b c d e f g h i j k\"}");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
-	const PDI::Record_datatype* record_type = dynamic_cast<const PDI::Record_datatype*>(&ref.type());
+	auto&& record_type = std::dynamic_pointer_cast<const PDI::Record_datatype>(ref.type());
 	
 	char* x;
 	long* y;
@@ -1106,7 +1136,7 @@ TEST(PCTreeToRef, scalar_value_unsigned_char)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Scalar_datatype type {PDI::Scalar_kind::UNSIGNED, sizeof(unsigned char)};
+	auto&& type = PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned char));
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
@@ -1118,7 +1148,7 @@ TEST(PCTreeToRef, scalar_value_short)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Scalar_datatype type {PDI::Scalar_kind::SIGNED, sizeof(short)};
+	auto&& type = PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(short));
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
@@ -1130,7 +1160,7 @@ TEST(PCTreeToRef, scalar_value_int)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Scalar_datatype type {PDI::Scalar_kind::SIGNED, sizeof(int)};
+	auto&& type = PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int));
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
@@ -1142,7 +1172,7 @@ TEST(PCTreeToRef, scalar_value_long)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Scalar_datatype type {PDI::Scalar_kind::SIGNED, sizeof(long)};
+	auto&& type = PDI::Scalar_datatype::make (PDI::Scalar_kind::SIGNED, sizeof(long));
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
@@ -1154,7 +1184,7 @@ TEST(PCTreeToRef, array_value_long)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Array_datatype type {Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::SIGNED, sizeof(long)}}, 4};
+	auto&& type = Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)), 4);
 	PC_tree_t tree = PC_parse_string("[1, 2, 3, 4]");
 	
 	PDI::Expression ex(tree);
@@ -1171,7 +1201,7 @@ TEST(PCTreeToRef, array_value_string)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Array_datatype type {Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::UNSIGNED, sizeof(char)}}, 5};
+	auto&& type = PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(char)), 5);
 	PC_tree_t tree = PC_parse_string("\"abcd\"");
 	
 	PDI::Expression ex(tree);
@@ -1187,7 +1217,7 @@ TEST(PCTreeToRef, array_value_float)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Array_datatype type {Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::FLOAT, sizeof(double)}}, 4};
+	auto&& type = PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::FLOAT, sizeof(double)), 4);
 	PC_tree_t tree = PC_parse_string("[1.1, 2.2, 3.3, 4.4]");
 	
 	PDI::Expression ex(tree);
@@ -1203,14 +1233,14 @@ TEST(PCTreeToRef, record_value)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Record_datatype type {
+	auto&& type = PDI::Record_datatype::make(
 		std::vector<PDI::Record_datatype::Member> {
-			PDI::Record_datatype::Member {0, PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::UNSIGNED, sizeof(char)}}, "char"},
-			PDI::Record_datatype::Member {2, PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::SIGNED, sizeof(short)}}, "short"},
-			PDI::Record_datatype::Member {8, PDI::Datatype_uptr{new PDI::Array_datatype{PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::SIGNED, sizeof(long)}}, 4}}, "long"}
+			PDI::Record_datatype::Member {0, PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(char)), "char"},
+			PDI::Record_datatype::Member {2, PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(short)), "short"},
+			PDI::Record_datatype::Member {8, PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)), 4), "long"}
 		},
 		40
-	};
+	);
 	PC_tree_t tree = PC_parse_string("{char: 42, short: 84, long: [1, 2, 3, 4]}");
 	
 	PDI::Expression ex(tree);
@@ -1235,13 +1265,13 @@ TEST(PCTreeToRef, record_value_string)
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
 	
-	PDI::Record_datatype type {
+	auto&& type = PDI::Record_datatype::make(
 		std::vector<PDI::Record_datatype::Member> {
-			PDI::Record_datatype::Member {0, PDI::Datatype_uptr{new PDI::Array_datatype{PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::UNSIGNED, sizeof(char)}}, 25}}, "string"},
-			PDI::Record_datatype::Member {32, PDI::Datatype_uptr{new PDI::Scalar_datatype{PDI::Scalar_kind::SIGNED, sizeof(long)}}, "long"}
+			PDI::Record_datatype::Member {0, PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(char)), 25), "string"},
+			PDI::Record_datatype::Member {32, PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)), "long"}
 		},
 		40
-	};
+	);
 	PC_tree_t tree = PC_parse_string("{string: \"a b c d e f g h i j k\", long: 123456789}");
 	
 	PDI::Expression ex(tree);

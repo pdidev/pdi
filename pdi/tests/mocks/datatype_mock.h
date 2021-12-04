@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -27,43 +28,15 @@
 
 #include <gmock/gmock.h>
 
+#include <pdi/context.h>
 #include <pdi/datatype.h>
-#include <pdi/pdi_fwd.h>
 
 struct MockDatatype : public PDI::Datatype {
 	MockDatatype():
 		PDI::Datatype()
 	{}
 	
-	PDI::Datatype_template_uptr clone() const override
-	{
-		return PDI::Datatype_template_uptr{clone_proxy()};
-	}
-	
-	PDI::Datatype_uptr clone_type() const override
-	{
-		return PDI::Datatype_uptr{clone_type_proxy()};
-	}
-	
-	PDI::Datatype_uptr densify() const override
-	{
-		return PDI::Datatype_uptr{densify_proxy()};
-	}
-	
-	PDI::Datatype_uptr evaluate(PDI::Context&) const override
-	{
-		return PDI::Datatype_uptr{evaluate_proxy()};
-	}
-	
-	std::pair<void*, PDI::Datatype_uptr> subaccess(void* from,
-	    std::vector<std::unique_ptr<Accessor_base>>::iterator remaining_begin,
-	    std::vector<std::unique_ptr<Accessor_base>>::iterator remaining_end) const
-	{
-		std::pair<void*, PDI::Datatype*> result = subaccess_proxy(from, remaining_begin, remaining_end);
-		return {result.first, PDI::Datatype_uptr{result.second}};
-	}
-	
-	bool operator == (const Datatype& other) const
+	bool operator == (const Datatype& other) const override
 	{
 		return equals(other);
 	}
@@ -72,21 +45,13 @@ struct MockDatatype : public PDI::Datatype {
 	MOCK_CONST_METHOD0(datasize, size_t());
 	MOCK_CONST_METHOD0(buffersize, size_t());
 	MOCK_CONST_METHOD0(alignment, size_t());
-	
-	//proxies are needed to work with unique_ptr<>
-	MOCK_CONST_METHOD0(clone_type_proxy, Datatype*());
-	MOCK_CONST_METHOD0(clone_proxy, Datatype_template*());
-	MOCK_CONST_METHOD0(densify_proxy, Datatype*());
-	MOCK_CONST_METHOD0(evaluate_proxy, Datatype*());
-	MOCK_CONST_METHOD3(subaccess_proxy, std::pair<void*, Datatype*> (void* from,
-	        std::vector<std::unique_ptr<Accessor_base>>::iterator remaining_begin,
-	        std::vector<std::unique_ptr<Accessor_base>>::iterator remaining_end));
-	        
+	MOCK_CONST_METHOD0(densify, PDI::Datatype_sptr());
+	MOCK_CONST_METHOD1(evaluate, PDI::Datatype_sptr(PDI::Context&));
 	MOCK_CONST_METHOD0(simple, bool());
 	MOCK_CONST_METHOD2(data_to_dense_copy, void* (void* to, const void* from));
 	MOCK_CONST_METHOD2(data_from_dense_copy, void* (void* to, const void* from));
 	MOCK_CONST_METHOD1(destroy_data, void(void* ptr));
-	MOCK_CONST_METHOD1(equals, bool(const Datatype&));
+	MOCK_CONST_METHOD1(equals, bool(const PDI::Datatype&));
 	MOCK_CONST_METHOD0(debug_string, std::string());
 };
 

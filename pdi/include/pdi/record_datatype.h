@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -42,30 +42,10 @@ namespace PDI {
 class PDI_EXPORT Record_datatype:
 	public Datatype
 {
-public:
-	/** Member accessor for record datatype
-	 */
-	class Member_accessor : public Accessor_base
-	{
-		/// Name of the member that will be returned
-		std::string m_member_name;
-		
-		std::string access_kind() const override;
-	public:
-		/** Construct a new member accessor
-		 *
-		 * \param member_name name of the member that will be returned
-		 */
-		Member_accessor(const std::string& member_name);
-		
-		std::pair<void*, Datatype_uptr> access(const Record_datatype& record_type,
-		    void* from,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-		    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
-		    
-		std::unique_ptr<Accessor_base> clone() const override;
-	};
+	// Required to make_shared due to private ctor
+	struct Shared_enabler;
 	
+public:
 	/** A Member is one of the elements inside a Record_datatype
 	 */
 	class Member
@@ -74,7 +54,7 @@ public:
 		size_t m_displacement;
 		
 		/// Type of the contained member
-		Datatype_uptr m_type;
+		Datatype_sptr m_type;
 		
 		/// Name of this specific member
 		std::string m_name;
@@ -86,7 +66,7 @@ public:
 		 * \param type type of the contained member
 		 * \param name name of this specific member
 		 */
-		Member(size_t displacement, Datatype_uptr type, const std::string& name);
+		Member(size_t displacement, Datatype_sptr type, const std::string& name);
 		
 		/** Construct a new member by copy
 		 *
@@ -104,7 +84,7 @@ public:
 		 *
 		 * \return the type of the contained member
 		 */
-		const Datatype& type() const;
+		Datatype_sptr type() const;
 		
 		/** Access the name of this specific member
 		 *
@@ -136,27 +116,13 @@ private:
 	size_t m_buffersize;
 	
 public:
-	/** Constructs a new Record_datatype
-	 *
-	 * \param members the members for the newly created Record_datatype in
-	 *        increasing displacement order
-	 * \param size the total size of the buffer containing all members
-	 * \param attributes attributes of the record datatype
-	 */
-	Record_datatype(std::vector<Member>&& members, size_t size, const Attributes_map& attributes = {});
-	
 	/** Accesses the members in increasing displacement order
 	 */
 	const std::vector<Member>& members() const;
 	
+	Datatype_sptr densify() const override;
 	
-	Datatype_template_uptr clone() const override;
-	
-	Datatype_uptr clone_type() const override;
-	
-	Datatype_uptr densify() const override;
-	
-	Datatype_uptr evaluate(Context&) const override;
+	Datatype_sptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	
@@ -172,15 +138,35 @@ public:
 	
 	void* data_from_dense_copy(void* to, const void*) const override;
 	
-	std::pair<void*, Datatype_uptr> subaccess_by_iterators(void* from,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
-	    
+	Datatype_sptr member ( const char* name ) const override;
+	
+	std::pair<void*, Datatype_sptr> member ( const char* name, void* data ) const override;
+	
 	void destroy_data(void*) const override;
 	
 	std::string debug_string() const override;
 	
 	bool operator== (const Datatype&) const override;
+	
+private:
+	/** Constructs a new Record_datatype
+	 *
+	 * \param members the members for the newly created Record_datatype in
+	 *        increasing displacement order
+	 * \param size the total size of the buffer containing all members
+	 * \param attributes attributes of the record datatype
+	 */
+	Record_datatype(std::vector<Member>&& members, size_t size, const Attributes_map& attributes = {});
+	
+public:
+	/** Constructs a new Record_datatype
+	 *
+	 * \param members the members for the newly created Record_datatype in
+	 *        increasing displacement order
+	 * \param size the total size of the buffer containing all members
+	 * \param attributes attributes of the record datatype
+	 */
+	static std::shared_ptr<Record_datatype> make(std::vector<Member>&& members, size_t size, const Attributes_map& attributes = {});
 	
 };
 

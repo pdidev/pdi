@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -29,6 +30,8 @@
 
 namespace _flowvr_plugin {
 
+using std::dynamic_pointer_cast;
+
 void Trace::load_on_data(PC_tree_t config)
 {
 	PC_tree_t on_data_node = PC_get(config, ".on_data");
@@ -40,12 +43,12 @@ void Trace::load_on_data(PC_tree_t config)
 
 void Trace::load_trace(PDI::Context& ctx, const std::string& name)
 {
-	const PDI::Datatype_uptr trace_datatype = ctx[m_on_data].default_type()->evaluate(ctx);
-	const PDI::Scalar_datatype* scalar_datatype = dynamic_cast<PDI::Scalar_datatype*>(trace_datatype.get());
-	const PDI::Array_datatype* array_datatype = dynamic_cast<PDI::Array_datatype*>(trace_datatype.get());
+	const PDI::Datatype_sptr trace_datatype = ctx[m_on_data].default_type()->evaluate(ctx);
+	auto&& scalar_datatype = dynamic_pointer_cast<const PDI::Scalar_datatype>(trace_datatype);
+	auto&& array_datatype = dynamic_pointer_cast<const PDI::Array_datatype>(trace_datatype);
 	
 	if (array_datatype) {
-		scalar_datatype = dynamic_cast<const PDI::Scalar_datatype*>(&array_datatype->subtype());
+		scalar_datatype = dynamic_pointer_cast<const PDI::Scalar_datatype>(array_datatype->subtype());
 	}
 	
 	if (scalar_datatype) {

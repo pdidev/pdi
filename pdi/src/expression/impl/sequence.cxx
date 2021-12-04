@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -40,6 +41,7 @@
 
 namespace PDI {
 
+using std::dynamic_pointer_cast;
 using std::max;
 using std::move;
 using std::string;
@@ -89,8 +91,8 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 	if (m_value.empty()) {
 		Ref_rw result {
 			nullptr,
-			[](void* v){},
-			Datatype_uptr(new Array_datatype{Datatype_uptr{new Scalar_datatype{Scalar_kind::UNKNOWN, 0}}, 0}),
+			[](void*){},
+			Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNKNOWN, 0), 0),
 			true,
 			true
 		};
@@ -98,16 +100,16 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 	}
 	
 	// get subtypes and alignment
-	std::vector<Datatype_uptr> subtypes;
+	std::vector<Datatype_sptr> subtypes;
 	size_t result_alignment = 0;
 	for (auto&& element : m_value) {
-		subtypes.emplace_back(element.to_ref(ctx).type().clone_type());
+		subtypes.emplace_back(element.to_ref(ctx).type());
 		result_alignment = max<size_t>(result_alignment, subtypes.back()->alignment());
 	}
 	
 	// check if all elements are the same, if true then it is an array
 	bool array_datatype = true;
-	Datatype_uptr result_type;
+	Datatype_sptr result_type;
 	for (int i = 1; i < subtypes.size(); i++) {
 		if (*subtypes[0] != *subtypes[i]) {
 			array_datatype = false;
@@ -117,7 +119,7 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 	
 	// create the datatype
 	if (array_datatype) {
-		result_type.reset(new Array_datatype{std::move(subtypes[0]), m_value.size()});
+		result_type= Array_datatype::make(std::move(subtypes[0]), m_value.size());
 	} else {
 		//tuple datatype
 		size_t displacement = 0;
@@ -126,23 +128,23 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 			size_t alignment = element_type->alignment();
 			// align the next element as requested
 			displacement += (alignment - (displacement % alignment)) % alignment;
-			tuple_elements.emplace_back(displacement, element_type->clone_type());
-			displacement += tuple_elements.back().type().buffersize();
+			tuple_elements.emplace_back(displacement, element_type);
+			displacement += tuple_elements.back().type()->buffersize();
 		}
 		//add padding at the end of tuple
 		displacement += (result_alignment - (displacement % result_alignment)) % result_alignment;
 		
 		// ensure the tuple size is at least 1 to have a unique address
 		displacement = max<size_t>(1, displacement);
-		result_type.reset(new Tuple_datatype{move(tuple_elements), displacement});
+		result_type = Tuple_datatype::make(move(tuple_elements), displacement);
 	}
 	
-	return Impl::to_ref(ctx, *result_type);
+	return Impl::to_ref(ctx, result_type);
 }
 
-size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, const Datatype& type) const
+size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const
 {
-	if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&type)) {
+	if (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(type)) {
 		size_t offset = 0;
 		for (int i = 0; i < m_value.size(); i++) {
 			void* to = static_cast<uint8_t*>(buffer) + offset;
@@ -152,7 +154,7 @@ size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, const 
 			throw Value_error{"Array literal copy incomplete: copied {} B of {} B", offset, array_type->buffersize()};
 		}
 		return offset;
-	} else if (const Tuple_datatype* tuple_type = dynamic_cast<const Tuple_datatype*>(&type)) {
+	} else if (auto&& tuple_type = dynamic_pointer_cast<const Tuple_datatype>(type)) {
 		size_t bytes_copied = 0;
 		for (int i = 0; i < m_value.size(); i++) {
 			bytes_copied += m_value[i].m_impl->copy_value(ctx,

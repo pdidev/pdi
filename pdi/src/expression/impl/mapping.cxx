@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -40,7 +41,9 @@
 
 namespace PDI {
 
+using std::dynamic_pointer_cast;
 using std::max;
+using std::make_shared;
 using std::move;
 using std::string;
 using std::unique_ptr;
@@ -90,23 +93,23 @@ Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 	for (const auto& element: m_value) {
 		Ref_rw element_ref {element.second.to_ref(ctx)};
 		
-		size_t alignment = element_ref.type().alignment();
+		size_t alignment = element_ref.type()->alignment();
 		record_alignment = max(record_alignment, alignment);
 		
 		// align the next member
 		displacement += (alignment - (displacement % alignment)) % alignment;
-		members.emplace_back(displacement, element_ref.type().clone_type(), element.first);
-		displacement += element_ref.type().buffersize();
+		members.emplace_back(displacement, element_ref.type(), element.first);
+		displacement += element_ref.type()->buffersize();
 	}
 	//add padding at the end of record
 	displacement += (record_alignment - (displacement % record_alignment)) % record_alignment;
 	
-	return Impl::to_ref(ctx, Record_datatype{move(members), displacement});
+	return Impl::to_ref(ctx, Record_datatype::make(move(members), displacement));
 }
 
-size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, const Datatype& type) const
+size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const
 {
-	if (const Record_datatype* record_type = dynamic_cast<const Record_datatype*>(&type)) {
+	if (auto&& record_type = dynamic_pointer_cast<const Record_datatype>(type)) {
 		for (const auto& element : m_value) {
 			auto member_it = find_if(record_type->members().begin(), record_type->members().end(), [&element](const Record_datatype::Member m) {
 				return m.name() == element.first;
@@ -118,7 +121,7 @@ size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, const D
 				throw Value_error{"Trying to reference non-existing member: {}", element.first};
 			}
 		}
-		return type.buffersize();
+		return type->buffersize();
 	} else {
 		throw Value_error{"Map literal cannot copy value of not record datatype"};
 	}

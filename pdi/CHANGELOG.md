@@ -44,10 +44,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#270](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/270)
 
 #### Changed
+* Datatype must now be used through shared_ptr
 
 #### Deprecated
 
 #### Removed
+* Removed `Datatype::Accessor` and use simple virtual functions instead
+  [#385](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/385)
 
 #### Fixed
 

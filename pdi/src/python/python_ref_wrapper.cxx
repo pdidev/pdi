@@ -1,26 +1,27 @@
 /*******************************************************************************
-* Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-* * Redistributions of source code must retain the above copyright
-*   notice, this list of conditions and the following disclaimer.
-* * Redistributions in binary form must reproduce the above copyright
-*   notice, this list of conditions and the following disclaimer in the
-*   documentation and/or other materials provided with the distribution.
-* * Neither the name of CEA nor the names of its contributors may be used to
-*   endorse or promote products derived from this software without specific
-*   prior written permission.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-* THE SOFTWARE.
-******************************************************************************/
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * * Neither the name of CEA nor the names of its contributors may be used to
+ *   endorse or promote products derived from this software without specific
+ *   prior written permission.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ ******************************************************************************/
 
 #include <algorithm>
 
@@ -33,20 +34,22 @@
 
 namespace PDI {
 
+using std::dynamic_pointer_cast;
+
 Python_ref_wrapper::Python_ref_wrapper(Ref ref):
 	m_ref{ref}
 {}
 
 pybind11::object Python_ref_wrapper::getattribute(std::string member_name)
 {
-	return to_python(Ref{m_ref, Record_datatype::Member_accessor{member_name}});
+	return to_python(m_ref[member_name]);
 }
 
 void Python_ref_wrapper::setattribute(std::string member_name, const pybind11::object value)
 {
-	Ref subref {m_ref, Record_datatype::Member_accessor{member_name}};
+	Ref subref = m_ref[member_name];
 	if (Ref_w subref_w {subref}) {
-		if (const Scalar_datatype* scalar_type = dynamic_cast<const Scalar_datatype*>(&subref_w.type())) {
+		if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(subref_w.type())) {
 			switch (scalar_type->kind()) {
 			case Scalar_kind::FLOAT: {
 				switch (scalar_type->datasize()) {
@@ -115,11 +118,11 @@ void Python_ref_wrapper::setattribute(std::string member_name, const pybind11::o
 			} break;
 			default: throw Type_error{"Unable to pass value of unexpected type to python"};
 			}
-		} else if (const Array_datatype* array_type = dynamic_cast<const Array_datatype*>(&subref_w.type())) {
+		} else if (auto&& array_type = std::dynamic_pointer_cast<const Array_datatype>(subref_w.type())) {
 			const pybind11::array py_array{value};
-			Datatype_uptr py_type = python_type(py_array);
+			Datatype_sptr py_type = python_type(py_array);
 			if (const Array_datatype* array_py_type = dynamic_cast<const Array_datatype*>(py_type.get())) {
-				if (array_py_type->subtype().buffersize() != array_type->subtype().buffersize()) {
+				if (array_py_type->subtype()->buffersize() != array_type->subtype()->buffersize()) {
 					throw Type_error{"Setting a member ({}) of array type with subtype different than int64 is unsupported", member_name};
 				}
 			}
@@ -134,7 +137,7 @@ void Python_ref_wrapper::setattribute(std::string member_name, const pybind11::o
 
 pybind11::object Python_ref_wrapper::getitem(size_t index)
 {
-	return to_python(Ref{m_ref, Array_datatype::Index_accessor{index}});
+	return to_python(m_ref[index]);
 }
 
 } // namespace PDI

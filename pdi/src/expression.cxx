@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -156,7 +156,7 @@ Ref Expression::to_ref(Context& ctx) const
 	return m_impl->to_ref(ctx);
 }
 
-Ref Expression::to_ref(Context& ctx, const Datatype& type) const
+Ref Expression::to_ref(Context& ctx, Datatype_sptr type) const
 {
 	return m_impl->to_ref(ctx, type);
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ struct PDI_NO_EXPORT Expression::Impl::String_literal : public Expression::Impl 
 	
 	Ref to_ref(Context& ctx) const override;
 	
-	size_t copy_value(Context& ctx, void* buffer, const Datatype& type) const override;
+	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
 	
 	static std::unique_ptr<Impl> parse(char const** val_str);
 	

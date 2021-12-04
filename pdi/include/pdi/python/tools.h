@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -47,7 +47,7 @@ pybind11::object PDI_EXPORT to_python(Ref r);
  * \param a python numpy array data
  * \return PDI datatype of python object
  */
-Datatype_uptr PDI_EXPORT python_type(const pybind11::array& a);
+Datatype_sptr PDI_EXPORT python_type(const pybind11::array& a);
 
 } // namespace PDI
 

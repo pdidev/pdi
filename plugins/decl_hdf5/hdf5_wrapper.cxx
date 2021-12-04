@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@
 #include "hdf5_wrapper.h"
 
 using PDI::Array_datatype;
-using PDI::Datatype;
+using PDI::Datatype_sptr;
 using PDI::Error;
 using PDI::Impl_error;
 using PDI::System_error;
@@ -47,6 +47,7 @@ using PDI::Type_error;
 using PDI::Scalar_datatype;
 using PDI::Record_datatype;
 using PDI::Scalar_kind;
+using std::dynamic_pointer_cast;
 using std::make_tuple;
 using std::move;
 using std::string;
@@ -64,23 +65,23 @@ herr_t raii_walker(unsigned n, const H5E_error2_t* err_desc, void* client_data)
 	return 0;
 }
 
-hid_t get_h5_type(const Datatype& type)
+hid_t get_h5_type(Datatype_sptr type)
 {
-	if (auto&& record_type = dynamic_cast<const Record_datatype*>(&type)) {
+	if (auto&& record_type = dynamic_pointer_cast<const Record_datatype>(type)) {
 		hid_t h5_type = H5Tcreate (H5T_COMPOUND, record_type->buffersize());
 		for (const auto& member : record_type->members()) {
 			H5Tinsert(h5_type, member.name().c_str(), member.displacement(), get_h5_type(member.type()));
 		}
 		return h5_type;
-	} else if (dynamic_cast<const Array_datatype*>(&type)) {
+	} else if (dynamic_pointer_cast<const Array_datatype>(type)) {
 		std::vector<hsize_t> dims;
-		const Datatype* subtype = &type;
-		while (auto&& array_type = dynamic_cast<const Array_datatype*>(subtype)) {
+		auto&& subtype = type;
+		while (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(subtype)) {
 			dims.emplace_back(array_type->size());
-			subtype = &array_type->subtype();
+			subtype = array_type->subtype();
 		}
-		return H5Tarray_create2(get_h5_type(*subtype), dims.size(), &dims[0]);
-	} else if (auto&& scalar_type = dynamic_cast<const Scalar_datatype*>(&type)) {
+		return H5Tarray_create2(get_h5_type(subtype), dims.size(), &dims[0]);
+	} else if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
 		switch (scalar_type->kind()) {
 		case Scalar_kind::UNSIGNED: {
 			switch (scalar_type->datasize()) {
@@ -129,17 +130,17 @@ void handle_hdf5_err(const char* message)
 	throw System_error{"{} {}", message, h5_errmsg};
 }
 
-tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
+tuple<Raii_hid, Raii_hid> space(Datatype_sptr type, bool dense)
 {
 	//check if outer type is an array
-	if (dynamic_cast<const Array_datatype*>(&type)) {
+	if (dynamic_pointer_cast<const Array_datatype>(type)) {
 		int rank = 0;
 		vector<hsize_t> h5_size;
 		vector<hsize_t> h5_subsize;
 		vector<hsize_t> h5_start;
-		const Datatype* subtype = &type;
+		Datatype_sptr subtype = type;
 		
-		while (auto&& array_type = dynamic_cast<const Array_datatype*>(subtype)) {
+		while (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(subtype)) {
 			++rank;
 			if ( dense ) {
 				h5_size.emplace_back(array_type->subsize());
@@ -150,7 +151,7 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
 				h5_subsize.emplace_back(array_type->subsize());
 				h5_start.emplace_back(array_type->start());
 			}
-			subtype = &array_type->subtype();
+			subtype = array_type->subtype();
 		}
 		if (!subtype->dense()) {
 			throw Type_error{"The top array datatype is the only one that can be sparse in dataset"};
@@ -159,9 +160,9 @@ tuple<Raii_hid, Raii_hid> space(const Datatype& type, bool dense)
 		Raii_hid h5_space = make_raii_hid(H5Screate_simple(rank, &h5_size[0], NULL), H5Sclose);
 		if ( 0>H5Sselect_hyperslab(h5_space, H5S_SELECT_SET, &h5_start[0], NULL, &h5_subsize[0], NULL) ) handle_hdf5_err();
 		
-		return make_tuple(move(h5_space), Raii_hid{get_h5_type(*subtype), H5Tclose});
+		return make_tuple(move(h5_space), Raii_hid{get_h5_type(subtype), H5Tclose});
 	} else {
-		if (!type.dense()) {
+		if (!type->dense()) {
 			throw Type_error{"The top array datatype is the only one that can be sparse in dataset"};
 		}
 		return make_tuple(make_raii_hid(H5Screate(H5S_SCALAR), H5Sclose), make_raii_hid(get_h5_type(type), H5Tclose));

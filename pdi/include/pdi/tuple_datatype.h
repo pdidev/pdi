@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -41,6 +42,9 @@ namespace PDI {
 class PDI_EXPORT Tuple_datatype:
 	public Datatype
 {
+	// Required to make_shared due to private ctor
+	struct Shared_enabler;
+	
 public:
 	/** A Element is one of the elements inside a Tuple_datatype
 	 */
@@ -50,7 +54,7 @@ public:
 		size_t m_offset;
 		
 		/// Type of the contained element
-		Datatype_uptr m_type;
+		Datatype_sptr m_type;
 		
 	public:
 		/** Construct a new element
@@ -58,7 +62,7 @@ public:
 		 * \param offset offset in byte from the Tuple_datatype start
 		 * \param type type of the contained element
 		 */
-		Element(size_t offset, Datatype_uptr type);
+		Element(size_t offset, Datatype_sptr type);
 		
 		/** Construct a new element by copy
 		 *
@@ -76,7 +80,7 @@ public:
 		 *
 		 * \return the type of the contained element
 		 */
-		const Datatype& type() const;
+		Datatype_sptr type() const;
 		
 		/** Tests another element for equality
 		 *
@@ -102,15 +106,6 @@ private:
 	size_t m_buffersize;
 	
 public:
-	/** Constructs a new Tuple_datatype
-	 *
-	 * \param elements the elements for the newly created Tuple_datatype in
-	 *        increasing offset order
-	 * \param buffersize the total size of the buffer containing all elements
-	 * \param attributes attributes of the tuple datatype
-	 */
-	Tuple_datatype(std::vector<Element> elements, size_t buffersize, const Attributes_map& attributes = {});
-	
 	/** Accesses the elements in increasing offset order
 	 */
 	const std::vector<Element>& elements() const;
@@ -120,11 +115,9 @@ public:
 	 */
 	size_t size() const;
 	
-	Datatype_uptr clone_type() const override;
+	Datatype_sptr densify() const override;
 	
-	Datatype_uptr densify() const override;
-	
-	Datatype_uptr evaluate(Context&) const override;
+	Datatype_sptr evaluate(Context&) const override;
 	
 	bool dense() const override;
 	
@@ -136,19 +129,43 @@ public:
 	
 	bool simple() const override;
 	
-	void* data_to_dense_copy(void* to, const void*) const override;
+	void* data_to_dense_copy(void*, const void*) const override;
 	
-	void* data_from_dense_copy(void* to, const void*) const override;
+	void* data_from_dense_copy(void*, const void*) const override;
 	
-	std::pair<void*, Datatype_uptr> subaccess_by_iterators(void* from,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_begin,
-	    std::vector<std::unique_ptr<Accessor_base>>::const_iterator remaining_end) const override;
-	    
+	Datatype_sptr index ( size_t ) const override;
+	
+	std::pair<void*, Datatype_sptr> index ( size_t, void* ) const override;
+	
+	Datatype_sptr slice ( size_t, size_t ) const override;
+	
+	std::pair<void*, Datatype_sptr> slice ( size_t, size_t, void* ) const override;
+	
 	void destroy_data(void*) const override;
 	
 	std::string debug_string() const override;
 	
 	bool operator== (const Datatype&) const override;
+	
+private:
+	/** Constructs a new Tuple_datatype
+	 *
+	 * \param elements the elements for the newly created Tuple_datatype in
+	 *        increasing offset order
+	 * \param buffersize the total size of the buffer containing all elements
+	 * \param attributes attributes of the tuple datatype
+	 */
+	Tuple_datatype(std::vector<Element> elements, size_t buffersize, const Attributes_map& attributes = {});
+	
+public:
+	/** Constructs a new Tuple_datatype
+	 *
+	 * \param elements the elements for the newly created Tuple_datatype in
+	 *        increasing offset order
+	 * \param buffersize the total size of the buffer containing all elements
+	 * \param attributes attributes of the tuple datatype
+	 */
+	static std::shared_ptr<Tuple_datatype> make(std::vector<Element> elements, size_t buffersize, const Attributes_map& attributes = {});
 	
 };
 
