@@ -319,13 +319,13 @@ try {
 	return status;
 }
 
-PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...)
+PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, int access, ...)
 try {
 	Paraconf_wrapper fw;
 	va_list ap;
 	list<string> transaction_data;
 	PDI_status_t status;
-	if ((status = PDI_share(name, data, access))) return status;
+	if ((status = PDI_share(name, data, static_cast<PDI_inout_t>(access)))) return status;
 	transaction_data.emplace_back(name);
 
 	va_start(ap, access);
