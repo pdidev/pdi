@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,11 @@ configure_file("pdicfg_validate" "pdicfg_validate" @ONLY)
 install(PROGRAMS "${CMAKE_BINARY_DIR}/pdicfg_validate"
 	DESTINATION "${CMAKE_INSTALL_BINDIR}/"
 )
+
+file(RELATIVE_PATH PDICFG_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/")
+configure_file("pdicfg_validate" "${CMAKE_CURRENT_BINARY_DIR}/pdicfg_validate_local" @ONLY)
 add_executable(pdicfg_validate IMPORTED GLOBAL)
-set_target_properties(pdicfg_validate PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validate")
+set_target_properties(pdicfg_validate PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/pdicfg_validate_local")
 
 
 if("${BUILD_TESTING}")
