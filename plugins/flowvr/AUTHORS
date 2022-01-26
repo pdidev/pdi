@@ -6,6 +6,7 @@ their contributions.
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Buildsystem update
 * Ported to the new Datatype system
+* Bugfixes
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science

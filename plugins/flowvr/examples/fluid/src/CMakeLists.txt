@@ -1,4 +1,5 @@
 #=============================================================================
+# Copyright (C) 2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -25,10 +26,10 @@
 INCLUDE_DIRECTORIES(../include)
 
 add_executable(gldens gldens.cxx)
-target_link_libraries(gldens PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(gldens PDI::PDI_C OpenGL::GL OpenGL::GLU GLUT::GLUT)
 configure_file(gldens.yml ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/gldens.yml COPYONLY)
 
 add_executable(fluid fluid.cxx Vec3D.cpp Turbulent.cpp TurbulentBase.cpp)
-target_link_libraries(fluid PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(fluid PDI::PDI_C OpenGL::GL OpenGL::GLU GLUT::GLUT)
 configure_file(fluid.yml ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/fluid.yml COPYONLY)
 

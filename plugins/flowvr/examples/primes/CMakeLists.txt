@@ -1,4 +1,5 @@
 #=============================================================================
+# Copyright (C) 2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -33,11 +34,11 @@ target_link_libraries(compute PDI::PDI_C)
 configure_file(compute.yml compute.yml COPYONLY)
 
 add_executable(capture capture.cxx)
-target_link_libraries(capture PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(capture PDI::PDI_C OpenGL::GL OpenGL::GLU GLUT::GLUT)
 configure_file(capture.yml capture.yml COPYONLY)
 
 add_executable(visu visu.cxx)
-target_link_libraries(visu PDI::PDI_C ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(visu PDI::PDI_C OpenGL::GL OpenGL::GLU GLUT::GLUT)
 configure_file(visu.yml visu.yml COPYONLY)
 
 
