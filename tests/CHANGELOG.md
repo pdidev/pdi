@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Do not run `Test05_C` when compiled without Decl'NetCDF support
+  [#401](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/401)
 
 ### Security
 
