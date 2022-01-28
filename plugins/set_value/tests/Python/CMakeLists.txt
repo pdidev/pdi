@@ -24,10 +24,8 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-if("${BUILD_PYTHON}")
-	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
-	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency")
-endif()
+find_package(Python3Path REQUIRED COMPONENTS Interpreter)
+set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency")
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../../cmake/runtest-dir")
 

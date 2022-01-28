@@ -148,6 +148,10 @@ endif()
 
 if(NOT "${BUILD_SHARED_LIBS}")
 	message(FATAL_ERROR "Building PDI as a static lib is not supported. Please add the flag `BUILD_SHARED_LIBS=ON` to the cmake command line.")
+else()
+	set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "" FORCE)
+	set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+	mark_as_advanced(CMAKE_POSITION_INDEPENDENT_CODE BUILD_SHARED_LIBS)
 endif()
 
 

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 * Updated dependencies, now require cmake-3.10, hdf5-1.10.0, and netcdf-4.6.0.
+* Indent if required by the user, not automatically whenever astyle is found.
 
 ### Deprecated
 

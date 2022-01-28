@@ -7,6 +7,7 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Minor compilation fix
 * Work on CMake buildsystem
 * Ported to the new Datatype system
+* Bugfixes
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science

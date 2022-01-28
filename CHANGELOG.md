@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Updated dependencies, the minimum required versions are now: 3.10 for cmake,
   1.6 for FTI, 1.10 for HDF5, 4.6 for NetCDF, 0.4.15 for paraconf, 3.6 for
   Python, 1.7.6 for sionlib, 1.5 for spdlog, and 1.0.15 for zpp.
+* Force the `CMAKE_POSITION_INDEPENDENT_CODE` & `BUILD_SHARED_LIBS` to on for
+  all sub-projects
 
 ### Deprecated
 

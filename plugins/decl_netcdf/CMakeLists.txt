@@ -40,7 +40,9 @@ include(CTest)
 include(GNUInstallDirs)
 
 # Astyle
-find_package(Astyle)
+if("${BUILD_INDENT}")
+	find_package(Astyle REQUIRED)
+endif()
 
 # MPI
 if("${BUILD_NETCDF_PARALLEL}")
@@ -75,11 +77,10 @@ set_target_properties(pdi_decl_netcdf_plugin PROPERTIES
 		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
-if("${Astyle_FOUND}")
+if("${BUILD_INDENT}")
 	Astyle_add_indent(indent TEST
-			OPTIONS_FILE formating.astyle
-			*.cxx *.h
-			tests/*.c)
+		OPTIONS_FILE formating.astyle
+		*.cxx *.h tests/*.c)
 endif()
 
 # installation
