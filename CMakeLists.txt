@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -31,7 +31,7 @@
 
 ### Project header
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(PDI_DIST LANGUAGES C CXX)
 
 
@@ -151,25 +151,6 @@ if(NOT "${BUILD_SHARED_LIBS}")
 endif()
 
 
-if("${CMAKE_VERSION}" VERSION_LESS "3.10")
-	if("${BUILD_TESTING}")
-		message(FATAL_ERROR
-			"Testing is enabled but the cmake version is less than 3.10.\n"
-			"    you have the following options:\n"
-			"     * install and use a more recent version of cmake (3.10 at least)\n"
-			"     * disable testing => pass `-DBUILD_TESTING=OFF' to cmake\n"
-		)
-	endif()
-	if("${BUILD_DOCUMENTATION}")
-		message(FATAL_ERROR
-			"Documentation building is enabled but the cmake version is less than 3.10.\n"
-			"    you have the following options:\n"
-			"     * install and use a more recent version of cmake (3.10 at least)\n"
-			"     * disable documentation build => pass `-DBUILD_DOCUMENTATION=OFF' to cmake\n"
-		)
-	endif()
-endif()
-
 if("${BUILD_PYCALL_PLUGIN}" AND NOT "${BUILD_PYTHON}")
 	message(FATAL_ERROR
 		"The Pycall plugin is enabled but Python support is disabled.\n"
@@ -239,9 +220,9 @@ endif()
 ## Python3
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.5 REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}" OR "${BUILD_FORTRAN}")
-	find_package(Python3Path 3.5 REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
 endif()
 
 
@@ -250,8 +231,8 @@ endif()
 if("${BUILD_FORTRAN}")
 	sbuild_add_dependency(Zpp EMBEDDED
 		BUILD_DEPENDENCY
-		EMBEDDED_PATH "vendor/zpp-1.0.6"
-		VERSION 1.0.0
+		EMBEDDED_PATH "vendor/zpp-1.0.15"
+		VERSION 1.0.15
 		BUILD_IN_SOURCE ON
 		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "<INSTALL_DIR>/lib/zpp-venv"
 		BUILD_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" build
@@ -305,7 +286,7 @@ sbuild_add_dependency(yaml "${USE_DEFAULT}"
 		"-DINSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
 		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
 		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
-	VERSION 0.1
+	VERSION 0.1.7
 )
 
 
@@ -317,7 +298,7 @@ if("${BUILD_FORTRAN}")
 endif()
 # if ( PDI or ... )
 sbuild_add_dependency(paraconf "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/libparaconf-0.4.6"
+	EMBEDDED_PATH "vendor/paraconf-0.4.15"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	SOURCE_SUBDIR "paraconf"
 	CMAKE_CACHE_ARGS
@@ -325,7 +306,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 		"-DUSE_yaml:STRING=SYSTEM"
 		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
-	VERSION 0.4.0
+	VERSION 0.4.15
 )
 
 
@@ -333,12 +314,13 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 
 # if ( PDI or ... )
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.3.1"
+	EMBEDDED_PATH "vendor/spdlog-1.5.0"
 	CMAKE_CACHE_ARGS
-		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
-		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
+		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
-	VERSION 1.3.1
+		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
+		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
+	VERSION 1.5.0
 )
 
 
@@ -348,7 +330,7 @@ if("${BUILD_DOCUMENTATION}")
 	sbuild_add_dependency(Doxygen "${USE_DEFAULT}"
 		BUILD_DEPENDENCY
 		EMBEDDED_PATH "vendor/doxygen-1.8.15"
-		VERSION 1.8.13
+		VERSION 1.8.12
 		OPTIONAL_COMPONENTS dot
 	)
 endif()
@@ -396,13 +378,13 @@ endif()
 
 if("${BUILD_FTI_PLUGIN}")
 	sbuild_add_dependency(FTI "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/fti-1.5.1"
+		EMBEDDED_PATH "vendor/fti-1.6"
 		CMAKE_CACHE_ARGS
 			"-DENABLE_FORTRAN:BOOL=OFF"
 			"-DENABLE_EXAMPLES:BOOL=OFF"
 			"-DENABLE_TESTS:BOOL=OFF"
 			"-DENABLE_DOCU:BOOL=OFF"
-		VERSION 1.5.1
+		VERSION 1.6
 	)
 endif()
 
@@ -451,7 +433,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/hdf5-1.12.0"
 		COMPONENTS ${HDF5_COMPONENTS}
-		MODULE_VARS HDF5_IS_PARALLEL HDF5_C_INCLUDE_DIRS HDF5_C_LIBRARIES
+		MODULE_VARS HDF5_IS_PARALLEL HDF5_C_INCLUDE_DIRS HDF5_C_LIBRARIES HDF5_VERSION
 		BUILD_IN_SOURCE 1
 		CONFIGURE_COMMAND ${HDF5_BUILD_ENV}
 			"<SOURCE_DIR>/configure"
@@ -463,9 +445,11 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			"--disable-tools"
 			"--disable-sharedlib-rpath"
 			${HDF5_CONFIGURE_OPTS}
-		VERSION 1.8.0
 	)
 	if("${HDF5_FOUND}")
+		if(1.10 VERSION_GREATER "${HDF5_VERSION}")
+			message(FATAL_ERROR "HDF5 version ${HDF5_VERSION} found less than required 1.10.0")
+		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
 				"You requested a parallel HDF5 build (-DBUILD_HDF5_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
@@ -498,7 +482,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 	endif()
 	
 	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/netcdf-c-4.7.1"
+		EMBEDDED_PATH "vendor/netcdf-c-4.8.1"
 		DEPENDS HDF5
 		BUILD_IN_SOURCE 1
 		ENV "CC=${NETCDF_CC}" "CPATH=${NETCDF_CPATH}" "LIBRARY_PATH=${NETCDF_LIBRARY_PATH}"
@@ -510,7 +494,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			--disable-dap
 			--disable-utilities
 			--disable-testsets
-		VERSION 4.0.0
+		VERSION 4.6.0
 	)
 	if("${NETCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
@@ -578,14 +562,14 @@ endif()
 if("${BUILD_DECL_SION_PLUGIN}")
 	sbuild_add_dependency(SIONlib "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/sionlib-1.7.6"
-		DEPENDS MPI_COMPONENTS
+		DEPENDS MPI
 		BUILD_IN_SOURCE 1
 		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
 			--prefix=<INSTALL_DIR>
 			--disable-fortran
 			--disable-parutils
 			--disable-cxx
-		VERSION 1.7.2
+		VERSION 1.7.6
 	)
 endif()
 

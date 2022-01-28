@@ -62,7 +62,7 @@ includes:
 
 #]==]
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 
 macro(_NetCDF_remove_duplicates_from_beginning _list_name)

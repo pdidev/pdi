@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -55,8 +55,8 @@ endif()
 set(HDF5_USE_STATIC_LIBRARIES OFF)
 set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
 find_package(HDF5 REQUIRED COMPONENTS C)
-if("${HDF5_VERSION}" VERSION_LESS "1.8.0")
-	message(FATAL_ERROR "HDF5 version 1.8.0 at least required, HDF5 ${HDF5_VERSION} found.")
+if("${HDF5_VERSION}" VERSION_LESS "1.10.0")
+	message(FATAL_ERROR "HDF5 version 1.10.0 at least required, HDF5 ${HDF5_VERSION} found.")
 endif()
 if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 	message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
@@ -105,7 +105,7 @@ install(TARGETS pdi_decl_hdf5_plugin
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
-	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
 			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()

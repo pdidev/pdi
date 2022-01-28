@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(pdi_serialize_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -66,7 +66,7 @@ install(TARGETS pdi_serialize_plugin
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
-	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
 			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()

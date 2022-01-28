@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(PDI LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
@@ -109,23 +109,23 @@ set(PARACONF_COMPONENTS "C")
 if("${BUILD_FORTRAN}")
 	list(APPEND PARACONF_COMPONENTS "f90")
 endif()
-find_package(paraconf 0.4.0 REQUIRED COMPONENTS ${PARACONF_COMPONENTS})
-find_package(spdlog 1.3.1 REQUIRED)
+find_package(paraconf 0.4.15 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
+find_package(spdlog 1.5.0 REQUIRED) # must match PDIConfig.cmake.in
 if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)
 endif()
 if("${BUILD_PYTHON}")
-	find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
 	# Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set
 	set(_PDI_Python3_FOUND "${Python3_FOUND}")
 	unset(Python3_FOUND)
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-	find_package(pybind11 2.3.0 REQUIRED)
+	find_package(pybind11 2.3.0 REQUIRED) # must match PDIConfig.cmake.in
 	set(Python3_FOUND "${_PDI_Python3_FOUND}")
 endif()
 if("${BUILD_FORTRAN}")
-	find_package(Zpp 1.0.6 REQUIRED)
+	find_package(Zpp 1.0.15 REQUIRED)
 endif()
 
 

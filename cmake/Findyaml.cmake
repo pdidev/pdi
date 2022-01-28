@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #--------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 # - Check for the presence of libyaml
 #
@@ -45,6 +45,9 @@ endfunction(_yaml_Find_Config)
 function(_yaml_Find_Pkgconfig)
 	find_package(PkgConfig QUIET)
 	if( NOT "${PKG_CONFIG_FOUND}" )
+		if (NOT "${yaml_FIND_QUIETLY}")
+			message("PkgConfig not found, unable to look for yaml")
+		endif()
 		return()
 	endif()
 	
@@ -57,7 +60,7 @@ function(_yaml_Find_Pkgconfig)
 		pkg_search_module(yamlpkg QUIET yaml yaml-0.1)
 	endif()
 	
-	if ( "${yamlpkg_FOUND}" AND "0${yaml_FIND_VERSION}" VERSION_LESS "${yamlpkg_VERSION}" )
+	if ( "${yamlpkg_FOUND}" AND NOT "0${yaml_FIND_VERSION}" VERSION_GREATER "0${yamlpkg_VERSION}" )
 		find_library (yaml_LIBRARIES NAMES ${yamlpkg_LIBRARIES}
 			HINTS ${yamlpkg_LIBRARY_DIRS}
 			PATH_SUFFIXES lib
@@ -91,10 +94,12 @@ endif()
 if ( NOT TARGET yaml )
 	_yaml_Find_Pkgconfig()
 endif()
-if ( TARGET yaml AND NOT "${yaml_LIBRARIES}" )
-	set(yaml_LIBRARIES yaml)
-endif()
-if ( NOT TARGET yaml )
+if ( TARGET yaml )
+	get_target_property(yaml_LIBRARIES yaml IMPORTED_LOCATION)
+	get_target_property(yamlpkg_INCLUDE_DIRS yaml INTERFACE_INCLUDE_DIRECTORIES)
+else()
+	unset(yamlpkg_INCLUDE_DIRS CACHE)
+	unset(yamlpkg_INCLUDE_DIRS)
 	unset(yaml_LIBRARIES CACHE)
 	unset(yaml_LIBRARIES)
 	unset(yaml_FOUND CACHE)

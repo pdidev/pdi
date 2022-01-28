@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 # Compute the installation prefix relative to this file.
 get_filename_component(_PDIcfg_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)

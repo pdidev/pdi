@@ -29,7 +29,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-find_package(Doxygen 1.8.13 REQUIRED OPTIONAL_COMPONENTS dot)
+find_package(Doxygen 1.8.12 REQUIRED OPTIONAL_COMPONENTS dot)
 
 add_custom_target(doc ALL)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")
@@ -84,6 +84,7 @@ doxygen_add_docs(doxygen_doc
 		"${CMAKE_CURRENT_SOURCE_DIR}/Installation.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Plugins.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Specification_tree_ref.md"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Source_installation.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Using_PDI.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Yaml.md"
 		"${PDI_BINARY_DIR}/pdi/export.h"

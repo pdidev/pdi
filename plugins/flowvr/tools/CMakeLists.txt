@@ -21,11 +21,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #=============================================================================
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(pdi_flowvr)
 
 include(GNUInstallDirs)
-find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
 find_package(PyYAML REQUIRED)
 
 install(DIRECTORY pdi_flowvr

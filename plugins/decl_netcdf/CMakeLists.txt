@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(pdi_decl_netcdf_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -48,7 +48,7 @@ if("${BUILD_NETCDF_PARALLEL}")
 endif()
 
 # NetCDF
-find_package(NetCDF 4.0.0 REQUIRED)
+find_package(NetCDF 4.6.0 REQUIRED)
 if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
 	message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DBUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
 endif()
@@ -95,7 +95,7 @@ endif()
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
-	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
 			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()

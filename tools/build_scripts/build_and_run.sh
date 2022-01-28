@@ -1,6 +1,6 @@
 #!/bin/bash
 #=============================================================================
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -41,22 +41,15 @@ cd "$(mktemp -d)"
 
 
 
-CMAKE_FLAGS="-DBUILD_DOCUMENTATION=OFF"
+MAKEFLAGS="${MAKEFLAGS:--j}"
 
-CMAKE_VERSION="$(cmake --version | grep -o 'version [0-9]\+.[0-9]\+.[0-9]\+' | sed 's/[^0-9]*//')"
-CMAKE_VERSION_MAJOR="${CMAKE_VERSION%%\.*}"
-CMAKE_VERSION_MINOR="${CMAKE_VERSION%\.*}";CMAKE_VERSION_MINOR="${CMAKE_VERSION_MINOR#*\.}"
+
 
 if [ "xprovided" = "x${PDI_LIBS}" ]
 then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM -DUSE_Zpp=SYSTEM -DUSE_Gtest=SYSTEM"
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM -DUSE_Zpp=SYSTEM"
 else
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=EMBEDDED"
-fi
-
-if [ "${CMAKE_VERSION_MAJOR}" -eq 3 ] && [ "${CMAKE_VERSION_MINOR}" -lt 10 ]
-then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_TESTING=OFF"
 fi
 
 if [ -n "${PDI_PLUGIN_PATH}" ]
@@ -64,26 +57,43 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
 fi
 
-#TODO: Workaround for https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/195
-if [ "xdocker-ubuntu-xenial" = "x${PDI_SYSTEM}" ]
+if [ "xspack" = "x${PDI_SYSTEM}" -a "xprovided" != "x${PDI_LIBS}" ]
 then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_SIONlib=SYSTEM"
+	#TODO: Workaround Doxygen fails to find iconv
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INCLUDE_DIRECTORIES_BEFORE=ON"
+	#TODO: Workaround Doxygen finds system libmd before its own
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DICONV_IN_GLIBC=OFF"
+	#TODO: Workaround FTI fails to include zlib https://github.com/leobago/fti/issues/407
+	export CFLAGS="${CFLAGS} $(pkg-config --cflags zlib)"
+	export LDFLAGS="${LDFLAGS} $(pkg-config --libs-only-L zlib)"
 fi
+
+if [ "xspack" = "x${PDI_SYSTEM}" -a "xlatest" != "x${PDI_DEPS}" ]
+then
+	#TODO: Workaround NetCDF < 4.6.2 does not support NC_HAS_PARALLEL4
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
+fi
+
+if [ "xubuntu-bionic" = "x${PDI_SYSTEM}" -a "xprovided" != "x${PDI_LIBS}" ]
+then
+	#TODO: https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/195
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_DECL_SION_PLUGIN=OFF"
+fi
+
+if [ "xubuntu-bionic" = "x${PDI_SYSTEM}" -a "xprovided" = "x${PDI_LIBS}" ]
+then
+	#TODO: only sequential NetCDF is provided as a package
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
+fi
+
+if [ "xubuntu-bionic" = "x${PDI_SYSTEM}" -a "xprovided" = "x${PDI_LIBS}" -a "x${PDI_MPI}" != "openmpi" ]
+then
+	#TODO: mpich flowvr package missing
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_FLOWVR_PLUGIN=OFF"
+fi
+
+
 
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-
-
-
-if [ -z "${MAKEFLAGS}" ]
-then
-	export MAKEFLAGS='-j'
-fi
-
-make
-
-
-
-if [ "${CMAKE_VERSION_MAJOR}" -gt 3 ] || [ "${CMAKE_VERSION_MINOR}" -ge 10 ]
-then
-	ctest --output-on-failure --timeout 180
-fi
+make ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90

@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(pdi_fti_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -46,7 +46,7 @@ endif()
 find_package(MPI REQUIRED COMPONENTS C CXX)
 
 # FTI
-find_package(FTI REQUIRED 1.5.1)
+find_package(FTI 1.6 REQUIRED)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
@@ -79,7 +79,7 @@ install(TARGETS pdi_fti_plugin
 
 # Configuration validation
 if ("${BUILD_CFG_VALIDATOR}")
-	find_package(Python3Path REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
 	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
 			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()

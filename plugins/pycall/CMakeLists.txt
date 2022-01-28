@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(pdi_pycall_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -42,7 +42,7 @@ if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)
 endif()
 
-find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
 # Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set

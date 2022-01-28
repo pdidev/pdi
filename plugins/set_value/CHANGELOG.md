@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#363](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/363)
 
 ### Changed
+* Updated dependencies, now require cmake-3.10.
 
 ### Deprecated
 

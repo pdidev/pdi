@@ -1,8 +1,0 @@
-#!@PYTHON_EXECUTABLE@ -B
-from sys import path
-from os.path import dirname, join
-
-if __name__ == '__main__':
-    path.insert(0, "@_CURRENT_LIST_DIR@")
-    from zpp import main
-    main()

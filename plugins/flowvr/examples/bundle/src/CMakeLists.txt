@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 add_executable(getMultiple getMultiple.cxx)
 target_link_libraries(getMultiple PDI::PDI_C)

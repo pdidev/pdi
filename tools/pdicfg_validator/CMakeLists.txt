@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(pdicfg_validator LANGUAGES)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -32,7 +32,7 @@ include(CTest)
 include(GNUInstallDirs)
 
 
-find_package(Python3Path REQUIRED COMPONENTS Interpreter)
+find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
 find_package(PyYAML REQUIRED)
 
 

@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2019-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2019-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2019-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -33,49 +33,96 @@
   - export MAKEFLAGS='-j 2'
   - sh tools/build_scripts/build_and_run.sh
 
+.default_run: &default_run [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
+
 pages:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
-  image: pdidevel/xenial_libs_cmake3.10:v1
+  only: *default_run
+  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all
   variables: { GIT_SUBMODULE_STRATEGY: recursive }
   script:
-    - mkdir build
-    - cd build
-    - cmake -DDIST_PROFILE=User -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_MPI_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DBUILD_DOCUMENTATION=ON -DUSE_DEFAULT=SYSTEM ..
-    - make PDI_pkg
+    - cmake -DBUILD_DOCUMENTATION=ON -DBUILD_TESTING=OFF pdi
+    - make doc
     - mkdir -p "$CI_PROJECT_DIR/public/"
-    - if [ -z "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/pdi/html "$CI_PROJECT_DIR/public/${CI_COMMIT_REF_NAME}"; fi
-    - if [ -n "${CI_COMMIT_TAG}" ]; then mv $CI_PROJECT_DIR/build/staging/share/doc/pdi/html "$CI_PROJECT_DIR/public/${CI_COMMIT_TAG}"; fi
+    - if [ -z "${CI_COMMIT_TAG}" ]; then mv docs/html "$CI_PROJECT_DIR/public/${CI_COMMIT_REF_NAME}"; fi
+    - if [ -n "${CI_COMMIT_TAG}" ]; then mv docs/html "$CI_PROJECT_DIR/public/${CI_COMMIT_TAG}"; fi
   artifacts: { paths: [ public ] }
 
-xenial_cmake3.5_embedded:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
-  image: pdidevel/xenial_cmake3.5:v1
+spack_oldest_clang_openmpi_all:
+  only: *default_run
+  image: ghcr.io/pdidev/spack/oldest/clang/openmpi/all
   script:
     - *shared_script
 
-xenial_cmake3.5_system:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
-  image: pdidevel/xenial_libs_cmake3.5:v1
+spack_oldest_clang_openmpi_mini:
+  only: *default_run
+  image: ghcr.io/pdidev/spack/oldest/clang/openmpi/mini
+  script:
+    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
+    - *shared_script
+
+spack_oldest_gcc_openmpi_all:
+  only: *default_run
+  image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/all
+  script:
+    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
+    - *shared_script
+
+spack_oldest_gcc_openmpi_mini:
+  only: *default_run
+  image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/mini
   script:
     - *shared_script
 
-xenial_cmake3.10_embedded:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
-  image: pdidevel/xenial_cmake3.10:v1
+spack_latest_clang_openmpi_all:
+  only: *default_run
+  image: ghcr.io/pdidev/spack/latest/clang/openmpi/all
   script:
     - *shared_script
 
-xenial_cmake3.10_system:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
-  image: pdidevel/xenial_libs_cmake3.10:v1
+spack_latest_clang_openmpi_mini:
+  only: *default_run
+  image: ghcr.io/pdidev/spack/latest/clang/openmpi/mini
   script:
     - *shared_script
 
-xenial_cmake3.10_pdi_plugin_path:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
-  image: pdidevel/xenial_libs_cmake3.10:v1
+spack_latest_gcc_openmpi_all:
+  only: *default_run
+  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all
   script:
-    - export PDI_PLUGIN_PATH=/tmp/plugins
+    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
+    - *shared_script
+
+spack_latest_gcc_openmpi_mini:
+  only: *default_run
+  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/mini
+  script:
+    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
+    - *shared_script
+
+ubuntu_bionic_openmpi_mini:
+  only: *default_run
+  image: ghcr.io/pdidev/ubuntu/bionic/openmpi/mini
+  script:
+    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
+    - *shared_script
+
+ubuntu_bionic_mpich_mini:
+  only: *default_run
+  image: ghcr.io/pdidev/ubuntu/bionic/mpich/mini
+  script:
+    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
+    - *shared_script
+
+ubuntu_bionic_openmpi_all:
+  only: *default_run
+  image: ghcr.io/pdidev/ubuntu/bionic/openmpi/all
+  script:
+    - *shared_script
+
+ubuntu_bionic_mpich_all:
+  only: *default_run
+  image: ghcr.io/pdidev/ubuntu/bionic/mpich/all
+  script:
     - *shared_script
 
 pages-deploy:

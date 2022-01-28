@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+* Updated dependencies, now require cmake-3.10, and python-3.6.
 
 ### Deprecated
 
