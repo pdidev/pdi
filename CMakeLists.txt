@@ -74,6 +74,7 @@ option(BUILD_FORTRAN            "Build with Fortran support" ON)
 option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "${BUILD_UNSTABLE}")
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
 option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
+option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
@@ -188,6 +189,26 @@ if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}" AND NOT "${BUILD_MPI
 	)
 endif()
 
+if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}" AND NOT "${BUILD_DECL_HDF5_PLUGIN}")
+	message(FATAL_ERROR
+		"Parallel support is enabled for the Decl'NetCDF plugin but parallel support for HDF5 disabled.\n"
+		"    you have the following options:\n"
+		"     * enable HDF5 parallel support => pass `-DBUILD_HDF5_PARALLEL=ON' to cmake\n"
+		"     * build Decl'NetCDF without parallel support => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
+		"     * do not build the Decl'NetCDF at all => pass `-DBUILD_DECL_NETCDF_PLUGIN=OFF' to cmake"
+	)
+endif()
+
+if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}" AND NOT "${BUILD_MPI_PLUGIN}")
+	message(FATAL_ERROR
+		"Parallel support is enabled for the Decl'NetCDF plugin but the MPI plugin is disabled.\n"
+		"    you have the following options:\n"
+		"     * build the MPI plugin => pass `-DBUILD_MPI_PLUGIN=ON' to cmake\n"
+		"     * build Decl'NetCDF without parallel support => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
+		"     * do not build the Decl'NetCDF at all => pass `-DBUILD_DECL_NETCDF_PLUGIN=OFF' to cmake"
+	)
+endif()
+
 
 
 ### Subtargets
@@ -255,7 +276,7 @@ if("${BUILD_TESTING}")
 		list(APPEND MPI_COMPONENTS Fortran)
 	endif()
 endif()
-if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}")
+if( ("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}") OR ("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}") )
 	list(APPEND MPI_COMPONENTS CXX C)
 	if("${BUILD_FORTRAN}")
 		list(APPEND MPI_COMPONENTS Fortran)
@@ -491,6 +512,17 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			--disable-testsets
 		VERSION 4.0.0
 	)
+	if("${NETCDF_FOUND}")
+		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
+			message(FATAL_ERROR
+				"You requested a parallel NetCDF build (-DBUILD_NETCDF_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
+				"    you have the following options:\n"
+				"     * build with this sequential NetCDF => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
+				"     * build the EMBEDDED NetCDF from PDI distribution => pass `-DUSE_NETCDF=EMBEDDED' to cmake\n"
+				"     * use another version of NetCDF from the system => pass `-DNetCDF_CFGSCRIPT=/path/to/netcdf/bin/nc-config' to cmake"
+			)
+		endif()
+	endif()
 endif()
 
 

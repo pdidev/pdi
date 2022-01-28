@@ -109,10 +109,11 @@ add_test(NAME PDI_example_decl_netcdf_C_serial COMMAND "${RUNTEST_DIR}" "${MPIEX
 set_property(TEST PDI_example_decl_netcdf_C_serial PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_decl_netcdf_C_serial PROPERTY PROCESSORS 1)
 
+if("${BUILD_NETCDF_PARALLEL}")
 add_test(NAME PDI_example_decl_netcdf_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf.yml")
 set_property(TEST PDI_example_decl_netcdf_C PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_decl_netcdf_C PROPERTY PROCESSORS 3)
-
+endif("${BUILD_NETCDF_PARALLEL}")
 endif("${BUILD_DECL_NETCDF_PLUGIN}")
 
 

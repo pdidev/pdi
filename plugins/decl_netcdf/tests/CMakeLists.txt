@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -50,7 +50,7 @@ add_executable(decl_netcdf_tests decl_netcdf_tests.cxx)
 target_link_libraries(decl_netcdf_tests PDI::PDI_plugins Threads::Threads GTest::GTest GTest::Main)
 gtest_discover_tests(decl_netcdf_tests)
 
-if("PARALLEL" IN_LIST NetCDF_FEATURES)
+if("${BUILD_NETCDF_PARALLEL}")
      find_package(MPI REQUIRED COMPONENTS C)
      add_executable(netcdf_mpi_tests decl_netcdf_mpi_tests.c)
      target_link_libraries(netcdf_mpi_tests PDI::PDI_C MPI::MPI_C)

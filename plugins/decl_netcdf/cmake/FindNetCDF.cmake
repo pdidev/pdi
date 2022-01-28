@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -356,14 +356,14 @@ find_package_handle_standard_args(NetCDF
 if("${NetCDF_FOUND}")
 	if("HDF5" IN_LIST NetCDF_FEATURES)
 		set(HDF5_USE_STATIC_LIBRARIES OFF)
-		if("PARALLEL" IN_LIST NetCDF_FEATURES)
+		if("PARALLEL4" IN_LIST NetCDF_FEATURES)
 			set(HDF5_PREFER_PARALLEL ON)
 		endif()
 		find_package(HDF5 REQUIRED COMPONENTS C)
 		if("${HDF5_VERSION}" VERSION_LESS "1.8.0")
 			message(ERROR "HDF5 version 1.8.0 at least required by NetCDF, HDF5 ${HDF5_VERSION} found.")
 		endif()
-		if("PARALLEL" IN_LIST NetCDF_FEATURES AND NOT "${HDF5_IS_PARALLEL}")
+		if("PARALLEL4" IN_LIST NetCDF_FEATURES AND NOT "${HDF5_IS_PARALLEL}")
 			message(ERROR "Parallel HDF5 required by NetCDF, sequential HDF5 only found.")
 		endif()
 		list(APPEND NetCDF_LINK_LIBRARIES hdf5::hdf5)
@@ -371,7 +371,7 @@ if("${NetCDF_FOUND}")
 			find_package(MPI REQUIRED COMPONENTS C)
 			list(APPEND NetCDF_LINK_LIBRARIES MPI::MPI_C)
 		endif()
-	elseif("PARALLEL" IN_LIST NetCDF_FEATURES)
+	elseif("PARALLEL4" IN_LIST NetCDF_FEATURES)
 		find_package(MPI REQUIRED COMPONENTS C)
 		list(APPEND NetCDF_LINK_LIBRARIES MPI::MPI_C)
 	endif()
