@@ -40,6 +40,7 @@ Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
 * Support for C struct in yaml
 * Support for size_t, ptrdiff_t, byte
 * Support for string boolean types in yaml.
+* Support for inteagers from stdint.h
 
 Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * Fortran interface fixes

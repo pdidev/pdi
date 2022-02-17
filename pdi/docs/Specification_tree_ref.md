@@ -187,19 +187,50 @@ A *datatype* can be **any of**:
 * a \ref double_type_node,
 * a \ref float_type_node,
 * a \ref int_type_node,
-* a \ref int16_type_node,
-* a \ref int32_type_node,
-* a \ref int64_type_node,
-* a \ref int8_type_node,
-* a \ref integer_type_node,
-* a \ref logical_type_node,
-* a \ref ptrdiff_t_type_node,
-* a \ref real_type_node,
-* a \ref record_type_node,
-* a \ref simple_datatype_node,
-* a \ref size_t_type_node,
-* a \ref struct_type_node,
-* a \ref tuple_type_node,
+* a \ref  int16_type_node,
+* a \ref  int32_type_node,
+* a \ref  int64_type_node,
+* a \ref  int8_type_node,
+* a \ref  integer_type_node,
+* a \ref  int_fast16_type_node,
+* a \ref  int_fast32_type_node,
+* a \ref  int_fast64_type_node,
+* a \ref  int_fast8_type_node,
+* a \ref  int_least16_type_node,
+* a \ref  int_least32_type_node,
+* a \ref  int_least64_type_node,
+* a \ref  int_least8_type_node,
+* a \ref  intmax_type_node,
+* a \ref  intptr_type_node,
+* a \ref  logical_type_node,
+* a \ref  long_type_node,
+* a \ref  long long_type_node,
+* a \ref  ptrdiff_t_type_node,
+* a \ref  real_type_node,
+* a \ref  record_type_node,
+* a \ref  short_type_node,
+* a \ref  simple_datatype_node,
+* a \ref  size_t_type_node,
+* a \ref  struct_type_node,
+* a \ref  tuple_type_node,
+* a \ref  uint_type_node,
+* a \ref  uint16_type_node,
+* a \ref  uint32_type_node,
+* a \ref  uint64_type_node,
+* a \ref  uint8_type_node,
+* a \ref  uint_fast16_type_node,
+* a \ref  uint_fast32_type_node,
+* a \ref  uint_fast64_type_node,
+* a \ref  uint_fast8_type_node,
+* a \ref  uint_least16_type_node,
+* a \ref  uint_least32_type_node,
+* a \ref  uint_least64_type_node,
+* a \ref  uint_least8_type_node,
+* a \ref  uintmax_type_node,
+* a \ref  uintptr_type_node,
+* a \ref  unsigned_long_type_node,
+* a \ref  unsigned_long_long_type_node,
+* a \ref  unsigned_short_type_node,
 * any user-defined datatype name.
 
 \ref simple_datatype_node is just a string that identifies the referenced type.
@@ -383,7 +414,7 @@ A *int16_type* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"type"`|`"int16"`|
+|`"type"`|`"int16" or "int16_t"`|
 |`"\+.*"` (*optional*)|anything|
 
 A \ref int16_type_node represents the C `int16_t` type from
@@ -526,6 +557,225 @@ a \ref expression_node "integer-valued $-expression".
 ```
 
 
+# intfast16_type {#intfast16_type_node}
+
+A *int_fast16_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int_fast16" or "int_fast16_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref int_fast16_type_node represents the C `int_fast16_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: int_fast16
+```
+
+
+# intfast32_type {#intfast32_type_node}
+
+A *int_fast32_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int_fast32" or "int_fast32_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref int_fast32_type_node represents the C `int_fast32_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: int_fast32
+```
+
+
+# intfast64_type {#intfast64_type_node}
+
+A *int_fast64_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int_fast64" or "int_fast64_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref int_fast64_type_node represents the C `int_fast64_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: int_fast64
+```
+
+
+# intfast8_type {#intfast8_type_node}
+
+A *int_fast8_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int_fast8" or "int_fast8_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref int_fast8_type_node represents the C `int_fast8_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: int_fast8
+```
+
+
+# intleast16_type {#intleast16_type_node}
+
+A *int_least16_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int_least16" or "int_least16_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref int_least16_type_node represents the C `int_least16_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: int_least16
+```
+
+
+# intleast32_type {#intleast32_type_node}
+
+A *int_least32_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int_least32" or "int_least32_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref int_least32_type_node represents the C `int_least32_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: int_least32
+```
+
+
+# intleast64_type {#intleast64_type_node}
+
+A *int_least64_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int_least64" or "int_least64_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref int_least64_type_node represents the C `int_least64_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: int_least64
+```
+
+
+# intleast8_type {#intleast8_type_node}
+
+A *int_least8_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"int_least8" or "int_least8_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref int_least8_type_node represents the C `int_least8_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: int_least8
+```
+
+# intmax_type_node {#intmax_type_node}
+
+A *intmax_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"intmax" or "intmax_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref intmax_type_node represents the C `intmax_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: intmax
+```
+
+
+# intptr_type_node {#intptr_type_node}
+
+A *intptr_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"intptr" or "intptr_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref intptr_type_node represents the C `intptr_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: intptr
+```
+
+
 # logging {#logging_node}
 
 A *logging* can be **any of**:
@@ -661,6 +911,48 @@ type: logical
 ```python
 type: logical
 kind: 1
+```
+
+
+# long_type {#long_type_node}
+
+A *long_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"long"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref long_type_node represents the C `long` type.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+**Example:**
+
+```python
+type: long
+```
+
+
+# long_long_type {#long_long_type_node}
+
+A *long_long_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"long long"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref long_long_type_node represents the C `long long` type.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+**Example:**
+
+```python
+type: long long
 ```
 
 
@@ -812,6 +1104,27 @@ members:
     type: array
     subtype: int64
     size: [10, 10]
+```
+
+
+# short_type {#short_type_node}
+
+A *short_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"short"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref short_type_node represents the C `short` type.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: short
 ```
 
 
@@ -969,3 +1282,376 @@ A *types_map* is a **mapping** that contains the following keys:
 
 * each key identifies the name of new user-defined datatype and the value
   associated to it describes the type
+
+
+# uint_type {#uint_type_node}
+# uint16_type {#uint16_type_node}
+
+A *uint16_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint16" or "uint16_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint16_type_node represents the C `uint16_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint16
+```
+
+
+# uint32_type {#uint32_type_node}
+
+A *uint32_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint32" or "uint32_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint32_type_node represents the C `uint32_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint32
+```
+
+
+# uint64_type {#uint64_type_node}
+
+A *uint64_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint64" or "uint64_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint64_type_node represents the C `uint64_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint64
+```
+
+
+# uint8_type {#uint8_type_node}
+
+A *uint8_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint8" or "uint8_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint8_type_node represents the C `uint8_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint8
+```
+
+
+# uint_fast16_type {#uint_fast16_type_node}
+
+A *uint_fast16_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint_fast16" or "uint_fast16_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint_fast16_type_node represents the C `uint_fast16_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint_fast16
+```
+
+
+# uint_fast32_type {#uint_fast32_type_node}
+
+A *uint_fast32_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint_fast32" or "uint_fast32_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint_fast32_type_node represents the C `uint_fast32_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint_fast32
+```
+
+
+# uint_fast64_type {#uint_fast64_type_node}
+
+A *uint_fast64_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint_fast64" or "uint_fast64_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint_fast64_type_node represents the C `uint_fast64_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint_fast64
+```
+
+
+# uint_fast8_type {#uint_fast8_type_node}
+
+A *uint_fast8_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint_fast8" or "uint_fast8_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint_fast8_type_node represents the C `uint_fast8_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint_fast8
+```
+
+
+# uint_least16_type {#uint_least16_type_node}
+
+A *uint_least16_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint_least16" or "uint_least16_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint_least16_type_node represents the C `uint_least16_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint_least16
+```
+
+
+# uint_least32_type {#uint_least32_type_node}
+
+A *uint_least32_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint_least32" or "uint_least32_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint_least32_type_node represents the C `uint_least32_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint_least32
+```
+
+
+# uint_least64_type {#uint_least64_type_node}
+
+A *uint_least64_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint_least64" or "uint_least64_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint_least64_type_node represents the C `uint_least64_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint_least64
+```
+
+
+# uint_least8_type {#uint_least8_type_node}
+
+A *uint_least8_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uint_least8" or "uint_least8_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uint_least8_type_node represents the C `uint_least8_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uint_least8
+```
+
+
+# uintmax_type {#uintmax_type_node}
+
+A *uintmax_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uintmax" or "uintmax_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uintmax_type_node represents the C `uintmax_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uintmax
+```
+
+
+# uintptr_type {#uintptr_type_node}
+
+A *uintptr_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"uintptr" or "uintptr_t"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref uintptr_type_node represents the C `uintptr_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: uintptr
+```
+
+
+# unsigned_long_type {#unsigned_long_type_node}
+
+A *unsigned_long_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"unsigned long long"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref unsigned_long_type_node represents the C `unsigned long` type.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: unsigned long
+```
+
+
+# unsigned_long_long_type {#unsigned_long_long_type_node}
+
+A *unsigned_long_long_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"unsigned long long"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref unsigned_long_long_type_node represents the C `unsigned long long` type.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: unsigned long long
+```
+
+
+# unsigned_short_type {#unsigned_short_type_node}
+
+A *unsigned_short_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"unsigned short"`|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref unsigned_short_type_node represents the C `unsigned short_t` type from the
+`<stdint.h>` header.
+It accepts no parameter.
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
+
+## Example:
+
+```python
+type: unsigned short
+```

@@ -606,6 +606,33 @@ const Attributes_map& Datatype_template::attributes() const
 Datatype_template::~Datatype_template()
 {}
 
+	void add_scalar_datatype(Context& ctx, const string& name, Scalar_kind kind, size_t size)
+	{
+		ctx.add_datatype(name, [kind, size](Context&, PC_tree_t tree) {
+			return Datatype_template_ptr {new Scalar_template{kind, static_cast <long> (size), tree}};
+		});
+	}
+
+	template<class S, S s>
+	void add_scalar_datatype_T(Context& ctx, const string& name, size_t size)
+	{
+		ctx.add_datatype(name, [&, size](Context&, PC_tree_t tree) {
+			return Datatype_template_ptr {new Scalar_template{s, static_cast <long> (size), tree}};
+		});
+	}
+
+	inline void add_unsigned(Context& ctx, const string& name, size_t size) {
+		add_scalar_datatype_T<Scalar_kind, Scalar_kind::UNSIGNED>(ctx, name, size);
+	}
+
+	inline void add_signed(Context& ctx, const string& name, size_t size) {
+		add_scalar_datatype_T<Scalar_kind, Scalar_kind::SIGNED>(ctx, name, size);
+	}
+
+	inline void add_float(Context& ctx, const string& name, size_t size) {
+		add_scalar_datatype_T<Scalar_kind, Scalar_kind::FLOAT>(ctx, name, size);
+	}
+
 void Datatype_template::load_basic_datatypes(Context& ctx)
 {
 	// holder types
@@ -616,39 +643,91 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	ctx.add_datatype("tuple", to_tuple_datatype_template);
 	
 	// C basic types
-	ctx.add_datatype("char", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::UNSIGNED, (long)sizeof(char), tree}};
-	});
-	ctx.add_datatype("int", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::SIGNED, (long)sizeof(int), tree}};
-	});
-	ctx.add_datatype("int8", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::SIGNED, 1L, tree}};
-	});
-	ctx.add_datatype("int16", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::SIGNED, 2L, tree}};
-	});
-	ctx.add_datatype("int32", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::SIGNED, 4L, tree}};
-	});
-	ctx.add_datatype("int64", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::SIGNED, 8L, tree}};
-	});
-	ctx.add_datatype("float", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::FLOAT, 4L, tree}};
-	});
-	ctx.add_datatype("double", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::FLOAT, 8L, tree}};
-	});
-	ctx.add_datatype("size_t", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::UNSIGNED, (long)sizeof(size_t), tree}};
-	});
-	ctx.add_datatype("ptrdiff_t", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::SIGNED, (long)sizeof(ptrdiff_t), tree}};
-	});
-	ctx.add_datatype("byte", [](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr {new Scalar_template{Scalar_kind::UNKNOWN, 1L, tree}};
-	});
+
+	static const std::unordered_map<string, size_t> signed_types = {
+		{"int",                 sizeof(int)},
+		{"short",               sizeof(short)},
+		{"long",                sizeof(long)},
+		{"long long",           sizeof(long long)},
+		{"intmax",              sizeof(intmax_t)},
+		{"intmax_t",            sizeof(intmax_t)},
+		{"int8",                1L},
+		{"int16",               2L},
+		{"int32",               4L},
+		{"int64",               8L},
+		{"int8_t",              1L},
+		{"int16_t",             2L},
+		{"int32_t",             4L},
+		{"int64_t",             8L},
+		{"int_least8",          sizeof(int_least8_t)},
+		{"int_least16",         sizeof(int_least16_t)},
+		{"int_least32",         sizeof(int_least32_t)},
+		{"int_least64",         sizeof(int_least64_t)},
+		{"int_least8_t",        sizeof(int_least8_t)},
+		{"int_least16_t",       sizeof(int_least16_t)},
+		{"int_least32_t",       sizeof(int_least32_t)},
+		{"int_least64_t",       sizeof(int_least64_t)},
+		{"int_fast8",           sizeof(int_fast8_t)},
+		{"int_fast16",          sizeof(int_fast16_t)},
+		{"int_fast32",          sizeof(int_fast32_t)},
+		{"int_fast64",          sizeof(int_fast64_t)},
+		{"int_fast8_t",         sizeof(int_fast8_t)},
+		{"int_fast16_t",        sizeof(int_fast16_t)},
+		{"int_fast32_t",        sizeof(int_fast32_t)},
+		{"int_fast64_t",        sizeof(int_fast64_t)},
+		{"intptr",              sizeof(intptr_t)},
+		{"intptr_t",            sizeof(intptr_t)},
+		{"ptrdiff",             sizeof(ptrdiff_t)},
+		{"ptrdiff_t",           sizeof(ptrdiff_t)}
+	};
+
+		for (auto& pair : signed_types) {
+			add_signed(ctx, pair.first, pair.second);
+		}
+
+	static const std::unordered_map<string, size_t> unsigned_types = {
+		{"char",                sizeof(char)},
+		{"unsigned short",      sizeof(unsigned short)},
+		{"unsigned long",       sizeof(unsigned long)},
+		{"unsigned long long",  sizeof(unsigned long long)},
+		{"uintmax",             sizeof(uintmax_t)},
+		{"uintmax_t",           sizeof(uintmax_t)},
+		{"uint8",               1L},
+		{"uint16",              2L},
+		{"uint32",              4L},
+		{"uint64",              8L},
+		{"uint8_t",             1L},
+		{"uint16_t",            2L},
+		{"uint32_t",            4L},
+		{"uint64_t",            8L},
+		{"uint_least8",         sizeof(uint_least8_t)},
+		{"uint_least16",        sizeof(uint_least16_t)},
+		{"uint_least32",        sizeof(uint_least32_t)},
+		{"uint_least64",        sizeof(uint_least64_t)},
+		{"uint_least8_t",       sizeof(uint_least8_t)},
+		{"uint_least16_t",      sizeof(uint_least16_t)},
+		{"uint_least32_t",      sizeof(uint_least32_t)},
+		{"uint_least64_t",      sizeof(uint_least64_t)},
+		{"uint_fast8",          sizeof(uint_fast8_t)},
+		{"uint_fast16",         sizeof(uint_fast16_t)},
+		{"uint_fast32",         sizeof(uint_fast32_t)},
+		{"uint_fast64",         sizeof(uint_fast64_t)},
+		{"uint_fast8_t",        sizeof(uint_fast8_t)},
+		{"uint_fast16_t",       sizeof(uint_fast16_t)},
+		{"uint_fast32_t",       sizeof(uint_fast32_t)},
+		{"uint_fast64_t",       sizeof(uint_fast64_t)},
+		{"uintptr",             sizeof(uintptr_t)},
+		{"uintptr_t",           sizeof(uintptr_t)},
+		{"size_t",              sizeof(size_t)}
+	};
+
+		for (auto& pair : unsigned_types) {
+			add_unsigned(ctx, pair.first, pair.second);
+		}
+
+	add_float(ctx, "float", 4L);
+	add_float(ctx, "double", 8L);
+	add_scalar_datatype(ctx, "byte", Scalar_kind::UNKNOWN, 1L);
 	
 	// Fortran basic types
 #ifdef BUILD_FORTRAN
