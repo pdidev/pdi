@@ -170,7 +170,7 @@ Dataset selection default values:
   * otherwise, the size default to the whole dataset.
 * If the `start` is not specified it defaults to 0 in all dimensions.
 
-### COLLISION_POLICY
+### COLLISION_POLICY {#COLLISION_POLICY}
 
 A `COLLISION_POLICY` is a string that identifies what to do when writing to a
 file or dataset that already exists.
