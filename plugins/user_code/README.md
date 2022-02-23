@@ -1,9 +1,9 @@
-\page user_code_plugin The user-code plugin
+# The user-code plugin {#user_code_plugin}
 
 The `user-code` plugin enables one to call a user-defined function 
 when a specified event occur or certain data becomes available.
 
-\section important_notes_node Important notes
+## Important notes {#important_notes_node}
 
 * Make sure to compile your program with `Wl,--export-dynamic` or `-rdynamic`
   flag (in CMake set `ENABLE_EXPORTS` to `TRUE` using `set_target_properties`
@@ -13,7 +13,7 @@ when a specified event occur or certain data becomes available.
 * Descriptor aliases enables one to use different descriptors without the need
   to recompile the code.
 
-\section dependencies_node Dependencies between the code and the specification tree
+## Dependencies between the code and the specification tree {#dependencies_node}
 
 To ensure proper work of the `user-code` plugin, there are several conventions to follow in the application 
 code and the specification tree.
@@ -24,11 +24,11 @@ Second, these functions **can not** take any arguments or return any value (i.e.
 
 Third, function's symbols **must** be exported to make them accessible by `user-code` plugin. To do this, compile your program as described in \ref important_notes_node.
 
-\section use_examples_node Use examples
+## Use examples {#use_examples_node}
 
 This section shows a simple examples with the use of a `user-code` plugin.
 
-\subsection hello_world_node Hello world!
+### Hello world! {#hello_world_node}
 
 First, we will call simple function without the use of descriptors to print "Hello world!"
 on "print" event.
@@ -71,7 +71,7 @@ Hello world!
 [PDI][User-code][13:40:55] *** info: Closing plugin
 ```
 
-\subsection handling_input_node Handling input
+### Handling input {#handling_input_node}
 
 Now we will pass some input data to the function.
 
@@ -168,7 +168,7 @@ I've got number 42.
 [PDI][User-code][13:52:15] *** info: Closing plugin
 ```
 
-\subsection handling_output_node Handling output
+### Handling output {#handling_output_node}
 
 Output handling is very similar to the input handling, the only
 difference are the access rights. In this example we will call
@@ -221,7 +221,7 @@ After expose, number = 52.
 
 ```
 
-\subsection multiple_inout_data_node Multiple input/output data
+### Multiple input/output data {#multiple_inout_data_node}
 
 In this example we will use multiple data in function. We will add 
 and multiply two given numbers and return the results on event "calculate".
@@ -286,7 +286,7 @@ After calculation, foo = 4, bar = 5, res1 = 9, res2 = 20.
 [PDI][User-code][13:58:20] *** info: Closing plugin
 ```
 
-\section conf_grammar_node Configuration grammar
+## Configuration grammar {#conf_grammar_node}
 
 The root of `user-code` plugin is a dictionary that contains the following keys:
 
@@ -302,7 +302,7 @@ will cause the specified functions to be called,
 * the `on_event` key specifies the list of events on which to call the specified functions,
 * additional keys are ignored.
 
-\subsection on_data_node on_data
+### on_data {#on_data_node}
 
 A \ref on_data_node is a dictionary that contains the following keys:
 
@@ -312,7 +312,7 @@ A \ref on_data_node is a dictionary that contains the following keys:
 
 * each key identifies the name of a descriptor, which will trigger specified functions when it becomes available.
 
-\subsection on_event_node on_event
+### on_event {#on_event_node}
 
 A \ref on_event_node is a dictionary that contains the following keys:
 
@@ -322,7 +322,7 @@ A \ref on_event_node is a dictionary that contains the following keys:
 
 * each key identifies the name of an event, which will trigger specified functions when it occurs.
 
-\subsection function_list_node function_list
+### function_list {#function_list_node}
 
 A \ref function_list_node is a dictionary that contains the following keys:
 
@@ -333,7 +333,7 @@ A \ref function_list_node is a dictionary that contains the following keys:
 * each key identifies the name of a function, which will be called on specified event or data,
 * **NOTE**: these functions **can not** take any arguments or return any value (i.e. their type must be `void(void)`).
 
-\subsection function_param_list_node function_param_list
+### function_param_list {#function_param_list_node}
 
 A \ref function_param_list_node is a dictionary that contains the following keys:
 
@@ -343,7 +343,7 @@ A \ref function_param_list_node is a dictionary that contains the following keys
 
 * each key identifies the name of a descriptor alias, which will be available during function execution.
 
-\section full_spec_tree_example_node Specification tree example
+## Specification tree example {#full_spec_tree_example_node}
 
 ```yaml                   
 data:

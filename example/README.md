@@ -1,4 +1,4 @@
-\page PDI_example %PDI examples
+# %PDI examples {#PDI_example}
 
 The example is made of a single source file (one version in each supported
 programming language), this file loads its configuration and %PDI specification
@@ -10,7 +10,7 @@ The example implements implements a simple
 [Heat equation](https://en.wikipedia.org/wiki/Heat_equation) solver using an
 explicit forward finite difference scheme parallelized with MPI in 2 dimensions.
 
-\section heat_algorithm Code algorithm
+## Code algorithm {#heat_algorithm}
 
 The data is stored in a 2D array in which each point represents the temperature.
 In every iteration, the value at the next iteration of each cell is computed by
@@ -46,7 +46,7 @@ MPI processes need to exchange information about their local matrix border cells
 
 All the communications instructions are written in `exchange` function.
 
-\section pdi_integration PDI integration
+## PDI integration {#pdi_integration}
 
 Now, when we know the algorithm, we can focus on analysing `decl_hdf5.yaml` specification tree.
  Fisrt 3 maps defined will not

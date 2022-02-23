@@ -1,4 +1,4 @@
-\page Decl_NetCDF_plugin The Decl'NetCDF plugin
+# The Decl'NetCDF plugin {#Decl_NetCDF_plugin}
 
 The Decl'NetCDF plugin was created to read from and write to NetCDF files in a declarative way.
 
@@ -12,7 +12,7 @@ Decl'NetCDF plugin allows you to:
 7. Read/write only part of NetCDF variable by hyperslab definition.
 8. Read/write in parallel mode using MPI.
 
-\section decl_netcdf_configuration Configuration elements
+## Configuration elements {#decl_netcdf_configuration}
 
 The root of Decl'NetCDF plugin configuration (named `decl_netcdf`), is a dictionary or a list of dictionaries that contains the following subtrees:
 |key            |value                      |            |
@@ -45,7 +45,7 @@ plugins:
       read: ...
 ```
 
-\subsection decl_netcdf_file file subtree
+### file subtree {#decl_netcdf_file}
 
 Defines name (path) of the input/output file.
 
@@ -60,7 +60,7 @@ plugins:
     file: "file_name_${i}.nc"
 ```
 
-\subsection decl_netcdf_comm communicator subtree
+### communicator subtree {#decl_netcdf_comm}
 
 \warning Feature not tested yet
 
@@ -78,7 +78,7 @@ plugins:
     communicator: $MPI_COMM_WORLD
 ```
 
-\subsection decl_netcdf_on_event on_event subtree
+### on_event subtree {#decl_netcdf_on_event}
 
 Defines on which events the plugin reads/writes data from/to NetCDF file. The value can be either single event
 name or the array of events names (both examples presented below). 
@@ -102,7 +102,7 @@ plugins:
     on_event: ["event_1", "event_2"]
 ```
 
-\subsection decl_netcdf_when when subtree
+### when subtree {#decl_netcdf_when}
 
 Defines the condition on which plugin will execute input/output operation on the file.
 
@@ -118,7 +118,7 @@ plugins:
     when: "$i < 10"
 ```
 
-\subsection decl_netcdf_groups groups subtree
+### groups subtree {#decl_netcdf_groups}
 
 Defines groups in the NetCDF file. Mainly used to read/write attributes values of the groups.
 
@@ -148,13 +148,13 @@ plugins:
             value: $value4
 ```
 
-\subsubsection decl_netcdf_groups_name group name subtree
+#### group name subtree {#decl_netcdf_groups_name}
 
 |key                      |value                                                                      |
 |:------------------------|:--------------------------------------------------------------------------|
 |name (path) of the group |Map with `attribute` key with value as map of \ref decl_netcdf_attr |
 
-\subsection decl_netcdf_variables variables subtree
+### variables subtree {#decl_netcdf_variables}
 
 Defines variables in the NetCDF file. Mainly used to define dimensions names and read/write attributes of the variable.
 
@@ -186,7 +186,7 @@ plugins:
 ```
 
 
-\subsubsection decl_netcdf_variables_value variable definition subtree
+#### variable definition subtree {#decl_netcdf_variables_value}
 
 |key           |value                                                         |            |
 |:-------------|:-------------------------------------------------------------|------------|
@@ -195,14 +195,14 @@ plugins:
 |attributes    |Map of \ref decl_netcdf_attr                                  |*optional*  |
 
 
-\subsubsection decl_netcdf_attr attribute subtree
+#### attribute subtree {#decl_netcdf_attr}
 
 |key           |value                                           |
 |:-------------|:-----------------------------------------------|
 |attribute name|`$-expression` value to be written as attribute |
 
 
-\subsection decl_netcdf_write write subtree
+### write subtree {#decl_netcdf_write}
 
 The `write` subtree can have 2 definitions:
 
@@ -274,7 +274,7 @@ The `write` subtree can have 2 definitions:
       write: [particle]
   ```
 
-\subsubsection decl_netcdf_var_selection subtree
+#### subtree {#decl_netcdf_var_selection}
 
 Defines the part of file NetCDF variable where from read/to write the data. The hyperslab will be created from given `start` and `subsize` (`count`) lists.
 
@@ -283,7 +283,7 @@ Defines the part of file NetCDF variable where from read/to write the data. The 
 |`start`              |list specifying start index for each dimension |*optional*  |
 |`subsize`            |list specifying count for each dimension       |*optional*  |
 
-\subsubsection decl_netcdf_io_when read/write when subtree
+#### read/write when subtree {#decl_netcdf_io_when}
 
 Defines the condition on which plugin will read/write specific variable.
 
@@ -291,7 +291,7 @@ Defines the condition on which plugin will read/write specific variable.
 |:-----|:---------------------------------------------------|
 |`when`|`$-expression` condition evalueated to boolean value|
 
-\subsection decl_netcdf_read read subtree
+### read subtree {#decl_netcdf_read}
 
 The `read` subtree can have 2 definitions:
 
@@ -343,7 +343,7 @@ The `read` subtree can have 2 definitions:
             subsize: [4, 4]
   ```
 
-\subsection decl_netcdf_full_config Full yaml example
+### Full yaml example {#decl_netcdf_full_config}
 
 ```yaml
 metadata:

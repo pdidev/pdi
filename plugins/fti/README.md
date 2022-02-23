@@ -1,4 +1,4 @@
-\page FTI_plugin FTI plugin
+# FTI plugin {#FTI_plugin}
 
 **WARNING** This documentation is a work in progress and does not 
 reflect the full FTI plugin potential.

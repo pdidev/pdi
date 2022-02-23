@@ -1,4 +1,4 @@
-\page serialize_plugin Serialize plugin
+# Serialize plugin {#serialize_plugin}
 
 Serialize plugin allows to serialize shared data. The plugin will convert all
 arrays from sparse to dense and dereference all pointers.
@@ -10,7 +10,7 @@ The serialized data will be shared as long the user data is shared.
 (to be sure that the serialized data have been writen to buffer by other plugin (e.g. done on event)).
 3. In case of the share with `PDI_INOUT`: plugin will do step 1. on `PDI_share` and step 2. on `PDI_reclaim`.
 
-\section serialize_configuration Configuration grammar
+## Configuration grammar {#serialize_configuration}
 
 The serialize configuration is made of only:
 
@@ -19,7 +19,7 @@ The serialize configuration is made of only:
 |`logging`              |\ref logging_node|
 |data name to serialize |serialized data name |
 
-\subsection serialize_plugin_examples Plugin examples
+## Plugin examples {#serialize_plugin_examples}
 
 ```yaml
 data:

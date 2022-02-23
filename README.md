@@ -19,11 +19,11 @@ The public plugin API offered by PDI is general and simple enough that one can
 easily add support for the best suited library for its use-case (problem size,
 IO type, hardware used, etc.)
 
-# Documentation
+## Documentation
 
 The on-line PDI documentation is available at https://pdi.dev
 
-# Installation
+## Installation
 
 **The recommended approach to install PDI is to use the stable pre-compiled
 binary packages for Debian, Fedora and Ubuntu available at
@@ -37,7 +37,7 @@ In case you don't want to use either option, you can install PDI source
 distribution using the dedicated
 [installation instructions](https://pdi.julien-bigot.fr/master/Installation.html).
 
-# Content
+## Content
 
 PDI distribution is made of the following submodules:
 * `CMakeLists.txt`, `LICENSE`, `cmake/`, `README.md`: distribution specific files,

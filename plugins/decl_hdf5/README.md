@@ -1,4 +1,4 @@
-\page Decl_HDF5_plugin The Decl'HDF5 plugin
+# The Decl'HDF5 plugin {#Decl_HDF5_plugin}
 
 **WARNING** This documentation is a work in progress and does not reflect the
 full Decl'HDF5 potential.
@@ -13,7 +13,7 @@ declarative interface to access a large subset of it.
 At its root, the Decl'HDF5 configuration is made of either a single
 `FILE_DESC` or a list of `FILE_DESC`s.
 
-## `FILE_DESC`
+## FILE_DESC
 
 A `FILE_DESC` specifies a list of actions to execute in one file.
 It is specified by a key/value map that contains at least the `file`
@@ -59,7 +59,7 @@ The possible values for the keys are as follow:
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
 
-## `DATA_SECTION`
+## DATA_SECTION
 
 The `DATA_SECTION` describes a set of I/O (read or write) to execute.
 A data section can take multiple forms:
@@ -77,7 +77,7 @@ A data section can take multiple forms:
 The first case behaves as if each data had its `DATA_IO_DESC` specified
 with all default values.
 
-## `DATA_IO_DESC`
+## DATA_IO_DESC
 
 A `DATA_IO_DESC` is a key-velue map describing one  I/O (read or write)
 to execute.
@@ -146,7 +146,7 @@ The possible values for the keys are as follow:
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
 
-## `SELECTION_DESC`
+## SELECTION_DESC
 
 A `SELECTION_DESC` is a key-value map that describes the selection of a
 subset of data from a larger set.
@@ -170,7 +170,7 @@ Dataset selection default values:
   * otherwise, the size default to the whole dataset.
 * If the `start` is not specified it defaults to 0 in all dimensions.
 
-## `COLLISION_POLICY` {#COLLISION_POLICY}
+## COLLISION_POLICY
 
 A `COLLISION_POLICY` is a string that identifies what to do when writing to a
 file or dataset that already exists.

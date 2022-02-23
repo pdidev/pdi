@@ -1,8 +1,8 @@
-\page pycall_plugin Pycall plugin
+# Pycall plugin {#pycall_plugin}
 
 The Pycall plugin allows calling python scripts from yaml file, that can work either if wanted data was shared or program calls specific event.
 
-\section pycall_configuration Configuration
+## Configuration {#pycall_configuration}
 
 Simple plugin build:
 ```yaml
@@ -16,14 +16,14 @@ plugins:
       data_name:    // python code which will be executed when data_name is shared
 ```
 
-\subsection pycall_plugin_tree Plugin tree
+### Plugin tree {#pycall_plugin_tree}
 
 The root of plugin configuration (named `pycall`), is a dictionary that contains the following keys:
 - \ref logging_node
 - \ref pycall_on_event
 - \ref pycall_on_data
 
-\subsection pycall_on_event on_event
+### on_event {#pycall_on_event}
 
 This option allows to execute written python code when specific event is called.
 
@@ -51,7 +51,7 @@ plugins:
           with: { b: $a }
 ```
 
-\subsection pycall_on_data on_data
+### on_data {#pycall_on_data}
 
 This option allows to execute written python code when specific data is shared. 
 
@@ -65,7 +65,7 @@ plugins:
 
 The `on_data` is a dictionary that contains data name with the python script that will be executed on share.
 
-\section pycall_ex Examples
+## Examples {#pycall_ex}
 
 Full example of pycall plugin. For siplicity yaml file was included with c code in one file instead of creating separate files.
 

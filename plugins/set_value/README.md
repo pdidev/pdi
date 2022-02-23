@@ -1,4 +1,4 @@
-\page set_value_plugin Set_value plugin
+# Set_value plugin {#set_value_plugin}
 
 The Set_value plugin allows setting values to data and metadata descriptors from
 the yaml file.
@@ -11,7 +11,7 @@ Here are main features of the plugins:
 4. Set data - plugin will set given values to the already shared data
 5. Calling an event - plugin will call an event
 
-\section set_value_configuration Configuration grammar
+## Configuration grammar {#set_value_configuration}
 
 At its root, the Set_value configuration is made of:
 
@@ -23,7 +23,7 @@ At its root, the Set_value configuration is made of:
 |`"on_data"` (*optional*)|an \ref on_data_map_node|
 |`"on_finalize"` (*optional*)|a list of \ref value_operation|
 
-\subsection on_init_list_node on_init
+### on_init {#on_init_list_node}
 
 Specifies a list of operation to do in \ref PDI_init function.
 `on_init` is a list of \ref value_operation s.
@@ -40,7 +40,7 @@ plugins:
       - logger: ... # logger_map
 ```
 
-\subsection on_event_map_node on_event
+### on_event {#on_event_map_node}
 
 Specifies a map of events that will trigger the values set.
 `on_event`  is a map with event name as a key and \ref value_operation list as map value.
@@ -67,7 +67,7 @@ plugins:
         - event: ... # value
 ```
 
-\subsection on_data_map_node on_data
+### on_data {#on_data_map_node}
 
 Specifies a map of data that on share will trigger the values set.
 `on_data`  is a map with data/metadata name as a key and \ref value_operation as map value.
@@ -98,7 +98,7 @@ plugins:
         - event: ... # value
 ```
 
-\subsection on_finalize_list_node on_finalize
+### on_finalize {#on_finalize_list_node}
 
 Specifies a list of operation to do in \ref PDI_finalize function.
 `on_finalize` is a list of \ref value_operation s.
@@ -114,7 +114,7 @@ plugins:
       - event: ... # value
 ```
 
-\subsection value_operation value operation
+### value operation {#value_operation}
 A value operation is specified as a key-value pair (a **mapping** whose content
 is a single key-value pair).
 It defines an operation to execute inside a \ref value_list.
@@ -135,7 +135,7 @@ Share is always done with read and write rights.
 Plugin allocates memory by `malloc`. If you reclaim the data, you should
 free it with `free` instruction.
 
-\subsection value_list value list
+### value list {#value_list}
 Is a list of the
 - \ref scalar_value,
 - \ref array_value,
@@ -144,7 +144,7 @@ Is a list of the
 as elements. The order of the elements is important. The descriptors will
 be set in the same order as given in the yaml file.
 
-\subsection scalar_value scalar value
+### scalar value {#scalar_value}
 
 Is a map of descriptor name as a key, and a value to set as a value:
 
@@ -161,7 +161,7 @@ set_value:
       - scalar_name: 42
 ```
 
-\subsection array_value array value
+### array value {#array_value}
 Is a map of descriptor name as a key, and a list of values to set as a value:
 
 |key|value|
@@ -182,7 +182,7 @@ plugins:
         - array_name: [2, 3, 4, 5]
 ```
 
-\subsection record_value record value
+### record value {#record_value}
 Is a map of descriptor name as a key, and a list of members to set as a value.
 Each member consist of an inner `value_list`. The order of the members is unrestricted,
 but the plugin will set the values to the members in the same order.
@@ -214,7 +214,7 @@ set_value:
           member_1: [1, 2, 3] # array of ints member
 ```
 
-\subsection logger_map logger map
+### logger map {#logger_map}
 Defines settings for global PDI logger.
 |key|value|
 |:--|:----|
@@ -222,7 +222,7 @@ Defines settings for global PDI logger.
 |`"pattern"` (*optional*) |pattern to set to the logger|
 |`"evaluate"` (*optional*) |if true evaluate the logger pattern|
 
-\section full_config full configuration example
+## full configuration example {#full_config}
 
 ```yaml
 metadata:
@@ -261,8 +261,8 @@ plugins:
       - release: [record_data]
 ```
 
-\section old_to_new Using old values to set new
-\subsection increment Increment value
+## Using old values to set new {#old_to_new}
+### Increment value {#increment}
 The set_value plugin allows to use the old values to set new values, you can use even the same
 descriptor, for example to increment a scalar. 
 
@@ -290,7 +290,7 @@ plugins:
 ```
 After calling `init` and `increment` event, `value_int` will be equal 1, and `int_array` to [2, 3, 4].
 
-\subsection increment_in_array Getting old value
+### Getting old value {#increment_in_array}
 The new value is set at the end of processing the whole descriptors. This means, that if
 you want to update the array element depending on other element, the old value will be set:
 
@@ -313,7 +313,7 @@ plugins:
 After calling `init` and `increment` event, all values in `int_array` will equal `1`. 
 This is because the `int_array[0]` was updated after setting all the elements.
 
-\subsection update_array_after_scalar Getting new value
+### Getting new value {#update_array_after_scalar}
 
 ```yaml
 metadata:
