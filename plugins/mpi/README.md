@@ -25,7 +25,7 @@ At the yaml tree root plugin is a map that contains the following keys:
 |`"logging"` (*optional*)|a \ref logging_node|
 |`"transtype"` (*optional*)|a \ref transtype_map_node|
 
-# transtype map {#transtype_map_node}
+## transtype map {#transtype_map_node}
 A *transtype map* can be used to transtype between C and Fortran MPI communicators.
 It is a mapping that in key has the name of data with communicator to transtype
 and in value the name of data where to write transtyped communicator.
