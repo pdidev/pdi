@@ -1,6 +1,6 @@
-\page YAML YAML
+# YAML {#YAML}
 
-# YAML Format
+## YAML Format
 
 [YAML](https://en.wikipedia.org/wiki/YAML) is the format used to write %PDI
 specification tree.
@@ -24,7 +24,7 @@ This tree contains the following kinds of nodes:
 * sequences,
 * mappings.
 
-## Scalar element
+### Scalar element
 
 A **scalar** is a leaf in the tree, represented as a string.
 Some forms of scalars can be interpreted as boolean, integer or floating-point
@@ -39,7 +39,7 @@ complete syntax):
 
 Scalars are represented in pink in the graphical representation.
 
-## Sequence sub-tree
+### Sequence sub-tree
 
 A **sequence** is an ordered list of sub-nodes (that can themselves be scalars,
 sequences, mappings, ...).
@@ -58,7 +58,7 @@ complete syntax).
 
 Sequences are represented in yellow in the graphical representation.
 
-## Mapping sub-tree
+### Mapping sub-tree
 
 A **mapping** is an unordered list of key-value pairs (whose elements can
 themselves be scalars, sequences, mappings, ...).
@@ -77,13 +77,13 @@ complete syntax).
 
 Mapping are represented in blue in the graphical representation.
 
-## YAML advanced elements
+### YAML advanced elements
 
 In addition to the previous basic building blocks, YAML supports additional
 advanced elements.
 These advanced elements build on the basic one to provide additional meaning.
 
-### Ordered mapping sub-tree
+#### Ordered mapping sub-tree
 
 An **ordered mapping** is represented as a sequence of mappings containing a
 single key-value pair each.
@@ -102,7 +102,7 @@ complete syntax).
 - "three": 3
 ```
 
-# YAML Parsing with Paraconf
+## YAML Parsing with Paraconf
 
 The PDI_init function gets as parameter a tree with `logging`, `data`,
 `metadata` and `plugins` maps defined in its root. User can define its own
@@ -113,7 +113,7 @@ duration: 0.75
 size: [64, 64]
 parallelism: { height: 4, width: 4 }
 
-# only the following config will be passed to PDI
+## only the following config will be passed to PDI
 pdi_subtree:
   metadata:
     iteration: int

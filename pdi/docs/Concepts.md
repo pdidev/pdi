@@ -1,6 +1,6 @@
-\page Concepts Core Concepts
+# Core Concepts {#Concepts}
 
-\section pdi_philosophy Philosophy of PDI 
+## Philosophy of PDI {#pdi_philosophy}
 Similarly to aspect-oriented programming, PDI distinguishes between core concerns and cross-cutting concerns.
 
 Core concerns are the aspects of the code that fulfill its main goal. We consider as core concerns of a simulation code the aspects handled in the main loop that generate elements needed as input of the next iteration of the loop.
@@ -14,7 +14,7 @@ The simulation could run with none of the cross-cutting concerns implemented (ev
 
 PDI supports calling libraries from the specification tree instead of from the code. This is well suited for cross-cutting concerns but means that the code has no control over what and how these aspects are handled which does not fit the needs of core concerns.
 
-\section PDI_description PDI description
+## PDI description {#PDI_description}
 
 %PDI offers to exchange data between the application code and various external data
 handlers, such as for example the file-system for I/O or another code for
@@ -37,7 +37,7 @@ store, what each handler should do with it, etc. is described in the
 
 \image html PDI_schema.jpg PDI structure schema
 
-\section Data_store Data store
+## Data store {#Data_store}
 
 The data store is the mechanism provided by %PDI to handle *data transfer* between the
 application code and external data handlers.
@@ -71,7 +71,7 @@ that contains:
 
 
 
-\section Event_subsystem Event subsystem
+## Event subsystem {#Event_subsystem}
 
 While the \ref Data_store "data store" handles data transfer between the application
 code and external data handlers, the event subsystem handles *control* transfer.
@@ -101,7 +101,7 @@ does not need to know which other module created it or how.
 
 
 
-\section Specification_tree Specification tree
+## Specification tree {#Specification_tree}
 
 The combination of the data transfer provided by the \ref Data_store "data store" and
 the control transfer provided by the \ref Event_subsystem "event subsystem" offers the
@@ -139,7 +139,7 @@ implement specific code handle data from the store.
 
 
 
-\section Conclusion
+## Conclusion
 
 To summarize, interactions between weakly coupled modules in %PDI go through the
 \ref Data_store "data store" that acts somewhat like a file-system.

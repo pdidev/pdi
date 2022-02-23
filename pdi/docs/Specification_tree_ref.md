@@ -1,9 +1,9 @@
-\page Specification_tree_ref Specification tree Reference
+# Specification tree Reference {#Specification_tree_ref}
 
 The %PDI specification tree is expressed in \subpage YAML.
 
 
-# specification tree root {#root_node}
+## specification tree root {#root_node}
 
 The *specification tree root* is a **mapping** that contains the following keys:
 
@@ -28,9 +28,9 @@ The *specification tree root* is a **mapping** that contains the following keys:
 * the `logging` section specify logger properties
 * additional sections are ignored.
 
-## Example:
+### Example:
 
-```python
+```{.python}
 metadata:
   my_metadata: int
 data:
@@ -44,7 +44,7 @@ plugins:
 ```
 
 
-# array_type {#array_type_node}
+## array_type {#array_type_node}
 
 A *array_type* is a **mapping** that contains the following keys:
 
@@ -73,22 +73,22 @@ A *array_type_node* represents a potentially multi-dimensional array where:
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: array
 subtype: double
 size: 5
 ```
 
-```python
+```{.python}
 type: array
 subtype: { type: character, kind: 4 }
 size: [ '$size_1d', '$size_2d' ]
 ```
 
 
-# byte_type {#byte_type_node}
+## byte_type {#byte_type_node}
 
 A *byte_type* is a **mapping** that contains the following keys:
 
@@ -104,12 +104,12 @@ It accepts no parameter.
 
 **Example:**
 
-```python
+```{.python}
 type: byte
 ```
 
 
-# char_type {#char_type_node}
+## char_type {#char_type_node}
 
 A *char_type* is a **mapping** that contains the following keys:
 
@@ -122,14 +122,14 @@ A *char_type* represents the C `char` datatype; it accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: char
 ```
 
 
-# character_type {#character_type_node}
+## character_type {#character_type_node}
 
 A *character_type* is a **mapping** that contains the following keys:
 
@@ -146,19 +146,19 @@ A *character_type_node* represents the Fortran `character` datatype, where:
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: character
 ```
 
-```python
+```{.python}
 type: character
 kind: 4
 ```
 
 
-# data_map {#data_map_node}
+## data_map {#data_map_node}
 
 A *data_map* is a **mapping** that contains the following keys:
 
@@ -169,15 +169,15 @@ A *data_map* is a **mapping** that contains the following keys:
 * each key identifies the name of a buffer exposed to %PDI associated to its
 type.
 
-## Example:
+### Example:
 
-```python
+```{.python}
 my_data_1: int
 my_data_2: {type: array, subtype: double, size: 5}
 ```
 
 
-# datatype {#datatype_node}
+## datatype {#datatype_node}
 
 A *datatype* can be **any of**:
 * a \ref array_type_node,
@@ -187,50 +187,50 @@ A *datatype* can be **any of**:
 * a \ref double_type_node,
 * a \ref float_type_node,
 * a \ref int_type_node,
-* a \ref  int16_type_node,
-* a \ref  int32_type_node,
-* a \ref  int64_type_node,
-* a \ref  int8_type_node,
-* a \ref  integer_type_node,
-* a \ref  int_fast16_type_node,
-* a \ref  int_fast32_type_node,
-* a \ref  int_fast64_type_node,
-* a \ref  int_fast8_type_node,
-* a \ref  int_least16_type_node,
-* a \ref  int_least32_type_node,
-* a \ref  int_least64_type_node,
-* a \ref  int_least8_type_node,
-* a \ref  intmax_type_node,
-* a \ref  intptr_type_node,
-* a \ref  logical_type_node,
-* a \ref  long_type_node,
-* a \ref  long long_type_node,
-* a \ref  ptrdiff_t_type_node,
-* a \ref  real_type_node,
-* a \ref  record_type_node,
-* a \ref  short_type_node,
-* a \ref  simple_datatype_node,
-* a \ref  size_t_type_node,
-* a \ref  struct_type_node,
-* a \ref  tuple_type_node,
-* a \ref  uint_type_node,
-* a \ref  uint16_type_node,
-* a \ref  uint32_type_node,
-* a \ref  uint64_type_node,
-* a \ref  uint8_type_node,
-* a \ref  uint_fast16_type_node,
-* a \ref  uint_fast32_type_node,
-* a \ref  uint_fast64_type_node,
-* a \ref  uint_fast8_type_node,
-* a \ref  uint_least16_type_node,
-* a \ref  uint_least32_type_node,
-* a \ref  uint_least64_type_node,
-* a \ref  uint_least8_type_node,
-* a \ref  uintmax_type_node,
-* a \ref  uintptr_type_node,
-* a \ref  unsigned_long_type_node,
-* a \ref  unsigned_long_long_type_node,
-* a \ref  unsigned_short_type_node,
+* a \ref int16_type_node,
+* a \ref int32_type_node,
+* a \ref int64_type_node,
+* a \ref int8_type_node,
+* a \ref integer_type_node,
+* a \ref int_fast16_type_node,
+* a \ref int_fast32_type_node,
+* a \ref int_fast64_type_node,
+* a \ref int_fast8_type_node,
+* a \ref int_least16_type_node,
+* a \ref int_least32_type_node,
+* a \ref int_least64_type_node,
+* a \ref int_least8_type_node,
+* a \ref intmax_type_node,
+* a \ref intptr_type_node,
+* a \ref logical_type_node,
+* a \ref long_type_node,
+* a \ref long_type_node,
+* a \ref ptrdiff_t_type_node,
+* a \ref real_type_node,
+* a \ref record_type_node,
+* a \ref short_type_node,
+* a \ref simple_datatype_node,
+* a \ref size_t_type_node,
+* a \ref struct_type_node,
+* a \ref tuple_type_node,
+* a \ref uint_type_node,
+* a \ref uint16_type_node,
+* a \ref uint32_type_node,
+* a \ref uint64_type_node,
+* a \ref uint8_type_node,
+* a \ref uint_fast16_type_node,
+* a \ref uint_fast32_type_node,
+* a \ref uint_fast64_type_node,
+* a \ref uint_fast8_type_node,
+* a \ref uint_least16_type_node,
+* a \ref uint_least32_type_node,
+* a \ref uint_least64_type_node,
+* a \ref uint_least8_type_node,
+* a \ref uintmax_type_node,
+* a \ref uintptr_type_node,
+* a \ref unsigned_long_type_node,
+* a \ref unsigned_long_long_type_node,
+* a \ref unsigned_short_type_node,
 * any user-defined datatype name.
 
 \ref simple_datatype_node is just a string that identifies the referenced type.
@@ -247,20 +247,17 @@ The value can be anything (**scalar**, **sequence** or **mapping**).
 Some additional types that are not listed here might be made available by
 plugins.
 
-## Example:
+### Example:
 
-```yaml
-...
+```{.yaml}
   data_name:
     type: int
     +first_attr: attr_value_1
     +second_attr: [attr, value]
     +third_attr: {key_0: 0, key_1: 1}
-...
 ```
 
-
-# datatype_with_disp {#datatype_with_disp_node}
+## datatype_with_disp {#datatype_with_disp_node}
 
 A *datatype_with_disp* is a **mapping** that must be a valid \ref datatype_node
 with an additional `disp` key:
@@ -275,7 +272,7 @@ with an additional `disp` key:
 * the other keys and values are interpreted as for a \ref datatype_node .
 
 
-# double_type {#double_type_node}
+## double_type {#double_type_node}
 
 A *double_type* is a **mapping** that contains the following keys:
 
@@ -289,14 +286,14 @@ A *double_type* represents the C `double` type; it accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: double
 ```
 
 
-# $-expression {#expression_node}
+## $-expression {#expression_node}
 
 A *$-expression* is a **scalar** whose content matches the following
 grammar:
@@ -340,25 +337,25 @@ The following strings can also be interpreted as a boolean integer values:
 * false (0): `n`, `N`, `no`, `No`, `NO`, `false`, `False`, `FALSE`, `Off`,
   `Off`, `OFF`.
 
-## Example:
+### Example:
 
-```python
+```{.python}
 '$my_data'
 ```
 
-```python
+```{.python}
 '($my_data + 3) % 6'
 ```
 
-```python
+```{.python}
 '${my_data.subarray[0]} * 42'
 ```
 
-```python
+```{.python}
 'my name is ${my_name}'
 ```
 
-```python
+```{.python}
 '${my_data:05d}'
 '${my_data:b}'
 '${my_data:1.5f}'
@@ -366,7 +363,7 @@ The following strings can also be interpreted as a boolean integer values:
 ```
 
 
-# float_type {#float_type_node}
+## float_type {#float_type_node}
 
 A *float_type* is a **mapping** that contains the following keys:
 
@@ -380,14 +377,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: float
 ```
 
 
-# int_type {#int_type_node}
+## int_type {#int_type_node}
 
 A *int_type* is a **mapping** that contains the following keys:
 
@@ -401,14 +398,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int
 ```
 
 
-# int16_type {#int16_type_node}
+## int16_type {#int16_type_node}
 
 A *int16_type* is a **mapping** that contains the following keys:
 
@@ -423,14 +420,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int16
 ```
 
 
-# int32_type {#int32_type_node}
+## int32_type {#int32_type_node}
 
 A *int32_type* is a **mapping** that contains the following keys:
 
@@ -445,14 +442,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int32
 ```
 
 
-# int64_type {#int64_type_node}
+## int64_type {#int64_type_node}
 
 A *int64_type* is a **mapping** that contains the following keys:
 
@@ -467,14 +464,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int64
 ```
 
 
-# int8_type {#int8_type_node}
+## int8_type {#int8_type_node}
 
 A *int8_type* is a **mapping** that contains the following keys:
 
@@ -489,14 +486,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int8
 ```
 
 
-# integer_type {#integer_type_node}
+## integer_type {#integer_type_node}
 
 A *integer_type* is a **mapping** that contains the following keys:
 
@@ -513,19 +510,19 @@ A *integer_type* represents the Fortran `integer` datatype.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: integer
 ```
 
-```python
+```{.python}
 type: integer
 kind: 2
 ```
 
 
-# intexpr_or_seq {#intexpr_or_seq_node}
+## intexpr_or_seq {#intexpr_or_seq_node}
 
 A *intexpr_or_seq* can be **any of**:
 * a \ref expression_node "integer-valued $-expression",
@@ -545,19 +542,19 @@ is interpreted as if it was:
 ```
 
 
-# intexpr_seq {#intexpr_seq_node}
+## intexpr_seq {#intexpr_seq_node}
 
 A *intexpr_seq* is a **sequence** where each element of the sequence is
 a \ref expression_node "integer-valued $-expression".
 
-## Example:
+### Example:
 
-```python
+```{.python}
 [ 1, '2', '$size', '$other_size + 2' ]
 ```
 
 
-# intfast16_type {#intfast16_type_node}
+## int_fast16_type {#int_fast16_type_node}
 
 A *int_fast16_type* is a **mapping** that contains the following keys:
 
@@ -572,14 +569,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int_fast16
 ```
 
 
-# intfast32_type {#intfast32_type_node}
+## int_fast32_type {#int_fast32_type_node}
 
 A *int_fast32_type* is a **mapping** that contains the following keys:
 
@@ -594,14 +591,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int_fast32
 ```
 
 
-# intfast64_type {#intfast64_type_node}
+## int_fast64_type {#int_fast64_type_node}
 
 A *int_fast64_type* is a **mapping** that contains the following keys:
 
@@ -616,14 +613,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int_fast64
 ```
 
 
-# intfast8_type {#intfast8_type_node}
+## int_fast8_type {#int_fast8_type_node}
 
 A *int_fast8_type* is a **mapping** that contains the following keys:
 
@@ -638,14 +635,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int_fast8
 ```
 
 
-# intleast16_type {#intleast16_type_node}
+## int_least16_type {#int_least16_type_node}
 
 A *int_least16_type* is a **mapping** that contains the following keys:
 
@@ -660,14 +657,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int_least16
 ```
 
 
-# intleast32_type {#intleast32_type_node}
+## int_least32_type {#int_least32_type_node}
 
 A *int_least32_type* is a **mapping** that contains the following keys:
 
@@ -682,14 +679,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int_least32
 ```
 
 
-# intleast64_type {#intleast64_type_node}
+## int_least64_type {#int_least64_type_node}
 
 A *int_least64_type* is a **mapping** that contains the following keys:
 
@@ -704,14 +701,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int_least64
 ```
 
 
-# intleast8_type {#intleast8_type_node}
+## int_least8_type {#int_least8_type_node}
 
 A *int_least8_type* is a **mapping** that contains the following keys:
 
@@ -726,13 +723,13 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: int_least8
 ```
 
-# intmax_type_node {#intmax_type_node}
+## intmax_type {#intmax_type_node}
 
 A *intmax_type* is a **mapping** that contains the following keys:
 
@@ -747,14 +744,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: intmax
 ```
 
 
-# intptr_type_node {#intptr_type_node}
+## intptr_type {#intptr_type_node}
 
 A *intptr_type* is a **mapping** that contains the following keys:
 
@@ -769,14 +766,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: intptr
 ```
 
 
-# logging {#logging_node}
+## logging {#logging_node}
 
 A *logging* can be **any of**:
 * a \ref logging_map_node,
@@ -785,7 +782,7 @@ A *logging* can be **any of**:
 A *logging* is fully supported in \ref root_node and any \ref plugin_map_node .
 
 
-# logging_level {#logging_level_node}
+## logging_level {#logging_level_node}
 
 A *logging_level* is a scalar which determines verbosity level. It can be set to 
   (from the most to the least verbose): 
@@ -809,7 +806,7 @@ logging: "debug"
 * by default `level` is set to `info`
 
 
-# logging_map {#logging_map_node}
+## logging_map {#logging_map_node}
 
 A *logging_map* is a **mapping** that contains the following keys:
 
@@ -843,7 +840,7 @@ logging:
 ```
 
 
-# logging_output_map {#logging_output_map_node}
+## logging_output_map {#logging_output_map_node}
 
 A *logging_output_map* is a **mapping** that contains the following keys:
 
@@ -864,15 +861,15 @@ logging:
     console: "on"
 ```
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: struct
 members:
   - my_char: char
 ```
 
-```python
+```{.python}
 type: struct
 members:
   - my_long: int64
@@ -885,7 +882,7 @@ members:
 See \ref struct_type_node for more examples.
 
 
-# logical_type {#logical_type_node}
+## logical_type {#logical_type_node}
 
 A *logical_type* is a **mapping** that contains the following keys:
 
@@ -902,19 +899,19 @@ A *logical_type* represents the Fortran `logical` datatype.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: logical
 ```
 
-```python
+```{.python}
 type: logical
 kind: 1
 ```
 
 
-# long_type {#long_type_node}
+## long_type {#long_type_node}
 
 A *long_type* is a **mapping** that contains the following keys:
 
@@ -930,12 +927,12 @@ It accepts no parameter.
 
 **Example:**
 
-```python
+```{.python}
 type: long
 ```
 
 
-# long_long_type {#long_long_type_node}
+## long_long_type {#long_long_type_node}
 
 A *long_long_type* is a **mapping** that contains the following keys:
 
@@ -951,12 +948,12 @@ It accepts no parameter.
 
 **Example:**
 
-```python
+```{.python}
 type: long long
 ```
 
 
-# plugin_map {#plugin_map_node}
+## plugin_map {#plugin_map_node}
 
 A *plugin_map* is a **mapping** that contains the following keys:
 |key|value|
@@ -972,7 +969,7 @@ tree they accept.
 See \ref root_node for an example.
 
 
-# plugin_path {#plugin_path_map_node}
+## plugin_path {#plugin_path_map_node}
 
 A path to directory where %PDI should search for plugins. It can be single path:
 
@@ -987,7 +984,7 @@ plugin_path: ["/home/user123/plugins", "/usr/lib/pdi/plugins"]
 ```
 
 
-# ptrdiff_t_type {#ptrdiff_t_type_node}
+## ptrdiff_t_type {#ptrdiff_t_type_node}
 
 A *ptrdiff_t_type* is a **mapping** that contains the following keys:
 
@@ -1004,11 +1001,11 @@ It accepts no parameter.
 
 **Example:**
 
-```python
+```{.python}
 type: ptrdiff_t
 ```
 
-# real_type {#real_type_node}
+## real_type {#real_type_node}
 
 A *real_type* is a **mapping** that contains the following keys:
 
@@ -1025,19 +1022,19 @@ A *real_type* represents the Fortran `real` datatype.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: real
 ```
 
-```python
+```{.python}
 type: real
 kind: 8
 ```
 
 
-# record_members_map {#record_members_map_node}
+## record_members_map {#record_members_map_node}
 
 A *record_members_map* is a **mapping** that contains the following keys:
 |key|value|
@@ -1050,7 +1047,7 @@ A *record_members_map* is a **mapping** that contains the following keys:
 See \ref record_type_node for an example.
 
 
-# record_type {#record_type_node}
+## record_type {#record_type_node}
 
 A *record_type* is a **mapping** that contains the following keys:
 
@@ -1069,9 +1066,9 @@ A \ref record_type_node represents a "record" where:
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Examples:
+### Examples:
 
-```python
+```{.python}
 type: record
 buffersize: 8
 members:
@@ -1083,7 +1080,7 @@ members:
     type: int32
 ```
 
-```python
+```{.python}
 type: record
 buffersize: 1
 members:
@@ -1092,7 +1089,7 @@ members:
         type: char
 ```
 
-```python
+```{.python}
 type: record
 buffersize: 808 
 members:
@@ -1107,7 +1104,7 @@ members:
 ```
 
 
-# short_type {#short_type_node}
+## short_type {#short_type_node}
 
 A *short_type* is a **mapping** that contains the following keys:
 
@@ -1121,14 +1118,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: short
 ```
 
 
-# simple_datatype {#simple_datatype_node}
+## simple_datatype {#simple_datatype_node}
 
 A *simple_datatype* is a **scalar**.
 
@@ -1147,7 +1144,7 @@ is interpreted as if it was:
 ```
 
 
-# size_t_type {#size_t_type_node}
+## size_t_type {#size_t_type_node}
 
 A *size_t_type* is a **mapping** that contains the following keys:
 
@@ -1164,12 +1161,12 @@ It accepts no parameter.
 
 **Example:**
 
-```python
+```{.python}
 type: size_t
 ```
 
 
-# struct_members_omap {#struct_members_omap_node}
+## struct_members_omap {#struct_members_omap_node}
 
 A *struct_members_omap* is an **ordered mapping** that contains the following
 keys:
@@ -1183,7 +1180,7 @@ keys:
 See \ref struct_type_node for an example.
 
 
-# struct_type {#struct_type_node}
+## struct_type {#struct_type_node}
 
 A *struct_type* is a **mapping** that contains the following keys:
 
@@ -1200,8 +1197,8 @@ C memory layout, where:
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
-```python
+### Example:
+```{.python}
 type: struct
 members:
   - first_int: int32
@@ -1217,7 +1214,7 @@ struct {
 ```
 
 
-# tuple_element {#tuple_element_node}
+## tuple_element {#tuple_element_node}
 
 A *tuple_elements_seq* is a **sequence** where each element of the sequence is a
 \ref datatype_with_disp_node where `disp` key is optional.
@@ -1225,7 +1222,7 @@ A *tuple_elements_seq* is a **sequence** where each element of the sequence is a
 See \ref tuple_type_node for an example.
 
 
-# tuple_elements_seq {#tuple_elements_seq_node}
+## tuple_elements_seq {#tuple_elements_seq_node}
 
 A *tuple_elements_seq* is a **sequence** where each element of the sequence is 
 either a \ref datatype_node or a \ref datatype_with_disp_node.
@@ -1236,7 +1233,7 @@ offset that does not lead to overlaps is used.
 See \ref tuple_type_node for an example.
 
 
-# tuple_type {#tuple_type_node}
+## tuple_type {#tuple_type_node}
 
 A *tuple_type* is a **mapping** that contains the following keys:
 
@@ -1255,7 +1252,7 @@ A \ref tuple_type_node represents a "tuple", where:
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
 ```yaml
 type: tuple
@@ -1273,7 +1270,7 @@ elements:
 ```
 
 
-# types_map {#types_map_node}
+## types_map {#types_map_node}
 
 A *types_map* is a **mapping** that contains the following keys:
 |key|value|
@@ -1284,8 +1281,8 @@ A *types_map* is a **mapping** that contains the following keys:
   associated to it describes the type
 
 
-# uint_type {#uint_type_node}
-# uint16_type {#uint16_type_node}
+## uint_type {#uint_type_node}
+## uint16_type {#uint16_type_node}
 
 A *uint16_type* is a **mapping** that contains the following keys:
 
@@ -1300,14 +1297,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint16
 ```
 
 
-# uint32_type {#uint32_type_node}
+## uint32_type {#uint32_type_node}
 
 A *uint32_type* is a **mapping** that contains the following keys:
 
@@ -1322,14 +1319,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint32
 ```
 
 
-# uint64_type {#uint64_type_node}
+## uint64_type {#uint64_type_node}
 
 A *uint64_type* is a **mapping** that contains the following keys:
 
@@ -1344,14 +1341,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint64
 ```
 
 
-# uint8_type {#uint8_type_node}
+## uint8_type {#uint8_type_node}
 
 A *uint8_type* is a **mapping** that contains the following keys:
 
@@ -1366,14 +1363,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint8
 ```
 
 
-# uint_fast16_type {#uint_fast16_type_node}
+## uint_fast16_type {#uint_fast16_type_node}
 
 A *uint_fast16_type* is a **mapping** that contains the following keys:
 
@@ -1388,14 +1385,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint_fast16
 ```
 
 
-# uint_fast32_type {#uint_fast32_type_node}
+## uint_fast32_type {#uint_fast32_type_node}
 
 A *uint_fast32_type* is a **mapping** that contains the following keys:
 
@@ -1410,14 +1407,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint_fast32
 ```
 
 
-# uint_fast64_type {#uint_fast64_type_node}
+## uint_fast64_type {#uint_fast64_type_node}
 
 A *uint_fast64_type* is a **mapping** that contains the following keys:
 
@@ -1432,14 +1429,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint_fast64
 ```
 
 
-# uint_fast8_type {#uint_fast8_type_node}
+## uint_fast8_type {#uint_fast8_type_node}
 
 A *uint_fast8_type* is a **mapping** that contains the following keys:
 
@@ -1454,14 +1451,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint_fast8
 ```
 
 
-# uint_least16_type {#uint_least16_type_node}
+## uint_least16_type {#uint_least16_type_node}
 
 A *uint_least16_type* is a **mapping** that contains the following keys:
 
@@ -1476,14 +1473,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint_least16
 ```
 
 
-# uint_least32_type {#uint_least32_type_node}
+## uint_least32_type {#uint_least32_type_node}
 
 A *uint_least32_type* is a **mapping** that contains the following keys:
 
@@ -1498,14 +1495,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint_least32
 ```
 
 
-# uint_least64_type {#uint_least64_type_node}
+## uint_least64_type {#uint_least64_type_node}
 
 A *uint_least64_type* is a **mapping** that contains the following keys:
 
@@ -1520,14 +1517,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint_least64
 ```
 
 
-# uint_least8_type {#uint_least8_type_node}
+## uint_least8_type {#uint_least8_type_node}
 
 A *uint_least8_type* is a **mapping** that contains the following keys:
 
@@ -1542,14 +1539,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uint_least8
 ```
 
 
-# uintmax_type {#uintmax_type_node}
+## uintmax_type {#uintmax_type_node}
 
 A *uintmax_type* is a **mapping** that contains the following keys:
 
@@ -1564,14 +1561,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uintmax
 ```
 
 
-# uintptr_type {#uintptr_type_node}
+## uintptr_type {#uintptr_type_node}
 
 A *uintptr_type* is a **mapping** that contains the following keys:
 
@@ -1586,14 +1583,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: uintptr
 ```
 
 
-# unsigned_long_type {#unsigned_long_type_node}
+## unsigned_long_type {#unsigned_long_type_node}
 
 A *unsigned_long_type* is a **mapping** that contains the following keys:
 
@@ -1607,14 +1604,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: unsigned long
 ```
 
 
-# unsigned_long_long_type {#unsigned_long_long_type_node}
+## unsigned_long_long_type {#unsigned_long_long_type_node}
 
 A *unsigned_long_long_type* is a **mapping** that contains the following keys:
 
@@ -1628,14 +1625,14 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: unsigned long long
 ```
 
 
-# unsigned_short_type {#unsigned_short_type_node}
+## unsigned_short_type {#unsigned_short_type_node}
 
 A *unsigned_short_type* is a **mapping** that contains the following keys:
 
@@ -1650,8 +1647,8 @@ It accepts no parameter.
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
-## Example:
+### Example:
 
-```python
+```{.python}
 type: unsigned short
 ```

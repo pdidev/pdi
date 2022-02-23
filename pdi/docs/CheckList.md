@@ -1,6 +1,6 @@
-\page Checklists Checklists
+# Checklists {#Checklists}
 
-# New patch release
+## New patch release
 
 To publish a small fix as a patch release:
 * make your changes based on the version branch (`v${X}.${Y}`)
@@ -20,7 +20,7 @@ To publish a small fix as a patch release:
 * publish new packages https://github.com/pdidev/pkgs
 * publish new recipes  https://github.com/pdidev/spack
 
-# New minor or major release
+## New minor or major release
 
 To publish a new minor or major release:
 * start from the master branch
@@ -40,7 +40,7 @@ To publish a new minor or major release:
 * publish new packages https://github.com/pdidev/pkgs
 * publish new recipes  https://github.com/pdidev/spack
 
-# Dependency change
+## Dependency change
 
 When changing the list of dependencies or just the version of one dependency:
 * update `pdi/docs/Source_installation.md`,

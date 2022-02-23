@@ -1,11 +1,11 @@
-\page PDI_usage %PDI usage
+# %PDI usage {#PDI_usage}
 
 After \ref Installation step, %PDI must be used in the application, that
 is written either in C/C++, Fortran or Pyhton.
 
-\section preparing_the_environment Preparing the environment
+## Preparing the environment {#preparing_the_environment}
 
-\subsection pdi_in_default_location PDI was installed in default location
+### PDI was installed in default location {#pdi_in_default_location}
 
 The library and plugins should be found without any problem, but a good approach is to
 make sure that all environment variables are set correctly. To do this, there are 3 options:
@@ -18,7 +18,7 @@ To have the environment always prepared for using %PDI, the first option (`sourc
 can be added to `~/.bash_profile` file. After that, any new shell will have environment
 variables set up.
 
-\subsection pdi_not_in_default_location PDI was installed in custom location
+### PDI was installed in custom location {#pdi_not_in_default_location}
 
 To prepare environment in this case there are 3 options:
 
@@ -32,13 +32,13 @@ To have the environment always prepared for using %PDI, the first option (`sourc
 can be added to `~/.bash_profile` file. After that, any new shell will have environment
 variables set up.
 
-\section compilation_of__app Compilation of an application
+## Compilation of an application {#compilation_of__app}
 
 If source files (of application that uses %PDI) and specification tree file are ready, the compilation step can be made.
 For C make sure that source files that use %PDI API are including `pdi.h` header file.
 For Fortran make sure that source files that use %PDI API are using `%PDI` module file (`USE %PDI`).
 
-\subsection compiling_by_hand Compiling by hand
+### Compiling by hand {#compiling_by_hand}
 
 To compile application, linker flag `-lpdi` must be used.
 For C it would look like this:
@@ -53,11 +53,11 @@ For Fortran it would look like this:
 gfortran source_files.f90 -o exec_file -lpdi
 ```
 
-\subsection compiling_with_cmake Compiling with cmake
+### Compiling with cmake {#compiling_with_cmake}
 
 If source files (of application that uses %PDI) and specification tree file are ready, the compilation step can be made.
 
-\subsubsection c_cpp_compiling_with_cmake_application C/C++ compilation
+#### C/C++ compilation {#c_cpp_compiling_with_cmake_application}
 
 To compile C/C++ application, cmake must find `C` component from %PDI package.
 Then the `PDI::PDI_C` library must be linked to the target:
@@ -69,7 +69,7 @@ add_executable(exec_file source_files.c)
 target_link_libraries(exec_file PDI::PDI_C)
 ```
 
-\subsubsection fortan_compiling_by_cmake_application Fortran compilation
+#### Fortran compilation {#fortan_compiling_by_cmake_application}
 
 To compile Fortran application, cmake must find `f90` component from %PDI package.
 Then the `PDI::PDI_f90` library must be linked to the target:
@@ -81,7 +81,7 @@ add_executable(exec_file source_files.c)
 target_link_libraries(exec_file PDI::PDI_f90)
 ```
 
-\section running_app Running an application
+## Running an application {#running_app}
 
 %PDI is a shared library. That means that all environment variables
 must be set not only on compilation, but also when running the program.

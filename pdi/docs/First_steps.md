@@ -1,7 +1,7 @@
-\page First_steps First steps with %PDI
+# First steps with %PDI {#First_steps}
 
 
-\section fs_hello_event Hello Event
+## Hello Event {#fs_hello_event}
 
 As mentioned in \ref Specification_tree we have to provide specification tree to
 instruct %PDI what data we will share and what to do with it.
@@ -34,7 +34,7 @@ The first line indicates that plugin has loaded successfully. The second is %PDI
 
 
 
-\section fs_hello_data Hello Data
+## Hello Data {#fs_hello_data}
 
 In \ref fs_hello_event we learned how to call an event. In this chapter we will see how to share and reclaim data.
 
@@ -81,7 +81,7 @@ is the same as:
 
 
 
-\section fs_hello_access Hello Access
+## Hello Access {#fs_hello_access}
 
 Now we will try to access a descriptor we share with %PDI. In this case we won't need any plugin. We want to define int and a string in our `hello_access.yml`:
 \include First_steps/hello_access.yml
@@ -107,7 +107,7 @@ As you can see, we manage to access data descriptor from function only by passin
 
 
 
-\section fs_hello_multi_expose Hello multi expose
+## Hello multi expose {#fs_hello_multi_expose}
 
 In some cases we would want to expose many descriptors at once. For this we have multi expose which shares all the given descriptors, then call given event and then reclaim all passed data. Let's look at the example.
 \include First_steps/hello_multi_expose.yml

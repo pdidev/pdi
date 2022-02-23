@@ -1,4 +1,4 @@
-\page Installation Installation of %PDI
+# Installation of %PDI {#Installation}
 
 There are three ways to install %PDI:
 1. the [pre-compiled binary packages](https://github.com/pdidev/repo) for
@@ -7,7 +7,7 @@ There are three ways to install %PDI:
 3. the source distribution.
 
 
-\section installation_using_binary_packages Installation using binary packages
+## Installation using binary packages {#installation_using_binary_packages}
 
 The [pre-compiled binary packages](https://github.com/pdidev/repo) are
 recommended on distributions where they are available: Debian, Fedora, and
@@ -18,7 +18,7 @@ compilation options used.
 [More...](https://github.com/pdidev/repo).
 
 
-\section installation_using_spack_recipes Installation using Spack recipes
+## Installation using Spack recipes {#installation_using_spack_recipes}
 
 [PDI recipes](https://github.com/pdidev/spack) for [Spack](https://spack.io) are
 recommended when root access is not available, on other distributions, or when
@@ -28,7 +28,7 @@ supercomputer.
 [More...](https://github.com/pdidev/spack).
 
 
-\section installation_from_source Installation from source
+## Installation from source {#installation_from_source}
 
 The \subpage Source_installation "source distribution" is available if for some
 reason one prefers not to use Spack.

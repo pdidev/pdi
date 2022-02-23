@@ -1,6 +1,6 @@
-\page how_to_create_plugin How to create a plugin
+# How to create a plugin {#how_to_create_plugin}
 
-\section plugin_class Plugin class
+## Plugin class {#plugin_class}
 
 Plugin is a class, that handles shared data and triggered events to perform an I/O operations. It is dynamically linked to the user program by PDI. Behavior of each plugin is defined by specification tree in plugins subtree.
 
@@ -13,7 +13,7 @@ The given example will load example plugin and pass its subtree to the plugin's 
 
 The plugin has to inherit from PDI::Plugin and have a constructor with arguments PDI::Context& and PC_tree_t.
 
-\subsection example_plugin Example plugin
+### Example plugin {#example_plugin}
 Example of the simplest plugin, that does nothing:
 
 ```cpp
@@ -31,7 +31,7 @@ struct example_plugin : public PDI::Plugin
 PDI_PLUGIN(example)
 ```
 
-\subsection adding_callback Adding a callback
+### Adding a callback {#adding_callback}
 PDI::Context has a member with all the functions (callbacks) that are called when user is sharing the data (calls PDI_share). To add a new function to the plugin must call `callbacks().add_data_callback`.
 
 ```cpp
@@ -90,7 +90,7 @@ User has shared a data named some_integer
 [PDI][13:42:42] *** info: Finalization
 ```
 
-\subsection rw_data Reading and writing data
+### Reading and writing data {#rw_data}
 Example of reading and writing data:
 ```cpp
 #include <pdi/context.h>
@@ -123,7 +123,7 @@ struct example_plugin : public PDI::Plugin
 PDI_PLUGIN(example)
 ```
 
-\subsection example_events Handling events
+### Handling events {#example_events}
 ```cpp
 #include <pdi/context.h>
 #include <pdi/paraconf_wrapper.h>
@@ -155,7 +155,7 @@ private:
 PDI_PLUGIN(example)
 ```
 
-\subsection reading_pc_tree Reading scalar and array from specification tree
+### Reading scalar and array from specification tree {#reading_pc_tree}
 Specification tree:
 ```yaml
 plugins:
@@ -192,7 +192,7 @@ struct example_plugin : public PDI::Plugin
 
 PDI_PLUGIN(example)
 ```
-\subsection reading_pc_tree_2 Reading maps from specification tree
+### Reading maps from specification tree {#reading_pc_tree_2}
 Specification tree:
 ```yaml
 plugins:
@@ -233,13 +233,13 @@ struct example_plugin : public PDI::Plugin
 PDI_PLUGIN(example)
 ```
 
-\section create_true_plugin Creating a true plugin: POSIX plugin
+## Creating a true plugin: POSIX plugin {#create_true_plugin}
 
-\subsection step_1 Step 1: Think what your plugin will be for.
+### Step 1: Think what your plugin will be for. {#step_1}
 
 Simple checkpointing. Each data will be saved in separate file. User can check the status of all files at once and then recover the data.
 
-\subsection step_2 Step 2: Prepare your specification tree schema.
+### Step 2: Prepare your specification tree schema. {#step_2}
 ```yaml
 data:
   some_data: {type: array, subtype: int, size: 64}
@@ -255,7 +255,7 @@ plugins:
 
 The fastest way to learn is by examples. To show how to create a plugin, we will create "posix plugin". It won't do anything special, but give you a basic knowledge how to create one.
 
-\subsection step_3 Step 3: Write your plugin.
+### Step 3: Write your plugin. {#step_3}
 Members and constructor:
 ```cpp
 class posix_plugin : public PDI::Plugin
@@ -398,7 +398,7 @@ public:
 }
 ```
 
-\subsection plugin_compile Next steps
+### Next steps {#plugin_compile}
 1. Compile: 
 g++ posix.cxx -o libpdi_posix_plugin.so -lpdi -shared -fPIC -std=c++11
 

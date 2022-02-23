@@ -1,4 +1,4 @@
-\page Source_installation Installation of %PDI source distribution
+# Installation of %PDI source distribution {#Source_installation}
 
 \warning
 The recommended approach to install %PDI is to use either the pre-compiled
@@ -12,7 +12,7 @@ The %PDI source distribution includes:
 * examples and tests,
 * most dependencies of all the above.
 
-\section downloading_distribution Downloading PDI source distribution
+## Downloading PDI source distribution {#downloading_distribution}
 
 To download the sources, have a look at the list of all releases at
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases
@@ -20,7 +20,7 @@ https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases
 For example, release 1.4.3 can be downloaded from
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.4.3/pdi-1.4.3.tar.bz2
 
-\section default_installation Default installation
+## Default installation {#default_installation}
 
 \attention
 The *default %PDI source distribution* consists in a subset of the %PDI source
@@ -65,7 +65,7 @@ install the distribution, flags are
 If the default installation fails or if you need an installation better tailored
 to your needs, keep reading.
 
-\section cmake_config Configuration
+## Configuration {#cmake_config}
 
 The %PDI source distribution is compiled using CMake.
 The `cmake` command accepts options to configure the distribution with flags.
@@ -157,7 +157,7 @@ cmake module.
 |`CMAKE_INSTALL_LIBDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|object code libraries|
 |`CMAKE_INSTALL_PREFIX`|see [CMake doc](https://cmake.org/cmake/help/v3.19/variable/CMAKE_INSTALL_PREFIX.html)|Installation base|
 
-\section dependecies List of dependencies
+## List of dependencies {#dependecies}
 
 Here is a list of all dependencies required by one feature or another.
 All dependencies are provided in the distribution unless specified otherwise.

@@ -1,6 +1,6 @@
-\page FAQ FAQ
+# FAQ {#FAQ}
 
-# Compile PDI with Intel compiler
+## Compile PDI with Intel compiler
 
 The Intel compiler is a complex beast for C++.
 It does not provide a full compilation environment but relies on GNU C++
@@ -21,9 +21,9 @@ order of recommendation):
 2. compile PDI with GCC for C/C++, only use Intel compiler for Fortran,
 3. compile PDI in a fully Intel environment, with GNU C++ library only.
 
-## load PDI with `include` instead of using the module
+### load PDI with `include` instead of using the module
 
-## compile PDI with GCC for C/C++, use Intel compiler for Fortran
+### compile PDI with GCC for C/C++, use Intel compiler for Fortran
 
 On a machine using environment modules you will need to load both GCC and Intel
 modules.
@@ -40,7 +40,7 @@ make install
 Even if you don't use it to compile your code, you must keep the GCC module
 loaded on a machine using environment modules.
 
-## compile PDI in a fully Intel environment, with GNU C++ library only
+### compile PDI in a fully Intel environment, with GNU C++ library only
 
 In order to use Intel compiler, you need to point it to an installation of
 GCC recent enough with the options:
