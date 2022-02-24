@@ -41,7 +41,7 @@ pages:
   variables: { GIT_SUBMODULE_STRATEGY: recursive }
   script:
     - cmake -DBUILD_DOCUMENTATION=ON -DBUILD_TESTING=OFF pdi
-    - make doc
+    - if make doc 2>&1 | tee >(cat>&2) | grep -qsi 'warning\|error >/dev/null; then exit 1; fi
     - mkdir -p "$CI_PROJECT_DIR/public/"
     - if [ -z "${CI_COMMIT_TAG}" ]; then mv docs/html "$CI_PROJECT_DIR/public/${CI_COMMIT_REF_NAME}"; fi
     - if [ -n "${CI_COMMIT_TAG}" ]; then mv docs/html "$CI_PROJECT_DIR/public/${CI_COMMIT_TAG}"; fi
@@ -124,6 +124,10 @@ ubuntu_bionic_mpich_all:
   image: ghcr.io/pdidev/ubuntu/bionic/mpich/all
   script:
     - *shared_script
+  artifacts:
+    when: always
+    reports:
+      junit: ./build/tests.xml
 
 pages-deploy:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
