@@ -31,7 +31,8 @@
 .shared_script: &shared_script
   - export DOCKER_RUNNER=gitlab
   - export MAKEFLAGS='-j 2'
-  - sh tools/build_scripts/build_and_run.sh
+  - export CTEST_FLAGS="--output-junit ${PWD}/tests.xml"
+  - bash tools/build_scripts/build_and_run.sh
 
 .default_run: &default_run [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
 
@@ -55,6 +56,9 @@ spack_oldest_clang_openmpi_all:
   image: ghcr.io/pdidev/spack/oldest/clang/openmpi/all
   script:
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 spack_oldest_clang_openmpi_mini:
   only: *default_run
@@ -62,6 +66,9 @@ spack_oldest_clang_openmpi_mini:
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 spack_oldest_gcc_openmpi_all:
   only: *default_run
@@ -69,24 +76,36 @@ spack_oldest_gcc_openmpi_all:
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 spack_oldest_gcc_openmpi_mini:
   only: *default_run
   image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/mini
   script:
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 spack_latest_clang_openmpi_all:
   only: *default_run
   image: ghcr.io/pdidev/spack/latest/clang/openmpi/all
   script:
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 spack_latest_clang_openmpi_mini:
   only: *default_run
   image: ghcr.io/pdidev/spack/latest/clang/openmpi/mini
   script:
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 spack_latest_gcc_openmpi_all:
   only: *default_run
@@ -94,6 +113,9 @@ spack_latest_gcc_openmpi_all:
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 spack_latest_gcc_openmpi_mini:
   only: *default_run
@@ -101,6 +123,9 @@ spack_latest_gcc_openmpi_mini:
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 ubuntu_bionic_openmpi_mini:
   only: *default_run
@@ -108,6 +133,9 @@ ubuntu_bionic_openmpi_mini:
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 ubuntu_bionic_mpich_mini:
   only: *default_run
@@ -115,12 +143,18 @@ ubuntu_bionic_mpich_mini:
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 ubuntu_bionic_openmpi_all:
   only: *default_run
   image: ghcr.io/pdidev/ubuntu/bionic/openmpi/all
   script:
     - *shared_script
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
 
 ubuntu_bionic_mpich_all:
   only: *default_run
@@ -129,8 +163,7 @@ ubuntu_bionic_mpich_all:
     - *shared_script
   artifacts:
     when: always
-    reports:
-      junit: ./build/tests.xml
+    reports: { junit: ./tests.xml }
 
 pages-deploy:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]

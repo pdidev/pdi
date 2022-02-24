@@ -96,4 +96,4 @@ fi
 
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}
