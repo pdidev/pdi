@@ -29,20 +29,22 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-
-
 set -xe
+
+
+TEST_DIR="${TEST_DIR:-${PWD}}"
+
 
 cd "$(dirname "$0")/" # build_scripts
 cd "../.."  # PDI distrib dir
 SRCDIR="$(pwd)"
 
+
+cd "${TEST_DIR}"
 cd "$(mktemp -d)"
 
 
-
 MAKEFLAGS="${MAKEFLAGS:--j}"
-
 
 
 if [ "xprovided" = "x${PDI_LIBS}" ]

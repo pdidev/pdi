@@ -32,13 +32,14 @@
   - export DOCKER_RUNNER=gitlab
   - export MAKEFLAGS='-j 2'
   - export CTEST_FLAGS="--output-junit ${PWD}/tests.xml"
+  - export TEST_DIR=/tmp
   - bash tools/build_scripts/build_and_run.sh
 
 .default_run: &default_run [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
 
 pages:
   only: *default_run
-  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all
+  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v1
   variables: { GIT_SUBMODULE_STRATEGY: recursive }
   script:
     - |
@@ -53,7 +54,7 @@ pages:
 
 spack_oldest_clang_openmpi_all:
   only: *default_run
-  image: ghcr.io/pdidev/spack/oldest/clang/openmpi/all
+  image: ghcr.io/pdidev/spack/oldest/clang/openmpi/all:v1
   script:
     - *shared_script
   artifacts:
@@ -62,7 +63,7 @@ spack_oldest_clang_openmpi_all:
 
 spack_oldest_clang_openmpi_mini:
   only: *default_run
-  image: ghcr.io/pdidev/spack/oldest/clang/openmpi/mini
+  image: ghcr.io/pdidev/spack/oldest/clang/openmpi/mini:v1
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
@@ -72,7 +73,7 @@ spack_oldest_clang_openmpi_mini:
 
 spack_oldest_gcc_openmpi_all:
   only: *default_run
-  image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/all
+  image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/all:v1
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
@@ -82,7 +83,7 @@ spack_oldest_gcc_openmpi_all:
 
 spack_oldest_gcc_openmpi_mini:
   only: *default_run
-  image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/mini
+  image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/mini:v1
   script:
     - *shared_script
   artifacts:
@@ -91,7 +92,7 @@ spack_oldest_gcc_openmpi_mini:
 
 spack_latest_clang_openmpi_all:
   only: *default_run
-  image: ghcr.io/pdidev/spack/latest/clang/openmpi/all
+  image: ghcr.io/pdidev/spack/latest/clang/openmpi/all:v1
   script:
     - *shared_script
   artifacts:
@@ -100,7 +101,7 @@ spack_latest_clang_openmpi_all:
 
 spack_latest_clang_openmpi_mini:
   only: *default_run
-  image: ghcr.io/pdidev/spack/latest/clang/openmpi/mini
+  image: ghcr.io/pdidev/spack/latest/clang/openmpi/mini:v1
   script:
     - *shared_script
   artifacts:
@@ -109,7 +110,7 @@ spack_latest_clang_openmpi_mini:
 
 spack_latest_gcc_openmpi_all:
   only: *default_run
-  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all
+  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v1
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
@@ -119,7 +120,7 @@ spack_latest_gcc_openmpi_all:
 
 spack_latest_gcc_openmpi_mini:
   only: *default_run
-  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/mini
+  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/mini:v1
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
@@ -129,7 +130,7 @@ spack_latest_gcc_openmpi_mini:
 
 ubuntu_bionic_openmpi_mini:
   only: *default_run
-  image: ghcr.io/pdidev/ubuntu/bionic/openmpi/mini
+  image: ghcr.io/pdidev/ubuntu/bionic/openmpi/mini:v1
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
@@ -139,7 +140,7 @@ ubuntu_bionic_openmpi_mini:
 
 ubuntu_bionic_mpich_mini:
   only: *default_run
-  image: ghcr.io/pdidev/ubuntu/bionic/mpich/mini
+  image: ghcr.io/pdidev/ubuntu/bionic/mpich/mini:v1
   script:
     - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
     - *shared_script
@@ -149,7 +150,7 @@ ubuntu_bionic_mpich_mini:
 
 ubuntu_bionic_openmpi_all:
   only: *default_run
-  image: ghcr.io/pdidev/ubuntu/bionic/openmpi/all
+  image: ghcr.io/pdidev/ubuntu/bionic/openmpi/all:v1
   script:
     - *shared_script
   artifacts:
@@ -158,7 +159,7 @@ ubuntu_bionic_openmpi_all:
 
 ubuntu_bionic_mpich_all:
   only: *default_run
-  image: ghcr.io/pdidev/ubuntu/bionic/mpich/all
+  image: ghcr.io/pdidev/ubuntu/bionic/mpich/all:v1
   script:
     - *shared_script
   artifacts:
