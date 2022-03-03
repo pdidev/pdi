@@ -40,16 +40,6 @@ set(CMAKE_C_STANDARD_REQUIRED TRUE)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 
-add_executable(PDI_test_01 PDI_test_01.c)
-target_link_libraries(PDI_test_01 PDI::PDI_C)
-add_test(NAME PDI_test_01 COMMAND PDI_test_01)
-
-
-add_executable(PDI_test_02 PDI_test_02.c)
-target_link_libraries(PDI_test_02 PDI::PDI_C)
-set_target_properties(PDI_test_02 PROPERTIES ENABLE_EXPORTS ON)
-add_test(NAME PDI_test_02 COMMAND PDI_test_02)
-
 if("${BUILD_FORTRAN}")
 	add_subdirectory(fortran/)
 endif()
@@ -68,6 +58,7 @@ endif()
 
 set(PDI_unit_tests_SRC
 		PDI_array_datatype.cxx
+		PDI_C_API.cxx
 		PDI_callbacks.cxx
 		PDI_context.cxx
 		PDI_data_descriptor.cxx

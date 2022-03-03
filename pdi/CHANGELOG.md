@@ -23,9 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#351](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/351)
 * Support for string boolean types in yaml.
   [#362](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/362)
-
-* Support for inteagers from stdint.h
+* Support for integers from stdint.h
   [#389](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/389)
+* Improved error message when a share/release/reclaim fails
+  [#410](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/410)
 
 #### Changed
 * Updated dependencies, now require cmake-3.10, paraconf-0.4.15, spdlog-1.5.0,
