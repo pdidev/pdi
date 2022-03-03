@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fixed an issue where parallel NetCDF would not be detected correctly with
   NetCDF too old and the wrong tests would be run
   [#383](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/383)
+* Fixed an issue where NetCDF would not be detected
+  [#412](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/412)
 
 ### Security
 

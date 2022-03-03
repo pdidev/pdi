@@ -43,8 +43,9 @@ This module will define the following variables:
 :NetCDF_INCLUDE_DIRECTORIES: .
 :NetCDF_COMPILE_DEFINITIONS: .
 :NetCDF_LINK_LIBRARIES: .
-:NetCDF_FEATURES: the features supported amongst CDF5, DAP2, DAP4, HDF4, HDF5,
-  NC2, NC4, PARALLEL, PARALLEL4, PNETCDF
+:NetCDF_FEATURES: the features supported amongst CDF5, DAP, DAP2, DAP4,
+                  DISKLESS, HDF4, HDF5, JNA, MMAP, NC2, NC4, PARALLEL,
+                  PARALLEL4, PNETCDF
 
 In addition, the module provides the following target to link against:
 
@@ -65,12 +66,14 @@ includes:
 cmake_minimum_required(VERSION 3.10)
 
 
+set(_NetCDF_features_list CDF5 DAP DAP2 DAP4 DISKLESS HDF4 HDF5 JNA MMAP NC2 NC4 PARALLEL PARALLEL4 PNETCDF)
+
 macro(_NetCDF_remove_duplicates_from_beginning _list_name)
-  if(${_list_name})
-    list(REVERSE ${_list_name})
-    list(REMOVE_DUPLICATES ${_list_name})
-    list(REVERSE ${_list_name})
-  endif()
+	if(${_list_name})
+		list(REVERSE ${_list_name})
+		list(REMOVE_DUPLICATES ${_list_name})
+		list(REVERSE ${_list_name})
+	endif()
 endmacro()
 
 
@@ -182,7 +185,7 @@ function(_NetCDF_parse_includes VERSION FEATURES)
 	endif()
 	
 	set(NetCDF_FEATURES)
-	foreach(FEATURE CDF5 DAP2 DAP4 HDF4 HDF5 NC2 NC4 PARALLEL PARALLEL4 PNETCDF)
+	foreach(FEATURE IN LISTS _NetCDF_features_list)
 		file(STRINGS "${NetCDF_META_H}" FEATURE_${FEATURE}
 			REGEX "#[ \t]*define[ \t]+NC_HAS_${FEATURE}[ \t]+[A-za-z0-9]+"
 		)
@@ -200,18 +203,21 @@ function(_NetCDF_find_CMAKE)
 	find_package(netCDF CONFIG QUIET)
 	if("${netCDF_FOUND}")
 		# Forward the variables in a consistent way.
-		set(NetCDF_FOUND "${netCDF_FOUND}" PARENT_SCOPE)
-		set(NetCDF_VERSION "${NETCDFVersion}" PARENT_SCOPE)
+		set(NetCDF_FOUND TRUE)
+		set(NetCDF_VERSION "${netCDF_VERSION}")
 		if(TARGET "netCDF::netcdf")
 			list(APPEND NetCDF_LINK_LIBRARIES "netCDF::netcdf")
-			set(NetCDF_LINK_LIBRARIES "${NetCDF_LINK_LIBRARIES}" PARENT_SCOPE)
 		elseif(TARGET "netcdf")
 			list(APPEND NetCDF_LINK_LIBRARIES "netcdf")
-			set(NetCDF_LINK_LIBRARIES "${NetCDF_LINK_LIBRARIES}" PARENT_SCOPE)
 		else()
-			_NetCDF_target_from_flags("" "${netCDF_INCLUDE_DIR}" "" "" "" "${netCDF_LIBRARIES}")
+			_NetCDF_target_from_flags("" "${netCDF_INCLUDE_DIR}" "" "" "${netCDF_LIB_DIR}" "${netCDF_LIBRARIES}")
 		endif()
-		_NetCDF_parse_includes(FALSE TRUE)
+		set(NetCDF_FEATURES)
+		foreach(FEATURE IN LISTS _NetCDF_features_list)
+			if("${netCDF_HAS_${FEATURE}}")
+				list(APPEND NetCDF_FEATURES "${FEATURE}")
+			endif()
+		endforeach()
 	endif()
 	_NetCDF_public_vars()
 endfunction()
@@ -275,7 +281,7 @@ function(_NetCDF_find_CFGSCRIPT CFGSCRIPT)
 	_NetCDF_target_from_flags("${CFLAGS}" "${INCLUDE_DIRECTORIES}" "" "${LDFLAGS}" "${LIBRARY_DIRS}" "")
 	
 	
-	foreach(FEATURE CDF5 DAP2 DAP4 HDF4 HDF5 NC2 NC4 PARALLEL PARALLEL4 PNETCDF)
+	foreach(FEATURE IN LISTS _NetCDF_features_list)
 		string(TOLOWER "--has-${FEATURE}" FEATURE_OPT)
 		execute_process(COMMAND "${CFGSCRIPT}" "${FEATURE_OPT}"
 			OUTPUT_VARIABLE "FEATURE_${FEATURE}"
