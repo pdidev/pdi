@@ -33,5 +33,5 @@ ensemble run, etc.
 ## Get support
 
 If you have any problem with installation, running or understanding %PDI,
-please contact us on our [**Slack channel** https://join.slack.pdi.dev](https://join.slack.pdi.dev).
+please contact us on our [Slack channel ![Slack](slack.png) https://join.slack.pdi.dev](https://join.slack.pdi.dev).
 We will be happy to help ( ဖ‿ဖ)人(စ‿စ )
