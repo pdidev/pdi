@@ -81,17 +81,12 @@ Fti_wrapper::Fti_wrapper(Context& ctx, const Fti_cfg& config, MPI_Comm comm, PC_
 	//load FTI_COMM_WORLD.rank
 	add_predefined(ctx, "FTI_COMM_WORLD_rank", &fti_world_rank, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	string fti_rank_name = "FTI %{FTI_COMM_WORLD_rank:06d}";
+	
+	ctx.logger().add_pattern_global_block(fti_rank_name);
 	if (m_head) {
-		fti_rank_name = "FTI %{FTI_COMM_WORLD_rank:06d} (HEAD)";
+		ctx.logger().add_pattern_global_block("FTI HEAD");
 	}
-	// pdi global logger
-	try {
-		Context_proxy& ctx_proxy = dynamic_cast<Context_proxy&>(ctx);
-		ctx_proxy.pdi_core_logger().default_pattern("[%T][" + fti_rank_name + "][%n] *** %^%l%$: %v");
-		ctx_proxy.pdi_core_logger().evaluate_pattern(ctx);
-	} catch (std::bad_cast&) {
-		ctx.logger().warn("Cannot cast Context to Context_proxy");
-	}
+	ctx.logger().evaluate_global_pattern(ctx);
 	
 	if (m_head) {
 		auto found_it = std::find_if(config.descs().begin(), config.descs().end(),

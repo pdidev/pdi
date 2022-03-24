@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#389](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/389)
 * Improved error message when a share/release/reclaim fails
   [#410](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/410)
+* Plugins can now add independent information to the PDI logger.
+  [#360](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/360)
 
 #### Changed
 * Updated dependencies, now require cmake-3.10, paraconf-0.4.15, spdlog-1.5.0,

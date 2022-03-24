@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -270,7 +270,8 @@ void Module::update_logger(PC_tree_t logging_tree)
 	} else {
 		return;
 	}
-	context().logger().default_pattern("[%T][" + format + "] *** %^%l%$: %v");
+	context().logger().add_pattern_global_block(format);
+	context().logger().evaluate_global_pattern(context());
 	context().logger().debug("Logger updated");
 }
 

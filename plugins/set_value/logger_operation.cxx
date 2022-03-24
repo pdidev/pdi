@@ -83,11 +83,11 @@ void Logger_operation::execute()
 			}
 		}
 		if (!m_pattern.empty()) {
-			ctx_proxy.pdi_core_logger().pattern(m_pattern);
-			ctx_proxy.pdi_core_logger().evaluate_pattern(context());
+			context().logger().global_pattern(m_pattern);
+			context().logger().evaluate_global_pattern(context());
 		}
 		if (m_evaluate) {
-			ctx_proxy.pdi_core_logger().evaluate_pattern(context());
+			context().logger().evaluate_global_pattern(context());
 		}
 
 	} catch (std::bad_cast&) {

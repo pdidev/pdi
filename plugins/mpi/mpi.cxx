@@ -180,14 +180,8 @@ struct mpi_plugin: Plugin {
 	
 	void set_up_logger(Context& ctx, PC_tree_t)
 	{
-		// pdi global logger
-		try {
-			Context_proxy& ctx_proxy = dynamic_cast<Context_proxy&>(ctx);
-			ctx_proxy.pdi_core_logger().default_pattern("[%T][%{MPI_COMM_WORLD_rank:06d}][%n] *** %^%l%$: %v");
-			ctx_proxy.pdi_core_logger().evaluate_pattern(ctx);
-		} catch (std::bad_cast&) {
-			ctx.logger().warn("Cannot cast Context to Context_proxy");
-		}
+		ctx.logger().add_pattern_global_block("MPI %{MPI_COMM_WORLD_rank:06d}");
+		ctx.logger().evaluate_global_pattern(ctx);
 	}
 	
 	void add_predefined(Context& ctx, const string& name, void* data, Datatype_sptr type)

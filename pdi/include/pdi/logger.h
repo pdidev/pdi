@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,11 +46,20 @@ class PDI_EXPORT Logger
 	/// observers of this logger to update when default pattern changes
 	std::vector<std::reference_wrapper<Logger>> m_default_pattern_observers;
 	
+	/// vector that contains pattern block from plugins added to the logger
+	std::vector<std::string> m_pattern_blocks;
+	
 	/// pattern of spdlog logger
 	std::string m_pattern = "[%T][%n] *** %^%l%$: %v";
 	
 	/// true if default_pattern method shouldn't change the pattern
 	bool m_pattern_from_config = false;
+	
+	/// builds new version of the pattern
+	void build_pattern();
+	
+	/// parent logger
+	Logger* m_parent_logger = nullptr; //change in c++17 to std::optional
 	
 public:
 	/// Creates new empty logger
@@ -67,6 +76,12 @@ public:
 	 * \param[in] parent_logger the logger to observe if default pattern has changed
 	 * \param[in] logger_name logger name that will be displayed
 	 * \param[in] config configuration tree from config file
+	 *
+	 * Loggers can inherit block structure from parent_logger. When inherited,
+	 * pattern and level of the parent will be set as default pattern and level of the child.
+	 * The pattern and level are inherited if they are not set in child config file.
+	 * For now it works with plugin loggers. PDI core logger is the parent and plugin logger is the child.
+	 *
 	 */
 	Logger(Logger& parent_logger, const std::string& logger_name, PC_tree_t config);
 	
@@ -90,12 +105,35 @@ public:
 	 */
 	void pattern(const std::string& pattern);
 	
-	/** Changes default pattern  of the logger
+	/** Changes pattern of the global logger
+	 *
+	 * \param[in] pattern pattern to set
+	 *
+	 * The global logger is the logger without a parent.
+	 *
+	 */
+	void global_pattern(const std::string& pattern);
+	
+	/** Changes default pattern of the logger
 	 *  (won't be updated if current pattern  is from config)
 	 *
 	 * \param[in] pattern pattern to set
 	 */
 	void default_pattern(const std::string& pattern);
+	
+	/** Add new element to default pattern
+	 *
+	 * \param[in] block new string block to add
+	 */
+	void add_pattern_block(const std::string& block);
+	
+	/** Add new element to default pattern of the global logger
+	*
+	* \param[in] block new string block to add
+	*
+	* Adds block to the pattern of the global logger.
+	*/
+	void add_pattern_global_block(const std::string& block);
 	
 	/** Returns pattern of the logger
 	 * \return pattern of the logger
@@ -115,8 +153,19 @@ public:
 	/** Evaluate pattern
 	 *
 	 * \param[in] ctx the context in which to evaluate the pattern
+	 *
+	 * Evaluation of the pattern.
 	 */
 	void evaluate_pattern(Context& ctx) const;
+	
+	/** Evaluate global pattern
+	 *
+	 * \param[in] ctx the context in which to evaluate the pattern
+	 *
+	 * Evaluation of the pattern. Used to evaluate parent and child patterns.
+	 *
+	 */
+	void evaluate_global_pattern(Context& ctx) const;
 	
 	/** Writes trace level message
 	 * \param[in] fmt fmt formatted string

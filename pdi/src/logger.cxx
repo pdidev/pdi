@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2018-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,7 @@ using spdlog::sinks::basic_file_sink_st;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::stringstream;
 using std::unordered_map;
 using std::vector;
 
@@ -166,6 +167,17 @@ std::string evaluate_refs_in_pattern(PDI::Context& ctx, string pattern)
 
 namespace PDI {
 
+void Logger::build_pattern()
+{
+	stringstream s_pattern;
+	for (auto&& plugin_block : m_pattern_blocks)
+	{
+		s_pattern << plugin_block;
+	}
+	s_pattern << "[%n] *** %^%l%$: %v";
+	m_pattern = s_pattern.str();
+}
+
 Logger::Logger(const string& logger_name, PC_tree_t config, level_enum level)
 {
 	setup(logger_name, config, level);
@@ -174,6 +186,7 @@ Logger::Logger(const string& logger_name, PC_tree_t config, level_enum level)
 Logger::Logger(Logger& parent_logger, const std::string& logger_name, PC_tree_t config):
 	Logger(logger_name, config, parent_logger.level())
 {
+	m_parent_logger = &parent_logger;
 	parent_logger.m_default_pattern_observers.emplace_back(*this);
 	default_pattern(parent_logger.pattern());
 }
@@ -185,6 +198,8 @@ void Logger::setup(const string& logger_name, PC_tree_t config, level_enum level
 
 	// try to read log level from yaml
 	read_log_level(m_logger, config);
+
+	add_pattern_block("%T");
 
 	// overwrite pattern if defined in yaml
 	PC_tree_t pattern_tree = PC_get(config, ".pattern");
@@ -200,19 +215,30 @@ void Logger::setup(const string& logger_name, PC_tree_t config, level_enum level
 
 void Logger::setup(Logger& parent_logger, const string& logger_name, PC_tree_t config)
 {
+	m_parent_logger = &parent_logger;
 	setup(logger_name, config, parent_logger.level());
 	parent_logger.m_default_pattern_observers.emplace_back(*this);
 	default_pattern(parent_logger.pattern());
 }
 
-void Logger::pattern(const string& pattern)
+void Logger::pattern(const string& pattern_str)
 {
-	m_pattern = pattern;
+	m_pattern = pattern_str;
 	m_logger->set_pattern(m_pattern);
 	for (auto&& observer : m_default_pattern_observers) {
 		observer.get().default_pattern(m_pattern);
 	}
 	m_logger->set_pattern(evaluate_refs_in_pattern(m_pattern));
+}
+
+void Logger::global_pattern(const string& pattern_str)
+{
+	if (m_parent_logger != nullptr) {
+		m_parent_logger->global_pattern(pattern_str);
+	} else {
+		pattern(pattern_str);
+	}
+
 }
 
 void Logger::default_pattern(const string& pattern)
@@ -223,6 +249,23 @@ void Logger::default_pattern(const string& pattern)
 		for (auto&& observer : m_default_pattern_observers) {
 			observer.get().default_pattern(m_pattern);
 		}
+	}
+}
+
+void Logger::add_pattern_block(const string& block)
+{
+	m_pattern_blocks.push_back("[" + block + "]");
+	build_pattern();
+	default_pattern(m_pattern);
+}
+
+void Logger::add_pattern_global_block(const string& block)
+{
+	if (m_parent_logger != nullptr) {
+		m_parent_logger->add_pattern_global_block(block);
+
+	} else {
+		add_pattern_block(block);
 	}
 }
 
@@ -246,6 +289,15 @@ void Logger::evaluate_pattern(Context& ctx) const
 	m_logger->set_pattern(evaluate_refs_in_pattern(ctx, m_pattern));
 	for (auto&& observer : m_default_pattern_observers) {
 		observer.get().evaluate_pattern(ctx);
+	}
+}
+
+void Logger::evaluate_global_pattern(Context& ctx) const
+{
+	if (m_parent_logger != nullptr) {
+		m_parent_logger->evaluate_global_pattern(ctx);
+	} else {
+		evaluate_pattern(ctx);
 	}
 }
 
