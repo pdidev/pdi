@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 * Updated dependencies, now require cmake-3.10, paraconf-0.4.15, spdlog-1.5.0,
   python-3.6 if enabled and zpp-1.0.15 if Fortran is enabled.
+* Updated the fortran interface with assumed type and assumed rank
+  arguments (Fortran 2008) where possible
 
 #### Deprecated
 

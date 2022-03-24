@@ -102,17 +102,16 @@ subroutine PDI_event(event, err)
   
 endsubroutine PDI_event
 
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
 
-subroutine PDI_share_${T}_${D}D(name, data, accessf, err)
+
+subroutine PDI_share(name, data, accessf, err)  
 
   use PDI_C
 
   implicit none
 
   character(len=*), intent(IN) :: name
-  $(fort_type $T), target, asynchronous :: data$(array_desc $D)
+  TYPE(*), target, asynchronous :: data(..)
   integer, intent(IN) :: accessf
   integer, intent(OUT), optional :: err
 
@@ -123,19 +122,16 @@ subroutine PDI_share_${T}_${D}D(name, data, accessf, err)
     C_name(ii) = name(ii:ii)
   enddo
   C_name(len_trim(name)+1) = C_null_char
-  
-  tmperr = int(PDI_share_C(C_loc(C_name), &
-      C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
-      accessf))
-  
+
+  tmperr = int(PDI_share_C(C_loc(C_name), C_loc(data), accessf))
+
   if(present(err)) then
     err = tmperr
   endif
-  
-endsubroutine PDI_share_${T}_${D}D
+  return
+end subroutine PDI_share
 
-!$SH   done
-!$SH done
+
 
 subroutine PDI_release(name, err)
 
@@ -188,17 +184,16 @@ subroutine PDI_reclaim(name, err)
   
 endsubroutine PDI_reclaim
 
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
 
-subroutine PDI_expose_${T}_${D}D(name, data, accessf, err)
+
+subroutine PDI_expose(name, data, accessf, err)
 
   use PDI_C
 
   implicit none
 
   character(len=*), intent(IN) :: name
-  $(fort_type $T), target, asynchronous :: data$(array_desc $D)
+  TYPE(*), target, asynchronous :: data(..)
   integer, intent(IN) :: accessf
   integer, intent(OUT), optional :: err
 
@@ -209,19 +204,16 @@ subroutine PDI_expose_${T}_${D}D(name, data, accessf, err)
     C_name(ii) = name(ii:ii)
   enddo
   C_name(len_trim(name)+1) = C_null_char
-
-  tmperr = int(PDI_expose_C(C_loc(C_name), &
-      C_loc(data$(str_repeat 'lbound(data, @N)' 1 ${D} $',&\n ' '(' ')')), &
-      accessf))
+  
+  tmperr = int(PDI_expose_C(C_loc(C_name), C_loc(data), accessf))
   
   if(present(err)) then
     err = tmperr
   endif
   
-endsubroutine PDI_expose_${T}_${D}D
+endsubroutine PDI_expose
 
-!$SH   done
-!$SH done
+
 !$SH for T in ${FORTTYPES}; do
 !$SH   for D in $(seq 0 ${MAXDIM}); do
 
