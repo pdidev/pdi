@@ -43,7 +43,7 @@ pages:
   variables: { GIT_SUBMODULE_STRATEGY: recursive }
   script:
     - |
-      cmake -DBUILD_DOCUMENTATION=ON -DBUILD_TESTING=OFF pdi
+      cmake -DBUILD_DOCUMENTATION=ON -DBUILD_BENCHMARKING=OFF -DBUILD_TESTING=OFF pdi
       if make doc 2>&1 | tee >(cat>&2) | grep ' warning: ' > /dev/null
       then
         make doc 2>&1 | tee >(cat>&2) | grep ' warning: '

@@ -30,12 +30,14 @@ spack:
   concretization: together
   specs:
   - 'astyle@3.1:3.999.999'
+  - 'benchmark@1.5.0:'
   - 'cmake@3.10.0:3.999.999'
   - 'doxygen@1.8.12:1.999.999'
   - 'flowvr@2.3.2:2.999.999'
   - 'freeglut'
   - 'fti@1.6:1.999'
   - 'fmt@6.1.2:8.999.999'
+  - 'googletest@1.8.0: +gmock'
   - 'hdf5@1.10.0:1.999.999'
   - 'mpi'
   - 'netcdf-c@4.6.0:4.999.999'
