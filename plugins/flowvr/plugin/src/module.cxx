@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <fmt/core.h>
+
 #include <pdi/error.h>
 
 #include "module.h"

@@ -72,8 +72,6 @@ set_property(SOURCE decl_sion.cxx APPEND_STRING PROPERTY COMPILE_FLAGS " ${SIONl
 target_link_libraries(pdi_decl_sion_plugin PUBLIC PDI::PDI_plugins MPI::MPI_CXX ${SIONlib_MPI_C_LIBRARIES})
 target_include_directories(pdi_decl_sion_plugin PUBLIC ${SIONlib_MPI_C_INCLUDE_DIRS})
 set_target_properties(pdi_decl_sion_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
 		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation

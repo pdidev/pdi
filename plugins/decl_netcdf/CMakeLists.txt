@@ -55,6 +55,9 @@ if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
 	message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DBUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
 endif()
 
+# FMT
+find_package(fmt 6.1.2 REQUIRED)
+
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
 
@@ -67,14 +70,11 @@ add_library(pdi_decl_netcdf_plugin MODULE
 		dnc_io.cxx
 		dnc_netcdf_file.cxx
 		dnc_variable.cxx)
-target_link_libraries(pdi_decl_netcdf_plugin PUBLIC PDI::PDI_plugins NetCDF::NetCDF)
+target_link_libraries(pdi_decl_netcdf_plugin PUBLIC PDI::PDI_plugins fmt::fmt-header-only NetCDF::NetCDF)
 if("${BUILD_NETCDF_PARALLEL}")
 	target_link_libraries(pdi_decl_netcdf_plugin PUBLIC MPI::MPI_CXX)
 endif()
-set_target_properties(pdi_decl_netcdf_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pdi_decl_netcdf_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")

@@ -28,8 +28,9 @@ project(pdi_set_value_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
-option(BUILD_INDENT  "Enable automatic code indentation" OFF)
+option(BUILD_INDENT "Enable automatic code indentation" OFF)
 
+# Includes
 include(CTest)
 include(GNUInstallDirs)
 
@@ -37,6 +38,9 @@ include(GNUInstallDirs)
 if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)
 endif()
+
+# spdlog
+find_package(spdlog 1.5.0 REQUIRED)
 
 # PDI
 find_package(PDI REQUIRED plugins)
@@ -51,13 +55,9 @@ add_library(pdi_set_value_plugin MODULE set_value.cxx
 										share_operation.cxx
 										expose_operation.cxx
 										event_operation.cxx
-										release_operation.cxx
-										)
-target_link_libraries(pdi_set_value_plugin PUBLIC PDI::PDI_plugins)
-set_target_properties(pdi_set_value_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
+										release_operation.cxx)
+target_link_libraries(pdi_set_value_plugin PUBLIC PDI::PDI_plugins spdlog::spdlog_header_only)
+set_target_properties(pdi_set_value_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")

@@ -28,7 +28,7 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.10)
-project(pdi_test_plugin LANGUAGES CXX)
+project(pdi_test_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
@@ -48,10 +48,7 @@ find_package(PDI REQUIRED COMPONENTS plugins)
 # The plugin
 add_library(pdi_test_plugin MODULE test.cxx)
 target_link_libraries(pdi_test_plugin PDI::PDI_plugins)
-set_target_properties(pdi_test_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pdi_test_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")

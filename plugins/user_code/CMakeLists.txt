@@ -49,10 +49,7 @@ find_package(PDI REQUIRED COMPONENTS plugins)
 # The plugin
 add_library(pdi_user_code_plugin MODULE user_code.cxx)
 target_link_libraries(pdi_user_code_plugin PDI::PDI_plugins)
-set_target_properties(pdi_user_code_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pdi_user_code_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")

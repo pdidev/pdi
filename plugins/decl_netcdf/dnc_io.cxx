@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <spdlog/spdlog.h>
-
 #include "dnc_io.h"
 
 namespace decl_netcdf {

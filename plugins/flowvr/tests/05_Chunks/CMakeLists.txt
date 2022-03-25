@@ -24,18 +24,14 @@
 
 add_executable(send_chunks send_chunks.cxx)
 target_link_libraries(send_chunks PDI::PDI_C)
+target_compile_features(send_chunks PUBLIC cxx_std_17)
 configure_file(send_chunks.yml send_chunks.yml COPYONLY)
-set_target_properties(send_chunks PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 
 add_executable(recv_chunks recv_chunks.cxx)
 target_link_libraries(recv_chunks PDI::PDI_C)
+target_compile_features(recv_chunks PUBLIC cxx_std_17)
 configure_file(recv_chunks.yml recv_chunks.yml COPYONLY)
-set_target_properties(recv_chunks PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/chunks.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

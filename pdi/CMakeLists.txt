@@ -110,6 +110,7 @@ if("${BUILD_FORTRAN}")
 	list(APPEND PARACONF_COMPONENTS "f90")
 endif()
 find_package(paraconf 0.4.15 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
+find_package(fmt 6.1.2 REQUIRED) # must match PDIConfig.cmake.in
 find_package(spdlog 1.5.0 REQUIRED) # must match PDIConfig.cmake.in
 if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)
@@ -183,19 +184,16 @@ set(PDI_C_SRC
 )
 add_library(PDI_C ${PDI_C_SRC})
 generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME pdi/export.h)
-target_link_libraries(PDI_C PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS} PRIVATE spdlog::spdlog)
-target_include_directories(PDI_C PUBLIC
-		"$<BUILD_INTERFACE:${PDI_BINARY_DIR}>" 
-		"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include/>"
-		PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
-)
+target_include_directories(PDI_C
+		PUBLIC "$<BUILD_INTERFACE:${PDI_BINARY_DIR}>"  "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include/>"
+		PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>")
+target_link_libraries(PDI_C
+		PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS}
+		PRIVATE spdlog::spdlog_header_only fmt::fmt-header-only)
+target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11 INTERFACE c_std_99)
 set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
 set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
-set_property(TARGET PDI_C PROPERTY C_STANDARD 99)
-set_property(TARGET PDI_C PROPERTY C_STANDARD_REQUIRED TRUE)
 set_property(TARGET PDI_C PROPERTY C_VISIBILITY_PRESET hidden)
-set_property(TARGET PDI_C PROPERTY CXX_STANDARD 14)
-set_property(TARGET PDI_C PROPERTY CXX_STANDARD_REQUIRED TRUE)
 set_property(TARGET PDI_C PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET PDI_C PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET PDI_C PROPERTY VERSION ${PDI_VERSION})
@@ -226,7 +224,8 @@ install(EXPORT PDI_C_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" 
 # C++ plugin API library
 
 add_library(PDI_plugins INTERFACE)
-target_link_libraries(PDI_plugins INTERFACE PDI::PDI_C spdlog::spdlog)
+target_link_libraries(PDI_plugins INTERFACE PDI::PDI_C spdlog::spdlog_header_only fmt::fmt-header-only)
+target_compile_features(PDI_plugins INTERFACE cxx_std_17 c_std_11)
 add_library(PDI::PDI_plugins ALIAS PDI_plugins)
 install(TARGETS PDI_plugins EXPORT PDI_plugins_EXPORT
 		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" ${LIBRARY_COMPONENT}
@@ -256,18 +255,23 @@ install(PROGRAMS scripts/pdirun
 if("${BUILD_PYTHON}")
 	
 	# C++ python support library
-	
 	add_library(PDI_pysupport src/python/python_ref_wrapper.cxx src/python/tools.cxx)
-	target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_plugins pybind11::pybind11)
 	target_include_directories(PDI_pysupport PUBLIC
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
 	)
+	# We should link to PDI::PDI_plugins, but since it imposes C++17 which fails with 
+	# pybind11 < 2.4.5 , we use its dependants, cross fingers and hope for C++-14 to work
+	if(2.4.5 VERSION_LESS_EQUAL "${pybind11_VERSION}")
+		target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_plugins)
+	else()
+		target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_C spdlog::spdlog_header_only fmt::fmt-header-only)
+	endif()
+	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11)
+	target_compile_features(PDI_pysupport PUBLIC cxx_std_14 c_std_11)
 	set_property(TARGET PDI_pysupport PROPERTY LIBRARY_OUTPUT_NAME "pdi_pysupport")
 	set_property(TARGET PDI_pysupport PROPERTY ENABLE_EXPORTS TRUE)
 	set_property(TARGET PDI_pysupport PROPERTY C_VISIBILITY_PRESET hidden)
-	set_property(TARGET PDI_pysupport PROPERTY CXX_STANDARD 14)
-	set_property(TARGET PDI_pysupport PROPERTY CXX_STANDARD_REQUIRED TRUE)
 	set_property(TARGET PDI_pysupport PROPERTY CXX_VISIBILITY_PRESET hidden)
 	set_property(TARGET PDI_pysupport PROPERTY POSITION_INDEPENDENT_CODE ON)
 	set_property(TARGET PDI_pysupport PROPERTY VERSION ${PDI_VERSION})
@@ -298,8 +302,6 @@ if("${BUILD_PYTHON}")
 	set_property(TARGET PDI_python PROPERTY LIBRARY_OUTPUT_NAME "_pdi")
 	set_property(TARGET PDI_python PROPERTY ENABLE_EXPORTS TRUE)
 	set_property(TARGET PDI_python PROPERTY C_VISIBILITY_PRESET hidden)
-	set_property(TARGET PDI_python PROPERTY CXX_STANDARD 14)
-	set_property(TARGET PDI_python PROPERTY CXX_STANDARD_REQUIRED TRUE)
 	set_property(TARGET PDI_python PROPERTY CXX_VISIBILITY_PRESET hidden)
 	set_property(TARGET PDI_python PROPERTY POSITION_INDEPENDENT_CODE ON)
 	set_property(TARGET PDI_python PROPERTY LIBRARY_OUTPUT_DIRECTORY pdi)

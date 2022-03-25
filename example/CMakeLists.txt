@@ -51,8 +51,8 @@ find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 find_library(LIB_M m DOC "The math library")
 
-# Default standard in the project is C99 & C++14
-set(CMAKE_C_STANDARD 99)
+# Default standard in the project is C11
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
 if("${BUILD_FORTRAN}")

@@ -33,7 +33,8 @@
 
 #include <dlfcn.h>
 #include <unistd.h>
-#include <spdlog/fmt/fmt.h>
+#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"

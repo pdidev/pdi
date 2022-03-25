@@ -24,18 +24,14 @@
 
 add_executable(send_msg_fin send_msg_fin.cxx)
 target_link_libraries(send_msg_fin PDI::PDI_C)
+target_compile_features(send_msg_fin PUBLIC cxx_std_17)
 configure_file(send_msg_fin.yml send_msg_fin.yml COPYONLY)
-set_target_properties(send_msg_fin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 
 add_executable(recv_msg_fin recv_msg_fin.cxx)
 target_link_libraries(recv_msg_fin PDI::PDI_C)
+target_compile_features(recv_msg_fin PUBLIC cxx_std_17)
 configure_file(recv_msg_fin.yml recv_msg_fin.yml COPYONLY)
-set_target_properties(recv_msg_fin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/abort_on_fin.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

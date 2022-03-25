@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Python, 1.7.6 for sionlib, 1.5 for spdlog, and 1.0.15 for zpp.
 * Force the `CMAKE_POSITION_INDEPENDENT_CODE` & `BUILD_SHARED_LIBS` to on for
   all sub-projects
+* Add {fmt} that is now a direct dependency of PDI to fix
+  [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
+
 
 ### Deprecated
 

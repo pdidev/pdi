@@ -46,10 +46,7 @@ find_package(PDI REQUIRED plugins)
 add_library(pdi_serialize_plugin MODULE serialize.cxx)
 
 target_link_libraries(pdi_serialize_plugin PUBLIC PDI::PDI_plugins)
-set_target_properties(pdi_serialize_plugin PROPERTIES
-						CXX_STANDARD 14
-						CXX_STANDARD_REQUIRED TRUE
-						CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pdi_serialize_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")

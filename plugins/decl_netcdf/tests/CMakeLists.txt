@@ -28,8 +28,6 @@ cmake_minimum_required(VERSION 3.10)
 
 find_package(GTest 1.8.0 REQUIRED)
 
-set(CMAKE_CXX_STANDARD 11)
-
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 # Add the plugin path to PDI_PLUGIN_PATH
@@ -48,12 +46,14 @@ endif()
 
 add_executable(decl_netcdf_tests decl_netcdf_tests.cxx)
 target_link_libraries(decl_netcdf_tests PDI::PDI_plugins Threads::Threads GTest::GTest GTest::Main)
+target_compile_features(decl_netcdf_tests PUBLIC cxx_std_17)
 gtest_discover_tests(decl_netcdf_tests)
 
 if("${BUILD_NETCDF_PARALLEL}")
      find_package(MPI REQUIRED COMPONENTS C)
      add_executable(netcdf_mpi_tests decl_netcdf_mpi_tests.c)
      target_link_libraries(netcdf_mpi_tests PDI::PDI_C MPI::MPI_C)
+     target_compile_features(netcdf_mpi_tests PUBLIC cxx_std_17)
      add_test(NAME netcdf_mpi_tests COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS}  "$<TARGET_FILE:netcdf_mpi_tests>" ${MPIEXEC_POSTFLAGS})
      set_property(TEST netcdf_mpi_tests PROPERTY TIMEOUT 15)
      set_property(TEST netcdf_mpi_tests PROPERTY PROCESSORS 4)
@@ -61,10 +61,12 @@ endif()
 
 add_executable(decl_netcdf_08_C decl_netcdf_test_08.c)
 target_link_libraries(decl_netcdf_08_C PDI::PDI_C)
+target_compile_features(decl_netcdf_08_C PUBLIC cxx_std_17)
 add_test(NAME decl_netcdf_08_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_08_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_08.yml")
 set_property(TEST decl_netcdf_08_C PROPERTY TIMEOUT 15)
 
 add_executable(decl_netcdf_09_C decl_netcdf_test_09.c)
 target_link_libraries(decl_netcdf_09_C PDI::PDI_C)
+target_compile_features(decl_netcdf_09_C PUBLIC cxx_std_17)
 add_test(NAME decl_netcdf_09_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_netcdf_09_C>" "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_test_09.yml")
 set_property(TEST decl_netcdf_09_C PROPERTY TIMEOUT 15)

@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#383](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/383)
 * Fixed an issue where NetCDF would not be detected
   [#412](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/412)
+* Add {fmt} as a direct dependancy to fix
+  [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
 
 ### Security
 

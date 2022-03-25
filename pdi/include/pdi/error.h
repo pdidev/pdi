@@ -32,9 +32,9 @@
 
 #include <paraconf.h>
 
-#include <pdi/pdi_fwd.h>
+#include <fmt/core.h>
 
-#include <spdlog/fmt/fmt.h>
+#include <pdi/pdi_fwd.h>
 
 namespace PDI {
 

@@ -24,7 +24,6 @@
 
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
-#include <spdlog/spdlog.h>
 
 #include "hdf5_wrapper.h"
 

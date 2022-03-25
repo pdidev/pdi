@@ -33,6 +33,8 @@
 #include <tuple>
 #include <vector>
 
+#include <fmt/core.h>
+
 #include <pdi/pdi_fwd.h>
 #include <pdi/array_datatype.h>
 #include <pdi/context.h>

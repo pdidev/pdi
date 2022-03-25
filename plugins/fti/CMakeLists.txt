@@ -57,11 +57,7 @@ add_library(pdi_fti_plugin MODULE
 		fti_cfg.cxx
 		fti_wrapper.cxx)
 target_link_libraries(pdi_fti_plugin MPI::MPI_CXX PDI::PDI_plugins fti.shared)
-set_target_properties(pdi_fti_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden
-)
+set_target_properties(pdi_fti_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${Astyle_FOUND}")

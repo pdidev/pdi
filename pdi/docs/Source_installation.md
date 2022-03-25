@@ -31,7 +31,7 @@ Most dependencies are embedded in the distribution and the only required
 external dependencies are:
 * a POSIX compatible OS such as GNU/linux,
 * [cmake](https://cmake.org/) version 3.5 or above,
-* a C 99, C++ 14 and Fortran 95 compiler such as [gcc](https://gcc.gnu.org/) 5.4 or above,
+* a C 99, C++ 17 and Fortran 03 compiler such as [gcc](https://gcc.gnu.org/) 5.4 or above,
 * a [python](https://www.python.org/) interpreter (with venv), version 3.6 or above,
 * a [bash](https://www.gnu.org/software/bash/) interpreter,
 * a [MPI](https://www.mpi-forum.org/) 2 implementation.
@@ -124,9 +124,9 @@ The following flags define whether to:
 |Flag          |Default   |Description|
 |:-------------|:---------|:----------|
 |`USE_Astyle`  |`AUTO`    |the [astyle](http://astyle.sourceforge.net/) tool.|
-|`USE_Zpp`     |`EMBEDDED`|the [zpp](https://github.com/jbigot/zpp) preprocessor.|
 |`USE_Doxygen` |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
 |`USE_FlowVR`  |`AUTO`    |the [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) framework.|
+|`USE_fmt`     |`AUTO`    |the [{fmt}](https://fmt.dev) library.|
 |`USE_FTI`     |`AUTO`    |the [FTI](https://github.com/leobago/fti) library.|
 |`USE_GTest`   |`EMBEDDED`|the [googletest](https://github.com/google/googletest) framework.|
 |`USE_HDF5`    |`AUTO`    |the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library.|
@@ -135,6 +135,7 @@ The following flags define whether to:
 |`USE_SIONlib` |`AUTO`    |the SIONlib library.|
 |`USE_spdlog`  |`AUTO`    |the [spdlog](https://github.com/gabime/spdlog) library.|
 |`USE_yaml`    |`AUTO`    |the [yaml](https://github.com/jbigot/zpp) library.|
+|`USE_Zpp`     |`EMBEDDED`|the [zpp](https://github.com/jbigot/zpp) preprocessor.|
 
 
 The following flags define where to install %PDI, those prefixed with `CMAKE_`
@@ -169,6 +170,7 @@ Dependencies of **%PDI**:
 * **a C 99 and C++ 17 compiler (not provided)** such as
   - [gcc](https://gcc.gnu.org/) 7.5 or above,
   - [clang](https://clang.llvm.org/) 9.0 or above,
+* the [{fmt}](https://fmt.dev) library version 6.1.2 or above (provided).
 * the [paraconf](https://github.com/pdidev/paraconf) library version 0.4 or above (provided),
 * the [libyaml](https://pyyaml.org/wiki/LibYAML) library version 0.2.2 or above (provided),
 * the [spdlog](https://github.com/gabime/spdlog) library version 1.3.1 or above (provided).
@@ -176,7 +178,7 @@ Dependencies of **%PDI**:
 Dependencies of **the Fortran API**:
 
 * the PDI library,
-* **a Fortran 95 compiler (not provided)** such as
+* **a Fortran 03 compiler (not provided)** such as
   - [gcc](https://gcc.gnu.org/) 7.5 or above,
 * **a [python](https://www.python.org/) interpreter (with venv), version 3.6 or above (not provided)**,
 * the [zpp](https://github.com/jbigot/zpp) preprocessor version 1.0.8 or above (provided).

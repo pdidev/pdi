@@ -24,18 +24,14 @@
 
 add_executable(send_copy send_copy.cxx)
 target_link_libraries(send_copy PDI::PDI_C)
+target_compile_features(send_copy PUBLIC cxx_std_17)
 configure_file(send_copy.yml send_copy.yml COPYONLY)
-set_target_properties(send_copy PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 
 add_executable(recv_copy recv_copy.cxx)
 target_link_libraries(recv_copy PDI::PDI_C)
+target_compile_features(recv_copy PUBLIC cxx_std_17)
 configure_file(recv_copy.yml recv_copy.yml COPYONLY)
-set_target_properties(recv_copy PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/copy_send_recv.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

@@ -60,10 +60,7 @@ find_package(PDI REQUIRED COMPONENTS pysupport)
 add_library(pdi_pycall_plugin MODULE pycall.cxx)
 # link against Python3::Python to workaround https://github.com/pybind/pybind11/issues/2664
 target_link_libraries(pdi_pycall_plugin PDI::PDI_pysupport pybind11::embed Python3::Python)
-set_target_properties(pdi_pycall_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pdi_pycall_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")

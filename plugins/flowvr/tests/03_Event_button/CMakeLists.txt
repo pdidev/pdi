@@ -24,18 +24,14 @@
 
 add_executable(send_button send_button.cxx)
 target_link_libraries(send_button PDI::PDI_C)
+target_compile_features(send_button PUBLIC cxx_std_17)
 configure_file(send_button.yml send_button.yml COPYONLY)
-set_target_properties(send_button PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 
 add_executable(recv_button recv_button.cxx)
 target_link_libraries(recv_button PDI::PDI_C)
+target_compile_features(recv_button PUBLIC cxx_std_17)
 configure_file(recv_button.yml recv_button.yml COPYONLY)
-set_target_properties(recv_button PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/event_button.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

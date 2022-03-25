@@ -69,16 +69,18 @@ add_library(pdi_flowvr_plugin MODULE src/flowvr.cxx
 		src/traces/traces_impl/trace_float.cxx
 		src/traces/traces_impl/trace_int.cxx
 		src/traces/traces_impl/trace_string.cxx)
-
-target_link_libraries(pdi_flowvr_plugin PDI::PDI_plugins ${FLOWVR_base_LIBRARY} ${FLOWVR_ftl_LIBRARY} ${FLOWVR_mod_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(pdi_flowvr_plugin PUBLIC 
-	"${CMAKE_CURRENT_LIST_DIR}/include"
-	${FLOWVR_INCLUDE_DIR})
+		"${CMAKE_CURRENT_LIST_DIR}/include"
+		${FLOWVR_INCLUDE_DIR})
+target_link_libraries(pdi_flowvr_plugin
+		PDI::PDI_plugins
+		fmt::fmt-header-only
+		Threads::Threads
+		${FLOWVR_base_LIBRARY}
+		${FLOWVR_ftl_LIBRARY}
+		${FLOWVR_mod_LIBRARY})
+set_target_properties(pdi_flowvr_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
-set_target_properties(pdi_flowvr_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")

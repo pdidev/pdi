@@ -31,7 +31,6 @@
 cmake_minimum_required(VERSION 3.10)
 find_package(GTest 1.8.0 REQUIRED)
 
-set(CMAKE_CXX_STANDARD 11)
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 # Add the plugin path to PDI_PLUGIN_PATH

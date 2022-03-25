@@ -61,10 +61,7 @@ find_package(PDI REQUIRED COMPONENTS plugins ${PDI_COMPONENTS})
 # The plugin
 add_library(pdi_mpi_plugin MODULE mpi.cxx)
 target_link_libraries(pdi_mpi_plugin PUBLIC PDI::PDI_plugins MPI::MPI_CXX)
-set_target_properties(pdi_mpi_plugin PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE
-		CXX_VISIBILITY_PRESET hidden)
+set_target_properties(pdi_mpi_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
 if("${BUILD_INDENT}")

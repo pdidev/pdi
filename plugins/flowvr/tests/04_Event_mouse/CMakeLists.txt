@@ -24,18 +24,14 @@
 
 add_executable(send_mouse send_mouse.cxx)
 target_link_libraries(send_mouse PDI::PDI_C)
+target_compile_features(send_mouse PUBLIC cxx_std_17)
 configure_file(send_mouse.yml send_mouse.yml COPYONLY)
-set_target_properties(send_mouse PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 
 add_executable(recv_mouse recv_mouse.cxx)
 target_link_libraries(recv_mouse PDI::PDI_C)
+target_compile_features(recv_mouse PUBLIC cxx_std_17)
 configure_file(recv_mouse.yml recv_mouse.yml COPYONLY)
-set_target_properties(recv_mouse PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED TRUE)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/event_mouse.py
 	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

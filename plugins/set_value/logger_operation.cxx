@@ -25,6 +25,8 @@
 #include <string>
 #include <unordered_map>
 
+#include <spdlog/spdlog.h>
+
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
 #include <pdi/error.h>

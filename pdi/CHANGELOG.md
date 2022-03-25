@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
+* Add {fmt} as a direct dependancy to fix
+  [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
 
 #### Security
 
