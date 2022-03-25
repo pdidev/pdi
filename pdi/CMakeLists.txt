@@ -389,6 +389,9 @@ if("${BUILD_TESTING}")
 	add_subdirectory(tests tests)
 endif()
 
+if("${BUILD_BENCHMARKING}")
+	add_subdirectory(benchmarks)
+endif()
 
 # Installable config
 

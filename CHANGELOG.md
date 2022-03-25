@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+* PDI benchmarks using google benchmark
+[#341](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/341)
+
 ### Changed
 * Updated dependencies, the minimum required versions are now: 3.10 for cmake,
   1.6 for FTI, 1.10 for HDF5, 4.6 for NetCDF, 0.4.15 for paraconf, 3.6 for
