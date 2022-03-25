@@ -92,12 +92,14 @@ The following flags define which features of the distribution to enable or not.
 
 |Flag                     |Default|Description|
 |:------------------------|:------|:----------|
+|`BUILD_BENCHMARKING`     |`ON`   |Build the benchmarks.|
 |`BUILD_FORTRAN`          |`ON`   |Build the Fortran interface.|
 |`BUILD_DECL_HDF5_PLUGIN` |`ON`   |Build the Decl'HDF5 plug-in.|
 |`BUILD_HDF5_PARALLEL`    |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
 |`BUILD_MPI_PLUGIN`       |`ON`   |Build the MPI plug-in.|
 |`BUILD_NETCDF_PARALLEL`  |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
 |`BUILD_TEST_PLUGIN`      |`ON`   |Build the Test plug-in.|
+|`BUILD_TESTING`          |`ON`   |Build the tests.|
 |`BUILD_TRACE_PLUGIN`     |`ON`   |Build the Trace plug-in.|
 |`BUILD_USER_CODE_PLUGIN` |`ON`   |Build the User-code plug-in.|
 |`BUILD_PYTHON`           |`OFF`  |Build the Python interface.|
@@ -105,7 +107,6 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_FLOWVR_PLUGIN`    |`OFF`  |Build the FlowVR plug-in.|
 |`BUILD_FTI_PLUGIN`       |`OFF`  |Build the FTI plug-in.|
 |`BUILD_PYCALL_PLUGIN`    |`OFF`  |Build Pycall plug-in.|
-|`BUILD_TESTING`          |`OFF`  |Build the tests.|
 |`BUILD_DOCUMENTATION`    |`OFF`  |Build the documentation website.|
 |`BUILD_INDENT`           |`OFF`  |Build the code auto-indentation tools.|
 |`BUILD_CFG_VALIDATOR`    |`OFF`  |Build the PDI configuration validation script.|
@@ -121,21 +122,22 @@ The following flags define whether to:
   compilation of the version of the dependency provided in the distribution if
   no preinstalled version is found.
 
-|Flag          |Default   |Description|
-|:-------------|:---------|:----------|
-|`USE_Astyle`  |`AUTO`    |the [astyle](http://astyle.sourceforge.net/) tool.|
-|`USE_Doxygen` |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
-|`USE_FlowVR`  |`AUTO`    |the [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) framework.|
-|`USE_fmt`     |`AUTO`    |the [{fmt}](https://fmt.dev) library.|
-|`USE_FTI`     |`AUTO`    |the [FTI](https://github.com/leobago/fti) library.|
-|`USE_GTest`   |`EMBEDDED`|the [googletest](https://github.com/google/googletest) framework.|
-|`USE_HDF5`    |`AUTO`    |the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library.|
-|`USE_paraconf`|`AUTO`    |the [paraconf](https://github.com/pdidev/paraconf) library.|
-|`USE_pybind11`|`AUTO`    |the [pybind11](https://pybind11.readthedocs.io/en/stable) library.|
-|`USE_SIONlib` |`AUTO`    |the SIONlib library.|
-|`USE_spdlog`  |`AUTO`    |the [spdlog](https://github.com/gabime/spdlog) library.|
-|`USE_yaml`    |`AUTO`    |the [yaml](https://github.com/jbigot/zpp) library.|
-|`USE_Zpp`     |`EMBEDDED`|the [zpp](https://github.com/jbigot/zpp) preprocessor.|
+|Flag           |Default   |Description|
+|:--------------|:---------|:----------|
+|`USE_Astyle`   |`AUTO`    |the [astyle](http://astyle.sourceforge.net/) tool.|
+|`USE_benchmark`|`EMBEDDED`|the [Benchmark](https://github.com/google/benchmark) library.|
+|`USE_Doxygen`  |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
+|`USE_FlowVR`   |`AUTO`    |the [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) library.|
+|`USE_fmt`      |`AUTO`    |the [{fmt}](https://fmt.dev) library.|
+|`USE_FTI`      |`AUTO`    |the [FTI](https://github.com/leobago/fti) library.|
+|`USE_GTest`    |`EMBEDDED`|the [googletest](https://github.com/google/googletest) library.|
+|`USE_HDF5`     |`AUTO`    |the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library.|
+|`USE_paraconf` |`AUTO`    |the [paraconf](https://github.com/pdidev/paraconf) library.|
+|`USE_pybind11` |`AUTO`    |the [pybind11](https://pybind11.readthedocs.io/en/stable) library.|
+|`USE_SIONlib`  |`AUTO`    |the SIONlib library.|
+|`USE_spdlog`   |`AUTO`    |the [spdlog](https://github.com/gabime/spdlog) library.|
+|`USE_yaml`     |`AUTO`    |the [yaml](https://github.com/jbigot/zpp) library.|
+|`USE_Zpp`      |`EMBEDDED`|the [zpp](https://github.com/jbigot/zpp) preprocessor.|
 
 
 The following flags define where to install %PDI, those prefixed with `CMAKE_`
@@ -224,7 +226,13 @@ Dependencies of **the Pycall plugin**:
 Dependencies of **the tests**:
 
 * the PDI library,
-* the [googletest](https://github.com/google/googletest) framework (provided),
+* the [googletest](https://github.com/google/googletest) library (provided),
+* [astyle](http://astyle.sourceforge.net/) version 3.1 or above (provided).
+
+Dependencies of **the benchmarks**:
+
+* the PDI library,
+* the [Benchmark](https://github.com/google/benchmark) library (provided),
 * [astyle](http://astyle.sourceforge.net/) version 3.1 or above (provided).
 
 Dependencies of **the documentation website builder**:

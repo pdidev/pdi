@@ -32,6 +32,7 @@ cmake_minimum_required(VERSION 3.10)
 project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
 option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_HDF5_PARALLEL "Enable HDF5 parallel build" ON)

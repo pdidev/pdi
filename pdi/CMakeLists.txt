@@ -50,8 +50,7 @@ set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
 
 # Build options
 
-option(BUILD_UNSTABLE     "Build all features by default including those not stable yet" OFF)
-
+option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
 option(BUILD_DOCUMENTATION "Build documentation" ON)
 option(BUILD_SHARED_LIBS   "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING       "Build tests" ON)
