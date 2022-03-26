@@ -56,7 +56,7 @@ add_library(pdi_set_value_plugin MODULE set_value.cxx
 										expose_operation.cxx
 										event_operation.cxx
 										release_operation.cxx)
-target_link_libraries(pdi_set_value_plugin PUBLIC PDI::PDI_plugins spdlog::spdlog_header_only)
+target_link_libraries(pdi_set_value_plugin PUBLIC PDI::PDI_plugins spdlog::spdlog)
 set_target_properties(pdi_set_value_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation

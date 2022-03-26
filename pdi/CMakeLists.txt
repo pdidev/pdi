@@ -188,7 +188,7 @@ target_include_directories(PDI_C
 		PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>")
 target_link_libraries(PDI_C
 		PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS}
-		PRIVATE spdlog::spdlog_header_only fmt::fmt-header-only)
+		PRIVATE spdlog::spdlog fmt::fmt)
 target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11 INTERFACE c_std_99)
 set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
 set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
@@ -223,7 +223,7 @@ install(EXPORT PDI_C_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" 
 # C++ plugin API library
 
 add_library(PDI_plugins INTERFACE)
-target_link_libraries(PDI_plugins INTERFACE PDI::PDI_C spdlog::spdlog_header_only fmt::fmt-header-only)
+target_link_libraries(PDI_plugins INTERFACE PDI::PDI_C spdlog::spdlog fmt::fmt)
 target_compile_features(PDI_plugins INTERFACE cxx_std_17 c_std_11)
 add_library(PDI::PDI_plugins ALIAS PDI_plugins)
 install(TARGETS PDI_plugins EXPORT PDI_plugins_EXPORT
@@ -264,7 +264,7 @@ if("${BUILD_PYTHON}")
 	if(2.4.5 VERSION_LESS_EQUAL "${pybind11_VERSION}")
 		target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_plugins)
 	else()
-		target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_C spdlog::spdlog_header_only fmt::fmt-header-only)
+		target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_C spdlog::spdlog fmt::fmt)
 	endif()
 	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11)
 	target_compile_features(PDI_pysupport PUBLIC cxx_std_14 c_std_11)

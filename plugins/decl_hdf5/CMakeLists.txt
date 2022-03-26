@@ -88,7 +88,7 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		file_op.cxx
 		hdf5_wrapper.cxx
 		selection.cxx)
-target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins fmt::fmt-header-only ${HDF5_DEPS})
+target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins fmt::fmt ${HDF5_DEPS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation
