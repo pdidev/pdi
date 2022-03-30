@@ -12,6 +12,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+
+## [1.5.0] - 2022-03-30
+
+### Added
+
 * PDI benchmarks using google benchmark
 [#341](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/341)
 
@@ -24,17 +39,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Add {fmt} that is now a direct dependency of PDI to fix
   [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
 
-
-### Deprecated
-
-### Removed
-
 ### Fixed
 * Fix an issue where libYaml is not found correctly when installed in a
   non-standard directory
   [#398](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/398)
-
-### Security
 
 
 ## [1.4.3] - 2021-11-30

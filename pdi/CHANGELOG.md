@@ -12,6 +12,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### For users
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
+## [1.5.0] - 2022-03-30
 
 ### For users
 
@@ -36,15 +68,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Updated the fortran interface with assumed type and assumed rank
   arguments (Fortran 2008) where possible
 
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Add {fmt} as a direct dependancy to fix
   [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
-
-#### Security
 
 
 ### For plugin developers
@@ -56,15 +82,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 * Datatype must now be used through shared_ptr
 
-#### Deprecated
-
 #### Removed
 * Removed `Datatype::Accessor` and use simple virtual functions instead
   [#385](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/385)
 
-#### Fixed
-
-#### Security
 
 
 ## [1.4.2] - 2021-11-30
@@ -79,7 +100,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [1.4.0] - 2021-11-09
-
 
 ### For users
 
@@ -99,7 +119,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.0] - 2021-07-30
 
-
 ### For users
 
 #### Added
@@ -111,7 +130,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [1.2.0] - 2021-06-15
-
 
 ### For users
 

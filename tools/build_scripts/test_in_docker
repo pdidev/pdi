@@ -46,9 +46,10 @@ def gen_script(command_list):
     return "; ".join([gen_script(scr) for scr in command_list])
 
 
-def launch_docker_test(docker_runner, image, script, no_pull=False):
+def launch_docker_test(image, script, no_pull=False):
     # Generate a random name for our temporary docker volume
-    volume_name = ''.join(random.choice(string.ascii_letters) for i in range(32))
+    volume_name = ''.join(random.choice(string.ascii_letters)
+                          for i in range(32))
 
     # Pull the user-specified image
     if not no_pull:
@@ -56,13 +57,18 @@ def launch_docker_test(docker_runner, image, script, no_pull=False):
 
     # Get the UID required from the image
     image_info = yaml.load(
-        subprocess.run(["docker", "image", "inspect", image],
+        subprocess.run(["docker", "run", "--entrypoint", "id", image],
                        capture_output=True, check=True).stdout,
         Loader=yaml.BaseLoader)
-    uid = int(image_info[0]["Config"]["User"])
+    uid = image_info[0]["Config"]["User"]
+    try:
+        uid = str(int(uid))
+    except:
+        pass
 
     # Create a volume
-    subprocess.run(["docker", "volume", "create", volume_name], capture_output=True, check=True)
+    subprocess.run(["docker", "volume", "create", volume_name],
+                   capture_output=True, check=True)
 
     try:
         # Populate the volume with the data (and chown it to the right UID)
@@ -72,14 +78,14 @@ def launch_docker_test(docker_runner, image, script, no_pull=False):
                         "-u", "0:0",
                         "alpine:3",
                         "/bin/sh", "-c",
-                        "cp -fa /data /builds/pdidev/pdi && chown -R " + str(uid)
+                        "cp -fa /data /builds/pdidev/pdi && chown -R " +
+                        str(uid)
                         + " /builds/pdidev/pdi",
                         ], check=True)
 
         # Run the user-specified image with the just populated volume
         subprocess.run(["docker", "run", "--rm",
                         "--mount", "source="+volume_name+",destination=/builds/pdidev/,readonly",
-                        "-e", "DOCKER_RUNNER="+docker_runner,
                         "-e", "MAKEFLAGS",
                         "--shm-size=5g",
                         image,
@@ -87,7 +93,8 @@ def launch_docker_test(docker_runner, image, script, no_pull=False):
                         ], check=True)
     finally:
         # Remove the volume
-        subprocess.run(["docker", "volume", "rm", volume_name], capture_output=True)
+        subprocess.run(["docker", "volume", "rm", volume_name],
+                       capture_output=True)
 
 
 def main():
@@ -101,18 +108,39 @@ def main():
                         help='cancels a previous --no-pull')
     parser.add_argument('--help', '-h', action='help',
                         help='show this help message and exit')
-    parser.add_argument('runner_name', metavar='DOCKER_RUNNER', nargs='?', default='local',
-                        help='name for the docker runner')
+    parser.add_argument('ignored', nargs='?', default=None,
+                        help='deprecated')
     parser.add_argument('test_name', default='local',
                         help='name of the test in the .gitlab-ci.yml file')
     args = parser.parse_args()
 
-    gitlab_ci = yaml.load(open(PDI_DIR/".gitlab-ci.yml"), Loader=yaml.BaseLoader)
+    gitlab_ci_path = PDI_DIR/".gitlab-ci.yml"
+    try:
+        gitlab_ci = yaml.load(open(gitlab_ci_path, 'r'),
+                              Loader=yaml.BaseLoader)
+    except FileNotFoundError:
+        print(f"*** Error: unable to open file "
+              f"`{gitlab_ci_path.relative_to(pathlib.Path.cwd())}'", file=sys.stderr)
+        exit(1)
+
+    if args.ignored is not None:
+        print("*** Warning: runner_name is deprecated!", file=sys.stderr)
+        parser.print_usage(file=sys.stderr)
+        print("", file=sys.stderr)
+
+    if args.test_name not in gitlab_ci:
+        print(f"*** Error: {args.test_name} is not a valid entry in "
+              f"`{gitlab_ci_path.relative_to(pathlib.Path.cwd())}', available options are:\n - " +
+              "\n - ".join([k for k in gitlab_ci.keys()
+                           if not k.startswith('.')]),
+              file=sys.stderr)
+        exit(1)
 
     image = gitlab_ci[args.test_name]["image"]
-    script = gen_script(["set -e", "cd /builds/pdidev/pdi", gitlab_ci[args.test_name]["script"]])
+    script = gen_script(["set -e", "cd /builds/pdidev/pdi",
+                        gitlab_ci[args.test_name]["script"]])
 
-    launch_docker_test(args.runner_name, image, script, not args.pull)
+    launch_docker_test(image, script, not args.pull)
 
 
 if __name__ == "__main__":

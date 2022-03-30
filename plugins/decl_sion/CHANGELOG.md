@@ -9,7 +9,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
-* Updated dependencies, now require cmake-3.10. and sionlib-1.7.6.
 
 ### Deprecated
 
@@ -18,6 +17,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.5.0] - 2022-03-30
+
+### Changed
+* Updated dependencies, now require cmake-3.10. and sionlib-1.7.6.
 
 
 ## [1.3.0] - 2021-07-30

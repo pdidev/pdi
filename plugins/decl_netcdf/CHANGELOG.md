@@ -9,12 +9,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
-* Updated dependencies, now require cmake-3.10, hdf5-1.10.0, and netcdf-4.6.0.
-* Indent if required by the user, not automatically whenever astyle is found.
 
 ### Deprecated
 
 ### Removed
+
+### Fixed
+
+### Security
+
+
+## [1.5.0] - 2022-03-30
+
+### Changed
+* Updated dependencies, now require cmake-3.10, hdf5-1.10.0, and netcdf-4.6.0.
+* Indent if required by the user, not automatically whenever astyle is found.
 
 ### Fixed
 * Fixed an issue where parallel NetCDF would not be detected correctly with
@@ -24,8 +33,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#412](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/412)
 * Add {fmt} as a direct dependancy to fix
   [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
-
-### Security
 
 
 ## [1.4.1] - 2021-11-10

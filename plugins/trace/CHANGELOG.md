@@ -9,7 +9,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
-* Updated dependencies, now require cmake-3.10.
 
 ### Deprecated
 
@@ -18,6 +17,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.5.0] - 2022-03-30
+
+### Changed
+* Updated dependencies, now require cmake-3.10.
 
 
 ## [1.4.0] - 2021-11-09

@@ -9,17 +9,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
-* Updated dependencies, now require cmake-3.10, and hdf5-1.10.0.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-* Add {fmt} as a direct dependancy to fix
-  [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
 
 ### Security
+
+
+## [1.5.0] - 2022-03-30
+
+### Changed
+* Updated dependencies, now require cmake-3.10, and hdf5-1.10.0.
+
+### Fixed
+* Add {fmt} as a direct dependancy to fix
+  [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413)
 
 
 ## [1.4.3] - 2021-11-30
