@@ -4,22 +4,14 @@ All notable changes to the tests project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
+## [1.5.0] - 2022-03-30
 
 ### Changed
 * Updated dependencies, now require cmake-3.10.
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 * Do not run `Test05_C` when compiled without Decl'NetCDF support
   [#401](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/401)
-
-### Security
 
 
 ## [1.0.0] - 2021-01-28

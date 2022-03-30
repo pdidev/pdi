@@ -4,7 +4,7 @@ All notable changes to the Set-value plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
+## [1.5.0] - 2022-03-30
 
 ### Added
 * Support for changing logger level and pattern during execution.
@@ -12,14 +12,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 * Updated dependencies, now require cmake-3.10.
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 
 ## [1.3.0] - 2021-07-30
