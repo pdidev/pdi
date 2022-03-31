@@ -657,6 +657,7 @@ private:
 	 *  can not be granted
 	 *
 	 * Can only be done on a null reference
+	 * If content has no owners it will be deleted
 	 *
 	 * \param content the content to link to
 	 */
@@ -664,8 +665,10 @@ private:
 	{
 		assert(!m_content);
 		if (!content || !content->m_data) return; // null ref
-		if (R && content->m_buffer->m_read_locks) return;
-		if (W && content->m_buffer->m_write_locks) return;
+		if (R && content->m_buffer->m_read_locks || W && content->m_buffer->m_write_locks) {
+			if (content->m_owners == 0) delete content;
+			return;
+		}
 		m_content = content;
 		++m_content->m_owners;
 		if (R || W) ++m_content->m_buffer->m_write_locks;
