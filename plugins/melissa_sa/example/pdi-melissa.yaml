@@ -1,0 +1,15 @@
+logging:
+  trace
+metadata: # type of small values for which PDI keeps a copy
+  num_cells: int
+  mpi_communicator: MPI_Comm
+data: # type of values for which PDI does not keep a copy
+  temperature: { size: [ "$num_cells" ], type: array, subtype: double }
+plugins:
+  mpi:
+  melissa:
+    communicator: "$mpi_communicator" # default COMM
+    send: temperature
+
+    #send:  # fields that are extracted into melissa. must be arrays, types will be casted to double!
+    #  main_field: "$comm"
