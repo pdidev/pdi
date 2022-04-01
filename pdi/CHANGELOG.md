@@ -43,6 +43,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.5.1] - 2022-04-01
+
+### For users
+
+#### Fixed
+* Fixed memory leak when created Ref couldn't acquire read or write lock.
+  [#418](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/418)
+
+
+
 ## [1.5.0] - 2022-03-30
 
 ### For users

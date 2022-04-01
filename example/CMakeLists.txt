@@ -163,11 +163,9 @@ set_property(TEST PDI_example_fti_F PROPERTY PROCESSORS 6)
 endif("${BUILD_FORTRAN}")
 
 if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_fti_P COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${PYTHON_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
+add_test(NAME PDI_example_fti_P COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
 set_property(TEST PDI_example_fti_P PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_fti_P PROPERTY PROCESSORS 6)
-#TODO: disabled due to https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/293
-set_property(TEST PDI_example_fti_P PROPERTY DISABLED TRUE)
 endif("${BUILD_PYTHON}")
 endif("${BUILD_FTI_PLUGIN}")
 
