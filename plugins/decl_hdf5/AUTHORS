@@ -11,6 +11,9 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Run tests that depend on the filesystem in their own temporary directory
 * Buildsystem
 
+Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
+* contribution to feature design, validation
+
 Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
 * Fixed a bug with parallel file deletion
 

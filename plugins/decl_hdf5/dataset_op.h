@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,8 @@ private:
 
 	/// direction of the transfer (read or write)
 	Direction m_direction;
+
+	H5FD_mpio_xfer_t m_mpio = H5FD_MPIO_COLLECTIVE;
 
 	/// the name of the dataset where to transfer
 	PDI::Expression m_dataset;
@@ -182,11 +184,10 @@ public:
 	 *
 	 * \param ctx the context in which to operate
 	 * \param h5_file the already opened HDF5 file id
-	 * \param xfer_lst the already created transfer property list including any
-	 *                 parallel HDF5 required property.
+	 * \param use_mpi whether the hdf5 read/write is parallel
 	 * \param dsets the type of the explicitly typed datasets
 	 */
-	void execute(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::unordered_map<std::string, PDI::Datatype_template_sptr>& dsets);
+	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::unordered_map<std::string, PDI::Datatype_template_ptr>& dsets);
 
 private:
 	void do_read(PDI::Context& ctx, hid_t h5_file, hid_t read_lst);
