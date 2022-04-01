@@ -63,6 +63,8 @@ def val_read_write_value(key, value_node, data_refs_list):
     
     if value_node.get("communicator", False):
         val_comm(value_node["communicator"], data_refs_list)
+    if value_node.get("mpio", False):
+        pass # validate if value is COLLECTIVE or INDEPENDENT
     if value_node.get("attribute", False):
         add_to_data_ref(value_node["attribute"], data_refs_list)
     if value_node.get("attributes", False):

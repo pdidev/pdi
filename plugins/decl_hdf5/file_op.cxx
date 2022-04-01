@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -280,7 +280,7 @@ void File_op::execute(Context& ctx)
 	std::string filename = m_file.to_string(ctx);
 	
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
-	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
+	bool use_mpio = false;
 #ifdef H5_HAVE_PARALLEL
 	MPI_Comm comm = MPI_COMM_SELF;
 	if (communicator()) {
@@ -288,7 +288,7 @@ void File_op::execute(Context& ctx)
 	}
 	if ( comm != MPI_COMM_SELF ) {
 		if ( 0>H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL) ) handle_hdf5_err();
-		if ( 0>H5Pset_dxpl_mpio(xfer_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
+		use_mpio = true;
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
 	}
 #endif
@@ -337,10 +337,10 @@ void File_op::execute(Context& ctx)
 	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
 	
 	for (auto&& one_dset_op: dset_writes ) {
-		one_dset_op.execute(ctx, h5_file, xfer_lst, m_datasets);
+		one_dset_op.execute(ctx, h5_file, use_mpio, m_datasets);
 	}
 	for (auto&& one_dset_op: dset_reads ) {
-		one_dset_op.execute(ctx, h5_file, xfer_lst, m_datasets);
+		one_dset_op.execute(ctx, h5_file, use_mpio, m_datasets);
 	}
 	for (auto&& one_attr_op: attr_writes ) {
 		one_attr_op.execute(ctx, h5_file);
