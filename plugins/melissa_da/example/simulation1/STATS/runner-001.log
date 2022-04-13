@@ -1,0 +1,4 @@
+[0] Init timing at 1649064428196 ms since epoch
+[0] Null time   at 1649064386499 ms since epoch (timing-events csv are relative to this)
+Configuration Connection to tcp://127.0.0.1:4000 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:68)
+[0] registering runner_id 1 at server

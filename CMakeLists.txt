@@ -76,6 +76,7 @@ option(BUILD_FLOWVR_PLUGIN      "Build FlowVR plug-in" "${BUILD_DEPRECATED}")
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
 option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "${BUILD_DEPRECATED}")
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
+option(BUILD_MELISSA_DA_PLUGIN  "Build Melissa_da plug-in" ON)
 option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
 option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
@@ -134,6 +135,9 @@ if("${BUILD_FLOWVR_PLUGIN}")
 endif()
 if("${BUILD_FTI_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/fti/cmake")
+endif()
+if("${BUILD_MELISSA_DA_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/melissa_da/cmake")
 endif()
 if("${BUILD_MPI_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi/cmake")
@@ -228,7 +232,7 @@ endif()
 
 if("${BUILD_PYTHON}")
 	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
-elseif("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}" OR "${BUILD_FORTRAN}")
+elseif("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}" OR "${BUILD_FORTRAN}" OR "${BUILD_MELISSA_DA_PLUGIN}")
 	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
 endif()
 
@@ -694,6 +698,12 @@ sbuild_add_module(FLOWVR_PLUGIN
 	SUBSTEPS indent test
 )
 
+sbuild_add_module(MELISSA_DA_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_MELISSA_DA_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/melissa_da"
+	DEPENDS PDI ${MelissaDA_LIBRARY} PyYAML ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
+)
 
 sbuild_add_module(PYCALL_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_PYCALL_PLUGIN

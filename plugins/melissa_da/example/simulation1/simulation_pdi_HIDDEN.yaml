@@ -1,0 +1,29 @@
+logging: info
+metadata: # type of small values for which PDI keeps a copy
+  local_vect_size: int
+  local_hidden_vect_size: size_t
+  secret_state: { size: [ "$local_hidden_vect_size" ], type: array, subtype: double }
+  # mpi_communicator: MPI_Comm
+data: # type of values for which PDI does not keep a copy
+  nsteps: int
+  current_step: int
+  current_state_id: int
+  variableX: { size: [ "$local_vect_size" ], type: array, subtype: double }
+plugins:
+  mpi:
+  melissa_da:
+    status: nsteps
+    current_step: current_step
+    current_state_id: current_state_id
+    communicator: "$MPI_COMM_WORLD" # default COMM
+    expose:
+      variableX: # if only hidden_vect_size then as USE_HIDDEN_STATE
+        hidden_values: $secret_state
+  set_value:
+    on_init:
+      - share:
+        - local_hidden_vect_size : 3
+        - secret_state: [3.0, 4.0, 5.0]
+    on_finalize:
+      - release: ["secret_state", "local_hidden_vect_size"]
+        

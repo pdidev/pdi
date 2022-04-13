@@ -1,0 +1,16 @@
+logging:
+  trace
+metadata: # type of small values for which PDI keeps a copy
+  local_vect_size: int
+  mpi_communicator: MPI_Comm
+data: # type of values for which PDI does not keep a copy
+  variableX: { size: [ "$local_vect_size" ], type: array, subtype: double }
+  variableY: { size: [ "$local_vect_size" ], type: array, subtype: double }
+plugins:
+  mpi:
+  melissa:
+    communicator: "$mpi_communicator" # default COMM
+    expose: [variableX, variableY]
+
+    #send:  # fields that are extracted into melissa. must be arrays, types will be casted to double!
+    #  main_field: "$comm"
