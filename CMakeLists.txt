@@ -68,6 +68,7 @@ option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
+option(BUILD_MELISSA_DA_PLUGIN  "Build Melissa_da plug-in" ON)
 option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
 option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
@@ -118,6 +119,9 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 endif()
 if("${BUILD_DEISA_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa/cmake")
+endif()
+if("${BUILD_MELISSA_DA_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/melissa_da/cmake")
 endif()
 if("${BUILD_MPI_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi/cmake")
@@ -215,7 +219,7 @@ endif()
 
 if("${BUILD_PYTHON}")
 	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
-elseif("${BUILD_FORTRAN}")
+elseif("${BUILD_FORTRAN}" OR "${BUILD_MELISSA_DA_PLUGIN}")
 	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter)
 endif()
 
@@ -487,7 +491,15 @@ sbuild_add_module(JSON_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
 	DEPENDS PDI
-	SUBSTEPS indent test
+	SUBSTEPS test
+)
+
+
+sbuild_add_module(MELISSA_DA_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_MELISSA_DA_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/melissa_da"
+	DEPENDS PDI ${MelissaDA_LIBRARY} PyYAML ${ASTYLE_DEPENDENCY}
+	SUBSTEPS test
 )
 
 
