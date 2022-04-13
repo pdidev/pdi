@@ -1,0 +1,365 @@
+[0] Init timing at 1649064387776 ms since epoch
+[0] Null time   at 1649064386499 ms since epoch (timing-events csv are relative to this)
+Configuration Connection to tcp://127.0.0.1:4000 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:68)
+[0] registering runner_id 0 at server
+[0] Registering field? 1
+port_names_size= 512 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:183)
+vect sizes: 112 104 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:317)
+offset 27 on rank 2 
+offset 14 on rank 1 
+Data Request Connection to tcp://127.0.0.1:5000 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:104)
+connect socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:109)
+offset 0 on rank 0 
+Worked 1 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid -1 current_step=0 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=1, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+First timestep to propagate: 1
+First timestep to propagate: 1
+First timestep to propagate: 1
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=1 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+Worked 0 s 
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=1, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=1 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=1, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 0 s 
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=1 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=2, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=2 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=2, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=2 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=2, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+Worked 0 s 
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=2 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Worked 1 s 
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=3, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=3 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=3, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=3 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=3, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=3 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=4, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=4 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=4, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=4 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=4, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+Worked 1 s 
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=4 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Worked 1 s 
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=5, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=5 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=5, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=5 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=5, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 0 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=5 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=6, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=6 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+Worked 0 s 
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=6, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=6 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=6, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 0 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=6 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+Worked 1 s 
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=7, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=7 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+Worked 0 s 
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=7, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=7 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=7, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=7 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=8, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+Worked 1 s 
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=8 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=8, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=8 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=8, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=8 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Worked 0 s 
+Worked 1 s 
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=9, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=9 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Worked 0 s 
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=9, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=9 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=9, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 1 s 
+Worked 1 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=9 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 0, current_step=10, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 0 current_step=10 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 1, current_step=10, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+-> Simulation runnerid 0, rank 0 sending stateid 1 current_step=10 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+<- Simulation got 112 bytes, expected 112 + 0 hidden bytes... for state 2, current_step=10, nsteps=1 (socket=0x5624352637b0) (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:195)
+nsteps 1 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Worked 1 s 
+Worked 0 s 
+Worked 0 s 
+put state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:305)
+sending on socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:136)
+Worked 0 s 
+-> Simulation runnerid 0, rank 0 sending stateid 2 current_step=10 fieldname=variableX, 112+0 hidden bytes (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:140)
+get state, local offset: 0, send count: 112 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:326)
+Received message size = 16 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:176)
+Server decided to end this runner now.
+nsteps 0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:459)
+Server decided to end this runner now.
+Server decided to end this runner now.
+Server decided to end this runner now.
+End Runner. (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:495)
+closing socket 0x5624352637b0 (/home/kacper/Desktop/Melissa/melissa-da-master/api/api_common.cxx:113)
+Terminating zmq context (/home/kacper/Desktop/Melissa/melissa-da-master/api/melissa_da_api.cxx:513)
+------------ Writing Timing Event List (csv) ------------
+------------------- Writing Timing information(csv): -------------------
+------------------- Writing Run information(csv): -------------------
+Event 11 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)
+Event 10 is no enter/leave region event (/home/kacper/Desktop/Melissa/melissa-da-master/common/TimingEvent.h:354)

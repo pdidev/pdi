@@ -1,0 +1,28 @@
+logging: info
+types:
+  index_map_t:
+    type: struct
+    members:
+      - index: int
+      - varid: int
+metadata: # type of small values for which PDI keeps a copy
+  local_vect_size: int
+  local_index_map:
+    type: array
+    subtype: index_map_t
+    size: $local_vect_size
+data: # type of values for which PDI does not keep a copy
+  nsteps: int
+  current_step: int
+  current_state_id: int
+  variableX: { size: [ "$local_vect_size" ], type: array, subtype: double }
+plugins:
+  mpi:
+  melissa_da:
+    status: nsteps
+    current_step: current_step
+    current_state_id: current_state_id
+    communicator: "$MPI_COMM_WORLD" # default COMM
+    expose:
+      variableX: # if only index_map then as WITH_INDEX_MAP
+        index_map: $local_index_map

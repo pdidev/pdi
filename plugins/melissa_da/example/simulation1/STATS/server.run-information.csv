@@ -1,0 +1,98 @@
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+2,1,3,-0,3,320,48,1,-inf,-29
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,3,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,3,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,3,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,3,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,3,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,3,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,3,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,3,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+3,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,96,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,96,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,96,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,96,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,96,10,-inf,-20
+cores simulation,number runners(max),cores server,runtime per iteration mean (ms),ensemble members,assimilated state size(#bytes),hidden state size(#bytes),iterations,mean bandwidth assimilated (MiB/s),iterations used for means
+4,1,2,-0,5,320,0,10,-inf,-20
