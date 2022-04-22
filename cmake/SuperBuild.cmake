@@ -27,6 +27,9 @@ cmake_minimum_required(VERSION 3.10)
 include(GNUInstallDirs)
 include(ExternalProject)
 
+if(POLICY CMP0114)
+	cmake_policy(SET CMP0114 OLD)
+endif()
 
 ### Generate a build command to build a subproject with access to its dependencies
 # 
