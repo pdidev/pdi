@@ -191,7 +191,7 @@ target_link_libraries(PDI_C
 		PRIVATE spdlog::spdlog fmt::fmt)
 # force use of external FMT
 target_compile_definitions(PDI_C PRIVATE SPDLOG_FMT_EXTERNAL)
-target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11 INTERFACE c_std_99)
+target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11)
 set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
 set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
 set_property(TARGET PDI_C PROPERTY C_VISIBILITY_PRESET hidden)

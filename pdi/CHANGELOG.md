@@ -43,6 +43,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.5.2] - 2022-04-22
+
+### For users
+
+#### Fixed
+* Fixed an issue when using PDI without C enabled from CMake
+  [#423](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/423)
+
+
+
 ## [1.5.1] - 2022-04-01
 
 ### For users

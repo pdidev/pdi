@@ -23,6 +23,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 
+## [1.5.2] - 2022-04-22
+
+### Fixed
+* Fixed an issue where PDI would not build with cmake 3.23+
+  [#422](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/422)
+
+
 ## [1.5.0] - 2022-03-30
 
 ### Added

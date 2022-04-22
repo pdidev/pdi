@@ -1,4 +1,4 @@
-# Checklists {#Checklists}
+# Checklists
 
 ## New patch release
 
@@ -6,13 +6,12 @@ To publish a small fix as a patch release:
 * make your changes based on the version branch (`v${X}.${Y}`)
 * change the version in `pdi/VERSION`
 * change the version in `pdi/docs/Source_installation.md`
-* go over all `CHANGELOG.md` files and mark the just released version
 * commit (or better, make a MR) in the version branch
 * merge the version branch into master
 * in the merge commit:
   - keep the content of `pdi/VERSION` from master (next with `-alpha` suffix)
-  - keep the content of `README.md` and `pdi/docs/Source_installation.md` from master
-    except with the version updated to the just released one
+  - keep the content `pdi/docs/Source_installation.md` from master except
+    with the version updated to the just released one
 * tag the new release: `git tag -m "PDI release ${VERSION}" -s "${VERSION}"`
 * push all that
 * describe the release https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases
