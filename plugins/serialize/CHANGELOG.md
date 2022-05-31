@@ -19,6 +19,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 
+## [1.5.3] - 2022-05-31
+
+### Fixed
+* Fixed a missing header compilation issue latest GCC
+  [#426](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/426)
+
+
 ## [1.5.0] - 2022-03-30
 
 ### Added
