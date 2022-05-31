@@ -23,12 +23,14 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <pdi.h>
-#include <stdlib.h> 
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+
 #include <gtest/gtest.h>
 
-#include <stddef.h>
-#include <stdio.h>
+#include <pdi.h>
 
 #define SUBREGIONARRAY_SIZE 64
 #define GRID_SIZE 32
@@ -103,50 +105,50 @@ typedef struct {
 
 static void init_subregion(Subregion* subregion, int value)
 {
-    subregion->ix = value; subregion->iy = value; subregion->iz = value;
-    subregion->nx = value; subregion->ny = value; subregion->nz = value;
-    subregion->sx = value; subregion->sy = value; subregion->sz = value;
-    subregion->rx = value; subregion->ry = value; subregion->rz = value;
-    subregion->level = value; subregion->process = value;
+	subregion->ix = value; subregion->iy = value; subregion->iz = value;
+	subregion->nx = value; subregion->ny = value; subregion->nz = value;
+	subregion->sx = value; subregion->sy = value; subregion->sz = value;
+	subregion->rx = value; subregion->ry = value; subregion->rz = value;
+	subregion->level = value; subregion->process = value;
 }
 
 static void init_subregion_array(SubregionArray* subregion_array, int size, int value)
 {
-    for (int i = 0; i < size; i++) {
-        init_subregion(subregion_array->subregions[i], i + value);
-    }
-    subregion_array->size = size;
+	for (int i = 0; i < size; i++) {
+		init_subregion(subregion_array->subregions[i], i + value);
+	}
+	subregion_array->size = size;
 }
 
 static void init_grid(Grid* grid)
 {
-    for (int i = 0; i < GRID_SIZE; i++) {
-        init_subregion_array(&grid->subgrids[i], SUBREGIONARRAY_SIZE, 10);
-        init_subregion_array(&grid->all_subgrids[i], SUBREGIONARRAY_SIZE, 100);
-        init_subregion_array(&grid->neighbors[i], SUBREGIONARRAY_SIZE, 200);
-    }
-    grid->size = GRID_SIZE;
+	for (int i = 0; i < GRID_SIZE; i++) {
+		init_subregion_array(&grid->subgrids[i], SUBREGIONARRAY_SIZE, 10);
+		init_subregion_array(&grid->all_subgrids[i], SUBREGIONARRAY_SIZE, 100);
+		init_subregion_array(&grid->neighbors[i], SUBREGIONARRAY_SIZE, 200);
+	}
+	grid->size = GRID_SIZE;
 }
 
 static void init_subvector(Subvector* subvector)
 {
-    for (int i = 0; i < SUBVECTOR_DATA_SIZE; i++) {
-        subvector->data[i] = (double) i;
-    }
-    subvector->allocated = 1;
-    init_subregion(subvector->data_space, 42);
-    subvector->data_size = SUBVECTOR_DATA_SIZE;
+	for (int i = 0; i < SUBVECTOR_DATA_SIZE; i++) {
+		subvector->data[i] = (double) i;
+	}
+	subvector->allocated = 1;
+	init_subregion(subvector->data_space, 42);
+	subvector->data_size = SUBVECTOR_DATA_SIZE;
 }
 
 static void init_vector(Vector* vector)
 {
-    for (int i = 0; i < VECTOR_DATA_SIZE; i++) {
-        init_subvector(vector->subvectors[i]);
-    }
-    vector->data_size = VECTOR_DATA_SIZE;
-    init_grid(vector->grid);
-    init_subregion_array(vector->data_space, SUBREGIONARRAY_SIZE, 0);
-    vector->size = VECTOR_SIZE;
+	for (int i = 0; i < VECTOR_DATA_SIZE; i++) {
+		init_subvector(vector->subvectors[i]);
+	}
+	vector->data_size = VECTOR_DATA_SIZE;
+	init_grid(vector->grid);
+	init_subregion_array(vector->data_space, SUBREGIONARRAY_SIZE, 0);
+	vector->size = VECTOR_SIZE;
 }
 
 // #################### SUBREGION ####################
@@ -305,12 +307,12 @@ void free_grid(Grid* grid)
 		free_subregion_array(&grid->subgrids[i]);
 	}
 	free(grid->subgrids);
-	
+
 	for (int i = 0; i < GRID_SIZE; i++) {
 		free_subregion_array(&grid->all_subgrids[i]);
 	}
 	free(grid->all_subgrids);
-	
+
 	for (int i = 0; i < GRID_SIZE; i++) {
 		free_subregion_array(&grid->neighbors[i]);
 	}
@@ -417,13 +419,13 @@ void free_vector(Vector* v1)
 	for (int i = 0; i < VECTOR_DATA_SIZE; i++) {
 		free_subvector(v1->subvectors[i]);
 		free(v1->subvectors[i]);
-		
+
 	}
 	free(v1->subvectors);
-	
+
 	free_grid(v1->grid);
 	free(v1->grid);
-	
+
 	free_subregion_array(v1->data_space);
 	free(v1->data_space);
 }
@@ -433,7 +435,8 @@ void free_vector(Vector* v1)
  *
  * Description:         scalar serialization
  */
-TEST(serialize_test, 01) { 
+TEST(serialize_test, 01)
+{
 
 	const char* CONFIG_YAML =
 	"logging: trace                         \n"
@@ -447,36 +450,36 @@ TEST(serialize_test, 01) {
 	;
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
-	
+
 	int int_scalar = 42;
 	double double_scalar = 42.42;
-	
+
 	PDI_share("int_scalar", &int_scalar, PDI_OUT);
 	PDI_share("double_scalar", &double_scalar, PDI_OUT);
-	
+
 	int* int_serialized;
 	double* double_serialized;
 	PDI_access("int_serialized", (void**)&int_serialized, PDI_IN);
 	PDI_access("double_serialized", (void**)&double_serialized, PDI_IN);
-	
+
 	printf("%d ?= %d\n", int_scalar, *int_serialized);
 	EXPECT_EQ(int_scalar, *int_serialized);
-	
+
 	printf("%f ?= %f\n", double_scalar, *double_serialized);
 	EXPECT_EQ(double_scalar, *double_serialized);
-	
+
 	PDI_release("int_serialized");
 	PDI_release("double_serialized");
-	
+
 	PDI_reclaim("int_scalar");
 	PDI_reclaim("double_scalar");
-	
+
 	PDI_errhandler(PDI_NULL_HANDLER);
 	PDI_status_t status = PDI_access("int_serialized", (void**)&int_serialized, PDI_IN);
 	EXPECT_NE(status, PDI_OK) << "Serialized data was not released";
 	status = PDI_access("double_serialized", (void**)&double_serialized, PDI_IN);
 	EXPECT_NE(status, PDI_OK) << "Serialized data was not released";
-	
+
 	PDI_finalize();
 }
 
@@ -485,7 +488,8 @@ TEST(serialize_test, 01) {
  *
  * Description:         array serialization
  */
-TEST(serialize_test, 02) { 
+TEST(serialize_test, 02)
+{
 
 	const char* CONFIG_YAML =
 	"logging: trace                               \n"
@@ -509,25 +513,25 @@ TEST(serialize_test, 02) {
 	;
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
-	
+
 	int sparse_int_array[8][4];
 	double sparse_double_array[8][4];
-	
+
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 4; j++) {
 			sparse_int_array[i][j] = i*4 + j;
 			sparse_double_array[i][j] = 1.23 + i*4 + j;
 		}
 	}
-	
+
 	PDI_share("sparse_int_array", sparse_int_array, PDI_OUT);
 	PDI_share("sparse_double_array", sparse_double_array, PDI_OUT);
-	
+
 	int* dense_int_array;
 	double* dense_double_array;
 	PDI_access("dense_int_array", (void**)&dense_int_array, PDI_IN);
 	PDI_access("dense_double_array", (void**)&dense_double_array, PDI_IN);
-	
+
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 2; j++) {
 			printf("s_i_a[%d][%d] = %d ?= d_i_a[%d][%d] = %d\n", i+2, j+1, sparse_int_array[i+2][j+1], i, j, dense_int_array[i*2 + j]);
@@ -536,13 +540,13 @@ TEST(serialize_test, 02) {
 			EXPECT_EQ(sparse_double_array[i+2][j+1], dense_double_array[i*2 + j]);
 		}
 	}
-	
+
 	PDI_release("dense_int_array");
 	PDI_release("dense_double_array");
-	
+
 	PDI_reclaim("sparse_int_array");
 	PDI_reclaim("sparse_double_array");
-	
+
 	PDI_finalize();
 }
 
@@ -551,7 +555,8 @@ TEST(serialize_test, 02) {
  *
  * Description:         pointer serialization
  */
-TEST(serialize_test, 03) { 
+TEST(serialize_test, 03)
+{
 
 	const char* CONFIG_YAML =
 	"logging: trace                                     \n"
@@ -585,13 +590,13 @@ TEST(serialize_test, 03) {
 	std::unique_ptr<int[]> array {new int[8]};
 	int* array_ptr = array.get();
 	int** pointer_to_array = &array_ptr;
-	std::unique_ptr<int*[]> pointer_array {new int*[8]};
+	std::unique_ptr<int* []> pointer_array {new int* [8]};
 	printf("pointer_to_array: %p\n", pointer_to_array);
 	for (int i = 0; i < 8; i++) {
 		pointer_array[i] = new int;
 		printf("pointer_to_array[%d]: %p\n", i, &array[i]);
 	}
-	
+
 	// initialize data
 	*pointer = 1.234;
 	for (int i = 0; i < 8; i++) {
@@ -600,19 +605,19 @@ TEST(serialize_test, 03) {
 	for (int i = 0; i < 8; i++) {
 		*(pointer_array[i]) = 42 + i;
 	}
-	
+
 	// share
 	PDI_share("pointer", &pointer, PDI_OUT);
 	PDI_share("pointer_to_array", pointer_to_array, PDI_OUT);
 	PDI_share("pointer_array", pointer_array.get(), PDI_OUT);
-	
+
 	double* pointer_serialized;
 	int* pointer_to_array_serialized;
 	int* pointer_array_serialized;
 	PDI_access("pointer_serialized", (void**)&pointer_serialized, PDI_IN);
 	PDI_access("pointer_to_array_serialized", (void**)&pointer_to_array_serialized, PDI_IN);
 	PDI_access("pointer_array_serialized", (void**)&pointer_array_serialized, PDI_IN);
-	
+
 	printf("%f ?== %f\n", *pointer, *pointer_serialized);
 	EXPECT_EQ(*pointer, *pointer_serialized);
 	for (int i = 0; i < 8; i++) {
@@ -623,19 +628,19 @@ TEST(serialize_test, 03) {
 		printf("[%d] %d ?== %d\n", i, *(pointer_array[i]), pointer_array_serialized[i]);
 		EXPECT_EQ(*(pointer_array[i]), pointer_array_serialized[i]);
 	}
-	
+
 	PDI_release("pointer_serialized");
 	PDI_release("pointer_to_array_serialized");
 	PDI_release("pointer_array_serialized");
-	
+
 	PDI_reclaim("pointer");
 	PDI_reclaim("pointer_to_array");
 	PDI_reclaim("pointer_array");
-	
+
 	for (int i = 0; i < 8; i++) {
 		delete pointer_array[i];
 	}
-	
+
 	PDI_finalize();
 }
 
@@ -644,7 +649,8 @@ TEST(serialize_test, 03) {
  *
  * Description:         record serialization
  */
-TEST(serialize_test, 04) { 
+TEST(serialize_test, 04)
+{
 
 	const char* CONFIG_YAML =
 	"logging: trace                   \n"
@@ -685,7 +691,7 @@ TEST(serialize_test, 04) {
 	} typedef Record_serialized;
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
-	
+
 	// initialize data
 	Record record;
 	record.scalar_member = 42;
@@ -694,13 +700,13 @@ TEST(serialize_test, 04) {
 	}
 	int pointed_scalar = 50;
 	record.pointer_member = &pointed_scalar;
-	
+
 	// share
 	PDI_share("record", &record, PDI_OUT);
-	
+
 	Record_serialized* record_serialized;
 	PDI_access("record_serialized", (void**)&record_serialized, PDI_IN);
-	
+
 	printf("%d ?== %d\n", record.scalar_member, record_serialized->scalar_member);
 	EXPECT_EQ(record.scalar_member, record_serialized->scalar_member);
 	for (int i = 0; i < 4; i++) {
@@ -709,10 +715,10 @@ TEST(serialize_test, 04) {
 	}
 	printf("%d ?== %d\n", *record.pointer_member, record_serialized->pointer_member);
 	EXPECT_EQ(*record.pointer_member, record_serialized->pointer_member);
-	
+
 	PDI_release("record_serialized");
 	PDI_reclaim("record");
-	
+
 	PDI_finalize();
 }
 
@@ -721,7 +727,8 @@ TEST(serialize_test, 04) {
  *
  * Description:         complex datatype serialization
  */
-TEST(serialize_test, 05) { 
+TEST(serialize_test, 05)
+{
 
 	const char* CONFIG_YAML =
 	".types:                                     \n"
@@ -849,36 +856,36 @@ TEST(serialize_test, 05) {
 	;
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
-	
+
 	int subregionarray_size = SUBREGIONARRAY_SIZE;
 	int grid_size = GRID_SIZE;
 	int subvector_data_size = SUBVECTOR_DATA_SIZE;
 	int vector_data_size = VECTOR_DATA_SIZE;
-	
+
 	PDI_expose("subregionarray_size", &subregionarray_size, PDI_OUT);
 	PDI_expose("grid_size", &grid_size, PDI_OUT);
 	PDI_expose("subvector_data_size", &subvector_data_size, PDI_OUT);
 	PDI_expose("vector_data_size", &vector_data_size, PDI_OUT);
-	
+
 	Vector vector;
 	alloc_vector(&vector);
 	init_vector(&vector);
-	
+
 	print_vector(&vector);
-	
+
 	PDI_share("vector_data", &vector, PDI_OUT);
-	
+
 	VectorSerialized* vector_serialized;
 	PDI_access("vector_data_serialized", (void**)&vector_serialized, PDI_IN);
-	
+
 	expect_eq_vector_serialized(&vector, vector_serialized);
-	
+
 	PDI_release("vector_data_serialized");
-	
+
 	PDI_reclaim("vector_data");
-	
+
 	free_vector(&vector);
-	
+
 	PDI_finalize();
 }
 
@@ -887,7 +894,8 @@ TEST(serialize_test, 05) {
  *
  * Description:         tuple serialization
  */
-TEST(serialize_test, 06) { 
+TEST(serialize_test, 06)
+{
 
 	const char* CONFIG_YAML =
 	"logging: trace                   \n"
@@ -921,7 +929,7 @@ TEST(serialize_test, 06) {
 	} typedef Record_serialized;
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
-	
+
 	// initialize data
 	Record record;
 	record.scalar_member = 42;
@@ -930,13 +938,13 @@ TEST(serialize_test, 06) {
 	}
 	int pointed_scalar = 50;
 	record.pointer_member = &pointed_scalar;
-	
+
 	// share
 	PDI_share("tuple", &record, PDI_OUT);
-	
+
 	Record_serialized* record_serialized;
 	PDI_access("tuple_serialized", (void**)&record_serialized, PDI_IN);
-	
+
 	printf("%d ?== %d\n", record.scalar_member, record_serialized->scalar_member);
 	EXPECT_EQ(record.scalar_member, record_serialized->scalar_member);
 	for (int i = 0; i < 4; i++) {
@@ -945,10 +953,10 @@ TEST(serialize_test, 06) {
 	}
 	printf("%d ?== %d\n", *record.pointer_member, record_serialized->pointer_member);
 	EXPECT_EQ(*record.pointer_member, record_serialized->pointer_member);
-	
+
 	PDI_release("tuple_serialized");
 	PDI_reclaim("tuple");
-	
+
 	PDI_finalize();
 }
 
@@ -957,7 +965,8 @@ TEST(serialize_test, 06) {
  *
  * Description:         complex tuple datatype serialization
  */
-TEST(serialize_test, 07) { 
+TEST(serialize_test, 07)
+{
 
 	const char* CONFIG_YAML =
 	".types:                                     \n"
@@ -1074,35 +1083,35 @@ TEST(serialize_test, 07) {
 	;
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
-	
+
 	int subregionarray_size = SUBREGIONARRAY_SIZE;
 	int grid_size = GRID_SIZE;
 	int subvector_data_size = SUBVECTOR_DATA_SIZE;
 	int vector_data_size = VECTOR_DATA_SIZE;
-	
+
 	PDI_expose("subregionarray_size", &subregionarray_size, PDI_OUT);
 	PDI_expose("grid_size", &grid_size, PDI_OUT);
 	PDI_expose("subvector_data_size", &subvector_data_size, PDI_OUT);
 	PDI_expose("vector_data_size", &vector_data_size, PDI_OUT);
-	
+
 	Vector vector;
 	alloc_vector(&vector);
 	init_vector(&vector);
-	
+
 	print_vector(&vector);
-	
+
 	PDI_share("vector_data", &vector, PDI_OUT);
-	
+
 	VectorSerialized* vector_serialized;
 	PDI_access("vector_data_serialized", (void**)&vector_serialized, PDI_IN);
-	
+
 	expect_eq_vector_serialized(&vector, vector_serialized);
-	
+
 	PDI_release("vector_data_serialized");
-	
+
 	PDI_reclaim("vector_data");
-	
+
 	free_vector(&vector);
-	
+
 	PDI_finalize();
 }
