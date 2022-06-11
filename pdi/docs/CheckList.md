@@ -41,7 +41,6 @@ To publish a new minor or major release:
 
 When changing the list of dependencies or just the version of one dependency:
 * update `pdi/docs/Source_installation.md`,
-* update `README.md`,
 * update `spack.yaml`,
 * update PDI distribution CMakeLists.txt as well as all CMakeLists.txt actually using it,
 * update the dockerfiles used for tests,

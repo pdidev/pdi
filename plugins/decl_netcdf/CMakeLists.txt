@@ -50,7 +50,12 @@ if("${BUILD_NETCDF_PARALLEL}")
 endif()
 
 # NetCDF
-find_package(NetCDF 4.6.0 REQUIRED)
+if("${BUILD_NETCDF_PARALLEL}")
+	set(NETCDF_MIN_VERSION "4.6.2")
+else()
+	set(NETCDF_MIN_VERSION "4.6.0")
+endif()
+find_package(NetCDF "${NETCDF_MIN_VERSION}" REQUIRED)
 if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
 	message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DBUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
 endif()

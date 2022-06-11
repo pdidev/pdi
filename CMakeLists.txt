@@ -509,6 +509,11 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 	else()
 		set(NETCDF_CC "${CMAKE_C_COMPILER}")
 	endif()
+	if("${BUILD_NETCDF_PARALLEL}")
+		set(NETCDF_MIN_VERSION "4.6.2")
+	else()
+		set(NETCDF_MIN_VERSION "4.6.0")
+	endif()
 	set(NETCDF_CPATH "${SBUILD_CPATH}")
 	set(NETCDF_LIBRARY_PATH "${SBUILD_LIBRARY_PATH}")
 	if("${HDF5_FOUND}")
@@ -532,7 +537,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			--disable-dap
 			--disable-utilities
 			--disable-testsets
-		VERSION 4.6.0
+		VERSION "${NETCDF_MIN_VERSION}"
 	)
 	if("${NETCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)

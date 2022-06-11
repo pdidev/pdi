@@ -40,7 +40,7 @@ spack:
   - 'googletest@1.8.0: +gmock'
   - 'hdf5@1.10.0:1.999.999'
   - 'mpi'
-  - 'netcdf-c@4.6.0:4.999.999'
+  - 'netcdf-c@4.6.2:4.999.999'
   - 'paraconf@0.4.14:0.999.999'
   - 'pkgconfig'
   - 'python@3.6.5:3.999.999'
