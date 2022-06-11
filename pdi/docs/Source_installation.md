@@ -17,8 +17,8 @@ The %PDI source distribution includes:
 To download the sources, have a look at the list of all releases at
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases
 
-For example, release 1.5.3 can be downloaded from
-https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.5.3/pdi-1.5.3.tar.bz2
+For example, release 1.5.4 can be downloaded from
+https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.5.4/pdi-1.5.4.tar.bz2
 
 ## Default installation {#default_installation}
 
@@ -37,18 +37,18 @@ external dependencies are:
 * a [MPI](https://www.mpi-forum.org/) 2 implementation.
 
 \attention
-This list of dependecies can be further reduced by limiting the set of features
+This list of dependencies can be further reduced by limiting the set of features
 compiled.
 
-For example, release 1.5.3 can be installed by following these instructions (but
+For example, release 1.5.4 can be installed by following these instructions (but
 look for the latest release at
 https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases ):
 
 ```bash
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.5.3/pdi-1.5.3.tar.bz2
-tar -xjf pdi-1.5.3.tar.bz2
-mkdir pdi-1.5.3/build
-cd pdi-1.5.3/build
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.5.4/pdi-1.5.4.tar.bz2
+tar -xjf pdi-1.5.4.tar.bz2
+mkdir pdi-1.5.4/build
+cd pdi-1.5.4/build
 cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
 make install   # compilation and installation
 ```
