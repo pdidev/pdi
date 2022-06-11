@@ -514,6 +514,7 @@ if(NOT HDF5_FOUND AND NOT HDF5_NO_FIND_PACKAGE_CONFIG_FILE)
         if(HDF5_FIND_DEBUG)
             message(STATUS "Found HDF5 at ${HDF5_DIR} via NO_MODULE. Now trying to extract locations etc.")
         endif()
+        unset(HDF5_IS_PARALLEL CACHE)
         set(HDF5_IS_PARALLEL ${HDF5_ENABLE_PARALLEL})
         set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
         set(HDF5_LIBRARIES)
@@ -591,6 +592,8 @@ endif()
 if(NOT HDF5_FOUND)
   set(_HDF5_NEED_TO_SEARCH FALSE)
   set(HDF5_COMPILER_NO_INTERROGATE TRUE)
+  unset(HDF5_IS_PARALLEL)
+  unset(HDF5_IS_PARALLEL CACHE)
   # Only search for languages we've enabled
   foreach(_lang IN LISTS HDF5_LANGUAGE_BINDINGS)
     # First check to see if our regular compiler is one of wrappers
@@ -965,6 +968,7 @@ if( NOT HDF5_FOUND )
 
     # If the HDF5 include directory was found, open H5pubconf.h to determine if
     # HDF5 was compiled with parallel IO support
+    unset(HDF5_IS_PARALLEL CACHE)
     set( HDF5_IS_PARALLEL FALSE )
     set( HDF5_VERSION "" )
     foreach( _dir IN LISTS HDF5_INCLUDE_DIRS )
