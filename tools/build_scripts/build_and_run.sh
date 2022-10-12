@@ -61,18 +61,16 @@ fi
 
 if [ "xspack" = "x${PDI_SYSTEM}" -a "xprovided" != "x${PDI_LIBS}" ]
 then
-	#TODO: Workaround Doxygen fails to find iconv
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INCLUDE_DIRECTORIES_BEFORE=ON"
-	#TODO: Workaround Doxygen finds system libmd before its own
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DICONV_IN_GLIBC=OFF"
 	#TODO: Workaround FTI fails to include zlib https://github.com/leobago/fti/issues/407
 	export CFLAGS="${CFLAGS} $(pkg-config --cflags zlib)"
 	export LDFLAGS="${LDFLAGS} $(pkg-config --libs-only-L zlib)"
+	#TODO: Workaround cmake FindOpenGL does not expect GLU to require -I
+	export CPATH="${CPATH}:$(pkg-config --variable=includedir glu)" || true
 fi
 
 if [ "xspack" = "x${PDI_SYSTEM}" -a "xlatest" != "x${PDI_DEPS}" ]
 then
-	#TODO: Workaround NetCDF < 4.6.2 does not support NC_HAS_PARALLEL4
+	# Workaround NetCDF < 4.6.2 does not support NC_HAS_PARALLEL4
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
 
@@ -84,15 +82,15 @@ fi
 
 if [ "xubuntu-bionic" = "x${PDI_SYSTEM}" -a "xprovided" = "x${PDI_LIBS}" ]
 then
-	#TODO: only sequential NetCDF is provided as a package
+	# only sequential NetCDF is provided as a package in Ubuntu
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
-	#TODO: fmt version is too old
+	# fmt version is too old in bionic
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_fmt=EMBEDDED"
 fi
 
 if [ "xubuntu-bionic" = "x${PDI_SYSTEM}" -a "xprovided" = "x${PDI_LIBS}" -a "x${PDI_MPI}" != "openmpi" ]
 then
-	#TODO: mpich flowvr package missing
+	#TODO: mpich flowvr package is missing
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_FLOWVR_PLUGIN=OFF"
 fi
 
