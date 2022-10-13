@@ -59,7 +59,7 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
 fi
 
-if [ "xspack" = "x${PDI_SYSTEM}" -a "xprovided" = "x${PDI_LIBS}" ]
+if [ "xspack" = "x${PDI_SYSTEM}" ]
 then
 	#TODO: Workaround cmake FindOpenGL does not expect GLU to require -I
 	export CPATH="${CPATH}:$(pkg-config --variable=includedir glu)" || true
