@@ -70,7 +70,7 @@ then
 	#TODO: Workaround Doxygen fails to find iconv
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INCLUDE_DIRECTORIES_BEFORE=ON"
 	#TODO: Workaround Doxygen finds system libmd before its own
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DICONV_IN_GLIBC=OFF
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DICONV_IN_GLIBC=OFF"
 	#TODO: Workaround FTI fails to include zlib https://github.com/leobago/fti/issues/407
 	export CFLAGS="${CFLAGS} $(pkg-config --cflags zlib)"
 	export LDFLAGS="${LDFLAGS} $(pkg-config --libs-only-L zlib)"
