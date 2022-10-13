@@ -74,8 +74,6 @@ then
 	#TODO: Workaround FTI fails to include zlib https://github.com/leobago/fti/issues/407
 	export CFLAGS="${CFLAGS} $(pkg-config --cflags zlib)"
 	export LDFLAGS="${LDFLAGS} $(pkg-config --libs-only-L zlib)"
-	#TODO: Workaround cmake FindOpenGL does not expect GLU to require -I
-	export CPATH="${CPATH}:$(pkg-config --variable=includedir glu)" || true
 fi
 
 if [ "xspack" = "x${PDI_SYSTEM}" -a "xlatest" != "x${PDI_DEPS}" ]

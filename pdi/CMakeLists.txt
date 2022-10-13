@@ -108,7 +108,7 @@ set(PARACONF_COMPONENTS "C")
 if("${BUILD_FORTRAN}")
 	list(APPEND PARACONF_COMPONENTS "f90")
 endif()
-find_package(paraconf 0.4.15 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
+find_package(paraconf 0.4.16 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
 find_package(fmt 6.1.2 REQUIRED) # must match PDIConfig.cmake.in
 find_package(spdlog 1.5.0 REQUIRED) # must match PDIConfig.cmake.in
 if("${BUILD_INDENT}")

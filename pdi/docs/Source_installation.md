@@ -173,7 +173,7 @@ Dependencies of **%PDI**:
   - [gcc](https://gcc.gnu.org/) 7.5 or above,
   - [clang](https://clang.llvm.org/) 9.0 or above,
 * the [{fmt}](https://fmt.dev) library version 6.1.2 or above (provided).
-* the [paraconf](https://github.com/pdidev/paraconf) library version 0.4 or above (provided),
+* the [paraconf](https://github.com/pdidev/paraconf) library version 0.4.16 or above (provided),
 * the [libyaml](https://pyyaml.org/wiki/LibYAML) library version 0.2.2 or above (provided),
 * the [spdlog](https://github.com/gabime/spdlog) library version 1.3.1 or above (provided).
 

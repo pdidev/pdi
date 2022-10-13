@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 * NetCDF 4.6.2 is now required for parallel NetCDF support.
+* Updated minimum required versions for paraconf to 0.4.16.
 
 ### Deprecated
 

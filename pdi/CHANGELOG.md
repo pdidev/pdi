@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 #### Changed
+* Updated minimum required versions for paraconf to 0.4.16.
 
 #### Deprecated
 

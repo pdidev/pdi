@@ -1,3 +1,0 @@
-key1: list()
-key2: map()
-key3: any(list(), map(), required=False)
