@@ -44,4 +44,5 @@ When changing the list of dependencies or just the version of one dependency:
 * update `spack.yaml`,
 * update PDI distribution CMakeLists.txt as well as all CMakeLists.txt actually using it,
 * update the dockerfiles used for tests,
-* prepare the update of the spack, deb & RPM packages for the next version.
+* prepare the update of the spack, deb & RPM packages for the next version,
+* change `.gitlab-ci` to use the new docker test images.
