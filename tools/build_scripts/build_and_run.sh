@@ -59,8 +59,18 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
 fi
 
+if [ "xspack" = "x${PDI_SYSTEM}" -a "xprovided" = "x${PDI_LIBS}" ]
+then
+	#TODO: Workaround cmake FindOpenGL does not expect GLU to require -I
+	export CPATH="${CPATH}:$(pkg-config --variable=includedir glu)" || true
+fi
+
 if [ "xspack" = "x${PDI_SYSTEM}" -a "xprovided" != "x${PDI_LIBS}" ]
 then
+	#TODO: Workaround Doxygen fails to find iconv
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INCLUDE_DIRECTORIES_BEFORE=ON"
+	#TODO: Workaround Doxygen finds system libmd before its own
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DICONV_IN_GLIBC=OFF
 	#TODO: Workaround FTI fails to include zlib https://github.com/leobago/fti/issues/407
 	export CFLAGS="${CFLAGS} $(pkg-config --cflags zlib)"
 	export LDFLAGS="${LDFLAGS} $(pkg-config --libs-only-L zlib)"
