@@ -1,0 +1,25 @@
+# YAML schema for validating PDI data
+# Author: Mathieu RIGAL
+# Date: 07/24/2017
+
+
+--- # Main validation schema
+pdi: include( '_pdi', required=False )
+
+
+--- # PDI nodes
+_pdi:
+  metadata: map( enum('int', 'float', 'double', required=False), include('type_nD_array', required=False), include('type_1D_array', required=False), required=True )
+  data: map( enum('int', 'float', 'double', required=False), include('type_1D_array', required=False), include('type_nD_array', required=False), required=True )
+
+
+--- # General types
+type_1D_array:
+  type: enum( 'int', 'float', 'double', required=True )
+  size: int( required=True )
+
+type_nD_array:
+  type: enum( 'int', 'float', 'double', required=True )
+  sizes: list( str(), required=True )
+  subsizes: list( str(), required=False )
+  starts: list( int(), required=False )

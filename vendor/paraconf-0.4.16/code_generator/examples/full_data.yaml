@@ -1,0 +1,69 @@
+node2: 2
+node1: -1.6e-16
+node3:
+  n1: False
+  n2: SOME TEXT
+  n3:
+    sub-node-1: 36.5
+  n4: 4
+node4:
+  - 4
+  - 3
+  - abc
+  - 1
+
+node5:
+  a: 3.14
+  b: 2.5
+  c: 36.
+
+node6:
+  - foobar
+  - - 1.1
+    - 1.2
+    - 1.2
+  - - 2.1
+    - 2.2
+    - 2.3
+
+node7:
+  - a: 1.0
+    b: 3.0
+
+node8:
+  n: foobar
+
+node9:
+  a:
+    n: thisisastring!
+
+node10: 3.14
+
+node11:
+  a:
+    n: 3
+  b: 3.8885
+
+node12:
+  c: 3675.E18
+  generic: [1, 2, 3]
+
+node13:
+  k1:
+    n: foo
+  k2:
+    n: bar
+
+node14: def
+
+node15:
+  - 1
+  - abc
+  - True
+
+node16:
+  - a: 1
+    b: 2
+
+not-existing: 'this node is not in the schema!'
+
