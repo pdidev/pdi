@@ -51,8 +51,8 @@ if("${BUILD_PYTHON}")
 	gtest_discover_tests(PDI_python_tools_unit_tests)
 endif()
 
-
-set(PDI_unit_tests_SRC
+add_executable(PDI_unit_tests
+		parsed_modulo.cxx
 		PDI_array_datatype.cxx
 		PDI_C_API.cxx
 		PDI_callbacks.cxx
@@ -69,8 +69,37 @@ set(PDI_unit_tests_SRC
 		PDI_ref_any.cxx
 		PDI_scalar_datatype.cxx
 		PDI_test_parse_types.cxx
-		PDI_tuple_datatype.cxx)
-add_executable(PDI_unit_tests ${PDI_unit_tests_SRC})
+		PDI_tuple_datatype.cxx
+		)
+
+set(OPERAND_TYPES uint8_t int64_t float double)
+foreach(OPERAND1_TYPE IN LISTS OPERAND_TYPES)
+	foreach(OPERAND2_TYPE IN LISTS OPERAND_TYPES)
+		string(REPLACE "_" "U" CASE_NAME "${OPERAND1_TYPE}U${OPERAND2_TYPE}")
+		configure_file(expression.cxx "${CMAKE_CURRENT_BINARY_DIR}/expression_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx" @ONLY)
+		target_sources(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/expression_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx")
+	endforeach()
+endforeach()
+
+set(PARSEABLE_OPERAND_TYPES long double)
+foreach(OPERAND1_TYPE IN LISTS PARSEABLE_OPERAND_TYPES)
+	foreach(OPERAND2_TYPE IN LISTS PARSEABLE_OPERAND_TYPES)
+		string(REPLACE "_" "U" CASE_NAME "${OPERAND1_TYPE}U${OPERAND2_TYPE}")
+		configure_file(parsed_expression.cxx "${CMAKE_CURRENT_BINARY_DIR}/parsed_expression_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx" @ONLY)
+		target_sources(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/parsed_expression_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx")
+	endforeach()
+endforeach()
+
+set(MODULABLE_OPERAND_TYPES uint8_t int64_t)
+foreach(OPERAND1_TYPE IN LISTS MODULABLE_OPERAND_TYPES)
+	foreach(OPERAND2_TYPE IN LISTS MODULABLE_OPERAND_TYPES)
+		string(REPLACE "_" "U" CASE_NAME "${OPERAND1_TYPE}U${OPERAND2_TYPE}")
+		configure_file(modulo.cxx "${CMAKE_CURRENT_BINARY_DIR}/modulo_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx" @ONLY)
+		target_sources(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/modulo_${OPERAND1_TYPE}_${OPERAND2_TYPE}.cxx")
+	endforeach()
+endforeach()
+
+target_compile_features(PDI_unit_tests PRIVATE cxx_std_17)
 target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)

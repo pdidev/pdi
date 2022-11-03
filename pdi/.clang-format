@@ -1,0 +1,164 @@
+---
+AccessModifierOffset:                           -4
+AlignAfterOpenBracket:                          BlockIndent
+AlignConsecutiveMacros:                         false
+AlignConsecutiveAssignments:                    false
+AlignConsecutiveBitFields:                      AcrossEmptyLinesAndComments
+AlignConsecutiveDeclarations:                   false
+AlignEscapedNewlines:                           Right
+AlignOperands:                                  AlignAfterOperator
+AlignTrailingComments:                          false
+AllowAllArgumentsOnNextLine:                    false
+AllowAllConstructorInitializersOnNextLine:      false
+AllowAllParametersOfDeclarationOnNextLine:      false
+AllowShortBlocksOnASingleLine:                  Empty
+AllowShortCaseLabelsOnASingleLine:              false
+AllowShortEnumsOnASingleLine:                   true
+AllowShortFunctionsOnASingleLine:               Inline
+AllowShortIfStatementsOnASingleLine:            WithoutElse
+AllowShortLambdasOnASingleLine:                 Inline
+AllowShortLoopsOnASingleLine:                   false
+AlwaysBreakAfterDefinitionReturnType:           None
+AlwaysBreakAfterReturnType:                     None
+AlwaysBreakBeforeMultilineStrings:              false
+AlwaysBreakTemplateDeclarations:                Yes
+BinPackArguments:                               false
+BinPackParameters:                              false
+BitFieldColonSpacing:                           After
+BraceWrapping:                                  
+  AfterCaseLabel:                               false
+  AfterClass:                                   true
+  AfterControlStatement:                        MultiLine
+  AfterEnum:                                    false
+  AfterFunction:                                true
+  AfterNamespace:                               false
+  AfterStruct:                                  true
+  AfterUnion:                                   false
+  AfterExternBlock:                             false
+  BeforeCatch:                                  false
+  BeforeElse:                                   false
+  BeforeLambdaBody:                             false
+  BeforeWhile:                                  false
+  IndentBraces:                                 false
+  SplitEmptyFunction:                           false
+  SplitEmptyRecord:                             false
+  SplitEmptyNamespace:                          false
+BreakAfterJavaFieldAnnotations:                 false
+BreakBeforeBinaryOperators:                     All
+BreakBeforeBraces:                              Custom
+BreakBeforeConceptDeclarations:                 true
+BreakBeforeInheritanceComma:                    true
+BreakBeforeTernaryOperators:                    true
+BreakConstructorInitializers:                   BeforeComma
+BreakConstructorInitializersBeforeComma:        true
+BreakInheritanceList:                           BeforeComma
+BreakStringLiterals:                            true
+ColumnLimit:                                    100
+CommentPragmas:                                 '^ IWYU pragma:'
+CompactNamespaces:                              false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth:              4
+ContinuationIndentWidth:                        8
+Cpp11BracedListStyle:                           true
+DeriveLineEnding:                               true
+DerivePointerAlignment:                         false
+DisableFormat:                                  false
+EmptyLineAfterAccessModifier:                   Never
+EmptyLineBeforeAccessModifier:                  LogicalBlock
+ExperimentalAutoDetectBinPacking:               false
+FixNamespaceComments:                           true
+IncludeBlocks:                                  Preserve
+IncludeCategories:
+  # config must come first, before anything else
+  - Regex:           '^[<"]config\.h[">]$'
+    Priority:        -140
+  # MPI must come first, before std headers
+  - Regex:           '^[<"]mpi\.h[">]$'
+    Priority:        -120
+  # std (extensionless, directoryless) headers
+  - Regex:           '^<[^\./]*>$'
+    Priority:        -100
+  # library headers
+  - Regex:           '^<.*>$'
+    Priority:        -80
+  # pdi headers
+  - Regex:           '^[<"]pdi\.h[>"]$'
+    Priority:        -60
+  # pdi headers
+  - Regex:           '^[<"]pdi/.*[>"]$'
+    Priority:        -40
+  # local headers
+  - Regex:           '^".*"$'
+    Priority:        -20
+IncludeIsMainRegex:                             '$'
+IncludeIsMainSourceRegex:                       ''
+IndentAccessModifiers:                          false
+IndentCaseLabels:                               false
+IndentCaseBlocks:                               false
+IndentExternBlock:                              NoIndent
+IndentGotoLabels:                               false
+IndentPPDirectives:                             None
+IndentRequires:                                 false
+IndentWidth:                                    4
+IndentWrappedFunctionNames:                     false
+KeepEmptyLinesAtTheStartOfBlocks:               false
+LambdaBodyIndentation:                          Signature
+MacroBlockBegin:                                ''
+MacroBlockEnd:                                  ''
+MaxEmptyLinesToKeep:                            3
+NamespaceIndentation:                           None
+PackConstructorInitializers:                    CurrentLine
+PenaltyBreakAssignment:                         2
+PenaltyBreakBeforeFirstCallParameter:           100000
+PenaltyBreakComment:                            2000000
+PenaltyBreakFirstLessLess:                      100000
+PenaltyBreakOpenParenthesis:                    100000
+PenaltyBreakString:                             100000
+PenaltyBreakTemplateDeclaration:                1
+PenaltyIndentedWhitespace:                      1
+PenaltyExcessCharacter:                         1000000
+PenaltyReturnTypeOnItsOwnLine:                  100000
+PointerAlignment:                               Left
+PPIndentWidth:                                  -1
+QualifierAlignment:                             Leave
+# QualifierOrder:                                 ['static', 'inline', 'volatile', 'type', 'const']
+ReferenceAlignment:                             Pointer
+ReflowComments:                                 false
+RemoveBracesLLVM:                               false
+SeparateDefinitionBlocks:                       Always
+ShortNamespaceLines:                            1
+SortIncludes:                                   true
+SortUsingDeclarations:                          true
+SpaceAfterCStyleCast:                           false
+SpaceAfterLogicalNot:                           false
+SpaceAfterTemplateKeyword:                      true
+SpaceAroundPointerQualifiers:                   Both
+SpaceBeforeAssignmentOperators:                 true
+SpaceBeforeCaseColon:                           false
+SpaceBeforeCpp11BracedList:                     true
+SpaceBeforeCtorInitializerColon:                true
+SpaceBeforeInheritanceColon:                    true
+SpaceBeforeParens:                              Custom
+SpaceBeforeParensOptions:
+  AfterControlStatements:                       true
+  AfterFunctionDeclarationName:                 true
+  AfterFunctionDefinitionName:                  true
+  AfterOverloadedOperator:                      true
+  BeforeNonEmptyParentheses:                    false
+SpaceBeforeRangeBasedForLoopColon:              true
+SpaceBeforeSquareBrackets:                      false
+SpaceInEmptyBlock:                              false
+SpaceInEmptyParentheses:                        false
+SpacesBeforeTrailingComments:                   1
+SpacesInAngles:                                 Leave
+SpacesInConditionalStatement:                   false
+SpacesInContainerLiterals:                      true
+SpacesInCStyleCastParentheses:                  false
+SpacesInParentheses:                            false
+SpacesInSquareBrackets:                         false
+SpaceBeforeSquareBrackets:                      false
+Standard:                                       c++17
+TabWidth:                                       4
+UseCRLF:                                        false
+UseTab:                                         AlignWithSpaces
+...

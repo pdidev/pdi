@@ -38,7 +38,7 @@ namespace PDI {
  */
 struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 	/** The binary operators that can be used in expressions
-	    */
+	  */
 	enum Operator {
 		PLUS = '+',
 		MINUS = '-',
@@ -49,7 +49,9 @@ struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 		AND = '&',
 		OR = '|',
 		GT = '>',
-		LT = '<'
+		LT = '<',
+		GET = ']',
+		LET = '['
 	};
 	
 	using Operand = std::pair<Operator, Expression>;
@@ -58,25 +60,31 @@ struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 	
 	std::vector<Operand> m_operands;
 	
+	template<class O1>
+	static Ref evalp ( O1, Operator, Ref_r );
+	
+	template<class O1, class O2>
+	static Ref eval ( O1, Operator, O2 );
+	
 	Operation();
 	
-	Operation(Expression first_operand, Operator op, Expression secend_operand);
+	Operation ( Expression first_operand, Operator op, Expression secend_operand );
 	
 	std::unique_ptr<Impl> clone() const override;
 	
-	long to_long(Context& ctx) const override;
-	
 	double to_double(Context& ctx) const override;
 	
-	Ref to_ref(Context& ctx) const override;
+	long to_long(Context& ctx) const override;
 	
-	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
+	Ref to_ref ( Context& ctx ) const override;
 	
-	static std::unique_ptr<Impl> parse(char const** val_str, int level);
+	size_t copy_value ( Context& ctx, void* buffer, Datatype_sptr type ) const override;
 	
-	static int op_level(const char* op);
+	static std::unique_ptr<Impl> parse ( char const** val_str, int level );
 	
-	static Operator parse_operator(char const** val_str, int level);
+	static int op_level ( const char* op );
+	
+	static Operator parse_operator ( char const** val_str, int level );
 };
 
 } // namespace PDI

@@ -508,7 +508,7 @@ public:
 	 *  \return value taken from the data buffer
 	 */
 	template<class T>
-	T scalar_value()
+	T scalar_value() const
 	{
 		static_assert(R, "Cannot get scalar_value from Ref without read access");
 		if (auto&& scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(type())) {
