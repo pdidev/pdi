@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <cerrno>
 #include <memory>
 
 #include "pdi/array_datatype.h"
@@ -111,7 +112,15 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** v
 {
 	const char* constval = *val_str;
 	
+	errno = 0;
 	unique_ptr<Int_literal> result {new Int_literal{strtol(constval, const_cast<char**>(&constval), 0)}};
+	if ( errno == ERANGE ) {
+		if ( result > 0 ) {
+			throw Value_error("Value too large for PDI integers: {}", constval);
+		} else {
+			throw Value_error("Value too small for PDI integers: {}", constval);
+		}
+	}
 	if (*val_str == constval) {
 		throw Value_error{"Expected integer, found `{}'", constval};
 	}

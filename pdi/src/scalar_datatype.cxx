@@ -41,7 +41,8 @@
 #include "pdi/scalar_datatype.h"
 
 
-namespace PDI {
+namespace PDI
+{
 
 using std::endl;
 using std::function;
@@ -56,7 +57,8 @@ using std::stringstream;
 using std::transform;
 using std::unique_ptr;
 
-namespace {
+namespace
+{
 
 inline bool ispow2(size_t v)
 {
@@ -74,12 +76,37 @@ inline bool nulltype(const Scalar_datatype& d)
 
 }
 
+template <class T>
+std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v = Scalar_datatype::make ( kind_of_v<T>, sizeof ( T ), alignof ( T ) );
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<uint8_t>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<uint16_t>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<uint32_t>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<uint64_t>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<int8_t>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<int16_t>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<int32_t>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<int64_t>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<bool>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<float>;
+
+template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<double>;
+
 Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, const Attributes_map& attributes):
 	Datatype(attributes),
 	m_size{size},
-	m_dense_size{size},
-	m_align{size},
-	m_kind{kind}
+	   m_dense_size{size},
+	   m_align{size},
+	   m_kind{kind}
 {
 	if ( !nulltype(*this) && !ispow2(m_align) ) throw Value_error{"alignment should be a power of 2"};
 }
@@ -179,11 +206,11 @@ string Scalar_datatype::debug_string() const
 	};
 	stringstream ss;
 	ss << "type: scalar" << endl
-	    << "kind: " << kind_map.at(kind()) << endl
-	    << "dense: " << (dense() ? "true" : "false") << endl
-	    << "buffersize: " << buffersize() << endl
-	    << "datasize: " << datasize() << endl
-	    << "alignment: " << alignment();
+	   << "kind: " << kind_map.at(kind()) << endl
+	   << "dense: " << (dense() ? "true" : "false") << endl
+	   << "buffersize: " << buffersize() << endl
+	   << "datasize: " << datasize() << endl
+	   << "alignment: " << alignment();
 	if (!m_attributes.empty()) {
 		ss << endl << "attributes: " << endl;
 		auto it = m_attributes.begin();
@@ -199,21 +226,21 @@ bool Scalar_datatype::operator==(const Datatype& other) const
 {
 	const Scalar_datatype* rhs = dynamic_cast<const Scalar_datatype*>(&other);
 	return rhs
-	    && m_size == rhs->m_size
-	    && m_align == rhs->m_align
-	    && m_kind == rhs->m_kind;
+		   && m_size == rhs->m_size
+		   && m_align == rhs->m_align
+		   && m_kind == rhs->m_kind;
 }
 
 struct Scalar_datatype::Shared_enabler : public Scalar_datatype {
-	Shared_enabler(Scalar_kind kind, size_t size, const Attributes_map& attributes={}):
+	Shared_enabler(Scalar_kind kind, size_t size, const Attributes_map& attributes= {}):
 		Scalar_datatype(kind, size, attributes)
 	{}
-	
-	Shared_enabler(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes={}):
+
+	Shared_enabler(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes= {}):
 		Scalar_datatype(kind, size, align, attributes)
 	{}
-	
-	Shared_enabler(Scalar_kind kind, size_t size, size_t align, size_t dense_size, function<void* (void*, const void*)> copy, function<void (void*)> destroy, const Attributes_map& attributes={}):
+
+	Shared_enabler(Scalar_kind kind, size_t size, size_t align, size_t dense_size, function<void* (void*, const void*)> copy, function<void (void*)> destroy, const Attributes_map& attributes= {}):
 		Scalar_datatype(kind, size, align, dense_size, copy, destroy, attributes)
 	{}
 };
