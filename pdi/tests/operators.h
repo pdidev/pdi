@@ -28,11 +28,11 @@
 
 struct PlusOperator
 {
-	static constexpr auto repr = "+";
-	static constexpr auto sign = '+';
+	static inline constexpr auto repr = "+";
+	static inline constexpr auto sign = '+';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 + o2;
 	}
@@ -40,11 +40,11 @@ struct PlusOperator
 
 struct MinusOperator
 {
-	static constexpr auto repr = "-";
-	static constexpr auto sign = '-';
+	static inline constexpr auto repr = "-";
+	static inline constexpr auto sign = '-';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 - o2;
 	}
@@ -52,11 +52,11 @@ struct MinusOperator
 
 struct MultOperator
 {
-	static constexpr auto repr = "*";
-	static constexpr auto sign = '*';
+	static inline constexpr auto repr = "*";
+	static inline constexpr auto sign = '*';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 * o2;
 	}
@@ -64,11 +64,11 @@ struct MultOperator
 
 struct DivOperator
 {
-	static constexpr auto repr = "/";
-	static constexpr auto sign = '/';
+	static inline constexpr auto repr = "/";
+	static inline constexpr auto sign = '/';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 / o2;
 	}
@@ -76,11 +76,11 @@ struct DivOperator
 
 struct EqualOperator
 {
-	static constexpr auto repr = "==";
-	static constexpr auto sign = '=';
+	static inline constexpr auto repr = "==";
+	static inline constexpr auto sign = '=';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 == o2;
 	}
@@ -88,11 +88,11 @@ struct EqualOperator
 
 struct AndOperator
 {
-	static constexpr auto repr = "&&";
-	static constexpr auto sign = '&';
+	static inline constexpr auto repr = "&&";
+	static inline constexpr auto sign = '&';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 && o2;
 	}
@@ -100,11 +100,11 @@ struct AndOperator
 
 struct OrOperator
 {
-	static constexpr auto repr = "||";
-	static constexpr auto sign = '|';
+	static inline constexpr auto repr = "||";
+	static inline constexpr auto sign = '|';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 || o2;
 	}
@@ -112,11 +112,11 @@ struct OrOperator
 
 struct GtOperator
 {
-	static constexpr auto repr = ">";
-	static constexpr auto sign = '>';
+	static inline constexpr auto repr = ">";
+	static inline constexpr auto sign = '>';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 > o2;
 	}
@@ -124,11 +124,11 @@ struct GtOperator
 
 struct LtOperator
 {
-	static constexpr auto repr = "<";
-	static constexpr auto sign = '<';
+	static inline constexpr auto repr = "<";
+	static inline constexpr auto sign = '<';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 < o2;
 	}
@@ -136,11 +136,11 @@ struct LtOperator
 
 struct GetOperator
 {
-	static constexpr auto repr = ">=";
-	static constexpr auto sign = ']';
+	static inline constexpr auto repr = ">=";
+	static inline constexpr auto sign = ']';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 >= o2;
 	}
@@ -148,11 +148,11 @@ struct GetOperator
 
 struct LetOperator
 {
-	static constexpr auto repr = "<=";
-	static constexpr auto sign = '[';
+	static inline constexpr auto repr = "<=";
+	static inline constexpr auto sign = '[';
 
 	template <class O1, class O2>
-	static constexpr auto eval (O1&& o1, O2&& o2)
+	static inline constexpr auto eval (O1&& o1, O2&& o2)
 	{
 		return o1 <= o2;
 	}
@@ -172,47 +172,47 @@ using OperatorTypes = ::testing::Types<
 
 
 template <class T>
-constexpr auto PARSEABLE_VALS = "Error";
+static inline constexpr auto PARSEABLE_VALS = "Error";
 
 // no min, because min/-1 == max+1 (out of range)
 template <>
-constexpr auto
+inline constexpr auto
 		PARSEABLE_VALS<long> = {std::numeric_limits<long>::min() + 1, -1l, 1l, std::numeric_limits<long>::max()};
 
 template <>
-constexpr auto PARSEABLE_VALS<double> = {-1.5, -1.0000001, -.5, 0.1, .5, 1.0000001, 1.5, 500.1};
+inline constexpr auto PARSEABLE_VALS<double> = {-1.5, -1.0000001, -.5, 0.1, .5, 1.0000001, 1.5, 500.1};
 
 
 template <class T>
-constexpr auto ALL_VALS = "Error";
+static inline constexpr auto ALL_VALS = "Error";
 
 template <>
-constexpr auto ALL_VALS<uint8_t> = {
+inline constexpr auto ALL_VALS<uint8_t> = {
 		static_cast<uint8_t>(std::numeric_limits<uint8_t>::min() + 1),
 		static_cast<uint8_t>(-1),
 		static_cast<uint8_t>(1),
 		std::numeric_limits<uint8_t>::max()};
 
 template <>
-constexpr auto ALL_VALS<int8_t> = {
+inline constexpr auto ALL_VALS<int8_t> = {
 		static_cast<int8_t>(std::numeric_limits<int8_t>::min() + 1),
 		static_cast<int8_t>(-1),
 		static_cast<int8_t>(1),
 		std::numeric_limits<int8_t>::max()};
 
 template <>
-constexpr auto ALL_VALS<uint64_t> = {
+inline constexpr auto ALL_VALS<uint64_t> = {
 		std::numeric_limits<uint64_t>::min() + 1,
 		-1ul,
 		1ul,
 		std::numeric_limits<uint64_t>::max()};
 
 template <>
-constexpr auto ALL_VALS<
+inline constexpr auto ALL_VALS<
 		int64_t> = {std::numeric_limits<int64_t>::min() + 1, -1l, 1l, std::numeric_limits<int64_t>::max()};
 
 template <>
-constexpr auto ALL_VALS<float> = {
+inline constexpr auto ALL_VALS<float> = {
 		std::numeric_limits<float>::min(),
 		-1.5f,
 		-1.f,
@@ -223,7 +223,7 @@ constexpr auto ALL_VALS<float> = {
 		std::numeric_limits<float>::max()};
 
 template <>
-constexpr auto ALL_VALS<double> = {
+inline constexpr auto ALL_VALS<double> = {
 		std::numeric_limits<double>::min(),
 		-1.5,
 		-1.,
