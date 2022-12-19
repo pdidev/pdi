@@ -579,14 +579,14 @@ if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
 	sbuild_get_env(CPATH CPATH)
 	sbuild_get_env(LIBRARY_PATH LIBRARY_PATH)
 	sbuild_add_dependency(PyYAML "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/PyYAML-5.3.1"
+		EMBEDDED_PATH "vendor/PyYAML-6.0"
 		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
 			"--with-libyaml"
 			build_ext
 			-I "${CPATH}"
 			-L "${LIBRARY_PATH}"
 		BUILD_IN_SOURCE ON
-		BUILD_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
+		BUILD_COMMAND "${Python3_EXECUTABLE}" -m pip install . "<SOURCE_DIR>/setup.py"
 			"--with-libyaml"
 			build
 		INSTALL_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
