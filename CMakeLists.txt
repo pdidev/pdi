@@ -580,21 +580,17 @@ if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
 	sbuild_get_env(LIBRARY_PATH LIBRARY_PATH)
 	sbuild_add_dependency(PyYAML "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/PyYAML-6.0"
-		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
-			"--with-libyaml"
-			build_ext
-			-I "${CPATH}"
-			-L "${LIBRARY_PATH}"
-		BUILD_IN_SOURCE ON
-		BUILD_COMMAND "${Python3_EXECUTABLE}" -m pip install . "<SOURCE_DIR>/setup.py"
-			"--with-libyaml"
-			build
-		INSTALL_COMMAND "${Python3_EXECUTABLE}" "<SOURCE_DIR>/setup.py"
-			"--with-libyaml"
-			install
+		CONFIGURE_COMMAND "true"
+		BUILD_COMMAND "true"
+		INSTALL_COMMAND env
+			"CPATH=${CPATH}"
+			"LIBRARY_PATH=${LIBRARY_PATH}"
+			"LD_LIBRARY_PATH=${LIBRARY_PATH}"
+			"${Python3_EXECUTABLE}" -m pip install
 			--prefix "<INSTALL_DIR>"
-			--install-purelib "<INSTALL_DIR>/${Python3Path_INSTALL_SITELIBDIR}"
-			--install-platlib "<INSTALL_DIR>/${Python3Path_INSTALL_SITEARCHDIR}"
+			--no-cache-dir --ignore-installed
+			"<SOURCE_DIR>"
+			install
 		DEPENDS yaml
 	)
 endif()
