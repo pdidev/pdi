@@ -587,10 +587,11 @@ if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
 			"LIBRARY_PATH=${LIBRARY_PATH}"
 			"LD_LIBRARY_PATH=${LIBRARY_PATH}"
 			"${Python3_EXECUTABLE}" -m pip install
-			--prefix "<INSTALL_DIR>"
-			--no-cache-dir --ignore-installed
-			"<SOURCE_DIR>"
+			"--prefix" "<INSTALL_DIR>"
+			"--no-cache-dir"
+			"--ignore-installed"
 			install
+			"<SOURCE_DIR>"
 		DEPENDS yaml
 	)
 endif()
