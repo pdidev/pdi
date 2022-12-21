@@ -576,6 +576,13 @@ endif()
 ## PyYAML
 
 if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
+	execute_process(COMMAND "${Python3_EXECUTABLE}" -m pip install --system
+		RESULT_VARIABLE PIP_INSTALL_ERROR
+		OUTPUT_QUIET
+		ERROR_QUIET)
+	if("${PIP_INSTALL_ERROR}" EQUAL 0)
+		set(PIP_SYSTEM "--system")
+	endif()
 	sbuild_get_env(CPATH CPATH)
 	sbuild_get_env(LIBRARY_PATH LIBRARY_PATH)
 	sbuild_add_dependency(PyYAML "${USE_DEFAULT}"
@@ -587,9 +594,10 @@ if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
 			"LIBRARY_PATH=${LIBRARY_PATH}"
 			"LD_LIBRARY_PATH=${LIBRARY_PATH}"
 			"${Python3_EXECUTABLE}" -m pip install
-			"--prefix" "<INSTALL_DIR>"
-			"--no-cache-dir"
-			"--ignore-installed"
+			${PIP_SYSTEM}
+			--prefix "<INSTALL_DIR>"
+			--no-cache-dir
+			--ignore-installed
 			install
 			"<SOURCE_DIR>"
 		DEPENDS yaml
