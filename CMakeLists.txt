@@ -315,17 +315,6 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 )
 
 
-## FMT
-
-# if ( PDI or ... )
-sbuild_add_dependency(fmt "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/fmt-6.1.2"
-	CMAKE_CACHE_ARGS
-		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
-	VERSION 6.1.2
-)
-
-
 ## spdlog
 
 # if ( PDI or ... )
@@ -336,8 +325,7 @@ sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
 		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
 		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
-		"-DSPDLOG_FMT_EXTERNAL:BOOL=ON"
-	DEPENDS fmt
+		"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
 	VERSION 1.5.0
 )
 
@@ -629,7 +617,7 @@ if("${BUILD_INDENT}")
 	set(ASTYLE_DEPENDENCY Astyle)
 endif()
 
-set(PDI_DEPENDS_LIST paraconf spdlog fmt "${ASTYLE_DEPENDENCY}" "${BENCHMARKING_DEPENDENCY}")
+set(PDI_DEPENDS_LIST paraconf spdlog "${ASTYLE_DEPENDENCY}" "${BENCHMARKING_DEPENDENCY}")
 if("${BUILD_DOCUMENTATION}")
 	list(APPEND PDI_DEPENDS_LIST Doxygen)
 endif()

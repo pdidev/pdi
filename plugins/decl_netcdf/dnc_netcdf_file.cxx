@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-#include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
 #include <pdi/array_datatype.h>
 #include <pdi/scalar_datatype.h>

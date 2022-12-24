@@ -32,7 +32,7 @@
 
 #include <paraconf.h>
 
-#include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
 #include <pdi/pdi_fwd.h>
 

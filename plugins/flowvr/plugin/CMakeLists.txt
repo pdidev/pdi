@@ -74,7 +74,6 @@ target_include_directories(pdi_flowvr_plugin PUBLIC
 		${FLOWVR_INCLUDE_DIR})
 target_link_libraries(pdi_flowvr_plugin
 		PDI::PDI_plugins
-		fmt::fmt
 		Threads::Threads
 		${FLOWVR_base_LIBRARY}
 		${FLOWVR_ftl_LIBRARY}

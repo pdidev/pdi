@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
 #include <pdi/error.h>
 

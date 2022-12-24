@@ -36,7 +36,6 @@ spack:
   - 'flowvr@2.3.2:2.999.999'
   - 'freeglut'
   - 'fti@1.6:1.999'
-  - 'fmt@6.1.2:8.999.999'
   - 'googletest@1.8.0: +gmock'
   - 'hdf5@1.10.0:1.999.999'
   - 'mpi'

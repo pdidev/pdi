@@ -25,8 +25,7 @@
 
 #include "config.h"
 
-#include <fmt/core.h>
-#include <fmt/format.h>
+#include <spdlog/spdlog.h>
 
 #include <pdi/error.h>
 

@@ -128,7 +128,6 @@ The following flags define whether to:
 |`USE_benchmark`|`EMBEDDED`|the [Benchmark](https://github.com/google/benchmark) library.|
 |`USE_Doxygen`  |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
 |`USE_FlowVR`   |`AUTO`    |the [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) library.|
-|`USE_fmt`      |`AUTO`    |the [{fmt}](https://fmt.dev) library.|
 |`USE_FTI`      |`AUTO`    |the [FTI](https://github.com/leobago/fti) library.|
 |`USE_GTest`    |`EMBEDDED`|the [googletest](https://github.com/google/googletest) library.|
 |`USE_HDF5`     |`AUTO`    |the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library.|
@@ -172,7 +171,6 @@ Dependencies of **%PDI**:
 * **a C 99 and C++ 17 compiler (not provided)** such as
   - [gcc](https://gcc.gnu.org/) 7.5 or above,
   - [clang](https://clang.llvm.org/) 9.0 or above,
-* the [{fmt}](https://fmt.dev) library version 6.1.2 or above (provided).
 * the [paraconf](https://github.com/pdidev/paraconf) library version 0.4.16 or above (provided),
 * the [libyaml](https://pyyaml.org/wiki/LibYAML) library version 0.2.2 or above (provided),
 * the [spdlog](https://github.com/gabime/spdlog) library version 1.3.1 or above (provided).

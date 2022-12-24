@@ -76,9 +76,6 @@ endif()
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins ${PDI_COMPONENTS})
 
-# FMT
-find_package(fmt 6.1.2 REQUIRED)
-
 # The plugin
 add_library(pdi_decl_hdf5_plugin MODULE
 		attribute_op.cxx
@@ -88,7 +85,7 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		file_op.cxx
 		hdf5_wrapper.cxx
 		selection.cxx)
-target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins fmt::fmt ${HDF5_DEPS})
+target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Indentation

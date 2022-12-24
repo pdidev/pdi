@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+* Remove {fmt} as a direct dependency, use that provided by spdlog to fix
+  [#431](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/431)
+  (reverts
+  [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413))
 
 ### Deprecated
 

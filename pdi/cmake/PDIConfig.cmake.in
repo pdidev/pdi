@@ -121,7 +121,6 @@ endif()
 # Import our dependencies, for Paraconf, require f90 if is was required from us
 
 if(TARGET PDI::PDI_plugins)
-	find_dependency(fmt 6.1.2)
 	find_dependency(spdlog 1.5.0)
 endif()
 if(TARGET PDI::PDI_pysupport)

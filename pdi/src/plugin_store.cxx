@@ -33,8 +33,8 @@
 
 #include <dlfcn.h>
 #include <unistd.h>
-#include <fmt/core.h>
-#include <fmt/format.h>
+
+#include <spdlog/spdlog.h>
 
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"

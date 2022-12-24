@@ -39,9 +39,6 @@ if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)
 endif()
 
-# FMT
-find_package(fmt 6.1.2 REQUIRED)
-
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")

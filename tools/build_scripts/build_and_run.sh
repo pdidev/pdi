@@ -92,8 +92,6 @@ if [ "xubuntu-bionic" = "x${PDI_SYSTEM}" -a "xprovided" = "x${PDI_LIBS}" ]
 then
 	# only sequential NetCDF is provided as a package in Ubuntu
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
-	# fmt version is too old in bionic
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_fmt=EMBEDDED"
 fi
 
 if [ "xubuntu-bionic" = "x${PDI_SYSTEM}" -a "xprovided" = "x${PDI_LIBS}" -a "x${PDI_MPI}" != "openmpi" ]
