@@ -23,7 +23,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <optional>
 #include <set>
+
 #include <netcdf.h>
 
 #include "dnc_netcdf_file.h"
@@ -182,26 +184,22 @@ Dnc_file_context::Dnc_file_context(Dnc_file_context&& other) noexcept
 	, m_write{std::move(other.m_write)}
 {}
 
-Dnc_variable* Dnc_file_context::variable(const std::string& desc_name, const std::string& variable_path, std::list<Dnc_variable>& variables_holder)
+Dnc_variable& Dnc_file_context::variable(const std::string& desc_name, const std::string& variable_path, std::list<Dnc_variable>& variables_holder)
 {
-	auto it = m_variables.find(variable_path);
-	if (it == m_variables.end()) {
-		// try desc_name as variable
-		it = m_variables.find(desc_name);
-		if (it == m_variables.end()) {
-			// variable not defined yet -> create it and add to variables_holder
-			if (variable_path.empty()) {
-				variables_holder.emplace_back(m_ctx, desc_name, PC_tree_t{});
-			} else {
-				variables_holder.emplace_back(m_ctx, variable_path, PC_tree_t{});
-			}
-			return &variables_holder.back();
-		} else {
-			return &it->second;
-		}
-	} else {
-		return &it->second;
+	if (auto it = m_variables.find(variable_path); it != m_variables.end()) {
+		return it->second;
 	}
+	// try desc_name as variable
+	if (auto it = m_variables.find(desc_name); it != m_variables.end()) {
+		return it->second;
+	}
+	// variable not defined yet -> create it and add to variables_holder
+	if (variable_path.empty()) {
+		variables_holder.emplace_back(m_ctx, desc_name, PC_tree_t{});
+	} else {
+		variables_holder.emplace_back(m_ctx, variable_path, PC_tree_t{});
+	}
+	return variables_holder.back();
 }
 
 void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
@@ -214,27 +212,27 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			Dnc_netcdf_file nc_file{m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator};
 
 			// define all groups
-			for (auto&& group: m_groups) {
-				nc_file.define_group(group.second);
+			for (auto&& [_, group]: m_groups) {
+				nc_file.define_group(group);
 			}
 
 			// get variable of shared descriptor
-			Dnc_variable* variable = this->variable(write_it->first, write_it->second.variable_path(), variables_holder);
+			Dnc_variable& variable = this->variable(write_it->first, write_it->second.variable_path(), variables_holder);
 
 			// ensure that variable has a type
-			if (!variable->type()) {
+			if (!variable.type()) {
 				// TODO: undo the type for defined variables
-				variable->type(ref.type());
+				variable.type(ref.type());
 			}
 
 			// define variable
-			nc_file.define_variable(*variable);
+			nc_file.define_variable(variable);
 
 			// end NetCDF definition mode
 			nc_file.enddef();
 
 			// execute write
-			nc_file.put_variable(*variable, write_it->second, ref);
+			nc_file.put_variable(variable, write_it->second, ref);
 		}
 
 		auto read_it = m_read.find(desc_name);
@@ -247,19 +245,20 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			}
 
 			// get variable of shared descriptor
-			Dnc_variable* variable = this->variable(read_it->first, read_it->second.variable_path(), variables_holder);
+			Dnc_variable variable = this->variable(read_it->first, read_it->second.variable_path(), variables_holder);
 
 			// ensure that variable has a type
-			if (!variable->type()) {
+			if (!variable.type()) {
 				// TODO: undo the type for defined variables
-				variable->type(ref.type());
+				variable.type(ref.type());
 			}
 
-			// read variable (could be done in get_variable, but we want to be coherent with write)
-			nc_file.read_variable(*variable);
+			// read variable (could be done in get_variable, but we want to be
+			// coherent with write)
+			nc_file.read_variable(variable);
 
 			// execute read
-			nc_file.get_variable(*variable, read_it->second, ref);
+			nc_file.get_variable(variable, read_it->second, ref);
 		}
 
 		auto size_it = m_sizeof.find(desc_name);
@@ -276,76 +275,75 @@ void Dnc_file_context::execute()
 {
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder;
-		std::vector<Dnc_variable*> variables_to_get;
-		std::vector<Dnc_variable*> variables_to_put;
+		std::vector<std::tuple<std::string, std::reference_wrapper<Dnc_io>, std::reference_wrapper<Dnc_variable> >> variables_to_get;
+		std::vector<std::tuple<std::string, std::reference_wrapper<Dnc_io>, std::reference_wrapper<Dnc_variable> >> variables_to_put;
 
-		std::unique_ptr<Dnc_netcdf_file> nc_file;
+		std::optional<Dnc_netcdf_file> nc_file;
 		if (m_write.empty()) {
-			nc_file.reset(new Dnc_netcdf_file{m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator});
-
+			nc_file.emplace(m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator);
 			// read all groups
-			for (auto&& group: m_groups) {
-				nc_file->read_group(group.second);
-			}
-
-			// read all variables
-			for (auto&& read: m_read) {
-				Dnc_variable* variable = this->variable(read.first, read.second.variable_path(), variables_holder);
-				variables_to_get.emplace_back(variable);
-
-				// ensure that variable has a type
-				if (!variable->type()) {
-					// TODO: undo the type for defined variables
-					variable->type(m_ctx.desc(read.first).ref().type());
-				}
-
-				// read this variable
-				nc_file->read_variable(*variable);
+			for (auto&& [_, group]: m_groups) {
+				nc_file->read_group(group);
 			}
 
 			for (auto&& size_of: m_sizeof) {
 				nc_file->get_sizeof_variable(size_of.first, size_of.second.variable_path(), m_ctx.desc(size_of.first).ref());
 			}
 		} else {
-			nc_file.reset(new Dnc_netcdf_file{m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator});
-
+			nc_file.emplace(m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator);
 			// define all groups
-			for (auto&& group: m_groups) {
-				nc_file->define_group(group.second);
+			for (auto&& [_, group]: m_groups) {
+				nc_file->define_group(group);
+			}
+		}
+
+		// define all read variables
+		for (auto&& [wname, wop]: m_read) {
+			m_ctx.logger().trace("Prepare to read NetCDF variable `{}'", wname);
+			Dnc_variable& variable = this->variable(wname, wop.variable_path(), variables_holder);
+
+			// ensure that variable has a type
+			if (!variable.type()) {
+				// TODO: undo the type for defined variables
+				variable.type(m_ctx.desc(wname).ref().type());
 			}
 
-			// define all variables
-			for (auto&& write: m_write) {
-				Dnc_variable* variable = this->variable(write.first, write.second.variable_path(), variables_holder);
-				variables_to_put.emplace_back(variable);
+			// read this variable
+			nc_file->read_variable(variable);
 
-				// ensure that variable has a type
-				if (!variable->type()) {
-					// TODO: undo the type for defined variables
-					variable->type(m_ctx.desc(write.first).ref().type());
-				}
+			variables_to_get.emplace_back(wname, wop, variable);
+		}
 
-				// define this variable
-				nc_file->define_variable(*variable);
+		// define all write variables
+		for (auto&& [wname, wop]: m_write) {
+			m_ctx.logger().trace("Prepare to write NetCDF variable `{}'", wname);
+			Dnc_variable& variable = this->variable(wname, wop.variable_path(), variables_holder);
+
+			// ensure that variable has a type
+			if (!variable.type()) {
+				// TODO: undo the type for defined variables
+				variable.type(m_ctx.desc(wname).ref().type());
 			}
 
+			// define this variable
+			nc_file->define_variable(variable);
+
+			variables_to_put.emplace_back(wname, wop, variable);
+		}
+
+		if (!m_write.empty()) {
 			// end NetCDF definition mode
 			nc_file->enddef();
 		}
 
-		int i = 0;
-		for (auto&& write: m_write) {
-			Dnc_variable* variable = variables_to_put[i]; // order of loop iteration is the same as was on define loop
-			m_ctx.logger().trace("{}: Putting desc `{}' to variable `{}'", i, write.first, variables_to_put[i]->path());
-			nc_file->put_variable(*variable, write.second, m_ctx.desc(write.first).ref());
-			i++;
+		for (auto&& [wname, wop, variable]: variables_to_get) {
+			m_ctx.logger().trace("Reading NetCDF variable `{}' into `{}'", variable.get().path(), wname);
+			nc_file->get_variable(variable, wop, m_ctx.desc(wname).ref());
 		}
 
-		i = 0;
-		for (auto&& read: m_read) {
-			Dnc_variable* variable = variables_to_get[i]; // order of loop iteration is the same as was on define loop
-			nc_file->get_variable(*variable, read.second, m_ctx.desc(read.first).ref());
-			i++;
+		for (auto&& [wname, wop, variable]: variables_to_put) {
+			m_ctx.logger().trace("Writing `{}' into NetCDF variable `{}'", wname, variable.get().path());
+			nc_file->put_variable(variable, wop, m_ctx.desc(wname).ref());
 		}
 	}
 }
