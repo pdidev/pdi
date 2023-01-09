@@ -26,8 +26,8 @@
 #include <netcdf.h>
 #include <netcdf_meta.h> // includes NC_HAS_PARALLEL4 define
 #if NC_HAS_PARALLEL4
-	#include <netcdf_par.h>
-	#include <mpi.h>
+#include <netcdf_par.h>
+#include <mpi.h>
 #endif
 #include <sstream>
 #include <string>
@@ -40,9 +40,11 @@
 
 #include "dnc_netcdf_file.h"
 
-namespace decl_netcdf {
+namespace decl_netcdf
+{
 
-namespace { // tools
+namespace   // tools
+{
 
 std::pair<std::string, std::string> split_group_and_variable(const std::string variable_path)
 {
@@ -59,12 +61,12 @@ std::pair<std::string, std::string> split_group_and_variable(const std::string v
 		group_path = "/";
 		variable_name = variable_path;
 	}
-	
+
 	// ensure that group begins with /
 	if (group_path.empty() || group_path[0] != '/') {
 		group_path.insert(group_path.begin(), '/');
 	}
-	
+
 	return {group_path, variable_name};
 }
 
@@ -103,10 +105,15 @@ const PDI::Datatype_sptr get_variable_stride(PDI::Datatype_sptr type, std::vecto
  * \param message a context message to use in case of error
  */
 template<typename... Args>
-void nc_try(int status, const char* message_if_error, const Args& ... args)
+void nc_try(int status, PDI::Context& ctx, const char* message_if_error, Args&& ... args)
 {
 	if (status != NC_NOERR) {
-		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: {} : ({}) {}", fmt::format(message_if_error, args...), status, nc_strerror(status)};
+
+		if ( std::uncaught_exceptions() ) {
+			ctx.logger().error("Decl_netcdf plugin: {}  while handling error: ({}) {}", fmt::format(message_if_error, args...), status, nc_strerror(status));
+		} else {
+			throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: {}: ({}) {}", fmt::format(message_if_error, args...), status, nc_strerror(status)};
+		}
 	}
 }
 
@@ -163,11 +170,11 @@ Dnc_netcdf_file::Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename,
 		m_ctx.logger().debug("Openning `{}' file in parallel mode", m_filename);
 		if (nc_open_par(m_filename.c_str(), rights_flag | NC_NETCDF4, *communicator, mpi_info, &m_file_id) != NC_NOERR) {
 			m_ctx.logger().trace("Cannot open file, creating", m_filename);
-			nc_try(nc_create_par(m_filename.c_str(), rights_flag | NC_NETCDF4, *communicator, mpi_info, &m_file_id),
-			    "Cannot open or create file: {}", m_filename);
+			nc_try(nc_create_par(m_filename.c_str(), rights_flag | NC_NETCDF4, *communicator, mpi_info, &m_file_id), ctx,
+				   "Cannot open or create file: {}", m_filename);
 		} else {
 			if (rights_flag == NC_WRITE) {
-				nc_try(nc_redef(m_file_id), "File opened to write, but cannot get define mode");
+				nc_try(nc_redef(m_file_id), m_ctx, "File opened to write, but cannot get define mode");
 			}
 		}
 #else
@@ -177,27 +184,27 @@ Dnc_netcdf_file::Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename,
 		m_ctx.logger().debug("Openning `{}' file in serial mode", m_filename);
 		if (nc_open(m_filename.c_str(), rights_flag | NC_NETCDF4, &m_file_id) != NC_NOERR) {
 			m_ctx.logger().trace("Cannot open `{}' file, creating", m_filename);
-			nc_try(nc_create(m_filename.c_str(), rights_flag | NC_NETCDF4 | NC_NOCLOBBER, &m_file_id),
-			    "Cannot open or create file: {}", m_filename);
+			nc_try(nc_create(m_filename.c_str(), rights_flag | NC_NETCDF4 | NC_NOCLOBBER, &m_file_id), m_ctx,
+				   "Cannot open or create file: {}", m_filename);
 		} else {
 			if (rights_flag == NC_WRITE) {
-				nc_try(nc_redef(m_file_id), "File opened to write, but cannot get define mode");
+				nc_try(nc_redef(m_file_id), m_ctx, "File opened to write, but cannot get define mode");
 			}
 		}
 	}
-	
+
 	m_ctx.logger().trace("File opened. (nc_id = {})", m_file_id);
-	
+
 	// add file id as a root group
 	m_groups.emplace("/", m_file_id);
 }
 
 Dnc_netcdf_file::Dnc_netcdf_file(Dnc_netcdf_file&& other) noexcept:
 	m_ctx{other.m_ctx},
-      m_filename{std::move(other.m_filename)},
-      m_file_id{std::move(other.m_file_id)},
-      m_groups{std::move(other.m_groups)},
-      m_variables{std::move(other.m_variables)}
+	  m_filename{std::move(other.m_filename)},
+	  m_file_id{std::move(other.m_file_id)},
+	  m_groups{std::move(other.m_groups)},
+	  m_variables{std::move(other.m_variables)}
 {}
 
 void Dnc_netcdf_file::read_group(const Dnc_group& group)
@@ -207,16 +214,16 @@ void Dnc_netcdf_file::read_group(const Dnc_group& group)
 	std::vector<std::string> groups_names = split_to_groups(group.path());
 	int group_id = m_file_id;
 	for (auto&& group_name : groups_names) {
-		nc_try(nc_inq_grp_ncid(dest_id, group_name.c_str(), &group_id),
-		    "Cannot read {} group from (nc_id = {})", group_name, dest_id);
-		    
+		nc_try(nc_inq_grp_ncid(dest_id, group_name.c_str(), &group_id), m_ctx,
+			   "Cannot read {} group from (nc_id = {})", group_name, dest_id);
+
 		m_ctx.logger().trace("Read `{}' group (nc_id = {}) in (nc_id = {})", dest_path + "/" + group_name, group_id, dest_id);
-		
+
 		dest_id = group_id;
 		dest_path += "/" + group_name;
 		m_groups.emplace(dest_path, dest_id);
 	}
-	
+
 	for (auto&& attribute : group.attributes()) {
 		this->get_attribute(group_id, NC_GLOBAL, attribute);
 	}
@@ -224,22 +231,23 @@ void Dnc_netcdf_file::read_group(const Dnc_group& group)
 
 void Dnc_netcdf_file::define_group(const Dnc_group& group)
 {
+	m_ctx.logger().trace("Define group `{}'", group.path());
 	nc_id dest_id = m_file_id;
 	std::string dest_path;
 	std::vector<std::string> groups_names = split_to_groups(group.path());
 	int group_id = m_file_id;
 	for (auto&& group_name : groups_names) {
 		if (nc_inq_grp_ncid(dest_id, group_name.c_str(), &group_id) != NC_NOERR) {
-			nc_try(nc_def_grp(dest_id, group_name.c_str(), &group_id),
-			    "Cannot define group {} in nc_id = {}", group_name, dest_id);
+			nc_try(nc_def_grp(dest_id, group_name.c_str(), &group_id), m_ctx,
+				   "Cannot define group {} in nc_id = {}", group_name, dest_id);
 			m_ctx.logger().trace("Defined `{}' group (nc_id = {}) in (nc_id = {})", dest_path + "/" + group_name, group_id, dest_id);
 		}
-		
+
 		dest_id = group_id;
 		dest_path += "/" + group_name;
 		m_groups.emplace(dest_path, dest_id);
 	}
-	
+
 	for (auto&& attribute : group.attributes()) {
 		this->put_attribute(group_id, NC_GLOBAL, attribute);
 	}
@@ -253,7 +261,7 @@ void Dnc_netcdf_file::read_variable(const Dnc_variable& variable)
 		std::string group_path;
 		std::string variable_name;
 		std::tie(group_path, variable_name) = split_group_and_variable(variable.path());
-		
+
 		// get src_id
 		auto group_it = m_groups.find(group_path);
 		if (group_it == m_groups.end()) {
@@ -263,11 +271,11 @@ void Dnc_netcdf_file::read_variable(const Dnc_variable& variable)
 			std::vector<std::string> groups_names = split_to_groups(group_path);
 			int group_id = m_file_id;
 			for (auto&& group_name : groups_names) {
-				nc_try(nc_inq_grp_ncid(dest_id, group_name.c_str(), &group_id),
-				    "Cannot read {} group from (nc_id = {})", group_name, dest_id);
-				    
+				nc_try(nc_inq_grp_ncid(dest_id, group_name.c_str(), &group_id), m_ctx,
+					   "Cannot read {} group from (nc_id = {})", group_name, dest_id);
+
 				m_ctx.logger().trace("Read `{}' group (nc_id = {}) in (nc_id = {})", dest_path + "/" + group_name, group_id, dest_id);
-				
+
 				dest_id = group_id;
 				dest_path += "/" + group_name;
 				m_groups.emplace(dest_path, dest_id);
@@ -275,14 +283,14 @@ void Dnc_netcdf_file::read_variable(const Dnc_variable& variable)
 			group_it = m_groups.find(group_path);
 		}
 		int src_id = group_it->second;
-		
+
 		int nc_var_id;
-		nc_try(nc_inq_varid(src_id, variable_name.c_str(), &nc_var_id),
-		    "Cannot inquire variable {} from (nc_id = {})", variable_name, src_id);
-		    
+		nc_try(nc_inq_varid(src_id, variable_name.c_str(), &nc_var_id), m_ctx,
+			   "Cannot inquire variable {} from (nc_id = {})", variable_name, src_id);
+
 		m_ctx.logger().trace("Inquired `{}' variable (nc_id = {}) from (nc_id = {})", variable.path(),nc_var_id, src_id);
 		m_variables.emplace(variable.path(), nc_var_id);
-		
+
 		m_ctx.logger().trace("Getting attributes of `{}' variable", variable_name);
 		for (auto&& attribute : variable.attributes()) {
 			get_attribute(src_id, nc_var_id, attribute);
@@ -290,7 +298,8 @@ void Dnc_netcdf_file::read_variable(const Dnc_variable& variable)
 	}
 }
 
-namespace {
+namespace
+{
 
 int get_dimension_id(PDI::Context& ctx, int nc_dest_id, const std::string& dim_name, int type_dim)
 {
@@ -298,12 +307,10 @@ int get_dimension_id(PDI::Context& ctx, int nc_dest_id, const std::string& dim_n
 	if (nc_inq_dimid(nc_dest_id, dim_name.c_str(), &dim_id) == NC_NOERR) {
 		ctx.logger().debug("`{}' dimension is already defined", dim_name);
 		size_t dim_len;
-		nc_try(nc_inq_dimlen (nc_dest_id, dim_id, &dim_len),
-		    "Cannot inquire dimension length");
+		nc_try(nc_inq_dimlen(nc_dest_id, dim_id, &dim_len), ctx, "Cannot inquire dimension length");
 	} else {
 		ctx.logger().debug("Defining `{}' dimension", dim_name);
-		nc_try(nc_def_dim(nc_dest_id, dim_name.c_str(), type_dim, &dim_id),
-		    "Cannot define {} dimension", dim_name);
+		nc_try(nc_def_dim(nc_dest_id, dim_name.c_str(), type_dim, &dim_id), ctx, "Cannot define {} dimension", dim_name);
 	}
 	return dim_id;
 }
@@ -319,14 +326,14 @@ nc_type Dnc_netcdf_file::define_compound_type(std::shared_ptr<const PDI::Record_
 	} catch (const std::exception& e) {
 		throw PDI::Value_error{"Cannot get `decl_netcdf.type' attribute from: {}", record_type->debug_string()};
 	}
-	
+
 	int status = nc_inq_typeid(m_file_id, compound_type_name.c_str(), &type_id);
 	if (status == NC_NOERR) {
 		m_ctx.logger().trace("{} type already defined: (nc_type = {})", compound_type_name, type_id);
 		return type_id;
 	}
-	
-	
+
+
 	/* support types in non-root groups? - netCDF 4.7.4 does not support it correctly
 	    std::string group_path;
 	    std::string compound_type_name;
@@ -339,7 +346,7 @@ nc_type Dnc_netcdf_file::define_compound_type(std::shared_ptr<const PDI::Record_
 	    }
 	    nc_id dest_id = group_it->second;
 	*/
-	
+
 	// HAVE TO DEFINE SUB COMPOUND TYPE BEFOER CALLING nc_def_compound
 	for (auto&& member : record_type->members()) {
 		PDI::Datatype_sptr type = member.type();
@@ -351,11 +358,11 @@ nc_type Dnc_netcdf_file::define_compound_type(std::shared_ptr<const PDI::Record_
 			define_compound_type(member_record_type);
 		}
 	}
-	
+
 	m_ctx.logger().debug("Defining new compound type: {} ({} B)", compound_type_name, record_type->buffersize());
-	nc_try(nc_def_compound(m_file_id, record_type->buffersize(), compound_type_name.c_str(), &type_id),
-	    "Cannot define record type");
-	    
+	nc_try(nc_def_compound(m_file_id, record_type->buffersize(), compound_type_name.c_str(), &type_id), m_ctx,
+		   "Cannot define record type");
+
 	for (auto&& member : record_type->members()) {
 		if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(member.type())) {
 			// member is an array
@@ -398,13 +405,11 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 		m_ctx.logger().trace("Variable `{}' already defined", variable.path());
 		return;
 	}
-	
+
 	// get group path and variable name
-	std::string group_path;
-	std::string variable_name;
-	std::tie(group_path, variable_name) = split_group_and_variable(variable.path());
+	auto&& [group_path, variable_name] = split_group_and_variable(variable.path());
 	m_ctx.logger().trace("Variable path `{}' splitted to `{}' group and `{}` variable name", variable.path(), group_path, variable_name);
-	
+
 	// get dest_id
 	auto group_it = m_groups.find(group_path);
 	if (group_it == m_groups.end()) {
@@ -415,7 +420,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 		group_it = m_groups.find(group_path);
 	}
 	int dest_id = group_it->second;
-	
+
 	nc_id var_id;
 	if (nc_inq_varid(dest_id, variable_name.c_str(), &var_id) == NC_NOERR) {
 		// variable already defined
@@ -430,7 +435,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Variable {}: Data must be dense (continuous memory)", variable.path()};
 		}
 		m_ctx.logger().trace("Preparing variable `{}'", variable_name);
-		
+
 		PDI::Datatype_sptr type = variable_type;
 		std::vector<size_t> sizes;
 		while (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(type)) {
@@ -445,7 +450,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 		} else {
 			throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Not supported datatype: {}", type->debug_string()};
 		}
-		
+
 		// get variable dimensions
 		m_ctx.logger().trace("Defining dimensions of {} variable:", variable.path());
 		std::vector<nc_id> dimensions_ids;
@@ -462,29 +467,29 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			if (sizes.size() != dimensions_names.size()) {
 				throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Variable type dimension ({}) != defined variable dimensions ({})", sizes.size(), dimensions_names.size()};
 			}
-			
+
 			for (int i = 0; i < dimensions_names.size(); i++) {
 				std::string dim_name = dimensions_names[i];
 				m_ctx.logger().trace("\t {}[{}]", dim_name, sizes[i]);
 				dimensions_ids.emplace_back(get_dimension_id(m_ctx, dest_id, dim_name, sizes[i]));
 			}
 		}
-		
+
 		m_ctx.logger().trace("Defining variable `{}' in (nc_id = {}) of type (nc_id = {})", variable.path(), dest_id, type_id);
-		nc_try(nc_def_var(dest_id, variable_name.c_str(), type_id, dimensions_ids.size(), dimensions_ids.data(), &var_id),
-		    "Cannot define `{}' variable in (nc_id = {})", variable_name, dest_id);
+		nc_try(nc_def_var(dest_id, variable_name.c_str(), type_id, dimensions_ids.size(), dimensions_ids.data(), &var_id), m_ctx,
+			   "Cannot define `{}' variable in (nc_id = {})", variable_name, dest_id);
 		m_ctx.logger().trace("Variable `{}' defined (var_id = {})", variable.path(), var_id);
 	}
-	
+
 	m_variables.emplace(variable.path(), var_id);
-	
+
 #if NC_HAS_PARALLEL4
 	if (m_communicator) {
-		nc_try(nc_var_par_access(dest_id, var_id, NC_COLLECTIVE),
-		    "Cannot change the access of `{}' variable to parallel", variable_name);
+		nc_try(nc_var_par_access(dest_id, var_id, NC_COLLECTIVE), m_ctx,
+			   "Cannot change the access of `{}' variable to parallel", variable_name);
 	}
 #endif
-	
+
 	// set the attributes
 	m_ctx.logger().trace("Putting attributes ({}), to `{}' variable", variable.attributes().size(), variable_name);
 	for (auto&& attribute : variable.attributes()) {
@@ -499,8 +504,8 @@ void Dnc_netcdf_file::get_attribute(nc_id src_id, nc_id var_id, const Dnc_attrib
 		m_ctx.logger().trace("Getting `{}' attribute from (nc_id = {}/{})", attribute.name(), src_id, var_id);
 		if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
 			// get scalar attribute
-			nc_try(nc_get_att(src_id, var_id, attribute.name().c_str(), ref_w.get()),
-			    "Cannot get attribute  `{}' from (nc_id = {}/{})", attribute.name(), src_id, var_id);
+			nc_try(nc_get_att(src_id, var_id, attribute.name().c_str(), ref_w.get()), m_ctx,
+				   "Cannot get attribute  `{}' from (nc_id = {}/{})", attribute.name(), src_id, var_id);
 		} else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref_w.type())) {
 			// get array attribute
 			if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
@@ -528,16 +533,16 @@ void Dnc_netcdf_file::put_attribute(nc_id dest_id, nc_id var_id, const Dnc_attri
 	if (PDI::Ref_r ref_r = attribute.value()) {
 		if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_r.type())) {
 			// set scalar attribute
-			nc_try(nc_put_att(dest_id, var_id, attribute.name().c_str(), nc_scalar_type(*scalar_type), 1, ref_r.get()),
-			    "Cannot put attribute  `{}' to (nc_id = {}/{})", attribute.name(), dest_id, var_id);
+			nc_try(nc_put_att(dest_id, var_id, attribute.name().c_str(), nc_scalar_type(*scalar_type), 1, ref_r.get()), m_ctx,
+				   "Cannot put attribute  `{}' to (nc_id = {}/{})", attribute.name(), dest_id, var_id);
 		} else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref_r.type())) {
 			// set array attribute
 			if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
 				if (!array_type->dense()) {
 					throw PDI::Error{PDI_ERR_TYPE, "Decl_netcdf plugin: Attribute type must be dense (continuous memory)"};
 				} else {
-					nc_try(nc_put_att(dest_id, var_id, attribute.name().c_str(), nc_scalar_type(*scalar_type), array_type->size(), ref_r.get()),
-					    "Cannot put attribute  `{}' to (nc_id = {}/{})", attribute.name(), dest_id, var_id);
+					nc_try(nc_put_att(dest_id, var_id, attribute.name().c_str(), nc_scalar_type(*scalar_type), array_type->size(), ref_r.get()), m_ctx,
+						   "Cannot put attribute  `{}' to (nc_id = {}/{})", attribute.name(), dest_id, var_id);
 				}
 			} else {
 				throw PDI::Error{PDI_ERR_TYPE, "Decl_netcdf plugin: Multi dimensional array for attribute not supported"};
@@ -550,9 +555,9 @@ void Dnc_netcdf_file::put_attribute(nc_id dest_id, nc_id var_id, const Dnc_attri
 	}
 }
 
-void Dnc_netcdf_file::enddef() const
+void Dnc_netcdf_file::enddef()
 {
-	nc_try(nc_enddef(m_file_id), "Cannot end define mode");
+	nc_try(nc_enddef(m_file_id), m_ctx, "Cannot end define mode");
 	m_ctx.logger().debug("Define mode end in file {} (nc_id = {})", m_filename, m_file_id);
 }
 
@@ -562,41 +567,41 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	if (!ref_r) {
 		throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Cannot write `{}'. Need read access to write it to file", variable.path()};
 	}
-	
+
 	// get group path and variable name
 	std::string group_path;
 	std::string variable_name;
 	std::tie(group_path, variable_name) = split_group_and_variable(variable.path());
-	
+
 	// get dest_id
 	auto group_it = m_groups.find(group_path);
 	if (group_it == m_groups.end()) {
 		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Cannot find group that should be created: {}", group_path};
 	}
 	nc_id dest_id = group_it->second;
-	
+
 	// get var_id
 	auto var_it = m_variables.find(variable.path());
 	if (var_it == m_variables.end()) {
 		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Cannot find variable that should be created: {}", variable.path()};
 	}
 	nc_id var_id = var_it->second;
-	
+
 	// get variable stride to calculate start and count
 	std::vector<size_t> var_stride;
 	get_variable_stride(variable.type(), var_stride);
 	std::vector<size_t> var_start = write.get_dims_start(var_stride);
 	std::vector<size_t> var_count = write.get_dims_count(var_stride);
-	
+
 	// write variable
 	m_ctx.logger().trace("Putting variable `{}' (var_id = {})", variable_name, var_id);
-	
+
 	if (var_stride.empty()) {
-		nc_try(nc_put_var(dest_id, var_id, ref_r.get()),
-		    "Decl_netcdf plugin: Cannot write `{}' to (nc_id = {})", dest_id);
+		nc_try(nc_put_var(dest_id, var_id, ref_r.get()), m_ctx,
+			   "Decl_netcdf plugin: Cannot write `{}' to (nc_id = {})", dest_id);
 	} else {
-		nc_try(nc_put_vara(dest_id, var_id, var_start.data(), var_count.data(), ref_r.get()),
-		    "Decl_netcdf plugin: Cannot write `{}' to (nc_id = {})", dest_id);
+		nc_try(nc_put_vara(dest_id, var_id, var_start.data(), var_count.data(), ref_r.get()), m_ctx,
+			   "Decl_netcdf plugin: Cannot write `{}' to (nc_id = {})", dest_id);
 	}
 	m_ctx.logger().trace("Variable `{}' written", variable_name);
 }
@@ -606,48 +611,47 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	if (!ref_w) {
 		throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Cannot read `{}'. Need write access to read it from file", variable.path()};
 	}
-	
+
 	// get variable stride to calculate start and count
 	std::vector<size_t> var_stride;
 	get_variable_stride(variable.type(), var_stride);
 	std::vector<size_t> var_start = read.get_dims_start(var_stride);
 	std::vector<size_t> var_count = read.get_dims_count(var_stride);
-	
+
 	// get group path and variable name
 	std::string group_path;
 	std::string variable_name;
 	std::tie(group_path, variable_name) = split_group_and_variable(variable.path());
-	
+
 	// get src_id
-	auto group_it = m_groups.find(group_path);
+	auto const group_it = m_groups.find(group_path);
 	if (group_it == m_groups.end()) {
 		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Cannot find group that should be created: {}", group_path};
 	}
-	nc_id src_id = group_it->second;
-	
+	nc_id const src_id = group_it->second;
+
 	// get var_id
-	auto var_it = m_variables.find(variable.path());
+	auto const var_it = m_variables.find(variable.path());
 	if (var_it == m_variables.end()) {
 		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Cannot find variable that should be created: {}", variable.path()};
 	}
-	nc_id var_id = var_it->second;
-	
+	nc_id const var_id = var_it->second;
+
 	// read variable
 	m_ctx.logger().trace("Getting variable `{}'", variable.path());
 	if (var_stride.empty()) {
-		nc_try(nc_get_var(src_id, var_id, ref_w.get()),
-		    "Cannot read `{}' from file", variable.path());
+		nc_try(nc_get_var(src_id, var_id, ref_w.get()), m_ctx,
+			   "Cannot read `{}' from file", variable.path());
 	} else {
-		nc_try(nc_get_vara(src_id, var_id, var_start.data(), var_count.data(), ref_w.get()),
-		    "Cannot read `{}' from file", variable.path());
+		nc_try(nc_get_vara(src_id, var_id, var_start.data(), var_count.data(), ref_w.get()), m_ctx,
+			   "Cannot read `{}' from file", variable.path());
 	}
 }
 
 Dnc_netcdf_file::~Dnc_netcdf_file()
 {
 	m_ctx.logger().debug("Closing file {} (nc_id = {})", m_filename, m_file_id);
-	nc_try(nc_close(m_file_id),
-	    "Cannot close the file {}", m_filename);
+	nc_try(nc_close(m_file_id), m_ctx, "Cannot close the file {}", m_filename);
 }
 
 } // namespace decl_netcdf
