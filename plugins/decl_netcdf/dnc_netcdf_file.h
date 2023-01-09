@@ -102,6 +102,12 @@ public:
 	/// Move constructor
 	Dnc_netcdf_file(Dnc_netcdf_file&& other) noexcept;
 
+	/** Return the filename of this NetCDF file
+	 *
+	 * \return the filename of this NetCDF file
+	 */
+	std::string const & path() const { return m_filename; }
+
 	/** Reads group nc_id from file and all attributes defined in yaml
 	 *
 	 * \param group group to be read
@@ -127,7 +133,7 @@ public:
 	void define_variable(const Dnc_variable& variable);
 
 	/// Ends definion mode in NetCDF file
-	void enddef() const;
+	void enddef();
 
 	/** Puts variable to the file
 	 *

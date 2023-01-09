@@ -226,6 +226,7 @@ void Dnc_netcdf_file::read_group(const Dnc_group& group)
 
 void Dnc_netcdf_file::define_group(const Dnc_group& group)
 {
+	m_ctx.logger().trace("Define group `{}'", group.path());
 	nc_id dest_id = m_file_id;
 	std::string dest_path;
 	std::vector<std::string> groups_names = split_to_groups(group.path());
@@ -392,8 +393,8 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 	}
 
 	// get group path and variable name
-	auto [group_path, variable_name] = split_group_and_variable(variable.path());
-	m_ctx.logger().trace("Variable path `{}' splitted to `{}' group and `{}` variable name", variable.path(), group_path, variable_name);
+	auto&& [group_path, variable_name] = split_group_and_variable(variable.path());
+	m_ctx.logger().trace("Variable path `{}' split to `{}' / `{}` ", variable.path(), group_path, variable_name);
 
 	// get dest_id
 	auto group_it = m_groups.find(group_path);
@@ -610,7 +611,7 @@ void Dnc_netcdf_file::put_attribute(nc_id dest_id, nc_id var_id, const Dnc_attri
 	}
 }
 
-void Dnc_netcdf_file::enddef() const
+void Dnc_netcdf_file::enddef()
 {
 	nc_try(nc_enddef(m_file_id), "cannot end define mode");
 	m_ctx.logger().debug("Define mode end in file {} (nc_id = {})", m_filename, m_file_id);
@@ -677,18 +678,18 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	auto [group_path, variable_name] = split_group_and_variable(variable.path());
 
 	// get src_id
-	auto group_it = m_groups.find(group_path);
+	auto const group_it = m_groups.find(group_path);
 	if (group_it == m_groups.end()) {
 		throw PDI::Value_error{"Decl_netcdf plugin: Cannot find group that should be created: {}", group_path};
 	}
-	nc_id src_id = group_it->second;
+	nc_id const src_id = group_it->second;
 
 	// get var_id
-	auto var_it = m_variables.find(variable.path());
+	auto const var_it = m_variables.find(variable.path());
 	if (var_it == m_variables.end()) {
 		throw PDI::Value_error{"Decl_netcdf plugin: Cannot find variable that should be created: {}", variable.path()};
 	}
-	nc_id var_id = var_it->second;
+	nc_id const var_id = var_it->second;
 
 	// read variable and check for scalar type match
 	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {

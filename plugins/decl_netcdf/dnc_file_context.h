@@ -83,12 +83,12 @@ class Dnc_file_context
 
 	/** Returns variable of given path, can be temporary if not found in m_variables
 	 *
-	 * \param desc_name descriptor name corelated with this variable
+	 * \param desc_name descriptor name correlated with this variable
 	 * \param variable_path path of the variable
 	 * \param variables_holder list of temporary variables created from desc_name
 	 * \return variable of given path, nullptr if variable doesn't exist
 	 */
-	Dnc_variable* variable(const std::string& desc_name, const std::string& variable_path, std::list<Dnc_variable>& variables_holder);
+	Dnc_variable& variable(const std::string& desc_name, const std::string& variable_path, std::list<Dnc_variable>& variables_holder);
 
 public:
 	/** Creates a NetCDF file information from yaml
