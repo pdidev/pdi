@@ -103,7 +103,7 @@ public:
 	Dnc_netcdf_file(Dnc_netcdf_file&& other) noexcept;
 
 	/** Return the filename of this NetCDF file
-	 * 
+	 *
 	 * \return the filename of this NetCDF file
 	 */
 	std::string const & path() const { return m_filename; }

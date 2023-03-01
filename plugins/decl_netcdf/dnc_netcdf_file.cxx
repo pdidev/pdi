@@ -43,8 +43,7 @@
 
 namespace decl_netcdf {
 
-namespace // tools
-{
+namespace { // tools
 
 std::pair<std::string, std::string> split_group_and_variable(const std::string variable_path)
 {
@@ -406,7 +405,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 
 	// get group path and variable name
 	auto&& [group_path, variable_name] = split_group_and_variable(variable.path());
-	m_ctx.logger().trace("Variable path `{}' splitted to `{}' group and `{}` variable name", variable.path(), group_path, variable_name);
+	m_ctx.logger().trace("Variable path `{}' split to `{}' / `{}` ", variable.path(), group_path, variable_name);
 
 	// get dest_id
 	auto group_it = m_groups.find(group_path);
