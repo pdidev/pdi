@@ -85,7 +85,7 @@ fi
 if [ "xspack" = "x${PDI_SYSTEM}" -a "xlatest" = "x${PDI_DEPS}" ]
 then
 	# Workaround https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/433
-	CTEST_FLAGS="${CTEST_FLAGS} -E^test_05_C$"
+	CTEST_FLAGS="${CTEST_FLAGS} -Etest_05_C"
 fi
 
 if [ "xubuntu-bionic" = "x${PDI_SYSTEM}" -a "xprovided" != "x${PDI_LIBS}" ]
