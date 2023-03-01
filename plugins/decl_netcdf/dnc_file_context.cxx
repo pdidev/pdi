@@ -1,7 +1,7 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
- * All rights reserved.
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies
+ *alternatives (CEA) Copyright (C) 2019-2021 Institute of Bioorganic Chemistry
+ *Polish Academy of Science (PSNC) All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -240,7 +240,8 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 				variable.type(ref.type());
 			}
 
-			// read variable (could be done in get_variable, but we want to be coherent with write)
+			// read variable (could be done in get_variable, but we want to be
+			// coherent with write)
 			nc_file.read_variable(variable);
 
 			// execute read
@@ -253,8 +254,8 @@ void Dnc_file_context::execute()
 {
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder;
-		std::vector<std::tuple<std::string, std::reference_wrapper<Dnc_io>, std::reference_wrapper<Dnc_variable>>> variables_to_get;
-		std::vector<std::tuple<std::string, std::reference_wrapper<Dnc_io>, std::reference_wrapper<Dnc_variable>>> variables_to_put;
+		std::vector<std::tuple<std::string, std::reference_wrapper<Dnc_io>, std::reference_wrapper<Dnc_variable> >> variables_to_get;
+		std::vector<std::tuple<std::string, std::reference_wrapper<Dnc_io>, std::reference_wrapper<Dnc_variable> >> variables_to_put;
 
 		std::optional<Dnc_netcdf_file> nc_file;
 		if (m_write.empty()) {
@@ -271,8 +272,9 @@ void Dnc_file_context::execute()
 			}
 		}
 
-		// read all variables
+		// define all read variables
 		for (auto&& [wname, wop]: m_read) {
+			m_ctx.logger().trace("Prepare to read NetCDF variable `{}'", wname);
 			Dnc_variable& variable = this->variable(wname, wop.variable_path(), variables_holder);
 
 			// ensure that variable has a type
@@ -280,15 +282,16 @@ void Dnc_file_context::execute()
 				// TODO: undo the type for defined variables
 				variable.type(m_ctx.desc(wname).ref().type());
 			}
-
-			variables_to_get.emplace_back(wname, wop, variable);
 
 			// read this variable
 			nc_file->read_variable(variable);
+
+			variables_to_get.emplace_back(wname, wop, variable);
 		}
 
-		// define all variables
+		// define all write variables
 		for (auto&& [wname, wop]: m_write) {
+			m_ctx.logger().trace("Prepare to write NetCDF variable `{}'", wname);
 			Dnc_variable& variable = this->variable(wname, wop.variable_path(), variables_holder);
 
 			// ensure that variable has a type
@@ -297,14 +300,16 @@ void Dnc_file_context::execute()
 				variable.type(m_ctx.desc(wname).ref().type());
 			}
 
-			variables_to_put.emplace_back(wname, wop, variable);
-
 			// define this variable
 			nc_file->define_variable(variable);
+
+			variables_to_put.emplace_back(wname, wop, variable);
 		}
 
-		// end NetCDF definition mode
-		nc_file->enddef();
+		if (!m_write.empty()) {
+			// end NetCDF definition mode
+			nc_file->enddef();
+		}
 
 		for (auto&& [wname, wop, variable]: variables_to_get) {
 			m_ctx.logger().trace("Reading NetCDF variable `{}' into `{}'", variable.get().path(), wname);
