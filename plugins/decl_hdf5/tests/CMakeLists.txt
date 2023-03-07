@@ -94,6 +94,15 @@ if("${BUILD_HDF5_PARALLEL}")
 	set_property(TEST decl_hdf5_mpi_05_C PROPERTY PROCESSORS 8)
 endif()
 
+# scalars default options
+if("${BUILD_HDF5_PARALLEL}")
+	add_executable(decl_hdf5_mpi_06_C decl_hdf5_mpi_test_06.c)
+	target_link_libraries(decl_hdf5_mpi_06_C PDI::PDI_C MPI::MPI_C)
+	add_test(NAME decl_hdf5_mpi_06_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_06_C>" ${MPIEXEC_POSTFLAGS})
+	set_property(TEST decl_hdf5_mpi_06_C PROPERTY TIMEOUT 15)
+	set_property(TEST decl_hdf5_mpi_06_C PROPERTY PROCESSORS 4)
+endif()
+
 add_executable(decl_hdf5_IO_options_C decl_hdf5_test_IO_options.c)
 target_link_libraries(decl_hdf5_IO_options_C PDI::PDI_C  ${HDF5_DEPS})
 add_test(NAME decl_hdf5_IO_options_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:decl_hdf5_IO_options_C>")

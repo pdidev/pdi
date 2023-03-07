@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -321,10 +321,7 @@ void File_op::execute(Context& ctx)
 			} else if (m_collision_policy & Collision_policy::REPLACE) {
 				notify("Deleting old file and creating a new one", filename);
 				H5Fclose(h5_file_raw);
-				if (remove(filename.c_str()) != 0) {
-					throw System_error{"Filename collision `{}': Cannot delete old file", filename};
-				}
-				h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
+				h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, file_lst);
 			} else if (m_collision_policy & Collision_policy::ERROR) {
 				H5Fclose(h5_file_raw);
 				throw System_error{"Filename collision `{}': File already exists", filename};
