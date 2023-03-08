@@ -10,11 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [Unreleased]
+## [1.6.0] - 2023-03-08
 
 ### For users
-
-#### Added
 
 #### Changed
 * Updated minimum required versions for paraconf to 0.4.16.
@@ -23,29 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (reverts
   [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413))
 * Update required version of paraconf to 1.0.0
-
-#### Deprecated
-
-#### Removed
-
-#### Fixed
-
-#### Security
-
-
-### For plugin developers
-
-#### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
-#### Fixed
-
-#### Security
 
 
 

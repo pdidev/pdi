@@ -4,21 +4,6 @@ All notable changes to the Serialize plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-
-
 ## [1.5.3] - 2022-05-31
 
 ### Fixed
