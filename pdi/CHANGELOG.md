@@ -17,12 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 #### Changed
-* Updated minimum required versions for paraconf to 0.4.16.
-* Remove {fmt} as a direct dependency, use that provided by spdlog to fix
-  [#431](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/431)
-  (reverts
-  [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413))
-* Update required version of paraconf to 1.0.0
 
 #### Deprecated
 
@@ -46,6 +40,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixed
 
 #### Security
+
+
+
+## [1.6.0] - 2023-03-08
+
+### For users
+
+#### Changed
+* Updated minimum required versions for paraconf to 0.4.16.
+* Remove {fmt} as a direct dependency, use that provided by spdlog to fix
+  [#431](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/431)
+  (reverts
+  [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413))
+* Update required version of paraconf to 1.0.0
 
 
 
