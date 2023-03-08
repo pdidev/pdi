@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -303,7 +303,7 @@ if("${BUILD_FORTRAN}")
 endif()
 # if ( PDI or ... )
 sbuild_add_dependency(paraconf "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/paraconf-0.4.16"
+	EMBEDDED_PATH "vendor/paraconf-1.0.0"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	SOURCE_SUBDIR "paraconf"
 	CMAKE_CACHE_ARGS
@@ -311,7 +311,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 		"-DUSE_yaml:STRING=SYSTEM"
 		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
-	VERSION 0.4.15
+	VERSION 1.0.0
 )
 
 

@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#431](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/431)
   (reverts
   [#413](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/413))
+* Update required version of paraconf to 1.0.0
 
 #### Deprecated
 

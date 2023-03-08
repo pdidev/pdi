@@ -171,7 +171,7 @@ Dependencies of **%PDI**:
 * **a C 99 and C++ 17 compiler (not provided)** such as
   - [gcc](https://gcc.gnu.org/) 7.5 or above,
   - [clang](https://clang.llvm.org/) 9.0 or above,
-* the [paraconf](https://github.com/pdidev/paraconf) library version 0.4.16 or above (provided),
+* the [paraconf](https://github.com/pdidev/paraconf) library version 1.0.0 or above (provided),
 * the [libyaml](https://pyyaml.org/wiki/LibYAML) library version 0.2.2 or above (provided),
 * the [spdlog](https://github.com/gabime/spdlog) library version 1.3.1 or above (provided).
 

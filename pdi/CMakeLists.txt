@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -108,7 +108,7 @@ set(PARACONF_COMPONENTS "C")
 if("${BUILD_FORTRAN}")
 	list(APPEND PARACONF_COMPONENTS "f90")
 endif()
-find_package(paraconf 0.4.16 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
+find_package(paraconf 1.0.0 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
 find_package(spdlog 1.5.0 REQUIRED) # must match PDIConfig.cmake.in
 if("${BUILD_INDENT}")
 	find_package(Astyle 3.1 REQUIRED)

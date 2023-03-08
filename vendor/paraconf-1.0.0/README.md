@@ -11,11 +11,11 @@ dependancies and examples.
 You can find a list of release at 
 https://github.com/pdidev/paraconf/releases
 
-For example, you can get release 0.4.16:
+For example, you can get release 1.0.0:
 ```
-wget https://github.com/pdidev/paraconf/archive/0.4.16.tar.gz
-tar -xzf 0.4.16.tar.gz
-mv paraconf-0.4.16 paraconf
+wget https://github.com/pdidev/paraconf/archive/1.0.0.tar.gz
+tar -xzf 1.0.0.tar.gz
+mv paraconf-1.0.0 paraconf
 ```
 
 

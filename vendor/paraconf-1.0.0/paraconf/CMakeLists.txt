@@ -116,7 +116,7 @@ install(FILES include/paraconf.h "${paraconf_BINARY_DIR}/paraconf_export.h"
 
 if("${BUILD_FORTRAN}")
 	add_library(paraconf_f90 src/fortran/paraconf.f90)
-	target_link_libraries(paraconf_f90 INTERFACE paraconf)
+	target_link_libraries(paraconf_f90 PUBLIC paraconf)
 	target_include_directories(paraconf_f90
 		PUBLIC "$<BUILD_INTERFACE:${paraconf_SOURCE_DIR}/include>"
 		INTERFACE "$<BUILD_INTERFACE:${paraconf_BINARY_DIR}/fmoddir/>")
