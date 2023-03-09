@@ -12,7 +12,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 * NetCDF 4.6.2 is now required for parallel NetCDF support.
-* Updated minimum required versions for paraconf to 0.4.16.
 * Updated vendored PyYaml version to 6.0.
 * Remove {fmt} as a direct dependency, use that provided by spdlog to fix
   [#431](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/431)

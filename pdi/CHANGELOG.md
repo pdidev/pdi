@@ -48,7 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### For users
 
 #### Changed
-* Updated minimum required versions for paraconf to 0.4.16.
 * Remove {fmt} as a direct dependency, use that provided by spdlog to fix
   [#431](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/431)
   (reverts
