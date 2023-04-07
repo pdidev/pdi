@@ -1,7 +1,7 @@
 # About {#mainpage}
 
 %PDI supports [loose coupling](https://en.wikipedia.org/wiki/Loose_coupling) of
-simulation codes with libraries:
+simulation codes with data handling libraries:
 * the simulation code is annotated in a library-agnostic way,
 * libraries are used from the \ref Specification_tree_ref "specification tree".
 
