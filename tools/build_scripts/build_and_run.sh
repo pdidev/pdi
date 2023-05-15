@@ -88,19 +88,19 @@ then
 	CTEST_FLAGS="-E test_05_C ${CTEST_FLAGS}"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ "xubuntu-.*" && "xprovided" != "x${PDI_LIBS}" ]]
+if [[ "x${PDI_SYSTEM}" =~ ^xubuntu-.* && "xprovided" != "x${PDI_LIBS}" ]]
 then
 	#TODO: https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/195
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_DECL_SION_PLUGIN=OFF"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ "xubuntu-.*" && "xprovided" = "x${PDI_LIBS}" ]]
+if [[ "x${PDI_SYSTEM}" =~ ^xubuntu-.* && "xprovided" = "x${PDI_LIBS}" ]]
 then
 	# only sequential NetCDF is provided as a package in Ubuntu
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ "xubuntu-.*" && "xprovided" = "x${PDI_LIBS}" && "x${PDI_MPI}" != "openmpi" ]]
+if [[ "x${PDI_SYSTEM}" =~ ^xubuntu-.* && "xprovided" = "x${PDI_LIBS}" && "x${PDI_MPI}" != "openmpi" ]]
 then
 	#TODO: mpich flowvr package is missing
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_FLOWVR_PLUGIN=OFF"
