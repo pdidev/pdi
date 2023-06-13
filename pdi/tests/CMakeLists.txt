@@ -104,6 +104,21 @@ target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::GT
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)
 
+find_program(ZSH_PROGRAM zsh)
+if(EXISTS "${ZSH_PROGRAM}")
+	set(ZSH_PROGRAM_FOUND ON)
+else()
+	set(ZSH_PROGRAM_FOUND OFF)
+endif()
+option(ENABLE_ZSH "Enable test of ZSH for env script" "${ZSH_PROGRAM_FOUND}")
+if("${ENABLE_ZSH}" STREQUAL "AUTO")
+	set(ENABLE_ZSH "${ZSH_PROGRAM_FOUND}")
+endif()
+
+add_test(NAME PDI_test_env_zsh COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/test_env_sh" "${CMAKE_INSTALL_PREFIX}/share/pdi/env.bash")
+if(NOT "${ENABLE_ZSH}")
+	set_property(TEST PDI_test_env_zsh PROPERTY DISABLED TRUE)
+endif()
 
 if("${Astyle_FOUND}")
 	Astyle_add_indent(PDI_tests_indent

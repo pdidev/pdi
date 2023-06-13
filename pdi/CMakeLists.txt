@@ -393,13 +393,19 @@ endif()
 
 # Installable config
 
-configure_file(scripts/env.bash.in env.bash @ONLY)
-configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
-install(FILES "${PDI_BINARY_DIR}/env.bash"
+configure_file(scripts/env.sh.in env.sh @ONLY)
+configure_file(scripts/env.xsh env.bash @ONLY)
+configure_file(scripts/env.xsh env.zsh @ONLY)
+install(FILES
+			"${PDI_BINARY_DIR}/env.bash"
+			"${PDI_BINARY_DIR}/env.sh"
+			"${PDI_BINARY_DIR}/env.zsh"
 		DESTINATION "${INSTALL_PDIDATADIR}"
 		COMPONENT Runtime
 )
 
+
+configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
 write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
 		VERSION "${PDI_VERSION}"
 		COMPATIBILITY AnyNewerVersion

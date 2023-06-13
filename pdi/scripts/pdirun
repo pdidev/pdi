@@ -1,7 +1,13 @@
 #!/bin/bash
 
+if [ "x-v" = "x${1}" -o "$*" = "" ]
+then
+	export PDI_VERBOSE_ENV=TRUE
+	shift
+fi
+
 # this in in bin/, go up one directories
-. "$(dirname "$0")/../share/pdi/env.bash"
+. "$(dirname "$0")/../share/pdi/env.sh"
 
 # run the provided command
 exec "$@"

@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
+* Fix unexpected behavior with zsh where env variables were set incorrectly.
+  Exit script if shell is unsupported
+  [#434](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/434)
 
 #### Security
 
