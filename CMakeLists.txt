@@ -574,7 +574,7 @@ if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
 	sbuild_get_env(CPATH CPATH)
 	sbuild_get_env(LIBRARY_PATH LIBRARY_PATH)
 	sbuild_add_dependency(PyYAML "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/PyYAML-6.0"
+		EMBEDDED_PATH "vendor/PyYAML-6.0.1"
 		CONFIGURE_COMMAND "true"
 		BUILD_COMMAND "true"
 		INSTALL_COMMAND env
