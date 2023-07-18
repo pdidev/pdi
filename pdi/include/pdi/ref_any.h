@@ -50,7 +50,7 @@ namespace {
 template<bool R, bool W>
 struct Ref_access {
 	/// No access (void) by default
-	typedef void type;
+	using type = void;
 };
 
 /** The type returned by a reference with R/W access where W=true
@@ -58,7 +58,7 @@ struct Ref_access {
 template<bool R>
 struct Ref_access<R, true> {
 	/// Full (void*) access
-	typedef void* type;
+	using type = void*;
 };
 
 /** The type returned by a reference with R/W access where R=true, W=false
@@ -66,8 +66,11 @@ struct Ref_access<R, true> {
 template<>
 struct Ref_access<true, false> {
 	/// read-only access (const void*)
-	typedef const void* type;
+	using type = void const*;
 };
+
+template<bool R, bool W>
+using ref_access_t = typename Ref_access<R,W>::type;
 
 } //namespace <anonymous>
 
@@ -479,7 +482,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	operator typename Ref_access<R, W>::type() const
+	operator ref_access_t<R, W>() const
 	{
 		return get();
 	}
@@ -488,7 +491,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	typename Ref_access<R, W>::type get() const
+	ref_access_t<R, W> get() const
 	{
 		if (is_null()) throw Right_error{"Trying to dereference a null reference"};
 		return m_content->m_data;
@@ -498,7 +501,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	typename Ref_access<R, W>::type get(std::nothrow_t) const noexcept
+	ref_access_t<R, W> get(std::nothrow_t) const noexcept
 	{
 		if (is_null()) return nullptr;
 		return m_content->m_data;
