@@ -32,15 +32,13 @@
 set -xe
 
 
-cd "$(mktemp -d)"
-TEST_DIR="${TEST_DIR:-${PWD}}"
-
-
 cd "$(dirname "$0")/" # build_scripts
 cd "../.."  # PDI distrib dir
 SRCDIR="$(pwd)"
 
 
+cd "$(mktemp -d)"
+TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 
 
