@@ -30,9 +30,10 @@
 
 .shared_script: &shared_script
   - export DOCKER_RUNNER=gitlab
-  - export MAKEFLAGS='-j 2'
+  - export MAKEFLAGS='-j 4'
   - export CTEST_FLAGS="--output-junit ${PWD}/tests.xml"
   - export TEST_DIR=/tmp
+  - if [ -d /tmpfs ]; then export TEST_DIR=/tmpfs; fi
   - bash tools/build_scripts/build_and_run.sh
 
 .default_run: &default_run [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
