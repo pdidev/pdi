@@ -32,6 +32,7 @@
 set -xe
 
 
+cd "$(mktemp -d)"
 TEST_DIR="${TEST_DIR:-${PWD}}"
 
 
@@ -41,7 +42,6 @@ SRCDIR="$(pwd)"
 
 
 cd "${TEST_DIR}"
-cd "$(mktemp -d)"
 
 
 MAKEFLAGS="${MAKEFLAGS:--j}"
