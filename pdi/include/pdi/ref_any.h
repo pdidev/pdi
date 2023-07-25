@@ -91,10 +91,7 @@ protected:
 	struct PDI_NO_EXPORT Referenced_buffer {
 	
 		/// The function to call to deallocate the buffer memory
-		std::function<void()> m_delete;
-		
-		/// Number of references to this buffer
-		int m_owners;
+		std::function<void()> m_deallocator;
 		
 		/// Number of locks preventing read access
 		int m_read_locks;
@@ -115,10 +112,9 @@ protected:
 		 * \param writable whether it is allowed to write the content
 		 */
 		Referenced_buffer(std::function<void()> deleter, bool readable, bool writable) noexcept:
-			m_delete{deleter},
-		         m_owners{0},
-		         m_read_locks{readable ? 0 : 1},
-		         m_write_locks{writable ? 0 : 1}
+			m_deallocator{deleter},
+		              m_read_locks{readable ? 0 : 1},
+		              m_write_locks{writable ? 0 : 1}
 		{}
 		
 		
@@ -130,8 +126,7 @@ protected:
 		
 		~Referenced_buffer()
 		{
-			m_delete();
-			assert(!m_owners);
+			m_deallocator();
 			assert(m_read_locks == 0 || m_read_locks == 1);
 			assert(m_write_locks == 0 || m_write_locks == 1);
 			assert(m_notifications.empty());
@@ -146,7 +141,7 @@ protected:
 	struct PDI_NO_EXPORT Referenced_data {
 	
 		/// The buffer in which the data lives
-		mutable Referenced_buffer* m_buffer;
+		mutable std::shared_ptr<Referenced_buffer> m_buffer;
 		
 		/// In-memory location of the data
 		void* m_data;
@@ -154,24 +149,19 @@ protected:
 		/// Type of the data
 		Datatype_sptr m_type;
 		
-		/// Number of references to this data
-		int m_owners;
-		
 		/** Constructs a new data descriptor from an already referenced buffer.
 		 *
 		 * \param buffer the buffer containing the data
 		 * \param data the data location
 		 * \param type the type of the data
 		 */
-		Referenced_data(Referenced_buffer* buffer, void* data, Datatype_sptr type):
-			m_buffer{buffer},
+		Referenced_data(std::shared_ptr<Referenced_buffer> buffer, void* data, Datatype_sptr type):
+			m_buffer{std::move(buffer)},
 			m_data{data},
-			m_type{std::move(type)},
-			m_owners{0}
+			m_type{std::move(type)}
 		{
-			assert(buffer);
+			assert(m_buffer);
 			assert(data);
-			m_buffer->m_owners++;
 		}
 		
 		/** Constructs a new data descriptor.
@@ -183,17 +173,14 @@ protected:
 		 * \param writable the maximum allowed access to the underlying content
 		 */
 		Referenced_data(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable):
-			m_data{data},
-			m_type{type},
-			m_owners{0}
+			m_buffer(std::make_shared<Referenced_buffer>([data, freefunc, type]()
 		{
+			type->destroy_data(data);
+			freefunc(data);
+		}, readable, writable)),
+		m_data{data},
+		m_type{type} {
 			assert(data);
-			m_buffer = new Referenced_buffer{[data, freefunc, type]()
-			{
-				type->destroy_data(data);
-				freefunc(data);
-			}, readable, writable};
-			m_buffer->m_owners++;
 		}
 		
 		Referenced_data() = delete;
@@ -201,28 +188,20 @@ protected:
 		Referenced_data(const Referenced_data&) = delete;
 		
 		Referenced_data(Referenced_data&&) = delete;
-		
-		~Referenced_data()
-		{
-			m_buffer->m_owners--;
-			if (m_buffer->m_owners == 0) {
-				delete m_buffer;
-			}
-		}
 	};
 	
 	
 	/** Pointer on the data content, can be null if the ref is null
 	 */
-	mutable Referenced_data* m_content;
+	mutable std::shared_ptr<Referenced_data> m_content;
 	
 	
 	/** Function to access the content from a reference with different access right
 	 */
-	static Referenced_data PDI_NO_EXPORT* get_content(const Reference_base& other) noexcept
+	static std::shared_ptr<Referenced_data> PDI_NO_EXPORT get_content(const Reference_base& other) noexcept
 	{
-		if ( !other.m_content ) return NULL;
-		if ( !other.m_content->m_data ) return NULL;
+		if ( !other.m_content ) return nullptr;
+		if ( !other.m_content->m_data ) return nullptr;
 		return other.m_content;
 	}
 	
@@ -251,7 +230,7 @@ public:
 	
 	size_t hash() const noexcept
 	{
-		return std::hash<Referenced_data*>()(get_content(*this));
+		return std::hash<Referenced_data*>()(get_content(*this).get());
 	}
 	
 }; // class Data_ref_base
@@ -266,9 +245,6 @@ public:
  * - a read/write locking mechanism similar to std::shared_mutex,
  * - a release system that nullifies all existing references to the raw data,
  * - a notification system to be notified when a reference is going to be nullified.
- *
- * \warning As of now, and unlike std::shared_ptr, the lock system can not be
- * relied upon in a multithreaded environment.
  */
 template<bool R, bool W>
 class PDI_EXPORT Ref_any:
@@ -336,7 +312,7 @@ public:
 			throw Type_error{"Referencing null data with non-null size"};
 		}
 		if (data) {
-			link(new Referenced_data(data, freefunc, std::move(type), readable,  writable));
+			link(std::make_shared<Referenced_data>(data, freefunc, std::move(type), readable,  writable));
 		}
 	}
 	
@@ -432,7 +408,7 @@ public:
 		}
 		std::pair<void*, Datatype_sptr> subref_info = type()->member(member_name, m_content->m_data);
 		Ref result;
-		result.link(new Referenced_data(
+		result.link(std::make_shared<Referenced_data>(
 		        m_content->m_buffer,
 		        subref_info.first,
 		        std::move(subref_info.second)));
@@ -452,7 +428,7 @@ public:
 		}
 		std::pair<void*, Datatype_sptr> subref_info = type()->index(index, m_content->m_data);
 		Ref result;
-		result.link(new Referenced_data(
+		result.link(std::make_shared<Referenced_data>(
 		        m_content->m_buffer,
 		        subref_info.first,
 		        std::move(subref_info.second)));
@@ -471,7 +447,7 @@ public:
 		}
 		std::pair<void*, Datatype_sptr> subref_info = type()->slice(slice.first, slice.second, m_content->m_data);
 		Ref result;
-		result.link(new Referenced_data(
+		result.link(std::make_shared<Referenced_data>(
 		        m_content->m_buffer,
 		        subref_info.first,
 		        std::move(subref_info.second)));
@@ -607,7 +583,7 @@ public:
 		
 		void* result = m_content->m_data;
 		m_content->m_data = nullptr;
-		m_content->m_buffer->m_delete = []() {}; // Referenced_metadata won't delete data
+		m_content->m_buffer->m_deallocator = []() {}; // Referenced_metadata won't delete data
 		
 		unlink();
 		
@@ -651,9 +627,7 @@ private:
 		m_content->m_buffer->m_notifications.erase(this);
 		if (R || W) --m_content->m_buffer->m_write_locks;
 		if (W) --m_content->m_buffer->m_read_locks;
-		--m_content->m_owners;
-		if (!m_content->m_owners) delete m_content;
-		m_content = nullptr;
+		m_content.reset();
 	}
 	
 	/** Tries to link this reference to a content, leaves it null if privileges
@@ -664,16 +638,14 @@ private:
 	 *
 	 * \param content the content to link to
 	 */
-	void PDI_NO_EXPORT link(Referenced_data* content) noexcept
+	void PDI_NO_EXPORT link(std::shared_ptr<Referenced_data> content) noexcept
 	{
 		assert(!m_content);
 		if (!content || !content->m_data) return; // null ref
-		if (R && content->m_buffer->m_read_locks || W && content->m_buffer->m_write_locks) {
-			if (content->m_owners == 0) delete content;
+		if ((R && content->m_buffer->m_read_locks) || (W && content->m_buffer->m_write_locks)) {
 			return;
 		}
-		m_content = content;
-		++m_content->m_owners;
+		m_content = std::move(content);
 		if (R || W) ++m_content->m_buffer->m_write_locks;
 		if (W) ++m_content->m_buffer->m_read_locks;
 	}
