@@ -23,404 +23,587 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <pdi/array_datatype.h>
-#include <pdi/scalar_datatype.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/record_datatype.h>
 #include <pdi/pointer_datatype.h>
 #include <pdi/ref_any.h>
-#include <pdi/pdi_fwd.h>
+#include <pdi/scalar_datatype.h>
 
 #include "mocks/datatype_mock.h"
 
 using namespace PDI;
 using namespace std;
 
+using ::testing::_;
 using ::testing::Return;
 
-/*
- * Struct prepared for DataRefAnyTest.
+/* Struct prepared for DataRefAnyTest.
  */
-struct DataRefAnyTest : public ::testing::Test, Reference_base {
-	DataRefAnyTest():
-		m_data(std::make_unique<int[]>(1024))
+struct DataRefAnyTest
+	: public ::testing::Test
+	, Reference_base
+{
+	bool destructor_called = false;
+
+	std::shared_ptr<MockDatatype const> ref_type = make_unique<MockDatatype>();
+
+	int data = [this] () {
+		EXPECT_CALL(*ref_type, datasize).WillOnce(Return(1));
+		return 1;
+	}();
+
+	PDI::Ref tested_ref {&data, [this] (void*) { destructor_called = true; }, ref_type, true, true};
+
+	~DataRefAnyTest()
 	{
-		for (int i = 0; i < 1024; i++) {
-			m_data[i] = i;
+		if (!destructor_called) {
+			EXPECT_CALL(*ref_type, destroy_data(&data));
 		}
-
-		auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
-		auto&& array_type = Array_datatype::make(int_type, 32);
-		m_tested_ref = std::make_unique<Ref> (m_data.get(), [this](void*) {
-			for (int i = 0; i < 1024; i++) {
-				m_data[i] = -1;
-			}
-		},
-		array_type, true, true);
 	}
-
-	unique_ptr<int[]> m_data;
-
-	unique_ptr<Ref> m_tested_ref;
 };
 
-/*
- * Name:                DataRefAnyTest.newReferenceConstructor
+/* Tested functions:
+ * - PDI::Ref_any::Ref_any()
  *
- * Tested functions:    PDI::Ref_any::Ref_any()
- *
- * Description:         Test checks if reference was correctly created.
+ * Description:
+ * Check if the reference is correctly created.
  */
-TEST_F(DataRefAnyTest, newReferenceConstructor)
+TEST_F(DataRefAnyTest, defaultConstructor)
 {
-	EXPECT_TRUE(*this->m_tested_ref);
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_EQ(0, Reference_base::get_content(*this->m_tested_ref)->m_buffer->m_read_locks);
-	EXPECT_EQ(0, Reference_base::get_content(*this->m_tested_ref)->m_buffer->m_write_locks);
+	Ref null_ref;
+	EXPECT_FALSE(Reference_base::get_content(null_ref));
 }
 
-/*
- * Name:                DataRefAnyTest.copyConstructor
+/* Tested functions:
+ * - PDI::Ref_any::Ref_any(Ref& )
  *
- * Tested functions:    PDI::Ref_any::Ref_any(Ref& )
- *
- * Description:         Test checks if reference copy is correctly
- *                      created and ref properties updated.
+ * Description:
+ * Check if reference copy is correctly created and ref properties updated.
  */
 TEST_F(DataRefAnyTest, copyConstructor)
 {
-	Ref copied_ref(*this->m_tested_ref);
-	EXPECT_TRUE(copied_ref);
-	EXPECT_TRUE(*this->m_tested_ref);
-	EXPECT_EQ(*this->m_tested_ref, copied_ref);
-	EXPECT_FALSE(!Reference_base::get_content(copied_ref));
-	EXPECT_FALSE(!Reference_base::get_content(copied_ref)->m_buffer);
+	Ref copied_ref(tested_ref);
+
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(copied_ref));
+	EXPECT_TRUE(Reference_base::get_content(copied_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(copied_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied_ref)->m_type);
 	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
 	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
+
+	EXPECT_EQ(Reference_base::get_content(tested_ref), Reference_base::get_content(tested_ref));
 }
 
-/*
- * Name:                DataRefAnyTest.moveConstructor
- *
- * Tested functions:    PDI::Ref_any::Ref_any(Ref&& )
- *
- * Description:         Test checks if reference move is correctly
- *                      handled and ref properties updated.
+/* Tested functions:
+ * - PDI::Ref_any::Ref_any(Ref&& )
  */
 TEST_F(DataRefAnyTest, moveConstructor)
 {
-	Ref moved_ref(move(*this->m_tested_ref));
-	EXPECT_TRUE(moved_ref);
-	EXPECT_FALSE(*this->m_tested_ref);
-	EXPECT_EQ(nullptr, Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(moved_ref));
-	EXPECT_FALSE(!Reference_base::get_content(moved_ref)->m_buffer);
+	Ref moved_ref(move(tested_ref));
+
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
+
+	EXPECT_TRUE(Reference_base::get_content(moved_ref));
+	EXPECT_TRUE(Reference_base::get_content(moved_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(moved_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(moved_ref)->m_type);
 	EXPECT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_read_locks);
 	EXPECT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_write_locks);
+
+	EXPECT_EQ(nullptr, Reference_base::get_content(tested_ref));
+	EXPECT_CALL(*ref_type, destroy_data(&data));
 }
 
-/*
- * Name:                DataRefAnyTest.unlinkToDestroy
+/* Tested functions:
+ * - PDI::Ref_any::Ref_any(void*, std::function<void(void*)>, Datatype_sptr, bool, bool)
  *
- * Tested functions:    PDI::Ref_any::reset()
- *                      PDI::Ref_any::unlink()
- *
- * Description:         Test checks if destructor is called
- *                      on reset().
+ * Description:
+ * Check if the reference is correctly created.
  */
-TEST_F(DataRefAnyTest, unlinkToDestroy)
+TEST_F(DataRefAnyTest, newReferenceConstructor)
 {
-	this->m_tested_ref->reset();
-	EXPECT_EQ(this->m_data[0], -1);
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
 }
 
-/*
- * Name:                DataRefAnyTest.unlinkButNotDestroy
- *
- * Tested functions:    PDI::Ref_any::reset()
- *                      PDI::Ref_any::unlink()
- *
- * Description:         Test checks if destructor isn't called
- *                      on reset() if more than 1 owner.
+/* Tested functions:
+ * - Datatype_sptr type() const noexcept
  */
-TEST_F(DataRefAnyTest, unlinkButNotDestroy)
+TEST_F(DataRefAnyTest, type)
 {
-	Ref copied_ref(*this->m_tested_ref);
-	EXPECT_TRUE(*this->m_tested_ref);
-	EXPECT_EQ(*this->m_tested_ref, copied_ref);
-	EXPECT_FALSE(!Reference_base::get_content(copied_ref));
-	EXPECT_FALSE(!Reference_base::get_content(copied_ref)->m_buffer);
+	Ref null_ref;
+	Ref copied_ref = tested_ref;
+	int data2;
+	EXPECT_CALL(*ref_type, index(0, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref sub_ref = tested_ref[0];
 
-	this->m_tested_ref->reset();
+	EXPECT_EQ(tested_ref.type(), ref_type);
+	EXPECT_EQ(*null_ref.type(), *UNDEF_TYPE);
+	EXPECT_EQ(copied_ref.type(), ref_type);
+	EXPECT_EQ(sub_ref.type(), ref_type);
+}
 
-	EXPECT_FALSE(*this->m_tested_ref);
-	EXPECT_TRUE(copied_ref);
-	EXPECT_EQ(this->m_data[0], 0);
-	EXPECT_FALSE(!Reference_base::get_content(copied_ref));
-	EXPECT_FALSE(!Reference_base::get_content(copied_ref)->m_buffer);
+/* Tested functions:
+ * - size_t hash() const noexcept
+ * - bool operator== (const Reference_base& o) const noexcept
+ * - bool operator!= (const Reference_base& o) const noexcept
+ */
+TEST_F(DataRefAnyTest, equality)
+{
+	Ref null_ref1;
+	Ref null_ref2;
+	Ref copied_ref = tested_ref;
+	int data2;
+	EXPECT_CALL(*ref_type, index(0, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref subref1 = tested_ref[0];
+	EXPECT_CALL(*ref_type, index(0, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref subref2 = tested_ref[0];
+
+	EXPECT_FALSE(tested_ref == null_ref1);
+	EXPECT_FALSE(tested_ref == null_ref2);
+	EXPECT_TRUE(tested_ref == copied_ref);
+	EXPECT_FALSE(tested_ref == subref1);
+	EXPECT_FALSE(tested_ref == subref2);
+	EXPECT_TRUE(null_ref1 == null_ref2);
+	EXPECT_FALSE(null_ref1 == copied_ref);
+	EXPECT_FALSE(null_ref1 == subref1);
+	EXPECT_FALSE(null_ref1 == subref2);
+	EXPECT_FALSE(null_ref2 == copied_ref);
+	EXPECT_FALSE(null_ref2 == subref1);
+	EXPECT_FALSE(null_ref2 == subref2);
+	EXPECT_FALSE(copied_ref == subref1);
+	EXPECT_FALSE(copied_ref == subref2);
+	EXPECT_TRUE(subref1 == subref2);
+
+	EXPECT_NE(tested_ref.hash(), null_ref1.hash());
+	EXPECT_NE(tested_ref.hash(), null_ref2.hash());
+	EXPECT_EQ(tested_ref.hash(), copied_ref.hash());
+	EXPECT_NE(tested_ref.hash(), subref1.hash());
+	EXPECT_NE(tested_ref.hash(), subref2.hash());
+	EXPECT_EQ(null_ref1.hash(), null_ref2.hash());
+	EXPECT_NE(null_ref1.hash(), copied_ref.hash());
+	EXPECT_NE(null_ref1.hash(), subref1.hash());
+	EXPECT_NE(null_ref1.hash(), subref2.hash());
+	EXPECT_NE(null_ref2.hash(), copied_ref.hash());
+	EXPECT_NE(null_ref2.hash(), subref1.hash());
+	EXPECT_NE(null_ref2.hash(), subref2.hash());
+	EXPECT_NE(copied_ref.hash(), subref1.hash());
+	EXPECT_NE(copied_ref.hash(), subref2.hash());
+	EXPECT_EQ(subref1.hash(), subref2.hash());
+
+	EXPECT_TRUE(tested_ref != null_ref1);
+	EXPECT_TRUE(tested_ref != null_ref2);
+	EXPECT_FALSE(tested_ref != copied_ref);
+	EXPECT_TRUE(tested_ref != subref1);
+	EXPECT_TRUE(tested_ref != subref2);
+	EXPECT_FALSE(null_ref1 != null_ref2);
+	EXPECT_TRUE(null_ref1 != copied_ref);
+	EXPECT_TRUE(null_ref1 != subref1);
+	EXPECT_TRUE(null_ref1 != subref2);
+	EXPECT_TRUE(null_ref2 != copied_ref);
+	EXPECT_TRUE(null_ref2 != subref1);
+	EXPECT_TRUE(null_ref2 != subref2);
+	EXPECT_TRUE(copied_ref != subref1);
+	EXPECT_TRUE(copied_ref != subref2);
+	EXPECT_FALSE(subref1 != subref2);
+}
+
+/* Tested functions:
+ * - PDI::Ref_any::Ref_any& operator= (const Ref_any&) noexcept
+ *
+ * Description:
+ * Check if reference copy is correctly created and ref properties updated.
+ */
+TEST_F(DataRefAnyTest, copyAssignment)
+{
+	Ref copied_ref;
+	copied_ref = tested_ref;
+
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(copied_ref));
+	EXPECT_TRUE(Reference_base::get_content(copied_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(copied_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied_ref)->m_type);
 	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
 	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
 
+	EXPECT_EQ(Reference_base::get_content(tested_ref), Reference_base::get_content(tested_ref));
+}
+
+/* Tested functions:
+ * - Ref_any& operator= (Ref_any&& other) noexcept
+ */
+TEST_F(DataRefAnyTest, moveAssignment)
+{
+	Ref moved_ref;
+	moved_ref = move(tested_ref);
+
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
+
+	EXPECT_TRUE(Reference_base::get_content(moved_ref));
+	EXPECT_TRUE(Reference_base::get_content(moved_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(moved_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(moved_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_write_locks);
+
+	EXPECT_EQ(nullptr, Reference_base::get_content(tested_ref));
+	EXPECT_CALL(*ref_type, destroy_data(&data));
+}
+
+/* Tested functions:
+ * - bool operator< (const Reference_base& o) const noexcept
+ * - bool operator> (const Reference_base& o) const noexcept
+ * - bool operator<= (const Reference_base& o) const noexcept
+ * - bool operator>= (const Reference_base& o) const noexcept
+ */
+TEST_F(DataRefAnyTest, order)
+{
+	Ref null_ref1;
+	Ref null_ref2;
+	Ref copied_ref = tested_ref;
+	int data2;
+	EXPECT_CALL(*ref_type, index(0, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref subref1 = tested_ref[0];
+	int data3;
+	EXPECT_CALL(*ref_type, index(0, _)).WillOnce(Return(make_pair(&data3, ref_type)));
+	Ref subref2 = tested_ref[0];
+
+	//TODO
+}
+
+/* Tested functions:
+ * - PDI::Ref_any::operator[](char const*)
+ */
+TEST_F(DataRefAnyTest, member)
+{
+	int data2;
+	EXPECT_CALL(*ref_type, member("x", _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref sub_ref = tested_ref["x"];
+
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
+
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
+	EXPECT_EQ(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(sub_ref)->m_buffer
+	);
+	
+	Ref null_ref;
+	EXPECT_THROW(null_ref["x"], Type_error);
+}
+
+/* Tested functions:
+ * - PDI::Ref_any::operator[](size_t)
+ */
+TEST_F(DataRefAnyTest, index)
+{
+	int data2;
+	EXPECT_CALL(*ref_type, index(4, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref sub_ref = tested_ref[4];
+
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
+
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
+	EXPECT_EQ(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(sub_ref)->m_buffer
+	);
+	
+	Ref null_ref;
+	EXPECT_THROW(null_ref[4], Type_error);
+}
+
+/* Tested functions:
+ * - PDI::Ref_any::operator[](std::pair<size_t, size_t>)
+ */
+TEST_F(DataRefAnyTest, slice)
+{
+	int data2;
+	EXPECT_CALL(*ref_type, slice(4,8, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref sub_ref = tested_ref[std::make_pair(4,8)];
+
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
+
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
+	EXPECT_EQ(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(sub_ref)->m_buffer
+	);
+	
+	Ref null_ref;
+	EXPECT_THROW(null_ref[std::make_pair(4,8)], Type_error);
+}
+
+/* Tested functions:
+ * - ref_access_t<R, W> PDI::Ref_any::get () const
+ * - PDI::Ref_any::operator ref_access_t<R, W> () const
+ * - ref_access_t<R, W> PDI::Ref_any::get (std::nothrow_t) const noexcept
+ */
+TEST_F(DataRefAnyTest, get)
+{
+	Ref_r copied_ref = tested_ref;
+	EXPECT_EQ(&data, copied_ref.get());
+	EXPECT_EQ(&data, copied_ref.get(std::nothrow));
+	EXPECT_EQ(&data, static_cast<void const*>(copied_ref));
+	
+	Ref_r null_ref;
+	ASSERT_THROW(null_ref.get(), Right_error);
+	EXPECT_EQ(nullptr, null_ref.get(std::nothrow));
+	ASSERT_THROW(static_cast<void const*>(null_ref), Right_error);
+}
+
+/* Tested functions:
+ * - T scalar_value () const
+ */
+TEST_F(DataRefAnyTest, scalarValue)
+{
+	//TODO
+}
+
+/* Tested functions:
+ * - explicit operator bool () const noexcept
+ */
+TEST_F(DataRefAnyTest, operatorBool)
+{
+	Ref null_ref;
+	Ref copied_null_ref = null_ref;
+	Ref copied_ref = tested_ref;
+	int data2;
+	EXPECT_CALL(*ref_type, index(0, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref sub_ref = tested_ref[0];
+	
+	EXPECT_TRUE(tested_ref);
+	EXPECT_FALSE(null_ref);
+	EXPECT_FALSE(copied_null_ref);
+	EXPECT_TRUE(copied_ref);
+	EXPECT_TRUE(sub_ref);
+}
+
+/* Tested functions:
+ * - PDI::Ref_any::reset()
+ *
+ * Description:
+ * Checks if destructor is called on reset().
+ */
+TEST_F(DataRefAnyTest, resetToDestroy)
+{
+	EXPECT_CALL(*ref_type, destroy_data(&data));
+	tested_ref.reset();
+	EXPECT_TRUE(destructor_called);
+}
+
+/* Tested functions: PDI::Ref_any::reset()
+ *
+ * Description:
+ * Checks that the destructor isn't called on reset() when more than 1 owner.
+ */
+TEST_F(DataRefAnyTest, reset)
+{
+	Ref_r copied_ref = tested_ref;
+
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(copied_ref));
+	EXPECT_TRUE(Reference_base::get_content(copied_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(copied_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
+
+	EXPECT_EQ(Reference_base::get_content(tested_ref), Reference_base::get_content(copied_ref));
+	EXPECT_EQ(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(copied_ref)->m_buffer
+	);
+	
+	int data2;
+	EXPECT_CALL(*ref_type, index(4, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref_r sub_ref = tested_ref[4];
+
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(copied_ref));
+	EXPECT_TRUE(Reference_base::get_content(copied_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(copied_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
+
+	EXPECT_EQ(Reference_base::get_content(tested_ref), Reference_base::get_content(copied_ref));
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
+	EXPECT_EQ(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(copied_ref)->m_buffer
+	);
+	EXPECT_EQ(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(sub_ref)->m_buffer
+	);
+
+	EXPECT_FALSE(destructor_called);
+
+	tested_ref.reset();
+
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
+
+	EXPECT_TRUE(Reference_base::get_content(copied_ref));
+	EXPECT_TRUE(Reference_base::get_content(copied_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(copied_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
+
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(copied_ref));
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
+	EXPECT_NE(Reference_base::get_content(copied_ref), Reference_base::get_content(sub_ref));
+	EXPECT_EQ(
+			Reference_base::get_content(copied_ref)->m_buffer,
+			Reference_base::get_content(sub_ref)->m_buffer
+	);
+
+	EXPECT_FALSE(destructor_called);
+
+	tested_ref.reset();
+
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
+
+	EXPECT_TRUE(Reference_base::get_content(copied_ref));
+	EXPECT_TRUE(Reference_base::get_content(copied_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(copied_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
+
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(copied_ref));
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
+	EXPECT_NE(Reference_base::get_content(copied_ref), Reference_base::get_content(sub_ref));
+	EXPECT_EQ(
+			Reference_base::get_content(copied_ref)->m_buffer,
+			Reference_base::get_content(sub_ref)->m_buffer
+	);
+
+	EXPECT_FALSE(destructor_called);
+
 	copied_ref.reset();
 
-	EXPECT_FALSE(*this->m_tested_ref);
-	EXPECT_FALSE(copied_ref);
-	EXPECT_EQ(this->m_data[0], -1);
-}
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
 
-/*
- * Name:                DataRefAnyTest.getAccess
- *
- * Tested functions:    PDI::Ref_any::reset()
- *                      PDI::Ref_any::unlink()
- *
- * Description:         Test checks if correct address is
- *                      returned from get().
- */
-TEST_F(DataRefAnyTest, getAccess)
-{
-	Ref_r copied_ref_r(*this->m_tested_ref);
-	EXPECT_TRUE(copied_ref_r);
-	const void* ptr_r = copied_ref_r.get();
-	EXPECT_EQ(this->m_data.get(), ptr_r);
+	EXPECT_FALSE(Reference_base::get_content(copied_ref));
 
-	copied_ref_r.reset();
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
 
-	Ref_rw copied_ref_rw(*this->m_tested_ref);
-	EXPECT_TRUE(copied_ref_rw);
-	void* ptr_rw = copied_ref_rw.get();
-	EXPECT_EQ(this->m_data.get(), ptr_rw);
-}
+	EXPECT_EQ(Reference_base::get_content(tested_ref), Reference_base::get_content(copied_ref));
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
 
-/*
- * Name:                DataRefAnyTest.releaseTest
- *
- * Tested functions:    PDI::Ref_any::release()
- *
- * Description:         Test checks if release returns correct address
- *                      and destructor isn't called.
- */
-TEST_F(DataRefAnyTest, releaseTest)
-{
-	EXPECT_EQ(this->m_data.get(), this->m_tested_ref->release());
-	EXPECT_FALSE(*this->m_tested_ref);
-	EXPECT_EQ(this->m_data[0], 0);
-}
+	EXPECT_FALSE(destructor_called);
 
-/*
- * Name:                DataRefAnyTest.nullifyTest
- *
- * Tested functions:    PDI::Ref_any::on_nullify()
- *
- * Description:         Test checks if the function passed in on_nullify
- *                      is called on realese by different owner.
- */
-TEST_F(DataRefAnyTest, nullifyTest)
-{
-	//the address to replace
-	char c;
-	void* address = &c;
-	this->m_tested_ref->on_nullify([address](Ref whoCalled) {
-		Reference_base::get_content(whoCalled)->m_data = address;
-	});
-	Ref otherRef(*this->m_tested_ref);
-	void* recvAddress = otherRef.release();
-	EXPECT_EQ(address, recvAddress);
-	EXPECT_EQ(this->m_data[0], 0);
-}
+	EXPECT_CALL(*ref_type, destroy_data(_));
+	sub_ref.reset();
 
-/*
- * Name:                DataRefAnyTest.get_content
- *
- * Tested functions:    PDI::Ref_any::Ref_any()
- */
-TEST_F(DataRefAnyTest, get_content)
-{
-	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
 
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
+	EXPECT_FALSE(Reference_base::get_content(copied_ref));
 
-	Ref_r sub = (*this->m_tested_ref)[4];
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_NE(get_content(sub), get_content(*this->m_tested_ref));
-	EXPECT_EQ(get_content(sub)->m_buffer, get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(sub));
-	EXPECT_FALSE(!get_content(sub)->m_buffer);
+	EXPECT_FALSE(Reference_base::get_content(sub_ref));
 
+	EXPECT_EQ(Reference_base::get_content(tested_ref), Reference_base::get_content(copied_ref));
+	EXPECT_EQ(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
 
-	this->m_tested_ref->reset();
-	EXPECT_FALSE(!get_content(sub));
-	EXPECT_FALSE(!get_content(sub)->m_buffer);
-
-	EXPECT_EQ(4, *static_cast<const int*>(sub.get()));
-	sub.reset();
-	EXPECT_EQ(this->m_data[0], -1);
-}
-
-/*
- * Name:                DataRefAnyTest.content_chain
- *
- * Tested functions:    PDI::Ref_any::Ref_any()
- */
-TEST_F(DataRefAnyTest, content_chain)
-{
-	Ref_r sub_array_ref = (*this->m_tested_ref)[std::pair<size_t, size_t>(16, 20)]; // array [16:20]
-	Ref_r sub_scalar_ref = sub_array_ref[0]; // array[16]
-
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(sub_array_ref));
-	EXPECT_FALSE(!get_content(sub_array_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(sub_scalar_ref));
-	EXPECT_FALSE(!get_content(sub_scalar_ref)->m_buffer);
-
-	EXPECT_EQ(get_content(sub_array_ref)->m_buffer, get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_EQ(get_content(sub_array_ref)->m_buffer, get_content(sub_scalar_ref)->m_buffer);
-
-	EXPECT_NE(get_content(sub_array_ref), get_content(*this->m_tested_ref));
-	EXPECT_NE(get_content(sub_array_ref), get_content(sub_scalar_ref));
-
-	this->m_tested_ref->reset();
-	EXPECT_TRUE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!get_content(sub_array_ref));
-	EXPECT_FALSE(!get_content(sub_array_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(sub_scalar_ref));
-	EXPECT_FALSE(!get_content(sub_scalar_ref)->m_buffer);
-
-	EXPECT_EQ(16, static_cast<const int*>(sub_array_ref.get())[0]);
-	EXPECT_EQ(17, static_cast<const int*>(sub_array_ref.get())[1]);
-	EXPECT_EQ(18, static_cast<const int*>(sub_array_ref.get())[2]);
-	EXPECT_EQ(19, static_cast<const int*>(sub_array_ref.get())[3]);
-	
-	sub_array_ref.reset();
-	EXPECT_TRUE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_TRUE(!get_content(sub_array_ref));
-	EXPECT_FALSE(!get_content(sub_scalar_ref));
-	EXPECT_FALSE(!get_content(sub_scalar_ref)->m_buffer);
-
-	EXPECT_EQ(16, *static_cast<const int*>(sub_scalar_ref.get()));
-
-	sub_scalar_ref.reset();
-	EXPECT_TRUE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_TRUE(!get_content(sub_array_ref));
-	EXPECT_TRUE(!get_content(sub_scalar_ref));
-	
-	EXPECT_EQ(-1, this->m_data[0]);
-}
-
-/*
- * Name:                DataRefAnyTest.content_record
- *
- * Tested functions:    PDI::Ref_any::Ref_any()
- */
-TEST_F(DataRefAnyTest, content_record)
-{
-	auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
-	struct Record {
-		char x;
-		int y[32];
-	};
-
-	std::vector<Record_datatype::Member> members;
-	members.emplace_back(offsetof(Record, x), char_type, "x");
-	members.emplace_back(offsetof(Record, y), this->m_tested_ref->type(), "y");
-	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Record));
-
-	Record data;
-	data.x = 42;
-	for (int i = 0; i < 32; i++) {
-		data.y[i] = i;
-	}
-
-	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type, true, true};
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-
-	{
-		Ref_r result = base_ref["y"][12];
-		EXPECT_EQ(12, *static_cast<const int*>(result.get()));
-	}
-
-	Ref_r data_x_ref = base_ref["x"]; // data.x
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-
-	Ref_r data_y_ref = base_ref["y"]; // data.y
-	for (int i = 0; i < 32; i++) {
-		EXPECT_EQ(i, static_cast<const int*>(data_y_ref.get())[i]);
-	}
-
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_ref));
-	EXPECT_FALSE(!get_content(data_y_ref)->m_buffer);
-
-	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
-
-	Ref data_y_scalar_ref = data_y_ref[12];
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_ref));
-	EXPECT_FALSE(!get_content(data_y_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-
-	if (Ref_w failed {data_y_scalar_ref}) {
-		FAIL();
-	}
-	if (Ref_w failed {base_ref}) {
-		FAIL();
-	}
-
-	Ref_r data_y_scalar_ref_r {data_y_scalar_ref};
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_ref));
-	EXPECT_FALSE(!get_content(data_y_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-	EXPECT_EQ(12, *static_cast<const int*>(data_y_scalar_ref_r.get()));
-
-	data_y_ref.reset();
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-	EXPECT_EQ(42, *static_cast<const char*>(data_x_ref.get()));
-
-	data_x_ref.reset();
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-
-	base_ref.reset();
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-
-	data_y_scalar_ref.reset();
-	EXPECT_FALSE(!get_content(data_y_scalar_ref_r));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref_r)->m_buffer);
-	EXPECT_EQ(42, data.x);
-
-	data_y_scalar_ref_r.reset();
-
-	EXPECT_EQ(-1, data.x);
+	EXPECT_TRUE(destructor_called);
 }
 
 /*
@@ -428,168 +611,149 @@ TEST_F(DataRefAnyTest, content_record)
  *
  * Tested functions:    PDI::Ref_any::do_copy()
  */
-TEST_F(DataRefAnyTest, content_deep_copy)
+TEST_F(DataRefAnyTest, copy)
 {
-	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	int data2;
+	EXPECT_CALL(*ref_type, index(4, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	Ref_r sub_ref = tested_ref[4];
 
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
 
-	Ref_r sub = (*this->m_tested_ref)[4];
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_NE(get_content(sub), get_content(*this->m_tested_ref));
-	EXPECT_EQ(get_content(sub)->m_buffer, get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(sub));
-	EXPECT_FALSE(!get_content(sub)->m_buffer);
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
 
-	Ref_r copied = do_copy(sub);
-	EXPECT_EQ(copied.type()->buffersize(), sub.type()->buffersize());
-	EXPECT_NE(copied.get(), sub.get());
-	EXPECT_EQ(*static_cast<const int*>(copied.get()), *static_cast<const int*>(sub.get()));
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
+	EXPECT_EQ(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(sub_ref)->m_buffer
+	);
 
-	this->m_tested_ref->reset();
-	EXPECT_FALSE(!get_content(sub));
-	EXPECT_FALSE(!get_content(sub)->m_buffer);
+	int data3;
+	EXPECT_CALL(*ref_type, densify).WillOnce(Return(ref_type));
+	EXPECT_CALL(*ref_type, buffersize).WillOnce(Return(1)).WillOnce(Return(1)).WillOnce(Return(1));
+	EXPECT_CALL(*ref_type, datasize).WillOnce(Return(1));
+	EXPECT_CALL(*ref_type, alignment).WillOnce(Return(1)).WillOnce(Return(1));
+	EXPECT_CALL(*ref_type, data_to_dense_copy).WillOnce(Return(&data3));
+	Ref_r copied = sub_ref.copy();
 
-	EXPECT_EQ(4, *static_cast<const int*>(sub.get()));
-	sub.reset();
-	EXPECT_EQ(this->m_data[0], -1);
+	EXPECT_TRUE(Reference_base::get_content(tested_ref));
+	EXPECT_TRUE(Reference_base::get_content(tested_ref)->m_buffer);
+	EXPECT_EQ(&data, Reference_base::get_content(tested_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(tested_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(tested_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(tested_ref)->m_buffer->m_write_locks);
 
-	EXPECT_EQ(4, *static_cast<const int*>(copied.get()));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(copied));
+	EXPECT_TRUE(Reference_base::get_content(copied)->m_buffer);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(copied)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(copied)->m_buffer->m_write_locks);
+
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(sub_ref));
+	EXPECT_NE(Reference_base::get_content(tested_ref), Reference_base::get_content(copied));
+	EXPECT_NE(Reference_base::get_content(sub_ref), Reference_base::get_content(copied));
+	EXPECT_EQ(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(sub_ref)->m_buffer
+	);
+	EXPECT_NE(
+			Reference_base::get_content(tested_ref)->m_buffer,
+			Reference_base::get_content(copied)->m_buffer
+	);
+	EXPECT_NE(
+			Reference_base::get_content(sub_ref)->m_buffer,
+			Reference_base::get_content(copied)->m_buffer
+	);
+
+	tested_ref.reset();
+
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
+
+	EXPECT_TRUE(Reference_base::get_content(sub_ref));
+	EXPECT_TRUE(Reference_base::get_content(sub_ref)->m_buffer);
+	EXPECT_EQ(&data2, Reference_base::get_content(sub_ref)->m_data);
+	EXPECT_EQ(ref_type, Reference_base::get_content(sub_ref)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(sub_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(sub_ref)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(Reference_base::get_content(copied));
+	EXPECT_TRUE(Reference_base::get_content(copied)->m_buffer);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(copied)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(copied)->m_buffer->m_write_locks);
+
+	EXPECT_CALL(*ref_type, destroy_data(&data));
+	sub_ref.reset();
+
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
+
+	EXPECT_FALSE(Reference_base::get_content(sub_ref));
+
+	EXPECT_TRUE(Reference_base::get_content(copied));
+	EXPECT_TRUE(Reference_base::get_content(copied)->m_buffer);
+	EXPECT_EQ(ref_type, Reference_base::get_content(copied)->m_type);
+	EXPECT_EQ(0, Reference_base::get_content(copied)->m_buffer->m_read_locks);
+	EXPECT_EQ(1, Reference_base::get_content(copied)->m_buffer->m_write_locks);
+
+	EXPECT_TRUE(destructor_called);
+
+	EXPECT_CALL(*ref_type, destroy_data(_));
 }
 
-/*
- * Name:                DataRefAnyTest.index_access
+/* Tested functions:
+ * - PDI::Ref_any::release()
  *
- * Tested functions:    PDI::Ref_any::operator[](size_t)
+ * Description:
+ * Checks if release returns the correct address, and does not call the destructor.
  */
-TEST_F(DataRefAnyTest, ref_index_access)
+TEST_F(DataRefAnyTest, release)
 {
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
+	auto dupref = tested_ref;
 
-	Ref_r sub = (*m_tested_ref)[4];
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_NE(get_content(sub), get_content(*this->m_tested_ref));
-	EXPECT_EQ(get_content(sub)->m_buffer, get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(sub));
-	EXPECT_FALSE(!get_content(sub)->m_buffer);
+	int data2;
+	EXPECT_CALL(*ref_type, index(7, _)).WillOnce(Return(make_pair(&data2, ref_type)));
+	auto sub_ref = dupref[7];
 
-
-	this->m_tested_ref->reset();
-	EXPECT_FALSE(!get_content(sub));
-	EXPECT_FALSE(!get_content(sub)->m_buffer);
-
-	EXPECT_EQ(4, *static_cast<const int*>(sub.get()));
-	sub.reset();
-	EXPECT_EQ(this->m_data[0], -1);
+	EXPECT_EQ(&data, tested_ref.release());
+	EXPECT_FALSE(tested_ref);
+	EXPECT_FALSE(Reference_base::get_content(tested_ref));
+	EXPECT_FALSE(dupref);
+	EXPECT_FALSE(sub_ref);
+	EXPECT_FALSE(destructor_called);
+	destructor_called = true;
 }
 
-/*
- * Name:                DataRefAnyTest.member_access
+/* Tested functions:
+ * - PDI::Ref_any::on_nullify()
  *
- * Tested functions:    PDI::Ref_any::operator[](std::string)
+ * Description:
+ * Check if the function passed in on_nullify is called on release by different owner.
  */
-TEST_F(DataRefAnyTest, ref_member_access)
+TEST_F(DataRefAnyTest, onNullify)
 {
-	auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
-	struct Record {
-		char x;
-		int y[32];
-	};
-
-	std::vector<Record_datatype::Member> members;
-	members.emplace_back(offsetof(Record, x), char_type, "x");
-	members.emplace_back(offsetof(Record, y), this->m_tested_ref->type(), "y");
-	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Record));
-
-	Record data;
-	data.x = 42;
-	for (int i = 0; i < 32; i++) {
-		data.y[i] = i;
-	}
-
-	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type, true, true};
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
-	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
-
-	Ref_r data_x_ref = base_ref["x"];
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-
-	Ref_r data_y_ref = base_ref["y"];
-	for (int i = 0; i < 32; i++) {
-		EXPECT_EQ(i, static_cast<const int*>(data_y_ref.get())[i]);
-	}
-
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_ref));
-	EXPECT_FALSE(!get_content(data_y_ref)->m_buffer);
-
-	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
-
-	Ref data_y_scalar_ref = data_y_ref[12];
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_ref));
-	EXPECT_FALSE(!get_content(data_y_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-
-	if (Ref_w failed {data_y_scalar_ref}) {
-		FAIL();
-	}
-	if (Ref_w failed {base_ref}) {
-		FAIL();
-	}
-
-	Ref_r data_y_scalar_ref_r {data_y_scalar_ref};
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_ref));
-	EXPECT_FALSE(!get_content(data_y_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-	EXPECT_EQ(12, *static_cast<const int*>(data_y_scalar_ref_r.get()));
-
-	data_y_ref.reset();
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_x_ref));
-	EXPECT_FALSE(!get_content(data_x_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-	EXPECT_EQ(42, *static_cast<const char*>(data_x_ref.get()));
-
-	data_x_ref.reset();
-	EXPECT_FALSE(!get_content(base_ref));
-	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-
-	base_ref.reset();
-	EXPECT_FALSE(!get_content(data_y_scalar_ref));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
-
-	data_y_scalar_ref.reset();
-	EXPECT_FALSE(!get_content(data_y_scalar_ref_r));
-	EXPECT_FALSE(!get_content(data_y_scalar_ref_r)->m_buffer);
-	EXPECT_EQ(42, data.x);
-
-	data_y_scalar_ref_r.reset();
-
-	EXPECT_EQ(-1, data.x);
+	//the address to replace
+	bool callback_called = false;
+	tested_ref.on_nullify([&] (Ref) { callback_called = true; });
+	Ref otherRef(tested_ref);
+	otherRef.release();
+	EXPECT_TRUE(callback_called);
+	destructor_called = true;
 }
 
 /*
@@ -810,8 +974,9 @@ TEST_F(DataRefAnyTest, invalid_dereference_pointers)
 /*
  * Struct prepared for DataRefAnyTypedTest.
  */
-template<typename T>
-struct DataRefAnyTypedTest : public DataRefAnyTest, T {
+template <typename T>
+struct DataRefAnyTypedTest : public DataRefAnyTest
+{
 	DataRefAnyTypedTest() : DataRefAnyTest()
 	{
 		if (is_same<T, Ref>::value) {
@@ -824,6 +989,7 @@ struct DataRefAnyTypedTest : public DataRefAnyTest, T {
 			locks = 3;
 		}
 	}
+
 	char locks;
 };
 
@@ -882,12 +1048,12 @@ TYPED_TEST(DataRefAnyTypedTest, PossibleNullRefMove)
 TYPED_TEST(DataRefAnyTypedTest, chmodConstructor)
 {
 	//copies a reference with different privileges
-	TypeParam chref(*this->m_tested_ref);
+	TypeParam chref(this->tested_ref);
 
-	EXPECT_TRUE(*this->m_tested_ref);
-	EXPECT_EQ(*this->m_tested_ref, chref);
-	EXPECT_FALSE(!Reference_base::get_content(chref));
-	EXPECT_FALSE(!Reference_base::get_content(chref)->m_buffer);
+	EXPECT_TRUE(this->tested_ref);
+	EXPECT_EQ(this->tested_ref, chref);
+	EXPECT_TRUE(Reference_base::get_content(chref));
+	EXPECT_TRUE(Reference_base::get_content(chref)->m_buffer);
 
 	if (this->locks & 2) {
 		//if granted with write access
@@ -907,32 +1073,31 @@ TYPED_TEST(DataRefAnyTypedTest, chmodConstructor)
 	}
 }
 
-
 /*
  * Struct prepared for DenseArrayRefAnyTest.
  */
-struct DenseArrayRefAnyTest : public DataRefAnyTest {
+struct DenseArrayRefAnyTest : public DataRefAnyTest
+{
 	DenseArrayRefAnyTest() : DataRefAnyTest()
 	{
-		DataRefAnyTest::m_tested_ref->reset();
+		tested_ref.reset();
 
 		for (int i = 0; i < 100; i++) {
 			array_to_share[i] = i;
 		}
 
-		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void*){},
-			datatype, true, true}
-		};
+		tested_ref
+				= Ref {array_to_share,
+		               [] (void*) {},
+		               Array_datatype::
+		                       make(Array_datatype::
+		                                    make(Scalar_datatype::
+		                                                 make(Scalar_kind::SIGNED, sizeof(int)),
+		                                         10),
+		                            10),
+		               true,
+		               true};
 	}
-
-	Datatype_sptr datatype {
-		Array_datatype::make(
-		Array_datatype::make(
-		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-		10),
-		10
-		)
-	};
 
 	int array_to_share[100]; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
 };
@@ -948,7 +1113,7 @@ struct DenseArrayRefAnyTest : public DataRefAnyTest {
  */
 TEST_F(DenseArrayRefAnyTest, checkDeepCopy)
 {
-	Ref_r changed_ref(*this->m_tested_ref);
+	Ref_r changed_ref(tested_ref);
 	EXPECT_TRUE(changed_ref);
 
 	Ref_rw cloned_ref(changed_ref.copy());
@@ -962,33 +1127,34 @@ TEST_F(DenseArrayRefAnyTest, checkDeepCopy)
  * Struct prepared for SparseArrayRefAnyTest.
  *
  */
-struct SparseArrayRefAnyTest : public DataRefAnyTest {
+struct SparseArrayRefAnyTest : public DataRefAnyTest
+{
 	int* array_to_share {new int[100]}; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
 
 	SparseArrayRefAnyTest() : DataRefAnyTest()
 	{
-		m_tested_ref->reset();
+		tested_ref.reset();
 
 		for (int i = 0; i < 100; i++) {
 			array_to_share[i] = i;
 		}
 
-		m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void* ptr){operator delete[] (ptr);}, datatype, true, true}};
+		tested_ref = Ref(
+				array_to_share,
+				[] (void* ptr) { operator delete[] (ptr); },
+				Array_datatype::
+						make(Array_datatype::
+		                             make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+		                                  10,
+		                                  3,
+		                                  4),
+		                     10,
+		                     3,
+		                     4),
+				true,
+				true
+		);
 	}
-
-	Datatype_sptr datatype {
-		Array_datatype::make(
-		Array_datatype::make(
-		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-		10,
-		3,
-		4
-		),
-		10,
-		3,
-		4
-		)
-	};
 };
 
 /*
@@ -1002,32 +1168,34 @@ struct SparseArrayRefAnyTest : public DataRefAnyTest {
  */
 TEST_F(SparseArrayRefAnyTest, checkDeepCopy)
 {
-	Ref_r changed_ref(*this->m_tested_ref);
+	Ref_r changed_ref(tested_ref);
 	EXPECT_TRUE(changed_ref);
 
 	Ref_r cloned_ref(changed_ref.copy());
 	const int* cloned_array = static_cast<const int*>(cloned_ref.get());
 	for (int i = 0; i < 16; i++) {
 		std::cerr << i << ": " << cloned_array[i] << std::endl;
-		EXPECT_EQ(this->array_to_share[(i/4 + 3)*10 + (i%4)+3], cloned_array[i]);
+		EXPECT_EQ(this->array_to_share[(i / 4 + 3) * 10 + (i % 4) + 3], cloned_array[i]);
 	}
 }
 
 /*
  * Struct prepared for DenseRecordRefAnyTest.
  */
-struct DenseRecordRefAnyTest : public DataRefAnyTest {
-	struct Struct_def {
-		char char_array[25];    //disp = 0
-		long long_scalar;       //disp = 32
-		int int_scalar;         //disp = 40
+struct DenseRecordRefAnyTest : public DataRefAnyTest
+{
+	struct Struct_def
+	{
+		char char_array[25]; //disp = 0
+		long long_scalar; //disp = 32
+		int int_scalar; //disp = 40
 	}; //sizeof = 48
 
 	Struct_def* record_to_share = new Struct_def;
 
 	DenseRecordRefAnyTest() : DataRefAnyTest()
 	{
-		DataRefAnyTest::m_tested_ref->reset();
+		DataRefAnyTest::tested_ref.reset();
 
 		for (int i = 0; i < 25; i++) {
 			record_to_share->char_array[i] = i;
@@ -1035,40 +1203,32 @@ struct DenseRecordRefAnyTest : public DataRefAnyTest {
 		record_to_share->long_scalar = 10;
 		record_to_share->int_scalar = -10;
 
-		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype, true, true}
-		};
+		tested_ref = Ref(
+				record_to_share,
+				[this] (void*) { destructor_called = true; },
+				Record_datatype::
+						make({{offsetof(Struct_def, char_array),
+		                       Array_datatype::
+		                               make(Scalar_datatype::
+		                                            make(Scalar_kind::UNSIGNED, sizeof(char)),
+		                                    25),
+		                       "char_array"},
+		                      {offsetof(Struct_def, long_scalar),
+		                       Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+		                       "long_scalar"},
+		                      {offsetof(Struct_def, int_scalar),
+		                       Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+		                       "int_scalar"}},
+		                     sizeof(Struct_def)),
+				true,
+				true
+		);
 	}
-
-	vector<Record_datatype::Member> get_members()
-	{
-		return  {
-			Record_datatype::Member{
-				offsetof(Struct_def, char_array),
-				Array_datatype::make(
-				Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
-				25
-				),
-				"char_array"
-			},
-			Record_datatype::Member{
-				offsetof(Struct_def, long_scalar),
-				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
-				"long_scalar"
-			},
-			Record_datatype::Member{
-				offsetof(Struct_def, int_scalar),
-				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-				"int_scalar"
-			}
-		};
-	}
-
-	Datatype_sptr datatype { Record_datatype::make(get_members(), sizeof(Struct_def)) };
 };
 
 TEST_F(DenseRecordRefAnyTest, checkDeepCopy)
 {
-	Ref_r changed_ref(*this->m_tested_ref);
+	Ref_r changed_ref(tested_ref);
 	EXPECT_TRUE(changed_ref);
 
 	Ref_r cloned_ref(changed_ref.copy());
@@ -1083,24 +1243,27 @@ TEST_F(DenseRecordRefAnyTest, checkDeepCopy)
 /*
  * Struct prepared for SparseRecordRefAnyTest.
  */
-struct SparseRecordRefAnyTest : public DataRefAnyTest {
-	struct Sparse_struct_def {
-		char char_array[25];    //disp = 0 //buffer: 5 x 5; data: 3 x 3; start: (1, 1)
-		long long_scalar;       //disp = 32
-		int int_scalar;         //disp = 40
+struct SparseRecordRefAnyTest : public DataRefAnyTest
+{
+	struct Sparse_struct_def
+	{
+		char char_array[25]; //disp = 0 //buffer: 5 x 5; data: 3 x 3; start: (1, 1)
+		long long_scalar; //disp = 32
+		int int_scalar; //disp = 40
 	}; //sizeof = 48
 
-	struct Dense_struct_def {
-		char char_array[9];     //disp = 0 //buffer: 3 x 3; data: 3 x 3;
-		long long_scalar;       //disp = 24
-		int int_scalar;         //disp = 28
+	struct Dense_struct_def
+	{
+		char char_array[9]; //disp = 0 //buffer: 3 x 3; data: 3 x 3;
+		long long_scalar; //disp = 24
+		int int_scalar; //disp = 28
 	}; //sizeof = 32
 
 	Sparse_struct_def* record_to_share = new Sparse_struct_def;
 
 	SparseRecordRefAnyTest() : DataRefAnyTest()
 	{
-		DataRefAnyTest::m_tested_ref->reset();
+		tested_ref.reset();
 
 		for (int i = 0; i < 25; i++) {
 			record_to_share->char_array[i] = i;
@@ -1108,53 +1271,53 @@ struct SparseRecordRefAnyTest : public DataRefAnyTest {
 		record_to_share->long_scalar = 10;
 		record_to_share->int_scalar = -10;
 
-		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype, true, true}
-		};
+		tested_ref = Ref(
+				record_to_share,
+				[] (void* ptr) { operator delete (ptr); },
+				datatype,
+				true,
+				true
+		);
 	}
 
-	vector<Record_datatype::Member> get_members()
+	vector<Record_datatype::Member> get_members ()
 	{
-		return  {
-			Record_datatype::Member{
-				offsetof(Sparse_struct_def, char_array),
-				Array_datatype::make(
-				Array_datatype::make(
-				Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
-				5,
-				1,
-				3
-				),
-				5,
-				1,
-				3
-				),
-				"char_array"
-			},
-			Record_datatype::Member{
-				offsetof(Sparse_struct_def, long_scalar),
-				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
-				"long_scalar"
-			},
-			Record_datatype::Member{
-				offsetof(Sparse_struct_def, int_scalar),
-				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-				"int_scalar"
-			}
-		};
+		return {Record_datatype::
+		                Member {offsetof(Sparse_struct_def, char_array),
+		                        Array_datatype::
+		                                make(Array_datatype::
+		                                             make(Scalar_datatype::
+		                                                          make(Scalar_kind::UNSIGNED,
+		                                                               sizeof(char)),
+		                                                  5,
+		                                                  1,
+		                                                  3),
+		                                     5,
+		                                     1,
+		                                     3),
+		                        "char_array"},
+		        Record_datatype::
+		                Member {offsetof(Sparse_struct_def, long_scalar),
+		                        Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
+		                        "long_scalar"},
+		        Record_datatype::
+		                Member {offsetof(Sparse_struct_def, int_scalar),
+		                        Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
+		                        "int_scalar"}};
 	}
 
-	Datatype_sptr datatype { Record_datatype::make(get_members(), sizeof(Sparse_struct_def)) };
+	Datatype_sptr datatype {Record_datatype::make(get_members(), sizeof(Sparse_struct_def))};
 };
 
 TEST_F(SparseRecordRefAnyTest, checkDeepCopy)
 {
-	Ref_r changed_ref(*this->m_tested_ref);
+	Ref_r changed_ref(tested_ref);
 	EXPECT_TRUE(changed_ref);
 
 	Ref_r cloned_ref(changed_ref.copy());
 	const Dense_struct_def* cloned_array = static_cast<const Dense_struct_def*>(cloned_ref.get());
 	for (int i = 0; i < 9; i++) {
-		EXPECT_EQ(cloned_array->char_array[i], (i/3+1)*5 + i%3 + 1);
+		EXPECT_EQ(cloned_array->char_array[i], (i / 3 + 1) * 5 + i % 3 + 1);
 	}
 	EXPECT_EQ(cloned_array->long_scalar, 10);
 	EXPECT_EQ(cloned_array->int_scalar, -10);

@@ -38,9 +38,9 @@ using std::static_pointer_cast;
 using ::testing::Return;
 
 namespace PDI{
-inline void PrintTo(Datatype_sptr dt, ::std::ostream *os)
+inline void PrintTo(Array_datatype const& dt, ::std::ostream *os)
 {
-	*os << dt->debug_string();
+	*os << dt.debug_string();
 }
 }
 

@@ -41,18 +41,26 @@ struct MockDatatype : public PDI::Datatype {
 		return equals(other);
 	}
 	
+	MOCK_CONST_METHOD1(equals, bool(const PDI::Datatype&));
+	MOCK_CONST_METHOD0(densify, PDI::Datatype_sptr());
 	MOCK_CONST_METHOD0(dense, bool());
 	MOCK_CONST_METHOD0(datasize, size_t());
 	MOCK_CONST_METHOD0(buffersize, size_t());
 	MOCK_CONST_METHOD0(alignment, size_t());
-	MOCK_CONST_METHOD0(densify, PDI::Datatype_sptr());
-	MOCK_CONST_METHOD1(evaluate, PDI::Datatype_sptr(PDI::Context&));
 	MOCK_CONST_METHOD0(simple, bool());
 	MOCK_CONST_METHOD2(data_to_dense_copy, void* (void* to, const void* from));
 	MOCK_CONST_METHOD2(data_from_dense_copy, void* (void* to, const void* from));
-	MOCK_CONST_METHOD1(destroy_data, void(void* ptr));
-	MOCK_CONST_METHOD1(equals, bool(const PDI::Datatype&));
-	MOCK_CONST_METHOD0(debug_string, std::string());
+	MOCK_METHOD(PDI::Datatype_sptr, index, (size_t), (const, override));
+	MOCK_METHOD((std::pair<void*,PDI::Datatype_sptr>), index, (size_t,void*), (const, override));
+	MOCK_METHOD(PDI::Datatype_sptr, slice, (size_t, size_t), (const, override));
+	MOCK_METHOD((std::pair<void*,PDI::Datatype_sptr>), slice, (size_t,size_t,void*), (const, override));
+	MOCK_METHOD(PDI::Datatype_sptr, member, (const char*), (const, override));
+	MOCK_METHOD((std::pair<void*,PDI::Datatype_sptr>), member, (const char*,void*), (const, override));
+	MOCK_METHOD(PDI::Datatype_sptr, dereference, (), (const, override));
+	MOCK_METHOD((std::pair<void*,PDI::Datatype_sptr>), dereference, (void*), (const, override));
+	MOCK_METHOD(void, destroy_data, (void*), (const, override));
+	MOCK_METHOD(std::string, debug_string, (), (const, override));
+	MOCK_CONST_METHOD1(evaluate, PDI::Datatype_sptr(PDI::Context&));
 };
 
 #endif //PDI_DATATYPE_MOCK_H_
