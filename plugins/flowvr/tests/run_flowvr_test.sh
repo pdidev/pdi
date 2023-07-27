@@ -29,13 +29,13 @@
 #=============================================================================
 
 # Relocation of flowvr-config.sh
-TMPDIR="$(mktemp -d)"
-cp "$(dirname "$(which flowvr-config.sh)")"/flowvr-*.sh "${TMPDIR}"
+WKDIR="$(mktemp -d)"
+cp "$(dirname "$(which flowvr-config.sh)")"/flowvr-*.sh "${WKDIR}"
 FLOWVR_PREFIX="$(dirname "$(dirname "$(which flowvr-config.sh)")" | sed -e 's/[\/&]/\\&/g')"
-sed "s/\bpwd\b/echo '${FLOWVR_PREFIX}'/" -i "${TMPDIR}/flowvr-relocate.sh"
-( cd "${TMPDIR}" && bash -x "./flowvr-relocate.sh" )
-. "${TMPDIR}/flowvr-config.sh"
-rm -rf "${TMPDIR}"
+sed "s/\bpwd\b/echo '${FLOWVR_PREFIX}'/" -i "${WKDIR}/flowvr-relocate.sh"
+( cd "${WKDIR}" && bash -x "./flowvr-relocate.sh" )
+. "${WKDIR}/flowvr-config.sh"
+rm -rf "${WKDIR}"
 
 # run daemon
 flowvrd > /dev/null & 
