@@ -37,11 +37,13 @@
 
 namespace PDI {
 
-using std::unique_ptr;
-using std::make_shared;
 using std::dynamic_pointer_cast;
+using std::make_shared;
+using std::unique_ptr;
 
-Expression::Impl::Float_literal::Float_literal(double value) : m_value(value) {}
+Expression::Impl::Float_literal::Float_literal(double value)
+	: m_value(value)
+{}
 
 unique_ptr<Expression::Impl> Expression::Impl::Float_literal::clone() const
 {
@@ -89,12 +91,13 @@ unique_ptr<Expression::Impl> Expression::Impl::Float_literal::parse(char const**
 {
 	const char* constval = *val_str;
 	
-	unique_ptr<Float_literal> result {new Float_literal{strtod(constval, const_cast<char**>(&constval))}};
+	unique_ptr<Float_literal> result{new Float_literal{strtod(constval, const_cast<char**>(&constval))}};
 	if (*val_str == constval) {
 		throw Value_error{"Expected double, found `{}'", constval};
 	}
-	while (isspace(*constval)) ++constval;
-	
+	while (isspace(*constval))
+		++constval;
+		
 	*val_str = constval;
 	return result;
 }

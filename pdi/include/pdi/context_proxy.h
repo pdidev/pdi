@@ -27,8 +27,8 @@
 #define PDI_CONTEXT_PROXY_H_
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/context.h>
 #include <pdi/callbacks.h>
+#include <pdi/context.h>
 #include <pdi/logger.h>
 
 #include <functional>
@@ -36,13 +36,14 @@
 
 namespace PDI {
 
-class PDI_EXPORT Context_proxy : public Context
+class PDI_EXPORT Context_proxy: public Context
 {
 	/// Real context of this proxy
 	Context& m_real_context;
 	
 	/// Logger of the plugin
 	Logger m_plugin_logger;
+	
 public:
 	/** Creates Context proxy without plugin logger
 	 * \param[in] ctx context to make a proxy
@@ -72,11 +73,11 @@ public:
 	
 	/** Context::operator[] proxy for plugins
 	 */
-	Data_descriptor& operator[](const std::string& name) override;
+	Data_descriptor& operator[] (const std::string& name) override;
 	
 	/** Context::operator[] proxy for plugins
 	 */
-	Data_descriptor& operator[](const char* name) override;
+	Data_descriptor& operator[] (const char* name) override;
 	
 	/** Context::begin proxy for plugins
 	 */

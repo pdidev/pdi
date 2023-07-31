@@ -41,7 +41,7 @@ interface
   !< initializes PDI
   !! \param[IN] treeconf the configuration
   !! \param[OUT] err for error status (optional)
-  subroutine PDI_init(treeconf, err)
+subroutine PDI_init(treeconf, err)
     use paraconf
     type(PC_tree_t), intent(IN) :: treeconf
     integer, intent(OUT), optional :: err
@@ -165,9 +165,11 @@ endinterface
 
 
 interface PDI_access
-!$SH for T in ${FORTTYPES}; do
-!$SH   for D in $(seq 0 ${MAXDIM}); do
-  
+!$SH for T in ${FORTTYPES};
+  do
+!$SH   for D in $(seq 0 ${MAXDIM});
+  do
+
   !=============================================================================
   !< requests for PDI to access a data buffer.
   !! \param[IN] name the data name
@@ -182,18 +184,10 @@ interface PDI_access
       err)
     character(len=*), intent(IN) :: name
     $(fort_type $T), pointer &
-!$SH     if [ 0 -lt "0$D" ]; then
-  , contiguous &
-!$SH     fi
-  :: ptr_data$(array_desc $D)
-    integer, intent(IN) :: access
-!$SH     if [ 0 -lt "$D" ]; then
-    integer, intent(IN) :: ptr_data_shape($D)
-!$SH     fi
-    integer, intent(OUT), optional :: err
-  endsubroutine PDI_access_${T}_${D}D
-  !=============================================================================
-  
-!$SH   done
-!$SH done
-endinterface PDI_access
+!$SH     if [ 0 -lt "0$D" ];
+  then, contiguous & !$SH fi ::ptr_data$(array_desc $D) integer, intent(IN)::access !$SH if[0 - lt "$D"];
+  then integer, intent(IN)::ptr_data_shape($D) !$SH fi integer, intent(OUT),
+      optional ::err endsubroutine PDI_access_${T} _${D} D != == == == == == == == == == == == == == == == == == == == == == == == == == == == == ==
+          == == == == == == == == ==
+
+          !$SH done !$SH done endinterface PDI_access

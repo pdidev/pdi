@@ -29,8 +29,8 @@
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
-#include "pdi/datatype.h"
 #include "pdi/data_descriptor.h"
+#include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
@@ -41,7 +41,6 @@
 
 #include "pdi/python/python_ref_wrapper.h"
 #include "pdi/python/tools.h"
-
 
 namespace PDI {
 
@@ -69,7 +68,7 @@ bool has_record_inside(Datatype_sptr type)
 	}
 }
 
-} // namespace <anonymous>
+} // namespace
 
 pybind11::object to_python(Ref r)
 {
@@ -85,42 +84,66 @@ pybind11::object to_python(Ref r)
 	auto&& subtype = r.type();
 	while (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(subtype)) {
 		shape.emplace_back(array_type->subsize());
-		if ( ndim ) strides.emplace_back(array_type->size());
+		if (ndim) strides.emplace_back(array_type->size());
 		starts.emplace_back(array_type->start());
 		++ndim;
 		subtype = array_type->subtype();
 	}
 	auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(subtype);
-	if ( ndim ) strides.emplace_back(scalar_type->buffersize());
+	if (ndim) strides.emplace_back(scalar_type->buffersize());
 	
 	pybind11::dtype pytype;
 	switch (scalar_type->kind()) {
 	case Scalar_kind::FLOAT: {
 		switch (scalar_type->datasize()) {
-		case sizeof(float): pytype = pybind11::dtype::of<float>(); break;
-		case sizeof(double): pytype = pybind11::dtype::of<double>(); break;
-		default: throw Type_error{"Unable to pass {} bytes floating point value to python", scalar_type->datasize()};
+		case sizeof(float):
+			pytype = pybind11::dtype::of<float>();
+			break;
+		case sizeof(double):
+			pytype = pybind11::dtype::of<double>();
+			break;
+		default:
+			throw Type_error{"Unable to pass {} bytes floating point value to python", scalar_type->datasize()};
 		}
 	} break;
 	case Scalar_kind::SIGNED: {
 		switch (scalar_type->datasize()) {
-		case sizeof(int8_t): pytype = pybind11::dtype::of<int8_t>(); break;
-		case sizeof(int16_t): pytype = pybind11::dtype::of<int16_t>(); break;
-		case sizeof(int32_t): pytype = pybind11::dtype::of<int32_t>(); break;
-		case sizeof(int64_t): pytype = pybind11::dtype::of<int64_t>(); break;
-		default: throw Type_error{"Unable to pass {} bytes integer value to python", scalar_type->datasize()};
+		case sizeof(int8_t):
+			pytype = pybind11::dtype::of<int8_t>();
+			break;
+		case sizeof(int16_t):
+			pytype = pybind11::dtype::of<int16_t>();
+			break;
+		case sizeof(int32_t):
+			pytype = pybind11::dtype::of<int32_t>();
+			break;
+		case sizeof(int64_t):
+			pytype = pybind11::dtype::of<int64_t>();
+			break;
+		default:
+			throw Type_error{"Unable to pass {} bytes integer value to python", scalar_type->datasize()};
 		}
 	} break;
 	case Scalar_kind::UNSIGNED: {
 		switch (scalar_type->datasize()) {
-		case sizeof(uint8_t): pytype = pybind11::dtype::of<uint8_t>(); break;
-		case sizeof(uint16_t): pytype = pybind11::dtype::of<uint16_t>(); break;
-		case sizeof(uint32_t): pytype = pybind11::dtype::of<uint32_t>(); break;
-		case sizeof(uint64_t): pytype = pybind11::dtype::of<uint64_t>(); break;
-		default: throw Type_error{"Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
+		case sizeof(uint8_t):
+			pytype = pybind11::dtype::of<uint8_t>();
+			break;
+		case sizeof(uint16_t):
+			pytype = pybind11::dtype::of<uint16_t>();
+			break;
+		case sizeof(uint32_t):
+			pytype = pybind11::dtype::of<uint32_t>();
+			break;
+		case sizeof(uint64_t):
+			pytype = pybind11::dtype::of<uint64_t>();
+			break;
+		default:
+			throw Type_error{"Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
 		}
 	} break;
-	default: throw Type_error{"Unable to pass value of unexpected type to python"};
+	default:
+		throw Type_error{"Unable to pass value of unexpected type to python"};
 	}
 	
 	ssize_t cumulated_stride = 1;
@@ -136,8 +159,8 @@ pybind11::object to_python(Ref r)
 		ptr = static_cast<uint8_t*>(const_cast<void*>(r_r.get()));
 		//      pybind11::detail::array_descriptor_proxy(result.ptr())->flags &= ~pybind11::detail::npy_api::NPY_ARRAY_WRITEABLE_;
 	}
-	for ( int ii=0; ii<ndim; ++ii ) {
-		ptr += starts[ii]*strides[ii];
+	for (int ii = 0; ii < ndim; ++ii) {
+		ptr += starts[ii] * strides[ii];
 	}
 	
 	Ref* pr = new Ref{r};
@@ -153,15 +176,16 @@ Datatype_sptr python_type(const pybind11::array& a)
 	//TODO: handle non C-order arrays
 	vector<size_t> sizes(a.ndim());
 	if (a.ndim()) sizes[0] = a.shape(0);
-	for ( int ii=1; ii<a.ndim(); ++ii ) {
-		sizes[ii] = a.strides(ii-1)/a.strides(ii);
+	for (int ii = 1; ii < a.ndim(); ++ii) {
+		sizes[ii] = a.strides(ii - 1) / a.strides(ii);
 	}
 	Scalar_kind k;
 	switch (a.dtype().kind()) {
 	case 'i':
 		k = Scalar_kind::SIGNED;
 		break;
-	case 'u': case 'b':
+	case 'u':
+	case 'b':
 		k = Scalar_kind::UNSIGNED;
 		break;
 	case 'f':
@@ -172,7 +196,7 @@ Datatype_sptr python_type(const pybind11::array& a)
 	}
 	
 	Datatype_sptr result = Scalar_datatype::make(k, static_cast<size_t>(a.dtype().itemsize()));
-	for ( int ii=a.ndim()-1; ii>=0; --ii ) {
+	for (int ii = a.ndim() - 1; ii >= 0; --ii) {
 		result = Array_datatype::make(move(result), sizes[ii], 0, static_cast<size_t>(a.shape(ii)));
 	}
 	return result;

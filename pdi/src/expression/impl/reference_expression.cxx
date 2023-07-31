@@ -46,7 +46,6 @@
 
 #include "reference_expression.h"
 
-
 namespace PDI {
 
 using std::dynamic_pointer_cast;
@@ -60,14 +59,13 @@ using std::vector;
 
 /// Base class for expression reference accessors
 struct Accessor_expression {
-
 	/** Accesses a type according to this Accessor_expression
 	 *
 	 * \param ctx in which to evaluate the expression
 	 * \param ref the data to access
 	 * \return The sub-type
 	 */
-	virtual Ref access ( Context& ctx, Ref ref ) const = 0;
+	virtual Ref access(Context& ctx, Ref ref) const = 0;
 	
 	/** Clones expression reference accessor
 	 * \return clone of this expression reference accessor
@@ -80,7 +78,7 @@ struct Accessor_expression {
 };
 
 /// Accessor used to access array element
-class Index_accessor_expression : public Accessor_expression
+class Index_accessor_expression: public Accessor_expression
 {
 	/// Expression to evaluate as index accessor
 	Expression m_expression;
@@ -89,11 +87,11 @@ public:
 	/** Creates new index accessors used for array access
 	 * \param expression expression to evaluate as index accessor
 	 */
-	Index_accessor_expression(Expression expression):
-		m_expression{expression}
+	Index_accessor_expression(Expression expression)
+		: m_expression{expression}
 	{}
 	
-	Ref access ( Context& ctx, Ref ref ) const override
+	Ref access(Context& ctx, Ref ref) const override
 	{
 		return ref[m_expression.to_long(ctx)];
 	}
@@ -105,7 +103,7 @@ public:
 };
 
 /// Accessor used to access record member
-class Member_accessor_expression : public Accessor_expression
+class Member_accessor_expression: public Accessor_expression
 {
 	/// Expression to evaluate as member accessor
 	Expression m_expression;
@@ -114,11 +112,11 @@ public:
 	/** Creates new member accessors used for record member access
 	 * \param expression expression to evaluate as member accessor
 	 */
-	Member_accessor_expression(Expression expression):
-		m_expression{expression}
+	Member_accessor_expression(Expression expression)
+		: m_expression{expression}
 	{}
 	
-	Ref access ( Context& ctx, Ref ref ) const override
+	Ref access(Context& ctx, Ref ref) const override
 	{
 		return ref[m_expression.to_string(ctx)];
 	}
@@ -131,20 +129,20 @@ public:
 
 Expression::Impl::Reference_expression::Reference_expression() = default;
 
-Expression::Impl::Reference_expression::Reference_expression(const Reference_expression& other):
-	m_referenced{other.m_referenced},
-	m_fmt_format{other.m_fmt_format}
+Expression::Impl::Reference_expression::Reference_expression(const Reference_expression& other)
+	: m_referenced{other.m_referenced}
+	, m_fmt_format{other.m_fmt_format}
 {
-	for (auto&& accessor : other.m_subelements) {
+	for (auto&& accessor: other.m_subelements) {
 		m_subelements.emplace_back(accessor->clone());
 	}
 }
 
-Expression::Impl::Reference_expression& Expression::Impl::Reference_expression::operator=(const Reference_expression& other)
+Expression::Impl::Reference_expression& Expression::Impl::Reference_expression::operator= (const Reference_expression& other)
 {
 	m_referenced = other.m_referenced;
 	m_fmt_format = other.m_fmt_format;
-	for (auto&& accessor : other.m_subelements) {
+	for (auto&& accessor: other.m_subelements) {
 		m_subelements.emplace_back(accessor->clone());
 	}
 	return *this;
@@ -163,7 +161,7 @@ long Expression::Impl::Reference_expression::to_long(Context& ctx) const
 		}
 		throw Right_error{"Unable to grant access for value reference"};
 	} catch (const Error& e) {
-		throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
+		throw Error{e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
 }
 
@@ -173,9 +171,9 @@ double Expression::Impl::Reference_expression::to_double(Context& ctx) const
 		if (Ref_r ref = to_ref(ctx)) {
 			return ref.scalar_value<double>();
 		}
-		throw Right_error {"Unable to grant read access for value reference"};
+		throw Right_error{"Unable to grant read access for value reference"};
 	} catch (const Error& e) {
-		throw Error {e.status(), "while referencing `{}': {}", m_referenced, e.what()};
+		throw Error{e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
 }
 
@@ -183,10 +181,9 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 {
 	string result;
 	Ref_r raw_data = to_ref(ctx);
-	if ( auto&& referenced_type = dynamic_pointer_cast<const Array_datatype>(raw_data.type()) ) {
-		if ( auto&& scal_type = dynamic_pointer_cast<const Scalar_datatype>(referenced_type->subtype()) ) {
-			if ( scal_type->datasize() == 1 && (
-			        scal_type->kind() == Scalar_kind::SIGNED || scal_type->kind() == Scalar_kind::UNSIGNED ) ) {
+	if (auto&& referenced_type = dynamic_pointer_cast<const Array_datatype>(raw_data.type())) {
+		if (auto&& scal_type = dynamic_pointer_cast<const Scalar_datatype>(referenced_type->subtype())) {
+			if (scal_type->datasize() == 1 && (scal_type->kind() == Scalar_kind::SIGNED || scal_type->kind() == Scalar_kind::UNSIGNED)) {
 				result = string{static_cast<const char*>(raw_data.get()), referenced_type->size()};
 				if (!m_fmt_format.empty()) {
 					result = fmt::format("{" + m_fmt_format + "}", result.c_str());
@@ -223,13 +220,13 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 {
 	Ref result = ctx.desc(m_referenced.c_str()).ref();
-	for (auto&& accessor : m_subelements) {
+	for (auto&& accessor: m_subelements) {
 		result = accessor->access(ctx, result);
 	}
 	return result;
 }
 
-template<class T>
+template <class T>
 size_t from_ref_cpy(void* buffer, Ref_r ref)
 {
 	T value = ref.scalar_value<T>();
@@ -310,28 +307,33 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 	if (*ref == '{') {
 		++ref;
 		has_curly_brace = true;
-		while (isspace(*ref)) ++ref;
+		while (isspace(*ref))
+			++ref;
 	}
 	
 	result->m_referenced = parse_id(&ref);
 	
-	while (isspace(*ref)) ++ref;
-	
+	while (isspace(*ref))
+		++ref;
+		
 	while (*ref == '[' || *ref == '.') {
 		if (*ref == '[') {
 			++ref;
-			while (isspace(*ref)) ++ref;
+			while (isspace(*ref))
+				++ref;
 			result->m_subelements.emplace_back(new Index_accessor_expression{Expression{Operation::parse(&ref, 1)}});
-			if (*ref != ']')  {
+			if (*ref != ']') {
 				throw Value_error{"Expected ']', found {}", *ref};
 			}
 			++ref;
 		} else { // *ref == '.'
 			++ref;
-			while (isspace(*ref)) ++ref;
+			while (isspace(*ref))
+				++ref;
 			result->m_subelements.emplace_back(new Member_accessor_expression{Expression{parse_id(&ref)}});
 		}
-		while (isspace(*ref)) ++ref;
+		while (isspace(*ref))
+			++ref;
 	}
 	
 	if (*ref == ':') {
@@ -349,7 +351,8 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 			throw Value_error{"Expected '}}', found {}", *ref};
 		}
 		++ref;
-		while (isspace(*ref)) ++ref;
+		while (isspace(*ref))
+			++ref;
 	}
 	
 	*val_str = ref;

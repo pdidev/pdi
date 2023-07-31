@@ -57,10 +57,9 @@ Expression::Impl::Sequence::Sequence(PC_tree_t value)
 	}
 }
 
-Expression::Impl::Sequence::Sequence(const vector<Expression>& value):
-	m_value(value)
-{
-}
+Expression::Impl::Sequence::Sequence(const vector<Expression>& value)
+	: m_value(value)
+{}
 
 unique_ptr<Expression::Impl> Expression::Impl::Sequence::clone() const
 {
@@ -80,7 +79,7 @@ double Expression::Impl::Sequence::to_double(Context& ctx) const
 string Expression::Impl::Sequence::to_string(Context& ctx) const
 {
 	string result;
-	for (const auto& element : m_value) {
+	for (const auto& element: m_value) {
 		result += element.to_string(ctx);
 	}
 	return result;
@@ -89,20 +88,14 @@ string Expression::Impl::Sequence::to_string(Context& ctx) const
 Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 {
 	if (m_value.empty()) {
-		Ref_rw result {
-			nullptr,
-			[](void*){},
-			Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNKNOWN, 0), 0),
-			true,
-			true
-		};
+		Ref_rw result{nullptr, [](void*) {}, Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNKNOWN, 0), 0), true, true};
 		return result;
 	}
 	
 	// get subtypes and alignment
 	std::vector<Datatype_sptr> subtypes;
 	size_t result_alignment = 0;
-	for (auto&& element : m_value) {
+	for (auto&& element: m_value) {
 		subtypes.emplace_back(element.to_ref(ctx).type());
 		result_alignment = max<size_t>(result_alignment, subtypes.back()->alignment());
 	}
@@ -119,12 +112,12 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 	
 	// create the datatype
 	if (array_datatype) {
-		result_type= Array_datatype::make(std::move(subtypes[0]), m_value.size());
+		result_type = Array_datatype::make(std::move(subtypes[0]), m_value.size());
 	} else {
 		//tuple datatype
 		size_t displacement = 0;
 		vector<Tuple_datatype::Element> tuple_elements;
-		for (auto&& element_type : subtypes) {
+		for (auto&& element_type: subtypes) {
 			size_t alignment = element_type->alignment();
 			// align the next element as requested
 			displacement += (alignment - (displacement % alignment)) % alignment;
@@ -157,9 +150,11 @@ size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, Dataty
 	} else if (auto&& tuple_type = dynamic_pointer_cast<const Tuple_datatype>(type)) {
 		size_t bytes_copied = 0;
 		for (int i = 0; i < m_value.size(); i++) {
-			bytes_copied += m_value[i].m_impl->copy_value(ctx,
+			bytes_copied += m_value[i].m_impl->copy_value(
+			        ctx,
 			        static_cast<uint8_t*>(buffer) + tuple_type->elements()[i].offset(),
-			        tuple_type->elements()[i].type());
+			        tuple_type->elements()[i].type()
+			    );
 		}
 		return tuple_type->buffersize();
 	} else {

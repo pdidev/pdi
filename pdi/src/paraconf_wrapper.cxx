@@ -28,7 +28,6 @@
 
 #include "pdi/paraconf_wrapper.h"
 
-
 namespace PDI {
 
 using std::string;
@@ -42,10 +41,10 @@ void do_pc(PC_tree_t tree, PC_status_t status)
 	}
 }
 
-} // namespace <anonymous>
+} // namespace
 
-Paraconf_wrapper::Paraconf_wrapper():
-	m_handler{PC_errhandler(PC_NULL_HANDLER)}
+Paraconf_wrapper::Paraconf_wrapper()
+    : m_handler{PC_errhandler(PC_NULL_HANDLER)}
 {}
 
 Paraconf_wrapper::~Paraconf_wrapper()
@@ -142,51 +141,48 @@ bool is_scalar(PC_tree_t tree)
 	return tree.node->type == YAML_SCALAR_NODE;
 }
 
-
-
 void each(PC_tree_t tree, std::function<void(PC_tree_t)> operation)
 {
 	int nb_elem = len(tree);
-	for (int elem_id=0; elem_id<nb_elem; ++elem_id) {
+	for (int elem_id = 0; elem_id < nb_elem; ++elem_id) {
 		operation(PC_get(tree, "[%d]", elem_id));
 	}
 }
 
 void opt_each(PC_tree_t tree, std::function<void(PC_tree_t)> operation)
 {
-	if ( !PC_status(PC_get(tree, "[0]")) ) {
+	if (!PC_status(PC_get(tree, "[0]"))) {
 		each(tree, operation);
 	} else {
 		operation(tree);
 	}
-	
 }
 
-void each(PC_tree_t tree, std::function<void(PC_tree_t,PC_tree_t)> operation)
+void each(PC_tree_t tree, std::function<void(PC_tree_t, PC_tree_t)> operation)
 {
 	int nb_elem = len(tree);
-	for (int elem_id=0; elem_id<nb_elem; ++elem_id) {
+	for (int elem_id = 0; elem_id < nb_elem; ++elem_id) {
 		operation(PC_get(tree, "{%d}", elem_id), PC_get(tree, "<%d>", elem_id));
 	}
 }
 
-void each_in_omap(PC_tree_t tree, std::function<void(PC_tree_t,PC_tree_t)> operation)
+void each_in_omap(PC_tree_t tree, std::function<void(PC_tree_t, PC_tree_t)> operation)
 {
 	int nb_elem = len(tree);
-	if ( !is_list(tree) ) {
-		if ( is_scalar(tree) ) {
+	if (!is_list(tree)) {
+		if (is_scalar(tree)) {
 			throw Config_error{tree, "Expected an ordered mapping, found a scalar"};
-		} else if ( is_map(tree) ) {
+		} else if (is_map(tree)) {
 			throw Config_error{tree, "Expected an ordered mapping, found a (unordered) mapping"};
 		} else {
 			throw Config_error{tree, "Expected an ordered mapping, invalid element found"};
 		}
 	}
-	for (int elem_id=0; elem_id<nb_elem; ++elem_id) {
+	for (int elem_id = 0; elem_id < nb_elem; ++elem_id) {
 		PC_tree_t elem = PC_get(tree, "[%d]", elem_id);
-		if ( !is_map(elem) ) {
+		if (!is_map(elem)) {
 			throw Config_error{elem, "Invalid ordered mapping found (no key)"};
-		} else if ( len(elem) != 1 ) {
+		} else if (len(elem) != 1) {
 			throw Config_error{elem, "Invalid ordered mapping found (multiple keys)"};
 		}
 		operation(PC_get(elem, "{0}"), PC_get(elem, "<0>"));

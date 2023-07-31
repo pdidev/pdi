@@ -39,7 +39,7 @@ struct Accessor_expression;
 
 /** An expression implemented by a a reference to a data
  */
-class PDI_NO_EXPORT Expression::Impl::Reference_expression : public Expression::Impl
+class PDI_NO_EXPORT Expression::Impl::Reference_expression: public Expression::Impl
 {
 	/// The referenced data
 	std::string m_referenced;
@@ -66,7 +66,7 @@ public:
 	 * \param[in] other the reference expression to copy
 	 * \return copy of reference expression
 	 */
-	Reference_expression& operator=(const Reference_expression& other);
+	Reference_expression& operator= (const Reference_expression& other);
 	
 	std::unique_ptr<Impl> clone() const override;
 	

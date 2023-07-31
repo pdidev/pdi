@@ -37,14 +37,15 @@
 
 #include "int_literal.h"
 
-
 namespace PDI {
 
 using std::dynamic_pointer_cast;
 using std::make_shared;
 using std::unique_ptr;
 
-Expression::Impl::Int_literal::Int_literal(long value) : m_value(value) {}
+Expression::Impl::Int_literal::Int_literal(long value)
+	: m_value(value)
+{}
 
 long Expression::Impl::Int_literal::to_long(Context&) const
 {
@@ -66,7 +67,7 @@ Ref Expression::Impl::Int_literal::to_ref(Context& ctx) const
 	return Impl::to_ref(ctx, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)));
 }
 
-template<class T>
+template <class T>
 size_t from_long_cpy(void* buffer, long value_long)
 {
 	T value = static_cast<T>(value_long);
@@ -113,9 +114,9 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** v
 	const char* constval = *val_str;
 	
 	errno = 0;
-	unique_ptr<Int_literal> result {new Int_literal{strtol(constval, const_cast<char**>(&constval), 0)}};
-	if ( errno == ERANGE ) {
-		if ( result > 0 ) {
+	unique_ptr<Int_literal> result{new Int_literal{strtol(constval, const_cast<char**>(&constval), 0)}};
+	if (errno == ERANGE) {
+		if (result > 0) {
 			throw Value_error("Value too large for PDI integers: {}", constval);
 		} else {
 			throw Value_error("Value too small for PDI integers: {}", constval);
@@ -124,8 +125,9 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** v
 	if (*val_str == constval) {
 		throw Value_error{"Expected integer, found `{}'", constval};
 	}
-	while (isspace(*constval)) ++constval;
-	
+	while (isspace(*constval))
+		++constval;
+		
 	*val_str = constval;
 	return result;
 }

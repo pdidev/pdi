@@ -35,8 +35,7 @@ namespace PDI {
 
 /** An expression implemented by a a float literal
  */
-struct PDI_NO_EXPORT Expression::Impl::Float_literal : public Expression::Impl {
-
+struct PDI_NO_EXPORT Expression::Impl::Float_literal: public Expression::Impl {
 	double m_value;
 	
 	Float_literal(double value);

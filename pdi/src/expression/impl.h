@@ -40,7 +40,6 @@
 namespace PDI {
 
 struct PDI_NO_EXPORT Expression::Impl {
-
 	/** An expression implemented by a a integer literal
 	 */
 	struct Int_literal;

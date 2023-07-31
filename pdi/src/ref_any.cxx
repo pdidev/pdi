@@ -25,8 +25,8 @@
 #include "config.h"
 
 #include <cassert>
-#include <cstring>
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <memory>
 #include <vector>
@@ -38,14 +38,13 @@
 
 #include "pdi/ref_any.h"
 
-
 namespace PDI {
 
 Ref Reference_base::do_copy(Ref_r ref)
 {
-	Datatype_sptr densified_type {ref.type()->densify()};
-	if ( !densified_type->buffersize() ) {
-		return Ref {};
+	Datatype_sptr densified_type{ref.type()->densify()};
+	if (!densified_type->buffersize()) {
+		return Ref{};
 	}
 	// no std::aligned_alloc or std::align_val_t in C++14, hand-written version
 	// size + (densified_type->alignment() - 1) <- we want to make sure that we fit the data even though the worst alignment occur
@@ -58,9 +57,8 @@ Ref Reference_base::do_copy(Ref_r ref)
 		::operator delete (buffer);
 		throw;
 	}
-	return Ref {data, [buffer](void*){operator delete (buffer);}, std::move(densified_type), true, true};
+	return Ref{data, [buffer](void*) { operator delete (buffer); }, std::move(densified_type), true, true};
 }
-
 
 Datatype_sptr Reference_base::type() const noexcept
 {

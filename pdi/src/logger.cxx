@@ -26,9 +26,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/ansicolor_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
 
 #include <pdi/context.h>
 #include <pdi/error.h>
@@ -45,19 +45,19 @@ using PDI::len;
 using PDI::to_long;
 using PDI::to_string;
 using spdlog::logger;
-using spdlog::level::level_enum;
-using spdlog::level::trace;
-using spdlog::level::debug;
-using spdlog::level::info;
-using spdlog::level::warn;
-using spdlog::level::err;
-using spdlog::level::off;
 using spdlog::sink_ptr;
+using spdlog::level::debug;
+using spdlog::level::err;
+using spdlog::level::info;
+using spdlog::level::level_enum;
+using spdlog::level::off;
+using spdlog::level::trace;
+using spdlog::level::warn;
 using spdlog::sinks::basic_file_sink_st;
 #if defined _WIN32 && !defined(__cplusplus_winrt)
-	using spdlog::sinks::wincolor_stdout_sink_st;
+using spdlog::sinks::wincolor_stdout_sink_st;
 #else
-	using spdlog::sinks::ansicolor_stdout_sink_st;
+using spdlog::sinks::ansicolor_stdout_sink_st;
 #endif
 using std::make_shared;
 using std::shared_ptr;
@@ -77,19 +77,19 @@ shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging
 {
 	vector<sink_ptr> sinks;
 	PC_tree_t output_tree = PC_get(logging_tree, ".output");
-	
+
 	//configure file sink
 	if (!PC_status(PC_get(output_tree, ".file"))) {
-		string filename {to_string(PC_get(output_tree, ".file"))};
+		string filename{to_string(PC_get(output_tree, ".file"))};
 		auto file_sink = make_shared<basic_file_sink_st>(filename);
 		sinks.emplace_back(file_sink);
 	}
-	
+
 	//configure console sink
-	if (
-	    (!PC_status(PC_get(output_tree, ".console")) || sinks.empty() ) // either there is a console sink specified or no other
+	if ((!PC_status(PC_get(output_tree, ".console")) || sinks.empty()) // either there is a console sink specified or no other
 	    && to_string(PC_get(output_tree, ".console"), "on") != "off" // the console sink is not specifically disabled
-	) {
+	)
+	{
 		//logging to console is turned on
 #if defined _WIN32 && !defined(__cplusplus_winrt)
 		sinks.push_back(make_shared<wincolor_stdout_sink_st>());
@@ -97,7 +97,7 @@ shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging
 		sinks.push_back(make_shared<ansicolor_stdout_sink_st>());
 #endif
 	}
-	
+
 	return make_shared<logger>(logger_name, sinks.begin(), sinks.end());
 }
 
@@ -122,15 +122,9 @@ void read_log_level(shared_ptr<logger> logger, PC_tree_t logging_tree)
 			return;
 		}
 	}
-	
-	const unordered_map<string, level_enum> level_map = {
-		{"trace", trace},
-		{"debug", debug},
-		{"info", info},
-		{"warn", warn},
-		{"error", err},
-		{"off", off}
-	};
+
+	const unordered_map<string, level_enum> level_map
+	    = {{"trace", trace}, {"debug", debug}, {"info", info}, {"warn", warn}, {"error", err}, {"off", off}};
 	auto level_it = level_map.find(level_str);
 	if (level_it != level_map.end()) {
 		logger->set_level(level_map.find(level_str)->second);
@@ -163,15 +157,14 @@ std::string evaluate_refs_in_pattern(PDI::Context& ctx, string pattern)
 	return pattern;
 }
 
-} // namespace <anonymous>
+} // namespace
 
 namespace PDI {
 
 void Logger::build_pattern()
 {
 	stringstream s_pattern;
-	for (auto&& plugin_block : m_pattern_blocks)
-	{
+	for (auto&& plugin_block: m_pattern_blocks) {
 		s_pattern << plugin_block;
 	}
 	s_pattern << "[%n] *** %^%l%$: %v";
@@ -183,8 +176,8 @@ Logger::Logger(const string& logger_name, PC_tree_t config, level_enum level)
 	setup(logger_name, config, level);
 }
 
-Logger::Logger(Logger& parent_logger, const std::string& logger_name, PC_tree_t config):
-	Logger(logger_name, config, parent_logger.level())
+Logger::Logger(Logger& parent_logger, const std::string& logger_name, PC_tree_t config)
+    : Logger(logger_name, config, parent_logger.level())
 {
 	m_parent_logger = &parent_logger;
 	parent_logger.m_default_pattern_observers.emplace_back(*this);
@@ -205,7 +198,7 @@ void Logger::setup(const string& logger_name, PC_tree_t config, level_enum level
 	PC_tree_t pattern_tree = PC_get(config, ".pattern");
 	if (!PC_status(pattern_tree)) {
 		m_pattern = to_string(pattern_tree);
-		for (auto&& observer : m_default_pattern_observers) {
+		for (auto&& observer: m_default_pattern_observers) {
 			observer.get().default_pattern(m_pattern);
 		}
 		m_pattern_from_config = true;
@@ -225,7 +218,7 @@ void Logger::pattern(const string& pattern_str)
 {
 	m_pattern = pattern_str;
 	m_logger->set_pattern(m_pattern);
-	for (auto&& observer : m_default_pattern_observers) {
+	for (auto&& observer: m_default_pattern_observers) {
 		observer.get().default_pattern(m_pattern);
 	}
 	m_logger->set_pattern(evaluate_refs_in_pattern(m_pattern));
@@ -238,7 +231,6 @@ void Logger::global_pattern(const string& pattern_str)
 	} else {
 		pattern(pattern_str);
 	}
-
 }
 
 void Logger::default_pattern(const string& pattern)
@@ -246,7 +238,7 @@ void Logger::default_pattern(const string& pattern)
 	if (!m_pattern_from_config) {
 		m_pattern = pattern;
 		m_logger->set_pattern(evaluate_refs_in_pattern(m_pattern));
-		for (auto&& observer : m_default_pattern_observers) {
+		for (auto&& observer: m_default_pattern_observers) {
 			observer.get().default_pattern(m_pattern);
 		}
 	}
@@ -287,7 +279,7 @@ level_enum Logger::level() const
 void Logger::evaluate_pattern(Context& ctx) const
 {
 	m_logger->set_pattern(evaluate_refs_in_pattern(ctx, m_pattern));
-	for (auto&& observer : m_default_pattern_observers) {
+	for (auto&& observer: m_default_pattern_observers) {
 		observer.get().evaluate_pattern(ctx);
 	}
 }

@@ -44,143 +44,214 @@ using std::is_integral_v;
 using std::make_shared;
 using std::remove_cv_t;
 using std::unique_ptr;
-using std::dynamic_pointer_cast;
 
-template<class O1, class O2>
+template <class O1, class O2>
 Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op, O2 const operand_value)
 {
 	switch (op) {
 	case PLUS: {
 		auto val = computed_value + operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case MINUS: {
 		auto val = computed_value - operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case MULT: {
 		auto val = computed_value * operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case DIV: {
 		auto val = computed_value / operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case MOD: {
-		if constexpr ( is_integral_v<O1>&& is_integral_v<O2> ) {
+		if constexpr (is_integral_v<O1>&& is_integral_v<O2>) {
 			auto val = computed_value % operand_value;
-			return Ref(new decltype(val)(val), [](void* p) {
+			return Ref(
+			        new decltype(val)(val),
+			[](void* p) {
 				delete reinterpret_cast<decltype(val)*>(p);
-			}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+			},
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+			    );
 		} else {
 			throw Type_error("Invalid operands to modulo operation");
 		}
 	} break;
 	case EQUAL: {
 		auto val = computed_value == operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case AND: {
 		auto val = computed_value && operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case OR: {
 		auto val = computed_value || operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case GT: {
 		auto val = computed_value > operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case LT: {
 		auto val = computed_value < operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case GET: {
 		auto val = computed_value >= operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	case LET: {
 		auto val = computed_value <= operand_value;
-		return Ref(new decltype(val)(val), [](void* p) {
+		return Ref(
+		        new decltype(val)(val),
+		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
-		}, Scalar_datatype::type_for_v<decltype(val)>, true, false);
+		},
+		Scalar_datatype::type_for_v<decltype(val)>,
+		true,
+		false
+		    );
 	} break;
 	}
 	throw Type_error("Unexpected type");
 }
 
-template<class O1>
+template <class O1>
 Ref Expression::Impl::Operation::evalp(O1 const computed_value, Operator const op, Ref_r operand_ref)
 {
 	auto const operand_type = dynamic_pointer_cast<Scalar_datatype const>(operand_ref.type());
-	if ( !operand_type ) {
+	if (!operand_type) {
 		throw Type_error("Cannot apply operation on non-scalar value");
 	}
-	switch ( operand_type->kind()  ) {
+	switch (operand_type->kind()) {
 	case Scalar_kind::FLOAT: {
-		switch ( operand_type->datasize() ) {
+		switch (operand_type->datasize()) {
 		case sizeof(float): {
-			return eval( computed_value, op, operand_ref.scalar_value<float>());
+			return eval(computed_value, op, operand_ref.scalar_value<float>());
 		} break;
 		case sizeof(double): {
-			return eval( computed_value, op, operand_ref.scalar_value<double>());
+			return eval(computed_value, op, operand_ref.scalar_value<double>());
 		} break;
 		default:
 			throw Type_error("Unable to compute on floating point data of size {}", operand_type->datasize());
 		}
 	} break;
 	case Scalar_kind::SIGNED: {
-		switch ( operand_type->datasize() ) {
+		switch (operand_type->datasize()) {
 		case sizeof(int8_t): {
-			return eval( computed_value, op, operand_ref.scalar_value<int8_t>());
+			return eval(computed_value, op, operand_ref.scalar_value<int8_t>());
 		} break;
 		case sizeof(int16_t): {
-			return eval( computed_value, op, operand_ref.scalar_value<int16_t>());
+			return eval(computed_value, op, operand_ref.scalar_value<int16_t>());
 		} break;
 		case sizeof(int32_t): {
-			return eval( computed_value, op, operand_ref.scalar_value<int32_t>());
+			return eval(computed_value, op, operand_ref.scalar_value<int32_t>());
 		} break;
 		case sizeof(int64_t): {
-			return eval( computed_value, op, operand_ref.scalar_value<int64_t>());
+			return eval(computed_value, op, operand_ref.scalar_value<int64_t>());
 		} break;
 		default:
 			throw Type_error("Unable to compute on integer data of size {}", operand_type->datasize());
 		}
 	} break;
 	case Scalar_kind::UNSIGNED: {
-		switch ( operand_type->datasize() ) {
+		switch (operand_type->datasize()) {
 		case sizeof(uint8_t): {
-			return eval( computed_value, op, operand_ref.scalar_value<uint8_t>());
+			return eval(computed_value, op, operand_ref.scalar_value<uint8_t>());
 		} break;
 		case sizeof(uint16_t): {
-			return eval( computed_value, op, operand_ref.scalar_value<uint16_t>());
+			return eval(computed_value, op, operand_ref.scalar_value<uint16_t>());
 		} break;
 		case sizeof(uint32_t): {
-			return eval( computed_value, op, operand_ref.scalar_value<uint32_t>());
+			return eval(computed_value, op, operand_ref.scalar_value<uint32_t>());
 		} break;
 		case sizeof(uint64_t): {
-			return eval( computed_value, op, operand_ref.scalar_value<uint64_t>());
+			return eval(computed_value, op, operand_ref.scalar_value<uint64_t>());
 		} break;
 		default:
 			throw Type_error("Unable to compute on unsigned data of size {}", operand_type->datasize());
@@ -191,8 +262,7 @@ Ref Expression::Impl::Operation::evalp(O1 const computed_value, Operator const o
 	}
 }
 
-Expression::Impl::Operation::Operation()
-{}
+Expression::Impl::Operation::Operation() {}
 
 Expression::Impl::Operation::Operation(Expression first_operand, Operator op, Expression secend_operand)
 {
@@ -207,7 +277,7 @@ Expression::Impl::Operation::Operation(Expression first_operand, Operator op, Ex
 double Expression::Impl::Operation::to_double(Context& ctx) const
 {
 	Ref_r const ref_value = to_ref(ctx);
-	if ( ! ref_value ) {
+	if (!ref_value) {
 		throw Value_error("Unexpected null value for operation");
 	}
 	return ref_value.scalar_value<double>();
@@ -216,7 +286,7 @@ double Expression::Impl::Operation::to_double(Context& ctx) const
 long Expression::Impl::Operation::to_long(Context& ctx) const
 {
 	Ref_r const ref_value = to_ref(ctx);
-	if ( ! ref_value ) {
+	if (!ref_value) {
 		throw Value_error("Unexpected null value for operation");
 	}
 	return ref_value.scalar_value<long>();
@@ -227,54 +297,54 @@ Ref Expression::Impl::Operation::to_ref(Context& ctx) const
 	Ref_r computed_ref = m_first_operand.to_ref(ctx);
 	for (auto&& op: m_operands) {
 		auto computed_type = dynamic_pointer_cast<Scalar_datatype const>(computed_ref.type());
-		if ( !computed_type ) {
+		if (!computed_type) {
 			throw Type_error("Cannot apply operation on non-scalar value");
 		}
 		Ref_r const operand_ref = op.second.to_ref(ctx);
-		switch ( computed_type->kind()  ) {
+		switch (computed_type->kind()) {
 		case Scalar_kind::FLOAT: {
-			switch ( computed_type->datasize() ) {
+			switch (computed_type->datasize()) {
 			case sizeof(float): {
-				computed_ref = evalp( computed_ref.scalar_value<float>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<float>(), op.first, operand_ref);
 			} break;
 			case sizeof(double): {
-				computed_ref = evalp( computed_ref.scalar_value<double>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<double>(), op.first, operand_ref);
 			} break;
 			default:
 				throw Type_error("Unable to compute on floating point data of size {}", computed_type->datasize());
 			}
 		} break;
 		case Scalar_kind::SIGNED: {
-			switch ( computed_type->datasize() ) {
+			switch (computed_type->datasize()) {
 			case sizeof(int8_t): {
-				computed_ref = evalp( computed_ref.scalar_value<int8_t>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<int8_t>(), op.first, operand_ref);
 			} break;
 			case sizeof(int16_t): {
-				computed_ref = evalp( computed_ref.scalar_value<int16_t>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<int16_t>(), op.first, operand_ref);
 			} break;
 			case sizeof(int32_t): {
-				computed_ref = evalp( computed_ref.scalar_value<int32_t>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<int32_t>(), op.first, operand_ref);
 			} break;
 			case sizeof(int64_t): {
-				computed_ref = evalp( computed_ref.scalar_value<int64_t>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<int64_t>(), op.first, operand_ref);
 			} break;
 			default:
 				throw Type_error("Unable to compute on integer data of size {}", computed_type->datasize());
 			}
 		} break;
 		case Scalar_kind::UNSIGNED: {
-			switch ( computed_type->datasize() ) {
+			switch (computed_type->datasize()) {
 			case sizeof(uint8_t): {
-				computed_ref = evalp( computed_ref.scalar_value<uint8_t>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<uint8_t>(), op.first, operand_ref);
 			} break;
 			case sizeof(uint16_t): {
-				computed_ref = evalp( computed_ref.scalar_value<uint16_t>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<uint16_t>(), op.first, operand_ref);
 			} break;
 			case sizeof(uint32_t): {
-				computed_ref = evalp( computed_ref.scalar_value<uint32_t>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<uint32_t>(), op.first, operand_ref);
 			} break;
 			case sizeof(uint64_t): {
-				computed_ref = evalp( computed_ref.scalar_value<uint64_t>(), op.first, operand_ref);
+				computed_ref = evalp(computed_ref.scalar_value<uint64_t>(), op.first, operand_ref);
 			} break;
 			default:
 				throw Type_error("Unable to compute on unsigned data of size {}", computed_type->datasize());
@@ -287,7 +357,7 @@ Ref Expression::Impl::Operation::to_ref(Context& ctx) const
 	return computed_ref;
 }
 
-template<class T>
+template <class T>
 size_t from_long_cpy(void* buffer, long value_long)
 {
 	T value = static_cast<T>(value_long);
@@ -299,9 +369,9 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, Datat
 {
 	Ref_r value = to_ref(ctx);
 	if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
-		switch ( scalar_type->kind()  ) {
+		switch (scalar_type->kind()) {
 		case Scalar_kind::FLOAT: {
-			switch ( scalar_type->datasize() ) {
+			switch (scalar_type->datasize()) {
 			case sizeof(float): {
 				*reinterpret_cast<float*>(buffer) = value.scalar_value<float>();
 			} break;
@@ -313,7 +383,7 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, Datat
 			}
 		} break;
 		case Scalar_kind::SIGNED: {
-			switch ( scalar_type->datasize() ) {
+			switch (scalar_type->datasize()) {
 			case sizeof(int8_t): {
 				*reinterpret_cast<int8_t*>(buffer) = value.scalar_value<int8_t>();
 			} break;
@@ -331,7 +401,7 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, Datat
 			}
 		} break;
 		case Scalar_kind::UNSIGNED: {
-			switch ( scalar_type->datasize() ) {
+			switch (scalar_type->datasize()) {
 			case sizeof(uint8_t): {
 				*reinterpret_cast<uint8_t*>(buffer) = value.scalar_value<uint8_t>();
 			} break;
@@ -358,9 +428,9 @@ size_t Expression::Impl::Operation::copy_value(Context& ctx, void* buffer, Datat
 
 unique_ptr<Expression::Impl> Expression::Impl::Operation::clone() const
 {
-	unique_ptr<Operation> result {new Operation};
+	unique_ptr<Operation> result{new Operation};
 	result->m_first_operand = m_first_operand;
-	for (const auto& element : m_operands) {
+	for (const auto& element: m_operands) {
 		result->m_operands.emplace_back(element.first, element.second);
 	}
 	return result;
@@ -399,12 +469,22 @@ unique_ptr<Expression::Impl> Expression::Impl::Operation::parse(char const** val
 int Expression::Impl::Operation::op_level(const char* op)
 {
 	switch (*op) {
-	case OR: return 1;
-	case AND: return 2;
-	case EQUAL: return 3;
-	case GT: case LT: return 4;
-	case PLUS: case MINUS: return 5;
-	case MULT: case DIV: case MOD: return 6;
+	case OR:
+		return 1;
+	case AND:
+		return 2;
+	case EQUAL:
+		return 3;
+	case GT:
+	case LT:
+		return 4;
+	case PLUS:
+	case MINUS:
+		return 5;
+	case MULT:
+	case DIV:
+	case MOD:
+		return 6;
 	}
 	return 0;
 }

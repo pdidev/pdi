@@ -32,8 +32,8 @@
 
 #include <paraconf.h>
 
-#include <pdi/expression.h>
 #include <pdi/pdi_fwd.h>
+#include <pdi/expression.h>
 
 namespace PDI {
 
@@ -97,10 +97,8 @@ public:
 	 * \param[in] types_tree with defined types
 	 */
 	static void load_user_datatypes(Context& ctx, PC_tree_t types_tree);
-	
 };
 
 } // namespace PDI
 
 #endif // PDI_DATATYPE_TEMPLATE_H_
-

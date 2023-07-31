@@ -26,9 +26,9 @@
 #include <algorithm>
 
 #include <pdi/array_datatype.h>
+#include <pdi/python/tools.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi/python/tools.h>
 
 #include "pdi/python/python_ref_wrapper.h"
 
@@ -36,8 +36,8 @@ namespace PDI {
 
 using std::dynamic_pointer_cast;
 
-Python_ref_wrapper::Python_ref_wrapper(Ref ref):
-	m_ref{ref}
+Python_ref_wrapper::Python_ref_wrapper(Ref ref)
+	: m_ref{ref}
 {}
 
 pybind11::object Python_ref_wrapper::getattribute(std::string member_name)
@@ -48,7 +48,7 @@ pybind11::object Python_ref_wrapper::getattribute(std::string member_name)
 void Python_ref_wrapper::setattribute(std::string member_name, const pybind11::object value)
 {
 	Ref subref = m_ref[member_name];
-	if (Ref_w subref_w {subref}) {
+	if (Ref_w subref_w{subref}) {
 		if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(subref_w.type())) {
 			switch (scalar_type->kind()) {
 			case Scalar_kind::FLOAT: {
@@ -63,7 +63,8 @@ void Python_ref_wrapper::setattribute(std::string member_name, const pybind11::o
 					memcpy(subref_w.get(), &double_data, sizeof(double));
 					break;
 				}
-				default: throw Type_error{"Unable to pass {} bytes floating point value to python {}", scalar_type->datasize(), sizeof(float)};
+				default:
+					throw Type_error{"Unable to pass {} bytes floating point value to python {}", scalar_type->datasize(), sizeof(float)};
 				}
 			} break;
 			case Scalar_kind::SIGNED: {
@@ -88,7 +89,8 @@ void Python_ref_wrapper::setattribute(std::string member_name, const pybind11::o
 					memcpy(subref_w.get(), &int64_t_data, sizeof(int64_t));
 					break;
 				}
-				default: throw Type_error{"Unable to pass {} bytes integer value to python", scalar_type->datasize()};
+				default:
+					throw Type_error{"Unable to pass {} bytes integer value to python", scalar_type->datasize()};
 				}
 			} break;
 			case Scalar_kind::UNSIGNED: {
@@ -113,10 +115,12 @@ void Python_ref_wrapper::setattribute(std::string member_name, const pybind11::o
 					memcpy(subref_w.get(), &float_data, sizeof(uint64_t));
 					break;
 				}
-				default: throw Type_error{"Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
+				default:
+					throw Type_error{"Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
 				}
 			} break;
-			default: throw Type_error{"Unable to pass value of unexpected type to python"};
+			default:
+				throw Type_error{"Unable to pass value of unexpected type to python"};
 			}
 		} else if (auto&& array_type = std::dynamic_pointer_cast<const Array_datatype>(subref_w.type())) {
 			const pybind11::array py_array{value};

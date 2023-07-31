@@ -37,8 +37,8 @@ using std::vector;
 
 namespace PDI {
 
-Callbacks::Callbacks(Context& ctx):
-	m_context{ctx}
+Callbacks::Callbacks(Context& ctx)
+    : m_context{ctx}
 {}
 
 function<void()> Callbacks::add_init_callback(const function<void()>& callback)
@@ -114,10 +114,9 @@ function<void()> Callbacks::add_empty_desc_access_callback(const function<void(c
 	}
 }
 
-
 void Callbacks::call_init_callbacks() const
 {
-	for (auto&& init_callback : m_init_callbacks) {
+	for (auto&& init_callback: m_init_callbacks) {
 		init_callback();
 	}
 }
@@ -137,7 +136,7 @@ void Callbacks::call_data_callbacks(const string& name, Ref ref) const
 	m_context.logger().trace("Calling `{}' share. Callbacks to call: {}", name, data_callbacks.size());
 	//call gathered callbacks
 	vector<Error> errors;
-	for (const std::function<void(const std::string&, Ref)>& callback : data_callbacks) {
+	for (const std::function<void(const std::string&, Ref)>& callback: data_callbacks) {
 		try {
 			callback(name, ref);
 			//TODO: remove the faulty plugin in case of error?
@@ -176,7 +175,7 @@ void Callbacks::call_data_remove_callbacks(const string& name, Ref ref) const
 	m_context.logger().trace("Calling `{}' data remove. Callbacks to call: {}", name, data_remove_callbacks.size());
 	//call gathered callbacks
 	vector<Error> errors;
-	for (const std::function<void(const std::string&, Ref)>& callback : data_remove_callbacks) {
+	for (const std::function<void(const std::string&, Ref)>& callback: data_remove_callbacks) {
 		try {
 			callback(name, ref);
 			//TODO: remove the faulty plugin in case of error?
@@ -215,7 +214,7 @@ void Callbacks::call_event_callbacks(const string& name) const
 	m_context.logger().trace("Calling `{}' event. Callbacks to call: {}", name, event_callbacks.size());
 	//call gathered callbacks
 	std::vector<Error> errors;
-	for (const function<void(const string&)>& callback : event_callbacks) {
+	for (const function<void(const string&)>& callback: event_callbacks) {
 		try {
 			callback(name);
 			//TODO: remove the faulty plugin in case of error?
@@ -254,7 +253,7 @@ void Callbacks::call_empty_desc_access_callbacks(const string& name) const
 	m_context.logger().trace("Calling `{}' empty desc access. Callbacks to call: {}", name, empty_desc_callbacks.size());
 	//call gathered callbacks
 	vector<Error> errors;
-	for (const std::function<void(const std::string&)>& callback : empty_desc_callbacks) {
+	for (const std::function<void(const std::string&)>& callback: empty_desc_callbacks) {
 		try {
 			callback(name);
 			//TODO: remove the faulty plugin in case of error?

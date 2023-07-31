@@ -110,49 +110,49 @@ public:
 	 * \param[in] expr the expression to copy
 	 * \return *this
 	 */
-	Expression& operator=(const Expression& expr);
+	Expression& operator= (const Expression& expr);
 	
 	/** Moves an expression
 	 *
 	 * \param[in] expr the expression to move`
 	 * \return *this
 	 */
-	Expression& operator=(Expression&& expr);
+	Expression& operator= (Expression&& expr);
 	
 	/** Summation operator of an expression
 	 *
 	 * \param[in] expr the expression to add
 	 * \return Expression as a result of sum
 	 */
-	Expression operator+(const Expression& expr) const;
+	Expression operator+ (const Expression& expr) const;
 	
 	/** Multiplication operator of an expression
 	 *
 	 * \param[in] expr the expression to multiply
 	 * \return Expression as a result of multiplication
 	 */
-	Expression operator*(const Expression& expr) const;
+	Expression operator* (const Expression& expr) const;
 	
 	/** Subtraction operator of an expression
 	 *
 	 * \param[in] expr the expression to subtract
 	 * \return Expression as a result of subtraction
 	 */
-	Expression operator-(const Expression& expr) const;
+	Expression operator- (const Expression& expr) const;
 	
 	/** Division operator of an expression
 	 *
 	 * \param[in] expr the expression to divide
 	 * \return Expression as a result of division
 	 */
-	Expression operator/(const Expression& expr) const;
+	Expression operator/ (const Expression& expr) const;
 	
 	/** Modulo operator of an expression
 	 *
 	 * \param[in] expr the expression to use modulo
 	 * \return Expression as a result of modulo
 	 */
-	Expression operator%(const Expression& expr) const;
+	Expression operator% (const Expression& expr) const;
 	
 	/** Checks whether this is an empty expression
 	 *

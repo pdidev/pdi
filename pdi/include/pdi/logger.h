@@ -25,8 +25,8 @@
 #ifndef PDI_LOGGER_H_
 #define PDI_LOGGER_H_
 
-#include <utility>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <spdlog/logger.h>
@@ -171,7 +171,7 @@ public:
 	 * \param[in] fmt fmt formatted string
 	 * \param[in] args arguments for fmt string
 	 */
-	template<typename... Args>
+	template <typename... Args>
 	void trace(const char* fmt, Args&& ... args)
 	{
 		m_logger->trace(fmt, std::forward<Args>(args)...);
@@ -181,7 +181,7 @@ public:
 	 * \param[in] fmt fmt formatted string
 	 * \param[in] args arguments for fmt string
 	 */
-	template<typename... Args>
+	template <typename... Args>
 	void debug(const char* fmt, Args&& ... args)
 	{
 		m_logger->debug(fmt, std::forward<Args>(args)...);
@@ -191,7 +191,7 @@ public:
 	 * \param[in] fmt fmt formatted string
 	 * \param[in] args arguments for fmt string
 	 */
-	template<typename... Args>
+	template <typename... Args>
 	void info(const char* fmt, Args&& ... args)
 	{
 		m_logger->info(fmt, std::forward<Args>(args)...);
@@ -201,7 +201,7 @@ public:
 	 * \param[in] fmt fmt formatted string
 	 * \param[in] args arguments for fmt string
 	 */
-	template<typename... Args>
+	template <typename... Args>
 	void warn(const char* fmt, Args&& ... args)
 	{
 		m_logger->warn(fmt, std::forward<Args>(args)...);
@@ -211,7 +211,7 @@ public:
 	 * \param[in] fmt fmt formatted string
 	 * \param[in] args arguments for fmt string
 	 */
-	template<typename... Args>
+	template <typename... Args>
 	void error(const char* fmt, Args&& ... args)
 	{
 		m_logger->error(fmt, std::forward<Args>(args)...);
@@ -221,7 +221,6 @@ public:
 	 * \return spdlog logger
 	 */
 	std::shared_ptr<spdlog::logger> real_logger();
-	
 };
 
 } // namespace PDI

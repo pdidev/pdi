@@ -30,16 +30,15 @@
 #include <cstdint>
 #include <memory>
 #include <regex>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
-#include "pdi/paraconf_wrapper.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/paraconf_wrapper.h"
 
 #include "pdi/array_datatype.h"
-
 
 namespace PDI {
 
@@ -60,16 +59,16 @@ using std::transform;
 using std::unique_ptr;
 using std::vector;
 
-Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes):
-	Datatype(attributes),
-	m_subtype {move(subtype)},
-	m_size{move(size)},
-	m_start{move(start)},
-	m_subsize{move(subsize)}
+Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes)
+    : Datatype(attributes)
+    , m_subtype{move(subtype)}
+    , m_size{move(size)}
+    , m_start{move(start)}
+    , m_subsize{move(subsize)}
 {}
 
-Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, const Attributes_map& attributes):
-	Array_datatype{move(subtype), size, 0, move(size), attributes}
+Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, const Attributes_map& attributes)
+    : Array_datatype{move(subtype), size, 0, move(size), attributes}
 {}
 
 Datatype_sptr Array_datatype::subtype() const
@@ -94,7 +93,7 @@ size_t Array_datatype::subsize() const
 
 Datatype_sptr Array_datatype::densify() const
 {
-	return unique_ptr<Array_datatype> {new Array_datatype{m_subtype->densify(), m_subsize, m_attributes}};
+	return unique_ptr<Array_datatype>{new Array_datatype{m_subtype->densify(), m_subsize, m_attributes}};
 }
 
 Datatype_sptr Array_datatype::evaluate(Context&) const
@@ -132,20 +131,20 @@ void* Array_datatype::data_to_dense_copy(void* to, const void* from) const
 {
 	size_t subtype_buffersize = subtype()->buffersize();
 	from = static_cast<const uint8_t*>(from) + (start() * subtype_buffersize);
-	
+
 	if (subtype()->simple() && subtype()->dense()) {
 		//dense copy
 		memcpy(to, from, datasize());
 		return reinterpret_cast<uint8_t*>(to) + datasize();
 	}
-	
+
 	size_t subtype_alignment = subtype()->alignment();
 	for (size_t subtype_no = 0; subtype_no < subsize(); subtype_no++) {
 		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
 		size_t space_to_align = subtype_alignment;
 		//size = 0, because we know that to points to allocated memory
 		to = align(subtype_alignment, 0, to, space_to_align);
-		
+
 		to = subtype()->data_to_dense_copy(to, from);
 		from = reinterpret_cast<const uint8_t*>(from) + subtype_buffersize;
 	}
@@ -157,26 +156,26 @@ void* Array_datatype::data_from_dense_copy(void* to, const void* from) const
 	uint8_t* original_to = reinterpret_cast<uint8_t*>(to);
 	size_t subtype_buffersize = subtype()->buffersize();
 	to = static_cast<uint8_t*>(to) + (start() * subtype_buffersize);
-	
+
 	if (subtype()->simple() && subtype()->dense()) {
 		//dense copy
 		memcpy(to, from, datasize());
 		to = original_to + buffersize();
 		return to;
 	}
-	
+
 	size_t subtype_alignment = subtype()->alignment();
 	for (int subtype_no = 0; subtype_no < subsize(); subtype_no++) {
 		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
 		size_t space_to_align = subtype_alignment;
 		//size = 0, because we know that to points to allocated memory
 		to = align(subtype_alignment, 0, to, space_to_align);
-		
+
 		//cannot use std::align, becasue `from' is const
 		auto subtype_align = subtype()->alignment();
 		int padding = (subtype_align - (reinterpret_cast<const uintptr_t>(from) % subtype_align)) % subtype_align;
 		from = reinterpret_cast<const uint8_t*>(from) + padding;
-		
+
 		to = subtype()->data_from_dense_copy(to, from);
 		from = reinterpret_cast<const uint8_t*>(from) + subtype()->datasize();
 	}
@@ -184,35 +183,35 @@ void* Array_datatype::data_from_dense_copy(void* to, const void* from) const
 	return to;
 }
 
-Datatype_sptr Array_datatype::index ( size_t index ) const
+Datatype_sptr Array_datatype::index(size_t index) const
 {
 	if (index < subsize()) {
 		return subtype();
 	} else {
-		throw Value_error {"Subaccess array index out of range: {} >= {}", index, subsize()};
+		throw Value_error{"Subaccess array index out of range: {} >= {}", index, subsize()};
 	}
 }
 
-std::pair<void*, Datatype_sptr> Array_datatype::index ( size_t index, void* data ) const
+std::pair<void*, Datatype_sptr> Array_datatype::index(size_t index, void* data) const
 {
 	if (index < subsize()) {
 		data = reinterpret_cast<uint8_t*>(data) + subtype()->buffersize() * (start() + index);
 		return {data, subtype()};
 	} else {
-		throw Value_error {"Subaccess array index out of range: {} >= {}", index, subsize()};
+		throw Value_error{"Subaccess array index out of range: {} >= {}", index, subsize()};
 	}
 }
 
-Datatype_sptr Array_datatype::slice ( size_t start_index, size_t end_index ) const
+Datatype_sptr Array_datatype::slice(size_t start_index, size_t end_index) const
 {
 	if (end_index <= subsize()) {
-		return make(subtype(), end_index-start_index);
+		return make(subtype(), end_index - start_index);
 	} else {
-		throw Value_error {"Subaccess array slice out of range: [{}:{}] > {}", start_index, end_index, subsize()};
+		throw Value_error{"Subaccess array slice out of range: [{}:{}] > {}", start_index, end_index, subsize()};
 	}
 }
 
-std::pair<void*, Datatype_sptr> Array_datatype::slice ( size_t start_index, size_t end_index, void* data ) const
+std::pair<void*, Datatype_sptr> Array_datatype::slice(size_t start_index, size_t end_index, void* data) const
 {
 	return {reinterpret_cast<uint8_t*>(data) + subtype()->buffersize() * (start() + start_index), slice(start_index, end_index)};
 }
@@ -221,8 +220,8 @@ void Array_datatype::destroy_data(void* ptr) const
 {
 	if (!subtype()->simple()) {
 		size_t subtype_buffersize = subtype()->buffersize();
-		for (size_t subtype_no = start(); subtype_no < start()+subsize(); ++subtype_no) {
-			subtype()->destroy_data(reinterpret_cast<uint8_t*>(ptr) + subtype_no*subtype_buffersize);
+		for (size_t subtype_no = start(); subtype_no < start() + subsize(); ++subtype_no) {
+			subtype()->destroy_data(reinterpret_cast<uint8_t*>(ptr) + subtype_no * subtype_buffersize);
 		}
 	}
 }
@@ -234,14 +233,15 @@ string Array_datatype::debug_string() const
 	subtype_str = regex_replace(subtype_str, regex("\n"), "\n\t");
 	subtype_str.insert(subtype_str.begin(), '\t');
 	ss << "type: array" << endl
-	    << "dense: " << (dense() ? "true" : "false") << endl
-	    << "buffersize: " << buffersize() << endl
-	    << "datasize: " << datasize() << endl
-	    << "alignment: " << alignment() << endl
-	    << "size: " << size() << endl
-	    << "start: " << start() << endl
-	    << "subsize: " << subsize() << endl
-	    << "subtype: " << endl << subtype_str;
+	   << "dense: " << (dense() ? "true" : "false") << endl
+	   << "buffersize: " << buffersize() << endl
+	   << "datasize: " << datasize() << endl
+	   << "alignment: " << alignment() << endl
+	   << "size: " << size() << endl
+	   << "start: " << start() << endl
+	   << "subsize: " << subsize() << endl
+	   << "subtype: " << endl
+	   << subtype_str;
 	if (!m_attributes.empty()) {
 		ss << endl << "attributes: " << endl;
 		auto it = m_attributes.begin();
@@ -253,23 +253,19 @@ string Array_datatype::debug_string() const
 	return ss.str();
 }
 
-bool Array_datatype::operator==(const Datatype& other) const
+bool Array_datatype::operator== (const Datatype& other) const
 {
 	auto&& rhs = dynamic_cast<const Array_datatype*>(&other);
-	return rhs
-	    && *subtype() == *(rhs->subtype())
-	    && m_size == rhs->size()
-	    && m_start == rhs->start()
-	    && m_subsize == rhs->subsize();
+	return rhs && *subtype() == *(rhs->subtype()) && m_size == rhs->size() && m_start == rhs->start() && m_subsize == rhs->subsize();
 }
 
-struct Array_datatype::Shared_enabler : public Array_datatype {
-	Shared_enabler (Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {}):
-		Array_datatype(subtype,size,start,subsize,attributes)
+struct Array_datatype::Shared_enabler: public Array_datatype {
+	Shared_enabler(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {})
+	    : Array_datatype(subtype, size, start, subsize, attributes)
 	{}
-	
-	Shared_enabler (Datatype_sptr subtype, size_t size, const Attributes_map& attributes = {}):
-		Array_datatype(subtype,size,attributes)
+
+	Shared_enabler(Datatype_sptr subtype, size_t size, const Attributes_map& attributes = {})
+	    : Array_datatype(subtype, size, attributes)
 	{}
 };
 

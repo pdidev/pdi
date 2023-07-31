@@ -35,8 +35,7 @@ namespace PDI {
 
 /** An expression implemented by a a string literal (with potential dollar refs)
  */
-struct PDI_NO_EXPORT Expression::Impl::String_literal : public Expression::Impl {
-
+struct PDI_NO_EXPORT Expression::Impl::String_literal: public Expression::Impl {
 	/** A Subvalue contains another value to insert and the string following it
 	 */
 	using Subvalue = std::pair<Expression, std::string>;
@@ -60,7 +59,6 @@ struct PDI_NO_EXPORT Expression::Impl::String_literal : public Expression::Impl 
 	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
 	
 	static std::unique_ptr<Impl> parse(char const** val_str);
-	
 };
 
 

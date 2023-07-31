@@ -34,11 +34,11 @@
 #include <dlfcn.h>
 #include <unistd.h>
 
+#include "pdi/error.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-#include "pdi/error.h"
 #include "pdi/version.h"
 
 #include "data_descriptor_impl.h"
@@ -64,7 +64,7 @@ namespace {
 void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 {
 	int map_len = len(node);
-	
+
 	for (int map_id = 0; map_id < map_len; ++map_id) {
 		Data_descriptor& dsc = ctx.desc(to_string(PC_get(node, "{%d}", map_id)).c_str());
 		dsc.metadata(is_metadata);
@@ -75,10 +75,9 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 	} else {
 		ctx.logger().trace("Loaded {} data", map_len);
 	}
-	
 }
 
-} // namespace <anonymous>
+} // namespace
 
 unique_ptr<Global_context> Global_context::s_context;
 
@@ -103,18 +102,18 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
-Global_context::Global_context(PC_tree_t conf):
-	m_logger{"PDI", PC_get(conf, ".logging")},
-	m_plugins{*this, conf}, 
-	m_callbacks{*this}
+Global_context::Global_context(PC_tree_t conf)
+    : m_logger{"PDI", PC_get(conf, ".logging")}
+    , m_plugins{*this, conf}
+    , m_callbacks{*this}
 {
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
 	// load user datatypes
 	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
-	
+
 	m_plugins.load_plugins();
-	
+
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
 
@@ -125,7 +124,7 @@ Global_context::Global_context(PC_tree_t conf):
 	} else {
 		m_logger.debug("Metadata is not defined in specification tree");
 	}
-	
+
 	// no data is spurious, but not an error
 	PC_tree_t data = PC_get(conf, ".data");
 	if (!PC_status(data)) {
@@ -133,15 +132,15 @@ Global_context::Global_context(PC_tree_t conf):
 	} else {
 		m_logger.warn("Data is not defined in specification tree");
 	}
-	
-	
+
+
 	m_callbacks.call_init_callbacks();
 	m_logger.info("Initialization successful");
 }
 
 Data_descriptor& Global_context::desc(const char* name)
 {
-	return *(m_descriptors.emplace(name, unique_ptr<Data_descriptor> {new Data_descriptor_impl{*this, name}}).first->second);
+	return *(m_descriptors.emplace(name, unique_ptr<Data_descriptor>{new Data_descriptor_impl{*this, name}}).first->second);
 }
 
 Data_descriptor& Global_context::desc(const string& name)
@@ -149,12 +148,12 @@ Data_descriptor& Global_context::desc(const string& name)
 	return desc(name.c_str());
 }
 
-Data_descriptor& Global_context::operator[](const char* name)
+Data_descriptor& Global_context::operator[] (const char* name)
 {
 	return desc(name);
 }
 
-Data_descriptor& Global_context::operator[](const string& name)
+Data_descriptor& Global_context::operator[] (const string& name)
 {
 	return desc(name.c_str());
 }
@@ -187,7 +186,7 @@ Datatype_template_ptr Global_context::datatype(PC_tree_t node)
 	} catch (const Error& e) {
 		type = to_string(node);
 	}
-	
+
 	// check if someone didn't mean to create an array with the old syntax
 	if (type != "array") {
 		if (!PC_status(PC_get(node, ".size"))) {
@@ -197,7 +196,7 @@ Datatype_template_ptr Global_context::datatype(PC_tree_t node)
 			logger().warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
 		}
 	}
-	
+
 	auto&& func_it = m_datatype_parsers.find(type);
 	if (func_it != m_datatype_parsers.end()) {
 		return (func_it->second)(*this, node);
@@ -229,4 +228,4 @@ Global_context::~Global_context()
 	m_logger.info("Finalization");
 }
 
-}
+} // namespace PDI

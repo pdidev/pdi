@@ -61,14 +61,13 @@ public:
 	
 }; // class Plugin
 
-
 #define PLUGIN_API_VERSION_MAJOR (0ul)
 
 #define PLUGIN_API_VERSION_MINOR (0ul)
 
 #define PLUGIN_API_VERSION_PATCH (1ul)
 
-#define PLUGIN_API_VERSION ((PLUGIN_API_VERSION_MAJOR<<24) + (PLUGIN_API_VERSION_MINOR<<16) + (PLUGIN_API_VERSION_PATCH<<8))
+#define PLUGIN_API_VERSION ((PLUGIN_API_VERSION_MAJOR << 24) + (PLUGIN_API_VERSION_MINOR << 16) + (PLUGIN_API_VERSION_PATCH << 8))
 
 /** Checks compatibility with a plugin API
  *
@@ -77,7 +76,7 @@ public:
  * \throws PDI::Error if the provided version is incompatible with the expected
  * one
  */
-unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version=0);
+unsigned long PDI_EXPORT plugin_api_version(unsigned long expected_version = 0);
 
 } // namespace PDI
 
@@ -92,11 +91,13 @@ struct has_dependencies {
 	{
 		return true;
 	}
+	
 	template <typename C>
 	static constexpr bool test(...)
 	{
 		return false;
 	}
+	
 	static constexpr bool value = test<T>(int());
 };
 
@@ -106,7 +107,8 @@ struct has_dependencies {
  * \returns plugin dependencies
  */
 template <class T>
-typename std::enable_if<has_dependencies<T>::value, std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>>>::type plugin_dependencies()
+typename std::enable_if<has_dependencies<T>::value, std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>>>::type
+plugin_dependencies()
 {
 	return T::dependencies();
 }
@@ -117,7 +119,8 @@ typename std::enable_if<has_dependencies<T>::value, std::pair<std::unordered_set
  * \returns empty dependencies sets (i.e no dependencies)
  */
 template <class T>
-typename std::enable_if<!has_dependencies<T>::value, std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>>>::type plugin_dependencies()
+typename std::enable_if<!has_dependencies<T>::value, std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>>>::type
+plugin_dependencies()
 {
 	return {};
 }
@@ -131,11 +134,13 @@ struct has_pretty_name {
 	{
 		return true;
 	}
+	
 	template <typename C>
 	static constexpr bool test(...)
 	{
 		return false;
 	}
+	
 	static constexpr bool value = test<T>(int());
 };
 
@@ -161,7 +166,7 @@ typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pr
 	return plugin_name;
 }
 
-} // namespace <anonymous>
+} // namespace
 
 /** Declares a plugin to be used with PDI and its dependencies
  *
@@ -180,24 +185,23 @@ typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pr
  *
  * \param name the name of the plugin
  */
-#define PDI_PLUGIN(name)\
-	_Pragma("clang diagnostic push")\
-	_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")\
-	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\"")\
-	extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf) \
-	{\
-		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf}};\
-		::PDI::plugin_api_version(PLUGIN_API_VERSION);\
-		return plugin;\
-	}\
-	extern "C" ::std::pair<::std::unordered_set<::std::string>, ::std::unordered_set<::std::string>> PDI_EXPORT PDI_plugin_##name##_dependencies() \
-	{\
-		return ::plugin_dependencies<name##_plugin>();\
-	}\
-	extern "C" ::std::string PDI_EXPORT PDI_plugin_##name##_pretty_name() \
-	{\
-		return ::plugin_pretty_name<name##_plugin>(#name);\
-	}\
+#define PDI_PLUGIN(name)                                                                                                                             \
+	_Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")                                                    \
+	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\""                                                                               \
+	) extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf)                     \
+	{                                                                                                                                                \
+		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf}};                                                                \
+		::PDI::plugin_api_version(PLUGIN_API_VERSION);                                                                                               \
+		return plugin;                                                                                                                               \
+	}                                                                                                                                                \
+	extern "C" ::std::pair<::std::unordered_set<::std::string>, ::std::unordered_set<::std::string>> PDI_EXPORT PDI_plugin_##name##_dependencies()   \
+	{                                                                                                                                                \
+		return ::plugin_dependencies<name##_plugin>();                                                                                               \
+	}                                                                                                                                                \
+	extern "C" ::std::string PDI_EXPORT PDI_plugin_##name##_pretty_name()                                                                            \
+	{                                                                                                                                                \
+		return ::plugin_pretty_name<name##_plugin>(#name);                                                                                           \
+	}                                                                                                                                                \
 	_Pragma("clang diagnostic pop")
 
 #endif // PDI_PLUGIN_H_

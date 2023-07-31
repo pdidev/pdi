@@ -31,9 +31,7 @@
 
 #include "pdi/datatype.h"
 
-
-namespace PDI
-{
+namespace PDI {
 
 using fmt::join;
 using std::pair;
@@ -42,54 +40,53 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-
-Datatype::Datatype(const Attributes_map& attributes):
-	Datatype_template(attributes)
+Datatype::Datatype(const Attributes_map& attributes)
+    : Datatype_template(attributes)
 {}
 
 Datatype::~Datatype() = default;
 
-bool Datatype::operator!=(const Datatype& rhs) const
+bool Datatype::operator!= (const Datatype& rhs) const
 {
 	return !(*this == rhs);
 }
 
-Datatype_sptr Datatype::index ( size_t ) const
+Datatype_sptr Datatype::index(size_t) const
 {
 	throw Type_error{"unable to access element by index in {}", debug_string()};
 }
 
-std::pair<void*, Datatype_sptr> Datatype::index ( size_t, void* ) const
+std::pair<void*, Datatype_sptr> Datatype::index(size_t, void*) const
 {
 	throw Type_error{"unable to access element by index in {}", debug_string()};
 }
 
-Datatype_sptr Datatype::slice ( size_t, size_t ) const
+Datatype_sptr Datatype::slice(size_t, size_t) const
 {
 	throw Type_error{"unable to access slice in {}", debug_string()};
 }
 
-std::pair<void*, Datatype_sptr> Datatype::slice ( size_t, size_t, void* ) const
+std::pair<void*, Datatype_sptr> Datatype::slice(size_t, size_t, void*) const
 {
 	throw Type_error{"unable to access slice in {}", debug_string()};
 }
 
-Datatype_sptr Datatype::member ( const char* ) const
+Datatype_sptr Datatype::member(const char*) const
 {
 	throw Type_error{"unable to access member in {}", debug_string()};
 }
 
-std::pair<void*, Datatype_sptr> Datatype::member ( const char*, void* ) const
+std::pair<void*, Datatype_sptr> Datatype::member(const char*, void*) const
 {
 	throw Type_error{"unable to access member in {}", debug_string()};
 }
 
-Datatype_sptr Datatype::dereference () const
+Datatype_sptr Datatype::dereference() const
 {
 	throw Type_error{"unable to dereference {}", debug_string()};
 }
 
-std::pair<void*, Datatype_sptr> Datatype::dereference ( void* ) const
+std::pair<void*, Datatype_sptr> Datatype::dereference(void*) const
 {
 	throw Type_error{"unable to dereference {}", debug_string()};
 }

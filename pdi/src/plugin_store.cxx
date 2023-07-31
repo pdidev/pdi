@@ -36,11 +36,11 @@
 
 #include <spdlog/spdlog.h>
 
+#include "pdi/error.h"
 #include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-#include "pdi/error.h"
 #include "pdi/version.h"
 
 #include "data_descriptor_impl.h"
@@ -48,15 +48,14 @@
 
 #include "plugin_store.h"
 
-
 namespace PDI {
 
 using fmt::format;
 using fmt::join;
 using std::exception;
 using std::forward_as_tuple;
-using std::map;
 using std::make_shared;
+using std::map;
 using std::pair;
 using std::piecewise_construct;
 using std::shared_ptr;
@@ -66,36 +65,36 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
-Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, string name, PC_tree_t conf):
-	m_config{conf},
-	m_ctx{ctx},
-	m_name{name},
-	m_state{PRELOADED}
+Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, string name, PC_tree_t conf)
+    : m_config{conf}
+    , m_ctx{ctx}
+    , m_name{name}
+    , m_state{PRELOADED}
 {
 	ctx.logger().trace("Pre-loading plugin `{}'", name);
-	
+
 	string ctor_symbol = "PDI_plugin_" + name + "_loader";
 	string deps_symbol = "PDI_plugin_" + name + "_dependencies";
 	string pretty_name_symbol = "PDI_plugin_" + name + "_pretty_name";
-	
+
 	// case where the library was prelinked
 	m_ctr = reinterpret_cast<plugin_factory_f>(dlsym(NULL, ctor_symbol.c_str()));
 	m_deps = reinterpret_cast<plugin_deps_f>(dlsym(NULL, deps_symbol.c_str()));
-	auto pretty_name_f = reinterpret_cast<std::string(*)()>(dlsym(NULL, pretty_name_symbol.c_str()));
+	auto pretty_name_f = reinterpret_cast<std::string (*)()>(dlsym(NULL, pretty_name_symbol.c_str()));
 
 	// case where the library was not prelinked
 	void* lib_handle = NULL;
 	if (!m_ctr || !m_deps) {
 		lib_handle = store.plugin_dlopen(name);
 	}
-	
+
 	if (!m_ctr) {
 		m_ctr = reinterpret_cast<plugin_factory_f>(dlsym(lib_handle, ctor_symbol.c_str()));
 		if (!m_ctr) {
 			throw Plugin_error{"Unable to load plugin constructor for `{}': {}", name, dlerror()};
 		}
 	}
-	
+
 	if (!m_deps) {
 		m_deps = reinterpret_cast<plugin_deps_f>(dlsym(lib_handle, deps_symbol.c_str()));
 		if (!m_deps) {
@@ -103,7 +102,7 @@ Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, st
 		}
 	}
 	if (!pretty_name_f) {
-		pretty_name_f = reinterpret_cast<std::string(*)()>(dlsym(lib_handle, pretty_name_symbol.c_str()));
+		pretty_name_f = reinterpret_cast<std::string (*)()>(dlsym(lib_handle, pretty_name_symbol.c_str()));
 		if (!m_deps) {
 			throw Plugin_error{"Unable to load plugin pretty name for `{}': {}", name, dlerror()};
 		}
@@ -122,8 +121,8 @@ void Plugin_store::Stored_plugin::ensure_loaded(map<string, shared_ptr<Stored_pl
 	case PRELOADED:
 		m_state = LOADING;
 		auto&& plugin_dependencies = m_deps();
-		
-		for (auto&& req_plugin : plugin_dependencies.first) {
+
+		for (auto&& req_plugin: plugin_dependencies.first) {
 			auto&& plugin_info_it = plugins.find(req_plugin);
 			if (plugin_info_it == plugins.end()) {
 				throw System_error{"Error while loading plugin `{}': required plugin `{}' is not loaded", m_name, req_plugin};
@@ -190,12 +189,12 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 {
 	vector<string> load_errors;
-	
+
 	// STEP 1: try using expected path
-	for ( auto&& path: m_plugin_path ) {
+	for (auto&& path: m_plugin_path) {
 		string libname = path + "/libpdi_" + plugin_name + "_plugin.so";
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
-		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW|RTLD_GLOBAL);
+		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 		if (lib_handle) {
 			m_ctx.logger().trace("Loaded `{}'", libname);
 			return lib_handle;
@@ -205,12 +204,12 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 			load_errors.push_back(format("\n  * unable to load `{}' {}", libname, error_msg));
 		}
 	}
-	
+
 	// STEP 2: get from relative path to system path
 	if /* constexpr */ (PDI_DEFAULT_PLUGIN_PATH[0] != '/') {
 		string libname = (PDI_DEFAULT_PLUGIN_PATH "/libpdi_") + plugin_name + "_plugin.so";
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
-		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW|RTLD_GLOBAL);
+		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 		if (lib_handle) {
 			m_ctx.logger().trace("Loaded `{}' relative to system path", libname);
 			return lib_handle;
@@ -220,11 +219,11 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 			load_errors.push_back(format("\n  * unable to load `{}' relative to system path {}", libname, error_msg));
 		}
 	}
-	
+
 	// STEP 3: try system path
 	string libname = string("libpdi_") + plugin_name + "_plugin.so";
 	// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
-	void* lib_handle = dlopen(libname.c_str(), RTLD_NOW|RTLD_GLOBAL);
+	void* lib_handle = dlopen(libname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 	if (lib_handle) {
 		m_ctx.logger().trace("Loaded `{}' from system path", libname);
 		return lib_handle;
@@ -233,18 +232,15 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 		m_ctx.logger().debug("Unable to load `{}' from system path {}", libname, error_msg);
 		load_errors.push_back(format("\n  * unable to load `{}' from system path {}", libname, error_msg));
 	}
-	
-	throw Plugin_error{"Unable to load plugin `{}': {}"
-		, plugin_name
-		, join(load_errors, ", ")
-	};
+
+	throw Plugin_error{"Unable to load plugin `{}': {}", plugin_name, join(load_errors, ", ")};
 }
 
-Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf):
-		m_ctx(ctx)
+Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
+    : m_ctx(ctx)
 {
 	initialize_path(PC_get(conf, ".plugin_path"));
-	
+
 	// pre-load the plugins
 	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
 	m_ctx.logger().trace("Loading {} plugin(s)", nb_plugins);
@@ -268,4 +264,4 @@ void Plugin_store::load_plugins()
 	}
 }
 
-}
+} // namespace PDI

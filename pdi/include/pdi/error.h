@@ -27,8 +27,8 @@
 #define PDI_ERROR_H_
 
 #include <exception>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include <paraconf.h>
 
@@ -38,8 +38,7 @@
 
 namespace PDI {
 
-class PDI_EXPORT Error:
-	public std::exception
+class PDI_EXPORT Error: public std::exception
 {
 protected:
 	/// status of the error
@@ -60,10 +59,10 @@ public:
 	 * \param[in] args the python-style parameters for the message
 	 * \see printf
 	 */
-	template<typename S, typename... Args>
-	Error(PDI_status_t errcode, const S& format_str, Args&& ... args):
-		m_status{errcode},
-		m_what{fmt::format(format_str, std::forward<Args>(args)...)}
+	template <typename S, typename... Args>
+	Error(PDI_status_t errcode, const S& format_str, Args&& ... args)
+		: m_status{errcode}
+		, m_what{fmt::format(format_str, std::forward<Args>(args)...)}
 	{}
 	
 	/** Creates a PDI error
@@ -78,16 +77,14 @@ public:
 	 * \return status of the error
 	 */
 	PDI_status_t status() const noexcept;
-	
 };
 
-class PDI_EXPORT Unavailable_error:
-	public Error
+class PDI_EXPORT Unavailable_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	Unavailable_error(const S& format_str, Args&& ... args):
-		Error(PDI_UNAVAILABLE, std::string("Unavailable_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename S, typename... Args>
+	Unavailable_error(const S& format_str, Args&& ... args)
+		: Error(PDI_UNAVAILABLE, std::string("Unavailable_error: ") + format_str, std::forward<Args>(args)...)
 	{}
 	
 	Unavailable_error(Unavailable_error&&) = default;
@@ -95,13 +92,12 @@ public:
 	Unavailable_error(const Unavailable_error&) = default;
 };
 
-class PDI_EXPORT Config_error:
-	public Error
+class PDI_EXPORT Config_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	Config_error(PC_tree_t tree, const S& format_str, Args&& ... args):
-		Error(PDI_ERR_CONFIG)
+	template <typename S, typename... Args>
+	Config_error(PC_tree_t tree, const S& format_str, Args&& ... args)
+		: Error(PDI_ERR_CONFIG)
 	{
 		std::ostringstream err_msg;
 		if (!PC_status(tree) && tree.node) {
@@ -122,13 +118,12 @@ public:
 	Config_error(const Config_error&) = default;
 };
 
-class PDI_EXPORT Value_error:
-	public Error
+class PDI_EXPORT Value_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	Value_error(const S& format_str, Args&& ... args):
-		Error(PDI_ERR_VALUE, std::string("Value_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename S, typename... Args>
+	Value_error(const S& format_str, Args&& ... args)
+		: Error(PDI_ERR_VALUE, std::string("Value_error: ") + format_str, std::forward<Args>(args)...)
 	{}
 	
 	Value_error(Value_error&&) = default;
@@ -136,13 +131,12 @@ public:
 	Value_error(const Value_error&) = default;
 };
 
-class PDI_EXPORT Plugin_error:
-	public Error
+class PDI_EXPORT Plugin_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	Plugin_error(const S& format_str, Args&& ... args):
-		Error(PDI_ERR_PLUGIN, std::string("Plugin_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename S, typename... Args>
+	Plugin_error(const S& format_str, Args&& ... args)
+		: Error(PDI_ERR_PLUGIN, std::string("Plugin_error: ") + format_str, std::forward<Args>(args)...)
 	{}
 	
 	Plugin_error(Plugin_error&&) = default;
@@ -150,13 +144,12 @@ public:
 	Plugin_error(const Plugin_error&) = default;
 };
 
-class PDI_EXPORT Impl_error:
-	public Error
+class PDI_EXPORT Impl_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	Impl_error(const S& format_str, Args&& ... args):
-		Error(PDI_ERR_IMPL, std::string("Impl_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename S, typename... Args>
+	Impl_error(const S& format_str, Args&& ... args)
+		: Error(PDI_ERR_IMPL, std::string("Impl_error: ") + format_str, std::forward<Args>(args)...)
 	{}
 	
 	Impl_error(Impl_error&&) = default;
@@ -164,13 +157,12 @@ public:
 	Impl_error(const Impl_error&) = default;
 };
 
-class PDI_EXPORT System_error:
-	public Error
+class PDI_EXPORT System_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	System_error(const S& format_str, Args&& ... args):
-		Error(PDI_ERR_SYSTEM, std::string("System_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename S, typename... Args>
+	System_error(const S& format_str, Args&& ... args)
+		: Error(PDI_ERR_SYSTEM, std::string("System_error: ") + format_str, std::forward<Args>(args)...)
 	{}
 	
 	System_error(System_error&&) = default;
@@ -178,13 +170,12 @@ public:
 	System_error(const System_error&) = default;
 };
 
-class PDI_EXPORT State_error:
-	public Error
+class PDI_EXPORT State_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	State_error(const S& format_str, Args&& ... args):
-		Error(PDI_ERR_STATE, std::string("State_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename S, typename... Args>
+	State_error(const S& format_str, Args&& ... args)
+		: Error(PDI_ERR_STATE, std::string("State_error: ") + format_str, std::forward<Args>(args)...)
 	{}
 	
 	State_error(State_error&&) = default;
@@ -192,13 +183,12 @@ public:
 	State_error(const State_error&) = default;
 };
 
-class PDI_EXPORT Right_error:
-	public Error
+class PDI_EXPORT Right_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	Right_error(const S& format_str, Args&& ... args):
-		Error(PDI_ERR_RIGHT, std::string("Right_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename S, typename... Args>
+	Right_error(const S& format_str, Args&& ... args)
+		: Error(PDI_ERR_RIGHT, std::string("Right_error: ") + format_str, std::forward<Args>(args)...)
 	{}
 	
 	Right_error(Right_error&&) = default;
@@ -206,13 +196,12 @@ public:
 	Right_error(const Right_error&) = default;
 };
 
-class PDI_EXPORT Type_error:
-	public Error
+class PDI_EXPORT Type_error: public Error
 {
 public:
-	template<typename S, typename... Args>
-	Type_error(const S& format_str, Args&& ... args):
-		Error(PDI_ERR_TYPE, std::string("Type_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename S, typename... Args>
+	Type_error(const S& format_str, Args&& ... args)
+		: Error(PDI_ERR_TYPE, std::string("Type_error: ") + format_str, std::forward<Args>(args)...)
 	{}
 	
 	Type_error(Type_error&&) = default;

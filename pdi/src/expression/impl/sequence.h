@@ -35,8 +35,7 @@ namespace PDI {
 
 /** An expression implemented by a a sequence
  */
-struct PDI_NO_EXPORT Expression::Impl::Sequence : public Expression::Impl {
-
+struct PDI_NO_EXPORT Expression::Impl::Sequence: public Expression::Impl {
 	std::vector<Expression> m_value;
 	
 	Sequence(PC_tree_t value);

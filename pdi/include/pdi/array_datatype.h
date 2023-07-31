@@ -41,8 +41,7 @@ namespace PDI {
  * an Array_datatype is a Datatype that represents an array: i.e storage
  * of multiple elements of the same type continuously in memory.
  */
-class PDI_EXPORT Array_datatype:
-	public Datatype
+class PDI_EXPORT Array_datatype: public Datatype
 {
 	// Required to make_shared due to private ctor
 	struct Shared_enabler;
@@ -101,13 +100,13 @@ public:
 	
 	void* data_from_dense_copy(void*, const void*) const override;
 	
-	Datatype_sptr index ( size_t index ) const override;
+	Datatype_sptr index(size_t index) const override;
 	
-	std::pair<void*, Datatype_sptr> index ( size_t index, void* data ) const override;
+	std::pair<void*, Datatype_sptr> index(size_t index, void* data) const override;
 	
-	Datatype_sptr slice ( size_t start_index, size_t end_index ) const override;
+	Datatype_sptr slice(size_t start_index, size_t end_index) const override;
 	
-	std::pair<void*, Datatype_sptr> slice ( size_t start_index, size_t end_index, void* data ) const override;
+	std::pair<void*, Datatype_sptr> slice(size_t start_index, size_t end_index, void* data) const override;
 	
 	void destroy_data(void*) const override;
 	
@@ -123,7 +122,8 @@ public:
 	 * \param subsize the number of actual elements in the array
 	 * \param attributes attributes of the array
 	 */
-	static std::shared_ptr<Array_datatype> make(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {});
+	static std::shared_ptr<Array_datatype>
+	make(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {});
 	
 	/** Construct a new completely filled Array_datatype
 	 *
@@ -151,7 +151,6 @@ private:
 	 * \param attributes attributes of the array
 	 */
 	Array_datatype(Datatype_sptr subtype, size_t size, const Attributes_map& attributes = {});
-	
 };
 
 } // namespace PDI

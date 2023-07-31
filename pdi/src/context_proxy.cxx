@@ -33,13 +33,13 @@ using std::string;
 namespace PDI {
 
 
-Context_proxy::Context_proxy(Context& ctx):
-	m_real_context{ctx}
+Context_proxy::Context_proxy(Context& ctx)
+    : m_real_context{ctx}
 {}
 
-Context_proxy::Context_proxy(Context& ctx, const string& logger_name, PC_tree_t logging_tree):
-	m_real_context{ctx},
-	m_plugin_logger{m_real_context.logger(), logger_name, logging_tree}
+Context_proxy::Context_proxy(Context& ctx, const string& logger_name, PC_tree_t logging_tree)
+    : m_real_context{ctx}
+    , m_plugin_logger{m_real_context.logger(), logger_name, logging_tree}
 {}
 
 void Context_proxy::setup_logger(const string& logger_name, PC_tree_t logging_tree)
@@ -57,12 +57,12 @@ Data_descriptor& Context_proxy::desc(const char* name)
 	return m_real_context.desc(name);
 }
 
-Data_descriptor& Context_proxy::operator[](const string& name)
+Data_descriptor& Context_proxy::operator[] (const string& name)
 {
 	return m_real_context[name];
 }
 
-Data_descriptor& Context_proxy::operator[](const char* name)
+Data_descriptor& Context_proxy::operator[] (const char* name)
 {
 	return m_real_context[name];
 }

@@ -28,16 +28,15 @@
 #include <algorithm>
 #include <memory>
 #include <regex>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
-#include "pdi/paraconf_wrapper.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/paraconf_wrapper.h"
 
 #include "pdi/tuple_datatype.h"
-
 
 namespace PDI {
 
@@ -57,14 +56,14 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
-Tuple_datatype::Element::Element(size_t displacement, Datatype_sptr type):
-	m_offset{displacement},
-	m_type{move(type)}
+Tuple_datatype::Element::Element(size_t displacement, Datatype_sptr type)
+    : m_offset{displacement}
+    , m_type{move(type)}
 {}
 
-Tuple_datatype::Element::Element(const Element& o):
-	m_offset{o.m_offset},
-	m_type{o.m_type}
+Tuple_datatype::Element::Element(const Element& o)
+    : m_offset{o.m_offset}
+    , m_type{o.m_type}
 {}
 
 size_t Tuple_datatype::Element::offset() const
@@ -77,21 +76,20 @@ Datatype_sptr Tuple_datatype::Element::type() const
 	return m_type;
 }
 
-bool Tuple_datatype::Element::operator==(const Element& rhs) const
+bool Tuple_datatype::Element::operator== (const Element& rhs) const
 {
-	return m_offset ==  rhs.m_offset
-	    && *m_type == *rhs.m_type;
+	return m_offset == rhs.m_offset && *m_type == *rhs.m_type;
 }
 
-bool Tuple_datatype::Element::operator!=(const Element& rhs) const
+bool Tuple_datatype::Element::operator!= (const Element& rhs) const
 {
 	return !(*this == rhs);
 }
 
-Tuple_datatype::Tuple_datatype(vector<Element> elements, size_t buffersize, const Attributes_map& attributes):
-	Datatype(attributes),
-	m_elements{move(elements)},
-	m_buffersize{buffersize}
+Tuple_datatype::Tuple_datatype(vector<Element> elements, size_t buffersize, const Attributes_map& attributes)
+    : Datatype(attributes)
+    , m_elements{move(elements)}
+    , m_buffersize{buffersize}
 {}
 
 const vector<Tuple_datatype::Element>& Tuple_datatype::elements() const
@@ -108,7 +106,7 @@ Datatype_sptr Tuple_datatype::densify() const
 {
 	size_t displacement = 0;
 	vector<Tuple_datatype::Element> densified_elements;
-	for (auto&& element : m_elements) {
+	for (auto&& element: m_elements) {
 		Datatype_sptr densified_type = element.type()->densify();
 		size_t alignment = densified_type->alignment();
 		// align the next element as requested
@@ -119,10 +117,10 @@ Datatype_sptr Tuple_datatype::densify() const
 	//add padding at the end of tuple
 	size_t tuple_alignment = alignment();
 	displacement += (tuple_alignment - (displacement % tuple_alignment)) % tuple_alignment;
-	
+
 	// ensure the tuple size is at least 1 to have a unique address
 	displacement = max<size_t>(1, displacement);
-	return unique_ptr<Tuple_datatype> {new Tuple_datatype{move(densified_elements), displacement}};
+	return unique_ptr<Tuple_datatype>{new Tuple_datatype{move(densified_elements), displacement}};
 }
 
 Datatype_sptr Tuple_datatype::evaluate(Context&) const
@@ -133,28 +131,28 @@ Datatype_sptr Tuple_datatype::evaluate(Context&) const
 bool Tuple_datatype::dense() const
 {
 	size_t displacement = 0;
-	for (auto&& element : m_elements) {
-		if ( !element.type()->dense() ) return false;
+	for (auto&& element: m_elements) {
+		if (!element.type()->dense()) return false;
 		size_t alignment = element.type()->alignment();
 		// add space for alignment
 		displacement += (alignment - (displacement % alignment)) % alignment;
-		if ( element.offset() > displacement ) return false;
+		if (element.offset() > displacement) return false;
 		displacement += element.type()->buffersize();
 	}
 	//add padding at the end of tuple
 	size_t tuple_alignment = alignment();
 	displacement += (tuple_alignment - (displacement % tuple_alignment)) % tuple_alignment;
-	
+
 	// accept 1 extra byte for unique address
 	displacement = max<size_t>(1, displacement);
-	if ( buffersize() > displacement ) return false;
+	if (buffersize() > displacement) return false;
 	return true;
 }
 
 size_t Tuple_datatype::datasize() const
 {
 	size_t result = 0;
-	for (auto&& element : m_elements) {
+	for (auto&& element: m_elements) {
 		result += element.type()->datasize();
 	}
 	return result;
@@ -168,7 +166,7 @@ size_t Tuple_datatype::buffersize() const
 size_t Tuple_datatype::alignment() const
 {
 	size_t result = 1;
-	for (auto&& element : m_elements) {
+	for (auto&& element: m_elements) {
 		result = max(result, element.type()->alignment());
 	}
 	return result;
@@ -176,7 +174,7 @@ size_t Tuple_datatype::alignment() const
 
 bool Tuple_datatype::simple() const
 {
-	for (auto&& element : m_elements) {
+	for (auto&& element: m_elements) {
 		if (!element.type()->simple()) return false;
 	}
 	return true;
@@ -190,8 +188,8 @@ void* Tuple_datatype::data_to_dense_copy(void* to, const void* from) const
 		to = reinterpret_cast<uint8_t*>(to) + buffersize();
 		return to;
 	}
-	
-	for (auto&& element : elements()) {
+
+	for (auto&& element: elements()) {
 		//space_to_align is set to alignment(), because we always find the alignment in the size of alignment
 		auto space_to_align = element.type()->alignment();
 		//size = 0, because we know that to points to allocated memory
@@ -205,20 +203,20 @@ void* Tuple_datatype::data_to_dense_copy(void* to, const void* from) const
 void* Tuple_datatype::data_from_dense_copy(void* to, const void* from) const
 {
 	uint8_t* original_to = reinterpret_cast<uint8_t*>(to);
-	
+
 	if (simple() && dense()) {
 		//dense copy
 		memcpy(to, from, buffersize());
 		to = original_to + buffersize();
 		return to;
 	}
-	
-	for (auto&& element : elements()) {
+
+	for (auto&& element: elements()) {
 		auto element_align = element.type()->alignment();
 		int padding = (element_align - (reinterpret_cast<const uintptr_t>(from) % element_align)) % element_align;
 		from = reinterpret_cast<const uint8_t*>(from) + padding;
 		to = original_to + element.offset();
-		
+
 		element.type()->data_from_dense_copy(to, from);
 		from = reinterpret_cast<const uint8_t*>(from) + element.type()->datasize();
 	}
@@ -226,32 +224,31 @@ void* Tuple_datatype::data_from_dense_copy(void* to, const void* from) const
 	return to;
 }
 
-Datatype_sptr Tuple_datatype::index ( size_t index ) const
+Datatype_sptr Tuple_datatype::index(size_t index) const
 {
 	if (index < size()) {
 		return elements()[index].type();
 	} else {
-		throw Value_error {"Subaccess tuple index out of range: {} >= {}", index, size()};
+		throw Value_error{"Subaccess tuple index out of range: {} >= {}", index, size()};
 	}
 }
 
-std::pair<void*, Datatype_sptr> Tuple_datatype::index ( size_t index, void* data ) const
+std::pair<void*, Datatype_sptr> Tuple_datatype::index(size_t index, void* data) const
 {
 	if (index < size()) {
 		data = reinterpret_cast<uint8_t*>(data) + elements()[index].offset();
-		return pair<void*, Datatype_sptr> {data, elements()[index].type()};
+		return pair<void*, Datatype_sptr>{data, elements()[index].type()};
 	} else {
-		throw Value_error {"Subaccess tuple index out of range: {} >= {}", index, size()};
+		throw Value_error{"Subaccess tuple index out of range: {} >= {}", index, size()};
 	}
 }
 
-Datatype_sptr Tuple_datatype::slice ( size_t start_index, size_t end_index ) const
+Datatype_sptr Tuple_datatype::slice(size_t start_index, size_t end_index) const
 {
 	if (end_index <= size()) {
 		vector<Tuple_datatype::Element> new_elements;
 		for (size_t i = start_index; i < end_index; i++) {
-			new_elements.emplace_back(elements()[i].offset() - elements()[start_index].offset(),
-									  elements()[i].type());
+			new_elements.emplace_back(elements()[i].offset() - elements()[start_index].offset(), elements()[i].type());
 		}
 		size_t new_buffersize = 0UL;
 		if (end_index == size()) {
@@ -265,19 +262,19 @@ Datatype_sptr Tuple_datatype::slice ( size_t start_index, size_t end_index ) con
 		auto&& new_tuple = Tuple_datatype::make(move(new_elements), new_buffersize);
 		return move(new_tuple);
 	} else {
-		throw Value_error {"Subaccess tuple slice out of range: [{}:{}] > {}", start_index, end_index, size()};
+		throw Value_error{"Subaccess tuple slice out of range: [{}:{}] > {}", start_index, end_index, size()};
 	}
 }
 
-std::pair<void*, Datatype_sptr> Tuple_datatype::slice ( size_t start_index, size_t end_index, void* data ) const
+std::pair<void*, Datatype_sptr> Tuple_datatype::slice(size_t start_index, size_t end_index, void* data) const
 {
-		return {reinterpret_cast<uint8_t*>(data) + elements()[start_index].offset(), slice(start_index, end_index)};
+	return {reinterpret_cast<uint8_t*>(data) + elements()[start_index].offset(), slice(start_index, end_index)};
 }
 
 void Tuple_datatype::destroy_data(void* ptr) const
 {
-	if ( simple() ) return;
-	for (auto&& element : elements()) {
+	if (simple()) return;
+	for (auto&& element: elements()) {
 		element.type()->destroy_data(reinterpret_cast<uint8_t*>(ptr) + element.offset());
 	}
 }
@@ -286,17 +283,16 @@ string Tuple_datatype::debug_string() const
 {
 	stringstream ss;
 	ss << "type: tuple" << endl
-	    << "dense: " << (dense() ? "true" : "false") << endl
-	    << "buffersize: " << buffersize() << endl
-	    << "datasize: " << datasize() << endl
-	    << "alignment: " << alignment() << endl
-	    << "elements: ";
-	for (auto&& element : elements()) {
+	   << "dense: " << (dense() ? "true" : "false") << endl
+	   << "buffersize: " << buffersize() << endl
+	   << "datasize: " << datasize() << endl
+	   << "alignment: " << alignment() << endl
+	   << "elements: ";
+	for (auto&& element: elements()) {
 		auto type_str = element.type()->debug_string();
 		type_str = regex_replace(type_str, regex("\n"), "\n\t\t");
 		type_str.insert(0, "\t\t");
-		ss << endl << "\t   displacement: " << element.offset() << endl
-		    << "\t   type: " << endl << type_str;
+		ss << endl << "\t   displacement: " << element.offset() << endl << "\t   type: " << endl << type_str;
 	}
 	if (!m_attributes.empty()) {
 		ss << endl << "attributes: " << endl;
@@ -309,18 +305,16 @@ string Tuple_datatype::debug_string() const
 	return ss.str();
 }
 
-bool Tuple_datatype::operator==(const Datatype& other) const
+bool Tuple_datatype::operator== (const Datatype& other) const
 {
 	const Tuple_datatype* rhs = dynamic_cast<const Tuple_datatype*>(&other);
-	return rhs
-	    && m_buffersize == rhs->m_buffersize
-	    && m_elements == rhs->m_elements;
+	return rhs && m_buffersize == rhs->m_buffersize && m_elements == rhs->m_elements;
 }
 
-struct Tuple_datatype::Shared_enabler : public Tuple_datatype {
-	template<class... Args>
-	Shared_enabler (Args... args):
-		Tuple_datatype(std::forward<Args>(args)...)
+struct Tuple_datatype::Shared_enabler: public Tuple_datatype {
+	template <class... Args>
+	Shared_enabler(Args... args)
+	    : Tuple_datatype(std::forward<Args>(args)...)
 	{}
 };
 

@@ -34,7 +34,6 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype_template.h>
 
-
 namespace PDI {
 
 /** A Datatype is a Datatype_template that accepts no argument.
@@ -44,15 +43,14 @@ namespace PDI {
  * * accessing its content
  * * data copy and destruction
  */
-class PDI_EXPORT Datatype:
-	public Datatype_template
+class PDI_EXPORT Datatype: public Datatype_template
 {
 public:
 	/** Creates a new datatype
 	 *
 	 * \param[in] attributes attributes of the datatype
 	 */
-	Datatype ( const Attributes_map& attributes = {} );
+	Datatype(const Attributes_map& attributes = {});
 	
 	~Datatype() override;
 	
@@ -61,14 +59,14 @@ public:
 	 * \param other the Datatype to compare
 	 * \return true if the Datatype's are equal
 	 */
-	virtual bool operator== ( const Datatype& other ) const = 0;
+	virtual bool operator== (const Datatype& other) const = 0;
 	
 	/** Test for inequality
 	 *
 	 * \param other the Datatype to compare
 	 * \return true if the Datatype's are different
 	 */
-	bool operator!= ( const Datatype& other ) const;
+	bool operator!= (const Datatype& other) const;
 	
 	/** Creates a new datatype as the dense copy of this one
 	 *
@@ -114,7 +112,7 @@ public:
 	 * \param[in] from the pointer to the copied data (size of buffersize)
 	 * \return updated `to' pointer
 	 */
-	virtual void* data_to_dense_copy ( void* to, const void* from ) const = 0;
+	virtual void* data_to_dense_copy(void* to, const void* from) const = 0;
 	
 	/** Creates a sparse deep copy of dense data
 	 *
@@ -122,14 +120,14 @@ public:
 	 * \param[in] from the pointer to the copied data (dense data)
 	 * \return updated `to' pointer
 	 */
-	virtual void* data_from_dense_copy ( void* to, const void* from ) const = 0;
+	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
 	
 	/** Access the type of the element at the provided index
 	 *
 	 * \param index the index where to look
 	 * \return the Datatype of the indexed sub-element
 	 */
-	virtual Datatype_sptr index ( size_t index ) const;
+	virtual Datatype_sptr index(size_t index) const;
 	
 	/** Access the type and value of the element at the provided index
 	 *
@@ -137,7 +135,7 @@ public:
 	 * \param data the address of the element to index
 	 * \return the Datatype and address of the indexed sub-element
 	 */
-	virtual std::pair<void*, Datatype_sptr> index ( size_t index, void* data ) const;
+	virtual std::pair<void*, Datatype_sptr> index(size_t index, void* data) const;
 	
 	/** Access the type of the elements slice between the provided indices
 	 *
@@ -145,7 +143,7 @@ public:
 	 * \param end_index the index where to end
 	 * \return the Datatype of the slice
 	 */
-	virtual Datatype_sptr slice ( size_t start_index, size_t end_index ) const;
+	virtual Datatype_sptr slice(size_t start_index, size_t end_index) const;
 	
 	/** Access the type and value of the elements slice between the provided indices
 	 *
@@ -154,14 +152,14 @@ public:
 	 * \param data the address of the element to slice
 	 * \return the Datatype and address of the slice
 	 */
-	virtual std::pair<void*, Datatype_sptr> slice ( size_t start_index, size_t end_index, void* data ) const;
+	virtual std::pair<void*, Datatype_sptr> slice(size_t start_index, size_t end_index, void* data) const;
 	
 	/** Access the type of the member with the provided name
 	 *
 	 * \param name the name of the member to access
 	 * \return the Datatype of the member
 	 */
-	virtual Datatype_sptr member ( const char* name ) const;
+	virtual Datatype_sptr member(const char* name) const;
 	
 	/** Access the type and value of the member with the provided name
 	 *
@@ -169,20 +167,20 @@ public:
 	 * \param data the address of the element whose member to access
 	 * \return the Datatype and address of the member
 	 */
-	virtual std::pair<void*, Datatype_sptr> member ( const char* name, void* data ) const;
+	virtual std::pair<void*, Datatype_sptr> member(const char* name, void* data) const;
 	
 	/** Access the type referenced by this
 	 *
 	 * \return the Datatype referenced
 	 */
-	virtual Datatype_sptr dereference () const;
+	virtual Datatype_sptr dereference() const;
 	
 	/** Access the type and value referenced by this
 	 *
 	 * \param data the address of the reference
 	 * \return the Datatype and address referenced
 	 */
-	virtual std::pair<void*, Datatype_sptr> dereference ( void* data ) const;
+	virtual std::pair<void*, Datatype_sptr> dereference(void* data) const;
 	
 	/** Delete data whose type is described by the Datatype.
 	 *
@@ -190,18 +188,15 @@ public:
 	 *
 	 * \param[in] ptr to the data to free
 	 */
-	virtual void destroy_data ( void* ptr ) const = 0;
+	virtual void destroy_data(void* ptr) const = 0;
 	
 	/** Returns the datatype yaml representation as a string
 	 *
 	 * \return the datatype yaml representation as a string
 	 */
 	virtual std::string debug_string() const = 0;
-	
 };
 
 } // namespace PDI
 
 #endif // PDI_DATATYPE_H_
-
-

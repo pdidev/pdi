@@ -32,11 +32,9 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
 
-
 namespace PDI {
 
-class PDI_EXPORT Pointer_datatype:
-	public Datatype
+class PDI_EXPORT Pointer_datatype: public Datatype
 {
 	// Required to make_shared due to private ctor
 	struct Shared_enabler;
@@ -75,21 +73,21 @@ public:
 	
 	void* data_from_dense_copy(void* to, const void* from) const override;
 	
-	Datatype_sptr index ( size_t index ) const override;
+	Datatype_sptr index(size_t index) const override;
 	
-	std::pair<void*, Datatype_sptr> index ( size_t index, void* data ) const override;
+	std::pair<void*, Datatype_sptr> index(size_t index, void* data) const override;
 	
-	Datatype_sptr slice ( size_t start_index, size_t end_index ) const override;
+	Datatype_sptr slice(size_t start_index, size_t end_index) const override;
 	
-	std::pair<void*, Datatype_sptr> slice ( size_t start_index, size_t end_index, void* data ) const override;
+	std::pair<void*, Datatype_sptr> slice(size_t start_index, size_t end_index, void* data) const override;
 	
-	Datatype_sptr member ( const char* name ) const override;
+	Datatype_sptr member(const char* name) const override;
 	
-	std::pair<void*, Datatype_sptr> member ( const char* name, void* data ) const override;
+	std::pair<void*, Datatype_sptr> member(const char* name, void* data) const override;
 	
-	Datatype_sptr dereference () const override;
+	Datatype_sptr dereference() const override;
 	
-	std::pair<void*, Datatype_sptr> dereference ( void* data ) const override;
+	std::pair<void*, Datatype_sptr> dereference(void* data) const override;
 	
 	void destroy_data(void* ptr) const override;
 	
@@ -112,7 +110,12 @@ private:
 	 * \param[in] destroy function that destroys data of this datatype (doesn't deallocate memory)
 	 * \param[in] attributes attributes of the pointer datatype
 	 */
-	Pointer_datatype(Datatype_sptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
+	Pointer_datatype(
+	    Datatype_sptr subtype,
+	    std::function<void* (void*, const void*)> copy,
+	    std::function<void(void*)> destroy,
+	    const Attributes_map& attributes = {}
+	);
 	
 public:
 	/** Creates new pointer datatype
@@ -129,8 +132,12 @@ public:
 	 * \param[in] destroy function that destroys data of this datatype (doesn't deallocate memory)
 	 * \param[in] attributes attributes of the pointer datatype
 	 */
-	static std::shared_ptr<Pointer_datatype> make(Datatype_sptr subtype, std::function<void* (void*, const void*)> copy, std::function<void(void*)> destroy, const Attributes_map& attributes = {});
-	
+	static std::shared_ptr<Pointer_datatype> make(
+	    Datatype_sptr subtype,
+	    std::function<void* (void*, const void*)> copy,
+	    std::function<void(void*)> destroy,
+	    const Attributes_map& attributes = {}
+	);
 };
 
 } // namespace PDI

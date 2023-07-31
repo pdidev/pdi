@@ -35,8 +35,7 @@ namespace PDI {
 
 /** An expression implemented by a a mapping
  */
-struct PDI_NO_EXPORT Expression::Impl::Mapping : public Expression::Impl {
-
+struct PDI_NO_EXPORT Expression::Impl::Mapping: public Expression::Impl {
 	std::unordered_map<std::string, Expression> m_value;
 	
 	Mapping(PC_tree_t value);

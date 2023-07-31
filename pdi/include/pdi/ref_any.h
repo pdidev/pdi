@@ -33,13 +33,12 @@
 #include <new>
 #include <unordered_map>
 
-#include <pdi/array_datatype.h>
 #include <pdi/pdi_fwd.h>
+#include <pdi/array_datatype.h>
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/record_datatype.h>
 #include <pdi/scalar_datatype.h>
-
 
 namespace PDI {
 
@@ -47,7 +46,7 @@ namespace {
 
 /** The type returned by a reference with R/W access
  */
-template<bool R, bool W>
+template <bool R, bool W>
 struct Ref_access {
 	/// No access (void) by default
 	using type = void;
@@ -55,7 +54,7 @@ struct Ref_access {
 
 /** The type returned by a reference with R/W access where W=true
  */
-template<bool R>
+template <bool R>
 struct Ref_access<R, true> {
 	/// Full (void*) access
 	using type = void*;
@@ -63,17 +62,16 @@ struct Ref_access<R, true> {
 
 /** The type returned by a reference with R/W access where R=true, W=false
  */
-template<>
+template <>
 struct Ref_access<true, false> {
 	/// read-only access (const void*)
-	using type = void const*;
+	using type = void const *;
 };
 
-template<bool R, bool W>
-using ref_access_t = typename Ref_access<R,W>::type;
+template <bool R, bool W>
+using ref_access_t = typename Ref_access<R, W>::type;
 
-} //namespace <anonymous>
-
+} // namespace
 
 /** A common base for all references, whatever their access privileges.
  *
@@ -83,13 +81,11 @@ using ref_access_t = typename Ref_access<R,W>::type;
 class PDI_EXPORT Reference_base
 {
 protected:
-
 	/** A descriptor for a buffer in which references can point.
 	 *
 	 * Both locking and memory management happen at this granularity.
 	 */
 	struct PDI_NO_EXPORT Referenced_buffer {
-	
 		/// The function to call to deallocate the buffer memory
 		std::function<void()> m_deallocator;
 		
@@ -111,12 +107,14 @@ protected:
 		 * \param readable whether it is allowed to read the content
 		 * \param writable whether it is allowed to write the content
 		 */
-		Referenced_buffer(std::function<void()> deleter, bool readable, bool writable) noexcept:
-			m_deallocator{deleter},
-		              m_read_locks{readable ? 0 : 1},
-		              m_write_locks{writable ? 0 : 1}
+		Referenced_buffer(std::function<void()> deleter, bool readable, bool writable) noexcept
+			: m_deallocator
+		{
+			deleter
+		}
+		, m_read_locks{readable ? 0 : 1}
+		, m_write_locks{writable ? 0 : 1}
 		{}
-		
 		
 		Referenced_buffer() = delete;
 		
@@ -131,7 +129,6 @@ protected:
 			assert(m_write_locks == 0 || m_write_locks == 1);
 			assert(m_notifications.empty());
 		}
-		
 	};
 	
 	/** A descriptor for data on which references can point.
@@ -139,7 +136,6 @@ protected:
 	 * The content type is handled at this granularity
 	 */
 	struct PDI_NO_EXPORT Referenced_data {
-	
 		/// The buffer in which the data lives
 		mutable std::shared_ptr<Referenced_buffer> m_buffer;
 		
@@ -155,10 +151,10 @@ protected:
 		 * \param data the data location
 		 * \param type the type of the data
 		 */
-		Referenced_data(std::shared_ptr<Referenced_buffer> buffer, void* data, Datatype_sptr type):
-			m_buffer{std::move(buffer)},
-			m_data{data},
-			m_type{std::move(type)}
+		Referenced_data(std::shared_ptr<Referenced_buffer> buffer, void* data, Datatype_sptr type)
+			: m_buffer{std::move(buffer)}
+			, m_data{data}
+			, m_type{std::move(type)}
 		{
 			assert(m_buffer);
 			assert(data);
@@ -172,14 +168,18 @@ protected:
 		 * \param readable the maximum allowed access to the underlying content
 		 * \param writable the maximum allowed access to the underlying content
 		 */
-		Referenced_data(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable):
-			m_buffer(std::make_shared<Referenced_buffer>([data, freefunc, type]()
+		Referenced_data(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable)
+			: m_buffer(std::make_shared<Referenced_buffer>(
+			          [data, freefunc, type]()
 		{
 			type->destroy_data(data);
 			freefunc(data);
-		}, readable, writable)),
-		m_data{data},
-		m_type{type} {
+		},
+		readable,
+		writable
+		      ))
+		, m_data{data}
+		, m_type{type} {
 			assert(data);
 		}
 		
@@ -190,18 +190,16 @@ protected:
 		Referenced_data(Referenced_data&&) = delete;
 	};
 	
-	
 	/** Pointer on the data content, can be null if the ref is null
 	 */
 	mutable std::shared_ptr<Referenced_data> m_content;
-	
 	
 	/** Function to access the content from a reference with different access right
 	 */
 	static std::shared_ptr<Referenced_data> PDI_NO_EXPORT get_content(const Reference_base& other) noexcept
 	{
-		if ( !other.m_content ) return nullptr;
-		if ( !other.m_content->m_data ) return nullptr;
+		if (!other.m_content) return nullptr;
+		if (!other.m_content->m_data) return nullptr;
 		return other.m_content;
 	}
 	
@@ -211,17 +209,17 @@ protected:
 	
 	/** Constructs a null reference
 	 */
-	Reference_base() noexcept:
-		m_content(nullptr)
+	Reference_base() noexcept
+		: m_content(nullptr)
 	{}
 	
 	Reference_base(const Reference_base&) = delete;
 	
 	Reference_base(Reference_base&&) = delete;
 	
-	Reference_base& operator = (const Reference_base&) = delete;
+	Reference_base& operator= (const Reference_base&) = delete;
 	
-	Reference_base& operator = (Reference_base&&) = delete;
+	Reference_base& operator= (Reference_base&&) = delete;
 	
 public:
 	/** accesses the type of the referenced raw data
@@ -235,7 +233,6 @@ public:
 	
 }; // class Data_ref_base
 
-
 /** A dynamically typed reference to data with automatic memory management and
  * read/write locking semantic.
  *
@@ -246,12 +243,11 @@ public:
  * - a release system that nullifies all existing references to the raw data,
  * - a notification system to be notified when a reference is going to be nullified.
  */
-template<bool R, bool W>
-class PDI_EXPORT Ref_any:
-	public Reference_base
+template <bool R, bool W>
+class PDI_EXPORT Ref_any: public Reference_base
 {
 public:
-	template<bool OR, bool OW>
+	template <bool OR, bool OW>
 	friend class Ref_any;
 	
 	/** Constructs a null reference
@@ -264,8 +260,8 @@ public:
 	 *
 	 * \param other the ref to copy
 	 */
-	Ref_any(const Ref_any& other) noexcept:
-		Reference_base()
+	Ref_any(const Ref_any& other) noexcept
+		: Reference_base()
 	{
 		link(get_content(other));
 	}
@@ -276,9 +272,9 @@ public:
 	 *
 	 * \param other the ref to copy
 	 */
-	template<bool OR, bool OW>
-	Ref_any(const Ref_any<OR, OW>& other) noexcept:
-		Reference_base()
+	template <bool OR, bool OW>
+	Ref_any(const Ref_any<OR, OW>& other) noexcept
+		: Reference_base()
 	{
 		link(get_content(other));
 	}
@@ -286,8 +282,8 @@ public:
 	/** Moves an existing reference
 	 * \param other the ref to copy
 	 */
-	Ref_any(Ref_any&& other) noexcept:
-		Reference_base()
+	Ref_any(Ref_any&& other) noexcept
+		: Reference_base()
 	{
 		if (!other.m_content) return;
 		// the other ref notification disappears
@@ -305,14 +301,14 @@ public:
 	 * \param readable the maximum allowed access to the underlying content
 	 * \param writable the maximum allowed access to the underlying content
 	 */
-	Ref_any(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable):
-		Reference_base()
+	Ref_any(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable)
+		: Reference_base()
 	{
-		if (type->datasize() && !data && (readable||writable)) {
+		if (type->datasize() && !data && (readable || writable)) {
 			throw Type_error{"Referencing null data with non-null size"};
 		}
 		if (data) {
-			link(std::make_shared<Referenced_data>(data, freefunc, std::move(type), readable,  writable));
+			link(std::make_shared<Referenced_data>(data, freefunc, std::move(type), readable, writable));
 		}
 	}
 	
@@ -326,7 +322,7 @@ public:
 	Ref_any& operator= (Ref_any&& other) noexcept
 	{
 		// self-copy: nothing to do
-		if (&other ==  this) return *this;
+		if (&other == this) return *this;
 		// we'll be copied into, start nullifying ourselves first
 		reset();
 		// if the other is null also, we're done
@@ -342,7 +338,7 @@ public:
 	Ref_any& operator= (const Ref_any& other) const noexcept
 	{
 		// self-copy: nothing to do
-		if (&other ==  this) return *this;
+		if (&other == this) return *this;
 		// we'll be copied into, start nullifying ourselves first
 		reset();
 		// and copy the content from the other
@@ -362,13 +358,13 @@ public:
 		return m_content != get_content(o);
 	}
 	
-	bool operator<  (const Reference_base& o) const noexcept
+	bool operator<(const Reference_base& o) const noexcept
 	{
 		is_null();
 		return m_content < get_content(o);
 	}
 	
-	bool operator>  (const Reference_base& o) const noexcept
+	bool operator> (const Reference_base& o) const noexcept
 	{
 		is_null();
 		return m_content > get_content(o);
@@ -393,7 +389,7 @@ public:
 	 */
 	Ref operator[] (const std::string& member_name) const
 	{
-		return this->operator[](member_name.c_str());
+		return this->operator[] (member_name.c_str());
 	}
 	
 	/** Create a sub-reference to a member in case the content behind the ref is a record
@@ -408,10 +404,7 @@ public:
 		}
 		std::pair<void*, Datatype_sptr> subref_info = type()->member(member_name, m_content->m_data);
 		Ref result;
-		result.link(std::make_shared<Referenced_data>(
-		        m_content->m_buffer,
-		        subref_info.first,
-		        std::move(subref_info.second)));
+		result.link(std::make_shared<Referenced_data>(m_content->m_buffer, subref_info.first, std::move(subref_info.second)));
 		return result;
 	}
 	
@@ -420,7 +413,7 @@ public:
 	 * \param index index to make a subref for
 	 * \return created subreference
 	 */
-	template<class T>
+	template <class T>
 	std::enable_if_t<std::is_integral<T>::value, Ref> operator[] (T index) const
 	{
 		if (is_null()) {
@@ -428,10 +421,7 @@ public:
 		}
 		std::pair<void*, Datatype_sptr> subref_info = type()->index(index, m_content->m_data);
 		Ref result;
-		result.link(std::make_shared<Referenced_data>(
-		        m_content->m_buffer,
-		        subref_info.first,
-		        std::move(subref_info.second)));
+		result.link(std::make_shared<Referenced_data>(m_content->m_buffer, subref_info.first, std::move(subref_info.second)));
 		return result;
 	}
 	
@@ -447,10 +437,7 @@ public:
 		}
 		std::pair<void*, Datatype_sptr> subref_info = type()->slice(slice.first, slice.second, m_content->m_data);
 		Ref result;
-		result.link(std::make_shared<Referenced_data>(
-		        m_content->m_buffer,
-		        subref_info.first,
-		        std::move(subref_info.second)));
+		result.link(std::make_shared<Referenced_data>(m_content->m_buffer, subref_info.first, std::move(subref_info.second)));
 		return result;
 	}
 	
@@ -458,7 +445,7 @@ public:
 	 *
 	 * \return a pointer to the referenced raw data
 	 */
-	operator ref_access_t<R, W>() const
+	operator ref_access_t<R, W> () const
 	{
 		return get();
 	}
@@ -486,7 +473,7 @@ public:
 	/** Returns a scalar value of type T taken from the data buffer
 	 *  \return value taken from the data buffer
 	 */
-	template<class T>
+	template <class T>
 	T scalar_value() const
 	{
 		static_assert(R, "Cannot get scalar_value from Ref without read access");
@@ -583,7 +570,8 @@ public:
 		
 		void* result = m_content->m_data;
 		m_content->m_data = nullptr;
-		m_content->m_buffer->m_deallocator = []() {}; // Referenced_metadata won't delete data
+		m_content->m_buffer->m_deallocator = []() {
+		}; // Referenced_metadata won't delete data
 		
 		unlink();
 		
@@ -649,16 +637,15 @@ private:
 		if (R || W) ++m_content->m_buffer->m_write_locks;
 		if (W) ++m_content->m_buffer->m_read_locks;
 	}
-	
 };
 
 } // namespace PDI
 
 namespace std {
 
-template<bool R, bool W>
-struct hash<PDI::Ref_any<R,W>> {
-	size_t operator() (const PDI::Ref_any<R,W>& r) const noexcept
+template <bool R, bool W>
+struct hash<PDI::Ref_any<R, W>> {
+	size_t operator() (const PDI::Ref_any<R, W>& r) const noexcept
 	{
 		return r.hash();
 	}

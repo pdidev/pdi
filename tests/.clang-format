@@ -13,7 +13,7 @@ AllowAllConstructorInitializersOnNextLine:      false
 AllowAllParametersOfDeclarationOnNextLine:      false
 AllowShortBlocksOnASingleLine:                  Empty
 AllowShortCaseLabelsOnASingleLine:              false
-AllowShortEnumsOnASingleLine:                   false
+AllowShortEnumsOnASingleLine:                   true
 AllowShortFunctionsOnASingleLine:               Inline
 AllowShortIfStatementsOnASingleLine:            WithoutElse
 AllowShortLambdasOnASingleLine:                 Inline
@@ -51,11 +51,11 @@ BreakBeforeTernaryOperators:                    true
 BreakConstructorInitializers:                   BeforeComma
 BreakInheritanceList:                           BeforeComma
 BreakStringLiterals:                            true
-ColumnLimit:                                    150
+ColumnLimit:                                    100
 CommentPragmas:                                 '^ *IWYU *pragma:'
 CompactNamespaces:                              false
 ConstructorInitializerIndentWidth:              4
-ContinuationIndentWidth:                        4
+ContinuationIndentWidth:                        8
 Cpp11BracedListStyle:                           true
 DeriveLineEnding:                               false
 DerivePointerAlignment:                         false
@@ -75,18 +75,15 @@ IncludeCategories:
   # std (extensionless, directoryless) headers
   - Regex:           '^<[^\./]*>$'
     Priority:        -100
-  # pdi main header
-  - Regex:           '^[<"]pdi\.h[>"]$'
-    Priority:        -60
-  # pdi fwd header
-  - Regex:           '^[<"]pdi/pdi_fwd\.h[>"]$'
-    Priority:        -50
-  # pdi headers
-  - Regex:           '^[<"]pdi/.*[>"]$'
-    Priority:        -40
   # library headers
   - Regex:           '^<.*>$'
     Priority:        -80
+  # pdi headers
+  - Regex:           '^[<"]pdi\.h[>"]$'
+    Priority:        -60
+  # pdi headers
+  - Regex:           '^[<"]pdi/.*[>"]$'
+    Priority:        -40
   # local headers
   - Regex:           '^".*"$'
     Priority:        -20
@@ -119,16 +116,16 @@ MaxEmptyLinesToKeep:                            3
 NamespaceIndentation:                           None
 PPIndentWidth:                                  -1
 PackConstructorInitializers:                    Never
-PenaltyBreakAssignment:                         10
-PenaltyBreakBeforeFirstCallParameter:           0
-PenaltyBreakComment:                            10000000
-PenaltyBreakFirstLessLess:                      10000
-PenaltyBreakOpenParenthesis:                    0
-PenaltyBreakString:                             10000000
-PenaltyBreakTemplateDeclaration:                100
-PenaltyExcessCharacter:                         500
+PenaltyBreakAssignment:                         2
+PenaltyBreakBeforeFirstCallParameter:           100000
+PenaltyBreakComment:                            2000000
+PenaltyBreakFirstLessLess:                      100000
+PenaltyBreakOpenParenthesis:                    100000
+PenaltyBreakString:                             100000
+PenaltyBreakTemplateDeclaration:                1
 PenaltyIndentedWhitespace:                      1
-PenaltyReturnTypeOnItsOwnLine:                  100
+PenaltyExcessCharacter:                         1000000
+PenaltyReturnTypeOnItsOwnLine:                  100000
 PointerAlignment:                               Left
 QualifierAlignment:                             Leave #TODO: Custom
 #QualifierOrder:                                 ['static', 'inline', 'constexpr', 'volatile', 'restrict', 'type', 'const']
@@ -155,8 +152,8 @@ SpaceBeforeInheritanceColon:                    false
 SpaceBeforeParens:                              Custom
 SpaceBeforeParensOptions:
   AfterControlStatements:                       true
-  AfterFunctionDeclarationName:                 false
-  AfterFunctionDefinitionName:                  false
+  AfterFunctionDeclarationName:                 true
+  AfterFunctionDefinitionName:                  true
   AfterOverloadedOperator:                      true
   AfterRequiresInClause:                        false
   AfterRequiresInExpression:                    false
@@ -179,7 +176,7 @@ SpacesInContainerLiterals:                      true
 SpacesInParentheses:                            false #CF<17
 SpacesInSquareBrackets:                         false
 SpaceBeforeSquareBrackets:                      false
-Standard:                                       Latest
+Standard:                                       c++17
 StatementAttributeLikeMacros:
 - PDI_EXPORT
 - PDI_NO_EXPORT
@@ -189,5 +186,5 @@ StatementAttributeLikeMacros:
 - PDI_NO_DEPRECATED
 TabWidth:                                       4
 UseCRLF:                                        false
-UseTab:                                         ForIndentation #TODO: AlignWithSpaces
----
+UseTab:                                         AlignWithSpaces
+...

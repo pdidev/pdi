@@ -29,30 +29,29 @@
 
 #include <dlfcn.h>
 
+#include "pdi/error.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-#include "pdi/error.h"
 
 #include "pdi/context.h"
-
 
 namespace PDI {
 
 using std::move;
 using std::string;
-using std::unordered_map;
 using std::unique_ptr;
+using std::unordered_map;
 
-Context::Iterator::Iterator(const unordered_map<string, unique_ptr<Data_descriptor>>::iterator& data):
-	m_data(data)
+Context::Iterator::Iterator(const unordered_map<string, unique_ptr<Data_descriptor>>::iterator& data)
+    : m_data(data)
 {}
 
-Context::Iterator::Iterator(unordered_map<string, unique_ptr<Data_descriptor>>::iterator&& data):
-	m_data(move(data))
+Context::Iterator::Iterator(unordered_map<string, unique_ptr<Data_descriptor>>::iterator&& data)
+    : m_data(move(data))
 {}
 
-Data_descriptor* Context::Iterator::operator-> ()
+Data_descriptor* Context::Iterator::operator->()
 {
 	return m_data->second.get();
 }
@@ -85,4 +84,4 @@ Context::Iterator Context::get_iterator(std::unordered_map<std::string, unique_p
 
 Context::~Context() = default;
 
-}
+} // namespace PDI

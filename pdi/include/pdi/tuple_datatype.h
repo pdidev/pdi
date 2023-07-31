@@ -32,15 +32,13 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/datatype.h>
 
-
 namespace PDI {
 
 /** A Tuple_datatype is a Datatype that represents a fixed number of elements of
  * potentially different types layed out in a specific way in memory.
  * Each element is given a index to access it.
  */
-class PDI_EXPORT Tuple_datatype:
-	public Datatype
+class PDI_EXPORT Tuple_datatype: public Datatype
 {
 	// Required to make_shared due to private ctor
 	struct Shared_enabler;
@@ -87,15 +85,14 @@ public:
 		 * \param rhs the other element to compare
 		 * \return true if the elements are equal
 		 */
-		bool operator==(const Element& rhs) const;
+		bool operator== (const Element& rhs) const;
 		
 		/** Tests another element for inequality
 		 *
 		 * \param rhs the other element to compare
 		 * \return true if the elements are different
 		 */
-		bool operator!=(const Element& rhs) const;
-		
+		bool operator!= (const Element& rhs) const;
 	};
 	
 private:
@@ -133,13 +130,13 @@ public:
 	
 	void* data_from_dense_copy(void*, const void*) const override;
 	
-	Datatype_sptr index ( size_t ) const override;
+	Datatype_sptr index(size_t) const override;
 	
-	std::pair<void*, Datatype_sptr> index ( size_t, void* ) const override;
+	std::pair<void*, Datatype_sptr> index(size_t, void*) const override;
 	
-	Datatype_sptr slice ( size_t, size_t ) const override;
+	Datatype_sptr slice(size_t, size_t) const override;
 	
-	std::pair<void*, Datatype_sptr> slice ( size_t, size_t, void* ) const override;
+	std::pair<void*, Datatype_sptr> slice(size_t, size_t, void*) const override;
 	
 	void destroy_data(void*) const override;
 	
@@ -166,7 +163,6 @@ public:
 	 * \param attributes attributes of the tuple datatype
 	 */
 	static std::shared_ptr<Tuple_datatype> make(std::vector<Element> elements, size_t buffersize, const Attributes_map& attributes = {});
-	
 };
 
 } // namespace PDI

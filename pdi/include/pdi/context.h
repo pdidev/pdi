@@ -38,7 +38,6 @@
 #include <pdi/logger.h>
 #include <pdi/ref_any.h>
 
-
 namespace PDI {
 
 class PDI_EXPORT Context
@@ -53,8 +52,9 @@ public:
 		std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator m_data;
 		Iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
 		Iterator(std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator&& data);
+		
 	public:
-		Data_descriptor* operator-> ();
+		Data_descriptor* operator->();
 		Data_descriptor& operator* ();
 		Iterator& operator++ ();
 		bool operator!= (const Iterator&);
@@ -82,11 +82,11 @@ public:
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& operator[](const std::string& name) = 0;
+	virtual Data_descriptor& operator[] (const std::string& name) = 0;
 	
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& operator[](const char* name) = 0;
+	virtual Data_descriptor& operator[] (const char* name) = 0;
 	
 	/** Returns an iterator on the first descriptor
 	 */

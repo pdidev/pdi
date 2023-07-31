@@ -26,12 +26,11 @@
 #ifndef PDI_PYTHON_TOOLS_H_
 #define PDI_PYTHON_TOOLS_H_
 
-#include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/ref_any.h>
-
 
 namespace PDI {
 

@@ -26,8 +26,8 @@
 #define PDI_CALLBACKS_H_
 
 #include <functional>
-#include <map>
 #include <list>
+#include <map>
 #include <string>
 
 #include "pdi/pdi_fwd.h"
@@ -37,7 +37,6 @@ namespace PDI {
 
 class PDI_EXPORT Callbacks
 {
-
 	/// Context of callbacks
 	Context& m_context;
 	
@@ -105,7 +104,6 @@ class PDI_EXPORT Callbacks
 	std::multimap<std::string, std::function<void(const std::string&)>> m_named_empty_desc_access_callbacks;
 	
 public:
-
 	Callbacks(Context& ctx);
 	
 	/** Adds new init callback to context
@@ -176,7 +174,6 @@ public:
 	 *  \param name name of the accessed descriptor
 	 */
 	void call_empty_desc_access_callbacks(const std::string& name) const;
-	
 };
 
 } // namespace PDI

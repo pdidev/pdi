@@ -42,8 +42,8 @@
 namespace PDI {
 
 using std::dynamic_pointer_cast;
-using std::max;
 using std::make_shared;
+using std::max;
 using std::move;
 using std::string;
 using std::unique_ptr;
@@ -60,7 +60,7 @@ Expression::Impl::Mapping::Mapping(PC_tree_t value)
 
 Expression::Impl::Mapping::Mapping(const unordered_map< string, Expression >& value)
 {
-	for (const auto& element : value) {
+	for (const auto& element: value) {
 		m_value.emplace(element.first, element.second);
 	}
 }
@@ -91,7 +91,7 @@ Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 	size_t displacement = 0;
 	size_t record_alignment = 1;
 	for (const auto& element: m_value) {
-		Ref_rw element_ref {element.second.to_ref(ctx)};
+		Ref_rw element_ref{element.second.to_ref(ctx)};
 		
 		size_t alignment = element_ref.type()->alignment();
 		record_alignment = max(record_alignment, alignment);
@@ -110,7 +110,7 @@ Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const
 {
 	if (auto&& record_type = dynamic_pointer_cast<const Record_datatype>(type)) {
-		for (const auto& element : m_value) {
+		for (const auto& element: m_value) {
 			auto member_it = find_if(record_type->members().begin(), record_type->members().end(), [&element](const Record_datatype::Member m) {
 				return m.name() == element.first;
 			});

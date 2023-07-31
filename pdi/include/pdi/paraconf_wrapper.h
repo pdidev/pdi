@@ -36,21 +36,18 @@
 
 #include <pdi/pdi_fwd.h>
 
-
 namespace PDI {
 
 /** Automatically installs a paraconf error-handler that ignores errors and
  *  uninstalls it on destruction.
  */
 struct PDI_EXPORT Paraconf_wrapper {
-
 	PC_errhandler_t m_handler;
 	
 	
 	Paraconf_wrapper();
 	
 	~Paraconf_wrapper();
-	
 };
 
 /** Returns the length of a node.
@@ -198,7 +195,7 @@ void PDI_EXPORT opt_each(PC_tree_t tree, std::function<void(PC_tree_t)> operatio
  * \param tree the tree containing the mapping
  * \param operation the operation to apply to each element of the tree
  */
-void PDI_EXPORT each(PC_tree_t tree, std::function<void (PC_tree_t,PC_tree_t)> operation);
+void PDI_EXPORT each(PC_tree_t tree, std::function<void(PC_tree_t, PC_tree_t)> operation);
 
 /** Iterates and apply the provided function to all elements of a PC ordered
  *  mapping
@@ -206,7 +203,7 @@ void PDI_EXPORT each(PC_tree_t tree, std::function<void (PC_tree_t,PC_tree_t)> o
  * \param tree the tree containing the ordered mapping
  * \param operation the operation to apply to each element of the tree
  */
-void PDI_EXPORT each_in_omap(PC_tree_t tree, std::function<void (PC_tree_t,PC_tree_t)> operation);
+void PDI_EXPORT each_in_omap(PC_tree_t tree, std::function<void(PC_tree_t, PC_tree_t)> operation);
 
 } // namespace PDI
 

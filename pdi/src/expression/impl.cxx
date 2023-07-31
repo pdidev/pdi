@@ -26,8 +26,8 @@
 
 #include <iomanip>
 #include <memory>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "pdi/array_datatype.h"
 #include "pdi/context.h"
@@ -47,7 +47,6 @@
 #include "impl/sequence.h"
 #include "impl/string_literal.h"
 
-
 namespace PDI {
 
 using std::dynamic_pointer_cast;
@@ -61,12 +60,10 @@ Expression::Impl::~Impl() = default;
 string Expression::Impl::to_string(Context& ctx) const
 {
 	Ref_r raw_data = to_ref(ctx);
-	if ( auto&& referenced_type = dynamic_pointer_cast<const Array_datatype>(raw_data.type()) ) {
-		if ( auto&& scal_type = dynamic_pointer_cast<const Scalar_datatype>(referenced_type->subtype()) ) {
-			if ( scal_type->datasize() == 1 && (
-			        scal_type->kind() == Scalar_kind::SIGNED
-			        || scal_type->kind() == Scalar_kind::UNSIGNED ) ) {
-				return string{static_cast<const char*>(raw_data.get()), referenced_type->size() };
+	if (auto&& referenced_type = dynamic_pointer_cast<const Array_datatype>(raw_data.type())) {
+		if (auto&& scal_type = dynamic_pointer_cast<const Scalar_datatype>(referenced_type->subtype())) {
+			if (scal_type->datasize() == 1 && (scal_type->kind() == Scalar_kind::SIGNED || scal_type->kind() == Scalar_kind::UNSIGNED)) {
+				return string{static_cast<const char*>(raw_data.get()), referenced_type->size()};
 			}
 		}
 	}
@@ -83,13 +80,7 @@ string Expression::Impl::to_string(Context& ctx) const
 
 Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 {
-	Ref_rw result {
-		aligned_alloc(type->alignment(), type->buffersize()),
-		[](void* v){free(v);},
-		type,
-		true,
-		true
-	};
+	Ref_rw result{aligned_alloc(type->alignment(), type->buffersize()), [](void* v) { free(v); }, type, true, true};
 	copy_value(ctx, result.get(), type);
 	return result;
 }
@@ -109,11 +100,14 @@ unique_ptr<Expression::Impl> Expression::Impl::parse(char const* val_str)
 {
 	try { // parse as a space enclosed intval
 		const char* parse_val = val_str;
-		while (isspace(*parse_val)) ++parse_val;
+		while (isspace(*parse_val))
+			++parse_val;
 		unique_ptr<Expression::Impl> result = Impl::Operation::parse(&parse_val, 1);
-		while (isspace(*parse_val)) ++parse_val;
+		while (isspace(*parse_val))
+			++parse_val;
 		if (!*parse_val) return result; // take this if we parsed the whole string, otherwise, parse as a string
-	} catch (Error&) {}
+	} catch (Error&) {
+	}
 	// in case of error, parse as a string
 	return Impl::String_literal::parse(&val_str);
 }
@@ -123,11 +117,13 @@ unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
 	if (**val_str == '(') {
 		const char* term = *val_str;
 		++term;
-		while (isspace(*term)) ++term;
+		while (isspace(*term))
+			++term;
 		unique_ptr<Expression::Impl> result = Operation::parse(&term, 1);
-		if (*term != ')')  throw Value_error{"Expected ')', found '{}'", *term};
+		if (*term != ')') throw Value_error{"Expected ')', found '{}'", *term};
 		++term;
-		while (isspace(*term)) ++term;
+		while (isspace(*term))
+			++term;
 		*val_str = term;
 		return result;
 	} else if (**val_str == '$') {
@@ -143,27 +139,18 @@ string Expression::Impl::parse_id(char const** val_str)
 {
 	const char* id = *val_str;
 	
-	if (!(
-	        (*id >= 'a' && *id <= 'z')
-	        || (*id >= 'A' && *id <= 'Z')
-	        || (*id == '_')
-	    )) {
+	if (!((*id >= 'a' && *id <= 'z') || (*id >= 'A' && *id <= 'Z') || (*id == '_'))) {
 		throw Value_error{"Invalid first ID character: {}", *id};
 	}
 	++id;
 	size_t id_len = 1;
 	
-	while (
-	    (*id >= 'a' && *id <= 'z')
-	    || (*id >= 'A' && *id <= 'Z')
-	    || (*id >= '0' && *id <= '9')
-	    || (*id == '_')
-	) {
+	while ((*id >= 'a' && *id <= 'z') || (*id >= 'A' && *id <= 'Z') || (*id >= '0' && *id <= '9') || (*id == '_')) {
 		++(id_len);
 		++id;
 	}
 	
-	string result { *val_str, id_len };
+	string result{*val_str, id_len};
 	*val_str = id;
 	return result;
 }

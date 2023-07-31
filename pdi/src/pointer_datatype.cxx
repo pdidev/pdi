@@ -26,13 +26,12 @@
 #include "config.h"
 
 #include <map>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "pdi/error.h"
 
 #include "pdi/pointer_datatype.h"
-
 
 namespace PDI {
 
@@ -49,17 +48,21 @@ using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
-
-Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, const Attributes_map& attributes):
-	Datatype(attributes),
-	m_subtype{move(subtype)}
+Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, const Attributes_map& attributes)
+    : Datatype(attributes)
+    , m_subtype{move(subtype)}
 {}
 
-Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, function<void* (void*, const void*)> copy, function<void(void*)> destroy, const Attributes_map& attributes):
-	Datatype(attributes),
-	m_subtype{move(subtype)},
-	m_copy{move(copy)},
-	m_destroy{move(destroy)}
+Pointer_datatype::Pointer_datatype(
+    Datatype_sptr subtype,
+    function<void*(void*, const void*)> copy,
+    function<void(void*)> destroy,
+    const Attributes_map& attributes
+)
+    : Datatype(attributes)
+    , m_subtype{move(subtype)}
+    , m_copy{move(copy)}
+    , m_destroy{move(destroy)}
 {}
 
 Datatype_sptr Pointer_datatype::subtype() const
@@ -69,7 +72,7 @@ Datatype_sptr Pointer_datatype::subtype() const
 
 Datatype_sptr Pointer_datatype::densify() const
 {
-	return unique_ptr<Pointer_datatype> {new Pointer_datatype{m_subtype->densify(), m_copy, m_destroy, m_attributes}};
+	return unique_ptr<Pointer_datatype>{new Pointer_datatype{m_subtype->densify(), m_copy, m_destroy, m_attributes}};
 }
 
 Datatype_sptr Pointer_datatype::evaluate(Context&) const
@@ -104,7 +107,7 @@ bool Pointer_datatype::simple() const
 
 void* Pointer_datatype::data_to_dense_copy(void* to, const void* from) const
 {
-	if ( !m_copy ) {
+	if (!m_copy) {
 		memcpy(to, from, datasize());
 		to = reinterpret_cast<uint8_t*>(to) + datasize();
 	} else {
@@ -120,7 +123,7 @@ void* Pointer_datatype::data_from_dense_copy(void* to, const void* from) const
 
 void Pointer_datatype::destroy_data(void* ptr) const
 {
-	if ( m_destroy ) {
+	if (m_destroy) {
 		m_destroy(ptr);
 	}
 }
@@ -129,11 +132,12 @@ string Pointer_datatype::debug_string() const
 {
 	stringstream ss;
 	ss << "type: pointer" << endl
-	    << "dense: " << (dense() ? "true" : "false") << endl
-	    << "buffersize: " << buffersize() << endl
-	    << "datasize: " << datasize() << endl
-	    << "alignment: " << alignment() << endl
-	    << "subtype: " << endl << m_subtype->debug_string();
+	   << "dense: " << (dense() ? "true" : "false") << endl
+	   << "buffersize: " << buffersize() << endl
+	   << "datasize: " << datasize() << endl
+	   << "alignment: " << alignment() << endl
+	   << "subtype: " << endl
+	   << m_subtype->debug_string();
 	if (!m_attributes.empty()) {
 		ss << endl << "attributes: " << endl;
 		auto it = m_attributes.begin();
@@ -145,7 +149,7 @@ string Pointer_datatype::debug_string() const
 	return ss.str();
 }
 
-bool Pointer_datatype::operator==(const Datatype& other) const
+bool Pointer_datatype::operator== (const Datatype& other) const
 {
 	auto&& rhs = dynamic_cast<const Pointer_datatype*>(&other);
 	return rhs && *m_subtype == *rhs->m_subtype;
@@ -181,24 +185,24 @@ Datatype_sptr Pointer_datatype::slice(size_t start_index, size_t end_index) cons
 	return m_subtype->slice(start_index, end_index);
 }
 
-Datatype_sptr Pointer_datatype::dereference () const
+Datatype_sptr Pointer_datatype::dereference() const
 {
 	return subtype();
 }
 
-std::pair<void*, Datatype_sptr> Pointer_datatype::dereference ( void* data ) const
+std::pair<void*, Datatype_sptr> Pointer_datatype::dereference(void* data) const
 {
 	data = *static_cast<void**>(data);
 	return {data, subtype()};
 }
 
-struct Pointer_datatype::Shared_enabler : public Pointer_datatype {
-	Shared_enabler (Datatype_sptr subtype, const Attributes_map& attributes):
-		Pointer_datatype(subtype, attributes)
+struct Pointer_datatype::Shared_enabler: public Pointer_datatype {
+	Shared_enabler(Datatype_sptr subtype, const Attributes_map& attributes)
+	    : Pointer_datatype(subtype, attributes)
 	{}
-	
-	Shared_enabler (Datatype_sptr subtype, function<void* (void*, const void*)> copy, function<void (void*)> destroy, const Attributes_map& attributes):
-		Pointer_datatype(subtype, copy, destroy, attributes)
+
+	Shared_enabler(Datatype_sptr subtype, function<void*(void*, const void*)> copy, function<void(void*)> destroy, const Attributes_map& attributes)
+	    : Pointer_datatype(subtype, copy, destroy, attributes)
 	{}
 };
 
@@ -207,11 +211,14 @@ shared_ptr<Pointer_datatype> Pointer_datatype::make(Datatype_sptr subtype, const
 	return make_shared<Shared_enabler>(subtype, attributes);
 }
 
-shared_ptr<Pointer_datatype> Pointer_datatype::make(Datatype_sptr subtype, function<void* (void*, const void*)> copy, function<void (void*)> destroy, const Attributes_map& attributes)
+shared_ptr<Pointer_datatype> Pointer_datatype::make(
+    Datatype_sptr subtype,
+    function<void*(void*, const void*)> copy,
+    function<void(void*)> destroy,
+    const Attributes_map& attributes
+)
 {
 	return make_shared<Shared_enabler>(subtype, copy, destroy, attributes);
 }
 
 } // namespace PDI
-
-

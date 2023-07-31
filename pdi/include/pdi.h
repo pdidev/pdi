@@ -93,7 +93,7 @@ typedef enum PDI_status_e {
 	PDI_ERR_RIGHT,
 	/// Invalid type error
 	PDI_ERR_TYPE
-	
+
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs
@@ -106,15 +106,13 @@ typedef void (*PDI_errfunc_f)(PDI_status_t status, const char* message, void* co
 /** Definition of an error handler
  */
 typedef struct PDI_errhandler_s {
-
 	/// The function to handle the error (none if NULL)
 	PDI_errfunc_f func;
-	
+
 	/// the context that will be provided to the function
 	void* context;
-	
-} PDI_errhandler_t;
 
+} PDI_errhandler_t;
 
 /** Prints the error message and aborts if the status is invalid
  */
@@ -189,9 +187,8 @@ typedef enum PDI_inout_e {
 	PDI_OUT = 2,
 	/// data transfer in both direction
 	PDI_INOUT = 3
-	
-} PDI_inout_t;
 
+} PDI_inout_t;
 
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
@@ -217,7 +214,7 @@ PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t acce
  * \pre PDI owns the data buffer
  * \post ownership of the data buffer is shared between PDI and the user code
  */
-PDI_status_t  PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t inout);
+PDI_status_t PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t inout);
 
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.

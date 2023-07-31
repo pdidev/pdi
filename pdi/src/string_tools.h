@@ -43,6 +43,6 @@ namespace PDI {
  */
 std::vector<std::string> string_array_parse(const std::string& unescaped);
 
-}
+} // namespace PDI
 
 #endif // PDI_STRING_TOOLS_H_

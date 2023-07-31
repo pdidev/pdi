@@ -24,7 +24,6 @@
 
 #include "pdi/data_descriptor.h"
 
-
 namespace PDI {
 
 Data_descriptor::~Data_descriptor() = default;

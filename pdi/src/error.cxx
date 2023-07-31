@@ -34,13 +34,13 @@
 
 namespace PDI {
 
-Error::Error(PDI_status_t errcode):
-	m_status{errcode}
+Error::Error(PDI_status_t errcode)
+    : m_status{errcode}
 {}
 
-Error::Error(PDI_status_t errcode, const char* fmt):
-	m_status{errcode},
-	m_what{fmt}
+Error::Error(PDI_status_t errcode, const char* fmt)
+    : m_status{errcode}
+    , m_what{fmt}
 {
 	// force inclusion of dtor
 	fmt::format_error("");

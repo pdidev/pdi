@@ -35,8 +35,7 @@ namespace PDI {
 
 /** An expression implemented by a a integer literal
  */
-struct PDI_NO_EXPORT Expression::Impl::Int_literal : public Expression::Impl {
-
+struct PDI_NO_EXPORT Expression::Impl::Int_literal: public Expression::Impl {
 	long m_value;
 	
 	Int_literal(long value);
@@ -52,7 +51,6 @@ struct PDI_NO_EXPORT Expression::Impl::Int_literal : public Expression::Impl {
 	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
 	
 	static std::unique_ptr<Impl> parse(char const** val_str);
-	
 };
 
 } // namespace PDI

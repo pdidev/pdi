@@ -86,7 +86,8 @@ class Data_descriptor;
  */
 class Plugin;
 
-template<bool, bool> class Ref_any;
+template <bool, bool>
+class Ref_any;
 
 typedef Ref_any<false, false> Ref;
 
@@ -111,6 +112,6 @@ enum class Scalar_kind : uint8_t {
  */
 class Expression;
 
-}
+} // namespace PDI
 
 #endif // PDI_PDI_FWD_H_

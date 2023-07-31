@@ -33,13 +33,11 @@
 #include <pdi/datatype_template.h>
 #include <pdi/ref_any.h>
 
-
 namespace PDI {
 
 class PDI_EXPORT Data_descriptor
 {
 public:
-
 	virtual ~Data_descriptor();
 	
 	/** Set the datatype template used to type raw pointers shared
