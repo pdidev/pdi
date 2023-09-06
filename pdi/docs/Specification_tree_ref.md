@@ -205,6 +205,7 @@ A *datatype* can be **any of**:
 * a \ref logical_type_node,
 * a \ref long_type_node,
 * a \ref long_type_node,
+* a \ref pointer_type_node,
 * a \ref ptrdiff_t_type_node,
 * a \ref real_type_node,
 * a \ref record_type_node,
@@ -982,6 +983,24 @@ or array of paths (%PDI will take first match):
 ```yaml
 plugin_path: ["/home/user123/plugins", "/usr/lib/pdi/plugins"]
 ```
+
+
+## pointer_type {#pointer_type_node}
+
+A *pointer_type* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"type"`|`"pointer"`|
+|`"subtype"`|a \ref datatype_node|
+|`"\+.*"` (*optional*)|anything|
+
+A \ref pointer_type_node represents a memory address where data is actually
+stored (a pointer) where:
+* the value associated to the `subtype` key represents the type of the
+  referenced elements,
+* keys that start with `+` represent attributes, the associated value can be
+  anything (**scalar**, **sequence** or **mapping**).
 
 
 ## ptrdiff_t_type {#ptrdiff_t_type_node}
