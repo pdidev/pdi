@@ -1002,6 +1002,18 @@ stored (a pointer) where:
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
+### Example:
+
+```{.python}
+type: pointer
+subtype: double
+```
+
+```{.python}
+type: pointer
+subtype: { type: pointer, subtype: int }
+```
+
 
 ## ptrdiff_t_type {#ptrdiff_t_type_node}
 
