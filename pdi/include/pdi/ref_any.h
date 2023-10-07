@@ -27,11 +27,15 @@
 #define PDI_REF_ANY_H_
 
 #include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <new>
 #include <unordered_map>
+
+#include <pdi/pdi_fwd.h>
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/array_datatype.h>
@@ -86,17 +90,19 @@ protected:
 	 * Both locking and memory management happen at this granularity.
 	 */
 	struct PDI_NO_EXPORT Referenced_buffer {
+		static constexpr size_t S_RLCK = 0x1;
+
+		static constexpr size_t S_RLCK_MASK = 0x3;
+
+		static constexpr size_t S_WLCK = 0x4;
+
 		/// The function to call to deallocate the buffer memory
 		std::function<void()> m_deallocator;
 
-		/// Number of locks preventing read access
-		int m_read_locks;
-
-		/** Number of locks preventing write access
-		 *
-		 * this should always remain between 0 & 2 inclusive w. current implem.
-		 */
-		int m_write_locks;
+		/// the locks on this
+		/// NB, we don't use std::shared_mutex because it does not allow a single thread to own
+		/// multiple shared locks on the mutex, and since we only use try_*_lock we can do simpler
+		std::atomic_size_t m_locks;
 
 		/// Nullification notifications registered on this instance
 		std::unordered_map<const Reference_base*, std::function<void(Ref)> > m_notifications;
@@ -108,9 +114,8 @@ protected:
 		 * \param writable whether it is allowed to write the content
 		 */
 		Referenced_buffer(std::function<void()> deleter, bool readable, bool writable) noexcept
-			: m_deallocator{deleter}
-			, m_read_locks{readable ? 0 : 1}
-			, m_write_locks{writable ? 0 : 1}
+			: m_deallocator(deleter)
+			, m_locks((readable ? 0 : S_RLCK) + (writable ? 0 : S_WLCK))
 		{}
 
 		Referenced_buffer() = delete;
@@ -122,9 +127,47 @@ protected:
 		~Referenced_buffer()
 		{
 			m_deallocator();
-			assert(m_read_locks == 0 || m_read_locks == 1);
-			assert(m_write_locks == 0 || m_write_locks == 1);
+			assert((m_locks & S_RLCK_MASK) < 2 * S_RLCK);
+			assert(m_locks < 2 * S_WLCK);
 			assert(m_notifications.empty());
+		}
+
+		/** Try to get the lock
+		 *
+		 * \return true if the lock was acquired, false otherwise
+		 */
+		template <bool R, bool W>
+		inline bool try_lock() noexcept
+		{
+			size_t locks = m_locks;
+			if constexpr (R) {
+				// if we're locked for reading => impossible
+				if (locks & S_RLCK_MASK) return false;
+			}
+			if constexpr (W) {
+				// if we're locked for writing => impossible
+				if (locks >= S_WLCK) return false;
+			}
+			size_t wanted_lock = locks;
+			// if we want any kind of access, we take the write-lock
+			if constexpr (R || W) wanted_lock += S_WLCK;
+			// if we want write access, we take the read-lock
+			if constexpr (W) wanted_lock += S_RLCK;
+			// try to get our lock, or abort if another thread messed with it
+			return m_locks.compare_exchange_strong(locks, wanted_lock);
+		}
+
+		/** Release the lock
+		 */
+		template <bool R, bool W>
+		inline void unlock() noexcept
+		{
+			size_t unlock = 0;
+			// if we had any kind of access, we release the write-lock
+			if constexpr (R || W) unlock += S_WLCK;
+			// if we had write access, we release the read-lock
+			if constexpr (W) unlock += S_RLCK;
+			m_locks -= unlock;
 		}
 	};
 
@@ -302,7 +345,7 @@ public:
 			throw Type_error{"Referencing null data with non-null size"};
 		}
 		if (data) {
-			link(std::make_shared<Referenced_data>(data, freefunc, std::move(type), readable, writable));
+			link(std::make_shared< Referenced_data>(data, freefunc, std::move(type), readable, writable));
 		}
 	}
 
@@ -680,8 +723,7 @@ private:
 	{
 		assert(m_content);
 		m_content->m_buffer->m_notifications.erase(this);
-		if (R || W) --m_content->m_buffer->m_write_locks;
-		if (W) --m_content->m_buffer->m_read_locks;
+		m_content->m_buffer->unlock<R, W>();
 		m_content.reset();
 	}
 
@@ -697,12 +739,8 @@ private:
 	{
 		assert(!m_content);
 		if (!content || !content->m_data) return; // null ref
-		if ((R && content->m_buffer->m_read_locks) || (W && content->m_buffer->m_write_locks)) {
-			return;
-		}
+		if (!content->m_buffer->try_lock<R, W>()) return;
 		m_content = std::move(content);
-		if (R || W) ++m_content->m_buffer->m_write_locks;
-		if (W) ++m_content->m_buffer->m_read_locks;
 	}
 };
 

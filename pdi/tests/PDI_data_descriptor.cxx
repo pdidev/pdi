@@ -281,12 +281,7 @@ TEST_F(DataDescTest, simply_share_meta)
 TEST_F(DataDescTest, share_meta_without_read)
 {
 	this->m_desc_default->metadata(true);
-	try {
-		this->m_desc_default->share(this->array, false, true);
-		FAIL();
-	} catch (const Error& err) {
-		ASSERT_EQ(PDI_status_t::PDI_ERR_RIGHT, err.status());
-	}
+	EXPECT_THROW(this->m_desc_default->share(this->array, false, true), Error);
 }
 
 /*

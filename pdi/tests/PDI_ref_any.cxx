@@ -85,8 +85,7 @@ TEST_F(DataRefAnyTest, newReferenceConstructor)
 	EXPECT_TRUE(*this->m_tested_ref);
 	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
 	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
-	EXPECT_EQ(0, Reference_base::get_content(*this->m_tested_ref)->m_buffer->m_read_locks);
-	EXPECT_EQ(0, Reference_base::get_content(*this->m_tested_ref)->m_buffer->m_write_locks);
+	EXPECT_EQ(0, Reference_base::get_content(*this->m_tested_ref)->m_buffer->m_locks);
 }
 
 /*
@@ -105,8 +104,7 @@ TEST_F(DataRefAnyTest, copyConstructor)
 	EXPECT_EQ(*this->m_tested_ref, copied_ref);
 	EXPECT_FALSE(!Reference_base::get_content(copied_ref));
 	EXPECT_FALSE(!Reference_base::get_content(copied_ref)->m_buffer);
-	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
-	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
+	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_locks);
 }
 
 /*
@@ -125,8 +123,7 @@ TEST_F(DataRefAnyTest, moveConstructor)
 	EXPECT_EQ(nullptr, Reference_base::get_content(*this->m_tested_ref));
 	EXPECT_FALSE(!Reference_base::get_content(moved_ref));
 	EXPECT_FALSE(!Reference_base::get_content(moved_ref)->m_buffer);
-	EXPECT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_read_locks);
-	EXPECT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_write_locks);
+	EXPECT_EQ(0, Reference_base::get_content(moved_ref)->m_buffer->m_locks);
 }
 
 /*
@@ -168,8 +165,7 @@ TEST_F(DataRefAnyTest, unlinkButNotDestroy)
 	EXPECT_EQ(this->m_data[0], 0);
 	EXPECT_FALSE(!Reference_base::get_content(copied_ref));
 	EXPECT_FALSE(!Reference_base::get_content(copied_ref)->m_buffer);
-	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_read_locks);
-	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_write_locks);
+	EXPECT_EQ(0, Reference_base::get_content(copied_ref)->m_buffer->m_locks);
 
 	copied_ref.reset();
 
@@ -825,23 +821,7 @@ TEST_F(DataRefAnyTest, invalid_dereference_pointers)
 template <typename T>
 struct DataRefAnyTypedTest
 	: public DataRefAnyTest
-	, T {
-	DataRefAnyTypedTest()
-		: DataRefAnyTest()
-	{
-		if (is_same<T, Ref>::value) {
-			locks = 0;
-		} else if (is_same<T, Ref_r>::value) {
-			locks = 1;
-		} else if (is_same<T, Ref_w>::value) {
-			locks = 2;
-		} else { //is_same<T, Ref_rw>::value
-			locks = 3;
-		}
-	}
-
-	char locks;
-};
+	, T {};
 
 typedef ::testing::Types<Ref, Ref_r, Ref_w, Ref_rw> RefTypes;
 TYPED_TEST_CASE(DataRefAnyTypedTest, RefTypes);
@@ -905,22 +885,17 @@ TYPED_TEST(DataRefAnyTypedTest, chmodConstructor)
 	EXPECT_FALSE(!Reference_base::get_content(chref));
 	EXPECT_FALSE(!Reference_base::get_content(chref)->m_buffer);
 
-	if (this->locks & 2) {
-		//if granted with write access
-		EXPECT_EQ(1, Reference_base::get_content(chref)->m_buffer->m_read_locks);
-		EXPECT_EQ(1, Reference_base::get_content(chref)->m_buffer->m_write_locks);
-	} else {
-		//if not granted with write access
-		if (this->locks & 1) {
-			//if granted with read access
-			EXPECT_EQ(0, Reference_base::get_content(chref)->m_buffer->m_read_locks);
-			EXPECT_EQ(1, Reference_base::get_content(chref)->m_buffer->m_write_locks);
-		} else {
-			//if not granted with read access
-			EXPECT_EQ(0, Reference_base::get_content(chref)->m_buffer->m_read_locks);
-			EXPECT_EQ(0, Reference_base::get_content(chref)->m_buffer->m_write_locks);
-		}
+	size_t expected_locks;
+	if constexpr (is_same<TypeParam, Ref>::value) {
+		expected_locks = 0;
+	} else if constexpr (is_same<TypeParam, Ref_r>::value) {
+		expected_locks = Reference_base::Referenced_buffer::S_WLCK;
+	} else if constexpr (is_same<TypeParam, Ref_w>::value) {
+		expected_locks = Reference_base::Referenced_buffer::S_RLCK + Reference_base::Referenced_buffer::S_WLCK;
+	} else { //is_same<TypeParam, Ref_rw>::value
+		expected_locks = Reference_base::Referenced_buffer::S_RLCK + Reference_base::Referenced_buffer::S_WLCK;
 	}
+	EXPECT_EQ(expected_locks, Reference_base::get_content(chref)->m_buffer->m_locks);
 }
 
 /*
