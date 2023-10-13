@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -112,7 +112,15 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 			PDI::each(read_node, [this](PC_tree_t desc_name, PC_tree_t read_value) {
 				std::string read_desc = PDI::to_string(desc_name);
 				m_ctx.logger().trace("Creating new read info for: {}", read_desc);
-				this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
+				// if we read a variable with "size_of" key
+				if (!PC_status(PC_get(read_value, ".size_of"))) {
+					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
+				}
+				// if we read a regular variable
+				else
+				{
+					this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
+				}
 			});
 		}
 	}
@@ -150,6 +158,9 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 			desc_triggers.emplace(desc_io_pair.first);
 		}
 		for (auto&& desc_io_pair: m_write) {
+			desc_triggers.emplace(desc_io_pair.first);
+		}
+		for (auto&& desc_io_pair: m_sizeof) {
 			desc_triggers.emplace(desc_io_pair.first);
 		}
 		for (auto&& desc_trigger: desc_triggers) {
@@ -248,6 +259,14 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			// execute read
 			nc_file.get_variable(*variable, read_it->second, ref);
 		}
+
+		auto size_it = m_sizeof.find(desc_name);
+		if (size_it != m_sizeof.end() && size_it->second.when()) {
+			Dnc_netcdf_file nc_file{m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator};
+			std::string dataset_name = size_it->second.sizeof_variable_path();
+			m_ctx.logger().trace("Getting size of `{}' dataset", dataset_name);
+			nc_file.get_sizeof_variable(size_it->first, dataset_name, ref);
+		}
 	}
 }
 
@@ -280,6 +299,10 @@ void Dnc_file_context::execute()
 
 				// read this variable
 				nc_file->read_variable(*variable);
+			}
+
+			for (auto&& size_of: m_sizeof) {
+				nc_file->get_sizeof_variable(size_of.first, size_of.second.sizeof_variable_path(), m_ctx.desc(size_of.first).ref());
 			}
 		} else {
 			nc_file.reset(new Dnc_netcdf_file{m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator});

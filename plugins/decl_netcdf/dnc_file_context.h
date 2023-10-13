@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -64,6 +65,9 @@ class Dnc_file_context
 
 	/// Map of desc name to Write operation on NetCDF file
 	std::unordered_map<std::string, Dnc_io> m_write;
+
+	/// Map of desc name to Size_of operation on NetCDF file
+	std::unordered_map<std::string, Dnc_io > m_sizeof;
 
 	/** Execute all I/O operations (called on event)
 	 *

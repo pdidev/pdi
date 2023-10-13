@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -39,6 +40,11 @@ Dnc_io::Dnc_io(PDI::Context& ctx, PC_tree_t config)
 		m_when = PDI::Expression{PDI::to_string(when_node)};
 	}
 
+	PC_tree_t sizeof_node = PC_get(config, ".size_of");
+	if (!PC_status(sizeof_node)) {
+		m_sizeof_var = PDI::Expression{PDI::to_string(sizeof_node)};
+	}
+
 	PC_tree_t var_selection_node = PC_get(config, ".variable_selection");
 	if (!PC_status(var_selection_node)) {
 		PC_tree_t start_node = PC_get(var_selection_node, ".start");
@@ -63,6 +69,15 @@ std::string Dnc_io::variable_path() const
 {
 	if (m_variable_path) {
 		return m_variable_path.to_string(m_ctx);
+	} else {
+		return {};
+	}
+}
+
+std::string Dnc_io::sizeof_variable_path() const
+{
+	if (m_sizeof_var) {
+		return m_sizeof_var.to_string(m_ctx);
 	} else {
 		return {};
 	}
