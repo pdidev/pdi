@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -51,6 +52,8 @@ protected:
 	/// Counts of hyperslab of this I/O
 	std::vector<PDI::Expression> m_subsize;
 
+	PDI::Expression m_sizeof_var;
+
 public:
 	/** Creates I/O operation (read or write) on NetCDF file
 	 *
@@ -65,6 +68,12 @@ public:
 	 *  \return variable path of this I/O, empty if no variable path
 	 */
 	std::string variable_path() const;
+
+	/** Getter for size_of variable path
+	 *
+	 *  \return size_of variable path of this I/O, empty if no variable path
+	 */
+	std::string sizeof_variable_path() const;
 
 	/** Getter for variable name
 	 *

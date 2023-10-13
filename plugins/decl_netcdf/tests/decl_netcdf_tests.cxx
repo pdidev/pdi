@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -733,6 +734,76 @@ TEST(decl_netcdf_test, 06)
 				ASSERT_EQ(int_matrix[i][j], iter * 100 + i * 8 + j);
 			}
 		}
+	}
+
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.01
+ *
+ * Description:         Tests simple write and read of scalar and array depending on `input' metadata
+ */
+TEST(decl_netcdf_test, 07)
+{
+	const char* CONFIG_YAML
+		= "logging: trace                                      \n"
+		  "metadata:                                           \n"
+		  "  input: int                                        \n"
+		  "data:                                               \n"
+		  "  int_scalar: int                                   \n"
+		  "  int_array: {type: array, subtype: int, size: 32}  \n"
+		  "  array_size: int                                   \n"
+		  "                                                    \n"
+		  "plugins:                                            \n"
+		  "  decl_netcdf:                                      \n"
+		  "    - file: 'test_07s.nc'                            \n"
+		  "      when: '${input}=0'                            \n"
+		  "      write: [int_scalar, int_array]                \n"
+		  "    - file: 'test_07s.nc'                            \n"
+		  "      when: '${input}=1'                            \n"
+		  "      read:                                         \n"
+		  "        int_scalar:                                 \n"
+		  "        int_array:                                  \n"
+		  "        array_size:                                 \n"
+		  "          size_of: int_array                        \n";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+	// init data
+	int input = 0;
+	int int_scalar = 42;
+	int int_array[32];
+	for (int i = 0; i < 32; i++) {
+		int_array[i] = i;
+	}
+
+	// write data
+	PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
+	PDI_expose("int_array", int_array, PDI_OUT);
+
+	// zero data
+	int_scalar = 0;
+	for (int i = 0; i < 32; i++) {
+		int_array[i] = 0;
+	}
+
+	// read data
+	input = 1;
+	PDI_expose("input", &input, PDI_OUT);
+	int array_size = 0;
+	PDI_expose("array_size", &array_size, PDI_IN);
+	PDI_expose("int_scalar", &int_scalar, PDI_IN);
+	PDI_expose("int_array", int_array, PDI_IN);
+
+	// verify
+	printf("array_size = %d\n", array_size);
+	printf("%d ?= %d\n", int_scalar, 42);
+	ASSERT_EQ(int_scalar, 42);
+	ASSERT_EQ(array_size, 32);
+	for (int i = 0; i < 32; i++) {
+		// printf("%d ?= %d\n", int_array[i], i);
+		ASSERT_EQ(int_array[i], i);
 	}
 
 	PDI_finalize();
