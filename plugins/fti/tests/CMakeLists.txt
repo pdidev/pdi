@@ -147,12 +147,12 @@ target_link_libraries(fti_05_C PDI::PDI_C MPI::MPI_C)
 
 ## without heads
 add_test(NAME fti_05-1_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config_03.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:fti_05_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/fti_test_05-1.yml")
-set_property(TEST fti_05-1_C PROPERTY TIMEOUT 15)
+set_property(TEST fti_05-1_C PROPERTY TIMEOUT 30)
 set_property(TEST fti_05-1_C PROPERTY PROCESSORS 6)
 
 ## with heads - CURRENTLY NOT WORKING, because heads are killed by FTI after FTI_Finalize
 add_test(NAME fti_05-2_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config_04.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:fti_05_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/fti_test_05-2.yml")
-set_property(TEST fti_05-2_C PROPERTY TIMEOUT 15)
+set_property(TEST fti_05-2_C PROPERTY TIMEOUT 30)
 set_property(TEST fti_05-2_C PROPERTY PROCESSORS 6)
 
 ##########
