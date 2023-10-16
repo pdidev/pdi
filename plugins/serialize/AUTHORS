@@ -6,13 +6,17 @@ condensed list of their contributions.
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Ported to the new Datatype system
 * Fixed some bugs
+* Maintainer (Jun. 2022 - ...)
 
 Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* Maintainer (Jul. 2020 - ...)
+* Maintainer (Jul. 2020 - Jun. 2022)
 * Design and initial implementation
 
 Kacper Sinkiewicz - PSNC (ksinkiewicz@man.poznan.pl)
 * Test refactoring using GTEST
+
+Yushan Wang - CEA (yushan.wang@cea.fr)
+* Maintainer (Sept. 2023 - ...)

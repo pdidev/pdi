@@ -29,7 +29,7 @@ Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* Co-maintainer (Nov. 2020 - ...)
+* Co-maintainer (Nov. 2020 - Jun. 2022)
 * Record datatype support
 * Attributes support
 * Multiple bugfixes
@@ -41,3 +41,6 @@ project co-financed by Polish Ministry of Science and Higher Education.
 Kacper Sinkiewicz - PSNC (ksinkiewicz@man.poznan.pl)
 * Many tests, including compatibility tests
 * Test refactoring using GTEST
+
+Yushan Wang - CEA (yushan.wang@cea.fr)
+* Maintainer (Sept. 2023 - ...)

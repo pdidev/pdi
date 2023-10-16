@@ -8,6 +8,7 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Updated to match new PDI API & style
 * Buildsystem update
 * Ported to the new Datatype system
+* Maintainer (Jun. 2022 - ...)
 
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Design and initial implementation
@@ -24,6 +25,9 @@ Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* Maintainer (Nov. 2020 - ...)
+* Maintainer (Nov. 2020 - Jun. 2022)
 * Improved logging system
 * Schema validator
+
+Yushan Wang - CEA (yushan.wang@cea.fr)
+* Maintainer (Sept. 2023 - ...)

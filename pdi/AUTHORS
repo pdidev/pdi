@@ -13,6 +13,10 @@ Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Add support for ZSH in env
 
+Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
+* Fortran interface fixes
+* developments in the fortran interface
+
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
@@ -29,7 +33,7 @@ Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* Co-maintainer (Nov. 2020 - ...)
+* Co-maintainer (Nov. 2020 - Jun. 2022)
 * Set-up and development of unit-tests
 * Support for records in YAML
 * Logging support
@@ -45,6 +49,5 @@ Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
 * Support for string boolean types in yaml.
 * Support for inteagers from stdint.h
 
-Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
-* Fortran interface fixes
-* developments in the fortran interface
+Yushan Wang - CEA (yushan.wang@cea.fr)
+* Maintainer (Sept. 2023 - ...)

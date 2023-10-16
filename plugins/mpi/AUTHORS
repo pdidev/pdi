@@ -8,6 +8,7 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Minor adaptations for new PDI API
 * Workaround an issue with the transtype feature when C & Fortran types are similar
 * Workaround an issue with the transtype feature
+* Maintainer (Jun. 2022 - ...)
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
@@ -20,6 +21,9 @@ Karol Sierociński - PSNC (ksiero@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
 project co-financed by Polish Ministry of Science and Higher Education.
-* Maintainer (Jul. 2018 - ...)
+* Maintainer (Jul. 2018 - Jun. 2022)
 * Design and initial implementation
 * Schema validator
+
+Yushan Wang - CEA (yushan.wang@cea.fr)
+* Maintainer (Sept. 2023 - ...)
