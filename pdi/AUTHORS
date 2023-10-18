@@ -12,6 +12,7 @@ Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Add support for ZSH in env
+* Update supported CMake versions
 
 Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * Fortran interface fixes

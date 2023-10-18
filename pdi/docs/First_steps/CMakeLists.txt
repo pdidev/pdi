@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10...3.25)
 
 if("${BUILD_FORTRAN}")
 	add_executable(hello_access.f90 hello_access.f90)
