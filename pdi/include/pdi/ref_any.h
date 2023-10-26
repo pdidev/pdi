@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -358,7 +358,7 @@ public:
 		return m_content != get_content(o);
 	}
 	
-	bool operator<(const Reference_base& o) const noexcept
+	bool operator< (const Reference_base& o) const noexcept
 	{
 		is_null();
 		return m_content < get_content(o);
@@ -439,6 +439,30 @@ public:
 		Ref result;
 		result.link(std::make_shared<Referenced_data>(m_content->m_buffer, subref_info.first, std::move(subref_info.second)));
 		return result;
+	}
+	
+	/** Create a reference to the pointed content in case the ref type is a reference.
+	 *
+	 * \return a reference to the dereferenced data
+	 */
+	Ref dereference() const
+	{
+		if (is_null()) {
+			throw Type_error{"Cannot dereference an empty Ref"};
+		}
+		
+		if (auto&& pointer_type = std::dynamic_pointer_cast<const PDI::Pointer_datatype>(type())) {
+			if constexpr (R) {
+				std::pair<void*, Datatype_sptr> subref_info = type()->dereference(m_content->m_data);
+				Ref result;
+				result.link(std::make_shared<Referenced_data>(m_content->m_buffer, subref_info.first, std::move(subref_info.second)));
+				return result;
+			} else {
+				return Ref_r(*this).dereference();
+			}
+		} else {
+			throw Type_error{"Cannot dereference a non pointer_type"};
+		}
 	}
 	
 	/** Offers access to the referenced raw data

@@ -12,7 +12,7 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Design and initial implementation
 
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
-* Fixed CMake issues
+* Fixed CMake issues, internal API enhancement
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science

@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix unexpected behavior with zsh where env variables were set incorrectly.
   Exit script if shell is unsupported
   [#434](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/434)
+* Create a method that dereferences a pointer type and returns the data as a new Reference.
+  [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
 
 #### Security
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -29,6 +29,7 @@
 #include <pdi/array_datatype.h>
 #include <pdi/scalar_datatype.h>
 #include <pdi/record_datatype.h>
+#include <pdi/pointer_datatype.h>
 #include <pdi/ref_any.h>
 #include <pdi/pdi_fwd.h>
 
@@ -629,6 +630,180 @@ TEST_F(DataRefAnyTest, wrong_index_access)
 		base_ref[4];
 		FAIL();
 	} catch (const Type_error& e) {}
+}
+
+
+/*
+ * Name:                DataRefAnyTest.dereference_pointer
+ *
+ * Tested functions:    PDI::Ref_any::dereference()
+ */
+TEST_F(DataRefAnyTest, dereference_pointer)
+{
+	/* SCALAR */
+	auto&& scalar_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	auto&& ptr_scalar_type = Pointer_datatype::make(scalar_type);
+
+	int m_scalar = 12;
+	int* m_ptr_scalar = &m_scalar;
+
+	Ref_r base_scalar_ref{&m_scalar, [](void*) {}, scalar_type, true, true};
+	Ref_r pointer_scalar_ref{&m_ptr_scalar, [](void*) {}, ptr_scalar_type, true, true};
+	Ref_r dereferenced_scalar_ref = pointer_scalar_ref.dereference();
+
+	// Check that the reference is valid.
+	EXPECT_FALSE(!dereferenced_scalar_ref);
+	EXPECT_FALSE(!Reference_base::get_content(dereferenced_scalar_ref));
+	EXPECT_FALSE(!Reference_base::get_content(dereferenced_scalar_ref)->m_buffer);
+	EXPECT_EQ(0, Reference_base::get_content(dereferenced_scalar_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(dereferenced_scalar_ref)->m_buffer->m_write_locks);
+
+	// Check that the reference has been dereferenced.
+	EXPECT_EQ(base_scalar_ref.type(), dereferenced_scalar_ref.type())
+		<< "Pointer datatype:\n" << dereferenced_scalar_ref.type()->debug_string()
+		<< "\n\nScalar datatype:\n" << base_scalar_ref.type()->debug_string();
+
+	const void* base_scalar_ptr = base_scalar_ref.get();
+	const void* dereferenced_scalar_ptr = dereferenced_scalar_ref.get();
+	EXPECT_EQ(reinterpret_cast<int*>(const_cast<void*>(base_scalar_ptr)), reinterpret_cast<int*>(const_cast<void*>(dereferenced_scalar_ptr)));
+
+
+	/* ARRAY */
+	auto&& array_type = Array_datatype::make(scalar_type, 32);
+	auto&& ptr_array_type = Pointer_datatype::make(array_type);
+
+	int m_scalar_array[32];
+	for (size_t i = 0; i < 32; ++i)
+		m_scalar_array[i] = i;
+	int(*m_ptr_scalar_array)[32] = &m_scalar_array;
+
+	Ref_r base_array_ref{m_scalar_array, [](void*) {}, array_type, true, true};
+	Ref_r pointer_array_ref{&m_ptr_scalar_array, [](void*) {}, ptr_array_type, true, true};
+	Ref_r dereferenced_array_ref = pointer_array_ref.dereference();
+
+	// Check that the reference is valid.
+	EXPECT_FALSE(!dereferenced_array_ref);
+	EXPECT_FALSE(!Reference_base::get_content(dereferenced_array_ref));
+	EXPECT_FALSE(!Reference_base::get_content(dereferenced_array_ref)->m_buffer);
+	EXPECT_EQ(0, Reference_base::get_content(dereferenced_array_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(dereferenced_array_ref)->m_buffer->m_write_locks);
+
+	// Check that the reference has been dereferenced.
+    EXPECT_EQ(base_array_ref.type(), dereferenced_array_ref.type())
+        << "Pointer datatype:\n" << dereferenced_array_ref.type()->debug_string()
+        << "\n\nArray datatype:\n" << base_array_ref.type()->debug_string();
+
+
+	/* RECORD */
+	auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
+
+	struct Record_t {
+		char x;
+		int y[32];
+	};
+
+	std::vector<Record_datatype::Member> members;
+	members.emplace_back(offsetof(Record_t, x), char_type, "x");
+	members.emplace_back(offsetof(Record_t, y), array_type, "y");
+	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Record_t));
+	auto&& ptr_record_type = Pointer_datatype::make(record_type);
+
+	Record_t m_record_data;
+	m_record_data.x = 42;
+	for (int i = 0; i < 32; i++) {
+		m_record_data.y[i] = i;
+	}
+
+	Ref_r base_record_ref{&m_record_data, [](void*) {}, record_type, true, true};
+
+	Record_t* m_ptr_record_data = &m_record_data;
+	Ref_r pointer_record_ref{&m_ptr_record_data, [](void*) {}, ptr_record_type, true, true};
+	Ref_r dereferenced_record_ref = pointer_record_ref.dereference();
+
+	// Check that the reference is valid.
+	EXPECT_FALSE(!dereferenced_record_ref);
+	EXPECT_FALSE(!Reference_base::get_content(dereferenced_record_ref));
+	EXPECT_FALSE(!Reference_base::get_content(dereferenced_record_ref)->m_buffer);
+	EXPECT_EQ(0, Reference_base::get_content(dereferenced_record_ref)->m_buffer->m_read_locks);
+	EXPECT_EQ(2, Reference_base::get_content(dereferenced_record_ref)->m_buffer->m_write_locks);
+
+	// Check that the reference has been dereferenced.
+	EXPECT_EQ(base_record_ref.type(), dereferenced_record_ref.type())
+        << "Scalar datatype:\n" << base_record_ref.type()->debug_string()
+		<< "\n\nPointer datatype:\n" << dereferenced_record_ref.type()->debug_string();
+
+	const void* base_record_ptr = base_array_ref.get();
+	const void* dereferenced_record_ptr = dereferenced_array_ref.get();
+	EXPECT_EQ(reinterpret_cast<int*>(const_cast<void*>(base_record_ptr)), reinterpret_cast<int*>(const_cast<void*>(dereferenced_record_ptr)));
+}
+
+
+/*
+ * Name:                DataRefAnyTest.dereference_pointer
+ *
+ * Tested functions:    PDI::Ref_any::dereference()
+ */
+TEST_F(DataRefAnyTest, invalid_dereference_pointers)
+{
+	/* Scalar */
+	auto&& scalar_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
+	int m_scalar = 12;
+	Ref base_scalar_ref{&m_scalar, [](void*) {}, scalar_type, true, true};
+
+	try {
+		Ref dereferenced_scalar_ref = base_scalar_ref.dereference();
+		ADD_FAILURE();
+	} catch (const Type_error& e) {
+	}
+
+	/* Char */
+	auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
+	char m_char = 'a';
+	Ref base_char_ref{&m_char, [](void*) {}, char_type, true, true};
+
+	try {
+		Ref dereferenced_char_ref = base_char_ref.dereference();
+		ADD_FAILURE();
+	} catch (const Type_error& e) {
+	}
+
+
+	/* Array */
+	auto&& array_type = Array_datatype::make(scalar_type, 32);
+	int m_scalar_array[32];
+	for (size_t i = 0; i < 32; ++i)
+		m_scalar_array[i] = i;
+	Ref base_array_ref{m_scalar_array, [](void*) {}, array_type, true, true};
+
+	try {
+		Ref dereferenced_array_ref = base_array_ref.dereference();
+		ADD_FAILURE();
+	} catch (const Type_error& e) {
+	}
+
+	/* Record */
+	struct Record_t {
+		char x;
+		int y[32];
+	};
+
+	std::vector<Record_datatype::Member> members;
+	members.emplace_back(offsetof(Record_t, x), char_type, "x");
+	members.emplace_back(offsetof(Record_t, y), array_type, "y");
+	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Record_t));
+
+	Record_t m_record_data;
+	m_record_data.x = 42;
+	for (int i = 0; i < 32; i++) {
+		m_record_data.y[i] = i;
+	}
+	Ref base_record_ref{&m_record_data, [](void*) {}, record_type, true, true};
+
+	try {
+		Ref dereferenced_record_ref = base_record_ref.dereference();
+		ADD_FAILURE();
+	} catch (const Type_error& e) {
+	}
 }
 
 
