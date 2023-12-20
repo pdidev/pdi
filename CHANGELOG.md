@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Deisa plugin for in-situ analysis using Dask
 
 ### Changed
 * Replaced the astyle based indentation by a clang-format one, fixes

@@ -96,6 +96,7 @@ The following flags define which features of the distribution to enable or not.
 |Flag                       |Default|Description|
 |:--------------------------|:------|:----------|
 |`BUILD_BENCHMARKING`       |`ON`   |Build the benchmarks.|
+|`BUILD_DEISA_PLUGIN`       |`OFF`  |Build the Deisa plug-in.|
 |`BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plug-in.|
 |`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plug-in.|
 |`BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
@@ -108,7 +109,6 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
 |`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
-
 
 The following flags define whether to:
 * use the preinstalled version of a dependency (`SYSTEM`), it will be looked for
