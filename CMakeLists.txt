@@ -550,12 +550,12 @@ if("${BUILD_PYTHON}")
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/pybind11-2.3.0"
+		EMBEDDED_PATH "vendor/pybind11-2.11.1"
 		CMAKE_CACHE_ARGS
 			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
-		VERSION 2.3.0
+		VERSION 2.11.1
 	)
 	set(Python3_FOUND "${_PDI_DIST_Python3_FOUND}")
 endif()
