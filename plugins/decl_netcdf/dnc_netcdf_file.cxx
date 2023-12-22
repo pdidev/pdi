@@ -643,6 +643,46 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	}
 }
 
+void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std::string sizeof_var, PDI::Ref_w ref_w)
+{
+	if (!ref_w) {
+		throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Cannot read `{}'. Need write access to read it from file", sizeof_var};
+	}
+	
+    // get group path and variable name
+	std::string group_path;
+	std::string variable_name;
+	std::tie(group_path, variable_name) = split_group_and_variable(sizeof_var);
+	
+	// get src_id
+	auto group_it = m_groups.find(group_path);
+	if (group_it == m_groups.end()) {
+		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Cannot find group that should be created: {}", group_path};
+	}
+	nc_id src_id = group_it->second;
+	
+	nc_id var_id;
+	nc_inq_varid(src_id, sizeof_var.c_str(), &var_id);
+
+	int var_dim;
+	nc_inq_varndims(src_id, var_id, &var_dim);
+	
+	std::unique_ptr<int[]> dimid {new int[var_dim]};
+	std::unique_ptr<size_t[]> dimlen {new size_t[var_dim]};
+
+
+	nc_try(nc_inq_vardimid(src_id, var_id, &dimid[0]),
+		"cannot get size of `{}", sizeof_var);
+
+	for(auto i=0; i<var_dim; i++)
+	{
+		nc_try(nc_inq_dimlen(src_id, dimid[i], &dimlen[i]),
+			   "cannot get size of `{}", sizeof_var);
+		*(static_cast<long*>(ref_w.get()) + i) = dimlen[i];
+	}
+
+}
+
 Dnc_netcdf_file::~Dnc_netcdf_file()
 {
 	m_ctx.logger().debug("Closing file {} (nc_id = {})", m_filename, m_file_id);
