@@ -84,6 +84,7 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_UNSTABLE}")
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
+option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" ON)
 
 
 
@@ -138,6 +139,9 @@ if("${BUILD_MPI_PLUGIN}")
 endif()
 if("${BUILD_PYCALL_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall/cmake")
+endif()
+if("${BUILD_DEISA_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa/cmake")
 endif()
 if("${BUILD_TESTING}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/example/cmake")
@@ -195,6 +199,14 @@ if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}" AND NOT "${BUILD
 	)
 endif()
 
+if("${BUILD_DEISA_PLUGIN}" AND NOT "${BUILD_PYTHON}")
+	message(FATAL_ERROR
+			"Deisa plugin is enabled but Python support is disabled.\n"
+			"    you have the following options:\n"
+			"     * enable Python support => pass `-DBUILD_PYTHON=ON' to cmake\n"
+			"     * do not build the Deisa plugin => pass `-DBUILD_DEISA_PLUGIN=OFF' to cmake"
+	)
+endif()
 
 
 ### Subtargets
@@ -737,6 +749,15 @@ sbuild_add_module(USER_CODE_PLUGIN
 	DEPENDS PDI ${ASTYLE_DEPENDENCY}
 	SUBSTEPS indent test
 )
+
+
+sbuild_add_module(DEISA_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_DEISA_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+#	SUBSTEPS indent test	# TODO
+)
+
 
 if ("${BUILD_FLOWVR_PLUGIN}")
 	set(FLOWVR_DEPENDENCY FlowVR)
