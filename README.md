@@ -54,6 +54,7 @@ PDI distribution is made of the following submodules:
 * `plugins/serialize/`: the serialize plugin,
 * `plugins/set_value/`: the Set value plugin,
 * `plugins/trace/`: the Trace plugin,
+* `plugins/deisa/`: the Deisa plugin,
 * `tools/pdicfg_validator/`: the PDIcfg-validator tool,
 * `example/`: PDI examples,
 * `tests/`: tests that combine multiple plugins,
