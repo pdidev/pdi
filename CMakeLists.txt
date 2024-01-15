@@ -84,7 +84,7 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_UNSTABLE}")
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
-option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" ON)
+option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
 
 
 

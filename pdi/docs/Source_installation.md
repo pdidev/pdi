@@ -90,26 +90,27 @@ The following general flags are useful to configure the distribution as a whole.
 
 The following flags define which features of the distribution to enable or not.
 
-|Flag                     |Default|Description|
-|:------------------------|:------|:----------|
-|`BUILD_BENCHMARKING`     |`ON`   |Build the benchmarks.|
-|`BUILD_FORTRAN`          |`ON`   |Build the Fortran interface.|
-|`BUILD_DECL_HDF5_PLUGIN` |`ON`   |Build the Decl'HDF5 plug-in.|
-|`BUILD_HDF5_PARALLEL`    |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
-|`BUILD_MPI_PLUGIN`       |`ON`   |Build the MPI plug-in.|
-|`BUILD_NETCDF_PARALLEL`  |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
-|`BUILD_TEST_PLUGIN`      |`ON`   |Build the Test plug-in.|
-|`BUILD_TESTING`          |`ON`   |Build the tests.|
-|`BUILD_TRACE_PLUGIN`     |`ON`   |Build the Trace plug-in.|
-|`BUILD_USER_CODE_PLUGIN` |`ON`   |Build the User-code plug-in.|
-|`BUILD_PYTHON`           |`OFF`  |Build the Python interface.|
-|`BUILD_DECL_SION_PLUGIN` |`OFF`  |Build the decl'SION plug-in.|
-|`BUILD_FLOWVR_PLUGIN`    |`OFF`  |Build the FlowVR plug-in.|
-|`BUILD_FTI_PLUGIN`       |`OFF`  |Build the FTI plug-in.|
-|`BUILD_PYCALL_PLUGIN`    |`OFF`  |Build Pycall plug-in.|
-|`BUILD_DOCUMENTATION`    |`OFF`  |Build the documentation website.|
-|`BUILD_INDENT`           |`OFF`  |Build the code auto-indentation tools.|
-|`BUILD_CFG_VALIDATOR`    |`OFF`  |Build the PDI configuration validation script.|
+| Flag                     | Default | Description                                                                         |
+|:-------------------------|:--------|:------------------------------------------------------------------------------------|
+| `BUILD_BENCHMARKING`     | `ON`    | Build the benchmarks.                                                               |
+| `BUILD_FORTRAN`          | `ON`    | Build the Fortran interface.                                                        |
+| `BUILD_DECL_HDF5_PLUGIN` | `ON`    | Build the Decl'HDF5 plug-in.                                                        |
+| `BUILD_HDF5_PARALLEL`    | `ON`    | Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.   |
+| `BUILD_MPI_PLUGIN`       | `ON`    | Build the MPI plug-in.                                                              |
+| `BUILD_NETCDF_PARALLEL`  | `ON`    | Build the parallel version of the Decl'NetCDF plugin instead of the sequential one. |
+| `BUILD_TEST_PLUGIN`      | `ON`    | Build the Test plug-in.                                                             |
+| `BUILD_TESTING`          | `ON`    | Build the tests.                                                                    |
+| `BUILD_TRACE_PLUGIN`     | `ON`    | Build the Trace plug-in.                                                            |
+| `BUILD_USER_CODE_PLUGIN` | `ON`    | Build the User-code plug-in.                                                        |
+| `BUILD_PYTHON`           | `OFF`   | Build the Python interface.                                                         |
+| `BUILD_DECL_SION_PLUGIN` | `OFF`   | Build the decl'SION plug-in.                                                        |
+| `BUILD_FLOWVR_PLUGIN`    | `OFF`   | Build the FlowVR plug-in.                                                           |
+| `BUILD_FTI_PLUGIN`       | `OFF`   | Build the FTI plug-in.                                                              |
+| `BUILD_PYCALL_PLUGIN`    | `OFF`   | Build Pycall plug-in.                                                               |
+| `BUILD_DOCUMENTATION`    | `OFF`   | Build the documentation website.                                                    |
+| `BUILD_INDENT`           | `OFF`   | Build the code auto-indentation tools.                                              |
+| `BUILD_CFG_VALIDATOR`    | `OFF`   | Build the PDI configuration validation script.                                      |
+| `BUILD_DEISA_PLUGIN`     | `OFF`   | Build the Deisa plug-in.                                                            |
 
 
 The following flags define whether to:
