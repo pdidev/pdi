@@ -257,10 +257,9 @@ private:
 			pyscope["size"] = to_python(size.to_ref(context()));
 			pyscope["deisa_arrays"] = darrs;
 			pyscope["deisa_arrays_dtype"] = darrs_dtype;
-			pyscope["compatibility"] = PYTHON_LIBRARY_COMPATIBILITY;
 			
 			// TODO: use_ucx
-			py::exec("bridge = get_bridge_instance(scheduler_info, rank, size, deisa_arrays, deisa_arrays_dtype, compatibility=compatibility)", pyscope);
+			py::exec("bridge = get_bridge_instance(scheduler_info, rank, size, deisa_arrays, deisa_arrays_dtype)", pyscope);
 		} catch (const std::exception& e) {
 			std::cerr << " *** [PDI/Deisa] Error: while initializing deisa, caught exception: " << e.what() << std::endl;
 			throw Plugin_error("Could not initialize Deisa plugin. Caught exception: " + std::string(e.what()));
