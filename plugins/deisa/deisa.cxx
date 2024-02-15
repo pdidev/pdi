@@ -98,7 +98,7 @@ py::dtype datatype_to_pydtype(const std::shared_ptr<const Scalar_datatype>& scal
  */
 class deisa_plugin : public Plugin
 {
-	static constexpr char PYTHON_LIBRARY_COMPATIBILITY[] = "0.3.0"; // Used to check compatibility with Deisa's python library
+	static constexpr char PYTHON_LIBRARY_COMPATIBILITY[] = "0.3.1"; // Used to check compatibility with Deisa's python library
 	
 	bool interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
 	Expression scheduler_info;
@@ -192,6 +192,7 @@ public:
 	{
 		try {
 			if (interpreter_initialized_in_plugin) {
+                py::exec("bridge.release()");   // call bridge release() so that we can clear things before destructor is called (if it is ever called !).
 				py::finalize_interpreter();
 			}
 		} catch (const std::exception& e) {
