@@ -9,7 +9,7 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.9)
-project(pdi_deisa_plugin LANGUAGES CXX)
+project(pdi_deisa_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_INDENT  "Enable automatic code indentation" OFF)
