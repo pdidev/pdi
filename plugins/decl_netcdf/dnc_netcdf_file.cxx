@@ -649,7 +649,7 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std:
 		throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Cannot read `{}'. Need write access to read it from file", sizeof_var};
 	}
 	
-    // get group path and variable name
+	// get group path and variable name
 	std::string group_path;
 	std::string variable_name;
 	std::tie(group_path, variable_name) = split_group_and_variable(sizeof_var);
@@ -664,26 +664,25 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std:
 	nc_id var_id;
 	nc_try(nc_inq_varid(src_id, sizeof_var.c_str(), &var_id),
 	    "Cannot inquire variable {} from (nc_id = {})", sizeof_var, src_id);
-
+	    
 	int var_dim;
 	nc_try(nc_inq_varndims(src_id, var_id, &var_dim),
-	     "Cannot inquire variable dimension counts from (var_id= {}, nc_id = {})", sizeof_var, src_id);
-	
+	    "Cannot inquire variable dimension counts from (var_id= {}, nc_id = {})", sizeof_var, src_id);
+	    
 	std::unique_ptr<int[]> dimid {new int[var_dim]};
 	std::unique_ptr<size_t[]> dimlen {new size_t[var_dim]};
-
-
+	
+	
 	nc_try(nc_inq_vardimid(src_id, var_id, &dimid[0]),
-		"cannot get size of `{}", sizeof_var);
-
-	for(auto i=0; i<var_dim; i++)
-	{
+	    "cannot get size of `{}", sizeof_var);
+	    
+	for (auto i=0; i<var_dim; i++) {
 		nc_try(nc_inq_dimlen(src_id, dimid[i], &dimlen[i]),
 		    "Cannot inquire dimension length");
 		// TO DO: implement in Ref_any a scalar_value setter similar to the existing getter and use it here
 		*(static_cast<long*>(ref_w.get()) + i) = dimlen[i];
 	}
-
+	
 }
 
 Dnc_netcdf_file::~Dnc_netcdf_file()

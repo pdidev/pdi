@@ -68,7 +68,7 @@ class Dnc_file_context
 	
 	/// Map of desc name to Size_of operation on NetCDF file
 	std::unordered_map<std::string, std::string> m_sizeof;
-
+	
 	/** Execute all I/O operations (called on event)
 	 *
 	 */
