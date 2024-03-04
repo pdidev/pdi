@@ -754,7 +754,6 @@ TEST(decl_netcdf_test, 07)
 	"  int_scalar: int                                   \n"
 	"  int_array: {type: array, subtype: int, size: 32}  \n"
 	"  array_size: int                                   \n"
-	"    size: [8, 8]                                    \n"
 	"                                                    \n"
 	"plugins:                                            \n"
     "  decl_netcdf:                                      \n"
