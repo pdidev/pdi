@@ -113,9 +113,11 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config):
 			PDI::each(read_node, [this](PC_tree_t desc_name, PC_tree_t read_value) {
 				std::string read_desc = PDI::to_string(desc_name);
 				m_ctx.logger().trace("Creating new read info for: {}", read_desc);
+				// if we read a variable with "size_of" key
 				if (!PC_status(PC_get(read_value, ".size_of"))) {
 					this->m_sizeof.emplace(read_desc, PDI::to_string(PC_get(read_value, ".size_of")));
 				}
+				// if we read a regular variable
 				else {
 					this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
@@ -265,18 +267,10 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 		}
 
 		auto size_it = m_sizeof.find(desc_name);
-		if (size_it != m_sizeof.end() ) {
+		if (size_it != m_sizeof.end()) {
 			Dnc_netcdf_file nc_file {m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator};
-			
-			// read all groups
-			for (auto&& group : m_groups) {
-				nc_file.read_group(group.second);
-			}
-
 			std::string dataset_name = size_it->second;
-			
 			m_ctx.logger().trace("Getting size of `{}' dataset", dataset_name);
-			
 			nc_file.get_sizeof_variable(size_it->first, size_it->second, ref);
 		}
 	}
@@ -312,7 +306,7 @@ void Dnc_file_context::execute()
 				// read this variable
 				nc_file->read_variable(*variable);
 			}
-
+			
 			for (auto&& size_of : m_sizeof) {
 				Dnc_variable* variable = this->variable(size_of.first, size_of.second, variables_holder);
 				variables_to_get.emplace_back(variable);

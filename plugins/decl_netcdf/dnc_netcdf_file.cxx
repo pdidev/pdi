@@ -662,10 +662,12 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std:
 	nc_id src_id = group_it->second;
 	
 	nc_id var_id;
-	nc_inq_varid(src_id, sizeof_var.c_str(), &var_id);
+	nc_try(nc_inq_varid(src_id, sizeof_var.c_str(), &var_id),
+	    "Cannot inquire variable {} from (nc_id = {})", sizeof_var, src_id);
 
 	int var_dim;
-	nc_inq_varndims(src_id, var_id, &var_dim);
+	nc_try(nc_inq_varndims(src_id, var_id, &var_dim),
+	     "Cannot inquire variable dimension counts from (var_id= {}, nc_id = {})", sizeof_var, src_id);
 	
 	std::unique_ptr<int[]> dimid {new int[var_dim]};
 	std::unique_ptr<size_t[]> dimlen {new size_t[var_dim]};
@@ -677,7 +679,8 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std:
 	for(auto i=0; i<var_dim; i++)
 	{
 		nc_try(nc_inq_dimlen(src_id, dimid[i], &dimlen[i]),
-			   "cannot get size of `{}", sizeof_var);
+		    "Cannot inquire dimension length");
+		// TO DO: implement in Ref_any a scalar_value setter similar to the existing getter and use it here
 		*(static_cast<long*>(ref_w.get()) + i) = dimlen[i];
 	}
 
