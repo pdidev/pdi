@@ -119,7 +119,8 @@ public:
 	{
 		if (!Py_IsInitialized()) {
 			py::initialize_interpreter();
-			interpreter_initialized_in_plugin = true;
+            py::exec("bridge = None");  // needed because check in dtor.
+            interpreter_initialized_in_plugin = true;
 		}
 		check_compatibility();
 		// init params
@@ -192,7 +193,10 @@ public:
 	{
 		try {
 			if (interpreter_initialized_in_plugin) {
-                py::exec("bridge.release()");   // call bridge release() so that we can clear things before destructor is called (if it is ever called !).
+                py::exec(R"(
+                  if bridge:
+                    bridge.release()
+                )");   // call bridge release() so that we can clear things before destructor is called (if it is ever called !).
 				py::finalize_interpreter();
 			}
 		} catch (const std::exception& e) {
