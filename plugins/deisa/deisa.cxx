@@ -215,7 +215,7 @@ private:
 		//            bool b = std::lexicographical_compare(python_library_version.begin(), python_library_version.end(),
 		//                                                  s.begin(), s.end());
 		if (python_library_version != PYTHON_LIBRARY_COMPATIBILITY) {
-			throw Plugin_error("Bridge version " + std::string(PYTHON_LIBRARY_COMPATIBILITY) + " is not compatible with the PDI plugin version " + python_library_version);
+			throw Plugin_error("Deisa PDI plugin is expecting Deisa python version " + std::string(PYTHON_LIBRARY_COMPATIBILITY) + " but found version " + python_library_version);
 		}
 	}
 	
