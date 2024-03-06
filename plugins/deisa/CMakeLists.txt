@@ -50,3 +50,10 @@ set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${P
 install(TARGETS pdi_deisa_plugin
     LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
 )
+
+# Configuration validation
+if ("${BUILD_CFG_VALIDATOR}")
+    find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
+            DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
+endif()
