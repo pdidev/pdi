@@ -98,7 +98,7 @@ py::dtype datatype_to_pydtype(const std::shared_ptr<const Scalar_datatype>& scal
  */
 class deisa_plugin : public Plugin
 {
-	static constexpr char PYTHON_LIBRARY_COMPATIBILITY[] = "0.3.1"; // Used to check compatibility with Deisa's python library
+	static constexpr char PYTHON_LIBRARY_COMPATIBILITY[] = "0.3.2"; // Used to check compatibility with Deisa's python library
 	
 	bool interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
 	Expression scheduler_info;
@@ -175,9 +175,12 @@ public:
 						pyscope[deisa_array_name.c_str()] = to_python(data_ref);
 						pyscope["time_step"] = time_step.to_long(ctx);
 						pyscope["name"] = deisa_array_name.c_str();
-						
-						py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step)", pyscope);
-						
+
+#ifdef NDEBUG
+						py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step, debug=False)", pyscope);
+#else
+                        py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step, debug=True)", pyscope);
+#endif
 						pyscope[deisa_array_name.c_str()] = NULL;   // TODO: is this needed ?
 					} catch (const std::exception& e) {
 						std::cerr << " *** [PDI/Deisa] Error: while publishing data, caught exception: " << e.what() << std::endl;
