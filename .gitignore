@@ -1,1 +1,7 @@
 *.pyc
+build/**
+example/PDI_example_C
+example/libdamaris_plugin.so
+example/libpdi_damaris_plugin.so
+example/**/log
+
