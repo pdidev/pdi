@@ -28,7 +28,7 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.10...3.25)
-project(pdi_examples LANGUAGES C)
+project(pdi_examples LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(MPI_COMPONENTS C)
@@ -45,11 +45,28 @@ if("${BUILD_PYTHON}")
 	list(APPEND PDI_COMPONENTS python)
 endif()
 
+
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
+
+# Boost
+find_package(Boost 1.65.0 REQUIRED COMPONENTS python numpy)
+
+# Damaris
+find_package(Damaris 1.8 REQUIRED)
+if (Damaris_FOUND)
+    message(STATUS "The Damaris library was found")
+else()
+    message(STATUS "The Damaris library was NOT found")
+endif()
+
+
 find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 find_library(LIB_M m DOC "The math library")
+
+
+
 
 # Default standard in the project is C11
 set(CMAKE_C_STANDARD 11)
@@ -77,12 +94,21 @@ endif()
 
 
 add_executable(PDI_example_C example.c)
-target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
+target_include_directories(PDI_example_C PUBLIC ${MPI_INCLUDE_DIRS} ${Damaris_INCLUDE_DIRS})
+target_link_directories(PDI_example_C PRIVATE ${Damaris_LIBRARY_DIRS})
+target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m ${Damaris_LIBRARIES})
 
 if("${BUILD_FORTRAN}")
 add_executable(PDI_example_F example.F90)
 target_link_libraries(PDI_example_F PDI::PDI_f90 MPI_with_mod m)
 endif("${BUILD_FORTRAN}")
+
+set_target_properties(PDI_example_C PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY /home/jbowden/exa_dost_pdi/pdi_v1.6/pdi/example
+)
+
+install(PROGRAMS "/home/jbowden/exa_dost_pdi/pdi_v1.6/pdi/build/PDI_EXAMPLE/src/PDI_EXAMPLE_pkg-build/PDI_example_C" DESTINATION /home/jbowden/exa_dost_pdi/pdi_v1.6/pdi/example/ )
+
 
 set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
 
@@ -200,3 +226,5 @@ add_test(NAME PDI_example_trace_P COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}"
 set_property(TEST PDI_example_trace_P PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_trace_P PROPERTY PROCESSORS 3)
 endif("${BUILD_PYTHON}")
+
+

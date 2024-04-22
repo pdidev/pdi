@@ -84,6 +84,26 @@ if("${BUILD_FORTRAN}")
 	enable_language(Fortran)
 endif()
 
+find_package(MPI REQUIRED)
+find_package(Boost 1.65.0 REQUIRED COMPONENTS python numpy)
+    
+# Damaris
+find_package(Damaris 1.8 REQUIRED)
+if (Damaris_FOUND)
+    message(STATUS "The Damaris library was found")
+    # Adds the libraries used - Damaris and its dependencies to the link line
+    # target_link_libraries(mysim PUBLIC ${Damaris_LIBRARIES})
+    # target_link_directories(mysim PRIVATE ${Damaris_LIBRARY_DIRS})
+    # target_include_directories(mysim PUBLIC ${Damaris_INCLUDE_DIRS})
+    # This creates a definition of a pre-processor variable (PROG_HAS_DAMARIS)
+    # that can be used as a guard in the C/C++ code:
+    # target_compile_definitions(mysim PRIVATE HAS_DAMARIS)
+    # MPI
+    
+else()
+    message(STATUS "The Damaris library was NOT found")
+endif()
+
 
 # Includes
 
@@ -100,6 +120,7 @@ set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
 set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
 set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
 set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
+
 
 
 # Dependencies
@@ -126,6 +147,7 @@ endif()
 if("${BUILD_FORTRAN}")
 	find_package(Zpp 1.0.15 REQUIRED)
 endif()
+
 
 
 # Check for some portability stuff and generate config.h
@@ -180,14 +202,22 @@ set(PDI_C_SRC
 		src/string_tools.cxx
 		src/tuple_datatype.cxx
 )
+
+# target_include_directories(PDI PUBLIC ${Damaris_INCLUDE_DIRS})
+# target_link_directories(PDI PRIVATE ${Damaris_LIBRARY_DIRS})
+
+
 add_library(PDI_C ${PDI_C_SRC})
 generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME pdi/export.h)
 target_include_directories(PDI_C
 		PUBLIC "$<BUILD_INTERFACE:${PDI_BINARY_DIR}>"  "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include/>"
-		PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>")
+		PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>" ${MPI_INCLUDE_DIRS} ${Damaris_INCLUDE_DIRS})
+target_link_directories(PDI_C PRIVATE ${Damaris_LIBRARY_DIRS})
 target_link_libraries(PDI_C
 		PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS}
-		PRIVATE spdlog::spdlog)
+		PRIVATE spdlog::spdlog
+        MPI::MPI_CXX MPI::MPI_C ${Damaris_LIBRARIES})
+target_compile_definitions(PDI_C PUBLIC HAS_DAMARIS)
 target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11)
 set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
 set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)

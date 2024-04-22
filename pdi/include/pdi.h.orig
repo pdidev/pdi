@@ -60,8 +60,6 @@
 #include <pdi/export.h>
 #include <pdi/version.h>
 
-//#include "/gpfs/softs/spack_0.17/opt/spack/linux-centos7-cascadelake/gcc-11.2.0/openmpi-4.1.1-ujlwnrlh5sewm2rxkpio3h5mariwgetn/include/mpi.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -95,7 +93,7 @@ typedef enum PDI_status_e {
 	PDI_ERR_RIGHT,
 	/// Invalid type error
 	PDI_ERR_TYPE
-
+	
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs
@@ -108,13 +106,15 @@ typedef void (*PDI_errfunc_f)(PDI_status_t status, const char* message, void* co
 /** Definition of an error handler
  */
 typedef struct PDI_errhandler_s {
+
 	/// The function to handle the error (none if NULL)
 	PDI_errfunc_f func;
-
+	
 	/// the context that will be provided to the function
 	void* context;
-
+	
 } PDI_errhandler_t;
+
 
 /** Prints the error message and aborts if the status is invalid
  */
@@ -151,35 +151,16 @@ PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler);
  * \{
  */
 
-
-#ifdef HAS_DAMARIS
-/** Initializes PDI with Damaris
- * \param[in] conf the configuration
- * \param[in] Damaris configuration XML file
- * \param[in] A response to state the process is a simulation process (a Damaris client process)
- * \return an error status
- */
-PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf,const char* configfile, int *is_client);
-#else
 /** Initializes PDI
  * \param[in] conf the configuration
  * \return an error status
  */
 PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf);
 
-#endif
-
-#ifdef HAS_DAMARIS
-/** Finalizes PDI
- * \return an error status
- */
-PDI_status_t PDI_EXPORT PDI_finalize(int);
-#else
 /** Finalizes PDI
  * \return an error status
  */
 PDI_status_t PDI_EXPORT PDI_finalize(void);
-#endif
 
 /** Checks PDI API version
  *
@@ -208,8 +189,9 @@ typedef enum PDI_inout_e {
 	PDI_OUT = 2,
 	/// data transfer in both direction
 	PDI_INOUT = 3
-
+	
 } PDI_inout_t;
+
 
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
@@ -235,7 +217,7 @@ PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t acce
  * \pre PDI owns the data buffer
  * \post ownership of the data buffer is shared between PDI and the user code
  */
-PDI_status_t PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t inout);
+PDI_status_t  PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t inout);
 
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
