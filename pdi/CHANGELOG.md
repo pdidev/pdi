@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#434](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/434)
 * Create a method that dereferences a pointer type and returns the data as a new Reference.
   [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
+* Fixed compilation with Python version > 3.12
 
 #### Security
 
