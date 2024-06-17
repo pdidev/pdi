@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+##############################################################################
+# Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# * Neither the names of CEA, nor the names of the contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written  permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+##############################################################################
+
+import argparse
+import os
+import pathlib
+import random
+import string
+import subprocess
+import sys
+import yaml
+
+PDI_DIR = pathlib.Path(__file__).parent.parent.absolute()
+
+
+def gen_script(command_list):
+    if isinstance(command_list, str):
+        return command_list
+    return "; ".join([gen_script(scr) for scr in command_list])
+
+
+def launch_docker_test(image, script, no_pull=False):
+    # Generate a random name for our temporary docker volume
+    volume_name = ''.join(random.choice(string.ascii_letters)
+                          for i in range(32))
+
+    # Pull the user-specified image
+    if not no_pull:
+        subprocess.run(["docker", "image", "pull", image], check=True)
+
+    # Get the UID required from the image
+    image_info = yaml.load(
+        subprocess.run(["docker", "run", "--entrypoint", "id", image],
+                       capture_output=True, check=True).stdout,
+        Loader=yaml.BaseLoader)
+    uid = image_info[0]["Config"]["User"]
+    try:
+        uid = str(int(uid))
+    except:
+        pass
+
+    # Create a volume
+    subprocess.run(["docker", "volume", "create", volume_name],
+                   capture_output=True, check=True)
+
+    try:
+        # Populate the volume with the data (and chown it to the right UID)
+        subprocess.run(["docker", "run", "--read-only", "--rm",
+                        "-v", str(PDI_DIR)+":/data/:ro",
+                        "--mount", "source="+volume_name+",destination=/builds/pdidev/",
+                        "-u", "0:0",
+                        "alpine:3",
+                        "/bin/sh", "-c",
+                        "cp -fa /data /builds/pdidev/pdi && chown -R " +
+                        str(uid)
+                        + " /builds/pdidev/pdi",
+                        ], check=True)
+
+        # Run the user-specified image with the just populated volume
+        subprocess.run(["docker", "run", "--rm",
+                        "--mount", "source="+volume_name+",destination=/builds/pdidev/,readonly",
+                        "-e", "MAKEFLAGS",
+                        "--shm-size=5g",
+                        image,
+                        "bash", "-c", script
+                        ], check=True)
+    finally:
+        # Remove the volume
+        subprocess.run(["docker", "volume", "rm", volume_name],
+                       capture_output=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(add_help=False,
+                                     description='Runs a docker job described in a .gitlab-ci.yml'
+                                     + ' file.')
+    parser.add_argument('--no-pull', '-p', dest='pull', action='store_false', default=True,
+                        help='do not force-pull the docker images and use the local cache if'
+                        + ' possible')
+    parser.add_argument('--pull', dest='pull', action='store_true',
+                        help='cancels a previous --no-pull')
+    parser.add_argument('--help', '-h', action='help',
+                        help='show this help message and exit')
+    parser.add_argument('test_name', default='local',
+                        help='name of the test in the .gitlab-ci.yml file')
+    args = parser.parse_args()
+
+    gitlab_ci_path = PDI_DIR/".gitlab-ci.yml"
+    try:
+        gitlab_ci = yaml.load(open(gitlab_ci_path, 'r'),
+                              Loader=yaml.BaseLoader)
+    except FileNotFoundError:
+        print(f"*** Error: unable to open file "
+              f"`{gitlab_ci_path.relative_to(pathlib.Path.cwd())}'", file=sys.stderr)
+        exit(1)
+
+    if args.test_name not in gitlab_ci:
+        print(f"*** Error: {args.test_name} is not a valid entry in "
+              f"`{gitlab_ci_path.relative_to(pathlib.Path.cwd())}', available options are:\n - " +
+              "\n - ".join([k for k in gitlab_ci.keys()
+                           if not k.startswith('.')]),
+              file=sys.stderr)
+        exit(1)
+
+    image = gitlab_ci[args.test_name]["image"]
+    script = gen_script(["set -e", "cd /builds/pdidev/pdi",
+                        gitlab_ci[args.test_name]["script"]])
+
+    launch_docker_test(image, script, not args.pull)
+
+
+if __name__ == "__main__":
+    main()

@@ -28,30 +28,48 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-.shared_script: &shared_script
-  - export DOCKER_RUNNER=gitlab
-  - export MAKEFLAGS='-j 4'
-  - export CTEST_FLAGS="--output-junit ${PWD}/tests.xml"
-  - export TEST_DIR=/tmp
-  - if [ -d /tmpfs ]; then export TEST_DIR=/tmpfs; export TMPDIR=/tmpfs; fi
-  - bash tools/build_scripts/build_and_run.sh
 
-.default_run: &default_run [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
 
-pages:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v2
-  variables: { GIT_SUBMODULE_STRATEGY: recursive }
-  script:
-    - |
-      cmake -DBUILD_DOCUMENTATION=ON -DBUILD_BENCHMARKING=OFF -DBUILD_TESTING=OFF pdi
-      if make doc 2>&1 | tee >(cat>&2) | grep ' warning: ' > /dev/null
-      then
-        make doc 2>&1 | tee >(cat>&2) | grep ' warning: '
-        exit 1
-      fi
-      mv docs/html "$CI_PROJECT_DIR/public"
-  artifacts: { paths: [ public ] }
+.build_and_run_all_tests:
+  only: &default_run [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
+  script: |
+    JOBID="$(echo "${CI_JOB_NAME}"|md5sum|cut -b 1)"
+    if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
+    export DOCKER_RUNNER=gitlab
+    export MAKEFLAGS='-j 4'
+    export CTEST_FLAGS="--output-junit ${PWD}/tests.xml"
+    if [ -d /tmpfs ]
+    then
+      export TMPDIR=/tmpfs
+      export TEST_DIR="$(mktemp -p /tmpfs -d pdibuild.XXXXX)"
+    fi
+    ./bin/build_and_run_all_tests
+  artifacts:
+    when: always
+    reports: { junit: ./tests.xml }
+
+
+spack:
+  extends: .build_and_run_all_tests
+  parallel:
+    matrix:
+    - version:  ['latest', 'oldest']
+      compiler: ['gcc', 'clang']
+      mpi:      ['openmpi', 'mpich']
+      level:    ['mini', 'all']
+  image: ghcr.io/pdidev/spack/${version}/${compiler}/${mpi}/${level}:v3
+
+
+debuntu:
+  extends: .build_and_run_all_tests
+  parallel:
+    matrix:
+    - base: ['ubuntu/focal', 'ubuntu/rolling', 'debian/oldstable', 'debian/unstable']
+      mpi: ['openmpi', 'mpich']
+      variant: ['mini', 'all']
+  image: ghcr.io/pdidev/${base}/${mpi}/${variant}:v3
+
+
 
 indentation:
   only: *default_run
@@ -60,124 +78,26 @@ indentation:
     entrypoint: ['/bin/sh', '-c']
   script: 'run-clang-format --color=always -r .'
 
-spack_oldest_clang_openmpi_all:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/oldest/clang/openmpi/all:v2
-  script:
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
 
-spack_oldest_clang_openmpi_mini:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/oldest/clang/openmpi/mini:v2
-  script:
-    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
 
-spack_oldest_gcc_openmpi_all:
+pages:
   only: *default_run
-  image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/all:v2
-  script:
-    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
+  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v3
+  variables: { GIT_SUBMODULE_STRATEGY: recursive }
+  script: |
+    cmake -DBUILD_DOCUMENTATION=ON -DBUILD_BENCHMARKING=OFF -DBUILD_TESTING=OFF pdi
+    if make doc 2>&1 | tee >(cat>&2) | grep ' warning: ' > /dev/null
+    then
+      make doc 2>&1 | tee >(cat>&2) | grep ' warning: '
+      exit 1
+    fi
+    mv docs/html "$CI_PROJECT_DIR/public"
+  artifacts: { paths: [ public ] }
 
-spack_oldest_gcc_openmpi_mini:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/oldest/gcc/openmpi/mini:v2
-  script:
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
-
-spack_latest_clang_openmpi_all:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/latest/clang/openmpi/all:v2
-  script:
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
-
-spack_latest_clang_openmpi_mini:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/latest/clang/openmpi/mini:v2
-  script:
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
-
-spack_latest_gcc_openmpi_all:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v2
-  script:
-    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
-
-spack_latest_gcc_openmpi_mini:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/mini:v2
-  script:
-    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
-
-ubuntu_bionic_openmpi_mini:
-  only: *default_run
-  image: ghcr.io/pdidev/ubuntu/bionic/openmpi/mini:v2
-  script:
-    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
-
-ubuntu_bionic_mpich_mini:
-  only: *default_run
-  image: ghcr.io/pdidev/ubuntu/bionic/mpich/mini:v2
-  script:
-    - export PDI_PLUGIN_PATH=/tmp/pdi_plugins
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
-
-ubuntu_bionic_openmpi_all:
-  only: *default_run
-  image: ghcr.io/pdidev/ubuntu/bionic/openmpi/all:v2
-  script:
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
-
-ubuntu_bionic_mpich_all:
-  only: *default_run
-  image: ghcr.io/pdidev/ubuntu/bionic/mpich/all:v2
-  script:
-    - *shared_script
-  artifacts:
-    when: always
-    reports: { junit: ./tests.xml }
 
 pages-deploy:
   only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
   stage: deploy
   image: curlimages/curl
-  script:
-    - |
-        curl -s -u "jbigot:${GITHUB_SITE_DEPLOY_KEY}" -H 'Accept: application/vnd.github.v3+json' -X POST "https://api.github.com/repos/pdidev/pdidev.github.io/dispatches" -d '{ "event_type": "do_gitlab_deploy" }'
+  script: |
+    curl -s -u "jbigot:${GITHUB_SITE_DEPLOY_KEY}" -H 'Accept: application/vnd.github.v3+json' -X POST "https://api.github.com/repos/pdidev/pdidev.github.io/dispatches" -d '{ "event_type": "do_gitlab_deploy" }'

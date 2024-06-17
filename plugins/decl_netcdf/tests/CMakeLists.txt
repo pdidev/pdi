@@ -24,9 +24,13 @@
 #=============================================================================
 
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 
-find_package(GTest 1.8.0 REQUIRED)
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../../vendor/googletest-b4aaf97/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -45,7 +49,7 @@ endif()
 
 
 add_executable(decl_netcdf_tests decl_netcdf_tests.cxx)
-target_link_libraries(decl_netcdf_tests PDI::PDI_plugins Threads::Threads GTest::GTest GTest::Main)
+target_link_libraries(decl_netcdf_tests PDI::PDI_plugins Threads::Threads GTest::gtest GTest::gtest_main)
 target_compile_features(decl_netcdf_tests PUBLIC cxx_std_17)
 gtest_discover_tests(decl_netcdf_tests)
 

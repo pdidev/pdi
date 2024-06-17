@@ -23,8 +23,13 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
-find_package(GTest 1.8.0 REQUIRED)
+cmake_minimum_required(VERSION 3.16...3.29)
+
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../../vendor/googletest-b4aaf97/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -43,5 +48,5 @@ endif()
 
 add_executable(serialize_tests serialize_tests.cxx)
 target_compile_features(serialize_tests PUBLIC cxx_std_17)
-target_link_libraries(serialize_tests PDI::PDI_C GTest::GTest GTest::Main)
+target_link_libraries(serialize_tests PDI::PDI_C GTest::gtest GTest::gtest_main)
 gtest_discover_tests(serialize_tests)

@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 enable_language(Fortran)
 
 # Includes

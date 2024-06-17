@@ -22,9 +22,9 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 
-find_package(Python3Path REQUIRED COMPONENTS Interpreter)
+find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter)
 set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency")
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../../cmake/runtest-dir")
