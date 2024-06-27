@@ -308,11 +308,7 @@ void Dnc_file_context::execute()
 			}
 			
 			for (auto&& size_of : m_sizeof) {
-				Dnc_variable* variable = this->variable(size_of.first, size_of.second, variables_holder);
-				variables_to_get.emplace_back(variable);
-				
-				// read this variable
-				nc_file->read_variable(*variable);
+				nc_file->get_sizeof_variable(size_of.first, size_of.second, m_ctx.desc(size_of.first).ref());
 			}
 		} else {
 			nc_file.reset(new Dnc_netcdf_file{m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator});
