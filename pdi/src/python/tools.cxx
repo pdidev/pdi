@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 * All rights reserved.
 *
@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <vector>
 
 #include "pdi/array_datatype.h"
@@ -46,7 +47,6 @@ namespace PDI {
 
 using namespace pybind11::literals;
 using std::dynamic_pointer_cast;
-using std::move;
 using std::vector;
 
 namespace {
@@ -70,7 +70,7 @@ bool has_record_inside(Datatype_sptr type)
 
 } // namespace
 
-pybind11::object to_python(Ref r)
+pybind11::object to_python(Ref r, bool force_const)
 {
 	if (has_record_inside(r.type())) {
 		return pybind11::cast(Python_ref_wrapper{r});
@@ -152,23 +152,26 @@ pybind11::object to_python(Ref r)
 		cumulated_stride = *stride;
 	}
 	
-	uint8_t* ptr;
-	if (Ref_w r_w{r}) {
-		ptr = static_cast<uint8_t*>(r_w.get());
-	} else if (Ref_r r_r{r}) {
-		ptr = static_cast<uint8_t*>(const_cast<void*>(r_r.get()));
-		//      pybind11::detail::array_descriptor_proxy(result.ptr())->flags &= ~pybind11::detail::npy_api::NPY_ARRAY_WRITEABLE_;
-	}
+	ssize_t offset = 0;
 	for (int ii = 0; ii < ndim; ++ii) {
-		ptr += starts[ii] * strides[ii];
+		offset += starts[ii] * strides[ii];
 	}
 	
-	Ref* pr = new Ref{r};
-	pybind11::array result = pybind11::array{pytype, move(shape), move(strides), ptr, pybind11::capsule{pr, [](void* pr)
-	{
-		delete static_cast<Ref*>(pr);
-	}}};
-	return result;
+	if ( !force_const ) {
+		if ( Ref_w r_w{r} ) {
+			return pybind11::array{pytype, std::move(shape), std::move(strides), static_cast<uint8_t*>(r_w.get())+offset, pybind11::capsule{new Ref{r}, [](void* pr)
+				{
+					delete static_cast<Ref*>(pr);
+				}}};
+		}
+	}
+	if (Ref_r r_r{r}) {
+		return pybind11::array{pytype, std::move(shape), std::move(strides), static_cast<const uint8_t*>(r_r.get())+offset, pybind11::capsule{new Ref{r}, [](void* pr)
+			{
+				delete static_cast<Ref*>(pr);
+			}}};
+	}
+	return pybind11::none();
 }
 
 Datatype_sptr python_type(const pybind11::array& a)

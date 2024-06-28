@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 * All rights reserved.
 *
@@ -101,14 +101,7 @@ PYBIND11_MODULE(_pdi, m)
 	m.attr("__name__") = "pdi._pdi"; // make this a private submodule of pdi
 	m.doc() = "PDI python public application API";
 	
-	static pybind11::exception<Error> exc(m, "Error");
-	pybind11::register_exception_translator([](std::exception_ptr p) {
-		try {
-			if (p) std::rethrow_exception(p);
-		} catch (const Error& e) {
-			exc(e.what());
-		}
-	});
+	pybind11::register_exception<Error>(m, "Error");
 	
 	pyenu<PDI_inout_t>(m, "Inout").value("IN", PDI_IN).value("OUT", PDI_OUT).value("INOUT", PDI_INOUT).value("NONE", PDI_NONE).export_values();
 	
@@ -167,10 +160,8 @@ PYBIND11_MODULE(_pdi, m)
 	[](const char* name, PDI_inout_t inout) {
 		Paraconf_wrapper fw;
 		Data_descriptor& desc = Global_context::context()[name];
-		pybind11::object result = to_python(desc.ref());
 		desc.share(desc.ref(), false, false);
-		if (!(inout & PDI_OUT)) pybind11::detail::array_descriptor_proxy(result.ptr())->flags &= ~pybind11::detail::npy_api::NPY_ARRAY_WRITEABLE_;
-		return result;
+		return to_python(desc.ref(), !(inout & PDI_OUT));
 	},
 	"Requests for PDI to access a data buffer"
 	);

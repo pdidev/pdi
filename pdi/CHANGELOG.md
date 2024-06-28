@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Exit script if shell is unsupported
   [#434](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/434)
 * Fixed compilation with Python version > 3.12
+* Stop using PyBind11 internals to support latest releases.
+  [#448](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/448)
 
 #### Security
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -34,12 +34,13 @@
 
 namespace PDI {
 
-/** Function takes reference that is converted to python numpy array
+/** Wraps a PDI reference in a python object
  *
- * \param r PDI reference to convert
- * \return converted python numpy array from PDI reference
+ * \param r PDI reference to wrap
+ * \param force_const whether the object should be const even if the ref can be write accessed
+ * \return python object wrapper for the PDI reference
  */
-pybind11::object PDI_EXPORT to_python(Ref r);
+pybind11::object PDI_EXPORT to_python(Ref r, bool force_const=false);
 
 /** Function takes python numpy array and converts it into PDI datatype
  *
