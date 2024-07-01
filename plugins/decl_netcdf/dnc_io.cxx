@@ -38,7 +38,7 @@ Dnc_io::Dnc_io(PDI::Context& ctx, PC_tree_t config):
 	if (!PC_status(when_node)) {
 		m_when = PDI::Expression{PDI::to_string(when_node)};
 	}
-
+	
 	PC_tree_t sizeof_node = PC_get(config, ".size_of");
 	if (!PC_status(sizeof_node)) {
 		m_sizeof_var = PDI::Expression{PDI::to_string(sizeof_node)};

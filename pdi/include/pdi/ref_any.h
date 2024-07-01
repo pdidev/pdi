@@ -545,7 +545,7 @@ public:
 		}
 		throw Type_error{"Expected scalar, found invalid type instead: {}", type()->debug_string()};
 	}
-
+	
 	/** Assign a scalar value to the data buffer according to its type
 	 *  \param value scalar value to assign to the buffer
 	 */
@@ -586,7 +586,7 @@ public:
 					*static_cast<int64_t*>(this->get()) = value;
 					return;
 				default:
-				    std::cout<<scalar_type->buffersize()<<std::endl;
+					std::cout<<scalar_type->buffersize()<<std::endl;
 					throw Type_error{"Unknown size of integer datatype"};
 				}
 			} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
@@ -605,8 +605,7 @@ public:
 			} else {
 				throw Type_error{"Unknown datatype to get value"};
 			}
-		}
-		else {
+		} else {
 			throw Type_error{"Expected scalar, found invalid type instead: {}", type()->debug_string()};
 		}
 	}

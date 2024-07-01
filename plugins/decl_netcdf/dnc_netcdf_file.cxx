@@ -558,7 +558,7 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	}
 	
 	// get group path and variable name
-	auto [group_path, variable_name] = split_group_and_variable(variable.path()); 
+	auto [group_path, variable_name] = split_group_and_variable(variable.path());
 	// get dest_i
 	auto group_it = m_groups.find(group_path);
 	if (group_it == m_groups.end()) {
@@ -664,23 +664,22 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std:
 	    "cannot get size of `{}", sizeof_var);
 	    
 	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref.type())) {
-		if(var_dim!=1) PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Incompatible data size for {}. Expecting size {}, but provided with size=1",sizeof_var, var_dim};
+		if (var_dim!=1) PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Incompatible data size for {}. Expecting size {}, but provided with size=1",sizeof_var, var_dim};
 		nc_try(nc_inq_dimlen(src_id, dimid[0], &dimlen[0]),
 		    "Cannot inquire dimension length");
-		
+		    
 		PDI::Ref_w(ref).scalar_assign(dimlen[0]);
 	}
-
-    else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref.type())) {
+	
+	else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref.type())) {
 		//TO DO: check if var_dim == ref.array_length
 		for (int i=0; i<var_dim; i++) {
 			nc_try(nc_inq_dimlen(src_id, dimid[i], &dimlen[i]),
-				"Cannot inquire dimension length");
-			
+			    "Cannot inquire dimension length");
+			    
 			PDI::Ref_w(ref[i]).scalar_assign(dimlen[i]);
 		}
-	}
-	else {
+	} else {
 		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Incompatible data type for {}. Expecting scalar or array", sizeof_var};
 	}
 }
