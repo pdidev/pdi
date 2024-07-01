@@ -794,12 +794,13 @@ TEST(decl_netcdf_test, 07)
     // read data
     input = 1;
     PDI_expose("input", &input, PDI_OUT);
-    long array_size = 0;
+    int array_size = 0;
     PDI_expose("array_size", &array_size, PDI_IN);
     PDI_expose("int_scalar", &int_scalar, PDI_IN);
     PDI_expose("int_array", int_array, PDI_IN);
 
     // verify
+    printf("array_size = %d\n", array_size);
     printf("%d ?= %d\n", int_scalar, 42);
     ASSERT_EQ(int_scalar, 42);
     ASSERT_EQ(array_size, 32);
