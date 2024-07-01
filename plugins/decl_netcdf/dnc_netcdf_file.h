@@ -146,7 +146,7 @@ public:
 	void get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w);
 	
 	
-	void get_sizeof_variable(const std::string variable, const std::string sizeof_var, PDI::Ref_w ref_w);
+	void get_sizeof_variable(const std::string variable, const std::string sizeof_var, PDI::Ref ref);
 	
 	/// Destructor
 	~Dnc_netcdf_file();

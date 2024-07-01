@@ -50,6 +50,8 @@ protected:
 	
 	/// Counts of hyperslab of this I/O
 	std::vector<PDI::Expression> m_subsize;
+
+	PDI::Expression m_sizeof_var;
 	
 public:
 	/** Creates I/O operation (read or write) on NetCDF file
@@ -65,6 +67,12 @@ public:
 	 *  \return variable path of this I/O, empty if no variable path
 	 */
 	std::string variable_path() const;
+
+	/** Getter for size of variable path
+	 *
+	 *  \return size of variable path of this I/O, empty if no variable path
+	 */
+	std::string sizeof_variable_path() const;
 	
 	/** Getter for variable name
 	 *

@@ -25,7 +25,7 @@
 
 #ifndef PDI_REF_ANY_H_
 #define PDI_REF_ANY_H_
-
+#include <iostream>
 #include <algorithm>
 #include <cassert>
 #include <functional>
@@ -544,6 +544,71 @@ public:
 			}
 		}
 		throw Type_error{"Expected scalar, found invalid type instead: {}", type()->debug_string()};
+	}
+
+	/** Assign a scalar value to the data buffer according to its type
+	 *  \param value scalar value to assign to the buffer
+	 */
+	template <class T>
+	void scalar_assign(T value)
+	{
+		static_assert(W, "Cannot assign a scalar value to Ref without write access");
+		if (auto&& scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(type())) {
+			if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
+				switch (scalar_type->buffersize()) {
+				case 1L:
+					*static_cast<uint8_t*>(this->get()) = value;
+					return;
+				case 2L:
+					*static_cast<uint16_t*>(this->get()) = value;
+					return;
+				case 4L:
+					*static_cast<uint32_t*>(this->get()) = value;
+					return;
+				case 8L:
+					*static_cast<uint64_t*>(this->get()) = value;
+					return;
+				default:
+					throw Type_error{"Unknown size of unsigned integer datatype"};
+				}
+			} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
+				switch (scalar_type->buffersize()) {
+				case 1L:
+					*static_cast<int8_t*>(this->get()) = value;
+					return;
+				case 2L:
+					*static_cast<int16_t*>(this->get()) = value;
+					return;
+				case 4L:
+					*static_cast<int32_t*>(this->get()) = value;
+					return;
+				case 8L:
+					*static_cast<int64_t*>(this->get()) = value;
+					return;
+				default:
+				    std::cout<<scalar_type->buffersize()<<std::endl;
+					throw Type_error{"Unknown size of integer datatype"};
+				}
+			} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
+				switch (type()->buffersize()) {
+				case 4L: {
+					*static_cast<float*>(this->get()) = value;
+					return;
+				}
+				case 8L: {
+					*static_cast<double*>(this->get()) = value;
+					return;
+				}
+				default:
+					throw Type_error{"Unknown size of float datatype"};
+				}
+			} else {
+				throw Type_error{"Unknown datatype to get value"};
+			}
+		}
+		else {
+			throw Type_error{"Expected scalar, found invalid type instead: {}", type()->debug_string()};
+		}
 	}
 	
 	/** Checks whether this is a null reference
