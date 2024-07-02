@@ -672,7 +672,7 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std:
 	}
 	
 	else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref.type())) {
-		if(var_dim != array_type->size()) {
+		if (var_dim != array_type->size()) {
 			PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Incoherent data size. Data {} defined with size {}, but provided with {}", variable, array_type->size(), var_dim};
 		}
 		for (int i=0; i<var_dim; i++) {
