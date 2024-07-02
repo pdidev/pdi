@@ -145,7 +145,12 @@ public:
 	 */
 	void get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w);
 	
-	
+	/** Gets variable from the file
+	 *
+	 * \param variable variable to affect its value
+	 * \param sizeof_variable variable to read its size
+	 * \param ref reference where the data will be written
+	 */
 	void get_sizeof_variable(const std::string variable, const std::string sizeof_var, PDI::Ref ref);
 	
 	/// Destructor
