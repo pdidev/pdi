@@ -25,7 +25,6 @@
 
 #ifndef PDI_REF_ANY_H_
 #define PDI_REF_ANY_H_
-#include <iostream>
 #include <algorithm>
 #include <cassert>
 #include <functional>
@@ -586,7 +585,6 @@ public:
 					*static_cast<int64_t*>(this->get()) = value;
 					return;
 				default:
-					std::cout<<scalar_type->buffersize()<<std::endl;
 					throw Type_error{"Unknown size of integer datatype"};
 				}
 			} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
