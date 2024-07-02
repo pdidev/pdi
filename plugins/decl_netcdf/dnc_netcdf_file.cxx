@@ -32,7 +32,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+#include <iostream>
 #include <spdlog/spdlog.h>
 
 #include <pdi/array_datatype.h>
@@ -672,7 +672,9 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std:
 	}
 	
 	else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref.type())) {
-		//TO DO: check if var_dim == ref.array_length
+		if(var_dim != array_type->size()) {
+			PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Incoherent data size. Data {} defined with size {}, but provided with {}", variable, array_type->size(), var_dim};
+		}
 		for (int i=0; i<var_dim; i++) {
 			nc_try(nc_inq_dimlen(src_id, dimid[i], &dimlen[i]),
 			    "Cannot inquire dimension length");
