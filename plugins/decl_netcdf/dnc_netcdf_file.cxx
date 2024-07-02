@@ -664,7 +664,9 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std:
 	    "cannot get size of `{}", sizeof_var);
 	    
 	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref.type())) {
-		if (var_dim!=1) PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Incompatible data size for {}. Expecting size {}, but provided with size=1",sizeof_var, var_dim};
+		if (var_dim != 1 ) {
+			throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Incoherent data size. Data {} defined with size=1 , but {} has size {}", variable, sizeof_var, var_dim};
+		}
 		nc_try(nc_inq_dimlen(src_id, dimid[0], &dimlen[0]),
 		    "Cannot inquire dimension length");
 		    
