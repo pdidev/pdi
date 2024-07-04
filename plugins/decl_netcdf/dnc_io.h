@@ -68,9 +68,9 @@ public:
 	 */
 	std::string variable_path() const;
 	
-	/** Getter for size of variable path
+	/** Getter for size_of variable path
 	 *
-	 *  \return size of variable path of this I/O, empty if no variable path
+	 *  \return size_of variable path of this I/O, empty if no variable path
 	 */
 	std::string sizeof_variable_path() const;
 	

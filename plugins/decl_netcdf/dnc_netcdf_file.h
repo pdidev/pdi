@@ -151,7 +151,7 @@ public:
 	 * \param sizeof_variable variable to read its size
 	 * \param ref reference where the data will be written
 	 */
-	void get_sizeof_variable(const std::string variable, const std::string sizeof_var, PDI::Ref ref);
+	void get_sizeof_variable(const std::string& variable, const std::string& sizeof_var, PDI::Ref ref);
 	
 	/// Destructor
 	~Dnc_netcdf_file();

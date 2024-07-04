@@ -632,7 +632,7 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	}
 }
 
-void Dnc_netcdf_file::get_sizeof_variable(const std::string variable, const std::string sizeof_var, PDI::Ref ref)
+void Dnc_netcdf_file::get_sizeof_variable(const std::string& variable, const std::string& sizeof_var, PDI::Ref ref)
 {
 	if (!PDI::Ref_w(ref)) {
 		throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Cannot read `{}'. Need write access to read it from file", sizeof_var};
