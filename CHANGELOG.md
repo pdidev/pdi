@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* NetCDF plugin now support the size_of attribute, fixes
+  [#446](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/446)
 
 ### Changed
 
@@ -23,14 +25,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 
-## [1.7.1]
+## [1.7.1] 2024-07-21
 
 ### Fixed
 * Fix the installation of embedded PyYAML, fixes
   [#455](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/455)
 
 
-## [1.7.0]
+## [1.7.0] 2024-07-17
 
 ### Fixed
 * Updated the embedded version of PyYAML to 6.0.1 to fix an incompatibility with
