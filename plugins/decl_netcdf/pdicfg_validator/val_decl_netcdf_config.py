@@ -65,6 +65,7 @@ def val_read_write_value(key, value_node, data_refs_list):
         # means it is a reference to data
         data_refs_list.append(variable_name)
     val_when(value_node.get("when", False), data_refs_list)
+    val_when(value_node.get("size_of", False), data_refs_list)
     
     var_selection = value_node.get("variable_selection", False)
     if var_selection:
