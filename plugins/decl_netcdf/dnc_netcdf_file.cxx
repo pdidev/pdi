@@ -656,7 +656,7 @@ void Dnc_netcdf_file::get_sizeof_variable(const std::string& variable, const std
 	int var_dim;
 	nc_try(nc_inq_varndims(src_id, var_id, &var_dim),
 	    "Cannot inquire variable dimension counts from (var_id= {}, nc_id = {})", sizeof_var, src_id);
-	
+	    
 	std::vector<int> dimid(var_dim);
 	std::vector<size_t> dimlen(var_dim);
 	
