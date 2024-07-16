@@ -26,6 +26,10 @@ from pdicfg_validator import add_to_data_ref, val_desc
 
 variables = []
 
+def val_sizeof(sizeof_node, data_refs_list):
+    if sizeof_node:
+        add_to_data_ref(sizeof_node, data_refs_list)
+
 def val_when(when_node, data_refs_list):
     if when_node:
         add_to_data_ref(when_node, data_refs_list)
@@ -65,7 +69,7 @@ def val_read_write_value(key, value_node, data_refs_list):
         # means it is a reference to data
         data_refs_list.append(variable_name)
     val_when(value_node.get("when", False), data_refs_list)
-    val_when(value_node.get("size_of", False), data_refs_list)
+    val_sizeof(value_node.get("size_of", False), data_refs_list)
     
     var_selection = value_node.get("variable_selection", False)
     if var_selection:
