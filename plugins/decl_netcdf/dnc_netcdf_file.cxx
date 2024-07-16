@@ -560,7 +560,7 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	
 	// get group path and variable name
 	auto [group_path, variable_name] = split_group_and_variable(variable.path());
-	// get dest_i
+	// get dest_id
 	auto group_it = m_groups.find(group_path);
 	if (group_it == m_groups.end()) {
 		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Cannot find group that should be created: {}", group_path};
