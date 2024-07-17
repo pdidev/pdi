@@ -10,17 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [Unreleased]
+## [1.7.0] - 2024-07-17
 
 ### For users
-
-#### Added
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
 
 #### Fixed
 * Fix unexpected behavior with zsh where env variables were set incorrectly.
@@ -30,24 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Stop using PyBind11 internals to support latest releases.
   [#448](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/448)
 
-#### Security
-
 
 ### For plugin developers
 
 #### Added
 * Create a method that dereferences a pointer type and returns the data as a new Reference.
   [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
-
-#### Changed
-
-#### Deprecated
-
-#### Removed
-
-#### Fixed
-
-#### Security
 
 
 

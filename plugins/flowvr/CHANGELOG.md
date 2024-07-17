@@ -4,20 +4,10 @@ All notable changes to the FlowVR plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
+## [1.7.0] - 2024-07-17
 
 ### Fixed
 * Fixed compilation with Python version > 3.12
-
-### Security
 
 
 ## [1.6.0] - 2023-03-08
