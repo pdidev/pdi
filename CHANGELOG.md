@@ -7,15 +7,15 @@ changes for PDI library proper are in [`pdi/CHANGELOG.md`](pdi/CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
 
-### Added
+## [1.7.1]
 
-### Changed
+### Fixed
+* Fix the installation of embedded PyYAML, fixes
+  [#455](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/455)
 
-### Deprecated
 
-### Removed
+## [1.7.0]
 
 ### Fixed
 * Updated the embedded version of PyYAML to 6.0.1 to fix an incompatibility with
@@ -24,9 +24,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Update PDI tested versions of CMake from 3.10 to 3.25.
   Fixed CMake policy warnings introduced in v3.24 and v3.27.6, fixes
   [#437](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/437)
-
-
-### Security
 
 
 ## [1.6.0] - 2023-03-08

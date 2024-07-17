@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -586,7 +586,6 @@ if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
 			--prefix "<INSTALL_DIR>"
 			--no-cache-dir
 			--ignore-installed
-			install
 			"<SOURCE_DIR>"
 		DEPENDS yaml
 	)
