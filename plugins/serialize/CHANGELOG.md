@@ -15,9 +15,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Fixed compilation with Python version > 3.12
 
 ### Security
+
+
+## [1.7.0] - 2024-07-17
+
+### Fixed
+* Fixed compilation with Python version > 3.12
 
 
 ## [1.5.3] - 2022-05-31

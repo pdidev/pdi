@@ -23,12 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
-* Fix unexpected behavior with zsh where env variables were set incorrectly.
-  Exit script if shell is unsupported
-  [#434](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/434)
-* Fixed compilation with Python version > 3.12
-* Stop using PyBind11 internals to support latest releases.
-  [#448](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/448)
 
 #### Security
 
@@ -36,8 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### For plugin developers
 
 #### Added
-* Create a method that dereferences a pointer type and returns the data as a new Reference.
-  [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
 
 #### Changed
 
@@ -48,6 +40,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixed
 
 #### Security
+
+
+
+## [1.7.0] - 2024-07-17
+
+### For users
+
+#### Fixed
+* Fix unexpected behavior with zsh where env variables were set incorrectly.
+  Exit script if shell is unsupported
+  [#434](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/434)
+* Fixed compilation with Python version > 3.12
+* Stop using PyBind11 internals to support latest releases.
+  [#448](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/448)
+
+
+### For plugin developers
+
+#### Added
+* Create a method that dereferences a pointer type and returns the data as a new Reference.
+  [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
 
 
 
