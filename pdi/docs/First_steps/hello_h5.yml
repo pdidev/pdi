@@ -1,0 +1,33 @@
+# inspired from heat-sim/io.yml
+metadata: # type of small values for which PDI keeps a copy
+  nx: int #Domain size per proc
+  ny: int #Domain size per proc
+  mpi_max_coords_x: int #MPI decomposition
+  mpi_max_coords_y: int #MPI decomposition
+  mpi_coords_x: int #MPI coordinate of the current process 
+  mpi_coords_y: int #MPI coordinate of the current process 
+  time: double #Time
+  nwrite: int #Index for naming files
+data:
+  main_field: { size: [ '$nx', '$ny' ], type: array, subtype: double } #Field of the current subdmain
+plugins:
+  trace: ~
+  pycall:
+    on_event:
+      testing:
+        exec: from plot_pdi import plot_bc2; plot_bc2()
+  mpi:
+  decl_hdf5: #Writing in hdf5
+    - file: test.h5
+      collision_policy: replace
+      on_event: write_data
+      datasets: #Dataset we are writing in: the whole solution
+        data:
+          type: array
+          subtype: double
+          size: ['$nx*$mpi_max_coords_x', '$ny*$mpi_max_coords_y']
+      write:
+        main_field: # the name of the data to write
+          dataset: data
+        
+        time:

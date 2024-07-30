@@ -22,6 +22,9 @@ C source code:
 Fortran source code:
 \include First_steps/hello_event.f90
 
+Julia source code:
+\include First_steps/hello_event.jl
+
 Let's analyze what happens in each line. Firstly we have PDI_init() function which take parameter of type `PC_tree_t`. It's a tree structure parsed from some YAML file, in our case we parse it with `paraconf` library build in %PDI. To parse a file we need to call `PC_parse_path` function passing file path as argument. The next step is to call an event in %PDI named "Hello World Event". At the end we have to call PDI_finalize(). The output from this program is presented below:
 ```
 [PDI][Trace-plugin][10:25:28] *** info: Welcome!
@@ -48,6 +51,9 @@ C source code:
 
 Fortran source code:
 \include First_steps/hello_data.f90
+
+Julia source code:
+\include First_steps/hello_data.jl
 
 Let's analyze new functions:
 - `PDI_share` shares access to the variable with %PDI. The first argument is a descriptor name and indicates what data we are sharing. The second one is pointer to our variable and the last one is access direction. `PDI_OUT` means data direction from application to %PDI, `PDI_IN` is a direction from %PDI to the program, `PDI_INOUT` includes both directions. 
@@ -79,6 +85,12 @@ Fortran source code:
 is the same as:
 \snippet First_steps/hello_expose.f90 expose
 
+Julia source code:
+\snippet First_steps/hello_expose.jl share_reclaim
+
+is the same as:
+\snippet First_steps/hello_expose.jl expose
+
 
 
 ## Hello Access {#fs_hello_access}
@@ -91,6 +103,9 @@ C source code:
 
 Fortran source code:
 \include First_steps/hello_access.f90
+
+Julia source code:
+\include First_steps/hello_access.jl
 
 
 We will focus on `print_secret_msg` function. If you don't understand what happens in `main` function, please see \ref fs_hello_data example. `PDI_access` sets our pointer to the data location. We need to pass `PDI_IN` because data flows from %PDI to our application. We also want to use `PDI_release`, because `PDI_reclaim` would end the sharing status of this descriptor and we reclaim this data later in `main` function.
