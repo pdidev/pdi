@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -49,6 +49,13 @@ endif()
 add_executable(decl_hdf5_tests decl_hdf5_tests.cxx)
 target_link_libraries(decl_hdf5_tests PDI::PDI_C GTest::GTest GTest::Main)
 gtest_discover_tests(decl_hdf5_tests)
+
+# compression test
+# if("${BUILD_HDF5_PARALLEL}")
+add_executable(decl_hdf5_deflate decl_hdf5_test_deflate.cxx)
+target_link_libraries(decl_hdf5_deflate PDI::PDI_C GTest::GTest GTest::Main ${HDF5_DEPS})
+gtest_discover_tests(decl_hdf5_deflate)
+# endif()
 
 # PDI_import/PDI_export
 if("${BUILD_HDF5_PARALLEL}")

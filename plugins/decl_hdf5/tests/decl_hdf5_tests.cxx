@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <pdi.h>
 #include <gtest/gtest.h>
-//#include <hdf5.h>
 
 /*
  * Name:                decl_hdf5_test.01
@@ -962,3 +961,5 @@ TEST(decl_hdf5_test, 07) {
 	PC_tree_destroy(&conf);
 
  }
+
+ 
