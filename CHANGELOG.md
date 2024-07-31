@@ -8,6 +8,13 @@ changes for PDI library proper are in [`pdi/CHANGELOG.md`](pdi/CHANGELOG.md).
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [1.7.2]
+
+### Fixed
+* Support installation with the latest version of python where setuptools is an external lib, fixes
+  [#457](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/457)
+
+
 ## [1.7.1]
 
 ### Fixed
