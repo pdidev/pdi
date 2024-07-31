@@ -211,7 +211,7 @@ if("${BUILD_FORTRAN}")
 		EMBEDDED_PATH "vendor/zpp-1.0.15"
 		VERSION 1.0.15
 		BUILD_IN_SOURCE ON
-		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "<INSTALL_DIR>/lib/zpp-venv"
+		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "--system-site-packages" "<INSTALL_DIR>/lib/zpp-venv"
 		BUILD_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" build
 		INSTALL_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" install "--install-data=<INSTALL_DIR>"
 	)
