@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 	/// References to the values of this descriptor
 	std::stack<std::unique_ptr<Ref_holder>> m_refs;
 
-	Datatype_template_ptr m_type;
+	Datatype_template_sptr m_type;
 
 	const std::string m_name;
 
@@ -75,9 +75,9 @@ public:
 
 	~Data_descriptor_impl() override;
 
-	void default_type(Datatype_template_ptr) override;
+	void default_type(Datatype_template_sptr) override;
 
-	Datatype_template_ptr default_type() override;
+	Datatype_template_sptr default_type() override;
 
 	bool metadata() const override;
 

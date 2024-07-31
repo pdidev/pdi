@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -48,7 +48,7 @@ struct Descriptor_test_handler {
 	
 	static Datatype_sptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
 	{
-		Datatype_template_ptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type;
+		Datatype_template_sptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type;
 		return desc_template->evaluate(global_ctx);
 	}
 	

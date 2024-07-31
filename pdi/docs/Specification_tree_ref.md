@@ -1106,7 +1106,7 @@ members:
   first_int:
     disp: 0
     type: int32
-  seconf_int:
+  second_int:
     disp: 4
     type: int32
 ```
@@ -1233,14 +1233,14 @@ C memory layout, where:
 type: struct
 members:
   - first_int: int32
-  - seconf_int: int32
+  - second_int: int32
 ```
 
 matches:
 ```C
 struct {
   int32_t first_int;
-  int32_t seconf_int;
+  int32_t second_int;
 };
 ```
 

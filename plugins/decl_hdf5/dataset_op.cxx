@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -55,7 +55,7 @@ using PDI::Array_datatype;
 using PDI::Context;
 using PDI::each;
 using PDI::Datatype;
-using PDI::Datatype_template_ptr;
+using PDI::Datatype_template_sptr;
 using PDI::Datatype_sptr;
 using PDI::Config_error;
 using PDI::Expression;
@@ -203,7 +203,7 @@ void Dataset_op::fletcher(Context& ctx, Expression value)
 	}
 }
 
-void Dataset_op::execute(Context& ctx, hid_t h5_file, hid_t xfer_lst, const unordered_map<string, Datatype_template_ptr>& dsets)
+void Dataset_op::execute(Context& ctx, hid_t h5_file, hid_t xfer_lst, const unordered_map<string, Datatype_template_sptr>& dsets)
 {
 	if (m_direction == READ) do_read(ctx, h5_file, xfer_lst);
 	else do_write(ctx, h5_file, xfer_lst, dsets);
@@ -325,7 +325,7 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	return dset_plist;
 }
 
-void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_ptr>& dsets)
+void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_sptr>& dsets)
 {
 	string dataset_name = m_dataset.to_string(ctx);
 	ctx.logger().trace("Preparing for writing `{}' dataset", dataset_name);

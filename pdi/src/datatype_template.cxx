@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -102,7 +102,7 @@ public:
 class Array_template: public Datatype_template
 {
 	/// Type of the elements contained in the array.
-	Datatype_template_ptr m_subtype;
+	Datatype_template_sptr m_subtype;
 
 	/// Number of elements the array can store
 	Expression m_size;
@@ -114,7 +114,7 @@ class Array_template: public Datatype_template
 	Expression m_subsize;
 
 public:
-	Array_template(Datatype_template_ptr subtype, Expression size, Expression start, Expression subsize, PC_tree_t datatype_tree)
+	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize, PC_tree_t datatype_tree)
 	    : Datatype_template(datatype_tree)
 	    , m_subtype{move(subtype)}
 	    , m_size{move(size)}
@@ -122,7 +122,7 @@ public:
 	    , m_subsize{move(subsize)}
 	{}
 
-	Array_template(Datatype_template_ptr subtype, Expression size, Expression start, Expression subsize, const Attributes_map& attributes = {})
+	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize, const Attributes_map& attributes = {})
 	    : Datatype_template(attributes)
 	    , m_subtype{move(subtype)}
 	    , m_size{move(size)}
@@ -150,11 +150,11 @@ public:
 		Expression m_displacement;
 
 		/// Type of the contained member
-		Datatype_template_ptr m_type;
+		Datatype_template_sptr m_type;
 
 		string m_name;
 
-		Member(Expression disp, Datatype_template_ptr type, string name)
+		Member(Expression disp, Datatype_template_sptr type, string name)
 		    : m_displacement{move(disp)}
 		    , m_type{move(type)}
 		    , m_name{move(name)}
@@ -202,10 +202,10 @@ class Struct_template: public Datatype_template
 public:
 	struct Member {
 		/// Type of the contained member
-		Datatype_template_ptr m_type;
+		Datatype_template_sptr m_type;
 		string m_name;
 
-		Member(Datatype_template_ptr type, string name)
+		Member(Datatype_template_sptr type, string name)
 		    : m_type{move(type)}
 		    , m_name{move(name)}
 		{}
@@ -255,15 +255,15 @@ public:
 
 class Pointer_template: public Datatype_template
 {
-	Datatype_template_ptr m_subtype;
+	Datatype_template_sptr m_subtype;
 
 public:
-	Pointer_template(Datatype_template_ptr subtype, PC_tree_t datatype_tree)
+	Pointer_template(Datatype_template_sptr subtype, PC_tree_t datatype_tree)
 	    : Datatype_template(datatype_tree)
 	    , m_subtype{std::move(subtype)}
 	{}
 
-	Pointer_template(Datatype_template_ptr subtype, const Attributes_map& attributes = {})
+	Pointer_template(Datatype_template_sptr subtype, const Attributes_map& attributes = {})
 	    : Datatype_template(attributes)
 	    , m_subtype{std::move(subtype)}
 	{}
@@ -279,13 +279,13 @@ public:
 		Expression m_displacement;
 
 		/// Type of the contained member
-		Datatype_template_ptr m_type;
+		Datatype_template_sptr m_type;
 
 		/** Creates new Element template with only type defined
 		 * 
 		 * \param[in] type type of the element
 		 */
-		Element(Datatype_template_ptr type)
+		Element(Datatype_template_sptr type)
 		    : m_type{move(type)}
 		{}
 
@@ -294,7 +294,7 @@ public:
 		 * \param[in] disp displacement of the element
 		 * \param[in] type type of the element
 		 */
-		Element(Expression disp, Datatype_template_ptr type)
+		Element(Expression disp, Datatype_template_sptr type)
 		    : m_displacement{move(disp)}
 		    , m_type{move(type)}
 		{}
@@ -413,7 +413,7 @@ void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>
 	}
 }
 
-Datatype_template_ptr to_array_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 {
 	{
 		string order_str = to_string(PC_get(node, ".order"), "");
@@ -435,7 +435,7 @@ Datatype_template_ptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		throw Config_error{node, "Array must have `subtype'"};
 	}
 
-	Datatype_template_ptr res_type = ctx.datatype(config_elem);
+	Datatype_template_sptr res_type = ctx.datatype(config_elem);
 
 	for (ssize_t ii = array_size.size() - 1; ii >= 0; --ii) {
 		res_type.reset(new Array_template(move(res_type), move(array_size[ii]), move(array_start[ii]), move(array_subsize[ii]), node));
@@ -484,7 +484,7 @@ vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t eleme
 	return result;
 }
 
-Datatype_template_ptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
 	Expression tuple_buffersize;
@@ -524,7 +524,7 @@ vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_
 	return members;
 }
 
-Datatype_template_ptr to_record_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
 	if (PC_status(buffersize_conf)) {
@@ -537,7 +537,7 @@ Datatype_template_ptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 	return unique_ptr<Record_template>{new Record_template{get_members(ctx, member_list_node), move(record_buffersize), node}};
 }
 
-Datatype_template_ptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
 {
 	vector<Struct_template::Member> members;
 	each_in_omap(PC_get(node, ".members"), [&](PC_tree_t member_name, PC_tree_t member_value_node) {
@@ -546,7 +546,7 @@ Datatype_template_ptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
 	return unique_ptr<Struct_template>{new Struct_template{std::move(members), node}};
 }
 
-Datatype_template_ptr to_pointer_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_pointer_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t subtype_conf = PC_get(node, ".subtype");
 	if (PC_status(subtype_conf)) {
@@ -595,7 +595,7 @@ Datatype_template::~Datatype_template() {}
 void add_scalar_datatype(Context& ctx, const string& name, Scalar_kind kind, size_t size)
 {
 	ctx.add_datatype(name, [kind, size](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr{new Scalar_template{kind, static_cast<long>(size), tree}};
+		return Datatype_template_sptr{new Scalar_template{kind, static_cast<long>(size), tree}};
 	});
 }
 
@@ -603,7 +603,7 @@ template <class S, S s>
 void add_scalar_datatype_T(Context& ctx, const string& name, size_t size)
 {
 	ctx.add_datatype(name, [&, size](Context&, PC_tree_t tree) {
-		return Datatype_template_ptr{new Scalar_template{s, static_cast<long>(size), tree}};
+		return Datatype_template_sptr{new Scalar_template{s, static_cast<long>(size), tree}};
 	});
 }
 
@@ -724,7 +724,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 			kind = PDI_CHARACTER_DEFAULT_KIND;
 		else if (kind < 0)
 			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
-		return Datatype_template_ptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
+		return Datatype_template_sptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
 	});
 	ctx.add_datatype("integer", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_INTEGER_DEFAULT_KIND);
@@ -732,7 +732,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 			kind = PDI_INTEGER_DEFAULT_KIND;
 		else if (kind < 0)
 			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
-		return Datatype_template_ptr{new Scalar_template{Scalar_kind::SIGNED, kind, tree}};
+		return Datatype_template_sptr{new Scalar_template{Scalar_kind::SIGNED, kind, tree}};
 	});
 	ctx.add_datatype("logical", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_LOGICAL_DEFAULT_KIND);
@@ -740,7 +740,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 			kind = PDI_LOGICAL_DEFAULT_KIND;
 		else if (kind < 0)
 			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
-		return Datatype_template_ptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
+		return Datatype_template_sptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
 	});
 	ctx.add_datatype("real", [](Context&, PC_tree_t tree) {
 		long kind = to_long(PC_get(tree, ".kind"), PDI_REAL_DEFAULT_KIND);
@@ -748,7 +748,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 			kind = PDI_REAL_DEFAULT_KIND;
 		else if (kind < 0)
 			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
-		return Datatype_template_ptr{new Scalar_template{Scalar_kind::FLOAT, kind, tree}};
+		return Datatype_template_sptr{new Scalar_template{Scalar_kind::FLOAT, kind, tree}};
 	});
 #endif // BUILD_FORTRAN
 }

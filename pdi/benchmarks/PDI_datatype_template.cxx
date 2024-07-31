@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +57,7 @@ public:
 
 BENCHMARK_F(PDI_Datatype_template, EvaluateScalar)(benchmark::State& state)
 {
-	PDI::Datatype_template_ptr scalar_datatype_template = context().datatype(PC_parse_string("int"));
+	PDI::Datatype_template_sptr scalar_datatype_template = context().datatype(PC_parse_string("int"));
 	for (auto _ : state) {
 		scalar_datatype_template->evaluate(context());
 	}
@@ -68,7 +69,7 @@ BENCHMARK_F(PDI_Datatype_template, EvaluateArray)(benchmark::State& state)
 	PDI::Ref size_ref {(void*)&size, [](void*){}, PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int)), true, false};
 	context().desc("size").share(size_ref, true, false);
 	PC_tree_t type_tree = PC_parse_string("{type: array, subtype: int, size: $size}");
-	PDI::Datatype_template_ptr array_datatype_template = context().datatype(type_tree);
+	PDI::Datatype_template_sptr array_datatype_template = context().datatype(type_tree);
 	for (auto _ : state) {
 		array_datatype_template->evaluate(context());
 	};
@@ -77,8 +78,8 @@ BENCHMARK_F(PDI_Datatype_template, EvaluateArray)(benchmark::State& state)
 
 BENCHMARK_F(PDI_Datatype_template, EvaluateRecord)(benchmark::State& state)
 {
-	PC_tree_t type_tree = PC_parse_string("{type: struct, members: [{fisrt: int}, {second: double}]}");
-	PDI::Datatype_template_ptr record_datatype_template = context().datatype(type_tree);
+	PC_tree_t type_tree = PC_parse_string("{type: struct, members: [{first: int}, {second: double}]}");
+	PDI::Datatype_template_sptr record_datatype_template = context().datatype(type_tree);
 	for (auto _ : state) {
 		record_datatype_template->evaluate(context());
 	};

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -31,8 +31,8 @@
 #include <pdi/datatype_template.h>
 
 struct MockDataDescriptor : public PDI::Data_descriptor {
-	MOCK_METHOD1(default_type, void(PDI::Datatype_template_ptr));
-	MOCK_METHOD0(default_type, PDI::Datatype_template_ptr());
+	MOCK_METHOD1(default_type, void(PDI::Datatype_template_sptr));
+	MOCK_METHOD0(default_type, PDI::Datatype_template_sptr());
 	MOCK_CONST_METHOD0(metadata, bool());
 	MOCK_METHOD1(metadata, void(bool));
 	MOCK_CONST_METHOD0(name, const std::string&());

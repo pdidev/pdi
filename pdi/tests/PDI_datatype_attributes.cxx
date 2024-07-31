@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -48,7 +48,7 @@ TEST(TypeAttrTest, simple_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: test } }")};
-	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("attr_array"));
+	Datatype_template_sptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test"));
 
 	auto attr_map = result->attributes();
@@ -67,7 +67,7 @@ TEST(TypeAttrTest, inner_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {inner_attr: {type: int, +attr: test_inner }, outer_attr: {type: array, subtype: inner_attr, size: 10, +attr: test_outer} }")};
-	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("outer_attr"));
+	Datatype_template_sptr result = global_ctx.datatype(PC_parse_string("outer_attr"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_outer"));
 
 	auto outer_attr_map = result->attributes();
@@ -93,7 +93,7 @@ TEST(TypeAttrTest, member_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {member_type: {type: int, +attr: test_member}, record_type: {type: struct, members: [first_member: member_type, second_member: member_type], +attr: test_record}}")};
-	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("record_type"));
+	Datatype_template_sptr result = global_ctx.datatype(PC_parse_string("record_type"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_record"));
 
 	auto record_attr_map = result->attributes();
@@ -123,7 +123,7 @@ TEST(TypeAttrTest, ptr_inner_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {inner_attr: {type: int, +attr: test_inner }, outer_attr: {type: pointer, subtype: inner_attr, +attr: test_outer} }")};
-	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("outer_attr"));
+	Datatype_template_sptr result = global_ctx.datatype(PC_parse_string("outer_attr"));
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_outer"));
 
 	auto outer_attr_map = result->attributes();
@@ -149,7 +149,7 @@ TEST(TypeAttrTest, array_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: [test0, test1] } }")};
-	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("attr_array"));
+	Datatype_template_sptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	Ref_r attr_ref_0 = result->attribute("attr").to_ref(global_ctx).operator[](0UL);
 	Ref_r attr_ref_1 = result->attribute("attr").to_ref(global_ctx).operator[](1UL);
 	ASSERT_STREQ(static_cast<const char*>(attr_ref_0.get()), "test0");
@@ -168,7 +168,7 @@ TEST(TypeAttrTest, map_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: {key: value} } }")};
-	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("attr_array"));
+	Datatype_template_sptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	Ref_r attr_ref_value = result->attribute("attr").to_ref(global_ctx).operator[]("key");
 	ASSERT_STREQ(static_cast<const char*>(attr_ref_value.get()), "value");
 };
@@ -185,7 +185,7 @@ TEST(TypeAttrTest, array_in_map_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("types: {attr_array: {type: array, subtype: int, size: 10, +attr: {key: [value0, value1]} } }")};
-	Datatype_template_ptr result = global_ctx.datatype(PC_parse_string("attr_array"));
+	Datatype_template_sptr result = global_ctx.datatype(PC_parse_string("attr_array"));
 	Ref_r map_attr_ref_value = result->attribute("attr").to_ref(global_ctx).operator[]("key");
 	Ref_r attr_ref_0 = map_attr_ref_value.operator[](0UL);
 	Ref_r attr_ref_1 = map_attr_ref_value.operator[](1UL);
@@ -205,7 +205,7 @@ TEST(DataAttrTest, simple_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {attr_int: {type: int, +attr: test}}")};
-	Datatype_template_ptr result = global_ctx["attr_int"].default_type();
+	Datatype_template_sptr result = global_ctx["attr_int"].default_type();
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test"));
 
 	auto attr_map = result->attributes();
@@ -224,7 +224,7 @@ TEST(DataAttrTest, inner_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("{types: {inner_attr: {type: int, +attr: test_inner }}, data: {outer_attr: {type: array, subtype: inner_attr, size: 10, +attr: test_outer}}}")};
-	Datatype_template_ptr result = global_ctx["outer_attr"].default_type();
+	Datatype_template_sptr result = global_ctx["outer_attr"].default_type();
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_outer"));
 
 	auto outer_attr_map = result->attributes();
@@ -249,7 +249,7 @@ TEST(DataAttrTest, member_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {record_data: {type: struct, members: [first_member: {type: int, +attr: test_member}, second_member: {type: int, +attr: test_member}], +attr: test_record}}")};
-	Datatype_template_ptr result = global_ctx["record_data"].default_type();
+	Datatype_template_sptr result = global_ctx["record_data"].default_type();
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_record"));
 
 	auto record_attr_map = result->attributes();
@@ -279,7 +279,7 @@ TEST(DataAttrTest, ptr_inner_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {outer_attr: {type: pointer, subtype: {type: int, +attr: test_inner}, +attr: test_outer} }")};
-	Datatype_template_ptr result = global_ctx["outer_attr"].default_type();
+	Datatype_template_sptr result = global_ctx["outer_attr"].default_type();
 	ASSERT_EQ(result->attribute("attr").to_string(global_ctx), string("test_outer"));
 
 	auto outer_attr_map = result->attributes();
@@ -305,7 +305,7 @@ TEST(DataAttrTest, array_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {attr_array: {type: array, subtype: int, size: 10, +attr: [test0, test1] } }")};
-	Datatype_template_ptr result = global_ctx["attr_array"].default_type();
+	Datatype_template_sptr result = global_ctx["attr_array"].default_type();
 	Ref_r attr_ref_0 = result->attribute("attr").to_ref(global_ctx).operator[](0UL);
 	Ref_r attr_ref_1 = result->attribute("attr").to_ref(global_ctx).operator[](1UL);
 	ASSERT_STREQ(static_cast<const char*>(attr_ref_0.get()), "test0");
@@ -324,7 +324,7 @@ TEST(DataAttrTest, map_attr)
 {
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("data: {attr_array: {type: array, subtype: int, size: 10, +attr: {key: value} } }")};
-	Datatype_template_ptr result = global_ctx["attr_array"].default_type();
+	Datatype_template_sptr result = global_ctx["attr_array"].default_type();
 	Ref_r attr_ref_value = result->attribute("attr").to_ref(global_ctx).operator[]("key");
 	ASSERT_STREQ(static_cast<const char*>(attr_ref_value.get()), "value");
 };
@@ -344,7 +344,7 @@ TEST(DataAttrTest, array_in_map_attr)
 	int value = 42;
 	auto&& value_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 	global_ctx["value"].share(Ref{(void*)&value, free, value_type, true, true}, false, false);
-	Datatype_template_ptr result = global_ctx["attr_array"].default_type();
+	Datatype_template_sptr result = global_ctx["attr_array"].default_type();
 	Ref_r map_attr_ref_value = result->attribute("attr").to_ref(global_ctx).operator[]("key");
 	Ref_r attr_ref_0 = map_attr_ref_value.operator[](0UL);
 	Ref_r attr_ref_1 = map_attr_ref_value.operator[](1UL);

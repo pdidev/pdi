@@ -24,20 +24,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 
+
 #### Security
 
 
 ### For plugin developers
 
 #### Added
-
+* Create a method that dereferences a pointer type and returns the data as a new Reference.
+  [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
 #### Changed
-
+* Rename `Datatype_template_ptr` to `Datatype_template_sptr`.
 #### Deprecated
-
+* `Datatype_template_ptr`
 #### Removed
 
 #### Fixed
+
 
 #### Security
 

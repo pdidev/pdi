@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -58,7 +58,7 @@ protected:
 	bool m_sharing_buffer;
 	
 	/// Type for data_selection to copy
-	PDI::Datatype_template_ptr m_data_selection;
+	PDI::Datatype_template_sptr m_data_selection;
 	
 	/// Callbacks to remove on payload destruction
 	std::vector<std::function<void()>> m_callbacks_remove;

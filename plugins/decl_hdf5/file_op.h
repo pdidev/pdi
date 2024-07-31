@@ -68,7 +68,7 @@ class File_op
 #endif
 	
 	/// type of the datasets for which an explicit type is specified
-	std::unordered_map<std::string, PDI::Datatype_template_ptr> m_datasets;
+	std::unordered_map<std::string, PDI::Datatype_template_sptr> m_datasets;
 	
 	/// the dataset operations
 	std::vector<Dataset_op> m_dset_ops;

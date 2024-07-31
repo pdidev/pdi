@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -73,7 +73,8 @@ class Tuple_datatype;
  */
 class Datatype_template;
 
-using Datatype_template_ptr = std::shared_ptr<const Datatype_template>;
+using Datatype_template_ptr [[deprecated]] = std::shared_ptr<const Datatype_template>;
+using Datatype_template_sptr = std::shared_ptr<const Datatype_template>;
 
 using Datatype_sptr = std::shared_ptr<const Datatype>;
 

@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,7 +90,7 @@ BENCHMARK_F(PDI_Context, CreateTupleDatatypeTemplate)(benchmark::State& state)
 BENCHMARK_F(PDI_Context, CreateRecordDatatypeTemplate)(benchmark::State& state)
 {
 	PC_tree_t type_tree = PC_parse_string("{type: record, buffersize: 16, "
-		"members: {fisrt: {disp: 0, type: int}, second: {disp: 8, type: double}}}");
+		"members: {first: {disp: 0, type: int}, second: {disp: 8, type: double}}}");
 	for (auto _ : state) {
 		context().datatype(type_tree);
 	}
@@ -97,7 +98,7 @@ BENCHMARK_F(PDI_Context, CreateRecordDatatypeTemplate)(benchmark::State& state)
 
 BENCHMARK_F(PDI_Context, CreateStructDatatypeTemplate)(benchmark::State& state)
 {
-	PC_tree_t type_tree = PC_parse_string("{type: struct, members: [{fisrt: int}, {second: double}]}");
+	PC_tree_t type_tree = PC_parse_string("{type: struct, members: [{first: int}, {second: double}]}");
 	for (auto _ : state) {
 		context().datatype(type_tree);
 	}

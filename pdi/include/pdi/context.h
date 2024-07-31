@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -62,7 +62,7 @@ public:
 	
 	/** A function that parses a PC_tree_t to create a datatype_template
 	 */
-	typedef std::function<Datatype_template_ptr(Context&, PC_tree_t)> Datatype_template_parser;
+	typedef std::function<Datatype_template_sptr(Context&, PC_tree_t)> Datatype_template_parser;
 	
 protected:
 	Iterator get_iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
@@ -116,7 +116,7 @@ public:
 	 *
 	 * \return the type generated
 	 */
-	virtual Datatype_template_ptr datatype(PC_tree_t node) = 0;
+	virtual Datatype_template_sptr datatype(PC_tree_t node) = 0;
 	
 	/** Adds new datatype parser to the context
 	 *
