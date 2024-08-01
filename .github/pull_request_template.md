@@ -1,8 +1,8 @@
-# Short description of the MR
+# Short description of the PR
 
 !!!INSERT YOUR DESCRIPTION HERE!!!
 
-# List of things to check before making a MR
+# List of things to check before making a PR
 
 Before merging your code, please check the following:
 
@@ -11,7 +11,7 @@ Before merging your code, please check the following:
 * [ ] you have checked pdi/docs/CheckList.md
 * you have checked your code format:
   - [ ] you have checked that you respect all conventions specified in CONTRIBUTING.md;
-  - [ ] you have checked that the indentation and formating conforms to the docs/formating.astyle;
+  - [ ] you have checked that the indentation and formatting conforms to the `.clang-format`;
   - [ ] you have documented with doxygen any new or changed function / class;
 * you have correctly updated the copyright headers:
   - [ ] your institution is in the copyright header of every file you (substantially) modified;

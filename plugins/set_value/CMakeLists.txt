@@ -27,16 +27,9 @@ cmake_minimum_required(VERSION 3.10...3.25)
 project(pdi_set_value_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-option(BUILD_INDENT "Enable automatic code indentation" OFF)
-
 # Includes
 include(CTest)
 include(GNUInstallDirs)
-
-# Astyle
-if("${BUILD_INDENT}")
-	find_package(Astyle 3.1 REQUIRED)
-endif()
 
 # spdlog
 find_package(spdlog 1.5.0 REQUIRED)
@@ -57,13 +50,6 @@ add_library(pdi_set_value_plugin MODULE set_value.cxx
 										release_operation.cxx)
 target_link_libraries(pdi_set_value_plugin PUBLIC PDI::PDI_plugins spdlog::spdlog)
 set_target_properties(pdi_set_value_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-
-# Indentation
-if("${BUILD_INDENT}")
-	Astyle_add_indent(indent TEST
-		OPTIONS_FILE formating.astyle
-		set_value.cxx tests/*.c)
-endif()
 
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")

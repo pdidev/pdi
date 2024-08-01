@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -56,7 +56,6 @@ option(BUILD_SHARED_LIBS   "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING       "Build tests" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_PYTHON        "Enable Python support" "${BUILD_UNSTABLE}")
-option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 
 if("${BUILD_TESTING}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10") 
 	message(FATAL_ERROR "Minimum CMake version to build tests is 3.10. Please update CMake or turn off testing by adding the flag `-DBUILD_TESTING=OFF` to the cmake command line.")
@@ -110,9 +109,6 @@ if("${BUILD_FORTRAN}")
 endif()
 find_package(paraconf 1.0.0 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
 find_package(spdlog 1.5.0 REQUIRED) # must match PDIConfig.cmake.in
-if("${BUILD_INDENT}")
-	find_package(Astyle 3.1 REQUIRED)
-endif()
 if("${BUILD_PYTHON}")
 	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
 	# Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set
@@ -365,19 +361,6 @@ endif()
 
 if("${BUILD_DOCUMENTATION}")
 	add_subdirectory(docs docs)
-endif()
-
-
-# Indentation
-
-if("${BUILD_INDENT}")
-	Astyle_add_indent(indent
-			OPTIONS_FILE "${PDI_SOURCE_DIR}/docs/formating.astyle"
-			TEST
-			RECURSIVE
-			${PDI_SOURCE_DIR}/include/**/*.h
-			${PDI_SOURCE_DIR}/src/**/*.h
-			${PDI_SOURCE_DIR}/src/**/*.cxx)
 endif()
 
 

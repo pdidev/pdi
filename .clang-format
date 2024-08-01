@@ -22,6 +22,13 @@ AlwaysBreakAfterDefinitionReturnType:           None
 AlwaysBreakAfterReturnType:                     None
 AlwaysBreakBeforeMultilineStrings:              false
 AlwaysBreakTemplateDeclarations:                Yes
+AttributeMacros:
+- PDI_EXPORT
+- PDI_NO_EXPORT
+- PDI_DEPRECATED
+- PDI_DEPRECATED_EXPORT
+- PDI_DEPRECATED_NO_EXPORT
+- PDI_NO_DEPRECATED
 BinPackArguments:                               false
 BinPackParameters:                              false
 BitFieldColonSpacing:                           After
@@ -46,7 +53,7 @@ BraceWrapping:
 BreakBeforeBinaryOperators:                     All
 BreakBeforeBraces:                              Custom
 BreakBeforeConceptDeclarations:                 true
-#CF16 BreakBeforeInlineASMColon:                      OnlyMultiline
+BreakBeforeInlineASMColon:                      OnlyMultiline
 BreakBeforeTernaryOperators:                    true
 BreakConstructorInitializers:                   BeforeComma
 BreakInheritanceList:                           BeforeComma
@@ -101,20 +108,11 @@ IndentPPDirectives:                             None
 IndentRequires:                                 false
 IndentWidth:                                    4
 IndentWrappedFunctionNames:                     false
-#CF16 InsertNewlineAtEOF:                             true
-#CF17 KeepEmptyLinesAtEOF:                            false
+InsertNewlineAtEOF:                             true
+KeepEmptyLinesAtEOF:                            false
 KeepEmptyLinesAtTheStartOfBlocks:               false
 LambdaBodyIndentation:                          Signature
-#CF16 LineEnding:                                     LF
-MacroBlockBegin:                                ''
-MacroBlockEnd:                                  ''
-#CF17 Macros:
-#CF17   - PDI_EXPORT
-#CF17   - PDI_NO_EXPORT
-#CF17   - PDI_DEPRECATED
-#CF17   - PDI_DEPRECATED_EXPORT
-#CF17   - PDI_DEPRECATED_NO_EXPORT
-#CF17   - PDI_NO_DEPRECATED
+LineEnding:                                     LF
 MaxEmptyLinesToKeep:                            3
 NamespaceIndentation:                           None
 PPIndentWidth:                                  -1
@@ -130,23 +128,23 @@ PenaltyExcessCharacter:                         500
 PenaltyIndentedWhitespace:                      1
 PenaltyReturnTypeOnItsOwnLine:                  100
 PointerAlignment:                               Left
-QualifierAlignment:                             Leave #TODO: Custom
+#QualifierAlignment:                             Custom
 #QualifierOrder:                                 ['static', 'inline', 'constexpr', 'volatile', 'restrict', 'type', 'const']
 ReferenceAlignment:                             Pointer
 ReflowComments:                                 false
 RemoveBracesLLVM:                               false
-#CF17 RemoveParentheses:                              false
-#CF17 RemoveSemicolon:                                true
+RemoveParentheses:                              Leave
+RemoveSemicolon:                                true
 RequiresClausePosition:                         OwnLine
-#CF16 RequiresExpressionIndentation:                  OuterScope
+RequiresExpressionIndentation:                  OuterScope
 SeparateDefinitionBlocks:                       Always
 ShortNamespaceLines:                            1
 SortIncludes:                                   true
-SortUsingDeclarations:                          true #TODO: LexicographicNumeric
+SortUsingDeclarations:                          LexicographicNumeric
 SpaceAfterCStyleCast:                           false
 SpaceAfterLogicalNot:                           false
 SpaceAfterTemplateKeyword:                      true
-SpaceAroundPointerQualifiers:                   Both
+SpaceAroundPointerQualifiers:                   After
 SpaceBeforeAssignmentOperators:                 true
 SpaceBeforeCaseColon:                           false
 SpaceBeforeCpp11BracedList:                     false
@@ -164,30 +162,18 @@ SpaceBeforeParensOptions:
 SpaceBeforeRangeBasedForLoopColon:              false
 SpaceBeforeSquareBrackets:                      false
 SpaceInEmptyBlock:                              false
-SpaceInEmptyParentheses:                        false #CF<17
 SpacesBeforeTrailingComments:                   1
 SpacesInAngles:                                 Leave
-SpacesInCStyleCastParentheses:                  false #CF<17
-SpacesInConditionalStatement:                   false #CF<17
 SpacesInContainerLiterals:                      true
-#CF17 SpacesInParens:                                 Custom
-#CF17 SpacesInParensOptions:
-#CF17   InConditionalStatements:                      true
-#CF17   InCStyleCasts:                                false
-#CF17   InEmptyParentheses:                           false
-#CF17   Other:                                        false
-SpacesInParentheses:                            false #CF<17
+SpacesInParens:                                 Custom
+SpacesInParensOptions:
+  InConditionalStatements:                      false
+  InCStyleCasts:                                false
+  InEmptyParentheses:                           false
+  Other:                                        false
 SpacesInSquareBrackets:                         false
-SpaceBeforeSquareBrackets:                      false
 Standard:                                       Latest
-StatementAttributeLikeMacros:
-- PDI_EXPORT
-- PDI_NO_EXPORT
-- PDI_DEPRECATED
-- PDI_DEPRECATED_EXPORT
-- PDI_DEPRECATED_NO_EXPORT
-- PDI_NO_DEPRECATED
 TabWidth:                                       4
 UseCRLF:                                        false
-UseTab:                                         ForIndentation #TODO: AlignWithSpaces
+UseTab:                                         AlignWithSpaces
 ---

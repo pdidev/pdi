@@ -104,7 +104,6 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
 |`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
 |`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
-|`BUILD_INDENT`             |`OFF`  |Build the code auto-indentation tools. (devel profile)|
 |`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
 
@@ -121,7 +120,6 @@ The following flags define whether to:
 
 |Flag           |Default   |Description|
 |:--------------|:---------|:----------|
-|`USE_Astyle`   |`AUTO`    |the [astyle](http://astyle.sourceforge.net/) tool.|
 |`USE_benchmark`|`EMBEDDED`|the [Benchmark](https://github.com/google/benchmark) library.|
 |`USE_Doxygen`  |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
 |`USE_GTest`    |`EMBEDDED`|the [googletest](https://github.com/google/googletest) library.|
@@ -210,13 +208,11 @@ Dependencies of **the tests**:
 
 * the PDI library,
 * the [googletest](https://github.com/google/googletest) library (provided),
-* [astyle](http://astyle.sourceforge.net/) version 3.1 or above (provided).
 
 Dependencies of **the benchmarks**:
 
 * the PDI library,
 * the [Benchmark](https://github.com/google/benchmark) library (provided),
-* [astyle](http://astyle.sourceforge.net/) version 3.1 or above (provided).
 
 Dependencies of **the documentation website builder**:
 

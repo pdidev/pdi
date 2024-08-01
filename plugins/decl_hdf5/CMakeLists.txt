@@ -35,7 +35,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_HDF5_PARALLEL "Enable HDF5 parallel build" ON)
-option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 
 include(CTest)
 
@@ -45,11 +44,6 @@ if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 endif()
 
 include(GNUInstallDirs)
-
-# Astyle
-if("${BUILD_INDENT}")
-	find_package(Astyle 3.1 REQUIRED)
-endif()
 
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
@@ -86,13 +80,6 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		selection.cxx)
 target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-
-# Indentation
-if("${BUILD_INDENT}")
-	Astyle_add_indent(indent TEST
-		OPTIONS_FILE formating.astyle
-		*.cxx *.h tests/*.c tests/compatibility_tests/*.c)
-endif()
 
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
