@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-# Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2018-2024 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -39,15 +39,9 @@ else()
 endif()
 
 option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
-option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 
 include(CTest)
 include(GNUInstallDirs)
-
-# Astyle
-if("${BUILD_INDENT}")
-	find_package(Astyle 3.1 REQUIRED)
-endif()
 
 # MPI
 find_package(MPI REQUIRED COMPONENTS C CXX)
@@ -65,14 +59,6 @@ add_library(pdi_fti_plugin MODULE
 		fti_wrapper.cxx)
 target_link_libraries(pdi_fti_plugin MPI::MPI_CXX PDI::PDI_plugins fti.shared)
 set_target_properties(pdi_fti_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-
-# Indentation
-if("${Astyle_FOUND}")
-	Astyle_add_indent(indent TEST
-			OPTIONS_FILE formating.astyle
-			*.cxx *.h tests/*.c
-	)
-endif()
 
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")

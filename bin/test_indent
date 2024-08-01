@@ -1,5 +1,6 @@
+#!/bin/bash
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,38 +28,37 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
-project(pdi_user_code_plugin LANGUAGES C CXX)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+cd "$(dirname "$(dirname "$0")")"
 
-option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
+if [ 0 -eq $# ]
+then CLANG_FORMAT_ARGS=""
+elif [ "x--apply" = "x$1" ]
+then CLANG_FORMAT_ARGS="-i"
+elif [ "x--quiet" = "x$1" ]
+then CLANG_FORMAT_ARGS="-q"
+else
+	echo "Usage: $0 [--apply|--quiet]" >&2
+	echo "  Checks (or with --apply, enforce) the indentation of PDI files" >&2
+	echo "  With --quiet, only the return code gives info" >&2
+	exit 1
+fi
 
-include(CTest)
+# Look for a docker based version
+DOCKER="$(which docker)"
+if "${DOCKER}" --version >/dev/null 2>&1
+then
+	RUN_CLANG_FORMAT="${DOCKER} run --rm -v $(pwd):/src ghcr.io/pdidev/run_clang_format:v3"
+fi
 
-include(GNUInstallDirs)
+# Look for a local version
+for CLANG_FORMAT in clang-format-17 clang-format17 clang-format
+do
+	CLANG_FORMAT="$(which "${CLANG_FORMAT}")"
+	if [ 17 -le "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" ]
+	then
+		RUN_CLANG_FORMAT="python3 vendor/run-clang-format/run-clang-format.py --clang-format-executable ${CLANG_FORMAT}"
+		break
+	fi
+done
 
-# PDI
-find_package(PDI REQUIRED COMPONENTS plugins)
-
-# The plugin
-add_library(pdi_user_code_plugin MODULE user_code.cxx)
-target_link_libraries(pdi_user_code_plugin PDI::PDI_plugins)
-set_target_properties(pdi_user_code_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-
-# installation
-set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
-install(TARGETS pdi_user_code_plugin
-		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
-)
-
-# Configuration validation
-if ("${BUILD_CFG_VALIDATOR}")
-	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
-	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
-			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
-endif()
-
-# Tests
-if("${BUILD_TESTING}")
-	add_subdirectory(tests/)
-endif()
+exec ${RUN_CLANG_FORMAT} ${CLANG_FORMAT_ARGS} $(git ls-files --full-name | grep '\.[hHcC]\(\|++\|xx\|pp\)\s*$')

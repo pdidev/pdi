@@ -35,16 +35,9 @@ else()
 	message(FATAL_ERROR "FlowVR is unmaintained and as such, the FlowVR plugin is deprecated, unmaintained and unsupported, set -DBUILD_DEPRECATED=ON to build anyway")
 endif()
 
-option(BUILD_INDENT "Enable automatic code indentation" OFF)
-
 include(CTest)
 
 include(GNUInstallDirs)
-
-# Astyle
-if("${BUILD_INDENT}")
-	find_package(Astyle 3.1 REQUIRED)
-endif()
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)

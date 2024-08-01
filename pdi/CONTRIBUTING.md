@@ -126,9 +126,4 @@ be used:
 
 ## Indentation
 
-A astyle configuration file is provided with in `docs/indent.astyle`.
-You can apply the formatting to the source in your working copy with the command
-```
-make indent
-```
-in your build directory.
+A clang-format configuration file is provided at the root of PDI distribution.

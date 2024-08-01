@@ -1,3 +1,6 @@
 [submodule "tutorial"]
 	path = tutorial
 	url = https://github.com/pdidev/tutorial.git
+[submodule "vendor/run-clang-format"]
+	path = vendor/run-clang-format
+	url = https://github.com/Sarcasm/run-clang-format.git

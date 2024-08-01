@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#452](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/452)
 
 ### Changed
+* Replaced the astyle based indentation by a clang-format one, fixes
+  [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
 
 ### Deprecated
 

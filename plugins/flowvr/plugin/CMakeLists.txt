@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -80,35 +80,7 @@ target_link_libraries(pdi_flowvr_plugin
 		${FLOWVR_mod_LIBRARY})
 set_target_properties(pdi_flowvr_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
-
-# Indentation
-if("${BUILD_INDENT}")
-	Astyle_add_indent(indent TEST
-		OPTIONS_FILE ../formating.astyle
-		include/*.h
-		include/ports/*.h
-		include/ports/payloads/*.h
-		include/ports/payloads/button_event/*.h
-		include/ports/payloads/chunk/*.h
-		include/ports/payloads/data/*.h
-		include/ports/payloads/mouse_event/*.h
-		include/ports/stamps/*.h
-		include/ports/stamps/desc/*.h
-		include/ports/stamps/expr/*.h
-		src/*.cxx
-		src/ports/*.cxx
-		src/ports/payloads/*.cxx
-		src/ports/payloads/button_event/*.cxx
-		src/ports/payloads/chunk/*.cxx
-		src/ports/payloads/data/*.cxx
-		src/ports/payloads/mouse_event/*.cxx
-		src/ports/stamps/*.cxx
-		src/ports/stamps/desc/*.cxx
-		src/ports/stamps/expr/*.cxx)
-endif()
-
 # Installation
-# installation
 install(TARGETS pdi_flowvr_plugin
 		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
 )

@@ -41,7 +41,6 @@ endif()
 
 option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
 option(BUILD_FORTRAN "Enable Fortran support" ON)
-option(BUILD_INDENT  "Enable automatic code indentation" OFF)
 
 include(CTest)
 
@@ -51,11 +50,6 @@ if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 endif()
 
 include(GNUInstallDirs)
-
-# Astyle
-if("${BUILD_INDENT}")
-	find_package(Astyle 3.1 REQUIRED)
-endif()
 
 # MPI
 set(MPI_LANGS CXX)
@@ -80,13 +74,6 @@ target_link_libraries(pdi_decl_sion_plugin PUBLIC PDI::PDI_plugins MPI::MPI_CXX 
 target_include_directories(pdi_decl_sion_plugin PUBLIC ${SIONlib_MPI_C_INCLUDE_DIRS})
 set_target_properties(pdi_decl_sion_plugin PROPERTIES
 		CXX_VISIBILITY_PRESET hidden)
-
-# Indentation
-if("${BUILD_INDENT}")
-	Astyle_add_indent(indent TEST
-		OPTIONS_FILE formating.astyle
-		decl_sion.cxx tests/*.c)
-endif()
 
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")

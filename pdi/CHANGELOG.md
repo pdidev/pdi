@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 #### Changed
+* Replaced the astyle based indentation by a clang-format one, fixes
+  [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
 
 #### Deprecated
 
