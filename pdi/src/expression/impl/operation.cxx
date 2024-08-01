@@ -52,7 +52,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case PLUS: {
 		auto val = computed_value + operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -64,7 +64,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case MINUS: {
 		auto val = computed_value - operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -74,9 +74,9 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 		    );
 	} break;
 	case MULT: {
-		auto val = computed_value* operand_value;
+		auto val = computed_value * operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -88,7 +88,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case DIV: {
 		auto val = computed_value / operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -101,7 +101,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 		if constexpr (is_integral_v<O1>&& is_integral_v<O2>) {
 			auto val = computed_value % operand_value;
 			return Ref(
-			    new decltype(val)(val),
+			        new decltype(val)(val),
 			[](void* p) {
 				delete reinterpret_cast<decltype(val)*>(p);
 			},
@@ -116,7 +116,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case EQUAL: {
 		auto val = computed_value == operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -128,7 +128,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case AND: {
 		auto val = computed_value && operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -140,7 +140,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case OR: {
 		auto val = computed_value || operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -152,7 +152,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case GT: {
 		auto val = computed_value > operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -164,7 +164,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case LT: {
 		auto val = computed_value < operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -176,7 +176,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case GET: {
 		auto val = computed_value >= operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},
@@ -188,7 +188,7 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case LET: {
 		auto val = computed_value <= operand_value;
 		return Ref(
-		    new decltype(val)(val),
+		        new decltype(val)(val),
 		[](void* p) {
 			delete reinterpret_cast<decltype(val)*>(p);
 		},

@@ -160,16 +160,16 @@ pybind11::object to_python(Ref r, bool force_const)
 	if ( !force_const ) {
 		if ( Ref_w r_w{r} ) {
 			return pybind11::array{pytype, std::move(shape), std::move(strides), static_cast<uint8_t*>(r_w.get())+offset, pybind11::capsule{new Ref{r}, [](void* pr)
-			{
-				delete static_cast<Ref*>(pr);
-			}}};
+				{
+					delete static_cast<Ref*>(pr);
+				}}};
 		}
 	}
 	if (Ref_r r_r{r}) {
 		return pybind11::array{pytype, std::move(shape), std::move(strides), static_cast<const uint8_t*>(r_r.get())+offset, pybind11::capsule{new Ref{r}, [](void* pr)
-		{
-			delete static_cast<Ref*>(pr);
-		}}};
+			{
+				delete static_cast<Ref*>(pr);
+			}}};
 	}
 	return pybind11::none();
 }
