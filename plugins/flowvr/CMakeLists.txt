@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,13 @@
 cmake_minimum_required(VERSION 3.10...3.25)
 project(pdi_flowvr_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+option(BUILD_DEPRECATED "Build deprecated modules" OFF)
+if("${BUILD_DEPRECATED}")
+	message(WARNING "FlowVR is unmaintained and as such, the FlowVR plugin is deprecated, unmaintained and unsupported")
+else()
+	message(FATAL_ERROR "FlowVR is unmaintained and as such, the FlowVR plugin is deprecated, unmaintained and unsupported, set -DBUILD_DEPRECATED=ON to build anyway")
+endif()
 
 option(BUILD_INDENT "Enable automatic code indentation" OFF)
 

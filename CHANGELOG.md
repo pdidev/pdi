@@ -15,6 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 ### Deprecated
+* The Decl'SION plugin is now deprecated, unmaintained and unsupported
+* The FlowVR plugin is now deprecated, unmaintained and unsupported
+* The FTI plugin is now deprecated, unmaintained and unsupported
+* The test plugin is now deprecated, unmaintained and unsupported
+* The PDI Config validator is now deprecated, unmaintained and unsupported
 
 ### Removed
 

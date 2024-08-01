@@ -59,6 +59,8 @@ else()
 	message(FATAL_ERROR "DIST_PROFILE should be set to one of: User, Devel")
 endif()
 
+option(BUILD_DEPRECATED "Build deprecated modules" OFF)
+
 set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can be 1) EMBEDDED to use the provided version, 2) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 3) AUTO to use SYSTEM if available and EMBEDDED otherwise")
 
 
@@ -66,13 +68,13 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 # Modules to build
 
 option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
-option(BUILD_CFG_VALIDATOR      "Build config validation script" "${BUILD_UNSTABLE}")
+option(BUILD_CFG_VALIDATOR      "Build config validation script" "${BUILD_DEPRECATED}")
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
-option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_DECL_SION_PLUGIN   "Build Decl'SION plug-in" "${BUILD_UNSTABLE}")
-option(BUILD_FLOWVR_PLUGIN      "Build FlowVR plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
+option(BUILD_DECL_SION_PLUGIN   "Build Decl'SION plug-in" "${BUILD_DEPRECATED}")
+option(BUILD_FLOWVR_PLUGIN      "Build FlowVR plug-in" "${BUILD_DEPRECATED}")
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
-option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "${BUILD_UNSTABLE}")
+option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "${BUILD_DEPRECATED}")
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
 option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
 option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
@@ -81,7 +83,7 @@ option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
-option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_UNSTABLE}")
+option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_DEPRECATED}")
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 

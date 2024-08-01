@@ -7,7 +7,6 @@
 Before merging your code, please check the following:
 
 * [ ] you have added a line describing your changes to the Changelog;
-* [ ] you have added any new or changed yaml config format to the validation script;
 * [ ] you have added unit tests for any new or improved feature;
 * [ ] you have checked pdi/docs/CheckList.md
 * you have checked your code format:

@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -30,6 +30,13 @@
 cmake_minimum_required(VERSION 3.10...3.25)
 project(pdi_test_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+option(BUILD_DEPRECATED "Build deprecated modules" OFF)
+if("${BUILD_DEPRECATED}")
+	message(WARNING "the test plugin is deprecated, unmaintained and unsupported")
+else()
+	message(FATAL_ERROR "the test plugin is deprecated, unmaintained and unsupported, set -DBUILD_DEPRECATED=ON to build anyway")
+endif()
 
 option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
 option(BUILD_INDENT "Enable automatic code indentation" OFF)

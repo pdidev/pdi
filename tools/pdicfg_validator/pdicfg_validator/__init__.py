@@ -1,6 +1,6 @@
 ##############################################################################
 # Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2022-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -236,6 +236,10 @@ def val_descs_node(types_node, data_refs_list):
 
 
 def run_test(config_file_name):
+
+    print("\033[0;31m\033[1mWarning:\033[0m"
+          + "\033[0;31m PDI Config validator is deprecated, unmaintained and unsupported\033[0m")
+
     # list of declared data
     data_list = []
 

@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright 2015 FZJ, Benedikt Steinbusch <b.steinbusch@fz-juelich.de>
-# Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -31,6 +31,13 @@
 cmake_minimum_required(VERSION 3.10...3.25)
 project(pdi_decl_sion_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+option(BUILD_DEPRECATED "Build deprecated modules" OFF)
+if("${BUILD_DEPRECATED}")
+	message(WARNING "Sionlib is unmaintained and as such, the Decl'Sion plugin is deprecated, unmaintained and unsupported")
+else()
+	message(FATAL_ERROR "Sionlib is unmaintained and as such, the Decl'Sion plugin is deprecated, unmaintained and unsupported, set -DBUILD_DEPRECATED=ON to build anyway")
+endif()
 
 option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
 option(BUILD_FORTRAN "Enable Fortran support" ON)

@@ -31,14 +31,16 @@ Most dependencies are embedded in the distribution and the only required
 external dependencies are:
 * a POSIX compatible OS such as GNU/linux,
 * [cmake](https://cmake.org/) version 3.5 or above,
-* a C 99, C++ 17 and Fortran 03 compiler such as [gcc](https://gcc.gnu.org/) 5.4 or above,
+* a C 99, C++ 17 and Fortran 03 compiler such as
+  - [gcc](https://gcc.gnu.org/) 7.5 or above,
+  - [clang](https://clang.llvm.org/) 9.0 or above,
 * a [python](https://www.python.org/) interpreter (with venv), version 3.6 or above,
 * a [bash](https://www.gnu.org/software/bash/) interpreter,
 * a [MPI](https://www.mpi-forum.org/) 2 implementation.
 
 \attention
-This list of dependencies can be further reduced by limiting the set of features
-compiled.
+This list of dependencies can be further reduced or extended by changing the
+set of features compiled.
 
 For example, release 1.7.1 can be installed by following these instructions (but
 look for the latest release at
@@ -84,32 +86,34 @@ The following general flags are useful to configure the distribution as a whole.
 |`CMAKE_PREFIX_PATH`   |            |A semicolon-separated list of prefix where to look for %PDI dependencies in addition to system path.|
 |`DIST_PROFILE`        |`User`      |Sets the default values of other flags. The possible values are `User` for the %PDI use profile and `Devel` for the developer profile.|
 |`USE_DEFAULT`         |`AUTO`      |Whether to compile the embedded versions of the dependencies. The possible values are `SYSTEM` to use the system versions, `EMBEDDED` to compile the version provided in the distribution and `AUTO` to prefer a system version but fall-back on the embedded version if unavailable.|
+|`BUILD_DEPRECATED`    |`OFF`       |Whether to build the deprecated, unmaintained and unsupported plugins, either `ON` or `OFF`.|
 |`BUILD_UNSTABLE`      |`OFF`       |Whether to build the unstable parts of the distribution, either `ON` or `OFF`.|
 |`CMAKE_BUILD_TYPE`    |`Release`   |Optimization level and debug verbosity. The possible values are `Release` and `Debug`.|
 |`PDI_PLUGIN_PATH`     |same as PDI |Path where to install all plugins. If not defined, will install relative to PDI.|
 
 The following flags define which features of the distribution to enable or not.
 
-|Flag                     |Default|Description|
-|:------------------------|:------|:----------|
-|`BUILD_BENCHMARKING`     |`ON`   |Build the benchmarks.|
-|`BUILD_FORTRAN`          |`ON`   |Build the Fortran interface.|
-|`BUILD_DECL_HDF5_PLUGIN` |`ON`   |Build the Decl'HDF5 plug-in.|
-|`BUILD_HDF5_PARALLEL`    |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
-|`BUILD_MPI_PLUGIN`       |`ON`   |Build the MPI plug-in.|
-|`BUILD_NETCDF_PARALLEL`  |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
-|`BUILD_TEST_PLUGIN`      |`ON`   |Build the Test plug-in.|
-|`BUILD_TESTING`          |`ON`   |Build the tests.|
-|`BUILD_TRACE_PLUGIN`     |`ON`   |Build the Trace plug-in.|
-|`BUILD_USER_CODE_PLUGIN` |`ON`   |Build the User-code plug-in.|
-|`BUILD_PYTHON`           |`OFF`  |Build the Python interface.|
-|`BUILD_DECL_SION_PLUGIN` |`OFF`  |Build the decl'SION plug-in.|
-|`BUILD_FLOWVR_PLUGIN`    |`OFF`  |Build the FlowVR plug-in.|
-|`BUILD_FTI_PLUGIN`       |`OFF`  |Build the FTI plug-in.|
-|`BUILD_PYCALL_PLUGIN`    |`OFF`  |Build Pycall plug-in.|
-|`BUILD_DOCUMENTATION`    |`OFF`  |Build the documentation website.|
-|`BUILD_INDENT`           |`OFF`  |Build the code auto-indentation tools.|
-|`BUILD_CFG_VALIDATOR`    |`OFF`  |Build the PDI configuration validation script.|
+|Flag                       |Default|Description|
+|:--------------------------|:------|:----------|
+|`BUILD_BENCHMARKING`       |`ON`   |Build the benchmarks.|
+|`BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plug-in.|
+|`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plug-in.|
+|`BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
+|`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
+|`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plug-in.|
+|`BUILD_NETCDF_PARALLEL`    |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
+|`BUILD_TEST_PLUGIN`        |`OFF`  |Build the Test plug-in. (deprecated)|
+|`BUILD_TESTING`            |`ON`   |Build the tests.|
+|`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
+|`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
+|`BUILD_CFG_VALIDATOR`      |`OFF`  |Build the PDI configuration validation script. (deprecated)|
+|`BUILD_DECL_SION_PLUGIN`   |`OFF`  |Build the decl'SION plug-in. (deprecated)|
+|`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
+|`BUILD_FLOWVR_PLUGIN`      |`OFF`  |Build the FlowVR plug-in. (deprecated)|
+|`BUILD_FTI_PLUGIN`         |`OFF`  |Build the FTI plug-in. (deprecated)|
+|`BUILD_INDENT`             |`OFF`  |Build the code auto-indentation tools. (devel profile)|
+|`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
+|`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
 
 
 The following flags define whether to:
@@ -216,7 +220,7 @@ Dependencies of **the Decl'SION plugin**:
 Dependencies of **the FlowVR plugin**:
 
 * the PDI library,
-* **the [python YAML](https://pyyaml.org/) module version 3.12.1 or above (not provided)**.
+* the [python YAML](https://pyyaml.org/) module version 3.12.1 or above (provided).
 * [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) version 2.3.2 or above (provided).
 
 Dependencies of **the FTI plugin**:
@@ -247,4 +251,4 @@ Dependencies of **the documentation website builder**:
 Dependencies of **the PDI configuration validation tool**:
 
 * **a [python](https://www.python.org/) interpreter version 3.6 or above (not provided)**,
-* **the [python YAML](https://pyyaml.org/) module version 3.12.1 or above (not provided)**.
+* the [python YAML](https://pyyaml.org/) module version 3.12.1 or above (provided).
