@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -32,7 +32,6 @@ project(pdi_user_code_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_INDENT "Enable automatic code indentation" OFF)
-option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
 
 include(CTest)
 
@@ -63,13 +62,6 @@ set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${P
 install(TARGETS pdi_user_code_plugin
 		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
 )
-
-# Configuration validation
-if ("${BUILD_CFG_VALIDATOR}")
-	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
-	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
-			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
-endif()
 
 # Tests
 if("${BUILD_TESTING}")

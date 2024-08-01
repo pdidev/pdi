@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -116,74 +116,6 @@ set_property(TEST PDI_example_decl_netcdf_C PROPERTY PROCESSORS 3)
 endif("${BUILD_NETCDF_PARALLEL}")
 endif("${BUILD_DECL_NETCDF_PLUGIN}")
 
-
-if("${BUILD_DECL_SION_PLUGIN}")
-add_test(NAME PDI_example_decl_sion_variables_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_variables.yml")
-set_property(TEST PDI_example_decl_sion_variables_C PROPERTY TIMEOUT 15)
-set_property(TEST PDI_example_decl_sion_variables_C PROPERTY PROCESSORS 3)
-
-if("${BUILD_FORTRAN}")
-add_test(NAME PDI_example_decl_sion_variables_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_variables.yml")
-set_property(TEST PDI_example_decl_sion_variables_F PROPERTY TIMEOUT 15)
-set_property(TEST PDI_example_decl_sion_variables_F PROPERTY PROCESSORS 3)
-endif("${BUILD_FORTRAN}")
-
-if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_decl_sion_variables_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_variables.yml")
-set_property(TEST PDI_example_decl_sion_variables_P PROPERTY TIMEOUT 15)
-set_property(TEST PDI_example_decl_sion_variables_P PROPERTY PROCESSORS 3)
-endif("${BUILD_PYTHON}")
-
-add_test(NAME PDI_example_decl_sion_files_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_files.yml")
-set_property(TEST PDI_example_decl_sion_files_C PROPERTY TIMEOUT 15)
-set_property(TEST PDI_example_decl_sion_files_C PROPERTY PROCESSORS 3)
-
-if("${BUILD_FORTRAN}")
-add_test(NAME PDI_example_decl_sion_files_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_files.yml")
-set_property(TEST PDI_example_decl_sion_files_F PROPERTY TIMEOUT 15)
-set_property(TEST PDI_example_decl_sion_files_F PROPERTY PROCESSORS 3)
-endif("${BUILD_FORTRAN}")
-
-if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_decl_sion_files_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/decl_sion_files.yml")
-set_property(TEST PDI_example_decl_sion_files_P PROPERTY TIMEOUT 15)
-set_property(TEST PDI_example_decl_sion_files_P PROPERTY PROCESSORS 3)
-endif("${BUILD_PYTHON}")
-endif("${BUILD_DECL_SION_PLUGIN}")
-
-if("${BUILD_FTI_PLUGIN}")
-add_test(NAME PDI_example_fti_C COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
-set_property(TEST PDI_example_fti_C PROPERTY TIMEOUT 30)
-set_property(TEST PDI_example_fti_C PROPERTY PROCESSORS 6)
-
-if("${BUILD_FORTRAN}")
-add_test(NAME PDI_example_fti_F COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
-set_property(TEST PDI_example_fti_F PROPERTY TIMEOUT 30)
-set_property(TEST PDI_example_fti_F PROPERTY PROCESSORS 6)
-endif("${BUILD_FORTRAN}")
-
-if("${BUILD_PYTHON}")
-add_test(NAME PDI_example_fti_P COMMAND "${RUNTEST_DIR}" "--runtest-dir-copy-file" "${CMAKE_CURRENT_SOURCE_DIR}/fti_config.ini" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 6 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/fti.yml")
-set_property(TEST PDI_example_fti_P PROPERTY TIMEOUT 30)
-set_property(TEST PDI_example_fti_P PROPERTY PROCESSORS 6)
-endif("${BUILD_PYTHON}")
-endif("${BUILD_FTI_PLUGIN}")
-
-if("${BUILD_FLOWVR_PLUGIN}")
-find_package(FlowVR REQUIRED)
-
-set(OpenGL_GL_PREFERENCE LEGACY)
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-add_executable(flowvr_visu flowvr_visu.c)
-target_link_libraries(flowvr_visu PDI::PDI_C OpenGL::GL OpenGL::GLU GLUT::GLUT)
-
-add_test(NAME PDI_example_flowvr_C COMMAND PDI::pdirun "${RUNTEST_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/flowvr_test.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "$<TARGET_FILE:PDI_example_C>" "$<TARGET_FILE:flowvr_visu>")
-set_property(TEST PDI_example_flowvr_C PROPERTY TIMEOUT 60)
-set_property(TEST PDI_example_flowvr_C PROPERTY PROCESSORS 4)
-set_property(TEST PDI_example_flowvr_C PROPERTY RESOURCE_LOCK flowvrd)
-set_property(TEST PDI_example_flowvr_C PROPERTY DISABLED TRUE)
-endif("${BUILD_FLOWVR_PLUGIN}")
 
 add_test(NAME PDI_example_trace_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")
 set_property(TEST PDI_example_trace_C PROPERTY TIMEOUT 15)

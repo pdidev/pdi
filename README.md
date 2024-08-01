@@ -9,8 +9,8 @@ Input/Output concerns.
 It offers a declarative application programming interface that enables codes to
 expose the buffers in which they store data and to notify PDI of significant
 steps of the simulation.
-It supports a plugin system to make existing libraries such as HDF5, SIONlib or
-FTI available to codes, potentially mixed in a single execution.
+It supports a plugin system to make existing libraries such as HDF5, NetCDF or
+Python available to codes, potentially mixed in a single execution.
 
 This approach makes it possible to describe the I/O operations in a dedicated
 YAML file instead of interleaving them with the simulation code and thus to
@@ -44,18 +44,14 @@ PDI distribution is made of the following submodules:
 * `pdi/` : the PDI library,
 * `plugins/decl_hdf5/`: the Decl'HDF5 plugin,
 * `plugins/decl_netcdf/`: the Decl'NetCDF plugin,
-* `plugins/flowvr/`: the FlowVR plugin,
 * `plugins/mpi/`: the MPI plugin,
-* `plugins/test/`: the Test plugin (deprecated),
-* `plugins/user_code/`: the user-code plugin,
-* `plugins/decl_sion/`: the Decl'SION plugin,
-* `plugins/fti/`: the FTI plugin,
 * `plugins/pycall/`: the Pycall plugin,
 * `plugins/serialize/`: the serialize plugin,
 * `plugins/set_value/`: the Set value plugin,
+* `plugins/test/`: the Test plugin (deprecated),
 * `plugins/trace/`: the Trace plugin,
-* `tools/pdicfg_validator/`: the PDIcfg-validator tool,
+* `plugins/user_code/`: the user-code plugin,
 * `example/`: PDI examples,
 * `tests/`: tests that combine multiple plugins,
 * `tutorial/`: the PDI tutorial,
-* `vendor/`: source for PDI dependencies.
+* `vendor/`: source for vendored PDI dependencies.
