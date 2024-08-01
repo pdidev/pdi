@@ -67,35 +67,35 @@ using std::unordered_set;
 using std::vector;
 
 Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, string name, PC_tree_t conf)
-    : m_config{conf}
-    , m_ctx{ctx}
-    , m_name{name}
-    , m_state{PRELOADED}
+	: m_config{conf}
+	, m_ctx{ctx}
+	, m_name{name}
+	, m_state{PRELOADED}
 {
 	ctx.logger().trace("Pre-loading plugin `{}'", name);
-
+	
 	string ctor_symbol = "PDI_plugin_" + name + "_loader";
 	string deps_symbol = "PDI_plugin_" + name + "_dependencies";
 	string pretty_name_symbol = "PDI_plugin_" + name + "_pretty_name";
-
+	
 	// case where the library was prelinked
 	m_ctr = reinterpret_cast<plugin_factory_f>(dlsym(NULL, ctor_symbol.c_str()));
 	m_deps = reinterpret_cast<plugin_deps_f>(dlsym(NULL, deps_symbol.c_str()));
 	auto pretty_name_f = reinterpret_cast<std::string (*)()>(dlsym(NULL, pretty_name_symbol.c_str()));
-
+	
 	// case where the library was not prelinked
 	void* lib_handle = NULL;
 	if (!m_ctr || !m_deps) {
 		lib_handle = store.plugin_dlopen(name);
 	}
-
+	
 	if (!m_ctr) {
 		m_ctr = reinterpret_cast<plugin_factory_f>(dlsym(lib_handle, ctor_symbol.c_str()));
 		if (!m_ctr) {
 			throw Plugin_error{"Unable to load plugin constructor for `{}': {}", name, dlerror()};
 		}
 	}
-
+	
 	if (!m_deps) {
 		m_deps = reinterpret_cast<plugin_deps_f>(dlsym(lib_handle, deps_symbol.c_str()));
 		if (!m_deps) {
@@ -108,7 +108,7 @@ Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, st
 			throw Plugin_error{"Unable to load plugin pretty name for `{}': {}", name, dlerror()};
 		}
 	}
-
+	
 	m_ctx.setup_logger(pretty_name_f(), PC_get(conf, ".logging"));
 }
 
@@ -122,7 +122,7 @@ void Plugin_store::Stored_plugin::ensure_loaded(map<string, shared_ptr<Stored_pl
 	case PRELOADED:
 		m_state = LOADING;
 		auto&& plugin_dependencies = m_deps();
-
+		
 		for (auto&& req_plugin: plugin_dependencies.first) {
 			auto&& plugin_info_it = plugins.find(req_plugin);
 			if (plugin_info_it == plugins.end()) {
@@ -154,7 +154,7 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 		}
 		m_plugin_path.insert(m_plugin_path.end(), escaped_env_plugin_path.begin(), escaped_env_plugin_path.end());
 	}
-
+	
 	// STEP 2: get path from yaml file
 	if (!PC_status(plugin_path_node)) {
 		if (is_list(plugin_path_node)) {
@@ -170,7 +170,7 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 			throw Config_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
 		}
 	}
-
+	
 	// STEP 3: get from relative path to libpdi.so
 	if /* constexpr */ (PDI_DEFAULT_PLUGIN_PATH[0] == '/') {
 		m_ctx.logger().trace("Adding plugin path: `{}'", PDI_DEFAULT_PLUGIN_PATH);
@@ -190,7 +190,7 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 {
 	vector<string> load_errors;
-
+	
 	// STEP 1: try using expected path
 	for (auto&& path: m_plugin_path) {
 		string libname = path + "/libpdi_" + plugin_name + "_plugin.so";
@@ -205,7 +205,7 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 			load_errors.push_back(format("\n  * unable to load `{}' {}", libname, error_msg));
 		}
 	}
-
+	
 	// STEP 2: get from relative path to system path
 	if /* constexpr */ (PDI_DEFAULT_PLUGIN_PATH[0] != '/') {
 		string libname = (PDI_DEFAULT_PLUGIN_PATH "/libpdi_") + plugin_name + "_plugin.so";
@@ -220,7 +220,7 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 			load_errors.push_back(format("\n  * unable to load `{}' relative to system path {}", libname, error_msg));
 		}
 	}
-
+	
 	// STEP 3: try system path
 	string libname = string("libpdi_") + plugin_name + "_plugin.so";
 	// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
@@ -233,15 +233,15 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 		m_ctx.logger().debug("Unable to load `{}' from system path {}", libname, error_msg);
 		load_errors.push_back(format("\n  * unable to load `{}' from system path {}", libname, error_msg));
 	}
-
+	
 	throw Plugin_error{"Unable to load plugin `{}': {}", plugin_name, join(load_errors, ", ")};
 }
 
 Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
-    : m_ctx(ctx)
+	: m_ctx(ctx)
 {
 	initialize_path(PC_get(conf, ".plugin_path"));
-
+	
 	// pre-load the plugins
 	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
 	m_ctx.logger().trace("Loading {} plugin(s)", nb_plugins);
