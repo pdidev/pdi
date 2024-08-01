@@ -108,12 +108,6 @@ if __name__ == '__main__':
     pdi.expose('mpi_comm_F', main_comm_f, pdi.INOUT)
     main_comm = MPI.Comm.f2py(main_comm_f)
 
-    fti_head = np.array(0)
-    pdi.expose('fti_head', fti_head, pdi.IN)
-    if fti_head == 1:
-        pdi.finalize()
-        exit()
-
     psize_1d = main_comm.Get_size()
     pcoord_1d = main_comm.Get_rank()
 

@@ -1,8 +1,0 @@
-name: docu-docs
-
-channels:
-  - QuantStack 
-
-dependencies:
-  - pip:
-    - breathe==4.19.1

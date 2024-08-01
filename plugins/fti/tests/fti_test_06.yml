@@ -1,8 +1,0 @@
-logging: trace
-data:
-  fti_head: int
-plugins:
-  mpi:
-  fti:
-    config_file: fti_config_02.ini
-    head: fti_head

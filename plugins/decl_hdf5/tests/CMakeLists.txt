@@ -120,42 +120,4 @@ if("${BUILD_FORTRAN}")
 endif("${BUILD_FORTRAN}")
 
 
-# Config tests
-
-if("${BUILD_CFG_VALIDATOR}")
-find_package(PDIcfg REQUIRED)
-
-# Positive tests
-add_test(NAME pos_val_decl_hdf5_test_01 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_01.yml")
-add_test(NAME pos_val_decl_hdf5_test_02 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_02.yml")
-add_test(NAME pos_val_decl_hdf5_test_03 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_03.yml")
-add_test(NAME pos_val_decl_hdf5_test_04 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_04.yml")
-add_test(NAME pos_val_decl_hdf5_test_05 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_05.yml")
-add_test(NAME pos_val_decl_hdf5_test_06 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_06.yml")
-add_test(NAME pos_val_decl_hdf5_test_07 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_07.yml")
-add_test(NAME pos_val_decl_hdf5_test_08 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/pos_val_decl_hdf5_test_08.yml")
-
-# Negative config tests
-add_test(NAME neg_val_decl_hdf5_test_01 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_01.yml")
-add_test(NAME neg_val_decl_hdf5_test_02 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_02.yml")
-add_test(NAME neg_val_decl_hdf5_test_03 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_03.yml")
-add_test(NAME neg_val_decl_hdf5_test_04 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_04.yml")
-add_test(NAME neg_val_decl_hdf5_test_05 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_05.yml")
-add_test(NAME neg_val_decl_hdf5_test_06 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_06.yml")
-add_test(NAME neg_val_decl_hdf5_test_07 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_07.yml")
-add_test(NAME neg_val_decl_hdf5_test_08 COMMAND PDIcfg::pdicfg_validate "${CMAKE_CURRENT_SOURCE_DIR}/neg_val_decl_hdf5_test_08.yml")
-set_tests_properties( 
-	neg_val_decl_hdf5_test_01
-	neg_val_decl_hdf5_test_02
-	neg_val_decl_hdf5_test_03
-	neg_val_decl_hdf5_test_04
-	neg_val_decl_hdf5_test_05
-	neg_val_decl_hdf5_test_06
-	neg_val_decl_hdf5_test_07
-	neg_val_decl_hdf5_test_08
-	PROPERTIES
-	WILL_FAIL TRUE)
-
-endif()
-
 add_subdirectory("compatibility_tests/")

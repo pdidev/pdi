@@ -69,7 +69,7 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INCLUDE_DIRECTORIES_BEFORE=ON"
 	#TODO: Workaround Doxygen finds system libmd before its own
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DICONV_IN_GLIBC=OFF"
-	#TODO: Workaround FTI fails to include zlib https://github.com/leobago/fti/issues/407
+	#TODO: Workaround NetCDF fails to include zlib https://github.com/leobago/fti/issues/407
 	export CFLAGS="${CFLAGS} $(pkg-config --cflags zlib)"
 	export LDFLAGS="${LDFLAGS} $(pkg-config --libs-only-L zlib)"
 fi
@@ -86,24 +86,11 @@ then
 	CTEST_FLAGS="-E test_05_C ${CTEST_FLAGS}"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ ^xubuntu-.* && "xprovided" != "x${PDI_LIBS}" ]]
-then
-	#TODO: https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/195
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_DECL_SION_PLUGIN=OFF"
-fi
-
 if [[ "x${PDI_SYSTEM}" =~ ^xubuntu-.* && "xprovided" = "x${PDI_LIBS}" ]]
 then
 	# only sequential NetCDF is provided as a package in Ubuntu
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
-
-if [[ "x${PDI_SYSTEM}" =~ ^xubuntu-.* && "xprovided" = "x${PDI_LIBS}" && "x${PDI_MPI}" != "openmpi" ]]
-then
-	#TODO: mpich flowvr package is missing
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_FLOWVR_PLUGIN=OFF"
-fi
-
 
 
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
