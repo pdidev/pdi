@@ -192,9 +192,9 @@ struct mpi_plugin: Plugin {
 	
 	/// the MPI_Comm_f datatype
 	std::shared_ptr<Scalar_datatype> m_mpi_comm_f_datatype = Scalar_datatype::make(
-	        (std::is_signed_v<MPI_Fint>? Scalar_kind::SIGNED : Scalar_kind::UNSIGNED),
-	        sizeof(MPI_Fint), alignof(MPI_Fint));
-	        
+	    (std::is_signed_v<MPI_Fint>? Scalar_kind::SIGNED : Scalar_kind::UNSIGNED),
+	    sizeof(MPI_Fint), alignof(MPI_Fint));
+	    
 	/** Pretty name for the plugin that will be shown in the logger
 	 *
 	 * \return pretty name of the plugin

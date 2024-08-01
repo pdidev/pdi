@@ -245,7 +245,7 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 				throw Value_error{
 					"Cannot copy reference expression value: reference buffersize ({}) != type bufferize ({})",
 					ref_r.type()->buffersize(),
-					type->buffersize()};
+					    type->buffersize()};
 			}
 		} else {
 			if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {

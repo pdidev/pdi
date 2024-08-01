@@ -114,8 +114,8 @@ PYBIND11_MODULE(_pdi, m)
 		Global_context::init(PC_parse_string(conf));
 	},
 	"Initialize PDI"
-	);
-	
+	    );
+	    
 	m.def(
 	    "finalize",
 	[]() {
@@ -123,8 +123,8 @@ PYBIND11_MODULE(_pdi, m)
 		Global_context::finalize();
 	},
 	"Finalize PDI"
-	);
-	
+	    );
+	    
 	m.def(
 	    "event",
 	[](const char* name) {
@@ -132,8 +132,8 @@ PYBIND11_MODULE(_pdi, m)
 		Global_context::context().event(name);
 	},
 	"Triggers a PDI \"event\""
-	);
-	
+	    );
+	    
 	m.def(
 	    "share",
 	[](const char* name, pybind11::array pybuf, PDI_inout_t access) {
@@ -142,8 +142,8 @@ PYBIND11_MODULE(_pdi, m)
 			pybuf.mutable_data(),
 			[pybuf](void*) { /* keep pybuf copy to prevent deallocation of the underlying memory */ },
 			python_type(pybuf),
-			static_cast<bool>(access & PDI_OUT),
-			static_cast<bool>(access & PDI_IN)};
+			static_cast<bool>(access& PDI_OUT),
+			static_cast<bool>(access& PDI_IN)};
 		try {
 			Global_context::context()[name].share(r, false, false);
 		} catch (...) {
@@ -153,19 +153,19 @@ PYBIND11_MODULE(_pdi, m)
 		}
 	},
 	"Shares some data with PDI. The user code should not modify it before a call to either release or reclaim"
-	);
-	
+	    );
+	    
 	m.def(
 	    "access",
 	[](const char* name, PDI_inout_t inout) {
 		Paraconf_wrapper fw;
 		Data_descriptor& desc = Global_context::context()[name];
 		desc.share(desc.ref(), false, false);
-		return to_python(desc.ref(), !(inout & PDI_OUT));
+		return to_python(desc.ref(), !(inout& PDI_OUT));
 	},
 	"Requests for PDI to access a data buffer"
-	);
-	
+	    );
+	    
 	m.def(
 	    "release",
 	[](const char* name) {
@@ -173,8 +173,8 @@ PYBIND11_MODULE(_pdi, m)
 		Global_context::context()[name].release();
 	},
 	"Releases ownership of a data shared with PDI. PDI is then responsible to free the associated memory whenever necessary."
-	);
-	
+	    );
+	    
 	m.def(
 	    "reclaim",
 	[](const char* name) {
@@ -182,8 +182,8 @@ PYBIND11_MODULE(_pdi, m)
 		Global_context::context()[name].reclaim();
 	},
 	"Reclaims ownership of a data buffer shared with PDI. PDI does not manage the buffer memory anymore."
-	);
-	
+	    );
+	    
 	pybind11::class_<Python_ref_wrapper>(m, "ref")
 	.def("__getattribute__", &Python_ref_wrapper::getattribute) // get member
 	.def("__setattr__", &Python_ref_wrapper::setattribute) // set member

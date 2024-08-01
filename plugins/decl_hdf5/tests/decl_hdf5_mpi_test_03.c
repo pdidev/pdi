@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 	for (j = njg; j < nj + njg ; ++j) {
 		for (i = nig; i < ni + nig; ++i) {
 			values[j][i]    = i + coord[1]*ni  -nig + (j+coord[0]*nj-njg)*10;
-			reals[j][i]     = i*cst + coord[1]*ni - nig*cst + (j+coord[0]*nj-njg)*10.; /// array that contains data
+			reals[j][i]     = i* cst + coord[1]*ni - nig* cst + (j+coord[0]*nj-njg)*10.; /// array that contains data
 		}
 	}
 	

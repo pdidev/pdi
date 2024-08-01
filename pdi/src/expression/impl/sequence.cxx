@@ -151,9 +151,9 @@ size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, Dataty
 		size_t bytes_copied = 0;
 		for (int i = 0; i < m_value.size(); i++) {
 			bytes_copied += m_value[i].m_impl->copy_value(
-			        ctx,
-			        static_cast<uint8_t*>(buffer) + tuple_type->elements()[i].offset(),
-			        tuple_type->elements()[i].type()
+			    ctx,
+			    static_cast<uint8_t*>(buffer) + tuple_type->elements()[i].offset(),
+			    tuple_type->elements()[i].type()
 			    );
 		}
 		return tuple_type->buffersize();
