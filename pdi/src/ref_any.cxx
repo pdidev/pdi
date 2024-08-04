@@ -62,7 +62,7 @@ Ref Reference_base::do_copy(Ref_r ref)
 
 Datatype_sptr Reference_base::type() const noexcept
 {
-	if (!m_content || !m_content->m_data) return UNDEF_TYPE;
+	if (!m_content || !m_content->m_cpu_data) return UNDEF_TYPE;
 	return m_content->m_type;
 }
 

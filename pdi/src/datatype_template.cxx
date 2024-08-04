@@ -282,7 +282,7 @@ public:
 		Datatype_template_sptr m_type;
 
 		/** Creates new Element template with only type defined
-		 * 
+		 *
 		 * \param[in] type type of the element
 		 */
 		Element(Datatype_template_sptr type)
@@ -290,7 +290,7 @@ public:
 		{}
 
 		/** Creates new Element template with only type defined
-		 * 
+		 *
 		 * \param[in] disp displacement of the element
 		 * \param[in] type type of the element
 		 */
@@ -300,7 +300,7 @@ public:
 		{}
 
 		/** Creates a copy of an element template
-		 * 
+		 *
 		 * \param[in] o an element to copy
 		 */
 		Element(const Element& o)
