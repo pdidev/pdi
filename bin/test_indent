@@ -1,5 +1,6 @@
+#!/bin/bash
 #=============================================================================
-# Copyright (C) 2023-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -26,22 +27,38 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
-spack:
-  concretization: together
-  specs:
-  - 'benchmark@1.5.0:'
-  - 'cmake@3.10.0:3.999.999'
-  - 'doxygen@1.8.12:1.999.999'
-  - 'googletest@1.8.0: +gmock'
-  - 'hdf5@1.10.0:1.999.999'
-  - 'mpi'
-  - 'netcdf-c@4.6.2:4.999.999'
-  - 'paraconf@1.0.0:1.999.999'
-  - 'pkgconfig'
-  - 'python@3.6.5:3.999.999'
-  - 'py-mpi4py@2.0.0:'
-  - 'py-numpy@1.13.3:'
-  - 'py-pip@9.0.1:'
-  - 'py-pybind11@2.3.0:2.999.999'
-  - 'spdlog@1.5.0:1.999.999'
-  - 'zpp@1.0.15:1.999.999'
+
+cd "$(dirname "$(dirname "$0")")"
+
+if [ 0 -eq $# ]
+then CLANG_FORMAT_ARGS=""
+elif [ "x--apply" = "x$1" ]
+then CLANG_FORMAT_ARGS="-i"
+elif [ "x--quiet" = "x$1" ]
+then CLANG_FORMAT_ARGS="-q"
+else
+	echo "Usage: $0 [--apply|--quiet]" >&2
+	echo "  Checks (or with --apply, enforce) the indentation of PDI files" >&2
+	echo "  With --quiet, only the return code gives info" >&2
+	exit 1
+fi
+
+# Look for a docker based version
+DOCKER="$(which docker)"
+if "${DOCKER}" --version >/dev/null 2>&1
+then
+	RUN_CLANG_FORMAT="${DOCKER} run --rm -v $(pwd):/src ghcr.io/pdidev/run_clang_format:v3"
+fi
+
+# Look for a local version
+for CLANG_FORMAT in clang-format-17 clang-format17 clang-format
+do
+	CLANG_FORMAT="$(which "${CLANG_FORMAT}")"
+	if [ 17 -le "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" ]
+	then
+		RUN_CLANG_FORMAT="python3 vendor/run-clang-format/run-clang-format.py --clang-format-executable ${CLANG_FORMAT}"
+		break
+	fi
+done
+
+exec ${RUN_CLANG_FORMAT} ${CLANG_FORMAT_ARGS} $(git ls-files --full-name | grep '\.[hHcC]\(\|++\|xx\|pp\)\s*$')

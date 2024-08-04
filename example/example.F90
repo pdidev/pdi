@@ -34,8 +34,8 @@ program PDI_example_f90
   character(len=512) :: strbuf
   type(PC_tree_t),target :: conf
   integer,target :: err, main_comm, psize_1d, pcoord_1d, dsize(2), psize(2)
-  integer,target :: cart_comm, pcoord(2), next_reduce, ii, rem_iter, fti_head
-  integer,pointer :: iptr, iaptr(:), fti_comm_ptr
+  integer,target :: cart_comm, pcoord(2), next_reduce, ii, rem_iter
+  integer,pointer :: iptr, iaptr(:)
   logical,target :: cart_period(2), keep_running
   real(8),target :: duration, start, local_time, global_time
   real(8),pointer :: cur(:,:), next(:,:), tmp(:,:)
@@ -55,16 +55,6 @@ program PDI_example_f90
   call PDI_init(PC_get(conf, ".pdi"))
   
   call PDI_expose("mpi_comm_F", main_comm, PDI_INOUT);
-
-  fti_head = 0;
-  call PDI_expose("fti_head", fti_head, PDI_IN)
-  if ( fti_head == 1) then
-    call PDI_finalize()
-    call PC_tree_destroy(conf)
-    call MPI_finalize(err)
-    call exit(0)
-  endif
-
 
   call MPI_Comm_size(main_comm, psize_1d, err)
   call MPI_Comm_rank(main_comm, pcoord_1d, err)

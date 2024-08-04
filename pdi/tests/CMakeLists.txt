@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -118,15 +118,4 @@ endif()
 add_test(NAME PDI_test_env_zsh COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/test_env_sh" "${CMAKE_INSTALL_PREFIX}/share/pdi/env.bash")
 if(NOT "${ENABLE_ZSH}")
 	set_property(TEST PDI_test_env_zsh PROPERTY DISABLED TRUE)
-endif()
-
-if("${Astyle_FOUND}")
-	Astyle_add_indent(PDI_tests_indent
-			OPTIONS_FILE "${PDI_SOURCE_DIR}/docs/formating.astyle"
-			TEST
-			RECURSIVE
-			"${CMAKE_CURRENT_SOURCE_DIR}/**/*.c"
-			"${CMAKE_CURRENT_SOURCE_DIR}/**/*.cxx"
-			"${CMAKE_CURRENT_SOURCE_DIR}/**/*.h")
-	add_dependencies(indent PDI_tests_indent)
 endif()

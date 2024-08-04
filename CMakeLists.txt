@@ -45,21 +45,17 @@ set_property(CACHE DIST_PROFILE PROPERTY STRINGS User Devel)
 
 if(User STREQUAL "${DIST_PROFILE}")
 	option(BUILD_DOCUMENTATION "Build documentation" OFF)
-	option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 	option(BUILD_TESTING       "Build tests" OFF)
 	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" OFF)
 	set(DEFAULT_BUILD_TYPE "Release")
 elseif(Devel STREQUAL "${DIST_PROFILE}")
 	option(BUILD_DOCUMENTATION "Build documentation" ON)
-	option(BUILD_INDENT        "Enable automatic code indentation" ON)
 	option(BUILD_TESTING       "Build tests" ON)
 	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
 	set(DEFAULT_BUILD_TYPE "Debug")
 else()
 	message(FATAL_ERROR "DIST_PROFILE should be set to one of: User, Devel")
 endif()
-
-option(BUILD_DEPRECATED "Build deprecated modules" OFF)
 
 set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can be 1) EMBEDDED to use the provided version, 2) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 3) AUTO to use SYSTEM if available and EMBEDDED otherwise")
 
@@ -68,13 +64,9 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 # Modules to build
 
 option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
-option(BUILD_CFG_VALIDATOR      "Build config validation script" "${BUILD_DEPRECATED}")
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
-option(BUILD_DECL_SION_PLUGIN   "Build Decl'SION plug-in" "${BUILD_DEPRECATED}")
-option(BUILD_FLOWVR_PLUGIN      "Build FlowVR plug-in" "${BUILD_DEPRECATED}")
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
-option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "${BUILD_DEPRECATED}")
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
 option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
 option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
@@ -83,7 +75,6 @@ option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
-option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_DEPRECATED}")
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 
@@ -99,7 +90,7 @@ message(STATUS " **Profile**: Build type is: `${CMAKE_BUILD_TYPE}' (-DCMAKE_BUIL
 message(STATUS " **Profile**: Prefix path is: `${CMAKE_PREFIX_PATH}' (-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH})")
 message(STATUS " **Profile**: Default use is: `${USE_DEFAULT}' (-DUSE_DEFAULT=${USE_DEFAULT})")
 message(STATUS " **Profile**: Unstable activation is: `${BUILD_UNSTABLE}' (-DBUILD_UNSTABLE=${BUILD_UNSTABLE})")
-foreach(FEATURE FORTRAN HDF5_PARALLEL INDENT PYTHON TESTING)
+foreach(FEATURE FORTRAN HDF5_PARALLEL PYTHON TESTING)
 	set(FEATURE_ENABLED "DISABLED")
 	if(${BUILD_${FEATURE}})
 		set(FEATURE_ENABLED "ENABLED ")
@@ -114,26 +105,13 @@ endforeach()
 list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/test/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code/cmake")
-if("${BUILD_CFG_VALIDATOR}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/pdicfg_validator/cmake")
-endif()
 if("${BUILD_DECL_HDF5_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake")
 endif()
 if("${BUILD_DECL_NETCDF_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
-endif()
-if("${BUILD_DECL_SION_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_sion/cmake")
-endif()
-if("${BUILD_FLOWVR_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/flowvr/cmake")
-endif()
-if("${BUILD_FTI_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/fti/cmake")
 endif()
 if("${BUILD_MPI_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi/cmake")
@@ -199,14 +177,6 @@ endif()
 
 
 
-### Subtargets
-
-if("${BUILD_INDENT}")
-	add_custom_target(indent)
-endif()
-
-
-
 ### Dependencies
 
 include(GNUInstallDirs)
@@ -228,7 +198,7 @@ endif()
 
 if("${BUILD_PYTHON}")
 	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
-elseif("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}" OR "${BUILD_FORTRAN}")
+elseif("${BUILD_FORTRAN}")
 	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
 endif()
 
@@ -270,7 +240,7 @@ if( ("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}") OR ("${BUILD_DECL
 		list(APPEND MPI_COMPONENTS Fortran)
 	endif()
 endif()
-if("${BUILD_FTI_PLUGIN}" OR "${BUILD_MPI_PLUGIN}" OR "${BUILD_DECL_SION_PLUGIN}")
+if("${BUILD_MPI_PLUGIN}")
 	list(APPEND MPI_COMPONENTS CXX)
 endif()
 if(NOT "x${MPI_COMPONENTS}x" STREQUAL xx)
@@ -284,7 +254,7 @@ endif()
 
 ## Yaml
 
-# if ( paraconf or PyYAML )
+# if ( paraconf )
 sbuild_add_dependency(yaml "${USE_DEFAULT}"
 	EMBEDDED_PATH "vendor/libyaml-0.2.2"
 	CMAKE_CACHE_ARGS
@@ -344,19 +314,6 @@ if("${BUILD_DOCUMENTATION}")
 endif()
 
 
-## Astyle
-
-if("${BUILD_INDENT}")
-	sbuild_add_dependency(Astyle "${USE_DEFAULT}"
-		BUILD_DEPENDENCY
-		EMBEDDED_PATH "vendor/astyle"
-		PATCH_COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/vendor/astyle/CMakeLists.txt" "<SOURCE_DIR>/CMakeLists.txt"
-		CMAKE_CACHE_ARGS "-DBUILD_SHARED_LIBS:BOOL=OFF"
-		VERSION 3.1
-	)
-endif()
-
-
 ## GTest
 
 if(${BUILD_TESTING})
@@ -390,45 +347,6 @@ if(${BUILD_BENCHMARKING})
 		VERSION 1.5.0
 	)
 	set(BENCHMARKING_DEPENDENCY benchmark)
-endif()
-
-
-## OpenGL
-
-if("${BUILD_FLOWVR_PLUGIN}" AND "${BUILD_TESTING}")
-	set(OpenGL_GL_PREFERENCE LEGACY)
-	sbuild_add_dependency(OpenGL SYSTEM)
-	sbuild_add_dependency(GLUT SYSTEM)
-endif()
-
-
-## FTI
-
-if("${BUILD_FTI_PLUGIN}")
-	sbuild_add_dependency(FTI "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/fti-1.6"
-		CMAKE_CACHE_ARGS
-			"-DENABLE_FORTRAN:BOOL=OFF"
-			"-DENABLE_EXAMPLES:BOOL=OFF"
-			"-DENABLE_TESTS:BOOL=OFF"
-			"-DENABLE_DOCU:BOOL=OFF"
-		VERSION 1.6
-	)
-endif()
-
-
-## FlowVR
-
-if("${BUILD_FLOWVR_PLUGIN}")
-	sbuild_add_dependency(FlowVR "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/flowvr-ex-v2.3.2"
-		CMAKE_CACHE_ARGS
-			"-DENABLE_EXAMPLES:BOOL=OFF"
-			"-DENABLE_TESTS:BOOL=OFF"
-			"-DENABLE_DOCU:BOOL=OFF"
-			"-DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-		# VERSION 2.3.2 Finding FlowVR version doesn't work with 2.3
-	)
 endif()
 
 
@@ -563,62 +481,9 @@ if("${BUILD_PYTHON}")
 endif()
 
 
-## PyYAML
-
-if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
-	execute_process(COMMAND "${Python3_EXECUTABLE}" -m pip install --system
-		RESULT_VARIABLE PIP_INSTALL_ERROR
-		OUTPUT_QUIET
-		ERROR_QUIET)
-	if("${PIP_INSTALL_ERROR}" EQUAL 0)
-		set(PIP_SYSTEM "--system")
-	endif()
-	sbuild_get_env(CPATH CPATH)
-	sbuild_get_env(LIBRARY_PATH LIBRARY_PATH)
-	sbuild_add_dependency(PyYAML "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/PyYAML-6.0.1"
-		CONFIGURE_COMMAND "true"
-		BUILD_COMMAND "true"
-		INSTALL_COMMAND env
-			"CPATH=${CPATH}"
-			"LIBRARY_PATH=${LIBRARY_PATH}"
-			"LD_LIBRARY_PATH=${LIBRARY_PATH}"
-			"${Python3_EXECUTABLE}" -m pip install
-			${PIP_SYSTEM}
-			--prefix "<INSTALL_DIR>"
-			--no-cache-dir
-			--ignore-installed
-			"<SOURCE_DIR>"
-		DEPENDS yaml
-	)
-endif()
-
-
-## SIONlib
-
-if("${BUILD_DECL_SION_PLUGIN}")
-	sbuild_add_dependency(SIONlib "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/sionlib-1.7.6"
-		DEPENDS MPI
-		BUILD_IN_SOURCE 1
-		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
-			--prefix=<INSTALL_DIR>
-			--disable-fortran
-			--disable-parutils
-			--disable-cxx
-		VERSION 1.7.6
-	)
-endif()
-
-
-
 ### Own modules
 
-if("${BUILD_INDENT}")
-	set(ASTYLE_DEPENDENCY Astyle)
-endif()
-
-set(PDI_DEPENDS_LIST paraconf spdlog "${ASTYLE_DEPENDENCY}" "${BENCHMARKING_DEPENDENCY}")
+set(PDI_DEPENDS_LIST paraconf spdlog "${BENCHMARKING_DEPENDENCY}")
 if("${BUILD_DOCUMENTATION}")
 	list(APPEND PDI_DEPENDS_LIST Doxygen)
 endif()
@@ -634,119 +499,83 @@ endif()
 sbuild_add_module(PDI
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pdi"
 	DEPENDS ${PDI_DEPENDS_LIST}
-	SUBSTEPS indent test
-)
-
-
-sbuild_add_module(PDICFG_VALIDATOR
-	ENABLE_BUILD_FLAG BUILD_CFG_VALIDATOR
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tools/pdicfg_validator"
-	DEPENDS PyYAML
 	SUBSTEPS test
 )
-if("${BUILD_CFG_VALIDATOR}")
-	set(PDICFG_DEPENDENCY PDICFG_VALIDATOR)
-endif()
 
 
 sbuild_add_module(MPI_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_MPI_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 
 sbuild_add_module(DECL_HDF5_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_HDF5_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5"
-	DEPENDS PDI HDF5 ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY} ${BENCHMARKING_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI HDF5 ${BENCHMARKING_DEPENDENCY}
+	SUBSTEPS test
 )
 
-
-sbuild_add_module(DECL_SION_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_DECL_SION_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_sion"
-	DEPENDS PDI SIONlib ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY}
-	SUBSTEPS indent test
-)
 
 sbuild_add_module(DECL_NETCDF_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf"
-	DEPENDS PDI NetCDF ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY}
-	SUBSTEPS indent test
-)
-
-sbuild_add_module(FTI_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_FTI_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/fti"
-	DEPENDS PDI FTI ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY}
-	SUBSTEPS indent test
-)
-
-
-sbuild_add_module(FLOWVR_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_FLOWVR_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/flowvr"
-	DEPENDS PDI FlowVR PyYAML ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI NetCDF
+	SUBSTEPS test
 )
 
 
 sbuild_add_module(PYCALL_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_PYCALL_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 sbuild_add_module(SET_VALUE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_SET_VALUE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/set_value"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 sbuild_add_module(SERIALIZE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_SERIALIZE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/serialize"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 sbuild_add_module(TEST_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TEST_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/test"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent
+	DEPENDS PDI
+	SUBSTEPS
 )
 
 
 sbuild_add_module(TRACE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TRACE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent
+	DEPENDS PDI
+	SUBSTEPS
 )
 
 
 sbuild_add_module(USER_CODE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
-if ("${BUILD_FLOWVR_PLUGIN}")
-	set(FLOWVR_DEPENDENCY FlowVR)
-endif()
 
 sbuild_add_module(PDI_EXAMPLE
 	ENABLE_BUILD_FLAG BUILD_TESTING
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/example"
-	DEPENDS PDI ${FLOWVR_DEPENDENCY}
+	DEPENDS PDI
 	INSTALL_COMMAND ""
 	SUBSTEPS test
 )
@@ -756,5 +585,5 @@ sbuild_add_module(PDI_TESTS
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
-	SUBSTEPS indent test
+	SUBSTEPS test
 )

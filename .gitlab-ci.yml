@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2019-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2019-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2019-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -52,6 +52,13 @@ pages:
       fi
       mv docs/html "$CI_PROJECT_DIR/public"
   artifacts: { paths: [ public ] }
+
+indentation:
+  only: *default_run
+  image:
+    name: ghcr.io/pdidev/run-clang-format:v3
+    entrypoint: ['/bin/sh', '-c']
+  script: 'run-clang-format --color=always -r .'
 
 spack_oldest_clang_openmpi_all:
   only: *default_run

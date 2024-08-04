@@ -8,7 +8,6 @@ binary packages for Debian, Fedora and Ubuntu or Spack recipe, see
 The %PDI source distribution includes:
 * the %PDI core and its bindings for Fortran and python,
 * many %PDI plugins,
-* the %PDI configuration validator,
 * examples and tests,
 * most dependencies of all the above.
 
@@ -86,7 +85,6 @@ The following general flags are useful to configure the distribution as a whole.
 |`CMAKE_PREFIX_PATH`   |            |A semicolon-separated list of prefix where to look for %PDI dependencies in addition to system path.|
 |`DIST_PROFILE`        |`User`      |Sets the default values of other flags. The possible values are `User` for the %PDI use profile and `Devel` for the developer profile.|
 |`USE_DEFAULT`         |`AUTO`      |Whether to compile the embedded versions of the dependencies. The possible values are `SYSTEM` to use the system versions, `EMBEDDED` to compile the version provided in the distribution and `AUTO` to prefer a system version but fall-back on the embedded version if unavailable.|
-|`BUILD_DEPRECATED`    |`OFF`       |Whether to build the deprecated, unmaintained and unsupported plugins, either `ON` or `OFF`.|
 |`BUILD_UNSTABLE`      |`OFF`       |Whether to build the unstable parts of the distribution, either `ON` or `OFF`.|
 |`CMAKE_BUILD_TYPE`    |`Release`   |Optimization level and debug verbosity. The possible values are `Release` and `Debug`.|
 |`PDI_PLUGIN_PATH`     |same as PDI |Path where to install all plugins. If not defined, will install relative to PDI.|
@@ -102,16 +100,10 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
 |`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plug-in.|
 |`BUILD_NETCDF_PARALLEL`    |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
-|`BUILD_TEST_PLUGIN`        |`OFF`  |Build the Test plug-in. (deprecated)|
 |`BUILD_TESTING`            |`ON`   |Build the tests.|
 |`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
 |`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
-|`BUILD_CFG_VALIDATOR`      |`OFF`  |Build the PDI configuration validation script. (deprecated)|
-|`BUILD_DECL_SION_PLUGIN`   |`OFF`  |Build the decl'SION plug-in. (deprecated)|
 |`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
-|`BUILD_FLOWVR_PLUGIN`      |`OFF`  |Build the FlowVR plug-in. (deprecated)|
-|`BUILD_FTI_PLUGIN`         |`OFF`  |Build the FTI plug-in. (deprecated)|
-|`BUILD_INDENT`             |`OFF`  |Build the code auto-indentation tools. (devel profile)|
 |`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
 
@@ -128,16 +120,12 @@ The following flags define whether to:
 
 |Flag           |Default   |Description|
 |:--------------|:---------|:----------|
-|`USE_Astyle`   |`AUTO`    |the [astyle](http://astyle.sourceforge.net/) tool.|
 |`USE_benchmark`|`EMBEDDED`|the [Benchmark](https://github.com/google/benchmark) library.|
 |`USE_Doxygen`  |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
-|`USE_FlowVR`   |`AUTO`    |the [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) library.|
-|`USE_FTI`      |`AUTO`    |the [FTI](https://github.com/leobago/fti) library.|
 |`USE_GTest`    |`EMBEDDED`|the [googletest](https://github.com/google/googletest) library.|
 |`USE_HDF5`     |`AUTO`    |the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library.|
 |`USE_paraconf` |`AUTO`    |the [paraconf](https://github.com/pdidev/paraconf) library.|
 |`USE_pybind11` |`AUTO`    |the [pybind11](https://pybind11.readthedocs.io/en/stable) library.|
-|`USE_SIONlib`  |`AUTO`    |the SIONlib library.|
 |`USE_spdlog`   |`AUTO`    |the [spdlog](https://github.com/gabime/spdlog) library.|
 |`USE_yaml`     |`AUTO`    |the [yaml](https://github.com/jbigot/zpp) library.|
 |`USE_Zpp`      |`EMBEDDED`|the [zpp](https://github.com/jbigot/zpp) preprocessor.|
@@ -212,22 +200,6 @@ Dependencies of **the Python API**:
 * **the [python](https://www.python.org/) development environment version 3.6 or above (not provided)**,
 * the [pybind11](https://pybind11.readthedocs.io/en/stable) library version 2.3 or above,
 
-Dependencies of **the Decl'SION plugin**:
-
-* the PDI library,
-* [SIONlib](https://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/SIONlib/_node.html) version 1.7.6 or above (provided),
-
-Dependencies of **the FlowVR plugin**:
-
-* the PDI library,
-* the [python YAML](https://pyyaml.org/) module version 3.12.1 or above (provided).
-* [FlowVR](https://gitlab.inria.fr/flowvr/flowvr-ex) version 2.3.2 or above (provided).
-
-Dependencies of **the FTI plugin**:
-
-* the PDI library,
-* the [FTI](https://github.com/leobago/fti) library version 1.6 or above (provided).
-
 Dependencies of **the Pycall plugin**:
 
 * the PDI library with python API.
@@ -236,19 +208,12 @@ Dependencies of **the tests**:
 
 * the PDI library,
 * the [googletest](https://github.com/google/googletest) library (provided),
-* [astyle](http://astyle.sourceforge.net/) version 3.1 or above (provided).
 
 Dependencies of **the benchmarks**:
 
 * the PDI library,
 * the [Benchmark](https://github.com/google/benchmark) library (provided),
-* [astyle](http://astyle.sourceforge.net/) version 3.1 or above (provided).
 
 Dependencies of **the documentation website builder**:
 
 * [doxygen](http://www.doxygen.nl/) version 1.8.14 or above (provided).
-
-Dependencies of **the PDI configuration validation tool**:
-
-* **a [python](https://www.python.org/) interpreter version 3.6 or above (not provided)**,
-* the [python YAML](https://pyyaml.org/) module version 3.12.1 or above (provided).

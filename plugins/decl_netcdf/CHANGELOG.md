@@ -9,10 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+* Replaced the astyle based indentation by a clang-format one, fixes
+  [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
 
 ### Deprecated
 
 ### Removed
+* Removed support for the PDI Config validator, fixes
+  [#458](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/458)
 
 ### Fixed
 

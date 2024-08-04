@@ -73,8 +73,7 @@ set(DOXYGEN_UML_LIMIT_NUM_FIELDS 20)
 set(DOXYGEN_UML_LOOK YES)
 set(DOXYGEN_WARN_NO_PARAMDOC YES)
 set(DOXYGEN_IMAGE_PATH
-		"${CMAKE_CURRENT_SOURCE_DIR}/images"
-		"${PDI_SOURCE_DIR}/../plugins/flowvr/images")
+		"${CMAKE_CURRENT_SOURCE_DIR}/images")
 doxygen_add_docs(doxygen_doc
 		"${CMAKE_CURRENT_SOURCE_DIR}/About.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Concepts.md"
@@ -95,8 +94,6 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_SOURCE_DIR}/../example/README.md"
 		"${PDI_SOURCE_DIR}/../tutorial/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/decl_hdf5/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/flowvr/README.md"
-		"${PDI_SOURCE_DIR}/../plugins/fti/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/decl_netcdf/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/mpi/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/trace/README.md"
