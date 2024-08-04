@@ -1,0 +1,14 @@
+[
+{"var_string": "string12"},
+{"var_array": [
+  11,
+  12,
+  13
+]},
+{"var_record": {
+  "var_int32_t1": 14,
+  "var_int32_t2": 15,
+  "var_char": "a",
+  "var_double": 16.000000
+}}
+]

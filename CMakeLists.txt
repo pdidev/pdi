@@ -77,6 +77,7 @@ option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
+option(BUILD_JSON_PLUGIN        "Build JSON plugin" "${BUILD_UNSTABLE}")
 
 
 
@@ -118,6 +119,9 @@ if("${BUILD_MPI_PLUGIN}")
 endif()
 if("${BUILD_PYCALL_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall/cmake")
+endif()
+if ("${BUILD_JSON_PLUGIN}")
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json/cmake")
 endif()
 if("${BUILD_TESTING}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/example/cmake")
@@ -461,6 +465,15 @@ sbuild_add_module(DECL_NETCDF_PLUGIN
 	SUBSTEPS test
 )
 
+
+sbuild_add_module(JSON_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
+)
+
+
 sbuild_add_module(PYCALL_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_PYCALL_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall"
@@ -496,7 +509,6 @@ sbuild_add_module(USER_CODE_PLUGIN
 	DEPENDS PDI
 	SUBSTEPS test
 )
-
 
 sbuild_add_module(PDI_EXAMPLE
 	ENABLE_BUILD_FLAG BUILD_TESTING
