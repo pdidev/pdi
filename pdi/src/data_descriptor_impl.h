@@ -89,9 +89,14 @@ public:
 
 	bool empty() override;
 
-	void share(void* data, bool read, bool write) override;
+	void share(void* data, bool read, bool write, bool is_gpu) override;
 
-	void* share(Ref ref, bool read, bool write) override;
+	void share_gpu(void* data_cpu, void* data_gpu, bool read, bool write, bool is_gpu) override;
+
+	// void share(void* data, bool read, bool write) override;
+
+	void* share(Ref ref, bool read, bool write, bool is_gpu) override;
+	// void* share(Ref ref, bool read, bool write) override;
 
 	void release() override;
 

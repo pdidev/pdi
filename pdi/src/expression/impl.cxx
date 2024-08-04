@@ -82,7 +82,14 @@ Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 {
 	auto al = static_cast<std::align_val_t>(type->alignment());
 	auto data = operator new (type->buffersize(), al);
-	Ref_rw result{data, [al](void* v) { operator delete (v, al); }, type, true, true};
+	Ref_rw result{
+		data,
+		[al](void* v) { operator delete (v, al); },
+		type,
+		true,
+		true,
+		false // on_cpu
+	};
 	copy_value(ctx, result.get(), type);
 	return result;
 }
@@ -108,8 +115,7 @@ unique_ptr<Expression::Impl> Expression::Impl::parse(char const * val_str)
 		while (isspace(*parse_val))
 			++parse_val;
 		if (!*parse_val) return result; // take this if we parsed the whole string, otherwise, parse as a string
-	} catch (Error&) {
-	}
+	} catch (Error&) {}
 	// in case of error, parse as a string
 	return Impl::String_literal::parse(&val_str);
 }

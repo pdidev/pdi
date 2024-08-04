@@ -52,6 +52,7 @@ elseif(Devel STREQUAL "${DIST_PROFILE}")
 	option(BUILD_DOCUMENTATION "Build documentation" ON)
 	option(BUILD_TESTING       "Build tests" ON)
 	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
+    set(CMAKE_CXX_FLAGS "-g3 -Wall -Wextra")
 	set(DEFAULT_BUILD_TYPE "Debug")
 else()
 	message(FATAL_ERROR "DIST_PROFILE should be set to one of: User, Devel")
@@ -73,10 +74,10 @@ option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
+option(BUILD_TEST_GPU_PLUGIN    "Build GPU testing plugin" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
-
 
 
 ### Default build type
@@ -488,6 +489,12 @@ sbuild_add_module(SERIALIZE_PLUGIN
 	SUBSTEPS test
 )
 
+sbuild_add_module(TEST_GPU_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_TEST_GPU_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/plugin_test_gpu"
+	DEPENDS PDI
+	SUBSTEPS test
+)
 
 sbuild_add_module(TRACE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TRACE_PLUGIN

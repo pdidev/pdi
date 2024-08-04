@@ -242,7 +242,7 @@ try {
 PDI_status_t PDI_share(const char* name, const void* buffer, PDI_inout_t access)
 try {
 	Paraconf_wrapper fw;
-	Global_context::context()[name].share(const_cast<void*>(buffer), access & PDI_OUT, access & PDI_IN);
+	Global_context::context()[name].share(const_cast<void*>(buffer), access & PDI_OUT, access & PDI_IN, access >= PDI_GPU_IN);
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -252,11 +252,43 @@ try {
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
+PDI_status_t PDI_share_GPU(const char* name, void* b_cpu, void* b_gpu, PDI_inout_t access)
+try {
+	Global_context::context()[name].share_gpu(b_cpu, b_gpu, access & PDI_OUT, access & PDI_IN, access >= PDI_GPU_IN);
+	return PDI_OK;
+} catch (const Error& e) {
+	return g_error_context.return_err(e);
+} catch (const exception& e) {
+	return g_error_context.return_err(e);
+} catch (...) {
+	return g_error_context.return_err();
+}
+
+PDI_status_t PDI_update_CPU(const char* name)
+{
+	Data_descriptor& desc = Global_context::context()[name];
+	Ref ref = desc.ref();
+
+	if (!ref.get_content()) return PDI_ERR_IMPL;
+	ref.get_content()->update_buffer_utd_mode(UTD_CPU);
+	return PDI_OK;
+}
+
+PDI_status_t PDI_update_GPU(const char* name)
+{
+	Data_descriptor& desc = Global_context::context()[name];
+	Ref ref = desc.ref();
+
+	if (!ref.get_content()) return PDI_ERR_IMPL;
+	ref.get_content()->update_buffer_utd_mode(UTD_GPU);
+	return PDI_OK;
+}
+
+PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t access)
 try {
 	Paraconf_wrapper fw;
 	Data_descriptor& desc = Global_context::context()[name];
-	*buffer = desc.share(desc.ref(), inout & PDI_IN, inout & PDI_OUT);
+	*buffer = desc.share(desc.ref(), access & PDI_IN, access & PDI_OUT, access > PDI_GPU_IN);
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);

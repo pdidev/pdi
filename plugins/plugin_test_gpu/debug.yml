@@ -1,0 +1,12 @@
+pdi:
+  logging:
+    pattern: "[%T][%n] -- %^%l%$: %v"
+    level: debug
+  data:
+    var: int
+
+  plugins:
+    test_gpu:
+      var: test_var.out
+      # - file: var.out
+      # write: [var]
