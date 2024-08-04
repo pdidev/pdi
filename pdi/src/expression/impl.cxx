@@ -80,7 +80,14 @@ string Expression::Impl::to_string(Context& ctx) const
 
 Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 {
-	Ref_rw result{aligned_alloc(type->alignment(), type->buffersize()), [](void* v) { free(v); }, type, true, true};
+	Ref_rw result{
+		aligned_alloc(type->alignment(), type->buffersize()),
+		[](void* v) { free(v); },
+		type,
+		true,
+		true,
+		false // on_cpu
+	};
 	copy_value(ctx, result.get(), type);
 	return result;
 }

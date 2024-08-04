@@ -87,16 +87,20 @@ class Data_descriptor;
  */
 class Plugin;
 
-template <bool, bool>
+template <bool, bool, bool>
 class Ref_any;
 
-typedef Ref_any<false, false> Ref;
+typedef Ref_any<false, false, false> Ref;
 
-typedef Ref_any<true, false> Ref_r;
+typedef Ref_any<true, false, false> Ref_r;
 
-typedef Ref_any<false, true> Ref_w;
+typedef Ref_any<false, true, false> Ref_w;
 
-typedef Ref_any<true, true> Ref_rw;
+typedef Ref_any<true, true, false> Ref_rw;
+
+typedef Ref_any<true, false, true> Ref_r_gpu;
+typedef Ref_any<false, true, true> Ref_w_gpu;
+typedef Ref_any<true, true, true> Ref_rw_gpu;
 
 /** Different possible interpretations for a scalar
  */

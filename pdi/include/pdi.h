@@ -49,7 +49,7 @@
  * PDI_status_t and an error message can be retrieved with the PDI_errmsg
  * function. This default behavior can be changed by replacing the error handler
  * with the PDI_errhandler function.
- * 
+ *
  */
 
 #ifndef PDI_H_
@@ -93,7 +93,7 @@ typedef enum PDI_status_e {
 	PDI_ERR_RIGHT,
 	/// Invalid type error
 	PDI_ERR_TYPE
-
+	
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs
@@ -108,10 +108,10 @@ typedef void (*PDI_errfunc_f)(PDI_status_t status, const char* message, void* co
 typedef struct PDI_errhandler_s {
 	/// The function to handle the error (none if NULL)
 	PDI_errfunc_f func;
-
+	
 	/// the context that will be provided to the function
 	void* context;
-
+	
 } PDI_errhandler_t;
 
 /** Prints the error message and aborts if the status is invalid
@@ -179,16 +179,30 @@ PDI_status_t PDI_EXPORT PDI_version(unsigned long* provided, unsigned long expec
  * Access directions
  */
 typedef enum PDI_inout_e {
-	/// No data transfert
+	/// No data transfer
 	PDI_NONE = 0,
-	/// data tranfer from PDI to the main code
+	/// data transfer from PDI to the main code
 	PDI_IN = 1,
 	/// data transfer from the main code to PDI
 	PDI_OUT = 2,
 	/// data transfer in both direction
-	PDI_INOUT = 3
-
+	PDI_INOUT = 3,
+	
+	/// GPU data transfer from PDI to the main code
+	PDI_GPU_IN = 5,
+	/// GPU data transfer from the main code to PDI
+	PDI_GPU_OUT = 6,
+	/// GPU data transfer in both direction
+	PDI_GPU_INOUT = 7
 } PDI_inout_t;
+
+/* Status mode for most recent update */
+typedef enum utd_mode_e {
+	UTD_NONE = 0,
+	UTD_CPU = 1,
+	UTD_GPU = 2,
+	UTD_BOTH = 3,
+} utd_mode_t;
 
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
@@ -206,6 +220,11 @@ typedef enum PDI_inout_e {
  */
 PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t access);
 
+PDI_status_t PDI_EXPORT PDI_share_GPU(const char* name, void* data_cpu, void* data_gpu, PDI_inout_t access);
+
+PDI_status_t PDI_EXPORT PDI_update_CPU(const char* name);
+PDI_status_t PDI_EXPORT PDI_update_GPU(const char* name);
+
 /** Requests for PDI to access a data buffer.
  * \param[in] name the data name
  * \param[in,out] buffer a pointer to the accessed data buffer
@@ -214,7 +233,7 @@ PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t acce
  * \pre PDI owns the data buffer
  * \post ownership of the data buffer is shared between PDI and the user code
  */
-PDI_status_t PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t inout);
+PDI_status_t PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t access);
 
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.

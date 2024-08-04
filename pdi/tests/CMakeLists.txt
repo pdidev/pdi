@@ -70,6 +70,7 @@ add_executable(PDI_unit_tests
 		PDI_scalar_datatype.cxx
 		PDI_test_parse_types.cxx
 		PDI_tuple_datatype.cxx
+        PDI_gpu_support.cxx
 		)
 
 set(OPERAND_TYPES uint8_t int64_t float double)

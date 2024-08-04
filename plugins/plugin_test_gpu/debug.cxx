@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,28 +22,33 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATA_DESCRIPTOR_MOCK_H_
-#define PDI_DATA_DESCRIPTOR_MOCK_H_
+#include <cstdint>
+#include <pdi.h>
+#include <stdio.h>
+#include <string>
+#include <unistd.h>
 
-#include <gmock/gmock.h>
-#include <pdi/data_descriptor.h>
-#include <pdi/datatype_template.h>
-
-struct MockDataDescriptor : public PDI::Data_descriptor {
-	MOCK_METHOD1(default_type, void(PDI::Datatype_template_sptr));
-	MOCK_METHOD0(default_type, PDI::Datatype_template_sptr());
-	MOCK_CONST_METHOD0(metadata, bool());
-	MOCK_METHOD1(metadata, void(bool));
-	MOCK_CONST_METHOD0(name, const std::string&());
-	MOCK_METHOD0(ref, PDI::Ref());
-	MOCK_METHOD0(empty, bool());
-	MOCK_METHOD4(share, void(void*, bool, bool, bool));
-	MOCK_METHOD4(share, void* (PDI::Ref, bool, bool, bool));
-	MOCK_METHOD4(share_gpu, void(void*, void*, bool, bool));
-	MOCK_METHOD5(share_gpu, void(void*, void*, bool, bool, bool));
-	MOCK_METHOD0(release, void());
-	MOCK_METHOD0(reclaim, void* ());
-};
-
-
-#endif //PDI_DATA_DESCRIPTOR_MOCK_H_
+int main(int argc, char* argv[])
+{
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s <config_file>\n", argv[0]);
+		exit(1);
+	}
+	PC_tree_t conf = PC_parse_path(argv[1]);
+	PDI_init(PC_get(conf, ".pdi"));
+	
+	/* Testing */
+	
+	int var = 0;
+	printf("Sharing var. Value is %d\n", var);
+	PDI_expose("var", &var, PDI_OUT);
+	
+	
+	
+	// printf("-- Requesting var from GPU\n");
+	// PDI_expose("var", &var, PDI_GPU_IN);
+	// printf("var : %d\n", var);
+	
+	PDI_finalize();
+	return 0;
+}

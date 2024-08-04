@@ -54,6 +54,7 @@ elseif(Devel STREQUAL "${DIST_PROFILE}")
 	option(BUILD_INDENT        "Enable automatic code indentation" ON)
 	option(BUILD_TESTING       "Build tests" ON)
 	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
+    set(CMAKE_CXX_FLAGS "-g3 -Wall -Wextra")
 	set(DEFAULT_BUILD_TYPE "Debug")
 else()
 	message(FATAL_ERROR "DIST_PROFILE should be set to one of: User, Devel")
@@ -87,6 +88,8 @@ option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_DEPRECATED}")
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 
+option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+option(BUILD_TEST_GPU_PLUGIN    "Build GPU testing plugin" ON)
 
 
 ### Default build type
@@ -735,6 +738,20 @@ sbuild_add_module(TRACE_PLUGIN
 sbuild_add_module(USER_CODE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
+)
+
+sbuild_add_module(JSON_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/plugin_json"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
+)
+
+sbuild_add_module(TEST_GPU_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_TEST_GPU_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/plugin_test_gpu"
 	DEPENDS PDI ${ASTYLE_DEPENDENCY}
 	SUBSTEPS indent test
 )

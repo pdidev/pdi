@@ -44,59 +44,64 @@ class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 {
 	friend class Global_context;
 	friend class Descriptor_test_handler;
-
+	
 	struct PDI_NO_EXPORT Ref_holder;
-
+	
 	/// The context this descriptor is part of
 	Global_context& m_context;
-
+	
 	/// References to the values of this descriptor
 	std::stack<std::unique_ptr<Ref_holder>> m_refs;
-
+	
 	Datatype_template_sptr m_type;
-
+	
 	const std::string m_name;
-
+	
 	bool m_metadata;
-
-
+	
+	
 	/** Create an empty descriptor
 	 */
 	Data_descriptor_impl(Global_context& ctx, const char* name);
-
+	
 	Data_descriptor_impl(const Data_descriptor_impl&) = delete;
-
+	
 	Data_descriptor_impl& operator= (const Data_descriptor_impl&) = delete;
-
+	
 	Data_descriptor_impl& operator= (Data_descriptor_impl&&) = delete;
-
+	
 public:
 	Data_descriptor_impl(Data_descriptor_impl&&);
-
+	
 	~Data_descriptor_impl() override;
-
+	
 	void default_type(Datatype_template_sptr) override;
-
+	
 	Datatype_template_sptr default_type() override;
-
+	
 	bool metadata() const override;
-
+	
 	void metadata(bool metadata) override;
-
+	
 	const std::string& name() const override;
-
+	
 	Ref ref() override;
-
+	
 	bool empty() override;
-
-	void share(void* data, bool read, bool write) override;
-
-	void* share(Ref ref, bool read, bool write) override;
-
+	
+	void share(void* data, bool read, bool write, bool is_gpu) override;
+	
+	void share_gpu(void* data_cpu, void* data_gpu, bool read, bool write, bool is_gpu) override;
+	
+	// void share(void* data, bool read, bool write) override;
+	
+	void* share(Ref ref, bool read, bool write, bool is_gpu) override;
+	// void* share(Ref ref, bool read, bool write) override;
+	
 	void release() override;
-
+	
 	void* reclaim() override;
-
+	
 }; // class Data_descriptor
 
 } // namespace PDI
