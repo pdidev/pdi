@@ -10,10 +10,14 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Initial Fortran interface
 
+Benoit Martin - CEA (bmartin@cea.fr)
+* Maintainer (Jan. 2024 - ...)
+
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
 * Add support for ZSH in env
 * Update supported CMake versions
+* Internal API improvements
 
 Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * Fortran interface fixes

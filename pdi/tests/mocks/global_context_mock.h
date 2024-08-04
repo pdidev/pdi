@@ -58,6 +58,7 @@ struct MockGlobalContext : public PDI::Global_context {
 	
 	MOCK_METHOD0(begin, PDI::Context::Iterator());
 	MOCK_METHOD0(end, PDI::Context::Iterator());
+	MOCK_METHOD1(find, PDI::Context::Iterator(const std::string& name));
 	
 	MOCK_METHOD1(event, void(const char*));
 	
@@ -65,7 +66,6 @@ struct MockGlobalContext : public PDI::Global_context {
 	MOCK_METHOD2(add_datatype, void(const std::string&, Datatype_template_parser));
 	MOCK_METHOD0(callbacks, PDI::Callbacks&());
 	MOCK_METHOD0(finalize_and_exit, void());
-	
 };
 
 

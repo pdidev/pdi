@@ -52,6 +52,7 @@ struct MockContext : public PDI::Context {
 	
 	MOCK_METHOD0(begin, PDI::Context::Iterator());
 	MOCK_METHOD0(end, PDI::Context::Iterator());
+	MOCK_METHOD1(find, PDI::Context::Iterator(const std::string& name));
 	
 	MOCK_METHOD1(event, void(const char*));
 	

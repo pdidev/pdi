@@ -168,6 +168,11 @@ Global_context::Iterator Global_context::end()
 	return Context::get_iterator(m_descriptors.end());
 }
 
+PDI::Context::Iterator Global_context::find(const string& name)
+{
+	return Context::get_iterator(m_descriptors.find(name));
+}
+
 void Global_context::event(const char* name)
 {
 	m_callbacks.call_event_callbacks(name);
