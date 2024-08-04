@@ -82,7 +82,14 @@ Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 {
 	auto al = static_cast<std::align_val_t>(type->alignment());
 	auto data = operator new (type->buffersize(), al);
-	Ref_rw result{data, [al](void* v) { operator delete (v, al); }, type, true, true};
+	Ref_rw result{
+		data,
+		[al](void* v) { operator delete (v, al); },
+		type,
+		true,
+		true,
+		false // on_cpu
+	};
 	copy_value(ctx, result.get(), type);
 	return result;
 }
