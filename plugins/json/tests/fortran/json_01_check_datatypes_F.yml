@@ -1,0 +1,17 @@
+pdi:
+  data:
+    var_uint8_t: uint8_t
+    var_uint16_t: uint16_t
+    var_uint32_t: uint32_t
+    var_uint64_t: uint64_t
+    var_int8_t: int8_t
+    var_int16_t: int16_t
+    var_int32_t: int32_t
+    var_int64_t: int64_t
+    var_float: float
+    var_double: double
+    var_char: char
+  plugins:
+    json:
+      - file : json_01_check_datatypes_F.json
+        write : [var_uint8_t, var_uint16_t, var_uint32_t, var_uint64_t, var_int8_t, var_int16_t, var_int32_t, var_int64_t, var_float, var_double, var_char]
