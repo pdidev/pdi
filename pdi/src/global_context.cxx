@@ -141,6 +141,7 @@ Global_context::Global_context(PC_tree_t conf)
 Data_descriptor& Global_context::desc(const char* name)
 {
 	return *(m_descriptors.emplace(name, unique_ptr<Data_descriptor>{new Data_descriptor_impl{*this, name}}).first->second);
+	// return unique_ptr<Data_descriptor> {new Data_descriptor_impl{*this, name}};
 }
 
 Data_descriptor& Global_context::desc(const string& name)
