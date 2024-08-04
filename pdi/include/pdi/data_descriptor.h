@@ -83,7 +83,10 @@ public:
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
 	 */
-	virtual void share(void* data, bool read, bool write) = 0;
+	virtual void share(void* data, bool read, bool write, bool is_gpu = false) = 0;
+	// virtual void share_gpu(void* data, bool read, bool write) = 0;
+
+	virtual void share_gpu(void* data_cpu, void* data_gpu, bool read, bool write, bool is_gpu) = 0;
 
 	/** Shares some data with PDI
 	 * \param[in,out] ref a reference to the shared data
@@ -91,7 +94,8 @@ public:
 	 * \param write whether the stored reference should have write access
 	 * \return the just shared buffer
 	 */
-	virtual void* share(Ref ref, bool read, bool write) = 0;
+	virtual void* share(Ref ref, bool read, bool write, bool is_gpu = false) = 0;
+	// virtual void* share_gpu(Ref ref, bool read, bool write) = 0;
 
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
 	 * free the associated memory whenever necessary.

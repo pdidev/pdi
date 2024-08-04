@@ -54,13 +54,13 @@ struct Data_descriptor_impl::Ref_holder {
 
 	virtual ~Ref_holder() {}
 
-	template <bool R, bool W>
+	template <bool R, bool W, bool GPU>
 	struct Impl;
 };
 
-template <bool R, bool W>
+template <bool R, bool W, bool GPU>
 struct Data_descriptor_impl::Ref_holder::Impl: Data_descriptor_impl::Ref_holder {
-	Ref_any<R, W> m_t;
+	Ref_any<R, W, GPU> m_t;
 
 	Impl(Ref t)
 		: m_t(t)
@@ -121,7 +121,7 @@ void Data_descriptor_impl::metadata(bool metadata)
 
 	// for metadata, ensure we have a placeholder ref at stack bottom
 	if (metadata) {
-		m_refs.emplace(new Ref_holder::Impl<true, false>(Ref{}));
+		m_refs.emplace(new Ref_holder::Impl<true, false, false>(Ref{}));
 	}
 	assert((!m_metadata || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 }
@@ -152,13 +152,13 @@ bool Data_descriptor_impl::empty()
 	return m_refs.empty();
 }
 
-void Data_descriptor_impl::share(void* data, bool read, bool write)
+void Data_descriptor_impl::share(void* data, bool read, bool write, bool is_gpu = false)
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-	Ref r{data, &free, m_type->evaluate(m_context), read, write};
+	Ref r{data, &free, m_type->evaluate(m_context), read, write, is_gpu};
 	try {
 		m_context.logger().trace("Sharing `{}' Ref with rights: R = {}, W = {}", m_name, read, write);
-		share(r, false, false);
+		share(r, false, false, is_gpu);
 	} catch (...) {
 		// on error, do not free the data as would be done automatically otherwise
 		r.release();
@@ -170,30 +170,50 @@ try {
 	rethrow_with_context(std::current_exception(), "Unable to share `{}', ", name());
 }
 
-void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
+void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write, bool is_gpu = false)
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// metadata must provide read access
-	if (metadata() && !Ref_r(data_ref)) {
+	if (metadata() && !Ref_r(data_ref) && !Ref_r_gpu(data_ref)) {
 		throw Permission_error{"Metadata sharing must offer read access"};
 	}
 
 	// make a reference and put it in the store
 	void* result = nullptr;
-	if (read) {
-		if (write) {
-			result = Ref_rw{data_ref}.get(nothrow);
-			m_refs.emplace(new Ref_holder::Impl<true, true>(data_ref));
+
+	if (is_gpu) {
+		if (read) {
+			if (write) {
+				result = Ref_rw_gpu{data_ref}.get(nothrow);
+				m_refs.emplace(new Ref_holder::Impl<true, true, true>(data_ref));
+			} else {
+				result = const_cast<void*>(Ref_r_gpu{data_ref}.get(nothrow));
+				m_refs.emplace(new Ref_holder::Impl<true, false, true>(data_ref));
+			}
 		} else {
-			result = const_cast<void*>(Ref_r{data_ref}.get(nothrow));
-			m_refs.emplace(new Ref_holder::Impl<true, false>(data_ref));
+			if (write) {
+				result = Ref_w_gpu{data_ref}.get(nothrow);
+				m_refs.emplace(new Ref_holder::Impl<false, true, true>(data_ref));
+			} else {
+				m_refs.emplace(new Ref_holder::Impl<false, false, true>(data_ref));
+			}
 		}
 	} else {
-		if (write) {
-			result = Ref_w{data_ref}.get(nothrow);
-			m_refs.emplace(new Ref_holder::Impl<false, true>(data_ref));
+		if (read) {
+			if (write) {
+				result = Ref_rw{data_ref}.get(nothrow);
+				m_refs.emplace(new Ref_holder::Impl<true, true, false>(data_ref));
+			} else {
+				result = const_cast<void*>(Ref_r{data_ref}.get(nothrow));
+				m_refs.emplace(new Ref_holder::Impl<true, false, false>(data_ref));
+			}
 		} else {
-			m_refs.emplace(new Ref_holder::Impl<false, false>(data_ref));
+			if (write) {
+				result = Ref_w{data_ref}.get(nothrow);
+				m_refs.emplace(new Ref_holder::Impl<false, true, false>(data_ref));
+			} else {
+				m_refs.emplace(new Ref_holder::Impl<false, false, false>(data_ref));
+			}
 		}
 	}
 
@@ -215,6 +235,24 @@ try {
 	rethrow_with_context(std::current_exception(), "Unable to share `{}', ", name());
 }
 
+void Data_descriptor_impl::share_gpu(void* data_cpu, void* data_gpu, bool read, bool write, bool is_gpu)
+try {
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+	Ref r{data_cpu, data_gpu, &free, m_type->evaluate(m_context), read, write, is_gpu};
+	try {
+		m_context.logger().trace("Sharing `{}' Ref with rights: R = {}, W = {}", m_name, read, write);
+		share(r, false, false, is_gpu);
+	} catch (...) {
+		// on error, do not free the data as would be done automatically otherwise
+		r.release();
+		assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+		throw;
+	}
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+} catch (...) {
+	rethrow_with_context(std::current_exception(), "Unable to share `{}', ", name());
+}
+
 void Data_descriptor_impl::release()
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
@@ -229,7 +267,7 @@ try {
 	// if only the metadata placeholder ref remains replace it by this one
 	if (metadata() && m_refs.size() == 1) {
 		m_refs.pop();
-		m_refs.emplace(new Ref_holder::Impl<true, false>(oldref));
+		m_refs.emplace(new Ref_holder::Impl<true, false, false>(oldref));
 	}
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 } catch (...) {
@@ -249,7 +287,7 @@ try {
 	// if only the metadata placeholder ref remains replace it by a copy of this one
 	if (metadata() && m_refs.size() == 1) {
 		m_refs.pop();
-		m_refs.emplace(new Ref_holder::Impl<true, false>(oldref.copy()));
+		m_refs.emplace(new Ref_holder::Impl<true, false, false>(oldref.copy()));
 	}
 
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
