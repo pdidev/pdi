@@ -96,6 +96,13 @@ public:
 	 */
 	virtual Iterator end() = 0;
 
+	/** Find the Data_descriptor corresponding to a given name
+	 * \param[in] name the Data_descriptor name
+	 *
+	 * \return the iterator that corresponds to the provided Data_descriptor name
+	 */
+	virtual Iterator find(const std::string& name) = 0;
+
 	/** Triggers a PDI "event"
 	 * \param[in] name the event name
 	 */

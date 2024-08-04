@@ -87,6 +87,13 @@ public:
 	 */
 	Iterator end() override;
 
+	/** Context::find proxy for plugins
+	 * \param[in] name the Data_descriptor name
+	 *
+	 * \return the iterator that corresponds to the provided Data_descriptor name
+	 */
+	Iterator find(const std::string& name) override;
+
 	/** Context::event proxy for plugins
 	 *
 	 *  \param[in] name name of the event
