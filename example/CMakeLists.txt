@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -168,6 +168,24 @@ set_property(TEST PDI_example_fti_P PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_fti_P PROPERTY PROCESSORS 6)
 endif("${BUILD_PYTHON}")
 endif("${BUILD_FTI_PLUGIN}")
+
+if("${BUILD_JSON_PLUGIN}")
+add_test(NAME PDI_example_json_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/json.yml")
+set_property(TEST PDI_example_json_C PROPERTY TIMEOUT 30)
+set_property(TEST PDI_example_json_C PROPERTY PROCESSORS 6)
+
+if("${BUILD_FORTRAN}")
+add_test(NAME PDI_example_json_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_F>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/json.yml")
+set_property(TEST PDI_example_json_F PROPERTY TIMEOUT 30)
+set_property(TEST PDI_example_json_F PROPERTY PROCESSORS 6)
+endif("${BUILD_FORTRAN}")
+
+if("${BUILD_PYTHON}")
+add_test(NAME PDI_example_json_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/json.yml")
+set_property(TEST PDI_example_json_P PROPERTY TIMEOUT 30)
+set_property(TEST PDI_example_json_P PROPERTY PROCESSORS 6)
+endif("${BUILD_PYTHON}")
+endif("${BUILD_JSON_PLUGIN}")
 
 if("${BUILD_FLOWVR_PLUGIN}")
 find_package(FlowVR REQUIRED)

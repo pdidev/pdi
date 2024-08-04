@@ -12,6 +12,7 @@
 |\subpage FTI_plugin "FTI plugin"                     |Perform checkpoints using FTI library.                             |
 |\subpage pycall_plugin "Pycall plugin"               |Call python scripts from C application                             |
 |\subpage mpi_plugin "MPI plugin"                     |Enables MPI support in %PDI and plugins.                           |
+|\subpage JSON_plugin "JSON plugin"         |Export data in JSON format.                                        |
 |Decl'SION plugin                                     |Read and write data from SIONlib files in a declarative way.       |
 
 

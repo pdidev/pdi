@@ -1,0 +1,36 @@
+# Style of brace 
+--style=kr
+# Indent is tab based
+--indent=tab=4
+# Attach braces to a namespace statement
+--attach-namespaces
+# Attach braces to a braced extern "C" statement
+--attach-extern-c
+# Attach the closing 'while' of a 'do-while' statement to the closing brace
+--attach-closing-while
+# Indent, instead of align, continuation lines following lines that contain an opening paren '(' or an assignment '='
+--indent-after-parens
+# Set the continuation indent for a line that ends with an opening paren '(' or an assignment '='
+# --indent-continuation=8
+# Indent preprocessor blocks at brace level zero and immediately within a namespace
+--indent-preproc-block
+# Indent multi-line preprocessor definitions ending with a backslash
+--indent-preproc-define
+# Indent C++ comments beginning in column one
+--indent-col1-comments
+# Set the minimal indent that is added when a header is built of multiple lines
+--min-conditional-indent=2
+# Insert space padding between a header (e.g. 'if', 'for', 'while'...) and the following paren
+--pad-header
+# Fill empty lines with the white space of the previous line
+--fill-empty-lines
+# Attach a pointer or reference operator (*, &, or ^) to either the variable type (left) or variable name (right), or place it between the type and name (middle)
+--align-pointer=type
+# Don't break complex statements and multiple statements residing on a single line
+--keep-one-line-statements
+# Converts tabs into spaces in the non-indentation part of the line
+--convert-tabs
+# Preserve the original file's date and time modified
+--preserve-date
+# Force use of the specified line end style
+--lineend=linux
