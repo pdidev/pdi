@@ -64,6 +64,7 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 # Modules to build
 
 option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
+option(BUILD_DAMARIS_PLUGIN     "Build Damaris plugin" ON)
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
@@ -465,6 +466,14 @@ sbuild_add_module(MPI_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi"
 	DEPENDS PDI
 	SUBSTEPS test
+)
+
+
+sbuild_add_module(DAMARIS_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_DAMARIS_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
 )
 
 
