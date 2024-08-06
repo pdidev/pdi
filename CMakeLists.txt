@@ -86,6 +86,7 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_DEPRECATED}")
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
+option(BUILD_DAMARIS_PLUGIN     "Build Damaris plugin" ON)
 
 
 
@@ -735,6 +736,14 @@ sbuild_add_module(TRACE_PLUGIN
 sbuild_add_module(USER_CODE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
+)
+
+
+sbuild_add_module(DAMARIS_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_DAMARIS_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris"
 	DEPENDS PDI ${ASTYLE_DEPENDENCY}
 	SUBSTEPS indent test
 )

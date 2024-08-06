@@ -60,6 +60,8 @@
 #include <pdi/export.h>
 #include <pdi/version.h>
 
+//#include "/gpfs/softs/spack_0.17/opt/spack/linux-centos7-cascadelake/gcc-11.2.0/openmpi-4.1.1-ujlwnrlh5sewm2rxkpio3h5mariwgetn/include/mpi.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -153,12 +155,16 @@ PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler);
  * \param[in] conf the configuration
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf);
+//PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf,const char* configfile, int *is_client,MPI_Comm *damaris_communicator);
+PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf,const char* configfile, int *is_client);
+
 
 /** Finalizes PDI
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_finalize(void);
+PDI_status_t PDI_EXPORT PDI_finalize(int);
+
+//PDI_status_t PDI_EXPORT PDI_finalize_Damaris(int *is_client);
 
 /** Checks PDI API version
  *

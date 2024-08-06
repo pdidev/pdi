@@ -87,6 +87,9 @@ endif()
 
 # Includes
 
+find_package(MPI)
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+
 include(CTest)
 include(CMakePackageConfigHelpers)
 if("${BUILD_FORTRAN}")
@@ -100,6 +103,11 @@ set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
 set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
 set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
 set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
+
+# Damaris lines
+find_package(MPI)
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+include_directories(/gpfs/users/racliuspa/damaris/damaris/damaris_install/include/)
 
 
 # Dependencies
@@ -126,6 +134,7 @@ endif()
 if("${BUILD_FORTRAN}")
 	find_package(Zpp 1.0.15 REQUIRED)
 endif()
+
 
 
 # Check for some portability stuff and generate config.h
@@ -187,7 +196,7 @@ target_include_directories(PDI_C
 		PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>")
 target_link_libraries(PDI_C
 		PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS}
-		PRIVATE spdlog::spdlog)
+		PRIVATE spdlog::spdlog ${MPI_C_LIBRARIES} /gpfs/users/racliuspa/damaris/damaris/damaris_install/lib/libdamaris.so)
 target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11)
 set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
 set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
@@ -198,6 +207,7 @@ set_property(TARGET PDI_C PROPERTY VERSION ${PDI_VERSION})
 set_property(TARGET PDI_C PROPERTY SOVERSION ${PDI_VERSION_MAJOR})
 set_property(TARGET PDI_C PROPERTY PDI_MAJOR_VERSION ${PDI_VERSION_MAJOR})
 set_property(TARGET PDI_C APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VERSION)
+
 add_library(PDI::pdi   ALIAS PDI_C)
 add_library(PDI::PDI_C ALIAS PDI_C)
 install(TARGETS PDI_C EXPORT PDI_C_EXPORT

@@ -45,6 +45,8 @@
 
 #include "global_context.h"
 
+#include "mpi.h"
+#include "Damaris.h"
 namespace {
 
 using namespace PDI;
@@ -165,12 +167,20 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 	return old_handler;
 }
 
-PDI_status_t PDI_init(PC_tree_t conf)
+PDI_status_t PDI_init(PC_tree_t conf,const char* configfile = NULL, int *is_client = 0/*, MPI_Comm *damaris_communicator = NULL*/)
 try {
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
 	Global_context::init(conf);
+	if (configfile) {
+		damaris_initialize(configfile,MPI_COMM_WORLD);
+		
+		int err = damaris_start(is_client);
+		//if (is_client)
+			//damaris_client_comm_get(damaris_communicator);
+		//printf("Err : %d",err);
+	}
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -179,9 +189,32 @@ try {
 } catch (...) {
 	return g_error_context.return_err();
 }
+/* PDI_status_t PDI_init_Damaris(PC_tree_t conf,) 
 
-PDI_status_t PDI_finalize()
 try {
+	Paraconf_wrapper fw;
+	g_transaction.clear();
+	g_transaction_data.clear();
+	Global_context::init(conf);
+
+	return PDI_OK;
+} catch (const Error& e) {
+	return g_error_context.return_err(e);
+} catch (const exception& e) {
+	return g_error_context.return_err(e);
+} catch (...) {
+	return g_error_context.return_err();
+} */
+PDI_status_t PDI_finalize(int is_client = -1)
+try {
+	//printf("is_client :%d\n",is_client);
+	if (is_client > 0) {
+		//printf("Stopping Damaris\n");
+		damaris_stop();
+	}
+	if (is_client != -1)
+		damaris_finalize();
+
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
@@ -194,6 +227,22 @@ try {
 } catch (...) {
 	return g_error_context.return_err();
 }
+
+/* PDI_status_t PDI_finalize_Damaris(int *is_client = 0)
+try {
+
+	Paraconf_wrapper fw;
+	g_transaction.clear();
+	g_transaction_data.clear();
+	Global_context::finalize();
+	return PDI_OK;
+} catch (const Error& e) {
+	return g_error_context.return_err(e);
+} catch (const exception& e) {
+	return g_error_context.return_err(e);
+} catch (...) {
+	return g_error_context.return_err();
+} */
 
 PDI_status_t PDI_version(unsigned long* provided, unsigned long expected)
 try {
