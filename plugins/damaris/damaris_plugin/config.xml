@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<simulation name="example" language="c" xmlns="http://damaris.gforge.inria.fr/damaris/model">
+    <architecture>
+        <domains count="1" />
+        <placement />                
+         <dedicated cores="1" nodes="0" />
+        <buffer name="buffer" size="67108864" />
+        <queue  name="queue" size="100" />
+    </architecture>
+    <data>
+        <parameter name="my_rank"  type="int" value="1000" />
+        
+        <parameter name="NROW" type="int" value="96" />
+        <parameter name="NCOL" type="int" value="96" />
+        <parameter name="size" type="int" value="2" />
+
+        <layout name="rmeshY" type="float" dimensions="1+NROW/size" />
+
+        <layout name="cells" type="int" dimensions="NCOL,NROW/size" />
+
+        <mesh name="mesh2d" type="rectilinear" topology="2">
+            <coord name="coordinates/x2d" unit="cm" label="Width"/>
+            <coord name="coordinates/y2d" unit="cm" label="Height"/>
+        </mesh>
+
+        <group name="coordinates">
+            <layout name="rmeshX" type="float" dimensions="1+NCOL" /> 
+            <variable name="x2d" layout="coordinates/rmeshX" 
+                visualizable="false" />
+            <variable name="y2d" layout="rmeshY" 
+                visualizable="false" />
+        </group>
+    
+        <group name="life">
+            <variable name="cells" type="scalar" layout="cells" 
+                mesh="mesh2d" centering="zonal" />
+        </group>
+    </data>
+    <storage>
+    </storage>
+    <actions>
+        <event name="test_event"       action="my_function"      scope="core" library="libdamaris_plugin.so" />
+        <event name="test_local_event" action="called_locally"   library="libdamaris_plugin.so"  />
+        <event name="test_bcast_event" action="bcasted_event"    library="libdamaris_plugin.so" />
+
+    </actions>
+    <visit>
+        <path></path>
+    </visit>
+    <log FileName="log/point" RotationSize="5" LogFormat="[%TimeStamp%]: %Message%" LogLevel="info" Flush="false" />
+</simulation>

@@ -77,6 +77,7 @@ option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
+option(BUILD_DAMARIS_PLUGIN     "Build Damaris plugin" ON)
 
 
 
@@ -444,6 +445,14 @@ sbuild_add_module(MPI_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi"
 	DEPENDS PDI
 	SUBSTEPS test
+)
+
+
+sbuild_add_module(DAMARIS_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_DAMARIS_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
 )
 
 
