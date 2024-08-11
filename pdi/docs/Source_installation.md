@@ -29,13 +29,15 @@ Installing the default %PDI source distribution is fairly easy.
 Most dependencies are embedded in the distribution and the only required
 external dependencies are:
 * a POSIX compatible OS such as GNU/linux,
-* [cmake](https://cmake.org/) version 3.5 or above,
+* [cmake](https://cmake.org/) version 3.16.3 or above,
 * a C 99, C++ 17 and Fortran 03 compiler such as
-  - [gcc](https://gcc.gnu.org/) 7.5 or above,
-  - [clang](https://clang.llvm.org/) 9.0 or above,
-* a [python](https://www.python.org/) interpreter (with venv), version 3.6 or above,
+  - [gcc](https://gcc.gnu.org/) 9.3 or above,
+  - [clang](https://clang.llvm.org/) 10.0 or above,
+* a [python](https://www.python.org/) interpreter, version 3.8.2 or above,
 * a [bash](https://www.gnu.org/software/bash/) interpreter,
-* a [MPI](https://www.mpi-forum.org/) 2 implementation.
+* a [MPI](https://www.mpi-forum.org/) 2 implementation such as
+  - [openmpi](https://www.open-mpi.org/) 4.0 or above,
+  - [mpich](https://www.mpich.org/) 3.3 or above.
 
 \attention
 This list of dependencies can be further reduced or extended by changing the
@@ -159,61 +161,47 @@ All dependencies are provided in the distribution unless specified otherwise.
 Dependencies of **%PDI**:
 
 * a POSIX compatible OS such as GNU/linux,
-* **[cmake](https://cmake.org/) version 3.10 or above (not provided)**,
+* **[cmake](https://cmake.org/) version 3.16 or above (not provided)**,
 * **a C 99 and C++ 17 compiler (not provided)** such as
-  - [gcc](https://gcc.gnu.org/) 7.5 or above,
-  - [clang](https://clang.llvm.org/) 9.0 or above,
+  - [gcc](https://gcc.gnu.org/) 9.3 or above,
+  - [clang](https://clang.llvm.org/) 10.0 or above,
 * the [paraconf](https://github.com/pdidev/paraconf) library version 1.0.0 or above (provided),
 * the [libyaml](https://pyyaml.org/wiki/LibYAML) library version 0.2.2 or above (provided),
-* the [spdlog](https://github.com/gabime/spdlog) library version 1.3.1 or above (provided).
+* the [spdlog](https://github.com/gabime/spdlog) library version 1.5.0 or above (provided).
 
-Dependencies of **the Fortran API**:
+Additional dependencies for **the Fortran API**:
 
 * the PDI library,
 * **a Fortran 03 compiler (not provided)** such as
-  - [gcc](https://gcc.gnu.org/) 7.5 or above,
-* **a [python](https://www.python.org/) interpreter (with venv), version 3.6 or above (not provided)**,
-* the [zpp](https://github.com/jbigot/zpp) preprocessor version 1.0.8 or above (provided).
+  - [gcc](https://gcc.gnu.org/) 9.3 or above,
+* **a [python](https://www.python.org/) interpreter, version 3.8.2 or above (not provided)**.
+
+Additional dependencies for **the Python support**:
+
+* the PDI library,
+* **the [python](https://www.python.org/) development environment version 3.8.2 or above (not provided)**,
+* the [pybind11](https://pybind11.readthedocs.io/en/stable) library version 2.4.3 or above.
 
 Dependencies of **the Decl'HDF5 plugin**:
 
 * the PDI library,
-* the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.8.10 or above (provided),
-* **a MPI implementation for the parallel version of the plugin (not provided)**.
+* the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.10.4 or above (provided),
+* **a MPI implementation for the parallel version of the plugin (not provided)**, such as
+  - [openmpi](https://www.open-mpi.org/) 4.0 or above,
+  - [mpich](https://www.mpich.org/) 3.3 or above.
 
 Dependencies of **the Decl'NetCDF plugin**:
 
 * the PDI library,
-* the [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) library version 4.6.2 or above (provided),
-* the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.8.10 or above (provided),
-* **a MPI implementation for the parallel version of the plugin (not provided)**.
+* the [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) library version 4.7.3 or above (provided),
+* the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.10.4 or above (provided),
+* **a MPI implementation for the parallel version of the plugin (not provided)**, such as
+  - [openmpi](https://www.open-mpi.org/) 4.0 or above,
+  - [mpich](https://www.mpich.org/) 3.3 or above.
 
 Dependencies of **the MPI plugin**:
 
 * the PDI library,
 * **a MPI-2 implementation (not provided)** such as
-  - [openmpi](https://www.open-mpi.org/) 2.1 or above.
-
-Dependencies of **the Python API**:
-
-* the PDI library,
-* **the [python](https://www.python.org/) development environment version 3.6 or above (not provided)**,
-* the [pybind11](https://pybind11.readthedocs.io/en/stable) library version 2.3 or above,
-
-Dependencies of **the Pycall plugin**:
-
-* the PDI library with python API.
-
-Dependencies of **the tests**:
-
-* the PDI library,
-* the [googletest](https://github.com/google/googletest) library (provided),
-
-Dependencies of **the benchmarks**:
-
-* the PDI library,
-* the [Benchmark](https://github.com/google/benchmark) library (provided),
-
-Dependencies of **the documentation website builder**:
-
-* [doxygen](http://www.doxygen.nl/) version 1.8.14 or above (provided).
+  - [openmpi](https://www.open-mpi.org/) 4.0 or above,
+  - [mpich](https://www.mpich.org/) 3.3 or above.

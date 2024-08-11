@@ -27,11 +27,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 
 find_package(Threads REQUIRED)
-find_package(GTest 1.8.0 REQUIRED)
-find_package(GMock 1.8.0 REQUIRED)
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../vendor/googletest-b4aaf97/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
@@ -46,7 +49,7 @@ if("${BUILD_PYTHON}")
 	add_test(NAME PDI_test_05 COMMAND PDI::pdirun "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/PDI_test_05.py")
 
 	add_executable(PDI_python_tools_unit_tests PDI_python_tools.cxx)
-	target_link_libraries(PDI_python_tools_unit_tests PDI::PDI_pysupport pybind11::embed Python3::Python Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
+	target_link_libraries(PDI_python_tools_unit_tests PDI::PDI_pysupport pybind11::embed Python3::Python Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 	target_include_directories(PDI_python_tools_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 	gtest_discover_tests(PDI_python_tools_unit_tests)
 endif()
@@ -100,7 +103,7 @@ foreach(OPERAND1_TYPE IN LISTS MODULABLE_OPERAND_TYPES)
 endforeach()
 
 target_compile_features(PDI_unit_tests PRIVATE cxx_std_17)
-target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::GTest GTest::Main GMock::GMock GMock::Main)
+target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)
 

@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,12 +27,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 
 project(decl_hdf5_benchmarks)
 
-find_package(benchmark 1.5.0 REQUIRED)
-# find_package(HDF5 1.8.0 REQUIRED COMPONENTS C)
+if(NOT TARGET GTest::gtest)
+  option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+  add_subdirectory("../../../vendor/googletest-b4aaf97/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+if(NOT TARGET benchmark::benchmark)
+  option(BENCHMARK_ENABLE_TESTING "Enable testing of the benchmark library." OFF)
+  option(BENCHMARK_ENABLE_WERROR "Build Release candidates with -Werror." OFF)
+  option(BENCHMARK_ENABLE_INSTALL "Enable installation of benchmark. (Projects embedding benchmark may want to turn this OFF.)" OFF)
+  add_subdirectory("../../../vendor/benchmark-38df9da/" "benchmark" EXCLUDE_FROM_ALL)
+endif()
 
 include(CTest)
 

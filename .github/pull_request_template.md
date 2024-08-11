@@ -1,5 +1,3 @@
-# Short description of the PR
-
 !!!INSERT YOUR DESCRIPTION HERE!!!
 
 # List of things to check before making a PR
@@ -8,7 +6,7 @@ Before merging your code, please check the following:
 
 * [ ] you have added a line describing your changes to the Changelog;
 * [ ] you have added unit tests for any new or improved feature;
-* [ ] you have checked pdi/docs/CheckList.md
+* [ ] In case you updated dependencies, you have checked pdi/docs/CheckList.md
 * you have checked your code format:
   - [ ] you have checked that you respect all conventions specified in CONTRIBUTING.md;
   - [ ] you have checked that the indentation and formatting conforms to the `.clang-format`;
@@ -27,5 +25,4 @@ Before merging your code, please check the following:
   - [ ] any change to the dependencies;
 * you have correctly linked your MR to one or more issues:
   - [ ] your MR solves an identified issue;
-  - [ ] your commit contain the `Fix #issue` keyword to autoclose the issue when merged;
-* [ ] you have added to this file any other check that was missing.
+  - [ ] your commit contain the `Fix #issue` keyword to autoclose the issue when merged.

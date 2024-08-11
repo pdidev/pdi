@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 * Replaced the astyle based indentation by a clang-format one, fixes
   [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
+* Update the version of dependencies according to our policy: oldest supported
+  Ubuntu & Fedora, oldstable debian & spack 0.18. The new requirements are:
+  CMake 3.16, Python 3.8, numpy 1.17, pybind11 2.4
+  - do not embed doxygen anymore
+  - directly use vendored gtest, benchmark & ZPP
+  [#465](https://github.com/pdidev/pdi/issues/465)
 
 #### Deprecated
 

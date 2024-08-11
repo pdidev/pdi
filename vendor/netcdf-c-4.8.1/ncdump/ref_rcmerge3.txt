@@ -1,3 +1,0 @@
-|ncrc|->|ncrc2|
-|ncrcx|->|ncrcy|
-|daprc|->|daprc|

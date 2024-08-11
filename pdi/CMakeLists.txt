@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
@@ -110,17 +110,13 @@ endif()
 find_package(paraconf 1.0.0 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
 find_package(spdlog 1.5.0 REQUIRED) # must match PDIConfig.cmake.in
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
-	# Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set
-	set(_PDI_Python3_FOUND "${Python3_FOUND}")
-	unset(Python3_FOUND)
+	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-	find_package(pybind11 2.3.0 REQUIRED) # must match PDIConfig.cmake.in
-	set(Python3_FOUND "${_PDI_Python3_FOUND}")
+	find_package(pybind11 2.4.3 REQUIRED) # must match PDIConfig.cmake.in
 endif()
 if("${BUILD_FORTRAN}")
-	find_package(Zpp 1.0.15 REQUIRED)
+	add_subdirectory("../vendor/zpp-1.0.16/" "zpp")
 endif()
 
 
@@ -255,7 +251,7 @@ if("${BUILD_PYTHON}")
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
 	)
 	# We should link to PDI::PDI_plugins, but since it imposes C++17 which fails with 
-	# pybind11 < 2.4.5 , we use its dependants, cross fingers and hope for C++-14 to work
+	# pybind11 <= 2.4.5 , we use its dependants, cross fingers and hope for C++-14 to work
 	if(2.4.5 VERSION_LESS_EQUAL "${pybind11_VERSION}")
 		target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_plugins)
 	else()

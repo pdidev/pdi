@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,9 +27,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 
-find_package(Doxygen 1.8.12 REQUIRED OPTIONAL_COMPONENTS dot)
+find_package(Doxygen 1.8.17 REQUIRED OPTIONAL_COMPONENTS dot)
 
 add_custom_target(doc ALL)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2020-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -213,12 +213,13 @@ function(_NetCDF_find_CMAKE)
 		else()
 			_NetCDF_target_from_flags("" "${netCDF_INCLUDE_DIR}" "" "" "${netCDF_LIB_DIR}" "${netCDF_LIBRARIES}")
 		endif()
-		set(NetCDF_FEATURES)
+		_NetCDF_parse_includes(FALSE TRUE)
 		foreach(FEATURE IN LISTS _NetCDF_features_list)
 			if("${netCDF_HAS_${FEATURE}}")
 				list(APPEND NetCDF_FEATURES "${FEATURE}")
 			endif()
 		endforeach()
+		list(REMOVE_DUPLICATES NetCDF_FEATURES)
 	endif()
 	_NetCDF_public_vars()
 endfunction()
