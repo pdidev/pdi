@@ -38,21 +38,6 @@
 
 .default_run: &default_run [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/', merge_requests ]
 
-pages:
-  only: *default_run
-  image: ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v2
-  variables: { GIT_SUBMODULE_STRATEGY: recursive }
-  script:
-    - |
-      cmake -DBUILD_DOCUMENTATION=ON -DBUILD_BENCHMARKING=OFF -DBUILD_TESTING=OFF pdi
-      if make doc 2>&1 | tee >(cat>&2) | grep ' warning: ' > /dev/null
-      then
-        make doc 2>&1 | tee >(cat>&2) | grep ' warning: '
-        exit 1
-      fi
-      mv docs/html "$CI_PROJECT_DIR/public"
-  artifacts: { paths: [ public ] }
-
 spack_oldest_clang_openmpi_all:
   only: *default_run
   image: ghcr.io/pdidev/spack/oldest/clang/openmpi/all:v2
@@ -166,11 +151,3 @@ ubuntu_bionic_mpich_all:
   artifacts:
     when: always
     reports: { junit: ./tests.xml }
-
-pages-deploy:
-  only: [ master, '/^[0-9]*\.[0-9]*\.[0-9]*$/' ]
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - |
-        curl -s -u "jbigot:${GITHUB_SITE_DEPLOY_KEY}" -H 'Accept: application/vnd.github.v3+json' -X POST "https://api.github.com/repos/pdidev/pdidev.github.io/dispatches" -d '{ "event_type": "do_gitlab_deploy" }'

@@ -1,0 +1,66 @@
+#=============================================================================
+# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# * Neither the names of CEA, nor the names of the contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written  permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#=============================================================================
+
+name: pages
+on:
+  push: { branches: [ main, 'v[0-9]+.[0-9]+' ] }
+  pull_request:
+jobs:
+  pages:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+      with: { submodules: recursive }
+    - name: Build
+      run: |
+        cat<<-'EOF' > run.sh
+          set -xe
+          cmake -DBUILD_DOCUMENTATION=ON -DBUILD_BENCHMARKING=OFF -DBUILD_TESTING=OFF /src/pdi
+          if make doc 2>&1 | tee >(cat>&2) | grep ' warning: ' > /dev/null
+          then
+            make doc 2>&1 | tee >(cat>&2) | grep ' warning: '
+            exit 1
+          fi
+        EOF
+        docker run \
+          --cidfile='docker.cid' \
+          -v ${PWD}:/src:ro \
+          ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v2 \
+          bash /src/run.sh
+        docker cp "$(cat docker.cid)":$(docker image inspect -f '{{.Config.WorkingDir}}' ghcr.io/pdidev/spack/latest/gcc/openmpi/all:v2)/docs/html public
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pages
+        path: public
+    - name: Deploy
+      if: "${{ github.event_name == 'push' }}"
+      run: |
+        curl -fsS -u "jbigot:${{secrets.PAGES_DEPLOY_TOKEN}}" -H 'Accept: application/vnd.github.v3+json' -X POST "https://api.github.com/repos/pdidev/pdidev.github.io/dispatches" -d '{ "event_type": "do_gitlab_deploy" }'
