@@ -31,7 +31,7 @@
 
 ### Project header
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI_DIST LANGUAGES C CXX)
 
 
@@ -197,24 +197,9 @@ endif()
 ## Python3
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
-endif()
-
-
-## Zpp
-
-if("${BUILD_FORTRAN}")
-	sbuild_add_dependency(Zpp EMBEDDED
-		BUILD_DEPENDENCY
-		EMBEDDED_PATH "vendor/zpp-1.0.15"
-		VERSION 1.0.15
-		BUILD_IN_SOURCE ON
-		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "<INSTALL_DIR>/lib/zpp-venv"
-		BUILD_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" build
-		INSTALL_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" install "--install-data=<INSTALL_DIR>"
-	)
+	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter)
 endif()
 
 
@@ -256,14 +241,14 @@ endif()
 
 # if ( paraconf )
 sbuild_add_dependency(yaml "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/libyaml-0.2.2"
+	EMBEDDED_PATH "vendor/libyaml-0.2.5"
 	CMAKE_CACHE_ARGS
 		"-DBUILD_TESTING:BOOL=OFF"
 		"-DINSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
 		"-DINSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
 		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
 		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
-	VERSION 0.1.7
+	VERSION 0.2.2
 )
 
 
@@ -291,7 +276,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 
 # if ( PDI or ... )
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.5.0"
+	EMBEDDED_PATH "vendor/spdlog-1.14.1"
 	CMAKE_CACHE_ARGS
 		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
@@ -305,96 +290,48 @@ sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 ## Doxygen
 
 if("${BUILD_DOCUMENTATION}")
-	sbuild_add_dependency(Doxygen "${USE_DEFAULT}"
-		BUILD_DEPENDENCY
-		EMBEDDED_PATH "vendor/doxygen-1.8.15"
-		VERSION 1.8.12
-		OPTIONAL_COMPONENTS dot
-	)
-endif()
-
-
-## GTest
-
-if(${BUILD_TESTING})
-	# find_package(GMock REQUIRED)
-	sbuild_add_dependency(GTest EMBEDDED
-		EMBEDDED_PATH "vendor/googletest-release-1.8.0"
-		BUILD_DEPENDENCY
-		CMAKE_CACHE_ARGS
-			"-DBUILD_TESTING:BOOL=OFF"
-			# set BUILD_SHARED_LIBS=OFF to workaround https://github.com/google/googletest/issues/930
-			"-DBUILD_SHARED_LIBS:BOOL=OFF"
-		VERSION 1.8.0
-	)
-endif()
-
-
-# Google benchmark
-if(${BUILD_BENCHMARKING})
-	sbuild_add_dependency(benchmark EMBEDDED
-		EMBEDDED_PATH "vendor/benchmark-1.5.5"
-		BUILD_DEPENDENCY
-		CMAKE_CACHE_ARGS
-			"-DCMAKE_BUILD_TYPE:STRING=Release"
-			"-DBENCHMARK_BUILD_32_BITS:BOOL=OFF"
-			"-DBENCHMARK_ENABLE_EXCEPTIONS:BOOL=ON"
-			"-DBENCHMARK_ENABLE_INSTALL:BOOL=ON"
-			"-DBENCHMARK_ENABLE_LIBPFM:BOOL=OFF"
-			"-DBENCHMARK_ENABLE_LTO:BOOL=OFF"
-			"-DBENCHMARK_ENABLE_TESTING:BOOL=OFF"
-			"-DBENCHMARK_USE_LIBCXX:BOOL=OFF"
-		VERSION 1.5.0
-	)
-	set(BENCHMARKING_DEPENDENCY benchmark)
+	find_package(Doxygen 1.8.17 REQUIRED OPTIONAL_COMPONENTS dot)
 endif()
 
 
 ## HDF5
 
 if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
-	set(HDF5_CONFIGURE_OPTS)
-	set(HDF5_BUILD_ENV)
-	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-		list(APPEND HDF5_CONFIGURE_OPTS "--enable-build-mode=debug")
-	else()
-		list(APPEND HDF5_CONFIGURE_OPTS "--enable-build-mode=production")
-	endif()
+	
+	set(HDF5_CMAKE_CACHE_ARGS)
+	
 	if("${BUILD_HDF5_PARALLEL}")
-		set(HDF5_PREFER_PARALLEL "ON")
-		list(APPEND HDF5_CONFIGURE_OPTS "--enable-parallel")
-		set(HDF5_BUILD_ENV "env" "CC=${MPI_C_COMPILER}")
+		set(HDF5_PREFER_PARALLEL ON)
+		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=ON")
 	else()
-		set(HDF5_PREFER_PARALLEL "OFF")
-		list(APPEND HDF5_CONFIGURE_OPTS "--disable-parallel")
-	endif()
-	if("${BUILD_DECL_NETCDF_PLUGIN}")
-		set(HDF5_COMPONENTS C HL)
-		list(APPEND HDF5_CONFIGURE_OPTS "--enable-hl")
-	else()
-		set(HDF5_COMPONENTS C)
-		list(APPEND HDF5_CONFIGURE_OPTS "--disable-hl")
+		set(HDF5_PREFER_PARALLEL OFF)
+		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=OFF")
 	endif()
 	
+	if("${BUILD_DECL_NETCDF_PLUGIN}")
+		set(HDF5_COMPONENTS C HL)
+		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=ON")
+	else()
+		set(HDF5_COMPONENTS C)
+		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=OFF")
+	endif()
+	
+	find_package(ZLIB)
+	
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/hdf5-1.12.0"
+		EMBEDDED_PATH "vendor/hdf5-1.12.3"
 		COMPONENTS ${HDF5_COMPONENTS}
 		MODULE_VARS HDF5_IS_PARALLEL HDF5_C_INCLUDE_DIRS HDF5_C_LIBRARIES HDF5_VERSION
-		BUILD_IN_SOURCE 1
-		CONFIGURE_COMMAND ${HDF5_BUILD_ENV}
-			"<SOURCE_DIR>/configure"
-			#TODO:  prefix should point to the final install dir, we should use a staging mechanism
-			"--prefix=<INSTALL_DIR>"
-			"--libdir=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}"
-			"--disable-tests"
-			"--disable-static"
-			"--disable-tools"
-			"--disable-sharedlib-rpath"
-			${HDF5_CONFIGURE_OPTS}
+		CMAKE_CACHE_ARGS
+			-DBUILD_TESTING:BOOL=OFF
+			-DHDF5_BUILD_EXAMPLES:BOOL=OFF
+			-DHDF5_BUILD_TOOLS:BOOL=ON
+			-DHDF5_BUILD_UTILS:BOOL=OFF
+			${HDF5_CMAKE_CACHE_ARGS}
 	)
 	if("${HDF5_FOUND}")
-		if(1.10 VERSION_GREATER "${HDF5_VERSION}")
-			message(FATAL_ERROR "HDF5 version ${HDF5_VERSION} found less than required 1.10.0")
+		if(1.10.4 VERSION_GREATER "${HDF5_VERSION}")
+			message(FATAL_ERROR "HDF5 version ${HDF5_VERSION} found less than required 1.10.4")
 		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
@@ -412,40 +349,52 @@ endif()
 ## NetCDF
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
+	
 	if("${BUILD_HDF5_PARALLEL}")
 		set(NETCDF_CC "${MPI_C_COMPILER}")
 	else()
 		set(NETCDF_CC "${CMAKE_C_COMPILER}")
 	endif()
+	
+	set(NETCDF_CMAKE_CACHE_ARGS)
 	if("${BUILD_NETCDF_PARALLEL}")
-		set(NETCDF_MIN_VERSION "4.6.2")
+		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=ON")
 	else()
-		set(NETCDF_MIN_VERSION "4.6.0")
+		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=OFF")
 	endif()
+	
 	set(NETCDF_CPATH "${SBUILD_CPATH}")
 	set(NETCDF_LIBRARY_PATH "${SBUILD_LIBRARY_PATH}")
-	if("${HDF5_FOUND}")
-		string(REPLACE ";" ":" NETCDF_CPATH "${SBUILD_CPATH}:${HDF5_C_INCLUDE_DIRS}")
-		foreach(LIB IN LISTS HDF5_C_LIBRARIES)
+	
+	# Workaround NetCDF borken LibXML2 include path detection
+	find_package(LibXml2)
+	if("${LIBXML2_FOUND}")
+		foreach(INCLUDE_DIR IN LISTS LIBXML2_INCLUDE_DIRS)
+			set(NETCDF_CPATH "${NETCDF_CPATH}:${INCLUDE_DIR}")
+			get_filename_component(INCLUDE_DIR "${INCLUDE_DIR}" DIRECTORY)
+			set(NETCDF_CPATH "${NETCDF_CPATH}:${INCLUDE_DIR}")
+		endforeach()
+		foreach(LIB IN LISTS LIBXML2_LIBRARIES)
 			get_filename_component(LIB_DIR "${LIB}" DIRECTORY)
 			set(NETCDF_LIBRARY_PATH "${NETCDF_LIBRARY_PATH}:${LIB_DIR}")
 		endforeach()
 	endif()
 	
 	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/netcdf-c-4.8.1"
+		EMBEDDED_PATH "vendor/netcdf-c-4.9.2"
 		DEPENDS HDF5
-		BUILD_IN_SOURCE 1
-		ENV "CC=${NETCDF_CC}" "CPATH=${NETCDF_CPATH}" "LIBRARY_PATH=${NETCDF_LIBRARY_PATH}"
-		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
-			#TODO:  prefix should point to the final install dir, we should use a staging mechanism
-			--prefix=<INSTALL_DIR>
-			--disable-static
-			--enable-netcdf-4 
-			--disable-dap
-			--disable-utilities
-			--disable-testsets
-		VERSION "${NETCDF_MIN_VERSION}"
+		MODULE_VARS NetCDF_FEATURES
+		ENV "CPATH=${NETCDF_CPATH}" "LIBRARY_PATH=${NETCDF_LIBRARY_PATH}"
+		CMAKE_CACHE_ARGS
+			"-DCMAKE_C_COMPILER:STRING=${NETCDF_CC}"
+			-DBUILD_TESTING:BOOL=OFF
+			-DBUILD_TESTSETS:BOOL=OFF
+			-DBUILD_UTILITIES:BOOL=OFF
+			-DENABLE_BASH_SCRIPT_TESTING:BOOL=OFF
+			-DENABLE_EXAMPLES:BOOL=OFF
+			-DENABLE_FILTER_TESTING:BOOL=OFF
+			-DENABLE_TESTS:BOOL=OFF
+		VERSION 4.7.3
 	)
 	if("${NETCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
@@ -464,35 +413,22 @@ endif()
 ## PyBind11
 
 if("${BUILD_PYTHON}")
-	# Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set
-	set(_PDI_DIST_Python3_FOUND "${Python3_FOUND}")
-	unset(Python3_FOUND)
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/pybind11-2.3.0"
+		EMBEDDED_PATH "vendor/pybind11-2.13.1"
 		CMAKE_CACHE_ARGS
 			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
-		VERSION 2.3.0
+		VERSION 2.4.3
 	)
-	set(Python3_FOUND "${_PDI_DIST_Python3_FOUND}")
 endif()
 
 
 ### Own modules
 
-set(PDI_DEPENDS_LIST paraconf spdlog "${BENCHMARKING_DEPENDENCY}")
-if("${BUILD_DOCUMENTATION}")
-	list(APPEND PDI_DEPENDS_LIST Doxygen)
-endif()
-if("${BUILD_TESTING}")
-	list(APPEND PDI_DEPENDS_LIST GTest)
-endif()
-if("${BUILD_FORTRAN}")
-	list(APPEND PDI_DEPENDS_LIST Zpp)
-endif()
+set(PDI_DEPENDS_LIST paraconf spdlog)
 if("${BUILD_PYTHON}")
 	list(APPEND PDI_DEPENDS_LIST pybind11)
 endif()
@@ -514,10 +450,9 @@ sbuild_add_module(MPI_PLUGIN
 sbuild_add_module(DECL_HDF5_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_HDF5_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5"
-	DEPENDS PDI HDF5 ${BENCHMARKING_DEPENDENCY}
+	DEPENDS PDI HDF5
 	SUBSTEPS test
 )
-
 
 sbuild_add_module(DECL_NETCDF_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
@@ -525,7 +460,6 @@ sbuild_add_module(DECL_NETCDF_PLUGIN
 	DEPENDS PDI NetCDF
 	SUBSTEPS test
 )
-
 
 sbuild_add_module(PYCALL_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_PYCALL_PLUGIN
@@ -548,19 +482,11 @@ sbuild_add_module(SERIALIZE_PLUGIN
 	SUBSTEPS test
 )
 
-sbuild_add_module(TEST_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_TEST_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/test"
-	DEPENDS PDI
-	SUBSTEPS
-)
-
 
 sbuild_add_module(TRACE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TRACE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace"
 	DEPENDS PDI
-	SUBSTEPS
 )
 
 

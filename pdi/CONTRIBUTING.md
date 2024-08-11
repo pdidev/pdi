@@ -126,4 +126,5 @@ be used:
 
 ## Indentation
 
-A clang-format configuration file is provided at the root of PDI distribution.
+A `.clang-format` configuration file is provided at the root of PDI
+distribution, the formatting it describes should be followed.

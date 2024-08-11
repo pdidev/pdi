@@ -13,6 +13,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+* Replaced the astyle based indentation by a clang-format one, fixes
+  [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
+* Update the version of dependencies according to our policy: oldest supported
+  Ubuntu & Fedora, oldstable debian & spack 0.18. The new requirements are:
+  CMake 3.16, NetCDF 4.7, Python 3.8, mpi4py 3.0, numpy 1.17, pybind11 2.4
+  - do not embed doxygen anymore
+  - directly use vendored gtest, benchmark & ZPP
+  [#465](https://github.com/pdidev/pdi/issues/465)
 
 ### Deprecated
 
@@ -24,6 +32,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 ### Fixed
+* Support installation with the latest version of python where setuptools is an external lib, fixes
+  [#457](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/457)
 
 ### Security
 

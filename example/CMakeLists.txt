@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_examples LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -41,7 +41,7 @@ if("${BUILD_FORTRAN}")
 endif()
 
 if("${BUILD_PYTHON}")
-	find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter)
+	find_package(Python3 3.8.2 REQUIRED COMPONENTS Interpreter)
 	list(APPEND PDI_COMPONENTS python)
 endif()
 

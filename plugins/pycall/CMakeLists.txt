@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_pycall_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -35,16 +35,12 @@ include(CTest)
 
 include(GNUInstallDirs)
 
-find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
-# Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set
-set(_pdi_pycall_plugin_Python3_FOUND "${Python3_FOUND}")
-unset(Python3_FOUND)
 set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-find_package(pybind11 2.3.0 REQUIRED)
-set(Python3_FOUND "${_pdi_pycall_plugin_Python3_FOUND}")
+find_package(pybind11 2.4.3 REQUIRED)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS pysupport)
