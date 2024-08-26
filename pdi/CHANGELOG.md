@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 #### Fixed
-* Fixed compilation with {fmt} version 11+ 
+* Fixed compilation with {fmt} version 11+
   [#456](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/456)
 
 
