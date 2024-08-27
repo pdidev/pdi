@@ -35,25 +35,25 @@
 
 namespace set_value {
 
-class Logger_operation : public Operation
+class Logger_operation: public Operation
 {
-    /// level to set to the logger on execute
-    PDI::Expression m_level;
+	/// level to set to the logger on execute
+	PDI::Expression m_level;
 
-    /// pattern to set to the logger on execute
-    std::string m_pattern;
+	/// pattern to set to the logger on execute
+	std::string m_pattern;
 
-    /// evaluate pattern on execute
-    bool m_evaluate = false;
+	/// evaluate pattern on execute
+	bool m_evaluate = false;
 
 public:
-    /** Creates logger operation
+	/** Creates logger operation
      * \param[in] ctx context of the operation
      * \param[in] logger_node yaml config tree of logger operation
      */
-    Logger_operation(PDI::Context& ctx, PC_tree_t logger_node);
-    
-    void execute() override;
+	Logger_operation(PDI::Context& ctx, PC_tree_t logger_node);
+
+	void execute() override;
 };
 
 } // namespace set_value

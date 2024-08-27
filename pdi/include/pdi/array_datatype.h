@@ -45,75 +45,75 @@ class PDI_EXPORT Array_datatype: public Datatype
 {
 	// Required to make_shared due to private ctor
 	struct Shared_enabler;
-	
+
 	/// Type of the elements contained in the array.
 	Datatype_sptr m_subtype;
-	
+
 	/// Number of elements the array can store
 	size_t m_size;
-	
+
 	/// id of the first actual element of the array
 	size_t m_start;
-	
+
 	/// Number of actual elements in the array
 	size_t m_subsize;
-	
+
 public:
 	/** Type of the elements contained in the array
 	 *
 	 * \return the type of the elements contained in the array
 	 */
 	Datatype_sptr subtype() const;
-	
+
 	/** Number of elements the array can store
 	 * \return the number of elements the array can store
 	 */
 	size_t size() const;
-	
+
 	/** id of the first actual element of the array
 	 *
 	 * \return the id of the first actual element of the array
 	 */
 	size_t start() const;
-	
+
 	/** Number of actual elements in the array
 	 *
 	 * \return the number of actual elements in the array
 	 */
 	size_t subsize() const;
-	
+
 	Datatype_sptr densify() const override;
-	
+
 	Datatype_sptr evaluate(Context&) const override;
-	
+
 	bool dense() const override;
-	
+
 	size_t datasize() const override;
-	
+
 	size_t buffersize() const override;
-	
+
 	size_t alignment() const override;
-	
+
 	bool simple() const override;
-	
+
 	void* data_to_dense_copy(void*, const void*) const override;
-	
+
 	void* data_from_dense_copy(void*, const void*) const override;
-	
+
 	Datatype_sptr index(size_t index) const override;
-	
+
 	std::pair<void*, Datatype_sptr> index(size_t index, void* data) const override;
-	
+
 	Datatype_sptr slice(size_t start_index, size_t end_index) const override;
-	
+
 	std::pair<void*, Datatype_sptr> slice(size_t start_index, size_t end_index, void* data) const override;
-	
+
 	void destroy_data(void*) const override;
-	
+
 	std::string debug_string() const override;
-	
+
 	bool operator== (const Datatype&) const override;
-	
+
 	/** Construct a new partially filled Array_datatype
 	 *
 	 * \param[in] subtype the type of the elements contained in the array
@@ -124,7 +124,7 @@ public:
 	 */
 	static std::shared_ptr<Array_datatype>
 	make(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {});
-	
+
 	/** Construct a new completely filled Array_datatype
 	 *
 	 * \param subtype the type of the elements contained in the array
@@ -132,7 +132,7 @@ public:
 	 * \param attributes attributes of the array
 	 */
 	static std::shared_ptr<Array_datatype> make(Datatype_sptr subtype, size_t size, const Attributes_map& attributes = {});
-	
+
 private:
 	/** Construct a new partially filled Array_datatype
 	 *
@@ -143,7 +143,7 @@ private:
 	 * \param attributes attributes of the array
 	 */
 	Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {});
-	
+
 	/** Construct a new completely filled Array_datatype
 	 *
 	 * \param subtype the type of the elements contained in the array

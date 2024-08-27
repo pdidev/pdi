@@ -42,23 +42,23 @@ namespace PDI {
 class PDI_EXPORT Plugin
 {
 	Context& m_context;
-	
+
 public:
 	Plugin(const Plugin&) = delete;
-	
+
 	Plugin(Plugin&&) = delete;
-	
+
 	/** Initialization of the plugin
 	 * \param ctx the PDI context for this plugin instance
 	 */
 	Plugin(Context& ctx);
-	
+
 	virtual ~Plugin() noexcept(false);
-	
+
 	/** Provides access to the PDI context for this plugin instance
 	 */
 	Context& context();
-	
+
 }; // class Plugin
 
 #define PLUGIN_API_VERSION_MAJOR (0ul)
@@ -91,13 +91,13 @@ struct has_dependencies {
 	{
 		return true;
 	}
-	
+
 	template <typename C>
 	static constexpr bool test(...)
 	{
 		return false;
 	}
-	
+
 	static constexpr bool value = test<T>(int());
 };
 
@@ -134,13 +134,13 @@ struct has_pretty_name {
 	{
 		return true;
 	}
-	
+
 	template <typename C>
 	static constexpr bool test(...)
 	{
 		return false;
 	}
-	
+
 	static constexpr bool value = test<T>(int());
 };
 
@@ -187,8 +187,8 @@ typename std::enable_if<!has_pretty_name<T>::value, std::string>::type plugin_pr
  */
 #define PDI_PLUGIN(name)                                                                                                                             \
 	_Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"")                                                    \
-	_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\""                                                                               \
-	) extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf)                     \
+		_Pragma("clang diagnostic ignored \"-Wreturn-type-c-linkage\""                                                                               \
+	    ) extern "C" ::std::unique_ptr<::PDI::Plugin> PDI_EXPORT PDI_plugin_##name##_loader(::PDI::Context& ctx, PC_tree_t conf)                     \
 	{                                                                                                                                                \
 		auto plugin = ::std::unique_ptr<name##_plugin>{new name##_plugin{ctx, conf}};                                                                \
 		::PDI::plugin_api_version(PLUGIN_API_VERSION);                                                                                               \

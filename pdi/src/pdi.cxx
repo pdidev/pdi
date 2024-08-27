@@ -68,7 +68,7 @@ struct Error_context {
 	string errmsg;
 
 	Error_context()
-	    : handler{PDI_ASSERT_HANDLER}
+		: handler{PDI_ASSERT_HANDLER}
 	{}
 
 	/** Return the C error and stores the message corresponding to the C++ exception
@@ -207,13 +207,14 @@ try {
 
 	if (expected && (expected_major != PDI_VERSION_MAJOR || expected_minor > PDI_VERSION_MINOR)) {
 		throw Plugin_error{
-		    "Invalid PDI API version: {}.{}.{}, PDI provided version is {}.{}.{}",
-		    expected_major,
-		    expected_minor,
-		    expected_patch,
-		    PDI_VERSION_MAJOR,
-		    PDI_VERSION_MINOR,
-		    PDI_VERSION_PATCH};
+			"Invalid PDI API version: {}.{}.{}, PDI provided version is {}.{}.{}",
+			expected_major,
+			expected_minor,
+			expected_patch,
+			PDI_VERSION_MAJOR,
+			PDI_VERSION_MINOR,
+			PDI_VERSION_PATCH
+		};
 	}
 	Global_context::context().logger().trace("PDI API version: {}.{}.{}");
 	return PDI_OK;
@@ -392,7 +393,7 @@ try {
 	for (auto&& it = g_transaction_data.rbegin(); it != g_transaction_data.rend(); it++) {
 		PDI_status_t r_status = PDI_reclaim(it->c_str());
 		g_transaction_status
-		    = !g_transaction_status ? r_status : g_transaction_status; //if it is first error, save its status (try to reclaim other desc anyway)
+			= !g_transaction_status ? r_status : g_transaction_status; //if it is first error, save its status (try to reclaim other desc anyway)
 	}
 	g_transaction_data.clear();
 	g_transaction.clear();

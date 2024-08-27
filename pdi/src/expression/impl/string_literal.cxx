@@ -51,7 +51,7 @@ using std::unordered_set;
 
 unique_ptr<Expression::Impl> Expression::Impl::String_literal::clone() const
 {
-	return unique_ptr<String_literal> {new String_literal(*this)};
+	return unique_ptr<String_literal>{new String_literal(*this)};
 }
 
 string Expression::Impl::String_literal::to_string(Context& ctx) const
@@ -103,12 +103,12 @@ size_t Expression::Impl::String_literal::copy_value(Context& ctx, void* buffer, 
 	throw Value_error{"Cannot copy String_literal as a non chars array datatype."};
 }
 
-unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const ** val_str)
 {
 	const char* str = *val_str;
-	
+
 	unique_ptr<String_literal> result{new String_literal};
-	
+
 	string* curstr = &result->m_start;
 	while (*str) {
 		size_t sz = 0;
@@ -142,7 +142,7 @@ unique_ptr<Expression::Impl> Expression::Impl::String_literal::parse(char const*
 		}
 		}
 	}
-	
+
 	*val_str = str;
 	return result;
 }

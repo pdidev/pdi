@@ -27,7 +27,7 @@
 
 #include <netcdf_meta.h> // includes NC_HAS_PARALLEL4 define
 #if NC_HAS_PARALLEL4
-	#include <mpi.h>
+#include <mpi.h>
 #endif
 
 #include <pdi/paraconf_wrapper.h>
@@ -37,13 +37,13 @@
 
 namespace {
 
-class decl_netcdf_plugin : public PDI::Plugin
+class decl_netcdf_plugin: public PDI::Plugin
 {
 	std::vector<decl_netcdf::Dnc_file_context> m_files;
-	
+
 public:
-	decl_netcdf_plugin(PDI::Context& ctx, PC_tree_t config):
-		Plugin(ctx)
+	decl_netcdf_plugin(PDI::Context& ctx, PC_tree_t config)
+		: Plugin(ctx)
 	{
 		if (PDI::is_list(config)) {
 			int len = PDI::len(config);
@@ -57,22 +57,16 @@ public:
 		}
 		context().logger().info("Plugin loaded successfully");
 	}
-	
-	~decl_netcdf_plugin()
-	{
-		context().logger().info("Closing plugin");
-	}
-	
+
+	~decl_netcdf_plugin() { context().logger().info("Closing plugin"); }
+
 	/** Pretty name for the plugin that will be shown in the logger
 	 *
 	 * \return pretty name of the plugin
 	 */
-	static std::string pretty_name()
-	{
-		return "Decl'NetCDF";
-	}
+	static std::string pretty_name() { return "Decl'NetCDF"; }
 };
 
-} // namespace decl_netcdf
+} // namespace
 
 PDI_PLUGIN(decl_netcdf)

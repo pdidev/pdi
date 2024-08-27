@@ -67,10 +67,10 @@ using std::unordered_set;
 using std::vector;
 
 Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, string name, PC_tree_t conf)
-    : m_config{conf}
-    , m_ctx{ctx}
-    , m_name{name}
-    , m_state{PRELOADED}
+	: m_config{conf}
+	, m_ctx{ctx}
+	, m_name{name}
+	, m_state{PRELOADED}
 {
 	ctx.logger().trace("Pre-loading plugin `{}'", name);
 
@@ -238,7 +238,7 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 }
 
 Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
-    : m_ctx(ctx)
+	: m_ctx(ctx)
 {
 	initialize_path(PC_get(conf, ".plugin_path"));
 

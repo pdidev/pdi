@@ -33,7 +33,6 @@
 
 #include "dnc_attribute.h"
 
-
 namespace decl_netcdf {
 
 /// Represents NetCDF group. Created from config.
@@ -41,33 +40,31 @@ class Dnc_group
 {
 	/// Context of this group
 	PDI::Context& m_ctx;
-	
+
 	std::string m_path;
-	
+
 	/// Attributes of the group
 	std::vector<Dnc_attribute> m_attributes;
-	
-public:
 
+public:
 	/** Creates a NetCDF group information from yaml
 	 *
 	 * \param ctx Context of this group
 	 * \param config (optional) config with group attributes
 	 */
 	Dnc_group(PDI::Context& ctx, const std::string& path, PC_tree_t config = {});
-	
+
 	/** Returns variable path
 	 *
 	 * \return variable path
 	 */
 	const std::string& path() const;
-	
+
 	/** Returns variable attributes
 	 *
 	 * \return variable attributes
 	 */
 	const std::vector<Dnc_attribute>& attributes() const;
-	
 };
 
 } // namespace decl_netcdf

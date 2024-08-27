@@ -44,7 +44,7 @@ void do_pc(PC_tree_t tree, PC_status_t status)
 } // namespace
 
 Paraconf_wrapper::Paraconf_wrapper()
-    : m_handler{PC_errhandler(PC_NULL_HANDLER)}
+	: m_handler{PC_errhandler(PC_NULL_HANDLER)}
 {}
 
 Paraconf_wrapper::~Paraconf_wrapper()

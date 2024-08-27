@@ -23,76 +23,97 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
-#include <unistd.h>
 #include <mpi.h>
-#include <pdi.h>
+#include <assert.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <pdi.h>
 
 #define IMX 10
 #define JMX 5
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
 	int values[JMX][IMX], cp_values[JMX][IMX];
 	double reals[JMX][IMX], cp_reals[JMX][IMX];
 	int i, j, input;
-	int ni=IMX,nj=JMX; // PDI only
-	
+	int ni = IMX, nj = JMX; // PDI only
+
 	MPI_Init(&argc, &argv);
 	assert(argc == 2 && "Needs 1 single arg: config file");
-	
+
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_init(conf);
-	int rank; MPI_Comm_rank(world, &rank);
-	
+	int rank;
+	MPI_Comm_rank(world, &rank);
+
 	char filename[4096];
 	snprintf(filename, 4096, "decl_hdf5_mpi_test_01_C_r%d.h5", rank);
 	remove(filename);
-	
+
 	// Fill arrays
-	for (j=0; j<JMX; ++j) {
-		for (i=0; i<IMX; ++i) {
-			values[j][i]= i;
-			reals[j][i] = (double)(i)+0.1*(i%10);
-			cp_values[j][i]= -1;
+	for (j = 0; j < JMX; ++j) {
+		for (i = 0; i < IMX; ++i) {
+			values[j][i] = i;
+			reals[j][i] = (double)(i) + 0.1 * (i % 10);
+			cp_values[j][i] = -1;
 			cp_reals[j][i] = -1.0;
 		}
 	}
-	
-	input=0;
-	PDI_expose("rank",&rank, PDI_OUT);
-	PDI_expose("input",&input, PDI_OUT);
+
+	input = 0;
+	PDI_expose("rank", &rank, PDI_OUT);
+	PDI_expose("input", &input, PDI_OUT);
 	// Set size for PDI
-	PDI_expose("ni",&ni, PDI_OUT);
-	PDI_expose("nj",&nj, PDI_OUT);
-	
+	PDI_expose("ni", &ni, PDI_OUT);
+	PDI_expose("nj", &nj, PDI_OUT);
+
 	// Test that export/exchange works
-	PDI_expose("input",&input, PDI_OUT);
-	PDI_expose("reals",&reals, PDI_OUT);      // output real
-	PDI_expose("values",&values, PDI_INOUT);  // output integers
-	
-	input=1;
+	PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("reals", &reals, PDI_OUT); // output real
+	PDI_expose("values", &values, PDI_INOUT); // output integers
+
+	input = 1;
 	// Import should also work
-	PDI_expose("input",&input, PDI_OUT); // update metadata => HDF5 now import only
-	PDI_expose("reals",&cp_reals, PDI_IN);      // input real
-	PDI_expose("values",&cp_values, PDI_INOUT);  // input integers
-	
+	PDI_expose("input", &input, PDI_OUT); // update metadata => HDF5 now import only
+	PDI_expose("reals", &cp_reals, PDI_IN); // input real
+	PDI_expose("values", &cp_values, PDI_INOUT); // input integers
+
 	// So the data should be the same
-	fprintf(stderr,"Data exported | Data imported\n");
-	for (j=0; j<JMX; ++j) {
-		for (i=0; i<IMX; ++i) {
-			fprintf(stderr,"%10d     %4d\n", values[j][i], cp_values[j][i]);
-			fprintf(stderr,"%10.2f     %2.2f\n", reals[j][i], cp_reals[j][i]);
+	fprintf(stderr, "Data exported | Data imported\n");
+	for (j = 0; j < JMX; ++j) {
+		for (i = 0; i < IMX; ++i) {
+			fprintf(stderr, "%10d     %4d\n", values[j][i], cp_values[j][i]);
+			fprintf(stderr, "%10.2f     %2.2f\n", reals[j][i], cp_reals[j][i]);
 			if (values[j][i] != cp_values[j][i] || reals[j][i] != cp_reals[j][i]) {
-				fprintf(stderr,"[%d]: values[%d][%d] = %10d should be equal to cp_values[%d][%d] = %4d\n", rank, j, i, values[j][i], j, i, cp_values[j][i]);
-				fprintf(stderr,"[%d]: reals[%d][%d] = %11.2f should be equal to cp_reals[%d][%d] = %5.2f\n", rank, j, i, reals[j][i], j, i, cp_reals[j][i]);
+				fprintf(
+					stderr,
+					"[%d]: values[%d][%d] = %10d should be equal to cp_values[%d][%d] = %4d\n",
+					rank,
+					j,
+					i,
+					values[j][i],
+					j,
+					i,
+					cp_values[j][i]
+				);
+				fprintf(
+					stderr,
+					"[%d]: reals[%d][%d] = %11.2f should be equal to cp_reals[%d][%d] = %5.2f\n",
+					rank,
+					j,
+					i,
+					reals[j][i],
+					j,
+					i,
+					cp_reals[j][i]
+				);
 				MPI_Abort(MPI_COMM_WORLD, -1);
 			}
 		}
 	}
-	
+
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();

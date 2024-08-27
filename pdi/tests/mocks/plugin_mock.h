@@ -30,10 +30,11 @@
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
-struct MockPlugin : public PDI::Plugin {
-	MockPlugin(PDI::Context& ctx):
-		Plugin(ctx)
+struct MockPlugin: public PDI::Plugin {
+	MockPlugin(PDI::Context& ctx)
+		: Plugin(ctx)
 	{}
+
 	MOCK_METHOD0(init, void());
 	MOCK_METHOD1(event, void(const char*));
 	MOCK_METHOD1(empty_desc_access, void(const char*));

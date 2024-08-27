@@ -99,41 +99,41 @@ template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<f
 template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<double>;
 
 Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, const Attributes_map& attributes)
-    : Datatype(attributes)
-    , m_size{size}
-    , m_dense_size{size}
-    , m_align{size}
-    , m_kind{kind}
+	: Datatype(attributes)
+	, m_size{size}
+	, m_dense_size{size}
+	, m_align{size}
+	, m_kind{kind}
 {
 	if (!nulltype(*this) && !ispow2(m_align)) throw Value_error{"alignment should be a power of 2"};
 }
 
 Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes)
-    : Datatype(attributes)
-    , m_size{size}
-    , m_dense_size{size}
-    , m_align{align}
-    , m_kind{kind}
+	: Datatype(attributes)
+	, m_size{size}
+	, m_dense_size{size}
+	, m_align{align}
+	, m_kind{kind}
 {
 	if (!nulltype(*this) && !ispow2(m_align)) throw Value_error{"alignment should be a power of 2"};
 }
 
 Scalar_datatype::Scalar_datatype(
-    Scalar_kind kind,
-    size_t size,
-    size_t align,
-    size_t dense_size,
-    std::function<void*(void*, const void*)> copy,
-    std::function<void(void*)> destroy,
-    const Attributes_map& attributes
+	Scalar_kind kind,
+	size_t size,
+	size_t align,
+	size_t dense_size,
+	std::function<void*(void*, const void*)> copy,
+	std::function<void(void*)> destroy,
+	const Attributes_map& attributes
 )
-    : Datatype(attributes)
-    , m_size{size}
-    , m_dense_size{dense_size}
-    , m_align{align}
-    , m_kind{kind}
-    , m_copy{move(copy)}
-    , m_destroy{move(destroy)}
+	: Datatype(attributes)
+	, m_size{size}
+	, m_dense_size{dense_size}
+	, m_align{align}
+	, m_kind{kind}
+	, m_copy{move(copy)}
+	, m_destroy{move(destroy)}
 {
 	if (!nulltype(*this) && !ispow2(m_align)) throw Value_error{"alignment should be a power of 2"};
 }
@@ -204,10 +204,11 @@ void Scalar_datatype::destroy_data(void* ptr) const
 string Scalar_datatype::debug_string() const
 {
 	const map<Scalar_kind, string> kind_map{
-	    {Scalar_kind::UNKNOWN, "unknown"},
-	    {Scalar_kind::SIGNED, "signed"},
-	    {Scalar_kind::UNSIGNED, "unsigned"},
-	    {Scalar_kind::FLOAT, "float"}};
+		{Scalar_kind::UNKNOWN, "unknown"},
+		{Scalar_kind::SIGNED, "signed"},
+		{Scalar_kind::UNSIGNED, "unsigned"},
+		{Scalar_kind::FLOAT, "float"}
+	};
 	stringstream ss;
 	ss << "type: scalar" << endl
 	   << "kind: " << kind_map.at(kind()) << endl
@@ -234,23 +235,23 @@ bool Scalar_datatype::operator== (const Datatype& other) const
 
 struct Scalar_datatype::Shared_enabler: public Scalar_datatype {
 	Shared_enabler(Scalar_kind kind, size_t size, const Attributes_map& attributes = {})
-	    : Scalar_datatype(kind, size, attributes)
+		: Scalar_datatype(kind, size, attributes)
 	{}
 
 	Shared_enabler(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes = {})
-	    : Scalar_datatype(kind, size, align, attributes)
+		: Scalar_datatype(kind, size, align, attributes)
 	{}
 
 	Shared_enabler(
-	    Scalar_kind kind,
-	    size_t size,
-	    size_t align,
-	    size_t dense_size,
-	    function<void*(void*, const void*)> copy,
-	    function<void(void*)> destroy,
-	    const Attributes_map& attributes = {}
+		Scalar_kind kind,
+		size_t size,
+		size_t align,
+		size_t dense_size,
+		function<void*(void*, const void*)> copy,
+		function<void(void*)> destroy,
+		const Attributes_map& attributes = {}
 	)
-	    : Scalar_datatype(kind, size, align, dense_size, copy, destroy, attributes)
+		: Scalar_datatype(kind, size, align, dense_size, copy, destroy, attributes)
 	{}
 };
 
@@ -265,13 +266,13 @@ shared_ptr<Scalar_datatype> Scalar_datatype::make(Scalar_kind kind, size_t size,
 }
 
 shared_ptr<Scalar_datatype> Scalar_datatype::make(
-    Scalar_kind kind,
-    size_t size,
-    size_t align,
-    size_t dense_size,
-    function<void*(void*, const void*)> copy,
-    function<void(void*)> destroy,
-    const Attributes_map& attributes
+	Scalar_kind kind,
+	size_t size,
+	size_t align,
+	size_t dense_size,
+	function<void*(void*, const void*)> copy,
+	function<void(void*)> destroy,
+	const Attributes_map& attributes
 )
 {
 	return make_shared<Shared_enabler>(kind, size, align, dense_size, copy, destroy, attributes);

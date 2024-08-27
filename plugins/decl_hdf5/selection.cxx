@@ -24,7 +24,7 @@
 
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
-	#include <mpi.h>
+#include <mpi.h>
 #endif
 
 #include <algorithm>
@@ -38,31 +38,26 @@
 
 #include "selection.h"
 
+using PDI::Config_error;
 using PDI::Context;
 using PDI::each;
-using PDI::Config_error;
 using PDI::opt_each;
 using PDI::to_string;
 using std::string;
 using std::transform;
 using std::vector;
 
-
 namespace decl_hdf5 {
 
-Selection::Selection(PC_tree_t tree):
-	m_selection_tree{tree}
+Selection::Selection(PC_tree_t tree)
+	: m_selection_tree{tree}
 {
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		string key = to_string(key_tree);
-		if ( key == "size" ) {
-			opt_each(value, [&](PC_tree_t size) {
-				m_size.emplace_back(to_string(size));
-			});
-		} else if ( key == "start" ) {
-			opt_each(value, [&](PC_tree_t start) {
-				m_start.emplace_back(to_string(start));
-			});
+		if (key == "size") {
+			opt_each(value, [&](PC_tree_t size) { m_size.emplace_back(to_string(size)); });
+		} else if (key == "start") {
+			opt_each(value, [&](PC_tree_t start) { m_start.emplace_back(to_string(start)); });
 		} else {
 			throw Config_error{key_tree, "Invalid configuration key in selection: `{}'", key};
 		}
@@ -72,26 +67,24 @@ Selection::Selection(PC_tree_t tree):
 void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 {
 	int rank = H5Sget_simple_extent_ndims(h5_space);
-	if ( 0>rank ) handle_hdf5_err();
-	if ( 0==rank ) return;
-	
+	if (0 > rank) handle_hdf5_err();
+	if (0 == rank) return;
+
 	vector<hsize_t> h5_subsize(rank);
 	vector<hsize_t> h5_start(rank);
-	if ( 0>H5Sget_select_bounds(h5_space, &h5_start[0], &h5_subsize[0]) ) handle_hdf5_err();
-	transform( h5_start.begin(), h5_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end) {
-		return end-start+1;
-	});
-	
-	if ( !m_size.empty() ) {
-		if (m_size.size() != static_cast<size_t>(rank) ) {
+	if (0 > H5Sget_select_bounds(h5_space, &h5_start[0], &h5_subsize[0])) handle_hdf5_err();
+	transform(h5_start.begin(), h5_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end) { return end - start + 1; });
+
+	if (!m_size.empty()) {
+		if (m_size.size() != static_cast<size_t>(rank)) {
 			throw Config_error{PC_get(m_selection_tree, ".size"), "Invalid selection: {} selection in {} array", m_size.size(), rank};
 		}
-		for ( int size_id=0; size_id<rank; ++size_id ) {
+		for (int size_id = 0; size_id < rank; ++size_id) {
 			h5_subsize[size_id] = m_size[size_id].to_long(ctx);
 		}
-	} else if (dflt_space != -1 ) {
+	} else if (dflt_space != -1) {
 		int dflt_rank = H5Sget_simple_extent_ndims(dflt_space);
-		if (dflt_rank != rank ) {
+		if (dflt_rank != rank) {
 			if (H5Sget_select_npoints(h5_space) == H5Sget_select_npoints(dflt_space)) {
 				// if ranks differ but number of elements are the same, select whole dataset
 			} else {
@@ -100,24 +93,23 @@ void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 		} else {
 			// ranks match, get memory size selection as dataset size selection
 			vector<hsize_t> dflt_start(rank);
-			if ( 0>H5Sget_select_bounds(dflt_space, &dflt_start[0], &h5_subsize[0] ) ) handle_hdf5_err();
-			transform( dflt_start.begin(), dflt_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end) {
-				return end-start+1;
+			if (0 > H5Sget_select_bounds(dflt_space, &dflt_start[0], &h5_subsize[0])) handle_hdf5_err();
+			transform(dflt_start.begin(), dflt_start.end(), h5_subsize.begin(), h5_subsize.begin(), [](hsize_t start, hsize_t end) {
+				return end - start + 1;
 			});
 		}
 	}
-	
-	if ( !m_start.empty() ) {
-		if ( m_start.size() != static_cast<size_t>(rank) ) {
-			throw Config_error{PC_get(m_selection_tree, ".start"),"Invalid selection: {} start in {} array", m_size.size(), rank};
+
+	if (!m_start.empty()) {
+		if (m_start.size() != static_cast<size_t>(rank)) {
+			throw Config_error{PC_get(m_selection_tree, ".start"), "Invalid selection: {} start in {} array", m_size.size(), rank};
 		}
-		for ( int size_id=0; size_id<rank; ++size_id ) {
+		for (int size_id = 0; size_id < rank; ++size_id) {
 			h5_start[size_id] += m_start[size_id].to_long(ctx);
 		}
 	}
-	
-	if ( 0>H5Sselect_hyperslab(h5_space, H5S_SELECT_SET, &h5_start[0], NULL, &h5_subsize[0], NULL) ) handle_hdf5_err();
+
+	if (0 > H5Sselect_hyperslab(h5_space, H5S_SELECT_SET, &h5_start[0], NULL, &h5_subsize[0], NULL)) handle_hdf5_err();
 }
 
 } // namespace decl_hdf5
-

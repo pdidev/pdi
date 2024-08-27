@@ -27,8 +27,8 @@
 
 #include <spdlog/spdlog.h>
 
-#include "pdi/fmt.h"
 #include "pdi/error.h"
+#include "pdi/fmt.h"
 
 #include "pdi/datatype.h"
 
@@ -42,7 +42,7 @@ using std::unique_ptr;
 using std::vector;
 
 Datatype::Datatype(const Attributes_map& attributes)
-    : Datatype_template(attributes)
+	: Datatype_template(attributes)
 {}
 
 Datatype::~Datatype() = default;

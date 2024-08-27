@@ -25,7 +25,7 @@
 
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
-	#include <mpi.h>
+#include <mpi.h>
 #endif
 
 #include <string>
@@ -60,63 +60,58 @@ using namespace decl_hdf5;
 
 /** The decl'HDF5 plugin
  */
-class decl_hdf5_plugin:
-	public Plugin
+class decl_hdf5_plugin: public Plugin
 {
 	/// the file operations to execute on events, we use a map of vector vs. multimap to conserve order
 	unordered_map<string, vector<File_op>> m_events;
-	
+
 	/// the file operations to execute on data, we use a map of vector vs. multimap to conserve order
 	unordered_map<string, vector<File_op>> m_data;
-	
+
 public:
-	decl_hdf5_plugin(Context& ctx, PC_tree_t config):
-		Plugin {ctx}
+	decl_hdf5_plugin(Context& ctx, PC_tree_t config)
+		: Plugin{ctx}
 	{
 		Hdf5_error_handler _;
-		if ( 0>H5open() ) handle_hdf5_err("Cannot initialize HDF5 library");
+		if (0 > H5open()) handle_hdf5_err("Cannot initialize HDF5 library");
 		opt_each(config, [&](PC_tree_t elem) {
 			for (auto&& op: File_op::parse(ctx, elem)) {
 				auto&& events = op.event();
-				if ( events.empty() ) {
+				if (events.empty()) {
 					// if there are no event names, this is data triggered
 					assert(op.dataset_ops().size() <= 1);
-					for ( auto&& transfer: op.dataset_ops() ) {
+					for (auto&& transfer: op.dataset_ops()) {
 						m_data[transfer.value()].emplace_back(op);
 					}
-					for ( auto&& transfer: op.attribute_ops() ) {
+					for (auto&& transfer: op.attribute_ops()) {
 						if (!transfer.desc().empty()) {
 							m_data[transfer.desc()].emplace_back(op);
 						}
 					}
-					for ( auto&& transfer: op.dataset_size_ops() ) {
+					for (auto&& transfer: op.dataset_size_ops()) {
 						m_data[transfer.first].emplace_back(op);
 					}
 				} else {
 					// if there are event names, this is event triggered
-					for ( auto&& evname: events ) {
+					for (auto&& evname: events) {
 						m_events[evname].emplace_back(op);
 					}
 				}
 			}
 		});
-		
-		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
-			this->data(name, ref);
-		});
-		ctx.callbacks().add_event_callback([this](const std::string& name) {
-			this->event(name);
-		});
-		
+
+		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->data(name, ref); });
+		ctx.callbacks().add_event_callback([this](const std::string& name) { this->event(name); });
+
 		ctx.logger().info("Plugin loaded successfully");
 	}
-	
+
 	~decl_hdf5_plugin()
 	{
-		if ( 0>H5close() ) handle_hdf5_err("Cannot finalize HDF5 library");
+		if (0 > H5close()) handle_hdf5_err("Cannot finalize HDF5 library");
 		context().logger().info("Closing plugin");
 	}
-	
+
 	void data(const std::string& name, Ref ref)
 	{
 		Hdf5_error_handler _;
@@ -124,7 +119,7 @@ public:
 			op.execute(context());
 		}
 	}
-	
+
 	void event(const std::string& event)
 	{
 		Hdf5_error_handler _;
@@ -132,18 +127,15 @@ public:
 			op.execute(context());
 		}
 	}
-	
+
 	/** Pretty name for the plugin that will be shown in the logger
 	 *
 	 * \return pretty name of the plugin
 	 */
-	static std::string pretty_name()
-	{
-		return "Decl'HDF5";
-	}
-	
+	static std::string pretty_name() { return "Decl'HDF5"; }
+
 }; // class decl_hdf5_plugin
 
-} // namespace <anonymous>
+} // namespace
 
 PDI_PLUGIN(decl_hdf5)

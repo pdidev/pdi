@@ -36,28 +36,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: DoozyX/clang-format-lint-action@v0.18.1
-      with:
-        clangFormatVersion: 17
-        source: |
-          example/
-          pdi/benchmarks
-          pdi/docs/First_steps
-          pdi/include
-          pdi/src
-          pdi/tests
-          plugins/decl_hdf5
-          plugins/decl_netcdf
-          plugins/decl_sion
-          plugins/flowvr/plugin/include
-          plugins/flowvr/plugin/src
-          plugins/flowvr/tests
-          plugins/fti
-          plugins/mpi
-          plugins/pycall
-          plugins/serialize
-          plugins/set_value
-          plugins/test
-          plugins/trace
-          plugins/user_code
-          tests
+    - run: exec ./bin/test_indent

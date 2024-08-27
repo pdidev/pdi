@@ -37,21 +37,21 @@ namespace PDI {
  */
 struct PDI_NO_EXPORT Expression::Impl::Sequence: public Expression::Impl {
 	std::vector<Expression> m_value;
-	
+
 	Sequence(PC_tree_t value);
-	
+
 	Sequence(const std::vector<Expression>& value);
-	
+
 	std::unique_ptr<Impl> clone() const override;
-	
+
 	long to_long(Context& ctx) const override;
-	
+
 	double to_double(Context& ctx) const override;
-	
+
 	std::string to_string(Context& ctx) const override;
-	
+
 	Ref to_ref(Context& ctx) const override;
-	
+
 	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
 };
 

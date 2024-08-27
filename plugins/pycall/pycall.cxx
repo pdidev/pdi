@@ -27,9 +27,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
 
 #include <pdi.h>
 #include <pdi/array_datatype.h>
@@ -39,10 +39,9 @@
 #include <pdi/expression.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
+#include <pdi/python/tools.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi/python/tools.h>
-
 
 namespace {
 
@@ -76,20 +75,20 @@ class Alias
 private:
 	/// name of the python variable to expose the alias as
 	string m_name;
-	
+
 	/// PDI value that is aliased
 	Expression m_value;
-	
+
 public:
 	/** Python alias for descriptors
 	 * \param name alias name for python
 	 * \param var expression value for this alias
 	 */
-	Alias(const string& name, const string& var):
-		m_name {name},
-		m_value {var}
+	Alias(const string& name, const string& var)
+		: m_name{name}
+		, m_value{var}
 	{}
-	
+
 	/** Exposes the alias
 	 * \param ctx the PDI context for this alias
 	 * \param pyscope python dictionary
@@ -99,29 +98,27 @@ public:
 		Ref r = m_value.to_ref(ctx);
 		pyscope[m_name.c_str()] = to_python(r);
 	}
-	
-}; // class Alias
 
+}; // class Alias
 
 /** A trigger for a function call
  */
 class Trigger
 {
 	string m_code;
-	
+
 	/// all the aliases to setup
 	vector<Alias> m_aliases;
-	
-public:
 
+public:
 	/** Parse tree to initialiaze this instance
 	 * \param code python code to call
 	 * \param with aliases of descriptors for python code
 	 */
-	Trigger(string code, PC_tree_t with):
-		m_code{move(code)}
+	Trigger(string code, PC_tree_t with)
+		: m_code{move(code)}
 	{
-		if (!PC_status(PC_get(with, "{0}"))) {   // parameters
+		if (!PC_status(PC_get(with, "{0}"))) { // parameters
 			int nwith = len(with);
 			for (int ii = 0; ii < nwith; ii++) {
 				string alias_name = to_string(PC_get(with, "{%d}", ii));
@@ -130,18 +127,18 @@ public:
 			}
 		}
 	}
-	
+
 	/** Parse tree to initialiaze this instance
 	 * \param code python code to call
 	 * \param with alias of descriptor for python code
 	 */
-	Trigger(string code, string with):
-		m_code{move(code)}
+	Trigger(string code, string with)
+		: m_code{move(code)}
 	{
 		string var = string("$") + with;
 		m_aliases.emplace_back(with, var);
 	}
-	
+
 	/** Call the function that has been registered
 	 * \param ctx the PDI context for this trigger
 	 */
@@ -150,34 +147,35 @@ public:
 		// a python context we fill with exposed variables
 		pydict pyscope = pymod::import("__main__").attr("__dict__");
 		pyscope["pdi"] = pymod::import("pdi");
-		
-		for (auto&& alias : m_aliases) {
+
+		for (auto&& alias: m_aliases) {
 			//create alias and share it with the plug-in
 			alias.expose(ctx, pyscope);
 		}
 		try {
 			pybind11::exec(m_code, pyscope);
-		} catch ( const std::exception& e ) {
+		} catch (const std::exception& e) {
 			ctx.logger().error("while calling python, caught exception: {}", e.what());
 		} catch (...) {
 			ctx.logger().error("while calling python, caught exception");
 		}
 	}
-	
+
 }; // class Trigger
 
 struct pycall_plugin: Plugin {
 	//Determine if python interpreter is initialized by the plugin.
 	bool interpreter_initialized_in_plugin = false;
-	pycall_plugin(Context& ctx, PC_tree_t conf):
-		Plugin{ctx}
+
+	pycall_plugin(Context& ctx, PC_tree_t conf)
+		: Plugin{ctx}
 	{
-		if ( ! Py_IsInitialized() ) {
+		if (!Py_IsInitialized()) {
 			pybind11::initialize_interpreter();
 			interpreter_initialized_in_plugin = true;
 			ctx.logger().debug("Python interpreter is initialized by the plugin");
 		}
-		
+
 		// Loading configuration for events
 		PC_tree_t on_event = PC_get(conf, ".on_event");
 		int nb_events = len(on_event, 0);
@@ -189,32 +187,33 @@ struct pycall_plugin: Plugin {
 				for (int i = 0; i < len; i++) {
 					triggers.emplace_back(to_string(PC_get(event, "[%d].exec", i)), PC_get(event, "[%d].with", i));
 				}
-				ctx.callbacks().add_event_callback([&ctx, triggers](const std::string&) mutable {
-					for (auto&& trigger : triggers)
-					{
-						trigger.call(ctx);
-					}
-				}, to_string(PC_get(on_event, "{%d}", map_id)));
+				ctx.callbacks().add_event_callback(
+					[&ctx, triggers](const std::string&) mutable {
+						for (auto&& trigger: triggers) {
+							trigger.call(ctx);
+						}
+					},
+					to_string(PC_get(on_event, "{%d}", map_id))
+				);
 			} else {
-				Trigger event_trigger {to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
-				ctx.callbacks().add_event_callback([&ctx, event_trigger](const std::string&) mutable {
-					event_trigger.call(ctx);
-				}, to_string(PC_get(on_event, "{%d}", map_id)));
+				Trigger event_trigger{to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
+				ctx.callbacks().add_event_callback(
+					[&ctx, event_trigger](const std::string&) mutable { event_trigger.call(ctx); },
+					to_string(PC_get(on_event, "{%d}", map_id))
+				);
 			}
 		}
-		
+
 		// Loading configuration for data
 		PC_tree_t on_data = PC_get(conf, ".on_data");
 		int nb_data = len(on_data, 0);
 		for (int map_id = 0; map_id < nb_data; map_id++) {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
-			Trigger data_trigger {to_string(PC_get(on_data, "<%d>", map_id)), data_name};
-			ctx.callbacks().add_data_callback([&ctx, data_trigger](const std::string&, Ref) mutable {
-				data_trigger.call(ctx);
-			}, data_name);
+			Trigger data_trigger{to_string(PC_get(on_data, "<%d>", map_id)), data_name};
+			ctx.callbacks().add_data_callback([&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx); }, data_name);
 		}
 	}
-	
+
 	~pycall_plugin()
 	{
 		if (interpreter_initialized_in_plugin) {
@@ -222,18 +221,15 @@ struct pycall_plugin: Plugin {
 			pybind11::finalize_interpreter();
 		}
 	}
-	
+
 	/** Pretty name for the plugin that will be shown in the logger
 	 *
 	 * \return pretty name of the plugin
 	 */
-	static std::string pretty_name()
-	{
-		return "PyCall";
-	}
-	
+	static std::string pretty_name() { return "PyCall"; }
+
 }; // struct pycall_plugin
 
-} // namespace <anonymous>
+} // namespace
 
 PDI_PLUGIN(pycall)

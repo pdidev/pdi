@@ -36,15 +36,14 @@ using ::testing::Return;
  * Member is int with displacement = 8 and named "intMember"
  */
 struct ScalarMemberTest: ::testing::Test {
-	
 	//displacement of member
 	size_t test_displacement = 8;
-	
+
 	Datatype_sptr mocked_datatype = std::make_shared<MockDatatype>();
-	
+
 	//name of the member
 	std::string test_name = "intMember";
-	
+
 	Record_datatype::Member test_member = {test_displacement, mocked_datatype, test_name};
 };
 
@@ -63,7 +62,6 @@ TEST_F(ScalarMemberTest, check_fields)
 	ASSERT_EQ(mocked_datatype, test_member.type());
 }
 
-
 /*
  * Name:                ScalarMemberTest.check_copy_constructor 
  *
@@ -74,7 +72,7 @@ TEST_F(ScalarMemberTest, check_fields)
  */
 TEST_F(ScalarMemberTest, check_copy_constructor)
 {
-	Record_datatype::Member copy {test_member};
+	Record_datatype::Member copy{test_member};
 	ASSERT_EQ(copy.displacement(), test_member.displacement());
 	ASSERT_EQ(copy.name(), test_member.name());
 	ASSERT_EQ(copy.type(), test_member.type());

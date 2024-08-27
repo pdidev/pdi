@@ -66,12 +66,12 @@ struct Accessor_expression {
 	 * \return The sub-type
 	 */
 	virtual Ref access(Context& ctx, Ref ref) const = 0;
-	
+
 	/** Clones expression reference accessor
 	 * \return clone of this expression reference accessor
 	 */
 	virtual std::unique_ptr<Accessor_expression> clone() const = 0;
-	
+
 	/** Destroys expression accessor
 	 */
 	virtual ~Accessor_expression() = default;
@@ -82,7 +82,7 @@ class Index_accessor_expression: public Accessor_expression
 {
 	/// Expression to evaluate as index accessor
 	Expression m_expression;
-	
+
 public:
 	/** Creates new index accessors used for array access
 	 * \param expression expression to evaluate as index accessor
@@ -90,15 +90,12 @@ public:
 	Index_accessor_expression(Expression expression)
 		: m_expression{expression}
 	{}
-	
-	Ref access(Context& ctx, Ref ref) const override
-	{
-		return ref[m_expression.to_long(ctx)];
-	}
-	
+
+	Ref access(Context& ctx, Ref ref) const override { return ref[m_expression.to_long(ctx)]; }
+
 	std::unique_ptr<Accessor_expression> clone() const override
 	{
-		return unique_ptr<Accessor_expression> {new Index_accessor_expression{m_expression}};
+		return unique_ptr<Accessor_expression>{new Index_accessor_expression{m_expression}};
 	}
 };
 
@@ -107,7 +104,7 @@ class Member_accessor_expression: public Accessor_expression
 {
 	/// Expression to evaluate as member accessor
 	Expression m_expression;
-	
+
 public:
 	/** Creates new member accessors used for record member access
 	 * \param expression expression to evaluate as member accessor
@@ -115,15 +112,12 @@ public:
 	Member_accessor_expression(Expression expression)
 		: m_expression{expression}
 	{}
-	
-	Ref access(Context& ctx, Ref ref) const override
-	{
-		return ref[m_expression.to_string(ctx)];
-	}
-	
+
+	Ref access(Context& ctx, Ref ref) const override { return ref[m_expression.to_string(ctx)]; }
+
 	std::unique_ptr<Accessor_expression> clone() const override
 	{
-		return unique_ptr<Accessor_expression> {new Member_accessor_expression{m_expression}};
+		return unique_ptr<Accessor_expression>{new Member_accessor_expression{m_expression}};
 	}
 };
 
@@ -150,7 +144,7 @@ Expression::Impl::Reference_expression& Expression::Impl::Reference_expression::
 
 unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::clone() const
 {
-	return unique_ptr<Reference_expression> {new Reference_expression{*this}};
+	return unique_ptr<Reference_expression>{new Reference_expression{*this}};
 }
 
 long Expression::Impl::Reference_expression::to_long(Context& ctx) const
@@ -213,7 +207,7 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 			}
 		}
 	}
-	
+
 	return result;
 }
 
@@ -245,7 +239,8 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 				throw Value_error{
 					"Cannot copy reference expression value: reference buffersize ({}) != type bufferize ({})",
 					ref_r.type()->buffersize(),
-					type->buffersize()};
+					type->buffersize()
+				};
 			}
 		} else {
 			if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
@@ -295,14 +290,14 @@ size_t Expression::Impl::Reference_expression::copy_value(Context& ctx, void* bu
 	}
 }
 
-unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char const ** val_str)
 {
 	const char* ref = *val_str;
 	unique_ptr<Reference_expression> result{new Reference_expression};
-	
+
 	if (*ref != '$') throw Value_error{"Expected '$', got {}", *ref};
 	++ref;
-	
+
 	bool has_curly_brace = false;
 	if (*ref == '{') {
 		++ref;
@@ -310,12 +305,12 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 		while (isspace(*ref))
 			++ref;
 	}
-	
+
 	result->m_referenced = parse_id(&ref);
-	
+
 	while (isspace(*ref))
 		++ref;
-		
+
 	while (*ref == '[' || *ref == '.') {
 		if (*ref == '[') {
 			++ref;
@@ -335,7 +330,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 		while (isspace(*ref))
 			++ref;
 	}
-	
+
 	if (*ref == ':') {
 		string fmt_format = ref;
 		size_t found_end = fmt_format.find_first_of("}");
@@ -345,7 +340,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 		result->m_fmt_format = fmt_format.substr(0, found_end);
 		ref += found_end;
 	}
-	
+
 	if (has_curly_brace) {
 		if (*ref != '}') {
 			throw Value_error{"Expected '}}', found {}", *ref};
@@ -354,7 +349,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Reference_expression::parse(char 
 		while (isspace(*ref))
 			++ref;
 	}
-	
+
 	*val_str = ref;
 	return result;
 }

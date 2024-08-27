@@ -35,25 +35,25 @@ int main()
 	if (file_id < 0) {
 		return 1;
 	}
-	
+
 	hsize_t coords[2] = {5, 10};
 	hid_t dataspace_id = H5Screate_simple(2, coords, NULL);
 	if (dataspace_id < 0) {
 		return 1;
 	}
-	
+
 	int dset_data[5][10];
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
 			dset_data[i][j] = i * 10 + j;
 		}
 	}
-	
+
 	hid_t dataset_id = H5Dcreate2(file_id, "/array_data", H5T_NATIVE_INT, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	if (dataset_id < 0) {
 		return 1;
 	}
-	
+
 	herr_t status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset_data);
 	if (status < 0) {
 		return 1;

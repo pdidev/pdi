@@ -43,14 +43,14 @@ class PDI_EXPORT Datatype_template: public std::enable_shared_from_this<Datatype
 {
 protected:
 	Attributes_map m_attributes;
-	
+
 public:
 	/** Creates datatype template with given attributes
 	 *
 	 * \param attributes attributes of datatype template
 	 */
 	Datatype_template(const Attributes_map& attributes = {});
-	
+
 	/** Creates datatype template
 	 *
 	 * If attributes are defined in datatype_tree, they will be included in datatype template
@@ -58,38 +58,38 @@ public:
 	 * \param datatype_tree datatype tree
 	 */
 	Datatype_template(PC_tree_t datatype_tree);
-	
+
 	/** Destroys the template
 	 */
 	virtual ~Datatype_template();
-	
+
 	/** Creates a new datatype by resolving the value of all metadata references
 	 *
 	 * \param ctx the context in which to evaluate this template
 	 * \return the evaluated type that is produced
 	 */
 	virtual Datatype_sptr evaluate(Context& ctx) const = 0;
-	
+
 	/** Returns attribute of given name as Expression
 	 * \param attribute_name attribute to get
 	 *
 	 * \return value of attribute as Expression
 	 */
 	Expression attribute(const std::string& attribute_name) const;
-	
+
 	/** Returns all attributes as a unordered map
 	 *
 	 * \return all attributes as a unordered map
 	 */
 	const Attributes_map& attributes() const;
-	
+
 	/**
 	 * Adds to the context the basic Array, Record, C and Fortran datatypes
 	 *
 	 * \param[in,out] ctx the context where to add the datatypes
 	 */
 	static void load_basic_datatypes(Context& ctx);
-	
+
 	/**
 	 * Adds to the context the user defined datatypes
 	 *

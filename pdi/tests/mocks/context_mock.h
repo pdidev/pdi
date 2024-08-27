@@ -33,30 +33,25 @@
 #include <pdi/datatype_template.h>
 #include <pdi/plugin.h>
 
-
-struct MockContext : public PDI::Context {
+struct MockContext: public PDI::Context {
 	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));
 	MOCK_METHOD1(desc, PDI::Data_descriptor&(const char*));
-	
+
 	MOCK_METHOD1(BracketOp1, PDI::Data_descriptor&(const std::string&));
-	PDI::Data_descriptor& operator [] (const std::string& str) override
-	{
-		return BracketOp1(str);
-	}
-	
+
+	PDI::Data_descriptor& operator[] (const std::string& str) override { return BracketOp1(str); }
+
 	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char*));
-	PDI::Data_descriptor& operator [] (const char* str) override
-	{
-		return BracketOp2(str);
-	}
-	
+
+	PDI::Data_descriptor& operator[] (const char* str) override { return BracketOp2(str); }
+
 	MOCK_METHOD0(begin, PDI::Context::Iterator());
 	MOCK_METHOD0(end, PDI::Context::Iterator());
-	
+
 	MOCK_METHOD1(event, void(const char*));
-	
+
 	MOCK_METHOD0(logger, PDI::Logger&());
-	
+
 	MOCK_METHOD1(datatype, PDI::Datatype_template_sptr(PC_tree_t));
 	MOCK_METHOD2(add_datatype, void(const std::string&, Datatype_template_parser));
 	MOCK_METHOD0(callbacks, PDI::Callbacks&());

@@ -37,18 +37,18 @@ using namespace std;
  */
 struct EmptyStructure {};
 
-struct RecordDatatypeEmptyTest : public ::testing::Test {
+struct RecordDatatypeEmptyTest: public ::testing::Test {
 	RecordDatatypeEmptyTest()
 	{
 		test_size = sizeof(EmptyStructure);
-		
+
 		vector<Record_datatype::Member> test_members;
 		test_record = Record_datatype::make(move(test_members), test_size);
 	}
-	
+
 	//size used to create Record_datatype
 	size_t test_size;
-	
+
 	shared_ptr<Record_datatype> test_record;
 };
 
@@ -94,7 +94,7 @@ TEST_F(RecordDatatypeEmptyTest, check_if_empty_members)
 TEST_F(RecordDatatypeEmptyTest, check_densify)
 {
 	auto&& densified = static_pointer_cast<const Record_datatype>(test_record->densify());
-	
+
 	ASSERT_EQ(test_record->members().empty(), densified->members().empty());
 	ASSERT_EQ(test_record->datasize(), densified->datasize());
 	ASSERT_EQ(test_record->buffersize(), densified->buffersize());
@@ -112,9 +112,9 @@ TEST_F(RecordDatatypeEmptyTest, check_densify)
 TEST_F(RecordDatatypeEmptyTest, check_evaluate)
 {
 	MockContext mockCtx;
-	
+
 	auto&& evaluated = static_pointer_cast<const Record_datatype>(test_record->evaluate(mockCtx));
-	
+
 	ASSERT_EQ(test_record->members().empty(), evaluated->members().empty());
 	ASSERT_EQ(test_record->datasize(), evaluated->datasize());
 	ASSERT_EQ(test_record->buffersize(), evaluated->buffersize());

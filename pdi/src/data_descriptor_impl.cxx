@@ -62,17 +62,17 @@ struct Data_descriptor_impl::Ref_holder::Impl: Data_descriptor_impl::Ref_holder 
 	Ref_any<R, W> m_t;
 
 	Impl(Ref t)
-	    : m_t(t)
+		: m_t(t)
 	{}
 
 	Ref ref() const override { return m_t; }
 };
 
 Data_descriptor_impl::Data_descriptor_impl(Global_context& ctx, const char* name)
-    : m_context{ctx}
-    , m_type{UNDEF_TYPE}
-    , m_name{name}
-    , m_metadata{false}
+	: m_context{ctx}
+	, m_type{UNDEF_TYPE}
+	, m_name{name}
+	, m_metadata{false}
 {}
 
 Data_descriptor_impl::Data_descriptor_impl(Data_descriptor_impl&&) = default;

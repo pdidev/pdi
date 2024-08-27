@@ -30,12 +30,12 @@
 
 namespace decl_hdf5 {
 
-enum class Collision_policy :uint8_t {
-	WARNING = 1,    // 00001b
-	SKIP = 2,       // 00010b
-	REPLACE = 4,    // 00100b
+enum class Collision_policy : uint8_t {
+	WARNING = 1, // 00001b
+	SKIP = 2, // 00010b
+	REPLACE = 4, // 00100b
 	WRITE_INTO = 8, // 01000b
-	ERROR = 16      // 10000b
+	ERROR = 16 // 10000b
 };
 
 /** OR operator on Collision policies
@@ -45,7 +45,7 @@ enum class Collision_policy :uint8_t {
  *
  * \return result of OR operation
  */
-Collision_policy operator|(Collision_policy a, Collision_policy b);
+Collision_policy operator| (Collision_policy a, Collision_policy b);
 
 /** AND operator on Collision policies
  *
@@ -54,7 +54,7 @@ Collision_policy operator|(Collision_policy a, Collision_policy b);
  *
  * \return result of AND operation as bool value
  */
-bool operator&(Collision_policy a, Collision_policy b);
+bool operator& (Collision_policy a, Collision_policy b);
 
 /** << operator of Collision policies
  *
@@ -63,7 +63,7 @@ bool operator&(Collision_policy a, Collision_policy b);
  *
  * \return os output stream
  */
-std::ostream& operator<<(std::ostream& os, Collision_policy policy);
+std::ostream& operator<< (std::ostream& os, Collision_policy policy);
 
 /** Converts string policy to Collision_policy enum
  *

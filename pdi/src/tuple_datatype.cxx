@@ -57,13 +57,13 @@ using std::unique_ptr;
 using std::vector;
 
 Tuple_datatype::Element::Element(size_t displacement, Datatype_sptr type)
-    : m_offset{displacement}
-    , m_type{move(type)}
+	: m_offset{displacement}
+	, m_type{move(type)}
 {}
 
 Tuple_datatype::Element::Element(const Element& o)
-    : m_offset{o.m_offset}
-    , m_type{o.m_type}
+	: m_offset{o.m_offset}
+	, m_type{o.m_type}
 {}
 
 size_t Tuple_datatype::Element::offset() const
@@ -87,9 +87,9 @@ bool Tuple_datatype::Element::operator!= (const Element& rhs) const
 }
 
 Tuple_datatype::Tuple_datatype(vector<Element> elements, size_t buffersize, const Attributes_map& attributes)
-    : Datatype(attributes)
-    , m_elements{move(elements)}
-    , m_buffersize{buffersize}
+	: Datatype(attributes)
+	, m_elements{move(elements)}
+	, m_buffersize{buffersize}
 {}
 
 const vector<Tuple_datatype::Element>& Tuple_datatype::elements() const
@@ -314,7 +314,7 @@ bool Tuple_datatype::operator== (const Datatype& other) const
 struct Tuple_datatype::Shared_enabler: public Tuple_datatype {
 	template <class... Args>
 	Shared_enabler(Args... args)
-	    : Tuple_datatype(std::forward<Args>(args)...)
+		: Tuple_datatype(std::forward<Args>(args)...)
 	{}
 };
 

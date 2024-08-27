@@ -53,7 +53,7 @@ using std::move;
 using std::unique_ptr;
 
 Expression::Expression(std::unique_ptr<Impl> impl)
-    : m_impl(move(impl))
+	: m_impl(move(impl))
 {}
 
 Expression::Expression() = default;
@@ -68,23 +68,23 @@ Expression::Expression(const Expression& value)
 Expression::Expression(Expression&& value) = default;
 
 Expression::Expression(const char* val_str)
-    : m_impl{Impl::parse(val_str)}
+	: m_impl{Impl::parse(val_str)}
 {}
 
 Expression::Expression(const std::string& val_str)
-    : Expression{val_str.c_str()}
+	: Expression{val_str.c_str()}
 {}
 
 Expression::Expression(long value)
-    : m_impl{new Expression::Impl::Int_literal{value}}
+	: m_impl{new Expression::Impl::Int_literal{value}}
 {}
 
 Expression::Expression(double value)
-    : m_impl{new Expression::Impl::Float_literal{value}}
+	: m_impl{new Expression::Impl::Float_literal{value}}
 {}
 
 Expression::Expression(PC_tree_t value)
-    : m_impl{Impl::parse(value)}
+	: m_impl{Impl::parse(value)}
 {}
 
 Expression::~Expression() = default;

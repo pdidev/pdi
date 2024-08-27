@@ -35,14 +35,14 @@ int main()
 	if (file_id < 0) {
 		return 1;
 	}
-	
+
 	int dset_data[5][10];
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
 			dset_data[i][j] = 0;
 		}
 	}
-	
+
 	hid_t dataset_id = H5Dopen2(file_id, "array_data", H5P_DEFAULT);
 	if (dataset_id < 0) {
 		return 1;
@@ -86,7 +86,7 @@ int main()
 			}
 		}
 	}
-	
+
 	status = H5Sclose(memory_dataspace_id);
 	if (status < 0) {
 		return 1;
@@ -103,7 +103,7 @@ int main()
 	if (file_id < 0) {
 		return 1;
 	}
-	
+
 	printf("HDF5_C dataset_read_test finalized\n");
 	return 0;
 }

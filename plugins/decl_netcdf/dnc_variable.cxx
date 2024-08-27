@@ -27,9 +27,9 @@
 
 namespace decl_netcdf {
 
-Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config):
-	m_ctx{ctx},
-	m_path{path}
+Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config)
+	: m_ctx{ctx}
+	, m_path{path}
 {
 	PC_tree_t attributes_node = PC_get(config, ".attributes");
 	if (!PC_status(attributes_node)) {
@@ -37,7 +37,7 @@ Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t
 			this->m_attributes.emplace_back(this->m_ctx, PDI::to_string(attr_name), attr_value);
 		});
 	}
-	
+
 	PC_tree_t dimensions_node = PC_get(config, ".dimensions");
 	if (!PC_status(dimensions_node)) {
 		if (PDI::is_list(dimensions_node)) {
@@ -47,12 +47,13 @@ Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t
 			}
 		}
 	}
-	
+
 	PC_tree_t type_node = PC_get(config, ".type");
 	if (!PC_status(type_node)) {
 		m_type = m_ctx.datatype(config);
 	}
 }
+
 const std::string& Dnc_variable::path() const
 {
 	return m_path;
@@ -75,7 +76,7 @@ PDI::Datatype_sptr Dnc_variable::type() const
 std::vector<std::string> Dnc_variable::dimensions_names() const
 {
 	std::vector<std::string> result;
-	for (auto&& dim_name : m_dimensions_names) {
+	for (auto&& dim_name: m_dimensions_names) {
 		result.emplace_back(dim_name.to_string(m_ctx));
 	}
 	return result;

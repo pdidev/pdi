@@ -36,20 +36,19 @@
 namespace set_value {
 
 /// Operation that calls an event when triggered
-class Event_operation : public Operation
+class Event_operation: public Operation
 {
-    /// event to call when operation triggered
-    std::string m_event_to_call;
+	/// event to call when operation triggered
+	std::string m_event_to_call;
 
 public:
-
-    /** Creates event operation
+	/** Creates event operation
      * \param[in] ctx context of the operation
      * \param[in] event_value_node yaml config tree of operation
      */
-    Event_operation(PDI::Context& ctx, PC_tree_t event_value_node);
-    
-    void execute() override;
+	Event_operation(PDI::Context& ctx, PC_tree_t event_value_node);
+
+	void execute() override;
 };
 
 } // namespace set_value

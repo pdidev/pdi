@@ -34,23 +34,20 @@
 
 
 using namespace PDI;
+using std::set;
 using std::string;
 using std::unique_ptr;
-using std::set;
 
 /*
  * Struct prepared for CallbacksTest.
  */
-struct CallbacksTest : public ::testing::Test {
-	CallbacksTest():
-		test_conf{PC_parse_string("logging: trace")}
+struct CallbacksTest: public ::testing::Test {
+	CallbacksTest()
+		: test_conf{PC_parse_string("logging: trace")}
 	{}
-	
-	void SetUp() override
-	{
-		test_context.reset(new Global_context{test_conf});
-	}
-	
+
+	void SetUp() override { test_context.reset(new Global_context{test_conf}); }
+
 	Paraconf_wrapper fw;
 	PC_tree_t test_conf;
 	unique_ptr<Context> test_context;
@@ -69,9 +66,7 @@ struct CallbacksTest : public ::testing::Test {
 TEST_F(CallbacksTest, add_event)
 {
 	int x = 0;
-	this->test_context->callbacks().add_event_callback([&x](const std::string&) {
-		x += 42;
-	}, "event");
+	this->test_context->callbacks().add_event_callback([&x](const std::string&) { x += 42; }, "event");
 	ASSERT_EQ(x, 0);
 	this->test_context->event("event");
 	ASSERT_EQ(x, 42);
@@ -93,9 +88,7 @@ TEST_F(CallbacksTest, add_event)
 TEST_F(CallbacksTest, remove_event)
 {
 	int x = 0;
-	auto erase_f = this->test_context->callbacks().add_event_callback([&x](const std::string&) {
-		x += 42;
-	}, "event");
+	auto erase_f = this->test_context->callbacks().add_event_callback([&x](const std::string&) { x += 42; }, "event");
 	ASSERT_EQ(x, 0);
 	this->test_context->event("event");
 	ASSERT_EQ(x, 42);
@@ -119,12 +112,8 @@ TEST_F(CallbacksTest, add_remove_event)
 {
 	int x = 0;
 	int y = 0;
-	auto erase_x = this->test_context->callbacks().add_event_callback([&x](const std::string&) {
-		x += 42;
-	}, "event_x");
-	auto erase_y = this->test_context->callbacks().add_event_callback([&y](const std::string&) {
-		y += 53;
-	}, "event_y");
+	auto erase_x = this->test_context->callbacks().add_event_callback([&x](const std::string&) { x += 42; }, "event_x");
+	auto erase_y = this->test_context->callbacks().add_event_callback([&y](const std::string&) { y += 53; }, "event_y");
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
 	this->test_context->event("event_x");
@@ -138,9 +127,7 @@ TEST_F(CallbacksTest, add_remove_event)
 	this->test_context->event("event_y");
 	ASSERT_EQ(x, 42);
 	ASSERT_EQ(y, 106);
-	auto erase_x_2 = this->test_context->callbacks().add_event_callback([&x](const std::string&) {
-		x += 42;
-	}, "event_x_2");
+	auto erase_x_2 = this->test_context->callbacks().add_event_callback([&x](const std::string&) { x += 42; }, "event_x_2");
 	this->test_context->event("event_x_2");
 	this->test_context->event("event_y");
 	ASSERT_EQ(x, 84);
@@ -167,11 +154,11 @@ TEST_F(CallbacksTest, add_remove_event)
  */
 TEST_F(CallbacksTest, add_data_callback)
 {
-	string data_x {"data_x"};
-	this->test_context->desc(data_x). default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	string data_x{"data_x"};
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
+		Ref_w ref_write{ref};
 		int* x = static_cast<int*>(ref_write.get());
 		*x += 42;
 		ASSERT_STREQ(name.c_str(), "data_x");
@@ -194,18 +181,21 @@ TEST_F(CallbacksTest, add_data_callback)
  */
 TEST_F(CallbacksTest, add_named_data_callback)
 {
-	string data_x {"data_x"};
-	string data_y {"data_y"};
+	string data_x{"data_x"};
+	string data_y{"data_y"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
-	this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
-		int* x = static_cast<int*>(ref_write.get());
-		*x += 42;
-		ASSERT_STREQ(name.c_str(), "data_x");
-	}, "data_x");
+	this->test_context->callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
 	this->test_context->desc("data_x").share(&x, true, true);
@@ -226,11 +216,11 @@ TEST_F(CallbacksTest, add_named_data_callback)
  */
 TEST_F(CallbacksTest, remove_data_callback)
 {
-	string data_x {"data_x"};
+	string data_x{"data_x"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	auto erase_x = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
+		Ref_w ref_write{ref};
 		int* x = static_cast<int*>(ref_write.get());
 		*x += 42;
 		ASSERT_STREQ(name.c_str(), "data_x");
@@ -257,18 +247,21 @@ TEST_F(CallbacksTest, remove_data_callback)
  */
 TEST_F(CallbacksTest, remove_named_data_callback)
 {
-	string data_x {"data_x"};
-	string data_y {"data_y"};
+	string data_x{"data_x"};
+	string data_y{"data_y"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
-	auto erase_x = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
-		int* x = static_cast<int*>(ref_write.get());
-		*x += 42;
-		ASSERT_STREQ(name.c_str(), "data_x");
-	}, "data_x");
+	auto erase_x = this->test_context->callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
 	this->test_context->desc("data_x").share(&x, true, true);
@@ -295,8 +288,8 @@ TEST_F(CallbacksTest, remove_named_data_callback)
  */
 TEST_F(CallbacksTest, add_remove_data_callback)
 {
-	string data_x {"data_x"};
-	string data_y {"data_y"};
+	string data_x{"data_x"};
+	string data_y{"data_y"};
 	Data_descriptor& desc_x = this->test_context->desc(data_x);
 	Data_descriptor& desc_y = this->test_context->desc(data_y);
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
@@ -304,12 +297,12 @@ TEST_F(CallbacksTest, add_remove_data_callback)
 	int x = 0;
 	int y = 0;
 	auto erase_x = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
+		Ref_w ref_write{ref};
 		int* x = static_cast<int*>(ref_write.get());
 		*x += std::stoi(name);
 	});
 	auto erase_y = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
+		Ref_w ref_write{ref};
 		int* y = static_cast<int*>(ref_write.get());
 		*y += std::stoi(name) + 1;
 	});
@@ -354,26 +347,32 @@ TEST_F(CallbacksTest, add_remove_data_callback)
  */
 TEST_F(CallbacksTest, add_remove_named_data_callback)
 {
-	string data_x {"data_x"};
-	string data_y {"data_y"};
+	string data_x{"data_x"};
+	string data_y{"data_y"};
 	Data_descriptor& desc_x = this->test_context->desc(data_x);
 	Data_descriptor& desc_y = this->test_context->desc(data_y);
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
-	auto erase_x = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
-		int* x = static_cast<int*>(ref_write.get());
-		*x += 42;
-		ASSERT_STREQ(name.c_str(), "data_x");
-	}, "data_x");
-	auto erase_y = this->test_context->callbacks().add_data_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
-		int* y = static_cast<int*>(ref_write.get());
-		*y += 53;
-		ASSERT_STREQ(name.c_str(), "data_y");
-	}, "data_y");
+	auto erase_x = this->test_context->callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+	auto erase_y = this->test_context->callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* y = static_cast<int*>(ref_write.get());
+			*y += 53;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
 	this->test_context->desc("data_x").share(&x, true, true);
@@ -411,14 +410,14 @@ TEST_F(CallbacksTest, add_remove_named_data_callback)
  */
 TEST_F(CallbacksTest, add_empty_desc_callback)
 {
-	string data_x {"data_x"};
+	string data_x{"data_x"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->callbacks().add_empty_desc_access_callback([this](const std::string& name) {
 		int* x = new int;
 		*x = 42;
 		this->test_context->desc(name).share(x, true, true);
 	});
-	Ref_r ref_read {this->test_context->desc(data_x).ref()};
+	Ref_r ref_read{this->test_context->desc(data_x).ref()};
 	int x = *static_cast<const int*>(ref_read.get());
 	ASSERT_EQ(x, 42);
 	int* data = static_cast<int*>(this->test_context->desc(data_x).reclaim());
@@ -437,21 +436,21 @@ TEST_F(CallbacksTest, add_empty_desc_callback)
  */
 TEST_F(CallbacksTest, remove_empty_desc_callback)
 {
-	string data_x {"data_x"};
+	string data_x{"data_x"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	auto erase_x = this->test_context->callbacks().add_empty_desc_access_callback([this](const std::string& name) {
 		int* x = new int;
 		*x = 42;
 		this->test_context->desc(name).share(x, true, true);
 	});
-	Ref_r ref_read {this->test_context->desc(data_x).ref()};
+	Ref_r ref_read{this->test_context->desc(data_x).ref()};
 	int x = *static_cast<const int*>(ref_read.get());
 	ASSERT_EQ(x, 42);
 	int* data = static_cast<int*>(this->test_context->desc(data_x).reclaim());
 	delete data;
 	erase_x();
 	try {
-		Ref ref_x {this->test_context->desc(data_x).ref()};
+		Ref ref_x{this->test_context->desc(data_x).ref()};
 		FAIL();
 	} catch (Value_error& e) {
 		ASSERT_EQ(e.status(), PDI_ERR_VALUE);
@@ -470,11 +469,11 @@ TEST_F(CallbacksTest, remove_empty_desc_callback)
  */
 TEST_F(CallbacksTest, add_data_remove_callback_reclaim)
 {
-	string data_x {"data_x"};
+	string data_x{"data_x"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
+		Ref_w ref_write{ref};
 		int* x = static_cast<int*>(ref_write.get());
 		*x += 42;
 		ASSERT_STREQ(name.c_str(), "data_x");
@@ -497,7 +496,7 @@ TEST_F(CallbacksTest, add_data_remove_callback_reclaim)
  */
 TEST_F(CallbacksTest, add_data_remove_callback_release)
 {
-	string data_x {"data_x"};
+	string data_x{"data_x"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	this->test_context->callbacks().add_data_remove_callback([&x](const std::string& name, Ref ref) {
@@ -523,24 +522,30 @@ TEST_F(CallbacksTest, add_data_remove_callback_release)
  */
 TEST_F(CallbacksTest, add_named_data_remove_callback_reclaim)
 {
-	string data_x {"data_x"};
-	string data_y {"data_y"};
+	string data_x{"data_x"};
+	string data_y{"data_y"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
-	this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
-		int* x = static_cast<int*>(ref_write.get());
-		*x += 42;
-		ASSERT_STREQ(name.c_str(), "data_x");
-	}, "data_x");
-	this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
-		int* y = static_cast<int*>(ref_write.get());
-		*y += 42;
-		ASSERT_STREQ(name.c_str(), "data_y");
-	}, "data_y");
+	this->test_context->callbacks().add_data_remove_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+	this->test_context->callbacks().add_data_remove_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* y = static_cast<int*>(ref_write.get());
+			*y += 42;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
 	this->test_context->desc("data_x").share(&x, true, true);
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
@@ -561,21 +566,27 @@ TEST_F(CallbacksTest, add_named_data_remove_callback_reclaim)
  */
 TEST_F(CallbacksTest, add_named_data_remove_callback_release)
 {
-	string data_x {"data_x"};
-	string data_y {"data_y"};
+	string data_x{"data_x"};
+	string data_y{"data_y"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	void* memory_to_free = malloc(sizeof(int));
 	int y = 0;
-	this->test_context->callbacks().add_data_remove_callback([&x](const std::string& name, Ref ref) {
-		x += 42;
-		ASSERT_STREQ(name.c_str(), "data_x");
-	}, "data_x");
-	this->test_context->callbacks().add_data_remove_callback([&y](const std::string& name, Ref ref) {
-		y += 42;
-		ASSERT_STREQ(name.c_str(), "data_y");
-	}, "data_y");
+	this->test_context->callbacks().add_data_remove_callback(
+		[&x](const std::string& name, Ref ref) {
+			x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+	this->test_context->callbacks().add_data_remove_callback(
+		[&y](const std::string& name, Ref ref) {
+			y += 42;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
 	this->test_context->desc("data_x").share(memory_to_free, true, true);
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
@@ -596,11 +607,11 @@ TEST_F(CallbacksTest, add_named_data_remove_callback_release)
  */
 TEST_F(CallbacksTest, add_data_remove_callback_reclaim_remove)
 {
-	string data_x {"data_x"};
+	string data_x{"data_x"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	auto remove_callback = this->test_context->callbacks().add_data_remove_callback([](const std::string& name, Ref ref) {
-		Ref_w ref_write {ref};
+		Ref_w ref_write{ref};
 		int* x = static_cast<int*>(ref_write.get());
 		*x += 42;
 		ASSERT_STREQ(name.c_str(), "data_x");
@@ -624,7 +635,7 @@ TEST_F(CallbacksTest, add_data_remove_callback_reclaim_remove)
  */
 TEST_F(CallbacksTest, add_data_remove_callback_release_remove)
 {
-	string data_x {"data_x"};
+	string data_x{"data_x"};
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	auto remove_callback = this->test_context->callbacks().add_data_remove_callback([&x](const std::string& name, Ref ref) {

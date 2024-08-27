@@ -36,30 +36,29 @@ using namespace std;
 /*
  * Struct prepared for PointerDatatypeTest.
  */
-struct PointerDatatypeTest : public ::testing::Test {
+struct PointerDatatypeTest: public ::testing::Test {
 	PointerDatatypeTest()
 	{
 		m_scalar_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 		m_ptr_scalar_type = Pointer_datatype::make(m_scalar_type);
-		
+
 		m_array_type = PDI::Array_datatype::make(m_scalar_type, 32);
 		m_ptr_array_type = Pointer_datatype::make(m_array_type);
-		
+
 		vector<Record_datatype::Member> members;
 		members.emplace_back(0, m_scalar_type, "member_0");
 		members.emplace_back(sizeof(int), m_array_type, "member_1");
-		
-		m_record_type = Record_datatype::make(std::move(members), 33*sizeof(int));
+
+		m_record_type = Record_datatype::make(std::move(members), 33 * sizeof(int));
 		m_ptr_record_type = Pointer_datatype::make(m_record_type);
-		
 	}
-	
+
 	shared_ptr<Datatype> m_scalar_type;
 	shared_ptr<Pointer_datatype> m_ptr_scalar_type;
-	
+
 	shared_ptr<Datatype> m_array_type;
 	shared_ptr<Pointer_datatype> m_ptr_array_type;
-	
+
 	shared_ptr<Datatype> m_record_type;
 	shared_ptr<Pointer_datatype> m_ptr_record_type;
 };
@@ -128,25 +127,25 @@ TEST(PointerAccessSequenceTest, pointer_to_record_with_pointer_to_array_of_scala
 		char m_char;
 		int* m_pointer;
 	};
-	
+
 	Simple_record_t simple_record;
 	simple_record.m_pointer = new int[10];
 	for (int i = 0; i < 10; i++) {
 		simple_record.m_pointer[i] = i;
 	}
-	auto&& char_type = Scalar_datatype::make(Scalar_kind::UNSIGNED,sizeof(char));
-	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED,sizeof(int));
+	auto&& char_type = Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char));
+	auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 	auto&& array_type = Array_datatype::make(int_type, 10);
 	auto&& ptr_array_type = Pointer_datatype::make(array_type);
-	
+
 	std::vector<Record_datatype::Member> members;
 	members.emplace_back(offsetof(Simple_record_t, m_char), char_type, "m_char");
 	members.emplace_back(offsetof(Simple_record_t, m_pointer), ptr_array_type, "m_pointer");
 	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Simple_record_t));
 	auto&& ptr_record_type = Pointer_datatype::make(record_type);
 	Simple_record_t* value_ptr = &simple_record;
-	
-	
+
+
 	std::pair<void*, Datatype_sptr> data = ptr_record_type->dereference(&value_ptr);
 	ASSERT_EQ(value_ptr, data.first);
 	ASSERT_EQ(*record_type, *data.second);
@@ -166,6 +165,6 @@ TEST(PointerAccessSequenceTest, pointer_to_record_with_pointer_to_array_of_scala
 	std::pair<void*, Datatype_sptr> array_ptr_ptr_data = ptr_ptr_data.second->index(2, ptr_ptr_data.first);
 	ASSERT_EQ(*int_type, *array_ptr_ptr_data.second);
 	ASSERT_EQ(&(simple_record.m_pointer[2]), array_ptr_ptr_data.first);
-	
+
 	delete[] simple_record.m_pointer;
 }

@@ -43,10 +43,10 @@ namespace PDI {
  */
 struct PDI_EXPORT Paraconf_wrapper {
 	PC_errhandler_t m_handler;
-	
-	
+
+
 	Paraconf_wrapper();
-	
+
 	~Paraconf_wrapper();
 };
 

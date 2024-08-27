@@ -36,9 +36,9 @@
 #include <pdi/datatype.h>
 #include <pdi/error.h>
 #include <pdi/expression.h>
-#include <pdi/ref_any.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/record_datatype.h>
+#include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 
 #include "global_context.h"
@@ -47,40 +47,40 @@
 #include "mocks/data_descriptor_mock.h"
 
 using PDI::Array_datatype;
-using PDI::Expression;
 using PDI::Context;
 using PDI::Datatype_sptr;
 using PDI::Error;
+using PDI::Expression;
 using PDI::Global_context;
-using PDI::Scalar_datatype;
-using PDI::Scalar_kind;
 using PDI::Paraconf_wrapper;
 using PDI::Ref;
 using PDI::Ref_r;
+using PDI::Scalar_datatype;
+using PDI::Scalar_kind;
 using std::numeric_limits;
+using std::pair;
 using std::string;
 using std::to_string;
-using std::pair;
 using std::unique_ptr;
 using std::vector;
 
 /*
  * Structs prepared for ExpressionTests.
  */
-struct EmptyExpressionTest : public testing::Test {
+struct EmptyExpressionTest: public testing::Test {
 	Expression test_expression;
 	MockContext context_mock;
 };
 
-struct LongExpressionTest : public testing::TestWithParam<long> {
+struct LongExpressionTest: public testing::TestWithParam<long> {
 	MockContext context_mock;
 };
 
-struct DoubleExpressionTest : public testing::TestWithParam<double> {
+struct DoubleExpressionTest: public testing::TestWithParam<double> {
 	MockContext context_mock;
 };
 
-struct StringExpressionTest : public testing::TestWithParam<const char*> {
+struct StringExpressionTest: public testing::TestWithParam<const char*> {
 	MockContext context_mock;
 };
 
@@ -171,7 +171,7 @@ TEST_P(LongExpressionTest, copy)
 	long param = GetParam();
 	Expression exp{param};
 	Expression copy{exp};
-	
+
 	ASSERT_EQ(exp.to_long(context_mock), copy.to_long(context_mock));
 }
 
@@ -188,7 +188,7 @@ TEST_P(LongExpressionTest, copy_operator)
 	Expression exp{param};
 	Expression copy;
 	copy = exp;
-	
+
 	ASSERT_EQ(exp.to_long(context_mock), copy.to_long(context_mock));
 }
 
@@ -205,7 +205,7 @@ TEST_P(LongExpressionTest, move)
 	Expression exp{param};
 	long result = exp.to_long(context_mock);
 	Expression copy{std::move(exp)};
-	
+
 	ASSERT_EQ(result, copy.to_long(context_mock));
 }
 
@@ -223,7 +223,7 @@ TEST_P(LongExpressionTest, move_operator)
 	long result = exp.to_long(context_mock);
 	Expression copy;
 	copy = std::move(exp);
-	
+
 	ASSERT_EQ(result, copy.to_long(context_mock));
 }
 
@@ -252,7 +252,7 @@ TEST_P(LongExpressionTest, to_long)
 {
 	long param = GetParam();
 	Expression exp{param};
-	
+
 	ASSERT_EQ(param, exp.to_long(context_mock));
 }
 
@@ -267,7 +267,7 @@ TEST_P(LongExpressionTest, to_double)
 {
 	long param = GetParam();
 	Expression exp{param};
-	
+
 	ASSERT_EQ(static_cast<double>(param), exp.to_double(context_mock));
 }
 
@@ -296,7 +296,7 @@ TEST_P(LongExpressionTest, to_ref)
 {
 	long param = GetParam();
 	Expression exp{param};
-	Ref_r ref {exp.to_ref(context_mock)};
+	Ref_r ref{exp.to_ref(context_mock)};
 	ASSERT_EQ(param, *static_cast<const long*>(ref.get()));
 }
 
@@ -312,7 +312,7 @@ TEST_P(DoubleExpressionTest, copy)
 	double param = GetParam();
 	Expression exp{param};
 	Expression copy{exp};
-	
+
 	ASSERT_EQ(exp.to_double(context_mock), copy.to_double(context_mock));
 }
 
@@ -329,7 +329,7 @@ TEST_P(DoubleExpressionTest, copy_operator)
 	Expression exp{param};
 	Expression copy;
 	copy = exp;
-	
+
 	ASSERT_EQ(exp.to_double(context_mock), copy.to_double(context_mock));
 }
 
@@ -346,7 +346,7 @@ TEST_P(DoubleExpressionTest, move)
 	Expression exp{param};
 	double result = exp.to_double(context_mock);
 	Expression copy{std::move(exp)};
-	
+
 	ASSERT_EQ(result, copy.to_double(context_mock));
 }
 
@@ -364,7 +364,7 @@ TEST_P(DoubleExpressionTest, move_operator)
 	double result = exp.to_double(context_mock);
 	Expression copy;
 	copy = std::move(exp);
-	
+
 	ASSERT_EQ(result, copy.to_double(context_mock));
 }
 
@@ -393,7 +393,7 @@ TEST_P(DoubleExpressionTest, to_long)
 {
 	double param = GetParam();
 	Expression exp{param};
-	
+
 	ASSERT_EQ(static_cast<long>(param), exp.to_long(context_mock));
 }
 
@@ -408,7 +408,7 @@ TEST_P(DoubleExpressionTest, to_double)
 {
 	double param = GetParam();
 	Expression exp{param};
-	
+
 	ASSERT_DOUBLE_EQ(param, exp.to_double(context_mock));
 }
 
@@ -437,7 +437,7 @@ TEST_P(DoubleExpressionTest, to_ref)
 {
 	double param = GetParam();
 	Expression exp{param};
-	Ref_r ref {exp.to_ref(context_mock)};
+	Ref_r ref{exp.to_ref(context_mock)};
 	ASSERT_DOUBLE_EQ(param, *static_cast<const double*>(ref.get()));
 }
 
@@ -453,7 +453,7 @@ TEST_P(StringExpressionTest, copy_cstr)
 	const char* param = GetParam();
 	Expression exp{param};
 	Expression copy{exp};
-	
+
 	ASSERT_EQ(exp.to_string(context_mock), copy.to_string(context_mock));
 }
 
@@ -469,7 +469,7 @@ TEST_P(StringExpressionTest, copy_string)
 	string param = GetParam();
 	Expression exp{param};
 	Expression copy{exp};
-	
+
 	ASSERT_EQ(exp.to_string(context_mock), copy.to_string(context_mock));
 }
 
@@ -486,7 +486,7 @@ TEST_P(StringExpressionTest, copy_operator_cstr)
 	Expression exp{param};
 	Expression copy;
 	copy = exp;
-	
+
 	ASSERT_EQ(exp.to_string(context_mock), copy.to_string(context_mock));
 }
 
@@ -503,7 +503,7 @@ TEST_P(StringExpressionTest, copy_operator_string)
 	Expression exp{param};
 	Expression copy;
 	copy = exp;
-	
+
 	ASSERT_EQ(exp.to_string(context_mock), copy.to_string(context_mock));
 }
 
@@ -520,7 +520,7 @@ TEST_P(StringExpressionTest, move_cstr)
 	Expression exp{param};
 	string result = exp.to_string(context_mock);
 	Expression copy{std::move(exp)};
-	
+
 	ASSERT_EQ(result, copy.to_string(context_mock));
 }
 
@@ -537,7 +537,7 @@ TEST_P(StringExpressionTest, move_string)
 	Expression exp{param};
 	string result = exp.to_string(context_mock);
 	Expression copy{std::move(exp)};
-	
+
 	ASSERT_EQ(result, copy.to_string(context_mock));
 }
 
@@ -550,13 +550,12 @@ TEST_P(StringExpressionTest, move_string)
  */
 TEST_P(StringExpressionTest, move_operator_cstr)
 {
-
 	const char* param = GetParam();
 	Expression exp{param};
 	string result = exp.to_string(context_mock);
 	Expression copy;
 	copy = std::move(exp);
-	
+
 	ASSERT_EQ(result, copy.to_string(context_mock));
 }
 
@@ -569,13 +568,12 @@ TEST_P(StringExpressionTest, move_operator_cstr)
  */
 TEST_P(StringExpressionTest, move_operator_string)
 {
-
 	string param = GetParam();
 	Expression exp{param};
 	string result = exp.to_string(context_mock);
 	Expression copy;
 	copy = std::move(exp);
-	
+
 	ASSERT_EQ(result, copy.to_string(context_mock));
 }
 
@@ -659,7 +657,7 @@ TEST_P(StringExpressionTest, to_long_string)
 	try {
 		long res = std::stol(param);
 		ASSERT_EQ(res, exp.to_long(context_mock));
-	} catch (const std::invalid_argument& ) {
+	} catch (const std::invalid_argument&) {
 		ASSERT_THROW(exp.to_long(context_mock), PDI::Error);
 	}
 }
@@ -678,7 +676,7 @@ TEST_P(StringExpressionTest, to_double_string)
 	try {
 		double res = std::stod(param);
 		ASSERT_EQ(res, exp.to_double(context_mock));
-	} catch (const std::invalid_argument& ) {
+	} catch (const std::invalid_argument&) {
 		ASSERT_THROW(exp.to_double(context_mock), PDI::Error);
 	}
 }
@@ -722,11 +720,11 @@ TEST_P(StringExpressionTest, to_ref_cstr)
 {
 	const char* param = GetParam();
 	Expression exp{param};
-	Ref_r ref {exp.to_ref(context_mock)};
+	Ref_r ref{exp.to_ref(context_mock)};
 	try {
 		long res = std::stol(param);
 		ASSERT_EQ(res, *static_cast<const long*>(ref.get()));
-	} catch (const std::invalid_argument& ) {
+	} catch (const std::invalid_argument&) {
 		ASSERT_STREQ(param, static_cast<const char*>(ref.get()));
 	}
 }
@@ -742,7 +740,7 @@ TEST_P(StringExpressionTest, to_ref_string)
 {
 	string param = GetParam();
 	Expression exp{param};
-	Ref_r ref {exp.to_ref(context_mock)};
+	Ref_r ref{exp.to_ref(context_mock)};
 	try {
 		long res = std::stol(param);
 		ASSERT_EQ(res, *static_cast<const long*>(ref.get()));
@@ -761,39 +759,15 @@ TEST_P(StringExpressionTest, to_ref_string)
 TEST_F(AdvancedExpressionTest, operators)
 {
 	//pairs of strings to parse and expected value
-	vector<pair<string, long>> checks {
-		{"2+2", 4l},
-		{"4-1", 3l},
-		{"4/2", 2l},
-		{"5/2", 2l},
-		{"5/2", 2l},
-		{"4\%2", 0l},
-		{"5\%2", 1l},
-		{"4=2", 0l},
-		{"2=2", 1l},
-		{"3&0", 0l},
-		{"4&2", 1l},
-		{"0&12", 0l},
-		{"0&0", 0l},
-		{"-5|0", 1l},
-		{"-7|-9", 1l},
-		{"0|-1234", 1l},
-		{"0|0", 0l},
-		{"-5 > -7", 1l},
-		{"-6 > -3", 0l},
-		{"5 > 7", 0l},
-		{"6 > 3", 1l},
-		{"3 > 3", 0l},
-		{"-5 < -7", 0l},
-		{"-6 < -3", 1l},
-		{"5 < 7", 1l},
-		{"6 < 3", 0l},
-		{"3 < 3", 0l}
-	};
-	
-	for (auto&& entry : checks) {
+	vector<pair<string, long>> checks{{"2+2", 4l},   {"4-1", 3l},     {"4/2", 2l},     {"5/2", 2l},     {"5/2", 2l},     {"4\%2", 0l},  {"5\%2", 1l},
+	                                  {"4=2", 0l},   {"2=2", 1l},     {"3&0", 0l},     {"4&2", 1l},     {"0&12", 0l},    {"0&0", 0l},   {"-5|0", 1l},
+	                                  {"-7|-9", 1l}, {"0|-1234", 1l}, {"0|0", 0l},     {"-5 > -7", 1l}, {"-6 > -3", 0l}, {"5 > 7", 0l}, {"6 > 3", 1l},
+	                                  {"3 > 3", 0l}, {"-5 < -7", 0l}, {"-6 < -3", 1l}, {"5 < 7", 1l},   {"6 < 3", 0l},   {"3 < 3", 0l}};
+
+	for (auto&& entry: checks) {
 		Expression exp{entry.first};
-		ASSERT_EQ(entry.second, exp.to_long(context_mock)) << "'" << entry.first << "' should be: " << entry.second << " is: " << exp.to_long(context_mock);
+		ASSERT_EQ(entry.second, exp.to_long(context_mock))
+			<< "'" << entry.first << "' should be: " << entry.second << " is: " << exp.to_long(context_mock);
 	}
 }
 
@@ -807,36 +781,17 @@ TEST_F(AdvancedExpressionTest, operators)
 TEST_F(AdvancedDoubleExpressionTest, operators)
 {
 	//pairs of strings to parse and expected value
-	vector<pair<string, double>> checks {
-		{"2.1+2.2", 4.3},
-		{"4.2-2.2", 2.0},
-		{"6.0/2.0", 3.0},
-		{"5.0/2.0", 2.5},
-		{"4.0=2.0", 0.0},
-		{"2.0=2.0", 1.0},
-		{"3.0&0.0", 0.0},
-		{"4.0&2.0", 1.0},
-		{"0.0&12.0", 0.0},
-		{"0.0&0.0", 0.0},
-		{"-5.0|0.0", 1.0},
-		{"-7.0|-9.0", 1.0},
-		{"0.0|-1234.0", 1.0},
-		{"0.0|0.0", 0.0},
-		{"-5.0 > -7.0", 1.0},
-		{"-6.0 > -3.0", 0.0},
-		{"5.0 > 7.0", 0.0},
-		{"6.0 > 3.0", 1.0},
-		{"3.0 > 3.0", 0.0},
-		{"-5.0 < -7.0", 0.0},
-		{"-6.0 < -3.0", 1.0},
-		{"5.0 < 7.0", 1.0},
-		{"6.0 < 3.0", 0.0},
-		{"3.0 < 3.0", 0.0}
+	vector<pair<string, double>> checks{
+		{"2.1+2.2", 4.3},     {"4.2-2.2", 2.0},     {"6.0/2.0", 3.0},     {"5.0/2.0", 2.5},     {"4.0=2.0", 0.0},   {"2.0=2.0", 1.0},
+		{"3.0&0.0", 0.0},     {"4.0&2.0", 1.0},     {"0.0&12.0", 0.0},    {"0.0&0.0", 0.0},     {"-5.0|0.0", 1.0},  {"-7.0|-9.0", 1.0},
+		{"0.0|-1234.0", 1.0}, {"0.0|0.0", 0.0},     {"-5.0 > -7.0", 1.0}, {"-6.0 > -3.0", 0.0}, {"5.0 > 7.0", 0.0}, {"6.0 > 3.0", 1.0},
+		{"3.0 > 3.0", 0.0},   {"-5.0 < -7.0", 0.0}, {"-6.0 < -3.0", 1.0}, {"5.0 < 7.0", 1.0},   {"6.0 < 3.0", 0.0}, {"3.0 < 3.0", 0.0}
 	};
-	
-	for (auto&& entry : checks) {
+
+	for (auto&& entry: checks) {
 		Expression exp{entry.first};
-		ASSERT_DOUBLE_EQ(entry.second, exp.to_double(context_mock)) << "'" << entry.first << "' should be: " << entry.second << " is: " << exp.to_double(context_mock);
+		ASSERT_DOUBLE_EQ(entry.second, exp.to_double(context_mock))
+			<< "'" << entry.first << "' should be: " << entry.second << " is: " << exp.to_double(context_mock);
 	}
 }
 
@@ -849,46 +804,25 @@ TEST_F(AdvancedDoubleExpressionTest, operators)
  */
 TEST_F(AdvancedExpressionTest, operator_precedence)
 {
-	vector<pair<string, long>> checks {
-		{"1+2+3", 6l},
-		{"4-2+1", 3l},
-		{"4-2-1", 1l},
-		{"1+2*3", 7l},
-		{"2*3+1", 7l},
-		{"1+4/2", 3l},
-		{"4/2+1", 3l},
-		{"1+4\%2", 1l},
-		{"4\%2+1", 1l},
-		{"1*2*3", 6l},
-		{"4/2/2", 1l},
-		{"4-(2+1)", 1l},
-		{"4-(2-1)", 3l},
-		{"(1+2)*3", 9l},
-		{"2*(3+1)", 8l},
-		{"(2+4)/2", 3l},
-		{"6/(2+1)", 2l},
-		{"4/(2/2)", 4l},
-		{"1 & 0 & 1", 0l},
-		{"1 | 0 | 1", 1l},
-		{"1 & 0 | 1", 1l},
-		{"0 & 0 | 1", 1l},
-		{"0 & (0 | 1)", 0l},
-		{"1 | 1 = 0", 1l},
-		{"(1 | 1) = 0", 0l},
-		{"3 > 2 & 2 > 1", 1l},
-		{"1\%3+2*3-4/2=5", 1l}
+	vector<pair<string, long>> checks{
+		{"1+2+3", 6l},       {"4-2+1", 3l},         {"4-2-1", 1l},         {"1+2*3", 7l},     {"2*3+1", 7l},       {"1+4/2", 3l},
+		{"4/2+1", 3l},       {"1+4\%2", 1l},        {"4\%2+1", 1l},        {"1*2*3", 6l},     {"4/2/2", 1l},       {"4-(2+1)", 1l},
+		{"4-(2-1)", 3l},     {"(1+2)*3", 9l},       {"2*(3+1)", 8l},       {"(2+4)/2", 3l},   {"6/(2+1)", 2l},     {"4/(2/2)", 4l},
+		{"1 & 0 & 1", 0l},   {"1 | 0 | 1", 1l},     {"1 & 0 | 1", 1l},     {"0 & 0 | 1", 1l}, {"0 & (0 | 1)", 0l}, {"1 | 1 = 0", 1l},
+		{"(1 | 1) = 0", 0l}, {"3 > 2 & 2 > 1", 1l}, {"1\%3+2*3-4/2=5", 1l}
 	};
-	
-	for (auto&& entry : checks) {
+
+	for (auto&& entry: checks) {
 		Expression exp{entry.first};
-		ASSERT_EQ(entry.second, exp.to_long(context_mock)) << "'" << entry.first << "' should be: " << entry.second << " is: " << exp.to_long(context_mock);
+		ASSERT_EQ(entry.second, exp.to_long(context_mock))
+			<< "'" << entry.first << "' should be: " << entry.second << " is: " << exp.to_long(context_mock);
 	}
 }
 
 using ::testing::Matcher;
-using ::testing::StrEq;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::StrEq;
 
 /*
  * Name:                AdvancedExpressionTest.simple_reference
@@ -901,13 +835,10 @@ TEST_F(AdvancedExpressionTest, simple_reference)
 {
 	MockDataDescriptor desc_mock;
 	long value = 10l;
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{
-		new long{value},
-		[](void* p){operator delete(p);},
-		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
-		true,
-		true
-	}));
+	EXPECT_CALL(desc_mock, ref())
+		.WillOnce(
+			Return(Ref_r{new long{value}, [](void* p) { operator delete (p); }, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)), true, true})
+		);
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp{"$simple"};
 	ASSERT_EQ(value, exp.to_long(context_mock));
@@ -924,23 +855,25 @@ TEST_F(AdvancedExpressionTest, string_ref)
 {
 	MockDataDescriptor desc_mock;
 	char string_value[] = "a_string_example";
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{
-		string_value,
-		[](void*) {},
-		Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), sizeof(string_value)-1),
-		true,
-		true
-	}));
+	EXPECT_CALL(desc_mock, ref())
+		.WillOnce(Return(Ref_r{
+			string_value,
+			[](void*) {},
+			Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), sizeof(string_value) - 1),
+			true,
+			true
+		}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp_str{"$simple"};
 	ASSERT_EQ(string_value, exp_str.to_string(context_mock));
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{
-		string_value,
-		[](void*) {},
-		Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), sizeof(string_value)-1),
-		true,
-		true
-	}));
+	EXPECT_CALL(desc_mock, ref())
+		.WillOnce(Return(Ref_r{
+			string_value,
+			[](void*) {},
+			Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), sizeof(string_value) - 1),
+			true,
+			true
+		}));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("simple")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp_str2{"<${simple}>"};
 	ASSERT_EQ("<a_string_example>", exp_str2.to_string(context_mock));
@@ -955,16 +888,8 @@ TEST_F(AdvancedExpressionTest, string_ref)
  */
 TEST_F(AdvancedExpressionTest, invalid_identifiers)
 {
-	vector<string> invalid_identifiers = {
-		"$123",
-		"$/something",
-		"$^ident",
-		"$$double",
-		"$",
-		"$(id)",
-		"${id with spaces}"
-	};
-	for (auto&& entry : invalid_identifiers) {
+	vector<string> invalid_identifiers = {"$123", "$/something", "$^ident", "$$double", "$", "$(id)", "${id with spaces}"};
+	for (auto&& entry: invalid_identifiers) {
 		ASSERT_THROW(Expression exp{entry}, PDI::Error) << "'" << entry << "' did not throw an exception";
 	}
 }
@@ -981,19 +906,13 @@ TEST_F(AdvancedExpressionTest, reference_in_operation)
 	MockDataDescriptor desc_mock;
 	long value1 = 10l;
 	long value2 = 20l;
-	EXPECT_CALL(desc_mock, ref()).WillOnce(Return(Ref_r{
-		new long{value1},
-		[](void*p){operator delete(p);},
-		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
-		true,
-		true
-	})).WillOnce(Return(Ref_r{
-		new long{value2},
-		[](void*p){operator delete(p);},
-		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
-		true,
-		true
-	}));
+	EXPECT_CALL(desc_mock, ref())
+		.WillOnce(Return(
+			Ref_r{new long{value1}, [](void* p) { operator delete (p); }, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)), true, true}
+		))
+		.WillOnce(Return(
+			Ref_r{new long{value2}, [](void* p) { operator delete (p); }, Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)), true, true}
+		));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("value1")))).WillOnce(ReturnRef(desc_mock));
 	EXPECT_CALL(context_mock, desc(Matcher<const char*>(StrEq("value2")))).WillOnce(ReturnRef(desc_mock));
 	Expression exp{"(${value1} + $value2) * 2"};
@@ -1018,13 +937,13 @@ INSTANTIATE_TEST_CASE_P(, LongExpressionTest, ::testing::Values(numeric_limits<l
 
 INSTANTIATE_TEST_CASE_P(, DoubleExpressionTest, ::testing::Values(numeric_limits<double>::min(), -1.0, 0.0, 1.0, numeric_limits<double>::max()));
 
-INSTANTIATE_TEST_CASE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c","", "-100000", "0", "100000"));
+INSTANTIATE_TEST_CASE_P(, StringExpressionTest, ::testing::Values("test_string", "s", "a+b+c", "", "-100000", "0", "100000"));
 
 TEST(PCTreeToRefDefault, scalar_value_long)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
@@ -1035,7 +954,7 @@ TEST(PCTreeToRefDefault, array_value_long)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	PC_tree_t tree = PC_parse_string("[1, 2, 3, 4]");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
@@ -1049,9 +968,9 @@ TEST(PCTreeToRefDefault, array_value_string)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	PC_tree_t tree = PC_parse_string("\"abcd\"");
-	
+
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
 	ASSERT_EQ('a', static_cast<char*>(ref.get())[0]);
@@ -1064,9 +983,9 @@ TEST(PCTreeToRefDefault, array_value_float)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	PC_tree_t tree = PC_parse_string("[1.1, 2.2, 3.3, 4.4]");
-	
+
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
 	ASSERT_EQ(1.1, static_cast<double*>(ref.get())[0]);
@@ -1079,13 +998,13 @@ TEST(PCTreeToRefDefault, record_value)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	PC_tree_t tree = PC_parse_string("{x: 42, y: [1, 2, 3, 4]}");
-	
+
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
 	auto&& record_type = std::dynamic_pointer_cast<const PDI::Record_datatype>(ref.type());
-	
+
 	long* x;
 	long* y;
 	if (record_type->members()[0].name() == "x") {
@@ -1108,15 +1027,15 @@ TEST(PCTreeToRefDefault, record_value_string)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	PC_tree_t tree = PC_parse_string("{y: 123456789, x: \"a b c d e f g h i j k\"}");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock);
 	auto&& record_type = std::dynamic_pointer_cast<const PDI::Record_datatype>(ref.type());
-	
+
 	char* x;
 	long* y;
-	
+
 	if (record_type->members()[0].name() == "x") {
 		// x is the first member
 		x = static_cast<char*>(ref.get());
@@ -1126,7 +1045,7 @@ TEST(PCTreeToRefDefault, record_value_string)
 		y = static_cast<long*>(ref.get());
 		x = reinterpret_cast<char*>(y + 1);
 	}
-	
+
 	ASSERT_STREQ("a b c d e f g h i j k", x);
 	ASSERT_EQ(123456789, *y);
 }
@@ -1135,7 +1054,7 @@ TEST(PCTreeToRef, scalar_value_unsigned_char)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	auto&& type = PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(unsigned char));
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
@@ -1147,7 +1066,7 @@ TEST(PCTreeToRef, scalar_value_short)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	auto&& type = PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(short));
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
@@ -1159,7 +1078,7 @@ TEST(PCTreeToRef, scalar_value_int)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	auto&& type = PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(int));
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
@@ -1171,8 +1090,8 @@ TEST(PCTreeToRef, scalar_value_long)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
-	auto&& type = PDI::Scalar_datatype::make (PDI::Scalar_kind::SIGNED, sizeof(long));
+
+	auto&& type = PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long));
 	PC_tree_t tree = PC_parse_string("4");
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
@@ -1183,10 +1102,10 @@ TEST(PCTreeToRef, array_value_long)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	auto&& type = Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)), 4);
 	PC_tree_t tree = PC_parse_string("[1, 2, 3, 4]");
-	
+
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
 	long* array = static_cast<long*>(ref.get());
@@ -1200,10 +1119,10 @@ TEST(PCTreeToRef, array_value_string)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	auto&& type = PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(char)), 5);
 	PC_tree_t tree = PC_parse_string("\"abcd\"");
-	
+
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
 	ASSERT_EQ('a', static_cast<char*>(ref.get())[0]);
@@ -1216,10 +1135,10 @@ TEST(PCTreeToRef, array_value_float)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	auto&& type = PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::FLOAT, sizeof(double)), 4);
 	PC_tree_t tree = PC_parse_string("[1.1, 2.2, 3.3, 4.4]");
-	
+
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
 	ASSERT_EQ(1.1, static_cast<double*>(ref.get())[0]);
@@ -1232,25 +1151,26 @@ TEST(PCTreeToRef, record_value)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	auto&& type = PDI::Record_datatype::make(
-		std::vector<PDI::Record_datatype::Member> {
-			PDI::Record_datatype::Member {0, PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(char)), "char"},
-			PDI::Record_datatype::Member {2, PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(short)), "short"},
-			PDI::Record_datatype::Member {8, PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)), 4), "long"}
+		std::vector<PDI::Record_datatype::Member>{
+			PDI::Record_datatype::Member{0, PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(char)), "char"},
+			PDI::Record_datatype::Member{2, PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(short)), "short"},
+			PDI::Record_datatype::Member{8, PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)), 4), "long"}
 		},
 		40
 	);
 	PC_tree_t tree = PC_parse_string("{char: 42, short: 84, long: [1, 2, 3, 4]}");
-	
+
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
-	
+
 	struct Test_record {
 		unsigned char x;
 		short y;
 		long z[4];
 	};
+
 	Test_record* result = static_cast<Test_record*>(ref.get());
 	ASSERT_EQ(42, result->x);
 	ASSERT_EQ(84, result->y);
@@ -1264,23 +1184,28 @@ TEST(PCTreeToRef, record_value_string)
 {
 	PDI::Paraconf_wrapper _pw;
 	MockContext ctx_mock;
-	
+
 	auto&& type = PDI::Record_datatype::make(
-		std::vector<PDI::Record_datatype::Member> {
-			PDI::Record_datatype::Member {0, PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(char)), 25), "string"},
-			PDI::Record_datatype::Member {32, PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)), "long"}
+		std::vector<PDI::Record_datatype::Member>{
+			PDI::Record_datatype::Member{
+				0,
+				PDI::Array_datatype::make(PDI::Scalar_datatype::make(PDI::Scalar_kind::UNSIGNED, sizeof(char)), 25),
+				"string"
+			},
+			PDI::Record_datatype::Member{32, PDI::Scalar_datatype::make(PDI::Scalar_kind::SIGNED, sizeof(long)), "long"}
 		},
 		40
 	);
 	PC_tree_t tree = PC_parse_string("{string: \"a b c d e f g h i j k\", long: 123456789}");
-	
+
 	PDI::Expression ex(tree);
 	PDI::Ref_rw ref = ex.to_ref(ctx_mock, type);
-	
+
 	struct Test_record {
 		char x[25];
 		long y;
 	};
+
 	Test_record* result = static_cast<Test_record*>(ref.get());
 	ASSERT_STREQ("a b c d e f g h i j k", result->x);
 	ASSERT_EQ(123456789, result->y);
@@ -1289,16 +1214,13 @@ TEST(PCTreeToRef, record_value_string)
 /*
  * Struct prepared for CallbacksTest.
  */
-struct ExpresionOperators : public ::testing::Test {
-	ExpresionOperators():
-		test_conf{PC_parse_string("data: {x : int, y : int}")}
+struct ExpresionOperators: public ::testing::Test {
+	ExpresionOperators()
+		: test_conf{PC_parse_string("data: {x : int, y : int}")}
 	{}
-	
-	void SetUp() override
-	{
-		test_context.reset(new PDI::Global_context{test_conf});
-	}
-	
+
+	void SetUp() override { test_context.reset(new PDI::Global_context{test_conf}); }
+
 	PDI::Paraconf_wrapper fw;
 	PC_tree_t test_conf;
 	std::unique_ptr<PDI::Context> test_context;
@@ -1315,12 +1237,13 @@ struct ExpresionOperators : public ::testing::Test {
  */
 TEST_F(ExpresionOperators, empty_expr)
 {
-	Expression first {"2"};
+	Expression first{"2"};
 	Expression second;
 	try {
 		Expression result = first + second;
 		FAIL();
-	} catch (const Error& e) {}
+	} catch (const Error& e) {
+	}
 }
 
 /*
@@ -1334,8 +1257,8 @@ TEST_F(ExpresionOperators, empty_expr)
  */
 TEST_F(ExpresionOperators, add_two_expr)
 {
-	Expression first {"2"};
-	Expression second {"2"};
+	Expression first{"2"};
+	Expression second{"2"};
 	Expression result = first + second;
 	if (!result) {
 		throw;
@@ -1359,8 +1282,8 @@ TEST_F(ExpresionOperators, add_two_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"$y"};
+	Expression first{"$x"};
+	Expression second{"$y"};
 	Expression result = first + second;
 	ASSERT_EQ(66, result.to_long(*test_context));
 
@@ -1384,9 +1307,9 @@ TEST_F(ExpresionOperators, add_tree_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"22"};
-	Expression third {"$y"};
+	Expression first{"$x"};
+	Expression second{"22"};
+	Expression third{"$y"};
 	Expression result = first + second + third;
 	ASSERT_EQ(88, result.to_long(*test_context));
 
@@ -1405,8 +1328,8 @@ TEST_F(ExpresionOperators, add_tree_ref_expr)
  */
 TEST_F(ExpresionOperators, sub_two_expr)
 {
-	Expression first {"4"};
-	Expression second {"2"};
+	Expression first{"4"};
+	Expression second{"2"};
 	Expression result = first - second;
 	if (!result) {
 		throw;
@@ -1430,8 +1353,8 @@ TEST_F(ExpresionOperators, sub_two_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"$y"};
+	Expression first{"$x"};
+	Expression second{"$y"};
 	Expression result = first - second;
 	ASSERT_EQ(2, result.to_long(*test_context));
 
@@ -1455,9 +1378,9 @@ TEST_F(ExpresionOperators, sub_tree_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"10"};
-	Expression third {"$y"};
+	Expression first{"$x"};
+	Expression second{"10"};
+	Expression third{"$y"};
 	Expression result = first - second - third;
 	ASSERT_EQ(12, result.to_long(*test_context));
 
@@ -1476,8 +1399,8 @@ TEST_F(ExpresionOperators, sub_tree_ref_expr)
  */
 TEST_F(ExpresionOperators, multiply_two_expr)
 {
-	Expression first {"2"};
-	Expression second {"2"};
+	Expression first{"2"};
+	Expression second{"2"};
 	Expression result = first * second;
 	ASSERT_EQ(4, result.to_long(*test_context));
 }
@@ -1498,8 +1421,8 @@ TEST_F(ExpresionOperators, multiply_two_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"$y"};
+	Expression first{"$x"};
+	Expression second{"$y"};
 	Expression result = first * second;
 	ASSERT_EQ(28, result.to_long(*test_context));
 
@@ -1523,9 +1446,9 @@ TEST_F(ExpresionOperators, multiply_tree_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"5"};
-	Expression third {"$y"};
+	Expression first{"$x"};
+	Expression second{"5"};
+	Expression third{"$y"};
 	Expression result = first * second * third;
 	ASSERT_EQ(40, result.to_long(*test_context));
 
@@ -1549,10 +1472,10 @@ TEST_F(ExpresionOperators, sum_multiply_tree_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"5"};
-	Expression third {"$y"};
-	
+	Expression first{"$x"};
+	Expression second{"5"};
+	Expression third{"$y"};
+
 	Expression result = first * second + third;
 	ASSERT_EQ(22, result.to_long(*test_context));
 
@@ -1574,8 +1497,8 @@ TEST_F(ExpresionOperators, sum_multiply_tree_ref_expr)
  */
 TEST_F(ExpresionOperators, divide_two_expr)
 {
-	Expression first {"4"};
-	Expression second {"2"};
+	Expression first{"4"};
+	Expression second{"2"};
 	Expression result = first / second;
 	ASSERT_EQ(2, result.to_long(*test_context));
 }
@@ -1596,8 +1519,8 @@ TEST_F(ExpresionOperators, divide_two_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"$y"};
+	Expression first{"$x"};
+	Expression second{"$y"};
 	Expression result = first / second;
 	ASSERT_EQ(2, result.to_long(*test_context));
 
@@ -1621,9 +1544,9 @@ TEST_F(ExpresionOperators, divide_tree_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"4"};
-	Expression third {"$y"};
+	Expression first{"$x"};
+	Expression second{"4"};
+	Expression third{"$y"};
 	Expression result = first / second / third;
 	ASSERT_EQ(2, result.to_long(*test_context));
 
@@ -1647,10 +1570,10 @@ TEST_F(ExpresionOperators, sum_divide_tree_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"4"};
-	Expression third {"$y"};
-	
+	Expression first{"$x"};
+	Expression second{"4"};
+	Expression third{"$y"};
+
 	Expression result = first / second + third;
 	ASSERT_EQ(6, result.to_long(*test_context));
 
@@ -1660,7 +1583,6 @@ TEST_F(ExpresionOperators, sum_divide_tree_ref_expr)
 	test_context->desc("x").reclaim();
 	test_context->desc("y").reclaim();
 }
-
 
 /*
  * Name:                ExpresionOperators.mod_two_ref_expr
@@ -1678,8 +1600,8 @@ TEST_F(ExpresionOperators, mod_two_ref_expr)
 	test_context->desc("x").share(&x, true, false);
 	test_context->desc("y").share(&y, true, false);
 
-	Expression first {"$x"};
-	Expression second {"$y"};
+	Expression first{"$x"};
+	Expression second{"$y"};
 	Expression result = first % second;
 	ASSERT_EQ(2, result.to_long(*test_context));
 
@@ -1690,16 +1612,13 @@ TEST_F(ExpresionOperators, mod_two_ref_expr)
 /*
  * Struct prepared for CallbacksTest.
  */
-struct ExpresionFMTFormat : public ::testing::Test {
-	ExpresionFMTFormat():
-		test_conf{PC_parse_string("data: {x : int, y : double, z: {type: array, subtype: char, size: 16}}")}
+struct ExpresionFMTFormat: public ::testing::Test {
+	ExpresionFMTFormat()
+		: test_conf{PC_parse_string("data: {x : int, y : double, z: {type: array, subtype: char, size: 16}}")}
 	{}
-	
-	void SetUp() override
-	{
-		test_context.reset(new PDI::Global_context{test_conf});
-	}
-	
+
+	void SetUp() override { test_context.reset(new PDI::Global_context{test_conf}); }
+
 	PDI::Paraconf_wrapper fw;
 	PC_tree_t test_conf;
 	std::unique_ptr<PDI::Context> test_context;
@@ -1764,7 +1683,6 @@ TEST_F(ExpresionFMTFormat, fmt_string_ref)
 	test_context->desc("z").reclaim();
 }
 
-
 /*
  * Name:                ExpresionMemberAccess.access_simple_member
  *
@@ -1779,19 +1697,19 @@ TEST(ExpresionMemberAccess, access_simple_member)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
-	"logging: trace                    \n"
-	"data:                             \n"
-	"    record_data:                  \n"
-	"        type: struct              \n"
-	"        members:                  \n"
-	"            - a: char             \n"
-	"            - b: int16            \n"
-	"            - c: int              \n"
-	"            - d: int64            \n"
-	"            - e: float            \n"
-	"            - f: double           \n"
+		"logging: trace                    \n"
+		"data:                             \n"
+		"    record_data:                  \n"
+		"        type: struct              \n"
+		"        members:                  \n"
+		"            - a: char             \n"
+		"            - b: int16            \n"
+		"            - c: int              \n"
+		"            - d: int64            \n"
+		"            - e: float            \n"
+		"            - f: double           \n"
 	);
-	
+
 	struct Test {
 		char a;
 		short b;
@@ -1809,8 +1727,8 @@ TEST(ExpresionMemberAccess, access_simple_member)
 	test.e = 1234.5;
 	test.f = 1234.56;
 
-	unique_ptr<Context> ctx {new Global_context{config}};
-	
+	unique_ptr<Context> ctx{new Global_context{config}};
+
 	ctx->desc("record_data").share(&test, true, false);
 
 	ASSERT_EQ(Expression{"${record_data.a}"}.to_long(*ctx), 1L);
@@ -1836,17 +1754,17 @@ TEST(ExpresionMemberAccess, access_string_member)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
-	"logging: trace                    \n"
-	"data:                             \n"
-	"    record_data:                  \n"
-	"        type: struct              \n"
-	"        members:                  \n"
-	"            - string:             \n"
-	"                  type: array     \n"
-	"                  subtype: char   \n"
-	"                  size: 32        \n"
+		"logging: trace                    \n"
+		"data:                             \n"
+		"    record_data:                  \n"
+		"        type: struct              \n"
+		"        members:                  \n"
+		"            - string:             \n"
+		"                  type: array     \n"
+		"                  subtype: char   \n"
+		"                  size: 32        \n"
 	);
-	
+
 	struct Test {
 		char string[32];
 	};
@@ -1854,8 +1772,8 @@ TEST(ExpresionMemberAccess, access_string_member)
 	Test test;
 	strcpy(test.string, "abcdefgh");
 
-	unique_ptr<Context> ctx {new Global_context{config}};
-	
+	unique_ptr<Context> ctx{new Global_context{config}};
+
 	ctx->desc("record_data").share(&test, true, false);
 
 	ASSERT_STREQ(Expression{"${record_data.string}"}.to_string(*ctx).c_str(), test.string);
@@ -1877,21 +1795,21 @@ TEST(ExpresionMemberAccess, access_array_record)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
-	"logging: trace                       \n"
-	"data:                                \n"
-	"    array_data:                      \n"
-	"        type: array                  \n"
-	"        size: 32                     \n"
-	"        subtype:                     \n"
-	"            type: struct             \n"
-	"            members:                 \n"
-	"                - scalar: char       \n"
-	"                - array:             \n"
-	"                      type: array    \n"
-	"                      subtype: int   \n"
-	"                      size: 32       \n"
+		"logging: trace                       \n"
+		"data:                                \n"
+		"    array_data:                      \n"
+		"        type: array                  \n"
+		"        size: 32                     \n"
+		"        subtype:                     \n"
+		"            type: struct             \n"
+		"            members:                 \n"
+		"                - scalar: char       \n"
+		"                - array:             \n"
+		"                      type: array    \n"
+		"                      subtype: int   \n"
+		"                      size: 32       \n"
 	);
-	
+
 	struct Record {
 		char scalar;
 		int array[32];
@@ -1905,8 +1823,8 @@ TEST(ExpresionMemberAccess, access_array_record)
 		}
 	}
 
-	unique_ptr<Context> ctx {new Global_context{config}};
-	
+	unique_ptr<Context> ctx{new Global_context{config}};
+
 	ctx->desc("array_data").share(array_record, true, false);
 
 	for (int i = 0; i < 32; i++) {
@@ -1918,7 +1836,6 @@ TEST(ExpresionMemberAccess, access_array_record)
 
 	ctx->desc("array_data").reclaim();
 }
-
 
 /*
  * Name:                ExpresionMemberAccess.access_complex_member
@@ -1934,25 +1851,25 @@ TEST(ExpresionMemberAccess, access_complex_member)
 {
 	Paraconf_wrapper fw;
 	PC_tree_t config = PC_parse_string(
-	"logging: trace                           \n"
-	"data:                                    \n"
-	"    record_data:                         \n"
-	"        type: struct                     \n"
-	"        members:                         \n"
-	"            - array:                     \n"
-	"                type: array              \n"
-	"                subtype: int             \n"
-	"                size: 32                 \n"
-	"            - subrecord:                 \n"
-	"                  type: struct           \n"
-	"                  members:               \n"
-	"                      - scalar: char     \n"
-	"                      - array:           \n"
-	"                            type: array  \n"
-	"                            subtype: int \n"
-	"                            size: 32     \n"
+		"logging: trace                           \n"
+		"data:                                    \n"
+		"    record_data:                         \n"
+		"        type: struct                     \n"
+		"        members:                         \n"
+		"            - array:                     \n"
+		"                type: array              \n"
+		"                subtype: int             \n"
+		"                size: 32                 \n"
+		"            - subrecord:                 \n"
+		"                  type: struct           \n"
+		"                  members:               \n"
+		"                      - scalar: char     \n"
+		"                      - array:           \n"
+		"                            type: array  \n"
+		"                            subtype: int \n"
+		"                            size: 32     \n"
 	);
-	
+
 	struct Subrecord {
 		char scalar;
 		int array[32];
@@ -1971,10 +1888,10 @@ TEST(ExpresionMemberAccess, access_complex_member)
 	for (int i = 0; i < 32; i++) {
 		record.subrecord.array[i] = i;
 	}
-	
 
-	unique_ptr<Context> ctx {new Global_context{config}};
-	
+
+	unique_ptr<Context> ctx{new Global_context{config}};
+
 	ctx->desc("record_data").share(&record, true, false);
 
 	for (int i = 0; i < 32; i++) {
@@ -2000,16 +1917,16 @@ TEST(StringExpressionBoolTest, to_long_boolean_string)
 	MockContext context_mock;
 
 	const vector<string> v_pos{"y", "Y", "yes", "Yes", "YES", "true", "True", "TRUE", "on", "On", "ON"};
-	for (auto&& string_value : v_pos) {
+	for (auto&& string_value: v_pos) {
 		ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
 	}
 	const vector<string> v_neg{"n", "N", "no", "No", "NO", "false", "False", "FALSE", "Off", "Off", "OFF"};
-	for (auto&& string_value : v_neg) {
+	for (auto&& string_value: v_neg) {
 		ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 0);
 	}
 
 	const vector<string> v_fpos{"y1", "YY", "yEs", "Yess", "YE5", "tru", "TrUe", "TRRUE", "onn", "0n", "ONN"};
-	for (auto&& string_value : v_fpos) {
+	for (auto&& string_value: v_fpos) {
 		try {
 			ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
 			FAIL();
@@ -2019,7 +1936,7 @@ TEST(StringExpressionBoolTest, to_long_boolean_string)
 	}
 
 	const vector<string> v_fneg{"n1", "nO", "N0", "Nope", "NOO", "faLse", "Fals", "FaLSE", "OfF", "0f", "FF"};
-	for (auto&& string_value : v_fneg) {
+	for (auto&& string_value: v_fneg) {
 		try {
 			ASSERT_EQ(PDI::Expression(string_value).to_long(context_mock), 1);
 			FAIL();
@@ -2027,5 +1944,4 @@ TEST(StringExpressionBoolTest, to_long_boolean_string)
 			// ok
 		}
 	}
-
 }

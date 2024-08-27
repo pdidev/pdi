@@ -29,7 +29,7 @@
 
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
-	#include <mpi.h>
+#include <mpi.h>
 #endif
 
 #include <string>
@@ -45,7 +45,6 @@
 #include "collision_policy.h"
 #include "dataset_op.h"
 
-
 namespace decl_hdf5 {
 
 /** A File_op represents an operation on a file: opening it, applying one or
@@ -55,30 +54,30 @@ class File_op
 {
 	/// What to do when file already exists (default = OVERWRITE)
 	Collision_policy m_collision_policy;
-	
+
 	/// the file where the operation takes place (mandatory)
 	PDI::Expression m_file;
-	
+
 	/// a list of events that trigger this operation
 	std::vector<std::string> m_event;
-	
+
 #ifdef H5_HAVE_PARALLEL
 	/// a communicator for parallel HDF5 (null if no comm is specified)
 	PDI::Expression m_communicator;
 #endif
-	
+
 	/// type of the datasets for which an explicit type is specified
 	std::unordered_map<std::string, PDI::Datatype_template_sptr> m_datasets;
-	
+
 	/// the dataset operations
 	std::vector<Dataset_op> m_dset_ops;
-	
+
 	/// attributes of this file (for groups and datasets)
 	std::vector<Attribute_op> m_attr_ops;
-	
+
 	/// map of descriptors to datasets name to get their sizes
 	std::unordered_map<std::string, PDI::Expression> m_dset_size_ops;
-	
+
 public:
 	/** Parse a "file" subtree to create one or multiple File_op's.
 	 *
@@ -90,61 +89,44 @@ public:
 	 * \return a vector containing all parsed File_op's
 	 */
 	static std::vector<File_op> parse(PDI::Context& ctx, PC_tree_t tree);
-	
-	File_op(File_op&&)=default;
-	
+
+	File_op(File_op&&) = default;
+
 	File_op(const File_op&);
-	
+
 	File_op(PDI::Expression&& file, Collision_policy collision_policy = Collision_policy::WRITE_INTO);
-	
+
 	/** a list of events that trigger this operation
 	 */
-	const std::vector<std::string>& event() const
-	{
-		return m_event;
-	}
-	
+	const std::vector<std::string>& event() const { return m_event; }
+
 	/** the dataset operations
 	 */
-	const std::vector<Dataset_op>& dataset_ops() const
-	{
-		return m_dset_ops;
-	}
-	
+	const std::vector<Dataset_op>& dataset_ops() const { return m_dset_ops; }
+
 	/** Returns the attribute operations
 	 *
 	 * \return attribute operations
 	 */
-	const std::vector<Attribute_op>& attribute_ops() const
-	{
-		return m_attr_ops;
-	}
-	
+	const std::vector<Attribute_op>& attribute_ops() const { return m_attr_ops; }
+
 	/** Returns the dataset size operations
 	 *
 	 * \return dataset size operations
 	 */
-	const std::unordered_map<std::string, PDI::Expression>& dataset_size_ops() const
-	{
-		return m_dset_size_ops;
-	}
-	
+	const std::unordered_map<std::string, PDI::Expression>& dataset_size_ops() const { return m_dset_size_ops; }
+
 #ifdef H5_HAVE_PARALLEL
-	PDI::Expression communicator() const
-	{
-		return m_communicator;
-	}
+	PDI::Expression communicator() const { return m_communicator; }
 #endif
-	
+
 	/** Executes the requested operation.
 	 *
 	 * \param ctx the context in which to operate
 	 */
 	void execute(PDI::Context& ctx);
-	
 };
 
 } // namespace decl_hdf5
 
 #endif // DECL_HDF5_FILE_OP_H_
-

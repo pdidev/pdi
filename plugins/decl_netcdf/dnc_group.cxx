@@ -26,9 +26,9 @@
 
 namespace decl_netcdf {
 
-Dnc_group::Dnc_group(PDI::Context& ctx, const std::string& path, PC_tree_t config):
-	m_ctx{ctx},
-	m_path{path}
+Dnc_group::Dnc_group(PDI::Context& ctx, const std::string& path, PC_tree_t config)
+	: m_ctx{ctx}
+	, m_path{path}
 {
 	PC_tree_t attributes_node = PC_get(config, ".attributes");
 	if (!PC_status(attributes_node)) {
@@ -48,4 +48,4 @@ const std::vector<Dnc_attribute>& Dnc_group::attributes() const
 	return m_attributes;
 }
 
-};
+}; // namespace decl_netcdf

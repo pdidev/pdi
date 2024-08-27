@@ -31,16 +31,13 @@
 #include <pdi/context.h>
 #include <pdi/datatype.h>
 
-struct MockDatatype : public PDI::Datatype {
-	MockDatatype():
-		PDI::Datatype()
+struct MockDatatype: public PDI::Datatype {
+	MockDatatype()
+		: PDI::Datatype()
 	{}
-	
-	bool operator == (const Datatype& other) const override
-	{
-		return equals(other);
-	}
-	
+
+	bool operator== (const Datatype& other) const override { return equals(other); }
+
 	MOCK_CONST_METHOD0(dense, bool());
 	MOCK_CONST_METHOD0(datasize, size_t());
 	MOCK_CONST_METHOD0(buffersize, size_t());
@@ -48,8 +45,8 @@ struct MockDatatype : public PDI::Datatype {
 	MOCK_CONST_METHOD0(densify, PDI::Datatype_sptr());
 	MOCK_CONST_METHOD1(evaluate, PDI::Datatype_sptr(PDI::Context&));
 	MOCK_CONST_METHOD0(simple, bool());
-	MOCK_CONST_METHOD2(data_to_dense_copy, void* (void* to, const void* from));
-	MOCK_CONST_METHOD2(data_from_dense_copy, void* (void* to, const void* from));
+	MOCK_CONST_METHOD2(data_to_dense_copy, void*(void* to, const void* from));
+	MOCK_CONST_METHOD2(data_from_dense_copy, void*(void* to, const void* from));
 	MOCK_CONST_METHOD1(destroy_data, void(void* ptr));
 	MOCK_CONST_METHOD1(equals, bool(const PDI::Datatype&));
 	MOCK_CONST_METHOD0(debug_string, std::string());

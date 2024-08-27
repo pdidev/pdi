@@ -63,7 +63,7 @@ Expression::Impl::Sequence::Sequence(const vector<Expression>& value)
 
 unique_ptr<Expression::Impl> Expression::Impl::Sequence::clone() const
 {
-	return unique_ptr<Impl> {new Expression::Impl::Sequence(m_value)};
+	return unique_ptr<Impl>{new Expression::Impl::Sequence(m_value)};
 }
 
 long Expression::Impl::Sequence::to_long(Context& ctx) const
@@ -91,7 +91,7 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 		Ref_rw result{nullptr, [](void*) {}, Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNKNOWN, 0), 0), true, true};
 		return result;
 	}
-	
+
 	// get subtypes and alignment
 	std::vector<Datatype_sptr> subtypes;
 	size_t result_alignment = 0;
@@ -99,7 +99,7 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 		subtypes.emplace_back(element.to_ref(ctx).type());
 		result_alignment = max<size_t>(result_alignment, subtypes.back()->alignment());
 	}
-	
+
 	// check if all elements are the same, if true then it is an array
 	bool array_datatype = true;
 	Datatype_sptr result_type;
@@ -109,7 +109,7 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 			break;
 		}
 	}
-	
+
 	// create the datatype
 	if (array_datatype) {
 		result_type = Array_datatype::make(std::move(subtypes[0]), m_value.size());
@@ -126,12 +126,12 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 		}
 		//add padding at the end of tuple
 		displacement += (result_alignment - (displacement % result_alignment)) % result_alignment;
-		
+
 		// ensure the tuple size is at least 1 to have a unique address
 		displacement = max<size_t>(1, displacement);
 		result_type = Tuple_datatype::make(move(tuple_elements), displacement);
 	}
-	
+
 	return Impl::to_ref(ctx, result_type);
 }
 
@@ -151,10 +151,10 @@ size_t Expression::Impl::Sequence::copy_value(Context& ctx, void* buffer, Dataty
 		size_t bytes_copied = 0;
 		for (int i = 0; i < m_value.size(); i++) {
 			bytes_copied += m_value[i].m_impl->copy_value(
-			        ctx,
-			        static_cast<uint8_t*>(buffer) + tuple_type->elements()[i].offset(),
-			        tuple_type->elements()[i].type()
-			    );
+				ctx,
+				static_cast<uint8_t*>(buffer) + tuple_type->elements()[i].offset(),
+				tuple_type->elements()[i].type()
+			);
 		}
 		return tuple_type->buffersize();
 	} else {

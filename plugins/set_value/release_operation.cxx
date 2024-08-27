@@ -28,8 +28,8 @@
 
 namespace set_value {
 
-Release_operation::Release_operation(PDI::Context& ctx, PC_tree_t release_value_node):
-    Operation{ctx}
+Release_operation::Release_operation(PDI::Context& ctx, PC_tree_t release_value_node)
+	: Operation{ctx}
 {
 	size_t list_size = PDI::len(release_value_node);
 	context().logger().debug("Release operation count: {}", list_size);
@@ -42,10 +42,10 @@ Release_operation::Release_operation(PDI::Context& ctx, PC_tree_t release_value_
 
 void Release_operation::execute()
 {
-	for (auto&& data_to_release : m_data_to_release) {
+	for (auto&& data_to_release: m_data_to_release) {
 		context().logger().trace("Calling {} data release", data_to_release);
 		context().desc(data_to_release).release();
 	}
 }
 
-}  // namespace set_value
+} // namespace set_value

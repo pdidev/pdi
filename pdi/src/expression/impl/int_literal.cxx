@@ -59,7 +59,7 @@ double Expression::Impl::Int_literal::to_double(Context&) const
 
 unique_ptr<Expression::Impl> Expression::Impl::Int_literal::clone() const
 {
-	return unique_ptr<Int_literal> {new Int_literal{*this}};
+	return unique_ptr<Int_literal>{new Int_literal{*this}};
 }
 
 Ref Expression::Impl::Int_literal::to_ref(Context& ctx) const
@@ -109,10 +109,10 @@ size_t Expression::Impl::Int_literal::copy_value(Context& ctx, void* buffer, Dat
 	throw Value_error{"Cannot copy Int_literal as a non integer datatype->"};
 }
 
-unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const ** val_str)
 {
 	const char* constval = *val_str;
-	
+
 	errno = 0;
 	unique_ptr<Int_literal> result{new Int_literal{strtol(constval, const_cast<char**>(&constval), 0)}};
 	if (errno == ERANGE) {
@@ -127,7 +127,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Int_literal::parse(char const** v
 	}
 	while (isspace(*constval))
 		++constval;
-		
+
 	*val_str = constval;
 	return result;
 }

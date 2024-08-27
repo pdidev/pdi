@@ -44,11 +44,11 @@ using std::unique_ptr;
 using std::unordered_map;
 
 Context::Iterator::Iterator(const unordered_map<string, unique_ptr<Data_descriptor>>::iterator& data)
-    : m_data(data)
+	: m_data(data)
 {}
 
 Context::Iterator::Iterator(unordered_map<string, unique_ptr<Data_descriptor>>::iterator&& data)
-    : m_data(move(data))
+	: m_data(move(data))
 {}
 
 Data_descriptor* Context::Iterator::operator->()

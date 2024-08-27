@@ -33,23 +33,20 @@
 
 
 using namespace PDI;
+using std::set;
 using std::string;
 using std::unique_ptr;
-using std::set;
 
 /*
  * Struct prepared for ContextTest.
  */
-struct ContextTest : public ::testing::Test {
-	ContextTest():
-		test_conf{PC_parse_string("logging: trace")}
+struct ContextTest: public ::testing::Test {
+	ContextTest()
+		: test_conf{PC_parse_string("logging: trace")}
 	{}
-	
-	void SetUp() override
-	{
-		test_context.reset(new Global_context{test_conf});
-	}
-	
+
+	void SetUp() override { test_context.reset(new Global_context{test_conf}); }
+
 	Paraconf_wrapper fw;
 	PC_tree_t test_conf;
 	unique_ptr<Context> test_context;
@@ -83,7 +80,7 @@ TEST_F(ContextTest, desc_string_initialized)
 	string desc_name{"desc1"};
 	//put desc1 first to check if the same desc is returned later
 	Data_descriptor& desc1 = this->test_context->desc(desc_name);
-	
+
 	Data_descriptor& desc = this->test_context->desc(desc_name);
 	ASSERT_EQ(desc_name, desc.name());
 	//desc1 and desc should have the same address if they are the same desc
@@ -118,7 +115,7 @@ TEST_F(ContextTest, desc_cstring_initialized)
 	const char* desc_name = "desc1";
 	//put desc1 first to check if the same desc is returned later
 	Data_descriptor& desc1 = this->test_context->desc(desc_name);
-	
+
 	Data_descriptor& desc = this->test_context->desc(desc_name);
 	ASSERT_STREQ(desc_name, desc.name().c_str());
 	//desc1 and desc should have the same address if they are the same desc
@@ -153,7 +150,7 @@ TEST_F(ContextTest, operator_string_initialized)
 	string desc_name{"desc1"};
 	//put desc1 first to check if the same desc is returned later
 	Data_descriptor& desc1 = this->test_context->desc(desc_name);
-	
+
 	Data_descriptor& desc = (*this->test_context)[desc_name];
 	ASSERT_EQ(desc_name, desc.name());
 	//desc1 and desc should have the same address if they are the same desc
@@ -188,7 +185,7 @@ TEST_F(ContextTest, operator_cstring_initialized)
 	const char* desc_name = "desc1";
 	//put desc1 first to check if the same desc is returned later
 	Data_descriptor& desc1 = this->test_context->desc(desc_name);
-	
+
 	Data_descriptor& desc = (*this->test_context)[desc_name];
 	ASSERT_STREQ(desc_name, desc.name().c_str());
 	//desc1 and desc should have the same address if they are the same desc
@@ -213,7 +210,7 @@ TEST_F(ContextTest, iterator)
 	}
 	auto begin = this->test_context->begin();
 	auto end = this->test_context->end();
-	
+
 	for (auto it = begin; it != end; ++it) {
 		auto name = desc_names.find((*it).name());
 		ASSERT_EQ(it->name(), (*it).name());
