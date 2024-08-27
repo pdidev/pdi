@@ -1,3 +1,0 @@
-SION_ERROR_RETURN on rank -1, rc=-1: sion_open: chunksizes seems not to be a pointer to an array, returning ...
-
-TEST A: sion_open returned -1

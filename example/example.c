@@ -125,14 +125,6 @@ int main( int argc, char* argv[] )
 	PDI_init(PC_get(conf, ".pdi"));
 	
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
-	int fti_head = 0;
-	PDI_expose("fti_head", &fti_head, PDI_IN);
-	if (fti_head == 1) {
-		PDI_finalize();
-		PC_tree_destroy(&conf);
-		MPI_Finalize();
-		return 0;
-	}
 
 	int psize_1d;  MPI_Comm_size(main_comm, &psize_1d);
 	int pcoord_1d; MPI_Comm_rank(main_comm, &pcoord_1d);

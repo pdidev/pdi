@@ -15,13 +15,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 ### Deprecated
-* The Decl'SION plugin is now deprecated, unmaintained and unsupported
-* The FlowVR plugin is now deprecated, unmaintained and unsupported
-* The FTI plugin is now deprecated, unmaintained and unsupported
-* The test plugin is now deprecated, unmaintained and unsupported
-* The PDI Config validator is now deprecated, unmaintained and unsupported
 
 ### Removed
+* Removed deprecated, unmaintained and unsupported plugins and tools for the
+  distribution: Decl'SION, FlowVR, FTI and test plugins, as well as the
+  PDI Config validator, fixes
+  [#458](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/458)
+
 
 ### Fixed
 

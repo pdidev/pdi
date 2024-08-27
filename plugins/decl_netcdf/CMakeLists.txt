@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -32,7 +32,6 @@ cmake_minimum_required(VERSION 3.10...3.25)
 project(pdi_decl_netcdf_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-option(BUILD_CFG_VALIDATOR "Build config validation script" OFF)
 option(BUILD_NETCDF_PARALLEL "Build Decl'NetCDF in parallel mode" ON)
 
 # Includes
@@ -94,11 +93,4 @@ install(TARGETS pdi_decl_netcdf_plugin
 # Tests
 if("${BUILD_TESTING}")
 	add_subdirectory(tests/)
-endif()
-
-# Configuration validation
-if ("${BUILD_CFG_VALIDATOR}")
-	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
-	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pdicfg_validator"
-			DESTINATION "${Python3Path_INSTALL_SITELIBDIR}/")
 endif()

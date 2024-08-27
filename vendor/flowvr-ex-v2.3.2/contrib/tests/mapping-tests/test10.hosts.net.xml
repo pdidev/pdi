@@ -1,3 +1,0 @@
-    <module id="primes/capture/singleton" host="localhost">
-    <module id="primes/visu/singleton" host="localhost">
-    <filter id="primes/PresignalKeysRequest" host="localhost">
