@@ -45,13 +45,11 @@ set_property(CACHE DIST_PROFILE PROPERTY STRINGS User Devel)
 
 if(User STREQUAL "${DIST_PROFILE}")
 	option(BUILD_DOCUMENTATION "Build documentation" OFF)
-	option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 	option(BUILD_TESTING       "Build tests" OFF)
 	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" OFF)
 	set(DEFAULT_BUILD_TYPE "Release")
 elseif(Devel STREQUAL "${DIST_PROFILE}")
 	option(BUILD_DOCUMENTATION "Build documentation" ON)
-	option(BUILD_INDENT        "Enable automatic code indentation" ON)
 	option(BUILD_TESTING       "Build tests" ON)
 	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
 	set(DEFAULT_BUILD_TYPE "Debug")
@@ -92,7 +90,7 @@ message(STATUS " **Profile**: Build type is: `${CMAKE_BUILD_TYPE}' (-DCMAKE_BUIL
 message(STATUS " **Profile**: Prefix path is: `${CMAKE_PREFIX_PATH}' (-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH})")
 message(STATUS " **Profile**: Default use is: `${USE_DEFAULT}' (-DUSE_DEFAULT=${USE_DEFAULT})")
 message(STATUS " **Profile**: Unstable activation is: `${BUILD_UNSTABLE}' (-DBUILD_UNSTABLE=${BUILD_UNSTABLE})")
-foreach(FEATURE FORTRAN HDF5_PARALLEL INDENT PYTHON TESTING)
+foreach(FEATURE FORTRAN HDF5_PARALLEL PYTHON TESTING)
 	set(FEATURE_ENABLED "DISABLED")
 	if(${BUILD_${FEATURE}})
 		set(FEATURE_ENABLED "ENABLED ")
@@ -175,14 +173,6 @@ if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}" AND NOT "${BUILD
 		"     * build Decl'NetCDF without parallel support => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
 		"     * do not build the Decl'NetCDF at all => pass `-DBUILD_DECL_NETCDF_PLUGIN=OFF' to cmake"
 	)
-endif()
-
-
-
-### Subtargets
-
-if("${BUILD_INDENT}")
-	add_custom_target(indent)
 endif()
 
 
@@ -320,19 +310,6 @@ if("${BUILD_DOCUMENTATION}")
 		EMBEDDED_PATH "vendor/doxygen-1.8.15"
 		VERSION 1.8.12
 		OPTIONAL_COMPONENTS dot
-	)
-endif()
-
-
-## Astyle
-
-if("${BUILD_INDENT}")
-	sbuild_add_dependency(Astyle "${USE_DEFAULT}"
-		BUILD_DEPENDENCY
-		EMBEDDED_PATH "vendor/astyle"
-		PATCH_COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/vendor/astyle/CMakeLists.txt" "<SOURCE_DIR>/CMakeLists.txt"
-		CMAKE_CACHE_ARGS "-DBUILD_SHARED_LIBS:BOOL=OFF"
-		VERSION 3.1
 	)
 endif()
 
@@ -506,11 +483,7 @@ endif()
 
 ### Own modules
 
-if("${BUILD_INDENT}")
-	set(ASTYLE_DEPENDENCY Astyle)
-endif()
-
-set(PDI_DEPENDS_LIST paraconf spdlog "${ASTYLE_DEPENDENCY}" "${BENCHMARKING_DEPENDENCY}")
+set(PDI_DEPENDS_LIST paraconf spdlog "${BENCHMARKING_DEPENDENCY}")
 if("${BUILD_DOCUMENTATION}")
 	list(APPEND PDI_DEPENDS_LIST Doxygen)
 endif()
@@ -526,76 +499,76 @@ endif()
 sbuild_add_module(PDI
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pdi"
 	DEPENDS ${PDI_DEPENDS_LIST}
-	SUBSTEPS indent test
+	SUBSTEPS test
 )
 
 
 sbuild_add_module(MPI_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_MPI_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 
 sbuild_add_module(DECL_HDF5_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_HDF5_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5"
-	DEPENDS PDI HDF5 ${ASTYLE_DEPENDENCY} ${BENCHMARKING_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI HDF5 ${BENCHMARKING_DEPENDENCY}
+	SUBSTEPS test
 )
 
 
 sbuild_add_module(DECL_NETCDF_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf"
-	DEPENDS PDI NetCDF ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI NetCDF
+	SUBSTEPS test
 )
 
 
 sbuild_add_module(PYCALL_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_PYCALL_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 sbuild_add_module(SET_VALUE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_SET_VALUE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/set_value"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 sbuild_add_module(SERIALIZE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_SERIALIZE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/serialize"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 sbuild_add_module(TEST_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TEST_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/test"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent
+	DEPENDS PDI
+	SUBSTEPS
 )
 
 
 sbuild_add_module(TRACE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TRACE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent
+	DEPENDS PDI
+	SUBSTEPS
 )
 
 
 sbuild_add_module(USER_CODE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
-	SUBSTEPS indent test
+	DEPENDS PDI
+	SUBSTEPS test
 )
 
 
@@ -612,5 +585,5 @@ sbuild_add_module(PDI_TESTS
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
-	SUBSTEPS indent test
+	SUBSTEPS test
 )

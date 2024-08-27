@@ -38,11 +38,6 @@ option(BUILD_NETCDF_PARALLEL "Build Decl'NetCDF in parallel mode" ON)
 include(CTest)
 include(GNUInstallDirs)
 
-# Astyle
-if("${BUILD_INDENT}")
-	find_package(Astyle REQUIRED)
-endif()
-
 # MPI
 if("${BUILD_NETCDF_PARALLEL}")
 	find_package(MPI REQUIRED COMPONENTS C CXX)
@@ -76,13 +71,6 @@ if("${BUILD_NETCDF_PARALLEL}")
 	target_link_libraries(pdi_decl_netcdf_plugin PUBLIC MPI::MPI_CXX)
 endif()
 set_target_properties(pdi_decl_netcdf_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-
-# Indentation
-if("${BUILD_INDENT}")
-	Astyle_add_indent(indent TEST
-		OPTIONS_FILE formating.astyle
-		*.cxx *.h tests/*.c)
-endif()
 
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")

@@ -26,15 +26,8 @@ cmake_minimum_required(VERSION 3.10...3.25)
 project(pdi_trace_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-option(BUILD_INDENT "Enable automatic code indentation" OFF)
-
 # Includes
 include(GNUInstallDirs)
-
-# Astyle
-if("${BUILD_INDENT}")
-	find_package(Astyle 3.1 REQUIRED)
-endif()
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
@@ -43,13 +36,6 @@ find_package(PDI REQUIRED COMPONENTS plugins)
 add_library(pdi_trace_plugin MODULE trace.cxx)
 target_link_libraries(pdi_trace_plugin PDI::PDI_plugins)
 set_target_properties(pdi_trace_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-
-# Indentation
-if("${BUILD_INDENT}")
-	Astyle_add_indent(indent TEST
-		OPTIONS_FILE formating.astyle
-		trace.cxx)
-endif()
 
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
