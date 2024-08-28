@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 	assert(record.scalar_data == 4);
 	for (int i = 0; i < 4; i++) {
 		printf("Array[%d] = %d\n", i, record.array_data[i]);
-		assert(record.array_data[i] == i+2);
+		assert(record.array_data[i] == i + 2);
 	}
 	PDI_finalize();
 }

@@ -59,7 +59,7 @@ TEST(ErrorTest, call_constructor_no_vargs)
  */
 TEST(ErrorTest, call_constructor_vargs)
 {
-	Error error(PDI_UNAVAILABLE, "{} errors in {}?", 0,"ErrorTest");
+	Error error(PDI_UNAVAILABLE, "{} errors in {}?", 0, "ErrorTest");
 	ASSERT_STREQ("0 errors in ErrorTest?", error.what());
 	ASSERT_EQ(error.status(), PDI_UNAVAILABLE);
 }
@@ -78,7 +78,7 @@ TEST(ErrorTest, call_constructor_vargs)
  */
 TEST(ErrorTest, call_constructor_va_list)
 {
-	Error error {PDI_OK, "Testing {} in {}", "what", "ErrorTest"};
+	Error error{PDI_OK, "Testing {} in {}", "what", "ErrorTest"};
 	ASSERT_STREQ("Testing what in ErrorTest", error.what());
 	ASSERT_EQ(error.status(), PDI_OK);
 }
@@ -96,7 +96,7 @@ TEST(ErrorTest, call_constructor_va_list)
  */
 TEST(ErrorTest, call_constructor_empty_va_list)
 {
-	Error error {PDI_OK, "This is some text."};
+	Error error{PDI_OK, "This is some text."};
 	ASSERT_STREQ("This is some text.", error.what());
 	ASSERT_EQ(error.status(), PDI_OK);
 }

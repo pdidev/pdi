@@ -36,24 +36,22 @@
 
 namespace set_value {
 
-class Share_operation : public Operation
+class Share_operation: public Operation
 {
-    /// desc names that was shared
-    std::set<std::string> m_data_to_release;
+	/// desc names that was shared
+	std::set<std::string> m_data_to_release;
 
-    /// map of data to share (shared new Ref (created from Expression))
-    std::vector<std::pair<std::string, PC_tree_t>> m_data_to_share;
+	/// map of data to share (shared new Ref (created from Expression))
+	std::vector<std::pair<std::string, PC_tree_t>> m_data_to_share;
 
 public:
-
-    /** Creates share operation
+	/** Creates share operation
      * \param[in] ctx context of the operation
      * \param[in] list_of_values yaml config tree of operation
      */
-    Share_operation(PDI::Context& ctx, PC_tree_t list_of_values);
-    
-    void execute() override;
+	Share_operation(PDI::Context& ctx, PC_tree_t list_of_values);
 
+	void execute() override;
 };
 
 } // namespace set_value

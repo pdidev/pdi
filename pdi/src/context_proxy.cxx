@@ -34,12 +34,12 @@ namespace PDI {
 
 
 Context_proxy::Context_proxy(Context& ctx)
-    : m_real_context{ctx}
+	: m_real_context{ctx}
 {}
 
 Context_proxy::Context_proxy(Context& ctx, const string& logger_name, PC_tree_t logging_tree)
-    : m_real_context{ctx}
-    , m_plugin_logger{m_real_context.logger(), logger_name, logging_tree}
+	: m_real_context{ctx}
+	, m_plugin_logger{m_real_context.logger(), logger_name, logging_tree}
 {}
 
 void Context_proxy::setup_logger(const string& logger_name, PC_tree_t logging_tree)

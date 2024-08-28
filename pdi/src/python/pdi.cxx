@@ -71,11 +71,11 @@ using std::vector;
 pytup pyversion(pytup pyexpected)
 {
 	Paraconf_wrapper fw;
-	
+
 	unsigned long expected_major = pyexpected[0].cast<unsigned long>();
 	unsigned long expected_minor = pyexpected[1].cast<unsigned long>();
 	unsigned long expected_patch = pyexpected[2].cast<unsigned long>();
-	
+
 	if ((expected_major || expected_minor || expected_patch) && (expected_major != PDI_VERSION_MAJOR || expected_minor > PDI_VERSION_MINOR)) {
 		throw Plugin_error{
 			"Invalid PDI API version: %lu.%lu.%lu, PDI provided version is %lu.%lu.%lu",
@@ -84,9 +84,10 @@ pytup pyversion(pytup pyexpected)
 			expected_patch,
 			PDI_VERSION_MAJOR,
 			PDI_VERSION_MINOR,
-			PDI_VERSION_PATCH};
+			PDI_VERSION_PATCH
+		};
 	}
-	
+
 	return pybind11::make_tuple(PDI_VERSION_MAJOR, PDI_VERSION_MINOR, PDI_VERSION_PATCH);
 }
 
@@ -100,92 +101,93 @@ PYBIND11_MODULE(_pdi, m)
 {
 	m.attr("__name__") = "pdi._pdi"; // make this a private submodule of pdi
 	m.doc() = "PDI python public application API";
-	
+
 	pybind11::register_exception<Error>(m, "Error");
-	
+
 	pyenu<PDI_inout_t>(m, "Inout").value("IN", PDI_IN).value("OUT", PDI_OUT).value("INOUT", PDI_INOUT).value("NONE", PDI_NONE).export_values();
-	
+
 	m.def("version", pyversion, "Checks PDI API version", "version"_a = pybind11::make_tuple(0, 0, 0));
-	
+
 	m.def(
-	    "init",
-	[](char* conf) {
-		Paraconf_wrapper fw;
-		Global_context::init(PC_parse_string(conf));
-	},
-	"Initialize PDI"
+		"init",
+		[](char* conf) {
+			Paraconf_wrapper fw;
+			Global_context::init(PC_parse_string(conf));
+		},
+		"Initialize PDI"
 	);
-	
+
 	m.def(
-	    "finalize",
-	[]() {
-		Paraconf_wrapper fw;
-		Global_context::finalize();
-	},
-	"Finalize PDI"
+		"finalize",
+		[]() {
+			Paraconf_wrapper fw;
+			Global_context::finalize();
+		},
+		"Finalize PDI"
 	);
-	
+
 	m.def(
-	    "event",
-	[](const char* name) {
-		Paraconf_wrapper fw;
-		Global_context::context().event(name);
-	},
-	"Triggers a PDI \"event\""
+		"event",
+		[](const char* name) {
+			Paraconf_wrapper fw;
+			Global_context::context().event(name);
+		},
+		"Triggers a PDI \"event\""
 	);
-	
+
 	m.def(
-	    "share",
-	[](const char* name, pybind11::array pybuf, PDI_inout_t access) {
-		Paraconf_wrapper fw;
-		Ref r{
-			pybuf.mutable_data(),
-			[pybuf](void*) { /* keep pybuf copy to prevent deallocation of the underlying memory */ },
-			python_type(pybuf),
-			static_cast<bool>(access & PDI_OUT),
-			static_cast<bool>(access & PDI_IN)};
-		try {
-			Global_context::context()[name].share(r, false, false);
-		} catch (...) {
-			// on error, do not free the data as would be done automatically otherwise
-			r.release();
-			throw;
-		}
-	},
-	"Shares some data with PDI. The user code should not modify it before a call to either release or reclaim"
+		"share",
+		[](const char* name, pybind11::array pybuf, PDI_inout_t access) {
+			Paraconf_wrapper fw;
+			Ref r{
+				pybuf.mutable_data(),
+				[pybuf](void*) { /* keep pybuf copy to prevent deallocation of the underlying memory */ },
+				python_type(pybuf),
+				static_cast<bool>(access & PDI_OUT),
+				static_cast<bool>(access & PDI_IN)
+			};
+			try {
+				Global_context::context()[name].share(r, false, false);
+			} catch (...) {
+				// on error, do not free the data as would be done automatically otherwise
+				r.release();
+				throw;
+			}
+		},
+		"Shares some data with PDI. The user code should not modify it before a call to either release or reclaim"
 	);
-	
+
 	m.def(
-	    "access",
-	[](const char* name, PDI_inout_t inout) {
-		Paraconf_wrapper fw;
-		Data_descriptor& desc = Global_context::context()[name];
-		desc.share(desc.ref(), false, false);
-		return to_python(desc.ref(), !(inout & PDI_OUT));
-	},
-	"Requests for PDI to access a data buffer"
+		"access",
+		[](const char* name, PDI_inout_t inout) {
+			Paraconf_wrapper fw;
+			Data_descriptor& desc = Global_context::context()[name];
+			desc.share(desc.ref(), false, false);
+			return to_python(desc.ref(), !(inout & PDI_OUT));
+		},
+		"Requests for PDI to access a data buffer"
 	);
-	
+
 	m.def(
-	    "release",
-	[](const char* name) {
-		Paraconf_wrapper fw;
-		Global_context::context()[name].release();
-	},
-	"Releases ownership of a data shared with PDI. PDI is then responsible to free the associated memory whenever necessary."
+		"release",
+		[](const char* name) {
+			Paraconf_wrapper fw;
+			Global_context::context()[name].release();
+		},
+		"Releases ownership of a data shared with PDI. PDI is then responsible to free the associated memory whenever necessary."
 	);
-	
+
 	m.def(
-	    "reclaim",
-	[](const char* name) {
-		Paraconf_wrapper fw;
-		Global_context::context()[name].reclaim();
-	},
-	"Reclaims ownership of a data buffer shared with PDI. PDI does not manage the buffer memory anymore."
+		"reclaim",
+		[](const char* name) {
+			Paraconf_wrapper fw;
+			Global_context::context()[name].reclaim();
+		},
+		"Reclaims ownership of a data buffer shared with PDI. PDI does not manage the buffer memory anymore."
 	);
-	
+
 	pybind11::class_<Python_ref_wrapper>(m, "ref")
-	.def("__getattribute__", &Python_ref_wrapper::getattribute) // get member
-	.def("__setattr__", &Python_ref_wrapper::setattribute) // set member
-	.def("__getitem__", &Python_ref_wrapper::getitem); // [] operator
+		.def("__getattribute__", &Python_ref_wrapper::getattribute) // get member
+		.def("__setattr__", &Python_ref_wrapper::setattribute) // set member
+		.def("__getitem__", &Python_ref_wrapper::getitem); // [] operator
 }

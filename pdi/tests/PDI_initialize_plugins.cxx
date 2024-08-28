@@ -24,12 +24,12 @@
 
 #include <gtest/gtest.h>
 
-#include "logger.cxx"
 #include "context_proxy.cxx"
 #include "global_context.cxx"
+#include "logger.cxx"
 
-#include "mocks/plugin_mock.h"
 #include "mocks/context_mock.h"
+#include "mocks/plugin_mock.h"
 
 namespace {
 
@@ -62,7 +62,7 @@ struct CheckerBase {
 	virtual ~CheckerBase() = default;
 };
 
-struct CallChecker : public CheckerBase {
+struct CallChecker: public CheckerBase {
 	MOCK_METHOD1(ctor_call, void(const string&));
 	MOCK_METHOD1(deps_call, void(const string&));
 };
@@ -71,126 +71,91 @@ struct CallChecker : public CheckerBase {
  * Checker mock object is global so the mocked functions can access it (without capturing it)
  */
 unique_ptr<CallChecker> call_checker;
+
 /*
  * Struct prepared for InitializePluginsTest.
  */
-struct InitializePluginsTest : public ::testing::Test {
+struct InitializePluginsTest: public ::testing::Test {
 	MockContext ctx_mock;
 	PC_tree_t empty_tree;
 	unordered_map<string, unique_ptr<Plugin>> plugins_map;
-	
+
 	//default behaviour of plugins, deps and reqs are empty.
-	Plugin_info_map plugins_load_info {
-		{
-			"plugin0",
-			{
-				[](Context& ctx, PC_tree_t)
-				{
-					call_checker->ctor_call("plugin0");
-					return unique_ptr<Plugin> {new MockPlugin{ctx}};
-				},
-				ctx_mock,
-				empty_tree,
-				[]()
-				{
-					call_checker->deps_call("plugin0");
-					return Plugin_dependencies{};
-				}
-			}
-		},
-		{
-			"plugin1",
-			{
-				[](Context& ctx, PC_tree_t)
-				{
-					call_checker->ctor_call("plugin1");
-					return unique_ptr<Plugin> {new MockPlugin{ctx}};
-				},
-				ctx_mock,
-				empty_tree,
-				[]()
-				{
-					call_checker->deps_call("plugin1");
-					return Plugin_dependencies{};
-				}
-			}
-		},
-		{
-			"plugin2",
-			{
-				[](Context& ctx, PC_tree_t)
-				{
-					call_checker->ctor_call("plugin2");
-					return unique_ptr<Plugin> {new MockPlugin{ctx}};
-				},
-				ctx_mock,
-				empty_tree,
-				[]()
-				{
-					call_checker->deps_call("plugin2");
-					return Plugin_dependencies{};
-				}
-			}
-		},
-		{
-			"plugin3",
-			{
-				[](Context& ctx, PC_tree_t)
-				{
-					call_checker->ctor_call("plugin3");
-					return unique_ptr<Plugin> {new MockPlugin{ctx}};
-				},
-				ctx_mock,
-				empty_tree,
-				[]()
-				{
-					call_checker->deps_call("plugin3");
-					return Plugin_dependencies{};
-				}
-			}
-		},
-		{
-			"plugin4",
-			{
-				[](Context& ctx, PC_tree_t)
-				{
-					call_checker->ctor_call("plugin4");
-					return unique_ptr<Plugin> {new MockPlugin{ctx}};
-				},
-				ctx_mock,
-				empty_tree,
-				[]()
-				{
-					call_checker->deps_call("plugin4");
-					return Plugin_dependencies{};
-				}
-			}
-		},
-		{
-			"plugin5",
-			{
-				[](Context& ctx, PC_tree_t)
-				{
-					call_checker->ctor_call("plugin5");
-					return unique_ptr<Plugin> {new MockPlugin{ctx}};
-				},
-				ctx_mock,
-				empty_tree,
-				[]()
-				{
-					call_checker->deps_call("plugin5");
-					return Plugin_dependencies{};
-				}
-			}
-		}
+	Plugin_info_map plugins_load_info{
+		{"plugin0",
+	     {[](Context& ctx, PC_tree_t) {
+			  call_checker->ctor_call("plugin0");
+			  return unique_ptr<Plugin>{new MockPlugin{ctx}};
+		  },
+	      ctx_mock,
+	      empty_tree,
+	      []() {
+			  call_checker->deps_call("plugin0");
+			  return Plugin_dependencies{};
+		  }}},
+		{"plugin1",
+	     {[](Context& ctx, PC_tree_t) {
+			  call_checker->ctor_call("plugin1");
+			  return unique_ptr<Plugin>{new MockPlugin{ctx}};
+		  },
+	      ctx_mock,
+	      empty_tree,
+	      []() {
+			  call_checker->deps_call("plugin1");
+			  return Plugin_dependencies{};
+		  }}},
+		{"plugin2",
+	     {[](Context& ctx, PC_tree_t) {
+			  call_checker->ctor_call("plugin2");
+			  return unique_ptr<Plugin>{new MockPlugin{ctx}};
+		  },
+	      ctx_mock,
+	      empty_tree,
+	      []() {
+			  call_checker->deps_call("plugin2");
+			  return Plugin_dependencies{};
+		  }}},
+		{"plugin3",
+	     {[](Context& ctx, PC_tree_t) {
+			  call_checker->ctor_call("plugin3");
+			  return unique_ptr<Plugin>{new MockPlugin{ctx}};
+		  },
+	      ctx_mock,
+	      empty_tree,
+	      []() {
+			  call_checker->deps_call("plugin3");
+			  return Plugin_dependencies{};
+		  }}},
+		{"plugin4",
+	     {[](Context& ctx, PC_tree_t) {
+			  call_checker->ctor_call("plugin4");
+			  return unique_ptr<Plugin>{new MockPlugin{ctx}};
+		  },
+	      ctx_mock,
+	      empty_tree,
+	      []() {
+			  call_checker->deps_call("plugin4");
+			  return Plugin_dependencies{};
+		  }}},
+		{"plugin5",
+	     {[](Context& ctx, PC_tree_t) {
+			  call_checker->ctor_call("plugin5");
+			  return unique_ptr<Plugin>{new MockPlugin{ctx}};
+		  },
+	      ctx_mock,
+	      empty_tree,
+	      []() {
+			  call_checker->deps_call("plugin5");
+			  return Plugin_dependencies{};
+		  }}}
 	};
-	
+
 	void SetUp() override
 	{
 		//global mock needs to be created in every test
 		call_checker.reset(new CallChecker{});
 	}
-	
+
 	void TearDown() override
 	{
 		//global mock needs to be destroyed in every test
@@ -214,7 +179,7 @@ TEST_F(InitializePluginsTest, empty)
 		EXPECT_CALL(*call_checker, ctor_call(plugin_name + to_string(i)));
 		EXPECT_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
 	}
-	
+
 	initialize_plugins(plugins_load_info, plugins_map);
 	ASSERT_EQ(plugins_map.size(), 6);
 }
@@ -250,13 +215,13 @@ TEST_F(InitializePluginsTest, req_plugins_fulfilled)
 		call_checker->deps_call("plugin4");
 		return Plugin_dependencies{{"plugin5"}, {}};
 	};
-	
-	for (int i = 0; i <plugins_load_info.size(); i++) {
+
+	for (int i = 0; i < plugins_load_info.size(); i++) {
 		string plugin_name = "plugin";
 		EXPECT_CALL(*call_checker, ctor_call(plugin_name + to_string(i)));
 		EXPECT_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
 	}
-	
+
 	initialize_plugins(plugins_load_info, plugins_map);
 	ASSERT_EQ(plugins_map.size(), 6);
 }
@@ -276,8 +241,8 @@ TEST_F(InitializePluginsTest, req_plugins_not_fulfilled)
 		return Plugin_dependencies{{"plugin1", "non-existing-plugin"}, {}};
 	};
 	EXPECT_CALL(*call_checker, deps_call("plugin0"));
-	
-	for (int i = 1; i <plugins_load_info.size(); i++) {
+
+	for (int i = 1; i < plugins_load_info.size(); i++) {
 		string plugin_name = "plugin";
 		ON_CALL(*call_checker, ctor_call(plugin_name + to_string(i)));
 		ON_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
@@ -323,15 +288,15 @@ TEST_F(InitializePluginsTest, in_sequence)
 		call_checker->deps_call("plugin4");
 		return Plugin_dependencies{{}, {"plugin5"}};
 	};
-	
+
 	for (int i = 0; i < plugins_load_info.size(); i++) {
 		string plugin_name = "plugin";
 		EXPECT_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
 	}
-	
+
 	{
 		InSequence _;
-		
+
 		EXPECT_CALL(*call_checker, ctor_call("plugin5")).Times(1);
 		EXPECT_CALL(*call_checker, ctor_call("plugin4")).Times(1);
 		EXPECT_CALL(*call_checker, ctor_call("plugin3")).Times(1);
@@ -339,7 +304,7 @@ TEST_F(InitializePluginsTest, in_sequence)
 		EXPECT_CALL(*call_checker, ctor_call("plugin1")).Times(1);
 		EXPECT_CALL(*call_checker, ctor_call("plugin0")).Times(1);
 	}
-	
+
 	initialize_plugins(plugins_load_info, plugins_map);
 	ASSERT_EQ(plugins_map.size(), 6);
 }
@@ -381,21 +346,21 @@ TEST_F(InitializePluginsTest, multi_dependency)
 		call_checker->deps_call("plugin3");
 		return Plugin_dependencies{{}, {"plugin4", "plugin5"}};
 	};
-	
+
 	for (int i = 0; i < plugins_load_info.size(); i++) {
 		string plugin_name = "plugin";
 		EXPECT_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
 	}
-	
+
 	Sequence s1, s2, s3, s4;
-	
+
 	EXPECT_CALL(*call_checker, ctor_call("plugin5")).Times(1).InSequence(s1, s2);
 	EXPECT_CALL(*call_checker, ctor_call("plugin4")).Times(1).InSequence(s3, s4);
 	EXPECT_CALL(*call_checker, ctor_call("plugin3")).Times(1).InSequence(s1, s3);
 	EXPECT_CALL(*call_checker, ctor_call("plugin2")).Times(1).InSequence(s2, s4);
 	EXPECT_CALL(*call_checker, ctor_call("plugin1")).Times(1).InSequence(s1, s2, s3, s4);
 	EXPECT_CALL(*call_checker, ctor_call("plugin0")).Times(1).InSequence(s1, s2, s3, s4);
-	
+
 	initialize_plugins(plugins_load_info, plugins_map);
 	ASSERT_EQ(plugins_map.size(), 6);
 }
@@ -440,21 +405,21 @@ TEST_F(InitializePluginsTest, one_to_all)
 		call_checker->deps_call("plugin4");
 		return Plugin_dependencies{{}, {"plugin5"}};
 	};
-	
+
 	for (int i = 0; i < plugins_load_info.size(); i++) {
 		string plugin_name = "plugin";
 		EXPECT_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
 	}
-	
+
 	Sequence s1, s2;
-	
+
 	EXPECT_CALL(*call_checker, ctor_call("plugin5")).Times(1).InSequence(s1, s2);
 	EXPECT_CALL(*call_checker, ctor_call("plugin4")).Times(1).InSequence(s1);
 	EXPECT_CALL(*call_checker, ctor_call("plugin3")).Times(1).InSequence(s1);
 	EXPECT_CALL(*call_checker, ctor_call("plugin2")).Times(1).InSequence(s2);
 	EXPECT_CALL(*call_checker, ctor_call("plugin1")).Times(1).InSequence(s1);
 	EXPECT_CALL(*call_checker, ctor_call("plugin0")).Times(1).InSequence(s1, s2);
-	
+
 	initialize_plugins(plugins_load_info, plugins_map);
 	ASSERT_EQ(plugins_map.size(), 6);
 }
@@ -499,21 +464,21 @@ TEST_F(InitializePluginsTest, disconnected_graph)
 		call_checker->deps_call("plugin4");
 		return Plugin_dependencies{{}, {"plugin5"}};
 	};
-	
+
 	for (int i = 0; i < plugins_load_info.size(); i++) {
 		string plugin_name = "plugin";
 		EXPECT_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
 	}
-	
+
 	Sequence s1, s2;
-	
+
 	EXPECT_CALL(*call_checker, ctor_call("plugin5")).Times(1).InSequence(s2);
 	EXPECT_CALL(*call_checker, ctor_call("plugin4")).Times(1).InSequence(s2);
 	EXPECT_CALL(*call_checker, ctor_call("plugin3")).Times(1).InSequence(s2);
 	EXPECT_CALL(*call_checker, ctor_call("plugin2")).Times(1).InSequence(s1);
 	EXPECT_CALL(*call_checker, ctor_call("plugin1")).Times(1).InSequence(s1);
 	EXPECT_CALL(*call_checker, ctor_call("plugin0")).Times(1).InSequence(s1);
-	
+
 	initialize_plugins(plugins_load_info, plugins_map);
 	ASSERT_EQ(plugins_map.size(), 6);
 }
@@ -558,14 +523,15 @@ TEST_F(InitializePluginsTest, simple_loop)
 		call_checker->deps_call("plugin5");
 		return Plugin_dependencies{{}, {"plugin0"}};
 	};
-	
+
 	for (int i = 0; i < plugins_load_info.size(); i++) {
 		string plugin_name = "plugin";
 		EXPECT_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
 	}
-	
+
 	ASSERT_THROW(initialize_plugins(plugins_load_info, plugins_map), Error);
 }
+
 /*
  * Name:                InitializePluginsTest.complex_loop
  *
@@ -606,12 +572,12 @@ TEST_F(InitializePluginsTest, complex_loop)
 		call_checker->deps_call("plugin5");
 		return Plugin_dependencies{{}, {"plugin0"}};
 	};
-	
+
 	for (int i = 0; i < plugins_load_info.size(); i++) {
 		string plugin_name = "plugin";
 		EXPECT_CALL(*call_checker, deps_call(plugin_name + to_string(i)));
 	}
-	
+
 	ASSERT_THROW(initialize_plugins(plugins_load_info, plugins_map), Error);
 }
-}
+} // namespace

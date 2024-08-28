@@ -22,16 +22,16 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <benchmark/benchmark.h>
 #include <iostream>
 #include <string>
+#include <benchmark/benchmark.h>
 
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "global_context.h"
-#include <pdi/callbacks.h>
 #include <paraconf.h>
+#include <pdi/callbacks.h>
+#include "global_context.h"
 
 struct Turn_off_stdout {
 	PDI::Context& m_ctx;
@@ -39,8 +39,8 @@ struct Turn_off_stdout {
 	int m_stderr_d;
 	int m_dev_null_d;
 
-	Turn_off_stdout(PDI::Context& ctx):
-		m_ctx{ctx}
+	Turn_off_stdout(PDI::Context& ctx)
+		: m_ctx{ctx}
 	{
 		m_stdout_d = dup(1);
 		m_stderr_d = dup(2);
@@ -49,7 +49,8 @@ struct Turn_off_stdout {
 		dup2(m_dev_null_d, 2);
 	}
 
-	~Turn_off_stdout() {
+	~Turn_off_stdout()
+	{
 		dup2(m_stdout_d, 1);
 		dup2(m_stderr_d, 2);
 		close(m_stdout_d);
@@ -59,32 +60,23 @@ struct Turn_off_stdout {
 	}
 };
 
-class PDI_Logger : public benchmark::Fixture
+class PDI_Logger: public benchmark::Fixture
 {
 	PDI::Paraconf_wrapper pw;
 	std::unique_ptr<PDI::Global_context> m_ctx;
 
 public:
+	PDI::Context& context() { return *m_ctx; }
 
-	PDI::Context& context()
-	{
-		return *m_ctx;
-	}
-	
-	void SetUp(const ::benchmark::State& state)
-	{
-		m_ctx.reset(new PDI::Global_context{PC_parse_string("{logging: off}")});
-	}
-	
-	void TearDown(const ::benchmark::State& state)
-	{
-	}
+	void SetUp(const ::benchmark::State& state) { m_ctx.reset(new PDI::Global_context{PC_parse_string("{logging: off}")}); }
+
+	void TearDown(const ::benchmark::State& state) {}
 };
 
 BENCHMARK_F(PDI_Logger, OffLevel)(benchmark::State& state)
 {
 	Turn_off_stdout off_stdout{context()};
-	for (auto _ : state) {
+	for (auto _: state) {
 		context().logger().trace("trace");
 		context().logger().debug("debug");
 		context().logger().info("info");
@@ -97,7 +89,7 @@ BENCHMARK_F(PDI_Logger, ErrorLevel)(benchmark::State& state)
 {
 	Turn_off_stdout off_stdout{context()};
 	context().logger().level(spdlog::level::err);
-	for (auto _ : state) {
+	for (auto _: state) {
 		context().logger().trace("trace");
 		context().logger().debug("debug");
 		context().logger().info("info");
@@ -105,13 +97,12 @@ BENCHMARK_F(PDI_Logger, ErrorLevel)(benchmark::State& state)
 		context().logger().error("error");
 	}
 }
-
 
 BENCHMARK_F(PDI_Logger, WarnLevel)(benchmark::State& state)
 {
 	Turn_off_stdout off_stdout{context()};
 	context().logger().level(spdlog::level::warn);
-	for (auto _ : state) {
+	for (auto _: state) {
 		context().logger().trace("trace");
 		context().logger().debug("debug");
 		context().logger().info("info");
@@ -120,12 +111,11 @@ BENCHMARK_F(PDI_Logger, WarnLevel)(benchmark::State& state)
 	}
 }
 
-
 BENCHMARK_F(PDI_Logger, InfoLevel)(benchmark::State& state)
 {
 	Turn_off_stdout off_stdout{context()};
 	context().logger().level(spdlog::level::info);
-	for (auto _ : state) {
+	for (auto _: state) {
 		context().logger().trace("trace");
 		context().logger().debug("debug");
 		context().logger().info("info");
@@ -138,7 +128,7 @@ BENCHMARK_F(PDI_Logger, DebugLevel)(benchmark::State& state)
 {
 	Turn_off_stdout off_stdout{context()};
 	context().logger().level(spdlog::level::debug);
-	for (auto _ : state) {
+	for (auto _: state) {
 		context().logger().trace("trace");
 		context().logger().debug("debug");
 		context().logger().info("info");
@@ -151,7 +141,7 @@ BENCHMARK_F(PDI_Logger, TraceLevel)(benchmark::State& state)
 {
 	Turn_off_stdout off_stdout{context()};
 	context().logger().level(spdlog::level::trace);
-	for (auto _ : state) {
+	for (auto _: state) {
 		context().logger().trace("trace");
 		context().logger().debug("debug");
 		context().logger().info("info");

@@ -38,7 +38,7 @@ using std::vector;
 namespace PDI {
 
 Callbacks::Callbacks(Context& ctx)
-    : m_context{ctx}
+	: m_context{ctx}
 {}
 
 function<void()> Callbacks::add_init_callback(const function<void()>& callback)

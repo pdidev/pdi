@@ -35,19 +35,19 @@
 
 namespace set_value {
 
-class Trigger {
-    PDI::Context& m_ctx;
+class Trigger
+{
+	PDI::Context& m_ctx;
 
-    // operations to execute
-    std::vector<std::unique_ptr<Operation>> m_operations;
+	// operations to execute
+	std::vector<std::unique_ptr<Operation>> m_operations;
 
 public:
+	Trigger(PDI::Context& ctx, PC_tree_t value_node);
 
-    Trigger(PDI::Context& ctx, PC_tree_t value_node);
-    
-    /** Sets/shares/exposes all values given in on_init/on_event/on_data
+	/** Sets/shares/exposes all values given in on_init/on_event/on_data
      */
-    void execute();
+	void execute();
 };
 
 } // namespace set_value

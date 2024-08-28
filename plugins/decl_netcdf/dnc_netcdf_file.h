@@ -41,25 +41,25 @@ namespace decl_netcdf {
 class Dnc_netcdf_file
 {
 	using nc_id = int;
-	
+
 	/// Context of this opened file
 	PDI::Context& m_ctx;
-	
+
 	/// Filename of this NetCDF file
 	std::string m_filename;
-	
+
 	/// NetCDF file ID
 	nc_id m_file_id;
-	
+
 	/// MPI communicator for this file
 	PDI::Expression m_communicator;
-	
+
 	/// Groups in NetCDF file
 	std::unordered_map<std::string, nc_id> m_groups;
-	
+
 	/// Variables in NetCDF file
 	std::unordered_map<std::string, nc_id> m_variables;
-	
+
 	/** Defines compound type in the netcdf file
 	 *
 	 * If type is already defined, the nc_type of it is returned
@@ -69,7 +69,7 @@ class Dnc_netcdf_file
 	 * \return nc_type of compound type
 	 */
 	nc_type define_compound_type(std::shared_ptr<const PDI::Record_datatype> record_type);
-	
+
 	/** Puts attribute to the file
 	 *
 	 * \param dest_id file nc_id or group nc_id in which the attribute will be put
@@ -77,7 +77,7 @@ class Dnc_netcdf_file
 	 * \param attribute attribute to put
 	 */
 	void put_attribute(nc_id dest_id, nc_id var_id, const Dnc_attribute& attribute);
-	
+
 	/** Gets attribute from the file
 	 *
 	 * \param src_id file nc_id or group nc_id from which the attribute will be gotten
@@ -85,7 +85,7 @@ class Dnc_netcdf_file
 	 * \param attribute attribute to get
 	 */
 	void get_attribute(nc_id src_id, nc_id var_id, const Dnc_attribute& attribute);
-	
+
 public:
 	/** Opens NetCDF files with given right flag.
 	 *
@@ -95,40 +95,40 @@ public:
 	 * \param mpi_comm_expr if not empty, opens NetCDF file in parallel using this MPI_Comm
 	 */
 	Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename, int rights_flag, PDI::Expression mpi_comm_expr);
-	
+
 	/// Deleted copy constructor
 	Dnc_netcdf_file(const Dnc_netcdf_file& other) = delete;
-	
+
 	/// Move constructor
 	Dnc_netcdf_file(Dnc_netcdf_file&& other) noexcept;
-	
+
 	/** Reads group nc_id from file and all attributes defined in yaml
 	 *
 	 * \param group group to be read
 	 */
 	void read_group(const Dnc_group& group);
-	
+
 	/** Defines group in the file and all attributes defined in yaml
 	 *
 	 * \param group group to be defined
 	 */
 	void define_group(const Dnc_group& group);
-	
+
 	/** Reads variable nc_id from file and all attributes defined in yaml
 	 *
 	 * \param variable variable to be read
 	 */
 	void read_variable(const Dnc_variable& variable);
-	
+
 	/** Defines variable in the file and all attributes defined in yaml
 	 *
 	 * \param variable variable to be defined
 	 */
 	void define_variable(const Dnc_variable& variable);
-	
+
 	/// Ends definion mode in NetCDF file
 	void enddef() const;
-	
+
 	/** Puts variable to the file
 	 *
 	 * \param variable variable to put
@@ -136,7 +136,7 @@ public:
 	 * \param ref_r reference where from get data to put
 	 */
 	void put_variable(const Dnc_variable& variable, const Dnc_io& write, PDI::Ref_r ref_r);
-	
+
 	/** Gets variable from the file
 	 *
 	 * \param variable variable to get
@@ -144,10 +144,9 @@ public:
 	 * \param ref_w reference where the data will be written
 	 */
 	void get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w);
-	
+
 	/// Destructor
 	~Dnc_netcdf_file();
-	
 };
 
 } // namespace decl_netcdf

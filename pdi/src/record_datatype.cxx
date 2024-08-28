@@ -56,15 +56,15 @@ using std::unique_ptr;
 using std::vector;
 
 Record_datatype::Member::Member(size_t displacement, Datatype_sptr type, const string& name)
-    : m_displacement{displacement}
-    , m_type{move(type)}
-    , m_name{name}
+	: m_displacement{displacement}
+	, m_type{move(type)}
+	, m_name{name}
 {}
 
 Record_datatype::Member::Member(const Member& o)
-    : m_displacement{o.m_displacement}
-    , m_type{o.m_type}
-    , m_name{o.m_name}
+	: m_displacement{o.m_displacement}
+	, m_type{o.m_type}
+	, m_name{o.m_name}
 {}
 
 size_t Record_datatype::Member::displacement() const
@@ -93,9 +93,9 @@ bool Record_datatype::Member::operator!= (const Member& rhs) const
 }
 
 Record_datatype::Record_datatype(vector<Member>&& members, size_t size, const Attributes_map& attributes)
-    : Datatype(attributes)
-    , m_members{move(members)}
-    , m_buffersize{move(size)}
+	: Datatype(attributes)
+	, m_members{move(members)}
+	, m_buffersize{move(size)}
 {}
 
 const vector<Record_datatype::Member>& Record_datatype::members() const
@@ -290,7 +290,7 @@ bool Record_datatype::operator== (const Datatype& other) const
 
 struct Record_datatype::Shared_enabler: public Record_datatype {
 	Shared_enabler(vector<Member>&& members, size_t size, const Attributes_map& attributes)
-	    : Record_datatype(move(members), size, attributes)
+		: Record_datatype(move(members), size, attributes)
 	{}
 };
 

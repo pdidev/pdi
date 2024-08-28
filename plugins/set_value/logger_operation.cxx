@@ -36,11 +36,10 @@
 
 #include "logger_operation.h"
 
-namespace set_value
-{
+namespace set_value {
 
-Logger_operation::Logger_operation(PDI::Context& ctx, PC_tree_t logger_node):
-	Operation{ctx}
+Logger_operation::Logger_operation(PDI::Context& ctx, PC_tree_t logger_node)
+	: Operation{ctx}
 {
 	context().logger().debug("Logger operation:");
 	PC_tree_t level_node = PC_get(logger_node, ".level");
@@ -67,14 +66,13 @@ void Logger_operation::execute()
 	try {
 		PDI::Context_proxy& ctx_proxy = dynamic_cast<PDI::Context_proxy&>(context());
 		if (m_level) {
-			static const std::unordered_map<std::string, spdlog::level::level_enum> level_map = {
-				{"trace", spdlog::level::level_enum::trace},
-				{"debug", spdlog::level::level_enum::debug},
-				{"info", spdlog::level::level_enum::info},
-				{"warn", spdlog::level::level_enum::warn},
-				{"error", spdlog::level::level_enum::err},
-				{"off", spdlog::level::level_enum::off}
-			};
+			static const std::unordered_map<std::string, spdlog::level::level_enum> level_map
+				= {{"trace", spdlog::level::level_enum::trace},
+			       {"debug", spdlog::level::level_enum::debug},
+			       {"info", spdlog::level::level_enum::info},
+			       {"warn", spdlog::level::level_enum::warn},
+			       {"error", spdlog::level::level_enum::err},
+			       {"off", spdlog::level::level_enum::off}};
 			std::string level_str = m_level.to_string(context());
 			auto level_it = level_map.find(level_str);
 			if (level_it != level_map.end()) {
@@ -97,4 +95,4 @@ void Logger_operation::execute()
 	}
 }
 
-}  // namespace set_value
+} // namespace set_value

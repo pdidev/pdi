@@ -47,7 +47,7 @@ Expression::Impl::Float_literal::Float_literal(double value)
 
 unique_ptr<Expression::Impl> Expression::Impl::Float_literal::clone() const
 {
-	return unique_ptr<Float_literal> {new Float_literal{*this}};
+	return unique_ptr<Float_literal>{new Float_literal{*this}};
 }
 
 long Expression::Impl::Float_literal::to_long(Context&) const
@@ -87,17 +87,17 @@ size_t Expression::Impl::Float_literal::copy_value(Context& ctx, void* buffer, D
 	throw Value_error{"Cannot copy Float_literal as a non float datatype."};
 }
 
-unique_ptr<Expression::Impl> Expression::Impl::Float_literal::parse(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::Float_literal::parse(char const ** val_str)
 {
 	const char* constval = *val_str;
-	
+
 	unique_ptr<Float_literal> result{new Float_literal{strtod(constval, const_cast<char**>(&constval))}};
 	if (*val_str == constval) {
 		throw Value_error{"Expected double, found `{}'", constval};
 	}
 	while (isspace(*constval))
 		++constval;
-		
+
 	*val_str = constval;
 	return result;
 }

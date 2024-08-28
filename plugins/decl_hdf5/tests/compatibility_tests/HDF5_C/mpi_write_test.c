@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <mpi.h>
 #include <assert.h>
 #include <hdf5.h>
-#include <mpi.h>
 #include <unistd.h>
 
 #define FILE "mpi_test.h5"
@@ -46,13 +46,13 @@ int main()
 	if (file_id < 0) {
 		return 1;
 	}
-	
+
 	hsize_t coords[2] = {5, 10};
 	hid_t dataspace_id = H5Screate_simple(2, coords, NULL);
 	if (dataspace_id < 0) {
 		return 1;
 	}
-	
+
 	int dset_data[5][5];
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
@@ -92,7 +92,7 @@ int main()
 	if (status < 0) {
 		return 1;
 	}
-	
+
 	status = H5Sclose(memory_dataspace_id);
 	if (status < 0) {
 		return 1;
@@ -120,7 +120,7 @@ int main()
 	if (status != 0) {
 		return status;
 	}
-	
+
 	H5close();
 	if (status < 0) {
 		return 1;

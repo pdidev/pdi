@@ -43,7 +43,7 @@ void write_dataset(hid_t file_id, const char* name, hid_t type, const void* data
 	if (status < 0) {
 		exit(1);
 	}
-	
+
 	status = H5Sclose(dataspace_id);
 	if (status < 0) {
 		exit(1);
@@ -69,12 +69,12 @@ int main()
 	write_dataset(file_id, "/float_data", H5T_NATIVE_FLOAT, &float_data);
 	char char_data = 'z';
 	write_dataset(file_id, "/char_data", H5T_NATIVE_CHAR, &char_data);
-	
+
 	herr_t status = H5Fclose(file_id);
 	if (status < 0) {
 		exit(1);
 	}
-	
+
 	printf("HDF5_C variables_write_test finalized\n");
 	return 0;
 }

@@ -33,31 +33,27 @@ typedef struct Record {
 int main(int argc, char* argv[])
 {
 	PDI_init(PC_parse_path(argv[1]));
-	
+
 	// init data
 	Record_t record_data;
 	record_data.int_scalar = 42;
 	for (int i = 0; i < 32; i++) {
 		record_data.double_array[i] = 42.4242;
 	}
-	
+
 	// write data
-	PDI_multi_expose("write",
-	    "record", &record_data, PDI_OUT,
-	    NULL);
-	    
+	PDI_multi_expose("write", "record", &record_data, PDI_OUT, NULL);
+
 	// zero data
 	record_data.int_scalar = 0;
 	for (int i = 0; i < 32; i++) {
 		record_data.double_array[i] = 0.0;
 	}
-	
-	
+
+
 	// read data
-	PDI_multi_expose("read",
-	    "record", &record_data, PDI_IN,
-	    NULL);
-	    
+	PDI_multi_expose("read", "record", &record_data, PDI_IN, NULL);
+
 	// verify
 	int status = 0;
 	if (record_data.int_scalar != 42) {
@@ -70,9 +66,9 @@ int main(int argc, char* argv[])
 			status = 1;
 		}
 	}
-	
-	
-	
+
+
+
 	PDI_finalize();
 	return status;
 }

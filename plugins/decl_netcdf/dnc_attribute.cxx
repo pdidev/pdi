@@ -26,9 +26,9 @@
 
 namespace decl_netcdf {
 
-Dnc_attribute::Dnc_attribute(PDI::Context& ctx, const std::string& name, PC_tree_t config):
-	m_ctx{ctx},
-	m_name{name}
+Dnc_attribute::Dnc_attribute(PDI::Context& ctx, const std::string& name, PC_tree_t config)
+	: m_ctx{ctx}
+	, m_name{name}
 {
 	m_value = PDI::Expression{PDI::to_string(config)};
 	m_ctx.logger().trace("`{}' attribute created", name);

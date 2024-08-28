@@ -23,15 +23,15 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include <pdi/array_datatype.h>
-#include <pdi/scalar_datatype.h>
-#include <pdi/record_datatype.h>
-#include <pdi/pointer_datatype.h>
-#include <pdi/ref_any.h>
 #include <pdi/pdi_fwd.h>
+#include <pdi/array_datatype.h>
+#include <pdi/pointer_datatype.h>
+#include <pdi/record_datatype.h>
+#include <pdi/ref_any.h>
+#include <pdi/scalar_datatype.h>
 
 #include "mocks/datatype_mock.h"
 
@@ -43,9 +43,11 @@ using ::testing::Return;
 /*
  * Struct prepared for DataRefAnyTest.
  */
-struct DataRefAnyTest : public ::testing::Test, Reference_base {
-	DataRefAnyTest():
-		m_data(std::make_unique<int[]>(1024))
+struct DataRefAnyTest
+	: public ::testing::Test
+	, Reference_base {
+	DataRefAnyTest()
+		: m_data(std::make_unique<int[]>(1024))
 	{
 		for (int i = 0; i < 1024; i++) {
 			m_data[i] = i;
@@ -53,12 +55,17 @@ struct DataRefAnyTest : public ::testing::Test, Reference_base {
 
 		auto&& int_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 		auto&& array_type = Array_datatype::make(int_type, 32);
-		m_tested_ref = std::make_unique<Ref> (m_data.get(), [this](void*) {
-			for (int i = 0; i < 1024; i++) {
-				m_data[i] = -1;
-			}
-		},
-		array_type, true, true);
+		m_tested_ref = std::make_unique<Ref>(
+			m_data.get(),
+			[this](void*) {
+				for (int i = 0; i < 1024; i++) {
+					m_data[i] = -1;
+				}
+			},
+			array_type,
+			true,
+			true
+		);
 	}
 
 	unique_ptr<int[]> m_data;
@@ -223,9 +230,7 @@ TEST_F(DataRefAnyTest, nullifyTest)
 	//the address to replace
 	char c;
 	void* address = &c;
-	this->m_tested_ref->on_nullify([address](Ref whoCalled) {
-		Reference_base::get_content(whoCalled)->m_data = address;
-	});
+	this->m_tested_ref->on_nullify([address](Ref whoCalled) { Reference_base::get_content(whoCalled)->m_data = address; });
 	Ref otherRef(*this->m_tested_ref);
 	void* recvAddress = otherRef.release();
 	EXPECT_EQ(address, recvAddress);
@@ -296,7 +301,7 @@ TEST_F(DataRefAnyTest, content_chain)
 	EXPECT_EQ(17, static_cast<const int*>(sub_array_ref.get())[1]);
 	EXPECT_EQ(18, static_cast<const int*>(sub_array_ref.get())[2]);
 	EXPECT_EQ(19, static_cast<const int*>(sub_array_ref.get())[3]);
-	
+
 	sub_array_ref.reset();
 	EXPECT_TRUE(!Reference_base::get_content(*this->m_tested_ref));
 	EXPECT_TRUE(!get_content(sub_array_ref));
@@ -309,7 +314,7 @@ TEST_F(DataRefAnyTest, content_chain)
 	EXPECT_TRUE(!Reference_base::get_content(*this->m_tested_ref));
 	EXPECT_TRUE(!get_content(sub_array_ref));
 	EXPECT_TRUE(!get_content(sub_scalar_ref));
-	
+
 	EXPECT_EQ(-1, this->m_data[0]);
 }
 
@@ -321,6 +326,7 @@ TEST_F(DataRefAnyTest, content_chain)
 TEST_F(DataRefAnyTest, content_record)
 {
 	auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
+
 	struct Record {
 		char x;
 		int y[32];
@@ -337,7 +343,7 @@ TEST_F(DataRefAnyTest, content_record)
 		data.y[i] = i;
 	}
 
-	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type, true, true};
+	Ref base_ref{&data, [](void* p) { static_cast<Record*>(p)->x = -1; }, record_type, true, true};
 	EXPECT_FALSE(!get_content(base_ref));
 	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
 
@@ -376,14 +382,14 @@ TEST_F(DataRefAnyTest, content_record)
 	EXPECT_FALSE(!get_content(data_y_scalar_ref));
 	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
 
-	if (Ref_w failed {data_y_scalar_ref}) {
+	if (Ref_w failed{data_y_scalar_ref}) {
 		FAIL();
 	}
-	if (Ref_w failed {base_ref}) {
+	if (Ref_w failed{base_ref}) {
 		FAIL();
 	}
 
-	Ref_r data_y_scalar_ref_r {data_y_scalar_ref};
+	Ref_r data_y_scalar_ref_r{data_y_scalar_ref};
 	EXPECT_FALSE(!get_content(base_ref));
 	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
 	EXPECT_FALSE(!get_content(data_x_ref));
@@ -495,6 +501,7 @@ TEST_F(DataRefAnyTest, ref_index_access)
 TEST_F(DataRefAnyTest, ref_member_access)
 {
 	auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
+
 	struct Record {
 		char x;
 		int y[32];
@@ -511,7 +518,7 @@ TEST_F(DataRefAnyTest, ref_member_access)
 		data.y[i] = i;
 	}
 
-	Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type, true, true};
+	Ref base_ref{&data, [](void* p) { static_cast<Record*>(p)->x = -1; }, record_type, true, true};
 	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref));
 	EXPECT_FALSE(!Reference_base::get_content(*this->m_tested_ref)->m_buffer);
 
@@ -545,14 +552,14 @@ TEST_F(DataRefAnyTest, ref_member_access)
 	EXPECT_FALSE(!get_content(data_y_scalar_ref));
 	EXPECT_FALSE(!get_content(data_y_scalar_ref)->m_buffer);
 
-	if (Ref_w failed {data_y_scalar_ref}) {
+	if (Ref_w failed{data_y_scalar_ref}) {
 		FAIL();
 	}
-	if (Ref_w failed {base_ref}) {
+	if (Ref_w failed{base_ref}) {
 		FAIL();
 	}
 
-	Ref_r data_y_scalar_ref_r {data_y_scalar_ref};
+	Ref_r data_y_scalar_ref_r{data_y_scalar_ref};
 	EXPECT_FALSE(!get_content(base_ref));
 	EXPECT_FALSE(!get_content(base_ref)->m_buffer);
 	EXPECT_FALSE(!get_content(data_x_ref));
@@ -602,19 +609,23 @@ TEST_F(DataRefAnyTest, wrong_index_access)
 	try {
 		(*m_tested_ref)["example"];
 		FAIL();
-	} catch (const Type_error& e) {}
+	} catch (const Type_error& e) {
+	}
 	try {
 		Ref sub = (*m_tested_ref)[4];
 		sub["example"];
 		FAIL();
-	} catch (const Type_error& e) {}
+	} catch (const Type_error& e) {
+	}
 	try {
 		Ref sub = (*m_tested_ref)[4];
 		sub[4];
 		FAIL();
-	} catch (const Type_error& e) {}
+	} catch (const Type_error& e) {
+	}
 	try {
 		auto&& char_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(char));
+
 		struct Record {
 			char x;
 			int y[32];
@@ -626,12 +637,12 @@ TEST_F(DataRefAnyTest, wrong_index_access)
 		auto&& record_type = Record_datatype::make(std::move(members), sizeof(Record));
 
 		Record data;
-		Ref base_ref {&data, [](void* p){static_cast<Record*>(p)->x = -1;}, record_type, true, true};
+		Ref base_ref{&data, [](void* p) { static_cast<Record*>(p)->x = -1; }, record_type, true, true};
 		base_ref[4];
 		FAIL();
-	} catch (const Type_error& e) {}
+	} catch (const Type_error& e) {
+	}
 }
-
 
 /*
  * Name:                DataRefAnyTest.dereference_pointer
@@ -660,8 +671,9 @@ TEST_F(DataRefAnyTest, dereference_pointer)
 
 	// Check that the reference has been dereferenced.
 	EXPECT_EQ(base_scalar_ref.type(), dereferenced_scalar_ref.type())
-		<< "Pointer datatype:\n" << dereferenced_scalar_ref.type()->debug_string()
-		<< "\n\nScalar datatype:\n" << base_scalar_ref.type()->debug_string();
+		<< "Pointer datatype:\n"
+		<< dereferenced_scalar_ref.type()->debug_string() << "\n\nScalar datatype:\n"
+		<< base_scalar_ref.type()->debug_string();
 
 	const void* base_scalar_ptr = base_scalar_ref.get();
 	const void* dereferenced_scalar_ptr = dereferenced_scalar_ref.get();
@@ -689,9 +701,10 @@ TEST_F(DataRefAnyTest, dereference_pointer)
 	EXPECT_EQ(2, Reference_base::get_content(dereferenced_array_ref)->m_buffer->m_write_locks);
 
 	// Check that the reference has been dereferenced.
-    EXPECT_EQ(base_array_ref.type(), dereferenced_array_ref.type())
-        << "Pointer datatype:\n" << dereferenced_array_ref.type()->debug_string()
-        << "\n\nArray datatype:\n" << base_array_ref.type()->debug_string();
+	EXPECT_EQ(base_array_ref.type(), dereferenced_array_ref.type())
+		<< "Pointer datatype:\n"
+		<< dereferenced_array_ref.type()->debug_string() << "\n\nArray datatype:\n"
+		<< base_array_ref.type()->debug_string();
 
 
 	/* RECORD */
@@ -729,14 +742,14 @@ TEST_F(DataRefAnyTest, dereference_pointer)
 
 	// Check that the reference has been dereferenced.
 	EXPECT_EQ(base_record_ref.type(), dereferenced_record_ref.type())
-        << "Scalar datatype:\n" << base_record_ref.type()->debug_string()
-		<< "\n\nPointer datatype:\n" << dereferenced_record_ref.type()->debug_string();
+		<< "Scalar datatype:\n"
+		<< base_record_ref.type()->debug_string() << "\n\nPointer datatype:\n"
+		<< dereferenced_record_ref.type()->debug_string();
 
 	const void* base_record_ptr = base_array_ref.get();
 	const void* dereferenced_record_ptr = dereferenced_array_ref.get();
 	EXPECT_EQ(reinterpret_cast<int*>(const_cast<void*>(base_record_ptr)), reinterpret_cast<int*>(const_cast<void*>(dereferenced_record_ptr)));
 }
-
 
 /*
  * Name:                DataRefAnyTest.dereference_pointer
@@ -806,13 +819,15 @@ TEST_F(DataRefAnyTest, invalid_dereference_pointers)
 	}
 }
 
-
 /*
  * Struct prepared for DataRefAnyTypedTest.
  */
-template<typename T>
-struct DataRefAnyTypedTest : public DataRefAnyTest, T {
-	DataRefAnyTypedTest() : DataRefAnyTest()
+template <typename T>
+struct DataRefAnyTypedTest
+	: public DataRefAnyTest
+	, T {
+	DataRefAnyTypedTest()
+		: DataRefAnyTest()
 	{
 		if (is_same<T, Ref>::value) {
 			locks = 0;
@@ -824,6 +839,7 @@ struct DataRefAnyTypedTest : public DataRefAnyTest, T {
 			locks = 3;
 		}
 	}
+
 	char locks;
 };
 
@@ -907,12 +923,12 @@ TYPED_TEST(DataRefAnyTypedTest, chmodConstructor)
 	}
 }
 
-
 /*
  * Struct prepared for DenseArrayRefAnyTest.
  */
-struct DenseArrayRefAnyTest : public DataRefAnyTest {
-	DenseArrayRefAnyTest() : DataRefAnyTest()
+struct DenseArrayRefAnyTest: public DataRefAnyTest {
+	DenseArrayRefAnyTest()
+		: DataRefAnyTest()
 	{
 		DataRefAnyTest::m_tested_ref->reset();
 
@@ -920,19 +936,10 @@ struct DenseArrayRefAnyTest : public DataRefAnyTest {
 			array_to_share[i] = i;
 		}
 
-		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void*){},
-			datatype, true, true}
-		};
+		DataRefAnyTest::m_tested_ref = unique_ptr<Ref>{new Ref{array_to_share, [](void*) {}, datatype, true, true}};
 	}
 
-	Datatype_sptr datatype {
-		Array_datatype::make(
-		Array_datatype::make(
-		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-		10),
-		10
-		)
-	};
+	Datatype_sptr datatype{Array_datatype::make(Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10), 10)};
 
 	int array_to_share[100]; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
 };
@@ -962,10 +969,11 @@ TEST_F(DenseArrayRefAnyTest, checkDeepCopy)
  * Struct prepared for SparseArrayRefAnyTest.
  *
  */
-struct SparseArrayRefAnyTest : public DataRefAnyTest {
-	int* array_to_share {new int[100]}; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
+struct SparseArrayRefAnyTest: public DataRefAnyTest {
+	int* array_to_share{new int[100]}; //buffer: 10 x 10; data: 4 x 4; start: (3, 3)
 
-	SparseArrayRefAnyTest() : DataRefAnyTest()
+	SparseArrayRefAnyTest()
+		: DataRefAnyTest()
 	{
 		m_tested_ref->reset();
 
@@ -973,22 +981,10 @@ struct SparseArrayRefAnyTest : public DataRefAnyTest {
 			array_to_share[i] = i;
 		}
 
-		m_tested_ref = unique_ptr<Ref> {new Ref{array_to_share, [](void* ptr){operator delete[] (ptr);}, datatype, true, true}};
+		m_tested_ref = unique_ptr<Ref>{new Ref{array_to_share, [](void* ptr) { operator delete[] (ptr); }, datatype, true, true}};
 	}
 
-	Datatype_sptr datatype {
-		Array_datatype::make(
-		Array_datatype::make(
-		Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-		10,
-		3,
-		4
-		),
-		10,
-		3,
-		4
-		)
-	};
+	Datatype_sptr datatype{Array_datatype::make(Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10, 3, 4), 10, 3, 4)};
 };
 
 /*
@@ -1009,23 +1005,24 @@ TEST_F(SparseArrayRefAnyTest, checkDeepCopy)
 	const int* cloned_array = static_cast<const int*>(cloned_ref.get());
 	for (int i = 0; i < 16; i++) {
 		std::cerr << i << ": " << cloned_array[i] << std::endl;
-		EXPECT_EQ(this->array_to_share[(i/4 + 3)*10 + (i%4)+3], cloned_array[i]);
+		EXPECT_EQ(this->array_to_share[(i / 4 + 3) * 10 + (i % 4) + 3], cloned_array[i]);
 	}
 }
 
 /*
  * Struct prepared for DenseRecordRefAnyTest.
  */
-struct DenseRecordRefAnyTest : public DataRefAnyTest {
+struct DenseRecordRefAnyTest: public DataRefAnyTest {
 	struct Struct_def {
-		char char_array[25];    //disp = 0
-		long long_scalar;       //disp = 32
-		int int_scalar;         //disp = 40
+		char char_array[25]; //disp = 0
+		long long_scalar; //disp = 32
+		int int_scalar; //disp = 40
 	}; //sizeof = 48
 
 	Struct_def* record_to_share = new Struct_def;
 
-	DenseRecordRefAnyTest() : DataRefAnyTest()
+	DenseRecordRefAnyTest()
+		: DataRefAnyTest()
 	{
 		DataRefAnyTest::m_tested_ref->reset();
 
@@ -1035,35 +1032,23 @@ struct DenseRecordRefAnyTest : public DataRefAnyTest {
 		record_to_share->long_scalar = 10;
 		record_to_share->int_scalar = -10;
 
-		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype, true, true}
-		};
+		DataRefAnyTest::m_tested_ref = unique_ptr<Ref>{new Ref{record_to_share, [](void* ptr) { operator delete (ptr); }, datatype, true, true}};
 	}
 
 	vector<Record_datatype::Member> get_members()
 	{
-		return  {
+		return {
 			Record_datatype::Member{
 				offsetof(Struct_def, char_array),
-				Array_datatype::make(
-				Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
-				25
-				),
+				Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 25),
 				"char_array"
 			},
-			Record_datatype::Member{
-				offsetof(Struct_def, long_scalar),
-				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
-				"long_scalar"
-			},
-			Record_datatype::Member{
-				offsetof(Struct_def, int_scalar),
-				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-				"int_scalar"
-			}
+			Record_datatype::Member{offsetof(Struct_def, long_scalar), Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)), "long_scalar"},
+			Record_datatype::Member{offsetof(Struct_def, int_scalar), Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), "int_scalar"}
 		};
 	}
 
-	Datatype_sptr datatype { Record_datatype::make(get_members(), sizeof(Struct_def)) };
+	Datatype_sptr datatype{Record_datatype::make(get_members(), sizeof(Struct_def))};
 };
 
 TEST_F(DenseRecordRefAnyTest, checkDeepCopy)
@@ -1083,22 +1068,23 @@ TEST_F(DenseRecordRefAnyTest, checkDeepCopy)
 /*
  * Struct prepared for SparseRecordRefAnyTest.
  */
-struct SparseRecordRefAnyTest : public DataRefAnyTest {
+struct SparseRecordRefAnyTest: public DataRefAnyTest {
 	struct Sparse_struct_def {
-		char char_array[25];    //disp = 0 //buffer: 5 x 5; data: 3 x 3; start: (1, 1)
-		long long_scalar;       //disp = 32
-		int int_scalar;         //disp = 40
+		char char_array[25]; //disp = 0 //buffer: 5 x 5; data: 3 x 3; start: (1, 1)
+		long long_scalar; //disp = 32
+		int int_scalar; //disp = 40
 	}; //sizeof = 48
 
 	struct Dense_struct_def {
-		char char_array[9];     //disp = 0 //buffer: 3 x 3; data: 3 x 3;
-		long long_scalar;       //disp = 24
-		int int_scalar;         //disp = 28
+		char char_array[9]; //disp = 0 //buffer: 3 x 3; data: 3 x 3;
+		long long_scalar; //disp = 24
+		int int_scalar; //disp = 28
 	}; //sizeof = 32
 
 	Sparse_struct_def* record_to_share = new Sparse_struct_def;
 
-	SparseRecordRefAnyTest() : DataRefAnyTest()
+	SparseRecordRefAnyTest()
+		: DataRefAnyTest()
 	{
 		DataRefAnyTest::m_tested_ref->reset();
 
@@ -1108,26 +1094,15 @@ struct SparseRecordRefAnyTest : public DataRefAnyTest {
 		record_to_share->long_scalar = 10;
 		record_to_share->int_scalar = -10;
 
-		DataRefAnyTest::m_tested_ref = unique_ptr<Ref> {new Ref{record_to_share, [](void* ptr){operator delete (ptr);}, datatype, true, true}
-		};
+		DataRefAnyTest::m_tested_ref = unique_ptr<Ref>{new Ref{record_to_share, [](void* ptr) { operator delete (ptr); }, datatype, true, true}};
 	}
 
 	vector<Record_datatype::Member> get_members()
 	{
-		return  {
+		return {
 			Record_datatype::Member{
 				offsetof(Sparse_struct_def, char_array),
-				Array_datatype::make(
-				Array_datatype::make(
-				Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
-				5,
-				1,
-				3
-				),
-				5,
-				1,
-				3
-				),
+				Array_datatype::make(Array_datatype::make(Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), 5, 1, 3), 5, 1, 3),
 				"char_array"
 			},
 			Record_datatype::Member{
@@ -1135,15 +1110,11 @@ struct SparseRecordRefAnyTest : public DataRefAnyTest {
 				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
 				"long_scalar"
 			},
-			Record_datatype::Member{
-				offsetof(Sparse_struct_def, int_scalar),
-				Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-				"int_scalar"
-			}
+			Record_datatype::Member{offsetof(Sparse_struct_def, int_scalar), Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), "int_scalar"}
 		};
 	}
 
-	Datatype_sptr datatype { Record_datatype::make(get_members(), sizeof(Sparse_struct_def)) };
+	Datatype_sptr datatype{Record_datatype::make(get_members(), sizeof(Sparse_struct_def))};
 };
 
 TEST_F(SparseRecordRefAnyTest, checkDeepCopy)
@@ -1154,7 +1125,7 @@ TEST_F(SparseRecordRefAnyTest, checkDeepCopy)
 	Ref_r cloned_ref(changed_ref.copy());
 	const Dense_struct_def* cloned_array = static_cast<const Dense_struct_def*>(cloned_ref.get());
 	for (int i = 0; i < 9; i++) {
-		EXPECT_EQ(cloned_array->char_array[i], (i/3+1)*5 + i%3 + 1);
+		EXPECT_EQ(cloned_array->char_array[i], (i / 3 + 1) * 5 + i % 3 + 1);
 	}
 	EXPECT_EQ(cloned_array->long_scalar, 10);
 	EXPECT_EQ(cloned_array->int_scalar, -10);

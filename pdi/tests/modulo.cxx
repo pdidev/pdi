@@ -35,8 +35,10 @@
 #include "operators.h"
 
 
+// clang-format off
 #cmakedefine OPERAND1_TYPE @OPERAND1_TYPE@
 #cmakedefine OPERAND2_TYPE @OPERAND2_TYPE@
+// clang-format on
 
 
 using PDI::Expression;
@@ -49,36 +51,36 @@ using std::remove_reference_t;
 using operand1_type = OPERAND1_TYPE;
 using operand2_type = OPERAND2_TYPE;
 
+// clang-format off
 TEST(ModuloU@CASE_NAME@Test, toLong)
+// clang-format on
 {
 	MockContext ctx;
 
 	MockDataDescriptor o1_desc;
-	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o1"))))
-			.WillRepeatedly(testing::ReturnRef(o1_desc));
+	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o1")))).WillRepeatedly(testing::ReturnRef(o1_desc));
 
 	MockDataDescriptor o2_desc;
-	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o2"))))
-			.WillRepeatedly(testing::ReturnRef(o2_desc));
+	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o2")))).WillRepeatedly(testing::ReturnRef(o2_desc));
 
-	for (auto op1 : ALL_VALS<operand1_type>) {
-		for (auto op2 : ALL_VALS<operand2_type>) {
+	for (auto op1: ALL_VALS<operand1_type>) {
+		for (auto op2: ALL_VALS<operand2_type>) {
 			EXPECT_CALL(o1_desc, ref())
-					.WillOnce(testing::Return(Ref(
-							&op1,
-							[] (void*) {},
-							Scalar_datatype::type_for_v<decltype(op1)>,
-							true,
-							false
-					)));
+				.WillOnce(testing::Return(Ref(
+					&op1,
+					[](void*) {},
+					Scalar_datatype::type_for_v<decltype(op1)>,
+					true,
+					false
+				)));
 			EXPECT_CALL(o2_desc, ref())
-					.WillOnce(testing::Return(Ref(
-							&op2,
-							[] (void*) {},
-							Scalar_datatype::type_for_v<decltype(op2)>,
-							true,
-							false
-					)));
+				.WillOnce(testing::Return(Ref(
+					&op2,
+					[](void*) {},
+					Scalar_datatype::type_for_v<decltype(op2)>,
+					true,
+					false
+				)));
 
 			auto const & expr = "${o1} % ${o2}";
 			auto const & expected = op1 % op2;
@@ -88,36 +90,36 @@ TEST(ModuloU@CASE_NAME@Test, toLong)
 	}
 }
 
+// clang-format off
 TEST(ModuloU@CASE_NAME@Test, toDouble)
+// clang-format on
 {
 	MockContext ctx;
 
 	MockDataDescriptor o1_desc;
-	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o1"))))
-			.WillRepeatedly(testing::ReturnRef(o1_desc));
+	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o1")))).WillRepeatedly(testing::ReturnRef(o1_desc));
 
 	MockDataDescriptor o2_desc;
-	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o2"))))
-			.WillRepeatedly(testing::ReturnRef(o2_desc));
+	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o2")))).WillRepeatedly(testing::ReturnRef(o2_desc));
 
-	for (auto op1 : ALL_VALS<operand1_type>) {
-		for (auto op2 : ALL_VALS<operand2_type>) {
+	for (auto op1: ALL_VALS<operand1_type>) {
+		for (auto op2: ALL_VALS<operand2_type>) {
 			EXPECT_CALL(o1_desc, ref())
-					.WillOnce(testing::Return(Ref(
-							&op1,
-							[] (void*) {},
-							Scalar_datatype::type_for_v<decltype(op1)>,
-							true,
-							false
-					)));
+				.WillOnce(testing::Return(Ref(
+					&op1,
+					[](void*) {},
+					Scalar_datatype::type_for_v<decltype(op1)>,
+					true,
+					false
+				)));
 			EXPECT_CALL(o2_desc, ref())
-					.WillOnce(testing::Return(Ref(
-							&op2,
-							[] (void*) {},
-							Scalar_datatype::type_for_v<decltype(op2)>,
-							true,
-							false
-					)));
+				.WillOnce(testing::Return(Ref(
+					&op2,
+					[](void*) {},
+					Scalar_datatype::type_for_v<decltype(op2)>,
+					true,
+					false
+				)));
 
 			auto const & expr = "${o1} % ${o2}";
 			auto const & expected = op1 % op2;
@@ -127,42 +129,40 @@ TEST(ModuloU@CASE_NAME@Test, toDouble)
 	}
 }
 
+// clang-format off
 TEST(ModuloU@CASE_NAME@Test, toRef)
+// clang-format on
 {
 	MockContext ctx;
 
 	MockDataDescriptor o1_desc;
-	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o1"))))
-			.WillRepeatedly(testing::ReturnRef(o1_desc));
+	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o1")))).WillRepeatedly(testing::ReturnRef(o1_desc));
 
 	MockDataDescriptor o2_desc;
-	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o2"))))
-			.WillRepeatedly(testing::ReturnRef(o2_desc));
+	EXPECT_CALL(ctx, desc(testing::Matcher<const char*>(testing::StrEq("o2")))).WillRepeatedly(testing::ReturnRef(o2_desc));
 
-	for (auto op1 : ALL_VALS<operand1_type>) {
-		for (auto op2 : ALL_VALS<operand2_type>) {
+	for (auto op1: ALL_VALS<operand1_type>) {
+		for (auto op2: ALL_VALS<operand2_type>) {
 			EXPECT_CALL(o1_desc, ref())
-					.WillOnce(testing::Return(Ref(
-							&op1,
-							[] (void*) {},
-							Scalar_datatype::type_for_v<decltype(op1)>,
-							true,
-							false
-					)));
+				.WillOnce(testing::Return(Ref(
+					&op1,
+					[](void*) {},
+					Scalar_datatype::type_for_v<decltype(op1)>,
+					true,
+					false
+				)));
 			EXPECT_CALL(o2_desc, ref())
-					.WillOnce(testing::Return(Ref(
-							&op2,
-							[] (void*) {},
-							Scalar_datatype::type_for_v<decltype(op2)>,
-							true,
-							false
-					)));
+				.WillOnce(testing::Return(Ref(
+					&op2,
+					[](void*) {},
+					Scalar_datatype::type_for_v<decltype(op2)>,
+					true,
+					false
+				)));
 
 			auto const & expr = "${o1} % ${o2}";
 			auto const & expected = op1 % op2;
-			auto const & result
-					= Ref_r(PDI::Expression(expr).to_ref(ctx))
-			                  .scalar_value< remove_cv_t<remove_reference_t<decltype(expected)>>>();
+			auto const & result = Ref_r(PDI::Expression(expr).to_ref(ctx)).scalar_value< remove_cv_t<remove_reference_t<decltype(expected)>>>();
 			EXPECT_EQ(expected, result) << expr;
 		}
 	}

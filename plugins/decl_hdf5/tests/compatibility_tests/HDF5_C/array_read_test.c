@@ -35,7 +35,7 @@ int main()
 	if (file_id < 0) {
 		return 1;
 	}
-	
+
 	int dset_data[5][10];
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
@@ -47,12 +47,12 @@ int main()
 	if (dataset_id < 0) {
 		return 1;
 	}
-	
+
 	herr_t status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset_data);
 	if (status < 0) {
 		return 1;
 	}
-	
+
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
 			if (dset_data[i][j] != i * 10 + j) {
@@ -61,7 +61,7 @@ int main()
 			}
 		}
 	}
-	
+
 	status = H5Dclose(dataset_id);
 	if (status < 0) {
 		return 1;

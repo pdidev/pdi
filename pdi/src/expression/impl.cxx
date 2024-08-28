@@ -88,15 +88,15 @@ Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
 {
 	if (PDI::is_map(value)) {
-		return unique_ptr<Impl> {new Mapping{value}};
+		return unique_ptr<Impl>{new Mapping{value}};
 	} else if (PDI::is_list(value)) {
-		return unique_ptr<Impl> {new Sequence{value}};
+		return unique_ptr<Impl>{new Sequence{value}};
 	} else {
 		return parse(PDI::to_string(value).c_str());
 	}
 }
 
-unique_ptr<Expression::Impl> Expression::Impl::parse(char const* val_str)
+unique_ptr<Expression::Impl> Expression::Impl::parse(char const * val_str)
 {
 	try { // parse as a space enclosed intval
 		const char* parse_val = val_str;
@@ -112,7 +112,7 @@ unique_ptr<Expression::Impl> Expression::Impl::parse(char const* val_str)
 	return Impl::String_literal::parse(&val_str);
 }
 
-unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
+unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const ** val_str)
 {
 	if (**val_str == '(') {
 		const char* term = *val_str;
@@ -135,21 +135,21 @@ unique_ptr<Expression::Impl> Expression::Impl::parse_term(char const** val_str)
 	}
 }
 
-string Expression::Impl::parse_id(char const** val_str)
+string Expression::Impl::parse_id(char const ** val_str)
 {
 	const char* id = *val_str;
-	
+
 	if (!((*id >= 'a' && *id <= 'z') || (*id >= 'A' && *id <= 'Z') || (*id == '_'))) {
 		throw Value_error{"Invalid first ID character: {}", *id};
 	}
 	++id;
 	size_t id_len = 1;
-	
+
 	while ((*id >= 'a' && *id <= 'z') || (*id >= 'A' && *id <= 'Z') || (*id >= '0' && *id <= '9') || (*id == '_')) {
 		++(id_len);
 		++id;
 	}
-	
+
 	string result{*val_str, id_len};
 	*val_str = id;
 	return result;

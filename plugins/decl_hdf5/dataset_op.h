@@ -29,7 +29,7 @@
 
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
-	#include <mpi.h>
+#include <mpi.h>
 #endif
 
 #include <string>
@@ -45,7 +45,6 @@
 #include "collision_policy.h"
 #include "selection.h"
 
-
 namespace decl_hdf5 {
 
 /** A Dataset_op represents an operation on a dataset: creating it and a read or
@@ -56,47 +55,50 @@ class Dataset_op
 public:
 	/** an  I/O direction (read or write)
 	 */
-	enum Direction { READ, WRITE };
-	
+	enum Direction {
+		READ,
+		WRITE
+	};
+
 private:
 	/// What to do when dataset already exists (default = OVERWRITE)
 	Collision_policy m_collision_policy;
-	
+
 	/// direction of the transfer (read or write)
 	Direction m_direction;
-	
+
 	/// the name of the dataset where to transfer
 	PDI::Expression m_dataset;
-	
+
 	/// the name of the value to transfer
 	std::string m_value;
-	
+
 	/// a condition to check before doing the transfer
 	PDI::Expression m_when;
-	
+
 #ifdef H5_HAVE_PARALLEL
 	/// a communicator for parallel HDF5 (only for data triggered)
 	PDI::Expression m_communicator;
 #endif
-	
+
 	/// a selection in-memory
 	Selection m_memory_selection;
-	
+
 	/// a selection in-dataset
 	Selection m_dataset_selection;
-	
+
 	/// chunking property set from yaml
 	PDI::Expression m_chunking;
-	
+
 	/// deflate property set from yaml
 	PDI::Expression m_deflate;
-	
+
 	/// fletcher property set from yaml
 	PDI::Expression m_fletcher;
-	
+
 	/// attributes of this dataset
 	std::vector<Attribute_op> m_attributes;
-	
+
 	/** Creates dataset plist to pass to H5D_create
 	 *
 	 * \param ctx the context in which to operate
@@ -106,7 +108,7 @@ private:
 	 * \return dataset creation plist hid_t
 	 */
 	hid_t dataset_creation_plist(PDI::Context& ctx, const PDI::Datatype* dataset_type, const std::string& dataset_name);
-	
+
 public:
 	/** Builds a Dataset_op from its yaml config
 	 *
@@ -122,69 +124,60 @@ public:
 	 * \param default_when the default "when" clause as read from the file level (optional)
 	 * \param tree the configuration tree
 	 */
-	Dataset_op(Direction dir, std::string name, PDI::Expression default_when, PC_tree_t tree, Collision_policy collision_policy = Collision_policy::WRITE_INTO);
-	
+	Dataset_op(
+		Direction dir,
+		std::string name,
+		PDI::Expression default_when,
+		PC_tree_t tree,
+		Collision_policy collision_policy = Collision_policy::WRITE_INTO
+	);
+
 	/** Accesses the direction of the transfer (read or write).
 	 *
 	 * \return The direction of the transfer (read or write)
 	 */
-	Direction direction()
-	{
-		return m_direction;
-	}
-	
+	Direction direction() { return m_direction; }
+
 	/** Accesses the name of the value to transfer.
 	 *
 	 * \return The name of the value to transfer
 	 */
-	std::string value() const
-	{
-		return m_value;
-	}
-	
+	std::string value() const { return m_value; }
+
 	/** Accesses the name of the dataset where to transfer.
 	 *
 	 * \return The name of the dataset where to transfer
 	 */
-	const PDI::Expression& dataset() const
-	{
-		return m_dataset;
-	}
-	
+	const PDI::Expression& dataset() const { return m_dataset; }
+
 	/** Accesses the condition to check before doing the transfer.
 	 *
 	 * \return The condition to check before doing the transfer
 	 */
-	const PDI::Expression& when() const
-	{
-		return m_when;
-	}
-	
+	const PDI::Expression& when() const { return m_when; }
+
 #ifdef H5_HAVE_PARALLEL
 	/** Accesses the communicator for parallel HDF5 (only for data triggered).
 	 *
 	 * \return The communicator for parallel HDF5 (only for data triggered)
 	 */
-	const PDI::Expression& communicator() const
-	{
-		return m_communicator;
-	}
+	const PDI::Expression& communicator() const { return m_communicator; }
 #endif
-	
+
 	/** Set deflate dataset level
 	 *
 	 * \param ctx the context in which to operate
 	 * \param level level of the deflate
 	 */
 	void deflate(PDI::Context& ctx, PDI::Expression level);
-	
+
 	/** Set fletcher dataset
 	 *
 	 * \param ctx the context in which to operate
 	 * \param value turn on fletcher if true, turn off if false
 	 */
 	void fletcher(PDI::Context& ctx, PDI::Expression value);
-	
+
 	/** Executes the requested operation.
 	 *
 	 * \param ctx the context in which to operate
@@ -194,14 +187,13 @@ public:
 	 * \param dsets the type of the explicitly typed datasets
 	 */
 	void execute(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::unordered_map<std::string, PDI::Datatype_template_sptr>& dsets);
-	
+
 private:
 	void do_read(PDI::Context& ctx, hid_t h5_file, hid_t read_lst);
-	
+
 	void do_write(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::unordered_map<std::string, PDI::Datatype_template_sptr>& dsets);
 };
 
 } // namespace decl_hdf5
 
 #endif // DECL_HDF5_DATASET_OP_H_
-

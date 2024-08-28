@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <mpi.h>
 #include <assert.h>
 #include <hdf5.h>
-#include <mpi.h>
 #include <unistd.h>
 
 #define FILE "mpi_test.h5"
@@ -46,7 +46,7 @@ int main()
 	if (file_id < 0) {
 		return 1;
 	}
-		
+
 	int dset_data[5][5];
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
@@ -59,7 +59,7 @@ int main()
 	if (dataspace_id < 0) {
 		return 1;
 	}
-		
+
 	hid_t dataset_id = H5Dopen2(file_id, "array_data", H5P_DEFAULT);
 	if (dataset_id < 0) {
 		return 1;
@@ -91,7 +91,7 @@ int main()
 	if (status < 0) {
 		return 1;
 	}
-	
+
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
 			if (dset_data[i][j] != i * 10 + j + (5 * mpi_rank)) {
@@ -100,7 +100,7 @@ int main()
 			}
 		}
 	}
-	
+
 	status = H5Dclose(dataset_id);
 	if (status < 0) {
 		return 1;
@@ -134,7 +134,7 @@ int main()
 		return 1;
 	}
 	MPI_Finalize();
-	
+
 	printf("[Rank: %d] HDF5 mpi_read_test finalized\n", mpi_rank);
 	return 0;
 }

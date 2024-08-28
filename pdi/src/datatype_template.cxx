@@ -72,25 +72,25 @@ class Scalar_template: public Datatype_template
 
 public:
 	Scalar_template(Scalar_kind kind, const Expression& size, const Expression& align, PC_tree_t datatype_tree)
-	    : Datatype_template(datatype_tree)
-	    , m_kind{kind}
-	    , m_size{size}
-	    , m_align{align}
+		: Datatype_template(datatype_tree)
+		, m_kind{kind}
+		, m_size{size}
+		, m_align{align}
 	{}
 
 	Scalar_template(Scalar_kind kind, const Expression& size, PC_tree_t datatype_tree)
-	    : Scalar_template(kind, size, size, datatype_tree)
+		: Scalar_template(kind, size, size, datatype_tree)
 	{}
 
 	Scalar_template(Scalar_kind kind, const Expression& size, const Expression& align, const Attributes_map& attributes = {})
-	    : Datatype_template(attributes)
-	    , m_kind{kind}
-	    , m_size{size}
-	    , m_align{align}
+		: Datatype_template(attributes)
+		, m_kind{kind}
+		, m_size{size}
+		, m_align{align}
 	{}
 
 	Scalar_template(Scalar_kind kind, const Expression& size, const Attributes_map& attributes = {})
-	    : Scalar_template(kind, size, size, attributes)
+		: Scalar_template(kind, size, size, attributes)
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -115,29 +115,29 @@ class Array_template: public Datatype_template
 
 public:
 	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize, PC_tree_t datatype_tree)
-	    : Datatype_template(datatype_tree)
-	    , m_subtype{move(subtype)}
-	    , m_size{move(size)}
-	    , m_start{move(start)}
-	    , m_subsize{move(subsize)}
+		: Datatype_template(datatype_tree)
+		, m_subtype{move(subtype)}
+		, m_size{move(size)}
+		, m_start{move(start)}
+		, m_subsize{move(subsize)}
 	{}
 
 	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize, const Attributes_map& attributes = {})
-	    : Datatype_template(attributes)
-	    , m_subtype{move(subtype)}
-	    , m_size{move(size)}
-	    , m_start{move(start)}
-	    , m_subsize{move(subsize)}
+		: Datatype_template(attributes)
+		, m_subtype{move(subtype)}
+		, m_size{move(size)}
+		, m_start{move(start)}
+		, m_subsize{move(subsize)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
 	{
 		return Array_datatype::make(
-		    m_subtype->evaluate(ctx),
-		    static_cast<size_t>(m_size.to_long(ctx)),
-		    static_cast<size_t>(m_start.to_long(ctx)),
-		    static_cast<size_t>(m_subsize.to_long(ctx)),
-		    m_attributes
+			m_subtype->evaluate(ctx),
+			static_cast<size_t>(m_size.to_long(ctx)),
+			static_cast<size_t>(m_start.to_long(ctx)),
+			static_cast<size_t>(m_subsize.to_long(ctx)),
+			m_attributes
 		);
 	}
 };
@@ -155,15 +155,15 @@ public:
 		string m_name;
 
 		Member(Expression disp, Datatype_template_sptr type, string name)
-		    : m_displacement{move(disp)}
-		    , m_type{move(type)}
-		    , m_name{move(name)}
+			: m_displacement{move(disp)}
+			, m_type{move(type)}
+			, m_name{move(name)}
 		{}
 
 		Member(const Member& o)
-		    : m_displacement{o.m_displacement}
-		    , m_type{o.m_type}
-		    , m_name{o.m_name}
+			: m_displacement{o.m_displacement}
+			, m_type{o.m_type}
+			, m_name{o.m_name}
 		{}
 	};
 
@@ -176,15 +176,15 @@ private:
 
 public:
 	Record_template(vector<Member>&& members, Expression&& size, PC_tree_t datatype_tree)
-	    : Datatype_template(datatype_tree)
-	    , m_members{move(members)}
-	    , m_buffersize{move(size)}
+		: Datatype_template(datatype_tree)
+		, m_members{move(members)}
+		, m_buffersize{move(size)}
 	{}
 
 	Record_template(vector<Member>&& members, Expression&& size, const Attributes_map& attributes = {})
-	    : Datatype_template(attributes)
-	    , m_members{move(members)}
-	    , m_buffersize{move(size)}
+		: Datatype_template(attributes)
+		, m_members{move(members)}
+		, m_buffersize{move(size)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -206,13 +206,13 @@ public:
 		string m_name;
 
 		Member(Datatype_template_sptr type, string name)
-		    : m_type{move(type)}
-		    , m_name{move(name)}
+			: m_type{move(type)}
+			, m_name{move(name)}
 		{}
 
 		Member(const Member& o)
-		    : m_type{o.m_type}
-		    , m_name{o.m_name}
+			: m_type{o.m_type}
+			, m_name{o.m_name}
 		{}
 	};
 
@@ -221,13 +221,13 @@ private:
 
 public:
 	Struct_template(vector<Member>&& members, PC_tree_t datatype_tree)
-	    : Datatype_template(datatype_tree)
-	    , m_members(std::move(members))
+		: Datatype_template(datatype_tree)
+		, m_members(std::move(members))
 	{}
 
 	Struct_template(vector<Member>&& members, const Attributes_map& attributes = {})
-	    : Datatype_template(attributes)
-	    , m_members(std::move(members))
+		: Datatype_template(attributes)
+		, m_members(std::move(members))
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -259,13 +259,13 @@ class Pointer_template: public Datatype_template
 
 public:
 	Pointer_template(Datatype_template_sptr subtype, PC_tree_t datatype_tree)
-	    : Datatype_template(datatype_tree)
-	    , m_subtype{std::move(subtype)}
+		: Datatype_template(datatype_tree)
+		, m_subtype{std::move(subtype)}
 	{}
 
 	Pointer_template(Datatype_template_sptr subtype, const Attributes_map& attributes = {})
-	    : Datatype_template(attributes)
-	    , m_subtype{std::move(subtype)}
+		: Datatype_template(attributes)
+		, m_subtype{std::move(subtype)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override { return Pointer_datatype::make(m_subtype->evaluate(ctx), m_attributes); }
@@ -286,7 +286,7 @@ public:
 		 * \param[in] type type of the element
 		 */
 		Element(Datatype_template_sptr type)
-		    : m_type{move(type)}
+			: m_type{move(type)}
 		{}
 
 		/** Creates new Element template with only type defined
@@ -295,8 +295,8 @@ public:
 		 * \param[in] type type of the element
 		 */
 		Element(Expression disp, Datatype_template_sptr type)
-		    : m_displacement{move(disp)}
-		    , m_type{move(type)}
+			: m_displacement{move(disp)}
+			, m_type{move(type)}
 		{}
 
 		/** Creates a copy of an element template
@@ -304,8 +304,8 @@ public:
 		 * \param[in] o an element to copy
 		 */
 		Element(const Element& o)
-		    : m_displacement{o.m_displacement}
-		    , m_type{o.m_type}
+			: m_displacement{o.m_displacement}
+			, m_type{o.m_type}
 		{}
 	};
 
@@ -318,20 +318,20 @@ private:
 
 public:
 	Tuple_template(vector<Element>&& elements, PC_tree_t datatype_tree)
-	    : Datatype_template(datatype_tree)
-	    , m_elements{move(elements)}
+		: Datatype_template(datatype_tree)
+		, m_elements{move(elements)}
 	{}
 
 	Tuple_template(vector<Element>&& elements, Expression&& size, PC_tree_t datatype_tree)
-	    : Datatype_template(datatype_tree)
-	    , m_elements{move(elements)}
-	    , m_buffersize{move(size)}
+		: Datatype_template(datatype_tree)
+		, m_elements{move(elements)}
+		, m_buffersize{move(size)}
 	{}
 
 	Tuple_template(vector<Element>&& elements, Expression&& size, const Attributes_map& attributes = {})
-	    : Datatype_template(attributes)
-	    , m_elements{move(elements)}
-	    , m_buffersize{move(size)}
+		: Datatype_template(attributes)
+		, m_elements{move(elements)}
+		, m_buffersize{move(size)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -498,7 +498,8 @@ Datatype_template_sptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
 	}
 	bool tuple_buffersize_defined = static_cast<bool>(tuple_buffersize);
 	return unique_ptr<Tuple_template>{
-	    new Tuple_template{get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), move(tuple_buffersize), node}};
+		new Tuple_template{get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), move(tuple_buffersize), node}
+	};
 }
 
 vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_node)
@@ -558,7 +559,7 @@ Datatype_template_sptr to_pointer_datatype_template(Context& ctx, PC_tree_t node
 } // namespace
 
 Datatype_template::Datatype_template(const Attributes_map& attributes)
-    : m_attributes{attributes}
+	: m_attributes{attributes}
 {}
 
 Datatype_template::Datatype_template(PC_tree_t datatype_tree)
@@ -634,79 +635,81 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 	// C basic types
 
 	static const std::unordered_map<string, size_t> signed_types = {
-	    {"int", sizeof(int)},
-	    {"short", sizeof(short)},
-	    {"long", sizeof(long)},
-	    {"long long", sizeof(long long)},
-	    {"intmax", sizeof(intmax_t)},
-	    {"intmax_t", sizeof(intmax_t)},
-	    {"int8", 1L},
-	    {"int16", 2L},
-	    {"int32", 4L},
-	    {"int64", 8L},
-	    {"int8_t", 1L},
-	    {"int16_t", 2L},
-	    {"int32_t", 4L},
-	    {"int64_t", 8L},
-	    {"int_least8", sizeof(int_least8_t)},
-	    {"int_least16", sizeof(int_least16_t)},
-	    {"int_least32", sizeof(int_least32_t)},
-	    {"int_least64", sizeof(int_least64_t)},
-	    {"int_least8_t", sizeof(int_least8_t)},
-	    {"int_least16_t", sizeof(int_least16_t)},
-	    {"int_least32_t", sizeof(int_least32_t)},
-	    {"int_least64_t", sizeof(int_least64_t)},
-	    {"int_fast8", sizeof(int_fast8_t)},
-	    {"int_fast16", sizeof(int_fast16_t)},
-	    {"int_fast32", sizeof(int_fast32_t)},
-	    {"int_fast64", sizeof(int_fast64_t)},
-	    {"int_fast8_t", sizeof(int_fast8_t)},
-	    {"int_fast16_t", sizeof(int_fast16_t)},
-	    {"int_fast32_t", sizeof(int_fast32_t)},
-	    {"int_fast64_t", sizeof(int_fast64_t)},
-	    {"intptr", sizeof(intptr_t)},
-	    {"intptr_t", sizeof(intptr_t)},
-	    {"ptrdiff", sizeof(ptrdiff_t)},
-	    {"ptrdiff_t", sizeof(ptrdiff_t)}};
+		{"int", sizeof(int)},
+		{"short", sizeof(short)},
+		{"long", sizeof(long)},
+		{"long long", sizeof(long long)},
+		{"intmax", sizeof(intmax_t)},
+		{"intmax_t", sizeof(intmax_t)},
+		{"int8", 1L},
+		{"int16", 2L},
+		{"int32", 4L},
+		{"int64", 8L},
+		{"int8_t", 1L},
+		{"int16_t", 2L},
+		{"int32_t", 4L},
+		{"int64_t", 8L},
+		{"int_least8", sizeof(int_least8_t)},
+		{"int_least16", sizeof(int_least16_t)},
+		{"int_least32", sizeof(int_least32_t)},
+		{"int_least64", sizeof(int_least64_t)},
+		{"int_least8_t", sizeof(int_least8_t)},
+		{"int_least16_t", sizeof(int_least16_t)},
+		{"int_least32_t", sizeof(int_least32_t)},
+		{"int_least64_t", sizeof(int_least64_t)},
+		{"int_fast8", sizeof(int_fast8_t)},
+		{"int_fast16", sizeof(int_fast16_t)},
+		{"int_fast32", sizeof(int_fast32_t)},
+		{"int_fast64", sizeof(int_fast64_t)},
+		{"int_fast8_t", sizeof(int_fast8_t)},
+		{"int_fast16_t", sizeof(int_fast16_t)},
+		{"int_fast32_t", sizeof(int_fast32_t)},
+		{"int_fast64_t", sizeof(int_fast64_t)},
+		{"intptr", sizeof(intptr_t)},
+		{"intptr_t", sizeof(intptr_t)},
+		{"ptrdiff", sizeof(ptrdiff_t)},
+		{"ptrdiff_t", sizeof(ptrdiff_t)}
+	};
 
 	for (auto& pair: signed_types) {
 		add_signed(ctx, pair.first, pair.second);
 	}
 
 	static const std::unordered_map<string, size_t> unsigned_types = {
-	    {"char", sizeof(char)},
-	    {"unsigned short", sizeof(unsigned short)},
-	    {"unsigned long", sizeof(unsigned long)},
-	    {"unsigned long long", sizeof(unsigned long long)},
-	    {"uintmax", sizeof(uintmax_t)},
-	    {"uintmax_t", sizeof(uintmax_t)},
-	    {"uint8", 1L},
-	    {"uint16", 2L},
-	    {"uint32", 4L},
-	    {"uint64", 8L},
-	    {"uint8_t", 1L},
-	    {"uint16_t", 2L},
-	    {"uint32_t", 4L},
-	    {"uint64_t", 8L},
-	    {"uint_least8", sizeof(uint_least8_t)},
-	    {"uint_least16", sizeof(uint_least16_t)},
-	    {"uint_least32", sizeof(uint_least32_t)},
-	    {"uint_least64", sizeof(uint_least64_t)},
-	    {"uint_least8_t", sizeof(uint_least8_t)},
-	    {"uint_least16_t", sizeof(uint_least16_t)},
-	    {"uint_least32_t", sizeof(uint_least32_t)},
-	    {"uint_least64_t", sizeof(uint_least64_t)},
-	    {"uint_fast8", sizeof(uint_fast8_t)},
-	    {"uint_fast16", sizeof(uint_fast16_t)},
-	    {"uint_fast32", sizeof(uint_fast32_t)},
-	    {"uint_fast64", sizeof(uint_fast64_t)},
-	    {"uint_fast8_t", sizeof(uint_fast8_t)},
-	    {"uint_fast16_t", sizeof(uint_fast16_t)},
-	    {"uint_fast32_t", sizeof(uint_fast32_t)},
-	    {"uint_fast64_t", sizeof(uint_fast64_t)},
-	    {"uintptr", sizeof(uintptr_t)},
-	    {"uintptr_t", sizeof(uintptr_t)},
-	    {"size_t", sizeof(size_t)}};
+		{"char", sizeof(char)},
+		{"unsigned short", sizeof(unsigned short)},
+		{"unsigned long", sizeof(unsigned long)},
+		{"unsigned long long", sizeof(unsigned long long)},
+		{"uintmax", sizeof(uintmax_t)},
+		{"uintmax_t", sizeof(uintmax_t)},
+		{"uint8", 1L},
+		{"uint16", 2L},
+		{"uint32", 4L},
+		{"uint64", 8L},
+		{"uint8_t", 1L},
+		{"uint16_t", 2L},
+		{"uint32_t", 4L},
+		{"uint64_t", 8L},
+		{"uint_least8", sizeof(uint_least8_t)},
+		{"uint_least16", sizeof(uint_least16_t)},
+		{"uint_least32", sizeof(uint_least32_t)},
+		{"uint_least64", sizeof(uint_least64_t)},
+		{"uint_least8_t", sizeof(uint_least8_t)},
+		{"uint_least16_t", sizeof(uint_least16_t)},
+		{"uint_least32_t", sizeof(uint_least32_t)},
+		{"uint_least64_t", sizeof(uint_least64_t)},
+		{"uint_fast8", sizeof(uint_fast8_t)},
+		{"uint_fast16", sizeof(uint_fast16_t)},
+		{"uint_fast32", sizeof(uint_fast32_t)},
+		{"uint_fast64", sizeof(uint_fast64_t)},
+		{"uint_fast8_t", sizeof(uint_fast8_t)},
+		{"uint_fast16_t", sizeof(uint_fast16_t)},
+		{"uint_fast32_t", sizeof(uint_fast32_t)},
+		{"uint_fast64_t", sizeof(uint_fast64_t)},
+		{"uintptr", sizeof(uintptr_t)},
+		{"uintptr_t", sizeof(uintptr_t)},
+		{"size_t", sizeof(size_t)}
+	};
 
 	for (auto& pair: unsigned_types) {
 		add_unsigned(ctx, pair.first, pair.second);

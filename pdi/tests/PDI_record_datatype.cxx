@@ -35,18 +35,23 @@ using namespace PDI;
 using namespace std;
 
 template <class T>
-struct RecordDatatypeTest : public ::testing::Test {
-	RecordDatatypeTest() : test_structure{new T} {}
+struct RecordDatatypeTest: public ::testing::Test {
+	RecordDatatypeTest()
+		: test_structure{new T}
+	{}
+
 	virtual ~RecordDatatypeTest() = default;
 	unique_ptr<T> test_structure;
 };
 
-typedef ::testing::Types<AlignedScalarsTest,
-        NotAlignedScalarsTest,
-        DenseArrayScalarsTest,
-        SparseArrayScalarsTest,
-        DenseRecordsInRecordTest,
-        SparseRecordsInRecordTest> TypesForRecord;
+typedef ::testing::Types<
+	AlignedScalarsTest,
+	NotAlignedScalarsTest,
+	DenseArrayScalarsTest,
+	SparseArrayScalarsTest,
+	DenseRecordsInRecordTest,
+	SparseRecordsInRecordTest>
+	TypesForRecord;
 TYPED_TEST_CASE(RecordDatatypeTest, TypesForRecord);
 
 /*
@@ -62,7 +67,6 @@ TYPED_TEST(RecordDatatypeTest, check_dense)
 	ASSERT_EQ(this->test_structure->dense(), this->test_structure->test_record()->dense());
 }
 
-
 /*
  * Name:                RecordDatatypeTest/<structname>.check_buffersize
  *
@@ -75,7 +79,6 @@ TYPED_TEST(RecordDatatypeTest, check_buffersize)
 {
 	ASSERT_EQ(this->test_structure->buffersize(), this->test_structure->test_record()->buffersize());
 }
-
 
 /*
  * Name:                RecordDatatypeTest/<structname>.check_datasize
@@ -113,7 +116,7 @@ TYPED_TEST(RecordDatatypeTest, check_alignment)
  */
 TYPED_TEST(RecordDatatypeTest, check_densify)
 {
-	Datatype_sptr newRecord {this->test_structure->test_record()->densify()};
+	Datatype_sptr newRecord{this->test_structure->test_record()->densify()};
 	ASSERT_EQ(this->test_structure->datasize(), newRecord->datasize());
 	ASSERT_EQ(this->test_structure->buffersize_after_densify(), newRecord->buffersize());
 }
@@ -122,20 +125,21 @@ TYPED_TEST(RecordDatatypeTest, check_densify)
  * Struct prepared for RecordDeepCopyTest.
  *
  */
-struct RecordDeepCopyTest : public ::testing::Test {
-
+struct RecordDeepCopyTest: public ::testing::Test {
 	struct Dense_record_t {
 		int my_int_array[9];
 		char my_char;
 		long my_long_array[10];
 	};
+
 	struct Sparse_record_t {
 		int my_int_array[25];
 		char my_char;
 		long my_long_array[100];
 	};
+
 	int copied_scalar;
-	
+
 	RecordDeepCopyTest()
 	{
 		for (int i = 0; i < 9; i++) {
@@ -145,7 +149,7 @@ struct RecordDeepCopyTest : public ::testing::Test {
 		for (int i = 0; i < 10; i++) {
 			dense_record.my_long_array[i] = i + 10;
 		}
-		
+
 		for (int i = 0; i < 25; i++) {
 			sparse_record.my_int_array[i] = 0;
 		}
@@ -154,53 +158,26 @@ struct RecordDeepCopyTest : public ::testing::Test {
 			sparse_record.my_long_array[i] = 0;
 		}
 	}
-	
+
 	Dense_record_t dense_record;
 	Sparse_record_t sparse_record;
-	
-	Datatype_sptr datatype {
-		Record_datatype::make(
-			vector<Record_datatype::Member> {
-				Record_datatype::Member{
-					0,
-					Array_datatype::make(
-						Array_datatype::make(
-							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)),
-							5,
-							1,
-							3
-						),
-						5,
-						1,
-						3
-					),
-					"my_int_array"
-				},
-				Record_datatype::Member{
-					100,
-					Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)),
-					"my_char"
-				},
-				Record_datatype::Member{
-					104,
-					Array_datatype::make(
-						Array_datatype::make(
-							Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)),
-							10,
-							2,
-							5
-						),
-						10,
-						5,
-						2
-					),
-					"my_long_array"
-				}
+
+	Datatype_sptr datatype{Record_datatype::make(
+		vector<Record_datatype::Member>{
+			Record_datatype::Member{
+				0,
+				Array_datatype::make(Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 5, 1, 3), 5, 1, 3),
+				"my_int_array"
 			},
-			908
-		)
-	};
-	
+			Record_datatype::Member{100, Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char)), "my_char"},
+			Record_datatype::Member{
+				104,
+				Array_datatype::make(Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long)), 10, 2, 5), 10, 5, 2),
+				"my_long_array"
+			}
+		},
+		908
+	)};
 };
 
 /*
@@ -216,13 +193,13 @@ TEST_F(RecordDeepCopyTest, dense_to_sparse)
 	this->datatype->data_from_dense_copy(&this->sparse_record, &this->dense_record);
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 4; j++) {
-			ASSERT_EQ(this->dense_record.my_int_array[3*(i-1) + j-1], this->sparse_record.my_int_array[i*5 + j]);
+			ASSERT_EQ(this->dense_record.my_int_array[3 * (i - 1) + j - 1], this->sparse_record.my_int_array[i * 5 + j]);
 		}
 	}
 	ASSERT_EQ(this->dense_record.my_char, this->sparse_record.my_char);
 	for (int i = 5; i < 7; i++) {
 		for (int j = 2; j < 7; j++) {
-			ASSERT_EQ(this->dense_record.my_long_array[5*(i-5) + j-2], this->sparse_record.my_long_array[i*10 + j]);
+			ASSERT_EQ(this->dense_record.my_long_array[5 * (i - 5) + j - 2], this->sparse_record.my_long_array[i * 10 + j]);
 		}
 	}
 }
@@ -236,42 +213,41 @@ TEST_F(RecordDeepCopyTest, dense_to_sparse)
  */
 TEST(RecordAccessSequenceTest, invalid_subtype_access_sequence_check)
 {
-
 	struct Simple_record_t {
 		int m_array[5];
 		char m_char;
 		long m_long;
 	};
-	
+
 	Simple_record_t simple_record;
-	
+
 	for (int i = 0; i < 5; i++) {
 		simple_record.m_array[i] = i;
 	}
-	
+
 	simple_record.m_char = 5;
 	simple_record.m_long = 987654;
 	std::vector<Record_datatype::Member> members;
 	auto&& array_data = Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 5);
 	auto&& char_data = Scalar_datatype::make(Scalar_kind::UNSIGNED, sizeof(char));
 	auto&& long_data = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(long));
-	
+
 	members.emplace_back(offsetof(Simple_record_t, m_array), array_data, "array");
 	members.emplace_back(offsetof(Simple_record_t, m_char), char_data, "char");
 	members.emplace_back(offsetof(Simple_record_t, m_long), long_data, "long");
-	
-	auto&& record_type = Record_datatype::make(std::move(members),sizeof(Simple_record_t));
-	
+
+	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Simple_record_t));
+
 	std::pair<void*, Datatype_sptr> data = record_type->member("array", &simple_record);
 	ASSERT_EQ(*array_data, *data.second);
-	for (int i = 0; i < 5 ; i++) {
+	for (int i = 0; i < 5; i++) {
 		ASSERT_EQ(simple_record.m_array[i], static_cast<int*>(data.first)[i]);
 	}
-	
+
 	data = record_type->member("char", &simple_record);
 	ASSERT_EQ(*char_data, *data.second);
 	ASSERT_EQ(&simple_record.m_char, data.first);
-	
+
 	data = record_type->member("long", &simple_record);
 	ASSERT_EQ(*long_data, *data.second);
 	ASSERT_EQ(&simple_record.m_long, data.first);
@@ -289,33 +265,33 @@ TEST(RecordAccessSequenceTest, subtype_and_value_check_for_record_of_arrays_with
 	struct Simple_record_t {
 		int* m_array[10];
 	};
-	
+
 	Simple_record_t simple_record;
-	
+
 	for (int i = 0; i < 10; i++) {
 		simple_record.m_array[i] = new int;
 		*simple_record.m_array[i] = i;
 	}
-	
+
 	std::vector<Record_datatype::Member> members;
 	auto&& scalar_type = Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int));
 	auto&& pointer_type = Pointer_datatype::make(scalar_type);
 	auto&& array_type = Array_datatype::make(pointer_type, 10);
 	members.emplace_back(offsetof(Simple_record_t, m_array), array_type, "array");
 	auto&& record_type = Record_datatype::make(std::move(members), sizeof(Simple_record_t));
-		
+
 	std::pair<void*, Datatype_sptr> data = record_type->member("array", &simple_record);
 	ASSERT_EQ(simple_record.m_array, data.first);
 	ASSERT_EQ(*array_type, *data.second);
-	for (int i = 0; i < 10 ; i++) {
+	for (int i = 0; i < 10; i++) {
 		ASSERT_EQ(*simple_record.m_array[i], *(static_cast<int**>(data.first)[i]));
 	}
-	
+
 	data = data.second->index(3, data.first);
 	data = data.second->dereference(data.first);
 	ASSERT_EQ(3, *static_cast<int*>(data.first));
 	ASSERT_EQ(*scalar_type, *data.second);
-	
+
 	for (int i = 0; i < 10; i++) {
 		delete simple_record.m_array[i];
 	}

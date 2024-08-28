@@ -35,17 +35,17 @@ using std::string;
 
 namespace decl_hdf5 {
 
-Collision_policy operator|(Collision_policy a, Collision_policy b)
+Collision_policy operator| (Collision_policy a, Collision_policy b)
 {
 	return static_cast<Collision_policy>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
 }
 
-bool operator&(Collision_policy a, Collision_policy b)
+bool operator& (Collision_policy a, Collision_policy b)
 {
 	return static_cast<bool>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
 }
 
-ostream& operator<<(ostream& os, Collision_policy policy)
+ostream& operator<< (ostream& os, Collision_policy policy)
 {
 	if (policy & Collision_policy::WARNING) {
 		os << "WARNING";
@@ -67,11 +67,7 @@ ostream& operator<<(ostream& os, Collision_policy policy)
 
 Collision_policy to_collision_policy(string collision_policy)
 {
-	std::transform(collision_policy.begin(), collision_policy.end(), collision_policy.begin(),
-	[](unsigned char c) {
-		return std::toupper(c);
-	}
-	);
+	std::transform(collision_policy.begin(), collision_policy.end(), collision_policy.begin(), [](unsigned char c) { return std::toupper(c); });
 	if (collision_policy == "SKIP") {
 		return Collision_policy::SKIP;
 	} else if (collision_policy == "SKIP_AND_WARN") {

@@ -37,20 +37,19 @@
 namespace set_value {
 
 /// Operation that releases data when triggered
-class Release_operation : public Operation
+class Release_operation: public Operation
 {
-    /// data to release when operation triggered
-    std::vector<std::string> m_data_to_release;
+	/// data to release when operation triggered
+	std::vector<std::string> m_data_to_release;
 
 public:
-
-    /** Creates release operation
+	/** Creates release operation
      * \param[in] ctx context of the operation
      * \param[in] release_value_node yaml config tree of operation
      */
-    Release_operation(PDI::Context& ctx, PC_tree_t release_value_node);
-    
-    void execute() override;
+	Release_operation(PDI::Context& ctx, PC_tree_t release_value_node);
+
+	void execute() override;
 };
 
 } // namespace set_value

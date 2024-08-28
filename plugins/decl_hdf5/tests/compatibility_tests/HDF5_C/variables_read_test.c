@@ -43,7 +43,7 @@ void read_dataset(hid_t file_id, const char* name, hid_t type, void* data)
 	if (status < 0) {
 		exit(1);
 	}
-	
+
 	status = H5Sclose(dataspace_id);
 	if (status < 0) {
 		exit(1);
@@ -69,7 +69,7 @@ int main()
 	read_dataset(file_id, "/float_data", H5T_NATIVE_FLOAT, &float_data);
 	char char_data = 0;
 	read_dataset(file_id, "/char_data", H5T_NATIVE_CHAR, &char_data);
-	
+
 	if (int_data != 15) {
 		fprintf(stderr, "%d != %d\n ", int_data, 15);
 		exit(1);
@@ -86,12 +86,12 @@ int main()
 		fprintf(stderr, "%c != %c\n ", char_data, 'z');
 		exit(1);
 	}
-	
+
 	herr_t status = H5Fclose(file_id);
 	if (status < 0) {
 		exit(1);
 	}
-	
+
 	printf("HDF5_C variables_read_test finalized\n");
 	return 0;
 }

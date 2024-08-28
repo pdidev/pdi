@@ -34,19 +34,19 @@
 
 namespace set_value {
 
-class Set_operation : public Operation
+class Set_operation: public Operation
 {
-    /// map of data to set (change the values under the Ref)
-    std::vector<std::pair<std::string, PC_tree_t>> m_data_to_set;
+	/// map of data to set (change the values under the Ref)
+	std::vector<std::pair<std::string, PC_tree_t>> m_data_to_set;
 
 public:
-    /** Creates set operation
+	/** Creates set operation
      * \param[in] ctx context of the operation
      * \param[in] list_of_values yaml config tree of operation
      */
-    Set_operation(PDI::Context& ctx, PC_tree_t list_of_values);
-    
-    void execute() override;
+	Set_operation(PDI::Context& ctx, PC_tree_t list_of_values);
+
+	void execute() override;
 };
 
 } // namespace set_value

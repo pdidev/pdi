@@ -40,7 +40,7 @@ namespace PDI {
  * \param force_const whether the object should be const even if the ref can be write accessed
  * \return python object wrapper for the PDI reference
  */
-pybind11::object PDI_EXPORT to_python(Ref r, bool force_const=false);
+pybind11::object PDI_EXPORT to_python(Ref r, bool force_const = false);
 
 /** Function takes python numpy array and converts it into PDI datatype
  *

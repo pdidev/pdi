@@ -29,18 +29,16 @@
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
 
-
 namespace {
 
 using PDI::Context;
-using PDI::Ref;
 using PDI::Plugin;
+using PDI::Ref;
 using std::string;
 
 struct trace_plugin: Plugin {
-
-	trace_plugin(Context& ctx, PC_tree_t config):
-		Plugin {ctx}
+	trace_plugin(Context& ctx, PC_tree_t config)
+		: Plugin{ctx}
 	{
 		ctx.callbacks().add_data_callback([this](const string& name, Ref ref) {
 			this->context().logger().info("=>>   data becoming available in the store: {}", name);
@@ -53,23 +51,17 @@ struct trace_plugin: Plugin {
 		});
 		context().logger().info("Welcome!");
 	}
-	
-	~trace_plugin()
-	{
-		context().logger().info("Goodbye!");
-	}
-	
+
+	~trace_plugin() { context().logger().info("Goodbye!"); }
+
 	/** Pretty name for the plugin that will be shown in the logger
 	 *
 	 * \return pretty name of the plugin
 	 */
-	static string pretty_name()
-	{
-		return "Trace";
-	}
-	
+	static string pretty_name() { return "Trace"; }
+
 }; // struct trace_plugin
 
-} // namespace <anonymous>
+} // namespace
 
 PDI_PLUGIN(trace)

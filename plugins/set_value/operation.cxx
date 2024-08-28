@@ -28,8 +28,8 @@
 
 namespace set_value {
 
-Operation::Operation(PDI::Context& ctx):
-    m_ctx{ctx}
+Operation::Operation(PDI::Context& ctx)
+	: m_ctx{ctx}
 {}
 
 PDI::Context& Operation::context()
@@ -38,4 +38,4 @@ PDI::Context& Operation::context()
 }
 
 
-}  // namespace set_value
+} // namespace set_value

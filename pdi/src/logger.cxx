@@ -124,7 +124,7 @@ void read_log_level(shared_ptr<logger> logger, PC_tree_t logging_tree)
 	}
 
 	const unordered_map<string, level_enum> level_map
-	    = {{"trace", trace}, {"debug", debug}, {"info", info}, {"warn", warn}, {"error", err}, {"off", off}};
+		= {{"trace", trace}, {"debug", debug}, {"info", info}, {"warn", warn}, {"error", err}, {"off", off}};
 	auto level_it = level_map.find(level_str);
 	if (level_it != level_map.end()) {
 		logger->set_level(level_map.find(level_str)->second);
@@ -177,7 +177,7 @@ Logger::Logger(const string& logger_name, PC_tree_t config, level_enum level)
 }
 
 Logger::Logger(Logger& parent_logger, const std::string& logger_name, PC_tree_t config)
-    : Logger(logger_name, config, parent_logger.level())
+	: Logger(logger_name, config, parent_logger.level())
 {
 	m_parent_logger = &parent_logger;
 	parent_logger.m_default_pattern_observers.emplace_back(*this);

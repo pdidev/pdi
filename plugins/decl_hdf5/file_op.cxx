@@ -25,12 +25,12 @@
 
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
-	#include <mpi.h>
+#include <mpi.h>
 #endif
 
 #include <memory>
-#include <utility>
 #include <unordered_map>
+#include <utility>
 
 #include <pdi/context.h>
 #include <pdi/error.h>
@@ -41,18 +41,18 @@
 
 #include "file_op.h"
 
+using PDI::Config_error;
 using PDI::Context;
 using PDI::each;
 using PDI::Error;
-using PDI::Config_error;
 using PDI::Expression;
 using PDI::opt_each;
 using PDI::Ref_r;
 using PDI::Ref_w;
 using PDI::System_error;
 using PDI::to_string;
-using std::move;
 using std::function;
+using std::move;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -63,60 +63,58 @@ namespace decl_hdf5 {
 vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 {
 	// pass 0: mandatory parameters
-	
+
 	File_op template_op{to_string(PC_get(tree, ".file"))};
-	
-	
+
+
 	// pass 1: file-level optional values
 	Expression deflate;
 	Expression fletcher;
 	Expression default_when = 1L;
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		string key = to_string(key_tree);
-		if ( key == "file" ) {
+		if (key == "file") {
 			// already read in pass 0
-		} else if ( key == "collision_policy" ) {
+		} else if (key == "collision_policy") {
 			template_op.m_collision_policy = to_collision_policy(to_string(value));
-		} else if ( key == "on_event" ) {
-			opt_each(value, [&](PC_tree_t event_tree) {
-				template_op.m_event.emplace_back(to_string(event_tree));
-			});
-		} else if ( key == "when" ) {
+		} else if (key == "on_event") {
+			opt_each(value, [&](PC_tree_t event_tree) { template_op.m_event.emplace_back(to_string(event_tree)); });
+		} else if (key == "when") {
 			default_when = to_string(value);
-		} else if ( key == "communicator" ) {
+		} else if (key == "communicator") {
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
 			throw Config_error {key_tree, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
-		} else if ( key == "datasets" ) {
+		} else if (key == "datasets") {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
 				template_op.m_datasets.emplace(to_string(dset_name), ctx.datatype(dset_type));
 			});
-		} else if ( key == "deflate" ) {
+		} else if (key == "deflate") {
 			deflate = value;
-		} else if ( key == "fletcher" ) {
+		} else if (key == "fletcher") {
 			fletcher = value;
-		} else if ( key == "write" ) {
+		} else if (key == "write") {
 			// will read in pass 2
-		} else if ( key == "read" ) {
+		} else if (key == "read") {
 			// will read in pass 2
-		} else if ( key == "logging" ) {
+		} else if (key == "logging") {
 			// pass
 		} else {
 			throw Config_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
 		}
 	});
-	
-	
+
+
 	// pass 2 read & writes
-	
+
 	vector<Dataset_op> dset_ops;
 	vector<Attribute_op> attr_ops;
 	unordered_map<string, Expression> dset_size_ops;
-	
+
 	PC_tree_t read_tree = PC_get(tree, ".read");
-	if ( !PC_status(PC_get(read_tree, "[0]")) ) { // it's a list of names only
+	if (!PC_status(PC_get(read_tree, "[0]"))) { // it's a list of names only
 		each(read_tree, [&](PC_tree_t tree) {
 			string dset_string = to_string(tree);
 			if (dset_string.find("#") == string::npos) {
@@ -125,7 +123,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 				attr_ops.emplace_back(Attribute_op::READ, tree, default_when);
 			}
 		});
-	} else if ( !PC_status(read_tree) ) { // it's a name:{config...} mapping
+	} else if (!PC_status(read_tree)) { // it's a name:{config...} mapping
 		each(read_tree, [&](PC_tree_t name, PC_tree_t config) {
 			opt_each(config, [&](PC_tree_t value) { // each config is an independant op
 				if (!PC_status(PC_get(value, ".attribute"))) {
@@ -139,7 +137,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		});
 	}
 	PC_tree_t write_tree = PC_get(tree, ".write");
-	if ( !PC_status(PC_get(write_tree, "[0]")) ) { // it's a list of names only
+	if (!PC_status(PC_get(write_tree, "[0]"))) { // it's a list of names only
 		each(write_tree, [&](PC_tree_t tree) {
 			string dset_string = to_string(tree);
 			if (dset_string.find("#") == string::npos) {
@@ -154,7 +152,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 				attr_ops.emplace_back(Attribute_op::WRITE, tree, default_when);
 			}
 		});
-	} else if ( !PC_status(write_tree) ) { // it's a name:{config...} mapping
+	} else if (!PC_status(write_tree)) { // it's a name:{config...} mapping
 		each(write_tree, [&](PC_tree_t name, PC_tree_t config) {
 			if (!PC_status(PC_get(config, ".attribute"))) {
 				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
@@ -173,17 +171,17 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			}
 		});
 	}
-	
-	
+
+
 	// final pass to build the result
-	
+
 	vector<File_op> result;
-	
-	if ( template_op.m_event.empty() ) { // we are in the data triggered case
+
+	if (template_op.m_event.empty()) { // we are in the data triggered case
 		for (auto&& one_dset_op: dset_ops) {
 			File_op one_op = template_op;
 #ifdef H5_HAVE_PARALLEL
-			if ( one_dset_op.communicator() ) {
+			if (one_dset_op.communicator()) {
 				one_op.m_communicator = one_dset_op.communicator();
 			}
 #endif
@@ -204,7 +202,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 		// check the dataset ops don't have specific communicators set
 		for (auto&& one_dset_op: dset_ops) {
-			if ( one_dset_op.communicator() ) {
+			if (one_dset_op.communicator()) {
 				throw Config_error{tree, "Communicator can not be set at the dataset level for event triggered I/O"};
 			}
 		}
@@ -214,29 +212,31 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		template_op.m_dset_size_ops = move(dset_size_ops);
 		result.emplace_back(move(template_op));
 	}
-	
+
 	return result;
 }
 
-File_op::File_op(const File_op& other):
-	m_collision_policy{other.m_collision_policy},
-	m_file{other.m_file},
-	m_event{other.m_event},
+File_op::File_op(const File_op& other)
+	: m_collision_policy{other.m_collision_policy}
+	, m_file{other.m_file}
+	, m_event{other.m_event}
+	,
 #ifdef H5_HAVE_PARALLEL
-	m_communicator {other.m_communicator},
+	m_communicator{other.m_communicator}
+	,
 #endif
-	m_dset_ops {other.m_dset_ops},
-	m_attr_ops {other.m_attr_ops},
-	m_dset_size_ops {other.m_dset_size_ops}
+	m_dset_ops{other.m_dset_ops}
+	, m_attr_ops{other.m_attr_ops}
+	, m_dset_size_ops{other.m_dset_size_ops}
 {
 	for (auto&& dataset: other.m_datasets) {
 		m_datasets.emplace(dataset.first, dataset.second);
 	}
 }
 
-File_op::File_op(Expression&& file, Collision_policy collision_policy):
-	m_collision_policy{collision_policy},
-	m_file{move(file)}
+File_op::File_op(Expression&& file, Collision_policy collision_policy)
+	: m_collision_policy{collision_policy}
+	, m_file{move(file)}
 {}
 
 void File_op::execute(Context& ctx)
@@ -244,11 +244,11 @@ void File_op::execute(Context& ctx)
 	// first gather the ops we actually want to do
 	vector<Dataset_op> dset_reads;
 	vector<Dataset_op> dset_writes;
-	
-	for ( auto&& one_dset_op: m_dset_ops ) {
+
+	for (auto&& one_dset_op: m_dset_ops) {
 		try {
-			if ( one_dset_op.when().to_long(ctx) ) {
-				if ( one_dset_op.direction() == Dataset_op::READ ) {
+			if (one_dset_op.when().to_long(ctx)) {
+				if (one_dset_op.direction() == Dataset_op::READ) {
 					dset_reads.push_back(one_dset_op);
 				} else {
 					dset_writes.push_back(one_dset_op);
@@ -258,14 +258,14 @@ void File_op::execute(Context& ctx)
 			ctx.logger().warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
 		}
 	}
-	
+
 	vector<Attribute_op> attr_reads;
 	vector<Attribute_op> attr_writes;
-	
-	for ( auto&& one_attr_op: m_attr_ops ) {
+
+	for (auto&& one_attr_op: m_attr_ops) {
 		try {
-			if ( one_attr_op.when().to_long(ctx) ) {
-				if ( one_attr_op.direction() == Attribute_op::READ ) {
+			if (one_attr_op.when().to_long(ctx)) {
+				if (one_attr_op.direction() == Attribute_op::READ) {
 					attr_reads.push_back(one_attr_op);
 				} else {
 					attr_writes.push_back(one_attr_op);
@@ -276,9 +276,9 @@ void File_op::execute(Context& ctx)
 		}
 	}
 	// nothing to do if no op is selected
-	if ( dset_reads.empty() && dset_writes.empty() && attr_reads.empty() && attr_writes.empty() && m_dset_size_ops.empty() ) return;
+	if (dset_reads.empty() && dset_writes.empty() && attr_reads.empty() && attr_writes.empty() && m_dset_size_ops.empty()) return;
 	std::string filename = m_file.to_string(ctx);
-	
+
 	Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
@@ -286,21 +286,21 @@ void File_op::execute(Context& ctx)
 	if (communicator()) {
 		comm = *(static_cast<const MPI_Comm*>(Ref_r{communicator().to_ref(ctx)}.get()));
 	}
-	if ( comm != MPI_COMM_SELF ) {
-		if ( 0>H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL) ) handle_hdf5_err();
-		if ( 0>H5Pset_dxpl_mpio(xfer_lst, H5FD_MPIO_COLLECTIVE) ) handle_hdf5_err();
+	if (comm != MPI_COMM_SELF) {
+		if (0 > H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL)) handle_hdf5_err();
+		if (0 > H5Pset_dxpl_mpio(xfer_lst, H5FD_MPIO_COLLECTIVE)) handle_hdf5_err();
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
 	}
 #endif
-	
+
 	hid_t h5_file_raw = -1;
-	if ( (!dset_writes.empty() || !attr_writes.empty()) && (!dset_reads.empty() || !attr_reads.empty()) ) {
+	if ((!dset_writes.empty() || !attr_writes.empty()) && (!dset_reads.empty() || !attr_reads.empty())) {
 		ctx.logger().trace("Opening `{}' file to read and write", filename);
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
-	} else if ( !dset_writes.empty() || !attr_writes.empty() ) {
+	} else if (!dset_writes.empty() || !attr_writes.empty()) {
 		ctx.logger().trace("Opening `{}' file to write", filename);
 		h5_file_raw = H5Fopen(m_file.to_string(ctx).c_str(), H5F_ACC_RDWR, file_lst);
-		if (0>h5_file_raw) {
+		if (0 > h5_file_raw) {
 			ctx.logger().trace("Cannot open `{}' file, creating new file", filename);
 			h5_file_raw = H5Fcreate(filename.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, file_lst);
 		} else {
@@ -313,7 +313,7 @@ void File_op::execute(Context& ctx)
 					ctx.logger().warn("File `{}' already exists: {}", filename, message);
 				};
 			}
-			
+
 			if (m_collision_policy & Collision_policy::SKIP) {
 				notify("Skipping", filename);
 				H5Fclose(h5_file_raw);
@@ -335,17 +335,17 @@ void File_op::execute(Context& ctx)
 		h5_file_raw = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_lst);
 	}
 	Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + filename + "' file").c_str());
-	
-	for (auto&& one_dset_op: dset_writes ) {
+
+	for (auto&& one_dset_op: dset_writes) {
 		one_dset_op.execute(ctx, h5_file, xfer_lst, m_datasets);
 	}
-	for (auto&& one_dset_op: dset_reads ) {
+	for (auto&& one_dset_op: dset_reads) {
 		one_dset_op.execute(ctx, h5_file, xfer_lst, m_datasets);
 	}
-	for (auto&& one_attr_op: attr_writes ) {
+	for (auto&& one_attr_op: attr_writes) {
 		one_attr_op.execute(ctx, h5_file);
 	}
-	for (auto&& one_attr_op: attr_reads ) {
+	for (auto&& one_attr_op: attr_reads) {
 		one_attr_op.execute(ctx, h5_file);
 	}
 	for (auto&& one_dset_size_op: m_dset_size_ops) {
@@ -356,13 +356,13 @@ void File_op::execute(Context& ctx)
 			ctx.logger().warn("Data `{}' to read size of dataset not available", one_dset_size_op.first);
 			return;
 		}
-		
+
 		ctx.logger().trace("Opening `{}' dataset", dataset_name);
 		Raii_hid dset_id = make_raii_hid(H5Dopen(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose);
 		Raii_hid dset_space_id = make_raii_hid(H5Dget_space(dset_id), H5Sclose);
 		if (H5Sis_simple(dset_space_id)) {
 			int ndims = H5Sget_simple_extent_ndims(dset_space_id);
-			unique_ptr<hsize_t[]> dims {new hsize_t[ndims]};
+			unique_ptr<hsize_t[]> dims{new hsize_t[ndims]};
 			H5Sget_simple_extent_dims(dset_space_id, dims.get(), NULL);
 			for (int i = 0; i < ndims; i++) {
 				*(static_cast<long*>(ref_w.get()) + i) = dims[i];
@@ -371,7 +371,7 @@ void File_op::execute(Context& ctx)
 			// not an array
 			*static_cast<long*>(ref_w.get()) = 0L;
 		}
-		
+
 		ctx.logger().trace("Getting size of `{}' dataset finished", dataset_name);
 	}
 	ctx.logger().trace("All operations done in `{}'. Closing the file.", filename);

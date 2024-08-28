@@ -43,28 +43,25 @@ namespace PDI {
 struct Descriptor_test_handler {
 	static unique_ptr<Data_descriptor> default_desc(Global_context& global_ctx)
 	{
-		return unique_ptr<Data_descriptor> {new Data_descriptor_impl{global_ctx, "default_desc"}};
+		return unique_ptr<Data_descriptor>{new Data_descriptor_impl{global_ctx, "default_desc"}};
 	}
-	
+
 	static Datatype_sptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
 	{
 		Datatype_template_sptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type;
 		return desc_template->evaluate(global_ctx);
 	}
-	
-	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc)
-	{
-		return dynamic_cast<Data_descriptor_impl*>(desc.get())->m_refs.size();
-	}
+
+	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc) { return dynamic_cast<Data_descriptor_impl*>(desc.get())->m_refs.size(); }
 };
-}
+} // namespace PDI
 
 /*
  * Struct prepared for DataDescTest
  */
-struct DataDescTest : public ::testing::Test {
+struct DataDescTest: public ::testing::Test {
 	int array[10];
-	PC_tree_t array_config {PC_parse_string("{ size: 10, type: array, subtype: int }")};
+	PC_tree_t array_config{PC_parse_string("{ size: 10, type: array, subtype: int }")};
 	shared_ptr<Array_datatype> array_datatype{Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10)};
 	PDI::Paraconf_wrapper fw;
 	Global_context global_ctx{PC_parse_string("")};
@@ -146,11 +143,11 @@ TEST_F(DataDescTest, catch_empty_exception)
 TEST_F(DataDescTest, simply_share_data)
 {
 	this->m_desc_default->share(this->array, false, true);
-	
+
 	Ref created_ref = this->m_desc_default->ref();
 	void* ptr = Ref_w{created_ref}.get();
 	ASSERT_EQ(this->array, ptr);
-	
+
 	this->m_desc_default->reclaim();
 }
 
@@ -173,23 +170,23 @@ TEST_F(DataDescTest, multi_read_share_data)
 	ASSERT_EQ(this->array, ptr);
 	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(this->array, ptr);
-	
+
 	int refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
-	
+
 	ASSERT_EQ(3, refs_number);
-	
+
 	this->m_desc_default->reclaim();
 	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(nullptr, ptr);
 	this->m_desc_default->release();
-	
+
 	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(2, refs_number);
-	
+
 	this->m_desc_default->release();
 	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(1, refs_number);
-	
+
 	this->m_desc_default->release();
 	refs_number = Descriptor_test_handler::desc_get_refs_number(this->m_desc_default);
 	ASSERT_EQ(0, refs_number);
@@ -215,7 +212,7 @@ TEST_F(DataDescTest, multi_write_share_data)
 	} catch (const Error& err) {
 		ASSERT_EQ(PDI_status_t::PDI_ERR_RIGHT, err.status());
 	}
-	
+
 	this->m_desc_default->reclaim();
 }
 
@@ -242,7 +239,7 @@ TEST_F(DataDescTest, read_write_share_data)
 		ASSERT_EQ(PDI_status_t::PDI_ERR_RIGHT, err.status());
 	}
 	this->m_desc_default->release();
-	
+
 	void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), false, true);
 	ASSERT_EQ(this->array, ptr);
 	try {
@@ -265,11 +262,11 @@ TEST_F(DataDescTest, read_write_share_data)
 TEST_F(DataDescTest, simply_share_meta)
 {
 	this->m_desc_default->share(this->array, true, false);
-	
+
 	Ref created_ref = this->m_desc_default->ref();
 	ASSERT_TRUE(created_ref);
 	ASSERT_FALSE(Ref_w{created_ref});
-	
+
 	this->m_desc_default->reclaim();
 }
 
@@ -290,7 +287,6 @@ TEST_F(DataDescTest, share_meta_without_read)
 	} catch (const Error& err) {
 		ASSERT_EQ(PDI_status_t::PDI_ERR_RIGHT, err.status());
 	}
-	
 }
 
 /*
@@ -308,35 +304,35 @@ TEST_F(DataDescTest, multi_read_share_meta)
 	ASSERT_EQ(0, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
 	this->m_desc_default->metadata(true);
 	ASSERT_EQ(1, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
-	
+
 	this->m_desc_default->share(this->array, true, false);
 	ASSERT_EQ(2, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
-	
+
 	const void* ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(3, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
 	ASSERT_EQ(this->array, ptr);
-	
+
 	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(4, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
 	ASSERT_EQ(this->array, ptr);
-	
+
 	this->m_desc_default->release();
 	ASSERT_EQ(3, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
-	
+
 	ptr = this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 	ASSERT_EQ(4, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
 	ASSERT_EQ(this->array, ptr);
-	
+
 	this->m_desc_default->release();
 	ASSERT_EQ(3, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
-	
+
 	this->m_desc_default->release();
 	ASSERT_EQ(2, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
-	
+
 	ptr = this->m_desc_default->reclaim();
 	ASSERT_EQ(1, Descriptor_test_handler::desc_get_refs_number(this->m_desc_default));
 	ASSERT_EQ(this->array, ptr);
-	
+
 	ptr = Ref_r{this->m_desc_default->ref()}.get();
 	ASSERT_NE(this->array, ptr);
 }

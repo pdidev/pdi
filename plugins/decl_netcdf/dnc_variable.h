@@ -43,58 +43,56 @@ class Dnc_variable
 {
 	/// Context of this variable
 	PDI::Context& m_ctx;
-	
+
 	/// Name of this variable
 	std::string m_path;
-	
+
 	/// Type of this variable. Can be nullptr.
 	PDI::Datatype_template_sptr m_type;
-	
+
 	/// Dimensions names of this variable
 	std::vector<PDI::Expression> m_dimensions_names;
-	
+
 	/// Attributes of the variable
 	std::vector<Dnc_attribute> m_attributes;
-	
-public:
 
+public:
 	/** Creates NetCDF variable information from yaml
 	 *
 	 * \param ctx Context of this variable
 	 * \param config Configuration node of this variable
 	 */
 	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config);
-	
+
 	/** Getter for variable name
 	 *
 	 * \return name of the variable
 	 */
 	const std::string& path() const;
-	
+
 	/** Setter for variable type
 	 *
 	 * \param type type of this variable
 	 */
 	void type(PDI::Datatype_sptr type);
-	
+
 	/** Getter for variable type
 	 *
 	 * \return type of the variable if defined
 	 */
 	PDI::Datatype_sptr type() const;
-	
+
 	/** Getter for variable dimensions
 	 *
 	 * \return dimensions of the variable
 	 */
 	std::vector<std::string> dimensions_names() const;
-	
+
 	/** Getter for variable attributes
 	 *
 	 * \return attributes of the variable
 	 */
 	const std::vector<Dnc_attribute>& attributes() const;
-	
 };
 
 } // namespace decl_netcdf

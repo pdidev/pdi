@@ -60,15 +60,15 @@ using std::unique_ptr;
 using std::vector;
 
 Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes)
-    : Datatype(attributes)
-    , m_subtype{move(subtype)}
-    , m_size{move(size)}
-    , m_start{move(start)}
-    , m_subsize{move(subsize)}
+	: Datatype(attributes)
+	, m_subtype{move(subtype)}
+	, m_size{move(size)}
+	, m_start{move(start)}
+	, m_subsize{move(subsize)}
 {}
 
 Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, const Attributes_map& attributes)
-    : Array_datatype{move(subtype), size, 0, move(size), attributes}
+	: Array_datatype{move(subtype), size, 0, move(size), attributes}
 {}
 
 Datatype_sptr Array_datatype::subtype() const
@@ -261,11 +261,11 @@ bool Array_datatype::operator== (const Datatype& other) const
 
 struct Array_datatype::Shared_enabler: public Array_datatype {
 	Shared_enabler(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {})
-	    : Array_datatype(subtype, size, start, subsize, attributes)
+		: Array_datatype(subtype, size, start, subsize, attributes)
 	{}
 
 	Shared_enabler(Datatype_sptr subtype, size_t size, const Attributes_map& attributes = {})
-	    : Array_datatype(subtype, size, attributes)
+		: Array_datatype(subtype, size, attributes)
 	{}
 };
 

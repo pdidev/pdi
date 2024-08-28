@@ -30,7 +30,7 @@
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype_template.h>
 
-struct MockDataDescriptor : public PDI::Data_descriptor {
+struct MockDataDescriptor: public PDI::Data_descriptor {
 	MOCK_METHOD1(default_type, void(PDI::Datatype_template_sptr));
 	MOCK_METHOD0(default_type, PDI::Datatype_template_sptr());
 	MOCK_CONST_METHOD0(metadata, bool());
@@ -39,9 +39,9 @@ struct MockDataDescriptor : public PDI::Data_descriptor {
 	MOCK_METHOD0(ref, PDI::Ref());
 	MOCK_METHOD0(empty, bool());
 	MOCK_METHOD3(share, void(void*, bool, bool));
-	MOCK_METHOD3(share, void* (PDI::Ref, bool, bool));
+	MOCK_METHOD3(share, void*(PDI::Ref, bool, bool));
 	MOCK_METHOD0(release, void());
-	MOCK_METHOD0(reclaim, void* ());
+	MOCK_METHOD0(reclaim, void*());
 };
 
 

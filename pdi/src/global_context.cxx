@@ -103,9 +103,9 @@ void Global_context::finalize()
 }
 
 Global_context::Global_context(PC_tree_t conf)
-    : m_logger{"PDI", PC_get(conf, ".logging")}
-    , m_plugins{*this, conf}
-    , m_callbacks{*this}
+	: m_logger{"PDI", PC_get(conf, ".logging")}
+	, m_plugins{*this, conf}
+	, m_callbacks{*this}
 {
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);

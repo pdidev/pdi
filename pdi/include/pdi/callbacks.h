@@ -39,73 +39,73 @@ class PDI_EXPORT Callbacks
 {
 	/// Context of callbacks
 	Context& m_context;
-	
+
 	/**
 	 *  Callbacks called after init
 	 *
 	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::list<std::function<void()>> m_init_callbacks;
-	
+
 	/**
 	 *  Callbacks called when any data is available
 	 *
 	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::list<std::function<void(const std::string&, Ref)>> m_data_callbacks;
-	
+
 	/**
 	 *  Callbacks called when specified data is available.
 	 *
 	 *  This must be an ordered multimap, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::multimap<std::string, std::function<void(const std::string&, Ref)>> m_named_data_callbacks;
-	
+
 	/**
 	 *  Callbacks called when any data is reclaimed/released.
 	 *
 	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::list<std::function<void(const std::string&, Ref)>> m_data_remove_callbacks;
-	
+
 	/**
 	 *  Callbacks called when specified data is reclaimed/released.
 	 *
 	 *  This must be an ordered multimap, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::multimap<std::string, std::function<void(const std::string&, Ref)>> m_named_data_remove_callbacks;
-	
+
 	/**
 	 *  Callbacks called on any event
 	 *
 	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::list<std::function<void(const std::string&)>> m_event_callbacks;
-	
+
 	/**
 	 *  Callbacks called on specified event
 	 *
 	 *  This must be an ordered multimap, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::multimap<std::string, std::function<void(const std::string&)>> m_named_event_callbacks;
-	
+
 	/**
 	 *  Callbacks called on any empty desc access
 	 *
 	 *  This must be a list, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::list<std::function<void(const std::string&)>> m_empty_desc_access_callbacks;
-	
+
 	/**
 	 *  Callbacks called on specified empty desc access
 	 *
 	 *  This must be an ordered multimap, because valid iterators are needed to properly remove the callback by plugin
 	 */
 	std::multimap<std::string, std::function<void(const std::string&)>> m_named_empty_desc_access_callbacks;
-	
+
 public:
 	Callbacks(Context& ctx);
-	
+
 	/** Adds new init callback to context
 	 *
 	 * \param[in] callback function to call when data and metadata are loaded
@@ -113,7 +113,7 @@ public:
 	 * \return function that removes callback
 	 */
 	std::function<void()> add_init_callback(const std::function<void()>& callback);
-	
+
 	/** Adds new data callback to context
 	 *
 	 * \param[in] callback function to call when data is being available
@@ -122,7 +122,7 @@ public:
 	 * \return function that removes callback
 	 */
 	std::function<void()> add_data_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {});
-	
+
 	/** Adds new data callback to context
 	 *
 	 * \param[in] callback function to call when data is reclaimed/released
@@ -131,7 +131,7 @@ public:
 	 * \return function that removes callback
 	 */
 	std::function<void()> add_data_remove_callback(const std::function<void(const std::string&, Ref)>& callback, const std::string& name = {});
-	
+
 	/** Adds new event callback to context
 	 *
 	 * \param[in] callback function to call when event is called
@@ -140,7 +140,7 @@ public:
 	 * \return function that removes callback
 	 */
 	std::function<void()> add_event_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {});
-	
+
 	/** Adds new empty desc access callback to context
 	 *
 	 * \param[in] callback function to call when event is called
@@ -149,27 +149,27 @@ public:
 	 * \return function that removes callback
 	 */
 	std::function<void()> add_empty_desc_access_callback(const std::function<void(const std::string&)>& callback, const std::string& name = {});
-	
+
 	/// Calls init callbacks
 	void call_init_callbacks() const;
-	
+
 	/** Calls data callbacks
 	 *  \param name name of the shared descriptor
 	 *  \param ref shared reference
 	 */
 	void call_data_callbacks(const std::string& name, Ref ref) const;
-	
+
 	/** Calls data remove callbacks
 	 *  \param name name of the descriptor that will be reclaimed/released
 	 *  \param ref reference that will be reclaimed/released
 	 */
 	void call_data_remove_callbacks(const std::string& name, Ref ref) const;
-	
+
 	/** Calls event callbacks
 	 *  \param name name of the event
 	 */
 	void call_event_callbacks(const std::string& name) const;
-	
+
 	/** Calls empty desc callbacks
 	 *  \param name name of the accessed descriptor
 	 */

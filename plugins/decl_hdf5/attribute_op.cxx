@@ -44,10 +44,9 @@ using std::move;
 using std::string;
 using std::tie;
 
-
-Attribute_op::Attribute_op(Direction direction, PC_tree_t attr_path_tree, Expression when):
-	m_direction{direction},
-	m_when{move(when)}
+Attribute_op::Attribute_op(Direction direction, PC_tree_t attr_path_tree, Expression when)
+	: m_direction{direction}
+	, m_when{move(when)}
 {
 	string attr_path = to_string(attr_path_tree);
 	size_t pos = attr_path.find('#');
@@ -60,15 +59,15 @@ Attribute_op::Attribute_op(Direction direction, PC_tree_t attr_path_tree, Expres
 	m_value = "$" + m_name;
 }
 
-Attribute_op::Attribute_op(Direction direction, const string& desc, Expression when, PC_tree_t tree):
-	m_desc{desc},
-	m_direction{direction},
-	m_value{"$" + desc},
-	m_when{move(when)}
+Attribute_op::Attribute_op(Direction direction, const string& desc, Expression when, PC_tree_t tree)
+	: m_desc{desc}
+	, m_direction{direction}
+	, m_value{"$" + desc}
+	, m_when{move(when)}
 {
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		string key = to_string(key_tree);
-		if ( key == "attribute" ) {
+		if (key == "attribute") {
 			string attr_path = to_string(value);
 			size_t pos = attr_path.find('#');
 			if (pos == string::npos) {
@@ -78,7 +77,7 @@ Attribute_op::Attribute_op(Direction direction, const string& desc, Expression w
 				m_object_path = Expression{attr_path.substr(0, pos)};
 				m_name = attr_path.substr(pos + 1);
 			}
-		} else if ( key == "when" ) {
+		} else if (key == "when") {
 			m_when = to_string(value);
 		} else {
 			throw Config_error{key_tree, "Unknown key for HDF5 attribute configuration: `{}'", key};
@@ -86,12 +85,12 @@ Attribute_op::Attribute_op(Direction direction, const string& desc, Expression w
 	});
 }
 
-Attribute_op::Attribute_op(Direction direction, Expression object_path, const string& attr_name, Expression value, Expression when):
-	m_direction{direction},
-	m_name{attr_name},
-	m_object_path{move(object_path)},
-	m_value{move(value)},
-	m_when{when}
+Attribute_op::Attribute_op(Direction direction, Expression object_path, const string& attr_name, Expression value, Expression when)
+	: m_direction{direction}
+	, m_name{attr_name}
+	, m_object_path{move(object_path)}
+	, m_value{move(value)}
+	, m_when{when}
 {}
 
 Expression Attribute_op::when() const
@@ -122,31 +121,39 @@ void Attribute_op::do_write(Context& ctx, hid_t h5_file) const
 		ctx.logger().warn("Cannot write `{}' attribute: data not available", m_name);
 		return;
 	}
-	
+
 	// cannot use H5Oopen, because HDF5 1.8 does not support opening groups
 	std::string object_path_str = m_object_path.to_string(ctx);
 	ctx.logger().trace("Trying to open `{}' as a group", object_path_str);
 	Raii_hid h5_dest = Raii_hid{H5Gopen(h5_file, object_path_str.c_str(), H5P_DEFAULT), H5Gclose};
 	if (h5_dest < 0) {
 		ctx.logger().trace("Failed to open `{}' as a group, trying as a dataset", object_path_str);
-		h5_dest = make_raii_hid(H5Dopen(h5_file, object_path_str.c_str(), H5P_DEFAULT), H5Dclose, ("Cannot open attribute destination (" + object_path_str + "): ").c_str());
+		h5_dest = make_raii_hid(
+			H5Dopen(h5_file, object_path_str.c_str(), H5P_DEFAULT),
+			H5Dclose,
+			("Cannot open attribute destination (" + object_path_str + "): ").c_str()
+		);
 	}
-	
+
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
-	
+
 	ctx.logger().trace("Opening `{}' attribute", m_name);
 	Raii_hid attr_id = Raii_hid{H5Aopen(h5_dest, m_name.c_str(), H5P_DEFAULT), H5Aclose};
 	if (attr_id < 0) {
 		ctx.logger().trace("Cannot open `{}' attribute, creating", m_name);
-		attr_id =  make_raii_hid(H5Acreate(h5_dest, m_name.c_str(), h5_mem_type, h5_mem_space, H5P_DEFAULT, H5P_DEFAULT), H5Aclose, ("Cannot open nor create " + m_name + " attribute: ").c_str());
+		attr_id = make_raii_hid(
+			H5Acreate(h5_dest, m_name.c_str(), h5_mem_type, h5_mem_space, H5P_DEFAULT, H5P_DEFAULT),
+			H5Aclose,
+			("Cannot open nor create " + m_name + " attribute: ").c_str()
+		);
 	}
-	
+
 	ctx.logger().trace("Writing `{}' attribute", m_name);
 	if (H5Awrite(attr_id, h5_mem_type, ref.get()) < 0) {
 		handle_hdf5_err(("Cannot write " + m_name + " attribute value: ").c_str());
 	}
-	
+
 	ctx.logger().trace("`{}' attribute write finished", m_name);
 }
 
@@ -167,27 +174,32 @@ void Attribute_op::do_read(Context& ctx, hid_t h5_file) const
 		ctx.logger().warn("Cannot read `{}' attribute: data not available", m_name);
 		return;
 	}
-	
+
 	// cannot use H5Oopen, because HDF5 1.8 does not support opening groups
 	std::string object_path_str = m_object_path.to_string(ctx);
 	ctx.logger().trace("Trying to open `{}' as a group", object_path_str);
 	Raii_hid h5_dest = Raii_hid{H5Gopen(h5_file, object_path_str.c_str(), H5P_DEFAULT), H5Gclose};
 	if (h5_dest < 0) {
 		ctx.logger().trace("Failed to open `{}' as a group, trying as a dataset", object_path_str);
-		h5_dest = make_raii_hid(H5Dopen(h5_file, object_path_str.c_str(), H5P_DEFAULT), H5Dclose, ("Cannot open attribute destination (" + object_path_str + "): ").c_str());
+		h5_dest = make_raii_hid(
+			H5Dopen(h5_file, object_path_str.c_str(), H5P_DEFAULT),
+			H5Dclose,
+			("Cannot open attribute destination (" + object_path_str + "): ").c_str()
+		);
 	}
-	
+
 	Raii_hid h5_mem_space, h5_mem_type;
 	tie(h5_mem_space, h5_mem_type) = space(ref.type());
-	
+
 	ctx.logger().trace("Opening `{}' attribute", m_name);
-	Raii_hid attr_id = make_raii_hid(H5Aopen(h5_dest, m_name.c_str(), H5P_DEFAULT), H5Aclose, ("Cannot open " + m_name + " attribute value: ").c_str());
-	
+	Raii_hid attr_id
+		= make_raii_hid(H5Aopen(h5_dest, m_name.c_str(), H5P_DEFAULT), H5Aclose, ("Cannot open " + m_name + " attribute value: ").c_str());
+
 	ctx.logger().trace("Reading `{}' attribute", m_name);
 	if (H5Aread(attr_id, h5_mem_type, ref.get()) < 0) {
 		handle_hdf5_err(("Cannot read " + m_name + " attribute value: ").c_str());
 	}
-	
+
 	ctx.logger().trace("`{}' attribute read finished", m_name);
 }
 

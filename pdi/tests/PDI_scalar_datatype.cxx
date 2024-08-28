@@ -36,27 +36,27 @@ using namespace std;
  * Struct prepared for ScalarDatatypeTest.
  */
 template <typename T>
-struct ScalarDatatypeTest : public ::testing::Test {
+struct ScalarDatatypeTest: public ::testing::Test {
 	//set kind and size depending on type
 	ScalarDatatypeTest()
 	{
-		if (is_same<T,int>::value || is_same<T,long>::value) {
+		if (is_same<T, int>::value || is_same<T, long>::value) {
 			test_kind = Scalar_kind::SIGNED;
-		} else if (is_same<T,unsigned int>::value || is_same<T,unsigned long>::value) {
+		} else if (is_same<T, unsigned int>::value || is_same<T, unsigned long>::value) {
 			test_kind = Scalar_kind::UNSIGNED;
-		} else if (is_same<T,float>::value || is_same<T,double>::value) {
+		} else if (is_same<T, float>::value || is_same<T, double>::value) {
 			test_kind = Scalar_kind::FLOAT;
 		}
 		test_size = sizeof(T);
 		test_scalar = Scalar_datatype::make(test_kind, test_size);
 	}
-	
+
 	//kind used to create Scalar_datatype
-	Scalar_kind test_kind ;
-	
+	Scalar_kind test_kind;
+
 	//size used to create Scalar_datatype
 	size_t test_size;
-	
+
 	shared_ptr<Scalar_datatype> test_scalar;
 };
 
@@ -139,7 +139,7 @@ TYPED_TEST(ScalarDatatypeTest, check_dense)
 TYPED_TEST(ScalarDatatypeTest, check_evaluate)
 {
 	MockContext mockCtx;
-	
+
 	auto&& evaluated_scalar = static_pointer_cast<const Scalar_datatype>(this->test_scalar->evaluate(mockCtx));
 	ASSERT_EQ(this->test_scalar->kind(), evaluated_scalar->kind());
 	ASSERT_EQ(this->test_scalar->datasize(), evaluated_scalar->datasize());
@@ -152,19 +152,17 @@ TYPED_TEST(ScalarDatatypeTest, check_evaluate)
  * Struct prepared for ScalarDeepCopyTest.
  *
  */
-struct ScalarDeepCopyTest : public ::testing::Test {
-
+struct ScalarDeepCopyTest: public ::testing::Test {
 	int data_scalar;
 	int copied_scalar;
-	
+
 	ScalarDeepCopyTest()
 	{
 		data_scalar = 123;
 		copied_scalar = 0;
 	}
-	
-	Datatype_sptr datatype {Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))};
-	
+
+	Datatype_sptr datatype{Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int))};
 };
 
 /*

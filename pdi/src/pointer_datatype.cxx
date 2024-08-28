@@ -49,20 +49,20 @@ using std::unique_ptr;
 using std::vector;
 
 Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, const Attributes_map& attributes)
-    : Datatype(attributes)
-    , m_subtype{move(subtype)}
+	: Datatype(attributes)
+	, m_subtype{move(subtype)}
 {}
 
 Pointer_datatype::Pointer_datatype(
-    Datatype_sptr subtype,
-    function<void*(void*, const void*)> copy,
-    function<void(void*)> destroy,
-    const Attributes_map& attributes
+	Datatype_sptr subtype,
+	function<void*(void*, const void*)> copy,
+	function<void(void*)> destroy,
+	const Attributes_map& attributes
 )
-    : Datatype(attributes)
-    , m_subtype{move(subtype)}
-    , m_copy{move(copy)}
-    , m_destroy{move(destroy)}
+	: Datatype(attributes)
+	, m_subtype{move(subtype)}
+	, m_copy{move(copy)}
+	, m_destroy{move(destroy)}
 {}
 
 Datatype_sptr Pointer_datatype::subtype() const
@@ -198,11 +198,11 @@ std::pair<void*, Datatype_sptr> Pointer_datatype::dereference(void* data) const
 
 struct Pointer_datatype::Shared_enabler: public Pointer_datatype {
 	Shared_enabler(Datatype_sptr subtype, const Attributes_map& attributes)
-	    : Pointer_datatype(subtype, attributes)
+		: Pointer_datatype(subtype, attributes)
 	{}
 
 	Shared_enabler(Datatype_sptr subtype, function<void*(void*, const void*)> copy, function<void(void*)> destroy, const Attributes_map& attributes)
-	    : Pointer_datatype(subtype, copy, destroy, attributes)
+		: Pointer_datatype(subtype, copy, destroy, attributes)
 	{}
 };
 
@@ -212,10 +212,10 @@ shared_ptr<Pointer_datatype> Pointer_datatype::make(Datatype_sptr subtype, const
 }
 
 shared_ptr<Pointer_datatype> Pointer_datatype::make(
-    Datatype_sptr subtype,
-    function<void*(void*, const void*)> copy,
-    function<void(void*)> destroy,
-    const Attributes_map& attributes
+	Datatype_sptr subtype,
+	function<void*(void*, const void*)> copy,
+	function<void(void*)> destroy,
+	const Attributes_map& attributes
 )
 {
 	return make_shared<Shared_enabler>(subtype, copy, destroy, attributes);

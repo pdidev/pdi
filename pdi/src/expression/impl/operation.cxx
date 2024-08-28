@@ -52,63 +52,53 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case PLUS: {
 		auto val = computed_value + operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case MINUS: {
 		auto val = computed_value - operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case MULT: {
 		auto val = computed_value * operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case DIV: {
 		auto val = computed_value / operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
-	} break;
-	case MOD: {
-		if constexpr (is_integral_v<O1>&& is_integral_v<O2>) {
-			auto val = computed_value % operand_value;
-			return Ref(
-			        new decltype(val)(val),
-			[](void* p) {
-				delete reinterpret_cast<decltype(val)*>(p);
-			},
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
 			Scalar_datatype::type_for_v<decltype(val)>,
 			true,
 			false
-			    );
+		);
+	} break;
+	case MOD: {
+		if constexpr (is_integral_v<O1> && is_integral_v<O2>) {
+			auto val = computed_value % operand_value;
+			return Ref(
+				new decltype(val)(val),
+				[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+				Scalar_datatype::type_for_v<decltype(val)>,
+				true,
+				false
+			);
 		} else {
 			throw Type_error("Invalid operands to modulo operation");
 		}
@@ -116,86 +106,72 @@ Ref Expression::Impl::Operation::eval(O1 const computed_value, Operator const op
 	case EQUAL: {
 		auto val = computed_value == operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case AND: {
 		auto val = computed_value && operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case OR: {
 		auto val = computed_value || operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case GT: {
 		auto val = computed_value > operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case LT: {
 		auto val = computed_value < operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case GET: {
 		auto val = computed_value >= operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	case LET: {
 		auto val = computed_value <= operand_value;
 		return Ref(
-		        new decltype(val)(val),
-		[](void* p) {
-			delete reinterpret_cast<decltype(val)*>(p);
-		},
-		Scalar_datatype::type_for_v<decltype(val)>,
-		true,
-		false
-		    );
+			new decltype(val)(val),
+			[](void* p) { delete reinterpret_cast<decltype(val)*>(p); },
+			Scalar_datatype::type_for_v<decltype(val)>,
+			true,
+			false
+		);
 	} break;
 	}
 	throw Type_error("Unexpected type");
@@ -269,7 +245,7 @@ Expression::Impl::Operation::Operation(Expression first_operand, Operator op, Ex
 	if (!first_operand || !secend_operand) {
 		throw Value_error{"Cannot call operation on empty expression with another expression"};
 	}
-	
+
 	m_first_operand = first_operand;
 	m_operands.emplace_back(op, secend_operand);
 }
@@ -436,16 +412,16 @@ unique_ptr<Expression::Impl> Expression::Impl::Operation::clone() const
 	return result;
 }
 
-unique_ptr<Expression::Impl> Expression::Impl::Operation::parse(char const** val_str, int level)
+unique_ptr<Expression::Impl> Expression::Impl::Operation::parse(char const ** val_str, int level)
 {
 	// a level 7 operation is a term
 	if (level == 7) {
 		return parse_term(val_str);
 	}
-	
+
 	const char* exprval = *val_str;
 	unique_ptr<Impl> result = parse(&exprval, level + 1);
-	
+
 	// we only build the Operation if needed, otherwise we return the previous
 	// expression directly
 	unique_ptr<Operation> expr = NULL;
@@ -457,7 +433,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Operation::parse(char const** val
 		Operator oper = parse_operator(&exprval, level);
 		expr->m_operands.emplace_back(oper, Expression{parse(&exprval, level + 1)});
 	}
-	
+
 	*val_str = exprval;
 	if (expr) {
 		return expr;
@@ -489,7 +465,7 @@ int Expression::Impl::Operation::op_level(const char* op)
 	return 0;
 }
 
-Expression::Impl::Operation::Operator Expression::Impl::Operation::parse_operator(char const** val_str, int level)
+Expression::Impl::Operation::Operator Expression::Impl::Operation::parse_operator(char const ** val_str, int level)
 {
 	const char* c_op = *val_str;
 	int found_level = op_level(c_op);
@@ -501,11 +477,11 @@ Expression::Impl::Operation::Operator Expression::Impl::Operation::parse_operato
 	}
 	Operator op = static_cast<Operator>(*c_op);
 	++c_op;
-	
+
 	while (isspace(*c_op)) {
 		++c_op;
 	}
-	
+
 	*val_str = c_op;
 	return op;
 }

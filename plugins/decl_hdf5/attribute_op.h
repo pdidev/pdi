@@ -25,8 +25,8 @@
 #ifndef DECL_HDF5_ATTRIBUTE_OP_H_
 #define DECL_HDF5_ATTRIBUTE_OP_H_
 
-#include <hdf5.h>
 #include <string>
+#include <hdf5.h>
 
 #include <pdi/context.h>
 #include <pdi/expression.h>
@@ -38,28 +38,30 @@ class Attribute_op
 public:
 	/** an  I/O direction (read or write)
 	 */
-	enum Direction { READ, WRITE };
-	
-private:
+	enum Direction {
+		READ,
+		WRITE
+	};
 
+private:
 	/// Descriptor of the attribute (can be empty)
 	std::string m_desc;
-	
+
 	/// Direction of the transfer (read or write)
 	Direction m_direction;
-	
+
 	/// Name of the attribute
 	std::string m_name;
-	
+
 	/// Path to the object of this attribute
 	PDI::Expression m_object_path;
-	
+
 	/// Value of the attribute
 	PDI::Expression m_value;
-	
+
 	/// Condition to check before doing the transfer
 	PDI::Expression m_when;
-	
+
 public:
 	/** Creates HDF5 attribute operation
 	 *
@@ -67,10 +69,8 @@ public:
 	 * \param attr_path_tree tree with object path with attribute name separated by #
 	 * \param when a condition to check before doing the transfer
 	 */
-	Attribute_op(Direction direction,
-	    PC_tree_t attr_path_tree,
-	    PDI::Expression when);
-	    
+	Attribute_op(Direction direction, PC_tree_t attr_path_tree, PDI::Expression when);
+
 	/** Creates HDF5 attribute operation
 	 *
 	 * \param direction direction of I/O (READ or WRITE)
@@ -78,11 +78,8 @@ public:
 	 * \param when a condition to check before doing the transfer
 	 * \param tree tree of the attribute
 	 */
-	Attribute_op(Direction direction,
-	    const std::string& desc,
-	    PDI::Expression when,
-	    PC_tree_t tree);
-	    
+	Attribute_op(Direction direction, const std::string& desc, PDI::Expression when, PC_tree_t tree);
+
 	/** Creates HDF5 attribute operation
 	 *
 	 * \param direction direction of I/O (READ or WRITE)
@@ -91,43 +88,39 @@ public:
 	 * \param value attribute value to write or read
 	 * \param when a condition to check before doing the transfer
 	 */
-	Attribute_op(Direction direction,
-	    PDI::Expression object_path,
-	    const std::string& attr_name,
-	    PDI::Expression value,
-	    PDI::Expression when = 1L);
-	    
+	Attribute_op(Direction direction, PDI::Expression object_path, const std::string& attr_name, PDI::Expression value, PDI::Expression when = 1L);
+
 	/** Accesses the condition to check before doing the transfer.
 	 *
 	 * \return The condition to check before doing the transfer
 	 */
 	PDI::Expression when() const;
-	
+
 	/** Accesses the direction of the transfer (read or write).
 	 *
 	 * \return The direction of the transfer (read or write)
 	 */
 	Direction direction() const;
-	
+
 	/** Accesses the name of the attribute.
 	 *
 	 * \return The name of the attribute
 	 */
 	std::string name() const;
-	
+
 	/** Returns descriptor of the attribute (can be empty)
 	 *
 	 * \return descriptor of the attribute
 	 */
 	std::string desc() const;
-	
+
 	/** Executes the requested operation.
 	 *
 	 * \param ctx the context in which to operate
 	 * \param h5_file the already opened HDF5 file id
 	 */
 	void execute(PDI::Context& ctx, hid_t h5_file) const;
-	
+
 private:
 	/** Executes write operation.
 	 *
@@ -135,7 +128,7 @@ private:
 	 * \param h5_file the already opened HDF5 file id
 	 */
 	void do_write(PDI::Context& ctx, hid_t h5_file) const;
-	
+
 	/** Executes read operation.
 	 *
 	 * \param ctx the context in which to operate

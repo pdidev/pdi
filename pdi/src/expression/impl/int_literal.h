@@ -37,20 +37,20 @@ namespace PDI {
  */
 struct PDI_NO_EXPORT Expression::Impl::Int_literal: public Expression::Impl {
 	long m_value;
-	
+
 	Int_literal(long value);
-	
+
 	std::unique_ptr<Impl> clone() const override;
-	
+
 	long to_long(Context& ctx) const override;
-	
+
 	double to_double(Context& ctx) const override;
-	
+
 	Ref to_ref(Context& ctx) const override;
-	
+
 	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
-	
-	static std::unique_ptr<Impl> parse(char const** val_str);
+
+	static std::unique_ptr<Impl> parse(char const ** val_str);
 };
 
 } // namespace PDI

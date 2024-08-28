@@ -75,12 +75,12 @@ pybind11::object to_python(Ref r, bool force_const)
 	if (has_record_inside(r.type())) {
 		return pybind11::cast(Python_ref_wrapper{r});
 	}
-	
+
 	ssize_t ndim = 0;
 	vector<ssize_t> starts;
 	vector<ssize_t> shape;
 	vector<ssize_t> strides;
-	
+
 	auto&& subtype = r.type();
 	while (auto&& array_type = dynamic_pointer_cast<const Array_datatype>(subtype)) {
 		shape.emplace_back(array_type->subsize());
@@ -91,7 +91,7 @@ pybind11::object to_python(Ref r, bool force_const)
 	}
 	auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(subtype);
 	if (ndim) strides.emplace_back(scalar_type->buffersize());
-	
+
 	pybind11::dtype pytype;
 	switch (scalar_type->kind()) {
 	case Scalar_kind::FLOAT: {
@@ -145,31 +145,47 @@ pybind11::object to_python(Ref r, bool force_const)
 	default:
 		throw Type_error{"Unable to pass value of unexpected type to python"};
 	}
-	
+
 	ssize_t cumulated_stride = 1;
 	for (auto&& stride = strides.rbegin(); stride != strides.rend(); ++stride) {
 		*stride *= cumulated_stride;
 		cumulated_stride = *stride;
 	}
-	
+
 	ssize_t offset = 0;
 	for (int ii = 0; ii < ndim; ++ii) {
 		offset += starts[ii] * strides[ii];
 	}
-	
-	if ( !force_const ) {
-		if ( Ref_w r_w{r} ) {
-			return pybind11::array{pytype, std::move(shape), std::move(strides), static_cast<uint8_t*>(r_w.get())+offset, pybind11::capsule{new Ref{r}, [](void* pr)
-				{
-					delete static_cast<Ref*>(pr);
-				}}};
+
+	if (!force_const) {
+		if (Ref_w r_w{r}) {
+			return pybind11::array{
+				pytype,
+				std::move(shape),
+				std::move(strides),
+				static_cast<uint8_t*>(r_w.get()) + offset,
+				pybind11::capsule{
+					new Ref{r},
+					[](void* pr) {
+						delete static_cast<Ref*>(pr);
+					}
+				}
+			};
 		}
 	}
 	if (Ref_r r_r{r}) {
-		return pybind11::array{pytype, std::move(shape), std::move(strides), static_cast<const uint8_t*>(r_r.get())+offset, pybind11::capsule{new Ref{r}, [](void* pr)
-			{
-				delete static_cast<Ref*>(pr);
-			}}};
+		return pybind11::array{
+			pytype,
+			std::move(shape),
+			std::move(strides),
+			static_cast<const uint8_t*>(r_r.get()) + offset,
+			pybind11::capsule{
+				new Ref{r},
+				[](void* pr) {
+					delete static_cast<Ref*>(pr);
+				}
+			}
+		};
 	}
 	return pybind11::none();
 }
@@ -197,7 +213,7 @@ Datatype_sptr python_type(const pybind11::array& a)
 	default:
 		throw Impl_error{"Unexpected python type descriptor: {}", a.dtype().kind()};
 	}
-	
+
 	Datatype_sptr result = Scalar_datatype::make(k, static_cast<size_t>(a.dtype().itemsize()));
 	for (int ii = a.ndim() - 1; ii >= 0; --ii) {
 		result = Array_datatype::make(move(result), sizes[ii], 0, static_cast<size_t>(a.shape(ii)));

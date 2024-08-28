@@ -51,61 +51,61 @@ public:
 	 * \param[in] attributes attributes of the datatype
 	 */
 	Datatype(const Attributes_map& attributes = {});
-	
+
 	~Datatype() override;
-	
+
 	/** Test for equality
 	 *
 	 * \param other the Datatype to compare
 	 * \return true if the Datatype's are equal
 	 */
 	virtual bool operator== (const Datatype& other) const = 0;
-	
+
 	/** Test for inequality
 	 *
 	 * \param other the Datatype to compare
 	 * \return true if the Datatype's are different
 	 */
 	bool operator!= (const Datatype& other) const;
-	
+
 	/** Creates a new datatype as the dense copy of this one
 	 *
 	 * \return the type that is produced
 	 */
 	virtual Datatype_sptr densify() const = 0;
-	
+
 	/** Indicate if the datatype is dense or not
 	 *
 	 * \return whether the datatype is dense
 	 */
 	virtual bool dense() const = 0;
-	
+
 	/** Computes the data size of a type, excluding potentially unused memory
 	 *  from a sparse type
 	 *
 	 * \return the size in bytes
 	 */
 	virtual size_t datasize() const = 0;
-	
+
 	/** Computes the data size of a type, including potentially unused memory
 	 *  from a sparse type
 	 *
 	 * \return the size in bytes
 	 */
 	virtual size_t buffersize() const = 0;
-	
+
 	/** Returns the required alignment for a type
 	 *
 	 * \return the size in bytes
 	 */
 	virtual size_t alignment() const = 0;
-	
+
 	/** Tells if data can be copied as bytes (if type is dense) and doesn't need a destroyer
 	 *
 	 * \return true if data has trivial copier and destroyer, false otherwise
 	 */
 	virtual bool simple() const = 0;
-	
+
 	/** Creates a dense deep copy of data
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (dense data)
@@ -113,7 +113,7 @@ public:
 	 * \return updated `to' pointer
 	 */
 	virtual void* data_to_dense_copy(void* to, const void* from) const = 0;
-	
+
 	/** Creates a sparse deep copy of dense data
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (size of buffersize)
@@ -121,14 +121,14 @@ public:
 	 * \return updated `to' pointer
 	 */
 	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
-	
+
 	/** Access the type of the element at the provided index
 	 *
 	 * \param index the index where to look
 	 * \return the Datatype of the indexed sub-element
 	 */
 	virtual Datatype_sptr index(size_t index) const;
-	
+
 	/** Access the type and value of the element at the provided index
 	 *
 	 * \param index the index where to look
@@ -136,7 +136,7 @@ public:
 	 * \return the Datatype and address of the indexed sub-element
 	 */
 	virtual std::pair<void*, Datatype_sptr> index(size_t index, void* data) const;
-	
+
 	/** Access the type of the elements slice between the provided indices
 	 *
 	 * \param start_index the index where to start
@@ -144,7 +144,7 @@ public:
 	 * \return the Datatype of the slice
 	 */
 	virtual Datatype_sptr slice(size_t start_index, size_t end_index) const;
-	
+
 	/** Access the type and value of the elements slice between the provided indices
 	 *
 	 * \param start_index the index where to start
@@ -153,14 +153,14 @@ public:
 	 * \return the Datatype and address of the slice
 	 */
 	virtual std::pair<void*, Datatype_sptr> slice(size_t start_index, size_t end_index, void* data) const;
-	
+
 	/** Access the type of the member with the provided name
 	 *
 	 * \param name the name of the member to access
 	 * \return the Datatype of the member
 	 */
 	virtual Datatype_sptr member(const char* name) const;
-	
+
 	/** Access the type and value of the member with the provided name
 	 *
 	 * \param name the name of the member to access
@@ -168,20 +168,20 @@ public:
 	 * \return the Datatype and address of the member
 	 */
 	virtual std::pair<void*, Datatype_sptr> member(const char* name, void* data) const;
-	
+
 	/** Access the type referenced by this
 	 *
 	 * \return the Datatype referenced
 	 */
 	virtual Datatype_sptr dereference() const;
-	
+
 	/** Access the type and value referenced by this
 	 *
 	 * \param data the address of the reference
 	 * \return the Datatype and address referenced
 	 */
 	virtual std::pair<void*, Datatype_sptr> dereference(void* data) const;
-	
+
 	/** Delete data whose type is described by the Datatype.
 	 *
 	 * This does not deallocate the buffer used to store the data.
@@ -189,7 +189,7 @@ public:
 	 * \param[in] ptr to the data to free
 	 */
 	virtual void destroy_data(void* ptr) const = 0;
-	
+
 	/** Returns the datatype yaml representation as a string
 	 *
 	 * \return the datatype yaml representation as a string

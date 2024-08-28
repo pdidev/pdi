@@ -43,44 +43,44 @@ class PDI_NO_EXPORT Expression::Impl::Reference_expression: public Expression::I
 {
 	/// The referenced data
 	std::string m_referenced;
-	
+
 	/// fmt format of referenced data in to_string (starting with `:')
 	std::string m_fmt_format;
-	
+
 	/// Subelements (sequence of index and member accessors)
 	std::vector<std::unique_ptr<Accessor_expression>> m_subelements;
-	
+
 public:
 	/** Creates empty reference expression
 	 */
 	Reference_expression();
-	
+
 	/** Copies reference expression
 	 *
 	 * \param[in] other the reference expression to copy
 	 */
 	Reference_expression(const Reference_expression& other);
-	
+
 	/** Copies reference expression
 	 *
 	 * \param[in] other the reference expression to copy
 	 * \return copy of reference expression
 	 */
 	Reference_expression& operator= (const Reference_expression& other);
-	
+
 	std::unique_ptr<Impl> clone() const override;
-	
+
 	long to_long(Context& ctx) const override;
-	
+
 	double to_double(Context& ctx) const override;
-	
+
 	std::string to_string(Context& ctx) const override;
-	
+
 	Ref to_ref(Context& ctx) const override;
-	
+
 	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
-	
-	static std::unique_ptr<Impl> parse(char const** val_str);
+
+	static std::unique_ptr<Impl> parse(char const ** val_str);
 };
 
 } // namespace PDI

@@ -53,38 +53,38 @@ struct PDI_NO_EXPORT Expression::Impl::Operation: Expression::Impl {
 		GET = ']',
 		LET = '['
 	};
-	
+
 	using Operand = std::pair<Operator, Expression>;
-	
+
 	Expression m_first_operand;
-	
+
 	std::vector<Operand> m_operands;
-	
+
 	template <class O1>
 	static Ref evalp(O1, Operator, Ref_r);
-	
+
 	template <class O1, class O2>
 	static Ref eval(O1, Operator, O2);
-	
+
 	Operation();
-	
+
 	Operation(Expression first_operand, Operator op, Expression secend_operand);
-	
+
 	std::unique_ptr<Impl> clone() const override;
-	
+
 	double to_double(Context& ctx) const override;
-	
+
 	long to_long(Context& ctx) const override;
-	
+
 	Ref to_ref(Context& ctx) const override;
-	
+
 	size_t copy_value(Context& ctx, void* buffer, Datatype_sptr type) const override;
-	
-	static std::unique_ptr<Impl> parse(char const** val_str, int level);
-	
+
+	static std::unique_ptr<Impl> parse(char const ** val_str, int level);
+
 	static int op_level(const char* op);
-	
-	static Operator parse_operator(char const** val_str, int level);
+
+	static Operator parse_operator(char const ** val_str, int level);
 };
 
 } // namespace PDI

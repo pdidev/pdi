@@ -35,19 +35,19 @@
 
 namespace set_value {
 
-class Expose_operation : public Operation
+class Expose_operation: public Operation
 {
-    /// map of data to expose (expose new Ref (created from Expression))
-    std::vector<std::pair<std::string, PC_tree_t>> m_data_to_expose;
+	/// map of data to expose (expose new Ref (created from Expression))
+	std::vector<std::pair<std::string, PC_tree_t>> m_data_to_expose;
 
 public:
-    /** Creates expose operation
+	/** Creates expose operation
      * \param[in] ctx context of the operation
      * \param[in] list_of_values yaml config tree of operation
      */
-    Expose_operation(PDI::Context& ctx, PC_tree_t list_of_values);
-    
-    void execute() override;
+	Expose_operation(PDI::Context& ctx, PC_tree_t list_of_values);
+
+	void execute() override;
 };
 
 } // namespace set_value

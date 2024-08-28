@@ -67,7 +67,7 @@ Expression::Impl::Mapping::Mapping(const unordered_map< string, Expression >& va
 
 unique_ptr<Expression::Impl> Expression::Impl::Mapping::clone() const
 {
-	return unique_ptr<Impl> {new Expression::Impl::Mapping(m_value)};
+	return unique_ptr<Impl>{new Expression::Impl::Mapping(m_value)};
 }
 
 long Expression::Impl::Mapping::to_long(Context& ctx) const
@@ -92,10 +92,10 @@ Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 	size_t record_alignment = 1;
 	for (const auto& element: m_value) {
 		Ref_rw element_ref{element.second.to_ref(ctx)};
-		
+
 		size_t alignment = element_ref.type()->alignment();
 		record_alignment = max(record_alignment, alignment);
-		
+
 		// align the next member
 		displacement += (alignment - (displacement % alignment)) % alignment;
 		members.emplace_back(displacement, element_ref.type(), element.first);
@@ -103,7 +103,7 @@ Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 	}
 	//add padding at the end of record
 	displacement += (record_alignment - (displacement % record_alignment)) % record_alignment;
-	
+
 	return Impl::to_ref(ctx, Record_datatype::make(move(members), displacement));
 }
 

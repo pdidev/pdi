@@ -43,6 +43,8 @@ else
 	exit 1
 fi
 
+RUN_CLANG_FORMAT='false'
+
 # Look for a docker based version
 DOCKER="$(which docker)"
 if "${DOCKER}" --version >/dev/null 2>&1
@@ -54,11 +56,17 @@ fi
 for CLANG_FORMAT in clang-format-17 clang-format17 clang-format
 do
 	CLANG_FORMAT="$(which "${CLANG_FORMAT}")"
-	if [ 17 -le "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" ]
+	if which "${CLANG_FORMAT}" >/dev/null && [ 17 -le "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" 2>/dev/null ]
 	then
 		RUN_CLANG_FORMAT="python3 vendor/run-clang-format/run-clang-format.py --clang-format-executable ${CLANG_FORMAT}"
 		break
 	fi
 done
 
-exec ${RUN_CLANG_FORMAT} ${CLANG_FORMAT_ARGS} $(git ls-files --full-name | grep '\.[hHcC]\(\|++\|xx\|pp\)\s*$')
+if [ "${RUN_CLANG_FORMAT}" = false ]
+then
+	echo "clang-format version 17 not found and docker not usable"
+	exit 127
+fi
+
+git ls-files -z --full-name | grep -zZv '^vendor/' | grep -zZ '\.[hHcC]\(\|++\|xx\|pp\)\s*$' | xargs -0 ${RUN_CLANG_FORMAT} ${CLANG_FORMAT_ARGS}

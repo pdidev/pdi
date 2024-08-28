@@ -42,7 +42,7 @@ class PDI_EXPORT Tuple_datatype: public Datatype
 {
 	// Required to make_shared due to private ctor
 	struct Shared_enabler;
-	
+
 public:
 	/** A Element is one of the elements inside a Tuple_datatype
 	 */
@@ -50,10 +50,10 @@ public:
 	{
 		/// Offset in byte from the Tuple_datatype start
 		size_t m_offset;
-		
+
 		/// Type of the contained element
 		Datatype_sptr m_type;
-		
+
 	public:
 		/** Construct a new element
 		 *
@@ -61,32 +61,32 @@ public:
 		 * \param type type of the contained element
 		 */
 		Element(size_t offset, Datatype_sptr type);
-		
+
 		/** Construct a new element by copy
 		 *
 		 * \param o the element to copy
 		 */
 		Element(const Element& o);
-		
+
 		/** Access the offset in byte from the Tuple_datatype start
 		 *
 		 * \return the offset in byte from the Tuple_datatype start
 		 */
 		size_t offset() const;
-		
+
 		/** Access the type of the contained element
 		 *
 		 * \return the type of the contained element
 		 */
 		Datatype_sptr type() const;
-		
+
 		/** Tests another element for equality
 		 *
 		 * \param rhs the other element to compare
 		 * \return true if the elements are equal
 		 */
 		bool operator== (const Element& rhs) const;
-		
+
 		/** Tests another element for inequality
 		 *
 		 * \param rhs the other element to compare
@@ -94,56 +94,56 @@ public:
 		 */
 		bool operator!= (const Element& rhs) const;
 	};
-	
+
 private:
 	/// All elements in increasing offset order
 	std::vector<Element> m_elements;
-	
+
 	/// The total size of the buffer containing all elementrs
 	size_t m_buffersize;
-	
+
 public:
 	/** Accesses the elements in increasing offset order
 	 */
 	const std::vector<Element>& elements() const;
-	
+
 	/** Number of elements of the tuple
 	 * \return the number of elements of the tuple
 	 */
 	size_t size() const;
-	
+
 	Datatype_sptr densify() const override;
-	
+
 	Datatype_sptr evaluate(Context&) const override;
-	
+
 	bool dense() const override;
-	
+
 	size_t datasize() const override;
-	
+
 	size_t buffersize() const override;
-	
+
 	size_t alignment() const override;
-	
+
 	bool simple() const override;
-	
+
 	void* data_to_dense_copy(void*, const void*) const override;
-	
+
 	void* data_from_dense_copy(void*, const void*) const override;
-	
+
 	Datatype_sptr index(size_t) const override;
-	
+
 	std::pair<void*, Datatype_sptr> index(size_t, void*) const override;
-	
+
 	Datatype_sptr slice(size_t, size_t) const override;
-	
+
 	std::pair<void*, Datatype_sptr> slice(size_t, size_t, void*) const override;
-	
+
 	void destroy_data(void*) const override;
-	
+
 	std::string debug_string() const override;
-	
+
 	bool operator== (const Datatype&) const override;
-	
+
 private:
 	/** Constructs a new Tuple_datatype
 	 *
@@ -153,7 +153,7 @@ private:
 	 * \param attributes attributes of the tuple datatype
 	 */
 	Tuple_datatype(std::vector<Element> elements, size_t buffersize, const Attributes_map& attributes = {});
-	
+
 public:
 	/** Constructs a new Tuple_datatype
 	 *

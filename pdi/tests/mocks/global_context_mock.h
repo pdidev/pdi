@@ -34,38 +34,33 @@
 
 #include "global_context.h"
 
-
-struct MockGlobalContext : public PDI::Global_context {
-	MockGlobalContext(PC_tree_t conf) :
-		Global_context(conf)
+struct MockGlobalContext: public PDI::Global_context {
+	MockGlobalContext(PC_tree_t conf)
+		: Global_context(conf)
 	{}
+
 	PDI::Paraconf_wrapper fw;
-	
+
 	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));
 	MOCK_METHOD1(desc, PDI::Data_descriptor&(const char*));
-	
+
 	MOCK_METHOD1(BracketOp1, PDI::Data_descriptor&(const std::string&));
-	PDI::Data_descriptor& operator [] (const std::string& str) override
-	{
-		return BracketOp1(str);
-	}
-	
+
+	PDI::Data_descriptor& operator[] (const std::string& str) override { return BracketOp1(str); }
+
 	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char*));
-	PDI::Data_descriptor& operator [] (const char* str) override
-	{
-		return BracketOp2(str);
-	}
-	
+
+	PDI::Data_descriptor& operator[] (const char* str) override { return BracketOp2(str); }
+
 	MOCK_METHOD0(begin, PDI::Context::Iterator());
 	MOCK_METHOD0(end, PDI::Context::Iterator());
-	
+
 	MOCK_METHOD1(event, void(const char*));
-	
+
 	MOCK_METHOD1(datatype, PDI::Datatype_template_sptr(PC_tree_t));
 	MOCK_METHOD2(add_datatype, void(const std::string&, Datatype_template_parser));
 	MOCK_METHOD0(callbacks, PDI::Callbacks&());
 	MOCK_METHOD0(finalize_and_exit, void());
-	
 };
 
 

@@ -27,16 +27,16 @@
 #include "event_operation.h"
 #include "expose_operation.h"
 #include "logger_operation.h"
+#include "release_operation.h"
 #include "set_operation.h"
 #include "share_operation.h"
-#include "release_operation.h"
 
 #include "trigger.h"
 
 namespace set_value {
 
-Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node):
-    m_ctx{ctx}
+Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node)
+	: m_ctx{ctx}
 {
 	if (!PDI::is_list(operation_list_node)) {
 		throw PDI::Config_error{operation_list_node, "Operations must be defined as a list"};
@@ -68,9 +68,9 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node):
 
 void Trigger::execute()
 {
-	for (auto& operation : m_operations) {
+	for (auto& operation: m_operations) {
 		operation->execute();
 	}
 }
 
-}  // namespace set_value
+} // namespace set_value

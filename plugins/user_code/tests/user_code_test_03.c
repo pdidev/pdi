@@ -27,28 +27,27 @@
 
 #include <pdi.h>
 
-const char* CONFIG_YAML =
-    "logging: trace                                   \n"
-    "metadata:                                        \n"
-    "data:                                            \n"
-    "  test_var: double                               \n"
-    "  input: int                                     \n"
-    "  output: int                                    \n"
-    "plugins:                                         \n"
-    "  user_code:                                     \n"
-    "    on_event:                                    \n"
-    "      testing:                                   \n"
-    "        test: {var_in: $input, var_out: $output }\n"
-    ;
+const char* CONFIG_YAML
+	= "logging: trace                                   \n"
+	  "metadata:                                        \n"
+	  "data:                                            \n"
+	  "  test_var: double                               \n"
+	  "  input: int                                     \n"
+	  "  output: int                                    \n"
+	  "plugins:                                         \n"
+	  "  user_code:                                     \n"
+	  "    on_event:                                    \n"
+	  "      testing:                                   \n"
+	  "        test: {var_in: $input, var_out: $output }\n";
 
 void test(void)
 {
 	void* buffer;
-	if ( !PDI_access("var_in", &buffer, PDI_IN) ) {
+	if (!PDI_access("var_in", &buffer, PDI_IN)) {
 		PDI_release("var_in");
 	}
-	
-	if ( !PDI_access("var_out", &buffer, PDI_OUT) ) {
+
+	if (!PDI_access("var_out", &buffer, PDI_OUT)) {
 		PDI_release("var_out");
 	}
 }
@@ -61,32 +60,27 @@ void succeed_on_failure(PDI_status_t status, const char* message, void* ctx)
 	}
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
 	int has_failed = 0;
 	PDI_errhandler_t local_errhandler;
 	local_errhandler.func = succeed_on_failure;
 	local_errhandler.context = &has_failed;
-	
+
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
-	
+
 	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
-	
+
 	int in = 0;
 	int out = 0;
-	PDI_multi_expose("testing",
-	    "input", &in, PDI_IN,
-	    "output", &out, PDI_IN,
-	    NULL);
-	    
+	PDI_multi_expose("testing", "input", &in, PDI_IN, "output", &out, PDI_IN, NULL);
+
 	PDI_errhandler(std_handler); // returning to standard PDI err_handler
-	if ( !has_failed ) {
+	if (!has_failed) {
 		fprintf(stderr, "Error expected but not reported, terminating\n");
 		abort();
-		
 	}
-	
+
 	PDI_finalize();
 }
-

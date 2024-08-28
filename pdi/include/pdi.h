@@ -129,7 +129,7 @@ extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
-const char PDI_EXPORT* PDI_errmsg(void);
+const char PDI_EXPORT * PDI_errmsg(void);
 
 /** Sets the error handler to use
  *

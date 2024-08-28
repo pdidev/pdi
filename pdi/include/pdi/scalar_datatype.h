@@ -39,28 +39,28 @@ class PDI_EXPORT Scalar_datatype: public Datatype
 {
 	// Required to make_shared due to private ctor
 	struct Shared_enabler;
-	
+
 	/// Size of the content in bytes or 0 if unknown
 	size_t m_size;
-	
+
 	/// Size of the densified content in bytes
 	size_t m_dense_size;
-	
+
 	/// Size of the alignment in bytes
 	size_t m_align;
-	
+
 	/// Interpretation of the content
 	Scalar_kind m_kind;
-	
+
 	/// copy function or null for memcpy
-	std::function<void* (void*, const void*) > m_copy;
-	
+	std::function<void*(void*, const void*) > m_copy;
+
 	/// destroy function or null for memcpy
 	std::function<void(void*) > m_destroy;
-	
+
 	template <class T>
 	static std::shared_ptr<Scalar_datatype> const cv_type_for_v;
-	
+
 	template <class T>
 	static constexpr inline Scalar_kind kind_of()
 	{
@@ -74,42 +74,42 @@ class PDI_EXPORT Scalar_datatype: public Datatype
 		}
 		return Scalar_kind::UNKNOWN;
 	}
-	
+
 public:
 	template <class T>
 	static constexpr auto kind_of_v = kind_of<std::remove_cv_t<T>>();
-	
+
 	template <class T>
-	static constexpr auto const& type_for_v = cv_type_for_v<std::remove_cv_t<T>>;
-	
+	static constexpr auto const & type_for_v = cv_type_for_v<std::remove_cv_t<T>>;
+
 	/** Interpretation of the content
 	 */
 	Scalar_kind kind() const;
-	
+
 	Datatype_sptr densify() const override;
-	
+
 	Datatype_sptr evaluate(Context&) const override;
-	
+
 	bool dense() const override;
-	
+
 	size_t datasize() const override;
-	
+
 	size_t buffersize() const override;
-	
+
 	size_t alignment() const override;
-	
+
 	bool simple() const override;
-	
+
 	void* data_to_dense_copy(void* to, const void* from) const override;
-	
+
 	void* data_from_dense_copy(void* to, const void* from) const override;
-	
+
 	void destroy_data(void* ptr) const override;
-	
+
 	std::string debug_string() const override;
-	
+
 	bool operator== (const Datatype&) const override;
-	
+
 private:
 	/** Creates new scalar datatype
 	 *
@@ -118,7 +118,7 @@ private:
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
 	Scalar_datatype(Scalar_kind kind, size_t size, const Attributes_map& attributes = {});
-	
+
 	/** Creates new scalar datatype
 	 *
 	 * \param[in] kind kind of the scalar datatype
@@ -127,7 +127,7 @@ private:
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
 	Scalar_datatype(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes = {});
-	
+
 	/** Creates new scalar datatype
 	 *
 	 * \param[in] kind kind of the scalar datatype
@@ -138,15 +138,15 @@ private:
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
 	Scalar_datatype(
-	    Scalar_kind kind,
-	    size_t size,
-	    size_t align,
-	    size_t dense_size,
-	    std::function<void* (void*, const void*) > copy,
-	    std::function<void(void*) > destroy,
-	    const Attributes_map& attributes = {}
+		Scalar_kind kind,
+		size_t size,
+		size_t align,
+		size_t dense_size,
+		std::function<void*(void*, const void*) > copy,
+		std::function<void(void*) > destroy,
+		const Attributes_map& attributes = {}
 	);
-	
+
 public:
 	/** Creates new scalar datatype
 	 *
@@ -155,7 +155,7 @@ public:
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
 	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, const Attributes_map& attributes = {});
-	
+
 	/** Creates new scalar datatype
 	 *
 	 * \param[in] kind kind of the scalar datatype
@@ -164,7 +164,7 @@ public:
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
 	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes = {});
-	
+
 	/** Creates new scalar datatype
 	 *
 	 * \param[in] kind kind of the scalar datatype
@@ -176,13 +176,13 @@ public:
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
 	static std::shared_ptr<Scalar_datatype> make(
-	    Scalar_kind kind,
-	    size_t size,
-	    size_t align,
-	    size_t dense_size,
-	    std::function<void* (void*, const void*) > copy,
-	    std::function<void(void*) > destroy,
-	    const Attributes_map& attributes = {}
+		Scalar_kind kind,
+		size_t size,
+		size_t align,
+		size_t dense_size,
+		std::function<void*(void*, const void*) > copy,
+		std::function<void(void*) > destroy,
+		const Attributes_map& attributes = {}
 	);
 };
 

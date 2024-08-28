@@ -38,25 +38,25 @@ class PDI_EXPORT Python_ref_wrapper
 {
 	/// Wrapped reference
 	Ref m_ref;
-	
+
 public:
 	/** Creates python reference wrapper
 	 * \param ref reference to wrap
 	 */
 	Python_ref_wrapper(Ref ref);
-	
+
 	/** Gets a member if ref has a record datatype
 	 * \param member_name name of the member to get
 	 * \return Python_ref_wrapper if member has record type inside, numpy array otherwise
 	 */
 	pybind11::object getattribute(std::string member_name);
-	
+
 	/** Sets a member value if ref has a record datatype
 	 * \param member_name name of the member to set
 	 * \param value value to set to member
 	 */
 	void setattribute(std::string member_name, const pybind11::object value);
-	
+
 	/** Gets element of the array if ref has a array datatype
 	 * \param index index of element to get
 	 * \return Python_ref_wrapper if member has record type inside, numpy array otherwise

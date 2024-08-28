@@ -40,13 +40,12 @@ using PDI::Ref_r;
 using std::remove_cv_t;
 using std::remove_reference_t;
 
-
 TEST(ParsedModuloTest, toLong)
 {
 	MockContext ctx;
 
-	for (auto op1 : PARSEABLE_VALS<long>) {
-		for (auto op2 : PARSEABLE_VALS<long>) {
+	for (auto op1: PARSEABLE_VALS<long>) {
+		for (auto op2: PARSEABLE_VALS<long>) {
 			auto const & expr = fmt::format("{} % {}", op1, op2);
 			auto const & expected = op1 % op2;
 			auto const & result = PDI::Expression(expr);
@@ -59,8 +58,8 @@ TEST(ParsedModuloTest, toDouble)
 {
 	MockContext ctx;
 
-	for (auto op1 : PARSEABLE_VALS<long>) {
-		for (auto op2 : PARSEABLE_VALS<long>) {
+	for (auto op1: PARSEABLE_VALS<long>) {
+		for (auto op2: PARSEABLE_VALS<long>) {
 			auto const & expr = fmt::format("{} % {}", op1, op2);
 			auto const & expected = op1 % op2;
 			auto const & result = PDI::Expression(expr);
@@ -73,13 +72,11 @@ TEST(ParsedModuloTest, toRef)
 {
 	MockContext ctx;
 
-	for (auto op1 : PARSEABLE_VALS<long>) {
-		for (auto op2 : PARSEABLE_VALS<long>) {
+	for (auto op1: PARSEABLE_VALS<long>) {
+		for (auto op2: PARSEABLE_VALS<long>) {
 			auto const & expr = fmt::format("{} % {}", op1, op2);
 			auto const & expected = op1 % op2;
-			auto const & result
-					= Ref_r(PDI::Expression(expr).to_ref(ctx))
-			                  .scalar_value< remove_cv_t<remove_reference_t<decltype(expected)>>>();
+			auto const & result = Ref_r(PDI::Expression(expr).to_ref(ctx)).scalar_value< remove_cv_t<remove_reference_t<decltype(expected)>>>();
 			EXPECT_EQ(expected, result) << expr;
 		}
 	}
