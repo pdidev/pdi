@@ -1364,14 +1364,14 @@ a[id]
 	text-decoration: none;
 }
 
-#gitlab-ribbon a
+#github-ribbon a
 {
 	transition: 0.5s;
 }
 
 @media screen and (min-width: 40rem)
 {
-	#tabs #gitlab-ribbon
+	#tabs #github-ribbon
 	{
 		position: fixed;
 		width: 0;
@@ -1387,12 +1387,12 @@ a[id]
 		overflow: visible;
 	}
 	
-	#tabs #gitlab-ribbon:hover
+	#tabs #github-ribbon:hover
 	{
 		background-color: transparent;
 	}
 	
-	#tabs #gitlab-ribbon a
+	#tabs #github-ribbon a
 	{
 		z-index: 9999;
 		letter-spacing: normal;
@@ -1413,13 +1413,13 @@ a[id]
 		box-shadow: 4px 4px 10px rgba(0,0,0,0.8);
 	}
 
-	#tabs #gitlab-ribbon a:hover
+	#tabs #github-ribbon a:hover
 	{
 		background: var(--site-dblue);
 		color: var(--site-white);
 	}
 
-	#tabs #gitlab-ribbon a::before, #gitlab-ribbon a::after
+	#tabs #github-ribbon a::before, #github-ribbon a::after
 	{
 		content:"";
 		width: 100%;
@@ -1431,7 +1431,7 @@ a[id]
 		background: #eee;
 	}
 
-	#tabs #gitlab-ribbon a::after
+	#tabs #github-ribbon a::after
 	{
 		bottom: 1px;
 		top: auto;
@@ -1440,7 +1440,7 @@ a[id]
 
 @media screen and (min-width: 74rem)
 {
-	#tabs #gitlab-ribbon
+	#tabs #github-ribbon
 	{
 		position: fixed;
 		width: 0;
@@ -1452,7 +1452,7 @@ a[id]
 		z-index: 9999;
 	}
 	
-	#tabs #gitlab-ribbon a
+	#tabs #github-ribbon a
 	{
 		position: fixed;
 		top: 2.4rem;

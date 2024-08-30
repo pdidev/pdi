@@ -7,11 +7,11 @@ https://pdidev.slack.com
 
 Each feature should be developed in answer to a requirement described in an
 issue. Each feature should be implemented in its own branch based on the
-`master` branch. WIP Merge requests should be created on gitlab early to discuss
-design choices. Branches should be rebased on `master` before integration.
+`main` branch. Draft pull requests should be created on github early to discuss
+design choices. Branches should be rebased on `main` before integration.
 
 Bug fixes should be developed on the latest release branch. The release branch
-should then be merged into master.
+should then be merged into main.
 
 # PDI Coding style
 
