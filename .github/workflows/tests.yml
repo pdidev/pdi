@@ -53,7 +53,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/oldstable', 'debian/unstable']
+        base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
     runs-on: ubuntu-20.04
