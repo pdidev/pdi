@@ -263,7 +263,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 		auto size_it = m_sizeof.find(desc_name);
 		if (size_it != m_sizeof.end() && size_it->second.when()) {
 			Dnc_netcdf_file nc_file{m_ctx, m_file_path.to_string(m_ctx), NC_NOWRITE, m_communicator};
-			std::string dataset_name = size_it->second.sizeof_variable_path();
+			std::string dataset_name = size_it->second.variable_path();
 			m_ctx.logger().trace("Getting size of `{}' dataset", dataset_name);
 			nc_file.get_sizeof_variable(size_it->first, dataset_name, ref);
 		}
@@ -302,7 +302,8 @@ void Dnc_file_context::execute()
 			}
 
 			for (auto&& size_of: m_sizeof) {
-				nc_file->get_sizeof_variable(size_of.first, size_of.second.sizeof_variable_path(), m_ctx.desc(size_of.first).ref());
+				// nc_file->get_sizeof_variable(size_of.first, size_of.second.sizeof_variable_path(), m_ctx.desc(size_of.first).ref());
+				nc_file->get_sizeof_variable(size_of.first, size_of.second.variable_path(), m_ctx.desc(size_of.first).ref());
 			}
 		} else {
 			nc_file.reset(new Dnc_netcdf_file{m_ctx, m_file_path.to_string(m_ctx), NC_WRITE, m_communicator});
