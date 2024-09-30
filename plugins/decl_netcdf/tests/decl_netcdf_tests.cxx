@@ -740,11 +740,11 @@ TEST(decl_netcdf_test, 06)
 }
 
 /*
- * Name:                decl_netcdf_test.01
+ * Name:                decl_netcdf_test.size_of
  *
  * Description:         Tests simple write and read of scalar and array depending on `input' metadata
  */
-TEST(decl_netcdf_test, 07)
+TEST(decl_netcdf_test, size_of)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                      \n"
