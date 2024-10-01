@@ -302,7 +302,6 @@ void Dnc_file_context::execute()
 			}
 
 			for (auto&& size_of: m_sizeof) {
-				// nc_file->get_sizeof_variable(size_of.first, size_of.second.sizeof_variable_path(), m_ctx.desc(size_of.first).ref());
 				nc_file->get_sizeof_variable(size_of.first, size_of.second.variable_path(), m_ctx.desc(size_of.first).ref());
 			}
 		} else {
