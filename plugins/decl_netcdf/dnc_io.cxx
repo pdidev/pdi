@@ -34,17 +34,13 @@ Dnc_io::Dnc_io(PDI::Context& ctx, PC_tree_t config)
 	if (!PC_status(variable_node)) {
 		m_variable_path = PDI::Expression{PDI::to_string(variable_node)};
 	}
-
-	PC_tree_t when_node = PC_get(config, ".when");
-	if (!PC_status(when_node)) {
-		m_when = PDI::Expression{PDI::to_string(when_node)};
+	else {
+		PC_tree_t sizeof_node = PC_get(config, ".size_of");
+		if (!PC_status(sizeof_node)) {
+			m_variable_path = PDI::Expression{PDI::to_string(sizeof_node)};
+	    }
 	}
-
-	PC_tree_t sizeof_node = PC_get(config, ".size_of");
-	if (!PC_status(sizeof_node)) {
-		m_variable_path = PDI::Expression{PDI::to_string(sizeof_node)};
-	}
-
+	
 	PC_tree_t var_selection_node = PC_get(config, ".variable_selection");
 	if (!PC_status(var_selection_node)) {
 		PC_tree_t start_node = PC_get(var_selection_node, ".start");
@@ -62,6 +58,11 @@ Dnc_io::Dnc_io(PDI::Context& ctx, PC_tree_t config)
 				m_subsize.emplace_back(PDI::to_string(PC_get(subsize_node, "[%d]", i)));
 			}
 		}
+	}
+
+	PC_tree_t when_node = PC_get(config, ".when");
+	if (!PC_status(when_node)) {
+		m_when = PDI::Expression{PDI::to_string(when_node)};
 	}
 }
 
