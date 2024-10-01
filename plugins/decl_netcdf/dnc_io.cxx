@@ -33,8 +33,7 @@ Dnc_io::Dnc_io(PDI::Context& ctx, PC_tree_t config)
 	PC_tree_t variable_node = PC_get(config, ".variable");
 	if (!PC_status(variable_node)) {
 		m_variable_path = PDI::Expression{PDI::to_string(variable_node)};
-	}
-	else {
+	} else {
 		PC_tree_t sizeof_node = PC_get(config, ".size_of");
 		if (!PC_status(sizeof_node)) {
 			m_variable_path = PDI::Expression{PDI::to_string(sizeof_node)};
