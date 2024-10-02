@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16...3.29)
 
 # Add the plugin path to PDI_PLUGIN_PATH
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
