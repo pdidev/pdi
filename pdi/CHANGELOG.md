@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
-- Add method `scalar_assign` to assign a scalar value to a data buffer according to its type
+- Add the function `scalar_assign` to the `Ref_any` to ease setting the value of a scalar data buffer.
 
 #### Changed
 
