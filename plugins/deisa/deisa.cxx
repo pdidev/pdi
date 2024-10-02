@@ -97,7 +97,7 @@ class deisa_plugin: public Plugin
 
 	bool interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
 	Expression scheduler_info;
-	std::unordered_map<std::string, Datatype_template_ptr> deisa_arrays;
+	std::unordered_map<std::string, Datatype_template_sptr> deisa_arrays;
 	std::unordered_map<std::string, std::string> deisa_map_ins;
 	Expression rank;
 	Expression size;
