@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the function `scalar_assign` to the `Ref_any` to ease setting the value of a scalar data buffer.
 
 #### Changed
-
 * Replaced the astyle based indentation by a clang-format one, fixes
   [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
 * Update the version of dependencies according to our policy: oldest supported
