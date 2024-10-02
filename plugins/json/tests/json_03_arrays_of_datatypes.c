@@ -57,7 +57,7 @@ const char* CONFIG_YAML
 	  "          - var_int64_t                                                  \n"
 	  "          - var_float                                                    \n"
 	  "          - var_double                                                   \n"
-	  "          - var_char                                                     \n"; 
+	  "          - var_char                                                     \n";
 
 int main(void)
 {
