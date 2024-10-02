@@ -27,7 +27,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include CXX_FILESYSTEM_HEADER
+#include <filesystem>
 
 //
 #include <pdi/array_datatype.h>
@@ -43,7 +43,7 @@
 
 namespace json {
 
-using CXX_FILESYSTEM_NAMESPACE::path;
+using std::filesystem::path;
 using std::dynamic_pointer_cast;
 using std::fstream, std::ios;
 using std::pair, std::make_pair, std::tie;
