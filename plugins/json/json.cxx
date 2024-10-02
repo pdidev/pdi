@@ -23,11 +23,11 @@
  ******************************************************************************/
 
 //
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include <filesystem>
 
 //
 #include <pdi/array_datatype.h>
@@ -43,12 +43,12 @@
 
 namespace json {
 
-using std::filesystem::path;
 using std::dynamic_pointer_cast;
 using std::fstream, std::ios;
 using std::pair, std::make_pair, std::tie;
 using std::string, std::to_string;
 using std::unordered_map;
+using std::filesystem::path;
 
 //
 using PDI::Datatype_sptr, PDI::Record_datatype, PDI::Array_datatype, PDI::Tuple_datatype;
