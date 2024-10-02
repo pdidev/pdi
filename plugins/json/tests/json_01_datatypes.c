@@ -58,6 +58,7 @@ const char* CONFIG_YAML
 	  "          - var_float                                                   \n"
 	  "          - var_double                                                  \n"
 	  "          - var_char                                                    \n"; 
+
 int main(void)
 {
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
