@@ -132,7 +132,7 @@ endif("${BUILD_FORTRAN}")
 # set_property(TEST PDI_example_json_P PROPERTY TIMEOUT 30)
 # set_property(TEST PDI_example_json_P PROPERTY PROCESSORS 6)
 # endif("${BUILD_PYTHON}")
-# endif("${BUILD_JSON_PLUGIN}")
+endif("${BUILD_JSON_PLUGIN}")
 
 add_test(NAME PDI_example_trace_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")
 set_property(TEST PDI_example_trace_C PROPERTY TIMEOUT 15)
