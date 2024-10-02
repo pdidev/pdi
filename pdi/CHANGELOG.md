@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   CMake 3.16, Python 3.8, numpy 1.17, pybind11 2.4
   - do not embed doxygen anymore
   - directly use vendored gtest, benchmark & ZPP
-    [#465](https://github.com/pdidev/pdi/issues/465)
+  [#465](https://github.com/pdidev/pdi/issues/465)
 
 #### Deprecated
 
