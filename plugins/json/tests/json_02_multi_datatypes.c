@@ -31,15 +31,15 @@
 const char* CONFIG_YAML
 	= "pdi:                                                        \n"
 	  "  data:                                                     \n"
-	  "    var_array: { type: array, subtype: int32_t, size: 3 }  \n"
-	  "    var_string: { type: array, subtype: char, size: 8 }    \n"
-	  "    var_record:                                            \n"
+	  "    var_array: { type: array, subtype: int32_t, size: 3 }   \n"
+	  "    var_string: { type: array, subtype: char, size: 8 }     \n"
+	  "    var_record:                                             \n"
 	  "        type: struct                                        \n"
 	  "        members:                                            \n"
-	  "            - var_int32_t1: int32_t                            \n"
-	  "            - var_int32_t2: int32_t                            \n"
-	  "            - var_char: char                                   \n"
-	  "            - var_double: double                               \n"
+	  "            - var_int32_t1: int32_t                         \n"
+	  "            - var_int32_t2: int32_t                         \n"
+	  "            - var_char: char                                \n"
+	  "            - var_double: double                            \n"
 	  "                                                            \n"
 	  "  plugins:                                                  \n"
 	  "    json:                                                   \n"
@@ -53,7 +53,6 @@ int main()
 
 	/* STRING */
 	char _var_string[] = "string12";
-	// std::string _string = "string12";
 	PDI_expose("var_string", &_var_string, PDI_OUT);
 
 	/* ARRAY */
