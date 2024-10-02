@@ -1,5 +1,4 @@
 # Changelog for PDI
-
 All notable changes to the PDI library will be documented in this file.
 
 Please note this is the list for the distribution mechanism of PDI. The list for
@@ -9,16 +8,17 @@ each sub-project (including PDI itself) is located in the dedicated sub-project
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+
 ## [Unreleased]
 
 ### For users
 
 #### Added
 
-- Add method `scalar_assign` to assign a scalar value to a data buffer according to its type
+- Add the function `scalar_assign` to the `Ref_any` to ease setting the value of a scalar data buffer.
 
 #### Changed
-
 * Replaced the astyle based indentation by a clang-format one, fixes
   [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
 * Update the version of dependencies according to our policy: oldest supported
@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   CMake 3.16, Python 3.8, numpy 1.17, pybind11 2.4
   - do not embed doxygen anymore
   - directly use vendored gtest, benchmark & ZPP
-    [#465](https://github.com/pdidev/pdi/issues/465)
+  [#465](https://github.com/pdidev/pdi/issues/465)
 
 #### Deprecated
 
