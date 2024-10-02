@@ -1,5 +1,4 @@
 # Changelog for PDI
-
 All notable changes to the PDI library will be documented in this file.
 
 Please note this is the list for the distribution mechanism of PDI. The list for
