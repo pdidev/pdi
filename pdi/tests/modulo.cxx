@@ -65,22 +65,8 @@ TEST(ModuloU@CASE_NAME@Test, toLong)
 
 	for (auto op1: ALL_VALS<operand1_type>) {
 		for (auto op2: ALL_VALS<operand2_type>) {
-			EXPECT_CALL(o1_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op1,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op1)>,
-					true,
-					false
-				)));
-			EXPECT_CALL(o2_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op2,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op2)>,
-					true,
-					false
-				)));
+			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
+			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
 			auto const & expr = "${o1} % ${o2}";
 			auto const & expected = op1 % op2;
@@ -104,22 +90,8 @@ TEST(ModuloU@CASE_NAME@Test, toDouble)
 
 	for (auto op1: ALL_VALS<operand1_type>) {
 		for (auto op2: ALL_VALS<operand2_type>) {
-			EXPECT_CALL(o1_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op1,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op1)>,
-					true,
-					false
-				)));
-			EXPECT_CALL(o2_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op2,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op2)>,
-					true,
-					false
-				)));
+			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
+			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
 			auto const & expr = "${o1} % ${o2}";
 			auto const & expected = op1 % op2;
@@ -143,22 +115,8 @@ TEST(ModuloU@CASE_NAME@Test, toRef)
 
 	for (auto op1: ALL_VALS<operand1_type>) {
 		for (auto op2: ALL_VALS<operand2_type>) {
-			EXPECT_CALL(o1_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op1,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op1)>,
-					true,
-					false
-				)));
-			EXPECT_CALL(o2_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op2,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op2)>,
-					true,
-					false
-				)));
+			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
+			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
 			auto const & expr = "${o1} % ${o2}";
 			auto const & expected = op1 % op2;
