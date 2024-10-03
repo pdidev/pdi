@@ -536,6 +536,7 @@ public:
 	template <class T>
 	void scalar_assign(T value)
 	{
+		static_assert(std::is_scalar<T>::value, "T is not a scalar type");
 		static_assert(W, "Cannot assign a scalar value to Ref without write access");
 		if (auto&& scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(type())) {
 			if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
