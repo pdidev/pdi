@@ -25,9 +25,7 @@ The on-line PDI documentation is available at https://pdi.dev
 
 ## Installation
 
-**The recommended approach to install PDI is to use the stable pre-compiled
-binary packages for Debian, Fedora and Ubuntu available at
-https://github.com/pdidev/pkgs/tree/repo .**
+**The recommended approach to install PDI is to use the stable [pre-compiled binary packages for Debian, Fedora and Ubuntu](https://github.com/pdidev/pkgs/tree/repo).**
 
 On other distributions, in case you do not have root access, or if you want a
 more recent version, [**PDI spack recipe**](https://github.com/pdidev/spack) can
