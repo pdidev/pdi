@@ -29,6 +29,7 @@
 #include <mpi.h>
 #include <netcdf_par.h>
 #endif
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
