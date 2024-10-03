@@ -25,6 +25,7 @@
 
 #ifndef PDI_REF_ANY_H_
 #define PDI_REF_ANY_H_
+
 #include <algorithm>
 #include <cassert>
 #include <functional>
