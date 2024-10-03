@@ -34,14 +34,16 @@ set -xe
 
 
 # Make our work dirs
+SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
 
+cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
-SRCDIR="$(pwd)"
+SRCDIR="${PWD}"
 
 cd "${TEST_DIR}"
 
