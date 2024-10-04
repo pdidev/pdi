@@ -244,5 +244,7 @@ TEST_F(ContextTest, iterator_find)
 	}
 
 	// test case where search key is not found
-	ASSERT_FALSE(this->test_context->find("desc4") != this->test_context->end()); // TODO: make this an ASSERT_TRUE when operator== in Context::Iterator is available
+	ASSERT_FALSE(
+		this->test_context->find("desc4") != this->test_context->end()
+	); // TODO: make this an ASSERT_TRUE when operator== in Context::Iterator is available
 }
