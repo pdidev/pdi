@@ -291,6 +291,7 @@ Defines the condition on which plugin will read/write specific variable.
 |:-----|:---------------------------------------------------|
 |`when`|`$-expression` condition evalueated to boolean value|
 
+
 ### read subtree {#decl_netcdf_read}
 
 The `read` subtree can have 2 definitions:
@@ -315,6 +316,7 @@ The `read` subtree can have 2 definitions:
   |key                  |value                                                                |            |
   |:--------------------|:--------------------------------------------------------------------|------------|
   |`when`               |\ref decl_netcdf_io_when                                             |*optional*  |
+  |`size_of`            |Name of the variable for which we retrive its size                   |*optional*  |
   |`variable`           |variable name to read (may be defined in \ref decl_netcdf_variables) |*optional*  |
   |`variable_selection` |\ref decl_netcdf_var_selection                                       |*optional*  |
 
@@ -325,6 +327,7 @@ The `read` subtree can have 2 definitions:
       type: array
       subtype: int
       size: [4, 4]
+    matrix_size: {type: array, subtype: int, size: 2}
 
   plugins:
     decl_netcdf:
@@ -341,6 +344,8 @@ The `read` subtree can have 2 definitions:
           variable_selection:  # select bottom-left submatrix 4x4
             start: [4, 4]
             subsize: [4, 4]
+        matrix_size:
+          size_of: integer_matrix  # matrix_size = [8,8]
   ```
 
 ### Full yaml example {#decl_netcdf_full_config}
