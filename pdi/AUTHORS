@@ -11,7 +11,7 @@ Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 * Initial Fortran interface
 
 Benoit Martin - CEA (bmartin@cea.fr)
-* Maintainer (Jan. 2024 - ...)
+* Add Context::find()
 
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
