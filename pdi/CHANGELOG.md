@@ -6,7 +6,8 @@ each sub-project (including PDI itself) is located in the dedicated sub-project
 `CHANGELOG.md`.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
 
@@ -19,8 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
 
 #### Changed
-* Replaced the astyle based indentation by a clang-format one, fixes
-  [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
 * Update the version of dependencies according to our policy: oldest supported
   Ubuntu & Fedora, oldstable debian & spack 0.18. The new requirements are:
   CMake 3.16, Python 3.8, numpy 1.17, pybind11 2.4
@@ -36,23 +35,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed compilation with {fmt} version 11+
   [#456](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/456)
 
-
 #### Security
 
 
 ### For plugin developers
 
 #### Added
-* Create a method that dereferences a pointer type and returns the data as a new Reference.
+* Create a method that dereferences a pointer type and returns the data as a new
+  Reference.
   [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
+* Add the function `scalar_assign` to `Ref_any` to ease setting the value of a
+  scalar data buffer.
+
 #### Changed
-* Rename `Datatype_template_ptr` to `Datatype_template_sptr`.
+* Replaced the astyle based indentation by a clang-format one, fixes
+  [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
+* Renamed `Datatype_template_ptr` to `Datatype_template_sptr` that should now be
+  used instead.
+
 #### Deprecated
-* `Datatype_template_ptr`
+* The `Datatype_template_ptr` type is now deprecated, `Datatype_template_sptr`
+  should be used instead.
+
 #### Removed
 
 #### Fixed
-
 
 #### Security
 
@@ -74,7 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### For plugin developers
 
 #### Added
-* Create a method that dereferences a pointer type and returns the data as a new Reference.
+* Create a method that dereferences a pointer type and returns the data as a new
+  Reference.
   [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
 
 
@@ -276,7 +284,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 * Expression arithmetic operators
-* The `PDI_DEFAULT_PLUGINDIR` cmake variable provides the default plugin installation path
+* The `PDI_DEFAULT_PLUGINDIR` cmake variable provides the default plugin
+  installation path
 * Subaccess methods for array, record and pointer datatypes
 * Ref operator[] for getting subref by index and member name
 * Documentation of coupling PDI with user application
