@@ -1,14 +1,14 @@
 #=============================================================================
 # Copyright (c) 2020-2024 Centre national de la recherche scientifique (CNRS)
 # Copyright (c) 2020-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
-# Copyright (c) 2020-2024 Institut national de recherche en informatique et en automatique (Inria)
+# Copyright (c) 2020-2023 Institut national de recherche en informatique et en automatique (Inria)
 # Copyright (c) 2020-2024 Université Paris-Saclay
 # Copyright (c) 2020-2024 Université de Versailles Saint-Quentin-en-Yvelines
 #
 # SPDX-License-Identifier: MIT
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_deisa_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
