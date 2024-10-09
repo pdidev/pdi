@@ -11,6 +11,12 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)
 * Design and initial implementation
 
+Amal Gueroudji - ANL (agueroudji@anl.gov)
+* Deisa plugin creation
+
+Benoit Martin - CEA (bmartin@cea.fr)
+* Deisa plugin refactoring
+
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
@@ -29,7 +35,3 @@ project co-financed by Polish Ministry of Science and Higher Education.
 
 Yushan Wang - CEA (yushan.wang@cea.fr)
 * Maintainer (Sept. 2023 - ...)
-
-Benoit Martin - CEA (bmartin@cea.fr)
-* Credit goes to Deisa creator: Amal Gueroudji
-* Deisa refactoring
