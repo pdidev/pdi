@@ -27,7 +27,6 @@ find_package(MPI REQUIRED COMPONENTS CXX)
 
 # The plugin
 add_library(pdi_deisa_plugin MODULE deisa.cxx)
-# link against Python3::Python to workaround https://github.com/pybind/pybind11/issues/2664
 target_link_libraries(pdi_deisa_plugin PUBLIC PDI::PDI_plugins PDI::PDI_pysupport pybind11::embed MPI::MPI_CXX)
 set_target_properties(pdi_deisa_plugin PROPERTIES
     CXX_STANDARD_REQUIRED TRUE
