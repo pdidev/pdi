@@ -77,6 +77,11 @@ Context::Iterator Context_proxy::end()
 	return m_real_context.end();
 }
 
+Context::Iterator Context_proxy::find(const string& name)
+{
+	return m_real_context.find(name);
+}
+
 void Context_proxy::event(const char* name)
 {
 	m_real_context.event(name);

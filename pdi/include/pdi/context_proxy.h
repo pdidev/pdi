@@ -87,6 +87,8 @@ public:
 	 */
 	Iterator end() override;
 
+	Iterator find(const std::string& name) override;
+
 	/** Context::event proxy for plugins
 	 *
 	 *  \param[in] name name of the event
