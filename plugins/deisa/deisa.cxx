@@ -49,13 +49,12 @@ class deisa_plugin: public Plugin
 {
 	static constexpr char PYTHON_LIBRARY_COMPATIBILITY[] = "0.3.2"; // Used to check compatibility with Deisa's python library
 
-	bool interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
-	Expression scheduler_info;
-	std::unordered_map<std::string, Datatype_template_sptr> deisa_arrays;
-	std::unordered_map<std::string, std::string> deisa_map_ins;
-	Expression rank;
-	Expression size;
-	Expression time_step;
+	bool m_interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
+	Expression m_scheduler_info;
+	std::unordered_map<std::string, Datatype_template_sptr> m_deisa_arrays;
+	Expression m_rank;
+	Expression m_size;
+	Expression m_time_step;
 
 public:
 	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return {{"mpi"}, {"mpi"}}; }
@@ -66,18 +65,18 @@ public:
 		if (!Py_IsInitialized()) {
 			py::initialize_interpreter();
 			py::exec("bridge = None"); // needed because check in dtor.
-			interpreter_initialized_in_plugin = true;
+			m_interpreter_initialized_in_plugin = true;
 		}
 		check_compatibility();
 		// init params
 		each(conf, [&](PC_tree_t key_tree, PC_tree_t value) {
 			std::string key = to_string(key_tree);
 			if (key == "scheduler_info") {
-				scheduler_info = to_string(value);
+				m_scheduler_info = to_string(value);
 			} else if (key == "deisa_arrays") {
-				each(value, [&](PC_tree_t key_map, PC_tree_t value_map) { deisa_arrays.emplace(to_string(key_map), ctx.datatype(value_map)); });
+				each(value, [&](PC_tree_t key_map, PC_tree_t value_map) { m_deisa_arrays.emplace(to_string(key_map), ctx.datatype(value_map)); });
 			} else if (key == "time_step") {
-				time_step = to_string(value);
+				m_time_step = to_string(value);
 			} else if (key == "map_in") {
 				//
 			} else if (key == "logging" || key == "init_on") {
@@ -89,10 +88,10 @@ public:
 
 
 		int mpi_size;
-		rank = Expression{Ref_r{ctx.desc("MPI_COMM_WORLD_rank").ref()}.scalar_value<long>()};
+		m_rank = Expression{Ref_r{ctx.desc("MPI_COMM_WORLD_rank").ref()}.scalar_value<long>()};
 		MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{ctx.desc("MPI_COMM_WORLD").ref()}.get());
 		MPI_Comm_size(comm, &mpi_size);
-		size = Expression{static_cast<long>(mpi_size)};
+		m_size = Expression{static_cast<long>(mpi_size)};
 
 
 		// plugin init
@@ -107,7 +106,6 @@ public:
 		PC_tree_t map_tree = PC_get(conf, ".map_in");
 		if (!PC_status(map_tree)) {
 			each(map_tree, [&](PC_tree_t key_map, PC_tree_t value_map) {
-				//                deisa_map_ins.emplace({to_string(key_map), to_string(value_map)});
 
 				ctx.callbacks().add_data_callback(
 					[&, deisa_array_name = to_string(value_map)](const std::string&, const Ref& data_ref) {
@@ -115,15 +113,15 @@ public:
 							// start a python context and call bridge.publish_data(...)
 							pydict pyscope = pymod::import("__main__").attr("__dict__");
 							pyscope[deisa_array_name.c_str()] = to_python(data_ref);
-							pyscope["time_step"] = time_step.to_long(ctx);
+							pyscope["time_step"] = m_time_step.to_long(ctx);
 							pyscope["name"] = deisa_array_name.c_str();
 
 #ifdef NDEBUG
 							py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step, debug=False)", pyscope);
 #else
-                        py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step, debug=True)", pyscope);
+              py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step, debug=True)", pyscope);
 #endif
-							pyscope[deisa_array_name.c_str()] = NULL; // TODO: is this needed ?
+							pyscope[deisa_array_name.c_str()] = NULL;
 						} catch (const std::exception& e) {
 							std::cerr << " *** [PDI/Deisa] Error: while publishing data, caught exception: " << e.what() << std::endl;
 						} catch (...) {
@@ -139,7 +137,7 @@ public:
 	~deisa_plugin() noexcept override
 	{
 		try {
-			if (interpreter_initialized_in_plugin) {
+			if (m_interpreter_initialized_in_plugin) {
 				py::exec(R"(
                   if bridge:
                     bridge.release()
@@ -177,7 +175,7 @@ private:
 	{
 		std::unordered_map<std::string, std::unordered_map<std::string, std::vector<size_t>>> darrs;
 		std::unordered_map<std::string, py::dtype> darrs_dtype;
-		for (auto&& key_value: deisa_arrays) {
+		for (auto&& key_value: m_deisa_arrays) {
 			std::unordered_map<std::string, std::vector<size_t>> darr;
 			std::vector<size_t> sizes;
 			std::vector<size_t> starts;
@@ -207,9 +205,9 @@ private:
 			pyscope["deisa"] = pymod::import("deisa");
 			pymod deisa = pymod::import("deisa");
 			pyscope["get_bridge_instance"] = deisa.attr("get_bridge_instance");
-			pyscope["scheduler_info"] = to_python(scheduler_info.to_ref(context()));
-			pyscope["rank"] = to_python(rank.to_ref(context()));
-			pyscope["size"] = to_python(size.to_ref(context()));
+			pyscope["scheduler_info"] = to_python(m_scheduler_info.to_ref(context()));
+			pyscope["rank"] = to_python(m_rank.to_ref(context()));
+			pyscope["size"] = to_python(m_size.to_ref(context()));
 			pyscope["deisa_arrays"] = darrs;
 			pyscope["deisa_arrays_dtype"] = darrs_dtype;
 
