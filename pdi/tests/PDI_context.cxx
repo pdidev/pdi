@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -216,4 +217,34 @@ TEST_F(ContextTest, iterator)
 		ASSERT_EQ(it->name(), (*it).name());
 		ASSERT_TRUE(name != desc_names.end());
 	}
+}
+
+/*
+ * Name:                ContextTest.iterator
+ *
+ * Tested functions:    PDI::Context::find(),
+ *                      PDI::Context::end(),
+ *
+ * Description:         Checks if tested functions
+ *                      return correct iterators.
+ */
+TEST_F(ContextTest, iterator_find)
+{
+	// Put some descriptors inside context
+	set<string> desc_names{"desc1", "desc2", "desc3"};
+	for (auto& desc_name: desc_names) {
+		this->test_context->desc(desc_name);
+	}
+
+	// Iterating through the descriptors to ensure we can find() them
+	for (set<string>::iterator it = desc_names.begin(); it != desc_names.end(); ++it) {
+		Context::Iterator descriptor = this->test_context->find(*it);
+		ASSERT_EQ(descriptor->name(), (*it));
+		ASSERT_TRUE(descriptor != this->test_context->end());
+	}
+
+	// test case where search key is not found
+	ASSERT_FALSE(
+		this->test_context->find("desc4") != this->test_context->end()
+	); // TODO: make this an ASSERT_TRUE when operator== in Context::Iterator is available
 }

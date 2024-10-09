@@ -108,6 +108,10 @@ public:
 	 */
 	Iterator end() override;
 
+	/** Returns the iterator that corresponds to the provided Data_descriptor name
+	 */
+	Iterator find(const std::string& name);
+
 	/** Triggers a PDI "event"
 	 * \param[in] name the event name
 	 */

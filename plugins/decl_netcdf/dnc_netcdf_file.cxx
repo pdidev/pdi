@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -29,6 +29,7 @@
 #include <mpi.h>
 #include <netcdf_par.h>
 #endif
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -250,9 +251,7 @@ void Dnc_netcdf_file::read_variable(const Dnc_variable& variable)
 	auto it = m_variables.find(variable.path());
 	if (it == m_variables.end()) {
 		// get group path and variable name
-		std::string group_path;
-		std::string variable_name;
-		std::tie(group_path, variable_name) = split_group_and_variable(variable.path());
+		auto [group_path, variable_name] = split_group_and_variable(variable.path());
 
 		// get src_id
 		auto group_it = m_groups.find(group_path);
@@ -324,9 +323,7 @@ nc_type Dnc_netcdf_file::define_compound_type(std::shared_ptr<const PDI::Record_
 
 
 	/* support types in non-root groups? - netCDF 4.7.4 does not support it correctly
-	    std::string group_path;
-	    std::string compound_type_name;
-	    std::tie(group_path, compound_type_name) = split_group_and_variable(compound_type_path);
+	    auto [group_path, compound_type_name] = split_group_and_variable(compound_type_path);
 	    define_group(Dnc_group{m_ctx, group_path});
 	    // get dest_id
 	    auto group_it = m_groups.find(group_path);
@@ -395,9 +392,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 	}
 
 	// get group path and variable name
-	std::string group_path;
-	std::string variable_name;
-	std::tie(group_path, variable_name) = split_group_and_variable(variable.path());
+	auto [group_path, variable_name] = split_group_and_variable(variable.path());
 	m_ctx.logger().trace("Variable path `{}' splitted to `{}' group and `{}` variable name", variable.path(), group_path, variable_name);
 
 	// get dest_id
@@ -588,10 +583,7 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	}
 
 	// get group path and variable name
-	std::string group_path;
-	std::string variable_name;
-	std::tie(group_path, variable_name) = split_group_and_variable(variable.path());
-
+	auto [group_path, variable_name] = split_group_and_variable(variable.path());
 	// get dest_id
 	auto group_it = m_groups.find(group_path);
 	if (group_it == m_groups.end()) {
@@ -640,9 +632,7 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	std::vector<size_t> var_count = read.get_dims_count(var_stride);
 
 	// get group path and variable name
-	std::string group_path;
-	std::string variable_name;
-	std::tie(group_path, variable_name) = split_group_and_variable(variable.path());
+	auto [group_path, variable_name] = split_group_and_variable(variable.path());
 
 	// get src_id
 	auto group_it = m_groups.find(group_path);
@@ -664,6 +654,69 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 		nc_try(nc_get_var(src_id, var_id, ref_w.get()), "Cannot read `{}' from file", variable.path());
 	} else {
 		nc_try(nc_get_vara(src_id, var_id, var_start.data(), var_count.data(), ref_w.get()), "Cannot read `{}' from file", variable.path());
+	}
+}
+
+void Dnc_netcdf_file::get_sizeof_variable(const std::string& variable, const std::string& sizeof_var, PDI::Ref ref)
+{
+	if (!PDI::Ref_w(ref)) {
+		throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Cannot read `{}'. Need write access to read it from file", sizeof_var};
+	}
+
+	// get group path and variable name
+	auto [group_path, variable_name] = split_group_and_variable(sizeof_var);
+
+	// get src_id
+	auto group_it = m_groups.find(group_path);
+	if (group_it == m_groups.end()) {
+		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Cannot find group that should be created: {}", group_path};
+	}
+	nc_id src_id = group_it->second;
+
+	nc_id var_id;
+	nc_try(nc_inq_varid(src_id, variable_name.c_str(), &var_id), "Cannot inquire variable {} from (nc_id = {})", variable_name, src_id);
+
+	int var_dim;
+	nc_try(nc_inq_varndims(src_id, var_id, &var_dim), "Cannot inquire variable dimension counts from (var_id= {}, nc_id = {})", sizeof_var, src_id);
+
+	std::vector<int> dimid(var_dim);
+	std::vector<size_t> dimlen(var_dim);
+
+	nc_try(nc_inq_vardimid(src_id, var_id, &dimid[0]), "cannot get size of `{}", sizeof_var);
+
+	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref.type())) {
+		if (var_dim != 1) {
+			throw PDI::Error{
+				PDI_ERR_VALUE,
+				"Decl_netcdf plugin: Incoherent data size. Data {} defined with size=1 , but {} has size {}",
+				variable,
+				sizeof_var,
+				var_dim
+			};
+		}
+		nc_try(nc_inq_dimlen(src_id, dimid[0], &dimlen[0]), "Cannot inquire dimension length");
+
+		PDI::Ref_w(ref).scalar_assign(dimlen[0]);
+	}
+
+	else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref.type()))
+	{
+		if (var_dim != array_type->size()) {
+			throw PDI::Error{
+				PDI_ERR_VALUE,
+				"Decl_netcdf plugin: Incoherent data size. Data {} defined with size {}, but provided with {}",
+				variable,
+				array_type->size(),
+				var_dim
+			};
+		}
+		for (int i = 0; i < var_dim; i++) {
+			nc_try(nc_inq_dimlen(src_id, dimid[i], &dimlen[i]), "Cannot inquire dimension length");
+
+			PDI::Ref_w(ref[i]).scalar_assign(dimlen[i]);
+		}
+	} else {
+		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: Incompatible data type for {}. Expecting scalar or array", sizeof_var};
 	}
 }
 
