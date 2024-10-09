@@ -43,52 +43,6 @@ using pydict = py::dict;
 using pymod = py::module;
 using pyobj = py::object;
 
-py::dtype datatype_to_pydtype(const std::shared_ptr<const Scalar_datatype>& scalar_type)
-{
-	switch (scalar_type->kind()) {
-	case Scalar_kind::FLOAT: {
-		switch (scalar_type->datasize()) {
-		case sizeof(float):
-			return py::dtype::of<float>();
-		case sizeof(double):
-			return py::dtype::of<double>();
-		default:
-			throw Type_error{"Unable to pass {} bytes floating point value to python", scalar_type->datasize()};
-		}
-	} break;
-	case Scalar_kind::SIGNED: {
-		switch (scalar_type->datasize()) {
-		case sizeof(int8_t):
-			return py::dtype::of<int8_t>();
-		case sizeof(int16_t):
-			return py::dtype::of<int16_t>();
-		case sizeof(int32_t):
-			return py::dtype::of<int32_t>();
-		case sizeof(int64_t):
-			return py::dtype::of<int64_t>();
-		default:
-			throw Type_error{"Unable to pass {} bytes integer value to python", scalar_type->datasize()};
-		}
-	} break;
-	case Scalar_kind::UNSIGNED: {
-		switch (scalar_type->datasize()) {
-		case sizeof(uint8_t):
-			return py::dtype::of<uint8_t>();
-		case sizeof(uint16_t):
-			return py::dtype::of<uint16_t>();
-		case sizeof(uint32_t):
-			return py::dtype::of<uint32_t>();
-		case sizeof(uint64_t):
-			return py::dtype::of<uint64_t>();
-		default:
-			throw Type_error{"Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
-		}
-	} break;
-	default:
-		throw Type_error{"Unable to pass value of unexpected type to python"};
-	}
-}
-
 /** The deisa plugin
  */
 class deisa_plugin: public Plugin
