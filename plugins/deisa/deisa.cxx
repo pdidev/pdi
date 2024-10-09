@@ -9,7 +9,6 @@
  *
  *****************************************************************************/
 
-#include <iostream>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -27,6 +26,7 @@
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype.h>
 #include <pdi/expression.h>
+#include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/python/tools.h>
@@ -51,7 +51,7 @@ class deisa_plugin: public Plugin
 
 	bool m_interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
 	Expression m_scheduler_info;
-	std::unordered_map<std::string, Datatype_template_sptr> m_deisa_arrays;
+	unordered_map<std::string, Datatype_template_sptr> m_deisa_arrays;
 	Expression m_rank;
 	Expression m_size;
 	Expression m_time_step;
@@ -122,9 +122,11 @@ public:
 #endif
 							pyscope[deisa_array_name.c_str()] = NULL;
 						} catch (const std::exception& e) {
-							std::cerr << " *** [PDI/Deisa] Error: while publishing data, caught exception: " << e.what() << std::endl;
+							ctx.logger().error("While publishing data, caught exception {}", e.what());
+							throw Plugin_error("While publishing data. Caught exception: {}", std::string(e.what()));
 						} catch (...) {
-							std::cerr << " *** [PDI/Deisa] Error: while publishing data." << std::endl;
+							ctx.logger().error("While publishing data.");
+							throw Plugin_error("While publishing data.");
 						}
 					},
 					to_string(key_map)
@@ -144,9 +146,9 @@ public:
 				py::finalize_interpreter();
 			}
 		} catch (const std::exception& e) {
-			std::cerr << " *** [PDI/Deisa] Error in destructor, caught exception: " << e.what() << std::endl;
+			context().logger().error("Exception in destructor, caught exception {}", e.what());
 		} catch (...) {
-			std::cerr << " *** [PDI/Deisa] Error in destructor. " << std::endl;
+			context().logger().error("Exception in destructor");
 		}
 	}
 
@@ -210,10 +212,10 @@ private:
 			// TODO: use_ucx
 			py::exec("bridge = get_bridge_instance(scheduler_info, rank, size, deisa_arrays, deisa_arrays_dtype)", pyscope);
 		} catch (const std::exception& e) {
-			std::cerr << " *** [PDI/Deisa] Error: while initializing deisa, caught exception: " << e.what() << std::endl;
-			throw Plugin_error("Could not initialize Deisa plugin. Caught exception: " + std::string(e.what()));
+			context().logger().error("While initializing deisa, caught exception {}", e.what());
+			throw Plugin_error("Could not initialize Deisa plugin. Caught exception: {}", std::string(e.what()));
 		} catch (...) {
-			std::cerr << " *** [PDI/Deisa] Error: while initializing deisa" << std::endl;
+			context().logger().error("While initializing deisa.");
 			throw Plugin_error("Could not initialize Deisa plugin. Unknown exception.");
 		}
 	}
