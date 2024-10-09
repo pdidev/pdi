@@ -106,7 +106,6 @@ public:
 		PC_tree_t map_tree = PC_get(conf, ".map_in");
 		if (!PC_status(map_tree)) {
 			each(map_tree, [&](PC_tree_t key_map, PC_tree_t value_map) {
-
 				ctx.callbacks().add_data_callback(
 					[&, deisa_array_name = to_string(value_map)](const std::string&, const Ref& data_ref) {
 						try {
@@ -119,7 +118,7 @@ public:
 #ifdef NDEBUG
 							py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step, debug=False)", pyscope);
 #else
-              py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step, debug=True)", pyscope);
+							py::exec("bridge.publish_data(" + deisa_array_name + ", name, time_step, debug=True)", pyscope);
 #endif
 							pyscope[deisa_array_name.c_str()] = NULL;
 						} catch (const std::exception& e) {
@@ -139,9 +138,9 @@ public:
 		try {
 			if (m_interpreter_initialized_in_plugin) {
 				py::exec(R"(
-                  if bridge:
-                    bridge.release()
-                )"); // call bridge release() so that we can clear things before destructor is called (if it is ever called !).
+				if bridge:
+				  bridge.release()
+                		)"); // call bridge release() so that we can clear things before destructor is called (if it is ever called !).
 				py::finalize_interpreter();
 			}
 		} catch (const std::exception& e) {
@@ -160,9 +159,6 @@ private:
 	{
 		pymod deisa = pymod::import("deisa.__version__");
 		const auto python_library_version = py::str(deisa.attr("__version__")).cast<std::string>();
-		//            auto s = std::string(PYTHON_LIBRARY_COMPATIBILITY);
-		//            bool b = std::lexicographical_compare(python_library_version.begin(), python_library_version.end(),
-		//                                                  s.begin(), s.end());
 		if (python_library_version != PYTHON_LIBRARY_COMPATIBILITY) {
 			throw Plugin_error(
 				"Deisa PDI plugin is expecting Deisa python version " + std::string(PYTHON_LIBRARY_COMPATIBILITY) + " but found version "
