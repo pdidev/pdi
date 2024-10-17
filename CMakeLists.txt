@@ -77,6 +77,7 @@ option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
+option(BUILD_CATALYST_PLUGIN   	"Build Catalyst plug-in" OFF)
 
 
 
@@ -515,4 +516,10 @@ sbuild_add_module(PDI_TESTS
 	DEPENDS PDI
 	INSTALL_COMMAND ""
 	SUBSTEPS test
+)
+
+sbuild_add_module(CATALYST_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_CATALYST_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/catalyst"
+	DEPENDS PDI
 )
