@@ -12,6 +12,7 @@ struct catalyst_plugin : public PDI::Plugin
 {
   catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree);
   ~catalyst_plugin();
+
 private:
   void ProcessPDIInit();
   void ProcessData(const std::string& data_name, PDI::Ref ref);

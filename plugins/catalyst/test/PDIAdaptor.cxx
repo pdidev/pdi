@@ -81,12 +81,6 @@ bool Execute(int cycle, double time, Grid& grid, Attributes& attribs)
 
 bool Finalize()
 {
-  // auto status = PDI_event("catalyst_finalize");
-  // if (status != PDI_status_t::PDI_OK)
-  // {
-  //   return false;
-  // }
-
   auto status = PDI_finalize();
   return status == PDI_status_t::PDI_OK;
 }
