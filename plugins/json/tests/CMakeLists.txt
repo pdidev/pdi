@@ -66,7 +66,3 @@ build_test_compare(json_04_arrays_of_multi_datatypes)
 build_test_compare(json_05_mixing_datatypes)
 build_test_compare(json_06_pointers)
 
-# if("${BUILD_FORTRAN}")
-# 	add_subdirectory(fortran/)
-# endif("${BUILD_FORTRAN}")
-
