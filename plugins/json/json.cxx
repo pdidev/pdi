@@ -316,7 +316,5 @@ private:
 	}
 };
 
-} // namespace json
+} // namespace
 PDI_PLUGIN(json)
-
-
