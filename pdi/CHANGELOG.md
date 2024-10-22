@@ -16,6 +16,8 @@ and this project adheres to
 ### For users
 
 #### Added
+* Add the `Context::find()` method.
+  [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
 
 #### Changed
 * Update the version of dependencies according to our policy: oldest supported
