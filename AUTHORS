@@ -11,6 +11,9 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)
 * Design and initial implementation
 
+Benoit Martin - CEA (bmartin@cea.fr)
+* CMake maintainer (Oct. 2024 - ...)
+
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
 * Bug fix, JSON plugin
