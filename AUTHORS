@@ -12,7 +12,6 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Design and initial implementation
 
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
-* Intern (Apr. 2023 - Oct. 2023)
 * Fixed CMake issues, internal API enhancement
 * Bug fix, JSON plugin
 
