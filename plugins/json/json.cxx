@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2023-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,14 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-//
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
 
-//
 #include <pdi/array_datatype.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
@@ -41,7 +39,7 @@
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
 
-namespace json {
+namespace {
 
 using std::dynamic_pointer_cast;
 using std::fstream, std::ios;
@@ -50,7 +48,6 @@ using std::string, std::to_string;
 using std::unordered_map;
 using std::filesystem::path;
 
-//
 using PDI::Datatype_sptr, PDI::Record_datatype, PDI::Array_datatype, PDI::Tuple_datatype;
 using PDI::Expression;
 using PDI::Logger;
@@ -58,6 +55,8 @@ using PDI::opt_each, PDI::each;
 using PDI::Ref, PDI::Ref_r;
 using PDI::Scalar_datatype, PDI::Scalar_kind;
 
+/** The json plugin 
+*/
 class json_plugin: public PDI::Plugin
 {
 	// Map between data variables and a pair between condition and the output filenames
@@ -90,10 +89,6 @@ public:
 		const Datatype_sptr type = reference.type();
 
 		auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type);
-		if (!scalar_type) {
-			logger.error("Reference is not of Scalar datatype ?");
-			return "not a scalar";
-		}
 		if (!scalar_type->buffersize()) logger.error("Buffersize is 0 ... invalid configuration file");
 
 		switch (scalar_type->kind()) {
@@ -211,7 +206,7 @@ private:
 		});
 	}
 
-	/** Read the configuration file
+	/** Convert reference to string for writing to file
 	 *
 	 * \param logger PDI's logger instance
 	 * \param reference the reference with read permissions
@@ -223,7 +218,6 @@ private:
 		const Datatype_sptr type = reference.type();
 
 		if (auto const && scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
-			if (!scalar_type->buffersize()) logger.error("buffersize is 0 ... invalid configuration file");
 			return scalar_ref_to_string(logger, reference);
 		} else if (auto const && array_type = dynamic_pointer_cast<const Array_datatype>(type)) {
 			// If the array subtype is a char : interpret it as a string
@@ -278,6 +272,7 @@ private:
 	 */
 	void write_data(const string& data_name, Ref_r reference)
 	{
+		// TODO: use a json library instead of native fstream
 		Logger& logger = context().logger();
 
 		for (auto const& [condition, fpath]: m_data_to_path_map[data_name]) {
@@ -321,6 +316,7 @@ private:
 	}
 };
 
+} // namespace json
 PDI_PLUGIN(json)
 
-} // namespace json
+
