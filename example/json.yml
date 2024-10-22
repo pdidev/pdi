@@ -32,7 +32,7 @@ duration: 0.75
 # global [height, width] (excluding boundary conditions or ghosts)
 datasize: [60, 12]
 # degree of parallelism
-parallelism: { height: 3, width: 1 }
+parallelism: { height: 2, width: 2 }
 
 # only the following config is passed to PDI
 pdi:
@@ -53,7 +53,8 @@ pdi:
       write : [dsize, psize]
     - file : params2.json
       write : [mpi_rank, mpi_size, dsize, psize, pcoord]
-    - file : iter_${iter}.json
+    - file : proc_${mpi_rank}_iter_${iter}.json
+      when: $iter % 100 = 0
       write : [main_field]
-      when: $iter % 10 = 0
+      
 # //! [example_config_json_plugin]

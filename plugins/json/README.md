@@ -46,8 +46,8 @@ For example,
 plugins:
   json:
     - file: file_path.json
-      write: [data1, data2, ...]
       when: iteration % 10 = 0 # This is optional
+      write: [data1, data2, ...]
 ```
 
 Note : by default, if not specified a true condition is set, so that the variable is written every time PDI is granted read permission.
@@ -56,9 +56,9 @@ Note : by default, if not specified a true condition is set, so that the variabl
 
 The easiest way to test the plugin is refering to the example section, that provides a full somewhat realistic C simulation code, where PDI is enabled and the JSON plugin is used. This one can be found at \ref PDI_example
 
-To use it, first compile using CMake, then execute : 
+To use it, first compile using CMake with `BUILD_TESTING` set to `ON`, then execute : 
 ```bash
-build/PDI_example_C json.yml
+build/PDI_EXAMPLE/PDI_example_C example/json.yml
 ```
 
 <!-- ### Example output -->
