@@ -77,7 +77,7 @@ option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
-option(BUILD_JSON_PLUGIN        "Build JSON plugin" "${BUILD_UNSTABLE}")
+option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 
 
 
@@ -472,7 +472,7 @@ sbuild_add_module(DECL_NETCDF_PLUGIN
 sbuild_add_module(JSON_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
-	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	DEPENDS PDI
 	SUBSTEPS indent test
 )
 
