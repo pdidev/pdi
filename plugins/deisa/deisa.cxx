@@ -52,11 +52,11 @@ class deisa_plugin: public Plugin
 
 	bool m_interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
 	Expression m_scheduler_info;
-  	std::unordered_map<std::string, Datatype_template_sptr> m_deisa_arrays;
+	std::unordered_map<std::string, Datatype_template_sptr> m_deisa_arrays;
 	Expression m_rank;
 	Expression m_size;
 	Expression m_time_step;
-  	py::object m_bridge;
+	py::object m_bridge;
 
 public:
 	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return {{"mpi"}, {"mpi"}}; }
@@ -66,7 +66,7 @@ public:
 	{
 		if (!Py_IsInitialized()) {
 			py::initialize_interpreter();
-		  	m_bridge = py::module_::import("deisa").attr("Bridge");
+			m_bridge = py::module_::import("deisa").attr("Bridge");
 			m_interpreter_initialized_in_plugin = true;
 		}
 		check_compatibility();
@@ -114,7 +114,7 @@ public:
 							assert(hasattr(m_bridge obj, "publish_data"));
 							py::object publish_data = m_bridge.attr("publish_data");
 #ifdef NDEBUG
-							publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(ctx), "debug"_a=false);
+							publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(ctx), "debug"_a = false);
 #else
 							publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(ctx), "debug"_a=true);
 #endif
@@ -203,7 +203,8 @@ private:
 				to_python(m_rank.to_ref(context())),
 				to_python(m_size.to_ref(context())),
 				darrs,
-				darrs_dtype);
+				darrs_dtype
+			);
 		} catch (const std::exception& e) {
 			context().logger().error("While initializing deisa, caught exception {}", e.what());
 			throw Plugin_error("Could not initialize Deisa plugin. Caught exception: {}", std::string(e.what()));
