@@ -14,12 +14,12 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include(GNUInstallDirs)
 
-find_package(Python3Path REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
 set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-find_package(pybind11 2.3.0 REQUIRED)
+find_package(pybind11 2.4.3 REQUIRED)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS pysupport)
