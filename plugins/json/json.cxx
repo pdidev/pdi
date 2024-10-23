@@ -48,9 +48,9 @@ using std::string, std::to_string;
 using std::unordered_map;
 using std::filesystem::path;
 
+using PDI::Config_error;
 using PDI::Datatype_sptr, PDI::Record_datatype, PDI::Array_datatype, PDI::Tuple_datatype;
 using PDI::Expression;
-using PDI::Config_error;
 using PDI::Logger;
 using PDI::opt_each, PDI::each;
 using PDI::Ref, PDI::Ref_r;
@@ -163,8 +163,7 @@ private:
 				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
 					string key = PDI::to_string(key_tree);
 
-					if (key == "when")
-					{
+					if (key == "when") {
 						default_when = PDI::to_string(value_tree);
 					} else if (key != "file" && key != "write") {
 						throw Config_error{key_tree, "Unknown keyword '{}' encountered while expecting file, when, or write", key};
