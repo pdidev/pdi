@@ -50,6 +50,7 @@ using std::filesystem::path;
 
 using PDI::Datatype_sptr, PDI::Record_datatype, PDI::Array_datatype, PDI::Tuple_datatype;
 using PDI::Expression;
+using PDI::Config_error;
 using PDI::Logger;
 using PDI::opt_each, PDI::each;
 using PDI::Ref, PDI::Ref_r;
@@ -162,12 +163,18 @@ private:
 				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
 					string key = PDI::to_string(key_tree);
 
-					if (key == "file") {
-					} // skip as we already read this
-					else if (key == "when")
+					if (key == "when")
 					{
 						default_when = PDI::to_string(value_tree);
-					} else if (key == "write") {
+					} else if (key != "file" && key != "write") {
+						throw Config_error{key_tree, "Unknown keyword '{}' encountered while expecting file, when, or write", key};
+					}
+				});
+
+				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
+					string key = PDI::to_string(key_tree);
+
+					if (key == "write") {
 						PC_tree_t write_tree = PC_get(elem_tree, ".write");
 
 						if (!PC_status(PC_get(write_tree, "[0]"))) { // it's a list of names only
@@ -185,10 +192,8 @@ private:
 								}
 							});
 						} else {
-							logger.error("Unknown write method for '{}'. Please use [var1, var2, ...]", filepath.to_string(context()));
+							throw Config_error{key_tree, "Unknown write method. Please use [var1, var2, ...]"};
 						}
-					} else {
-						logger.error("Unknown keyword '{}' encountered when reading for '{}'", key, filepath.to_string(context()));
 					}
 				});
 			} else { // it's "var: filename" format
@@ -286,7 +291,6 @@ private:
 			logger.debug("Writing data of {} for {}", data_name, filepath);
 			if (!reference) {
 				logger.error("Reading permissions were not granted for {}", data_name);
-				return;
 			}
 
 			string const str = "{\"" + data_name + "\": " + ref_to_string(logger, reference, 0, 2) + "}\n]";
