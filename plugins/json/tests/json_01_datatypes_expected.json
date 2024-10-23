@@ -1,0 +1,12 @@
+[
+{"var_uint16_t": 2},
+{"var_uint32_t": 3},
+{"var_uint64_t": 4},
+{"var_int8_t": 5},
+{"var_int16_t": 6},
+{"var_int32_t": 7},
+{"var_int64_t": 8},
+{"var_float": 9.000000},
+{"var_double": 10.000000},
+{"var_char": "a"}
+]
