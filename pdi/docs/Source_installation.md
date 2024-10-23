@@ -110,6 +110,7 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
 
+
 The following flags define whether to:
 * use the preinstalled version of a dependency (`SYSTEM`), it will be looked for
   in the system directories and those specified by the `CMAKE_PREFIX_PATH` list,
