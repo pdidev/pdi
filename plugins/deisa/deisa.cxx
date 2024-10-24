@@ -103,7 +103,7 @@ public:
 		// map_in
 		PC_tree_t map_in = PC_get(conf, ".map_in");
 		if (!PC_status(map_in)) {
-			each(map_in, [&](PC_tree_t key_map, PC_tree_t value_map) {
+			each(map_in, [&](PC_tree_t key_map, PC_tree_t value_map) { // TODO: when #481 is fixed, use `or_none` variant.
 				ctx.callbacks().add_data_callback(
 					[&, deisa_array_name = to_string(value_map)](const std::string&, const Ref& data_ref) {
 						try {
