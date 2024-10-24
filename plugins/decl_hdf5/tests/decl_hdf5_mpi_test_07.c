@@ -60,7 +60,7 @@ const char* CONFIG_YAML
 	  "plugins:                                                         \n"
 	  "  mpi:                                                           \n"
 	  "  decl_hdf5:                                                     \n"
-	  "    file: decl_hdf5_mpi_test_06_C.h5                             \n"
+	  "    file: decl_hdf5_mpi_test_07_C.h5                             \n"
 	  "    communicator: $MPI_COMM_WORLD                                \n"
 	  "    datasets:                                                    \n"
 	  "      reals:  {type: array, subtype: double, size: [$njt, $nit]} \n"
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
 	MPI_Comm_rank(world, &rank);
 
 	if (0 == rank) {
-		remove("decl_hdf5_mpi_test_02_C.h5");
+		remove("decl_hdf5_mpi_test_07_C.h5");
 	}
 
 	{
