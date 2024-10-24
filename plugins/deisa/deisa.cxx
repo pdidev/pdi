@@ -194,13 +194,7 @@ private:
 			py::object get_bridge_instance = m_deisa.attr("get_bridge_instance");
 
 			// TODO: use_ucx
-			m_bridge = get_bridge_instance(
-				to_python(m_scheduler_info.to_ref(context())),
-				m_rank,
-				m_size,
-				darrs,
-				darrs_dtype
-			);
+			m_bridge = get_bridge_instance(to_python(m_scheduler_info.to_ref(context())), m_rank, m_size, darrs, darrs_dtype);
 		} catch (const std::exception& e) {
 			throw Plugin_error("Could not initialize Deisa plugin. Caught exception: {}", std::string(e.what()));
 		} catch (...) {
