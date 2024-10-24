@@ -98,7 +98,7 @@ public:
 			ctx.callbacks().add_event_callback([&](const std::string&) { init_deisa(); }, to_string(init_tree));
 		} else {
 			throw Config_error{conf, "Deisa plugin requires init_on key "};
-		}
+		} // TODO: replace with try/catch when #480 is fixed.
 
 		// map_in
 		PC_tree_t map_in = PC_get(conf, ".map_in");
