@@ -40,9 +40,6 @@ namespace py = pybind11;
 
 using namespace PDI;
 using namespace py::literals;
-using pydict = py::dict;
-using pymod = py::module;
-using pyobj = py::object;
 
 /** The deisa plugin
  */
@@ -66,10 +63,9 @@ public:
 	{
 		if (!Py_IsInitialized()) {
 			py::initialize_interpreter();
-			m_bridge = py::module_::import("deisa").attr("Bridge");
 			m_interpreter_initialized_in_plugin = true;
 		}
-		check_compatibility();
+
 		// init params
 		each(conf, [&](PC_tree_t key_tree, PC_tree_t value) {
 			std::string key = to_string(key_tree);
@@ -90,10 +86,10 @@ public:
 
 
 		int mpi_size;
-		m_rank = Expression{Ref_r{ctx.desc("MPI_COMM_WORLD_rank").ref()}.scalar_value<long>()};
+		m_rank = Ref_r{ctx.desc("MPI_COMM_WORLD_rank").ref()}.scalar_value<long>();
 		MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{ctx.desc("MPI_COMM_WORLD").ref()}.get());
 		MPI_Comm_size(comm, &mpi_size);
-		m_size = Expression{static_cast<long>(mpi_size)};
+		m_size = static_cast<long>(mpi_size);
 
 
 		// plugin init
@@ -152,9 +148,9 @@ private:
 	 * Check that the PDI plugin is compatible with Deisa's python Bridge (i.e, that the python API is what it should be).
 	 * The plugin is compatible if DEISA_COMPATIBLE_VERSION == deisa.__version__.__version__ (python)
 	 */
-	static void check_compatibility()
+	void check_compatibility()
 	{
-		pymod deisa = pymod::import("deisa.__version__");
+		py::module deisa = py::module::import("deisa.__version__");
 		const auto python_library_version = py::str(deisa.attr("__version__")).cast<std::string>();
 		if (python_library_version != DEISA_COMPATIBLE_VERSION) {
 			throw Plugin_error(
@@ -194,11 +190,11 @@ private:
 
 		try {
 			// setup python context and instantiate bridge
-			auto m_deisa = pymod::import("deisa");
+			py::module m_deisa = py::module::import("deisa");
 			py::object get_bridge_instance = m_deisa.attr("get_bridge_instance");
 
 			// TODO: use_ucx
-			m_bridge = py::module_::import("deisa").attr("get_bridge_instance")(
+			m_bridge = get_bridge_instance(
 				to_python(m_scheduler_info.to_ref(context())),
 				m_rank,
 				m_size,
@@ -210,6 +206,8 @@ private:
 		} catch (...) {
 			throw Plugin_error("Could not initialize Deisa plugin. Unknown exception.");
 		}
+
+		check_compatibility();
 	}
 
 }; // class deisa_plugin

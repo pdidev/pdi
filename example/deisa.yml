@@ -3,7 +3,7 @@ duration: 0.75
 # global [height, width] (excluding boundary conditions or ghosts)
 datasize: [60, 12]
 # degree of parallelism
-parallelism: { height: 1, width: 1 }
+parallelism: { height: 3, width: 1 }
 
 # only the following config is passed to PDI
 pdi:
