@@ -185,7 +185,7 @@ private:
 			darr["subsizes"] = subsizes;
 			darr["timedim"] = timedim;
 			darrs[deisa_array_name] = darr;
-			darrs_dtype[deisa_array_name] = datatype_to_pydtype(std::dynamic_pointer_cast<const Scalar_datatype>(type_sptr));
+			darrs_dtype[deisa_array_name] = to_python(std::dynamic_pointer_cast<const Scalar_datatype>(type_sptr));
 		}
 
 		try {

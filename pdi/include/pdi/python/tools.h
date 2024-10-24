@@ -54,7 +54,7 @@ Datatype_sptr PDI_EXPORT python_type(const pybind11::array& a);
  * \param scalar_type to convert to pybind11 data type
  * \return pybind11 data type for the given scalar type
  */
-pybind11::dtype PDI_EXPORT datatype_to_pydtype(const std::shared_ptr<const Scalar_datatype>& scalar_type);
+pybind11::dtype PDI_EXPORT to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type);
 
 } // namespace PDI
 

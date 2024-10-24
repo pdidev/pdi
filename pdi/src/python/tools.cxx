@@ -93,7 +93,7 @@ pybind11::object to_python(Ref r, bool force_const)
 	auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(subtype);
 	if (ndim) strides.emplace_back(scalar_type->buffersize());
 
-	pybind11::dtype pytype = datatype_to_pydtype(scalar_type);
+	pybind11::dtype pytype = to_python(scalar_type);
 
 	ssize_t cumulated_stride = 1;
 	for (auto&& stride = strides.rbegin(); stride != strides.rend(); ++stride) {
@@ -170,7 +170,7 @@ Datatype_sptr python_type(const pybind11::array& a)
 	return result;
 }
 
-pybind11::dtype datatype_to_pydtype(const std::shared_ptr<const Scalar_datatype>& scalar_type)
+pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)
 {
 	switch (scalar_type->kind()) {
 	case Scalar_kind::FLOAT: {
