@@ -22,7 +22,7 @@ set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to
 find_package(pybind11 2.4.3 REQUIRED)
 
 # PDI
-find_package(PDI REQUIRED COMPONENTS pysupport)
+find_package(PDI REQUIRED COMPONENTS plugins pysupport)
 find_package(MPI REQUIRED COMPONENTS CXX)
 
 # The plugin
