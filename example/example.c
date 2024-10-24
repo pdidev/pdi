@@ -173,7 +173,8 @@ int main(int argc, char* argv[])
 
 	PDI_expose("mpi_rank", &pcoord_1d, PDI_OUT);
 	PDI_expose("mpi_size", &psize_1d, PDI_OUT);
-	PDI_event("init");
+	int ii = 0;
+	PDI_expose("iter", &ii, PDI_OUT);
 
 	long longval;
 
@@ -209,6 +210,7 @@ int main(int argc, char* argv[])
 	PDI_expose("dsize", dsize, PDI_OUT);
 	PDI_expose("psize", psize, PDI_OUT);
 	PDI_expose("pcoord", pcoord, PDI_OUT);
+	PDI_event("init");
 
 	double(*cur)[dsize[1]] = malloc(sizeof(double) * dsize[1] * dsize[0]);
 	double(*next)[dsize[1]] = malloc(sizeof(double) * dsize[1] * dsize[0]);
@@ -217,7 +219,6 @@ int main(int argc, char* argv[])
 
 	PDI_event("main_loop");
 	double start = MPI_Wtime();
-	int ii;
 	int next_reduce = 0;
 	for (ii = 0;; ++ii) {
 		PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, NULL);

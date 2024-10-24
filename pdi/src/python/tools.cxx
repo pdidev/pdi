@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 #include "pdi/array_datatype.h"
@@ -92,59 +93,7 @@ pybind11::object to_python(Ref r, bool force_const)
 	auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(subtype);
 	if (ndim) strides.emplace_back(scalar_type->buffersize());
 
-	pybind11::dtype pytype;
-	switch (scalar_type->kind()) {
-	case Scalar_kind::FLOAT: {
-		switch (scalar_type->datasize()) {
-		case sizeof(float):
-			pytype = pybind11::dtype::of<float>();
-			break;
-		case sizeof(double):
-			pytype = pybind11::dtype::of<double>();
-			break;
-		default:
-			throw Type_error{"Unable to pass {} bytes floating point value to python", scalar_type->datasize()};
-		}
-	} break;
-	case Scalar_kind::SIGNED: {
-		switch (scalar_type->datasize()) {
-		case sizeof(int8_t):
-			pytype = pybind11::dtype::of<int8_t>();
-			break;
-		case sizeof(int16_t):
-			pytype = pybind11::dtype::of<int16_t>();
-			break;
-		case sizeof(int32_t):
-			pytype = pybind11::dtype::of<int32_t>();
-			break;
-		case sizeof(int64_t):
-			pytype = pybind11::dtype::of<int64_t>();
-			break;
-		default:
-			throw Type_error{"Unable to pass {} bytes integer value to python", scalar_type->datasize()};
-		}
-	} break;
-	case Scalar_kind::UNSIGNED: {
-		switch (scalar_type->datasize()) {
-		case sizeof(uint8_t):
-			pytype = pybind11::dtype::of<uint8_t>();
-			break;
-		case sizeof(uint16_t):
-			pytype = pybind11::dtype::of<uint16_t>();
-			break;
-		case sizeof(uint32_t):
-			pytype = pybind11::dtype::of<uint32_t>();
-			break;
-		case sizeof(uint64_t):
-			pytype = pybind11::dtype::of<uint64_t>();
-			break;
-		default:
-			throw Type_error{"Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
-		}
-	} break;
-	default:
-		throw Type_error{"Unable to pass value of unexpected type to python"};
-	}
+	pybind11::dtype pytype = to_python(scalar_type);
 
 	ssize_t cumulated_stride = 1;
 	for (auto&& stride = strides.rbegin(); stride != strides.rend(); ++stride) {
@@ -220,5 +169,52 @@ Datatype_sptr python_type(const pybind11::array& a)
 	}
 	return result;
 }
+
+pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)
+{
+	switch (scalar_type->kind()) {
+	case Scalar_kind::FLOAT: {
+		switch (scalar_type->datasize()) {
+		case sizeof(float):
+			return pybind11::dtype::of<float>();
+		case sizeof(double):
+			return pybind11::dtype::of<double>();
+		default:
+			throw Type_error{"Unable to pass {} bytes floating point value to python", scalar_type->datasize()};
+		}
+	} break;
+	case Scalar_kind::SIGNED: {
+		switch (scalar_type->datasize()) {
+		case sizeof(int8_t):
+			return pybind11::dtype::of<int8_t>();
+		case sizeof(int16_t):
+			return pybind11::dtype::of<int16_t>();
+		case sizeof(int32_t):
+			return pybind11::dtype::of<int32_t>();
+		case sizeof(int64_t):
+			return pybind11::dtype::of<int64_t>();
+		default:
+			throw Type_error{"Unable to pass {} bytes integer value to python", scalar_type->datasize()};
+		}
+	} break;
+	case Scalar_kind::UNSIGNED: {
+		switch (scalar_type->datasize()) {
+		case sizeof(uint8_t):
+			return pybind11::dtype::of<uint8_t>();
+		case sizeof(uint16_t):
+			return pybind11::dtype::of<uint16_t>();
+		case sizeof(uint32_t):
+			return pybind11::dtype::of<uint32_t>();
+		case sizeof(uint64_t):
+			return pybind11::dtype::of<uint64_t>();
+		default:
+			throw Type_error{"Unable to pass {} bytes unsigned integer value to python", scalar_type->datasize()};
+		}
+	} break;
+	default:
+		throw Type_error{"Unable to pass value of unexpected type to python"};
+	}
+}
+
 
 } // namespace PDI
