@@ -173,8 +173,7 @@ int main(int argc, char* argv[])
 
 	PDI_expose("mpi_rank", &pcoord_1d, PDI_OUT);
 	PDI_expose("mpi_size", &psize_1d, PDI_OUT);
-	int ii = 0;
-	PDI_expose("iter", &ii, PDI_OUT);
+	PDI_event("init");
 
 	long longval;
 
@@ -207,10 +206,11 @@ int main(int argc, char* argv[])
 	int pcoord[2];
 	MPI_Cart_coords(cart_com, pcoord_1d, 2, pcoord);
 
+	int ii = 0;
+	PDI_expose("iter", &ii, PDI_OUT);
 	PDI_expose("dsize", dsize, PDI_OUT);
 	PDI_expose("psize", psize, PDI_OUT);
 	PDI_expose("pcoord", pcoord, PDI_OUT);
-	PDI_event("init");
 
 	double(*cur)[dsize[1]] = malloc(sizeof(double) * dsize[1] * dsize[0]);
 	double(*next)[dsize[1]] = malloc(sizeof(double) * dsize[1] * dsize[0]);

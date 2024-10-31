@@ -47,13 +47,10 @@ class deisa_plugin: public Plugin
 {
 	static constexpr char DEISA_COMPATIBLE_VERSION[] = "0.3.2"; // Used to check compatibility with Deisa's python library
 
-	bool m_interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
 	Expression m_scheduler_info;
 	std::unordered_map<std::string, Datatype_template_sptr> m_deisa_arrays;
-	long m_rank;
-	long m_size;
 	Expression m_time_step;
-	py::object m_bridge;
+	py::object m_bridge = py::none();
 
 public:
 	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return {{"mpi"}, {"mpi"}}; }
@@ -63,7 +60,6 @@ public:
 	{
 		if (!Py_IsInitialized()) {
 			py::initialize_interpreter();
-			m_interpreter_initialized_in_plugin = true;
 		}
 
 		// init params
@@ -84,18 +80,10 @@ public:
 			}
 		});
 
-
-		int mpi_size;
-		m_rank = Ref_r{ctx.desc("MPI_COMM_WORLD_rank").ref()}.scalar_value<long>();
-		MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{ctx.desc("MPI_COMM_WORLD").ref()}.get());
-		MPI_Comm_size(comm, &mpi_size);
-		m_size = static_cast<long>(mpi_size);
-
-
 		// plugin init
 		PC_tree_t init_tree = PC_get(conf, ".init_on");
 		if (!PC_status(init_tree)) {
-			ctx.callbacks().add_event_callback([&](const std::string&) { init_deisa(); }, to_string(init_tree));
+			ctx.callbacks().add_event_callback([&](const std::string&) { init_deisa(ctx); }, to_string(init_tree));
 		} else {
 			throw Config_error{conf, "Deisa plugin requires init_on key "};
 		} // TODO: replace with try/catch when #480 is fixed.
@@ -107,7 +95,8 @@ public:
 				ctx.callbacks().add_data_callback(
 					[&, deisa_array_name = to_string(value_map)](const std::string&, const Ref& data_ref) {
 						try {
-							assert(hasattr(m_bridge obj, "publish_data"));
+							assert(m_bridge != py::none());
+							assert(hasattr(m_bridge, "publish_data"));
 							py::object publish_data = m_bridge.attr("publish_data");
 #ifdef NDEBUG
 							publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(ctx), "debug"_a = false);
@@ -129,13 +118,11 @@ public:
 	~deisa_plugin() noexcept override
 	{
 		try {
-			if (m_interpreter_initialized_in_plugin) {
-				if (hasattr(m_bridge, "release")) {
-					// call bridge release() so that we can clear things before destructor is called (if it is ever called !).
-					m_bridge.release();
-				}
-				py::finalize_interpreter();
-			}
+			// call bridge release() so that we can clear things before destructor is called (if it is ever called !).
+			assert(hasattr(m_bridge, "release"));
+			m_bridge.release();
+			m_bridge = py::none();
+			py::finalize_interpreter();
 		} catch (const std::exception& e) {
 			context().logger().error("Exception in destructor, caught exception {}", e.what());
 		} catch (...) {
@@ -160,7 +147,7 @@ private:
 		}
 	}
 
-	void init_deisa()
+	void init_deisa(Context& ctx)
 	{
 		std::unordered_map<std::string, std::unordered_map<std::string, std::vector<size_t>>> darrs;
 		std::unordered_map<std::string, py::dtype> darrs_dtype;
@@ -189,7 +176,13 @@ private:
 		}
 
 		try {
-			// setup python context and instantiate bridge
+			int mpi_size;
+			long m_rank = Ref_r{ctx.desc("MPI_COMM_WORLD_rank").ref()}.scalar_value<long>();
+			MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{ctx.desc("MPI_COMM_WORLD").ref()}.get());
+			MPI_Comm_size(comm, &mpi_size);
+			long m_size = static_cast<long>(mpi_size);
+
+			// instantiate bridge
 			py::module m_deisa = py::module::import("deisa");
 			py::object get_bridge_instance = m_deisa.attr("get_bridge_instance");
 

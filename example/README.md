@@ -117,3 +117,9 @@ Above instruction will share `iter` and `main_field`, call `newiter` event and t
 This is the place when plugins will read/write our data.
 
 We have covered the logic behind the %PDI example. Now you can start the \ref Hands_on.
+
+
+## Dask enabled insitu analytics (Deisa)
+
+Requirements: 
+

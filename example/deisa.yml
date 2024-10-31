@@ -19,7 +19,7 @@ pdi:
     mpi:
     deisa:
       scheduler_info: /tmp/scheduler.json
-      init_on: init
+      init_on: main_loop
       time_step: $iter
       deisa_arrays:
         global_t: # Name of the Deisa array
