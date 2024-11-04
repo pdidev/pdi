@@ -141,8 +141,7 @@ private:
 		const auto python_library_version = py::str(deisa.attr("__version__")).cast<std::string>();
 		if (python_library_version != DEISA_COMPATIBLE_VERSION) {
 			throw Plugin_error(
-				"Deisa PDI plugin is expecting Deisa python version " + std::string(DEISA_COMPATIBLE_VERSION) + " but found version "
-				+ python_library_version
+				"Deisa PDI plugin is expecting Deisa python version {} but found version {}", DEISA_COMPATIBLE_VERSION, python_library_version
 			);
 		}
 	}
