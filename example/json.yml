@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2023-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -46,7 +46,7 @@ pdi:
   data: # type of values for which PDI does not keep a copy
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
 
-# //! [example_config_json_plugin]
+#! [example_config_json_plugin]
   plugins:
     json:
     - pcoord: params_pcoord_proc_${mpi_rank}.json
@@ -61,4 +61,4 @@ pdi:
       when: $iter % 100 = 0
     
       
-# //! [example_config_json_plugin]
+#! [example_config_json_plugin]

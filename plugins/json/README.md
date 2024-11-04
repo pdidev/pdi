@@ -51,6 +51,7 @@ plugins:
 ```
 
 Note : by default, if not specified a true condition is set, so that the variable is written every time PDI is granted read permission.
+An example of this two syntax are given in `example/json.yml`
 
 ## Test the JSON plugin ! {#json_test_plugin}
 
@@ -65,8 +66,7 @@ build/PDI_EXAMPLE/PDI_example_C example/json.yml
 
 ## Full configuration file example {#json_config_example}
 
-\snippet "../../example/json.yml" example_config_json_plugin
-
+ Please refer to `example/json.yml`
 ## On going work / Limitations {#json_on_going_work}
 
 - [ ] Adding support for reading variables. 
@@ -88,9 +88,9 @@ For the sake of the example, let's imagine the following code, creating which pe
 
 ```C
     PDI_multi_expose("init",
-        "simulation_name", &cfg.simulation_name, PDI_OUT,
-        "max_steps", &cfg.max_steps, PDI_OUT,
-        "mesh_config", &cfg.mesh_config, PDI_OUT,
+        "simulation_name", &simulation_name, PDI_OUT,
+        "max_steps", &max_steps, PDI_OUT,
+        "mesh_config", &mesh_config, PDI_OUT,
         "rank", &rank, PDI_OUT,
         NULL) ;
 
@@ -115,24 +115,24 @@ For the sake of the example, let's imagine the following code, creating which pe
 types: # [...] including config_t description
     metadata: {rank: int, step: int}
     data:
-    simulation_name: { type: array, subtype: char, size: 512 }
-    max_steps: int
-    mesh_config:
-    type: struct
-        members:
-        - dimensions: { type: array, subtype: int, size: 3}
-        - spacings: { type: array, subtype: int, size: 3}
+        simulation_name: { type: array, subtype: char, size: 512 }
+        max_steps: int
+        mesh_config:
+            type: struct
+            members:
+            - dimensions: { type: array, subtype: int, size: 3}
+            - spacings: { type: array, subtype: int, size: 3}
 
         temp: # the main temperature field
         - type: array
         - subtype: double
-        - size: 'Smesh_config.dimensions'
+        - size: '$mesh_config.dimensions'
 
 plugins:
     json:
-    - file: data-Srank.json
-      write: temp
-      when: 'Sstep > 0
+    - file: data-$rank.json
+      write: [step, temp]
+      when: '$step > 0
 ```
 
 ### JSON output
