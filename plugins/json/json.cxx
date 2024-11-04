@@ -70,7 +70,7 @@ public:
 		// initialize m_data_to_path_map from config.yml
 		read_config_tree(ctx.logger(), spec_tree);
 
-		for (auto const & data_path_pair: m_data_to_path_map) {
+		for (const auto & data_path_pair: m_data_to_path_map) {
 			ctx.callbacks().add_data_callback([this](const string& data_name, Ref ref) { this->write_data(data_name, ref); }, data_path_pair.first);
 		}
 
@@ -221,9 +221,9 @@ private:
 	{
 		const Datatype_sptr type = reference.type();
 
-		if (auto const && scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
+		if (const auto && scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
 			return scalar_ref_to_string(logger, reference);
-		} else if (auto const && array_type = dynamic_pointer_cast<const Array_datatype>(type)) {
+		} else if (const auto && array_type = dynamic_pointer_cast<const Array_datatype>(type)) {
 			// If the array subtype is a char : interpret it as a string
 			if (auto array_of_scalars_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
 				if (array_of_scalars_type->kind() == Scalar_kind::UNSIGNED && array_of_scalars_type->buffersize() == 1L) {
@@ -241,7 +241,7 @@ private:
 				array += (i < array_type->size() - 1 ? ",\n" : "\n" + string(cur_indent, ' ') + "]");
 			}
 			return array;
-		} else if (auto const && tuple_type = dynamic_pointer_cast<const Tuple_datatype>(type)) {
+		} else if (const auto && tuple_type = dynamic_pointer_cast<const Tuple_datatype>(type)) {
 			string tuple = "[\n";
 
 			for (int i = 0; i < tuple_type->size(); i++) {
@@ -249,10 +249,10 @@ private:
 				tuple += (i < tuple_type->size() - 1 ? ",\n" : "\n" + string(cur_indent, ' ') + "]");
 			}
 			return tuple;
-		} else if (auto const && record_type = dynamic_pointer_cast<const Record_datatype>(type)) {
+		} else if (const auto && record_type = dynamic_pointer_cast<const Record_datatype>(type)) {
 			string map = "{";
 
-			for (auto const & member: record_type->members()) {
+			for (const auto & member: record_type->members()) {
 				map += "\n" + string(cur_indent + indent_size, ' ') + "\"" + member.name() + "\": ";
 				map += ref_to_string(logger, reference[member.name()], cur_indent + indent_size, indent_size) + ",";
 			}
@@ -279,7 +279,7 @@ private:
 		// TODO: use a json library instead of native fstream
 		Logger& logger = context().logger();
 
-		for (auto const& [condition, fpath]: m_data_to_path_map[data_name]) {
+		for (const auto& [condition, fpath]: m_data_to_path_map[data_name]) {
 			if (!condition.to_long(context())) {
 				logger.debug("Condition for {} isn't verified !", data_name);
 				continue;
