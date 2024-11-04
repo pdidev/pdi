@@ -187,7 +187,7 @@ public:
 	 * \param use_mpi whether the hdf5 read/write is parallel
 	 * \param dsets the type of the explicitly typed datasets
 	 */
-	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::unordered_map<std::string, PDI::Datatype_template_ptr>& dsets);
+	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::unordered_map<std::string, PDI::Datatype_template_sptr>& dsets);
 
 private:
 	void do_read(PDI::Context& ctx, hid_t h5_file, hid_t read_lst);

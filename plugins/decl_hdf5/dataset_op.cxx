@@ -211,7 +211,7 @@ void Dataset_op::fletcher(Context& ctx, Expression value)
 	}
 }
 
-void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unordered_map<string, Datatype_template_sptr>& dsets)
+void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unordered_map<string, PDI::Datatype_template_sptr>& dsets)
 {
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 	if (use_mpio) {
