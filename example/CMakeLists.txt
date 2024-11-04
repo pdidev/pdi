@@ -127,11 +127,6 @@ set_property(TEST PDI_example_json_F PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_json_F PROPERTY PROCESSORS 6)
 endif("${BUILD_FORTRAN}")
 
-# if("${BUILD_PYTHON}")
-# add_test(NAME PDI_example_json_P COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI::pdirun>" "${Python3_EXECUTABLE}" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/example.py" "${CMAKE_CURRENT_SOURCE_DIR}/json.yml")
-# set_property(TEST PDI_example_json_P PROPERTY TIMEOUT 30)
-# set_property(TEST PDI_example_json_P PROPERTY PROCESSORS 6)
-# endif("${BUILD_PYTHON}")
 endif("${BUILD_JSON_PLUGIN}")
 
 add_test(NAME PDI_example_trace_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")
