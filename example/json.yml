@@ -49,14 +49,14 @@ pdi:
 # //! [example_config_json_plugin]
   plugins:
     json:
-    - file : params.json
+    - pcoord: params_pcoord_proc_${mpi_rank}.json
+    - file : params1.json
       write : [dsize, psize]
       when: ${mpi_rank}=0
     - file : params2.json
       when: ${mpi_rank}=0
       write : [mpi_rank, mpi_size, dsize, psize, pcoord]
-    - pcoord: params3_proc_${mpi_rank}.json
-    - file : proc_${mpi_rank}_iter_${iter}.json
+    - file : main_field_proc_${mpi_rank}_iter_${iter}.json
       write : [main_field]
       when: $iter % 100 = 0
     
