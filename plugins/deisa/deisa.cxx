@@ -178,17 +178,17 @@ private:
 
 		try {
 			int mpi_size;
-			long m_rank = Ref_r{ctx.desc("MPI_COMM_WORLD_rank").ref()}.scalar_value<long>();
+			long rank = Ref_r{ctx.desc("MPI_COMM_WORLD_rank").ref()}.scalar_value<long>();
 			MPI_Comm comm = *static_cast<const MPI_Comm*>(Ref_r{ctx.desc("MPI_COMM_WORLD").ref()}.get());
 			MPI_Comm_size(comm, &mpi_size);
-			long m_size = static_cast<long>(mpi_size);
+			long size = static_cast<long>(mpi_size);
 
 			// instantiate bridge
 			py::module deisa = py::module::import("deisa");
 			py::object get_bridge_instance = deisa.attr("get_bridge_instance");
 
 			// TODO: use_ucx
-			m_bridge = get_bridge_instance(to_python(m_scheduler_info.to_ref(context())), m_rank, m_size, darrs, darrs_dtype);
+			m_bridge = get_bridge_instance(to_python(m_scheduler_info.to_ref(context())), rank, size, darrs, darrs_dtype);
 		} catch (const std::exception& e) {
 			throw Plugin_error("Could not initialize Deisa plugin. Caught exception: {}", e.what());
 		} catch (...) {
