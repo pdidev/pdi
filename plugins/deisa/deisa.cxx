@@ -184,8 +184,8 @@ private:
 			long m_size = static_cast<long>(mpi_size);
 
 			// instantiate bridge
-			py::module m_deisa = py::module::import("deisa");
-			py::object get_bridge_instance = m_deisa.attr("get_bridge_instance");
+			py::module deisa = py::module::import("deisa");
+			py::object get_bridge_instance = deisa.attr("get_bridge_instance");
 
 			// TODO: use_ucx
 			m_bridge = get_bridge_instance(to_python(m_scheduler_info.to_ref(context())), m_rank, m_size, darrs, darrs_dtype);
