@@ -184,7 +184,7 @@ public:
 	 *
 	 * \param ctx the context in which to operate
 	 * \param h5_file the already opened HDF5 file id
-	 * \param use_mpi whether the hdf5 read/write is parallel
+	 * \param use_mpio whether the hdf5 read/write is parallel
 	 * \param dsets the type of the explicitly typed datasets
 	 */
 	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::unordered_map<std::string, PDI::Datatype_template_sptr>& dsets);
