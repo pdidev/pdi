@@ -299,14 +299,17 @@ private:
 
 			if (!file.is_open()) { // Create file if doesn't exist
 				file.open(fp, ios::out);
+				if (!file) { throw std::runtime_error("Error: Could not create or open the file.");}
 				file << "[\n";
-			} else {
-				file.seekp(-1, ios::end);
-				if (file.tellp() > 1) {
-					file.seekp(-1, ios::cur); // Seek to second last char
-					file.trunc;
-				}
+				file.close(); 
+        		file.open(fp, std::ios::in | std::ios::out | std::ios::ate);  // Reopen in read/write mode
+			} 
+			
+			if (file.tellp() > 2) { // check if the file has existing entries
+				file.seekp(-2, ios::end); // get to the very end of the last entry
 				file << ",\n";
+			} else {
+				file.seekp(0, ios::end);
 			}
 
 			file << str;
