@@ -70,7 +70,7 @@ public:
 		// initialize m_data_to_path_map from config.yml
 		read_config_tree(ctx.logger(), spec_tree);
 
-		for (const auto & data_path_pair: m_data_to_path_map) {
+		for (const auto& data_path_pair: m_data_to_path_map) {
 			ctx.callbacks().add_data_callback([this](const string& data_name, Ref ref) { this->write_data(data_name, ref); }, data_path_pair.first);
 		}
 
@@ -221,9 +221,9 @@ private:
 	{
 		const Datatype_sptr type = reference.type();
 
-		if (const auto && scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
+		if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(type)) {
 			return scalar_ref_to_string(logger, reference);
-		} else if (const auto && array_type = dynamic_pointer_cast<const Array_datatype>(type)) {
+		} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(type)) {
 			// If the array subtype is a char : interpret it as a string
 			if (auto array_of_scalars_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
 				if (array_of_scalars_type->kind() == Scalar_kind::UNSIGNED && array_of_scalars_type->buffersize() == 1L) {
@@ -241,7 +241,7 @@ private:
 				array += (i < array_type->size() - 1 ? ",\n" : "\n" + string(cur_indent, ' ') + "]");
 			}
 			return array;
-		} else if (const auto && tuple_type = dynamic_pointer_cast<const Tuple_datatype>(type)) {
+		} else if (const auto&& tuple_type = dynamic_pointer_cast<const Tuple_datatype>(type)) {
 			string tuple = "[\n";
 
 			for (int i = 0; i < tuple_type->size(); i++) {
@@ -249,10 +249,10 @@ private:
 				tuple += (i < tuple_type->size() - 1 ? ",\n" : "\n" + string(cur_indent, ' ') + "]");
 			}
 			return tuple;
-		} else if (const auto && record_type = dynamic_pointer_cast<const Record_datatype>(type)) {
+		} else if (const auto&& record_type = dynamic_pointer_cast<const Record_datatype>(type)) {
 			string map = "{";
 
-			for (const auto & member: record_type->members()) {
+			for (const auto& member: record_type->members()) {
 				map += "\n" + string(cur_indent + indent_size, ' ') + "\"" + member.name() + "\": ";
 				map += ref_to_string(logger, reference[member.name()], cur_indent + indent_size, indent_size) + ",";
 			}
@@ -299,12 +299,14 @@ private:
 
 			if (!file.is_open()) { // Create file if doesn't exist
 				file.open(fp, ios::out);
-				if (!file) { throw std::runtime_error("Error: Could not create or open the file.");}
+				if (!file) {
+					throw std::runtime_error("Error: Could not create or open the file.");
+				}
 				file << "[\n";
-				file.close(); 
-        		file.open(fp, std::ios::in | std::ios::out | std::ios::ate);  // Reopen in read/write mode
-			} 
-			
+				file.close();
+				file.open(fp, std::ios::in | std::ios::out | std::ios::ate); // Reopen in read/write mode
+			}
+
 			if (file.tellp() > 2) { // check if the file has existing entries
 				file.seekp(-2, ios::end); // get to the very end of the last entry
 				file << ",\n";
