@@ -61,6 +61,7 @@ public:
 		if (!Py_IsInitialized()) {
 			py::initialize_interpreter();
 		}
+		assert(Py_IsInitialized());
 
 		// init params
 		each(conf, [&](PC_tree_t key_tree, PC_tree_t value) {
@@ -83,7 +84,10 @@ public:
 		// plugin init
 		PC_tree_t init_tree = PC_get(conf, ".init_on");
 		if (!PC_status(init_tree)) {
-			ctx.callbacks().add_event_callback([&](const std::string&) { init_deisa(ctx); }, to_string(init_tree));
+			ctx.callbacks().add_event_callback(
+				[&](const std::string&) { m_bridge = init_deisa(ctx, m_scheduler_info, m_deisa_arrays); },
+				to_string(init_tree)
+			);
 		} else {
 			throw Config_error{conf, "Deisa plugin requires init_on key "};
 		} // TODO: replace with try/catch when #480 is fixed.
@@ -135,7 +139,7 @@ private:
 	 * Check that the PDI plugin is compatible with Deisa's python Bridge (i.e, that the python API is what it should be).
 	 * The plugin is compatible if DEISA_COMPATIBLE_VERSION == deisa.__version__.__version__ (python)
 	 */
-	void check_compatibility()
+	static void check_compatibility()
 	{
 		py::module deisa = py::module::import("deisa.__version__");
 		const auto python_library_version = py::str(deisa.attr("__version__")).cast<std::string>();
@@ -148,19 +152,20 @@ private:
 		}
 	}
 
-	void init_deisa(Context& ctx)
+	static py::object
+	init_deisa(Context& ctx, const Expression& scheduler_info, const std::unordered_map<std::string, Datatype_template_sptr>& deisa_arrays)
 	{
 		std::unordered_map<std::string, std::unordered_map<std::string, std::vector<size_t>>> darrs;
 		std::unordered_map<std::string, py::dtype> darrs_dtype;
-		for (auto&& [deisa_array_name, type_tpl]: m_deisa_arrays) {
+		for (auto&& [deisa_array_name, type_tpl]: deisa_arrays) {
 			std::unordered_map<std::string, std::vector<size_t>> darr;
 			std::vector<size_t> sizes;
 			std::vector<size_t> starts;
 			std::vector<size_t> subsizes;
 			std::vector<size_t> timedim;
 
-			Datatype_sptr type_sptr = type_tpl->evaluate(context());
-			timedim.emplace_back(type_tpl->attribute("timedim").to_long(context()));
+			Datatype_sptr type_sptr = type_tpl->evaluate(ctx);
+			timedim.emplace_back(type_tpl->attribute("timedim").to_long(ctx));
 			// get info from datatype
 			while (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(type_sptr)) {
 				sizes.emplace_back(array_type->size());
@@ -187,15 +192,15 @@ private:
 			py::module deisa = py::module::import("deisa");
 			py::object get_bridge_instance = deisa.attr("get_bridge_instance");
 
+			check_compatibility();
+
 			// TODO: use_ucx
-			m_bridge = get_bridge_instance(to_python(m_scheduler_info.to_ref(context())), rank, size, darrs, darrs_dtype);
+			return get_bridge_instance(to_python(scheduler_info.to_ref(ctx)), rank, size, darrs, darrs_dtype);
 		} catch (const std::exception& e) {
 			throw Plugin_error("Could not initialize Deisa plugin. Caught exception: {}", e.what());
 		} catch (...) {
 			throw Plugin_error("Could not initialize Deisa plugin. Unknown exception.");
 		}
-
-		check_compatibility();
 	}
 
 }; // class deisa_plugin
