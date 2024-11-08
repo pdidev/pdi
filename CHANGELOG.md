@@ -268,6 +268,7 @@ and this project adheres to
 * NetCDF plugin now support the size_of attribute, fixes
   [#446](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/446)
 * Deisa plugin for in-situ analysis using Dask
+* Add Catalyst plugin from Kitware
 
 #### Changed
 * Update the version of dependencies according to our policy: oldest supported
