@@ -98,23 +98,9 @@ public:
 		if (!PC_status(map_in)) {
 			each(map_in, [&](PC_tree_t key_map, PC_tree_t value_map) { // TODO: when #481 is fixed, use `or_none` variant.
 				ctx.callbacks().add_data_callback(
-					[&, deisa_array_name = to_string(value_map)](const std::string&, const Ref& data_ref) {
-						try {
-							assert(m_bridge != py::none());
-							assert(hasattr(m_bridge, "publish_data"));
-							py::object publish_data = m_bridge.attr("publish_data");
-#ifdef NDEBUG
-							publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(ctx), "debug"_a = false);
-#else
-							publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(ctx), "debug"_a=true);
-#endif
-						} catch (const std::exception& e) {
-							throw Plugin_error("While publishing data. Caught exception: {}", std::string(e.what()));
-						} catch (...) {
-							throw Plugin_error("While publishing data.");
-						}
-					},
-					to_string(key_map)
+					[&](const std::string& deisa_array_name, const Ref& data_ref) {
+						on_data(deisa_array_name, data_ref);
+					},to_string(key_map)
 				);
 			});
 		}
@@ -136,6 +122,23 @@ public:
 	}
 
 private:
+	void on_data(const std::string& deisa_array_name, const Ref& data_ref) {
+		try {
+			assert(m_bridge != py::none());
+			assert(hasattr(m_bridge, "publish_data"));
+			py::object publish_data = m_bridge.attr("publish_data");
+#ifdef NDEBUG
+			publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(context()), "debug"_a = false);
+#else
+			publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(context()), "debug"_a=true);
+#endif
+		} catch (const std::exception& e) {
+			throw Plugin_error("While publishing data. Caught exception: {}", std::string(e.what()));
+		} catch (...) {
+			throw Plugin_error("While publishing data.");
+		}
+	}
+
 	/**
 	 * Check that the PDI plugin is compatible with Deisa's python Bridge (i.e, that the python API is what it should be).
 	 * The plugin is compatible if DEISA_COMPATIBLE_VERSION == deisa.__version__.__version__ (python)
