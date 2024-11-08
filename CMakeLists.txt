@@ -77,6 +77,7 @@ option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
+option(BUILD_CATALYST_PLUGIN    "Build Catalyst plugin" ON)
 
 
 
@@ -419,6 +420,21 @@ if("${BUILD_PYTHON}")
 	)
 endif()
 
+## Catalyst
+if("${BUILD_CATALYST_PLUGIN}")
+	sbuild_add_dependency(catalyst "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/catalyst-2.0.0"
+		CMAKE_CACHE_ARGS
+			"-DBUILD_TESTING:BOOL=OFF"
+                        "-DCATALYST_BUILD_TESTING:BOOL=OFF"
+                        "-DCATALYST_USE_MPI:BOOL=ON"
+                        "-DCATALYST_WRAP_FORTRAN:BOOL=OFF"
+                        "-DCATALYST_WRAP_PYTHON:BOOL=OFF"
+		VERSION 2.0.0
+	)
+endif()
+
+
 
 ## JSON
 
@@ -534,5 +550,12 @@ sbuild_add_module(PDI_API_TESTS
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/api_tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
+	SUBSTEPS test
+)
+
+sbuild_add_module(CATALYST_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_CATALYST_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/catalyst"
+	DEPENDS PDI catalyst
 	SUBSTEPS test
 )
