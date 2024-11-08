@@ -85,9 +85,8 @@ public:
 		PC_tree_t init_tree = PC_get(conf, ".init_on");
 		if (!PC_status(init_tree)) {
 			ctx.callbacks().add_event_callback(
-				[&](const std::string&) {
-					m_bridge = on_init_event(ctx, m_scheduler_info, m_deisa_arrays);
-				},to_string(init_tree)
+				[&](const std::string&) { m_bridge = on_init_event(ctx, m_scheduler_info, m_deisa_arrays); },
+				to_string(init_tree)
 			);
 		} else {
 			throw Config_error{conf, "Deisa plugin requires init_on key "};
@@ -98,9 +97,8 @@ public:
 		if (!PC_status(map_in)) {
 			each(map_in, [&](PC_tree_t key_map, PC_tree_t value_map) { // TODO: when #481 is fixed, use `or_none` variant.
 				ctx.callbacks().add_data_callback(
-					[&](const std::string& deisa_array_name, const Ref& data_ref) {
-						on_data(deisa_array_name, data_ref);
-					},to_string(key_map)
+					[&](const std::string& deisa_array_name, const Ref& data_ref) { on_data(deisa_array_name, data_ref); },
+					to_string(key_map)
 				);
 			});
 		}
@@ -122,7 +120,8 @@ public:
 	}
 
 private:
-	void on_data(const std::string& deisa_array_name, const Ref& data_ref) {
+	void on_data(const std::string& deisa_array_name, const Ref& data_ref)
+	{
 		try {
 			assert(m_bridge != py::none());
 			assert(hasattr(m_bridge, "publish_data"));
@@ -130,7 +129,7 @@ private:
 #ifdef NDEBUG
 			publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(context()), "debug"_a = false);
 #else
-			publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(context()), "debug"_a=true);
+			publish_data(to_python(data_ref), deisa_array_name.c_str(), m_time_step.to_long(context()), "debug"_a = true);
 #endif
 		} catch (const std::exception& e) {
 			throw Plugin_error("While publishing data. Caught exception: {}", std::string(e.what()));
