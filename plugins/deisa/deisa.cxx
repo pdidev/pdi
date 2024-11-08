@@ -85,8 +85,9 @@ public:
 		PC_tree_t init_tree = PC_get(conf, ".init_on");
 		if (!PC_status(init_tree)) {
 			ctx.callbacks().add_event_callback(
-				[&](const std::string&) { m_bridge = init_deisa(ctx, m_scheduler_info, m_deisa_arrays); },
-				to_string(init_tree)
+				[&](const std::string&) {
+					m_bridge = on_init_event(ctx, m_scheduler_info, m_deisa_arrays);
+				},to_string(init_tree)
 			);
 		} else {
 			throw Config_error{conf, "Deisa plugin requires init_on key "};
@@ -153,7 +154,7 @@ private:
 	}
 
 	static py::object
-	init_deisa(Context& ctx, const Expression& scheduler_info, const std::unordered_map<std::string, Datatype_template_sptr>& deisa_arrays)
+	on_init_event(Context& ctx, const Expression& scheduler_info, const std::unordered_map<std::string, Datatype_template_sptr>& deisa_arrays)
 	{
 		std::unordered_map<std::string, std::unordered_map<std::string, std::vector<size_t>>> darrs;
 		std::unordered_map<std::string, py::dtype> darrs_dtype;
