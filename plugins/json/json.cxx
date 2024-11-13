@@ -285,14 +285,14 @@ private:
 				continue;
 			}
 
-			string const filepath = fpath.to_string(context());
+			const string filepath = fpath.to_string(context());
 
 			logger.debug("Writing data of {} for {}", data_name, filepath);
 			if (!reference) {
 				logger.error("Reading permissions were not granted for {}", data_name);
 			}
 
-			string const str = "{\"" + data_name + "\": " + ref_to_string(logger, reference, 0, 2) + "}\n]";
+			const string str = "{\"" + data_name + "\": " + ref_to_string(logger, reference, 0, 2) + "}\n]";
 
 			path fp(filepath);
 			fstream file(fp, ios::in | ios::out | ios::ate);
