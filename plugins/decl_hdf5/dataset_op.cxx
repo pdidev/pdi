@@ -170,7 +170,7 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				} else if (to_string(value) == "COLLECTIVE") {
 					m_mpio = H5FD_MPIO_COLLECTIVE;
 				} else {
-					throw Config_error{key_tree, "Not valid MPIO value: `{}'", to_string(value)};
+					throw Config_error{key_tree, "Not valid MPIO value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
 				}
 			} else if (key == "collision_policy") {
 				m_collision_policy = to_collision_policy(to_string(value));
@@ -211,7 +211,7 @@ void Dataset_op::fletcher(Context& ctx, Expression value)
 	}
 }
 
-void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unordered_map<string, PDI::Datatype_template_sptr>& dsets)
+void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unordered_map<string, Datatype_template_sptr>& dsets)
 {
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 	if (use_mpio) {
@@ -340,7 +340,7 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	return dset_plist;
 }
 
-void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_sptr>& dsets)
+void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, Datatype_template_sptr>& dsets)
 {
 	string dataset_name = m_dataset.to_string(ctx);
 	ctx.logger().trace("Preparing for writing `{}' dataset", dataset_name);
