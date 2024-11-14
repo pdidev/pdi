@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* decl'hdf5 feature : possibility to choose parallel MPIIO pointer (COLLECTIVE/INDEPENDENT)
+* Possibility to choose parallel MPIIO mode: either COLLECTIVE or INDEPENDENT
   [#419](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/419)
 
 ### Changed

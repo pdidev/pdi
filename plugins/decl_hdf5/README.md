@@ -164,6 +164,7 @@ Memory selection default values:
 * If the `size` is not specified, it defaults to size of the whole data in each
   dimension.
 * If the `start` is not specified it defaults to 0 in all dimensions.
+
 Dataset selection default values:
 * If the `size` is not specified:
   * if the number of dimensions match that of the memory, the size defaults to

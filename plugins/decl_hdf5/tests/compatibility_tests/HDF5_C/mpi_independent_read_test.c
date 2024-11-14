@@ -33,10 +33,10 @@
 Test : Read a file using hdf5 parallel version with the option independent parallel pointer.
 */
 
-int main()
+int main(int argc, char* argv[])
 {
 	printf("HDF5 mpi_independent_read_test started\n");
-	MPI_Init(NULL, NULL);
+	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	herr_t status = H5open();
