@@ -18,6 +18,7 @@ and this project adheres to
 #### Added
 * Add the `Context::find()` method.
   [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
+* Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)` helper function.
 
 #### Changed
 * Update the version of dependencies according to our policy: oldest supported
