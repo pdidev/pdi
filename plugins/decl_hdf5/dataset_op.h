@@ -67,7 +67,7 @@ private:
 	/// direction of the transfer (read or write)
 	Direction m_direction;
 
-	/// the type of MPIIO parallel pointer (default = COLLECTIVE)
+	/// the type of MPI-I/O parallel pointer (default = COLLECTIVE)
 	H5FD_mpio_xfer_t m_mpio = H5FD_MPIO_COLLECTIVE;
 
 	/// the name of the dataset where to transfer

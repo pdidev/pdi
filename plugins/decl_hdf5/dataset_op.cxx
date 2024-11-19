@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -170,7 +170,7 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				} else if (to_string(value) == "COLLECTIVE") {
 					m_mpio = H5FD_MPIO_COLLECTIVE;
 				} else {
-					throw Config_error{key_tree, "Not valid MPIO value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
+					throw Config_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
 				}
 			} else if (key == "collision_policy") {
 				m_collision_policy = to_collision_policy(to_string(value));
