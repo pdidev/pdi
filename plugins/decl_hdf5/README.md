@@ -145,7 +145,7 @@ The possible values for the keys are as follow:
   See
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
-* `mpio` : a string expression to define the type of MPIIO parallel pointer 
+* `mpio` : a string expression to define the type of MPI-I/O parallel pointer 
 for the operation among two choices : `COLLECTIVE` (default) and `INDEPENDENT`.
 
 ### SELECTION_DESC
@@ -221,7 +221,7 @@ plugins:
         - dataset: data/array      # a dataset name (default: the data name)
           when: "$iter>0&$iter<11" # an additional condition when to actually trigger the actions (default: always true)
           communicator: $MPI_COMM_SELF   # the MPI communicator used for HDF5 parallel synchronized write (default: that of the file)
-          mpio: INDEPENDENT              # the type of MPIIO parallel pointer (default: COLLECTIVE)
+          mpio: INDEPENDENT              # the type of MPI-I/O parallel pointer (default: COLLECTIVE)
           memory_selection:
             size:  [$width-2, $height-2] # number of elements to transfer in each dimension (default: size of the full data)
             start: [1, 1]                # coordinate of the start point in memory relative to the shared data (default: 0 in each dimensions)

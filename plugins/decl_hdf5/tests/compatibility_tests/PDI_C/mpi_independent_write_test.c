@@ -29,10 +29,10 @@
 
 #define FILE "mpi_independent_test.h5"
 
-int main()
+int main(int argc, char* argv[])
 {
 	printf("PDI mpi_write_test started\n");
-	MPI_Init(NULL, NULL);
+	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
