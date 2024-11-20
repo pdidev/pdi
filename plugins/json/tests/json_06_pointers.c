@@ -77,7 +77,6 @@ int main()
 	PDI_init(PC_get(conf, ".pdi"));
 
 	// Scalars
-	// uint8_t _var_uint8_t = 1; // considered as char
 	uint16_t _var_uint16_t = 2;
 	uint32_t _var_uint32_t = 3;
 	uint64_t _var_uint64_t = 4;
@@ -120,7 +119,6 @@ int main()
 	/* STRING */
 	char _var_string[] = "string12";
 	char* _p_var_string = _var_string;
-	// std::string _var_string = "string12";
 	PDI_expose("pvar_string", &_p_var_string, PDI_OUT);
 
 	/* ARRAY */
@@ -145,8 +143,6 @@ int main()
 	int32_t _var_array2[3] = {4, 5, 6};
 	int32_t* _var_int_pointer_array[2] = {_var_array1, _var_array2};
 	PDI_expose("var_int_pointer_array", _var_int_pointer_array, PDI_OUT);
-	// int32_t _var_array_array[2][3] = {{1, 2, 3}, {4, 5, 6}};
-	// PDI_expose("var_array_array", _var_array_array, PDI_OUT);
 
 	PDI_finalize();
 	return 0;

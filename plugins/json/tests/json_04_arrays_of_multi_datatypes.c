@@ -65,10 +65,6 @@ int main()
 	PDI_init(PC_get(conf, ".pdi"));
 
 	/* STRINGS */
-	// char _var_string[] = "string12";
-	// std::string _string = "string12";
-	// PDI_expose("var_string", &_var_string, PDI_OUT);
-
 	char _var_string_array[3][8] = {"string12", "string13", "string14"};
 	PDI_expose("var_string_array", &_var_string_array, PDI_OUT);
 
@@ -85,7 +81,6 @@ int main()
 	};
 	struct record_t _var_record1 = {14, 15, 'a', 16.};
 	struct record_t _var_record2 = {17, 18, 'b', 19.};
-	// PDI_expose("var_record", &_var_record1, PDI_OUT);
 
 	struct record_t _var_records_array[2] = {_var_record1, _var_record2};
 	PDI_expose("var_records_array", &_var_records_array, PDI_OUT);
