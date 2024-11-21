@@ -34,6 +34,14 @@ In case you don't want to use either option, you can install PDI source
 distribution using the dedicated
 [installation instructions](https://pdi.dev/main/Installation.html).
 
+---
+
+Futhermore, you can use the script "tutorialInstallation.sh" from the pdi folder to clone the tutorial repository and setup an environment enabling a default setup with added hdf5 and python plugins. To clone in your current directory, use this script with:
+```bash
+chmod u+x tutorialInstallation.sh
+./tutorialInstallation.sh
+```
+
 ## Content
 
 PDI distribution is made of the following submodules:
