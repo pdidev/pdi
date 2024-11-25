@@ -36,11 +36,19 @@ distribution using the dedicated
 
 ---
 
-Futhermore, you can use the script "tutorialInstallation.sh" from the pdi folder to clone the tutorial repository and setup an environment enabling a default setup with added hdf5 and python plugins. To clone in your current directory, use this script with:
+Futhermore, you can use the script "tutorialSetup.sh" from the pdi folder to clone the tutorial repository and setup an environment enabling a default setup with added HDF5 and Python plugins. To clone in your current directory, use this script with:
 ```bash
-chmod u+x tutorialInstallation.sh
-./tutorialInstallation.sh
+chmod u+x tutorialSetup.sh
+./tutorialSetup.sh
 ```
+Alternatively, you can use the script "tutorialSetupDeisa.sh" to setup an environment enabling HDF5, Python and Deisa. To clone in your current directory, use this script with:
+```bash
+chmod u+x tutorialSetupDeisa.sh
+./tutorialSetupDeisa.sh # Or ./tutorialSetup.sh 2> /dev/null | grep "Error\|Warning\|not "
+source deisa/deisa_python_env/bin/activate
+source pdi/build/staging/share/pdi/env.sh
+```
+Be sure to source the virtual environment to enable Deisa.
 
 ## Content
 
