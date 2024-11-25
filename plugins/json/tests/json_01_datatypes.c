@@ -65,6 +65,7 @@ int main(void)
 	PDI_init(PC_get(conf, ".pdi"));
 
 	// Scalars
+	// uint8_t  _var_uint8_t  = 1;
 	uint16_t _var_uint16_t = 2;
 	uint32_t _var_uint32_t = 3;
 	uint64_t _var_uint64_t = 4;
@@ -78,6 +79,7 @@ int main(void)
 
 	char _var_char = 'a';
 
+	// PDI_expose("var_uint8_t",  &_var_uint8_t,  PDI_OUT);
 	PDI_expose("var_uint16_t", &_var_uint16_t, PDI_OUT);
 	PDI_expose("var_uint32_t", &_var_uint32_t, PDI_OUT);
 	PDI_expose("var_uint64_t", &_var_uint64_t, PDI_OUT);

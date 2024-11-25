@@ -40,11 +40,12 @@ const char* CONFIG_YAML
 	  "            - var_int32_t2: int32_t                         \n"
 	  "            - var_char: char                                \n"
 	  "            - var_double: double                            \n"
+	  "            - var_array: { type: array, subtype: int32_t, size: 3 }                     \n"
 	  "                                                            \n"
 	  "  plugins:                                                  \n"
 	  "    json:                                                   \n"
 	  "      - file : json_02_multi_datatypes.json                 \n"
-	  "        write : [var_string, var_array,var_record]          \n";
+	  "        write : [var_string, var_array, var_record]         \n";
 
 int main()
 {

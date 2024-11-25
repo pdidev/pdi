@@ -36,6 +36,7 @@ find_package(PDI REQUIRED COMPONENTS plugins)
 # The plugin
 add_library(pdi_json_plugin MODULE json.cxx)
 target_link_libraries(pdi_json_plugin PUBLIC PDI::PDI_plugins )
+target_include_directories(pdi_json_plugin PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../vendor/json/include")
 
 # Installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
