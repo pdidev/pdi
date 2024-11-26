@@ -24,12 +24,9 @@
 
 #include <filesystem>
 #include <fstream>
-#include <sstream>
+#include <iostream>
 #include <string>
 #include <unordered_map>
-#include <iostream>
-#include <variant>
-
 
 #include <pdi/array_datatype.h>
 #include <pdi/context.h>
@@ -48,18 +45,12 @@ namespace {
 
 using std::dynamic_pointer_cast;
 using std::fstream, std::ios;
-using std::pair, std::make_pair, std::tie;
-using std::string, std::to_string;
+using std::pair, std::make_pair;
+using std::string;
 using std::unordered_map;
 using std::filesystem::path;
 
-using PDI::Config_error;
-using PDI::Datatype_sptr, PDI::Record_datatype, PDI::Array_datatype, PDI::Tuple_datatype, PDI::Pointer_datatype;
-using PDI::Expression;
-using PDI::Logger;
-using PDI::opt_each, PDI::each;
-using PDI::Ref, PDI::Ref_r;
-using PDI::Scalar_datatype, PDI::Scalar_kind, PDI::Type_error;
+using namespace PDI;
 
 /** The json plugin 
 */
@@ -69,7 +60,7 @@ class json_plugin: public PDI::Plugin
 	unordered_map<string, std::vector<pair<Expression, Expression>>> m_data_to_path_map;
 
 public:
-	json_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
+	json_plugin(Context& ctx, PC_tree_t spec_tree)
 		: Plugin{ctx}
 	{
 		// initialize m_data_to_path_map from config.yml
@@ -100,29 +91,29 @@ private:
 
 		// Read yaml entries
 		opt_each(spec_tree, [&](PC_tree_t elem_tree) {
-			if (PDI::to_string(PC_get(elem_tree, "{%d}", 0)) == "file") {
-				Expression filepath = PDI::to_string(PC_get(elem_tree, ".file"));
+			if (to_string(PC_get(elem_tree, "{%d}", 0)) == "file") {
+				Expression filepath = to_string(PC_get(elem_tree, ".file"));
 
 				Expression default_when = 1L;
 				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
-					string key = PDI::to_string(key_tree);
+					string key = to_string(key_tree);
 
 					if (key == "when") {
-						default_when = PDI::to_string(value_tree);
+						default_when = to_string(value_tree);
 					} else if (key != "file" && key != "write") {
 						throw Config_error{key_tree, "Unknown keyword '{}' encountered while expecting file, when, or write", key};
 					}
 				});
 
 				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
-					string key = PDI::to_string(key_tree);
+					string key = to_string(key_tree);
 
 					if (key == "write") {
 						PC_tree_t write_tree = PC_get(elem_tree, ".write");
 
 						if (!PC_status(PC_get(write_tree, "[0]"))) { // it's a list of names only
 							each(write_tree, [&](PC_tree_t tree) {
-								string dset_string = PDI::to_string(tree);
+								string dset_string = to_string(tree);
 
 								// Append to list if key exist, else create it
 								auto iter = m_data_to_path_map.find(dset_string);
@@ -140,8 +131,8 @@ private:
 					}
 				});
 			} else { // it's "var: filename" format
-				string dset_string = PDI::to_string(PC_get(elem_tree, "{%d}", 0));
-				Expression filepath = PDI::to_string(PC_get(elem_tree, "<%d>", 0));
+				string dset_string = to_string(PC_get(elem_tree, "{%d}", 0));
+				Expression filepath = to_string(PC_get(elem_tree, "<%d>", 0));
 
 				auto iter = m_data_to_path_map.find(dset_string);
 				Expression default_when = 1L;
@@ -154,38 +145,37 @@ private:
 		});
 	}
 
-
-
-    void write_scalar_to_json(nlohmann::json &json_data, Ref_r reference) {
-		const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(reference.type());
+	void write_scalar_to_json(nlohmann::json& json_data, Ref_r reference)
+	{
+		auto scalar_type = dynamic_pointer_cast<const Scalar_datatype>(reference.type());
 		if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
-			if(scalar_type->buffersize() == 1L) {
+			if (scalar_type->buffersize() == 1L) {
 				json_data = std::string(1, reference.scalar_value<char>());
-			} else if(scalar_type->buffersize() == 2L) {
+			} else if (scalar_type->buffersize() == 2L) {
 				json_data = reference.scalar_value<uint16_t>();
-			} else if(scalar_type->buffersize() == 4L) {
+			} else if (scalar_type->buffersize() == 4L) {
 				json_data = reference.scalar_value<uint32_t>();
-			} else if(scalar_type->buffersize() == 8L) {
+			} else if (scalar_type->buffersize() == 8L) {
 				json_data = reference.scalar_value<uint64_t>();
 			} else {
 				throw Type_error{"Unknown size of unsigned integer datatype"};
 			}
 		} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
-			if(scalar_type->buffersize() == 1L) {
+			if (scalar_type->buffersize() == 1L) {
 				json_data = reference.scalar_value<int8_t>();
-			} else if(scalar_type->buffersize() == 2L) {
+			} else if (scalar_type->buffersize() == 2L) {
 				json_data = reference.scalar_value<int16_t>();
-			} else if(scalar_type->buffersize() == 4L) {
+			} else if (scalar_type->buffersize() == 4L) {
 				json_data = reference.scalar_value<int32_t>();
-			} else if(scalar_type->buffersize() == 8L) {
+			} else if (scalar_type->buffersize() == 8L) {
 				json_data = reference.scalar_value<int64_t>();
 			} else {
 				throw Type_error{"Unknown size of signed integer datatype"};
 			}
 		} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
-			if(scalar_type->buffersize() == 4L) {
+			if (scalar_type->buffersize() == 4L) {
 				json_data = reference.scalar_value<float>();
-			} else if(scalar_type->buffersize() == 8L) {
+			} else if (scalar_type->buffersize() == 8L) {
 				json_data = reference.scalar_value<double>();
 			} else {
 				throw Type_error{"Unknown size of float datatype"};
@@ -195,8 +185,9 @@ private:
 		}
 	}
 
-	void push_scalar_array_to_json(nlohmann::json &json_data, Ref_r reference) {
-        auto array_type = dynamic_pointer_cast<const Array_datatype>(reference.type());
+	void push_scalar_array_to_json(nlohmann::json& json_data, Ref_r reference)
+	{
+		auto array_type = dynamic_pointer_cast<const Array_datatype>(reference.type());
 		auto sub_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype());
 		if (sub_type->kind() == PDI::Scalar_kind::UNSIGNED) {
 			if (sub_type->buffersize() == 1L) {
@@ -206,19 +197,19 @@ private:
 				}
 				json_data.push_back(str);
 			} else if (sub_type->buffersize() == 2L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<uint16_t>());
 				}
 				json_data.push_back(jsonArray);
 			} else if (sub_type->buffersize() == 4L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<uint32_t>());
 				}
 				json_data.push_back(jsonArray);
 			} else if (sub_type->buffersize() == 8L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<uint64_t>());
 				}
@@ -228,25 +219,25 @@ private:
 			}
 		} else if (sub_type->kind() == PDI::Scalar_kind::SIGNED) {
 			if (sub_type->buffersize() == 1L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<int8_t>());
 				}
 				json_data.push_back(jsonArray);
 			} else if (sub_type->buffersize() == 2L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<int16_t>());
 				}
 				json_data.push_back(jsonArray);
 			} else if (sub_type->buffersize() == 4L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<int32_t>());
 				}
 				json_data.push_back(jsonArray);
 			} else if (sub_type->buffersize() == 8L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<int64_t>());
 				}
@@ -256,13 +247,13 @@ private:
 			}
 		} else if (sub_type->kind() == PDI::Scalar_kind::FLOAT) {
 			if (sub_type->buffersize() == 4L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<float>());
 				}
 				json_data.push_back(jsonArray);
 			} else if (sub_type->buffersize() == 8L) {
-				nlohmann::json jsonArray = nlohmann::json::array();	
+				nlohmann::json jsonArray = nlohmann::json::array();
 				for (int i = 0; i < array_type->size(); i++) {
 					jsonArray.push_back(Ref_r{reference[i]}.scalar_value<double>());
 				}
@@ -275,10 +266,10 @@ private:
 		}
 	}
 
-
-	void write_array_to_json(nlohmann::json &json_data, Ref_r reference) {
+	void write_array_to_json(nlohmann::json& json_data, Ref_r reference)
+	{
 		auto array_type = dynamic_pointer_cast<const Array_datatype>(reference.type());
-		if(const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
+		if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
 			if (sub_type->kind() == PDI::Scalar_kind::UNSIGNED) {
 				if (sub_type->buffersize() == 1L) {
 					std::string str = "";
@@ -287,19 +278,19 @@ private:
 					}
 					json_data = str;
 				} else if (sub_type->buffersize() == 2L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<uint16_t>());
 					}
 					json_data = jsonArray;
 				} else if (sub_type->buffersize() == 4L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<uint32_t>());
 					}
 					json_data = jsonArray;
 				} else if (sub_type->buffersize() == 8L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<uint64_t>());
 					}
@@ -309,25 +300,25 @@ private:
 				}
 			} else if (sub_type->kind() == PDI::Scalar_kind::SIGNED) {
 				if (sub_type->buffersize() == 1L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<int8_t>());
 					}
 					json_data = jsonArray;
 				} else if (sub_type->buffersize() == 2L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<int16_t>());
 					}
 					json_data = jsonArray;
 				} else if (sub_type->buffersize() == 4L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<int32_t>());
 					}
 					json_data = jsonArray;
 				} else if (sub_type->buffersize() == 8L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<int64_t>());
 					}
@@ -337,13 +328,13 @@ private:
 				}
 			} else if (sub_type->kind() == PDI::Scalar_kind::FLOAT) {
 				if (sub_type->buffersize() == 4L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<float>());
 					}
 					json_data = jsonArray;
 				} else if (sub_type->buffersize() == 8L) {
-					nlohmann::json jsonArray = nlohmann::json::array();	
+					nlohmann::json jsonArray = nlohmann::json::array();
 					for (int i = 0; i < array_type->size(); i++) {
 						jsonArray.push_back(Ref_r{reference[i]}.scalar_value<double>());
 					}
@@ -354,7 +345,7 @@ private:
 			} else {
 				throw Type_error{"Unknown datatype to get value"};
 			}
-	    } else if(const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(array_type->subtype())) {			
+		} else if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(array_type->subtype())) {
 			nlohmann::json jsonArray = nlohmann::json::array();
 			for (int i = 0; i < array_type->size(); i++) {
 				push_scalar_array_to_json(jsonArray, Ref_r{reference[i]});
@@ -364,14 +355,12 @@ private:
 			nlohmann::json jsonArray = nlohmann::json::array();
 			for (int i = 0; i < array_type->size(); i++) {
 				nlohmann::json jsonStruct;
-				for (const auto& member: sub_type->members()) {					
+				for (const auto& member: sub_type->members()) {
 					if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(member.type())) {
 						write_scalar_to_json(jsonStruct[member.name()], Ref_r{reference[i]}[member.name()]);
-					} 
-					else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(member.type())) {
+					} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(member.type())) {
 						write_array_to_json(jsonStruct[member.name()], Ref_r{reference[i]}[member.name()]);
-					}
-					else if (const auto&& struct_type = dynamic_pointer_cast<const Record_datatype>(member.type())) {
+					} else if (const auto&& struct_type = dynamic_pointer_cast<const Record_datatype>(member.type())) {
 						write_struct_to_json(jsonStruct[member.name()], Ref_r{reference[i]}[member.name()]);
 					} else {
 						throw Type_error{"Unknown member datatype passed to json"};
@@ -387,11 +376,9 @@ private:
 				Ref_r dereferenced_ref = reference[i].dereference();
 				if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(dereferenced_ref.type())) {
 					write_scalar_to_json(jsonElement, dereferenced_ref);
-				} 
-				else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(dereferenced_ref.type())) {
+				} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(dereferenced_ref.type())) {
 					write_array_to_json(jsonElement, dereferenced_ref);
-				}
-				else if (const auto&& struct_type = dynamic_pointer_cast<const Record_datatype>(dereferenced_ref.type())) {
+				} else if (const auto&& struct_type = dynamic_pointer_cast<const Record_datatype>(dereferenced_ref.type())) {
 					write_struct_to_json(jsonElement, dereferenced_ref);
 				} else {
 					throw Type_error{"Unknown member datatype passed to json"};
@@ -404,16 +391,15 @@ private:
 		}
 	}
 
-	void write_struct_to_json(nlohmann::json &json_data, Ref_r reference) {
+	void write_struct_to_json(nlohmann::json& json_data, Ref_r reference)
+	{
 		auto record_type = dynamic_pointer_cast<const Record_datatype>(reference.type());
 		for (const auto& member: record_type->members()) {
 			if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(member.type())) {
 				write_scalar_to_json(json_data[member.name()], reference[member.name()]);
-			} 
-			else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(member.type())) {
+			} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(member.type())) {
 				write_array_to_json(json_data[member.name()], reference[member.name()]);
-			}
-			else {
+			} else {
 				throw Type_error{"Unknown member datatype passed to json"};
 			}
 		}
@@ -448,10 +434,10 @@ private:
 			} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(reference.type())) {
 				write_array_to_json(json_data[data_name], reference);
 			} else if (const auto&& record_type = dynamic_pointer_cast<const Record_datatype>(reference.type())) {
-			    write_struct_to_json(json_data[data_name], reference);				
+				write_struct_to_json(json_data[data_name], reference);
 			} else if (const auto&& pointer_type = dynamic_pointer_cast<const Pointer_datatype>(reference.type())) {
-			    Ref dereferenced_ref = reference.dereference();
-				// throw Type_error{"Can't dereference with read permissions"};
+				Ref dereferenced_ref = reference.dereference();
+				if(!dereferenced_ref) throw Value_error{"Can't dereference with read permissions"};
 
 				if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(dereferenced_ref.type())) {
 					write_scalar_to_json(json_data[data_name], dereferenced_ref);
@@ -460,9 +446,8 @@ private:
 				} else if (const auto&& record_type = dynamic_pointer_cast<const Record_datatype>(dereferenced_ref.type())) {
 					write_struct_to_json(json_data[data_name], dereferenced_ref);
 				} else {
-					throw Type_error{"Unknown dereferenced datatype passed to json"};	
-				}	
-
+					throw Type_error{"Unknown dereferenced datatype passed to json"};
+				}
 			} else {
 				throw Type_error{"Unknown datatype passed to json"};
 			}
@@ -470,11 +455,9 @@ private:
 			path fp(filepath);
 			fstream json_file(fp, ios::in | ios::out | ios::ate);
 			if (!json_file.is_open()) {
-				std::cout << "File is created for appending.\n";
 				json_file.open(fp, ios::out);
-				json_file << "[\n"<<json_data.dump(4)<<"]"; // Append the new entry and close the array
-			}
-			else{
+				json_file << "[\n" << json_data.dump(4) << "]"; // Append the new entry and close the array
+			} else {
 				// Step 2: Move to the end of the file and adjust the JSON structure
 				json_file.seekg(-1, std::ios::end); // Move to the last character
 				char lastChar;
@@ -488,13 +471,8 @@ private:
 					std::cerr << "File does not end with a valid JSON array. Cannot append.\n";
 					json_file.close();
 				}
-
 				json_file.close();
-				std::cout << "Appended new entry to the file successfully.\n";
-
 			}
-
-
 			logger.debug("Done ! {} ", data_name);
 		}
 	}
