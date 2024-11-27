@@ -12,8 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* Added new JSON plugin. Enables users to write data in JSON format, along with
-  the option to write user-defined format, thanks to taking JSON as input for
+* Added new JSON plugin. Enables users to write data in JSON format, 
+  using the [nlohmann/json](https://github.com/nlohmann/json) library.
+  Users can also write data in other format thanks to taking JSON as input for
   the dedicated tools.
   [#440](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/440)
 
