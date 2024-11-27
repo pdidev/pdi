@@ -11,8 +11,12 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)
 * Design and initial implementation
 
+Amal Gueroudji - CEA (agueroudji@anl.gov)
+* Deisa plugin creation
+
 Benoit Martin - CEA (bmartin@cea.fr)
 * CMake maintainer (Oct. 2024 - ...)
+* Deisa plugin refactoring
 
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement

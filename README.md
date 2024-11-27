@@ -42,6 +42,7 @@ PDI distribution is made of the following submodules:
 * `pdi/` : the PDI library,
 * `plugins/decl_hdf5/`: the Decl'HDF5 plugin,
 * `plugins/decl_netcdf/`: the Decl'NetCDF plugin,
+* `plugins/deisa/`: the Deisa plugin,
 * `plugins/mpi/`: the MPI plugin,
 * `plugins/pycall/`: the Pycall plugin,
 * `plugins/serialize/`: the serialize plugin,
