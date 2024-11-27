@@ -432,7 +432,6 @@ private:
 	 */
 	void write_data(const string& data_name, Ref_r reference)
 	{
-		// TODO: use a json library instead of native fstream
 		Logger& logger = context().logger();
 
 		for (const auto& [condition, fpath]: m_data_to_path_map[data_name]) {
@@ -475,18 +474,23 @@ private:
 			path fp(filepath);
 			fstream json_file(fp, ios::in | ios::out | ios::ate);
 			if (!json_file.is_open()) {
+				// Case 1: File doesn't exist
+				// Create the file 
+				// Write the json data between brackets
 				json_file.open(fp, ios::out);
-				json_file << "[\n" << json_data.dump(4) << "]"; // Append the new entry and close the array
+				json_file << "[\n" << json_data.dump(4) << "]";
 			} else {
-				// Step 2: Move to the end of the file and adjust the JSON structure
+				// Case 2: File exist
+				// Move to the end of the file 
+				// Remove the closing bracket
+				// Write the json data
+				// Add the closing bracket
 				json_file.seekg(-1, std::ios::end); // Move to the last character
 				char lastChar;
 				json_file.get(lastChar);
-
 				if (lastChar == ']') {
-					// The file ends with a valid array, so we can append
 					json_file.seekp(-1, std::ios::end); // Move one character back to overwrite the closing ']'
-					json_file << ",\n" << json_data.dump(4) << "\n]"; // Append the new entry and close the array
+					json_file << ",\n" << json_data.dump(4) << "\n]";
 				} else {
 					std::cerr << "File does not end with a valid JSON array. Cannot append.\n";
 					json_file.close();
