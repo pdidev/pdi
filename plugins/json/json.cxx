@@ -145,7 +145,7 @@ private:
 		});
 	}
 
-    /** Write to json a scalar value 
+	/** Write to json a scalar value 
 	 *
 	 * \param json_data A json data to which we write a scalar value
 	 * \param reference A reference to a scalar datatype
@@ -190,7 +190,7 @@ private:
 		}
 	}
 
-    /** Push a scalar array to a json object. Only used for writing to json an array of scalar arrays.
+	/** Push a scalar array to a json object. Only used for writing to json an array of scalar arrays.
 	 *
 	 * \param json_data A json data to which we write an array
 	 * \param reference A reference to an array datatype
@@ -276,7 +276,7 @@ private:
 		}
 	}
 
-    /** Write to json an array. The array can be an array of scalars, of scalar arrays, of structures, or of pointers
+	/** Write to json an array. The array can be an array of scalars, of scalar arrays, of structures, or of pointers
 	 *
 	 * \param json_data A json data to which we write an array
 	 * \param reference A reference to an array datatype
@@ -371,11 +371,14 @@ private:
 			for (int i = 0; i < array_type->size(); i++) {
 				nlohmann::json jsonRecord;
 				for (const auto& member: sub_type->members()) {
-					if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(member.type())) { // scalar member of the record subtype
+					if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(member.type()))
+					{ // scalar member of the record subtype
 						write_scalar_to_json(jsonRecord[member.name()], Ref_r{reference[i]}[member.name()]);
-					} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(member.type())) { // array member of the record subtype
+					} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(member.type()))
+					{ // array member of the record subtype
 						write_array_to_json(jsonRecord[member.name()], Ref_r{reference[i]}[member.name()]);
-					} else if (const auto&& struct_type = dynamic_pointer_cast<const Record_datatype>(member.type())) { // record member of the record subtype
+					} else if (const auto&& struct_type = dynamic_pointer_cast<const Record_datatype>(member.type()))
+					{ // record member of the record subtype
 						write_record_to_json(jsonRecord[member.name()], Ref_r{reference[i]}[member.name()]);
 					} else {
 						throw Type_error{"Unknown member datatype passed to json"};
@@ -391,9 +394,11 @@ private:
 				Ref_r dereferenced_ref = reference[i].dereference();
 				if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(dereferenced_ref.type())) { // an array of scalar pointers
 					write_scalar_to_json(jsonElement, dereferenced_ref);
-				} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(dereferenced_ref.type())) { // an array of array pointers
+				} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(dereferenced_ref.type()))
+				{ // an array of array pointers
 					write_array_to_json(jsonElement, dereferenced_ref);
-				} else if (const auto&& struct_type = dynamic_pointer_cast<const Record_datatype>(dereferenced_ref.type())) {  // an array of record pointers
+				} else if (const auto&& struct_type = dynamic_pointer_cast<const Record_datatype>(dereferenced_ref.type()))
+				{ // an array of record pointers
 					write_record_to_json(jsonElement, dereferenced_ref);
 				} else {
 					throw Type_error{"Unknown member datatype passed to json"};
@@ -406,7 +411,7 @@ private:
 		}
 	}
 
-    /** Write to json a record. The members of the record can be scalar and array.
+	/** Write to json a record. The members of the record can be scalar and array.
 	 *
 	 * \param json_data A json data to which we write a scalar value
 	 * \param reference A reference to a record datatype
@@ -456,7 +461,7 @@ private:
 				write_record_to_json(json_data[data_name], reference);
 			} else if (const auto&& pointer_type = dynamic_pointer_cast<const Pointer_datatype>(reference.type())) { // a pointer type
 				Ref dereferenced_ref = reference.dereference();
-				if(!dereferenced_ref) throw Value_error{"Can't dereference with read permissions"};
+				if (!dereferenced_ref) throw Value_error{"Can't dereference with read permissions"};
 
 				if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(dereferenced_ref.type())) { // a pointer of scalar
 					write_scalar_to_json(json_data[data_name], dereferenced_ref);
@@ -475,13 +480,13 @@ private:
 			fstream json_file(fp, ios::in | ios::out | ios::ate);
 			if (!json_file.is_open()) {
 				// Case 1: File doesn't exist
-				// Create the file 
+				// Create the file
 				// Write the json data between brackets
 				json_file.open(fp, ios::out);
 				json_file << "[\n" << json_data.dump(4) << "]";
 			} else {
 				// Case 2: File exist
-				// Move to the end of the file 
+				// Move to the end of the file
 				// Remove the closing bracket
 				// Write the json data
 				// Add the closing bracket
