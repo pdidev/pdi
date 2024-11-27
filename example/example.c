@@ -206,6 +206,8 @@ int main(int argc, char* argv[])
 	int pcoord[2];
 	MPI_Cart_coords(cart_com, pcoord_1d, 2, pcoord);
 
+	int ii = 0;
+	PDI_expose("iter", &ii, PDI_OUT);
 	PDI_expose("dsize", dsize, PDI_OUT);
 	PDI_expose("psize", psize, PDI_OUT);
 	PDI_expose("pcoord", pcoord, PDI_OUT);
@@ -217,7 +219,6 @@ int main(int argc, char* argv[])
 
 	PDI_event("main_loop");
 	double start = MPI_Wtime();
-	int ii;
 	int next_reduce = 0;
 	for (ii = 0;; ++ii) {
 		PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, NULL);
