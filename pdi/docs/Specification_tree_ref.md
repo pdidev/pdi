@@ -1279,7 +1279,7 @@ A \ref tuple_type_node represents a "tuple", where:
 * the value associated to the `buffersize` key represents the overall size of
   the tuple including potential padding, if omitted, the minimum size that fits
   all elements is used,
-* the value associated to the `members` key lists all elements of the tuple,
+* the value associated to the `elements` key lists all elements of the tuple,
 * keys that start with `+` represent attributes, the associated value can be
   anything (**scalar**, **sequence** or **mapping**).
 
