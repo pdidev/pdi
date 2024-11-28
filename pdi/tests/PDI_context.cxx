@@ -244,12 +244,8 @@ TEST_F(ContextTest, iterator_find)
 	}
 
 	// test case where search key is not found
-	ASSERT_FALSE(
-		this->test_context->find("desc4") != this->test_context->end()
-	); 
-	ASSERT_TRUE(
-		this->test_context->find("desc5") == this->test_context->end()
-	);
+	ASSERT_FALSE(this->test_context->find("desc4") != this->test_context->end());
+	ASSERT_TRUE(this->test_context->find("desc5") == this->test_context->end());
 }
 
 /*
@@ -275,31 +271,30 @@ TEST_F(ContextTest, iterator_operator_equal_equal)
 	for (set<string>::iterator it2 = desc_names.begin(); it2 != desc_names.end(); ++it2) {
 		Context::Iterator descriptor = this->test_context->find(*it2);
 
-		int counter_ok=0;
-	
+		int counter_ok = 0;
+
 		for (auto it = begin; it != end; ++it) {
-			if( it == descriptor ){
+			if (it == descriptor) {
 				counter_ok++;
-				ASSERT_FALSE( it != descriptor );
+				ASSERT_FALSE(it != descriptor);
 			}
 		}
-		ASSERT_EQ( counter_ok, 1);
+		ASSERT_EQ(counter_ok, 1);
 	}
 
 	// test operator!=
 	for (set<string>::iterator it2 = desc_names.begin(); it2 != desc_names.end(); ++it2) {
 		Context::Iterator descriptor = this->test_context->find(*it2);
 
-		int counter_false=0;
+		int counter_false = 0;
 
 		for (auto it = begin; it != end; ++it) {
-			if( it != descriptor ){ 
+			if (it != descriptor) {
 				counter_false++;
-				ASSERT_FALSE( it == descriptor );
+				ASSERT_FALSE(it == descriptor);
 			}
 		}
-		
-		ASSERT_EQ( counter_false, 2);
+
+		ASSERT_EQ(counter_false, 2);
 	}
 }
-
