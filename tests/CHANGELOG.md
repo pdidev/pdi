@@ -9,11 +9,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
-* Update the version of dependencies according to our policy: oldest supported
-  Ubuntu & Fedora, oldstable debian & spack 0.18. The new requirements are:
-  CMake 3.16
-  - directly use vendored gtest
-  [#465](https://github.com/pdidev/pdi/issues/465)
 
 ### Deprecated
 
@@ -22,6 +17,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.8.0] - 2024-11-28
+
+### Changed
+* Update the version of dependencies according to our policy: oldest supported
+  Ubuntu & Fedora, oldstable debian & spack 0.18. The new requirements are:
+  CMake 3.16
+  - directly use vendored gtest
+  [#465](https://github.com/pdidev/pdi/issues/465)
 
 
 ## [1.5.0] - 2022-03-30

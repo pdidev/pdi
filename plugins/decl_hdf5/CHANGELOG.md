@@ -11,6 +11,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#419](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/419)
 
 ### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+
+## [1.8.0] - 2024-11-28
+
+### Changed
 * Replaced the astyle based indentation by a clang-format one, fixes
   [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
 * Update the version of dependencies according to our policy: oldest supported
@@ -19,15 +32,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - directly use vendored gtest & benchmark
   [#465](https://github.com/pdidev/pdi/issues/465)
 
-### Deprecated
-
 ### Removed
 * Removed support for the PDI Config validator, fixes
   [#458](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/458)
-
-### Fixed
-
-### Security
 
 
 ## [1.7.0] - 2024-07-17
