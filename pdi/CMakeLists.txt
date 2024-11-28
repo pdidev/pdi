@@ -199,6 +199,7 @@ install(TARGETS PDI_C EXPORT PDI_C_EXPORT
 )
 install(FILES
 		"${PDI_SOURCE_DIR}/include/pdi.h"
+		"${PDI_SOURCE_DIR}/include/pdi_deactivation.h"
 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 		COMPONENT Development
 )

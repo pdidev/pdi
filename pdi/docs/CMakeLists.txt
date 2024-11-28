@@ -90,6 +90,7 @@ doxygen_add_docs(doxygen_doc
 		"${PDI_BINARY_DIR}/pdi/version.h"
 		"${PDI_BINARY_DIR}/fmoddir/pdif.h"
 		"${PDI_SOURCE_DIR}/include/pdi.h"
+		"${PDI_SOURCE_DIR}/include/pdi_deactivation.h"
 		"${PDI_SOURCE_DIR}/include/pdi/"
 		"${PDI_SOURCE_DIR}/../example/README.md"
 		"${PDI_SOURCE_DIR}/../tutorial/README.md"
