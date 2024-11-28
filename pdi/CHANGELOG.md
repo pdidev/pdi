@@ -11,7 +11,7 @@ and this project adheres to
 
 
 
-## [Unreleased]
+## [1.8.0] - 2024-11-28
 
 ### For users
 
@@ -28,15 +28,9 @@ and this project adheres to
   - directly use vendored gtest, benchmark & ZPP
   [#465](https://github.com/pdidev/pdi/issues/465)
 
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Fixed compilation with {fmt} version 11+
   [#456](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/456)
-
-#### Security
 
 
 ### For plugin developers
@@ -57,12 +51,6 @@ and this project adheres to
 #### Deprecated
 * The `Datatype_template_ptr` type is now deprecated, `Datatype_template_sptr`
   should be used instead.
-
-#### Removed
-
-#### Fixed
-
-#### Security
 
 
 
