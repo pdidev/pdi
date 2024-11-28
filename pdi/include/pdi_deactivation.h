@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -68,65 +68,6 @@ extern "C" {
 //  * \{
 //  */
 
-// /** Error codes of PDI
-//  */
-// typedef enum PDI_status_e {
-// 	/// everything went well
-// 	PDI_OK = 0,
-// 	/// on an input call, no such data is available
-// 	PDI_UNAVAILABLE,
-// 	/// The configuration file is invalid
-// 	PDI_ERR_CONFIG,
-// 	/// A value expression is invalid
-// 	PDI_ERR_VALUE,
-// 	/// Tried to load a non-existing plugin
-// 	PDI_ERR_PLUGIN,
-// 	/// Implementation limitation (typically an unimplemented feature)
-// 	PDI_ERR_IMPL,
-// 	/// A system error occured (OS, etc.)
-// 	PDI_ERR_SYSTEM,
-// 	/** A call to a function has been made at a wrong time (e.g. closing an
-// 	 *  unopened transaction)
-// 	 */
-// 	PDI_ERR_STATE,
-// 	/// A conflict of onwership over a content has been raised
-// 	PDI_ERR_RIGHT,
-// 	/// Invalid type error
-// 	PDI_ERR_TYPE
-
-// } PDI_status_t;
-
-// /** Type of a callback function used when an error occurs
-//  * \param status the error code
-//  * \param message the human-readable error message
-//  * \param context a user-provided context
-//  */
-// typedef void (*PDI_errfunc_f)(PDI_status_t status, const char* message, void* context);
-
-// /** Definition of an error handler
-//  */
-// typedef struct PDI_errhandler_s {
-// 	/// The function to handle the error (none if NULL)
-// 	PDI_errfunc_f func;
-
-// 	/// the context that will be provided to the function
-// 	void* context;
-
-// } PDI_errhandler_t;
-
-// /** Prints the error message and aborts if the status is invalid
-//  */
-// extern const PDI_errhandler_t PDI_EXPORT PDI_ASSERT_HANDLER;
-
-// /** Prints the error message and continue if the status is invalid
-//  */
-// extern const PDI_errhandler_t PDI_EXPORT PDI_WARN_HANDLER;
-
-// /** Does nothing
-//  */
-// extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
-
-
 /** Return a human-readabe message describing the last error that occured in PDI
  */
 const char PDI_EXPORT * PDI_errmsg(void){};
@@ -174,21 +115,6 @@ PDI_status_t PDI_EXPORT PDI_version(unsigned long* provided, unsigned long expec
 /** \addtogroup annotation
  * \{
  */
-
-/**
- * Access directions
- */
-// typedef enum PDI_inout_e {
-// 	/// No data transfert
-// 	PDI_NONE = 0,
-// 	/// data tranfer from PDI to the main code
-// 	PDI_IN = 1,
-// 	/// data transfer from the main code to PDI
-// 	PDI_OUT = 2,
-// 	/// data transfer in both direction
-// 	PDI_INOUT = 3
-
-// } PDI_inout_t;
 
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
