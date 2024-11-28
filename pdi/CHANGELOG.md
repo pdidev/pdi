@@ -15,11 +15,6 @@ and this project adheres to
 
 ### For users
 
-#### Added
-* Add the `Context::find()` method.
-  [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
-* Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)` helper function.
-
 #### Changed
 * Update the version of dependencies according to our policy: oldest supported
   Ubuntu & Fedora, oldstable debian & spack 0.18. The new requirements are:
@@ -41,6 +36,11 @@ and this project adheres to
   [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
 * Add the function `scalar_assign` to `Ref_any` to ease setting the value of a
   scalar data buffer.
+* Add the `Context::find()` method.
+  [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
+* Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)`
+  helper function.
+
 
 #### Changed
 * Replaced the astyle based indentation by a clang-format one, fixes
