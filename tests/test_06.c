@@ -31,22 +31,22 @@
 
 int main(int argc, char* argv[])
 {
-    PC_tree_t conf = PC_parse_path(argv[1]);
-
-    PDI_init(PC_get(conf, ".pdi"));
-    printf("%s",argv[1]);
-
-    long longval;
-
-    int global_size[2];
-    PC_int(PC_get(conf, ".global_size.height"), &longval); global_size[0] = longval;
-    PC_int(PC_get(conf, ".global_size.width"), &longval); global_size[1] = longval;
-
-    // # As the value is shared with pdi.h, it can be reclaimed in a second time.
-    // # In the case of pdi_deactivation.h, the value is never shared, hence the reclaim operation fails.
+	PC_tree_t conf = PC_parse_path(argv[1]);
+	
+	PDI_init(PC_get(conf, ".pdi"));
+	printf("%s",argv[1]);
+	
+	long longval;
+	
+	int global_size[2];
+	PC_int(PC_get(conf, ".global_size.height"), &longval); global_size[0] = longval;
+	PC_int(PC_get(conf, ".global_size.width"), &longval); global_size[1] = longval;
+	
+	// # As the value is shared with pdi.h, it can be reclaimed in a second time.
+	// # In the case of pdi_deactivation.h, the value is never shared, hence the reclaim operation fails.
 	// PDI_share("global_size",    global_size,    PDI_OUT) == NULL;
 	PDI_reclaim("global_size");
-
+	
 	PDI_finalize();
 	return 0;
 }
