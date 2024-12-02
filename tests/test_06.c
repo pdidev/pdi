@@ -38,9 +38,9 @@ int main(int argc, char* argv[])
 	long longval;
 
 	int global_size[2];
-	PC_int(PC_get(conf, ".global_size.height"), &longval); 
+	PC_int(PC_get(conf, ".global_size.height"), &longval);
 	global_size[0] = longval;
-	PC_int(PC_get(conf, ".global_size.width"), &longval); 
+	PC_int(PC_get(conf, ".global_size.width"), &longval);
 	global_size[1] = longval;
 
 	// # As the value is shared with pdi.h, it can be reclaimed in a second time.
