@@ -43,12 +43,12 @@ const char* CONFIG_YAML
 	  "    var_double: double                                                  \n"
 	  "    var_char: char                                                      \n"
 	  "    var_tuple:                                                          \n"
-      "      type: tuple                                                       \n"
-      "      elements:                          						       \n"
-      "        - elem_int:                          						   \n"
-      "          type: int                          					       \n"
-      "        - elem_double:                         					       \n"
-      "          type: double                          					       \n"
+	  "      type: tuple                                                       \n"
+	  "      elements:                          						       \n"
+	  "        - elem_int:                          						   \n"
+	  "          type: int                          					       \n"
+	  "        - elem_double:                         					       \n"
+	  "          type: double                          					       \n"
 	  "                                                                        \n"
 	  "  plugins:                                                              \n"
 	  "    json:                                                               \n"
@@ -86,6 +86,7 @@ int main(void)
 	double _var_double = 10;
 
 	char _var_char = 'a';
+
 	struct tuple_t {
 		int elem_int;
 		double elem_double;
@@ -105,7 +106,7 @@ int main(void)
 
 	PDI_expose("var_char", &_var_char, PDI_OUT);
 
-    PDI_expose("var_tuple", &_var_tuple, PDI_OUT);
+	PDI_expose("var_tuple", &_var_tuple, PDI_OUT);
 
 	PDI_finalize();
 	return 0;
