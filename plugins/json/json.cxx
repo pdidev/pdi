@@ -190,21 +190,20 @@ private:
 		}
 	}
 
-	void write_array_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger) {
-		std::cout<<"write_array_to_json"<<std::endl;
+	void write_array_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
+	{
 		auto array_type = dynamic_pointer_cast<const Array_datatype>(reference.type());
-		if(const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype()) ){
-			if(sub_type->kind() == PDI::Scalar_kind::UNSIGNED && sub_type->buffersize() == 1L) {
+		if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
+			if (sub_type->kind() == PDI::Scalar_kind::UNSIGNED && sub_type->buffersize() == 1L) {
 				std::string str = "";
 				for (int i = 0; i < array_type->size(); i++) {
 					str += *reinterpret_cast<const char*>(reinterpret_cast<const char*>(Ref_r{reference[i]}.get()));
 				}
-				json_data.push_back(str); 
+				json_data.push_back(str);
 				return;
 			}
 		}
 		for (int i = 0; i < array_type->size(); i++) {
-			// If the element is another nested array, process recursively
 			if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) { // an array of scalars
 				nlohmann::json result;
 				write_scalar_to_json(result, Ref_r{reference[i]}, logger);
@@ -262,35 +261,41 @@ private:
 	{
 		auto tuple_type = dynamic_pointer_cast<const Tuple_datatype>(reference.type());
 		for (int i = 0; i < tuple_type->size(); i++) {
-			if (const auto&& sub_type = dynamic_pointer_cast<const Scalar_datatype>(tuple_type->elements()[i].type())) { // scalar member of the record
+			if (const auto&& sub_type = dynamic_pointer_cast<const Scalar_datatype>(tuple_type->elements()[i].type()))
+			{ // scalar member of the record
 				nlohmann::json result;
 				write_scalar_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Array_datatype>(tuple_type->elements()[i].type())) { // scalar member of the record
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const Array_datatype>(tuple_type->elements()[i].type()))
+			{ // scalar member of the record
 				nlohmann::json result;
 				write_array_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Pointer_datatype>(tuple_type->elements()[i].type())) { // scalar member of the record
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const Pointer_datatype>(tuple_type->elements()[i].type()))
+			{ // scalar member of the record
 				nlohmann::json result;
 				write_pointer_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Record_datatype>(tuple_type->elements()[i].type())) { // scalar member of the record
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const Record_datatype>(tuple_type->elements()[i].type()))
+			{ // scalar member of the record
 				nlohmann::json result;
 				write_record_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
 			} else {
-					throw Type_error{"Unknown tuple subtype passed to json, currently supprting scalar and array subtypes."};
+				throw Type_error{"Unknown tuple subtype passed to json, currently supprting scalar and array subtypes."};
 			}
 		}
 	}
 
-	void write_pointer_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger) {
+	void write_pointer_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
+	{
 		Ref dereferenced_ref = reference.dereference();
 		if (!dereferenced_ref) throw Value_error{"Can't dereference with read permissions"};
 		choose_type_and_write(json_data, dereferenced_ref, logger);
 	}
 
-	void choose_type_and_write(nlohmann::json& json_data, Ref_r reference, Logger& logger) {
+	void choose_type_and_write(nlohmann::json& json_data, Ref_r reference, Logger& logger)
+	{
 		if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(reference.type())) { // a scalar type
 			write_scalar_to_json(json_data, reference, logger);
 		} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(reference.type())) { // an array type
