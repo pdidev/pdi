@@ -145,10 +145,11 @@ private:
 		});
 	}
 
-	/** Write to json a scalar value 
+	/** Write to json a scalar data 
 	 *
-	 * \param json_data A json data to which we write a scalar value
+	 * \param json_data A json data to which we write a scalar data
 	 * \param reference A reference to a scalar datatype
+	 * \param logger PDI's logger instance
 	 */
 	void write_scalar_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
@@ -190,6 +191,12 @@ private:
 		}
 	}
 
+	/** Write to json an array data
+	 *
+	 * \param json_data A json data to which we write an array data
+	 * \param reference A reference to an array datatype
+	 * \param logger PDI's logger instance
+	 */
 	void write_array_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
 		auto array_type = dynamic_pointer_cast<const Array_datatype>(reference.type());
@@ -228,10 +235,11 @@ private:
 		}
 	}
 
-	/** Write to json a record. The members of the record can be scalar and array.
+	/** Write to json a record data
 	 *
-	 * \param json_data A json data to which we write a scalar value
+	 * \param json_data A json data to which we write a record data
 	 * \param reference A reference to a record datatype
+	 * \param logger PDI's logger instance
 	 */
 	void write_record_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
@@ -252,10 +260,11 @@ private:
 		}
 	}
 
-	/** Write to json a tuple. The members of the record can be scalar and array.
+	/** Write to json a tuple data
 	 *
-	 * \param json_data A json data to which we write a scalar value
+	 * \param json_data A json data to which we write a tuple data
 	 * \param reference A reference to a tuple datatype
+	 * \param logger PDI's logger instance
 	 */
 	void write_tuple_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
@@ -287,14 +296,26 @@ private:
 		}
 	}
 
+    /** Write to json a pointer data
+	 *
+	 * \param json_data A json data to which we write a pointer data
+	 * \param reference A reference to a tuple datatype
+	 * \param logger PDI's logger instance
+	 */
 	void write_pointer_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
 		Ref dereferenced_ref = reference.dereference();
 		if (!dereferenced_ref) throw Value_error{"Can't dereference with read permissions"};
-		choose_type_and_write(json_data, dereferenced_ref, logger);
+		choose_type_and_dump_to_json(json_data, dereferenced_ref, logger);
 	}
 
-	void choose_type_and_write(nlohmann::json& json_data, Ref_r reference, Logger& logger)
+	/** Call different json dump function accordint to the datatype
+	 *
+	 * \param json_data A json data to which we write various types of data
+	 * \param reference A reference to a datatype
+	 * \param logger PDI's logger instance
+	 */
+	void choose_type_and_dump_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
 		if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(reference.type())) { // a scalar type
 			write_scalar_to_json(json_data, reference, logger);
@@ -334,7 +355,7 @@ private:
 			}
 
 			nlohmann::json json_data;
-			choose_type_and_write(json_data[data_name], reference, logger);
+			choose_type_and_dump_to_json(json_data[data_name], reference, logger);
 
 			path fp(filepath);
 			fstream json_file(fp, ios::in | ios::out | ios::ate);
