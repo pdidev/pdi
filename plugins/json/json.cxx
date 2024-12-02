@@ -200,7 +200,7 @@ private:
 	void write_array_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
 		auto array_type = dynamic_pointer_cast<const Array_datatype>(reference.type());
-		if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
+		if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
 			if (sub_type->kind() == PDI::Scalar_kind::UNSIGNED && sub_type->buffersize() == 1L) {
 				std::string str = "";
 				for (int i = 0; i < array_type->size(); i++) {
@@ -211,23 +211,23 @@ private:
 			}
 		}
 		for (int i = 0; i < array_type->size(); i++) {
-			if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) { // an array of scalars
+			if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) { // an array of scalars
 				nlohmann::json result;
 				write_scalar_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(array_type->subtype())) { // an array of arrays
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Array_datatype>(array_type->subtype())) { // an array of arrays
 				nlohmann::json result = nlohmann::json::array();
 				write_array_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Record_datatype>(array_type->subtype())) { // an array of arrays
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Record_datatype>(array_type->subtype())) { // an array of arrays
 				nlohmann::json result;
 				write_record_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Pointer_datatype>(array_type->subtype())) {
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Pointer_datatype>(array_type->subtype())) {
 				nlohmann::json result = nlohmann::json::array();
 				write_pointer_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const PDI::Tuple_datatype>(array_type->subtype())) {
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Tuple_datatype>(array_type->subtype())) {
 				nlohmann::json result = nlohmann::json::array();
 				write_pointer_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
