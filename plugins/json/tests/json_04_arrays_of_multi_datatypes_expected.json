@@ -1,8 +1,12 @@
 [
 {
     "var_string_array": [
-        "string12",
-        "string13"
+        [
+            "string12"
+        ],
+        [
+            "string13"
+        ]
     ]
 },
 {

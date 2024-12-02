@@ -71,6 +71,8 @@
 }
 ,
 {
-    "var_char": "abc"
+    "var_char": [
+        "abc"
+    ]
 }
 ]

@@ -42,6 +42,13 @@ const char* CONFIG_YAML
 	  "    var_float: float                                                    \n"
 	  "    var_double: double                                                  \n"
 	  "    var_char: char                                                      \n"
+	  "    var_tuple:                                                          \n"
+      "      type: tuple                                                       \n"
+      "      elements:                          						       \n"
+      "        - elem_int:                          						   \n"
+      "          type: int                          					       \n"
+      "        - elem_double:                         					       \n"
+      "          type: double                          					       \n"
 	  "                                                                        \n"
 	  "  plugins:                                                              \n"
 	  "    json:                                                               \n"
@@ -57,7 +64,8 @@ const char* CONFIG_YAML
 	  "          - var_int64_t                                                 \n"
 	  "          - var_float                                                   \n"
 	  "          - var_double                                                  \n"
-	  "          - var_char                                                    \n";
+	  "          - var_char                                                    \n"
+	  "          - var_tuple                                                   \n";
 
 int main(void)
 {
@@ -78,8 +86,12 @@ int main(void)
 	double _var_double = 10;
 
 	char _var_char = 'a';
+	struct tuple_t {
+		int elem_int;
+		double elem_double;
+	};
+	struct tuple_t _var_tuple = {11, 12.3};
 
-	// PDI_expose("var_uint8_t",  &_var_uint8_t,  PDI_OUT);
 	PDI_expose("var_uint16_t", &_var_uint16_t, PDI_OUT);
 	PDI_expose("var_uint32_t", &_var_uint32_t, PDI_OUT);
 	PDI_expose("var_uint64_t", &_var_uint64_t, PDI_OUT);
@@ -92,6 +104,8 @@ int main(void)
 	PDI_expose("var_double", &_var_double, PDI_OUT);
 
 	PDI_expose("var_char", &_var_char, PDI_OUT);
+
+    PDI_expose("var_tuple", &_var_tuple, PDI_OUT);
 
 	PDI_finalize();
 	return 0;

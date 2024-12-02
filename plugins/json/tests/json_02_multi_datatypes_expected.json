@@ -1,6 +1,8 @@
 [
 {
-    "var_string": "string12"
+    "var_string": [
+        "string12"
+    ]
 },
 {
     "var_array": [

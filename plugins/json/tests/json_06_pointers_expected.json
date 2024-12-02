@@ -39,7 +39,9 @@
 }
 ,
 {
-    "pvar_string": "string12"
+    "pvar_string": [
+        "string12"
+    ]
 }
 ,
 {
