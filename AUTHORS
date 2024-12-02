@@ -6,6 +6,8 @@ Please note this is the list for the distribution mechanism of PDI. The list for
 each sub-project (including PDI itself) is located in the dedicated sub-project
 AUTHORS file.
 
+Julian Auriac - CEA (julian.auriac@cea.fr)
+* Maintainer (Nov. 2024 - ...)
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)
@@ -36,6 +38,3 @@ project co-financed by Polish Ministry of Science and Higher Education.
 
 Yushan Wang - CEA (yushan.wang@cea.fr)
 * Maintainer (Sept. 2023 - ...)
-
-Julian Auriac - CEA (julian.auriac@cea.fr)
-* Maintainer (Nov. 2024 - ...)

@@ -36,6 +36,7 @@ variables set up.
 
 If source files (of application that uses %PDI) and specification tree file are ready, the compilation step can be made.
 For C make sure that source files that use %PDI API are including `pdi.h` header file.
+%PDI can be disabled by using `pdi_deactivation.h` instead of `pdi.h`, and re-enabled by doing the opposite.
 For Fortran make sure that source files that use %PDI API are using `%PDI` module file (`USE %PDI`).
 
 ### Compiling by hand {#compiling_by_hand}

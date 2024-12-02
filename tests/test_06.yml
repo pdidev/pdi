@@ -1,0 +1,6 @@
+global_size: { height: 60, width: 12 }
+
+pdi:
+  plugins:
+    trace:
+      logging: { pattern: '[PDI][%n-plugin] *** %l: %v' }
