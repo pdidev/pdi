@@ -154,9 +154,9 @@ private:
 	void write_scalar_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
 		auto scalar_type = dynamic_pointer_cast<const Scalar_datatype>(reference.type());
-		if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
+		if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
 			if (scalar_type->buffersize() == 1L) {
-				json_data = std::string(1, reference.scalar_value<char>());
+				json_data = string(1, reference.scalar_value<char>());
 			} else if (scalar_type->buffersize() == 2L) {
 				json_data = reference.scalar_value<uint16_t>();
 			} else if (scalar_type->buffersize() == 4L) {
@@ -166,7 +166,7 @@ private:
 			} else {
 				throw Type_error{"Unknown size of unsigned integer datatype"};
 			}
-		} else if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
+		} else if (scalar_type->kind() == Scalar_kind::SIGNED) {
 			if (scalar_type->buffersize() == 1L) {
 				json_data = reference.scalar_value<int8_t>();
 			} else if (scalar_type->buffersize() == 2L) {
@@ -178,7 +178,7 @@ private:
 			} else {
 				throw Type_error{"Unknown size of signed integer datatype"};
 			}
-		} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
+		} else if (scalar_type->kind() == Scalar_kind::FLOAT) {
 			if (scalar_type->buffersize() == 4L) {
 				json_data = reference.scalar_value<float>();
 			} else if (scalar_type->buffersize() == 8L) {
@@ -200,9 +200,9 @@ private:
 	void write_array_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
 		auto array_type = dynamic_pointer_cast<const Array_datatype>(reference.type());
-		if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) {
-			if (sub_type->kind() == PDI::Scalar_kind::UNSIGNED && sub_type->buffersize() == 1L) {
-				std::string str = "";
+		if (const auto&& sub_type = dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) {
+			if (sub_type->kind() == Scalar_kind::UNSIGNED && sub_type->buffersize() == 1L) {
+				string str = "";
 				for (int i = 0; i < array_type->size(); i++) {
 					str += *reinterpret_cast<const char*>(reinterpret_cast<const char*>(Ref_r{reference[i]}.get()));
 				}
@@ -211,23 +211,23 @@ private:
 			}
 		}
 		for (int i = 0; i < array_type->size(); i++) {
-			if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Scalar_datatype>(array_type->subtype())) { // an array of scalars
+			if (const auto&& sub_type = dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) { // an array of scalars
 				nlohmann::json result;
 				write_scalar_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Array_datatype>(array_type->subtype())) { // an array of arrays
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const Array_datatype>(array_type->subtype())) { // an array of arrays
 				nlohmann::json result = nlohmann::json::array();
 				write_array_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Record_datatype>(array_type->subtype())) { // an array of arrays
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const Record_datatype>(array_type->subtype())) { // an array of arrays
 				nlohmann::json result;
 				write_record_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Pointer_datatype>(array_type->subtype())) {
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const Pointer_datatype>(array_type->subtype())) {
 				nlohmann::json result = nlohmann::json::array();
 				write_pointer_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const PDI::Tuple_datatype>(array_type->subtype())) {
+			} else if (const auto&& sub_type = dynamic_pointer_cast<const Tuple_datatype>(array_type->subtype())) {
 				nlohmann::json result = nlohmann::json::array();
 				write_pointer_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
@@ -371,7 +371,7 @@ private:
 				// Remove the closing bracket
 				// Write the json data
 				// Add the closing bracket
-				json_file.seekg(-1, std::ios::end); // Move to the last character
+				json_file.seekg(-1, ios::end); // Move to the last character
 				char lastChar;
 				json_file.get(lastChar);
 				if (lastChar == ']') {
