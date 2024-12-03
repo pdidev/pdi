@@ -4,54 +4,43 @@
 },
 {
     "pvar_uint32_t": 3
-}
-,
+},
 {
     "pvar_uint64_t": 4
-}
-,
+},
 {
     "pvar_int8_t": 5
-}
-,
+},
 {
     "pvar_int16_t": 6
-}
-,
+},
 {
     "pvar_int32_t": 7
-}
-,
+},
 {
     "pvar_int64_t": 8
-}
-,
+},
 {
     "pvar_float": 9.0
-}
-,
+},
 {
     "pvar_double": 10.0
-}
-,
+},
 {
     "pvar_char": "a"
-}
-,
+},
 {
     "pvar_string": [
         "string12"
     ]
-}
-,
+},
 {
     "pvar_array": [
         11,
         12,
         13
     ]
-}
-,
+},
 {
     "pvar_record": {
         "var_char": "a",
@@ -59,8 +48,7 @@
         "var_int32_t1": 14,
         "var_int32_t2": 15
     }
-}
-,
+},
 {
     "var_int_pointer_array": [
         [
