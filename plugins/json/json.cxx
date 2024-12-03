@@ -375,7 +375,7 @@ private:
 				char lastChar;
 				json_file.get(lastChar);
 				if (lastChar == ']') {
-					json_file.seekp(-1, std::ios::end); // Move one character back to overwrite the closing ']'
+					json_file.seekp(-1, ios::end); // Move one character back to overwrite the closing ']'
 					json_file << ",\n" << json_data.dump(4) << "\n]";
 				} else {
 					std::cerr << "File does not end with a valid JSON array. Cannot append.\n";
