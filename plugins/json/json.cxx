@@ -43,13 +43,6 @@
 
 namespace {
 
-using std::dynamic_pointer_cast;
-using std::fstream, std::ios;
-using std::pair, std::make_pair;
-using std::string;
-using std::unordered_map;
-using std::filesystem::path;
-
 using namespace PDI;
 
 /** The json plugin 
@@ -57,7 +50,7 @@ using namespace PDI;
 class json_plugin: public PDI::Plugin
 {
 	// Map between data variables and a pair between condition and the output filenames
-	unordered_map<string, std::vector<pair<Expression, Expression>>> m_data_to_path_map;
+	std::unordered_map<std::string, std::vector<std::pair<Expression, Expression>>> m_data_to_path_map;
 
 public:
 	json_plugin(Context& ctx, PC_tree_t spec_tree)
@@ -67,7 +60,7 @@ public:
 		read_config_tree(ctx.logger(), spec_tree);
 
 		for (const auto& data_path_pair: m_data_to_path_map) {
-			ctx.callbacks().add_data_callback([this](const string& data_name, Ref ref) { this->write_data(data_name, ref); }, data_path_pair.first);
+			ctx.callbacks().add_data_callback([this](const std::string& data_name, Ref ref) { this->write_data(data_name, ref); }, data_path_pair.first);
 		}
 
 		ctx.logger().info("Plugin loaded successfully");
@@ -96,7 +89,7 @@ private:
 
 				Expression default_when = 1L;
 				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
-					string key = to_string(key_tree);
+					std::string key = to_string(key_tree);
 
 					if (key == "when") {
 						default_when = to_string(value_tree);
@@ -106,22 +99,22 @@ private:
 				});
 
 				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
-					string key = to_string(key_tree);
+					std::string key = to_string(key_tree);
 
 					if (key == "write") {
 						PC_tree_t write_tree = PC_get(elem_tree, ".write");
 
 						if (!PC_status(PC_get(write_tree, "[0]"))) { // it's a list of names only
 							each(write_tree, [&](PC_tree_t tree) {
-								string dset_string = to_string(tree);
+								std::string dset_string = to_string(tree);
 
 								// Append to list if key exist, else create it
 								auto iter = m_data_to_path_map.find(dset_string);
 								if (iter != m_data_to_path_map.end()) {
-									iter->second.push_back(make_pair(default_when, filepath));
+									iter->second.push_back(std::make_pair(default_when, filepath));
 								} else {
 									m_data_to_path_map.insert(
-										make_pair(dset_string, std::vector<pair<Expression, Expression>>{make_pair(default_when, filepath)})
+										std::make_pair(dset_string, std::vector<std::pair<Expression, Expression>>{std::make_pair(default_when, filepath)})
 									);
 								}
 							});
@@ -131,15 +124,15 @@ private:
 					}
 				});
 			} else { // it's "var: filename" format
-				string dset_string = to_string(PC_get(elem_tree, "{%d}", 0));
+				std::string dset_string = to_string(PC_get(elem_tree, "{%d}", 0));
 				Expression filepath = to_string(PC_get(elem_tree, "<%d>", 0));
 
 				auto iter = m_data_to_path_map.find(dset_string);
 				Expression default_when = 1L;
 				if (iter != m_data_to_path_map.end()) {
-					iter->second.push_back(make_pair(default_when, filepath));
+					iter->second.push_back(std::make_pair(default_when, filepath));
 				} else {
-					m_data_to_path_map.insert(make_pair(dset_string, std::vector<pair<Expression, Expression>>{make_pair(default_when, filepath)}));
+					m_data_to_path_map.insert(std::make_pair(dset_string, std::vector<std::pair<Expression, Expression>>{std::make_pair(default_when, filepath)}));
 				}
 			}
 		});
@@ -153,10 +146,10 @@ private:
 	 */
 	void write_scalar_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
-		auto scalar_type = dynamic_pointer_cast<const Scalar_datatype>(reference.type());
+		auto scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(reference.type());
 		if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
 			if (scalar_type->buffersize() == 1L) {
-				json_data = string(1, reference.scalar_value<char>());
+				json_data = std::string(1, reference.scalar_value<char>());
 			} else if (scalar_type->buffersize() == 2L) {
 				json_data = reference.scalar_value<uint16_t>();
 			} else if (scalar_type->buffersize() == 4L) {
@@ -199,10 +192,10 @@ private:
 	 */
 	void write_array_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
-		auto array_type = dynamic_pointer_cast<const Array_datatype>(reference.type());
-		if (const auto&& sub_type = dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) {
+		auto array_type = std::dynamic_pointer_cast<const Array_datatype>(reference.type());
+		if (const auto&& sub_type = std::dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) {
 			if (sub_type->kind() == Scalar_kind::UNSIGNED && sub_type->buffersize() == 1L) {
-				string str = "";
+				std::string str = "";
 				for (int i = 0; i < array_type->size(); i++) {
 					str += *reinterpret_cast<const char*>(reinterpret_cast<const char*>(Ref_r{reference[i]}.get()));
 				}
@@ -211,23 +204,23 @@ private:
 			}
 		}
 		for (int i = 0; i < array_type->size(); i++) {
-			if (const auto&& sub_type = dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) { // an array of scalars
+			if (const auto&& sub_type = std::dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) { // an array of scalars
 				nlohmann::json result;
 				write_scalar_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Array_datatype>(array_type->subtype())) { // an array of arrays
+			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const Array_datatype>(array_type->subtype())) { // an array of arrays
 				nlohmann::json result = nlohmann::json::array();
 				write_array_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Record_datatype>(array_type->subtype())) { // an array of arrays
+			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const Record_datatype>(array_type->subtype())) { // an array of arrays
 				nlohmann::json result;
 				write_record_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Pointer_datatype>(array_type->subtype())) {
+			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const Pointer_datatype>(array_type->subtype())) {
 				nlohmann::json result = nlohmann::json::array();
 				write_pointer_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Tuple_datatype>(array_type->subtype())) {
+			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const Tuple_datatype>(array_type->subtype())) {
 				nlohmann::json result = nlohmann::json::array();
 				write_pointer_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
@@ -243,15 +236,15 @@ private:
 	 */
 	void write_record_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
-		auto record_type = dynamic_pointer_cast<const Record_datatype>(reference.type());
+		auto record_type = std::dynamic_pointer_cast<const Record_datatype>(reference.type());
 		for (const auto& member: record_type->members()) {
-			if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(member.type())) { // scalar member of the record
+			if (const auto&& scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(member.type())) { // scalar member of the record
 				write_scalar_to_json(json_data[member.name()], reference[member.name()], logger);
-			} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(member.type())) { // array member of the record
+			} else if (const auto&& array_type = std::dynamic_pointer_cast<const Array_datatype>(member.type())) { // array member of the record
 				write_array_to_json(json_data[member.name()], Ref_r{reference[member.name()]}, logger);
-			} else if (const auto&& array_type = dynamic_pointer_cast<const Pointer_datatype>(member.type())) { // array member of the record
+			} else if (const auto&& array_type = std::dynamic_pointer_cast<const Pointer_datatype>(member.type())) { // array member of the record
 				write_pointer_to_json(json_data[member.name()], Ref_r{reference[member.name()]}, logger);
-			} else if (const auto&& array_type = dynamic_pointer_cast<const Tuple_datatype>(member.type())) { // array member of the record
+			} else if (const auto&& array_type = std::dynamic_pointer_cast<const Tuple_datatype>(member.type())) { // array member of the record
 				logger.warn("record of tuple not yet tested");
 				write_tuple_to_json(json_data[member.name()], Ref_r{reference[member.name()]}, logger);
 			} else {
@@ -268,24 +261,24 @@ private:
 	 */
 	void write_tuple_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
-		auto tuple_type = dynamic_pointer_cast<const Tuple_datatype>(reference.type());
+		auto tuple_type = std::dynamic_pointer_cast<const Tuple_datatype>(reference.type());
 		for (int i = 0; i < tuple_type->size(); i++) {
-			if (const auto&& sub_type = dynamic_pointer_cast<const Scalar_datatype>(tuple_type->elements()[i].type()))
+			if (const auto&& sub_type = std::dynamic_pointer_cast<const Scalar_datatype>(tuple_type->elements()[i].type()))
 			{ // scalar member of the record
 				nlohmann::json result;
 				write_scalar_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Array_datatype>(tuple_type->elements()[i].type()))
+			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const Array_datatype>(tuple_type->elements()[i].type()))
 			{ // scalar member of the record
 				nlohmann::json result;
 				write_array_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Pointer_datatype>(tuple_type->elements()[i].type()))
+			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const Pointer_datatype>(tuple_type->elements()[i].type()))
 			{ // scalar member of the record
 				nlohmann::json result;
 				write_pointer_to_json(result, Ref_r{reference[i]}, logger);
 				json_data.push_back(result);
-			} else if (const auto&& sub_type = dynamic_pointer_cast<const Record_datatype>(tuple_type->elements()[i].type()))
+			} else if (const auto&& sub_type = std::dynamic_pointer_cast<const Record_datatype>(tuple_type->elements()[i].type()))
 			{ // scalar member of the record
 				nlohmann::json result;
 				write_record_to_json(result, Ref_r{reference[i]}, logger);
@@ -317,15 +310,15 @@ private:
 	 */
 	void choose_type_and_dump_to_json(nlohmann::json& json_data, Ref_r reference, Logger& logger)
 	{
-		if (const auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(reference.type())) { // a scalar type
+		if (const auto&& scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(reference.type())) { // a scalar type
 			write_scalar_to_json(json_data, reference, logger);
-		} else if (const auto&& array_type = dynamic_pointer_cast<const Array_datatype>(reference.type())) { // an array type
+		} else if (const auto&& array_type = std::dynamic_pointer_cast<const Array_datatype>(reference.type())) { // an array type
 			write_array_to_json(json_data, reference, logger);
-		} else if (const auto&& record_type = dynamic_pointer_cast<const Record_datatype>(reference.type())) { // a record type
+		} else if (const auto&& record_type = std::dynamic_pointer_cast<const Record_datatype>(reference.type())) { // a record type
 			write_record_to_json(json_data, reference, logger);
-		} else if (const auto&& pointer_type = dynamic_pointer_cast<const Tuple_datatype>(reference.type())) {
+		} else if (const auto&& pointer_type = std::dynamic_pointer_cast<const Tuple_datatype>(reference.type())) {
 			write_tuple_to_json(json_data, reference, logger);
-		} else if (const auto&& pointer_type = dynamic_pointer_cast<const Pointer_datatype>(reference.type())) { // a pointer type
+		} else if (const auto&& pointer_type = std::dynamic_pointer_cast<const Pointer_datatype>(reference.type())) { // a pointer type
 			write_pointer_to_json(json_data, reference, logger);
 		} else {
 			throw Type_error{"Unknown datatype passed to json"};
@@ -337,7 +330,7 @@ private:
 	 * \param data_name the variable name shared from PDI
 	 * \param indent_size reference The reference with read permission to this variable
 	 */
-	void write_data(const string& data_name, Ref_r reference)
+	void write_data(const std::string& data_name, Ref_r reference)
 	{
 		Logger& logger = context().logger();
 
@@ -347,7 +340,7 @@ private:
 				continue;
 			}
 
-			const string filepath = fpath.to_string(context());
+			const std::string filepath = fpath.to_string(context());
 
 			logger.debug("Writing data of {} for {}", data_name, filepath);
 			if (!reference) {
@@ -357,25 +350,25 @@ private:
 			nlohmann::json json_data;
 			choose_type_and_dump_to_json(json_data[data_name], reference, logger);
 
-			path fp(filepath);
-			fstream json_file(fp, ios::in | ios::out | ios::ate);
+			std::filesystem::path fp(filepath);
+			std::fstream json_file(fp, std::ios::in | std::ios::out | std::ios::ate);
 			if (!json_file.is_open()) {
 				// Case 1: File doesn't exist
 				// Create the file
 				// Write the json data between brackets
-				json_file.open(fp, ios::out);
-				json_file << "[\n" << json_data.dump(4) << "]";
+				json_file.open(fp, std::ios::out);
+				json_file << "[\n" << json_data.dump(4) << "\n]";
 			} else {
 				// Case 2: File exist
 				// Move to the end of the file
 				// Remove the closing bracket
 				// Write the json data
 				// Add the closing bracket
-				json_file.seekg(-1, ios::end); // Move to the last character
+				json_file.seekg(-1, std::ios::end); // Move to the last character
 				char lastChar;
 				json_file.get(lastChar);
 				if (lastChar == ']') {
-					json_file.seekp(-1, ios::end); // Move one character back to overwrite the closing ']'
+					json_file.seekp(-2, std::ios::end); // Move one character back to overwrite the closing ']'
 					json_file << ",\n" << json_data.dump(4) << "\n]";
 				} else {
 					std::cerr << "File does not end with a valid JSON array. Cannot append.\n";
