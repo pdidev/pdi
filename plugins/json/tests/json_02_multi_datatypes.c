@@ -29,23 +29,23 @@
 #include <pdi.h>
 
 const char* CONFIG_YAML
-	= "pdi:                                                        \n"
-	  "  data:                                                     \n"
-	  "    var_array: { type: array, subtype: int32_t, size: 3 }   \n"
-	  "    var_string: { type: array, subtype: char, size: 8 }     \n"
-	  "    var_record:                                             \n"
-	  "        type: struct                                        \n"
-	  "        members:                                            \n"
-	  "            - var_int32_t1: int32_t                         \n"
-	  "            - var_int32_t2: int32_t                         \n"
-	  "            - var_char: char                                \n"
-	  "            - var_double: double                            \n"
-	  "            - var_array: { type: array, subtype: int32_t, size: 3 }                     \n"
-	  "                                                            \n"
-	  "  plugins:                                                  \n"
-	  "    json:                                                   \n"
-	  "      - file : json_02_multi_datatypes.json                 \n"
-	  "        write : [var_string, var_array, var_record]         \n";
+	= "pdi:                                                                 \n"
+	  "  data:                                                              \n"
+	  "    var_array: { type: array, subtype: int32_t, size: 3 }            \n"
+	  "    var_string: { type: array, subtype: char, size: 8 }              \n"
+	  "    var_record:                                                      \n"
+	  "        type: struct                                                 \n"
+	  "        members:                                                     \n"
+	  "            - var_int32_t1: int32_t                                  \n"
+	  "            - var_int32_t2: int32_t                                  \n"
+	  "            - var_char: char                                         \n"
+	  "            - var_double: double                                     \n"
+	  "            - var_array_dup: { type: array, subtype: int, size: 3 }  \n"
+	  "                                                                     \n"
+	  "  plugins:                                                           \n"
+	  "    json:                                                            \n"
+	  "      - file : json_02_multi_datatypes.json                          \n"
+	  "        write : [var_string, var_array, var_record]                  \n";
 
 int main()
 {
@@ -66,8 +66,9 @@ int main()
 		int32_t _var_int32t2;
 		char _var_a; // padding
 		double _var_double;
+		int _var_array_dup[3];
 	};
-	struct record_t _var_record1 = {14, 15, 'a', 16.};
+	struct record_t _var_record1 = {14, 15, 'a', 16., {17, 18, 19}};
 
 	PDI_expose("var_record", &_var_record1, PDI_OUT);
 
