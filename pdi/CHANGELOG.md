@@ -10,8 +10,40 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-
 ## [Unreleased]
+
+### For users
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
+## [1.8.0] - 2024-11-28
 
 ### For users
 
@@ -29,15 +61,9 @@ and this project adheres to
   - directly use vendored gtest, benchmark & ZPP
   [#465](https://github.com/pdidev/pdi/issues/465)
 
-#### Deprecated
-
-#### Removed
-
 #### Fixed
 * Fixed compilation with {fmt} version 11+
   [#456](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/456)
-
-#### Security
 
 
 ### For plugin developers
@@ -58,12 +84,6 @@ and this project adheres to
 #### Deprecated
 * The `Datatype_template_ptr` type is now deprecated, `Datatype_template_sptr`
   should be used instead.
-
-#### Removed
-
-#### Fixed
-
-#### Security
 
 
 

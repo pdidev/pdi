@@ -13,11 +13,11 @@ The %PDI source distribution includes:
 
 ## Downloading PDI source distribution {#downloading_distribution}
 
-To download the sources, have a look at the list of all releases at
-https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases
+To download the sources, have a look at the list of all releases at 
+https://github.com/pdidev/pdi/releases/
 
-For example, release 1.7.1 can be downloaded from
-https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.7.1/pdi-1.7.1.tar.bz2
+For example, release 1.8.0 can be downloaded from
+https://github.com/pdidev/pdi/archive/refs/tags/1.8.0.tar.gz
 
 ## Default installation {#default_installation}
 
@@ -43,15 +43,15 @@ external dependencies are:
 This list of dependencies can be further reduced or extended by changing the
 set of features compiled.
 
-For example, release 1.7.1 can be installed by following these instructions (but
+For example, release 1.8.0 can be installed by following these instructions (but
 look for the latest release at
-https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/releases ):
+https://github.com/pdidev/pdi/releases ):
 
 ```bash
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.7.1/pdi-1.7.1.tar.bz2
-tar -xjf pdi-1.7.1.tar.bz2
-mkdir pdi-1.7.1/build
-cd pdi-1.7.1/build
+wget https://github.com/pdidev/pdi/archive/refs/tags/1.8.0.tar.gz
+tar -xjf 1.8.0.tar.bz2
+mkdir 1.8.0/build
+cd 1.8.0/build
 cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
 make install   # compilation and installation
 ```
