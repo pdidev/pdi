@@ -289,7 +289,7 @@ private:
 		}
 	}
 
-    /** Write to json a pointer data
+	/** Write to json a pointer data
 	 *
 	 * \param json_data A json data to which we write a pointer data
 	 * \param reference A reference to a tuple datatype
@@ -358,6 +358,7 @@ private:
 				// Write the json data between brackets
 				json_file.open(fp, std::ios::out);
 				json_file << "[\n" << json_data.dump(4) << "\n]";
+				json_file.close();
 			} else {
 				// Case 2: File exist
 				// Move to the end of the file
@@ -372,7 +373,6 @@ private:
 					json_file << ",\n" << json_data.dump(4) << "\n]";
 				} else {
 					std::cerr << "File does not end with a valid JSON array. Cannot append.\n";
-					json_file.close();
 				}
 				json_file.close();
 			}
