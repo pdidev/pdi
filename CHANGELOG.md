@@ -18,6 +18,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the dedicated tools.
   [#440](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/440)
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+
+## [1.8.0] - 2024-11-28
+
+### Added
+
 * NetCDF plugin now support the size_of attribute, fixes
   [#446](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/446)
 * Deisa plugin for in-situ analysis using Dask
@@ -32,20 +47,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - directly use vendored gtest, benchmark & ZPP
   [#465](https://github.com/pdidev/pdi/issues/465)
 
-### Deprecated
-
 ### Removed
 * Removed deprecated, unmaintained and unsupported plugins and tools for the
   distribution: Decl'SION, FlowVR, FTI and test plugins, as well as the
   PDI Config validator, fixes
   [#458](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/458)
 
-
 ### Fixed
 * Support installation with the latest version of python where setuptools is an external lib, fixes
   [#457](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/457)
-
-### Security
 
 
 ## [1.7.1] - 2024-07-21
