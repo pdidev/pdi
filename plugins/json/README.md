@@ -5,10 +5,9 @@ reflect the full potential of the JSON plugin.
 
 The JSON plugin enables users to export data in valid JSON format and allows for custom writing formats (\ref json_custom_format).
 
-This plugin permits writing multiple variables in the same file as soon as they are available.
+This plugin allows writing multiple variables in the same file as soon as they are available.
 
-All scalar types, arrays, tuples, strings, and records are supported.
-Multiple level arrays or records have limited support, such as when using arrays of arrays (but this is currently a work in progress, see \ref json_on_going_work).
+It supports not only basic data types such as scalar, array, record, tuple, and pointer, but also complex and nested combinations of these types. This includes multi-level arrays, multi-level records, and any mixture of the supported basic types at arbitrary levels of nesting. However, not all combinations are fully tested.
 
 It ensures a JSON valid format at all times, even if the simulation crashes and PDI is not finalized, due to its incremental writing. **Warning:** this may result in increased disk bandwidth and may not be ideal for a performance-sensitive context. 
 <!-- You might then want to consider using the `xxxxx` option to use the open file once behavior, instead of rewriting at each call. This would cause invalid JSON if simulation crashes or PDI's finalization is not called. But then you are using JSON anyways ... -->
@@ -50,12 +49,12 @@ plugins:
       write: [data1, data2, ...]
 ```
 
-Note : by default, if not specified a true condition is set, so that the variable is written every time PDI is granted read permission.
-An example of this two syntax are given in `example/json.yml`
+Note : By default, if not specified a true condition is set so that the variable is written every time PDI is granted read permission.
+Examples of those two syntax are given in `example/json.yml`.
 
 ## Test the JSON plugin ! {#json_test_plugin}
 
-The easiest way to test the plugin is refering to the example section, that provides a full somewhat realistic C simulation code, where PDI is enabled and the JSON plugin is used. This one can be found at \ref PDI_example
+The easiest way to test the plugin is referring to the example section, which provides a full somewhat realistic C simulation code, where PDI is enabled and the JSON plugin is used. This one can be found in `example`.
 
 To use it, first compile using CMake with `BUILD_TESTING` set to `ON`, then execute : 
 ```bash
@@ -69,18 +68,13 @@ build/PDI_EXAMPLE/PDI_example_C example/json.yml
  Please refer to `example/json.yml`
 ## On going work / Limitations {#json_on_going_work}
 
-- [ ] Adding support for reading variables. 
+- Adding support for reading variables. 
     Currently, the JSON plugin doesn't support reading variables, only writing them. To cover more use cases, the JSON plugin should be able to read variables as well as write them.
-- [x] Improve strings handling. Concatenate arrays of chars to have "var": "value" instead of "var": ["v", "a", ...].
-- [x] Added full support for types that can be recursive, e.g. arrays of arrays, arrays within structures etc. 
-- [ ] The ability to create an on-the-go structures for several variables to be produced in a single JSON object
-- [x] Continuous integration: More test units coverage
+- The ability to create an on-the-go structures for several variables to be produced in a single JSON object
 
 ## The JSON plugin for custom formating {#json_custom_format}
 
-Initially, the aim of this plugin was to enable the writing of customized file formats. To achieve this, the template systems are logical and first-hand, in particular `mustache`. The latter, however, allows you to take JSON as input and format it.
-
-For the sake of the example, let's imagine the following code, creating which performs some kind of heat transfer simulation.
+For the sake of the example, let's imagine the following code, creating which performs a certain heat transfer simulation.
 
 ### The PDI exposes
 
@@ -162,9 +156,7 @@ If we run this code as is, the following JSON file would get generated.
 ]
 ```
 
-As explained in \ref json_custom_format, we can use this to generate our custom format.
-
-This one defines (in mustache langage) as follows : 
+We can use this output json file to generate our custom format. For example, we can rely on [mustache](https://mustache.github.io/) to do so.
 
 ### Mustache code
 <!-- \image html json_mustache_light.png width=800px -->
