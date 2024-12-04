@@ -56,8 +56,8 @@ Examples of those two syntax are given in `example/json.yml`.
 The JSON plugin relies on the [nlohmann/json](https://github.com/nlohmann/json) library to output data to JSON format.
 The json library is included in the PDI repo as a submodule. To get the source code of this external library, one needs to do, from the root of PDI:
 ```bash
-git submodule --init
-git submodule --update
+git submodule init
+git submodule update
 ```
 Next, users can activate the json_plugin by adding `BUILD_JSON_PLUGIN=ON` option to the PDI configuration commande.
 
