@@ -30,9 +30,13 @@
 
 #define FILE "mpi_independent_test.h5"
 
+/**
+* Test : Read a file using PDI with the plugin decl_hdf5 in parallel with the option mpio: INDEPENDENT.
+*/
+
 int main(int argc, char* argv[])
 {
-	printf("PDI mpi_read_test started\n");
+	printf("PDI mpi_independent_read_test started\n");
 	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);

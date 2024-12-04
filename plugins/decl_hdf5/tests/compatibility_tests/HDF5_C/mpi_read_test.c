@@ -29,6 +29,10 @@
 
 #define FILE "mpi_test.h5"
 
+/**
+* Test : Read a file using hdf5 parallel version with the option collective parallel pointer.
+*/
+
 int main(int argc, char* argv[])
 {
 	printf("HDF5 mpi_read_test started\n");

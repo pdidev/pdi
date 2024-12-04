@@ -29,8 +29,8 @@
 
 #define FILE "mpi_independent_test.h5"
 
-/*
-Test : Read a file using hdf5 parallel version with the option independent parallel pointer.
+/**
+* Test : Read a file using hdf5 parallel version with the option independent parallel pointer.
 */
 
 int main(int argc, char* argv[])
