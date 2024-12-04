@@ -60,7 +60,10 @@ public:
 		read_config_tree(ctx.logger(), spec_tree);
 
 		for (const auto& data_path_pair: m_data_to_path_map) {
-			ctx.callbacks().add_data_callback([this](const std::string& data_name, Ref ref) { this->write_data(data_name, ref); }, data_path_pair.first);
+			ctx.callbacks().add_data_callback(
+				[this](const std::string& data_name, Ref ref) { this->write_data(data_name, ref); },
+				data_path_pair.first
+			);
 		}
 
 		ctx.logger().info("Plugin loaded successfully");
@@ -113,9 +116,10 @@ private:
 								if (iter != m_data_to_path_map.end()) {
 									iter->second.push_back(std::make_pair(default_when, filepath));
 								} else {
-									m_data_to_path_map.insert(
-										std::make_pair(dset_string, std::vector<std::pair<Expression, Expression>>{std::make_pair(default_when, filepath)})
-									);
+									m_data_to_path_map.insert(std::make_pair(
+										dset_string,
+										std::vector<std::pair<Expression, Expression>>{std::make_pair(default_when, filepath)}
+									));
 								}
 							});
 						} else {
@@ -132,7 +136,9 @@ private:
 				if (iter != m_data_to_path_map.end()) {
 					iter->second.push_back(std::make_pair(default_when, filepath));
 				} else {
-					m_data_to_path_map.insert(std::make_pair(dset_string, std::vector<std::pair<Expression, Expression>>{std::make_pair(default_when, filepath)}));
+					m_data_to_path_map.insert(
+						std::make_pair(dset_string, std::vector<std::pair<Expression, Expression>>{std::make_pair(default_when, filepath)})
+					);
 				}
 			}
 		});
