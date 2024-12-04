@@ -52,9 +52,16 @@ plugins:
 Note : By default, if not specified a true condition is set so that the variable is written every time PDI is granted read permission.
 Examples of those two syntax are given in `example/json.yml`.
 
-## Test the JSON plugin ! {#json_test_plugin}
+## Install and test the JSON plugin ! {#json_test_plugin}
+The JSON plugin relies on the [nlohmann/json](https://github.com/nlohmann/json) library to output data to JSON format.
+The json library is included in the PDI repo as a submodule. To get the source code of this external library, one needs to do, from the root of PDI:
+```bash
+git submodule --init
+git submodule --update
+```
+Next, users can activate the json_plugin by adding `BUILD_JSON_PLUGIN=ON` option to the PDI configuration commande.
 
-The easiest way to test the plugin is referring to the example section, which provides a full somewhat realistic C simulation code, where PDI is enabled and the JSON plugin is used. This one can be found in `example`.
+Once the plugin installed, the easiest way to test the plugin is referring to the example section, which provides a full somewhat realistic C simulation code, where PDI is enabled and the JSON plugin is used. This one can be found in `example`.
 
 To use it, first compile using CMake with `BUILD_TESTING` set to `ON`, then execute : 
 ```bash
