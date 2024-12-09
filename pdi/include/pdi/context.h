@@ -58,6 +58,7 @@ public:
 		Data_descriptor& operator* ();
 		Iterator& operator++ ();
 		bool operator!= (const Iterator&);
+		bool operator== (const Iterator&);
 	};
 
 	/** A function that parses a PC_tree_t to create a datatype_template
