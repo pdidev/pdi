@@ -13,6 +13,9 @@ Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 Benoit Martin - CEA (bmartin@cea.fr)
 * Add Context::find()
 
+Jacques Morice - CEA (jacques.morice@cea.fr)
+* Add Add operator== in Context::Iterator()
+
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
 * Add support for ZSH in env
