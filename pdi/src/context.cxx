@@ -72,6 +72,11 @@ bool Context::Iterator::operator!= (const Iterator& o)
 	return (m_data != o.m_data);
 }
 
+bool Context::Iterator::operator== (const Iterator& o)
+{
+	return (m_data == o.m_data);
+}
+
 Context::Iterator Context::get_iterator(const std::unordered_map<std::string, unique_ptr<Data_descriptor>>::iterator& data)
 {
 	return data;
