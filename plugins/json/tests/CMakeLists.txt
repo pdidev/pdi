@@ -65,4 +65,5 @@ build_test_compare(json_031_arrays_of_arrays_of_datatypes)
 build_test_compare(json_04_arrays_of_multi_datatypes)
 build_test_compare(json_05_mixing_datatypes)
 build_test_compare(json_06_pointers)
+build_test_compare(json_07_nested_datatypes)
 
