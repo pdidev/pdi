@@ -152,7 +152,7 @@ private:
 	 */
 	nlohmann::json write_scalar_to_json(Ref_r reference)
 	{
-		context().logger().info("write to json a scalar type data !");
+		context().logger().debug("write to json a scalar type data !");
 		nlohmann::json json_data;
 		auto scalar_type = std::dynamic_pointer_cast<const Scalar_datatype>(reference.type());
 		if (scalar_type->kind() == Scalar_kind::UNSIGNED) {
@@ -202,7 +202,7 @@ private:
 	nlohmann::json write_array_to_json(Ref_r reference)
 	{
 		auto array_type = std::dynamic_pointer_cast<const Array_datatype>(reference.type());
-		context().logger().info("write to json an array type data with size {}!", array_type->size());
+		context().logger().debug("write to json an array type data with size {}!", array_type->size());
 		nlohmann::json json_data;
 		if (const auto&& sub_type = std::dynamic_pointer_cast<const Scalar_datatype>(array_type->subtype())) {
 			if (sub_type->kind() == Scalar_kind::UNSIGNED && sub_type->buffersize() == 1L) {
@@ -238,7 +238,7 @@ private:
 	 */
 	nlohmann::json write_record_to_json(Ref_r reference)
 	{
-		context().logger().info("write to json a record type data !");
+		context().logger().debug("write to json a record type data !");
 		nlohmann::json json_data;
 		auto record_type = std::dynamic_pointer_cast<const Record_datatype>(reference.type());
 		for (const auto& member: record_type->members()) {
@@ -267,7 +267,7 @@ private:
 	{
 		nlohmann::json json_data;
 		auto tuple_type = std::dynamic_pointer_cast<const Tuple_datatype>(reference.type());
-		context().logger().info("write to json a tuple type data with size {}!", tuple_type->size());
+		context().logger().debug("write to json a tuple type data with size {}!", tuple_type->size());
 		for (int i = 0; i < tuple_type->size(); i++) {
 			if (const auto&& sub_type = std::dynamic_pointer_cast<const Scalar_datatype>(tuple_type->elements()[i].type())) {
 				json_data.emplace_back(write_scalar_to_json(Ref_r{reference[i]}));
@@ -292,7 +292,7 @@ private:
 	 */
 	nlohmann::json write_pointer_to_json(Ref_r reference)
 	{
-		context().logger().info("write to json a pointer type data !");
+		context().logger().debug("write to json a pointer type data !");
 		Ref dereferenced_ref = reference.dereference();
 		if (!dereferenced_ref) throw Value_error{"Can't dereference with read permissions"};
 		return choose_type_and_dump_to_json(dereferenced_ref);
