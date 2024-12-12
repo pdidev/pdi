@@ -24,7 +24,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -65,7 +64,6 @@ public:
 				data_path_pair.first
 			);
 		}
-
 		ctx.logger().info("Plugin loaded successfully");
 	}
 
