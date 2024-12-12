@@ -340,7 +340,7 @@ private:
 
 			const std::string filepath = fpath.to_string(context());
 
-			logger.info("Writing data of {} for {}", data_name, filepath);
+			logger.debug("Writing data of {} for {}", data_name, filepath);
 			if (!reference) {
 				logger.error("Reading permissions were not granted for {}", data_name);
 			}
@@ -370,7 +370,7 @@ private:
 					json_file.seekp(-2, std::ios::end); // Move one character back to overwrite the closing ']'
 					json_file << ",\n" << json_data.dump(4) << "\n]";
 				} else {
-					std::cerr << "File does not end with a valid JSON array. Cannot append.\n";
+					logger.error("File does not end with a valid JSON array. Cannot append.");
 				}
 				json_file.close();
 			}
