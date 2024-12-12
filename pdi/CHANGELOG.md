@@ -18,6 +18,8 @@ and this project adheres to
 #### Fixed
 * Stop claiming to support old cmake versions we do not
   [#507](https://github.com/pdidev/pdi/issues/507)
+* Fixed website generation
+  [#506](https://github.com/pdidev/pdi/issues/506)
 
 
 ## [1.8.0] - 2024-11-28
