@@ -215,7 +215,9 @@ void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unord
 {
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 	if (use_mpio) {
-		if (0 > H5Pset_dxpl_mpio(xfer_lst, m_mpio)) handle_hdf5_err();
+		if (0 > H5Pset_dxpl_mpio(xfer_lst, m_mpio)) {
+			handle_hdf5_err();
+		}
 	}
 	if (m_direction == READ)
 		do_read(ctx, h5_file, xfer_lst);
