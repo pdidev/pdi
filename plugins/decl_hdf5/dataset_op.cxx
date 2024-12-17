@@ -339,7 +339,8 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 		}
 	}
 
-	return dset_plist;
+		return dset_plist;
+	}
 }
 
 void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, Datatype_template_sptr>& dsets)
