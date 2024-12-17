@@ -219,9 +219,9 @@ void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unord
 			handle_hdf5_err();
 		}
 	}
-	if (m_direction == READ)
+	if (m_direction == READ) {
 		do_read(ctx, h5_file, xfer_lst);
-	else
+	} else {
 		do_write(ctx, h5_file, xfer_lst, dsets);
 }
 
