@@ -28,61 +28,6 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.16...3.29)
-project(PDI LANGUAGES CXX C)
-list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
-
-
-# Version
-
-file(READ VERSION PDI_VERSION)
-string(STRIP "${PDI_VERSION}" PDI_VERSION)
-string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
-set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
-set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
-set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
-set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
-if("git" STREQUAL "${PDI_VERSION_MODIF}" OR "alpha" STREQUAL "${PDI_VERSION_MODIF}")
-	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" "${PDI_VERSION_MODIF}" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
-set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
-
-
-# Build options
-
-option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
-option(BUILD_DOCUMENTATION "Build documentation" ON)
-option(BUILD_SHARED_LIBS   "Build shared libraries rather than static ones" ON)
-option(BUILD_TESTING       "Build tests" ON)
-option(BUILD_FORTRAN       "Enable Fortran support" ON)
-option(BUILD_PYTHON        "Enable Python support" "${BUILD_UNSTABLE}")
-
-if("${BUILD_TESTING}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10") 
-	message(FATAL_ERROR "Minimum CMake version to build tests is 3.10. Please update CMake or turn off testing by adding the flag `-DBUILD_TESTING=OFF` to the cmake command line.")
-endif()
-if("${BUILD_DOCUMENTATION}" AND "${CMAKE_VERSION}" VERSION_LESS "3.10") 
-	message(FATAL_ERROR "Minimum CMake version to build documentation is 3.10. Please update CMake or turn off documentation generation by adding the flag `-DBUILD_DOCUMENTATION=OFF` to the cmake command line.")
-endif()
-if(NOT "${BUILD_SHARED_LIBS}") 
-	message(FATAL_ERROR "Building PDI as a static lib is not supported currently")
-endif()
-
-
-# A little compatibility macro
-
-if("${CMAKE_VERSION}" VERSION_LESS "3.12")
-	set(LIBRARY_COMPONENT "COMPONENT" "Runtime")
-else()
-	set(LIBRARY_COMPONENT "COMPONENT" "Runtime" "NAMELINK_COMPONENT" "Development")
-endif()
-
-
-# Language support
-
-if("${BUILD_FORTRAN}")
-	enable_language(Fortran)
-endif()
-
 
 # Includes
 
@@ -92,32 +37,6 @@ if("${BUILD_FORTRAN}")
 	include(DefaultKind)
 endif()
 include(GenerateExportHeader)
-set(_REAL_PROJECT_NAME "${PROJECT_NAME}")
-set(PROJECT_NAME pdi)
-include(GNUInstallDirs)
-set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
-set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
-set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
-set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
-
-
-# Dependencies
-
-set(PARACONF_COMPONENTS "C")
-if("${BUILD_FORTRAN}")
-	list(APPEND PARACONF_COMPONENTS "f90")
-endif()
-find_package(paraconf 1.0.0 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
-find_package(spdlog 1.5.0 REQUIRED) # must match PDIConfig.cmake.in
-if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
-	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
-	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-	find_package(pybind11 2.4.3 REQUIRED) # must match PDIConfig.cmake.in
-endif()
-if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
-	add_subdirectory("../vendor/zpp-1.1.0/" "zpp")
-endif()
 
 
 # Check for some portability stuff and generate config.h
@@ -134,43 +53,43 @@ if("${BUILD_FORTRAN}")
 	get_default_kind(REAL      PDI_REAL_DEFAULT_KIND)
 	get_default_kind(LOGICAL   PDI_LOGICAL_DEFAULT_KIND)
 endif()
-configure_file(src/config.h.in config.h @ONLY)
-configure_file(src/version.h.in pdi/version.h @ONLY)
+configure_file(config.h.in config.h @ONLY)
+configure_file(version.h.in pdi/version.h @ONLY)
 
 
 # C API library
 
 set(PDI_C_SRC
-		src/array_datatype.cxx
-		src/callbacks.cxx
-		src/context.cxx
-		src/context_proxy.cxx
-		src/data_descriptor.cxx
-		src/data_descriptor_impl.cxx
-		src/datatype.cxx
-		src/datatype_template.cxx
-		src/error.cxx
-		src/expression.cxx
-		src/expression/impl.cxx
-		src/expression/impl/float_literal.cxx
-		src/expression/impl/int_literal.cxx
-		src/expression/impl/mapping.cxx
-		src/expression/impl/operation.cxx
-		src/expression/impl/reference_expression.cxx
-		src/expression/impl/sequence.cxx
-		src/expression/impl/string_literal.cxx
-		src/global_context.cxx
-		src/logger.cxx
-		src/paraconf_wrapper.cxx
-		src/pdi.cxx
-		src/plugin.cxx
-		src/plugin_store.cxx
-		src/pointer_datatype.cxx
-		src/record_datatype.cxx
-		src/ref_any.cxx
-		src/scalar_datatype.cxx
-		src/string_tools.cxx
-		src/tuple_datatype.cxx
+		array_datatype.cxx
+		callbacks.cxx
+		context.cxx
+		context_proxy.cxx
+		data_descriptor.cxx
+		data_descriptor_impl.cxx
+		datatype.cxx
+		datatype_template.cxx
+		error.cxx
+		expression.cxx
+		expression/impl.cxx
+		expression/impl/float_literal.cxx
+		expression/impl/int_literal.cxx
+		expression/impl/mapping.cxx
+		expression/impl/operation.cxx
+		expression/impl/reference_expression.cxx
+		expression/impl/sequence.cxx
+		expression/impl/string_literal.cxx
+		global_context.cxx
+		logger.cxx
+		paraconf_wrapper.cxx
+		pdi.cxx
+		plugin.cxx
+		plugin_store.cxx
+		pointer_datatype.cxx
+		record_datatype.cxx
+		ref_any.cxx
+		scalar_datatype.cxx
+		string_tools.cxx
+		tuple_datatype.cxx
 )
 add_library(PDI_C ${PDI_C_SRC})
 generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME pdi/export.h)
@@ -193,7 +112,7 @@ set_property(TARGET PDI_C APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_
 add_library(PDI::pdi   ALIAS PDI_C)
 add_library(PDI::PDI_C ALIAS PDI_C)
 install(TARGETS PDI_C EXPORT PDI_C_EXPORT
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" ${LIBRARY_COMPONENT}
+		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Runtime NAMELINK_COMPONENT Development
 		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
 		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
@@ -218,7 +137,7 @@ target_link_libraries(PDI_plugins INTERFACE PDI::PDI_C spdlog::spdlog)
 target_compile_features(PDI_plugins INTERFACE cxx_std_17 c_std_11)
 add_library(PDI::PDI_plugins ALIAS PDI_plugins)
 install(TARGETS PDI_plugins EXPORT PDI_plugins_EXPORT
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" ${LIBRARY_COMPONENT}
+		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Runtime NAMELINK_COMPONENT Development
 		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
 		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
@@ -230,22 +149,10 @@ install(DIRECTORY "${PDI_SOURCE_DIR}/include/pdi"
 install(EXPORT PDI_plugins_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "PDI_plugins.cmake")
 
 
-# pdirun
-
-file(COPY scripts/pdirun_intree DESTINATION "${CMAKE_BINARY_DIR}/")
-add_executable(pdirun IMPORTED)
-add_executable(PDI::pdirun IMPORTED)
-set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/pdirun_intree")
-install(PROGRAMS scripts/pdirun
-		DESTINATION "${CMAKE_INSTALL_BINDIR}"
-		COMPONENT Runtime
-)
-
-
 if("${BUILD_PYTHON}")
 	
 	# C++ python support library
-	add_library(PDI_pysupport src/python/python_ref_wrapper.cxx src/python/tools.cxx)
+	add_library(PDI_pysupport python/python_ref_wrapper.cxx python/tools.cxx)
 	target_include_directories(PDI_pysupport PUBLIC
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
@@ -270,7 +177,7 @@ if("${BUILD_PYTHON}")
 	set_property(TARGET PDI_pysupport APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VERSION)
 	add_library(PDI::PDI_pysupport ALIAS PDI_pysupport)
 	install(TARGETS PDI_pysupport EXPORT PDI_pysupport_EXPORT
-			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" ${LIBRARY_COMPONENT}
+			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Runtime NAMELINK_COMPONENT Development
 			ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
 			INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 	)
@@ -283,7 +190,7 @@ if("${BUILD_PYTHON}")
 	
 	# Python API module
 	
-	pybind11_add_module(PDI_python MODULE src/python/pdi.cxx)
+	pybind11_add_module(PDI_python MODULE python/pdi.cxx)
 	target_link_libraries(PDI_python PRIVATE PDI::PDI_pysupport)
 	target_include_directories(PDI_python PRIVATE
 			"${PDI_SOURCE_DIR}/include"
@@ -298,11 +205,11 @@ if("${BUILD_PYTHON}")
 	install(TARGETS PDI_python
 			LIBRARY DESTINATION "${Python3Path_INSTALL_SITEARCHDIR}/pdi" COMPONENT Runtime
 	)
-	install(DIRECTORY src/python/pdi
+	install(DIRECTORY python/pdi
 			DESTINATION "${Python3Path_INSTALL_SITEARCHDIR}"
 			COMPONENT Runtime
 	)
-	configure_file("src/python/pdi/__init__.py" "pdi" COPYONLY)
+	configure_file("python/pdi/__init__.py" "pdi" COPYONLY)
 
 endif()
 
@@ -310,18 +217,18 @@ endif()
 # Fortran API library
 
 if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
-	zpp_preprocess(OUTPUT PDIF_H SOURCES src/fortran/pdif.h.zpp)
+	zpp_preprocess(OUTPUT PDIF_H SOURCES fortran/pdif.h.zpp)
 	add_custom_target(generated_files_for_doc DEPENDS "${PDIF_H}")
 endif()
 if("${BUILD_FORTRAN}")
-	zpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.f90.zpp)
+	zpp_preprocess(OUTPUT PDI_F90 SOURCES fortran/pdi.f90.zpp)
 	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fmoddir")
 	add_custom_target(mv_zpp_files # we put in in fmoddir because pdif.h is compiler dependant
 			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PDIF_H}" "${PDI_BINARY_DIR}/fmoddir/pdif.h"
 			DEPENDS "${PDIF_H}"
 			VERBATIM
 	)
-	add_library(PDI_f90 ${PDI_F90} src/fortran/pdi_c.f90)
+	add_library(PDI_f90 ${PDI_F90} fortran/pdi_c.f90)
 	target_link_libraries(PDI_f90 PUBLIC PDI::PDI_C paraconf::paraconf_f90 PRIVATE PDI::PDI_plugins)
 	add_dependencies(PDI_f90 mv_zpp_files)
 	target_include_directories(PDI_f90 PUBLIC
@@ -341,7 +248,7 @@ if("${BUILD_FORTRAN}")
 		CACHE PATH
 		"Fortran module directory (LIBDIR/pdi/finclude/${CMAKE_Fortran_COMPILER_ID}-${Fortran_COMPILER_MINOR_VERSION})")
 	install(TARGETS PDI_f90 EXPORT pdi_f90_EXPORT
-			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT ${LIBRARY_COMPONENT}
+			LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT COMPONENT Runtime NAMELINK_COMPONENT Development
 			ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
 			INCLUDES DESTINATION "${INSTALL_FMODDIR}"
 	)
@@ -356,36 +263,14 @@ if("${BUILD_FORTRAN}")
 endif()
 
 
-# Documentation
-
-if("${BUILD_DOCUMENTATION}")
-	add_subdirectory(docs docs)
-endif()
-
-
 # Tests
 
 if("${BUILD_TESTING}")
 	add_subdirectory(tests tests)
 endif()
 
-if("${BUILD_BENCHMARKING}")
-	add_subdirectory(benchmarks)
-endif()
 
 # Installable config
-
-configure_file(scripts/env.sh.in env.sh @ONLY)
-configure_file(scripts/env.xsh env.bash @ONLY)
-configure_file(scripts/env.xsh env.zsh @ONLY)
-install(FILES
-			"${PDI_BINARY_DIR}/env.bash"
-			"${PDI_BINARY_DIR}/env.sh"
-			"${PDI_BINARY_DIR}/env.zsh"
-		DESTINATION "${INSTALL_PDIDATADIR}"
-		COMPONENT Runtime
-)
-
 
 configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
 write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
@@ -394,8 +279,6 @@ write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
 )
 install(FILES
 		cmake/CMakeFindDependencyMacro.cmake
-		cmake/FindPackageHandleStandardArgs.cmake
-		cmake/FindPackageMessage.cmake
 		"${PDI_BINARY_DIR}/PDIConfig.cmake"
 		"${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
 		DESTINATION "${INSTALL_CMAKEDIR}"

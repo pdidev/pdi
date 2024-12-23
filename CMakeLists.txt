@@ -32,8 +32,8 @@
 ### Project header
 
 cmake_minimum_required(VERSION 3.16...3.29)
-project(PDI_DIST LANGUAGES C CXX)
-
+project(PDI LANGUAGES C CXX)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 
 ### Build options
@@ -103,37 +103,6 @@ endforeach()
 
 
 
-### Include sub-projects find modules
-
-list(APPEND CMAKE_MODULE_PATH
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code/cmake")
-if("${BUILD_DECL_HDF5_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake")
-endif()
-if("${BUILD_DECL_NETCDF_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
-endif()
-if("${BUILD_DEISA_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa/cmake")
-endif()
-if("${BUILD_MPI_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi/cmake")
-endif()
-if("${BUILD_PYCALL_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall/cmake")
-endif()
-if ("${BUILD_JSON_PLUGIN}")
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json/cmake")
-endif()
-if("${BUILD_TESTING}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/example/cmake")
-endif()
-
-
-
 ### Sanity check
 
 if(NOT "${BUILD_SHARED_LIBS}")
@@ -196,12 +165,17 @@ endif()
 
 ### Dependencies
 
+set(_REAL_PROJECT_NAME "${PROJECT_NAME}")
+set(PROJECT_NAME pdi)
 include(GNUInstallDirs)
+set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
+set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
+set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
+set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
 include(SuperBuild)
-sbuild_get_env(SBUILD_PATH PATH)
-sbuild_get_env(SBUILD_CPATH CPATH)
-sbuild_get_env(SBUILD_LIBRARY_PATH LIBRARY_PATH)
-sbuild_get_env(SBUILD_LD_LIBRARY_PATH LD_LIBRARY_PATH)
+
+set(PDI_BUILD_TESTING "${BUILD_TESTING}")
+set(BUILD_TESTING OFF)
 
 
 ## Fortran
@@ -214,16 +188,16 @@ endif()
 ## Python3
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3 3.8.2 REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter)
+	find_package(Python3 3.8.2 REQUIRED COMPONENTS Interpreter)
 endif()
 
 
 ## Threads
 
 if("${BUILD_TESTING}")
-	sbuild_add_dependency(Threads SYSTEM)
+	find_package(Threads REQUIRED)
 endif()
 
 
@@ -247,25 +221,16 @@ if("${BUILD_MPI_PLUGIN}")
 endif()
 if(NOT "x${MPI_COMPONENTS}x" STREQUAL xx)
 	list(REMOVE_DUPLICATES MPI_COMPONENTS)
-	sbuild_add_dependency(MPI SYSTEM
-		COMPONENTS ${MPI_COMPONENTS}
-		MODULE_VARS MPI_C_COMPILER
-	)
+	find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 endif()
 
 
 ## Yaml
 
 # if ( paraconf )
+
 sbuild_add_dependency(yaml "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/libyaml-0.2.5"
-	CMAKE_CACHE_ARGS
-		"-DBUILD_TESTING:BOOL=OFF"
-		"-DINSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
-		"-DINSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
-		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
-		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
-		"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5" # needed until upstream libyaml is updated (https://github.com/yaml/libyaml/pull/314)
+	SOURCE_DIR "vendor/libyaml-0.2.5"
 	VERSION 0.2.2
 )
 
@@ -278,29 +243,22 @@ if("${BUILD_FORTRAN}")
 endif()
 # if ( PDI or ... )
 sbuild_add_dependency(paraconf "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/paraconf-1.0.1"
-	COMPONENTS ${PARACONF_COMPONENTS}
-	SOURCE_SUBDIR "paraconf"
-	CMAKE_CACHE_ARGS
-		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE"
-		"-DUSE_yaml:STRING=SYSTEM"
-		"-DBUILD_TESTING:BOOL=OFF"
-	DEPENDS "yaml"
+	SOURCE_DIR "vendor/paraconf-1.0.0/paraconf"
 	VERSION 1.0.0
+	FIND_PACKAGE_ARGS
+	COMPONENTS ${PARACONF_COMPONENTS}
 )
 
 
 ## spdlog
 
 # if ( PDI or ... )
+set(SPDLOG_BUILD_BENCH OFF)
+set(SPDLOG_BUILD_EXAMPLES OFF)
+set(SPDLOG_BUILD_TESTS OFF)
+set(SPDLOG_FMT_EXTERNAL OFF)
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.14.1"
-	CMAKE_CACHE_ARGS
-		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
-		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
-		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
-		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
-		"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
+	SOURCE_DIR "vendor/spdlog-1.14.1"
 	VERSION 1.5.0
 )
 
@@ -308,7 +266,7 @@ sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 ## Doxygen
 
 if("${BUILD_DOCUMENTATION}")
-	find_package(Doxygen 1.8.17 REQUIRED OPTIONAL_COMPONENTS dot)
+	find_package(Doxygen 1.8.17 REQUIRED)
 endif()
 
 
@@ -316,38 +274,33 @@ endif()
 
 if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	
-	set(HDF5_CMAKE_CACHE_ARGS)
-	
 	if("${BUILD_HDF5_PARALLEL}")
 		set(HDF5_PREFER_PARALLEL ON)
-		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=ON")
 	else()
 		set(HDF5_PREFER_PARALLEL OFF)
-		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=OFF")
 	endif()
 	
 	if("${BUILD_DECL_NETCDF_PLUGIN}")
 		set(HDF5_COMPONENTS C HL)
-		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=ON")
+		set(HDF5_BUILD_HL_LIB ON)
 	else()
 		set(HDF5_COMPONENTS C)
-		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=OFF")
+		set(HDF5_BUILD_HL_LIB OFF)
 	endif()
+	
+	set(HDF5_BUILD_EXAMPLES OFF)
+	set(HDF5_BUILD_TOOLS ON)
+	set(HDF5_BUILD_UTILS OFF)
 	
 	find_package(ZLIB)
 	
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/hdf5-1.12.3"
+		SOURCE_DIR "vendor/hdf5-1.12.3"
+		VERSION 1.10.4
+		FIND_PACKAGE_ARGS
 		COMPONENTS ${HDF5_COMPONENTS}
-		MODULE_VARS HDF5_IS_PARALLEL HDF5_C_INCLUDE_DIRS HDF5_C_LIBRARIES HDF5_VERSION
-		CMAKE_CACHE_ARGS
-			-DBUILD_TESTING:BOOL=OFF
-			-DHDF5_BUILD_EXAMPLES:BOOL=OFF
-			-DHDF5_BUILD_TOOLS:BOOL=ON
-			-DHDF5_BUILD_UTILS:BOOL=OFF
-			-DHDF5_INSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}
-			${HDF5_CMAKE_CACHE_ARGS}
 	)
+	
 	if("${HDF5_FOUND}")
 		if(1.10.4 VERSION_GREATER "${HDF5_VERSION}")
 			message(FATAL_ERROR "HDF5 version ${HDF5_VERSION} found less than required 1.10.4")
@@ -369,53 +322,23 @@ endif()
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
 	
-	if("${BUILD_HDF5_PARALLEL}")
-		set(NETCDF_CC "${MPI_C_COMPILER}")
-	else()
-		set(NETCDF_CC "${CMAKE_C_COMPILER}")
-	endif()
-	
-	set(NETCDF_CMAKE_CACHE_ARGS)
 	if("${BUILD_NETCDF_PARALLEL}")
-		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=ON")
+		set(ENABLE_PARALLEL4 ON)
 	else()
-		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=OFF")
+		set(ENABLE_PARALLEL4 OFF)
 	endif()
 	
-	set(NETCDF_CPATH "${SBUILD_CPATH}")
-	set(NETCDF_LIBRARY_PATH "${SBUILD_LIBRARY_PATH}")
-	
-	# Workaround NetCDF borken LibXML2 include path detection
-	find_package(LibXml2)
-	if("${LIBXML2_FOUND}")
-		foreach(INCLUDE_DIR IN LISTS LIBXML2_INCLUDE_DIRS)
-			set(NETCDF_CPATH "${NETCDF_CPATH}:${INCLUDE_DIR}")
-			get_filename_component(INCLUDE_DIR "${INCLUDE_DIR}" DIRECTORY)
-			set(NETCDF_CPATH "${NETCDF_CPATH}:${INCLUDE_DIR}")
-		endforeach()
-		foreach(LIB IN LISTS LIBXML2_LIBRARIES)
-			get_filename_component(LIB_DIR "${LIB}" DIRECTORY)
-			set(NETCDF_LIBRARY_PATH "${NETCDF_LIBRARY_PATH}:${LIB_DIR}")
-		endforeach()
-	endif()
-	
+	set(BUILD_TESTSETS OFF)
+	set(BUILD_UTILITIES OFF)
+	set(ENABLE_BASH_SCRIPT_TESTING OFF)
+	set(ENABLE_BYTERANGE OFF)
+	set(ENABLE_DAP OFF)
+	set(ENABLE_DAP4 OFF)
+	set(ENABLE_EXAMPLES OFF)
+	set(ENABLE_FILTER_TESTING OFF)
+	set(ENABLE_TESTS OFF)
 	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/netcdf-c-4.9.2"
-		DEPENDS HDF5
-		MODULE_VARS NetCDF_FEATURES
-		ENV "CPATH=${NETCDF_CPATH}" "LIBRARY_PATH=${NETCDF_LIBRARY_PATH}"
-		CMAKE_CACHE_ARGS
-			"-DCMAKE_C_COMPILER:STRING=${NETCDF_CC}"
-			-DBUILD_TESTING:BOOL=OFF
-			-DBUILD_TESTSETS:BOOL=OFF
-			-DBUILD_UTILITIES:BOOL=OFF
-			-DENABLE_BASH_SCRIPT_TESTING:BOOL=OFF
-			-DENABLE_BYTERANGE:BOOL=OFF
-			-DENABLE_DAP:BOOL=OFF
-			-DENABLE_DAP4:BOOL=OFF
-			-DENABLE_EXAMPLES:BOOL=OFF
-			-DENABLE_FILTER_TESTING:BOOL=OFF
-			-DENABLE_TESTS:BOOL=OFF
+		SOURCE_DIR "vendor/netcdf-c-4.9.2"
 		VERSION 4.7.3
 	)
 	if("${NETCDF_FOUND}")
@@ -437,59 +360,86 @@ endif()
 if("${BUILD_PYTHON}")
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
+	set(PYBIND11_TEST OFF)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/pybind11-3.0.1"
-		CMAKE_CACHE_ARGS
-			"-DBUILD_TESTING:BOOL=OFF"
-			"-DPYBIND11_TEST:BOOL=OFF"
-			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
+		SOURCE_DIR "vendor/pybind11-2.13.1"
 		VERSION 2.4.3
 	)
 endif()
 
 
-## JSON
+## ZPP
 
-if("${BUILD_JSON_PLUGIN}")
-	sbuild_add_dependency(JSON "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/json-3.11.4"
-	)
+if("${BUILD_FORTRAN}")
+	add_subdirectory("vendor/zpp-1.0.16/" EXCLUDE_FROM_ALL)
 endif()
 
 
 ### Own modules
 
-set(PDI_DEPENDS_LIST paraconf spdlog)
-if("${BUILD_PYTHON}")
-	list(APPEND PDI_DEPENDS_LIST pybind11)
+set(BUILD_TESTING "${PDI_BUILD_TESTING}")
+
+
+# Version
+
+file(READ VERSION PDI_VERSION)
+string(STRIP "${PDI_VERSION}" PDI_VERSION)
+string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
+set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
+set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
+set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
+set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
+if("git" STREQUAL "${PDI_VERSION_MODIF}" OR "alpha" STREQUAL "${PDI_VERSION_MODIF}")
+	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" "${PDI_VERSION_MODIF}" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
-sbuild_add_module(PDI
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pdi"
-	DEPENDS ${PDI_DEPENDS_LIST}
-	SUBSTEPS test
+set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
+set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
+
+# pdirun
+
+file(COPY scripts/pdirun_intree DESTINATION "${CMAKE_BINARY_DIR}/")
+add_executable(pdirun IMPORTED)
+add_executable(PDI::pdirun IMPORTED)
+set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/pdirun_intree")
+install(PROGRAMS scripts/pdirun
+		DESTINATION "${CMAKE_INSTALL_BINDIR}"
+		COMPONENT Runtime
 )
 
+configure_file(scripts/env.sh.in env.sh @ONLY)
+configure_file(scripts/env.xsh env.bash @ONLY)
+configure_file(scripts/env.xsh env.zsh @ONLY)
+install(FILES
+			"${PDI_BINARY_DIR}/env.bash"
+			"${PDI_BINARY_DIR}/env.sh"
+			"${PDI_BINARY_DIR}/env.zsh"
+		DESTINATION "${INSTALL_PDIDATADIR}"
+		COMPONENT Runtime
+)
+
+
+# pdi
+
+add_subdirectory(src)
+
+sbuild_add_module(BENCHMARKING
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks"
+)
+
+sbuild_add_module(DOCUMENTATION
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/docs"
+)
 
 sbuild_add_module(MPI_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_MPI_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi"
-	DEPENDS PDI
-	SUBSTEPS test
 )
 
-
 sbuild_add_module(DECL_HDF5_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_DECL_HDF5_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5"
-	DEPENDS PDI HDF5
-	SUBSTEPS test
 )
 
 sbuild_add_module(DECL_NETCDF_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf"
-	DEPENDS PDI NetCDF
-	SUBSTEPS test
 )
 
 
@@ -502,59 +452,35 @@ sbuild_add_module(JSON_PLUGIN
 
 
 sbuild_add_module(PYCALL_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_PYCALL_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall"
-	DEPENDS PDI
-	SUBSTEPS test
 )
 
 sbuild_add_module(SET_VALUE_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_SET_VALUE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/set_value"
-	DEPENDS PDI
-	SUBSTEPS test
 )
 
 sbuild_add_module(SERIALIZE_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_SERIALIZE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/serialize"
-	DEPENDS PDI
-	SUBSTEPS test
 )
-
 
 sbuild_add_module(TRACE_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_TRACE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace"
-	DEPENDS PDI
 )
 
-
 sbuild_add_module(USER_CODE_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
-	DEPENDS PDI
-	SUBSTEPS test
 )
 
 sbuild_add_module(DEISA_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_DEISA_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa"
-	DEPENDS PDI
 )
 
 sbuild_add_module(PDI_EXAMPLE
 	ENABLE_BUILD_FLAG BUILD_TESTING
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/example"
-	DEPENDS PDI
-	INSTALL_COMMAND ""
-	SUBSTEPS test
 )
 
 sbuild_add_module(PDI_TESTS
 	ENABLE_BUILD_FLAG BUILD_TESTING
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-	DEPENDS PDI
-	INSTALL_COMMAND ""
-	SUBSTEPS test
 )
