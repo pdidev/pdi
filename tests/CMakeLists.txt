@@ -35,9 +35,6 @@ option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 # Includes
 include(CTest)
 
-# PDI
-find_package(PDI REQUIRED COMPONENTS C)
-
 if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
 add_executable(test_01_C test_01.c)

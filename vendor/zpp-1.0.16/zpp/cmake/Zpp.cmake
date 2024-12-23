@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.16)
 cmake_policy(PUSH)
 
 # Compute the installation prefix relative to this file.

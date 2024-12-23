@@ -20,7 +20,8 @@
 # THE SOFTWARE.
 ##############################################################################
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
+cmake_policy(SET CMP0148 OLD)
 
 set(Python_ADDITIONAL_VERSIONS 3 2)
 find_package(PythonInterp REQUIRED)
