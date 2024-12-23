@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #--------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16...3.29)
 
 # - Check for the presence of libyaml
 #
