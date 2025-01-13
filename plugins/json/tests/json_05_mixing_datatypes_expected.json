@@ -1,0 +1,68 @@
+[
+{
+    "var_mix": [
+        {
+            "var_array1": [
+                {
+                    "var_array2": [
+                        5.0,
+                        6.0,
+                        7.0
+                    ],
+                    "var_double2": 1.0
+                },
+                {
+                    "var_array2": [
+                        8.0,
+                        9.0,
+                        10.0
+                    ],
+                    "var_double2": 2.0
+                },
+                {
+                    "var_array2": [
+                        11.0,
+                        12.0,
+                        13.0
+                    ],
+                    "var_double2": 3.0
+                }
+            ],
+            "var_char1": "a",
+            "var_double1": 102.0,
+            "var_int32_t1": 100
+        },
+        {
+            "var_array1": [
+                {
+                    "var_array2": [
+                        11.0,
+                        12.0,
+                        13.0
+                    ],
+                    "var_double2": 3.0
+                },
+                {
+                    "var_array2": [
+                        8.0,
+                        9.0,
+                        10.0
+                    ],
+                    "var_double2": 2.0
+                },
+                {
+                    "var_array2": [
+                        5.0,
+                        6.0,
+                        7.0
+                    ],
+                    "var_double2": 1.0
+                }
+            ],
+            "var_char1": "b",
+            "var_double1": 202.0,
+            "var_int32_t1": 200
+        }
+    ]
+}
+]

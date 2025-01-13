@@ -7,6 +7,7 @@
 |Deisa plugin                                         |Expose data to a Dask analysis script.                             |
 |\subpage mpi_plugin "MPI plugin"                     |Enables MPI support in %PDI and plugins.                           |
 |\subpage pycall_plugin "Pycall plugin"               |Call python scripts from C application                             |
+|\subpage JSON_plugin "JSON plugin"                   |Export data in JSON format.                                        |
 |\subpage serialize_plugin "Serialize plugin"         |Serializes and deserializes shared data.                           |
 |\subpage set_value_plugin "Set Value plugin"         |Set values to data and metadata from yaml file.                    |
 |\subpage trace_plugin "Trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
