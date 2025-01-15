@@ -27,15 +27,15 @@
 #include <hdf5.h>
 #include <unistd.h>
 
-#define FILE "mpi_test.h5"
+#define FILE "mpi_independent_test.h5"
 
 /**
-* Test : Read a file using hdf5 parallel version with the option collective parallel pointer.
+* Test : Write a file using hdf5 parallel version with the option independent parallel pointer.
 */
 
 int main(int argc, char* argv[])
 {
-	printf("HDF5 mpi_read_test started\n");
+	printf("HDF5 mpi_independent_write_test started\n");
 	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -46,16 +46,9 @@ int main(int argc, char* argv[])
 
 	hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
 	H5Pset_fapl_mpio(fapl_id, MPI_COMM_WORLD, MPI_INFO_NULL);
-	hid_t file_id = H5Fopen(FILE, H5F_ACC_RDONLY, fapl_id);
+	hid_t file_id = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
 	if (file_id < 0) {
 		return 1;
-	}
-
-	int dset_data[5][5];
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
-			dset_data[i][j] = 0;
-		}
 	}
 
 	hsize_t coords[2] = {5, 10};
@@ -64,7 +57,14 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	hid_t dataset_id = H5Dopen2(file_id, "array_data", H5P_DEFAULT);
+	int dset_data[5][5];
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			dset_data[i][j] = i * 10 + j + (5 * mpi_rank);
+		}
+	}
+
+	hid_t dataset_id = H5Dcreate2(file_id, "/array_data", H5T_STD_I32BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	if (dataset_id < 0) {
 		return 1;
 	}
@@ -89,30 +89,14 @@ int main(int argc, char* argv[])
 	}
 
 	hid_t dxpl_id = H5Pcreate(H5P_DATASET_XFER);
-	H5Pset_dxpl_mpio(dxpl_id, H5FD_MPIO_COLLECTIVE);
+	H5Pset_dxpl_mpio(dxpl_id, H5FD_MPIO_INDEPENDENT);
 
-	status = H5Dread(dataset_id, H5T_NATIVE_INT, memory_dataspace_id, dataspace_id, dxpl_id, dset_data);
+
+	status = H5Dwrite(dataset_id, H5T_NATIVE_INT, memory_dataspace_id, dataspace_id, dxpl_id, dset_data);
 	if (status < 0) {
 		return 1;
 	}
 
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
-			if (dset_data[i][j] != i * 10 + j + (5 * mpi_rank)) {
-				fprintf(stderr, "[%d][%d] %d != %d\n ", i, j, dset_data[i][j], i * 10 + j + (5 * mpi_rank));
-				return 1;
-			}
-		}
-	}
-
-	status = H5Dclose(dataset_id);
-	if (status < 0) {
-		return 1;
-	}
-	status = H5Pclose(dxpl_id);
-	if (status != 0) {
-		return status;
-	}
 	status = H5Sclose(memory_dataspace_id);
 	if (status < 0) {
 		return 1;
@@ -120,6 +104,14 @@ int main(int argc, char* argv[])
 	status = H5Sclose(dataspace_id);
 	if (status < 0) {
 		return 1;
+	}
+	status = H5Dclose(dataset_id);
+	if (status < 0) {
+		return 1;
+	}
+	status = H5Pclose(dxpl_id);
+	if (status != 0) {
+		return status;
 	}
 	status = H5Fclose(file_id);
 	if (file_id < 0) {
@@ -138,7 +130,6 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	MPI_Finalize();
-
-	printf("[Rank: %d] HDF5 mpi_read_test finalized\n", mpi_rank);
+	printf("[Rank: %d] HDF5 mpi_write_test finalized\n", mpi_rank);
 	return 0;
 }

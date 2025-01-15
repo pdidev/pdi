@@ -29,10 +29,14 @@
 
 #define FILE "mpi_test.h5"
 
-int main()
+/**
+* Test : Write a file using hdf5 parallel version with the option collective parallel pointer.
+*/
+
+int main(int argc, char* argv[])
 {
 	printf("HDF5 mpi_write_test started\n");
-	MPI_Init(NULL, NULL);
+	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	herr_t status = H5open();

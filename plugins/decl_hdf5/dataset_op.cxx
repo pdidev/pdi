@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -164,6 +164,14 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				m_fletcher = value;
 			} else if (key == "attributes") {
 				// pass
+			} else if (key == "mpio") {
+				if (to_string(value) == "INDEPENDENT") {
+					m_mpio = H5FD_MPIO_INDEPENDENT;
+				} else if (to_string(value) == "COLLECTIVE") {
+					m_mpio = H5FD_MPIO_COLLECTIVE;
+				} else {
+					throw Config_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
+				}
 			} else if (key == "collision_policy") {
 				m_collision_policy = to_collision_policy(to_string(value));
 			} else {
@@ -203,12 +211,19 @@ void Dataset_op::fletcher(Context& ctx, Expression value)
 	}
 }
 
-void Dataset_op::execute(Context& ctx, hid_t h5_file, hid_t xfer_lst, const unordered_map<string, Datatype_template_sptr>& dsets)
+void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unordered_map<string, Datatype_template_sptr>& dsets)
 {
-	if (m_direction == READ)
+	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
+	if (use_mpio) {
+		if (0 > H5Pset_dxpl_mpio(xfer_lst, m_mpio)) {
+			handle_hdf5_err();
+		}
+	}
+	if (m_direction == READ) {
 		do_read(ctx, h5_file, xfer_lst);
-	else
+	} else {
 		do_write(ctx, h5_file, xfer_lst, dsets);
+	}
 }
 
 void Dataset_op::do_read(Context& ctx, hid_t h5_file, hid_t read_lst)
@@ -328,7 +343,7 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	return dset_plist;
 }
 
-void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, PDI::Datatype_template_sptr>& dsets)
+void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, Datatype_template_sptr>& dsets)
 {
 	string dataset_name = m_dataset.to_string(ctx);
 	ctx.logger().trace("Preparing for writing `{}' dataset", dataset_name);
