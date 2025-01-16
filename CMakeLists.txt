@@ -79,6 +79,7 @@ option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
+option(BUILD_DAMARIS_PLUGIN   	"Build Damaris plug-in" ON)
 
 
 
@@ -119,6 +120,9 @@ endif()
 if("${BUILD_DEISA_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa/cmake")
 endif()
+if("${BUILD_DAMARIS_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris/cmake")
+endif()
 if("${BUILD_MPI_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi/cmake")
 endif()
@@ -131,7 +135,6 @@ endif()
 if("${BUILD_TESTING}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/example/cmake")
 endif()
-
 
 
 ### Sanity check
@@ -530,6 +533,12 @@ sbuild_add_module(DEISA_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DEISA_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa"
 	DEPENDS PDI
+)
+
+sbuild_add_module(DAMARIS_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_DAMARIS_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris"
+	DEPENDS PDI #Damaris !?
 )
 
 sbuild_add_module(PDI_EXAMPLE
