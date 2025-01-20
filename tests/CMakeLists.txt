@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,23 +23,17 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_tests LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
-option(BUILD_INDENT           "Enable automatic code indentation" OFF)
 option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 
 # Includes
 include(CTest)
-
-# Astyle
-if("${BUILD_INDENT}")
-	find_package(Astyle 3.1 REQUIRED)
-endif()
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS C)
@@ -62,10 +56,6 @@ add_executable(test_04_C test_04.c)
 target_link_libraries(test_04_C PDI::PDI_C)
 add_test(NAME test_04_C COMMAND "$<TARGET_FILE:test_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_04.yml")
 
-add_executable(test_06_C test_06.c)
-target_link_libraries(test_06_C PDI::PDI_C)
-add_test(NAME test_06_C COMMAND "$<TARGET_FILE:test_06_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_06.yml")
-
 endif("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
@@ -74,10 +64,3 @@ target_link_libraries(test_05_C PDI::PDI_C)
 add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_05.yml")
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
-
-# Indentation
-if("${BUILD_INDENT}")
-	Astyle_add_indent(indent TEST
-		OPTIONS_FILE formating.astyle
-		*.c *.h)
-endif()
