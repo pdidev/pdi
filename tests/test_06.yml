@@ -1,6 +1,42 @@
-global_size: { height: 60, width: 12 }
+metadata:
+  input: int
+data:
+  scalar_data: int
+  array_data:
+    type: array
+    subtype: int
+    size: 8
+    subsize: 4
+    start: 2
+  record_data:
+    type: record
+    buffersize: 16
+    members:
+      a:
+        disp: 0
+        type: int
+      b:
+        disp: 8
+        type: pointer
+        subtype: int
 
 pdi:
   plugins:
     trace:
       logging: { pattern: '[PDI][%n-plugin] *** %l: %v' }
+    serialize:
+      scalar_data: scalar_data_serialized
+      array_data: array_data_serialized
+      record_data: record_data_serialized
+    decl_hdf5:
+      - file: test_06.h5
+        on_event: write
+        write: [scalar_data_serialized, array_data_serialized, record_data_serialized]
+        # when: $input=0
+        # write: [scalar_data_serialized, array_data_serialized, record_data_serialized]
+      - file: test_06.h5
+        when: $input=1
+        read: [scalar_data_serialized, array_data_serialized, record_data_serialized]
+
+
+      

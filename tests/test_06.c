@@ -25,10 +25,19 @@
 
 #include <assert.h>
 #include <pdi.h>
-// #include <pdi_deactivation.h>
 #include <stdio.h>
 
-int main(int argc, char* argv[])
+/*void write_subvector()
+{
+	// Subvector data_write;
+	// alloc_subvector(&data_write);
+	// init_subvector(&data_write);
+	PDI_multi_expose("write", "subvector", &data_write, PDI_OUT, NULL);
+
+	// free_subvector(&data_write);
+}*/
+
+/*int main(int argc, char* argv[])
 {
 	PC_tree_t conf = PC_parse_path(argv[1]);
 
@@ -43,10 +52,54 @@ int main(int argc, char* argv[])
 	PC_int(PC_get(conf, ".global_size.width"), &longval);
 	global_size[1] = longval;
 
-	// # As the value is shared with pdi.h, it can be reclaimed in a second time.
-	// # In the case of pdi_deactivation.h, the value is never shared, hence the reclaim operation fails.
-	PDI_share("global_size",    global_size,    PDI_OUT) == NULL;
-	PDI_reclaim("global_size");
+	// // # As the value is shared with pdi.h, it can be reclaimed in a second time.
+	// // # In the case of pdi_deactivation.h, the value is never shared, hence the reclaim operation fails.
+	// PDI_share("global_size",    global_size,    PDI_OUT) == NULL;
+	// PDI_reclaim("global_size");
+
+	write_data_serialized();
+
+	PDI_finalize();
+	return 0;
+}*/
+
+int main(int argc, char* argv[])
+{
+	PC_tree_t conf = PC_parse_path(argv[1]);
+
+	PDI_init(PC_get(conf, ".pdi"));
+	printf("%s", argv[1]);
+
+
+	int readOrWrite = 0;
+	PDI_expose("readOrWrite", &readOrWrite, PDI_OUT);
+
+	int scalar_data = 42;
+	PDI_expose("scalar_data", &scalar_data, PDI_OUT);
+	int array_data[8];
+	for (int i = 0; i < 8; i++) {
+		array_data[i] = 42 + i;
+	}
+	// PDI_expose("array_data", array_data, PDI_OUT);
+	PDI_multi_expose("write", "array_data", &array_data, PDI_OUT, NULL);
+
+
+	readOrWrite = 1;
+	PDI_expose("readOrWrite", &readOrWrite, PDI_OUT);
+
+
+	int scalar_data_read;
+	PDI_expose("scalar_data", &scalar_data_read, PDI_IN);
+	printf("%d ?== %d\n", scalar_data, scalar_data_read);
+	assert(scalar_data == scalar_data_read);
+
+	int array_data_read[8];
+	PDI_expose("array_data", array_data_read, PDI_IN);
+	for (int i = 2; i < 6; i++) {
+		printf("[%d] %d ?== %d\n", i, array_data[i], array_data_read[i]);
+		assert(array_data[i] == array_data_read[i]);
+	}
+
 
 	PDI_finalize();
 	return 0;
