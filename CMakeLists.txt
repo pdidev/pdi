@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -31,7 +31,7 @@
 
 ### Project header
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.10...3.25)
 project(PDI_DIST LANGUAGES C CXX)
 
 
@@ -45,13 +45,17 @@ set_property(CACHE DIST_PROFILE PROPERTY STRINGS User Devel)
 
 if(User STREQUAL "${DIST_PROFILE}")
 	option(BUILD_DOCUMENTATION "Build documentation" OFF)
+	option(BUILD_INDENT        "Enable automatic code indentation" OFF)
 	option(BUILD_TESTING       "Build tests" OFF)
 	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" OFF)
+	option(DEACTIVATE_PDI	   "Disable PDI without deleting code, as a toggle" OFF)
 	set(DEFAULT_BUILD_TYPE "Release")
 elseif(Devel STREQUAL "${DIST_PROFILE}")
 	option(BUILD_DOCUMENTATION "Build documentation" ON)
+	option(BUILD_INDENT        "Enable automatic code indentation" ON)
 	option(BUILD_TESTING       "Build tests" ON)
 	option(BUILD_UNSTABLE      "Build all features by default including those not stable yet" ON)
+	option(DEACTIVATE_PDI	   "Disable PDI without deleting code, as a toggle" OFF)
 	set(DEFAULT_BUILD_TYPE "Debug")
 else()
 	message(FATAL_ERROR "DIST_PROFILE should be set to one of: User, Devel")
@@ -64,9 +68,13 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 # Modules to build
 
 option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
+option(BUILD_CFG_VALIDATOR      "Build config validation script" "${BUILD_UNSTABLE}")
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
-option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
+option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_DECL_SION_PLUGIN   "Build Decl'SION plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_FLOWVR_PLUGIN      "Build FlowVR plug-in" "${BUILD_UNSTABLE}")
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
+option(BUILD_FTI_PLUGIN         "Build FTI plug-in." "${BUILD_UNSTABLE}")
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
 option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
 option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
@@ -75,11 +83,10 @@ option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
+option(BUILD_TEST_PLUGIN        "Build Test plugin" "${BUILD_UNSTABLE}")
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
-option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
-
 
 
 
@@ -93,14 +100,16 @@ message(STATUS " **Profile**: Build type is: `${CMAKE_BUILD_TYPE}' (-DCMAKE_BUIL
 message(STATUS " **Profile**: Prefix path is: `${CMAKE_PREFIX_PATH}' (-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH})")
 message(STATUS " **Profile**: Default use is: `${USE_DEFAULT}' (-DUSE_DEFAULT=${USE_DEFAULT})")
 message(STATUS " **Profile**: Unstable activation is: `${BUILD_UNSTABLE}' (-DBUILD_UNSTABLE=${BUILD_UNSTABLE})")
-foreach(FEATURE FORTRAN HDF5_PARALLEL PYTHON TESTING)
+foreach(FEATURE FORTRAN HDF5_PARALLEL INDENT PYTHON TESTING)
 	set(FEATURE_ENABLED "DISABLED")
 	if(${BUILD_${FEATURE}})
 		set(FEATURE_ENABLED "ENABLED ")
 	endif()
 	message(STATUS " **Feature**: ${FEATURE_ENABLED} ${FEATURE} (-DBUILD_${FEATURE}=${BUILD_${FEATURE}})")
 endforeach()
-
+if (DEACTIVATE_PDI)
+  add_definitions(-DDEACTIVATE_PDI)
+endif()
 
 
 ### Include sub-projects find modules
@@ -108,16 +117,26 @@ endforeach()
 list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake"
+	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/test/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code/cmake")
+if("${BUILD_CFG_VALIDATOR}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/pdicfg_validator/cmake")
+endif()
 if("${BUILD_DECL_HDF5_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake")
 endif()
 if("${BUILD_DECL_NETCDF_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
 endif()
-if("${BUILD_DEISA_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa/cmake")
+if("${BUILD_DECL_SION_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_sion/cmake")
+endif()
+if("${BUILD_FLOWVR_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/flowvr/cmake")
+endif()
+if("${BUILD_FTI_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/fti/cmake")
 endif()
 if("${BUILD_MPI_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi/cmake")
@@ -125,8 +144,8 @@ endif()
 if("${BUILD_PYCALL_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall/cmake")
 endif()
-if ("${BUILD_JSON_PLUGIN}")
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json/cmake")
+if("${BUILD_DEISA_PLUGIN}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa/cmake")
 endif()
 if("${BUILD_TESTING}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/example/cmake")
@@ -194,6 +213,14 @@ if("${BUILD_DEISA_PLUGIN}" AND NOT "${BUILD_PYTHON}")
 endif()
 
 
+### Subtargets
+
+if("${BUILD_INDENT}")
+	add_custom_target(indent)
+endif()
+
+
+
 ### Dependencies
 
 include(GNUInstallDirs)
@@ -214,9 +241,24 @@ endif()
 ## Python3
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
-elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter Development)
+elseif("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}" OR "${BUILD_FORTRAN}")
+	find_package(Python3Path 3.6 REQUIRED COMPONENTS Interpreter)
+endif()
+
+
+## Zpp
+
+if("${BUILD_FORTRAN}")
+	sbuild_add_dependency(Zpp EMBEDDED
+		BUILD_DEPENDENCY
+		EMBEDDED_PATH "vendor/zpp-1.0.15.tar"
+		VERSION 1.0.15
+		BUILD_IN_SOURCE ON
+		CONFIGURE_COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "<INSTALL_DIR>/lib/zpp-venv"
+		BUILD_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" build
+		INSTALL_COMMAND "<INSTALL_DIR>/lib/zpp-venv/bin/python" "<SOURCE_DIR>/setup.py" install "--install-data=<INSTALL_DIR>"
+	)
 endif()
 
 
@@ -242,7 +284,7 @@ if( ("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}") OR ("${BUILD_DECL
 		list(APPEND MPI_COMPONENTS Fortran)
 	endif()
 endif()
-if("${BUILD_MPI_PLUGIN}")
+if("${BUILD_FTI_PLUGIN}" OR "${BUILD_MPI_PLUGIN}" OR "${BUILD_DECL_SION_PLUGIN}")
 	list(APPEND MPI_COMPONENTS CXX)
 endif()
 if(NOT "x${MPI_COMPONENTS}x" STREQUAL xx)
@@ -256,16 +298,16 @@ endif()
 
 ## Yaml
 
-# if ( paraconf )
+# if ( paraconf or PyYAML )
 sbuild_add_dependency(yaml "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/libyaml-0.2.5"
+	EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"
 	CMAKE_CACHE_ARGS
 		"-DBUILD_TESTING:BOOL=OFF"
 		"-DINSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
 		"-DINSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
 		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
 		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
-	VERSION 0.2.2
+	VERSION 0.1.7
 )
 
 
@@ -277,7 +319,7 @@ if("${BUILD_FORTRAN}")
 endif()
 # if ( PDI or ... )
 sbuild_add_dependency(paraconf "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/paraconf-1.0.0"
+	EMBEDDED_PATH "vendor/paraconf-1.0.0.tar"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	SOURCE_SUBDIR "paraconf"
 	CMAKE_CACHE_ARGS
@@ -293,7 +335,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 
 # if ( PDI or ... )
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.14.1"
+	EMBEDDED_PATH "vendor/spdlog-1.5.0.tar"
 	CMAKE_CACHE_ARGS
 		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
@@ -307,48 +349,148 @@ sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 ## Doxygen
 
 if("${BUILD_DOCUMENTATION}")
-	find_package(Doxygen 1.8.17 REQUIRED OPTIONAL_COMPONENTS dot)
+	sbuild_add_dependency(Doxygen "${USE_DEFAULT}"
+		BUILD_DEPENDENCY
+		EMBEDDED_PATH "vendor/doxygen-1.8.15.src.tar"
+		VERSION 1.8.12
+		OPTIONAL_COMPONENTS dot
+	)
+endif()
+
+
+## Astyle
+
+if("${BUILD_INDENT}")
+	sbuild_add_dependency(Astyle "${USE_DEFAULT}"
+		BUILD_DEPENDENCY
+		EMBEDDED_PATH "vendor/astyle_3.1_linux.tar"
+		PATCH_COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/vendor/astyle/CMakeLists.txt" "<SOURCE_DIR>/CMakeLists.txt"
+		CMAKE_CACHE_ARGS "-DBUILD_SHARED_LIBS:BOOL=OFF"
+		VERSION 3.1
+	)
+endif()
+
+
+## GTest
+
+if(${BUILD_TESTING})
+	# find_package(GMock REQUIRED)
+	sbuild_add_dependency(GTest EMBEDDED
+		EMBEDDED_PATH "vendor/googletest-release-1.8.0.tar"
+		BUILD_DEPENDENCY
+		CMAKE_CACHE_ARGS
+			"-DBUILD_TESTING:BOOL=OFF"
+			# set BUILD_SHARED_LIBS=OFF to workaround https://github.com/google/googletest/issues/930
+			"-DBUILD_SHARED_LIBS:BOOL=OFF"
+		VERSION 1.8.0
+	)
+endif()
+
+
+# Google benchmark
+if(${BUILD_BENCHMARKING})
+	sbuild_add_dependency(benchmark EMBEDDED
+		EMBEDDED_PATH "vendor/benchmark-1.5.5.tar"
+		BUILD_DEPENDENCY
+		CMAKE_CACHE_ARGS
+			"-DCMAKE_BUILD_TYPE:STRING=Release"
+			"-DBENCHMARK_BUILD_32_BITS:BOOL=OFF"
+			"-DBENCHMARK_ENABLE_EXCEPTIONS:BOOL=ON"
+			"-DBENCHMARK_ENABLE_INSTALL:BOOL=ON"
+			"-DBENCHMARK_ENABLE_LIBPFM:BOOL=OFF"
+			"-DBENCHMARK_ENABLE_LTO:BOOL=OFF"
+			"-DBENCHMARK_ENABLE_TESTING:BOOL=OFF"
+			"-DBENCHMARK_USE_LIBCXX:BOOL=OFF"
+		VERSION 1.5.0
+	)
+	set(BENCHMARKING_DEPENDENCY benchmark)
+endif()
+
+
+## OpenGL
+
+if("${BUILD_FLOWVR_PLUGIN}" AND "${BUILD_TESTING}")
+	set(OpenGL_GL_PREFERENCE LEGACY)
+	sbuild_add_dependency(OpenGL SYSTEM)
+	sbuild_add_dependency(GLUT SYSTEM)
+endif()
+
+
+## FTI
+
+if("${BUILD_FTI_PLUGIN}")
+	sbuild_add_dependency(FTI "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/fti-1.6.tar"
+		CMAKE_CACHE_ARGS
+			"-DENABLE_FORTRAN:BOOL=OFF"
+			"-DENABLE_EXAMPLES:BOOL=OFF"
+			"-DENABLE_TESTS:BOOL=OFF"
+			"-DENABLE_DOCU:BOOL=OFF"
+		VERSION 1.6
+	)
+endif()
+
+
+## FlowVR
+
+if("${BUILD_FLOWVR_PLUGIN}")
+	sbuild_add_dependency(FlowVR "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/flowvr-ex-v2.3.2.tar"
+		CMAKE_CACHE_ARGS
+			"-DENABLE_EXAMPLES:BOOL=OFF"
+			"-DENABLE_TESTS:BOOL=OFF"
+			"-DENABLE_DOCU:BOOL=OFF"
+			"-DOpenGL_GL_PREFERENCE:STRING=LEGACY"
+		# VERSION 2.3.2 Finding FlowVR version doesn't work with 2.3
+	)
 endif()
 
 
 ## HDF5
 
 if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
-	
-	set(HDF5_CMAKE_CACHE_ARGS)
-	
-	if("${BUILD_HDF5_PARALLEL}")
-		set(HDF5_PREFER_PARALLEL ON)
-		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=ON")
+	set(HDF5_CONFIGURE_OPTS)
+	set(HDF5_BUILD_ENV)
+	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+		list(APPEND HDF5_CONFIGURE_OPTS "--enable-build-mode=debug")
 	else()
-		set(HDF5_PREFER_PARALLEL OFF)
-		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_ENABLE_PARALLEL:BOOL=OFF")
+		list(APPEND HDF5_CONFIGURE_OPTS "--enable-build-mode=production")
 	endif()
-	
+	if("${BUILD_HDF5_PARALLEL}")
+		set(HDF5_PREFER_PARALLEL "ON")
+		list(APPEND HDF5_CONFIGURE_OPTS "--enable-parallel")
+		set(HDF5_BUILD_ENV "env" "CC=${MPI_C_COMPILER}")
+	else()
+		set(HDF5_PREFER_PARALLEL "OFF")
+		list(APPEND HDF5_CONFIGURE_OPTS "--disable-parallel")
+	endif()
 	if("${BUILD_DECL_NETCDF_PLUGIN}")
 		set(HDF5_COMPONENTS C HL)
-		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=ON")
+		list(APPEND HDF5_CONFIGURE_OPTS "--enable-hl")
 	else()
 		set(HDF5_COMPONENTS C)
-		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=OFF")
+		list(APPEND HDF5_CONFIGURE_OPTS "--disable-hl")
 	endif()
 	
-	find_package(ZLIB)
-	
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/hdf5-1.12.3"
+		EMBEDDED_PATH "vendor/hdf5-1.12.0.tar"
 		COMPONENTS ${HDF5_COMPONENTS}
 		MODULE_VARS HDF5_IS_PARALLEL HDF5_C_INCLUDE_DIRS HDF5_C_LIBRARIES HDF5_VERSION
-		CMAKE_CACHE_ARGS
-			-DBUILD_TESTING:BOOL=OFF
-			-DHDF5_BUILD_EXAMPLES:BOOL=OFF
-			-DHDF5_BUILD_TOOLS:BOOL=ON
-			-DHDF5_BUILD_UTILS:BOOL=OFF
-			${HDF5_CMAKE_CACHE_ARGS}
+		BUILD_IN_SOURCE 1
+		CONFIGURE_COMMAND ${HDF5_BUILD_ENV}
+			"<SOURCE_DIR>/configure"
+			#TODO:  prefix should point to the final install dir, we should use a staging mechanism
+			"--prefix=<INSTALL_DIR>"
+			"--libdir=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}"
+			"--disable-tests"
+			"--disable-static"
+			"--disable-tools"
+			"--disable-sharedlib-rpath"
+			${HDF5_CONFIGURE_OPTS}
 	)
 	if("${HDF5_FOUND}")
-		if(1.10.4 VERSION_GREATER "${HDF5_VERSION}")
-			message(FATAL_ERROR "HDF5 version ${HDF5_VERSION} found less than required 1.10.4")
+		if(1.10 VERSION_GREATER "${HDF5_VERSION}")
+			message(FATAL_ERROR "HDF5 version ${HDF5_VERSION} found less than required 1.10.0")
 		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
@@ -366,55 +508,40 @@ endif()
 ## NetCDF
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
-	
 	if("${BUILD_HDF5_PARALLEL}")
 		set(NETCDF_CC "${MPI_C_COMPILER}")
 	else()
 		set(NETCDF_CC "${CMAKE_C_COMPILER}")
 	endif()
-	
-	set(NETCDF_CMAKE_CACHE_ARGS)
 	if("${BUILD_NETCDF_PARALLEL}")
-		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=ON")
+		set(NETCDF_MIN_VERSION "4.6.2")
 	else()
-		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=OFF")
+		set(NETCDF_MIN_VERSION "4.6.0")
 	endif()
-	
 	set(NETCDF_CPATH "${SBUILD_CPATH}")
 	set(NETCDF_LIBRARY_PATH "${SBUILD_LIBRARY_PATH}")
-	
-	# Workaround NetCDF borken LibXML2 include path detection
-	find_package(LibXml2)
-	if("${LIBXML2_FOUND}")
-		foreach(INCLUDE_DIR IN LISTS LIBXML2_INCLUDE_DIRS)
-			set(NETCDF_CPATH "${NETCDF_CPATH}:${INCLUDE_DIR}")
-			get_filename_component(INCLUDE_DIR "${INCLUDE_DIR}" DIRECTORY)
-			set(NETCDF_CPATH "${NETCDF_CPATH}:${INCLUDE_DIR}")
-		endforeach()
-		foreach(LIB IN LISTS LIBXML2_LIBRARIES)
+	if("${HDF5_FOUND}")
+		string(REPLACE ";" ":" NETCDF_CPATH "${SBUILD_CPATH}:${HDF5_C_INCLUDE_DIRS}")
+		foreach(LIB IN LISTS HDF5_C_LIBRARIES)
 			get_filename_component(LIB_DIR "${LIB}" DIRECTORY)
 			set(NETCDF_LIBRARY_PATH "${NETCDF_LIBRARY_PATH}:${LIB_DIR}")
 		endforeach()
 	endif()
 	
 	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/netcdf-c-4.9.2"
+		EMBEDDED_PATH "vendor/netcdf-c-4.8.1.tar"
 		DEPENDS HDF5
-		MODULE_VARS NetCDF_FEATURES
-		ENV "CPATH=${NETCDF_CPATH}" "LIBRARY_PATH=${NETCDF_LIBRARY_PATH}"
-		CMAKE_CACHE_ARGS
-			"-DCMAKE_C_COMPILER:STRING=${NETCDF_CC}"
-			-DBUILD_TESTING:BOOL=OFF
-			-DBUILD_TESTSETS:BOOL=OFF
-			-DBUILD_UTILITIES:BOOL=OFF
-			-DENABLE_BASH_SCRIPT_TESTING:BOOL=OFF
-			-DENABLE_BYTERANGE:BOOL=OFF
-			-DENABLE_DAP:BOOL=OFF
-			-DENABLE_DAP4:BOOL=OFF
-			-DENABLE_EXAMPLES:BOOL=OFF
-			-DENABLE_FILTER_TESTING:BOOL=OFF
-			-DENABLE_TESTS:BOOL=OFF
-		VERSION 4.7.3
+		BUILD_IN_SOURCE 1
+		ENV "CC=${NETCDF_CC}" "CPATH=${NETCDF_CPATH}" "LIBRARY_PATH=${NETCDF_LIBRARY_PATH}"
+		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
+			#TODO:  prefix should point to the final install dir, we should use a staging mechanism
+			--prefix=<INSTALL_DIR>
+			--disable-static
+			--enable-netcdf-4 
+			--disable-dap
+			--disable-utilities
+			--disable-testsets
+		VERSION "${NETCDF_MIN_VERSION}"
 	)
 	if("${NETCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
@@ -433,59 +560,152 @@ endif()
 ## PyBind11
 
 if("${BUILD_PYTHON}")
+	# Workaround pybind11 incompatibility with cmake<3.12 if Python3_FOUND is set
+	set(_PDI_DIST_Python3_FOUND "${Python3_FOUND}")
+	unset(Python3_FOUND)
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/pybind11-2.13.1"
+		EMBEDDED_PATH "vendor/pybind11-2.11.1.tar"
 		CMAKE_CACHE_ARGS
 			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
-		VERSION 2.4.3
+		VERSION 2.11.1
+	)
+	set(Python3_FOUND "${_PDI_DIST_Python3_FOUND}")
+endif()
+
+
+## PyYAML
+
+if("${BUILD_CFG_VALIDATOR}" OR "${BUILD_FLOWVR_PLUGIN}")
+	execute_process(COMMAND "${Python3_EXECUTABLE}" -m pip install --system
+		RESULT_VARIABLE PIP_INSTALL_ERROR
+		OUTPUT_QUIET
+		ERROR_QUIET)
+	if("${PIP_INSTALL_ERROR}" EQUAL 0)
+		set(PIP_SYSTEM "--system")
+	endif()
+	sbuild_get_env(CPATH CPATH)
+	sbuild_get_env(LIBRARY_PATH LIBRARY_PATH)
+	sbuild_add_dependency(PyYAML "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/PyYAML-6.0.1.tar"
+		CONFIGURE_COMMAND "true"
+		BUILD_COMMAND "true"
+		INSTALL_COMMAND env
+			"CPATH=${CPATH}"
+			"LIBRARY_PATH=${LIBRARY_PATH}"
+			"LD_LIBRARY_PATH=${LIBRARY_PATH}"
+			"${Python3_EXECUTABLE}" -m pip install
+			${PIP_SYSTEM}
+			--prefix "<INSTALL_DIR>"
+			--no-cache-dir
+			--ignore-installed
+			install
+			"<SOURCE_DIR>"
+		DEPENDS yaml
 	)
 endif()
 
 
+## SIONlib
+
+if("${BUILD_DECL_SION_PLUGIN}")
+	sbuild_add_dependency(SIONlib "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/sionlib-1.7.6.tar"
+		DEPENDS MPI
+		BUILD_IN_SOURCE 1
+		CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
+			--prefix=<INSTALL_DIR>
+			--disable-fortran
+			--disable-parutils
+			--disable-cxx
+		VERSION 1.7.6
+	)
+endif()
+
+
+
 ### Own modules
 
-set(PDI_DEPENDS_LIST paraconf spdlog)
+if("${BUILD_INDENT}")
+	set(ASTYLE_DEPENDENCY Astyle)
+endif()
+
+set(PDI_DEPENDS_LIST paraconf spdlog "${ASTYLE_DEPENDENCY}" "${BENCHMARKING_DEPENDENCY}")
+if("${BUILD_DOCUMENTATION}")
+	list(APPEND PDI_DEPENDS_LIST Doxygen)
+endif()
+if("${BUILD_TESTING}")
+	list(APPEND PDI_DEPENDS_LIST GTest)
+endif()
+if("${BUILD_FORTRAN}")
+	list(APPEND PDI_DEPENDS_LIST Zpp)
+endif()
 if("${BUILD_PYTHON}")
 	list(APPEND PDI_DEPENDS_LIST pybind11)
 endif()
 sbuild_add_module(PDI
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pdi"
 	DEPENDS ${PDI_DEPENDS_LIST}
+	SUBSTEPS indent test
+)
+
+
+sbuild_add_module(PDICFG_VALIDATOR
+	ENABLE_BUILD_FLAG BUILD_CFG_VALIDATOR
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tools/pdicfg_validator"
+	DEPENDS PyYAML
 	SUBSTEPS test
 )
+if("${BUILD_CFG_VALIDATOR}")
+	set(PDICFG_DEPENDENCY PDICFG_VALIDATOR)
+endif()
 
 
 sbuild_add_module(MPI_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_MPI_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi"
-	DEPENDS PDI
-	SUBSTEPS test
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
 )
 
 
 sbuild_add_module(DECL_HDF5_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_HDF5_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5"
-	DEPENDS PDI HDF5
-	SUBSTEPS test
+	DEPENDS PDI HDF5 ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY} ${BENCHMARKING_DEPENDENCY}
+	SUBSTEPS indent test
+)
+
+
+sbuild_add_module(DECL_SION_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_DECL_SION_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_sion"
+	DEPENDS PDI SIONlib ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY}
+	SUBSTEPS indent test
 )
 
 sbuild_add_module(DECL_NETCDF_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DECL_NETCDF_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf"
-	DEPENDS PDI NetCDF
-	SUBSTEPS test
+	DEPENDS PDI NetCDF ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY}
+	SUBSTEPS indent test
+)
+
+sbuild_add_module(FTI_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_FTI_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/fti"
+	DEPENDS PDI FTI ${ASTYLE_DEPENDENCY} ${PDICFG_DEPENDENCY}
+	SUBSTEPS indent test
 )
 
 
-sbuild_add_module(JSON_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
-	DEPENDS PDI
+sbuild_add_module(FLOWVR_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_FLOWVR_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/flowvr"
+	DEPENDS PDI FlowVR PyYAML ${ASTYLE_DEPENDENCY}
 	SUBSTEPS indent test
 )
 
@@ -493,49 +713,64 @@ sbuild_add_module(JSON_PLUGIN
 sbuild_add_module(PYCALL_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_PYCALL_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall"
-	DEPENDS PDI
-	SUBSTEPS test
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
 )
 
 sbuild_add_module(SET_VALUE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_SET_VALUE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/set_value"
-	DEPENDS PDI
-	SUBSTEPS test
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
 )
 
 sbuild_add_module(SERIALIZE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_SERIALIZE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/serialize"
-	DEPENDS PDI
-	SUBSTEPS test
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
+)
+
+sbuild_add_module(TEST_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_TEST_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/test"
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent
 )
 
 
 sbuild_add_module(TRACE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_TRACE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace"
-	DEPENDS PDI
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent
 )
 
 
 sbuild_add_module(USER_CODE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
-	DEPENDS PDI
-	SUBSTEPS test
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+	SUBSTEPS indent test
 )
+
 
 sbuild_add_module(DEISA_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DEISA_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa"
-	DEPENDS PDI
+	DEPENDS PDI ${ASTYLE_DEPENDENCY}
+#	SUBSTEPS indent test	# TODO
 )
+
+
+if ("${BUILD_FLOWVR_PLUGIN}")
+	set(FLOWVR_DEPENDENCY FlowVR)
+endif()
 
 sbuild_add_module(PDI_EXAMPLE
 	ENABLE_BUILD_FLAG BUILD_TESTING
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/example"
-	DEPENDS PDI
+	DEPENDS PDI ${FLOWVR_DEPENDENCY}
 	INSTALL_COMMAND ""
 	SUBSTEPS test
 )
@@ -545,5 +780,5 @@ sbuild_add_module(PDI_TESTS
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
-	SUBSTEPS test
+	SUBSTEPS indent test
 )

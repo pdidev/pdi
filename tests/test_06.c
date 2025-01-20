@@ -24,8 +24,8 @@
  ******************************************************************************/
 
 #include <assert.h>
-// #include <pdi.h>
-#include <pdi_deactivation.h>
+#include <pdi.h>
+// #include <pdi_deactivation.h>
 #include <stdio.h>
 
 int main(int argc, char* argv[])
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
 	// # As the value is shared with pdi.h, it can be reclaimed in a second time.
 	// # In the case of pdi_deactivation.h, the value is never shared, hence the reclaim operation fails.
-	// PDI_share("global_size",    global_size,    PDI_OUT) == NULL;
+	PDI_share("global_size",    global_size,    PDI_OUT) == NULL;
 	PDI_reclaim("global_size");
 
 	PDI_finalize();
