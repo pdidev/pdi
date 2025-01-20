@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,15 +28,15 @@
 #include <unistd.h>
 #include <pdi.h>
 
-#define FILE "mpi_test.h5"
+#define FILE "mpi_independent_test.h5"
 
 /**
-* Test : Write a file using PDI with the plugin decl_hdf5 in parallel with the option mpio: COLLECTIVE(DEFAULT).
+* Test : Read a file using PDI with the plugin decl_hdf5 in parallel with the option mpio: INDEPENDENT.
 */
 
 int main(int argc, char* argv[])
 {
-	printf("PDI mpi_write_test started\n");
+	printf("PDI mpi_independent_read_test started\n");
 	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -50,10 +51,11 @@ int main(int argc, char* argv[])
 		  "  mpi: ~                                                     \n"
 		  "  decl_hdf5:                                                 \n"
 		  "    communicator: $MPI_COMM_WORLD                            \n"
-		  "    file: mpi_test.h5                                        \n"
+		  "    file: mpi_independent_test.h5                            \n"
 		  "    datasets:                                                \n"
 		  "      array_data: {type: array, subtype: int, size: [5, 10]} \n"
-		  "    write:                                                   \n"
+		  "    read:                                                    \n"
+		  "      mpio: INDEPENDENT                                      \n"
 		  "      array_data:                                            \n"
 		  "        - memory_selection:                                  \n"
 		  "            size: [5, 5]                                     \n"
@@ -67,20 +69,27 @@ int main(int argc, char* argv[])
 	PDI_expose("mpi_rank", &mpi_rank, PDI_OUT);
 
 	int test_array[5][5];
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			test_array[i][j] = 0;
+		}
+	}
+	PDI_expose("array_data", test_array, PDI_IN);
 
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
-			test_array[i][j] = i * 10 + j + 5 * mpi_rank;
+			if (test_array[i][j] != i * 10 + j + 5 * mpi_rank) {
+				fprintf(stderr, "[%d][%d] %d != %d\n ", i, j, test_array[i][j], i * 10 + j + 5 * mpi_rank);
+				return 1;
+			}
 		}
 	}
-
-	PDI_expose("array_data", test_array, PDI_OUT);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 
 	MPI_Finalize();
 
-	printf("[Rank: %d] HDF5 mpi_write_test finalized\n", mpi_rank);
+	printf("[Rank: %d] PDI mpi_read_test finalized\n", mpi_rank);
 	return 0;
 }

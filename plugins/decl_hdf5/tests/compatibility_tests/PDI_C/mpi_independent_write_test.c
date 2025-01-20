@@ -27,15 +27,15 @@
 #include <unistd.h>
 #include <pdi.h>
 
-#define FILE "mpi_test.h5"
+#define FILE "mpi_independent_test.h5"
 
 /**
-* Test : Write a file using PDI with the plugin decl_hdf5 in parallel with the option mpio: COLLECTIVE(DEFAULT).
+* Test : Write a file using PDI with the plugin decl_hdf5 in parallel with the option mpio: INDEPENDENT.
 */
 
 int main(int argc, char* argv[])
 {
-	printf("PDI mpi_write_test started\n");
+	printf("PDI mpi_independent_write_test started\n");
 	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -50,10 +50,11 @@ int main(int argc, char* argv[])
 		  "  mpi: ~                                                     \n"
 		  "  decl_hdf5:                                                 \n"
 		  "    communicator: $MPI_COMM_WORLD                            \n"
-		  "    file: mpi_test.h5                                        \n"
+		  "    file: mpi_independent_test.h5                            \n"
 		  "    datasets:                                                \n"
 		  "      array_data: {type: array, subtype: int, size: [5, 10]} \n"
 		  "    write:                                                   \n"
+		  "      mpio: INDEPENDENT                                      \n"
 		  "      array_data:                                            \n"
 		  "        - memory_selection:                                  \n"
 		  "            size: [5, 5]                                     \n"

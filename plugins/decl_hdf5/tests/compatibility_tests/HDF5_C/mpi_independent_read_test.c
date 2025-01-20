@@ -27,15 +27,15 @@
 #include <hdf5.h>
 #include <unistd.h>
 
-#define FILE "mpi_test.h5"
+#define FILE "mpi_independent_test.h5"
 
 /**
-* Test : Read a file using hdf5 parallel version with the option collective parallel pointer.
+* Test : Read a file using hdf5 parallel version with the option independent parallel pointer.
 */
 
 int main(int argc, char* argv[])
 {
-	printf("HDF5 mpi_read_test started\n");
+	printf("HDF5 mpi_independent_read_test started\n");
 	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
 	}
 
 	hid_t dxpl_id = H5Pcreate(H5P_DATASET_XFER);
-	H5Pset_dxpl_mpio(dxpl_id, H5FD_MPIO_COLLECTIVE);
+	H5Pset_dxpl_mpio(dxpl_id, H5FD_MPIO_INDEPENDENT);
 
 	status = H5Dread(dataset_id, H5T_NATIVE_INT, memory_dataspace_id, dataspace_id, dxpl_id, dset_data);
 	if (status < 0) {

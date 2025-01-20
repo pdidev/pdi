@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+* Added new JSON plugin. Enables users to write data in JSON format, 
+  using the [nlohmann/json](https://github.com/nlohmann/json) library.
+  Users can also write data in other format thanks to taking JSON as input for
+  the dedicated tools.
+  [#440](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/440)
+
 ### Changed
 
 ### Deprecated
@@ -26,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [1.8.0] - 2024-11-28
 
 ### Added
+
 * NetCDF plugin now support the size_of attribute, fixes
   [#446](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/446)
 * Deisa plugin for in-situ analysis using Dask
