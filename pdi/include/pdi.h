@@ -55,8 +55,6 @@
 #ifndef PDI_H_
 #define PDI_H_
 
-#include <paraconf.h>
-
 #include <pdi/export.h>
 #include <pdi/version.h>
 
