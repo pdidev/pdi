@@ -8,6 +8,13 @@ changes for PDI library proper are in [`pdi/CHANGELOG.md`](pdi/CHANGELOG.md).
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [1.8.1] - TODO
+
+### Fixed
+* Fix the indentation check script
+  [#515](https://github.com/pdidev/pdi/issues/515)
+
+
 ## [1.8.0] - 2024-11-28
 
 ### Added
