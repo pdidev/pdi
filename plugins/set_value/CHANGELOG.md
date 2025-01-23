@@ -4,7 +4,7 @@ All notable changes to the Set-value plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [1.8.1] - TODO
+## [1.8.1] - 2025-01-23
 
 ### Fixed
 * Stop claiming to support old cmake versions we do not

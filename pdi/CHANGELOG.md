@@ -11,7 +11,7 @@ and this project adheres to
 
 
 
-## [1.8.1] - TODO
+## [1.8.1] - 2025-01-23
 
 ### For users
 
