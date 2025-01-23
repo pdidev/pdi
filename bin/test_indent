@@ -1,6 +1,10 @@
 #!/bin/bash
 #=============================================================================
-# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (c) 2024-2025 Centre national de la recherche scientifique (CNRS)
+# Copyright (c) 2024-2025 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# Copyright (c) 2024-2025 Institut national de recherche en informatique et en automatique (Inria)
+# Copyright (c) 2024-2025 Université Paris-Saclay
+# Copyright (c) 2024-2025 Université de Versailles Saint-Quentin-en-Yvelines
 #
 # All rights reserved.
 #
@@ -53,15 +57,18 @@ then
 fi
 
 # Look for a local version
-for CLANG_FORMAT in clang-format-17 clang-format17 clang-format
-do
-	CLANG_FORMAT="$(which "${CLANG_FORMAT}")"
-	if which "${CLANG_FORMAT}" >/dev/null && [ 17 -le "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" 2>/dev/null ]
-	then
-		RUN_CLANG_FORMAT="python3 vendor/run-clang-format/run-clang-format.py --clang-format-executable ${CLANG_FORMAT}"
-		break
-	fi
-done
+if [ -f vendor/run-clang-format/run-clang-format.py ]
+then
+	for CLANG_FORMAT in clang-format-17 clang-format17 clang-format
+	do
+		CLANG_FORMAT="$(which "${CLANG_FORMAT}")"
+		if which "${CLANG_FORMAT}" >/dev/null && [ 17 -le "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" 2>/dev/null ]
+		then
+			RUN_CLANG_FORMAT="python3 vendor/run-clang-format/run-clang-format.py --clang-format-executable ${CLANG_FORMAT}"
+			break
+		fi
+	done
+fi
 
 if [ "${RUN_CLANG_FORMAT}" = false ]
 then
