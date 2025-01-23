@@ -1,9 +1,9 @@
 /******************************************************************************
- * Copyright (c) 2020-2024 Centre national de la recherche scientifique (CNRS)
- * Copyright (c) 2020-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+ * Copyright (c) 2020-2025 Centre national de la recherche scientifique (CNRS)
+ * Copyright (c) 2020-2025 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
  * Copyright (c) 2020-2023 Institut national de recherche en informatique et en automatique (Inria)
- * Copyright (c) 2020-2024 Université Paris-Saclay
- * Copyright (c) 2020-2024 Université de Versailles Saint-Quentin-en-Yvelines
+ * Copyright (c) 2020-2025 Université Paris-Saclay
+ * Copyright (c) 2020-2025 Université de Versailles Saint-Quentin-en-Yvelines
  *
  * SPDX-License-Identifier: MIT
  *
@@ -99,7 +99,7 @@ public:
 		if (!PC_status(map_in)) {
 			each(map_in, [&](PC_tree_t key_map, PC_tree_t value_map) { // TODO: when #481 is fixed, use `or_none` variant.
 				ctx.callbacks().add_data_callback(
-					[&](const std::string& deisa_array_name, const Ref& data_ref) { on_data(deisa_array_name, data_ref); },
+					[&, deisa_array_name = to_string(value_map)](const std::string&, const Ref& data_ref) { on_data(deisa_array_name, data_ref); },
 					to_string(key_map)
 				);
 			});

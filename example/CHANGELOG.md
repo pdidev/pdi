@@ -1,5 +1,4 @@
 # Changelog for PDI example project
-
 All notable changes to the example project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
@@ -18,6 +17,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.8.1] - 2025-01-23
+
+### Fixed
+* Stop claiming to support old cmake versions we do not
+  [#507](https://github.com/pdidev/pdi/issues/507)
 
 
 ## [1.8.0] - 2024-11-28

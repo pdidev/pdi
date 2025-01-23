@@ -43,14 +43,20 @@ and this project adheres to
 
 
 
-## [1.8.0] - 2024-11-28
+## [1.8.1] - 2025-01-23
 
 ### For users
 
-#### Added
-* Add the `Context::find()` method.
-  [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
-* Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)` helper function.
+#### Fixed
+* Stop claiming to support old cmake versions we do not
+  [#507](https://github.com/pdidev/pdi/issues/507)
+* Fixed website generation
+  [#506](https://github.com/pdidev/pdi/issues/506)
+
+
+## [1.8.0] - 2024-11-28
+
+### For users
 
 #### Changed
 * Update the version of dependencies according to our policy: oldest supported
@@ -73,6 +79,11 @@ and this project adheres to
   [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
 * Add the function `scalar_assign` to `Ref_any` to ease setting the value of a
   scalar data buffer.
+* Add the `Context::find()` method.
+  [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
+* Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)`
+  helper function.
+
 
 #### Changed
 * Replaced the astyle based indentation by a clang-format one, fixes
