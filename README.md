@@ -33,7 +33,7 @@ be used.
 
 In case you don't want to use either option, you can install PDI source
 distribution using the dedicated
-[installation instructions](https://pdi.dev/master/Installation.html).
+[installation instructions](https://pdi.dev/main/Installation.html).
 
 ## Content
 
