@@ -1,0 +1,10 @@
+
+{
+  "catalyst": 
+  {
+    "scripts": 
+    {
+      "script1": {"dtype":"char8_str","number_of_elements": 110,"offset": 0,"stride": 1,"element_bytes": 1,"endianness": "little"}
+    }
+  }
+}
