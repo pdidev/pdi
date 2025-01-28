@@ -1,0 +1,70 @@
+
+{
+  "catalyst": 
+  {
+    "state": 
+    {
+      "timestep": {"dtype":"int32","number_of_elements": 1,"offset": 0,"stride": 4,"element_bytes": 4,"endianness": "little"},
+      "time": {"dtype":"float64","number_of_elements": 1,"offset": 4,"stride": 8,"element_bytes": 8,"endianness": "little"},
+      "multiblock": {"dtype":"int64","number_of_elements": 1,"offset": 12,"stride": 8,"element_bytes": 8,"endianness": "little"}
+    },
+    "channels": 
+    {
+      "grid": 
+      {
+        "type": {"dtype":"char8_str","number_of_elements": 5,"offset": 20,"stride": 1,"element_bytes": 1,"endianness": "little"},
+        "data": 
+        {
+          "coordsets": 
+          {
+            "my_coords": 
+            {
+              "type": {"dtype":"char8_str","number_of_elements": 9,"offset": 25,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "values": 
+              {
+                "x": {"dtype":"float64","number_of_elements": 50160,"offset": 34,"stride": 8,"element_bytes": 8,"endianness": "little"},
+                "y": {"dtype":"float64","number_of_elements": 50160,"offset": 401314,"stride": 8,"element_bytes": 8,"endianness": "little"},
+                "z": {"dtype":"float64","number_of_elements": 50160,"offset": 802594,"stride": 8,"element_bytes": 8,"endianness": "little"}
+              }
+            }
+          },
+          "topologies": 
+          {
+            "my_mesh": 
+            {
+              "type": {"dtype":"char8_str","number_of_elements": 13,"offset": 1203874,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "coordset": {"dtype":"char8_str","number_of_elements": 10,"offset": 1203887,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "elements": 
+              {
+                "shape": {"dtype":"char8_str","number_of_elements": 4,"offset": 1203897,"stride": 1,"element_bytes": 1,"endianness": "little"},
+                "connectivity": {"dtype":"uint32","number_of_elements": 365328,"offset": 1203901,"stride": 4,"element_bytes": 4,"endianness": "little"}
+              }
+            }
+          },
+          "fields": 
+          {
+            "velocity": 
+            {
+              "association": {"dtype":"char8_str","number_of_elements": 7,"offset": 2665213,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "topology": {"dtype":"char8_str","number_of_elements": 8,"offset": 2665220,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "volume_dependent": {"dtype":"char8_str","number_of_elements": 6,"offset": 2665228,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "values": 
+              {
+                "x": {"dtype":"float64","number_of_elements": 50160,"offset": 2665234,"stride": 8,"element_bytes": 8,"endianness": "little"},
+                "y": {"dtype":"float64","number_of_elements": 50160,"offset": 3066514,"stride": 8,"element_bytes": 8,"endianness": "little"},
+                "z": {"dtype":"float64","number_of_elements": 50160,"offset": 3467794,"stride": 8,"element_bytes": 8,"endianness": "little"}
+              }
+            },
+            "pressure": 
+            {
+              "association": {"dtype":"char8_str","number_of_elements": 8,"offset": 3869074,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "topology": {"dtype":"char8_str","number_of_elements": 8,"offset": 3869082,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "volume_dependent": {"dtype":"char8_str","number_of_elements": 6,"offset": 3869090,"stride": 1,"element_bytes": 1,"endianness": "little"},
+              "values": {"dtype":"float32","number_of_elements": 45666,"offset": 3869096,"stride": 4,"element_bytes": 4,"endianness": "little"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

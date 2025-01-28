@@ -1,0 +1,129 @@
+logging:
+  level: "info"
+metadata:
+  points_array_size: size_t
+  cell_points_size: size_t
+  velocity_array_size: size_t
+  pressure_array_size: size_t
+data:
+  cycle: int
+  time: double
+  number_of_points: size_t
+  number_of_cells: size_t
+  points_array:
+    type: array
+    subtype: double
+    size: $points_array_size
+  cell_points:
+    type: array
+    subtype: uint32
+    size: $cell_points_size
+  velocity_array:
+    type: array
+    subtype: double
+    size: $velocity_array_size
+  pressure_array:
+    type: array
+    subtype: float
+    size: $pressure_array_size
+plugins:
+  catalyst:
+    scripts:
+      script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_with_rendering.py"
+    PDI_execute_event_name: "catalyst_execute"
+    execute:
+      state:
+        timestep:
+          PDI_data:
+            name: "cycle"
+        time:
+          PDI_data:
+            name: "time"
+        multiblock: 1
+      channels:
+        grid:
+          type: "mesh"
+          data:
+            coordsets:
+              my_coords:
+                type: "explicit"
+                values:
+                  x:
+                    PDI_data:
+                      name: "points_array"
+                      size:
+                        PDI_data:
+                          name: "number_of_points"
+                      offset: 0
+                      stride: 3
+                  y:
+                    PDI_data:
+                      name: "points_array"
+                      size:
+                        PDI_data:
+                          name: "number_of_points"
+                      offset: 1
+                      stride: 3
+                  z:
+                    PDI_data:
+                      name: "points_array"
+                      size:
+                        PDI_data:
+                          name: "number_of_points"
+                      offset: 2
+                      stride: 3
+            topologies:
+              my_mesh:
+                type: "unstructured"
+                coordset: "my_coords"
+                elements:
+                  shape: "hex"
+                  connectivity:
+                    PDI_data:
+                      name: "cell_points"
+                      size:
+                        PDI_data:
+                          name: "number_of_cells"
+                          multiply: 8
+            fields:
+              velocity:
+                association: "vertex"
+                topology: "my_mesh"
+                volume_dependent: "false"
+                values:
+                  x:
+                    PDI_data:
+                      name: "velocity_array"
+                      size:
+                        PDI_data:
+                          name: "number_of_points"
+                      offset: 0
+                  y:
+                    PDI_data:
+                      name: "velocity_array"
+                      size:
+                        PDI_data:
+                          name: "number_of_points"
+                      offset:
+                        PDI_data:
+                          name: "number_of_points"
+                  z:
+                    PDI_data:
+                      name: "velocity_array"
+                      size:
+                        PDI_data:
+                          name: "number_of_points"
+                      offset:
+                          PDI_data:
+                            name: "number_of_points"
+                            multiply: 2
+              pressure:
+                association: "element"
+                topology: "my_mesh"
+                volume_dependent: "false"
+                values:
+                  PDI_data:
+                    name: "pressure_array"
+                    size:
+                      PDI_data:
+                        name: "number_of_cells"
