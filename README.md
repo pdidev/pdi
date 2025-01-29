@@ -38,7 +38,7 @@ distribution using the dedicated
 
 PDI distribution is made of the following submodules:
 * `AUTHORS`, `CHANGELOG.md`, `CMakeLists.txt`, `LICENSE`, `PACKAGING.md`,
-  `README.md`, `spack.yaml`, `bin`, `cmake/`: distribution specific files,
+  `README.md`, `bin`, `cmake/`, `spack.yaml`: distribution specific files,
 * `pdi/` : the PDI library,
 * `plugins/decl_hdf5/`: the Decl'HDF5 plugin,
 * `plugins/decl_netcdf/`: the Decl'NetCDF plugin,
