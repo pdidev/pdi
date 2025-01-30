@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Users can also write data in other format thanks to taking JSON as input for
   the dedicated tools.
   [#440](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/440)
+* Add "no-pdi", including the header no-pdi/include/pdi.h, which allows to
+  disable PDI effects while keeping code syntax unchanged.
 
 ### Changed
 
