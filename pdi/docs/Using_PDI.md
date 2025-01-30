@@ -40,7 +40,8 @@ For Fortran make sure that source files that use %PDI API are using `%PDI` modul
 
 %PDI can be disabled by using the `no-pdi` directory instead of the `pdi` directory.
 Make sure to modify your target application `CMakeLists.txt` following 
-the file `exampleTargetCMakeLists.txt` included in the no-pdi directory.
+the file `exampleTargetCMakeLists.txt` included in the no-pdi directory,
+adding the CMake option `WITHOUT_PDI`.
 %PDI can be re-enabled by reversing those modifications.
 
 ### Compiling by hand {#compiling_by_hand}
