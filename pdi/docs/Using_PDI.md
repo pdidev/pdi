@@ -38,6 +38,11 @@ If source files (of application that uses %PDI) and specification tree file are 
 For C make sure that source files that use %PDI API are including `pdi.h` header file.
 For Fortran make sure that source files that use %PDI API are using `%PDI` module file (`USE %PDI`).
 
+%PDI can be disabled by using the `no-pdi` directory instead of the `pdi` directory.
+Make sure to modify your target application `CMakeLists.txt` following 
+the file `exampleTargetCMakeLists.txt` included in the no-pdi directory.
+%PDI can be re-enabled by reversing those modifications.
+
 ### Compiling by hand {#compiling_by_hand}
 
 To compile application, linker flag `-lpdi` must be used.
