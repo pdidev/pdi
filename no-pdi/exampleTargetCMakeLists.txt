@@ -25,90 +25,59 @@ project(pdi_examples LANGUAGES C)
 
 find_package(MPI REQUIRED COMPONENTS C)
 find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-# find_package(PDI 1.6.0 REQUIRED COMPONENTS C)
 
 option(WITHOUT_PDI		"Disable PDI" OFF)
-# if(WITHOUT_PDI)
-# 	# include(no-pdi.cmake) # Defines PDI::pdi to only include no-pdi/
-# 	# include(PDI_C.cmake) # Defines PDI::pdi to only include no-pdi/
-# 	# # include(CMakePrintHelpers)
-# 	# # cmake_print_variables("${INSTALL_CMAKEDIR}") # is empty
-# 	# find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-# 	# include("../no-pdi/build/CMakeFiles/Export/share/pdi/cmake/PDI_C.cmake") # Defines PDI::pdi to only include no-pdi/
-# 	# include("../no-pdi/") # Defines PDI::pdi to only include no-pdi/
-# 	# find_package(PDI 1.6.0 REQUIRED COMPONENTS C PATHS "../no-pdi/build/CMakeFiles/Export/share/pdi")
-# 	# find_package(PDI 1.6.0 REQUIRED COMPONENTS C)
-# 	# include_directories(include)
-# 	# add_executable(include/no-pdi.h)
-# else()
-# 	# find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-# 	find_package(PDI 1.6.0 REQUIRED COMPONENTS C)
-# endif()
+
 if(WITHOUT_PDI)
-	# # #################
-	# include(CMakePrintHelpers)
-	# cmake_print_variables("PDI is disabled.")
-	# # #################
 	message(WARNING "PDI is disabled.")
-	# find_package(PDI 1.6.0 REQUIRED COMPONENTS C)
 else()
 	find_package(PDI 1.6.0 REQUIRED COMPONENTS C)
 endif()
 
 set(CMAKE_C_STANDARD 99)
 
-# set( CMAKE_CXX_FLAGS_DEBUG_INIT "-fstack-protector" )
-
 if(WITHOUT_PDI)
 
-	add_library(test_lib INTERFACE)
-	target_include_directories(test_lib INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
-	# add_library(test_lib_bis INTERFACE)
-	# target_include_directories(test_lib_bis INTERFACE ${CMAKE_SOURCE_DIR}/../no-paraconf/include)
+	add_library(no_pdi_lib INTERFACE)
+	target_include_directories(no_pdi_lib INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
 
 	add_executable(ex1 ex1.c)
-	target_link_libraries(ex1 m MPI::MPI_C paraconf::paraconf test_lib)
-	# target_link_libraries(ex1 m MPI::MPI_C test_lib_bis test_lib)
+	target_link_libraries(ex1 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex2 ex2.c)
-	target_link_libraries(ex2 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex2 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex3 ex3.c)
-	target_link_libraries(ex3 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex3 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex4 ex4.c)
-	target_link_libraries(ex4 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex4 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex5 ex5.c)
-	target_link_libraries(ex5 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex5 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex6 ex6.c)
-	target_link_libraries(ex6 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex6 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex7 ex7.c)
-	target_link_libraries(ex7 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex7 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex8 ex8.c)
-	target_link_libraries(ex8 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex8 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex9 ex9.c)
-	target_link_libraries(ex9 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex9 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex10 ex10.c)
-	target_link_libraries(ex10 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex10 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex11 ex11.c)
-	target_link_libraries(ex11 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex11 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 	
 	add_executable(ex12 ex12.c)
-	target_link_libraries(ex12 m MPI::MPI_C paraconf::paraconf test_lib)
+	target_link_libraries(ex12 m MPI::MPI_C paraconf::paraconf no_pdi_lib)
 
 else()
-
-	## comment ex0
-	##add_executable(ex0 ex0.c)
-	##target_link_libraries(ex0 m MPI::MPI_C paraconf::paraconf PDI::pdi)
-
 	add_executable(ex1 ex1.c)
 	target_link_libraries(ex1 m MPI::MPI_C paraconf::paraconf PDI::pdi)
 
@@ -117,39 +86,6 @@ else()
 
 	add_executable(ex3 ex3.c)
 	target_link_libraries(ex3 m MPI::MPI_C paraconf::paraconf PDI::pdi)
-
-	# add_executable(ex3 ex3.c)
-	# # target_link_libraries(ex3 m MPI::MPI_C paraconf::paraconf PDI::pdi)
-	# target_link_libraries(ex3 m MPI::MPI_C paraconf::paraconf)
-	# # #################
-	# include(CMakePrintHelpers)
-	# cmake_print_variables(../no-pdi/include)
-	# # #################
-	# # target_link_directories(ex3 INTERFACE ../no-pdi/build/CMakeFiles/Export/share/pdi)
-	# link_directories(ex3 INTERFACE ../no-pdi/include)
-	# # link_directories ?
-
-	# # # #################
-	# include(CMakePrintHelpers)
-	# cmake_print_variables("${CMAKE_SOURCE_DIR}/../no-pdi/include/pdi.h")
-	# # # #################
-	# # add_library(test_lib SHARED pdi.h)
-	# add_library(test_lib SHARED ${CMAKE_SOURCE_DIR}/../no-pdi/include/pdi.h)
-	# # target_sources(test_lib INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include/pdi.h)
-	# add_executable(ex3 ex3.c)
-	# target_link_libraries(ex3 m MPI::MPI_C paraconf::paraconf test_lib)
-
-	# add_library(test_lib INTERFACE)
-	# target_include_directories(test_lib INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
-	# add_executable(ex3 ex3.c)
-	# target_link_libraries(ex3 m MPI::MPI_C paraconf::paraconf test_lib)
-
-	# add_library(test_lib INTERFACE)
-	# target_include_directories(test_lib INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
-	# add_library(test_lib_bis INTERFACE)
-	# target_include_directories(test_lib_bis INTERFACE ${CMAKE_SOURCE_DIR}/../no-paraconf/include)
-	# add_executable(ex3 ex3.c)
-	# target_link_libraries(ex3 m MPI::MPI_C test_lib_bis test_lib)
 
 	add_executable(ex4 ex4.c)
 	target_link_libraries(ex4 m MPI::MPI_C paraconf::paraconf PDI::pdi)
