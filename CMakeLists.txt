@@ -79,7 +79,7 @@ option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
-option(BUILD_CATALYST_PLUGIN    "Build Catalyst plugin" ON)
+option(BUILD_CATALYST_PLUGIN    "Build Catalyst plugin" "${BUILD_UNSTABLE}")
 
 
 
