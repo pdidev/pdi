@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Fixed compilation error when BUILD_HDF5_PARALLEL=OFF
+  [#55](https://github.com/pdidev/pkgs/issues/55)
 
 ### Security
 
