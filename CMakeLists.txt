@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2026 Julien Bigot <julien@julien-bigot.fr>
+# Copyright (C) 2024-2025 Kitware SAS
 #
 # All rights reserved.
 #
