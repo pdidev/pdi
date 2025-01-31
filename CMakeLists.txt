@@ -78,7 +78,8 @@ option(BUILD_TIMER_PLUGIN       "Build Timer plugin" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
-option(BUILD_CATALYST_PLUGIN    "Build Catalyst plugin" ON)
+option(BUILD_CATALYST_PLUGIN    "Build Catalyst plugin" "${BUILD_UNSTABLE}")
+
 
 
 
