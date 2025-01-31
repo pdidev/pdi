@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2024-2025 Kitware SAS
 #
 # All rights reserved.
 #
@@ -79,7 +80,7 @@ option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
-
+option(BUILD_CATALYST_PLUGIN    "Build Catalyst plugin" "${BUILD_UNSTABLE}")
 
 
 
@@ -445,6 +446,21 @@ if("${BUILD_PYTHON}")
 	)
 endif()
 
+## Catalyst
+if("${BUILD_CATALYST_PLUGIN}")
+	sbuild_add_dependency(catalyst "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/catalyst-2.0.0"
+		CMAKE_CACHE_ARGS
+			"-DBUILD_TESTING:BOOL=OFF"
+                        "-DCATALYST_BUILD_TESTING:BOOL=OFF"
+                        "-DCATALYST_USE_MPI:BOOL=ON"
+                        "-DCATALYST_WRAP_FORTRAN:BOOL=OFF"
+                        "-DCATALYST_WRAP_PYTHON:BOOL=OFF"
+		VERSION 2.0.0
+	)
+endif()
+
+
 
 ### Own modules
 
@@ -546,4 +562,11 @@ sbuild_add_module(PDI_TESTS
 	DEPENDS PDI
 	INSTALL_COMMAND ""
 	SUBSTEPS test
+)
+
+sbuild_add_module(CATALYST_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_CATALYST_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/catalyst"
+	DEPENDS PDI catalyst
+        SUBSTEPS test
 )
