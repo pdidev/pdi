@@ -1,19 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="$langISO">
 <head>
 	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=11"/>
 	<meta name="generator" content="Doxygen $doxygenversion"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<title>PDI: $title</title>
 	$mathjax
+	<!--BEGIN PROJECT_ICON-->
+	<link rel="icon" href="$relpath^$projecticon" type="image/x-icon" />
+	<!--END PROJECT_ICON-->
+	<link href="$relpath^tabs.css" rel="stylesheet" type="text/css"/>
+	<script type="text/javascript">var page_layout=1;</script>
 	<script type="text/javascript" src="$relpath^jquery.js"></script>
 	<script type="text/javascript" src="$relpath^dynsections.js"></script>
-	<script type="text/javascript" src="$relpath^navtreedata.js"></script>
-	<script type="text/javascript" src="$relpath^navtree.js"></script>
+	<!--BEGIN COPY_CLIPBOARD-->
+	<script type="text/javascript" src="$relpath^clipboard.js"></script>
+	<!--END COPY_CLIPBOARD-->
+	$treeview
+	$search
+	$darkmode
 	<link href="$relpath^$stylesheet" rel="stylesheet" type="text/css" />
+	$extrastylesheet
 </head>
 <body>
-<div>
+<!--BEGIN DISABLE_INDEX-->
+  <!--BEGIN FULL_SIDEBAR-->
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
+  <!--END FULL_SIDEBAR-->
+<!--END DISABLE_INDEX-->
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <header id="titlearea">
 	<div id="projectlogo"><a href="index.html"><img alt="Logo" src="$relpath^$projectlogo"/></a></div>
 	<h1 id="projectname">PDI&nbsp;<span id="projectnumber">$projectnumber</span></h1>
@@ -30,5 +46,5 @@
 	<li><a href="modules.html">C API reference</a>
 	<li><a href="Specification_tree_ref.html">Specification tree</a>
 	<li><a href="Plugins.html">Plugins</a>
-	<li id="github-ribbon"><a rel="noopener" href="https://github.pdi.dev/pdi" target="_blank">⭐⭐⭐Star us⭐⭐⭐, or contribute on GitHub</a></li>
+	<li id="github-ribbon"><a rel="noopener" href="https://github.pdi.dev" target="_blank">⭐Star us on GitHub</a></li>
 </ul></nav>

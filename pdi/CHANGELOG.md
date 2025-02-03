@@ -11,6 +11,11 @@ and this project adheres to
 
 
 
+## [1.8.2] - TODO
+* Fix documentation generation, add sidepanel & fix repository URL, fixes
+  [#521](https://github.com/pdidev/pdi/issues/521) and
+  [#522](https://github.com/pdidev/pdi/issues/522)
+
 ## [1.8.1] - 2025-01-23
 
 ### For users

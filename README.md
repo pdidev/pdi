@@ -1,8 +1,8 @@
 # The PDI distribution
 
-This is the PDI source distribution, including PDI (the PDI Data Interface) and
-its bindings for Fortran and python, the PDI plugins, the PDI configuration
-validator, examples and tests, as well as many dependencies of all those.
+This is the PDI source distribution, including PDI (the PDI Data Interface), its
+bindings for Fortran and python, the PDI plugins, examples and tests,
+documentation, as well as many dependencies of all those.
 
 PDI is a library that aims to decouple high-performance simulation codes from
 Input/Output concerns.
@@ -25,20 +25,21 @@ The on-line PDI documentation is available at https://pdi.dev
 
 ## Installation
 
-**The recommended approach to install PDI is to use the stable [pre-compiled binary packages for Debian, Fedora and Ubuntu](https://github.com/pdidev/pkgs/tree/repo).**
+**The recommended approach to install PDI is to use the stable [pre-compiled binary packages for Debian, Fedora and Ubuntu](https://repo.pdi.dev).**
 
-On other distributions, in case you do not have root access, or if you want a
-more recent version, [**PDI spack recipe**](https://github.com/pdidev/spack) can
-be used.
+On other distributions, or in case you do not have root access,
+[**PDI spack recipe**](https://github.com/pdidev/spack) can be used.
 
 In case you don't want to use either option, you can install PDI source
 distribution using the dedicated
-[installation instructions](https://pdi.julien-bigot.fr/master/Installation.html).
+[installation instructions](https://pdi.dev/main/Installation.html).
 
 ## Content
 
 PDI distribution is made of the following submodules:
-* `CMakeLists.txt`, `LICENSE`, `cmake/`, `README.md`: distribution specific files,
+* `AUTHORS`, `CHANGELOG.md`, `CMakeLists.txt`, `LICENSE`, `PACKAGING.md`,
+  `README.md`, `bin`, `cmake/`, `spack.yaml`: distribution specific files and 
+  directories,
 * `pdi/` : the PDI library,
 * `plugins/decl_hdf5/`: the Decl'HDF5 plugin,
 * `plugins/decl_netcdf/`: the Decl'NetCDF plugin,
