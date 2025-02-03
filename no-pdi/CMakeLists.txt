@@ -56,12 +56,12 @@ endif()
 
 # Includes
 
-include(CTest)
-include(CMakePackageConfigHelpers)
-include(GenerateExportHeader)
+# include(CTest)
+# include(CMakePackageConfigHelpers)
+# include(GenerateExportHeader)
 set(_REAL_PROJECT_NAME "${PROJECT_NAME}")
 set(PROJECT_NAME pdi)
-include(GNUInstallDirs)
+# include(GNUInstallDirs)
 set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
 set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
 set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
@@ -76,31 +76,31 @@ else()
 	file(RELATIVE_PATH PDI_DEFAULT_PLUGIN_PATH "/${CMAKE_INSTALL_LIBDIR}" "/${INSTALL_PDIPLUGINDIR}" )
 endif()
 
-add_library(PDI_C INTERFACE)
-generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME no-pdi/export.h)
-target_include_directories(PDI_C
-		INTERFACE "$<BUILD_INTERFACE:${PDI_BINARY_DIR}>"  "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include/>"
-		INTERFACE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>")
-target_link_libraries(PDI_C
-		INTERFACE paraconf::paraconf ${CMAKE_DL_LIBS}
-		INTERFACE spdlog::spdlog)
-target_compile_features(PDI_C INTERFACE cxx_std_17 c_std_11)
-set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
-set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
-set_property(TARGET PDI_C PROPERTY C_VISIBILITY_PRESET hidden)
-set_property(TARGET PDI_C PROPERTY CXX_VISIBILITY_PRESET hidden)
-set_property(TARGET PDI_C PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET PDI_C PROPERTY VERSION ${PDI_VERSION})
-set_property(TARGET PDI_C PROPERTY SOVERSION ${PDI_VERSION_MAJOR})
-set_property(TARGET PDI_C PROPERTY PDI_MAJOR_VERSION ${PDI_VERSION_MAJOR})
-set_property(TARGET PDI_C APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VERSION)
-add_library(PDI::pdi   ALIAS PDI_C)
-add_library(PDI::PDI_C ALIAS PDI_C)
-install(TARGETS PDI_C EXPORT PDI_C_EXPORT
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" ${LIBRARY_COMPONENT}
-		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
-		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-)
+# add_library(PDI_C INTERFACE)
+# generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME no-pdi/export.h)
+# target_include_directories(PDI_C
+# 		INTERFACE "$<BUILD_INTERFACE:${PDI_BINARY_DIR}>"  "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include/>"
+# 		INTERFACE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>")
+# target_link_libraries(PDI_C
+# 		INTERFACE paraconf::paraconf ${CMAKE_DL_LIBS}
+# 		INTERFACE spdlog::spdlog)
+# target_compile_features(PDI_C INTERFACE cxx_std_17 c_std_11)
+# set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
+# set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
+# set_property(TARGET PDI_C PROPERTY C_VISIBILITY_PRESET hidden)
+# set_property(TARGET PDI_C PROPERTY CXX_VISIBILITY_PRESET hidden)
+# set_property(TARGET PDI_C PROPERTY POSITION_INDEPENDENT_CODE ON)
+# set_property(TARGET PDI_C PROPERTY VERSION ${PDI_VERSION})
+# set_property(TARGET PDI_C PROPERTY SOVERSION ${PDI_VERSION_MAJOR})
+# set_property(TARGET PDI_C PROPERTY PDI_MAJOR_VERSION ${PDI_VERSION_MAJOR})
+# set_property(TARGET PDI_C APPEND PROPERTY COMPATIBLE_INTERFACE_STRING PDI_MAJOR_VERSION)
+# add_library(PDI::pdi   ALIAS PDI_C)
+# add_library(PDI::PDI_C ALIAS PDI_C)
+# install(TARGETS PDI_C EXPORT PDI_C_EXPORT
+# 		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" ${LIBRARY_COMPONENT}
+# 		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
+# 		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+# )
 install(FILES
 		"${PDI_SOURCE_DIR}/../no-pdi/include/pdi.h"
 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
@@ -121,16 +121,16 @@ set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_B
 
 # Installable config
 
-configure_file(scripts/env.sh.in env.sh @ONLY)
-configure_file(scripts/env.xsh env.bash @ONLY)
-configure_file(scripts/env.xsh env.zsh @ONLY)
-install(FILES
-			"${PDI_BINARY_DIR}/env.bash"
-			"${PDI_BINARY_DIR}/env.sh"
-			"${PDI_BINARY_DIR}/env.zsh"
-		DESTINATION "${INSTALL_PDIDATADIR}"
-		COMPONENT Runtime
-)
+# configure_file(scripts/env.sh.in env.sh @ONLY)
+# configure_file(scripts/env.xsh env.bash @ONLY)
+# configure_file(scripts/env.xsh env.zsh @ONLY)
+# install(FILES
+# 			"${PDI_BINARY_DIR}/env.bash"
+# 			"${PDI_BINARY_DIR}/env.sh"
+# 			"${PDI_BINARY_DIR}/env.zsh"
+# 		DESTINATION "${INSTALL_PDIDATADIR}"
+# 		COMPONENT Runtime
+# )
 
 
 configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
