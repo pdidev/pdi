@@ -57,8 +57,8 @@
 
 #include <paraconf.h>
 
-#include <pdi/export.h>
-#include <pdi/version.h>
+
+#define PDI_EXPORT __attribute__((visibility("default")))
 
 #ifdef __cplusplus
 extern "C" {
@@ -114,6 +114,7 @@ typedef struct PDI_errhandler_s {
 
 } PDI_errhandler_t;
 
+
 /** Prints the error message and aborts if the status is invalid
  */
 extern const PDI_errhandler_t PDI_EXPORT PDI_ASSERT_HANDLER;
@@ -129,7 +130,7 @@ extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
-inline const char PDI_EXPORT * PDI_errmsg(void){};
+const char PDI_EXPORT * PDI_errmsg(void){};
 
 /** Sets the error handler to use
  *
@@ -138,7 +139,7 @@ inline const char PDI_EXPORT * PDI_errmsg(void){};
  * \param handler the new handler to set
  * \return the previous handler
  */
-inline PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler){};
+PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler){};
 
 /// \}
 
@@ -153,13 +154,13 @@ inline PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t handler){};
  * \param[in] conf the configuration
  * \return an error status
  */
-inline PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf){};
+PDI_status_t PDI_EXPORT PDI_init(PC_tree_t conf){};
 // PDI_status_t PDI_EXPORT PDI_init(void* conf){};
 
 /** Finalizes PDI
  * \return an error status
  */
-inline PDI_status_t PDI_EXPORT PDI_finalize(void){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_finalize(void){return PDI_OK;};
 
 /** Checks PDI API version
  *
@@ -168,7 +169,7 @@ inline PDI_status_t PDI_EXPORT PDI_finalize(void){return PDI_OK;};
  * \return an error status if the expected version is incompatible with the
  * provided one
  */
-inline PDI_status_t PDI_EXPORT PDI_version(unsigned long* provided, unsigned long expected){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_version(unsigned long* provided, unsigned long expected){return PDI_OK;};
 
 /// \}
 
@@ -205,7 +206,7 @@ typedef enum PDI_inout_e {
  * * PDI_IN means PDI can set the buffer content
  * * PDI_OUT means the buffer contains data that can be accessed by PDI
  */
-inline PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t access){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t access){return PDI_OK;};
 
 /** Requests for PDI to access a data buffer.
  * \param[in] name the data name
@@ -215,7 +216,7 @@ inline PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout
  * \pre PDI owns the data buffer
  * \post ownership of the data buffer is shared between PDI and the user code
  */
-inline PDI_status_t PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t inout){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_inout_t inout){return PDI_OK;};
 
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
@@ -224,7 +225,7 @@ inline PDI_status_t PDI_EXPORT PDI_access(const char* name, void** buffer, PDI_i
  * \pre ownership of the data buffer is shared between PDI and the user code
  * \pre PDI owns the data buffer
  */
-inline PDI_status_t PDI_EXPORT PDI_release(const char* name){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_release(const char* name){return PDI_OK;};
 
 /** Reclaims ownership of a data buffer shared with PDI. PDI does not manage
  * the buffer memory anymore.
@@ -233,13 +234,13 @@ inline PDI_status_t PDI_EXPORT PDI_release(const char* name){return PDI_OK;};
  * \pre ownership of the data buffer is shared between PDI and the user code
  * \post the user code owns the data buffer
  */
-inline PDI_status_t PDI_EXPORT PDI_reclaim(const char* name){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_reclaim(const char* name){return PDI_OK;};
 
 /** Triggers a PDI "event"
  * \param[in] event the event name
  * \return an error status
  */
-inline PDI_status_t PDI_EXPORT PDI_event(const char* event){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_event(const char* event){return PDI_OK;};
 
 /** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
  * \param[in] name the data name
@@ -248,7 +249,7 @@ inline PDI_status_t PDI_EXPORT PDI_event(const char* event){return PDI_OK;};
  *                   by PDI
  * \return an error status
  */
-inline PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t access){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t access){return PDI_OK;};
 
 /** Performs multiple exposes at once. All the data is shared in order they were specified
  *  and reclaimed in reversed order after an event is triggered.
@@ -265,7 +266,7 @@ inline PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inou
  *                inidactes an end of the list.
  * \return an error status
  */
-inline PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...){return PDI_OK;};
+PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...){return PDI_OK;};
 
 #ifdef PDI_WITH_DEPRECATED
 
@@ -283,7 +284,7 @@ inline PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const ch
  *                 triggered when all data become available)
  * \return an error status
  */
-inline PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name){return PDI_OK;};
+PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name){return PDI_OK;};
 
 /** Ends the previously opened transaction.
  *
@@ -295,7 +296,7 @@ inline PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name
  *
  * \return an error status
  */
-inline PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void){return PDI_OK;};
+PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void){return PDI_OK;};
 
 #endif // PDI_WITH_DEPRECATED
 

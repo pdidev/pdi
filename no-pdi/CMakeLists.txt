@@ -29,29 +29,49 @@
 
 cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES CXX C)
-list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
+# list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
+
+include(no-pdi.cmake)
+
+# add_library(PDI_C INTERFACE)
+# add_library(PDI::pdi   ALIAS PDI_C)
+# add_library(PDI::PDI_C ALIAS PDI_C)
+
+# # target_include_directories(PDI_C
+# # 		INTERFACE "$<BUILD_INTERFACE:${PDI_BINARY_DIR}>"  "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include/>"
+# # 		INTERFACE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>")
+
+# # set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
+
+# # add_library(PDI::pdi INTERFACE)
+# # add_library(no-pdi INTERFACE)
+# # add_library(PDI::pdi   ALIAS PDI_C)
+# target_include_directories(PDI_C INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
+# # target_include_directories(PDI::pdi INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
+# # include_directories(PDI::pdi INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
+# # include_directories(no-pdi INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
 
 # Version
 
-string(STRIP "${PDI_VERSION}" PDI_VERSION)
-string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
-set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
-set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
-set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
-set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
-if("git" STREQUAL "${PDI_VERSION_MODIF}" OR "alpha" STREQUAL "${PDI_VERSION_MODIF}")
-	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" "${PDI_VERSION_MODIF}" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
-set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
+# string(STRIP "${PDI_VERSION}" PDI_VERSION)
+# string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
+# set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
+# set(PDI_VERSION_MINOR "${CMAKE_MATCH_2}")
+# set(PDI_VERSION_PATCH "${CMAKE_MATCH_3}")
+# set(PDI_VERSION_MODIF "${CMAKE_MATCH_5}")
+# if("git" STREQUAL "${PDI_VERSION_MODIF}" OR "alpha" STREQUAL "${PDI_VERSION_MODIF}")
+# 	execute_process(COMMAND "${PDI_SOURCE_DIR}/cmake/version-uid" "${PDI_VERSION_MODIF}" WORKING_DIRECTORY "${PDI_SOURCE_DIR}" OUTPUT_VARIABLE PDI_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
+# endif()
+# set(PDI_VERSION "${PDI_VERSION_MAJOR}.${PDI_VERSION_MINOR}.${PDI_VERSION_PATCH}")
+# set(PDI_VERSION "${PDI_VERSION}${PDI_VERSION_MODIF}")
 
-# A little compatibility macro
+# # A little compatibility macro
 
-if("${CMAKE_VERSION}" VERSION_LESS "3.12")
-	set(LIBRARY_COMPONENT "COMPONENT" "Runtime")
-else()
-	set(LIBRARY_COMPONENT "COMPONENT" "Runtime" "NAMELINK_COMPONENT" "Development")
-endif()
+# if("${CMAKE_VERSION}" VERSION_LESS "3.12")
+# 	set(LIBRARY_COMPONENT "COMPONENT" "Runtime")
+# else()
+# 	set(LIBRARY_COMPONENT "COMPONENT" "Runtime" "NAMELINK_COMPONENT" "Development")
+# endif()
 
 
 # Includes
@@ -59,22 +79,22 @@ endif()
 # include(CTest)
 # include(CMakePackageConfigHelpers)
 # include(GenerateExportHeader)
-set(_REAL_PROJECT_NAME "${PROJECT_NAME}")
-set(PROJECT_NAME pdi)
-# include(GNUInstallDirs)
-set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
-set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
-set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
-set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
+# # # set(_REAL_PROJECT_NAME "${PROJECT_NAME}")
+# # # set(PROJECT_NAME pdi)
+# # # # include(GNUInstallDirs)
+# # # set(PROJECT_NAME "${_REAL_PROJECT_NAME}")
+# # # set(INSTALL_PDIDATADIR "${CMAKE_INSTALL_DATADIR}/pdi" CACHE PATH "PDI data directory (DATADIR/pdi)")
+# # # set(INSTALL_CMAKEDIR   "${INSTALL_PDIDATADIR}/cmake"  CACHE PATH "cmake modules (PDIDATADIR/cmake)")
+# # # set(INSTALL_PDIPLUGINDIR  "${CMAKE_INSTALL_LIBDIR}/pdi/plugins_${PDI_VERSION}" CACHE PATH "cmake modules (LIBDIR/pdi/plugins_${PDI_VERSION})")
 
 
-# Check for some portability stuff and generate config.h
+# # # # Check for some portability stuff and generate config.h
 
-if(IS_ABSOLUTE "${INSTALL_PDIPLUGINDIR}")
-	set(PDI_DEFAULT_PLUGIN_PATH "${INSTALL_PDIPLUGINDIR}")
-else()
-	file(RELATIVE_PATH PDI_DEFAULT_PLUGIN_PATH "/${CMAKE_INSTALL_LIBDIR}" "/${INSTALL_PDIPLUGINDIR}" )
-endif()
+# # # if(IS_ABSOLUTE "${INSTALL_PDIPLUGINDIR}")
+# # # 	set(PDI_DEFAULT_PLUGIN_PATH "${INSTALL_PDIPLUGINDIR}")
+# # # else()
+# # # 	file(RELATIVE_PATH PDI_DEFAULT_PLUGIN_PATH "/${CMAKE_INSTALL_LIBDIR}" "/${INSTALL_PDIPLUGINDIR}" )
+# # # endif()
 
 # add_library(PDI_C INTERFACE)
 # generate_export_header(PDI_C BASE_NAME pdi EXPORT_FILE_NAME no-pdi/export.h)
@@ -101,49 +121,49 @@ endif()
 # 		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
 # 		INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 # )
-install(FILES
-		"${PDI_SOURCE_DIR}/../no-pdi/include/pdi.h"
-		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-		COMPONENT Development
-)
-install(FILES
-		"${PDI_BINARY_DIR}/no-pdi/export.h"
-		"${PDI_BINARY_DIR}/no-pdi/version.h"
-		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/no-pdi"
-		COMPONENT Development
-)
-install(EXPORT PDI_C_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "PDI_C.cmake")
-
-add_executable(pdirun IMPORTED)
-add_executable(PDI::pdirun IMPORTED)
-set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/pdirun_intree")
-
-
-# Installable config
-
-# configure_file(scripts/env.sh.in env.sh @ONLY)
-# configure_file(scripts/env.xsh env.bash @ONLY)
-# configure_file(scripts/env.xsh env.zsh @ONLY)
 # install(FILES
-# 			"${PDI_BINARY_DIR}/env.bash"
-# 			"${PDI_BINARY_DIR}/env.sh"
-# 			"${PDI_BINARY_DIR}/env.zsh"
-# 		DESTINATION "${INSTALL_PDIDATADIR}"
-# 		COMPONENT Runtime
+# 		"${PDI_SOURCE_DIR}/../no-pdi/include/pdi.h"
+# 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+# 		COMPONENT Development
 # )
+# install(FILES
+# 		"${PDI_BINARY_DIR}/no-pdi/export.h"
+# 		"${PDI_BINARY_DIR}/no-pdi/version.h"
+# 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/no-pdi"
+# 		COMPONENT Development
+# )
+# install(EXPORT PDI_C_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" FILE "PDI_C.cmake")
+
+# add_executable(pdirun IMPORTED)
+# add_executable(PDI::pdirun IMPORTED)
+# set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/pdirun_intree")
 
 
-configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
-write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
-		VERSION "${PDI_VERSION}"
-		COMPATIBILITY AnyNewerVersion
-)
-install(FILES
-		cmake/CMakeFindDependencyMacro.cmake
-		cmake/FindPackageHandleStandardArgs.cmake
-		cmake/FindPackageMessage.cmake
-		"${PDI_BINARY_DIR}/PDIConfig.cmake"
-		"${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
-		DESTINATION "${INSTALL_CMAKEDIR}"
-		COMPONENT Development
-)
+# # Installable config
+
+# # configure_file(scripts/env.sh.in env.sh @ONLY)
+# # configure_file(scripts/env.xsh env.bash @ONLY)
+# # configure_file(scripts/env.xsh env.zsh @ONLY)
+# # install(FILES
+# # 			"${PDI_BINARY_DIR}/env.bash"
+# # 			"${PDI_BINARY_DIR}/env.sh"
+# # 			"${PDI_BINARY_DIR}/env.zsh"
+# # 		DESTINATION "${INSTALL_PDIDATADIR}"
+# # 		COMPONENT Runtime
+# # )
+
+
+# configure_file(cmake/PDIConfig.cmake.in PDIConfig.cmake @ONLY)
+# write_basic_package_version_file("${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
+# 		VERSION "${PDI_VERSION}"
+# 		COMPATIBILITY AnyNewerVersion
+# )
+# install(FILES
+# 		cmake/CMakeFindDependencyMacro.cmake
+# 		cmake/FindPackageHandleStandardArgs.cmake
+# 		cmake/FindPackageMessage.cmake
+# 		"${PDI_BINARY_DIR}/PDIConfig.cmake"
+# 		"${PDI_BINARY_DIR}/PDIConfigVersion.cmake"
+# 		DESTINATION "${INSTALL_CMAKEDIR}"
+# 		COMPONENT Development
+# )
