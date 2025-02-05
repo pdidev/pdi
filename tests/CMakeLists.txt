@@ -24,8 +24,11 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.16...3.29)
-project(pdi_tests LANGUAGES C)
+project(pdi_tests LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+#list(APPEND CMAKE_MODULE_PATH "/local/home/ja281254/.local/share/paraconf/cmake")
+
+message("CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -44,6 +47,21 @@ if(WITHOUT_PDI)
 	add_executable(test_07_no-pdi_C test_07_no-pdi.c)
 	target_link_libraries(test_07_no-pdi_C paraconf::paraconf PDI::PDI_C)
 	add_test(NAME test_07_no-pdi_C COMMAND "$<TARGET_FILE:test_07_no-pdi_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_no-pdi.yml")
+
+	add_executable(test_07_no-pdi_CXX test_07_no-pdi.cpp)
+	# set_target_properties(test_07_no-pdi_CXX PROPERTIES CXX_STANDARD 11)
+	# set_target_properties(test_07_no-pdi_CXX PROPERTIES LANGUAGE CXX)
+	# set_target_properties(test_07_no-pdi_CXX PROPERTIES LINKER_LANGUAGE CXX)
+
+	set(BUILD_FLAGS_FOR_CXX "-Wall")
+	target_compile_options(test_07_no-pdi_CXX PRIVATE
+          $<$<COMPILE_LANGUAGE:CXX>:${BUILD_FLAGS_FOR_CXX}>)
+
+	target_link_libraries(test_07_no-pdi_CXX paraconf::paraconf PDI::PDI_C)
+	add_test(NAME test_07_no-pdi_CXX COMMAND "$<TARGET_FILE:test_07_no-pdi_CXX>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_no-pdi.yml")
+
+
+
 else()
 	# PDI
 	find_package(PDI REQUIRED COMPONENTS C)
