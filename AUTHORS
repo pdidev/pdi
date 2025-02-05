@@ -7,6 +7,9 @@ each sub-project (including PDI itself) is located in the dedicated sub-project
 AUTHORS file.
 
 
+Julian Auriac - CEA (julian.auriac@cea.fr)
+* Maintainer (Nov. 2024 - ...)
+
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)
 * Design and initial implementation
