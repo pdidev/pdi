@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+project(PDI LANGUAGES C CXX)
+
 add_library(PDI_C INTERFACE)
 add_library(PDI::pdi   ALIAS PDI_C)
 add_library(PDI::PDI_C ALIAS PDI_C)
