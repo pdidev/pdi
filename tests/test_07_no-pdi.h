@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2025 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,6 @@
 
 #include <paraconf.h>
 #include <pdi.h>
-
-// #include "test.h"
 
 void share()
 {
@@ -57,7 +55,6 @@ void reclaim() //share/reclaim
 
 void event()
 {
-	int to_event[2] = {1, 1};
 	assert(PDI_OK == PDI_event("event_one"));
 }
 
@@ -77,8 +74,6 @@ void multi_expose()
 							NULL));
 }
 
-void mock_errfunc(PDI_status_t status, const char* message, void* context){}
-
 void errhandler()
 {
 	PDI_errhandler_t new_handler = {mock_errfunc, NULL};
@@ -86,21 +81,8 @@ void errhandler()
 	assert(current_handler.func == mock_errfunc && current_handler.context == NULL);
 }
 
-// #ifdef __cplusplus
-// #include <iostream>
-// #endif
-
-int main(int argc, char* argv[])
+int tests(int argc, char* argv[])
 {
-// #ifdef __cplusplus
-// 	std::cout << "C++" << std::endl;
-// #else
-// 	printf("C\n");
-// #endif
-
-	PC_tree_t t;
-	t.status;
-
 	assert(PDI_OK == PDI_init(PC_parse_path(argv[1])));
 
 	assert(NULL == PDI_errmsg());
@@ -115,5 +97,6 @@ int main(int argc, char* argv[])
 	multi_expose();
 
 	assert(PDI_OK == PDI_finalize());
+
 	return 0;
 }

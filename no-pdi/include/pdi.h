@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -49,13 +49,13 @@
  * PDI_status_t and an error message can be retrieved with the PDI_errmsg
  * function. This default behavior can be changed by replacing the error handler
  * with the PDI_errhandler function.
- * 
+ *
  */
 
 #ifndef PDI_H_
 #define PDI_H_
 
-struct PC_tree_t;
+// struct PC_tree_t;
 
 #define PDI_EXPORT __attribute__((visibility("default")))
 
@@ -129,11 +129,19 @@ extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
-const char PDI_EXPORT * PDI_errmsg(void){};
+const char PDI_EXPORT * PDI_errmsg(void){return 0;};
+
+/** A mock error function used as a default error handler.
+ *  This function does nothing and is used to provide a default
+ *  behavior, as no error handler is set in the following function.
+ */
+void mock_errfunc(PDI_status_t, const char*, void*){}
 
 /** Sets the error handler to use
  */
-PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t){};
+PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t){
+	PDI_errhandler_t new_handler = {mock_errfunc, 0};
+	return new_handler;};
 
 /// \}
 

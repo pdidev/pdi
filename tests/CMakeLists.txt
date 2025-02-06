@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,30 +40,31 @@ option(WITHOUT_PDI			  "Disable PDI" OFF)
 include(CTest)
 
 if(WITHOUT_PDI)
+
 	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-	message(WARNING "PDI is disabled for unit testing.")
+	message(WARNING "PDI is disabled for unit testing (use test 07 for no pdi).")
 	include(${CMAKE_SOURCE_DIR}/../no-pdi/no-pdi.cmake)
+	include_directories(${CMAKE_SOURCE_DIR})
 
-	add_executable(test_07_no-pdi_C test_07_no-pdi.c)
-	target_link_libraries(test_07_no-pdi_C paraconf::paraconf PDI::PDI_C)
-	add_test(NAME test_07_no-pdi_C COMMAND "$<TARGET_FILE:test_07_no-pdi_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_no-pdi.yml")
+	add_executable(test_07_main_C test_07_main.c)
+	set(BUILD_FLAGS_FOR_C "-Wall")
+	target_compile_options(test_07_main_C PRIVATE
+          $<$<COMPILE_LANGUAGE:C>:${BUILD_FLAGS_FOR_C}>)
+	target_link_libraries(test_07_main_C paraconf::paraconf PDI::PDI_C)
+	add_test(NAME test_07_main_C COMMAND "$<TARGET_FILE:test_07_main_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_main.yml")
 
-	add_executable(test_07_no-pdi_CXX test_07_no-pdi.cpp)
-	# set_target_properties(test_07_no-pdi_CXX PROPERTIES CXX_STANDARD 11)
-	# set_target_properties(test_07_no-pdi_CXX PROPERTIES LANGUAGE CXX)
-	# set_target_properties(test_07_no-pdi_CXX PROPERTIES LINKER_LANGUAGE CXX)
-
+	add_executable(test_07_main_CXX test_07_main.cpp)
 	set(BUILD_FLAGS_FOR_CXX "-Wall")
-	target_compile_options(test_07_no-pdi_CXX PRIVATE
+	target_compile_options(test_07_main_CXX PRIVATE
           $<$<COMPILE_LANGUAGE:CXX>:${BUILD_FLAGS_FOR_CXX}>)
-
-	target_link_libraries(test_07_no-pdi_CXX paraconf::paraconf PDI::PDI_C)
-	add_test(NAME test_07_no-pdi_CXX COMMAND "$<TARGET_FILE:test_07_no-pdi_CXX>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_no-pdi.yml")
-
-
+	set_target_properties(test_07_main_CXX PROPERTIES CXX_STANDARD 11)
+	set_target_properties(test_07_main_CXX PROPERTIES LANGUAGE CXX)
+	set_target_properties(test_07_main_CXX PROPERTIES LINKER_LANGUAGE CXX)
+	target_link_libraries(test_07_main_CXX paraconf::paraconf PDI::PDI_C)
+	add_test(NAME test_07_main_CXX COMMAND "$<TARGET_FILE:test_07_main_CXX>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_main.yml")
 
 else()
-	# PDI
+
 	find_package(PDI REQUIRED COMPONENTS C)
 
 	if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
@@ -92,4 +93,5 @@ else()
 	add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_05.yml")
 
 	endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
+
 endif()
