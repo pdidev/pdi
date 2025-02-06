@@ -29,6 +29,5 @@
 
 cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES C CXX)
-# list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
 include(no-pdi.cmake)

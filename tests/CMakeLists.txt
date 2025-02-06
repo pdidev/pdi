@@ -27,10 +27,6 @@ cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_tests LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-message("CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
-
-message("CMAKE_MODULE_PATH=" ${CMAKE_MODULE_PATH})
-
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
