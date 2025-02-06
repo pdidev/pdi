@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2025 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
