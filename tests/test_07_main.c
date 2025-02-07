@@ -30,6 +30,11 @@
 
 int main(int argc, char* argv[])
 {
+#ifdef __cplusplus
+	std::cout << "C++" << std::endl;
+#else
+	printf("C\n");
+#endif
 	assert(tests(argc, argv) == 0);
  	printf("Disabled PDI ok for C++.\n");
 }
