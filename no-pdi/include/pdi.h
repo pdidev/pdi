@@ -113,7 +113,6 @@ typedef struct PDI_errhandler_s {
 
 } PDI_errhandler_t;
 
-
 /** Prints the error message and aborts if the status is invalid
  */
 extern const PDI_errhandler_t PDI_EXPORT PDI_ASSERT_HANDLER;
@@ -125,7 +124,6 @@ extern const PDI_errhandler_t PDI_EXPORT PDI_WARN_HANDLER;
 /** Does nothing
  */
 extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
-
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
