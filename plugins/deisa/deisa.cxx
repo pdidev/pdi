@@ -51,7 +51,6 @@ class deisa_plugin: public Plugin
 	std::unordered_map<std::string, Datatype_template_sptr> m_deisa_arrays;
 	Expression m_time_step;
 	py::object m_bridge = py::none();
-	bool m_interpreter_initialized_in_plugin = false; // Determine if python interpreter is initialized by the plugin
 
 public:
 	static std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> dependencies() { return {{"mpi"}, {"mpi"}}; }
@@ -61,7 +60,6 @@ public:
 	{
 		if (!Py_IsInitialized()) {
 			py::initialize_interpreter();
-			m_interpreter_initialized_in_plugin = true;
 		}
 		assert(Py_IsInitialized());
 
@@ -106,16 +104,15 @@ public:
 		}
 	}
 
-	~deisa_plugin() noexcept override
+	~deisa_plugin() noexcept
 	{
+		context().logger().info("Closing plugin");
 		try {
 			// call bridge release() so that we can clear things before destructor is called (if it is ever called !).
+			assert(m_bridge != py::none());
 			assert(hasattr(m_bridge, "release"));
-			m_bridge.release();
+			m_bridge.attr("release")();
 			m_bridge = py::none();
-			if (m_interpreter_initialized_in_plugin) {
-				py::finalize_interpreter();
-			}
 		} catch (const std::exception& e) {
 			context().logger().error("Exception in destructor, caught exception {}", e.what());
 		} catch (...) {
