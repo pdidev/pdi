@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 * Fix the indentation check script
   [#515](https://github.com/pdidev/pdi/issues/515)
+* For vendor hdf5, fix the directory of hdf5 library for rhel
+  [#532](https://github.com/pdidev/pdi/issues/532)
 
 
 ## [1.8.0] - 2024-11-28
