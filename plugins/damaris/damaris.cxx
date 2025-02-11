@@ -89,29 +89,37 @@ public:
 	damaris_plugin(Context& ctx, PC_tree_t config)
 		: Plugin{ctx}
 		, m_config{ctx, config}
-		, m_event_handler{m_config.xml_config_object(), m_config.communicator()}
+		, m_event_handler{m_config.xml_config_object(), m_config.communicator(), m_config.init_on_event()
+			, m_config.start_on_event(), m_config.stop_on_event()}
 	{
-		multi_expose_transaction_dataname.clear();
-		//multi_expose_transaction_dataref.clear();
+		for (auto&& desc: m_config.descs()) {//add data callback only for awaited data
+			ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->data(name, ref); },
+				desc.first);
+		}
+		//Trigger other data callback for multi_expose_transaction_dataname OR remove totally !!!?
 
-		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->data(name, ref); });
 		ctx.callbacks().add_event_callback([this](const std::string& name) { this->event(name); });
 
 		ctx.logger().info("Plugin loaded successfully");
-		/*
-		TODO: issue to handle
+		
 		if (!m_config.init_on_event() && m_config.communicator()) {
+			//TODO: issue communicator to handle
+			/* 
 			MPI_Comm comm = *(static_cast<const MPI_Comm*>(Ref_r{m_config.communicator().to_ref(context())}.get()));	
 			//context().logger().info("communicator `{}'", m_config.communicator().to_string(context()));
 			
 			m_damaris.reset(new Damaris_wrapper{context(), m_config.xml_config_object().c_str(), comm});
 			context().logger().info("Plugin initialized successfully");
-		}*/
+			*/
+
+			std::string init_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_INITIALIZE);
+			PDI_status_t status = PDI_event(init_event_name.c_str());
+		}
 	}
 
 	void data(const std::string& name, Ref ref)
 	{		
-		context().logger().info("data `{}' has been exposed", name);
+		//context().logger().info("data `{}' has been exposed", name);
 
 		//Update damaris parameters
 		if(m_config.is_needed_metadata(name)){
@@ -160,6 +168,54 @@ public:
 			prm_name_concat.pop_back();
 			context().logger().info("data `{}' Is a needed metadata for the evaluation of parameters {}", name, prm_name_concat);
 		}
+		else if(m_config.is_dataset_to_write(name)){
+			context().logger().info("is_dataset_to_write(`{}') = '{}'", name, m_config.is_dataset_to_write(name));
+			if (Ref_r rref = ref) {
+				Dataset_Write_Info ds_write_info = m_config.get_dataset_write_info(name);
+
+				//Only write when autorized!
+				if(ds_write_info.when.to_long(context())) {
+					context().logger().info("data `{}' will be written when = '{}'", name, ds_write_info.when.to_long(context()));
+
+					int32_t block = ds_write_info.block.to_long(context());
+					context().logger().info("data `{}' will be written in block = '{}'", name, block);
+					int64_t position[3] = {
+						 ds_write_info.position[0].to_long(context())
+						,ds_write_info.position[1].to_long(context())
+						,ds_write_info.position[2].to_long(context())
+					};
+					context().logger().info("data `{}' will be written at: block '{}' and position '{}:{}:{}', when = '{}'", name, block, position[0], position[1], position[2], ds_write_info.when.to_long(context()));
+
+					const void* data = static_cast<const void*>(rref.get());
+
+					std::string set_block_pos_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_SET_BLOCK_POSITION);
+					m_event_handler.damaris_api_call_event(context(), m_damaris, set_block_pos_event_name, multi_expose_transaction_dataname, name, block, position);
+
+					std::string write_block_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_WRITE_BLOCK);
+					m_event_handler.damaris_api_call_event(context(), m_damaris, write_block_event_name, multi_expose_transaction_dataname, name, block, data);	
+				
+					if(m_config.is_there_after_write_events()) {
+						list<string> after_write_events = m_config.get_after_write_events();
+						for (auto it = after_write_events.begin(); it != after_write_events.end(); it++) {
+							std::string aw_event = it->c_str();
+							if(m_event_handler.is_damaris_api_call_event(aw_event)){
+								context().logger().info("event `{}' has been triggered", aw_event);
+
+								context().logger().info("is_damaris_api_call_event ( `{}' ) = TRUE", aw_event);
+								m_event_handler.damaris_api_call_event(context(), m_damaris, aw_event, {});
+								//m_event_handler.damaris_api_call_event(context(), m_damaris, aw_event, list<string> expose_dataname = {});
+							}
+							else {//Non Damaris call event
+								
+							}
+						}
+					}
+				}				
+			}
+			else{
+				context().logger().error("The Damaris need write access over the data (`{}')", name);
+			}
+		}
 		else {//Handle other situations...
 			multi_expose_transaction_dataname.emplace_back(name);
 			//multi_expose_transaction_dataref.emplace_back(ref);
@@ -170,12 +226,14 @@ public:
 
 	void event(const std::string& event_name)
 	{
-		context().logger().info("event `{}' has been triggered", event_name);
-
 		if(m_event_handler.is_damaris_api_call_event(event_name)){
+			context().logger().info("event `{}' has been triggered", event_name);
 
 			context().logger().info("is_damaris_api_call_event ( `{}' ) = TRUE", event_name);
 			m_event_handler.damaris_api_call_event(context(), m_damaris, event_name, multi_expose_transaction_dataname);
+
+			multi_expose_transaction_dataname.clear();
+			//multi_expose_transaction_dataref.clear();
 		}
 		else {//Non Damaris call event
 			
@@ -184,8 +242,6 @@ public:
 
 	~damaris_plugin()
 	{
-		multi_expose_transaction_dataname.clear();
-		//multi_expose_transaction_dataref.clear();
 		context().logger().info("Closing plugin");
 	}
 	

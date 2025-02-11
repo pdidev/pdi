@@ -14,7 +14,7 @@ asynchronous, in situ processing capabilities to MPI based simulation codes.
 include(FindPackageHandleStandardArgs)
 
 set(Damaris_BASE_DIR /usr/lib/damaris /opt/damaris)
-set(Damaris_VERSIONS 1.11.1 1.11.2)
+set(Damaris_VERSIONS 1.11.1 1.12.0)
 
 #Find Damaris base install dir
 set(Damaris_CANDIDATES ${Damaris_ROOT})

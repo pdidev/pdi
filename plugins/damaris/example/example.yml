@@ -1,0 +1,108 @@
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [60, 12]
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
+
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
+    pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
+  data: # type of values for which PDI does not keep a copy
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+  
+  plugins:
+    #mpi:
+    damaris:  
+      init_on_event: 1
+      communicator: MPI_COMM_WORLD
+      architecture:
+        sim_name: example  
+        domains: 1
+        dedicated:
+          core: 0
+          node: 0
+      parameters:
+        - parameter: 
+            name: dsize0
+            type: int
+            value: '$dsize[0]'
+            depends_on: dsize 
+        - parameter: 
+            name: dsize1
+            type: int
+            value: '$dsize[1]'
+            depends_on: dsize
+        - parameter: 
+            name: psize0
+            type: int
+            value: '$psize[0]'
+            depends_on: psize
+        - parameter: 
+            name: psize1
+            type: int
+            value: '$psize[1]'
+            depends_on: psize   
+      datasets:
+        - dataset: 
+            name: main_field
+            layout: main_field_layout
+            mesh: mesh2d
+            centering: zonal
+            storage: hdf5_example
+            script:
+            visualizable: true
+            time_varying: true
+            #comment: This is the zonal pressure from our test simulation
+      layouts:
+        - layout: 
+            name: main_field_layout
+            type: double
+            global: 'psize0*(dsize0-2),psize1*(dsize1-2)'
+            dimensions: [ 'dsize0', 'dsize1' ] # process dim, with ghosts/boundaries
+            ghosts: '1:1,1:1'  
+      storages:
+        - storage:
+            name: hdf5_example
+            type: HDF5
+            file_mode: Collective # or FilePerCore
+            files_path:    # Where to save files
+            #frequency: 1
+            
+      #Events sections
+      write:
+        main_field: # the name of the data to write, if dataset not specified afterward!
+          dataset: main_field
+          #when: '$iter<10'   # do only write the first 10 iterations (0...9), Default at every iteration.
+          position: ['$pcoord[0]', '$pcoord[1]']
+          #block: [...] # To be defined
+      after_write: damaris_end_iteration # applied for all the data...
+      #  -  *: aw_event # OR [aw_event1, aw_event1, ...] # applied for all the data...
+      #  -  data1_name: d1_aw_event # OR [d1_aw_event1, d1_aw_event2, ...]
+      #  -  data2_name: d2_aw_event # OR [d2_aw_event1, d2_aw_event2, ...]
+      
+      # TODO:
+      # a list or map of data (damaris parameters) to get/set (default: empty)
+      #  if a prm is to be set and get, priority most be defined, and a politic of recurence if this happen several time (default: RR)
+      # Ex.
+      # paremeter_get:
+      #   - prm1:
+      #       priority: 0
+      # paremeter_set:
+      #   - prm1:
+      #       priority: 1
+      #   - prm2:
+      paremeter_get:
+      paremeter_set:
+      
+      #Optional config, has a default behavior 
+      log:
+        #file_name: example # default = $sim_name
+        rotation_size: 5
+        log_level: info
+        flush: true
+        

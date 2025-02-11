@@ -46,6 +46,8 @@
 
 using PDI::Context;
 using std::unique_ptr;
+using std::list;
+using std::string;
 
 namespace damaris_pdi {
 
@@ -68,12 +70,18 @@ struct Architecture_type {
 };
 
 enum class Desc_type {
-	MPI_COMM,
-	STATUS,
-	DATA_SIZE,
-	HEAD,
-	STAGE_DIR,
-	STAGE_STATUS
+	 DATA_TO_WRITE
+	,DATA_TO_WRITE_WITH_BLOCK
+	//,DATA_TO_READ
+	,PRM_REQUIRED_METADATA
+	,PRM_TO_GET
+	,PRM_TO_SET
+};
+
+struct Dataset_Write_Info {
+    PDI::Expression when = "1";//By default, always write as long as there are iteration going on
+    /*int64_t* */ PDI::Expression position[3] = {"0", "0", "0"};//Max Dim is 3
+    /*int32_t */ PDI::Expression block = "0";//when domain = 1, which is the default behaviour
 };
 
 
@@ -90,7 +98,9 @@ class Damaris_cfg
     std::string m_xml_config_object;      
     damaris::model::ModifyModel damarisXMLModifyModel;
 
-    bool m_init_on_event = true;
+    bool m_init_on_event = false;
+    bool m_start_on_event = false;
+    bool m_stop_on_event = false;
     
     int m_arch_domains ;
     int m_dc_cores_pernode ;
@@ -112,7 +122,10 @@ class Damaris_cfg
     std::unordered_map<std::string, damaris::model::DamarisGroupXML> m_groups;
     damaris::model::DamarisParaviewXML *m_paraview = NULL;
     damaris::model::DamarisPyScriptXML *m_pyscript = NULL;
-    
+
+    std::unordered_map<std::string, Desc_type> m_descs ;  
+    std::unordered_map<std::string, Dataset_Write_Info> m_datasets_to_write;
+	list<string> m_after_write_events;  
 
     //In damaris parameter play similar role than metadata in PDI, in that other variable can be expressed by them
     //  Here we express parameter in terms of PDI metadata, and when metadata are expose, 
@@ -163,6 +176,7 @@ void parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list);
 void parse_meshes_tree(Context& ctx, PC_tree_t meshes_tree_list);
 void parse_paraview_tree(Context& ctx, PC_tree_t paraview_tree);
 void parse_pyscript_tree(Context& ctx, PC_tree_t pyscript_tree);
+void parse_write_tree(Context& ctx, PC_tree_t write_tree_list);
 void parse_log_tree(Context& ctx, PC_tree_t config);
 
 void init_xml_config_object(){
@@ -184,14 +198,30 @@ public:
     const std::unordered_map<std::string, damaris::model::DamarisStoreXML>& storages() const;
     const std::unordered_map<std::string, damaris::model::DamarisMeshXML>& meshes() const;
     const std::unordered_map<std::string, damaris::model::DamarisGroupXML>& groups() const;
+
+	const std::unordered_map<std::string, Desc_type>& descs() const;
+	const std::unordered_map<std::string, Dataset_Write_Info>& datasets_to_write() const;
+
+	Dataset_Write_Info get_dataset_write_info(std::string data_name) const;
+	list<string> get_after_write_events() const
+    {
+        return m_after_write_events;
+    }
+	bool is_there_after_write_events() const
+    {
+        return m_after_write_events.size();
+    }
 		
 	bool init_on_event() const;
+	bool start_on_event() const;
+	bool stop_on_event() const;
 	
 	const std::unordered_map<std::string, std::unordered_set<int>>& recover_var() const;
 	
 	const std::unordered_map<std::string, std::set<std::tuple<PDI::Expression, PDI::Expression, std::string>>>& send_file() const;
 
 
+    bool is_dataset_to_write(std::string data_name);
     bool is_needed_metadata(std::string data_name);
 
     std::unordered_map<std::string, std::pair<std::string, std::string>> get_updatable_parameters(Context& ctx);
