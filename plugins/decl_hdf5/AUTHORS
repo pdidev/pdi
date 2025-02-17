@@ -13,6 +13,7 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 
 Jacques Morice - CEA (jacques.morice@cea.fr)
 * contribution to feature improvement, validation
+* fix issue [#55](https://github.com/pdidev/pkgs/issues/55)
 
 Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * contribution to feature design, validation

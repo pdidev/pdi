@@ -36,13 +36,13 @@ void share()
 void access() //access
 {
 	int to_access[2] = {1, 1};
-	assert(PDI_OK == PDI_access("to_access", (void **)&to_access, PDI_IN));
+	assert(PDI_OK == PDI_access("to_access", (void**)&to_access, PDI_IN));
 }
 
 void release() //access/release
 {
 	int to_release[2] = {1, 1};
-	PDI_access("to_access", (void **)&to_release, PDI_IN);
+	PDI_access("to_access", (void**)&to_release, PDI_IN);
 	assert(PDI_OK == PDI_release("to_release"));
 }
 
@@ -61,23 +61,23 @@ void event()
 void expose()
 {
 	int to_expose[2] = {1, 1};
-	assert(PDI_OK == PDI_expose("to_expose",    to_expose, PDI_OUT));
+	assert(PDI_OK == PDI_expose("to_expose", to_expose, PDI_OUT));
 }
 
 void multi_expose()
 {
 	int to_multi_expose[2] = {1, 1};
 	int to_multi_expose_two[2] = {2, 2};
-	assert(PDI_OK == PDI_multi_expose("event_two",
-							"to_multi_expose",		&to_multi_expose, 		PDI_OUT,
-							"to_multi_expose_two",	to_multi_expose_two,	PDI_OUT,
-							NULL));
+	assert(
+		PDI_OK
+		== PDI_multi_expose("event_two", "to_multi_expose", &to_multi_expose, PDI_OUT, "to_multi_expose_two", to_multi_expose_two, PDI_OUT, NULL)
+	);
 }
 
 void errhandler()
 {
 	PDI_errhandler_t new_handler = {mock_errfunc, NULL};
-    PDI_errhandler_t current_handler = PDI_errhandler(new_handler);
+	PDI_errhandler_t current_handler = PDI_errhandler(new_handler);
 	assert(current_handler.func == mock_errfunc && current_handler.context == NULL);
 }
 
@@ -86,7 +86,7 @@ int tests(int argc, char* argv[])
 	assert(PDI_OK == PDI_init(PC_parse_path(argv[1])));
 
 	assert(NULL == PDI_errmsg());
-	errhandler();	
+	errhandler();
 
 	share();
 	access();
