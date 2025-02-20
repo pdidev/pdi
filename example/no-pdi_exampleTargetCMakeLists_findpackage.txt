@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,15 @@
 cmake_minimum_required(VERSION 3.9)
 project(pdi_examples LANGUAGES C)
 
+find_package(spdlog)
 find_package(MPI REQUIRED COMPONENTS C)
 find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-
-option(WITHOUT_PDI		"Disable PDI" OFF)
-
-if(WITHOUT_PDI)
-	message(WARNING "PDI is disabled.")
-	include(${CMAKE_SOURCE_DIR}/../no-pdi/no-pdi.cmake)
-else()
-	find_package(PDI 1.6.0 REQUIRED COMPONENTS C)
-endif()
+find_package(PDI 1.0.0 REQUIRED COMPONENTS C)
 
 set(CMAKE_C_STANDARD 99)
 
 add_executable(ex1 ex1.c)
-target_link_libraries(ex1 m MPI::MPI_C paraconf::paraconf PDI::pdi)
+target_link_libraries(ex1 m MPI::MPI_C paraconf::paraconf)
 
 add_executable(ex2 ex2.c)
 target_link_libraries(ex2 m MPI::MPI_C paraconf::paraconf PDI::pdi)
@@ -70,8 +63,5 @@ target_link_libraries(ex10 m MPI::MPI_C paraconf::paraconf PDI::pdi)
 add_executable(ex11 ex11.c)
 set_target_properties(ex11 PROPERTIES ENABLE_EXPORTS TRUE)
 target_link_libraries(ex11 m MPI::MPI_C paraconf::paraconf PDI::pdi)
-
-add_executable(ex12 ex12.c)
-target_link_libraries(ex12 m MPI::MPI_C paraconf::paraconf PDI::pdi)
 
 add_subdirectory(ex_deisa/)
