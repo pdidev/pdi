@@ -8,13 +8,18 @@ changes for PDI library proper are in [`pdi/CHANGELOG.md`](pdi/CHANGELOG.md).
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [1.8.2] - 2025-02-20
+
+### Fixed
+* Correct the directory where the vendored HDF5 library is  installed on RHEL,
+  fixes [#532](https://github.com/pdidev/pdi/issues/532)
+
+
 ## [1.8.1] - 2025-01-23
 
 ### Fixed
 * Fix the indentation check script
   [#515](https://github.com/pdidev/pdi/issues/515)
-* For vendor hdf5, fix the directory of hdf5 library for rhel
-  [#532](https://github.com/pdidev/pdi/issues/532)
 
 
 ## [1.8.0] - 2024-11-28
@@ -41,7 +46,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#458](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/458)
 
 ### Fixed
-* Support installation with the latest version of python where setuptools is an external lib, fixes
+* Support installation with the latest version of python where setuptools is an
+  external lib, fixes
   [#457](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/457)
 
 

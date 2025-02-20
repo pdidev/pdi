@@ -11,10 +11,16 @@ and this project adheres to
 
 
 
-## [1.8.2] - TODO
-* Fix documentation generation, add sidepanel & fix repository URL, fixes
+## [1.8.2] - 2025-02-20
+
+### For plugin developers
+
+#### Fixed
+* Improve documentation generation, add sidepanel & fix repository URL, fixes
   [#521](https://github.com/pdidev/pdi/issues/521) and
   [#522](https://github.com/pdidev/pdi/issues/522)
+
+
 
 ## [1.8.1] - 2025-01-23
 
@@ -25,6 +31,7 @@ and this project adheres to
   [#507](https://github.com/pdidev/pdi/issues/507)
 * Fixed website generation
   [#506](https://github.com/pdidev/pdi/issues/506)
+
 
 
 ## [1.8.0] - 2024-11-28
@@ -56,7 +63,6 @@ and this project adheres to
   [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
 * Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)`
   helper function.
-
 
 #### Changed
 * Replaced the astyle based indentation by a clang-format one, fixes
