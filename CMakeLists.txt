@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -344,6 +344,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			-DHDF5_BUILD_EXAMPLES:BOOL=OFF
 			-DHDF5_BUILD_TOOLS:BOOL=ON
 			-DHDF5_BUILD_UTILS:BOOL=OFF
+			-DHDF5_INSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}
 			${HDF5_CMAKE_CACHE_ARGS}
 	)
 	if("${HDF5_FOUND}")

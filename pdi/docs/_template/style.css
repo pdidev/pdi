@@ -1178,7 +1178,7 @@ a[id]
 {
 	max-width: 52rem;
 	padding: 0;
-	margin: 0 15rem 0 0;
+	margin: 0 15rem 0 0 !important;
 }
 
 @media (max-width: 68rem)
