@@ -11,7 +11,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-
 * Added new JSON plugin. Enables users to write data in JSON format, 
   using the [nlohmann/json](https://github.com/nlohmann/json) library.
   Users can also write data in other format thanks to taking JSON as input for
@@ -27,6 +26,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.8.2] - 2025-02-20
+
+### Fixed
+* Correct the directory where the vendored HDF5 library is  installed on RHEL,
+  fixes [#532](https://github.com/pdidev/pdi/issues/532)
 
 
 ## [1.8.1] - 2025-01-23
@@ -61,7 +67,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#458](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/458)
 
 ### Fixed
-* Support installation with the latest version of python where setuptools is an external lib, fixes
+* Support installation with the latest version of python where setuptools is an
+  external lib, fixes
   [#457](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/457)
 
 
