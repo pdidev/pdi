@@ -11,6 +11,15 @@ and this project adheres to
 
 
 
+## [1.8.3] - Unreleased
+
+### For users
+
+#### Fixed
+* Correctlty detect python path when distutils is part of setuptools, fixes
+  [#544](https://github.com/pdidev/pdi/issues/544)
+
+
 ## [1.8.2] - 2025-02-20
 
 ### For plugin developers

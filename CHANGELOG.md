@@ -8,6 +8,14 @@ changes for PDI library proper are in [`pdi/CHANGELOG.md`](pdi/CHANGELOG.md).
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+
+## [1.8.3] - Unreleased
+
+### Fixed
+* Correctlty detect python path when distutils is part of setuptools, fixes
+  [#544](https://github.com/pdidev/pdi/issues/544)
+
+
 ## [1.8.2] - 2025-02-20
 
 ### Fixed

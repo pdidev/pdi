@@ -1,9 +1,9 @@
 #=============================================================================
-# Copyright (c) 2020-2024 Centre national de la recherche scientifique (CNRS)
-# Copyright (c) 2020-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# Copyright (c) 2020-2025 Centre national de la recherche scientifique (CNRS)
+# Copyright (c) 2020-2025 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
 # Copyright (c) 2020-2023 Institut national de recherche en informatique et en automatique (Inria)
-# Copyright (c) 2020-2024 Université Paris-Saclay
-# Copyright (c) 2020-2024 Université de Versailles Saint-Quentin-en-Yvelines
+# Copyright (c) 2020-2025 Université Paris-Saclay
+# Copyright (c) 2020-2025 Université de Versailles Saint-Quentin-en-Yvelines
 #
 # SPDX-License-Identifier: MIT
 #=============================================================================
@@ -14,7 +14,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include(GNUInstallDirs)
 
-find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 3.8.2 REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
 set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
