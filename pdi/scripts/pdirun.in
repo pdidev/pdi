@@ -1,0 +1,81 @@
+#!/bin/bash
+
+while [[ $# -gt 0 ]]
+do
+	case "x$1" in
+		"x--" )
+			shift
+			break 2
+		;;
+		"x-v" )
+			export PDI_VERBOSE_ENV=TRUE
+			shift
+		;;
+		"x--verbose" )
+			export PDI_VERBOSE_ENV=TRUE
+			shift
+		;;
+		"x-q" )
+			export PDI_QUIET_ENV=TRUE
+			shift
+		;;
+		"x--quiet" )
+			export PDI_QUIET_ENV=TRUE
+			shift
+		;;
+		"x-h" )
+			export PRINT_USAGE=TRUE
+			break 2
+		;;
+		"x--help" )
+			export PRINT_USAGE=TRUE
+			break 2
+		;;
+		*)
+			break 2
+		;;
+	esac
+done
+
+# this file in in CMAKE_INSTALL_BINDIR relative to PDI root, go up as many directories as it contains
+PDI_DATADIR="$(PDI_RELBINDIR="@CMAKE_INSTALL_BINDIR@"
+cd "$(dirname "$0")"
+while [ "$(readlink -f "/${PDI_RELBINDIR}")" != "/" ]
+do
+	PDI_RELBINDIR="$(dirname "${PDI_RELBINDIR}")"
+	cd ..
+done
+cd "@INSTALL_PDIDATADIR@"
+pwd)"
+
+if [[ $# -eq 0 ]] || [[ -n "$PRINT_USAGE" ]] ; then
+	PDI_QUIET_ENV=TRUE
+	unset PDI_VERBOSE_ENV
+	. "${PDI_DATADIR}/env.sh"
+	echo "Usage: $0 [OPTION] [--] [<command>]"
+	echo "  runs <command> with PDI $PDI_VERSION environment set up from"
+	echo "  $PDI_DIR"
+	echo "Options:"
+	echo " -v|--verbose: increase verbosity"
+	echo " -q|--quiet: do not print even important messages"
+	echo " -h|--help: print this usage message and exit"
+	echo
+	echo "if you want to permanently set the environment, you can source env.sh instead:"
+	echo " . '${PDI_DATADIR}/env.sh'"
+	exit
+fi
+
+# source the env file
+. "${PDI_DATADIR}/env.sh"
+
+# give a little info
+if [ "$PDI_DIR" != "$PDI_BASE" ]; then
+	echo "** Error: unable to load requested environment, doing nothing" >&2
+	exit 1
+elif [ -z "$PDI_QUIET_ENV" ] && [ -z "$PDI_VERBOSE_ENV" ]; then
+	echo "Running with PDI $PDI_VERSION ($PDI_DIR)" >&2
+fi
+
+# run the provided command
+exec "$@"
+
