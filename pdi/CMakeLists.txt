@@ -222,10 +222,11 @@ install(EXPORT PDI_plugins_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKE
 # pdirun
 
 file(COPY scripts/pdirun_intree DESTINATION "${CMAKE_BINARY_DIR}/")
+configure_file(scripts/pdirun.in pdirun USE_SOURCE_PERMISSIONS @ONLY)
 add_executable(pdirun IMPORTED)
 add_executable(PDI::pdirun IMPORTED)
 set_target_properties(pdirun PDI::pdirun PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/pdirun_intree")
-install(PROGRAMS scripts/pdirun
+install(PROGRAMS "${CMAKE_BINARY_DIR}/pdirun"
 		DESTINATION "${CMAKE_INSTALL_BINDIR}"
 		COMPONENT Runtime
 )
