@@ -11,6 +11,16 @@ and this project adheres to
 
 
 
+## [1.8.3] - Unreleased
+
+### For users
+
+#### Fixed
+* Support MacOSX in env.sh to correctly load PDI there, fixes
+  [#540](https://github.com/pdidev/pdi/issues/540)
+
+
+
 ## [1.8.2] - 2025-02-20
 
 ### For plugin developers
