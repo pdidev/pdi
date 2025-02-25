@@ -18,6 +18,9 @@ and this project adheres to
 #### Fixed
 * Correctlty detect python path when distutils is part of setuptools, fixes
   [#544](https://github.com/pdidev/pdi/issues/544)
+* Support MacOSX in env.sh to correctly load PDI there, fixes
+  [#540](https://github.com/pdidev/pdi/issues/540)
+
 
 
 ## [1.8.2] - 2025-02-20
