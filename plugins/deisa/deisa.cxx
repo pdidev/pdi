@@ -108,10 +108,12 @@ public:
 
 	~deisa_plugin() noexcept override
 	{
+		context().logger().info("Closing plugin");
 		try {
 			// call bridge release() so that we can clear things before destructor is called (if it is ever called !).
+			assert(m_bridge != py::none());
 			assert(hasattr(m_bridge, "release"));
-			m_bridge.release();
+			m_bridge.attr("release")();
 			m_bridge = py::none();
 			if (m_interpreter_initialized_in_plugin) {
 				py::finalize_interpreter();
