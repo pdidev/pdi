@@ -106,7 +106,7 @@ public:
 		}
 	}
 
-	~deisa_plugin() noexcept
+	~deisa_plugin() noexcept override
 	{
 		context().logger().info("Closing plugin");
 		try {
