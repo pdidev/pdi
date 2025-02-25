@@ -11,7 +11,7 @@ and this project adheres to
 
 
 
-## [1.8.3] - Unreleased
+## [1.8.3] - 2025-02-25
 
 ### For users
 

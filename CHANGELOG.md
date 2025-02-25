@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
-## [1.8.3] - Unreleased
+## [1.8.3] - 2025-02-25
 
 ### Fixed
 * Correctlty detect python path when distutils is part of setuptools, fixes
