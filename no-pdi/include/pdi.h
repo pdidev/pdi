@@ -55,10 +55,6 @@
 #ifndef PDI_H_
 #define PDI_H_
 
-// struct PC_tree_t;
-
-#define PDI_EXPORT __attribute__((visibility("default")))
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -115,35 +111,28 @@ typedef struct PDI_errhandler_s {
 
 /** Prints the error message and aborts if the status is invalid
  */
-extern const PDI_errhandler_t PDI_EXPORT PDI_ASSERT_HANDLER;
+extern const PDI_errhandler_t PDI_ASSERT_HANDLER;
 
 /** Prints the error message and continue if the status is invalid
  */
-extern const PDI_errhandler_t PDI_EXPORT PDI_WARN_HANDLER;
+extern const PDI_errhandler_t PDI_WARN_HANDLER;
 
 /** Does nothing
  */
-extern const PDI_errhandler_t PDI_EXPORT PDI_NULL_HANDLER;
+const PDI_errhandler_t PDI_NULL_HANDLER = {NULL, NULL};
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
-const char PDI_EXPORT * PDI_errmsg(void)
+static inline const char* PDI_errmsg(void)
 {
 	return 0;
 }
 
-/** A mock error function used as a default error handler.
- *  This function does nothing and is used to provide a default
- *  behavior, as no error handler is set in the following function.
- */
-void mock_errfunc(PDI_status_t, const char*, void*) {}
-
 /** Sets the error handler to use
  */
-PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t)
+static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t)
 {
-	PDI_errhandler_t new_handler = {mock_errfunc, 0};
-	return new_handler;
+	return PDI_NULL_HANDLER;
 }
 
 /// \}
@@ -157,7 +146,7 @@ PDI_errhandler_t PDI_EXPORT PDI_errhandler(PDI_errhandler_t)
 
 /** Initializes PDI
  */
-PDI_status_t PDI_EXPORT PDI_init(PC_tree_t)
+static inline PDI_status_t PDI_init(PC_tree_t)
 {
 	return PDI_OK;
 }
@@ -165,14 +154,14 @@ PDI_status_t PDI_EXPORT PDI_init(PC_tree_t)
 /** Finalizes PDI
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_finalize(void)
+static inline PDI_status_t PDI_finalize(void)
 {
 	return PDI_OK;
 }
 
 /** Checks PDI API version
  */
-PDI_status_t PDI_EXPORT PDI_version(unsigned long*, unsigned long)
+static inline PDI_status_t PDI_version(unsigned long*, unsigned long)
 {
 	return PDI_OK;
 }
@@ -201,14 +190,14 @@ typedef enum PDI_inout_e {
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
  */
-PDI_status_t PDI_EXPORT PDI_share(const char*, void*, PDI_inout_t)
+static inline PDI_status_t PDI_share(const char*, void*, PDI_inout_t)
 {
 	return PDI_OK;
 }
 
 /** Requests for PDI to access a data buffer.
  */
-PDI_status_t PDI_EXPORT PDI_access(const char*, void**, PDI_inout_t)
+static inline PDI_status_t PDI_access(const char*, void**, PDI_inout_t)
 {
 	return PDI_OK;
 }
@@ -216,7 +205,7 @@ PDI_status_t PDI_EXPORT PDI_access(const char*, void**, PDI_inout_t)
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
  */
-PDI_status_t PDI_EXPORT PDI_release(const char*)
+static inline PDI_status_t PDI_release(const char*)
 {
 	return PDI_OK;
 }
@@ -224,21 +213,21 @@ PDI_status_t PDI_EXPORT PDI_release(const char*)
 /** Reclaims ownership of a data buffer shared with PDI. PDI does not manage
  * the buffer memory anymore.
  */
-PDI_status_t PDI_EXPORT PDI_reclaim(const char*)
+static inline PDI_status_t PDI_reclaim(const char*)
 {
 	return PDI_OK;
 }
 
 /** Triggers a PDI "event"
  */
-PDI_status_t PDI_EXPORT PDI_event(const char*)
+static inline PDI_status_t PDI_event(const char*)
 {
 	return PDI_OK;
 }
 
 /** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
  */
-PDI_status_t PDI_EXPORT PDI_expose(const char*, void*, PDI_inout_t)
+static inline PDI_status_t PDI_expose(const char*, void*, PDI_inout_t)
 {
 	return PDI_OK;
 }
@@ -248,7 +237,7 @@ PDI_status_t PDI_EXPORT PDI_expose(const char*, void*, PDI_inout_t)
  *
  *  NULL argument indicates an end of the list.
  */
-PDI_status_t PDI_EXPORT PDI_multi_expose(const char*, const char*, void*, PDI_inout_t, ...)
+static inline PDI_status_t PDI_multi_expose(const char*, const char*, void*, PDI_inout_t, ...)
 {
 	return PDI_OK;
 }
@@ -267,7 +256,7 @@ PDI_status_t PDI_EXPORT PDI_multi_expose(const char*, const char*, void*, PDI_in
  *
  * \return an error status
  */
-PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char*)
+static inline PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char*)
 {
 	return PDI_OK;
 }
@@ -282,7 +271,7 @@ PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char*)
  *
  * \return an error status
  */
-PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void)
+static inline PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void)
 {
 	return PDI_OK;
 }
