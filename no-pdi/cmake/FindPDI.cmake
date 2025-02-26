@@ -1,3 +1,5 @@
+include(CMakePrintHelpers)
+
 # Set the default search paths
 set(PDI_DIRS "${CMAKE_CURRENT_LIST_DIR}/..")
 

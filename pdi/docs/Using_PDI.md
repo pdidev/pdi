@@ -40,13 +40,20 @@ For Fortran make sure that source files that use %PDI API are using `%PDI` modul
 
 %PDI can be disabled by using the `no-pdi` directory instead of the `pdi` directory.
 
-You can use the `find_package` method. Use a `CMakeLists.txt` similar to
-`no-pdi_exampleTargetCMakeLists_findpackage.txt` for your target, then use the following:
+You can use the `find_package` method, which does not require to modify the 
+target `CMakeLists.txt` but requires to compile with an added argument pointing to the no-pdi folder. 
+
+Use a `CMakeLists.txt` similar to `no-pdi_exampleTargetCMakeLists_findpackage.txt` for your target, 
+then use the following:
 ```bash
-cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi"
+cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
 
-Alternatively, you can use the `include`/`target_include_directories` method.
+Alternatively, you can use the `include`/`target_include_directories` method, 
+which does not require to pass an additional argument at compilation 
+but requires to add ad option to the target `CMakeLists.txt`, 
+which must be enabled through an option at compilation.
+
 In this case, make sure to modify your target application `CMakeLists.txt` following 
 the file `no-pdi_exampleTargetCMakeLists_usingsubdir.txt` included in the example directory,
 adding the CMake option `WITHOUT_PDI`, then use the following:

@@ -40,7 +40,7 @@ if(WITHOUT_PDI)
 
 	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
 	message(WARNING "PDI is disabled for unit testing (use test 07 for no pdi).")
-	include(${CMAKE_SOURCE_DIR}/../no-pdi/no-pdi.cmake)
+	include(${CMAKE_SOURCE_DIR}/../no-pdi/cmake/no-pdi.cmake)
 	include_directories(${CMAKE_SOURCE_DIR})
 
 	add_executable(test_07_main_C test_07_main.c)

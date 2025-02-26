@@ -76,9 +76,8 @@ void multi_expose()
 
 void errhandler()
 {
-	PDI_errhandler_t new_handler = {mock_errfunc, NULL};
-	PDI_errhandler_t current_handler = PDI_errhandler(new_handler);
-	assert(current_handler.func == mock_errfunc && current_handler.context == NULL);
+	PDI_errhandler_t current_handler = PDI_errhandler(PDI_NULL_HANDLER);
+	assert(current_handler.func == NULL && current_handler.context == NULL);
 }
 
 int tests(int argc, char* argv[])
