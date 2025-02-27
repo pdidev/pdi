@@ -31,6 +31,7 @@ DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = PDI
 PROJECT_NUMBER         = @PDI_VERSION@
 PROJECT_BRIEF          = 
+PROJECT_ICON           = ./_template/logo.png
 PROJECT_LOGO           = ./_template/logo.png
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@
 CREATE_SUBDIRS         = NO
