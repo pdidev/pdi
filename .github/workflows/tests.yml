@@ -40,7 +40,7 @@ jobs:
         compiler: ['gcc', 'clang']
         mpi:      ['openmpi', 'mpich']
         variant:  ['mini', 'all']
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
       uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
         base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
       uses: actions/checkout@v4
