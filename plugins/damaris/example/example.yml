@@ -12,19 +12,42 @@ pdi:
     dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
     psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
     pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
+    mpi_comm: MPI_Comm
   data: # type of values for which PDI does not keep a copy
+    #is_client: int
+    #mpi_comm: MPI_Comm
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
   
   plugins:
-    #mpi:
+    trace: ~
+    mpi:
+    decl_hdf5:
+      file: data_2.h5
+      communicator: $mpi_comm #$MPI_COMM_WORLD # the MPI communicator used for HDF5 parallel synchronized write 
+      datasets: # type of the datasets to create in file
+        data:
+          type: array
+          subtype: double
+          size: [10, '$psize[0]*($dsize[0]-2)', '$psize[1]*($dsize[1]-2)']
+      write:
+        main_field: # the name of the data to write
+          dataset: data
+          when: '$iter<10'   # do only write the first 10 iterations (0...9)
+          memory_selection:  # exclude ghosts from the data in memory
+            size:  ['$dsize[0]-2', '$dsize[1]-2']
+            start: [1, 1]
+          dataset_selection: # only write into a single slice in time
+            size:  [1, '$dsize[0]-2', '$dsize[1]-2']
+            start: [$iter, '($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']
     damaris:  
       init_on_event: 1
+      #start_on_event: 1
       communicator: MPI_COMM_WORLD
       architecture:
         sim_name: example  
         domains: 1
         dedicated:
-          core: 0
+          core: 1
           node: 0
       parameters:
         - parameter: 
@@ -70,15 +93,16 @@ pdi:
             name: hdf5_example
             type: HDF5
             file_mode: Collective # or FilePerCore
-            files_path:    # Where to save files
+            files_path: ./HDF5_files/   # Where to save files
             #frequency: 1
             
       #Events sections
       write:
         main_field: # the name of the data to write, if dataset not specified afterward!
           dataset: main_field
-          #when: '$iter<10'   # do only write the first 10 iterations (0...9), Default at every iteration.
-          position: ['$pcoord[0]', '$pcoord[1]']
+          when: '$iter<10'   # do only write the first 10 iterations (0...9), Default at every iteration.
+          #position: ['$pcoord[0]', '$pcoord[1]']
+          position: ['($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']
           #block: [...] # To be defined
       after_write: damaris_end_iteration # applied for all the data...
       #  -  *: aw_event # OR [aw_event1, aw_event1, ...] # applied for all the data...
@@ -86,18 +110,20 @@ pdi:
       #  -  data2_name: d2_aw_event # OR [d2_aw_event1, d2_aw_event2, ...]
       
       # TODO:
-      # a list or map of data (damaris parameters) to get/set (default: empty)
+      # a list or map of data (damaris parameters) to get/set (default: empty). This is basically for time-varying parameters...
       #  if a prm is to be set and get, priority most be defined, and a politic of recurence if this happen several time (default: RR)
       # Ex.
-      # paremeter_get:
+      # parameter_get:
       #   - prm1:
       #       priority: 0
-      # paremeter_set:
+      # parameter_set:
       #   - prm1:
       #       priority: 1
       #   - prm2:
-      paremeter_get:
-      paremeter_set:
+      get_is_client: is_client
+      client_comm_get: mpi_comm
+      parameter_get:
+      parameter_set:
       
       #Optional config, has a default behavior 
       log:

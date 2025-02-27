@@ -1,0 +1,133 @@
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    size:   int   
+  data: # type of values for which PDI does not keep a copy
+    is_client: int  # equivalent to fti_head
+  plugins:
+    #mpi:
+    damaris:  
+      init_on_event: 1
+      start_on_event: 1
+      stop_on_event: 1
+      communicator: MPI_COMM_WORLD
+      architecture:
+        sim_name: image  
+        domains: 1
+        buffer_size: 150000000
+        placement:
+          start:
+          stride:
+          blocksize:
+          mask:
+        dedicated:
+          core: 2
+          node: 0
+      parameters:
+        - parameter: 
+            name: WIDTH
+            type: int
+            value: 100
+        - parameter: 
+            name: HEIGHT
+            type: int
+            value: 100
+        - parameter: 
+            name: DEPTH
+            type: int
+            value: 100
+        - parameter: 
+            name: size
+            type: int
+            value: 2
+      datasets:
+        - dataset: 
+            name: zonal_pressure
+            type: scalar
+            layout: zonal_layout
+            mesh: mesh
+            centering: zonal
+        - dataset: 
+            name: nodal_pressure
+            type: scalar
+            layout: nodal_layout
+            mesh: mesh
+            centering: nodal
+        - dataset: 
+            name: coord/x
+            layout: rmeshX
+            visualizable: false
+            time_varying: false
+        - dataset: 
+            name: coord/y
+            layout: rmeshY
+            visualizable: false
+            time_varying: false
+        - dataset: 
+            name: coord/z
+            layout: rmeshZ
+            visualizable: false
+            time_varying: false
+      layouts:
+        - layout: 
+            name: zonal_layout
+            type: double
+            dimensions: 'WIDTH,HEIGHT,DEPTH/size'
+            global: 'WIDTH,HEIGHT,DEPTH'
+            ghosts: '0:0,0:0,0:0' 
+        - layout: 
+            name: nodal_layout
+            type: double
+            dimensions: 'WIDTH+1,HEIGHT+1,DEPTH/size+1'
+            global: 'WIDTH+1,HEIGHT+1,DEPTH+1'
+            ghosts: '0:0,0:0,0:0' 
+        - layout: 
+            name: rmeshX
+            type: float
+            dimensions: 'WIDTH+1'
+            global: 'WIDTH+1'
+            ghosts: '0:0' 
+        - layout: 
+            name: rmeshY
+            type: float
+            dimensions: 'HEIGHT+1'
+            global: 'HEIGHT+1'
+            ghosts: '0:0' 
+        - layout: 
+            name: rmeshZ
+            type: float
+            dimensions: 'DEPTH/size+1'
+            global: 'DEPTH+1'
+            ghosts: '0:0'  
+      meshes:
+        - mesh:
+            name: mesh
+            type: rectilinear
+            topology: 3
+            coordinates: 
+              - coord: 
+                  name: coord/x
+                  #unit: cm
+                  label: X
+              - coord: 
+                  name: coord/y
+                  #unit: cm
+                  label: Y
+              - coord: 
+                  name: coord/z
+                  #unit: cm
+                  label: Z
+      paraview: 
+        script: ./image.py # can be absolute or relative path
+        #scripts: [ 'path/to/script1.py' , 'path/to/script2.py' ]
+        update_frequency: 1
+        realtime_timestep: 0.1
+        end_iteration: 0
+        write_vtk: 0
+        write_vtk_binary: true
+        #comment: ""  
+      log:
+        #file_name: 2dmesh # default = $sim_name
+        rotation_size: 5
+        log_level: info
+        flush: true

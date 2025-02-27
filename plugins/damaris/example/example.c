@@ -161,16 +161,17 @@ int main(int argc, char* argv[])
 
 	PC_tree_t conf = PC_parse_path(argv[1]);
 
-	MPI_Comm main_comm = MPI_COMM_WORLD;
+	MPI_Comm main_comm;// = MPI_COMM_WORLD;
 	PDI_init(PC_get(conf, ".pdi"));
 	PDI_event("init");
 	   
-	int is_client = 1;
+	int is_client = 2;
 	
-	//PDI_multi_expose("damaris_start"
-	//,"is_client", &is_client, PDI_INOUT
-	//, NULL);
+	PDI_expose("is_client", &is_client, PDI_IN);
+    	printf("-------------------------------------------------------------------------------------D: :) ;) is_client = %d\n", is_client);
 
+	//return 0;
+	
    	if(is_client) {
 	//*******************************************************************Only damaris clients run this section
 	
@@ -181,6 +182,8 @@ int main(int argc, char* argv[])
     	//, NULL);
     	
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
+	//MPI_Comm hdf5_mpi_comm = main_comm;
+	//PDI_expose("hdf5_mpi_comm", &hdf5_mpi_comm, PDI_INOUT);
 
 	int psize_1d;
 	MPI_Comm_size(main_comm, &psize_1d);
@@ -264,9 +267,13 @@ int main(int argc, char* argv[])
 	PDI_expose("iter", &ii, PDI_OUT);
 	PDI_expose("main_field", cur, PDI_OUT);
 	
+	free(cur);
+	free(next);
+	
 	//PDI_event("damaris_stop");
 	//*******************************************************************END if(is_client)
 	}//END if(is_client)
+	
 	PDI_event("finalization");
 
 	PDI_finalize();

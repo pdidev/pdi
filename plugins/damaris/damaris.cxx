@@ -65,6 +65,7 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
+using std::dynamic_pointer_cast;
 
 using namespace PDI;
 using namespace damaris_pdi;
@@ -214,6 +215,67 @@ public:
 			}
 			else{
 				context().logger().error("The Damaris need write access over the data (`{}')", name);
+			}
+		}
+		else if(m_config.is_parameter_to_update(name)){
+			std::pair<std::string, Desc_type> prm_to_update_info = m_config.get_parameter_to_update_info(name);
+			std::string prm_name = prm_to_update_info.first;
+			size_t size;
+
+			Ref_r rref = ref;
+			Ref_rw rwref = ref;
+
+			if (rref && prm_to_update_info.second == Desc_type::PRM_TO_SET) {
+				Datatype_sptr ref_type = rref.type();
+				if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(ref_type)) {
+					size = rref.scalar_value<size_t>();
+				} else {
+					throw Type_error{"Damaris paramegter must be a scalar"};
+				}
+
+				std::string prm_set_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_PARAMETER_SET);
+				m_event_handler.damaris_api_call_event(context(), m_damaris, prm_set_event_name, multi_expose_transaction_dataname, prm_name, name, size);
+			}
+			else if (rwref && prm_to_update_info.second == Desc_type::PRM_TO_GET) {
+				Datatype_sptr ref_type = rwref.type();
+				if (auto&& scalar_type = dynamic_pointer_cast<const Scalar_datatype>(ref_type)) {
+					size = rwref.scalar_value<size_t>();
+				} else {
+					throw Type_error{"Damaris paramegter must be a scalar"};
+				}
+
+				std::string prm_get_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_PARAMETER_GET);
+				m_event_handler.damaris_api_call_event(context(), m_damaris, prm_get_event_name, multi_expose_transaction_dataname, prm_name, name, size);
+			}
+			else {
+				//Error handling!
+			}
+		}
+		//is_client_get !?
+		else if(name == m_config.is_client_dataset_name()) {	
+			context().logger().info("'{}' == m_config.is_client_dataset_name() = '{}'", name, (name == m_config.is_client_dataset_name()));
+					
+			if (Ref_w wref = ref) {
+				*static_cast<int*>(wref.get()) = m_damaris->get_is_client();
+				context().logger().info("------------------- CALLED is_client_dataset_name Return is_client = '{}')", m_damaris->get_is_client());
+			}
+			else {
+				//MayBe a PDI_multi_expose is under traitement
+				multi_expose_transaction_dataname.emplace_back(name);
+			}
+		}
+		//client_comm_get !?
+		else if(name == m_config.client_comm_get_dataset_name()) {
+			if (Ref_w wref = ref) {
+				MPI_Comm client_comm;		
+				int err = m_damaris->damaris_pdi_client_comm_get(&client_comm);
+
+				*static_cast<MPI_Comm*>(wref.get()) = client_comm;
+				context().logger().info("------------------- CALLED is_client_dataset_name Return client_comm SETED)");
+			}
+			else {
+				//MayBe a PDI_multi_expose is under traitement
+				multi_expose_transaction_dataname.emplace_back(name);
 			}
 		}
 		else {//Handle other situations...
