@@ -370,7 +370,7 @@ try {
 
 	i = 0;
 	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
-		Global_context::context().logger().trace("Multi expose: data_delay `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
+		Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
 		if (( status = PDI_data_callbacks(it->c_str()))) {
 			break;
 		}
