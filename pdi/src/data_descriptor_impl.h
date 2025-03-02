@@ -89,9 +89,9 @@ public:
 
 	bool empty() override;
 
-	void share(void* data, bool read, bool write, bool delayDataCallback = false) override;
+	void share(void* data, bool read, bool write, bool delayDataCallback=false) override;
 
-	void* share(Ref ref, bool read, bool write, bool delayDataCallback = false) override;
+	void* share(Ref ref, bool read, bool write, bool delayDataCallback=false) override;
 
 	void data_callbacks() override;
 

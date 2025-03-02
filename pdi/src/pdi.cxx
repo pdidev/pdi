@@ -361,7 +361,7 @@ try {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
-		if (( status = PDI_share_delay(v_name, v_data, v_access))) {
+		if ((status = PDI_share_delay(v_name, v_data, v_access))) {
 			break;
 		}
 		transaction_data.emplace_back(v_name);
@@ -371,7 +371,7 @@ try {
 	i = 0;
 	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
 		Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
-		if (( status = PDI_data_callbacks(it->c_str()))) {
+		if ((status = PDI_data_callbacks(it->c_str()))) {
 			break;
 		}
 	}
