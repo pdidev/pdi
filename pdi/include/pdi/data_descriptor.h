@@ -85,7 +85,7 @@ public:
 	 * \param delayDataCallback a boolean to define if we want to delay
 	 *        "call_data_callbacks" for the shared data
 	 */
-	virtual void share(void* data, bool read, bool write, bool delayDataCallback=false) = 0;
+	virtual void share(void* data, bool read, bool write, bool delayDataCallback = false) = 0;
 
 	/** Shares some data with PDI
 	 * \param[in,out] ref a reference to the shared data
@@ -95,7 +95,7 @@ public:
 	 *        "call_data_callbacks" for the shared data
 	 * \return the just shared buffer
 	 */
-	virtual void* share(Ref ref, bool read, bool write, bool delayDataCallback=false) = 0;
+	virtual void* share(Ref ref, bool read, bool write, bool delayDataCallback = false) = 0;
 
 	/** function to call "call_data_callbacks" for the shared data.
 	 */
