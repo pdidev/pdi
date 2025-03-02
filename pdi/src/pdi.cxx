@@ -252,6 +252,32 @@ try {
 	return g_error_context.return_err();
 }
 
+PDI_status_t PDI_share_delay(const char* name, void* buffer, PDI_inout_t access)
+try {
+	Paraconf_wrapper fw;
+	Global_context::context()[name].share(buffer, access & PDI_OUT, access & PDI_IN, true);
+	return PDI_OK;
+} catch (const Error& e) {
+	return g_error_context.return_err(e);
+} catch (const exception& e) {
+	return g_error_context.return_err(e);
+} catch (...) {
+	return g_error_context.return_err();
+}
+
+PDI_status_t PDI_data_callbacks(const char* name)
+try {
+	Paraconf_wrapper fw;
+	Global_context::context()[name].data_callbacks();
+	return PDI_OK;
+} catch (const Error& e) {
+	return g_error_context.return_err(e);
+} catch (const exception& e) {
+	return g_error_context.return_err(e);
+} catch (...) {
+	return g_error_context.return_err();
+}
+
 PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
 try {
 	Paraconf_wrapper fw;
@@ -326,7 +352,7 @@ try {
 	va_list ap;
 	list<string> transaction_data;
 	PDI_status_t status;
-	if ((status = PDI_share(name, data, access))) return status;
+	if ((status = PDI_share_delay(name, data, access))) return status;
 	transaction_data.emplace_back(name);
 
 	va_start(ap, access);
@@ -335,12 +361,20 @@ try {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
-		if ((status = PDI_share(v_name, v_data, v_access))) {
+		if ((status = PDI_share_delay(v_name, v_data, v_access))) {
 			break;
 		}
 		transaction_data.emplace_back(v_name);
 	}
 	va_end(ap);
+
+	i = 0;
+	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
+		Global_context::context().logger().trace("Multi expose: data_delay `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
+		if (( status = PDI_data_callbacks(it->c_str()))) {
+			break;
+		}
+	}
 
 	if (!status) { //trigger event only when all data is available
 		Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
