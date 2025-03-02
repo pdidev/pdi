@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -370,7 +370,7 @@ try {
 
 	i = 0;
 	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
-		Global_context::context().logger().trace("Multi expose: data_delay `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
+		Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
 		if (( status = PDI_data_callbacks(it->c_str()))) {
 			break;
 		}
