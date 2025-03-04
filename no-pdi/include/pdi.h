@@ -109,17 +109,17 @@ typedef struct PDI_errhandler_s {
 
 } PDI_errhandler_t;
 
+/** Does nothing
+ */
+static const PDI_errhandler_t PDI_NULL_HANDLER = {NULL, NULL};
+
 /** Prints the error message and aborts if the status is invalid
  */
-extern const PDI_errhandler_t PDI_ASSERT_HANDLER;
+static const PDI_errhandler_t PDI_ASSERT_HANDLER = PDI_NULL_HANDLER;
 
 /** Prints the error message and continue if the status is invalid
  */
-extern const PDI_errhandler_t PDI_WARN_HANDLER;
-
-/** Does nothing
- */
-const PDI_errhandler_t PDI_NULL_HANDLER = {NULL, NULL};
+static const PDI_errhandler_t PDI_WARN_HANDLER = PDI_NULL_HANDLER;
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
@@ -256,7 +256,7 @@ static inline PDI_status_t PDI_multi_expose(const char*, const char*, void*, PDI
  *
  * \return an error status
  */
-static inline PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char*)
+static inline PDI_status_t PDI_transaction_begin(const char*)
 {
 	return PDI_OK;
 }
@@ -271,7 +271,7 @@ static inline PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const cha
  *
  * \return an error status
  */
-static inline PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void)
+static inline PDI_status_t PDI_transaction_end(void)
 {
 	return PDI_OK;
 }
