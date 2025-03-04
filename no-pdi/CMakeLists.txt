@@ -30,4 +30,4 @@
 cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES C CXX)
 
-include(cmake/no-pdi.cmake)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/no-pdi.cmake")

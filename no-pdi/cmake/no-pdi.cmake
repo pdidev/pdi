@@ -33,4 +33,4 @@ add_library(PDI_C INTERFACE)
 add_library(PDI::pdi   ALIAS PDI_C)
 add_library(PDI::PDI_C ALIAS PDI_C)
 
-target_include_directories(PDI_C INTERFACE ${CMAKE_SOURCE_DIR}/../no-pdi/include)
+target_include_directories(PDI_C INTERFACE "${CMAKE_CURRENT_LIST_DIR}/../include") 
