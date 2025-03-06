@@ -84,7 +84,7 @@ int tests(int argc, char* argv[])
 {
 	assert(PDI_OK == PDI_init(PC_parse_path(argv[1])));
 
-	assert(NULL == PDI_errmsg());
+	assert(PDI_errmsg());
 	errhandler();
 
 	share();
