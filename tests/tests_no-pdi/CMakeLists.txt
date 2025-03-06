@@ -34,5 +34,24 @@ option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 
 include(CTest)
 
-add_subdirectory(tests_pdi/)
-add_subdirectory(tests_no-pdi/)
+find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
+message(WARNING "PDI is disabled on test 07 for no pdi.")
+include(${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/no-pdi.cmake)
+include_directories(${CMAKE_CURRENT_LIST_DIR})
+
+add_executable(test_07_main_C test_07_main.c)
+set(BUILD_FLAGS_FOR_C "-Wall")
+target_compile_options(test_07_main_C PRIVATE
+		$<$<COMPILE_LANGUAGE:C>:${BUILD_FLAGS_FOR_C}>)
+target_link_libraries(test_07_main_C paraconf::paraconf PDI::PDI_C)
+add_test(NAME test_07_main_C COMMAND "$<TARGET_FILE:test_07_main_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_main.yml")
+
+add_executable(test_07_main_CXX test_07_main.cpp)
+set(BUILD_FLAGS_FOR_CXX "-Wall")
+target_compile_options(test_07_main_CXX PRIVATE
+		$<$<COMPILE_LANGUAGE:CXX>:${BUILD_FLAGS_FOR_CXX}>)
+set_target_properties(test_07_main_CXX PROPERTIES CXX_STANDARD 11)
+set_target_properties(test_07_main_CXX PROPERTIES LANGUAGE CXX)
+set_target_properties(test_07_main_CXX PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(test_07_main_CXX paraconf::paraconf PDI::PDI_C)
+add_test(NAME test_07_main_CXX COMMAND "$<TARGET_FILE:test_07_main_CXX>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_main.yml")
