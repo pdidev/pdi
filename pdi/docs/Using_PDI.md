@@ -38,18 +38,9 @@ If source files (of application that uses %PDI) and specification tree file are 
 For C make sure that source files that use %PDI API are including `pdi.h` header file.
 For Fortran make sure that source files that use %PDI API are using `%PDI` module file (`USE %PDI`).
 
-%PDI can be disabled by using the `no-pdi` directory instead of the `pdi` directory.
+%PDI can be disabled by using the `no-pdi` directory.
 
-You can use the `find_package` method, which does not require to modify the 
-target `CMakeLists.txt` but requires to compile with an added argument pointing to the no-pdi folder. 
-
-Use a `CMakeLists.txt` similar to `no-pdi_exampleTargetCMakeLists_findpackage.txt` for your target, 
-then use the following:
-```bash
-cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
-```
-
-Alternatively, you can use the `include`/`target_include_directories` method, 
+You can use the `include`/`target_include_directories` method, 
 which does not require to pass an additional argument at compilation 
 but requires to add an option to the target `CMakeLists.txt`, 
 which must be enabled through an option at compilation.
@@ -60,6 +51,17 @@ adding the CMake option `WITHOUT_PDI`, then use the following:
 ```bash
 cmake . -DWITHOUT_PDI=ON
 ```
+
+Alternatively, if modifying the CMakeList.txt is unpractical, you can use the `find_package` method, 
+which does not require to modify the 
+target `CMakeLists.txt` but requires to compile with an added argument pointing to the no-pdi folder. 
+
+Use a `CMakeLists.txt` similar to `no-pdi_exampleTargetCMakeLists_findpackage.txt` for your target, 
+then use the following:
+```bash
+cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
+```
+
 %PDI can be re-enabled by reversing those modifications.
 
 ### Compiling by hand {#compiling_by_hand}
