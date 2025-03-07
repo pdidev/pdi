@@ -87,12 +87,12 @@ Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 	// return result;
 
 	// === option 1: use hand-written version fo aligned_alloc
-	size_t size = type->buffersize() + (type->alignment() - 1);
-	void* buffer = operator new (size);
-	void* data = std::align(type->alignment(), type->buffersize(), buffer, size);
-	Ref_rw result{data, [buffer](void*) { operator delete (buffer); }, type, true, true};
-	copy_value(ctx, result.get(), type);
-	return result;
+	// size_t size = type->buffersize() + (type->alignment() - 1);
+	// void* buffer = operator new (size);
+	// void* data = std::align(type->alignment(), type->buffersize(), buffer, size);
+	// Ref_rw result{data, [buffer](void*) { operator delete (buffer); }, type, true, true};
+	// copy_value(ctx, result.get(), type);
+	// return result;
 
 	// === option 2: use posix_memalign
 	// void * data;
@@ -116,6 +116,12 @@ Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 	// 	copy_value(ctx, result.get(), type);
 	// 	return result;
 	// }
+
+	// option 4: use operator new with align_val_t (C++17)
+	auto data = operator new (type->buffersize(), static_cast<std::align_val_t>(type->alignment()));
+	Ref_rw result{data, [](void* v) { operator delete(v); }, type, true, true};
+	copy_value(ctx, result.get(), type);
+	return result;
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
