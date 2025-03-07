@@ -118,8 +118,9 @@ Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 	// }
 
 	// option 4: use operator new with align_val_t (C++17)
-	auto data = operator new (type->buffersize(), static_cast<std::align_val_t>(type->alignment()));
-	Ref_rw result{data, [](void* v) { operator delete (v); }, type, true, true};
+	auto al = static_cast<std::align_val_t>(type->alignment());
+	auto data = operator new (type->buffersize(), al);
+	Ref_rw result{data, [al](void* v) { operator delete (v, al); }, type, true, true};
 	copy_value(ctx, result.get(), type);
 	return result;
 }
