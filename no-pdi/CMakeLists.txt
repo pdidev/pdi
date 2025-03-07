@@ -41,15 +41,16 @@ project(PDI LANGUAGES C CXX)
 set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Find the PDI package
-find_package(PDI REQUIRED)
+# find_package(PDI REQUIRED)
+include(cmake/PDIConfig.cmake)
 
-# Add your executable or library target
-add_executable(my_executable main.cpp)
+# # Add your executable or library target
+# add_executable(my_executable main.cpp)
 
-# Link the PDI library to your target
-if(PDI_FOUND)
-    target_link_libraries(my_executable PDI::pdi)
-endif()
+# # Link the PDI library to your target
+# if(PDI_FOUND)
+#     target_link_libraries(my_executable PDI::pdi)
+# endif()
 
 
 
