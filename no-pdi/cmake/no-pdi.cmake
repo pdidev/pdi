@@ -33,22 +33,22 @@ add_library(PDI_C INTERFACE)
 add_library(PDI::pdi   ALIAS PDI_C)
 add_library(PDI::PDI_C ALIAS PDI_C)
 
-##target_include_directories(PDI_C INTERFACE "${CMAKE_CURRENT_LIST_DIR}/../include")
-target_include_directories(PDI_C INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+target_include_directories(PDI_C INTERFACE "${CMAKE_CURRENT_LIST_DIR}/../include")
+# target_include_directories(PDI_C INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
-# Install the library and configuration files
-install(TARGETS PDI_C
-    EXPORT PDITargets
-    INCLUDES DESTINATION include
-)
+# # Install the library and configuration files
+# install(TARGETS PDI_C
+#     EXPORT PDITargets
+#     INCLUDES DESTINATION include
+# )
 
-install(EXPORT PDITargets
-    FILE PDITargets.cmake
-    DESTINATION lib/cmake/PDI
-)
+# install(EXPORT PDITargets
+#     FILE PDITargets.cmake
+#     DESTINATION lib/cmake/PDI
+# )
 
-install(FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfig.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfigVersion.cmake"
-    DESTINATION lib/cmake/PDI
-)
+# install(FILES
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfig.cmake"
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfigVersion.cmake"
+#     DESTINATION lib/cmake/PDI
+# )

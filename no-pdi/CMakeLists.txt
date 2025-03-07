@@ -32,47 +32,74 @@
 
 # include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/no-pdi.cmake")
 
+
+
 cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES C CXX)
 
-# Create an interface library
-add_library(PDI_C INTERFACE)
+# Set the CMAKE_PREFIX_PATH to include the directory containing PDIConfig.cmake
+set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Create aliases for the interface library
-add_library(PDI::pdi ALIAS PDI_C)
-add_library(PDI::PDI_C ALIAS PDI_C)
+# Find the PDI package
+find_package(PDI REQUIRED)
 
-# Specify include directories using generator expressions
-target_include_directories(PDI_C INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+# Add your executable or library target
+add_executable(my_executable main.cpp)
 
-# Export the interface library
-export(TARGETS PDI_C FILE PDITargets.cmake)
+# Link the PDI library to your target
+if(PDI_FOUND)
+    target_link_libraries(my_executable PDI::pdi)
+endif()
 
-# Install the interface library and configuration files
-install(TARGETS PDI_C
-    EXPORT PDITargets
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-    INCLUDES DESTINATION include
-)
 
-install(EXPORT PDITargets
-    FILE PDITargets.cmake
-    DESTINATION lib/cmake/PDI
-)
 
-install(FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfig.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfigVersion.cmake"
-    DESTINATION lib/cmake/PDI
-)
+# # cmake_minimum_required(VERSION 3.16...3.29)
+# # project(PDI LANGUAGES C CXX)
 
-# Ensure that the parent directories are created
-file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib/cmake/PDI")
-file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib")
-file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/include")
-file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/bin")
+# # # Specify a custom installation directory
+# # set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/cmake/install" CACHE STRING "Installation prefix directory")
 
-# Specify a custom installation directory
-set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE STRING "Installation prefix directory")
+# # # Create an interface library
+# # add_library(PDI_C INTERFACE)
+
+# # # Create aliases for the interface library
+# # add_library(PDI::pdi ALIAS PDI_C)
+# # add_library(PDI::PDI_C ALIAS PDI_C)
+
+# # # Specify include directories using generator expressions
+# # target_include_directories(PDI_C INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+
+# # # Export the interface library
+# # export(TARGETS PDI_C FILE PDITargets.cmake)
+
+# # # Install the interface library and configuration files
+# # install(TARGETS PDI_C
+# #     EXPORT PDITargets
+# #     LIBRARY DESTINATION lib
+# #     ARCHIVE DESTINATION lib
+# #     RUNTIME DESTINATION bin
+# #     INCLUDES DESTINATION include
+# # )
+
+# # install(EXPORT PDITargets
+# #     FILE PDITargets.cmake
+# #     DESTINATION lib/cmake/PDI
+# # )
+
+# # install(FILES
+# #     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfig.cmake"
+# #     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfigVersion.cmake"
+# #     DESTINATION lib/cmake/PDI
+# # )
+
+# # # # Ensure that the parent directories are created relative to the installation prefix
+# # # install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
+# # #     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
+# # #     DESTINATION lib/cmake/PDI
+# # # )
+
+# # # Ensure that the parent directories are created
+# # file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cmake/lib/cmake/PDI")
+# # file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cmake/lib")
+# # file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cmake/include")
+# # file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cmake/bin")
