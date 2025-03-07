@@ -1,8 +1,1 @@
 *.pyc
-CMakeCache.txt
-CMakeFiles
-cmake_install.cmake
-CTestTestfile.cmake
-DartConfiguration.tcl
-Makefile
-/Testing

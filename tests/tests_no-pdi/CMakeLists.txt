@@ -37,7 +37,7 @@ include(CTest)
 
 find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
 message(WARNING "PDI is disabled on test 07 for no pdi.")
-if (EXAMPLE_NO_PDI)
+if(EXAMPLE_NO_PDI)
 	include(${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/no-pdi.cmake)
 elseif(PDI_ROOT)
 	include(${PDI_ROOT}/PDIConfig.cmake)
