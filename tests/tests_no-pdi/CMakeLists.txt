@@ -31,12 +31,17 @@ set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
+option(EXAMPLE_NO_PDI		  "Disable PDI using PDIConfig" OFF)
 
 include(CTest)
 
 find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
 message(WARNING "PDI is disabled on test 07 for no pdi.")
-include(${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/no-pdi.cmake)
+if (EXAMPLE_NO_PDI)
+	include(${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/no-pdi.cmake)
+elseif(PDI_ROOT)
+	include(${PDI_ROOT}/PDIConfig.cmake)
+endif()
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 add_executable(test_07_main_C test_07_main.c)
