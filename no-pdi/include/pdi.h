@@ -109,20 +109,17 @@ typedef struct PDI_errhandler_s {
 
 } PDI_errhandler_t;
 
-#ifndef PDI_NULL_HANDLER_DEFINED
-#define PDI_NULL_HANDLER_DEFINED
 /** Does nothing
  */
-const PDI_errhandler_t PDI_NULL_HANDLER = {NULL, NULL};
+static const PDI_errhandler_t PDI_NULL_HANDLER = {NULL, NULL};
 
 /** Prints the error message and aborts if the status is invalid
  */
-const PDI_errhandler_t PDI_ASSERT_HANDLER = PDI_NULL_HANDLER;
+static const PDI_errhandler_t PDI_ASSERT_HANDLER = PDI_NULL_HANDLER;
 
 /** Prints the error message and continue if the status is invalid
  */
-const PDI_errhandler_t PDI_WARN_HANDLER = PDI_NULL_HANDLER;
-#endif
+static const PDI_errhandler_t PDI_WARN_HANDLER = PDI_NULL_HANDLER;
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
