@@ -1,4 +1,4 @@
-add_library(PDI::pdi INTERFACE IMPORTED)
+add_library(PDI::pdi   INTERFACE IMPORTED)
 add_library(PDI::PDI_C INTERFACE IMPORTED)
 set_target_properties(PDI::pdi PROPERTIES
 #    IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/../lib/PDI_C.so"
