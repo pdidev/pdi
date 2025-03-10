@@ -29,7 +29,6 @@
 #include <vector>
 
 #include <dlfcn.h>
-#include <link.h>
 
 #include <pdi.h>
 #include <pdi/context.h>
