@@ -117,12 +117,20 @@ Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 	// 	return result;
 	// }
 
-	// option 4: use operator new with align_val_t (C++17)
-	auto al = static_cast<std::align_val_t>(type->alignment());
-	auto data = operator new (type->buffersize(), al);
-	Ref_rw result{data, [al](void* v) { operator delete (v, al); }, type, true, true};
-	copy_value(ctx, result.get(), type);
-	return result;
+	// option 4: use aligned_alloc, falls back to use operator new with align_val_t (C++17)
+	auto data = std::aligned_alloc(type->alignment(), type->buffersize());
+	if(data) {
+		Ref_rw result{data, [](void* v) { free(v); }, type, true, true};
+		copy_value(ctx, result.get(), type);
+		return result;
+	}
+	else {
+		auto al = static_cast<std::align_val_t>(type->alignment());
+		data = operator new (type->buffersize(), al);
+		Ref_rw result{data, [al](void* v) { operator delete (v, al); }, type, true, true};
+		copy_value(ctx, result.get(), type);
+		return result;
+	}
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
