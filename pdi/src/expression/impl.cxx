@@ -119,7 +119,7 @@ Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 
 	// option 4: use aligned_alloc, falls back to use operator new with align_val_t (C++17)
 	auto data = std::aligned_alloc(type->alignment(), type->buffersize());
-	if(data) {
+	if (data) {
 		Ref_rw result{data, [](void* v) { free(v); }, type, true, true};
 		copy_value(ctx, result.get(), type);
 		return result;
