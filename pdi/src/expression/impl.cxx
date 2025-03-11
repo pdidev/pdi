@@ -80,56 +80,11 @@ string Expression::Impl::to_string(Context& ctx) const
 
 Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 {
-	// bug on MACOS with aligned_alloc
-	// auto data = std::aligned_alloc(type->alignment(), type->buffersize());
-	// Ref_rw result{data, [](void* v) { free(v); }, type, true, true};
-	// copy_value(ctx, result.get(), type);
-	// return result;
-
-	// === option 1: use hand-written version fo aligned_alloc
-	// size_t size = type->buffersize() + (type->alignment() - 1);
-	// void* buffer = operator new (size);
-	// void* data = std::align(type->alignment(), type->buffersize(), buffer, size);
-	// Ref_rw result{data, [buffer](void*) { operator delete (buffer); }, type, true, true};
-	// copy_value(ctx, result.get(), type);
-	// return result;
-
-	// === option 2: use posix_memalign
-	// void * data;
-	// int err = posix_memalign(&data, type->alignment()*sizeof(void*), type->buffersize());
-	// Ref_rw result{data, [](void* v) { free(v); }, type, true, true};
-	// copy_value(ctx, result.get(), type);
-	// return result;
-
-	// === option 3: use aligned_alloc, falls back to hand-written version if fails
-	// auto data = std::aligned_alloc(type->alignment(), type->buffersize());
-	// if(data) {
-	// 	Ref_rw result{data, [](void* v) { free(v); }, type, true, true};
-	// 	copy_value(ctx, result.get(), type);
-	// 	return result;
-	// }
-	// else {
-	// 	size_t size = type->buffersize() + (type->alignment() - 1);
-	// 	void* buffer = operator new (size);
-	// 	data = std::align(type->alignment(), type->buffersize(), buffer, size);
-	// 	Ref_rw result{data, [buffer](void*) { operator delete (buffer); }, type, true, true};
-	// 	copy_value(ctx, result.get(), type);
-	// 	return result;
-	// }
-
-	// option 4: use aligned_alloc, falls back to use operator new with align_val_t (C++17)
-	auto data = std::aligned_alloc(type->alignment(), type->buffersize());
-	if (data) {
-		Ref_rw result{data, [](void* v) { free(v); }, type, true, true};
-		copy_value(ctx, result.get(), type);
-		return result;
-	} else {
-		auto al = static_cast<std::align_val_t>(type->alignment());
-		data = operator new (type->buffersize(), al);
-		Ref_rw result{data, [al](void* v) { operator delete (v, al); }, type, true, true};
-		copy_value(ctx, result.get(), type);
-		return result;
-	}
+	auto al = static_cast<std::align_val_t>(type->alignment());
+	auto data = operator new (type->buffersize(), al);
+	Ref_rw result{data, [al](void* v) { operator delete (v, al); }, type, true, true};
+	copy_value(ctx, result.get(), type);
+	return result;
 }
 
 unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
