@@ -40,6 +40,7 @@ and this project adheres to
 #### Fixed
 * Aligned memory allocation using `operator new`, fixes
   [#550](https://github.com/pdidev/pdi/issues/550) 
+* Fix compile issue with macOS where `std::numeric_limits<uint64_t>::min()` is interpreted as `unsigned long long`
 
 #### Security
 
