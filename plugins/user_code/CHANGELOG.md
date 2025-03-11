@@ -13,9 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Deprecated
 
 ### Removed
-* remove header file `<link.h>`
 
 ### Fixed
+* Fix macOS compile issue with the user-code plugin [#539](https://github.com/pdidev/pdi/issues/539)
 
 ### Security
 
