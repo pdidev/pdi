@@ -101,7 +101,9 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			// will read in pass 2
 		} else if (key == "logging") {
 			// pass
-		} else {
+		} else if (key == "variables") {
+			// pass
+		}  else {
 			throw Config_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
 		}
 	});
