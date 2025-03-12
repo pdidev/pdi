@@ -103,7 +103,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			// pass
 		} else if (key == "variables") {
 			// pass
-		}  else {
+		} else {
 			throw Config_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
 		}
 	});
