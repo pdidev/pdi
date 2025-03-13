@@ -143,12 +143,13 @@ void warn_status(PDI_status_t status, const char* message, void*)
 	}
 }
 
-struct Var_to_reclaim{
+struct Var_to_reclaim {
 	list<string> names;
 
-	Var_to_reclaim(){ names.clear(); }
+	Var_to_reclaim() { names.clear(); }
 
-	~Var_to_reclaim() {
+	~Var_to_reclaim()
+	{
 		int counter = 0;
 		for (auto&& it = names.rbegin(); it != names.rend(); it++) {
 			Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, names.size());
@@ -156,22 +157,14 @@ struct Var_to_reclaim{
 		}
 		names.clear();
 	}
-	
-	void add_element(const char* dataname) {
-		names.emplace_back(dataname);
-	} 
 
-	list<string>::iterator begin() {
-		return names.begin();
-	}
+	void add_element(const char* dataname) { names.emplace_back(dataname); }
 
-	list<string>::iterator end() {
-		return names.end();
-	}
+	list<string>::iterator begin() { return names.begin(); }
 
-	size_t size() {
-		return names.size();
-	}
+	list<string>::iterator end() { return names.end(); }
+
+	size_t size() { return names.size(); }
 };
 
 
@@ -358,9 +351,9 @@ try {
 	va_list ap;
 
 	Var_to_reclaim list_reclaim;
-	{ 
+	{
 		Global_context::context()[name].share(data, access & PDI_OUT, access & PDI_IN, true);
-		list_reclaim.add_element( name );
+		list_reclaim.add_element(name);
 
 		va_start(ap, access);
 		int i = 0;
@@ -370,7 +363,7 @@ try {
 
 			Global_context::context().logger().trace("\n Multi expose: Sharing `{}' ({}/{}) \n", ++i, list_reclaim.names.size());
 			Global_context::context()[v_name].share(v_data, v_access & PDI_OUT, v_access & PDI_IN, true);
-			list_reclaim.add_element( v_name );
+			list_reclaim.add_element(v_name);
 		}
 		va_end(ap);
 
@@ -379,7 +372,6 @@ try {
 			Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, list_reclaim.size());
 			Global_context::context()[it->c_str()].data_callbacks();
 		}
-
 	}
 
 	Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
