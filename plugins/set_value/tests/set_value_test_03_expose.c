@@ -23,6 +23,7 @@
  ******************************************************************************/
 
 #include <assert.h>
+#include <math.h>
 
 #include <paraconf.h>
 #include <pdi.h>
@@ -167,13 +168,13 @@ int main(int argc, char* argv[])
 
 	//float
 	PDI_access("value_float", (void**)&value_float, PDI_IN);
-	assert(abs(*value_float - 4.14159265f) < 0.000001f);
+	assert(fabsf(*value_float - 4.14159265f) < 0.000001f);
 	PDI_release("value_float");
 
 	PDI_access("float_array", (void**)&float_array, PDI_IN);
-	assert(abs(float_array[0] - 2.23456789f) < 0.000001f);
-	assert(abs(float_array[1] - 13.3456789f) < 0.000001f);
-	assert(abs(float_array[2] - 124.456789f) < 0.000001f);
+	assert(fabsf(float_array[0] - 2.23456789f) < 0.000001f);
+	assert(fabsf(float_array[1] - 13.3456789f) < 0.000001f);
+	assert(fabsf(float_array[2] - 124.456789f) < 0.000001f);
 	PDI_release("float_array");
 
 	//double
