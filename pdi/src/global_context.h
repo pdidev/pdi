@@ -110,7 +110,7 @@ public:
 
 	/** Returns the iterator that corresponds to the provided Data_descriptor name
 	 */
-	Iterator find(const std::string& name);
+	Iterator find(const std::string& name) override;
 
 	/** Triggers a PDI "event"
 	 * \param[in] name the event name
