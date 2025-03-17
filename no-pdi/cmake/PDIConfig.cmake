@@ -29,13 +29,13 @@
 
 # Remove the existing targets if they exist
 if(TARGET PDI_C)
-    remove_library(PDI_C)
+    remove_target(PDI_C)
 endif()
 if(TARGET PDI::pdi)
-    remove_library(PDI::pdi)
+    remove_target(PDI::pdi)
 endif()
 if(TARGET PDI::PDI_C)
-    remove_library(PDI::PDI_C)
+    remove_target(PDI::PDI_C)
 endif()
 
 add_library(PDI_C INTERFACE)
