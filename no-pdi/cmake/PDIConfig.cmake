@@ -27,15 +27,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-# Remove the existing targets if they exist
+# Temporarily rename the existing targets if they exist
 if(TARGET PDI_C)
-    remove_target(PDI_C)
+    set_target_properties(PDI_C PROPERTIES OUTPUT_NAME PDI_C_TEMP)
 endif()
+
 if(TARGET PDI::pdi)
-    remove_target(PDI::pdi)
+    set_target_properties(PDI::pdi PROPERTIES OUTPUT_NAME PDI_pdi_TEMP)
 endif()
+
 if(TARGET PDI::PDI_C)
-    remove_target(PDI::PDI_C)
+    set_target_properties(PDI::PDI_C PROPERTIES OUTPUT_NAME PDI_PDI_C_TEMP)
 endif()
 
 add_library(PDI_C INTERFACE)
@@ -45,3 +47,16 @@ add_library(PDI::PDI_C ALIAS PDI_C)
 set_target_properties(PDI_C PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../include"
 )
+
+# Remove the temporarily renamed targets
+if(TARGET PDI_C_TEMP)
+    remove_library(PDI_C_TEMP)
+endif()
+
+if(TARGET PDI_pdi_TEMP)
+    remove_library(PDI_pdi_TEMP)
+endif()
+
+if(TARGET PDI_PDI_C_TEMP)
+    remove_library(PDI_PDI_C_TEMP)
+endif()
