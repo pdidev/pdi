@@ -27,6 +27,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+# Remove the existing targets if they exist
+if(TARGET PDI_C)
+    remove_library(PDI_C)
+endif()
+if(TARGET PDI::pdi)
+    remove_library(PDI::pdi)
+endif()
+if(TARGET PDI::PDI_C)
+    remove_library(PDI::PDI_C)
+endif()
+
 add_library(PDI_C INTERFACE)
 add_library(PDI::pdi   ALIAS PDI_C)
 add_library(PDI::PDI_C ALIAS PDI_C)
