@@ -105,6 +105,10 @@ endforeach()
 target_compile_features(PDI_unit_tests PRIVATE cxx_std_17)
 target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
+set_target_properties(PDI_unit_tests PROPERTIES
+    INSTALL_RPATH "${CMAKE_BINARY_DIR}/staging/lib"
+)
+
 gtest_discover_tests(PDI_unit_tests)
 
 find_program(ZSH_PROGRAM zsh)
