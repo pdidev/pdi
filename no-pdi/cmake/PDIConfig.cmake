@@ -27,17 +27,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-# Collect the list of existing targets
-get_cmake_property(_targets TARGETS)
-
-# Remove the existing targets from the list
-list(REMOVE_ITEM _targets PDI_C)
-list(REMOVE_ITEM _targets PDI::pdi)
-list(REMOVE_ITEM _targets PDI::PDI_C)
-
-add_library(PDI_C INTERFACE)
-add_library(PDI::pdi   ALIAS PDI_C)
-add_library(PDI::PDI_C ALIAS PDI_C)
+if (NOT TARGET PDI_C)
+    add_library(PDI_C INTERFACE)
+    add_library(PDI::pdi   ALIAS PDI_C)
+    add_library(PDI::PDI_C ALIAS PDI_C)
+else()
+    message(WARNING "PDI library is already defined and won't be overwritten.")
+endif()
 
 set_target_properties(PDI_C PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../include"
