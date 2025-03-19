@@ -27,13 +27,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-if (NOT TARGET PDI_C)
-    add_library(PDI_C INTERFACE)
-    add_library(PDI::pdi   ALIAS PDI_C)
-    add_library(PDI::PDI_C ALIAS PDI_C)
-else()
-    message(WARNING "PDI library is already defined and won't be overwritten.")
-endif()
+add_library(PDI_C INTERFACE)
+add_library(PDI::pdi   ALIAS PDI_C)
+add_library(PDI::PDI_C ALIAS PDI_C)
 
 set_target_properties(PDI_C PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../include"
