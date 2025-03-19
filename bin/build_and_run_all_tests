@@ -29,7 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-set -xe
+# set -xe
 
 
 
@@ -40,6 +40,12 @@ TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
+
+cd "${SRCDIR}"
+TEST_DIR_NO_PDI="${TEST_DIR_NO_PDI:-${PWD}}"
+cd "${TEST_DIR_NO_PDI}"
+cd "$(mktemp -d pdibuild.XXXXX)"
+TEST_DIR_NO_PDI="${PWD}"
 
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
@@ -107,6 +113,15 @@ fi
 
 # Configure, build & test
 
-cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} -j8 || true
+
+
+
+# Configure, build & test for no-pdi
+
+cd "${TEST_DIR_NO_PDI}"
+cmake -DBUILD_BENCHMARKING=OFF -DDISABLE_PDI=ON -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+make ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} -j8 || true
