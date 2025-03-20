@@ -38,6 +38,8 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Aligned memory allocation using `operator new`, fixes
+  [#550](https://github.com/pdidev/pdi/issues/550) 
 
 #### Security
 
