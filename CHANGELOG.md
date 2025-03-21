@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Fix known MacOS compile & execution issues 
+  [[#562](https://github.com/pdidev/pdi/issues/562)]
 
 ### Security
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -180,10 +180,18 @@ inline constexpr auto ALL_VALS<int8_t>
        std::numeric_limits<int8_t>::max()};
 
 template <>
-inline constexpr auto ALL_VALS<uint64_t> = {std::numeric_limits<uint64_t>::min() + 1, -1ul, 1ul, std::numeric_limits<uint64_t>::max()};
+inline constexpr auto ALL_VALS<uint64_t>
+	= {static_cast<uint64_t>(std::numeric_limits<uint64_t>::min() + 1),
+       static_cast<uint64_t>(-1),
+       static_cast<uint64_t>(1),
+       std::numeric_limits<uint64_t>::max()};
 
 template <>
-inline constexpr auto ALL_VALS< int64_t> = {std::numeric_limits<int64_t>::min() + 1, -1l, 1l, std::numeric_limits<int64_t>::max()};
+inline constexpr auto ALL_VALS<int64_t>
+	= {static_cast<int64_t>(std::numeric_limits<int64_t>::min() + 1),
+       static_cast<int64_t>(-1),
+       static_cast<int64_t>(1),
+       std::numeric_limits<int64_t>::max()};
 
 template <>
 inline constexpr auto ALL_VALS<float> = {std::numeric_limits<float>::min(), -1.5f, -1.f, -.5f, .5f, 1.f, 1.5f, std::numeric_limits<float>::max()};
