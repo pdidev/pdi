@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#419](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/419)
 
 ### Changed
+* Throw a waring instead of an error when a unknown key is parsed.
 
 ### Deprecated
 
