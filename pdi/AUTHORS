@@ -26,6 +26,9 @@ Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * Fortran interface fixes
 * developments in the fortran interface
 
+Thomas Padioleau (thomas.padioleau@cea.fr)
+* Compile warning fix
+
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
