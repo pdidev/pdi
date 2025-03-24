@@ -332,6 +332,34 @@ try {
 	return status;
 }
 
+PDI_status_t PDI_expose_const(const char* name, const void* data)
+try {
+	Paraconf_wrapper fw;
+	if (PDI_status_t status = PDI_share_const(name, data)) {
+		if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
+		return status;
+	}
+
+	if (!g_transaction.empty()) { // defer the reclaim
+		g_transaction_data.emplace_back(name);
+	} else { // do the reclaim now
+		if (PDI_status_t status = PDI_reclaim(name)) return status;
+	}
+	return PDI_OK;
+} catch (const Error& e) {
+	PDI_status_t status = g_error_context.return_err(e);
+	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
+} catch (const exception& e) {
+	PDI_status_t status = g_error_context.return_err(e);
+	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
+} catch (...) {
+	PDI_status_t status = g_error_context.return_err();
+	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
+}
+
 PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...)
 try {
 	Paraconf_wrapper fw;

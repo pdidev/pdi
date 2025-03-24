@@ -260,6 +260,13 @@ PDI_status_t PDI_EXPORT PDI_event(const char* event);
  */
 PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t access);
 
+/** Shortly exposes some const data to PDI. Equivalent to PDI_share_const + PDI_reclaim.
+ * \param[in] name the data name
+ * \param[in] data the exposed data
+ * \return an error status
+ */
+PDI_status_t PDI_EXPORT PDI_expose_const(const char* name, const void* data);
+
 /** Performs multiple exposes at once. All the data is shared in order they were specified
  *  and reclaimed in reversed order after an event is triggered.
  *
