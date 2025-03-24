@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -142,6 +142,31 @@ void warn_status(PDI_status_t status, const char* message, void*)
 		Global_context::context().logger().warn(message);
 	}
 }
+
+struct Var_to_reclaim {
+	list<string> names;
+
+	Var_to_reclaim() { names.clear(); }
+
+	~Var_to_reclaim()
+	{
+		int counter = 0;
+		for (auto&& it = names.rbegin(); it != names.rend(); it++) {
+			Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, names.size());
+			Global_context::context()[it->c_str()].reclaim();
+		}
+		names.clear();
+	}
+
+	void add_element(const char* dataname) { names.emplace_back(dataname); }
+
+	list<string>::iterator begin() { return names.begin(); }
+
+	list<string>::iterator end() { return names.end(); }
+
+	size_t size() { return names.size(); }
+};
+
 
 } // namespace
 
@@ -324,37 +349,36 @@ PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* da
 try {
 	Paraconf_wrapper fw;
 	va_list ap;
-	list<string> transaction_data;
-	PDI_status_t status;
-	if ((status = PDI_share(name, data, access))) return status;
-	transaction_data.emplace_back(name);
 
-	va_start(ap, access);
-	int i = 0;
-	while (const char* v_name = va_arg(ap, const char*)) {
-		void* v_data = va_arg(ap, void*);
-		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
-		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
-		if ((status = PDI_share(v_name, v_data, v_access))) {
-			break;
+	Var_to_reclaim list_reclaim;
+	{
+		Global_context::context()[name].share(data, access & PDI_OUT, access & PDI_IN, true);
+		list_reclaim.add_element(name);
+
+		va_start(ap, access);
+		int i = 0;
+		while (const char* v_name = va_arg(ap, const char*)) {
+			void* v_data = va_arg(ap, void*);
+			PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
+
+			Global_context::context().logger().trace("\n Multi expose: Sharing `{}' ({}/{}) \n", ++i, list_reclaim.names.size());
+			Global_context::context()[v_name].share(v_data, v_access & PDI_OUT, v_access & PDI_IN, true);
+			list_reclaim.add_element(v_name);
 		}
-		transaction_data.emplace_back(v_name);
-	}
-	va_end(ap);
+		va_end(ap);
 
-	if (!status) { //trigger event only when all data is available
-		Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
-		status = PDI_event(event_name);
+		i = 0;
+		for (auto&& it = list_reclaim.begin(); it != list_reclaim.end(); it++) {
+			Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, list_reclaim.size());
+			Global_context::context()[it->c_str()].data_callbacks();
+		}
 	}
 
-	i = 0;
-	for (auto&& it = transaction_data.rbegin(); it != transaction_data.rend(); it++) {
-		Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++i, transaction_data.size());
-		PDI_status_t r_status = PDI_reclaim(it->c_str());
-		status = !status ? r_status : status; //if it is first error, save its status (try to reclaim other desc anyway)
-	}
-	//the status of the first error is returned
-	return status;
+	Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
+	Global_context::context().event(event_name);
+
+	// remark: The reclaim of the data are done in the destructor of the Var_to_reclaim (see struct Var_to_reclaim)
+	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
 } catch (const exception& e) {
