@@ -252,6 +252,18 @@ try {
 	return g_error_context.return_err();
 }
 
+PDI_status_t PDI_share_const(const char* name, const void* buffer)
+try {
+	PDI_share(name, const_cast<void*>(buffer), PDI_OUT);
+	return PDI_OK;
+} catch (const Error& e) {
+	return g_error_context.return_err(e);
+} catch (const exception& e) {
+	return g_error_context.return_err(e);
+} catch (...) {
+	return g_error_context.return_err();
+}
+
 PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
 try {
 	Paraconf_wrapper fw;

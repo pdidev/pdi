@@ -102,3 +102,36 @@ TEST_F(PdiCApiTest, MetadataDensification)
 		EXPECT_EQ(dense_array[i], (i / 20 + 1) * 100 + (i / 5 % 4 + 2) * 10 + i % 5 + 3);
 	}
 }
+
+/* Name:                PdiCApiTest.PDI_expose
+ *
+ * Tested functions:    PDI_share(), PDI_share_const()
+ *
+ * Description:         Test PDI_share API call
+ */
+TEST_F(PdiCApiTest, PDI_share)
+{
+	static const char* CONFIG_YAML
+		= "logging: trace         \n"
+		  "metadata:              \n"
+		  "  my_int: int \n";
+		  "  my_const_int: int \n";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	int i=42;
+	const int j=51;
+	int* int_ptr;
+
+	// share
+	PDI_share("my_int", &i, PDI_OUT);
+	EXPECT_EQ(i, 42);
+	PDI_access("my_int", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 42);
+
+	// share_const
+	PDI_share_const("my_const_int", &j);	// no need for access as it is const data
+	EXPECT_EQ(j, 51);
+	PDI_access("my_const_int", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 51);
+}
