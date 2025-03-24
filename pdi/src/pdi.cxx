@@ -162,9 +162,9 @@ try {
 
 template<>
 PDI_status_t PDI_share(const char* name, const void* buffer, PDI_inout_t access) {
-	// if(PDI_OUT != access) {
-	// 	throw Right_error("Sharing a const buffer can only be done using PDI_IN access rights.");
-	// }
+	if(PDI_OUT != access) {
+		throw Right_error("Sharing a const buffer can only be done using PDI_IN access rights.");
+	}
 	return PDI_share(name, const_cast<void*>(buffer), access);
 }
 

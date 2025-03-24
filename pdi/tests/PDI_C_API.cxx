@@ -185,4 +185,13 @@ TEST_F(PdiCApiTest, PDI_share_expose_multi_expose)
 	// EXPECT_EQ(*int_ptr, 51);
 	// PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
 	// EXPECT_EQ(*int_ptr, 51);
+
+	// right error
+	PDI_errhandler(PDI_NULL_HANDLER);
+	i=48;
+	PDI_status_t err = PDI_multi_expose("event",
+		"my_int1", &i, PDI_INOUT,	// ok
+		"my_int2", &j, PDI_INOUT,	// error
+		NULL);
+	EXPECT_EQ(err, PDI_ERR_RIGHT);
 }
