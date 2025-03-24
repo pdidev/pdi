@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -110,7 +110,7 @@ public:
 
 	/** Returns the iterator that corresponds to the provided Data_descriptor name
 	 */
-	Iterator find(const std::string& name);
+	Iterator find(const std::string& name) override;
 
 	/** Triggers a PDI "event"
 	 * \param[in] name the event name
