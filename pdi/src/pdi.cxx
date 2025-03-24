@@ -360,7 +360,7 @@ try {
 	return status;
 }
 
-PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...)
+PDI_status_t PDI_multi_expose(const char* event_name, const char* name, const void* data, PDI_inout_t access, ...)
 try {
 	Paraconf_wrapper fw;
 	va_list ap;

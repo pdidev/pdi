@@ -282,7 +282,7 @@ PDI_status_t PDI_EXPORT PDI_expose_const(const char* name, const void* data);
  *                inidactes an end of the list.
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...);
+PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, const void* data, PDI_inout_t access, ...);
 
 #ifdef PDI_WITH_DEPRECATED
 
