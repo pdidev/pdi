@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -102,7 +102,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if (key == "logging") {
 			// pass
 		} else {
-			throw Config_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
+			ctx.logger().warn("Unknown key in HDF5 file configuration: `{}'", key);
 		}
 	});
 
