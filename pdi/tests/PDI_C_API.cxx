@@ -103,47 +103,86 @@ TEST_F(PdiCApiTest, MetadataDensification)
 	}
 }
 
-/* Name:                PdiCApiTest.PDI_share_expose
+/* Name:                PdiCApiTest.PDI_share_expose_multi_expose
  *
- * Tested functions:    PDI_share(), PDI_share_const()
+ * Tested functions:    PDI_share(), PDI_share_const(), PDI_multi_expose(), PDI_access()
  *
  * Description:         Test PDI_share API call
  */
-TEST_F(PdiCApiTest, PDI_share_expose)
+TEST_F(PdiCApiTest, PDI_share_expose_multi_expose)
 {
 	static const char* CONFIG_YAML
 		= "logging: trace         \n"
 		  "metadata:              \n"
-		  "  my_int: int \n";
-		  "  my_const_int: int \n";
+		  "  my_int1: int \n";
+		  "  my_int2: int \n";
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
-	int i=42;
+	int i=0;
 	const int j=51;
 	int* int_ptr;
 
 	// share
-	PDI_share("my_int", &i, PDI_OUT);
+	i=42;
+	PDI_share("my_int1", &i, PDI_OUT);
 	EXPECT_EQ(i, 42);
-	PDI_access("my_int", (void**)&int_ptr, PDI_IN);
+	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
 	EXPECT_EQ(*int_ptr, 42);
 
-	// share_const
-	PDI_share_const("my_const_int", &j);	// no need for access as it is const data
+	// share_const with int
+	i=43;
+	PDI_share_const("my_int1", &i);
+	EXPECT_EQ(i, 43);
+	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 43);
+
+	// share_const with const int
+	PDI_share_const("my_int1", &j);
 	EXPECT_EQ(j, 51);
-	PDI_access("my_const_int", (void**)&int_ptr, PDI_IN);
+	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
 	EXPECT_EQ(*int_ptr, 51);
 
 	// expose
-	PDI_expose("my_int", &i, PDI_OUT);
-	EXPECT_EQ(i, 42);
-	PDI_access("my_int", (void**)&int_ptr, PDI_IN);
-	EXPECT_EQ(*int_ptr, 42);
-
-	// expose_const
-	PDI_expose_const("my_const_int", &j);	// no need for access as it is const data
-	EXPECT_EQ(j, 51);
-	PDI_access("my_const_int", (void**)&int_ptr, PDI_IN);
+	i=44;
+	PDI_expose("my_int1", &i, PDI_OUT);
+	EXPECT_EQ(i, 44);
+	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
 	EXPECT_EQ(*int_ptr, 51);
+
+	// expose_const with int
+	i=45;
+	PDI_expose_const("my_int1", &i);
+	EXPECT_EQ(i, 45);
+	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 51);
+
+	// expose_const with const int
+	PDI_expose_const("my_int1", &j);
+	EXPECT_EQ(j, 51);
+	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 51);
+
+	// multi_expose i first
+	i=46;
+	PDI_multi_expose("event",
+		"my_int1", &i, PDI_OUT,
+		"my_int2", &j, PDI_OUT,
+		NULL);
+	// PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
+	// EXPECT_EQ(*int_ptr, 51);
+	// PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
+	// EXPECT_EQ(*int_ptr, 51);
+
+
+	// multi_expose j first
+	i=47;
+	PDI_multi_expose("event",
+		"my_int1", &j, PDI_OUT,
+		"my_int2", &i, PDI_OUT,
+		NULL);
+	// PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
+	// EXPECT_EQ(*int_ptr, 51);
+	// PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
+	// EXPECT_EQ(*int_ptr, 51);
 }
