@@ -4,6 +4,13 @@ All notable changes to the Deisa plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [1.8.3] - 2025-02-25
+
+#### Fixed
+* Fixed a bug where the plugin would not call the bridge's release method.
+  [#534](https://github.com/pdidev/pdi/issues/534)
+
+
 ## [1.8.1] - 2025-01-23
 
 ### Fixed

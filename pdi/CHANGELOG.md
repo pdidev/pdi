@@ -38,8 +38,33 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Aligned memory allocation using `operator new`, fixes
+  [#550](https://github.com/pdidev/pdi/issues/550) 
 
 #### Security
+
+
+
+## [1.8.3] - 2025-02-25
+
+### For users
+
+#### Fixed
+* Correctlty detect python path when distutils is part of setuptools, fixes
+  [#544](https://github.com/pdidev/pdi/issues/544)
+* Support MacOSX in env.sh to correctly load PDI there, fixes
+  [#540](https://github.com/pdidev/pdi/issues/540)
+
+
+
+## [1.8.2] - 2025-02-20
+
+### For plugin developers
+
+#### Fixed
+* Improve documentation generation, add sidepanel & fix repository URL, fixes
+  [#521](https://github.com/pdidev/pdi/issues/521) and
+  [#522](https://github.com/pdidev/pdi/issues/522)
 
 
 
@@ -52,6 +77,7 @@ and this project adheres to
   [#507](https://github.com/pdidev/pdi/issues/507)
 * Fixed website generation
   [#506](https://github.com/pdidev/pdi/issues/506)
+
 
 
 ## [1.8.0] - 2024-11-28
@@ -83,7 +109,6 @@ and this project adheres to
   [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
 * Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)`
   helper function.
-
 
 #### Changed
 * Replaced the astyle based indentation by a clang-format one, fixes

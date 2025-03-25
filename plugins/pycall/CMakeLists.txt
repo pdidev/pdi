@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -35,7 +35,7 @@ include(CTest)
 
 include(GNUInstallDirs)
 
-find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 3.8.2 REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
 set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)

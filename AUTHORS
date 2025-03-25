@@ -22,6 +22,9 @@ François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
 * Bug fix, JSON plugin
 
+Jacques Morice - CEA (jacques.morice@cea.fr)
+* fix the directory of hdf5 library for rhel
+
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international

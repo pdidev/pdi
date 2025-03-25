@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,9 @@ string Expression::Impl::to_string(Context& ctx) const
 
 Ref Expression::Impl::to_ref(Context& ctx, Datatype_sptr type) const
 {
-	Ref_rw result{aligned_alloc(type->alignment(), type->buffersize()), [](void* v) { free(v); }, type, true, true};
+	auto al = static_cast<std::align_val_t>(type->alignment());
+	auto data = operator new (type->buffersize(), al);
+	Ref_rw result{data, [al](void* v) { operator delete (v, al); }, type, true, true};
 	copy_value(ctx, result.get(), type);
 	return result;
 }
