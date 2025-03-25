@@ -103,9 +103,10 @@ TEST_F(PdiCApiTest, MetadataDensification)
 	}
 }
 
-void test_share(PDI_inout_t access) {
-	int i=42;
-	const int j=51;
+void test_share(PDI_inout_t access)
+{
+	int i = 42;
+	const int j = 51;
 	int* int_ptr;
 
 	// share int
@@ -133,7 +134,8 @@ void test_share(PDI_inout_t access) {
  *
  * Description:         Test the share() API call with non-const and const data
  */
-TEST_F(PdiCApiTest, PDI_share) {
+TEST_F(PdiCApiTest, PDI_share)
+{
 	static const char* CONFIG_YAML = "logging: trace\n";
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
@@ -141,10 +143,10 @@ TEST_F(PdiCApiTest, PDI_share) {
 	test_share(PDI_INOUT);
 }
 
-
-void test_expose(PDI_inout_t access) {
-	int i=42;
-	const int j=51;
+void test_expose(PDI_inout_t access)
+{
+	int i = 42;
+	const int j = 51;
 	int* int_ptr;
 
 	// expose int
@@ -164,7 +166,8 @@ void test_expose(PDI_inout_t access) {
  *
  * Description:         Test the expose() API call with non-const and const data
  */
-TEST_F(PdiCApiTest, PDI_expose) {
+TEST_F(PdiCApiTest, PDI_expose)
+{
 	static const char* CONFIG_YAML = "logging: trace\n";
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
@@ -172,16 +175,14 @@ TEST_F(PdiCApiTest, PDI_expose) {
 	test_expose(PDI_INOUT);
 }
 
-void test_multi_expose(PDI_inout_t access) {
-	int i=42;
-	const int j=51;
+void test_multi_expose(PDI_inout_t access)
+{
+	int i = 42;
+	const int j = 51;
 	int* int_ptr;
 
 	// multi_expose int first
-	EXPECT_EQ(PDI_multi_expose("event",
-		"my_int1", &i, access,
-		"my_int2", &j, access,
-		NULL), PDI_OK);
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &i, access, "my_int2", &j, access, NULL), PDI_OK);
 
 	// PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
 	// EXPECT_EQ(*int_ptr, 51);
@@ -189,10 +190,7 @@ void test_multi_expose(PDI_inout_t access) {
 	// EXPECT_EQ(*int_ptr, 46);
 
 	// multi_expose const int first
-	EXPECT_EQ(PDI_multi_expose("event",
-		"my_int1", &j, access,
-		"my_int2", &i, access,
-		NULL), PDI_OK);
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &j, access, "my_int2", &i, access, NULL), PDI_OK);
 
 	// PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
 	// EXPECT_EQ(*int_ptr, 51);
@@ -206,7 +204,8 @@ void test_multi_expose(PDI_inout_t access) {
  *
  * Description:         Test the multi_expose() API call with non-const and const data
  */
-TEST_F(PdiCApiTest, PDI_multi_expose) {
+TEST_F(PdiCApiTest, PDI_multi_expose)
+{
 	static const char* CONFIG_YAML = "logging: trace\n";
 	PDI_init(PC_parse_string(CONFIG_YAML));
 

@@ -145,10 +145,10 @@ void warn_status(PDI_status_t status, const char* message, void*)
 
 } // namespace
 
-
 namespace PDI {
 
-PDI_status_t share(const char* name, void* buffer, PDI_inout_t access) {
+PDI_status_t share(const char* name, void* buffer, PDI_inout_t access)
+{
 	try {
 		Paraconf_wrapper fw;
 		Global_context::context()[name].share(buffer, access & PDI_OUT, access & PDI_IN);
@@ -162,12 +162,14 @@ PDI_status_t share(const char* name, void* buffer, PDI_inout_t access) {
 	}
 }
 
-PDI_status_t share(const char* name, const void* buffer, PDI_inout_t access) {
+PDI_status_t share(const char* name, const void* buffer, PDI_inout_t access)
+{
 	return share(name, const_cast<void*>(buffer), access);
 }
 
-template<typename T>
-PDI_status_t expose(const char* name, T data, PDI_inout_t access) {
+template <typename T>
+PDI_status_t expose(const char* name, T data, PDI_inout_t access)
+{
 	try {
 		Paraconf_wrapper fw;
 		if (PDI_status_t status = PDI::share(name, data, access)) {
@@ -197,7 +199,6 @@ PDI_status_t expose(const char* name, T data, PDI_inout_t access) {
 }
 
 } // namespace PDI
-
 
 extern "C" {
 
@@ -293,11 +294,13 @@ try {
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_share(const char* name, void* buffer, PDI_inout_t access) {
+PDI_status_t PDI_share(const char* name, void* buffer, PDI_inout_t access)
+{
 	return PDI::share(name, buffer, access);
 }
 
-PDI_status_t PDI_share_const(const char* name, const void* buffer) {
+PDI_status_t PDI_share_const(const char* name, const void* buffer)
+{
 	return PDI::share(name, buffer, PDI_OUT);
 }
 
@@ -341,11 +344,13 @@ try {
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access) {
+PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access)
+{
 	return PDI::expose(name, data, access);
 }
 
-PDI_status_t PDI_expose_const(const char* name, const void* data) {
+PDI_status_t PDI_expose_const(const char* name, const void* data)
+{
 	return PDI::expose(name, data, PDI_OUT);
 }
 
