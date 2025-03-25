@@ -111,11 +111,7 @@ TEST_F(PdiCApiTest, MetadataDensification)
  */
 TEST_F(PdiCApiTest, PDI_share_expose_multi_expose)
 {
-	static const char* CONFIG_YAML
-		= "logging: trace         \n"
-		  "metadata:              \n"
-		  "  my_int1: int \n";
-		  "  my_int2: int \n";
+	static const char* CONFIG_YAML = "logging: trace\n";
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
@@ -145,53 +141,63 @@ TEST_F(PdiCApiTest, PDI_share_expose_multi_expose)
 
 	// expose
 	i=44;
-	PDI_expose("my_int1", &i, PDI_OUT);
+	PDI_expose("my_int1", &i, PDI_OUT); // calls share() + reclaim()
 	EXPECT_EQ(i, 44);
 	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
-	EXPECT_EQ(*int_ptr, 51);
+	EXPECT_EQ(*int_ptr, 51);	// previous stack value
 
 	// expose_const with int
 	i=45;
-	PDI_expose_const("my_int1", &i);
+	PDI_expose_const("my_int1", &i); // calls share() + reclaim()
 	EXPECT_EQ(i, 45);
 	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
-	EXPECT_EQ(*int_ptr, 51);
+	EXPECT_EQ(*int_ptr, 51);	// previous stack value
 
 	// expose_const with const int
-	PDI_expose_const("my_int1", &j);
+	PDI_expose_const("my_int1", &j); // calls share() + reclaim()
 	EXPECT_EQ(j, 51);
 	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
-	EXPECT_EQ(*int_ptr, 51);
+	EXPECT_EQ(*int_ptr, 51);	// previous stack value
 
-	// multi_expose i first
+	// set value for my_int2
+	i=1664;
+	PDI_share("my_int2", &i, PDI_OUT);
+	EXPECT_EQ(i, 1664);
+	PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 1664);
+	PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 1664);
+
+	// multi_expose i (int) first
 	i=46;
-	PDI_multi_expose("event",
+	EXPECT_EQ(PDI_multi_expose("event",
 		"my_int1", &i, PDI_OUT,
 		"my_int2", &j, PDI_OUT,
-		NULL);
-	// PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
-	// EXPECT_EQ(*int_ptr, 51);
-	// PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
-	// EXPECT_EQ(*int_ptr, 51);
+		NULL), PDI_OK);
 
+	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 51);
+	PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 46);
 
-	// multi_expose j first
+	// multi_expose j (const int) first
 	i=47;
-	PDI_multi_expose("event",
+	EXPECT_EQ(PDI_multi_expose("event",
 		"my_int1", &j, PDI_OUT,
 		"my_int2", &i, PDI_OUT,
-		NULL);
-	// PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
-	// EXPECT_EQ(*int_ptr, 51);
-	// PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
-	// EXPECT_EQ(*int_ptr, 51);
+		NULL), PDI_OK);
+
+	PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 51);
+	PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
+	EXPECT_EQ(*int_ptr, 47);
 
 	// right error
-	PDI_errhandler(PDI_NULL_HANDLER);
+	PDI_errhandler_t old_handler = PDI_errhandler(PDI_NULL_HANDLER);	// disable default error handler
 	i=48;
-	PDI_status_t err = PDI_multi_expose("event",
+	EXPECT_EQ(PDI_multi_expose("event",
 		"my_int1", &i, PDI_INOUT,	// ok
 		"my_int2", &j, PDI_INOUT,	// error
-		NULL);
-	EXPECT_EQ(err, PDI_ERR_RIGHT);
+		NULL), PDI_ERR_RIGHT);
+	PDI_errhandler(old_handler);	// restore default error handler
 }
