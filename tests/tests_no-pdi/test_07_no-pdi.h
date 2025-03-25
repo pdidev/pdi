@@ -24,7 +24,6 @@
 
 #include <assert.h>
 
-#include <paraconf.h>
 #include <pdi.h>
 
 void share()

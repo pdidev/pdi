@@ -55,6 +55,9 @@
 #ifndef PDI_H_
 #define PDI_H_
 
+#include <paraconf.h>
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
