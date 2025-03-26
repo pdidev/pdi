@@ -204,18 +204,7 @@ typedef enum PDI_inout_e {
  * * PDI_IN means PDI can set the buffer content
  * * PDI_OUT means the buffer contains data that can be accessed by PDI
  */
-PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t access);
-
-/** Shares some const data with PDI. The user code should not modify it before
- * a call to either PDI_release or PDI_reclaim.
- * \param[in] name the data name
- * \param[in,out] data the accessed data
-
- * \return an error status
- * \pre the user code owns the data buffer
- * \post ownership of the data buffer is shared between PDI and the user code
- */
-PDI_status_t PDI_EXPORT PDI_share_const(const char* name, const void* data);
+PDI_status_t PDI_EXPORT PDI_share(const char* name, const void* data, PDI_inout_t access);
 
 /** Requests for PDI to access a data buffer.
  * \param[in] name the data name
@@ -258,14 +247,7 @@ PDI_status_t PDI_EXPORT PDI_event(const char* event);
  *                   by PDI
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t access);
-
-/** Shortly exposes some const data to PDI. Equivalent to PDI_share_const + PDI_reclaim.
- * \param[in] name the data name
- * \param[in] data the exposed data
- * \return an error status
- */
-PDI_status_t PDI_EXPORT PDI_expose_const(const char* name, const void* data);
+PDI_status_t PDI_EXPORT PDI_expose(const char* name, const void* data, PDI_inout_t access);
 
 /** Performs multiple exposes at once. All the data is shared in order they were specified
  *  and reclaimed in reversed order after an event is triggered.

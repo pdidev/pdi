@@ -145,61 +145,6 @@ void warn_status(PDI_status_t status, const char* message, void*)
 
 } // namespace
 
-namespace PDI {
-
-PDI_status_t share(const char* name, void* buffer, PDI_inout_t access)
-{
-	try {
-		Paraconf_wrapper fw;
-		Global_context::context()[name].share(buffer, access & PDI_OUT, access & PDI_IN);
-		return PDI_OK;
-	} catch (const Error& e) {
-		return g_error_context.return_err(e);
-	} catch (const exception& e) {
-		return g_error_context.return_err(e);
-	} catch (...) {
-		return g_error_context.return_err();
-	}
-}
-
-PDI_status_t share(const char* name, const void* buffer, PDI_inout_t access)
-{
-	return share(name, const_cast<void*>(buffer), access);
-}
-
-template <typename T>
-PDI_status_t expose(const char* name, T data, PDI_inout_t access)
-{
-	try {
-		Paraconf_wrapper fw;
-		if (PDI_status_t status = PDI::share(name, data, access)) {
-			if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
-			return status;
-		}
-
-		if (!g_transaction.empty()) { // defer the reclaim
-			g_transaction_data.emplace_back(name);
-		} else { // do the reclaim now
-			if (PDI_status_t status = PDI_reclaim(name)) return status;
-		}
-		return PDI_OK;
-	} catch (const Error& e) {
-		PDI_status_t status = g_error_context.return_err(e);
-		if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
-		return status;
-	} catch (const exception& e) {
-		PDI_status_t status = g_error_context.return_err(e);
-		if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
-		return status;
-	} catch (...) {
-		PDI_status_t status = g_error_context.return_err();
-		if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
-		return status;
-	}
-}
-
-} // namespace PDI
-
 extern "C" {
 
 const PDI_errhandler_t PDI_ASSERT_HANDLER = {&assert_status, NULL};
@@ -294,14 +239,17 @@ try {
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_share(const char* name, void* buffer, PDI_inout_t access)
-{
-	return PDI::share(name, buffer, access);
-}
-
-PDI_status_t PDI_share_const(const char* name, const void* buffer)
-{
-	return PDI::share(name, buffer, PDI_OUT);
+PDI_status_t PDI_share(const char* name, const void* buffer, PDI_inout_t access)
+try {
+	Paraconf_wrapper fw;
+	Global_context::context()[name].share(const_cast<void*>(buffer), access & PDI_OUT, access & PDI_IN);
+	return PDI_OK;
+} catch (const Error& e) {
+	return g_error_context.return_err(e);
+} catch (const exception& e) {
+	return g_error_context.return_err(e);
+} catch (...) {
+	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
@@ -344,14 +292,32 @@ try {
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access)
-{
-	return PDI::expose(name, data, access);
-}
+PDI_status_t PDI_expose(const char* name, const void* data, PDI_inout_t access)
+try {
+	Paraconf_wrapper fw;
+	if (PDI_status_t status = PDI_share(name, data, access)) {
+		if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
+		return status;
+	}
 
-PDI_status_t PDI_expose_const(const char* name, const void* data)
-{
-	return PDI::expose(name, data, PDI_OUT);
+	if (!g_transaction.empty()) { // defer the reclaim
+		g_transaction_data.emplace_back(name);
+	} else { // do the reclaim now
+		if (PDI_status_t status = PDI_reclaim(name)) return status;
+	}
+	return PDI_OK;
+} catch (const Error& e) {
+	PDI_status_t status = g_error_context.return_err(e);
+	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
+} catch (const exception& e) {
+	PDI_status_t status = g_error_context.return_err(e);
+	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
+} catch (...) {
+	PDI_status_t status = g_error_context.return_err();
+	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
+	return status;
 }
 
 PDI_status_t PDI_multi_expose(const char* event_name, const char* name, const void* data, PDI_inout_t access, ...)
@@ -360,7 +326,7 @@ try {
 	va_list ap;
 	list<string> transaction_data;
 	PDI_status_t status;
-	if ((status = PDI::share(name, data, access))) return status;
+	if ((status = PDI_share(name, data, access))) return status;
 	transaction_data.emplace_back(name);
 
 	va_start(ap, access);
@@ -369,7 +335,7 @@ try {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, transaction_data.size());
-		if ((status = PDI::share(v_name, v_data, v_access))) {
+		if ((status = PDI_share(v_name, v_data, v_access))) {
 			break;
 		}
 		transaction_data.emplace_back(v_name);

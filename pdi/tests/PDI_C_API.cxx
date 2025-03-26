@@ -115,14 +115,8 @@ void test_share(PDI_inout_t access)
 	EXPECT_EQ(PDI_access("my_int1", (void**)&int_ptr, PDI_IN), PDI_OK);
 	EXPECT_EQ(*int_ptr, 42);
 
-	// share_const with int
-	EXPECT_EQ(PDI_share_const("my_int1", &i), PDI_OK);
-	EXPECT_EQ(i, 42);
-	EXPECT_EQ(PDI_access("my_int1", (void**)&int_ptr, PDI_IN), PDI_OK);
-	EXPECT_EQ(*int_ptr, 42);
-
-	// share_const with const int
-	EXPECT_EQ(PDI_share_const("my_int1", &j), PDI_OK);
+	// share with const int
+	EXPECT_EQ(PDI_share("my_int1", &j, access), PDI_OK);
 	EXPECT_EQ(j, 51);
 	EXPECT_EQ(PDI_access("my_int1", (void**)&int_ptr, PDI_IN), PDI_OK);
 	EXPECT_EQ(*int_ptr, 51);
@@ -143,23 +137,6 @@ TEST_F(PdiCApiTest, PDI_share)
 	test_share(PDI_INOUT);
 }
 
-void test_expose(PDI_inout_t access)
-{
-	int i = 42;
-	const int j = 51;
-	int* int_ptr;
-
-	// expose int
-	EXPECT_EQ(PDI_expose("my_int1", &i, access), PDI_OK);
-	EXPECT_EQ(i, 42);
-	// EXPECT_EQ(PDI_access("my_int1", (void**)&int_ptr, PDI_IN), PDI_UNAVAILABLE);
-
-	// expose const int
-	EXPECT_EQ(PDI_expose_const("my_int1", &j), PDI_OK);
-	EXPECT_EQ(j, 51);
-	// EXPECT_EQ(PDI_access("my_int1", (void**)&int_ptr, PDI_IN), PDI_UNAVAILABLE);
-}
-
 /* Name:                PdiCApiTest.PDI_expose
  *
  * Tested functions:    PDI_expose(), PDI_expose_const()
@@ -171,31 +148,15 @@ TEST_F(PdiCApiTest, PDI_expose)
 	static const char* CONFIG_YAML = "logging: trace\n";
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
-	test_expose(PDI_OUT);
-	test_expose(PDI_INOUT);
-}
-
-void test_multi_expose(PDI_inout_t access)
-{
 	int i = 42;
 	const int j = 51;
-	int* int_ptr;
 
-	// multi_expose int first
-	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &i, access, "my_int2", &j, access, NULL), PDI_OK);
-
-	// PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
-	// EXPECT_EQ(*int_ptr, 51);
-	// PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
-	// EXPECT_EQ(*int_ptr, 46);
-
-	// multi_expose const int first
-	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &j, access, "my_int2", &i, access, NULL), PDI_OK);
-
-	// PDI_access("my_int1", (void**)&int_ptr, PDI_IN);
-	// EXPECT_EQ(*int_ptr, 51);
-	// PDI_access("my_int2", (void**)&int_ptr, PDI_IN);
-	// EXPECT_EQ(*int_ptr, 47);
+	// expose int
+	EXPECT_EQ(PDI_expose("my_int1", &i, PDI_OUT), PDI_OK);
+	EXPECT_EQ(i, 42);
+	// expose const int
+	EXPECT_EQ(PDI_expose("my_int1", &j, PDI_OUT), PDI_OK);
+	EXPECT_EQ(j, 51);
 }
 
 /* Name:                PdiCApiTest.PDI_multi_expose
@@ -209,6 +170,24 @@ TEST_F(PdiCApiTest, PDI_multi_expose)
 	static const char* CONFIG_YAML = "logging: trace\n";
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
-	test_multi_expose(PDI_OUT);
-	test_multi_expose(PDI_INOUT);
+	int i = 42;
+	const int j = 51;
+
+	// multi_expose int first
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &i, PDI_OUT, "my_int2", &j, PDI_OUT, NULL), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(j, 51);
+	// multi_expose const int first
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &j, PDI_OUT, "my_int2", &i, PDI_OUT, NULL), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(j, 51);
+
+	// multi_expose int first
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &i, PDI_INOUT, "my_int2", &j, PDI_INOUT, NULL), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(j, 51);
+	// multi_expose const int first
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &j, PDI_INOUT, "my_int2", &i, PDI_INOUT, NULL), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(j, 51);
 }
