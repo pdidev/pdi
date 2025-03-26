@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -239,10 +239,10 @@ try {
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_share(const char* name, void* buffer, PDI_inout_t access)
+PDI_status_t PDI_share(const char* name, const void* buffer, PDI_inout_t access)
 try {
 	Paraconf_wrapper fw;
-	Global_context::context()[name].share(buffer, access & PDI_OUT, access & PDI_IN);
+	Global_context::context()[name].share(const_cast<void*>(buffer), access & PDI_OUT, access & PDI_IN);
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -292,7 +292,7 @@ try {
 	return g_error_context.return_err();
 }
 
-PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access)
+PDI_status_t PDI_expose(const char* name, const void* data, PDI_inout_t access)
 try {
 	Paraconf_wrapper fw;
 	if (PDI_status_t status = PDI_share(name, data, access)) {
@@ -320,7 +320,7 @@ try {
 	return status;
 }
 
-PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...)
+PDI_status_t PDI_multi_expose(const char* event_name, const char* name, const void* data, PDI_inout_t access, ...)
 try {
 	Paraconf_wrapper fw;
 	va_list ap;
