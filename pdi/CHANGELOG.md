@@ -15,6 +15,8 @@ and this project adheres to
 ### For users
 
 #### Added
+* `PDI_share`, `PDI_expose` and `PDI_multi_expose` now accept `const` data
+  [#553](https://github.com/pdidev/pdi/issues/553)
 
 #### Changed
 
