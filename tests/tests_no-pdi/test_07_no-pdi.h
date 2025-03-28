@@ -122,7 +122,7 @@ int tests(int argc, char* argv[])
 	}
 	
 	const char* errmsg = PDI_errmsg();
-	if (strcmp(errmsg, "") != 0) 
+	if ( strcmp(errmsg, "") != 0 ) 
 	{
 		fprintf(stderr, "*** Error: no-pdi errmsg\n");
 		exit(1);
@@ -138,7 +138,7 @@ int tests(int argc, char* argv[])
 	expose();
 	multi_expose();
 
-	if(	PDI_OK != PDI_finalize()) 
+	if(	PDI_OK != PDI_finalize() ) 
 	{
 		fprintf(stderr, "*** Error: no-pdi finalisation\n");
 		exit(1);
