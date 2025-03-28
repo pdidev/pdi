@@ -30,12 +30,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
 option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
-# option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" OFF)
 option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 
 include(CTest)
 
-# message("DISABLE_PDI:${DISABLE_PDI}")
 if (DISABLE_PDI)
 	add_subdirectory(tests_no-pdi/) # no-pdi
 else()

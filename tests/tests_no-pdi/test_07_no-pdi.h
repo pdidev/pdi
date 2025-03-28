@@ -29,61 +29,105 @@
 void share()
 {
 	int to_share[2] = {1, 1};
-	assert(PDI_OK == PDI_share("to_share", to_share, PDI_OUT));
+	if(	PDI_OK != PDI_share("to_share", to_share, PDI_OUT) ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi share\n");
+		exit(1);
+	}
 }
 
 void access() //access
 {
 	int to_access[2] = {1, 1};
-	assert(PDI_OK == PDI_access("to_access", (void**)&to_access, PDI_IN));
+	if(	PDI_OK != PDI_access("to_access", (void**)&to_access, PDI_IN) ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi access\n");
+		exit(1);
+	}
 }
 
 void release() //access/release
 {
 	int to_release[2] = {1, 1};
 	PDI_access("to_access", (void**)&to_release, PDI_IN);
-	assert(PDI_OK == PDI_release("to_release"));
+	if(	PDI_OK != PDI_release("to_release") ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi release\n");
+		exit(1);
+	}
+	
 }
 
 void reclaim() //share/reclaim
 {
 	int to_reclaim[2] = {1, 1};
 	PDI_share("to_release", to_reclaim, PDI_OUT);
-	assert(PDI_OK == PDI_reclaim("to_reclaim"));
+	if(	PDI_OK != PDI_reclaim("to_reclaim") ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi reclaim\n");
+		exit(1);
+	}
 }
 
 void event()
 {
-	assert(PDI_OK == PDI_event("event_one"));
+	if(	PDI_OK != PDI_event("event_one") ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi event\n");
+		exit(1);
+	}
 }
 
 void expose()
 {
 	int to_expose[2] = {1, 1};
-	assert(PDI_OK == PDI_expose("to_expose", to_expose, PDI_OUT));
+	if(	PDI_OK != PDI_expose("to_expose", to_expose, PDI_OUT) ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi expose\n");
+		exit(1);
+	}
 }
 
 void multi_expose()
 {
 	int to_multi_expose[2] = {1, 1};
 	int to_multi_expose_two[2] = {2, 2};
-	assert(
-		PDI_OK
-		== PDI_multi_expose("event_two", "to_multi_expose", &to_multi_expose, PDI_OUT, "to_multi_expose_two", to_multi_expose_two, PDI_OUT, NULL)
-	);
+	if(	PDI_OK
+	!= PDI_multi_expose("event_two", "to_multi_expose", &to_multi_expose, PDI_OUT, "to_multi_expose_two", to_multi_expose_two, PDI_OUT, NULL) ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi multi_expose\n");
+		exit(1);
+	}
 }
 
 void errhandler()
 {
 	PDI_errhandler_t current_handler = PDI_errhandler(PDI_NULL_HANDLER);
-	assert(current_handler.func == NULL && current_handler.context == NULL);
+	if(	NULL != current_handler.func || NULL != current_handler.context ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi erhandler\n");
+		exit(1);
+	}
 }
 
 int tests(int argc, char* argv[])
 {
-	assert(PDI_OK == PDI_init(PC_parse_path(argv[1])));
+	static const char* CONFIG_YAML
+		= "logging: trace         \n";
 
-	assert(PDI_errmsg());
+	if(	PDI_OK != PDI_init(PC_parse_string(CONFIG_YAML)) ) 
+	{
+		fprintf(stderr, "*** Error: no-pdi initialisation\n");
+		exit(1);
+	}
+	
+	const char* errmsg = PDI_errmsg();
+	if (strcmp(errmsg, "") != 0) 
+	{
+		fprintf(stderr, "*** Error: no-pdi errmsg\n");
+		exit(1);
+	}
+	
 	errhandler();
 
 	share();
@@ -94,7 +138,11 @@ int tests(int argc, char* argv[])
 	expose();
 	multi_expose();
 
-	assert(PDI_OK == PDI_finalize());
+	if(	PDI_OK != PDI_finalize()) 
+	{
+		fprintf(stderr, "*** Error: no-pdi finalisation\n");
+		exit(1);
+	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }
