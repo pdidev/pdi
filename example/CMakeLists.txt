@@ -48,7 +48,14 @@ endif()
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
-find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
+option(EXAMPLES_WITHOUT_PDI		"Disable PDI" OFF)
+
+if(EXAMPLES_WITHOUT_PDI)
+	message(WARNING "PDI is disabled.")
+	include(${CMAKE_CURRENT_LIST_DIR}/../no-pdi/cmake/no-pdi.cmake)
+else()
+	find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
+endif()
 find_library(LIB_M m DOC "The math library")
 
 # Default standard in the project is C11
