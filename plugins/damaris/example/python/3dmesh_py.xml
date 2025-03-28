@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<simulation name="3dmesh_col_wf" language="c" xmlns="http://damaris.gforge.inria.fr/damaris/model">
+    <architecture>
+        <domains count="1" />
+        <dedicated cores="1" nodes="0" />
+        <placement />
+        <buffer name="damaris-buffer" size="536870912" />
+        <queue  name="damaris-queue" size="100" />
+    </architecture>
+    <data>
+        <parameter name="WIDTH"  type="int" value="16" />
+        <parameter name="HEIGHT" type="int" value="8" />
+        <parameter name="DEPTH"  type="int" value="4" />
+        <parameter name="size"   type="int" value="4"      comment="this will be dynamically updated with the number of mpi client ranks"/>
+      <parameter name="whd_layout" type="int" value="2"  comment="Set this to 0 for layout=cells_whd_dl, 1 for layout=cells_whd_hm and 2 for layout=cells_whd_wf "/>
+
+      
+      <layout name="cells_whd_dl"  type="int" dimensions="WIDTH,HEIGHT,DEPTH/size"
+            global="WIDTH,HEIGHT,DEPTH" ghosts="0:0,0:0,0:0" />
+      
+      <layout name="cells_whd_hm"  type="int" dimensions="WIDTH,HEIGHT/size,DEPTH"
+            global="WIDTH,HEIGHT,DEPTH" ghosts="0:0,0:0,0:0" />
+      
+      <layout name="cells_whd_wf_original"  type="int" dimensions="WIDTH/size,HEIGHT,DEPTH"
+            global="WIDTH,HEIGHT,DEPTH" ghosts="0:0,0:0,0:0" />
+      
+      <layout name="cells_whd_wf"  type="int" dimensions="DEPTH/size,HEIGHT,WIDTH"
+            global="DEPTH,HEIGHT,WIDTH" ghosts="0:0,0:0,0:0" />
+    
+        <layout name="cells_whd_wf_float"  type="float" dimensions="DEPTH/size,HEIGHT,WIDTH"
+            global="DEPTH,HEIGHT,WIDTH" ghosts="0:0,0:0,0:0" />
+
+        <variable name="cube_i" type="scalar" layout="cells_whd_wf" mesh="mesh" centering="nodal" script="MyPyAction" />
+        <variable name="cube_f" type="scalar" layout="cells_whd_wf_float" mesh="mesh" centering="nodal" script="MyPyAction" />
+    </data>
+    <actions>
+    </actions>
+    <scripts>
+        <pyscript name="MyPyAction" file="3dmesh_py.py" language="python" frequency="1" />
+    </scripts>
+
+    <log FileName="log/3dmesh" RotationSize="5" LogFormat="[%TimeStamp%]: %Message%" LogLevel="info" Flush="false" />
+</simulation>
