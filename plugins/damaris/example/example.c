@@ -163,7 +163,9 @@ int main(int argc, char* argv[])
 
 	MPI_Comm main_comm;// = MPI_COMM_WORLD;
 	PDI_init(PC_get(conf, ".pdi"));
-	PDI_event("init");
+	PDI_event("init"); // event "init" is currently reserved for damaris. It is not recommand for plugins to reserve certain names of events.
+	// we can try to use the key "on_init" for example
+ 	// PDI_event("user_init_damaris");
 	   
 	int is_client = 2;
 	
@@ -181,7 +183,7 @@ int main(int argc, char* argv[])
     	//,"client_comm", &main_comm, PDI_INOUT
     	//, NULL);
     	
-	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
+	PDI_expose("mpi_comm", &main_comm, PDI_INOUT); // PDI_IN should be sufficient?
 	//MPI_Comm hdf5_mpi_comm = main_comm;
 	//PDI_expose("hdf5_mpi_comm", &hdf5_mpi_comm, PDI_INOUT);
 

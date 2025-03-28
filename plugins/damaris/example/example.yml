@@ -14,7 +14,7 @@ pdi:
     pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
     mpi_comm: MPI_Comm
   data: # type of values for which PDI does not keep a copy
-    #is_client: int
+    #is_client: int # Question: pourquoi pas d'erreur meme si "is_client" n'est pas déclaré comme data, et que simulation accède à cette donnée?
     #mpi_comm: MPI_Comm
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
   
@@ -40,20 +40,23 @@ pdi:
             size:  [1, '$dsize[0]-2', '$dsize[1]-2']
             start: [$iter, '($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']
     damaris:  
-      init_on_event: 1
+      
+      init_on_event: 1  # à simplifier ref set_value plugin ou la doc PDI: on_init, on_data, on_event , on_finalize
+      #on_init: init_damaris
       #start_on_event: 1
-      communicator: MPI_COMM_WORLD
-      architecture:
+      communicator: $MPI_COMM_WORLD # pas utilisé actuellement
+      architecture: 
         sim_name: example  
-        domains: 1
+        domains: 1 # => nb de block par sous domain 
+        # damaris divise le sous domain par block equitablement
         dedicated:
           core: 1
           node: 0
-      parameters:
+      parameters: # meme but que les metadata, mais la valeur peut changer au cours de l'execution
         - parameter: 
             name: dsize0
             type: int
-            value: '$dsize[0]'
+            value: '$dsize[0]' # overwrite the default value 0
             depends_on: dsize 
         - parameter: 
             name: dsize1
@@ -74,37 +77,44 @@ pdi:
         - dataset: 
             name: main_field
             layout: main_field_layout
-            mesh: mesh2d
+            mesh: mesh2d # pour la visualisation
             centering: zonal
             storage: hdf5_example
             script:
             visualizable: true
             time_varying: true
             #comment: This is the zonal pressure from our test simulation
-      layouts:
+      layouts: # on ne peut pas modifier la valuer de layout une fois initialisé, travail en cours pour la modification dynamique
         - layout: 
-            name: main_field_layout
+            name: main_field_layout # ~hdf5 dataset_selection
             type: double
+            # try something like: global: '$psize[0]*($dsize[0]-2), $psize[1]*($dsize[1]-2)'
             global: 'psize0*(dsize0-2),psize1*(dsize1-2)'
             dimensions: [ 'dsize0', 'dsize1' ] # process dim, with ghosts/boundaries
-            ghosts: '1:1,1:1'  
+            ghosts: '1:1,1:1'   # 1 ghost à gauche de dim1, 1 ghost à droit de dim1 , 1 ghost à gauche de dim2, 1 ghost à droit de dim2
       storages:
         - storage:
             name: hdf5_example
             type: HDF5
             file_mode: Collective # or FilePerCore
             files_path: ./HDF5_files/   # Where to save files
+            # hdf5 file name defined by damaris
             #frequency: 1
-            
+    
       #Events sections
-      write:
-        main_field: # the name of the data to write, if dataset not specified afterward!
-          dataset: main_field
+      write: 
+        main_field: # the name of the data to write, if dataset not specified afterward! ~meme notion de dataset hdf5
+          dataset: main_field 
           when: '$iter<10'   # do only write the first 10 iterations (0...9), Default at every iteration.
           #position: ['$pcoord[0]', '$pcoord[1]']
-          position: ['($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']
-          #block: [...] # To be defined
-      after_write: damaris_end_iteration # applied for all the data...
+          position: ['($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]'] # ~start de dataset_selection par iteration
+          # damaris "append" file with next iteration
+          #block: [...] # To be defined # indice de block à écrire = 0 par default => tout le sous-domain
+          # si "architecture/domains" >1 on peut écrire les block de indice 0 à domains-1
+      # after_write: damaris_end_iteration # applied for all the data... 
+      # question: moyen de enlever cette ligne au-desus???
+      # on_end_iteration: damaris_end_iteration
+
       #  -  *: aw_event # OR [aw_event1, aw_event1, ...] # applied for all the data...
       #  -  data1_name: d1_aw_event # OR [d1_aw_event1, d1_aw_event2, ...]
       #  -  data2_name: d2_aw_event # OR [d2_aw_event1, d2_aw_event2, ...]
@@ -122,8 +132,10 @@ pdi:
       #   - prm2:
       get_is_client: is_client
       client_comm_get: mpi_comm
+      
+      # question: utilisé ou pas???
       parameter_get:
-      parameter_set:
+      parameter_set: 
       
       #Optional config, has a default behavior 
       log:
