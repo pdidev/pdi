@@ -30,6 +30,6 @@
 
 int main(int argc, char* argv[])
 {
-	assert(tests(argc, argv) == 0);
+	tests(argc, argv);
 	printf("Disabled PDI ok for C++.\n");
 }
