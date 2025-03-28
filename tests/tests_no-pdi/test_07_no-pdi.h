@@ -86,7 +86,7 @@ void multi_expose()
 	int to_multi_expose[2] = {1, 1};
 	int to_multi_expose_two[2] = {2, 2};
 	if (PDI_OK
-	    != PDI_multi_expose("event_two", "to_multi_expose", &to_multi_expose, PDI_OUT, "to_multi_expose_two", to_multi_expose_two, PDI_OUT, NULL)) 
+	    != PDI_multi_expose("event_two", "to_multi_expose", &to_multi_expose, PDI_OUT, "to_multi_expose_two", to_multi_expose_two, PDI_OUT, NULL))
 	{
 		fprintf(stderr, "*** Error: no-pdi multi_expose\n");
 		exit(1);
@@ -97,7 +97,7 @@ void errhandler()
 {
 	PDI_errhandler_t current_handler = PDI_errhandler(PDI_NULL_HANDLER);
 	if (NULL != current_handler.func || NULL != current_handler.context) {
-		fprintf(stderr, "*** Error: no-pdi erhandler\n");
+		fprintf(stderr, "*** Error: no-pdi errhandler\n");
 		exit(1);
 	}
 }
