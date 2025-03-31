@@ -70,6 +70,10 @@ class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 
 	Data_descriptor_impl& operator= (Data_descriptor_impl&&) = delete;
 
+	/** Function to try the function call_data_callbacks()
+	 */
+	void try_call_data_callbacks();
+
 public:
 	Data_descriptor_impl(Data_descriptor_impl&&);
 
@@ -89,9 +93,9 @@ public:
 
 	bool empty() override;
 
-	void share(void* data, bool read, bool write, bool delayDataCallback = false) override;
+	void share(void* data, bool read, bool write, bool delay_data_callback = false) override;
 
-	void* share(Ref ref, bool read, bool write, bool delayDataCallback = false) override;
+	void* share(Ref ref, bool read, bool write, bool delay_data_callback = false) override;
 
 	void data_callbacks() override;
 
