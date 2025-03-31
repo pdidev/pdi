@@ -143,28 +143,21 @@ void warn_status(PDI_status_t status, const char* message, void*)
 	}
 }
 
-struct Var_to_reclaim {
-	list<string> names;
-
-	Var_to_reclaim() { names.clear(); }
+/** A structure to reclaim the datas properly in case of error
+ */
+struct Var_to_reclaim : public std::list<string>
+{
+	Var_to_reclaim() = default;
 
 	~Var_to_reclaim()
 	{
 		int counter = 0;
-		for (auto&& it = names.rbegin(); it != names.rend(); it++) {
-			Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, names.size());
+		for (auto&& it = this->rbegin(); it != this->rend(); it++) {
+			Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, this->size());
 			Global_context::context()[it->c_str()].reclaim();
 		}
-		names.clear();
+		this->clear();
 	}
-
-	void add_element(const char* dataname) { names.emplace_back(dataname); }
-
-	list<string>::iterator begin() { return names.begin(); }
-
-	list<string>::iterator end() { return names.end(); }
-
-	size_t size() { return names.size(); }
 };
 
 
@@ -350,34 +343,33 @@ try {
 	Paraconf_wrapper fw;
 	va_list ap;
 
-	Var_to_reclaim list_reclaim;
-	{
-		Global_context::context()[name].share(data, access & PDI_OUT, access & PDI_IN, true);
-		list_reclaim.add_element(name);
+	Var_to_reclaim list_names; // list of variable that will be reclaimed at the end of this function
 
-		va_start(ap, access);
-		int i = 0;
-		while (const char* v_name = va_arg(ap, const char*)) {
-			void* v_data = va_arg(ap, void*);
-			PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
+	Global_context::context()[name].share(data, access & PDI_OUT, access & PDI_IN, true);
+	list_names.emplace_back(name);
 
-			Global_context::context().logger().trace("\n Multi expose: Sharing `{}' ({}/{}) \n", ++i, list_reclaim.names.size());
-			Global_context::context()[v_name].share(v_data, v_access & PDI_OUT, v_access & PDI_IN, true);
-			list_reclaim.add_element(v_name);
-		}
-		va_end(ap);
+	va_start(ap, access);
+	int i = 0;
+	while (const char* v_name = va_arg(ap, const char*)) {
+		void* v_data = va_arg(ap, void*);
+		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 
-		i = 0;
-		for (auto&& it = list_reclaim.begin(); it != list_reclaim.end(); it++) {
-			Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, list_reclaim.size());
-			Global_context::context()[it->c_str()].data_callbacks();
-		}
+		Global_context::context().logger().trace("\n Multi expose: Sharing `{}' ({}/{}) \n", ++i, list_names.size());
+		Global_context::context()[v_name].share(v_data, v_access & PDI_OUT, v_access & PDI_IN, true);
+		list_names.emplace_back(v_name);
+	}
+	va_end(ap);
+
+	i = 0;
+	for (auto&& it = list_names.begin(); it != list_names.end(); it++) {
+		Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, list_names.size());
+		Global_context::context()[it->c_str()].data_callbacks();
 	}
 
 	Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
 	Global_context::context().event(event_name);
 
-	// remark: The reclaim of the data are done in the destructor of the Var_to_reclaim (see struct Var_to_reclaim)
+	// remark: The reclaim of the datas are done in the destructor of the Var_to_reclaim (see struct Var_to_reclaim)
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
