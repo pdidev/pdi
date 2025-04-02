@@ -25,6 +25,7 @@
 
 #include <pdi/ref_any.h>
 #include "damaris_api_call_handler.h"
+#include "damaris_cfg.h"
 
 using PDI::Context;
 using PDI::Ref;
@@ -51,7 +52,7 @@ Damaris_api_call_handler::Damaris_api_call_handler(std::string cfg_object, PDI::
     m_communicator = comm;
 }
 
-Damaris_api_call_handler::Damaris_api_call_handler(std::string cfg_object, PDI::Expression comm, bool init_on_event, bool start_on_event, bool stop_on_event)
+Damaris_api_call_handler::Damaris_api_call_handler(std::string cfg_object, PDI::Expression comm, std::string init_on_event, std::string start_on_event, std::string stop_on_event)
 {
     xml_config_object = cfg_object;
     m_communicator = comm;
@@ -80,12 +81,11 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
     //************************************************************ */
     //Events : Damaris Initialize and Damaris Start
     //************************************************************ */
-    if(event_name == event_names.at(Event_type::DAMARIS_INITIALIZE) 
-        || event_name == event_names.at(Event_type::DAMARIS_INITIALIZE_ALIAS))  {
+    if(event_name == event_names.at(Event_type::DAMARIS_INITIALIZE))  {
 
         damaris_pdi_init(ctx, m_damaris, xml_config_object.c_str());
 
-		if (!m_start_on_event) {
+		if (m_start_on_event.empty()) {
 
             ctx.logger().info("Plugin sent damaris_start() to Damaris, in initialize");	
 
@@ -143,42 +143,27 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
             ctx.logger().warn("Trying to call damaris_parameter_get() before plugin initialization (`{}')", event_name);
             return;
         }
+        ctx.logger().info("------------------- INNNNN DAMARIS_PARAMETER_GET Event...");
 
-        //Retrive parameters! sent via Multi expose, the two last sent data
-        char* var_name; std::string arg1_name;
-        void* buffer;  std::string arg2_name;
-        unsigned int* size; std::string arg3_name;
-        int arg_pos = 0;
-        int nb_awaited_args = 3;
-        int transaction_data_size = expose_dataname.size();
-        auto it = expose_dataname.begin();
-        //Position to the first needed parameter
-        advance(it, (transaction_data_size - nb_awaited_args));
-        //for (auto it = expose_dataname.rbegin(); it != expose_dataname.rend(); ++it) {
-        //while (arg_pos < nb_awaited_args)
-        for (; it != expose_dataname.end(); it++) {
-            ctx.logger().info("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
-            
-            if (arg_pos == 1)
-            {				
-                PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
-                arg1_name = it->c_str();
-            }
-            else if (arg_pos == 2){
-                PDI_access(it->c_str(), (void**)&buffer, PDI_INOUT);
-                arg2_name = it->c_str();
-            }
-            else if (arg_pos == 3){
-                PDI_access(it->c_str(), (void**)&size, PDI_IN);
-                arg3_name = it->c_str();
-            }
-            else
-                //if(nb_awaited_args <= arg_pos)
-                break;
+        char* var_name; std::string arg1_name = "prm_name";
+        void* buffer;  std::string arg2_name = "prm_buffer";
+        unsigned int* size; std::string arg3_name = "prm_size";
+
+	    va_list extra_args;
+	    va_start(extra_args, expose_dataname);
+        string data_name = va_arg(extra_args, string);
+        if(!data_name.empty()) {
+            var_name  = (char*)data_name.c_str();
+            buffer    = va_arg(extra_args, void*);
+            ctx.logger().info("------------------- INNNNN DAMARIS_PARAMETER_GET Event.. EXTRA ARGS.... AFTER buffer");
+            *size     = va_arg(extra_args, int);
+            ctx.logger().info("------------------- INNNNN DAMARIS_PARAMETER_GET Event.. EXTRA ARGS.... AFTER size...");
+
+
+            ctx.logger().info("------------------- CALLING damaris_pdi_parameter_get arg_pos({}==='{}', {}==='{}', {}==='{}')", arg1_name, var_name, arg2_name, *(int *)buffer, arg3_name, *(int*)size);
+            int err = m_damaris->damaris_pdi_parameter_get((const char*)var_name, (void *) buffer, *(int*)size);
         }
-
-        ctx.logger().info("------------------- CALLING damaris_pdi_parameter_get arg_pos({}==='{}', {}==='{}', {}==='{}')", arg1_name, var_name, arg2_name, *(int *)buffer, arg3_name, *(int*)size);
-        int err = m_damaris->damaris_pdi_parameter_get((const char*)var_name, (void *) buffer, *(int*)size);
+    
     } 
     // DAMARIS_PARAMETER_SET
     else if(event_name == event_names.at(Event_type::DAMARIS_PARAMETER_SET)) {
@@ -187,41 +172,21 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
             return;
         }
 
-        //Retrive parameters! sent via Multi expose, the three last sent data
-        char* var_name; std::string arg1_name;
-        void* buffer;  std::string arg2_name;
-        unsigned int* size; std::string arg3_name;
-        int arg_pos = 0;
-        int nb_awaited_args = 3;
-        int transaction_data_size = expose_dataname.size();
-        auto it = expose_dataname.begin();
-        //Position to the first needed parameter
-        advance(it, (transaction_data_size - nb_awaited_args));
-        //for (auto it = expose_dataname.rbegin(); it != expose_dataname.rend(); ++it) {
-        //while (arg_pos < nb_awaited_args)
-        for (; it != expose_dataname.end(); it++) {
-            ctx.logger().info("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++arg_pos, expose_dataname.size());
-            
-            if (arg_pos == 1)
-            {				
-                PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
-                arg1_name = it->c_str();
-            }
-            else if (arg_pos == 2){
-                PDI_access(it->c_str(), (void**)&buffer, PDI_IN);
-                arg2_name = it->c_str();
-            }
-            else if (arg_pos == 3){
-                PDI_access(it->c_str(), (void**)&size, PDI_IN);
-                arg3_name = it->c_str();
-            }
-            else
-                //if(nb_awaited_args <= arg_pos)
-                break;
-        }
+        char* var_name; std::string arg1_name = "prm_name";
+        void* buffer;  std::string arg2_name = "prm_buffer";
+        unsigned int* size; std::string arg3_name = "prm_size";
 
-        ctx.logger().info("------------------- CALLING damaris_pdi_parameter_set arg_pos({}==='{}', {}==='{}', {}==='{}')", arg1_name, var_name, arg2_name, *(int *)buffer, arg3_name, *(int*)size);
-        int err = m_damaris->damaris_pdi_parameter_set((const char*)var_name, (const void *) buffer, *(int*)size);
+	    va_list extra_args;
+	    va_start(extra_args, expose_dataname);
+        string data_name = va_arg(extra_args, string);
+        if(!data_name.empty()) {
+            var_name  = (char*)data_name.c_str();
+            buffer    = va_arg(extra_args, void*);
+            *size     = va_arg(extra_args, size_t);
+
+            ctx.logger().info("------------------- CALLING damaris_pdi_parameter_set arg_pos({}==='{}', {}==='{}', {}==='{}')", arg1_name, var_name, arg2_name, *(int *)buffer, arg3_name, *(int*)size);
+            int err = m_damaris->damaris_pdi_parameter_set((const char*)var_name, (const void *) buffer, *(int*)size);    
+        }
     } 
     // DAMARIS_CLIENT_COMM_GET
     else if(event_name == event_names.at(Event_type::DAMARIS_CLIENT_COMM_GET))  {
@@ -464,14 +429,13 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
         
         int err = m_damaris->damaris_pdi_stop();
     } 		
-    else if(event_name == event_names.at(Event_type::DAMARIS_FINALIZE)
-        || event_name == event_names.at(Event_type::DAMARIS_FINALIZE_ALIAS)) {
+    else if(event_name == event_names.at(Event_type::DAMARIS_FINALIZE)) {
         if (!m_damaris) {
             ctx.logger().warn("Trying to call damaris_strop() before plugin initialization (`{}')", event_name);
             return;
         }
 
-        if (!m_stop_on_event) {
+        if (m_stop_on_event.empty()) {
             ctx.logger().info("Plugin sent damaris_stop() to Damaris, in finalization");	
             
             //std::string stop_event_name = this->get_event_name(Event_type::DAMARIS_STOP);

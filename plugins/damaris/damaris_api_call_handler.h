@@ -37,6 +37,7 @@
 
 #include <Damaris.h>
 #include "damaris_wrapper.h"
+#include "damaris_cfg.h"
 
 using PDI::Context;
 using std::list;
@@ -45,57 +46,18 @@ using std::unique_ptr;
 
 namespace damaris_pdi {
 
-enum class Event_type {
-	DAMARIS_INITIALIZE = 0
-	, DAMARIS_INITIALIZE_ALIAS = 1
-	, DAMARIS_START = 2
-	, DAMARIS_SET_POSITION = 3
-	, DAMARIS_SET_BLOCK_POSITION = 4
-	, DAMARIS_WRITE = 5
-	, DAMARIS_WRITE_BLOCK = 6
-	, DAMARIS_CLIENT_COMM_GET = 7
-	, DAMARIS_PARAMETER_SET = 8
-	, DAMARIS_PARAMETER_GET = 10
-	, DAMARIS_END_ITERATION = 12
-	, DAMARIS_GET_ITERATION = 13
-	, DAMARIS_SIGNAL = 15
-	, DAMARIS_BIND = 16
-	, DAMARIS_STOP = 17
-	, DAMARIS_FINALIZE = 18
-	, DAMARIS_FINALIZE_ALIAS = 19
-};
-
-const std::unordered_map<Event_type, std::string> event_names = {
-	{Event_type::DAMARIS_INITIALIZE,          "initialize"}
-	,{Event_type::DAMARIS_INITIALIZE_ALIAS,   "init"}
-	,{Event_type::DAMARIS_START,              "damaris_start"}
-	,{Event_type::DAMARIS_SET_POSITION,       "damaris_set_position"}
-	,{Event_type::DAMARIS_SET_BLOCK_POSITION, "damaris_set_block_position"}
-	,{Event_type::DAMARIS_WRITE,              "damaris_write"}
-	,{Event_type::DAMARIS_WRITE_BLOCK,        "damaris_write_block"}
-	,{Event_type::DAMARIS_CLIENT_COMM_GET,    "damaris_client_comm_get"}
-	,{Event_type::DAMARIS_PARAMETER_SET,      "damaris_parameter_set"}
-	,{Event_type::DAMARIS_PARAMETER_GET,      "damaris_parameter_get"}
-	,{Event_type::DAMARIS_END_ITERATION,      "damaris_end_iteration"}
-	,{Event_type::DAMARIS_GET_ITERATION,      "damaris_get_iteration"}
-	,{Event_type::DAMARIS_SIGNAL,             "damaris_signal"}
-	,{Event_type::DAMARIS_BIND,               "damaris_bind"}
-	,{Event_type::DAMARIS_STOP,               "damaris_stop"}
-	,{Event_type::DAMARIS_FINALIZE,      	  "finalize"}
-	,{Event_type::DAMARIS_FINALIZE_ALIAS,     "finalization"}
-};
-
 class Damaris_api_call_handler
 {
 
 	std::string xml_config_object;
 	PDI::Expression m_communicator;
-    bool m_init_on_event = false;
-    bool m_start_on_event = false;
-    bool m_stop_on_event = false;
+	std::string m_init_on_event = "";
+	std::string m_start_on_event = "";
+	std::string m_stop_on_event = "";
+	std::string m_finalize_on_event = "";
 
 public:
-	Damaris_api_call_handler(std::string cfg_object, PDI::Expression comm, bool init_on_event, bool start_on_event, bool stop_on_event);
+	Damaris_api_call_handler(std::string cfg_object, PDI::Expression comm, std::string init_on_event, std::string start_on_event, std::string stop_on_event);
 	Damaris_api_call_handler(std::string cfg_object, PDI::Expression comm);
 	Damaris_api_call_handler(std::string cfg_object);
 

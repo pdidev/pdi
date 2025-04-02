@@ -63,9 +63,18 @@
  
  namespace {
          
-     bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const string& name, Desc_type desc_type)
+    bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const string& name, Desc_type desc_type)
+    {        
+        auto&& result = descs.emplace(name, desc_type);
+        if (!result.second) {
+            //ctx.logger().warn("Duplicate use of a descriptor `{}' in `{}' (previously used in `{}')", name, desc_names.at(desc_type), desc_names.at(result.first->second));
+        }
+        return result.second;
+    }
+         
+     bool load_event(unordered_map<string, Event_type>& events, Context& ctx, const string& name, Event_type event_type)
      {        
-         auto&& result = descs.emplace(name, desc_type);
+         auto&& result = events.emplace(name, event_type);
          if (!result.second) {
              //ctx.logger().warn("Duplicate use of a descriptor `{}' in `{}' (previously used in `{}')", name, desc_names.at(desc_type), desc_names.at(result.first->second));
          }
@@ -114,17 +123,28 @@
                  throw Config_error{key_tree, "no MPI communicator set", key};
              }
          } 
-         else if (key == "init_on_event") {
-             m_init_on_event = to_long(value);// Default = false
+         else if (key == "init_on_event" || key == "on_init") {
+               m_init_on_event = to_string(value);
+               load_event(m_events, ctx, m_init_on_event, Event_type::DAMARIS_INITIALIZE);
+         } 
+         else if (key == "finalize_on_event" || key == "on_finalize") {
+            m_finalize_on_event = to_string(value);
+               load_event(m_events, ctx, m_finalize_on_event, Event_type::DAMARIS_FINALIZE);
          } 
          else if (key == "start_on_event") {
-             m_start_on_event = to_long(value);// Default = false
+             m_start_on_event = to_string(value);
+             load_event(m_events, ctx, m_start_on_event, Event_type::DAMARIS_START);
          } 
          else if (key == "stop_on_event") {
-             m_stop_on_event = to_long(value);// Default = false
+             m_stop_on_event = to_string(value);
+             load_event(m_events, ctx, m_stop_on_event, Event_type::DAMARIS_STOP);
+         } 
+         else if (key == "end_iteration_on_event") {
+             m_end_iteration_on_event = to_string(value);
+             load_event(m_events, ctx, m_end_iteration_on_event, Event_type::DAMARIS_END_ITERATION);
          } 
          else if (key == "parameters") {                
-             parse_parameters_tree(ctx, value);
+            parse_parameters_tree(ctx, value);
          } 
          else if (key == "datasets") {                
              parse_datasets_tree(ctx, value);
@@ -190,6 +210,13 @@
              throw Config_error{key_tree, "Unknown key in Damaris configuration: `{}'", key};
          }*/
      });
+
+     std::string end_it_event_name = event_names.at(Event_type::DAMARIS_END_ITERATION);
+     //Add only if it does not exist yet
+     if(std::find(m_after_write_events.begin(), m_after_write_events.end(), end_it_event_name) == m_after_write_events.end()
+            && m_end_iteration_on_event.empty()){
+        m_after_write_events.emplace_back(end_it_event_name); 
+     }
  
      parse_log_tree(ctx, tree);
  
@@ -823,139 +850,97 @@
  }
  
  void Damaris_cfg::parse_write_tree(Context& ctx, PC_tree_t write_tree_list)
- {
-    // opt_each(write_tree_list, [&](PC_tree_t writes_tree) {//list of ds map     
-         each(write_tree_list, [&](PC_tree_t writet_key, PC_tree_t write_ds_tree) {//each dataset to write
-             
-             std::string ds_name = to_string(writet_key);//the name of the data to write, if dataset not specified afterward!
-             Dataset_Write_Info ds_write_info;
- 
-             //dataset
-             PC_tree_t ds_name_tree = PC_get(write_ds_tree, ".dataset");
-             if(!PC_status(ds_name_tree))
-             {
-                 ds_name = to_string(ds_name_tree);
-                 std::cout << "INFO: damaris_cfg write_ds_tree :: ds_name = '" << ds_name  << "'"  << std::endl ;
-             }
-             //when
-             PC_tree_t ds_when_tree = PC_get(write_ds_tree, ".when");
-             if(!PC_status(ds_when_tree))
-             {
-                 ds_write_info.when = to_string(ds_when_tree);
-                 std::cout << "INFO: damaris_cfg write_ds_tree :: when = '" << ds_write_info.when  << "'"  << std::endl ;
-             }
-             //position
-             PC_tree_t ds_position_tree = PC_get(write_ds_tree, ".position");
-             if(!PC_status(ds_position_tree))
-             {
-                 if (!PC_status(PC_get(ds_position_tree, "[0]"))) {//Array [p0,p1,p3] (1 to 3 elements)
-                     int position_dim; PC_len(ds_position_tree, &position_dim);
-                     std::cout << "INFO: damaris_cfg write_ds_tree :: '"<< ds_name <<"' will be written in dims: " << position_dim << std::endl ;
-                                             
-                     int pos_idx = 0;
-                     each(ds_position_tree, [&](PC_tree_t dim) {
-                         ds_write_info.position[pos_idx] = to_string(dim);
-                         pos_idx++;
-                     });
-                 }                    
-                 else {//p0
-                     ds_write_info.position[0] = to_string(ds_position_tree);   
-                     std::cout << "INFO: damaris_cfg write_ds_tree :: '"<< ds_name <<"' will be written in dims: 1" << std::endl ;
-                 }
-             }
-             //block
-             PC_tree_t ds_block_tree = PC_get(write_ds_tree, ".block");
-             if(!PC_status(ds_block_tree))
-             {
-                 ds_write_info.block = to_string(ds_block_tree);
-                 std::cout << "INFO: damaris_cfg write_ds_tree :: block = '" << ds_write_info.block  << "'"  << std::endl ;
-             }
- 
-             /*
-             each(write_ds_tree, [&](PC_tree_t wdst_key, PC_tree_t value) {//storage info
-                 std::string key = to_string(wdst_key);
- 
-                 if (key == "dataset") {
-                     ds_name = to_string(value);
-                 } 
-                 else if (key == "when") {
-                     ds_write_info.when = to_string(value);                    
-                 } 
-                 else if (key == "position") {
-                     if (!PC_status(PC_get(value, "[0]"))) {//Array [p0,p1,p3] (1 to 3 elements)
-                         int position_dim; PC_len(value, &position_dim);
-                         std::cout << "INFO: damaris_cfg ds '"<< ds_name <<"' will be written in dims: " << position_dim << std::endl ;
-                                                 
-                         int pos_idx = 0;
-                         each(value, [&](PC_tree_t dim) {
-                             ds_write_info.position[pos_idx] = to_long(dim);
-                             pos_idx++;
-                         });
-                     }                    
-                     else {//p0
-                         ds_write_info.position[0] = to_long(value);   
-                     }
-                 } 
-                 else if (key == "block") {
-                     ds_write_info.block = to_long(value);
-                 } 
-                 else {
-                     std::cerr << "ERROR: damaris_cfg unrecogognized write map string: " << key << std::endl ;
-                 }
-             });
-             */
- 
-             m_datasets_to_write.emplace(ds_name, ds_write_info);
-             
-             load_desc(m_descs, ctx, ds_name, Desc_type::DATA_TO_WRITE_WITH_BLOCK);
-         });
-     //});
+ {   
+    each(write_tree_list, [&](PC_tree_t writet_key, PC_tree_t write_ds_tree) {//each dataset to write
+        
+        std::string ds_name = to_string(writet_key);//the name of the data to write, if dataset not specified afterward!
+        Dataset_Write_Info ds_write_info;
+
+        //dataset
+        PC_tree_t ds_name_tree = PC_get(write_ds_tree, ".dataset");
+        if(!PC_status(ds_name_tree))
+        {
+            ds_name = to_string(ds_name_tree);
+            std::cout << "INFO: damaris_cfg write_ds_tree :: ds_name = '" << ds_name  << "'"  << std::endl ;
+        }
+        //when
+        PC_tree_t ds_when_tree = PC_get(write_ds_tree, ".when");
+        if(!PC_status(ds_when_tree))
+        {
+            ds_write_info.when = to_string(ds_when_tree);
+            std::cout << "INFO: damaris_cfg write_ds_tree :: when = '" << ds_write_info.when  << "'"  << std::endl ;
+        }
+        //position
+        PC_tree_t ds_position_tree = PC_get(write_ds_tree, ".position");
+        if(!PC_status(ds_position_tree))
+        {
+            if (!PC_status(PC_get(ds_position_tree, "[0]"))) {//Array [p0,p1,p3] (1 to 3 elements)
+                int position_dim; PC_len(ds_position_tree, &position_dim);
+                std::cout << "INFO: damaris_cfg write_ds_tree :: '"<< ds_name <<"' will be written in dims: " << position_dim << std::endl ;
+                                        
+                int pos_idx = 0;
+                each(ds_position_tree, [&](PC_tree_t dim) {
+                    ds_write_info.position[pos_idx] = to_string(dim);
+                    pos_idx++;
+                });
+            }                    
+            else {//p0
+                ds_write_info.position[0] = to_string(ds_position_tree);   
+                std::cout << "INFO: damaris_cfg write_ds_tree :: '"<< ds_name <<"' will be written in dims: 1" << std::endl ;
+            }
+        }
+        //block
+        PC_tree_t ds_block_tree = PC_get(write_ds_tree, ".block");
+        if(!PC_status(ds_block_tree))
+        {
+            ds_write_info.block = to_string(ds_block_tree);
+            std::cout << "INFO: damaris_cfg write_ds_tree :: block = '" << ds_write_info.block  << "'"  << std::endl ;
+        }
+
+        m_datasets_to_write.emplace(ds_name, ds_write_info);
+        
+        load_desc(m_descs, ctx, ds_name, Desc_type::DATA_TO_WRITE_WITH_BLOCK);
+    });
  }
  
  
  
  void Damaris_cfg::parse_parameter_to_update_tree(Context& ctx, PC_tree_t ptu_tree, Desc_type op_type)
- {
-     if (!PC_status(ptu_tree)) { // it's a name:{config...} mapping
-         each(ptu_tree, [&](PC_tree_t ptu_metadata, PC_tree_t ptu_prmname) {
-             std::string metadata = to_string(ptu_metadata);
-             std::string prm_name = to_string(ptu_metadata);   
-             std::pair<std::string, Desc_type> prm_to_update_info;
- 
-             if(!PC_status(ptu_prmname))
-             {
-                 if(to_string(ptu_prmname) != "")
-                     prm_name = to_string(ptu_prmname);
-             }
- 
-             prm_to_update_info.first = prm_name;
-             prm_to_update_info.second = op_type;
-             m_parameter_to_update.emplace(metadata, prm_to_update_info);
-             load_desc(m_descs, ctx, metadata, op_type);
-         }); 
-     }
-     else if (!PC_status(PC_get(ptu_tree, "[0]"))) {//Array [prm0,prm1,prm3,...] / it's a list of names only
-         each(ptu_tree, [&](PC_tree_t prm_name_t) {   
-             std::pair<std::string, Desc_type> prm_to_update_info;
-             std::string metadata = to_string(prm_name_t);
-             std::string prm_name = to_string(prm_name_t);
- 
-             prm_to_update_info.first = prm_name;
-             prm_to_update_info.second = op_type;
-             m_parameter_to_update.emplace(metadata, prm_to_update_info);
-             load_desc(m_descs, ctx, metadata, op_type);
-         });
-     }                    
-     else {//prm0 
-         std::pair<std::string, Desc_type> prm_to_update_info;
-         std::string metadata = to_string(ptu_tree);
-         std::string prm_name = to_string(ptu_tree);
- 
-         prm_to_update_info.first = prm_name;
-         prm_to_update_info.second = op_type;
-         m_parameter_to_update.emplace(metadata, prm_to_update_info);
-         load_desc(m_descs, ctx, metadata, op_type);
-     }
+ {  
+    if (!PC_status(PC_get(ptu_tree, "[0]"))) {//Array [prm0,prm1,prm3,...] / it's a list of names only
+        std::cout << "INFO: damaris_cfg parameter_set or _get :: Array [prm0,prm1,prm3,...] / it's a list of names only " << std::endl ;
+        each(ptu_tree, [&](PC_tree_t prm_name_t) {   
+            std::pair<std::string, Desc_type> prm_to_update_info;
+            std::string metadata = to_string(prm_name_t);
+            std::string prm_name = to_string(prm_name_t);
+
+            prm_to_update_info.first = prm_name;
+            prm_to_update_info.second = op_type;
+            m_parameter_to_update.emplace(metadata, prm_to_update_info);
+            load_desc(m_descs, ctx, metadata, op_type);
+            std::cout << "INFO: damaris_cfg parameter_set or _get :: metadata = "<< metadata <<" and prm_name = "<< prm_name <<" " << std::endl ;
+        });
+    } 
+    else if (!PC_status(ptu_tree)) { // it's a name:{config...} mapping
+        std::cout << "INFO: damaris_cfg parameter_set or _get :: it's a name:{config...} mapping " << std::endl ;
+        each(ptu_tree, [&](PC_tree_t ptu_metadata, PC_tree_t ptu_prmname) {
+            std::string metadata = to_string(ptu_metadata);
+            std::string prm_name = to_string(ptu_metadata);   
+            std::pair<std::string, Desc_type> prm_to_update_info;
+
+            if(!PC_status(ptu_prmname))
+            {
+                if(to_string(ptu_prmname) != "")
+                    prm_name = to_string(ptu_prmname);
+            }
+
+            prm_to_update_info.first = prm_name;
+            prm_to_update_info.second = op_type;
+            m_parameter_to_update.emplace(metadata, prm_to_update_info);
+            load_desc(m_descs, ctx, metadata, op_type);
+            std::cout << "INFO: damaris_cfg parameter_set or _get :: metadata = "<< metadata <<" and prm_name = "<< prm_name <<" " << std::endl ;
+        }); 
+    }    
  }
  
  void Damaris_cfg::parse_log_tree(Context& ctx, PC_tree_t config)
@@ -1321,6 +1306,11 @@
  {
      return m_parameters;
  }
+
+const damaris::model::DamarisParameterXML Damaris_cfg::get_parameter_xml(string prm_name) const
+{
+    return m_parameters.at(prm_name);
+}
  
  const std::unordered_map<std::string, damaris::model::DamarisStoreXML>& Damaris_cfg::storages() const
  {
@@ -1340,6 +1330,11 @@
  const unordered_map<string, Desc_type>& Damaris_cfg::descs() const
  {
      return m_descs;
+ }
+ 
+ const unordered_map<string, Event_type>& Damaris_cfg::events() const
+ {
+     return m_events;
  }
  
  const std::unordered_map<std::string, Dataset_Write_Info>& Damaris_cfg::datasets_to_write() const
@@ -1370,19 +1365,30 @@
      }
  }
  
- bool Damaris_cfg::init_on_event() const
+ std::string Damaris_cfg::init_on_event() const
  {
-     return m_init_on_event;
+    return m_init_on_event;
  }
  
- bool Damaris_cfg::start_on_event() const
+ std::string Damaris_cfg::finalize_on_event() const
+ {
+    return m_finalize_on_event;
+ }
+ 
+ 
+ std::string Damaris_cfg::start_on_event() const
  {
      return m_start_on_event;
  }
  
- bool Damaris_cfg::stop_on_event() const
+ std::string Damaris_cfg::stop_on_event() const
  {
      return m_stop_on_event;
+ }
+ 
+ std::string Damaris_cfg::end_iteration_on_event() const
+ {
+     return m_end_iteration_on_event;
  }
  
  } // namespace damaris_pdi

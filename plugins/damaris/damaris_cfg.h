@@ -55,7 +55,7 @@
      int start ;
      int stride ;
      int blocksize ;
-     std::vector<int> mask {} ;
+     std::vector<int> mask {} ;//std::vector<char> mask {} ???
  } placement ;
  
  typedef struct dedicated {
@@ -79,6 +79,43 @@
      ,IS_CLIENT_GET
      ,CLIENT_COMM_GET
  };
+
+ enum class Event_type {
+     DAMARIS_INITIALIZE = 0
+     , DAMARIS_START = 1
+     , DAMARIS_SET_POSITION = 2
+     , DAMARIS_SET_BLOCK_POSITION = 3
+     , DAMARIS_WRITE = 4
+     , DAMARIS_WRITE_BLOCK = 5
+     , DAMARIS_CLIENT_COMM_GET = 6
+     , DAMARIS_PARAMETER_SET = 7
+     , DAMARIS_PARAMETER_GET = 8
+     , DAMARIS_END_ITERATION = 9
+     , DAMARIS_GET_ITERATION = 10
+     , DAMARIS_SIGNAL = 11
+     , DAMARIS_BIND = 12
+     , DAMARIS_STOP = 13
+     , DAMARIS_FINALIZE = 14
+ };
+
+ /** These default event names are for internal use. If a configured name is given, these ones will be surcharged */
+const std::unordered_map<Event_type, std::string> event_names = {
+	{Event_type::DAMARIS_INITIALIZE,          "initialize"}
+	,{Event_type::DAMARIS_START,              "damaris_start"}
+	,{Event_type::DAMARIS_SET_POSITION,       "damaris_set_position"}
+	,{Event_type::DAMARIS_SET_BLOCK_POSITION, "damaris_set_block_position"}
+	,{Event_type::DAMARIS_WRITE,              "damaris_write"}
+	,{Event_type::DAMARIS_WRITE_BLOCK,        "damaris_write_block"}
+	,{Event_type::DAMARIS_CLIENT_COMM_GET,    "damaris_client_comm_get"}
+	,{Event_type::DAMARIS_PARAMETER_SET,      "damaris_parameter_set"}
+	,{Event_type::DAMARIS_PARAMETER_GET,      "damaris_parameter_get"}
+	,{Event_type::DAMARIS_END_ITERATION,      "damaris_end_iteration"}
+	,{Event_type::DAMARIS_GET_ITERATION,      "damaris_get_iteration"}
+	,{Event_type::DAMARIS_SIGNAL,             "damaris_signal"}
+	,{Event_type::DAMARIS_BIND,               "damaris_bind"}
+	,{Event_type::DAMARIS_STOP,               "damaris_stop"}
+	,{Event_type::DAMARIS_FINALIZE,      	  "finalize"}
+};
  
  struct Dataset_Write_Info {
      PDI::Expression when = "1";//By default, always write as long as there are iteration going on
@@ -100,9 +137,12 @@
      std::string m_xml_config_object;      
      damaris::model::ModifyModel damarisXMLModifyModel;
  
-     bool m_init_on_event = false;
-     bool m_start_on_event = false;
-     bool m_stop_on_event = false;
+     std::string m_init_on_event = "";
+     std::string m_start_on_event = "";
+     std::string m_stop_on_event = "";
+     std::string m_end_iteration_on_event = "";
+     std::string m_finalize_on_event = "";
+     
      
      int m_arch_domains ;
      int m_dc_cores_pernode ;
@@ -125,7 +165,8 @@
      damaris::model::DamarisParaviewXML *m_paraview = NULL;
      damaris::model::DamarisPyScriptXML *m_pyscript = NULL;
  
-     std::unordered_map<std::string, Desc_type> m_descs ;  
+     std::unordered_map<std::string, Desc_type> m_descs ;      
+     std::unordered_map<std::string, Event_type> m_events;
      std::unordered_map<std::string, Dataset_Write_Info> m_datasets_to_write;
      list<string> m_after_write_events;  
      //<metadata_name, <parameter_name, PRM_TO_GET/PRM_TO_SET>>
@@ -203,11 +244,13 @@
      const std::unordered_map<std::string, damaris::model::DamarisVarXML>& datasets() const;
      const std::unordered_map<std::string, damaris::model::DamarisLayoutXML>& layouts() const;
      const std::unordered_map<std::string, damaris::model::DamarisParameterXML>& parameters() const;
+     const damaris::model::DamarisParameterXML get_parameter_xml(string prm_name) const;
      const std::unordered_map<std::string, damaris::model::DamarisStoreXML>& storages() const;
      const std::unordered_map<std::string, damaris::model::DamarisMeshXML>& meshes() const;
      const std::unordered_map<std::string, damaris::model::DamarisGroupXML>& groups() const;
  
      const std::unordered_map<std::string, Desc_type>& descs() const;
+     const std::unordered_map<std::string, Event_type>& events() const;
      const std::unordered_map<std::string, Dataset_Write_Info>& datasets_to_write() const;
      const std::unordered_map<std::string, std::pair<std::string, Desc_type>>& parameter_to_update() const;
  
@@ -230,9 +273,11 @@
          return m_client_comm_get_dataset_name;
      }
          
-     bool init_on_event() const;
-     bool start_on_event() const;
-     bool stop_on_event() const;
+     std::string init_on_event() const;
+     std::string start_on_event() const;
+     std::string stop_on_event() const;
+     std::string end_iteration_on_event() const;
+     std::string finalize_on_event() const;
      
      const std::unordered_map<std::string, std::unordered_set<int>>& recover_var() const;
      

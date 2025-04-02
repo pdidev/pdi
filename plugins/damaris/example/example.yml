@@ -14,7 +14,8 @@ pdi:
     pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
     mpi_comm: MPI_Comm
   data: # type of values for which PDI does not keep a copy
-    #is_client: int # Question: pourquoi pas d'erreur meme si "is_client" n'est pas déclaré comme data, et que simulation accède à cette donnée?
+    # Question: pourquoi pas d'erreur meme si "is_client" n'est pas déclaré comme data, et que simulation accède à cette donnée?
+    #is_client: int 
     #mpi_comm: MPI_Comm
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
   
@@ -40,10 +41,11 @@ pdi:
             size:  [1, '$dsize[0]-2', '$dsize[1]-2']
             start: [$iter, '($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]']
     damaris:  
-      
-      init_on_event: 1  # à simplifier ref set_value plugin ou la doc PDI: on_init, on_data, on_event , on_finalize
-      #on_init: init_damaris
-      #start_on_event: 1
+    
+      on_init: init #or init_on_event
+      #start_on_event: damaris_start
+      #end_iteration_on_event: damaris_end_iteration
+      on_finalize: finalization #Or finalize_on_event
       communicator: $MPI_COMM_WORLD # pas utilisé actuellement
       architecture: 
         sim_name: example  
@@ -144,3 +146,4 @@ pdi:
         log_level: info
         flush: true
         
+
