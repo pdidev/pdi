@@ -27,5 +27,5 @@
 int main(int argc, char* argv[])
 {
 	tests(argc, argv);
-	printf("Disabled PDI ok for C++.\n");
+	printf("Disabled PDI ok for C.\n");
 }
