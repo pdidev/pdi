@@ -118,11 +118,11 @@ static const PDI_errhandler_t PDI_NULL_HANDLER = {NULL, NULL};
 
 /** Prints the error message and aborts if the status is invalid
  */
-static const PDI_errhandler_t PDI_ASSERT_HANDLER = PDI_NULL_HANDLER;
+static const PDI_errhandler_t PDI_ASSERT_HANDLER = {NULL, NULL};
 
 /** Prints the error message and continue if the status is invalid
  */
-static const PDI_errhandler_t PDI_WARN_HANDLER = PDI_NULL_HANDLER;
+static const PDI_errhandler_t PDI_WARN_HANDLER = {NULL, NULL};
 
 /** Return a human-readabe message describing the last error that occured in PDI
  */
@@ -133,7 +133,7 @@ static inline const char* PDI_errmsg(void)
 
 /** Sets the error handler to use
  */
-static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t)
+static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 {
 	return PDI_NULL_HANDLER;
 }
@@ -149,7 +149,7 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t)
 
 /** Initializes PDI
  */
-static inline PDI_status_t PDI_init(PC_tree_t)
+static inline PDI_status_t PDI_init(PC_tree_t conf)
 {
 	return PDI_OK;
 }
@@ -164,7 +164,7 @@ static inline PDI_status_t PDI_finalize(void)
 
 /** Checks PDI API version
  */
-static inline PDI_status_t PDI_version(unsigned long*, unsigned long)
+static inline PDI_status_t PDI_version(unsigned long* provided, unsigned long expected)
 {
 	return PDI_OK;
 }
@@ -193,14 +193,14 @@ typedef enum PDI_inout_e {
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
  */
-static inline PDI_status_t PDI_share(const char*, void*, PDI_inout_t)
+static inline PDI_status_t PDI_share(const char* name, void* data, PDI_inout_t access)
 {
 	return PDI_OK;
 }
 
 /** Requests for PDI to access a data buffer.
  */
-static inline PDI_status_t PDI_access(const char*, void**, PDI_inout_t)
+static inline PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
 {
 	return PDI_OK;
 }
@@ -208,7 +208,7 @@ static inline PDI_status_t PDI_access(const char*, void**, PDI_inout_t)
 /** Releases ownership of a data shared with PDI. PDI is then responsible to
  * free the associated memory whenever necessary.
  */
-static inline PDI_status_t PDI_release(const char*)
+static inline PDI_status_t PDI_release(const char* name)
 {
 	return PDI_OK;
 }
@@ -216,21 +216,21 @@ static inline PDI_status_t PDI_release(const char*)
 /** Reclaims ownership of a data buffer shared with PDI. PDI does not manage
  * the buffer memory anymore.
  */
-static inline PDI_status_t PDI_reclaim(const char*)
+static inline PDI_status_t PDI_reclaim(const char* name)
 {
 	return PDI_OK;
 }
 
 /** Triggers a PDI "event"
  */
-static inline PDI_status_t PDI_event(const char*)
+static inline PDI_status_t PDI_event(const char* event)
 {
 	return PDI_OK;
 }
 
 /** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
  */
-static inline PDI_status_t PDI_expose(const char*, void*, PDI_inout_t)
+static inline PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access)
 {
 	return PDI_OK;
 }
@@ -240,7 +240,7 @@ static inline PDI_status_t PDI_expose(const char*, void*, PDI_inout_t)
  *
  *  NULL argument indicates an end of the list.
  */
-static inline PDI_status_t PDI_multi_expose(const char*, const char*, void*, PDI_inout_t, ...)
+static inline PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...)
 {
 	return PDI_OK;
 }
@@ -259,7 +259,7 @@ static inline PDI_status_t PDI_multi_expose(const char*, const char*, void*, PDI
  *
  * \return an error status
  */
-static inline PDI_status_t PDI_transaction_begin(const char*)
+static inline PDI_status_t PDI_transaction_begin(const char* name)
 {
 	return PDI_OK;
 }
