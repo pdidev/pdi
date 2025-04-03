@@ -32,7 +32,7 @@ include(GNUInstallDirs)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../vendor/json" nlohmann_json)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../vendor/json-3.11.4" nlohmann_json)
 
 # The plugin
 add_library(pdi_json_plugin MODULE json.cxx)
