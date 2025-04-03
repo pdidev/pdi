@@ -107,6 +107,6 @@ fi
 
 # Configure, build & test
 
-cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -DBUILD_JSON_PLUGIN "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
