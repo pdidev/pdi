@@ -35,7 +35,7 @@ option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 include(CTest)
 
 if (DISABLE_PDI)
-	add_subdirectory(tests_no-pdi/) # no-pdi
+	add_subdirectory(no-pdi/) # no-pdi
 else()
-	add_subdirectory(tests_pdi/) #  pdi
+	add_subdirectory(pdi/) #  pdi
 endif()

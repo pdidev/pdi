@@ -24,10 +24,6 @@
 
 #include <test_07_no-pdi.h>
 
-#ifdef __cplusplus
-#include <iostream>
-#endif
-
 int main(int argc, char* argv[])
 {
 	tests(argc, argv);

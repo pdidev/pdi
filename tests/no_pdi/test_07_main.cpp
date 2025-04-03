@@ -24,12 +24,10 @@
 
 #include <test_07_no-pdi.h>
 
-#ifdef __cplusplus
 #include <iostream>
-#endif
 
 int main(int argc, char* argv[])
 {
 	tests(argc, argv);
-	printf("Disabled PDI ok for C++.\n");
+	std::cout << "Disabled PDI ok for C++." << std::endl; 
 }

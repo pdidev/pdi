@@ -25,7 +25,7 @@
 
 cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_tests LANGUAGES C CXX)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
@@ -36,7 +36,6 @@ option(EXAMPLE_NO_PDI		  "Disable PDI using PDIConfig" OFF)
 include(CTest)
 
 find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-message(WARNING "PDI is disabled on test 07 for no pdi.")
 if(PDI_ROOT)
 	message(WARNING "Using include through PDI_ROOT")
 	include(${PDI_ROOT}/PDIConfig.cmake)
@@ -44,14 +43,15 @@ else() #if(EXAMPLE_NO_PDI)
 	message(WARNING "Using include through CMAKE_CURRENT_LIST_DIR")
 	include(${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/PDIConfig.cmake)
 endif()
-include_directories(${CMAKE_CURRENT_LIST_DIR})
+# include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 add_executable(test_07_main_C test_07_main.c)
 set(BUILD_FLAGS_FOR_C "-Wall")
 target_compile_options(test_07_main_C PRIVATE
 		$<$<COMPILE_LANGUAGE:C>:${BUILD_FLAGS_FOR_C}>)
 target_link_libraries(test_07_main_C paraconf::paraconf PDI::PDI_C)
-add_test(NAME test_07_main_C COMMAND "$<TARGET_FILE:test_07_main_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_main.yml")
+# add_test(NAME test_07_main_C COMMAND "$<TARGET_FILE:test_07_main_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07_main.yml")
+add_test(NAME test_07_main_C COMMAND "$<TARGET_FILE:test_07_main_C>")
 
 add_executable(test_07_main_CXX test_07_main.cpp)
 set(BUILD_FLAGS_FOR_CXX "-Wall")
