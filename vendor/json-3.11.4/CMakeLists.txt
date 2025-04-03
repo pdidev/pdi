@@ -109,8 +109,6 @@ if (JSON_SystemInclude)
     set(NLOHMANN_JSON_SYSTEM_INCLUDE "SYSTEM")
 endif()
 
-message(INFO "%%%%%%%%%%%%%%%%%%%%%%%%json install %%%%%%%%%%%%%%%%%%%%%%%%%%%% ${JSON_Install}")
-
 ##
 ## TARGET
 ## create target and add include path
