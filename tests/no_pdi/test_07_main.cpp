@@ -29,5 +29,5 @@
 int main(int argc, char* argv[])
 {
 	tests(argc, argv);
-	std::cout << "Disabled PDI ok for C++." << std::endl; 
+	std::cout << "Disabled PDI ok for C++." << std::endl;
 }
