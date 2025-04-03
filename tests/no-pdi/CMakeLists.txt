@@ -25,7 +25,6 @@
 
 cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_tests LANGUAGES C CXX)
-# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
