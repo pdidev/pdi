@@ -38,29 +38,7 @@ If source files (of application that uses %PDI) and specification tree file are 
 For C make sure that source files that use %PDI API are including `pdi.h` header file.
 For Fortran make sure that source files that use %PDI API are using `%PDI` module file (`USE %PDI`).
 
-%PDI can be disabled by using the `no-pdi` directory.
-
-You can use the `include`/`target_include_directories` method, 
-which does not require to pass an additional argument at compilation 
-but requires to add an option to the target `CMakeLists.txt`, 
-which must be enabled through an option at compilation.
-
-Use a `CMakeLists.txt` similar to `example/CMakeLists.txt` with `EXAMPLES_WITHOUT_PDI` for your target, 
-then use the following:
-```bash
-cmake . -DEXAMPLES_WITHOUT_PDI=ON
-```
-
-Alternatively, you can also use the `PDIConfig` method, 
-to compile with an added argument pointing to the no-pdi folder.
-
-Use a `CMakeLists.txt` similar to `tests/no-pdi/CMakeLists.txt` with `PDI_ROOT` for your target, 
-then use the following:
-```bash
-cmake . -PDI_ROOT="/<full>/<path>/<to>/pdi/no-pdi/cmake"
-```
-
-%PDI can be re-enabled by reversing those modifications.
+%PDI can be disabled by using the [`no-pdi` directory](#deactivate_PDI).
 
 ### Compiling by hand {#compiling_by_hand}
 
@@ -117,3 +95,27 @@ plugins in 4 steps (it will use the first plugin found):
 2. `plugin_path` subtree in specification tree: \ref plugin_path_map_node,
 3. Relative path of used %PDI shared object `libpdi.so`,
 4. `LD_LIBRARY_PATH` environment variable that is colon separated list.
+
+## How to deactivate PDI {#deactivate_PDI}
+
+You can use the `PDIConfig` method, 
+which does not require to pass an additional argument at compilation 
+but requires to add an option to the target `CMakeLists.txt`, 
+which must be enabled through an option at compilation.
+
+Use a `CMakeLists.txt` similar to `example/CMakeLists.txt` with `EXAMPLES_WITHOUT_PDI` for your target, 
+then use the following:
+```bash
+cmake . -DEXAMPLES_WITHOUT_PDI=ON
+```
+
+Alternatively, you can also use the `PDIConfig` method 
+to compile with an added argument pointing to the no-pdi folder.
+
+Use a `CMakeLists.txt` similar to `tests/no-pdi/CMakeLists.txt` with `PDI_ROOT` for your target, 
+then use the following:
+```bash
+cmake . -PDI_ROOT="/<full>/<path>/<to>/pdi/no-pdi/cmake"
+```
+
+%PDI can be re-enabled by reversing those modifications.
