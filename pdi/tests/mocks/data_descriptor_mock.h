@@ -38,8 +38,6 @@ struct MockDataDescriptor: public PDI::Data_descriptor {
 	MOCK_CONST_METHOD0(name, const std::string&());
 	MOCK_METHOD0(ref, PDI::Ref());
 	MOCK_METHOD0(empty, bool());
-	MOCK_METHOD3(share, void(void*, bool, bool));
-	MOCK_METHOD3(share, void*(PDI::Ref, bool, bool));
 	MOCK_METHOD4(share, void(void*, bool, bool, bool));
 	MOCK_METHOD4(share, void*(PDI::Ref, bool, bool, bool));
 	MOCK_METHOD0(data_callbacks, void());
