@@ -19,6 +19,8 @@ and this project adheres to
   [#553](https://github.com/pdidev/pdi/issues/553)
 
 #### Changed
+* Delay data events in multi_expose when the last data is exposed
+  [#514](https://github.com/pdidev/pdi/issues/514)
 
 #### Deprecated
 
