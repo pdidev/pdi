@@ -32,7 +32,7 @@ include(GNUInstallDirs)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
-find_package(nlohmann_json 3.11.4 REQUIRED)
+find_package(nlohmann_json 3.9.1 REQUIRED)
 
 # The plugin
 add_library(pdi_json_plugin MODULE json.cxx)
