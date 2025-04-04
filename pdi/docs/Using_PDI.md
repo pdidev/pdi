@@ -103,11 +103,15 @@ which does not require to pass an additional argument at compilation
 but requires to add an option to the target `CMakeLists.txt`, 
 which must be enabled through an option at compilation.
 
+### Using a no-pdi included in the currently used pdi repository
+
 Use a `CMakeLists.txt` similar to `example/CMakeLists.txt` with `EXAMPLES_WITHOUT_PDI` for your target, 
 then use the following:
 ```bash
 cmake . -DEXAMPLES_WITHOUT_PDI=ON
 ```
+
+### Using a specific no-pdi through a full path
 
 Alternatively, you can also use the `PDIConfig` method 
 to compile with an added argument pointing to the no-pdi folder.
