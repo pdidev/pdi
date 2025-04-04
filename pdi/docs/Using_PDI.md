@@ -38,7 +38,7 @@ If source files (of application that uses %PDI) and specification tree file are 
 For C make sure that source files that use %PDI API are including `pdi.h` header file.
 For Fortran make sure that source files that use %PDI API are using `%PDI` module file (`USE %PDI`).
 
-%PDI can be disabled by using the [`no-pdi` directory](#deactivate_PDI).
+%PDI can be disabled by using the `no-pdi` directory (see section ["How to deactivate PDI"](#deactivate_pdi)).
 
 ### Compiling by hand {#compiling_by_hand}
 
@@ -96,7 +96,7 @@ plugins in 4 steps (it will use the first plugin found):
 3. Relative path of used %PDI shared object `libpdi.so`,
 4. `LD_LIBRARY_PATH` environment variable that is colon separated list.
 
-## How to deactivate PDI {#deactivate_PDI}
+## How to deactivate PDI {#deactivate_pdi}
 
 You can use the `PDIConfig` method, 
 which does not require to pass an additional argument at compilation 
