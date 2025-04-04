@@ -115,7 +115,7 @@ fi
 
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} ${MAKEFLAGS} || true
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} -j || true
 
 
 
@@ -125,4 +125,4 @@ cd "${TEST_DIR_NO_PDI}"
 NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
 cmake -DDISABLE_PDI=ON -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS} ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS} -j

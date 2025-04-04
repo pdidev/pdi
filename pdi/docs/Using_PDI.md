@@ -45,21 +45,19 @@ which does not require to pass an additional argument at compilation
 but requires to add an option to the target `CMakeLists.txt`, 
 which must be enabled through an option at compilation.
 
-In this case, make sure to modify your target application `CMakeLists.txt` as illustrated in 
-`example/CMakeLists.txt`,
-adding the CMake option `WITHOUT_PDI`, then use the following:
-```bash
-cmake . -DWITHOUT_PDI=ON
-```
-
-Alternatively, if modifying the CMakeList.txt is unpractical, you can use the `find_package` method, 
-which does not require to modify the 
-target `CMakeLists.txt` but requires to compile with an added argument pointing to the no-pdi folder. 
-
-Use a `CMakeLists.txt` similar to `no-pdi_exampleTargetCMakeLists_findpackage.txt` for your target, 
+Use a `CMakeLists.txt` similar to `example/CMakeLists.txt` with `EXAMPLES_WITHOUT_PDI` for your target, 
 then use the following:
 ```bash
-cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
+cmake . -DEXAMPLES_WITHOUT_PDI=ON
+```
+
+Alternatively, you can also use the `PDIConfig` method, 
+to compile with an added argument pointing to the no-pdi folder.
+
+Use a `CMakeLists.txt` similar to `tests/no-pdi/CMakeLists.txt` with `PDI_ROOT` for your target, 
+then use the following:
+```bash
+cmake . -PDI_ROOT="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
 
 %PDI can be re-enabled by reversing those modifications.
