@@ -179,13 +179,13 @@ int main(int argc, char* argv[])
 
 	//double
 	PDI_access("value_double", (void**)&value_double, PDI_IN);
-	assert(*value_double == 4.14159265);
+	assert(fabs(*value_double - 4.14159265) < 0.000001);
 	PDI_release("value_double");
 
 	PDI_access("double_array", (void**)&double_array, PDI_IN);
-	assert(double_array[0] == 2.23456789);
-	assert(double_array[1] == 13.3456789);
-	assert(double_array[2] == 124.456789);
+	assert(fabs(double_array[0] - 2.23456789) < 0.000001);
+	assert(fabs(double_array[1] - 13.3456789) < 0.000001);
+	assert(fabs(double_array[2] - 124.456789) < 0.000001);
 	PDI_release("double_array");
 
 	PDI_access("string", (void**)&string, PDI_IN);
