@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<simulation name="2dmesh" language="c" xmlns="http://damaris.gforge.inria.fr/damaris/model">
+    <architecture>
+        <domains count="1" />
+        <dedicated cores="1" nodes="0" />
+        <placement />        
+        <buffer name="damaris-buffer" size="536870912" />
+        <queue  name="damaris-queue" size="100" />
+    </architecture>
+    <data>
+        <parameter name="WIDTH"  type="int" value="16" />
+        <parameter name="HEIGHT" type="int" value="16" />
+        <parameter name="size"     type="int" value="4" comment="This will be set to the number of Damaris cients, so depends on mpirun -nm X value" />
+        <parameter name="domains"   type="int" value="1"  />
+        <parameter name="GX0"     type="int" value="2"  />
+        <parameter name="GY0"     type="int" value="3"  />
+        <parameter name="GX1"     type="int" value="1"  />
+        <parameter name="GY1"     type="int" value="4"  />
+
+        <layout name="cells"  type="int" dimensions="(WIDTH/size)+(GX0+GX1),(HEIGHT/domains)+(GY0+GY1)"
+            global="WIDTH,HEIGHT" ghosts="GX0:GX1,GY0:GY1" />
+
+        <variable name="space" type="scalar" layout="cells" mesh="mesh" centering="nodal" store="MyStore" />
+    </data>
+    <storage>
+        <store name="MyStore" type="HDF5">
+            <option key="FileMode">FilePerCore</option>
+            <option key="XDMFMode">NoIteration</option>
+            <option key="FilesPath"></option>
+        </store>
+    </storage>
+    <actions>
+    </actions>
+    <log FileName="log/2dmesh" RotationSize="5" LogFormat="[%TimeStamp%]: %Message%" LogLevel="info" Flush="false" />
+</simulation>
+
