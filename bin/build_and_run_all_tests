@@ -103,7 +103,6 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
 
-
 # Configure, build & test
 
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
