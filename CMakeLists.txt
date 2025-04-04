@@ -64,6 +64,7 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 
 # Modules to build
 
+
 option(BUILD_BENCHMARKING       "Build PDI benchmarks" OFF)
 option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" OFF)
 option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" OFF)
@@ -570,4 +571,3 @@ sbuild_add_module(CATALYST_PLUGIN
 	DEPENDS PDI catalyst
         SUBSTEPS test
 )
-
