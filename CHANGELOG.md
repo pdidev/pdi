@@ -11,11 +11,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* Added new JSON plugin. Enables users to write data in JSON format, 
-  using the [nlohmann/json](https://github.com/nlohmann/json) library.
-  Users can also write data in other format thanks to taking JSON as input for
-  the dedicated tools.
-  [#440](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/440)
 
 ### Changed
 
@@ -24,10 +19,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Fix known MacOS compile & execution issues 
-  [[#562](https://github.com/pdidev/pdi/issues/562)]
 
 ### Security
+
+
+## [1.9.0] - 2025-03-07
+
+### Added
+* Added new JSON plugin. Enables users to write data in JSON format, 
+  using the [nlohmann/json](https://github.com/nlohmann/json) library.
+  Users can also write data in other format thanks to taking JSON as input for
+  the dedicated tools.
+  [#440](https://github.com/pdidev/pdi/issues/440)
+
+### Fixed
+* Fix known MacOS compile & execution issues 
+  [[#562](https://github.com/pdidev/pdi/issues/562)]
 
 
 ## [1.8.3] - 2025-02-25
