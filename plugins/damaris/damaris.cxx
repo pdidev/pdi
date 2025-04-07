@@ -87,7 +87,8 @@ class damaris_plugin: public Plugin {
 
 	std::string int_numbers_types[3]  = {"short", "int", "integer"};
 	std::string real_numbers_types[3] = {"float", "real", "double"};
-
+	
+	int iteration = 0;//for debugging
 public:
 
 	damaris_plugin(Context& ctx, PC_tree_t config)
@@ -96,10 +97,14 @@ public:
 		, m_event_handler{m_config.xml_config_object(), m_config.communicator(), m_config.init_on_event()
 			, m_config.start_on_event(), m_config.stop_on_event()}
 	{
+
+		std::string data_cb_concat = "";
 		for (auto&& desc: m_config.descs()) {//add data callback only for awaited data
 			ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->data(name, ref); },
 				desc.first);
+				data_cb_concat.append(desc.first + ", ");
 		}
+		context().logger().info("Data for callback : {}", data_cb_concat);
 		
 		//Sim configured event names
 		for (auto&& event: m_config.events()) {
@@ -136,7 +141,7 @@ public:
 
 	void data(const std::string& name, Ref ref)
 	{		
-		//context().logger().info("data `{}' has been exposed", name);
+		context().logger().info("data `{}' has been exposed", name);
 
 		//Update damaris parameters
 		if(m_config.is_needed_metadata(name)){
@@ -148,18 +153,26 @@ public:
 				auto update_info		 = prm_update_info.second;
 				{
 					std::string prm_value  = update_info.first;
-					std::string prm_type  	  = update_info.second;
+					std::string prm_type   = update_info.second;
 
 					void* prm_value_buffer;
 					size_t prm_buffer_size;
-					if(std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prm_type)) {
+					if(std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prm_type) != std::end(int_numbers_types)) {
+						std::cout << "int_numbers_types contains " << prm_type << '\n';
 						int prm_long_value = std::atoi(prm_value.c_str());
 						prm_value_buffer = &prm_long_value;
 						prm_buffer_size = sizeof(int);
 	
-						int msg_err = m_damaris->damaris_pdi_parameter_set(prm_name.c_str(), prm_value_buffer, prm_buffer_size);						
+						int msg_err = m_damaris->damaris_pdi_parameter_set(prm_name.c_str(), prm_value_buffer, prm_buffer_size);	
+												
+						//checking if it works!
+						/*int new_prm_val;
+						m_damaris->damaris_pdi_parameter_get(prm_name.c_str(), &new_prm_val, prm_buffer_size);	
+						context().logger().info("---------------------------------------------------------> Parameter '{}' updated successfully, new value '{}' vs Sent Value '{}'", prm_name, new_prm_val, prm_long_value);
+						*/
 					} 
-					else if(std::find(std::begin(real_numbers_types), std::end(real_numbers_types), prm_type)) {
+					else if(std::find(std::begin(real_numbers_types), std::end(real_numbers_types), prm_type) != std::end(real_numbers_types)) {
+						std::cout << "real_numbers_types contains " << prm_type << '\n';
 						double prm_dbl_value = std::atof(prm_value.c_str());
 						prm_value_buffer = &prm_dbl_value;
 						prm_buffer_size = sizeof(double);
@@ -167,6 +180,7 @@ public:
 						int msg_err = m_damaris->damaris_pdi_parameter_set(prm_name.c_str(), prm_value_buffer, prm_buffer_size);  						
 					} 
 					else {
+						std::cout << "String === " << prm_type << '\n';
 						std::string prm_string_value = prm_value;
 						prm_value_buffer = &prm_string_value;
 						prm_buffer_size = sizeof(std::string);
@@ -178,9 +192,11 @@ public:
 				prm_name_concat.append(prm_name + ", ");
 				m_config.reset_parameter_depends_on(prm_name);
 			}
-			prm_name_concat.pop_back();
-			prm_name_concat.pop_back();
-			context().logger().info("data `{}' Is a needed metadata for the evaluation of parameters {}", name, prm_name_concat);
+			if(updatable_parameters.size() > 0){
+				prm_name_concat.pop_back();
+				prm_name_concat.pop_back();
+				context().logger().info("data `{}' Is a needed metadata for the evaluation of parameters {}", name, prm_name_concat);
+			}
 		}
 		else if(m_config.is_dataset_to_write(name)){
 			context().logger().info("is_dataset_to_write(`{}') = '{}'", name, m_config.is_dataset_to_write(name));
@@ -229,6 +245,11 @@ public:
 			else{
 				context().logger().error("The Damaris need write access over the data (`{}')", name);
 			}
+
+			//Debugging
+			//iteration++;
+			//if(iteration == 2)
+			//	exit(0);
 		}
 		else if(m_config.is_parameter_to_update(name)){
 			context().logger().info("m_config.is_parameter_to_update('{}') = `{}'", name, m_config.is_parameter_to_update(name));
@@ -238,10 +259,10 @@ public:
 
 			damaris::model::DamarisParameterXML prmxml = m_config.get_parameter_xml(prm_name);
 
-			if(std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prmxml.param_datatype_)) {
+			if(std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prmxml.param_datatype_) != std::end(int_numbers_types)) {
 				size = sizeof(int);					
 			} 
-			else if(std::find(std::begin(real_numbers_types), std::end(real_numbers_types), prmxml.param_datatype_)) {
+			else if(std::find(std::begin(real_numbers_types), std::end(real_numbers_types), prmxml.param_datatype_) != std::end(real_numbers_types)) {
 				size = sizeof(double);						
 			} 
 			else {

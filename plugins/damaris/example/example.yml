@@ -20,8 +20,8 @@ pdi:
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
   
   plugins:
-    trace: ~
     mpi:
+    trace: ~
     decl_hdf5:
       file: data_2.h5
       communicator: $mpi_comm #$MPI_COMM_WORLD # the MPI communicator used for HDF5 parallel synchronized write 
@@ -53,28 +53,7 @@ pdi:
         # damaris divise le sous domain par block equitablement
         dedicated:
           core: 1
-          node: 0
-      parameters: # meme but que les metadata, mais la valeur peut changer au cours de l'execution
-        - parameter: 
-            name: dsize0
-            type: int
-            value: '$dsize[0]' # overwrite the default value 0
-            depends_on: dsize 
-        - parameter: 
-            name: dsize1
-            type: int
-            value: '$dsize[1]'
-            depends_on: dsize
-        - parameter: 
-            name: psize0
-            type: int
-            value: '$psize[0]'
-            depends_on: psize
-        - parameter: 
-            name: psize1
-            type: int
-            value: '$psize[1]'
-            depends_on: psize   
+          node: 0 
       datasets:
         - dataset: 
             name: main_field
@@ -90,10 +69,10 @@ pdi:
         - layout: 
             name: main_field_layout # ~hdf5 dataset_selection
             type: double
-            # try something like: global: '$psize[0]*($dsize[0]-2), $psize[1]*($dsize[1]-2)'
-            global: 'psize0*(dsize0-2),psize1*(dsize1-2)'
-            dimensions: [ 'dsize0', 'dsize1' ] # process dim, with ghosts/boundaries
+            global: '$psize[0]*($dsize[0]-2),$psize[1]*($dsize[1]-2)'
+            dimensions: [ '$dsize[0]', '$dsize[1]' ] # process dim, with ghosts/boundaries
             ghosts: '1:1,1:1'   # 1 ghost à gauche de dim1, 1 ghost à droit de dim1 , 1 ghost à gauche de dim2, 1 ghost à droit de dim2
+            depends_on: [dsize, psize] # This will help ensure an update of the layout attributes value to Damaris lib once the metadata are exposed (using Damaris Parameters in the background)!
       storages:
         - storage:
             name: hdf5_example
@@ -101,8 +80,7 @@ pdi:
             file_mode: Collective # or FilePerCore
             files_path: ./HDF5_files/   # Where to save files
             # hdf5 file name defined by damaris
-            #frequency: 1
-    
+            #frequency: 1    
       #Events sections
       write: 
         main_field: # the name of the data to write, if dataset not specified afterward! ~meme notion de dataset hdf5
@@ -113,31 +91,8 @@ pdi:
           # damaris "append" file with next iteration
           #block: [...] # To be defined # indice de block à écrire = 0 par default => tout le sous-domain
           # si "architecture/domains" >1 on peut écrire les block de indice 0 à domains-1
-      # after_write: damaris_end_iteration # applied for all the data... 
-      # question: moyen de enlever cette ligne au-desus???
-      # on_end_iteration: damaris_end_iteration
-
-      #  -  *: aw_event # OR [aw_event1, aw_event1, ...] # applied for all the data...
-      #  -  data1_name: d1_aw_event # OR [d1_aw_event1, d1_aw_event2, ...]
-      #  -  data2_name: d2_aw_event # OR [d2_aw_event1, d2_aw_event2, ...]
-      
-      # TODO:
-      # a list or map of data (damaris parameters) to get/set (default: empty). This is basically for time-varying parameters...
-      #  if a prm is to be set and get, priority most be defined, and a politic of recurence if this happen several time (default: RR)
-      # Ex.
-      # parameter_get:
-      #   - prm1:
-      #       priority: 0
-      # parameter_set:
-      #   - prm1:
-      #       priority: 1
-      #   - prm2:
       get_is_client: is_client
-      client_comm_get: mpi_comm
-      
-      # question: utilisé ou pas???
-      parameter_get:
-      parameter_set: 
+      client_comm_get: mpi_comm   
       
       #Optional config, has a default behavior 
       log:

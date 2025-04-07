@@ -178,6 +178,8 @@ const std::unordered_map<Event_type, std::string> event_names = {
      //   This variable is intended for that
      std::unordered_map<std::string, std::unordered_map<std::string, bool>> m_parameter_depends_on;
      std::unordered_map<std::string, PDI::Expression> m_parameter_expression;
+     std::unordered_map<std::string, std::unordered_map<std::string, bool>> m_layout_depends_on;
+     std::unordered_map<std::string, PDI::Expression> m_layout_expression;
  
      std::string m_is_client_dataset_name = "";
      std::string m_client_comm_get_dataset_name = "";

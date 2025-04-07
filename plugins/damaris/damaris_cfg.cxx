@@ -33,6 +33,7 @@
  #include <pdi/plugin.h>
  #include <pdi/paraconf_wrapper.h>
  #include <pdi/ref_any.h>
+ #include <bits/stdc++.h>
  
  #include "damaris_cfg.h"
  
@@ -100,6 +101,9 @@
      void insert_dataset_elts_to_group(DS_TYPE varxml, std::string nested_groups_names[], unsigned index);
      //void insert_dataset_elts_to_group(damaris::model::DamarisVarXML varxml, std::string nested_groups_names[], unsigned index);
      
+     std::string numbers_types[] = {"short", "int", "integer", "float", "real", "double"};
+     std::string int_numbers_types[3]  = {"short", "int", "integer"};
+     std::string real_numbers_types[3] = {"float", "real", "double"};
  
  // This constructor is called on the construction of the damaris_plugin struct/object
  // This code is a mapping of the Damaris src/model/Model.xsd schema to PDI YAML
@@ -244,7 +248,8 @@
  
      m_xml_config_object = damarisXMLModifyModel.GetConfigString();
  
-     //printf("-------------------------------------------------------XML OBJECT MODIFIED----------------------------------------------\n%s", damarisXMLModifyModel.GetConfigString().c_str());
+    printf("-------------------------------------------------------XML OBJECT MODIFIED----------------------------------------------\n%s", damarisXMLModifyModel.GetConfigString().c_str());
+    //exit(0);
  }
  
  void Damaris_cfg::parse_architecture_tree(Context& ctx, PC_tree_t arch_tree){
@@ -392,9 +397,11 @@
              //m_parameter_expression.emplace(prmxml.param_name_, prmxml.param_value_);
              m_parameter_depends_on.emplace(prmxml.param_name_, depends_on_metadata);
              //set default value if depend on metadata
-             std::string numbers_types[] = {"short", "int", "integer", "float", "real", "double"};
-             if(is_dependent && std::find(std::begin(numbers_types), std::end(numbers_types), prmxml.param_datatype_)) {
-                 prmxml.param_value_ = "1"; //"0"
+             if(is_dependent && std::find(std::begin(numbers_types), std::end(numbers_types), prmxml.param_datatype_) != std::end(numbers_types)) {
+                if(std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prmxml.param_datatype_) != std::end(int_numbers_types))
+                    prmxml.param_value_ = "1"; //"0"
+                else
+                    prmxml.param_value_ = "1.0"; //"0"
              }
              else {
                  ///???
@@ -520,6 +527,11 @@
              std::map<std::string, std::string> find_replace_map = {};
              unsigned name_index = 0;
              std::string dataset_elt_full_name;
+             std::unordered_map<std::string, bool> depends_on_metadata;
+             bool is_dependent = false;
+             std::string depends_on_str = "";
+             std::string in_datatype;
+             int nb_dims;
  
              each(layout_tree, [&](PC_tree_t lt_key, PC_tree_t value) {//layout info
                  std::string key = to_string(lt_key);
@@ -535,7 +547,7 @@
                      layoutxml.layout_name_ = nested_groups_names[name_index-1]; //to_string(value);
                  } 
                  else if (key == "type") {
-                     std::string in_datatype = to_string(value);
+                     in_datatype = to_string(value);
                      layoutxml.set_datatype( in_datatype );
                  } 
                  else if (key == "dimensions") {                   
@@ -556,12 +568,37 @@
                          layoutxml.layout_dimensions_ = to_string(value);   
                      }
                      
+                     nb_dims = count(layoutxml.layout_dimensions_.begin(),layoutxml.layout_dimensions_.end(),',') + 1;
                  } 
-                 else if (key == "global") {
-                     layoutxml.layout_dims_global_ = to_string(value);
+                 else if (key == "global") {  
+                    //Is there a way to determine if an expression is ready to be evaluated? ei, all the conponent have a value
+                    if (!PC_status(PC_get(value, "[0]"))) {//Array //[dg1,dg2,dg3] for instance, each di an expreession of of Damaris Parameter
+                        
+                        std::string dims_global_list = "";
+                        each(value, [&](PC_tree_t dim) {
+                            dims_global_list += to_string(dim) + ",";
+                        });
+                        dims_global_list.pop_back();
+                        layoutxml.layout_dims_global_ = dims_global_list;
+                    }                    
+                    else {//"dg1,dg2,dg3" for instance, each di an expreession of of Damaris Parameter
+                        layoutxml.layout_dims_global_ = to_string(value);
+                    }
                  } 
                  else if (key == "ghosts") {
-                     layoutxml.layout_ghosts_ = to_string(value);
+                    //Is there a way to determine if an expression is ready to be evaluated? ei, all the conponent have a value
+                    if (!PC_status(PC_get(value, "[0]"))) {//Array //['g11:g12','g21:g22','g31:g32'] for instance, each di an expreession of of Damaris Parameter
+                        
+                        std::string ghosts_list = "";
+                        each(value, [&](PC_tree_t dim) {
+                            ghosts_list += to_string(dim) + ",";
+                        });
+                        ghosts_list.pop_back();
+                        layoutxml.layout_ghosts_ = ghosts_list;
+                    }                    
+                    else {//"g11:g12,g21:g22,g31:g32" for instance, each di an expreession of of Damaris Parameter
+                        layoutxml.layout_ghosts_ = to_string(value);
+                    }
                  } 
                  else if (key == "language") {
                      std::string in_language = to_string(value);
@@ -575,10 +612,105 @@
                  else if (key == "comment") {
                      layoutxml.layout_comment_ = to_string(value);
                  } 
+                 else if (key == "depends_on") {
+                    is_dependent = true;
+                    if (!PC_status(PC_get(value, "[0]"))) {//Array //[d1,d2,d3] for instance, each di an expreession of of Damaris Parameter
+                         //int idx = 0;
+                         each(value, [&](PC_tree_t metadata_name_tree) {
+                             std::string metadata_name = to_string(metadata_name_tree);
+                             depends_on_str += metadata_name+", ";
+                             
+                             depends_on_metadata.insert(
+                                 {metadata_name, false}
+                             );
+ 
+                             //load_desc(m_descs, ctx, metadata_name, Desc_type::PRM_REQUIRED_METADATA);
+                         });
+                         depends_on_str.pop_back();//' '
+                         depends_on_str.pop_back();//','
+                    }                    
+                    else {//d1
+                         std::string metadata_name = to_string(value);  
+                         depends_on_str = metadata_name;
+                         //depends_on_metadata[metadata_name] = false;
+                         depends_on_metadata.insert(
+                             {metadata_name, false}
+                         );
+                             
+                         //load_desc(m_descs, ctx, metadata_name, Desc_type::PRM_REQUIRED_METADATA);
+                    } 
+                    depends_on_str = "["+depends_on_str+"]";
+ 
+                 }
                  else {
                      std::cerr << "ERROR: damaris_cfg unrecogognized layout map string: " << key << std::endl ;
                  }
              });
+             m_layout_depends_on.emplace(layoutxml.layout_name_, depends_on_metadata);
+             //set default value if depend on metadata
+            //if(is_dependent && std::find(std::begin(numbers_types), std::end(numbers_types), in_datatype)) { 
+            if(is_dependent) {
+                std::stringstream ss_dims(layoutxml.layout_dimensions_), ss_globals(layoutxml.layout_dims_global_);
+                std::string tmp;
+                std::vector<std::string> dim_list, global_list;
+
+                while (std::getline(ss_dims, tmp, ',')) {
+                    dim_list.push_back(tmp);
+                }
+                while (std::getline(ss_globals, tmp, ',')) {
+                    global_list.push_back(tmp);
+                }
+
+                ctx.logger().info("------------------- OLD  layoutxml.layout_dimensions_ '{}' |  layoutxml.layout_dims_global_ '{}'", layoutxml.layout_dimensions_, layoutxml.layout_dims_global_);
+
+                ctx.logger().info("------------------- dim_list[0] = '{}' |  global_list[0] = '{}'", dim_list[0], global_list[0]);
+
+                std::string prm_config_yaml
+                    = "";//"parameters:                                                         \n";
+
+                layoutxml.layout_dimensions_ = "";
+                std::string new_globals = "";
+                //TODO: get the type of the metadata to which the layout depends, to apply it to the parameters
+                std::string metadatatype = "int";
+
+                for (int i = 0; i < nb_dims; i++)
+                {                    
+                    string dim_name = layoutxml.layout_name_+"_dim"+std::to_string(i);
+                    prm_config_yaml += "- parameter:                                                    \n";
+                    prm_config_yaml += "    name: "+dim_name+"                                          \n";
+                    prm_config_yaml += "    type: "+metadatatype+"                                      \n";
+                    prm_config_yaml += "    value: '"+dim_list[i]+"'                                    \n";
+                    prm_config_yaml += "    depends_on: "+depends_on_str+"                              \n";
+
+                    layoutxml.layout_dimensions_ += dim_name+","; 
+
+                    if(layoutxml.layout_dims_global_.length() > 1) {      
+                        string global_name = layoutxml.layout_name_+"_global"+std::to_string(i);                      
+                        prm_config_yaml += "- parameter:                                                    \n";
+                        prm_config_yaml += "    name: "+global_name+"                                       \n";
+                        prm_config_yaml += "    type: "+metadatatype+"                                      \n";
+                        prm_config_yaml += "    value: '"+global_list[i]+"'                                 \n";
+                        prm_config_yaml += "    depends_on: "+depends_on_str+"                              \n";
+
+                        new_globals += global_name+","; 
+                    } 
+                }
+                layoutxml.layout_dimensions_.pop_back();
+                //the layout_dims_global_ attribute being optional with default value '#', we need to ensure it has been set before modification.
+                //if(layoutxml.layout_dims_global_ != '#') {  
+                if(layoutxml.layout_dims_global_.length() > 1) {  
+                    new_globals.pop_back();
+                    layoutxml.layout_dims_global_ = new_globals;
+                }
+
+                //Background creation of parameter
+	            PC_tree_t parameters_conf = PC_parse_string(prm_config_yaml.c_str());     
+                ctx.logger().info("------------------- parameters_conf = \n '{}'", prm_config_yaml);                   
+                parse_parameters_tree(ctx, parameters_conf);
+             }
+             else {
+                 ///???
+             }
  
              if(dataset_elt_full_name.empty())
                  throw Value_error{"ERROR: damaris_cfg layout name must not be empty"};
