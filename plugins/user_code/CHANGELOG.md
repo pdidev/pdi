@@ -4,20 +4,11 @@ All notable changes to the User-code plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
+## [1.9.0] - 2025-03-07
 
 ### Fixed
-* Fix macOS compile issue with the user-code plugin [#539](https://github.com/pdidev/pdi/issues/539)
-
-### Security
+* Fix macOS compile issue with the user-code plugin 
+  [#539](https://github.com/pdidev/pdi/issues/539)
 
 
 ## [1.8.0] - 2024-11-28
