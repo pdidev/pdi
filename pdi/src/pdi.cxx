@@ -145,8 +145,7 @@ void warn_status(PDI_status_t status, const char* message, void*)
 
 /** A structure to reclaim the datas properly in case of error
  */
-struct Var_to_reclaim : public std::list<string>
-{
+struct Var_to_reclaim: public std::list<string> {
 	Var_to_reclaim() = default;
 
 	~Var_to_reclaim()

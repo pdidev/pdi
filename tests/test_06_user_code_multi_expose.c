@@ -1,5 +1,5 @@
  /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,6 @@ const char* CONFIG_YAML
 	  "      var1:                             \n"
 	  "        test_access_var2: { value: $var2 }\n";
 
-
 static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
 {
 	if (value != var) {
@@ -63,7 +62,7 @@ static void fct_test_value(int var, const int value, int fatal, const char* fct,
 // Test access of the first argument var1
 void test_access_var1(void)
 {
-	int* value;//=NULL;
+	int* value;
 	PDI_access("value", (void**) &value, PDI_IN); // Read something from input
 	PDI_release("value");
 	test_value(*value, CST1, FATAL);
@@ -72,13 +71,13 @@ void test_access_var1(void)
 // Test access of the last argument var2
 void test_access_var2(void)
 {
-	int* value;//NULL;
+	int* value;
 	PDI_access("value", (void**) &value, PDI_IN); // Read something from input
 	PDI_release("value");
 	test_value(*value, CST2, FATAL);
 }
 
-/// @brief Verify that the value of data in a multiexpose are given to PDI 
+/// @brief Verify that the value of data in a multiexpose are given to PDI
 /// before the loop "on_data" event.
 int main(int argc, char* argv[])
 {
