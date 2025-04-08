@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2023-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2023-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,11 +32,11 @@ include(GNUInstallDirs)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../vendor/json" nlohmann_json)
+find_package(nlohmann_json 3.9.1 REQUIRED)
 
 # The plugin
 add_library(pdi_json_plugin MODULE json.cxx)
-target_link_libraries(pdi_json_plugin PUBLIC PDI::PDI_plugins nlohmann_json)
+target_link_libraries(pdi_json_plugin PUBLIC PDI::PDI_plugins nlohmann_json::nlohmann_json )
 
 # Installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")

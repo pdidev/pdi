@@ -12,6 +12,7 @@ Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 
 Benoit Martin - CEA (bmartin@cea.fr)
 * Add Context::find()
+* Add support for const data in `PDI_share`, `PDI_expose` and `PDI_multi_expose`
 
 Jacques Morice - CEA (jacques.morice@cea.fr)
 * Add Add operator== in Context::Iterator()

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -204,7 +204,7 @@ typedef enum PDI_inout_e {
  * * PDI_IN means PDI can set the buffer content
  * * PDI_OUT means the buffer contains data that can be accessed by PDI
  */
-PDI_status_t PDI_EXPORT PDI_share(const char* name, void* data, PDI_inout_t access);
+PDI_status_t PDI_EXPORT PDI_share(const char* name, const void* data, PDI_inout_t access);
 
 /** Requests for PDI to access a data buffer.
  * \param[in] name the data name
@@ -247,7 +247,7 @@ PDI_status_t PDI_EXPORT PDI_event(const char* event);
  *                   by PDI
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t access);
+PDI_status_t PDI_EXPORT PDI_expose(const char* name, const void* data, PDI_inout_t access);
 
 /** Performs multiple exposes at once. All the data is shared in order they were specified
  *  and reclaimed in reversed order after an event is triggered.
@@ -264,7 +264,7 @@ PDI_status_t PDI_EXPORT PDI_expose(const char* name, void* data, PDI_inout_t acc
  *                inidactes an end of the list.
  * \return an error status
  */
-PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...);
+PDI_status_t PDI_EXPORT PDI_multi_expose(const char* event_name, const char* name, const void* data, PDI_inout_t access, ...);
 
 #ifdef PDI_WITH_DEPRECATED
 
