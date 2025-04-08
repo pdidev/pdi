@@ -86,8 +86,7 @@ int main(int argc, char* argv[])
 	int var1 = (int)CST1;
 	int var2 = (int)CST2;
 	
-	PDI_multi_expose("my_test", "var1", &var1, PDI_OUT, "var2", &var2, PDI_OUT,
-					 NULL);
+	PDI_multi_expose("my_test", "var1", &var1, PDI_OUT, "var2", &var2, PDI_OUT, NULL);
 
 	PDI_finalize();
 	return 0;
