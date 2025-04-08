@@ -15,9 +15,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Fix macOS compile issue with the user-code plugin [#539](https://github.com/pdidev/pdi/issues/539)
 
 ### Security
+
+
+## [1.9.0] - 2025-03-07
+
+### Fixed
+* Fix macOS compile issue with the user-code plugin 
+  [#539](https://github.com/pdidev/pdi/issues/539)
 
 
 ## [1.8.0] - 2024-11-28

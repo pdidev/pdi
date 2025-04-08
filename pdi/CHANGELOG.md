@@ -10,13 +10,12 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+
 ## [Unreleased]
 
 ### For users
 
 #### Added
-* `PDI_share`, `PDI_expose` and `PDI_multi_expose` now accept `const` data
-  [#553](https://github.com/pdidev/pdi/issues/553)
 
 #### Changed
 
@@ -40,10 +39,25 @@ and this project adheres to
 #### Removed
 
 #### Fixed
-* Aligned memory allocation using `operator new`, fixes
-  [#550](https://github.com/pdidev/pdi/issues/550) 
 
 #### Security
+
+
+
+## [1.9.0] - 2025-03-07
+
+### For users
+
+#### Added
+* `PDI_share`, `PDI_expose` and `PDI_multi_expose` now accept `const` data
+  [#553](https://github.com/pdidev/pdi/issues/553)
+
+
+### For plugin developers
+
+#### Fixed
+* Aligned memory allocation using `operator new`, fixes
+  [#550](https://github.com/pdidev/pdi/issues/550) 
 
 
 
