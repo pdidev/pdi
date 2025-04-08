@@ -63,7 +63,7 @@ static void fct_test_value(int var, const int value, int fatal, const char* fct,
 void test_access_var1(void)
 {
 	int* value;
-	PDI_access("value", (void**) &value, PDI_IN); // Read something from input
+	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
 	PDI_release("value");
 	test_value(*value, CST1, FATAL);
 }
@@ -72,7 +72,7 @@ void test_access_var1(void)
 void test_access_var2(void)
 {
 	int* value;
-	PDI_access("value", (void**) &value, PDI_IN); // Read something from input
+	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
 	PDI_release("value");
 	test_value(*value, CST2, FATAL);
 }
@@ -83,15 +83,11 @@ int main(int argc, char* argv[])
 {
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
-	int var1 = (int) CST1;
-	int var2 = (int) CST2;
+	int var1 = (int)CST1;
+	int var2 = (int)CST2;
 	
-	//
-	PDI_multi_expose("my_test",
-		"var1", &var1, PDI_OUT,
-		"var2", &var2, PDI_OUT,
-		NULL
-	);
+	PDI_multi_expose("my_test", "var1", &var1, PDI_OUT, "var2", &var2, PDI_OUT,
+					 NULL);
 
 	PDI_finalize();
 	return 0;
