@@ -345,7 +345,7 @@ try {
 
 	Var_to_reclaim list_names; // list of variable that will be reclaimed at the end of this function
 
-	Global_context::context()[name].share(data, access & PDI_OUT, access & PDI_IN, true);
+	Global_context::context()[name].share(const_cast<void*>(data), access & PDI_OUT, access & PDI_IN, true);
 	list_names.emplace_back(name);
 
 	va_start(ap, access);
@@ -354,7 +354,7 @@ try {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 
-		Global_context::context().logger().trace("\n Multi expose: Sharing `{}' ({}/{}) \n", ++i, list_names.size());
+		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, list_names.size());
 		Global_context::context()[v_name].share(v_data, v_access & PDI_OUT, v_access & PDI_IN, true);
 		list_names.emplace_back(v_name);
 	}
