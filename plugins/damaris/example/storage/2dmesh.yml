@@ -1,0 +1,170 @@
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    size:   int   
+  data: # type of values for which PDI does not keep a copy
+    is_client: int  # equivalent to fti_head
+  plugins:
+    #mpi:
+    damaris:  
+      #init_on_event: 1
+      communicator: MPI_COMM_WORLD
+      architecture:
+        sim_name: 2dmesh  
+        domains: 2
+        placement:
+          start:
+          stride:
+          blocksize:
+          mask:
+        dedicated:
+          core: 1
+          node: 0
+      parameters:
+        - parameter: 
+            name: WIDTH
+            type: int
+            value: 16
+        - parameter: 
+            name: HEIGHT
+            type: int
+            value: 16
+        - parameter: 
+            name: size
+            type: int
+            value: '$size'
+            depends_on: size
+        - parameter: 
+            name: domains
+            type: int
+            value: 2
+        - parameter: 
+            name: GX0
+            type: int
+            value: 2
+        - parameter: 
+            name: GY0
+            type: int
+            value: 3
+        - parameter: 
+            name: GX1
+            type: int
+            value: 1
+        - parameter: 
+            name: GY1
+            type: int
+            value: 4
+      datasets:
+        - dataset: 
+            name: space
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+        - dataset: 
+            name: coord/candy_x
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+        - dataset: 
+            name: coord/sub_coord/candy_xyz
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+        - dataset: 
+            name: coord/candy_y
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+        - dataset: 
+            name: coord/candy_z
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+        - dataset: 
+            name: coordinate/candy_x
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+        - dataset: 
+            name: coordinate/candy_y
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+        - dataset: 
+            name: coordinate/sub_coord1/sub_coord2/candy_xyz
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+        - dataset: 
+            name: coordinate/candy_z
+            type: scalar
+            layout: cells
+            mesh: mesh2d
+            centering: nodal
+            storage: MyStore
+      layouts:
+        - layout: 
+            name: cells
+            type: int
+            dimensions: [ '(WIDTH/size)+(GX0+GX1)' , '(HEIGHT/domains)+(GY0+GY1)' ] # '(WIDTH/size)+(GX0+GX1),(HEIGHT/domains)+(GY0+GY1)' # 
+            global: 'WIDTH,HEIGHT'
+            ghosts: 'GX0:GX1,GY0:GY1'  
+        - layout: 
+            name: coord/cells2
+            type: int
+            dimensions: [ '(WIDTH/size)+(GX0+GX1)' , '(HEIGHT/domains)+(GY0+GY1)' ] # '(WIDTH/size)+(GX0+GX1),(HEIGHT/domains)+(GY0+GY1)' # 
+            global: 'WIDTH,HEIGHT'
+            ghosts: 'GX0:GX1,GY0:GY1'    
+      storages:
+        - storage:
+            name: MyStore
+            type: HDF5
+            file_mode: FilePerCore # Or 
+            files_path: ./HDF_files/  # Where to save files
+            #frequency: 1
+      paraview: 
+        script: path/to/script.py # can be absolute or relative path
+        #scripts: [ 'path/to/script1.py' , 'path/to/script2.py' ]
+        update_frequency: 1
+        realtime_timestep: 0.1
+        end_iteration: 0
+        write_vtk: 0
+        write_vtk_binary: true
+        #comment: ""  
+      #pyscript: 
+        #name: MyPyAction
+        #file: path/to/script.py # can be absolute or relative path
+        #scheduler_file: path/to/dask_scheduler.json
+        #execution: 1
+        #language: python
+        #scope: core
+        #external: false
+        #frequency: 1
+        #nthreads: 1
+        #timeout: 2
+        #keep_workers: no
+        #comment: ""  
+      log:
+        file_name: 2dmesh # default = $sim_name
+        rotation_size: 5
+        log_level: info
+        flush: true
+
+
+
