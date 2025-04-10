@@ -98,14 +98,16 @@ plugins in 4 steps (it will use the first plugin found):
 
 ## How to deactivate PDI {#deactivate_pdi}
 
-You can use the `PDIConfig` method, 
-which does not require to pass an additional argument at compilation 
-but requires to add an option to the target `CMakeLists.txt`, 
-which must be enabled through an option at compilation.
+### Using the no-pdi included in the currently used pdi repository
 
-### Using a no-pdi included in the currently used pdi repository
+You can use the no-pdi folder of your pdi installation, 
+which does not require to specify a path at compilation 
+but requires to add an option ("EXAMPLES_WITHOUT_PDI" in the below example) 
+to the target CMakeLists.txt, 
+which must be enabled through a chosen cmake argument at compilation.
 
-Use a `CMakeLists.txt` similar to `example/CMakeLists.txt` with `EXAMPLES_WITHOUT_PDI` for your target, 
+Use a CMakeLists.txt similar to example/CMakeLists.txt 
+with `if(EXAMPLES_WITHOUT_PDI)` and `option(EXAMPLES_WITHOUT_PDI)` for your target, 
 then use the following:
 ```bash
 cmake . -DEXAMPLES_WITHOUT_PDI=ON
@@ -113,10 +115,11 @@ cmake . -DEXAMPLES_WITHOUT_PDI=ON
 
 ### Using a specific no-pdi through a full path
 
-Alternatively, you can also use the `PDIConfig` method 
-to compile with an added argument pointing to the no-pdi folder.
+Alternatively, you can use a specific no-pdi folder among your system, 
+to compile with an added argument pointing to this no-pdi folder using a full path.
 
-Use a `CMakeLists.txt` similar to `tests/no-pdi/CMakeLists.txt` with `PDI_ROOT` for your target, 
+Use a CMakeLists.txt similar to example/CMakeLists.txt 
+with `if(PDI_ROOT)` for your target, 
 then use the following:
 ```bash
 cmake . -PDI_ROOT="/<full>/<path>/<to>/pdi/no-pdi/cmake"

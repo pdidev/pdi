@@ -193,7 +193,7 @@ typedef enum PDI_inout_e {
 /** Shares some data with PDI. The user code should not modify it before
  * a call to either PDI_release or PDI_reclaim.
  */
-static inline PDI_status_t PDI_share(const char* name, void* data, PDI_inout_t access)
+static inline PDI_status_t PDI_share(const char* name, const void* data, PDI_inout_t access)
 {
 	return PDI_OK;
 }
@@ -230,7 +230,7 @@ static inline PDI_status_t PDI_event(const char* event)
 
 /** Shortly exposes some data to PDI. Equivalent to PDI_share + PDI_reclaim.
  */
-static inline PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t access)
+static inline PDI_status_t PDI_expose(const char* name, const void* data, PDI_inout_t access)
 {
 	return PDI_OK;
 }
@@ -240,7 +240,7 @@ static inline PDI_status_t PDI_expose(const char* name, void* data, PDI_inout_t 
  *
  *  NULL argument indicates an end of the list.
  */
-static inline PDI_status_t PDI_multi_expose(const char* event_name, const char* name, void* data, PDI_inout_t access, ...)
+static inline PDI_status_t PDI_multi_expose(const char* event_name, const char* name, const void* data, PDI_inout_t access, ...)
 {
 	return PDI_OK;
 }
