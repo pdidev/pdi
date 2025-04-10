@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -64,3 +64,12 @@ target_link_libraries(test_05_C PDI::PDI_C)
 add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_05.yml")
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
+
+if("${BUILD_USER_CODE_PLUGIN}")
+
+add_executable(test_06_user_code_multi_expose_C test_06_user_code_multi_expose.c)
+target_link_libraries(test_06_user_code_multi_expose_C PDI::PDI_C)
+set_target_properties(test_06_user_code_multi_expose_C PROPERTIES ENABLE_EXPORTS TRUE)
+add_test(NAME test_06_user_code_multi_expose_C COMMAND "$<TARGET_FILE:test_06_user_code_multi_expose_C>")
+
+endif("${BUILD_USER_CODE_PLUGIN}")
