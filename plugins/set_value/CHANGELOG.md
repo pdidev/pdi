@@ -15,7 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Use `fabsf` and `fabs` to get the absolute value of floating-point variables
+* Correct some tests that would incorrectly compare floats with abs instead of
+  fabs, rounding down to zero and hence never failing, even in the case of error
 
 ### Security
 
