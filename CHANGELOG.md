@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* Add "no-pdi", including the header no-pdi/include/pdi.h, which allows to
+  disable PDI effects while keeping code syntax unchanged.
+  [#438](https://github.com/pdidev/pdi/issues/438)
 
 ### Changed
 
