@@ -75,6 +75,7 @@ jobs:
           -D USE_HDF5=SYSTEM \
           -D USE_NetCDF=SYSTEM \
           -D CMAKE_CXX_STANDARD=${{matrix.cxx_std}} \
+          -D CMAKE_CXX_FLAGS="-Wno-unqualified-std-cast-call" \
           -B build
         cmake --build build
         ctest --test-dir build --output-on-failure
