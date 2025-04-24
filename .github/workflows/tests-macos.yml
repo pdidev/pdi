@@ -47,6 +47,8 @@ jobs:
       CC: clang
       CXX: clang++
       CMAKE_BUILD_TYPE: ${{matrix.build_type}}
+      OMPI_MCA_rmaps_base_oversubscribe: 1
+      PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
     steps:
     - run: brew install hdf5-mpi
     - uses: actions/checkout@v4
