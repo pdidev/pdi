@@ -52,7 +52,7 @@ int PDI_write_pure()
 	float matrix_data[100][100];
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
+			matrix_data[i][j] = 100.f * i + j * 0.95f;
 		}
 	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
@@ -196,7 +196,7 @@ int PDI_write_chunked()
 	float matrix_data[100][100];
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
+			matrix_data[i][j] = 100.f * i + j * 0.95f;
 		}
 	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
@@ -354,7 +354,7 @@ int PDI_write_deflated()
 	float matrix_data[100][100];
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
+			matrix_data[i][j] = 100.f * i + j * 0.95f;
 		}
 	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
@@ -488,7 +488,7 @@ int PDI_write_fletcher()
 	float matrix_data[100][100];
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
+			matrix_data[i][j] = 100.f * i + j * 0.95f;
 		}
 	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
@@ -623,7 +623,7 @@ int PDI_write_defletcher()
 	float matrix_data[100][100];
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
+			matrix_data[i][j] = 100.f * i + j * 0.95f;
 		}
 	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
