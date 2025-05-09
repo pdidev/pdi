@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<simulation name="3dmesh_wf" language="c" xmlns="http://damaris.gforge.inria.fr/damaris/model">
+    <architecture comment="mpirun -np 6 ./3dmesh_py_domians 3dmesh_dask.xml -r -i 2 -d 4" >
+        <domains count="8" />
+        <dedicated cores="2" nodes="0" />
+        <placement />
+        <buffer name="damaris-buffer" size="536870912" />
+        <queue  name="damaris-queue" size="100" />
+    </architecture>
+    <data>
+        <parameter name="WIDTH"    type="int" value="16" />
+        <parameter name="HEIGHT"   type="int" value="8"  />
+        <parameter name="DEPTH"    type="int" value="16" />
+        <parameter name="size"     type="int" value="4"  comment="this will be dynamically updated with the number of mpi client ranks" />
+        <parameter name="blocks"   type="int" value="4"  comment="this will be dynamically updated with the number of blocks specified on the command line of the executable"/>
+
+      
+        <layout name="cells_whd_wf"    type="int"    dimensions="DEPTH/size,HEIGHT,WIDTH/blocks"  global="DEPTH,HEIGHT,WIDTH"  />
+        <layout name="one_int"         type="int"    dimensions="1"  global="1" 
+                comment="This will provide storage for one integer per Damaris client rank" />
+        <layout name="one_double"      type="double" dimensions="1"  global="1" 
+                comment="This will provide storage for one double per Damaris client rank, but note, only rank 0 uses it in this example" />
+        
+        <variable name="cube_i"    type="scalar"  layout="cells_whd_wf" time-varying="true" mesh="mesh" centering="nodal" script="MyPyAction" 
+                  comment="This is our main data set being passed from the simulation C code to Python" />
+        <variable name="last_iter" type="scalar"  layout="one_int"      time-varying="true" script="MyPyAction" comment="set time-varying=true so the value can be updated on each iteration of the simulation from Python"/> 
+        <variable name="array_sum" type="scalar"  layout="one_double"   time-varying="true"  script="MyPyAction" comment="used to pass summation computed on C side to the Python side"/> 
+    </data>
+    <actions>
+    </actions>
+    <scripts>
+        <pyscript name="MyPyAction" file="3dmesh_dask.py" language="python" frequency="1" scheduler-file="dask_file.json" nthreads="1" keep-workers="no" />
+    </scripts>
+
+    <log FileName="log/3dmesh" RotationSize="5" LogFormat="[%TimeStamp%]: %Message%" LogLevel="debug" Flush="false" />
+</simulation>
