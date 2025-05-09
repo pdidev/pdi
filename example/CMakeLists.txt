@@ -48,7 +48,17 @@ endif()
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
-find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
+option(EXAMPLES_WITHOUT_PDI		"Disable PDI using local relative path to PDIConfig" OFF)
+
+if(PDI_ROOT)
+	message(WARNING "Using include through PDI_ROOT's full path")
+	include(${PDI_ROOT}/PDIConfig.cmake)
+elseif(EXAMPLES_WITHOUT_PDI)
+	message(WARNING "Using include through CMAKE_CURRENT_LIST_DIR's relative path")
+	include(${CMAKE_CURRENT_LIST_DIR}/../no-pdi/cmake/PDIConfig.cmake)
+else()
+	find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
+endif()
 find_library(LIB_M m DOC "The math library")
 
 # Default standard in the project is C11

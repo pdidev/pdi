@@ -38,6 +38,8 @@ If source files (of application that uses %PDI) and specification tree file are 
 For C make sure that source files that use %PDI API are including `pdi.h` header file.
 For Fortran make sure that source files that use %PDI API are using `%PDI` module file (`USE %PDI`).
 
+%PDI can be disabled by using the `no-pdi` directory (see section ["How to deactivate PDI"](#deactivate_pdi)).
+
 ### Compiling by hand {#compiling_by_hand}
 
 To compile application, linker flag `-lpdi` must be used.
@@ -93,3 +95,34 @@ plugins in 4 steps (it will use the first plugin found):
 2. `plugin_path` subtree in specification tree: \ref plugin_path_map_node,
 3. Relative path of used %PDI shared object `libpdi.so`,
 4. `LD_LIBRARY_PATH` environment variable that is colon separated list.
+
+## How to deactivate PDI {#deactivate_pdi}
+
+### Using the no-pdi included in the currently used pdi repository
+
+You can use the no-pdi folder of your pdi installation, 
+which does not require to specify a path at compilation 
+but requires to add an option ("EXAMPLES_WITHOUT_PDI" in the below example) 
+to the target CMakeLists.txt, 
+which must be enabled through a chosen cmake argument at compilation.
+
+Use a CMakeLists.txt similar to example/CMakeLists.txt 
+with `if(EXAMPLES_WITHOUT_PDI)` and `option(EXAMPLES_WITHOUT_PDI)` for your target, 
+then use the following:
+```bash
+cmake . -DEXAMPLES_WITHOUT_PDI=ON
+```
+
+### Using a specific no-pdi through a full path
+
+Alternatively, you can use a specific no-pdi folder among your system, 
+to compile with an added argument pointing to this no-pdi folder using a full path.
+
+Use a CMakeLists.txt similar to example/CMakeLists.txt 
+with `if(PDI_ROOT)` for your target, 
+then use the following:
+```bash
+cmake . -PDI_ROOT="/<full>/<path>/<to>/pdi/no-pdi/cmake"
+```
+
+%PDI can be re-enabled by reversing those modifications.
