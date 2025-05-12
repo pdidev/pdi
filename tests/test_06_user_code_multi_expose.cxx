@@ -25,68 +25,64 @@
 #include <gtest/gtest.h>
 #include <pdi.h>
 
-// Function to check the value 
-void check_value(const char *var_name, int &var, const int expected_value)
+// Function to check the value
+void check_value(const char* var_name, int& var, const int expected_value)
 {
-	EXPECT_EQ(var, expected_value) << "Wrong value of "<< var_name <<": " << var << " != " << expected_value;
+	EXPECT_EQ(var, expected_value) << "Wrong value of " << var_name << ": " << var << " != " << expected_value;
 }
 
 // Define user_code function
 extern "C" {
 
-	// Test access of the first argument var1
-	void test_access_var1(void)
-	{
-		int* value;
-		PDI_access("value", (void**)&value, PDI_IN); // Read something from input
-		PDI_release("value");
-		check_value("var1", *value, -4);
-	}
+// Test access of the first argument var1
+void test_access_var1(void)
+{
+	int* value;
+	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
+	PDI_release("value");
+	check_value("var1", *value, -4);
+}
 
-	// Test access of the last argument var2
-	void test_access_var2(void)
-	{
-		int* value;
-		PDI_access("value", (void**)&value, PDI_IN); // Read something from input
-		PDI_release("value");
-		check_value("var2",*value, 3);
-	}
+// Test access of the last argument var2
+void test_access_var2(void)
+{
+	int* value;
+	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
+	PDI_release("value");
+	check_value("var2", *value, 3);
+}
 
 } // end extern "C"
-
 
 /*
  * Name:               user_code_multi_expose_test
  *
  * Description:        Verify that the value of data in a multi_expose are given to PDI
  *                     before the loop "on_data" event. 
- */         
+ */
 
 
-TEST(user_code_multi_expose_test,01)
+TEST(user_code_multi_expose_test, 01)
 {
 	const char* CONFIG_YAML
-	= "logging: trace                          \n"
-	  "data:                                   \n"
-	  "  var1: int                             \n"
-	  "  var2: int                             \n"
-	  "plugins:                                \n"
-	  "  user_code:                            \n"
-	  "    on_data:                            \n"
-	  "      var2:                             \n"
-	  "        test_access_var1: { value: $var1 }\n"
-	  "      var1:                             \n"
-	  "        test_access_var2: { value: $var2 }\n";
+		= "logging: trace                          \n"
+		  "data:                                   \n"
+		  "  var1: int                             \n"
+		  "  var2: int                             \n"
+		  "plugins:                                \n"
+		  "  user_code:                            \n"
+		  "    on_data:                            \n"
+		  "      var2:                             \n"
+		  "        test_access_var1: { value: $var1 }\n"
+		  "      var1:                             \n"
+		  "        test_access_var2: { value: $var2 }\n";
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
 	int var1 = -4;
 	int var2 = 3;
 
-	PDI_multi_expose("my_test",
-		"var1", &var1, PDI_OUT,
-		"var2", &var2, PDI_OUT,
-		NULL);
+	PDI_multi_expose("my_test", "var1", &var1, PDI_OUT, "var2", &var2, PDI_OUT, NULL);
 
 	PDI_finalize();
 }
