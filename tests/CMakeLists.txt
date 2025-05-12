@@ -79,7 +79,6 @@ if("${BUILD_USER_CODE_PLUGIN}")
 add_executable(test_06_user_code_multi_expose_CXX test_06_user_code_multi_expose.cxx)
 target_link_libraries(test_06_user_code_multi_expose_CXX PDI::PDI_C GTest::gtest GTest::gtest_main)
 set_target_properties(test_06_user_code_multi_expose_CXX PROPERTIES ENABLE_EXPORTS TRUE)
-add_test(NAME test_06_user_code_multi_expose_CXX COMMAND "$<TARGET_FILE:test_06_user_code_multi_expose_CXX")
 gtest_discover_tests(test_06_user_code_multi_expose_CXX)
 
 endif("${BUILD_USER_CODE_PLUGIN}")

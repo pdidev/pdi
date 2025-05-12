@@ -62,7 +62,7 @@ void test_access_var2(void)
  */
 
 
-TEST(user_code_multi_expose_test, 01)
+TEST(test_06_user_code_multi_expose_test, 01)
 {
 	const char* CONFIG_YAML
 		= "logging: trace                          \n"
