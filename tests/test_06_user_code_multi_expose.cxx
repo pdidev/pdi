@@ -22,18 +22,50 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
-#include <stdlib.h>
+#include <gtest/gtest.h>
 #include <pdi.h>
 
-#define FATAL 1
-#define WARN 0
-#define CST1 -24
-#define CST2 3
+// Function to check the value 
+void check_value(const char *var_name, int &var, const int expected_value)
+{
+	EXPECT_EQ(var, expected_value) << "Wrong value of "<< var_name <<": " << var << " != " << expected_value;
+}
 
-#define test_value(var, value, fatal) fct_test_value(var, value, fatal, __func__, __LINE__)
+// Define user_code function
+extern "C" {
 
-const char* CONFIG_YAML
+	// Test access of the first argument var1
+	void test_access_var1(void)
+	{
+		int* value;
+		PDI_access("value", (void**)&value, PDI_IN); // Read something from input
+		PDI_release("value");
+		check_value("var1", *value, -4);
+	}
+
+	// Test access of the last argument var2
+	void test_access_var2(void)
+	{
+		int* value;
+		PDI_access("value", (void**)&value, PDI_IN); // Read something from input
+		PDI_release("value");
+		check_value("var2",*value, 3);
+	}
+
+} // end extern "C"
+
+
+/*
+ * Name:               user_code_multi_expose_test
+ *
+ * Description:        Verify that the value of data in a multi_expose are given to PDI
+ *                     before the loop "on_data" event. 
+ */         
+
+
+TEST(user_code_multi_expose_test,01)
+{
+	const char* CONFIG_YAML
 	= "logging: trace                          \n"
 	  "data:                                   \n"
 	  "  var1: int                             \n"
@@ -46,48 +78,15 @@ const char* CONFIG_YAML
 	  "      var1:                             \n"
 	  "        test_access_var2: { value: $var2 }\n";
 
-static void fct_test_value(int var, const int value, int fatal, const char* fct, int line)
-{
-	if (value != var) {
-		fprintf(stdout, "Test in func %s line %3d, not working: value=%d, var=%d \n", fct, line, value, var);
-		fflush(stdout);
-		if (fatal) abort();
-	} else {
-		fprintf(stdout, "Test in func %s line %3d, working : value =%d = var \n", fct, line, value);
-		fflush(stdout);
-	}
-	return;
-}
-
-// Test access of the first argument var1
-void test_access_var1(void)
-{
-	int* value;
-	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
-	PDI_release("value");
-	test_value(*value, CST1, FATAL);
-}
-
-// Test access of the last argument var2
-void test_access_var2(void)
-{
-	int* value;
-	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
-	PDI_release("value");
-	test_value(*value, CST2, FATAL);
-}
-
-/// @brief Verify that the value of data in a multiexpose are given to PDI
-/// before the loop "on_data" event.
-int main(int argc, char* argv[])
-{
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
-	int var1 = (int)CST1;
-	int var2 = (int)CST2;
+	int var1 = -4;
+	int var2 = 3;
 
-	PDI_multi_expose("my_test", "var1", &var1, PDI_OUT, "var2", &var2, PDI_OUT, NULL);
+	PDI_multi_expose("my_test",
+		"var1", &var1, PDI_OUT,
+		"var2", &var2, PDI_OUT,
+		NULL);
 
 	PDI_finalize();
-	return 0;
 }
