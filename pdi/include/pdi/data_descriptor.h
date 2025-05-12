@@ -83,7 +83,7 @@ public:
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
 	 * \param delay_data_callback a boolean to define if we want to delay
-	 *        "call_data_callbacks" for the shared data
+	 *        "data_callbacks" for the shared data
 	 */
 	virtual void share(void* data, bool read, bool write, bool delay_data_callback = false) = 0;
 
@@ -97,7 +97,7 @@ public:
 	 */
 	virtual void* share(Ref ref, bool read, bool write, bool delay_data_callback = false) = 0;
 
-	/** function to call "call_data_callbacks" for the shared data.
+	/** function to call "data_callbacks" for the shared data.
 	 */
 	virtual void data_callbacks() = 0;
 

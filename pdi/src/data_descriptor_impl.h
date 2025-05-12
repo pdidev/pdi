@@ -70,10 +70,6 @@ class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 
 	Data_descriptor_impl& operator= (Data_descriptor_impl&&) = delete;
 
-	/** Function to try the function call_data_callbacks()
-	 */
-	void try_call_data_callbacks();
-
 public:
 	Data_descriptor_impl(Data_descriptor_impl&&);
 

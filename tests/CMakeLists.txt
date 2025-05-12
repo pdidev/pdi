@@ -24,7 +24,16 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.16...3.29)
-project(pdi_tests LANGUAGES C)
+project(pdi_tests LANGUAGES C CXX)
+
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)"
+ OFF)
+	add_subdirectory("../vendor/googletest-b4aaf97/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
+
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
@@ -67,9 +76,10 @@ endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
 if("${BUILD_USER_CODE_PLUGIN}")
 
-add_executable(test_06_user_code_multi_expose_C test_06_user_code_multi_expose.c)
-target_link_libraries(test_06_user_code_multi_expose_C PDI::PDI_C)
-set_target_properties(test_06_user_code_multi_expose_C PROPERTIES ENABLE_EXPORTS TRUE)
-add_test(NAME test_06_user_code_multi_expose_C COMMAND "$<TARGET_FILE:test_06_user_code_multi_expose_C>")
+add_executable(test_06_user_code_multi_expose_CXX test_06_user_code_multi_expose.cxx)
+target_link_libraries(test_06_user_code_multi_expose_CXX PDI::PDI_C GTest::gtest GTest::gtest_main)
+set_target_properties(test_06_user_code_multi_expose_CXX PROPERTIES ENABLE_EXPORTS TRUE)
+add_test(NAME test_06_user_code_multi_expose_CXX COMMAND "$<TARGET_FILE:test_06_user_code_multi_expose_CXX")
+gtest_discover_tests(test_06_user_code_multi_expose_CXX)
 
 endif("${BUILD_USER_CODE_PLUGIN}")

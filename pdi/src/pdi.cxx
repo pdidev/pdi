@@ -149,13 +149,19 @@ struct Var_to_reclaim: public std::list<string> {
 	Var_to_reclaim() = default;
 
 	~Var_to_reclaim()
-	{
+	try {
 		int counter = 0;
 		for (auto&& it = this->rbegin(); it != this->rend(); it++) {
 			Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, this->size());
 			Global_context::context()[it->c_str()].reclaim();
 		}
 		this->clear();
+	} catch (const Error& e) {
+		g_error_context.return_err(e);
+	} catch (const exception& e) {
+		g_error_context.return_err(e);
+	} catch (...) {
+		g_error_context.return_err();
 	}
 };
 
@@ -344,15 +350,15 @@ try {
 
 	Var_to_reclaim list_names; // list of variable that will be reclaimed at the end of this function
 
+	int i = -1;
+	Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", name, ++i, list_names.size());
 	Global_context::context()[name].share(const_cast<void*>(data), access & PDI_OUT, access & PDI_IN, true);
 	list_names.emplace_back(name);
 
 	va_start(ap, access);
-	int i = 0;
 	while (const char* v_name = va_arg(ap, const char*)) {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
-
 		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, list_names.size());
 		Global_context::context()[v_name].share(v_data, v_access & PDI_OUT, v_access & PDI_IN, true);
 		list_names.emplace_back(v_name);

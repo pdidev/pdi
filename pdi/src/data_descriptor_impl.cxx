@@ -151,15 +151,22 @@ bool Data_descriptor_impl::empty()
 	return m_refs.empty();
 }
 
-void Data_descriptor_impl::try_call_data_callbacks()
-{
+void Data_descriptor_impl::data_callbacks()
+try {
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+
 	try {
 		m_context.callbacks().call_data_callbacks(m_name, ref());
 	} catch (const exception&) {
 		m_refs.pop();
 		throw;
 	}
+
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+} catch (Error& e) {
+	throw Error(e.status(), "Unable to execute data_callbacks on data `{}', {}", name(), e.what());
 }
+
 
 void Data_descriptor_impl::share(void* data, bool read, bool write, bool delay_data_callback)
 try {
@@ -212,7 +219,7 @@ try {
 	}
 
 	if (!delay_data_callback) {
-		try_call_data_callbacks();
+		data_callbacks();
 	}
 
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
@@ -221,16 +228,6 @@ try {
 	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
 }
 
-void Data_descriptor_impl::data_callbacks()
-try {
-	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-
-	try_call_data_callbacks();
-
-	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-} catch (Error& e) {
-	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
-}
 
 void Data_descriptor_impl::release()
 try {
