@@ -167,7 +167,6 @@ try {
 	throw Error(e.status(), "Unable to execute data_callbacks on data `{}', {}", name(), e.what());
 }
 
-
 void Data_descriptor_impl::share(void* data, bool read, bool write, bool delay_data_callback)
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
@@ -227,7 +226,6 @@ try {
 } catch (Error& e) {
 	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
 }
-
 
 void Data_descriptor_impl::release()
 try {
