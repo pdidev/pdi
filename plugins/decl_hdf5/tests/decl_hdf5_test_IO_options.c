@@ -85,8 +85,14 @@ int PDI_read_pure(int array_ref[100], float matrix_ref[100][100])
 		return 1;
 	}
 
-	// check deflate and fletcher
+	// check chunking
 	hid_t array_plist = H5Dget_create_plist(array_data_id);
+	if (H5Pget_layout(array_plist) == H5D_CHUNKED) {
+		printf("Array dataset has chunking in pure file\n");
+		return 1;
+	}
+
+	// check deflate and fletcher
 	int filters_count = H5Pget_nfilters(array_plist);
 	if (filters_count > 0) {
 		printf("Array dataset has filters in pure file\n");
@@ -119,10 +125,15 @@ int PDI_read_pure(int array_ref[100], float matrix_ref[100][100])
 		printf("Cannot read matrix dataset\n");
 		return 1;
 	}
-	printf("Above errors are expected and correct\n");
+
+	// check chunking
+	hid_t matrix_plist = H5Dget_create_plist(matrix_data_id);
+	if (H5Pget_layout(matrix_plist) == H5D_CHUNKED) {
+		printf("Matrix dataset has chunking in pure file\n");
+		return 1;
+	}
 
 	// check deflate and fletcher
-	hid_t matrix_plist = H5Dget_create_plist(matrix_data_id);
 	filters_count = H5Pget_nfilters(matrix_plist);
 	if (filters_count > 0) {
 		printf("Matrix dataset has filters in pure file\n");
