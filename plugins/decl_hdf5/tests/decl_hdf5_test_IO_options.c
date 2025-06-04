@@ -239,7 +239,7 @@ int PDI_read_chunked(int array_ref[100], float matrix_ref[100][100])
 		return 1;
 	}
 	if (array_dims[0] != 10) {
-		printf("Array dataset invalid chunking: %d (should be: 10)\n", array_dims[0]);
+		printf("Array dataset invalid chunking: %d (should be: 10)\n", (int)array_dims[0]);
 		return 1;
 	}
 
@@ -284,7 +284,7 @@ int PDI_read_chunked(int array_ref[100], float matrix_ref[100][100])
 		return 1;
 	}
 	if (matrix_dims[0] != 10 || matrix_dims[1] != 10) {
-		printf("Matrix dataset invalid chunking: [%d, %d] (should be: [10, 10])\n", matrix_dims[0], matrix_dims[1]);
+		printf("Matrix dataset invalid chunking: [%d, %d] (should be: [10, 10])\n", (int)matrix_dims[0], (int)matrix_dims[1]);
 		return 1;
 	}
 
