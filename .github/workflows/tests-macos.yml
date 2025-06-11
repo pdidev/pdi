@@ -52,6 +52,12 @@ jobs:
       PDI_SYSTEM: macos
     steps:
     - run: brew install hdf5-mpi python-setuptools
+    - name: macos-13 dependencies fix
+      if: matrix.os == 'macos-13'
+      run: sudo -H pip install setuptools
+    - name: macos-14-15 dependencies fix
+      if: matrix.os == 'macos-14' || matrix.os == 'macos-15'
+      run: brew install python-setuptools
     - uses: actions/checkout@v4
       with:
         submodules: recursive
