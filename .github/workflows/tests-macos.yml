@@ -51,8 +51,7 @@ jobs:
       PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
       PDI_SYSTEM: macos
     steps:
-    - run: brew install hdf5-mpi
-    - run: python3 -m pip install setuptools
+    - run: brew install hdf5-mpi python-setuptools
     - uses: actions/checkout@v4
       with:
         submodules: recursive
