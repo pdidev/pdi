@@ -124,7 +124,7 @@ then
           -DBUILD_USER_CODE_PLUGIN=ON \
           -DUSE_HDF5=SYSTEM \
           -DUSE_NetCDF=SYSTEM \
-          -DCMAKE_CXX_FLAGS=\"-Wno-unqualified-std-cast-call\" \
+          -DCMAKE_CXX_FLAGS=-Wno-unqualified-std-cast-call \
           "
 #          -DCMAKE_CXX_STANDARD=${{matrix.cxx_std}} \
 fi
