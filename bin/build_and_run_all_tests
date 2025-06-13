@@ -52,6 +52,7 @@ cd "${TEST_DIR}"
 
 MAKEFLAGS="${MAKEFLAGS:--j}"
 EXCLUDED_PDI_TESTS=""
+CMAKE_FLAGS=""
 
 if [[ -n "${PDI_PLUGIN_PATH}" ]]
 then
