@@ -100,11 +100,9 @@ plugins in 4 steps (it will use the first plugin found):
 
 ### Using the no-pdi included in the currently used pdi repository
 
-You can use the no-pdi folder of your pdi installation, 
-which does not require to specify a path at compilation 
-but requires to add an option ("EXAMPLES_WITHOUT_PDI" in the below example) 
-to the target CMakeLists.txt, 
-which must be enabled through a chosen cmake argument at compilation.
+You can copy the `no-pdi` folder from PDI in your application repository, and 
+add an option (`BUILD_WITHOUT_PDI` in the example below) to your
+`CMakeLists.txt` to use this mock folder instead of the real PDI.
 
 Use a CMakeLists.txt similar to example/CMakeLists.txt 
 with `if(EXAMPLES_WITHOUT_PDI)` and `option(EXAMPLES_WITHOUT_PDI)` for your target, 
