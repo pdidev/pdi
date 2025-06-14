@@ -39,13 +39,16 @@ SRCDIR="${PWD}"
 TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
-TEST_DIR="${PWD}"
+TEST_DIR_ROOT="${PWD}"
 
-cd "${SRCDIR}"
-TEST_DIR_NO_PDI="${TEST_DIR_NO_PDI:-${PWD}}"
-cd "${TEST_DIR_NO_PDI}"
-cd "$(mktemp -d pdibuild.XXXXX)"
+mkdir no_pdi
+cd no_pdi
 TEST_DIR_NO_PDI="${PWD}"
+
+cd "${TEST_DIR_ROOT}"
+mkdir with_pdi
+cd with_pdi
+TEST_DIR="${PWD}"
 
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
