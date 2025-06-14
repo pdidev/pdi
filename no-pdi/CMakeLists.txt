@@ -30,8 +30,4 @@
 cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES C CXX)
 
-# Set the CMAKE_PREFIX_PATH to include the directory containing PDIConfig.cmake
-set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-# Include PDI
-include(cmake/PDIConfig.cmake)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfig.cmake")
