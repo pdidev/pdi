@@ -50,7 +50,7 @@ jobs:
       OMPI_MCA_rmaps_base_oversubscribe: 1
       PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
       PDI_SYSTEM: macos
-      PDI_COMPILER: ${{env.CC}}
+      PDI_COMPILER: clang
       PDI_MPI: openmpi
     steps:
     - run: brew install open-mpi #numpy
