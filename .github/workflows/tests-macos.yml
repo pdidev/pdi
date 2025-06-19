@@ -66,9 +66,9 @@ jobs:
     - name: macos-15 hdf5-mpi
       # building hdf5 from source fails on macos-15 due to resource limits.
       if: matrix.os == 'macos-15'
-      run: brew install hdf5-mpi
-      env:
-        CMAKE_FLAGS: "${CMAKE_FLAGS} -DUSE_HDF5=SYSTEM"
+      run: |
+        brew install hdf5-mpi
+        echo "CMAKE_FLAGS=$(echo ${CMAKE_FLAGS} -DUSE_HDF5=SYSTEM)" >> $CMAKE_FLAGS
 
     - uses: actions/checkout@v4
       with:
