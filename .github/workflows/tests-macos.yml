@@ -53,7 +53,7 @@ jobs:
       PDI_COMPILER: ${CC}
       PDI_MPI: openmpi
     steps:
-    #- run: brew install hdf5-mpi #numpy
+    - run: brew install open-mpi #numpy
     #- name: macos-13 dependencies fix
     #  if: matrix.os == 'macos-13'
     #  run: |
