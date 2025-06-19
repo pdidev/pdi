@@ -51,13 +51,16 @@ jobs:
       PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
       PDI_SYSTEM: macos
     steps:
-    - run: brew install hdf5-mpi mpi4py numpy doxygen
+    - run: brew install hdf5-mpi doxygen
     - name: macos-13 dependencies fix
       if: matrix.os == 'macos-13'
-      run: sudo -H pip install setuptools
+      run: |
+        sudo -H pip install setuptools mpi4py
     - name: macos-14-15 dependencies fix
       if: matrix.os == 'macos-14' || matrix.os == 'macos-15'
-      run: brew install python-setuptools
+      run: |
+        brew install python-setuptools mpi4py
+        sudo -H pip install numpy
     - uses: actions/checkout@v4
       with:
         submodules: recursive
