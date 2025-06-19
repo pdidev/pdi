@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies
+# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies
 # alternatives (CEA)
 # All rights reserved.
 #
@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.10...3.25)
+cmake_minimum_required(VERSION 3.16...3.25)
 
 include(FindPackageHandleStandardArgs)
 
@@ -59,10 +59,23 @@ find_package(Python3 ${Python3Path_FIND_VERSION} ${_Python3Path_QUIET} ${_Python
 
 if("${Python3_FOUND}")
 	# retrieve various package installation directories
-	execute_process (COMMAND "${Python3_EXECUTABLE}" -c "import sys; from distutils import sysconfig;sys.stdout.write(';'.join([sysconfig.get_python_lib(prefix='',plat_specific=False,standard_lib=True),sysconfig.get_python_lib(prefix='',plat_specific=True,standard_lib=True),sysconfig.get_python_lib(prefix='',plat_specific=False,standard_lib=False),sysconfig.get_python_lib(prefix='',plat_specific=True,standard_lib=False)]))"
+	execute_process (COMMAND "${Python3_EXECUTABLE}" -c [=[
+import sys
+try:
+	import setuptools
+except ModuleNotFoundError:
+	pass
+from distutils import sysconfig
+sys.stdout.write(';'.join([sysconfig.get_python_lib(prefix='',plat_specific=False,standard_lib=True),
+							sysconfig.get_python_lib(prefix='',plat_specific=True,standard_lib=True),
+							sysconfig.get_python_lib(prefix='',plat_specific=False,standard_lib=False),
+							sysconfig.get_python_lib(prefix='',plat_specific=True,standard_lib=False)]))
+			]=]
 			RESULT_VARIABLE _Python3Path_RESULT
 			OUTPUT_VARIABLE _Python3Path_LIBPATHS
-			ERROR_QUIET)
+			ERROR_VARIABLE _Python3Path_PYTHONERR
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			ERROR_STRIP_TRAILING_WHITESPACE)
 	if (NOT _Python3Path_RESULT)
 		list (GET _Python3Path_LIBPATHS 0 Python3Path_INSTALL_STDLIBDIR)
 		list (GET _Python3Path_LIBPATHS 1 Python3Path_INSTALL_STDARCHDIR)
@@ -73,6 +86,9 @@ if("${Python3_FOUND}")
 		unset (Python3Path_INSTALL_STDARCHDIR)
 		unset (Python3Path_INSTALL_SITELIBDIR)
 		unset (Python3Path_INSTALL_SITEARCHDIR)
+		if(NOT "${Python3Path_FIND_QUIETLY}")
+			message(WARNING "Unable to query python path: \n * ${_Python3Path_LIBPATHS}\n * ${_Python3Path_PYTHONERR}")
+		endif()
 	endif()
 	unset(_Python3Path_LIBPATHS)
 endif()

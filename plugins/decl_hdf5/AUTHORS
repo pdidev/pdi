@@ -11,6 +11,13 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Run tests that depend on the filesystem in their own temporary directory
 * Buildsystem
 
+Jacques Morice - CEA (jacques.morice@cea.fr)
+* contribution to feature improvement, validation
+* fix issue [#55](https://github.com/pdidev/pkgs/issues/55)
+
+Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
+* contribution to feature design, validation
+
 Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
 * Fixed a bug with parallel file deletion
 

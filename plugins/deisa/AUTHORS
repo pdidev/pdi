@@ -1,0 +1,18 @@
+Multiple people have contributed to the PDI Deisa plugin. To show our
+appreciation for their public spirit, we list here in alphabetical order a
+condensed list of their contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Supervision of the initial design
+* Minor CMake improvements
+
+Amal Gueroudji - CEA (amal.gueroudji@cea.fr)
+* Initial design
+
+Benoit Martin - CEA (bmartin@cea.fr)
+* Major initial cleanup
+* Maintainer
+
+Bruno Raffin - Inria (bruno.raffin@inria.fr)
+* Supervision of the initial design

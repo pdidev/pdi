@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -347,6 +347,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			-DHDF5_BUILD_EXAMPLES:BOOL=OFF
 			-DHDF5_BUILD_TOOLS:BOOL=ON
 			-DHDF5_BUILD_UTILS:BOOL=OFF
+			-DHDF5_INSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}
 			${HDF5_CMAKE_CACHE_ARGS}
 	)
 	if("${HDF5_FOUND}")
@@ -449,6 +450,15 @@ if("${BUILD_PYTHON}")
 endif()
 
 
+## JSON
+
+if("${BUILD_JSON_PLUGIN}")
+	sbuild_add_dependency(JSON "${USE_DEFAULT}"
+		EMBEDDED_PATH "vendor/json-3.11.4"
+	)
+endif()
+
+
 ### Own modules
 
 set(PDI_DEPENDS_LIST paraconf spdlog)
@@ -488,7 +498,7 @@ sbuild_add_module(DECL_NETCDF_PLUGIN
 sbuild_add_module(JSON_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_JSON_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json"
-	DEPENDS PDI
+	DEPENDS PDI JSON
 	SUBSTEPS indent test
 )
 

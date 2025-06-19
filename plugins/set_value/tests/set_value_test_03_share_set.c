@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,6 +24,7 @@
  ******************************************************************************/
 
 #include <assert.h>
+#include <math.h>
 
 #include <paraconf.h>
 #include <pdi.h>
@@ -166,24 +168,24 @@ int main(int argc, char* argv[])
 
 	//float
 	PDI_access("value_float", (void**)&value_float, PDI_IN);
-	assert(abs(*value_float - 4.14159265f) < 0.000001f);
+	assert(fabsf(*value_float - 4.14159265f) < 0.000001f);
 	PDI_release("value_float");
 
 	PDI_access("float_array", (void**)&float_array, PDI_IN);
-	assert(abs(float_array[0] - 2.23456789f) < 0.000001f);
-	assert(abs(float_array[1] - 13.3456789f) < 0.000001f);
-	assert(abs(float_array[2] - 124.456789f) < 0.000001f);
+	assert(fabsf(float_array[0] - 2.23456789f) < 0.000001f);
+	assert(fabsf(float_array[1] - 13.3456789f) < 0.000001f);
+	assert(fabsf(float_array[2] - 124.456789f) < 0.000001f);
 	PDI_release("float_array");
 
 	//double
 	PDI_access("value_double", (void**)&value_double, PDI_IN);
-	assert(*value_double == 4.14159265);
+	assert(fabs(*value_double - 4.14159265) < 0.000001);
 	PDI_release("value_double");
 
 	PDI_access("double_array", (void**)&double_array, PDI_IN);
-	assert(double_array[0] == 2.23456789);
-	assert(double_array[1] == 13.3456789);
-	assert(double_array[2] == 124.456789);
+	assert(fabs(double_array[0] - 2.23456789) < 0.000001);
+	assert(fabs(double_array[1] - 13.3456789) < 0.000001);
+	assert(fabs(double_array[2] - 124.456789) < 0.000001);
 	PDI_release("double_array");
 
 	PDI_access("string", (void**)&string, PDI_IN);

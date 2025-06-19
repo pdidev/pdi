@@ -115,7 +115,7 @@ if("${BUILD_PYTHON}")
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	find_package(pybind11 2.4.3 REQUIRED) # must match PDIConfig.cmake.in
 endif()
-if("${BUILD_FORTRAN}")
+if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
 	add_subdirectory("../vendor/zpp-1.0.16/" "zpp")
 endif()
 
@@ -309,8 +309,11 @@ endif()
 
 # Fortran API library
 
-if("${BUILD_FORTRAN}")
+if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
 	zpp_preprocess(OUTPUT PDIF_H SOURCES src/fortran/pdif.h.zpp)
+	add_custom_target(generated_files_for_doc DEPENDS "${PDIF_H}")
+endif()
+if("${BUILD_FORTRAN}")
 	zpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.f90.zpp)
 	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fmoddir")
 	add_custom_target(mv_zpp_files # we put in in fmoddir because pdif.h is compiler dependant

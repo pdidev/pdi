@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.16...3.25)
 
 function(get_default_kind TYPE DEFAULT_KIND_VAR)
 	if(DEFINED "${DEFAULT_KIND_VAR}")

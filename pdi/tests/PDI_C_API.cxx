@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,4 +101,93 @@ TEST_F(PdiCApiTest, MetadataDensification)
 	for (int i = 0; i < 60; i++) {
 		EXPECT_EQ(dense_array[i], (i / 20 + 1) * 100 + (i / 5 % 4 + 2) * 10 + i % 5 + 3);
 	}
+}
+
+void test_share(PDI_inout_t access)
+{
+	int i = 42;
+	const int j = 51;
+	int* int_ptr;
+
+	// share int
+	EXPECT_EQ(PDI_share("my_int1", &i, access), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(PDI_access("my_int1", (void**)&int_ptr, PDI_IN), PDI_OK);
+	EXPECT_EQ(*int_ptr, 42);
+
+	// share with const int
+	EXPECT_EQ(PDI_share("my_int1", &j, access), PDI_OK);
+	EXPECT_EQ(j, 51);
+	EXPECT_EQ(PDI_access("my_int1", (void**)&int_ptr, PDI_IN), PDI_OK);
+	EXPECT_EQ(*int_ptr, 51);
+}
+
+/* Name:                PdiCApiTest.PDI_share
+ *
+ * Tested functions:    PDI_share(), PDI_share_const()
+ *
+ * Description:         Test the share() API call with non-const and const data
+ */
+TEST_F(PdiCApiTest, PDI_share)
+{
+	static const char* CONFIG_YAML = "logging: trace\n";
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	test_share(PDI_OUT);
+	test_share(PDI_INOUT);
+}
+
+/* Name:                PdiCApiTest.PDI_expose
+ *
+ * Tested functions:    PDI_expose(), PDI_expose_const()
+ *
+ * Description:         Test the expose() API call with non-const and const data
+ */
+TEST_F(PdiCApiTest, PDI_expose)
+{
+	static const char* CONFIG_YAML = "logging: trace\n";
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	int i = 42;
+	const int j = 51;
+
+	// expose int
+	EXPECT_EQ(PDI_expose("my_int1", &i, PDI_OUT), PDI_OK);
+	EXPECT_EQ(i, 42);
+	// expose const int
+	EXPECT_EQ(PDI_expose("my_int1", &j, PDI_OUT), PDI_OK);
+	EXPECT_EQ(j, 51);
+}
+
+/* Name:                PdiCApiTest.PDI_multi_expose
+ *
+ * Tested functions:    PDI_multi_expose(), PDI_multi_expose_const()
+ *
+ * Description:         Test the multi_expose() API call with non-const and const data
+ */
+TEST_F(PdiCApiTest, PDI_multi_expose)
+{
+	static const char* CONFIG_YAML = "logging: trace\n";
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	int i = 42;
+	const int j = 51;
+
+	// multi_expose int first
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &i, PDI_OUT, "my_int2", &j, PDI_OUT, NULL), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(j, 51);
+	// multi_expose const int first
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &j, PDI_OUT, "my_int2", &i, PDI_OUT, NULL), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(j, 51);
+
+	// multi_expose int first
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &i, PDI_INOUT, "my_int2", &j, PDI_INOUT, NULL), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(j, 51);
+	// multi_expose const int first
+	EXPECT_EQ(PDI_multi_expose("event", "my_int1", &j, PDI_INOUT, "my_int2", &i, PDI_INOUT, NULL), PDI_OK);
+	EXPECT_EQ(i, 42);
+	EXPECT_EQ(j, 51);
 }

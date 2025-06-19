@@ -10,6 +10,7 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+
 ## [Unreleased]
 
 ### For users
@@ -43,14 +44,71 @@ and this project adheres to
 
 
 
-## [1.8.0] - 2024-11-28
+## [1.9.1] - 2025-05-07
+
+### For users
+
+#### Fixed
+* Solve a compilation issue where latest compilers do not transitively define
+  `uint8_t`, fix [#577](https://github.com/pdidev/pdi/issues/577)
+
+
+
+## [1.9.0] - 2025-03-07
 
 ### For users
 
 #### Added
-* Add the `Context::find()` method.
-  [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
-* Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)` helper function.
+* `PDI_share`, `PDI_expose` and `PDI_multi_expose` now accept `const` data
+  [#553](https://github.com/pdidev/pdi/issues/553)
+
+
+### For plugin developers
+
+#### Fixed
+* Aligned memory allocation using `operator new`, fixes
+  [#550](https://github.com/pdidev/pdi/issues/550) 
+
+
+
+## [1.8.3] - 2025-02-25
+
+### For users
+
+#### Fixed
+* Correctlty detect python path when distutils is part of setuptools, fixes
+  [#544](https://github.com/pdidev/pdi/issues/544)
+* Support MacOSX in env.sh to correctly load PDI there, fixes
+  [#540](https://github.com/pdidev/pdi/issues/540)
+
+
+
+## [1.8.2] - 2025-02-20
+
+### For plugin developers
+
+#### Fixed
+* Improve documentation generation, add sidepanel & fix repository URL, fixes
+  [#521](https://github.com/pdidev/pdi/issues/521) and
+  [#522](https://github.com/pdidev/pdi/issues/522)
+
+
+
+## [1.8.1] - 2025-01-23
+
+### For users
+
+#### Fixed
+* Stop claiming to support old cmake versions we do not
+  [#507](https://github.com/pdidev/pdi/issues/507)
+* Fixed website generation
+  [#506](https://github.com/pdidev/pdi/issues/506)
+
+
+
+## [1.8.0] - 2024-11-28
+
+### For users
 
 #### Changed
 * Update the version of dependencies according to our policy: oldest supported
@@ -73,6 +131,10 @@ and this project adheres to
   [#443](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/443)
 * Add the function `scalar_assign` to `Ref_any` to ease setting the value of a
   scalar data buffer.
+* Add the `Context::find()` method.
+  [#445](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/445)
+* Add the `pybind11::dtype to_python(const std::shared_ptr<const Scalar_datatype>& scalar_type)`
+  helper function.
 
 #### Changed
 * Replaced the astyle based indentation by a clang-format one, fixes

@@ -19,6 +19,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 
+## [1.9.0] - 2025-03-07
+
+### Added
+* Possibility to choose parallel MPI-I/O mode: either COLLECTIVE or INDEPENDENT
+  [#419](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/419)
+
+
 ## [1.8.0] - 2024-11-28
 
 ### Changed

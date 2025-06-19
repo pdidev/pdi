@@ -16,8 +16,8 @@ The %PDI source distribution includes:
 To download the sources, have a look at the list of all releases at 
 https://github.com/pdidev/pdi/releases/
 
-For example, release 1.8.0 can be downloaded from
-https://github.com/pdidev/pdi/archive/refs/tags/1.8.0.tar.gz
+For example, release 1.9.2 can be downloaded from
+https://github.com/pdidev/pdi/archive/refs/tags/1.9.2.tar.gz
 
 ## Default installation {#default_installation}
 
@@ -43,15 +43,15 @@ external dependencies are:
 This list of dependencies can be further reduced or extended by changing the
 set of features compiled.
 
-For example, release 1.8.0 can be installed by following these instructions (but
+For example, release 1.9.2 can be installed by following these instructions (but
 look for the latest release at
 https://github.com/pdidev/pdi/releases ):
 
 ```bash
-wget https://github.com/pdidev/pdi/archive/refs/tags/1.8.0.tar.gz
-tar -xjf 1.8.0.tar.bz2
-mkdir 1.8.0/build
-cd 1.8.0/build
+wget https://github.com/pdidev/pdi/archive/refs/tags/1.9.2.tar.gz
+tar -xjf 1.9.2.tar.bz2
+mkdir 1.9.2/build
+cd 1.9.2/build
 cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
 make install   # compilation and installation
 ```
@@ -100,6 +100,7 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plug-in.|
 |`BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
 |`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
+|`BUILD_JSON_PLUGIN`        |`OFF`  |Build the Json plug-in.|
 |`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plug-in.|
 |`BUILD_NETCDF_PARALLEL`    |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
 |`BUILD_TESTING`            |`ON`   |Build the tests.|
@@ -127,6 +128,7 @@ The following flags define whether to:
 |`USE_Doxygen`  |`AUTO`    |the [doxygen](http://www.doxygen.nl/) tool.|
 |`USE_GTest`    |`EMBEDDED`|the [googletest](https://github.com/google/googletest) library.|
 |`USE_HDF5`     |`AUTO`    |the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library.|
+|`USE_JSON`     |`AUTO`    |the [Json](https://github.com/nlohmann/json/) library.|
 |`USE_paraconf` |`AUTO`    |the [paraconf](https://github.com/pdidev/paraconf) library.|
 |`USE_pybind11` |`AUTO`    |the [pybind11](https://pybind11.readthedocs.io/en/stable) library.|
 |`USE_spdlog`   |`AUTO`    |the [spdlog](https://github.com/gabime/spdlog) library.|
@@ -200,6 +202,11 @@ Dependencies of **the Decl'NetCDF plugin**:
   - [openmpi](https://www.open-mpi.org/) 4.0 or above,
   - [mpich](https://www.mpich.org/) 3.3 or above.
 
+Dependencies of **the JSON plugin**:
+
+* the PDI library,
+* the [Json](https://github.com/nlohmann/json/) library version 3.9.1 or above (provided).
+  
 Dependencies of **the MPI plugin**:
 
 * the PDI library,

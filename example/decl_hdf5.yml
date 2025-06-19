@@ -28,6 +28,7 @@ pdi:
       write:
         main_field: # the name of the data to write
           dataset: data
+          mpio: COLLECTIVE # or INDEPENDENT
           when: '$iter<10'   # do only write the first 10 iterations (0...9)
           memory_selection:  # exclude ghosts from the data in memory
             size:  ['$dsize[0]-2', '$dsize[1]-2']

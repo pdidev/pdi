@@ -12,6 +12,7 @@ Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
 
 Benoit Martin - CEA (bmartin@cea.fr)
 * Add Context::find()
+* Add support for const data in `PDI_share`, `PDI_expose` and `PDI_multi_expose`
 
 Jacques Morice - CEA (jacques.morice@cea.fr)
 * Add Add operator== in Context::Iterator()
@@ -25,6 +26,9 @@ François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * Fortran interface fixes
 * developments in the fortran interface
+
+Thomas Padioleau (thomas.padioleau@cea.fr)
+* Compile warning fix
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science

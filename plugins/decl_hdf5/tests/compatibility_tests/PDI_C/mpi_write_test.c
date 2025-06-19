@@ -29,10 +29,14 @@
 
 #define FILE "mpi_test.h5"
 
-int main()
+/**
+* Test : Write a file using PDI with the plugin decl_hdf5 in parallel with the option mpio: COLLECTIVE(DEFAULT).
+*/
+
+int main(int argc, char* argv[])
 {
 	printf("PDI mpi_write_test started\n");
-	MPI_Init(NULL, NULL);
+	MPI_Init(&argc, &argv);
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 

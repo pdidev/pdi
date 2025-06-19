@@ -12,12 +12,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* Added new JSON plugin. Enables users to write data in JSON format, 
-  using the [nlohmann/json](https://github.com/nlohmann/json) library.
-  Users can also write data in other format thanks to taking JSON as input for
-  the dedicated tools.
-  [#440](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/440)
-
 ### Changed
 
 ### Deprecated
@@ -27,6 +21,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.9.2] - 2025-06-13
+
+### Fixed
+* Released 1.9.2 because 1.9.1 was incorrectly tagged
+
+
+## [1.9.0] - 2025-03-07
+
+### Added
+* Added new JSON plugin. Enables users to write data in JSON format, 
+  using the [nlohmann/json](https://github.com/nlohmann/json) library.
+  Users can also write data in other format thanks to taking JSON as input for
+  the dedicated tools.
+  [#440](https://github.com/pdidev/pdi/issues/440)
+
+### Fixed
+* Fix known MacOS compile & execution issues 
+  [[#562](https://github.com/pdidev/pdi/issues/562)]
+
+
+## [1.8.3] - 2025-02-25
+
+### Fixed
+* Correctlty detect python path when distutils is part of setuptools, fixes
+  [#544](https://github.com/pdidev/pdi/issues/544)
+
+
+## [1.8.2] - 2025-02-20
+
+### Fixed
+* Correct the directory where the vendored HDF5 library is  installed on RHEL,
+  fixes [#532](https://github.com/pdidev/pdi/issues/532)
+
+
+## [1.8.1] - 2025-01-23
+
+### Fixed
+* Fix the indentation check script
+  [#515](https://github.com/pdidev/pdi/issues/515)
 
 
 ## [1.8.0] - 2024-11-28
@@ -54,7 +89,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#458](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/458)
 
 ### Fixed
-* Support installation with the latest version of python where setuptools is an external lib, fixes
+* Support installation with the latest version of python where setuptools is an
+  external lib, fixes
   [#457](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/457)
 
 
