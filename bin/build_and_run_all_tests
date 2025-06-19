@@ -125,7 +125,7 @@ then
 		-DBUILD_USER_CODE_PLUGIN=ON
 		-DUSE_HDF5=SYSTEM
 		-DUSE_NetCDF=SYSTEM
-		-DCMAKE_CXX_FLAGS="-Wno-unqualified-std-cast-call -undefined dynamic_lookup"
+		-DCMAKE_CXX_FLAGS=\"-Wno-unqualified-std-cast-call -undefined dynamic_lookup\"
 	)
 fi
 
