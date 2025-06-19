@@ -50,8 +50,10 @@ jobs:
       OMPI_MCA_rmaps_base_oversubscribe: 1
       PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
       PDI_SYSTEM: macos
+      PDI_COMPILER: ${CC}
+      PDI_MPI: openmpi
     steps:
-    - run: brew install hdf5-mpi #numpy
+    #- run: brew install hdf5-mpi #numpy
     #- name: macos-13 dependencies fix
     #  if: matrix.os == 'macos-13'
     #  run: |

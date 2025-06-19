@@ -109,7 +109,7 @@ then
 	
 	# needed for pybind11
 	# export LDFLAGS="-undefined dynamic_lookup"
-
+	# not all plugins are built on macos (https://github.com/pdidev/pdi/issues/580)
 	CMAKE_FLAGS="${CMAKE_FLAGS} \
 -DBUILD_BENCHMARKING=OFF \
 -DBUILD_DECL_HDF5_PLUGIN=ON \
@@ -126,10 +126,7 @@ then
 -DBUILD_SET_VALUE_PLUGIN=ON \
 -DBUILD_TESTING=ON \
 -DBUILD_TRACE_PLUGIN=ON \
--DBUILD_USER_CODE_PLUGIN=ON \
--DUSE_HDF5=SYSTEM \
--DUSE_NetCDF=SYSTEM \
--DCMAKE_CXXFLAGS=-Wno-unqualified-std-cast-call"
+-DBUILD_USER_CODE_PLUGIN=ON"
 fi
 
 # Configure, build & test
