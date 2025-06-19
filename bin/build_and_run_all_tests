@@ -106,8 +106,9 @@ fi
 if [[ "x${PDI_SYSTEM}" =~ ^xmacos ]]
 then
 	#Workaround: not all plugins work on macos.
-
-	export LDFLAGS="-undefined dynamic_lookup"
+	
+	# needed for pybind11
+	# export LDFLAGS="-undefined dynamic_lookup"
 
 	CMAKE_FLAGS="${CMAKE_FLAGS} \
 -DBUILD_BENCHMARKING=OFF \
@@ -132,7 +133,6 @@ then
 fi
 
 # Configure, build & test
-
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
