@@ -50,7 +50,7 @@ jobs:
       OMPI_MCA_rmaps_base_oversubscribe: 1
       PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
       PDI_SYSTEM: macos
-      PDI_COMPILER: ${CC}
+      PDI_COMPILER: ${{env.CC}}
       PDI_MPI: openmpi
     steps:
     - run: brew install open-mpi #numpy
@@ -68,7 +68,7 @@ jobs:
       if: matrix.os == 'macos-15'
       run: |
         brew install hdf5-mpi
-        echo "CMAKE_FLAGS=$(echo ${CMAKE_FLAGS} -DUSE_HDF5=SYSTEM)" >> $CMAKE_FLAGS
+        echo "CMAKE_FLAGS=$(echo ${CMAKE_FLAGS} -DUSE_HDF5=SYSTEM)" >> $GITHUB_ENV
 
     - uses: actions/checkout@v4
       with:
