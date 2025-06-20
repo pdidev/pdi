@@ -43,7 +43,7 @@ jobs:
         build_type: ['Debug']
     runs-on: ${{matrix.os}}
     env:
-      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      MAKEFLAGS: -j4
       CC: clang
       CXX: clang++
       CMAKE_BUILD_TYPE: ${{matrix.build_type}}
@@ -63,12 +63,12 @@ jobs:
     #  run: |
     #    brew install python-setuptools mpi4py
     #    sudo -H pip install pyyaml
-    - name: macos-14-15 hdf5-mpi
-      # building hdf5 from source fails on macos-14 and macos-15 due to resource limits on runner.
-      if: matrix.os == 'macos-14' || matrix.os == 'macos-15'
-      run: |
-        brew install hdf5-mpi
-        echo "CMAKE_FLAGS=$(echo ${CMAKE_FLAGS} -DUSE_HDF5=SYSTEM)" >> $GITHUB_ENV
+    #- name: macos-14-15 hdf5-mpi
+    #  # building hdf5 from source fails on macos-14 and macos-15 due to resource limits on runner.
+    #  if: matrix.os == 'macos-14' || matrix.os == 'macos-15'
+    #  run: |
+    #    brew install hdf5-mpi
+    #    echo "CMAKE_FLAGS=$(echo ${CMAKE_FLAGS} -DUSE_HDF5=SYSTEM)" >> $GITHUB_ENV
 
     - uses: actions/checkout@v4
       with:
