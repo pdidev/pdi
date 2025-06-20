@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* Added macOS CI for PDI, decl_hdf5, mpi, serialize, set_value, user_code and trace plugins
 
 ### Changed
 
@@ -19,6 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Fix macOS linking issue when installing via root CMakeLists.txt
+* Fix chunking test in decl_hdf5
+* Fix data validation in decl_hdf5 test after write operation
 
 ### Security
 
