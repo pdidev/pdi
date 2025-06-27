@@ -63,7 +63,7 @@ add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOUR
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
-# find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
+find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
 # if(EXAMPLES_NO_PDI)
 # 	message(WARNING "Using include through CMAKE_CURRENT_LIST_DIR")
 # 	include(${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/PDIConfig.cmake)
