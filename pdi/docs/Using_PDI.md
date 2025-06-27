@@ -104,11 +104,19 @@ You can copy the `no-pdi` folder from PDI in your application repository, and
 add an option (`BUILD_WITHOUT_PDI` in the example below) to your
 `CMakeLists.txt` to use this mock folder instead of the real PDI.
 
-Use a CMakeLists.txt similar to example/CMakeLists.txt 
-with `if(EXAMPLES_WITHOUT_PDI)` and `option(EXAMPLES_WITHOUT_PDI)` for your target, 
-then use the following:
+In your `CMakeLists.txt`, replace the `find_package(PDI)` with code like the
+following one:
+```CMake
+option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
+if(BUILD_WITHOUT_PDI)
+	include("${CMAKE_CURRENT_LIST_DIR}/no-pdi/cmake/PDIConfig.cmake)
+else()
+	find_package(PDI REQUIRED)
+endif()
+```
+Then you can build your project with this option specified to disable PDI:
 ```bash
-cmake . -DEXAMPLES_WITHOUT_PDI=ON
+cmake . -DBUILD_WITHOUT_PDI=ON
 ```
 
 ### Using a specific no-pdi through a full path
@@ -116,11 +124,10 @@ cmake . -DEXAMPLES_WITHOUT_PDI=ON
 Alternatively, you can use a specific no-pdi folder among your system, 
 to compile with an added argument pointing to this no-pdi folder using a full path.
 
-Use a CMakeLists.txt similar to example/CMakeLists.txt 
-with `if(PDI_ROOT)` for your target, 
+Use a CMakeLists.txt similar to example/CMakeLists.txt, 
 then use the following:
 ```bash
-cmake . -PDI_ROOT="/<full>/<path>/<to>/pdi/no-pdi/cmake"
+cmake . -DCMAKE_MODULE_PATH=<ABSOLUTE_PATH_TO>/no-pdi/cmake
 ```
 
-%PDI can be re-enabled by reversing those modifications.
+%PDI can be re-enabled by reverting those modifications.
