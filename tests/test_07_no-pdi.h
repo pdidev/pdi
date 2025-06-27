@@ -103,15 +103,15 @@ void errhandler()
 int tests(int argc, char* argv[])
 {
 	static const char* CONFIG_YAML = 
-	"logging: trace         										  \n"
-	"data:                                                            \n"
-	"  to_share: {type: array, subtype: int, size: 2}                 \n"
-	"  to_access: {type: array, subtype: int, size: 2}                \n"
-	"  to_release: {type: array, subtype: int, size: 2}               \n"
-	"  to_reclaim: {type: array, subtype: int, size: 2}               \n"
-	"  to_expose: {type: array, subtype: int, size: 2}                \n"
-	"  to_multi_expose: {type: array, subtype: int, size: 2}          \n"
-	"  to_multi_expose_two: {type: array, subtype: int, size: 2}      \n";
+	"logging: trace														\n"
+	"data:																\n"
+	"  to_share: {type: array, subtype: int, size: 2}					\n"
+	"  to_access: {type: array, subtype: int, size: 2}					\n"
+	"  to_release: {type: array, subtype: int, size: 2}					\n"
+	"  to_reclaim: {type: array, subtype: int, size: 2}					\n"
+	"  to_expose: {type: array, subtype: int, size: 2}					\n"
+	"  to_multi_expose: {type: array, subtype: int, size: 2}			\n"
+	"  to_multi_expose_two: {type: array, subtype: int, size: 2}		\n";
 	// "plugins:                                                         \n"
 
 	if (PDI_OK != PDI_init(PC_parse_string(CONFIG_YAML))) {
@@ -125,7 +125,7 @@ int tests(int argc, char* argv[])
 		exit(1);
 	}
 
-	// errhandler();
+	errhandler();
 
 	share();
 	access();
