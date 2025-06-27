@@ -96,7 +96,7 @@ void errhandler()
 	PDI_errhandler_t current_handler = PDI_errhandler(PDI_NULL_HANDLER);
 	fprintf(stderr, "*** errhandler func %s\n", current_handler.func);
 	fprintf(stderr, "*** errhandler context %s\n", current_handler.context);
-	if (NULL != current_handler.func || NULL != current_handler.context) {
+	if (null != current_handler.func || null != current_handler.context) {
 		fprintf(stderr, "*** Error: no-pdi errhandler\n");
 		exit(1);
 	}
@@ -104,7 +104,7 @@ void errhandler()
 
 int tests(int argc, char* argv[])
 {
-	static const char* CONFIG_YAML 
+	static const char* CONFIG_YAML
 		= "logging: trace														\n"
 		  "data:																\n"
 		  "  to_share: {type: array, subtype: int, size: 2}						\n"
@@ -114,7 +114,6 @@ int tests(int argc, char* argv[])
 		  "  to_expose: {type: array, subtype: int, size: 2}					\n"
 		  "  to_multi_expose: {type: array, subtype: int, size: 2}				\n"
 		  "  to_multi_expose_two: {type: array, subtype: int, size: 2}			\n";
-		// "plugins:                                                         \n"
 
 	if (PDI_OK != PDI_init(PC_parse_string(CONFIG_YAML))) {
 		fprintf(stderr, "*** Error: no-pdi initialisation\n");
