@@ -120,6 +120,11 @@ public:
 	 * \return the type generated
 	 */
 	virtual Datatype_template_sptr datatype(PC_tree_t node) = 0;
+	
+	/**
+	 * TODO add doc
+	 */
+	virtual Datatype_template_definition_sptr datatype(const std::string &str) = 0;
 
 	/** Adds new datatype parser to the context
 	 *
