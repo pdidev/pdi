@@ -465,6 +465,8 @@ if("${BUILD_JSON_PLUGIN}")
 	sbuild_add_dependency(nlohmann_json "${USE_DEFAULT}"
 		EMBEDDED_PATH "${PDI_VENDORED_JSON_DIR}"
 		CMAKE_CACHE_ARGS
+			"-DBUILD_TESTING:BOOL=OFF"
+			"-DJSON_BuildTests:BOOL=OFF"
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated
 			"-DJSON_BuildTests:BOOL=OFF" # skip unit tests for json
 		VERSION "${PDI_REQUIRED_JSON_VERSION}"

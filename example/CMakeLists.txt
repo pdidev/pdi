@@ -30,7 +30,6 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(pdi_examples LANGUAGES C)
 
 set(MPI_COMPONENTS C)
 set(PARACONF_COMPONENTS C)
@@ -186,3 +185,7 @@ add_test(NAME PDI_example_timer COMMAND ${RUNTEST_DIR} "${MPIEXEC}" "${MPIEXEC_N
 set_property(TEST PDI_example_timer PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_timer PROPERTY PROCESSORS 3)
 endif("${BUILD_TIMER_PLUGIN}" AND "${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}" AND "${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}")
+
+add_executable(parametric parametric.cxx)
+target_compile_features(parametric PUBLIC cxx_std_17)
+target_link_libraries(parametric PDI::PDI_C)
