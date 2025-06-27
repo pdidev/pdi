@@ -452,6 +452,9 @@ endif()
 if("${BUILD_JSON_PLUGIN}")
 	sbuild_add_dependency(JSON "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/json-3.11.4"
+		CMAKE_CACHE_ARGS
+			"-DBUILD_TESTING:BOOL=OFF"
+			"-DJSON_BuildTests:BOOL=OFF"
 	)
 endif()
 

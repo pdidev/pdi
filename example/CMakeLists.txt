@@ -28,7 +28,7 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.16...3.29)
-project(pdi_examples LANGUAGES C)
+project(pdi_examples LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(MPI_COMPONENTS C)
@@ -144,3 +144,8 @@ add_test(NAME PDI_example_trace_P COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}"
 set_property(TEST PDI_example_trace_P PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_trace_P PROPERTY PROCESSORS 3)
 endif("${BUILD_PYTHON}")
+
+
+add_executable(parametric parametric.cxx)
+target_compile_features(parametric PUBLIC cxx_std_17)
+target_link_libraries(parametric PDI::PDI_C)
