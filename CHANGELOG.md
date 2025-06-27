@@ -26,6 +26,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 
+## [1.9.2] - 2025-06-13
+
+### Fixed
+* Released 1.9.2 because 1.9.1 was incorrectly tagged
+
+
 ## [1.9.0] - 2025-03-07
 
 ### Added

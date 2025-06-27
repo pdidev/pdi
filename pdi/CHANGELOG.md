@@ -44,6 +44,16 @@ and this project adheres to
 
 
 
+## [1.9.1] - 2025-05-07
+
+### For users
+
+#### Fixed
+* Solve a compilation issue where latest compilers do not transitively define
+  `uint8_t`, fix [#577](https://github.com/pdidev/pdi/issues/577)
+
+
+
 ## [1.9.0] - 2025-03-07
 
 ### For users
