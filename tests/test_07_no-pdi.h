@@ -47,6 +47,7 @@ void release() //share/release
 {
 	int to_release[2] = {1, 1};
 	PDI_share("to_release", to_release, PDI_OUT);
+	PDI_access("to_release", (void**)&to_release, PDI_IN);
 	if (PDI_OK != PDI_release("to_release")) {
 		fprintf(stderr, "*** Error: no-pdi release\n");
 		exit(1);
