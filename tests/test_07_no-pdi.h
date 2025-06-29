@@ -45,7 +45,7 @@ void access() //access
 void release() //access/release
 {
 	int to_release[2] = {1, 1};
-	PDI_access("to_access", (void**)&to_release, PDI_IN);
+	PDI_access("to_release", (void**)&to_release, PDI_IN);
 	if (PDI_OK != PDI_release("to_release")) {
 		fprintf(stderr, "*** Error: no-pdi release\n");
 		exit(1);
@@ -55,7 +55,7 @@ void release() //access/release
 void reclaim() //share/reclaim
 {
 	int to_reclaim[2] = {1, 1};
-	PDI_share("to_release", to_reclaim, PDI_OUT);
+	PDI_share("to_reclaim", to_reclaim, PDI_OUT);
 	if (PDI_OK != PDI_reclaim("to_reclaim")) {
 		fprintf(stderr, "*** Error: no-pdi reclaim\n");
 		exit(1);
