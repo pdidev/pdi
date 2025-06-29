@@ -36,6 +36,7 @@ void share()
 void access() //access
 {
 	int to_access[2] = {1, 1};
+	PDI_share("to_access", to_access, PDI_OUT);
 	if (PDI_OK != PDI_access("to_access", (void**)&to_access, PDI_IN)) {
 		fprintf(stderr, "*** Error: no-pdi access\n");
 		exit(1);
