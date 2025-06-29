@@ -95,6 +95,8 @@ void multi_expose()
 
 void errhandler()
 {
+	fprintf(stderr, "*** PDI_NULL_HANDLER func %p\n", (void*)PDI_NULL_HANDLER.func);
+    fprintf(stderr, "*** PDI_NULL_HANDLER context %p\n", PDI_NULL_HANDLER.context);
 	PDI_errhandler_t current_handler = PDI_errhandler(PDI_NULL_HANDLER);
 	fprintf(stderr, "*** errhandler func %p\n", (void*)current_handler.func);
 	fprintf(stderr, "*** errhandler context %p\n", current_handler.context);
