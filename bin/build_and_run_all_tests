@@ -135,7 +135,7 @@ fi
 
 cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make verbose=1 ${MAKEFLAGS}
-# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 echo "############"
 
