@@ -24,7 +24,7 @@
 
 #include <pdi.h>
 
-void share()
+void share() //share
 {
 	int to_share[2] = {1, 1};
 	if (PDI_OK != PDI_share("to_share", to_share, PDI_OUT)) {
@@ -33,7 +33,7 @@ void share()
 	}
 }
 
-void access() //access
+void access() //share/access
 {
 	int to_access[2] = {1, 1};
 	PDI_share("to_access", to_access, PDI_OUT);
@@ -43,10 +43,10 @@ void access() //access
 	}
 }
 
-void release() //access/release
+void release() //share/release
 {
 	int to_release[2] = {1, 1};
-	PDI_access("to_release", (void**)&to_release, PDI_IN);
+	PDI_share("to_release", to_release, PDI_OUT);
 	if (PDI_OK != PDI_release("to_release")) {
 		fprintf(stderr, "*** Error: no-pdi release\n");
 		exit(1);
