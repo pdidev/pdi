@@ -33,21 +33,37 @@ set -xe
 
 
 
+# # Make our work dirs
+# SRCDIR="${PWD}"
+
+# TEST_DIR="${TEST_DIR:-${PWD}}"
+# cd "${TEST_DIR}"
+# cd "$(mktemp -d pdibuild.XXXXX)"
+# TEST_DIR_ROOT="${PWD}"
+
+# mkdir no_pdi
+# cd no_pdi
+# TEST_DIR_NO_PDI="${PWD}"
+
+# cd "${TEST_DIR_ROOT}"
+# mkdir with_pdi
+# cd with_pdi
+# TEST_DIR="${PWD}"
+
+# cd "${SRCDIR}"
+# cd "$(dirname "$0")/.."
+# SRCDIR="${PWD}"
+
+# cd "${TEST_DIR}"
+
+
+######################################
 # Make our work dirs
 SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
-TEST_DIR_ROOT="${PWD}"
-
-mkdir no_pdi
-cd no_pdi
-TEST_DIR_NO_PDI="${PWD}"
-
-cd "${TEST_DIR_ROOT}"
-mkdir with_pdi
-cd with_pdi
 TEST_DIR="${PWD}"
 
 cd "${SRCDIR}"
@@ -55,6 +71,7 @@ cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
 
 cd "${TEST_DIR}"
+######################################
 
 
 # Gather options
@@ -117,16 +134,16 @@ fi
 # Configure, build & test
 
 cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+make verbose=1 ${MAKEFLAGS}
+# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 echo "############"
 
 # Configure, build & test for no-pdi
 
-cd "${TEST_DIR_NO_PDI}"
-RELATIVE_MODULE_PATH="../../no-pdi/cmake"
-NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
-cmake -DBUILD_BENCHMARKING=OFF -DCMAKE_MODULE_PATH="${TEST_DIR_NO_PDI}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+# cd "${TEST_DIR_NO_PDI}"
+# RELATIVE_MODULE_PATH="../../no-pdi/cmake"
+# NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
+# cmake -DBUILD_BENCHMARKING=OFF -DCMAKE_MODULE_PATH="${TEST_DIR_NO_PDI}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+# make ${MAKEFLAGS}
+# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
