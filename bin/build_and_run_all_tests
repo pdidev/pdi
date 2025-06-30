@@ -147,6 +147,7 @@ RELATIVE_MODULE_PATH="../../no-pdi/cmake"
 ls "${TEST_DIR_NO_PDI}"
 ls "${TEST_DIR_NO_PDI}/.."
 ls "${TEST_DIR_NO_PDI}/../.."
+ls "${SRCDIR}"
 cd "${TEST_DIR_NO_PDI}/../.."
 find . -name "cmake"
 cd -
