@@ -106,9 +106,7 @@ fi
 if [[ "x${PDI_SYSTEM}" =~ ^xmacos ]]
 then
 	#Workaround: not all plugins work on macos.
-	
-	# needed for pybind11
-	# export LDFLAGS="-undefined dynamic_lookup"
+	# export LDFLAGS="-undefined dynamic_lookup" is needed for pybind11 (cf: https://pybind11.readthedocs.io/en/stable/compiling.html#building-manually)
 	# not all plugins are built on macos (https://github.com/pdidev/pdi/issues/580)
 	CMAKE_FLAGS="${CMAKE_FLAGS} \
 -DBUILD_BENCHMARKING=OFF \
