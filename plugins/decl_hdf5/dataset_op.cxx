@@ -32,6 +32,7 @@
 #include <sstream>
 #include <tuple>
 #include <vector>
+#include <regex>
 
 #include <spdlog/spdlog.h>
 
@@ -360,20 +361,52 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	ctx.logger().trace("Applying `{}' memory selection", dataset_name);
 	m_memory_selection.apply(ctx, h5_mem_space);
 
-	auto&& dataset_type_iter = dsets.find(dataset_name);
 	Datatype_sptr dataset_type;
 	Raii_hid h5_file_type, h5_file_space;
-	if (dataset_type_iter != dsets.end()) {
-		dataset_type = dataset_type_iter->second->evaluate(ctx);
-		tie(h5_file_space, h5_file_type) = space(dataset_type);
-		ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
-		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
+
+	ctx.logger().trace("loop on dsets{}'");
+	for (auto && dsets_elem: dsets ){
+		// create regex from string
+		ctx.logger().trace("value in dsets {}'",dsets_elem.first);
+	}
+
+	int counter = 0;
+	ctx.logger().trace("search `{}' in the list of datasets section", dataset_name);
+	for (auto && dsets_elem: dsets ){
+		// create regex from string
+		std::regex dsets_elem_regex(dsets_elem.first);
+		// try if dataset_name is including in regex
+		if (std::regex_match(dataset_name, dsets_elem_regex)) {
+			counter++;
+			ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem.first);
+		}
+	}
+
+	ctx.logger().trace("found `{}' match(s) in the list of datasets section for `{}'", counter, dataset_name);
+	if( counter > 1 ){
+		throw Config_error{m_dataset_selection.selection_tree(), "2 or more elements (as regex) are compatible for `{}' in the datasets section ", dataset_name};
+	}
+
+	if( counter == 1 ){
+		for (auto && dataset_type_iter_regex = dsets.begin(); dataset_type_iter_regex !=dsets.end(); ++dataset_type_iter_regex){
+			std::regex dsets_elem_regex(dataset_type_iter_regex->first);
+			if (std::regex_match(dataset_name, dsets_elem_regex)) {
+				// we found the datasets
+				ctx.logger().trace("Get the regex in the list of datasets section := `{}'", dataset_type_iter_regex->first);
+				dataset_type = dataset_type_iter_regex->second->evaluate(ctx);
+				tie(h5_file_space, h5_file_type) = space(dataset_type);
+				ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
+				m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
+				break; // stop the "for" loop
+			}
+		}
 	} else {
 		if (!m_dataset_selection.size().empty()) {
 			throw Config_error{m_dataset_selection.selection_tree(), "Dataset selection is invalid in implicit dataset `{}'", dataset_name};
+		} else {
+			dataset_type = ref.type();
+			tie(h5_file_space, h5_file_type) = space(dataset_type, true);
 		}
-		dataset_type = ref.type();
-		tie(h5_file_space, h5_file_type) = space(dataset_type, true);
 	}
 
 	ctx.logger().trace("Validating `{}' dataset dataspaces selection", dataset_name);

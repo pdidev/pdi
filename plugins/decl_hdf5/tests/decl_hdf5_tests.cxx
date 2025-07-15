@@ -950,3 +950,191 @@ TEST(decl_hdf5_test, 08)
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 }
+
+/*
+ * Name:                decl_hdf5_test.10
+ *
+ * Description:     creating group with regex for reading
+ */
+TEST(decl_hdf5_test, 09)
+{
+	const char* CONFIG_YAML
+		= "logging: trace                                                       \n"
+		  "data:                                                                \n"
+		  "  array_data: { size: [5, 10], type: array, subtype: int }           \n"
+		  "  array_data_second: { size: [5, 10], type: array, subtype: int }    \n"
+		  "  array_data_third: { size: [5, 10], type: array, subtype: int }     \n"
+		  "metadata:                                                            \n"
+		  "  index: int                                                         \n"
+		  "plugins:                                                             \n"
+		  "  decl_hdf5:                                                         \n"
+		  "    file: decl_hdf5_test_09.h5                                       \n"
+		  "    on_event: write_event                                            \n"
+		  "    datasets:                                                        \n"
+		  "      group/lion_array_data:                                         \n"
+		  "        size: [3, 8]                                                \n"
+		  "        type: array                                                  \n"
+		  "        subtype: int                                                 \n"
+		  "      group[0-9]+/dog_array_data:                                     \n"
+		  "        size: [3, 8]                                                \n"
+		  "        type: array                                                  \n"
+		  "        subtype: int                                                 \n"
+		  "      group_second.*/cat_array_data:                                 \n"
+		  "        size: [3, 8]                                                \n"
+		  "        type: array                                                  \n"
+		  "        subtype: int                                                 \n"
+		  "    write:                                                           \n"
+		  "      array_data:                                                    \n"
+		  "        dataset: 'group${index}/dog_array_data'                    \n"
+		  "        dataset_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [0, 0]                                       \n"
+		  "        memory_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [1, 1]                                       \n"
+		  "      array_data_second:                                             \n"
+		  "        dataset: group_second_TRY/cat_array_data                   \n"
+		  "        dataset_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [0, 0]                                       \n"
+		  "        memory_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [1, 1]                                       \n"
+		  "      array_data_third:                                              \n"
+		  "        dataset: group/lion_array_data                               \n"
+		  "        dataset_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [0, 0]                                       \n"
+		  "        memory_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [1, 1]                                       \n";
+
+
+	//PDI_write
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
+	PDI_init(conf);
+
+	int index = 123;
+
+	int test_array[5][10];
+	int test_array_second[5][10];
+	int test_array_third[5][10];
+
+	int true_test_array[5][10];
+	int true_test_array_second[5][10];
+	int true_test_array_third[5][10];
+
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 10; j++) {
+			test_array[i][j] = i * 10 + j;
+			test_array_second[i][j] = (i * 10 + j) * 10;
+			test_array_third[i][j] = (i * 10 + j) * 20;
+		}
+	}
+
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 10; j++) {
+			true_test_array[i][j] = test_array[i][j];
+			true_test_array_second[i][j] = test_array_second[i][j];
+			true_test_array_third[i][j] = test_array_third[i][j];
+		}
+	}
+
+	PDI_expose("index",&index,PDI_OUT);
+	PDI_multi_expose("write_event", "array_data", test_array, PDI_OUT, "array_data_second", test_array_second, PDI_OUT, "array_data_third", test_array_third, PDI_OUT, NULL);
+
+	PDI_finalize();
+	PC_tree_destroy(&conf);
+
+	CONFIG_YAML
+		= "logging: trace                                                       \n"
+		  "data:                                                                \n"
+		  "  array_data: { size: [5, 10], type: array, subtype: int }           \n"
+		  "  array_data_second: { size: [5, 10], type: array, subtype: int }    \n"
+		  "  array_data_third: { size: [5, 10], type: array, subtype: int }     \n"
+		  "metadata:                                                            \n"
+		  "  index: int                                                         \n"
+		  "plugins:                                                             \n"
+		  "  decl_hdf5:                                                         \n"
+		  "    file: decl_hdf5_test_09.h5                                       \n"
+		  "    on_event: read_event                                             \n"
+		//   "    datasets:                                                        \n"
+		//   "      lion_array_data:                                               \n"
+		//   "        size: [3, 8]                                                 \n"
+		//   "        type: array                                                  \n"
+		//   "        subtype: int                                                 \n"
+		//   "      group[0-9]+/dog_array_data:                                     \n"
+		//   "        size: [3, 8]                                                \n"
+		//   "        type: array                                                  \n"
+		//   "        subtype: int                                                 \n"
+		//   "      group_second.*/cat_array_data:                                 \n"
+		//   "        size: [3, 8]                                                \n"
+		//   "        type: array                                                  \n"
+		//   "        subtype: int                                                 \n"
+		  "    read:                                                            \n"
+		  "      array_data:                                                    \n"
+		  "        dataset: group${index}/dog_array_data                   \n"
+		  "        dataset_selection:                                         \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [0, 0]                                       \n"
+		  "        memory_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [1, 1]                                       \n"
+		  "      array_data_second:                                             \n"
+		  "        dataset: group_second_TRY/cat_array_data                   \n"
+		  "        dataset_selection:                                         \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [0, 0]                                       \n"
+		  "        memory_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [1, 1]                                       \n"
+		  "      array_data_third:                                              \n"
+		  "        dataset: group/lion_array_data                             \n"
+		  "        dataset_selection:                                         \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [0, 0]                                       \n"
+		  "        memory_selection:                                     \n"
+		  "          size: [ 3, 8]                                       \n"
+		  "          start: [1, 1]                                       \n";
+
+	//PDI_read
+	conf = PC_parse_string(CONFIG_YAML);
+	PDI_init(conf);
+
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 10; j++) {
+			test_array[i][j] = 0;
+			test_array_second[i][j] = 0;
+			test_array_third[i][j] = 0;
+		}
+	}
+
+	EXPECT_EQ(index,123) <<" The value have changed between wrting and reading";
+	PDI_expose("index",&index,PDI_OUT);
+	PDI_multi_expose("read_event", "array_data", test_array, PDI_IN, "array_data_second", test_array_second, PDI_IN, "array_data_third", test_array_third, PDI_IN, NULL);
+
+	for (int i = 1; i < 4; i++) {
+		for (int j = 1; j < 9; j++) {
+			EXPECT_EQ(test_array[i][j],true_test_array[i][j]) << "Wrong value of test_array[" << i << "][" << j << "]: " << test_array[i][j]
+												   << " != " << true_test_array[i][j];
+		}
+	}
+
+	for (int i = 1; i < 4; i++) {
+		for (int j = 1; j < 9; j++) {
+			EXPECT_EQ(test_array_second[i][j],true_test_array_second[i][j]) << "Wrong value of test_array_second[" << i << "][" << j << "]: " << test_array_second[i][j]
+												   << " != " << true_test_array_second[i][j];
+		}
+	}
+
+	for (int i = 1; i < 4; i++) {
+		for (int j = 1; j < 9; j++) {
+			EXPECT_EQ(test_array_third[i][j],true_test_array_third[i][j]) << "Wrong value of test_array_third[" << i << "][" << j << "]: " << test_array_third[i][j]
+												   << " != " << true_test_array_third[i][j];
+		}
+	}
+
+
+	PDI_finalize();
+	PC_tree_destroy(&conf);
+}
