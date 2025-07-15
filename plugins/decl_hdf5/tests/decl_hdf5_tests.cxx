@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -1040,8 +1040,20 @@ TEST(decl_hdf5_test, 09)
 		}
 	}
 
-	PDI_expose("index",&index,PDI_OUT);
-	PDI_multi_expose("write_event", "array_data", test_array, PDI_OUT, "array_data_second", test_array_second, PDI_OUT, "array_data_third", test_array_third, PDI_OUT, NULL);
+	PDI_expose("index", &index, PDI_OUT);
+	PDI_multi_expose(
+		"write_event",
+		"array_data",
+		test_array,
+		PDI_OUT,
+		"array_data_second",
+		test_array_second,
+		PDI_OUT,
+		"array_data_third",
+		test_array_third,
+		PDI_OUT,
+		NULL
+	);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
@@ -1058,19 +1070,19 @@ TEST(decl_hdf5_test, 09)
 		  "  decl_hdf5:                                                         \n"
 		  "    file: decl_hdf5_test_09.h5                                       \n"
 		  "    on_event: read_event                                             \n"
-		//   "    datasets:                                                        \n"
-		//   "      lion_array_data:                                               \n"
-		//   "        size: [3, 8]                                                 \n"
-		//   "        type: array                                                  \n"
-		//   "        subtype: int                                                 \n"
-		//   "      group[0-9]+/dog_array_data:                                     \n"
-		//   "        size: [3, 8]                                                \n"
-		//   "        type: array                                                  \n"
-		//   "        subtype: int                                                 \n"
-		//   "      group_second.*/cat_array_data:                                 \n"
-		//   "        size: [3, 8]                                                \n"
-		//   "        type: array                                                  \n"
-		//   "        subtype: int                                                 \n"
+		  //   "    datasets:                                                        \n"
+		  //   "      lion_array_data:                                               \n"
+		  //   "        size: [3, 8]                                                 \n"
+		  //   "        type: array                                                  \n"
+		  //   "        subtype: int                                                 \n"
+		  //   "      group[0-9]+/dog_array_data:                                     \n"
+		  //   "        size: [3, 8]                                                \n"
+		  //   "        type: array                                                  \n"
+		  //   "        subtype: int                                                 \n"
+		  //   "      group_second.*/cat_array_data:                                 \n"
+		  //   "        size: [3, 8]                                                \n"
+		  //   "        type: array                                                  \n"
+		  //   "        subtype: int                                                 \n"
 		  "    read:                                                            \n"
 		  "      array_data:                                                    \n"
 		  "        dataset: group${index}/dog_array_data                   \n"
@@ -1109,31 +1121,43 @@ TEST(decl_hdf5_test, 09)
 		}
 	}
 
-	EXPECT_EQ(index,123) <<" The value have changed between wrting and reading";
-	PDI_expose("index",&index,PDI_OUT);
-	PDI_multi_expose("read_event", "array_data", test_array, PDI_IN, "array_data_second", test_array_second, PDI_IN, "array_data_third", test_array_third, PDI_IN, NULL);
+	EXPECT_EQ(index, 123) << " The value have changed between wrting and reading";
+	PDI_expose("index", &index, PDI_OUT);
+	PDI_multi_expose(
+		"read_event",
+		"array_data",
+		test_array,
+		PDI_IN,
+		"array_data_second",
+		test_array_second,
+		PDI_IN,
+		"array_data_third",
+		test_array_third,
+		PDI_IN,
+		NULL
+	);
 
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 9; j++) {
-			EXPECT_EQ(test_array[i][j],true_test_array[i][j]) << "Wrong value of test_array[" << i << "][" << j << "]: " << test_array[i][j]
-												   << " != " << true_test_array[i][j];
+			EXPECT_EQ(test_array[i][j], true_test_array[i][j])
+				<< "Wrong value of test_array[" << i << "][" << j << "]: " << test_array[i][j] << " != " << true_test_array[i][j];
 		}
 	}
 
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 9; j++) {
-			EXPECT_EQ(test_array_second[i][j],true_test_array_second[i][j]) << "Wrong value of test_array_second[" << i << "][" << j << "]: " << test_array_second[i][j]
-												   << " != " << true_test_array_second[i][j];
+			EXPECT_EQ(test_array_second[i][j], true_test_array_second[i][j])
+				<< "Wrong value of test_array_second[" << i << "][" << j << "]: " << test_array_second[i][j]
+				<< " != " << true_test_array_second[i][j];
 		}
 	}
 
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 9; j++) {
-			EXPECT_EQ(test_array_third[i][j],true_test_array_third[i][j]) << "Wrong value of test_array_third[" << i << "][" << j << "]: " << test_array_third[i][j]
-												   << " != " << true_test_array_third[i][j];
+			EXPECT_EQ(test_array_third[i][j], true_test_array_third[i][j])
+				<< "Wrong value of test_array_third[" << i << "][" << j << "]: " << test_array_third[i][j] << " != " << true_test_array_third[i][j];
 		}
 	}
-
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);

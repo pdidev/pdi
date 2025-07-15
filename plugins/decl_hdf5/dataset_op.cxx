@@ -29,10 +29,10 @@
 #endif
 
 #include <algorithm>
+#include <regex>
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include <regex>
 
 #include <spdlog/spdlog.h>
 
@@ -364,15 +364,9 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	Datatype_sptr dataset_type;
 	Raii_hid h5_file_type, h5_file_space;
 
-	ctx.logger().trace("loop on dsets{}'");
-	for (auto && dsets_elem: dsets ){
-		// create regex from string
-		ctx.logger().trace("value in dsets {}'",dsets_elem.first);
-	}
-
 	int counter = 0;
 	ctx.logger().trace("search `{}' in the list of datasets section", dataset_name);
-	for (auto && dsets_elem: dsets ){
+	for (auto&& dsets_elem: dsets) {
 		// create regex from string
 		std::regex dsets_elem_regex(dsets_elem.first);
 		// try if dataset_name is including in regex
@@ -383,12 +377,16 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	}
 
 	ctx.logger().trace("found `{}' match(s) in the list of datasets section for `{}'", counter, dataset_name);
-	if( counter > 1 ){
-		throw Config_error{m_dataset_selection.selection_tree(), "2 or more elements (as regex) are compatible for `{}' in the datasets section ", dataset_name};
+	if (counter > 1) {
+		throw Config_error{
+			m_dataset_selection.selection_tree(),
+			"2 or more elements (as regex) are compatible for `{}' in the datasets section ",
+			dataset_name
+		};
 	}
 
-	if( counter == 1 ){
-		for (auto && dataset_type_iter_regex = dsets.begin(); dataset_type_iter_regex !=dsets.end(); ++dataset_type_iter_regex){
+	if (counter == 1) {
+		for (auto&& dataset_type_iter_regex = dsets.begin(); dataset_type_iter_regex != dsets.end(); ++dataset_type_iter_regex) {
 			std::regex dsets_elem_regex(dataset_type_iter_regex->first);
 			if (std::regex_match(dataset_name, dsets_elem_regex)) {
 				// we found the datasets
