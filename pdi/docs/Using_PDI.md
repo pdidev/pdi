@@ -100,7 +100,7 @@ plugins in 4 steps (it will use the first plugin found):
 
 ### Using the no-pdi included in the currently used pdi repository
 
-You can copy the `no-pdi` folder from PDI in your application repository, and 
+You can copy the `no-pdi` folder from PDI in your application repository, and
 add an option (`BUILD_WITHOUT_PDI` in the example below) to your
 `CMakeLists.txt` to use this mock folder instead of the real PDI.
 
@@ -109,7 +109,7 @@ following one:
 ```CMake
 option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
 if(BUILD_WITHOUT_PDI)
-	include("${CMAKE_CURRENT_LIST_DIR}/no-pdi/cmake/PDIConfig.cmake)
+	include("${CMAKE_CURRENT_LIST_DIR}/no-pdi/cmake/PDIConfig.cmake")
 else()
 	find_package(PDI REQUIRED)
 endif()
@@ -118,6 +118,8 @@ Then you can build your project with this option specified to disable PDI:
 ```bash
 cmake . -DBUILD_WITHOUT_PDI=ON
 ```
+This is the preferred method of using no-pdi, as the following may result in
+a conflict when using a dependency toward Paraconf outside of PDI.
 
 ### Using a specific no-pdi through a full path
 
@@ -127,7 +129,9 @@ to compile with an added argument pointing to this no-pdi folder using a full pa
 Use a CMakeLists.txt similar to example/CMakeLists.txt, 
 then use the following:
 ```bash
-cmake . -DCMAKE_MODULE_PATH=<ABSOLUTE_PATH_TO>/no-pdi/cmake
+cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
+This is not the preferred method of using no-pdi, as it may result in
+a conflict when using a dependency toward Paraconf outside of PDI.
 
 %PDI can be re-enabled by reverting those modifications.

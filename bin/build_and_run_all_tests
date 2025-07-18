@@ -50,6 +50,11 @@ mkdir with_pdi
 cd with_pdi
 TEST_DIR="${PWD}"
 
+cd "${TEST_DIR_ROOT}"
+mkdir api_pdi
+cd api_pdi
+TEST_DIR_API="${PWD}"
+
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
@@ -115,7 +120,7 @@ fi
 
 
 
-# Configure, build & test for pdi
+# Configure, build & test for pdi, with Paraconf
 
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
@@ -123,11 +128,31 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $
 
 echo "############"
 
-# Configure, build & test for no-pdi
+# Configure, build & test for no-pdi's specific tests with CMAKE_MODULE_PATH, with Paraconf
 
-cd "${TEST_DIR_NO_PDI}"
-RELATIVE_MODULE_PATH="no-pdi/cmake"
+if pkg-config --exists paraconf; then
+    # cd "${TEST_DIR_API}"
+    cd "${SRCDIR}/example"
+    RELATIVE_MODULE_PATH="no-pdi/cmake"
+	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_MODULE_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${PWD}"
+	make ${MAKEFLAGS}
+    ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R "PDI_example_C"
+
+	cd "${TEST_DIR_NO_PDI}"
+	NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
+	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_MODULE_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+	make ${MAKEFLAGS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+else
+    echo "Paraconf is not available, skipping no-pdi's specific tests with CMAKE_MODULE_PATH."
+fi
+
+echo "############"
+
+# Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI, without Paraconf
+
+cd "${TEST_DIR_API}"
 NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
-cmake -DBUILD_BENCHMARKING=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_MODULE_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DBUILD_WITHOUT_PDI=ON -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}

@@ -34,7 +34,16 @@ option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 
 include(CTest)
 
-find_package(PDI REQUIRED COMPONENTS C)
+# find_package(PDI REQUIRED COMPONENTS C)
+
+option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
+if(BUILD_WITHOUT_PDI)
+	# include("${CMAKE_CURRENT_LIST_DIR}/no-pdi/cmake/PDIConfig.cmake")
+	message(WARNING "Using include through CMAKE_CURRENT_LIST_DIR")
+	include("${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/PDIConfig.cmake")
+else()
+	find_package(PDI REQUIRED COMPONENTS C)
+endif()
 
 if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
@@ -63,12 +72,12 @@ add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOUR
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
-find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-# if(EXAMPLES_NO_PDI)
-# 	message(WARNING "Using include through CMAKE_CURRENT_LIST_DIR")
-# 	include(${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/PDIConfig.cmake)
-# endif()
-# include_directories(${CMAKE_CURRENT_LIST_DIR})
+# find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
+# # if(EXAMPLES_NO_PDI)
+# # 	message(WARNING "Using include through CMAKE_CURRENT_LIST_DIR")
+# # 	include(${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/PDIConfig.cmake)
+# # endif()
+# # include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 add_executable(test_07_main_C test_07_main.c)
 set(BUILD_FLAGS_FOR_C "-Wall")

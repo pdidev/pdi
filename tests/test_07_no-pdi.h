@@ -104,6 +104,7 @@ void errhandler()
 
 int tests(int argc, char* argv[])
 {
+	#ifdef PARACONF_H__
 	static const char* CONFIG_YAML
 		= "logging: trace														\n"
 		  "data:																\n"
@@ -119,6 +120,7 @@ int tests(int argc, char* argv[])
 		fprintf(stderr, "*** Error: no-pdi initialisation\n");
 		exit(1);
 	}
+	#endif
 
 	const char* errmsg = PDI_errmsg();
 	if (strcmp(errmsg, "") != 0) {
