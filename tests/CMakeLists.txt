@@ -94,7 +94,8 @@ add_executable(test_07_main_C test_07_main.c)
 set(BUILD_FLAGS_FOR_C "-Wall")
 target_compile_options(test_07_main_C PRIVATE
 		$<$<COMPILE_LANGUAGE:C>:${BUILD_FLAGS_FOR_C}>)
-target_link_libraries(test_07_main_C paraconf::paraconf PDI::PDI_C)
+# target_link_libraries(test_07_main_C paraconf::paraconf PDI::PDI_C)
+target_link_libraries(test_07_main_C PDI::PDI_C)
 add_test(NAME test_07_main_C COMMAND "$<TARGET_FILE:test_07_main_C>")
 
 add_executable(test_07_main_CXX test_07_main.cpp)
@@ -104,5 +105,6 @@ target_compile_options(test_07_main_CXX PRIVATE
 set_target_properties(test_07_main_CXX PROPERTIES CXX_STANDARD 11)
 set_target_properties(test_07_main_CXX PROPERTIES LANGUAGE CXX)
 set_target_properties(test_07_main_CXX PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(test_07_main_CXX paraconf::paraconf PDI::PDI_C)
+# target_link_libraries(test_07_main_CXX paraconf::paraconf PDI::PDI_C)
+target_link_libraries(test_07_main_CXX PDI::PDI_C)
 add_test(NAME test_07_main_CXX COMMAND "$<TARGET_FILE:test_07_main_CXX>")
