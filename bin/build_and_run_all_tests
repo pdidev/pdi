@@ -151,6 +151,9 @@ echo "############"
 
 # Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI, without Paraconf
 
+echo "ls SRCDIR:"
+ls "${SRCDIR}"
+
 cd "${TEST_DIR_API}"
 echo "TEST_DIR_API: ${TEST_DIR_API}"
 NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
