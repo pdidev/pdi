@@ -129,8 +129,8 @@ ls .
 echo "ldd"
 ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C"
 echo "ldd grep"
-ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep '^libparaconf.so.1 =>' | egrep -v 'not found'
-ls "x${PDI_LIBS}"
+ldd ("PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep '^libparaconf.so.1 =>' | egrep -v 'not found')
+# ls "x${PDI_LIBS}"
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 echo "############"
