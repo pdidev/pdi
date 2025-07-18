@@ -37,11 +37,13 @@ include(CTest)
 # find_package(PDI REQUIRED COMPONENTS C)
 
 option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
+message(WARNING "BUILD_WITHOUT_PDI: ${BUILD_WITHOUT_PDI}")
 if(BUILD_WITHOUT_PDI)
 	# include("${CMAKE_CURRENT_LIST_DIR}/no-pdi/cmake/PDIConfig.cmake")
 	message(WARNING "Using include through CMAKE_CURRENT_LIST_DIR")
 	include("${CMAKE_CURRENT_LIST_DIR}/../../no-pdi/cmake/PDIConfig.cmake")
 else()
+	message(WARNING "Using find_package by default")
 	find_package(PDI REQUIRED COMPONENTS C)
 endif()
 
