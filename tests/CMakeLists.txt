@@ -38,7 +38,7 @@ include(CTest)
 
 message(WARNING "BUILD_WITHOUT_PDI before: ${BUILD_WITHOUT_PDI}")
 # message(WARNING "DIST_PROFILE: ${DIST_PROFILE}")
-# message(WARNING "BUILD_FORTRAN: ${BUILD_FORTRAN}")
+message(WARNING "BUILD_UNSTABLE: ${BUILD_UNSTABLE}")
 # message(WARNING "ici: ${CMAKE_CURRENT_LIST_DIR}")
 option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
 # message(WARNING "BUILD_WITHOUT_PDI: ${BUILD_WITHOUT_PDI}")
