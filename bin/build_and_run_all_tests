@@ -126,6 +126,10 @@ cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 # ls . ## pour trouver où faire un ldd, pour trouver paraconf
 ls .
+echo "ldd"
+ldd PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C
+echo "ldd grep"
+ldd your_binary | grep '^libparaconf.so.1 =>' | egrep -v 'not found'
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 echo "############"
