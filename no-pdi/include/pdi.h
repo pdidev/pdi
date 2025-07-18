@@ -148,7 +148,7 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 
 /** Initializes PDI
  */
-#ifndef PARACONF_H__ 
+#ifndef PARACONF_H__
 typedef struct PC_tree_s {
 } PC_tree_t; //ajouter ifdef pour ne pas empêcher "no-pdi+paraconf"
 #endif
