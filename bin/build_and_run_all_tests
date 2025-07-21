@@ -123,7 +123,9 @@ fi
 # Configure, build & test for pdi, with Paraconf
 
 cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+# echo "verbose"
 make ${MAKEFLAGS}
+# make VERBOSE=1 -j1
 # ls . ## pour trouver où faire un ldd, pour trouver paraconf
 ls .
 echo "ldd"
@@ -131,6 +133,7 @@ ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C"
 echo "ldd grep"
 ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | grep -v 'not found'
 # ls "x${PDI_LIBS}"
+echo "après ldd"
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 echo "############"
@@ -160,7 +163,7 @@ else
     echo "Paraconf is not available, skipping no-pdi's specific tests with CMAKE_MODULE_PATH."
 fi
 
-# echo "############"
+echo "############"
 
 # # Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI, without Paraconf
 
