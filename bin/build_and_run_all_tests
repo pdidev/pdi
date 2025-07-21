@@ -129,7 +129,7 @@ ls .
 echo "ldd"
 ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C"
 echo "ldd grep"
-ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep '^libparaconf.so.1 =>' | grep -vq 'not found'
+ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | grep -vq 'not found'
 # ls "x${PDI_LIBS}"
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
@@ -138,7 +138,7 @@ echo "############"
 # Configure, build & test for no-pdi's specific tests with CMAKE_MODULE_PATH, with Paraconf
 
 # if pkg-config --exists paraconf; then
-if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep '^libparaconf.so.1 =>' | grep -vq 'not found'; then
+if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | grep -vq 'not found'; then
     # cd "${TEST_DIR_API}"
     cd "${SRCDIR}/example"
     RELATIVE_MODULE_PATH="no-pdi/cmake"
