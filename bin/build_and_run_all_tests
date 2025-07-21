@@ -144,6 +144,7 @@ if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>
     # cd "${SRCDIR}/example"
 	# mkdir build_example && cd build_example
     RELATIVE_MODULE_PATH="no-pdi/cmake"
+	ls "${SRCDIR}/${RELATIVE_MODULE_PATH}"
 	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_MODULE_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
 	make ${MAKEFLAGS}
     ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R "PDI_example_C"
