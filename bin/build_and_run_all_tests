@@ -142,8 +142,11 @@ echo "############ 1"
 
 # if pkg-config --exists paraconf; then
 if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | grep -v 'not found'; then
-	PARACONF_PATH=$(ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | sed -n 's/.*=> \(\/[^ ]*\) (.*/\1/p')
-	PARACONF_DIR=$(dirname "$PARACONF_PATH")
+	# PARACONF_PATH=$(ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | sed -n 's/.*=> \(\/[^ ]*\) (.*/\1/p')
+	# PARACONF_DIR=$(dirname "$PARACONF_PATH")
+    RELATIVE_PARACONF_PATH="staging/share/paraconf/cmake"
+    echo "PARACONF_DIR: "
+	PARACONF_DIR=$(dirname "${TEST_DIR}/${RELATIVE_PARACONF_PATH}")
     cd "${TEST_DIR_API}"
     # cd "${SRCDIR}/example"
     # ls "${SRCDIR}/example"
