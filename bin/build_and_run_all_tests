@@ -136,7 +136,7 @@ ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' |
 echo "après ldd"
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-echo "############1"
+echo "############ 1"
 
 # Configure, build & test for no-pdi's specific tests with CMAKE_MODULE_PATH, with Paraconf
 
@@ -156,7 +156,7 @@ if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>
 	make ${MAKEFLAGS}
     ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R "PDI_example_C"
 
-	echo "############2"
+	echo "############ 2"
 
 	cd "${TEST_DIR_NO_PDI}"
 	NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
@@ -168,7 +168,7 @@ else
     echo "Paraconf is not available, skipping no-pdi's specific tests with CMAKE_MODULE_PATH."
 fi
 
-echo "############3"
+echo "############ 3"
 
 # # Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI, without Paraconf
 
