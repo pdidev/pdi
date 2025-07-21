@@ -55,6 +55,12 @@
 #ifndef PDI_H_
 #define PDI_H_
 
+#if defined __has_include
+  #if __has_include(<paraconf.h>)
+    #include <paraconf.h>
+  #endif
+#endif
+
 #include <stddef.h>
 
 #ifdef __cplusplus
