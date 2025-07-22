@@ -113,7 +113,7 @@ void errhandler()
 
 int tests(int argc, char* argv[])
 {
-#ifdef PC_parse_string
+// #ifdef PC_parse_string
 	static const char* CONFIG_YAML
 		= "logging: trace														\n"
 		  "data:																\n"
@@ -129,13 +129,13 @@ int tests(int argc, char* argv[])
 		fprintf(stderr, "*** Error: no-pdi initialisation\n");
 		exit(EXIT_FAILURE);
 	}
-#else
-	PC_tree_t mock_PC_tree = {};
-	if (PDI_OK != PDI_init(mock_PC_tree)) {
-		fprintf(stderr, "*** Error: no-pdi initialisation\n");
-		exit(EXIT_FAILURE);
-	}
-#endif
+// #else
+// 	PC_tree_t mock_PC_tree = {};
+// 	if (PDI_OK != PDI_init(mock_PC_tree)) {
+// 		fprintf(stderr, "*** Error: no-pdi initialisation\n");
+// 		exit(EXIT_FAILURE);
+// 	}
+// #endif
 
 	const char* errmsg = PDI_errmsg();
 	if (strcmp(errmsg, "") != 0) {

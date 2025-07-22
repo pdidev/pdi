@@ -94,6 +94,12 @@ endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 # # endif()
 # # include_directories(${CMAKE_CURRENT_LIST_DIR})
 
+if(paraconf_DIR)
+{
+	message(WARNING "paraconf_DIR was specified")
+	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
+}
+
 add_executable(test_07_main_C test_07_main.c)
 set(BUILD_FLAGS_FOR_C "-Wall")
 target_compile_options(test_07_main_C PRIVATE
