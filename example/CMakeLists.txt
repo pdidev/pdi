@@ -33,11 +33,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 message(WARNING "ici example: ${CMAKE_CURRENT_LIST_DIR}")
 
-if(paraconf_DIR)
-	message(WARNING "paraconf_DIR was specified")
-	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-endif()
-
 set(MPI_COMPONENTS C)
 set(PDI_COMPONENTS C)
 
@@ -82,9 +77,19 @@ end module
 	endif()
 endif()
 
+option(BUILD_WITH_PARACONF "Build with Paraconf" OFF)
+if(BUILD_WITH_PARACONF)
+	message(WARNING "Building with Paraconf")
+	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
+endif()
 
 add_executable(PDI_example_C example.c)
-target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
+# target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
+if(BUILD_WITH_PARACONF)
+	target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m)
+else()
+	target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
+endif()
 
 if("${BUILD_FORTRAN}")
 add_executable(PDI_example_F example.F90)
