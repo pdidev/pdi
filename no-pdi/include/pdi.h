@@ -156,6 +156,7 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
  */
 // #ifndef PARACONF_H__ // Add ifndef to not prevent "no-pdi with paraconf" (and allow "no-pdi without paraconf")
 #if defined __has_include
+#warning "Knows '__has_include'"
 #if !__has_include(<paraconf.h>)
 #warning "PARACONF_H__ is missing, defining mock PC_tree and PC_parse_string"
 
