@@ -32,9 +32,9 @@
 #include <stdlib.h>
 #include <string.h>
 #endif
-#ifndef PC_parse_string
-#include <paraconf.h>
-#endif
+// #ifndef PC_parse_string
+// #include <paraconf.h>
+// #endif
 
 void share() //share
 {
