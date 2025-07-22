@@ -155,6 +155,8 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 /** Initializes PDI
  */
 // #ifndef PARACONF_H__ // Add ifndef to not prevent "no-pdi with paraconf" (and allow "no-pdi without paraconf")
+#if defined __has_include
+#if !__has_include(<paraconf.h>)
 #warning "PARACONF_H__ is missing, defining mock PC_tree and PC_parse_string"
 
 typedef struct PC_tree_s {
@@ -166,6 +168,8 @@ static inline PC_tree_t PC_parse_string(const char* document)
 	return mock_PC_tree;
 }
 
+#endif
+#endif
 // #endif
 
 static inline PDI_status_t PDI_init(PC_tree_t conf)
