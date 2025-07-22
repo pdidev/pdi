@@ -113,25 +113,29 @@ void errhandler()
 
 int tests(int argc, char* argv[])
 {
-	// #ifdef PARACONF_H__
-	// static const char* CONFIG_YAML
-	// 	= "logging: trace														\n"
-	// 	  "data:																\n"
-	// 	  "  to_share: {type: array, subtype: int, size: 2}						\n"
-	// 	  "  to_access: {type: array, subtype: int, size: 2}					\n"
-	// 	  "  to_release: {type: array, subtype: int, size: 2}					\n"
-	// 	  "  to_reclaim: {type: array, subtype: int, size: 2}					\n"
-	// 	  "  to_expose: {type: array, subtype: int, size: 2}					\n"
-	// 	  "  to_multi_expose: {type: array, subtype: int, size: 2}				\n"
-	// 	  "  to_multi_expose_two: {type: array, subtype: int, size: 2}			\n";
+	#ifdef PARACONF_H__
+	static const char* CONFIG_YAML
+		= "logging: trace														\n"
+		  "data:																\n"
+		  "  to_share: {type: array, subtype: int, size: 2}						\n"
+		  "  to_access: {type: array, subtype: int, size: 2}					\n"
+		  "  to_release: {type: array, subtype: int, size: 2}					\n"
+		  "  to_reclaim: {type: array, subtype: int, size: 2}					\n"
+		  "  to_expose: {type: array, subtype: int, size: 2}					\n"
+		  "  to_multi_expose: {type: array, subtype: int, size: 2}				\n"
+		  "  to_multi_expose_two: {type: array, subtype: int, size: 2}			\n";
 
-	// if (PDI_OK != PDI_init(PC_parse_string(CONFIG_YAML))) {
-	PC_tree_t empty_PC_tree = {};
-	if (PDI_OK != PDI_init(empty_PC_tree)) {
+	if (PDI_OK != PDI_init(PC_parse_string(CONFIG_YAML))) {
 		fprintf(stderr, "*** Error: no-pdi initialisation\n");
 		exit(EXIT_FAILURE);
 	}
-	// #endif
+	#else
+	PC_tree_t mock_PC_tree = {};
+	if (PDI_OK != PDI_init(mock_PC_tree)) {
+		fprintf(stderr, "*** Error: no-pdi initialisation\n");
+		exit(EXIT_FAILURE);
+	}
+	#endif
 
 	const char* errmsg = PDI_errmsg();
 	if (strcmp(errmsg, "") != 0) {
