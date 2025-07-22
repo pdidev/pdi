@@ -161,7 +161,8 @@ typedef struct PC_tree_s {
 
 static inline PC_tree_t PC_parse_string(const char* document)
 {
-	return PC_tree_t mock_PC_tree = {};
+	PC_tree_t mock_PC_tree = {};
+	return mock_PC_tree;
 }
 #endif
 
