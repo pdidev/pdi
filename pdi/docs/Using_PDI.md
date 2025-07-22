@@ -135,6 +135,7 @@ then use the following:
 ```bash
 cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
+You may also need 
 This is not the preferred method of using no-pdi, as it may result in
 a conflict when using a dependency toward Paraconf outside of PDI.
 
