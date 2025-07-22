@@ -92,7 +92,7 @@ else()
 	message(WARNING "PDI_example_C without paraconf")
 	target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
 endif()
-add_test(NAME PDI_example_C COMMAND "$<TARGET_FILE:PDI_example_C>")
+add_test(NAME PDI_example_C COMMAND "$<TARGET_FILE:PDI_example_C>" "${CMAKE_CURRENT_SOURCE_DIR}/pluginless.yml")
 
 if("${BUILD_FORTRAN}")
 add_executable(PDI_example_F example.F90)
