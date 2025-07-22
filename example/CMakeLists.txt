@@ -34,10 +34,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 message(WARNING "ici example: ${CMAKE_CURRENT_LIST_DIR}")
 
 if(paraconf_DIR)
-{
 	message(WARNING "paraconf_DIR was specified")
 	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-}
+endif()
 
 set(MPI_COMPONENTS C)
 set(PDI_COMPONENTS C)
