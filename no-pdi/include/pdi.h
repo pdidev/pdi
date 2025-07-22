@@ -158,7 +158,7 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 typedef struct PC_tree_s {
 } PC_tree_t;
 
-PC_tree_t PC_parse_string(const char* document) 
+PC_tree_t PC_parse_string(const char* document)
 {
 	return PC_tree_t mock_PC_tree = {};
 }
