@@ -161,7 +161,7 @@ if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>
 	make ${MAKEFLAGS}
 	# ls "PDI_TESTS/src/PDI_TESTS_pkg-build"
 	ls -l .
-    ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R "PDI_example_C"
+    ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
 	# make clean
 
 	echo "############ 2"
