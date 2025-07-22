@@ -154,11 +154,12 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 
 /** Initializes PDI
  */
-#ifndef PARACONF_H__  // Add ifndef to not prevent "no-pdi with paraconf"
+#ifndef PARACONF_H__ // Add ifndef to not prevent "no-pdi with paraconf"
 typedef struct PC_tree_s {
 } PC_tree_t;
 
-PC_tree_t PC_parse_string(const char* document) {
+PC_tree_t PC_parse_string(const char* document) 
+{
 	return PC_tree_t mock_PC_tree = {};
 }
 #endif
