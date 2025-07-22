@@ -121,6 +121,9 @@ Then you can build your project with this option specified to disable PDI:
 ```bash
 cmake . -DBUILD_WITHOUT_PDI=ON
 ```
+You may also need an option `-DBUILD_WITH_PARACONF` if your code uses more than 
+`PDI_init`, and you want to be able to use an already available Paraconf dependency.
+
 This is the preferred method of using no-pdi, as the following may result in
 a conflict when using a dependency toward Paraconf outside of PDI.
 You can refer to `pdi/tests/CMakeLists.txt` for an example.
@@ -135,7 +138,9 @@ then use the following:
 ```bash
 cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
-You may also need 
+You may also need an option `-DBUILD_WITH_PARACONF` if your code uses more than 
+`PDI_init`, and you want to be able to use an already available Paraconf dependency.
+
 This is not the preferred method of using no-pdi, as it may result in
 a conflict when using a dependency toward Paraconf outside of PDI.
 
