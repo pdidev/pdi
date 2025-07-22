@@ -148,18 +148,18 @@ if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>
     echo "PARACONF_DIR: "
 	PARACONF_DIR=$(dirname "${TEST_DIR}/${RELATIVE_PARACONF_PATH}")
 
-    # cd "${TEST_DIR_API}"
-    # # cd "${SRCDIR}/example"
-    # # ls "${SRCDIR}/example"
-	# # mkdir build_example && cd build_example
-    # # RELATIVE_MODULE_PATH="no-pdi/cmake"
+    cd "${TEST_DIR_API}"
+    # cd "${SRCDIR}/example"
+    # ls "${SRCDIR}/example"
+	# mkdir build_example && cd build_example
+    # RELATIVE_MODULE_PATH="no-pdi/cmake"
     RELATIVE_MODULE_PATH="no-pdi"
-	# ls "${SRCDIR}/${RELATIVE_MODULE_PATH}"
-	# # cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_MODULE_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
-	# cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -Dparaconf_DIR="${PARACONF_DIR}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
-	# make ${MAKEFLAGS}
-	# ls "PDI_TESTS/src/PDI_TESTS_pkg-build"
-    # ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R "PDI_example_C"
+	ls "${SRCDIR}/${RELATIVE_MODULE_PATH}"
+	# cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_MODULE_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
+	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -Dparaconf_DIR="${PARACONF_DIR}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
+	make ${MAKEFLAGS}
+	ls "PDI_TESTS/src/PDI_TESTS_pkg-build"
+    ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R "PDI_example_C"
 
 	echo "############ 2"
 
@@ -174,16 +174,16 @@ else
     echo "Paraconf is not available, skipping no-pdi's specific tests with CMAKE_MODULE_PATH."
 fi
 
-# echo "############ 3"
+echo "############ 3"
 
-# # Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI, without Paraconf
+# Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI, without Paraconf
 
-# echo "ls SRCDIR:"
-# ls "${SRCDIR}"
+echo "ls SRCDIR:"
+ls "${SRCDIR}"
 
-# cd "${TEST_DIR_API}"
-# echo "TEST_DIR_API: ${TEST_DIR_API}"
-# NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
-# cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DBUILD_WITHOUT_PDI=ON -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
-# make ${MAKEFLAGS}
-# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+cd "${TEST_DIR_API}"
+echo "TEST_DIR_API: ${TEST_DIR_API}"
+NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
+cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DBUILD_WITHOUT_PDI=ON -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
+make ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}

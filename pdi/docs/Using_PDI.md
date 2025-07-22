@@ -109,7 +109,10 @@ following one:
 ```CMake
 option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
 if(BUILD_WITHOUT_PDI)
-	include("${CMAKE_CURRENT_LIST_DIR}/no-pdi/cmake/PDIConfig.cmake")
+	include_directories("/<full>/<path>/<to>/pdi/no-pdi/include")
+	add_library(PDI_C INTERFACE)
+    target_include_directories(PDI_C INTERFACE "/<full>/<path>/<to>/pdi/no-pdi/include")
+    add_library(PDI::PDI_C ALIAS PDI_C)
 else()
 	find_package(PDI REQUIRED)
 endif()
@@ -120,6 +123,7 @@ cmake . -DBUILD_WITHOUT_PDI=ON
 ```
 This is the preferred method of using no-pdi, as the following may result in
 a conflict when using a dependency toward Paraconf outside of PDI.
+You can refer to `pdi/tests/CMakeLists.txt` for an example.
 
 ### Using a specific no-pdi through a full path
 
