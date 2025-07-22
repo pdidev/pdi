@@ -24,11 +24,13 @@
 
 #include <pdi.h>
 #ifdef __cplusplus
-#  include <cstdio>
-#  include <cstdlib>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #else
-#  include <stdio.h>
-#  include <stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #endif
 
 void share() //share
@@ -36,7 +38,7 @@ void share() //share
 	int to_share[2] = {1, 1};
 	if (PDI_OK != PDI_share("to_share", to_share, PDI_OUT)) {
 		fprintf(stderr, "*** Error: no-pdi share\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -46,7 +48,7 @@ void access() //share/access
 	PDI_share("to_access", to_access, PDI_OUT);
 	if (PDI_OK != PDI_access("to_access", (void**)&to_access, PDI_IN)) {
 		fprintf(stderr, "*** Error: no-pdi access\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -57,7 +59,7 @@ void release() //share/release
 	PDI_access("to_release", (void**)&to_release, PDI_IN);
 	if (PDI_OK != PDI_release("to_release")) {
 		fprintf(stderr, "*** Error: no-pdi release\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -67,7 +69,7 @@ void reclaim() //share/reclaim
 	PDI_share("to_reclaim", to_reclaim, PDI_OUT);
 	if (PDI_OK != PDI_reclaim("to_reclaim")) {
 		fprintf(stderr, "*** Error: no-pdi reclaim\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -75,7 +77,7 @@ void event()
 {
 	if (PDI_OK != PDI_event("event_one")) {
 		fprintf(stderr, "*** Error: no-pdi event\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -84,7 +86,7 @@ void expose()
 	int to_expose[2] = {1, 1};
 	if (PDI_OK != PDI_expose("to_expose", to_expose, PDI_OUT)) {
 		fprintf(stderr, "*** Error: no-pdi expose\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -96,7 +98,7 @@ void multi_expose()
 	    != PDI_multi_expose("event_two", "to_multi_expose", &to_multi_expose, PDI_OUT, "to_multi_expose_two", to_multi_expose_two, PDI_OUT, NULL))
 	{
 		fprintf(stderr, "*** Error: no-pdi multi_expose\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -105,36 +107,36 @@ void errhandler()
 	PDI_errhandler_t current_handler = PDI_errhandler(PDI_NULL_HANDLER);
 	if (NULL != current_handler.context) {
 		fprintf(stderr, "*** Error: no-pdi errhandler\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
 int tests(int argc, char* argv[])
 {
 	// #ifdef PARACONF_H__
-	static const char* CONFIG_YAML
-		= "logging: trace														\n"
-		  "data:																\n"
-		  "  to_share: {type: array, subtype: int, size: 2}						\n"
-		  "  to_access: {type: array, subtype: int, size: 2}					\n"
-		  "  to_release: {type: array, subtype: int, size: 2}					\n"
-		  "  to_reclaim: {type: array, subtype: int, size: 2}					\n"
-		  "  to_expose: {type: array, subtype: int, size: 2}					\n"
-		  "  to_multi_expose: {type: array, subtype: int, size: 2}				\n"
-		  "  to_multi_expose_two: {type: array, subtype: int, size: 2}			\n";
+	// static const char* CONFIG_YAML
+	// 	= "logging: trace														\n"
+	// 	  "data:																\n"
+	// 	  "  to_share: {type: array, subtype: int, size: 2}						\n"
+	// 	  "  to_access: {type: array, subtype: int, size: 2}					\n"
+	// 	  "  to_release: {type: array, subtype: int, size: 2}					\n"
+	// 	  "  to_reclaim: {type: array, subtype: int, size: 2}					\n"
+	// 	  "  to_expose: {type: array, subtype: int, size: 2}					\n"
+	// 	  "  to_multi_expose: {type: array, subtype: int, size: 2}				\n"
+	// 	  "  to_multi_expose_two: {type: array, subtype: int, size: 2}			\n";
 
 	// if (PDI_OK != PDI_init(PC_parse_string(CONFIG_YAML))) {
 	PC_tree_t empty_PC_tree = {};
 	if (PDI_OK != PDI_init(empty_PC_tree)) {
 		fprintf(stderr, "*** Error: no-pdi initialisation\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	// #endif
 
 	const char* errmsg = PDI_errmsg();
 	if (strcmp(errmsg, "") != 0) {
 		fprintf(stderr, "*** Error: no-pdi errmsg\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	errhandler();
@@ -149,7 +151,7 @@ int tests(int argc, char* argv[])
 
 	if (PDI_OK != PDI_finalize()) {
 		fprintf(stderr, "*** Error: no-pdi finalisation\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	return EXIT_SUCCESS;
