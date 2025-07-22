@@ -23,6 +23,13 @@
  ******************************************************************************/
 
 #include <pdi.h>
+#ifdef __cplusplus
+#  include <cstdio>
+#  include <cstdlib>
+#else
+#  include <stdio.h>
+#  include <stdlib.h>
+#endif
 
 void share() //share
 {
