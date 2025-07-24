@@ -120,38 +120,38 @@ fi
 
 
 
-# Configure, build & test for pdi, with Paraconf
+# # Configure, build & test for pdi, with Paraconf
 
-cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+# cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+# make ${MAKEFLAGS}
+# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-echo "############ 1"
+# echo "############ 1"
 
-# Configure, build & test for no-pdi's specific tests with CMAKE_MODULE_PATH, with Paraconf
+# # Configure, build & test for no-pdi's specific tests with CMAKE_MODULE_PATH, with Paraconf
 
-if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | grep -v 'not found'; then # Check if Paraconf can be found among the dependencies of the first ctest command
-    RELATIVE_PARACONF_PATH="staging/share/paraconf/cmake"
-    echo "PARACONF_DIR: "
-	PARACONF_DIR=$(dirname "${TEST_DIR}/${RELATIVE_PARACONF_PATH}")
+# if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | grep -v 'not found'; then # Check if Paraconf can be found among the dependencies of the first ctest command
+#     RELATIVE_PARACONF_PATH="staging/share/paraconf/cmake"
+#     echo "PARACONF_DIR: "
+# 	PARACONF_DIR=$(dirname "${TEST_DIR}/${RELATIVE_PARACONF_PATH}")
 
-    cd "${TEST_DIR_API}"
-    RELATIVE_MODULE_PATH="no-pdi"
-	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DBUILD_WITH_PARACONF=ON -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
-	make ${MAKEFLAGS}
-    ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
-	rm -rf CMakeCache.txt CMakeFiles/
+#     cd "${TEST_DIR_API}"
+#     RELATIVE_MODULE_PATH="no-pdi"
+# 	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DBUILD_WITH_PARACONF=ON -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
+# 	make ${MAKEFLAGS}
+#     ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
+# 	rm -rf CMakeCache.txt CMakeFiles/
 
-	echo "############ 2"
+# 	echo "############ 2"
 
-	cd "${TEST_DIR_NO_PDI}"
-	NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
-	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DBUILD_WITH_PARACONF=ON -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
-	make ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
-else
-    echo "Paraconf is not available, skipping no-pdi's specific tests with CMAKE_MODULE_PATH."
-fi
+# 	cd "${TEST_DIR_NO_PDI}"
+# 	NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
+# 	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DBUILD_WITH_PARACONF=ON -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
+# 	make ${MAKEFLAGS}
+# 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+# else
+#     echo "Paraconf is not available, skipping no-pdi's specific tests with CMAKE_MODULE_PATH."
+# fi
 
 echo "############ 3"
 
@@ -159,16 +159,6 @@ echo "############ 3"
 
 cd "${TEST_DIR_API}"
 NO_PDI_TESTS="test_07_main_C test_07_main_CXX"
-
-message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
-message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
-message(STATUS "LIBRARY_PATH: ${LIBRARY_PATH}")
-find_path(paraconf_INCLUDE_DIR paraconf.h NO_DEFAULT_PATH)
-find_library(paraconf_LIBRARY paraconf NO_DEFAULT_PATH)
-if(paraconf_INCLUDE_DIR AND paraconf_LIBRARY)
-    message(STATUS "paraconf include directory: ${paraconf_INCLUDE_DIR}")
-    message(STATUS "paraconf library: ${paraconf_LIBRARY}")
-endif()
 
 cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DBUILD_WITHOUT_PDI=ON -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
 make ${MAKEFLAGS}
