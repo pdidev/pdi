@@ -37,47 +37,18 @@ include(CTest)
 option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
 option(BUILD_WITH_PARACONF "Build with Paraconf" OFF)
 
+option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
+message(WARNING "BUILD_WITHOUT_PDI: ${BUILD_WITHOUT_PDI}")
 if(BUILD_WITHOUT_PDI)
-  message(WARNING "Using mock PDI")
-  include_directories("${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
-  add_library(PDI_C INTERFACE)
-  target_include_directories(PDI_C INTERFACE
-    "${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include"
-  )
-  add_library(PDI::PDI_C ALIAS PDI_C)
+	message(WARNING "Using include of NO-PDI through CMAKE_CURRENT_LIST_DIR: ${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
+	add_library(PDI_C INTERFACE)
+    target_include_directories(PDI_C INTERFACE "${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
+    add_library(PDI::PDI_C ALIAS PDI_C)
 else()
-  message(WARNING "Finding real PDI")
-  find_package(PDI REQUIRED COMPONENTS C)
-#   target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
+	message(WARNING "Using find_package for PDI by default")
+	find_package(PDI REQUIRED COMPONENTS C)
 endif()
-
-# Blocker for paraconf.h
-set(PARACONF_BLOCK_DIR "${CMAKE_CURRENT_LIST_DIR}/../no-pdi/empty-include")
-if(NOT BUILD_WITH_PARACONF)
-  message(WARNING "Blocking paraconf.h by prepending empty-include")
-  include_directories(BEFORE SYSTEM "${PARACONF_BLOCK_DIR}")
-endif()
-
-# Now handle Paraconf
-if(BUILD_WITH_PARACONF)
-  message(WARNING "Building with Paraconf")
-  find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-  # Optionally link/paraconf targets here
-endif()
-
-
-# option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
-# message(WARNING "BUILD_WITHOUT_PDI: ${BUILD_WITHOUT_PDI}")
-# if(BUILD_WITHOUT_PDI)
-# 	message(WARNING "Using include of NO-PDI through CMAKE_CURRENT_LIST_DIR: ${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
-# 	include_directories("${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
-# 	add_library(PDI_C INTERFACE)
-#     target_include_directories(PDI_C INTERFACE "${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
-#     add_library(PDI::PDI_C ALIAS PDI_C)
-# else()
-# 	message(WARNING "Using find_package for PDI by default")
-# 	find_package(PDI REQUIRED COMPONENTS C)
-# endif()
 
 if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
@@ -106,11 +77,11 @@ add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOUR
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
-# option(BUILD_WITH_PARACONF "Build with Paraconf" OFF)
-# if(BUILD_WITH_PARACONF)
-# 	message(WARNING "Building with Paraconf")
-# 	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-# endif()
+option(BUILD_WITH_PARACONF "Build with Paraconf" OFF)
+if(BUILD_WITH_PARACONF)
+	message(WARNING "Building with Paraconf")
+	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
+endif()
 
 add_executable(test_07_main_C test_07_main.c)
 set(BUILD_FLAGS_FOR_C "-Wall")
