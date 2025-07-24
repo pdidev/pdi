@@ -37,18 +37,19 @@ include(CTest)
 option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
 option(BUILD_WITH_PARACONF "Build with Paraconf" OFF)
 
-add_library(PDI_C INTERFACE)
 if(BUILD_WITHOUT_PDI)
   message(WARNING "Using mock PDI")
+  include_directories("${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
+  add_library(PDI_C INTERFACE)
   target_include_directories(PDI_C INTERFACE
     "${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include"
   )
+  add_library(PDI::PDI_C ALIAS PDI_C)
 else()
   message(WARNING "Finding real PDI")
   find_package(PDI REQUIRED COMPONENTS C)
-  target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
+#   target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
 endif()
-add_library(PDI::PDI_C ALIAS PDI_C)
 
 # Blocker for paraconf.h
 set(PARACONF_BLOCK_DIR "${CMAKE_CURRENT_LIST_DIR}/../no-pdi/empty-include")
