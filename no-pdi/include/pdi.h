@@ -174,17 +174,17 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 // // #endif
 
 #if defined(__has_include)
-  #if __has_include(<paraconf.h>)
-    #warning "INCLUDE"
-    #include <paraconf.h>
-  #else
+//   #if __has_include(<paraconf.h>)
+//     #warning "INCLUDE"
+//     #include <paraconf.h>
+//   #else
     #warning "MOCK"
     typedef struct PC_tree_s { } PC_tree_t;
     static inline PC_tree_t PC_parse_string(const char* document) {
         PC_tree_t mock = {};
         return mock;
     }
-  #endif
+//   #endif
 #else
 #warning "ELSE"
 #endif
