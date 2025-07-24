@@ -47,7 +47,7 @@ static inline PC_tree_t PC_parse_string(const char* document)
 	return mock;
 }
 
-static inline PC_tree_t PC_parse_file(FILE *file)
+static inline PC_tree_t PC_parse_file(FILE* file)
 {
 	PC_tree_t mock = {};
 	return mock;
