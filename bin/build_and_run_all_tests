@@ -131,9 +131,10 @@ echo "############ 1"
 
 # Configure, build & test for no-pdi's specific tests with CMAKE_MODULE_PATH, with Paraconf
 
-ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>'
+ls "PDI_TESTS/src/PDI_TESTS_pkg-build/"
+ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_04_C" | grep 'libparaconf.so.1 =>'
 echo "if paraconf"
-if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>' | grep -v 'not found'; then # Check if Paraconf can be found among the dependencies of the first ctest command
+if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_04_C" | grep 'libparaconf.so.1 =>' | grep -v 'not found'; then # Check if Paraconf can be found among the dependencies of the first ctest command
     RELATIVE_PARACONF_PATH="staging/share/paraconf/cmake"
     echo "PARACONF_DIR: "
 	PARACONF_DIR=$(dirname "${TEST_DIR}/${RELATIVE_PARACONF_PATH}")
@@ -144,7 +145,7 @@ if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_05_C" | grep 'libparaconf.so.1 =>
 	make ${MAKEFLAGS}
 	ldd PDI_example_C
     ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
-	rm -rf CMakeCache.txt CMakeFiles/
+	rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
 
 	echo "############ 2"
 

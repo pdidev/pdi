@@ -137,7 +137,7 @@ to compile with an added argument pointing to this no-pdi folder using a full pa
 Use a CMakeLists.txt similar to example/CMakeLists.txt, 
 then use the following:
 ```bash
-cmake . -DCMAKE_MODULE_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
+cmake . -DCMAKE_PREFIX_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
 You may also need an option `-DBUILD_WITH_PARACONF` if your code uses more than 
 `PDI_init`, and you want to be able to use an 
