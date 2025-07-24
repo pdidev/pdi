@@ -64,7 +64,7 @@ else()
 	else()
 		message(WARNING "Building with Paraconf")
 		find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-		target_link_libraries(PDI::PDI_C INTERFACE paraconf::paraconf)
+		target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
 	endif()
 endif()
 
