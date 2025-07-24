@@ -31,8 +31,6 @@ cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_examples LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-message(WARNING "ici example: ${CMAKE_CURRENT_LIST_DIR}")
-
 set(MPI_COMPONENTS C)
 set(PDI_COMPONENTS C)
 
@@ -77,18 +75,18 @@ end module
 	endif()
 endif()
 
-option(BUILD_WITH_PARACONF "Build with Paraconf" OFF)
+option(BUILD_WITH_PARACONF "Build with Paraconf using find_package" OFF)
 if(BUILD_WITH_PARACONF)
-	message(WARNING "Building with Paraconf")
+	message(WARNING "Building with Paraconf using find_package")
 	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
 endif()
 
 add_executable(PDI_example_C example.c)
 if(BUILD_WITH_PARACONF)
-	message(WARNING "PDI_example_C with paraconf")
+	message(WARNING "PDI_example_C with Paraconf")
 	target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m)
 else()
-	message(WARNING "PDI_example_C without paraconf")
+	message(WARNING "PDI_example_C without Paraconf")
 	target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
 endif()
 add_test(NAME PDI_example_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/pluginless.yml")

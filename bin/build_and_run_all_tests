@@ -127,13 +127,10 @@ make ${MAKEFLAGS}
 ls .
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-echo "############ 1"
+echo "############ tests pdi/paraconf done"
 
-# Configure, build & test for no-pdi's specific tests with CMAKE_MODULE_PATH, with Paraconf
+# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
 
-ls "PDI_TESTS/src/PDI_TESTS_pkg-build/"
-ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_04_C" | grep 'libparaconf.so.1 =>'
-echo "if paraconf"
 if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_04_C" | grep 'libparaconf.so.1 =>' | grep -v 'not found'; then # Check if Paraconf can be found among the dependencies of the first ctest command
     RELATIVE_PARACONF_PATH="staging/share/paraconf/cmake"
     echo "PARACONF_DIR: "
@@ -147,7 +144,7 @@ if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_04_C" | grep 'libparaconf.so.1 =>
     ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
 	rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
 
-	echo "############ 2"
+	echo "############ example no-pdi/paraconf done"
 
 	cd "${TEST_DIR_NO_PDI}"
 	NO_PDI_TESTS="test_07_C test_07_CXX"
@@ -156,12 +153,12 @@ if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_04_C" | grep 'libparaconf.so.1 =>
 	ldd test_07_C
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
 else
-    echo "Paraconf is not available, skipping no-pdi's specific tests with CMAKE_MODULE_PATH."
+    echo "Paraconf is not available, skipping no-pdi's specific tests with paraconf (through CMAKE_MODULE_PATH)."
 fi
 
-echo "############ 3"
+echo "############ test-api no-pdi/paraconf done"
 
-# Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI, without Paraconf
+# Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI (include_directories), without Paraconf
 
 cd "${TEST_DIR_API}"
 NO_PDI_TESTS="test_07_C test_07_CXX"
@@ -170,3 +167,5 @@ cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF
 make ${MAKEFLAGS}
 ldd test_07_C
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+
+echo "############ test-api no-pdi/no-paraconf done"

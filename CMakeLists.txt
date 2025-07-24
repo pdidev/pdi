@@ -34,8 +34,6 @@
 cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI_DIST LANGUAGES C CXX)
 
-message(WARNING "ici pdi: ${CMAKE_CURRENT_LIST_DIR}")
-
 ### Build options
 
 ## Global options

@@ -31,8 +31,6 @@ cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
-message(WARNING "ici pdi/pdi: ${CMAKE_CURRENT_LIST_DIR}")
-
 # Version
 
 file(READ VERSION PDI_VERSION)

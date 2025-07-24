@@ -34,7 +34,7 @@ option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 
 include(CTest)
 
-option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
+option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one through " OFF)
 option(BUILD_WITH_PARACONF "Build with Paraconf" OFF)
 message(WARNING "BUILD_WITHOUT_PDI: ${BUILD_WITHOUT_PDI}")
 message(WARNING "BUILD_WITH_PARACONF: ${BUILD_WITH_PARACONF}")

@@ -104,26 +104,12 @@ You can copy the `no-pdi` folder from PDI in your application repository, and
 add an option (`BUILD_WITHOUT_PDI` in the example below) to your
 `CMakeLists.txt` to use this mock folder instead of the real PDI.
 
-In your `CMakeLists.txt`, replace the `find_package(PDI)` with code like the
-following one:
-```CMake
-option(BUILD_WITHOUT_PDI "Use a mock PDI instead of the real one" OFF)
-if(BUILD_WITHOUT_PDI)
-	include_directories("/<full>/<path>/<to>/pdi/no-pdi/include")
-	add_library(PDI_C INTERFACE)
-    target_include_directories(PDI_C INTERFACE "/<full>/<path>/<to>/pdi/no-pdi/include")
-    add_library(PDI::PDI_C ALIAS PDI_C)
-else()
-	find_package(PDI REQUIRED)
-endif()
-```
+In your `CMakeLists.txt`, replace the `find_package(PDI)` with code similar to
+the paragraph defining the option `BUILD_WITHOUT_PDI` of `pdi/tests/CMakeLists.txt`.
 Then you can build your project with this option specified to disable PDI:
 ```bash
 cmake . -DBUILD_WITHOUT_PDI=ON
 ```
-You may also need an option `-DBUILD_WITH_PARACONF` if your code uses more than 
-`PDI_init`, and you want to be able to use an 
-already available Paraconf dependency (see `pdi/example/CMakeLists.txt`).
 
 This is the preferred method of using no-pdi, as the following may result in
 a conflict when using a dependency toward Paraconf outside of PDI.
@@ -134,13 +120,12 @@ You can refer to `pdi/tests/CMakeLists.txt` for an example.
 Alternatively, you can use a specific no-pdi folder among your system, 
 to compile with an added argument pointing to this no-pdi folder using a full path.
 
-Use a CMakeLists.txt similar to example/CMakeLists.txt, 
-then use the following:
+Use the following to specify your `no-pdi` location :
 ```bash
 cmake . -DCMAKE_PREFIX_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
-You may also need an option `-DBUILD_WITH_PARACONF` if your code uses more than 
-`PDI_init`, and you want to be able to use an 
+You may also want an option `-DBUILD_WITH_PARACONF` if your code does not uses 
+more than `PDI_init`, and you want to be able to use an 
 already available Paraconf dependency (see `pdi/example/CMakeLists.txt`).
 
 This is not the preferred method of using no-pdi, as it may result in

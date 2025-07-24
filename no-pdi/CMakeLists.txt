@@ -30,6 +30,4 @@
 cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES C CXX)
 
-message(WARNING "ici no-pdi: ${CMAKE_CURRENT_LIST_DIR}")
-
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfig.cmake")
