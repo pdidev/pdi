@@ -36,17 +36,17 @@ extern "C" {
  * \{
  */
 
-    typedef struct PC_tree_s { } PC_tree_t;
-    struct _IO_FILE;
-    typedef struct _IO_FILE FILE;
-    static inline PC_tree_t PC_parse_string(const char* document) {
-        PC_tree_t mock = {};
-        return mock;
-    }
-    static inline PC_tree_t PC_parse_file(FILE *file) {
-        PC_tree_t mock = {};
-        return mock;
-    }
+typedef struct PC_tree_s { } PC_tree_t;
+struct _IO_FILE;
+typedef struct _IO_FILE FILE;
+static inline PC_tree_t PC_parse_string(const char* document) {
+	PC_tree_t mock = {};
+	return mock;
+}
+static inline PC_tree_t PC_parse_file(FILE *file) {
+	PC_tree_t mock = {};
+	return mock;
+}
 
 #ifdef __cplusplus
 } // extern C
