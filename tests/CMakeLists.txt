@@ -70,6 +70,7 @@ message(WARNING "test-api")
 # 	find_package(PDI REQUIRED COMPONENTS C)
 # endif()
 find_package(PDI REQUIRED COMPONENTS C)
+find_package(paraconf REQUIRED COMPONENTS C)
 
 if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
