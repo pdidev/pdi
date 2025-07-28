@@ -116,7 +116,7 @@ void errhandler()
 
 int tests(int argc, char* argv[])
 {
-#ifndef PARACONF_H__
+#ifdef PARACONF_H__
 	static const char* CONFIG_YAML
 		= "logging: trace														\n"
 		  "data:																\n"
