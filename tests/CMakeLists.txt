@@ -63,6 +63,7 @@ include(CTest)
 # 	target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
 # endif()
 
+message(WARNING "test-api")
 if(BUILD_WITHOUT_PDI)
 	add_subdirectory({CMAKE_CURRENT_LIST_DIR}/../no-pdi no-pdi)
 else()

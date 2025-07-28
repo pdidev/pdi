@@ -76,6 +76,7 @@ end module
 	endif()
 endif()
 
+message(WARNING "PDI_example_C")
 add_executable(PDI_example_C example.c)
 # option(BUILD_WITH_PARACONF_FOR_NO_PDI "Build with Paraconf using find_package" OFF)
 # if(BUILD_WITH_PARACONF_FOR_NO_PDI) 	# This case is reached to enable PARACONF when using NO-PDI.
