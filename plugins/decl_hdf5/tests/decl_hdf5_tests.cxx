@@ -24,11 +24,7 @@
  ******************************************************************************/
 
 #include <gtest/gtest.h>
-#include <spdlog/logger.h>
-#include <spdlog/spdlog.h>
 #include <unistd.h>
-//#include "/local/home/jm280892/code/my_fork/pdi_regex/pdi/src/global_context.h"
-//#include "../../../pdi/src/global_context.h"
 #include <pdi.h>
 
 /*
