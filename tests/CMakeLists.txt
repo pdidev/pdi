@@ -64,11 +64,12 @@ include(CTest)
 # endif()
 
 message(WARNING "test-api")
-if(BUILD_WITHOUT_PDI)
-	add_subdirectory({CMAKE_CURRENT_LIST_DIR}/../no-pdi no-pdi)
-else()
-	find_package(PDI REQUIRED COMPONENTS C)
-endif()
+# if(BUILD_WITHOUT_PDI)
+# 	add_subdirectory({CMAKE_CURRENT_LIST_DIR}/../no-pdi no-pdi)
+# else()
+# 	find_package(PDI REQUIRED COMPONENTS C)
+# endif()
+find_package(PDI REQUIRED COMPONENTS C)
 
 if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
