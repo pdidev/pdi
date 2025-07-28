@@ -100,7 +100,7 @@ plugins in 4 steps (it will use the first plugin found):
 
 ### Using the no-pdi included in the currently used pdi repository
 
-You can copy the `no-pdi` folder from PDI in your application repository, and
+You can copy the no-pdi folder from PDI in your application repository, and
 add an option (`BUILD_WITHOUT_PDI` in the example below) to your
 `CMakeLists.txt` to use this mock folder instead of the real PDI.
 
@@ -110,9 +110,11 @@ Then you can build your project with this option specified to disable PDI:
 ```bash
 cmake . -DBUILD_WITHOUT_PDI=ON
 ```
+This method does not rely on an external dependency to Paraconf, and can only 
+be used if only the initialisation of PDI calls a Paraconf function.
 
-This is the preferred method of using no-pdi, as the following may result in
-a conflict when using a dependency toward Paraconf outside of PDI.
+This is the preferred method of using no-pdi, as the next method may results 
+in a conflict when using a dependency toward Paraconf outside of PDI.
 You can refer to `pdi/tests/CMakeLists.txt` for an example.
 
 ### Using a specific no-pdi through a full path
@@ -120,15 +122,17 @@ You can refer to `pdi/tests/CMakeLists.txt` for an example.
 Alternatively, you can use a specific no-pdi folder among your system, 
 to compile with an added argument pointing to this no-pdi folder using a full path.
 
-Use the following to specify your `no-pdi` location :
+Use the following to specify your no-pdi location :
 ```bash
 cmake . -DCMAKE_PREFIX_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
-You may also want an option `-DBUILD_WITH_PARACONF_FOR_NO_PDI` if your code does not uses 
-more than `PDI_init`, and you want to be able to use an 
+You may also want an option `-DBUILD_WITH_PARACONF_FOR_NO_PDI` if your code 
+uses more than `PDI_init`, and you want to be able to use an 
 already available Paraconf dependency (see `pdi/example/CMakeLists.txt`).
+If you do not had this option, similarly to the other no-pdi method, 
+Paraconf must not be called outside of the initialisation of %PDI
 
-This is not the preferred method of using no-pdi, as it may result in
-a conflict when using a dependency toward Paraconf outside of PDI.
+This is not the preferred method of using no-pdi, as it may results in
+a conflict when using a dependency toward a Paraconf outside of %PDI.
 
 %PDI can be re-enabled by reverting those modifications.
