@@ -57,7 +57,7 @@
 
 // #if defined __has_include
 // #if __has_include(<paraconf.h>)
-#include <paraconf.h>
+// #include <paraconf.h>
 // #endif
 // #endif
 
@@ -195,10 +195,12 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 // #warning "ELSE"
 // #endif
 
+#ifndef PARACONF_H__
 static inline PDI_status_t PDI_init(PC_tree_t conf)
 {
 	return PDI_OK;
 }
+#endif // PARACONF_H__
 
 /** Finalizes PDI
  * \return an error status

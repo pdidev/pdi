@@ -129,8 +129,8 @@ cmake . -DCMAKE_PREFIX_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 You may also want an option `-DBUILD_WITH_PARACONF_FOR_NO_PDI` if your code 
 uses more than `PDI_init`, and you want to be able to use an 
 already available Paraconf dependency (see `pdi/example/CMakeLists.txt`).
-If you do not had this option, similarly to the other no-pdi method, 
-Paraconf must not be called outside of the initialisation of %PDI
+If you do not add this option, similarly to the other no-pdi method, 
+Paraconf must not be called outside of the initialisation of %PDI.
 
 This is not the preferred method of using no-pdi, as it may results in
 a conflict when using a dependency toward a Paraconf outside of %PDI.
