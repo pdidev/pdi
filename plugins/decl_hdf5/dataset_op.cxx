@@ -380,7 +380,9 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	if (counter > 1) {
 		throw Config_error{
 			m_dataset_selection.selection_tree(),
-			"found `{}' match(s) in the list of datasets section for `{}'", counter, dataset_name
+			"found `{}' match(s) in the list of datasets section for `{}'",
+			counter,
+			dataset_name
 		};
 	}
 

@@ -959,27 +959,30 @@ TEST(decl_hdf5_test, 08)
  * 
 */
 
-class decl_hdf5_ClassTest : public ::testing::Test {
+class decl_hdf5_ClassTest: public ::testing::Test
+{
 protected:
-    decl_hdf5_ClassTest() {}
-    virtual ~decl_hdf5_ClassTest() {}
+	decl_hdf5_ClassTest() {}
 
-    void SetUp(const std::string &filename) {
-        m_file_to_delete = filename;
+	virtual ~decl_hdf5_ClassTest() {}
+
+	void SetUp(const std::string& filename)
+	{
+		m_file_to_delete = filename;
 		std::remove(m_file_to_delete.c_str()); // In case of the tear down is not called in a previous test
-    }
+	}
 
-	void TearDown() {
+	void TearDown()
+	{
 		// If the API of PDI throw, this function is not called
-		// If the macro FAIL() of gtest is called, this function is not called 
+		// If the macro FAIL() of gtest is called, this function is not called
 		std::cout << "decl_hdf5_ClassTest:TearDown: remove file " << m_file_to_delete << std::endl;
 		std::remove(m_file_to_delete.c_str());
-    }
+	}
 
 private:
-   std::string m_file_to_delete;
+	std::string m_file_to_delete;
 };
-
 
 /*
  * Name:            create_different_groups_with_regex
@@ -988,7 +991,7 @@ private:
  */
 TEST_F(decl_hdf5_ClassTest, create_different_groups_with_regex)
 {
-	std::string filename= "decl_hdf5_test_create_different_groups_with_regex.h5";
+	std::string filename = "decl_hdf5_test_create_different_groups_with_regex.h5";
 	SetUp(filename);
 
 	const char* CONFIG_YAML
@@ -1074,11 +1077,19 @@ TEST_F(decl_hdf5_ClassTest, create_different_groups_with_regex)
 	}
 
 	PDI_expose("index", &index, PDI_OUT);
-	PDI_multi_expose("write_event",
-		"array_data", test_array, PDI_OUT,
-		"array_data_second", test_array_second, PDI_OUT,
-		"array_data_third", test_array_third, PDI_OUT,
-		NULL);
+	PDI_multi_expose(
+		"write_event",
+		"array_data",
+		test_array,
+		PDI_OUT,
+		"array_data_second",
+		test_array_second,
+		PDI_OUT,
+		"array_data_third",
+		test_array_third,
+		PDI_OUT,
+		NULL
+	);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
@@ -1148,11 +1159,19 @@ TEST_F(decl_hdf5_ClassTest, create_different_groups_with_regex)
 
 	EXPECT_EQ(index, 123) << " The value have changed between wrting and reading";
 	PDI_expose("index", &index, PDI_OUT);
-	PDI_multi_expose("read_event",
-		"array_data", test_array,PDI_IN,
-		"array_data_second", test_array_second, PDI_IN,
-		"array_data_third", test_array_third, PDI_IN,
-		NULL);
+	PDI_multi_expose(
+		"read_event",
+		"array_data",
+		test_array,
+		PDI_IN,
+		"array_data_second",
+		test_array_second,
+		PDI_IN,
+		"array_data_third",
+		test_array_third,
+		PDI_IN,
+		NULL
+	);
 
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 9; j++) {
@@ -1187,7 +1206,7 @@ TEST_F(decl_hdf5_ClassTest, create_different_groups_with_regex)
  */
 TEST_F(decl_hdf5_ClassTest, create_groups_that_depend_on_index)
 {
-	std::string filename= "decl_hdf5_test_create_groups_that_depend_on_index.h5";
+	std::string filename = "decl_hdf5_test_create_groups_that_depend_on_index.h5";
 	SetUp(filename);
 
 	const char* CONFIG_YAML
@@ -1220,25 +1239,25 @@ TEST_F(decl_hdf5_ClassTest, create_groups_that_depend_on_index)
 	PDI_init(conf);
 
 	int index;
-	int size_index=2;
+	int size_index = 2;
 	int vec_index[size_index];
-	for(int ii=0; ii<size_index; ++ii){
-		vec_index[ii] = ii+1;
+	for (int ii = 0; ii < size_index; ++ii) {
+		vec_index[ii] = ii + 1;
 	}
-	
+
 	int true_test_array[size_index][5][10];
 
-	for(int ii=0; ii<size_index; ++ii){
+	for (int ii = 0; ii < size_index; ++ii) {
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 10; j++) {
-			true_test_array[ii][i][j] = i * 10 + j + vec_index[ii] * 100;
+				true_test_array[ii][i][j] = i * 10 + j + vec_index[ii] * 100;
 			}
 		}
 	}
 
 	int test_array[5][10];
 
-	for (int ii=0; ii<size_index; ++ii){
+	for (int ii = 0; ii < size_index; ++ii) {
 		// define the array
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 10; j++) {
@@ -1246,7 +1265,7 @@ TEST_F(decl_hdf5_ClassTest, create_groups_that_depend_on_index)
 			}
 		}
 		// change the value of index
-		index=vec_index[ii];
+		index = vec_index[ii];
 
 		PDI_expose("index", &index, PDI_OUT);
 		PDI_multi_expose("write_event", "array_data", test_array, PDI_OUT, NULL);
@@ -1280,7 +1299,7 @@ TEST_F(decl_hdf5_ClassTest, create_groups_that_depend_on_index)
 	conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 
-	for (int ii=0; ii<size_index; ++ii){
+	for (int ii = 0; ii < size_index; ++ii) {
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 10; j++) {
 				test_array[i][j] = 0;
@@ -1288,7 +1307,7 @@ TEST_F(decl_hdf5_ClassTest, create_groups_that_depend_on_index)
 		}
 
 		// change the value of index
-		index=vec_index[ii];
+		index = vec_index[ii];
 
 		PDI_expose("index", &index, PDI_OUT);
 		PDI_multi_expose("read_event", "array_data", test_array, PDI_IN, NULL);
@@ -1296,7 +1315,8 @@ TEST_F(decl_hdf5_ClassTest, create_groups_that_depend_on_index)
 		for (int i = 1; i < 4; i++) {
 			for (int j = 1; j < 9; j++) {
 				EXPECT_EQ(test_array[i][j], true_test_array[ii][i][j])
-					<< "For dataset=group" << vec_index[ii] << "/array_data: Wrong value of test_array[" << i << "][" << j << "]: " << test_array[i][j] << " != " << true_test_array[ii][i][j];
+					<< "For dataset=group" << vec_index[ii] << "/array_data: Wrong value of test_array[" << i << "][" << j
+					<< "]: " << test_array[i][j] << " != " << true_test_array[ii][i][j];
 			}
 		}
 	}
@@ -1337,15 +1357,15 @@ TEST_F(decl_hdf5_ClassTest, create_a_group_not_include_in_datasets_with_no_data_
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 
-	int index=123;	
+	int index = 123;
 	int true_test_array[5][10];
-	
+
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
-		true_test_array[i][j] = i * 10 + j;
+			true_test_array[i][j] = i * 10 + j;
 		}
 	}
-	
+
 	int test_array[5][10];
 
 	for (int i = 0; i < 5; i++) {
@@ -1365,8 +1385,8 @@ TEST_F(decl_hdf5_ClassTest, create_a_group_not_include_in_datasets_with_no_data_
 * Structure to check the error message of PDI
 */
 
-struct context_check_error{
-	std::string true_errmsg; 
+struct context_check_error {
+	std::string true_errmsg;
 	PDI_status_t true_err_status;
 	int has_failed;
 };
@@ -1378,11 +1398,11 @@ struct context_check_error{
 void succeed_on_failure(PDI_status_t status, const char* message, void* ctx)
 {
 	if (status) {
-		context_check_error *tmp_ctx=static_cast<struct context_check_error *>(ctx);
-		EXPECT_EQ( ctx, tmp_ctx);
-		EXPECT_TRUE( status == (PDI_status_t) tmp_ctx->true_err_status  ) << "error: status = "<< status <<" should be: 2 (PDI_ERR_CONFIG) \n";
-		std::string true_errmsg = (std::string) tmp_ctx->true_errmsg;
-		EXPECT_STREQ( message, true_errmsg.c_str());
+		context_check_error* tmp_ctx = static_cast<struct context_check_error*>(ctx);
+		EXPECT_EQ(ctx, tmp_ctx);
+		EXPECT_TRUE(status == (PDI_status_t)tmp_ctx->true_err_status) << "error: status = " << status << " should be: 2 (PDI_ERR_CONFIG) \n";
+		std::string true_errmsg = (std::string)tmp_ctx->true_errmsg;
+		EXPECT_STREQ(message, true_errmsg.c_str());
 		tmp_ctx->has_failed = 1; // has_failed = 1
 	}
 }
@@ -1393,15 +1413,16 @@ void succeed_on_failure(PDI_status_t status, const char* message, void* ctx)
  * Description: check error message generated with a dataset where two regex are found
  */
 
-TEST_F( decl_hdf5_ClassTest, check_config_error_for_two_regex_found_v2)
+TEST_F(decl_hdf5_ClassTest, check_config_error_for_two_regex_found_v2)
 {
 	SetUp("decl_hdf5_test_two_regex_found.h5");
 
 	int has_failed = 0;
 
-	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 32 - 33: found `2' match(s) in the list of datasets section for `group123/array_data'";
-	PDI_status_t true_status=PDI_ERR_CONFIG;
-	context_check_error ctx{ true_errmsg, true_status, has_failed};
+	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 32 - 33: found `2' match(s) in the list of datasets "
+	                          "section for `group123/array_data'";
+	PDI_status_t true_status = PDI_ERR_CONFIG;
+	context_check_error ctx{true_errmsg, true_status, has_failed};
 
 	// defined local error handler
 	PDI_errhandler_t local_errhandler;
@@ -1471,27 +1492,27 @@ TEST_F( decl_hdf5_ClassTest, check_config_error_for_two_regex_found_v2)
 	PDI_status_t status_ok = PDI_expose("index", &index, PDI_OUT);
 
 	// method to check without changing error handler
-	EXPECT_TRUE( status_ok == PDI_OK ) << "error: status = "<< status_ok <<" should be: 0 (PDI_OK) \n";
+	EXPECT_TRUE(status_ok == PDI_OK) << "error: status = " << status_ok << " should be: 0 (PDI_OK) \n";
 	// https://stackoverflow.com/questions/11617552/c-assigning-null-to-a-stdstring
 	std::string errmsg_index = PDI_errmsg();
 	std::string empty_string = "";
-	EXPECT_STREQ( errmsg_index.c_str(), empty_string.c_str() ) << "Expect no error msg, we have this message:"<< errmsg_index <<"  \n";
-	
+	EXPECT_STREQ(errmsg_index.c_str(), empty_string.c_str()) << "Expect no error msg, we have this message:" << errmsg_index << "  \n";
+
 
 	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
 	PDI_status_t status = PDI_multi_expose("write_event", "array_data", test_array, PDI_OUT, NULL);
 
 	// method to check without changing error handler
-	EXPECT_TRUE( status == PDI_ERR_CONFIG ) << "error: status = "<< status <<" should be: 2 (PDI_ERR_CONFIG) \n";
+	EXPECT_TRUE(status == PDI_ERR_CONFIG) << "error: status = " << status << " should be: 2 (PDI_ERR_CONFIG) \n";
 	// Get the last 'throw' message send by PDI core
 	std::string errmsg = PDI_errmsg();
 	// check throw message
-	EXPECT_STREQ( errmsg.c_str(), true_errmsg.c_str());
+	EXPECT_STREQ(errmsg.c_str(), true_errmsg.c_str());
 
 	PDI_errhandler(std_handler); // returning to standard PDI err_handler
-	
+
 	if (!ctx.has_failed) {
-		std::cerr<< "Error expected but not reported, terminating " << std::endl;
+		std::cerr << "Error expected but not reported, terminating " << std::endl;
 		PDI_finalize();
 		PC_tree_destroy(&conf);
 		TearDown();
@@ -1502,19 +1523,19 @@ TEST_F( decl_hdf5_ClassTest, check_config_error_for_two_regex_found_v2)
 	PC_tree_destroy(&conf);
 }
 
-
 /*
  * Name:                decl_hdf5_test.???
  *
  * Description:     check error when dataset_selection is given and no datasets is found  
  */
-TEST_F( decl_hdf5_ClassTest, check_config_error_for_no_regex_found)
+TEST_F(decl_hdf5_ClassTest, check_config_error_for_no_regex_found)
 {
 	SetUp("decl_hdf5_test_no_regex.h5");
 	int has_failed = 0;
- 	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 19 - 20: Dataset selection is invalid in implicit dataset `group123/array_data'";
-	PDI_status_t true_status=PDI_ERR_CONFIG;
-	context_check_error ctx{ true_errmsg, true_status, has_failed};
+	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 19 - 20: Dataset selection is invalid in implicit "
+	                          "dataset `group123/array_data'";
+	PDI_status_t true_status = PDI_ERR_CONFIG;
+	context_check_error ctx{true_errmsg, true_status, has_failed};
 
 	// defined local error handler
 	PDI_errhandler_t local_errhandler;
@@ -1575,7 +1596,7 @@ TEST_F( decl_hdf5_ClassTest, check_config_error_for_no_regex_found)
 	PDI_status_t status = PDI_multi_expose("write_event", "array_data", test_array, PDI_OUT, NULL);
 
 	PDI_errhandler(std_handler); // returning to standard PDI err_handler
-	
+
 	if (status != PDI_ERR_CONFIG) {
 		printf("error: status = %d, should be: 2 (PDI_ERR_CONFIG)", status);
 		PDI_finalize();
@@ -1587,4 +1608,3 @@ TEST_F( decl_hdf5_ClassTest, check_config_error_for_no_regex_found)
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 }
-
