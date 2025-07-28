@@ -48,14 +48,14 @@ if(BUILD_WITHOUT_PDI)
 		add_library(paraconf::paraconf ALIAS paraconf)
 		target_include_directories(paraconf INTERFACE BEFORE "${CMAKE_CURRENT_LIST_DIR}/../no-paraconf/include")
 		target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
-	else()
+	else() 	# This case is never reached in the tests, as this method of using NO-PDI is made to be used when PARACONF is missing.
 		message(WARNING "Using PARACONF, for NO-PDI through include_directories")
 		find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
 	endif()
 	include_directories("${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
     include_directories(PDI_C INTERFACE "${CMAKE_CURRENT_LIST_DIR}/../no-pdi/include")
     add_library(PDI::PDI_C ALIAS PDI_C)
-else()
+else() 		# This case covers boths true PDI and NO-PDI (find_package), when using true PARACONF, as NO-PDI through find_package always uses a true PARACONF.
 	message(WARNING "Using find_package for PDI (whether PDI or NO-PDI)")
 	find_package(PDI REQUIRED COMPONENTS C)
 	
@@ -70,7 +70,7 @@ else()
 
 	message(WARNING "Using PARACONF, for PDI or NO-PDI through find_package")
 	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-	target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
+	# target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
 
 	# message(WARNING "Building with true Paraconf")
 	# find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
