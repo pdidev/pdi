@@ -77,12 +77,12 @@ endif()
 
 add_executable(PDI_example_C example.c)
 option(BUILD_WITH_PARACONF_FOR_NO_PDI "Build with Paraconf using find_package" OFF)
-if(BUILD_WITH_PARACONF_FOR_NO_PDI)
+if(BUILD_WITH_PARACONF_FOR_NO_PDI) 	# This case is reached to enable PARACONF when using NO-PDI.
 	message(WARNING "Building with Paraconf using find_package, for no-PDI")
 	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
 	message(WARNING "PDI_example_C with Paraconf using target_link_libraries")
 	target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m)
-else()
+else()								# This case is reached to enable PARACONF when using PDI.
 	message(WARNING "PDI_example_C without Paraconf using target_link_libraries")
 	target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
 endif()
