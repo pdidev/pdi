@@ -1420,7 +1420,7 @@ TEST_F(decl_hdf5_ClassTest, check_config_error_for_two_regex_found_v2)
 	int has_failed = 0;
 
 	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 32 - 33: found `2' match(s) in the list of datasets "
-	                          "section for `group123/array_data'";
+							  "section for `group123/array_data'";
 	PDI_status_t true_status = PDI_ERR_CONFIG;
 	context_check_error ctx{true_errmsg, true_status, has_failed};
 
@@ -1533,7 +1533,7 @@ TEST_F(decl_hdf5_ClassTest, check_config_error_for_no_regex_found)
 	SetUp("decl_hdf5_test_no_regex.h5");
 	int has_failed = 0;
 	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 19 - 20: Dataset selection is invalid in implicit "
-	                          "dataset `group123/array_data'";
+							  "dataset `group123/array_data'";
 	PDI_status_t true_status = PDI_ERR_CONFIG;
 	context_check_error ctx{true_errmsg, true_status, has_failed};
 
