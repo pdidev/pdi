@@ -124,7 +124,7 @@ Use the following to specify your `no-pdi` location :
 ```bash
 cmake . -DCMAKE_PREFIX_PATH="/<full>/<path>/<to>/pdi/no-pdi/cmake"
 ```
-You may also want an option `-DBUILD_WITH_PARACONF` if your code does not uses 
+You may also want an option `-DBUILD_WITH_PARACONF_FOR_NO_PDI` if your code does not uses 
 more than `PDI_init`, and you want to be able to use an 
 already available Paraconf dependency (see `pdi/example/CMakeLists.txt`).
 
