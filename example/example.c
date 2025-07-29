@@ -159,10 +159,12 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
+#ifdef PARACONF_H__
 	PC_tree_t conf = PC_parse_path(argv[1]);
+	PDI_init(PC_get(conf, ".pdi"));
+#endif
 
 	MPI_Comm main_comm = MPI_COMM_WORLD;
-	PDI_init(PC_get(conf, ".pdi"));
 
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
 
