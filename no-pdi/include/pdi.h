@@ -60,7 +60,7 @@
 // #include <paraconf.h>
 // #endif
 // #endif
-#ifndef PARACONF_AVAILABLE
+#ifdef PARACONF_AVAILABLE
 #include <paraconf.h>
 #endif
 

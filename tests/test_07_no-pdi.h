@@ -35,7 +35,7 @@
 // #ifndef PC_parse_string
 // #include <paraconf.h> ??
 // #endif
-#ifndef PARACONF_AVAILABLE
+#ifdef PARACONF_AVAILABLE
 #include <paraconf.h>
 #endif
 
