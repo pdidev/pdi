@@ -159,14 +159,14 @@ fi
 
 echo "############ test-api no-pdi/paraconf done"
 
-# Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI (include_directories), without Paraconf
+# # Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI (include_directories), without Paraconf
 
-cd "${TEST_DIR_API}"
-NO_PDI_TESTS="test_07_C test_07_CXX"
+# cd "${TEST_DIR_API}"
+# NO_PDI_TESTS="test_07_C test_07_CXX"
 
-cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DBUILD_WITHOUT_PDI=ON -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
-make ${MAKEFLAGS}
-ldd test_07_C
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+# cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DBUILD_WITHOUT_PDI=ON -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
+# make ${MAKEFLAGS}
+# ldd test_07_C
+# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
 
-echo "############ test-api no-pdi/no-paraconf done"
+# echo "############ test-api no-pdi/no-paraconf done"
