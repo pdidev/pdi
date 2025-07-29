@@ -48,7 +48,7 @@ endif()
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
-find_package(paraconf REQUIRED COMPONENTS ${PDI_COMPONENTS}) #ajout
+# find_package(paraconf REQUIRED COMPONENTS ${PDI_COMPONENTS}) #ajout
 find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 find_library(LIB_M m DOC "The math library")
 
