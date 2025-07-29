@@ -32,6 +32,7 @@ project(pdi_examples LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(MPI_COMPONENTS C)
+set(paraconf_COMPONENTS C)
 set(PDI_COMPONENTS C)
 
 if("${BUILD_FORTRAN}")
@@ -48,7 +49,7 @@ endif()
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
-find_package(paraconf REQUIRED COMPONENTS C) #ajout
+find_package(paraconf REQUIRED COMPONENTS ${paraconf_COMPONENTS})
 find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 find_library(LIB_M m DOC "The math library")
 
@@ -78,19 +79,7 @@ endif()
 
 message(WARNING "PDI_example_C")
 add_executable(PDI_example_C example.c)
-# option(BUILD_WITH_PARACONF_FOR_NO_PDI "Build with Paraconf using find_package" OFF)
-# if(BUILD_WITH_PARACONF_FOR_NO_PDI) 	# This case is reached to enable PARACONF when using NO-PDI.
-# 	message(WARNING "Building with Paraconf using find_package, for no-PDI")
-# 	find_package(paraconf 1.0.0 REQUIRED COMPONENTS C)
-# 	message(WARNING "PDI_example_C with Paraconf using target_link_libraries")
-# 	target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m)
-# else()								# This case is reached to enable PARACONF when using PDI.
-# 	message(WARNING "PDI_example_C without Paraconf using target_link_libraries")
-# 	target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
-# endif()
-## remonte find_package(paraconf et ajoute target_link_libraries
-target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m) #ajout
-# target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m) #ajout
+target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m)
 add_test(NAME PDI_example_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/pluginless.yml")
 set_property(TEST PDI_example_C PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_C PROPERTY PROCESSORS 3)
