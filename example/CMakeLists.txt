@@ -89,7 +89,8 @@ add_executable(PDI_example_C example.c)
 # 	target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
 # endif()
 ## remonte find_package(paraconf et ajoute target_link_libraries
-target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m) #ajout
+# target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m) #ajout
+target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m) #ajout
 add_test(NAME PDI_example_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/pluginless.yml")
 set_property(TEST PDI_example_C PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_C PROPERTY PROCESSORS 3)
