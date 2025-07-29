@@ -35,6 +35,9 @@
 // #ifndef PC_parse_string
 // #include <paraconf.h> ??
 // #endif
+#ifndef PARACONF_H__
+#include <paraconf.h>
+#endif
 
 void share() //share
 {
