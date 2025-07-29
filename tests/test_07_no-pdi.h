@@ -35,7 +35,7 @@
 // #ifndef PC_parse_string
 // #include <paraconf.h> ??
 // #endif
-#ifdef PARACONF_AVAILABLE
+#ifdef PARACONF_FOUND
 #include <paraconf.h>
 #endif
 
@@ -119,7 +119,7 @@ void errhandler()
 
 int tests(int argc, char* argv[])
 {
-#ifdef PARACONF_AVAILABLE
+#ifdef PARACONF_FOUND
 	static const char* CONFIG_YAML
 		= "logging: trace														\n"
 		  "data:																\n"
@@ -135,7 +135,7 @@ int tests(int argc, char* argv[])
 		fprintf(stderr, "*** Error: no-pdi initialisation\n");
 		exit(EXIT_FAILURE);
 	}
-#endif // PARACONF_AVAILABLE
+#endif // PARACONF_FOUND
 
 	const char* errmsg = PDI_errmsg();
 	if (strcmp(errmsg, "") != 0) {
