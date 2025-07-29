@@ -60,7 +60,8 @@
 // #include <paraconf.h>
 // #endif
 // #endif
-#ifdef PARACONF_AVAILABLE
+#ifdef PARACONF_FOUND
+#warning "PARACONF_FOUND, include"
 #include <paraconf.h>
 #endif
 
@@ -198,12 +199,13 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 // #warning "ELSE"
 // #endif
 
-#ifdef PARACONF_AVAILABLE
+#ifdef PARACONF_FOUND
+#warning "PARACONF_FOUND, init"
 static inline PDI_status_t PDI_init(PC_tree_t conf)
 {
 	return PDI_OK;
 }
-#endif // PARACONF_AVAILABLE
+#endif // PARACONF_FOUND
 
 /** Finalizes PDI
  * \return an error status
