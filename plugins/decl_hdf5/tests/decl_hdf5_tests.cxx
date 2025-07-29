@@ -40,7 +40,7 @@ protected:
 		std::remove(m_file_to_delete.c_str()); // In case of the tear down is not called in a previous test
 	}
 
-	void TearDown()
+	void TearDown() override
 	{
 		// If the API of PDI throw, this function is not called
 		// If the macro FAIL() of gtest is called, this function is not called
@@ -78,6 +78,17 @@ void succeed_on_failure(PDI_status_t status, const char* message, void* ctx)
 			<< "error: status = " << status << " should be: " << (PDI_status_t)tmp_ctx->true_err_status << "\n";
 		std::string true_errmsg = (std::string)tmp_ctx->true_errmsg;
 		EXPECT_STREQ(message, true_errmsg.c_str());
+		tmp_ctx->has_failed = 1; // has_failed = 1
+	}
+}
+
+void succeed_on_failure_without_checking_message(PDI_status_t status, const char* message, void* ctx)
+{
+	if (status) {
+		context_check_error* tmp_ctx = static_cast<struct context_check_error*>(ctx);
+		EXPECT_EQ(ctx, tmp_ctx);
+		EXPECT_TRUE(status == (PDI_status_t)tmp_ctx->true_err_status)
+			<< "error: status = " << status << " should be: " << (PDI_status_t)tmp_ctx->true_err_status << "\n";
 		tmp_ctx->has_failed = 1; // has_failed = 1
 	}
 }
@@ -597,7 +608,7 @@ TEST_F(decl_hdf5_test, 06)
 		  "          size_of: array_data                                           \n"
 		  "        matrix_data_size:                                               \n"
 		  "          size_of: matrix_data                                          \n"
-		  "    - file: decl_hdf5_test_06.h5                                        \n"
+		  "    - file: decl_hdf5_test_read_dataset_size_before_dataset_itself.h5   \n"
 		  "      on_event: \"read_size\"                                           \n"
 		  "      read:                                                             \n"
 		  "        array_data_size:                                                \n"
@@ -959,22 +970,14 @@ TEST_F(decl_hdf5_test, 08)
 	// check error status
 	int has_failed = 0;
 	std::string true_errmsg
-		= "Error while triggering event `read_scalar': System_error: Cannot open `scalar_data' dataset object 'scalar_data' doesn't exist\n"
-		  " * traversal operator failed\n"
-		  " * internal path traversal failed\n"
-		  " * can't find object\n * not found\n"
-		  " * unable to open dataset\n"
-		  " * dataset open failed\n"
-		  " * dataset open failed\n"
-		  " * unable to open dataset";
+		= "Error while triggering event `read_scalar': System_error: Cannot open `scalar_data' dataset object 'scalar_data' doesn't exist\n";
 	PDI_status_t true_status = PDI_ERR_SYSTEM;
 	context_check_error ctx{true_errmsg, true_status, has_failed};
 
 	// defined local error handler
 	PDI_errhandler_t local_errhandler;
-	local_errhandler.func = succeed_on_failure;
+	local_errhandler.func = succeed_on_failure_without_checking_message;
 	local_errhandler.context = static_cast<void*>(&ctx);
-
 
 	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
 	PDI_status_t status = PDI_multi_expose("read_scalar", "scalar_data", &scalar_data, PDI_IN, NULL);

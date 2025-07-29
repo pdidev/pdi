@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
 	PDI_expose("jstart", &jstart, PDI_OUT);
 
 	for (int iteration = 0; iteration < niterations; ++iteration) {
-		PDI_expose("iter_saved",&iteration, PDI_INOUT); // save all iteration
+		PDI_expose("iter_saved", &iteration, PDI_INOUT); // save all iteration
 		// Fill arrays
 		for (j = 0; j < nj; ++j) {
 			for (i = 0; i < ni; ++i) {
