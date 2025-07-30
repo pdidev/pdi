@@ -1,6 +1,6 @@
 #!/bin/bash
 #=============================================================================
-# Copyright (C) 2022-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2022-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -37,8 +37,8 @@ set -xe
 
 SRCDIR="${PWD}"
 
-TEST_DIR="${TEST_DIR:-${PWD}}"
-cd "${TEST_DIR}"
+TEST_DIR_WITH_PDI="${TEST_DIR_WITH_PDI:-${PWD}}"
+cd "${TEST_DIR_WITH_PDI}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR_ROOT="${PWD}"
 
@@ -49,7 +49,7 @@ TEST_DIR_NO_PDI="${PWD}"
 cd "${TEST_DIR_ROOT}"
 mkdir with_pdi
 cd with_pdi
-TEST_DIR="${PWD}"
+TEST_DIR_WITH_PDI="${PWD}"
 
 cd "${TEST_DIR_ROOT}"
 mkdir api_pdi
@@ -59,8 +59,6 @@ TEST_DIR_API="${PWD}"
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
-
-cd "${TEST_DIR}"
 
 
 
@@ -120,45 +118,6 @@ then
 fi
 
 
-
-# Configure, build & test for pdi, with Paraconf
-
-cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-make ${MAKEFLAGS}
-ls .
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
-
-echo "############ tests pdi/paraconf done"
-
-# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
-
-if ldd "PDI_TESTS/src/PDI_TESTS_pkg-build/test_04_C" | grep 'libparaconf.so.1 =>' | grep -v 'not found'; then # Check if Paraconf can be found among the dependencies of the first ctest command
-	RELATIVE_PARACONF_PATH="staging/share/paraconf/cmake"
-	echo "PARACONF_DIR: "
-	PARACONF_DIR=$(dirname "${TEST_DIR}/${RELATIVE_PARACONF_PATH}")
-
-	cd "${TEST_DIR_NO_PDI}"
-	RELATIVE_MODULE_PATH="no-pdi"
-	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
-	make ${MAKEFLAGS}
-	ldd PDI_example_C
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
-
-	echo "############ example no-pdi/paraconf done"
-
-	cd "${TEST_DIR_API}"
-	NO_PDI_TESTS="test_07_C test_07_CXX"
-	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
-	make ${MAKEFLAGS}
-	ldd test_07_C
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
-	rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
-else
-	echo "Paraconf is not available, skipping no-pdi's specific tests with paraconf (through CMAKE_MODULE_PATH)."
-fi
-
-echo "############ test-api no-pdi/paraconf done"
-
 # Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI (include_directories), without Paraconf
 
 cd "${TEST_DIR_API}"
@@ -171,3 +130,51 @@ ldd test_07_C
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
 
 echo "############ test-api no-pdi/no-paraconf done"
+
+# Get Paraconf independently from pdi
+# cd "${SRCDIR}/vendor/paraconf*/"
+cd "${SRCDIR}"
+ls .
+cd vendor/paraconf*/
+mkdir build
+cd build
+cmake -DUSE_SYSTEM_YAML=OFF ..
+make
+make install
+
+echo "############ got paraconf"
+
+# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
+
+cd "${TEST_DIR_NO_PDI}"
+RELATIVE_MODULE_PATH="no-pdi"
+cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
+make ${MAKEFLAGS}
+ldd PDI_example_C
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
+
+echo "############ example no-pdi/paraconf done"
+
+cd "${TEST_DIR_API}"
+NO_PDI_TESTS="test_07_C test_07_CXX"
+cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
+make ${MAKEFLAGS}
+ldd test_07_C
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
+
+echo "############ test-api no-pdi/paraconf done"
+
+# Configure, build & test for pdi, with Paraconf
+
+cd "${TEST_DIR_WITH_PDI}"
+cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+make ${MAKEFLAGS}
+ls .
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+
+echo "############ tests pdi/paraconf done"
+
+
+
+

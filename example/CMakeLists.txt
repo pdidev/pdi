@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -50,12 +50,6 @@ endif()
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
 find_package(paraconf REQUIRED COMPONENTS ${paraconf_COMPONENTS})
-# if(paraconf_FOUND)
-# 	message(WARNING "Paraconf found")
-# 	add_definitions(-DPARACONF_FOUND)
-# else()
-# 	message(WARNING "Paraconf not found")
-# endif()
 find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 find_library(LIB_M m DOC "The math library")
 

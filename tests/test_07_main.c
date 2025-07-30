@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "test_07_no-pdi.h"
+#include "test_api_no-pdi.h"
 
 int main(int argc, char* argv[])
 {
