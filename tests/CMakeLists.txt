@@ -73,7 +73,7 @@ add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOUR
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
-add_executable(test_api_C test_api_main.c)
+add_executable(test_api_C test_api.c)
 set(BUILD_FLAGS_FOR_C "-Wall")
 target_compile_options(test_api_C PRIVATE
 		$<$<COMPILE_LANGUAGE:C>:${BUILD_FLAGS_FOR_C}>)
@@ -85,7 +85,7 @@ target_compile_options(test_api_C PRIVATE
 target_link_libraries(test_api_C PDI::PDI_C)
 add_test(NAME test_api_C COMMAND "$<TARGET_FILE:test_api_C>")
 
-add_executable(test_api_CXX test_api_main.cpp)
+add_executable(test_api_CXX test_api.cpp)
 set(BUILD_FLAGS_FOR_CXX "-Wall")
 target_compile_options(test_api_CXX PRIVATE
 		$<$<COMPILE_LANGUAGE:CXX>:${BUILD_FLAGS_FOR_CXX}>)
