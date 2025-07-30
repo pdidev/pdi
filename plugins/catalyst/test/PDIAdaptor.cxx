@@ -25,8 +25,8 @@ bool Initialize(const std::string& pdi_yaml_config_file_path, const Grid& grid)
     return false;
   }
 
-  auto number_of_cells = grid.GetNumberOfCells();
-  status = PDI_expose("cell_points_size", &number_of_cells, PDI_OUT);
+  auto cell_points_size = grid.GetNumberOfCells() * 8;
+  status = PDI_expose("cell_points_size", &cell_points_size, PDI_OUT);
   if (status != PDI_status_t::PDI_OK)
   {
     return false;
