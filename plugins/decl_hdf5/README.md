@@ -42,8 +42,8 @@ The possible values for the keys are as follow:
   can be replaced inside the `DATA_SECTION`.
 * `datasets`: a key-value map associating a PDI type to string keys.
   Each string is the name of a dataset to create in the file on first
-  access, with the type described in the value. The string key can be also
-  regular expression (regex), to define in some sense "a generic keys",
+  access, with the type described in the value. The string key can also be 
+  a regular expression (regex), and be used to define "generic keys",
   that can be used in `DATA_IO_DESC` for the keyword dataset.
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY
 * `deflate`: an integer value (from 0 to 9) defining the default deflate (GNU
