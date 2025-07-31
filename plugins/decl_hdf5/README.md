@@ -114,7 +114,7 @@ The possible values for the keys are as follow:
   It defaults to selecting the whole data.
 * `dataset_selection`: a `SELECTION_DESC` specifying the selection of
   data in the file data to write or read.
-  This is only valid if the dataset are defined in the datasets.
+  This is only valid if the dataset is defined in the datasets.
 * `attributes`: a key-value map specifying the set of attributes to read from
   (respectively, write to) the file when the associated dataset is read
   (respectively, written).
