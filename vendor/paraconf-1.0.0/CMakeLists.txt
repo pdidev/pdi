@@ -107,7 +107,8 @@ endif()
 ## Yaml
 
 sbuild_add_dependency(yaml "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"
+	# EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"
+	EMBEDDED_PATH "vendor/libyaml-0.2.5"
 	CMAKE_CACHE_ARGS
 		"-DBUILD_TESTING:BOOL=OFF"
 		"-DINSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
