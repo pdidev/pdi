@@ -22,6 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+/*
+*
+* description:
+*
+* In this test, we check that an element of datasets define as a regex
+* allow to write a global data that verify these conditions:
+*  - The global data is writting in one hdf5 file.
+*  - The local data of a given mpi rank is writting in the global data using 'dataset_selection'
+*  - The global data is saved in a datagroup that depends on 'iter_saved':
+*   	- dataset: timestep${iter_saved:05}/reals
+*/
+
+
 #include <mpi.h>
 #include <paraconf.h>
 #include <time.h>
@@ -58,7 +71,7 @@ const char* CONFIG_YAML
 	  "plugins:                                                                      \n"
 	  "  mpi:                                                                        \n"
 	  "  decl_hdf5:                                                                  \n"
-	  "   - file: zzz_decl_hdf5_mpi_test_08_C.h5                                     \n"
+	  "   - file: decl_hdf5_mpi_test_08_C.h5                                         \n"
 	  "     communicator: $MPI_COMM_WORLD                                            \n"
 	  "     collision_policy: replace_and_warn                                       \n"
 	  "     on_event: write                                                          \n"
@@ -74,7 +87,7 @@ const char* CONFIG_YAML
 	  "         when: $input=0                                                       \n"
 	  "         dataset_selection: {start: [$jstart, $istart]}                       \n"
 	  "         dataset: timestep${iter_saved:05}/values                             \n"
-	  "   - file: zzz_decl_hdf5_mpi_test_08_C.h5                                     \n"
+	  "   - file: decl_hdf5_mpi_test_08_C.h5                                         \n"
 	  "     communicator: $MPI_COMM_WORLD                                            \n"
 	  "     on_event: read                                                           \n"
 	  "     datasets:                                                                \n"
@@ -118,10 +131,6 @@ int main(int argc, char* argv[])
 	PDI_init(conf);
 	int rank;
 	MPI_Comm_rank(world, &rank);
-
-	// if( rank == 0 ){
-	// 	remove("zzz_decl_hdf5_mpi_test_08_C.h5");
-	// }
 
 	{
 		/// setting nb of procs.

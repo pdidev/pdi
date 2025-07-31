@@ -122,7 +122,8 @@ if("${BUILD_HDF5_PARALLEL}")
 	set_property(TEST decl_hdf5_mpi_07_C PROPERTY PROCESSORS 4)
 endif()
 
-# mpio dataset attribute
+# case datasets is defined as a regex.
+# The data is writing in //. This data is defined with a dataset_selection and a dataset that depends on a regex
 if("${BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_08_C decl_hdf5_mpi_test_08.c)
 	target_link_libraries(decl_hdf5_mpi_08_C PDI::PDI_C MPI::MPI_C)

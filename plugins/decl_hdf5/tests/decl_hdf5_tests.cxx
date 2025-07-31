@@ -1075,9 +1075,9 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 	const char* CONFIG_YAML
 		= "logging: trace                                                       \n"
 		  "data:                                                                \n"
-		  "  array_data: { size: [5, 10], type: array, subtype: int }           \n"
-		  "  array_data_second: { size: [5, 10], type: array, subtype: int }    \n"
-		  "  array_data_third: { size: [5, 10], type: array, subtype: int }     \n"
+		  "  array_first: { size: [5, 10], type: array, subtype: int }          \n"
+		  "  array_second: { size: [5, 10], type: array, subtype: int }         \n"
+		  "  array_third: { size: [5, 10], type: array, subtype: int }          \n"
 		  "metadata:                                                            \n"
 		  "  index: int                                                         \n"
 		  "plugins:                                                             \n"
@@ -1098,7 +1098,7 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 		  "        type: array                                                  \n"
 		  "        subtype: int                                                 \n"
 		  "    write:                                                           \n"
-		  "      array_data:                                                    \n"
+		  "      array_first:                                                    \n"
 		  "        dataset: 'group${index}/dog_array_data'                      \n"
 		  "        dataset_selection:                                           \n"
 		  "          size: [ 3, 8]                                              \n"
@@ -1106,7 +1106,7 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 		  "        memory_selection:                                            \n"
 		  "          size: [ 3, 8]                                              \n"
 		  "          start: [1, 1]                                              \n"
-		  "      array_data_second:                                             \n"
+		  "      array_second:                                                  \n"
 		  "        dataset: group_second_TRY/cat_array_data                     \n"
 		  "        dataset_selection:                                           \n"
 		  "          size: [ 3, 8]                                              \n"
@@ -1114,7 +1114,7 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 		  "        memory_selection:                                            \n"
 		  "          size: [ 3, 8]                                              \n"
 		  "          start: [1, 1]                                              \n"
-		  "      array_data_third:                                              \n"
+		  "      array_third:                                                   \n"
 		  "        dataset: group/lion_array_data                               \n"
 		  "        dataset_selection:                                           \n"
 		  "          size: [ 3, 8]                                              \n"
@@ -1130,44 +1130,33 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 
 	int index = 123;
 
-	int test_array[5][10];
-	int test_array_second[5][10];
-	int test_array_third[5][10];
+	int array_01[5][10];
+	int array_02[5][10];
+	int array_03[5][10];
 
-	int true_test_array[5][10];
-	int true_test_array_second[5][10];
-	int true_test_array_third[5][10];
+	int true_array_01[5][10];
+	int true_array_02[5][10];
+	int true_array_03[5][10];
 
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
-			test_array[i][j] = i * 10 + j;
-			test_array_second[i][j] = (i * 10 + j) * 10;
-			test_array_third[i][j] = (i * 10 + j) * 20;
+			array_01[i][j] = i * 10 + j;
+			array_02[i][j] = (i * 10 + j) * 10;
+			array_03[i][j] = (i * 10 + j) * 20;
 		}
 	}
 
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
-			true_test_array[i][j] = test_array[i][j];
-			true_test_array_second[i][j] = test_array_second[i][j];
-			true_test_array_third[i][j] = test_array_third[i][j];
+			true_array_01[i][j] = array_01[i][j];
+			true_array_02[i][j] = array_02[i][j];
+			true_array_03[i][j] = array_03[i][j];
 		}
 	}
 
 	PDI_expose("index", &index, PDI_OUT);
-	PDI_multi_expose(
-		"write_event",
-		"array_data",
-		test_array,
-		PDI_OUT,
-		"array_data_second",
-		test_array_second,
-		PDI_OUT,
-		"array_data_third",
-		test_array_third,
-		PDI_OUT,
-		NULL
-	);
+
+	PDI_multi_expose("write_event", "array_first", array_01, PDI_OUT, "array_second", array_02, PDI_OUT, "array_third", array_03, PDI_OUT, NULL);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
@@ -1175,14 +1164,14 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 	CONFIG_YAML
 		= "logging: trace                                                       \n"
 		  "data:                                                                \n"
-		  "  array_data: { size: [5, 10], type: array, subtype: int }           \n"
-		  "  array_data_second: { size: [5, 10], type: array, subtype: int }    \n"
-		  "  array_data_third: { size: [5, 10], type: array, subtype: int }     \n"
+		  "  array_first: { size: [5, 10], type: array, subtype: int }          \n"
+		  "  array_second: { size: [5, 10], type: array, subtype: int }         \n"
+		  "  array_third: { size: [5, 10], type: array, subtype: int }          \n"
 		  "metadata:                                                            \n"
 		  "  index: int                                                         \n"
 		  "plugins:                                                             \n"
 		  "  decl_hdf5:                                                         \n"
-		  "    file: decl_hdf5_test_create_different_groups_with_regex.h5       \n"
+		  "    file: decl_hdf5_test_create_different_groups_with_regex.h5     \n"
 		  "    on_event: read_event                                             \n"
 		  "    datasets:                                                        \n"
 		  "      group/lion_array_data:                                         \n"
@@ -1198,7 +1187,7 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 		  "        type: array                                                  \n"
 		  "        subtype: int                                                 \n"
 		  "    read:                                                            \n"
-		  "      array_data:                                                    \n"
+		  "      array_first:                                                   \n"
 		  "        dataset: group${index}/dog_array_data                        \n"
 		  "        dataset_selection:                                           \n"
 		  "          size: [ 3, 8]                                              \n"
@@ -1206,7 +1195,7 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 		  "        memory_selection:                                            \n"
 		  "          size: [ 3, 8]                                              \n"
 		  "          start: [1, 1]                                              \n"
-		  "      array_data_second:                                             \n"
+		  "      array_second:                                                  \n"
 		  "        dataset: group_second_TRY/cat_array_data                     \n"
 		  "        dataset_selection:                                           \n"
 		  "          size: [ 3, 8]                                              \n"
@@ -1214,7 +1203,7 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 		  "        memory_selection:                                            \n"
 		  "          size: [ 3, 8]                                              \n"
 		  "          start: [1, 1]                                              \n"
-		  "      array_data_third:                                              \n"
+		  "      array_third:                                                   \n"
 		  "        dataset: group/lion_array_data                               \n"
 		  "        dataset_selection:                                           \n"
 		  "          size: [ 3, 8]                                              \n"
@@ -1229,47 +1218,34 @@ TEST_F(decl_hdf5_test, create_different_groups_with_regex)
 
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 10; j++) {
-			test_array[i][j] = 0;
-			test_array_second[i][j] = 0;
-			test_array_third[i][j] = 0;
+			array_01[i][j] = 0;
+			array_02[i][j] = 0;
+			array_03[i][j] = 0;
 		}
 	}
 
 	EXPECT_EQ(index, 123) << " The value have changed between wrting and reading";
 	PDI_expose("index", &index, PDI_OUT);
-	PDI_multi_expose(
-		"read_event",
-		"array_data",
-		test_array,
-		PDI_IN,
-		"array_data_second",
-		test_array_second,
-		PDI_IN,
-		"array_data_third",
-		test_array_third,
-		PDI_IN,
-		NULL
-	);
+	PDI_multi_expose("read_event", "array_first", array_01, PDI_IN, "array_second", array_02, PDI_IN, "array_third", array_03, PDI_IN, NULL);
 
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 9; j++) {
-			EXPECT_EQ(test_array[i][j], true_test_array[i][j])
-				<< "Wrong value of test_array[" << i << "][" << j << "]: " << test_array[i][j] << " != " << true_test_array[i][j];
+			EXPECT_EQ(array_01[i][j], true_array_01[i][j])
+				<< "Wrong value of array_01[" << i << "][" << j << "]: " << array_01[i][j] << " != " << true_array_01[i][j];
 		}
 	}
 
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 9; j++) {
-			EXPECT_EQ(test_array_second[i][j], true_test_array_second[i][j])
-				<< "Wrong value of test_array_second[" << i << "][" << j << "]: " << test_array_second[i][j]
-				<< " != " << true_test_array_second[i][j];
+			EXPECT_EQ(array_02[i][j], true_array_02[i][j])
+				<< "Wrong value of array_02[" << i << "][" << j << "]: " << array_02[i][j] << " != " << true_array_02[i][j];
 		}
 	}
 
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 9; j++) {
-			EXPECT_EQ(test_array_third[i][j], true_test_array_third[i][j])
-				<< "Wrong value of test_array_third[" << i << "][" << j << "]: " << test_array_third[i][j] << " != " << true_test_array_third[i][j];
+			EXPECT_EQ(array_03[i][j], true_array_03[i][j])
+				<< "Wrong value of array_03[" << i << "][" << j << "]: " << array_03[i][j] << " != " << true_array_03[i][j];
 		}
 	}
 
@@ -1459,35 +1435,6 @@ TEST_F(decl_hdf5_test, create_a_group_not_include_in_datasets_with_no_data_selec
 	PC_tree_destroy(&conf);
 }
 
-// // ===========================================
-// // test for checking error
-
-// /*
-// * Structure to check the error message of PDI
-// */
-
-// struct context_check_error {
-// 	std::string true_errmsg;
-// 	PDI_status_t true_err_status;
-// 	int has_failed;
-// };
-
-// /*
-// * function to redefine the error handler of PDI
-// */
-
-// void succeed_on_failure(PDI_status_t status, const char* message, void* ctx)
-// {
-// 	if (status) {
-// 		context_check_error* tmp_ctx = static_cast<struct context_check_error*>(ctx);
-// 		EXPECT_EQ(ctx, tmp_ctx);
-// 		EXPECT_TRUE(status == (PDI_status_t)tmp_ctx->true_err_status) << "error: status = " << status << " should be: "<< (PDI_status_t)tmp_ctx->true_err_status  << "\n";
-// 		std::string true_errmsg = (std::string)tmp_ctx->true_errmsg;
-// 		EXPECT_STREQ(message, true_errmsg.c_str());
-// 		tmp_ctx->has_failed = 1; // has_failed = 1
-// 	}
-// }
-
 /*
  * Name:                decl_hdf5_test.check_config_error_for_two_regex_found
  *
@@ -1500,8 +1447,13 @@ TEST_F(decl_hdf5_test, check_config_error_for_two_regex_found)
 
 	int has_failed = 0;
 
-	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 32 - 33: found `2' match(s) in the list of datasets "
-							  "section for `group123/array_data'";
+	std::string true_errmsg
+		= "Error while triggering event `write_event': Config_error in lines 32 - 33: Found `2' match(s) in the list of datasets "
+		  "section for `group123/array_data'. Cannot choose the right element in datasets.\n"
+		  "The elements that match group123/array_data are:\n"
+		  " - group[0-9]+/array_data\n"
+		  " - group.*/array_data\n"
+		  "Attention: The elements are considered as a regex.";
 	PDI_status_t true_status = PDI_ERR_CONFIG;
 	context_check_error ctx{true_errmsg, true_status, has_failed};
 
