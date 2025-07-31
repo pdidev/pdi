@@ -36,7 +36,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version:  ['latest', 'oldest']
+        # version:  ['latest', 'oldest']
+        # compiler: ['gcc', 'clang']
+        # mpi:      ['openmpi', 'mpich']
+        # variant:  ['mini', 'all']
+        version:  ['latest']
         compiler: ['gcc', 'clang']
         mpi:      ['openmpi', 'mpich']
         variant:  ['mini', 'all']

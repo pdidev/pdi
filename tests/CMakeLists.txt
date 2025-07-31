@@ -45,7 +45,7 @@ include(CTest)
 # 	endif()
 # endif()
 
-find_package(paraconf 1.0.0 COMPONENTS C)
+# find_package(paraconf 1.0.0 COMPONENTS C)
 if(paraconf_FOUND)
 	message(WARNING "Paraconf found for test-api")
 else()

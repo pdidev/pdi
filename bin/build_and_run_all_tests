@@ -153,8 +153,7 @@ cd "${BUILD_DIR_PARACONF}"
 # ls ${SRCDIR}/vendor/paraconf*/vendor
 ls ${SRCDIR}/vendor/paraconf*/vendor/libyaml-0.2.2
 # cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" -DUSE_SYSTEM_YAML=OFF ${SRCDIR}/vendor/paraconf*
-# cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" ${SRCDIR}/vendor/paraconf*
-cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE -DUSE_yaml:STRING=SYSTEM -DBUILD_TESTING:BOOL=OFF ${SRCDIR}/vendor/paraconf*
+cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" ${SRCDIR}/vendor/paraconf*
 make ${MAKEFLAGS}
 make install
 
