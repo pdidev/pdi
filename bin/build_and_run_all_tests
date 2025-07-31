@@ -148,7 +148,9 @@ echo "############ test-api no-pdi/no-paraconf done"
 # make install
 
 cd "${BUILD_DIR_PARACONF}"
-cmake -DUSE_SYSTEM_YAML=OFF "${SRCDIR}/vendor/paraconf*/"
+ls ${SRCDIR}/vendor
+ls ${SRCDIR}/vendor/paraconf*
+cmake -DUSE_SYSTEM_YAML=OFF ${SRCDIR}/vendor/paraconf*/
 make
 make install
 
