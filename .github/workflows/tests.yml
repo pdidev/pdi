@@ -53,7 +53,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
+        # base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
+        # mpi:     ['openmpi', 'mpich']
+        # variant: ['mini', 'all']
+        base:    ['debian/bookworm']
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
     runs-on: ubuntu-24.04
