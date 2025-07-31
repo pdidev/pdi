@@ -56,6 +56,11 @@ mkdir api_pdi
 cd api_pdi
 TEST_DIR_API="${PWD}"
 
+cd "${TEST_DIR_ROOT}"
+mkdir build_paraconf
+cd build_paraconf
+BUILD_DIR_PARACONF="${PWD}"
+
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
@@ -132,13 +137,18 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
 echo "############ test-api no-pdi/no-paraconf done"
 
 # Get Paraconf independently from pdi
-# cd "${SRCDIR}/vendor/paraconf*/"
-cd "${SRCDIR}"
-ls .
-cd vendor/paraconf*/
-mkdir build
-cd build
-cmake -DUSE_SYSTEM_YAML=OFF ..
+# # cd "${SRCDIR}/vendor/paraconf*/"
+# cd "${SRCDIR}"
+# ls .
+# cd vendor/paraconf*/
+# mkdir build
+# cd build
+# cmake -DUSE_SYSTEM_YAML=OFF ..
+# make
+# make install
+
+cd "${BUILD_DIR_PARACONF}"
+cmake -DUSE_SYSTEM_YAML=OFF "${SRCDIR}/vendor/paraconf*/"
 make
 make install
 
