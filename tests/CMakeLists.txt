@@ -44,6 +44,13 @@ include(CTest)
 # 		message(WARNING "Paraconf not found")
 # 	endif()
 # endif()
+
+find_package(paraconf 1.0.0 COMPONENTS C)
+if(paraconf_FOUND)
+	message(WARNING "Paraconf found for test-api")
+else()
+	message(WARNING "Paraconf not found for test-api")
+endif()
 find_package(PDI REQUIRED COMPONENTS C)
 
 if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
