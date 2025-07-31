@@ -147,14 +147,29 @@ echo "############ test-api no-pdi/no-paraconf done"
 # make
 # make install
 
+# cd "${BUILD_DIR_PARACONF}"
+# # ls ${SRCDIR}/vendor
+# # ls ${SRCDIR}/vendor/paraconf*
+# # ls ${SRCDIR}/vendor/paraconf*/vendor
+# ls ${SRCDIR}/vendor/paraconf*/vendor/libyaml-0.2.2
+# # cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" -DUSE_SYSTEM_YAML=OFF ${SRCDIR}/vendor/paraconf*
+# # cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" ${SRCDIR}/vendor/paraconf*
+# cmake -DCMAKE_PREFIX_PATH=${SRCDIR}/vendor/paraconf*/vendor/libyaml* -DCMAKE_INSTALL_PREFIX="./install_paraconf" ${SRCDIR}/vendor/paraconf*
+# make ${MAKEFLAGS}
+# make install
+
 cd "${BUILD_DIR_PARACONF}"
-# ls ${SRCDIR}/vendor
-# ls ${SRCDIR}/vendor/paraconf*
-# ls ${SRCDIR}/vendor/paraconf*/vendor
-ls ${SRCDIR}/vendor/paraconf*/vendor/libyaml-0.2.2
-# cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" -DUSE_SYSTEM_YAML=OFF ${SRCDIR}/vendor/paraconf*
-# cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" ${SRCDIR}/vendor/paraconf*
-cmake -DCMAKE_PREFIX_PATH=${SRCDIR}/vendor/paraconf*/vendor/libyaml* -DCMAKE_INSTALL_PREFIX="./install_paraconf" ${SRCDIR}/vendor/paraconf*
+PARACONF_SRC=( ${SRCDIR}/vendor/paraconf* )
+LIBYAML_DIR=( ${SRCDIR}/vendor/paraconf*/vendor/libyaml* )
+ls "${LIBYAML_DIR[0]}"
+if [[ ${#PARACONF_SRC[@]} -ne 1 ]] || [[ ${#LIBYAML_DIR[@]} -ne 1 ]]; then
+    echo "Error: paraconf* or libyaml* did not match exactly one directory"
+    exit 1
+fi
+cmake \
+  -DCMAKE_PREFIX_PATH="${LIBYAML_DIR[0]}" \
+  -DCMAKE_INSTALL_PREFIX="./install_paraconf" \
+  "${PARACONF_SRC[0]}"
 make ${MAKEFLAGS}
 make install
 
