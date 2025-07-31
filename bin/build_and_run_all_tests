@@ -122,11 +122,11 @@ fi
 
 cd "${TEST_DIR_API}"
 RELATIVE_MODULE_PATH="no-pdi"
-NO_PDI_TESTS="test_07_C test_07_CXX"
+NO_PDI_TESTS="test_api_C test_api_CXX"
 
 cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DBUILD_WITH_PARACONF=OFF -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
 make ${MAKEFLAGS}
-ldd test_07_C
+ldd test_api_C
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
 
 echo "############ test-api no-pdi/no-paraconf done"
@@ -156,10 +156,10 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
 echo "############ example no-pdi/paraconf done"
 
 cd "${TEST_DIR_API}"
-NO_PDI_TESTS="test_07_C test_07_CXX"
+NO_PDI_TESTS="test_api_C test_api_CXX"
 cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
 make ${MAKEFLAGS}
-ldd test_07_C
+ldd test_api_C
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
 rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
 
