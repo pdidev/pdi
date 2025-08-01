@@ -158,19 +158,28 @@ echo "############ test-api no-pdi/no-paraconf done"
 # make ${MAKEFLAGS}
 # make install
 
+# cd "${BUILD_DIR_PARACONF}"
+# PARACONF_SRC=( ${SRCDIR}/vendor/paraconf* )
+# LIBYAML_DIR=( ${SRCDIR}/vendor/paraconf*/vendor/libyaml* )
+# ls "${LIBYAML_DIR[0]}"
+# if [[ ${#PARACONF_SRC[@]} -ne 1 ]] || [[ ${#LIBYAML_DIR[@]} -ne 1 ]]; then
+#     echo "Error: paraconf* or libyaml* did not match exactly one directory"
+#     exit 1
+# fi
+# cmake \
+#   -DCMAKE_PREFIX_PATH="${LIBYAML_DIR[0]}" \
+#   -DCMAKE_INSTALL_PREFIX="./install_paraconf" \
+#   "${PARACONF_SRC[0]}"
+# make ${MAKEFLAGS}
+# make install
+
 cd "${BUILD_DIR_PARACONF}"
-PARACONF_SRC=( ${SRCDIR}/vendor/paraconf* )
-LIBYAML_DIR=( ${SRCDIR}/vendor/paraconf*/vendor/libyaml* )
-ls "${LIBYAML_DIR[0]}"
-if [[ ${#PARACONF_SRC[@]} -ne 1 ]] || [[ ${#LIBYAML_DIR[@]} -ne 1 ]]; then
-    echo "Error: paraconf* or libyaml* did not match exactly one directory"
-    exit 1
-fi
-cmake \
-  -DCMAKE_PREFIX_PATH="${LIBYAML_DIR[0]}" \
-  -DCMAKE_INSTALL_PREFIX="./install_paraconf" \
-  "${PARACONF_SRC[0]}"
-make ${MAKEFLAGS}
+git clone git@github.com:pdidev/paraconf.git
+cd paraconf
+mkdir build
+cd build
+cmake -DUSE_SYSTEM_YAML=OFF ..
+make
 make install
 
 echo "############ got paraconf"
