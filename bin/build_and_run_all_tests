@@ -177,7 +177,7 @@ cd "${BUILD_DIR_PARACONF}"
 # wget https://github.com/pdidev/paraconf/archive/1.0.0.tar.gz
 # tar -xzf 1.0.0.tar.gz
 # mv paraconf-1.0.0 paraconf
-cp ${SRCDIR}/vendor/paraconf*/ .
+cp -r ${SRCDIR}/vendor/paraconf*/ .
 cd paraconf*
 # sed EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"
 sed -i 's|EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"|EMBEDDED_PATH "vendor/libyaml*"|' "CMakeLists.txt"
