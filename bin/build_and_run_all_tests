@@ -174,7 +174,10 @@ echo "############ test-api no-pdi/no-paraconf done"
 # make install
 
 cd "${BUILD_DIR_PARACONF}"
-git clone git@github.com:pdidev/paraconf.git
+# git clone git@github.com:pdidev/paraconf.git
+wget https://github.com/pdidev/paraconf/archive/1.0.0.tar.gz
+tar -xzf 1.0.0.tar.gz
+mv paraconf-1.0.0 paraconf
 cd paraconf
 mkdir build
 cd build
