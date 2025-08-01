@@ -128,7 +128,6 @@ fi
 cd "${TEST_DIR_API}"
 RELATIVE_MODULE_PATH="no-pdi"
 NO_PDI_TESTS="test_api_C test_api_CXX"
-
 cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_MODULE_PATH}" -DBUILD_WITH_PARACONF=OFF -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
 make ${MAKEFLAGS}
 ldd test_api_C
@@ -175,10 +174,13 @@ echo "############ test-api no-pdi/no-paraconf done"
 
 cd "${BUILD_DIR_PARACONF}"
 # git clone git@github.com:pdidev/paraconf.git
-wget https://github.com/pdidev/paraconf/archive/1.0.0.tar.gz
-tar -xzf 1.0.0.tar.gz
-mv paraconf-1.0.0 paraconf
-cd paraconf
+# wget https://github.com/pdidev/paraconf/archive/1.0.0.tar.gz
+# tar -xzf 1.0.0.tar.gz
+# mv paraconf-1.0.0 paraconf
+cp ${SRCDIR}/vendor/paraconf*/ .
+cd paraconf*
+# sed EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"
+sed -i 's|EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"|EMBEDDED_PATH "vendor/libyaml*"|' "CMakeLists.txt"
 mkdir build
 cd build
 cmake -DUSE_SYSTEM_YAML=OFF ..
