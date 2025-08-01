@@ -35,7 +35,11 @@ set_target_properties(PDI_C PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../include"
 )
 
-find_package(paraconf 1.0.0 COMPONENTS C)
+option(BUILD_WITH_PARACONF "BUILD_WITH_PARACONF" ON)
+if(BUILD_WITH_PARACONF)
+	find_package(paraconf 1.0.0 COMPONENTS C)
+endif()
+# find_package(paraconf 1.0.0 COMPONENTS C)
 if(paraconf_FOUND)
 	message(WARNING "Paraconf found")
 	add_compile_definitions(PARACONF_FOUND)
