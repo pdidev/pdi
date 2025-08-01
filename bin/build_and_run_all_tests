@@ -180,7 +180,7 @@ cd "${BUILD_DIR_PARACONF}"
 cp -r ${SRCDIR}/vendor/paraconf*/ .
 cd paraconf*
 # sed EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"*
-ls vendor/libyaml
+ls vendor/libyaml*
 sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"$(ls vendor/libyaml-*)\"|" CMakeLists.txt
 mkdir build
 cd build
