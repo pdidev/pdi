@@ -172,26 +172,26 @@ echo "############ test-api no-pdi/no-paraconf done"
 # make ${MAKEFLAGS}
 # make install
 
-cd "${BUILD_DIR_PARACONF}"
-# git clone git@github.com:pdidev/paraconf.git
-# wget https://github.com/pdidev/paraconf/archive/1.0.0.tar.gz
-# tar -xzf 1.0.0.tar.gz
-# mv paraconf-1.0.0 paraconf
-cp -r ${SRCDIR}/vendor/paraconf*/ .
-cd paraconf*
-# sed EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"*
-ls vendor/libyaml*
-echo "---"
-# sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"$(ls vendor/libyaml-*)\"|" CMakeLists.txt
-# sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"$(basename "$(ls vendor/libyaml-*.tar)" .tar)\"|" CMakeLists.txt
-sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"vendor/libyaml-0.2.2\"|" CMakeLists.txt
-mkdir build
-cd build
-cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX="./install_paraconf" ..
-make
-make install
+# cd "${BUILD_DIR_PARACONF}"
+# # git clone git@github.com:pdidev/paraconf.git
+# # wget https://github.com/pdidev/paraconf/archive/1.0.0.tar.gz
+# # tar -xzf 1.0.0.tar.gz
+# # mv paraconf-1.0.0 paraconf
+# cp -r ${SRCDIR}/vendor/paraconf*/ .
+# cd paraconf*
+# # sed EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"*
+# ls vendor/libyaml*
+# echo "---"
+# # sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"$(ls vendor/libyaml-*)\"|" CMakeLists.txt
+# # sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"$(basename "$(ls vendor/libyaml-*.tar)" .tar)\"|" CMakeLists.txt
+# sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"vendor/libyaml-0.2.2\"|" CMakeLists.txt
+# mkdir build
+# cd build
+# cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX="./install_paraconf" ..
+# make
+# make install
 
-echo "############ got paraconf"
+# echo "############ got paraconf"
 
 # Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
 
