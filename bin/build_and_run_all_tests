@@ -183,7 +183,7 @@ cd paraconf*
 sed -i 's|EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"|EMBEDDED_PATH \"$(ls vendor/libyaml*)\"|' "CMakeLists.txt"
 mkdir build
 cd build
-cmake -DUSE_SYSTEM_YAML=OFF ..
+cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX="./install_paraconf" ..
 make
 make install
 
