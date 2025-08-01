@@ -222,7 +222,7 @@ echo "############ test-api no-pdi/paraconf done"
 
 # Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI (include_directories), without Paraconf
 
-apt-get remove libparaconf-dev
+# apt-get remove libparaconf-dev
 
 cd "${TEST_DIR_API}"
 RELATIVE_NO_PDI_PATH="no-pdi"
