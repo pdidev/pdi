@@ -34,7 +34,7 @@ option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
 
 include(CTest)
 
-# option(BUILD_WITH_PARACONF "BUILD_WITH_PARACONF" ON)
+option(BUILD_WITH_PARACONF "BUILD_WITH_PARACONF" ON)
 # if(BUILD_WITH_PARACONF)
 # 	find_package(paraconf 1.0.0 COMPONENTS C)
 # 	if(paraconf_FOUND)
