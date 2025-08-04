@@ -193,7 +193,7 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $
 echo "############ tests pdi/paraconf done"
 
 
-pkg-config --modversion paraconf
+# pkg-config --modversion paraconf
 if pkg-config --exists paraconf; then
 # Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
 
