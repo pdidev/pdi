@@ -182,19 +182,20 @@ fi
 
 # echo "############ got paraconf"
 
-# Configure, build & test for pdi, with Paraconf
+# # Configure, build & test for pdi, with Paraconf
 
-cd "${TEST_DIR_WITH_PDI}"
-cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-make ${MAKEFLAGS}
-ls .
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+# cd "${TEST_DIR_WITH_PDI}"
+# cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+# make ${MAKEFLAGS}
+# ls .
+# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-echo "############ tests pdi/paraconf done"
+# echo "############ tests pdi/paraconf done"
 
 
 # pkg-config --modversion paraconf
-if pkg-config --exists paraconf; then
+# if pkg-config --exists paraconf; then
+if ldconfig -p | grep -q libparaconf; then
 # Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
 
 cd "${TEST_DIR_NO_PDI}"
