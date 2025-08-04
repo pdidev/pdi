@@ -49,10 +49,7 @@ endif()
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
-message(WARNING "Requiring Paraconf")
-# find_package(paraconf REQUIRED COMPONENTS ${paraconf_COMPONENTS})
-find_package(paraconf COMPONENTS ${paraconf_COMPONENTS})
-message(WARNING "Paraconf found for example")
+find_package(paraconf REQUIRED COMPONENTS ${paraconf_COMPONENTS})
 find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 find_library(LIB_M m DOC "The math library")
 

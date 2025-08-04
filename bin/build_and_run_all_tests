@@ -124,115 +124,49 @@ fi
 
 
 
-# Get Paraconf independently from pdi
-# # cd "${SRCDIR}/vendor/paraconf*/"
-# cd "${SRCDIR}"
-# ls .
-# cd vendor/paraconf*/
-# mkdir build
-# cd build
-# cmake -DUSE_SYSTEM_YAML=OFF ..
-# make
-# make install
-
-# cd "${BUILD_DIR_PARACONF}"
-# # ls ${SRCDIR}/vendor
-# # ls ${SRCDIR}/vendor/paraconf*
-# # ls ${SRCDIR}/vendor/paraconf*/vendor
-# ls ${SRCDIR}/vendor/paraconf*/vendor/libyaml-0.2.2
-# # cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" -DUSE_SYSTEM_YAML=OFF ${SRCDIR}/vendor/paraconf*
-# # cmake -DCMAKE_INSTALL_PREFIX="./install_paraconf" ${SRCDIR}/vendor/paraconf*
-# cmake -DCMAKE_PREFIX_PATH=${SRCDIR}/vendor/paraconf*/vendor/libyaml* -DCMAKE_INSTALL_PREFIX="./install_paraconf" ${SRCDIR}/vendor/paraconf*
-# make ${MAKEFLAGS}
-# make install
-
-# cd "${BUILD_DIR_PARACONF}"
-# PARACONF_SRC=( ${SRCDIR}/vendor/paraconf* )
-# LIBYAML_DIR=( ${SRCDIR}/vendor/paraconf*/vendor/libyaml* )
-# ls "${LIBYAML_DIR[0]}"
-# if [[ ${#PARACONF_SRC[@]} -ne 1 ]] || [[ ${#LIBYAML_DIR[@]} -ne 1 ]]; then
-#     echo "Error: paraconf* or libyaml* did not match exactly one directory"
-#     exit 1
-# fi
-# cmake \
-#   -DCMAKE_PREFIX_PATH="${LIBYAML_DIR[0]}" \
-#   -DCMAKE_INSTALL_PREFIX="./install_paraconf" \
-#   "${PARACONF_SRC[0]}"
-# make ${MAKEFLAGS}
-# make install
-
-# cd "${BUILD_DIR_PARACONF}"
-# # git clone git@github.com:pdidev/paraconf.git
-# # wget https://github.com/pdidev/paraconf/archive/1.0.0.tar.gz
-# # tar -xzf 1.0.0.tar.gz
-# # mv paraconf-1.0.0 paraconf
-# cp -r ${SRCDIR}/vendor/paraconf*/ .
-# cd paraconf*
-# # sed EMBEDDED_PATH "vendor/libyaml-0.2.2.tar"*
-# ls vendor/libyaml*
-# echo "---"
-# # sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"$(ls vendor/libyaml-*)\"|" CMakeLists.txt
-# # sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"$(basename "$(ls vendor/libyaml-*.tar)" .tar)\"|" CMakeLists.txt
-# sed -i "s|EMBEDDED_PATH \"vendor/libyaml-0.2.2.tar\"|EMBEDDED_PATH \"vendor/libyaml-0.2.2\"|" CMakeLists.txt
-# mkdir build
-# cd build
-# cmake -DUSE_SYSTEM_YAML=OFF -DCMAKE_INSTALL_PREFIX="./install_paraconf" ..
-# make
-# make install
-
-# echo "############ got paraconf"
-
 # # Configure, build & test for pdi, with Paraconf
 
 # cd "${TEST_DIR_WITH_PDI}"
 # cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 # make ${MAKEFLAGS}
-# ls .
 # ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 # echo "############ tests pdi/paraconf done"
 
 
-# pkg-config --modversion paraconf
-# if pkg-config --exists paraconf; then
+ldconfig -p
 if ldconfig -p | grep -q libparaconf; then
-# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
+	# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
 
-cd "${TEST_DIR_NO_PDI}"
-RELATIVE_NO_PDI_PATH="no-pdi"
-# cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
-cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
-# cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}:${BUILD_DIR_PARACONF}/paraconf*/build/install_paraconf" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
-make ${MAKEFLAGS}
-ldd PDI_example_C
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
+	cd "${TEST_DIR_NO_PDI}"
+	RELATIVE_NO_PDI_PATH="no-pdi"
+	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/example"
+	make ${MAKEFLAGS}
+	ldd PDI_example_C
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
 
-echo "############ example no-pdi/paraconf done"
+	echo "############ example no-pdi/paraconf done"
 
-cd "${TEST_DIR_API}"
-RELATIVE_NO_PDI_PATH="no-pdi"
-NO_PDI_TESTS="test_api_C test_api_CXX"
-# cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
-cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
-make ${MAKEFLAGS}
-ldd test_api_C
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
-rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
+	cd "${TEST_DIR_API}"
+	RELATIVE_NO_PDI_PATH="no-pdi"
+	NO_PDI_TESTS="test_api_C test_api_CXX"
+	cmake -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
+	make ${MAKEFLAGS}
+	ldd test_api_C
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+	rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
 
-echo "############ test-api no-pdi/paraconf done"
+	echo "############ test-api no-pdi/paraconf done"
 else
-echo "############ no-pdi/paraconf skipped"
+	echo "############ no-pdi/paraconf skipped, paraconf not available"
 fi
 
-# Configure, build & test for no-pdi's specific tests with BUILD_WITHOUT_PDI (include_directories), without Paraconf
-
-# apt-get remove libparaconf-dev
+# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), without Paraconf
 
 cd "${TEST_DIR_API}"
 RELATIVE_NO_PDI_PATH="no-pdi"
 NO_PDI_TESTS="test_api_C test_api_CXX"
 cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DBUILD_WITH_PARACONF=OFF -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
-# cmake -DBUILD_BENCHMARKING=OFF -DBUILD_UNSTABLE=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}/tests"
 make ${MAKEFLAGS}
 ldd test_api_C
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
