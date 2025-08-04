@@ -133,8 +133,6 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $
 
 echo "############ tests pdi/paraconf done"
 
-
-ldconfig -p | grep -q libparaconf
 if ldconfig -p | grep -q libparaconf; then
 	# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
 
@@ -158,7 +156,7 @@ if ldconfig -p | grep -q libparaconf; then
 
 	echo "############ test-api no-pdi/paraconf done"
 else
-	echo "############ no-pdi/paraconf skipped, paraconf not available"
+	echo "############ no-pdi/paraconf skipped, paraconf not available on mini configuration"
 fi
 
 # Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), without Paraconf
@@ -166,7 +164,7 @@ fi
 cd "${TEST_DIR_API}"
 RELATIVE_NO_PDI_PATH="no-pdi"
 NO_PDI_TESTS="test_api_C test_api_CXX"
-cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DBUILD_WITH_PARACONF=OFF -DBUILD_SERIALIZE_PLUGIN=OFF -DBUILD_SET_VALUE_PLUGIN=OFF "${SRCDIR}/tests"
+cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" -DBUILD_WITH_PARACONF=OFF "${SRCDIR}/tests"
 make ${MAKEFLAGS}
 ldd test_api_C
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
