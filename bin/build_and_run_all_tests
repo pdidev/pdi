@@ -124,14 +124,14 @@ fi
 
 
 
-# # Configure, build & test for pdi, with Paraconf
+# Configure, build & test for pdi, with Paraconf
 
-# cd "${TEST_DIR_WITH_PDI}"
-# cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-# make ${MAKEFLAGS}
-# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+cd "${TEST_DIR_WITH_PDI}"
+cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+make ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-# echo "############ tests pdi/paraconf done"
+echo "############ tests pdi/paraconf done"
 
 
 ldconfig -p
