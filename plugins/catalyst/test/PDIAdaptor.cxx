@@ -5,6 +5,7 @@
 
 #include <pdi.h>
 #include <string>
+#include <iostream>
 
 namespace PDIAdaptor
 {
@@ -25,8 +26,8 @@ bool Initialize(const std::string& pdi_yaml_config_file_path, const Grid& grid)
     return false;
   }
 
-  auto cell_points_size = grid.GetNumberOfCells() * 8;
-  status = PDI_expose("cell_points_size", &cell_points_size, PDI_OUT);
+  auto number_of_cells = grid.GetNumberOfCells() * 8;
+  status = PDI_expose("cell_points_size", &number_of_cells, PDI_OUT);
   if (status != PDI_status_t::PDI_OK)
   {
     return false;
@@ -54,6 +55,22 @@ bool Execute(int cycle, double time, Grid& grid, Attributes& attribs)
   auto number_of_points = grid.GetNumberOfPoints();
   auto number_of_cells = grid.GetNumberOfCells();
 
+  std::cout << "#### begin false_catalyst_execute ####" << std::endl;
+
+  auto status_false = PDI_multi_expose(
+    //
+    "false_catalyst_execute",
+    //
+    "number_of_cells", &number_of_cells, PDI_OUT,
+    //
+    "cell_points", grid.GetCellPoints(0), PDI_OUT,
+    //
+    "velocity_array", attribs.GetVelocityArray(), PDI_OUT,
+    //
+    "pressure_array", attribs.GetPressureArray(), PDI_OUT,
+    //
+    NULL);
+
   auto status = PDI_multi_expose(
     //
     "catalyst_execute",
@@ -62,13 +79,13 @@ bool Execute(int cycle, double time, Grid& grid, Attributes& attribs)
     //
     "time", &time, PDI_OUT,
     //
-    "points_array", grid.GetPointsArray(), PDI_OUT,
-    //
     "number_of_points", &number_of_points, PDI_OUT,
     //
-    "cell_points", grid.GetCellPoints(0), PDI_OUT,
+    "points_array", grid.GetPointsArray(), PDI_OUT,
     //
     "number_of_cells", &number_of_cells, PDI_OUT,
+    //
+    "cell_points", grid.GetCellPoints(0), PDI_OUT,
     //
     "velocity_array", attribs.GetVelocityArray(), PDI_OUT,
     //
