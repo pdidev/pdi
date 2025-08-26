@@ -1,5 +1,5 @@
 logging:
-  level: "info"
+  level: "debug"
 metadata:
   points_array_size: size_t
   cell_points_size: size_t
@@ -27,18 +27,18 @@ data:
     subtype: float
     size: $pressure_array_size
 plugins:
+  trace:
+#  decl_hdf5:
+#    file: test_writing_.h5
+#    write: [number_of_points,points_array]
   catalyst:
     scripts:
       script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_with_rendering.py"
     PDI_execute_event_name: "catalyst_execute"
     execute:
       state:
-        timestep:
-          PDI_data:
-            name: "cycle"
-        time:
-          PDI_data:
-            name: "time"
+        timestep: '$cycle'
+        time: '$time'
         multiblock: 1
       channels:
         grid:
@@ -49,29 +49,20 @@ plugins:
                 type: "explicit"
                 values:
                   x:
-                    PDI_data:
-                      name: "points_array"
-                      size:
-                        PDI_data:
-                          name: "number_of_points"
-                      offset: 0
-                      stride: 3
+                    PDI_data_array: "points_array"
+                    size: '$number_of_points'
+                    offset: 0
+                    stride: 3
                   y:
-                    PDI_data:
-                      name: "points_array"
-                      size:
-                        PDI_data:
-                          name: "number_of_points"
-                      offset: 1
-                      stride: 3
+                    PDI_data_array: "points_array"
+                    size: '$number_of_points'
+                    offset: 1
+                    stride: 3
                   z:
-                    PDI_data:
-                      name: "points_array"
-                      size:
-                        PDI_data:
-                          name: "number_of_points"
-                      offset: 2
-                      stride: 3
+                    PDI_data_array: "points_array"
+                    size: '$number_of_points'
+                    offset: 2
+                    stride: 3
             topologies:
               my_mesh:
                 type: "unstructured"
@@ -79,12 +70,8 @@ plugins:
                 elements:
                   shape: "hex"
                   connectivity:
-                    PDI_data:
-                      name: "cell_points"
-                      size:
-                        PDI_data:
-                          name: "number_of_cells"
-                          multiply: 8
+                    PDI_data_array: "cell_points"
+                    size: '8*$number_of_cells'
             fields:
               velocity:
                 association: "vertex"
@@ -92,38 +79,37 @@ plugins:
                 volume_dependent: "false"
                 values:
                   x:
-                    PDI_data:
-                      name: "velocity_array"
-                      size:
-                        PDI_data:
-                          name: "number_of_points"
-                      offset: 0
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: 0
                   y:
-                    PDI_data:
-                      name: "velocity_array"
-                      size:
-                        PDI_data:
-                          name: "number_of_points"
-                      offset:
-                        PDI_data:
-                          name: "number_of_points"
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: '$number_of_points'
                   z:
-                    PDI_data:
-                      name: "velocity_array"
-                      size:
-                        PDI_data:
-                          name: "number_of_points"
-                      offset:
-                          PDI_data:
-                            name: "number_of_points"
-                            multiply: 2
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: '2*$number_of_points'
+                association: "vertex"
+                topology: "my_mesh"
+                volume_dependent: "false"
+                values:
+                  x:
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: 0
+                  y:
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: '$number_of_points'
+                  z:
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: '2*$number_of_points'
               pressure:
                 association: "element"
                 topology: "my_mesh"
                 volume_dependent: "false"
                 values:
-                  PDI_data:
-                    name: "pressure_array"
-                    size:
-                      PDI_data:
-                        name: "number_of_cells"
+                  PDI_data_array: "pressure_array"
+                  size: '$number_of_cells'

@@ -43,6 +43,7 @@ velocityLUTColorBar.Visibility = 1
 # show color legend
 gridDisplay.SetScalarBarVisibility(renderView1, True)
 
+
 # ----------------------------------------------------------------
 # setup extractors
 # ----------------------------------------------------------------
@@ -58,10 +59,67 @@ pNG1.Writer.FileName = 'screenshot_{timestep:06d}.png'
 pNG1.Writer.ImageResolution = [1600,800]
 pNG1.Writer.Format = 'PNG'
 
+# # ######## render view pressure
+
+# # Create a new 'Render View'
+# renderView2 = CreateView('RenderView')
+# renderView2.ViewSize = [1600,800]
+# renderView2.CameraPosition = [157.90070691620653, 64.91180236667495, 167.90421495515105]
+# renderView2.CameraFocalPoint = [19.452526958533134, 28.491610229010647, 10.883993417012459]
+# renderView2.CameraViewUp = [0.07934883419275315, 0.953396338566962, -0.2910999555468221]
+# renderView2.CameraFocalDisk = 1.0
+# renderView2.CameraParallelScale = 54.99504523136608
+
+# # get color transfer function/color map for 'velocity'
+# pressureLUT = GetColorTransferFunction('pressure')
+# pressureLUT.RGBPoints = [-2.0, 0.231373, 0.298039, 0.752941,
+#                         0.0, 0.865003, 0.865003, 0.865003,
+#                         2.0, 0.705882, 0.0156863, 0.14902]
+# pressureLUT.ScalarRangeInitialized = 1.0
+
+# # show data from grid
+# gridDisplay222 = Show(producer, renderView2, 'UnstructuredGridRepresentation') ## pourquoi pas uniform possible
+# #gridDisplay222 = Show(producer, renderView2, 'StructuredGridRepresentation') ## pourquoi pas uniform possible
+
+
+# gridDisplay222.Representation = 'Surface'
+# gridDisplay222.ColorArrayName = ['CELLS', 'pressure']
+# gridDisplay222.LookupTable = pressureLUT
+
+# # get color legend/bar for pressureLUT in view renderView2
+# pressureLUTColorBar = GetScalarBar(pressureLUT, renderView2)
+# pressureLUTColorBar.Title = 'pressure'
+# pressureLUTColorBar.ComponentTitle = 'Magnitude'
+
+# # set color bar visibility
+# pressureLUTColorBar.Visibility = 1
+
+# # show color legend
+# gridDisplay222.SetScalarBarVisibility(renderView2, True)
+
+
+# # # ----------------------------------------------------------------
+# # # setup extractors
+# # # ----------------------------------------------------------------
+
+# SetActiveView(renderView2)
+# # create extractor
+# pNG2= CreateExtractor('PNG', renderView2, registrationName='PNG2')
+# # trace defaults for the extractor.
+# pNG2.Trigger = 'TimeStep'
+
+# # init the 'PNG' selected for 'Writer'
+# pNG2.Writer.FileName = 'pressure_screenshot_{timestep:06d}.png'
+# pNG2.Writer.ImageResolution = [1600,800]
+# pNG2.Writer.Format = 'PNG'
+
+
 # ------------------------------------------------------------------------------
 # Catalyst options
 options = catalyst.Options()
-options.EnableCatalystLive = 1
+## 0: no client, generate the images
+## 1: interactif
+options.EnableCatalystLive = 0
 
 
 # Greeting to ensure that ctest knows this script is being imported
