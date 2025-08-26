@@ -33,7 +33,7 @@ private:
   void RunCatalystInitialize();
   void RunCatalystExecute();
   void RunCatalystFinalize();
-  void FillNodeWithPDIData(conduit_node* node, PC_tree_t tree);
+  void FillNodeWithPDIDataArray(conduit_node* node, PC_tree_t tree);
   void FillNodeWithScalarPDIData(conduit_node* node, const std::string& name,
     const PDI::Scalar_datatype& scalar_datatype, PDI::Ref_r& ref_r);
   void FillNodeWithArrayPDIData(conduit_node* node, const std::string& name, PC_tree_t& tree,
