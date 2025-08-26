@@ -30,7 +30,7 @@
 name: pages
 on:
   push:
-    branches: [ main, 'v[0-9]+\.[0-9]+' ]
+    branches: [ main, 'v[0-9]+\.[0-9]+', get_last_pages_1_9 ]
     tags: '[0-9]+\.[0-9]+\.[0-9]+'
   pull_request:
 jobs:
@@ -62,7 +62,7 @@ jobs:
       with:
         name: pages
         path: public
-    - name: Deploy
-      if: "${{ github.event_name == 'push' }}"
-      run: |
-        curl -fsS -u "jbigot:${{secrets.PAGES_DEPLOY_TOKEN}}" -H 'Accept: application/vnd.github.v3+json' -X POST "https://api.github.com/repos/pdidev/pdidev.github.io/dispatches" -d '{ "event_type": "do_gitlab_deploy" }'
+#    - name: Deploy
+#      if: "${{ github.event_name == 'push' }}"
+#      run: |
+#        curl -fsS -u "jbigot:${{secrets.PAGES_DEPLOY_TOKEN}}" -H 'Accept: application/vnd.github.v3+json' -X POST "https://api.github.com/repos/pdidev/pdidev.github.io/dispatches" -d '{ "event_type": "do_gitlab_deploy" }'
