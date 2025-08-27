@@ -33,6 +33,12 @@ on:
     branches: [ main, 'v[0-9]+\.[0-9]+' ]
     tags: '[0-9]+\.[0-9]+\.[0-9]+'
   pull_request:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Define branch name'     
+        required: true
+        default: 'v1.8'
 jobs:
   pages:
     runs-on: ubuntu-24.04
