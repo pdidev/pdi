@@ -42,7 +42,9 @@ The possible values for the keys are as follow:
   can be replaced inside the `DATA_SECTION`.
 * `datasets`: a key-value map associating a PDI type to string keys.
   Each string is the name of a dataset to create in the file on first
-  access, with the type described in the value.
+  access, with the type described in the value. The string key can also be 
+  a regular expression (regex), and be used to define "generic keys",
+  that can be used in `DATA_IO_DESC` for the keyword dataset.
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY
 * `deflate`: an integer value (from 0 to 9) defining the default deflate (GNU
   gzip) compression level to use for datasets created in this file.
@@ -112,7 +114,7 @@ The possible values for the keys are as follow:
   It defaults to selecting the whole data.
 * `dataset_selection`: a `SELECTION_DESC` specifying the selection of
   data in the file data to write or read.
-  This is only valid if the 
+  This is only valid if the dataset is defined in the datasets.
 * `attributes`: a key-value map specifying the set of attributes to read from
   (respectively, write to) the file when the associated dataset is read
   (respectively, written).
@@ -216,6 +218,10 @@ plugins:
         type: array
         subtype: double                # type of the data in the dataset
         size: [10, $width-2, $width-2] # size of the dataset
+      data_iter.*/array: # a dataset name which is a regex. This name allows to write datasets that match this regex in the h5 file
+        type: array
+        subtype: double                # type of the data in the dataset
+        size: [$width-2, $width-2]     # size of the dataset
     write: # a list or map of data to write (default: empty)
       main_field: # name of the data, it contains either a list or a single write to execute
         - dataset: data/array      # a dataset name (default: the data name)
@@ -232,6 +238,14 @@ plugins:
             size: ($width-2)*($width-2)
             width: $width-2
             height: $width-2
+        - dataset: data_iter${iter}/array  # a dataset name with an implicit name
+          memory_selection:
+            size:  [$width-2, $height-2] # number of elements to transfer in each dimension (default: size of the full data)
+            start: [1, 1]                # coordinate of the start point in memory relative to the shared data (default: 0 in each dimensions)
+          dataset_selection:
+            size:  [ $width-2, $width-2] # number of elements to transfer in each dimension, must amount to the same number as the memory selection (default: size of memory slab)
+            start: [ 0, 0]               # coordinate of the start point in the file relative to the dataset (default: 0 in each dimensions)
+
     read: # a list or map of data to read, similar to write (default: empty)
       - another_value
 ```
