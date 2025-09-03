@@ -100,6 +100,15 @@ fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^xmacos ]]
 then
+	#Workaround: needed for pybind11 (cf: https://pybind11.readthedocs.io/en/stable/compiling.html#building-manually)
+	# but this shouldn't be set here. CMake should take care of that.
+	#WARNING: This shouldn't make it to main!!!
+	CMAKE_FLAGS="${CMAKE_FLAGS} \
+-DCMAKE_EXE_LINKER_FLAGS=-undefined dynamic_lookup \
+-DCMAKE_SHARED_LINKER_FLAGS=-undefined dynamic_lookup \
+-DCMAKE_MODULE_LINKER_FLAGS=-undefined dynamic_lookup \
+"
+	
 	#Workaround: not all plugins work on OSX yet (https://github.com/pdidev/pdi/issues/580)
 	CMAKE_FLAGS="${CMAKE_FLAGS} \
 -DBUILD_BENCHMARKING=OFF \
