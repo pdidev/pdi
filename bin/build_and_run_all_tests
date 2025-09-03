@@ -34,6 +34,7 @@ set -xe
 
 
 # Make our work dirs
+
 SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
@@ -46,6 +47,7 @@ cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
 
 cd "${TEST_DIR}"
+
 
 
 # Gather options
@@ -127,7 +129,10 @@ then
 -DBUILD_USER_CODE_PLUGIN=ON"
 fi
 
+
+
 # Configure, build & test
+
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
