@@ -161,29 +161,18 @@ int main(int argc, char* argv[])
 
 	PC_tree_t conf = PC_parse_path(argv[1]);
 
-	MPI_Comm main_comm;// = MPI_COMM_WORLD;
+	MPI_Comm main_comm = MPI_COMM_WORLD;
 	PDI_init(PC_get(conf, ".pdi"));
 	PDI_event("init");
 	   
 	int is_client = -1;
 	
-	PDI_expose("is_client", &is_client, PDI_IN);
-    	printf("-------------------------------------------------------------------------------------D: :) ;) is_client = %d\n", is_client);
-
-	//return 0;
+	//PDI_expose("is_client", &is_client, PDI_IN);
+	PDI_expose("is_client", &is_client, PDI_INOUT);  // <-- allow plugin to set
+	PDI_expose("mpi_comm",  &main_comm,  PDI_INOUT); // <-- allow plugin to set
 	
    	if(is_client) {
 	//*******************************************************************Only damaris clients run this section
-	
-        //Gets the communicator that the clients must use.
-	//damaris_client_comm_get(&comm);
-    	//PDI_multi_expose("damaris_client_comm_get"
-    	//,"client_comm", &main_comm, PDI_INOUT
-    	//, NULL);
-    	
-	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
-	//MPI_Comm hdf5_mpi_comm = main_comm;
-	//PDI_expose("hdf5_mpi_comm", &hdf5_mpi_comm, PDI_INOUT);
 
 	int psize_1d;
 	MPI_Comm_size(main_comm, &psize_1d);
@@ -263,18 +252,17 @@ int main(int argc, char* argv[])
 		}
 	    //PDI_event("damaris_end_iteration");
 	}
-	//PDI_event("finalization");
+	PDI_event("finalization");
 	PDI_expose("iter", &ii, PDI_OUT);
 	PDI_expose("main_field", cur, PDI_OUT);
 	
+	//moved here to be in the scope, since if(is_client) has been added
 	free(cur);
 	free(next);
 	
 	//PDI_event("damaris_stop");
 	//*******************************************************************END if(is_client)
 	}//END if(is_client)
-	
-	PDI_event("finalization");
 
 	PDI_finalize();
 

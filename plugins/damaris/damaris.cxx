@@ -89,6 +89,8 @@ class damaris_plugin: public Plugin {
 	std::string real_numbers_types[3] = {"float", "real", "double"};
 	
 	int iteration = 0;//for debugging
+    int datasets_to_write_count = 0;//The number of data already written in the current iteration
+
 public:
 
 	damaris_plugin(Context& ctx, PC_tree_t config)
@@ -214,17 +216,29 @@ public:
 						,ds_write_info.position[1].to_long(context())
 						,ds_write_info.position[2].to_long(context())
 					};
-					context().logger().info("data `{}' will be written at: block '{}' and position '{}:{}:{}', when = '{}'", name, block, position[0], position[1], position[2], ds_write_info.when.to_long(context()));
-
+					
 					const void* data = static_cast<const void*>(rref.get());
 
-					std::string set_block_pos_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_SET_BLOCK_POSITION);
-					m_event_handler.damaris_api_call_event(context(), m_damaris, set_block_pos_event_name, multi_expose_transaction_dataname, name, block, position);
+					if(block > 0) {
+						context().logger().info("data `{}' will be written at: block '{}' and position '{}:{}:{}', when = '{}'", name, block, position[0], position[1], position[2], ds_write_info.when.to_long(context()));
+					
+						std::string set_block_pos_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_SET_BLOCK_POSITION);
+						m_event_handler.damaris_api_call_event(context(), m_damaris, set_block_pos_event_name, multi_expose_transaction_dataname, name, block, position);
+						
+						std::string write_block_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_WRITE_BLOCK);
+						m_event_handler.damaris_api_call_event(context(), m_damaris, write_block_event_name, multi_expose_transaction_dataname, name, block, data);	
+					}
+					else {
+						std::string set_pos_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_SET_POSITION);
+						m_event_handler.damaris_api_call_event(context(), m_damaris, set_pos_event_name, multi_expose_transaction_dataname, name, position);
 
-					std::string write_block_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_WRITE_BLOCK);
-					m_event_handler.damaris_api_call_event(context(), m_damaris, write_block_event_name, multi_expose_transaction_dataname, name, block, data);	
-				
-					if(m_config.is_there_after_write_events()) {
+						std::string write_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_WRITE);
+						m_event_handler.damaris_api_call_event(context(), m_damaris, write_event_name, multi_expose_transaction_dataname, name, data);	
+					}
+					
+					datasets_to_write_count++;
+					//Wait until all datasets are written before launching end of iteration operations
+					if(m_config.is_there_after_write_events() && datasets_to_write_count == m_config.datasets_to_write().size()) {
 						list<string> after_write_events = m_config.get_after_write_events();
 						for (auto it = after_write_events.begin(); it != after_write_events.end(); it++) {
 							std::string aw_event = it->c_str();
@@ -239,6 +253,7 @@ public:
 								
 							}
 						}
+						datasets_to_write_count = 0;
 					}
 				}				
 			}
@@ -358,8 +373,9 @@ public:
 	{
 
 		if (m_config.finalize_on_event().empty() && m_damaris) {
+			context().logger().info("Calling  DAMARIS_FINALIZE in ~damaris_plugin()");
 			std::string finalize_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_FINALIZE);
-			m_event_handler.damaris_api_call_event(context(), m_damaris, finalize_event_name, multi_expose_transaction_dataname);
+			//m_event_handler.damaris_api_call_event(context(), m_damaris, finalize_event_name, multi_expose_transaction_dataname);
 			//PDI_status_t status = PDI_event(finalize_event_name.c_str());
 		}
 

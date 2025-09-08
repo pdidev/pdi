@@ -233,6 +233,17 @@ const std::unordered_map<Event_type, std::string> event_names = {
  void init_xml_config_object(){
      m_xml_config_object = XML_CONFIG_TEMPLATE;
      damarisXMLModifyModel = damaris::model::ModifyModel(m_xml_config_object);
+
+    /*
+    m_init_on_event = "";
+    m_start_on_event = "";
+    m_stop_on_event = "";
+    m_end_iteration_on_event = "";
+    m_finalize_on_event = "";
+
+    m_paraview = NULL;
+    m_pyscript = NULL;
+    */
  }
  
      

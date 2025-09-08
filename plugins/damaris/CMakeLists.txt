@@ -33,31 +33,34 @@ project(pdi_damaris_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # TODO:
-#include(CTest)
+include(CTest)
 
 include(GNUInstallDirs)
 
 #Damaris
-set(Damaris_DEPS damaris MPI::MPI_C MPI::MPI_CXX)
-find_package(Damaris)
+#set(Damaris_DEPS damaris MPI::MPI_C MPI::MPI_CXX)
+set(Damaris_DEPS MPI::MPI_C MPI::MPI_CXX)
+find_package(Damaris 1.12.0 REQUIRED)
 if (Damaris_FOUND)
-    message(STATUS "The Damaris library was found")
+    message(STATUS "The Damaris library was found (${Damaris_LIBRARIES_PATH}/libdamaris.so)")
     # Adds the libraries used - Damaris and its dependencies to the link line
     # target_link_libraries(mysim PUBLIC ${Damaris_LIBRARIES})
     # This creates a definition of a pre-processor variable (PROG_HAS_DAMARIS)
     # that can be used as a guard in the C/C++ code:
     # target_compile_definitions(mysim PRIVATE PROG_HAS_DAMARIS)
+    list(APPEND Damaris_DEPS damaris)
+    #list(APPEND Damaris_DEPS ${Damaris_LIBRARIES})
+    include_directories(${Damaris_INCLUDE_DIRS} ${Damaris_INCLUDE_DIRS}/damaris)
+    link_directories(${Damaris_LIBRARIES_PATH})
 else()
     message(STATUS "The Damaris library was NOT found")
 endif()
-include_directories(${Damaris_INCLUDE_DIRS} ${Damaris_INCLUDE_DIRS}/damaris)
-link_directories(${Damaris_LIBRARIES_PATH})
 
 # MPI
 find_package(MPI REQUIRED COMPONENTS CXX C)
 
 # PDI
-find_package(PDI REQUIRED COMPONENTS plugins)
+find_package(PDI 1.9.2 REQUIRED COMPONENTS plugins)
 
 # The plugin
 add_library(pdi_damaris_plugin MODULE
