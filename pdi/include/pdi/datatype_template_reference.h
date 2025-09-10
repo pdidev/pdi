@@ -33,33 +33,27 @@
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/expression.h>
 #include <pdi/datatype_template.h>
+#include <pdi/expression.h>
 
 namespace PDI {
 
-class PDI_EXPORT Datatype_template_reference: public Datatype_template {
+class PDI_EXPORT Datatype_template_reference: public Datatype_template
+{
+	Datatype_template_definition_sptr m_definition;
 
-    Datatype_template_definition_sptr m_definition;
-    std::unordered_map<std::string, Datatype_template_sptr> m_arguments;
+	std::unordered_map<std::string, Datatype_template_sptr> m_arguments;
 
 public:
 	/** Creates datatype template reference
 	 *
 	 * \param attributes attributes of datatype template
 	 */
-	// Datatype_template_reference(const Attributes_map& attributes = {});
-    Datatype_sptr evaluate(Context& ctx) const override;
-    
+	Datatype_template_reference(const Attributes_map& attributes = {});
 
-
+	Datatype_sptr evaluate(Context& ctx) const override;
 };
 
-
-
-
-
-
-}
+} // namespace PDI
 
 #endif //PDI_DATATYPE_TEMPLATE_REFERENCE_H_

@@ -34,33 +34,27 @@
 
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
-// #include <pdi/datatype_template.h>
 
 namespace PDI {
 
-class PDI_EXPORT Datatype_template_definition {
-    std::string m_name; // maybe not necessary
-    std::vector<std::string> m_parameters;
-    // each parameter represents a type
-    // m_parameters is the list of the name of the parameters that each of them represents a type
-    Datatype_template_sptr m_content;
+class PDI_EXPORT Datatype_template_definition
+{
+	std::string m_name; // maybe not necessary
+
+	std::vector<std::string> m_parameters;
+
+	// each parameter represents a type
+	// m_parameters is the list of the name of the parameters that each of them represents a type
+	Datatype_template_sptr m_content;
 
 public:
 	/** Creates datatype template definition
 	 *
 	 * \param attributes attributes of datatype template
 	 */
-	// Datatype_template_definition(const Attributes_map& attributes = {});
-
-
-
+	Datatype_template_definition(const Attributes_map& attributes = {});
 };
 
-
-
-
-
-
-}
+} // namespace PDI
 
 #endif //PDI_DATATYPE_TEMPLATE_DEFINITION_H_
