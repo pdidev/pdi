@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+ #include <sys/stat.h>
+ #include <sys/types.h>
  #include <iostream>
  #include <sstream>
  #include <assert.h>
@@ -839,6 +841,18 @@
                  } 
                  else if (key == "files_path") {
                      store.store_opt_FilesPath_ = to_string(value);
+                    //Ensure the folder exists
+                    struct stat st;
+                    if (stat(store.store_opt_FilesPath_.c_str(), &st) == 0 && S_ISDIR(st.st_mode)) {
+                        ctx.logger().info("HDF5 files_path exists: '{}'", to_string(value));
+                    } else {
+                        if (mkdir(store.store_opt_FilesPath_.c_str(), 0775) == -1) {
+                            ctx.logger().info("Error during the creation of the HDF5 files_path: '{}'", strerror(errno));
+                            exit(1);
+                        } else {
+                            ctx.logger().info("HDF5 files_path created successfully: '{}'", to_string(value));
+                        }
+                    }
                  } 
                  else {
                      std::cerr << "ERROR: damaris_cfg unrecogognized storage map string: " << key << std::endl ;
