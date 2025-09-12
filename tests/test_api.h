@@ -32,9 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 #endif
-// #ifndef PC_parse_string
-// #include <paraconf.h>
-// #endif
 #ifdef PARACONF_FOUND
 #warning "PARACONF_FOUND, paraconf included in test_api.h"
 #include <paraconf.h>

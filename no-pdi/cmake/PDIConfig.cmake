@@ -40,12 +40,6 @@ if(BUILD_WITH_PARACONF)
 	find_package(paraconf 1.0.0 COMPONENTS C)
 endif()
 
-# option(BUILD_WITH_PARACONF "BUILD_WITH_PARACONF" OFF)
-# if(BUILD_WITH_PARACONF)
-# 	find_package(paraconf 1.0.0 COMPONENTS C)
-# endif()
-
-# find_package(paraconf 1.0.0 COMPONENTS C)
 if(paraconf_FOUND)
 	message(WARNING "Paraconf found")
 	add_compile_definitions(PARACONF_FOUND)

@@ -55,11 +55,6 @@
 #ifndef PDI_H_
 #define PDI_H_
 
-// #if defined __has_include
-// #if __has_include(<paraconf.h>)
-// #include <paraconf.h>
-// #endif
-// #endif
 #ifdef PARACONF_FOUND
 #warning "PARACONF_FOUND, paraconf included"
 #include <paraconf.h>
@@ -158,47 +153,6 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 
 /** Initializes PDI
  */
-// // #ifndef PARACONF_H__ // Add ifndef to not prevent "no-pdi with paraconf" (and allow "no-pdi without paraconf")
-// #if defined __has_include
-// #warning "Knows '__has_include'"
-// #if !__has_include(<paraconf.h>)
-// #warning "PARACONF_H__ is missing, defining mock PC_tree and PC_parse_string"
-
-// typedef struct PC_tree_s {
-// } PC_tree_t;
-
-// static inline PC_tree_t PC_parse_string(const char* document)
-// {
-// 	PC_tree_t mock_PC_tree = {};
-// 	return mock_PC_tree;
-// }
-
-// #endif
-// #endif
-// // #endif
-
-// #if defined(__has_include)
-//   #if __has_include(<paraconf.h>)
-//     #warning "INCLUDE"
-//     #include <paraconf.h>
-//   #else
-//     #warning "MOCK"
-//     typedef struct PC_tree_s { } PC_tree_t;
-//     struct _IO_FILE;
-//     typedef struct _IO_FILE FILE;
-//     static inline PC_tree_t PC_parse_string(const char* document) {
-//         PC_tree_t mock = {};
-//         return mock;
-//     }
-//     static inline PC_tree_t PC_parse_file(FILE *file) {
-//         PC_tree_t mock = {};
-//         return mock;
-//     }
-//   #endif
-// #else
-// #warning "ELSE"
-// #endif
-
 #ifdef PARACONF_FOUND
 #warning "PARACONF_FOUND, PDI_init set"
 
