@@ -32,35 +32,28 @@ on:
   push: { branches: [ main, 'v[0-9]+.[0-9]+' ] }
   pull_request:
 jobs:
-  # spack:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       # version:  ['latest', 'oldest']
-  #       # compiler: ['gcc', 'clang']
-  #       # mpi:      ['openmpi', 'mpich']
-  #       # variant:  ['mini', 'all']
-  #       version:  ['latest']
-  #       compiler: ['gcc', 'clang']
-  #       mpi:      ['openmpi', 'mpich']
-  #       variant:  ['mini', 'all']
-  #   runs-on: ubuntu-24.04
-  #   steps:
-  #   - name: Checkout branch
-  #     uses: actions/checkout@v4
-  #     with: { submodules: recursive }
-  #   - name: Test
-  #     uses: ./.github/actions/test/
-  #     with: 
-  #       image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
+  spack:
+    strategy:
+      fail-fast: false
+      matrix:
+        version:  ['latest', 'oldest']
+        compiler: ['gcc', 'clang']
+        mpi:      ['openmpi', 'mpich']
+        variant:  ['mini', 'all']
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+      with: { submodules: recursive }
+    - name: Test
+      uses: ./.github/actions/test/
+      with: 
+        image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
   debuntu:
     strategy:
       fail-fast: false
       matrix:
-        # base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
-        # mpi:     ['openmpi', 'mpich']
-        # variant: ['mini', 'all']
-        base:    ['debian/bookworm']
+        base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
     runs-on: ubuntu-24.04
