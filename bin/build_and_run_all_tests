@@ -151,7 +151,7 @@ if ldconfig -p | grep -q libparaconf; then
 
 	echo "############ test-api no-pdi/paraconf done"
 else
-	echo "############ no-pdi/paraconf skipped, paraconf not available on mini configuration"
+	echo "############ no-pdi/paraconf skipped, paraconf not available on the CI's mini configuration"
 fi
 
 # Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), without Paraconf
