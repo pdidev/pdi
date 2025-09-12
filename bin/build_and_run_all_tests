@@ -56,11 +56,6 @@ mkdir api_pdi
 cd api_pdi
 TEST_DIR_API="${PWD}"
 
-# cd "${TEST_DIR_ROOT}"
-# mkdir build_paraconf
-# cd build_paraconf
-# BUILD_DIR_PARACONF="${PWD}"
-
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
