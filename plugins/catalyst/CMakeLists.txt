@@ -19,4 +19,5 @@ install(TARGETS pdi_catalyst_plugin
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(test)
+    add_subdirectory(test_tuto_september_2025_ghost_attributes)
 endif()
