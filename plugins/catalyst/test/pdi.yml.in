@@ -28,9 +28,6 @@ data:
     size: $pressure_array_size
 plugins:
   trace:
-#  decl_hdf5:
-#    file: test_writing_.h5
-#    write: [number_of_points,points_array]
   catalyst:
     scripts:
       script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_with_rendering.py"
@@ -74,22 +71,6 @@ plugins:
                     size: '8*$number_of_cells'
             fields:
               velocity:
-                association: "vertex"
-                topology: "my_mesh"
-                volume_dependent: "false"
-                values:
-                  x:
-                    PDI_data_array: "velocity_array"
-                    size: '$number_of_points'
-                    offset: 0
-                  y:
-                    PDI_data_array: "velocity_array"
-                    size: '$number_of_points'
-                    offset: '$number_of_points'
-                  z:
-                    PDI_data_array: "velocity_array"
-                    size: '$number_of_points'
-                    offset: '2*$number_of_points'
                 association: "vertex"
                 topology: "my_mesh"
                 volume_dependent: "false"
