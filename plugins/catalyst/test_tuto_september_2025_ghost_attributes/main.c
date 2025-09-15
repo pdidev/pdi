@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
     PDI_multi_expose("catalyst_execute", "cycle", &ii, PDI_OUT, 
                       "time", &time, PDI_OUT,
                       "temp", cur, PDI_OUT, 
-                      "ghosts", ghost_type_cells, PDI_OUT,
+                      "mask_ghosts", ghost_type_cells, PDI_OUT,
                       "coords_x", coords_x, PDI_OUT,
                       "coords_y", coords_y, PDI_OUT,
                       NULL);
@@ -294,7 +294,7 @@ int main(int argc, char *argv[]) {
   PDI_multi_expose("catalyst_execute", "cycle", &ii, PDI_OUT, 
                     "time", &time, PDI_OUT,
                     "temp", cur, PDI_OUT,
-                    "ghosts", ghost_type_cells, PDI_OUT,
+                    "mask_ghosts", ghost_type_cells, PDI_OUT,
                     "coords_x", coords_x, PDI_OUT,
                     "coords_y", coords_y, PDI_OUT,
                     NULL);
