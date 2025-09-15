@@ -55,22 +55,6 @@ bool Execute(int cycle, double time, Grid& grid, Attributes& attribs)
   auto number_of_points = grid.GetNumberOfPoints();
   auto number_of_cells = grid.GetNumberOfCells();
 
-  std::cout << "#### begin false_catalyst_execute ####" << std::endl;
-
-  auto status_false = PDI_multi_expose(
-    //
-    "false_catalyst_execute",
-    //
-    "number_of_cells", &number_of_cells, PDI_OUT,
-    //
-    "cell_points", grid.GetCellPoints(0), PDI_OUT,
-    //
-    "velocity_array", attribs.GetVelocityArray(), PDI_OUT,
-    //
-    "pressure_array", attribs.GetPressureArray(), PDI_OUT,
-    //
-    NULL);
-
   auto status = PDI_multi_expose(
     //
     "catalyst_execute",
