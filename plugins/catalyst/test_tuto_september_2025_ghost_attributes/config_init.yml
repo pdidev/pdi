@@ -15,10 +15,9 @@ pdi:
   data:
     iteration: int
     temp: {type: array, subtype: double, size: ['$local_size[0]', '$local_size[1]']}
-    total_number_of_points: size_t
     cycle: int
     time: double
-    ghosts: {  type: array, subtype: uint8_t, size: '$local_size[0]*$local_size[1]' }
+    mask_ghosts: {  type: array, subtype: uint8_t, size: '$local_size[0]*$local_size[1]' }
     coords_x:  {  type: array, subtype: double, size: '($local_size[0]+1)*($local_size[1]+1)' }
     coords_y:  {  type: array, subtype: double, size: '($local_size[0]+1)*($local_size[1]+1)' }
   plugins:
@@ -68,5 +67,5 @@ pdi:
                   topology: "my_mesh"
                   volume_dependent: "false"
                   values:
-                    PDI_data_array: "ghosts"
+                    PDI_data_array: "mask_ghosts"
                     size: '$local_size[0]*$local_size[1]'
