@@ -265,7 +265,7 @@ sbuild_add_dependency(yaml "${USE_DEFAULT}"
 		"-DINSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
 		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
 		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
-		"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5"
+		"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5" # needed until upstream libyaml is updated (https://github.com/yaml/libyaml/pull/314)
 	VERSION 0.2.2
 )
 
