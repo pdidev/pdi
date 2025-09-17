@@ -35,6 +35,9 @@
 # Default owners, unless something else is specified
 *  yushan.wang@cea.fr julien.bigot@cea.fr
 
+# Owners of the Deisa plugin
+plugins/deisa/  benoit.martin2@cea.fr julien.bigot@cea.fr
+
 # Owners of the buildsystem & packaging stuff
 cmake/          benoit.martin2@cea.fr julien.bigot@cea.fr
 CMakeLists.txt  benoit.martin2@cea.fr julien.bigot@cea.fr
