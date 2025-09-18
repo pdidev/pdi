@@ -77,6 +77,11 @@ end module
 	endif()
 endif()
 
+
+add_executable(PDI_example_C example.c)
+target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
+
+
 if("${BUILD_FORTRAN}")
 add_executable(PDI_example_F example.F90)
 target_link_libraries(PDI_example_F PDI::PDI_f90 MPI_with_mod m)
