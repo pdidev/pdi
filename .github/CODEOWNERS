@@ -36,16 +36,16 @@
 *  yushan.wang@cea.fr julien.bigot@cea.fr
 
 # Owners of the Deisa plugin
-plugins/deisa/  benoit.martin2@cea.fr julien.bigot@cea.fr
+plugins/deisa/  bmartin@cea.fr julien.bigot@cea.fr
 
 # Owners of the buildsystem & packaging stuff
-cmake/          benoit.martin2@cea.fr julien.bigot@cea.fr
-CMakeLists.txt  benoit.martin2@cea.fr julien.bigot@cea.fr
-*.cmake         benoit.martin2@cea.fr julien.bigot@cea.fr
-/spack.yaml     benoit.martin2@cea.fr julien.bigot@cea.fr
-/PACKAGING.md   benoit.martin2@cea.fr julien.bigot@cea.fr
+cmake/          bmartin@cea.fr julien.bigot@cea.fr
+CMakeLists.txt  bmartin@cea.fr julien.bigot@cea.fr
+*.cmake         bmartin@cea.fr julien.bigot@cea.fr
+/spack.yaml     bmartin@cea.fr julien.bigot@cea.fr
+/PACKAGING.md   bmartin@cea.fr julien.bigot@cea.fr
 
 # Owners of the CI/CD stuff
-/.github/  benoit.martin2@cea.fr julien.bigot@cea.fr
-/bin/      benoit.martin2@cea.fr julien.bigot@cea.fr
-/tools     benoit.martin2@cea.fr julien.bigot@cea.fr
+/.github/  bmartin@cea.fr julien.bigot@cea.fr
+/bin/      bmartin@cea.fr julien.bigot@cea.fr
+/tools     bmartin@cea.fr julien.bigot@cea.fr
