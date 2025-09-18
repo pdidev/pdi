@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Add "no-pdi", including the header no-pdi/include/pdi.h, which allows to
   disable PDI effects while keeping code syntax unchanged.
   [#438](https://github.com/pdidev/pdi/issues/438)
+* Added macOS CI for PDI, decl_hdf5, mpi, serialize, set_value, user_code and
+  trace plugins [#556](https://github.com/pdidev/pdi/issues/556)
 
 ### Changed
 
@@ -22,6 +24,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Fix macOS linking issue when installing via root CMakeLists.txt
+  [#565](https://github.com/pdidev/pdi/issues/565)
+* Fix chunking test in decl_hdf5
+  [#588](https://github.com/pdidev/pdi/issues/588)
+* Fix data validation in decl_hdf5 test after write operation
+  [#587](https://github.com/pdidev/pdi/issues/587)
 
 ### Security
 
