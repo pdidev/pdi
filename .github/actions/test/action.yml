@@ -44,7 +44,7 @@ runs:
           JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
-          export CTEST_FLAGS="--output-junit /tmp/tests.xml"
+          export CTEST_FLAGS="--output-junit /tests.xml"
           export TEST_DIR="/tmp"
           /src/bin/build_and_run_all_tests
         EOF
@@ -54,7 +54,7 @@ runs:
           --tmpfs /tmp:exec \
           ${{inputs.image}} \
           bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/tests.xml tests.xml
+        if docker cp "$(cat docker.cid)":/tests.xml tests.xml
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi

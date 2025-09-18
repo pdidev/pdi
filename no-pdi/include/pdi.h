@@ -56,7 +56,6 @@
 #define PDI_H_
 
 #ifdef PARACONF_FOUND
-#warning "PARACONF_FOUND, paraconf included"
 #include <paraconf.h>
 #endif
 
@@ -154,7 +153,6 @@ static inline PDI_errhandler_t PDI_errhandler(PDI_errhandler_t handler)
 /** Initializes PDI
  */
 #ifdef PARACONF_FOUND
-#warning "PARACONF_FOUND, PDI_init set"
 
 static inline PDI_status_t PDI_init(PC_tree_t conf)
 {

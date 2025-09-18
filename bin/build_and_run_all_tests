@@ -133,10 +133,10 @@ if ldconfig -p | grep -q libparaconf; then
 
 	cd "${TEST_DIR_NO_PDI}"
 	RELATIVE_NO_PDI_PATH="no-pdi"
-	cmake -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
+	cmake -DBUILD_TRACE_PLUGIN=ON -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
 	make ${MAKEFLAGS}
-	ldd PDI_example_C
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
+	ldd PDI_example_trace_C
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
 
 	echo "############ example no-pdi/paraconf done"
 

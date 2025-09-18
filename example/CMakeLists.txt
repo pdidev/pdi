@@ -77,13 +77,6 @@ end module
 	endif()
 endif()
 
-message(WARNING "PDI_example_C")
-add_executable(PDI_example_C example.c)
-target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m)
-add_test(NAME PDI_example_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/pluginless.yml")
-set_property(TEST PDI_example_C PROPERTY TIMEOUT 15)
-set_property(TEST PDI_example_C PROPERTY PROCESSORS 3)
-
 if("${BUILD_FORTRAN}")
 add_executable(PDI_example_F example.F90)
 target_link_libraries(PDI_example_F PDI::PDI_f90 MPI_with_mod m)
