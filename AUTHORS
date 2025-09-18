@@ -28,6 +28,9 @@ François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 Jacques Morice - CEA (jacques.morice@cea.fr)
 * fix the directory of hdf5 library for rhel
 
+Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
+* Added macOS CI
+
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
 in the years 2016 - 2018 granted for the realization of the international
