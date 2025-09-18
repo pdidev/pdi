@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,8 @@ function(__sbuild_build_command _SBUILD_OUTVAR)
 		set(_SBUILD_CM_TARGET --target "${ARGV1}")
 	endif()
 	sbuild_get_env(_SBUILD_ENV_LD_LIBRARY_PATH LD_LIBRARY_PATH)
-	set(_SBUILD_RESULT "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}")
+	sbuild_get_env(_SBUILD_ENV_DYLD_LIBRARY_PATH DYLD_LIBRARY_PATH)
+	set(_SBUILD_RESULT "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "DYLD_LIBRARY_PATH=${_SBUILD_ENV_DYLD_LIBRARY_PATH}")
 	if("${CMAKE_GENERATOR}" MATCHES "Make") #< Use recursive make.
 		list(APPEND _SBUILD_RESULT "\$(MAKE)" ${_SBUILD_MK_TARGET})
 	else() #< Drive the project with "cmake --build".
@@ -223,7 +224,8 @@ function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
 	set(_SBUILD_DEPENDS "${_SBUILD_DEPENDS_NEW}")
 	
 	sbuild_get_env(_SBUILD_ENV_LD_LIBRARY_PATH LD_LIBRARY_PATH)
-	set(_SBUILD_CMAKE_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "${CMAKE_COMMAND}")
+	sbuild_get_env(_SBUILD_ENV_DYLD_LIBRARY_PATH DYLD_LIBRARY_PATH)
+	set(_SBUILD_CMAKE_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "DYLD_LIBRARY_PATH=${_SBUILD_ENV_DYLD_LIBRARY_PATH}" "${CMAKE_COMMAND}")
 	
 	ExternalProject_Add("${_SBUILD_NAME}_pkg"
 		CMAKE_COMMAND "${_SBUILD_CMAKE_COMMAND}"
@@ -284,7 +286,8 @@ function(sbuild_add_module _SBUILD_NAME)
 	set(_SBUILD_DEPENDS "${_SBUILD_DEPENDS_NEW}")
 	
 	sbuild_get_env(_SBUILD_ENV_LD_LIBRARY_PATH LD_LIBRARY_PATH)
-	set(_SBUILD_CMAKE_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "${CMAKE_COMMAND}")
+	sbuild_get_env(_SBUILD_ENV_DYLD_LIBRARY_PATH DYLD_LIBRARY_PATH)
+	set(_SBUILD_CMAKE_COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=${_SBUILD_ENV_LD_LIBRARY_PATH}" "DYLD_LIBRARY_PATH=${_SBUILD_ENV_DYLD_LIBRARY_PATH}" "${CMAKE_COMMAND}")
 	
 	ExternalProject_Add("${_SBUILD_NAME}_pkg"
 		CMAKE_COMMAND "${_SBUILD_CMAKE_COMMAND}"
@@ -323,7 +326,7 @@ endfunction()
 ###
 function(sbuild_get_env _SBUILD_VAR _SBUILD_ENV_NAME)
 	set(_SBUILD_ENV_VAL "$ENV{${_SBUILD_ENV_NAME}}")
-	if("LD_LIBRARY_PATH" STREQUAL "${_SBUILD_ENV_NAME}" OR "LIBRARY_PATH" STREQUAL "${_SBUILD_ENV_NAME}")
+	if("LD_LIBRARY_PATH" STREQUAL "${_SBUILD_ENV_NAME}" OR "DYLD_LIBRARY_PATH" STREQUAL "${_SBUILD_ENV_NAME}" OR "LIBRARY_PATH" STREQUAL "${_SBUILD_ENV_NAME}")
 		__sbuild_env_append(_SBUILD_ENV_VAL "${CMAKE_INSTALL_LIBDIR}")
 		__sbuild_env_append(_SBUILD_ENV_VAL "lib")
 	elseif("CPATH" STREQUAL "${_SBUILD_ENV_NAME}")
@@ -355,6 +358,12 @@ if("x${LD_LIBRARY_PATH}x" STREQUAL xx)
 	set(ENV{LD_LIBRARY_PATH} "${ADDPATH}")
 else()
 	set(ENV{LD_LIBRARY_PATH} "${ADDPATH}:${LD_LIBRARY_PATH}")
+endif()
+set(DYLD_LIBRARY_PATH "$ENV{DYLD_LIBRARY_PATH}")
+if("x${DYLD_LIBRARY_PATH}x" STREQUAL xx)
+	set(ENV{DYLD_LIBRARY_PATH} "${ADDPATH}")
+else()
+	set(ENV{DYLD_LIBRARY_PATH} "${ADDPATH}:${DYLD_LIBRARY_PATH}")
 endif()
 ]===]
 	)
