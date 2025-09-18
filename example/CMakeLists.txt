@@ -79,7 +79,7 @@ endif()
 
 
 add_executable(PDI_example_C example.c)
-target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
+target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m)
 
 
 if("${BUILD_FORTRAN}")
