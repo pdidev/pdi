@@ -100,19 +100,18 @@ plugins in 4 steps (it will use the first plugin found):
 
 ### Using the no-pdi directory with an available Paraconf
 
-You may copy the no-pdi folder from %PDI in your application repository, and
-must add an option (`CMAKE_PREFIX_PATH` in the example below) to your
-cmake command to use this mock folder instead of the real PDI.
-Use your target `CMakeLists.txt` with `SRCDIR` as the directory containing no-pdi 
-(it is the root %PDI directory if you did not move the no-pdi directory) :
+You may use the no-pdi mock folder instead of the real PDI to compile your 
+application. The only modification you need to make is to add the 
+CMAKE_PREFIX_PATH option to your CMake command :
 ```bash
-cmake . -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/no-pdi"
+cmake . -your-usual-cmake-compile-options -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}<path-to>/no-pdi"
 ```
-%PDI path as `SRCDIR` containing no-pdi in the example above.
+The no-pdi directory can be copied out of the pdi repository, for convenience.
 
-If you add this option, Paraconf will only be used if it is found.
-In the case if is not found, only the basic `.yaml` file reader of Paraconf 
-will be enabled to fit with no-pdi, through `PDI_init`.
+If Paraconf is missing from your system, you need to remove all calls to it 
+from your application.
+This contains its inclusion (`#include <paraconf.h>` in C/C++, for example), 
+its use by PDI via `PDI_init`, and direct calls to Paraconf API.
 
 %PDI can be re-enabled by reverting those modifications, 
 using cmake again without specifying a path to no-pdi.
