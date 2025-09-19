@@ -6,6 +6,8 @@ Please note this is the list for the distribution mechanism of PDI. The list for
 each sub-project (including PDI itself) is located in the dedicated sub-project
 AUTHORS file.
 
+Julian Auriac - CEA (julian.auriac@cea.fr)
+* fix CI bug where tests.xml file could not be written
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)
@@ -24,9 +26,6 @@ François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 
 Jacques Morice - CEA (jacques.morice@cea.fr)
 * fix the directory of hdf5 library for rhel
-
-Julian Auriac - CEA (julian.auriac@cea.fr)
-* fix CI bug where tests.xml file could not be written
 
 Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
 * Added macOS CI
