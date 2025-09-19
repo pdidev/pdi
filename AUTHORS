@@ -25,6 +25,9 @@ François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
 * Bug fix, JSON plugin
 
+Julian Auriac - CEA (julian.auriac@cea.fr)
+* Add pdi deactivation option
+
 Jacques Morice - CEA (jacques.morice@cea.fr)
 * fix the directory of hdf5 library for rhel
 

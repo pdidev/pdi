@@ -110,29 +110,9 @@ cmake . -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR
 ```
 %PDI path as `SRCDIR` containing no-pdi in the example above.
 
-### Using the no-pdi directory without an available Paraconf
-
-In addition to the previous, you may also want to disable the use of Paraconf 
-if your system doesn't already include an available install :
-```bash
-cmake . -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/no-pdi" -DBUILD_WITH_PARACONF=OFF
-```
-You will need to modify your target `CMakeLists.txt` (see `pdi/tests/CMakeLists.txt`) :
-```cmake
-option(BUILD_WITH_PARACONF "BUILD_WITH_PARACONF" ON)
-if(BUILD_WITH_PARACONF)
-	find_package(paraconf 1.0.0 COMPONENTS C)
-	if(paraconf_FOUND)
-		message(WARNING "Paraconf found")
-		add_compile_definitions(PARACONF_FOUND)
-	else()
-		message(WARNING "Paraconf not found")
-	endif()
-endif()
-```
-If you add this option, unlike the other no-pdi method, 
-Paraconf must not be called outside of the initialisation of %PDI.
-In this case, only the basic `.yaml` file reader of Paraconf 
+If you add this option, Paraconf will only be used if it is found.
+In the case if is not found, only the basic `.yaml` file reader of Paraconf 
 will be enabled to fit with no-pdi, through `PDI_init`.
 
-%PDI can be re-enabled by reverting those modifications.
+%PDI can be re-enabled by reverting those modifications, 
+using cmake again without specifying a path to no-pdi.
