@@ -26,7 +26,7 @@ Jacques Morice - CEA (jacques.morice@cea.fr)
 * fix the directory of hdf5 library for rhel
 
 Julian Auriac - CEA (julian.auriac@cea.fr)
-* Maintainer (Nov. 2024 - ...)
+* fix CI bug where tests.xml file could not be written
 
 Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
 * Added macOS CI
