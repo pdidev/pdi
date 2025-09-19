@@ -142,8 +142,6 @@ cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-echo "############ tests pdi/paraconf done"
-
 if ldconfig -p | grep -q libparaconf; then
 	# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with Paraconf
 
@@ -153,8 +151,6 @@ if ldconfig -p | grep -q libparaconf; then
 	make ${MAKEFLAGS}
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
 
-	echo "############ example no-pdi/paraconf done"
-
 	cd "${TEST_DIR_API}"
 	RELATIVE_NO_PDI_PATH="no-pdi"
 	NO_PDI_TESTS="test_api_C test_api_CXX"
@@ -162,10 +158,6 @@ if ldconfig -p | grep -q libparaconf; then
 	make ${MAKEFLAGS}
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
 	rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
-
-	echo "############ test-api no-pdi/paraconf done"
-else
-	echo "############ no-pdi/paraconf skipped, paraconf not available on specific CI configurations"
 fi
 
 # Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), without Paraconf
@@ -176,5 +168,3 @@ NO_PDI_TESTS="test_api_C test_api_CXX"
 cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/tests"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
-
-echo "############ test-api no-pdi/no-paraconf done"
