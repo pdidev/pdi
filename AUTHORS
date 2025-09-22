@@ -8,6 +8,7 @@ AUTHORS file.
 
 Julian Auriac - CEA (julian.auriac@cea.fr)
 * Add pdi deactivation option
+* Fix CI bug where tests.xml file could not be written
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)
@@ -25,7 +26,7 @@ François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Bug fix, JSON plugin
 
 Jacques Morice - CEA (jacques.morice@cea.fr)
-* fix the directory of hdf5 library for rhel
+* Fix the directory of hdf5 library for rhel
 
 Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
 * Added macOS CI

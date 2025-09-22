@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Fix github action (CI) access issue of tests.xml
+  [#585](https://github.com/pdidev/pdi/issues/585)
 * Fix libyaml cmake minimal policy requirement.
   [#593](https://github.com/pdidev/pdi/issues/593)
 * Fix macOS linking issue when installing via root CMakeLists.txt
