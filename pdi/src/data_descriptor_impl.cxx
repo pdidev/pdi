@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -151,13 +151,29 @@ bool Data_descriptor_impl::empty()
 	return m_refs.empty();
 }
 
-void Data_descriptor_impl::share(void* data, bool read, bool write)
+void Data_descriptor_impl::data_callbacks()
+try {
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+
+	try {
+		m_context.callbacks().call_data_callbacks(m_name, ref());
+	} catch (const exception&) {
+		m_refs.pop();
+		throw;
+	}
+
+	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
+} catch (Error& e) {
+	throw Error(e.status(), "Unable to execute data_callbacks on data `{}', {}", name(), e.what());
+}
+
+void Data_descriptor_impl::share(void* data, bool read, bool write, bool delay_data_callback)
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	Ref r{data, &free, m_type->evaluate(m_context), read, write};
 	try {
 		m_context.logger().trace("Sharing `{}' Ref with rights: R = {}, W = {}", m_name, read, write);
-		share(r, false, false);
+		share(r, false, false, delay_data_callback);
 	} catch (...) {
 		// on error, do not free the data as would be done automatically otherwise
 		r.release();
@@ -169,7 +185,7 @@ try {
 	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
 }
 
-void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
+void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write, bool delay_data_callback)
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// metadata must provide read access
@@ -201,11 +217,8 @@ try {
 		throw Right_error{"Unable to grant requested rights"};
 	}
 
-	try {
-		m_context.callbacks().call_data_callbacks(m_name, ref());
-	} catch (const exception&) {
-		m_refs.pop();
-		throw;
+	if (!delay_data_callback) {
+		data_callbacks();
 	}
 
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
