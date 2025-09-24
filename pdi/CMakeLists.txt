@@ -31,7 +31,6 @@ cmake_minimum_required(VERSION 3.16...3.29)
 project(PDI LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
-
 # Version
 
 file(READ VERSION PDI_VERSION)

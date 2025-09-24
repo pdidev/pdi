@@ -24,6 +24,7 @@ To publish a new minor or major release:
 * start from the main branch
 * change the version in `pdi/VERSION`
 * change the version in `pdi/docs/Source_installation.md`
+* all versions changes (including PDI itself and CMake) must be reflected on no-pdi
 * go over all `CHANGELOG.md` files and mark the just released version
 * commit these changes into a new version branch (`v${X}.${Y}`)
 * tag the new release: `git tag -m "PDI release ${X}.${Y}.0" -s "${X}.${Y}.0"`
