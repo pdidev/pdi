@@ -7,7 +7,8 @@ each sub-project (including PDI itself) is located in the dedicated sub-project
 AUTHORS file.
 
 Julian Auriac - CEA (julian.auriac@cea.fr)
-* fix CI bug where tests.xml file could not be written
+* Fix CI bug where tests.xml file could not be written
+* Added local CI
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)

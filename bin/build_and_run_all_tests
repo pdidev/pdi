@@ -35,7 +35,6 @@ set -xe
 
 # Make our work dirs
 
-# # SRCDIR="${PWD}"
 # Set SRCDIR only if not provided
 if [[ -z "${SRCDIR:-}" ]]; then
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,10 +45,6 @@ TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
-
-# # cd "${SRCDIR}"
-# # cd "$(dirname "$0")/.."
-# # SRCDIR="${PWD}"
 
 cd "${TEST_DIR}"
 

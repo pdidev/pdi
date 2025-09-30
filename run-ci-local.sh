@@ -1,4 +1,32 @@
 #!/usr/bin/env bash
+#=============================================================================
+# Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# * Neither the names of CEA, nor the names of the contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written  permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#=============================================================================
 
 set -euo pipefail
 
@@ -16,11 +44,11 @@ rm -f "$SCRIPT_DIR/$SCRIPT_NAME" "$REPORT_FILE"
 
 # Make sure the binary exists and is executable
 if [[ ! -f "$BINARY_PATH" ]]; then
-  echo "⚠️  Binary not found at $BINARY_PATH"
+  echo "Binary not found at $BINARY_PATH"
   exit 1
 fi
 
-echo "📝 Generating $SCRIPT_NAME in $SCRIPT_DIR..."
+echo "Generating $SCRIPT_NAME in $SCRIPT_DIR..."
 cat <<EOF > "$SCRIPT_DIR/$SCRIPT_NAME"
 #!/bin/bash
 set -xe
@@ -42,7 +70,7 @@ EOF
 chmod +x "$SCRIPT_DIR/$SCRIPT_NAME"
 
 # Step 1: Create a container and inject the script
-echo "🐳 Creating and preparing container..."
+echo "Creating and preparing container..."
 CONTAINER_ID=$(podman create \
   --userns=keep-id \
   -v "$PWD":/src \
@@ -50,21 +78,21 @@ CONTAINER_ID=$(podman create \
   "$IMAGE" \
   bash /tmp/run.sh)
 
-echo "📦 Copying script and binary into container..."
+echo "Copying script and binary into container..."
 podman cp "$SCRIPT_DIR/$SCRIPT_NAME" "$CONTAINER_ID:/tmp/run.sh"
 podman cp "$BINARY_PATH" "$CONTAINER_ID:/tmp/build_and_run_all_tests"
 
 # DO NOT run podman exec here — container isn't running yet
 
-echo "🚀 Starting container and running script..."
+echo "Starting container and running script..."
 podman start --attach "$CONTAINER_ID"
 
-echo "📄 Attempting to extract test report from container..."
+echo "Attempting to extract test report from container..."
 if podman cp "$CONTAINER_ID":/tmp/tests.xml "$REPORT_FILE"; then
-  echo "✅ Test report saved as $REPORT_FILE"
+  echo "Test report saved as $REPORT_FILE"
 else
-  echo "⚠️ Test report not found in container."
+  echo "Test report not found in container."
 fi
 
-echo "🧹 Cleaning up container..."
+echo "Cleaning up container..."
 podman rm "$CONTAINER_ID" >/dev/null 2>&1 || true
