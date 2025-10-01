@@ -45,6 +45,7 @@
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
 #include <pdi/tuple_datatype.h>
+#include <pdi/fmt.h>
 
 #include "hdf5_wrapper.h"
 #include "selection.h"
