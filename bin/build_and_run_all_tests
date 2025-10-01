@@ -143,13 +143,17 @@ cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package)
-
-cd "${TEST_DIR_NO_PDI}"
 RELATIVE_NO_PDI_PATH="no-pdi"
-cmake -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
-make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
+if ldconfig -p | grep -q libparaconf; then
+	# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, with Paraconf
+
+	cd "${TEST_DIR_NO_PDI}"
+	cmake -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
+	make ${MAKEFLAGS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
+fi
+
+# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with or without Paraconf
 
 cd "${TEST_DIR_API}"
 NO_PDI_TESTS="test_api_C test_api_CXX"
