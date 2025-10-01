@@ -369,23 +369,28 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	pair< string, pair<regex, Datatype_template_sptr> > dset_found;
 	ctx.logger().trace("search `{}' in the list of datasets section", dataset_name);
 
-	for (auto&& dsets_elem: dsets) {
-		// create regex from string
-		if (std::regex_match(dataset_name, dsets_elem.second.first)) {
+	for (auto&& dsets_elem = dsets.begin(); dsets_elem != dsets.end(); ++dsets_elem) {
+		if (std::regex_match(dataset_name, dsets_elem->second.first)) {
 			if (!bool_dataset_found) {
 				bool_dataset_found = true;
-				ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem.first);
-				dset_found = dsets_elem;
+				ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem->first);
+				dset_found = *dsets_elem;
 			} else {
 				// if we found an other element in the list of datasets, we can't choose the right dataset
 				// (if the elements found have different size, subsize, type, ...)
 				// send a error a message to the user
 				std::list<string> list_dataset_found;
-				for (auto&& new_dsets_elem: dsets) {
-					if (std::regex_match(dataset_name, new_dsets_elem.second.first)) {
-						list_dataset_found.emplace_back(new_dsets_elem.first);
+				list_dataset_found.emplace_back(dset_found.first);
+				list_dataset_found.emplace_back(dsets_elem->first);
+
+				++dsets_elem; // get the next element in the iterator on dsets
+				// loop over the rest of the elements in the iterator on dsets
+				for (dsets_elem; dsets_elem != dsets.end(); ++dsets_elem) {
+					if (std::regex_match(dataset_name, dsets_elem->second.first)) {
+						list_dataset_found.emplace_back(dsets_elem->first);
 					}
 				}
+
 				std::string msg_dataset_found = fmt::format(
 					"\nThe elements that match {} are:\n - {}\nAttention: The elements are considered as a regex.",
 					dataset_name,

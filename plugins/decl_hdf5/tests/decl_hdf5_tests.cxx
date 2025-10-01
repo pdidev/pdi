@@ -1448,12 +1448,15 @@ TEST_F(decl_hdf5_test, check_config_error_for_two_regex_found)
 	int has_failed = 0;
 
 	std::string true_errmsg
-		= "Error while triggering event `write_event': Config_error in lines 32 - 33: Found `2' match(s) in the list of datasets "
+		= "Error while triggering event `write_event': Config_error in lines 44 - 45: Found `4' match(s) in the list of datasets "
 		  "section for `group123/array_data'. Cannot choose the right element in datasets.\n"
 		  "The elements that match group123/array_data are:\n"
 		  " - group[0-9]+/array_data\n"
 		  " - group.*/array_data\n"
+		  " - group1.*/array_data\n"
+		  " - group12.*/array_data\n"
 		  "Attention: The elements are considered as a regex.";
+
 	PDI_status_t true_status = PDI_ERR_CONFIG;
 	context_check_error ctx{true_errmsg, true_status, has_failed};
 
@@ -1487,6 +1490,18 @@ TEST_F(decl_hdf5_test, check_config_error_for_two_regex_found)
 		  "        type: array                                                  \n"
 		  "        subtype: int                                                 \n"
 		  "      group.*/array_data:                                            \n"
+		  "        size: [3, 8]                                                 \n"
+		  "        type: array                                                  \n"
+		  "        subtype: int                                                 \n"
+		  "      group1.*/array_data:                                           \n"
+		  "        size: [3, 8]                                                 \n"
+		  "        type: array                                                  \n"
+		  "        subtype: int                                                 \n"
+		  "      group/.*/array_data:                                           \n"
+		  "        size: [3, 8]                                                 \n"
+		  "        type: array                                                  \n"
+		  "        subtype: int                                                 \n"
+		  "      group12.*/array_data:                                          \n"
 		  "        size: [3, 8]                                                 \n"
 		  "        type: array                                                  \n"
 		  "        subtype: int                                                 \n"
@@ -1551,7 +1566,7 @@ TEST_F(decl_hdf5_test, check_config_error_for_no_regex_found)
 {
 	SetUp("decl_hdf5_test_no_regex.h5");
 	int has_failed = 0;
-	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 19 - 20: Dataset selection is invalid in implicit "
+	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 19 - 20: Dataset selection is invalid for implicit "
 							  "dataset `group123/array_data'";
 	PDI_status_t true_status = PDI_ERR_CONFIG;
 	context_check_error ctx{true_errmsg, true_status, has_failed};
