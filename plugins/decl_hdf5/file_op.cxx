@@ -89,7 +89,12 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #endif
 		} else if (key == "datasets") {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
-				template_op.m_datasets.emplace(to_string(dset_name), ctx.datatype(dset_type));
+				std::string dset_name_string = to_string(dset_name);
+				std::regex dset_regex(dset_name_string);
+				template_op.m_datasets.emplace(
+					dset_name_string,
+					std::pair<std::regex, PDI::Datatype_template_sptr>(dset_regex, ctx.datatype(dset_type))
+				);
 			});
 		} else if (key == "deflate") {
 			deflate = value;
@@ -230,7 +235,7 @@ File_op::File_op(const File_op& other)
 	, m_dset_size_ops{other.m_dset_size_ops}
 {
 	for (auto&& dataset: other.m_datasets) {
-		m_datasets.emplace(dataset.first, dataset.second);
+		m_datasets.emplace(dataset.first, std::pair<std::regex, PDI::Datatype_template_sptr>(dataset.second.first, dataset.second.second));
 	}
 }
 

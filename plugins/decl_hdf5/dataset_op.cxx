@@ -29,7 +29,6 @@
 #endif
 
 #include <algorithm>
-#include <regex>
 #include <sstream>
 #include <tuple>
 #include <vector>
@@ -70,6 +69,8 @@ using PDI::Type_error;
 using PDI::Value_error;
 using std::dynamic_pointer_cast;
 using std::function;
+using std::pair;
+using std::regex;
 using std::string;
 using std::stringstream;
 using std::tie;
@@ -212,7 +213,7 @@ void Dataset_op::fletcher(Context& ctx, Expression value)
 	}
 }
 
-void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unordered_map<string, Datatype_template_sptr>& dsets)
+void Dataset_op::execute(Context& ctx, hid_t h5_file, bool use_mpio, const unordered_map<string, pair<regex, Datatype_template_sptr>>& dsets)
 {
 	Raii_hid xfer_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
 #ifdef H5_HAVE_PARALLEL
@@ -346,7 +347,7 @@ hid_t Dataset_op::dataset_creation_plist(Context& ctx, const Datatype* dataset_t
 	return dset_plist;
 }
 
-void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, Datatype_template_sptr>& dsets)
+void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const unordered_map<string, pair<regex, Datatype_template_sptr>>& dsets)
 {
 	string dataset_name = m_dataset.to_string(ctx);
 	ctx.logger().trace("Preparing for writing `{}' dataset", dataset_name);
@@ -364,65 +365,56 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 	Datatype_sptr dataset_type;
 	Raii_hid h5_file_type, h5_file_space;
 
-	int counter_dataset_found = 0;
+	bool bool_dataset_found = false;
+	pair< string, pair<regex, Datatype_template_sptr> > dset_found;
 	ctx.logger().trace("search `{}' in the list of datasets section", dataset_name);
 
 	for (auto&& dsets_elem: dsets) {
 		// create regex from string
-		std::regex dsets_elem_regex(dsets_elem.first);
-		// try if dataset_name is including in regex
-		if (std::regex_match(dataset_name, dsets_elem_regex)) {
-			counter_dataset_found++;
-			ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem.first);
+		if (std::regex_match(dataset_name, dsets_elem.second.first)) {
+			if (!bool_dataset_found) {
+				bool_dataset_found = true;
+				ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem.first);
+				dset_found = dsets_elem;
+			} else {
+				// if we found an other element in the list of datasets, we can't choose the right dataset
+				// (if the elements found have different size, subsize, type, ...)
+				// send a error a message to the user
+				std::list<string> list_dataset_found;
+				for (auto&& new_dsets_elem: dsets) {
+					if (std::regex_match(dataset_name, new_dsets_elem.second.first)) {
+						list_dataset_found.emplace_back(new_dsets_elem.first);
+					}
+				}
+				std::string msg_dataset_found = fmt::format(
+					"\nThe elements that match {} are:\n - {}\nAttention: The elements are considered as a regex.",
+					dataset_name,
+					fmt::join(list_dataset_found, "\n - ")
+				);
+
+				throw Config_error{
+					m_dataset_selection.selection_tree(),
+					"Found `{}' match(s) in the list of datasets section for `{}'. Cannot choose the right element in datasets.{}",
+					list_dataset_found.size(),
+					dataset_name,
+					msg_dataset_found
+				};
+			}
 		}
 	}
 
-	ctx.logger().trace("Found `{}' match(s) in the list of datasets section for `{}'", counter_dataset_found, dataset_name);
-
-	if (counter_dataset_found > 1) {
-		// if we found two or more element in the list of datasets, we can't choose the right dataset (if the elements found have different size, subsize, type, ...)
-		// send a error a message to the user
-		std::stringstream msg_dataset_found;
-		msg_dataset_found << "\nThe elements that match " << dataset_name << " are:" << std::endl;
-		for (auto&& dsets_elem: dsets) {
-			// create regex from string
-			std::regex dsets_elem_regex(dsets_elem.first);
-			// try if dataset_name is including in regex
-			if (std::regex_match(dataset_name, dsets_elem_regex)) {
-				msg_dataset_found << " - " << dsets_elem.first << std::endl;
-			}
-		}
-		msg_dataset_found << "Attention: The elements are considered as a regex.";
-
-		throw Config_error{
-			m_dataset_selection.selection_tree(),
-			"Found `{}' match(s) in the list of datasets section for `{}'. Cannot choose the right element in datasets.{}",
-			counter_dataset_found,
-			dataset_name,
-			msg_dataset_found.str()
-		};
-	}
-
-	if (counter_dataset_found == 1) {
-		for (auto&& dataset_type_iter_regex = dsets.begin(); dataset_type_iter_regex != dsets.end(); ++dataset_type_iter_regex) {
-			std::regex dsets_elem_regex(dataset_type_iter_regex->first);
-			if (std::regex_match(dataset_name, dsets_elem_regex)) {
-				// we found the dataset
-				ctx.logger().trace("Get the regex in the list of datasets section := `{}'", dataset_type_iter_regex->first);
-				dataset_type = dataset_type_iter_regex->second->evaluate(ctx);
-				tie(h5_file_space, h5_file_type) = space(dataset_type);
-				ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
-				m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
-				break; // stop the "for" loop
-			}
-		}
+	if (bool_dataset_found) {
+		ctx.logger().trace("Get the regex in the list of datasets section := `{}'", dset_found.first);
+		dataset_type = dset_found.second.second->evaluate(ctx);
+		tie(h5_file_space, h5_file_type) = space(dataset_type);
+		ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
+		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	} else {
 		if (!m_dataset_selection.size().empty()) {
-			throw Config_error{m_dataset_selection.selection_tree(), "Dataset selection is invalid in implicit dataset `{}'", dataset_name};
-		} else {
-			dataset_type = ref.type();
-			tie(h5_file_space, h5_file_type) = space(dataset_type, true);
+			throw Config_error{m_dataset_selection.selection_tree(), "Dataset selection is invalid for implicit dataset `{}'", dataset_name};
 		}
+		dataset_type = ref.type();
+		tie(h5_file_space, h5_file_type) = space(dataset_type, true);
 	}
 
 	ctx.logger().trace("Validating `{}' dataset dataspaces selection", dataset_name);

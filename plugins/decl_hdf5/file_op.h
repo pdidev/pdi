@@ -32,6 +32,7 @@
 #include <mpi.h>
 #endif
 
+#include <regex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -67,7 +68,7 @@ class File_op
 #endif
 
 	/// type of the datasets for which an explicit type is specified
-	std::unordered_map<std::string, PDI::Datatype_template_sptr> m_datasets;
+	std::unordered_map<std::string, std::pair<std::regex, PDI::Datatype_template_sptr>> m_datasets;
 
 	/// the dataset operations
 	std::vector<Dataset_op> m_dset_ops;

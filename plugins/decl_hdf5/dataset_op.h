@@ -32,6 +32,7 @@
 #include <mpi.h>
 #endif
 
+#include <regex>
 #include <string>
 #include <unordered_map>
 
@@ -188,12 +189,22 @@ public:
 	 * \param use_mpio whether the hdf5 read/write is parallel
 	 * \param dsets the type of the explicitly typed datasets
 	 */
-	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::unordered_map<std::string, PDI::Datatype_template_sptr>& dsets);
+	void execute(
+		PDI::Context& ctx,
+		hid_t h5_file,
+		bool use_mpio,
+		const std::unordered_map<std::string, std::pair<std::regex, PDI::Datatype_template_sptr>>& dsets
+	);
 
 private:
 	void do_read(PDI::Context& ctx, hid_t h5_file, hid_t read_lst);
 
-	void do_write(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::unordered_map<std::string, PDI::Datatype_template_sptr>& dsets);
+	void do_write(
+		PDI::Context& ctx,
+		hid_t h5_file,
+		hid_t xfer_lst,
+		const std::unordered_map<std::string, std::pair<std::regex, PDI::Datatype_template_sptr>>& dsets
+	);
 };
 
 } // namespace decl_hdf5
