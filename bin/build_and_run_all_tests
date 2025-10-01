@@ -61,10 +61,6 @@ mkdir api_pdi
 cd api_pdi
 TEST_DIR_API="${PWD}"
 
-cd "${SRCDIR}"
-cd "$(dirname "$0")/.."
-SRCDIR="${PWD}"
-
 
 
 
@@ -151,13 +147,13 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $
 
 cd "${TEST_DIR_NO_PDI}"
 RELATIVE_NO_PDI_PATH="no-pdi"
-cmake -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
+cmake -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_C
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
 
 cd "${TEST_DIR_API}"
 NO_PDI_TESTS="test_api_C test_api_CXX"
-cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/tests"
+cmake -DBUILD_FORTRAN=OFF -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/tests"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
 rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
