@@ -38,8 +38,5 @@ set_target_properties(PDI_C PROPERTIES
 find_package(paraconf 1.0.0 COMPONENTS C)
 
 if(paraconf_FOUND)
-	message(WARNING "Paraconf found")
 	add_compile_definitions(PARACONF_FOUND)
-else()
-	message(WARNING "Paraconf not found")
 endif()

@@ -36,10 +36,7 @@ include(CTest)
 
 find_package(paraconf 1.0.0 COMPONENTS C)
 if(paraconf_FOUND)
-	message(WARNING "Paraconf found")
 	add_compile_definitions(PARACONF_FOUND)
-else()
-	message(WARNING "Paraconf not found")
 endif()
 
 find_package(PDI REQUIRED COMPONENTS C)
@@ -72,9 +69,8 @@ add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOUR
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
 add_executable(test_api_C test_api.c)
-set(BUILD_FLAGS_FOR_C "-Wall")
-target_compile_options(test_api_C PRIVATE
-		$<$<COMPILE_LANGUAGE:C>:${BUILD_FLAGS_FOR_C}>)
+# target_compile_options(test_api_C PRIVATE
+# 		$<$<COMPILE_LANGUAGE:C>:${BUILD_FLAGS_FOR_C}>)
 if(paraconf_FOUND)
 	target_link_libraries(test_api_C paraconf::paraconf PDI::PDI_C)
 else()
@@ -83,12 +79,11 @@ endif()
 add_test(NAME test_api_C COMMAND "$<TARGET_FILE:test_api_C>")
 
 add_executable(test_api_CXX test_api.cpp)
-set(BUILD_FLAGS_FOR_CXX "-Wall")
-target_compile_options(test_api_CXX PRIVATE
-		$<$<COMPILE_LANGUAGE:CXX>:${BUILD_FLAGS_FOR_CXX}>)
-set_target_properties(test_api_CXX PROPERTIES CXX_STANDARD 11)
-set_target_properties(test_api_CXX PROPERTIES LANGUAGE CXX)
-set_target_properties(test_api_CXX PROPERTIES LINKER_LANGUAGE CXX)
+# target_compile_options(test_api_CXX PRIVATE
+# 		$<$<COMPILE_LANGUAGE:CXX>:${BUILD_FLAGS_FOR_CXX}>)
+# set_target_properties(test_api_CXX PROPERTIES CXX_STANDARD 11)
+# set_target_properties(test_api_CXX PROPERTIES LANGUAGE CXX)
+# set_target_properties(test_api_CXX PROPERTIES LINKER_LANGUAGE CXX)
 if(paraconf_FOUND)
 	target_link_libraries(test_api_CXX paraconf::paraconf PDI::PDI_C)
 else()
