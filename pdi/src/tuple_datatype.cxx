@@ -35,6 +35,7 @@
 #include "pdi/error.h"
 #include "pdi/expression.h"
 #include "pdi/paraconf_wrapper.h"
+#include "pdi/ref_any.h"
 
 #include "pdi/tuple_datatype.h"
 
@@ -58,7 +59,7 @@ using std::vector;
 
 Tuple_datatype::Element::Element(size_t displacement, Datatype_sptr type)
 	: m_offset{displacement}
-	, m_type{move(type)}
+	, m_type{std::move(type)}
 {}
 
 Tuple_datatype::Element::Element(const Element& o)
@@ -86,9 +87,8 @@ bool Tuple_datatype::Element::operator!= (const Element& rhs) const
 	return !(*this == rhs);
 }
 
-Tuple_datatype::Tuple_datatype(vector<Element> elements, size_t buffersize, const Attributes_map& attributes)
-	: Datatype(attributes)
-	, m_elements{move(elements)}
+Tuple_datatype::Tuple_datatype(vector<Element> elements, size_t buffersize, std::unordered_map<std::string, Ref> attributes)
+	: m_elements{std::move(elements)}
 	, m_buffersize{buffersize}
 {}
 
@@ -111,7 +111,7 @@ Datatype_sptr Tuple_datatype::densify() const
 		size_t alignment = densified_type->alignment();
 		// align the next element as requested
 		displacement += (alignment - (displacement % alignment)) % alignment;
-		densified_elements.emplace_back(displacement, move(densified_type));
+		densified_elements.emplace_back(displacement, std::move(densified_type));
 		displacement += densified_elements.back().type()->buffersize();
 	}
 	//add padding at the end of tuple
@@ -120,12 +120,7 @@ Datatype_sptr Tuple_datatype::densify() const
 
 	// ensure the tuple size is at least 1 to have a unique address
 	displacement = max<size_t>(1, displacement);
-	return unique_ptr<Tuple_datatype>{new Tuple_datatype{move(densified_elements), displacement}};
-}
-
-Datatype_sptr Tuple_datatype::evaluate(Context&) const
-{
-	return static_pointer_cast<const Datatype>(this->shared_from_this());
+	return unique_ptr<Tuple_datatype>{new Tuple_datatype{std::move(densified_elements), displacement}};
 }
 
 bool Tuple_datatype::dense() const
@@ -259,8 +254,8 @@ Datatype_sptr Tuple_datatype::slice(size_t start_index, size_t end_index) const
 			new_buffersize = elements()[end_index + 1].offset() - elements()[start_index].offset();
 		}
 
-		auto&& new_tuple = Tuple_datatype::make(move(new_elements), new_buffersize);
-		return move(new_tuple);
+		auto&& new_tuple = Tuple_datatype::make(std::move(new_elements), new_buffersize);
+		return std::move(new_tuple);
 	} else {
 		throw Value_error{"Subaccess tuple slice out of range: [{}:{}] > {}", start_index, end_index, size()};
 	}
@@ -294,10 +289,10 @@ string Tuple_datatype::debug_string() const
 		type_str.insert(0, "\t\t");
 		ss << endl << "\t   displacement: " << element.offset() << endl << "\t   type: " << endl << type_str;
 	}
-	if (!m_attributes.empty()) {
+	if (!attributes().empty()) {
 		ss << endl << "attributes: " << endl;
-		auto it = m_attributes.begin();
-		for (; next(it) != m_attributes.end(); it++) {
+		auto it = attributes().begin();
+		for (; next(it) != attributes().end(); it++) {
 			ss << "\t" << it->first << ", ";
 		}
 		ss << "\t" << it->first;
@@ -318,9 +313,9 @@ struct Tuple_datatype::Shared_enabler: public Tuple_datatype {
 	{}
 };
 
-shared_ptr<Tuple_datatype> Tuple_datatype::make(vector<Element> elements, size_t buffersize, const Attributes_map& attributes)
+shared_ptr<Tuple_datatype> Tuple_datatype::make(vector<Element> elements, size_t buffersize, std::unordered_map<std::string, Ref> attributes)
 {
-	return make_shared<Shared_enabler>(move(elements), buffersize, attributes);
+	return make_shared<Shared_enabler>(std::move(elements), buffersize, std::move(attributes));
 }
 
 } // namespace PDI

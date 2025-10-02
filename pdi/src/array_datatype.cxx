@@ -37,6 +37,7 @@
 #include "pdi/error.h"
 #include "pdi/expression.h"
 #include "pdi/paraconf_wrapper.h"
+#include "pdi/ref_any.h"
 
 #include "pdi/array_datatype.h"
 
@@ -59,16 +60,16 @@ using std::transform;
 using std::unique_ptr;
 using std::vector;
 
-Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes)
+Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, std::unordered_map<std::string, Ref> attributes)
 	: Datatype(attributes)
-	, m_subtype{move(subtype)}
-	, m_size{move(size)}
-	, m_start{move(start)}
-	, m_subsize{move(subsize)}
+	, m_subtype{std::move(subtype)}
+	, m_size{std::move(size)}
+	, m_start{std::move(start)}
+	, m_subsize{std::move(subsize)}
 {}
 
-Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, const Attributes_map& attributes)
-	: Array_datatype{move(subtype), size, 0, move(size), attributes}
+Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, std::unordered_map<std::string, Ref> attributes)
+	: Array_datatype{std::move(subtype), size, 0, std::move(size), attributes}
 {}
 
 Datatype_sptr Array_datatype::subtype() const
@@ -93,12 +94,7 @@ size_t Array_datatype::subsize() const
 
 Datatype_sptr Array_datatype::densify() const
 {
-	return unique_ptr<Array_datatype>{new Array_datatype{m_subtype->densify(), m_subsize, m_attributes}};
-}
-
-Datatype_sptr Array_datatype::evaluate(Context&) const
-{
-	return static_pointer_cast<const Datatype>(this->shared_from_this());
+	return unique_ptr<Array_datatype>{new Array_datatype{m_subtype->densify(), m_subsize, attributes()}};
 }
 
 bool Array_datatype::dense() const
@@ -242,10 +238,10 @@ string Array_datatype::debug_string() const
 	   << "subsize: " << subsize() << endl
 	   << "subtype: " << endl
 	   << subtype_str;
-	if (!m_attributes.empty()) {
+	if (!attributes().empty()) {
 		ss << endl << "attributes: " << endl;
-		auto it = m_attributes.begin();
-		for (; next(it) != m_attributes.end(); it++) {
+		auto it = attributes().begin();
+		for (; next(it) != attributes().end(); it++) {
 			ss << "\t" << it->first << ", ";
 		}
 		ss << "\t" << it->first;

@@ -38,6 +38,7 @@
 #include "pdi/context.h"
 #include "pdi/error.h"
 #include "pdi/expression.h"
+#include "pdi/logger.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/pointer_datatype.h"
 #include "pdi/record_datatype.h"
@@ -71,31 +72,19 @@ class Scalar_template: public Datatype_template
 	Expression m_align;
 
 public:
-	Scalar_template(Scalar_kind kind, const Expression& size, const Expression& align, PC_tree_t datatype_tree)
-		: Datatype_template(datatype_tree)
-		, m_kind{kind}
+	Scalar_template(Scalar_kind kind, const Expression& size, const Expression& align)
+		: m_kind{kind}
 		, m_size{size}
 		, m_align{align}
 	{}
 
-	Scalar_template(Scalar_kind kind, const Expression& size, PC_tree_t datatype_tree)
-		: Scalar_template(kind, size, size, datatype_tree)
-	{}
-
-	Scalar_template(Scalar_kind kind, const Expression& size, const Expression& align, const Attributes_map& attributes = {})
-		: Datatype_template(attributes)
-		, m_kind{kind}
-		, m_size{size}
-		, m_align{align}
-	{}
-
-	Scalar_template(Scalar_kind kind, const Expression& size, const Attributes_map& attributes = {})
-		: Scalar_template(kind, size, size, attributes)
+	Scalar_template(Scalar_kind kind, const Expression& size)
+		: Scalar_template(kind, size, size)
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
 	{
-		return Scalar_datatype::make(m_kind, static_cast<size_t>(m_size.to_long(ctx)), static_cast<size_t>(m_align.to_long(ctx)), m_attributes);
+		return Scalar_datatype::make(m_kind, static_cast<size_t>(m_size.to_long(ctx)), static_cast<size_t>(m_align.to_long(ctx)));
 	}
 };
 
@@ -114,20 +103,11 @@ class Array_template: public Datatype_template
 	Expression m_subsize;
 
 public:
-	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize, PC_tree_t datatype_tree)
-		: Datatype_template(datatype_tree)
-		, m_subtype{move(subtype)}
-		, m_size{move(size)}
-		, m_start{move(start)}
-		, m_subsize{move(subsize)}
-	{}
-
-	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize, const Attributes_map& attributes = {})
-		: Datatype_template(attributes)
-		, m_subtype{move(subtype)}
-		, m_size{move(size)}
-		, m_start{move(start)}
-		, m_subsize{move(subsize)}
+	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize)
+		: m_subtype{std::move(subtype)}
+		, m_size{std::move(size)}
+		, m_start{std::move(start)}
+		, m_subsize{std::move(subsize)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -136,8 +116,7 @@ public:
 			m_subtype->evaluate(ctx),
 			static_cast<size_t>(m_size.to_long(ctx)),
 			static_cast<size_t>(m_start.to_long(ctx)),
-			static_cast<size_t>(m_subsize.to_long(ctx)),
-			m_attributes
+			static_cast<size_t>(m_subsize.to_long(ctx))
 		);
 	}
 };
@@ -155,9 +134,9 @@ public:
 		string m_name;
 
 		Member(Expression disp, Datatype_template_sptr type, string name)
-			: m_displacement{move(disp)}
-			, m_type{move(type)}
-			, m_name{move(name)}
+			: m_displacement{std::move(disp)}
+			, m_type{std::move(type)}
+			, m_name{std::move(name)}
 		{}
 
 		Member(const Member& o)
@@ -175,16 +154,9 @@ private:
 	Expression m_buffersize;
 
 public:
-	Record_template(vector<Member>&& members, Expression&& size, PC_tree_t datatype_tree)
-		: Datatype_template(datatype_tree)
-		, m_members{move(members)}
-		, m_buffersize{move(size)}
-	{}
-
-	Record_template(vector<Member>&& members, Expression&& size, const Attributes_map& attributes = {})
-		: Datatype_template(attributes)
-		, m_members{move(members)}
-		, m_buffersize{move(size)}
+	Record_template(vector<Member>&& members, Expression&& size)
+		: m_members{std::move(members)}
+		, m_buffersize{std::move(size)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -193,7 +165,7 @@ public:
 		for (auto&& member: m_members) {
 			evaluated_members.emplace_back(member.m_displacement.to_long(ctx), member.m_type->evaluate(ctx), member.m_name);
 		}
-		return Record_datatype::make(move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx)), m_attributes);
+		return Record_datatype::make(std::move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx)));
 	}
 };
 
@@ -206,8 +178,8 @@ public:
 		string m_name;
 
 		Member(Datatype_template_sptr type, string name)
-			: m_type{move(type)}
-			, m_name{move(name)}
+			: m_type{std::move(type)}
+			, m_name{std::move(name)}
 		{}
 
 		Member(const Member& o)
@@ -220,14 +192,8 @@ private:
 	vector<Member> m_members;
 
 public:
-	Struct_template(vector<Member>&& members, PC_tree_t datatype_tree)
-		: Datatype_template(datatype_tree)
-		, m_members(std::move(members))
-	{}
-
-	Struct_template(vector<Member>&& members, const Attributes_map& attributes = {})
-		: Datatype_template(attributes)
-		, m_members(std::move(members))
+	Struct_template(vector<Member>&& members)
+		: m_members(std::move(members))
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -240,7 +206,7 @@ public:
 			size_t alignment = member_type->alignment();
 			// align the next member as requested
 			displacement += (alignment - (displacement % alignment)) % alignment;
-			evaluated_members.emplace_back(displacement, move(member_type), member.m_name);
+			evaluated_members.emplace_back(displacement, std::move(member_type), member.m_name);
 			displacement += evaluated_members.back().type()->buffersize();
 			struct_alignment = max(struct_alignment, alignment);
 		}
@@ -249,7 +215,7 @@ public:
 
 		// ensure the record size is at least 1 to have a unique address
 		displacement = max<size_t>(1, displacement);
-		return Record_datatype::make(move(evaluated_members), displacement, m_attributes);
+		return Record_datatype::make(std::move(evaluated_members), displacement);
 	}
 };
 
@@ -258,17 +224,11 @@ class Pointer_template: public Datatype_template
 	Datatype_template_sptr m_subtype;
 
 public:
-	Pointer_template(Datatype_template_sptr subtype, PC_tree_t datatype_tree)
-		: Datatype_template(datatype_tree)
-		, m_subtype{std::move(subtype)}
+	Pointer_template(Datatype_template_sptr subtype)
+		: m_subtype{std::move(subtype)}
 	{}
 
-	Pointer_template(Datatype_template_sptr subtype, const Attributes_map& attributes = {})
-		: Datatype_template(attributes)
-		, m_subtype{std::move(subtype)}
-	{}
-
-	Datatype_sptr evaluate(Context& ctx) const override { return Pointer_datatype::make(m_subtype->evaluate(ctx), m_attributes); }
+	Datatype_sptr evaluate(Context& ctx) const override { return Pointer_datatype::make(m_subtype->evaluate(ctx)); }
 };
 
 class Tuple_template: public Datatype_template
@@ -286,7 +246,7 @@ public:
 		 * \param[in] type type of the element
 		 */
 		Element(Datatype_template_sptr type)
-			: m_type{move(type)}
+			: m_type{std::move(type)}
 		{}
 
 		/** Creates new Element template with only type defined
@@ -295,8 +255,8 @@ public:
 		 * \param[in] type type of the element
 		 */
 		Element(Expression disp, Datatype_template_sptr type)
-			: m_displacement{move(disp)}
-			, m_type{move(type)}
+			: m_displacement{std::move(disp)}
+			, m_type{std::move(type)}
 		{}
 
 		/** Creates a copy of an element template
@@ -317,21 +277,13 @@ private:
 	Expression m_buffersize;
 
 public:
-	Tuple_template(vector<Element>&& elements, PC_tree_t datatype_tree)
-		: Datatype_template(datatype_tree)
-		, m_elements{move(elements)}
+	Tuple_template(vector<Element>&& elements)
+		: m_elements{std::move(elements)}
 	{}
 
-	Tuple_template(vector<Element>&& elements, Expression&& size, PC_tree_t datatype_tree)
-		: Datatype_template(datatype_tree)
-		, m_elements{move(elements)}
-		, m_buffersize{move(size)}
-	{}
-
-	Tuple_template(vector<Element>&& elements, Expression&& size, const Attributes_map& attributes = {})
-		: Datatype_template(attributes)
-		, m_elements{move(elements)}
-		, m_buffersize{move(size)}
+	Tuple_template(vector<Element>&& elements, Expression&& size)
+		: m_elements{std::move(elements)}
+		, m_buffersize{std::move(size)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -353,7 +305,7 @@ public:
 				size_t alignment = element_type->alignment();
 				// align the next element as requested
 				displacement += (alignment - (displacement % alignment)) % alignment;
-				evaluated_elements.emplace_back(displacement, move(element_type));
+				evaluated_elements.emplace_back(displacement, std::move(element_type));
 				displacement += evaluated_elements.back().type()->buffersize();
 				tuple_alignment = max(tuple_alignment, alignment);
 			}
@@ -366,7 +318,7 @@ public:
 		}
 
 
-		return Tuple_datatype::make(move(evaluated_elements), tuple_buffersize, m_attributes);
+		return Tuple_datatype::make(std::move(evaluated_elements), tuple_buffersize);
 	}
 };
 
@@ -413,12 +365,12 @@ void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>
 	}
 }
 
-Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
+Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node, Logger& logger)
 {
 	{
 		string order_str = to_string(PC_get(node, ".order"), "");
 		if (order_str == "c" && order_str == "C") {
-			ctx.logger().warn("`order: C' for array is the only supported order and its specification is deprecated");
+			logger.warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str != "") {
 			throw Config_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
 		}
@@ -435,7 +387,7 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		throw Config_error{node, "Array must have `subtype'"};
 	}
 
-	Datatype_template_sptr res_type = ctx.datatype(config_elem);
+	Datatype_template_sptr res_type = Datatype_template_alias(config_elem);
 
 	for (ssize_t ii = array_size.size() - 1; ii >= 0; --ii) {
 		res_type.reset(new Array_template(move(res_type), move(array_size[ii]), move(array_start[ii]), move(array_subsize[ii]), node));
@@ -770,3 +722,4 @@ void Datatype_template::load_user_datatypes(Context& ctx, PC_tree_t types_tree)
 }
 
 } // namespace PDI
+

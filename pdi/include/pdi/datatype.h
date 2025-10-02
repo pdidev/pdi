@@ -40,19 +40,21 @@ namespace PDI {
  *
  * It represents the memory layout of data and supports some simple operations
  * on it:
- * * accessing its content
- * * data copy and destruction
+ * - accessing its content
+ * - data copy and destruction
  */
-class PDI_EXPORT Datatype: public Datatype_template
+class PDI_EXPORT Datatype
 {
 public:
 	/** Creates a new datatype
 	 *
 	 * \param[in] attributes attributes of the datatype
 	 */
-	Datatype(const Attributes_map& attributes = {});
+	Datatype(std::unordered_map<std::string, Ref> attributes = {});
 
-	~Datatype() override;
+	virtual ~Datatype();
+	
+	const std::unordered_map<std::string, Ref>& attributes() const;
 
 	/** Test for equality
 	 *
@@ -195,6 +197,9 @@ public:
 	 * \return the datatype yaml representation as a string
 	 */
 	virtual std::string debug_string() const = 0;
+
+private:
+	std::unordered_map<std::string, Ref> m_attributes;
 };
 
 } // namespace PDI

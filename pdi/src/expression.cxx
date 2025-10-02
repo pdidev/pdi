@@ -53,7 +53,7 @@ using std::move;
 using std::unique_ptr;
 
 Expression::Expression(std::unique_ptr<Impl> impl)
-	: m_impl(move(impl))
+	: m_impl(tsd::move(impl))
 {}
 
 Expression::Expression() = default;

@@ -57,8 +57,6 @@ public:
 
 	Datatype_sptr densify() const override;
 
-	Datatype_sptr evaluate(Context&) const override;
-
 	bool dense() const override;
 
 	size_t datasize() const override;
@@ -101,7 +99,7 @@ private:
 	 * \param[in] subtype subtype of the pointer datatype
 	 * \param[in] attributes attributes of the pointer datatype
 	 */
-	Pointer_datatype(Datatype_sptr subtype, const Attributes_map& attributes = {});
+	Pointer_datatype(Datatype_sptr subtype, std::unordered_map<std::string, Ref> attributes = {});
 
 	/** Creates new pointer datatype
 	 *
@@ -114,7 +112,7 @@ private:
 		Datatype_sptr subtype,
 		std::function<void*(void*, const void*)> copy,
 		std::function<void(void*)> destroy,
-		const Attributes_map& attributes = {}
+		std::unordered_map<std::string, Ref> attributes = {}
 	);
 
 public:
@@ -123,7 +121,7 @@ public:
 	 * \param[in] subtype subtype of the pointer datatype
 	 * \param[in] attributes attributes of the pointer datatype
 	 */
-	static std::shared_ptr<Pointer_datatype> make(Datatype_sptr subtype, const Attributes_map& attributes = {});
+	static std::shared_ptr<Pointer_datatype> make(Datatype_sptr subtype, std::unordered_map<std::string, Ref> attributes = {});
 
 	/** Creates new pointer datatype
 	 *
@@ -136,7 +134,7 @@ public:
 		Datatype_sptr subtype,
 		std::function<void*(void*, const void*)> copy,
 		std::function<void(void*)> destroy,
-		const Attributes_map& attributes = {}
+		std::unordered_map<std::string, Ref> attributes = {}
 	);
 };
 

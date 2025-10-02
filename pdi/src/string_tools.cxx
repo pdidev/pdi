@@ -28,8 +28,6 @@
 
 #include "pdi/error.h"
 
-#include "data_descriptor_impl.h"
-
 #include "string_tools.h"
 
 namespace PDI {

@@ -44,7 +44,6 @@
 #include "pdi/ref_any.h"
 #include "pdi/version.h"
 
-#include "data_descriptor_impl.h"
 #include "string_tools.h"
 
 #include "plugin_store.h"
@@ -66,13 +65,13 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
-Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, string name, PC_tree_t conf)
+Plugin_store::Stored_plugin::Stored_plugin(Logger& logger, Plugin_store& store, string name, PC_tree_t conf)
 	: m_config{conf}
-	, m_ctx{ctx}
+	, m_logger{logger}
 	, m_name{name}
 	, m_state{PRELOADED}
 {
-	ctx.logger().trace("Pre-loading plugin `{}'", name);
+	m_logger.trace("Pre-loading plugin `{}'", name);
 
 	string ctor_symbol = "PDI_plugin_" + name + "_loader";
 	string deps_symbol = "PDI_plugin_" + name + "_dependencies";
@@ -109,7 +108,7 @@ Plugin_store::Stored_plugin::Stored_plugin(Context& ctx, Plugin_store& store, st
 		}
 	}
 
-	m_ctx.setup_logger(pretty_name_f(), PC_get(conf, ".logging"));
+//	m_ctx.setup_logger(pretty_name_f(), PC_get(conf, ".logging"));
 }
 
 void Plugin_store::Stored_plugin::ensure_loaded(map<string, shared_ptr<Stored_plugin>>& plugins)
@@ -139,7 +138,7 @@ void Plugin_store::Stored_plugin::ensure_loaded(map<string, shared_ptr<Stored_pl
 			}
 		}
 		m_state = LOADED;
-		m_loaded_plugin = m_ctr(m_ctx, m_config);
+		m_loaded_plugin = m_ctr(m_logger, m_config);
 	}
 }
 
@@ -147,10 +146,10 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 {
 	// STEP 1: get path from PDI_PLUGIN_PATH
 	if (const char* env_plugin_path = std::getenv("PDI_PLUGIN_PATH")) {
-		m_ctx.logger().trace("Found PDI_PLUGIN_PATH env variable: `{}'", env_plugin_path);
+		m_logger.trace("Found PDI_PLUGIN_PATH env variable: `{}'", env_plugin_path);
 		vector<string> escaped_env_plugin_path = string_array_parse(env_plugin_path);
 		for (auto&& one_path: escaped_env_plugin_path) {
-			m_ctx.logger().trace("Escaped PDI_PLUGIN_PATH[] env variable: `{}'", one_path);
+			m_logger.trace("Escaped PDI_PLUGIN_PATH[] env variable: `{}'", one_path);
 		}
 		m_plugin_path.insert(m_plugin_path.end(), escaped_env_plugin_path.begin(), escaped_env_plugin_path.end());
 	}
@@ -160,11 +159,11 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 		if (is_list(plugin_path_node)) {
 			int len = PDI::len(plugin_path_node);
 			for (int i = 0; i < len; i++) {
-				m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
+				m_logger.trace("Adding plugin path from yaml: `{}'", PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
 				m_plugin_path.push_back(PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
 			}
 		} else if (is_scalar(plugin_path_node)) {
-			m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_path_node));
+			m_logger.trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_path_node));
 			m_plugin_path.push_back(PDI::to_string(plugin_path_node));
 		} else {
 			throw Config_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
@@ -173,7 +172,7 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 
 	// STEP 3: get from relative path to libpdi.so
 	if /* constexpr */ (PDI_DEFAULT_PLUGIN_PATH[0] == '/') {
-		m_ctx.logger().trace("Adding plugin path: `{}'", PDI_DEFAULT_PLUGIN_PATH);
+		m_logger.trace("Adding plugin path: `{}'", PDI_DEFAULT_PLUGIN_PATH);
 		m_plugin_path.push_back(PDI_DEFAULT_PLUGIN_PATH);
 	} else {
 		Dl_info libpdi_info;
@@ -181,7 +180,7 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 			string path = libpdi_info.dli_fname;
 			path = path.substr(0, path.find_last_of('/'));
 			path = path + "/" + PDI_DEFAULT_PLUGIN_PATH;
-			m_ctx.logger().trace("Adding plugin path `{}' relative to PDI lib: `{}'", PDI_DEFAULT_PLUGIN_PATH, path);
+			m_logger.trace("Adding plugin path `{}' relative to PDI lib: `{}'", PDI_DEFAULT_PLUGIN_PATH, path);
 			m_plugin_path.push_back(path);
 		}
 	}
@@ -197,11 +196,11 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 		if (lib_handle) {
-			m_ctx.logger().trace("Loaded `{}'", libname);
+			m_logger.trace("Loaded `{}'", libname);
 			return lib_handle;
 		} else {
 			const string error_msg = dlerror();
-			m_ctx.logger().debug("Unable to load `{}' {}", libname, error_msg);
+			m_logger.debug("Unable to load `{}' {}", libname, error_msg);
 			load_errors.push_back(format("\n  * unable to load `{}' {}", libname, error_msg));
 		}
 	}
@@ -212,11 +211,11 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 		// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 		void* lib_handle = dlopen(libname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 		if (lib_handle) {
-			m_ctx.logger().trace("Loaded `{}' relative to system path", libname);
+			m_logger.trace("Loaded `{}' relative to system path", libname);
 			return lib_handle;
 		} else {
 			const string error_msg = dlerror();
-			m_ctx.logger().debug("Unable to load `{}' relative to system path {}", libname, error_msg);
+			m_logger.debug("Unable to load `{}' relative to system path {}", libname, error_msg);
 			load_errors.push_back(format("\n  * unable to load `{}' relative to system path {}", libname, error_msg));
 		}
 	}
@@ -226,28 +225,28 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 	// we'd like to use dlmopen(LM_ID_NEWLM, ...) but this leads to multiple PDI
 	void* lib_handle = dlopen(libname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 	if (lib_handle) {
-		m_ctx.logger().trace("Loaded `{}' from system path", libname);
+		m_logger.trace("Loaded `{}' from system path", libname);
 		return lib_handle;
 	} else {
 		const string error_msg = dlerror();
-		m_ctx.logger().debug("Unable to load `{}' from system path {}", libname, error_msg);
+		m_logger.debug("Unable to load `{}' from system path {}", libname, error_msg);
 		load_errors.push_back(format("\n  * unable to load `{}' from system path {}", libname, error_msg));
 	}
 
 	throw Plugin_error{"Unable to load plugin `{}': {}", plugin_name, join(load_errors, ", ")};
 }
 
-Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
-	: m_ctx(ctx)
+Plugin_store::Plugin_store(Logger& logger, PC_tree_t conf)
+	: m_logger(logger)
 {
 	initialize_path(PC_get(conf, ".plugin_path"));
 
 	// pre-load the plugins
 	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
-	m_ctx.logger().trace("Loading {} plugin(s)", nb_plugins);
+	m_logger.trace("Loading {} plugin(s)", nb_plugins);
 	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
 		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
-		m_plugins.emplace(plugin_name, make_shared<Stored_plugin>(m_ctx, *this, plugin_name, PC_get(conf, ".plugins<%d>", plugin_id)));
+		m_plugins.emplace(plugin_name, make_shared<Stored_plugin>(m_logger, *this, plugin_name, PC_get(conf, ".plugins<%d>", plugin_id)));
 	}
 }
 

@@ -213,7 +213,7 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 
 Ref Expression::Impl::Reference_expression::to_ref(Context& ctx) const
 {
-	Ref result = ctx.desc(m_referenced.c_str()).ref();
+	Ref result = ctx.data(m_referenced);
 	for (auto&& accessor: m_subelements) {
 		result = accessor->access(ctx, result);
 	}

@@ -114,8 +114,6 @@ public:
 
 	Datatype_sptr densify() const override;
 
-	Datatype_sptr evaluate(Context&) const override;
-
 	bool dense() const override;
 
 	size_t datasize() const override;
@@ -152,7 +150,7 @@ private:
 	 * \param buffersize the total size of the buffer containing all elements
 	 * \param attributes attributes of the tuple datatype
 	 */
-	Tuple_datatype(std::vector<Element> elements, size_t buffersize, const Attributes_map& attributes = {});
+	Tuple_datatype(std::vector<Element> elements, size_t buffersize, std::unordered_map<std::string, Ref> attributes = {});
 
 public:
 	/** Constructs a new Tuple_datatype
@@ -162,7 +160,7 @@ public:
 	 * \param buffersize the total size of the buffer containing all elements
 	 * \param attributes attributes of the tuple datatype
 	 */
-	static std::shared_ptr<Tuple_datatype> make(std::vector<Element> elements, size_t buffersize, const Attributes_map& attributes = {});
+	static std::shared_ptr<Tuple_datatype> make(std::vector<Element> elements, size_t buffersize, std::unordered_map<std::string, Ref> attributes = {});
 };
 
 } // namespace PDI

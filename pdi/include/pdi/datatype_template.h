@@ -29,39 +29,43 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
+#include <pdi/datatype_expression.h>
 #include <pdi/expression.h>
 
 namespace PDI {
 
-using Attributes_map = std::unordered_map<std::string, Expression>;
-
+/** A datatype template. 
+ * 
+ * A datatype template is something that given arguments that associate values to its parameters, resolves to a
+ * datatype.
+ * 
+ * A datatype template supports two kind of parameters:
+ * - data parameters with a type (e.g. integer or array of integers) where the argument associates a data value such 
+ *   as 5 to the parameter.
+ * - datatype parameters where the argument associates a datatype such as `int` to the parameter
+ * 
+ * A datatype template can either be a predefined one, such as array, or a user defined one.
+ */
 class PDI_EXPORT Datatype_template: public std::enable_shared_from_this<Datatype_template>
 {
 protected:
-	Attributes_map m_attributes;
+	std::unordered_set<std::string> m_type_parameters;
+
+	std::unordered_set<std::string> m_value_attributes;
 
 public:
-	/** Creates datatype template with given attributes
-	 *
-	 * \param attributes attributes of datatype template
-	 */
-	Datatype_template(const Attributes_map& attributes = {});
-
-	/** Creates datatype template
-	 *
-	 * If attributes are defined in datatype_tree, they will be included in datatype template
-	 *
-	 * \param datatype_tree datatype tree
-	 */
-	Datatype_template(PC_tree_t datatype_tree);
-
 	/** Destroys the template
 	 */
-	virtual ~Datatype_template();
+	virtual ~Datatype_template() = default;
+
+	const std::unordered_set<std::string>& type_parameters() const;
+
+	const std::unordered_set<std::string> value_attributes() const;
 
 	/** Creates a new datatype by resolving the value of all metadata references
 	 *
@@ -69,34 +73,6 @@ public:
 	 * \return the evaluated type that is produced
 	 */
 	virtual Datatype_sptr evaluate(Context& ctx) const = 0;
-
-	/** Returns attribute of given name as Expression
-	 * \param attribute_name attribute to get
-	 *
-	 * \return value of attribute as Expression
-	 */
-	Expression attribute(const std::string& attribute_name) const;
-
-	/** Returns all attributes as a unordered map
-	 *
-	 * \return all attributes as a unordered map
-	 */
-	const Attributes_map& attributes() const;
-
-	/**
-	 * Adds to the context the basic Array, Record, C and Fortran datatypes
-	 *
-	 * \param[in,out] ctx the context where to add the datatypes
-	 */
-	static void load_basic_datatypes(Context& ctx);
-
-	/**
-	 * Adds to the context the user defined datatypes
-	 *
-	 * \param[in,out] ctx the context where to add the datatypes
-	 * \param[in] types_tree with defined types
-	 */
-	static void load_user_datatypes(Context& ctx, PC_tree_t types_tree);
 };
 
 } // namespace PDI
