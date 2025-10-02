@@ -30,6 +30,7 @@
 #include <string>
 
 #include "pdi/error.h"
+#include "pdi/ref_any.h"
 
 #include "pdi/pointer_datatype.h"
 
@@ -48,7 +49,7 @@ using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
-Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, const Attributes_map& attributes)
+Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, std::unordered_map<std::string, Ref> attributes)
 	: Datatype(attributes)
 	, m_subtype{move(subtype)}
 {}
@@ -57,7 +58,7 @@ Pointer_datatype::Pointer_datatype(
 	Datatype_sptr subtype,
 	function<void*(void*, const void*)> copy,
 	function<void(void*)> destroy,
-	const Attributes_map& attributes
+	std::unordered_map<std::string, Ref> attributes
 )
 	: Datatype(attributes)
 	, m_subtype{move(subtype)}
@@ -72,12 +73,7 @@ Datatype_sptr Pointer_datatype::subtype() const
 
 Datatype_sptr Pointer_datatype::densify() const
 {
-	return unique_ptr<Pointer_datatype>{new Pointer_datatype{m_subtype->densify(), m_copy, m_destroy, m_attributes}};
-}
-
-Datatype_sptr Pointer_datatype::evaluate(Context&) const
-{
-	return static_pointer_cast<const Datatype>(this->shared_from_this());
+	return unique_ptr<Pointer_datatype>{new Pointer_datatype{m_subtype->densify(), m_copy, m_destroy, attributes()}};
 }
 
 bool Pointer_datatype::dense() const
@@ -138,10 +134,10 @@ string Pointer_datatype::debug_string() const
 	   << "alignment: " << alignment() << endl
 	   << "subtype: " << endl
 	   << m_subtype->debug_string();
-	if (!m_attributes.empty()) {
+	if (!attributes().empty()) {
 		ss << endl << "attributes: " << endl;
-		auto it = m_attributes.begin();
-		for (; next(it) != m_attributes.end(); it++) {
+		auto it = attributes().begin();
+		for (; next(it) != attributes().end(); it++) {
 			ss << "\t" << it->first << ", ";
 		}
 		ss << "\t" << it->first;
@@ -197,16 +193,21 @@ std::pair<void*, Datatype_sptr> Pointer_datatype::dereference(void* data) const
 }
 
 struct Pointer_datatype::Shared_enabler: public Pointer_datatype {
-	Shared_enabler(Datatype_sptr subtype, const Attributes_map& attributes)
+	Shared_enabler(Datatype_sptr subtype, std::unordered_map<std::string, Ref> attributes)
 		: Pointer_datatype(subtype, attributes)
 	{}
 
-	Shared_enabler(Datatype_sptr subtype, function<void*(void*, const void*)> copy, function<void(void*)> destroy, const Attributes_map& attributes)
+	Shared_enabler(
+		Datatype_sptr subtype,
+		function<void*(void*, const void*)> copy,
+		function<void(void*)> destroy,
+		std::unordered_map<std::string, Ref> attributes
+	)
 		: Pointer_datatype(subtype, copy, destroy, attributes)
 	{}
 };
 
-shared_ptr<Pointer_datatype> Pointer_datatype::make(Datatype_sptr subtype, const Attributes_map& attributes)
+shared_ptr<Pointer_datatype> Pointer_datatype::make(Datatype_sptr subtype, std::unordered_map<std::string, Ref> attributes)
 {
 	return make_shared<Shared_enabler>(subtype, attributes);
 }
@@ -215,7 +216,7 @@ shared_ptr<Pointer_datatype> Pointer_datatype::make(
 	Datatype_sptr subtype,
 	function<void*(void*, const void*)> copy,
 	function<void(void*)> destroy,
-	const Attributes_map& attributes
+	std::unordered_map<std::string, Ref> attributes
 )
 {
 	return make_shared<Shared_enabler>(subtype, copy, destroy, attributes);

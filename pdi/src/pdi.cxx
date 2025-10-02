@@ -43,7 +43,7 @@
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 
-#include "global_context.h"
+#include "pdi/data_store.h"
 
 namespace {
 

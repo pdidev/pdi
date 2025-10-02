@@ -37,6 +37,7 @@
 #include "pdi/error.h"
 #include "pdi/expression.h"
 #include "pdi/paraconf_wrapper.h"
+#include "pdi/ref_any.h"
 
 #include "pdi/scalar_datatype.h"
 
@@ -98,7 +99,7 @@ template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<f
 
 template std::shared_ptr<Scalar_datatype> const Scalar_datatype::cv_type_for_v<double>;
 
-Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, const Attributes_map& attributes)
+Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, std::unordered_map<std::string, Ref> attributes)
 	: Datatype(attributes)
 	, m_size{size}
 	, m_dense_size{size}
@@ -108,7 +109,7 @@ Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, const Attributes
 	if (!nulltype(*this) && !ispow2(m_align)) throw Value_error{"alignment should be a power of 2"};
 }
 
-Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes)
+Scalar_datatype::Scalar_datatype(Scalar_kind kind, size_t size, size_t align, std::unordered_map<std::string, Ref> attributes)
 	: Datatype(attributes)
 	, m_size{size}
 	, m_dense_size{size}
@@ -125,7 +126,7 @@ Scalar_datatype::Scalar_datatype(
 	size_t dense_size,
 	std::function<void*(void*, const void*)> copy,
 	std::function<void(void*)> destroy,
-	const Attributes_map& attributes
+	std::unordered_map<std::string, Ref> attributes
 )
 	: Datatype(attributes)
 	, m_size{size}
@@ -145,12 +146,7 @@ Scalar_kind Scalar_datatype::kind() const
 
 Datatype_sptr Scalar_datatype::densify() const
 {
-	return unique_ptr<Scalar_datatype>{new Scalar_datatype{m_kind, m_dense_size, m_align, m_dense_size, m_copy, m_destroy, m_attributes}};
-}
-
-Datatype_sptr Scalar_datatype::evaluate(Context&) const
-{
-	return static_pointer_cast<const Datatype>(this->shared_from_this());
+	return unique_ptr<Scalar_datatype>{new Scalar_datatype{m_kind, m_dense_size, m_align, m_dense_size, m_copy, m_destroy, attributes()}};
 }
 
 bool Scalar_datatype::dense() const
@@ -216,10 +212,10 @@ string Scalar_datatype::debug_string() const
 	   << "buffersize: " << buffersize() << endl
 	   << "datasize: " << datasize() << endl
 	   << "alignment: " << alignment();
-	if (!m_attributes.empty()) {
+	if (!attributes().empty()) {
 		ss << endl << "attributes: " << endl;
-		auto it = m_attributes.begin();
-		for (; next(it) != m_attributes.end(); it++) {
+		auto it = attributes().begin();
+		for (; next(it) != attributes().end(); it++) {
 			ss << "\t" << it->first << ", ";
 		}
 		ss << "\t" << it->first;
@@ -234,11 +230,11 @@ bool Scalar_datatype::operator== (const Datatype& other) const
 }
 
 struct Scalar_datatype::Shared_enabler: public Scalar_datatype {
-	Shared_enabler(Scalar_kind kind, size_t size, const Attributes_map& attributes = {})
+	Shared_enabler(Scalar_kind kind, size_t size, std::unordered_map<std::string, Ref> attributes = {})
 		: Scalar_datatype(kind, size, attributes)
 	{}
 
-	Shared_enabler(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes = {})
+	Shared_enabler(Scalar_kind kind, size_t size, size_t align, std::unordered_map<std::string, Ref> attributes = {})
 		: Scalar_datatype(kind, size, align, attributes)
 	{}
 
@@ -249,18 +245,18 @@ struct Scalar_datatype::Shared_enabler: public Scalar_datatype {
 		size_t dense_size,
 		function<void*(void*, const void*)> copy,
 		function<void(void*)> destroy,
-		const Attributes_map& attributes = {}
+		std::unordered_map<std::string, Ref> attributes = {}
 	)
 		: Scalar_datatype(kind, size, align, dense_size, copy, destroy, attributes)
 	{}
 };
 
-shared_ptr<Scalar_datatype> Scalar_datatype::make(Scalar_kind kind, size_t size, const Attributes_map& attributes)
+shared_ptr<Scalar_datatype> Scalar_datatype::make(Scalar_kind kind, size_t size, std::unordered_map<std::string, Ref> attributes)
 {
 	return make_shared<Shared_enabler>(kind, size, attributes);
 }
 
-shared_ptr<Scalar_datatype> Scalar_datatype::make(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes)
+shared_ptr<Scalar_datatype> Scalar_datatype::make(Scalar_kind kind, size_t size, size_t align, std::unordered_map<std::string, Ref> attributes)
 {
 	return make_shared<Shared_enabler>(kind, size, align, attributes);
 }
@@ -272,7 +268,7 @@ shared_ptr<Scalar_datatype> Scalar_datatype::make(
 	size_t dense_size,
 	function<void*(void*, const void*)> copy,
 	function<void(void*)> destroy,
-	const Attributes_map& attributes
+	std::unordered_map<std::string, Ref> attributes
 )
 {
 	return make_shared<Shared_enabler>(kind, size, align, dense_size, copy, destroy, attributes);

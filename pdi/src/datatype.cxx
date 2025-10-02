@@ -29,6 +29,7 @@
 
 #include "pdi/error.h"
 #include "pdi/fmt.h"
+#include "pdi/ref_any.h"
 
 #include "pdi/datatype.h"
 
@@ -41,8 +42,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-Datatype::Datatype(const Attributes_map& attributes)
-	: Datatype_template(attributes)
+Datatype::Datatype(std::unordered_map<std::string, Ref> attributes)
 {}
 
 Datatype::~Datatype() = default;

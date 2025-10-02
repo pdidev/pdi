@@ -88,8 +88,6 @@ public:
 
 	Datatype_sptr densify() const override;
 
-	Datatype_sptr evaluate(Context&) const override;
-
 	bool dense() const override;
 
 	size_t datasize() const override;
@@ -117,7 +115,7 @@ private:
 	 * \param[in] size buffersize of the scalar datatype
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
-	Scalar_datatype(Scalar_kind kind, size_t size, const Attributes_map& attributes = {});
+	Scalar_datatype(Scalar_kind kind, size_t size, std::unordered_map<std::string, Ref> attributes = {});
 
 	/** Creates new scalar datatype
 	 *
@@ -126,7 +124,7 @@ private:
 	 * \param[in] align alignment of the scalar datatype
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
-	Scalar_datatype(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes = {});
+	Scalar_datatype(Scalar_kind kind, size_t size, size_t align, std::unordered_map<std::string, Ref> attributes = {});
 
 	/** Creates new scalar datatype
 	 *
@@ -144,7 +142,7 @@ private:
 		size_t dense_size,
 		std::function<void*(void*, const void*) > copy,
 		std::function<void(void*) > destroy,
-		const Attributes_map& attributes = {}
+		std::unordered_map<std::string, Ref> attributes = {}
 	);
 
 public:
@@ -154,7 +152,7 @@ public:
 	 * \param[in] size buffersize of the scalar datatype
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
-	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, const Attributes_map& attributes = {});
+	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, std::unordered_map<std::string, Ref> attributes = {});
 
 	/** Creates new scalar datatype
 	 *
@@ -163,7 +161,7 @@ public:
 	 * \param[in] align alignment of the scalar datatype
 	 * \param[in] attributes attributes of the scalar datatype
 	 */
-	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, size_t align, const Attributes_map& attributes = {});
+	static std::shared_ptr<Scalar_datatype> make(Scalar_kind kind, size_t size, size_t align, std::unordered_map<std::string, Ref> attributes = {});
 
 	/** Creates new scalar datatype
 	 *
@@ -182,7 +180,7 @@ public:
 		size_t dense_size,
 		std::function<void*(void*, const void*) > copy,
 		std::function<void(void*) > destroy,
-		const Attributes_map& attributes = {}
+		std::unordered_map<std::string, Ref> attributes = {}
 	);
 };
 

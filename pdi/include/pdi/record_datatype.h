@@ -119,8 +119,6 @@ public:
 
 	Datatype_sptr densify() const override;
 
-	Datatype_sptr evaluate(Context&) const override;
-
 	bool dense() const override;
 
 	size_t datasize() const override;
@@ -153,7 +151,7 @@ private:
 	 * \param size the total size of the buffer containing all members
 	 * \param attributes attributes of the record datatype
 	 */
-	Record_datatype(std::vector<Member>&& members, size_t size, const Attributes_map& attributes = {});
+	Record_datatype(std::vector<Member>&& members, size_t size);
 
 public:
 	/** Constructs a new Record_datatype
@@ -163,7 +161,7 @@ public:
 	 * \param size the total size of the buffer containing all members
 	 * \param attributes attributes of the record datatype
 	 */
-	static std::shared_ptr<Record_datatype> make(std::vector<Member>&& members, size_t size, const Attributes_map& attributes = {});
+	static std::shared_ptr<Record_datatype> make(std::vector<Member>&& members, size_t size, std::unordered_map<std::string, Expression> attributes = {});
 };
 
 } // namespace PDI

@@ -23,58 +23,58 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATATYPE_TEMPLATE_H_
-#define PDI_DATATYPE_TEMPLATE_H_
+#ifndef PDI_DATATYPE_EXPRESSION_H_
+#define PDI_DATATYPE_EXPRESSION_H_
 
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/datatype_expression.h>
 #include <pdi/expression.h>
 
 namespace PDI {
 
-/** A datatype template. 
+/** A datatype expression that can be evaluated to a datatype
  * 
- * A datatype template is something that given arguments that associate values to its parameters, resolves to a
- * datatype.
+ * A datatype expression contains a reference to a specific datatype template, plus a set of arguments that associate
+ * values to the parameters of the template.
  * 
- * A datatype template supports two kind of parameters:
- * - data parameters with a type (e.g. integer or array of integers) where the argument associates a data value such 
- *   as 5 to the parameter.
- * - datatype parameters where the argument associates a datatype such as `int` to the parameter
- * 
- * A datatype template can either be a predefined one, such as array, or a user defined one.
+ * One way to consider that, is that if a datatype template is a function definition, then a datatype expression is a
+ * function call
  */
-class PDI_EXPORT Datatype_template: public std::enable_shared_from_this<Datatype_template>
+class PDI_EXPORT Datatype_expression
 {
-protected:
-	std::unordered_set<std::string> m_type_parameters;
+private:
+	Datatype_template_sptr m_referenced;
 
-	std::unordered_set<std::string> m_value_attributes;
+	std::unordered_map<std::string, Expression> m_value_args;
+
+	std::unordered_map<std::string, Datatype_expression> m_type_args;
 
 public:
-	/** Destroys the template
-	 */
-	virtual ~Datatype_template() = default;
+	Datatype_expression(PC_tree_t datatype_tree);
 
-	const std::unordered_set<std::string>& type_parameters() const;
+	Datatype_expression(
+		Datatype_template_sptr referenced,
+		std::unordered_map<std::string, Expression> value_args,
+		std::unordered_map<std::string, Datatype_expression> type_args
+	);
 
-	const std::unordered_set<std::string> value_attributes() const;
+	const std::unordered_map<std::string, Expression>& value_args() const;
+
+	const std::unordered_map<std::string, Datatype_expression>& type_args() const;
 
 	/** Creates a new datatype by resolving the value of all metadata references
 	 *
 	 * \param ctx the context in which to evaluate this template
 	 * \return the evaluated type that is produced
 	 */
-	virtual Datatype_sptr evaluate(Context& ctx) const = 0;
+	Datatype_sptr evaluate(const Context& ctx) const;
 };
 
 } // namespace PDI
 
-#endif // PDI_DATATYPE_TEMPLATE_H_
+#endif // PDI_DATATYPE_EXPRESSION_H_

@@ -35,6 +35,7 @@
 #include "pdi/error.h"
 #include "pdi/expression.h"
 #include "pdi/paraconf_wrapper.h"
+#include "pdi/ref_any.h"
 
 #include "pdi/record_datatype.h"
 
@@ -57,7 +58,7 @@ using std::vector;
 
 Record_datatype::Member::Member(size_t displacement, Datatype_sptr type, const string& name)
 	: m_displacement{displacement}
-	, m_type{move(type)}
+	, m_type{std::move(type)}
 	, m_name{name}
 {}
 
@@ -92,10 +93,9 @@ bool Record_datatype::Member::operator!= (const Member& rhs) const
 	return !(*this == rhs);
 }
 
-Record_datatype::Record_datatype(vector<Member>&& members, size_t size, const Attributes_map& attributes)
-	: Datatype(attributes)
-	, m_members{move(members)}
-	, m_buffersize{move(size)}
+Record_datatype::Record_datatype(vector<Member>&& members, size_t size)
+	: m_members{std::move(members)}
+	, m_buffersize{std::move(size)}
 {}
 
 const vector<Record_datatype::Member>& Record_datatype::members() const
@@ -112,7 +112,7 @@ Datatype_sptr Record_datatype::densify() const
 		size_t alignment = densified_type->alignment();
 		// align the next member as requested
 		displacement += (alignment - (displacement % alignment)) % alignment;
-		densified_members.emplace_back(displacement, move(densified_type), member.name());
+		densified_members.emplace_back(displacement, std::move(densified_type), member.name());
 		displacement += densified_members.back().type()->buffersize();
 	}
 	//add padding at the end of record
@@ -121,12 +121,7 @@ Datatype_sptr Record_datatype::densify() const
 
 	// ensure the record size is at least 1 to have a unique address
 	displacement = max<size_t>(1, displacement);
-	return unique_ptr<Record_datatype>{new Record_datatype{move(densified_members), displacement}};
-}
-
-Datatype_sptr Record_datatype::evaluate(Context&) const
-{
-	return static_pointer_cast<const Datatype>(this->shared_from_this());
+	return unique_ptr<Record_datatype>{new Record_datatype{std::move(densified_members), displacement}};
 }
 
 bool Record_datatype::dense() const
@@ -271,10 +266,10 @@ string Record_datatype::debug_string() const
 		   << "\t   type: " << endl
 		   << type_str;
 	}
-	if (!m_attributes.empty()) {
+	if (!attributes().empty()) {
 		ss << endl << "attributes: " << endl;
-		auto it = m_attributes.begin();
-		for (; next(it) != m_attributes.end(); it++) {
+		auto it = attributes().begin();
+		for (; next(it) != attributes().end(); it++) {
 			ss << "\t" << it->first << ", ";
 		}
 		ss << "\t" << it->first;

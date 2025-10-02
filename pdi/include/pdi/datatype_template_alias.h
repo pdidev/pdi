@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,10 +23,52 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "pdi/data_descriptor.h"
+#ifndef PDI_DATATYPE_TEMPLATE_ALIAS_H_
+#define PDI_DATATYPE_TEMPLATE_ALIAS_H_
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+
+#include <paraconf.h>
+
+#include <pdi/pdi_fwd.h>
+
+#include <pdi/datatype_template.h>
+#include <pdi/expression.h>
 
 namespace PDI {
 
-Data_descriptor::~Data_descriptor() = default;
+using Attributes_map = std::unordered_map<std::string, Expression>;
+
+class PDI_EXPORT Datatype_template_alias: public Datatype_template
+{
+	Datatype_expression m_expression;
+
+	std::unordered_map<std::string, Expression> m_attributes;
+
+public:
+	/** Creates datatype template with given attributes
+	 *
+	 * \param attributes attributes of datatype template
+	 */
+	Datatype_template_alias(std::unordered_map<std::string, Expression> attributes = {});
+
+	/** Creates datatype template alias
+	 */
+	Datatype_template_alias(
+		std::unordered_set<std::string> type_arguments,
+		std::unordered_set<std::string> value_arguments,
+		Datatype_expression expression
+	);
+
+	/** Creates datatype template alias
+	 */
+	Datatype_template_alias(PC_tree_t tree);
+
+	Datatype_sptr evaluate(Context& ctx) const override;
+};
 
 } // namespace PDI
+
+#endif // PDI_DATATYPE_TEMPLATE_ALIAS_H_
