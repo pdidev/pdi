@@ -42,42 +42,59 @@ namespace PDI {
  */
 class Context;
 
-/** A PDI datatype
+/** The data store is the main data storage in PDI
+ */
+class Data_store;
+
+/** A datatype is something that defines both the exact memory representation and interpretation of a value.
  *
- * A datatype is either: an array, a scalar, a pointer, a record or a tuple.
+ * A datatype is either: an array, a pointer, a record, a scalar or a tuple.
+ * It is fully defined for a specific value, so "array" in itself is not a datatype (it's a template).
+ * "An array of exactly 10 8-bits unsigned integers laid-out contiguously in memory, with no padding", is a datatype.
  */
 class Datatype;
+using Datatype_sptr = std::shared_ptr<const Datatype>;
 
 /** Array datatype derived from Datatype
-    */
+ */
 class Array_datatype;
 
 /** Pointer datatype derived from Datatype
-    */
+ */
 class Pointer_datatype;
 
 /** Record datatype derived from Datatype
-    */
+ */
 class Record_datatype;
 
 /** Scalar datatype derived from Datatype
-    */
+ */
 class Scalar_datatype;
 
 /** Tuple datatype derived from Datatype
-    */
+ */
 class Tuple_datatype;
 
-/** A PDI datatype template
+/** A datatype template
  *
- * A template can be evaluated into a datatype by resolving its references
+ * A datatype template is something that 
+ * - can have value parameters,
+ * - can have datatype parameters,
+ * and can be evaluated into a datatype by giving a context that associates values to the parameters of the template.
  */
 class Datatype_template;
-
 using Datatype_template_ptr [[deprecated]] = std::shared_ptr<const Datatype_template>;
 using Datatype_template_sptr = std::shared_ptr<const Datatype_template>;
 
-using Datatype_sptr = std::shared_ptr<const Datatype>;
+/** A datatype template defined as an alias to another one, derived from Datatype_template
+ * 
+ * Is is basically a datatype template defined by a datatype expression
+ */
+class Datatype_template_alias;
+
+/** An expression that references elements of its 
+ */
+class Datatype_expression;
 
 /** A data descriptors with a name and a value, it contains an implicit type
  * template that is used when exposing untyped data
@@ -90,13 +107,9 @@ class Plugin;
 
 template <bool, bool>
 class Ref_any;
-
 typedef Ref_any<false, false> Ref;
-
 typedef Ref_any<true, false> Ref_r;
-
 typedef Ref_any<false, true> Ref_w;
-
 typedef Ref_any<true, true> Ref_rw;
 
 /** Different possible interpretations for a scalar

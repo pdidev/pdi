@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -23,47 +23,58 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_CONTEXT_H_
-#define PDI_CONTEXT_H_
+#ifndef PDI_DATATYPE_EXPRESSION_H_
+#define PDI_DATATYPE_EXPRESSION_H_
 
-#include <functional>
 #include <memory>
 #include <string>
-#include <string_view>
 #include <unordered_map>
 
+#include <paraconf.h>
+
 #include <pdi/pdi_fwd.h>
-#include <pdi/datatype_template.h>
-#include <pdi/ref_any.h>
+#include <pdi/expression.h>
 
 namespace PDI {
 
-class PDI_EXPORT Context
+/** A datatype expression that can be evaluated to a datatype
+ * 
+ * A datatype expression contains a reference to a specific datatype template, plus a set of arguments that associate
+ * values to the parameters of the template.
+ * 
+ * One way to consider that, is that if a datatype template is a function definition, then a datatype expression is a
+ * function call
+ */
+class PDI_EXPORT Datatype_expression
 {
+private:
+	std::string m_referenced_datatype_name;
+
+	std::unordered_map<std::string, Expression> m_value_args;
+
+	std::unordered_map<std::string, Datatype_expression> m_type_args;
+
 public:
-	virtual ~Context();
+	Datatype_expression(PC_tree_t datatype_tree);
 
-	/** Accesses the descriptor for a specific name.
-	 */
-	Ref operator[] (std::string_view name) const { return data(std::move(name)); }
+	Datatype_expression(
+		Datatype_template_sptr referenced,
+		std::unordered_map<std::string, Expression> value_args,
+		std::unordered_map<std::string, Datatype_expression> type_args
+	);
 
-	/** Accesses the descriptor for a specific name.
-	 */
-	virtual Ref data(std::string_view name) const = 0;
+	const std::unordered_map<std::string, Expression>& value_args() const;
 
-	/** Accesses the descriptor for a specific name.
-	 */
-	virtual Ref local_data(std::string_view name) const = 0;
+	const std::unordered_map<std::string, Datatype_expression>& type_args() const;
 
-	/** Accesses the descriptor for a specific name.
+	/** Creates a new datatype by resolving the value of all metadata references
+	 *
+	 * \param ctx the context in which to evaluate this template
+	 * \return the evaluated type that is produced
 	 */
-	virtual Ref global_data(std::string_view name) const = 0;
-
-	/** Accesses the descriptor for a specific name.
-	 */
-	virtual Datatype_template_sptr datatype(std::string_view name) const = 0;
+	Datatype_sptr evaluate(const Context& ctx) const;
 };
 
 } // namespace PDI
 
-#endif // PDI_CONTEXT_H_
+#endif // PDI_DATATYPE_EXPRESSION_H_

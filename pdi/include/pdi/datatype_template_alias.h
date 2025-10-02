@@ -1,6 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,57 +23,52 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_CONTEXT_PROXY_H_
-#define PDI_CONTEXT_PROXY_H_
+#ifndef PDI_DATATYPE_TEMPLATE_ALIAS_H_
+#define PDI_DATATYPE_TEMPLATE_ALIAS_H_
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+
+#include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/callbacks.h>
-#include <pdi/context.h>
-#include <pdi/logger.h>
 
-#include <functional>
-#include <string>
+#include <pdi/datatype_template.h>
+#include <pdi/expression.h>
 
 namespace PDI {
 
-class PDI_EXPORT Context_proxy: public Context
-{
-	/// Real context of this proxy
-	Context& m_real_context;
+using Attributes_map = std::unordered_map<std::string, Expression>;
 
-	/// Logger of the plugin
-	Logger m_plugin_logger;
+class PDI_EXPORT Datatype_template_alias: public Datatype_template
+{
+	Datatype_expression m_expression;
+
+	std::unordered_map<std::string, Expression> m_attributes;
 
 public:
-	/** Creates Context proxy without plugin logger
-	 * \param[in] ctx context to make a proxy
-	 */
-	Context_proxy(Context& ctx);
-
-	/** Creates Context proxy
-	 * \param[in] ctx context to make a proxy
-	 * \param[in] logger_name name of the logger (will be used in logger pattern)
-	 * \param[in] logging_tree logging yaml tree of the plugin
-	 */
-	Context_proxy(Context& ctx, const std::string& logger_name, PC_tree_t logging_tree);
-
-	/** Sets up logger
-	 * \param[in] logger_name name of the logger (will be used in logger pattern)
-	 * \param[in] logging_tree logging yaml tree of the plugin
-	 */
-	void setup_logger(const std::string& logger_name, PC_tree_t logging_tree);
-
-	/** Returns pdi core logger
+	/** Creates datatype template with given attributes
 	 *
-	 * \return pdi core logger
+	 * \param attributes attributes of datatype template
 	 */
-	Logger& pdi_core_logger();
+	Datatype_template_alias(std::unordered_map<std::string, Expression> attributes = {});
 
-	/** Context::datatype proxy for plugins
+	/** Creates datatype template alias
 	 */
-	Datatype_template_sptr datatype(PC_tree_t node) override;
+	Datatype_template_alias(
+		std::unordered_set<std::string> type_arguments,
+		std::unordered_set<std::string> value_arguments,
+		Datatype_expression expression
+	);
+
+	/** Creates datatype template alias
+	 */
+	Datatype_template_alias(PC_tree_t tree);
+
+	Datatype_sptr evaluate(Context& ctx) const override;
 };
 
-} //namespace PDI
+} // namespace PDI
 
-#endif // PDI_CONTEXT_PROXY_H_
+#endif // PDI_DATATYPE_TEMPLATE_ALIAS_H_

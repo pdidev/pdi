@@ -35,15 +35,15 @@
 #include <type_traits>
 #include <unordered_set>
 
-#include "pdi/context.h"
-#include "pdi/data_descriptor.h"
+#include "pdi/pdi_fwd.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/paraconf_wrapper.h"
+#include "pdi/pdi_instance.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 
-#include "global_context.h"
+#include "pdi/data_store.h"
 
 namespace {
 

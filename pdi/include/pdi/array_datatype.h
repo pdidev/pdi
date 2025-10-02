@@ -84,8 +84,6 @@ public:
 
 	Datatype_sptr densify() const override;
 
-	Datatype_sptr evaluate(Context&) const override;
-
 	bool dense() const override;
 
 	size_t datasize() const override;
@@ -123,7 +121,7 @@ public:
 	 * \param attributes attributes of the array
 	 */
 	static std::shared_ptr<Array_datatype>
-	make(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {});
+	make(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, std::unordered_map<std::string, Ref> attributes = {});
 
 	/** Construct a new completely filled Array_datatype
 	 *
@@ -131,7 +129,7 @@ public:
 	 * \param size the number of elements the array can store
 	 * \param attributes attributes of the array
 	 */
-	static std::shared_ptr<Array_datatype> make(Datatype_sptr subtype, size_t size, const Attributes_map& attributes = {});
+	static std::shared_ptr<Array_datatype> make(Datatype_sptr subtype, size_t size, std::unordered_map<std::string, Ref> attributes = {});
 
 private:
 	/** Construct a new partially filled Array_datatype
@@ -142,7 +140,7 @@ private:
 	 * \param subsize the number of actual elements in the array
 	 * \param attributes attributes of the array
 	 */
-	Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes = {});
+	Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, std::unordered_map<std::string, Ref> attributes = {});
 
 	/** Construct a new completely filled Array_datatype
 	 *
@@ -150,7 +148,7 @@ private:
 	 * \param size the number of elements the array can store
 	 * \param attributes attributes of the array
 	 */
-	Array_datatype(Datatype_sptr subtype, size_t size, const Attributes_map& attributes = {});
+	Array_datatype(Datatype_sptr subtype, size_t size, std::unordered_map<std::string, Ref> attributes = {});
 };
 
 } // namespace PDI
