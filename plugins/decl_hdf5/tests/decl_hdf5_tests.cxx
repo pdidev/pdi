@@ -1451,10 +1451,10 @@ TEST_F(decl_hdf5_test, check_config_error_for_two_regex_found)
 		= "Error while triggering event `write_event': Config_error in lines 44 - 45: Found `4' match(s) in the list of datasets "
 		  "section for `group123/array_data'. Cannot choose the right element in datasets.\n"
 		  "The elements that match group123/array_data are:\n"
-		  " - group[0-9]+/array_data\n"
 		  " - group.*/array_data\n"
 		  " - group1.*/array_data\n"
 		  " - group12.*/array_data\n"
+		  " - group[0-9]+/array_data\n"
 		  "Attention: The elements are considered as a regex.";
 
 	PDI_status_t true_status = PDI_ERR_CONFIG;
