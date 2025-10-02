@@ -391,7 +391,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const un
 						list_dataset_found.emplace_back(dsets_elem->first);
 					}
 				}
-				list_dataset_found.sort(); // sort the list of dataset 
+				list_dataset_found.sort(); // sort the list of dataset
 
 				std::string msg_dataset_found = fmt::format(
 					"\nThe elements that match {} are:\n - {}\nAttention: The elements are considered as a regex.",
