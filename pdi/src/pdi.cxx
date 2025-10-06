@@ -368,7 +368,7 @@ try {
 	i = 0;
 	for (auto&& it = list_names.begin(); it != list_names.end(); it++) {
 		Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, list_names.size());
-		Global_context::context()[it->c_str()].data_callbacks();
+		Global_context::context()[it->c_str()].trigger_delayed_data_callbacks();
 	}
 
 	Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);

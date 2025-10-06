@@ -93,7 +93,7 @@ public:
 
 	void* share(Ref ref, bool read, bool write, bool delay_data_callback = false) override;
 
-	void data_callbacks() override;
+	void trigger_delayed_data_callbacks() override;
 
 	void release() override;
 

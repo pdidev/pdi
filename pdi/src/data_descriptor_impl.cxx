@@ -151,7 +151,7 @@ bool Data_descriptor_impl::empty()
 	return m_refs.empty();
 }
 
-void Data_descriptor_impl::data_callbacks()
+void Data_descriptor_impl::trigger_delayed_data_callbacks()
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 
@@ -218,7 +218,7 @@ try {
 	}
 
 	if (!delay_data_callback) {
-		data_callbacks();
+		trigger_delayed_data_callbacks();
 	}
 
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
