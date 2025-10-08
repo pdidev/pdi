@@ -57,7 +57,9 @@ class Hdf5_error_handler
 {
 	/// The original handler
 	H5E_auto2_t m_old_func;
-
+	/// Original handler to use with old HDF5 API
+        H5E_auto1_t m_old_func_V16;
+  
 	/// The original handler data
 	void* m_old_data;
 
@@ -66,15 +68,36 @@ public:
 	 */
 	Hdf5_error_handler()
 	{
-		if (0 > H5Eget_auto2(H5E_DEFAULT, &m_old_func, &m_old_data)) handle_hdf5_err();
-		if (0 > H5Eset_auto2(H5E_DEFAULT, NULL, NULL)) handle_hdf5_err();
+	  unsigned is_v2;
+	  hid_t stack = H5Eget_current_stack();
+	  H5Eauto_is_v2(stack, &is_v2);
+	  if(is_v2)
+	    {
+	      if (0 > H5Eget_auto2(H5E_DEFAULT, &m_old_func, &m_old_data)) handle_hdf5_err();
+	      if (0 > H5Eset_auto2(H5E_DEFAULT, NULL, NULL)) handle_hdf5_err();
+	    }
+	  else
+	    {
+	      if (0 > H5Eget_auto1(&m_old_func_V16, &m_old_data)) handle_hdf5_err();
+	      if (0 > H5Eset_auto1(NULL, NULL)) handle_hdf5_err();
+	    }	  
 	}
 
 	/** The destructor
 	 */
 	~Hdf5_error_handler()
 	{
-		if (0 > H5Eset_auto2(H5E_DEFAULT, m_old_func, m_old_data)) handle_hdf5_err();
+	  unsigned is_v2;
+	  hid_t stack = H5Eget_current_stack();
+	  H5Eauto_is_v2(stack, &is_v2);
+	  if(is_v2)
+	    {
+	      if (0 > H5Eset_auto2(H5E_DEFAULT, m_old_func, m_old_data)) handle_hdf5_err();
+	    }
+	  else
+	    {
+	      if (0 > H5Eset_auto1(m_old_func_V16, m_old_data)) handle_hdf5_err();
+	    }
 	}
 };
 
