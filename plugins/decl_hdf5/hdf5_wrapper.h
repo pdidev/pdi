@@ -56,21 +56,30 @@ namespace decl_hdf5 {
 class Hdf5_error_handler
 {
 	/// The original handler
-	H5E_auto2_t m_old_func;
-	/// Original handler to use with old HDF5 API
-        H5E_auto1_t m_old_func_V16;
-  
+  union {
+    // handler to use with the HDF5 API version 2
+    H5E_auto2_t m_old_func; 
+    ///handler to use with old HDF5 API
+    H5E_auto1_t m_old_func_V16;
+  };
 	/// The original handler data
 	void* m_old_data;
 
+  unsigned get_api_version()
+  {
+    	    hid_t stack = H5Eget_current_stack();
+	    if (0 > stack)  handle_hdf5_err();
+	    unsigned result;
+	    if (0 > H5Eauto_is_v2(stack, &result)) handle_hdf5_err();
+	    if (0 > H5Eclose_stack(stack)) handle_hdf5_err();
+	    return result;
+  }
 public:
 	/** The default (and only) constructor, installs the handler
 	 */
 	Hdf5_error_handler()
 	{
-	  unsigned is_v2;
-	  hid_t stack = H5Eget_current_stack();
-	  H5Eauto_is_v2(stack, &is_v2);
+	  static unsigned is_v2 = get_api_version();
 	  if(is_v2)
 	    {
 	      if (0 > H5Eget_auto2(H5E_DEFAULT, &m_old_func, &m_old_data)) handle_hdf5_err();
@@ -87,9 +96,7 @@ public:
 	 */
 	~Hdf5_error_handler()
 	{
-	  unsigned is_v2;
-	  hid_t stack = H5Eget_current_stack();
-	  H5Eauto_is_v2(stack, &is_v2);
+	  static unsigned is_v2 = get_api_version();
 	  if(is_v2)
 	    {
 	      if (0 > H5Eset_auto2(H5E_DEFAULT, m_old_func, m_old_data)) handle_hdf5_err();
