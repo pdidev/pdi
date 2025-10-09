@@ -56,55 +56,51 @@ namespace decl_hdf5 {
 class Hdf5_error_handler
 {
 	/// The original handler
-  union {
-    // handler to use with the HDF5 API version 2
-    H5E_auto2_t m_old_func; 
-    ///handler to use with old HDF5 API
-    H5E_auto1_t m_old_func_V16;
-  };
+	union {
+		// handler to use with the HDF5 API version 2
+		H5E_auto2_t m_old_func;
+		///handler to use with old HDF5 API
+		H5E_auto1_t m_old_func_V16;
+	};
+
 	/// The original handler data
 	void* m_old_data;
 
-  unsigned get_api_version()
-  {
-    	    hid_t stack = H5Eget_current_stack();
-	    if (0 > stack)  handle_hdf5_err();
-	    unsigned result;
-	    if (0 > H5Eauto_is_v2(stack, &result)) handle_hdf5_err();
-	    if (0 > H5Eclose_stack(stack)) handle_hdf5_err();
-	    return result;
-  }
+	unsigned get_api_version()
+	{
+		hid_t stack = H5Eget_current_stack();
+		if (0 > stack) handle_hdf5_err();
+		unsigned result;
+		if (0 > H5Eauto_is_v2(stack, &result)) handle_hdf5_err();
+		if (0 > H5Eclose_stack(stack)) handle_hdf5_err();
+		return result;
+	}
+
 public:
 	/** The default (and only) constructor, installs the handler
 	 */
 	Hdf5_error_handler()
 	{
-	  static unsigned is_v2 = get_api_version();
-	  if(is_v2)
-	    {
-	      if (0 > H5Eget_auto2(H5E_DEFAULT, &m_old_func, &m_old_data)) handle_hdf5_err();
-	      if (0 > H5Eset_auto2(H5E_DEFAULT, NULL, NULL)) handle_hdf5_err();
-	    }
-	  else
-	    {
-	      if (0 > H5Eget_auto1(&m_old_func_V16, &m_old_data)) handle_hdf5_err();
-	      if (0 > H5Eset_auto1(NULL, NULL)) handle_hdf5_err();
-	    }	  
+		static unsigned is_v2 = get_api_version();
+		if (is_v2) {
+			if (0 > H5Eget_auto2(H5E_DEFAULT, &m_old_func, &m_old_data)) handle_hdf5_err();
+			if (0 > H5Eset_auto2(H5E_DEFAULT, NULL, NULL)) handle_hdf5_err();
+		} else {
+			if (0 > H5Eget_auto1(&m_old_func_V16, &m_old_data)) handle_hdf5_err();
+			if (0 > H5Eset_auto1(NULL, NULL)) handle_hdf5_err();
+		}
 	}
 
 	/** The destructor
 	 */
 	~Hdf5_error_handler()
 	{
-	  static unsigned is_v2 = get_api_version();
-	  if(is_v2)
-	    {
-	      if (0 > H5Eset_auto2(H5E_DEFAULT, m_old_func, m_old_data)) handle_hdf5_err();
-	    }
-	  else
-	    {
-	      if (0 > H5Eset_auto1(m_old_func_V16, m_old_data)) handle_hdf5_err();
-	    }
+		static unsigned is_v2 = get_api_version();
+		if (is_v2) {
+			if (0 > H5Eset_auto2(H5E_DEFAULT, m_old_func, m_old_data)) handle_hdf5_err();
+		} else {
+			if (0 > H5Eset_auto1(m_old_func_V16, m_old_data)) handle_hdf5_err();
+		}
 	}
 };
 
