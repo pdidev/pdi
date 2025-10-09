@@ -48,62 +48,6 @@ namespace decl_hdf5 {
  */
 [[noreturn]] void handle_hdf5_err(const char* message = NULL);
 
-/** A RAII-style HDF5 error handler.
- *
- * Creating an instance of this class removes any HDF5 error handler.
- * The original handler is reinstalled when the instance is destroyed.
- */
-class Hdf5_error_handler
-{
-	/// The original handler
-	union {
-		// handler to use with the HDF5 API version 2
-		H5E_auto2_t m_old_func;
-		///handler to use with old HDF5 API
-		H5E_auto1_t m_old_func_V16;
-	};
-
-	/// The original handler data
-	void* m_old_data;
-
-	unsigned get_api_version()
-	{
-		hid_t stack = H5Eget_current_stack();
-		if (0 > stack) handle_hdf5_err();
-		unsigned result;
-		if (0 > H5Eauto_is_v2(stack, &result)) handle_hdf5_err();
-		if (0 > H5Eclose_stack(stack)) handle_hdf5_err();
-		return result;
-	}
-
-public:
-	/** The default (and only) constructor, installs the handler
-	 */
-	Hdf5_error_handler()
-	{
-		static unsigned is_v2 = get_api_version();
-		if (is_v2) {
-			if (0 > H5Eget_auto2(H5E_DEFAULT, &m_old_func, &m_old_data)) handle_hdf5_err();
-			if (0 > H5Eset_auto2(H5E_DEFAULT, NULL, NULL)) handle_hdf5_err();
-		} else {
-			if (0 > H5Eget_auto1(&m_old_func_V16, &m_old_data)) handle_hdf5_err();
-			if (0 > H5Eset_auto1(NULL, NULL)) handle_hdf5_err();
-		}
-	}
-
-	/** The destructor
-	 */
-	~Hdf5_error_handler()
-	{
-		static unsigned is_v2 = get_api_version();
-		if (is_v2) {
-			if (0 > H5Eset_auto2(H5E_DEFAULT, m_old_func, m_old_data)) handle_hdf5_err();
-		} else {
-			if (0 > H5Eset_auto1(m_old_func_V16, m_old_data)) handle_hdf5_err();
-		}
-	}
-};
-
 /** A RAII-style wrapper for HDF5 hid_t.
  *
  * This calls the provided destroyer function when the hid_t goes out of scope.
@@ -208,6 +152,61 @@ Raii_hid make_raii_hid(hid_t value, Destroyer&& dst, const char* message = NULL)
  * \return a tuple containing the Raii_hid for (dataspace, datatype)
  */
 std::tuple<Raii_hid, Raii_hid> space(PDI::Datatype_sptr type, bool dense = false);
+
+/** A RAII-style HDF5 error handler.
+ *
+ * Creating an instance of this class removes any HDF5 error handler.
+ * The original handler is reinstalled when the instance is destroyed.
+ */
+class Hdf5_error_handler
+{
+	/// The original handler
+	union
+	{
+		// handler to use with the HDF5 API version 2
+		H5E_auto2_t m_old_func;
+		///handler to use with old HDF5 API
+		H5E_auto1_t m_old_func_V16;
+	};
+
+	/// The original handler data
+	void* m_old_data;
+
+	static unsigned get_api_version()
+	{
+		Raii_hid stack = make_raii_hid(H5Eget_current_stack(), H5Eclose_stack, "unable to retrieve HDF5 stack to check API version");
+		unsigned result;
+		if (0 > H5Eauto_is_v2(stack, &result)) handle_hdf5_err("unable to retrieve HDF5 stack to check API version");
+		return result;
+	}
+
+public:
+	/** The default (and only) constructor, installs the handler
+	 */
+	Hdf5_error_handler()
+	{
+		static unsigned is_v2 = get_api_version();
+		if (is_v2) {
+			if (0 > H5Eget_auto2(H5E_DEFAULT, &m_old_func, &m_old_data)) handle_hdf5_err();
+			if (0 > H5Eset_auto2(H5E_DEFAULT, NULL, NULL)) handle_hdf5_err();
+		} else {
+			if (0 > H5Eget_auto1(&m_old_func_V16, &m_old_data)) handle_hdf5_err();
+			if (0 > H5Eset_auto1(NULL, NULL)) handle_hdf5_err();
+		}
+	}
+
+	/** The destructor
+	 */
+	~Hdf5_error_handler()
+	{
+		static unsigned is_v2 = get_api_version();
+		if (is_v2) {
+			if (0 > H5Eset_auto2(H5E_DEFAULT, m_old_func, m_old_data)) handle_hdf5_err();
+		} else {
+			if (0 > H5Eset_auto1(m_old_func_V16, m_old_data)) handle_hdf5_err();
+		}
+	}
+};
 
 } // namespace decl_hdf5
 
