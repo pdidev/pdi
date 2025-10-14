@@ -11,6 +11,9 @@ Julien Bigot - CEA (julien.bigot@cea.fr)
 * Run tests that depend on the filesystem in their own temporary directory
 * Buildsystem
 
+Anida Khizar - CEA (anida.khizar@cea.fr)
+* fix HDF5 API version compatibility issue [#567](https://github.com/pdidev/pdi/issues/567)
+
 Jacques Morice - CEA (jacques.morice@cea.fr)
 * contribution to feature improvement, validation
 * fix issue [#55](https://github.com/pdidev/pkgs/issues/55)
