@@ -161,8 +161,7 @@ std::tuple<Raii_hid, Raii_hid> space(PDI::Datatype_sptr type, bool dense = false
 class Hdf5_error_handler
 {
 	/// The original handler
-	union
-	{
+	union {
 		// handler to use with the HDF5 API version 2
 		H5E_auto2_t m_old_func;
 		///handler to use with old HDF5 API
