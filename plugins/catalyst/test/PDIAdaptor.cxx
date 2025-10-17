@@ -5,6 +5,7 @@
 
 #include <pdi.h>
 #include <string>
+#include <iostream>
 
 namespace PDIAdaptor
 {
@@ -25,7 +26,7 @@ bool Initialize(const std::string& pdi_yaml_config_file_path, const Grid& grid)
     return false;
   }
 
-  auto number_of_cells = grid.GetNumberOfCells();
+  auto number_of_cells = grid.GetNumberOfCells() * 8;
   status = PDI_expose("cell_points_size", &number_of_cells, PDI_OUT);
   if (status != PDI_status_t::PDI_OK)
   {
@@ -62,13 +63,13 @@ bool Execute(int cycle, double time, Grid& grid, Attributes& attribs)
     //
     "time", &time, PDI_OUT,
     //
-    "points_array", grid.GetPointsArray(), PDI_OUT,
-    //
     "number_of_points", &number_of_points, PDI_OUT,
     //
-    "cell_points", grid.GetCellPoints(0), PDI_OUT,
+    "points_array", grid.GetPointsArray(), PDI_OUT,
     //
     "number_of_cells", &number_of_cells, PDI_OUT,
+    //
+    "cell_points", grid.GetCellPoints(0), PDI_OUT,
     //
     "velocity_array", attribs.GetVelocityArray(), PDI_OUT,
     //
