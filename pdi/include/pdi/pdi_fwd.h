@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -30,6 +30,7 @@
 #ifndef PDI_PDI_FWD_H_
 #define PDI_PDI_FWD_H_
 
+#include <cstdint>
 #include <memory>
 
 #include <pdi.h>

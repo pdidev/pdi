@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -25,7 +26,7 @@
 #include <hdf5.h>
 #include <pdi.h>
 
-int PDI_write_pure()
+int PDI_write_pure(int array_data[100], float matrix_data[100][100])
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                          \n"
@@ -43,18 +44,8 @@ int PDI_write_pure()
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 
-	int array_data[100];
-	for (int i = 0; i < 100; i++) {
-		array_data[i] = i;
-	}
 	PDI_expose("array_data", array_data, PDI_OUT);
 
-	float matrix_data[100][100];
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
-		}
-	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
 
 	PDI_finalize();
@@ -63,7 +54,7 @@ int PDI_write_pure()
 	return 0;
 }
 
-int PDI_read_pure()
+int PDI_read_pure(int array_ref[100], float matrix_ref[100][100])
 {
 	hid_t file_id = H5Fopen("decl_hdf5_test_16_pure.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id < 0) {
@@ -97,9 +88,7 @@ int PDI_read_pure()
 
 	// check chunking
 	hid_t array_plist = H5Dget_create_plist(array_data_id);
-	hsize_t array_dims[2];
-	int chunk_dim = H5Pget_chunk(array_plist, 2, array_dims);
-	if (chunk_dim >= 0) {
+	if (H5Pget_layout(array_plist) == H5D_CHUNKED) {
 		printf("Array dataset has chunking in pure file\n");
 		return 1;
 	}
@@ -118,8 +107,8 @@ int PDI_read_pure()
 	}
 
 	for (int i = 0; i < 100; i++) {
-		if (array_data[i] != i) {
-			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], i);
+		if (array_data[i] != array_ref[i]) {
+			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], array_ref[i]);
 			return 1;
 		}
 	}
@@ -140,13 +129,10 @@ int PDI_read_pure()
 
 	// check chunking
 	hid_t matrix_plist = H5Dget_create_plist(matrix_data_id);
-	hsize_t matrix_dims[2];
-	chunk_dim = H5Pget_chunk(matrix_plist, 2, matrix_dims);
-	if (chunk_dim >= 0) {
+	if (H5Pget_layout(matrix_plist) == H5D_CHUNKED) {
 		printf("Matrix dataset has chunking in pure file\n");
 		return 1;
 	}
-	printf("Above errors are expected and correct\n");
 
 	// check deflate and fletcher
 	filters_count = H5Pget_nfilters(matrix_plist);
@@ -163,8 +149,8 @@ int PDI_read_pure()
 
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			if (matrix_data[i][j] != i * 100 + j * 0.95f) {
-				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], i * 100 + j * 0.95f);
+			if (matrix_data[i][j] != matrix_ref[i][j]) {
+				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], matrix_ref[i][j]);
 				return 1;
 			}
 		}
@@ -178,7 +164,7 @@ int PDI_read_pure()
 	return 0;
 }
 
-int PDI_write_chunked()
+int PDI_write_chunked(int array_data[100], float matrix_data[100][100])
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                                \n"
@@ -203,18 +189,8 @@ int PDI_write_chunked()
 	PDI_expose("x", &x, PDI_OUT);
 	PDI_expose("y", &y, PDI_OUT);
 
-	int array_data[100];
-	for (int i = 0; i < 100; i++) {
-		array_data[i] = i;
-	}
 	PDI_expose("array_data", array_data, PDI_OUT);
 
-	float matrix_data[100][100];
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
-		}
-	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
 
 	PDI_finalize();
@@ -223,7 +199,7 @@ int PDI_write_chunked()
 	return 0;
 }
 
-int PDI_read_chunked()
+int PDI_read_chunked(int array_ref[100], float matrix_ref[100][100])
 {
 	hid_t file_id = H5Fopen("decl_hdf5_test_16_chunked.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id < 0) {
@@ -264,7 +240,7 @@ int PDI_read_chunked()
 		return 1;
 	}
 	if (array_dims[0] != 10) {
-		printf("Array dataset invalid chunking: %d (should be: 10)\n", array_dims[0]);
+		printf("Array dataset invalid chunking: %d (should be: 10)\n", (int)array_dims[0]);
 		return 1;
 	}
 
@@ -282,8 +258,8 @@ int PDI_read_chunked()
 	}
 
 	for (int i = 0; i < 100; i++) {
-		if (array_data[i] != i) {
-			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], i);
+		if (array_data[i] != array_ref[i]) {
+			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], array_ref[i]);
 			return 1;
 		}
 	}
@@ -309,7 +285,7 @@ int PDI_read_chunked()
 		return 1;
 	}
 	if (matrix_dims[0] != 10 || matrix_dims[1] != 10) {
-		printf("Matrix dataset invalid chunking: [%d, %d] (should be: [10, 10])\n", matrix_dims[0], matrix_dims[1]);
+		printf("Matrix dataset invalid chunking: [%d, %d] (should be: [10, 10])\n", (int)matrix_dims[0], (int)matrix_dims[1]);
 		return 1;
 	}
 
@@ -328,8 +304,8 @@ int PDI_read_chunked()
 
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			if (matrix_data[i][j] != i * 100 + j * 0.95f) {
-				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], i * 100 + j * 0.95f);
+			if (matrix_data[i][j] != matrix_ref[i][j]) {
+				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], matrix_ref[i][j]);
 				return 1;
 			}
 		}
@@ -343,7 +319,7 @@ int PDI_read_chunked()
 	return 0;
 }
 
-int PDI_write_deflated()
+int PDI_write_deflated(int array_data[100], float matrix_data[100][100])
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                                                 \n"
@@ -361,18 +337,8 @@ int PDI_write_deflated()
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 
-	int array_data[100];
-	for (int i = 0; i < 100; i++) {
-		array_data[i] = i;
-	}
 	PDI_expose("array_data", array_data, PDI_OUT);
 
-	float matrix_data[100][100];
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
-		}
-	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
 
 	PDI_finalize();
@@ -381,7 +347,7 @@ int PDI_write_deflated()
 	return 0;
 }
 
-int PDI_read_deflated()
+int PDI_read_deflated(int array_ref[100], float matrix_ref[100][100])
 {
 	hid_t file_id = H5Fopen("decl_hdf5_test_16_deflated.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id < 0) {
@@ -428,8 +394,8 @@ int PDI_read_deflated()
 	}
 
 	for (int i = 0; i < 100; i++) {
-		if (array_data[i] != i) {
-			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], i);
+		if (array_data[i] != array_ref[i]) {
+			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], array_ref[i]);
 			return 1;
 		}
 	}
@@ -462,8 +428,8 @@ int PDI_read_deflated()
 
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			if (matrix_data[i][j] != i * 100 + j * 0.95f) {
-				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], i * 100 + j * 0.95f);
+			if (matrix_data[i][j] != matrix_ref[i][j]) {
+				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], matrix_ref[i][j]);
 				return 1;
 			}
 		}
@@ -477,7 +443,7 @@ int PDI_read_deflated()
 	return 0;
 }
 
-int PDI_write_fletcher()
+int PDI_write_fletcher(int array_data[100], float matrix_data[100][100])
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                                                 \n"
@@ -495,18 +461,8 @@ int PDI_write_fletcher()
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 
-	int array_data[100];
-	for (int i = 0; i < 100; i++) {
-		array_data[i] = i;
-	}
 	PDI_expose("array_data", array_data, PDI_OUT);
 
-	float matrix_data[100][100];
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
-		}
-	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
 
 	PDI_finalize();
@@ -515,7 +471,7 @@ int PDI_write_fletcher()
 	return 0;
 }
 
-int PDI_read_fletcher()
+int PDI_read_fletcher(int array_ref[100], float matrix_ref[100][100])
 {
 	hid_t file_id = H5Fopen("decl_hdf5_test_16_fletcher.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id < 0) {
@@ -562,8 +518,8 @@ int PDI_read_fletcher()
 	}
 
 	for (int i = 0; i < 100; i++) {
-		if (array_data[i] != i) {
-			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], i);
+		if (array_data[i] != array_ref[i]) {
+			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], array_ref[i]);
 			return 1;
 		}
 	}
@@ -596,8 +552,8 @@ int PDI_read_fletcher()
 
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			if (matrix_data[i][j] != i * 100 + j * 0.95f) {
-				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], i * 100 + j * 0.95f);
+			if (matrix_data[i][j] != matrix_ref[i][j]) {
+				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], matrix_ref[i][j]);
 				return 1;
 			}
 		}
@@ -611,7 +567,7 @@ int PDI_read_fletcher()
 	return 0;
 }
 
-int PDI_write_defletcher()
+int PDI_write_defletcher(int array_data[100], float matrix_data[100][100])
 {
 	const char* CONFIG_YAML
 		= "logging: trace                                                                                 \n"
@@ -630,18 +586,8 @@ int PDI_write_defletcher()
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 
-	int array_data[100];
-	for (int i = 0; i < 100; i++) {
-		array_data[i] = i;
-	}
 	PDI_expose("array_data", array_data, PDI_OUT);
 
-	float matrix_data[100][100];
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
-			matrix_data[i][j] = 100 * i + j * 0.95f;
-		}
-	}
 	PDI_expose("matrix_data", matrix_data, PDI_OUT);
 
 	PDI_finalize();
@@ -650,7 +596,7 @@ int PDI_write_defletcher()
 	return 0;
 }
 
-int PDI_read_defletcher()
+int PDI_read_defletcher(int array_ref[100], float matrix_ref[100][100])
 {
 	hid_t file_id = H5Fopen("decl_hdf5_test_16_defletcher.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file_id < 0) {
@@ -697,8 +643,8 @@ int PDI_read_defletcher()
 	}
 
 	for (int i = 0; i < 100; i++) {
-		if (array_data[i] != i) {
-			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], i);
+		if (array_data[i] != array_ref[i]) {
+			printf("array_size[%d] invalid value: %d (should be: %d)\n", i, array_data[i], array_ref[i]);
 			return 1;
 		}
 	}
@@ -731,8 +677,8 @@ int PDI_read_defletcher()
 
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
-			if (matrix_data[i][j] != i * 100 + j * 0.95f) {
-				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], i * 100 + j * 0.95f);
+			if (matrix_data[i][j] != matrix_ref[i][j]) {
+				printf("matrix_size[%d, %d] invalid value: %f (should be: %f)\n", i, j, matrix_data[i][j], matrix_ref[i][j]);
 				return 1;
 			}
 		}
@@ -748,52 +694,64 @@ int PDI_read_defletcher()
 
 int main()
 {
+	int array_data[100];
+	for (int i = 0; i < 100; i++) {
+		array_data[i] = i;
+	}
+
+	float matrix_data[100][100];
+	for (int i = 0; i < 100; i++) {
+		for (int j = 0; j < 100; j++) {
+			matrix_data[i][j] = 100 * i + j * 0.95f;
+		}
+	}
+
 	// pure
-	int status = PDI_write_pure();
+	int status = PDI_write_pure(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
-	status = PDI_read_pure();
+	status = PDI_read_pure(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
 
 	// chunked
-	status = PDI_write_chunked();
+	status = PDI_write_chunked(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
-	status = PDI_read_chunked();
+	status = PDI_read_chunked(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
 
 	// deflated
-	status = PDI_write_deflated();
+	status = PDI_write_deflated(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
-	status = PDI_read_deflated();
+	status = PDI_read_deflated(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
 
 	// fletcher
-	status = PDI_write_fletcher();
+	status = PDI_write_fletcher(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
-	status = PDI_read_fletcher();
+	status = PDI_read_fletcher(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
 
 	// deflate and fletcher
-	status = PDI_write_defletcher();
+	status = PDI_write_defletcher(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}
-	status = PDI_read_defletcher();
+	status = PDI_read_defletcher(array_data, matrix_data);
 	if (status != 0) {
 		return status;
 	}

@@ -1,5 +1,10 @@
 #=============================================================================
-# Copyright (C) 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2025 Centre national de la recherche scientifique (CNRS)
+# Copyright (C) 2025 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# Copyright (C) 2025 Université Paris-Saclay
+# Copyright (C) 2025 Université de Versailles Saint-Quentin-en-Yvelines (UVSQ)
+#
+# SPDX-License-Identifier: BSD-3-Clause
 #
 # All rights reserved.
 #
@@ -27,38 +32,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-name: Test PDI
-description: 'Test PDI'
-inputs:
-  image:
-    required: true
-    description: "docker image in which to run the test"
-runs:
-  using: "composite"
-  steps:
-    - id: test
-      shell: bash
-      run: |
-        cat<<-'EOF' > run.sh
-          set -xe
-          JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
-          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
-          export MAKEFLAGS='-j 4'
-          export CTEST_FLAGS="--output-junit /tmp/tests.xml"
-          export TEST_DIR="/tmp_dir_test"
-          /src/bin/build_and_run_all_tests
-        EOF
-        docker run \
-          --cidfile='docker.cid' \
-          -v ${PWD}:/src:ro \
-          --tmpfs /tmp_dir_test:exec \
-          ${{inputs.image}} \
-          bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/tests.xml tests.xml
-        then echo "with_report=true" >> "$GITHUB_OUTPUT"
-        else echo "with_report=false" >> "$GITHUB_OUTPUT"
-        fi
-    - id: Publish
-      uses: mikepenz/action-junit-report@v4
-      if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
-      with: { report_paths: 'tests.xml' }
+# Default owners, unless something else is specified
+*  yushan.wang@cea.fr julien.bigot@cea.fr
+
+# Owners of the Deisa plugin
+plugins/deisa/  bmartin@cea.fr julien.bigot@cea.fr
+
+# Owners of the buildsystem & packaging stuff
+cmake/          bmartin@cea.fr julien.bigot@cea.fr
+CMakeLists.txt  bmartin@cea.fr julien.bigot@cea.fr
+*.cmake         bmartin@cea.fr julien.bigot@cea.fr
+/spack.yaml     bmartin@cea.fr julien.bigot@cea.fr
+/PACKAGING.md   bmartin@cea.fr julien.bigot@cea.fr
+
+# Owners of the CI/CD stuff
+/.github/  bmartin@cea.fr julien.bigot@cea.fr
+/bin/      bmartin@cea.fr julien.bigot@cea.fr
+/tools     bmartin@cea.fr julien.bigot@cea.fr
