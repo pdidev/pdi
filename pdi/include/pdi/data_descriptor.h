@@ -82,20 +82,33 @@ public:
 	 * \param[in,out] data the shared data
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
-	 * \param delay_data_callback a boolean to define if we want to delay
-	 *        "data_callbacks" for the shared data
 	 */
-	virtual void share(void* data, bool read, bool write, bool delay_data_callback = false) = 0;
+	virtual void share(void* data, bool read, bool write) = 0;
+
+	/** Shares some data with PDI
+	 * \param[in,out] data the shared data
+	 * \param read whether read access is granted to other references
+	 * \param write whether write access is granted to other references
+	 * \param delay_callbacks a class that allow to delay trigger_delayed_data_callbacks for a list of a data
+	 */
+	virtual void share(void* data, bool read, bool write, Delayed_data_callbacks &delayed_callbacks) = 0;
 
 	/** Shares some data with PDI
 	 * \param[in,out] ref a reference to the shared data
 	 * \param read whether the stored reference should have read access
 	 * \param write whether the stored reference should have write access
-	 * \param delay_data_callback a boolean to define if we want to delay
-	 *        "call_data_callbacks" for the shared data
 	 * \return the just shared buffer
 	 */
-	virtual void* share(Ref ref, bool read, bool write, bool delay_data_callback = false) = 0;
+	virtual void* share(Ref ref, bool read, bool write) = 0;
+
+	/** Shares some data with PDI
+	 * \param[in,out] ref a reference to the shared data
+	 * \param read whether the stored reference should have read access
+	 * \param write whether the stored reference should have write access
+	 * \param delay_data_callback a class that allow to delay trigger_delayed_data_callbacks for a list of a data
+	 * \return the just shared buffer
+	 */
+	virtual void* share(Ref ref, bool read, bool write, Delayed_data_callbacks &delayed_callbacks) = 0;
 
 	/** function to call "data_callbacks" for the shared data.
 	 */

@@ -37,6 +37,7 @@
 #include "pdi/callbacks.h"
 #include "pdi/context.h"
 #include "pdi/context_proxy.h"
+//#include "pdi/delayed_data_callbacks.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/logger.h"
 #include "pdi/plugin.h"
@@ -49,6 +50,7 @@ namespace PDI {
 class PDI_EXPORT Global_context: public Context
 {
 private:
+	friend class Delayed_data_callbacks;
 	friend class Data_descriptor_impl;
 
 	/// The singleton Context instance

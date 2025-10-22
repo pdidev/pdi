@@ -32,6 +32,7 @@
 #include <paraconf.h>
 
 #include <pdi/pdi_fwd.h>
+//#include <pdi/delayed_data_callbacks.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype_template.h>
 #include <pdi/ref_any.h>
@@ -43,10 +44,13 @@ namespace PDI {
 class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 {
 	friend class Global_context;
+	friend class Delayed_data_callback;
 	friend class Descriptor_test_handler;
+
 
 	struct PDI_NO_EXPORT Ref_holder;
 
+	public:
 	/// The context this descriptor is part of
 	Global_context& m_context;
 
@@ -89,9 +93,13 @@ public:
 
 	bool empty() override;
 
-	void share(void* data, bool read, bool write, bool delay_data_callback = false) override;
+	void share(void* data, bool read, bool write) override;
 
-	void* share(Ref ref, bool read, bool write, bool delay_data_callback = false) override;
+	void share(void* data, bool read, bool write, Delayed_data_callbacks &delayed_callbacks) override;
+
+	void* share(Ref ref, bool read, bool write) override;
+
+	void* share(Ref ref, bool read, bool write, Delayed_data_callbacks &delayed_callbacks) override;
 
 	void trigger_delayed_data_callbacks() override;
 

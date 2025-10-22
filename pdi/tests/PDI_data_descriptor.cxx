@@ -30,6 +30,7 @@
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
+#include <pdi/delayed_data_callbacks.h>
 
 #include <data_descriptor_impl.h>
 
@@ -64,6 +65,7 @@ struct DataDescTest: public ::testing::Test {
 	PC_tree_t array_config{PC_parse_string("{ size: 10, type: array, subtype: int }")};
 	shared_ptr<Array_datatype> array_datatype{Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10)};
 	PDI::Paraconf_wrapper fw;
+	//Global_context global_ctx{PC_parse_string("logging: trace")};
 	Global_context global_ctx{PC_parse_string("")};
 	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
 };
@@ -398,14 +400,19 @@ TEST_F(DataDescDelayedCallbacksTest, multiple_delayed_data_callbacks)
 
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
-	this->test_context->desc("data_x").share(&x, true, true, true);
-	this->test_context->desc("data_y").share(&y, true, true, true);
+
+	Data_descriptor_impl * desc_impl_data_x= dynamic_cast<Data_descriptor_impl *>(&desc_x);
+	Data_descriptor_impl * desc_impl_data_y= dynamic_cast<Data_descriptor_impl *>(&desc_y);
+	Delayed_data_callbacks delayed_callbacks_x(&desc_impl_data_x);
+	Delayed_data_callbacks delayed_callbacks_y(&desc_impl_data_y);
+	this->test_context->desc("data_x").share(&x, true, true, delayed_callbacks_x);
+	this->test_context->desc("data_y").share(&y, true, true, delayed_callbacks_y);
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
-	this->test_context->desc("data_x").trigger_delayed_data_callbacks();
+	delayed_callbacks_x.trigger();
 	ASSERT_EQ(x, 42);
 	ASSERT_EQ(y, 0);
-	this->test_context->desc("data_y").trigger_delayed_data_callbacks();
+	delayed_callbacks_y.trigger();
 	ASSERT_EQ(x, 42);
 	ASSERT_EQ(y, 53);
 	this->test_context->desc("data_y").reclaim();
@@ -426,10 +433,12 @@ TEST_F(DataDescDelayedCallbacksTest, multiple_delayed_data_callbacks)
  *                      with trigger_delayed_data_callbacks() after throwing an error
  *
  */
+
 TEST_F(DataDescDelayedCallbacksTest, delayed_data_callbacks_with_error)
 {
 	string data_x{"data_x"};
 	Data_descriptor& desc_x = this->test_context->desc(data_x);
+	Data_descriptor_impl * desc_impl_data_x= dynamic_cast<Data_descriptor_impl *>(&desc_x);
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
@@ -446,24 +455,47 @@ TEST_F(DataDescDelayedCallbacksTest, delayed_data_callbacks_with_error)
 	ASSERT_EQ(x, 0);
 
 	try {
-		this->test_context->desc("data_x").share(&x, true, true, true);
+		Delayed_data_callbacks delayed_callbacks_x(&desc_impl_data_x);
+		this->test_context->desc("data_x").share(&x, true, true, delayed_callbacks_x);
 		throw std::runtime_error("forced throw error for testing");
-		this->test_context->desc("data_x").trigger_delayed_data_callbacks();
+		delayed_callbacks_x.trigger();
 	} catch (const std::runtime_error& e) {
 		EXPECT_STREQ("forced throw error for testing", e.what());
 		this->test_context->desc("data_x").reclaim();
 	} catch (...) {
 		FAIL() << "The error throwing must be std::runtime_error.";
 	}
-
-	ASSERT_EQ(x, 0);
-
-	// data_callbacks() for data_x
-	ASSERT_EQ(x, 0);
-	this->test_context->desc("data_x").share(&x, true, true, true);
-	ASSERT_EQ(x, 0);
-	this->test_context->desc("data_x").trigger_delayed_data_callbacks();
 	ASSERT_EQ(x, 42);
-	this->test_context->desc("data_x").reclaim();
-	ASSERT_EQ(x, 42);
+	{
+		Delayed_data_callbacks delayed_callbacks_x(&desc_impl_data_x);
+		// data_callbacks() for data_x
+		ASSERT_EQ(x, 42);
+		this->test_context->desc("data_x").share(&x, true, true, delayed_callbacks_x);
+		ASSERT_EQ(x, 42);
+		delayed_callbacks_x.trigger();
+		std::cout << "first trigger x=" << x << std::endl << std::flush;
+		ASSERT_EQ(x, 84);
+		this->test_context->desc("data_x").reclaim();
+		ASSERT_EQ(x, 84);
+
+		this->test_context->desc("data_x").share(&x, true, true, delayed_callbacks_x);
+		delayed_callbacks_x.cancel();
+		this->test_context->desc("data_x").reclaim();
+	}
+	ASSERT_EQ(x, 84);
+	{
+		// two data callback call at the end
+		Delayed_data_callbacks delayed_callbacks_x(&desc_impl_data_x);
+		// data_callbacks() for data_x
+		ASSERT_EQ(x, 84);
+		this->test_context->desc("data_x").share(&x, true, true, delayed_callbacks_x);
+		ASSERT_EQ(x, 84);
+		this->test_context->desc("data_x").reclaim();
+
+		ASSERT_EQ(x, 84);
+		this->test_context->desc("data_x").share(&x, true, true, delayed_callbacks_x);
+		ASSERT_EQ(x, 84);
+	}
+	this->test_context->desc("data_x").reclaim(); // The reclaim must be outside the loop to have no error in destructor of delayed_callbacks_x
+	ASSERT_EQ(x, 168);
 }

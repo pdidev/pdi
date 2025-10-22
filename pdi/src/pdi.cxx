@@ -36,6 +36,7 @@
 #include <unordered_set>
 
 #include "pdi/context.h"
+#include "pdi/delayed_data_callbacks.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
@@ -145,23 +146,34 @@ void warn_status(PDI_status_t status, const char* message, void*)
 
 /** A structure to reclaim the datas properly in case of error
  */
-struct Var_to_reclaim: public std::list<string> {
+struct Var_to_reclaim
+{
+	std::list<string> m_varnames;
 	Var_to_reclaim() = default;
 
 	~Var_to_reclaim()
 	try {
 		int counter = 0;
-		for (auto&& it = this->rbegin(); it != this->rend(); it++) {
-			Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, this->size());
+		for (auto&& it = m_varnames.rbegin(); it != m_varnames.rend(); it++) {
+			Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, m_varnames.size());
 			Global_context::context()[it->c_str()].reclaim();
 		}
-		this->clear();
+		m_varnames.clear();
 	} catch (const Error& e) {
 		g_error_context.return_err(e);
 	} catch (const exception& e) {
 		g_error_context.return_err(e);
 	} catch (...) {
 		g_error_context.return_err();
+	}
+
+	size_t size() const
+	{
+		return m_varnames.size();
+	}
+
+	void emplace_back(const string &name){
+		m_varnames.emplace_back(name);
 	}
 };
 
@@ -349,10 +361,10 @@ try {
 	va_list ap;
 
 	Var_to_reclaim list_names; // list of variable that will be reclaimed at the end of this function
-
+	Delayed_data_callbacks delayed_callbacks(Global_context::context());
 	int i = -1;
 	Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", name, ++i, list_names.size());
-	Global_context::context()[name].share(const_cast<void*>(data), access & PDI_OUT, access & PDI_IN, true);
+	Global_context::context()[name].share(const_cast<void*>(data), access & PDI_OUT, access & PDI_IN, delayed_callbacks);
 	list_names.emplace_back(name);
 
 	va_start(ap, access);
@@ -360,16 +372,12 @@ try {
 		void* v_data = va_arg(ap, void*);
 		PDI_inout_t v_access = static_cast<PDI_inout_t>(va_arg(ap, int));
 		Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", v_name, ++i, list_names.size());
-		Global_context::context()[v_name].share(v_data, v_access & PDI_OUT, v_access & PDI_IN, true);
+		Global_context::context()[v_name].share(v_data, v_access & PDI_OUT, v_access & PDI_IN, delayed_callbacks);
 		list_names.emplace_back(v_name);
 	}
 	va_end(ap);
 
-	i = 0;
-	for (auto&& it = list_names.begin(); it != list_names.end(); it++) {
-		Global_context::context().logger().trace("Multi expose: data events `{}' ({}/{})", it->c_str(), ++i, list_names.size());
-		Global_context::context()[it->c_str()].trigger_delayed_data_callbacks();
-	}
+	delayed_callbacks.trigger();
 
 	Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
 	Global_context::context().event(event_name);
