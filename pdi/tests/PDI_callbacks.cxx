@@ -27,10 +27,10 @@
 #include <gtest/gtest.h>
 
 #include <pdi/context.h>
+#include <pdi/delayed_data_callbacks.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi/delayed_data_callbacks.h>
 
 #include "global_context.h"
 
@@ -671,7 +671,7 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks)
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 
-	Delayed_data_callbacks delayed_callbacks( *dynamic_cast<Global_context *>(this->test_context.get()) );
+	Delayed_data_callbacks delayed_callbacks(*dynamic_cast<Global_context*>(this->test_context.get()));
 
 	int x = 0;
 	int y = 0;
@@ -738,7 +738,7 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks_with_error)
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 
-	Delayed_data_callbacks delayed_callbacks(*dynamic_cast<PDI::Global_context *>(this->test_context.get()));
+	Delayed_data_callbacks delayed_callbacks(*dynamic_cast<PDI::Global_context*>(this->test_context.get()));
 
 	int x = 0;
 	int y = 0;

@@ -27,10 +27,10 @@
 
 #include <pdi/array_datatype.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/delayed_data_callbacks.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi/delayed_data_callbacks.h>
 
 #include <data_descriptor_impl.h>
 
@@ -401,8 +401,8 @@ TEST_F(DataDescDelayedCallbacksTest, multiple_delayed_data_callbacks)
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
 
-	Data_descriptor_impl * desc_impl_data_x= dynamic_cast<Data_descriptor_impl *>(&desc_x);
-	Data_descriptor_impl * desc_impl_data_y= dynamic_cast<Data_descriptor_impl *>(&desc_y);
+	Data_descriptor_impl* desc_impl_data_x = dynamic_cast<Data_descriptor_impl*>(&desc_x);
+	Data_descriptor_impl* desc_impl_data_y = dynamic_cast<Data_descriptor_impl*>(&desc_y);
 	Delayed_data_callbacks delayed_callbacks_x(&desc_impl_data_x);
 	Delayed_data_callbacks delayed_callbacks_y(&desc_impl_data_y);
 	this->test_context->desc("data_x").share(&x, true, true, delayed_callbacks_x);
@@ -438,7 +438,7 @@ TEST_F(DataDescDelayedCallbacksTest, delayed_data_callbacks_with_error)
 {
 	string data_x{"data_x"};
 	Data_descriptor& desc_x = this->test_context->desc(data_x);
-	Data_descriptor_impl * desc_impl_data_x= dynamic_cast<Data_descriptor_impl *>(&desc_x);
+	Data_descriptor_impl* desc_impl_data_x = dynamic_cast<Data_descriptor_impl*>(&desc_x);
 	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 

@@ -27,9 +27,9 @@
 #define PDI_DATA_DESCRIPTOR_MOCK_H_
 
 #include <gmock/gmock.h>
-#include <pdi/delayed_data_callbacks.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype_template.h>
+#include <pdi/delayed_data_callbacks.h>
 
 struct MockDataDescriptor: public PDI::Data_descriptor {
 	MOCK_METHOD1(default_type, void(PDI::Datatype_template_sptr));

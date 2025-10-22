@@ -36,9 +36,9 @@
 #include <unordered_set>
 
 #include "pdi/context.h"
-#include "pdi/delayed_data_callbacks.h"
 #include "pdi/data_descriptor.h"
 #include "pdi/datatype.h"
+#include "pdi/delayed_data_callbacks.h"
 #include "pdi/error.h"
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
@@ -146,8 +146,7 @@ void warn_status(PDI_status_t status, const char* message, void*)
 
 /** A structure to reclaim the datas properly in case of error
  */
-struct Var_to_reclaim
-{
+struct Var_to_reclaim {
 	std::list<string> m_varnames;
 	Var_to_reclaim() = default;
 
@@ -167,14 +166,9 @@ struct Var_to_reclaim
 		g_error_context.return_err();
 	}
 
-	size_t size() const
-	{
-		return m_varnames.size();
-	}
+	size_t size() const { return m_varnames.size(); }
 
-	void emplace_back(const string &name){
-		m_varnames.emplace_back(name);
-	}
+	void emplace_back(const string& name) { m_varnames.emplace_back(name); }
 };
 
 

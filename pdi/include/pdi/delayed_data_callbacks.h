@@ -26,21 +26,21 @@
 #define PDI_DELAYED_DATA_CALLBACK_H_
 
 
+#include <iostream>
 #include <list>
 #include <string>
-#include <iostream>
 
 #include <pdi/pdi_fwd.h>
-#include <pdi/context.h>
-#include <pdi/data_descriptor.h>
-#include <pdi/datatype_template.h>
-#include <pdi/ref_any.h>
 #include "pdi/context.h"
 #include "pdi/datatype.h"
 #include "pdi/error.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
 #include "pdi/scalar_datatype.h"
+#include <pdi/context.h>
+#include <pdi/data_descriptor.h>
+#include <pdi/datatype_template.h>
+#include <pdi/ref_any.h>
 
 #include <data_descriptor_impl.h>
 
@@ -48,102 +48,102 @@
 
 namespace PDI {
 
-class PDI_EXPORT Delayed_data_callbacks {
-    /// friend class Global_context;
-    std::list<std::string> m_datanames;
+class PDI_EXPORT Delayed_data_callbacks
+{
+	/// friend class Global_context;
+	std::list<std::string> m_datanames;
 
-    /// The context this descriptor is part of
+	/// The context this descriptor is part of
 	Global_context& m_context;
 
-    /// A descriptor in case of
-    Data_descriptor_impl** m_descriptor;
-    
-    public:
+	/// A descriptor in case of
+	Data_descriptor_impl** m_descriptor;
 
-    /// constructor used in: 
-    ///     - desc.share(void* data, bool read, bool write) 
-    ///     - desc.share(Ref data_ref, bool read, bool write) 
-    /// to define a "Delayed_data_callbacks" object
-    Delayed_data_callbacks(Data_descriptor_impl **desc) : m_descriptor(desc), m_datanames(0),  m_context((*desc)->m_context) { }
-    
-    /// constructor used in:
-    ///     - the case of PDI_multi_expose 
-    ///     - when a user want to define is own "Delayed_data_callbacks" object
-    /// Remark: This constructor doesn't work if PDI_init is not called.
-    Delayed_data_callbacks(Global_context& ctx) : m_context{ctx}, m_datanames(0), m_descriptor(nullptr) { }
+public:
+	/// constructor used in:
+	///     - desc.share(void* data, bool read, bool write)
+	///     - desc.share(Ref data_ref, bool read, bool write)
+	/// to define a "Delayed_data_callbacks" object
+	Delayed_data_callbacks(Data_descriptor_impl** desc)
+		: m_descriptor(desc)
+		, m_datanames(0)
+		, m_context((*desc)->m_context)
+	{}
 
-    // In the destructor, we need to throw an error message in case of the callback on the data doesn't work (trigger function)
-    //  (example: error in the config.yml for a plugin, error due to external library incompatibility)
-    ~Delayed_data_callbacks() noexcept(false) 
-    {
-        try{
-            this->trigger();
-        } catch (Error& e) {
-            if ( std::uncaught_exceptions() ) {
-                // An exception is throwing. Print simple message to avoid std::terminate.
-                m_context.logger().error("Error in the destructor of Delayed_data_callbacks, {}", e.what() );
-            }
-            else {
-                // No exception is throwing. Throw an error.
-                throw Error(e.status(), "Error in the destructor of Delayed_data_callbacks, {}", e.what());
-            }
-        } catch (const std::exception &e) {
-            if ( std::uncaught_exceptions() ) {
-                // An exception is throwing. Print simple message to avoid std::terminate.
-                m_context.logger().error("Error in the destructor of Delayed_data_callbacks, {}", e.what() );
-            }
-            else {
-                // No exception is throwing. Throw an error.
-                m_context.logger().error("Error in the destructor of Delayed_data_callbacks." );
-                throw;
-            }
-        } catch (...) {
-            if ( std::uncaught_exceptions() ) {
-                // An exception is throwing. Print simple message to avoid std::terminate.
-                m_context.logger().error("Error in the destructor of Delayed_data_callbacks.");
-            }
-            else {
-                // No exception is throwing. Throw an error.
-                m_context.logger().error("Error in the destructor of Delayed_data_callbacks.");
-                throw;
-            }
-        }
-        m_descriptor = nullptr;
-    }
+	/// constructor used in:
+	///     - the case of PDI_multi_expose
+	///     - when a user want to define is own "Delayed_data_callbacks" object
+	/// Remark: This constructor doesn't work if PDI_init is not called.
+	Delayed_data_callbacks(Global_context& ctx)
+		: m_context{ctx}
+		, m_datanames(0)
+		, m_descriptor(nullptr)
+	{}
 
-    // add element to the list
-    void add_dataname(const std::string & name) {
-        m_datanames.emplace_back(name);        
-    }
+	// In the destructor, we need to throw an error message in case of the callback on the data doesn't work (trigger function)
+	//  (example: error in the config.yml for a plugin, error due to external library incompatibility)
+	~Delayed_data_callbacks() noexcept(false)
+	{
+		try {
+			this->trigger();
+		} catch (Error& e) {
+			if (std::uncaught_exceptions()) {
+				// An exception is throwing. Print simple message to avoid std::terminate.
+				m_context.logger().error("Error in the destructor of Delayed_data_callbacks, {}", e.what());
+			} else {
+				// No exception is throwing. Throw an error.
+				throw Error(e.status(), "Error in the destructor of Delayed_data_callbacks, {}", e.what());
+			}
+		} catch (const std::exception& e) {
+			if (std::uncaught_exceptions()) {
+				// An exception is throwing. Print simple message to avoid std::terminate.
+				m_context.logger().error("Error in the destructor of Delayed_data_callbacks, {}", e.what());
+			} else {
+				// No exception is throwing. Throw an error.
+				m_context.logger().error("Error in the destructor of Delayed_data_callbacks.");
+				throw;
+			}
+		} catch (...) {
+			if (std::uncaught_exceptions()) {
+				// An exception is throwing. Print simple message to avoid std::terminate.
+				m_context.logger().error("Error in the destructor of Delayed_data_callbacks.");
+			} else {
+				// No exception is throwing. Throw an error.
+				m_context.logger().error("Error in the destructor of Delayed_data_callbacks.");
+				throw;
+			}
+		}
+		m_descriptor = nullptr;
+	}
 
-    // trigger_delayed_data_callbacks()
-    void trigger()
-    try{
-        int i=0;
-        size_t number_of_elements = m_datanames.size();
-        for (; !m_datanames.empty(); m_datanames.pop_front()) {
-            auto &&element_name = m_datanames.front();
-            m_context.logger().trace("Trigger data callback `{}' ({}/{})", element_name.c_str(), ++i, number_of_elements);
+	// add element to the list
+	void add_dataname(const std::string& name) { m_datanames.emplace_back(name); }
 
-            if (!m_descriptor) {
-                m_context[element_name.c_str()].trigger_delayed_data_callbacks();
-            }
-            else {
-                (*m_descriptor)->trigger_delayed_data_callbacks();
-            }
-        }
-    } catch (Error& e) {
-        this->cancel(); // clear the m_datanames
-        throw Error(e.status(), "Error in trigger data callback: `{}'", e.what());
-    } catch (...) {
-        this->cancel(); // clear the m_datanames
-        throw;
-    }
+	// trigger_delayed_data_callbacks()
+	void trigger()
+	try {
+		int i = 0;
+		size_t number_of_elements = m_datanames.size();
+		for (; !m_datanames.empty(); m_datanames.pop_front()) {
+			auto&& element_name = m_datanames.front();
+			m_context.logger().trace("Trigger data callback `{}' ({}/{})", element_name.c_str(), ++i, number_of_elements);
 
-    // clear the element in the list
-    void cancel() {
-        m_datanames.clear();
-    }
+			if (!m_descriptor) {
+				m_context[element_name.c_str()].trigger_delayed_data_callbacks();
+			} else {
+				(*m_descriptor)->trigger_delayed_data_callbacks();
+			}
+		}
+	} catch (Error& e) {
+		this->cancel(); // clear the m_datanames
+		throw Error(e.status(), "Error in trigger data callback: `{}'", e.what());
+	} catch (...) {
+		this->cancel(); // clear the m_datanames
+		throw;
+	}
+
+	// clear the element in the list
+	void cancel() { m_datanames.clear(); }
 }; // class Delayed_data_callbacks
 
 } // namespace PDI
