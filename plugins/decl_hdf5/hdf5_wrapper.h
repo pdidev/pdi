@@ -171,6 +171,10 @@ class Hdf5_error_handler
 	/// The original handler data
 	void* m_old_data;
 
+	/** Retrieves the HDF5 API version that is being used by the current error stack
+	 *
+	 * \return 1 if the error stack conforms to the API version 2, 0 otherwise
+	 */
 	static unsigned get_api_version()
 	{
 		Raii_hid stack = make_raii_hid(H5Eget_current_stack(), H5Eclose_stack, "unable to retrieve HDF5 stack to check API version");
