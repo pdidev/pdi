@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* fix HDF5 API version compatibility issue during error handling
+  [#567](https://github.com/pdidev/pdi/issues/567)
 
 ### Security
 
