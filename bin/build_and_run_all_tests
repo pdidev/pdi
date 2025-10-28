@@ -57,6 +57,9 @@ mkdir api_pdi
 cd api_pdi
 TEST_DIR_API="${PWD}"
 
+cd "${SRCDIR}"
+cd "$(dirname "$0")/.."
+SRCDIR="${PWD}"
 
 
 
