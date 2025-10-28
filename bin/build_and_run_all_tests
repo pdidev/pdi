@@ -35,7 +35,8 @@ set -xe
 
 # Make our work dirs
 
-SRCDIR="$(dirname "$0")/.."
+cd "$(dirname "$0")/.."
+SRCDIR="${PWD}"
 
 # Prepare working directories
 TEST_DIR_WITH_PDI="${TEST_DIR_WITH_PDI:-${PWD}}"
