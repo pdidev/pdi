@@ -35,11 +35,7 @@ set -xe
 
 # Make our work dirs
 
-# Set SRCDIR only if not provided
-if [[ -z "${SRCDIR:-}" ]]; then
-  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  SRCDIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-fi
+SRCDIR="${PWD}"
 
 # Prepare working directories
 TEST_DIR_WITH_PDI="${TEST_DIR_WITH_PDI:-${PWD}}"
@@ -148,7 +144,7 @@ if ldconfig -p | grep -q libparaconf; then
 	# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, with Paraconf
 
 	cd "${TEST_DIR_NO_PDI}"
-	cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
+	cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DBUILD_JSON_PLUGIN=OFF -DBUILD_FORTRAN=OFF -DBUILD_PYTHON=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
 	make ${MAKEFLAGS}
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
 fi
@@ -160,4 +156,3 @@ NO_PDI_TESTS="test_api_C test_api_CXX"
 cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/tests"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
-rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
