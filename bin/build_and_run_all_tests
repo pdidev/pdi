@@ -145,10 +145,9 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
 fi
 
-# Configure, build & test for no-pdi's specific tests with CMAKE_PREFIX_PATH (find_package), with or without Paraconf
+# Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package), with or without Paraconf
 
 cd "${TEST_DIR_API}"
-NO_PDI_TESTS="test_api_C test_api_CXX"
-cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/tests"
+cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}
