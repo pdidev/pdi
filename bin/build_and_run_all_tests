@@ -143,7 +143,7 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	cd "${TEST_DIR_NO_PDI}"
 	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
 	make ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}_2.xml -R PDI_example_trace_C
 fi
 
 # Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
@@ -151,4 +151,6 @@ fi
 cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}_3.xml
+
+junitparser merge $(ls ${CTEST_OUTPUT_JUNIT}*.xml 2>/dev/null) ${CTEST_OUTPUT_JUNIT} || echo "No output files of junit to merge"
