@@ -129,15 +129,16 @@ fi
 
 
 
-# Configure, build & test for pdi
+# Configure, build & test for pdi, including example and test_api
 
 cd "${TEST_DIR_WITH_PDI}"
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
+# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only with Paraconf
+
 if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
-	# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, with Paraconf
 
 	cd "${TEST_DIR_NO_PDI}"
 	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
@@ -145,7 +146,7 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
 fi
 
-# Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package), with or without Paraconf
+# Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
 
 cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
