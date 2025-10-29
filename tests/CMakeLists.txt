@@ -35,7 +35,7 @@ option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 
 include(CTest)
 
-find_package(paraconf 1.0.0 COMPONENTS C)
+find_package(paraconf COMPONENTS C)
 
 find_package(PDI REQUIRED COMPONENTS C)
 

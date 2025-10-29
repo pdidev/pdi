@@ -35,7 +35,7 @@ set_target_properties(PDI_C PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../include"
 )
 
-find_package(paraconf 1.0.0 COMPONENTS C)
+find_package(paraconf QUIET COMPONENTS C)
 
 if(paraconf_FOUND)
     target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
