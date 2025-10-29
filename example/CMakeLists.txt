@@ -33,7 +33,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(MPI_COMPONENTS C)
 set(paraconf_COMPONENTS C)
-set(PDI_COMPONENTS C)
+set(PDI_COMPONENTS C f90)
+
+option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" OFF)
+option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" OFF)
+option(BUILD_FORTRAN            "Build with Fortran support" OFF)
+option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" OFF)
+option(BUILD_PYTHON             "Build with Python support" OFF)
+option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 
 if("${BUILD_FORTRAN}")
 	enable_language(Fortran)

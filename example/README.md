@@ -122,5 +122,5 @@ We have covered the logic behind the %PDI example. Now you can start the \ref Ha
 
 Use `no-pdi` instead of `pdi` when building with:
 ```bash
-cmake -DCMAKE_MODULE_PATH=<ABSOLUTE_PATH_TO>/no-pdi/cmake ..
+cmake -DCMAKE_MODULE_PATH=<ABSOLUTE_PATH_TO>/no-pdi ..
 ```

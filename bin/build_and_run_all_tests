@@ -33,29 +33,23 @@ set -xe
 
 
 
-# Make our work dirs
+# Make work directories
 
 SRCDIR="${PWD}"
 
-# Prepare working directories
-TEST_DIR_WITH_PDI="${TEST_DIR_WITH_PDI:-${PWD}}"
-cd "${TEST_DIR_WITH_PDI}"
+TEST_DIR="${TEST_DIR:-${PWD}}"
+cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
-TEST_DIR_ROOT="${PWD}"
+TEST_DIR="${PWD}"
 
-mkdir no_pdi
-cd no_pdi
-TEST_DIR_NO_PDI="${PWD}"
+TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
+mkdir "${TEST_DIR_WITH_PDI}"
 
-cd "${TEST_DIR_ROOT}"
-mkdir with_pdi
-cd with_pdi
-TEST_DIR_WITH_PDI="${PWD}"
+TEST_DIR_NO_PDI="${TEST_DIR}/no_pdi"
+mkdir "${TEST_DIR_NO_PDI}"
 
-cd "${TEST_DIR_ROOT}"
-mkdir api_pdi
-cd api_pdi
-TEST_DIR_API="${PWD}"
+TEST_DIR_API="${TEST_DIR}/api"
+mkdir "${TEST_DIR_API}"
 
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
@@ -142,12 +136,11 @@ cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-RELATIVE_NO_PDI_PATH="no-pdi"
-if ldconfig -p | grep -q libparaconf; then
+if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, with Paraconf
 
 	cd "${TEST_DIR_NO_PDI}"
-	cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DBUILD_JSON_PLUGIN=OFF -DBUILD_FORTRAN=OFF -DBUILD_PYTHON=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/example"
+	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
 	make ${MAKEFLAGS}
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R PDI_example_trace_C
 fi
@@ -156,6 +149,6 @@ fi
 
 cd "${TEST_DIR_API}"
 NO_PDI_TESTS="test_api_C test_api_CXX"
-cmake -DBUILD_DECL_HDF5_PLUGIN=OFF -DBUILD_DECL_NETCDF_PLUGIN=OFF -DCMAKE_PREFIX_PATH="${SRCDIR}/${RELATIVE_NO_PDI_PATH}" "${SRCDIR}/tests"
+cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/tests"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} -R ${NO_PDI_TESTS}

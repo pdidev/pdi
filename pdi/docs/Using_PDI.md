@@ -98,9 +98,7 @@ plugins in 4 steps (it will use the first plugin found):
 
 ## How to deactivate PDI {#deactivate_pdi}
 
-### Using the no-pdi directory with an available Paraconf
-
-You may use the no-pdi mock folder instead of the real PDI to compile your 
+You may use the no-pdi mock directory (with an available Paraconf) instead of the real PDI to compile your 
 application. The only modification you need to make is to add the 
 CMAKE_PREFIX_PATH option to your CMake command :
 ```bash

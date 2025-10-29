@@ -38,5 +38,6 @@ set_target_properties(PDI_C PROPERTIES
 find_package(paraconf 1.0.0 COMPONENTS C)
 
 if(paraconf_FOUND)
-	add_compile_definitions(PARACONF_FOUND)
+    target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
+    target_compile_definitions(PDI_C INTERFACE PARACONF_FOUND)
 endif()

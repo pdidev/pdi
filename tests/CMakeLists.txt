@@ -29,15 +29,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
-option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
-option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
+option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" OFF)
+option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" OFF)
+option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 
 include(CTest)
 
 find_package(paraconf 1.0.0 COMPONENTS C)
-if(paraconf_FOUND)
-	add_compile_definitions(PARACONF_FOUND)
-endif()
 
 find_package(PDI REQUIRED COMPONENTS C)
 
@@ -70,16 +68,18 @@ endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
 add_executable(test_api_C test_api.c)
 if(paraconf_FOUND)
-	target_link_libraries(test_api_C paraconf::paraconf PDI::PDI_C)
+	target_link_libraries(test_api_C PRIVATE paraconf::paraconf PDI::PDI_C)
+	target_compile_definitions(test_api_C PRIVATE PARACONF_FOUND)
 else()
-	target_link_libraries(test_api_C PDI::PDI_C)
+	target_link_libraries(test_api_C PRIVATE PDI::PDI_C)
 endif()
 add_test(NAME test_api_C COMMAND "$<TARGET_FILE:test_api_C>")
 
 add_executable(test_api_CXX test_api.cpp)
 if(paraconf_FOUND)
-	target_link_libraries(test_api_CXX paraconf::paraconf PDI::PDI_C)
+	target_link_libraries(test_api_CXX PRIVATE paraconf::paraconf PDI::PDI_C)
+	target_compile_definitions(test_api_CXX PRIVATE PARACONF_FOUND)
 else()
-	target_link_libraries(test_api_CXX PDI::PDI_C)
+	target_link_libraries(test_api_CXX PRIVATE PDI::PDI_C)
 endif()
 add_test(NAME test_api_CXX COMMAND "$<TARGET_FILE:test_api_CXX>")
