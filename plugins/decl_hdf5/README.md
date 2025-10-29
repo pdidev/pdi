@@ -44,7 +44,7 @@ The possible values for the keys are as follow:
   Each string is the name of a dataset to create in the file on first
   access, with the type described in the value. The string key is 
   a regular expression (regex), and be used to define "generic keys",
-  that can be used in `DATA_IO_DESC` for the keyword dataset.
+  that can be used in `DATA_IO_DESC` for the keyword dataset. The regex use the Modiﬁed ECMAScript regular expression grammar.
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY
 * `deflate`: an integer value (from 0 to 9) defining the default deflate (GNU
   gzip) compression level to use for datasets created in this file.

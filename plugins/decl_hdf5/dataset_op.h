@@ -44,6 +44,7 @@
 
 #include "attribute_op.h"
 #include "collision_policy.h"
+#include "dataset_explicit_type.h"
 #include "selection.h"
 
 namespace decl_hdf5 {
@@ -187,24 +188,14 @@ public:
 	 * \param ctx the context in which to operate
 	 * \param h5_file the already opened HDF5 file id
 	 * \param use_mpio whether the hdf5 read/write is parallel
-	 * \param dsets the type of the explicitly typed datasets
+	 * \param dsets the vector of the explicitly typed datasets defined in Yaml file.
 	 */
-	void execute(
-		PDI::Context& ctx,
-		hid_t h5_file,
-		bool use_mpio,
-		const std::unordered_map<std::string, std::pair<std::regex, PDI::Datatype_template_sptr>>& dsets
-	);
+	void execute(PDI::Context& ctx, hid_t h5_file, bool use_mpio, const std::vector<Dataset_explicit_type>& dsets);
 
 private:
 	void do_read(PDI::Context& ctx, hid_t h5_file, hid_t read_lst);
 
-	void do_write(
-		PDI::Context& ctx,
-		hid_t h5_file,
-		hid_t xfer_lst,
-		const std::unordered_map<std::string, std::pair<std::regex, PDI::Datatype_template_sptr>>& dsets
-	);
+	void do_write(PDI::Context& ctx, hid_t h5_file, hid_t xfer_lst, const std::vector<Dataset_explicit_type>& dsets);
 };
 
 } // namespace decl_hdf5

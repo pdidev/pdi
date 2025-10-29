@@ -1438,23 +1438,23 @@ TEST_F(decl_hdf5_test, create_a_group_not_include_in_datasets_with_no_data_selec
 /*
  * Name:                decl_hdf5_test.check_config_error_for_two_regex_found
  *
- * Description: check error message generated with a dataset where two regex are found
+ * Description: check error message generated with a dataset where 4 regex are found
  */
 
-TEST_F(decl_hdf5_test, check_config_error_for_two_regex_found)
+TEST_F(decl_hdf5_test, check_config_error_for_four_regex_found)
 {
-	SetUp("decl_hdf5_test_two_regex_found.h5");
+	SetUp("decl_hdf5_test_four_regex_found.h5");
 
 	int has_failed = 0;
 
 	std::string true_errmsg
-		= "Error while triggering event `write_event': Config_error in lines 44 - 45: Found `4' match(s) in the list of datasets "
+		= "Error while triggering event `write_event': Config_error in lines 41 - 42: Found `4' match(es) in the list of datasets "
 		  "section for `group123/array_data'. Cannot choose the right element in datasets.\n"
-		  "The elements that match group123/array_data are:\n"
-		  " - group.*/array_data\n"
-		  " - group1.*/array_data\n"
-		  " - group12.*/array_data\n"
-		  " - group[0-9]+/array_data\n"
+		  "The elements that match `group123/array_data' are:\n"
+		  " - group[0-9]+/array_data defined in lines 20 - 23\n"
+		  " - group.*/array_data defined in line 24\n"
+		  " - group1.*/array_data defined in lines 25 - 28\n"
+		  " - group12.*/array_data defined in lines 33 - 36\n"
 		  "Attention: The elements are considered as a regex.";
 
 	PDI_status_t true_status = PDI_ERR_CONFIG;
@@ -1482,17 +1482,14 @@ TEST_F(decl_hdf5_test, check_config_error_for_two_regex_found)
 		  "      output:                                                        \n"
 		  "        file: my_trace_logger_hdf5.txt                               \n"
 		  "        console: on                                                  \n"
-		  "    file: decl_hdf5_test_two_regex_found.h5                          \n"
+		  "    file: decl_hdf5_test_four_regex_found.h5                         \n"
 		  "    on_event: write_event                                            \n"
 		  "    datasets:                                                        \n"
 		  "      group[0-9]+/array_data:                                        \n"
 		  "        size: [3, 8]                                                 \n"
 		  "        type: array                                                  \n"
 		  "        subtype: int                                                 \n"
-		  "      group.*/array_data:                                            \n"
-		  "        size: [3, 8]                                                 \n"
-		  "        type: array                                                  \n"
-		  "        subtype: int                                                 \n"
+		  "      group.*/array_data: {size: [3, 8], type: array, subtype: int}  \n"
 		  "      group1.*/array_data:                                           \n"
 		  "        size: [3, 8]                                                 \n"
 		  "        type: array                                                  \n"
