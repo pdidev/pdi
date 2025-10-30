@@ -70,5 +70,5 @@ runs:
         echo '</testsuites>' >> tests.xml
     - id: PublishMergedReport
       uses: mikepenz/action-junit-report@v4
-      if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
+      if: always() && steps.RunTests.outputs.with_report == 'true' # always run even if the previous step fails
       with: { report_paths: 'tests.xml' }
