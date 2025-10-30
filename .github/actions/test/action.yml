@@ -39,8 +39,6 @@ runs:
     - id: RunTests
       shell: bash
       run: |
-        mkdir -p tmp
-
         cat <<-'EOF' > run.sh
           set -xe
           JOBID="$(echo "${{github.run_id}}" | md5sum | cut -b 1)"
@@ -52,30 +50,35 @@ runs:
           /src/bin/build_and_run_all_tests
         EOF
 
-        docker run \
+        CONTAINER_ID=$(docker run -d \
           -v ${PWD}:/src:ro \
-          -v ${PWD}/tmp:/tmp \
           --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
-          bash /src/run.sh
+          bash /src/run.sh)
 
-        if compgen -G tmp/tests.xml_*.xml > /dev/null; then
+        echo "Docker container ID: $CONTAINER_ID"
+
+        docker wait $CONTAINER_ID
+
+        docker cp $CONTAINER_ID:/tmp/. ./
+
+        docker rm $CONTAINER_ID
+
+        if compgen -G tests.xml_*.xml > /dev/null; then
           echo "with_report=true" >> "$GITHUB_OUTPUT"
         else
           echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
-
     - id: MergeTestsReports
       shell: bash
       run: |
         echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
         echo '<testsuites>' >> tests.xml
-        for f in tmp/tests.xml_*.xml; do
+        for f in tests.xml_*.xml; do
           sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
         done
         echo '</testsuites>' >> tests.xml
         ls -lh tests.xml
-
     - id: PublishMergedReport
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.RunTests.outputs.with_report == 'true' # always run even if the previous step fails
