@@ -61,6 +61,11 @@ jobs:
     #     done
     #     echo '</testsuites>' >> tests.xml
     #     ls -lh tests.xml
+    - name: Publish JUnit report
+      if: always() && steps.test.outputs.with_report == 'true'
+      uses: mikepenz/action-junit-report@v4
+      with:
+        report_paths: 'tests.xml'
   debuntu:
     strategy:
       fail-fast: false
@@ -89,3 +94,8 @@ jobs:
     #     done
     #     echo '</testsuites>' >> tests.xml
     #     ls -lh tests.xml
+    - name: Publish JUnit report
+      if: always() && steps.test.outputs.with_report == 'true'
+      uses: mikepenz/action-junit-report@v4
+      with:
+        report_paths: 'tests.xml'

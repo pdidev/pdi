@@ -50,7 +50,6 @@ runs:
           /src/bin/build_and_run_all_tests
         EOF
 
-        # Run container and save ID to a file (works even on older Docker)
         docker run --cidfile docker.cid \
           -v ${PWD}:/src:ro \
           --tmpfs /tmp_dir_test:exec \
@@ -60,7 +59,6 @@ runs:
         CONTAINER_ID=$(cat docker.cid | tr -d '\n')
         echo "Container ID: $CONTAINER_ID"
 
-        # Copy test reports from container /tmp
         if docker cp "$CONTAINER_ID":/tmp/. ./; then
           echo "Copied test reports from container."
           echo "with_report=true" >> "$GITHUB_OUTPUT"
@@ -69,5 +67,4 @@ runs:
           echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
 
-        # Clean up
         docker rm "$CONTAINER_ID" || true
