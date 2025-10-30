@@ -33,6 +33,12 @@ inputs:
   image:
     required: true
     description: "docker image in which to run the test"
+
+outputs:
+  with_report:
+    description: "True if test report was successfully copied from container"
+    value: ${{ steps.RunTests.outputs.with_report }}
+
 runs:
   using: "composite"
   steps:
@@ -68,3 +74,14 @@ runs:
         fi
 
         docker rm "$CONTAINER_ID" || true
+
+    - id: MergeTestsReports
+      shell: bash
+      run: |
+        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
+        echo '<testsuites>' >> tests.xml
+        for f in tests.xml_*.xml; do
+          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
+        done
+        echo '</testsuites>' >> tests.xml
+        ls -lh tests.xml
