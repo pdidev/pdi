@@ -83,7 +83,7 @@ NC_VERSION_MINOR="$(nc-config --version | sed 's/^[a-zA-Z ]*\([0-9]*\)\.\([0-9]*
 if (( NC_VERSION_MAJOR > 4 || ( NC_VERSION_MAJOR == 4 && NC_VERSION_MINOR > 8 ) )) || [[ "x${PDI_LIBS}" != "xprovided" ]]
 then
 	#TODO: NetCDF error https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/433
-	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}test_05_C"
+	# EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}test_05_C"
 fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_MPI}" = "xmpich" ]]
@@ -134,7 +134,7 @@ fi
 cd "${TEST_DIR_WITH_PDI}"
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}_1.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 # Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only with Paraconf
 
@@ -153,4 +153,4 @@ cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}_3.xml
 
-junitparser merge $(ls ${CTEST_OUTPUT_JUNIT}*.xml 2>/dev/null) ${CTEST_OUTPUT_JUNIT} || echo "No output files of junit to merge"
+# junitparser merge $(ls ${CTEST_OUTPUT_JUNIT}*.xml 2>/dev/null) ${CTEST_OUTPUT_JUNIT} || echo "No output files of junit to merge"
