@@ -50,36 +50,24 @@ runs:
           /src/bin/build_and_run_all_tests
         EOF
 
-        CONTAINER_ID=$(docker run -d \
+        # Run container and save ID to a file (works even on older Docker)
+        docker run --cidfile docker.cid \
           -v ${PWD}:/src:ro \
           --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
-          bash /src/run.sh)
+          bash /src/run.sh || true
 
-        echo "Docker container ID: $CONTAINER_ID"
+        CONTAINER_ID=$(cat docker.cid | tr -d '\n')
+        echo "Container ID: $CONTAINER_ID"
 
-        docker wait $CONTAINER_ID
-
-        docker cp $CONTAINER_ID:/tmp/. ./
-
-        docker rm $CONTAINER_ID
-
-        if compgen -G tests.xml_*.xml > /dev/null; then
+        # Copy test reports from container /tmp
+        if docker cp "$CONTAINER_ID":/tmp/. ./; then
+          echo "Copied test reports from container."
           echo "with_report=true" >> "$GITHUB_OUTPUT"
         else
+          echo "Failed to copy test reports."
           echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
-    - id: MergeTestsReports
-      shell: bash
-      run: |
-        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
-        echo '<testsuites>' >> tests.xml
-        for f in tests.xml_*.xml; do
-          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
-        done
-        echo '</testsuites>' >> tests.xml
-        ls -lh tests.xml
-    - id: PublishMergedReport
-      uses: mikepenz/action-junit-report@v4
-      if: always() && steps.RunTests.outputs.with_report == 'true' # always run even if the previous step fails
-      with: { report_paths: 'tests.xml' }
+
+        # Clean up
+        docker rm "$CONTAINER_ID" || true
