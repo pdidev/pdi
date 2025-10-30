@@ -36,7 +36,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: test
+    - id: RunTests
       shell: bash
       run: |
         cat<<-'EOF' > run.sh
@@ -59,7 +59,7 @@ runs:
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
-    - id: Merge JUnit reports
+    - id: MergeTestsReports
       shell: bash
       run: |
         echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
@@ -68,7 +68,7 @@ runs:
           sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
         done
         echo '</testsuites>' >> tests.xml
-    - id: Publish
+    - id: PublishMergedReport
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
       with: { report_paths: 'tests.xml' }
