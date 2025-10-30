@@ -29,8 +29,10 @@
 
 name: tests
 on:
-  push: { branches: [ main, 'v[0-9]+.[0-9]+' ] }
+  push:
+    branches: [ main, 'v[0-9]+.[0-9]+' ]
   pull_request:
+
 jobs:
   spack:
     strategy:
@@ -42,19 +44,23 @@ jobs:
         variant:  ['mini', 'all']
     runs-on: ubuntu-24.04
     steps:
-    - name: Checkout branch
-      uses: actions/checkout@v4
-      with: { submodules: recursive }
-    - name: Test
-      id: testSpack
-      uses: ./.github/actions/test/
-      with: 
-        image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
-    - name: Publish JUnit report
-      if: always() && steps.testSpack.outputs.with_report == 'true'
-      uses: mikepenz/action-junit-report@v4
-      with:
-        report_paths: 'tests.xml'
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Test Spack
+        id: testSpack
+        uses: ./.github/actions/test/
+        with:
+          image: ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3
+
+      - name: Publish JUnit report (Spack)
+        if: always() && steps.testSpack.outputs.with_report == 'true'
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: 'tests.xml'
+
   debuntu:
     strategy:
       fail-fast: false
@@ -64,16 +70,20 @@ jobs:
         variant: ['mini', 'all']
     runs-on: ubuntu-24.04
     steps:
-    - name: Checkout branch
-      uses: actions/checkout@v4
-      with: { submodules: recursive }
-    - name: Test
-      id: testDebuntu
-      uses: ./.github/actions/test/
-      with: 
-        image: 'ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
-    - name: Publish JUnit report
-      if: always() && steps.testDebuntu.outputs.with_report == 'true'
-      uses: mikepenz/action-junit-report@v4
-      with:
-        report_paths: 'tests.xml'
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Test Debuntu
+        id: testDebuntu
+        uses: ./.github/actions/test/
+        with:
+          image: ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v3
+
+      - name: Publish JUnit report (Debuntu)
+        if: always() && steps.testDebuntu.outputs.with_report == 'true'
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: 'tests.xml'
+
