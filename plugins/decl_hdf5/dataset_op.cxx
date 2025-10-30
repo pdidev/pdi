@@ -372,23 +372,23 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 	ctx.logger().trace("search `{}' in the list of datasets section", dataset_name);
 
 	for (auto&& dsets_elem = dsets.begin(); dsets_elem != dsets.end(); ++dsets_elem) {
-		if (std::regex_match(dataset_name, dsets_elem->m_regex)) {
+		if (std::regex_match(dataset_name, dsets_elem->regex())) {
 			if (!dataset_found) {
 				dataset_found = true;
-				ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem->m_definition);
+				ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem->definition());
 				dset_found = *dsets_elem;
 			} else {
 				// if we found an other element in the list of datasets, we can't choose the right dataset
 				// (if the elements found have different size, subsize, type, ...)
 				// send a error a message to the user
 				std::vector<string> list_dataset_found;
-				list_dataset_found.emplace_back(dset_found.m_definition + dset_found.get_msg_err_line());
-				list_dataset_found.emplace_back(dsets_elem->m_definition + dsets_elem->get_msg_err_line());
+				list_dataset_found.emplace_back(dset_found.definition() + dset_found.get_msg_err_line());
+				list_dataset_found.emplace_back(dsets_elem->definition() + dsets_elem->get_msg_err_line());
 				++dsets_elem; // get the next element in the iterator on dsets
 				// loop over the rest of the elements in the iterator on dsets
 				for (dsets_elem; dsets_elem != dsets.end(); ++dsets_elem) {
-					if (std::regex_match(dataset_name, dsets_elem->m_regex)) {
-						list_dataset_found.emplace_back(dsets_elem->m_definition + dsets_elem->get_msg_err_line());
+					if (std::regex_match(dataset_name, dsets_elem->regex())) {
+						list_dataset_found.emplace_back(dsets_elem->definition() + dsets_elem->get_msg_err_line());
 					}
 				}
 
@@ -412,8 +412,8 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 	}
 
 	if (dataset_found) {
-		ctx.logger().trace("Get the regex in the list of datasets section := `{}'", dset_found.m_definition);
-		dataset_type = dset_found.m_type->evaluate(ctx);
+		ctx.logger().trace("Get the regex in the list of datasets section := `{}'", dset_found.definition());
+		dataset_type = dset_found.type()->evaluate(ctx);
 		tie(h5_file_space, h5_file_type) = space(dataset_type);
 		ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);

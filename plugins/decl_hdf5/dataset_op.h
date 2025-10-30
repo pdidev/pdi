@@ -32,7 +32,6 @@
 #include <mpi.h>
 #endif
 
-#include <regex>
 #include <string>
 #include <unordered_map>
 

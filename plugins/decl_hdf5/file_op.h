@@ -32,7 +32,7 @@
 #include <mpi.h>
 #endif
 
-//#include <regex>
+#include <regex>
 #include <string>
 #include <unordered_map>
 #include <vector>
