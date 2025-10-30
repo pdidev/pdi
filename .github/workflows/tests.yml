@@ -51,7 +51,7 @@ jobs:
         image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
     - name: Merge JUnit reports
       if: always() && steps.test.outputs.with_report == 'true'
-      uses: devmasx/junit-merge-action@v1
+      uses: tricycl/junit-merge@v1
       with:
         files: 'tests.xml_*'
         output: 'tests.xml'
@@ -73,7 +73,7 @@ jobs:
         image: 'ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
     - name: Merge JUnit reports
       if: always() && steps.test.outputs.with_report == 'true'
-      uses: devmasx/junit-merge-action@v1
+      uses: tricycl/junit-merge@v1
       with:
         files: 'tests.xml_*'
         output: 'tests.xml'
