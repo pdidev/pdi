@@ -59,6 +59,15 @@ runs:
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
+    - id: Merge JUnit reports
+      shell: bash
+      run: |
+        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
+        echo '<testsuites>' >> tests.xml
+        for f in tests.xml_*.xml; do
+          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
+        done
+        echo '</testsuites>' >> tests.xml
     - id: Publish
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails

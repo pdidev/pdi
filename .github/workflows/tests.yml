@@ -49,18 +49,18 @@ jobs:
       uses: ./.github/actions/test/
       with: 
         image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
-    - name: Merge JUnit reports
-      if: always() && steps.test.outputs.with_report == 'true'
-      shell: bash
-      run: |
-        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
-        echo '<testsuites>' >> tests.xml
-        for f in tests.xml_*; do
-          echo "Merging $f"
-          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml || true
-        done
-        echo '</testsuites>' >> tests.xml
-        ls -lh tests.xml
+    # - name: Merge JUnit reports
+    #   if: always() && steps.test.outputs.with_report == 'true'
+    #   shell: bash
+    #   run: |
+    #     echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
+    #     echo '<testsuites>' >> tests.xml
+    #     for f in tests.xml_*; do
+    #       echo "Merging $f"
+    #       sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml || true
+    #     done
+    #     echo '</testsuites>' >> tests.xml
+    #     ls -lh tests.xml
   debuntu:
     strategy:
       fail-fast: false
@@ -77,15 +77,15 @@ jobs:
       uses: ./.github/actions/test/
       with: 
         image: 'ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
-    - name: Merge JUnit reports
-      if: always() && steps.test.outputs.with_report == 'true'
-      shell: bash
-      run: |
-        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
-        echo '<testsuites>' >> tests.xml
-        for f in tests.xml_*; do
-          echo "Merging $f"
-          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml || true
-        done
-        echo '</testsuites>' >> tests.xml
-        ls -lh tests.xml
+    # - name: Merge JUnit reports
+    #   if: always() && steps.test.outputs.with_report == 'true'
+    #   shell: bash
+    #   run: |
+    #     echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
+    #     echo '<testsuites>' >> tests.xml
+    #     for f in tests.xml_*; do
+    #       echo "Merging $f"
+    #       sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml || true
+    #     done
+    #     echo '</testsuites>' >> tests.xml
+    #     ls -lh tests.xml
