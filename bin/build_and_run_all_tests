@@ -80,11 +80,11 @@ fi
 
 NC_VERSION_MAJOR="$(nc-config --version | sed 's/^[a-zA-Z ]*\([0-9]*\)\.\([0-9]*\).*$/\1/')"
 NC_VERSION_MINOR="$(nc-config --version | sed 's/^[a-zA-Z ]*\([0-9]*\)\.\([0-9]*\).*$/\2/')"
-if (( NC_VERSION_MAJOR > 4 || ( NC_VERSION_MAJOR == 4 && NC_VERSION_MINOR > 8 ) )) || [[ "x${PDI_LIBS}" != "xprovided" ]]
-then
-	#TODO: NetCDF error https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/433
-	# EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}test_05_C"
-fi
+# if (( NC_VERSION_MAJOR > 4 || ( NC_VERSION_MAJOR == 4 && NC_VERSION_MINOR > 8 ) )) || [[ "x${PDI_LIBS}" != "xprovided" ]]
+# then
+# 	#TODO: NetCDF error https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/433
+# 	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}test_05_C"
+# fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_MPI}" = "xmpich" ]]
 then
