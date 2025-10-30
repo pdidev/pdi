@@ -13,8 +13,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 * Added macOS CI for PDI, decl_hdf5, mpi, serialize, set_value, user_code and
   trace plugins [#556](https://github.com/pdidev/pdi/issues/556)
-* Added workflow_dispatch in the workflow pages.yml
- [#598](https://github.com/pdidev/pdi/issues/598)
 
 ### Changed
 
