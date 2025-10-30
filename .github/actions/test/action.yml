@@ -56,7 +56,7 @@ runs:
           /src/bin/build_and_run_all_tests
         EOF
 
-        docker run --cidfile docker.cid \
+        docker run --rm=false --cidfile docker.cid \
           -v ${PWD}:/src:ro \
           --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
