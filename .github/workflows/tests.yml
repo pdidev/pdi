@@ -51,10 +51,16 @@ jobs:
         image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
     - name: Merge JUnit reports
       if: always() && steps.test.outputs.with_report == 'true'
-      uses: tricycl/junit-merge@v1
-      with:
-        files: 'tests.xml_*'
-        output: 'tests.xml'
+      shell: bash
+      run: |
+        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
+        echo '<testsuites>' >> tests.xml
+        for f in tests.xml_*; do
+          echo "Merging $f"
+          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml || true
+        done
+        echo '</testsuites>' >> tests.xml
+        ls -lh tests.xml
   debuntu:
     strategy:
       fail-fast: false
@@ -73,7 +79,13 @@ jobs:
         image: 'ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
     - name: Merge JUnit reports
       if: always() && steps.test.outputs.with_report == 'true'
-      uses: tricycl/junit-merge@v1
-      with:
-        files: 'tests.xml_*'
-        output: 'tests.xml'
+      shell: bash
+      run: |
+        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
+        echo '<testsuites>' >> tests.xml
+        for f in tests.xml_*; do
+          echo "Merging $f"
+          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml || true
+        done
+        echo '</testsuites>' >> tests.xml
+        ls -lh tests.xml
