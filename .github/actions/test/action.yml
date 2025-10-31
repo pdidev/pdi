@@ -101,3 +101,16 @@ runs:
 
         docker rm "${CONTAINER_ID}" || true
 
+    - name: Extract merged tests
+      if: always() && steps.testSpack.outputs.with_report == 'true'
+      run: |
+        mkdir -p merged_results
+        tar -xzf test_results.tar -C merged_results
+        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
+        echo '<testsuites>' >> tests.xml
+        for f in merged_results/tests_*.xml; do
+          echo "Merging $f"
+          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
+        done
+        echo '</testsuites>' >> tests.xml
+        ls -lh tests.xml

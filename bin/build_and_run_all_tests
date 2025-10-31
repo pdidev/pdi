@@ -29,9 +29,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-set -xe
-
-
+set -euo pipefail
+set -x
 
 # Make work directories
 
@@ -164,5 +163,5 @@ echo "Contents of TEST_OUTPUT_DIR ($TEST_OUTPUT_DIR):"
 find . -type f -maxdepth 1 -print || true
 
 tar czf /tmp/test_results.tar tests_*.xml
-echo "✅ Created /tmp/test_results.tar with the following files:"
+echo "Created /tmp/test_results.tar with the following files:"
 tar tzf /tmp/test_results.tar || true
