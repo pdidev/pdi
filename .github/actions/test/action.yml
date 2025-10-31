@@ -100,9 +100,9 @@ runs:
         fi
 
         docker rm "${CONTAINER_ID}" || true
-
     - name: Extract merged tests
-      if: always() && steps.testSpack.outputs.with_report == 'true'
+      shell: bash
+      # if: always() && steps.testSpack.outputs.with_report == 'true'
       run: |
         mkdir -p merged_results
         tar -xzf test_results.tar -C merged_results
