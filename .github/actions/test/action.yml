@@ -80,6 +80,7 @@ runs:
         docker run --cidfile docker.cid \
           -v "${PWD}:/src:ro" \
           -v /tmp_dir_test:/tmp_dir_test \
+          --user root \
           ${{ inputs.image }} \
           bash /src/run.sh || true
 
