@@ -90,7 +90,8 @@ runs:
         echo "Container ID: ${CONTAINER_ID}"
 
         echo "=== Copying test_results.tar from container ==="
-        if docker cp "${CONTAINER_ID}":/tmp/test_results.tar ./; then
+        # if docker cp "${CONTAINER_ID}":/tmp/test_results.tar ./; then
+        if docker cp "${CONTAINER_ID}":/tmp_dir_test/pdibuild.*/test_results/test_results.tar ./; then
           echo "Successfully copied test_results.tar"
           tar tzf test_results.tar || true
           echo "with_report=true" >> "$GITHUB_OUTPUT"
