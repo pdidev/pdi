@@ -29,8 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-set -euo pipefail
-set -x
+set -xe
 
 # Make work directories
 
