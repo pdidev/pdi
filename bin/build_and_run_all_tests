@@ -38,18 +38,18 @@ set -xe
 SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
-cd "${TEST_DIR}"
+cd -p "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
 
 TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
-mkdir "${TEST_DIR_WITH_PDI}"
+mkdir -p "${TEST_DIR_WITH_PDI}"
 
 TEST_DIR_NO_PDI="${TEST_DIR}/no_pdi"
-mkdir "${TEST_DIR_NO_PDI}"
+mkdir -p "${TEST_DIR_NO_PDI}"
 
 TEST_DIR_API="${TEST_DIR}/api"
-mkdir "${TEST_DIR_API}"
+mkdir -p "${TEST_DIR_API}"
 
 TEST_OUTPUT_DIR="${TEST_DIR}/test_results"
 mkdir -p "$TEST_OUTPUT_DIR"
@@ -160,5 +160,9 @@ CTEST_FILE="${TEST_OUTPUT_DIR}/tests_3.xml"
 ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" -E ${EXCLUDED_PDI_TESTS}
 
 cd "$TEST_OUTPUT_DIR"
-echo $TEST_OUTPUT_DIR
-tar czf "${TEST_OUTPUT_DIR}/test_results.tar" tests_*.xml
+echo "Contents of TEST_OUTPUT_DIR ($TEST_OUTPUT_DIR):"
+find . -type f -maxdepth 1 -print || true
+
+tar czf /tmp/test_results.tar tests_*.xml
+echo "✅ Created /tmp/test_results.tar with the following files:"
+tar tzf /tmp/test_results.tar || true
