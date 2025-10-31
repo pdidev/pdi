@@ -51,12 +51,12 @@ mkdir "${TEST_DIR_NO_PDI}"
 TEST_DIR_API="${TEST_DIR}/api"
 mkdir "${TEST_DIR_API}"
 
+TEST_OUTPUT_DIR="${TEST_DIR}/tmp_test_results"
+mkdir -p "$TEST_OUTPUT_DIR"
+
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
-
-TEST_OUTPUT_DIR="${SRCDIR}/tmp_test_results"
-mkdir -p "$TEST_OUTPUT_DIR"
 
 
 
@@ -160,5 +160,5 @@ CTEST_FILE="--output-junit ${TEST_OUTPUT_DIR}/tests_3.xml"
 ctest --output-on-failure --timeout 90 $CTEST_FILE -E ${EXCLUDED_PDI_TESTS}
 
 # After all three ctest commands
-cd /tmp
-tar czf /tmp/test_results.tar ${TEST_OUTPUT_DIR}/tests_*.xml
+cd ${TEST_OUTPUT_DIR}
+tar czf "${TEST_OUTPUT_DIR}/test_results.tar" "${TEST_OUTPUT_DIR}/tests_*.xml"
