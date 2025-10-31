@@ -86,11 +86,17 @@ runs:
       shell: bash
       run: |
         set -xe
+        echo "Current working directory: $(pwd)"
+        echo "Listing all files:"
+        find . -maxdepth 3 -type f -print | sort
+
         echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
         echo '<testsuites>' >> tests.xml
-        for f in tests.xml_* 2>/dev/null; do
-          [ -f "$f" ] || continue
+
+        for f in tests.xml_* tests.xml_*xml; do
+          echo "Merging $f"
           sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
         done
+
         echo '</testsuites>' >> tests.xml
         ls -lh tests.xml
