@@ -161,4 +161,6 @@ ctest --output-on-failure --timeout 90 $CTEST_FILE -E ${EXCLUDED_PDI_TESTS}
 
 # After all three ctest commands
 cd ${TEST_OUTPUT_DIR}
-tar czf "${TEST_OUTPUT_DIR}/test_results.tar" "${TEST_OUTPUT_DIR}/tests_*.xml"
+# tar czf "${TEST_OUTPUT_DIR}/test_results.tar" "${TEST_OUTPUT_DIR}/tests_*.xml"
+# tar czf test_results_BIS.tar tests_*.xml
+tar czf /tmp/test_results.tar tests_*.xml
