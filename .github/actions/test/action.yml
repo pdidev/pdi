@@ -46,36 +46,37 @@ runs:
       shell: bash
       run: |
         set -xe
-
-        # Prepare working directory (shared with container)
-        mkdir -p work_dir
-
         cat <<'EOF' > run.sh
-        set -xe
-        JOBID="$(echo "${{ github.run_id }}" | md5sum | cut -b 1)"
-        if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
-        export MAKEFLAGS='-j 4'
-        export CTEST_FLAGS='--output-junit /work/tests.xml'
-        export CTEST_OUTPUT_JUNIT='/work/tests.xml'
-        export TEST_DIR='/tmp_dir_test'
-        /src/bin/build_and_run_all_tests
+          set -xe
+          JOBID="$(echo "${{ github.run_id }}" | md5sum | cut -b 1)"
+          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
+          export MAKEFLAGS='-j 4'
+          export CTEST_FLAGS='--output-junit /tmp/tests.xml'
+          export CTEST_OUTPUT_JUNIT='/tmp/tests.xml'
+          export TEST_DIR='/tmp_dir_test'
+          /src/bin/build_and_run_all_tests
+          cd /tmp
+          tar czf /tmp/test_results.tar tests.xml*
         EOF
 
-        # Run the container with a bind-mounted /work dir
-        docker run --rm \
+        docker run --cidfile docker.cid \
           -v ${PWD}:/src:ro \
-          -v ${PWD}/work_dir:/work \
           --tmpfs /tmp_dir_test:exec \
           ${{ inputs.image }} \
           bash /src/run.sh || true
 
-        # Copy results to workspace
-        if ls work_dir/tests.xml* >/dev/null 2>&1; then
-          cp work_dir/tests.xml* ./
+        CONTAINER_ID=$(cat docker.cid | tr -d '\n')
+        echo "Container ID: $CONTAINER_ID"
+
+        # Copy the tarball out
+        if docker cp "$CONTAINER_ID":/tmp/test_results.tar ./; then
+          tar xzf test_results.tar
           echo "with_report=true" >> "$GITHUB_OUTPUT"
         else
           echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
+
+        docker rm "$CONTAINER_ID" || true
 
     - id: MergeTestsReports
       if: steps.RunTests.outputs.with_report == 'true'
@@ -84,10 +85,9 @@ runs:
         set -xe
         echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
         echo '<testsuites>' >> tests.xml
-        for f in tests.xml_* tests.xml_*xml 2>/dev/null; do
+        for f in tests.xml_* 2>/dev/null; do
           [ -f "$f" ] || continue
           sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
         done
         echo '</testsuites>' >> tests.xml
         ls -lh tests.xml
-

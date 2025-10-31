@@ -132,7 +132,7 @@ fi
 # Configure, build & test for pdi, including example and test_api
 
 cd "${TEST_DIR_WITH_PDI}"
-cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}_1.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
@@ -152,3 +152,7 @@ cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS}_3.xml -E ${EXCLUDED_PDI_TESTS}
+
+# After all three ctest commands
+cd /tmp
+tar czf /tmp/test_results.tar tests.xml*
