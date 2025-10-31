@@ -59,8 +59,8 @@ runs:
           tar czf /tmp/test_results.tar tests.xml*
         EOF
 
-        docker run --cidfile docker.cid \
-          -v ${PWD}:/src:ro \
+        docker run --rm=false --cidfile=docker.cid \
+          -v "${PWD}:/src:ro" \
           --tmpfs /tmp_dir_test:exec \
           ${{ inputs.image }} \
           bash /src/run.sh || true
@@ -68,14 +68,17 @@ runs:
         CONTAINER_ID=$(cat docker.cid | tr -d '\n')
         echo "Container ID: $CONTAINER_ID"
 
-        # Copy the tarball out
+        # Copy the tarball out from /tmp (where build_and_run_all_tests created it)
         if docker cp "$CONTAINER_ID":/tmp/test_results.tar ./; then
-          tar xzf test_results.tar
+          echo "Extracting test results..."
+          tar xzf test_results.tar || echo "Warning: could not extract test_results.tar"
           echo "with_report=true" >> "$GITHUB_OUTPUT"
         else
+          echo "No test_results.tar found in container"
           echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
 
+        # Clean up container
         docker rm "$CONTAINER_ID" || true
 
     - id: MergeTestsReports
