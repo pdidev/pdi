@@ -51,7 +51,7 @@ mkdir "${TEST_DIR_NO_PDI}"
 TEST_DIR_API="${TEST_DIR}/api"
 mkdir "${TEST_DIR_API}"
 
-TEST_OUTPUT_DIR="${TEST_DIR}/tmp_test_results"
+TEST_OUTPUT_DIR="${TEST_DIR}/test_results"
 mkdir -p "$TEST_OUTPUT_DIR"
 
 cd "${SRCDIR}"
@@ -137,8 +137,8 @@ fi
 cd "${TEST_DIR_WITH_PDI}"
 cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
-CTEST_FILE="--output-junit ${TEST_OUTPUT_DIR}/tests_1.xml"
-ctest --output-on-failure --timeout 90 $CTEST_FILE ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+CTEST_FILE="${TEST_OUTPUT_DIR}/tests_1.xml"
+ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 # Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only with Paraconf
 
@@ -147,8 +147,8 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	cd "${TEST_DIR_NO_PDI}"
 	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
 	make ${MAKEFLAGS}
-	CTEST_FILE="--output-junit ${TEST_OUTPUT_DIR}/tests_2.xml"
-	ctest --output-on-failure --timeout 90 $CTEST_FILE -R PDI_example_trace_C -E ${EXCLUDED_PDI_TESTS}
+	CTEST_FILE="${TEST_OUTPUT_DIR}/tests_2.xml"
+	ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" -R PDI_example_trace_C -E ${EXCLUDED_PDI_TESTS}
 fi
 
 # Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
@@ -156,11 +156,9 @@ fi
 cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
 make ${MAKEFLAGS}
-CTEST_FILE="--output-junit ${TEST_OUTPUT_DIR}/tests_3.xml"
-ctest --output-on-failure --timeout 90 $CTEST_FILE -E ${EXCLUDED_PDI_TESTS}
+CTEST_FILE="${TEST_OUTPUT_DIR}/tests_3.xml"
+ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" -E ${EXCLUDED_PDI_TESTS}
 
-# After all three ctest commands
-cd ${TEST_OUTPUT_DIR}
-# tar czf "${TEST_OUTPUT_DIR}/test_results.tar" "${TEST_OUTPUT_DIR}/tests_*.xml"
-# tar czf test_results_BIS.tar tests_*.xml
-tar czf /tmp/test_results.tar tests_*.xml
+cd "$TEST_OUTPUT_DIR"
+echo $TEST_OUTPUT_DIR
+tar czf "${TEST_OUTPUT_DIR}/test_results.tar" tests_*.xml
