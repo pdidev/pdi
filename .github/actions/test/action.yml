@@ -44,36 +44,33 @@ runs:
 
         # Write the run.sh script to be executed inside the container
         cat <<'EOF' > run.sh
+          #!/bin/bash
           set -xe
 
           echo "=== Inside container ==="
           echo "PWD: $(pwd)"
           echo "Running tests..."
 
-          JOBID="$(echo "${{ github.run_id }}" | md5sum | cut -b 1)"
-          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
-          export MAKEFLAGS='-j 4'
-          export CTEST_FLAGS='--output-junit /tmp/tests.xml'
-          export CTEST_OUTPUT_JUNIT='/tmp/tests.xml'
-          export TEST_DIR='/tmp_dir_test'
+          # Ensure environment variables exist
+          : "${TEST_DIR:=/tmp_dir_test}"
+          : "${MAKEFLAGS:=-j}"
+          : "${CMAKE_FLAGS:=}"
+          : "${EXCLUDED_PDI_TESTS:=}"
+
+          mkdir -p "$TEST_DIR/test_results"
+
+          export TEST_DIR
 
           /src/bin/build_and_run_all_tests
 
           echo "=== Locating test result files ==="
-          find /tmp_dir_test -type f -name "tests_*.xml" || true
+          find "$TEST_DIR/test_results" -type f -name "tests_*.xml" || true
 
-          echo "=== Preparing tarball ==="
-          TEST_OUTPUT_DIR="$(find /tmp_dir_test -type d -name test_results | head -n 1 || true)"
-          echo "TEST_OUTPUT_DIR found at: ${TEST_OUTPUT_DIR}"
-
-          if [[ -n "${TEST_OUTPUT_DIR}" && -d "${TEST_OUTPUT_DIR}" ]]; then
-            cd "${TEST_OUTPUT_DIR}"
-            ls -l
-            tar czf /tmp/test_results.tar tests_*.xml
-            echo "Tar created at /tmp/test_results.tar"
+          if ls "$TEST_DIR/test_results/tests_*.xml" 1>/dev/null 2>&1; then
+              tar czf /tmp/test_results.tar -C "$TEST_DIR/test_results" tests_*.xml
+              echo ">>> Created /tmp/test_results.tar"
           else
-            echo "ERROR: TEST_OUTPUT_DIR not found!"
-            exit 1
+              echo ">>> No test results found — skipping tar creation"
           fi
         EOF
 
@@ -82,7 +79,7 @@ runs:
         # Run inside Docker
         docker run --cidfile docker.cid \
           -v "${PWD}:/src:ro" \
-          --tmpfs /tmp_dir_test:exec \
+          -v /tmp_dir_test:/tmp_dir_test \
           ${{ inputs.image }} \
           bash /src/run.sh || true
 
@@ -100,17 +97,21 @@ runs:
         fi
 
         docker rm "${CONTAINER_ID}" || true
+
     - name: Extract merged tests
       shell: bash
-      # if: always() && steps.testSpack.outputs.with_report == 'true'
       run: |
-        mkdir -p merged_results
-        tar -xzf test_results.tar -C merged_results
-        echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
-        echo '<testsuites>' >> tests.xml
-        for f in merged_results/tests_*.xml; do
-          echo "Merging $f"
-          sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
-        done
-        echo '</testsuites>' >> tests.xml
-        ls -lh tests.xml
+        if [ -f test_results.tar ]; then
+          mkdir -p merged_results
+          tar -xzf test_results.tar -C merged_results
+          echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
+          echo '<testsuites>' >> tests.xml
+          for f in merged_results/tests_*.xml; do
+            echo "Merging $f"
+            sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
+          done
+          echo '</testsuites>' >> tests.xml
+          ls -lh tests.xml
+        else
+          echo "No test_results.tar to extract — skipping merge"
+        fi

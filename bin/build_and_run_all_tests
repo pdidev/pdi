@@ -29,9 +29,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+#!/usr/bin/env bash
 set -xe
 
-# Make work directories
+# -----------------------
+# Setup work directories
+# -----------------------
 
 SRCDIR="${PWD}"
 
@@ -52,112 +55,84 @@ mkdir -p "${TEST_DIR_API}"
 TEST_OUTPUT_DIR="${TEST_DIR}/test_results"
 mkdir -p "$TEST_OUTPUT_DIR"
 
-cd "${SRCDIR}"
+cd "$SRCDIR"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
 
-
-
+# -----------------------
 # Gather options
+# -----------------------
 
 MAKEFLAGS="${MAKEFLAGS:--j}"
 EXCLUDED_PDI_TESTS=""
 
-if [[ -n "${PDI_PLUGIN_PATH}" ]]
-then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
+# Initialize CMAKE_FLAGS safely
+: "${CMAKE_FLAGS:=}"
+
+if [[ -n "${PDI_PLUGIN_PATH}" ]]; then
+  CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
 fi
 
-if [[ "x${PDI_LIBS}" = "xprovided" ]]
-then
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM"
+if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
+  CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM"
 else
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=EMBEDDED"
+  CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=EMBEDDED"
 fi
 
-
-
-# Various workarounds
+# -----------------------
+# Workarounds for Debian/Ubuntu
+# -----------------------
 
 NC_VERSION_MAJOR="$(nc-config --version | sed 's/^[a-zA-Z ]*\([0-9]*\)\.\([0-9]*\).*$/\1/')"
 NC_VERSION_MINOR="$(nc-config --version | sed 's/^[a-zA-Z ]*\([0-9]*\)\.\([0-9]*\).*$/\2/')"
-if (( NC_VERSION_MAJOR > 4 || ( NC_VERSION_MAJOR == 4 && NC_VERSION_MINOR > 8 ) )) || [[ "x${PDI_LIBS}" != "xprovided" ]]
-then
-	#TODO: NetCDF error https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/433
-	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}test_05_C"
+
+if (( NC_VERSION_MAJOR > 4 || ( NC_VERSION_MAJOR == 4 && NC_VERSION_MINOR > 8 ) )) || [[ "x${PDI_LIBS}" != "xprovided" ]]; then
+  EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}test_05_C"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_MPI}" = "xmpich" ]]
-then
-	#Workaround: mpi4py in debuntu is packaged for openmpi only
-	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}PDI_example_trace_P|PDI_example_decl_hdf5_P"
+if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_MPI}" = "xmpich" ]]; then
+  EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}PDI_example_trace_P|PDI_example_decl_hdf5_P"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ ^xubuntu && "x${PDI_MPI}" = "xmpich" ]] && dpkg -s mpich | grep -q 4.2.0-5
-then
-	#Workaround: mpich is broken in ubuntu noble and launches independent processes
-	#Due to https://bugs.launchpad.net/ubuntu/+source/mpich/+bug/2072338
-	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}mpi|decl_hdf5_02_F|decl_hdf5_03_F|decl_hdf5_04_F|PDI_example"
+if [[ "x${PDI_SYSTEM}" =~ ^xubuntu && "x${PDI_MPI}" = "xmpich" ]] && dpkg -s mpich | grep -q 4.2.0-5; then
+  EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}mpi|decl_hdf5_02_F|decl_hdf5_03_F|decl_hdf5_04_F|PDI_example"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]
-then
-	#Workaround: parallel NetCDF detection broken in debuntu (and absent in mpich case)
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
+if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]; then
+  CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ ^xmacos ]]
-then
-	#Workaround: not all plugins work on OSX yet (https://github.com/pdidev/pdi/issues/580)
-	CMAKE_FLAGS="${CMAKE_FLAGS} \
--DBUILD_BENCHMARKING=OFF \
--DBUILD_DECL_HDF5_PLUGIN=ON \
--DBUILD_DECL_NETCDF_PLUGIN=OFF \
--DBUILD_DEISA_PLUGIN=OFF \
--DBUILD_DOCUMENTATION=OFF \
--DBUILD_HDF5_PARALLEL=ON \
--DBUILD_FORTRAN=OFF \
--DBUILD_PYTHON=OFF \
--DBUILD_MPI_PLUGIN=ON \
--DBUILD_NETCDF_PARALLEL=ON \
--DBUILD_PYCALL_PLUGIN=OFF \
--DBUILD_SERIALIZE_PLUGIN=ON \
--DBUILD_SET_VALUE_PLUGIN=ON \
--DBUILD_TESTING=ON \
--DBUILD_TRACE_PLUGIN=ON \
--DBUILD_USER_CODE_PLUGIN=ON"
-fi
+# -----------------------
+# Configure, build & run tests
+# -----------------------
 
+run_ctest() {
+  local build_dir="$1"
+  local cmake_opts="$2"
+  local regex="$3"
 
+  mkdir -p "$build_dir"
+  cd "$build_dir"
+  cmake $cmake_opts "$SRCDIR"
+  make $MAKEFLAGS
+  CTEST_FILE="${TEST_OUTPUT_DIR}/tests_$(basename "$build_dir").xml"
+  ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" ${regex:+-R $regex} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+}
 
-# Configure, build & test for pdi, including example and test_api
+# Run PDI tests
+run_ctest "$TEST_DIR_WITH_PDI" "-DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel $CMAKE_FLAGS"
 
-cd "${TEST_DIR_WITH_PDI}"
-cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-make ${MAKEFLAGS}
-CTEST_FILE="${TEST_OUTPUT_DIR}/tests_1.xml"
-ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
-
-# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only with Paraconf
-
+# Run example tests if PDI_LIBS=provided
 if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
-
-	cd "${TEST_DIR_NO_PDI}"
-	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
-	make ${MAKEFLAGS}
-	CTEST_FILE="${TEST_OUTPUT_DIR}/tests_2.xml"
-	ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" -R PDI_example_trace_C -E ${EXCLUDED_PDI_TESTS}
+  run_ctest "$TEST_DIR_NO_PDI" "-DCMAKE_PREFIX_PATH=${SRCDIR}/no-pdi ${SRCDIR}/example" "PDI_example_trace_C"
 fi
 
-# Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
+# Run API-specific tests
+run_ctest "$TEST_DIR_API" "-DCMAKE_PREFIX_PATH=${SRCDIR}/no-pdi ${SRCDIR}/test_api"
 
-cd "${TEST_DIR_API}"
-cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
-make ${MAKEFLAGS}
-CTEST_FILE="${TEST_OUTPUT_DIR}/tests_3.xml"
-ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" -E ${EXCLUDED_PDI_TESTS}
-
-
+# -----------------------
+# Package results
+# -----------------------
 
 echo ">>> Current TEST_OUTPUT_DIR: $TEST_OUTPUT_DIR"
 echo ">>> Listing test results directory:"
@@ -167,9 +142,8 @@ cd "$TEST_OUTPUT_DIR"
 if ls tests_*.xml 1>/dev/null 2>&1; then
     echo ">>> Creating test_results.tar from:"
     ls -l tests_*.xml
-    tar czf test_results.tar tests_*.xml
-    echo ">>> Copying tar to /tmp for extraction"
-    cp test_results.tar /tmp/test_results.tar
+    tar czf /tmp/test_results.tar tests_*.xml
+    echo ">>> Test results tarball created at /tmp/test_results.tar"
 else
     echo ">>> No XML test results found — skipping tar creation"
 fi
