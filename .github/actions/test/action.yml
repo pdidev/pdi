@@ -93,7 +93,7 @@ runs:
         echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
         echo '<testsuites>' >> tests.xml
 
-        for f in tests.xml_* tests.xml_*xml; do
+        for f in tests.xml_*; do
           echo "Merging $f"
           sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
         done
