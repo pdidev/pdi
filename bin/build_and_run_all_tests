@@ -55,6 +55,9 @@ cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
 
+TEST_OUTPUT_DIR="${SRCDIR}/tmp_test_results"
+mkdir -p "$TEST_OUTPUT_DIR"
+
 
 
 # Gather options
@@ -134,7 +137,7 @@ fi
 cd "${TEST_DIR_WITH_PDI}"
 cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
-CTEST_FILE="${CTEST_FLAGS%.*}_1.xml" 
+CTEST_FILE="--output-junit ${TEST_OUTPUT_DIR}/tests_1.xml"
 ctest --output-on-failure --timeout 90 $CTEST_FILE ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 # Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only with Paraconf
@@ -144,7 +147,7 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	cd "${TEST_DIR_NO_PDI}"
 	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
 	make ${MAKEFLAGS}
-	CTEST_FILE="${CTEST_FLAGS%.*}_2.xml" 
+	CTEST_FILE="--output-junit ${TEST_OUTPUT_DIR}/tests_2.xml"
 	ctest --output-on-failure --timeout 90 $CTEST_FILE -R PDI_example_trace_C -E ${EXCLUDED_PDI_TESTS}
 fi
 
@@ -153,9 +156,9 @@ fi
 cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
 make ${MAKEFLAGS}
-CTEST_FILE="${CTEST_FLAGS%.*}_3.xml" 
+CTEST_FILE="--output-junit ${TEST_OUTPUT_DIR}/tests_3.xml"
 ctest --output-on-failure --timeout 90 $CTEST_FILE -E ${EXCLUDED_PDI_TESTS}
 
 # After all three ctest commands
 cd /tmp
-tar czf /tmp/test_results.tar tests.xml*
+tar czf /tmp/test_results.tar ${TEST_OUTPUT_DIR}/tests_*.xml
