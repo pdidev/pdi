@@ -158,10 +158,19 @@ make ${MAKEFLAGS}
 CTEST_FILE="${TEST_OUTPUT_DIR}/tests_3.xml"
 ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" -E ${EXCLUDED_PDI_TESTS}
 
-cd "$TEST_OUTPUT_DIR"
-echo "Contents of TEST_OUTPUT_DIR ($TEST_OUTPUT_DIR):"
-find . -type f -maxdepth 1 -print || true
 
-tar czf /tmp/test_results.tar tests_*.xml
-echo "Created /tmp/test_results.tar with the following files:"
-tar tzf /tmp/test_results.tar || true
+
+echo ">>> Current TEST_OUTPUT_DIR: $TEST_OUTPUT_DIR"
+echo ">>> Listing test results directory:"
+find "$TEST_OUTPUT_DIR" -type f -maxdepth 1 || true
+
+cd "$TEST_OUTPUT_DIR"
+if ls tests_*.xml 1>/dev/null 2>&1; then
+    echo ">>> Creating test_results.tar from:"
+    ls -l tests_*.xml
+    tar czf test_results.tar tests_*.xml
+    echo ">>> Copying tar to /tmp for extraction"
+    cp test_results.tar /tmp/test_results.tar
+else
+    echo ">>> No XML test results found — skipping tar creation"
+fi
