@@ -28,7 +28,7 @@
 #=============================================================================
 
 name: "Run PDI tests in Docker"
-description: "Build, run, and extract test results"
+description: "Build, run, and extract test results using junitparser"
 inputs:
   image:
     description: "Docker image to use for testing"
@@ -37,82 +37,53 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Run tests inside Docker and extract results
+    - name: Prepare directories
+      shell: bash
+      run: |
+        mkdir -p merged_results
+
+    - name: Run tests inside Docker
       shell: bash
       run: |
         set -xe
 
         # Write the run.sh script to be executed inside the container
         cat <<'EOF' > run.sh
-          #!/bin/bash
           set -xe
-
+          
           echo "=== Inside container ==="
-          echo "PWD: $(pwd)"
-          echo "Running tests..."
+          export MAKEFLAGS='-j 4'
+          export CTEST_FLAGS='--output-junit /tmp_dir_test/test_results'
+          export TEST_DIR='/tmp_dir_test'
 
-          # Ensure environment variables exist
-          : "${TEST_DIR:=/tmp_dir_test}"
-          : "${MAKEFLAGS:=-j}"
-          : "${CMAKE_FLAGS:=}"
-          : "${EXCLUDED_PDI_TESTS:=}"
-
-          mkdir -p "$TEST_DIR/test_results"
-
-          export TEST_DIR
+          mkdir -p "${TEST_DIR}/test_results"
 
           /src/bin/build_and_run_all_tests
 
-          echo "=== Locating test result files ==="
-          find "$TEST_DIR/test_results" -type f -name "tests_*.xml" || true
-
-          if ls "$TEST_DIR/test_results/tests_*.xml" 1>/dev/null 2>&1; then
-              tar czf /tmp/test_results.tar -C "$TEST_DIR/test_results" tests_*.xml
-              echo ">>> Created /tmp/test_results.tar"
-          else
-              echo ">>> No test results found — skipping tar creation"
-          fi
+          echo "=== Listing test results ==="
+          find "${TEST_DIR}/test_results" -type f -name "tests_*.xml" || true
         EOF
 
         chmod +x run.sh
 
-        # Run inside Docker
-        docker run --cidfile docker.cid \
+        # Run inside Docker, mounting merged_results as test results directory
+        docker run --rm \
           -v "${PWD}:/src:ro" \
-          -v /tmp_dir_test:/tmp_dir_test \
-          --user root \
+          -v "${PWD}/merged_results:/tmp_dir_test/test_results" \
           ${{ inputs.image }} \
           bash /src/run.sh || true
 
-        CONTAINER_ID=$(cat docker.cid | tr -d '\n')
-        echo "Container ID: ${CONTAINER_ID}"
-
-        echo "=== Copying test_results.tar from container ==="
-        if docker cp "${CONTAINER_ID}":/tmp/test_results.tar ./; then
-          echo "Successfully copied test_results.tar"
-          tar tzf test_results.tar || true
-          echo "with_report=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "No test_results.tar found in container"
-          echo "with_report=false" >> "$GITHUB_OUTPUT"
-        fi
-
-        docker rm "${CONTAINER_ID}" || true
-
-    - name: Extract merged tests
-      shell: bash
+    - name: Merge JUnit XML results
+      shell: python
       run: |
-        if [ -f test_results.tar ]; then
-          mkdir -p merged_results
-          tar -xzf test_results.tar -C merged_results
-          echo '<?xml version="1.0" encoding="UTF-8"?>' > tests.xml
-          echo '<testsuites>' >> tests.xml
-          for f in merged_results/tests_*.xml; do
-            echo "Merging $f"
-            sed -n '/<testsuite/,/<\/testsuite>/p' "$f" >> tests.xml
-          done
-          echo '</testsuites>' >> tests.xml
-          ls -lh tests.xml
-        else
-          echo "No test_results.tar to extract — skipping merge"
-        fi
+        import junitparser
+        import glob
+
+        merged = junitparser.JUnitXml()
+
+        for xml_file in glob.glob("merged_results/tests_*.xml"):
+            print(f"Merging {xml_file}")
+            merged.add_junitxml(junitparser.JUnitXml.fromfile(xml_file))
+
+        merged.write("tests.xml")
+        print("Merged XML written to tests.xml")

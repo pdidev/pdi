@@ -32,10 +32,6 @@
 #!/usr/bin/env bash
 set -xe
 
-# -----------------------
-# Setup work directories
-# -----------------------
-
 SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
@@ -43,41 +39,19 @@ cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
 
-TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
-mkdir -p "${TEST_DIR_WITH_PDI}"
+mkdir -p "${TEST_DIR}/with_pdi" "${TEST_DIR}/no_pdi" "${TEST_DIR}/api" "${TEST_DIR}/test_results"
 
-TEST_DIR_NO_PDI="${TEST_DIR}/no_pdi"
-mkdir -p "${TEST_DIR_NO_PDI}"
-
-TEST_DIR_API="${TEST_DIR}/api"
-mkdir -p "${TEST_DIR_API}"
-
-TEST_OUTPUT_DIR="${TEST_DIR}/test_results"
-mkdir -p "$TEST_OUTPUT_DIR"
-
-cd "$SRCDIR"
-cd "$(dirname "$0")/.."
+cd "${SRCDIR}"
 SRCDIR="${PWD}"
-
-# -----------------------
-# Gather options
-# -----------------------
 
 MAKEFLAGS="${MAKEFLAGS:--j}"
 EXCLUDED_PDI_TESTS=""
 
-# Initialize CMAKE_FLAGS safely
-: "${CMAKE_FLAGS:=}"
-
-if [[ -n "${PDI_PLUGIN_PATH}" ]]; then
-  CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
-fi
-
-if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
-  CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM"
-else
-  CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=EMBEDDED"
-fi
+# Set CMAKE_FLAGS depending on environment variables
+CMAKE_FLAGS="${CMAKE_FLAGS:-}"
+[[ -n "${PDI_PLUGIN_PATH}" ]] && CMAKE_FLAGS="${CMAKE_FLAGS} -DINSTALL_PDIPLUGINDIR=${PDI_PLUGIN_PATH}"
+[[ "x${PDI_LIBS}" = "xprovided" ]] && CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=SYSTEM" || CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_DEFAULT=EMBEDDED"
+[[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]] && CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 
 # -----------------------
 # Workarounds for Debian/Ubuntu
@@ -106,44 +80,28 @@ fi
 # Configure, build & run tests
 # -----------------------
 
-run_ctest() {
-  local build_dir="$1"
-  local cmake_opts="$2"
-  local regex="$3"
+# Run tests with PDI
+cd "${TEST_DIR}/with_pdi"
+cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+make ${MAKEFLAGS}
+CTEST_FILE="${TEST_DIR}/test_results/tests_1.xml"
+ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-  mkdir -p "$build_dir"
-  cd "$build_dir"
-  cmake $cmake_opts "$SRCDIR"
-  make $MAKEFLAGS
-  CTEST_FILE="${TEST_OUTPUT_DIR}/tests_$(basename "$build_dir").xml"
-  ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" ${regex:+-R $regex} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
-}
-
-# Run PDI tests
-run_ctest "$TEST_DIR_WITH_PDI" "-DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel $CMAKE_FLAGS"
-
-# Run example tests if PDI_LIBS=provided
+# Run tests without PDI if provided
 if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
-  run_ctest "$TEST_DIR_NO_PDI" "-DCMAKE_PREFIX_PATH=${SRCDIR}/no-pdi ${SRCDIR}/example" "PDI_example_trace_C"
+    cd "${TEST_DIR}/no_pdi"
+    cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
+    make ${MAKEFLAGS}
+    CTEST_FILE="${TEST_DIR}/test_results/tests_2.xml"
+    ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" -R PDI_example_trace_C -E ${EXCLUDED_PDI_TESTS}
 fi
 
-# Run API-specific tests
-run_ctest "$TEST_DIR_API" "-DCMAKE_PREFIX_PATH=${SRCDIR}/no-pdi ${SRCDIR}/test_api"
+# API tests
+cd "${TEST_DIR}/api"
+cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
+make ${MAKEFLAGS}
+CTEST_FILE="${TEST_DIR}/test_results/tests_3.xml"
+ctest --output-on-failure --timeout 90 --output-junit "$CTEST_FILE" -E ${EXCLUDED_PDI_TESTS}
 
-# -----------------------
-# Package results
-# -----------------------
-
-echo ">>> Current TEST_OUTPUT_DIR: $TEST_OUTPUT_DIR"
-echo ">>> Listing test results directory:"
-find "$TEST_OUTPUT_DIR" -type f -maxdepth 1 || true
-
-cd "$TEST_OUTPUT_DIR"
-if ls tests_*.xml 1>/dev/null 2>&1; then
-    echo ">>> Creating test_results.tar from:"
-    ls -l tests_*.xml
-    tar czf /tmp/test_results.tar tests_*.xml
-    echo ">>> Test results tarball created at /tmp/test_results.tar"
-else
-    echo ">>> No XML test results found — skipping tar creation"
-fi
+echo ">>> Listing test results:"
+find "${TEST_DIR}/test_results" -type f
