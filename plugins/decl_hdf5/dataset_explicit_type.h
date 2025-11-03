@@ -46,11 +46,20 @@ namespace decl_hdf5 {
 /// Information about the types that should be used to create datasets as provided in the Yaml file
 class Dataset_explicit_type
 {
-	std::string m_definition; ///< definition from the YAML as a string for debugging purpose
-	std::regex m_regex; ///< the parsed regex that determines if the provided type applies (depend only on m_definition and regex grammar)
-	int m_begin_line; ///< begin line number in the YAML for debugging purposes
-	int m_end_line; ///< end line number in the YAML for debugging purposes
-	PDI::Datatype_template_sptr m_type; ///< the type to use for the dataset in case the regex matches
+    /// definition from the YAML as a string for debugging purpose
+	std::string m_definition;
+	
+	///< the parsed regex that determines if the provided type applies (depend only on m_definition and regex grammar)
+	std::regex m_regex;
+	
+	///< begin line number in the YAML for debugging purposes
+	int m_begin_line;
+	
+	///< end line number in the YAML for debugging purposes
+	int m_end_line;
+	
+	///< the type to use for the dataset in case the regex matches
+	PDI::Datatype_template_sptr m_type;
 
 public:
 	Dataset_explicit_type() = default;
