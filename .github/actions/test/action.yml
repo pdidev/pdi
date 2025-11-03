@@ -27,63 +27,39 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-name: "Run PDI tests in Docker"
-description: "Build, run, and extract test results using junitparser"
+name: Test PDI
+description: 'Test PDI'
 inputs:
   image:
-    description: "Docker image to use for testing"
     required: true
-
+    description: "docker image in which to run the test"
 runs:
   using: "composite"
   steps:
-    - name: Prepare directories
+    - id: test
       shell: bash
       run: |
-        mkdir -p merged_results
-
-    - name: Run tests inside Docker
-      shell: bash
-      run: |
-        set -xe
-
-        # Write the run.sh script to be executed inside the container
-        cat <<'EOF' > run.sh
+        cat<<-'EOF' > run.sh
           set -xe
-          
-          echo "=== Inside container ==="
+          JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
+          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
-          export CTEST_FLAGS='--output-junit /tmp_dir_test/test_results'
-          export TEST_DIR='/tmp_dir_test'
-
-          mkdir -p "${TEST_DIR}/test_results"
-
+          export CTEST_FLAGS="--output-junit /tmp/tests.xml"
+          export CTEST_OUTPUT_JUNIT="/tmp/tests.xml"
+          export TEST_DIR="/tmp_dir_test"
           /src/bin/build_and_run_all_tests
-
-          echo "=== Listing test results ==="
-          find "${TEST_DIR}/test_results" -type f -name "tests_*.xml" || true
         EOF
-
-        chmod +x run.sh
-
-        # Run inside Docker, mounting merged_results as test results directory
-        docker run --rm \
-          -v "${PWD}:/src:ro" \
-          -v "${PWD}/merged_results:/tmp_dir_test/test_results" \
-          ${{ inputs.image }} \
-          bash /src/run.sh || true
-
-    - name: Merge JUnit XML results
-      shell: python
-      run: |
-        import junitparser
-        import glob
-
-        merged = junitparser.JUnitXml()
-
-        for xml_file in glob.glob("merged_results/tests_*.xml"):
-            print(f"Merging {xml_file}")
-            merged.add_junitxml(junitparser.JUnitXml.fromfile(xml_file))
-
-        merged.write("tests.xml")
-        print("Merged XML written to tests.xml")
+        docker run \
+          --cidfile='docker.cid' \
+          -v ${PWD}:/src:ro \
+          --tmpfs /tmp_dir_test:exec \
+          ${{inputs.image}} \
+          bash /src/run.sh
+        if docker cp "$(cat docker.cid)":/tmp/. ./
+        then echo "with_report=true" >> "$GITHUB_OUTPUT"
+        else echo "with_report=false" >> "$GITHUB_OUTPUT"
+        fi
+    - id: Publish
+      uses: mikepenz/action-junit-report@v4
+      if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
+      with: { report_paths: 'tests*.xml' }
