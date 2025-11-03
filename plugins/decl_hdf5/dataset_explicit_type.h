@@ -49,7 +49,7 @@ class Dataset_explicit_type
     /// definition from the YAML as a string for debugging purpose
 	std::string m_definition;
 	
-	///< the parsed regex that determines if the provided type applies (depend only on m_definition and regex grammar)
+	/// the parsed regex that determines if the provided type applies (depend only on m_definition and regex grammar)
 	std::regex m_regex;
 	
 	/// begin line number in the YAML for debugging purposes
