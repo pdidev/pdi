@@ -58,7 +58,7 @@ class Dataset_explicit_type
 	/// end line number in the YAML for debugging purposes
 	int m_end_line;
 	
-	///< the type to use for the dataset in case the regex matches
+	/// the type to use for the dataset in case the regex matches
 	PDI::Datatype_template_sptr m_type;
 
 public:
