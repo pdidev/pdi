@@ -22,14 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-
 #ifndef DECL_HDF5_DATASET_EXPLICIT_TYPE_H_
 #define DECL_HDF5_DATASET_EXPLICIT_TYPE_H_
-
-// #include <hdf5.h>
-// #ifdef H5_HAVE_PARALLEL
-// #include <mpi.h>
-// #endif
 
 #include <regex>
 #include <string>
@@ -38,32 +32,35 @@
 
 #include <pdi/pdi_fwd.h>
 
-//#include <pdi/context.h>
-//#include <pdi/expression.h>
-
 namespace decl_hdf5 {
 
 /// Information about the types that should be used to create datasets as provided in the Yaml file
 class Dataset_explicit_type
 {
-    /// definition from the YAML as a string for debugging purpose
+	/// definition from the YAML as a string for debugging purpose
 	std::string m_definition;
-	
+
 	/// the parsed regex that determines if the provided type applies (depend only on m_definition and regex grammar)
 	std::regex m_regex;
-	
+
 	/// begin line number in the YAML for debugging purposes
 	int m_begin_line;
-	
+
 	/// end line number in the YAML for debugging purposes
 	int m_end_line;
-	
+
 	/// the type to use for the dataset in case the regex matches
 	PDI::Datatype_template_sptr m_type;
 
 public:
-	Dataset_explicit_type() = default;
-
+	/** Constructor of Dataset_explicit_type
+	 *
+	 * \param def the definition or generic name of the dataset in the Yaml file 
+	 * \param b_line first line in the Yaml file where the dataset is defined
+	 * \param e_line last line in the Yaml file where the dataset is defined
+	 * \param regex the regex that correspond to the string contains in def
+	 * \param type the type to use for the dataset in case the regex matches
+	 */
 	Dataset_explicit_type(std::string def, int b_line, int e_line, std::regex regex, PDI::Datatype_template_sptr type)
 		: m_definition(def)
 		, m_begin_line(b_line)

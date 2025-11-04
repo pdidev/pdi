@@ -29,6 +29,7 @@
 #endif
 
 #include <algorithm>
+#include <optional>
 #include <regex>
 #include <sstream>
 #include <tuple>
@@ -367,14 +368,12 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 	Datatype_sptr dataset_type;
 	Raii_hid h5_file_type, h5_file_space;
 
-	bool dataset_found = false;
-	Dataset_explicit_type dset_found;
+	std::optional<Dataset_explicit_type> dset_found;
 	ctx.logger().trace("search `{}' in the list of datasets section", dataset_name);
 
 	for (auto&& dsets_elem = dsets.begin(); dsets_elem != dsets.end(); ++dsets_elem) {
 		if (std::regex_match(dataset_name, dsets_elem->regex())) {
-			if (!dataset_found) {
-				dataset_found = true;
+			if (!dset_found.has_value()) {
 				ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem->definition());
 				dset_found = *dsets_elem;
 			} else {
@@ -382,7 +381,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 				// (if the elements found have different size, subsize, type, ...)
 				// send a error a message to the user
 				std::vector<string> list_dataset_found;
-				list_dataset_found.emplace_back(dset_found.definition() + dset_found.get_msg_err_line());
+				list_dataset_found.emplace_back(dset_found->definition() + dset_found->get_msg_err_line());
 				list_dataset_found.emplace_back(dsets_elem->definition() + dsets_elem->get_msg_err_line());
 				++dsets_elem; // get the next element in the iterator on dsets
 				// loop over the rest of the elements in the iterator on dsets
@@ -411,9 +410,9 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 		}
 	}
 
-	if (dataset_found) {
-		ctx.logger().trace("Get the regex in the list of datasets section := `{}'", dset_found.definition());
-		dataset_type = dset_found.type()->evaluate(ctx);
+	if (dset_found.has_value()) {
+		ctx.logger().trace("Get the regex in the list of datasets section := `{}'", dset_found->definition());
+		dataset_type = dset_found->type()->evaluate(ctx);
 		tie(h5_file_space, h5_file_type) = space(dataset_type);
 		ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
