@@ -1,0 +1,105 @@
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    size:   int   
+  data: # type of values for which PDI does not keep a copy
+    is_client: int  # equivalent to fti_head
+  plugins:
+    #mpi:
+    damaris:  
+      #init_on_event: 1
+      communicator: MPI_COMM_WORLD
+      architecture:
+        sim_name: 3dmesh_wf  
+        domains: 8
+        buffer_size: 536870912
+        placement:
+          start:
+          stride:
+          blocksize:
+          mask:
+        dedicated:
+          core: 2
+          node: 0
+      parameters:
+        - parameter: 
+            name: WIDTH
+            type: int
+            value: 16
+        - parameter: 
+            name: HEIGHT
+            type: int
+            value: 8
+        - parameter: 
+            name: DEPTH
+            type: int
+            value: 16
+        - parameter: 
+            name: size
+            type: int
+            value: 4
+        - parameter: 
+            name: blocks
+            type: int
+            value: 4
+      datasets:
+        - dataset: 
+            name: cube_i
+            type: scalar
+            layout: cells_whd_wf
+            time_varying: true
+            mesh: mesh
+            centering: nodal
+            script: MyPyAction
+        - dataset: 
+            name: last_iter
+            type: scalar
+            layout: one_int
+            time_varying: true
+            mesh: mesh
+            script: MyPyAction
+        - dataset: 
+            name: array_sum
+            type: scalar
+            layout: one_double
+            time_varying: true
+            mesh: mesh
+            script: MyPyAction
+      layouts:
+        - layout: 
+            name: cells_whd_wf
+            type: int
+            dimensions: 'WIDTH/size,HEIGHT,DEPTH/blocks'
+            global: 'WIDTH,HEIGHT,DEPTH'
+            #ghosts: '0:0,0:0,0:0'  
+        - layout: 
+            name: one_int
+            type: int
+            dimensions: '1'
+            global: '1' 
+        - layout: 
+            name: one_double
+            type: double
+            dimensions: '1'
+            global: '1'  
+      pyscript: 
+        name: MyPyAction
+        file: 3dmesh_dask.py # can be absolute or relative path
+        scheduler_file: dask_file.json
+        #execution: 1
+        language: python
+        #scope: core
+        #external: false
+        frequency: 1
+        #nthreads: 1
+        #timeout: 2
+        #keep_workers: no
+        #comment: ""  
+      log:
+        #file_name: 2dmesh # default = $sim_name
+        rotation_size: 5
+        log_level: info
+        flush: true
+
+
+

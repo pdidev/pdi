@@ -1,0 +1,68 @@
+# duration in seconds
+duration: 0.75
+# global [height, width] (excluding boundary conditions or ghosts)
+datasize: [60, 12]
+# degree of parallelism
+parallelism: { height: 3, width: 1 }
+
+# only the following config is passed to PDI
+pdi:
+  metadata: # type of small values for which PDI keeps a copy
+    iter:   int                    # current iteration id
+    dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
+    psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
+    pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
+  data: 
+    main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
+  
+  plugins:
+    mpi:
+    damaris:  
+    
+      on_init: init #or init_on_event
+      #start_on_event: damaris_start
+      #end_iteration_on_event: damaris_end_iteration
+      on_finalize: finalization #Or finalize_on_event
+      communicator: $MPI_COMM_WORLD # pas utilisé actuellement
+      architecture: 
+        sim_name: example  
+        domains: 1 # => nb de block par sous domain 
+        # damaris divise le sous domain par block equitablement
+        dedicated:
+          core: 1
+          node: 0 
+      datasets:
+        - dataset: 
+            name: main_field
+            layout: main_field_layout
+            mesh: mesh2d # pour la visualisation
+            centering: zonal
+            storage: hdf5_example
+            script:
+            visualizable: true
+            time_varying: true
+            #comment: This is the zonal pressure from our test simulation
+      layouts: # on ne peut pas modifier la valuer de layout une fois initialisé, travail en cours pour la modification dynamique
+        - layout: 
+            name: main_field_layout # ~hdf5 dataset_selection
+            type: double
+            global: '$psize[0]*($dsize[0]-2),$psize[1]*($dsize[1]-2)'
+            dimensions: [ '$dsize[0]', '$dsize[1]' ] # process dim, with ghosts/boundaries
+            ghosts: '1:1,1:1'   # 1 ghost à gauche de dim1, 1 ghost à droit de dim1 , 1 ghost à gauche de dim2, 1 ghost à droit de dim2
+            depends_on: [dsize, psize] # This will help ensure an update of the layout attributes value to Damaris lib once the metadata are exposed (using Damaris Parameters in the background)!
+      storages:
+        - storage:
+            name: hdf5_example
+            type: HDF5
+            file_mode: Collective # or FilePerCore
+            files_path: ./HDF5_files/   # Where to save files
+            # hdf5 file name defined by damaris
+            #frequency: 1
+      
+      #Optional config, has a default behavior 
+      log:
+        #file_name: example # default = $sim_name
+        rotation_size: 5
+        log_level: info
+        flush: true
+        

@@ -1,5 +1,6 @@
 #=============================================================================
-# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
 #
@@ -27,42 +28,26 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-name: tests
-on:
-  push: { branches: [ main, 'v[0-9]+.[0-9]+' ] }
-  pull_request: 
-    types: [ready_for_review]
-jobs:
-  spack:
-    strategy:
-      fail-fast: false
-      matrix:
-        version:  ['latest', 'oldest']
-        compiler: ['gcc', 'clang']
-        mpi:      ['openmpi', 'mpich']
-        variant:  ['mini', 'all']
-    runs-on: ubuntu-24.04
-    steps:
-    - name: Checkout branch
-      uses: actions/checkout@v4
-      with: { submodules: recursive }
-    - name: Test
-      uses: ./.github/actions/test/
-      with: 
-        image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
-  debuntu:
-    strategy:
-      fail-fast: false
-      matrix:
-        base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
-        mpi:     ['openmpi', 'mpich']
-        variant: ['mini', 'all']
-    runs-on: ubuntu-24.04
-    steps:
-    - name: Checkout branch
-      uses: actions/checkout@v4
-      with: { submodules: recursive }
-    - name: Test
-      uses: ./.github/actions/test/
-      with: 
-        image: 'ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
+cmake_minimum_required(VERSION 3.16...3.29)
+
+set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
+
+# Add the plugin path to PDI_PLUGIN_PATH
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
+file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
+     CONTENT "
+set(PDI_PLUGIN_PATH \"\$ENV{PDI_PLUGIN_PATH}\")\n
+if(\"x\${PDI_PLUGIN_PATH}x\" STREQUAL xx)\n
+set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_damaris_plugin>\")\n
+else()\n
+set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_damaris_plugin>:\${PDI_PLUGIN_PATH}\")\n
+endif()
+"
+)
+
+# Damaris plugin test
+add_executable(damaris_mpi_test_01 damaris_mpi_test_01.c)
+target_link_libraries(damaris_mpi_test_01 damaris MPI::MPI_C MPI::MPI_CXX)
+add_test(NAME damaris_mpi_test_01 COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:damaris_mpi_test_01>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/damaris_mpi_test_01.yml")
+set_property(TEST damaris_mpi_test_01 PROPERTY PROCESSORS 1)
+
