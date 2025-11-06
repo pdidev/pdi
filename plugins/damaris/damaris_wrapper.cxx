@@ -228,7 +228,7 @@ int Damaris_wrapper::damaris_pdi_get_iteration(int* iteration)
 Damaris_wrapper::~Damaris_wrapper()
 {
 	// Call before MPI_Finalize()
-    damaris_finalize();
+    //damaris_finalize();//Commented to avoid double finalize bug, Thank you Jacques :)
 }
 
 } // namespace damaris_pdi

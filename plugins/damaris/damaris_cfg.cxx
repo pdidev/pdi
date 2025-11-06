@@ -250,7 +250,7 @@
  
      m_xml_config_object = damarisXMLModifyModel.GetConfigString();
  
-    printf("-------------------------------------------------------XML OBJECT MODIFIED----------------------------------------------\n%s", damarisXMLModifyModel.GetConfigString().c_str());
+    //printf("-------------------------------------------------------XML OBJECT MODIFIED----------------------------------------------\n%s", damarisXMLModifyModel.GetConfigString().c_str());
     //exit(0);
  }
  
@@ -387,7 +387,7 @@
                          );
                              
                          load_desc(m_descs, ctx, metadata_name, Desc_type::PRM_REQUIRED_METADATA);
-                        ctx.logger().info("--------------------------------------------------------------------------------PARAMETER {} depends on {}", prmxml.param_name_, metadata_name);
+                        //ctx.logger().info("--------------------------------------------------------------------------------PARAMETER {} depends on {}", prmxml.param_name_, metadata_name);
                      }
  
  
@@ -503,7 +503,7 @@
  
              //m_datasets.emplace(vxml.var_name_ , vxml) ;
              m_datasets.emplace(dataset_elt_full_name , vxml) ;
-             ctx.logger().info("------------------- Parsing damaris Variable '{}' , name_index = {} ", dataset_elt_full_name, name_index);
+             //ctx.logger().info("------------------- Parsing damaris Variable '{}' , name_index = {} ", dataset_elt_full_name, name_index);
  
              if(name_index == 1) {
                  find_replace_map.insert(
@@ -557,7 +557,7 @@
                      //Is there a way to determine if an expression is ready to be evaluated? ei, all the conponent have a value
                      if (!PC_status(PC_get(value, "[0]"))) {//Array //[d1,d2,d3] for instance, each di an expreession of of Damaris Parameter
                          int nb_layout_dims2; PC_len(value, &nb_layout_dims2);
-                         std::cout << "INFO: damaris_cfg nb_layout_dims has dims2: " << nb_layout_dims2 << std::endl ;
+                         //std::cout << "INFO: damaris_cfg nb_layout_dims has dims2: " << nb_layout_dims2 << std::endl ;
                          
                          std::string dims_list = "";
                          each(value, [&](PC_tree_t dim) {
@@ -663,9 +663,9 @@
                     global_list.push_back(tmp);
                 }
 
-                ctx.logger().info("------------------- OLD  layoutxml.layout_dimensions_ '{}' |  layoutxml.layout_dims_global_ '{}'", layoutxml.layout_dimensions_, layoutxml.layout_dims_global_);
+                //ctx.logger().info("------------------- OLD  layoutxml.layout_dimensions_ '{}' |  layoutxml.layout_dims_global_ '{}'", layoutxml.layout_dimensions_, layoutxml.layout_dims_global_);
 
-                ctx.logger().info("------------------- dim_list[0] = '{}' |  global_list[0] = '{}'", dim_list[0], global_list[0]);
+                //ctx.logger().info("------------------- dim_list[0] = '{}' |  global_list[0] = '{}'", dim_list[0], global_list[0]);
 
                 std::string prm_config_yaml
                     = "";//"parameters:                                                         \n";
@@ -707,7 +707,7 @@
 
                 //Background creation of parameter
 	            PC_tree_t parameters_conf = PC_parse_string(prm_config_yaml.c_str());     
-                ctx.logger().info("------------------- parameters_conf = \n '{}'", prm_config_yaml);                   
+                //ctx.logger().info("------------------- parameters_conf = \n '{}'", prm_config_yaml);                   
                 parse_parameters_tree(ctx, parameters_conf);
              }
              else {
@@ -719,7 +719,7 @@
  
              //m_layouts.emplace(layoutxml.layout_name_ , layoutxml) ;
              m_layouts.emplace(dataset_elt_full_name , layoutxml) ;
-             ctx.logger().info("------------------- Parsing damaris Layout '{}' , name_index = {} ", dataset_elt_full_name, name_index);
+             //ctx.logger().info("------------------- Parsing damaris Layout '{}' , name_index = {} ", dataset_elt_full_name, name_index);
  
              if(name_index == 1) {
                  find_replace_map.insert(
@@ -801,7 +801,7 @@
  
              //m_meshes.emplace(meshxml.get_name() , meshxml) ;
              m_meshes.emplace(meshxml.get_name() , meshxml) ;
-             ctx.logger().info("------------------- Parsing damaris Mesh '{}' , name_index = {} ", dataset_elt_full_name, name_index);
+             //ctx.logger().info("------------------- Parsing damaris Mesh '{}' , name_index = {} ", dataset_elt_full_name, name_index);
  
              if(name_index == 1) {
                  find_replace_map.insert(
@@ -844,13 +844,13 @@
                     //Ensure the folder exists
                     struct stat st;
                     if (stat(store.store_opt_FilesPath_.c_str(), &st) == 0 && S_ISDIR(st.st_mode)) {
-                        ctx.logger().info("HDF5 files_path exists: '{}'", to_string(value));
+                        //ctx.logger().info("HDF5 files_path exists: '{}'", to_string(value));
                     } else {
                         if (mkdir(store.store_opt_FilesPath_.c_str(), 0775) == -1) {
-                            ctx.logger().info("Error during the creation of the HDF5 files_path: '{}'", strerror(errno));
+                            //ctx.logger().info("Error during the creation of the HDF5 files_path: '{}'", strerror(errno));
                             exit(1);
                         } else {
-                            ctx.logger().info("HDF5 files_path created successfully: '{}'", to_string(value));
+                            //ctx.logger().info("HDF5 files_path created successfully: '{}'", to_string(value));
                         }
                     }
                  } 
@@ -908,7 +908,7 @@
  
              if (!PC_status(PC_get(value, "[0]"))) {//Array //[script1, script2, script3]
                  int nb_paraview_scripts; PC_len(value, &nb_paraview_scripts);
-                 std::cout << "INFO: damaris_cfg nb paraview scripts: " << nb_paraview_scripts << std::endl ;
+                // std::cout << "INFO: damaris_cfg nb paraview scripts: " << nb_paraview_scripts << std::endl ;
                  
                  each(value, [&](PC_tree_t script) {
                      paraviewxml.add_script(to_string(script));
@@ -1007,14 +1007,14 @@
         if(!PC_status(ds_name_tree))
         {
             ds_name = to_string(ds_name_tree);
-            std::cout << "INFO: damaris_cfg write_ds_tree :: ds_name = '" << ds_name  << "'"  << std::endl ;
+           // std::cout << "INFO: damaris_cfg write_ds_tree :: ds_name = '" << ds_name  << "'"  << std::endl ;
         }
         //when
         PC_tree_t ds_when_tree = PC_get(write_ds_tree, ".when");
         if(!PC_status(ds_when_tree))
         {
             ds_write_info.when = to_string(ds_when_tree);
-            std::cout << "INFO: damaris_cfg write_ds_tree :: when = '" << ds_write_info.when  << "'"  << std::endl ;
+           // std::cout << "INFO: damaris_cfg write_ds_tree :: when = '" << ds_write_info.when  << "'"  << std::endl ;
         }
         //position
         PC_tree_t ds_position_tree = PC_get(write_ds_tree, ".position");
@@ -1022,7 +1022,7 @@
         {
             if (!PC_status(PC_get(ds_position_tree, "[0]"))) {//Array [p0,p1,p3] (1 to 3 elements)
                 int position_dim; PC_len(ds_position_tree, &position_dim);
-                std::cout << "INFO: damaris_cfg write_ds_tree :: '"<< ds_name <<"' will be written in dims: " << position_dim << std::endl ;
+               // std::cout << "INFO: damaris_cfg write_ds_tree :: '"<< ds_name <<"' will be written in dims: " << position_dim << std::endl ;
                                         
                 int pos_idx = 0;
                 each(ds_position_tree, [&](PC_tree_t dim) {
@@ -1032,7 +1032,7 @@
             }                    
             else {//p0
                 ds_write_info.position[0] = to_string(ds_position_tree);   
-                std::cout << "INFO: damaris_cfg write_ds_tree :: '"<< ds_name <<"' will be written in dims: 1" << std::endl ;
+               // std::cout << "INFO: damaris_cfg write_ds_tree :: '"<< ds_name <<"' will be written in dims: 1" << std::endl ;
             }
         }
         //block
@@ -1040,7 +1040,7 @@
         if(!PC_status(ds_block_tree))
         {
             ds_write_info.block = to_string(ds_block_tree);
-            std::cout << "INFO: damaris_cfg write_ds_tree :: block = '" << ds_write_info.block  << "'"  << std::endl ;
+           // std::cout << "INFO: damaris_cfg write_ds_tree :: block = '" << ds_write_info.block  << "'"  << std::endl ;
         }
 
         m_datasets_to_write.emplace(ds_name, ds_write_info);
@@ -1054,7 +1054,7 @@
  void Damaris_cfg::parse_parameter_to_update_tree(Context& ctx, PC_tree_t ptu_tree, Desc_type op_type)
  {  
     if (!PC_status(PC_get(ptu_tree, "[0]"))) {//Array [prm0,prm1,prm3,...] / it's a list of names only
-        std::cout << "INFO: damaris_cfg parameter_set or _get :: Array [prm0,prm1,prm3,...] / it's a list of names only " << std::endl ;
+       // std::cout << "INFO: damaris_cfg parameter_set or _get :: Array [prm0,prm1,prm3,...] / it's a list of names only " << std::endl ;
         each(ptu_tree, [&](PC_tree_t prm_name_t) {   
             std::pair<std::string, Desc_type> prm_to_update_info;
             std::string metadata = to_string(prm_name_t);
@@ -1064,11 +1064,11 @@
             prm_to_update_info.second = op_type;
             m_parameter_to_update.emplace(metadata, prm_to_update_info);
             load_desc(m_descs, ctx, metadata, op_type);
-            std::cout << "INFO: damaris_cfg parameter_set or _get :: metadata = "<< metadata <<" and prm_name = "<< prm_name <<" " << std::endl ;
+           // std::cout << "INFO: damaris_cfg parameter_set or _get :: metadata = "<< metadata <<" and prm_name = "<< prm_name <<" " << std::endl ;
         });
     } 
     else if (!PC_status(ptu_tree)) { // it's a name:{config...} mapping
-        std::cout << "INFO: damaris_cfg parameter_set or _get :: it's a name:{config...} mapping " << std::endl ;
+       // std::cout << "INFO: damaris_cfg parameter_set or _get :: it's a name:{config...} mapping " << std::endl ;
         each(ptu_tree, [&](PC_tree_t ptu_metadata, PC_tree_t ptu_prmname) {
             std::string metadata = to_string(ptu_metadata);
             std::string prm_name = to_string(ptu_metadata);   
@@ -1084,7 +1084,7 @@
             prm_to_update_info.second = op_type;
             m_parameter_to_update.emplace(metadata, prm_to_update_info);
             load_desc(m_descs, ctx, metadata, op_type);
-            std::cout << "INFO: damaris_cfg parameter_set or _get :: metadata = "<< metadata <<" and prm_name = "<< prm_name <<" " << std::endl ;
+           // std::cout << "INFO: damaris_cfg parameter_set or _get :: metadata = "<< metadata <<" and prm_name = "<< prm_name <<" " << std::endl ;
         }); 
     }    
  }

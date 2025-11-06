@@ -52,6 +52,11 @@ if (Damaris_FOUND)
     #list(APPEND Damaris_DEPS ${Damaris_LIBRARIES})
     include_directories(${Damaris_INCLUDE_DIRS} ${Damaris_INCLUDE_DIRS}/damaris)
     link_directories(${Damaris_LIBRARIES_PATH})
+
+
+    message(STATUS "Embedding RPATH for Damaris: ${Damaris_LIBRARIES_PATH}")
+    set(CMAKE_INSTALL_RPATH "${Damaris_LIBRARIES_PATH}")
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 else()
     message(STATUS "The Damaris library was NOT found")
 endif()

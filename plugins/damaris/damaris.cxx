@@ -125,24 +125,12 @@ public:
 		//ctx.callbacks().add_event_callback([this](const std::string& name) { this->event(name); });
 
 		ctx.logger().info("Plugin loaded successfully");
-		
-		if (m_config.init_on_event().empty() && m_config.communicator()) {
-			//TODO: issue communicator to handle
-			/* 
-			MPI_Comm comm = *(static_cast<const MPI_Comm*>(Ref_r{m_config.communicator().to_ref(context())}.get()));	
-			//context().logger().info("communicator `{}'", m_config.communicator().to_string(context()));
-			
-			m_damaris.reset(new Damaris_wrapper{context(), m_config.xml_config_object().c_str(), comm});
-			context().logger().info("Plugin initialized successfully");
-			*/
-
-			std::string init_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_INITIALIZE);
-			PDI_status_t status = PDI_event(init_event_name.c_str());
-		}
 	}
 
 	void data(const std::string& name, Ref ref)
 	{		
+		ensure_damaris_is_initialized("");
+
 		context().logger().info("data `{}' has been exposed", name);
 
 		//Update damaris parameters
@@ -336,6 +324,8 @@ public:
 
 	void event(const std::string& event_name)
 	{
+		ensure_damaris_is_initialized(event_name);
+
 		//If it a sim configured event
 		if (m_config.events().find(event_name) != m_config.events().end()) {
 			if(event_name == m_config.init_on_event()) {
@@ -369,14 +359,36 @@ public:
 		}
 	}
 
+	void ensure_damaris_is_initialized(const std::string& event_name)
+	{
+        if (!m_damaris) {
+			if (m_config.events().find(event_name) != m_config.events().end()) {
+				//Means the first action received by the plugin wasn't fir initialization...  
+				if (!m_config.init_on_event().empty() && event_name != m_config.init_on_event()) {
+					context().logger().error("Trying to use {} plugin before the initialization of the Damaris library!", pretty_name());
+				}
+				else if (event_name == m_config.init_on_event())
+					return;//The init will follows
+			}
+			this->damaris_init();
+        }
+	}
+
+	void damaris_init()
+	{
+		context().logger().info("In damaris_init()");
+		std::string init_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_INITIALIZE);
+		m_event_handler.damaris_api_call_event(context(), m_damaris, init_event_name, multi_expose_transaction_dataname);
+	}
+
+
 	~damaris_plugin()
 	{
 
 		if (m_config.finalize_on_event().empty() && m_damaris) {
 			context().logger().info("Calling  DAMARIS_FINALIZE in ~damaris_plugin()");
 			std::string finalize_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_FINALIZE);
-			//m_event_handler.damaris_api_call_event(context(), m_damaris, finalize_event_name, multi_expose_transaction_dataname);
-			//PDI_status_t status = PDI_event(finalize_event_name.c_str());
+			m_event_handler.damaris_api_call_event(context(), m_damaris, finalize_event_name, multi_expose_transaction_dataname);
 		}
 
 		context().logger().info("Closing plugin");
