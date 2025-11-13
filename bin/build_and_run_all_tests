@@ -136,7 +136,7 @@ cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 --output-junit /tmp/tests_pdi.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only with Paraconf
+# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only if Paraconf is available
 
 if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 

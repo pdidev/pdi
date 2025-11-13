@@ -37,7 +37,7 @@ set_target_properties(PDI_C PROPERTIES
 
 find_package(paraconf QUIET COMPONENTS C)
 
-if(paraconf_FOUND)
+if("${paraconf_FOUND}")
     target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
     target_compile_definitions(PDI_C INTERFACE PARACONF_FOUND)
 endif()
