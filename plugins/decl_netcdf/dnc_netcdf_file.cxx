@@ -472,6 +472,16 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			variable_name,
 			dest_id
 		);
+		int deflate = variable.deflate(); 
+		if (deflate) {
+			m_ctx.logger().trace("\t var {} deflate = [{}]", variable_name, deflate);
+			nc_try(
+				nc_def_var_deflate(dest_id, var_id, NC_SHUFFLE, 1, deflate),
+				"Cannot define deflate level of `{}' variable in (nc_id = {})",
+				variable_name,
+				dest_id
+			);
+		}
 		m_ctx.logger().trace("Variable `{}' defined (var_id = {})", variable.path(), var_id);
 	}
 

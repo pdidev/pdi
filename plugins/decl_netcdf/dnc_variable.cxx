@@ -52,6 +52,14 @@ Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t
 	if (!PC_status(type_node)) {
 		m_type = m_ctx.datatype(config);
 	}
+
+	PC_tree_t deflate_node = PC_get(config, ".deflate");
+	if (!PC_status(deflate_node)) {
+		m_deflate = (unsigned int)PDI::to_long(deflate_node);
+	}
+	else {
+		m_deflate = 0;
+	}
 }
 
 const std::string& Dnc_variable::path() const
@@ -87,5 +95,9 @@ const std::vector<Dnc_attribute>& Dnc_variable::attributes() const
 	return m_attributes;
 }
 
+const unsigned int Dnc_variable::deflate() const
+{
+	return m_deflate;
+}
 
 } // namespace decl_netcdf
