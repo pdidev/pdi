@@ -38,7 +38,7 @@ runs:
   steps:
     - id: test
       shell: bash
-      run: | # not using ' export CTEST_FLAGS="--output-junit /tmp/tests.xml" ' anymore because of paths appending error for ubuntu/focal, for multiples junit output files
+      run: |
         cat<<-'EOF' > run.sh
           set -xe
           JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
@@ -55,7 +55,7 @@ runs:
           --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
           bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/. ./
+        if docker cp "$(cat docker.cid)":/tmp/tests*.xml ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi

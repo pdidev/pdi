@@ -39,8 +39,7 @@ SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
-chmod u+w "${TEST_DIR}"
-cd "$(mktemp -d pdibuild.XXXXX)"
+cd "$(mktemp -d /tmp/pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
 
 TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
