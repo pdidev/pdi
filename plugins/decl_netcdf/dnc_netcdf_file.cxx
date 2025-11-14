@@ -472,8 +472,8 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			variable_name,
 			dest_id
 		);
-		
-		int deflate_level = variable.deflate().to_long(m_ctx); 
+
+		int deflate_level = variable.deflate().to_long(m_ctx);
 		if (deflate_level) {
 			m_ctx.logger().trace("\t var {} deflate = [{}]", variable_name, deflate_level);
 			nc_try(

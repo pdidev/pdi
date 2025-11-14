@@ -28,7 +28,7 @@
 // #include <cstdlib>
 #include <gtest/gtest.h>
 
-constexpr char pdi_config[]=R"(
+constexpr char pdi_config[] = R"(
 logging: trace
 metadata:
   input: int
@@ -74,71 +74,71 @@ plugins:
 // Tests simple write and read of scalar and array depending on event
 int main(int argc, char* argv[])
 {
-    PDI_init(PC_parse_string(pdi_config));
+	PDI_init(PC_parse_string(pdi_config));
 
-    // init data
-    int input = 0;
-    int int_scalar = 42;
-    int int_array[32];
+	// init data
+	int input = 0;
+	int int_scalar = 42;
+	int int_array[32];
 	int deflate = 2;
-    for (int i = 0; i < 32; i++) {
-        int_array[i] = i;
-    }
+	for (int i = 0; i < 32; i++) {
+		int_array[i] = i;
+	}
 
-    // expose attributes
-    int scalar_attr = 100;
-    
+	// expose attributes
+	int scalar_attr = 100;
+
 	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
-	
 
-    int array_attr[4];
-    array_attr[0] = 101;
-    array_attr[1] = 102;
-    array_attr[2] = 103;
-    array_attr[3] = 104;
-    PDI_expose("array_attr", array_attr, PDI_OUT);
 
-    int scalar_group_attr = 200;
-    PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
+	int array_attr[4];
+	array_attr[0] = 101;
+	array_attr[1] = 102;
+	array_attr[2] = 103;
+	array_attr[3] = 104;
+	PDI_expose("array_attr", array_attr, PDI_OUT);
 
-    int array_group_attr[4];
-    array_group_attr[0] = 201;
-    array_group_attr[1] = 202;
-    array_group_attr[2] = 203;
-    array_group_attr[3] = 204;
-    PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
+	int scalar_group_attr = 200;
+	PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
 
-    // write data
-    input = 0;
-    PDI_expose("input", &input, PDI_OUT);
+	int array_group_attr[4];
+	array_group_attr[0] = 201;
+	array_group_attr[1] = 202;
+	array_group_attr[2] = 203;
+	array_group_attr[3] = 204;
+	PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
+
+	// write data
+	input = 0;
+	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("deflate", &deflate, PDI_OUT);
-    PDI_expose("int_scalar", &int_scalar, PDI_OUT);
-    PDI_expose("int_array", int_array, PDI_OUT);
+	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
+	PDI_expose("int_array", int_array, PDI_OUT);
 
-    // zero data
-    int_scalar = 0;
-    for (int i = 0; i < 32; i++) {
-        int_array[i] = 0;
-    }
+	// zero data
+	int_scalar = 0;
+	for (int i = 0; i < 32; i++) {
+		int_array[i] = 0;
+	}
 
-    // reset metadata
-    scalar_attr = 0;
-    PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
+	// reset metadata
+	scalar_attr = 0;
+	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
 
-    array_attr[0] = 0;
-    array_attr[1] = 0;
-    array_attr[2] = 0;
-    array_attr[3] = 0;
-    PDI_expose("array_attr", array_attr, PDI_OUT);
+	array_attr[0] = 0;
+	array_attr[1] = 0;
+	array_attr[2] = 0;
+	array_attr[3] = 0;
+	PDI_expose("array_attr", array_attr, PDI_OUT);
 
-    scalar_group_attr = 0;
-    PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
+	scalar_group_attr = 0;
+	PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
 
-    array_group_attr[0] = 0;
-    array_group_attr[1] = 0;
-    array_group_attr[2] = 0;
-    array_group_attr[3] = 0;
-    PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
+	array_group_attr[0] = 0;
+	array_group_attr[1] = 0;
+	array_group_attr[2] = 0;
+	array_group_attr[3] = 0;
+	PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
 
-    PDI_finalize();
+	PDI_finalize();
 }
