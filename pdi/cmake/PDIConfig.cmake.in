@@ -52,7 +52,7 @@ if("Fortran" IN_LIST PDI_FIND_COMPONENTS)
 endif()
 
 
-# by default, if no component is specified, look for all but only require C
+# By default, if no component is specified, look for all but only require C
 
 set(_PDI_FIND_QUIETLY_OPTIONAL "${PDI_FIND_QUIETLY}")
 if("xx" STREQUAL "x${PDI_FIND_COMPONENTS}x")

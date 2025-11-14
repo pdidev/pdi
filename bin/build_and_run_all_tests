@@ -33,20 +33,27 @@ set -xe
 
 
 
-# Make our work dirs
+# Make work directories
 
 SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
-cd "$(mktemp -d pdibuild.XXXXX)"
+cd "$(mktemp -d /tmp/pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
+
+TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
+mkdir "${TEST_DIR_WITH_PDI}"
+
+TEST_DIR_NO_PDI="${TEST_DIR}/no_pdi"
+mkdir "${TEST_DIR_NO_PDI}"
+
+TEST_DIR_API="${TEST_DIR}/api"
+mkdir "${TEST_DIR_API}"
 
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
-
-cd "${TEST_DIR}"
 
 
 
@@ -122,8 +129,55 @@ fi
 
 
 
-# Configure, build & test
+# Configure, build & test for pdi, including example and test_api
 
+cd "${TEST_DIR_WITH_PDI}"
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+
+# Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only if Paraconf is available
+
+if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
+
+	cd "${TEST_DIR_NO_PDI}"
+	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
+	make ${MAKEFLAGS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+fi
+
+# Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
+
+cd "${TEST_DIR_API}"
+cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
+make ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+
+# Configure, build & test for error generation with unsupported plug-in of no-pdi
+
+set +e
+rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
+
+OUTPUT=$(mktemp)
+if cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" -DBUILD_TRACE_PLUGIN=ON "${SRCDIR}/test_api" && \
+   make ${MAKEFLAGS} > "$OUTPUT" 2>&1; then
+    TEST_RESULT="failure"
+    MESSAGE="Test unexpectedly succeeded! Expected failure."
+else
+    TEST_RESULT="success"
+    MESSAGE=$(cat "$OUTPUT")
+fi
+
+JUNIT_FILE="${JUNIT_OUTPUT_DIR}/tests_no-pdi_unsupported.xml"
+cat <<EOF > "$JUNIT_FILE"
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="ExpectedFailTest" tests="1" failures="$([ "$TEST_RESULT" = "failure" ] && echo 1 || echo 0)">
+    <testcase classname="ExpectedFail" name="PDIUnsupportedOptionTest">
+      $([ "$TEST_RESULT" = "failure" ] && echo "<failure message=\"$MESSAGE\"/>" || echo "<system-out>$MESSAGE</system-out>")
+    </testcase>
+  </testsuite>
+</testsuites>
+EOF
+
+exit 0

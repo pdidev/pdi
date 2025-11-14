@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,52 +27,50 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-name: Test PDI
-description: 'Test PDI'
-inputs:
-  image:
-    required: true
-    description: "docker image in which to run the test"
-runs:
-  using: "composite"
-  steps:
-    - id: test
-      shell: bash
-      run: |
-        cat<<-'EOF' > run.sh
-          set -xe
-          JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
-          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
-          export MAKEFLAGS='-j 4'
-          export CTEST_FLAGS=""
-          export JUNIT_OUTPUT_DIR="/tmp"
-          export TEST_DIR="/tmp_dir_test"
-          /src/bin/build_and_run_all_tests
-        EOF
-        docker run \
-          --cidfile='docker.cid' \
-          -v ${PWD}:/src:ro \
-          --tmpfs /tmp_dir_test:exec \
-          ${{inputs.image}} \
-          bash /src/run.sh
-        files=(
-          tests_pdi.xml
-          tests_no-pdi_example.xml
-          tests_no-pdi_api.xml
-          tests_no-pdi_unsupported.xml
+# Check for activated but not supported options
+# Currently doesn't support any options, including Fortran and Python
+set(_no-pdi_forbidden_options
+    BUILD_BENCHMARKING
+    BUILD_DECL_HDF5_PLUGIN
+    BUILD_DECL_NETCDF_PLUGIN
+    BUILD_DEISA_PLUGIN
+    BUILD_DOCUMENTATION
+    BUILD_HDF5_PARALLEL
+    BUILD_FORTRAN
+    BUILD_PYTHON
+    BUILD_MPI_PLUGIN
+    BUILD_NETCDF_PARALLEL
+    BUILD_PYCALL_PLUGIN
+    BUILD_SERIALIZE_PLUGIN
+    BUILD_SET_VALUE_PLUGIN
+    # BUILD_TESTING # Enabled by CTest (by "include(CTest)" in the case of the example)
+    BUILD_TRACE_PLUGIN
+    BUILD_USER_CODE_PLUGIN
+    BUILD_JSON_PLUGIN
+)
+
+foreach(option IN LISTS _no-pdi_forbidden_options)
+    if(DEFINED ${option} AND ${option}) # Check that the variable exists before evaluating it
+        message(FATAL_ERROR
+            "no-PDI configuration: The option ${option} must remain OFF when using no-PDI. "
         )
-        report_generated=false
-        for f in "${files[@]}"; do
-            if docker cp "$(cat docker.cid)":/tmp/"$f" ./ 2>/dev/null; then
-                report_generated=true
-            fi
-        done
-        if [ "$report_generated" = true ]; then
-            echo "with_report=true" >> "$GITHUB_OUTPUT"
-        else
-            echo "with_report=false" >> "$GITHUB_OUTPUT"
-        fi
-    - id: Publish
-      uses: mikepenz/action-junit-report@v4
-      if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
-      with: { report_paths: 'tests*.xml' }
+    endif()
+endforeach()
+
+unset(_no-pdi_forbidden_options)
+# Enf of check
+
+add_library(PDI_C INTERFACE)
+add_library(PDI::pdi   ALIAS PDI_C)
+add_library(PDI::PDI_C ALIAS PDI_C)
+
+set_target_properties(PDI_C PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../include"
+)
+
+find_package(paraconf QUIET COMPONENTS C)
+
+if("${paraconf_FOUND}")
+    target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
+    target_compile_definitions(PDI_C INTERFACE PARACONF_FOUND)
+endif()
