@@ -144,13 +144,6 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
 	make ${MAKEFLAGS}
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
-
-	# Check for error generation with unsuported plug-in of no-pdi
-	cd "${TEST_DIR_NO_PDI}"
-	rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
-	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" -DBUILD_TRACE_PLUGIN=ON "${SRCDIR}/example"
-	make ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 fi
 
 # Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
@@ -159,3 +152,35 @@ cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+
+# Configure, build & test for error generation with unsuported plug-in of no-pdi
+
+set +e
+rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
+# cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" -DBUILD_TRACE_PLUGIN=ON "${SRCDIR}/test_api"
+# make ${MAKEFLAGS}
+# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+
+OUTPUT=$(mktemp)
+if cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" -DBUILD_TRACE_PLUGIN=ON "${SRCDIR}/test_api" && \
+   make ${MAKEFLAGS} > "$OUTPUT" 2>&1; then
+    TEST_RESULT="failure"
+    MESSAGE="Test unexpectedly succeeded! Expected failure."
+else
+    TEST_RESULT="success"
+    MESSAGE=$(cat "$OUTPUT")
+fi
+
+JUNIT_FILE="${JUNIT_OUTPUT_DIR}/tests_no-pdi_trace.xml"
+cat <<EOF > "$JUNIT_FILE"
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="ExpectedFailTest" tests="1" failures="$([ "$TEST_RESULT" = "failure" ] && echo 1 || echo 0)">
+    <testcase classname="ExpectedFail" name="PDIUnsupportedOptionTest">
+      $([ "$TEST_RESULT" = "failure" ] && echo "<failure message=\"$MESSAGE\"/>" || echo "<system-out>$MESSAGE</system-out>")
+    </testcase>
+  </testsuite>
+</testsuites>
+EOF
+
+exit 0
