@@ -59,6 +59,7 @@ runs:
           tests_pdi.xml
           tests_no-pdi_example.xml
           tests_no-pdi_api.xml
+          tests_no-pdi_unsupported.xml
         )
         report_generated=false
         for f in "${files[@]}"; do

@@ -153,7 +153,7 @@ cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-# Configure, build & test for error generation with unsuported plug-in of no-pdi
+# Configure, build & test for error generation with unsupported plug-in of no-pdi
 
 set +e
 rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
@@ -171,7 +171,7 @@ else
     MESSAGE=$(cat "$OUTPUT")
 fi
 
-JUNIT_FILE="${JUNIT_OUTPUT_DIR}/tests_no-pdi_trace.xml"
+JUNIT_FILE="${JUNIT_OUTPUT_DIR}/tests_no-pdi_unsupported.xml"
 cat <<EOF > "$JUNIT_FILE"
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
