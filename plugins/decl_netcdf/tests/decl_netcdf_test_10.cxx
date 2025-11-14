@@ -37,6 +37,7 @@ metadata:
   array_attr: {type: array, subtype: int, size: 4}
   scalar_group_attr: int
   array_group_attr: {type: array, subtype: int, size: 4}
+  deflate: int
 data:
   int_scalar: int
   int_array: {type: array, subtype: int, size: 32}
@@ -47,6 +48,7 @@ plugins:
         int_scalar:
           type: int
           group: 'scalar_group'
+          
           attributes: 
             scalar_attr: $scalar_attr
         int_array:
@@ -55,7 +57,7 @@ plugins:
           size: 32
           group: 'array_group'
           dimensions: ['time']
-          deflate: 9 
+          deflate: $deflate 
           attributes:
             array_attr: $array_attr
       groups:
@@ -78,13 +80,16 @@ int main(int argc, char* argv[])
     int input = 0;
     int int_scalar = 42;
     int int_array[32];
+	int deflate = 2;
     for (int i = 0; i < 32; i++) {
         int_array[i] = i;
     }
 
     // expose attributes
     int scalar_attr = 100;
-    PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
+    
+	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
+	
 
     int array_attr[4];
     array_attr[0] = 101;
@@ -106,6 +111,7 @@ int main(int argc, char* argv[])
     // write data
     input = 0;
     PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("deflate", &deflate, PDI_OUT);
     PDI_expose("int_scalar", &int_scalar, PDI_OUT);
     PDI_expose("int_array", int_array, PDI_OUT);
 

@@ -57,7 +57,7 @@ class Dnc_variable
 	std::vector<Dnc_attribute> m_attributes;
 
 	// Compression level of this variable
-	unsigned int m_deflate;
+	PDI::Expression m_deflate;
 
 public:
 	/** Creates NetCDF variable information from yaml
@@ -101,7 +101,7 @@ public:
 	 *
 	 * \return deflate level of the variable
 	 */
-	const unsigned int deflate() const;
+	const PDI::Expression deflate() const;
 };
 
 } // namespace decl_netcdf
