@@ -159,7 +159,7 @@ set +e
 rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
 
 OUTPUT=$(mktemp)
-if cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api" && \
+if cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" -DBUILD_TRACE_PLUGIN=ON "${SRCDIR}/test_api" && \
    make ${MAKEFLAGS} > "$OUTPUT" 2>&1; then
     TEST_RESULT="failure"
     MESSAGE="Test unexpectedly succeeded! Expected failure."
