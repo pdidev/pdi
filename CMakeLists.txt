@@ -75,9 +75,9 @@ option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
 option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
-option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
-option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
-option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+option(BUILD_TRACE_PLUGIN       "Build Trace plug-in" ON)
+option(BUILD_USER_CODE_PLUGIN   "Build User-code plug-in" ON)
+option(BUILD_JSON_PLUGIN        "Build JSON plug-in" OFF)
 option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
 
 

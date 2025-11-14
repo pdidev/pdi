@@ -144,6 +144,13 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
 	make ${MAKEFLAGS}
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+
+	# Check for error generation with unsuported plug-in of no-pdi
+	cd "${TEST_DIR_NO_PDI}"
+	rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
+	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" -DBUILD_TRACE_PLUGIN=ON "${SRCDIR}/example"
+	make ${MAKEFLAGS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 fi
 
 # Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf

@@ -27,6 +27,39 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+# Check for activated but not supported options
+# Currently doesn't support any options, including Fortran and Python
+set(_no-pdi_forbidden_options
+    BUILD_BENCHMARKING
+    BUILD_DECL_HDF5_PLUGIN
+    BUILD_DECL_NETCDF_PLUGIN
+    BUILD_DEISA_PLUGIN
+    BUILD_DOCUMENTATION
+    BUILD_HDF5_PARALLEL
+    BUILD_FORTRAN
+    BUILD_PYTHON
+    BUILD_MPI_PLUGIN
+    BUILD_NETCDF_PARALLEL
+    BUILD_PYCALL_PLUGIN
+    BUILD_SERIALIZE_PLUGIN
+    BUILD_SET_VALUE_PLUGIN
+    BUILD_TESTING
+    BUILD_TRACE_PLUGIN
+    BUILD_USER_CODE_PLUGIN
+    BUILD_JSON_PLUGIN
+)
+
+foreach(option IN LISTS _no-pdi_forbidden_options)
+    if(DEFINED ${option} AND ${option})
+        message(FATAL_ERROR
+            "no-PDI configuration: The option ${option} must remain OFF when using no-PDI. "
+        )
+    endif()
+endforeach()
+
+unset(_no-pdi_forbidden_options)
+# Enf of check
+
 add_library(PDI_C INTERFACE)
 add_library(PDI::pdi   ALIAS PDI_C)
 add_library(PDI::PDI_C ALIAS PDI_C)

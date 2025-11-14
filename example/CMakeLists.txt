@@ -40,7 +40,7 @@ option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in"  OFF)
 option(BUILD_FORTRAN            "Build with Fortran support" OFF)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in"       OFF)
 option(BUILD_PYTHON             "Build with Python support"  OFF)
-option(BUILD_JSON_PLUGIN        "Build JSON plugin"          OFF)
+option(BUILD_JSON_PLUGIN        "Build JSON plug-in"         OFF)
 
 if("${BUILD_FORTRAN}")
 	enable_language(Fortran)
