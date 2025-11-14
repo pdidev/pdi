@@ -43,14 +43,14 @@ set(_no-pdi_forbidden_options
     BUILD_PYCALL_PLUGIN
     BUILD_SERIALIZE_PLUGIN
     BUILD_SET_VALUE_PLUGIN
-    BUILD_TESTING
+    # BUILD_TESTING # Enabled by CTest (by "include(CTest)" in the case of the example)
     BUILD_TRACE_PLUGIN
     BUILD_USER_CODE_PLUGIN
     BUILD_JSON_PLUGIN
 )
 
 foreach(option IN LISTS _no-pdi_forbidden_options)
-    if(DEFINED ${option} AND ${option})
+    if(DEFINED ${option} AND ${option}) # Check that the variable exists before evaluating it
         message(FATAL_ERROR
             "no-PDI configuration: The option ${option} must remain OFF when using no-PDI. "
         )
