@@ -42,9 +42,9 @@ The possible values for the keys are as follow:
   can be replaced inside the `DATA_SECTION`.
 * `datasets`: a key-value map associating a PDI type to string keys.
   Each string is the name of a dataset to create in the file on first
-  access, with the type described in the value. The string key can also be 
+  access, with the type described in the value. The string key is 
   a regular expression (regex), and be used to define "generic keys",
-  that can be used in `DATA_IO_DESC` for the keyword dataset.
+  that can be used in `DATA_IO_DESC` for the keyword dataset. The regex use the Modiﬁed ECMAScript regular expression grammar.
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY
 * `deflate`: an integer value (from 0 to 9) defining the default deflate (GNU
   gzip) compression level to use for datasets created in this file.
@@ -114,7 +114,8 @@ The possible values for the keys are as follow:
   It defaults to selecting the whole data.
 * `dataset_selection`: a `SELECTION_DESC` specifying the selection of
   data in the file data to write or read.
-  This is only valid if the dataset is defined in the datasets.
+  This is only valid if the dataset is explicitly defined in the `datasets`
+  section.
 * `attributes`: a key-value map specifying the set of attributes to read from
   (respectively, write to) the file when the associated dataset is read
   (respectively, written).
