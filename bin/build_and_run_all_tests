@@ -157,12 +157,9 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--outp
 
 set +e
 rm -rf CMakeCache.txt CMakeFiles/ cmake_install.cmake Makefile
-# cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" -DBUILD_TRACE_PLUGIN=ON "${SRCDIR}/test_api"
-# make ${MAKEFLAGS}
-# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 OUTPUT=$(mktemp)
-if cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" -DBUILD_TRACE_PLUGIN=ON "${SRCDIR}/test_api" && \
+if cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api" && \
    make ${MAKEFLAGS} > "$OUTPUT" 2>&1; then
     TEST_RESULT="failure"
     MESSAGE="Test unexpectedly succeeded! Expected failure."
