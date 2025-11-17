@@ -31,6 +31,7 @@
 constexpr char pdi_config[] = R"(
 logging: trace
 metadata:
+  pb_size: int
   input: int
   group_attr: int
   scalar_attr: int
@@ -40,24 +41,102 @@ metadata:
   deflate: int
 data:
   int_scalar: int
-  int_array: {type: array, subtype: int, size: 32}
+  int_array: {type: array, subtype: int, size: $pb_size}
 plugins:
   decl_netcdf:
-    - file: 'test_10.nc'
+    - file: 'test_10_deflate_0.nc'
       variables:
         int_scalar:
           type: int
           group: 'scalar_group'
-          
+          deflate: 0 
           attributes: 
             scalar_attr: $scalar_attr
         int_array:
           type: array
           subtype: int
-          size: 32
+          size: $pb_size
           group: 'array_group'
           dimensions: ['time']
-          deflate: $deflate 
+          deflate: 0
+          attributes:
+            array_attr: $array_attr
+      groups:
+        scalar_group:
+          attributes:
+              scalar_group_attr: $scalar_group_attr
+        array_group:
+          attributes:
+              array_group_attr: $array_group_attr
+      when: '${input}=0'
+      write: [int_scalar, int_array]
+    - file: 'test_10_deflate_2.nc'
+      variables:
+        int_scalar:
+          type: int
+          group: 'scalar_group'
+          deflate: 2 
+          attributes: 
+            scalar_attr: $scalar_attr
+        int_array:
+          type: array
+          subtype: int
+          size: $pb_size
+          group: 'array_group'
+          dimensions: ['time']
+          deflate: 2
+          attributes:
+            array_attr: $array_attr
+      groups:
+        scalar_group:
+          attributes:
+              scalar_group_attr: $scalar_group_attr
+        array_group:
+          attributes:
+              array_group_attr: $array_group_attr
+      when: '${input}=0'
+      write: [int_scalar, int_array]
+    - file: 'test_10_deflate_6.nc'
+      variables:
+        int_scalar:
+          type: int
+          group: 'scalar_group'
+          deflate: 6 
+          attributes: 
+            scalar_attr: $scalar_attr
+        int_array:
+          type: array
+          subtype: int
+          size: $pb_size
+          group: 'array_group'
+          dimensions: ['time']
+          deflate: 6
+          attributes:
+            array_attr: $array_attr
+      groups:
+        scalar_group:
+          attributes:
+              scalar_group_attr: $scalar_group_attr
+        array_group:
+          attributes:
+              array_group_attr: $array_group_attr
+      when: '${input}=0'
+      write: [int_scalar, int_array]
+    - file: 'test_10_deflate_9.nc'
+      variables:
+        int_scalar:
+          type: int
+          group: 'scalar_group'
+          deflate: 9 
+          attributes: 
+            scalar_attr: $scalar_attr
+        int_array:
+          type: array
+          subtype: int
+          size: $pb_size
+          group: 'array_group'
+          dimensions: ['time']
+          deflate: 9
           attributes:
             array_attr: $array_attr
       groups:
@@ -79,9 +158,10 @@ int main(int argc, char* argv[])
 	// init data
 	int input = 0;
 	int int_scalar = 42;
-	int int_array[32];
-	int deflate = 2;
-	for (int i = 0; i < 32; i++) {
+    int N=1000000;
+	int* int_array = new int[N];
+	int deflate = 1;
+	for (int i = 0; i < N; i++) {
 		int_array[i] = i;
 	}
 
@@ -89,7 +169,7 @@ int main(int argc, char* argv[])
 	int scalar_attr = 100;
 
 	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
-
+    PDI_expose("pb_size", &N, PDI_OUT);
 
 	int array_attr[4];
 	array_attr[0] = 101;
@@ -115,30 +195,31 @@ int main(int argc, char* argv[])
 	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
 	PDI_expose("int_array", int_array, PDI_OUT);
 
-	// zero data
-	int_scalar = 0;
-	for (int i = 0; i < 32; i++) {
-		int_array[i] = 0;
-	}
+	// // zero data
+	// int_scalar = 0;
+	// for (int i = 0; i < N; i++) {
+	// 	int_array[i] = 0;
+	// }
 
-	// reset metadata
-	scalar_attr = 0;
-	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
+	// // reset metadata
+	// scalar_attr = 0;
+	// PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
 
-	array_attr[0] = 0;
-	array_attr[1] = 0;
-	array_attr[2] = 0;
-	array_attr[3] = 0;
-	PDI_expose("array_attr", array_attr, PDI_OUT);
+	// array_attr[0] = 0;
+	// array_attr[1] = 0;
+	// array_attr[2] = 0;
+	// array_attr[3] = 0;
+	// PDI_expose("array_attr", array_attr, PDI_OUT);
 
-	scalar_group_attr = 0;
-	PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
+	// scalar_group_attr = 0;
+	// PDI_expose("scalar_group_attr", &scalar_group_attr, PDI_OUT);
 
-	array_group_attr[0] = 0;
-	array_group_attr[1] = 0;
-	array_group_attr[2] = 0;
-	array_group_attr[3] = 0;
-	PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
-
+	// array_group_attr[0] = 0;
+	// array_group_attr[1] = 0;
+	// array_group_attr[2] = 0;
+	// array_group_attr[3] = 0;
+	// PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
+    
+    delete[] int_array;
 	PDI_finalize();
 }
