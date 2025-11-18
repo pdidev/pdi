@@ -45,7 +45,7 @@ runs:
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS=""
-          export JUNIT_OUTPUT_DIR="/tmp"
+          export JUNIT_OUTPUT_DIR="/tmp_dir_test/outputs"
           export TEST_DIR="/tmp_dir_test"
           /src/bin/build_and_run_all_tests
         EOF
@@ -55,22 +55,9 @@ runs:
           --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
           bash /src/run.sh
-        files=(
-          tests_pdi.xml
-          tests_no-pdi_example.xml
-          tests_no-pdi_api.xml
-          tests_no-pdi_unsupported.xml
-        )
-        report_generated=false
-        for f in "${files[@]}"; do
-            if docker cp "$(cat docker.cid)":/tmp/"$f" ./ 2>/dev/null; then
-                report_generated=true
-            fi
-        done
-        if [ "$report_generated" = true ]; then
-            echo "with_report=true" >> "$GITHUB_OUTPUT"
-        else
-            echo "with_report=false" >> "$GITHUB_OUTPUT"
+        if docker cp "$(cat docker.cid)":/tmp_dir_test/outputs/. ./
+        then echo "with_report=true" >> "$GITHUB_OUTPUT"
+        else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
     - id: Publish
       uses: mikepenz/action-junit-report@v4
