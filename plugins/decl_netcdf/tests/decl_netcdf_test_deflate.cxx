@@ -23,9 +23,6 @@
  ******************************************************************************/
 
 #include <pdi.h>
-// #include <paraconf.h>
-// #include <iostream>
-// #include <cstdlib>
 #include <gtest/gtest.h>
 
 constexpr char pdi_config[] = R"(
@@ -44,12 +41,13 @@ data:
   int_array: {type: array, subtype: int, size: $pb_size}
 plugins:
   decl_netcdf:
-    - file: 'test_10_deflate_0.nc'
+    - file: 'test_deflate_0.nc'
       variables:
         int_scalar:
           type: int
           group: 'scalar_group'
           deflate: 0 
+          chunking: 10
           attributes: 
             scalar_attr: $scalar_attr
         int_array:
@@ -59,6 +57,7 @@ plugins:
           group: 'array_group'
           dimensions: ['time']
           deflate: 0
+          chunking: 10
           attributes:
             array_attr: $array_attr
       groups:
@@ -70,7 +69,7 @@ plugins:
               array_group_attr: $array_group_attr
       when: '${input}=0'
       write: [int_scalar, int_array]
-    - file: 'test_10_deflate_2.nc'
+    - file: 'test_deflate_2.nc'
       variables:
         int_scalar:
           type: int
@@ -85,6 +84,7 @@ plugins:
           group: 'array_group'
           dimensions: ['time']
           deflate: 2
+          chunking: 20
           attributes:
             array_attr: $array_attr
       groups:
@@ -96,7 +96,7 @@ plugins:
               array_group_attr: $array_group_attr
       when: '${input}=0'
       write: [int_scalar, int_array]
-    - file: 'test_10_deflate_6.nc'
+    - file: 'test_deflate_6.nc'
       variables:
         int_scalar:
           type: int
@@ -122,7 +122,7 @@ plugins:
               array_group_attr: $array_group_attr
       when: '${input}=0'
       write: [int_scalar, int_array]
-    - file: 'test_10_deflate_9.nc'
+    - file: 'test_deflate_9.nc'
       variables:
         int_scalar:
           type: int
@@ -137,6 +137,7 @@ plugins:
           group: 'array_group'
           dimensions: ['time']
           deflate: 9
+          chunking: 100
           attributes:
             array_attr: $array_attr
       groups:
@@ -158,7 +159,7 @@ int main(int argc, char* argv[])
 	// init data
 	int input = 0;
 	int int_scalar = 42;
-    int N=1000000;
+	int N = 1000;
 	int* int_array = new int[N];
 	int deflate = 1;
 	for (int i = 0; i < N; i++) {
@@ -169,7 +170,7 @@ int main(int argc, char* argv[])
 	int scalar_attr = 100;
 
 	PDI_expose("scalar_attr", &scalar_attr, PDI_OUT);
-    PDI_expose("pb_size", &N, PDI_OUT);
+	PDI_expose("pb_size", &N, PDI_OUT);
 
 	int array_attr[4];
 	array_attr[0] = 101;
@@ -219,7 +220,7 @@ int main(int argc, char* argv[])
 	// array_group_attr[2] = 0;
 	// array_group_attr[3] = 0;
 	// PDI_expose("array_group_attr", array_group_attr, PDI_OUT);
-    
-    delete[] int_array;
+
+	delete[] int_array;
 	PDI_finalize();
 }

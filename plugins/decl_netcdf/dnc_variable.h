@@ -56,8 +56,11 @@ class Dnc_variable
 	/// Attributes of the variable
 	std::vector<Dnc_attribute> m_attributes;
 
-	// Compression level of this variable
+	/// Compression level of this variable
 	PDI::Expression m_deflate;
+
+	/// chunking property set from yaml
+	PDI::Expression m_chunking;
 
 public:
 	/** Creates NetCDF variable information from yaml
@@ -102,6 +105,8 @@ public:
 	 * \return deflate level of the variable
 	 */
 	const PDI::Expression deflate() const;
+
+	const PDI::Expression chunking() const;
 };
 
 } // namespace decl_netcdf

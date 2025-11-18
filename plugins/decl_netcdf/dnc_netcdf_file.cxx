@@ -478,12 +478,14 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			deflate_level = 0;
 			m_ctx.logger().warn("\t var {} is of type scalar, reset deflate level to {} (no deflate)", variable_name, deflate_level);
 		}
-		// m_ctx.logger().warn("\t var {} has deflate level to {} (no deflate)", variable_name, deflate_level);
 		if (deflate_level) {
 			m_ctx.logger().trace("\t var {} deflate = [{}]", variable_name, deflate_level);
-			size_t chunksize[1] = {1000};
-			nc_def_var_chunking(dest_id, var_id, NC_CHUNKED, chunksize);
-			m_ctx.logger().warn("\t var {} chunksize = [{}]", variable_name, chunksize[0]);
+			size_t chunksize[1] = {static_cast<size_t>(variable.chunking().to_long(m_ctx))};
+			nc_try(
+				nc_def_var_chunking(dest_id, var_id, NC_CHUNKED, chunksize),
+				"can not set chunksize from yml");
+			m_ctx.logger().warn("\t var {} with chunksize = [{}]", variable_name, chunksize[0]);
+			
 			nc_try(
 				nc_def_var_deflate(dest_id, var_id, NC_SHUFFLE, 1, deflate_level),
 				"Cannot define deflate level of `{}' variable in (nc_id = {})",
