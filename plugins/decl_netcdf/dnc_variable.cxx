@@ -30,6 +30,8 @@ namespace decl_netcdf {
 Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config)
 	: m_ctx{ctx}
 	, m_path{path}
+	, m_deflate{NULL}
+	, m_chunking{NULL}
 {
 	PC_tree_t attributes_node = PC_get(config, ".attributes");
 	if (!PC_status(attributes_node)) {
@@ -51,6 +53,16 @@ Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t
 	PC_tree_t type_node = PC_get(config, ".type");
 	if (!PC_status(type_node)) {
 		m_type = m_ctx.datatype(config);
+	}
+
+	PC_tree_t deflate_node = PC_get(config, ".deflate");
+	if (!PC_status(deflate_node)) {
+		m_deflate = deflate_node;
+	}
+
+	PC_tree_t chunking_node = PC_get(config, ".chunking");
+	if (!PC_status(chunking_node)) {
+		m_chunking = chunking_node;
 	}
 }
 
@@ -87,5 +99,14 @@ const std::vector<Dnc_attribute>& Dnc_variable::attributes() const
 	return m_attributes;
 }
 
+const PDI::Expression Dnc_variable::deflate() const
+{
+	return m_deflate;
+}
+
+const PDI::Expression Dnc_variable::chunking() const
+{
+	return m_chunking;
+}
 
 } // namespace decl_netcdf
