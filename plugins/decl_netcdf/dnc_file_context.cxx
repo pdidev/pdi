@@ -127,7 +127,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 
 	PC_tree_t write_node = PC_get(config, ".write");
 	if (!PC_status(write_node)) {
-		if (PDI::is_scalar(read_node)) {
+		if (PDI::is_scalar(write_node)) {
 			std::string write_desc = PDI::to_string(write_node);
 			m_ctx.logger().trace("Creating new empty write info for: {}", write_desc);
 			m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
