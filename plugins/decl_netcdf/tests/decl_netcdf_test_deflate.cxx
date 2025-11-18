@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <pdi.h>
 #include <gtest/gtest.h>
+#include <pdi.h>
 
 constexpr char pdi_config[] = R"(
 logging: trace
