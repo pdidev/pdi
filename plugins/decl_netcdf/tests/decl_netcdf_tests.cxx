@@ -763,7 +763,7 @@ TEST(decl_netcdf_test, 07)
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
 	int int_matrix[8][8];
-	
+
 	// init data
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
@@ -773,7 +773,6 @@ TEST(decl_netcdf_test, 07)
 
 	// write data
 	PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL);
-	
 
 	PDI_finalize();
 }
