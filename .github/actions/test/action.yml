@@ -33,10 +33,6 @@ inputs:
   image:
     required: true
     description: "docker image in which to run the test"
-  junit_output_dir:
-    required: false
-    description: "Path inside container for JUnit output"
-    default: "/tmp_dir_test/outputs"
 runs:
   using: "composite"
   steps:
@@ -49,7 +45,6 @@ runs:
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS=""
-          export JUNIT_OUTPUT_DIR="${{ inputs.junit_output_dir }}"
           export TEST_DIR="/tmp_dir_test"
           /src/bin/build_and_run_all_tests
         EOF
@@ -60,7 +55,7 @@ runs:
           ${{inputs.image}} \
           bash /src/run.sh
         ls /tmp_dir_test
-        docker cp "$(cat docker.cid)":/tmp_dir_test/junit_dir.env .
+        docker cp "$(cat docker.cid)":/tmp/junit_dir.env .
         source junit_dir.env
         if docker cp "$(cat docker.cid)":$JUNIT_OUTPUT_DIR/. ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
