@@ -51,6 +51,7 @@ TEST_DIR="${PWD}"
 
 JUNIT_OUTPUT_DIR="${TEST_DIR}/outputs"
 mkdir "${JUNIT_OUTPUT_DIR}"
+echo "JUNIT_OUTPUT_DIR=${JUNIT_OUTPUT_DIR}" > "${TEST_DIR}/junit_dir.env"
 
 TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
 mkdir "${TEST_DIR_WITH_PDI}"
