@@ -35,7 +35,8 @@ set -xe
 
 # Make work directories
 
-mkdir -p "${JUNIT_OUTPUT_DIR}"
+# mkdir -p "${JUNIT_OUTPUT_DIR}"
+# mkdir -p "$(dirname "$JUNIT_OUTPUT_DIR")"
 # echo "${JUNIT_OUTPUT_DIR}"
 # mkdir "./outputs"
 # cd outputs
@@ -47,6 +48,8 @@ TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 cd "$(mktemp -d /tmp/pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
+
+mkdir "${JUNIT_OUTPUT_DIR}"
 
 TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
 mkdir "${TEST_DIR_WITH_PDI}"
