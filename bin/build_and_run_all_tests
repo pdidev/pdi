@@ -35,6 +35,8 @@ set -xe
 
 # Make work directories
 
+mkdir -p "$JUNIT_OUTPUT_DIR"
+
 SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
