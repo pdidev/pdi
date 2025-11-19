@@ -49,6 +49,7 @@ cd "${TEST_DIR}"
 cd "$(mktemp -d /tmp/pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
 
+JUNIT_OUTPUT_DIR="${TEST_DIR}/outputs"
 mkdir "${JUNIT_OUTPUT_DIR}"
 
 TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
