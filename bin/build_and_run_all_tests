@@ -35,7 +35,11 @@ set -xe
 
 # Make work directories
 
-mkdir -p "$JUNIT_OUTPUT_DIR"
+# mkdir -p "${JUNIT_OUTPUT_DIR}"
+# echo "${JUNIT_OUTPUT_DIR}"
+mkdir "./outputs"
+cd outputs
+echo "${PWD}"
 
 SRCDIR="${PWD}"
 
