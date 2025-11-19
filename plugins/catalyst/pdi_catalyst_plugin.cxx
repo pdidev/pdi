@@ -45,7 +45,6 @@ void catalyst_plugin::ProcessData(const std::string& data_name, PDI::Ref ref)
 
 void catalyst_plugin::ProcessEvent(const std::string& event_name)
 {
-  context().logger().trace("####### call catalyst_plugin::ProcessEvent ######");
   if (event_name == this->PDIExecuteEventName)
   {
     RunCatalystExecute();
@@ -107,11 +106,12 @@ void catalyst_plugin::RunCatalystExecute()
           case YAML_PLAIN_SCALAR_STYLE:
             // handle integer or float/double type that doesn't depend on PDI store
             {
-              PDI::Expression data_expression{PDI::to_string(current.tree)};
+              PDI::Expression data_expression{ PDI::to_string(current.tree) };
               PDI::Ref_r spec_ref = data_expression.to_ref(context());
 
               auto data_type = spec_ref.type()->evaluate(context());
-              if (auto scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type))
+              if (auto scalar_datatype =
+                    std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type))
               {
                 PDI::Scalar_kind scalar_kind = (*scalar_datatype).kind();
                 if (scalar_kind == PDI::Scalar_kind::SIGNED)
@@ -120,8 +120,10 @@ void catalyst_plugin::RunCatalystExecute()
                 }
                 else if (scalar_kind == PDI::Scalar_kind::UNSIGNED)
                 {
-                  context().logger().error("The expression {} is defined as unsigned integer.", PDI::to_string(current.tree));
-                  // context().logger().trace("The expression {} is defined with unsigned integer. It is tranformed to signed integer.", PDI::to_string(current.tree));
+                  context().logger().error("The expression {} is defined as unsigned integer.",
+                    PDI::to_string(current.tree));
+                  // context().logger().trace("The expression {} is defined with unsigned integer.
+                  // It is tranformed to signed integer.", PDI::to_string(current.tree));
                   // current_node.set_int64(data_expression.to_long(context()));
                 }
                 else if (scalar_kind == PDI::Scalar_kind::FLOAT)
@@ -130,30 +132,35 @@ void catalyst_plugin::RunCatalystExecute()
                 }
                 else
                 {
-                  context().logger().error("Unknown Scalar Type for variable {}", PDI::to_string(current.tree));
+                  context().logger().error(
+                    "Unknown Scalar Type for variable {}", PDI::to_string(current.tree));
                 }
               }
               else
               {
-                context().logger().error("Unsupported datatype for variable: {}", PDI::to_string(current.tree));
+                context().logger().error(
+                  "Unsupported datatype for variable: {}", PDI::to_string(current.tree));
               }
             }
             break;
           case YAML_SINGLE_QUOTED_SCALAR_STYLE:
             // handle integer or float/double type that depend on scalar PDI data
             {
-              std::string data_name{PDI::to_string(current.tree)};
-              PDI::Expression data_expression{PDI::to_string(current.tree)};
+              std::string data_name{ PDI::to_string(current.tree) };
+              PDI::Expression data_expression{ PDI::to_string(current.tree) };
               PDI::Ref_r spec_ref = data_expression.to_ref(context());
               auto data_type = spec_ref.type()->evaluate(context());
 
-              if (auto scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type))
+              if (auto scalar_datatype =
+                    std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type))
               {
-                FillNodeWithScalarPDIData(conduit_cpp::c_node(&current_node), data_name, *scalar_datatype, spec_ref);
+                FillNodeWithScalarPDIData(
+                  conduit_cpp::c_node(&current_node), data_name, *scalar_datatype, spec_ref);
               }
               else
               {
-                context().logger().error("Unsupported datatype for variable: {}. It should be scalar type.", data_name);
+                context().logger().error(
+                  "Unsupported datatype for variable: {}. It should be scalar type.", data_name);
               }
             }
             break;
@@ -173,14 +180,14 @@ void catalyst_plugin::RunCatalystExecute()
       case YAML_MAPPING_NODE:
         int data_tree_size = PDI::len(current.tree);
         // Check for dynamic PDI Data array
-        bool pdi_data_array=false;
+        bool pdi_data_array = false;
         for (int i = data_tree_size - 1; i >= 0; --i)
         {
           auto key = PC_get(current.tree, "{%d}", i);
           if (PDI::to_string(key) == "PDI_data_array")
           {
             this->FillNodeWithPDIDataArray(conduit_cpp::c_node(&current_node), current.tree);
-            pdi_data_array=true;
+            pdi_data_array = true;
             break; // break the loop
           }
         }
@@ -194,11 +201,9 @@ void catalyst_plugin::RunCatalystExecute()
         {
           auto key = PC_get(current.tree, "{%d}", i);
           auto value = PC_get(current.tree, "<%d>", i);
-          std::cout << "Mapping Node: key="<< PDI::to_string(key) << std::endl;
           remainingTreeAndParentNode.push(
             { value, PDI::to_string(key), conduit_cpp::c_node(&current_node) });
         }
-        std::cout << "End YAML_MAPPING_NODE" << std::endl;
         break;
     }
   }
@@ -239,7 +244,8 @@ void catalyst_plugin::FillNodeWithPDIDataArray(conduit_node* node, PC_tree_t tre
     return;
   }
 
-  std::string name = PDI::to_string(name_spec); // Jacques: Perhaps we need an expression if the users add an index for example "my_name${index}".
+  std::string name = PDI::to_string(name_spec); // Jacques: Perhaps we need an expression if the
+                                                // users add an index for example "my_name${index}".
   auto it = this->CurrentPDIData.find(name);
   if (it == this->CurrentPDIData.end())
   {
@@ -262,7 +268,8 @@ void catalyst_plugin::FillNodeWithPDIDataArray(conduit_node* node, PC_tree_t tre
   }
   else
   {
-    context().logger().error("Unsupported datatype for variable: {}. The type should be array type.", name);
+    context().logger().error(
+      "Unsupported datatype for variable: {}. The type should be array type.", name);
   }
 }
 
@@ -368,7 +375,8 @@ void catalyst_plugin::FillNodeWithArrayPDIData(conduit_node* node, const std::st
   }
   else
   {
-    context().logger().error("Unknown the number of elements for variable{} passed to catalyst.", name);
+    context().logger().error(
+      "Unknown the number of elements for variable{} passed to catalyst.", name);
   }
 
   conduit_index_t offset = 0;
@@ -495,7 +503,7 @@ long catalyst_plugin::GetLongValueFromSpecNode(PC_tree_t& spec, const std::strin
 {
   if (spec.node->type == YAML_SCALAR_NODE)
   {
-    PDI::Expression data_expression{PDI::to_string(spec)};
+    PDI::Expression data_expression{ PDI::to_string(spec) };
     PDI::Ref_r spec_ref = data_expression.to_ref(context());
     if (!spec_ref)
     {
@@ -505,24 +513,27 @@ long catalyst_plugin::GetLongValueFromSpecNode(PC_tree_t& spec, const std::strin
     auto data_type = spec_ref.type()->evaluate(context());
     if (auto scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type))
     {
-        PDI::Scalar_kind scalar_kind = (*scalar_datatype).kind();
-        if (scalar_kind == PDI::Scalar_kind::SIGNED)
-        {
-          return data_expression.to_long(context());
-        }
-        else if (scalar_kind == PDI::Scalar_kind::UNSIGNED)
-        {
-          // Jacques: auto value = ref_r.scalar_value<long>();?? a utiliser en fonction du buffersize ??
-          return data_expression.to_long(context());
-        }
-        else
-        {
-          context().logger().error("Unknown Scalar Type for variable {}. The type must be an integer", PDI::to_string(spec));
-        }
+      PDI::Scalar_kind scalar_kind = (*scalar_datatype).kind();
+      if (scalar_kind == PDI::Scalar_kind::SIGNED)
+      {
+        return data_expression.to_long(context());
+      }
+      else if (scalar_kind == PDI::Scalar_kind::UNSIGNED)
+      {
+        // Jacques: auto value = ref_r.scalar_value<long>();?? a utiliser en fonction du buffersize
+        // ??
+        return data_expression.to_long(context());
+      }
+      else
+      {
+        context().logger().error(
+          "Unknown Scalar Type for variable {}. The type must be an integer", PDI::to_string(spec));
+      }
     }
     else
     {
-      context().logger().error("The datatype must be a scalar datatype for variable: {}", PDI::to_string(spec));
+      context().logger().error(
+        "The datatype must be a scalar datatype for variable: {}", PDI::to_string(spec));
     }
     return 0;
   }
