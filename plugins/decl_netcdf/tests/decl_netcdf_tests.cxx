@@ -680,7 +680,7 @@ TEST(decl_netcdf_test, 06)
 		  "                                                    \n"
 		  "plugins:                                            \n"
 		  "  decl_netcdf:                                      \n"
-		  "    - file: 'test_07.nc'                            \n"
+		  "    - file: 'test_06.nc'                            \n"
 		  "      on_event: 'write'                             \n"
 		  "      variables:                                    \n"
 		  "        int_matrix_var:                             \n"
@@ -694,7 +694,7 @@ TEST(decl_netcdf_test, 06)
 		  "          variable_selection:                       \n"
 		  "            start: ['$iter', 0, 0]                  \n"
 		  "            subsize: [1, 8, 8]                      \n"
-		  "    - file: 'test_07.nc'                            \n"
+		  "    - file: 'test_06.nc'                            \n"
 		  "      on_event: 'read'                              \n"
 		  "      variables:                                    \n"
 		  "        int_matrix_var:                             \n"
@@ -735,6 +735,45 @@ TEST(decl_netcdf_test, 06)
 			}
 		}
 	}
+
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.07
+ *
+ * Description:         Tests yaml syntaxe with `write: data`
+ */
+TEST(decl_netcdf_test, 07)
+{
+	const char* CONFIG_YAML
+		= "logging: trace                                      \n"
+		  "data:                                               \n"
+		  "  int_matrix:                                       \n"
+		  "    type: array                                     \n"
+		  "    subtype: int                                    \n"
+		  "    size: [8, 8]                                    \n"
+		  "                                                    \n"
+		  "plugins:                                            \n"
+		  "  decl_netcdf:                                      \n"
+		  "    - file: 'test_07.nc'                            \n"
+		  "      on_event: 'write'                             \n"
+		  "      write: int_matrix                             \n";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	int int_matrix[8][8];
+	
+	// init data
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 8; j++) {
+			int_matrix[i][j] = 100 + i * 8 + j;
+		}
+	}
+
+	// write data
+	PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL);
+	
 
 	PDI_finalize();
 }
