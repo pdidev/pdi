@@ -52,7 +52,7 @@ runs:
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
-          --tmpfs /tmp_dir_test:exec \
+          -v /tmp_dir_test:/tmp_dir_test \
           ${{inputs.image}} \
           bash /src/run.sh
         if docker cp "$(cat docker.cid)":/home/ci/outputs/. ./
