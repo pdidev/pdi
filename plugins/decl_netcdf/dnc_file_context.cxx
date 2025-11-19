@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -127,7 +127,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 
 	PC_tree_t write_node = PC_get(config, ".write");
 	if (!PC_status(write_node)) {
-		if (PDI::is_scalar(read_node)) {
+		if (PDI::is_scalar(write_node)) {
 			std::string write_desc = PDI::to_string(write_node);
 			m_ctx.logger().trace("Creating new empty write info for: {}", write_desc);
 			m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
