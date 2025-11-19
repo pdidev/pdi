@@ -59,6 +59,7 @@ runs:
           -v /tmp_dir_test:/tmp_dir_test \
           ${{inputs.image}} \
           bash /src/run.sh
+        ls /tmp_dir_test
         docker cp "$(cat docker.cid)":/tmp_dir_test/junit_dir.env .
         source junit_dir.env
         if docker cp "$(cat docker.cid)":$JUNIT_OUTPUT_DIR/. ./
