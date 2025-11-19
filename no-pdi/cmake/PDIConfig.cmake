@@ -30,8 +30,8 @@
 # Check for available but not supported components
 if(PDI_FIND_COMPONENTS)
     foreach(component ${PDI_FIND_COMPONENTS})
-        if(NOT component STREQUAL "CTest")
-            message(FATAL_ERROR "no-PDI configuration: The component '${component}' is not not supported. Only the 'CTest' component is supported.")
+        if(NOT component STREQUAL "C")
+            message(FATAL_ERROR "no-PDI configuration: The component '${component}' is not not supported. Only the C component is supported.")
         endif()
     endforeach()
 endif()
