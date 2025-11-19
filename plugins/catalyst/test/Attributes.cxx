@@ -26,17 +26,19 @@ void Attributes::UpdateFields(double time)
   size_t numCells = this->GridPtr->GetNumberOfCells();
   this->Pressure.resize(numCells);
 
-  double tmp_var=(numCells * time*0.5);
+  double tmp_var = (numCells * time * 0.5);
   size_t first_cells;
-  if( tmp_var < 0 ){
-    first_cells=0;
+  if (tmp_var < 0)
+  {
+    first_cells = 0;
   }
-  else {
-    first_cells= (size_t) tmp_var;
+  else
+  {
+    first_cells = (size_t)tmp_var;
   }
 
   std::fill(this->Pressure.begin(), this->Pressure.end(), -1.f);
-  std::fill(this->Pressure.begin()+first_cells, this->Pressure.end(), 1.f);
+  std::fill(this->Pressure.begin() + first_cells, this->Pressure.end(), 1.f);
 }
 
 double* Attributes::GetVelocityArray()

@@ -3,9 +3,9 @@
 #include "Attributes.h"
 #include "Grid.h"
 
+#include <iostream>
 #include <pdi.h>
 #include <string>
-#include <iostream>
 
 namespace PDIAdaptor
 {
