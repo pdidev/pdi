@@ -47,6 +47,7 @@ runs:
           export CTEST_FLAGS=""
           export JUNIT_OUTPUT_DIR="/tmp_dir_test/outputs"
           export TEST_DIR="/tmp_dir_test"
+          mkdir -p "$JUNIT_OUTPUT_DIR"
           /src/bin/build_and_run_all_tests
         EOF
         docker run \
