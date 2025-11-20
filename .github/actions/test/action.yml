@@ -58,7 +58,9 @@ runs:
         # if docker cp "$(cat docker.cid)":$CI_OUTPUTS_TAR_PATH ./
         # if docker cp "$(cat docker.cid)":/home/ci/CI_outputs.tar ./
         if docker cp "$(cat docker.cid)":/home/ci/CI_outputs/CI_outputs.tar ./
-        then echo "with_report=true" >> "$GITHUB_OUTPUT"
+        then 
+          echo "with_report=true" >> "$GITHUB_OUTPUT"
+          tar -xvf CI_outputs.tar -C .
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
     - id: Publish
