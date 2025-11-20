@@ -54,9 +54,6 @@ runs:
           ${{inputs.image}} \
           bash /src/run.sh
         ls /tmp_dir_test
-        docker cp "$(cat docker.cid)":/tmp/junit_dir.env .
-        source junit_dir.env
-        if docker cp "$(cat docker.cid)":$JUNIT_OUTPUT_DIR/. ./
         if docker cp "$(cat docker.cid)":CI_outputs.tar ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
