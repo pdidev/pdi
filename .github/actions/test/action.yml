@@ -55,7 +55,7 @@ runs:
           bash /src/run.sh
         ls /tmp_dir_test
         ls .
-        export CURRENT_DIR = echo pwd
+        export CURRENT_DIR="${PWD}"
         if docker cp "$(cat docker.cid)": ${CURRENT_DIR}/CI_outputs.tar ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
