@@ -49,7 +49,7 @@ runs:
         EOF
         docker run \
           --cidfile='docker.cid' \
-          -v ${PWD}:/src:ro \
+          -v ${PWD}:/src \
           -v /tmp_dir_test:/tmp_dir_test \
           ${{inputs.image}} \
           bash /src/run.sh
