@@ -31,11 +31,10 @@
 if(PDI_FIND_COMPONENTS)
     foreach(component ${PDI_FIND_COMPONENTS})
         if(NOT component STREQUAL "C")
-            message(FATAL_ERROR "no-PDI configuration: The component '${component}' is not not supported. Only the C component is supported.")
+            message(FATAL_ERROR "no-PDI configuration: The component '${component}' is not supported. Only the C component is supported.")
         endif()
     endforeach()
 endif()
-# Enf of check
 
 add_library(PDI_C INTERFACE)
 add_library(PDI::pdi   ALIAS PDI_C)

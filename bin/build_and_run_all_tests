@@ -140,7 +140,7 @@ fi
 # Configure, build & test for pdi, including example and test_api
 
 cd "${TEST_DIR_WITH_PDI}"
-cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 # cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${PDI_ROOT}"
 make ${MAKEFLAGS}
 # ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
@@ -168,3 +168,5 @@ make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 tar -cvf ${TRUE_SRCDIR}/CI_outputs.tar ${TEST_DIR_TRY}
+
+echo "CI_OUTPUTS_TAR_PATH=${TRUE_SRCDIR}/CI_outputs.tar"
