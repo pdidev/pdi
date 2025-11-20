@@ -35,7 +35,7 @@ set -xe
 
 # Make work directories
 
-TRUE_SRCDIR="${PWD}"
+TRUE_SRCDIR="${PWD}" # is /home/ci
 SRCDIR="${PWD}"
 TEST_DIR_TRY="${SRCDIR}/CI_outputs"
 echo "${TEST_DIR_TRY}"
@@ -170,6 +170,8 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-j
 # tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar ${TEST_DIR_TRY}
 # mv ${TEST_DIR_TRY}/CI_outputs.tar ${TRUE_SRCDIR}
 # cp ${TRUE_SRCDIR}/CI_outputs.tar /tmp_dir_test
-tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar ${TRUE_SRCDIR}
+# tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar ${TRUE_SRCDIR}
+# tar -cvf ${SRCDIR}/CI_outputs.tar -C ${TEST_DIR_TRY} .
+tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar -C ${TEST_DIR_TRY} .
 
 # echo "CI_OUTPUTS_TAR_PATH=${TEST_DIR_TRY}/CI_outputs.tar" > "/tmp/ci_outputs.tar.env"
