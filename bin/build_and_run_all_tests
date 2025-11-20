@@ -167,6 +167,7 @@ make ${MAKEFLAGS}
 # ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-tar -cvf ${SRCDIR}/CI_outputs.tar ${TEST_DIR_TRY}
+tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar ${TEST_DIR_TRY}
+mv ${TEST_DIR_TRY}/CI_outputs.tar ${TRUE_SRCDIR}
 
-echo "CI_OUTPUTS_TAR_PATH=${SRCDIR}/CI_outputs.tar" > "/tmp/ci_outputs.tar.env"
+# echo "CI_OUTPUTS_TAR_PATH=${TEST_DIR_TRY}/CI_outputs.tar" > "/tmp/ci_outputs.tar.env"
