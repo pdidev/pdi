@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,43 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-name: Test PDI
-description: 'Test PDI'
-inputs:
-  image:
-    required: true
-    description: "docker image in which to run the test"
-runs:
-  using: "composite"
-  steps:
-    - id: test
-      shell: bash
-      run: |
-        cat<<-'EOF' > run.sh
-          set -xe
-          JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
-          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
-          export MAKEFLAGS='-j 4'
-          export CTEST_FLAGS=""
-          /src/bin/build_and_run_all_tests
-        EOF
-        docker run \
-          --cidfile='docker.cid' \
-          -v ${PWD}:/src \
-          -v /tmp_dir_test:/tmp_dir_test \
-          ${{inputs.image}} \
-          bash /src/run.sh
-        # docker cp "$(cat docker.cid)":/tmp/ci_outputs.tar.env .
-        # source ci_outputs.tar.env
-        # if docker cp "$(cat docker.cid)":$CI_OUTPUTS_TAR_PATH ./
-        # if docker cp "$(cat docker.cid)":/home/ci/CI_outputs.tar ./
-        if docker cp "$(cat docker.cid)":/home/ci/CI_outputs/CI_outputs.tar ./
-        then 
-          echo "with_report=true" >> "$GITHUB_OUTPUT"
-          tar -xvf CI_outputs.tar -C .
-        else echo "with_report=false" >> "$GITHUB_OUTPUT"
-        fi
-    - id: Publish
-      uses: mikepenz/action-junit-report@v4
-      if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
-      with: { report_paths: 'tests*.xml' }
+cmake_minimum_required(VERSION 3.16...3.29)
+project(PDI LANGUAGES C)
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/PDIConfig.cmake")

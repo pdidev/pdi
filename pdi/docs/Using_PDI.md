@@ -38,6 +38,8 @@ If source files (of application that uses %PDI) and specification tree file are 
 For C make sure that source files that use %PDI API are including `pdi.h` header file.
 For Fortran make sure that source files that use %PDI API are using `%PDI` module file (`USE %PDI`).
 
+%PDI can be disabled by using the `no-pdi` directory (see section ["How to deactivate PDI"](#deactivate_pdi)).
+
 ### Compiling by hand {#compiling_by_hand}
 
 To compile application, linker flag `-lpdi` must be used.
@@ -93,3 +95,21 @@ plugins in 4 steps (it will use the first plugin found):
 2. `plugin_path` subtree in specification tree: \ref plugin_path_map_node,
 3. Relative path of used %PDI shared object `libpdi.so`,
 4. `LD_LIBRARY_PATH` environment variable that is colon separated list.
+
+## How to deactivate PDI {#deactivate_pdi}
+
+You may use the no-pdi mock directory (with an available Paraconf) instead of the real PDI to compile your 
+application. The only modification you need to make is to add the 
+CMAKE_PREFIX_PATH option to your CMake command :
+```bash
+cmake . -your-usual-cmake-compile-options -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH}:}<path-to>/no-pdi"
+```
+The no-pdi directory can be copied out of the pdi repository, for convenience.
+
+If Paraconf is missing from your system, you need to remove all calls to it 
+from your application.
+This contains its inclusion (`#include <paraconf.h>` in C/C++, for example), 
+its use by PDI via `PDI_init`, and direct calls to Paraconf API.
+
+%PDI can be re-enabled by reverting those modifications, 
+using cmake again without specifying a path to no-pdi.

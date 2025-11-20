@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 # All rights reserved.
 #
@@ -32,11 +32,20 @@ project(pdi_examples LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(MPI_COMPONENTS C)
+set(paraconf_COMPONENTS C)
 set(PDI_COMPONENTS C)
+
+option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in"    OFF)
+option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in"  OFF)
+option(BUILD_FORTRAN            "Build with Fortran support" OFF)
+option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in"       OFF)
+option(BUILD_PYTHON             "Build with Python support"  OFF)
+option(BUILD_JSON_PLUGIN        "Build JSON plug-in"         OFF)
 
 if("${BUILD_FORTRAN}")
 	enable_language(Fortran)
 	list(APPEND MPI_COMPONENTS Fortran)
+	list(APPEND PARACONF_COMPONENTS "f90")
 	list(APPEND PDI_COMPONENTS f90)
 endif()
 
@@ -48,6 +57,7 @@ endif()
 # Includes
 include(CTest)
 find_package(MPI REQUIRED COMPONENTS ${MPI_COMPONENTS})
+find_package(paraconf REQUIRED COMPONENTS ${paraconf_COMPONENTS})
 find_package(PDI REQUIRED COMPONENTS ${PDI_COMPONENTS})
 find_library(LIB_M m DOC "The math library")
 
@@ -77,7 +87,8 @@ endif()
 
 
 add_executable(PDI_example_C example.c)
-target_link_libraries(PDI_example_C PDI::PDI_C MPI::MPI_C m)
+target_link_libraries(PDI_example_C paraconf::paraconf PDI::PDI_C MPI::MPI_C m)
+
 
 if("${BUILD_FORTRAN}")
 add_executable(PDI_example_F example.F90)
