@@ -61,7 +61,7 @@ mkdir "${TEST_DIR_API}"
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
-# PDI_ROOT="${PWD}"
+PDI_ROOT="${PWD}"
 
 mkdir "${TEST_DIR_TRY}"
 
@@ -141,6 +141,7 @@ fi
 
 cd "${TEST_DIR_WITH_PDI}"
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+# cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${PDI_ROOT}"
 make ${MAKEFLAGS}
 # ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
@@ -151,6 +152,7 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 
 	cd "${TEST_DIR_NO_PDI}"
 	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
+	# cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/example"
 	make ${MAKEFLAGS}
 	# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
@@ -160,9 +162,9 @@ fi
 
 cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
+# cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/test_api"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
-
 # ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 tar -cvf ${TRUE_SRCDIR}/CI_outputs.tar ${TEST_DIR_TRY}
