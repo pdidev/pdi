@@ -47,7 +47,7 @@ TEST_DIR="${PWD}" # TEST_DIR is pdibuild.XXXXX
 
 JUNIT_OUTPUT_DIR="${TEST_DIR}/outputs"
 mkdir "${JUNIT_OUTPUT_DIR}"
-echo "JUNIT_OUTPUT_DIR=${JUNIT_OUTPUT_DIR}" > "/tmp/junit_dir.env"
+# echo "JUNIT_OUTPUT_DIR=${JUNIT_OUTPUT_DIR}" > "/tmp/junit_dir.env"
 
 TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
 mkdir "${TEST_DIR_WITH_PDI}"
@@ -167,6 +167,6 @@ make ${MAKEFLAGS}
 # ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-tar -cvf ${TRUE_SRCDIR}/CI_outputs.tar ${TEST_DIR_TRY}
+tar -cvf ${SRCDIR}/CI_outputs.tar ${TEST_DIR_TRY}
 
-echo "CI_OUTPUTS_TAR_PATH=${TRUE_SRCDIR}/CI_outputs.tar"
+echo "CI_OUTPUTS_TAR_PATH=${SRCDIR}/CI_outputs.tar" > "/tmp/ci_outputs.tar.env"

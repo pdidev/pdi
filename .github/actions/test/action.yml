@@ -46,19 +46,16 @@ runs:
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS=""
           /src/bin/build_and_run_all_tests
-          CI_OUTPUTS_TAR_PATH=$(grep "CI_OUTPUTS_TAR_PATH=" /src/bin/build_and_run_all_tests.log | cut -d'=' -f2)
-          mv "$CI_OUTPUTS_TAR_PATH" /src/CI_outputs.tar
         EOF
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
           -v /tmp_dir_test:/tmp_dir_test \
           ${{inputs.image}} \
-          bash /src/run.sh > /src/bin/build_and_run_all_tests.log 2>&1
-        export CURRENT_DIR="${PWD}"
-        echo #########
-        ls ${CURRENT_DIR}
-        if docker cp "$(cat docker.cid)":/src/CI_outputs.tar ./
+          bash /src/run.sh
+        docker cp "$(cat docker.cid)":/tmp/ci_outputs.tar.env .
+        source ci_outputs.tar.env
+        if docker cp "$(cat docker.cid)":$CI_OUTPUTS_TAR_PATH ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
