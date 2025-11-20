@@ -172,6 +172,11 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-j
 # cp ${TRUE_SRCDIR}/CI_outputs.tar /tmp_dir_test
 # tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar ${TRUE_SRCDIR}
 # tar -cvf ${SRCDIR}/CI_outputs.tar -C ${TEST_DIR_TRY} .
-tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar -C ${TEST_DIR_TRY} .
+# tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar -C ${TEST_DIR_TRY} .
+
+TMP_DIR=$(mktemp -d)
+TMP_TAR="${TMP_DIR}/CI_outputs.tar"
+tar -cvf "$TMP_TAR" -C "${TEST_DIR_TRY}" .
+mv "$TMP_TAR" "${TEST_DIR_TRY}/CI_outputs.tar"
 
 # echo "CI_OUTPUTS_TAR_PATH=${TEST_DIR_TRY}/CI_outputs.tar" > "/tmp/ci_outputs.tar.env"
