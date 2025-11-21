@@ -31,7 +31,7 @@ plugins:
   catalyst:
     scripts:
       script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_with_rendering.py"
-    PDI_execute_event_name: "catalyst_execute"
+    on_event: "catalyst_execute"
     execute:
       state:
         timestep: '$cycle'
