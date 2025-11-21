@@ -68,7 +68,6 @@ options.EnableCatalystLive = 0
 
 
 # Greeting to ensure that ctest knows this script is being imported
-print("executing catalyst_pipeline")
 def catalyst_execute(info):
     global producer
     producer.UpdatePipeline()
@@ -77,6 +76,7 @@ def catalyst_execute(info):
     print("bounds:", producer.GetDataInformation().GetBounds())
     print("velocity-magnitude-range:", producer.PointData["velocity"].GetRange(-1))
     print("pressure-range:", producer.CellData["pressure"].GetRange(0))
+
     # In a real simulation sleep is not needed. We use it here to slow down the
     # "simulation" and make sure ParaView client can catch up with the produced
     # results instead of having all of them flashing at once.
