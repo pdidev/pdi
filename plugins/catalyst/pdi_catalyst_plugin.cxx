@@ -2,7 +2,6 @@
 
 #include "catalyst.hpp"
 
-#include <iostream>
 #include <stack>
 
 catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
@@ -547,7 +546,7 @@ long catalyst_plugin::GetLongValueFromSpecNode(PC_tree_t& spec, const std::strin
 std::string catalyst_plugin::ReadPDIExecuteEventName()
 {
   std::string eventName;
-  auto execute_spec = PC_get(this->SpecTree, ".PDI_execute_event_name");
+  auto execute_spec = PC_get(this->SpecTree, ".on_event");
   if (PC_status(execute_spec) == PC_OK)
   {
     eventName = PDI::to_string(execute_spec);
