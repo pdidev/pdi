@@ -28,6 +28,9 @@ Benoit Martin - CEA (bmartin@cea.fr)
 François Mazen - Kitware (francois.mazen@kitware.com)
 * Catalyst plugin
 
+François Mazen - Kitware (francois.mazen@kitware.com)
+* Catalyst plugin creation
+
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
 * Bug fix, JSON plugin
@@ -114,6 +117,3 @@ Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
 
 Yushan Wang - CEA (yushan.wang@cea.fr)
 * Maintainer (Sept. 2023 - ...)
-* enable HDF5 subfiling
-* Add native compression support in Decl'NetCDF
-
