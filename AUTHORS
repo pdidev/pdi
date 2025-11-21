@@ -20,6 +20,9 @@ Benoit Martin - CEA (bmartin@cea.fr)
 * CMake maintainer (Oct. 2024 - ...)
 * Deisa plugin refactoring
 
+François Mazen - Kitware (francois.mazen@kitware.com)
+* Catalyst plugin creation
+
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
 * Bug fix, JSON plugin
@@ -48,6 +51,3 @@ project co-financed by Polish Ministry of Science and Higher Education.
 
 Yushan Wang - CEA (yushan.wang@cea.fr)
 * Maintainer (Sept. 2023 - ...)
-
-François Mazen - Kitware (francois.mazen@kitware.com)
-* Catalyst plugin
