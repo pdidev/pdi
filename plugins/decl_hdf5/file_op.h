@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -32,6 +32,7 @@
 #include <mpi.h>
 #endif
 
+#include <regex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -43,6 +44,7 @@
 
 #include "attribute_op.h"
 #include "collision_policy.h"
+#include "dataset_explicit_type.h"
 #include "dataset_op.h"
 
 namespace decl_hdf5 {
@@ -66,8 +68,8 @@ class File_op
 	PDI::Expression m_communicator;
 #endif
 
-	/// type of the datasets for which an explicit type is specified
-	std::unordered_map<std::string, PDI::Datatype_template_sptr> m_datasets;
+	/// type information for the datasets for which an explicit type is specified
+	std::vector<Dataset_explicit_type> m_datasets;
 
 	/// the dataset operations
 	std::vector<Dataset_op> m_dset_ops;
