@@ -48,6 +48,7 @@ runs:
           /src/bin/build_and_run_all_tests
         EOF
 
+        echo "Runner OS: ${{ runner.os }}"
         if [[ "${{ runner.os }}" == "Linux" ]]
         then
           OUTPUT_PATH="/home/ci/CI_outputs/CI_outputs.tar"
@@ -58,6 +59,7 @@ runs:
           echo "Unsupported OS: ${{ runner.os }}"
           exit 1
         fi
+        echo "OUTPUT PATH: ${{ OUTPUT_PATH }}"
 
         docker run \
           --cidfile='docker.cid' \
