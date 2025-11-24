@@ -117,7 +117,8 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 				// if we read a regular variable
-				else {
+				else
+				{
 					this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 			});
