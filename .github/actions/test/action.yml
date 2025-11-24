@@ -48,9 +48,11 @@ runs:
           /src/bin/build_and_run_all_tests
         EOF
 
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
+        if [[ "${{ runner.os }}" == "Linux" ]]
+        then
           OUTPUT_PATH="/home/ci/CI_outputs/CI_outputs.tar"
-        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+        elif [[ "${{ runner.os }}" == "macOS" ]]
+        then
           OUTPUT_PATH="/Users/runner/work/pdi/pdi/CI_outputs.tar"
         else
           echo "Unsupported OS: ${{ runner.os }}"
@@ -64,7 +66,7 @@ runs:
           ${{inputs.image}} \
           bash /src/run.sh
 
-        if docker cp "$(cat docker.cid)":${OUTPUT_PATH} .; then
+        if docker cp "$(cat docker.cid)":${OUTPUT_PATH} .
         then 
           echo "with_report=true" >> "$GITHUB_OUTPUT"
           tar -xvf CI_outputs.tar -C .
