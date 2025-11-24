@@ -35,19 +35,14 @@ set -xe
 
 # Make work directories
 
-TRUE_SRCDIR="${PWD}" # is /home/ci
-SRCDIR="${PWD}"
+SRCDIR="${PWD}" # SRCDIR is /home/ci
 TEST_DIR_TRY="${SRCDIR}/CI_outputs"
-echo "${TEST_DIR_TRY}"
+mkdir "${TEST_DIR_TRY}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}" # TEST_DIR is pdibuild.XXXXX
-
-JUNIT_OUTPUT_DIR="${TEST_DIR}/outputs"
-mkdir "${JUNIT_OUTPUT_DIR}"
-# echo "JUNIT_OUTPUT_DIR=${JUNIT_OUTPUT_DIR}" > "/tmp/junit_dir.env"
 
 TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
 mkdir "${TEST_DIR_WITH_PDI}"
@@ -60,10 +55,9 @@ mkdir "${TEST_DIR_API}"
 
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
-SRCDIR="${PWD}"
 PDI_ROOT="${PWD}"
 
-mkdir "${TEST_DIR_TRY}"
+
 
 # Gather options
 
@@ -140,10 +134,8 @@ fi
 # Configure, build & test for pdi, including example and test_api
 
 cd "${TEST_DIR_WITH_PDI}"
-cmake -DBUILD_BENCHMARKING=OFF -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-# cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${PDI_ROOT}"
+cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${PDI_ROOT}"
 make ${MAKEFLAGS}
-# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 # Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only if Paraconf is available
@@ -151,32 +143,19 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-j
 if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 
 	cd "${TEST_DIR_NO_PDI}"
-	cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/example"
-	# cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/example"
+	cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/example"
 	make ${MAKEFLAGS}
-	# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 fi
 
 # Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
 
 cd "${TEST_DIR_API}"
-cmake -DCMAKE_PREFIX_PATH="${SRCDIR}/no-pdi" "${SRCDIR}/test_api"
-# cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/test_api"
+cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/test_api"
 make ${MAKEFLAGS}
-# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${JUNIT_OUTPUT_DIR:+--output-junit ${JUNIT_OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
-
-# tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar ${TEST_DIR_TRY}
-# mv ${TEST_DIR_TRY}/CI_outputs.tar ${TRUE_SRCDIR}
-# cp ${TRUE_SRCDIR}/CI_outputs.tar /tmp_dir_test
-# tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar ${TRUE_SRCDIR}
-# tar -cvf ${SRCDIR}/CI_outputs.tar -C ${TEST_DIR_TRY} .
-# tar -cvf ${TEST_DIR_TRY}/CI_outputs.tar -C ${TEST_DIR_TRY} .
 
 TMP_DIR=$(mktemp -d)
 TMP_TAR="${TMP_DIR}/CI_outputs.tar"
 tar -cvf "$TMP_TAR" -C "${TEST_DIR_TRY}" .
 mv "$TMP_TAR" "${TEST_DIR_TRY}/CI_outputs.tar"
-
-# echo "CI_OUTPUTS_TAR_PATH=${TEST_DIR_TRY}/CI_outputs.tar" > "/tmp/ci_outputs.tar.env"
