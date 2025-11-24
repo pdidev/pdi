@@ -59,7 +59,6 @@ runs:
           echo "Unsupported OS: ${{ runner.os }}"
           exit 1
         fi
-        echo "OUTPUT PATH: ${{ OUTPUT_PATH }}"
 
         docker run \
           --cidfile='docker.cid' \
