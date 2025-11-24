@@ -798,8 +798,12 @@ TEST(decl_netcdf_test, 07)
 		}
 	}
 
-	// write data
-	PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL);
+	// write data & verify
+    ASSERT_NO_FATAL_FAILURE({
+        PDI_status_t status = PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL);
+        ASSERT_EQ(status, PDI_OK);
+    });
+
 	PDI_finalize();
 }
 
