@@ -117,8 +117,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 				// if we read a regular variable
-				else
-				{
+				else {
 					this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 			});
@@ -138,7 +137,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 				m_ctx.logger().trace("Creating new empty write info for: {}", write_desc);
 				m_write.emplace(write_desc, Dnc_io{this->m_ctx, PC_tree_t{}});
 			}
-		} else if (PDI::is_map(write_node)){
+		} else if (PDI::is_map(write_node)) {
 			PDI::each(write_node, [this](PC_tree_t desc_name, PC_tree_t write_value) {
 				std::string write_desc = PDI::to_string(desc_name);
 				m_ctx.logger().trace("Creating new write info for: {}", write_desc);
@@ -147,7 +146,6 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 		} else {
 			throw PDI::Error{PDI_ERR_CONFIG, "write node is not parsed correctly"};
 		}
-		
 	}
 
 	for (auto&& event: events) {
