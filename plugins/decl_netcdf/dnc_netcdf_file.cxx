@@ -483,7 +483,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			PDI::Ref_r chunking_ref = variable.chunking().to_ref(m_ctx);
 
 			if (chunking_ref) {
-				m_ctx.logger().warn("Setting `{}' dataset chunking:", variable_name);
+				m_ctx.logger().trace("Setting `{}' dataset chunking:", variable_name);
 				std::vector<size_t> sizes;
 				PDI::Datatype_sptr ref_type = chunking_ref.type();
 				if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_type)) {
