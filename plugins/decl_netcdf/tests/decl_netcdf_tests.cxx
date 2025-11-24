@@ -739,6 +739,21 @@ TEST(decl_netcdf_test, 06)
 	PDI_finalize();
 }
 
+struct context_check_error {
+	std::string true_errmsg;
+	PDI_status_t true_err_status;
+	int has_failed;
+};
+
+void succeed_on_failure_without_checking_message(PDI_status_t status, const char* message, void* ctx)
+{
+	if (status != PDI_OK) {
+		context_check_error* tmp_ctx = static_cast<struct context_check_error*>(ctx);
+		tmp_ctx->has_failed = 1;
+	}
+	ASSERT_EQ(status, PDI_OK);
+}
+
 /*
  * Name:                decl_netcdf_test.07
  *
@@ -760,7 +775,19 @@ TEST(decl_netcdf_test, 07)
 		  "      on_event: 'write'                             \n"
 		  "      write: int_matrix                             \n";
 
+	context_check_error ctx{"", PDI_OK, 0};
+
+	PDI_errhandler_t local_errhandler;
+	local_errhandler.func = succeed_on_failure_without_checking_message;
+	local_errhandler.context = static_cast<void*>(&ctx);
+	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
+
 	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	if (ctx.has_failed) {
+		PDI_finalize();
+		FAIL();
+	}
 
 	int int_matrix[8][8];
 
@@ -773,7 +800,6 @@ TEST(decl_netcdf_test, 07)
 
 	// write data
 	PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL);
-
 	PDI_finalize();
 }
 
