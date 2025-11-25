@@ -137,7 +137,8 @@ fi
 cd "${TEST_DIR_WITH_PDI}"
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${PDI_ROOT}"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR}/tests_pdi.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 # Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only if Paraconf is available
 
@@ -146,7 +147,8 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	cd "${TEST_DIR_NO_PDI}"
 	cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/example"
 	make ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+	# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR}/tests_no-pdi_example.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 fi
 
 # Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
@@ -154,9 +156,12 @@ fi
 cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/test_api"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+# ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR}/tests_no-pdi_api.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 TMP_DIR=$(mktemp -d)
 TMP_TAR="${TMP_DIR}/CI_outputs.tar"
-tar -cvf "$TMP_TAR" -C "${OUTPUT_DIR}" .
-mv "$TMP_TAR" "${OUTPUT_DIR}/CI_outputs.tar"
+# tar -cvf "$TMP_TAR" -C "${OUTPUT_DIR}" .
+# mv "$TMP_TAR" "${OUTPUT_DIR}/CI_outputs.tar"
+tar -cvf "$TMP_TAR" -C "${CTEST_DIR}" .
+mv "$TMP_TAR" "${CTEST_DIR}/CI_outputs.tar"

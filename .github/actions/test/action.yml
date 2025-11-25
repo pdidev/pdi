@@ -44,7 +44,8 @@ runs:
           JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
-          export CTEST_FLAGS=""
+          export CTEST_FLAGS="--output-junit"
+          export CTEST_DIR="/tmp"
           /src/bin/build_and_run_all_tests
         EOF
         docker run \
