@@ -35,14 +35,14 @@ set -xe
 
 # Make work directories
 
-SRCDIR="${PWD}" # SRCDIR is /home/ci
-TEST_DIR_TRY="${SRCDIR}/CI_outputs"
-mkdir "${TEST_DIR_TRY}"
+SRCDIR="${PWD}" 	# SRCDIR is /home/ci
+OUTPUT_DIR="${SRCDIR}/CI_outputs"
+mkdir "${OUTPUT_DIR}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
-TEST_DIR="${PWD}" # TEST_DIR is pdibuild.XXXXX
+TEST_DIR="${PWD}" 	# TEST_DIR is pdibuild.XXXXX
 
 TEST_DIR_WITH_PDI="${TEST_DIR}/with_pdi"
 mkdir "${TEST_DIR_WITH_PDI}"
@@ -55,7 +55,8 @@ mkdir "${TEST_DIR_API}"
 
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
-PDI_ROOT="${PWD}"
+PDI_ROOT="${PWD}" 	# PDI_ROOT is the root of the pdi repository, 
+					# which contains pdi, no-pdi, and test_api among others
 
 
 
@@ -136,7 +137,7 @@ fi
 cd "${TEST_DIR_WITH_PDI}"
 cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${PDI_ROOT}"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_pdi.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 # Configure, build & test for pdi's example with CMAKE_PREFIX_PATH (find_package) for no-pdi, only if Paraconf is available
 
@@ -145,7 +146,7 @@ if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	cd "${TEST_DIR_NO_PDI}"
 	cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/example"
 	make ${MAKEFLAGS}
-	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_no-pdi_example.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 fi
 
 # Configure, build & test for pdi's API specific tests with CMAKE_PREFIX_PATH (find_package) for no-pdi, with or without Paraconf
@@ -153,9 +154,9 @@ fi
 cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/test_api"
 make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${TEST_DIR_TRY:+--output-junit ${TEST_DIR_TRY}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${OUTPUT_DIR:+--output-junit ${OUTPUT_DIR}/tests_no-pdi_api.xml} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 TMP_DIR=$(mktemp -d)
 TMP_TAR="${TMP_DIR}/CI_outputs.tar"
-tar -cvf "$TMP_TAR" -C "${TEST_DIR_TRY}" .
-mv "$TMP_TAR" "${TEST_DIR_TRY}/CI_outputs.tar"
+tar -cvf "$TMP_TAR" -C "${OUTPUT_DIR}" .
+mv "$TMP_TAR" "${OUTPUT_DIR}/CI_outputs.tar"
