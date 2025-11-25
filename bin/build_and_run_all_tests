@@ -162,4 +162,4 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR}/tests_no-pdi_
 # mv "$OUTPUT_TAR" "${CTEST_DIR}/CI_outputs.tar"
 
 cd ${CTEST_DIR}
-tar -cvf CI_outputs.tar -C *.xml
+tar -cvf CI_outputs.tar *.xml
