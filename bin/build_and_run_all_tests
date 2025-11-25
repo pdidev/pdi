@@ -167,4 +167,12 @@ cd ${CTEST_DIR}
 # tar -cvf CI_outputs.tar $(find . -maxdepth 1 -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml")
 # tar -cvf CI_outputs.tar $(find . -maxdepth 1 \( -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml" \) -print0 | xargs -0 -r)
 # tar -cvf CI_outputs.tar $(find . -maxdepth 1 \( -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml" \) -print | xargs echo)
-tar -cvf CI_outputs.tar $(find . -maxdepth 1 \( -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml" \) -print | grep .)
+# tar -cvf CI_outputs.tar $(find . -maxdepth 1 \( -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml" \) -print | grep .)
+# files=$(find . -maxdepth 1 \( -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml" \) -print); if [ -n "$files" ]; then tar -cvf CI_outputs.tar $files; else echo "No files found to archive."; fi
+
+files=$(find . -maxdepth 1 \( -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml" \) -print)
+if [ -n "$files" ]; then
+    tar -cvf CI_outputs.tar $files
+else
+    echo "No files found to archive."
+fi
