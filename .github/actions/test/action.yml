@@ -50,11 +50,11 @@ runs:
         EOF
         docker run \
           --cidfile='docker.cid' \
-          -v ${PWD}:/src \
-          -v /tmp_dir_test:/tmp_dir_test \
+          -v ${PWD}:/src:ro \
+          --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
           bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/home/ci/CI_outputs/CI_outputs.tar ./
+        if docker cp "$(cat docker.cid)":/tmp/CI_outputs.tar ./
         then 
           echo "with_report=true" >> "$GITHUB_OUTPUT"
           tar -xvf CI_outputs.tar -C .
