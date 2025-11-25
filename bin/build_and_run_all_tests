@@ -163,4 +163,5 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR}/tests_no-pdi_
 
 cd ${CTEST_DIR}
 # tar -cvf CI_outputs.tar *.xml
-tar -cvf CI_outputs.tar tests_pdi.xml tests_no-pdi_example.xml tests_no-pdi_api.xml
+# tar -cvf CI_outputs.tar tests_pdi.xml tests_no-pdi_example.xml tests_no-pdi_api.xml
+tar -cvf CI_outputs.tar $(find . -maxdepth 1 -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml")
