@@ -779,7 +779,7 @@ TEST(decl_netcdf_test, 07)
 
 	PDI_errhandler_t local_errhandler;
 	local_errhandler.func = succeed_on_failure_without_checking_message;
-	local_errhandler.context = static_cast<void*>(&ctx);
+	local_errhandler.context = &ctx;
 	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
