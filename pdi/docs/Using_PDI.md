@@ -99,6 +99,8 @@ plugins in 4 steps (it will use the first plugin found):
 ## How to deactivate PDI {#deactivate_pdi}
 
 As of now, only the C component is supported for no-pdi.
+If using a Fortran API or a Python API, you can manually disable PDI 
+by commenting out all of the source code calls to PDI.
 
 You may use the no-pdi mock directory (with an available Paraconf) instead of the real PDI to compile your 
 application. The only modification you need to make is to add the 

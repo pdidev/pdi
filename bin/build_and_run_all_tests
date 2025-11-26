@@ -35,7 +35,7 @@ set -xe
 
 # Make work directories
 
-SRCDIR="${PWD}" 	# SRCDIR is /home/ci
+SRCDIR="${PWD}"
 
 TEST_DIR="${TEST_DIR:-${PWD}}"
 cd "${TEST_DIR}"
@@ -154,10 +154,8 @@ cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/test_api"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR}/tests_no-pdi_api.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
-cd ${CTEST_DIR}
-files=$(find . -maxdepth 1 \( -name "tests_pdi.xml" -o -name "tests_no-pdi_example.xml" -o -name "tests_no-pdi_api.xml" \) -print)
-if [ -n "$files" ]; then
-    tar -cvf CI_outputs.tar $files
-else
-    echo "No files found to archive."
+cd "${CTEST_DIR}"
+files=$(find . -maxdepth 1 -type f -name "*.xml" -print0)
+if [[ -n "$files" ]]; then
+    tar -cvf CI_outputs.tar --null -T <(echo "$files")
 fi
