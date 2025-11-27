@@ -155,7 +155,4 @@ make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR}/tests_no-pdi_api.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
 
 cd "${CTEST_DIR}"
-files=$(find . -maxdepth 1 -type f -name "*.xml" -print0)
-if [[ -n "$files" ]]; then
-    tar -cvf CI_outputs.tar --null -T <(echo "$files")
-fi
+find . -maxdepth 1 -type f -name "*.xml" -print0 | tar -cvf CI_outputs.tar --null -T -
