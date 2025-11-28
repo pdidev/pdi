@@ -106,6 +106,10 @@ public:
 	 */
 	const PDI::Expression deflate() const;
 
+	/** Getter for variable chunk size
+	 *
+	 * \return chunk size of the variable
+	 */
 	const PDI::Expression chunking() const;
 };
 

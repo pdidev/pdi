@@ -474,6 +474,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 		);
 
 		int deflate_level = variable.deflate().to_long(m_ctx);
+		// if a deflate level is set on a scalar variable, reset the level to 0
 		if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(variable_type)) {
 			deflate_level = 0;
 			m_ctx.logger().warn("\t var {} is of type scalar, reset deflate level to {} (no deflate)", variable_name, deflate_level);
@@ -481,7 +482,6 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 		if (deflate_level) {
 			m_ctx.logger().trace("\t var {} deflate = [{}]", variable_name, deflate_level);
 			PDI::Ref_r chunking_ref = variable.chunking().to_ref(m_ctx);
-
 			if (chunking_ref) {
 				m_ctx.logger().trace("Setting `{}' dataset chunking:", variable_name);
 				std::vector<size_t> sizes;
@@ -506,7 +506,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 					dest_id
 				);
 			}
-
+			// if no chunking is defiend, automatic chunking will be used
 			nc_try(
 				nc_def_var_deflate(dest_id, var_id, NC_SHUFFLE, 1, deflate_level),
 				"Cannot define deflate level of `{}' variable in (nc_id = {})",
