@@ -760,14 +760,11 @@ TEST(decl_netcdf_test, 07)
 		  "      on_event: 'write'                             \n"
 		  "      write: int_matrix                             \n";
 
-	PDI_errhandler_t local_errhandler;
-	local_errhandler.func = NULL;
-	//changing err handler to the local one
-	//note: without this switch, the error is not captured. Need further investigation 
-	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); 
+	// Use the null error handle explicitly. Otherwise, the error is not captured.
+	// Need further investigation
+	PDI_errhandler(PDI_NULL_HANDLER);
 
-	PDI_status_t status = PDI_init(PC_parse_string(CONFIG_YAML));
-	ASSERT_EQ(status, PDI_OK);
+	ASSERT_EQ(PDI_OK, PDI_init(PC_parse_string(CONFIG_YAML)));
 
 	int int_matrix[8][8];
 
@@ -778,9 +775,8 @@ TEST(decl_netcdf_test, 07)
 		}
 	}
 
-	// write data & verify
-	status = PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL);
-	ASSERT_EQ(status, PDI_OK);
+	// write data
+	ASSERT_EQ(PDI_OK, PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL));
 
 	PDI_finalize();
 }
