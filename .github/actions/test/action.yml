@@ -45,7 +45,8 @@ runs:
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS="--output-junit"
-          export CTEST_DIR="/tmp"
+          export CTEST_DIR="/tmp/output_tests"
+          mkdir -p "$CTEST_DIR"
           /src/bin/build_and_run_all_tests
         EOF
         docker run \
@@ -54,10 +55,8 @@ runs:
           --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
           bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/CI_outputs.tar ./
-        then 
-          echo "with_report=true" >> "$GITHUB_OUTPUT"
-          tar -xvf CI_outputs.tar -C .
+        if docker cp "$(cat docker.cid)":/tmp/output_tests ./
+        then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
     - id: Publish
