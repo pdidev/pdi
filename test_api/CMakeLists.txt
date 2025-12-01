@@ -29,8 +29,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
-option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in"   OFF)
-option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" OFF)
+# option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in"   OFF)
+# option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" OFF)
 
 include(CTest)
 
