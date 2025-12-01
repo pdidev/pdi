@@ -153,6 +153,3 @@ cd "${TEST_DIR_API}"
 cmake -DCMAKE_PREFIX_PATH="${PDI_ROOT}/no-pdi" "${PDI_ROOT}/test_api"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR}/tests_no-pdi_api.xml ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
-
-cd "${CTEST_DIR}"
-find . -maxdepth 1 -type f -name "*.xml" -print0 | tar -cvf CI_outputs.tar --null -T -
