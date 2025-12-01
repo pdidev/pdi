@@ -28,13 +28,10 @@
 #=============================================================================
 
 # Check for available but not supported components
-set(_PDI_ALLOWED_COMPONENTS C Python Fortran)
 if(PDI_FIND_COMPONENTS)
-    foreach(component IN LISTS PDI_FIND_COMPONENTS)
-        if(NOT component IN_LIST _PDI_ALLOWED_COMPONENTS)
-            message(FATAL_ERROR
-                "no-PDI configuration: The component '${component}' is not supported. "
-                "Only the C componenent is supported.")
+    foreach(component ${PDI_FIND_COMPONENTS})
+        if(NOT component STREQUAL "C")
+            message(FATAL_ERROR "no-PDI configuration: The component '${component}' is not supported. Only the C component is supported.")
         endif()
     endforeach()
 endif()
