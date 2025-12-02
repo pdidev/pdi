@@ -42,6 +42,11 @@ cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
 
+INSTALL_DIR="${INSTALL_DIR:-${PWD}}"
+cd "${INSTALL_DIR}"
+cd "$(mktemp -d pdiinstall.XXXXX)"
+INSTALL_DIR="${PWD}"
+
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
 SRCDIR="${PWD}"
@@ -124,6 +129,11 @@ fi
 
 # Configure, build & test
 
-cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
+cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
 make ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+
+# Run cmake test
+
+make install
+cmake -DCMAKE_PREFIX_PATH="${INSTALL_DIR}/share/pdi/cmake" ${SRCDIR}/tests/test_cmake
