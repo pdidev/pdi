@@ -20,7 +20,7 @@
 # ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
 # LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 # CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DAchaTA, OR PROFITS; OR BUSINESS
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
@@ -31,22 +31,28 @@
 if(PDI_FIND_COMPONENTS)
     foreach(component ${PDI_FIND_COMPONENTS})
         if(NOT component STREQUAL "C")
-            message(FATAL_ERROR "no-PDI configuration: The component '${component}' is not supported. Only the C component is supported.")
+            message(FATAL_ERROR 
+                "no-PDI configuration: The component '${component}' is not supported. 
+                Only the C component is supported.")
         endif()
     endforeach()
 endif()
 
-add_library(PDI_C INTERFACE)
-add_library(PDI::pdi   ALIAS PDI_C)
-add_library(PDI::PDI_C ALIAS PDI_C)
+# Create the PDI_C target only once
+if(NOT TARGET PDI_C)
+    add_library(PDI_C INTERFACE)
+    add_library(PDI::pdi   ALIAS PDI_C)
+    add_library(PDI::PDI_C ALIAS PDI_C)
 
-set_target_properties(PDI_C PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../include"
-)
+    set_target_properties(PDI_C PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES 
+            "${CMAKE_CURRENT_LIST_DIR}/../include"
+    )
 
-find_package(paraconf QUIET COMPONENTS C)
+    find_package(paraconf QUIET COMPONENTS C)
 
-if("${paraconf_FOUND}")
-    target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
-    target_compile_definitions(PDI_C INTERFACE PARACONF_FOUND)
+    if("${paraconf_FOUND}")
+        target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
+        target_compile_definitions(PDI_C INTERFACE PARACONF_FOUND)
+    endif()
 endif()

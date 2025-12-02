@@ -49,17 +49,19 @@ runs:
           mkdir -p "$CTEST_DIR"
           /src/bin/build_and_run_all_tests
         EOF
+        BASENAME_CTEST_DIR="$(basename "$CTEST_DIR")"
+        echo "basename_ctest_dir=$BASENAME_CTEST_DIR" >> "$GITHUB_OUTPUT"
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
           --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
           bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/output_tests ./
+        if docker cp "$(cat docker.cid)":${CTEST_DIR} ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
     - id: Publish
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
-      with: { report_paths: 'output_tests/tests*.xml' }
+      with: { report_paths: '${{ steps.test.outputs.basename_ctest_dir }}/*.xml' }
