@@ -47,8 +47,6 @@ runs:
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS="--output-junit"
-          export CTEST_DIR="$CTEST_DIR"
-          mkdir -p /tmp_dir_test
           mkdir -p "$CTEST_DIR"
           /src/bin/build_and_run_all_tests
         EOF
@@ -56,7 +54,6 @@ runs:
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
           --tmpfs /tmp_dir_test:exec,mode=1777 \
-          -e CTEST_DIR="${{ env.CTEST_DIR }}" \
           ${{inputs.image}} \
           bash /src/run.sh
         if docker cp "$(cat docker.cid)":${{ env.CTEST_DIR }} ./
