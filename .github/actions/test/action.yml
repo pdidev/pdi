@@ -51,7 +51,7 @@ runs:
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
-          --tmpfs /tmp_dir_test:exec \
+          --tmpfs /tmp_dir_test:rw,exec \
           ${{inputs.image}} \
           bash /src/run.sh
         if docker cp "$(cat docker.cid)":/tmp/tests.xml tests.xml
