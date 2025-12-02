@@ -37,12 +37,14 @@ set -xe
 
 SRCDIR="${PWD}"
 
-TEST_DIR="${TEST_DIR:-/tmp/${PWD}}"
+TEST_DIR="${TEST_DIR:-/tmp${PWD}}"
+mkdir -p ${TEST_DIR}
 cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
 
-INSTALL_DIR="${INSTALL_DIR:-/tmp/${PWD}}"
+INSTALL_DIR="${INSTALL_DIR:-/tmp${PWD}}"
+mkdir -p ${INSTALL_DIR}
 cd "${INSTALL_DIR}"
 cd "$(mktemp -d pdiinstall.XXXXX)"
 INSTALL_DIR="${PWD}"
