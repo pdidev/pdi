@@ -54,6 +54,7 @@ runs:
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
           --tmpfs /tmp_dir_test:exec,mode=1777 \
+          -e CTEST_DIR="${{ env.CTEST_DIR }}" \
           ${{inputs.image}} \
           bash /src/run.sh
         if docker cp "$(cat docker.cid)":${{ env.CTEST_DIR }} ./
