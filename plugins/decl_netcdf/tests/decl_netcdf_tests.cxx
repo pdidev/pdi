@@ -917,10 +917,15 @@ TEST(decl_netcdf_test, deflate)
 
 	// check the deflate level of output files
 	int result;
-	result = std::system("ncdump -hs test_deflate_6.nc | grep -q '_DeflateLevel = 6'");
-	EXPECT_EQ(result, 0) << "Deflate level for test_deflate_6.nc is not 6";
-	result = std::system("ncdump -hs test_deflate_9.nc | grep -q '_DeflateLevel = 9'");
-	EXPECT_EQ(result, 0) << "Deflate level for test_deflate_9.nc is not 9";
+	result = std::system("which ncdump > /dev/null 2>&1");
+	// check the deflate level only if ncdump is available
+	if (result == 0) {
+		result = std::system("ncdump -hs test_deflate_6.nc | grep -q '_DeflateLevel = 6'");
+		EXPECT_EQ(result, 0) << "Deflate level for test_deflate_6.nc is not 6";
+		result = std::system("ncdump -hs test_deflate_9.nc | grep -q '_DeflateLevel = 9'");
+		EXPECT_EQ(result, 0) << "Deflate level for test_deflate_9.nc is not 9";
+	}
+
 
 	// read data
 	input = 1;
