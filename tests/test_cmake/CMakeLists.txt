@@ -28,9 +28,9 @@ project(pdi_cmake_tests)
 
 function(assert)
     message(STATUS "assert ${ARGV}")
-    if(NOT (${ARGV}))
+    if (NOT (${ARGV}))
         message(FATAL_ERROR "Assertion failed: ${ARGV}")
-    endif()
+    endif ()
 endfunction()
 
 
@@ -38,38 +38,39 @@ message(STATUS "Testing multiple find_package(PDI)")
 
 # 2 consecutive find_package(PDI)
 message(STATUS "+ 1st find_package")
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS C)
 assert(${PDI_FOUND} EQUAL 1)
 assert(TARGET PDI_C)
-assert(NOT TARGET PDI_python)
 assert(NOT TARGET PDI_f90)
-
+assert(NOT TARGET PDI_pysupport)
 
 message(STATUS "+ 2nd find_package")
-find_package(PDI REQUIRED)
+find_package(PDI REQUIRED COMPONENTS C)
 assert(${PDI_FOUND} EQUAL 1)
 assert(TARGET PDI_C)
-assert(NOT TARGET PDI_python)
 assert(NOT TARGET PDI_f90)
+assert(NOT TARGET PDI_pysupport)
 
-# find_package(PDI) with component
+# Add Fortran component
+message(STATUS "+ find_package with component C and Fortran")
+find_package(PDI REQUIRED COMPONENTS Fortran)
+assert(${PDI_FOUND} EQUAL 1)
+assert(TARGET PDI_C)
+assert(TARGET PDI_f90)
+assert(NOT TARGET PDI_pysupport)
+
+# Only C component
 message(STATUS "+ find_package with component C")
 find_package(PDI REQUIRED COMPONENTS C)
 assert(${PDI_FOUND} EQUAL 1)
 assert(TARGET PDI_C)
-assert(NOT TARGET PDI_python)
-assert(NOT TARGET PDI_f90)
+assert(TARGET PDI_f90)
+assert(NOT TARGET PDI_pysupport)
 
-message(STATUS "+ find_package with component C")
-find_package(PDI REQUIRED COMPONENTS C Python)
+# Add pysupport component
+message(STATUS "+ find_package with component C and python")
+find_package(PDI REQUIRED COMPONENTS pysupport)
 assert(${PDI_FOUND} EQUAL 1)
 assert(TARGET PDI_C)
-assert(TARGET PDI_python)
-assert(NOT TARGET PDI_f90)
-
-
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
+assert(TARGET PDI_f90)
+#assert(TARGET PDI_pysupport) # no python target defined
