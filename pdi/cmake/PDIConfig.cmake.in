@@ -72,11 +72,6 @@ endif()
 list(INSERT PDI_FIND_COMPONENTS 0 "C")
 
 
-message(STATUS ">>>>> PDI_FIND_COMPONENTS=${PDI_FIND_COMPONENTS}")
-
-
-
-
 # The executable
 
 if(NOT TARGET "PDI::pdirun")
