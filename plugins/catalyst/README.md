@@ -10,7 +10,7 @@ This PDI plugin pushes PDI shared data to the Catalyst 2 API. The goal is to lev
  - Configure with CMake with variables:
    * `PDI_DIR` points to `pdi/install/folder/share/pdi/cmake`
    * `paraconf_DIR` points to `pdi/install/folder/share/paraconf/cmake`
-   * `Catalyst_DIR` points to `catalyst/install/folder/lib/cmake/catalyst-2.0`
+   * `catalyst_DIR` points to `catalyst/install/folder/lib/cmake/catalyst-2.0`
    * optional: `BUILD_TESTING=ON` to build the example test
    * in case of you used vendored version of libraries during your PDI build, instead of system libraries, you may have to define additional PDI dependencies locations. For example `spdlog_DIR` CMake variable for the spdlog library.
  - Build with `make` or `ninja`
@@ -36,11 +36,24 @@ However, Catalyst requires additional semantic about meanings of the data, to ma
 The current approach is to add this semantic to the PDI Specification Tree under the `catalyst` key. See the [example file](test/pdi.yml.in) for actual implementation.
 
 PDI is very flexible about the timing of the data sharing using an advanced event mechanism, whereas Catalyst needs all data at the same point in time.
-So, the user of this plugin should set an event name referenced by the `PDI_execute_event_name` key in the yaml config, in order to trigger the call to `catalyst_execute`. Data should have been shared either before the event or during the event using the `PDI_multi_expose` function.
+So, the user of this plugin should set an event name referenced by the `on_event` key in the yaml config, in order to trigger the call to `catalyst_execute`. Data should have been shared either before the event or during the event using the `PDI_multi_expose` function.
 
 Internally, `catalyst_initialize` is called by `PDI_Init` and `catalyst_finalize` is called by `PDI_finalize`.
 
-In the specification tree, the `PDI_data` key indicates that the conduit node data should be set as external pointer to a data from the PDI data store. There is several subkeys to describe this data, like `name`, `offset`, `stride`, `multiply` to try to match every possible memory layout cases.
+
+In the sub-tree corresponding to the catalyst plugin, a double quoted value is evaluated as a string.
+
+In the specification tree, the `PDI_data_array` key indicates that the conduit node data should be set as external pointer to a data array from the PDI data store. The value of this key corresponds to the name of the data in PDI data store. There is several keys to describe this array like `size`, `offset`, `stride` to try to match every possible memory layout cases. In this case, these integers values are evaluated as conduit index type.
+
+By default other integer are evaluated as `long`. Excepted if the integer value depend on a data defined in PDI data store as `numXPoints`
+in this example:
+```yaml
+dims: { i: '$numXPoints', j: '60', k: 44 }
+```
+Be careful, if you compile conduit with 32-bits index (option `CONDUIT_INDEX_32`), you recommand to define a metadata/data for the index and pass the data as `i` in the previous example.
+
+In the case of real value, the value is evaluated as `double`. Excepted if the real value depend on a data defined in PDI data store.
+
 
 # License
 

@@ -105,40 +105,21 @@ void catalyst_plugin::RunCatalystExecute()
           case YAML_PLAIN_SCALAR_STYLE:
             // handle integer or float/double type that doesn't depend on PDI store
             {
+              std::string data_name{ PDI::to_string(current.tree) };
               PDI::Expression data_expression{ PDI::to_string(current.tree) };
               PDI::Ref_r spec_ref = data_expression.to_ref(context());
-
               auto data_type = spec_ref.type()->evaluate(context());
+
               if (auto scalar_datatype =
                     std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type))
               {
-                PDI::Scalar_kind scalar_kind = (*scalar_datatype).kind();
-                if (scalar_kind == PDI::Scalar_kind::SIGNED)
-                {
-                  current_node.set_int64(data_expression.to_long(context()));
-                }
-                else if (scalar_kind == PDI::Scalar_kind::UNSIGNED)
-                {
-                  context().logger().error("The expression {} is defined as unsigned integer.",
-                    PDI::to_string(current.tree));
-                  // context().logger().trace("The expression {} is defined with unsigned integer.
-                  // It is tranformed to signed integer.", PDI::to_string(current.tree));
-                  // current_node.set_int64(data_expression.to_long(context()));
-                }
-                else if (scalar_kind == PDI::Scalar_kind::FLOAT)
-                {
-                  current_node.set_float64(data_expression.to_double(context()));
-                }
-                else
-                {
-                  context().logger().error(
-                    "Unknown Scalar Type for variable {}", PDI::to_string(current.tree));
-                }
+                FillNodeWithScalarPDIData(
+                  conduit_cpp::c_node(&current_node), data_name, *scalar_datatype, spec_ref);
               }
               else
               {
                 context().logger().error(
-                  "Unsupported datatype for variable: {}", PDI::to_string(current.tree));
+                  "Unsupported datatype for variable: {}. It should be scalar type.", data_name);
               }
             }
             break;
@@ -239,12 +220,12 @@ void catalyst_plugin::FillNodeWithPDIDataArray(conduit_node* node, PC_tree_t tre
   auto name_spec = PC_get(tree, ".PDI_data_array");
   if (PC_status(name_spec))
   {
-    context().logger().error("No \"name\" child in PDI_data spec.");
+    context().logger().error("No \"name\" child in PDI_data_array spec.");
     return;
   }
 
-  std::string name = PDI::to_string(name_spec); // Jacques: Perhaps we need an expression if the
-                                                // users add an index for example "my_name${index}".
+  std::string name = PDI::to_string(name_spec);
+
   auto it = this->CurrentPDIData.find(name);
   if (it == this->CurrentPDIData.end())
   {
@@ -353,7 +334,6 @@ void catalyst_plugin::FillNodeWithArrayPDIData(conduit_node* node, const std::st
   PC_tree_t& tree, const PDI::Array_datatype& array_datatype, PDI::Ref_r& ref_r)
 {
   PDI::Datatype_sptr type = array_datatype.subtype();
-  // Jacques: Pourquoi une boucle While ??  Infini ??
   while (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(type))
   {
     type = array_type->subtype();
@@ -365,12 +345,24 @@ void catalyst_plugin::FillNodeWithArrayPDIData(conduit_node* node, const std::st
     return;
   }
 
-  // Jacques: il faut toujours que le .size soit defini ==> faire un test.
   conduit_index_t num_elements = 0;
   auto size_spec = PC_get(tree, ".size");
   if (PC_status(size_spec) == PC_OK)
   {
-    num_elements = GetLongValueFromSpecNode(size_spec, name);
+    if (std::is_same<conduit_index_t,long>::value)
+    {
+      num_elements = GetLongValueFromSpecNode(size_spec, name);
+    }
+    else
+    {
+      // case conduit_index_t is 32-bits
+      long tmp_num_elements = GetLongValueFromSpecNode(size_spec, name);
+      num_elements = static_cast<conduit_index_t>(tmp_num_elements);
+      if (num_elements != tmp_num_elements)
+      {
+        context().logger().error("Error in cast of a type conduit_index_t in long. {} != {}", num_elements, tmp_num_elements);
+      }
+    }
   }
   else
   {
@@ -382,16 +374,45 @@ void catalyst_plugin::FillNodeWithArrayPDIData(conduit_node* node, const std::st
   auto offset_spec = PC_get(tree, ".offset");
   if (PC_status(offset_spec) == PC_OK)
   {
-    offset = GetLongValueFromSpecNode(offset_spec, name);
+    if (std::is_same<conduit_index_t,long>::value)
+    {
+      offset = GetLongValueFromSpecNode(offset_spec, name);
+    }
+    else
+    {
+      // case conduit_index_t is 32-bits
+      long tmp_offset = GetLongValueFromSpecNode(offset_spec, name);
+      offset= static_cast<conduit_index_t>(tmp_offset);
+      if (offset != tmp_offset)
+      {
+        context().logger().error("Error in cast of a type long in conduit_index_t {} != {}", offset, tmp_offset);
+      }
+    }
   }
 
   conduit_index_t stride = 1;
   auto stride_spec = PC_get(tree, ".stride");
   if (PC_status(stride_spec) == PC_OK)
   {
-    stride = GetLongValueFromSpecNode(stride_spec, name);
+    if (std::is_same<conduit_index_t,long>::value)
+    {
+      stride = GetLongValueFromSpecNode(stride_spec, name);
+    }
+    else
+    {
+      // case conduit_index_t is 32-bits
+      long tmp_stride = GetLongValueFromSpecNode(stride_spec, name);
+      stride = static_cast<conduit_index_t>(tmp_stride);
+      if (stride != tmp_stride)
+      {
+        context().logger().error("Error in cast of a type long to conduit_index_t {} != {}", stride, tmp_stride);
+      }
+    }
   }
 
+
+
+  // computer endianness is used
   conduit_index_t endianness = CONDUIT_ENDIANNESS_DEFAULT_ID;
 
   PDI::Scalar_kind scalar_kind = scalar_datatype->kind();
@@ -519,8 +540,6 @@ long catalyst_plugin::GetLongValueFromSpecNode(PC_tree_t& spec, const std::strin
       }
       else if (scalar_kind == PDI::Scalar_kind::UNSIGNED)
       {
-        // Jacques: auto value = ref_r.scalar_value<long>();?? a utiliser en fonction du buffersize
-        // ??
         return data_expression.to_long(context());
       }
       else
