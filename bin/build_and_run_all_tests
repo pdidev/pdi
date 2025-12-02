@@ -133,4 +133,6 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $
 # Run cmake test
 
 make install
+cd /tmp
+cd "$(mktemp -d pdicmaketestdir.XXXXX)"
 cmake -DCMAKE_PREFIX_PATH="${INSTALL_DIR}/share/pdi/cmake" ${SRCDIR}/tests/test_cmake
