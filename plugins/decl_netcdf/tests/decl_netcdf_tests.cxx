@@ -808,3 +808,149 @@ TEST(decl_netcdf_test, size_of)
 
 	PDI_finalize();
 }
+
+/*
+ * Name:                decl_netcdf_test.defalte
+ *
+ * Description:         Tests simple write and read of compressed variables
+*/
+TEST(decl_netcdf_test, deflate)
+{
+	const char* CONFIG_YAML
+		= "logging: trace                                                \n"
+		  "metadata:                                                     \n"
+		  "  pb_size: int                                                \n"
+		  "  input: int                                                  \n"
+		  "  chunk: int                                                  \n"
+		  "data:                                                         \n"
+		  "  int_scalar: int                                             \n"
+		  "  int_array: {type: array, subtype: int, size: $pb_size}      \n"
+		  "  int_matrix:                                                 \n"
+		  "    type: array                                               \n"
+		  "    subtype: int                                              \n"
+		  "    size: ['$pb_size', '$pb_size']                            \n"
+		  "plugins:                                                      \n"
+		  "  decl_netcdf:                                                \n"
+		  "    - file: 'test_deflate_0.nc'                               \n"
+		  "      variables:                                              \n"
+		  "        int_scalar: int                                       \n"
+		  "        int_array:                                            \n"
+		  "          type: array                                         \n"
+		  "          subtype: int                                        \n"
+		  "          size: $pb_size                                      \n"
+		  "          dimensions: ['time']                                \n"
+		  "        int_matrix:                                           \n"
+		  "          type: array                                         \n"
+		  "          subtype: int                                        \n"
+		  "          size: ['$pb_size', '$pb_size']                      \n"
+		  "          dimensions: ['col', 'row']                          \n"
+		  "      when: '${input}=0'                                      \n"
+		  "      write: [int_scalar, int_array, int_matrix]              \n"
+		  "    - file: 'test_deflate_6.nc'                               \n"
+		  "      variables:                                              \n"
+		  "        int_scalar: int                                       \n"
+		  "        int_array:                                            \n"
+		  "          type: array                                         \n"
+		  "          subtype: int                                        \n"
+		  "          size: $pb_size                                      \n"
+		  "          dimensions: ['time']                                \n"
+		  "          deflate: 6                                          \n"
+		  "        int_matrix:                                           \n"
+		  "          type: array                                         \n"
+		  "          subtype: int                                        \n"
+		  "          size: ['$pb_size', '$pb_size']                      \n"
+		  "          dimensions: ['col', 'row']                          \n"
+		  "          deflate: 6                                          \n"
+		  "      when: '${input}=0'                                      \n"
+		  "      write: [int_scalar, int_array, int_matrix]              \n"
+		  "    - file: 'test_deflate_9.nc'                               \n"
+		  "      variables:                                              \n"
+		  "        int_scalar: int                                       \n"
+		  "        int_array:                                            \n"
+		  "          type: array                                         \n"
+		  "          subtype: int                                        \n"
+		  "          size: $pb_size                                      \n"
+		  "          dimensions: ['time']                                \n"
+		  "          deflate: 9                                          \n"
+		  "          chunking: $chunk                                    \n"
+		  "        int_matrix:                                           \n"
+		  "          type: array                                         \n"
+		  "          subtype: int                                        \n"
+		  "          size: ['$pb_size', '$pb_size']                      \n"
+		  "          dimensions: ['col', 'row']                          \n"
+		  "          deflate: 9                                          \n"
+		  "          chunking: ['$chunk', '$chunk']                      \n"
+		  "      when: '${input}=0'                                      \n"
+		  "      write: [int_scalar, int_array, int_matrix]              \n"
+		  "    - file: 'test_deflate_6.nc'                               \n"
+		  "      when: '${input}=1'                                      \n"
+		  "      read: [int_scalar, int_array, int_matrix]               \n";
+
+
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	// init data
+	int input = 0;
+	int int_scalar = 42;
+	int N = 1000;
+	int chunk = 1000;
+	int* int_array = new int[N];
+	int* int_matrix = new int[N * N];
+
+	// write data
+	for (int i = 0; i < N; i++) {
+		int_array[i] = i;
+	}
+
+	for (int i = 0; i < N * N; i++) {
+		int_matrix[i] = i;
+	}
+
+	PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("pb_size", &N, PDI_OUT);
+	PDI_expose("chunk", &chunk, PDI_OUT);
+
+	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
+	PDI_expose("int_array", int_array, PDI_OUT);
+	PDI_expose("int_matrix", int_matrix, PDI_OUT);
+
+	// check the deflate level of output files
+	int result;
+	result = std::system("ncdump -hs test_deflate_6.nc | grep -q '_DeflateLevel = 6'");
+	EXPECT_EQ(result, 0) << "Deflate level for test_deflate_6.nc is not 6";
+	result = std::system("ncdump -hs test_deflate_9.nc | grep -q '_DeflateLevel = 9'");
+	EXPECT_EQ(result, 0) << "Deflate level for test_deflate_9.nc is not 9";
+
+	// read data
+	input = 1;
+	int_scalar = 0;
+	for (int i = 0; i < N; i++) {
+		int_array[i] = 0;
+	}
+	for (int i = 0; i < N * N; i++) {
+		int_matrix[i] = 0;
+	}
+
+	PDI_expose("input", &input, PDI_OUT);
+
+	PDI_expose("int_scalar", &int_scalar, PDI_IN);
+	PDI_expose("int_array", int_array, PDI_IN);
+	PDI_expose("int_matrix", int_matrix, PDI_IN);
+
+	// verify
+	ASSERT_EQ(int_scalar, 42);
+
+	for (int i = 0; i < N; i++) {
+		ASSERT_EQ(int_array[i], i);
+	}
+
+	for (int i = 0; i < N * N; i++) {
+		ASSERT_EQ(int_matrix[i], i);
+	}
+
+	delete[] int_array;
+	delete[] int_matrix;
+
+	PDI_finalize();
+}
