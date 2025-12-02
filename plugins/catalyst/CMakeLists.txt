@@ -3,6 +3,10 @@ project(pdi_catalyst_plugin LANGUAGES C CXX)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
+
+# Python CATALYST_WRAP_FORTRAN=ON
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
 # Catalyst
 find_package(catalyst REQUIRED)
 if(NOT ${CATALYST_USE_MPI})
@@ -20,7 +24,7 @@ install(TARGETS pdi_catalyst_plugin
 )
 
 # Tests
-if(BUILD_TESTING)
+if("${BUILD_TESTING}")
     enable_testing()
     add_subdirectory(tests)
 endif()
