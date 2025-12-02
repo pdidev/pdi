@@ -21,6 +21,7 @@ target_link_libraries(TestPDICatalyst
 set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests)
 configure_file(pdi.yml.in pdi.yml)
 
+# find_package(Python3 REQUIRED COMPONENTS Interpreter Development) //To be checked when is necessary
 find_package(Python3 COMPONENTS Interpreter)
 add_test(NAME TestPDICatalyst COMMAND ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tests/run_test.py" "${CMAKE_BINARY_DIR}/tests/" "${CMAKE_SOURCE_DIR}/tests/")
 
