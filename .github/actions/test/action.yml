@@ -46,6 +46,7 @@ runs:
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS="--output-junit"
           export CTEST_DIR="/tmp_dir_test/output_tests"
+          mkdir -p /tmp_dir_test
           mkdir -p "$CTEST_DIR"
           /src/bin/build_and_run_all_tests
         EOF
