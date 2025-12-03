@@ -71,13 +71,16 @@ runs:
           ${{inputs.image}} \
           /src/run.sh
         if docker cp "$(cat docker.cid)":"${FINAL_RESULTS_DIR}" "${FINAL_RESULTS_DIR}"
-        then echo "with_report=true" >> "$GITHUB_OUTPUT"
+        then
+          echo "Fichiers copiés vers l'hôte:"
+          ls -la "${FINAL_RESULTS_DIR}"
+          echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
-        echo "=== Debugging: Files in FINAL_RESULTS_DIR ==="
-        ls -la "${FINAL_RESULTS_DIR}"
-        echo "=== Debugging: Files in CTEST_DIR ==="
-        ls -la "${CTEST_DIR}"
+        # echo "=== Debugging: Files in FINAL_RESULTS_DIR ==="
+        # ls -la "${FINAL_RESULTS_DIR}"
+        # echo "=== Debugging: Files in CTEST_DIR ==="
+        # ls -la "${CTEST_DIR}"
         rm -f docker.cid
     - id: Publish
       uses: mikepenz/action-junit-report@v4
