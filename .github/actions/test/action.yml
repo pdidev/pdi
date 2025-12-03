@@ -38,54 +38,39 @@ runs:
   steps:
     - id: test
       shell: bash
-      env:
-        CTEST_DIR: "/tmp_dir_test/output_tests"
-        FINAL_RESULTS_DIR: "./test_results"
       run: |
-        mkdir -p "${FINAL_RESULTS_DIR}"
         cat<<-'EOF' > run.sh
-          set -xe
-          JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
-          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
-          export MAKEFLAGS='-j 4'
-          export CTEST_FLAGS="--output-junit"
-          export CTEST_DIR="${CTEST_DIR}"
-          WORK_DIR="/tmp_dir_test/work"
-          mkdir -p "$WORK_DIR"
-          cd "$WORK_DIR"
+          set -ex
+          CTEST_DIR="/tmp_dir_test/output_tests"
+          FINAL_RESULTS_DIR="/container_test_results"
           mkdir -p "$(dirname "$CTEST_DIR")"
           mkdir -p "$CTEST_DIR"
+          mkdir -p "$FINAL_RESULTS_DIR"
           /src/bin/build_and_run_all_tests
-          mkdir -p "${FINAL_RESULTS_DIR}"
           if [ -d "$CTEST_DIR" ]; then
-            cp -r "$CTEST_DIR"/* "${FINAL_RESULTS_DIR}/"
+            cp -rv "$CTEST_DIR"/* "$FINAL_RESULTS_DIR/" || {
+              echo "Erreur lors de la copie des résultats"
+              exit 1
+            }
+          else
+            echo "Aucun fichier trouvé dans CTEST_DIR"
+            exit 1
           fi
         EOF
         chmod +x run.sh
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
+          -v ${PWD}/test_results:/container_test_results \
           --tmpfs /tmp_dir_test:exec,mode=1777 \
-          -e CTEST_DIR="${CTEST_DIR}" \
-          -e FINAL_RESULTS_DIR="${FINAL_RESULTS_DIR}" \
           ${{inputs.image}} \
           /src/run.sh
-        if docker cp "$(cat docker.cid)":"${FINAL_RESULTS_DIR}" "${FINAL_RESULTS_DIR}"
-        then
-          echo "Fichiers copiés vers l'hôte:"
-          ls -la "${FINAL_RESULTS_DIR}"
-          echo "with_report=true" >> "$GITHUB_OUTPUT"
-        else echo "with_report=false" >> "$GITHUB_OUTPUT"
-        fi
-        # echo "=== Debugging: Files in FINAL_RESULTS_DIR ==="
-        # ls -la "${FINAL_RESULTS_DIR}"
-        # echo "=== Debugging: Files in CTEST_DIR ==="
-        # ls -la "${CTEST_DIR}"
+        echo "Contenu du conteneur:"
+        docker exec "$(cat docker.cid)" ls -la "/container_test_results"
+        echo "with_report=true" >> "$GITHUB_OUTPUT"
         rm -f docker.cid
     - id: Publish
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true'
-      env:
-        FINAL_RESULTS_DIR: "./test_results"
       with:
-        report_paths: ${{ env.FINAL_RESULTS_DIR }}/tests*.xml
+        report_paths: test_results/tests*.xml
