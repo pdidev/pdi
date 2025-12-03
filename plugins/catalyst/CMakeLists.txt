@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024-2025 Kitware SAS
+# SPDX-FileCopyrightText: Copyright (c) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# SPDX-License-Identifier: Apache 2.0
+
 cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_catalyst_plugin LANGUAGES C CXX)
 
