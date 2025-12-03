@@ -35,12 +35,12 @@ inputs:
     description: "docker image in which to run the test"
 runs:
   using: "composite"
-  env:
-    CTEST_DIR: "/tmp_dir_test/output_tests"
-    FINAL_RESULTS_DIR: "/tmp/output_tests"
   steps:
     - id: test
       shell: bash
+      env:
+        CTEST_DIR: "/tmp_dir_test/output_tests"
+        FINAL_RESULTS_DIR: "/tmp/output_tests"
       run: |
         cat<<-'EOF' > run.sh
           set -xe
@@ -73,9 +73,18 @@ runs:
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
+        echo "=== Debugging: Files in FINAL_RESULTS_DIR ==="
+        ls -la "${FINAL_RESULTS_DIR}"
+        echo "=== Debugging: Files in CTEST_DIR ==="
+        ls -la "${CTEST_DIR}"
+        echo "=== Debugging: Files in host FINAL_RESULTS_DIR ==="
+        ls -la ./"${FINAL_RESULTS_DIR#/}"
         rm -f docker.cid
     - id: Publish
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true'
+      env:
+        CTEST_DIR: "/tmp_dir_test/output_tests"
+        FINAL_RESULTS_DIR: "/tmp/output_tests"
       with: 
         report_paths: ${{ env.FINAL_RESULTS_DIR }}/tests*.xml
