@@ -1,3 +1,8 @@
+/*
+# SPDX-FileCopyrightText: Copyright (c) 2024-2025 Kitware SAS
+# SPDX-FileCopyrightText: Copyright (c) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# SPDX-License-Identifier: Apache 2.0
+*/
 #include "pdi_catalyst_plugin.h"
 
 #include "catalyst.hpp"
@@ -409,8 +414,6 @@ void catalyst_plugin::FillNodeWithArrayPDIData(conduit_node* node, const std::st
       }
     }
   }
-
-
 
   // computer endianness is used
   conduit_index_t endianness = CONDUIT_ENDIANNESS_DEFAULT_ID;
