@@ -77,4 +77,5 @@ runs:
     - id: Publish
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true'
-      with: { report_paths: '${{ env.FINAL_RESULTS_DIR }}/tests*.xml' }
+      with: 
+        report_paths: ${{ env.FINAL_RESULTS_DIR }}/tests*.xml
