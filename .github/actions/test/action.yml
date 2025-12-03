@@ -47,6 +47,8 @@ runs:
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS="--output-junit"
+          export CTEST_DIR="${CTEST_DIR}"
+          mkdir -p "$(dirname "$CTEST_DIR")"
           mkdir -p "$CTEST_DIR"
           /src/bin/build_and_run_all_tests
         EOF
