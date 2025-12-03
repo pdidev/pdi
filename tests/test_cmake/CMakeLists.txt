@@ -34,9 +34,17 @@ function(assert)
 endfunction()
 
 
-message(STATUS "Testing multiple find_package(PDI)")
+# check subdirectory scope
+message(STATUS "+ add_subdirectory(PDI)")
+add_subdirectory(subdir)
+assert(NOT DEFINED PDI_FOUND)
+assert(NOT TARGET PDI_C)
+assert(NOT TARGET PDI_f90)
+assert(NOT TARGET PDI_pysupport)
+
 
 # 2 consecutive find_package(PDI)
+message(STATUS "Testing multiple find_package(PDI)")
 message(STATUS "+ 1st find_package")
 find_package(PDI REQUIRED COMPONENTS C)
 assert(${PDI_FOUND} EQUAL 1)
@@ -60,7 +68,7 @@ assert(TARGET PDI_f90)
 assert(NOT TARGET PDI_pysupport)
 
 # Only C component
-message(STATUS "+ find_package with component C")
+message(STATUS "+ find_package with component C. Previous components should remain.")
 find_package(PDI REQUIRED COMPONENTS C)
 assert(${PDI_FOUND} EQUAL 1)
 assert(TARGET PDI_C)

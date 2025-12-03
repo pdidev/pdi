@@ -112,7 +112,7 @@ endforeach()
 # Add aliases
 if(TARGET "PDI::PDI_C" AND NOT TARGET "PDI_C"
                        AND NOT TARGET "PDI::pdi")
-    add_library(PDI_C INTERFACE)
+    add_library(PDI_C INTERFACE IMPORTED)
     target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
     add_library(PDI::pdi ALIAS PDI_C)
 else()
@@ -122,7 +122,7 @@ endif()
 if(TARGET "PDI::PDI_f90" AND NOT TARGET "PDI_f90"
                          AND NOT TARGET "PDI::PDI_Fortran"
                          AND NOT TARGET "PDI::pdi_f90")
-	add_library(PDI_f90 INTERFACE)
+	add_library(PDI_f90 INTERFACE IMPORTED)
 	target_link_libraries(PDI_f90 INTERFACE PDI::PDI_f90)
 	add_library(PDI::PDI_Fortran ALIAS PDI_f90)
 	add_library(PDI::pdi_f90 ALIAS PDI_f90)
