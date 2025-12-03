@@ -41,6 +41,7 @@ runs:
       env:
         CTEST_DIR: "/tmp_dir_test/output_tests"
       run: |
+        mkdir -p "${{ env.CTEST_DIR }}"
         cat<<-'EOF' > run.sh
           set -xe
           JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
