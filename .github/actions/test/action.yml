@@ -38,6 +38,9 @@ runs:
   steps:
     - id: test
       shell: bash
+      env:
+        CTEST_DIR: "/tmp_dir_test/output_tests"
+        FINAL_RESULTS_DIR: "/tmp/output_tests"
       run: |
         cat<<-'EOF' > run.sh
           set -xe
@@ -45,21 +48,31 @@ runs:
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS="--output-junit"
-          export CTEST_DIR="/tmp/output_tests"
+          export CTEST_DIR="${CTEST_DIR}"
+          WORK_DIR="/tmp_dir_test/work"
+          mkdir -p "$WORK_DIR"
+          cd "$WORK_DIR"
+          mkdir -p "$(dirname "$CTEST_DIR")"
           mkdir -p "$CTEST_DIR"
           /src/bin/build_and_run_all_tests
+          mkdir -p "${FINAL_RESULTS_DIR}"
+          if [ -d "$CTEST_DIR" ]; then
+            cp -r "$CTEST_DIR"/* "${FINAL_RESULTS_DIR}/"
+          fi
         EOF
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
-          --tmpfs /tmp_dir_test:exec \
+          --tmpfs /tmp_dir_test:exec,mode=1777 \
+          -e CTEST_DIR="${{ env.CTEST_DIR }}" \
+          -e FINAL_RESULTS_DIR="${{ env.FINAL_RESULTS_DIR }}" \
           ${{inputs.image}} \
-          bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/output_tests ./
+          /src/run.sh
+        if docker cp "$(cat docker.cid)":"${{ env.FINAL_RESULTS_DIR }}" ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
     - id: Publish
       uses: mikepenz/action-junit-report@v4
-      if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
-      with: { report_paths: 'output_tests/tests*.xml' }
+      if: always() && steps.test.outputs.with_report == 'true'
+      with: { report_paths: '${{ env.FINAL_RESULTS_DIR }}/tests*.xml' }
