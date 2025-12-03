@@ -40,7 +40,7 @@ runs:
       shell: bash
       env:
         CTEST_DIR: "/tmp_dir_test/output_tests"
-        FINAL_RESULTS_DIR: "/tmp/output_tests"
+        FINAL_RESULTS_DIR: "./test_results"
       run: |
         cat<<-'EOF' > run.sh
           set -xe
@@ -65,11 +65,11 @@ runs:
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
           --tmpfs /tmp_dir_test:exec,mode=1777 \
-          -e CTEST_DIR="${{ env.CTEST_DIR }}" \
-          -e FINAL_RESULTS_DIR="${{ env.FINAL_RESULTS_DIR }}" \
+          -e CTEST_DIR="${CTEST_DIR}" \
+          -e FINAL_RESULTS_DIR="${FINAL_RESULTS_DIR}" \
           ${{inputs.image}} \
           /src/run.sh
-        if docker cp "$(cat docker.cid)":"${{ env.FINAL_RESULTS_DIR }}" ./
+        if docker cp "$(cat docker.cid)":"${FINAL_RESULTS_DIR}" ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
@@ -77,14 +77,11 @@ runs:
         ls -la "${FINAL_RESULTS_DIR}"
         echo "=== Debugging: Files in CTEST_DIR ==="
         ls -la "${CTEST_DIR}"
-        echo "=== Debugging: Files in host FINAL_RESULTS_DIR ==="
-        ls -la ./"${FINAL_RESULTS_DIR#/}"
         rm -f docker.cid
     - id: Publish
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true'
       env:
-        CTEST_DIR: "/tmp_dir_test/output_tests"
-        FINAL_RESULTS_DIR: "/tmp/output_tests"
-      with: 
+        FINAL_RESULTS_DIR: "./test_results"
+      with:
         report_paths: ${{ env.FINAL_RESULTS_DIR }}/tests*.xml
