@@ -42,6 +42,7 @@ runs:
         CTEST_DIR: "/tmp_dir_test/output_tests"
         FINAL_RESULTS_DIR: "./test_results"
       run: |
+        mkdir -p "${FINAL_RESULTS_DIR}"
         cat<<-'EOF' > run.sh
           set -xe
           JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
@@ -69,7 +70,7 @@ runs:
           -e FINAL_RESULTS_DIR="${FINAL_RESULTS_DIR}" \
           ${{inputs.image}} \
           /src/run.sh
-        if docker cp "$(cat docker.cid)":"${FINAL_RESULTS_DIR}" ./
+        if docker cp "$(cat docker.cid)":"${FINAL_RESULTS_DIR}" "${FINAL_RESULTS_DIR}"
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
