@@ -38,33 +38,28 @@ runs:
   steps:
     - id: test
       shell: bash
-      env:
-        CTEST_DIR: "/tmp_dir_test/output_tests"
       run: |
-        mkdir -p "${{ env.CTEST_DIR }}"
         cat<<-'EOF' > run.sh
           set -xe
           JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS="--output-junit"
-          export CTEST_DIR="${CTEST_DIR}"
-          mkdir -p "$(dirname "$CTEST_DIR")"
+          export CTEST_DIR="/tmp/output_tests"
           mkdir -p "$CTEST_DIR"
           /src/bin/build_and_run_all_tests
         EOF
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
-          --tmpfs /tmp_dir_test:exec,mode=1777 \
-          -e CTEST_DIR="${{ env.CTEST_DIR }}" \
+          --tmpfs /tmp_dir_test:exec \
           ${{inputs.image}} \
           bash /src/run.sh
-        if docker cp "$(cat docker.cid)":${{ env.CTEST_DIR }} ./
+        if docker cp "$(cat docker.cid)":/tmp/output_tests ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
     - id: Publish
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true' # always run even if the previous step fails
-      with: { report_paths: '${{ env.CTEST_DIR }}/tests*.xml' }
+      with: { report_paths: 'output_tests/tests*.xml' }
