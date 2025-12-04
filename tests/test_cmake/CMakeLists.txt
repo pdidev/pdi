@@ -25,6 +25,8 @@
 cmake_minimum_required(VERSION 3.16...3.29)
 project(pdi_cmake_tests)
 
+option(TEST_FORTRAN "Test Fortran component" ON)
+option(TEST_PYTHON "Test Python component" ON)
 
 function(assert)
     message(STATUS "assert ${ARGV}")
@@ -61,12 +63,14 @@ assert(NOT TARGET PDI_f90)
 assert(NOT TARGET PDI_pysupport)
 
 # Add Fortran component
-message(STATUS "+ find_package with component C and Fortran")
-find_package(PDI REQUIRED COMPONENTS Fortran)
-assert(${PDI_FOUND} EQUAL 1)
-assert(TARGET PDI_C)
-assert(TARGET PDI_f90)
-assert(NOT TARGET PDI_pysupport)
+if ("${TEST_FORTRAN}")
+    message(STATUS "+ find_package with component C and Fortran")
+    find_package(PDI REQUIRED COMPONENTS Fortran)
+    assert(${PDI_FOUND} EQUAL 1)
+    assert(TARGET PDI_C)
+    assert(TARGET PDI_f90)
+    assert(NOT TARGET PDI_pysupport)
+endif()
 
 # Only C component
 message(STATUS "+ find_package with component C. Previous components should remain.")
@@ -77,9 +81,11 @@ assert(TARGET PDI_f90)
 assert(NOT TARGET PDI_pysupport)
 
 # Add pysupport component
-message(STATUS "+ find_package with component C and python")
-find_package(PDI REQUIRED COMPONENTS pysupport)
-assert(${PDI_FOUND} EQUAL 1)
-assert(TARGET PDI_C)
-assert(TARGET PDI_f90)
-#assert(TARGET PDI_pysupport) # no python target defined
+if ("${TEST_PYTHON}")
+    message(STATUS "+ find_package with component C and python")
+    find_package(PDI REQUIRED COMPONENTS pysupport)
+    assert(${PDI_FOUND} EQUAL 1)
+    assert(TARGET PDI_C)
+    assert(TARGET PDI_f90)
+    #assert(TARGET PDI_pysupport) # no python target defined
+endif()

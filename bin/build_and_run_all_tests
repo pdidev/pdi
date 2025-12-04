@@ -122,6 +122,7 @@ then
 -DBUILD_USER_CODE_PLUGIN=ON"
 
   DYLD_LIBRARY_PATH=${INSTALL_DIR}/lib:$DYLD_LIBRARY_PATH
+  CMAKE_TEST_FLAGS="-DTEST_FORTRAN=OFF -DTEST_PYTHON=OFF"
 fi
 
 
@@ -137,4 +138,4 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $
 make install
 cd /tmp
 cd "$(mktemp -d pdicmaketestdir.XXXXX)"
-${INSTALL_DIR}/bin/pdirun cmake ${SRCDIR}/tests/test_cmake
+${INSTALL_DIR}/bin/pdirun cmake ${CMAKE_TEST_FLAGS} ${SRCDIR}/tests/test_cmake
