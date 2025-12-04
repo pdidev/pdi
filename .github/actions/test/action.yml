@@ -33,6 +33,8 @@ inputs:
   image:
     required: true
     description: "docker image in which to run the test"
+env:
+  CTEST_DIR: "/tmp/tests_output"
 runs:
   using: "composite"
   steps:
@@ -45,7 +47,7 @@ runs:
           if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
           export MAKEFLAGS='-j 4'
           export CTEST_FLAGS="--output-junit"
-          export CTEST_DIR="/tmp/tests_output"
+          export CTEST_DIR="${{ env.CTEST_DIR }}"
           export TEST_DIR="/tmp_dir_test"
           /src/bin/build_and_run_all_tests
         EOF
@@ -55,7 +57,7 @@ runs:
           --tmpfs /tmp_dir_test:exec,mode=1777 \
           ${{inputs.image}} \
           bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/tests_output ./
+        if docker cp "$(cat docker.cid)":"${{ env.CTEST_DIR }}" ./
         then echo "with_report=true" >> "$GITHUB_OUTPUT"
         else echo "with_report=false" >> "$GITHUB_OUTPUT"
         fi
@@ -63,4 +65,4 @@ runs:
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true'
       with:
-        report_paths: tests_output/tests_*.xml
+        report_paths: "${{ env.CTEST_DIR }}"/tests_*.xml
