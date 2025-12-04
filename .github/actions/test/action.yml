@@ -54,6 +54,7 @@ runs:
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
+          -e CTEST_DIR="$CTEST_DIR" \
           --tmpfs /tmp_dir_test:exec,mode=1777 \
           ${{inputs.image}} \
           bash /src/run.sh
