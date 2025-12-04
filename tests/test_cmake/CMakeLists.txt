@@ -70,15 +70,16 @@ if ("${TEST_FORTRAN}")
     assert(TARGET PDI_C)
     assert(TARGET PDI_f90)
     assert(NOT TARGET PDI_pysupport)
+
+    # Only C component
+    message(STATUS "+ find_package with component C. Previous components should remain.")
+    find_package(PDI REQUIRED COMPONENTS C)
+    assert(${PDI_FOUND} EQUAL 1)
+    assert(TARGET PDI_C)
+    assert(TARGET PDI_f90)
+    assert(NOT TARGET PDI_pysupport)
 endif()
 
-# Only C component
-message(STATUS "+ find_package with component C. Previous components should remain.")
-find_package(PDI REQUIRED COMPONENTS C)
-assert(${PDI_FOUND} EQUAL 1)
-assert(TARGET PDI_C)
-assert(TARGET PDI_f90)
-assert(NOT TARGET PDI_pysupport)
 
 # Add pysupport component
 if ("${TEST_PYTHON}")
