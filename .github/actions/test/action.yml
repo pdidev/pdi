@@ -65,4 +65,4 @@ runs:
       uses: mikepenz/action-junit-report@v4
       if: always() && steps.test.outputs.with_report == 'true'
       with:
-        report_paths: "${{ env.CTEST_DIR }}"/tests_*.xml
+        report_paths: "${{ env.CTEST_DIR }}/tests_*.xml"
