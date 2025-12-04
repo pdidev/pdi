@@ -199,7 +199,7 @@ plugins:
 |chunking      |Chunk size of the variable for chunked storage                |*optional*  |
 
 `deflate` allows you to set the compression level of a variable. It uses the native netCDF compression. Using `deflate: 0` means no compression and it is the default setting.
-When compression is enbaled, you can also set the variable's chunk size by `chunking`. If you do not specify the `chunking`, an automatic chunking will be used. The `chunking` must have the same dimension as the variable.
+When compression is enabled, you can also set the variable's chunk size by `chunking`. If you do not specify the `chunking`, an automatic chunking will be used. The `chunking` must have the same dimension as the variable.
 
 #### attribute subtree {#decl_netcdf_attr}
 
