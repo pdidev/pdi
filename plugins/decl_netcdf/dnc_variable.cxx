@@ -56,16 +56,12 @@ Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t
 	PC_tree_t deflate_node = PC_get(config, ".deflate");
 	if (!PC_status(deflate_node)) {
 		m_deflate = deflate_node;
-	} else {
-		m_deflate = NULL;
-	}
+	} 
 
 	PC_tree_t chunking_node = PC_get(config, ".chunking");
 	if (!PC_status(chunking_node)) {
 		m_chunking = chunking_node;
-	} else {
-		m_chunking = NULL;
-	}
+	} 
 }
 
 const std::string& Dnc_variable::path() const
