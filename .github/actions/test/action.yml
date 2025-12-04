@@ -63,4 +63,4 @@ runs:
       uses: mikepenz/action-junit-report@v5
       if: always() && steps.test.outputs.with_report == 'true'
       with:
-        report_paths: '/tmp/tests_output/tests_*.xml'
+        report_paths: 'tests_output/tests_*.xml'
