@@ -130,6 +130,9 @@ fi
 
 
 
+# Create directory for ctest output files.
+mkdir -p ${CTEST_DIR}
+
 # Configure, build & test for pdi, including example and test_api
 
 cd "${TEST_DIR_WITH_PDI}"
