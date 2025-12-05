@@ -1,4 +1,4 @@
-#include "Grid.h"
+#include "grid.h"
 
 #include <mpi.h>
 #include <exception>

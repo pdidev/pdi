@@ -1,6 +1,6 @@
-#include "Attributes.h"
+#include "attributes.h"
 
-#include "Grid.h"
+#include "grid.h"
 
 Attributes::Attributes(Grid* grid)
 {
