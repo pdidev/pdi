@@ -1,6 +1,6 @@
-#include "Attributes.h"
-#include "Grid.h"
-#include "PDIAdaptor.h"
+#include "attributes.h"
+#include "grid.h"
+#include "pdi_adaptor.h"
 
 #include <mpi.h>
 #include <cstdlib>
@@ -18,9 +18,9 @@ int main(int argc, char* argv[])
 		std::cerr << "expecting the pdi yaml config as argument" << std::endl;
 		return EXIT_FAILURE;
 	}
-	auto code = PDI_adaptor::initialize(std::string(argv[1]), grid);
+	auto code = pdi_adaptor::initialize(std::string(argv[1]), grid);
 	if (!code) {
-		std::cerr << "PDIAdaptor::Initialize failure" << std::endl;
+		std::cerr << "pdi_adaptor::Initialize failure" << std::endl;
 		return EXIT_FAILURE;
 	}
 
@@ -30,16 +30,16 @@ int main(int argc, char* argv[])
 		double time = time_step * 0.1;
 		attributes.update_fields(time);
 
-		code = PDI_adaptor::execute(time_step, time, grid, attributes);
+		code = pdi_adaptor::execute(time_step, time, grid, attributes);
 		if (!code) {
-			std::cerr << "PDIAdaptor::Execute failure" << std::endl;
+			std::cerr << "pdi_adaptor::Execute failure" << std::endl;
 			return EXIT_FAILURE;
 		}
 	}
 
-	code = PDI_adaptor::finalize();
+	code = pdi_adaptor::finalize();
 	if (!code) {
-		std::cerr << "PDIAdaptor::Finalize failure" << std::endl;
+		std::cerr << "pdi_adaptor::Finalize failure" << std::endl;
 		return EXIT_FAILURE;
 	}
 
