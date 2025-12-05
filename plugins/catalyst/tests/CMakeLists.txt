@@ -12,11 +12,7 @@ add_executable(TestPDICatalyst
 find_package(MPI COMPONENTS C CXX REQUIRED)
 
 target_link_libraries(TestPDICatalyst
-  PRIVATE
-    MPI::MPI_C
-    MPI::MPI_CXX
-    paraconf::paraconf
-    PDI::pdi)
+  PRIVATE PDI::PDI_C MPI::MPI_C)
 
 set(CATALYST_SCRIPT_FOLDER ${CMAKE_SOURCE_DIR}/tests)
 configure_file(pdi.yml.in pdi.yml)
