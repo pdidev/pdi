@@ -1,13 +1,13 @@
-#include "PDIAdaptor.h"
+#include "pdi_adaptor.h"
 
-#include "Attributes.h"
-#include "Grid.h"
+#include "attributes.h"
+#include "grid.h"
 
 #include <iostream>
 #include <string>
 #include <pdi.h>
 
-namespace PDI_adaptor {
+namespace pdi_adaptor {
 
 bool initialize(const std::string& pdi_yaml_config_file_path, const Grid& grid)
 {
