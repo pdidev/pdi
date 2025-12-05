@@ -512,7 +512,7 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 				}
 			}
 
-			// if no chunking is defiend, automatic chunking will be used
+			// if no chunking is defined, automatic chunking will be used
 			nc_try(
 				nc_def_var_deflate(dest_id, var_id, NC_SHUFFLE, 1, deflate_level),
 				"Cannot define deflate level of `{}' variable in (nc_id = {})",

@@ -59,7 +59,7 @@ class Dnc_variable
 	/// Compression level of this variable
 	PDI::Expression m_deflate;
 
-	/// chunking property set from yaml
+	/// Chunking property set from yaml
 	PDI::Expression m_chunking;
 
 public:
