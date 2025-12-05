@@ -13,7 +13,7 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	: Plugin{ctx}
 	, m_spec_tree(spec_tree)
 {
-	ctx.callbacks().add_init_callback([this]() { this->process_PDI_init(); });
+	ctx.callbacks().add_init_callback([this]() { this->process_pdi_init(); });
 	ctx.callbacks().add_data_callback([this](const std::string& data_name, PDI::Ref ref) { this->process_data(data_name, ref); });
 	ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_event(event_name); });
 }
@@ -23,27 +23,27 @@ catalyst_plugin::~catalyst_plugin()
 	run_catalyst_finalize();
 }
 
-void catalyst_plugin::process_PDI_init()
+void catalyst_plugin::process_pdi_init()
 {
 	this->run_catalyst_initialize();
-	this->m_PDI_execute_event_name = this->read_PDI_execute_event_name();
+	this->m_pdi_execute_event_name = this->read_pdi_execute_event_name();
 }
 
 void catalyst_plugin::process_data(const std::string& data_name, PDI::Ref ref)
 {
 	context().logger().debug("User has shared a data named {}", data_name);
-	auto it = this->m_current_PDI_data.find(data_name);
-	if (it != this->m_current_PDI_data.end()) {
+	auto it = this->m_current_pdi_data.find(data_name);
+	if (it != this->m_current_pdi_data.end()) {
 		context().logger().warn("Data named '{}' already recorded, the previous value will overwritten.", data_name);
 		it->second = ref.copy();
 	} else {
-		this->m_current_PDI_data.emplace(data_name, ref);
+		this->m_current_pdi_data.emplace(data_name, ref);
 	}
 }
 
 void catalyst_plugin::process_event(const std::string& event_name)
 {
-	if (event_name == this->m_PDI_execute_event_name) {
+	if (event_name == this->m_pdi_execute_event_name) {
 		run_catalyst_execute();
 	}
 }
@@ -103,7 +103,7 @@ void catalyst_plugin::run_catalyst_execute()
 					auto data_type = spec_ref.type()->evaluate(context());
 
 					if (auto scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type)) {
-						fill_node_with_scalar_PDI_data(conduit_cpp::c_node(&current_node), data_name, *scalar_datatype, spec_ref);
+						fill_node_with_scalar_pdi_data(conduit_cpp::c_node(&current_node), data_name, *scalar_datatype, spec_ref);
 					} else {
 						context().logger().error("Unsupported datatype for variable: {}. It should be scalar type.", data_name);
 					}
@@ -118,7 +118,7 @@ void catalyst_plugin::run_catalyst_execute()
 					auto data_type = spec_ref.type()->evaluate(context());
 
 					if (auto scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type)) {
-						fill_node_with_scalar_PDI_data(conduit_cpp::c_node(&current_node), data_name, *scalar_datatype, spec_ref);
+						fill_node_with_scalar_pdi_data(conduit_cpp::c_node(&current_node), data_name, *scalar_datatype, spec_ref);
 					} else {
 						context().logger().error("Unsupported datatype for variable: {}. It should be scalar type.", data_name);
 					}
@@ -144,7 +144,7 @@ void catalyst_plugin::run_catalyst_execute()
 			for (int i = data_tree_size - 1; i >= 0; --i) {
 				auto key = PC_get(current.tree, "{%d}", i);
 				if (PDI::to_string(key) == "PDI_data_array") {
-					this->fill_node_with_PDI_data_array(conduit_cpp::c_node(&current_node), current.tree);
+					this->fill_node_with_pdi_data_array(conduit_cpp::c_node(&current_node), current.tree);
 					pdi_data_array = true;
 					break; // break the loop
 				}
@@ -172,8 +172,8 @@ void catalyst_plugin::run_catalyst_execute()
 		context().logger().error("catalyst_execute failure");
 	}
 
-	// clear m_current_PDI_data at each iteration
-	this->m_current_PDI_data.clear();
+	// clear m_current_pdi_data at each iteration
+	this->m_current_pdi_data.clear();
 }
 
 void catalyst_plugin::run_catalyst_finalize()
@@ -186,7 +186,7 @@ void catalyst_plugin::run_catalyst_finalize()
 	}
 }
 
-void catalyst_plugin::fill_node_with_PDI_data_array(conduit_node* node, PC_tree_t tree)
+void catalyst_plugin::fill_node_with_pdi_data_array(conduit_node* node, PC_tree_t tree)
 {
 	auto name_spec = PC_get(tree, ".PDI_data_array");
 	if (PC_status(name_spec)) {
@@ -196,8 +196,8 @@ void catalyst_plugin::fill_node_with_PDI_data_array(conduit_node* node, PC_tree_
 
 	std::string name = PDI::to_string(name_spec);
 
-	auto it = this->m_current_PDI_data.find(name);
-	if (it == this->m_current_PDI_data.end()) {
+	auto it = this->m_current_pdi_data.find(name);
+	if (it == this->m_current_pdi_data.end()) {
 		context().logger().error("Can't find the PDI_data named: {}", name);
 		return;
 	}
@@ -211,13 +211,13 @@ void catalyst_plugin::fill_node_with_PDI_data_array(conduit_node* node, PC_tree_
 
 	auto data_type = ref_r.type();
 	if (auto array_datatype = std::dynamic_pointer_cast<const PDI::Array_datatype>(data_type)) {
-		fill_node_with_array_PDI_data(node, name, tree, *array_datatype, ref_r);
+		fill_node_with_array_pdi_data(node, name, tree, *array_datatype, ref_r);
 	} else {
 		context().logger().error("Unsupported datatype for variable: {}. The type should be array type.", name);
 	}
 }
 
-void catalyst_plugin::fill_node_with_scalar_PDI_data(
+void catalyst_plugin::fill_node_with_scalar_pdi_data(
 	conduit_node* node,
 	const std::string& name,
 	const PDI::Scalar_datatype& scalar_datatype,
@@ -265,7 +265,7 @@ void catalyst_plugin::fill_node_with_scalar_PDI_data(
 	}
 }
 
-void catalyst_plugin::fill_node_with_array_PDI_data(
+void catalyst_plugin::fill_node_with_array_pdi_data(
 	conduit_node* node,
 	const std::string& name,
 	PC_tree_t& tree,
@@ -503,7 +503,7 @@ long catalyst_plugin::get_long_value_from_spec_node(PC_tree_t& spec, const std::
 	return 0;
 }
 
-std::string catalyst_plugin::read_PDI_execute_event_name()
+std::string catalyst_plugin::read_pdi_execute_event_name()
 {
 	std::string event_name;
 	auto execute_spec = PC_get(this->m_spec_tree, ".on_event");
