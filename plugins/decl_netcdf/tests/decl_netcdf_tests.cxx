@@ -776,7 +776,7 @@ TEST(decl_netcdf_test, 07)
 	}
 
 	// write data
-	ASSERT_EQ(PDI_OK, PDI_multi_expose("write", "int_matrix", int_matrix, PDI_OUT, NULL));
+	ASSERT_EQ(PDI_OK, PDI_expose("write", "int_matrix", int_matrix, PDI_OUT));
 
 	PDI_finalize();
 }
