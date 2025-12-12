@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
         cxx_std: ['17']
         build_type: ['Debug']
     runs-on: ${{matrix.os}}

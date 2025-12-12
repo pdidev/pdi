@@ -189,7 +189,7 @@
 #
 #     add_test(AllTestsInFoo foo)
 
-cmake_minimum_required(VERSION 3.16...3.25)
+cmake_minimum_required(VERSION 3.22...3.28)
 
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}")
 

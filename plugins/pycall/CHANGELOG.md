@@ -33,7 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#349](https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/349)
 * Update the version of dependencies according to our policy: oldest supported
   Ubuntu & Fedora, oldstable debian & spack 0.18. The new requirements are:
-  CMake 3.16, Python 3.8, numpy 1.17, pybind11 2.4
+  CMake 3.16, Python 3.8, numpy 1.17, pybind11 2.10
   [#465](https://github.com/pdidev/pdi/issues/465)
 
 

@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.16...3.25)
+cmake_minimum_required(VERSION 3.22...3.28)
 
 include(FindPackageHandleStandardArgs)
 

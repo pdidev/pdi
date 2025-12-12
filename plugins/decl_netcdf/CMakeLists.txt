@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...3.28)
 project(pdi_decl_netcdf_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -44,7 +44,7 @@ if("${BUILD_NETCDF_PARALLEL}")
 endif()
 
 # NetCDF
-find_package(NetCDF 4.7.3 REQUIRED)
+find_package(NetCDF 4.9.2 REQUIRED)
 if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
 	message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DBUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
 endif()

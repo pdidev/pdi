@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -48,12 +48,12 @@ jobs:
     - name: Test
       uses: ./.github/actions/test/
       with: 
-        image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
+        image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v4'
   debuntu:
     strategy:
       fail-fast: false
       matrix:
-        base:    ['ubuntu/focal', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
+        base:    ['ubuntu/jammy', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
     runs-on: ubuntu-24.04
@@ -64,4 +64,4 @@ jobs:
     - name: Test
       uses: ./.github/actions/test/
       with: 
-        image: 'ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v3'
+        image: 'ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v4'

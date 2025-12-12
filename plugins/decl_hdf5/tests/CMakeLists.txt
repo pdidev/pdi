@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...3.28)
 
 if(NOT TARGET GTest::gtest)
 	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)

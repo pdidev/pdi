@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...3.28)
 project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 

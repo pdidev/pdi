@@ -8,18 +8,18 @@
 # SPDX-License-Identifier: MIT
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...3.28)
 project(pdi_deisa_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include(GNUInstallDirs)
 
-find_package(Python3 3.8.2 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
 set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-find_package(pybind11 2.4.3 REQUIRED)
+find_package(pybind11 2.10 REQUIRED)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins pysupport)

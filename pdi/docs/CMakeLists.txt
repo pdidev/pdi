@@ -27,9 +27,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...3.28)
 
-find_package(Doxygen 1.8.17 REQUIRED)
+find_package(Doxygen 1.15 REQUIRED)
 
 set(DOXYGEN_INPUT
 		"${CMAKE_CURRENT_SOURCE_DIR}/About.md"

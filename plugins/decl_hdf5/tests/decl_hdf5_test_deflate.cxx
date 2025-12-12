@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,25 @@
 #include <unistd.h>
 #include <pdi.h>
 
+bool get_deflate_level(hid_t plist_id, unsigned int& level)
+{
+	int nfilters = H5Pget_nfilters(plist_id);
+	for (int i = 0; i < nfilters; i++) {
+		size_t nelmts = 1;
+		unsigned int cd_value = 0;
+
+		H5Z_filter_t filter = H5Pget_filter2(plist_id, i, nullptr, &nelmts, &cd_value, 0, nullptr, nullptr);
+
+		if (filter == H5Z_FILTER_DEFLATE) {
+			if (nelmts == 1) {
+				level = cd_value;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 TEST(decl_hdf5_deflate, no_deflate)
 {
 	const char* CONFIG_YAML
@@ -52,21 +71,16 @@ TEST(decl_hdf5_deflate, no_deflate)
 	size_t N = 1000;
 	PDI_expose("pb_size", &N, PDI_OUT);
 
-	double** matrix_data = new double*[N];
-	for (int i = 0; i < N; i++) {
-		matrix_data[i] = new double[N];
-		for (int j = 0; j < N; j++) {
-			matrix_data[i][j] = N * i + j;
+	std::vector<double> matrix_data(N * N);
+	for (size_t i = 0; i < N; i++) {
+		for (size_t j = 0; j < N; j++) {
+			matrix_data[i * N + j] = N * i + j;
 		}
 	}
-	PDI_expose("matrix_data", matrix_data, PDI_OUT);
+	PDI_expose("matrix_data", matrix_data.data(), PDI_OUT);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-
-	for (int i = 0; i < N; i++)
-		delete[] matrix_data[i];
-	delete[] matrix_data;
 
 	hid_t file_id, dataset_id, plist_id;
 	herr_t status;
@@ -78,9 +92,10 @@ TEST(decl_hdf5_deflate, no_deflate)
 	dataset_id = H5Dopen2(file_id, "matrix_data", H5P_DEFAULT);
 	plist_id = H5Dget_create_plist(dataset_id);
 
-	status = H5Pget_filter_by_id2(plist_id, H5Z_FILTER_DEFLATE, NULL, &cd_nelmts, &compression_level, 0, NULL, NULL);
+	unsigned int level = 0;
+	bool has_deflate = get_deflate_level(plist_id, level);
 
-	ASSERT_LT(status, 0);
+	ASSERT_FALSE(has_deflate);
 
 	H5Pclose(plist_id);
 	H5Dclose(dataset_id);
@@ -112,21 +127,16 @@ TEST(decl_hdf5_deflate, deflate_level1)
 	size_t N = 1000;
 	PDI_expose("pb_size", &N, PDI_OUT);
 
-	double** matrix_data = new double*[N];
-	for (int i = 0; i < N; i++) {
-		matrix_data[i] = new double[N];
-		for (int j = 0; j < N; j++) {
-			matrix_data[i][j] = N * i + j;
+	std::vector<double> matrix_data(N * N);
+	for (size_t i = 0; i < N; i++) {
+		for (size_t j = 0; j < N; j++) {
+			matrix_data[i * N + j] = N * i + j;
 		}
 	}
-	PDI_expose("matrix_data", matrix_data, PDI_OUT);
+	PDI_expose("matrix_data", matrix_data.data(), PDI_OUT);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-
-	for (int i = 0; i < N; i++)
-		delete[] matrix_data[i];
-	delete[] matrix_data;
 
 	hid_t file_id, dataset_id, plist_id;
 	herr_t status;
@@ -138,9 +148,11 @@ TEST(decl_hdf5_deflate, deflate_level1)
 	dataset_id = H5Dopen2(file_id, "matrix_data", H5P_DEFAULT);
 	plist_id = H5Dget_create_plist(dataset_id);
 
-	status = H5Pget_filter_by_id2(plist_id, H5Z_FILTER_DEFLATE, NULL, &cd_nelmts, &compression_level, 0, NULL, NULL);
+	unsigned int level = 0;
+	bool has_deflate = get_deflate_level(plist_id, level);
 
-	ASSERT_EQ(compression_level, 1);
+	ASSERT_TRUE(has_deflate);
+	ASSERT_EQ(level, 1);
 
 	H5Pclose(plist_id);
 	H5Dclose(dataset_id);
@@ -172,21 +184,16 @@ TEST(decl_hdf5_deflate, deflate_level2)
 	size_t N = 1000;
 	PDI_expose("pb_size", &N, PDI_OUT);
 
-	double** matrix_data = new double*[N];
-	for (int i = 0; i < N; i++) {
-		matrix_data[i] = new double[N];
-		for (int j = 0; j < N; j++) {
-			matrix_data[i][j] = N * i + j;
+	std::vector<double> matrix_data(N * N);
+	for (size_t i = 0; i < N; i++) {
+		for (size_t j = 0; j < N; j++) {
+			matrix_data[i * N + j] = N * i + j;
 		}
 	}
-	PDI_expose("matrix_data", matrix_data, PDI_OUT);
+	PDI_expose("matrix_data", matrix_data.data(), PDI_OUT);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-
-	for (int i = 0; i < N; i++)
-		delete[] matrix_data[i];
-	delete[] matrix_data;
 
 	hid_t file_id, dataset_id, plist_id;
 	herr_t status;
@@ -198,9 +205,11 @@ TEST(decl_hdf5_deflate, deflate_level2)
 	dataset_id = H5Dopen2(file_id, "matrix_data", H5P_DEFAULT);
 	plist_id = H5Dget_create_plist(dataset_id);
 
-	status = H5Pget_filter_by_id2(plist_id, H5Z_FILTER_DEFLATE, NULL, &cd_nelmts, &compression_level, 0, NULL, NULL);
+	unsigned int level = 0;
+	bool has_deflate = get_deflate_level(plist_id, level);
 
-	ASSERT_EQ(compression_level, 2);
+	ASSERT_TRUE(has_deflate);
+	ASSERT_EQ(level, 2);
 
 	H5Pclose(plist_id);
 	H5Dclose(dataset_id);
@@ -232,21 +241,16 @@ TEST(decl_hdf5_deflate, deflate_level9)
 	size_t N = 1000;
 	PDI_expose("pb_size", &N, PDI_OUT);
 
-	double** matrix_data = new double*[N];
-	for (int i = 0; i < N; i++) {
-		matrix_data[i] = new double[N];
-		for (int j = 0; j < N; j++) {
-			matrix_data[i][j] = N * i + j;
+	std::vector<double> matrix_data(N * N);
+	for (size_t i = 0; i < N; i++) {
+		for (size_t j = 0; j < N; j++) {
+			matrix_data[i * N + j] = N * i + j;
 		}
 	}
-	PDI_expose("matrix_data", matrix_data, PDI_OUT);
+	PDI_expose("matrix_data", matrix_data.data(), PDI_OUT);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
-
-	for (int i = 0; i < N; i++)
-		delete[] matrix_data[i];
-	delete[] matrix_data;
 
 	hid_t file_id, dataset_id, plist_id;
 	herr_t status;
@@ -258,9 +262,11 @@ TEST(decl_hdf5_deflate, deflate_level9)
 	dataset_id = H5Dopen2(file_id, "matrix_data", H5P_DEFAULT);
 	plist_id = H5Dget_create_plist(dataset_id);
 
-	status = H5Pget_filter_by_id2(plist_id, H5Z_FILTER_DEFLATE, NULL, &cd_nelmts, &compression_level, 0, NULL, NULL);
+	unsigned int level = 0;
+	bool has_deflate = get_deflate_level(plist_id, level);
 
-	ASSERT_EQ(compression_level, 9);
+	ASSERT_TRUE(has_deflate);
+	ASSERT_EQ(level, 9);
 
 	H5Pclose(plist_id);
 	H5Dclose(dataset_id);

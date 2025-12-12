@@ -15,6 +15,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   trace plugins [#556](https://github.com/pdidev/pdi/issues/556)
 
 ### Changed
+* Update the version of dependencies according to our policy: oldest supported non-EOL
+  Ubuntu (22.04 Jammy Jellyfish), oldstable Debian & Spack 0.19. The new requirements are:
+  CMake 3.22...3.28, NetCDF 4.9.2 (from 4.7.3), Python 3.10, mpi4py 3.1, numpy 1.21, pybind11 2.10,
+  HDF5 1.14.3
+  For reference, the others requirements are kept :
+  JSON 3.11.4, libyaml 0.2.5, spdlog 1.14.1, ZPP 1.0.16
+  [#613](https://github.com/pdidev/pdi/issues/613)
 
 ### Deprecated
 

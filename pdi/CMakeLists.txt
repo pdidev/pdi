@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...3.28)
 project(PDI LANGUAGES CXX C)
 list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
@@ -110,10 +110,10 @@ endif()
 find_package(paraconf 1.0.0 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
 find_package(spdlog 1.5.0 REQUIRED) # must match PDIConfig.cmake.in
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter Development)
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-	find_package(pybind11 2.4.3 REQUIRED) # must match PDIConfig.cmake.in
+	find_package(pybind11 2.10 REQUIRED) # must match PDIConfig.cmake.in
 endif()
 if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
 	add_subdirectory("../vendor/zpp-1.1.0/" "zpp")

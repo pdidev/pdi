@@ -31,7 +31,7 @@
 
 ### Project header
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...3.28)
 project(PDI_DIST LANGUAGES C CXX)
 
 
@@ -214,9 +214,9 @@ endif()
 ## Python3
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter)
 endif()
 
 
@@ -266,7 +266,7 @@ sbuild_add_dependency(yaml "${USE_DEFAULT}"
 		"-DINSTALL_INCLUDE_DIR:STRING=${CMAKE_INSTALL_INCLUDEDIR}"
 		"-DINSTALL_CMAKE_DIR:STRING=share/yaml/cmake"
 		"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5" # needed until upstream libyaml is updated (https://github.com/yaml/libyaml/pull/314)
-	VERSION 0.2.2
+	VERSION 0.2.5
 )
 
 
@@ -301,14 +301,14 @@ sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
 		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
 		"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
-	VERSION 1.5.0
+	VERSION 1.14.1
 )
 
 
 ## Doxygen
 
 if("${BUILD_DOCUMENTATION}")
-	find_package(Doxygen 1.8.17 REQUIRED OPTIONAL_COMPONENTS dot)
+	find_package(Doxygen 1.15 REQUIRED OPTIONAL_COMPONENTS dot)
 endif()
 
 
@@ -416,7 +416,7 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 			-DENABLE_EXAMPLES:BOOL=OFF
 			-DENABLE_FILTER_TESTING:BOOL=OFF
 			-DENABLE_TESTS:BOOL=OFF
-		VERSION 4.7.3
+		VERSION 4.9.2
 	)
 	if("${NETCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
@@ -443,7 +443,7 @@ if("${BUILD_PYTHON}")
 			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
-		VERSION 2.4.3
+		VERSION 2.10
 	)
 endif()
 

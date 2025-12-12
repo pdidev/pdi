@@ -196,7 +196,7 @@ Dependencies of **the Decl'HDF5 plugin**:
 Dependencies of **the Decl'NetCDF plugin**:
 
 * the PDI library,
-* the [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) library version 4.7.3 or above (provided),
+* the [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) library version 4.9.2 or above (provided),
 * the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.10.4 or above (provided),
 * **a MPI implementation for the parallel version of the plugin (not provided)**, such as
   - [openmpi](https://www.open-mpi.org/) 4.0 or above,
