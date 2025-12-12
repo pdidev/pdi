@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ includes:
 
 #]==]
 
-cmake_minimum_required(VERSION 3.16...3.25)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 set(_NetCDF_features_list CDF5 DAP DAP2 DAP4 DISKLESS HDF4 HDF5 JNA MMAP NC2 NC4 PARALLEL PARALLEL4 PNETCDF)
 
@@ -366,9 +366,9 @@ if("${NetCDF_FOUND}")
 		if("PARALLEL4" IN_LIST NetCDF_FEATURES)
 			set(HDF5_PREFER_PARALLEL ON)
 		endif()
-		find_package(HDF5 REQUIRED COMPONENTS C)
-		if("${HDF5_VERSION}" VERSION_LESS "1.8.0")
-			message(ERROR "HDF5 version 1.8.0 at least required by NetCDF, HDF5 ${HDF5_VERSION} found.")
+		find_package(HDF5 REQUIRED COMPONENTS C HL)
+		if("${HDF5_VERSION}" VERSION_LESS 1.10)
+			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
 		if("PARALLEL4" IN_LIST NetCDF_FEATURES AND NOT "${HDF5_IS_PARALLEL}")
 			message(ERROR "Parallel HDF5 required by NetCDF, sequential HDF5 only found.")

@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2023-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2023-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,8 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_json_plugin LANGUAGES C CXX)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # Includes
 include(CTest)
@@ -32,7 +31,7 @@ include(GNUInstallDirs)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
-find_package(nlohmann_json 3.9.1 REQUIRED)
+find_package(nlohmann_json 3.9 REQUIRED)
 
 # The plugin
 add_library(pdi_json_plugin MODULE json.cxx)

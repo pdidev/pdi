@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 if(NOT TARGET GTest::gtest)
 	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)

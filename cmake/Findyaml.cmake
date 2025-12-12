@@ -1,6 +1,6 @@
 #--------------------------------------------------------------------------------
 # Copyright (c) 2012-2013, Lars Baehren <lbaehren@gmail.com>
-# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #--------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.16...3.25)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 # - Check for the presence of libyaml
 #
@@ -43,6 +43,9 @@ function(_yaml_Find_Config)
 		mark_as_advanced(yaml_DIR)
 	else()
 		unset(yaml_DIR CACHE)
+		if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
+			message(DEBUG "Yaml not found through config")
+		endif()
 	endif()
 endfunction(_yaml_Find_Config)
 
@@ -52,6 +55,10 @@ function(_yaml_Find_Cache)
 		set_target_properties(yaml PROPERTIES
 				IMPORTED_LOCATION ${yaml_LIBRARIES}
 				INTERFACE_INCLUDE_DIRECTORIES "${yaml_INCLUDE_DIRS}")
+	else()
+		if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
+			message(DEBUG "Yaml not found through cache")
+		endif()
 	endif()
 endfunction(_yaml_Find_Cache)
 
@@ -73,6 +80,10 @@ function(_yaml_Find_Pkgconfig)
 		if("${yamlpkg_FOUND}")
 			pkg_get_variable(yamlpkg_INCLUDEDIR ${PKGCFG_NAME} includedir)
 			break()
+		else()
+			if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
+				message(DEBUG "Yaml not found as ${PKGCFG_NAME} through pkgconfig")
+			endif()
 		endif()
 		unset(yamlpkg_FOUND CACHE)
 		unset(yamlpkg_FOUND)
@@ -101,6 +112,10 @@ function(_yaml_Find_Pkgconfig)
 			else()
 				unset(yaml_VERSION PARENT_SCOPE)
 			endif()
+		endif()
+	elseif("${yamlpkg_FOUND}")
+		if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
+			message(DEBUG "Yaml version invalid, yaml_FIND_VERSION=${yaml_FIND_VERSION} but yamlpkg_VERSION=${yamlpkg_VERSION}")
 		endif()
 	endif()
 endfunction(_yaml_Find_Pkgconfig)

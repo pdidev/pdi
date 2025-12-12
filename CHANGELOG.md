@@ -14,6 +14,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
 
 ### Changed
+* Update the version of dependencies according to our policy: oldest supported
+  Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
+  CMake 3.22, Doxygen 1.9.1, HDF5 1.10.7, mpi4py 3.1.3, NetCDF 4.8.1,
+  numpy 1.21.5, pyyaml 5.4.1, pybind11 2.9.1, Python 3.10.6, and spdlog 1.9.2
+  [#613](https://github.com/pdidev/pdi/issues/613)
 
 ### Deprecated
 

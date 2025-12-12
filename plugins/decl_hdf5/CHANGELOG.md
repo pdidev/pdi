@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#627](https://github.com/pdidev/pdi/issues/627)
 
 ### Changed
+* Update the version of dependencies according to our policy: oldest supported
+  Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
+  CMake 3.22, and HDF5 1.10.7 [#613](https://github.com/pdidev/pdi/issues/613)
 
 ### Deprecated
 

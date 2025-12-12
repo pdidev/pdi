@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,8 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.16...3.25)
-
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}")
+cmake_policy(PUSH)
+cmake_policy(VERSION 3.22...4.2)
 
 function(get_default_kind TYPE DEFAULT_KIND_VAR)
 	if(DEFINED "${DEFAULT_KIND_VAR}")
@@ -66,3 +65,5 @@ end program test_kind${TYPE}
 	mark_as_advanced("${DEFAULT_KIND_VAR}")
 	message(STATUS "Checking default Fortran kind for ${TYPE} -- ${${DEFAULT_KIND_VAR}}")
 endfunction()
+
+cmake_policy(POP)

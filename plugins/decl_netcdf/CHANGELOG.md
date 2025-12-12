@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+* Update the version of dependencies according to our policy: oldest supported
+  Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
+  CMake 3.22, and NetCDF 4.8.1 [#613](https://github.com/pdidev/pdi/issues/613)
 
 ### Deprecated
 
@@ -16,7 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 * Fixed a error incorrectly raised when using the scalar format in yaml write
-  configuration [#TODO](https://github.com/pdidev/pdi/issues/TODO)
+  configuration [#636](https://github.com/pdidev/pdi/issues/636)
 
 ### Security
 
