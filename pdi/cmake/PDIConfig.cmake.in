@@ -79,7 +79,7 @@ if(NOT TARGET "PDI::pdirun")
     add_executable(PDI::pdirun IMPORTED)
     set_target_properties(PDI::pdirun PROPERTIES IMPORTED_LOCATION "${PDI_pdirun_EXECUTABLE}")
 else()
-    message(WARNING "Target PDI::pdirun is already defined. Skipping.")
+    message("Target PDI::pdirun is already defined. Skipping.")
 endif()
 
 # The other targets
@@ -123,7 +123,7 @@ if(TARGET "PDI::PDI_C" AND NOT TARGET "PDI_C"
     target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
     add_library(PDI::pdi ALIAS PDI_C)
 else()
-    message(WARNING "Target PDI_C is already defined. Skipping.")
+    message("Target PDI_C is already defined. Skipping.")
 endif()
 
 if(TARGET "PDI::PDI_f90" AND NOT TARGET "PDI_f90"
@@ -141,7 +141,7 @@ if(TARGET "PDI::PDI_f90" AND NOT TARGET "PDI_f90"
 	add_library(PDI::PDI_Fortran ALIAS PDI_f90)
 	add_library(PDI::pdi_f90 ALIAS PDI_f90)
 else()
-    message(WARNING "Target PDI_f90 is already defined. Skipping.")
+    message("Target PDI_f90 is already defined. Skipping.")
 endif()
 
 
