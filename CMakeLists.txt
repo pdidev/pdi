@@ -85,7 +85,7 @@ option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
 
 ### Default build type
 
-if(NOT "${CMAKE_BUILD_TYPE}")
+if(NOT DEFINED CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build, options are: None Debug Release(default) RelWithDebInfo MinSizeRel ..." FORCE)
 endif()
 message(STATUS " **Profile**: Distribution profile is: `${DIST_PROFILE}' (-DDIST_PROFILE=${DIST_PROFILE})")
