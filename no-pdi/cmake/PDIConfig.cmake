@@ -28,7 +28,7 @@
 #=============================================================================
 
 # Check for available but not supported components
-if(PDI_FIND_COMPONENTS)
+if(DEFINED PDI_FIND_COMPONENTS)
     foreach(component ${PDI_FIND_COMPONENTS})
         if(NOT component STREQUAL "C")
             message(FATAL_ERROR 
@@ -49,7 +49,9 @@ if(NOT TARGET PDI_C)
             "${CMAKE_CURRENT_LIST_DIR}/../include"
     )
 
-    find_package(paraconf QUIET COMPONENTS C)
+    if(NOT TARGET paraconf::paraconf)
+        find_package(paraconf QUIET COMPONENTS C)
+    endif()
 
     if("${paraconf_FOUND}")
         target_link_libraries(PDI_C INTERFACE paraconf::paraconf)
