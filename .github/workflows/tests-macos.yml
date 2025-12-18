@@ -52,6 +52,7 @@ jobs:
       PDI_SYSTEM: macos
       PDI_COMPILER: clang
       PDI_MPI: openmpi
+      CTEST_DIR: "/tmp/tests_output"
     steps:
     - run: brew install open-mpi
     - uses: actions/checkout@v4
