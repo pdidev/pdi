@@ -1,5 +1,5 @@
 \page deisa_plugin Deisa plugin
-# The DEISA plugin {#deisa_plugin}
+# The DEISA plugin
 
 **WARNING** This documentation is a work in progress and does not reflect the full DEISA plugin potential.
 
@@ -25,7 +25,7 @@ The DEISA plugin uses the following configuration:
 
 # Example: A 2D MPI space with ghost cells.
 
-```yaml
+@code{.yaml}
 metadata:
   nx: int               # Domain size per proc
   ny: int               # Domain size per proc
@@ -53,4 +53,4 @@ plugins:
         +timedim: 0
     map_in: 
       main_field: global_t            # 'main_field' is mapped to 'global_t'
-```
+@endcode

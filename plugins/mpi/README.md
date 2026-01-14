@@ -1,5 +1,5 @@
 \page mpi_plugin MPI plugin
-# The MPI plugin {#mpi_plugin}
+# The MPI plugin
 
 **WARNING** This documentation is a work in progress and does not reflect the
 full MPI plugin potential.

@@ -1,5 +1,5 @@
 \page PDI_example PDI example
-# %PDI examples {#PDI_example}
+# %PDI examples
 
 The example is made of a single source file (one version in each supported
 programming language), this file loads its configuration and %PDI specification

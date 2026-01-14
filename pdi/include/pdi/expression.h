@@ -119,7 +119,11 @@ public:
 	 */
 	Expression& operator= (Expression&& expr);
 
-	/// \copydoc PDI::Expression::operator+
+	/** Summation operator of an expression
+	 *
+	 * \param[in] expr the expression to add
+	 * \return Expression as a result of sum
+	 */
 	Expression operator+ (const Expression& expr) const;
 
 	/** Multiplication operator of an expression

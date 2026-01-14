@@ -1,5 +1,5 @@
 \page set_value_plugin Set Value plugin
-# Set_value plugin {#set_value_plugin}
+# Set_value plugin
 
 The Set_value plugin allows setting values to data and metadata descriptors from
 the yaml file.

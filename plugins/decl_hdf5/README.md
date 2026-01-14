@@ -1,5 +1,5 @@
 \page Decl_HDF5_plugin Decl'HDF5 plugin
-# The Decl'HDF5 plugin {#Decl_HDF5_plugin}
+# The Decl'HDF5 plugin
 
 **WARNING** This documentation is a work in progress and does not reflect the
 full Decl'HDF5 potential.
