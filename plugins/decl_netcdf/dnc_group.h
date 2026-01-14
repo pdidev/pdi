@@ -50,6 +50,7 @@ public:
 	/** Creates a NetCDF group information from yaml
 	 *
 	 * \param ctx Context of this group
+	 * \param path File name of the netCDF dataset
 	 * \param config (optional) config with group attributes
 	 */
 	Dnc_group(PDI::Context& ctx, const std::string& path, PC_tree_t config = {});

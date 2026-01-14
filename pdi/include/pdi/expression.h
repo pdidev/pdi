@@ -114,16 +114,12 @@ public:
 
 	/** Moves an expression
 	 *
-	 * \param[in] expr the expression to move`
+	 * \param[in] expr the expression to move
 	 * \return *this
 	 */
 	Expression& operator= (Expression&& expr);
 
-	/** Summation operator of an expression
-	 *
-	 * \param[in] expr the expression to add
-	 * \return Expression as a result of sum
-	 */
+	/// \copydoc PDI::Expression::operator+
 	Expression operator+ (const Expression& expr) const;
 
 	/** Multiplication operator of an expression

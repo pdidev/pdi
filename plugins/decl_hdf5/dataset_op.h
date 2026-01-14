@@ -127,6 +127,7 @@ public:
 	 * \param name the value name
 	 * \param default_when the default "when" clause as read from the file level (optional)
 	 * \param tree the configuration tree
+	 * \param collision_policy the collision policy string
 	 */
 	Dataset_op(
 		Direction dir,

@@ -60,6 +60,7 @@ public:
 	/** Creates NetCDF variable information from yaml
 	 *
 	 * \param ctx Context of this variable
+	 * \param path File name of the netCDF dataset
 	 * \param config Configuration node of this variable
 	 */
 	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config);
