@@ -1,3 +1,4 @@
+\page deisa_plugin Deisa plugin
 # The DEISA plugin {#deisa_plugin}
 
 **WARNING** This documentation is a work in progress and does not reflect the full DEISA plugin potential.
@@ -51,5 +52,5 @@ plugins:
         start: [$nstep, '$mpi_coords_x*($nx+2)', '$mpi_coords_y*($ny+2)']
         +timedim: 0
     map_in: 
-      main_field: global_t            # `main_field` is mapped to `global_t`
+      main_field: global_t            # 'main_field' is mapped to 'global_t'
 ```

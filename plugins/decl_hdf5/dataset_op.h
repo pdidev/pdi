@@ -119,6 +119,7 @@ public:
 	 * \param dir the operation direction
 	 * \param name the value name
 	 * \param default_when the default "when" clause as read from the file level (optional)
+	 * \param file_collision_policy the collision policy string
 	 */
 	Dataset_op(Direction dir, std::string name, PDI::Expression default_when, Collision_policy file_collision_policy = Collision_policy::WRITE_INTO);
 	/** Builds a Dataset_op from its yaml config

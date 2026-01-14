@@ -1,3 +1,4 @@
+\page serialize_plugin Serialize plugin
 # Serialize plugin {#serialize_plugin}
 
 Serialize plugin allows to serialize shared data. The plugin will convert all

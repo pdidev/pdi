@@ -1,3 +1,4 @@
+\page Decl_NetCDF_plugin Decl'NetCDF plugin
 # The Decl'NetCDF plugin {#Decl_NetCDF_plugin}
 
 The Decl'NetCDF plugin was created to read from and write to NetCDF files in a declarative way.

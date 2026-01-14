@@ -110,7 +110,7 @@ public:
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (dense data)
 	 * \param[in] from the pointer to the copied data (size of buffersize)
-	 * \return updated to pointer
+	 * \return updated 'to' pointer
 	 */
 	virtual void* data_to_dense_copy(void* to, const void* from) const = 0;
 
@@ -118,7 +118,7 @@ public:
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (size of buffersize)
 	 * \param[in] from the pointer to the copied data (dense data)
-	 * \return updated to pointer
+	 * \return updated 'to' pointer
 	 */
 	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
 

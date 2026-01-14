@@ -1,3 +1,4 @@
+\page user_code_plugin user-code plugin
 # The user-code plugin {#user_code_plugin}
 
 The `user-code` plugin enables one to call a user-defined function 

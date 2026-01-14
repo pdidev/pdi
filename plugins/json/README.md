@@ -1,3 +1,4 @@
+\page JSON_plugin JSON plugin
 # JSON plugin {#JSON_plugin}
 
 **WARNING** This documentation is a work in progress and does not 

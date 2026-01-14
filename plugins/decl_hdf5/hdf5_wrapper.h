@@ -148,7 +148,7 @@ Raii_hid make_raii_hid(hid_t value, Destroyer&& dst, const char* message = NULL)
 /** builds a HDF5 dataspace that represents a PDI Datatype
  *
  * \param type the datatype to represent in HDF5
- * \param select whether to create a dense type instead of a type with a selection
+ * \param dense whether to create a dense type instead of a type with a selection
  * \return a tuple containing the Raii_hid for (dataspace, datatype)
  */
 std::tuple<Raii_hid, Raii_hid> space(PDI::Datatype_sptr type, bool dense = false);

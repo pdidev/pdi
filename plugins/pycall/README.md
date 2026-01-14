@@ -1,3 +1,4 @@
+\page pycall_plugin Pycall plugin
 # Pycall plugin {#pycall_plugin}
 
 The Pycall plugin allows calling python scripts from yaml file, that can work either if wanted data was shared or program calls specific event.

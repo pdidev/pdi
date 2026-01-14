@@ -1,3 +1,4 @@
+\page trace_plugin Trace plugin
 # Trace plugin {#trace_plugin}
 
 The trace plugin is intended to generate a trace of what happens in 
