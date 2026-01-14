@@ -43,7 +43,6 @@ protected:
 public:
 	/** Creates operation
      * \param[in] ctx context of the operation
-     * \param[in] release_value_node yaml config tree of operation
      */
 	Operation(PDI::Context& ctx);
 
