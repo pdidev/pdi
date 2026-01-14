@@ -7,17 +7,17 @@ The DEISA plugin is used to expose data to [Dask](https://www.dask.org/).
 This mechanism decouples analytics code from simulation code by providing an asynchronous pipeline for analytics.
 
 The DEISA plugin uses the following configuration:
-- `scheduler_info`: File name defined by the dask scheduler. This file contains information on how to connect to the dask cluster.
-- `init_on`: Name of the PDI event called after sharing all metadata.
-- `time_step`: Timestep variable.
-- `deisa_arrays`: List of Deisa virtual arrays.
-  - `type`: Type of the Deisa array. Usually: `array`.
-  - `subtype`: Type stored in the `Deisa array.
-  - `size`: Size of the Deisa array.
-  - `subsize`: How the Deisa array is chunked. In other words, the size of each chunk.
-  - `start`: How to find the start of each chunk.
-  - `+timedim`: Define where the time dimension is. Currently, only dimension 0 is supported.
-- `map_in`: Define how a local data is mapped to a Deisa array.
+- 'scheduler_info': File name defined by the dask scheduler. This file contains information on how to connect to the dask cluster.
+- 'init_on': Name of the PDI event called after sharing all metadata.
+- 'time_step': Timestep variable.
+- 'deisa_arrays': List of Deisa virtual arrays.
+  - 'type': Type of the Deisa array. Usually: 'array'.
+  - 'subtype': Type stored in the 'Deisa array.
+  - 'size': Size of the Deisa array.
+  - 'subsize': How the Deisa array is chunked. In other words, the size of each chunk.
+  - 'start': How to find the start of each chunk.
+  - '+timedim': Define where the time dimension is. Currently, only dimension 0 is supported.
+- 'map_in': Define how a local data is mapped to a Deisa array.
 
 
 ---
