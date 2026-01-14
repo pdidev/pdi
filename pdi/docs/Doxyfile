@@ -130,11 +130,12 @@ WARN_AS_ERROR          = NO
 WARN_FORMAT            = "$file:$line: $text"
 WARN_LINE_FORMAT       = at line $line of file $file
 WARN_LOGFILE           = 
-INPUT                  = @DOXYGEN_INPUT_SP@
+INPUT                  = @DOXYGEN_INPUT_SP@ \
+                         ../../plugins
 INPUT_ENCODING         = UTF-8
 INPUT_FILE_ENCODING    = 
 FILE_PATTERNS          = *.c *.cc *.cxx *.cxxm *.cpp *.cppm *.c++ *.c++m *.java *.ii *.ixx *.ipp *.i++ *.inl *.idl *.ddl *.odl *.h *.hh *.hxx *.hpp *.h++ *.ixx *.l *.cs *.d *.php *.php4 *.php5 *.phtml *.inc *.m *.markdown *.md *.mm *.dox *.py *.pyw *.f90 *.f95 *.f03 *.f08 *.f18 *.f *.for *.vhd *.vhdl *.ucf *.qsf *.ice
-RECURSIVE              = NO
+RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = */.git/* */.svn/* */.hg/* */CMakeFiles/* */_CPack_Packages/* DartConfiguration.tcl CMakeLists.txt CMakeCache.txt
