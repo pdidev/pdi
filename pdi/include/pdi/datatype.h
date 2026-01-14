@@ -110,7 +110,7 @@ public:
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (dense data)
 	 * \param[in] from the pointer to the copied data (size of buffersize)
-	 * \return updated `to' pointer
+	 * \return updated to pointer
 	 */
 	virtual void* data_to_dense_copy(void* to, const void* from) const = 0;
 
@@ -118,12 +118,11 @@ public:
 	 *
 	 * \param[in] to the pointer to the allocated memory to fill (size of buffersize)
 	 * \param[in] from the pointer to the copied data (dense data)
-	 * \return updated `to' pointer
+	 * \return updated to pointer
 	 */
 	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
 
-	/** \anchor Datatype_index_size_t
-	 * Access the type of the element at the provided index
+	/** Access the type of the element at the provided index
 	 *
 	 * \param index the index where to look
 	 * \return the Datatype of the indexed sub-element
