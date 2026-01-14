@@ -1,3 +1,4 @@
+\page PDI_example PDI example
 # %PDI examples {#PDI_example}
 
 The example is made of a single source file (one version in each supported
