@@ -100,7 +100,7 @@ public:
 
 	void* data_from_dense_copy(void*, const void*) const override;
 
-	/// \copydoc Datatype_index_size_t
+	/// \copydoc PDI::Datatype::Datatype_index_size_t
 	Datatype_sptr index(size_t index) const override;
 
 	std::pair<void*, Datatype_sptr> index(size_t index, void* data) const override;
