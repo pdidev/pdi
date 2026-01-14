@@ -94,7 +94,7 @@ public:
 	 * \param right_flag right flag which be used to open file
 	 * \param mpi_comm_expr if not empty, opens NetCDF file in parallel using this MPI_Comm
 	 */
-	Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename, int rights_flag, PDI::Expression mpi_comm_expr);
+	Dnc_netcdf_file(PDI::Context& ctx, const std::string& filename, int right_flag, PDI::Expression mpi_comm_expr);
 
 	/// Deleted copy constructor
 	Dnc_netcdf_file(const Dnc_netcdf_file& other) = delete;
@@ -140,7 +140,7 @@ public:
 	/** Gets variable from the file
 	 *
 	 * \param variable variable to get
-	 * \param write Dnc_io that deteremines the read operation
+	 * \param read Dnc_io that deteremines the read operation
 	 * \param ref_w reference where the data will be written
 	 */
 	void get_variable(const Dnc_variable& variable, const Dnc_io& read, PDI::Ref_w ref_w);
@@ -151,7 +151,7 @@ public:
 	 * \param sizeof_variable variable to read its size
 	 * \param ref reference where the data will be written
 	 */
-	void get_sizeof_variable(const std::string& variable, const std::string& sizeof_var, PDI::Ref ref);
+	void get_sizeof_variable(const std::string& variable, const std::string& sizeof_variable, PDI::Ref ref);
 
 	/// Destructor
 	~Dnc_netcdf_file();

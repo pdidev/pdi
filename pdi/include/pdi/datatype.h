@@ -123,7 +123,7 @@ public:
 	virtual void* data_from_dense_copy(void* to, const void* from) const = 0;
 
 	/**
-	 * \anchor Datatype_index_override
+	 * \anchor Datatype_index_size_t
 	 * Access the type of the element at the provided index
 	 *
 	 * \param index the index where to look
