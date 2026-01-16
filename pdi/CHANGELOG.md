@@ -17,6 +17,8 @@ and this project adheres to
 #### Fixed
 * Updated embedded versions of zpp to fix a build issue with recent cmake
   [#631](https://github.com/pdidev/pdi/issues/631)
+* Updated doxygen files to be compatible with recent versions of Doxygen
+  [#629](https://github.com/pdidev/pdi/issues/629)
 
 
 ## [1.9.1] - 2025-05-07
