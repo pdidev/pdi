@@ -10,6 +10,15 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.3] - 2026-01-16
+
+### For users
+
+#### Fixed
+* Updated embedded versions of zpp to fix a build issue with recent cmake
+  [#631](https://github.com/pdidev/pdi/issues/631)
+
+
 ## [1.9.1] - 2025-05-07
 
 ### For users
