@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -116,7 +116,7 @@ if("${BUILD_PYTHON}")
 	find_package(pybind11 2.4.3 REQUIRED) # must match PDIConfig.cmake.in
 endif()
 if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
-	add_subdirectory("../vendor/zpp-1.0.16/" "zpp")
+	add_subdirectory("../vendor/zpp-1.1.0/" "zpp")
 endif()
 
 

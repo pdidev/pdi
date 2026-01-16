@@ -1,0 +1,75 @@
+!-----------------------------------------------------------------------------
+! SPDX-FileCopyrightText: 2014-2024 Centre national de la recherche scientifique (CNRS)
+! SPDX-FileCopyrightText: 2014-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+! SPDX-FileCopyrightText: 2014-2024 Julien Bigot <julien.bigot@cea.fr>
+! SPDX-FileCopyrightText: 2014-2024 Université Paris-Saclay
+! SPDX-FileCopyrightText: 2014-2024 Université de Versailles Saint-Quentin-en-Yvelines
+!
+! SPDX-License-Identifier: MIT
+!-----------------------------------------------------------------------------
+
+!$SH source fortran.zpp.sh
+!$SH MAXDIM=7
+
+module print_mod
+
+  implicit none
+
+  private
+
+  public:: print_val
+
+  interface print_val
+!$SH for T in ${ZPP_FORT_TYPES}; do # T: type descriptor
+!$SH   for D in $(seq 0 ${MAXDIM}); do # D: dimensions of array
+    module procedure print_${T}_${D}d
+!$SH   done
+!$SH done
+  endinterface print_val
+
+contains
+!$SH for T in ${ZPP_FORT_TYPES}; do # T: type descriptor
+!$SH   for D in $(seq 0 ${MAXDIM}); do # D: dimensions of array
+
+
+  subroutine print_${T}_${D}d( val )
+
+    $(zpp_fort_type $T):: val$(zpp_fort_array_desc $D)
+
+    print '("The value is a $T of dim $D")'
+    print '("Its first element is ", $(zpp_fort_io_format $T) )', &
+            val$(zpp_str_repeat 1 1 $D ', ' '(' ')')
+
+  endsubroutine print_${T}_${D}d
+
+!$SH   done
+!$SH done
+endmodule print_mod
+
+program tst_zpp
+
+  use print_mod
+
+  implicit none
+
+  integer:: ival
+  real:: rval
+  real:: aval(3,2)
+  integer:: ii, jj
+
+  ival = 1
+
+  rval = 1.5
+
+  do ii = 1,3
+    do jj=1,2
+      aval(ii, jj) = 0.1*ii+0.01*jj
+    enddo
+  enddo
+
+  print *, "Here are ival, rval and aval:"
+  call print_val(ival)
+  call print_val(rval)
+  call print_val(aval)
+
+endprogram tst_zpp

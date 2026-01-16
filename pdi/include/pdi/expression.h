@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -114,7 +114,7 @@ public:
 
 	/** Moves an expression
 	 *
-	 * \param[in] expr the expression to move`
+	 * \param[in] expr the expression to move
 	 * \return *this
 	 */
 	Expression& operator= (Expression&& expr);
@@ -193,7 +193,7 @@ public:
 	 */
 	Ref to_ref(Context& ctx, Datatype_sptr type) const;
 
-	/** Parses a string that starts with `$` and represents a reference expression
+	/** Parses a string that starts with `$' and represents a reference expression
 	 *
 	 * \param[in] reference_str string that represents a reference expression
 	 *
