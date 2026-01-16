@@ -35,6 +35,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 
+## [1.9.3] - 2026-01-16
+
+### Fixed
+* Updated embedded versions of paraconf & pybind11 to fix a build issue with
+  recent cmake [#631](https://github.com/pdidev/pdi/issues/631)
+
+
 ## [1.9.2] - 2025-06-13
 
 ### Fixed

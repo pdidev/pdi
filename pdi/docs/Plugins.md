@@ -13,4 +13,4 @@
 |\subpage trace_plugin "Trace plugin"                 |Generate a trace of what happens in %PDI data store.               |
 |\subpage user_code_plugin "user-code plugin"         |Call your function on event or when data becomes available.        |
 
-To learn how to create your own plugin see: \subpage how_to_create_plugin "How to create a plugin"
+To learn how to create your own plugin see: \ref how_to_create_plugin "How to create a plugin"
