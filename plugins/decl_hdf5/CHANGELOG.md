@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
 * Possibility to add a regex for dataset name in datasets section
   [#582](https://github.com/pdidev/pkgs/issues/582)
 

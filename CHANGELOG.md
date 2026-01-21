@@ -11,8 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* Added macOS CI for PDI, decl_hdf5, mpi, serialize, set_value, user_code and
-  trace plugins [#556](https://github.com/pdidev/pdi/issues/556)
+* Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
 
 ### Changed
 
@@ -21,9 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Fix github action (CI) access issue of tests.xml
+* Fix an issue where github action wouldn't run due to permission issue
   [#585](https://github.com/pdidev/pdi/issues/585)
-* Fix libyaml cmake minimal policy requirement.
+* Fix a build error in libyaml with recent cmake versions
   [#593](https://github.com/pdidev/pdi/issues/593)
 * Fix macOS linking issue when installing via root CMakeLists.txt
   [#565](https://github.com/pdidev/pdi/issues/565)

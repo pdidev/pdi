@@ -16,6 +16,7 @@ and this project adheres to
 ### For users
 
 #### Added
+* Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
 
 #### Changed
 

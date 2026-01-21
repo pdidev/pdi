@@ -15,7 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
-* Bug(typo) fixed: Config error raised when using the scalar format for the yaml write configuration.
+* Fixed a error incorrectly raised when using the scalar format in yaml write
+  configuration [#TODO](https://github.com/pdidev/pdi/issues/TODO)
 
 ### Security
 
