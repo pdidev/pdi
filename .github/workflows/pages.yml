@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -43,6 +43,7 @@ jobs:
       with: { submodules: recursive }
     - name: Build
       run: |
+        IMG="ghcr.io/pdidev/debian/unstable/openmpi/all:v3"
         cat<<-'EOF' > run.sh
           set -xe
           cmake -DBUILD_DOCUMENTATION=ON -DBUILD_BENCHMARKING=OFF -DBUILD_TESTING=OFF /src/pdi
@@ -55,9 +56,9 @@ jobs:
         docker run \
           --cidfile='docker.cid' \
           -v ${PWD}:/src:ro \
-          ghcr.io/pdidev/debian/unstable/openmpi/all:v3 \
+          "${IMG}" \
           bash /src/run.sh
-        docker cp "$(cat docker.cid)":$(docker image inspect -f '{{.Config.WorkingDir}}' ghcr.io/pdidev/debian/unstable/openmpi/all:v3)/docs/html public
+        docker cp "$(cat docker.cid)":$(docker image inspect -f '{{.Config.WorkingDir}}' "${IMG}")/docs/html public
     - name: Archive production artifacts
       uses: actions/upload-artifact@v4
       with:

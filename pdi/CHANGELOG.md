@@ -44,6 +44,18 @@ and this project adheres to
 
 
 
+## [1.9.3] - 2026-01-16
+
+### For users
+
+#### Fixed
+* Updated embedded versions of zpp to fix a build issue with recent cmake
+  [#631](https://github.com/pdidev/pdi/issues/631)
+* Updated doxygen files to be compatible with recent versions of Doxygen
+  [#629](https://github.com/pdidev/pdi/issues/629)
+
+
+
 ## [1.9.1] - 2025-05-07
 
 ### For users
@@ -61,6 +73,7 @@ and this project adheres to
 #### Added
 * `PDI_share`, `PDI_expose` and `PDI_multi_expose` now accept `const` data
   [#553](https://github.com/pdidev/pdi/issues/553)
+
 
 
 ### For plugin developers

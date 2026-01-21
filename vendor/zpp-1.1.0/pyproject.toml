@@ -1,0 +1,43 @@
+##############################################################################
+# SPDX-FileCopyrightText: 2014-2024 Centre national de la recherche scientifique (CNRS)
+# SPDX-FileCopyrightText: 2014-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# SPDX-FileCopyrightText: 2014-2024 Julien Bigot <julien.bigot@cea.fr>
+# SPDX-FileCopyrightText: 2014-2024 Université Paris-Saclay
+# SPDX-FileCopyrightText: 2014-2024 Université de Versailles Saint-Quentin-en-Yvelines
+#
+# SPDX-License-Identifier: MIT
+##############################################################################
+
+[build-system]
+requires = ["setuptools >= 59.6"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["zpp"]
+
+[project]
+name = "zpp"
+authors = [
+  {name = "Julien Bigot", email = "julien.bigot@cea.fr"},
+]
+description = """a Bash Pre-Processor for Fortran.\
+                 ZPP is useful in order to build clean Fortran90 interfaces.\
+                 It allows to generate Fortran code for all types, kinds, and array ranks\
+                 supported by the compiler."""
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["bash", "Fortran", "pre-processor"]
+license = {text = "MIT"}
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+]
+dynamic = ["version"]
+
+[project.scripts]
+zpp = "zpp:main"
+zpp_register = "zpp.registration:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "zpp.__version__"}
