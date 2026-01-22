@@ -278,4 +278,3 @@ TEST(decl_hdf5_deflate, deflate_level9)
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
 }
-
