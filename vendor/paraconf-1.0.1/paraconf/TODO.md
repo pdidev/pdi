@@ -1,7 +1,0 @@
-- add a more descriptive example
-- add a README
-- improve the Fortran interface
-- add auto-broadcast capability
-- add C/Fortran struct generation based on kwalify
-- add parsing to C/Fortran struct
-- add tests to check paraconf behaviour for various input

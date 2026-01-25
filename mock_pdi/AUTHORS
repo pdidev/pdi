@@ -1,0 +1,5 @@
+Julian Auriac - CEA (julian.auriac@cea.fr)
+* Added support for the MockFind approach
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Added support for the SubdirMock approach and for Paraconf target mock

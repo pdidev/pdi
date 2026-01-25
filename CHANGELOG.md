@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* Add "mock PDI", to allow disabling PDI  while keeping code syntax unchanged
+  [#438](https://github.com/pdidev/pdi/issues/438)
 * Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
 
 ### Changed

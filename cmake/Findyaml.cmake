@@ -24,7 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #--------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.22...4.2)
+cmake_policy(PUSH)
+cmake_policy(VERSION 3.22...4.2)
 
 # - Check for the presence of libyaml
 #
@@ -41,6 +42,9 @@ function(_yaml_Find_Config)
 		get_target_property(yaml_INCLUDE_DIRS yaml INTERFACE_INCLUDE_DIRECTORIES)
 		set(yaml_INCLUDE_DIRS "${yaml_INCLUDE_DIRS}" PARENT_SCOPE)
 		mark_as_advanced(yaml_DIR)
+		if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
+			message(DEBUG "Yaml found through config")
+		endif()
 	else()
 		unset(yaml_DIR CACHE)
 		if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
@@ -55,6 +59,9 @@ function(_yaml_Find_Cache)
 		set_target_properties(yaml PROPERTIES
 				IMPORTED_LOCATION ${yaml_LIBRARIES}
 				INTERFACE_INCLUDE_DIRECTORIES "${yaml_INCLUDE_DIRS}")
+		if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
+			message(DEBUG "Yaml found through cache")
+		endif()
 	else()
 		if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
 			message(DEBUG "Yaml not found through cache")
@@ -79,6 +86,9 @@ function(_yaml_Find_Pkgconfig)
 		pkg_search_module(yamlpkg QUIET ${PKGCFG_NAME})
 		if("${yamlpkg_FOUND}")
 			pkg_get_variable(yamlpkg_INCLUDEDIR ${PKGCFG_NAME} includedir)
+			if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
+				message(DEBUG "Yaml found as ${PKGCFG_NAME} through pkgconfig")
+			endif()
 			break()
 		else()
 			if("${DEBUG_FIND_YAML}" AND NOT "${yaml_FIND_QUIETLY}")
@@ -124,6 +134,9 @@ unset(yaml_FOUND)
 unset(yaml_LIBRARIES)
 unset(yaml_INCLUDE_DIRS)
 unset(yaml_VERSION)
+if(TARGET yaml)
+	set(yaml_LIBRARIES yaml)
+endif()
 if(NOT TARGET yaml)
  	_yaml_Find_Config()
 endif()
@@ -148,3 +161,5 @@ find_package_handle_standard_args(
 	REQUIRED_VARS yaml_LIBRARIES
 	VERSION_VAR yaml_VERSION
 )
+
+cmake_policy(POP)

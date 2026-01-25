@@ -25,11 +25,12 @@
 #include <mpi.h>
 #include <assert.h>
 #include <math.h>
+#ifndef WITHOUT_PARACONF
 #include <paraconf.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <yaml.h>
 
 #include "pdi.h"
 
@@ -159,10 +160,14 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
+#ifndef WITHOUT_PARACONF
 	PC_tree_t conf = PC_parse_path(argv[1]);
+#endif
 
 	MPI_Comm main_comm = MPI_COMM_WORLD;
+#ifndef WITHOUT_PARACONF
 	PDI_init(PC_get(conf, ".pdi"));
+#endif
 
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT);
 
@@ -178,19 +183,39 @@ int main(int argc, char* argv[])
 	long longval;
 
 	int dsize[2];
+#ifndef WITHOUT_PARACONF
 	PC_int(PC_get(conf, ".datasize[0]"), &longval);
+#else
+	longval = 8; // size is 8 by default because, why not
+#endif
 	dsize[0] = longval;
+#ifndef WITHOUT_PARACONF
 	PC_int(PC_get(conf, ".datasize[1]"), &longval);
+#else
+	longval = 8 * psize_1d; // default size is 8 * psize_1d so that it's easy to parallelize over psize_1d processes
+#endif
 	dsize[1] = longval;
 
 	int psize[2];
+#ifndef WITHOUT_PARACONF
 	PC_int(PC_get(conf, ".parallelism.height"), &longval);
+#else
+	longval = 1;
+#endif
 	psize[0] = longval;
+#ifndef WITHOUT_PARACONF
 	PC_int(PC_get(conf, ".parallelism.width"), &longval);
+#else
+	longval = psize_1d; // all the parallelism is here by default
+#endif
 	psize[1] = longval;
 
 	double duration;
+#ifndef WITHOUT_PARACONF
 	PC_double(PC_get(conf, ".duration"), &duration);
+#else
+	duration = 0.1;
+#endif
 
 	// get local & add ghosts to sizes
 	assert(dsize[0] % psize[0] == 0);
@@ -249,7 +274,9 @@ int main(int argc, char* argv[])
 
 	PDI_finalize();
 
+#ifndef WITHOUT_PARACONF
 	PC_tree_destroy(&conf);
+#endif
 
 	free(cur);
 	free(next);
