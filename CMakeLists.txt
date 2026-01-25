@@ -78,7 +78,6 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
-option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
 
 
 
@@ -115,9 +114,6 @@ if("${BUILD_DECL_HDF5_PLUGIN}")
 endif()
 if("${BUILD_DECL_NETCDF_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
-endif()
-if("${BUILD_DEISA_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa/cmake")
 endif()
 if("${BUILD_MPI_PLUGIN}")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi/cmake")
@@ -181,15 +177,6 @@ if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}" AND NOT "${BUILD
 		"     * build the MPI plugin => pass `-DBUILD_MPI_PLUGIN=ON' to cmake\n"
 		"     * build Decl'NetCDF without parallel support => pass `-DBUILD_NETCDF_PARALLEL=OFF' to cmake\n"
 		"     * do not build the Decl'NetCDF at all => pass `-DBUILD_DECL_NETCDF_PLUGIN=OFF' to cmake"
-	)
-endif()
-
-if("${BUILD_DEISA_PLUGIN}" AND NOT "${BUILD_PYTHON}")
-	message(FATAL_ERROR
-			"Deisa plugin is enabled but Python support is disabled.\n"
-			"    you have the following options:\n"
-			"     * enable Python support => pass `-DBUILD_PYTHON=ON' to cmake\n"
-			"     * do not build the Deisa plugin => pass `-DBUILD_DEISA_PLUGIN=OFF' to cmake"
 	)
 endif()
 
@@ -535,12 +522,6 @@ sbuild_add_module(USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
 	DEPENDS PDI
 	SUBSTEPS test
-)
-
-sbuild_add_module(DEISA_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_DEISA_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa"
-	DEPENDS PDI
 )
 
 sbuild_add_module(PDI_EXAMPLE
