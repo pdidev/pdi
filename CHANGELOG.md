@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Deprecated
 
 ### Removed
+* Removed the Deisa plugin that does not match any current version of Deisa
 
 ### Fixed
 * Fix an issue where github action wouldn't run due to permission issue

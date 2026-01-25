@@ -106,7 +106,6 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_TESTING`            |`ON`   |Build the tests.|
 |`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
 |`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
-|`BUILD_DEISA_PLUGIN`       |`OFF`  |Build the Deisa plug-in.|
 |`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
 |`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
