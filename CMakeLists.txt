@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -31,7 +31,7 @@
 
 ### Project header
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 project(PDI_DIST LANGUAGES C CXX)
 
 
@@ -59,8 +59,6 @@ endif()
 
 set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can be 1) EMBEDDED to use the provided version, 2) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 3) AUTO to use SYSTEM if available and EMBEDDED otherwise")
 
-
-
 # Modules to build
 
 option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
@@ -78,8 +76,6 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
-option(BUILD_DEISA_PLUGIN   	"Build Deisa plug-in" OFF)
-
 
 
 
@@ -107,30 +103,15 @@ endforeach()
 
 list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/trace/cmake"
-	"${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code/cmake")
-if("${BUILD_DECL_HDF5_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake")
-endif()
+	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake")
 if("${BUILD_DECL_NETCDF_PLUGIN}")
+	# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+	if(4.1 VERSION_GREATER "${CMAKE_VERSION}")
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.1")
+	endif()
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
 endif()
-if("${BUILD_DEISA_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa/cmake")
-endif()
-if("${BUILD_MPI_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/mpi/cmake")
-endif()
-if("${BUILD_PYCALL_PLUGIN}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/pycall/cmake")
-endif()
-if ("${BUILD_JSON_PLUGIN}")
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/json/cmake")
-endif()
-if("${BUILD_TESTING}")
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/example/cmake")
-endif()
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
 
 
@@ -143,7 +124,6 @@ else()
 	set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 	mark_as_advanced(CMAKE_POSITION_INDEPENDENT_CODE BUILD_SHARED_LIBS)
 endif()
-
 
 if("${BUILD_PYCALL_PLUGIN}" AND NOT "${BUILD_PYTHON}")
 	message(FATAL_ERROR
@@ -184,14 +164,6 @@ if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_NETCDF_PARALLEL}" AND NOT "${BUILD
 	)
 endif()
 
-if("${BUILD_DEISA_PLUGIN}" AND NOT "${BUILD_PYTHON}")
-	message(FATAL_ERROR
-			"Deisa plugin is enabled but Python support is disabled.\n"
-			"    you have the following options:\n"
-			"     * enable Python support => pass `-DBUILD_PYTHON=ON' to cmake\n"
-			"     * do not build the Deisa plugin => pass `-DBUILD_DEISA_PLUGIN=OFF' to cmake"
-	)
-endif()
 
 
 ### Dependencies
@@ -214,9 +186,9 @@ endif()
 ## Python3
 
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter Development)
+	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter Development)
 elseif("${BUILD_FORTRAN}")
-	find_package(Python3Path 3.8.2 REQUIRED COMPONENTS Interpreter)
+	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter)
 endif()
 
 
@@ -278,7 +250,7 @@ if("${BUILD_FORTRAN}")
 endif()
 # if ( PDI or ... )
 sbuild_add_dependency(paraconf "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/paraconf-1.0.0"
+	EMBEDDED_PATH "vendor/paraconf-1.0.1"
 	COMPONENTS ${PARACONF_COMPONENTS}
 	SOURCE_SUBDIR "paraconf"
 	CMAKE_CACHE_ARGS
@@ -286,7 +258,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 		"-DUSE_yaml:STRING=SYSTEM"
 		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
-	VERSION 1.0.0
+	VERSION 1.0
 )
 
 
@@ -301,14 +273,14 @@ sbuild_add_dependency(spdlog "${USE_DEFAULT}"
 		"-DSPDLOG_BUILD_EXAMPLES:BOOL=OFF"
 		"-DSPDLOG_BUILD_TESTS:BOOL=OFF"
 		"-DSPDLOG_FMT_EXTERNAL:BOOL=OFF"
-	VERSION 1.5.0
+	VERSION 1.9
 )
 
 
 ## Doxygen
 
 if("${BUILD_DOCUMENTATION}")
-	find_package(Doxygen 1.8.17 REQUIRED OPTIONAL_COMPONENTS dot)
+	find_package(Doxygen 1.9 REQUIRED OPTIONAL_COMPONENTS dot)
 endif()
 
 
@@ -334,23 +306,26 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		list(APPEND HDF5_CMAKE_CACHE_ARGS "-DHDF5_BUILD_HL_LIB:BOOL=OFF")
 	endif()
 	
-	find_package(ZLIB)
-	
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/hdf5-1.12.3"
 		COMPONENTS ${HDF5_COMPONENTS}
-		MODULE_VARS HDF5_IS_PARALLEL HDF5_C_INCLUDE_DIRS HDF5_C_LIBRARIES HDF5_VERSION
+		MODULE_VARS HDF5_IS_PARALLEL HDF5_VERSION
 		CMAKE_CACHE_ARGS
+			-DBUILD_STATIC_LIBS:BOOL=OFF
 			-DBUILD_TESTING:BOOL=OFF
 			-DHDF5_BUILD_EXAMPLES:BOOL=OFF
 			-DHDF5_BUILD_TOOLS:BOOL=ON
 			-DHDF5_BUILD_UTILS:BOOL=OFF
-			-DHDF5_INSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}
+			"-DHDF5_INSTALL_BIN_DIR:STRING=${CMAKE_INSTALL_BINDIR}"
+			"-DHDF5_INSTALL_CMAKE_DIR:STRING=${CMAKE_INSTALL_DATADIR}/cmake/hdf5"
+			"-DHDF5_INSTALL_DATA_DIR:STRING=${CMAKE_INSTALL_DATADIR}/hdf5"
+			"-DHDF5_INSTALL_LIB_DIR:STRING=${CMAKE_INSTALL_LIBDIR}"
 			${HDF5_CMAKE_CACHE_ARGS}
+		VERSION
 	)
 	if("${HDF5_FOUND}")
-		if(1.10.4 VERSION_GREATER "${HDF5_VERSION}")
-			message(FATAL_ERROR "HDF5 version ${HDF5_VERSION} found less than required 1.10.4")
+		if("${HDF5_VERSION}" VERSION_LESS 1.10)
+			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
@@ -382,41 +357,30 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 		list(APPEND NETCDF_CMAKE_CACHE_ARGS "-DENABLE_PARALLEL4:BOOL=OFF")
 	endif()
 	
-	set(NETCDF_CPATH "${SBUILD_CPATH}")
-	set(NETCDF_LIBRARY_PATH "${SBUILD_LIBRARY_PATH}")
-	
-	# Workaround NetCDF borken LibXML2 include path detection
-	find_package(LibXml2)
-	if("${LIBXML2_FOUND}")
-		foreach(INCLUDE_DIR IN LISTS LIBXML2_INCLUDE_DIRS)
-			set(NETCDF_CPATH "${NETCDF_CPATH}:${INCLUDE_DIR}")
-			get_filename_component(INCLUDE_DIR "${INCLUDE_DIR}" DIRECTORY)
-			set(NETCDF_CPATH "${NETCDF_CPATH}:${INCLUDE_DIR}")
-		endforeach()
-		foreach(LIB IN LISTS LIBXML2_LIBRARIES)
-			get_filename_component(LIB_DIR "${LIB}" DIRECTORY)
-			set(NETCDF_LIBRARY_PATH "${NETCDF_LIBRARY_PATH}:${LIB_DIR}")
-		endforeach()
+	# Workaround NetCDF failing to add ZLIB include path in H5Deflate plugin
+	find_package(ZLIB QUIET)
+	if("${ZLIB_FOUND}")
+		string(REPLACE ";" " -I" NETCDF_CFLAGS "-I ${ZLIB_INCLUDE_DIRS}")
 	endif()
 	
 	sbuild_add_dependency(NetCDF "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/netcdf-c-4.9.2"
+		EMBEDDED_PATH "vendor/netcdf-c-4.9.3"
 		DEPENDS HDF5
 		MODULE_VARS NetCDF_FEATURES
-		ENV "CPATH=${NETCDF_CPATH}" "LIBRARY_PATH=${NETCDF_LIBRARY_PATH}"
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_C_COMPILER:STRING=${NETCDF_CC}"
 			-DBUILD_TESTING:BOOL=OFF
 			-DBUILD_TESTSETS:BOOL=OFF
-			-DBUILD_UTILITIES:BOOL=OFF
+			"-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} ${NETCDF_CFLAGS}"
 			-DENABLE_BASH_SCRIPT_TESTING:BOOL=OFF
-			-DENABLE_BYTERANGE:BOOL=OFF
-			-DENABLE_DAP:BOOL=OFF
-			-DENABLE_DAP4:BOOL=OFF
-			-DENABLE_EXAMPLES:BOOL=OFF
-			-DENABLE_FILTER_TESTING:BOOL=OFF
-			-DENABLE_TESTS:BOOL=OFF
-		VERSION 4.7.3
+			-DNETCDF_BUILD_UTILITIES:BOOL=OFF
+			-DNETCDF_ENABLE_BYTERANGE:BOOL=OFF
+			-DNETCDF_ENABLE_DAP:BOOL=OFF
+			-DNETCDF_ENABLE_DAP4:BOOL=OFF
+			-DNETCDF_ENABLE_EXAMPLES:BOOL=OFF
+			-DNETCDF_ENABLE_FILTER_TESTING:BOOL=OFF
+			-DNETCDF_ENABLE_TESTS:BOOL=OFF
+		VERSION 4.8
 	)
 	if("${NETCDF_FOUND}")
 		if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
@@ -438,12 +402,12 @@ if("${BUILD_PYTHON}")
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
 	sbuild_add_dependency(pybind11 "${USE_DEFAULT}"
-		EMBEDDED_PATH "vendor/pybind11-2.13.1"
+		EMBEDDED_PATH "vendor/pybind11-3.0.1"
 		CMAKE_CACHE_ARGS
 			"-DBUILD_TESTING:BOOL=OFF"
 			"-DPYBIND11_TEST:BOOL=OFF"
 			"-DPYBIND11_PYTHON_VERSION:STRING=${Python3_VERSION}"
-		VERSION 2.4.3
+		VERSION 2.9
 	)
 endif()
 
@@ -535,12 +499,6 @@ sbuild_add_module(USER_CODE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/user_code"
 	DEPENDS PDI
 	SUBSTEPS test
-)
-
-sbuild_add_module(DEISA_PLUGIN
-	ENABLE_BUILD_FLAG BUILD_DEISA_PLUGIN
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/deisa"
-	DEPENDS PDI
 )
 
 sbuild_add_module(PDI_EXAMPLE

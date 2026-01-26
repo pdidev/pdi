@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -28,9 +28,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
@@ -49,9 +48,10 @@ include(GNUInstallDirs)
 set(HDF5_USE_STATIC_LIBRARIES OFF)
 set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
 find_package(HDF5 REQUIRED COMPONENTS C)
-if("${HDF5_VERSION}" VERSION_LESS "1.10.0")
-	message(FATAL_ERROR "HDF5 version 1.10.0 at least required, HDF5 ${HDF5_VERSION} found.")
+if("${HDF5_VERSION}" VERSION_LESS 1.10)
+	message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 endif()
+
 if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 	message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
 endif()

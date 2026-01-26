@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,9 +27,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 
-find_package(Doxygen 1.8.17 REQUIRED)
+find_package(Doxygen 1.9 REQUIRED)
 
 set(DOXYGEN_INPUT
 		"${CMAKE_CURRENT_SOURCE_DIR}/About.md"
@@ -38,7 +38,6 @@ set(DOXYGEN_INPUT
 		"${CMAKE_CURRENT_SOURCE_DIR}/First_steps.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/How_to_create_plugin.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Installation.md"
-		"${CMAKE_CURRENT_SOURCE_DIR}/modules.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Plugins.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Specification_tree_ref.md"
 		"${CMAKE_CURRENT_SOURCE_DIR}/Source_installation.md"

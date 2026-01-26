@@ -1,7 +1,7 @@
 #=============================================================================
-# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2022 Centre National de Recherche Scientifique (CNRS)
+# Copyright (C) 2022-2026 Centre National de Recherche Scientifique (CNRS)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 if(NOT TARGET GTest::gtest)
 	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)

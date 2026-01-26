@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+* Update the version of dependencies according to our policy: oldest supported
+  Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
+  CMake 3.22, pybind11 2.9.1, and Python 3.10.6
+  [#613](https://github.com/pdidev/pdi/issues/613)
 
 ### Deprecated
 

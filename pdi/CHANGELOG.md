@@ -16,8 +16,14 @@ and this project adheres to
 ### For users
 
 #### Added
+* Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
 
 #### Changed
+* Update the version of dependencies according to our policy: oldest supported
+  Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
+  CMake 3.22, Doxygen 1.9.1, pybind11 2.9.1, Python 3.10.6, and spdlog 1.9.2
+  [#613](https://github.com/pdidev/pdi/issues/613)
+
 
 #### Deprecated
 
@@ -44,6 +50,18 @@ and this project adheres to
 
 
 
+## [1.9.3] - 2026-01-16
+
+### For users
+
+#### Fixed
+* Updated embedded versions of zpp to fix a build issue with recent cmake
+  [#631](https://github.com/pdidev/pdi/issues/631)
+* Updated doxygen files to be compatible with recent versions of Doxygen
+  [#629](https://github.com/pdidev/pdi/issues/629)
+
+
+
 ## [1.9.1] - 2025-05-07
 
 ### For users
@@ -61,6 +79,7 @@ and this project adheres to
 #### Added
 * `PDI_share`, `PDI_expose` and `PDI_multi_expose` now accept `const` data
   [#553](https://github.com/pdidev/pdi/issues/553)
+
 
 
 ### For plugin developers

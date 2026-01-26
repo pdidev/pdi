@@ -11,19 +11,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* Added macOS CI for PDI, decl_hdf5, mpi, serialize, set_value, user_code and
-  trace plugins [#556](https://github.com/pdidev/pdi/issues/556)
+* Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
 
 ### Changed
+* Update the version of dependencies according to our policy: oldest supported
+  Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
+  CMake 3.22, Doxygen 1.9.1, HDF5 1.10.7, mpi4py 3.1.3, NetCDF 4.8.1,
+  numpy 1.21.5, pyyaml 5.4.1, pybind11 2.9.1, Python 3.10.6, and spdlog 1.9.2
+  [#613](https://github.com/pdidev/pdi/issues/613)
 
 ### Deprecated
 
 ### Removed
+* Removed the Deisa plugin that does not match any current version of Deisa
 
 ### Fixed
-* Fix github action (CI) access issue of tests.xml
+* Fix an issue where github action wouldn't run due to permission issue
   [#585](https://github.com/pdidev/pdi/issues/585)
-* Fix libyaml cmake minimal policy requirement.
+* Fix a build error in libyaml with recent cmake versions
   [#593](https://github.com/pdidev/pdi/issues/593)
 * Fix macOS linking issue when installing via root CMakeLists.txt
   [#565](https://github.com/pdidev/pdi/issues/565)
@@ -33,6 +38,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#587](https://github.com/pdidev/pdi/issues/587)
 
 ### Security
+
+
+## [1.9.3] - 2026-01-16
+
+### Fixed
+* Updated embedded versions of paraconf & pybind11 to fix a build issue with
+  recent cmake [#631](https://github.com/pdidev/pdi/issues/631)
 
 
 ## [1.9.2] - 2025-06-13

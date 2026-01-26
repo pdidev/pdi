@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,20 +27,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_pycall_plugin LANGUAGES C CXX)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include(CTest)
 
 include(GNUInstallDirs)
 
-find_package(Python3 3.8.2 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development)
 
 # PyBind11
 set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-find_package(pybind11 2.4.3 REQUIRED)
+find_package(pybind11 2.9 REQUIRED)
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS pysupport)
