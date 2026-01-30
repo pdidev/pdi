@@ -36,6 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   [#588](https://github.com/pdidev/pdi/issues/588)
 * Fix data validation in decl_hdf5 test after write operation
   [#587](https://github.com/pdidev/pdi/issues/587)
+* Fix default CMAKE_BUILD_TYPE value
+  [#617](https://github.com/pdidev/pdi/issues/617)
 
 ### Security
 

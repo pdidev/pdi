@@ -25,6 +25,7 @@ Jacques Morice - CEA (jacques.morice@cea.fr)
 
 Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
 * Added macOS CI
+* Fixed CMake issues
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science
