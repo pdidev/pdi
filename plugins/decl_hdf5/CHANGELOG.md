@@ -4,7 +4,7 @@ All notable changes to the Decl'HDF5 plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
-## [Unreleased]
+## [1.10.0] - 2026-01-31
 
 ### Added
 * Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
@@ -18,15 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
   CMake 3.22, and HDF5 1.10.7 [#613](https://github.com/pdidev/pdi/issues/613)
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 * fix HDF5 API version compatibility issue during error handling
   [#567](https://github.com/pdidev/pdi/issues/567)
-
-### Security
 
 
 ## [1.9.0] - 2025-03-07
