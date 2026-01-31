@@ -7,12 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
 
 ### Changed
-* Update the version of dependencies according to our policy: oldest supported
-  Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
-  CMake 3.22 [#613](https://github.com/pdidev/pdi/issues/613)
 
 ### Deprecated
 
@@ -21,6 +17,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 ### Security
+
+
+## [1.10.0] - 2026-01-31
+
+### Added
+* Added macOS CI [#556](https://github.com/pdidev/pdi/issues/556)
+
+### Changed
+* Update the version of dependencies according to our policy: oldest supported
+  Debian, Fedora & Ubuntu, as well as spack 0.19. The new requirements are:
+  CMake 3.22 [#613](https://github.com/pdidev/pdi/issues/613)
 
 
 ## [1.8.0] - 2024-11-28
