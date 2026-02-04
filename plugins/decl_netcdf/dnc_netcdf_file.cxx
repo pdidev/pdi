@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -472,6 +472,54 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			variable_name,
 			dest_id
 		);
+
+		int deflate_level = 0;
+		if (variable.deflate()) {
+			deflate_level = variable.deflate().to_long(m_ctx);
+		}
+		// if a deflate level is set on a scalar variable, reset the level to 0
+		if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(variable_type) && deflate_level != 0) {
+			m_ctx.logger().warn("\t var {} is of type scalar, reset deflate level to {} (no deflate)", variable_name, deflate_level);
+			deflate_level = 0;
+		}
+		if (deflate_level) {
+			m_ctx.logger().trace("\t var {} deflate = [{}]", variable_name, deflate_level);
+			if (variable.chunking()) {
+				PDI::Ref_r chunking_ref = variable.chunking().to_ref(m_ctx);
+				if (chunking_ref) {
+					m_ctx.logger().trace("Setting `{}' dataset chunking:", variable_name);
+					std::vector<size_t> sizes;
+					PDI::Datatype_sptr ref_type = chunking_ref.type();
+					if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_type)) {
+						sizes.emplace_back(chunking_ref.scalar_value<size_t>());
+					} else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref_type)) {
+						for (size_t i = 0; i < array_type->size(); i++) {
+							sizes.emplace_back(PDI::Ref_r{chunking_ref[i]}.scalar_value<size_t>());
+						}
+					} else if (auto&& tuple_type = std::dynamic_pointer_cast<const PDI::Tuple_datatype>(ref_type)) {
+						for (size_t i = 0; i < tuple_type->size(); i++) {
+							sizes.emplace_back(PDI::Ref_r{chunking_ref[i]}.scalar_value<size_t>());
+						}
+					} else {
+						throw PDI::Type_error{"Chunking must be a scalar, an array or a tuple"};
+					}
+					nc_try(
+						nc_def_var_chunking(dest_id, var_id, NC_CHUNKED, sizes.data()),
+						"Cannot define chunking of `{}' variable in (nc_id = {})",
+						variable_name,
+						dest_id
+					);
+				}
+			}
+
+			// if no chunking is defined, automatic chunking will be used
+			nc_try(
+				nc_def_var_deflate(dest_id, var_id, NC_SHUFFLE, 1, deflate_level),
+				"Cannot define deflate level of `{}' variable in (nc_id = {})",
+				variable_name,
+				dest_id
+			);
+		}
 		m_ctx.logger().trace("Variable `{}' defined (var_id = {})", variable.path(), var_id);
 	}
 
