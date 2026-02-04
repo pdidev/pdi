@@ -80,7 +80,7 @@ if(NOT TARGET "PDI::pdirun")
     set_target_properties(PDI::pdirun PROPERTIES IMPORTED_LOCATION "${PDI_pdirun_EXECUTABLE}")
 else()
     if(NOT "${_PDI_FIND_QUIETLY_OPTIONAL}")
-        message("Target PDI::pdirun is already defined. Skipping.")
+        message(VERBOSE "Target PDI::pdirun is already defined. Skipping.")
     endif()
 endif()
 
@@ -126,7 +126,7 @@ if(TARGET "PDI::PDI_C" AND NOT TARGET "PDI_C"
     add_library(PDI::pdi ALIAS PDI_C)
 else()
     if(NOT "${_PDI_FIND_QUIETLY_OPTIONAL}")
-        message("Target PDI_C is already defined. Skipping.")
+        message(VERBOSE "Target PDI_C is already defined. Skipping.")
     endif()
 endif()
 
@@ -146,7 +146,7 @@ if(TARGET "PDI::PDI_f90" AND NOT TARGET "PDI_f90"
 	add_library(PDI::pdi_f90 ALIAS PDI_f90)
 else()
     if(NOT "${_PDI_FIND_QUIETLY_OPTIONAL}")
-        message("Target PDI_f90 is already defined. Skipping.")
+        message(VERBOSE "Target PDI_f90 is already defined. Skipping.")
     endif()
 endif()
 
