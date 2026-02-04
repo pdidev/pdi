@@ -113,9 +113,18 @@ fi
 
 printf "\n\n\n\e[1;36m *** Configure, build & test the whole pdi distribution\e[m\n\n"
 
-cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}" -B tests_distribution
+mkdir -p install/include install/lib # Workaround for https://github.com/pdidev/pdi/issues/644
+cmake --install-prefix "${PWD}/install" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}" -B tests_distribution
 cmake --build tests_distribution -- ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_distribution.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_distribution
+
+
+printf "\n\n\n\e[1;36m *** Install the pdi distribution & use it from an external project\e[m\n\n"
+
+cmake --install tests_distribution
+./install/bin/pdirun cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}/cmake_test" -B test_from_install
+./install/bin/pdirun cmake --build test_from_install -- ${MAKEFLAGS}
+./install/bin/pdirun ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_from_install.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir test_from_install
 
 
 printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with SubdirMock PDI\e[m\n\n"

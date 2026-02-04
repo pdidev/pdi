@@ -40,9 +40,6 @@ This module will define the following variables:
 
 :NetCDF_FOUND: Whether NetCDF was found or not.
 :NetCDF_VERSION: The version of NetCDF found.
-:NetCDF_INCLUDE_DIRECTORIES: .
-:NetCDF_COMPILE_DEFINITIONS: .
-:NetCDF_LINK_LIBRARIES: .
 :NetCDF_FEATURES: the features supported amongst CDF5, DAP, DAP2, DAP4,
                   DISKLESS, HDF4, HDF5, JNA, MMAP, NC2, NC4, PARALLEL,
                   PARALLEL4, PNETCDF
@@ -54,7 +51,7 @@ In addition, the module provides the following target to link against:
 The following variable can be set to guide the search for NetCDF libraries and
 includes:
 
-:NetCDF_CFGSCRIPT: The config script to use.
+:NetCDF_CFGSCRIPT: The config script (nc-config) to use.
 
 :NetCDF_FIND_DEBUG: Set to true to get extra debugging output.
 
@@ -205,7 +202,7 @@ function(_NetCDF_find_CMAKE)
 		set(NetCDF_FOUND TRUE)
 		set(NetCDF_VERSION "${netCDF_VERSION}")
 		if(TARGET "${netCDF_LIBRARIES}")
-			if(NetCDF_FIND_DEBUG)
+			if("${NetCDF_FIND_DEBUG}" AND NOT "${NetCDF_FIND_QUIETLY}")
 				message(STATUS "Found NetCDF CMAKE target ${netCDF_LIBRARIES}")
 			endif()
 			set(NetCDF_LINK_LIBRARIES ${netCDF_LIBRARIES})
@@ -275,7 +272,7 @@ function(_NetCDF_find_CFGSCRIPT CFGSCRIPT)
 			set(NetCDF_FOUND "FALSE" PARENT_SCOPE)
 			return()
 		endif()
-		if(NetCDF_FIND_DEBUG)
+		if("${NetCDF_FIND_DEBUG}" AND NOT "${NetCDF_FIND_QUIETLY}")
 			message(STATUS "${CFGSCRIPT} ${${INFO}_OPT} returns ${${INFO}}")
 		endif()
 	endforeach()
@@ -290,7 +287,9 @@ function(_NetCDF_find_CFGSCRIPT CFGSCRIPT)
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 		if(NOT "${CFGSCRIPT_RETURN}" EQUAL "0")
-			message(WARNING "Error running ${CFGSCRIPT} ${FEATURE_OPT}")
+			if(NOT "${NetCDF_FIND_QUIETLY}")
+				message(VERBOSE "Error running ${CFGSCRIPT} ${FEATURE_OPT}")
+			endif()
 			continue()
 		endif()
 		if("x${FEATURE_${FEATURE}}" MATCHES "yes")
