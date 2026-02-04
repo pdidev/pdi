@@ -24,7 +24,7 @@ and this project adheres to
 #### Removed
 
 #### Fixed
-* Fix multiple consecutive calls to find_package(PDI)
+* Support multiple reentrant calls to find_package(PDI)
   [#526](https://github.com/pdidev/pdi/issues/526)
 
 #### Security
