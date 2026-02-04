@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -27,9 +27,10 @@
 
 namespace decl_netcdf {
 
-Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config)
+Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate)
 	: m_ctx{ctx}
 	, m_path{path}
+	, m_deflate{deflate}
 {
 	PC_tree_t attributes_node = PC_get(config, ".attributes");
 	if (!PC_status(attributes_node)) {
@@ -55,7 +56,7 @@ Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t
 
 	PC_tree_t deflate_node = PC_get(config, ".deflate");
 	if (!PC_status(deflate_node)) {
-		m_deflate = deflate_node;
+		m_deflate = deflate_node;  // overwrite file_deflate level by variable deflate
 	}
 
 	PC_tree_t chunking_node = PC_get(config, ".chunking");

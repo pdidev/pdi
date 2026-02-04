@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -67,8 +67,9 @@ public:
 	 *
 	 * \param ctx Context of this variable
 	 * \param config Configuration node of this variable
+	 * \param deflate Deflate level of the file
 	 */
-	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config);
+	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate=PDI::Expression(0L));
 
 	/** Getter for variable name
 	 *

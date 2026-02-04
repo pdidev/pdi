@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -478,9 +478,9 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			deflate_level = variable.deflate().to_long(m_ctx);
 		}
 		// if a deflate level is set on a scalar variable, reset the level to 0
-		if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(variable_type)) {
-			deflate_level = 0;
+		if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(variable_type) && deflate_level != 0) {
 			m_ctx.logger().warn("\t var {} is of type scalar, reset deflate level to {} (no deflate)", variable_name, deflate_level);
+			deflate_level = 0;
 		}
 		if (deflate_level) {
 			m_ctx.logger().trace("\t var {} deflate = [{}]", variable_name, deflate_level);

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
- * Copyright (C) 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -906,6 +906,25 @@ TEST(decl_netcdf_test, deflate)
 		  "      when: '${input}=0'                                      \n"
 		  "      write: [int_scalar, int_array, int_matrix]              \n"
 		  "    - file: 'test_deflate_9.nc'                               \n"
+		  "      deflate: 9                                              \n"
+		  "      variables:                                              \n"
+		  "        int_scalar: int                                       \n"
+		  "        int_array:                                            \n"
+		  "          type: array                                         \n"
+		  "          subtype: int                                        \n"
+		  "          size: $pb_size                                      \n"
+		  "          dimensions: ['time']                                \n"
+		  "          chunking: $chunk                                    \n"
+		  "        int_matrix:                                           \n"
+		  "          type: array                                         \n"
+		  "          subtype: int                                        \n"
+		  "          size: ['$pb_size', '$pb_size']                      \n"
+		  "          dimensions: ['col', 'row']                          \n"
+		  "          chunking: ['$chunk', '$chunk']                      \n"
+		  "      when: '${input}=0'                                      \n"
+		  "      write: [int_scalar, int_array, int_matrix]              \n"
+		  "    - file: 'test_deflate_mix.nc'                             \n"
+		  "      deflate: 6                                              \n"
 		  "      variables:                                              \n"
 		  "        int_scalar: int                                       \n"
 		  "        int_array:                                            \n"
@@ -920,7 +939,6 @@ TEST(decl_netcdf_test, deflate)
 		  "          subtype: int                                        \n"
 		  "          size: ['$pb_size', '$pb_size']                      \n"
 		  "          dimensions: ['col', 'row']                          \n"
-		  "          deflate: 9                                          \n"
 		  "          chunking: ['$chunk', '$chunk']                      \n"
 		  "      when: '${input}=0'                                      \n"
 		  "      write: [int_scalar, int_array, int_matrix]              \n"
@@ -966,6 +984,10 @@ TEST(decl_netcdf_test, deflate)
 		EXPECT_EQ(result, 0) << "Deflate level for test_deflate_6.nc is not 6";
 		result = std::system("ncdump -hs test_deflate_9.nc | grep -q '_DeflateLevel = 9'");
 		EXPECT_EQ(result, 0) << "Deflate level for test_deflate_9.nc is not 9";
+		result = std::system("ncdump -hs test_deflate_mix.nc | grep -q 'int_array:_DeflateLevel = 9'");
+		EXPECT_EQ(result, 0) << "Deflate level of int_array in test_deflate_mix.nc is not 9";
+		result = std::system("ncdump -hs test_deflate_mix.nc | grep -q 'int_matrix:_DeflateLevel = 6'");
+		EXPECT_EQ(result, 0) << "Deflate level of int_matrix in test_deflate_mix.nc is not 6";
 	}
 
 
