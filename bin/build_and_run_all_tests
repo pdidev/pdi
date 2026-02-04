@@ -42,7 +42,7 @@ cd "${TEST_DIR}"
 cd "$(mktemp -d pdibuild.XXXXX)"
 TEST_DIR="${PWD}"
 
-INSTALL_DIR="${INSTALL_DIR:-/tmp/pdi_install_dir}"
+INSTALL_DIR="${INSTALL_DIR:-"$(mktemp --tmpdir -d pdi_install_dir_XXXXXXX)"}"
 
 cd "${SRCDIR}"
 cd "$(dirname "$0")/.."
