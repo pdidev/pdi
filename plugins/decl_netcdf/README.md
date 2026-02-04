@@ -154,6 +154,21 @@ plugins:
 |:------------------------|:--------------------------------------------------------------------------|
 |name (path) of the group |Map with `attribute` key with value as map of \ref decl_netcdf_attr |
 
+#### deflate subtree {#decl_netcdf_deflate}
+
+|key     |value                                                   |     |
+|:-------|:-------------------------------------------------------|-----|
+|deflate | Compression level (0-9) for all variables of the file (defalut=0). Can be overwritten by the content of `variables definition` | *optional* |
+
+See \ref decl_netcdf_variables for more information about the `deflate` attribut.
+Configuration example:
+```yaml
+plugins:
+  decl_netcdf:
+    - file: "compressed_file.nc"
+      deflate: 6
+```
+
 ### variables subtree {#decl_netcdf_variables}
 
 Defines variables in the NetCDF file. Mainly used to define dimensions names and read/write attributes of the variable.
