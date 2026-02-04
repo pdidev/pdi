@@ -136,6 +136,5 @@ ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $
 # Run cmake test
 
 make install
-cd /tmp
-cd "$(mktemp -d pdicmaketestdir.XXXXX)"
+cd "$(mktemp --tmpdir -d pdicmaketestdir.XXXXXXX)"
 ${INSTALL_DIR}/bin/pdirun cmake ${CMAKE_TEST_FLAGS} ${SRCDIR}/tests/test_cmake
