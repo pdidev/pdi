@@ -72,7 +72,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 	} else {
 		m_when = PDI::Expression{1L}; // if when not defined -> always true
 	}
-	
+
 	PDI::Expression file_deflate;
 	PC_tree_t deflate_node = PC_get(config, ".deflate");
 	if (!PC_status(deflate_node)) {
@@ -123,8 +123,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 					this->m_sizeof.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 				// if we read a regular variable
-				else
-				{
+				else {
 					this->m_read.emplace(read_desc, Dnc_io{this->m_ctx, read_value});
 				}
 			});

@@ -69,7 +69,7 @@ public:
 	 * \param config Configuration node of this variable
 	 * \param deflate Deflate level of the file
 	 */
-	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate=PDI::Expression(0L));
+	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate = PDI::Expression(0L));
 
 	/** Getter for variable name
 	 *
