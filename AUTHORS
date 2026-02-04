@@ -7,7 +7,8 @@ each sub-project (including PDI itself) is located in the dedicated sub-project
 AUTHORS file.
 
 Julian Auriac - CEA (julian.auriac@cea.fr)
-* fix CI bug where tests.xml file could not be written
+* Add pdi deactivation option
+* Fix CI bug where tests.xml file could not be written
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
 * Maintainer (Dec. 2014 - ...)
@@ -21,10 +22,11 @@ François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Bug fix, JSON plugin
 
 Jacques Morice - CEA (jacques.morice@cea.fr)
-* fix the directory of hdf5 library for rhel
+* Fix the directory of hdf5 library for rhel
 
 Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
 * Added macOS CI
+* Fixed CMake issues
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
 The scientific/academic work is financed from financial resources for science

@@ -1,0 +1,27 @@
+#!/bin/sh
+# Copyright (C) The Paraconf development team, see COPYRIGHT.md file at the
+#               root of the project or at https://github.com/pdidev/paraconf
+#
+# SPDX-License-Identifier: MIT
+
+set -e
+export LC_ALL=C
+
+PRE_RELEASE="${1-alpha}"
+WORK_DIR="${2-.}"
+GIT_EXE="${GIT_EXE-"$(which git 2> /dev/null || true)"}"
+
+if [ git = "${PRE_RELEASE}" ]
+then
+	PRE_RELEASE=alpha
+fi
+
+if [ -x "${GIT_EXE}" ]
+then
+	cd "${WORK_DIR}"
+	GIT_DATE="$("${GIT_EXE}" show -s --format=%ci HEAD | sed 's/ .*//')"
+	GIT_SHA1="$("${GIT_EXE}" rev-parse --verify --short=7 HEAD)"
+	echo "-${PRE_RELEASE}.${GIT_DATE}.${GIT_SHA1}"
+else
+	date -u "+-${PRE_RELEASE}.%F"
+fi

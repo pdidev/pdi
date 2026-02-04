@@ -22,7 +22,7 @@ ensemble run, etc.
 7. [C API reference](topics.html)
 8. \subpage Specification_tree_ref "Specification tree reference"
 9. \subpage Plugins "List of PDI plugins"
-10. \subpage FAQ F.A.Q.
+10. \subpage FAQ "F.A.Q."
 
 ## Developer documentation
 

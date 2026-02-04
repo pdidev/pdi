@@ -60,12 +60,21 @@ set(DOXYGEN_INPUT
 		"${PDI_SOURCE_DIR}/../plugins/set_value/README.md"
 		"${PDI_SOURCE_DIR}/../plugins/json/README.md")
 
+set(DOXY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+cmake_path(NORMAL_PATH DOXY_ROOT)
+
+set(DOXYGEN_REL_INPUT)
+foreach(INPUT_ELEMENT IN LISTS DOXYGEN_INPUT)
+	cmake_path(RELATIVE_PATH INPUT_ELEMENT BASE_DIRECTORY "${DOXY_ROOT}")
+	list(APPEND DOXYGEN_REL_INPUT "${INPUT_ELEMENT}")
+endforeach()
+string(REPLACE ";" " " DOXYGEN_REL_INPUT "${DOXYGEN_REL_INPUT}")
+
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")
-string(REPLACE ";" " " DOXYGEN_INPUT_SP "${DOXYGEN_INPUT}")
 configure_file(Doxyfile "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
 add_custom_target(doc ALL
 	Doxygen::doxygen "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../"
 	DEPENDS ${DOXYGEN_INPUT}
 )
 add_dependencies(doc generated_files_for_doc)
