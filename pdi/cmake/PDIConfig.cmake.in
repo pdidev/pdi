@@ -116,11 +116,7 @@ if(TARGET "PDI::PDI_C" AND NOT TARGET "PDI_C"
                        AND NOT TARGET "PDI::pdi")
 
     # Note: temporary fix for oldest supported cmake. target will have global scope with cmake version < 3.18
-    if (CMAKE_MAJOR_VERSION VERSION_EQUAL "3" AND CMAKE_MINOR_VERSION VERSION_GREATER_EQUAL "18")
-        add_library(PDI_C INTERFACE IMPORTED)
-    else()
-        add_library(PDI_C INTERFACE)
-    endif()
+    add_library(PDI_C INTERFACE IMPORTED)
 
     target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
     add_library(PDI::pdi ALIAS PDI_C)
