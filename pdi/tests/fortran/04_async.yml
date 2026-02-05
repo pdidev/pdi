@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2021 Centre national de la recherche scientifique (CNRS)
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 metadata:
   intarray: {type: array, subtype: int, size: 10}
 data:

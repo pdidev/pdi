@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
+# SPDX-FileCopyrightText: 2019-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import pdi
 import numpy as np
 
 pdi.init("logging: trace")
 
-x = np.zeros([2,3,5])
+x = np.zeros([2, 3, 5])
 for i in range(2):
     for j in range(3):
         for k in range(5):
@@ -23,11 +27,11 @@ y[0][1][3] = 999
 print("y:")
 print(y, "\n")
 
-pdi.release("sh") # y
+pdi.release("sh")  # y
 
 del y
 
-pdi.reclaim("sh") # x
+pdi.reclaim("sh")  # x
 
 print("x:")
 print(x, "\n")

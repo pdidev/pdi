@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # Changelog for PDI API tests project
 All notable changes to the test_api project will be documented in this file.
 

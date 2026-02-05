@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * SPDX-FileCopyrightText: 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include <pdi.h>
 
 void print_secret_msg()

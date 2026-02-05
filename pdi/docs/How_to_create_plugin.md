@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2019-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+SPDX-FileCopyrightText: 2022-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # How to create a plugin {#how_to_create_plugin}
 
 ## Plugin class {#plugin_class}

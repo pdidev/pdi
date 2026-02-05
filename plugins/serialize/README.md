@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+SPDX-FileCopyrightText: 2022-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # Serialize plugin {#serialize_plugin}
 
 Serialize plugin allows to serialize shared data. The plugin will convert all

@@ -1,3 +1,14 @@
+<!--
+SPDX-FileCopyrightText: 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+SPDX-FileCopyrightText: 2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # Changelog for PDI Decl'HDF5 plugin
 All notable changes to the Decl'HDF5 plugin will be documented in this file.
 

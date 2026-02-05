@@ -1,3 +1,11 @@
+<!--
+SPDX-FileCopyrightText: 2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+SPDX-FileCopyrightText: 2019-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # The user-code plugin {#user_code_plugin}
 
 The `user-code` plugin enables one to call a user-defined function 

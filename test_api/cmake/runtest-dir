@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# SPDX-License-Identifier: BSD-3-Clause
+
 WKDIR="$(mktemp -p "${PWD}" -d run-XXXXXXXXXX)"
 function finish {
   rm -rf "${WKDIR}"

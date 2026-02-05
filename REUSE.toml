@@ -1,0 +1,11 @@
+version=1
+
+[[annotations]]
+path = [
+"pdi/VERSION",
+"**/AUTHORS",
+]
+SPDX-License-Identifier = "BSD-3-Clause"
+SPDX-FileCopyrightText = "The PDI team"
+
+

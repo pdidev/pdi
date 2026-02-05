@@ -1,3 +1,12 @@
+<!--
+SPDX-FileCopyrightText: 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+SPDX-FileCopyrightText: 2018-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+SPDX-FileCopyrightText: 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # The Decl'HDF5 plugin {#Decl_HDF5_plugin}
 
 **WARNING** This documentation is a work in progress and does not reflect the

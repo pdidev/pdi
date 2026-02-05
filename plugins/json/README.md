@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # JSON plugin {#JSON_plugin}
 
 **WARNING** This documentation is a work in progress and does not 

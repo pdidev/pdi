@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+SPDX-FileCopyrightText: 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # %PDI examples {#PDI_example}
 
 The example is made of a single source file (one version in each supported

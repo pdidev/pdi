@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2019-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # Joining the PDI dev team
 
 To make you known to others, please join the PDI slack channel at 

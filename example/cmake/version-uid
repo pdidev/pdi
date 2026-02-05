@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# SPDX-License-Identifier: BSD-3-Clause
+
 export LC_ALL=C
 
 GIT_VERSION="$(git rev-parse --verify --short=9 HEAD 2> /dev/null)"

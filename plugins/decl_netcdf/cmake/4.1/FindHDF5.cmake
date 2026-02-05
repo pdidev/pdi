@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file LICENSE.rst or https://cmake.org/licensing for details.
 

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# SPDX-FileCopyrightText: 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import pdi
 import numpy as np
 

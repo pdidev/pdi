@@ -1,0 +1,41 @@
+version=1
+
+[[annotations]]
+path="benchmark-4ed29ae/**/*"
+SPDX-License-Identifier="Apache-2.0"
+SPDX-FileCopyrightText="The Google Benchmark team"
+
+[[annotations]]
+path="googletest-56efe39/**/*"
+SPDX-License-Identifier="BSD-3-Clause"
+SPDX-FileCopyrightText="The Google Test team"
+
+[[annotations]]
+path="hdf5-1.12.3/**/*"
+SPDX-License-Identifier="BSD-3-Clause"
+SPDX-FileCopyrightText="The HDF5 team"
+
+[[annotations]]
+path="json-3.11.4/**/*"
+SPDX-License-Identifier="MIT"
+SPDX-FileCopyrightText="The libJSON team"
+
+[[annotations]]
+path="libyaml-0.2.5/**/*"
+SPDX-License-Identifier="MIT"
+SPDX-FileCopyrightText="The libYAML team"
+
+[[annotations]]
+path="netcdf-c-4.9.3/**/*"
+SPDX-License-Identifier="BSD-3-Clause"
+SPDX-FileCopyrightText="The NetCDF team"
+
+[[annotations]]
+path="pybind11-3.0.1/**/*"
+SPDX-License-Identifier="BSD-3-Clause"
+SPDX-FileCopyrightText="The pybind11 team"
+
+[[annotations]]
+path="spdlog-1.14.1/**/*"
+SPDX-License-Identifier="MIT"
+SPDX-FileCopyrightText="The spdlog team"

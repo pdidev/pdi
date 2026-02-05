@@ -1,3 +1,11 @@
+<!--
+SPDX-FileCopyrightText: 2019-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+SPDX-FileCopyrightText: 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+SPDX-FileCopyrightText: 2021 Centre national de la recherche scientifique (CNRS)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # Core Concepts {#Concepts}
 
 ## Philosophy of PDI {#pdi_philosophy}

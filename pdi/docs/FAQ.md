@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # FAQ {#FAQ}
 
 ## Compile PDI with Intel compiler

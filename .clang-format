@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# SPDX-FileCopyrightText: 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 ---
 AccessModifierOffset:                           -4
 AlignAfterOpenBracket:                          BlockIndent
