@@ -1022,3 +1022,50 @@ TEST(decl_netcdf_test, deflate)
 
 	PDI_finalize();
 }
+
+/*
+ * Name:                decl_netcdf_test.scalar_read
+ *
+ * Description:         Tests write and read of scalar of type mismatch
+ */
+TEST(decl_netcdf_test, scalar_read)
+{
+	const char* CONFIG_YAML
+		= "logging: trace                                      \n"
+		//   "metadata:                                           \n"
+		  "data:                                               \n"
+		  "  int_scalar: int32                                   \n"
+		  "  int_scalar_read: int64                            \n"
+		  "                                                    \n"
+		  "plugins:                                            \n"
+		  "  decl_netcdf:                                      \n"
+		  "    - file: 'test_read.nc'                           \n"
+		  "      variable:                                      \n"
+          "        int_scalar_32: int32                         \n"  
+		  "      on_event: write_data                            \n"
+		  "      write:                                         \n"
+		  "        int_scalar:                                  \n"
+		  "          variable: int_scalar_32                    \n"
+		  "    - file: 'test_read.nc'                           \n"
+		  "      on_event: read_data                           \n"
+		  "      variable:                                      \n"
+          "        int_scalar_32: int32                         \n"
+		  "      read:                                         \n"
+		  "        int_scalar_read:                            \n"
+		  "          variable:                                  \n"
+		  "            int_scalar_32                            \n";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	int32_t int_scalar = 42;
+	
+	// write data
+	PDI_multi_expose("write_data", "int_scalar", &int_scalar, PDI_OUT, NULL);
+
+	// read data
+	int64_t int_scalar_read=-1;
+	int status = PDI_multi_expose("read_data", "int_scalar_read", &int_scalar_read, PDI_IN, NULL);
+	ASSERT_NE(int_scalar_read, 42);    
+	
+	PDI_finalize();
+}

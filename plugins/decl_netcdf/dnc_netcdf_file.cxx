@@ -697,6 +697,116 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	nc_id var_id = var_it->second;
 
 	// read variable
+	nc_type var_nc_type;
+	nc_inq_vartype(src_id, var_id, &var_nc_type);
+	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
+		auto buffersize = scalar_type->buffersize();
+		if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
+			switch (var_nc_type) {
+			case NC_BYTE:
+				if (buffersize != 1) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_BYTE for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_BYTE for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
+				}
+				break;
+			case NC_SHORT:
+				if (buffersize != 2) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_SHORT for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_SHORT for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
+				}
+				break;
+			case NC_INT:
+				if (buffersize != 4) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_INT(32) for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_INT32 for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
+				}
+				break;
+			case NC_INT64:
+				if (buffersize != 8) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_INT64 for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_64 for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
+				}
+				break;
+			}
+		} else if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
+			switch (var_nc_type) {
+			case NC_UBYTE:
+				if (buffersize != 1) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_UBYTE for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UBYTE for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
+				}
+				break;
+			case NC_USHORT:
+				if (buffersize != 2) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_USHORT for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_USHORT for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
+				}
+				break;
+			case NC_UINT:
+				if (buffersize != 4) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_UINT(32) for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UINT(32) for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
+				}
+				break;
+			case NC_UINT64:
+				if (buffersize != 8) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_UINT64 for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UINT64 for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
+				}
+				break;
+			}
+		}
+	} else {
+		m_ctx.logger().warn(
+			"Inquired `{}' variable (nc_id = {}) from (nc_id = {}). Please be careful to match the buffer with the variable type",
+			variable.path(),
+			var_id,
+			src_id
+		);
+		// TODO : check other data types
+	}
+
+
 	m_ctx.logger().trace("Getting variable `{}'", variable.path());
 	if (var_stride.empty()) {
 		nc_try(nc_get_var(src_id, var_id, ref_w.get()), "Cannot read `{}' from file", variable.path());
