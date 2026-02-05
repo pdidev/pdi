@@ -1063,8 +1063,8 @@ TEST(decl_netcdf_test, scalar_read)
 
 	// read data
 	int64_t int_scalar_read = -1;
-	ASSERT_NE(PDI_OK, PDI_multi_expose("read_data", "int_scalar_read", &int_scalar_read, PDI_IN, NULL));
-	// ASSERT_NE(int_scalar_read, 42);
+	PDI_multi_expose("read_data", "int_scalar_read", &int_scalar_read, PDI_IN, NULL);
+	ASSERT_NE(int_scalar_read, 42);
 
 	PDI_finalize();
 }
