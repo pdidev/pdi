@@ -705,8 +705,9 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 			switch (var_nc_type) {
 			case NC_BYTE:
 				if (buffersize != 1) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_BYTE for a buffer of size {}", variable_name, buffersize);
 					throw PDI::Error{
-						PDI_ERR_CONFIG,
+						PDI_ERR_VALUE,
 						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_BYTE for a buffer of size {}",
 						variable_name,
 						buffersize
@@ -715,8 +716,9 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 				break;
 			case NC_SHORT:
 				if (buffersize != 2) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_SHORT for a buffer of size {}", variable_name, buffersize);
 					throw PDI::Error{
-						PDI_ERR_CONFIG,
+						PDI_ERR_VALUE,
 						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_SHORT for a buffer of size {}",
 						variable_name,
 						buffersize
@@ -725,19 +727,20 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 				break;
 			case NC_INT:
 				if (buffersize != 4) {
-					// throw PDI::Error{
-					// 	PDI_ERR_CONFIG,
-					// 	"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_INT32 for a buffer of size {}",
-					// 	variable_name,
-					// 	buffersize
-					// };
-					// TO DO: what shall we put here? an error or just a warning?
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_INT(32) for a buffer of size {}", variable_name, buffersize);
+					throw PDI::Error{
+						PDI_ERR_VALUE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_INT32 for a buffer of size {}",
+						variable_name,
+						buffersize
+					};
 				}
 				break;
 			case NC_INT64:
 				if (buffersize != 8) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_INT64 for a buffer of size {}", variable_name, buffersize);
 					throw PDI::Error{
-						PDI_ERR_CONFIG,
+						PDI_ERR_VALUE,
 						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_64 for a buffer of size {}",
 						variable_name,
 						buffersize
@@ -749,8 +752,9 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 			switch (var_nc_type) {
 			case NC_UBYTE:
 				if (buffersize != 1) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_UBYTE for a buffer of size {}", variable_name, buffersize);
 					throw PDI::Error{
-						PDI_ERR_CONFIG,
+						PDI_ERR_VALUE,
 						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UBYTE for a buffer of size {}",
 						variable_name,
 						buffersize
@@ -759,8 +763,9 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 				break;
 			case NC_USHORT:
 				if (buffersize != 2) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_USHORT for a buffer of size {}", variable_name, buffersize);
 					throw PDI::Error{
-						PDI_ERR_CONFIG,
+						PDI_ERR_VALUE,
 						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_USHORT for a buffer of size {}",
 						variable_name,
 						buffersize
@@ -769,8 +774,9 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 				break;
 			case NC_UINT:
 				if (buffersize != 4) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_UINT(32) for a buffer of size {}", variable_name, buffersize);
 					throw PDI::Error{
-						PDI_ERR_CONFIG,
+						PDI_ERR_VALUE,
 						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UINT(32) for a buffer of size {}",
 						variable_name,
 						buffersize
@@ -779,8 +785,9 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 				break;
 			case NC_UINT64:
 				if (buffersize != 8) {
+					m_ctx.logger().error("Datatype mismatch: read '{}' of type NC_UINT64 for a buffer of size {}", variable_name, buffersize);
 					throw PDI::Error{
-						PDI_ERR_CONFIG,
+						PDI_ERR_VALUE,
 						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UINT64 for a buffer of size {}",
 						variable_name,
 						buffersize
