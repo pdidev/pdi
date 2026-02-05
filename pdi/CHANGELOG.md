@@ -11,6 +11,16 @@ and this project adheres to
 
 
 
+## [1.10.1] - 2026-02-04
+
+### For users
+
+#### Fixed
+* Support multiple consecutive calls to `find_package(PDI)`
+  [#526](https://github.com/pdidev/pdi/issues/526)
+
+
+
 ## [1.10.0] - 2026-01-31
 
 ### For users

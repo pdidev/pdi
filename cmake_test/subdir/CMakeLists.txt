@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -27,39 +27,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-name: Test PDI
-description: 'Test PDI'
-inputs:
-  image:
-    required: true
-    description: "docker image in which to run the test"
-runs:
-  using: "composite"
-  steps:
-    - id: test
-      shell: bash
-      run: |
-        cat<<-'EOF' > run.sh
-          set -xe
-          JOBID="$(echo "${{github.run_id}}"|md5sum|cut -b 1)"
-          if [[ "01234567" == *"${JOBID}"* ]]; then export PDI_PLUGIN_PATH=/tmp/pdi_plugins; fi
-          export MAKEFLAGS='-j 4'
-          export CTEST_DIR="/tmp/tests_output"
-          export TEST_DIR="/tmp_dir_test"
-          exec /src/bin/build_and_run_all_tests
-        EOF
-        docker run \
-          --cidfile='docker.cid' \
-          -v ${PWD}:/src:ro \
-          --tmpfs /tmp_dir_test:exec,mode=1777 \
-          ${{inputs.image}} \
-          bash /src/run.sh
-        if docker cp "$(cat docker.cid)":/tmp/tests_output ./
-        then echo "with_report=true" >> "$GITHUB_OUTPUT"
-        else echo "with_report=false" >> "$GITHUB_OUTPUT"
-        fi
-    - id: Publish
-      uses: mikepenz/action-junit-report@v5
-      if: always() && steps.test.outputs.with_report == 'true'
-      with:
-        report_paths: 'tests_output/tests_*.xml'
+cmake_minimum_required(VERSION 3.22...4.2)
+
+set(COMPONENTS)
+if("${BUILD_FORTRAN}")
+	list(APPEND COMPONENTS f90)
+endif()
+if("${BUILD_PYTHON}")
+	list(APPEND COMPONENTS python pysupport)
+endif()
+find_package(PDI REQUIRED C plugins ${COMPONENTS})
