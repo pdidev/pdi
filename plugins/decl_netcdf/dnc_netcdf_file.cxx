@@ -677,12 +677,13 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 				break;
 			case NC_INT:
 				if (buffersize != 4) {
-					throw PDI::Error{
-						PDI_ERR_CONFIG,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_INT32 for a buffer of size {}",
-						variable_name,
-						buffersize
-					};
+					// throw PDI::Error{
+					// 	PDI_ERR_CONFIG,
+					// 	"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_INT32 for a buffer of size {}",
+					// 	variable_name,
+					// 	buffersize
+					// };
+					// TO DO: what shall we put here? an error or just a warning?
 				}
 				break;
 			case NC_INT64:
