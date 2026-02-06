@@ -26,6 +26,9 @@
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
 #include <mpi.h>
+	// #ifdef H5_HAVE_SUBFILING_VFD
+	#include <H5FDsubfiling.h>
+	// #endif
 #endif
 
 #include <memory>
@@ -57,7 +60,7 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
-
+// #error
 namespace decl_hdf5 {
 
 vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
@@ -302,7 +305,34 @@ void File_op::execute(Context& ctx)
 		if (0 > H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL)) handle_hdf5_err();
 		use_mpio = true;
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
+		// #ifdef H5_HAS_SUBFILING_VFD
+		
+		ctx.logger().warn("H5Pset_fapl_subfiling {}", filename);
+		H5FD_subfiling_config_t subf_config;
+    
+    	// 2. Start with the library defaults
+    	// Note: This fills subf_config with standard values for your version
+    	H5Pget_fapl_subfiling(file_lst, &subf_config);
+
+		// 3. Configure for "One-to-One" behavior
+		// SELECT_ALL means every MPI rank will act as an I/O concentrator
+    	subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
+
+		// Define 'N' via the environment variable OR the config
+		// For the code to force it:
+		setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", "1", 1);
+    
+   		// Optional: Set stripe size (e.g., 1MB)
+    	subf_config.shared_cfg.stripe_size = 1024;
+
+    	// 4. Apply the custom configuration
+    	H5Pset_fapl_subfiling(file_lst, &subf_config);
+
+
+		// #endif
+
 	}
+	
 #endif
 
 	hid_t h5_file_raw = -1;

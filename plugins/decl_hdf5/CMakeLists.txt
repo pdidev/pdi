@@ -47,24 +47,27 @@ include(GNUInstallDirs)
 # HDF5
 set(HDF5_USE_STATIC_LIBRARIES OFF)
 set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
+set(HDF5_ROOT "$ENV{HDF5_ROOT}")
 find_package(HDF5 REQUIRED COMPONENTS C)
 if("${HDF5_VERSION}" VERSION_LESS 1.10)
 	message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 endif()
 
-if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
+if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_PROVIDES_PARALLEL}")
 	message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
 endif()
 set(HDF5_DEPS hdf5::hdf5)
 
 # MPI
-if("${HDF5_IS_PARALLEL}")
+if("${HDF5_PROVIDES_PARALLEL}")
 	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 		set(MPI_COMPONENTS Fortran)
 	endif()
 	find_package(MPI REQUIRED COMPONENTS CXX C ${MPI_COMPONENTS})
 	set(HDF5_DEPS hdf5::hdf5 MPI::MPI_C MPI::MPI_CXX)
 endif()
+
+
 
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins ${PDI_COMPONENTS})
@@ -78,7 +81,7 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		file_op.cxx
 		hdf5_wrapper.cxx
 		selection.cxx)
-target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS})
+target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS} )
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # installation
