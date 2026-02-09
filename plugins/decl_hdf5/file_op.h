@@ -123,6 +123,7 @@ public:
 
 #ifdef H5_HAVE_PARALLEL
 	PDI::Expression communicator() const { return m_communicator; }
+
 	PDI::Expression subfiling() const { return m_subfiling; }
 #endif
 

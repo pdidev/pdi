@@ -75,7 +75,7 @@ const char* CONFIG_YAML
 	  "        dataset_selection: {start: [$jstart, $istart]}           \n";
 
 int main(int argc, char* argv[])
-{	
+{
 	const int icst = -1; /// constants values in the ghost nodes
 	const double rcst = -1.01;
 
@@ -98,11 +98,11 @@ int main(int argc, char* argv[])
 
 	int provided;
 	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-	
+
 	if (provided != MPI_THREAD_MULTIPLE) {
-        printf("provided level = %d, required level = %d\n", provided, MPI_THREAD_MULTIPLE);
+		printf("provided level = %d, required level = %d\n", provided, MPI_THREAD_MULTIPLE);
 		return -1;
-    }
+	}
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
 	PDI_init(conf);
