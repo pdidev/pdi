@@ -80,6 +80,9 @@ class File_op
 	/// map of descriptors to datasets name to get their sizes
 	std::unordered_map<std::string, PDI::Expression> m_dset_size_ops;
 
+	/// HDF5 subfiling
+	PDI::Expression m_subfiling;
+
 public:
 	/** Parse a "file" subtree to create one or multiple File_op's.
 	 *
@@ -120,6 +123,7 @@ public:
 
 #ifdef H5_HAVE_PARALLEL
 	PDI::Expression communicator() const { return m_communicator; }
+	PDI::Expression subfiling() const { return m_subfiling; }
 #endif
 
 	/** Executes the requested operation.

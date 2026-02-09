@@ -60,8 +60,9 @@ const char* CONFIG_YAML
 	  "plugins:                                                         \n"
 	  "  mpi:                                                           \n"
 	  "  decl_hdf5:                                                     \n"
-	  "    file: subfiling.h5                             \n"
+	  "    file: subfiling.h5                                           \n"
 	  "    communicator: $MPI_COMM_WORLD                                \n"
+	  "    subfiling: true                                              \n"
 	  "    datasets:                                                    \n"
 	  "      reals:  {type: array, subtype: double, size: [$njt, $nit]} \n"
 	  "      values: {type: array, subtype: int, size: [$njt, $nit]}    \n"
@@ -72,13 +73,6 @@ const char* CONFIG_YAML
 	  "      values:                                                    \n"
 	  "        when: $input=0                                           \n"
 	  "        dataset_selection: {start: [$jstart, $istart]}           \n";
-	//   "    read:                                                        \n"
-	//   "      reals:                                                     \n"
-	//   "        when: $input=1                                           \n"
-	//   "        dataset_selection: {start: [$jstart, $istart]}           \n"
-	//   "      values:                                                    \n"
-	//   "        when: $input=1                                           \n"
-	//   "        dataset_selection: {start: [$jstart, $istart]}           \n";
 
 int main(int argc, char* argv[])
 {	
