@@ -858,95 +858,94 @@ TEST(decl_netcdf_test, size_of)
 */
 TEST(decl_netcdf_test, deflate)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                                                \n"
-		  "metadata:                                                     \n"
-		  "  pb_size: int                                                \n"
-		  "  input: int                                                  \n"
-		  "  chunk: int                                                  \n"
-		  "data:                                                         \n"
-		  "  int_scalar: int                                             \n"
-		  "  int_array: {type: array, subtype: int, size: $pb_size}      \n"
-		  "  int_matrix:                                                 \n"
-		  "    type: array                                               \n"
-		  "    subtype: int                                              \n"
-		  "    size: ['$pb_size', '$pb_size']                            \n"
-		  "plugins:                                                      \n"
-		  "  decl_netcdf:                                                \n"
-		  "    - file: 'test_deflate_0.nc'                               \n"
-		  "      variables:                                              \n"
-		  "        int_scalar: int                                       \n"
-		  "        int_array:                                            \n"
-		  "          type: array                                         \n"
-		  "          subtype: int                                        \n"
-		  "          size: $pb_size                                      \n"
-		  "          dimensions: ['time']                                \n"
-		  "        int_matrix:                                           \n"
-		  "          type: array                                         \n"
-		  "          subtype: int                                        \n"
-		  "          size: ['$pb_size', '$pb_size']                      \n"
-		  "          dimensions: ['col', 'row']                          \n"
-		  "      when: '${input}=0'                                      \n"
-		  "      write: [int_scalar, int_array, int_matrix]              \n"
-		  "    - file: 'test_deflate_6.nc'                               \n"
-		  "      variables:                                              \n"
-		  "        int_scalar: int                                       \n"
-		  "        int_array:                                            \n"
-		  "          type: array                                         \n"
-		  "          subtype: int                                        \n"
-		  "          size: $pb_size                                      \n"
-		  "          dimensions: ['time']                                \n"
-		  "          deflate: 6                                          \n"
-		  "        int_matrix:                                           \n"
-		  "          type: array                                         \n"
-		  "          subtype: int                                        \n"
-		  "          size: ['$pb_size', '$pb_size']                      \n"
-		  "          dimensions: ['col', 'row']                          \n"
-		  "          deflate: 6                                          \n"
-		  "      when: '${input}=0'                                      \n"
-		  "      write: [int_scalar, int_array, int_matrix]              \n"
-		  "    - file: 'test_deflate_9.nc'                               \n"
-		  "      deflate: 9                                              \n"
-		  "      variables:                                              \n"
-		  "        int_scalar: int                                       \n"
-		  "        int_array:                                            \n"
-		  "          type: array                                         \n"
-		  "          subtype: int                                        \n"
-		  "          size: $pb_size                                      \n"
-		  "          dimensions: ['time']                                \n"
-		  "          chunking: $chunk                                    \n"
-		  "        int_matrix:                                           \n"
-		  "          type: array                                         \n"
-		  "          subtype: int                                        \n"
-		  "          size: ['$pb_size', '$pb_size']                      \n"
-		  "          dimensions: ['col', 'row']                          \n"
-		  "          chunking: ['$chunk', '$chunk']                      \n"
-		  "      when: '${input}=0'                                      \n"
-		  "      write: [int_scalar, int_array, int_matrix]              \n"
-		  "    - file: 'test_deflate_mix.nc'                             \n"
-		  "      deflate: 6                                              \n"
-		  "      variables:                                              \n"
-		  "        int_scalar: int                                       \n"
-		  "        int_array:                                            \n"
-		  "          type: array                                         \n"
-		  "          subtype: int                                        \n"
-		  "          size: $pb_size                                      \n"
-		  "          dimensions: ['time']                                \n"
-		  "          deflate: 9                                          \n"
-		  "          chunking: $chunk                                    \n"
-		  "        int_matrix:                                           \n"
-		  "          type: array                                         \n"
-		  "          subtype: int                                        \n"
-		  "          size: ['$pb_size', '$pb_size']                      \n"
-		  "          dimensions: ['col', 'row']                          \n"
-		  "          chunking: ['$chunk', '$chunk']                      \n"
-		  "      when: '${input}=0'                                      \n"
-		  "      write: [int_scalar, int_array, int_matrix]              \n"
-		  "    - file: 'test_deflate_6.nc'                               \n"
-		  "      when: '${input}=1'                                      \n"
-		  "      read: [int_scalar, int_array, int_matrix]               \n";
-
-
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    metadata:
+      pb_size: int
+      input: int
+      chunk: int
+    data:
+      int_scalar: int
+      int_array: {type: array, subtype: int, size: $pb_size}
+      int_matrix:
+        type: array
+        subtype: int
+        size: ['$pb_size', '$pb_size']
+    plugins:
+      decl_netcdf:
+      - file: 'test_deflate_0.nc'
+        variables:
+          int_scalar: int
+          int_array:
+            type: array
+            subtype: int
+            size: $pb_size
+            dimensions: ['time']
+          int_matrix:
+            type: array
+            subtype: int
+            size: ['$pb_size', '$pb_size']
+            dimensions: ['col', 'row']
+        when: '${input}=0'
+        write: [int_scalar, int_array, int_matrix]
+      - file: 'test_deflate_6.nc'
+        variables:
+          int_scalar: int
+          int_array:
+            type: array
+            subtype: int
+            size: $pb_size
+            dimensions: ['time']
+            deflate: 6
+          int_matrix:
+            type: array
+            subtype: int
+            size: ['$pb_size', '$pb_size']
+            dimensions: ['col', 'row']
+            deflate: 6
+        when: '${input}=0'
+        write: [int_scalar, int_array, int_matrix]
+      - file: 'test_deflate_9.nc'
+        deflate: 9
+        variables:
+          int_scalar: int
+          int_array:
+            type: array
+            subtype: int
+            size: $pb_size
+            dimensions: ['time']
+            chunking: $chunk
+          int_matrix:
+            type: array
+            subtype: int
+            size: ['$pb_size', '$pb_size']
+            dimensions: ['col', 'row']
+            chunking: ['$chunk', '$chunk']
+        when: '${input}=0'
+        write: [int_scalar, int_array, int_matrix]
+      - file: 'test_deflate_mix.nc'
+        deflate: 6
+        variables:
+          int_scalar: int
+          int_array:
+            type: array
+            subtype: int
+            size: $pb_size
+            dimensions: ['time']
+            deflate: 9
+            chunking: $chunk
+          int_matrix:
+            type: array
+            subtype: int
+            size: ['$pb_size', '$pb_size']
+            dimensions: ['col', 'row']
+            chunking: ['$chunk', '$chunk']
+        when: '${input}=0'
+        write: [int_scalar, int_array, int_matrix]
+      - file: 'test_deflate_6.nc'
+        when: '${input}=1'
+        read: [int_scalar, int_array, int_matrix]
+    )";
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
 
