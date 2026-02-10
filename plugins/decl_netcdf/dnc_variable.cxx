@@ -98,12 +98,12 @@ const std::vector<Dnc_attribute>& Dnc_variable::attributes() const
 	return m_attributes;
 }
 
-const PDI::Expression Dnc_variable::deflate() const
+const PDI::Expression& Dnc_variable::deflate() const
 {
 	return m_deflate;
 }
 
-const PDI::Expression Dnc_variable::chunking() const
+const PDI::Expression& Dnc_variable::chunking() const
 {
 	return m_chunking;
 }

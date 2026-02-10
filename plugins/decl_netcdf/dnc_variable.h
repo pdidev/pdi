@@ -105,13 +105,13 @@ public:
 	 *
 	 * \return deflate level of the variable
 	 */
-	const PDI::Expression deflate() const;
+	const PDI::Expression& deflate() const;
 
 	/** Getter for variable chunk size
 	 *
 	 * \return chunk size of the variable
 	 */
-	const PDI::Expression chunking() const;
+	const PDI::Expression& chunking() const;
 };
 
 } // namespace decl_netcdf
