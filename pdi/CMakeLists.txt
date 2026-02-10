@@ -138,6 +138,7 @@ set(PDI_C_SRC
 		src/data_descriptor_impl.cxx
 		src/datatype.cxx
 		src/datatype_template.cxx
+		src/datatype_template_reference.cxx
 		src/error.cxx
 		src/expression.cxx
 		src/expression/impl.cxx

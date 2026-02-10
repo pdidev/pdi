@@ -23,125 +23,129 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_CONTEXT_H_
-#define PDI_CONTEXT_H_
+#include "config.h"
 
-#include <functional>
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
-#include <pdi/pdi_fwd.h>
-#include <pdi/callbacks.h>
-#include <pdi/data_descriptor.h>
-#include <pdi/datatype_template.h>
-#include <pdi/logger.h>
-#include <pdi/ref_any.h>
+#include "pdi.h"
+#include "pdi/array_datatype.h"
+#include "pdi/context.h"
+#include "pdi/error.h"
+#include "pdi/expression.h"
+#include "pdi/paraconf_wrapper.h"
+#include "pdi/pointer_datatype.h"
+#include "pdi/record_datatype.h"
+#include "pdi/scalar_datatype.h"
+#include "pdi/tuple_datatype.h"
+
+#include "pdi/datatype_template_reference.h"
 
 namespace PDI {
 
-class PDI_EXPORT Context
+using std::exception;
+using std::make_shared;
+using std::max;
+using std::move;
+using std::string;
+using std::transform;
+using std::unique_ptr;
+using std::vector;
+
+class Local_context: public Context
 {
-public:
-	/** An iterator used to go through the descriptor store.
-	 */
-	class Iterator
-	{
-		friend class Context;
-		/// The iterator this wraps
-		std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator m_data;
-		Iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
-		Iterator(std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator&& data);
-
-	public:
-		Data_descriptor* operator->();
-		Data_descriptor& operator* ();
-		Iterator& operator++ ();
-		bool operator!= (const Iterator&);
-		bool operator== (const Iterator&);
-	};
-
-	/** A function that parses a PC_tree_t to create a datatype_template
-	 */
-	typedef std::function<Datatype_template_sptr(Context&, PC_tree_t)> Datatype_template_parser;
-
-protected:
-	Iterator get_iterator(const std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator& data);
-
-	Iterator get_iterator(std::unordered_map<std::string, std::unique_ptr<Data_descriptor>>::iterator&& data);
+	Context* m_global_context;
 
 public:
-	virtual ~Context();
+	Local_context(Context& context)
+		: m_global_context(&context)
+	{}
+
+	virtual Data_descriptor& desc(const std::string& name) override { return m_global_context->desc(name); }
 
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& desc(const std::string& name) = 0;
+	virtual Data_descriptor& desc(const char* name) override { return m_global_context->desc(name); }
 
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& desc(const char* name) = 0;
+	virtual Data_descriptor& operator[] (const std::string& name) override { return (*m_global_context)[name]; }
 
 	/** Accesses the descriptor for a specific name. Might be uninitialized
 	 */
-	virtual Data_descriptor& operator[] (const std::string& name) = 0;
-
-	/** Accesses the descriptor for a specific name. Might be uninitialized
-	 */
-	virtual Data_descriptor& operator[] (const char* name) = 0;
+	virtual Data_descriptor& operator[] (const char* name) override { return (*m_global_context)[name]; }
 
 	/** Returns an iterator on the first descriptor
 	 */
-	virtual Iterator begin() = 0;
+	virtual Iterator begin() override { return m_global_context->begin(); }
 
 	/** Returns an iterator past the last descriptor
 	 */
-	virtual Iterator end() = 0;
+	virtual Iterator end() override { return m_global_context->end(); }
 
 	/** Find the Data_descriptor corresponding to a given name
 	 *
 	 * \param[in] name the Data_descriptor name
 	 * \return an iterator to the requested Data_descriptor name. If no such element is found, past-the-end (see end()) iterator is returned.
 	 */
-	virtual Iterator find(const std::string& name) = 0;
+	virtual Iterator find(const std::string& name) override { return m_global_context->find(name); }
 
 	/** Triggers a PDI "event"
 	 * \param[in] name the event name
 	 */
-	virtual void event(const char* name) = 0;
+	virtual void event(const char* name) override { return m_global_context->event(name); }
 
 	/** Logger getter
 	 * \return logger
 	 */
-	virtual Logger& logger() = 0;
+	virtual Logger& logger() override { return m_global_context->logger(); }
 
 	/** Callbacks of the context
 	 * \return context callbacks
 	 */
-	virtual Callbacks& callbacks() = 0;
+	virtual Callbacks& callbacks() override { return m_global_context->callbacks(); }
 
 	/** Creates a new datatype template from a paraconf-style config
 	 * \param[in] node the configuration to read
 	 *
 	 * \return the type generated
 	 */
-	virtual Datatype_template_sptr datatype(PC_tree_t node) = 0;
-	
+	virtual Datatype_template_sptr datatype(PC_tree_t node) override { return m_global_context->datatype(node); }
+
 	/**
 	 * TODO add doc
 	 */
-	virtual Datatype_template_definition_sptr datatype(const std::string &str) = 0;
+	virtual Datatype_template_definition_sptr datatype(const std::string& str) override { return m_global_context->datatype(str); }
 
 	/** Adds new datatype parser to the context
 	 *
 	 * \param[in] name name of the datatype to add
 	 * \param[in] parser function that creates new datatype_template from PC_tree_t
 	 */
-	virtual void add_datatype(const std::string& name, Datatype_template_parser parser) = 0;
+	virtual void add_datatype(const std::string& name, Datatype_template_parser parser) override
+	{
+		return m_global_context->add_datatype(name, parser);
+	}
 
 	/// Finalizes PDI and exits application
-	virtual void finalize_and_exit() = 0;
+	virtual void finalize_and_exit() override { return m_global_context->finalize_and_exit(); }
 };
 
-} // namespace PDI
+Datatype_sptr Datatype_template_reference::evaluate(Context& ctx) const
+{
+	// need to evaluate m_definition and m_arguments
+	// create a new local context, falls back to old context if method not available
+	Local_context callee_context(ctx);
+	
+	// need to populate the callee_context
+	// give the values of m_parameters
+	// evaluate each element in its context
+	return m_definition->m_content->evaluate(callee_context);
+}
 
-#endif // PDI_CONTEXT_H_
+} // namespace PDI
