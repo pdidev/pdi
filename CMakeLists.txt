@@ -34,9 +34,6 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(PDI_DIST LANGUAGES C CXX)
 
-set(HDF5_ROOT "$ENV{HDF5_ROOT}")
-find_package(HDF5 REQUIRED COMPONENTS C )
-
 ### Build options
 
 ## Global options
