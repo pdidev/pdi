@@ -1,0 +1,10 @@
+Multiple people have contributed to the PDI cmake tests. To show our
+appreciation for their public spirit, we list here in alphabetical order a
+condensed list of their contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Support calling other existing tests (example, test_api, tests)
+
+Benoit Martin - CEA (benoit.martin2@cea.fr)
+* Initial implementation
