@@ -284,7 +284,7 @@ endif()
 ## HDF5
 
 if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
-	
+	find_package(HDF5 COMPONENTS C )
 	set(HDF5_CMAKE_CACHE_ARGS)
 	
 	if("${BUILD_HDF5_PARALLEL}")
@@ -320,7 +320,6 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			${HDF5_CMAKE_CACHE_ARGS}
 		VERSION
 	)
-	# find_package(HDF5 REQUIRED COMPONENTS C)
 	if("${HDF5_FOUND}")
 		if("${HDF5_VERSION}" VERSION_LESS 1.10)
 			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")

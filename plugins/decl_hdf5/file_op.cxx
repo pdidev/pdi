@@ -26,9 +26,9 @@
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
 #include <mpi.h>
-	#ifdef H5_HAVE_SUBFILING_VFD
-	#include <H5FDsubfiling.h>
-	#endif
+#ifdef H5_HAVE_SUBFILING_VFD
+#include <H5FDsubfiling.h>
+#endif
 #endif
 
 
@@ -311,7 +311,7 @@ void File_op::execute(Context& ctx)
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
 
 		if (subfiling().to_long(ctx)) {
-			#ifdef H5_HAVE_SUBFILING_VFD
+#ifdef H5_HAVE_SUBFILING_VFD
 			ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
 
 			H5FD_subfiling_config_t subf_config;
@@ -323,9 +323,9 @@ void File_op::execute(Context& ctx)
 			subf_config.shared_cfg.stripe_size = 1024;
 
 			H5Pset_fapl_subfiling(file_lst, &subf_config);
-			#else
+#else
 			ctx.logger().warn("HDF5 subfiling enabled for file {}, but the used HDF5 does not support Subfiling VFD.", filename);
-			#endif
+#endif
 		}
 	}
 #endif
