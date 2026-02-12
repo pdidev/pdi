@@ -328,6 +328,9 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			set(HDF5_IS_PARALLEL ${HDF5_PROVIDES_PARALLEL})
 		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
+			if( NOT "${HDF5_IS_PARALLEL}" )
+				message(FATAL_ERROR " HDF5_IS_PARALLEL = ${HDF5_IS_PARALLEL} , is not corretly set")
+			endif()
 			message(FATAL_ERROR
 				"You requested a parallel HDF5 build (-DBUILD_HDF5_PARALLEL=ON) but a sequential SYSTEM version has been found\n"
 				"    you have the following options:\n"
