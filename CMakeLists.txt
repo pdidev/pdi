@@ -34,6 +34,8 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(PDI_DIST LANGUAGES C CXX)
 
+
+
 ### Build options
 
 ## Global options
@@ -284,7 +286,6 @@ endif()
 ## HDF5
 
 if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
-	find_package(HDF5 COMPONENTS C )
 	set(HDF5_CMAKE_CACHE_ARGS)
 	
 	if("${BUILD_HDF5_PARALLEL}")
@@ -324,9 +325,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		if("${HDF5_VERSION}" VERSION_LESS 1.10)
 			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
-		if("${HDF5_VERSION}" VERSION_GREATER_EQUAL 2.0.0)
-			set(HDF5_IS_PARALLEL ${HDF5_PROVIDES_PARALLEL})
-		endif()
+
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			if( NOT "${HDF5_IS_PARALLEL}" )
 				message(FATAL_ERROR " HDF5_IS_PARALLEL = ${HDF5_IS_PARALLEL} , is not corretly set")
@@ -346,6 +345,7 @@ endif()
 ## NetCDF
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
+
 	if("${BUILD_HDF5_PARALLEL}")
 		set(NETCDF_CC "${MPI_C_COMPILER}")
 	else()
