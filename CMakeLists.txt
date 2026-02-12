@@ -286,6 +286,7 @@ endif()
 ## HDF5
 
 if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
+
 	set(HDF5_CMAKE_CACHE_ARGS)
 	
 	if("${BUILD_HDF5_PARALLEL}")
@@ -325,7 +326,6 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 		if("${HDF5_VERSION}" VERSION_LESS 1.10)
 			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
-
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			if( NOT "${HDF5_IS_PARALLEL}" )
 				message(FATAL_ERROR " HDF5_IS_PARALLEL = ${HDF5_IS_PARALLEL} , is not corretly set")
@@ -345,7 +345,7 @@ endif()
 ## NetCDF
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
-
+    
 	if("${BUILD_HDF5_PARALLEL}")
 		set(NETCDF_CC "${MPI_C_COMPILER}")
 	else()
