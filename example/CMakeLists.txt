@@ -1,6 +1,7 @@
 #=============================================================================
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+#
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -100,7 +101,7 @@ add_executable(PDI_example_F example.F90)
 target_link_libraries(PDI_example_F PRIVATE PDI::PDI_f90 paraconf::paraconf_f90 MPI_with_mod m)
 endif()
 
-set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
+set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/runtest-dir")
 
 if("${BUILD_DECL_HDF5_PLUGIN}")
 add_test(NAME PDI_example_decl_hdf5_C COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_hdf5.yml")

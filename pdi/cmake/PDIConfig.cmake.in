@@ -1,5 +1,6 @@
 ################################################################################
 # Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,6 +29,60 @@ cmake_policy(VERSION 3.22...4.2)
 include(CMakeFindDependencyMacro)
 
 
+# List of Components supported by the project. 
+
+set(_PDI_AVAILABLE_COMPONENTS C f90 Fortran plugins pysupport python)
+
+
+# Check that all required components are valid
+
+foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
+	if(NOT "${_PDI_ONE_COMPONENT}" IN_LIST _PDI_AVAILABLE_COMPONENTS)
+		# We do not respect PDI_FIND_QUIETLY because we were called in an invalid way
+		message(FATAL_ERROR "PDI: unknown component: \"${_PDI_ONE_COMPONENT}\"")
+	elseif("x${_PDI_ONE_COMPONENT}" STREQUAL "xFortran" AND NOT "${_PDI_FIND_OPTIONAL_QUIETLY}")
+		message(WARNING "PDI: \"Fortran\" component is deprecated, please use \"f90\" instead")
+	endif()
+endforeach()
+
+
+# Normalize the component names
+
+if("Fortran" IN_LIST PDI_FIND_COMPONENTS)
+	list(REMOVE_ITEM PDI_FIND_COMPONENTS "Fortran")
+	list(APPEND PDI_FIND_COMPONENTS "f90")
+	if("${PDI_FIND_REQUIRED_Fortran}")
+		set(PDI_FIND_REQUIRED_f90 TRUE)
+	endif()
+endif()
+
+
+# by default, if no component is specified, look for all but only require C
+
+set(_PDI_FIND_OPTIONAL_QUIETLY "${PDI_FIND_QUIETLY}")
+if("xx" STREQUAL "x${PDI_FIND_COMPONENTS}x")
+	set(PDI_FIND_COMPONENTS C f90 pysupport plugins)
+	set(PDI_FIND_REQUIRED_C TRUE)
+	set(PDI_FIND_REQUIRED_f90 FALSE)
+	set(PDI_FIND_REQUIRED_pysupport FALSE)
+	set(PDI_FIND_REQUIRED_plugins FALSE)
+	set(_PDI_FIND_OPTIONAL_QUIETLY TRUE)
+endif()
+
+
+# Add dependency components
+
+if("pysupport" IN_LIST PDI_FIND_COMPONENTS)
+	list(INSERT PDI_FIND_COMPONENTS 0 "plugins")
+endif()
+
+
+# Ensure C is present and remove any duplicate requested component
+
+list(INSERT PDI_FIND_COMPONENTS 0 "C")
+list(REMOVE_DUPLICATES PDI_FIND_COMPONENTS)
+
+
 # Compute the installation prefix relative to this file.
 
 set(_PDI_INSTALL_CMAKEDIR "@INSTALL_CMAKEDIR@")
@@ -42,50 +97,30 @@ endif()
 
 set(PDI_DEFAULT_PLUGINDIR  "@INSTALL_PDIPLUGINDIR@" )
 
-# Normalize the component names
-
-if("Fortran" IN_LIST PDI_FIND_COMPONENTS)
-	list(REMOVE_ITEM PDI_FIND_COMPONENTS "Fortran")
-	list(APPEND PDI_FIND_COMPONENTS "f90")
-	set(PDI_FIND_REQUIRED_f90 "${PDI_FIND_REQUIRED_Fortran}")
-endif()
-
-
-# by default, if no component is specified, look for all but only require C
-
-set(_PDI_FIND_QUIETLY_OPTIONAL "${PDI_FIND_QUIETLY}")
-if("xx" STREQUAL "x${PDI_FIND_COMPONENTS}x")
-	set(PDI_FIND_COMPONENTS C f90)
-	set(PDI_FIND_REQUIRED_C TRUE)
-	set(PDI_FIND_REQUIRED_f90 FALSE)
-	set(PDI_FIND_REQUIRED_python FALSE)
-	set(_PDI_FIND_QUIETLY_OPTIONAL TRUE)
-endif()
-
-
-# Add dependencies
-
-if("pysupport" IN_LIST PDI_FIND_COMPONENTS)
-	list(INSERT PDI_FIND_COMPONENTS 0 "plugins")
-endif()
-list(INSERT PDI_FIND_COMPONENTS 0 "C")
-
 
 # The executable
 
-set(PDI_pdirun_EXECUTABLE "${_PDI_IMPORT_PREFIX}/@CMAKE_INSTALL_BINDIR@/pdirun")
-add_executable(PDI::pdirun IMPORTED)
-set_target_properties(PDI::pdirun PROPERTIES IMPORTED_LOCATION "${PDI_pdirun_EXECUTABLE}")
+if(NOT TARGET "PDI::pdirun")
+	add_executable(PDI::pdirun IMPORTED)
+	set_target_properties(PDI::pdirun PROPERTIES IMPORTED_LOCATION "${_PDI_IMPORT_PREFIX}/@CMAKE_INSTALL_BINDIR@/pdirun")
+elseif("${DEBUG_PDI_FIND}" AND NOT "${PDI_FIND_QUIETLY}")
+	message(DEBUG "Target PDI::pdirun is already defined. Skipping defining it.")
+endif()
 
 
-# The other targets
+# The exported library targets
 
-foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
-	include("${CMAKE_CURRENT_LIST_DIR}/PDI_${_PDI_ONE_COMPONENT}.cmake" OPTIONAL)
-endforeach()
+include("${CMAKE_CURRENT_LIST_DIR}/PDI_C.cmake" OPTIONAL)
+include("${CMAKE_CURRENT_LIST_DIR}/PDI_plugins.cmake" OPTIONAL)
+if(pysupport IN_LIST PDI_FIND_COMPONENTS)
+	include("${CMAKE_CURRENT_LIST_DIR}/PDI_pysupport.cmake" OPTIONAL)
+endif()
+if(f90 IN_LIST PDI_FIND_COMPONENTS)
+	include("${CMAKE_CURRENT_LIST_DIR}/PDI_f90.cmake" OPTIONAL)
+endif()
 
 
-# Check the components
+# Check that all required components were found
 
 foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
 	if("@BUILD_PYTHON@" AND "x${_PDI_ONE_COMPONENT}" STREQUAL "xpython")
@@ -94,45 +129,74 @@ foreach(_PDI_ONE_COMPONENT ${PDI_FIND_COMPONENTS})
 		if("${PDI_FIND_REQUIRED_${_PDI_ONE_COMPONENT}}")
 			set(PDI_FOUND "FALSE")
 			if(NOT "${PDI_FIND_QUIETLY}")
-				message(WARNING "PDI: required component \"${_PDI_ONE_COMPONENT}\" not found")
+				message(SEND_ERROR "PDI: required component \"${_PDI_ONE_COMPONENT}\" not found")
 			endif()
-		else()
-			if(NOT "${_PDI_FIND_QUIETLY_OPTIONAL}")
-				message("PDI: optional component \"${_PDI_ONE_COMPONENT}\" not found")
-			endif()
+		elseif(NOT "${_PDI_FIND_OPTIONAL_QUIETLY}")
+			message(STATUS "PDI: optional component \"${_PDI_ONE_COMPONENT}\" not found")
 		endif()
 	endif()
 endforeach()
 
 
-# Add aliases
+# Add aliases for (deprecated) backward compatibility
 
-add_library(PDI_C INTERFACE)
-target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
-add_library(PDI::pdi ALIAS PDI_C)
-if(TARGET "PDI::PDI_f90")
+if(TARGET "PDI::PDI_C" AND NOT TARGET "PDI_C")
+	add_library(PDI_C INTERFACE)
+	target_link_libraries(PDI_C INTERFACE PDI::PDI_C)
+	set_target_properties(PDI_C PROPERTIES DEPRECATION
+			"The unnamespaced `PDI_C', and `PDI::pdi` targets are deprecated, please use `PDI::PDI_C' instead.")
+elseif(TARGET "PDI::PDI_C" AND "${DEBUG_PDI_FIND}" AND NOT "${PDI_FIND_QUIETLY}")
+	message(DEBUG "Target PDI_C is already defined. Skipping aliasing it.")
+endif()
+
+if(TARGET "PDI::PDI_C" AND NOT TARGET "PDI::pdi")
+	add_library(PDI::pdi ALIAS PDI_C)
+elseif(TARGET "PDI::PDI_C" AND "${DEBUG_PDI_FIND}" AND NOT "${PDI_FIND_QUIETLY}")
+	message(DEBUG "Target PDI::pdi is already defined. Skipping aliasing it.")
+endif()
+
+if(TARGET "PDI::PDI_f90" AND NOT TARGET "PDI_f90")
 	add_library(PDI_f90 INTERFACE)
 	target_link_libraries(PDI_f90 INTERFACE PDI::PDI_f90)
+	set_target_properties(PDI_f90 PROPERTIES DEPRECATION
+			"The unnamespaced `PDI_f90', `PDI::PDI_Fortran', and `PDI::pdi_f90' targets are deprecated, please use `PDI::PDI_f90' instead.")
+elseif(TARGET "PDI::PDI_f90" AND "${DEBUG_PDI_FIND}" AND NOT "${PDI_FIND_QUIETLY}")
+	message(DEBUG "Target PDI_f90 is already defined. Skipping aliasing it.")
+endif()
+
+if(TARGET "PDI::PDI_f90" AND NOT TARGET "PDI::PDI_Fortran")
 	add_library(PDI::PDI_Fortran ALIAS PDI_f90)
+elseif(TARGET "PDI::PDI_f90" AND "${DEBUG_PDI_FIND}" AND NOT "${PDI_FIND_QUIETLY}")
+	message(DEBUG "Target PDI::PDI_Fortran is already defined. Skipping aliasing it.")
+endif()
+
+if(TARGET "PDI::PDI_f90" AND NOT TARGET "PDI::pdi_f90")
 	add_library(PDI::pdi_f90 ALIAS PDI_f90)
+elseif(TARGET "PDI::PDI_f90" AND "${DEBUG_PDI_FIND}" AND NOT "${PDI_FIND_QUIETLY}")
+	message(DEBUG "Target PDI::pdi_f90 is already defined. Skipping aliasing it.")
 endif()
 
 
-# Import our dependencies, for Paraconf, require f90 if is was required from us
+# Find our dependencies
 
 if(TARGET PDI::PDI_plugins)
-	find_dependency(spdlog 1.9)
+	find_dependency(spdlog   "@PDI_REQUIRED_SPDLOG_VERSION@")
 endif()
 if(TARGET PDI::PDI_pysupport)
-	find_dependency(pybind11 2.9)
+	find_dependency(Python3 "@PDI_REQUIRED_PYTHON_VERSION@" COMPONENTS Interpreter Development)
+	find_dependency(pybind11 "@PDI_REQUIRED_PYBIND11_VERSION@")
 endif()
 if(TARGET PDI::PDI_f90)
-	find_dependency(paraconf 1.0.0 COMPONENTS C f90)
+	find_dependency(paraconf "@PDI_REQUIRED_PARACONF_VERSION@" COMPONENTS C f90)
 else()
-	find_dependency(paraconf 1.0.0 COMPONENTS C)
+	find_dependency(paraconf "@PDI_REQUIRED_PARACONF_VERSION@" COMPONENTS C)
 endif()
 
-unset(_PDI_FIND_QUIETLY_OPTIONAL)
+
+# Cleanup after ourselves
+
+unset(_PDI_AVAILABLE_COMPONENTS)
+unset(_PDI_FIND_OPTIONAL_QUIETLY)
 unset(_PDI_IMPORT_PREFIX)
 unset(_PDI_INCLUDE_OPTIONAL)
 unset(_PDI_INSTALL_CMAKEDIR)

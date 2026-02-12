@@ -92,13 +92,17 @@ set(PARACONF_COMPONENTS "C")
 if("${BUILD_FORTRAN}")
 	list(APPEND PARACONF_COMPONENTS "f90")
 endif()
-find_package(paraconf 1.0 REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
-find_package(spdlog 1.9 REQUIRED) # must match PDIConfig.cmake.in
+set(PDI_REQUIRED_PARACONF_VERSION 1.0) # used in PDIConfig too
+find_package(paraconf "${PDI_REQUIRED_PARACONF_VERSION}" REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
+set(PDI_REQUIRED_SPDLOG_VERSION 1.9) # used in PDIConfig too
+find_package(spdlog "${PDI_REQUIRED_SPDLOG_VERSION}" REQUIRED) # must match PDIConfig.cmake.in
 if("${BUILD_PYTHON}")
-	find_package(Python3Path 3.10 REQUIRED COMPONENTS Interpreter Development)
+	set(PDI_REQUIRED_PYTHON_VERSION 3.10) # used in PDIConfig too
+	find_package(Python3Path "${PDI_REQUIRED_PYTHON_VERSION}" REQUIRED COMPONENTS Interpreter Development)
 	set(Python_ADDITIONAL_VERSIONS "${Python3_VERSION}" CACHE STRING "Python version found by FindPython3 for coherency" FORCE)
 	set(PYBIND11_PYTHON_VERSION "${Python3_VERSION}" CACHE STRING "Python version to use for compiling modules" FORCE)
-	find_package(pybind11 2.9 REQUIRED) # must match PDIConfig.cmake.in
+	set(PDI_REQUIRED_PYBIND11_VERSION 2.9) # used in PDIConfig too
+	find_package(pybind11 "${PDI_REQUIRED_PYBIND11_VERSION}" REQUIRED)
 endif()
 if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
 	add_subdirectory("../vendor/zpp-1.1.0/" "zpp")
@@ -235,15 +239,7 @@ if("${BUILD_PYTHON}")
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
 	)
-	# We should link to PDI::PDI_plugins, but since it imposes C++17 which fails with 
-	# pybind11 <= 2.4.5 , we use its dependants, cross fingers and hope for C++-14 to work
-	if(2.4.5 VERSION_LESS_EQUAL "${pybind11_VERSION}")
-		target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_plugins)
-	else()
-		target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_C spdlog::spdlog)
-	endif()
-	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11)
-	target_compile_features(PDI_pysupport PUBLIC cxx_std_14 c_std_11)
+	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11 PDI::PDI_plugins)
 	set_property(TARGET PDI_pysupport PROPERTY LIBRARY_OUTPUT_NAME "pdi_pysupport")
 	set_property(TARGET PDI_pysupport PROPERTY ENABLE_EXPORTS TRUE)
 	set_property(TARGET PDI_pysupport PROPERTY C_VISIBILITY_PRESET hidden)
