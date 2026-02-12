@@ -286,7 +286,7 @@ endif()
 ## HDF5
 
 if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
-
+	
 	set(HDF5_CMAKE_CACHE_ARGS)
 	
 	if("${BUILD_HDF5_PARALLEL}")
@@ -345,7 +345,7 @@ endif()
 ## NetCDF
 
 if("${BUILD_DECL_NETCDF_PLUGIN}")
-    
+	
 	if("${BUILD_HDF5_PARALLEL}")
 		set(NETCDF_CC "${MPI_C_COMPILER}")
 	else()
