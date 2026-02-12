@@ -45,7 +45,7 @@ public:
 	decl_netcdf_plugin(PDI::Context& ctx, PC_tree_t config)
 		: Plugin(ctx)
 	{
-		if (PDI::is_list(config)) {
+		if (PDI::is_seq(config)) {
 			int len = PDI::len(config);
 			// allocate memory for all elements, because Dnc_file has callbacks with their pointers
 			m_files.reserve(len);

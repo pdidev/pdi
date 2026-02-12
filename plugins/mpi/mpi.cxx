@@ -276,17 +276,14 @@ struct mpi_plugin: Plugin {
 		std::shared_ptr<const Scalar_datatype> F_mpi_comm_type
 	)
 	{
-		PC_tree_t transtype_tree = PC_get(tree, ".transtype");
-		if (!PC_status(transtype_tree)) {
+		PDI::opt_one(PC_get(tree, ".transtype"), [&](PC_tree_t transtype_tree){
 			ctx.logger().warn("`transtype' key is deprecated when transtyping C/Fortran MPI communicator, please use Comm_c2f/Comm_f2c");
 			if (*C_mpi_comm_type == *F_mpi_comm_type) {
 				throw Value_error{"Transtype failed, cannot detect the direction of transtype"};
 			}
-			int len;
-			PC_len(transtype_tree, &len);
-			for (int i = 0; i < len; i++) {
-				string src_desc = to_string(PC_get(transtype_tree, "{%d}", i));
-				string dst_desc = to_string(PC_get(transtype_tree, "<%d>", i));
+			PDI::each(transtype_tree,  [&](PC_tree_t key, PC_tree_t value) {
+				string src_desc = to_string(key);
+				string dst_desc = to_string(value);
 				if (*ctx.desc(src_desc).default_type()->evaluate(ctx) == *C_mpi_comm_type) {
 					/// src is C_comm, dst is F_comm
 					transtype_C_to_F(ctx, src_desc, dst_desc);
@@ -294,25 +291,15 @@ struct mpi_plugin: Plugin {
 					/// src is F_comm, dst is C_comm
 					transtype_F_to_C(ctx, src_desc, dst_desc);
 				}
-			}
-		}
+			});
+		});
 
-		PC_tree_t c2f_tree = PC_get(tree, ".Comm_c2f");
-		if (!PC_status(c2f_tree)) {
-			int len;
-			PC_len(c2f_tree, &len);
-			for (int i = 0; i < len; i++) {
-				transtype_C_to_F(ctx, to_string(PC_get(c2f_tree, "{%d}", i)), to_string(PC_get(c2f_tree, "<%d>", i)));
-			}
-		}
-		PC_tree_t f2c_tree = PC_get(tree, ".Comm_f2c");
-		if (!PC_status(f2c_tree)) {
-			int len;
-			PC_len(f2c_tree, &len);
-			for (int i = 0; i < len; i++) {
-				transtype_F_to_C(ctx, to_string(PC_get(f2c_tree, "{%d}", i)), to_string(PC_get(f2c_tree, "<%d>", i)));
-			}
-		}
+		PDI::opt_each(PC_get(tree, ".Comm_c2f"), [&](PC_tree_t key, PC_tree_t value) {
+			transtype_C_to_F(ctx, to_string(key), to_string(value));
+		});
+		PDI::opt_each(PC_get(tree, ".Comm_f2c"), [&](PC_tree_t key, PC_tree_t value) {
+			transtype_F_to_C(ctx, to_string(key), to_string(value));
+		});
 	}
 
 	/** Transtype C mpi comm to Fortran mpi comm

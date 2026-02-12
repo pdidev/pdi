@@ -166,37 +166,25 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 }
 
 PDI_status_t PDI_init(PC_tree_t conf)
-try {
+{
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
 	Global_context::init(conf);
 	return PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_finalize()
-try {
+{
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
 	Global_context::finalize();
 	return PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_version(unsigned long* provided, unsigned long expected)
-try {
+{
 	Paraconf_wrapper fw;
 	if (provided) *provided = PDI_VERSION;
 
@@ -218,82 +206,46 @@ try {
 	}
 	Global_context::context().logger().trace("PDI API version: {}.{}.{}");
 	return PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_event(const char* name)
-try {
+{
 	Paraconf_wrapper fw;
 	Global_context::context().event(name);
 	return PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_share(const char* name, const void* buffer, PDI_inout_t access)
-try {
+{
 	Paraconf_wrapper fw;
 	Global_context::context()[name].share(const_cast<void*>(buffer), access & PDI_OUT, access & PDI_IN);
 	return PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_access(const char* name, void** buffer, PDI_inout_t inout)
-try {
+{
 	Paraconf_wrapper fw;
 	Data_descriptor& desc = Global_context::context()[name];
 	*buffer = desc.share(desc.ref(), inout & PDI_IN, inout & PDI_OUT);
 	return PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_release(const char* name)
-try {
+{
 	Paraconf_wrapper fw;
 	Global_context::context()[name].release();
 	return PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_reclaim(const char* name)
-try {
+{
 	Paraconf_wrapper fw;
 	Global_context::context()[name].reclaim();
 	return PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_expose(const char* name, const void* data, PDI_inout_t access)
-try {
+{
 	Paraconf_wrapper fw;
 	if (PDI_status_t status = PDI_share(name, data, access)) {
 		if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
@@ -306,22 +258,10 @@ try {
 		if (PDI_status_t status = PDI_reclaim(name)) return status;
 	}
 	return PDI_OK;
-} catch (const Error& e) {
-	PDI_status_t status = g_error_context.return_err(e);
-	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
-	return status;
-} catch (const exception& e) {
-	PDI_status_t status = g_error_context.return_err(e);
-	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
-	return status;
-} catch (...) {
-	PDI_status_t status = g_error_context.return_err();
-	if (!g_transaction.empty() && !g_transaction_status) g_transaction_status = status; //if it is first error in transaction, save its status
-	return status;
 }
 
 PDI_status_t PDI_multi_expose(const char* event_name, const char* name, const void* data, PDI_inout_t access, ...)
-try {
+{
 	Paraconf_wrapper fw;
 	va_list ap;
 	list<string> transaction_data;
@@ -355,32 +295,20 @@ try {
 	}
 	//the status of the first error is returned
 	return status;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_begin(const char* name)
-try {
+{
 	Paraconf_wrapper fw;
 	if (!g_transaction.empty()) {
 		throw State_error{"Transaction already in progress, cannot start a new one"};
 	}
 	g_transaction = name;
 	return g_transaction_status = PDI_OK;
-} catch (const Error& e) {
-	return g_error_context.return_err(e);
-} catch (const exception& e) {
-	return g_error_context.return_err(e);
-} catch (...) {
-	return g_error_context.return_err();
 }
 
 PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end()
-try {
+{
 	Paraconf_wrapper fw;
 	if (g_transaction.empty()) {
 		throw State_error{"No transaction in progress, cannot end one"};
@@ -399,18 +327,6 @@ try {
 	g_transaction.clear();
 
 	//the status of the first error is returned
-	return g_transaction_status;
-} catch (const Error& e) {
-	PDI_status_t status = g_error_context.return_err(e);
-	g_transaction_status = !g_transaction_status ? status : g_transaction_status; //if it is first error, save its status
-	return g_transaction_status;
-} catch (const exception& e) {
-	PDI_status_t status = g_error_context.return_err(e);
-	g_transaction_status = !g_transaction_status ? status : g_transaction_status; //if it is first error, save its status
-	return g_transaction_status;
-} catch (...) {
-	PDI_status_t status = g_error_context.return_err();
-	g_transaction_status = !g_transaction_status ? status : g_transaction_status; //if it is first error, save its status
 	return g_transaction_status;
 }
 

@@ -38,7 +38,7 @@ namespace set_value {
 Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node)
 	: m_ctx{ctx}
 {
-	if (!PDI::is_list(operation_list_node)) {
+	if (!PDI::is_seq(operation_list_node)) {
 		throw PDI::Config_error{operation_list_node, "Operations must be defined as a list"};
 	}
 

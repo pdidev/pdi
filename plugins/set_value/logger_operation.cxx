@@ -40,26 +40,10 @@ namespace set_value {
 
 Logger_operation::Logger_operation(PDI::Context& ctx, PC_tree_t logger_node)
 	: Operation{ctx}
-{
-	context().logger().debug("Logger operation:");
-	PC_tree_t level_node = PC_get(logger_node, ".level");
-	if (!PC_status(level_node)) {
-		context().logger().debug("\tlevel");
-		m_level = level_node;
-	}
-
-	PC_tree_t pattern_node = PC_get(logger_node, ".pattern");
-	if (!PC_status(pattern_node)) {
-		context().logger().debug("\tpattern");
-		m_pattern = PDI::to_string(pattern_node);
-	}
-
-	PC_tree_t evaluate_node = PC_get(logger_node, ".evaluate");
-	if (!PC_status(evaluate_node)) {
-		context().logger().debug("\tevaluate");
-		m_evaluate = static_cast<bool>(PDI::Expression(evaluate_node).to_long(context()));
-	}
-}
+	, m_level(PC_get(logger_node, ".level"), PDI::Expression())
+	, m_pattern(PDI::to_string(PC_get(logger_node, ".pattern"), ""))
+	, m_evaluate(PDI::Expression(PC_get(logger_node, ".evaluate"), 0L).to_long(ctx))
+{}
 
 void Logger_operation::execute()
 {

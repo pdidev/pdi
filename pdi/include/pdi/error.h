@@ -100,14 +100,14 @@ public:
 		: Error(PDI_ERR_CONFIG)
 	{
 		std::ostringstream err_msg;
-		if (!PC_status(tree) && tree.node) {
+		if (tree.node) {
 			if (tree.node->start_mark.line == tree.node->end_mark.line) {
-				err_msg << "Config_error in line " << tree.node->start_mark.line + 1 << ": ";
+				err_msg << "Configuration error on line " << tree.node->start_mark.line + 1 << ", character "<<tree.node->start_mark.column<<": ";
 			} else {
-				err_msg << "Config_error in lines " << tree.node->start_mark.line + 1 << " - " << tree.node->end_mark.line << ": ";
+				err_msg << "Configuration error on lines " << tree.node->start_mark.line + 1 << ", character "<<tree.node->start_mark.column<<" - " << tree.node->end_mark.line << ": ";
 			}
 		} else {
-			err_msg << "Config_error: ";
+			err_msg << "Configuration error: ";
 		}
 		err_msg << fmt::format(format_str, std::forward<Args>(args)...);
 		m_what = err_msg.str();

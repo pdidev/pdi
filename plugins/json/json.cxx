@@ -78,66 +78,19 @@ private:
 	 */
 	void read_config_tree(Logger& logger, PC_tree_t spec_tree)
 	{
-		if (PC_status(spec_tree)) {
-			logger.error("Error in read_config_tree");
-			return;
-		}
-
-		// Read yaml entries
-		opt_each(spec_tree, [&](PC_tree_t elem_tree) {
-			if (to_string(PC_get(elem_tree, "{%d}", 0)) == "file") {
-				Expression filepath = to_string(PC_get(elem_tree, ".file"));
-
-				Expression default_when = 1L;
-				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
-					std::string key = to_string(key_tree);
-
-					if (key == "when") {
-						default_when = to_string(value_tree);
-					} else if (key != "file" && key != "write") {
-						throw Config_error{key_tree, "Unknown keyword '{}' encountered while expecting file, when, or write", key};
-					}
-				});
-
-				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
-					std::string key = to_string(key_tree);
-
-					if (key == "write") {
-						PC_tree_t write_tree = PC_get(elem_tree, ".write");
-
-						if (!PC_status(PC_get(write_tree, "[0]"))) { // it's a list of names only
-							each(write_tree, [&](PC_tree_t tree) {
-								std::string dset_string = to_string(tree);
-
-								// Append to list if key exist, else create it
-								auto iter = m_data_to_path_map.find(dset_string);
-								if (iter != m_data_to_path_map.end()) {
-									iter->second.push_back(std::make_pair(default_when, filepath));
-								} else {
-									m_data_to_path_map.insert(std::make_pair(
-										dset_string,
-										std::vector<std::pair<Expression, Expression>>{std::make_pair(default_when, filepath)}
-									));
-								}
-							});
-						} else {
-							throw Config_error{key_tree, "Unknown write method. Please use [var1, var2, ...]"};
-						}
-					}
+		// We should receive one or multiple mappings
+		opt_one_or_each(spec_tree, [&](PC_tree_t elem_tree) {
+			if (PDI::exists(PC_get(elem_tree, ".file"))) { // if the mappping contains a `file` key, syntax #1
+				Expression filepath(PC_get(elem_tree, ".file"));
+				Expression when(PC_get(elem_tree, ".when"), 1L);
+				PDI::each(PC_get(elem_tree, ".write"), [&](PC_tree_t tree) { // it's a list of names
+					// Append to list if key exist, else create it
+					m_data_to_path_map[to_string(tree)].emplace_back(when, filepath);
 				});
 			} else { // it's "var: filename" format
-				std::string dset_string = to_string(PC_get(elem_tree, "{%d}", 0));
-				Expression filepath = to_string(PC_get(elem_tree, "<%d>", 0));
-
-				auto iter = m_data_to_path_map.find(dset_string);
-				Expression default_when = 1L;
-				if (iter != m_data_to_path_map.end()) {
-					iter->second.push_back(std::make_pair(default_when, filepath));
-				} else {
-					m_data_to_path_map.insert(
-						std::make_pair(dset_string, std::vector<std::pair<Expression, Expression>>{std::make_pair(default_when, filepath)})
-					);
-				}
+				each(elem_tree, [&](PC_tree_t key_tree, PC_tree_t value_tree) {
+					m_data_to_path_map[to_string(key_tree)].emplace_back(1L, to_string(value_tree));
+				});
 			}
 		});
 	}

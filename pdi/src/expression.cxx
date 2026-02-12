@@ -49,11 +49,10 @@
 
 namespace PDI {
 
-using std::move;
 using std::unique_ptr;
 
 Expression::Expression(std::unique_ptr<Impl> impl)
-	: m_impl(move(impl))
+	: m_impl(std::move(impl))
 {}
 
 Expression::Expression() = default;
@@ -85,6 +84,14 @@ Expression::Expression(double value)
 
 Expression::Expression(PC_tree_t value)
 	: m_impl{Impl::parse(value)}
+{}
+
+Expression::Expression(PC_tree_t value, const Expression& dflt)
+	: m_impl{Impl::parse(value, *dflt.m_impl)}
+{}
+
+Expression::Expression(PC_tree_t value, Expression&& dflt)
+	: m_impl{Impl::parse(value, std::move(dflt.m_impl))}
 {}
 
 Expression::~Expression() = default;
@@ -163,7 +170,7 @@ std::pair<Expression, long> Expression::parse_reference(const char* reference_st
 {
 	const char* reference_str_to_parse = reference_str;
 	unique_ptr<Expression::Impl> reference_impl = Expression::Impl::Reference_expression::parse(&reference_str_to_parse);
-	return {move(reference_impl), reference_str_to_parse - reference_str};
+	return {std::move(reference_impl), reference_str_to_parse - reference_str};
 }
 
 } // namespace PDI

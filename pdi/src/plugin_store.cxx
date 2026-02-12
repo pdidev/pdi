@@ -156,23 +156,13 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 	}
 
 	// STEP 2: get path from yaml file
-	if (!PC_status(plugin_path_node)) {
-		if (is_list(plugin_path_node)) {
-			int len = PDI::len(plugin_path_node);
-			for (int i = 0; i < len; i++) {
-				m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
-				m_plugin_path.push_back(PDI::to_string(PC_get(plugin_path_node, "[%d]", i)));
-			}
-		} else if (is_scalar(plugin_path_node)) {
-			m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_path_node));
-			m_plugin_path.push_back(PDI::to_string(plugin_path_node));
-		} else {
-			throw Config_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
-		}
-	}
+	PDI::opt_one_or_each(plugin_path_node, [&](PC_tree_t plugin_one_path_node){
+		m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_one_path_node));
+		m_plugin_path.push_back(PDI::to_string(plugin_one_path_node));
+	});
 
 	// STEP 3: get from relative path to libpdi.so
-	if /* constexpr */ (PDI_DEFAULT_PLUGIN_PATH[0] == '/') {
+	if constexpr (PDI_DEFAULT_PLUGIN_PATH[0] == '/') {
 		m_ctx.logger().trace("Adding plugin path: `{}'", PDI_DEFAULT_PLUGIN_PATH);
 		m_plugin_path.push_back(PDI_DEFAULT_PLUGIN_PATH);
 	} else {

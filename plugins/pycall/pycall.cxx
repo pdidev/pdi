@@ -116,16 +116,11 @@ public:
 	 * \param with aliases of descriptors for python code
 	 */
 	Trigger(string code, PC_tree_t with)
-		: m_code{move(code)}
+		: m_code{std::move(code)}
 	{
-		if (!PC_status(PC_get(with, "{0}"))) { // parameters
-			int nwith = len(with);
-			for (int ii = 0; ii < nwith; ii++) {
-				string alias_name = to_string(PC_get(with, "{%d}", ii));
-				string var = to_string(PC_get(with, "<%d>", ii));
-				m_aliases.emplace_back(alias_name, var);
-			}
-		}
+		PDI::opt_each(with, [&](PC_tree_t alias_name, PC_tree_t var){
+			m_aliases.emplace_back(to_string(alias_name), to_string(var));
+		});
 	}
 
 	/** Parse tree to initialiaze this instance
@@ -133,7 +128,7 @@ public:
 	 * \param with alias of descriptor for python code
 	 */
 	Trigger(string code, string with)
-		: m_code{move(code)}
+		: m_code{std::move(code)}
 	{
 		string var = string("$") + with;
 		m_aliases.emplace_back(with, var);
@@ -181,7 +176,7 @@ struct pycall_plugin: Plugin {
 		int nb_events = len(on_event, 0);
 		for (int map_id = 0; map_id < nb_events; map_id++) {
 			PC_tree_t event = PC_get(on_event, "<%d>", map_id);
-			if (PDI::is_list(event)) {
+			if (PDI::is_seq(event)) {
 				size_t len = PDI::len(event);
 				std::vector<Trigger> triggers;
 				for (int i = 0; i < len; i++) {

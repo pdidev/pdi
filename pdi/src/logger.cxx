@@ -42,6 +42,8 @@ using PDI::Context;
 using PDI::Error;
 using PDI::Expression;
 using PDI::len;
+using PDI::opt_one;
+using PDI::to_bool;
 using PDI::to_long;
 using PDI::to_string;
 using spdlog::logger;
@@ -78,18 +80,12 @@ shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging
 	vector<sink_ptr> sinks;
 	PC_tree_t output_tree = PC_get(logging_tree, ".output");
 
-	//configure file sink
-	if (!PC_status(PC_get(output_tree, ".file"))) {
-		string filename{to_string(PC_get(output_tree, ".file"))};
-		auto file_sink = make_shared<basic_file_sink_st>(filename);
-		sinks.emplace_back(file_sink);
-	}
+	// configure file sink
+	opt_one(PC_get(output_tree, ".file"), [&](PC_tree_t file_node) { sinks.emplace_back(make_shared<basic_file_sink_st>(to_string(file_node))); });
 
-	//configure console sink
-	if ((!PC_status(PC_get(output_tree, ".console")) || sinks.empty()) // either there is a console sink specified or no other
-	    && to_string(PC_get(output_tree, ".console"), "on") != "off" // the console sink is not specifically disabled
-	)
-	{
+	// configure console sink
+	// either there is a console sink explicitely requested, or there is no other one specified
+	if (to_bool(PC_get(output_tree, ".console"), sinks.empty())) {
 		//logging to console is turned on
 #if defined _WIN32 && !defined(__cplusplus_winrt)
 		sinks.push_back(make_shared<wincolor_stdout_sink_st>());
@@ -109,25 +105,14 @@ shared_ptr<logger> select_log_sinks(const string& logger_name, PC_tree_t logging
  */
 void read_log_level(shared_ptr<logger> logger, PC_tree_t logging_tree)
 {
-	string level_str;
-
-	PC_tree_t level_tree = PC_get(logging_tree, ".level");
-	if (!PC_status(level_tree)) {
-		level_str = to_string(level_tree);
-	} else {
-		try {
-			level_str = to_string(logging_tree);
-		} catch (const Error& e) {
-			// level is not defined
-			return;
-		}
-	}
+	string level_str = to_string(PC_get(logging_tree, ".level"), to_string(logging_tree, ""));
+	if ( level_str == "" ) return; // no level defined, nothing to do
 
 	const unordered_map<string, level_enum> level_map
 		= {{"trace", trace}, {"debug", debug}, {"info", info}, {"warn", warn}, {"error", err}, {"off", off}};
 	auto level_it = level_map.find(level_str);
 	if (level_it != level_map.end()) {
-		logger->set_level(level_map.find(level_str)->second);
+		logger->set_level(level_it->second);
 	} else {
 		logger->warn("Invalid logging level: {}. Available: 'trace', 'debug', 'info', 'warn', 'error', 'off'.", level_str);
 	}
@@ -195,14 +180,13 @@ void Logger::setup(const string& logger_name, PC_tree_t config, level_enum level
 	add_pattern_block("%T");
 
 	// overwrite pattern if defined in yaml
-	PC_tree_t pattern_tree = PC_get(config, ".pattern");
-	if (!PC_status(pattern_tree)) {
+	opt_one(PC_get(config, ".pattern"), [&](PC_tree_t pattern_tree) {
 		m_pattern = to_string(pattern_tree);
 		for (auto&& observer: m_default_pattern_observers) {
 			observer.get().default_pattern(m_pattern);
 		}
 		m_pattern_from_config = true;
-	}
+	});
 	m_logger->set_pattern(evaluate_refs_in_pattern(m_pattern));
 }
 

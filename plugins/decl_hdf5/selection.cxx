@@ -55,9 +55,9 @@ Selection::Selection(PC_tree_t tree)
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		string key = to_string(key_tree);
 		if (key == "size") {
-			opt_each(value, [&](PC_tree_t size) { m_size.emplace_back(to_string(size)); });
+			PDI::opt_one_or_each(value, [&](PC_tree_t size) { m_size.emplace_back(to_string(size)); });
 		} else if (key == "start") {
-			opt_each(value, [&](PC_tree_t start) { m_start.emplace_back(to_string(start)); });
+			PDI::opt_one_or_each(value, [&](PC_tree_t start) { m_start.emplace_back(to_string(start)); });
 		} else {
 			throw Config_error{key_tree, "Invalid configuration key in selection: `{}'", key};
 		}

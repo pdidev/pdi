@@ -29,40 +29,16 @@ namespace decl_netcdf {
 
 Dnc_io::Dnc_io(PDI::Context& ctx, PC_tree_t config)
 	: m_ctx{ctx}
+	, m_variable_path{PC_get(config, ".variable"), PDI::Expression{PC_get(config, ".size_of"), PDI::Expression()}}
+	, m_when{PC_get(config, ".when"), PDI::Expression()}
 {
-	PC_tree_t variable_node = PC_get(config, ".variable");
-	if (!PC_status(variable_node)) {
-		m_variable_path = PDI::Expression{PDI::to_string(variable_node)};
-	} else {
-		PC_tree_t sizeof_node = PC_get(config, ".size_of");
-		if (!PC_status(sizeof_node)) {
-			m_variable_path = PDI::Expression{PDI::to_string(sizeof_node)};
-		}
-	}
+	PDI::opt_each_in_seq(PC_get(config, ".variable_selection.start"), [&](PC_tree_t start_node) {
+		m_start.emplace_back(PDI::to_string(start_node));
+	});
 
-	PC_tree_t var_selection_node = PC_get(config, ".variable_selection");
-	if (!PC_status(var_selection_node)) {
-		PC_tree_t start_node = PC_get(var_selection_node, ".start");
-		if (!PC_status(start_node)) {
-			int len = PDI::len(start_node);
-			for (int i = 0; i < len; i++) {
-				m_start.emplace_back(PDI::to_string(PC_get(start_node, "[%d]", i)));
-			}
-		}
-
-		PC_tree_t subsize_node = PC_get(var_selection_node, ".subsize");
-		if (!PC_status(subsize_node)) {
-			int len = PDI::len(subsize_node);
-			for (int i = 0; i < len; i++) {
-				m_subsize.emplace_back(PDI::to_string(PC_get(subsize_node, "[%d]", i)));
-			}
-		}
-	}
-
-	PC_tree_t when_node = PC_get(config, ".when");
-	if (!PC_status(when_node)) {
-		m_when = PDI::Expression{PDI::to_string(when_node)};
-	}
+	PDI::opt_each_in_seq(PC_get(config, ".variable_selection.subsize"), [&](PC_tree_t subsize_node) {
+		m_subsize.emplace_back(PDI::to_string(subsize_node));
+	});
 }
 
 std::string Dnc_io::variable_path() const

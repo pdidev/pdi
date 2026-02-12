@@ -78,7 +78,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if (key == "collision_policy") {
 			template_op.m_collision_policy = to_collision_policy(to_string(value));
 		} else if (key == "on_event") {
-			opt_each(value, [&](PC_tree_t event_tree) { template_op.m_event.emplace_back(to_string(event_tree)); });
+			PDI::opt_one_or_each(value, [&](PC_tree_t event_tree) { template_op.m_event.emplace_back(to_string(event_tree)); });
 		} else if (key == "when") {
 			default_when = to_string(value);
 		} else if (key == "communicator") {
@@ -125,65 +125,59 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 	vector<Attribute_op> attr_ops;
 	unordered_map<string, Expression> dset_size_ops;
 
-	PC_tree_t read_tree = PC_get(tree, ".read");
-	if (!PC_status(PC_get(read_tree, "[0]"))) { // it's a list of names only
-		each(read_tree, [&](PC_tree_t tree) {
-			string dset_string = to_string(tree);
-			if (dset_string.find("#") == string::npos) {
-				dset_ops.emplace_back(Dataset_op::READ, to_string(tree), default_when);
-			} else {
-				attr_ops.emplace_back(Attribute_op::READ, tree, default_when);
+	// can be either a list of names only, or a name:config , or name:{config...} mapping
+	opt_each(PC_get(tree, ".read"), PC_tree_t{}, [&](PC_tree_t name_node, PC_tree_t config) {
+		string name = to_string(name_node);
+		if (!PDI::exists(config)) { // a list of names only
+			if (name.find("#") != string::npos) { // there is a # -> attribute read
+				attr_ops.emplace_back(Attribute_op::READ, name_node, default_when);
+			} else { // no # -> normal read
+				dset_ops.emplace_back(Dataset_op::READ, name, default_when);
 			}
-		});
-	} else if (!PC_status(read_tree)) { // it's a name:{config...} mapping
-		each(read_tree, [&](PC_tree_t name, PC_tree_t config) {
-			opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-				if (!PC_status(PC_get(value, ".attribute"))) {
-					attr_ops.emplace_back(Attribute_op::READ, to_string(name), default_when, value);
-				} else if (!PC_status(PC_get(value, ".size_of"))) {
-					dset_size_ops.emplace(to_string(name), to_string(PC_get(value, ".size_of")));
-				} else {
-					dset_ops.emplace_back(Dataset_op::READ, to_string(name), default_when, value);
+		} else { // a name:config , or name:{config...} mapping
+			PDI::opt_one_or_each(config, [&](PC_tree_t value) { // each config is an independant op
+				if (PDI::exists(PC_get(value, ".attribute"))) { // an attribute read
+					attr_ops.emplace_back(Attribute_op::READ, name, default_when, value);
+				} else if (PDI::exists(PC_get(value, ".size_of"))) { // a size_of read
+					dset_size_ops.emplace(name, to_string(PC_get(value, ".size_of")));
+				} else { // a normal read
+					dset_ops.emplace_back(Dataset_op::READ, name, default_when, value);
 				}
 			});
-		});
-	}
-	PC_tree_t write_tree = PC_get(tree, ".write");
-	if (!PC_status(PC_get(write_tree, "[0]"))) { // it's a list of names only
-		each(write_tree, [&](PC_tree_t tree) {
-			string dset_string = to_string(tree);
-			if (dset_string.find("#") == string::npos) {
-				dset_ops.emplace_back(Dataset_op::WRITE, to_string(tree), default_when, template_op.m_collision_policy);
+		}
+	});
+
+	// can be either a list of names only, or a name:config , or name:{config...} mapping
+	opt_each(PC_get(tree, ".write"), PC_tree_t{}, [&](PC_tree_t name_node, PC_tree_t config) {
+		string name = to_string(name_node);
+		if (!PDI::exists(config)) { // a list of names only
+			if (name.find("#") != string::npos) {// there is a # -> attribute read
+				attr_ops.emplace_back(Attribute_op::WRITE, name_node, default_when);
+			} else { // no # -> normal read
+				dset_ops.emplace_back(Dataset_op::WRITE, name, default_when, template_op.m_collision_policy);
 				if (deflate) {
 					dset_ops.back().deflate(ctx, deflate.to_long(ctx));
 				}
 				if (fletcher) {
 					dset_ops.back().fletcher(ctx, fletcher.to_long(ctx));
 				}
-			} else {
-				attr_ops.emplace_back(Attribute_op::WRITE, tree, default_when);
 			}
-		});
-	} else if (!PC_status(write_tree)) { // it's a name:{config...} mapping
-		each(write_tree, [&](PC_tree_t name, PC_tree_t config) {
-			if (!PC_status(PC_get(config, ".attribute"))) {
-				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-					attr_ops.emplace_back(Attribute_op::WRITE, to_string(name), default_when, value);
-				});
-			} else {
-				opt_each(config, [&](PC_tree_t value) { // each config is an independant op
-					dset_ops.emplace_back(Dataset_op::WRITE, to_string(name), default_when, value, template_op.m_collision_policy);
+		} else { // a name:config , or name:{config...} mapping
+			PDI::opt_one_or_each(config, [&](PC_tree_t value) { // each config is an independant op
+				if (PDI::exists(PC_get(config, ".attribute"))) { // an attribute write
+					attr_ops.emplace_back(Attribute_op::WRITE, name, default_when, value);
+				} else { // a normal write
+					dset_ops.emplace_back(Dataset_op::WRITE, name, default_when, value, template_op.m_collision_policy);
 					if (deflate) {
 						dset_ops.back().deflate(ctx, deflate.to_long(ctx));
 					}
 					if (fletcher) {
 						dset_ops.back().fletcher(ctx, fletcher.to_long(ctx));
 					}
-				});
-			}
-		});
-	}
-
+				}
+			});
+		}
+	});
 
 	// final pass to build the result
 

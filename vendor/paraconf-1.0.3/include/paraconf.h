@@ -153,8 +153,8 @@ PC_tree_t PARACONF_EXPORT PC_root(yaml_document_t* document);
  * * access to a mapping element key using braces (indices are 0-based):
  *   e.g. .map{1}
  * * access to a mapping element value by index using chevrons:
- *   e.g. .map<1>
- *   PC_get(0,map,"<1>"); is similar to k=PC_get(0,map,"{1}"); PC_get(0,map,".%s",k);
+ *   e.g. .map\<1\>
+ *   PC_get(map, "\<1\>"); is similar to PC_get(map, ".%s", PC_get(map, "{1}"));
  *
  * \param[in] tree a yaml tree
  * \param[in] index_fmt the ypath index, can be a printf-style format string

@@ -41,26 +41,26 @@ namespace decl_netcdf {
 /// Represents NetCDF variable. Created from config.
 class Dnc_variable
 {
+	/// Attributes of the variable
+	std::vector<Dnc_attribute> m_attributes;
+
+	/// Chunking property set from yaml
+	PDI::Expression m_chunking;
+
 	/// Context of this variable
 	PDI::Context& m_ctx;
+
+	/// Compression level of this variable
+	PDI::Expression m_deflate;
+
+	/// Dimensions names of this variable
+	std::vector<PDI::Expression> m_dimensions_names;
 
 	/// Name of this variable
 	std::string m_path;
 
 	/// Type of this variable. Can be nullptr.
 	PDI::Datatype_template_sptr m_type;
-
-	/// Dimensions names of this variable
-	std::vector<PDI::Expression> m_dimensions_names;
-
-	/// Attributes of the variable
-	std::vector<Dnc_attribute> m_attributes;
-
-	/// Compression level of this variable
-	PDI::Expression m_deflate;
-
-	/// Chunking property set from yaml
-	PDI::Expression m_chunking;
 
 public:
 	/** Creates NetCDF variable information from yaml

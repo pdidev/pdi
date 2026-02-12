@@ -373,18 +373,8 @@ public:
 vector<Expression> get_array_property(PC_tree_t node, string property)
 {
 	vector<Expression> prop_vector;
-	PC_tree_t config = PC_get(node, property.c_str());
-	if (!PC_status(PC_get(config, "[0]"))) {
-		int rank = len(config);
-		for (int i = 0; i < rank; i++) {
-			prop_vector.emplace_back(to_string(PC_get(node, (property + string("[%d]")).c_str(), i)));
-		}
-	} else {
-		string prop = to_string(config, "");
-		if (prop.length() > 0) {
-			prop_vector.emplace_back(prop);
-		}
-	}
+	opt_one_or_each(PC_get(node, property.c_str()), [&](PC_tree_t config) { prop_vector.emplace_back(config); });
+	if (prop_vector.empty()) prop_vector.emplace_back("");
 	return prop_vector;
 }
 
@@ -431,14 +421,14 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 	validate_array(node, array_size, array_subsize, array_start);
 
 	PC_tree_t config_elem = PC_get(node, ".subtype");
-	if (PC_status(config_elem)) {
+	if (!PDI::exists(config_elem)) {
 		throw Config_error{node, "Array must have `subtype'"};
 	}
 
 	Datatype_template_sptr res_type = ctx.datatype(config_elem);
 
 	for (ssize_t ii = array_size.size() - 1; ii >= 0; --ii) {
-		res_type.reset(new Array_template(move(res_type), move(array_size[ii]), move(array_start[ii]), move(array_subsize[ii]), node));
+		res_type.reset(new Array_template(move(res_type), std::move(array_size[ii]), move(array_start[ii]), move(array_subsize[ii]), node));
 	}
 	return res_type;
 }
@@ -447,27 +437,15 @@ vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t eleme
 {
 	int displacement_counter = 0;
 	vector<Tuple_template::Element> result;
-	int nb_elements = len(elements_node, 0);
-	if (is_list(elements_node)) {
-		for (int element_id = 0; element_id < nb_elements; element_id++) {
-			// get element type
-			PC_tree_t element_node = PC_get(elements_node, "[%d]", element_id);
+	each(elements_node, [&](PC_tree_t element_node) {
+		// get element displacement
+		Expression disp(PC_get(element_node, ".disp"), PDI::Expression());
+		result.emplace_back(disp, ctx.datatype(element_node));
+		if (disp) displacement_counter++;
+	});
 
-			// get element displacement
-			PC_tree_t disp_conf = PC_get(element_node, ".disp");
-			Expression disp;
-			if (!PC_status(disp_conf)) {
-				disp = to_string(disp_conf);
-				displacement_counter++;
-			}
-			result.emplace_back(disp, ctx.datatype(element_node));
-		}
-	} else {
-		throw Config_error{elements_node, "Tuple elements subtree must be a seqence or ordered mapping"};
-	}
-
-	// check if non or all of elements have diplacement defined
-	if (displacement_counter != 0 && displacement_counter != nb_elements) {
+	// check if none or all of elements have diplacement defined
+	if (displacement_counter != 0 && displacement_counter != len(elements_node)) {
 		throw Config_error{elements_node, "None or all of tuple elements must to have `disp' defined"};
 	}
 
@@ -486,19 +464,15 @@ vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t eleme
 
 Datatype_template_sptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
 {
-	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
-	Expression tuple_buffersize;
-	if (!PC_status(buffersize_conf)) {
-		tuple_buffersize = to_string(buffersize_conf);
-	}
+	Expression tuple_buffersize(PC_get(node, ".buffersize"), PDI::Expression());
+	bool tuple_buffersize_defined = tuple_buffersize;
 
 	PC_tree_t elements_node = PC_get(node, ".elements");
-	if (PC_status(elements_node)) {
+	if (!PDI::exists(elements_node)) {
 		throw Config_error{node, "Tuple datatype must have `elements' subtree"};
 	}
-	bool tuple_buffersize_defined = static_cast<bool>(tuple_buffersize);
 	return unique_ptr<Tuple_template>{
-		new Tuple_template{get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), move(tuple_buffersize), node}
+		new Tuple_template{get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), std::move(tuple_buffersize), node}
 	};
 }
 
@@ -506,36 +480,28 @@ vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_
 {
 	vector<Record_template::Member> members;
 
-	int nb_members = len(member_list_node, 0);
-	for (int member_id = 0; member_id < nb_members; member_id++) {
-		//get current member name
-		string member_name = to_string(PC_get(member_list_node, "{%d}", member_id));
-
-		//get current member
-		PC_tree_t member_node = PC_get(member_list_node, "<%d>", member_id);
-
+	opt_each(member_list_node, [&](PC_tree_t member_name, PC_tree_t member_node) {
 		PC_tree_t disp_conf = PC_get(member_node, ".disp");
-		if (PC_status(disp_conf)) {
+		if (!PDI::exists(disp_conf)) {
 			throw Config_error{member_node, "All members must have displacements"};
 		}
-		Expression disp = to_string(disp_conf);
+		Expression disp(disp_conf);
 
-		members.emplace_back(move(disp), ctx.datatype(member_node), move(member_name));
-	}
+		members.emplace_back(std::move(disp), ctx.datatype(member_node), std::move(to_string(member_name)));
+	});
+
 	return members;
 }
 
 Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
-	if (PC_status(buffersize_conf)) {
+	if (!PDI::exists(buffersize_conf)) {
 		throw Config_error{node, "Record must have defined buffersize"};
 	}
-	Expression record_buffersize = to_string(buffersize_conf);
+	Expression record_buffersize(buffersize_conf);
 
-	PC_tree_t member_list_node = PC_get(node, ".members");
-
-	return unique_ptr<Record_template>{new Record_template{get_members(ctx, member_list_node), move(record_buffersize), node}};
+	return std::make_unique<Record_template>(get_members(ctx, PC_get(node, ".members")), std::move(record_buffersize), node);
 }
 
 Datatype_template_sptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
@@ -550,10 +516,10 @@ Datatype_template_sptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
 Datatype_template_sptr to_pointer_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t subtype_conf = PC_get(node, ".subtype");
-	if (PC_status(subtype_conf)) {
+	if (!PDI::exists(subtype_conf)) {
 		throw Config_error{node, "Pointer must have defined subtype"};
 	}
-	return unique_ptr<Pointer_template>{new Pointer_template{ctx.datatype(subtype_conf), node}};
+	return std::make_unique<Pointer_template>(ctx.datatype(subtype_conf), node);
 }
 
 } // namespace
@@ -564,17 +530,13 @@ Datatype_template::Datatype_template(const Attributes_map& attributes)
 
 Datatype_template::Datatype_template(PC_tree_t datatype_tree)
 {
-	if (!PC_status(datatype_tree) && !is_scalar(datatype_tree)) {
-		int len;
-		PC_len(datatype_tree, &len);
-		for (int i = 0; i < len; i++) {
-			string key = to_string(PC_get(datatype_tree, "{%d}", i));
-			if (key[0] == '+') {
-				// is an attribute
-				m_attributes[key.substr(1)] = PC_get(datatype_tree, "<%d>", i);
-			}
+	opt_each(datatype_tree, [&](PC_tree_t key_node, PC_tree_t value) {
+		string key = to_string(key_node);
+		// if it is an attribute
+		if (key[0] == '+') {
+			m_attributes.emplace(std::make_pair(key.substr(1), value));
 		}
-	}
+	});
 }
 
 Expression Datatype_template::attribute(const std::string& attribute_name) const
@@ -758,15 +720,9 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 
 void Datatype_template::load_user_datatypes(Context& ctx, PC_tree_t types_tree)
 {
-	if (!PC_status(types_tree)) {
-		int types_len;
-		PC_len(types_tree, &types_len);
-		for (int i = 0; i < types_len; i++) {
-			ctx.add_datatype(to_string(PC_get(types_tree, "{%d}", i)), [datatype_tree = PC_get(types_tree, "<%d>", i)](Context& ctx, PC_tree_t tree) {
-				return ctx.datatype(datatype_tree);
-			});
-		}
-	}
+	opt_each(types_tree, [&](PC_tree_t key, PC_tree_t datatype_tree) {
+		ctx.add_datatype(to_string(key), [datatype_tree](Context& ctx, PC_tree_t) { return ctx.datatype(datatype_tree); });
+	});
 }
 
 } // namespace PDI

@@ -47,6 +47,7 @@ using PDI::each;
 using PDI::Error;
 using PDI::Expression;
 using PDI::opt_each;
+using PDI::opt_one_or_each;
 using PDI::Plugin;
 using PDI::Ref;
 using PDI::System_error;
@@ -152,9 +153,7 @@ public:
 		}
 		m_fct = reinterpret_cast<ptr_fct_t>(fct_uncast);
 
-		if (!PC_status(PC_get(params, "{0}"))) { // parameters
-			each(params, [&](PC_tree_t alias, PC_tree_t var) { m_aliases.emplace_back(to_string(alias), to_string(var)); });
-		}
+		opt_each(params, [&](PC_tree_t alias, PC_tree_t var) { m_aliases.emplace_back(to_string(alias), to_string(var)); });
 	}
 
 	/// call the function that has been registered
@@ -182,34 +181,30 @@ struct user_code_plugin: Plugin {
 		: Plugin{ctx}
 	{
 		// Loading configuration for events
-		PC_tree_t on_event = PC_get(conf, ".on_event");
-		if (!PC_status(on_event))
-			each(on_event, [&](PC_tree_t event_name, PC_tree_t events) {
-				opt_each(events, [&](PC_tree_t one_event) {
-					each(one_event, [&](PC_tree_t function_name, PC_tree_t parameters) {
-						Trigger event_trigger{to_string(function_name), parameters};
-						ctx.callbacks().add_event_callback(
-							[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
-							to_string(event_name)
-						);
-					});
+		opt_each(PC_get(conf, ".on_event"), [&](PC_tree_t event_name, PC_tree_t events) {
+			opt_one_or_each(events, [&](PC_tree_t one_event) {
+				each(one_event, [&](PC_tree_t function_name, PC_tree_t parameters) {
+					Trigger event_trigger{to_string(function_name), parameters};
+					ctx.callbacks().add_event_callback(
+						[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
+						to_string(event_name)
+					);
 				});
 			});
+		});
 
 		// Loading configuration for data
-		PC_tree_t on_data = PC_get(conf, ".on_data");
-		if (!PC_status(on_data))
-			each(on_data, [&](PC_tree_t data_name, PC_tree_t datas) {
-				opt_each(datas, [&](PC_tree_t one_data) {
-					each(one_data, [&](PC_tree_t function_name, PC_tree_t parameters) {
-						Trigger data_trigger{to_string(function_name), parameters};
-						ctx.callbacks().add_data_callback(
-							[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
-							to_string(data_name)
-						);
-					});
+		opt_each(PC_get(conf, ".on_data"), [&](PC_tree_t data_name, PC_tree_t datas) {
+			opt_one_or_each(datas, [&](PC_tree_t one_data) {
+				each(one_data, [&](PC_tree_t function_name, PC_tree_t parameters) {
+					Trigger data_trigger{to_string(function_name), parameters};
+					ctx.callbacks().add_data_callback(
+						[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
+						to_string(data_name)
+					);
 				});
 			});
+		});
 
 		ctx.logger().info("Plugin loaded successfully");
 	}

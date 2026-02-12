@@ -144,6 +144,20 @@ struct PDI_NO_EXPORT Expression::Impl {
 	 */
 	static std::unique_ptr<Impl> parse(PC_tree_t value);
 
+	/** Parse a PC_tree value as Impl
+	 *
+	 * \param value PC_tree value to parse
+	 * \return unique_ptr with parsed Impl
+	 */
+	static std::unique_ptr<Impl> parse(PC_tree_t value, const Expression::Impl& dflt);
+
+	/** Parse a PC_tree value as Impl
+	 *
+	 * \param value PC_tree value to parse
+	 * \return unique_ptr with parsed Impl
+	 */
+	static std::unique_ptr<Impl> parse(PC_tree_t value, std::unique_ptr<Expression::Impl>&& dflt);
+
 	/** Parse a string value as Impl
 	 *
 	 * \param value string value to parse

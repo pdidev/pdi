@@ -58,40 +58,19 @@ struct set_value_plugin: PDI::Plugin {
 	 */
 	void load_config(PC_tree_t config)
 	{
-		PC_tree_t on_init = PC_get(config, ".on_init");
-		if (!PC_status(on_init)) {
-			m_triggers_list.emplace_back(context(), on_init);
-			m_triggers_list.back().execute();
-		}
+		PDI::opt_one(PC_get(config, ".on_init"), [&](PC_tree_t on_init) { m_triggers_list.emplace_back(context(), on_init).execute(); });
 
-		PC_tree_t on_event = PC_get(config, ".on_event");
-		if (!PC_status(on_event)) {
-			int map_len = PDI::len(on_event);
-			for (int i = 0; i < map_len; i++) {
-				std::string event_name = PDI::to_string(PC_get(on_event, "{%d}", i));
-				PC_tree_t value_node = PC_get(on_event, "<%d>", i);
-				m_triggers_list.emplace_back(context(), value_node);
-				set_value::Trigger& trigger = m_triggers_list.back();
-				context().callbacks().add_event_callback([&trigger](const std::string&) { trigger.execute(); }, event_name);
-			}
-		}
+		PDI::opt_each(PC_get(config, ".on_event"), [&](PC_tree_t event_name, PC_tree_t value_node) {
+			set_value::Trigger& trigger = m_triggers_list.emplace_back(context(), value_node);
+			context().callbacks().add_event_callback([&trigger](const std::string&) { trigger.execute(); }, PDI::to_string(event_name));
+		});
 
-		PC_tree_t on_data = PC_get(config, ".on_data");
-		if (!PC_status(on_data)) {
-			int map_len = PDI::len(on_data);
-			for (int i = 0; i < map_len; i++) {
-				std::string data_name = PDI::to_string(PC_get(on_data, "{%d}", i));
-				PC_tree_t value_node = PC_get(on_data, "<%d>", i);
-				m_triggers_list.emplace_back(context(), value_node);
-				set_value::Trigger& trigger = m_triggers_list.back();
-				context().callbacks().add_data_callback([&trigger](const std::string&, PDI::Ref) { trigger.execute(); }, data_name);
-			}
-		}
+		PDI::opt_each(PC_get(config, ".on_data"), [&](PC_tree_t data_name, PC_tree_t value_node) {
+			set_value::Trigger& trigger = m_triggers_list.emplace_back(context(), value_node);
+			context().callbacks().add_data_callback([&trigger](const std::string&, PDI::Ref) { trigger.execute(); }, PDI::to_string(data_name));
+		});
 
-		PC_tree_t on_finalize = PC_get(config, ".on_finalize");
-		if (!PC_status(on_finalize)) {
-			m_trigger_on_finalize.emplace_back(context(), on_finalize);
-		}
+		PDI::opt_one(PC_get(config, ".on_finalize"), [&](PC_tree_t on_finalize) { m_trigger_on_finalize.emplace_back(context(), on_finalize); });
 	}
 
 	set_value_plugin(PDI::Context& ctx, PC_tree_t config)

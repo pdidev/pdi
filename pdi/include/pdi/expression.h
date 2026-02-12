@@ -98,8 +98,23 @@ public:
 	/** Builds an expression that is parsed from PC_tree_t
 	 *
 	 * \param[in] expr the PC_tree_t value
+	 * \throws Config_error if the tree is in error
 	 */
 	Expression(PC_tree_t expr);
+
+	/** Builds an expression that is parsed from PC_tree_t
+	 *
+	 * \param[in] expr the PC_tree_t value
+	 * \param[in] dflt the value to use if the tree is in error
+	 */
+	Expression(PC_tree_t expr, const Expression& dflt);
+
+	/** Builds an expression that is parsed from PC_tree_t
+	 *
+	 * \param[in] expr the PC_tree_t value
+	 * \param[in] dflt the value to use if the tree is in error
+	 */
+	Expression(PC_tree_t expr, Expression&& dflt);
 
 	/** Destroys an expression
 	 */

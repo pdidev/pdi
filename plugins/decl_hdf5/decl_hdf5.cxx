@@ -74,7 +74,7 @@ public:
 	{
 		Hdf5_error_handler _;
 		if (0 > H5open()) handle_hdf5_err("Cannot initialize HDF5 library");
-		opt_each(config, [&](PC_tree_t elem) {
+		PDI::opt_one_or_each(config, [&](PC_tree_t elem) {
 			for (auto&& op: File_op::parse(ctx, elem)) {
 				auto&& events = op.event();
 				if (events.empty()) {

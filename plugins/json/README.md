@@ -49,7 +49,7 @@ plugins:
       write: [data1, data2, ...]
 ```
 
-Note : By default, if the key "when" is not specified, a true condition is set so that the variable is written every time PDI is granted read permission.
+Note : By default, if the key "when" is not specified, the variable is written every time the variable is exposed in `OUT` mode.
 Examples of those two syntax are given in `example/json.yml`.
 
 ## Install and test the JSON plugin ! {#json_test_plugin}
@@ -133,7 +133,7 @@ plugins:
     json:
     - file: data-$rank.json
       write: [step, temp]
-      when: '$step > 0
+      when: '$step > 0'
 ```
 
 ### JSON output

@@ -25,44 +25,27 @@
 
 #include "dnc_variable.h"
 
+#include <pdi/paraconf_wrapper.h>
+
 namespace decl_netcdf {
 
 Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate)
-	: m_ctx{ctx}
+	: m_chunking{PC_get(config, ".chunking")}
+	, m_ctx{ctx}
+	, m_deflate{PC_get(config, ".deflate"), std::move(deflate)}
 	, m_path{path}
-	, m_deflate{deflate}
 {
-	PC_tree_t attributes_node = PC_get(config, ".attributes");
-	if (!PC_status(attributes_node)) {
-		PDI::each(attributes_node, [this](PC_tree_t attr_name, PC_tree_t attr_value) {
-			this->m_attributes.emplace_back(this->m_ctx, PDI::to_string(attr_name), attr_value);
-		});
-	}
+	PDI::opt_each(PC_get(config, ".attributes"), [this](PC_tree_t attr_name, PC_tree_t attr_value) {
+		this->m_attributes.emplace_back(this->m_ctx, PDI::to_string(attr_name), attr_value);
+	});
 
-	PC_tree_t dimensions_node = PC_get(config, ".dimensions");
-	if (!PC_status(dimensions_node)) {
-		if (PDI::is_list(dimensions_node)) {
-			int len = PDI::len(dimensions_node);
-			for (int i = 0; i < len; i++) {
-				m_dimensions_names.emplace_back(PDI::to_string(PC_get(dimensions_node, "[%d]", i)));
-			}
-		}
-	}
+	PDI::opt_one_or_each(PC_get(config, ".dimensions"), [&](PC_tree_t dimensions_node){
+		m_dimensions_names.emplace_back(PDI::to_string(dimensions_node));
+	});
 
-	PC_tree_t type_node = PC_get(config, ".type");
-	if (!PC_status(type_node)) {
+	PDI::opt_one(PC_get(config, ".type"), [&](PC_tree_t){
 		m_type = m_ctx.datatype(config);
-	}
-
-	PC_tree_t deflate_node = PC_get(config, ".deflate");
-	if (!PC_status(deflate_node)) {
-		m_deflate = deflate_node; // overwrite file_deflate level by variable deflate
-	}
-
-	PC_tree_t chunking_node = PC_get(config, ".chunking");
-	if (!PC_status(chunking_node)) {
-		m_chunking = chunking_node;
-	}
+	});
 }
 
 const std::string& Dnc_variable::path() const

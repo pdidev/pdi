@@ -145,57 +145,55 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 	: Dataset_op{dir, name, default_when, file_collision_policy}
 {
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-		if (!PC_status(value)) {
-			string key = to_string(key_tree);
-			if (key == "dataset") {
-				m_dataset = to_string(value);
-			} else if (key == "when") {
-				m_when = to_string(value);
-			} else if (key == "communicator") {
+		string key = to_string(key_tree);
+		if (!PDI::exists(value)) {
+			throw Config_error{key_tree, "Missing value for key `{}` in HDF5 dataset configuration.", key};
+		}
+		if (key == "dataset") {
+			m_dataset = to_string(value);
+		} else if (key == "when") {
+			m_when = to_string(value);
+		} else if (key == "communicator") {
 #ifdef H5_HAVE_PARALLEL
-				m_communicator = to_string(value);
+			m_communicator = to_string(value);
 #else
-				throw Config_error {value, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+			throw Config_error {value, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
-			} else if (key == "memory_selection") {
-				m_memory_selection = value;
-			} else if (key == "dataset_selection") {
-				m_dataset_selection = value;
-			} else if (key == "chunking") {
-				m_chunking = value;
-			} else if (key == "deflate") {
-				m_deflate = value;
-			} else if (key == "fletcher") {
-				m_fletcher = value;
-			} else if (key == "attributes") {
-				// pass
-			} else if (key == "mpio") {
-				if (to_string(value) == "INDEPENDENT") {
-					m_mpio = H5FD_MPIO_INDEPENDENT;
-				} else if (to_string(value) == "COLLECTIVE") {
-					m_mpio = H5FD_MPIO_COLLECTIVE;
-				} else {
-					throw Config_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
-				}
-			} else if (key == "collision_policy") {
-				m_collision_policy = to_collision_policy(to_string(value));
+		} else if (key == "memory_selection") {
+			m_memory_selection = value;
+		} else if (key == "dataset_selection") {
+			m_dataset_selection = value;
+		} else if (key == "chunking") {
+			m_chunking = value;
+		} else if (key == "deflate") {
+			m_deflate = value;
+		} else if (key == "fletcher") {
+			m_fletcher = value;
+		} else if (key == "attributes") {
+			// pass
+		} else if (key == "mpio") {
+			if (to_string(value) == "INDEPENDENT") {
+				m_mpio = H5FD_MPIO_INDEPENDENT;
+			} else if (to_string(value) == "COLLECTIVE") {
+				m_mpio = H5FD_MPIO_COLLECTIVE;
 			} else {
-				throw Config_error{key_tree, "Unknown key for HDF5 dataset configuration: `{}'", key};
+				throw Config_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
 			}
+		} else if (key == "collision_policy") {
+			m_collision_policy = to_collision_policy(to_string(value));
+		} else {
+			throw Config_error{key_tree, "Unknown key for HDF5 dataset configuration: `{}'", key};
 		}
 	});
 
 	// need to know the final dataset expression
-	PC_tree_t attribute_tree = PC_get(tree, ".attributes");
-	if (!PC_status(attribute_tree)) {
-		each(attribute_tree, [&](PC_tree_t attr_key, PC_tree_t attr_value) {
-			Attribute_op::Direction attr_dir = Attribute_op::Direction::WRITE;
-			if (dir == Direction::READ) {
-				attr_dir = Attribute_op::Direction::READ;
-			}
-			m_attributes.emplace_back(attr_dir, m_dataset, to_string(attr_key), Expression{to_string(attr_value)});
-		});
-	}
+	PDI::opt_each(PC_get(tree, ".attributes"), [&](PC_tree_t attr_key, PC_tree_t attr_value) {
+		Attribute_op::Direction attr_dir = Attribute_op::Direction::WRITE;
+		if (dir == Direction::READ) {
+			attr_dir = Attribute_op::Direction::READ;
+		}
+		m_attributes.emplace_back(attr_dir, m_dataset, to_string(attr_key), Expression{to_string(attr_value)});
+	});
 }
 
 void Dataset_op::deflate(Context& ctx, Expression level)
