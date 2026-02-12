@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -26,8 +26,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
-
-set(RUNTEST_DIR "${CMAKE_SOURCE_DIR}/cmake/runtest-dir")
 
 # Add the plugin path to PDI_PLUGIN_PATH
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
