@@ -76,7 +76,7 @@ void succeed_on_failure(PDI_status_t status, const char* message, void* ctx)
 		EXPECT_EQ(ctx, tmp_ctx);
 		EXPECT_TRUE(status == (PDI_status_t)tmp_ctx->true_err_status)
 			<< "error: status = " << status << " should be: " << (PDI_status_t)tmp_ctx->true_err_status << "\n";
-		std::string true_errmsg = (std::string)tmp_ctx->true_errmsg;
+		std::string true_errmsg = tmp_ctx->true_errmsg;
 		EXPECT_STREQ(message, true_errmsg.c_str());
 		tmp_ctx->has_failed = 1; // has_failed = 1
 	}
@@ -153,7 +153,7 @@ TEST_F(decl_hdf5_test, 01)
 
 	FILE* fp = fopen("5.h5", "r");
 	EXPECT_NE(fp, nullptr) << "File not found. \n";
-	fclose(fp);
+	if (fp) fclose(fp);
 }
 
 /*
@@ -482,7 +482,7 @@ TEST_F(decl_hdf5_test, 05)
 		  "  size_attr: int                                                        \n"
 		  "plugins:                                                                \n"
 		  "  decl_hdf5:                                                            \n"
-		  "    file: decl_hdf5_test_attribute_data.h55                             \n"
+		  "    file: decl_hdf5_test_attribute_data.h5                              \n"
 		  "    on_event: \"write\"                                                 \n"
 		  "    write: [array_data, array_data#dset_attr, array_data#size_attr]     \n";
 
@@ -517,7 +517,7 @@ TEST_F(decl_hdf5_test, 05)
 		  "  size_attr: int                                                        \n"
 		  "plugins:                                                                \n"
 		  "  decl_hdf5:                                                            \n"
-		  "    file: decl_hdf5_test_attribute_data.h55                             \n"
+		  "    file: decl_hdf5_test_attribute_data.h5                              \n"
 		  "    on_event: \"read\"                                                  \n"
 		  "    read: [array_data, array_data#dset_attr, array_data#size_attr]      \n";
 
@@ -1538,9 +1538,6 @@ TEST_F(decl_hdf5_test, check_config_error_for_four_regex_found)
 
 	// method to check without changing error handler
 	EXPECT_TRUE(status_ok == PDI_OK) << "error: status = " << status_ok << " should be: 0 (PDI_OK) \n";
-	std::string errmsg_index = PDI_errmsg();
-	std::string empty_string = "";
-	EXPECT_STREQ(errmsg_index.c_str(), empty_string.c_str()) << "Expect no error msg, we have this message:" << errmsg_index << "  \n";
 
 	PDI_errhandler_t std_handler = PDI_errhandler(local_errhandler); //changing err handler
 

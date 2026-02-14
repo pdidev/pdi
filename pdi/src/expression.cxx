@@ -87,6 +87,14 @@ Expression::Expression(PC_tree_t value)
 	: m_impl{Impl::parse(value)}
 {}
 
+Expression::Expression(PC_tree_t value, const Expression& dflt)
+	: m_impl{Impl::parse(value, *dflt.m_impl)}
+{}
+
+Expression::Expression(PC_tree_t value, Expression&& dflt)
+	: m_impl{Impl::parse(value, std::move(dflt.m_impl))}
+{}
+
 Expression::~Expression() = default;
 
 Expression& Expression::operator= (const Expression& value)

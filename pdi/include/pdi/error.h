@@ -102,7 +102,7 @@ public:
 		std::ostringstream err_msg;
 		if (!PC_status(tree) && tree.node) {
 			if (tree.node->start_mark.line == tree.node->end_mark.line) {
-				err_msg << "Config_error in line " << tree.node->start_mark.line + 1 << ": ";
+				err_msg << "Config_error in line " << (tree.node->start_mark.line + 1) << ":"<<(tree.node->start_mark.column+ 1)<<" ";
 			} else {
 				err_msg << "Config_error in lines " << tree.node->start_mark.line + 1 << " - " << tree.node->end_mark.line << ": ";
 			}

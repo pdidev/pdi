@@ -54,13 +54,13 @@ int main(int argc, char* argv[])
 		  "    datasets:                                                \n"
 		  "      array_data: {type: array, subtype: int, size: [5, 10]} \n"
 		  "    write:                                                   \n"
-		  "      mpio: INDEPENDENT                                      \n"
 		  "      array_data:                                            \n"
 		  "        - memory_selection:                                  \n"
 		  "            size: [5, 5]                                     \n"
 		  "          dataset_selection:                                 \n"
 		  "            size: [5, 5]                                     \n"
-		  "            start: [0, $mpi_rank * 5]                        \n";
+		  "            start: [0, $mpi_rank * 5]                        \n"
+		  "          mpio: INDEPENDENT                                  \n";
 
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);

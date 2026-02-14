@@ -91,10 +91,36 @@ unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value)
 {
 	if (PDI::is_map(value)) {
 		return unique_ptr<Impl>{new Mapping{value}};
-	} else if (PDI::is_list(value)) {
+	} else if (PDI::is_seq(value)) {
 		return unique_ptr<Impl>{new Sequence{value}};
 	} else {
 		return parse(PDI::to_string(value).c_str());
+	}
+}
+
+unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value, const Expression::Impl& dflt)
+{
+	if (PDI::is_map(value)) {
+		return std::make_unique<Mapping>(value);
+	} else if (PDI::is_seq(value)) {
+		return std::make_unique<Sequence>(value);
+	} else if (PDI::is_scalar(value)) {
+		return parse(PDI::to_string(value).c_str());
+	} else {
+		return dflt.clone();
+	}
+}
+
+unique_ptr<Expression::Impl> Expression::Impl::parse(PC_tree_t value, unique_ptr<Expression::Impl>&& dflt)
+{
+	if (PDI::is_map(value)) {
+		return unique_ptr<Impl>{new Mapping{value}};
+	} else if (PDI::is_seq(value)) {
+		return unique_ptr<Impl>{new Sequence{value}};
+	} else if (PDI::is_scalar(value)) {
+		return parse(PDI::to_string(value).c_str());
+	} else {
+		return std::move(dflt);
 	}
 }
 
@@ -108,8 +134,7 @@ unique_ptr<Expression::Impl> Expression::Impl::parse(char const * val_str)
 		while (isspace(*parse_val))
 			++parse_val;
 		if (!*parse_val) return result; // take this if we parsed the whole string, otherwise, parse as a string
-	} catch (Error&) {
-	}
+	} catch (Error&) {}
 	// in case of error, parse as a string
 	return Impl::String_literal::parse(&val_str);
 }
