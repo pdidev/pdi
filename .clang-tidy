@@ -1,0 +1,5 @@
+Checks: 'readability-identifier-naming'
+CheckOptions:
+  readability-identifier-naming:
+    IdentifierNamingConvention: '^[a-z][a-z0-9_]*$'  # snake_case
+    IgnoreMainLikeFunctions: true
