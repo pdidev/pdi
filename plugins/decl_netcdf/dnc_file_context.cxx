@@ -92,7 +92,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 
 	PC_tree_t variables_node = PC_get(config, ".variables");
 	if (!PC_status(variables_node)) {
-		PDI::each(variables_node, [this, file_deflate](PC_tree_t variable_path_node, PC_tree_t variable_value) {
+		PDI::each(variables_node, [&](PC_tree_t variable_path_node, PC_tree_t variable_value) {
 			std::string variable_path = PDI::to_string(variable_path_node);
 			this->m_ctx.logger().trace("Creating new variable info: {}", variable_path);
 			this->m_variables.emplace(variable_path, Dnc_variable{this->m_ctx, variable_path, variable_value, file_deflate});

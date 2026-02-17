@@ -30,7 +30,7 @@ namespace decl_netcdf {
 Dnc_variable::Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate)
 	: m_ctx{ctx}
 	, m_path{path}
-	, m_deflate{deflate}
+	, m_deflate{std::move(deflate)}
 {
 	PC_tree_t attributes_node = PC_get(config, ".attributes");
 	if (!PC_status(attributes_node)) {
