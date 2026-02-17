@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -29,6 +29,7 @@
 #include <gmock/gmock.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/datatype_template.h>
+#include <pdi/delayed_data_callbacks.h>
 
 struct MockDataDescriptor: public PDI::Data_descriptor {
 	MOCK_METHOD1(default_type, void(PDI::Datatype_template_sptr));
@@ -40,6 +41,9 @@ struct MockDataDescriptor: public PDI::Data_descriptor {
 	MOCK_METHOD0(empty, bool());
 	MOCK_METHOD3(share, void(void*, bool, bool));
 	MOCK_METHOD3(share, void*(PDI::Ref, bool, bool));
+	MOCK_METHOD4(share, void(void*, bool, bool, PDI::Delayed_data_callbacks&&));
+	MOCK_METHOD4(share, void*(PDI::Ref, bool, bool, PDI::Delayed_data_callbacks&&));
+	MOCK_METHOD0(trigger_delayed_data_callbacks, void());
 	MOCK_METHOD0(release, void());
 	MOCK_METHOD0(reclaim, void*());
 };
