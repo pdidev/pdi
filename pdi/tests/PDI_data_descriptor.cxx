@@ -27,6 +27,7 @@
 
 #include <pdi/array_datatype.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/delayed_data_callbacks.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
@@ -41,18 +42,15 @@ using namespace std;
 namespace PDI {
 //handler to private fields of Descriptor
 struct Descriptor_test_handler {
-	static unique_ptr<Data_descriptor> default_desc(Global_context& global_ctx)
-	{
-		return unique_ptr<Data_descriptor>{new Data_descriptor_impl{global_ctx, "default_desc"}};
-	}
+	static Data_descriptor* default_desc(Global_context& global_ctx) { return &global_ctx.desc("default_desc"); }
 
-	static Datatype_sptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
+	static Datatype_sptr desc_get_type(Data_descriptor* desc, Global_context& global_ctx)
 	{
-		Datatype_template_sptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type;
+		Datatype_template_sptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc)->m_type;
 		return desc_template->evaluate(global_ctx);
 	}
 
-	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc) { return dynamic_cast<Data_descriptor_impl*>(desc.get())->m_refs.size(); }
+	static int desc_get_refs_number(Data_descriptor* desc) { return dynamic_cast<Data_descriptor_impl*>(desc)->m_refs.size(); }
 };
 } // namespace PDI
 
@@ -64,8 +62,8 @@ struct DataDescTest: public ::testing::Test {
 	PC_tree_t array_config{PC_parse_string("{ size: 10, type: array, subtype: int }")};
 	shared_ptr<Array_datatype> array_datatype{Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10)};
 	PDI::Paraconf_wrapper fw;
-	Global_context global_ctx{PC_parse_string("")};
-	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
+	Global_context global_ctx{PC_parse_string("logging: debug")};
+	Data_descriptor* m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
 };
 
 /*
@@ -335,4 +333,77 @@ TEST_F(DataDescTest, multi_read_share_meta)
 
 	ptr = Ref_r{this->m_desc_default->ref()}.get();
 	ASSERT_NE(this->array, ptr);
+}
+
+/*
+ * Struct prepared for DataDescDelayedCallbacksTest
+ */
+struct DataDescDelayedCallbacksTest: public ::testing::Test {
+	Paraconf_wrapper fw;
+	Global_context context{PC_parse_string("logging: trace")};
+};
+
+/*
+ * Name:                CallbacksTest.callbacks().multiple_delayed_data_callbacks
+ *
+ * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool, bool)
+ *                      PDI::Data_descriptor::share(Ref, bool, bool)
+ *                      PDI::Data_descriptor::trigger_delayed_data_callbacks()
+ *                      PDI::Data_descriptor::release()
+ *
+ * Description:         Checks if callback is correctly called when a data is delayed
+ * 						with trigger_delayed_data_callbacks()
+ *
+ */
+TEST_F(DataDescDelayedCallbacksTest, multiple_delayed_data_callbacks)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	Data_descriptor& desc_x = context.desc(data_x);
+	Data_descriptor& desc_y = context.desc(data_y);
+	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	context.desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	int x = 0;
+	int y = 0;
+
+	context.callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+
+	context.callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* y = static_cast<int*>(ref_write.get());
+			*y += 53;
+			std::cout << "name=" << name.c_str() << " == data_y" << std::endl;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
+
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+
+	Delayed_data_callbacks delayed_callbacks_x(context);
+	Delayed_data_callbacks delayed_callbacks_y(context);
+	context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks_x));
+	context.desc("data_y").share(&y, true, true, std::move(delayed_callbacks_y));
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	delayed_callbacks_x.trigger();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+	delayed_callbacks_y.trigger();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+	context.desc("data_y").reclaim();
+	context.desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
 }

@@ -15,7 +15,8 @@ Benoit Martin - CEA (bmartin@cea.fr)
 * Add support for const data in `PDI_share`, `PDI_expose` and `PDI_multi_expose`
 
 Jacques Morice - CEA (jacques.morice@cea.fr)
-* Add Add operator== in Context::Iterator()
+* Add operator== in Context::Iterator()
+* Delay data events in multi_expose when the last data is exposed
 
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement

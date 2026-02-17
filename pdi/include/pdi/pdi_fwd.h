@@ -79,6 +79,11 @@ using Datatype_template_sptr = std::shared_ptr<const Datatype_template>;
 
 using Datatype_sptr = std::shared_ptr<const Datatype>;
 
+/**
+ * A class to delayed the moment to call call_data_callback
+*/
+class Delayed_data_callbacks;
+
 /** A data descriptors with a name and a value, it contains an implicit type
  * template that is used when exposing untyped data
  */
