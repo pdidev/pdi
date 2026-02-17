@@ -221,9 +221,9 @@ public:
 
 	using status_impl::status;
 
-	std::string full_msg() const override;
+	std::string full_msg() const;
 
-	[[noreturn]] void rethrow_with_context(std::string msg) const override;
+	[[noreturn]] void rethrow_with_context(std::string msg) const;
 };
 
 /** An error class to use when multiple errors of different kind have happened
@@ -314,5 +314,4 @@ static inline void rethrow_with_context(range_of_exception_ptrs auto&& errors, f
 }
 
 } // namespace PDI
-
 #endif // PDI_ERROR_H_

@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,29 +22,45 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_DATA_DESCRIPTOR_MOCK_H_
-#define PDI_DATA_DESCRIPTOR_MOCK_H_
+#ifndef PDI_DELAYED_DATA_CALLBACK_H_
+#define PDI_DELAYED_DATA_CALLBACK_H_
 
-#include <gmock/gmock.h>
-#include <pdi/data_descriptor.h>
-#include <pdi/datatype_template.h>
-#include <pdi/delayed_data_callbacks.h>
+#include <string>
+#include <vector>
 
-struct MockDataDescriptor: public PDI::Data_descriptor {
-	MOCK_METHOD1(default_type, void(PDI::Datatype_template_sptr));
-	MOCK_METHOD0(default_type, PDI::Datatype_template_sptr());
-	MOCK_CONST_METHOD0(metadata, bool());
-	MOCK_METHOD1(metadata, void(bool));
-	MOCK_CONST_METHOD0(name, const std::string&());
-	MOCK_METHOD0(ref, PDI::Ref());
-	MOCK_METHOD0(empty, bool());
-	MOCK_METHOD3(share, void(void*, bool, bool));
-	MOCK_METHOD3(share, void*(PDI::Ref, bool, bool));
-	MOCK_METHOD4(share, void(void*, bool, bool, PDI::Delayed_data_callbacks&&));
-	MOCK_METHOD4(share, void*(PDI::Ref, bool, bool, PDI::Delayed_data_callbacks&&));
-	MOCK_METHOD0(release, void());
-	MOCK_METHOD0(reclaim, void*());
-};
+#include <pdi/pdi_fwd.h>
+#include "pdi/context.h"
 
+#include "global_context.h"
 
-#endif //PDI_DATA_DESCRIPTOR_MOCK_H_
+namespace PDI {
+
+class PDI_EXPORT Delayed_data_callbacks
+{
+	/// list of names of the data
+	std::vector<std::string> m_datanames;
+
+	/// The context where the list of data is a part of
+	Global_context& m_context;
+
+public:
+	/// constructor
+	Delayed_data_callbacks(Global_context& ctx);
+
+	/// In the destructor, we need to throw an error message in case the callback on the data doesn't work (trigger function)
+	///  (example: error in the config.yml for a plugin, error due to external library incompatibility)
+	~Delayed_data_callbacks() noexcept(false);
+
+	/// add element "name" to  "m_datanames"
+	void add_dataname(const std::string& name);
+
+	/// Trigger data callback for all elements in "m_datanames"
+	void trigger();
+
+	/// clear m_datanames
+	void cancel();
+
+}; // class Delayed_data_callbacks
+
+} // namespace PDI
+#endif // PDI_DELAYED_DATA_CALLBACK_H_
