@@ -49,6 +49,7 @@ class PDI_EXPORT Global_context: public Context
 {
 private:
 	friend class Data_descriptor_impl;
+	friend class Delayed_data_callbacks;
 
 	/// The singleton Context instance
 	static std::unique_ptr<Global_context> s_context;
