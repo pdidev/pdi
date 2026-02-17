@@ -24,7 +24,13 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(pdi_tests LANGUAGES C)
+project(pdi_tests LANGUAGES C CXX)
+
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
