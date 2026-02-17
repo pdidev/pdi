@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,6 @@ class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 
 	bool m_metadata;
 
-
 	/** Create an empty descriptor
 	 */
 	Data_descriptor_impl(Global_context& ctx, const char* name);
@@ -91,12 +90,15 @@ public:
 
 	void share(void* data, bool read, bool write) override;
 
+	void share(void* data, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks) override;
+
 	void* share(Ref ref, bool read, bool write) override;
+
+	void* share(Ref ref, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks) override;
 
 	void release() override;
 
 	void* reclaim() override;
-
 }; // class Data_descriptor
 
 } // namespace PDI

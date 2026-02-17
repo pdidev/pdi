@@ -38,6 +38,8 @@ and this project adheres to
   usages [#675](https://github.com/pdidev/pdi/issues/675)
 * benchmarks are not run as part of the test suite by default anymore, one must
   set `ENABLE_BENCHMARKING` to `ON` in Cmake to re-enable them
+* Delay data events in multi_expose when the last data is exposed
+  [#514](https://github.com/pdidev/pdi/issues/514)
 
 #### Deprecated
 * Error names have been improved to fix

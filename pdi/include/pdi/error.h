@@ -313,6 +313,27 @@ static inline void rethrow_with_context(range_of_exception_ptrs auto&& errors, f
 	rethrow_with_simple_context(std::vector<std::exception_ptr>(errors.begin(), errors.end()), fmt::format(format_str, std::forward<Args>(args)...));
 }
 
-} // namespace PDI
+class PDI_EXPORT Multiple_error: public Error
+{
+public:
+	Multiple_error(const std::vector<Error>& List_of_errors, const std::string& info_msg)
+		: Error{PDI_ERR_MULTIPLE}
+	{
+		if (1 == List_of_errors.size()) {
+			m_status = List_of_errors.front().status();
+			m_what = info_msg + ": " + std::string(List_of_errors.front().what());
+		} else {
+			m_what = "Multiple errors:" + info_msg + "\n";
+			for (auto&& err: List_of_errors) {
+				m_what += std::string(err.what()) + "\n";
+			}
+		}
+	}
 
+	Multiple_error(Multiple_error&&) = default;
+
+	Multiple_error(const Multiple_error&) = default;
+};
+
+} // namespace PDI
 #endif // PDI_ERROR_H_
