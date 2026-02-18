@@ -8,7 +8,7 @@ project(pdi_catalyst_plugin LANGUAGES C CXX)
 # PDI
 find_package(PDI REQUIRED COMPONENTS plugins)
 
-# Python CATALYST_WRAP_FORTRAN=ON
+# Python
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 # Catalyst
