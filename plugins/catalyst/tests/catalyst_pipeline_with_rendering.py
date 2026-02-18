@@ -63,8 +63,8 @@ pNG1.Writer.Format = 'PNG'
 # Catalyst options
 options = catalyst.Options()
 ## 0: no client, generate the images
-## 1: interactif
-options.EnableCatalystLive = 0
+## 1: live visualization
+options.EnableCatalystLive = 1
 
 
 # Greeting to ensure that ctest knows this script is being imported
