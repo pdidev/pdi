@@ -19,6 +19,8 @@ This PDI plugin pushes PDI shared data to the Catalyst 2 API. The goal is to lev
 
 The test executable expects the config yaml file as arguments.
 
+# Use Catalyst-Paraview
+
 To use the Catalyst-ParaView implementation, you should also set the following environment variables:
  - `CATALYST_IMPLEMENTATION_NAME=paraview`
  - `CATALYST_IMPLEMENTATION_PATHS=path/to/paraview/install/lib/catalyst`
