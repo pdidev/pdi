@@ -381,7 +381,6 @@ TEST_F(DataDescDelayedCallbacksTest, multiple_delayed_data_callbacks)
 			Ref_w ref_write{ref};
 			int* y = static_cast<int*>(ref_write.get());
 			*y += 53;
-			std::cout << "name=" << name.c_str() << " == data_y" << std::endl;
 			ASSERT_STREQ(name.c_str(), "data_y");
 		},
 		"data_y"

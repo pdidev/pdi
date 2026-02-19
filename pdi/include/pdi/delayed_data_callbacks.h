@@ -25,8 +25,6 @@
 #ifndef PDI_DELAYED_DATA_CALLBACK_H_
 #define PDI_DELAYED_DATA_CALLBACK_H_
 
-
-//#include <iostream>
 #include <list>
 #include <string>
 
