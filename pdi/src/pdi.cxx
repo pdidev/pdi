@@ -29,7 +29,6 @@
 #include <exception>
 #include <iomanip>
 #include <iostream>
-#include <list>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -147,7 +146,7 @@ void warn_status(PDI_status_t status, const char* message, void*)
 /** A structure to reclaim the datas properly in case of error
  */
 struct Var_to_reclaim {
-	std::list<string> m_varnames;
+	std::vector<string> m_varnames;
 	Var_to_reclaim() = default;
 
 	~Var_to_reclaim() noexcept

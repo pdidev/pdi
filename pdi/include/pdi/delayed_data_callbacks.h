@@ -25,8 +25,8 @@
 #ifndef PDI_DELAYED_DATA_CALLBACK_H_
 #define PDI_DELAYED_DATA_CALLBACK_H_
 
-#include <list>
 #include <string>
+#include <vector>
 
 #include <pdi/pdi_fwd.h>
 #include "pdi/context.h"
@@ -49,7 +49,7 @@ namespace PDI {
 class PDI_EXPORT Delayed_data_callbacks
 {
 	/// friend class Global_context;
-	std::list<std::string> m_datanames;
+	std::vector<std::string> m_datanames;
 
 	/// The context this descriptor is part of
 	Global_context& m_context;
@@ -107,12 +107,11 @@ public:
 	try {
 		int i = 0;
 		size_t number_of_elements = m_datanames.size();
-		for (; !m_datanames.empty(); m_datanames.pop_front()) {
-			auto&& element_name = m_datanames.front();
+		for (auto element_name: m_datanames) {
 			m_context.logger().trace("Trigger data callback `{}' ({}/{})", element_name.c_str(), ++i, number_of_elements);
-
 			m_context[element_name.c_str()].trigger_delayed_data_callbacks();
 		}
+		this->cancel(); // clear the m_datanames
 	} catch (Error& e) {
 		this->cancel(); // clear the m_datanames
 		throw Error(e.status(), "Error in trigger data callback: `{}'", e.what());
