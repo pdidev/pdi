@@ -107,7 +107,7 @@ public:
 	try {
 		int i = 0;
 		size_t number_of_elements = m_datanames.size();
-		for (auto element_name: m_datanames) {
+		for (auto&& element_name: m_datanames) {
 			m_context.logger().trace("Trigger data callback `{}' ({}/{})", element_name.c_str(), ++i, number_of_elements);
 			m_context[element_name.c_str()].trigger_delayed_data_callbacks();
 		}
