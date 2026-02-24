@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -49,6 +49,7 @@ namespace PDI {
 class PDI_EXPORT Global_context: public Context
 {
 private:
+	friend class Delayed_data_callbacks;
 	friend class Data_descriptor_impl;
 
 	/// The singleton Context instance

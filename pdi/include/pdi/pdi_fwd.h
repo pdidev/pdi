@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -78,6 +78,11 @@ using Datatype_template_ptr [[deprecated]] = std::shared_ptr<const Datatype_temp
 using Datatype_template_sptr = std::shared_ptr<const Datatype_template>;
 
 using Datatype_sptr = std::shared_ptr<const Datatype>;
+
+/**
+ * A class to delayed the moment to call call_data_callback
+*/
+class Delayed_data_callbacks;
 
 /** A data descriptors with a name and a value, it contains an implicit type
  * template that is used when exposing untyped data

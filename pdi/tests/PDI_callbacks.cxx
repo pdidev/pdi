@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 
 #include <pdi/context.h>
+#include <pdi/delayed_data_callbacks.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/scalar_datatype.h>
@@ -165,6 +166,7 @@ TEST_F(CallbacksTest, add_data_callback)
 	});
 	ASSERT_EQ(x, 0);
 	this->test_context->desc("data_x").share(&x, true, true);
+	ASSERT_EQ(x, 42);
 	this->test_context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 42);
 }
@@ -648,4 +650,152 @@ TEST_F(CallbacksTest, add_data_remove_callback_release_remove)
 	remove_callback();
 	this->test_context->desc("data_x").release();
 	ASSERT_EQ(x, 0);
+}
+
+/*
+ * Name:                CallbacksTest.callbacks().multiple_delayed_data_callbacks
+ *
+ * Tested functions:    PDI::Context::callbacks()
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data when a data
+ *
+ */
+TEST_F(CallbacksTest, multiple_delayed_data_callbacks)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	Data_descriptor& desc_x = this->test_context->desc(data_x);
+	Data_descriptor& desc_y = this->test_context->desc(data_y);
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+
+	Delayed_data_callbacks delayed_callbacks(*dynamic_cast<Global_context*>(this->test_context.get()));
+
+	int x = 0;
+	int y = 0;
+
+	this->test_context->callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			std::cout << "name=" << name.c_str() << " == data_x" << std::endl;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+
+	this->test_context->callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* y = static_cast<int*>(ref_write.get());
+			*y += 53;
+			std::cout << "name=" << name.c_str() << " == data_y" << std::endl;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
+
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	std::cout << "share data_x=" << std::endl;
+	this->test_context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+	std::cout << "share data_y=" << std::endl;
+	this->test_context->desc("data_y").share(&y, true, true, std::move(delayed_callbacks));
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_x").trigger_delayed_data_callbacks();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_y").trigger_delayed_data_callbacks();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+	delayed_callbacks.cancel();
+	this->test_context->desc("data_y").reclaim();
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
+}
+
+/*
+ * Name:                CallbacksTest.callbacks().multiple_delayed_data_callbacks_with_error
+ *
+ * Tested functions:    PDI::Context::callbacks()
+ *
+ *
+ * Description:         Checks if callback is
+ *                      correctly called on data when a data
+ *
+ */
+TEST_F(CallbacksTest, multiple_delayed_data_callbacks_with_error)
+{
+	string data_x{"data_x"};
+	string data_y{"data_y"};
+	Data_descriptor& desc_x = this->test_context->desc(data_x);
+	Data_descriptor& desc_y = this->test_context->desc(data_y);
+	this->test_context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	this->test_context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+
+	Delayed_data_callbacks delayed_callbacks(*dynamic_cast<PDI::Global_context*>(this->test_context.get()));
+
+	int x = 0;
+	int y = 0;
+
+	this->test_context->callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* x = static_cast<int*>(ref_write.get());
+			*x += 42;
+			std::cout << "name=" << name.c_str() << " == data_x" << std::endl;
+			ASSERT_STREQ(name.c_str(), "data_x");
+		},
+		"data_x"
+	);
+
+	this->test_context->callbacks().add_data_callback(
+		[](const std::string& name, Ref ref) {
+			Ref_w ref_write{ref};
+			int* y = static_cast<int*>(ref_write.get());
+			*y += 53;
+			std::cout << "name=" << name.c_str() << " == data_y" << std::endl;
+			ASSERT_STREQ(name.c_str(), "data_y");
+		},
+		"data_y"
+	);
+
+	ASSERT_EQ(x, 0);
+	ASSERT_EQ(y, 0);
+	try {
+		this->test_context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+		throw std::runtime_error("forced throw error for testing");
+		this->test_context->desc("data_x").trigger_delayed_data_callbacks();
+	} catch (const std::runtime_error& e) {
+		EXPECT_STREQ("forced throw error for testing", e.what());
+		this->test_context->desc("data_x").reclaim();
+	} catch (...) {
+		FAIL() << "The error throwing must be std::runtime_error.";
+	}
+
+	// callback for data_y
+	ASSERT_EQ(x, 0);
+
+	this->test_context->desc("data_y").share(&y, true, true, std::move(delayed_callbacks));
+	ASSERT_EQ(y, 0);
+	this->test_context->desc("data_y").trigger_delayed_data_callbacks();
+	ASSERT_EQ(y, 53);
+	delayed_callbacks.cancel();
+	this->test_context->desc("data_y").reclaim();
+	ASSERT_EQ(y, 53);
+
+	// callback for data_x
+	this->test_context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+	ASSERT_EQ(x, 0);
+	this->test_context->desc("data_x").trigger_delayed_data_callbacks();
+	ASSERT_EQ(x, 42);
+	delayed_callbacks.cancel();
+	this->test_context->desc("data_x").reclaim();
+	ASSERT_EQ(x, 42);
+	ASSERT_EQ(y, 53);
 }
