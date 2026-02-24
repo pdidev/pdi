@@ -76,6 +76,7 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+option(BUILD_CHECKPOINT_PLUGIN   "Build Checkpoint plugin" OFF)
 
 
 
@@ -479,6 +480,12 @@ sbuild_add_module(SET_VALUE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/set_value"
 	DEPENDS PDI
 	SUBSTEPS test
+)
+
+sbuild_add_module(CHECKPOINT_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_CHECKPOINT_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/checkpoint"
+	DEPENDS PDI
 )
 
 sbuild_add_module(SERIALIZE_PLUGIN
