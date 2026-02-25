@@ -31,18 +31,30 @@ set(ALL_TEST_NAMES array dataset group struct variables)
 if("${BUILD_HDF5_PARALLEL}")
     list(APPEND ALL_TEST_NAMES mpi mpi_independent)
 endif()
-
+set(HDF5_DEPS hdf5::hdf5)
 foreach(test_name ${ALL_TEST_NAMES})
     foreach(io_operation write read)
         add_executable("HDF5_C_${test_name}_${io_operation}_test" "HDF5_C/${test_name}_${io_operation}_test.c")
         target_link_libraries("HDF5_C_${test_name}_${io_operation}_test" ${HDF5_DEPS})
-
+        set_target_properties("HDF5_C_${test_name}_${io_operation}_test" PROPERTIES 
+            INSTALL_RPATH_USE_LINK_PATH TRUE
+            BUILD_WITH_INSTALL_RPATH TRUE
+        )
+        set_property(TARGET "HDF5_C_${test_name}_${io_operation}_test" APPEND PROPERTY INSTALL_RPATH "/usr/local/lib")
+        
         add_executable("PDI_C_${test_name}_${io_operation}_test" "PDI_C/${test_name}_${io_operation}_test.c")
         target_link_libraries("PDI_C_${test_name}_${io_operation}_test" PDI::PDI_C)
+        set_target_properties("PDI_C_${test_name}_${io_operation}_test" PROPERTIES 
+            INSTALL_RPATH_USE_LINK_PATH TRUE
+            BUILD_WITH_INSTALL_RPATH TRUE
+        )
+        set_property(TARGET "PDI_C_${test_name}_${io_operation}_test" APPEND PROPERTY INSTALL_RPATH "/usr/local/lib")
         if ( ("${test_name}" STREQUAL "mpi") OR ("${test_name}" STREQUAL "mpi_independent") )
             target_link_libraries("HDF5_C_${test_name}_${io_operation}_test" MPI::MPI_C)
             target_link_libraries("PDI_C_${test_name}_${io_operation}_test"  MPI::MPI_C)
         endif()
+        
+
     endforeach(io_operation)
 
     foreach(write_prefix HDF5_C_ PDI_C_)
