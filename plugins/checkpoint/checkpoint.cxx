@@ -29,7 +29,10 @@ class checkpoint_plugin : public PDI::Plugin
 {
 private:
 
-	char** prev_cp_file; 
+	string prev_cp_file; 
+
+	long int failure_value;
+
     unordered_map<string, vector<File_op>> m_data;
 
 
@@ -37,64 +40,59 @@ public:
     checkpoint_plugin(PDI::Context& ctx, PC_tree_t config)
         : Plugin(ctx) // construct and initialize 
     {
-		long int failure_value;
+		PDI::opt_each(config, [&](PC_tree_t item) {// Each sequence item is a mapping with keys
+
+            PDI::each(item, [&](PC_tree_t key_tree, PC_tree_t value) {
+                string key = PDI::to_string(key_tree);
+                if (key == "failure") {
+                    failure_value = PDI::to_long(value);
+                } else if (key == "last_checkpoint") {
+                    prev_cp_file = PDI::to_string(value);
+                }
+            });
+        });
+
+	
 		
-		PC_tree_t recovery_tree = PC_get(config, ".failure");
-		int len;
-		PC_len(recovery_tree, &len);
+		if(failure_value!=0 && prev_cp_file.empty()){
 
-		if(len>0) { 
-
-			cout << " Try out " << endl;
-				
-				PC_tree_t last_cp_node = PC_get(recovery_tree, ".last_checkpoint");
-				if (PC_status(last_cp_node)) {
-					PC_string(last_cp_node, prev_cp_file);
-				}
-			}
-		
-		else { 
-
-			cout << " Try out 2 " << endl;
+			cout << " The last checkpoint file has to be defined if the failure key is set " << endl; 
 			
-			PC_int(recovery_tree, &failure_value);
+			return; 
+		}
 
-			cout << " failure value =  " << failure_value << endl;
+		if(failure_value==0 && (!prev_cp_file.empty())){
 
-			if (failure_value!=0){
-				cout<< " A recovery file has to be defined if a failure occurred " << endl;
-				return;
-			}
+			cout << " Ignoring the last checkpoint file as the failure key is not set" << endl; 
 
-			// PC_tree_t hdf5_tree = PC_get(config, ".file");
+		}
 
-			Hdf5_error_handler _;
-			if (0 > H5open()) handle_hdf5_err("Cannot initialize HDF5 library");
+		Hdf5_error_handler _;
+		if (0 > H5open()) handle_hdf5_err("Cannot initialize HDF5 library");
+			
+			each(config, [&](PC_tree_t elem) {
+
+			for (auto&& op: File_op::parse(ctx, elem)) {
+				auto&& events = op.event();
 				
-				each(config, [&](PC_tree_t elem) {
-
-				for (auto&& op: File_op::parse(ctx, elem)) {
-					auto&& events = op.event();
-					
-						// if there are no event names, this is data triggered
-						assert(op.dataset_ops().size() <= 1);
-						for (auto&& transfer: op.dataset_ops()) {
-							m_data[transfer.value()].emplace_back(op);
+					// if there are no event names, this is data triggered
+					assert(op.dataset_ops().size() <= 1);
+					for (auto&& transfer: op.dataset_ops()) {
+						m_data[transfer.value()].emplace_back(op);
+					}
+					for (auto&& transfer: op.attribute_ops()) {
+						if (!transfer.desc().empty()) {
+							m_data[transfer.desc()].emplace_back(op);
 						}
-						for (auto&& transfer: op.attribute_ops()) {
-							if (!transfer.desc().empty()) {
-								m_data[transfer.desc()].emplace_back(op);
-							}
-						}
-						for (auto&& transfer: op.dataset_size_ops()) {
-							m_data[transfer.first].emplace_back(op);
-						}				
-				}
-			});
+					}
+					for (auto&& transfer: op.dataset_size_ops()) {
+						m_data[transfer.first].emplace_back(op);
+					}				
+			}
+		});
 
-			ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->write_checkpoint(name, ref); });
-    	}
-	};
+		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->write_checkpoint(name, ref); });
+};
 
     ~checkpoint_plugin()
 	{
