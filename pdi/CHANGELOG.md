@@ -22,6 +22,11 @@ and this project adheres to
   C11.
 
 #### Deprecated
+* Error names have been improved to fix
+  [#670](https://github.com/pdidev/pdi/issues/670):
+  - `PDI_ERR_CONFIG` has been renamed to `PDI_ERR_SPECTREE`,
+  - `PDI_ERR_RIGHT` has been renamed to `PDI_ERR_PERMISSION`,
+  - `PDI_UNAVAILABLE` is never used and will be removed.
 
 #### Removed
 
@@ -38,10 +43,13 @@ and this project adheres to
 
 #### Changed
 * Versions of C++ used in now C++ 20 instead of C++ 17.
+* `PDI::Right_error` has been replaced by `PDI::Permission_error`.
+* `PDI::Config_error` has been replaced by `PDI::Spectree_error`.
 
 #### Deprecated
 
 #### Removed
+* `PDI::Unavailable_error` was never used and has been removed.
 
 #### Fixed
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,10 @@
 
 #include "selection.h"
 
-using PDI::Config_error;
 using PDI::Context;
 using PDI::each;
 using PDI::opt_each;
+using PDI::Spectree_error;
 using PDI::to_string;
 using std::string;
 using std::transform;
@@ -59,7 +59,7 @@ Selection::Selection(PC_tree_t tree)
 		} else if (key == "start") {
 			opt_each(value, [&](PC_tree_t start) { m_start.emplace_back(to_string(start)); });
 		} else {
-			throw Config_error{key_tree, "Invalid configuration key in selection: `{}'", key};
+			throw Spectree_error{key_tree, "Invalid configuration key in selection: `{}'", key};
 		}
 	});
 }
@@ -77,7 +77,7 @@ void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 
 	if (!m_size.empty()) {
 		if (m_size.size() != static_cast<size_t>(rank)) {
-			throw Config_error{PC_get(m_selection_tree, ".size"), "Invalid selection: {} selection in {} array", m_size.size(), rank};
+			throw Spectree_error{PC_get(m_selection_tree, ".size"), "Invalid selection: {} selection in {} array", m_size.size(), rank};
 		}
 		for (int size_id = 0; size_id < rank; ++size_id) {
 			h5_subsize[size_id] = m_size[size_id].to_long(ctx);
@@ -88,7 +88,7 @@ void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 			if (H5Sget_select_npoints(h5_space) == H5Sget_select_npoints(dflt_space)) {
 				// if ranks differ but number of elements are the same, select whole dataset
 			} else {
-				throw Config_error{m_selection_tree, "Invalid default selection: {} selection in {} array", dflt_rank, rank};
+				throw Spectree_error{m_selection_tree, "Invalid default selection: {} selection in {} array", dflt_rank, rank};
 			}
 		} else {
 			// ranks match, get memory size selection as dataset size selection
@@ -102,7 +102,7 @@ void Selection::apply(Context& ctx, hid_t h5_space, hid_t dflt_space) const
 
 	if (!m_start.empty()) {
 		if (m_start.size() != static_cast<size_t>(rank)) {
-			throw Config_error{PC_get(m_selection_tree, ".start"), "Invalid selection: {} start in {} array", m_size.size(), rank};
+			throw Spectree_error{PC_get(m_selection_tree, ".start"), "Invalid selection: {} start in {} array", m_size.size(), rank};
 		}
 		for (int size_id = 0; size_id < rank; ++size_id) {
 			h5_start[size_id] += m_start[size_id].to_long(ctx);

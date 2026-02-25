@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -391,10 +391,10 @@ vector<Expression> get_array_property(PC_tree_t node, string property)
 void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>& subsize, vector<Expression>& start)
 {
 	if (size.empty()) {
-		throw Config_error{node, "Array must have defined `size'"};
+		throw Spectree_error{node, "Array must have defined `size'"};
 	}
 	if (!start.empty() && subsize.empty()) {
-		throw Config_error{node, "Array with a `start` property must have a defined `subsize'"};
+		throw Spectree_error{node, "Array with a `start` property must have a defined `subsize'"};
 		//TODO: handle by setting subsize to size-start
 	}
 	if (start.empty()) {
@@ -406,10 +406,10 @@ void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>
 
 	//check if rank of array is correct
 	if (size.size() != subsize.size()) {
-		throw Config_error{node, "`subsize' must have the same rank as `size': {} != {}", subsize.size(), size.size()};
+		throw Spectree_error{node, "`subsize' must have the same rank as `size': {} != {}", subsize.size(), size.size()};
 	}
 	if (size.size() != start.size()) {
-		throw Config_error{node, "`start' must have the same rank as `size': {} != {}", start.size(), size.size()};
+		throw Spectree_error{node, "`start' must have the same rank as `size': {} != {}", start.size(), size.size()};
 	}
 }
 
@@ -420,7 +420,7 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		if (order_str == "c" && order_str == "C") {
 			ctx.logger().warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str != "") {
-			throw Config_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
+			throw Spectree_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
 		}
 	}
 
@@ -432,7 +432,7 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 
 	PC_tree_t config_elem = PC_get(node, ".subtype");
 	if (PC_status(config_elem)) {
-		throw Config_error{node, "Array must have `subtype'"};
+		throw Spectree_error{node, "Array must have `subtype'"};
 	}
 
 	Datatype_template_sptr res_type = ctx.datatype(config_elem);
@@ -463,22 +463,22 @@ vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t eleme
 			result.emplace_back(disp, ctx.datatype(element_node));
 		}
 	} else {
-		throw Config_error{elements_node, "Tuple elements subtree must be a seqence or ordered mapping"};
+		throw Spectree_error{elements_node, "Tuple elements subtree must be a seqence or ordered mapping"};
 	}
 
 	// check if non or all of elements have diplacement defined
 	if (displacement_counter != 0 && displacement_counter != nb_elements) {
-		throw Config_error{elements_node, "None or all of tuple elements must to have `disp' defined"};
+		throw Spectree_error{elements_node, "None or all of tuple elements must to have `disp' defined"};
 	}
 
 	// buffersize defined, but no displacement in elements
 	if (buffersize_defined && displacement_counter == 0) {
-		throw Config_error{elements_node, "If tuple buffersize is defined, all `disp' must be defined also"};
+		throw Spectree_error{elements_node, "If tuple buffersize is defined, all `disp' must be defined also"};
 	}
 
 	// buffersize not defined, but displacement is defined in elements
 	if (!buffersize_defined && displacement_counter != 0) {
-		throw Config_error{elements_node, "If tuple buffersize is not defined, `disp' cannot be defined also"};
+		throw Spectree_error{elements_node, "If tuple buffersize is not defined, `disp' cannot be defined also"};
 	}
 
 	return result;
@@ -494,7 +494,7 @@ Datatype_template_sptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
 
 	PC_tree_t elements_node = PC_get(node, ".elements");
 	if (PC_status(elements_node)) {
-		throw Config_error{node, "Tuple datatype must have `elements' subtree"};
+		throw Spectree_error{node, "Tuple datatype must have `elements' subtree"};
 	}
 	bool tuple_buffersize_defined = static_cast<bool>(tuple_buffersize);
 	return unique_ptr<Tuple_template>{
@@ -516,7 +516,7 @@ vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_
 
 		PC_tree_t disp_conf = PC_get(member_node, ".disp");
 		if (PC_status(disp_conf)) {
-			throw Config_error{member_node, "All members must have displacements"};
+			throw Spectree_error{member_node, "All members must have displacements"};
 		}
 		Expression disp = to_string(disp_conf);
 
@@ -529,7 +529,7 @@ Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
 	if (PC_status(buffersize_conf)) {
-		throw Config_error{node, "Record must have defined buffersize"};
+		throw Spectree_error{node, "Record must have defined buffersize"};
 	}
 	Expression record_buffersize = to_string(buffersize_conf);
 
@@ -551,7 +551,7 @@ Datatype_template_sptr to_pointer_datatype_template(Context& ctx, PC_tree_t node
 {
 	PC_tree_t subtype_conf = PC_get(node, ".subtype");
 	if (PC_status(subtype_conf)) {
-		throw Config_error{node, "Pointer must have defined subtype"};
+		throw Spectree_error{node, "Pointer must have defined subtype"};
 	}
 	return unique_ptr<Pointer_template>{new Pointer_template{ctx.datatype(subtype_conf), node}};
 }
@@ -726,7 +726,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		if (kind == 0)
 			kind = PDI_CHARACTER_DEFAULT_KIND;
 		else if (kind < 0)
-			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
+			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
 	});
 	ctx.add_datatype("integer", [](Context&, PC_tree_t tree) {
@@ -734,7 +734,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		if (kind == 0)
 			kind = PDI_INTEGER_DEFAULT_KIND;
 		else if (kind < 0)
-			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
+			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::SIGNED, kind, tree}};
 	});
 	ctx.add_datatype("logical", [](Context&, PC_tree_t tree) {
@@ -742,7 +742,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		if (kind == 0)
 			kind = PDI_LOGICAL_DEFAULT_KIND;
 		else if (kind < 0)
-			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
+			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
 	});
 	ctx.add_datatype("real", [](Context&, PC_tree_t tree) {
@@ -750,7 +750,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		if (kind == 0)
 			kind = PDI_REAL_DEFAULT_KIND;
 		else if (kind < 0)
-			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
+			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::FLOAT, kind, tree}};
 	});
 #endif // BUILD_FORTRAN

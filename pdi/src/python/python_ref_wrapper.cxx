@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -135,7 +135,7 @@ void Python_ref_wrapper::setattribute(std::string member_name, const pybind11::o
 			throw Type_error{"Setting a member ({}) of record type is unsupported", member_name};
 		}
 	} else {
-		throw Right_error{"Cannot set member that is read only: {}", member_name};
+		throw Permission_error{"Cannot set member that is read only: {}", member_name};
 	}
 }
 

@@ -491,7 +491,7 @@ public:
 	 */
 	ref_access_t<R, W> get() const
 	{
-		if (is_null()) throw Right_error{"Trying to dereference a null reference"};
+		if (is_null()) throw Permission_error{"Trying to dereference a null reference"};
 		return m_content->m_data;
 	}
 
