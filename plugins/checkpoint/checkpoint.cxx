@@ -12,6 +12,7 @@
 using PDI::Context;
 using PDI::each;
 using PDI::opt_each;
+using PDI::Error;
 using PDI::Plugin;
 using PDI::Ref;
 using PDI::to_long;
@@ -21,6 +22,7 @@ using std::unordered_map;
 using std::vector;
 using std::cout;
 using std::endl;
+using std::tie; 
 
 using namespace decl_hdf5;
 
@@ -32,6 +34,8 @@ private:
 	string prev_cp_file; 
 
 	long int failure_value;
+
+	bool start_from_last_checkpoint = true ; 
 
     unordered_map<string, vector<File_op>> m_data;
 
@@ -94,7 +98,18 @@ public:
 			}
 		});
 
-		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) { this->write_checkpoint(name, ref); });
+		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
+			
+			
+			if((!prev_cp_file.empty()) && start_from_last_checkpoint){
+				this-> load_checkpoint(name, ref);
+			}
+
+			else{
+				this->write_checkpoint(name, ref); 
+			}
+
+		});
 };
 
     ~checkpoint_plugin()
@@ -112,6 +127,59 @@ private:
 			op.execute(context());
 		}
     
+    };
+
+
+	void load_checkpoint(const std::string& name, Ref ref)
+    {
+        Hdf5_error_handler _;
+
+		Context& ctx = context();
+		
+		string dataset_name = "/" + name;
+
+		hid_t h5_file_raw = -1;
+		Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
+	
+		ctx.logger().trace("Opening `{}' file to read", prev_cp_file);
+
+		h5_file_raw = H5Fopen(prev_cp_file.c_str(), H5F_ACC_RDONLY, file_lst);
+		
+		Raii_hid h5_file = make_raii_hid(h5_file_raw, H5Fclose, ("Cannot open `" + prev_cp_file + "' file").c_str());
+		
+		Raii_hid read_lst = make_raii_hid(H5Pcreate(H5P_DATASET_XFER), H5Pclose);
+
+		PDI::Ref_w write_ref{ref};
+		if (!write_ref) {
+			ctx.logger().warn("Cannot read `{}' dataset: `{}' data not available", dataset_name, name);
+			return;
+		}
+
+		Raii_hid h5_mem_space, h5_mem_type;
+		tie(h5_mem_space, h5_mem_type) = space(write_ref.type());
+
+		// ctx.logger().trace("Applying `{}' memory selection", dataset_name);
+		// m_memory_selection.apply(ctx, h5_mem_space);
+
+		ctx.logger().trace("Opening `{}' dataset", dataset_name);
+		Raii_hid h5_set
+			= make_raii_hid(H5Dopen2(h5_file, dataset_name.c_str(), H5P_DEFAULT), H5Dclose, ("Cannot open `" + dataset_name + "' dataset").c_str());
+
+		ctx.logger().trace("Inquiring `{}' dataset dataspace", dataset_name);
+		Raii_hid h5_file_space = make_raii_hid(H5Dget_space(h5_set), H5Sclose, ("Cannot inquire `" + dataset_name + "' dataset dataspace").c_str());
+
+		// ctx.logger().trace("Applying `{}' dataset selection", dataset_name);
+		// m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
+
+		// ctx.logger().trace("Validating `{}' dataset dataspaces selection", dataset_name);
+		// validate_dataspaces(m_dataset_selection.selection_tree(), h5_mem_space, h5_file_space, dataset_name);
+
+		ctx.logger().trace("Reading `{}' dataset", dataset_name);
+		if (0 > H5Dread(h5_set, h5_mem_type, h5_mem_space, h5_file_space, read_lst, write_ref)) handle_hdf5_err();
+
+		ctx.logger().trace("`{}' dataset read finished", dataset_name);
+
+		start_from_last_checkpoint=false;
     };
 
 };
