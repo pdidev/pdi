@@ -90,35 +90,42 @@ if [[ "x${PDI_SYSTEM}" =~ ^xmacos ]]
 then
 	# Workaround: not all plugins work on OSX yet (https://github.com/pdidev/pdi/issues/580)
 	CMAKE_FLAGS="${CMAKE_FLAGS} \
--DBUILD_BENCHMARKING=OFF \
--DBUILD_DECL_HDF5_PLUGIN=ON \
--DBUILD_DECL_NETCDF_PLUGIN=OFF \
--DBUILD_DOCUMENTATION=OFF \
--DBUILD_HDF5_PARALLEL=ON \
--DBUILD_FORTRAN=OFF \
--DBUILD_PYTHON=OFF \
--DBUILD_MPI_PLUGIN=ON \
--DBUILD_NETCDF_PARALLEL=ON \
--DBUILD_PYCALL_PLUGIN=OFF \
--DBUILD_SERIALIZE_PLUGIN=ON \
--DBUILD_SET_VALUE_PLUGIN=ON \
--DBUILD_TESTING=ON \
--DBUILD_TRACE_PLUGIN=ON \
--DBUILD_USER_CODE_PLUGIN=ON"
+		-DBUILD_BENCHMARKING=OFF \
+		-DBUILD_DECL_HDF5_PLUGIN=ON \
+		-DBUILD_DECL_NETCDF_PLUGIN=OFF \
+		-DBUILD_DOCUMENTATION=OFF \
+		-DBUILD_HDF5_PARALLEL=ON \
+		-DBUILD_FORTRAN=OFF \
+		-DBUILD_PYTHON=OFF \
+		-DBUILD_MPI_PLUGIN=ON \
+		-DBUILD_NETCDF_PARALLEL=ON \
+		-DBUILD_PYCALL_PLUGIN=OFF \
+		-DBUILD_SERIALIZE_PLUGIN=ON \
+		-DBUILD_SET_VALUE_PLUGIN=ON \
+		-DBUILD_TESTING=ON \
+		-DBUILD_TRACE_PLUGIN=ON \
+		-DBUILD_USER_CODE_PLUGIN=ON"
 fi
 
 
 
-# Configure, build & test the whole pdi distribution
+# And now for the actual tests
 
 printf "\n\n\n\e[1;36m *** Configure, build & test the whole pdi distribution\e[m\n\n"
 
-cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}" -B tests_distribution
+mkdir -p install/include install/lib # Workaround for https://github.com/pdidev/pdi/issues/644
+cmake --install-prefix "${PWD}/install" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}" -B tests_distribution
 cmake --build tests_distribution -- ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_distribution.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_distribution
 
 
-# Configure, build & test pdi API and example with SubdirMock PDI
+printf "\n\n\n\e[1;36m *** Install the pdi distribution & use it from an external project\e[m\n\n"
+
+cmake --install tests_distribution
+./install/bin/pdirun cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}/cmake_test" -B test_from_install
+./install/bin/pdirun cmake --build test_from_install -- ${MAKEFLAGS}
+./install/bin/pdirun ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_from_install.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir test_from_install
+
 
 printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with SubdirMock PDI\e[m\n\n"
 
@@ -133,8 +140,6 @@ cmake -DDISABLE_PDI=ON -S "${SRCDIR}/test_api" -B tests_api_subdirmock
 cmake --build tests_api_subdirmock -- ${MAKEFLAGS}
 ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_api_subdirmock
 
-
-# Configure, build & test pdi API and example with MockFind PDI (only in provided mode, because we need Paraconf)
 
 if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
 	
