@@ -1023,6 +1023,7 @@ TEST(decl_netcdf_test, deflate)
 	PDI_finalize();
 }
 
+
 /*
  * Name:                decl_netcdf_test.read
  *
