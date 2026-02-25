@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 * Add native netcdf deflate support with chunking 
   [[#603](https://github.com/pdidev/pdi/issues/603)]
+* Add type check when reading scalar variable from file
+  [[#647](https://github.com/pdidev/pdi/issues/647)]
 
 ### Changed
 
