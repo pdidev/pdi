@@ -1023,7 +1023,6 @@ TEST(decl_netcdf_test, deflate)
 	PDI_finalize();
 }
 
-
 /*
  * Name:                decl_netcdf_test.read
  *
@@ -1031,31 +1030,32 @@ TEST(decl_netcdf_test, deflate)
  */
 TEST(decl_netcdf_test, scalar_read)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                                      \n"
-		  "data:                                               \n"
-		  "  int_scalar: int32                                 \n"
-		  "  int_scalar_read: int64                            \n"
-		  "                                                    \n"
-		  "plugins:                                            \n"
-		  "  decl_netcdf:                                      \n"
-		  "    - file: 'test_read.nc'                          \n"
-		  "      variable:                                     \n"
-		  "        int_scalar_32: int32                        \n"
-		  "      on_event: write_data                          \n"
-		  "      write:                                        \n"
-		  "        int_scalar:                                 \n"
-		  "          variable: int_scalar_32                   \n"
-		  "    - file: 'test_read.nc'                          \n"
-		  "      on_event: read_data                           \n"
-		  "      variable:                                     \n"
-		  "        int_scalar_32: int32                        \n"
-		  "      read:                                         \n"
-		  "        int_scalar_read:                            \n"
-		  "          variable:                                 \n"
-		  "            int_scalar_32                           \n";
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    data:
+      int_scalar: int32
+      int_scalar_read: int64
+    plugins:
+      decl_netcdf:
+      - file: 'test_read.nc'
+        variable:
+          int_scalar_32: int32
+        on_event: write_data
+        write:
+          int_scalar:
+            variable: int_scalar_32
+      - file: 'test_read.nc'
+        variable:
+          int_scalar_32: int32
+        on_event: read_data
+        read:
+          int_scalar_read:
+            variable:
+              int_scalar_32
+    )";
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
+    PDI_errhandler(PDI_NULL_HANDLER);
 
 	int32_t int_scalar = 42;
 
@@ -1064,8 +1064,8 @@ TEST(decl_netcdf_test, scalar_read)
 
 	// read data
 	int64_t int_scalar_read = -1;
-	PDI_multi_expose("read_data", "int_scalar_read", &int_scalar_read, PDI_IN, NULL);
-	ASSERT_NE(int_scalar_read, 42);
+	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "int_scalar_read", &int_scalar_read, PDI_IN, NULL));
+	// ASSERT_NE(int_scalar_read, 42);
 
 	PDI_finalize();
 }

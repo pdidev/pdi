@@ -696,109 +696,22 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	}
 	nc_id var_id = var_it->second;
 
-	// read variable
-	nc_type var_nc_type;
-	nc_inq_vartype(src_id, var_id, &var_nc_type);
+	// read variable and check for scalar type match
 	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
-		auto buffersize = scalar_type->buffersize();
-		if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
-			switch (var_nc_type) {
-			case NC_BYTE:
-				if (buffersize != 1) {
-					throw PDI::Error{
-						PDI_ERR_CONFIG,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_BYTE for a buffer of size {}",
-						variable_name,
-						buffersize
-					};
-				}
-				break;
-			case NC_SHORT:
-				if (buffersize != 2) {
-					throw PDI::Error{
-						PDI_ERR_CONFIG,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_SHORT for a buffer of size {}",
-						variable_name,
-						buffersize
-					};
-				}
-				break;
-			case NC_INT:
-				if (buffersize != 4) {
-					// throw PDI::Error{
-					// 	PDI_ERR_CONFIG,
-					// 	"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_INT32 for a buffer of size {}",
-					// 	variable_name,
-					// 	buffersize
-					// };
-					// TO DO: what shall we put here? an error or just a warning?
-				}
-				break;
-			case NC_INT64:
-				if (buffersize != 8) {
-					throw PDI::Error{
-						PDI_ERR_CONFIG,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_64 for a buffer of size {}",
-						variable_name,
-						buffersize
-					};
-				}
-				break;
-			}
-		} else if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
-			switch (var_nc_type) {
-			case NC_UBYTE:
-				if (buffersize != 1) {
-					throw PDI::Error{
-						PDI_ERR_CONFIG,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UBYTE for a buffer of size {}",
-						variable_name,
-						buffersize
-					};
-				}
-				break;
-			case NC_USHORT:
-				if (buffersize != 2) {
-					throw PDI::Error{
-						PDI_ERR_CONFIG,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_USHORT for a buffer of size {}",
-						variable_name,
-						buffersize
-					};
-				}
-				break;
-			case NC_UINT:
-				if (buffersize != 4) {
-					throw PDI::Error{
-						PDI_ERR_CONFIG,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UINT(32) for a buffer of size {}",
-						variable_name,
-						buffersize
-					};
-				}
-				break;
-			case NC_UINT64:
-				if (buffersize != 8) {
-					throw PDI::Error{
-						PDI_ERR_CONFIG,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type NC_UINT64 for a buffer of size {}",
-						variable_name,
-						buffersize
-					};
-				}
-				break;
-			}
+		nc_type var_nc_type;
+		size_t var_nc_type_size;
+		nc_try(nc_inq_vartype(src_id, var_id, &var_nc_type), "Can not get type of `{}' from file", variable.path());
+		nc_try(nc_inq_type(0, var_nc_type, NULL, &var_nc_type_size), "Can not inquire the size of `{}'", var_nc_type);
+		if (scalar_type->datasize() != var_nc_type_size) {
+			throw PDI::Error{
+				PDI_ERR_TYPE,
+				"Decl_netcdf plugin: Datatype mismatch: read '{}' of type {} for a buffer of size {}",
+				variable_name,
+				var_nc_type,
+				scalar_type->datasize()
+			};
 		}
-	} else {
-		m_ctx.logger().warn(
-			"Inquired `{}' variable (nc_id = {}) from (nc_id = {}). Please be careful to match the buffer with the variable type",
-			variable.path(),
-			var_id,
-			src_id
-		);
-		// TODO : check other data types
 	}
-
 
 	m_ctx.logger().trace("Getting variable `{}'", variable.path());
 	if (var_stride.empty()) {
