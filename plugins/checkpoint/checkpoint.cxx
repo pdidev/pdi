@@ -25,7 +25,7 @@ using std::endl;
 using namespace decl_hdf5;
 
 
-class checkpoint_plugin : public PDI::Plugin
+class checkpoint_plugin : public Plugin
 {
 private:
 
@@ -37,22 +37,25 @@ private:
 
 
 public:
-    checkpoint_plugin(PDI::Context& ctx, PC_tree_t config)
+    checkpoint_plugin(Context& ctx, PC_tree_t config)
         : Plugin(ctx) // construct and initialize 
     {
-		PDI::opt_each(config, [&](PC_tree_t item) {// Each sequence item is a mapping with keys
+		opt_each(config, [&](PC_tree_t item) { 
+			
+			// handles sequences to be compatible with the File_op::parse 
+			// method called in the decl_hdf5 plugin 
+			// otherwise, could just use PDI::each with mappings 
 
-            PDI::each(item, [&](PC_tree_t key_tree, PC_tree_t value) {
-                string key = PDI::to_string(key_tree);
+            each(item, [&](PC_tree_t key_tree, PC_tree_t value) {
+                string key = to_string(key_tree);
                 if (key == "failure") {
-                    failure_value = PDI::to_long(value);
+                    failure_value = to_long(value);
                 } else if (key == "last_checkpoint") {
-                    prev_cp_file = PDI::to_string(value);
+                    prev_cp_file = to_string(value);
                 }
             });
-        });
 
-	
+        });
 		
 		if(failure_value!=0 && prev_cp_file.empty()){
 
@@ -102,7 +105,7 @@ public:
 
 private:
 
-    void write_checkpoint(const std::string& name, PDI::Ref ref)
+    void write_checkpoint(const std::string& name, Ref ref)
     {
         Hdf5_error_handler _;
 		for (auto&& op: m_data[name]) {
