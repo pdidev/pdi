@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* Add Catalyst plugin from Kitware [#496](https://github.com/pdidev/pdi/pull/496)
 
 ### Changed
 

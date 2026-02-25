@@ -1,0 +1,100 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024-2025 Kitware SAS
+# SPDX-FileCopyrightText: Copyright (c) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# SPDX-License-Identifier: Apache 2.0
+
+logging:
+  level: "debug"
+metadata:
+  points_array_size: size_t
+  cell_points_size: size_t
+  velocity_array_size: size_t
+  pressure_array_size: size_t
+data:
+  cycle: int
+  time: double
+  number_of_points: size_t
+  number_of_cells: size_t
+  points_array:
+    type: array
+    subtype: double
+    size: $points_array_size
+  cell_points:
+    type: array
+    subtype: uint32
+    size: $cell_points_size
+  velocity_array:
+    type: array
+    subtype: double
+    size: $velocity_array_size
+  pressure_array:
+    type: array
+    subtype: float
+    size: $pressure_array_size
+plugins:
+  trace:
+  catalyst:
+    scripts:
+      script1: "@CATALYST_SCRIPT_FOLDER@/catalyst_pipeline_with_rendering.py"
+    on_event: "catalyst_execute"
+    execute:
+      state:
+        timestep: '$cycle'
+        time: '$time'
+        multiblock: 1
+      channels:
+        grid:
+          type: "mesh"
+          data:
+            coordsets:
+              my_coords:
+                type: "explicit"
+                values:
+                  x:
+                    PDI_data_array: "points_array"
+                    size: '$number_of_points'
+                    offset: 0
+                    stride: 3
+                  y:
+                    PDI_data_array: "points_array"
+                    size: '$number_of_points'
+                    offset: 1
+                    stride: 3
+                  z:
+                    PDI_data_array: "points_array"
+                    size: '$number_of_points'
+                    offset: 2
+                    stride: 3
+            topologies:
+              my_mesh:
+                type: "unstructured"
+                coordset: "my_coords"
+                elements:
+                  shape: "hex"
+                  connectivity:
+                    PDI_data_array: "cell_points"
+                    size: '8*$number_of_cells'
+            fields:
+              velocity:
+                association: "vertex"
+                topology: "my_mesh"
+                volume_dependent: "false"
+                values:
+                  x:
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: 0
+                  y:
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: '$number_of_points'
+                  z:
+                    PDI_data_array: "velocity_array"
+                    size: '$number_of_points'
+                    offset: '2*$number_of_points'
+              pressure:
+                association: "element"
+                topology: "my_mesh"
+                volume_dependent: "false"
+                values:
+                  PDI_data_array: "pressure_array"
+                  size: '$number_of_cells'
