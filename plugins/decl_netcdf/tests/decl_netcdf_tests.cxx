@@ -1055,7 +1055,7 @@ TEST(decl_netcdf_test, scalar_read)
     )";
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
-    PDI_errhandler(PDI_NULL_HANDLER);
+	PDI_errhandler(PDI_NULL_HANDLER);
 
 	int32_t int_scalar = 42;
 
