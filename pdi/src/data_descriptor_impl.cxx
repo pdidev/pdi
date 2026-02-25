@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include <exception>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -165,8 +166,8 @@ try {
 		throw;
 	}
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-} catch (Error& e) {
-	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
+} catch (...) {
+	rethrow_with_context(std::current_exception(), "Unable to share `{}', ", name());
 }
 
 void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
@@ -210,8 +211,8 @@ try {
 
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	return result;
-} catch (Error& e) {
-	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
+} catch (...) {
+	rethrow_with_context(std::current_exception(), "Unable to share `{}', ", name());
 }
 
 void Data_descriptor_impl::release()
@@ -231,8 +232,8 @@ try {
 		m_refs.emplace(new Ref_holder::Impl<true, false>(oldref));
 	}
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-} catch (Error& e) {
-	throw Error(e.status(), "Unable to release `{}', {}", name(), e.what());
+} catch (...) {
+	rethrow_with_context(std::current_exception(), "Unable to release `{}', ", name());
 }
 
 void* Data_descriptor_impl::reclaim()
@@ -254,8 +255,8 @@ try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// finally release the data behind the ref
 	return oldref.release();
-} catch (Error& e) {
-	throw Error(e.status(), "Unable to reclaim `{}', {}", name(), e.what());
+} catch (...) {
+	rethrow_with_context(std::current_exception(), "Unable to reclaim `{}', ", name());
 }
 
 } // namespace PDI

@@ -32,7 +32,9 @@
 
 using PDI::make_random;
 using PDI::random_init;
+using testing::AllOf;
 using testing::Eq;
+using testing::HasSubstr;
 using testing::StartsWith;
 using testing::StrEq;
 
@@ -599,8 +601,7 @@ plugins:
 			*this,
 			PdiError(
 				Eq(PDI_ERR_SYSTEM),
-				StartsWith("Error while triggering event `read_scalar': "
-		                   "System_error: Cannot open `scalar_data' dataset object 'scalar_data' doesn't exist")
+				StartsWith("System error: while triggering `read_scalar', Cannot open `scalar_data' dataset object 'scalar_data' doesn't exist")
 			)
 		);
 		PDI_multi_expose("read_scalar", "scalar_data", &scalar_data_read, PDI_IN, nullptr);
@@ -624,10 +625,7 @@ plugins:
 	// APPEND => error (scalar_data already exists)
 	EXPECT_CALL(
 		*this,
-		PdiError(
-			Eq(PDI_ERR_SYSTEM),
-			StrEq("Error while triggering event `append': System_error: Dataset collision `scalar_data': Dataset already exists")
-		)
+		PdiError(Eq(PDI_ERR_SYSTEM), StrEq("System error: while triggering `append', Dataset collision `scalar_data': Dataset already exists"))
 	);
 	auto const scalar_data_2 = make_a<int>();
 	PDI_multi_expose("append", "scalar_data", &scalar_data_2, PDI_OUT, nullptr);
@@ -637,7 +635,7 @@ plugins:
 		*this,
 		PdiError(
 			Eq(PDI_ERR_SYSTEM),
-			StrEq("Error while triggering event `error': System_error: Filename collision `decl_hdf5_test_collision_policy.h5': File already exists")
+			StrEq("System error: while triggering `error', Filename collision `decl_hdf5_test_collision_policy.h5': File already exists")
 		)
 	);
 	auto const array_data_5 = make_a<std::array<std::array<int, 4>, 4>>();
@@ -799,16 +797,15 @@ plugins:
 	EXPECT_CALL(
 		*this,
 		PdiError(
-			Eq(PDI_ERR_SPECTREE),
-			StrEq("Error while triggering event `write_event': Spectree_error: "
-	              "Found `4' match(es) in the list of datasets section for `group123/array_data'. "
-	              "Cannot choose the right element in datasets.\n"
-	              "The elements that match `group123/array_data' are:\n"
-	              " - group[0-9]+/array_data defined in line 13\n"
-	              " - group.*/array_data defined in line 14\n"
-	              " - group1.*/array_data defined in line 15\n"
-	              " - group12.*/array_data defined in line 17\n"
-	              "Attention: The elements are considered as a regex.")
+			Eq(PDI_ERR_INVALIDACTION),
+			AllOf(
+				StartsWith("Invalid action requested: while triggering `write_event'"),
+				HasSubstr(R"(found 4 regexes in the "datasets:" list that match the dataset `group123/array_data' to write:)"),
+				HasSubstr("- group[0-9]+/array_data defined in line "),
+				HasSubstr("- group.*/array_data defined in line "),
+				HasSubstr("- group1.*/array_data defined in line "),
+				HasSubstr("- group12.*/array_data defined in line ")
+			)
 		)
 	);
 	PDI_multi_expose("write_event", "array_data", array_data.data(), PDI_OUT, nullptr);
@@ -841,8 +838,9 @@ plugins:
 		*this,
 		PdiError(
 			Eq(PDI_ERR_SPECTREE),
-			StrEq("Unable to share `array_data', Unable to share `array_data', Error while triggering data share `array_data': "
-	              "Spectree_error in line 13: Dataset selection is invalid for implicit dataset `group123/array_data'")
+			StrEq("Invalid entry in specification tree: (13:28 -> 13:49) Unable to share `array_data', "
+	              "Unable to share `array_data', while sharing `array_data', "
+	              "Dataset selection is invalid for implicit dataset `group123/array_data'")
 		)
 	);
 	PDI_expose("array_data", array_data.data(), PDI_OUT);

@@ -20,6 +20,16 @@ and this project adheres to
 * added a `ENABLE_BENCHMARKING` flag to cmake to enable running the benchmarks
   as part of the tests (off by default)
   [#679](https://github.com/pdidev/pdi/issues/679)
+* Improved messages for specification tree errors, with file & line numbers and
+  support for file names from Paraconf 1.1,
+  [#657](https://github.com/pdidev/pdi/issues/657)
+* A new error code `PDI_ERR_INVALIDACTION` has been added when an action
+  requested in the yaml specification tree makes no sense (but the specification
+  tree in syntaxically correct)
+* A new error code `PDI_ERR_MULTIPLE` has been added when multiple errors of
+  different kind happen
+* `PDI_STATUS_MSG` has been added to offer an english description of error
+  codes.
 
 #### Changed
 * The minimum version of C required is now C17 (ISO/IEC 9899:2018) instead of
@@ -60,6 +70,7 @@ and this project adheres to
 
 #### Removed
 * `PDI::Unavailable_error` was never used and has been removed.
+* `PDI::Error` is now an abstract class and should never be used directly.
 
 #### Fixed
 
