@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* Add native netcdf deflate support with chunking 
+  [[#603](https://github.com/pdidev/pdi/issues/603)]
 
 ### Changed
 

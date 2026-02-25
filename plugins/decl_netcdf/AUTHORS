@@ -27,4 +27,5 @@ Kacper Sinkiewicz - PSNC (ksinkiewicz@man.poznan.pl)
 * Test refactoring using GTEST
 
 Yushan Wang - CEA (yushan.wang@cea.fr)
+* Add native compression support
 * Maintainer (Sept. 2023 - ...)

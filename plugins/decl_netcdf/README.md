@@ -154,6 +154,21 @@ plugins:
 |:------------------------|:--------------------------------------------------------------------------|
 |name (path) of the group |Map with `attribute` key with value as map of \ref decl_netcdf_attr |
 
+#### deflate subtree {#decl_netcdf_deflate}
+
+|key     |value                                                   |     |
+|:-------|:-------------------------------------------------------|-----|
+|deflate | Compression level (0-9) for all variables of the file (defalut=0). Can be overwritten by the content of `variables definition` | *optional* |
+
+See \ref decl_netcdf_variables for more information about the `deflate` attribut.
+Configuration example:
+```yaml
+plugins:
+  decl_netcdf:
+    - file: "compressed_file.nc"
+      deflate: 6
+```
+
 ### variables subtree {#decl_netcdf_variables}
 
 Defines variables in the NetCDF file. Mainly used to define dimensions names and read/write attributes of the variable.
@@ -181,6 +196,8 @@ plugins:
         subtype: double
         size: [0, $value, $value] # 0 -> UNLIMITED dimension
         dimensions: ["time", "height", "width"]
+        deflate: 6
+        chunking: [10, 100, 100]
         attributes:
           attr1: $value
 ```
@@ -193,7 +210,11 @@ plugins:
 |type          |type of variable (defined the same way as other types in %PDI)|*optional*  |
 |dimensions    |array of dimensions names of variable                         |*optional*  |
 |attributes    |Map of \ref decl_netcdf_attr                                  |*optional*  |
+|deflate       |Compression level (0-9) of the variable (defalut=0)           |*optional*  |
+|chunking      |Chunk size of the variable for chunked storage                |*optional*  |
 
+`deflate` allows you to set the compression level of a variable. It uses the native netCDF compression. Using `deflate: 0` means no compression and it is the default setting.
+When compression is enabled, you can also set the variable's chunk size by `chunking`. If you do not specify the `chunking`, an automatic chunking will be used. The `chunking` must have the same dimension as the variable.
 
 #### attribute subtree {#decl_netcdf_attr}
 
