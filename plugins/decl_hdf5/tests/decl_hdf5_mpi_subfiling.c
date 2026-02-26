@@ -23,6 +23,7 @@
  ******************************************************************************/
 
 #include <mpi.h>
+#include <glob.h>
 #include <unistd.h>
 #include <pdi.h>
 
@@ -171,56 +172,23 @@ int main(int argc, char* argv[])
 	PDI_expose("reals", &reals, PDI_OUT); // output real
 	PDI_expose("values", &values, PDI_INOUT); // output integers
 
-	input = 1;
-	///  Import should also work
-	// PDI_expose("input", &input, PDI_OUT); // update metadata => HDF5 now import only
-	// PDI_expose("reals", &cp_reals, PDI_IN); // input real
-	// PDI_expose("values", &cp_values, PDI_INOUT); // input integers
+	if (rank == 0) {
+		glob_t results;
+		int ret = glob("subfiling.h5.subfile_*", 0, NULL, &results);
 
-	/// So the data should be the same
-	fprintf(stderr, "Data exported | Data imported\n");
+		if (!ret) {
+			printf("Found %zu file(s) matching the pattern:\n", results.gl_pathc);
+			for (size_t i = 0; i < results.gl_pathc; i++) {
+				printf(" - %s\n", results.gl_pathv[i]);
+			}
+		} else if (ret == GLOB_NOMATCH) {
+			printf("No files found matching the pattern.\n");
+		} else {
+			printf("An error occurred during globbing.\n");
+		}
 
-	// for (int j = njg; j < nj + njg; ++j) { // Should be the same inside
-	// 	for (int i = nig; i < ni + nig; i++) {
-	// 		if ((values[j][i] != cp_values[j][i]) || (reals[j][i] != cp_reals[j][i])) {
-	// 			fprintf(stderr, "Ghost: integer (export) / integer(imported) :: %3d  %3d\n", values[j][i], cp_values[j][i]);
-	// 			fprintf(stderr, "Ghost: reals   (export) / reals (imported) :: %6f  %6f\n", reals[j][i], cp_reals[j][i]);
-	// 			MPI_Abort(MPI_COMM_WORLD, -1);
-	// 		}
-	// 	}
-	// }
-	// for (int j = 0; j < njg; j++) { // and should be icst/rcst outside
-	// 	for (int i = 0; i < nig; i++) {
-	// 		if ((icst != cp_values[j][i]) || (rcst != cp_reals[j][i])) {
-	// 			fprintf(stderr, "Ghost: integer (export) / integer(imported) :: %3d  %3d\n", icst, cp_values[j][i]);
-	// 			fprintf(stderr, "Ghost: reals   (export) / reals (imported) :: %6f  %6f\n", rcst, cp_reals[j][i]);
-	// 			MPI_Abort(MPI_COMM_WORLD, -1);
-	// 		}
-	// 	}
-	// 	for (int i = ni + nig; i < ni + 2 * nig; ++i) {
-	// 		if ((icst != cp_values[j][i]) || (rcst != cp_reals[j][i])) {
-	// 			fprintf(stderr, "Ghost: integer (export) / integer(imported) :: %3d  %3d\n", icst, cp_values[j][i]);
-	// 			fprintf(stderr, "Ghost: reals   (export) / reals (imported) :: %6f  %6f\n", rcst, cp_reals[j][i]);
-	// 			MPI_Abort(MPI_COMM_WORLD, -1);
-	// 		}
-	// 	}
-	// }
-	// for (int j = nj + njg; j < nj + 2 * njg; ++j) {
-	// 	for (int i = 0; i < nig; i++) {
-	// 		if ((icst != cp_values[j][i]) || (rcst != cp_reals[j][i])) {
-	// 			fprintf(stderr, "Ghost: integer (export) / integer(imported) :: %3d  %3d\n", icst, cp_values[j][i]);
-	// 			fprintf(stderr, "Ghost: reals   (export) / reals (imported) :: %6f  %6f\n", rcst, cp_reals[j][i]);
-	// 			MPI_Abort(MPI_COMM_WORLD, -1);
-	// 		}
-	// 	}
-	// 	for (int i = ni + nig; i < ni + 2 * nig; ++i) {
-	// 		if ((icst != cp_values[j][i]) || (rcst != cp_reals[j][i])) {
-	// 			fprintf(stderr, "Ghost: integer (export) / integer(imported) :: %3d  %3d\n", icst, cp_values[j][i]);
-	// 			fprintf(stderr, "Ghost: reals   (export) / reals (imported) :: %6f  %6f\n", rcst, cp_reals[j][i]);
-	// 			MPI_Abort(MPI_COMM_WORLD, -1);
-	// 		}
-	// 	}
-	// }
+		globfree(&results);
+	}
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
