@@ -66,6 +66,9 @@ class File_op
 #ifdef H5_HAVE_PARALLEL
 	/// a communicator for parallel HDF5 (null if no comm is specified)
 	PDI::Expression m_communicator;
+	
+	/// HDF5 subfiling
+	PDI::Expression m_subfiling = 0L;
 #endif
 
 	/// type information for the datasets for which an explicit type is specified
@@ -79,10 +82,7 @@ class File_op
 
 	/// map of descriptors to datasets name to get their sizes
 	std::unordered_map<std::string, PDI::Expression> m_dset_size_ops;
-
-	/// HDF5 subfiling
-	PDI::Expression m_subfiling;
-
+	
 public:
 	/** Parse a "file" subtree to create one or multiple File_op's.
 	 *
