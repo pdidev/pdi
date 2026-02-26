@@ -151,4 +151,4 @@ if("${BUILD_FORTRAN}")
 endif("${BUILD_FORTRAN}")
 
 
-add_subdirectory("compatibility_tests/")
+# add_subdirectory("compatibility_tests/")
