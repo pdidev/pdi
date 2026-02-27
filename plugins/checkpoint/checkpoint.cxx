@@ -35,14 +35,16 @@ private:
 
 	long int failure_value;
 
-	bool start_from_last_checkpoint = true ; 
-
     unordered_map<string, vector<File_op>> m_data;
+
+	unordered_map<string, string> last_dset_paths;
+
+	unordered_map<string, bool> restore_from_last_checkpoint;
 
 
 public:
     checkpoint_plugin(Context& ctx, PC_tree_t config)
-        : Plugin(ctx) // construct and initialize 
+        : Plugin(ctx), failure_value(-1)// construct and initialize 
     {
 		opt_each(config, [&](PC_tree_t item) { 
 			
@@ -55,24 +57,19 @@ public:
                 if (key == "failure") {
                     failure_value = to_long(value);
                 } else if (key == "last_checkpoint") {
-                    prev_cp_file = to_string(value);
-                }
+						prev_cp_file = to_string(value);
+                }else if (key == "last_dset_paths"){
+					each(value, [&](PC_tree_t path_key, PC_tree_t path_value) {
+						string data_name = to_string(path_key);
+						string dset_path = to_string(path_value);
+						last_dset_paths[data_name] = dset_path;
+						restore_from_last_checkpoint[data_name] = true; 
+					});
+				}
             });
 
         });
 		
-		if(failure_value!=0 && prev_cp_file.empty()){
-
-			cout << " The last checkpoint file has to be defined if the failure key is set " << endl; 
-			
-			return; 
-		}
-
-		if(failure_value==0 && (!prev_cp_file.empty())){
-
-			cout << " Ignoring the last checkpoint file as the failure key is not set" << endl; 
-
-		}
 
 		Hdf5_error_handler _;
 		if (0 > H5open()) handle_hdf5_err("Cannot initialize HDF5 library");
@@ -98,11 +95,48 @@ public:
 			}
 		});
 
+		if(failure_value==1){
+			
+			if (prev_cp_file.empty()){
+				throw Error{PDI_ERR_CONFIG, 
+					"Checkpoint plugin: The name of the last checkpoint file has to be defined if the failure key is set "};
+			};
+
+			if(last_dset_paths.size()==0){
+
+				context().logger().warn("The dataset paths of the last checkpoint were not defined" 
+					"-- assuming they correspond to the dataset paths  of new checkpoints");
+					
+				for (const auto& [key, value] : m_data) {
+					cout << key << endl;
+					restore_from_last_checkpoint[key] = true; 
+				}
+			}
+
+		};
+
+		if(failure_value==0 && ((!prev_cp_file.empty()) || last_dset_paths.size()!=0)){
+
+			cout << " Ignoring the last checkpoint information as the failure key is not set" << endl; 
+			prev_cp_file.clear();
+			last_dset_paths.clear();
+
+		};
+
+		if(failure_value!=0 && failure_value!=1){
+			throw Error{PDI_ERR_CONFIG, 
+				"Checkpoint plugin: the failure key has to be set to 1 or 0 if a failure occurred or not"};
+		};
+
 		ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
 			
-			
-			if((!prev_cp_file.empty()) && start_from_last_checkpoint){
+			if(restore_from_last_checkpoint[name] == true){
+				
 				this-> load_checkpoint(name, ref);
+
+				// keep it now for testinf purposes 
+				this->write_checkpoint(name, ref); 
+				
 			}
 
 			else{
@@ -110,7 +144,7 @@ public:
 			}
 
 		});
-};
+	};
 
     ~checkpoint_plugin()
 	{
@@ -135,13 +169,30 @@ private:
         Hdf5_error_handler _;
 
 		Context& ctx = context();
+
+		string dataset_name;
 		
-		string dataset_name = "/" + name;
+		if (last_dset_paths.find(name) == last_dset_paths.end()) // if user has not specified dataset paths
+        {
+			// use the dataset name defined for newly launched simulation
+			for (const auto& file_op : m_data[name]) {
+				for (const auto& dset_op : file_op.dataset_ops()) {
+					dataset_name = dset_op.dataset().to_string(ctx);  // returns dataset name and converts it to string
+				}
+   			}
+		}
+		else{
+				dataset_name = last_dset_paths[name];
+			}
+
+
+		cout << "dataset name : " << dataset_name << endl;
+
 
 		hid_t h5_file_raw = -1;
 		Raii_hid file_lst = make_raii_hid(H5Pcreate(H5P_FILE_ACCESS), H5Pclose);
 	
-		ctx.logger().trace("Opening `{}' file to read", prev_cp_file);
+		ctx.logger().info("Opening `{}' file to read", prev_cp_file);
 
 		h5_file_raw = H5Fopen(prev_cp_file.c_str(), H5F_ACC_RDONLY, file_lst);
 		
@@ -151,9 +202,10 @@ private:
 
 		PDI::Ref_w write_ref{ref};
 		if (!write_ref) {
-			ctx.logger().warn("Cannot read `{}' dataset: `{}' data not available", dataset_name, name);
-			return;
-		}
+
+			throw Error{PDI_ERR_RIGHT, 
+				"Cannot read `{}' dataset: `{}' data not shared properly", dataset_name, name};
+			}
 
 		Raii_hid h5_mem_space, h5_mem_type;
 		tie(h5_mem_space, h5_mem_type) = space(write_ref.type());
@@ -179,7 +231,7 @@ private:
 
 		ctx.logger().trace("`{}' dataset read finished", dataset_name);
 
-		start_from_last_checkpoint=false;
+		restore_from_last_checkpoint[name] = false; 
     };
 
 };
