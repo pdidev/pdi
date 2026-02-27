@@ -112,7 +112,11 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if (key == "fletcher") {
 			fletcher = value;
 		} else if (key == "subfiling") {
+#ifdef H5_HAVE_SUBFILING_VFD
 			template_op.m_subfiling = to_string(value);
+#else 
+			ctx.logger().warn("Used HDF5 does not support subfiling. Subfiling setup ignored");
+#endif
 		} else if (key == "write") {
 			// will read in pass 2
 		} else if (key == "read") {
@@ -241,7 +245,9 @@ File_op::File_op(const File_op& other)
 	,
 #ifdef H5_HAVE_PARALLEL
 	m_communicator{other.m_communicator}
+#ifdef H5_HAVE_SUBFILING_VFD
 	, m_subfiling{other.m_subfiling}
+#endif
 	,
 #endif
 	m_dset_ops{other.m_dset_ops}
@@ -309,19 +315,16 @@ void File_op::execute(Context& ctx)
 		if (0 > H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL)) handle_hdf5_err();
 		use_mpio = true;
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
-
-		if (subfiling().to_long(ctx)) {
 #ifdef H5_HAVE_SUBFILING_VFD
+		if (subfiling().to_long(ctx)) {
 			ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
 
 			H5FD_subfiling_config_t subf_config;
 			H5Pget_fapl_subfiling(file_lst, &subf_config);
 			subf_config.shared_cfg.stripe_count = subfiling().to_long(ctx);
 			H5Pset_fapl_subfiling(file_lst, &subf_config);
-#else
-			ctx.logger().warn("HDF5 subfiling enabled for file {}, but the used HDF5 does not support Subfiling VFD.", filename);
-#endif
 		}
+#endif
 	}
 #endif
 

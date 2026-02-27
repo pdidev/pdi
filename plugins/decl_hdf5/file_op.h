@@ -67,8 +67,10 @@ class File_op
 	/// a communicator for parallel HDF5 (null if no comm is specified)
 	PDI::Expression m_communicator;
 
+#ifdef H5_HAVE_SUBFILING_VFD
 	/// HDF5 subfiling
 	PDI::Expression m_subfiling = 0L;
+#endif
 #endif
 
 	/// type information for the datasets for which an explicit type is specified
@@ -124,7 +126,9 @@ public:
 #ifdef H5_HAVE_PARALLEL
 	PDI::Expression communicator() const { return m_communicator; }
 
+#ifdef H5_HAVE_SUBFILING_VFD
 	PDI::Expression subfiling() const { return m_subfiling; }
+#endif
 #endif
 
 	/** Executes the requested operation.
