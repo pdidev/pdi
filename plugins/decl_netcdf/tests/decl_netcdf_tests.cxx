@@ -1026,45 +1026,87 @@ TEST(decl_netcdf_test, deflate)
 /*
  * Name:                decl_netcdf_test.read
  *
- * Description:         Tests write and read of scalar of type mismatch
+ * Description:         Tests write and read of int with type mismatch
  */
-TEST(decl_netcdf_test, scalar_read)
+TEST(decl_netcdf_test, int_read)
 {
 	constexpr char CONFIG_YAML[] = R"(
     logging: trace
     data:
-      int_scalar: int32
-      int_scalar_read: int64
+      int_in: int32
+      int_out: int64
     plugins:
       decl_netcdf:
-      - file: 'test_read.nc'
+      - file: 'test_int_read.nc'
         variable:
-          int_scalar_32: int32
+          scalar_int32: int32
         on_event: write_data
         write:
-          int_scalar:
-            variable: int_scalar_32
-      - file: 'test_read.nc'
+          int_in:
+            variable: scalar_int32
+      - file: 'test_int_read.nc'
         variable:
-          int_scalar_32: int32
+          scalar_int32: int32
         on_event: read_data
         read:
-          int_scalar_read:
+          int_out:
             variable:
-              int_scalar_32
+              scalar_int32
     )";
 
 	PDI_init(PC_parse_string(CONFIG_YAML));
 	PDI_errhandler(PDI_NULL_HANDLER);
 
-	int32_t int_scalar = 42;
-
 	// write data
-	PDI_multi_expose("write_data", "int_scalar", &int_scalar, PDI_OUT, NULL);
+	int32_t int_in = 42;
+	PDI_multi_expose("write_data", "int_in", &int_in, PDI_OUT, NULL);
 
 	// read data
-	int64_t int_scalar_read = -1;
-	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "int_scalar_read", &int_scalar_read, PDI_IN, NULL));
+	int64_t int_out = -1;
+	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "int_out", &int_out, PDI_IN, NULL));
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.read
+ *
+ * Description:         Tests write and read of float/double with type mismatch
+ */
+TEST(decl_netcdf_test, float_read)
+{
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    data:
+      var_in: float
+      var_out: double
+    plugins:
+      decl_netcdf:
+      - file: 'test_float_read.nc'
+        variable:
+          nc_var: float
+        on_event: write_data
+        write:
+          var_in:
+            variable: nc_var
+      - file: 'test_float_read.nc'
+        variable:
+          nc_var: float
+        on_event: read_data
+        read:
+          var_out:
+            variable: nc_var
+    )";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+	PDI_errhandler(PDI_NULL_HANDLER);
+
+	// write data
+	float var_in = 12.34;
+	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
+
+	// read data
+	double var_out = -1.0;
+	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL));
 
 	PDI_finalize();
 }

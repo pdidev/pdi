@@ -701,19 +701,19 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 		nc_type var_nc_type;
 		size_t var_nc_type_size;
 		nc_try(nc_inq_vartype(src_id, var_id, &var_nc_type), "Can not get type of `{}' from file", variable.path());
+		nc_try(nc_inq_type(0, var_nc_type, NULL, &var_nc_type_size), "Can not inquire the size of `{}'", var_nc_type);
 		if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
 			switch (var_nc_type) {
 			case NC_BYTE:
 			case NC_SHORT:
 			case NC_INT:
 			case NC_INT64:
-				nc_try(nc_inq_type(0, var_nc_type, NULL, &var_nc_type_size), "Can not inquire the size of `{}'", var_nc_type);
 				if (scalar_type->datasize() != var_nc_type_size) {
 					throw PDI::Error{
 						PDI_ERR_TYPE,
-						"Decl_netcdf plugin: Datatype mismatch (with size): read '{}' of type {} for a buffer of size {}",
+						"Decl_netcdf plugin: Datatype mismatch (with size): read '{}' of size {} for a buffer of size {}",
 						variable_name,
-						var_nc_type,
+						var_nc_type_size,
 						scalar_type->datasize()
 					};
 				}
@@ -732,13 +732,12 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 			case NC_USHORT:
 			case NC_UINT:
 			case NC_UINT64:
-				nc_try(nc_inq_type(0, var_nc_type, NULL, &var_nc_type_size), "Can not inquire the size of `{}'", var_nc_type);
 				if (scalar_type->datasize() != var_nc_type_size) {
 					throw PDI::Error{
 						PDI_ERR_TYPE,
-						"Decl_netcdf plugin: Datatype mismatch: read '{}' of type {} for a buffer of size {}",
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of size {} for a buffer of size {}",
 						variable_name,
-						var_nc_type,
+						var_nc_type_size,
 						scalar_type->datasize()
 					};
 				}
@@ -751,14 +750,18 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 					variable_name,
 				};
 			}
+		} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
+			if (scalar_type->datasize() != var_nc_type_size) {
+				throw PDI::Error{
+					PDI_ERR_TYPE,
+					"Decl_netcdf plugin: Datatype mismatch (with size): read '{}' of size {} for a buffer of size {}",
+					variable_name,
+					var_nc_type_size,
+					scalar_type->datasize()
+				};
+			}
 		} else {
-			m_ctx.logger().warn(
-				"Inquired `{}' variable (nc_id = {}) from (nc_id = {}). Please be careful to match the buffer with the variable type",
-				variable.path(),
-				var_id,
-				src_id
-			);
-			// TODO : check other data types
+			throw PDI::Type_error{"Can not read `{}' : buffer has unknown type", variable_name};
 		}
 	}
 
