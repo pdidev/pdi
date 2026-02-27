@@ -315,13 +315,8 @@ void File_op::execute(Context& ctx)
 			ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
 
 			H5FD_subfiling_config_t subf_config;
-
-			// TODO: make choices for ioc_selection, and for stripe_size
 			H5Pget_fapl_subfiling(file_lst, &subf_config);
-			subf_config.shared_cfg.ioc_selection = SELECT_IOC_EVERY_NTH_RANK;
-			setenv("H5FD_SUBFILING_IOC_SELECTION_CRITERIA", "1", 1);
-			subf_config.shared_cfg.stripe_size = 1024;
-
+			subf_config.shared_cfg.stripe_count = subfiling().to_long(ctx);
 			H5Pset_fapl_subfiling(file_lst, &subf_config);
 #else
 			ctx.logger().warn("HDF5 subfiling enabled for file {}, but the used HDF5 does not support Subfiling VFD.", filename);

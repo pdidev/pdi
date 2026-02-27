@@ -63,16 +63,14 @@ const char* CONFIG_YAML
 	  "  decl_hdf5:                                                     \n"
 	  "    file: subfiling.h5                                           \n"
 	  "    communicator: $MPI_COMM_WORLD                                \n"
-	  "    subfiling: true                                              \n"
+	  "    subfiling: 2                                                 \n"
 	  "    datasets:                                                    \n"
 	  "      reals:  {type: array, subtype: double, size: [$njt, $nit]} \n"
 	  "      values: {type: array, subtype: int, size: [$njt, $nit]}    \n"
 	  "    write:                                                       \n"
 	  "      reals:                                                     \n"
-	  "        when: $input=0                                           \n"
 	  "        dataset_selection: {start: [$jstart, $istart]}           \n"
 	  "      values:                                                    \n"
-	  "        when: $input=0                                           \n"
 	  "        dataset_selection: {start: [$jstart, $istart]}           \n";
 
 int main(int argc, char* argv[])
@@ -109,21 +107,14 @@ int main(int argc, char* argv[])
 	PDI_init(conf);
 	int rank;
 	MPI_Comm_rank(world, &rank);
-
-	if (0 == rank) {
-		remove("subfiling.h5");
+	
+	int size;
+	MPI_Comm_size(world, &size);
+	if (size != 4) {
+		printf("Run on 4 procs only.");
+		MPI_Abort(MPI_COMM_WORLD, -1);
 	}
-
-	{
-		/// setting nb of procs.
-		int size;
-		MPI_Comm_size(world, &size);
-		if (size != 4) {
-			printf("Run on 4 procs only.");
-			MPI_Abort(MPI_COMM_WORLD, -1);
-		}
-		PDI_expose("nproc", &size, PDI_OUT);
-	}
+	PDI_expose("nproc", &size, PDI_OUT);
 
 
 	MPI_Cart_create(world, DIM, dims, periodic, 0, &comm2D);
@@ -163,7 +154,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	input = 0;
 	PDI_expose("rank", &rank, PDI_OUT);
 	PDI_expose("input", &input, PDI_OUT);
 
@@ -171,24 +161,6 @@ int main(int argc, char* argv[])
 	PDI_expose("input", &input, PDI_OUT);
 	PDI_expose("reals", &reals, PDI_OUT); // output real
 	PDI_expose("values", &values, PDI_INOUT); // output integers
-
-	if (rank == 0) {
-		glob_t results;
-		int ret = glob("subfiling.h5.subfile_*", 0, NULL, &results);
-
-		if (!ret) {
-			printf("Found %zu file(s) matching the pattern:\n", results.gl_pathc);
-			for (size_t i = 0; i < results.gl_pathc; i++) {
-				printf(" - %s\n", results.gl_pathv[i]);
-			}
-		} else if (ret == GLOB_NOMATCH) {
-			printf("No files found matching the pattern.\n");
-		} else {
-			printf("An error occurred during globbing.\n");
-		}
-
-		globfree(&results);
-	}
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);
