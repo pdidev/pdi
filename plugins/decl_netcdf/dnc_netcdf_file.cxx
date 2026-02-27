@@ -722,7 +722,7 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 				throw PDI::Error{
 					PDI_ERR_TYPE,
 					"Decl_netcdf plugin: Datatype mismatch (with sign): buffer is of signed scalar type while read '{}' is neither NC_BYTE, "
-				    "NC_SHORT, NC_INT, nor NC_INT64.",
+					"NC_SHORT, NC_INT, nor NC_INT64.",
 					variable_name,
 				};
 			}
@@ -747,7 +747,7 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 				throw PDI::Error{
 					PDI_ERR_TYPE,
 					"Decl_netcdf plugin: Datatype mismatch (with sign): buffer is of unsigned scalar type while read '{}' is neither NC_UBYTE, "
-				    "NC_USHORT, NC_UINT, nor NC_UINT64.",
+					"NC_USHORT, NC_UINT, nor NC_UINT64.",
 					variable_name,
 				};
 			}
