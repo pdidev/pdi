@@ -73,11 +73,16 @@ class Tuple_datatype;
  * A template can be evaluated into a datatype by resolving its references
  */
 class Datatype_template;
+class Datatype_template_definition;
+class Datatype_template_reference;
 
 using Datatype_template_ptr [[deprecated]] = std::shared_ptr<const Datatype_template>;
 using Datatype_template_sptr = std::shared_ptr<const Datatype_template>;
 
 using Datatype_sptr = std::shared_ptr<const Datatype>;
+
+using Datatype_template_definition_sptr = std::shared_ptr<const Datatype_template_definition>;
+using Datatype_template_reference_sptr = std::shared_ptr<const Datatype_template_reference>;
 
 /** A data descriptors with a name and a value, it contains an implicit type
  * template that is used when exposing untyped data
