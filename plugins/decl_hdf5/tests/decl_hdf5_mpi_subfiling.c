@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 	PDI_init(conf);
 	int rank;
 	MPI_Comm_rank(world, &rank);
-	
+
 	int size;
 	MPI_Comm_size(world, &size);
 	if (size != 4) {
