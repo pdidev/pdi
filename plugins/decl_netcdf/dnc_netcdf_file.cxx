@@ -696,7 +696,75 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	}
 	nc_id var_id = var_it->second;
 
-	// read variable
+	// read variable and check for scalar type match
+	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
+		nc_type var_nc_type;
+		size_t var_nc_type_size;
+		nc_try(nc_inq_vartype(src_id, var_id, &var_nc_type), "Can not get type of `{}' from file", variable.path());
+		nc_try(nc_inq_type(0, var_nc_type, NULL, &var_nc_type_size), "Can not inquire the size of `{}'", var_nc_type);
+		if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
+			switch (var_nc_type) {
+			case NC_BYTE:
+			case NC_SHORT:
+			case NC_INT:
+			case NC_INT64:
+				if (scalar_type->datasize() != var_nc_type_size) {
+					throw PDI::Error{
+						PDI_ERR_TYPE,
+						"Decl_netcdf plugin: Datatype mismatch (with size): read '{}' of size {} for a buffer of size {}",
+						variable_name,
+						var_nc_type_size,
+						scalar_type->datasize()
+					};
+				}
+				break;
+			default:
+				throw PDI::Error{
+					PDI_ERR_TYPE,
+					"Decl_netcdf plugin: Datatype mismatch (with sign): buffer is of signed scalar type while read '{}' is neither NC_BYTE, "
+					"NC_SHORT, NC_INT, nor NC_INT64.",
+					variable_name,
+				};
+			}
+		} else if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
+			switch (var_nc_type) {
+			case NC_UBYTE:
+			case NC_USHORT:
+			case NC_UINT:
+			case NC_UINT64:
+				if (scalar_type->datasize() != var_nc_type_size) {
+					throw PDI::Error{
+						PDI_ERR_TYPE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of size {} for a buffer of size {}",
+						variable_name,
+						var_nc_type_size,
+						scalar_type->datasize()
+					};
+				}
+				break;
+			default:
+				throw PDI::Error{
+					PDI_ERR_TYPE,
+					"Decl_netcdf plugin: Datatype mismatch (with sign): buffer is of unsigned scalar type while read '{}' is neither NC_UBYTE, "
+					"NC_USHORT, NC_UINT, nor NC_UINT64.",
+					variable_name,
+				};
+			}
+		} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
+			if (scalar_type->datasize() != var_nc_type_size) {
+				throw PDI::Error{
+					PDI_ERR_TYPE,
+					"Decl_netcdf plugin: Datatype mismatch (with size): read '{}' of size {} for a buffer of size {}",
+					variable_name,
+					var_nc_type_size,
+					scalar_type->datasize()
+				};
+			}
+		} else {
+			throw PDI::Type_error{"Can not read `{}' : buffer has unknown type", variable_name};
+		}
+	}
+
 	m_ctx.logger().trace("Getting variable `{}'", variable.path());
 	if (var_stride.empty()) {
 		nc_try(nc_get_var(src_id, var_id, ref_w.get()), "Cannot read `{}' from file", variable.path());
