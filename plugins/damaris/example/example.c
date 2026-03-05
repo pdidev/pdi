@@ -158,10 +158,16 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "Usage: %s <config_file>\n", argv[0]);
 		exit(1);
 	}
-
+	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 
 	MPI_Comm main_comm = MPI_COMM_WORLD;
+	int world_size;
+	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+	if(world_size!=4) {
+		fprintf(stderr, "Please use 4 mpi processes in total\n");
+		exit(1);
+	}
 	PDI_init(PC_get(conf, ".pdi"));
 	PDI_event("init");
 	   
@@ -228,7 +234,7 @@ int main(int argc, char* argv[])
 	PDI_event("main_loop");
 	double start = MPI_Wtime();
 	int next_reduce = 0;
-	for (ii = 0;; ++ii) {
+	for (ii = 0; ii<10; ++ii) {
 		PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, NULL);
 
 		iter(dsize, cur, next);
@@ -237,19 +243,19 @@ int main(int argc, char* argv[])
 		cur = next;
 		next = tmp;
 
-		if (ii >= next_reduce) {
-			double local_time, global_time;
-			local_time = MPI_Wtime() - start;
-			MPI_Allreduce(&local_time, &global_time, 1, MPI_DOUBLE, MPI_MAX, main_comm);
-			if (global_time >= duration) {
-				if (0 == pcoord_1d) printf("iter=%7d; time=%7.3f; STOP!!!\n", ii, global_time);
-				break;
-			}
-			int rem_iter = .9 * (duration - global_time) * (ii + 1) / (global_time + 0.1);
-			if (rem_iter < 1) rem_iter = 1;
-			next_reduce = ii + rem_iter;
-			if (0 == pcoord_1d) printf("iter=%7d; time=%7.3f; next_reduce=%7d\n", ii, global_time, next_reduce);
-		}
+		// if (ii >= next_reduce) {
+		// 	double local_time, global_time;
+		// 	local_time = MPI_Wtime() - start;
+		// 	MPI_Allreduce(&local_time, &global_time, 1, MPI_DOUBLE, MPI_MAX, main_comm);
+		// 	if (global_time >= duration) {
+		// 		if (0 == pcoord_1d) printf("iter=%7d; time=%7.3f; STOP!!!\n", ii, global_time);
+		// 		break;
+		// 	}
+		// 	int rem_iter = .9 * (duration - global_time) * (ii + 1) / (global_time + 0.1);
+		// 	if (rem_iter < 1) rem_iter = 1;
+		// 	next_reduce = ii + rem_iter;
+		// 	if (0 == pcoord_1d) printf("iter=%7d; time=%7.3f; next_reduce=%7d\n", ii, global_time, next_reduce);
+		// }
 	    //PDI_event("damaris_end_iteration");
 	}
 	PDI_event("finalization");
