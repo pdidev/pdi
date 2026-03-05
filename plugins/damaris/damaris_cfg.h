@@ -181,7 +181,7 @@ const std::unordered_map<Event_type, std::string> event_names = {
      std::unordered_map<std::string, std::unordered_map<std::string, bool>> m_layout_depends_on;
      std::unordered_map<std::string, PDI::Expression> m_layout_expression;
  
-     std::string m_is_client_dataset_name = "";
+     static std::string m_is_client_dataset_name;
      std::string m_client_comm_get_dataset_name = "";
      
  
@@ -277,9 +277,9 @@ const std::unordered_map<Event_type, std::string> event_names = {
      {
          return m_after_write_events.size();
      }
-     std::string is_client_dataset_name() const
+     static std::string is_client_dataset_name()
      {
-         return m_is_client_dataset_name;
+        return m_is_client_dataset_name;
      }
      std::string client_comm_get_dataset_name() const
      {

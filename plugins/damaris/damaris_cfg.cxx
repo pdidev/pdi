@@ -114,6 +114,7 @@
  Damaris_cfg::Damaris_cfg(Context& ctx, PC_tree_t tree)
      :m_communicator{"MPI_COMM_WORLD"}
  {
+    m_is_client_dataset_name = "";
      init_xml_config_object();
      
      each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
@@ -126,7 +127,7 @@
  
              m_communicator = to_string(value);
              if (!m_communicator) {
-                 throw Config_error{key_tree, "no MPI communicator set", key};
+                 throw Config_error{key_tree, "no MPI communicator setted", key};
              }
          } 
          else if (key == "init_on_event" || key == "on_init") {
@@ -494,7 +495,7 @@
                      vxml.enabled_ = (tf == 0) ?  false : true ;
                  } 
                  else {
-                     std::cerr << "ERROR: damaris_cfg unrecogognized variable map string: " << key << std::endl ;
+                    throw Value_error{"RROR: damaris_cfg unrecogognized variable map string: " + key};
                  }
              });
  
@@ -645,7 +646,7 @@
  
                  }
                  else {
-                     std::cerr << "ERROR: damaris_cfg unrecogognized layout map string: " << key << std::endl ;
+                    throw Value_error{"RROR: damaris_cfg unrecogognized layout map string: " + key};
                  }
              });
              m_layout_depends_on.emplace(layoutxml.layout_name_, depends_on_metadata);
@@ -1537,4 +1538,7 @@ const damaris::model::DamarisParameterXML Damaris_cfg::get_parameter_xml(string 
      return m_end_iteration_on_event;
  }
  
- } // namespace damaris_pdi
+
+std::string Damaris_cfg::m_is_client_dataset_name = "";
+ 
+} // namespace damaris_pdi
