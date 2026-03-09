@@ -60,6 +60,7 @@ The possible values for the keys are as follow:
   See
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
+* `subfiling`: an integer value interpreted as the total number of subfiles. This key is available only when the underlying HDF5 has `H5_HAVE_SUBFILING_VFD` enabled. By default `subfiling: 0` is used indicating no HDF5 subfiling. `subfiling: 2` means 2 subfiles will be generated.
 
 ### DATA_SECTION
 
