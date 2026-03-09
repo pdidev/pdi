@@ -66,11 +66,6 @@ find_package(MPI REQUIRED COMPONENTS CXX C)
 
 # PDI
 find_package(PDI 1.9.2 REQUIRED COMPONENTS plugins)
-find_package(HDF5 REQUIRED COMPONENTS C)
-find_package(XercesC REQUIRED)
-find_package(Boost 1.65.0 REQUIRED COMPONENTS thread log log_setup filesystem date_time )
-
-set(other_deps hdf5::hdf5 XercesC::XercesC Boost::filesystem Boost::log Boost::log_setup)
 
 # The plugin
 add_library(pdi_damaris_plugin MODULE
@@ -78,7 +73,7 @@ add_library(pdi_damaris_plugin MODULE
         damaris_cfg.cxx
         damaris_wrapper.cxx
         damaris_api_call_handler.cxx)
-target_link_libraries(pdi_damaris_plugin PUBLIC PDI::PDI_plugins ${Damaris_DEPS} ${other_deps})
+target_link_libraries(pdi_damaris_plugin PUBLIC PDI::PDI_plugins ${Damaris_DEPS})
 set_target_properties(pdi_damaris_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # installation
