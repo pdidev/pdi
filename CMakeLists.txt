@@ -418,6 +418,7 @@ if("${BUILD_JSON_PLUGIN}")
 		EMBEDDED_PATH "vendor/json-3.11.4"
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated
+			"-DJSON_BuildTests:BOOL=OFF" # skip unit tests for json
 		VERSION 3.11
 	)
 endif()
