@@ -35,8 +35,7 @@
  #include <pdi/plugin.h>
  #include <pdi/paraconf_wrapper.h>
  #include <pdi/ref_any.h>
- #include <bits/stdc++.h>
- 
+  
  #include "damaris_cfg.h"
  
  using PDI::Context;

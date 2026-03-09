@@ -28,7 +28,6 @@
 #include <mpi.h>
 #include <cassert>
 
-#include <bits/stdc++.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -211,17 +210,17 @@ public:
 						context().logger().info("data `{}' will be written at: block '{}' and position '{}:{}:{}', when = '{}'", name, block, position[0], position[1], position[2], ds_write_info.when.to_long(context()));
 					
 						std::string set_block_pos_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_SET_BLOCK_POSITION);
-						m_event_handler.damaris_api_call_event(context(), m_damaris, set_block_pos_event_name, multi_expose_transaction_dataname, name, block, position);
+						m_event_handler.damaris_api_call_event(context(), m_damaris, set_block_pos_event_name, multi_expose_transaction_dataname, name.c_str(), block, position);
 						
 						std::string write_block_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_WRITE_BLOCK);
-						m_event_handler.damaris_api_call_event(context(), m_damaris, write_block_event_name, multi_expose_transaction_dataname, name, block, data);	
+						m_event_handler.damaris_api_call_event(context(), m_damaris, write_block_event_name, multi_expose_transaction_dataname, name.c_str(), block, data);	
 					}
 					else {
 						std::string set_pos_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_SET_POSITION);
-						m_event_handler.damaris_api_call_event(context(), m_damaris, set_pos_event_name, multi_expose_transaction_dataname, name, position);
+						m_event_handler.damaris_api_call_event(context(), m_damaris, set_pos_event_name, multi_expose_transaction_dataname, name.c_str(), position);
 
 						std::string write_event_name = m_event_handler.get_event_name(Event_type::DAMARIS_WRITE);
-						m_event_handler.damaris_api_call_event(context(), m_damaris, write_event_name, multi_expose_transaction_dataname, name, data);	
+						m_event_handler.damaris_api_call_event(context(), m_damaris, write_event_name, multi_expose_transaction_dataname, name.c_str(), data);	
 					}
 					
 					datasets_to_write_count++;
