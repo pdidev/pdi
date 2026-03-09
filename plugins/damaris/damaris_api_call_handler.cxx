@@ -137,20 +137,6 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				break;
 		}
 
-		//-----------------------Workaround to hide is_client from user-----------------------
-		//If it is a server and no `if(is_client) {}` closure:
-		//  - all its clients have ended
-		//  - we can stop it from here, since there is no more if(is_client) {} closure
-		if (!is_client && Damaris_cfg::is_client_dataset_name().empty()) //
-		{
-			ctx.logger().info(
-				"------------------- In if(!is_client): Damaris_cfg::is_client_dataset_name() = '{}')",
-				Damaris_cfg::is_client_dataset_name()
-			);
-			PDI_finalize();
-			MPI_Finalize();
-			exit(0);
-		}
 	}
 
 	//************************************************************ */
