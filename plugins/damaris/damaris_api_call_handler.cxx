@@ -151,7 +151,7 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
 
 	    va_list extra_args;
 	    va_start(extra_args, expose_dataname);
-        string data_name = va_arg(extra_args, string);
+        string data_name = va_arg(extra_args, const char*);
         if(!data_name.empty()) {
             var_name  = (char*)data_name.c_str();
             buffer    = va_arg(extra_args, void*);
@@ -178,7 +178,7 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
 
 	    va_list extra_args;
 	    va_start(extra_args, expose_dataname);
-        string data_name = va_arg(extra_args, string);
+        string data_name = va_arg(extra_args, const char*);
         if(!data_name.empty()) {
             var_name  = (char*)data_name.c_str();
             buffer    = va_arg(extra_args, void*);
@@ -231,7 +231,7 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
 
 	    va_list extra_args;
 	    va_start(extra_args, expose_dataname);
-        string data_name = va_arg(extra_args, string);
+        string data_name = va_arg(extra_args, const char*);
         if(!data_name.empty()) {
             var_name  = (char*)data_name.c_str();
             position = va_arg(extra_args, int64_t*);
@@ -282,7 +282,7 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
 	    va_list extra_args;
 	    va_start(extra_args, expose_dataname);
         //if(string data_name = va_arg(extra_args, string)) {
-        string data_name = va_arg(extra_args, string);
+        string data_name = va_arg(extra_args, const char*);
         if(!data_name.empty()) {
             var_name  = (char*)data_name.c_str();
             data     = va_arg(extra_args, void*);//const void*
@@ -333,7 +333,7 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
 
 	    va_list extra_args;
 	    va_start(extra_args, expose_dataname);
-        string data_name = va_arg(extra_args, string);
+        string data_name = va_arg(extra_args, const char*);
         if(!data_name.empty()) {
             var_name  = (char*)data_name.c_str();
             *block    = va_arg(extra_args, int32_t);
@@ -387,7 +387,7 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
 	    va_list extra_args;
 	    va_start(extra_args, expose_dataname);
         //if(string data_name = va_arg(extra_args, string)) {
-        string data_name = va_arg(extra_args, string);
+        string data_name = va_arg(extra_args, const char*);
         if(!data_name.empty()) {
             var_name  = (char*)data_name.c_str();
             *block    = va_arg(extra_args, int32_t);
