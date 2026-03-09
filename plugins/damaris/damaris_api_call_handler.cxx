@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <mpi.h>
 #include <pdi/ref_any.h>
 #include "damaris_api_call_handler.h"
 #include "damaris_cfg.h"
@@ -107,7 +106,7 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
         int is_client;
         int err = m_damaris->damaris_pdi_start(&is_client);
         m_damaris->set_is_client(is_client);
-        //ctx.logger().info("------------------- CALLED damaris_pdi_start Return IS_CLIENT = '{}')", is_client);
+        ctx.logger().info("------------------- CALLED damaris_pdi_start Return IS_CLIENT = '{}')", is_client);
 
         int arg_pos = 0;
         int nb_awaited_args = 1;
@@ -132,18 +131,6 @@ void Damaris_api_call_handler::damaris_api_call_event(Context& ctx, unique_ptr<D
             else
                 //if(nb_awaited_args <= arg_pos)
                 break;
-        }
-
-        //-----------------------Workaround to hide is_client from user-----------------------
-        //If it is a server and no `if(is_client) {}` closure:
-        //  - all its clients have ended
-        //  - we can stop it from here, since there is no more if(is_client) {} closure
-        if(!is_client && Damaris_cfg::is_client_dataset_name().empty())//
-        {
-            ctx.logger().info("------------------- In if(!is_client): Damaris_cfg::is_client_dataset_name() = '{}')", Damaris_cfg::is_client_dataset_name());
-            PDI_finalize();
-            MPI_Finalize();
-            exit(0);
         }
     } 
 
