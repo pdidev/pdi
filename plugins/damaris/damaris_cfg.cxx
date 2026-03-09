@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2024 National Institute for Research in Digital Science and Technology (Inria)
  * All rights reserved.
  *
@@ -35,7 +35,7 @@
  #include <pdi/plugin.h>
  #include <pdi/paraconf_wrapper.h>
  #include <pdi/ref_any.h>
-  
+
  #include "damaris_cfg.h"
  
  using PDI::Context;
