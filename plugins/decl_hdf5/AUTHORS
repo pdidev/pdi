@@ -58,3 +58,4 @@ Kacper Sinkiewicz - PSNC (ksinkiewicz@man.poznan.pl)
 
 Yushan Wang - CEA (yushan.wang@cea.fr)
 * Maintainer (Sept. 2023 - ...)
+* enable HDF5 subfiling

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -66,6 +66,11 @@ class File_op
 #ifdef H5_HAVE_PARALLEL
 	/// a communicator for parallel HDF5 (null if no comm is specified)
 	PDI::Expression m_communicator;
+
+#ifdef H5_HAVE_SUBFILING_VFD
+	/// HDF5 subfiling
+	PDI::Expression m_subfiling = 0L;
+#endif
 #endif
 
 	/// type information for the datasets for which an explicit type is specified
@@ -120,6 +125,10 @@ public:
 
 #ifdef H5_HAVE_PARALLEL
 	PDI::Expression communicator() const { return m_communicator; }
+
+#ifdef H5_HAVE_SUBFILING_VFD
+	PDI::Expression subfiling() const { return m_subfiling; }
+#endif
 #endif
 
 	/** Executes the requested operation.

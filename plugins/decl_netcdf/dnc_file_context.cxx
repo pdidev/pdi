@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -73,6 +73,12 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 		m_when = PDI::Expression{1L}; // if when not defined -> always true
 	}
 
+	PDI::Expression file_deflate;
+	PC_tree_t deflate_node = PC_get(config, ".deflate");
+	if (!PC_status(deflate_node)) {
+		file_deflate = deflate_node;
+	}
+
 	PC_tree_t groups_node = PC_get(config, ".groups");
 	if (!PC_status(groups_node)) {
 		PDI::each(groups_node, [this](PC_tree_t group_path_node, PC_tree_t group_value) {
@@ -86,10 +92,10 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 
 	PC_tree_t variables_node = PC_get(config, ".variables");
 	if (!PC_status(variables_node)) {
-		PDI::each(variables_node, [this](PC_tree_t variable_path_node, PC_tree_t variable_value) {
+		PDI::each(variables_node, [&](PC_tree_t variable_path_node, PC_tree_t variable_value) {
 			std::string variable_path = PDI::to_string(variable_path_node);
 			this->m_ctx.logger().trace("Creating new variable info: {}", variable_path);
-			this->m_variables.emplace(variable_path, Dnc_variable{this->m_ctx, variable_path, variable_value});
+			this->m_variables.emplace(variable_path, Dnc_variable{this->m_ctx, variable_path, variable_value, file_deflate});
 		});
 	} else {
 		m_ctx.logger().trace("No variable defined");

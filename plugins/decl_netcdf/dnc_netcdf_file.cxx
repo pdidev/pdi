@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -472,6 +472,54 @@ void Dnc_netcdf_file::define_variable(const Dnc_variable& variable)
 			variable_name,
 			dest_id
 		);
+
+		int deflate_level = 0;
+		if (variable.deflate()) {
+			deflate_level = variable.deflate().to_long(m_ctx);
+		}
+		// if a deflate level is set on a scalar variable, reset the level to 0
+		if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(variable_type) && deflate_level != 0) {
+			m_ctx.logger().warn("\t var {} is of type scalar, reset deflate level to {} (no deflate)", variable_name, deflate_level);
+			deflate_level = 0;
+		}
+		if (deflate_level) {
+			m_ctx.logger().trace("\t var {} deflate = [{}]", variable_name, deflate_level);
+			if (variable.chunking()) {
+				PDI::Ref_r chunking_ref = variable.chunking().to_ref(m_ctx);
+				if (chunking_ref) {
+					m_ctx.logger().trace("Setting `{}' dataset chunking:", variable_name);
+					std::vector<size_t> sizes;
+					PDI::Datatype_sptr ref_type = chunking_ref.type();
+					if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_type)) {
+						sizes.emplace_back(chunking_ref.scalar_value<size_t>());
+					} else if (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(ref_type)) {
+						for (size_t i = 0; i < array_type->size(); i++) {
+							sizes.emplace_back(PDI::Ref_r{chunking_ref[i]}.scalar_value<size_t>());
+						}
+					} else if (auto&& tuple_type = std::dynamic_pointer_cast<const PDI::Tuple_datatype>(ref_type)) {
+						for (size_t i = 0; i < tuple_type->size(); i++) {
+							sizes.emplace_back(PDI::Ref_r{chunking_ref[i]}.scalar_value<size_t>());
+						}
+					} else {
+						throw PDI::Type_error{"Chunking must be a scalar, an array or a tuple"};
+					}
+					nc_try(
+						nc_def_var_chunking(dest_id, var_id, NC_CHUNKED, sizes.data()),
+						"Cannot define chunking of `{}' variable in (nc_id = {})",
+						variable_name,
+						dest_id
+					);
+				}
+			}
+
+			// if no chunking is defined, automatic chunking will be used
+			nc_try(
+				nc_def_var_deflate(dest_id, var_id, NC_SHUFFLE, 1, deflate_level),
+				"Cannot define deflate level of `{}' variable in (nc_id = {})",
+				variable_name,
+				dest_id
+			);
+		}
 		m_ctx.logger().trace("Variable `{}' defined (var_id = {})", variable.path(), var_id);
 	}
 
@@ -648,7 +696,75 @@ void Dnc_netcdf_file::get_variable(const Dnc_variable& variable, const Dnc_io& r
 	}
 	nc_id var_id = var_it->second;
 
-	// read variable
+	// read variable and check for scalar type match
+	if (auto&& scalar_type = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(ref_w.type())) {
+		nc_type var_nc_type;
+		size_t var_nc_type_size;
+		nc_try(nc_inq_vartype(src_id, var_id, &var_nc_type), "Can not get type of `{}' from file", variable.path());
+		nc_try(nc_inq_type(0, var_nc_type, NULL, &var_nc_type_size), "Can not inquire the size of `{}'", var_nc_type);
+		if (scalar_type->kind() == PDI::Scalar_kind::SIGNED) {
+			switch (var_nc_type) {
+			case NC_BYTE:
+			case NC_SHORT:
+			case NC_INT:
+			case NC_INT64:
+				if (scalar_type->datasize() != var_nc_type_size) {
+					throw PDI::Error{
+						PDI_ERR_TYPE,
+						"Decl_netcdf plugin: Datatype mismatch (with size): read '{}' of size {} for a buffer of size {}",
+						variable_name,
+						var_nc_type_size,
+						scalar_type->datasize()
+					};
+				}
+				break;
+			default:
+				throw PDI::Error{
+					PDI_ERR_TYPE,
+					"Decl_netcdf plugin: Datatype mismatch (with sign): buffer is of signed scalar type while read '{}' is neither NC_BYTE, "
+					"NC_SHORT, NC_INT, nor NC_INT64.",
+					variable_name,
+				};
+			}
+		} else if (scalar_type->kind() == PDI::Scalar_kind::UNSIGNED) {
+			switch (var_nc_type) {
+			case NC_UBYTE:
+			case NC_USHORT:
+			case NC_UINT:
+			case NC_UINT64:
+				if (scalar_type->datasize() != var_nc_type_size) {
+					throw PDI::Error{
+						PDI_ERR_TYPE,
+						"Decl_netcdf plugin: Datatype mismatch: read '{}' of size {} for a buffer of size {}",
+						variable_name,
+						var_nc_type_size,
+						scalar_type->datasize()
+					};
+				}
+				break;
+			default:
+				throw PDI::Error{
+					PDI_ERR_TYPE,
+					"Decl_netcdf plugin: Datatype mismatch (with sign): buffer is of unsigned scalar type while read '{}' is neither NC_UBYTE, "
+					"NC_USHORT, NC_UINT, nor NC_UINT64.",
+					variable_name,
+				};
+			}
+		} else if (scalar_type->kind() == PDI::Scalar_kind::FLOAT) {
+			if (scalar_type->datasize() != var_nc_type_size) {
+				throw PDI::Error{
+					PDI_ERR_TYPE,
+					"Decl_netcdf plugin: Datatype mismatch (with size): read '{}' of size {} for a buffer of size {}",
+					variable_name,
+					var_nc_type_size,
+					scalar_type->datasize()
+				};
+			}
+		} else {
+			throw PDI::Type_error{"Can not read `{}' : buffer has unknown type", variable_name};
+		}
+	}
+
 	m_ctx.logger().trace("Getting variable `{}'", variable.path());
 	if (var_stride.empty()) {
 		nc_try(nc_get_var(src_id, var_id, ref_w.get()), "Cannot read `{}' from file", variable.path());
