@@ -164,8 +164,8 @@ int main(int argc, char* argv[])
 	MPI_Comm main_comm = MPI_COMM_WORLD;
 	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-	if (world_size != 4) {
-		fprintf(stderr, "Please use 4 mpi processes in total\n");
+	if (world_size < 4) {
+		fprintf(stderr, "Please use at least 4 mpi processes\n");
 		exit(1);
 	}
 	PDI_init(PC_get(conf, ".pdi"));
