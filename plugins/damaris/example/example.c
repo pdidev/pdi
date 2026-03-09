@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "Usage: %s <config_file>\n", argv[0]);
 		exit(1);
 	}
-
+	
 	PC_tree_t conf = PC_parse_path(argv[1]);
 
 	MPI_Comm main_comm = MPI_COMM_WORLD;
