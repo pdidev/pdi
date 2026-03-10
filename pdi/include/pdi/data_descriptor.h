@@ -108,7 +108,7 @@ public:
 	 * \param[in,out] ref a reference to the shared data
 	 * \param read whether the stored reference should have read access
 	 * \param write whether the stored reference should have write access
-	 * \param delayed_callbacks a class that allow to delay trigger_delayed_data_callbacks for a list of a data
+	 * \param delayed_callbacks a list of callbacks where the callback for this data will be added, instead of being triggered. So that one can delay the trigger
 	 * \return the just shared buffer
 	 */
 	virtual void* share(Ref ref, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks) = 0;
