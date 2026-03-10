@@ -36,8 +36,6 @@
 #include <pdi/datatype_template.h>
 #include <pdi/ref_any.h>
 
-// #include "global_context.h"
-
 namespace PDI {
 
 class PDI_EXPORT Data_descriptor
