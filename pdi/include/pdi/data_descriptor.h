@@ -92,7 +92,7 @@ public:
 	 * \param[in,out] data the shared data
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
-	 * \param delayed_callbacks a class that allow to delay trigger_delayed_data_callbacks for a list of a data
+	 * \param delayed_callbacks a list of callbacks where the callback for this data will be added, instead of being triggered. So that one can delay the trigger
 	 */
 	virtual void share(void* data, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks) = 0;
 
