@@ -1,14 +1,34 @@
+/*******************************************************************************
+ * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * * Neither the name of CEA nor the names of its contributors may be used to
+ *   endorse or promote products derived from this software without specific
+ *   prior written permission.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ ******************************************************************************/
+
 #include <pdi/plugin.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
 #include <veloc.h>
 
-// #include <hdf5.h>
 #include <iostream>
-// #include "../decl_hdf5/dataset_op.h"
-// #include "../decl_hdf5/collision_policy.h"
-// #include "../decl_hdf5/file_op.h"
-// #include "../decl_hdf5/hdf5_wrapper.h"
 
 using PDI::Context;
 using PDI::each;
@@ -44,15 +64,24 @@ private:
     string iter_name; 
 
 	vector<string> protected_data; 
-	
-    unordered_map<string, bool> restore_from_last_checkpoint;
 
-	unordered_map<string, bool> save_memory_regions;
+    unordered_map<string, Ref> protected_data_refs;
+	
+    bool restore_from_last_checkpoint;
+
+	unordered_map<string, bool> register_memory_regions;
+
+    PC_tree_t saved_config;
+
+    string checkpoint_event_name; 
+
+    long int iter;
 
 public:
     veloc_plugin(Context& ctx, PC_tree_t config)
-        : Plugin(ctx), failure_value(-1), when(1L) // construct and initialize 
+        : Plugin(ctx), failure_value(-1), when(1L), restore_from_last_checkpoint(false), iter(0) // construct and initialize 
     {
+        saved_config = PC_get(config, ".checkpoint_data");   
 
 		// pass 1
 
@@ -76,8 +105,11 @@ public:
 				else if (key == "checkpoint_data"){
 					// parsed in pass 2 
 				}
-                else if(key == "iteration_name" ){
+                else if(key == "iteration_name_in_cp_file" ){
                     iter_name = to_string(value);
+                }
+                else if(key == "on_event" ){
+                    checkpoint_event_name = to_string(value);
                 }
 				else {
 					throw Config_error{config, "Unknown key in VeloC plugin configuration: `{}'", key};
@@ -88,18 +120,19 @@ public:
 		// pass 2 
 
 		PC_tree_t protect_tree = PC_get(config, ".checkpoint_data");
+        
+        if(failure_value==1){
+			restore_from_last_checkpoint = true; 
+		}
 
 		if (!PC_status(PC_get(protect_tree, "[0]"))) { // it's a list of names only
 			each(protect_tree, [&](PC_tree_t tree) {
 
 				string data_name = to_string(tree);
-				protected_data.push_back(data_name);
+				
+                protected_data.push_back(data_name);
 
-				if(failure_value==1){
-					restore_from_last_checkpoint[data_name] = true; 
-				}
-
-                save_memory_regions[data_name] = true;
+                register_memory_regions[data_name] = true;
 			});
 		}
    
@@ -115,6 +148,11 @@ public:
 				"VeloC plugin: The name of the checkpoint label must be defined"};
 		}
 
+        if (on_event.empty()){
+			throw Error{PDI_ERR_CONFIG, 
+				"VeloC plugin: The name of the checkpoint event must be defined"};
+		}
+
 		if (protected_data.size() ==0 ){
 			throw Error{PDI_ERR_CONFIG, 
 				"VeloC plugin: The data to be included in checkpoints must be defined"};
@@ -122,7 +160,14 @@ public:
 
         if(iter_name.empty()){
             throw Error{PDI_ERR_CONFIG, 
-				"VeloC plugin: The name used to indicate the iteration number in the PDI data store must be defined"};
+				"VeloC plugin: The name of the iteration number in the PDI data store must be defined"};
+        }
+
+        if (std::find(protected_data.begin(), protected_data.end(), 
+                iter_name) == protected_data.end()){  
+            throw Error{PDI_ERR_CONFIG, 
+				"VeloC plugin: The iteration number must be included in checkpoint_data "
+            };
         }
 
 		if (VELOC_Init(MPI_COMM_WORLD, veloc_file.c_str()) != VELOC_SUCCESS) {
@@ -130,51 +175,82 @@ public:
 			exit(2);
 		}
     
+        ctx.callbacks().add_event_callback([this](const std::string& name) { 
+
+           // cout << "before event(name) call" << endl; 
+            event(name); 
+        });
 
         ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
 
-				if(save_memory_regions[name]){
 
-					// for sure : 
-					// "ref.type()->datasize() returns the nr of bytes of a type "  (Dataset.cxx)
-					// ref.type()->subsize() returns number of actual elements in the array 
+            // 1️Check if name is a key in the map
+            auto it_map = register_memory_regions.find(name);
+            if (it_map == register_memory_regions.end()) {
+                cout << " Returning 1" << endl; 
+                return;
+            }
 
-                    auto it = std::find(protected_data.begin(), protected_data.end(), name);
-                    size_t index = -1;
+            // Check if name is inside protected_data
+            auto it_vec = std::find(protected_data.begin(), protected_data.end(), name);
+            if (it_vec == protected_data.end()) {
+                cout << " Returning 2" << endl; 
+                return;
+            }
+
+        std::cout << "Checking if memory needs registering" << std::endl;
+
+        size_t index = std::distance(protected_data.begin(), it_vec);
+
+            if (it_map->second){ //if memory needs to be registered 
+
+                // for sure  
+                // "ref.type()->datasize() returns the nr of bytes of a type "  (Dataset.cxx)
+                // ref.type()->subsize() returns number of actual elements in the array 
+
+                if(ref.type()->dense()){
+                    Ref_r read_ref{ref};
+                    // size_t n = ref.type()->subsize();
+
+                    void* ptr = const_cast<void*>(read_ref.get());
+                   
+
+                    size_t bytes = ref.type()-> datasize();
+
+                    printf("REGISTER %s: ptr=%p, bytes=%zu\n", name.c_str(), ptr, bytes);
+
+                    VELOC_Mem_protect(index, const_cast<void*>(read_ref.get()), 1, bytes);
+                    cout << " memory registered for " << name << "at " << index << endl;
+                }
+
+                else{
+                    // size_t n = ref.type()->subsize();
+                    Ref_r read_ref{ref};
+
+                    void* ptr = const_cast<void*>(read_ref.get());
                     
-                    if (it != protected_data.end()) {
-                        index = it - protected_data.begin();  
-                    }
 
-                
-                    if(ref.type()->dense()){
-                        Ref_r read_ref{ref};
-                        // size_t n = ref.type()->subsize();
-                        size_t bytes = ref.type()-> datasize();
-                        VELOC_Mem_protect(index, const_cast<void*>(read_ref.get()), 1, bytes);
-                    }
+                    size_t bytes = ref.type()->buffersize();
 
-                    else{
-                        // size_t n = ref.type()->subsize();
-                        Ref_r read_ref{ref};
-                        size_t bytes = ref.type()->buffersize();
-                        VELOC_Mem_protect(index, const_cast<void*>(read_ref.get()), 1, bytes);
-                    }
+                    printf("REGISTER %s: ptr=%p, bytes=%zu\n", name.c_str(), ptr, bytes);
 
-                    save_memory_regions[name] = false;
-
-				}
-
-                if(restore_from_last_checkpoint[name] == true){
-
-                    this->load_checkpoint(name, ref);
-
-                    // keep it now for testing purposes 
-                    this->write_checkpoint(name, ref); 
+                    VELOC_Mem_protect(index, const_cast<void*>(read_ref.get()), 1, bytes);
+                    cout << " memory registered for " << name << endl;
                 }
-                else if (std::find(protected_data.begin(), protected_data.end(), name) != protected_data.end()){
-                    this->write_checkpoint(name, ref); 
-                }
+
+                register_memory_regions[name] = false;
+
+            }
+
+            if(restore_from_last_checkpoint && memoryRegionsWereRegistered()){
+
+                load_checkpoint();
+
+            }
+
+            // TO DO : make checkpointing only on-event bc like otherwise I get too many checpoints file written and then overwritten 
+            //  like if there are more arrays exposed independently in one iter. 
+
         });
     }
 
@@ -185,7 +261,7 @@ public:
     }
 
 private:
-    void write_checkpoint(const std::string& name, Ref ref){
+    void write_checkpoint(){
 
 		if(when.to_long(context())){
 
@@ -193,16 +269,19 @@ private:
 
             auto i = ref_r_iter.scalar_value<int>();
 
+            cout << " in wc iter from ref is equal to = " <<  i << endl;
+
 			if (VELOC_Checkpoint(cp_label.c_str(), i) != VELOC_SUCCESS) {
 				printf("Error checkpointing! Aborting...\n");
 				exit(2);
             }
+
+            cout << " checkpoint wrote " << endl;
 		}
     }
 
-    void load_checkpoint(const std::string& name, Ref ref){
-
-
+    void load_checkpoint(){
+        
         int v = VELOC_Restart_test(cp_label.c_str(), 0); // 0 means restart from latest checkpoint 
         if (v > 0) {
         printf("Previous checkpoint found at iteration %d, initiating restart...\n", v);
@@ -213,12 +292,80 @@ private:
             }
         }
 
-        restore_from_last_checkpoint[name] = false; 
+        Ref_r ref_r_iter = context().desc(iter_name).ref();
+
+        auto i = ref_r_iter.scalar_value<int>();
+
+        cout << " in lc iter from ref is equal to = " <<  i << endl;
+
+        restore_from_last_checkpoint = false; 
 
     }
-	// if(dset_op.when().to_long(ctx))
-	// const PDI::Expression& when() const { return m_when; }
+	
+    void event(const std::string& event)
+	{
+		if (event == "simulate_failure"){
 
+            cout << "handling failure simulation event " << endl; 
+
+            // for(int i=0; i < protected_data.size();i++){
+            //     VELOC_Mem_unprotect(i);
+            // }
+
+            restore_from_last_checkpoint = true; 
+
+           for(auto &key_value : register_memory_regions){
+                auto &value = key_value.second;
+                value = true;
+           };
+
+           for(auto &key_value : register_memory_regions){
+
+                auto key = key_value.first;
+                auto value = key_value.second;
+                cout << "key : " << key << " value : " << value << endl;
+           };
+
+            cout << " failure simulated"<< endl;
+
+        }
+
+        else if(event == checkpoint_event_name){
+
+
+            cout << " checkpoint event called "  << endl;
+
+            // TO DO: COUDL PACK THESE LINES OF CODE SOMEWHERE SINCE THEY ARE REPLICATED BETWEEN DATA CALLS AND EVENT CALLS 
+
+            if(restore_from_last_checkpoint == true){
+
+                cout << " restoring before checkpointing -- should not happen " << endl;
+
+                if(memoryRegionsWereRegistered()){
+
+                    this->load_checkpoint();
+
+                }
+
+                else {
+                    throw Error{PDI_ERR_VALUE, 
+                        "VeloC plugin: Not all data to be included in checkpoints "
+                            "has been exposed before calling the checkpoint event"}; 
+                }
+            }
+
+            // TO DO END 
+ 
+            write_checkpoint(); 
+    
+        }
+	}
+
+    bool memoryRegionsWereRegistered() {
+
+        return std::all_of(register_memory_regions.begin(), register_memory_regions.end(),
+                       [](const auto& pair) { return pair.second == false; });
+    }
 	
 };
 
