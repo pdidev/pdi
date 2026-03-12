@@ -70,7 +70,9 @@ if("${BUILD_NETCDF_PARALLEL}")
 	target_link_libraries(pdi_decl_netcdf_plugin PUBLIC MPI::MPI_CXX)
 endif()
 set_target_properties(pdi_decl_netcdf_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-
+if(WITH_TIMER_REPORT)
+    target_compile_definitions(pdi_decl_netcdf_plugin PUBLIC WITH_TIMER_REPORT)
+endif()
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_decl_netcdf_plugin

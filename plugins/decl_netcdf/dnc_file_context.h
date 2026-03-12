@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -32,6 +32,7 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
 #include <pdi/paraconf_wrapper.h>
+#include <pdi/timer.h>
 
 #include "dnc_group.h"
 #include "dnc_io.h"
