@@ -159,6 +159,7 @@ set(PDI_C_SRC
 		src/ref_any.cxx
 		src/scalar_datatype.cxx
 		src/string_tools.cxx
+		src/timer.cxx
 		src/tuple_datatype.cxx
 )
 add_library(PDI_C ${PDI_C_SRC})
@@ -170,6 +171,9 @@ target_link_libraries(PDI_C
 		PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS}
 		PRIVATE spdlog::spdlog)
 target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11)
+if(WITH_TIMER_REPORT)
+    target_compile_definitions(PDI_C PUBLIC WITH_TIMER_REPORT)
+endif()
 set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
 set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
 set_property(TARGET PDI_C PROPERTY C_VISIBILITY_PRESET hidden)

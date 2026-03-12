@@ -42,6 +42,7 @@
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
+#include "pdi/timer.h"
 
 #include "global_context.h"
 
@@ -167,6 +168,7 @@ PDI_errhandler_t PDI_errhandler(PDI_errhandler_t new_handler)
 
 PDI_status_t PDI_init(PC_tree_t conf)
 try {
+	START_TIMER("PDI");
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
@@ -186,6 +188,8 @@ try {
 	g_transaction.clear();
 	g_transaction_data.clear();
 	Global_context::finalize();
+	STOP_TIMER("PDI");
+	PRINT_TIMER_REPORT();
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
