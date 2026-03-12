@@ -76,8 +76,7 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
-
-
+option(WITH_TIMER_REPORT        "Enable timer" ON)
 
 ### Default build type
 
@@ -308,7 +307,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/hdf5-1.12.3"
 		COMPONENTS ${HDF5_COMPONENTS}
-		MODULE_VARS HDF5_IS_PARALLEL HDF5_VERSION
+		MODULE_VARS HDF5_IS_PARALLEL HDF5_PROVIDES_PARALLEL HDF5_VERSION
 		CMAKE_CACHE_ARGS
 			-DBUILD_STATIC_LIBS:BOOL=OFF
 			-DBUILD_TESTING:BOOL=OFF
@@ -327,7 +326,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
 		if("${HDF5_VERSION}" VERSION_GREATER_EQUAL 2.0.0)
-			set(HDF5_IS_PARALLEL ${HDF5_PROVIDES_PARALLEL})
+			set(HDF5_IS_PARALLEL "${HDF5_PROVIDES_PARALLEL}")
 		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
