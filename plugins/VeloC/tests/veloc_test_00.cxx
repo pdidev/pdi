@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     PDI_init(PC_get(conf, ".pdi"));
 
     double red[10] = {0};
-    double blue[10] = {0};
+    double blue[10] = {1};
     int ii = 0;
 
     for (; ii < FAILURE_ITER; ++ii) {
@@ -96,8 +96,11 @@ int main(int argc, char* argv[])
             NULL);
 
         for (int i = 0; i < 10; ++i){
-            red[i] = ii;
-            blue[i] = ii*2;
+
+            if(i > 0){
+                red[i] = red[i-1] + ii;
+                blue[i] = blue[i-1] + ii;
+            }
         }
 
         PDI_event("checkpoint");

@@ -64,8 +64,6 @@ private:
     string iter_name; 
 
 	vector<string> protected_data; 
-
-    unordered_map<string, Ref> protected_data_refs;
 	
     bool restore_from_last_checkpoint;
 
@@ -75,11 +73,11 @@ private:
 
     string checkpoint_event_name; 
 
-    long int iter;
+    long int recovered_iter;
 
 public:
     veloc_plugin(Context& ctx, PC_tree_t config)
-        : Plugin(ctx), failure_value(-1), when(1L), restore_from_last_checkpoint(false), iter(0) // construct and initialize 
+        : Plugin(ctx), failure_value(-1), when(1L), restore_from_last_checkpoint(false), recovered_iter(0) 
     {
         saved_config = PC_get(config, ".checkpoint_data");   
 
@@ -177,7 +175,6 @@ public:
     
         ctx.callbacks().add_event_callback([this](const std::string& name) { 
 
-           // cout << "before event(name) call" << endl; 
             event(name); 
         });
 
@@ -253,7 +250,6 @@ public:
     }
 
     ~veloc_plugin(){
-        // if (0 > H5close()) handle_hdf5_err("Cannot finalize HDF5 library");
         VELOC_Finalize(1); 
         context().logger().info("Closing plugin");
     }
@@ -267,14 +263,10 @@ private:
 
             auto i = ref_r_iter.scalar_value<int>();
 
-            cout << " in wc iter from ref is equal to = " <<  i << endl;
-
 			if (VELOC_Checkpoint(cp_label.c_str(), i) != VELOC_SUCCESS) {
 				printf("Error checkpointing! Aborting...\n");
 				exit(2);
             }
-
-            cout << " checkpoint wrote " << endl;
 		}
     }
 
@@ -290,13 +282,8 @@ private:
             }
         }
 
-        Ref_r ref_r_iter = context().desc(iter_name).ref();
-
-        auto i = ref_r_iter.scalar_value<int>();
-
-        cout << " in lc iter from ref is equal to = " <<  i << endl;
-
         restore_from_last_checkpoint = false; 
+        recovered_iter = v;
 
     }
 	
@@ -305,10 +292,6 @@ private:
 		if (event == "simulate_failure"){
 
             cout << "handling failure simulation event " << endl; 
-
-            // for(int i=0; i < protected_data.size();i++){
-            //     VELOC_Mem_unprotect(i);
-            // }
 
             restore_from_last_checkpoint = true; 
 
@@ -323,17 +306,12 @@ private:
                 auto value = key_value.second;
                 cout << "key : " << key << " value : " << value << endl;
            };
-
             cout << " failure simulated"<< endl;
-
         }
 
         else if(event == checkpoint_event_name){
 
-
-            cout << " checkpoint event called "  << endl;
-
-            // TO DO: COUDL PACK THESE LINES OF CODE SOMEWHERE SINCE THEY ARE REPLICATED BETWEEN DATA CALLS AND EVENT CALLS 
+            // TO DO: COUDL REMOVE THESE LINES
 
             if(restore_from_last_checkpoint == true){
 
@@ -348,14 +326,21 @@ private:
                 else {
                     throw Error{PDI_ERR_VALUE, 
                         "VeloC plugin: Not all data to be included in checkpoints "
-                            "has been exposed before calling the checkpoint event"}; 
+                            "has been exposed to PDI before calling the checkpoint event"}; 
                 }
             }
 
-            // TO DO END 
- 
-            write_checkpoint(); 
-    
+            // TO DO END
+
+            Ref_r ref_r_iter = context().desc(iter_name).ref();
+
+            auto new_iter = ref_r_iter.scalar_value<int>();
+            
+           if( new_iter != recovered_iter){
+
+                write_checkpoint(); 
+
+            }   
         }
 	}
 

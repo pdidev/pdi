@@ -86,9 +86,9 @@ int main(int argc, char* argv[])
     double blue[10] = {0};
     int ii = 0;
 
-    double red_at_failure[10] = {30,30,30,30,30,30,30,30,30,30};
-    double blue_at_failure[10] = {60,60,60,60,60,60,60,60,60,60};
-    
+    double red_at_failure[10] = {0, 29, 58, 87, 116, 145, 174, 203, 232, 261};
+    double blue_at_failure[10] = {1, 30, 59, 88, 117, 146, 175, 204, 233, 262};
+
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
     PDI_init(PC_get(conf, ".pdi"));
 
@@ -100,19 +100,19 @@ int main(int argc, char* argv[])
             "blue", blue, PDI_INOUT,
             NULL);
 
-        if(ii == FAILURE_ITER+1) {
-
+        if(ii == (FAILURE_ITER)) {
             for (int i =0; i < 10 ; i++){
-
-            assert(red_at_failure[i] == red[i] && "Test 1 failed : Data recovered does not match data before failure");
-            assert(blue_at_failure[i] == blue[i] && "Test 1 failed : Data recovered does not match data before failure");
+                assert(red_at_failure[i] == red[i] && "Test 1 failed : Data recovered does not match data before failure");
+                assert(blue_at_failure[i] == blue[i] && "Test 1 failed : Data recovered does not match data before failure");
             }
-
         }
 
+
         for (int i = 0; i < 10; ++i){
-            red[i] = ii;
-            blue[i] = ii*2;
+            if(i > 0){
+                red[i] = red[i-1] + ii;
+                blue[i] = blue[i-1] + ii;
+            }
         }
 
         PDI_event("checkpoint");
