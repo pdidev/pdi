@@ -148,7 +148,7 @@ public:
 				"VeloC plugin: The name of the checkpoint label must be defined"};
 		}
 
-        if (on_event.empty()){
+        if (checkpoint_event_name.empty()){
 			throw Error{PDI_ERR_CONFIG, 
 				"VeloC plugin: The name of the checkpoint event must be defined"};
 		}
@@ -184,21 +184,19 @@ public:
         ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
 
 
-            // 1️Check if name is a key in the map
-            auto it_map = register_memory_regions.find(name);
-            if (it_map == register_memory_regions.end()) {
-                cout << " Returning 1" << endl; 
-                return;
-            }
-
-            // Check if name is inside protected_data
+            // Check if name is a protected_data
             auto it_vec = std::find(protected_data.begin(), protected_data.end(), name);
             if (it_vec == protected_data.end()) {
                 cout << " Returning 2" << endl; 
                 return;
             }
 
-        std::cout << "Checking if memory needs registering" << std::endl;
+            // Check if name is a mem region to be protected 
+            auto it_map = register_memory_regions.find(name);
+            if (it_map == register_memory_regions.end()) {
+                cout << " Returning 1" << endl; 
+                return;
+            }
 
         size_t index = std::distance(protected_data.begin(), it_vec);
 

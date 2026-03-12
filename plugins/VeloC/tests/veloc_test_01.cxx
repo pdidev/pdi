@@ -41,6 +41,24 @@ using std::endl;
 const int FAILURE_ITER = 30;
 const int MAX_ITER = 60;
 
+const char* CONFIG_YAML =
+  "pdi:                                                            \n"
+  "  metadata:                                                     \n"
+  "    ii: int                                                     \n"
+  "  data:                                                         \n"
+  "    red:  {type: array, subtype: double, size: 10}              \n"
+  "    blue: {type: array, subtype: double, size: 10}              \n"
+  "  plugins:                                                      \n"
+  "    veloc:                                                      \n"
+  "      failure: 1                                                \n"
+  "      checkpoint_label: \"test01\"                               \n"
+  "      veloc_cfg_path: \"./veloc_test.cfg\"                       \n"
+  "      iteration_name_in_cp_file: \"ii\"                          \n"
+  "      checkpoint_data: [ii, red, blue]                          \n"
+  "      when: '$ii % 10 = 0'                                      \n"
+  "      on_event: \"checkpoint\"                                  \n";
+
+
 
 int main(int argc, char* argv[])
 {
@@ -48,8 +66,6 @@ int main(int argc, char* argv[])
 	MPI_Comm world = MPI_COMM_WORLD;
     int rank;
 	MPI_Comm_rank(world, &rank);
-
-    assert(argc == 2 && "Needs 1 arg: config file");
 
     // create directories defined in veloc_test_01.cfg
     const char* dirs[] = {"./scratchdir/", "./persdir/"};
@@ -73,7 +89,7 @@ int main(int argc, char* argv[])
     double red_at_failure[10] = {30,30,30,30,30,30,30,30,30,30};
     double blue_at_failure[10] = {60,60,60,60,60,60,60,60,60,60};
     
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
     PDI_init(PC_get(conf, ".pdi"));
 
     for (; ii < MAX_ITER; ++ii) {
