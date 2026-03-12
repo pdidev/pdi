@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -39,6 +39,7 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
+#include <pdi/timer.h>
 
 #include "file_op.h"
 #include "hdf5_wrapper.h"
@@ -114,18 +115,22 @@ public:
 
 	void data(const std::string& name, Ref ref)
 	{
+		START_TIMER(pretty_name());
 		Hdf5_error_handler _;
 		for (auto&& op: m_data[name]) {
 			op.execute(context());
 		}
+		STOP_TIMER(pretty_name());
 	}
 
 	void event(const std::string& event)
 	{
+		START_TIMER(pretty_name());
 		Hdf5_error_handler _;
 		for (auto&& op: m_events[event]) {
 			op.execute(context());
 		}
+		STOP_TIMER(pretty_name());
 	}
 
 	/** Pretty name for the plugin that will be shown in the logger
