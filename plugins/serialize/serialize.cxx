@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -40,6 +40,7 @@
 #include <pdi/record_datatype.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
+#include <pdi/timer.h>
 #include <pdi/tuple_datatype.h>
 
 namespace {
@@ -272,6 +273,7 @@ struct serialize_plugin: PDI::Plugin {
 	 */
 	void share_serialized(const std::string& desc_name, PDI::Ref ref)
 	{
+		START_TIMER(pretty_name());
 		std::string serialized_name = m_desc_to_serialize[desc_name];
 		context().logger().debug("Serializing `{}` as `{}`", desc_name, serialized_name);
 		PDI::Datatype_sptr serialized_type = serialize_type(ref.type());
@@ -333,6 +335,7 @@ struct serialize_plugin: PDI::Plugin {
 			);
 			m_serialized_remove_callback.emplace_back(serialized_name, remove_callback, PDI_IN);
 		}
+		STOP_TIMER(pretty_name());
 	}
 
 	void release_serialized(const std::string& desc_name, PDI::Ref ref)
