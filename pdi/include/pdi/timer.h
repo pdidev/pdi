@@ -25,52 +25,46 @@
 #ifndef PDI_TIMER_H_
 #define PDI_TIMER_H_
 
-#include <iostream>
-// #include <vector>
-#include <string>
-#include <map>
 #include <chrono>
-// #include <string>
+#include <iostream>
+#include <map>
+#include <string>
 #include <utility>
 
-// #include <spdlog/logger.h>
-// #include <spdlog/spdlog.h>
-
 #include <pdi/pdi_fwd.h>
-// #include <pdi/paraconf_wrapper.h>
+
 namespace PDI {
 
-class PDI_EXPORT TimerManager {
+class PDI_EXPORT TimerManager
+{
 public:
-    // Delete copy constructor and assignment
-    TimerManager(const TimerManager&) = delete;
-    void operator=(const TimerManager&) = delete;
+	TimerManager(const TimerManager&) = delete;
+	void operator= (const TimerManager&) = delete;
 
-    static TimerManager& getInstance();
+	static TimerManager& getInstance();
 
-    void startTimer(const std::string& name);
-    void stopTimer(const std::string& name);
-    void printReport() const ;
-    void printReport(const std::string& name) const;
+	void startTimer(const std::string& name);
+	void stopTimer(const std::string& name);
+	void printReport() const;
+	void printReport(const std::string& name) const;
 
-    const std::map<std::string, double>& getResults();
+	const std::map<std::string, double>& getResults();
 
 private:
-    TimerManager() {} // Private Constructor
+	TimerManager() {}
 
-    std::map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
-    std::map<std::string, double> accumulated_times;
+	std::map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
+	std::map<std::string, double> accumulated_times;
 };
-}
+} // namespace PDI
 #ifdef WITH_TIMER_REPORT
-    #define START_TIMER(name) PDI::TimerManager::getInstance().startTimer(name)
-    #define STOP_TIMER(name)  PDI::TimerManager::getInstance().stopTimer(name)
-    #define PRINT_TIMER_REPORT() PDI::TimerManager::getInstance().printReport()
+#define START_TIMER(name) PDI::TimerManager::getInstance().startTimer(name)
+#define STOP_TIMER(name) PDI::TimerManager::getInstance().stopTimer(name)
+#define PRINT_TIMER_REPORT() PDI::TimerManager::getInstance().printReport()
 #else
-    #define START_TIMER(name)
-    #define STOP_TIMER(name)
-    #define PRINT_TIMER_REPORT()
+#define START_TIMER(name)
+#define STOP_TIMER(name)
+#define PRINT_TIMER_REPORT()
 #endif
-
 
 #endif // PDI_TIMER_H_
