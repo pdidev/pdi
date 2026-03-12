@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -38,6 +38,7 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
+#include <pdi/timer.h>
 
 namespace {
 
@@ -160,6 +161,7 @@ public:
 	/// call the function that has been registered
 	void call(Context& ctx)
 	{
+		START_TIMER("User-code");
 		// all exposed aliases that will be unexposed on destroy
 		vector<ExposedAlias> exposed_aliases;
 		for (auto&& alias: m_aliases) {
@@ -173,6 +175,7 @@ public:
 		} catch (...) {
 			ctx.logger().error("While calling user code, caught exception");
 		}
+		STOP_TIMER("User-code");
 	}
 
 }; // class Trigger
