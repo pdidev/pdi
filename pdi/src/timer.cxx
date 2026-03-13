@@ -53,7 +53,7 @@ void TimerManager::stopTimer(const std::string& name)
 // Export the results
 void TimerManager::printReport() const
 {
-	std::cout << "\n--- Full Timer Report ---" << &accumulated_times << std::endl;
+	std::cout << "\n--- Full Timer Report ---" << std::endl;
 	for (const auto& [name, duration]: accumulated_times) {
 		std::cout << name << ": " << duration << " seconds" << std::endl;
 	}
@@ -61,7 +61,7 @@ void TimerManager::printReport() const
 
 void TimerManager::printReport(const std::string& name) const
 {
-	std::cout << "\n--- Timer Report : " << &accumulated_times << std::endl;
+	std::cout << "\n--- Timer Report : " << std::endl;
 	auto it = accumulated_times.find(name);
 
 	if (it != accumulated_times.end()) {
