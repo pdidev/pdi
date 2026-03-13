@@ -49,7 +49,12 @@ add_library(pdi_pycall_plugin MODULE pycall.cxx)
 # link against Python3::Python to workaround https://github.com/pybind/pybind11/issues/2664
 target_link_libraries(pdi_pycall_plugin PDI::PDI_pysupport pybind11::embed Python3::Python)
 set_target_properties(pdi_pycall_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-
+if(WITH_TIMER_REPORT)
+    target_compile_definitions(pdi_pycall_plugin PUBLIC WITH_TIMER_REPORT)
+endif()
+if(APPLE)
+	target_link_options(pdi_pycall_plugin PRIVATE "-undefined" "dynamic_lookup")
+endif()
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_pycall_plugin
