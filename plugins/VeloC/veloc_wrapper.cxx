@@ -164,8 +164,7 @@ public:
         if (std::find(protected_data.begin(), protected_data.end(), 
                 iter_name) == protected_data.end()){  
             throw Error{PDI_ERR_CONFIG, 
-				"VeloC plugin: The iteration number must be included in checkpoint_data "
-            };
+				"VeloC plugin: The iteration number must be included in checkpoint_data"};
         }
 
 		if (VELOC_Init(MPI_COMM_WORLD, veloc_file.c_str()) != VELOC_SUCCESS) {
@@ -180,61 +179,44 @@ public:
 
         ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
 
-
-            // Check if name is a protected_data
+            // Check if it is a data to be included in/ to be restored from checkpoints
             auto it_vec = std::find(protected_data.begin(), protected_data.end(), name);
             if (it_vec == protected_data.end()) {
-                cout << " Returning 2" << endl; 
                 return;
             }
-
-            // Check if name is a mem region to be protected 
             auto it_map = register_memory_regions.find(name);
             if (it_map == register_memory_regions.end()) {
-                cout << " Returning 1" << endl; 
                 return;
             }
 
-        size_t index = std::distance(protected_data.begin(), it_vec);
+            size_t index = std::distance(protected_data.begin(), it_vec);
 
-            if (it_map->second){ //if memory needs to be registered 
-
-                // for sure  
-                // "ref.type()->datasize() returns the nr of bytes of a type "  (Dataset.cxx)
-                // ref.type()->subsize() returns number of actual elements in the array 
-
+            if (it_map->second){ // if data structure has not been registered yet 
+                size_t n = 1;  
+                size_t bytes; 
+                Ref_r read_ref{ref};
+                void* ptr = const_cast<void*>(read_ref.get());
+                
                 if(ref.type()->dense()){
-                    Ref_r read_ref{ref};
-                    // size_t n = ref.type()->subsize();
-
-                    void* ptr = const_cast<void*>(read_ref.get());
-                   
-
-                    size_t bytes = ref.type()-> datasize();
-
-                    printf("REGISTER %s: ptr=%p, bytes=%zu\n", name.c_str(), ptr, bytes);
-
-                    VELOC_Mem_protect(index, const_cast<void*>(read_ref.get()), 1, bytes);
-                    cout << " memory registered for " << name << "at " << index << endl;
+                    bytes = ref.type()-> datasize();
                 }
-
                 else{
-                    // size_t n = ref.type()->subsize();
-                    Ref_r read_ref{ref};
-
-                    void* ptr = const_cast<void*>(read_ref.get());
-                    
-
-                    size_t bytes = ref.type()->buffersize();
-
-                    printf("REGISTER %s: ptr=%p, bytes=%zu\n", name.c_str(), ptr, bytes);
-
-                    VELOC_Mem_protect(index, const_cast<void*>(read_ref.get()), 1, bytes);
-                    cout << " memory registered for " << name << endl;
+                    bytes = ref.type()-> buffersize();
+                }
+                 
+                if(auto* array_type = // If Datatype is an array 
+                    dynamic_cast<const PDI::Array_datatype*>(ref.type().get())) { 
+                    n = array_type->subsize();
                 }
 
+                size_t sub_bytes = bytes/n; 
+                
+                // register data structure in VeloC 
+                VELOC_Mem_protect(index, ptr, n, sub_bytes);   
+                context().logger().info("Registered {} at index {} with size = {} bytes\n", 
+                    name.c_str(), index, (n*sub_bytes));
+                
                 register_memory_regions[name] = false;
-
             }
 
             if(restore_from_last_checkpoint && memoryRegionsWereRegistered()){
@@ -242,9 +224,6 @@ public:
                 load_checkpoint();
 
             }
-
-            // TO DO : make checkpointing only on-event bc like otherwise I get too many checpoints file written and then overwritten 
-            //  like if there are more arrays exposed independently in one iter. 
 
         });
     }
@@ -272,7 +251,8 @@ private:
 
     void load_checkpoint(){
         
-        int v = VELOC_Restart_test(cp_label.c_str(), 0); // 0 means restart from latest checkpoint 
+        // restart from last checkpoint (because we pass 0)
+        int v = VELOC_Restart_test(cp_label.c_str(), 0); 
         if (v > 0) {
         printf("Previous checkpoint found at iteration %d, initiating restart...\n", v);
         // v can be any version, independent of what VELOC_Restart_test is returning
@@ -289,57 +269,37 @@ private:
 	
     void event(const std::string& event)
 	{
-		if (event == "simulate_failure"){
+		// if (event == "simulate_failure"){
 
-            cout << "handling failure simulation event " << endl; 
+        //     cout << "handling failure simulation event " << endl; 
 
-            restore_from_last_checkpoint = true; 
+        //    restore_from_last_checkpoint = true; 
 
-           for(auto &key_value : register_memory_regions){
-                auto &value = key_value.second;
-                value = true;
-           };
+        //    for(auto &key_value : register_memory_regions){
+        //         auto &value = key_value.second;
+        //         value = true;
+        //    };
 
-           for(auto &key_value : register_memory_regions){
+        //     cout << " failure simulated " << endl;
+        // }
 
-                auto key = key_value.first;
-                auto value = key_value.second;
-                cout << "key : " << key << " value : " << value << endl;
-           };
-            cout << " failure simulated"<< endl;
-        }
+        // else 
+        if(event == checkpoint_event_name){
 
-        else if(event == checkpoint_event_name){
+            if(!memoryRegionsWereRegistered()){
 
-            // TO DO: COUDL REMOVE THESE LINES
-
-            if(restore_from_last_checkpoint == true){
-
-                cout << " restoring before checkpointing -- should not happen " << endl;
-
-                if(memoryRegionsWereRegistered()){
-
-                    this->load_checkpoint();
-
-                }
-
-                else {
-                    throw Error{PDI_ERR_VALUE, 
+                throw Error{PDI_ERR_VALUE, 
                         "VeloC plugin: Not all data to be included in checkpoints "
                             "has been exposed to PDI before calling the checkpoint event"}; 
-                }
             }
-
-            // TO DO END
 
             Ref_r ref_r_iter = context().desc(iter_name).ref();
 
             auto new_iter = ref_r_iter.scalar_value<int>();
             
-           if( new_iter != recovered_iter){
-
+            // Avoid overwriting the checkpoint that has just been loaded 
+            if(new_iter != recovered_iter){ 
                 write_checkpoint(); 
-
             }   
         }
 	}

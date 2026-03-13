@@ -50,7 +50,7 @@ const char* CONFIG_YAML =
   "  plugins:                                                      \n"
   "    veloc:                                                      \n"
   "      failure: 0                                                \n"
-  "      checkpoint_label: \"test01\"                               \n"
+  "      checkpoint_label: \"test\"                               \n"
   "      veloc_cfg_path: \"./veloc_test.cfg\"                       \n"
   "      iteration_name_in_cp_file: \"ii\"                          \n"
   "      checkpoint_data: [ii, red, blue]                          \n"
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
 
     PDI_event("checkpoint");
 
-    assert(exists("./persdir/test01-0-30.dat") && "Test 1 failed : Checkpoint file not found/");
+    assert(exists("./persdir/test-0-30.dat") && "Test 1 failed : Checkpoint file not found/");
 
     cout << "Test 0 passed " << endl;
 
