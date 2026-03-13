@@ -159,9 +159,9 @@ public:
 	}
 
 	/// call the function that has been registered
-	void call(Context& ctx)
+	void call(Context& ctx, const std::string& name)
 	{
-		START_TIMER("User-code");
+		START_TIMER(name);
 		// all exposed aliases that will be unexposed on destroy
 		vector<ExposedAlias> exposed_aliases;
 		for (auto&& alias: m_aliases) {
@@ -175,7 +175,7 @@ public:
 		} catch (...) {
 			ctx.logger().error("While calling user code, caught exception");
 		}
-		STOP_TIMER("User-code");
+		STOP_TIMER(name);
 	}
 
 }; // class Trigger
@@ -192,7 +192,7 @@ struct user_code_plugin: Plugin {
 					each(one_event, [&](PC_tree_t function_name, PC_tree_t parameters) {
 						Trigger event_trigger{to_string(function_name), parameters};
 						ctx.callbacks().add_event_callback(
-							[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx); },
+							[&ctx, event_trigger](const std::string& name) mutable { event_trigger.call(ctx, pretty_name()); },
 							to_string(event_name)
 						);
 					});
@@ -207,7 +207,7 @@ struct user_code_plugin: Plugin {
 					each(one_data, [&](PC_tree_t function_name, PC_tree_t parameters) {
 						Trigger data_trigger{to_string(function_name), parameters};
 						ctx.callbacks().add_data_callback(
-							[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx); },
+							[&ctx, data_trigger](const std::string& name, Ref ref) mutable { data_trigger.call(ctx, pretty_name()); },
 							to_string(data_name)
 						);
 					});

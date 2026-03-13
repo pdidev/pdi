@@ -110,6 +110,8 @@ public:
 	 * \param other Dnc_file_context to move
 	 */
 	Dnc_file_context(Dnc_file_context&& other) noexcept;
+
+	static std::string pretty_name() { return "Decl'NetCDF"; }
 };
 
 } // namespace decl_netcdf
