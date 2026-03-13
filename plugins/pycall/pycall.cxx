@@ -213,7 +213,10 @@ struct pycall_plugin: Plugin {
 		for (int map_id = 0; map_id < nb_data; map_id++) {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
 			Trigger data_trigger{to_string(PC_get(on_data, "<%d>", map_id)), data_name};
-			ctx.callbacks().add_data_callback([&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx, pretty_name()); }, data_name);
+			ctx.callbacks().add_data_callback(
+				[&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx, pretty_name()); },
+				data_name
+			);
 		}
 	}
 
