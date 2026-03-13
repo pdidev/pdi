@@ -16,6 +16,7 @@ and this project adheres to
 ### For users
 
 #### Added
+* A compile option `WITH_TIMER_REPORT` is added to generate timer for all plugins.
 
 #### Changed
 
