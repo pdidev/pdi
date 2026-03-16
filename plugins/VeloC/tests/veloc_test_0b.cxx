@@ -32,7 +32,10 @@
 #include <filesystem>
 #include <cassert>
 #include <fstream>    
-#include <vector>     
+#include <vector>   
+#include <sys/stat.h>    
+#include <istream>        
+#include <ostream>  
 
 using std::filesystem::exists;
 using std::cout;
@@ -89,6 +92,10 @@ int main(int argc, char* argv[])
     double red_at_failure[10] = {0, 29, 58, 87, 116, 145, 174, 203, 232, 261};
     double blue_at_failure[10] = {1, 30, 59, 88, 117, 146, 175, 204, 233, 262};
 
+    int fds[2];
+    pipe(fds);
+    setenv("CP_COUNTER_FD", std::to_string(fds[1]).c_str(), 1);
+
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
     PDI_init(PC_get(conf, ".pdi"));
 
@@ -102,11 +109,12 @@ int main(int argc, char* argv[])
 
         if(ii == (FAILURE_ITER)) {
             for (int i =0; i < 10 ; i++){
-                assert(red_at_failure[i] == red[i] && "Test 1 failed : Data recovered does not match data before failure");
-                assert(blue_at_failure[i] == blue[i] && "Test 1 failed : Data recovered does not match data before failure");
+                assert(red_at_failure[i] == red[i] && 
+                    "Test 1 failed : Data recovered does not match data before failure");
+                assert(blue_at_failure[i] == blue[i] && 
+                    "Test 1 failed : Data recovered does not match data before failure");
             }
         }
-
 
         for (int i = 0; i < 10; ++i){
             if(i > 0){
@@ -127,10 +135,22 @@ int main(int argc, char* argv[])
 
     PDI_event("checkpoint");
 
+    PDI_event("assert_nr_checkpoints");
+
+    std::ifstream f("veloc_cp_count.txt");
+    long int count = -1;
+    f >> count;
+    f.close();
+    cout << "count is = " << count << endl; 
+    std::filesystem::remove("veloc_cp_count.txt");
+
+    assert(count == 3 && "write_checkpoint() was called exactly 3 times");
+    assert(exists("./persdir/test-0-40.dat") && "Test 1 failed : Checkpoint file not found/");
+    assert(exists("./persdir/test-0-50.dat") && "Test 1 failed : Checkpoint file not found/");
     assert(exists("./persdir/test-0-60.dat") && "Test 1 failed : Checkpoint file not found/");
 
-    std::cout << "Test Passed" << std::endl; 
-
+    cout << "Test 1 passed " << endl;
+    
     PDI_finalize();
     MPI_Finalize();
 

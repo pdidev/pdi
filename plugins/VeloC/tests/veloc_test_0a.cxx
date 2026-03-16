@@ -33,6 +33,7 @@
 #include <cassert>
 #include <fstream>    
 #include <vector>     
+#include <sys/stat.h>    
 
 using std::filesystem::exists;
 using std::cout;
@@ -114,6 +115,19 @@ int main(int argc, char* argv[])
 
     PDI_event("checkpoint");
 
+    PDI_event("assert_nr_checkpoints");
+
+    std::ifstream f("veloc_cp_count.txt");
+    long int count = -1;
+    f >> count;
+    f.close();
+    cout << "count is = " << count << endl; 
+    std::filesystem::remove("veloc_cp_count.txt");
+
+    assert(count == 4 && "write_checkpoint() was called exactly 3 times");
+    assert(exists("./persdir/test-0-0.dat") && "Test 1 failed : Checkpoint file not found/");
+    assert(exists("./persdir/test-0-10.dat") && "Test 1 failed : Checkpoint file not found/");
+    assert(exists("./persdir/test-0-20.dat") && "Test 1 failed : Checkpoint file not found/");
     assert(exists("./persdir/test-0-30.dat") && "Test 1 failed : Checkpoint file not found/");
 
     cout << "Test 0 passed " << endl;
