@@ -114,9 +114,7 @@ void load_pdi_config(Global_context& ctx, PC_tree_t conf)
 
 	PC_tree_t includes = PC_get(root, ".include");
 	if (!PC_status(includes)) {
-		PDI::each(includes, [&](PC_tree_t inc){
-			load_pdi_config(ctx, PC_parse_path((PDI::to_string(inc)).c_str()));
-		});
+		PDI::each(includes, [&](PC_tree_t yaml_subfile){ load_pdi_config(ctx, PC_parse_path((PDI::to_string(yaml_subfile)).c_str())); });
 	} else {
 		ctx.logger().trace("Includes are not defined in specification tree");
 	}
