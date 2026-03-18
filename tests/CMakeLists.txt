@@ -54,6 +54,10 @@ add_executable(test_04_C test_04.c)
 target_link_libraries(test_04_C paraconf::paraconf PDI::PDI_C)
 add_test(NAME test_04_C COMMAND "$<TARGET_FILE:test_04_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_04.yml")
 
+add_executable(test_07_C test_07.c)
+target_link_libraries(test_07_C paraconf::paraconf PDI::PDI_C)
+add_test(NAME test_07_C COMMAND "$<TARGET_FILE:test_07_C>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07.yml")
+
 endif("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
