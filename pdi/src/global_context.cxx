@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -102,143 +102,11 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
-// //
-static void print_indent(int indent)
+void load_pdi_config(Global_context& ctx, PC_tree_t conf)
 {
-    for(int i = 0; i < indent; i++)
-        printf("  ");
-}
-
-static const char* yaml_node_type_str(yaml_node_type_t t)
-{
-    switch(t)
-    {
-        case YAML_NO_NODE: return "YAML_NO_NODE";
-        case YAML_SCALAR_NODE: return "YAML_SCALAR_NODE";
-        case YAML_SEQUENCE_NODE: return "YAML_SEQUENCE_NODE";
-        case YAML_MAPPING_NODE: return "YAML_MAPPING_NODE";
-        default: return "INVALID_NODE_TYPE";
-    }
-}
-
-static void print_node_ptr(yaml_document_t *doc, yaml_node_t *node, int indent)
-{
-    if(!node)
-        return;
-
-    switch(node->type)
-    {
-        case YAML_SCALAR_NODE:
-            printf("%s", (char*)node->data.scalar.value);
-            break;
-
-        case YAML_SEQUENCE_NODE:
-        {
-            yaml_node_item_t *item = node->data.sequence.items.start;
-
-            while(item < node->data.sequence.items.top)
-            {
-                yaml_node_t *child = yaml_document_get_node(doc, *item);
-
-                print_indent(indent);
-                printf("- ");
-
-                if(child->type == YAML_SCALAR_NODE)
-                {
-                    printf("%s\n", (char*)child->data.scalar.value);
-                }
-                else if(child->type == YAML_MAPPING_NODE)
-                {
-                    printf("\n");
-                    print_node_ptr(doc, child, indent + 1);
-                }
-                else
-                {
-                    printf("\n");
-                    print_node_ptr(doc, child, indent + 1);
-                }
-
-                item++;
-            }
-
-            break;
-        }
-
-        case YAML_MAPPING_NODE:
-        {
-            yaml_node_pair_t *pair = node->data.mapping.pairs.start;
-
-            while(pair < node->data.mapping.pairs.top)
-            {
-                yaml_node_t *key = yaml_document_get_node(doc, pair->key);
-                yaml_node_t *val = yaml_document_get_node(doc, pair->value);
-
-                print_indent(indent);
-                printf("%s:", (char*)key->data.scalar.value);
-
-                if(val->type == YAML_SCALAR_NODE)
-                {
-                    printf(" %s\n", (char*)val->data.scalar.value);
-                }
-                else
-                {
-                    printf("\n");
-                    print_node_ptr(doc, val, indent + 1);
-                }
-
-                pair++;
-            }
-
-            break;
-        }
-
-        default:
-        {
-            const char *tag = node->tag ? (char*)node->tag : "(none)";
-
-            fprintf(stderr,
-                "\nYAML ERROR: unknown node type\n"
-                "  type: %s (%d)\n"
-                "  tag : %s\n"
-                "  indent level: %d\n",
-                yaml_node_type_str(node->type),
-                node->type,
-                tag,
-                indent
-            );
-
-            abort();
-        }
-    }
-}
-// //
-
-void PC_debug_print(PC_tree_t tree)
-{
-    if(!tree.document)
-    {
-        printf("No YAML document\n");
-        return;
-    }
-
-    if(!tree.node)
-    {
-        printf("No YAML root node\n");
-        return;
-    }
-
-    print_node_ptr(tree.document, tree.node, 0);
-
-    printf("\n");
-}
-// //
-
-void load_pdi(Global_context& ctx, PC_tree_t conf)
-{
-	ctx.logger().debug("A load_pdi");
-
 	PC_tree_t root = conf;
-	// si on a un noeud ".pdi", on descend dedans, sinon on reste à ce niveau (pour le yaml racine, ou pour un yaml inclus)
+	// if we have a node ".pdi", we go down inside it, otherwise we stay at this level
+	// this is used for both for the root yaml and for included yaml
 	PC_tree_t pdi = PC_get(conf, ".pdi");
 	if (!PC_status(pdi)) {
 		root = pdi;
@@ -247,36 +115,27 @@ void load_pdi(Global_context& ctx, PC_tree_t conf)
 	PC_tree_t includes = PC_get(root, ".include");
 	if (!PC_status(includes)) {
 		PDI::each(includes, [&](PC_tree_t inc){
-			load_pdi(ctx, PC_parse_path((PDI::to_string(inc)).c_str()));
+			load_pdi_config(ctx, PC_parse_path((PDI::to_string(inc)).c_str()));
 		});
-		// ctx.logger().warn("Includes are defined in specification tree");
-		ctx.logger().debug("Includes are defined in specification tree IN");
 	} else {
-		// ctx.logger().warn("Includes are not defined in specification tree");
-		ctx.logger().debug("Includes are not defined in specification tree IN ELSE");
+		ctx.logger().trace("Includes are not defined in specification tree");
 	}
 
-	// load user datatypes
 	Datatype_template::load_user_datatypes(ctx, PC_get(root, ".types"));
 
-	// no metadata is not an error
 	PC_tree_t metadata = PC_get(root, ".metadata");
 	if (!PC_status(metadata)) {
 		load_data(ctx, metadata, true);
 	} else {
-		// ctx.logger().warn("Metadata is not defined in specification tree IN");
-		ctx.logger().debug("Metadata is not defined in specification tree IN");
+		ctx.logger().trace("Metadata is not defined in specification tree");
 	}
 
-	// no data is spurious, but not an error
 	PC_tree_t data = PC_get(root, ".data");
 	if (!PC_status(data)) {
 		load_data(ctx, data, false);
 	} else {
-		// ctx.logger().warn("Data is not defined in specification tree IN");
-		ctx.logger().debug("Data is not defined in specification tree IN");
+		ctx.logger().trace("Data is not defined in specification tree");
 	}
-	ctx.logger().debug("Out of a load_pdi");
 }
 
 Global_context::Global_context(PC_tree_t conf)
@@ -289,7 +148,7 @@ Global_context::Global_context(PC_tree_t conf)
 
 	m_plugins.load_plugins();
 
-	load_pdi(*this, conf);
+	load_pdi_config(*this, conf);
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);

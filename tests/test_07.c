@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) ...
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,6 @@ struct Record_data {
 
 int main(int argc, char* argv[])
 {
-	// PDI_init(PC_parse_path(argv[1]));
-
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	PDI_init(PC_get(conf, ".pdi"));
 
@@ -61,8 +59,6 @@ int main(int argc, char* argv[])
 
 	int scalar_data_read;
 	PDI_expose("scalar_data", &scalar_data_read, PDI_IN);
-	// printf("%d ?== %d\n", scalar_data, scalar_data_read);
-	// assert(scalar_data == scalar_data_read);
 	printf("%d ?== %d\n", scalar_data, scalar_data_read);
 	if (scalar_data != scalar_data_read) {
 		fprintf(stderr, "Assertion failed: %d != %d\n", scalar_data, scalar_data_read);
