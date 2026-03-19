@@ -1,5 +1,4 @@
 pdi:
-  logging: debug
   data:
     scalar_data: double
     array_data:
