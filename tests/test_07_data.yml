@@ -1,7 +1,7 @@
 pdi:
-  logging: trace
+  logging: debug
   data:
-    scalar_data: int
+    scalar_data: double
     array_data:
       type: array
       subtype: int

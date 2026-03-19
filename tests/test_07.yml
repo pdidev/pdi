@@ -1,9 +1,11 @@
 pdi:
   include:
-    - /<full>/<path>/<to>/test_07_data.yml
+    - /<full>/<path>/<to>/<test_07_data.yml>
   logging: trace
   metadata:
     input: int
+  data:
+    scalar_data: int
   plugins:
     serialize:
       scalar_data: scalar_data_serialized
