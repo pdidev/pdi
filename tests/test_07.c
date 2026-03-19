@@ -45,41 +45,31 @@ int replace_placeholder_in_file(const char *file_path, const char *replace_str) 
         perror("Failed to open file");
         return 1;
     }
-
-    // Create a temporary file to store modified content
     FILE *temp_file = fopen("temp_test_07.yml", "w");
     if (!temp_file) {
         perror("Failed to open temp file");
         fclose(file);
         return 1;
     }
-
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
-        // Find the placeholder and replace it
         char *pos = strstr(line, PLACEHOLDER);
         if (pos) {
-            // Write the part before the placeholder
             fwrite(line, 1, pos - line, temp_file);
-            // Write the replacement string
             fwrite(replace_str, 1, strlen(replace_str), temp_file);
-            // Write the rest of the line after the placeholder
             fwrite(pos + strlen(PLACEHOLDER), 1, strlen(pos) - strlen(PLACEHOLDER), temp_file);
-        } else {
-            // If no placeholder, just copy the line as is
-            fputs(line, temp_file);
         }
     }
-
     fclose(file);
     fclose(temp_file);
-
-    // Replace the original file with the modified one
+    if (remove(file_path) != 0) {
+        perror("Failed to remove the original file");
+        return 1;
+    }
     if (rename("temp_test_07.yml", file_path) != 0) {
         perror("Failed to rename temp file to original file");
         return 1;
     }
-
     return 0;
 }
 
