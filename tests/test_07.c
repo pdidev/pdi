@@ -40,6 +40,150 @@ struct Record_data {
 	int* b;
 } typedef Record_data;
 
+// //
+static void print_indent(int indent)
+{
+    for(int i = 0; i < indent; i++)
+        printf("  ");
+}
+
+static const char* yaml_node_type_str(yaml_node_type_t t)
+{
+    switch(t)
+    {
+        case YAML_NO_NODE: return "YAML_NO_NODE";
+        case YAML_SCALAR_NODE: return "YAML_SCALAR_NODE";
+        case YAML_SEQUENCE_NODE: return "YAML_SEQUENCE_NODE";
+        case YAML_MAPPING_NODE: return "YAML_MAPPING_NODE";
+        default: return "INVALID_NODE_TYPE";
+    }
+}
+
+static void print_node_ptr(yaml_document_t *doc, yaml_node_t *node, int indent)
+{
+    if(!node)
+        return;
+
+    switch(node->type)
+    {
+        case YAML_SCALAR_NODE:
+            printf("%s", (char*)node->data.scalar.value);
+            break;
+
+        case YAML_SEQUENCE_NODE:
+        {
+            yaml_node_item_t *item = node->data.sequence.items.start;
+
+            while(item < node->data.sequence.items.top)
+            {
+                yaml_node_t *child = yaml_document_get_node(doc, *item);
+
+                print_indent(indent);
+                // printf("- ");
+
+                // if(child->type == YAML_SCALAR_NODE)
+                // {
+                //     printf("%s\n", (char*)child->data.scalar.value);
+                // }
+                // else
+                // {
+                //     printf("\n");
+                //     print_node_ptr(doc, child, indent + 1);
+                // }
+                printf("- ");
+
+                if(child->type == YAML_SCALAR_NODE)
+                {
+                    printf("%s\n", (char*)child->data.scalar.value);
+                }
+                else if(child->type == YAML_MAPPING_NODE)
+                {
+                    printf("\n");
+                    print_node_ptr(doc, child, indent + 1);
+                }
+                else
+                {
+                    printf("\n");
+                    print_node_ptr(doc, child, indent + 1);
+                }
+
+                item++;
+            }
+
+            break;
+        }
+
+        case YAML_MAPPING_NODE:
+        {
+            yaml_node_pair_t *pair = node->data.mapping.pairs.start;
+
+            while(pair < node->data.mapping.pairs.top)
+            {
+                yaml_node_t *key = yaml_document_get_node(doc, pair->key);
+                yaml_node_t *val = yaml_document_get_node(doc, pair->value);
+
+                print_indent(indent);
+                printf("%s:", (char*)key->data.scalar.value);
+
+                if(val->type == YAML_SCALAR_NODE)
+                {
+                    printf(" %s\n", (char*)val->data.scalar.value);
+                }
+                else
+                {
+                    printf("\n");
+                    print_node_ptr(doc, val, indent + 1);
+                }
+
+                pair++;
+            }
+
+            break;
+        }
+
+        // default:
+        //     printf("UNKNOWN\n");
+        
+        default:
+        {
+            const char *tag = node->tag ? (char*)node->tag : "(none)";
+
+            fprintf(stderr,
+                "\nYAML ERROR: unknown node type\n"
+                "  type: %s (%d)\n"
+                "  tag : %s\n"
+                "  indent level: %d\n",
+                yaml_node_type_str(node->type),
+                node->type,
+                tag,
+                indent
+            );
+
+            abort();
+        }
+    }
+}
+// //
+void PC_debug_print(PC_tree_t tree)
+{
+    if(!tree.document)
+    {
+        printf("No YAML document\n");
+        return;
+    }
+
+    if(!tree.node)
+    {
+        printf("No YAML root node\n");
+        return;
+    }
+
+    print_node_ptr(tree.document, tree.node, 0);
+
+    printf("\n");
+}
+// //
+
 // int replace_placeholder_in_file(const char *file_path, const char *replace_str) {
 //     FILE *file = fopen(file_path, "r");
 //     if (!file) {
@@ -130,6 +274,8 @@ int main(int argc, char* argv[])
 
 	PC_tree_t conf = PC_parse_path(argv[1]);
 	PDI_init(PC_get(conf, ".pdi"));
+
+	PC_debug_print(conf);
 
 	int input = 0;
 	PDI_expose("input", &input, PDI_OUT);
