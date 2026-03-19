@@ -261,19 +261,43 @@ int replace_placeholder_in_file(const char *file_path, const char *replace_str) 
 
 int main(int argc, char* argv[])
 {
-    if (argc < 3) {
-        fprintf(stderr, "May be missing absolute path to test_07_data.yml", argv[0]);
-        return 1;
-    }
-    const char *yaml_path = argv[1];
-    const char *data_yaml_path = argv[2];
-    if (replace_placeholder_in_file(yaml_path, data_yaml_path) != 0) {
-        fprintf(stderr, "Failed to modify the root YAML file test_07.yml\n");
-        return 1;
-    }
+    // if (argc < 3) {
+    //     fprintf(stderr, "May be missing absolute path to test_07_data.yml", argv[0]);
+    //     return 1;
+    // }
+    // const char *yaml_path = argv[1];
+    // const char *data_yaml_path = argv[2];
+    // if (replace_placeholder_in_file(yaml_path, data_yaml_path) != 0) {
+    //     fprintf(stderr, "Failed to modify the root YAML file test_07.yml\n");
+    //     return 1;
+    // }
 
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	if (argc < 2) {
+		fprintf(stderr, "Missing path to test_07.yml\n");
+		return 1;
+	}
+
+	const char *yaml_path = argv[1];
+
+	/* Build test_07_data.yml path from test_07.yml */
+	char data_path[1024];
+	snprintf(data_path, sizeof(data_path),
+			"%.*s_data.yml",
+			(int)(strlen(yaml_path) - 4),  // remove ".yml"
+			yaml_path);
+
+	/* Replace placeholder in YAML -> writes to /tmp_dir_test */
+	if (replace_placeholder_in_file(yaml_path, data_path) != 0) {
+		fprintf(stderr, "Failed to modify the root YAML file\n");
+		return 1;
+	}
+
+	/* IMPORTANT: parse the MODIFIED file, not the original */
+	PC_tree_t conf = PC_parse_path("/tmp_dir_test/temp_test_07.yml");
 	PDI_init(PC_get(conf, ".pdi"));
+
+	// PC_tree_t conf = PC_parse_path(argv[1]);
+	// PDI_init(PC_get(conf, ".pdi"));
 
 	PC_debug_print(conf);
 
