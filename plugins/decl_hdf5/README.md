@@ -60,7 +60,11 @@ The possible values for the keys are as follow:
   See
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
-* `subfiling`: an integer value interpreted as the total number of subfiles. This key is available only when the underlying HDF5 has `H5_HAVE_SUBFILING_VFD` enabled. By default `subfiling: 0` is used indicating no HDF5 subfiling. `subfiling: 2` means 2 subfiles will be generated.
+* `subfiling`: an integer value interpreted as the total number of subfiles. This key is available only when the underlying HDF5 has `H5_HAVE_SUBFILING_VFD` enabled. By default `subfiling: 0` is used indicating no HDF5 subfiling. `subfiling: 2` means 2 subfiles will be generated. Here are several important notes for using `subfiling` correctly:
+   * The simulation must be initialized with `MPI_THREAD_MULTIPLE`.
+   * Subfiling strip size can be changed via the environment variable `H5FD_SUBFILING_STRIPE_SIZE`
+   * You can also specify the location of the subfiles by giving the desired absolute path to `H5FD_SUBFILING_SUBFILE_PREFIX`. You also need to set the same path to `H5FD_SUBFILING_CONFIG_FILE_PREFIX` for the config file.
+   * HDF5 does not provide an easy option to change the naming template of subfiles. The generated subfile will be named similarly to `output.h5.subfile_11273556_01_of_10`.
 
 ### DATA_SECTION
 
