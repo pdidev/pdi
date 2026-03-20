@@ -80,9 +80,6 @@ add_library(pdi_decl_hdf5_plugin MODULE
 target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
-if(WITH_TIMER_REPORT)
-    target_compile_definitions(pdi_decl_hdf5_plugin PUBLIC WITH_TIMER_REPORT)
-endif()
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_decl_hdf5_plugin

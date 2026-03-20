@@ -38,9 +38,7 @@ add_library(pdi_serialize_plugin MODULE serialize.cxx)
 
 target_link_libraries(pdi_serialize_plugin PUBLIC PDI::PDI_plugins)
 set_target_properties(pdi_serialize_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
-if(WITH_TIMER_REPORT)
-    target_compile_definitions(pdi_serialize_plugin PUBLIC WITH_TIMER_REPORT)
-endif()
+
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_serialize_plugin

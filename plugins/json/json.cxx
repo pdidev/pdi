@@ -36,7 +36,6 @@
 #include <pdi/record_datatype.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi/timer.h>
 #include <pdi/tuple_datatype.h>
 
 #include <nlohmann/json.hpp>
@@ -330,7 +329,7 @@ private:
 	 */
 	void write_data(const std::string& data_name, Ref_r&& reference)
 	{
-		START_TIMER(pretty_name());
+		context().timer().startTimer(pretty_name());
 		Logger& logger = context().logger();
 
 		for (const auto& [condition, fpath]: m_data_to_path_map[data_name]) {
@@ -377,7 +376,7 @@ private:
 			}
 			logger.debug("Done ! {} ", data_name);
 		}
-		STOP_TIMER(pretty_name());
+		context().timer().stopTimer(pretty_name());
 	}
 };
 

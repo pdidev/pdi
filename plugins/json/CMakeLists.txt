@@ -36,9 +36,7 @@ find_package(nlohmann_json 3.9 REQUIRED)
 # The plugin
 add_library(pdi_json_plugin MODULE json.cxx)
 target_link_libraries(pdi_json_plugin PUBLIC PDI::PDI_plugins nlohmann_json::nlohmann_json )
-if(WITH_TIMER_REPORT)
-    target_compile_definitions(pdi_json_plugin PUBLIC WITH_TIMER_REPORT)
-endif()
+
 # Installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_json_plugin

@@ -32,7 +32,6 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/expression.h>
 #include <pdi/paraconf_wrapper.h>
-#include <pdi/timer.h>
 
 #include "dnc_group.h"
 #include "dnc_io.h"

@@ -35,6 +35,26 @@
 
 namespace PDI {
 
+class PDI_EXPORT Timer
+{
+public:
+	Timer(const Timer&) = delete;
+	Timer() {}
+	
+	void operator= (const Timer&) = delete;
+
+	void startTimer(const std::string& name);
+	void stopTimer(const std::string& name);
+	void printReport() const;
+	void printReport(const std::string& name) const;
+
+	const std::map<std::string, double>& getResults();
+
+private:
+	std::map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
+	std::map<std::string, double> accumulated_times;
+};
+
 class PDI_EXPORT TimerManager
 {
 public:

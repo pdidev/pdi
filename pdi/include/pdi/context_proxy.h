@@ -30,6 +30,7 @@
 #include <pdi/callbacks.h>
 #include <pdi/context.h>
 #include <pdi/logger.h>
+#include <pdi/timer.h>
 
 #include <functional>
 #include <string>
@@ -43,6 +44,8 @@ class PDI_EXPORT Context_proxy: public Context
 
 	/// Logger of the plugin
 	Logger m_plugin_logger;
+
+	Timer *m_plugin_timer;
 
 public:
 	/** Creates Context proxy without plugin logger
@@ -100,6 +103,12 @@ public:
 	 *  \return plugin logger
 	 */
 	Logger& logger() override;
+
+	/** Returns plugin timer
+	 *
+	 *  \return plugin timer
+	 */
+	Timer& timer() override;
 
 	/** Returns pdi core logger
 	 *

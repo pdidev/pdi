@@ -183,6 +183,11 @@ Logger& Global_context::logger()
 	return m_logger;
 }
 
+Timer& Global_context::timer()
+{
+	return m_timer;
+}
+
 Datatype_template_sptr Global_context::datatype(PC_tree_t node)
 {
 	string type;

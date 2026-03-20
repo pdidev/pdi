@@ -40,7 +40,6 @@
 #include <pdi/record_datatype.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi/timer.h>
 #include <pdi/tuple_datatype.h>
 
 namespace {
@@ -273,7 +272,7 @@ struct serialize_plugin: PDI::Plugin {
 	 */
 	void share_serialized(const std::string& desc_name, PDI::Ref ref)
 	{
-		START_TIMER(pretty_name());
+		context().timer().startTimer(pretty_name());
 		std::string serialized_name = m_desc_to_serialize[desc_name];
 		context().logger().debug("Serializing `{}` as `{}`", desc_name, serialized_name);
 		PDI::Datatype_sptr serialized_type = serialize_type(ref.type());
@@ -335,7 +334,7 @@ struct serialize_plugin: PDI::Plugin {
 			);
 			m_serialized_remove_callback.emplace_back(serialized_name, remove_callback, PDI_IN);
 		}
-		STOP_TIMER(pretty_name());
+		context().timer().stopTimer(pretty_name());
 	}
 
 	void release_serialized(const std::string& desc_name, PDI::Ref ref)

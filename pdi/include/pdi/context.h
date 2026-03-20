@@ -37,6 +37,7 @@
 #include <pdi/datatype_template.h>
 #include <pdi/logger.h>
 #include <pdi/ref_any.h>
+#include <pdi/timer.h>
 
 namespace PDI {
 
@@ -113,6 +114,11 @@ public:
 	 * \return logger
 	 */
 	virtual Logger& logger() = 0;
+
+	/** Timer getter
+	 * \return timer
+	 */
+	virtual Timer& timer() = 0;
 
 	/** Callbacks of the context
 	 * \return context callbacks

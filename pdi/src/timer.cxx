@@ -27,6 +27,61 @@
 namespace PDI {
 
 
+
+// Stop a timer and accumulate the duration
+void Timer::stopTimer(const std::string& name)
+{
+	#ifdef WITH_TIMER_REPORT
+	auto end_time = std::chrono::high_resolution_clock::now();
+
+	if (start_times.find(name) != start_times.end()) {
+		std::chrono::duration<double> elapsed = end_time - start_times[name];
+		accumulated_times[name] += elapsed.count();
+	}
+	#endif
+}
+// Start a timer by name
+void Timer::startTimer(const std::string& name)
+{
+	#ifdef WITH_TIMER_REPORT
+	start_times[name] = std::chrono::high_resolution_clock::now();
+	#endif
+}
+
+// Export the results
+void Timer::printReport() const
+{
+	#ifdef WITH_TIMER_REPORT
+	std::cout << "\n--- Full Timer Report ---" << std::endl;
+	for (const auto& [name, duration]: accumulated_times) {
+		std::cout << name << ": " << duration << " seconds" << std::endl;
+	}
+	#endif
+}
+
+void Timer::printReport(const std::string& name) const
+{
+	#ifdef WITH_TIMER_REPORT
+	std::cout << "\n--- Timer Report : " << std::endl;
+	auto it = accumulated_times.find(name);
+
+	if (it != accumulated_times.end()) {
+		std::cout << name << " : " << it->second << " seconds" << std::endl;
+	} else {
+		std::cout << name << " timer not found." << std::endl;
+	}
+	#endif
+}
+
+// Get the map directly (useful for MPI export)
+const std::map<std::string, double>& Timer::getResults()
+{
+	#ifdef WITH_TIMER_REPORT
+	return accumulated_times;
+	#endif
+}
+
+
 TimerManager& TimerManager::getInstance()
 {
 	static TimerManager instance;

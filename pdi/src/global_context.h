@@ -41,6 +41,7 @@
 #include "pdi/logger.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
+#include "pdi/timer.h"
 
 #include "plugin_store.h"
 
@@ -56,6 +57,9 @@ private:
 
 	/// Global logger of PDI, should be constructed first, destroyed last
 	Logger m_logger;
+
+	/// Global timer of PDI
+	Timer m_timer;
 
 	/// Datatype_template constructors available in PDI
 	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
@@ -118,6 +122,8 @@ public:
 	void event(const char* name) override;
 
 	Logger& logger() override;
+	
+	Timer& timer() override;
 
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 

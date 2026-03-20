@@ -38,7 +38,6 @@
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/plugin.h>
 #include <pdi/ref_any.h>
-#include <pdi/timer.h>
 
 namespace {
 
@@ -161,7 +160,7 @@ public:
 	/// call the function that has been registered
 	void call(Context& ctx, const std::string& name)
 	{
-		START_TIMER(name);
+		ctx.timer().startTimer(name);
 		// all exposed aliases that will be unexposed on destroy
 		vector<ExposedAlias> exposed_aliases;
 		for (auto&& alias: m_aliases) {
@@ -175,7 +174,7 @@ public:
 		} catch (...) {
 			ctx.logger().error("While calling user code, caught exception");
 		}
-		STOP_TIMER(name);
+		ctx.timer().stopTimer(name);
 	}
 
 }; // class Trigger

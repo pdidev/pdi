@@ -42,7 +42,6 @@
 #include <pdi/python/tools.h>
 #include <pdi/ref_any.h>
 #include <pdi/scalar_datatype.h>
-#include <pdi/timer.h>
 
 namespace {
 
@@ -154,9 +153,9 @@ public:
 			alias.expose(ctx, pyscope);
 		}
 		try {
-			START_TIMER(name);
+			ctx.timer().startTimer(name);
 			pybind11::exec(m_code, pyscope);
-			STOP_TIMER(name);
+			ctx.timer().stopTimer(name);
 		} catch (const std::exception& e) {
 			ctx.logger().error("while calling python, caught exception: {}", e.what());
 		} catch (...) {
