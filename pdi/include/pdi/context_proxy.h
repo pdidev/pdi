@@ -45,7 +45,7 @@ class PDI_EXPORT Context_proxy: public Context
 	/// Logger of the plugin
 	Logger m_plugin_logger;
 
-	Timer *m_plugin_timer;
+	Timer* m_plugin_timer;
 
 public:
 	/** Creates Context proxy without plugin logger
