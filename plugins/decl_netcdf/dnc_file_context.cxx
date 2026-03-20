@@ -282,7 +282,7 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 
 void Dnc_file_context::execute()
 {
-	START_TIMER(pretty_name());
+	m_ctx.timer().startTimer(pretty_name());
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder;
 		std::vector<Dnc_variable*> variables_to_get;
@@ -357,7 +357,7 @@ void Dnc_file_context::execute()
 			i++;
 		}
 	}
-	STOP_TIMER(pretty_name());
+	m_ctx.timer().stopTimer(pretty_name());
 }
 
 } // namespace decl_netcdf
