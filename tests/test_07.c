@@ -86,12 +86,13 @@ int main(int argc, char* argv[])
 	bool is_macOS = false;
 #endif
 
-	PC_tree_t conf = NULL;
+	PC_tree_t conf;
+	bool conf_created = false;
 
 	if (is_macOS) {
 		printf("is_macOS=%s\n", is_macOS ? "true" : "false");
 		// macOS (local CI): Use PC_parse_string to emulate the test, workaround for online CI on macOS
-		static const char* CONFIG_YAML 
+		static const char* CONFIG_YAML
 			= "pdi:\n"
 			  "  logging: trace\n"
 			  "  metadata:\n"
@@ -129,6 +130,7 @@ int main(int argc, char* argv[])
 			  "        read: [scalar_data_serialized, array_data_serialized, record_data_serialized]";
 
 		conf = PC_parse_string(CONFIG_YAML);
+		conf_created = true;
 		PDI_init(conf);
 	} else if (is_github_actions) {
 		printf("GITHUB_ACTIONS=%s\n", github_actions);
@@ -145,6 +147,7 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		conf = PC_parse_path("/tmp_dir_test/temp_test_07.yml");
+		conf_created = true;
 		PDI_init(PC_get(conf, ".pdi"));
 	} else {
 		printf("GITHUB_ACTIONS is NOT set\n");
@@ -154,6 +157,7 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		conf = PC_parse_path(argv[1]);
+		conf_created = true;
 		PDI_init(PC_get(conf, ".pdi"));
 	}
 
@@ -202,7 +206,7 @@ int main(int argc, char* argv[])
 	assert(b == b_read);
 
 	PDI_finalize();
-	if (conf != NULL) {
+	if (conf_created) {
 		PC_tree_destroy(&conf);
 	}
 	return 0;
