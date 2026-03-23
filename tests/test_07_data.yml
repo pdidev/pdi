@@ -1,6 +1,5 @@
 pdi:
   data:
-    scalar_data: double
     array_data:
       type: array
       subtype: int

@@ -73,6 +73,8 @@ private:
 
 	Global_context(Global_context&&) = delete;
 
+	std::unordered_set<std::string> m_defined;
+
 public:
 	static void init(PC_tree_t conf);
 
@@ -126,6 +128,10 @@ public:
 	Callbacks& callbacks() override;
 
 	void finalize_and_exit() override;
+
+	void load_pdi_config(PC_tree_t conf);
+
+	void check_duplicate(const std::string& name) override;
 
 	~Global_context() override;
 };

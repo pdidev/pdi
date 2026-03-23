@@ -61,20 +61,24 @@ namespace PDI {
 
 namespace {
 
-void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
+void load_data(Global_context& ctx, PC_tree_t node, bool is_metadata)
 {
-	int map_len = len(node);
+    int map_len = len(node);
 
-	for (int map_id = 0; map_id < map_len; ++map_id) {
-		Data_descriptor& dsc = ctx.desc(to_string(PC_get(node, "{%d}", map_id)).c_str());
-		dsc.metadata(is_metadata);
-		dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
-	}
-	if (is_metadata) {
-		ctx.logger().trace("Loaded {} metadata", map_len);
-	} else {
-		ctx.logger().trace("Loaded {} data", map_len);
-	}
+    for (int map_id = 0; map_id < map_len; ++map_id) {
+        std::string name = to_string(PC_get(node, "{%d}", map_id));
+
+        ctx.check_duplicate(name);
+
+        Data_descriptor& dsc = ctx.desc(name.c_str());
+        dsc.metadata(is_metadata);
+        dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
+    }
+
+    if (is_metadata)
+        ctx.logger().trace("Loaded {} metadata", map_len);
+    else
+        ctx.logger().trace("Loaded {} data", map_len);
 }
 
 } // namespace
@@ -102,7 +106,7 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
-void load_pdi_config(Global_context& ctx, PC_tree_t conf)
+void Global_context::load_pdi_config(PC_tree_t conf)
 {
 	PC_tree_t root = conf;
 	// if we have a node ".pdi", we go down inside it, otherwise we stay at this level
@@ -114,23 +118,19 @@ void load_pdi_config(Global_context& ctx, PC_tree_t conf)
 
 	PC_tree_t includes = PC_get(root, ".include");
 	if (!PC_status(includes)) {
-		PDI::each(includes, [&](PC_tree_t yaml_subfile){ load_pdi_config(ctx, PC_parse_path((PDI::to_string(yaml_subfile)).c_str())); });
+		PDI::each(includes, [&](PC_tree_t yaml_subfile){ this->load_pdi_config(PC_parse_path((PDI::to_string(yaml_subfile)).c_str())); });
 	}
 
-	Datatype_template::load_user_datatypes(ctx, PC_get(root, ".types"));
+	Datatype_template::load_user_datatypes(*this, PC_get(root, ".types"));
 
 	PC_tree_t metadata = PC_get(root, ".metadata");
 	if (!PC_status(metadata)) {
-		load_data(ctx, metadata, true);
-	} else {
-		ctx.logger().trace("Metadata is not defined in specification tree");
+		load_data(*this, metadata, true);
 	}
 
 	PC_tree_t data = PC_get(root, ".data");
 	if (!PC_status(data)) {
-		load_data(ctx, data, false);
-	} else {
-		ctx.logger().trace("Data is not defined in specification tree");
+		load_data(*this, data, false);
 	}
 }
 
@@ -144,7 +144,7 @@ Global_context::Global_context(PC_tree_t conf)
 
 	m_plugins.load_plugins();
 
-	load_pdi_config(*this, conf);
+	load_pdi_config(conf);
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
@@ -242,6 +242,14 @@ void Global_context::finalize_and_exit()
 {
 	Global_context::finalize();
 	exit(0);
+}
+
+void Global_context::check_duplicate(const std::string& name)
+{
+	if (!m_defined.insert(name).second) {
+		// throw System_error instead of std::runtime_error to use assert for test on expected error
+		throw System_error("Duplicate definition of '{}'", name);
+    }
 }
 
 Global_context::~Global_context()

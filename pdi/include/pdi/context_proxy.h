@@ -120,6 +120,8 @@ public:
 	Callbacks& callbacks() override;
 
 	void finalize_and_exit() override;
+
+	void check_duplicate(const std::string& name) override;
 };
 
 } //namespace PDI

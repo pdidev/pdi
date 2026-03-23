@@ -298,3 +298,55 @@ TEST_F(ContextTest, iterator_operator_equal_equal)
 		ASSERT_EQ(counter_false, 2);
 	}
 }
+
+/*
+ * Name:                ContextTest.check_duplicate
+ *
+ * Tested functions:    PDI::Context::check_duplicate
+ *
+ * Description:         Checks if duplicate definitions 
+ *                      throw System_error.
+ */
+TEST_F(ContextTest, check_duplicate)
+{
+    // Test 1: First call should succeed
+    ASSERT_NO_THROW(this->test_context->check_duplicate("test_variable"));
+
+    // Test 2: Second call with same name should throw System_error
+    EXPECT_THROW(
+        this->test_context->check_duplicate("test_variable"),
+        System_error
+    );
+
+    // Test 3: Different names should both succeed
+    ASSERT_NO_THROW(this->test_context->check_duplicate("another_variable"));
+    ASSERT_NO_THROW(this->test_context->check_duplicate("yet_another_variable"));
+}
+
+/*
+ * Name:                ContextTest.load_pdi_config_duplicate_data_via_inclusion
+ *
+ * Tested functions:    PDI::load_pdi_config (recursive inclusion), through multiple PC_parse_string
+ *
+ * Description:         Checks if including a YAML with duplicate data fields
+ *                      throws System_error (simulates test_07.yml and test_07_data.yml).
+ */
+TEST_F(ContextTest, load_pdi_config_duplicate_data_via_inclusion)
+{
+	PC_tree_t main_conf = PC_parse_string("data: {scalar_data: int}");
+    PC_tree_t included_conf = PC_parse_string("data: {scalar_data: double}");
+
+	auto* ctx = static_cast<Global_context*>(this->test_context.get());
+
+	// Test 1: Defining a variable is not an issue
+	ASSERT_NO_THROW(ctx->load_pdi_config(main_conf));
+
+	// Test 2: Defining the same variable again in a second load is an issue and should throw System_error
+	EXPECT_THROW(
+		ctx->load_pdi_config(included_conf),
+		System_error
+	);
+
+    PC_tree_destroy(&main_conf);
+    PC_tree_destroy(&included_conf);
+}

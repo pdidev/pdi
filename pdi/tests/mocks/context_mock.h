@@ -57,6 +57,7 @@ struct MockContext: public PDI::Context {
 	MOCK_METHOD2(add_datatype, void(const std::string&, Datatype_template_parser));
 	MOCK_METHOD0(callbacks, PDI::Callbacks&());
 	MOCK_METHOD0(finalize_and_exit, void());
+	MOCK_METHOD1(check_duplicate, void(const std::string&));
 };
 
 
