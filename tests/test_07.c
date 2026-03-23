@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
 
 		conf = PC_parse_string(CONFIG_YAML);
 		conf_created = true;
-		PDI_init(conf);
+		PDI_init(PC_get(conf, ".pdi"));
 	} else if (is_github_actions) {
 		printf("GITHUB_ACTIONS=%s\n", github_actions);
 		// GitHub Actions (online CI): Use file-based logic with placeholder replacement, workaround for online CI on Linux
