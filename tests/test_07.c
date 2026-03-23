@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define MAX_LINE_LENGTH 1024
 #define PLACEHOLDER "/<full>/<path>/<to>/<test_07_data.yml>"
@@ -40,7 +41,7 @@ struct Record_data {
 	int* b;
 } typedef Record_data;
 
-int replace_placeholder_in_file(const char *file_path, const char *replace_str)
+int replace_placeholder_in_file(const char* file_path, const char *replace_str)
 {
 	FILE* file = fopen(file_path, "r");
 	if (!file) {
@@ -71,20 +72,20 @@ int replace_placeholder_in_file(const char *file_path, const char *replace_str)
 }
 
 int main(int argc, char* argv[]) {
-    // Detect if running in GitHub Actions
-    const char* github_actions = std::getenv("GITHUB_ACTIONS");
-    bool is_github_actions = (github_actions != nullptr);
+	// Detect if running in GitHub Actions
+	const char* github_actions = getenv("GITHUB_ACTIONS");
+	bool is_github_actions = (github_actions != NULL);
 
-    // Detect macOS
-    #ifdef __APPLE__
-        bool is_macOS = true;
-    #else
-        bool is_macOS = false;
-    #endif
+	// Detect macOS
+	#ifdef __APPLE__
+		bool is_macOS = true;
+	#else
+		bool is_macOS = false;
+	#endif
 
-    if (is_macOS) {
-        // macOS (local CI): Use PC_parse_string to emulate the test, workaround for online CI on macOS
-		static const char* CONFIG_YAML =
+	if (is_macOS) {
+		// macOS (local CI): Use PC_parse_string to emulate the test, workaround for online CI on macOS
+	static const char* CONFIG_YAML =
 		"pdi:\n"
 		"  logging: trace\n"
 		"  metadata:\n"
@@ -123,32 +124,32 @@ int main(int argc, char* argv[]) {
 
 		PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 		PDI_init(conf);
-    }
-    else if (is_github_actions) {
-        // GitHub Actions (online CI): Use file-based logic with placeholder replacement, workaround for online CI on Linux
-        if (argc < 2) {
-            fprintf(stderr, "Missing path to test_07.yml\n");
-            return 1;
-        }
-        const char* yaml_path = argv[1];
-        char data_path[1024];
-        snprintf(data_path, sizeof(data_path), "%.*s_data.yml", (int)(strlen(yaml_path) - 4), yaml_path);
-        if (replace_placeholder_in_file(yaml_path, data_path) != 0) {
-            fprintf(stderr, "Failed to modify the root YAML file\n");
-            return 1;
-        }
-        PC_tree_t conf = PC_parse_path("/tmp_dir_test/temp_test_07.yml");
-        PDI_init(PC_get(conf, ".pdi"));
-    }
-    else {
-        // Local Linux: Use classic file-based logic without placeholder replacement, classic use for local CI
-        if (argc < 2) {
-            fprintf(stderr, "Missing path to test_07.yml\n");
-            return 1;
-        }
-        PC_tree_t conf = PC_parse_path(argv[1]);
-        PDI_init(PC_get(conf, ".pdi"));
-    }
+	}
+	else if (is_github_actions) {
+		// GitHub Actions (online CI): Use file-based logic with placeholder replacement, workaround for online CI on Linux
+		if (argc < 2) {
+			fprintf(stderr, "Missing path to test_07.yml\n");
+			return 1;
+		}
+		const char* yaml_path = argv[1];
+		char data_path[1024];
+		snprintf(data_path, sizeof(data_path), "%.*s_data.yml", (int)(strlen(yaml_path) - 4), yaml_path);
+		if (replace_placeholder_in_file(yaml_path, data_path) != 0) {
+			fprintf(stderr, "Failed to modify the root YAML file\n");
+			return 1;
+		}
+		PC_tree_t conf = PC_parse_path("/tmp_dir_test/temp_test_07.yml");
+		PDI_init(PC_get(conf, ".pdi"));
+	}
+	else {
+		// Local Linux: Use classic file-based logic without placeholder replacement, classic use for local CI
+		if (argc < 2) {
+			fprintf(stderr, "Missing path to test_07.yml\n");
+			return 1;
+		}
+		PC_tree_t conf = PC_parse_path(argv[1]);
+		PDI_init(PC_get(conf, ".pdi"));
+	}
 
 	int input = 0;
 	PDI_expose("input", &input, PDI_OUT);
