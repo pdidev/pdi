@@ -309,18 +309,18 @@ TEST_F(ContextTest, iterator_operator_equal_equal)
  */
 TEST_F(ContextTest, check_duplicate)
 {
-    // Test 1: First call should succeed
-    ASSERT_NO_THROW(this->test_context->check_duplicate("test_variable"));
+	// Test 1: First call should succeed
+	ASSERT_NO_THROW(this->test_context->check_duplicate("test_variable"));
 
-    // Test 2: Second call with same name should throw System_error
-    EXPECT_THROW(
-        this->test_context->check_duplicate("test_variable"),
-        System_error
-    );
+	// Test 2: Second call with same name should throw System_error
+	EXPECT_THROW(
+	    this->test_context->check_duplicate("test_variable"),
+	    System_error
+	);
 
-    // Test 3: Different names should both succeed
-    ASSERT_NO_THROW(this->test_context->check_duplicate("another_variable"));
-    ASSERT_NO_THROW(this->test_context->check_duplicate("yet_another_variable"));
+	// Test 3: Different names should both succeed
+	ASSERT_NO_THROW(this->test_context->check_duplicate("another_variable"));
+	ASSERT_NO_THROW(this->test_context->check_duplicate("yet_another_variable"));
 }
 
 /*
@@ -334,7 +334,7 @@ TEST_F(ContextTest, check_duplicate)
 TEST_F(ContextTest, load_pdi_config_duplicate_data_via_inclusion)
 {
 	PC_tree_t main_conf = PC_parse_string("data: {scalar_data: int}");
-    PC_tree_t included_conf = PC_parse_string("data: {scalar_data: double}");
+	PC_tree_t included_conf = PC_parse_string("data: {scalar_data: double}");
 
 	auto* ctx = static_cast<Global_context*>(this->test_context.get());
 
@@ -342,11 +342,8 @@ TEST_F(ContextTest, load_pdi_config_duplicate_data_via_inclusion)
 	ASSERT_NO_THROW(ctx->load_pdi_config(main_conf));
 
 	// Test 2: Defining the same variable again in a second load is an issue and should throw System_error
-	EXPECT_THROW(
-		ctx->load_pdi_config(included_conf),
-		System_error
-	);
+	EXPECT_THROW(ctx->load_pdi_config(included_conf), System_error);
 
-    PC_tree_destroy(&main_conf);
-    PC_tree_destroy(&included_conf);
+	PC_tree_destroy(&main_conf);
+	PC_tree_destroy(&included_conf);
 }

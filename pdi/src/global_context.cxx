@@ -63,22 +63,22 @@ namespace {
 
 void load_data(Global_context& ctx, PC_tree_t node, bool is_metadata)
 {
-    int map_len = len(node);
+	int map_len = len(node);
 
-    for (int map_id = 0; map_id < map_len; ++map_id) {
-        std::string name = to_string(PC_get(node, "{%d}", map_id));
+	for (int map_id = 0; map_id < map_len; ++map_id) {
+		std::string name = to_string(PC_get(node, "{%d}", map_id));
 
-        ctx.check_duplicate(name);
+		ctx.check_duplicate(name);
 
-        Data_descriptor& dsc = ctx.desc(name.c_str());
-        dsc.metadata(is_metadata);
-        dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
-    }
+		Data_descriptor& dsc = ctx.desc(name.c_str());
+		dsc.metadata(is_metadata);
+		dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
+	}
 
-    if (is_metadata)
-        ctx.logger().trace("Loaded {} metadata", map_len);
-    else
-        ctx.logger().trace("Loaded {} data", map_len);
+	if (is_metadata)
+		ctx.logger().trace("Loaded {} metadata", map_len);
+	else
+		ctx.logger().trace("Loaded {} data", map_len);
 }
 
 } // namespace
@@ -118,7 +118,7 @@ void Global_context::load_pdi_config(PC_tree_t conf)
 
 	PC_tree_t includes = PC_get(root, ".include");
 	if (!PC_status(includes)) {
-		PDI::each(includes, [&](PC_tree_t yaml_subfile){ this->load_pdi_config(PC_parse_path((PDI::to_string(yaml_subfile)).c_str())); });
+		PDI::each(includes, [&](PC_tree_t yaml_subfile) { this->load_pdi_config(PC_parse_path((PDI::to_string(yaml_subfile)).c_str())); });
 	}
 
 	Datatype_template::load_user_datatypes(*this, PC_get(root, ".types"));
@@ -249,7 +249,7 @@ void Global_context::check_duplicate(const std::string& name)
 	if (!m_defined.insert(name).second) {
 		// throw System_error instead of std::runtime_error to use assert for test on expected error
 		throw System_error("Duplicate definition of '{}'", name);
-    }
+	}
 }
 
 Global_context::~Global_context()

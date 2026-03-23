@@ -41,58 +41,58 @@ struct Record_data {
 } typedef Record_data;
 
 int replace_placeholder_in_file(const char *file_path, const char *replace_str) {
-    FILE *file = fopen(file_path, "r");
-    if (!file) {
-        perror("Failed to open file");
-        return 1;
-    }
-    FILE *temp_file = fopen(TEMP_FILE_PATH, "w");
-    if (!temp_file) {
-        perror("Failed to open temp file");
-        fclose(file);
-        return 1;
-    }
-    char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), file)) {
-        char *pos = strstr(line, PLACEHOLDER);
-        if (pos) {
-            fwrite(line, 1, pos - line, temp_file);
-            fwrite(replace_str, 1, strlen(replace_str), temp_file);
-            fwrite(pos + strlen(PLACEHOLDER), 1, strlen(pos) - strlen(PLACEHOLDER), temp_file);
-        } else {
-            fputs(line, temp_file);
-        }
-    }
-    fclose(file);
-    fclose(temp_file);
-    printf("Modified YAML written to: %s\n", TEMP_FILE_PATH);
-    return 0;
+	FILE *file = fopen(file_path, "r");
+	if (!file) {
+		perror("Failed to open file");
+		return 1;
+	}
+	FILE *temp_file = fopen(TEMP_FILE_PATH, "w");
+	if (!temp_file) {
+		perror("Failed to open temp file");
+		fclose(file);
+		return 1;
+	}
+	char line[MAX_LINE_LENGTH];
+	while (fgets(line, sizeof(line), file)) {
+		char *pos = strstr(line, PLACEHOLDER);
+		if (pos) {
+			fwrite(line, 1, pos - line, temp_file);
+			fwrite(replace_str, 1, strlen(replace_str), temp_file);
+			fwrite(pos + strlen(PLACEHOLDER), 1, strlen(pos) - strlen(PLACEHOLDER), temp_file);
+		} else {
+			fputs(line, temp_file);
+		}
+	}
+	fclose(file);
+	fclose(temp_file);
+	printf("Modified YAML written to: %s\n", TEMP_FILE_PATH);
+	return 0;
 }
 
 int main(int argc, char* argv[])
 {
 	// --- workaround for online CI
-	// if (argc < 2) {
-	// 	fprintf(stderr, "Missing path to test_07.yml\n");
-	// 	return 1;
-	// }
-	// const char *yaml_path = argv[1];
-	// char data_path[1024];
-	// snprintf(data_path, sizeof(data_path),
-	// 		"%.*s_data.yml",
-	// 		(int)(strlen(yaml_path) - 4),
-	// 		yaml_path);
-	// if (replace_placeholder_in_file(yaml_path, data_path) != 0) {
-	// 	fprintf(stderr, "Failed to modify the root YAML file\n");
-	// 	return 1;
-	// }
-	// PC_tree_t conf = PC_parse_path("/tmp_dir_test/temp_test_07.yml");
-	// PDI_init(PC_get(conf, ".pdi"));
+	if (argc < 2) {
+		fprintf(stderr, "Missing path to test_07.yml\n");
+		return 1;
+	}
+	const char *yaml_path = argv[1];
+	char data_path[1024];
+	snprintf(data_path, sizeof(data_path),
+			"%.*s_data.yml",
+			(int)(strlen(yaml_path) - 4),
+			yaml_path);
+	if (replace_placeholder_in_file(yaml_path, data_path) != 0) {
+		fprintf(stderr, "Failed to modify the root YAML file\n");
+		return 1;
+	}
+	PC_tree_t conf = PC_parse_path("/tmp_dir_test/temp_test_07.yml");
+	PDI_init(PC_get(conf, ".pdi"));
 	// ---
 
 	// --- classic use for local CI
-	PC_tree_t conf = PC_parse_path(argv[1]);
-	PDI_init(PC_get(conf, ".pdi"));
+	// PC_tree_t conf = PC_parse_path(argv[1]);
+	// PDI_init(PC_get(conf, ".pdi"));
 	// ---
 
 	int input = 0;
