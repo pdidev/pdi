@@ -27,10 +27,10 @@
 
 #include "test.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #define MAX_LINE_LENGTH 1024
 #define PLACEHOLDER "/<full>/<path>/<to>/<test_07_data.yml>"
@@ -41,7 +41,7 @@ struct Record_data {
 	int* b;
 } typedef Record_data;
 
-int replace_placeholder_in_file(const char* file_path, const char *replace_str)
+int replace_placeholder_in_file(const char* file_path, const char* replace_str)
 {
 	FILE* file = fopen(file_path, "r");
 	if (!file) {
@@ -71,61 +71,65 @@ int replace_placeholder_in_file(const char* file_path, const char *replace_str)
 	return 0;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 	// Detect if running in GitHub Actions
 	const char* github_actions = getenv("GITHUB_ACTIONS");
 	bool is_github_actions = (github_actions != NULL);
+	const char* ci = getenv("CI");
+	printf("CI=%s\n", ci ? ci : "null");
 
-	// Detect macOS
-	#ifdef __APPLE__
-		bool is_macOS = true;
-	#else
-		bool is_macOS = false;
-	#endif
+// Detect macOS
+#ifdef __APPLE__
+	bool is_macOS = true;
+#else
+	bool is_macOS = false;
+#endif
 
 	if (is_macOS) {
+		printf("is_macOS=%s\n", is_macOS ? "true" : "false");
 		// macOS (local CI): Use PC_parse_string to emulate the test, workaround for online CI on macOS
-	static const char* CONFIG_YAML =
-		"pdi:\n"
-		"  logging: trace\n"
-		"  metadata:\n"
-		"    input: int\n"
-		"  data:\n"
-		"    scalar_data: int\n"
-		"    array_data:\n"
-		"      type: array\n"
-		"      subtype: int\n"
-		"      size: 8\n"
-		"      subsize: 4\n"
-		"      start: 2\n"
-		"    record_data:\n"
-		"      type: record\n"
-		"      buffersize: 16\n"
-		"      members:\n"
-		"        a:\n"
-		"          disp: 0\n"
-		"          type: int\n"
-		"        b:\n"
-		"          disp: 8\n"
-		"          type: pointer\n"
-		"          subtype: int\n"
-		"  plugins:\n"
-		"    serialize:\n"
-		"      scalar_data: scalar_data_serialized\n"
-		"      array_data: array_data_serialized\n"
-		"      record_data: record_data_serialized\n"
-		"    decl_hdf5:\n"
-		"      - file: serialize_test_06.h5\n"
-		"        when: '$input=0'\n"
-		"        write: [scalar_data_serialized, array_data_serialized, record_data_serialized]\n"
-		"      - file: serialize_test_06.h5\n"
-		"        when: '$input=1'\n"
-		"        read: [scalar_data_serialized, array_data_serialized, record_data_serialized]";
+		static const char* CONFIG_YAML =
+			"pdi:\n"
+			"  logging: trace\n"
+			"  metadata:\n"
+			"    input: int\n"
+			"  data:\n"
+			"    scalar_data: int\n"
+			"    array_data:\n"
+			"      type: array\n"
+			"      subtype: int\n"
+			"      size: 8\n"
+			"      subsize: 4\n"
+			"      start: 2\n"
+			"    record_data:\n"
+			"      type: record\n"
+			"      buffersize: 16\n"
+			"      members:\n"
+			"        a:\n"
+			"          disp: 0\n"
+			"          type: int\n"
+			"        b:\n"
+			"          disp: 8\n"
+			"          type: pointer\n"
+			"          subtype: int\n"
+			"  plugins:\n"
+			"    serialize:\n"
+			"      scalar_data: scalar_data_serialized\n"
+			"      array_data: array_data_serialized\n"
+			"      record_data: record_data_serialized\n"
+			"    decl_hdf5:\n"
+			"      - file: serialize_test_06.h5\n"
+			"        when: '$input=0'\n"
+			"        write: [scalar_data_serialized, array_data_serialized, record_data_serialized]\n"
+			"      - file: serialize_test_06.h5\n"
+			"        when: '$input=1'\n"
+			"        read: [scalar_data_serialized, array_data_serialized, record_data_serialized]";
 
 		PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 		PDI_init(conf);
-	}
-	else if (is_github_actions) {
+	} else if (is_github_actions) {
+		printf("GITHUB_ACTIONS=%s\n", github_actions);
 		// GitHub Actions (online CI): Use file-based logic with placeholder replacement, workaround for online CI on Linux
 		if (argc < 2) {
 			fprintf(stderr, "Missing path to test_07.yml\n");
@@ -140,8 +144,8 @@ int main(int argc, char* argv[]) {
 		}
 		PC_tree_t conf = PC_parse_path("/tmp_dir_test/temp_test_07.yml");
 		PDI_init(PC_get(conf, ".pdi"));
-	}
-	else {
+	} else {
+		printf("GITHUB_ACTIONS is NOT set\n");
 		// Local Linux: Use classic file-based logic without placeholder replacement, classic use for local CI
 		if (argc < 2) {
 			fprintf(stderr, "Missing path to test_07.yml\n");
@@ -196,5 +200,6 @@ int main(int argc, char* argv[]) {
 	assert(b == b_read);
 
 	PDI_finalize();
+	PC_tree_destroy(&conf);
 	return 0;
 }
