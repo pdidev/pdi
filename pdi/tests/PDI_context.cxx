@@ -313,10 +313,7 @@ TEST_F(ContextTest, check_duplicate)
 	ASSERT_NO_THROW(this->test_context->check_duplicate("test_variable"));
 
 	// Test 2: Second call with same name should throw System_error
-	EXPECT_THROW(
-	    this->test_context->check_duplicate("test_variable"),
-	    System_error
-	);
+	EXPECT_THROW(this->test_context->check_duplicate("test_variable"), System_error);
 
 	// Test 3: Different names should both succeed
 	ASSERT_NO_THROW(this->test_context->check_duplicate("another_variable"));
