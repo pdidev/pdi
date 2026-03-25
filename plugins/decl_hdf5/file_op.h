@@ -129,6 +129,7 @@ public:
 
 #ifdef H5_HAVE_SUBFILING_VFD
 	PDI::Expression subfiling() const { return m_subfiling; }
+
 	PDI::Expression subfiling_policy() const { return m_subfiling_policy; }
 #endif
 #endif
