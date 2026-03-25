@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef VELOC_PLUGIN_H
-#define VELOC_PLUGIN_H
+#ifndef VELOC_WRAPPER_H
+#define VELOC_WRAPPER_H
 
 #include <pdi/plugin.h>
 #include <pdi/context.h>
+#include <pdi/context_proxy.h>
 #include <pdi/expression.h>
 #include <veloc.h>
 
@@ -36,51 +37,20 @@
 #include <unordered_map>
 #include <string>
 #include <algorithm>
+#include <optional>
 
-using PDI::Context;
-using PDI::each;
-using PDI::opt_each;
-using PDI::Error;
-using PDI::Config_error;
-using PDI::Plugin;
-using PDI::Ref;
-using PDI::Ref_r;
-using PDI::to_long;
-using PDI::to_string;
-using std::string;
-using std::unordered_map;
-using std::vector;
-using std::cout;
-using std::endl;
+void init(MPI_Comm comm, std::string veloc_file);
 
-class veloc_plugin : public Plugin
-{
-private:
-    string veloc_file; 
-    PDI::Expression when;
-    long int failure_value;
-    string cp_label; 
-    string iter_name; 
-    vector<string> protected_data; 
-    bool restore_from_last_checkpoint;
-    unordered_map<string, bool> register_memory_regions;
-    PC_tree_t saved_config;
-    string checkpoint_event_name; 
-    long int recovered_iter;
-    long int cp_counter;
+void protect_data(PDI::Context& ctx,int id, void * ptr, size_t n, size_t sub_bytes,
+		const std::string& name);
 
-public:
-    veloc_plugin(Context& ctx, PC_tree_t config);
+void unprotect_data(PDI::Context& ctx, int id);
 
-    ~veloc_plugin();
+int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> when, 
+	std::string label, std::string iter_name);
 
-private:
-    void write_checkpoint();
+int load_checkpoint(PDI::Context& ctx, std::string label);
 
-    void load_checkpoint();
+void finalize();
 
-    void event(const std::string& event);
-    
-    bool memoryRegionsWereRegistered();
-};
 #endif 

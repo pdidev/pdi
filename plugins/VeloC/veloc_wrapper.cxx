@@ -1,6 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,268 +23,102 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <pdi/plugin.h>
+#include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
+#include <pdi/context_proxy.h>
+#include <pdi/plugin.h>
 #include <pdi/expression.h>
-#include <veloc.h>
-#include <fstream>
-#include <iostream>
+#include <pdi/data_descriptor.h>
+#include <pdi/datatype.h>
+#include <pdi/error.h>
+#include <pdi/ref_any.h>
+
+#include <optional>
+
+
+#include "veloc_wrapper.h"
 
 using PDI::Context;
-using PDI::each;
-using PDI::opt_each;
-using PDI::Error;
-using PDI::Config_error;
-using PDI::Plugin;
-using PDI::Ref;
 using PDI::Ref_r;
-using PDI::to_long;
-using PDI::to_string;
+
 using std::string;
-using std::unordered_map;
-using std::vector;
-using std::cout;
-using std::endl;
-using std::tie; 
 
 
-veloc_plugin::veloc_plugin(Context& ctx, PC_tree_t config)
-    : Plugin(ctx), failure_value(-1), when(1L), restore_from_last_checkpoint(false), 
-    recovered_iter(-1), cp_counter(0)
-{
-    saved_config = PC_get(config, ".checkpoint_data");   
+void init(MPI_Comm comm, std::string veloc_file){
 
-    // pass 1
+	if(VELOC_Init(comm, veloc_file.c_str()) != VELOC_SUCCESS) {
+		printf("Error initializing VELOC! Aborting...\n");
+		exit(2);
+	}
+}
 
-    opt_each(config, [&](PC_tree_t item) { 
-        each(item, [&](PC_tree_t key_tree, PC_tree_t value) {
-            
-            string key = to_string(key_tree);
-            
-            if (key == "failure") {
-                failure_value = to_long(value);
-            } 
-            else if (key == "checkpoint_label") {
-                cp_label = to_string(value);
-            }
-            else if (key == "veloc_cfg_path"){
-                veloc_file = to_string(value);
-            }
-            else if (key == "when"){
-                when = to_string(value);
-            }
-            else if (key == "checkpoint_data"){
-                // parsed in pass 2 
-            }
-            else if(key == "iteration_name_in_cp_file" ){
-                iter_name = to_string(value);
-            }
-            else if(key == "on_event" ){
-                checkpoint_event_name = to_string(value);
-            }
-            else {
-                throw Config_error{config, "Unknown key in VeloC plugin configuration: `{}'", key};
-            }
-        });
-    });
+void protect_data(PDI::Context& ctx, int id, void * ptr, size_t n, size_t sub_bytes,
+			const string& name){
 
-    // pass 2 
+	VELOC_Mem_protect(id, ptr, n, sub_bytes);   
+	ctx.logger().info("Registered {} at index {} with size = {} bytes\n", 
+        name.c_str(), id, (n*sub_bytes));
 
-    PC_tree_t protect_tree = PC_get(config, ".checkpoint_data");
+}
+
+void unprotect_data(PDI::Context& ctx, int id){
+
+	VELOC_Mem_unprotect(id);   
     
-    if(failure_value==1){
-        restore_from_last_checkpoint = true; 
-    }
-
-    if (!PC_status(PC_get(protect_tree, "[0]"))) { // it's a list of names only
-        each(protect_tree, [&](PC_tree_t tree) {
-
-            string data_name = to_string(tree);
-            
-            protected_data.push_back(data_name);
-
-            register_memory_regions[data_name] = true;
-        });
-    }
-
-    // conformity checks 
-
-    if(failure_value!=0 && failure_value!=1){
-        throw Error{PDI_ERR_CONFIG, 
-            "VeloC plugin: the failure key must be 1 or 0 depening if a failure occurred or not"};
-    }
-
-    if (cp_label.empty()){
-        throw Error{PDI_ERR_CONFIG, 
-            "VeloC plugin: The name of the checkpoint label must be defined"};
-    }
-
-    if (checkpoint_event_name.empty()){
-        throw Error{PDI_ERR_CONFIG, 
-            "VeloC plugin: The name of the checkpoint event must be defined"};
-    }
-
-    if (protected_data.size() ==0 ){
-        throw Error{PDI_ERR_CONFIG, 
-            "VeloC plugin: The data to be included in checkpoints must be defined"};
-    }
-
-    if(iter_name.empty()){
-        throw Error{PDI_ERR_CONFIG, 
-            "VeloC plugin: The name of the iteration number in the PDI data store must be defined"};
-    }
-
-    if (std::find(protected_data.begin(), protected_data.end(), 
-            iter_name) == protected_data.end()){  
-        throw Error{PDI_ERR_CONFIG, 
-            "VeloC plugin: The iteration number must be included in checkpoint_data"};
-    }
-
-    if (VELOC_Init(MPI_COMM_WORLD, veloc_file.c_str()) != VELOC_SUCCESS) {
-        printf("Error initializing VELOC! Aborting...\n");
-        exit(2);
-    }
-
-    ctx.callbacks().add_event_callback([this](const std::string& name) { 
-
-        event(name); 
-    });
-
-    ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
-
-        // Check if it is a data to be included in/ to be restored from checkpoints
-        auto it_vec = std::find(protected_data.begin(), protected_data.end(), name);
-        if (it_vec == protected_data.end()) {
-            return;
-        }
-        auto it_map = register_memory_regions.find(name);
-        if (it_map == register_memory_regions.end()) {
-            return;
-        }
-
-        size_t index = std::distance(protected_data.begin(), it_vec);
-
-        if (it_map->second){ // if data structure has not been registered yet 
-            size_t n = 1;  
-            size_t bytes; 
-            Ref_r read_ref{ref};
-            void* ptr = const_cast<void*>(read_ref.get());
-            
-            if(ref.type()->dense()){
-                bytes = ref.type()-> datasize();
-            }
-            else{
-                bytes = ref.type()-> buffersize();
-            }
-                
-            if(auto* array_type = // If Datatype is an array 
-                dynamic_cast<const PDI::Array_datatype*>(ref.type().get())) { 
-                n = array_type->subsize();
-            }
-
-            size_t sub_bytes = bytes/n; 
-            
-            // register data structure in VeloC 
-            VELOC_Mem_protect(index, ptr, n, sub_bytes);   
-            context().logger().info("Registered {} at index {} with size = {} bytes\n", 
-                name.c_str(), index, (n*sub_bytes));
-            
-            register_memory_regions[name] = false;
-        }
-
-        if(restore_from_last_checkpoint && memoryRegionsWereRegistered()){
-
-            load_checkpoint();
-
-        }
-
-    });
-}
-
-veloc_plugin::~veloc_plugin(){
-    VELOC_Finalize(1); 
-    context().logger().info("{} checkpoints have been written", cp_counter);
-    context().logger().info("Closing plugin");
-}
-
-
-void veloc_plugin::write_checkpoint(){
-
-    if(when.to_long(context())){
-
-        Ref_r ref_r_iter = context().desc(iter_name).ref();
-
-        auto i = ref_r_iter.scalar_value<int>();
-
-        if (VELOC_Checkpoint(cp_label.c_str(), i) != VELOC_SUCCESS) {
-            printf("Error checkpointing! Aborting...\n");
-            exit(2);
-        }
-
-        cp_counter++;
-    }
-}
-
-void veloc_plugin::load_checkpoint(){
-    
-    // restart from last checkpoint (because we pass 0)
-    int v = VELOC_Restart_test(cp_label.c_str(), 0); 
-    if (v > 0) {
-    printf("Previous checkpoint found at iteration %d, initiating restart...\n", v);
-    // v can be any version, independent of what VELOC_Restart_test is returning
-        if (VELOC_Restart(cp_label.c_str(), v) != VELOC_SUCCESS) {
-            printf("Error restarting from checkpoint! Aborting...\n");
-            exit(2);
-        }
-    }
-
-    restore_from_last_checkpoint = false; 
-    recovered_iter = v;
+	ctx.logger().info("Unregistered id {}\n", id);
 
 }
+
+int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> when, std::string label, std::string iter_name){
+
+	if(when.has_value() && !when->to_long(ctx)){
+        return 0;
+    }
+
+	Ref_r ref_r_iter = ctx.desc(iter_name).ref();
+	auto v = ref_r_iter.scalar_value<int>();
+
+	std::cout << " value of iter_name is " << v << std::endl;
 	
-void veloc_plugin::event(const std::string& event)
-{
-    if (event == "assert_nr_checkpoints"){
+	if (VELOC_Checkpoint(label.c_str(), v) != VELOC_SUCCESS) {
+		std::cout << "Error checkpointing! Aborting...\n" << std::endl;
+		exit(2);
+	}
 
-        if (event == checkpoint_event_name) {
-            // continue 
-        }
-        else{
-            std::ofstream f("veloc_cp_count.txt");
-            f << cp_counter;  
-            f.flush(); 
-            cout << "cp_counter is = " << cp_counter<< endl; 
-        }
-    }
+	return 1;
 
-    // else 
-    if(event == checkpoint_event_name){
-
-        if(!memoryRegionsWereRegistered()){
-
-            throw Error{PDI_ERR_VALUE, 
-                    "VeloC plugin: Not all data to be included in checkpoints "
-                        "has been exposed to PDI before calling the checkpoint event"}; 
-        }
-
-        Ref_r ref_r_iter = context().desc(iter_name).ref();
-
-        auto new_iter = ref_r_iter.scalar_value<int>();
-        
-        // Avoid overwriting the checkpoint that has just been loaded 
-        if(new_iter!= recovered_iter){ 
-            write_checkpoint(); 
-        }   
-    }
 }
 
-bool veloc_plugin::memoryRegionsWereRegistered() {
-
-    return std::all_of(register_memory_regions.begin(), register_memory_regions.end(),
-                    [](const auto& pair) { return pair.second == false; });
-}
-
-PDI_PLUGIN(veloc)
+int load_checkpoint(PDI::Context& ctx, std::string label){
 	
+	// restart from last checkpoint (because we pass 0)
+	int version = VELOC_Restart_test(label.c_str(), 0);
+	// while(1){ 
+		
+	//     if (v == VELOC_FAILURE) {
+	//             printf("No valid checkpoint found.\n");
+	//             exit(1);
+	//     }
+
+	if (version > 0) {
+	std::cout << "Previous checkpoint found at iteration " << version << " initiating restart..." << std::endl; 
+	// v can be any version, independent of what VELOC_Restart_test is returning
+	
+	if (VELOC_Restart(label.c_str(), version) != VELOC_SUCCESS) {
+		std::cout << "Error restarting! Aborting ..." << std::endl;   
+		exit(2);
+	}
+	// else {
+	// 	break; 
+	// }
+	}
+// }
+	return version; 
+}
+
+
+void finalize(){
+	VELOC_Finalize(1); // 1 because wait for pending checkpoints to flush if there are any 
+}
+
 

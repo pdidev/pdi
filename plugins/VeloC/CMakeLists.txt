@@ -14,7 +14,9 @@ list(APPEND CMAKE_PREFIX_PATH "${HOME}/.local/share/veloc/cmake")
 find_package(veloc REQUIRED)
 
 add_library(pdi_veloc_plugin MODULE
-		veloc_wrapper.cxx)
+		veloc_wrapper.cxx
+        veloc.cxx
+        veloc_cfg.cxx)
 
 target_link_libraries(pdi_veloc_plugin 
     PUBLIC 

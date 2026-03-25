@@ -124,13 +124,13 @@ int main(int argc, char* argv[])
     cout << "count is = " << count << endl; 
     std::filesystem::remove("veloc_cp_count.txt");
 
-    assert(count == 4 && "write_checkpoint() was called exactly 3 times");
+    assert(count == 4 && "write_checkpoint() was called exactly 4 times");
     assert(exists("./persdir/test-0-0.dat") && "Test 1 failed : Checkpoint file not found/");
     assert(exists("./persdir/test-0-10.dat") && "Test 1 failed : Checkpoint file not found/");
     assert(exists("./persdir/test-0-20.dat") && "Test 1 failed : Checkpoint file not found/");
     assert(exists("./persdir/test-0-30.dat") && "Test 1 failed : Checkpoint file not found/");
 
-    cout << "Test 0 passed " << endl;
+    cout << "Test 0a passed " << endl;
 
     PDI_finalize();
     MPI_Finalize();

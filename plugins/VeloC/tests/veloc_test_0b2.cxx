@@ -32,18 +32,12 @@
 #include <filesystem>
 #include <cassert>
 #include <fstream>    
-#include <vector>   
+#include <vector>     
 #include <sys/stat.h>    
-#include <istream>        
-#include <ostream>  
-#include <filesystem>
 
 using std::filesystem::exists;
 using std::cout;
 using std::endl;
-
-const int FAILURE_ITER = 30;
-const int MAX_ITER = 60;
 
 const char* CONFIG_YAML =
   "pdi:                                                            \n"
@@ -62,7 +56,8 @@ const char* CONFIG_YAML =
   "      when: '$ii % 10 = 0'                                      \n"
   "      on_event: \"checkpoint\"                                  \n";
 
-
+const int FAILURE_ITER = 20;
+const int MAX_ITER = 60;
 
 int main(int argc, char* argv[])
 {
@@ -73,7 +68,7 @@ int main(int argc, char* argv[])
 
     // check that directories exist 
     const char* dirs[] = {"./scratchdir/", "./persdir/"};
-
+    
     for (int i = 0; i < 2; ++i) {
         if(!std::filesystem::exists(dirs[i])){
             cout << "Checkpoint directories not found. "<< 
@@ -82,17 +77,45 @@ int main(int argc, char* argv[])
         }
     }
 
-    double blue[10] = {0};
-    int ii = 0;
-    double red_at_failure[10] = {0, 29, 58, 87, 116, 145, 174, 203, 232, 261};
-    double blue_at_failure[10] = {1, 30, 59, 88, 117, 146, 175, 204, 233, 262};
 
-    int fds[2];
-    pipe(fds);
-    setenv("CP_COUNTER_FD", std::to_string(fds[1]).c_str(), 1);
+    // change last checkpoint to trigger checksum error 
+    if (!std::filesystem::exists("./persdir/test-0-30.dat")) {
+        std::cerr << "ERROR: test-0-30.dat does not exist in persdir\n";
+        return 1;
+    }
 
+    std::ofstream file;
+    file.open("./persdir/test-0-30.dat", std::ios::app);
+    if (!file) {
+        std::cerr << "Error opening file!" << std::endl;
+        return 1;
+    }
+
+    // Append character to file to trigger checksum error 
+    std::string append_error = "#try123";
+    file << append_error;
+    file.flush(); 
+    file.close();
+
+
+    std::ofstream file2;
+    file2.open("./scratchdir/test-0-30.dat", std::ios::app);
+    if (!file2) {
+        std::cerr << "Error opening file!" << std::endl;
+        return 1;
+    }
+    file2 << append_error;
+    file2.flush(); 
+    file2.close();
+    
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
     PDI_init(PC_get(conf, ".pdi"));
+
+    double red[10] = {0};
+    double blue[10] = {1};
+    int ii = 0;
+    double red_at_failure[10] = {0, 20, 40, 60, 80, 100, 120, 140, 160, 180};
+    double blue_at_failure[10] = {1, 21, 41, 61, 81, 101, 121, 141, 161, 181};
 
     for (; ii < MAX_ITER; ++ii) {
 
@@ -121,7 +144,6 @@ int main(int argc, char* argv[])
         PDI_event("checkpoint");
     }
 
-
     PDI_multi_expose("finalization", 
             "ii", &ii, PDI_INOUT,
             "red", red, PDI_INOUT,
@@ -139,13 +161,15 @@ int main(int argc, char* argv[])
     cout << "count is = " << count << endl; 
     std::filesystem::remove("veloc_cp_count.txt");
 
-    assert(count == 3 && "write_checkpoint() was called exactly 3 times");
-    assert(exists("./persdir/test-0-40.dat") && "Test 1 failed : Checkpoint file not found/");
-    assert(exists("./persdir/test-0-50.dat") && "Test 1 failed : Checkpoint file not found/");
-    assert(exists("./persdir/test-0-60.dat") && "Test 1 failed : Checkpoint file not found/");
+    assert(count == 4 && "write_checkpoint() was called exactly 4 times");
 
-    cout << "Test 0b passed " << endl;
-    
+    assert(exists("./persdir/test-0-0.dat") && "Test 1 failed : Checkpoint file not found/");
+    assert(exists("./persdir/test-0-10.dat") && "Test 1 failed : Checkpoint file not found/");
+    assert(exists("./persdir/test-0-20.dat") && "Test 1 failed : Checkpoint file not found/");
+    assert(exists("./persdir/test-0-30.dat") && "Test 1 failed : Checkpoint file not found/");
+
+    cout << "Test 0 passed " << endl;
+
     PDI_finalize();
     MPI_Finalize();
 
