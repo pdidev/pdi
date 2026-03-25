@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(paraconf_examples LANGUAGES C CXX)
+project(paraconf_examples LANGUAGES C)
 
 option(BUILD_FORTRAN "Enable Fortran support" ON)
 option(PARACONF_BUILD_FORTRAN "Enable Fortran support in Paraconf" "${BUILD_FORTRAN}")

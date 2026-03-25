@@ -111,21 +111,30 @@ void Global_context::finalize()
 
 void Global_context::load_pdi_config(PC_tree_t conf)
 {
-	PC_tree_t root = conf;
+	const char* current_path = PC_path(conf);
+	fs::path current_dir = fs::path(current_path).parent_path();
 
-	PC_tree_t includes = PC_get(root, ".include");
+	PC_tree_t includes = PC_get(conf, ".include");
 	if (!PC_status(includes)) {
-		PDI::each(includes, [&](PC_tree_t yaml_subfile) { this->load_pdi_config(PC_parse_path((PDI::to_string(yaml_subfile)).c_str())); });
+		PDI::each(includes, [&](PC_tree_t yaml_subfile) {
+			std::string include_path = PDI::to_string(yaml_subfile);
+
+			if (!fs::path(include_path).is_absolute()) {
+				include_path = (current_dir / include_path).string();
+			}
+
+			this->load_pdi_config(PC_parse_path(include_path.c_str()));
+		});
 	}
 
-	Datatype_template::load_user_datatypes(*this, PC_get(root, ".types"));
+	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
 
-	PC_tree_t metadata = PC_get(root, ".metadata");
+	PC_tree_t metadata = PC_get(conf, ".metadata");
 	if (!PC_status(metadata)) {
 		load_data(*this, metadata, true);
 	}
 
-	PC_tree_t data = PC_get(root, ".data");
+	PC_tree_t data = PC_get(conf, ".data");
 	if (!PC_status(data)) {
 		load_data(*this, data, false);
 	}

@@ -15,26 +15,29 @@ include(CTest)
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
 include(GNUInstallDirs)
-set(INSTALL_CMAKEDIR "${CMAKE_INSTALL_DATADIR}/paraconf/cmake" CACHE STRING "installation path for cmake files")
-set(PARACONF_INSTALL_CMAKEDIR "${INSTALL_CMAKEDIR}" CACHE STRING "installation path for cmake files of Paraconf") # not provided by GNUInstallDirs
 
 
 # Build options
-
-option(BUILD_SHARED_LIBS "Build shared libraries rather than static ones" ON)
-option(BUILD_EXAMPLE     "Build example" ON)
-option(BUILD_FORTRAN     "Enable Fortran support" ON)
-option(PARACONF_BUILD_EXAMPLE "Build Paraconf example" "${BUILD_EXAMPLE}")
-option(PARACONF_BUILD_FORTRAN "Enable Fortran support in Paraconf" "${BUILD_FORTRAN}")
-option(PARACONF_BUILD_TESTING "Enable Tests in Paraconf" "${BUILD_TESTING}")
-
-if("${PARACONF_BUILD_FORTRAN}")
-	enable_language(Fortran)
+if(DEFINED BUILD_EXAMPLE) # Use the non-namespaced BUILD_EXAMPLE as default if provided
+	option(PARACONF_BUILD_EXAMPLE    "Build Paraconf example" "${BUILD_EXAMPLE}")
 endif()
+option(BUILD_SHARED_LIBS "Build shared libraries rather than static ones" ON)
+option(BUILD_EXAMPLE     "Build example" "${BUILD_TESTING}")
+option(BUILD_FORTRAN     "Enable Fortran support" ON)
+set(   INSTALL_CMAKEDIR  "${CMAKE_INSTALL_DATADIR}/paraconf/cmake" CACHE STRING "installation path for cmake files")
+option(PARACONF_BUILD_FORTRAN    "Enable Fortran support in Paraconf" "${BUILD_FORTRAN}")
+option(PARACONF_BUILD_TESTING    "Enable Tests in Paraconf" "${BUILD_TESTING}")
+#else(NOT DEFINED BUILD_EXAMPLE) fallback to PARACONF_BUILD_TESTING as default
+option(PARACONF_BUILD_EXAMPLE    "Build Paraconf example" "${PARACONF_BUILD_TESTING}")
+#endif()
+set(   PARACONF_INSTALL_CMAKEDIR "${INSTALL_CMAKEDIR}" CACHE STRING "installation path for cmake files of Paraconf") # not provided by GNUInstallDirs
 
 
 # Dependencies
 
+if("${PARACONF_BUILD_FORTRAN}")
+	enable_language(Fortran)
+endif()
 find_package(Threads REQUIRED)
 find_package(yaml REQUIRED)
 
@@ -48,10 +51,24 @@ set(paraconf_VERSION_MAJOR "${CMAKE_MATCH_1}")
 set(paraconf_VERSION_MINOR "${CMAKE_MATCH_2}")
 set(paraconf_VERSION_PATCH "${CMAKE_MATCH_3}")
 set(paraconf_VERSION_MODIF "${CMAKE_MATCH_5}")
-if("git" STREQUAL "${paraconf_VERSION_MODIF}" OR "alpha" STREQUAL "${paraconf_VERSION_MODIF}")
+set(paraconf_VERSION_VARIANT 65535)
+if("git" STREQUAL "${paraconf_VERSION_MODIF}" OR "${paraconf_VERSION_MODIF}" MATCHES "(alpha|beta|rc)([0-9]*)")
+	if("git" STREQUAL "${paraconf_VERSION_MODIF}")
+		execute_process(COMMAND "${paraconf_SOURCE_DIR}/cmake/version-uid" "--nbdays" WORKING_DIRECTORY "${paraconf_SOURCE_DIR}" OUTPUT_VARIABLE paraconf_VERSION_VARIANT OUTPUT_STRIP_TRAILING_WHITESPACE)
+	else()
+		if("alpha" STREQUAL "${CMAKE_MATCH_1}")
+			set(paraconf_VERSION_VARIANT 65512)
+		elseif("beta" STREQUAL "${CMAKE_MATCH_1}")
+			set(paraconf_VERSION_VARIANT 65520)
+		elseif("rc" STREQUAL "${CMAKE_MATCH_1}")
+			set(paraconf_VERSION_VARIANT 65528)
+		endif()
+		math(EXPR paraconf_VERSION_VARIANT "${paraconf_VERSION_VARIANT} + 0${CMAKE_MATCH_2}")
+	endif()
 	execute_process(COMMAND "${paraconf_SOURCE_DIR}/cmake/version-uid" "${paraconf_VERSION_MODIF}" WORKING_DIRECTORY "${paraconf_SOURCE_DIR}" OUTPUT_VARIABLE paraconf_VERSION_MODIF OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 set(paraconf_VERSION "${paraconf_VERSION_MAJOR}.${paraconf_VERSION_MINOR}.${paraconf_VERSION_PATCH}${paraconf_VERSION_MODIF}")
+configure_file(include/paraconf_version.h.in paraconf_version.h @ONLY)
 
 
 # Libraries
@@ -82,7 +99,7 @@ install(TARGETS paraconf EXPORT PC_export
 	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Runtime NAMELINK_COMPONENT Development
 	INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
-install(FILES include/paraconf.h "${paraconf_BINARY_DIR}/paraconf_export.h"
+install(FILES include/paraconf.h "${paraconf_BINARY_DIR}/paraconf_export.h" "${paraconf_BINARY_DIR}/paraconf_version.h"
 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 	COMPONENT Development
 )

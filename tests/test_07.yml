@@ -1,7 +1,7 @@
 alpha: 0.125 # Can be loaded with `PC_double(PC_get(conf, ".alpha"), &alpha);` as this is the main YAML
 
 include:
-  - /opt/repositories/includeYamlQuater/pdi/tests/test_07_data.yml
+  - test_07_data.yml
 logging: trace
 metadata:
   input: int

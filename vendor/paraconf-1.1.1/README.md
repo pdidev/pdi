@@ -24,14 +24,15 @@ Paraconf depends on:
 Paraconf Fortran support depends on:
   * a Fortran-2003 compiler
 
-For example, you can get release 1.0.3, compile & install it with:
+For example, you can get release 1.0.4, compile & install it with:
 ```bash
-wget https://github.com/pdidev/paraconf/archive/1.0.3.tar.gz
-tar -xzf 1.0.3.tar.gz
-cmake -DCMAKE_INSTALL_PREFIX=/usr/ -B paraconf-build -S paraconf-1.0.3
+wget https://github.com/pdidev/paraconf/archive/1.0.4.tar.gz
+tar -xzf 1.0.4.tar.gz
+cmake -DCMAKE_INSTALL_PREFIX=/usr/ -B paraconf-build -S paraconf-1.0.4
 cmake --build paraconf-build
 ```
 
+[!TIP]
 Change `-DCMAKE_INSTALL_PREFIX=/usr/` to something else if you want to install
 somewhere else than in `/usr/`.
 

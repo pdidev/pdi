@@ -1,0 +1,53 @@
+/* Copyright (C) The Paraconf development team, see COPYRIGHT.md file at the
+ *               root of the project or at https://github.com/pdidev/paraconf
+ * 
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef PARACONF_VERSION_H__
+#define PARACONF_VERSION_H__
+
+#include <stdint.h>
+
+// clang-format off
+/// paraconf major revision number
+#define PARACONF_VERSION_MAJOR @paraconf_VERSION_MAJOR@
+/// paraconf minor revision number
+#define PARACONF_VERSION_MINOR @paraconf_VERSION_MINOR@
+/// paraconf patch revision number
+#define PARACONF_VERSION_PATCH @paraconf_VERSION_PATCH@
+/** paraconf version variant, such as pre-release
+ * - number of days since Jan. 01 2015 for a git revision
+ * - 65504 (2^16-32) + alpha number for an alpha release
+ * - 65512 (2^16-24) + beta number for a beta release
+ * - 65520 (2^16-16) + rc-number for a release candidate
+ * - 65535 (0xFFFF or 2^16-1) for a normal release
+ */
+#define PARACONF_VERSION_VARIANT @paraconf_VERSION_VARIANT@
+// clang-format on
+
+#define PARACONF_COMPUTE_VERSION_WITH_VARIANT(MAJOR, MINOR, PATCH, VARIANT)                                                                          \
+	((((uint64_t)(MAJOR)) << 48) | (((uint64_t)(MINOR)) << 32) | (((uint64_t)(PATCH)) << 16) | ((uint64_t)(VARIANT)))
+
+#define PARACONF_COMPUTE_VERSION(MAJOR, MINOR, PATCH) PARACONF_COMPUTE_VERSION_WITH_VARIANT(MAJOR, MINOR, PATCH, 0)
+
+#define PARACONF_UNTYPED_COMPUTE_VERSION_WITH_VARIANT(MAJOR, MINOR, PATCH, VARIANT) (((MAJOR) << 48) | ((MINOR) << 32) | ((PATCH) << 16) | (VARIANT))
+
+#define PARACONF_UNTYPED_COMPUTE_VERSION(MAJOR, MINOR, PATCH) PARACONF_UNTYPED_COMPUTE_VERSION_WITH_VARIANT(MAJOR, MINOR, PATCH, 65535)
+
+#define PARACONF_UNTYPED_VERSION PARACONF_UNTYPED_COMPUTE_VERSION_WITH_VARIANT(PARACONF_VERSION_MAJOR, PARACONF_VERSION_MINOR, PARACONF_VERSION_PATCH, PARACONF_VERSION_VARIANT)
+
+/** The version of paraconf as a 64 bit integer where:
+ * - the 16 upper bits represent the major revision number
+ * - the 16 following bits represent the minor revision number
+ * - the 16 following bits represent the patch revision number
+ * - the 16 lower bits can represent a variant such as pre-release
+ *   - number of days since Jan. 01 2015 for a git revision
+ *   - 65504 (2^16-32) + alpha number for an alpha release
+ *   - 65512 (2^16-24) + beta number for a beta release
+ *   - 65520 (2^16-16) + rc-number for a release candidate
+ *   - 65535 (0xFFFF or 2^16-1) for a normal release
+ */
+#define PARACONF_VERSION PARACONF_COMPUTE_VERSION_WITH_VARIANT(PARACONF_VERSION_MAJOR, PARACONF_VERSION_MINOR, PARACONF_VERSION_PATCH, PARACONF_VERSION_VARIANT)
+
+#endif // PARACONF_VERSION_H__

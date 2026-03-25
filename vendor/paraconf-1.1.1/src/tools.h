@@ -8,23 +8,24 @@
 #define TOOLS_H__
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "paraconf.h"
+#include "ypath.h"
 
 static inline PC_tree_t subtree(PC_tree_t tree, int key)
 {
-	tree.node = yaml_document_get_node(tree.document, key);
+	tree.node = yaml_document_get_node(&tree.pcdoc->document, key);
 	assert(tree.node);
 	return tree;
 }
 
-static inline int strlzcmp(const char *lstr, const char *zstr, size_t lstr_size)
+static inline int strlzcmp(const char* lstr, const char* zstr, size_t lstr_size)
 {
 	int res = strncmp(lstr, zstr, lstr_size);
-	if ( res ) return res;
-	if ( zstr[lstr_size] ) return -1;
+	if (res) return res;
+	if (zstr[lstr_size]) return -1;
 	return res;
 }
 

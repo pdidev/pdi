@@ -1,6 +1,5 @@
 <!--
-Copyright (C) The Paraconf development team, see COPYRIGHT.md file at the
-              root of the project or at https://github.com/pdidev/paraconf
+Copyright (C) The Paraconf development team, see below
 
 SPDX-License-Identifier: MIT
 -->
@@ -9,9 +8,9 @@ SPDX-License-Identifier: MIT
 
 The Paraconf project licencing information follows the REUSE specification.
 
-It is distributed under the BSD 3-Clause License whose full text is available in
-the LICENSES/MIT.txt file. A small number of files in this repository do not
-originate from the DDC developers. These files may have their own licences
+It is distributed under the MIT License whose full text is available in the 
+LICENSES/MIT.txt file. A small number of files in this repository do not 
+originate from the Paraconf developers. These files may have their own licenses
 which will be indicated in the headers.
 
 For the purpose of copyright, the Paraconf development team is defined as
