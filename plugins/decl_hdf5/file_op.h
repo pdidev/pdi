@@ -70,6 +70,7 @@ class File_op
 #ifdef H5_HAVE_SUBFILING_VFD
 	/// HDF5 subfiling
 	PDI::Expression m_subfiling = 0L;
+	PDI::Expression m_subfiling_policy = "STOP";
 #endif
 #endif
 
@@ -128,6 +129,7 @@ public:
 
 #ifdef H5_HAVE_SUBFILING_VFD
 	PDI::Expression subfiling() const { return m_subfiling; }
+	PDI::Expression subfiling_policy() const { return m_subfiling_policy; }
 #endif
 #endif
 

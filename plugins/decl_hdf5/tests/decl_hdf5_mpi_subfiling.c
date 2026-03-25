@@ -158,9 +158,7 @@ int main(int argc, char* argv[])
 	PDI_expose("input", &input, PDI_OUT);
 
 	///  Test that export/exchange works
-	PDI_expose("input", &input, PDI_OUT);
-	PDI_expose("reals", &reals, PDI_OUT); // output real
-	PDI_expose("values", &values, PDI_INOUT); // output integers
+	PDI_multi_expose("", "reals", &reals, PDI_OUT, "values", &values, PDI_INOUT, NULL);
 
 	PDI_finalize();
 	PC_tree_destroy(&conf);

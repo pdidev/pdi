@@ -104,18 +104,18 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 						ctx.datatype(dset_type)
 					);
 				} else {
-					Config_error{key_tree, "Error in the definiion of dataset `{}' in datasets section.", dset_name_value};
+					Config_error{key_tree, "Error in the definition of dataset `{}' in datasets section.", dset_name_value};
 				}
 			});
 		} else if (key == "deflate") {
 			deflate = value;
 		} else if (key == "fletcher") {
 			fletcher = value;
-		} else if (key == "subfiling") {
 #ifdef H5_HAVE_SUBFILING_VFD
+		} else if (key == "subfiling") {
 			template_op.m_subfiling = to_string(value);
-#else 
-			ctx.logger().warn("Used HDF5 does not support subfiling. Subfiling setup ignored");
+		} else if (key == "subfiling_policy") {
+			template_op.m_subfiling_policy = to_string(value);
 #endif
 		} else if (key == "write") {
 			// will read in pass 2
@@ -247,6 +247,7 @@ File_op::File_op(const File_op& other)
 	m_communicator{other.m_communicator}
 #ifdef H5_HAVE_SUBFILING_VFD
 	, m_subfiling{other.m_subfiling}
+	, m_subfiling_policy{other.m_subfiling_policy}
 #endif
 	,
 #endif
@@ -316,12 +317,22 @@ void File_op::execute(Context& ctx)
 		use_mpio = true;
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
 #ifdef H5_HAVE_SUBFILING_VFD
-		if (subfiling().to_long(ctx)) {
+		if (auto subfiling_stripe_count = subfiling().to_long(ctx)) {
+			int provided;
+			MPI_Query_thread(&provided);
+			if (provided < MPI_THREAD_MULTIPLE) {
+				if (subfiling_policy().to_string(ctx) == "CONTINUE") {
+					subfiling_stripe_count = 1;
+					ctx.logger().warn("MPI is not initialized with MPI_THREAD_MULTIPLE. HDF5 subfiling is ignored");
+				} else {
+					throw System_error{"HDF5 subfiling requires MPI_THREAD_MULTIPLE (3). The provided level of thread support is {}", provided};
+				}
+			}
 			ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
 
 			H5FD_subfiling_config_t subf_config;
 			H5Pget_fapl_subfiling(file_lst, &subf_config);
-			subf_config.shared_cfg.stripe_count = subfiling().to_long(ctx);
+			subf_config.shared_cfg.stripe_count = subfiling_stripe_count;
 			H5Pset_fapl_subfiling(file_lst, &subf_config);
 		}
 #endif
