@@ -45,6 +45,9 @@
 
 #include "global_context.h"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 
 using std::exception;
 using std::forward_as_tuple;
@@ -109,12 +112,6 @@ void Global_context::finalize()
 void Global_context::load_pdi_config(PC_tree_t conf)
 {
 	PC_tree_t root = conf;
-	// if we have a node ".pdi", we go down inside it, otherwise we stay at this level
-	// this is used for both for the root yaml and for included yaml
-	PC_tree_t pdi = PC_get(conf, ".pdi");
-	if (!PC_status(pdi)) {
-		root = pdi;
-	}
 
 	PC_tree_t includes = PC_get(root, ".include");
 	if (!PC_status(includes)) {

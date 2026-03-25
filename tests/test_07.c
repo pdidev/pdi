@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
 
 		conf = PC_parse_string(CONFIG_YAML);
 		conf_created = true;
-		PDI_init(PC_get(conf, ".pdi"));
+		PDI_init(conf);
 	} else if (is_github_actions) {
 		printf("GITHUB_ACTIONS=%s\n", github_actions);
 		// GitHub Actions (online CI): Use file-based logic with placeholder replacement, workaround for online CI on Linux
@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 		}
 		conf = PC_parse_path("/tmp_dir_test/temp_test_07.yml");
 		conf_created = true;
-		PDI_init(PC_get(conf, ".pdi"));
+		PDI_init(conf);
 	} else {
 		printf("GITHUB_ACTIONS is NOT set\n");
 		// Local Linux: Use classic file-based logic without placeholder replacement, classic use for local CI
@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 		}
 		conf = PC_parse_path(argv[1]);
 		conf_created = true;
-		PDI_init(PC_get(conf, ".pdi"));
+		PDI_init(conf);
 	}
 
 	int input = 0;
