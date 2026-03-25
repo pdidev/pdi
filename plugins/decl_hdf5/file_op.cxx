@@ -117,7 +117,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #else 
 			ctx.logger().warn("Used HDF5 does not support subfiling. Subfiling setup ignored");
 #endif
-        } else if (key == "subfiling_policy") {
+		} else if (key == "subfiling_policy") {
 #ifdef H5_HAVE_SUBFILING_VFD
 			template_op.m_subfiling_policy = to_string(value);
 #endif
