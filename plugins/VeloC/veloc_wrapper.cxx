@@ -52,12 +52,9 @@ void init(MPI_Comm comm, std::string veloc_file){
 	}
 }
 
-void protect_data(PDI::Context& ctx, int id, void * ptr, size_t n, size_t sub_bytes,
-			const string& name){
+void protect_data(PDI::Context& ctx, int id, void * ptr, size_t n, size_t sub_bytes){
 
 	VELOC_Mem_protect(id, ptr, n, sub_bytes);   
-	ctx.logger().info("Registered {} at index {} with size = {} bytes\n", 
-        name.c_str(), id, (n*sub_bytes));
 
 }
 

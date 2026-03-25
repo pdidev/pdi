@@ -41,8 +41,7 @@
 
 void init(MPI_Comm comm, std::string veloc_file);
 
-void protect_data(PDI::Context& ctx,int id, void * ptr, size_t n, size_t sub_bytes,
-		const std::string& name);
+void protect_data(PDI::Context& ctx,int id, void * ptr, size_t n, size_t sub_bytes);
 
 void unprotect_data(PDI::Context& ctx, int id);
 

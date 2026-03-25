@@ -88,7 +88,7 @@ class veloc_plugin : public Plugin
                     continue;
                 }
 
-                protect_data(context(), data.first, const_cast<void*>(ref.get()), n, sub_bytes, data.second);   
+                protect_data(context(), data.first, const_cast<void*>(ref.get()), n, sub_bytes);   
 
             } 
             else{
@@ -120,7 +120,7 @@ class veloc_plugin : public Plugin
                     context().logger().warn("Sparse types are not supported (`{}')", data.second);
                     continue;
                 }
-                protect_data(context(),data.first, const_cast<void*>(ref.get()), n, sub_bytes, data.second);   
+                protect_data(context(),data.first, const_cast<void*>(ref.get()), n, sub_bytes);   
             } 
             else{
                 // context().logger().warn("Protected variable `{}' (id: {}) not available for writing", data.second, data.first);
