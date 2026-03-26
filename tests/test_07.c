@@ -83,11 +83,11 @@ int replace_all_placeholders(const char* input_path)
 		struct {
 			const char* placeholder;
 			const char* replacement;
-		} replacements[] 
+		} replacements[]
 			= {{PLACEHOLDER_MAIN_YAML, "/tmp_dir_test/test_07.yml"},
-			{PLACEHOLDER_ARRAY_DATA_YAML, "/tmp_dir_test/test_07_array_data.yml"},
-			{PLACEHOLDER_RECORD_DATA_YAML, "/tmp_dir_test/test_07_record_data.yml"},
-			{PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"}};
+		   {PLACEHOLDER_ARRAY_DATA_YAML, "/tmp_dir_test/test_07_array_data.yml"},
+		   {PLACEHOLDER_RECORD_DATA_YAML, "/tmp_dir_test/test_07_record_data.yml"},
+		   {PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"}};
 
 		for (size_t i = 0; i < sizeof(replacements) / sizeof(replacements[0]); ++i) {
 			char* pos = strstr(buffer, replacements[i].placeholder);
@@ -155,9 +155,9 @@ int main(int argc, char* argv[])
 		replace_all_placeholders(path_array);
 		replace_all_placeholders(path_record);
 		replace_all_placeholders(path_subdata);
-		printf("Parsing YAML: %s\n", TEMP_FILE_PATH);
+		printf("Parsing YAML: %s\n", "/tmp_dir_test/test_07.yml");
 		fflush(stdout);
-		conf = PC_parse_path(TEMP_FILE_PATH);
+		conf = PC_parse_path("/tmp_dir_test/test_07.yml");
 		conf_created = true;
 		PDI_init(conf);
 	} else {
