@@ -46,13 +46,15 @@ struct Record_data {
 int replace_all_placeholders(const char* input_path)
 {
 	FILE* in = fopen(input_path, "r");
-	if (!in) {
+	if (!in)
+	{
 		perror("open input");
 		return 1;
 	}
 
 	FILE* out = fopen(TEMP_FILE_PATH, "w");
-	if (!out) {
+	if (!out)
+	{
 		perror("open output");
 		fclose(in);
 		return 1;
@@ -60,8 +62,8 @@ int replace_all_placeholders(const char* input_path)
 
 	char line[MAX_LINE_LENGTH];
 
-	while (fgets(line, sizeof(line), in)) {
-
+	while (fgets(line, sizeof(line), in))
+	{
 		char buffer[MAX_LINE_LENGTH * 2];
 		strcpy(buffer, line);
 
@@ -75,7 +77,8 @@ int replace_all_placeholders(const char* input_path)
 			{PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"},
 		};
 
-		for (size_t i = 0; i < sizeof(replacements)/sizeof(replacements[0]); ++i) {
+		for (size_t i = 0; i < sizeof(replacements) / sizeof(replacements[0]); ++i)
+		{
 			char* pos = strstr(buffer, replacements[i].placeholder);
 			if (pos) {
 				char tmp[MAX_LINE_LENGTH * 2];
@@ -84,9 +87,7 @@ int replace_all_placeholders(const char* input_path)
 
 				memcpy(tmp, buffer, prefix_len);
 				strcpy(tmp + prefix_len, replacements[i].replacement);
-				strcpy(tmp + prefix_len + strlen(replacements[i].replacement),
-				       pos + strlen(replacements[i].placeholder));
-
+				strcpy(tmp + prefix_len + strlen(replacements[i].replacement), pos + strlen(replacements[i].placeholder));
 				strcpy(buffer, tmp);
 			}
 		}
