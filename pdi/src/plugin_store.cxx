@@ -283,18 +283,16 @@ void Plugin_store::load_plugins()
 //         auto it = m_plugins.find(name);
 
 //         if (it == m_plugins.end()) {
-//             // ✅ First time → create plugin
 //             m_plugins.emplace(
 //                 name,
 //                 std::make_shared<Stored_plugin>(m_ctx, *this, name, new_conf)
 //             );
 //         } else {
-//             // ⚠️ Plugin already exists → merge config
 //             auto& existing = it->second;
 
 //             // --- merge logic inline (since Stored_plugin has no merge yet) ---
 
-//             PC_tree_t& base = existing->m_config; // ⚠️ needs friend or public access
+//             PC_tree_t& base = existing->m_config;
 
 //             if (is_map(base) && is_map(new_conf)) {
 //                 int m = len(new_conf);
