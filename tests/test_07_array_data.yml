@@ -1,10 +1,12 @@
 beta: 0.250 # Can't be loaded with `PC_double(PC_get(conf, ".alpha"), &alpha);` as this is not the main YAML
 
+# include:
+#   - test_07_subdata.yml
+#   - test_07.yml
 include:
-  - test_07_subdata.yml
-  - test_07.yml
+  - /tmp_dir_test/test_07_subdata.yml
+  - /tmp_dir_test/test_07.yml
 data:
-  scalar_subdata: int
   array_data:
     type: array
     subtype: int

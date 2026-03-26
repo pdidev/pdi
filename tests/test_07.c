@@ -115,63 +115,64 @@ int replace_all_placeholders(const char* input_path)
 
 int main(int argc, char* argv[])
 {
-	printf("argv[1] = %s\n", argv[1]);
+// 	printf("argv[1] = %s\n", argv[1]);
 
-	// Detect if running in GitHub Actions
-	const char* github_actions = getenv("GITHUB_ACTIONS");
-	bool is_github_actions = (github_actions != NULL);
-	const char* ci = getenv("CI");
-	printf("CI=%s\n", ci ? ci : "null");
+// 	// Detect if running in GitHub Actions
+// 	const char* github_actions = getenv("GITHUB_ACTIONS");
+// 	bool is_github_actions = (github_actions != NULL);
+// 	const char* ci = getenv("CI");
+// 	printf("CI=%s\n", ci ? ci : "null");
 
-// Detect macOS
-#ifdef __APPLE__
-	bool is_macOS = true;
-#else
-	bool is_macOS = false;
-#endif
+// // Detect macOS
+// #ifdef __APPLE__
+// 	bool is_macOS = true;
+// #else
+// 	bool is_macOS = false;
+// #endif
 
-	PC_tree_t conf;
-	bool conf_created = false;
+// 	PC_tree_t conf;
+// 	bool conf_created = false;
 
-	if (is_github_actions && !is_macOS) {
-		printf("GITHUB_ACTIONS=%s\n", github_actions);
-		// GitHub Actions (online CI): Use file-based logic with placeholder replacement, workaround for online CI on Linux
-		if (argc < 2) {
-			fprintf(stderr, "Missing path to test_07.yml\n");
-			return 1;
-		}
-		const char* yaml_path = argv[1];
-		char base_dir[1024];
-		strncpy(base_dir, yaml_path, sizeof(base_dir));
-		char* slash = strrchr(base_dir, '/');
-		if (slash) *slash = '\0';
-		char path_array[1024];
-		char path_record[1024];
-		char path_subdata[1024];
-		snprintf(path_array, sizeof(path_array), "%s/test_07_array_data.yml", base_dir);
-		snprintf(path_record, sizeof(path_record), "%s/test_07_record_data.yml", base_dir);
-		snprintf(path_subdata, sizeof(path_subdata), "%s/test_07_subdata.yml", base_dir);
-		replace_all_placeholders(yaml_path);
-		replace_all_placeholders(path_array);
-		replace_all_placeholders(path_record);
-		replace_all_placeholders(path_subdata);
-		printf("Parsing YAML: %s\n", "/tmp_dir_test/test_07.yml");
-		fflush(stdout);
-		conf = PC_parse_path("/tmp_dir_test/test_07.yml");
-		conf_created = true;
-		PDI_init(conf);
-	} else {
-		printf("GITHUB_ACTIONS is NOT set\n");
-		// Local Linux (or MacOS with Paraconf 1.1+): Use classic file-based logic without placeholder replacement, classic use for local CI
-		if (argc < 2) {
-			fprintf(stderr, "Missing path to test_07.yml\n");
-			return 1;
-		}
-		conf = PC_parse_path(argv[1]);
-		conf_created = true;
-		PDI_init(conf);
-	}
+// 	if (is_github_actions && !is_macOS) {
+// 		printf("GITHUB_ACTIONS=%s\n", github_actions);
+// 		// GitHub Actions (online CI): Use file-based logic with placeholder replacement, workaround for online CI on Linux
+// 		if (argc < 2) {
+// 			fprintf(stderr, "Missing path to test_07.yml\n");
+// 			return 1;
+// 		}
+// 		const char* yaml_path = argv[1];
+// 		char base_dir[1024];
+// 		strncpy(base_dir, yaml_path, sizeof(base_dir));
+// 		char* slash = strrchr(base_dir, '/');
+// 		if (slash) *slash = '\0';
+// 		char path_array[1024];
+// 		char path_record[1024];
+// 		char path_subdata[1024];
+// 		snprintf(path_array, sizeof(path_array), "%s/test_07_array_data.yml", base_dir);
+// 		snprintf(path_record, sizeof(path_record), "%s/test_07_record_data.yml", base_dir);
+// 		snprintf(path_subdata, sizeof(path_subdata), "%s/test_07_subdata.yml", base_dir);
+// 		replace_all_placeholders(yaml_path);
+// 		replace_all_placeholders(path_array);
+// 		replace_all_placeholders(path_record);
+// 		replace_all_placeholders(path_subdata);
+// 		printf("Parsing YAML: %s\n", "/tmp_dir_test/test_07.yml");
+// 		fflush(stdout);
+// 		conf = PC_parse_path("/tmp_dir_test/test_07.yml");
+// 		conf_created = true;
+// 		PDI_init(conf);
+// 	} else {
+// 		printf("GITHUB_ACTIONS is NOT set\n");
+// 		// Local Linux (or MacOS with Paraconf 1.1+): Use classic file-based logic without placeholder replacement, classic use for local CI
+// 		if (argc < 2) {
+// 			fprintf(stderr, "Missing path to test_07.yml\n");
+// 			return 1;
+// 		}
+// 		conf = PC_parse_path(argv[1]);
+// 		conf_created = true;
+// 		PDI_init(conf);
+// 	}
 
+	PC_tree_t conf = PC_parse_path(argv[1]);
 	int input = 0;
 	PDI_expose("input", &input, PDI_OUT);
 
@@ -229,8 +230,8 @@ int main(int argc, char* argv[])
 	assert(b == b_read);
 
 	PDI_finalize();
-	if (conf_created) {
-		PC_tree_destroy(&conf);
-	}
+	// if (conf_created) {
+	// 	PC_tree_destroy(&conf);
+	// }
 	return 0;
 }
