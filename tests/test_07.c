@@ -32,44 +32,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LENGTH 1024
-#define PLACEHOLDER "/<full>/<path>/<to>/<test_07_data.yml>"
-#define TEMP_FILE_PATH "/tmp_dir_test/temp_test_07.yml"
-
 struct Record_data {
 	int a;
 	int* b;
 } typedef Record_data;
-
-int replace_placeholder_in_file(const char* file_path, const char* replace_str)
-{
-	FILE* file = fopen(file_path, "r");
-	if (!file) {
-		perror("Failed to open file");
-		return 1;
-	}
-	FILE* temp_file = fopen(TEMP_FILE_PATH, "w");
-	if (!temp_file) {
-		perror("Failed to open temp file");
-		fclose(file);
-		return 1;
-	}
-	char line[MAX_LINE_LENGTH];
-	while (fgets(line, sizeof(line), file)) {
-		char* pos = strstr(line, PLACEHOLDER);
-		if (pos) {
-			fwrite(line, 1, pos - line, temp_file);
-			fwrite(replace_str, 1, strlen(replace_str), temp_file);
-			fwrite(pos + strlen(PLACEHOLDER), 1, strlen(pos) - strlen(PLACEHOLDER), temp_file);
-		} else {
-			fputs(line, temp_file);
-		}
-	}
-	fclose(file);
-	fclose(temp_file);
-	printf("Modified YAML written to: %s\n", TEMP_FILE_PATH);
-	return 0;
-}
 
 int main(int argc, char* argv[])
 {
@@ -79,6 +45,10 @@ int main(int argc, char* argv[])
 
 	int scalar_data = 42;
 	PDI_expose("scalar_data", &scalar_data, PDI_OUT);
+
+	int scalar_subdata = 43;
+	PDI_expose("scalar_subdata", &scalar_subdata, PDI_OUT);
+
 	int array_data[8];
 	for (int i = 0; i < 8; i++) {
 		array_data[i] = 42 + i;
@@ -99,6 +69,14 @@ int main(int argc, char* argv[])
 	printf("%d ?== %d\n", scalar_data, scalar_data_read);
 	if (scalar_data != scalar_data_read) {
 		fprintf(stderr, "Assertion failed: %d != %d\n", scalar_data, scalar_data_read);
+		exit(EXIT_FAILURE);
+	}
+
+	int scalar_subdata_read;
+	PDI_expose("scalar_subdata", &scalar_subdata_read, PDI_IN);
+	printf("%d ?== %d\n", scalar_subdata, scalar_subdata_read);
+	if (scalar_subdata != scalar_subdata_read) {
+		fprintf(stderr, "Assertion failed: %d != %d\n", scalar_subdata, scalar_subdata_read);
 		exit(EXIT_FAILURE);
 	}
 

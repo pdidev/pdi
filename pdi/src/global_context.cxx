@@ -46,6 +46,9 @@
 #include "global_context.h"
 
 #include <filesystem>
+#include <unordered_set>
+#include <stdexcept>
+
 namespace fs = std::filesystem;
 
 
@@ -109,34 +112,49 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
-void Global_context::load_pdi_config(PC_tree_t conf)
-{
+void Global_context::load_pdi_config(PC_tree_t conf, std::unordered_set<std::string>* loaded_files) {
+	std::unordered_set<std::string> current_loaded_files;
+	if (!loaded_files) loaded_files = &current_loaded_files;
+
 	const char* current_path = PC_path(conf);
-	fs::path current_dir = fs::path(current_path).parent_path();
+	std::string current_file = fs::path(current_path).lexically_normal().string();
+
+	// Check for repeated includes (diamond or circular)
+	if (loaded_files->find(current_file) != loaded_files->end()) {
+		m_logger.warn("Skipping already included file '{}'", current_file);
+		return;
+	}
+	loaded_files->insert(current_file);
+
+	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
+	if (PC_tree_t metadata = PC_get(conf, ".metadata"); !PC_status(metadata)) {
+		load_data(*this, metadata, true);
+	}
+	if (PC_tree_t data = PC_get(conf, ".data"); !PC_status(data)) {
+		load_data(*this, data, false);
+	}
 
 	PC_tree_t includes = PC_get(conf, ".include");
 	if (!PC_status(includes)) {
 		PDI::each(includes, [&](PC_tree_t yaml_subfile) {
 			std::string include_path = PDI::to_string(yaml_subfile);
+			fs::path full_path = fs::path(include_path).is_absolute()
+				? fs::path(include_path)
+				: fs::path(current_path).parent_path() / include_path;
 
-			if (!fs::path(include_path).is_absolute()) {
-				include_path = (current_dir / include_path).string();
+			full_path = full_path.lexically_normal();
+
+			if (!fs::exists(full_path)) {
+				throw std::runtime_error("Included file not found: " + full_path.string());
 			}
 
-			this->load_pdi_config(PC_parse_path(include_path.c_str()));
+			PC_tree_t included_conf = PC_parse_path(full_path.string().c_str());
+			if (PC_status(included_conf) != PC_OK) {
+				throw std::runtime_error("Failed to parse: " + full_path.string());
+			}
+
+			load_pdi_config(included_conf, loaded_files);
 		});
-	}
-
-	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
-
-	PC_tree_t metadata = PC_get(conf, ".metadata");
-	if (!PC_status(metadata)) {
-		load_data(*this, metadata, true);
-	}
-
-	PC_tree_t data = PC_get(conf, ".data");
-	if (!PC_status(data)) {
-		load_data(*this, data, false);
 	}
 }
 

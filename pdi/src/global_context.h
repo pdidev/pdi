@@ -129,7 +129,7 @@ public:
 
 	void finalize_and_exit() override;
 
-	void load_pdi_config(PC_tree_t conf);
+	void load_pdi_config(PC_tree_t conf, std::unordered_set<std::string>* loaded_files = nullptr);
 
 	void check_duplicate(const std::string& name) override;
 
