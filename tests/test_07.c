@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 // 		PDI_init(conf);
 // 	}
 
-	PC_tree_t conf = PC_parse_path(argv[1]);
+	PDI_init(PC_parse_path(argv[1]));
 	int input = 0;
 	PDI_expose("input", &input, PDI_OUT);
 
