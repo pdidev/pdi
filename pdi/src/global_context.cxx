@@ -64,13 +64,13 @@ using std::unordered_set;
 using std::vector;
 
 #ifdef PARACONF_VERSION_MAJOR
-  #if (PARACONF_VERSION_MAJOR > 1) || (PARACONF_VERSION_MAJOR == 1 && PARACONF_VERSION_MINOR >= 1)
-    #define PDI_HAS_PC_PATH 1
-  #else
-    #define PDI_HAS_PC_PATH 0
-  #endif
+#if (PARACONF_VERSION_MAJOR > 1) || (PARACONF_VERSION_MAJOR == 1 && PARACONF_VERSION_MINOR >= 1)
+#define PDI_HAS_PC_PATH 1
 #else
-  #define PDI_HAS_PC_PATH 0
+#define PDI_HAS_PC_PATH 0
+#endif
+#else
+#define PDI_HAS_PC_PATH 0
 #endif
 
 namespace PDI {
@@ -170,13 +170,13 @@ void Global_context::load_pdi_config(PC_tree_t conf, std::unordered_set<std::str
 			if (fs::path(include_path).is_absolute()) {
 				full_path = fs::path(include_path);
 			} else {
-			#if PDI_HAS_PC_PATH
+#if PDI_HAS_PC_PATH
 				full_path = fs::path(base_dir) / include_path;
-			#else
+#else
 				throw std::runtime_error(
 					"Relative include not supported with Paraconf < 1.1: " + include_path
 				);
-			#endif
+#endif
 			}
 
 			full_path = full_path.lexically_normal();
