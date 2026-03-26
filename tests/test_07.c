@@ -33,10 +33,10 @@
 #include <string.h>
 
 #define MAX_LINE_LENGTH 1024
+#define PLACEHOLDER_MAIN_YAML "test_07.yml"
 #define PLACEHOLDER_ARRAY_DATA_YAML "test_07_array_data.yml"
 #define PLACEHOLDER_RECORD_DATA_YAML "test_07_record_data.yml"
 #define PLACEHOLDER_SUBDATA_YAML "test_07_subdata.yml"
-#define PLACEHOLDER_MAIN_YAML "test_07.yml"
 #define TEMP_FILE_PATH "/tmp_dir_test/temp_test_07.yml"
 
 struct Record_data {
@@ -77,11 +77,11 @@ int replace_all_placeholders(const char* input_path)
 		struct {
 			const char* placeholder;
 			const char* replacement;
-		} replacements[] = {
+		} replacements[] 
+			= {	{PLACEHOLDER_MAIN_YAML, "/tmp_dir_test/test_07.yml"},
 			{PLACEHOLDER_ARRAY_DATA_YAML, "/tmp_dir_test/test_07_array_data.yml"},
 			{PLACEHOLDER_RECORD_DATA_YAML, "/tmp_dir_test/test_07_record_data.yml"},
-			{PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"},
-			{PLACEHOLDER_MAIN_YAML, "/tmp_dir_test/test_07.yml"}
+			{PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"}			
 		};
 
 		for (size_t i = 0; i < sizeof(replacements) / sizeof(replacements[0]); ++i) {
@@ -133,10 +133,21 @@ int main(int argc, char* argv[])
 			fprintf(stderr, "Missing path to test_07.yml\n");
 			return 1;
 		}
-		replace_all_placeholders("test_07_array_data.yml");
-		replace_all_placeholders("test_07_record_data.yml");
-		replace_all_placeholders("test_07_subdata.yml");
-		replace_all_placeholders("test_07.yml");
+		const char* yaml_path = argv[1];
+		char base_dir[1024];
+		strncpy(base_dir, yaml_path, sizeof(base_dir));
+		char* slash = strrchr(base_dir, '/');
+		if (slash) *slash = '\0';
+		char path_array[1024];
+		char path_record[1024];
+		char path_subdata[1024];
+		snprintf(path_array, sizeof(path_array), "%s/test_07_array_data.yml", base_dir);
+		snprintf(path_record, sizeof(path_record), "%s/test_07_record_data.yml", base_dir);
+		snprintf(path_subdata, sizeof(path_subdata), "%s/test_07_subdata.yml", base_dir);
+		replace_all_placeholders(yaml_path);
+		replace_all_placeholders(path_array);
+		replace_all_placeholders(path_record);
+		replace_all_placeholders(path_subdata);
 		conf = PC_parse_path(TEMP_FILE_PATH);
 		conf_created = true;
 		PDI_init(conf);
