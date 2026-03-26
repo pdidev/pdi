@@ -3,6 +3,6 @@ beta: 0.250 # Can't be loaded with `PC_double(PC_get(conf, ".alpha"), &alpha);` 
 # include:
 #   - test_07.yml
 include:
-  - /tmp_dir_test/test_07.yml
+  - /src/tests/test_07.yml
 data:
   scalar_subdata: int
