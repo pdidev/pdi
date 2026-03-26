@@ -52,6 +52,9 @@ const char* get_filename(const char* path)
 
 int replace_all_placeholders(const char* input_path)
 {
+	printf("Opening input file: %s\n", input_path);
+	fflush(stdout);
+
 	FILE* in = fopen(input_path, "r");
 	if (!in) {
 		perror("open input");
@@ -67,6 +70,9 @@ int replace_all_placeholders(const char* input_path)
 		return 1;
 	}
 
+	printf("Writing output file: %s\n", output_path);
+	fflush(stdout);
+
 	char line[MAX_LINE_LENGTH];
 
 	while (fgets(line, sizeof(line), in)) {
@@ -78,11 +84,10 @@ int replace_all_placeholders(const char* input_path)
 			const char* placeholder;
 			const char* replacement;
 		} replacements[] 
-			= {	{PLACEHOLDER_MAIN_YAML, "/tmp_dir_test/test_07.yml"},
+			= {{PLACEHOLDER_MAIN_YAML, "/tmp_dir_test/test_07.yml"},
 			{PLACEHOLDER_ARRAY_DATA_YAML, "/tmp_dir_test/test_07_array_data.yml"},
 			{PLACEHOLDER_RECORD_DATA_YAML, "/tmp_dir_test/test_07_record_data.yml"},
-			{PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"}			
-		};
+			{PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"}};
 
 		for (size_t i = 0; i < sizeof(replacements) / sizeof(replacements[0]); ++i) {
 			char* pos = strstr(buffer, replacements[i].placeholder);
@@ -110,6 +115,8 @@ int replace_all_placeholders(const char* input_path)
 
 int main(int argc, char* argv[])
 {
+	printf("argv[1] = %s\n", argv[1]);
+
 	// Detect if running in GitHub Actions
 	const char* github_actions = getenv("GITHUB_ACTIONS");
 	bool is_github_actions = (github_actions != NULL);
@@ -148,6 +155,8 @@ int main(int argc, char* argv[])
 		replace_all_placeholders(path_array);
 		replace_all_placeholders(path_record);
 		replace_all_placeholders(path_subdata);
+		printf("Parsing YAML: %s\n", TEMP_FILE_PATH);
+		fflush(stdout);
 		conf = PC_parse_path(TEMP_FILE_PATH);
 		conf_created = true;
 		PDI_init(conf);
