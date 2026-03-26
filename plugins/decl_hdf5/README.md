@@ -60,11 +60,14 @@ The possible values for the keys are as follow:
   See
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
-* `subfiling`: an integer value interpreted as the total number of subfiles. This key is available only when the underlying HDF5 has `H5_HAVE_SUBFILING_VFD` enabled. By default `subfiling: 0` is used indicating no HDF5 subfiling. `subfiling: 2` means 2 subfiles will be generated. Here are several important notes for using `subfiling` correctly:
-   * The simulation must be initialized with `MPI_THREAD_MULTIPLE` in order to support the subfiling feature. If the requirement is not satisfied, a runtime error will occur. However, in the case where the MPI thread support level is not `MPI_THREAD_MULTIPLE`, it is possible to ignore the `subfiling` configuration by setting `subfiling_policy` to `CONTINUE`. In this case, the output file will not contain any subfiles.
-   * Subfiling strip size can be changed via the environment variable `H5FD_SUBFILING_STRIPE_SIZE`
-   * One can also specify the location of the subfiles by giving the desired absolute path to `H5FD_SUBFILING_SUBFILE_PREFIX`. It is then mandatory to set the same path to `H5FD_SUBFILING_CONFIG_FILE_PREFIX` for the config file.
-   * HDF5 does not provide an easy option to change the naming template of subfiles. The generated subfile will be named similarly to `output.h5.subfile_11273556_01_of_10`.
+
+* `subfiling`: an integer value interpreted as the total number of subfiles.  This feature is only available if the underlying HDF5 installation has `H5_HAVE_SUBFILING_VFD` enabled. By default `subfiling: 0` is used indicating no HDF5 subfiling. `subfiling: 2` creates 2 physical subfiles to distribute I/O load. Here are several important notes for using `subfiling` correctly:
+   * **MPI Threading Requirement**: The simulation must be initialized with `MPI_THREAD_MULTIPLE`. If this requirement is not met, the application will throw a runtime error. Fallback: If `MPI_THREAD_MULTIPLE` is unavailable, one can use `subfiling_policy: CONTINUE` to ignore the subfiling configuration and generate a standard HDF5 output file instead.
+   * **Stripe Size Configuration**: Subfiling strip size (the amount of data written to one subfile before moving to the next) can be changed either via the environment variable `H5FD_SUBFILING_STRIPE_SIZE`, or in the yaml by setting `subfiling_stripe_size` to the desired size in bytes.
+   * **File Locations**: To store subfiles in a specific directory, provide an absolute path to the environment variable `H5FD_SUBFILING_SUBFILE_PREFIX`. Note: If a subfile prefix is set, it is then mandatory to set the same path for `H5FD_SUBFILING_CONFIG_FILE_PREFIX` to ensure the configuration file remains discoverable.
+   * **Naming Convention**: Subfile names are managed internally by HDF5 and cannot be easily customized. They follow a template similar to:
+   `[filename].h5.subfile_[contextID]_[subfile_index]_of_[total_subfiles]`
+   (e.g., `output.h5.subfile_11273556_01_of_10`)
 
 ### DATA_SECTION
 
