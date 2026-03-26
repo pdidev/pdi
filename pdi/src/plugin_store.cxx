@@ -265,4 +265,59 @@ void Plugin_store::load_plugins()
 	}
 }
 
+// void Plugin_store::add_config(PC_tree_t plugins_node)
+// {
+//     // merge plugin definitions into internal storage
+// }
+
+// void Plugin_store::add_config(PC_tree_t plugins_node)
+// {
+//     if (PC_status(plugins_node)) return;
+
+//     int n = len(plugins_node);
+
+//     for (int i = 0; i < n; ++i) {
+//         std::string name = to_string(PC_get(plugins_node, "{%d}", i));
+//         PC_tree_t new_conf = PC_get(plugins_node, "<%d>", i);
+
+//         auto it = m_plugins.find(name);
+
+//         if (it == m_plugins.end()) {
+//             // ✅ First time → create plugin
+//             m_plugins.emplace(
+//                 name,
+//                 std::make_shared<Stored_plugin>(m_ctx, *this, name, new_conf)
+//             );
+//         } else {
+//             // ⚠️ Plugin already exists → merge config
+//             auto& existing = it->second;
+
+//             // --- merge logic inline (since Stored_plugin has no merge yet) ---
+
+//             PC_tree_t& base = existing->m_config; // ⚠️ needs friend or public access
+
+//             if (is_map(base) && is_map(new_conf)) {
+//                 int m = len(new_conf);
+//                 for (int j = 0; j < m; ++j) {
+//                     std::string key = to_string(PC_get(new_conf, "{%d}", j));
+//                     PC_tree_t val = PC_get(new_conf, "<%d>", j);
+
+//                     PC_set(base, key.c_str(), val);
+//                 }
+//             }
+//             else if (is_sequence(base) && is_sequence(new_conf)) {
+//                 int m = len(new_conf);
+//                 for (int j = 0; j < m; ++j) {
+//                     PC_tree_t val = PC_get(new_conf, "[%d]", j);
+//                     PC_append(base, val);
+//                 }
+//             }
+//             else {
+//                 // fallback: override
+//                 base = new_conf;
+//             }
+//         }
+//     }
+// }
+
 } // namespace PDI

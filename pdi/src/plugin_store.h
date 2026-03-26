@@ -128,6 +128,8 @@ public:
 	/** Actually load the plugins
 	 */
 	void load_plugins();
+
+	// void add_config(PC_tree_t plugins_node);
 };
 
 } // namespace PDI

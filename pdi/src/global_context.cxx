@@ -46,8 +46,8 @@
 #include "global_context.h"
 
 #include <filesystem>
-#include <unordered_set>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace fs = std::filesystem;
 
@@ -62,6 +62,16 @@ using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
+
+#ifdef PARACONF_VERSION_MAJOR
+  #if (PARACONF_VERSION_MAJOR > 1) || (PARACONF_VERSION_MAJOR == 1 && PARACONF_VERSION_MINOR >= 1)
+    #define PDI_HAS_PC_PATH 1
+  #else
+    #define PDI_HAS_PC_PATH 0
+  #endif
+#else
+  #define PDI_HAS_PC_PATH 0
+#endif
 
 namespace PDI {
 
@@ -117,8 +127,20 @@ void Global_context::load_pdi_config(PC_tree_t conf, std::unordered_set<std::str
 	std::unordered_set<std::string> current_loaded_files;
 	if (!loaded_files) loaded_files = &current_loaded_files;
 
+	// const char* current_path = PC_path(conf);
+	// std::string current_file = fs::path(current_path).lexically_normal().string();
+
+	std::string current_file;
+	std::string base_dir;
+
+#if PDI_HAS_PC_PATH
 	const char* current_path = PC_path(conf);
-	std::string current_file = fs::path(current_path).lexically_normal().string();
+	current_file = fs::path(current_path).lexically_normal().string();
+	base_dir = fs::path(current_path).parent_path().string();
+#else
+	current_file = "<unknown_current_file_path>";
+	base_dir = "<unknown_current_file_path_directory>";
+#endif
 
 	// Check for repeated includes (diamond or circular)
 	if (loaded_files->find(current_file) != loaded_files->end()) {
@@ -134,12 +156,29 @@ void Global_context::load_pdi_config(PC_tree_t conf, std::unordered_set<std::str
 	if (PC_tree_t data = PC_get(conf, ".data"); !PC_status(data)) {
 		load_data(*this, data, false);
 	}
+	// if (PC_tree_t plugins = PC_get(conf, ".plugins"); !PC_status(plugins)) {
+	// 	m_plugins.add_config(plugins);
+	// }
 
 	PC_tree_t includes = PC_get(conf, ".include");
 	if (!PC_status(includes)) {
 		PDI::each(includes, [&](PC_tree_t yaml_subfile) {
 			std::string include_path = PDI::to_string(yaml_subfile);
-			fs::path full_path = fs::path(include_path).is_absolute() ? fs::path(include_path) : fs::path(current_path).parent_path() / include_path;
+			// fs::path full_path = fs::path(include_path).is_absolute() ? fs::path(include_path) : fs::path(current_path).parent_path() / include_path;
+
+			fs::path full_path;
+			if (fs::path(include_path).is_absolute()) {
+				full_path = fs::path(include_path);
+			} else {
+			#if PDI_HAS_PC_PATH
+				full_path = fs::path(base_dir) / include_path;
+			#else
+				throw std::runtime_error(
+					"Relative include not supported with Paraconf < 1.1: " + include_path
+				);
+			#endif
+			}
+
 			full_path = full_path.lexically_normal();
 
 			if (!fs::exists(full_path)) {
@@ -167,6 +206,8 @@ Global_context::Global_context(PC_tree_t conf)
 	m_plugins.load_plugins();
 
 	load_pdi_config(conf);
+
+	// m_plugins.load_plugins();
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
