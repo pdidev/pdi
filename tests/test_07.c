@@ -36,12 +36,19 @@
 #define PLACEHOLDER_ARRAY_DATA_YAML "test_07_array_data.yml"
 #define PLACEHOLDER_RECORD_DATA_YAML "test_07_record_data.yml"
 #define PLACEHOLDER_SUBDATA_YAML "test_07_subdata.yml"
+#define PLACEHOLDER_MAIN_YAML "test_07.yml"
 #define TEMP_FILE_PATH "/tmp_dir_test/temp_test_07.yml"
 
 struct Record_data {
 	int a;
 	int* b;
 } typedef Record_data;
+
+const char* get_filename(const char* path)
+{
+	const char* slash = strrchr(path, '/');
+	return slash ? slash + 1 : path;
+}
 
 int replace_all_placeholders(const char* input_path)
 {
@@ -51,7 +58,9 @@ int replace_all_placeholders(const char* input_path)
 		return 1;
 	}
 
-	FILE* out = fopen(TEMP_FILE_PATH, "w");
+	char output_path[1024];
+	snprintf(output_path, sizeof(output_path), "/tmp_dir_test/%s", get_filename(input_path));
+	FILE* out = fopen(output_path, "w");
 	if (!out) {
 		perror("open output");
 		fclose(in);
@@ -72,6 +81,7 @@ int replace_all_placeholders(const char* input_path)
 			{PLACEHOLDER_ARRAY_DATA_YAML, "/tmp_dir_test/test_07_array_data.yml"},
 			{PLACEHOLDER_RECORD_DATA_YAML, "/tmp_dir_test/test_07_record_data.yml"},
 			{PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"},
+			{PLACEHOLDER_MAIN_YAML, "/tmp_dir_test/test_07.yml"}
 		};
 
 		for (size_t i = 0; i < sizeof(replacements) / sizeof(replacements[0]); ++i) {
@@ -94,7 +104,7 @@ int replace_all_placeholders(const char* input_path)
 	fclose(in);
 	fclose(out);
 
-	printf("Modified YAML written to: %s\n", TEMP_FILE_PATH);
+	printf("Modified YAML written to: %s\n", output_path);
 	return 0;
 }
 
@@ -106,27 +116,33 @@ int main(int argc, char* argv[])
 	const char* ci = getenv("CI");
 	printf("CI=%s\n", ci ? ci : "null");
 
+// Detect macOS
+#ifdef __APPLE__
+	bool is_macOS = true;
+#else
+	bool is_macOS = false;
+#endif
+
 	PC_tree_t conf;
 	bool conf_created = false;
 
-	if (is_github_actions) {
+	if (is_github_actions && !is_macOS) {
 		printf("GITHUB_ACTIONS=%s\n", github_actions);
 		// GitHub Actions (online CI): Use file-based logic with placeholder replacement, workaround for online CI on Linux
 		if (argc < 2) {
 			fprintf(stderr, "Missing path to test_07.yml\n");
 			return 1;
 		}
-		const char* yaml_path = argv[1];
-		if (replace_all_placeholders(yaml_path) != 0) {
-			fprintf(stderr, "Failed to modify the root YAML file\n");
-			return 1;
-		}
+		replace_all_placeholders("test_07_array_data.yml");
+		replace_all_placeholders("test_07_record_data.yml");
+		replace_all_placeholders("test_07_subdata.yml");
+		replace_all_placeholders("test_07.yml");
 		conf = PC_parse_path(TEMP_FILE_PATH);
 		conf_created = true;
 		PDI_init(conf);
 	} else {
 		printf("GITHUB_ACTIONS is NOT set\n");
-		// Local Linux: Use classic file-based logic without placeholder replacement, classic use for local CI (or macOS with Paraconf 1.1+)
+		// Local Linux (or MacOS with Paraconf 1.1+): Use classic file-based logic without placeholder replacement, classic use for local CI
 		if (argc < 2) {
 			fprintf(stderr, "Missing path to test_07.yml\n");
 			return 1;
