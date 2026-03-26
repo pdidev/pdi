@@ -310,14 +310,14 @@ TEST_F(ContextTest, iterator_operator_equal_equal)
 TEST_F(ContextTest, check_duplicate)
 {
 	// Test 1: First call should succeed
-	ASSERT_NO_THROW(this->test_context->check_duplicate("test_variable"));
+	ASSERT_NO_THROW(this->test_context->check_duplicate("variable_A"));
 
 	// Test 2: Second call with same name should throw System_error
-	EXPECT_THROW(this->test_context->check_duplicate("test_variable"), System_error);
+	EXPECT_THROW(this->test_context->check_duplicate("variable_A"), System_error);
 
 	// Test 3: Different names should both succeed
-	ASSERT_NO_THROW(this->test_context->check_duplicate("another_variable"));
-	ASSERT_NO_THROW(this->test_context->check_duplicate("yet_another_variable"));
+	ASSERT_NO_THROW(this->test_context->check_duplicate("variable_B"));
+	ASSERT_NO_THROW(this->test_context->check_duplicate("variable_C"));
 }
 
 /*
@@ -325,7 +325,7 @@ TEST_F(ContextTest, check_duplicate)
  *
  * Tested functions:    PDI::load_pdi_config (recursive inclusion), through multiple PC_parse_string
  *
- * Description:         Checks if including a YAML with duplicate data fields
+ * Description:         Checks if including Paraconf trees with duplicate data fields
  *                      throws System_error (simulates test_07.yml and test_07_data.yml).
  */
 TEST_F(ContextTest, load_pdi_config_duplicate_data_via_inclusion)

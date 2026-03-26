@@ -1,0 +1,6 @@
+beta: 0.250 # Can't be loaded with `PC_double(PC_get(conf, ".alpha"), &alpha);` as this is not the main YAML
+
+include:
+  - test_07.yml
+data:
+  scalar_subdata: int

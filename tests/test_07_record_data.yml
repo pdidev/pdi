@@ -1,0 +1,16 @@
+beta: 0.250 # Can't be loaded with `PC_double(PC_get(conf, ".alpha"), &alpha);` as this is not the main YAML
+
+include:
+  - test_07_subdata.yml
+data:
+  record_data:
+    type: record
+    buffersize: 16
+    members:
+      a:
+        disp: 0
+        type: int
+      b:
+        disp: 8
+        type: pointer
+        subtype: int

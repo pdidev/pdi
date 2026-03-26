@@ -112,7 +112,8 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
-void Global_context::load_pdi_config(PC_tree_t conf, std::unordered_set<std::string>* loaded_files) {
+void Global_context::load_pdi_config(PC_tree_t conf, std::unordered_set<std::string>* loaded_files)
+{
 	std::unordered_set<std::string> current_loaded_files;
 	if (!loaded_files) loaded_files = &current_loaded_files;
 
@@ -138,10 +139,7 @@ void Global_context::load_pdi_config(PC_tree_t conf, std::unordered_set<std::str
 	if (!PC_status(includes)) {
 		PDI::each(includes, [&](PC_tree_t yaml_subfile) {
 			std::string include_path = PDI::to_string(yaml_subfile);
-			fs::path full_path = fs::path(include_path).is_absolute()
-				? fs::path(include_path)
-				: fs::path(current_path).parent_path() / include_path;
-
+			fs::path full_path = fs::path(include_path).is_absolute() ? fs::path(include_path) : fs::path(current_path).parent_path() / include_path;
 			full_path = full_path.lexically_normal();
 
 			if (!fs::exists(full_path)) {
