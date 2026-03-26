@@ -4,6 +4,7 @@ include:
   - test_07_subdata.yml
   - test_07.yml
 data:
+  scalar_subdata: int
   array_data:
     type: array
     subtype: int

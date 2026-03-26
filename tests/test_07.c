@@ -85,9 +85,9 @@ int replace_all_placeholders(const char* input_path)
 			const char* replacement;
 		} replacements[]
 			= {{PLACEHOLDER_MAIN_YAML, "/tmp_dir_test/test_07.yml"},
-		   {PLACEHOLDER_ARRAY_DATA_YAML, "/tmp_dir_test/test_07_array_data.yml"},
-		   {PLACEHOLDER_RECORD_DATA_YAML, "/tmp_dir_test/test_07_record_data.yml"},
-		   {PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"}};
+		       {PLACEHOLDER_ARRAY_DATA_YAML, "/tmp_dir_test/test_07_array_data.yml"},
+		       {PLACEHOLDER_RECORD_DATA_YAML, "/tmp_dir_test/test_07_record_data.yml"},
+		       {PLACEHOLDER_SUBDATA_YAML, "/tmp_dir_test/test_07_subdata.yml"}};
 
 		for (size_t i = 0; i < sizeof(replacements) / sizeof(replacements[0]); ++i) {
 			char* pos = strstr(buffer, replacements[i].placeholder);
