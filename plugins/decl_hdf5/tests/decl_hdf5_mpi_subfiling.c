@@ -63,8 +63,9 @@ const char* CONFIG_YAML
 	  "  decl_hdf5:                                                     \n"
 	  "    file: subfiling.h5                                           \n"
 	  "    communicator: $MPI_COMM_WORLD                                \n"
-	  "    subfiling: 4                                                 \n"
-	  "    subfiling_stripe_size: 4096                                  \n"
+	  "    subfiling:                                                   \n"
+	  "      stripe_size: 4096                                          \n"
+	  "      count: 4                                                   \n"
 	  "    datasets:                                                    \n"
 	  "      reals:  {type: array, subtype: double, size: [$njt, $nit]} \n"
 	  "      values: {type: array, subtype: int, size: [$njt, $nit]}    \n"
@@ -94,7 +95,6 @@ int main(int argc, char* argv[])
 	periodic[1] = 0;
 	dims[0] = 2;
 	dims[1] = 2;
-
 
 	int provided;
 	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);

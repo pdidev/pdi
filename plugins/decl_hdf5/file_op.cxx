@@ -112,11 +112,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if (key == "fletcher") {
 			fletcher = value;
 		} else if (key == "subfiling") {
-			template_op.m_subfiling = to_string(value);
-		} else if (key == "subfiling_policy") {
-			template_op.m_subfiling_policy = to_string(value);
-		} else if (key == "subfiling_stripe_size") {
-			template_op.m_subfiling_stripe_size = to_string(value);
+			template_op.m_subfiling = value;
 		} else if (key == "write") {
 			// will read in pass 2
 		} else if (key == "read") {
@@ -247,8 +243,6 @@ File_op::File_op(const File_op& other)
 	m_communicator{other.m_communicator}
 #ifdef H5_HAVE_SUBFILING_VFD
 	, m_subfiling{other.m_subfiling}
-	, m_subfiling_policy{other.m_subfiling_policy}
-	, m_subfiling_stripe_size{other.m_subfiling_stripe_size}
 #endif
 	,
 #endif
@@ -318,9 +312,9 @@ void File_op::execute(Context& ctx)
 		use_mpio = true;
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
 
-		if (auto subfiling_stripe_count = subfiling().to_long(ctx)) {
+		if (auto subfiling_stripe_count = subfiling().count().to_long(ctx)) {
 #ifndef H5_HAVE_SUBFILING_VFD
-			if (subfiling_policy().to_string(ctx) == "CONTINUE") {
+			if (subfiling().policy().to_string(ctx) == "CONTINUE") {
 				ctx.logger().warn("Used HDF5 does not support subfiling. HDF5 subfiling is ignored");
 			} else {
 				throw System_error{"Used HDF5 does not support subfiling. Please set subfiling to 0."};
@@ -329,7 +323,7 @@ void File_op::execute(Context& ctx)
 			int provided;
 			MPI_Query_thread(&provided);
 			if (provided < MPI_THREAD_MULTIPLE) {
-				if (subfiling_policy().to_string(ctx) == "CONTINUE") {
+				if (subfiling().policy().to_string(ctx) == "CONTINUE") {
 					subfiling_stripe_count = 0;
 					ctx.logger().warn("MPI is not initialized with MPI_THREAD_MULTIPLE. HDF5 subfiling is ignored");
 				} else {
@@ -342,7 +336,7 @@ void File_op::execute(Context& ctx)
 				H5FD_subfiling_config_t subf_config;
 				H5Pget_fapl_subfiling(file_lst, &subf_config);
 				subf_config.shared_cfg.stripe_count = subfiling_stripe_count;
-				if (auto stripe_size = subfiling_stripe_size().to_long(ctx)) {
+				if (auto stripe_size = subfiling().stripe_size().to_long(ctx)) {
 					subf_config.shared_cfg.stripe_size = stripe_size;
 				}
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
