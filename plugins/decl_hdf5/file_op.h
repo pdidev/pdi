@@ -125,7 +125,7 @@ public:
 	PDI::Expression communicator() const { return m_communicator; }
 #endif
 
-	Subfiling subfiling() const {return m_subfiling; }
+	Subfiling subfiling() const { return m_subfiling; }
 
 	/** Executes the requested operation.
 	 *
