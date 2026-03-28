@@ -1,0 +1,15 @@
+include:
+  # - test_10_subdata.yml
+  - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_10_subdata.yml
+data:
+  record_data:
+    type: record
+    buffersize: 16
+    members:
+      a:
+        disp: 0
+        type: int
+      b:
+        disp: 8
+        type: pointer
+        subtype: int

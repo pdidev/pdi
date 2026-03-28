@@ -45,12 +45,13 @@
 
 #include "global_context.h"
 
+#include <atomic>
 #include <filesystem>
+#include <fstream>
 #include <stdexcept>
 #include <unordered_set>
 
 namespace fs = std::filesystem;
-
 
 using std::exception;
 using std::forward_as_tuple;
@@ -122,77 +123,135 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
-void Global_context::load_pdi_config(PC_tree_t conf, std::unordered_set<std::string>* loaded_files)
+std::string Global_context::read_file_content(const fs::path& p)
 {
-	std::unordered_set<std::string> current_loaded_files;
-	if (!loaded_files) loaded_files = &current_loaded_files;
+	std::ifstream f(p, std::ios::in | std::ios::binary);
+	if (!f) return "";
+	return std::string(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
+}
 
-	// const char* current_path = PC_path(conf);
-	// std::string current_file = fs::path(current_path).lexically_normal().string();
+void Global_context::load_pdi_config_impl(
+	PC_tree_t conf,
+	std::unordered_set<std::string>& loaded, // global history of all loaded yaml, used to detect diamond include
+	std::unordered_set<std::string>& stack, // local content of the current "branch", used to detect circular include
+	const std::string& root_content,
+	const std::string& known_path
+)
+{
+	// ── Step 1: determine this node's identity ───────────────────────────────
+	// Priority order:
+	//   1. known_path       — set by the caller when it resolved the include path
+	//                         (works for both Paraconf 1.0.3 and 1.1.1)
+	//   2. PC_path()        — available only with Paraconf >= 1.1
+	//   3. address sentinel — root config parsed from a string; can never be
+	//                         referenced by path, so a unique ID is used instead
+	std::string current_id;
+	bool has_real_path = false;
 
-	std::string current_file;
-	std::string base_dir;
-
+	if (!known_path.empty()) {
+		// Caller already canonicalised the path — trust it directly.
+		current_id = known_path;
+		has_real_path = true;
+	}
 #if PDI_HAS_PC_PATH
-	const char* current_path = PC_path(conf);
-	current_file = fs::path(current_path).lexically_normal().string();
-	base_dir = fs::path(current_path).parent_path().string();
-#else
-	current_file = "<unknown_current_file_path>";
-	base_dir = "<unknown_current_file_path_directory>";
+	else
+	{
+		const char* raw_path = PC_path(conf);
+		if (raw_path && std::strlen(raw_path) > 0 && fs::exists(raw_path)) {
+			current_id = fs::canonical(raw_path).string();
+			has_real_path = true;
+		}
+	}
 #endif
 
-	// Check for repeated includes (diamond or circular)
-	if (loaded_files->find(current_file) != loaded_files->end()) {
-		m_logger.warn("Skipping already included file '{}'", current_file);
-		return;
+	if (!has_real_path) {
+		// PC_tree_t internals differ between Paraconf versions and are not
+		// guaranteed to be accessible. Use a monotonic counter instead: each
+		// string-parsed root is a distinct configuration, so a unique ID per
+		// call is exactly what we want. The counter never needs to be reset
+		// because sentinels are only compared within a single recursion tree.
+		static std::atomic<std::size_t> s_no_path_counter{0};
+		current_id = "<no-path:" + std::to_string(s_no_path_counter++) + ">";
 	}
-	loaded_files->insert(current_file);
 
-	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
-	if (PC_tree_t metadata = PC_get(conf, ".metadata"); !PC_status(metadata)) {
-		load_data(*this, metadata, true);
+	// ── Step 2: circular include detection ───────────────────────────────────
+	// Meaningful only for file-backed nodes: a no-path root cannot be
+	// referenced by any include directive, so it can never form a cycle.
+	if (has_real_path && stack.count(current_id)) {
+		throw std::runtime_error("Circular include detected, read again from: '" + current_id + "'");
 	}
-	if (PC_tree_t data = PC_get(conf, ".data"); !PC_status(data)) {
-		load_data(*this, data, false);
-	}
-	// if (PC_tree_t plugins = PC_get(conf, ".plugins"); !PC_status(plugins)) {
-	// 	m_plugins.add_config(plugins);
-	// }
 
+	// ── Step 3: diamond include detection ────────────────────────────────────
+	if (loaded.count(current_id)) {
+		m_logger.warn("Diamond include: '{}' has already been loaded in this include tree, skipping", current_id);
+		return; // <- early return before stack.insert, so no erase needed
+	}
+
+	stack.insert(current_id);
+	loaded.insert(current_id);
+
+	// ── Step 4: process .include ─────────────────────────────────────────────
 	PC_tree_t includes = PC_get(conf, ".include");
 	if (!PC_status(includes)) {
-		PDI::each(includes, [&](PC_tree_t yaml_subfile) {
-			std::string include_path = PDI::to_string(yaml_subfile);
-			// fs::path full_path = fs::path(include_path).is_absolute() ? fs::path(include_path) : fs::path(current_path).parent_path() / include_path;
+		PDI::each(includes, [&](PC_tree_t node) {
+			const std::string inc = PDI::to_string(node);
+			const bool is_absolute = fs::path(inc).is_absolute();
 
-			fs::path full_path;
-			if (fs::path(include_path).is_absolute()) {
-				full_path = fs::path(include_path);
-			} else {
+			// ── 4a: resolve to a canonical path ─────────────────────────────
 #if PDI_HAS_PC_PATH
-				full_path = fs::path(base_dir) / include_path;
-#else
+			if (!is_absolute && !has_real_path) {
 				throw std::runtime_error(
-					"Relative include not supported with Paraconf < 1.1: " + include_path
+					"Relative include '" + inc
+					+ "' cannot be resolved: "
+					  "the root config was parsed from a string (no file path available)"
 				);
-#endif
 			}
-
-			full_path = full_path.lexically_normal();
+			fs::path full_path = is_absolute ? fs::path(inc) : fs::path(fs::path(current_id).parent_path()) / inc;
+#else
+			if (!is_absolute) {
+				throw std::runtime_error(
+					"Relative include '" + inc + "' is not supported: "
+					"Paraconf >= 1.1 is required for relative path resolution"
+				);
+			}
+			fs::path full_path = fs::path(inc);
+#endif
 
 			if (!fs::exists(full_path)) {
-				throw std::runtime_error("Included file not found: " + full_path.string());
+				throw std::runtime_error("Included file not found: '" + full_path.string() + "'");
+			}
+			full_path = fs::canonical(full_path); // normalise once, use everywhere
+
+			// ── 4b: content-based circular detection for a no-path root ─────
+			if (!root_content.empty()) {
+				const std::string inc_content = read_file_content(full_path);
+				if (inc_content == root_content) {
+					throw std::runtime_error(
+						"Circular include detected: file '" + full_path.string() + "' is identical to the root config that was parsed from a string"
+					);
+				}
 			}
 
-			PC_tree_t included_conf = PC_parse_path(full_path.string().c_str());
-			if (PC_status(included_conf) != PC_OK) {
-				throw std::runtime_error("Failed to parse: " + full_path.string());
+			// ── 4c: parse and recurse ────────────────────────────────────────
+			PC_tree_t sub = PC_parse_path(full_path.string().c_str());
+			if (PC_status(sub) != PC_OK) {
+				throw std::runtime_error("Failed to parse included file: '" + full_path.string() + "'");
 			}
 
-			load_pdi_config(included_conf, loaded_files);
+			// Pass full_path.string() as known_path so the recursive call
+			// uses the canonical path as identity regardless of Paraconf version.
+			load_pdi_config_impl(sub, loaded, stack, root_content, full_path.string());
 		});
 	}
+
+	// ── Step 5: load types / metadata / data ─────────────────────────────────
+	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
+
+	if (auto m = PC_get(conf, ".metadata"); !PC_status(m)) load_data(*this, m, true);
+
+	if (auto d = PC_get(conf, ".data"); !PC_status(d)) load_data(*this, d, false);
+
+	stack.erase(current_id);
 }
 
 Global_context::Global_context(PC_tree_t conf)

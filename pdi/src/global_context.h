@@ -26,12 +26,14 @@
 #ifndef PDI_GLOBAL_CONTEXT_H_
 #define PDI_GLOBAL_CONTEXT_H_
 
+#include <filesystem>
 #include <list>
 #include <map>
 #include <memory>
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "pdi/pdi_fwd.h"
 #include "pdi/callbacks.h"
@@ -74,6 +76,16 @@ private:
 	Global_context(Global_context&&) = delete;
 
 	std::unordered_set<std::string> m_defined;
+
+	static std::string read_file_content(const std::filesystem::path& path);
+
+	void load_pdi_config_impl(
+		PC_tree_t conf,
+		std::unordered_set<std::string>& loaded,
+		std::unordered_set<std::string>& stack,
+		const std::string& root_content,
+		const std::string& known_path = ""
+	);
 
 public:
 	static void init(PC_tree_t conf);
@@ -129,7 +141,12 @@ public:
 
 	void finalize_and_exit() override;
 
-	void load_pdi_config(PC_tree_t conf, std::unordered_set<std::string>* loaded_files = nullptr);
+	inline void load_pdi_config(PC_tree_t conf, const std::string& root_content = "")
+	{
+		std::unordered_set<std::string> loaded;
+		std::unordered_set<std::string> stack;
+		load_pdi_config_impl(conf, loaded, stack, root_content, "");
+	}
 
 	void check_duplicate(const std::string& name) override;
 
