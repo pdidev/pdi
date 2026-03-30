@@ -3,11 +3,13 @@ include:
   # - test_09_record_data.yml
   - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_09_array_data.yml
   - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_09_record_data.yml
+
 logging: trace
 metadata:
   input: int
 data:
   scalar_data: int
+
 plugins:
   serialize:
     scalar_data: scalar_data_serialized

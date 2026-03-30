@@ -1,6 +1,7 @@
 include:
   # - test_09_subdata.yml
   - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_09_subdata.yml
+
 data:
   record_data:
     type: record

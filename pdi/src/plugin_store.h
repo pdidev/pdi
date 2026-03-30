@@ -129,7 +129,10 @@ public:
 	 */
 	void load_plugins();
 
-	// void add_config(PC_tree_t plugins_node);
+	/** Register plugins from an additional config node (e.g. an included file)
+	 *  Actual loading still happens in load_plugins()
+	 */
+	void register_plugins(PC_tree_t conf);
 };
 
 } // namespace PDI

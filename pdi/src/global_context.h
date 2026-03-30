@@ -83,7 +83,6 @@ private:
 		PC_tree_t conf,
 		std::unordered_set<std::string>& loaded,
 		std::unordered_set<std::string>& stack,
-		const std::string& root_content,
 		const std::string& known_path = ""
 	);
 
@@ -141,11 +140,11 @@ public:
 
 	void finalize_and_exit() override;
 
-	inline void load_pdi_config(PC_tree_t conf, const std::string& root_content = "")
+	inline void load_pdi_config(PC_tree_t conf)
 	{
 		std::unordered_set<std::string> loaded;
 		std::unordered_set<std::string> stack;
-		load_pdi_config_impl(conf, loaded, stack, root_content, "");
+		load_pdi_config_impl(conf, loaded, stack, "");
 	}
 
 	void check_duplicate(const std::string& name) override;

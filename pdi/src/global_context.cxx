@@ -123,18 +123,10 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
-std::string Global_context::read_file_content(const fs::path& p)
-{
-	std::ifstream f(p, std::ios::in | std::ios::binary);
-	if (!f) return "";
-	return std::string(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
-}
-
 void Global_context::load_pdi_config_impl(
 	PC_tree_t conf,
 	std::unordered_set<std::string>& loaded, // global history of all loaded yaml, used to detect diamond include
 	std::unordered_set<std::string>& stack, // local content of the current "branch", used to detect circular include
-	const std::string& root_content,
 	const std::string& known_path
 )
 {
@@ -157,7 +149,7 @@ void Global_context::load_pdi_config_impl(
 	else
 	{
 		const char* raw_path = PC_path(conf);
-		if (raw_path && std::strlen(raw_path) > 0 && fs::exists(raw_path)) {
+		if (raw_path && fs::exists(raw_path)) {
 			current_id = fs::canonical(raw_path).string();
 			has_real_path = true;
 		}
@@ -166,17 +158,17 @@ void Global_context::load_pdi_config_impl(
 
 	if (!has_real_path) {
 		// PC_tree_t internals differ between Paraconf versions and are not
-		// guaranteed to be accessible. Use a monotonic counter instead: each
-		// string-parsed root is a distinct configuration, so a unique ID per
-		// call is exactly what we want. The counter never needs to be reset
+		// guaranteed to be accessible. Use a never decreasing counter instead:
+		// each string-parsed root is a distinct configuration, so a unique ID
+		// per call is exactly what we want. The counter never needs to be reset
 		// because sentinels are only compared within a single recursion tree.
 		static std::atomic<std::size_t> s_no_path_counter{0};
 		current_id = "<no-path:" + std::to_string(s_no_path_counter++) + ">";
 	}
 
 	// ── Step 2: circular include detection ───────────────────────────────────
-	// Meaningful only for file-backed nodes: a no-path root cannot be
-	// referenced by any include directive, so it can never form a cycle.
+	// Meaningful only for file-backed nodes: a no-path root (from PC_parse_string)
+	// cannot be referenced by any include directive, so it can never form a cycle.
 	if (has_real_path && stack.count(current_id)) {
 		throw std::runtime_error("Circular include detected, read again from: '" + current_id + "'");
 	}
@@ -184,7 +176,7 @@ void Global_context::load_pdi_config_impl(
 	// ── Step 3: diamond include detection ────────────────────────────────────
 	if (loaded.count(current_id)) {
 		m_logger.warn("Diamond include: '{}' has already been loaded in this include tree, skipping", current_id);
-		return; // <- early return before stack.insert, so no erase needed
+		return; // Early return before stack.insert, so no erase needed
 	}
 
 	stack.insert(current_id);
@@ -199,6 +191,9 @@ void Global_context::load_pdi_config_impl(
 
 			// ── 4a: resolve to a canonical path ─────────────────────────────
 #if PDI_HAS_PC_PATH
+			// Check if the path to inlcude is relative,
+			// and whether we know our current path.
+			// is_absolute on "included" file, has_real_path on "includer" file
 			if (!is_absolute && !has_real_path) {
 				throw std::runtime_error(
 					"Relative include '" + inc
@@ -222,17 +217,7 @@ void Global_context::load_pdi_config_impl(
 			}
 			full_path = fs::canonical(full_path); // normalise once, use everywhere
 
-			// ── 4b: content-based circular detection for a no-path root ─────
-			if (!root_content.empty()) {
-				const std::string inc_content = read_file_content(full_path);
-				if (inc_content == root_content) {
-					throw std::runtime_error(
-						"Circular include detected: file '" + full_path.string() + "' is identical to the root config that was parsed from a string"
-					);
-				}
-			}
-
-			// ── 4c: parse and recurse ────────────────────────────────────────
+			// ── 4b: parse and recurse ────────────────────────────────────────
 			PC_tree_t sub = PC_parse_path(full_path.string().c_str());
 			if (PC_status(sub) != PC_OK) {
 				throw std::runtime_error("Failed to parse included file: '" + full_path.string() + "'");
@@ -240,16 +225,17 @@ void Global_context::load_pdi_config_impl(
 
 			// Pass full_path.string() as known_path so the recursive call
 			// uses the canonical path as identity regardless of Paraconf version.
-			load_pdi_config_impl(sub, loaded, stack, root_content, full_path.string());
+			load_pdi_config_impl(sub, loaded, stack, full_path.string());
 		});
 	}
 
-	// ── Step 5: load types / metadata / data ─────────────────────────────────
+	// ── Step 5: load types / metadata / data / plugins ───────────────────────
 	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
 
 	if (auto m = PC_get(conf, ".metadata"); !PC_status(m)) load_data(*this, m, true);
-
 	if (auto d = PC_get(conf, ".data"); !PC_status(d)) load_data(*this, d, false);
+
+	m_plugins.register_plugins(conf); // Collects from this node, loads later in constructor
 
 	stack.erase(current_id);
 }
@@ -262,15 +248,14 @@ Global_context::Global_context(PC_tree_t conf)
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
 
-	m_plugins.load_plugins();
+	// m_plugins.load_plugins();
 
 	load_pdi_config(conf);
 
-	// m_plugins.load_plugins();
+	m_plugins.load_plugins();
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
-
 
 	m_callbacks.call_init_callbacks();
 	m_logger.info("Initialization successful");

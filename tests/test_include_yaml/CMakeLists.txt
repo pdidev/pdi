@@ -54,4 +54,9 @@ target_link_libraries(test_circular_yaml_include paraconf::paraconf PDI::PDI_C)
 add_test(NAME test_circular_yaml_include COMMAND "$<TARGET_FILE:test_circular_yaml_include>" "${CMAKE_CURRENT_SOURCE_DIR}/test_10.yml")
 set_tests_properties(test_circular_yaml_include PROPERTIES DISABLED TRUE) # Disabled as expected to fail on correct behaviour (and also missing absolute paths on online CI)
 
+add_executable(test_plugins_yaml_include test_07.c)
+target_link_libraries(test_plugins_yaml_include paraconf::paraconf PDI::PDI_C)
+add_test(NAME test_plugins_yaml_include COMMAND "$<TARGET_FILE:test_plugins_yaml_include>" "${CMAKE_CURRENT_SOURCE_DIR}/test_11.yml")
+set_tests_properties(test_plugins_yaml_include PROPERTIES DISABLED TRUE) # Disabled as missing absolute paths on online CI
+
 endif("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")

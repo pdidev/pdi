@@ -241,12 +241,23 @@ Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
 	: m_ctx(ctx)
 {
 	initialize_path(PC_get(conf, ".plugin_path"));
+	// Plugin registration is deferred to register_plugins(),
+	// called for each node (root included) by load_pdi_config_impl.
+}
 
-	// pre-load the plugins
+void Plugin_store::register_plugins(PC_tree_t conf)
+{
+	// Allow included files to extend the plugin path too.
+	initialize_path(PC_get(conf, ".plugin_path"));
+
 	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
-	m_ctx.logger().trace("Loading {} plugin(s)", nb_plugins);
+	if (nb_plugins > 0) m_ctx.logger().trace("Registering {} plugin(s)", nb_plugins);
 	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
 		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
+		if (m_plugins.count(plugin_name)) {
+			m_ctx.logger().warn("Plugin `{}' already registered, skipping", plugin_name);
+			continue;
+		}
 		m_plugins.emplace(plugin_name, make_shared<Stored_plugin>(m_ctx, *this, plugin_name, PC_get(conf, ".plugins<%d>", plugin_id)));
 	}
 }
@@ -264,58 +275,5 @@ void Plugin_store::load_plugins()
 		throw System_error{"Error while loading plugins: {}", e.what()};
 	}
 }
-
-// void Plugin_store::add_config(PC_tree_t plugins_node)
-// {
-//     // merge plugin definitions into internal storage
-// }
-
-// void Plugin_store::add_config(PC_tree_t plugins_node)
-// {
-//     if (PC_status(plugins_node)) return;
-
-//     int n = len(plugins_node);
-
-//     for (int i = 0; i < n; ++i) {
-//         std::string name = to_string(PC_get(plugins_node, "{%d}", i));
-//         PC_tree_t new_conf = PC_get(plugins_node, "<%d>", i);
-
-//         auto it = m_plugins.find(name);
-
-//         if (it == m_plugins.end()) {
-//             m_plugins.emplace(
-//                 name,
-//                 std::make_shared<Stored_plugin>(m_ctx, *this, name, new_conf)
-//             );
-//         } else {
-//             auto& existing = it->second;
-
-//             // --- merge logic inline (since Stored_plugin has no merge yet) ---
-
-//             PC_tree_t& base = existing->m_config;
-
-//             if (is_map(base) && is_map(new_conf)) {
-//                 int m = len(new_conf);
-//                 for (int j = 0; j < m; ++j) {
-//                     std::string key = to_string(PC_get(new_conf, "{%d}", j));
-//                     PC_tree_t val = PC_get(new_conf, "<%d>", j);
-
-//                     PC_set(base, key.c_str(), val);
-//                 }
-//             }
-//             else if (is_sequence(base) && is_sequence(new_conf)) {
-//                 int m = len(new_conf);
-//                 for (int j = 0; j < m; ++j) {
-//                     PC_tree_t val = PC_get(new_conf, "[%d]", j);
-//                     PC_append(base, val);
-//                 }
-//             }
-//             else {
-//                 // fallback: override
-//                 base = new_conf;
-//             }
-//         }
-//     }
-// }
 
 } // namespace PDI
