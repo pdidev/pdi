@@ -23,47 +23,59 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef VELOC_WRAPPER_H
-#define VELOC_WRAPPER_H
+#include <assert.h>
+#include <mpi.h>
+#include <pdi.h>
 
-#include <pdi/plugin.h>
-#include <pdi/context.h>
-#include <pdi/context_proxy.h>
-#include <pdi/expression.h>
-#include <veloc.h>
+const char CONF_YAML[] =
+    "metadata:\n"
+    "  ii: int\n"
+    "data:\n"
+    "  cp_status: int\n"
+    "  cp_counter: int\n"
+    "  a: int\n"
+    "plugins:\n"
+    "  veloc:\n"
+    "    failure: 0\n"
+    "    config_file: veloc_config.cfg\n"
+    "    status: cp_status\n"
+    "    counter: cp_counter\n"
+    "    checkpoint_label: test_01\n"
+    "    iteration: ii\n"
+    "    protect_data: [ii, a]\n"   
+    "    checkpoint_on: ckp\n";
 
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <algorithm>
-#include <optional>
 
-void init(MPI_Comm comm, std::string veloc_file);
+int main(int argc, char* argv[])
+{
+	MPI_Init(&argc, &argv);
+	PC_tree_t conf = PC_parse_string(CONF_YAML);
+	PDI_init(conf);
+	
+	int cp_status;
+	int cp_counter; 
+	int ii = 0; 
+	int a = 30;
+	
+	PDI_multi_expose("init", "ii", &ii, PDI_INOUT,
+			"a", &a, PDI_INOUT, NULL);
+	PDI_expose("cp_status", &cp_status, PDI_IN);
 
-void protect_data(PDI::Context& ctx,int id, void * ptr, size_t n, size_t sub_bytes);
+	assert(cp_status== 1); // recovery not needed 
 
-void unprotect_data(PDI::Context& ctx, int id);
+	ii = 20;
+	a = 50;
 
-int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> when, 
-	std::string label, std::string iter_name);
+	PDI_multi_expose("ckp", "ii", &ii, PDI_INOUT,
+			"a", &a, PDI_INOUT, NULL);
+	PDI_expose("cp_counter", &cp_counter, PDI_IN);
+	printf("counter is %d/n", cp_counter);
+	assert(cp_counter == 1);
 
-int load_checkpoint(PDI::Context& ctx, std::string label);
-
-void selective_load(std::string label, int * ids, int len);
-
-void init_checkpoint(PDI::Context& ctx, std::string label, std::string iter_name);
-
-void route_file(const std::string& input_filename, char* output_filename);
-
-void end_checkpoint();
-
-void end_selective_load();
-
-void init_restart(PDI::Context& ctx, std::string label);
-
-void restart_end();
-
-void finalize();
-
-#endif 
+    printf("TEST 01_1 PASSED ");
+	
+	PDI_finalize();
+	MPI_Finalize();
+	
+	return 0;
+}

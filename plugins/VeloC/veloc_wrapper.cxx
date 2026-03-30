@@ -34,6 +34,8 @@
 #include <pdi/ref_any.h>
 
 #include <optional>
+#include <iostream>
+#include <cassert>
 
 
 #include "veloc_wrapper.h"
@@ -54,15 +56,29 @@ void init(MPI_Comm comm, std::string veloc_file){
 
 void protect_data(PDI::Context& ctx, int id, void * ptr, size_t n, size_t sub_bytes){
 
-	VELOC_Mem_protect(id, ptr, n, sub_bytes);   
+	std::cout << " id : " << id << " at ptr ="<< ptr << " of size = " << n*sub_bytes<< std::endl; 
+	if (VELOC_Mem_protect(id, ptr, n, sub_bytes)!= VELOC_SUCCESS)
+	{
+		std::cout << "mem protect failed" << std::endl;
+	}
+	else{
+		std::cout << "Protected id "  << id << std::endl; 
+	} 
 
 }
 
 void unprotect_data(PDI::Context& ctx, int id){
 
-	VELOC_Mem_unprotect(id);   
+	// VELOC_Mem_unprotect(id);  
+	
+	if (VELOC_Mem_unprotect(id) != VELOC_SUCCESS)
+	{
+		std::cout << "mem unprotect failed" << std::endl;
+	}
+	else{
+		std::cout << "Unproteted id " << id << std::endl;
+	}
     
-	ctx.logger().info("Unregistered id {}\n", id);
 
 }
 
@@ -73,16 +89,14 @@ int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> whe
     }
 
 	Ref_r ref_r_iter = ctx.desc(iter_name).ref();
-	auto v = ref_r_iter.scalar_value<int>();
-
-	std::cout << " value of iter_name is " << v << std::endl;
+	auto version = ref_r_iter.scalar_value<int>();
 	
-	if (VELOC_Checkpoint(label.c_str(), v) != VELOC_SUCCESS) {
+	if (VELOC_Checkpoint(label.c_str(), version) != VELOC_SUCCESS) {
 		std::cout << "Error checkpointing! Aborting...\n" << std::endl;
 		exit(2);
 	}
 
-	return 1;
+	return version;
 
 }
 
@@ -98,8 +112,8 @@ int load_checkpoint(PDI::Context& ctx, std::string label){
 	//     }
 
 	if (version > 0) {
-	std::cout << "Previous checkpoint found at iteration " << version << " initiating restart..." << std::endl; 
-	// v can be any version, independent of what VELOC_Restart_test is returning
+	std::cout << "Previous checkpoint found at iteration " << version << 
+		" initiating restart..." << std::endl; 
 	
 	if (VELOC_Restart(label.c_str(), version) != VELOC_SUCCESS) {
 		std::cout << "Error restarting! Aborting ..." << std::endl;   
@@ -113,6 +127,87 @@ int load_checkpoint(PDI::Context& ctx, std::string label){
 	return version; 
 }
 
+void selective_load(std::string label, int * ids, int len){
+
+	int version = VELOC_Restart_test(label.c_str(), 0);
+
+	if (version > 0) {
+
+		std::cout << "Previous checkpoint found at iteration " << version 
+			<< " Initiating restart... \n" << std::endl;
+	
+		if(VELOC_Restart_begin(label.c_str(), version)!= VELOC_SUCCESS){
+			std::cout << "Error at VELOC_Restart_begin " << std::endl;
+		};
+
+		std::cout << " ids = " << ids << std::endl; 
+		
+		if (VELOC_Recover_selective(VELOC_RECOVER_SOME, ids, len) != VELOC_SUCCESS) {
+			std::cout << "Error restarting variable(s) ";
+			for (int i = 0; i < len; ++i) {
+				std::cout << ids[i] << ", ";
+			}
+			std::cout << " Aborting ..." << std::endl;
+			VELOC_Restart_end(0);
+			exit(2);	
+		}
+
+		if(VELOC_Restart_end(1) != VELOC_SUCCESS){
+			std::cout << "Error at VELOC_Restart_end " << std::endl;
+		};
+	
+	}
+
+}
+
+void restart_end(){
+
+	if(VELOC_Restart_end(1) != VELOC_SUCCESS){
+			std::cout << "Error at VELOC_Restart_end " << std::endl;
+		};
+}
+
+void init_restart(PDI::Context& ctx, std::string label){
+	
+	int version = VELOC_Restart_test(label.c_str(), 0);
+
+	if (version > 0) {
+
+		std::cout << "Previous checkpoint found at iteration " << version 
+			<< " Initiating restart... \n" << std::endl;
+	
+		if(VELOC_Restart_begin(label.c_str(), version)!= VELOC_SUCCESS){
+			std::cout << "Error at VELOC_Restart_begin " << std::endl;
+		};
+	}
+
+}
+
+
+void init_checkpoint(PDI::Context& ctx, std::string label, std::string iter_name){
+
+	Ref_r ref_r_iter = ctx.desc(iter_name).ref(); // this should be in veloc.xx
+	auto version = ref_r_iter.scalar_value<int>(); // this should be in veloc.xx
+	
+	if(VELOC_Checkpoint_begin(label.c_str(), version)!= VELOC_SUCCESS){
+		std::cout << "Error at VELOC_Checkpoint_begin " << std::endl;
+	};
+
+}
+
+void end_checkpoint(){
+	assert(VELOC_Checkpoint_end(1) == VELOC_SUCCESS);
+}
+
+void route_file(const std::string& input_filename, char* output_filename) {
+    if (VELOC_Route_file(input_filename.c_str(), output_filename) != VELOC_SUCCESS) {
+        std::cout << "Routing of file failed" << std::endl;
+    } else {
+        std::cout << "File routed successfully" << std::endl;
+		std::cout << "input_filename = " << input_filename << std::endl;
+		std::cout << "output_filename = " << output_filename << std::endl;
+    }
+}
 
 void finalize(){
 	VELOC_Finalize(1); // 1 because wait for pending checkpoints to flush if there are any 

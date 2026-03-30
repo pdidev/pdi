@@ -64,11 +64,15 @@ bool load_events(unordered_map<string, Event_type>& events, Context& ctx, PC_tre
 		{Event_type::CHECKPOINT, "checkpoint_on"},
 		{Event_type::RECOVER,       "recover_on"},
 		{Event_type::RECOVER_VAR,   "recover_var"},
-		{Event_type::STATE_SYNC,     "synchronize_on"}
+		{Event_type::STATE_SYNC,     "synchronize_on"},
+        {Event_type::START_CHECKPOINT,  "start_on"},
+        {Event_type::END_CHECKPOINT,  "end_on"},
+        {Event_type::ROUTE_FILE,  "route_file_on"}
 	};
 	
 	bool inserted = false;
-    if (!PC_status(PC_get(tree, "[0]"))){
+    if (!PC_status(PC_get(tree, "[0]"))){ // if it is a list 
+        std::cout << "list of events " << std::endl;
         each(tree, [&](PC_tree_t subtree) {
             auto&& result = events.emplace(to_string(subtree), event_type);
             if (result.second) {
@@ -84,6 +88,7 @@ bool load_events(unordered_map<string, Event_type>& events, Context& ctx, PC_tre
     }
 
     else{
+        std::cout << "single event " << std::endl;
         auto&& result = events.emplace(to_string(tree), event_type);
         if (result.second) {
             inserted = true;
@@ -118,7 +123,7 @@ bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const stri
 
 // takes the ".var" entries of the recover_var tree 
 
-unordered_set<int> load_vars(Context& ctx, PC_tree_t tree, std::unordered_map<int, std::string> protected_data)
+set<int> load_vars(Context& ctx, PC_tree_t tree, std::unordered_map<int, std::string> protected_data)
 {
     // Build a reverse lookup: name -> id
     unordered_map<string, int> name_to_id;
@@ -129,7 +134,7 @@ unordered_set<int> load_vars(Context& ctx, PC_tree_t tree, std::unordered_map<in
     // for each var name, checks if present in protected_data. Is this necessary?
     // if so, it adds the variable index to an unordered set
     // which then in the constructor is used as a value of a key-value map where the key is the event name 
-    unordered_set<int> vars;
+    set<int> vars;
     if (!PC_status(PC_get(tree, "[0]"))){ //list 
         each(tree, [&](PC_tree_t subtree) -> void {
             string var_name = to_string(subtree);
@@ -149,7 +154,7 @@ unordered_set<int> load_vars(Context& ctx, PC_tree_t tree, std::unordered_map<in
         auto it = name_to_id.find(var_name);
         if (it == name_to_id.end()) {
             ctx.logger().warn("Unknown variable name `{}' in `recover_var'", var_name);
-            return unordered_set<int> {};
+            return set<int> {};
         }
         auto&& result = vars.emplace(it->second);
         if (!result.second) {
@@ -209,6 +214,9 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
         else if (key == "recover_var"){
             // parsed in pass 3
         }
+        else if (key == "manual_checkpoint"){
+            // parsed in pass 4
+        }
         else {
             throw Config_error{tree, "Unknown key in VeloC plugin configuration: `{}'", key};
         }
@@ -234,6 +242,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
             data_id++;
         });
     }
+    // TO DO: else 
 
     // pass 3 
     PC_tree_t recover_var_tree = PC_get(tree, ".recover_var");
@@ -259,6 +268,34 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
                 this->m_recover_var.emplace(event_name, vars);
             });
         }
+    }
+
+    // pass 4 
+    PC_tree_t manual_cp_tree = PC_get(tree, ".manual_checkpoint");
+    if (!PC_status(manual_cp_tree)) {
+        each(manual_cp_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
+
+            std::cout << "inside manual checkpoint tree " << std::endl; 
+            string key = to_string(key_tree);
+
+            if(key == "original_file"){
+                m_manual_cp.original_file = to_string(value);
+            }
+            else if(key == "veloc_file"){
+                string routed_file = to_string(value); 
+                std::cout << "routed_file = " << routed_file << std::endl; 
+                m_manual_cp.routed_file = routed_file; 
+            }
+            else if(key == "start_on"){
+                load_events(m_events, ctx, value, Event_type::START_CHECKPOINT);
+            }
+            else if(key == "end_on"){
+                load_events(m_events, ctx, value, Event_type::END_CHECKPOINT);
+            }
+            else if(key == "route_file_on"){
+                load_events(m_events, ctx, value, Event_type::ROUTE_FILE);
+            }
+        });     
     }
 
     // conformity checks 

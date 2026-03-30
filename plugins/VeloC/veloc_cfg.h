@@ -28,6 +28,7 @@
 #include <map>
 #include <set>
 #include <tuple>
+#include <vector>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -40,7 +41,10 @@ enum class Event_type {
 	RECOVER,
     CHECKPOINT,
 	RECOVER_VAR,
-	STATE_SYNC
+	STATE_SYNC,
+	START_CHECKPOINT,
+	ROUTE_FILE,
+	END_CHECKPOINT
 };
 
 enum class Desc_type {
@@ -48,11 +52,22 @@ enum class Desc_type {
     COUNTER_CP
 };
 
+struct ManualCheckpoint{
+	std::string original_file;
+	std::string routed_file;
+	Event_type start_on;
+	Event_type route_on;
+	Event_type end_on; 
+	// PDI::Expression when;
+};
+
 class Veloc_cfg
 {
 	PDI::Expression m_config_file;
 
     std::string m_cp_label; 
+
+	ManualCheckpoint m_manual_cp;
 
     int m_failure; 
 
@@ -68,7 +83,7 @@ class Veloc_cfg
 
 	PDI::Expression m_when;
 	
-	std::unordered_map<std::string, std::unordered_set<int>> m_recover_var; // event a - 1,2,3 ( = recover variables with index 1,2, and 3 in m_protected_data on "event")
+	std::unordered_map<std::string, std::set<int>> m_recover_var; // event a - 1,2,3 ( = recover variables with index 1,2, and 3 in m_protected_data on "event")
 	
 public:
 	Veloc_cfg(PDI::Context& ctx, PC_tree_t tree);
@@ -81,6 +96,8 @@ public:
 
 	std::string iter_name() const { return m_iter_name; }
 
+	const ManualCheckpoint manual_cp() const {return m_manual_cp;}
+
 	const PDI::Expression& when() const { return m_when; }
 	
 	const std::unordered_map<int, std::string>& protected_data() const {return m_protected_data; }
@@ -89,7 +106,7 @@ public:
 	
 	const std::unordered_map<std::string, Event_type>& events() const {return m_events;}
 	
-	const std::unordered_map<std::string, std::unordered_set<int>>& recover_var() const {return m_recover_var;}
+	const std::unordered_map<std::string, std::set<int>>& recover_var() const {return m_recover_var;}
 }; // class Veloc_cfg
 
 #endif // VELOC_CFG_H_

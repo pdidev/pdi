@@ -23,47 +23,73 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef VELOC_WRAPPER_H
-#define VELOC_WRAPPER_H
+#include <assert.h>
+#include <mpi.h>
+#include <pdi.h>
 
-#include <pdi/plugin.h>
-#include <pdi/context.h>
-#include <pdi/context_proxy.h>
-#include <pdi/expression.h>
-#include <veloc.h>
+const char CONF_YAML[] =
+    "data:\n"
+    "  a: int\n"
+	"  ii: int\n"
+    "plugins:\n"
+    "  veloc:\n"
+    "    failure: 1\n"
+    "    config_file: veloc_config.cfg\n"
+    "    checkpoint_label: test_01\n"
+    "    iteration: ii\n"
+    "    protect_data: [ii, a]\n"  
+	"    recover_var:\n"
+	"      - on_event: recover_iter\n"
+	"        var: [ii]\n"
+	"      - on_event: recover_a\n"
+	"        var: [a]\n"
+	"      - on_event: recover_all\n"
+	"        var: [ii, a]\n";
+	
 
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <algorithm>
-#include <optional>
+int main(int argc, char* argv[])
+{	
+    MPI_Init(&argc, &argv);
+    PC_tree_t conf = PC_parse_string(CONF_YAML);
+	PDI_init(conf);
+	
+	int cp_status;
+	int cp_counter; 
+	int ii = 0;  
+	int a = 0;
+	
+	// PDI_multi_expose("recover", "ii", &ii, PDI_INOUT, 
+	// 	"a", &a, PDI_INOUT, NULL);
+	// assert(ii == 20);
+	// assert(a == 50);
 
-void init(MPI_Comm comm, std::string veloc_file);
+	// printf(" after recover_iter"); 
 
-void protect_data(PDI::Context& ctx,int id, void * ptr, size_t n, size_t sub_bytes);
+	PDI_multi_expose("recover_a", "a", &a, PDI_INOUT, NULL);
+	assert(a == 50);
 
-void unprotect_data(PDI::Context& ctx, int id);
+	ii=0;
+	a=0; 
 
-int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> when, 
-	std::string label, std::string iter_name);
+	// printf(" after recover_a"); 
 
-int load_checkpoint(PDI::Context& ctx, std::string label);
 
-void selective_load(std::string label, int * ids, int len);
+	// PDI_multi_expose("recover", "ii", &ii, PDI_INOUT, 
+	// 	"a", &a, PDI_INOUT, NULL);
+	// assert(ii == 20);
+	// assert(a == 50);
+	
+	PDI_multi_expose("recover_iter", "ii", &ii, PDI_INOUT,
+			NULL);
 
-void init_checkpoint(PDI::Context& ctx, std::string label, std::string iter_name);
+	assert(ii == 20);
+	// assert(a == 50);
 
-void route_file(const std::string& input_filename, char* output_filename);
+	printf("TEST 01_3 PASSED ");
 
-void end_checkpoint();
+	PDI_finalize();
+	MPI_Finalize();
 
-void end_selective_load();
+    return 0; 
 
-void init_restart(PDI::Context& ctx, std::string label);
-
-void restart_end();
-
-void finalize();
-
-#endif 
+}

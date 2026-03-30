@@ -100,6 +100,12 @@ class veloc_plugin : public Plugin
         }
     }
 
+    void unprotect(){
+        for (auto&& data: m_config.protected_data()) {
+            unprotect_data(context(), data.first);   
+        }
+    }
+
     // protect all variables to be included in checkpoints for restoring 
     void protect_for_write(){
         for (auto&& data: m_config.protected_data()) {
@@ -123,11 +129,8 @@ class veloc_plugin : public Plugin
                 protect_data(context(),data.first, const_cast<void*>(ref.get()), n, sub_bytes);   
             } 
             else{
-                // context().logger().warn("Protected variable `{}' (id: {}) not available for writing", data.second, data.first);
-                // unprotect_data(data.first);
                 throw Error{PDI_ERR_VALUE, 
                         "Protected variable `{}' (id: {}) not available for writing", data.second, data.first}; 
-
             }
         }
     }
@@ -256,38 +259,62 @@ class veloc_plugin : public Plugin
 
             for (auto&& event: m_config.events()) { // event call backs
                 switch (event.second) {
-                // case Event_type::RECOVER_VAR: {
-                // 	context().callbacks().add_event_callback([this](const string& event_name) {
-                // 		if (!m_fti) {
-                // 			context().logger().warn("Trying to recover variable before plugin initialization (`{}')", event_name);
-                // 			return;
-                // 		}
-                // 		FTI_RecoverVarInit();
-                // 		for (auto&& var_id: m_config.recover_var().at(event_name)) {
-                // 			string desc_name = m_config.dataset().at(var_id);
-                // 			if (Ref_w ref = context().desc(desc_name).ref()) {
-                // 				const Datatype_sptr type = ref.type();
-                // 				if (!type->dense()) {
-                // 					context().logger().warn("Sparse types are not supported (`{}')", desc_name);
-                // 					continue;
-                // 				}
-                // 				context().logger().debug("FTI_Recover, var id: `{}', desc `{}'", var_id, desc_name);
-                // 				m_fti->protect(var_id, ref.get(), type->datasize(), FTI_CHAR);
-                // 				m_fti->recover_var(var_id);
-                // 			} else {
-                // 				context().logger().warn("Variable `{}' (id: {}) unavailable", desc_name, var_id);
-                // 			}
-                // 		}
-                // 		FTI_RecoverVarFinalize();
-                // 	},
-                // 	event.first);
-                // } break;
+                case Event_type::RECOVER_VAR: {
+                	context().callbacks().add_event_callback([this](const string& event_name) {
+                		for (int var_id: m_config.recover_var().at(event_name)) {
+                			string desc_name = m_config.protected_data().at(var_id);
+                            std::cout <<  "desc_name : "<< desc_name << std::endl << " var_id : " << var_id <<std::endl; 
+                			if (Ref_w ref = context().desc(desc_name).ref()) {
+                                const Datatype_sptr type = ref.type();
+                                size_t n = 1;  
+                                size_t bytes = type-> datasize();
+
+                                if(auto* array_type = // If Datatype is an array 
+                                    dynamic_cast<const PDI::Array_datatype*>(type.get())) { 
+                                    n = array_type->subsize();
+                                }
+
+                                size_t sub_bytes = bytes/n; 
+
+                                if (!type->dense()) {
+                                    context().logger().warn("Sparse types are not supported (`{}')", desc_name);
+                                    continue;
+                                }
+
+                                protect_data(context(),var_id, const_cast<void*>(ref.get()), n, sub_bytes);   
+                                // selective_load(m_config.label(), &var_id, 1);
+                            } 
+                            else{
+                                // unprotect_data(data.first);
+                                // end_selective_load();
+                                throw Error{PDI_ERR_VALUE, 
+                                        "Protected variable `{}' (id: {}) not available for reading", desc_name, var_id};  
+                            }
+                		}
+                        const auto& var_ids = m_config.recover_var().at(event_name);
+                        for (int id : var_ids) {
+                            std::cout << " var_ids : " << id << std::endl; 
+                        }
+                        std::vector<int> var_ids_vector(var_ids.begin(), var_ids.end());
+                        std::cout << "var_ids_vector.data() = " << var_ids_vector.data() << std::endl;
+                        for(int i=0; i <var_ids_vector.size(); i++) {
+                            std::cout << " var_ids_vector[" << i << "] = " << var_ids_vector[i] <<std::endl;
+                        }
+                        selective_load(m_config.label(), var_ids_vector.data(), var_ids_vector.size());
+
+                        for (auto&& var_id: var_ids) {
+                            unprotect_data(context(),var_id);
+                        }
+                    },
+                	event.first);
+                } break;
                 case Event_type::RECOVER: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
                         protect_for_write();
                         int result = load_checkpoint(context(), m_config.label()); 
                         m_recovered_iter = result;
                         m_status = 1; 
+                        unprotect();
                     },
                     event.first);
                 } break;
@@ -298,19 +325,21 @@ class veloc_plugin : public Plugin
                             int result = load_checkpoint(context(), m_config.label()); 
                             m_recovered_iter = result;
                             m_status = 1; 
+                            unprotect();
                         } 
                         else if(m_status) { // recovery done or not needed 
                             protect_for_read();
                             int result = write_checkpoint(context(), m_config.when(),m_config.label(), m_config.iter_name()); 
-                            if (result ==1){
+                            if (result != 0){
                                 cp_counter++; 
                             }
+                            unprotect();
                         }
                     },
                     event.first);
                 } break;
                 case Event_type::CHECKPOINT: {
-                    Event_type event_type = event.second;
+                    Event_type event_type = event.second; // it this needed? 
                     context().callbacks().add_event_callback([this, event_type](const string& event_name) {
 
                         if(!m_status){
@@ -323,13 +352,46 @@ class veloc_plugin : public Plugin
                         auto new_iter = new_iter_r.scalar_value<int>();
                         if(new_iter!= m_recovered_iter){  
                             int result = write_checkpoint(context(), m_config.when(), m_config.label(), m_config.iter_name()); 
-                            if (result ==1){
+                            
+                            if (result != 0){
                                 cp_counter++; 
                             }
-                        } 
+                        }
+                        unprotect();
                     },
                     event.first);
                 } break;
+                case Event_type::START_CHECKPOINT: {
+                    context().callbacks().add_event_callback([this](const string& event_name) {
+                        std::cout << "inside strat_checkpoint event handler" << std::endl; 
+                        protect_for_read();
+                        init_checkpoint(context(), m_config.label(), m_config.iter_name());
+                    },
+                    event.first);
+                }break;
+                case Event_type::ROUTE_FILE: {
+                context().callbacks().add_event_callback([this](const string& event_name) {
+                    std::cout << "insie route_file event handler" << std::endl; 
+                    Ref_w wref = context().desc(m_config.manual_cp().routed_file).ref(); // ← Ref_w
+                    std::cout << "m_config.manual_cp().routed_file = " << m_config.manual_cp().routed_file << std::endl;
+                    if (!wref) {
+                        throw Error{PDI_ERR_VALUE,
+                            "Variable `{}' not available for writing", m_config.manual_cp().routed_file};
+                    }
+                    char* routed_chars = static_cast<char*>(wref.get()); // no const_cast needed
+                    std::cout << "routed_chars = " << routed_chars << std::endl;
+                    std::cout << "m_config.manual_cp().original_file = " << m_config.manual_cp().original_file << std::endl;
+                    route_file(m_config.manual_cp().original_file, routed_chars);
+                },
+                event.first);
+            } break;
+                case Event_type::END_CHECKPOINT: {
+                    context().callbacks().add_event_callback([this](const string& event_name) {
+                        end_checkpoint();
+                        unprotect();
+                    },
+                    event.first);
+                }break;
                 default:
                     assert(false &&  "Unexpected event type");
                 }
@@ -338,11 +400,9 @@ class veloc_plugin : public Plugin
 
         ~veloc_plugin(){
             finalize();
-            context().logger().info("{} checkpoints have been written", cp_counter);
+            context().logger().info("{} checkpoints were written", cp_counter);
             context().logger().info("Closing plugin");
         }
-
-
         
     // void event(const std::string& event)
     // {
