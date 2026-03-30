@@ -65,9 +65,12 @@ bool load_events(unordered_map<string, Event_type>& events, Context& ctx, PC_tre
 		{Event_type::RECOVER,       "recover_on"},
 		{Event_type::RECOVER_VAR,   "recover_var"},
 		{Event_type::STATE_SYNC,     "synchronize_on"},
-        {Event_type::START_CHECKPOINT,  "start_on"},
-        {Event_type::END_CHECKPOINT,  "end_on"},
-        {Event_type::ROUTE_FILE,  "route_file_on"}
+        {Event_type::START_CHECKPOINT,  "start_cp_on"},
+        {Event_type::END_CHECKPOINT,  "end_cp_on"},
+        {Event_type::ROUTE_FILE_FOR_CP,  "route_file_for_cp_on"},
+        {Event_type::ROUTE_FILE_FOR_REC,  "route_file_for_rec_on"},
+        {Event_type::START_RECOVERY,  "start_rec_on"},
+        {Event_type::END_RECOVERY,  "end_rec_on"}
 	};
 	
 	bool inserted = false;
@@ -88,7 +91,7 @@ bool load_events(unordered_map<string, Event_type>& events, Context& ctx, PC_tre
     }
 
     else{
-        std::cout << "single event " << std::endl;
+        std::cout << "single event : " << to_string(tree) << std::endl;
         auto&& result = events.emplace(to_string(tree), event_type);
         if (result.second) {
             inserted = true;
@@ -217,6 +220,9 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
         else if (key == "manual_checkpoint"){
             // parsed in pass 4
         }
+        else if (key == "manual_recovery"){
+            // parsed in pass 5
+        }
         else {
             throw Config_error{tree, "Unknown key in VeloC plugin configuration: `{}'", key};
         }
@@ -293,10 +299,42 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
                 load_events(m_events, ctx, value, Event_type::END_CHECKPOINT);
             }
             else if(key == "route_file_on"){
-                load_events(m_events, ctx, value, Event_type::ROUTE_FILE);
+                load_events(m_events, ctx, value, Event_type::ROUTE_FILE_FOR_CP);
             }
         });     
     }
+
+    // TO DO: ELSE
+
+    // pass 5
+    PC_tree_t manual_rec_tree = PC_get(tree, ".manual_recovery");
+    if (!PC_status(manual_rec_tree)) {
+        each(manual_rec_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
+
+            std::cout << "inside manual recovery tree " << std::endl; 
+            string key = to_string(key_tree);
+
+            if(key == "original_file"){
+                m_manual_rec.original_file = to_string(value);
+            }
+            else if(key == "veloc_file"){
+                string routed_file = to_string(value); 
+                std::cout << "routed_file = " << routed_file << std::endl; 
+                m_manual_rec.routed_file = routed_file; 
+            }
+            else if(key == "start_on"){
+                load_events(m_events, ctx, value, Event_type::START_RECOVERY);
+            }
+            else if(key == "end_on"){
+                load_events(m_events, ctx, value, Event_type::END_RECOVERY);
+            }
+            else if(key == "route_file_on"){
+                load_events(m_events, ctx, value, Event_type::ROUTE_FILE_FOR_REC);
+            }
+        });     
+    }
+
+    // TO DO: else
 
     // conformity checks 
 

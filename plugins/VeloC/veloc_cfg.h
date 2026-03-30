@@ -43,8 +43,11 @@ enum class Event_type {
 	RECOVER_VAR,
 	STATE_SYNC,
 	START_CHECKPOINT,
-	ROUTE_FILE,
-	END_CHECKPOINT
+	ROUTE_FILE_FOR_CP,
+	ROUTE_FILE_FOR_REC,
+	END_CHECKPOINT,
+	START_RECOVERY,
+	END_RECOVERY
 };
 
 enum class Desc_type {
@@ -55,11 +58,22 @@ enum class Desc_type {
 struct ManualCheckpoint{
 	std::string original_file;
 	std::string routed_file;
-	Event_type start_on;
+	Event_type start_cp_on;
 	Event_type route_on;
-	Event_type end_on; 
+	Event_type end_cp_on; 
 	// PDI::Expression when;
 };
+
+
+struct ManualRecovery{
+	std::string original_file;
+	std::string routed_file;
+	Event_type start_rec_on;
+	Event_type route_on;
+	Event_type end_rec_on; 
+	// PDI::Expression when;
+};
+
 
 class Veloc_cfg
 {
@@ -68,6 +82,8 @@ class Veloc_cfg
     std::string m_cp_label; 
 
 	ManualCheckpoint m_manual_cp;
+
+	ManualRecovery m_manual_rec;
 
     int m_failure; 
 
@@ -97,6 +113,8 @@ public:
 	std::string iter_name() const { return m_iter_name; }
 
 	const ManualCheckpoint manual_cp() const {return m_manual_cp;}
+
+	const ManualRecovery manual_rec() const {return m_manual_rec;}
 
 	const PDI::Expression& when() const { return m_when; }
 	

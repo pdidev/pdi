@@ -369,7 +369,15 @@ class veloc_plugin : public Plugin
                     },
                     event.first);
                 }break;
-                case Event_type::ROUTE_FILE: {
+                case Event_type::START_RECOVERY: {
+                    context().callbacks().add_event_callback([this](const string& event_name) {
+                        std::cout << "inside strat_checkpoint event handler" << std::endl; 
+                        protect_for_read();
+                        init_restart(context(), m_config.label());
+                    },
+                    event.first);
+                }break;
+                case Event_type::ROUTE_FILE_FOR_CP: {
                 context().callbacks().add_event_callback([this](const string& event_name) {
                     std::cout << "insie route_file event handler" << std::endl; 
                     Ref_w wref = context().desc(m_config.manual_cp().routed_file).ref(); // ← Ref_w
@@ -384,10 +392,33 @@ class veloc_plugin : public Plugin
                     route_file(m_config.manual_cp().original_file, routed_chars);
                 },
                 event.first);
-            } break;
+                } break;
+                case Event_type::ROUTE_FILE_FOR_REC: {
+                context().callbacks().add_event_callback([this](const string& event_name) {
+                    std::cout << "insie route_file event handler" << std::endl; 
+                    Ref_w wref = context().desc(m_config.manual_rec().routed_file).ref(); // ← Ref_w
+                    std::cout << "m_config.manual_rec().routed_file = " << m_config.manual_rec().routed_file << std::endl;
+                    if (!wref) {
+                        throw Error{PDI_ERR_VALUE,
+                            "Variable `{}' not available for writing", m_config.manual_rec().routed_file};
+                    }
+                    char* routed_chars = static_cast<char*>(wref.get()); // no const_cast needed
+                    std::cout << "routed_chars = " << routed_chars << std::endl;
+                    std::cout << "m_config.manual_rec().original_file = " << m_config.manual_rec().original_file << std::endl;
+                    route_file(m_config.manual_rec().original_file, routed_chars);
+                },
+                event.first);
+                } break;
                 case Event_type::END_CHECKPOINT: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
                         end_checkpoint();
+                        unprotect();
+                    },
+                    event.first);
+                }break;
+                case Event_type::END_RECOVERY: {
+                    context().callbacks().add_event_callback([this](const string& event_name) {
+                        end_restart();
                         unprotect();
                     },
                     event.first);

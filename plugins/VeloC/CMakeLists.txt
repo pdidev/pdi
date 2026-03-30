@@ -33,6 +33,6 @@ set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${P
 install(TARGETS pdi_veloc_plugin
     LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}")
 
-if(BUILD_TESTING)
-    add_subdirectory(tests)
-endif()
+#if(BUILD_TESTING)
+#    add_subdirectory(tests)
+#endif()

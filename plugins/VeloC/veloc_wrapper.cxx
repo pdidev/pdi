@@ -160,7 +160,7 @@ void selective_load(std::string label, int * ids, int len){
 
 }
 
-void restart_end(){
+void end_restart(){
 
 	if(VELOC_Restart_end(1) != VELOC_SUCCESS){
 			std::cout << "Error at VELOC_Restart_end " << std::endl;

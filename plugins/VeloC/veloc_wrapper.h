@@ -62,7 +62,7 @@ void end_selective_load();
 
 void init_restart(PDI::Context& ctx, std::string label);
 
-void restart_end();
+void end_restart();
 
 void finalize();
 
