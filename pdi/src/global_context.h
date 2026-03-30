@@ -138,6 +138,10 @@ public:
 
 	Callbacks& callbacks() override;
 
+	void check_duplicate(const std::string& name) override;
+
+	void collect_plugins_impl(PC_tree_t conf, std::unordered_set<std::string>& visited, const std::string& known_path = "");
+
 	void finalize_and_exit() override;
 
 	inline void load_pdi_config(PC_tree_t conf)
@@ -146,8 +150,6 @@ public:
 		std::unordered_set<std::string> stack;
 		load_pdi_config_impl(conf, loaded, stack, "");
 	}
-
-	void check_duplicate(const std::string& name) override;
 
 	~Global_context() override;
 };

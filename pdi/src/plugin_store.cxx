@@ -245,6 +245,20 @@ Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
 	// called for each node (root included) by load_pdi_config_impl.
 }
 
+void Plugin_store::load_plugins()
+{
+	try {
+		for (auto&& plugin: m_plugins) {
+			//TODO: what to do if a single plugin fails to load?
+			plugin.second->ensure_loaded(m_plugins);
+		}
+	} catch (const Error& e) {
+		throw;
+	} catch (const exception& e) {
+		throw System_error{"Error while loading plugins: {}", e.what()};
+	}
+}
+
 void Plugin_store::register_plugins(PC_tree_t conf)
 {
 	// Allow included files to extend the plugin path too.
@@ -259,20 +273,6 @@ void Plugin_store::register_plugins(PC_tree_t conf)
 			continue;
 		}
 		m_plugins.emplace(plugin_name, make_shared<Stored_plugin>(m_ctx, *this, plugin_name, PC_get(conf, ".plugins<%d>", plugin_id)));
-	}
-}
-
-void Plugin_store::load_plugins()
-{
-	try {
-		for (auto&& plugin: m_plugins) {
-			//TODO: what to do if a single plugin fails to load?
-			plugin.second->ensure_loaded(m_plugins);
-		}
-	} catch (const Error& e) {
-		throw;
-	} catch (const exception& e) {
-		throw System_error{"Error while loading plugins: {}", e.what()};
 	}
 }
 

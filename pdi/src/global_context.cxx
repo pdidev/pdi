@@ -123,6 +123,183 @@ void Global_context::finalize()
 	s_context.reset();
 }
 
+Global_context::Global_context(PC_tree_t conf)
+	: m_logger{"PDI", PC_get(conf, ".logging")}
+	, m_plugins{*this, conf}
+	, m_callbacks{*this}
+{
+	// load basic datatypes
+	Datatype_template::load_basic_datatypes(*this);
+
+	// Pass 1: collect all plugin declarations from the full include tree,
+	//         then load them - so custom types (like MPI_Comm) are available.
+	{
+		std::unordered_set<std::string> visited;
+		collect_plugins_impl(conf, visited);
+	}
+
+	m_plugins.load_plugins();
+
+	load_pdi_config(conf);
+
+	// evaluate pattern after loading plugins
+	m_logger.evaluate_pattern(*this);
+
+	m_callbacks.call_init_callbacks();
+	m_logger.info("Initialization successful");
+}
+
+Data_descriptor& Global_context::desc(const char* name)
+{
+	return *(m_descriptors.emplace(name, unique_ptr<Data_descriptor>{new Data_descriptor_impl{*this, name}}).first->second);
+}
+
+Data_descriptor& Global_context::desc(const string& name)
+{
+	return desc(name.c_str());
+}
+
+Data_descriptor& Global_context::operator[] (const char* name)
+{
+	return desc(name);
+}
+
+Data_descriptor& Global_context::operator[] (const string& name)
+{
+	return desc(name.c_str());
+}
+
+Global_context::Iterator Global_context::begin()
+{
+	return Context::get_iterator(m_descriptors.begin());
+}
+
+Global_context::Iterator Global_context::end()
+{
+	return Context::get_iterator(m_descriptors.end());
+}
+
+PDI::Context::Iterator Global_context::find(const string& name)
+{
+	return Context::get_iterator(m_descriptors.find(name));
+}
+
+void Global_context::event(const char* name)
+{
+	m_callbacks.call_event_callbacks(name);
+}
+
+Logger& Global_context::logger()
+{
+	return m_logger;
+}
+
+Datatype_template_sptr Global_context::datatype(PC_tree_t node)
+{
+	string type;
+	try {
+		type = to_string(PC_get(node, ".type"));
+	} catch (const Error& e) {
+		type = to_string(node);
+	}
+
+	// check if someone didn't mean to create an array with the old syntax
+	if (type != "array") {
+		if (!PC_status(PC_get(node, ".size"))) {
+			logger().warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line);
+		}
+		if (!PC_status(PC_get(node, ".sizes"))) {
+			logger().warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
+		}
+	}
+
+	auto&& func_it = m_datatype_parsers.find(type);
+	if (func_it != m_datatype_parsers.end()) {
+		return (func_it->second)(*this, node);
+	}
+	throw Config_error{node, "Unknown data type: `{}'", type};
+}
+
+void Global_context::add_datatype(const string& name, Datatype_template_parser parser)
+{
+	if (!m_datatype_parsers.emplace(name, move(parser)).second) {
+		//if a datatype with the given name already exists
+		throw Type_error{"Datatype already defined `{}'", name};
+	}
+}
+
+Callbacks& Global_context::callbacks()
+{
+	return m_callbacks;
+}
+
+void Global_context::check_duplicate(const std::string& name)
+{
+	if (!m_defined.insert(name).second) {
+		// throw System_error instead of std::runtime_error to use assert for test on expected error
+		throw System_error("Duplicate definition of '{}'", name);
+	}
+}
+
+void Global_context::collect_plugins_impl(PC_tree_t conf, std::unordered_set<std::string>& visited, const std::string& known_path)
+{
+	// ── identity (same logic as load_pdi_config_impl) ────────────────────────
+	std::string current_id;
+	bool has_real_path = false;
+
+	if (!known_path.empty()) {
+		current_id = known_path;
+		has_real_path = true;
+	}
+#if PDI_HAS_PC_PATH
+	else
+	{
+		const char* raw_path = PC_path(conf);
+		if (raw_path && fs::exists(raw_path)) {
+			current_id = fs::canonical(raw_path).string();
+			has_real_path = true;
+		}
+	}
+#endif
+	if (!has_real_path) {
+		static std::atomic<std::size_t> s_counter{0};
+		current_id = "<no-path:" + std::to_string(s_counter++) + ">";
+	}
+
+	if (visited.count(current_id)) return; // already collected
+	visited.insert(current_id);
+
+	// ── recurse into includes first ──────────────────────────────────────────
+	PC_tree_t includes = PC_get(conf, ".include");
+	if (!PC_status(includes)) {
+		PDI::each(includes, [&](PC_tree_t node) {
+			const std::string inc = PDI::to_string(node);
+			const bool is_absolute = fs::path(inc).is_absolute();
+#if PDI_HAS_PC_PATH
+			if (!is_absolute && !has_real_path) return; // will be caught in pass 2
+			fs::path full_path = is_absolute ? fs::path(inc) : fs::path(fs::path(current_id).parent_path()) / inc;
+#else
+			if (!is_absolute) return;
+			fs::path full_path = fs::path(inc);
+#endif
+			if (!fs::exists(full_path)) return; // will be caught in pass 2
+			full_path = fs::canonical(full_path);
+			PC_tree_t sub = PC_parse_path(full_path.string().c_str());
+			if (PC_status(sub) != PC_OK) return;
+			collect_plugins_impl(sub, visited, full_path.string());
+		});
+	}
+
+	// ── collect plugin declarations from this node ───────────────────────────
+	m_plugins.register_plugins(conf);
+}
+
+void Global_context::finalize_and_exit()
+{
+	Global_context::finalize();
+	exit(0);
+}
+
 void Global_context::load_pdi_config_impl(
 	PC_tree_t conf,
 	std::unordered_set<std::string>& loaded, // global history of all loaded yaml, used to detect diamond include
@@ -132,16 +309,16 @@ void Global_context::load_pdi_config_impl(
 {
 	// ── Step 1: determine this node's identity ───────────────────────────────
 	// Priority order:
-	//   1. known_path       — set by the caller when it resolved the include path
+	//   1. known_path       - set by the caller when it resolved the include path
 	//                         (works for both Paraconf 1.0.3 and 1.1.1)
-	//   2. PC_path()        — available only with Paraconf >= 1.1
-	//   3. address sentinel — root config parsed from a string; can never be
+	//   2. PC_path()        - available only with Paraconf >= 1.1
+	//   3. address sentinel - root config parsed from a string; can never be
 	//                         referenced by path, so a unique ID is used instead
 	std::string current_id;
 	bool has_real_path = false;
 
 	if (!known_path.empty()) {
-		// Caller already canonicalised the path — trust it directly.
+		// Caller already canonicalised the path - trust it directly.
 		current_id = known_path;
 		has_real_path = true;
 	}
@@ -235,128 +412,7 @@ void Global_context::load_pdi_config_impl(
 	if (auto m = PC_get(conf, ".metadata"); !PC_status(m)) load_data(*this, m, true);
 	if (auto d = PC_get(conf, ".data"); !PC_status(d)) load_data(*this, d, false);
 
-	m_plugins.register_plugins(conf); // Collects from this node, loads later in constructor
-
 	stack.erase(current_id);
-}
-
-Global_context::Global_context(PC_tree_t conf)
-	: m_logger{"PDI", PC_get(conf, ".logging")}
-	, m_plugins{*this, conf}
-	, m_callbacks{*this}
-{
-	// load basic datatypes
-	Datatype_template::load_basic_datatypes(*this);
-
-	// m_plugins.load_plugins();
-
-	load_pdi_config(conf);
-
-	m_plugins.load_plugins();
-
-	// evaluate pattern after loading plugins
-	m_logger.evaluate_pattern(*this);
-
-	m_callbacks.call_init_callbacks();
-	m_logger.info("Initialization successful");
-}
-
-Data_descriptor& Global_context::desc(const char* name)
-{
-	return *(m_descriptors.emplace(name, unique_ptr<Data_descriptor>{new Data_descriptor_impl{*this, name}}).first->second);
-}
-
-Data_descriptor& Global_context::desc(const string& name)
-{
-	return desc(name.c_str());
-}
-
-Data_descriptor& Global_context::operator[] (const char* name)
-{
-	return desc(name);
-}
-
-Data_descriptor& Global_context::operator[] (const string& name)
-{
-	return desc(name.c_str());
-}
-
-Global_context::Iterator Global_context::begin()
-{
-	return Context::get_iterator(m_descriptors.begin());
-}
-
-Global_context::Iterator Global_context::end()
-{
-	return Context::get_iterator(m_descriptors.end());
-}
-
-PDI::Context::Iterator Global_context::find(const string& name)
-{
-	return Context::get_iterator(m_descriptors.find(name));
-}
-
-void Global_context::event(const char* name)
-{
-	m_callbacks.call_event_callbacks(name);
-}
-
-Logger& Global_context::logger()
-{
-	return m_logger;
-}
-
-Datatype_template_sptr Global_context::datatype(PC_tree_t node)
-{
-	string type;
-	try {
-		type = to_string(PC_get(node, ".type"));
-	} catch (const Error& e) {
-		type = to_string(node);
-	}
-
-	// check if someone didn't mean to create an array with the old syntax
-	if (type != "array") {
-		if (!PC_status(PC_get(node, ".size"))) {
-			logger().warn("In line {}: Non-array type with a `size' property", node.node->start_mark.line);
-		}
-		if (!PC_status(PC_get(node, ".sizes"))) {
-			logger().warn("In line {}: Non-array type with a `sizes' property", node.node->start_mark.line);
-		}
-	}
-
-	auto&& func_it = m_datatype_parsers.find(type);
-	if (func_it != m_datatype_parsers.end()) {
-		return (func_it->second)(*this, node);
-	}
-	throw Config_error{node, "Unknown data type: `{}'", type};
-}
-
-void Global_context::add_datatype(const string& name, Datatype_template_parser parser)
-{
-	if (!m_datatype_parsers.emplace(name, move(parser)).second) {
-		//if a datatype with the given name already exists
-		throw Type_error{"Datatype already defined `{}'", name};
-	}
-}
-
-Callbacks& Global_context::callbacks()
-{
-	return m_callbacks;
-}
-
-void Global_context::finalize_and_exit()
-{
-	Global_context::finalize();
-	exit(0);
-}
-
-void Global_context::check_duplicate(const std::string& name)
-{
-	if (!m_defined.insert(name).second) {
-		// throw System_error instead of std::runtime_error to use assert for test on expected error
-		throw System_error("Duplicate definition of '{}'", name);
-	}
 }
 
 Global_context::~Global_context()
