@@ -297,7 +297,7 @@ endif()
 if("${BUILD_FORTRAN}")
 	zpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.f90.zpp)
 	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fmoddir")
-	add_custom_target(mv_zpp_files # we put in in fmoddir because pdif.h is compiler dependant
+	add_custom_target(mv_zpp_files # we put it in fmoddir because pdif.h is compiler dependant
 			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PDIF_H}" "${PDI_BINARY_DIR}/fmoddir/pdif.h"
 			DEPENDS "${PDIF_H}"
 			VERBATIM

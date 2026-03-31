@@ -304,5 +304,8 @@ PDI_status_t PDI_DEPRECATED_EXPORT PDI_transaction_end(void);
 } // extern C
 #endif
 
+#ifdef __cplusplus
+#include <pdi/scope_guard.h>
+#endif
 
 #endif // PDI_H_

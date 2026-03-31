@@ -24,9 +24,9 @@
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(pdi_tests LANGUAGES C)
+project(pdi_tests LANGUAGES C CXX)
 
-set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
+set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake/runtest-dir")
 
 option(BUILD_DECL_HDF5_PLUGIN "Build Decl'HDF5 plug-in" ON)
 option(BUILD_SERIALIZE_PLUGIN "Build Serialize plug-in" ON)
@@ -64,3 +64,15 @@ add_test(NAME test_05_C COMMAND "$<TARGET_FILE:test_05_C>" "${CMAKE_CURRENT_SOUR
 set_tests_properties(test_05_C PROPERTIES DISABLED TRUE)
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
+if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}" AND "${BUILD_MPI_PLUGIN}")
+
+find_package(MPI REQUIRED COMPONENTS C)
+
+add_executable(test_12_CXX test_12.cxx)
+target_compile_definitions(test_12_CXX PRIVATE OMPI_SKIP_MPICXX)
+target_link_libraries(test_12_CXX PDI::PDI_C MPI::MPI_C)
+add_test(NAME test_12_CXX COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 8 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:test_12_CXX>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST test_12_CXX PROPERTY TIMEOUT 15)
+set_property(TEST test_12_CXX PROPERTY PROCESSORS 8)
+
+endif("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_HDF5_PARALLEL}" AND "${BUILD_MPI_PLUGIN}")
