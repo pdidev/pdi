@@ -57,7 +57,7 @@ public:
 	 * \param conf the paraconf configuration tree passed to PDI_init()
 	 * \throws std::runtime_error if PDI_init() returns an error status
 	 */
-	[[nodiscard]] ScopeGuard(PC_tree_t conf)
+	ScopeGuard(PC_tree_t conf)
 	{
 		PDI_status_t status = PDI_init(conf);
 		if (status != PDI_OK) {
