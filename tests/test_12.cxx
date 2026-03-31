@@ -84,64 +84,72 @@ void verify_matrix(int comm_color, int world_rank)
 int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
-    PC_tree_t conf = PC_parse_string(CONFIG_YAML);
+	int ret = 0;
+    try {
+		PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 
-    {   // ← PDI lifetime scoped here
-        PDI::ScopeGuard pdi_guard(conf);
+		{   // ← PDI lifetime scoped here
+			PDI::ScopeGuard pdi_guard(conf);
 
-        int world_size;
-        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-        if (world_size != 8) {
-            printf("world_size must be 8 instead of %d.", world_size);
-            MPI_Abort(MPI_COMM_WORLD, -1);
-            // PDI_finalize() still called by ~ScopeGuard before MPI_Abort
-            // propagates (or may let MPI_Abort kill everything cleanly)
-        }
+			int world_size;
+			MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+			if (world_size != 8) {
+				printf("world_size must be 8 instead of %d.", world_size);
+				MPI_Abort(MPI_COMM_WORLD, -1);
+				// PDI_finalize() still called by ~ScopeGuard before MPI_Abort
+				// propagates (or may let MPI_Abort kill everything cleanly)
+			}
 
-        int world_rank;
-        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+			int world_rank;
+			MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-        int comm_color = (world_rank < 4);
-        MPI_Comm my_comm;
-        MPI_Comm_split(MPI_COMM_WORLD, comm_color, 0, &my_comm);
-        PDI_expose("my_comm", &my_comm, PDI_OUT);
+			int comm_color = (world_rank < 4);
+			MPI_Comm my_comm;
+			MPI_Comm_split(MPI_COMM_WORLD, comm_color, 0, &my_comm);
+			PDI_expose("my_comm", &my_comm, PDI_OUT);
 
-        int my_comm_rank;
-        MPI_Comm_rank(my_comm, &my_comm_rank);
-        int pcoord[2] = {my_comm_rank / 2, my_comm_rank % 2};
-        PDI_expose("pcoord", pcoord, PDI_OUT);
+			int my_comm_rank;
+			MPI_Comm_rank(my_comm, &my_comm_rank);
+			int pcoord[2] = {my_comm_rank / 2, my_comm_rank % 2};
+			PDI_expose("pcoord", pcoord, PDI_OUT);
 
-        if (comm_color) {
-            int matrix = world_rank;
-            PDI_expose("matrix_out", &matrix, PDI_OUT);
-        }
+			if (comm_color) {
+				int matrix = world_rank;
+				PDI_expose("matrix_out", &matrix, PDI_OUT);
+			}
 
-        if (world_rank == 0) {
-            MPI_Comm self = MPI_COMM_SELF;
-            PDI_expose("my_comm", &self, PDI_OUT);
-            verify_matrix(comm_color, world_rank);
-        }
+			if (world_rank == 0) {
+				MPI_Comm self = MPI_COMM_SELF;
+				PDI_expose("my_comm", &self, PDI_OUT);
+				verify_matrix(comm_color, world_rank);
+			}
 
-        MPI_Barrier(MPI_COMM_WORLD);
+			MPI_Barrier(MPI_COMM_WORLD);
 
-        if (!comm_color) {
-            int matrix = world_rank;
-            PDI_expose("matrix_out", &matrix, PDI_OUT);
-        }
+			if (!comm_color) {
+				int matrix = world_rank;
+				PDI_expose("matrix_out", &matrix, PDI_OUT);
+			}
 
-        MPI_Barrier(MPI_COMM_WORLD);
+			MPI_Barrier(MPI_COMM_WORLD);
 
-        if (world_rank == 0) {
-            MPI_Comm self = MPI_COMM_SELF;
-            PDI_expose("my_comm", &self, PDI_OUT);
-            verify_matrix(!comm_color, world_rank);
-        }
+			if (world_rank == 0) {
+				MPI_Comm self = MPI_COMM_SELF;
+				PDI_expose("my_comm", &self, PDI_OUT);
+				verify_matrix(!comm_color, world_rank);
+			}
 
-        MPI_Comm_free(&my_comm);
+			MPI_Comm_free(&my_comm);
 
-    }   // ← PDI_finalize() called here automatically
+		}   // ← PDI_finalize() called here automatically
 
-    PC_tree_destroy(&conf);
+		PC_tree_destroy(&conf);
+
+	} catch (const std::exception& e) {
+        fprintf(stderr, "Error: %s\n", e.what());
+        ret = 1;
+    }
+    
     MPI_Finalize();
     return 0;
 }
