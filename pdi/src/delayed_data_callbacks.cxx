@@ -25,6 +25,8 @@
 #include <string>
 #include <vector>
 
+#include <spdlog/spdlog.h>
+
 #include <pdi/pdi_fwd.h>
 #include "pdi/context.h"
 #include "pdi/datatype.h"
