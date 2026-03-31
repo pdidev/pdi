@@ -185,8 +185,6 @@ try {
 	return share(data_ref, read, write, Delayed_data_callbacks(m_context));
 } catch (Error& e) {
 	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
-} catch (...) {
-	throw std::runtime_error("void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)");
 }
 
 void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks)

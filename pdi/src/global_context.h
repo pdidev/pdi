@@ -49,7 +49,6 @@ namespace PDI {
 class PDI_EXPORT Global_context: public Context
 {
 private:
-	friend class Delayed_data_callbacks;
 	friend class Data_descriptor_impl;
 
 	/// The singleton Context instance

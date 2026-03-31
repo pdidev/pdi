@@ -43,7 +43,6 @@ namespace PDI {
 class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 {
 	friend class Global_context;
-	friend class Delayed_data_callback;
 	friend class Descriptor_test_handler;
 
 
