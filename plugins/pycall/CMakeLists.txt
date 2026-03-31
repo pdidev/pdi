@@ -50,9 +50,6 @@ add_library(pdi_pycall_plugin MODULE pycall.cxx)
 target_link_libraries(pdi_pycall_plugin PDI::PDI_pysupport pybind11::embed Python3::Python)
 set_target_properties(pdi_pycall_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
-if(APPLE)
-	target_link_options(pdi_pycall_plugin PRIVATE "-undefined" "dynamic_lookup")
-endif()
 # installation
 set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
 install(TARGETS pdi_pycall_plugin
