@@ -71,8 +71,8 @@ public:
 
 	ScopeGuard(const ScopeGuard&) = delete;
 	ScopeGuard(ScopeGuard&&) = delete;
-	ScopeGuard& operator=(const ScopeGuard&) = delete;
-	ScopeGuard& operator=(ScopeGuard&&) = delete;
+	ScopeGuard& operator= (const ScopeGuard&) = delete;
+	ScopeGuard& operator= (ScopeGuard&&) = delete;
 };
 
 } // namespace PDI

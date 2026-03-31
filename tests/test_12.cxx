@@ -83,12 +83,12 @@ void verify_matrix(int comm_color, int world_rank)
 
 int main(int argc, char* argv[])
 {
-    MPI_Init(&argc, &argv);
+	MPI_Init(&argc, &argv);
 	int ret = 0;
-    try {
+	try {
 		PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 
-		{   // ← PDI lifetime scoped here
+		{ // PDI lifetime scoped here
 			PDI::ScopeGuard pdi_guard(conf);
 
 			int world_size;
@@ -141,15 +141,15 @@ int main(int argc, char* argv[])
 
 			MPI_Comm_free(&my_comm);
 
-		}   // ← PDI_finalize() called here automatically
+		} // PDI_finalize() called here automatically
 
 		PC_tree_destroy(&conf);
 
 	} catch (const std::exception& e) {
-        fprintf(stderr, "Error: %s\n", e.what());
-        ret = 1;
-    }
-    
-    MPI_Finalize();
-    return 0;
+		fprintf(stderr, "Error: %s\n", e.what());
+		ret = 1;
+	}
+
+	MPI_Finalize();
+	return 0;
 }
