@@ -28,16 +28,8 @@
 #include <spdlog/spdlog.h>
 
 #include <pdi/pdi_fwd.h>
-#include "pdi/context.h"
-#include "pdi/datatype.h"
-#include "pdi/error.h"
-#include "pdi/plugin.h"
-#include "pdi/ref_any.h"
-#include "pdi/scalar_datatype.h"
 #include <pdi/context.h>
-#include <pdi/data_descriptor.h>
-#include <pdi/datatype_template.h>
-#include <pdi/ref_any.h>
+#include <pdi/error.h>
 
 #include <data_descriptor_impl.h>
 
