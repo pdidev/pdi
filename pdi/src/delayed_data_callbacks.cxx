@@ -50,12 +50,12 @@ Delayed_data_callbacks::Delayed_data_callbacks(Global_context& ctx)
 
 // In the destructor, we need to throw an error message in case of the callback on the data doesn't work (trigger function)
 //  (example: error in the config.yml for a plugin, error due to external library incompatibility)
-Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false) {
+Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
+{
 	try {
 		m_context.logger().info("### call trigger in the destructor");
 		this->trigger();
-	}
-	catch (const std::exception& e) {
+	} catch (const std::exception& e) {
 		if (std::uncaught_exceptions()) {
 			// An exception is throwing before. Print simple message to avoid std::terminate.
 			m_context.logger().error("Error in the destructor of Delayed_data_callbacks, {}", e.what());
@@ -72,7 +72,10 @@ Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false) {
 	}
 }
 
-void Delayed_data_callbacks::add_dataname(const std::string& name) { m_datanames.emplace_back(name); }
+void Delayed_data_callbacks::add_dataname(const std::string& name)
+{
+	m_datanames.emplace_back(name);
+}
 
 void Delayed_data_callbacks::trigger()
 {
@@ -84,13 +87,11 @@ void Delayed_data_callbacks::trigger()
 		try {
 			m_context.logger().trace("Trigger data callback `{}' ({}/{})", element_name.c_str(), ++i, number_of_elements);
 			m_context.callbacks().call_data_callbacks(element_name, m_context[element_name].ref());
-		}
-		catch (const std::exception& e) {
+		} catch (const std::exception& e) {
 			std::string ewhat = e.what();
-			msg_data_error.emplace_back("data="+element_name+", exception error="+ewhat); 
-		}
-		catch (...) {
-			msg_data_error.emplace_back("data="+element_name+", no exception error");
+			msg_data_error.emplace_back("data=" + element_name + ", exception error=" + ewhat);
+		} catch (...) {
+			msg_data_error.emplace_back("data=" + element_name + ", no exception error");
 		}
 	}
 
@@ -99,14 +100,16 @@ void Delayed_data_callbacks::trigger()
 	// throw a message in case of error
 	if (msg_data_error.size()) {
 		const char* msg_system_error
-		= "Found `{0}' error(s) in trigger the data callback  "
-	 	  "This is the list of error for a each data: \n"
-		  " - {1}\n";
-		throw System_error{ msg_system_error, msg_data_error.size(), fmt::join(msg_data_error, "\n - ")};
+			= "Found `{0}' error(s) in trigger the data callback  "
+			  "This is the list of error for a each data: \n"
+			  " - {1}\n";
+		throw System_error{msg_system_error, msg_data_error.size(), fmt::join(msg_data_error, "\n - ")};
 	}
 }
 
-void  Delayed_data_callbacks::cancel() { m_datanames.clear(); }
+void Delayed_data_callbacks::cancel()
+{
+	m_datanames.clear();
+}
 
 } // namespace PDI
-
