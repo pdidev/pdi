@@ -43,7 +43,6 @@ struct MockDataDescriptor: public PDI::Data_descriptor {
 	MOCK_METHOD3(share, void*(PDI::Ref, bool, bool));
 	MOCK_METHOD4(share, void(void*, bool, bool, PDI::Delayed_data_callbacks&&));
 	MOCK_METHOD4(share, void*(PDI::Ref, bool, bool, PDI::Delayed_data_callbacks&&));
-	MOCK_METHOD0(trigger_delayed_data_callbacks, void());
 	MOCK_METHOD0(release, void());
 	MOCK_METHOD0(reclaim, void*());
 };

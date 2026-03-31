@@ -113,10 +113,6 @@ public:
 	 */
 	virtual void* share(Ref ref, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks) = 0;
 
-	/** function to call "data_callbacks" for the shared data.
-	 */
-	virtual void trigger_delayed_data_callbacks() = 0;
-
 	/** Releases ownership of a data shared with PDI. PDI is then responsible to
 	 * free the associated memory whenever necessary.
 	 */

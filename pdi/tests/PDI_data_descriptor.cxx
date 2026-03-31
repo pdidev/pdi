@@ -396,11 +396,14 @@ TEST_F(DataDescDelayedCallbacksTest, multiple_delayed_data_callbacks)
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
 	delayed_callbacks_x.trigger();
+
 	ASSERT_EQ(x, 42);
 	ASSERT_EQ(y, 0);
 	delayed_callbacks_y.trigger();
+
 	ASSERT_EQ(x, 42);
 	ASSERT_EQ(y, 53);
+
 	context.desc("data_y").reclaim();
 	context.desc("data_x").reclaim();
 	ASSERT_EQ(x, 42);

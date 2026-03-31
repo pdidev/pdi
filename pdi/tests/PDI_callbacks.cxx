@@ -706,10 +706,7 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks)
 	this->test_context->desc("data_y").share(&y, true, true, std::move(delayed_callbacks));
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
-	this->test_context->desc("data_x").trigger_delayed_data_callbacks();
-	ASSERT_EQ(x, 42);
-	ASSERT_EQ(y, 0);
-	this->test_context->desc("data_y").trigger_delayed_data_callbacks();
+	delayed_callbacks.trigger();
 	ASSERT_EQ(x, 42);
 	ASSERT_EQ(y, 53);
 	delayed_callbacks.cancel();
@@ -767,23 +764,24 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks_with_error)
 
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
+	std::cout << "Try and catch error" << std::endl;
 	try {
 		this->test_context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 		throw std::runtime_error("forced throw error for testing");
-		this->test_context->desc("data_x").trigger_delayed_data_callbacks();
+		delayed_callbacks.trigger();
 	} catch (const std::runtime_error& e) {
 		EXPECT_STREQ("forced throw error for testing", e.what());
 		this->test_context->desc("data_x").reclaim();
+		delayed_callbacks.cancel(); // remove "data_x" to the list of data to callbacks
 	} catch (...) {
 		FAIL() << "The error throwing must be std::runtime_error.";
 	}
 
-	// callback for data_y
 	ASSERT_EQ(x, 0);
-
+	std::cout << "share data_y" << std::endl;
 	this->test_context->desc("data_y").share(&y, true, true, std::move(delayed_callbacks));
 	ASSERT_EQ(y, 0);
-	this->test_context->desc("data_y").trigger_delayed_data_callbacks();
+	delayed_callbacks.trigger();
 	ASSERT_EQ(y, 53);
 	delayed_callbacks.cancel();
 	this->test_context->desc("data_y").reclaim();
@@ -792,7 +790,7 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks_with_error)
 	// callback for data_x
 	this->test_context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 	ASSERT_EQ(x, 0);
-	this->test_context->desc("data_x").trigger_delayed_data_callbacks();
+	delayed_callbacks.trigger();
 	ASSERT_EQ(x, 42);
 	delayed_callbacks.cancel();
 	this->test_context->desc("data_x").reclaim();

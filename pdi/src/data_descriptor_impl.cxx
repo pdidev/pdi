@@ -152,29 +152,6 @@ bool Data_descriptor_impl::empty()
 	return m_refs.empty();
 }
 
-void Data_descriptor_impl::trigger_delayed_data_callbacks()
-try {
-	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-	if (m_refs.empty() || (m_refs.size() == 1 && metadata())) {
-		throw State_error{"Cannot call trigger_delayed_data_callbacks on a non shared value: : `{}'", m_name};
-	}
-	try {
-		m_context.callbacks().call_data_callbacks(m_name, ref());
-	} catch (const exception&) {
-		m_refs.pop();
-		throw;
-	} catch (...) {
-		m_context.logger().trace("Error in trigger_delayed_data_callbacks\n");
-		m_refs.pop();
-		throw;
-	}
-
-	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-} catch (Error& e) {
-	throw Error(e.status(), "Unable to execute data_callbacks on data `{}', {}", name(), e.what());
-}
-
-
 void Data_descriptor_impl::share(void* data, bool read, bool write)
 {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
@@ -208,7 +185,6 @@ try {
 	return share(data_ref, read, write, Delayed_data_callbacks(m_context));
 } catch (Error& e) {
 	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
-	;
 } catch (...) {
 	throw std::runtime_error("void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)");
 }

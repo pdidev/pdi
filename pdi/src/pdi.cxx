@@ -149,20 +149,48 @@ struct Var_to_reclaim {
 	std::vector<string> m_varnames;
 	Var_to_reclaim() = default;
 
-	~Var_to_reclaim() noexcept
-	try {
+	~Var_to_reclaim() noexcept(false)
+	{
+		std::vector<Error> msg_reclaim_data_error;
 		int counter = 0;
 		for (auto&& it = m_varnames.rbegin(); it != m_varnames.rend(); it++) {
-			Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, m_varnames.size());
-			Global_context::context()[it->c_str()].reclaim();
+			try {
+				Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, m_varnames.size());
+				Global_context::context()[it->c_str()].reclaim();
+			} catch (const Error& e) {
+				msg_reclaim_data_error.emplace_back(e);
+			} catch (const std::exception& e) {
+				msg_reclaim_data_error.emplace_back(PDI_ERR_SYSTEM, e.what());
+			} catch (...) {
+				msg_reclaim_data_error.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error in reclaiming the data=" + (*it));
+			}
+		}
+		if (!msg_reclaim_data_error.empty()) {
+			if (1 == msg_reclaim_data_error.size()) {
+				if (std::uncaught_exceptions()) {
+					std::string errmsg = "Error while triggering reclaim in multi expose : " + std::string(msg_reclaim_data_error.front().what());
+					Global_context::context().logger().error(errmsg.c_str());
+				} else {
+					throw Error{
+						msg_reclaim_data_error.front().status(),
+						"Error while triggering reclaim in multi expose : {}",
+						msg_reclaim_data_error.front().what()
+					};
+				}
+			} else {
+				std::string errmsg
+					= "Multiple (" + std::to_string(msg_reclaim_data_error.size()) + ") errors while triggering reclaim in multi expose: \n";
+				for (auto&& err: msg_reclaim_data_error) {
+					errmsg += string(err.what()) + "\n";
+				}
+				if (std::uncaught_exceptions()) {
+					Global_context::context().logger().error(errmsg.c_str());
+				} else {
+					throw System_error{errmsg.c_str()};
+				}
+			}
 		}
 		m_varnames.clear();
-	} catch (const Error& e) {
-		g_error_context.return_err(e);
-	} catch (const exception& e) {
-		g_error_context.return_err(e);
-	} catch (...) {
-		g_error_context.return_err();
 	}
 
 	size_t size() const { return m_varnames.size(); }
