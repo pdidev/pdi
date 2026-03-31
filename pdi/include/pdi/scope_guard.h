@@ -49,7 +49,7 @@ namespace PDI {
  * }
  * \endcode
  */
-class [[nodiscard]] ScopeGuard
+class ScopeGuard
 {
 public:
 	/** Initializes PDI with the given configuration tree.
@@ -57,7 +57,7 @@ public:
 	 * \param conf the paraconf configuration tree passed to PDI_init()
 	 * \throws std::runtime_error if PDI_init() returns an error status
 	 */
-	ScopeGuard(PC_tree_t conf)
+	[[nodiscard]] ScopeGuard(PC_tree_t conf)
 	{
 		PDI_status_t status = PDI_init(conf);
 		if (status != PDI_OK) {
