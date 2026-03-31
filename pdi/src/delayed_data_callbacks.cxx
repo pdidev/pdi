@@ -30,6 +30,7 @@
 #include <pdi/pdi_fwd.h>
 #include <pdi/context.h>
 #include <pdi/error.h>
+#include <pdi/fmt.h>
 
 #include <data_descriptor_impl.h>
 
