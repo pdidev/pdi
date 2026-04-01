@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 ### Fixed
+* Fixed a rare bug, where the plugin would crash while reporting an error with
+  multiple matching regexes [#668](https://github.com/pdidev/pdi/issues/668)
 
 ### Security
 
