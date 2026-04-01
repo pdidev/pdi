@@ -37,26 +37,26 @@ if("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 add_executable(test_simple_yaml_include test_07.c)
 target_link_libraries(test_simple_yaml_include paraconf::paraconf PDI::PDI_C)
 add_test(NAME test_simple_yaml_include COMMAND "$<TARGET_FILE:test_simple_yaml_include>" "${CMAKE_CURRENT_SOURCE_DIR}/test_07.yml")
-# set_tests_properties(test_simple_yaml_include PROPERTIES DISABLED TRUE) # Disabled as missing absolute paths on online CI
+set_tests_properties(test_simple_yaml_include PROPERTIES DISABLED TRUE) # Disabled as missing absolute paths on online CI
 
 add_executable(test_duplicate_yaml_include test_07.c)
 target_link_libraries(test_duplicate_yaml_include paraconf::paraconf PDI::PDI_C)
 add_test(NAME test_duplicate_yaml_include COMMAND "$<TARGET_FILE:test_duplicate_yaml_include>" "${CMAKE_CURRENT_SOURCE_DIR}/test_08.yml")
-# set_tests_properties(test_duplicate_yaml_include PROPERTIES DISABLED TRUE) # Disabled as expected to fail on correct behaviour (and also missing absolute paths on online CI)
+set_tests_properties(test_duplicate_yaml_include PROPERTIES DISABLED TRUE) # Disabled as expected to fail on correct behaviour (and also missing absolute paths on online CI)
 
 add_executable(test_diamond_yaml_include test_07.c)
 target_link_libraries(test_diamond_yaml_include paraconf::paraconf PDI::PDI_C)
 add_test(NAME test_diamond_yaml_include COMMAND "$<TARGET_FILE:test_diamond_yaml_include>" "${CMAKE_CURRENT_SOURCE_DIR}/test_09.yml")
-# set_tests_properties(test_diamond_yaml_include PROPERTIES DISABLED TRUE) # Disabled as missing absolute paths on online CI
+set_tests_properties(test_diamond_yaml_include PROPERTIES DISABLED TRUE) # Disabled as missing absolute paths on online CI
 
 add_executable(test_circular_yaml_include test_07.c)
 target_link_libraries(test_circular_yaml_include paraconf::paraconf PDI::PDI_C)
 add_test(NAME test_circular_yaml_include COMMAND "$<TARGET_FILE:test_circular_yaml_include>" "${CMAKE_CURRENT_SOURCE_DIR}/test_10.yml")
-# set_tests_properties(test_circular_yaml_include PROPERTIES DISABLED TRUE) # Disabled as expected to fail on correct behaviour (and also missing absolute paths on online CI)
+set_tests_properties(test_circular_yaml_include PROPERTIES DISABLED TRUE) # Disabled as expected to fail on correct behaviour (and also missing absolute paths on online CI)
 
 add_executable(test_plugins_yaml_include test_07.c)
 target_link_libraries(test_plugins_yaml_include paraconf::paraconf PDI::PDI_C)
 add_test(NAME test_plugins_yaml_include COMMAND "$<TARGET_FILE:test_plugins_yaml_include>" "${CMAKE_CURRENT_SOURCE_DIR}/test_11.yml")
-# set_tests_properties(test_plugins_yaml_include PROPERTIES DISABLED TRUE) # Disabled as missing absolute paths on online CI
+set_tests_properties(test_plugins_yaml_include PROPERTIES DISABLED TRUE) # Disabled as missing absolute paths on online CI
 
 endif("${BUILD_DECL_HDF5_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
