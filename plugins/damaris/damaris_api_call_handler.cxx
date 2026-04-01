@@ -132,6 +132,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				PDI_access(it->c_str(), (void**)&inout_is_client, PDI_INOUT);
 				*inout_is_client = is_client;
 				arg1_name = it->c_str();
+				PDI_release(it->c_str());
 			} else
 				//if(nb_awaited_args <= arg_pos)
 				break;
@@ -241,6 +242,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				PDI_access(it->c_str(), (void**)&comm, PDI_INOUT);
 				*comm = client_comm; //Update the value
 				arg1_name = it->c_str();
+				PDI_release(it->c_str());
 			} else
 				//if(nb_awaited_args <= arg_pos)
 				break;
@@ -286,9 +288,11 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				if (arg_pos == 1) {
 					PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
 					arg1_name = it->c_str();
+					PDI_release(it->c_str());
 				} else if (arg_pos == 2) {
 					PDI_access(it->c_str(), (void**)&position, PDI_IN);
 					arg2_name = it->c_str();
+					PDI_release(it->c_str());
 				} else
 					//if(nb_awaited_args <= arg_pos)
 					break;
@@ -343,9 +347,11 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				if (arg_pos == 1) {
 					PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
 					arg1_name = it->c_str();
+					PDI_release(it->c_str());
 				} else if (arg_pos == 2) {
 					PDI_access(it->c_str(), (void**)&data, PDI_IN);
 					arg2_name = it->c_str();
+					PDI_release(it->c_str());
 				} else
 					//if(nb_awaited_args <= arg_pos)
 					break;
@@ -393,12 +399,15 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				if (arg_pos == 1) {
 					PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
 					arg1_name = it->c_str();
+					PDI_release(it->c_str());
 				} else if (arg_pos == 2) {
 					PDI_access(it->c_str(), (void**)&block, PDI_IN);
 					arg2_name = it->c_str();
+					PDI_release(it->c_str());
 				} else if (arg_pos == 3) {
 					PDI_access(it->c_str(), (void**)&position, PDI_IN);
 					arg3_name = it->c_str();
+					PDI_release(it->c_str());
 				} else
 					//if(nb_awaited_args <= arg_pos)
 					break;
@@ -454,12 +463,15 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				if (arg_pos == 1) {
 					PDI_access(it->c_str(), (void**)&var_name, PDI_IN);
 					arg1_name = it->c_str();
+					PDI_release(it->c_str());
 				} else if (arg_pos == 2) {
 					PDI_access(it->c_str(), (void**)&block, PDI_IN);
 					arg2_name = it->c_str();
+					PDI_release(it->c_str());
 				} else if (arg_pos == 3) {
 					PDI_access(it->c_str(), (void**)&data, PDI_IN);
 					arg3_name = it->c_str();
+					PDI_release(it->c_str());
 				} else
 					//if(nb_awaited_args <= arg_pos)
 					break;
