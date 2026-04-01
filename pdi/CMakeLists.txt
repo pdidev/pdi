@@ -234,14 +234,16 @@ install(PROGRAMS scripts/pdirun
 if("${BUILD_PYTHON}")
 	
 	# C++ python support library
-	add_library(PDI_pysupport src/python/python_ref_wrapper.cxx src/python/tools.cxx)
+	if(APPLE)
+		pybind11_add_module(PDI_pysupport SHARED src/python/python_ref_wrapper.cxx src/python/tools.cxx) 
+	else()
+		add_library(PDI_pysupport src/python/python_ref_wrapper.cxx src/python/tools.cxx)
+	endif()
 	target_include_directories(PDI_pysupport PUBLIC
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
 	)
-	if(APPLE)
-	target_link_options(PDI_pysupport PUBLIC "-undefined" "dynamic_lookup")
-	endif()
+
 	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11 PDI::PDI_plugins)
 	set_property(TARGET PDI_pysupport PROPERTY LIBRARY_OUTPUT_NAME "pdi_pysupport")
 	set_property(TARGET PDI_pysupport PROPERTY ENABLE_EXPORTS TRUE)
