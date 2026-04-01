@@ -104,10 +104,16 @@ const PDI::Datatype_sptr get_variable_stride(PDI::Datatype_sptr type, std::vecto
  * \param message a context message to use in case of error
  */
 template <typename... Args>
-void nc_try(int status, const char* message_if_error, const Args&... args)
+void nc_try(int status, fmt::format_string<Args...> message_if_error, Args&&... args)
 {
 	if (status != NC_NOERR) {
-		throw PDI::Error{PDI_ERR_VALUE, "Decl_netcdf plugin: {} : ({}) {}", fmt::format(message_if_error, args...), status, nc_strerror(status)};
+		throw PDI::Error{
+			PDI_ERR_VALUE,
+			"Decl_netcdf plugin: {} : ({}) {}",
+			fmt::format(message_if_error, std::forward<Args>(args)...),
+			status,
+			nc_strerror(status)
+		};
 	}
 }
 
@@ -656,11 +662,12 @@ void Dnc_netcdf_file::put_variable(const Dnc_variable& variable, const Dnc_io& w
 	m_ctx.logger().trace("Putting variable `{}' (var_id = {})", variable_name, var_id);
 
 	if (var_stride.empty()) {
-		nc_try(nc_put_var(dest_id, var_id, ref_r.get()), "Decl_netcdf plugin: Cannot write `{}' to (nc_id = {})", dest_id);
+		nc_try(nc_put_var(dest_id, var_id, ref_r.get()), "Decl_netcdf plugin: Cannot write `{}' to (nc_id = {})", variable_name, dest_id);
 	} else {
 		nc_try(
 			nc_put_vara(dest_id, var_id, var_start.data(), var_count.data(), ref_r.get()),
 			"Decl_netcdf plugin: Cannot write `{}' to (nc_id = {})",
+			variable_name,
 			dest_id
 		);
 	}

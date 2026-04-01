@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -392,7 +392,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 				}
 
 				// Remark: message error is defined outside Config_error because is too long.
-				const char* msg_config_error
+				static constexpr char const * const msg_config_error
 					= "Found `{0}' match(es) in the list of datasets section for `{1}'."
 					  " Cannot choose the right element in datasets.\n"
 					  "The elements that match `{1}' are:\n"

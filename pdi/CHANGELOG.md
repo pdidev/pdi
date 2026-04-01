@@ -18,12 +18,16 @@ and this project adheres to
 #### Added
 
 #### Changed
+* The minimum version of C required is now C17 (ISO/IEC 9899:2018) instead of
+  C11.
 
 #### Deprecated
 
 #### Removed
 
 #### Fixed
+* Fix some incorrect uses of `{fmt}` that could lead to compilation errors in
+  C++ 20+ or crashes in C++ <20 [#660](https://github.com/pdidev/pdi/issues/660)
 
 #### Security
 
