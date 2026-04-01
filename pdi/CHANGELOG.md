@@ -33,6 +33,7 @@ and this project adheres to
 #### Added
 
 #### Changed
+* Versions of C++ used in now C++ 20 instead of C++ 17.
 
 #### Deprecated
 
