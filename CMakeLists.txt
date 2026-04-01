@@ -259,7 +259,6 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 		"-DBUILD_TESTING:BOOL=OFF"
 	DEPENDS "yaml"
 	VERSION 1.0
-	# VERSION 1.1
 )
 
 

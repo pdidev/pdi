@@ -77,15 +77,6 @@ private:
 
 	std::unordered_set<std::string> m_defined;
 
-	static std::string read_file_content(const std::filesystem::path& path);
-
-	void load_pdi_config_impl(
-		PC_tree_t conf,
-		std::unordered_set<std::string>& loaded,
-		std::unordered_set<std::string>& stack,
-		const std::string& known_path = ""
-	);
-
 public:
 	static void init(PC_tree_t conf);
 
@@ -140,16 +131,20 @@ public:
 
 	void check_duplicate(const std::string& name) override;
 
-	void collect_plugins_impl(PC_tree_t conf, std::unordered_set<std::string>& visited, const std::string& known_path = "");
+	// Traverses the include tree once in post-order (deepest includes first),
+	// filling `ordered_nodes` with (canonical_id, PC_tree_t) pairs.
+	// Diamond/circular detection is handled here.
+	void collect_ordered_nodes(
+		PC_tree_t conf,
+		std::unordered_set<std::string>& loaded,
+		std::unordered_set<std::string>& stack,
+		std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
+		const std::string& known_path = ""
+	);
 
 	void finalize_and_exit() override;
 
-	inline void load_pdi_config(PC_tree_t conf)
-	{
-		std::unordered_set<std::string> loaded;
-		std::unordered_set<std::string> stack;
-		load_pdi_config_impl(conf, loaded, stack, "");
-	}
+	void load_pdi_config(PC_tree_t conf);
 
 	~Global_context() override;
 };

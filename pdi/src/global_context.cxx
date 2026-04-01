@@ -131,16 +131,7 @@ Global_context::Global_context(PC_tree_t conf)
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
 
-	// Pass 1: collect all plugin declarations from the full include tree,
-	//         then load them - so custom types (like MPI_Comm) are available.
-	{
-		std::unordered_set<std::string> visited;
-		collect_plugins_impl(conf, visited);
-	}
-
-	m_plugins.load_plugins();
-
-	load_pdi_config(conf);
+	load_pdi_config(conf); // single tree traversal + two flat sub-passes
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
@@ -241,9 +232,15 @@ void Global_context::check_duplicate(const std::string& name)
 	}
 }
 
-void Global_context::collect_plugins_impl(PC_tree_t conf, std::unordered_set<std::string>& visited, const std::string& known_path)
+void Global_context::collect_ordered_nodes(
+	PC_tree_t conf,
+	std::unordered_set<std::string>& loaded,
+	std::unordered_set<std::string>& stack,
+	std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
+	const std::string& known_path
+)
 {
-	// ── identity (same logic as load_pdi_config_impl) ────────────────────────
+	// ── Step 1: identity ─────────────────────────────────────────────────────
 	std::string current_id;
 	bool has_real_path = false;
 
@@ -266,111 +263,28 @@ void Global_context::collect_plugins_impl(PC_tree_t conf, std::unordered_set<std
 		current_id = "<no-path:" + std::to_string(s_counter++) + ">";
 	}
 
-	if (visited.count(current_id)) return; // already collected
-	visited.insert(current_id);
-
-	// ── recurse into includes first ──────────────────────────────────────────
-	PC_tree_t includes = PC_get(conf, ".include");
-	if (!PC_status(includes)) {
-		PDI::each(includes, [&](PC_tree_t node) {
-			const std::string inc = PDI::to_string(node);
-			const bool is_absolute = fs::path(inc).is_absolute();
-#if PDI_HAS_PC_PATH
-			if (!is_absolute && !has_real_path) return; // will be caught in pass 2
-			fs::path full_path = is_absolute ? fs::path(inc) : fs::path(fs::path(current_id).parent_path()) / inc;
-#else
-			if (!is_absolute) return;
-			fs::path full_path = fs::path(inc);
-#endif
-			if (!fs::exists(full_path)) return; // will be caught in pass 2
-			full_path = fs::canonical(full_path);
-			PC_tree_t sub = PC_parse_path(full_path.string().c_str());
-			if (PC_status(sub) != PC_OK) return;
-			collect_plugins_impl(sub, visited, full_path.string());
-		});
-	}
-
-	// ── collect plugin declarations from this node ───────────────────────────
-	m_plugins.register_plugins(conf);
-}
-
-void Global_context::finalize_and_exit()
-{
-	Global_context::finalize();
-	exit(0);
-}
-
-void Global_context::load_pdi_config_impl(
-	PC_tree_t conf,
-	std::unordered_set<std::string>& loaded, // global history of all loaded yaml, used to detect diamond include
-	std::unordered_set<std::string>& stack, // local content of the current "branch", used to detect circular include
-	const std::string& known_path
-)
-{
-	// ── Step 1: determine this node's identity ───────────────────────────────
-	// Priority order:
-	//   1. known_path       - set by the caller when it resolved the include path
-	//                         (works for both Paraconf 1.0.3 and 1.1.1)
-	//   2. PC_path()        - available only with Paraconf >= 1.1
-	//   3. address sentinel - root config parsed from a string; can never be
-	//                         referenced by path, so a unique ID is used instead
-	std::string current_id;
-	bool has_real_path = false;
-
-	if (!known_path.empty()) {
-		// Caller already canonicalised the path - trust it directly.
-		current_id = known_path;
-		has_real_path = true;
-	}
-#if PDI_HAS_PC_PATH
-	else
-	{
-		const char* raw_path = PC_path(conf);
-		if (raw_path && fs::exists(raw_path)) {
-			current_id = fs::canonical(raw_path).string();
-			has_real_path = true;
-		}
-	}
-#endif
-
-	if (!has_real_path) {
-		// PC_tree_t internals differ between Paraconf versions and are not
-		// guaranteed to be accessible. Use a never decreasing counter instead:
-		// each string-parsed root is a distinct configuration, so a unique ID
-		// per call is exactly what we want. The counter never needs to be reset
-		// because sentinels are only compared within a single recursion tree.
-		static std::atomic<std::size_t> s_no_path_counter{0};
-		current_id = "<no-path:" + std::to_string(s_no_path_counter++) + ">";
-	}
-
-	// ── Step 2: circular include detection ───────────────────────────────────
-	// Meaningful only for file-backed nodes: a no-path root (from PC_parse_string)
-	// cannot be referenced by any include directive, so it can never form a cycle.
+	// ── Step 2: circular detection ───────────────────────────────────────────
 	if (has_real_path && stack.count(current_id)) {
-		throw std::runtime_error("Circular include detected, read again from: '" + current_id + "'");
+		throw std::runtime_error("Circular include detected from: '" + current_id + "'");
 	}
 
-	// ── Step 3: diamond include detection ────────────────────────────────────
+	// ── Step 3: diamond detection ────────────────────────────────────────────
 	if (loaded.count(current_id)) {
-		m_logger.warn("Diamond include: '{}' has already been loaded in this include tree, skipping", current_id);
-		return; // Early return before stack.insert, so no erase needed
+		m_logger.warn("Diamond include: '{}' has already been loaded, skipping", current_id);
+		return;
 	}
 
 	stack.insert(current_id);
 	loaded.insert(current_id);
 
-	// ── Step 4: process .include ─────────────────────────────────────────────
+	// ── Step 4: recurse into includes (post-order: children before parent) ───
 	PC_tree_t includes = PC_get(conf, ".include");
 	if (!PC_status(includes)) {
 		PDI::each(includes, [&](PC_tree_t node) {
 			const std::string inc = PDI::to_string(node);
 			const bool is_absolute = fs::path(inc).is_absolute();
 
-			// ── 4a: resolve to a canonical path ─────────────────────────────
 #if PDI_HAS_PC_PATH
-			// Check if the path to inlcude is relative,
-			// and whether we know our current path.
-			// is_absolute on "included" file, has_real_path on "includer" file
 			if (!is_absolute && !has_real_path) {
 				throw std::runtime_error(
 					"Relative include '" + inc
@@ -392,27 +306,47 @@ void Global_context::load_pdi_config_impl(
 			if (!fs::exists(full_path)) {
 				throw std::runtime_error("Included file not found: '" + full_path.string() + "'");
 			}
-			full_path = fs::canonical(full_path); // normalise once, use everywhere
+			full_path = fs::canonical(full_path);
 
-			// ── 4b: parse and recurse ────────────────────────────────────────
 			PC_tree_t sub = PC_parse_path(full_path.string().c_str());
 			if (PC_status(sub) != PC_OK) {
 				throw std::runtime_error("Failed to parse included file: '" + full_path.string() + "'");
 			}
 
-			// Pass full_path.string() as known_path so the recursive call
-			// uses the canonical path as identity regardless of Paraconf version.
-			load_pdi_config_impl(sub, loaded, stack, full_path.string());
+			collect_ordered_nodes(sub, loaded, stack, ordered_nodes, full_path.string());
 		});
 	}
 
-	// ── Step 5: load types / metadata / data / plugins ───────────────────────
-	Datatype_template::load_user_datatypes(*this, PC_get(conf, ".types"));
-
-	if (auto m = PC_get(conf, ".metadata"); !PC_status(m)) load_data(*this, m, true);
-	if (auto d = PC_get(conf, ".data"); !PC_status(d)) load_data(*this, d, false);
-
+	// ── Step 5: append this node after its children (post-order) ────────────
+	ordered_nodes.emplace_back(current_id, conf);
 	stack.erase(current_id);
+}
+
+void Global_context::finalize_and_exit()
+{
+	Global_context::finalize();
+	exit(0);
+}
+
+void Global_context::load_pdi_config(PC_tree_t conf)
+{
+	std::unordered_set<std::string> loaded;
+	std::unordered_set<std::string> stack;
+	std::vector<std::pair<std::string, PC_tree_t>> ordered_nodes;
+	collect_ordered_nodes(conf, loaded, stack, ordered_nodes);
+
+	// Sub-pass A: register + load plugins so custom types (e.g. MPI_Comm)
+	// are available before metadata/data are parsed.
+	for (auto& [id, node]: ordered_nodes)
+		m_plugins.register_plugins(node);
+	m_plugins.load_plugins();
+
+	// Sub-pass B: types, metadata, data, in include order.
+	for (auto& [id, node]: ordered_nodes) {
+		Datatype_template::load_user_datatypes(*this, PC_get(node, ".types"));
+		if (auto m = PC_get(node, ".metadata"); !PC_status(m)) load_data(*this, m, true);
+		if (auto d = PC_get(node, ".data"); !PC_status(d)) load_data(*this, d, false);
+	}
 }
 
 Global_context::~Global_context()
