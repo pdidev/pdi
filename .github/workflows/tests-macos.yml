@@ -54,6 +54,7 @@ jobs:
       PDI_MPI: openmpi
       CTEST_DIR: "/tmp/tests_output"
     steps:
+    - run: pip install pyyaml
     - run: brew install open-mpi python-setuptools numpy mpi4py libyaml
     - uses: actions/checkout@v4
       with:
