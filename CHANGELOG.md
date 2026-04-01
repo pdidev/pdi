@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 * Added tests for using an installed PDI
+* Support an include mechanism for PDI config,
+  to include other YAML files into root YAML document.
 
 
 ## [1.10.0] - 2026-01-31
