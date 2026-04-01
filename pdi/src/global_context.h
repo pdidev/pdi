@@ -131,9 +131,9 @@ public:
 
 	void check_duplicate(const std::string& name) override;
 
-	// Traverses the include tree once in post-order (deepest includes first),
-	// filling `ordered_nodes` with (canonical_id, PC_tree_t) pairs.
-	// Diamond/circular detection is handled here.
+	/// Traverses the include tree once in post-order (deepest includes first),
+	/// filling `ordered_nodes` with (canonical_id, PC_tree_t) pairs.
+	/// Diamond/circular detection is handled here.
 	void collect_ordered_nodes(
 		PC_tree_t conf,
 		std::unordered_set<std::string>& loaded,

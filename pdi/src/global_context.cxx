@@ -78,7 +78,7 @@ namespace PDI {
 
 namespace {
 
-void load_data(Global_context& ctx, PC_tree_t node, bool is_metadata)
+void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 {
 	int map_len = len(node);
 
