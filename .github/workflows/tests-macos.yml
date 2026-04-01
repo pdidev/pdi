@@ -54,8 +54,7 @@ jobs:
       PDI_MPI: openmpi
       CTEST_DIR: "/tmp/tests_output"
     steps:
-    - run: brew install open-mpi python-setuptools numpy mpi4py
-    - run: $(brew --prefix)/bin/python3 -m pip install pyyaml
+    - run: brew install open-mpi python-setuptools numpy mpi4py pyyaml
     - uses: actions/checkout@v4
       with:
         submodules: recursive
