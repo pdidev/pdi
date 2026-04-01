@@ -154,11 +154,7 @@ bool Data_descriptor_impl::empty()
 
 void Data_descriptor_impl::share(void* data, bool read, bool write)
 {
-	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
-
 	share(data, read, write, Delayed_data_callbacks(m_context));
-
-	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 }
 
 void Data_descriptor_impl::share(void* data, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks)

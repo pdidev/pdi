@@ -45,7 +45,6 @@ class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 	friend class Global_context;
 	friend class Descriptor_test_handler;
 
-
 	struct PDI_NO_EXPORT Ref_holder;
 
 	/// The context this descriptor is part of

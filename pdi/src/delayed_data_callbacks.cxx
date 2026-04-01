@@ -48,7 +48,6 @@ Delayed_data_callbacks::Delayed_data_callbacks(Global_context& ctx)
 Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 {
 	try {
-		m_context.logger().info("### call trigger in the destructor");
 		this->trigger();
 	} catch (const std::exception& e) {
 		if (std::uncaught_exceptions()) {
@@ -76,29 +75,42 @@ void Delayed_data_callbacks::trigger()
 {
 	int i = 0;
 	size_t number_of_elements = m_datanames.size();
-	std::vector<std::string> msg_data_error;
+	std::vector<Error> msg_data_error;
 
 	for (auto&& element_name: m_datanames) {
 		try {
 			m_context.logger().trace("Trigger data callback `{}' ({}/{})", element_name.c_str(), ++i, number_of_elements);
 			m_context.callbacks().call_data_callbacks(element_name, m_context[element_name].ref());
+		} catch (const Error& e) {
+			msg_data_error.emplace_back(e.status(), "Error in data callbacks for " + element_name + ": " + e.what());
 		} catch (const std::exception& e) {
-			std::string ewhat = e.what();
-			msg_data_error.emplace_back("data=" + element_name + ", exception error=" + ewhat);
+			msg_data_error.emplace_back(PDI_ERR_SYSTEM, "Error in data callbacks for " + element_name + ": " + e.what());
 		} catch (...) {
-			msg_data_error.emplace_back("data=" + element_name + ", no exception error");
+			msg_data_error.emplace_back(PDI_ERR_SYSTEM, "Error in data callbacks for " + element_name + ": Not a std::exception based error.");
 		}
 	}
 
 	m_datanames.clear();
 
-	// throw a message in case of error
-	if (msg_data_error.size()) {
-		const char* msg_system_error
-			= "Found `{0}' error(s) in trigger the data callback  "
-			  "This is the list of error for a each data: \n"
-			  " - {1}\n";
-		throw System_error{msg_system_error, msg_data_error.size(), fmt::join(msg_data_error, "\n - ")};
+	if (!msg_data_error.empty()) {
+		if (1 == msg_data_error.size()) {
+			if (std::uncaught_exceptions()) {
+				Global_context::context().logger().error(msg_data_error.front().what());
+			} else {
+				throw Error{msg_data_error.front().status(), msg_data_error.front().what()};
+			}
+		} else {
+			std::string errmsg
+				= "Multiple (" + std::to_string(msg_data_error.size()) + ") errors while triggering  data callbacks in multi expose: \n";
+			for (auto&& err: msg_data_error) {
+				errmsg += std::string(err.what()) + "\n";
+			}
+			if (std::uncaught_exceptions()) {
+				Global_context::context().logger().error(errmsg.c_str());
+			} else {
+				throw System_error{errmsg.c_str()};
+			}
+		}
 	}
 }
 

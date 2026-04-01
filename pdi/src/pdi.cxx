@@ -151,6 +151,18 @@ struct Var_to_reclaim {
 
 	~Var_to_reclaim() noexcept(false)
 	{
+		try {
+			this->trigger_reclaim();
+		} catch (...) {
+			if (std::uncaught_exceptions() == 0) {
+				throw;
+			}
+			// else:  stack unwinding case
+		}
+	}
+
+	void trigger_reclaim()
+	{
 		std::vector<Error> msg_reclaim_data_error;
 		int counter = 0;
 		for (auto&& it = m_varnames.rbegin(); it != m_varnames.rend(); it++) {
