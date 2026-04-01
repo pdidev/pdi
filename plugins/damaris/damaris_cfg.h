@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2024 National Institute for Research in Digital Science and Technology (Inria)
  * All rights reserved.
  *
@@ -181,8 +181,8 @@ const std::unordered_map<Event_type, std::string> event_names = {
      std::unordered_map<std::string, std::unordered_map<std::string, bool>> m_layout_depends_on;
      std::unordered_map<std::string, PDI::Expression> m_layout_expression;
  
-     std::string m_is_client_dataset_name = "";
-     std::string m_client_comm_get_dataset_name = "";
+     static std::string m_is_client_dataset_name;
+     static std::string m_client_comm_get_dataset_name;
      
  
  const std::string XML_CONFIG_TEMPLATE = R"V0G0N(<?xml version="1.0"?>
@@ -271,19 +271,19 @@ const std::unordered_map<Event_type, std::string> event_names = {
      std::pair<std::string, Desc_type> get_parameter_to_update_info(std::string data_name) const;
      list<string> get_after_write_events() const
      {
-         return m_after_write_events;
+        return m_after_write_events;
      }
      bool is_there_after_write_events() const
      {
-         return m_after_write_events.size();
+        return m_after_write_events.size();
      }
-     std::string is_client_dataset_name() const
+     static std::string is_client_dataset_name()
      {
-         return m_is_client_dataset_name;
+        return m_is_client_dataset_name;
      }
-     std::string client_comm_get_dataset_name() const
+     static std::string client_comm_get_dataset_name()
      {
-         return m_client_comm_get_dataset_name;
+        return m_client_comm_get_dataset_name;
      }
          
      std::string init_on_event() const;

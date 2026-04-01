@@ -1348,5 +1348,9 @@ std::string Damaris_cfg::end_iteration_on_event() const
 {
 	return m_end_iteration_on_event;
 }
+ 
+
+std::string Damaris_cfg::m_is_client_dataset_name = "";
+std::string Damaris_cfg::m_client_comm_get_dataset_name = "";
 
 } // namespace damaris_pdi

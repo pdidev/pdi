@@ -127,7 +127,7 @@ public:
 	{
 		ensure_damaris_is_initialized("");
 
-		context().logger().info("data `{}' has been exposed", name);
+		//context().logger().info("data `{}' has been exposed", name);//too verbose
 
 		//Update damaris parameters
 		if (m_config.is_needed_metadata(name)) {
@@ -144,7 +144,7 @@ public:
 					void* prm_value_buffer;
 					size_t prm_buffer_size;
 					if(std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prm_type) != std::end(int_numbers_types)) {
-						std::cout << "int_numbers_types contains " << prm_type << '\n';
+						//std::cout << "int_numbers_types contains " << prm_type << '\n';//Can be too verbose
 						int prm_long_value = std::atoi(prm_value.c_str());
 						prm_value_buffer = &prm_long_value;
 						prm_buffer_size = sizeof(int);
@@ -184,7 +184,7 @@ public:
 				context().logger().info("data `{}' Is a needed metadata for the evaluation of parameters {}", name, prm_name_concat);
 			}
 		} else if (m_config.is_dataset_to_write(name)) {
-			context().logger().info("is_dataset_to_write(`{}') = '{}'", name, m_config.is_dataset_to_write(name));
+			//context().logger().info("is_dataset_to_write(`{}') = '{}'", name, m_config.is_dataset_to_write(name));//too verbose
 			if (Ref_r rref = ref) {
 				Dataset_Write_Info ds_write_info = m_config.get_dataset_write_info(name);
 
