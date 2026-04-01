@@ -172,7 +172,9 @@ try {
 	g_transaction.clear();
 	g_transaction_data.clear();
 	Global_context::init(conf);
-	Global_context::context().timer().startTimer("PDI");
+	if (Global_context::context().timer_enabled()) {
+		Global_context::context().timer().startTimer("PDI");
+	}
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);
@@ -187,7 +189,10 @@ try {
 	Paraconf_wrapper fw;
 	g_transaction.clear();
 	g_transaction_data.clear();
-	Global_context::context().timer().stopTimer("PDI");
+	if (Global_context::context().timer_enabled()) {
+		Global_context::context().timer().stopTimer("PDI");
+		Global_context::context().timer().printReport();
+	}
 	Global_context::context().timer().printReport();
 	Global_context::finalize();
 	return PDI_OK;

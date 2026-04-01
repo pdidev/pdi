@@ -106,7 +106,15 @@ Global_context::Global_context(PC_tree_t conf)
 	: m_logger{"PDI", PC_get(conf, ".logging")}
 	, m_plugins{*this, conf}
 	, m_callbacks{*this}
+	, m_timer_enabled{false}
 {
+	PC_tree_t timer_node = PC_get(conf, ".timer");
+	if (!PC_status(timer_node)) {
+		long val = 0;
+		PC_int(timer_node, &val);
+		m_timer_enabled = (val != 0);
+	}
+
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
 	// load user datatypes

@@ -61,6 +61,8 @@ private:
 	/// Global timer of PDI
 	Timer m_timer;
 
+	bool m_timer_enabled;
+
 	/// Datatype_template constructors available in PDI
 	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
 
@@ -132,6 +134,8 @@ public:
 	Callbacks& callbacks() override;
 
 	void finalize_and_exit() override;
+
+	bool timer_enabled() const { return m_timer_enabled; }
 
 	~Global_context() override;
 };
