@@ -59,9 +59,9 @@ class veloc_plugin : public Plugin
 {
     Veloc_cfg m_config; 
 
-    int m_recovered_iter;
+    int recovered_iter;
 
-    int m_status; 
+    int status; 
 
     int cp_counter; 
     
@@ -142,11 +142,15 @@ class veloc_plugin : public Plugin
         {
 
             if(m_config.failure()==1){
-                m_status = 0;
+                status = 0;
             }
             else{
-                m_status = 1; 
+                status = 1; 
             }
+
+            cp_counter = 0; 
+
+            recovered_iter = -1; 
             
             // conformity checks 
 
@@ -189,7 +193,7 @@ class veloc_plugin : public Plugin
                 if (desc.second == Desc_type::STATUS) {
                     context().callbacks().add_data_callback([this](const string& name, Ref ref) {
                         if (Ref_w wref = ref) {
-                            *static_cast<int*>(wref.get()) = m_status; 
+                            *static_cast<int*>(wref.get()) = status; 
                         }
                     },
                     desc.first);
@@ -312,25 +316,25 @@ class veloc_plugin : public Plugin
                     context().callbacks().add_event_callback([this](const string& event_name) {
                         protect_for_write();
                         int result = load_checkpoint(context(), m_config.label()); 
-                        m_recovered_iter = result;
-                        m_status = 1; 
+                        recovered_iter = result;
+                        status = 1; 
                         unprotect();
                     },
                     event.first);
                 } break;
                 case Event_type::STATE_SYNC: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
-                        if (!m_status) { // recovery needed
+                        if (!status) { // recovery needed
                             protect_for_write();
                             int result = load_checkpoint(context(), m_config.label()); 
-                            m_recovered_iter = result;
-                            m_status = 1; 
+                            recovered_iter = result;
+                            status = 1; 
                             unprotect();
                         } 
-                        else if(m_status) { // recovery done or not needed 
+                        else if(status) { // recovery done or not needed 
                             protect_for_read();
                             int result = write_checkpoint(context(), m_config.when(),m_config.label(), m_config.iter_name()); 
-                            if (result != 0){
+                            if (result){
                                 cp_counter++; 
                             }
                             unprotect();
@@ -342,18 +346,20 @@ class veloc_plugin : public Plugin
                     Event_type event_type = event.second; // it this needed? 
                     context().callbacks().add_event_callback([this, event_type](const string& event_name) {
 
-                        if(!m_status){
+                        if(!status){
                             context().logger().warn("A checkpoint event was launched before a recovery event");
                         }
 
                         protect_for_read(); // will throw error if iter_name is not exposed 
 
+                        std::cout << "in ckpt event handler " << std::endl; 
+
                         Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
                         auto new_iter = new_iter_r.scalar_value<int>();
-                        if(new_iter!= m_recovered_iter){  
+                        if(new_iter!= recovered_iter){  
                             int result = write_checkpoint(context(), m_config.when(), m_config.label(), m_config.iter_name()); 
-                            
-                            if (result != 0){
+                            std::cout << "in if new inter condition " << std::endl; 
+                            if (result){
                                 cp_counter++; 
                             }
                         }

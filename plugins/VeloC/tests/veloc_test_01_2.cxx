@@ -23,29 +23,28 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
 #include <mpi.h>
 #include <pdi.h>
+#include <iostream>
 
 const char CONF_YAML[] =
+    "metadata:\n"
+    "  ii: int\n"
     "data:\n"
-    "  a: int\n"
-	"  ii: int\n"
+    "  cp_status: int\n"
+    "  cp_counter: int\n"
+    "  var: int\n"
     "plugins:\n"
     "  veloc:\n"
     "    failure: 1\n"
     "    config_file: veloc_config.cfg\n"
+    "    status: cp_status\n"
+    "    counter: cp_counter\n"
     "    checkpoint_label: test_01\n"
     "    iteration: ii\n"
-    "    protect_data: [ii, a]\n"  
-	"    recover_var:\n"
-	"      - on_event: recover_iter\n"
-	"        var: [ii]\n"
-	"      - on_event: recover_a\n"
-	"        var: [a]\n"
-	"      - on_event: recover_all\n"
-	"        var: [ii, a]\n";
-	
+    "    protect_data: [ii, var]\n"   
+    "    checkpoint_on: ckp\n"
+	"    recover_on: recover\n";
 
 int main(int argc, char* argv[])
 {	
@@ -55,37 +54,44 @@ int main(int argc, char* argv[])
 	
 	int cp_status;
 	int cp_counter; 
-	int ii = 0;  
-	int a = 0;
+	int rec_ii = 0;  
+	int rec_var = 0;
 	
-	// PDI_multi_expose("recover", "ii", &ii, PDI_INOUT, 
-	// 	"a", &a, PDI_INOUT, NULL);
-	// assert(ii == 20);
-	// assert(a == 50);
+	PDI_expose("cp_status", &cp_status, PDI_IN);
 
-	// printf(" after recover_iter"); 
+	if(cp_status!=0){
 
-	PDI_multi_expose("recover_a", "a", &a, PDI_INOUT, NULL);
-	assert(a == 50);
-
-	ii=0;
-	a=0; 
-
-	// printf(" after recover_a"); 
-
-
-	// PDI_multi_expose("recover", "ii", &ii, PDI_INOUT, 
-	// 	"a", &a, PDI_INOUT, NULL);
-	// assert(ii == 20);
-	// assert(a == 50);
+		std::cout <<"status is " << cp_status << std::endl; 
+        std::cout <<"TEST 01_2 FAILED"  << std::endl; 
+		exit(2);
+	}
 	
-	PDI_multi_expose("recover_iter", "ii", &ii, PDI_INOUT,
-			NULL);
+	PDI_multi_expose("recover", "ii", &rec_ii, PDI_INOUT,
+			"var", &rec_var, PDI_INOUT, NULL);
+	PDI_expose("cp_status", &cp_status, PDI_IN);
 
-	assert(ii == 20);
-	// assert(a == 50);
+	if(cp_status!=1){
 
-	printf("TEST 01_3 PASSED ");
+		std::cout <<"status is " << cp_status << std::endl; 
+        std::cout <<"TEST 01_2 FAILED"  << std::endl; 
+		exit(2);
+	}
+
+    if(rec_ii == 25){
+
+		std::cout <<"rec_ii is " << rec_ii << std::endl; 
+        std::cout <<"TEST 01_2 FAILED"  << std::endl; 
+		exit(2);
+	}
+
+    if(rec_var == 50){
+
+		std::cout <<"rec_var is " << rec_var << std::endl; 
+        std::cout <<"TEST 01_2 FAILED"  << std::endl; 
+		exit(2);
+	}
+
+	printf("TEST 01_2 PASSED ");
 
 	PDI_finalize();
 	MPI_Finalize();

@@ -96,7 +96,7 @@ int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> whe
 		exit(2);
 	}
 
-	return version;
+	return 1;
 
 }
 

@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <mpi.h>
 #include <pdi.h>
+#include <iostream>
 
 const char CONF_YAML[] =
     "metadata:\n"
@@ -33,7 +34,7 @@ const char CONF_YAML[] =
     "data:\n"
     "  cp_status: int\n"
     "  cp_counter: int\n"
-    "  a: int\n"
+    "  var: int\n"
     "plugins:\n"
     "  veloc:\n"
     "    failure: 0\n"
@@ -42,9 +43,8 @@ const char CONF_YAML[] =
     "    counter: cp_counter\n"
     "    checkpoint_label: test_01\n"
     "    iteration: ii\n"
-    "    protect_data: [ii, a]\n"   
+    "    protect_data: [ii, var]\n"   
     "    checkpoint_on: ckp\n";
-
 
 int main(int argc, char* argv[])
 {
@@ -54,24 +54,30 @@ int main(int argc, char* argv[])
 	
 	int cp_status;
 	int cp_counter; 
-	int ii = 0; 
-	int a = 30;
 	
-	PDI_multi_expose("init", "ii", &ii, PDI_INOUT,
-			"a", &a, PDI_INOUT, NULL);
+	int ii = 25; 
+	int var = 50;
+	
 	PDI_expose("cp_status", &cp_status, PDI_IN);
+	if(cp_status!=1){
 
-	assert(cp_status== 1); // recovery not needed 
-
-	ii = 20;
-	a = 50;
+		std::cout <<"status is " << cp_status << std::endl; 
+        std::cout <<"TEST 01_1 FAILED"  << std::endl; 
+		exit(2);
+	}
 
 	PDI_multi_expose("ckp", "ii", &ii, PDI_INOUT,
-			"a", &a, PDI_INOUT, NULL);
+			"var", &var, PDI_INOUT, NULL);
+	
 	PDI_expose("cp_counter", &cp_counter, PDI_IN);
-	printf("counter is %d/n", cp_counter);
-	assert(cp_counter == 1);
+	
+	if(cp_counter!=1){
 
+		std::cout <<"counter is " << cp_counter << std::endl; 
+        std::cout <<"TEST 01_1 FAILED"  << std::endl; 
+		exit(2);
+
+	}
     printf("TEST 01_1 PASSED ");
 	
 	PDI_finalize();
