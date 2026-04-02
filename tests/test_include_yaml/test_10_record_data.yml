@@ -1,6 +1,5 @@
 include:
-  # - test_10_subdata.yml
-  - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_10_subdata.yml
+  - test_10_subdata.yml
 
 data:
   record_data:

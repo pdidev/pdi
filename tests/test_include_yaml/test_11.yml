@@ -1,8 +1,7 @@
 include:
-  # - test_11_serialize_plugin.yml
-  # - test_11_hdf5_plugin.yml
-  - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_11_serialize_plugin.yml
-  - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_11_hdf5_plugin.yml
+  - test_11_serialize_plugin.yml
+  - test_11_hdf5_plugin.yml
+
 logging: trace
 metadata:
   input: int

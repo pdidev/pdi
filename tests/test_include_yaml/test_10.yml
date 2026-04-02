@@ -1,6 +1,5 @@
 include:
-  # - test_10_record_data.yml
-  - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_10_record_data.yml
+  - test_10_record_data.yml
 
 logging: trace
 metadata:

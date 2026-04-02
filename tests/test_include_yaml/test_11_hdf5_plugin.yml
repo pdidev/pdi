@@ -1,6 +1,5 @@
 include:
-  # - test_11_subdata.yml
-  - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_11_subdata.yml
+  - test_11_subdata.yml
 
 plugins:
   decl_hdf5:

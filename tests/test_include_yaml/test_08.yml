@@ -1,6 +1,5 @@
 include:
-  # - test_08_subdata.yml
-  - /opt/repositories/includeYamlQuater/pdi/tests/test_include_yaml/test_08_subdata.yml
+  - test_08_subdata.yml
 
 logging: trace
 metadata:
