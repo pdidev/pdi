@@ -11,7 +11,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-* A compile option `WITH_TIMER_REPORT` is added to generate timer for all plugins.
 
 ### Changed
 

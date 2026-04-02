@@ -16,6 +16,7 @@ and this project adheres to
 ### For users
 
 #### Added
+* A timer is added to reflect the time consumed by plugins. 
 
 #### Changed
 

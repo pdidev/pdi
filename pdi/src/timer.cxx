@@ -22,61 +22,57 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <pdi/logger.h>
 #include <pdi/timer.h>
+
+#include "global_context.h"
 
 namespace PDI {
 
 // Start a timer by name
 void Timer::startTimer(const std::string& name)
 {
-#ifdef WITH_TIMER_REPORT
-	start_times[name] = std::chrono::high_resolution_clock::now();
-#endif
+	if (timer_enabled) start_times[name] = std::chrono::high_resolution_clock::now();
 }
 
 // Stop a timer and accumulate the duration
 void Timer::stopTimer(const std::string& name)
 {
-#ifdef WITH_TIMER_REPORT
-	auto end_time = std::chrono::high_resolution_clock::now();
+	if (timer_enabled) {
+		auto end_time = std::chrono::high_resolution_clock::now();
 
-	if (start_times.find(name) != start_times.end()) {
-		std::chrono::duration<double> elapsed = end_time - start_times[name];
-		accumulated_times[name] += elapsed.count();
+		if (start_times.find(name) != start_times.end()) {
+			std::chrono::duration<double> elapsed = end_time - start_times[name];
+			accumulated_times[name] += elapsed.count();
+		}
 	}
-#endif
 }
 
 // Export the results
 void Timer::printReport() const
 {
-#ifdef WITH_TIMER_REPORT
-	std::cout << "\n--- Full Timer Report ---" << std::endl;
-	for (const auto& [name, duration]: accumulated_times) {
-		std::cout << name << ": " << duration << " seconds" << std::endl;
+	if (timer_enabled) {
+		for (const auto& [name, duration]: accumulated_times) {
+			Global_context::context().logger().info("{} : {} seconds", name, duration);
+		}
 	}
-#endif
 }
 
 void Timer::printReport(const std::string& name) const
 {
-#ifdef WITH_TIMER_REPORT
-	std::cout << "\n--- Timer Report : " << std::endl;
-	auto it = accumulated_times.find(name);
-
-	if (it != accumulated_times.end()) {
-		std::cout << name << " : " << it->second << " seconds" << std::endl;
-	} else {
-		std::cout << name << " timer not found." << std::endl;
+	if (timer_enabled) {
+		auto it = accumulated_times.find(name);
+		if (it != accumulated_times.end()) {
+			Global_context::context().logger().info("{} : {} seconds", name, it->second);
+		} else {
+			Global_context::context().logger().info("{} timer not found.", name);
+		}
 	}
-#endif
 }
 
 // Get the map directly (useful for MPI export)
 const std::map<std::string, double>& Timer::getResults()
 {
-#ifdef WITH_TIMER_REPORT
-	return accumulated_times;
-#endif
+	if (timer_enabled) return accumulated_times;
 }
 } // namespace PDI

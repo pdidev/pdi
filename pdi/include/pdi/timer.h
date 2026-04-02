@@ -51,9 +51,12 @@ public:
 
 	const std::map<std::string, double>& getResults();
 
+	void enable_timer(const bool choice) { timer_enabled = choice; }
+
 private:
 	std::map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
 	std::map<std::string, double> accumulated_times;
+	bool timer_enabled = false;
 };
 } // namespace PDI
 #endif // PDI_TIMER_H_
