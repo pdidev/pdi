@@ -61,9 +61,9 @@ int main(int argc, char* argv[])
 	PDI_expose("cp_status", &cp_status, PDI_IN);
 	if(cp_status!=1){
 
-		std::cout <<"status is " << cp_status << std::endl; 
-        std::cout <<"TEST 01_1 FAILED"  << std::endl; 
-		exit(2);
+		std::cerr << "TEST_01_1 FAILED: status value " << cp_status
+                  << " does not match expected value " << 1 << std::endl;
+		exit(1); 
 	}
 
 	PDI_multi_expose("ckp", "ii", &ii, PDI_INOUT,
@@ -73,9 +73,9 @@ int main(int argc, char* argv[])
 	
 	if(cp_counter!=1){
 
-		std::cout <<"counter is " << cp_counter << std::endl; 
-        std::cout <<"TEST 01_1 FAILED"  << std::endl; 
-		exit(2);
+		std::cerr << "TEST_01_1 FAILED: counter value " << cp_counter
+                  << " does not match expected value " << 1 << std::endl;
+		exit(1); 
 
 	}
     printf("TEST 01_1 PASSED ");

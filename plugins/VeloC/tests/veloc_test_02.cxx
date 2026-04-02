@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <assert.h>
 #include <mpi.h>
 #include <pdi.h>
 #include <iostream>
@@ -30,69 +31,74 @@
 const char CONF_YAML[] =
     "metadata:\n"
     "  ii: int\n"
+    "  arr_size: int\n"
     "data:\n"
     "  cp_status: int\n"
     "  cp_counter: int\n"
-    "  var: int\n"
+    "  arr:  {type: array, size: '$arr_size', subtype: double}\n"
     "plugins:\n"
     "  veloc:\n"
-    "    failure: 1\n"
+    "    failure: 0\n"
     "    config_file: veloc_config.cfg\n"
-    "    status: cp_status\n"
     "    counter: cp_counter\n"
-    "    checkpoint_label: test_01\n"
+	"    status: cp_status\n"
+    "    checkpoint_label: test_02\n"
     "    iteration: ii\n"
-    "    protect_data: [ii, var]\n"  
-	"    recover_on: recover\n";
+    "    protect_data: [ii, arr]\n"   
+    "    synchronize_on: sync\n"
+	"    when: '$ii % 2 = 0 '\n";
 
 int main(int argc, char* argv[])
-{	
-    MPI_Init(&argc, &argv);
-    PC_tree_t conf = PC_parse_string(CONF_YAML);
+{
+	MPI_Init(&argc, &argv);
+	PC_tree_t conf = PC_parse_string(CONF_YAML);
 	PDI_init(conf);
 	
-	int cp_status;
 	int cp_counter; 
-	int rec_ii = 0;  
-	int rec_var = 0;
-	
+	int cp_status; 
+
+	int ii = 0; 
+	int arr_size = 20; 
+	PDI_expose("arr_size", &arr_size, PDI_OUT);
+	double * arr = new double[arr_size];
+	for (int i = 0; i < arr_size; i++) arr[i] = 0.0;
+
 	PDI_expose("cp_status", &cp_status, PDI_IN);
-
-	if(cp_status!=0){
-
-		std::cerr << "TEST_01_2 FAILED: status value " << cp_status
-                  << " does not match expected value " << 0 << std::endl;
-		exit(1); 
-	}
 	
-	PDI_multi_expose("recover", "ii", &rec_ii, PDI_INOUT,
-			"var", &rec_var, PDI_INOUT, NULL);
-	PDI_expose("cp_status", &cp_status, PDI_IN);
+	for (; ii<10; ++ ii) {
 
-	if(cp_status!=1){
-		std::cerr << "TEST_01_2 FAILED: status value " << cp_status
-                  << " does not match expected value " << 1 << std::endl;
-		exit(1); 
+		arr[ii] = ii * 2; 
+		PDI_multi_expose("sync",
+                "ii",        &ii,       PDI_INOUT,
+                "arr", arr, PDI_INOUT,
+                NULL);
+		
+		if((cp_status) && (ii == 5)){
+			break; 
+		}
+    };
+
+	PDI_expose("cp_counter", &cp_counter, PDI_IN);
+	
+	if(cp_status){ // no recovery needed
+		if(cp_counter!=3){
+			std::cerr << "TEST_02 FAILED: counter value " << cp_counter
+                  << " does not match expected value " << 3 << std::endl;
+			exit(1);
+		}
 	}
-
-    if(rec_ii != 25){
-		std::cerr << "TEST_01_2 FAILED: recovered iter value " << rec_ii
-                  << " does not match expected value " << 25 << std::endl;
+	else if (!cp_status){ // recovery needed 
+		if(cp_counter!=2){
+		std::cerr << "TEST_02 FAILED: counter value " << cp_counter
+                  << " does not match expected value " << 2 << std::endl;
 		exit(1);
+		}
 	}
 
-    if(rec_var != 50){
-
-		std::cerr << "TEST_01_2 FAILED: recovered var value " << rec_var
-                  << " does not match expected value " << 50 << std::endl;
-		exit(1); 
-	}
-
-	printf("TEST 01_2 PASSED ");
-
+    printf("TEST 02 PASSED ");
+	
 	PDI_finalize();
 	MPI_Finalize();
-
-    return 0; 
-
+	
+	return 0;
 }
