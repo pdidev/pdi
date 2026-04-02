@@ -146,7 +146,9 @@ if("${BUILD_HDF5_PARALLEL}")
 	set_property(TEST decl_hdf5_mpi_subfiling PROPERTY PROCESSORS 4)
 
 	add_test(NAME check_subfile_count
-    COMMAND sh -c "count=$(ls -1 subfiling_*.h5.subfile_* 2>/dev/null | wc -l); echo \"Detected count: $count\"; if [ \"$count\" -eq 8 ]; then exit 0; else exit 1; fi")
+    COMMAND sh -c "h5cc -showconfig | grep 'Subfiling VFD: ON' || { echo 'Subfiling not supported, skipping'; exit 0; }; \
+	               count=$(ls -1 subfiling_*.h5.subfile_* 2>/dev/null | wc -l); echo \"Detected count: $count\"; \
+				   if [ \"$count\" -eq 8 ]; then exit 0; else exit 1; fi")
 	set_tests_properties(check_subfile_count PROPERTIES DEPENDS decl_hdf5_mpi_subfiling)
 endif()
 
