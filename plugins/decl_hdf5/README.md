@@ -63,9 +63,9 @@ The possible values for the keys are as follow:
 
 * `subfiling`: a key-value map or an integer. Configures the HDF5 Subfiling Virtual File Driver (VFD). This feature is only available if the underlying HDF5 installation was compiled with `H5_HAVE_SUBFILING_VFD`.
   * Configuration keys:
-    * `count` (integer, default: 0) : the total number of subfiles to generate
-    * `policy` (string, default: "STOP") : Determines behavior if subfiling requirements are not met. 
-      * `STOP`: Throw a runtime error and exit.
+    * `count` (integer, default: 0) : the total number of subfiles to generate. If set to -1 or other negative values, the one-subfile-per-node mode will be triggered.
+    * `policy` (string, default: "STOP") : Determines behavior if subfiling requirements are not met.
+      * `STOP`: Throw a runtime error.
       * `CONTINUE`: Fall back to a standard HDF5 output file.
     * `stripe_size` (integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MB) is used.
   * Yaml example
