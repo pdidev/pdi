@@ -57,7 +57,7 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 			}
 		});
 	} else {
-		throw PDI::Error{PDI_ERR_CONFIG, "subfiling node is not parsed correctly"};
+		throw Config_error{sf_tree, "subfiling node is not parsed correctly"};
 	}
 }
 

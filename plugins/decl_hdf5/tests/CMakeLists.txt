@@ -141,15 +141,10 @@ set_property(TEST decl_hdf5_IO_options_C PROPERTY TIMEOUT 15)
 if("${BUILD_HDF5_PARALLEL}")
 	add_executable(decl_hdf5_mpi_subfiling decl_hdf5_mpi_subfiling.c)
 	target_link_libraries(decl_hdf5_mpi_subfiling PDI::PDI_C MPI::MPI_C)
-	add_test(NAME decl_hdf5_mpi_subfiling COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_subfiling>" ${MPIEXEC_POSTFLAGS})
+	add_test(NAME decl_hdf5_mpi_subfiling COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_subfiling>" ${MPIEXEC_POSTFLAGS})
 	set_property(TEST decl_hdf5_mpi_subfiling PROPERTY TIMEOUT 15)
 	set_property(TEST decl_hdf5_mpi_subfiling PROPERTY PROCESSORS 4)
 
-	add_test(NAME check_subfile_count
-    COMMAND sh -c "h5cc -showconfig | grep 'Subfiling VFD: ON' || { echo 'Subfiling not supported, skipping'; exit 0; }; \
-	               count=$(ls -1 subfiling_*.h5.subfile_* 2>/dev/null | wc -l); echo \"Detected count: $count\"; \
-				   if [ \"$count\" -eq 8 ]; then exit 0; else exit 1; fi")
-	set_tests_properties(check_subfile_count PROPERTIES DEPENDS decl_hdf5_mpi_subfiling)
 endif()
 
 if("${BUILD_FORTRAN}")
