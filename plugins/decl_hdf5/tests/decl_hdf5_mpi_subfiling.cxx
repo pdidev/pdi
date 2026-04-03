@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 			return EXIT_FAILURE;
 		}
 		if (std::system("grep \"subfile_count=2\" subfiling_values.h5.subfile_*.config > /dev/null 2>&1")) {
-            return EXIT_FAILURE;
+			return EXIT_FAILURE;
 		}
 	}
 }
