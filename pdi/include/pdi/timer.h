@@ -49,8 +49,6 @@ public:
 	void printReport() const;
 	void printReport(const std::string& name) const;
 
-	const std::map<std::string, double>& getResults();
-
 	void enable_timer(const bool choice) { timer_enabled = choice; }
 
 private:
