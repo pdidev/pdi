@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 		exit(1); 
 	}
 
-	printf("TEST 01_2 PASSED ");
+	std::cout << "TEST 01_2 PASSED " <<std::endl;
 
 	PDI_finalize();
 	MPI_Finalize();

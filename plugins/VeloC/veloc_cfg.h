@@ -77,13 +77,17 @@ struct ManualRecovery{
 
 class Veloc_cfg
 {
-	PDI::Expression m_config_file;
+	std::string m_config_file;
 
     std::string m_cp_label; 
 
 	ManualCheckpoint m_manual_cp;
 
 	ManualRecovery m_manual_rec;
+
+	bool manual_cp_defined;
+
+	bool manual_rec_defined;
 
     int m_failure; 
 
@@ -100,11 +104,13 @@ class Veloc_cfg
 	PDI::Expression m_when;
 	
 	std::unordered_map<std::string, std::set<int>> m_recover_var; // event a - 1,2,3 ( = recover variables with index 1,2, and 3 in m_protected_data on "event")
+
+	void check_conformity(PDI::Context& ctx);
 	
 public:
 	Veloc_cfg(PDI::Context& ctx, PC_tree_t tree);
 	
-	std::string config(PDI::Context& ctx) const;
+	std::string config()  const { return m_config_file; }
 
 	std::string label() const { return m_cp_label; }
 	

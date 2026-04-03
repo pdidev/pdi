@@ -36,6 +36,7 @@
 #include "veloc_cfg.h"
 
 using PDI::Context;
+using PDI::Error;
 using PDI::Config_error;
 using PDI::Expression;
 using PDI::Impl_error;
@@ -91,7 +92,6 @@ bool load_events(unordered_map<string, Event_type>& events, Context& ctx, PC_tre
     }
 
     else{
-        std::cout << "single event : " << to_string(tree) << std::endl;
         auto&& result = events.emplace(to_string(tree), event_type);
         if (result.second) {
             inserted = true;
@@ -169,14 +169,14 @@ set<int> load_vars(Context& ctx, PC_tree_t tree, std::unordered_map<int, std::st
 }
 } // namespace <anonymous>
 
-Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
+Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree) : m_failure{-1}, manual_cp_defined{false}, manual_rec_defined{false}
 {
     //pass 1 
     each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
         
         string key = to_string(key_tree);
 
-        if (key == "config_file") { // VeloC config file 
+        if (key == "config_file") {
             m_config_file = to_string(value);
         } 
         else if (key == "failure") {
@@ -196,19 +196,16 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
             string counter_name = to_string(value);
             load_desc(m_descs, ctx, counter_name, Desc_type::COUNTER_CP); 
         } 
-        else if(key == "iteration" ){
+        else if(key == "iteration"){
             m_iter_name = to_string(value);
         }
         else if (key == "synchronize_on") {
-            // PC_tree_t sync_tree = PC_get(tree, ".synchronize_on");
             load_events(m_events, ctx, value, Event_type::STATE_SYNC);
         } 
         else if (key == "recover_on") {
-            // PC_tree_t recover_tree = PC_get(tree, ".recover_on");
             load_events(m_events, ctx, value, Event_type::RECOVER);
         }
-        else if(key == "checkpoint_on" ){ 
-            // PC_tree_t ckpt_tree = PC_get(tree, ".checkpoint_on");
+        else if(key == "checkpoint_on"){ 
             load_events(m_events, ctx, value, Event_type::CHECKPOINT);
         }
         else if (key == "protect_data") {
@@ -228,132 +225,288 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
         }
     });
 
-    // pass 2 
+    // pass 2
     PC_tree_t protect_tree = PC_get(tree, ".protect_data");
-
-    if (!PC_status(PC_get(protect_tree, "[0]"))) { // it's a list of names only
-        int data_id = 0;
-        each(protect_tree, [&](PC_tree_t value) {
-
-            string data_name = to_string(value);
-
-            auto&& result = m_protected_data.emplace(data_id, data_name); 
-
-            if (result.second) { // if insertion succeeds 
-              //  register_memory_regions[data_name] = true;
-            } 
-            else {
-                ctx.logger().warn("Duplicate data id (`{}')", data_id);
-            }
-            data_id++;
-        });
+    if (!PC_status(protect_tree)) {                                      
+        if (!PC_status(PC_get(protect_tree, "[0]"))) {
+            int data_id = 0;
+            each(protect_tree, [&](PC_tree_t value) {
+                string data_name = to_string(value);
+                auto&& result = m_protected_data.emplace(data_id, data_name);
+                if (!result.second) {
+                    ctx.logger().warn("Duplicate data id (`{}')", data_id);
+                }
+                data_id++;
+            });
+        }
     }
-    // TO DO: else 
 
-    // pass 3 
+    // pass 3
     PC_tree_t recover_var_tree = PC_get(tree, ".recover_var");
-    if(!PC_status(recover_var_tree)){
+    if (!PC_status(recover_var_tree)) {
         if (!PC_status(PC_get(recover_var_tree, "[0]"))) {
+            // list of recover_var entries
             each(recover_var_tree, [&](PC_tree_t recover_var_subtree) {
-                
                 PC_tree_t var_tree = PC_get(recover_var_subtree, ".var");
+                if (PC_status(var_tree)) {                               // <-- guard: .var may be absent
+                    ctx.logger().warn("VeloC config: `recover_var' entry missing `.var', skipping.");
+                    return;
+                }
                 auto&& vars = load_vars(ctx, var_tree, m_protected_data);
-                
+
                 PC_tree_t event_tree = PC_get(recover_var_subtree, ".on_event");
+                if (PC_status(event_tree)) {                             // <-- guard: .on_event may be absent
+                    ctx.logger().warn("VeloC config: `recover_var' entry missing `.on_event', skipping.");
+                    return;
+                }
                 load_events(m_events, ctx, event_tree, Event_type::RECOVER_VAR, [this, vars](const string& event_name) {
-                    this->m_recover_var.emplace(event_name, vars);
+                    m_recover_var.emplace(event_name, vars);
                 });
             });
         }
-        else{
+        else {
+            // single recover_var entry
             PC_tree_t var_tree = PC_get(recover_var_tree, ".var");
-            auto&& vars = load_vars(ctx, var_tree, m_protected_data);
-            
-            PC_tree_t event_tree = PC_get(recover_var_tree, ".on_event");
-            load_events(m_events, ctx, event_tree, Event_type::RECOVER_VAR, [this, vars](const string& event_name) {
-                this->m_recover_var.emplace(event_name, vars);
-            });
+            if (PC_status(var_tree)) {                                   // <-- guard: .var may be absent
+                ctx.logger().warn("VeloC config: `recover_var' missing `.var', skipping.");
+            }
+            else {
+                auto&& vars = load_vars(ctx, var_tree, m_protected_data);
+
+                PC_tree_t event_tree = PC_get(recover_var_tree, ".on_event");
+                if (PC_status(event_tree)) {                             // <-- guard: .on_event may be absent
+                    ctx.logger().warn("VeloC config: `recover_var' missing `.on_event', skipping.");
+                }
+                else {
+                    load_events(m_events, ctx, event_tree, Event_type::RECOVER_VAR, [this, vars](const string& event_name) {
+                        m_recover_var.emplace(event_name, vars);
+                    });
+                }
+            }
         }
     }
 
-    // pass 4 
+    // pass 4
     PC_tree_t manual_cp_tree = PC_get(tree, ".manual_checkpoint");
     if (!PC_status(manual_cp_tree)) {
+        manual_cp_defined = true; 
         each(manual_cp_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-
-            std::cout << "inside manual checkpoint tree " << std::endl; 
             string key = to_string(key_tree);
 
-            if(key == "original_file"){
+            if (key == "original_file") {
                 m_manual_cp.original_file = to_string(value);
             }
-            else if(key == "veloc_file"){
-                string routed_file = to_string(value); 
-                std::cout << "routed_file = " << routed_file << std::endl; 
-                m_manual_cp.routed_file = routed_file; 
+            else if (key == "veloc_file") {
+                m_manual_cp.routed_file = to_string(value);
             }
-            else if(key == "start_on"){
+            else if (key == "start_on") {
                 load_events(m_events, ctx, value, Event_type::START_CHECKPOINT);
             }
-            else if(key == "end_on"){
+            else if (key == "end_on") {
                 load_events(m_events, ctx, value, Event_type::END_CHECKPOINT);
             }
-            else if(key == "route_file_on"){
+            else if (key == "route_file_on") {
                 load_events(m_events, ctx, value, Event_type::ROUTE_FILE_FOR_CP);
             }
-        });     
+            else {
+                ctx.logger().warn("VeloC config: unknown key `{}' in `manual_checkpoint', ignoring.", key);
+            }
+        });
     }
-
-    // TO DO: ELSE
 
     // pass 5
     PC_tree_t manual_rec_tree = PC_get(tree, ".manual_recovery");
     if (!PC_status(manual_rec_tree)) {
+        manual_rec_defined = true; 
         each(manual_rec_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
-
-            std::cout << "inside manual recovery tree " << std::endl; 
             string key = to_string(key_tree);
 
-            if(key == "original_file"){
+            if (key == "original_file") {
                 m_manual_rec.original_file = to_string(value);
             }
-            else if(key == "veloc_file"){
-                string routed_file = to_string(value); 
-                std::cout << "routed_file = " << routed_file << std::endl; 
-                m_manual_rec.routed_file = routed_file; 
+            else if (key == "veloc_file") {
+                m_manual_rec.routed_file = to_string(value);
             }
-            else if(key == "start_on"){
+            else if (key == "start_on") {
                 load_events(m_events, ctx, value, Event_type::START_RECOVERY);
             }
-            else if(key == "end_on"){
+            else if (key == "end_on") {
                 load_events(m_events, ctx, value, Event_type::END_RECOVERY);
             }
-            else if(key == "route_file_on"){
+            else if (key == "route_file_on") {
                 load_events(m_events, ctx, value, Event_type::ROUTE_FILE_FOR_REC);
             }
-        });     
+            else {
+                ctx.logger().warn("VeloC config: unknown key `{}' in `manual_recovery', ignoring.", key);
+            }
+        });
     }
 
-    // TO DO: else
+    check_conformity(ctx);
+}
 
-    // conformity checks 
+void Veloc_cfg::check_conformity(Context& ctx){
 
-    if(!m_when){
-        m_when = 1L; 
+    if(m_config_file.empty()){
+         throw Error{PDI_ERR_CONFIG, 
+            "VELOC PLUGIN YAML : The VeloC configuration file is undefined"};
     }
 
-    // TODO CONTINUE HERE ... 
+    if(m_protected_data.size()==0){
+        throw Error{PDI_ERR_CONFIG, 
+            "VELOC PLUGIN YAML: Data to be checkpointed/recovered must be defined"};
+    }
 
-	if (!m_config_file) {
-		throw Config_error{tree, "Missing `config_file' key for FTI configuration"};
-	}
+    bool cp_events_defined = std::any_of(
+        m_events.begin(), m_events.end(),
+        [](const auto& pair) {
+            return pair.second == Event_type::CHECKPOINT;
+        }
+    );
+
+    bool rec_events_defined = std::any_of(
+        m_events.begin(), m_events.end(),
+        [](const auto& pair) {
+            return pair.second == Event_type::RECOVER;
+        }
+    );
+    bool sync_events_defined = std::any_of(
+        m_events.begin(), m_events.end(),
+        [](const auto& pair) {
+            return pair.second == Event_type::STATE_SYNC;
+        }
+    );
+
+    if(!cp_events_defined && !rec_events_defined && !sync_events_defined && 
+        !manual_cp_defined && !manual_rec_defined){
+            throw Error{PDI_ERR_CONFIG, 
+            "VELOC PLUGIN YAML: No events have been defined"};      
+    }
+
+    if (m_cp_label.empty()){
+        throw Error{PDI_ERR_CONFIG, 
+            "VELOC PLUGIN YAML : The name of the checkpoint label must be defined"};
+    }
+
+    if(m_failure!=0 && m_failure!=1){
+        throw Error{PDI_ERR_CONFIG, 
+            "VELOC PLUGIN YAML : The failure key must defined as equal to 1 or 0 "
+            "depening if a failure occurred or not"};
+    }
+
+    if(m_iter_name.empty()){
+        throw Error{PDI_ERR_CONFIG, 
+            "VELOC PLUGIN YAML: The name of the iteration number in the PDI data store must be defined"};
+    }
+    else if (std::find_if(m_protected_data.begin(), m_protected_data.end(),
+        [this](const auto& p){ return p.second == this->m_iter_name; }) 
+        == m_protected_data.end()) {  
+        throw Error{PDI_ERR_CONFIG, 
+            "VELOC PLUGIN YAML: The iteration number must be included in the data to be protected"};
+    }
+
+    if(!cp_events_defined){
+        if(m_when){
+            ctx.logger().warn("VELOC PLUGIN YAML : No checkpoints events have been defined. "
+                "Ignoring 'when' key\n");
+        }
+        else{
+            ctx.logger().warn("VELOC PLUGIN YAML : No checkpoints events have been defined\n");
+        }
+    }
+    else{  
+        if(!m_when){
+            m_when = 1L; 
+        }
+    }
+
+    if(m_failure==1 && (!rec_events_defined) || (!sync_events_defined)){
+        ctx.logger().warn("VELOC PLUGIN YAML : The failure key has been set to 1 " 
+            "but no recovery or synchronization events have been defined\n");
+    }
+
+    if(manual_cp_defined){
+
+        bool start_event_defined = std::any_of(
+            m_events.begin(), m_events.end(),
+            [](const auto& pair) {
+                return pair.second == Event_type::START_CHECKPOINT;
+            }
+        );
+
+        bool route_event_defined = std::any_of(
+            m_events.begin(), m_events.end(),
+            [](const auto& pair) {
+                return pair.second == Event_type::ROUTE_FILE_FOR_CP;
+            }
+        );
+
+        bool end_event_defined = std::any_of(
+            m_events.begin(), m_events.end(),
+            [](const auto& pair) {
+                return pair.second == Event_type::END_CHECKPOINT;
+            }
+        );
+
+        if(m_manual_cp.routed_file.empty()){
+            throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: the name of the routed filename buffer in the PDI data store must be defined"};
+        }
+        if(!start_event_defined){
+            throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: the event on which to start a checkpoint phase must be defined "};
+        }
+        if(!route_event_defined){
+            throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: the event on which to route a filename for checkpointing must be defined "};
+        }
+        if(!end_event_defined){
+            throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: the event on which to end a checkpoint phase must be defined "};
+        }
+    }
+
+   if(manual_rec_defined){
+
+        bool start_event_defined = std::any_of(
+            m_events.begin(), m_events.end(),
+            [](const auto& pair) {
+                return pair.second == Event_type::START_RECOVERY;
+            }
+        );
+
+        bool route_event_defined = std::any_of(
+            m_events.begin(), m_events.end(),
+            [](const auto& pair) {
+                return pair.second == Event_type::ROUTE_FILE_FOR_REC;
+            }
+        );
+
+        bool end_event_defined = std::any_of(
+            m_events.begin(), m_events.end(),
+            [](const auto& pair) {
+                return pair.second == Event_type::END_RECOVERY;
+            }
+        );
+
+        if(m_manual_rec.routed_file.empty()){
+            throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: the name of the routed filename buffer in the PDI data store must be defined"};
+        }
+        if(!start_event_defined){
+            throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: the event on which to start a recovery phase must be defined "};
+        }
+        if(!route_event_defined){
+            throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: the event on which to route a filename for recovery must be defined "};
+        }
+        if(!end_event_defined){
+            throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: the event on which to end a recovery phase must be defined "};
+        }
+    }
 
 }
-
-string Veloc_cfg::config(Context& ctx) const
-{
-	return m_config_file.to_string(ctx); // needs ctx to be evaluated cause could contain things like ${HOME}/.. for example 
-}
-
 
 

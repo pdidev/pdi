@@ -152,42 +152,8 @@ class veloc_plugin : public Plugin
 
             recovered_iter = -1; 
             
-            // conformity checks 
-
-            // if(failure_value!=0 && failure_value!=1){
-            //     throw Error{PDI_ERR_CONFIG, 
-            //         "VeloC plugin: the failure key must be 1 or 0 depening if a failure occurred or not"};
-            // }
-
-            // if (cp_label.empty()){
-            //     throw Error{PDI_ERR_CONFIG, 
-            //         "VeloC plugin: The name of the checkpoint label must be defined"};
-            // }
-
-            // if (checkpoint_event_name.empty()){
-            //     throw Error{PDI_ERR_CONFIG, 
-            //         "VeloC plugin: The name of the checkpoint event must be defined"};
-            // }
-
-            // if (protected_data.size() ==0 ){
-            //     throw Error{PDI_ERR_CONFIG, 
-            //         "VeloC plugin: The data to be included in checkpoints must be defined"};
-            // }
-
-            // if(iter_name.empty()){
-            //     throw Error{PDI_ERR_CONFIG, 
-            //         "VeloC plugin: The name of the iteration number in the PDI data store must be defined"};
-            // }
-
-            // if (std::find(protected_data.begin(), protected_data.end(), 
-            //         iter_name) == protected_data.end()){  
-            //     throw Error{PDI_ERR_CONFIG, 
-            //         "VeloC plugin: The iteration number must be included in checkpoint_data"};
-            // }
-
-
             // Initialize VeloC 
-            init(MPI_COMM_WORLD, m_config.config(context()));
+            init(MPI_COMM_WORLD, m_config.config());
             
             for (auto&& desc: m_config.descs()) {
                 if (desc.second == Desc_type::STATUS) {
