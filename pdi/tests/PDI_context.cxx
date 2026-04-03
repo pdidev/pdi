@@ -307,21 +307,28 @@ TEST_F(ContextTest, iterator_operator_equal_equal)
  * Description:         Checks if duplicate definitions 
  *                      throw System_error.
  */
-// TEST_F(ContextTest, check_duplicate)
-// {
-// 	// Test 1: First call should succeed
-// 	ASSERT_NO_THROW(this->test_context->check_duplicate("variable_A"));
+TEST_F(ContextTest, check_duplicate)
+{
+	PC_tree_t conf_a = PC_parse_string("variable_A: int");
+	PC_tree_t conf_b = PC_parse_string("variable_B: int");
+	PC_tree_t conf_c = PC_parse_string("variable_C: int");
 
-// 	// Test 2: Second call with same name should throw System_error
-// 	EXPECT_THROW(this->test_context->check_duplicate("variable_A"), System_error);
+	auto* ctx = static_cast<Global_context*>(this->test_context.get());
 
-// 	// Test 3: Different names should both succeed
-// 	ASSERT_NO_THROW(this->test_context->check_duplicate("variable_B"));
-// 	ASSERT_NO_THROW(this->test_context->check_duplicate("variable_C"));
-// }
+	// Test 1: First call should succeed
+	ASSERT_NO_THROW(ctx->check_duplicate(conf_a, "variable_A"));
 
-	// PC_tree_t main_conf = PC_parse_string("data: {scalar_data: int}");
-	// PC_tree_t included_conf = PC_parse_string("data: {scalar_data: double}");
+	// Test 2: Second call with same name should throw Config_error
+	EXPECT_THROW(ctx->check_duplicate(conf_a, "variable_A"), Config_error);
+
+	// Test 3: Different names should both succeed
+	ASSERT_NO_THROW(ctx->check_duplicate(conf_b, "variable_B"));
+	ASSERT_NO_THROW(ctx->check_duplicate(conf_c, "variable_C"));
+
+	PC_tree_destroy(&conf_a);
+	PC_tree_destroy(&conf_b);
+	PC_tree_destroy(&conf_c);
+}
 
 /*
  * Name:                ContextTest.load_pdi_config_duplicate_data_via_inclusion

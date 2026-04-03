@@ -136,11 +136,13 @@ public:
 	/// filling `ordered_nodes` with (canonical_id, PC_tree_t) pairs.
 	/// Diamond/circular detection is handled here.
 	void collect_ordered_nodes(
-		PC_tree_t conf,
 		std::unordered_set<std::string>& loaded,
 		std::unordered_set<std::string>& stack,
 		std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
-		const std::string& known_path = ""
+		const std::string& known_path = "",
+		PC_tree_t include_directive = {},
+		PC_tree_t conf,
+		const std::string& parent_id = ""
 	);
 
 	void finalize_and_exit() override;
