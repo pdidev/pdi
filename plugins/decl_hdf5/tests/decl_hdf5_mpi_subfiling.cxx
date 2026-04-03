@@ -23,7 +23,7 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <iostream>
+#include <cstdlib>
 #include <pdi.h>
 
 #define IMX 50
