@@ -64,11 +64,9 @@ class veloc_plugin : public Plugin
     int status; 
 
     int cp_counter; 
-    
-    // unordered_map<string, bool> register_memory_regions;
 
-    // protect all variables to be included in checkpoints for checkpointing 
-    void protect_for_read(){
+    // protect all variables to be included in checkpoints 
+    void protect_all_for_read(){
         for (auto&& data: m_config.protected_data()) {
             if (Ref_r ref = context().desc(data.second).ref()) {
 
@@ -100,14 +98,14 @@ class veloc_plugin : public Plugin
         }
     }
 
-    void unprotect(){
+    void unprotect_all(){
         for (auto&& data: m_config.protected_data()) {
             unprotect_data(context(), data.first);   
         }
     }
 
-    // protect all variables to be included in checkpoints for restoring 
-    void protect_for_write(){
+    // protect all variables to be restored 
+    void protect_all_for_write(){
         for (auto&& data: m_config.protected_data()) {
             if (Ref_w ref = context().desc(data.second).ref()) {
 
@@ -177,56 +175,8 @@ class veloc_plugin : public Plugin
                     assert(false &&  "Unexpected desc type");
                 }
             } // data call backs for descriptors 
-            
-            ctx.callbacks().add_data_callback([this](const std::string& name, Ref ref) {
-                // Check if it is a data to be included in/to be restored from checkpoints
-            //     auto it_vec = std::find(protected_data.begin(), protected_data.end(), name);
-            //     if (it_vec == protected_data.end()){
-            //         return;
-            //     }
-            //     auto it_map = register_memory_regions.find(name);
-            //     if (it_map == register_memory_regions.end()){
-            //         return;
-            //     }
-
-            //     size_t index = std::distance(protected_data.begin(), it_vec);
-
-            //     if (it_map->second){ // if data structure has not been registered yet 
-            //         size_t n = 1;  
-            //         size_t bytes; 
-            //         Ref_r read_ref{ref};
-            //         void* ptr = const_cast<void*>(read_ref.get());
-                    
-            //         if(ref.type()->dense()){
-            //             bytes = ref.type()-> datasize();
-            //         }
-            //         else{
-            //             bytes = ref.type()-> buffersize();
-            //         }
-                        
-            //         if(auto* array_type = // If Datatype is an array 
-            //             dynamic_cast<const PDI::Array_datatype*>(ref.type().get())) { 
-            //             n = array_type->subsize();
-            //         }
-
-            //         size_t sub_bytes = bytes/n; 
-                    
-            //         // register data structure in VeloC 
-            //         VELOC_Mem_protect(index, ptr, n, sub_bytes);   
-            //         context().logger().info("Registered {} at index {} with size = {} bytes\n", 
-            //             name.c_str(), index, (n*sub_bytes));
-                    
-            //         register_memory_regions[name] = false;
-            //     }
-
-            //     if(restore_from_last_checkpoint && memoryRegionsWereRegistered()){
-            //         load_checkpoint();
-            //     }
-
-            }); // data callbacks 
 
             // event callbacks 
-
             for (auto&& event: m_config.events()) { // event call backs
                 switch (event.second) {
                 case Event_type::RECOVER_VAR: {
@@ -252,11 +202,8 @@ class veloc_plugin : public Plugin
                                 }
 
                                 protect_data(context(),var_id, const_cast<void*>(ref.get()), n, sub_bytes);   
-                                // selective_load(m_config.label(), &var_id, 1);
                             } 
                             else{
-                                // unprotect_data(data.first);
-                                // end_selective_load();
                                 throw Error{PDI_ERR_VALUE, 
                                         "Protected variable `{}' (id: {}) not available for reading", desc_name, var_id};  
                             }
@@ -280,30 +227,30 @@ class veloc_plugin : public Plugin
                 } break;
                 case Event_type::RECOVER: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
-                        protect_for_write();
-                        int result = load_checkpoint(context(), m_config.label()); 
+                        protect_all_for_write();
+                        int result = load_checkpoint(context(), m_config.label(), m_config.requested_checkpoint()); 
                         recovered_iter = result;
                         status = 1; 
-                        unprotect();
+                        unprotect_all();
                     },
                     event.first);
                 } break;
                 case Event_type::STATE_SYNC: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
                         if (!status) { // recovery needed
-                            protect_for_write();
-                            int result = load_checkpoint(context(), m_config.label()); 
+                            protect_all_for_write();
+                            int result = load_checkpoint(context(), m_config.label(),m_config.requested_checkpoint()); 
                             recovered_iter = result;
                             status = 1; 
-                            unprotect();
+                            unprotect_all();
                         } 
                         else if(status) { // recovery done or not needed 
-                            protect_for_read();
+                            protect_all_for_read();
                             int result = write_checkpoint(context(), m_config.when(),m_config.label(), m_config.iter_name()); 
                             if (result){
                                 cp_counter++; 
                             }
-                            unprotect();
+                            unprotect_all();
                         }
                     },
                     event.first);
@@ -316,7 +263,7 @@ class veloc_plugin : public Plugin
                             context().logger().warn("A checkpoint event was launched before a recovery event");
                         }
 
-                        protect_for_read(); // will throw error if iter_name is not exposed 
+                        protect_all_for_read(); // will throw error if iter_name is not exposed 
 
                         std::cout << "in ckpt event handler " << std::endl; 
 
@@ -329,14 +276,14 @@ class veloc_plugin : public Plugin
                                 cp_counter++; 
                             }
                         }
-                        unprotect();
+                        unprotect_all();
                     },
                     event.first);
                 } break;
                 case Event_type::START_CHECKPOINT: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
                         std::cout << "inside strat_checkpoint event handler" << std::endl; 
-                        protect_for_read();
+                        protect_all_for_read();
                         init_checkpoint(context(), m_config.label(), m_config.iter_name());
                     },
                     event.first);
@@ -344,7 +291,7 @@ class veloc_plugin : public Plugin
                 case Event_type::START_RECOVERY: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
                         std::cout << "inside strat_checkpoint event handler" << std::endl; 
-                        protect_for_read();
+                        protect_all_for_read();
                         init_restart(context(), m_config.label());
                     },
                     event.first);
@@ -384,14 +331,14 @@ class veloc_plugin : public Plugin
                 case Event_type::END_CHECKPOINT: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
                         end_checkpoint();
-                        unprotect();
+                        unprotect_all();
                     },
                     event.first);
                 }break;
                 case Event_type::END_RECOVERY: {
                     context().callbacks().add_event_callback([this](const string& event_name) {
                         end_restart();
-                        unprotect();
+                        unprotect_all();
                     },
                     event.first);
                 }break;
@@ -406,48 +353,6 @@ class veloc_plugin : public Plugin
             context().logger().info("{} checkpoints were written", cp_counter);
             context().logger().info("Closing plugin");
         }
-        
-    // void event(const std::string& event)
-    // {
-    //     if (event == "assert_nr_checkpoints"){
-
-    //         if (event == checkpoint_event_name) {
-    //             // continue 
-    //         }
-    //         else{
-    //             std::ofstream f("veloc_cp_count.txt");
-    //             f << cp_counter;  
-    //             f.flush(); 
-    //             cout << "cp_counter is = " << cp_counter<< endl; 
-    //         }
-    //     }
-
-    //     // else 
-    //     if(event == checkpoint_event_name){
-
-    //         if(!memoryRegionsWereRegistered()){
-
-    //             throw Error{PDI_ERR_VALUE, 
-    //                     "VeloC plugin: Not all data to be included in checkpoints "
-    //                         "has been exposed to PDI before calling the checkpoint event"}; 
-    //         }
-
-    //         Ref_r ref_r_iter = context().desc(iter_name).ref();
-
-    //         auto new_iter = ref_r_iter.scalar_value<int>();
-            
-    //         // Avoid overwriting the checkpoint that has just been loaded 
-    //         if(new_iter!= m_recover_iter){ 
-    //             write_checkpoint(); 
-    //         }   
-    //     }
-    // }
-
-    // bool memoryRegionsWereRegistered() {
-
-    //     return std::all_of(register_memory_regions.begin(), register_memory_regions.end(),
-    //                     [](const auto& pair) { return pair.second == false; });
-    // }
 };
 PDI_PLUGIN(veloc)
 	

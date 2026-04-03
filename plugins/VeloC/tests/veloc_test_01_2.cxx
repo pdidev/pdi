@@ -67,6 +67,7 @@ int main(int argc, char* argv[])
 	
 	PDI_multi_expose("recover", "ii", &rec_ii, PDI_INOUT,
 			"var", &rec_var, PDI_INOUT, NULL);
+
 	PDI_expose("cp_status", &cp_status, PDI_IN);
 
 	if(cp_status!=1){
@@ -75,16 +76,15 @@ int main(int argc, char* argv[])
 		exit(1); 
 	}
 
-    if(rec_ii != 25){
+    if(rec_ii != 1){
 		std::cerr << "TEST_01_2 FAILED: recovered iter value " << rec_ii
-                  << " does not match expected value " << 25 << std::endl;
+                  << " does not match expected value " << 1 << std::endl;
 		exit(1);
 	}
 
-    if(rec_var != 50){
-
+    if(rec_var != 52){
 		std::cerr << "TEST_01_2 FAILED: recovered var value " << rec_var
-                  << " does not match expected value " << 50 << std::endl;
+                  << " does not match expected value " << 52 << std::endl;
 		exit(1); 
 	}
 

@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	int cp_status;
 	int cp_counter; 
 	
-	int ii = 25; 
+	int ii = 0; 
 	int var = 50;
 	
 	PDI_expose("cp_status", &cp_status, PDI_IN);
@@ -66,12 +66,15 @@ int main(int argc, char* argv[])
 		exit(1); 
 	}
 
-	PDI_multi_expose("ckp", "ii", &ii, PDI_INOUT,
+	for(; ii<2; ii++){
+		var = var  + 1, 
+		PDI_multi_expose("ckp", "ii", &ii, PDI_INOUT,
 			"var", &var, PDI_INOUT, NULL);
-	
+	}
+
 	PDI_expose("cp_counter", &cp_counter, PDI_IN);
 	
-	if(cp_counter!=1){
+	if(cp_counter!=2){
 
 		std::cerr << "TEST_01_1 FAILED: counter value " << cp_counter
                   << " does not match expected value " << 1 << std::endl;

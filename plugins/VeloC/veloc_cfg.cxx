@@ -169,7 +169,8 @@ set<int> load_vars(Context& ctx, PC_tree_t tree, std::unordered_map<int, std::st
 }
 } // namespace <anonymous>
 
-Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree) : m_failure{-1}, manual_cp_defined{false}, manual_rec_defined{false}
+Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree) : m_failure{-1}, 
+manual_cp_defined{false}, manual_rec_defined{false}, m_requested_checkpoint{-1}
 {
     //pass 1 
     each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
@@ -184,6 +185,9 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree) : m_failure{-1}, manual_cp_de
         } 
         else if (key == "checkpoint_label") {
             m_cp_label = to_string(value);
+        }
+        else if(key == "checkpoint_nr"){ 
+            m_requested_checkpoint = to_long(value);
         }
         else if (key == "when"){ 
             m_when = to_string(value);
@@ -405,6 +409,18 @@ void Veloc_cfg::check_conformity(Context& ctx){
             "VELOC PLUGIN YAML: The iteration number must be included in the data to be protected"};
     }
 
+    if(m_requested_checkpoint)
+
+    if(!rec_events_defined){
+        if(m_requested_checkpoint!=-1){
+            ctx.logger().warn("VELOC PLUGIN YAML : No recovery events have been defined. "
+                "Ignoring 'checkpoint_nr' key\n");
+        }
+        else{
+            ctx.logger().warn("VELOC PLUGIN YAML : No recovery events have been defined\n");
+        }
+    }
+
     if(!cp_events_defined){
         if(m_when){
             ctx.logger().warn("VELOC PLUGIN YAML : No checkpoints events have been defined. "
@@ -420,7 +436,7 @@ void Veloc_cfg::check_conformity(Context& ctx){
         }
     }
 
-    if(m_failure==1 && (!rec_events_defined) || (!sync_events_defined)){
+    if(m_failure==1 && !rec_events_defined && !sync_events_defined){
         ctx.logger().warn("VELOC PLUGIN YAML : The failure key has been set to 1 " 
             "but no recovery or synchronization events have been defined\n");
     }

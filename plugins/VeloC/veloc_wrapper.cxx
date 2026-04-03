@@ -100,31 +100,21 @@ int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> whe
 
 }
 
-int load_checkpoint(PDI::Context& ctx, std::string label){
+int load_checkpoint(PDI::Context& ctx, std::string label, int version){
 	
-	// restart from last checkpoint (because we pass 0)
-	int version = VELOC_Restart_test(label.c_str(), 0);
-	// while(1){ 
+	int target = (version >=  0) ? version : VELOC_Restart_test(label.c_str(), 0);
+	std:: cout << "target = " << target << std::endl;
+	std::cout << "version = " << version << std::endl;
+	if (target >= 0) {
+		std::cout << "Previous checkpoint found at iteration " << target << 
+			" initiating restart..." << std::endl; 
 		
-	//     if (v == VELOC_FAILURE) {
-	//             printf("No valid checkpoint found.\n");
-	//             exit(1);
-	//     }
-
-	if (version > 0) {
-	std::cout << "Previous checkpoint found at iteration " << version << 
-		" initiating restart..." << std::endl; 
-	
-	if (VELOC_Restart(label.c_str(), version) != VELOC_SUCCESS) {
-		std::cout << "Error restarting! Aborting ..." << std::endl;   
-		exit(2);
+		if (VELOC_Restart(label.c_str(), target) != VELOC_SUCCESS) {
+			std::cout << "Error restarting! Aborting ..." << std::endl;   
+			exit(2);
+		}
 	}
-	// else {
-	// 	break; 
-	// }
-	}
-// }
-	return version; 
+	return target; 
 }
 
 void selective_load(std::string label, int * ids, int len){

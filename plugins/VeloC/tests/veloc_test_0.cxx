@@ -314,7 +314,6 @@ int main(int argc, char* argv[])
         { "manual_recovery: missing end_on",            CONF_REC_END_MISSING,         1 },
     };
 
-
     int passed = 0, failed = 0;
 
     for (auto& t : tests) {

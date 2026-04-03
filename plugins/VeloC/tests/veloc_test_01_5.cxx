@@ -23,47 +23,67 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef VELOC_WRAPPER_H
-#define VELOC_WRAPPER_H
+#include <assert.h>
+#include <mpi.h>
+#include <pdi.h>
 
-#include <pdi/plugin.h>
-#include <pdi/context.h>
-#include <pdi/context_proxy.h>
-#include <pdi/expression.h>
-#include <veloc.h>
+const char CONF_YAML[] =
+    "data:\n"
+    "  a: int\n"
+	"  var: int\n"
+    "plugins:\n"
+    "  veloc:\n"
+    "    failure: 1\n"
+    "    config_file: veloc_config.cfg\n"
+    "    checkpoint_label: test_01\n"
+    "    iteration: ii\n"
+    "    protect_data: [ii, var]\n"  
+	"    recover_var:\n"
+	"      - on_event: recover_iter\n"
+	"        var: [ii]\n"
+	"      - on_event: recover_var\n"
+	"        var: [var]\n"
+	"      - on_event: recover_all\n"
+	"        var: [ii, var]\n";
+	
 
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <algorithm>
-#include <optional>
+int main(int argc, char* argv[])
+{	
+    MPI_Init(&argc, &argv);
+    PC_tree_t conf = PC_parse_string(CONF_YAML);
+	PDI_init(conf);
+	
+	int cp_status;
+	int cp_counter; 
+	int rec_ii = 0;  
+	int rec_var = 0;
 
-void init(MPI_Comm comm, std::string veloc_file);
+	PDI_multi_expose("recover_iter", "ii", &rec_ii, PDI_INOUT,
+			NULL);
 
-void protect_data(PDI::Context& ctx,int id, void * ptr, size_t n, size_t sub_bytes);
+	if(rec_ii != 25){
 
-void unprotect_data(PDI::Context& ctx, int id);
+		std::cerr << "TEST_01_3 FAILED: recovered iter value " << rec_ii
+                  << " does not match expected value " << 25 << std::endl;
+		exit(1);
+	}
+	
 
-int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> when, 
-	std::string label, std::string iter_name);
+	PDI_multi_expose("recover_var", "var", &rec_var, PDI_INOUT, NULL);
 
-int load_checkpoint(PDI::Context& ctx, std::string label, int cp_id=0);
+	if(rec_var != 50){
 
-void selective_load(std::string label, int * ids, int len);
+		std::cerr << "TEST_01_3 FAILED: recovered var value " << rec_var
+                  << " does not match expected value " << 50 << std::endl;
+		exit(1);
+	}
+ 
 
-void init_checkpoint(PDI::Context& ctx, std::string label, std::string iter_name);
+	std::cout << "TEST 01_3 PASSED " <<std::endl;
 
-void route_file(const std::string& input_filename, char* output_filename);
+	PDI_finalize();
+	MPI_Finalize();
 
-void end_checkpoint();
+    return 0; 
 
-void end_selective_load();
-
-void init_restart(PDI::Context& ctx, std::string label);
-
-void end_restart();
-
-void finalize();
-
-#endif 
+}

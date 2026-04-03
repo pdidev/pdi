@@ -93,6 +93,8 @@ class Veloc_cfg
 
 	int m_status; 
 
+	int m_requested_checkpoint; 
+
     std::string m_iter_name;
 	
 	std::unordered_map<int, std::string> m_protected_data;
@@ -115,6 +117,8 @@ public:
 	std::string label() const { return m_cp_label; }
 	
 	int failure() const { return m_failure; }
+
+	int requested_checkpoint() const { return m_requested_checkpoint; }
 
 	std::string iter_name() const { return m_iter_name; }
 
