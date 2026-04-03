@@ -36,12 +36,12 @@ namespace PDI {
 
 Context_proxy::Context_proxy(Context& ctx)
 	: m_real_context{ctx}
-	, m_plugin_timer{&(ctx.timer())}
+	, m_timer{&(ctx.timer())}
 {}
 
 Context_proxy::Context_proxy(Context& ctx, const string& logger_name, PC_tree_t logging_tree)
 	: m_real_context{ctx}
-	, m_plugin_timer{&(ctx.timer())}
+	, m_timer{&(ctx.timer())}
 	, m_plugin_logger{m_real_context.logger(), logger_name, logging_tree}
 {}
 
@@ -97,7 +97,7 @@ Logger& Context_proxy::logger()
 
 Timer& Context_proxy::timer()
 {
-	return *m_plugin_timer;
+	return *m_timer;
 }
 
 Logger& Context_proxy::pdi_core_logger()
