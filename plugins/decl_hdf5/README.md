@@ -80,7 +80,7 @@ The possible values for the keys are as follow:
       ```
       subfiling: 2 
       ```
-      This will sets `count=2` and all other members use default values.
+      This will set `count=2` and all other members use default values.
   * Here are several important notes for using `subfiling` correctly:
     * **MPI Threading Requirement**: The simulation must be initialized with `MPI_THREAD_MULTIPLE`. If this is not satisfied, the application will throw a runtime error unless policy is set to `CONTINUE`. In `CONTINUE` mode, the simulation will proceed using standard HDF5 I/O.
     * **Stripe Size Configuration**:  The stripe size can be set in the YAML via `stripe_size` or via the environment variable `H5FD_SUBFILING_STRIPE_SIZE`. The YAML value takes precedence if both are provided.
