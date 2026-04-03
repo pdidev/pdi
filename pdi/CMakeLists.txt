@@ -243,7 +243,6 @@ if("${BUILD_PYTHON}")
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
 	)
-
 	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11 PDI::PDI_plugins)
 	set_property(TARGET PDI_pysupport PROPERTY LIBRARY_OUTPUT_NAME "pdi_pysupport")
 	set_property(TARGET PDI_pysupport PROPERTY ENABLE_EXPORTS TRUE)
