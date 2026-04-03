@@ -24,46 +24,7 @@
 
 #include <mpi.h>
 #include <iostream>
-#include <hdf5.h>
 #include <pdi.h>
-#include "H5FDsubfiling.h"
-
-bool is_subfiled(const std::string& filename)
-{
-	// 1. Open the file
-	hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
-	H5FD_subfiling_config_t sub_config;
-	H5Pget_fapl_subfiling(H5P_DEFAULT, &sub_config);
-	H5Pset_fapl_subfiling(fapl, &sub_config);
-	hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, fapl);
-	if (file_id < 0) {
-		std::cerr << "Error: Could not open file " << filename << std::endl;
-		return false;
-	}
-
-	// 2. Get the Access Property List used by the file
-	hid_t fapl_id = H5Fget_access_plist(file_id);
-
-	// 3. Get the Driver ID
-	hid_t driver_id = H5Pget_driver(fapl_id);
-
-	bool result = false;
-
-#ifdef H5_HAVE_SUBFILING_VFD
-	// 4. Compare with the Subfiling Driver ID
-	if (driver_id == H5FD_SUBFILING) {
-		result = true;
-	}
-#else
-	std::cout << "ifdef failed" << std::endl;
-#endif
-
-	// Cleanup
-	H5Pclose(fapl_id);
-	H5Fclose(file_id);
-
-	return result;
-}
 
 #define IMX 50
 #define JMX 40
