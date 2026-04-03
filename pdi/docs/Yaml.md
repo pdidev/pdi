@@ -104,9 +104,9 @@ complete syntax).
 
 ## YAML Parsing with Paraconf
 
-The PDI_init function gets as parameter a tree with `logging`, `data`,
-`metadata` and `plugins` maps defined in its root. User can define its own
-values in yaml and pass to %PDI only the subtree:
+The PDI_init function gets as parameter a tree with `logging`, `include`,
+`data`, `metadata` and `plugins` maps defined in its root. User can define its
+own values in yaml and pass to %PDI only the subtree:
 
 ```yaml
 duration: 0.75

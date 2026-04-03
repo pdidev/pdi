@@ -85,7 +85,7 @@ void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
 	for (int map_id = 0; map_id < map_len; ++map_id) {
 		std::string name = to_string(PC_get(node, "{%d}", map_id));
 
-		ctx.check_duplicate(name);
+		ctx.check_duplicate(PC_get(node, "{%d}", map_id), name);
 
 		Data_descriptor& dsc = ctx.desc(name.c_str());
 		dsc.metadata(is_metadata);
@@ -224,102 +224,145 @@ Callbacks& Global_context::callbacks()
 	return m_callbacks;
 }
 
-void Global_context::check_duplicate(const std::string& name)
+void Global_context::check_duplicate(const PC_tree_t& node, const std::string& name)
 {
-	if (!m_defined.insert(name).second) {
-		// throw System_error instead of std::runtime_error to use assert for test on expected error
-		throw System_error("Duplicate definition of '{}'", name);
-	}
+    auto [it, inserted] = m_defined.emplace(name, node);
+    if (!inserted) {
+        // it->second = first definition site (deepest file in include tree, post-order)
+        // node       = redefinition site (current file being processed)
+#if PDI_HAS_PC_PATH
+        const char* orig_path = PC_path(it->second);
+        const char* redef_path = PC_path(node);
+
+        bool orig_has_path  = orig_path  && fs::exists(orig_path);
+        bool redef_has_path = redef_path && fs::exists(redef_path);
+
+        if (redef_has_path && orig_has_path) {
+            throw Config_error(node,
+                "Duplicate definition of '{}', originally defined in '{}', defined again in '{}'",
+                name, redef_path, orig_path);
+        } else if (redef_has_path) {
+            throw Config_error(node,
+                "Duplicate definition of '{}', originally defined in string config, defined again in '{}'",
+                name, redef_path);
+        } else if (orig_has_path) {
+            throw Config_error(node,
+                "Duplicate definition of '{}', originally defined in '{}', defined again in a string config",
+                name, orig_path);
+        }
+#endif
+        throw Config_error(node, "Duplicate definition of '{}'", name);
+    }
 }
 
 void Global_context::collect_ordered_nodes(
-	PC_tree_t conf,
-	std::unordered_set<std::string>& loaded,
-	std::unordered_set<std::string>& stack,
-	std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
-	const std::string& known_path
+    PC_tree_t conf,
+    std::unordered_set<std::string>& loaded,
+    std::unordered_set<std::string>& stack,
+    std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
+    const std::string& known_path
 )
 {
-	// ── Step 1: identity ─────────────────────────────────────────────────────
-	std::string current_id;
-	bool has_real_path = false;
+    // ── Step 1: identity ─────────────────────────────────────────────────────
+    std::string current_id;
+    bool has_real_path = false;
 
-	if (!known_path.empty()) {
-		current_id = known_path;
-		has_real_path = true;
-	}
+    if (!known_path.empty()) {
+        current_id    = known_path;
+        has_real_path = true;
+    }
 #if PDI_HAS_PC_PATH
-	else
-	{
-		const char* raw_path = PC_path(conf);
-		if (raw_path && fs::exists(raw_path)) {
-			current_id = fs::canonical(raw_path).string();
-			has_real_path = true;
-		}
-	}
+    else {
+        const char* raw_path = PC_path(conf);
+        if (raw_path && fs::exists(raw_path)) {
+            current_id    = fs::canonical(raw_path).string();
+            has_real_path = true;
+        }
+    }
 #endif
-	if (!has_real_path) {
-		static std::atomic<std::size_t> s_counter{0};
-		current_id = "<no-path:" + std::to_string(s_counter++) + ">";
-	}
+    if (!has_real_path) {
+        static std::atomic<std::size_t> s_counter{0};
+        current_id = "<no-path:" + std::to_string(s_counter++) + ">";
+    }
 
-	// ── Step 2: circular detection ───────────────────────────────────────────
-	if (has_real_path && stack.count(current_id)) {
-		throw std::runtime_error("Circular include detected from: '" + current_id + "'");
-	}
+    // ── Step 2: circular detection ───────────────────────────────────────────
+    if (has_real_path && stack.count(current_id)) {
+        // conf is the root node of the file being re-entered: gives the line
+        // of the yaml_document root, current_id gives the file name.
+        throw Config_error(conf, "Circular include detected: '{}' is already being loaded", current_id);
+    }
 
-	// ── Step 3: diamond detection ────────────────────────────────────────────
-	if (loaded.count(current_id)) {
-		m_logger.warn("Diamond include: '{}' has already been loaded, skipping", current_id);
-		return;
-	}
+    // ── Step 3: diamond detection ────────────────────────────────────────────
+    if (loaded.count(current_id)) {
+        m_logger.warn("Diamond include: '{}' has already been loaded, skipping", current_id);
+        return;
+    }
 
-	stack.insert(current_id);
-	loaded.insert(current_id);
+    stack.insert(current_id);
+    loaded.insert(current_id);
 
-	// ── Step 4: recurse into includes (post-order: children before parent) ───
-	PC_tree_t includes = PC_get(conf, ".include");
-	if (!PC_status(includes)) {
-		PDI::each(includes, [&](PC_tree_t node) {
-			const std::string inc = PDI::to_string(node);
-			const bool is_absolute = fs::path(inc).is_absolute();
+    // ── Step 4: recurse into includes (post-order: children before parent) ───
+    PC_tree_t includes = PC_get(conf, ".include");
+    if (!PC_status(includes)) {
+        PDI::each(includes, [&](PC_tree_t node) {
+            // `node` is the scalar YAML node of the include entry:
+            // Config_error(node, ...) gives the exact line of the offending directive.
+            const std::string inc         = PDI::to_string(node);
+            const bool        is_absolute = fs::path(inc).is_absolute();
 
 #if PDI_HAS_PC_PATH
-			if (!is_absolute && !has_real_path) {
-				throw std::runtime_error(
-					"Relative include '" + inc
-					+ "' cannot be resolved: "
-					  "the root config was parsed from a string (no file path available)"
-				);
-			}
-			fs::path full_path = is_absolute ? fs::path(inc) : fs::path(fs::path(current_id).parent_path()) / inc;
+            if (!is_absolute && !has_real_path) {
+                throw Config_error(node,
+                    "Relative include '{}' cannot be resolved: "
+                    "the root config was parsed from a string (no file path available)",
+                    inc
+                );
+            }
+            fs::path full_path = is_absolute
+                ? fs::path(inc)
+                : fs::path(fs::path(current_id).parent_path()) / inc;
 #else
-			if (!is_absolute) {
-				throw std::runtime_error(
-					"Relative include '" + inc + "' is not supported: "
-					"Paraconf >= 1.1 is required for relative path resolution"
-				);
-			}
-			fs::path full_path = fs::path(inc);
+            if (!is_absolute) {
+                throw Config_error(node,
+                    "Relative include '{}' is not supported: "
+                    "Paraconf >= 1.1 is required for relative path resolution",
+                    inc
+                );
+            }
+            fs::path full_path = fs::path(inc);
 #endif
 
-			if (!fs::exists(full_path)) {
-				throw std::runtime_error("Included file not found: '" + full_path.string() + "'");
-			}
-			full_path = fs::canonical(full_path);
+            if (!fs::exists(full_path)) {
+                // has_real_path tells us whether we can name the includer file
+                if (has_real_path) {
+                    throw Config_error(node,
+                        "Included file not found: '{}' (included from '{}')",
+                        full_path.string(), current_id
+                    );
+                } else {
+                    throw Config_error(node,
+                        "Included file not found: '{}'",
+                        full_path.string()
+                    );
+                }
+            }
+            full_path = fs::canonical(full_path);
 
-			PC_tree_t sub = PC_parse_path(full_path.string().c_str());
-			if (PC_status(sub) != PC_OK) {
-				throw std::runtime_error("Failed to parse included file: '" + full_path.string() + "'");
-			}
+            PC_tree_t sub = PC_parse_path(full_path.string().c_str());
+            if (PC_status(sub) != PC_OK) {
+                throw Config_error(node,
+                    "Failed to parse included file: '{}'",
+                    full_path.string()
+                );
+            }
 
-			collect_ordered_nodes(sub, loaded, stack, ordered_nodes, full_path.string());
-		});
-	}
+            collect_ordered_nodes(sub, loaded, stack, ordered_nodes, full_path.string());
+        });
+    }
 
-	// ── Step 5: append this node after its children (post-order) ────────────
-	ordered_nodes.emplace_back(current_id, conf);
-	stack.erase(current_id);
+    // ── Step 5: append this node after its children (post-order) ────────────
+    ordered_nodes.emplace_back(current_id, conf);
+    stack.erase(current_id);
 }
 
 void Global_context::finalize_and_exit()

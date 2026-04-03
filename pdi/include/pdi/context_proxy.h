@@ -121,7 +121,7 @@ public:
 
 	void finalize_and_exit() override;
 
-	void check_duplicate(const std::string& name) override;
+	void check_duplicate(const PC_tree_t& node, const std::string& name) override;
 };
 
 } //namespace PDI

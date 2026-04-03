@@ -28,8 +28,8 @@
 *
 * In this test, we check that an element of datasets define as a regex
 * allow to write a global data that verify these conditions:
-*  - The global data is writting in one hdf5 file.
-*  - The local data of a given mpi rank is writting in the global data using 'dataset_selection'
+*  - The global data is writing in one hdf5 file.
+*  - The local data of a given mpi rank is writing in the global data using 'dataset_selection'
 *  - The global data is saved in a datagroup that depends on 'iter_saved':
 *   	- dataset: timestep${iter_saved:05}/reals
 */

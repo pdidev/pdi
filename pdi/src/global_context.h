@@ -75,7 +75,8 @@ private:
 
 	Global_context(Global_context&&) = delete;
 
-	std::unordered_set<std::string> m_defined;
+	// The node of each first definition, for duplicate error reporting
+	std::unordered_map<std::string, PC_tree_t> m_defined;
 
 public:
 	static void init(PC_tree_t conf);
@@ -129,7 +130,7 @@ public:
 
 	Callbacks& callbacks() override;
 
-	void check_duplicate(const std::string& name) override;
+	void check_duplicate(const PC_tree_t& node, const std::string& name) override;
 
 	/// Traverses the include tree once in post-order (deepest includes first),
 	/// filling `ordered_nodes` with (canonical_id, PC_tree_t) pairs.
