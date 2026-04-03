@@ -23,9 +23,47 @@
  ******************************************************************************/
 
 #include <mpi.h>
-#include <glob.h>
-#include <unistd.h>
+#include <iostream>
+#include <hdf5.h>
 #include <pdi.h>
+#include "H5FDsubfiling.h"
+
+bool is_subfiled(const std::string& filename)
+{
+	// 1. Open the file
+	hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
+	H5FD_subfiling_config_t sub_config;
+	H5Pget_fapl_subfiling(H5P_DEFAULT, &sub_config);
+	H5Pset_fapl_subfiling(fapl, &sub_config);
+	hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, fapl);
+	if (file_id < 0) {
+		std::cerr << "Error: Could not open file " << filename << std::endl;
+		return false;
+	}
+
+	// 2. Get the Access Property List used by the file
+	hid_t fapl_id = H5Fget_access_plist(file_id);
+
+	// 3. Get the Driver ID
+	hid_t driver_id = H5Pget_driver(fapl_id);
+
+	bool result = false;
+
+#ifdef H5_HAVE_SUBFILING_VFD
+	// 4. Compare with the Subfiling Driver ID
+	if (driver_id == H5FD_SUBFILING) {
+		result = true;
+	}
+#else
+	std::cout << "ifdef failed" << std::endl;
+#endif
+
+	// Cleanup
+	H5Pclose(fapl_id);
+	H5Fclose(file_id);
+
+	return result;
+}
 
 #define IMX 50
 #define JMX 40
@@ -33,52 +71,53 @@
 #define NJ_GHOST 2
 #define DIM 2
 
-const char* CONFIG_YAML
-	= "logging: trace                                                   \n"
-	  "metadata:                                                        \n"
-	  "  input: int                                                     \n"
-	  "  ni: int                                                        \n"
-	  "  nj: int                                                        \n"
-	  "  nig: int                                                       \n"
-	  "  njg: int                                                       \n"
-	  "  nit: int                                                       \n"
-	  "  njt: int                                                       \n"
-	  "  istart: int                                                    \n"
-	  "  jstart: int                                                    \n"
-	  "data:                                                            \n"
-	  "  reals:                                                         \n"
-	  "    type: array                                                  \n"
-	  "    subtype: double                                              \n"
-	  "    size: [$nj + 2*$njg, $ni + 2*$nig]                           \n"
-	  "    subsize: [$nj, $ni]                                          \n"
-	  "    start: [$njg, $nig]                                          \n"
-	  "  values:                                                        \n"
-	  "    type: array                                                  \n"
-	  "    subtype: int                                                 \n"
-	  "    size: [$nj + 2*$njg, $ni + 2*$nig]                           \n"
-	  "    subsize: [$nj, $ni]                                          \n"
-	  "    start: [$njg, $nig]                                          \n"
-	  "plugins:                                                         \n"
-	  "  mpi:                                                           \n"
-	  "  decl_hdf5:                                                     \n"
-	  "    - file: subfiling_reals.h5                                     \n"
-	  "      communicator: $MPI_COMM_WORLD                                \n"
-	  "      subfiling:                                                   \n"
-	  "        stripe_size: 4096                                          \n"
-	  "        count: 4                                                   \n"
-	  "      datasets:                                                    \n"
-	  "        reals: {type: array, subtype: double, size: [$njt, $nit]}  \n"
-	  "      write:                                                       \n"
-	  "        reals:                                                     \n"
-	  "          dataset_selection: {start: [$jstart, $istart]}           \n"
-	  "    - file: subfiling_values.h5                                    \n"
-	  "      communicator: $MPI_COMM_WORLD                                \n"
-	  "      subfiling: 2                                                 \n"
-	  "      datasets:                                                    \n"
-	  "        values: {type: array, subtype: int, size: [$njt, $nit]}    \n"
-	  "      write:                                                       \n"
-	  "        values:                                                    \n"
-	  "          dataset_selection: {start: [$jstart, $istart]}           \n";
+constexpr char CONFIG_YAML[] = R"(
+logging: trace
+metadata:
+  input: int
+  ni: int
+  nj: int
+  nig: int
+  njg: int
+  nit: int
+  njt: int
+  istart: int
+  jstart: int
+data:
+  reals:
+    type: array
+    subtype: double
+    size: [$nj + 2*$njg, $ni + 2*$nig]
+    subsize: [$nj, $ni]
+    start: [$njg, $nig]
+  values:
+    type: array
+    subtype: int
+    size: [$nj + 2*$njg, $ni + 2*$nig]
+    subsize: [$nj, $ni]
+    start: [$njg, $nig]
+plugins:
+  mpi:
+  decl_hdf5:
+    - file: subfiling_reals.h5
+      communicator: $MPI_COMM_WORLD
+      subfiling:
+        stripe_size: 4096
+        count: 4
+      datasets:
+        reals: {type: array, subtype: double, size: [$njt, $nit]}
+      write:
+        reals:
+          dataset_selection: {start: [$jstart, $istart]}
+    - file: subfiling_values.h5
+      communicator: $MPI_COMM_WORLD
+      subfiling: 2
+      datasets:
+        values: {type: array, subtype: int, size: [$njt, $nit]}
+      write:
+        values:
+          dataset_selection: {start: [$jstart, $istart]}
+)";
 
 int main(int argc, char* argv[])
 {
@@ -169,4 +208,13 @@ int main(int argc, char* argv[])
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
+
+	if (!std::system("h5cc -showconfig | grep -q 'Subfiling VFD: ON' > /dev/null 2>&1")) {
+		if (std::system("grep \"subfile_count=4\" subfiling_reals.h5.subfile_*.config > /dev/null 2>&1")) {
+			return EXIT_FAILURE;
+		}
+		if (std::system("grep \"subfile_count=2\" subfiling_values.h5.subfile_*.config > /dev/null 2>&1")) {
+            return EXIT_FAILURE;
+		}
+	}
 }

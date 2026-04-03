@@ -139,8 +139,9 @@ add_test(NAME decl_hdf5_IO_options_C COMMAND "${RUNTEST_DIR}" "$<TARGET_FILE:dec
 set_property(TEST decl_hdf5_IO_options_C PROPERTY TIMEOUT 15)
 
 if("${BUILD_HDF5_PARALLEL}")
-	add_executable(decl_hdf5_mpi_subfiling decl_hdf5_mpi_subfiling.c)
-	target_link_libraries(decl_hdf5_mpi_subfiling PDI::PDI_C MPI::MPI_C)
+	add_executable(decl_hdf5_mpi_subfiling decl_hdf5_mpi_subfiling.cxx)
+	target_link_libraries(decl_hdf5_mpi_subfiling PDI::PDI_C MPI::MPI_C ${HDF5_DEPS})
+	target_compile_features(decl_hdf5_mpi_subfiling PUBLIC cxx_std_17)
 	add_test(NAME decl_hdf5_mpi_subfiling COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 4 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:decl_hdf5_mpi_subfiling>" ${MPIEXEC_POSTFLAGS})
 	set_property(TEST decl_hdf5_mpi_subfiling PROPERTY TIMEOUT 15)
 	set_property(TEST decl_hdf5_mpi_subfiling PROPERTY PROCESSORS 4)
