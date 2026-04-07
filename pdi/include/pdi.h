@@ -92,8 +92,9 @@ typedef enum PDI_status_e {
 	/// A conflict of onwership over a content has been raised
 	PDI_ERR_RIGHT,
 	/// Invalid type error
-	PDI_ERR_TYPE
-
+	PDI_ERR_TYPE,
+	/// Multiple error
+	PDI_ERR_MULTIPLE
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs

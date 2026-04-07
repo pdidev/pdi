@@ -230,11 +230,7 @@ void Callbacks::call_event_callbacks(const string& name) const
 		if (1 == errors.size()) {
 			throw Error{errors.front().status(), "Error while triggering event `{}': {}", name, errors.front().what()};
 		}
-		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering event `" + string(name) + "':\n";
-		for (auto&& err: errors) {
-			errmsg += string(err.what()) + "\n";
-		}
-		throw System_error{errmsg.c_str()};
+		throw Multiple_error{errors, std::to_string(errors.size()) + "error(s) while triggering event `" + string(name) + "'"};
 	}
 }
 

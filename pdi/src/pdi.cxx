@@ -163,42 +163,40 @@ struct Var_to_reclaim {
 
 	void trigger_reclaim()
 	{
-		std::vector<Error> msg_reclaim_data_error;
+		std::vector<Error> reclaim_data_errors;
 		int counter = 0;
 		for (auto&& it = m_varnames.rbegin(); it != m_varnames.rend(); it++) {
 			try {
 				Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, m_varnames.size());
 				Global_context::context()[it->c_str()].reclaim();
 			} catch (const Error& e) {
-				msg_reclaim_data_error.emplace_back(e);
+				reclaim_data_errors.emplace_back(e);
 			} catch (const std::exception& e) {
-				msg_reclaim_data_error.emplace_back(PDI_ERR_SYSTEM, e.what());
+				reclaim_data_errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 			} catch (...) {
-				msg_reclaim_data_error.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error in reclaiming the data=" + (*it));
+				reclaim_data_errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error in reclaiming the data=" + (*it));
 			}
 		}
-		if (!msg_reclaim_data_error.empty()) {
-			if (1 == msg_reclaim_data_error.size()) {
+		if (!reclaim_data_errors.empty()) {
+			if (1 == reclaim_data_errors.size()) {
 				if (std::uncaught_exceptions()) {
-					std::string errmsg = "Error while triggering reclaim in multi expose : " + std::string(msg_reclaim_data_error.front().what());
-					Global_context::context().logger().error(errmsg.c_str());
+					Global_context::context().logger().error("Error when triggering reclaim in multi expose: {}", reclaim_data_errors.front().what());
 				} else {
 					throw Error{
-						msg_reclaim_data_error.front().status(),
-						"Error while triggering reclaim in multi expose : {}",
-						msg_reclaim_data_error.front().what()
+						reclaim_data_errors.front().status(),
+						"Error when triggering reclaim in multi expose: {}",
+						reclaim_data_errors.front().what()
 					};
 				}
 			} else {
-				std::string errmsg
-					= "Multiple (" + std::to_string(msg_reclaim_data_error.size()) + ") errors while triggering reclaim in multi expose: \n";
-				for (auto&& err: msg_reclaim_data_error) {
-					errmsg += string(err.what()) + "\n";
-				}
+				Multiple_error reclaim_multiple_error{
+					reclaim_data_errors,
+					std::to_string(reclaim_data_errors.size()) + " error(s) when triggering reclaim in multi expose:"
+				};
 				if (std::uncaught_exceptions()) {
-					Global_context::context().logger().error(errmsg.c_str());
+					Global_context::context().logger().error(reclaim_multiple_error.what());
 				} else {
-					throw System_error{errmsg.c_str()};
+					throw reclaim_multiple_error;
 				}
 			}
 		}

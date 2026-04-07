@@ -75,40 +75,39 @@ void Delayed_data_callbacks::trigger()
 {
 	int i = 0;
 	size_t number_of_elements = m_datanames.size();
-	std::vector<Error> msg_data_error;
+	std::vector<Error> trigger_data_errors;
 
 	for (auto&& element_name: m_datanames) {
 		try {
 			m_context.logger().trace("Trigger data callback `{}' ({}/{})", element_name.c_str(), ++i, number_of_elements);
 			m_context.callbacks().call_data_callbacks(element_name, m_context[element_name].ref());
 		} catch (const Error& e) {
-			msg_data_error.emplace_back(e.status(), "Error in data callbacks for " + element_name + ": " + e.what());
+			trigger_data_errors.emplace_back(e.status(), "Error in data callbacks for " + element_name + ": " + e.what());
 		} catch (const std::exception& e) {
-			msg_data_error.emplace_back(PDI_ERR_SYSTEM, "Error in data callbacks for " + element_name + ": " + e.what());
+			trigger_data_errors.emplace_back(PDI_ERR_SYSTEM, "Error in data callbacks for " + element_name + ": " + e.what());
 		} catch (...) {
-			msg_data_error.emplace_back(PDI_ERR_SYSTEM, "Error in data callbacks for " + element_name + ": Not a std::exception based error.");
+			trigger_data_errors.emplace_back(PDI_ERR_SYSTEM, "Error in data callbacks for " + element_name + ": Not a std::exception based error.");
 		}
 	}
 
 	m_datanames.clear();
 
-	if (!msg_data_error.empty()) {
-		if (1 == msg_data_error.size()) {
+	if (!trigger_data_errors.empty()) {
+		if (1 == trigger_data_errors.size()) {
 			if (std::uncaught_exceptions()) {
-				Global_context::context().logger().error(msg_data_error.front().what());
+				Global_context::context().logger().error("Error while triggering data callbacks: {}", trigger_data_errors.front().what());
 			} else {
-				throw Error{msg_data_error.front().status(), msg_data_error.front().what()};
+				throw Error{trigger_data_errors.front().status(), trigger_data_errors.front().what()};
 			}
 		} else {
-			std::string errmsg
-				= "Multiple (" + std::to_string(msg_data_error.size()) + ") errors while triggering  data callbacks in multi expose: \n";
-			for (auto&& err: msg_data_error) {
-				errmsg += std::string(err.what()) + "\n";
-			}
+			Multiple_error trigger_multiple_error{
+				trigger_data_errors,
+				std::to_string(trigger_data_errors.size()) + " error(s) while triggering data callbacks"
+			};
 			if (std::uncaught_exceptions()) {
-				Global_context::context().logger().error(errmsg.c_str());
+				Global_context::context().logger().error(trigger_multiple_error.what());
 			} else {
-				throw System_error{errmsg.c_str()};
+				throw trigger_multiple_error;
 			}
 		}
 	}
