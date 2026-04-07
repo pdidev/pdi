@@ -63,7 +63,7 @@ jobs:
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyyaml numpy mpi4py
+        pip install setuptools pyyaml numpy mpi4py
     - name: Set up PDI
       uses: actions/checkout@v4
       with:
