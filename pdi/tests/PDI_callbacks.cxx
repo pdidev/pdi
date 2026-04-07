@@ -681,7 +681,6 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks)
 			Ref_w ref_write{ref};
 			int* x = static_cast<int*>(ref_write.get());
 			*x += 42;
-			std::cout << "name=" << name.c_str() << " == data_x" << std::endl;
 			ASSERT_STREQ(name.c_str(), "data_x");
 		},
 		"data_x"
@@ -692,7 +691,6 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks)
 			Ref_w ref_write{ref};
 			int* y = static_cast<int*>(ref_write.get());
 			*y += 53;
-			std::cout << "name=" << name.c_str() << " == data_y" << std::endl;
 			ASSERT_STREQ(name.c_str(), "data_y");
 		},
 		"data_y"
@@ -700,9 +698,7 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks)
 
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
-	std::cout << "share data_x=" << std::endl;
 	this->test_context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
-	std::cout << "share data_y=" << std::endl;
 	this->test_context->desc("data_y").share(&y, true, true, std::move(delayed_callbacks));
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
@@ -745,7 +741,6 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks_with_error)
 			Ref_w ref_write{ref};
 			int* x = static_cast<int*>(ref_write.get());
 			*x += 42;
-			std::cout << "name=" << name.c_str() << " == data_x" << std::endl;
 			ASSERT_STREQ(name.c_str(), "data_x");
 		},
 		"data_x"
@@ -756,7 +751,6 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks_with_error)
 			Ref_w ref_write{ref};
 			int* y = static_cast<int*>(ref_write.get());
 			*y += 53;
-			std::cout << "name=" << name.c_str() << " == data_y" << std::endl;
 			ASSERT_STREQ(name.c_str(), "data_y");
 		},
 		"data_y"
@@ -764,7 +758,6 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks_with_error)
 
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
-	std::cout << "Try and catch error" << std::endl;
 	try {
 		this->test_context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 		throw std::runtime_error("forced throw error for testing");
@@ -778,7 +771,6 @@ TEST_F(CallbacksTest, multiple_delayed_data_callbacks_with_error)
 	}
 
 	ASSERT_EQ(x, 0);
-	std::cout << "share data_y" << std::endl;
 	this->test_context->desc("data_y").share(&y, true, true, std::move(delayed_callbacks));
 	ASSERT_EQ(y, 0);
 	delayed_callbacks.trigger();
