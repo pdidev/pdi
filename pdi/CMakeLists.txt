@@ -234,16 +234,12 @@ install(PROGRAMS scripts/pdirun
 if("${BUILD_PYTHON}")
 	
 	# C++ python support library
-	if(APPLE)
-		pybind11_add_module(PDI_pysupport SHARED src/python/python_ref_wrapper.cxx src/python/tools.cxx) 
-	else()
-		add_library(PDI_pysupport src/python/python_ref_wrapper.cxx src/python/tools.cxx)
-	endif()
+	pybind11_add_module(PDI_pysupport SHARED src/python/python_ref_wrapper.cxx src/python/tools.cxx) 
 	target_include_directories(PDI_pysupport PUBLIC
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
 	)
-	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11 PDI::PDI_plugins)
+	target_link_libraries(PDI_pysupport PUBLIC PDI::PDI_plugins)
 	set_property(TARGET PDI_pysupport PROPERTY LIBRARY_OUTPUT_NAME "pdi_pysupport")
 	set_property(TARGET PDI_pysupport PROPERTY ENABLE_EXPORTS TRUE)
 	set_property(TARGET PDI_pysupport PROPERTY C_VISIBILITY_PRESET hidden)
