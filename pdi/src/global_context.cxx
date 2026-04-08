@@ -250,9 +250,24 @@ void Global_context::check_duplicate(const PC_tree_t& node, const std::string& n
 
 void Global_context::collect_ordered_nodes(
 	PC_tree_t conf,
+	std::unordered_set<std::string>& globally_loaded,
+	std::unordered_set<std::string>& include_chain,
+	std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
+	const std::string& known_path,
+	PC_tree_t include_directive,
+	const std::string& parent_id
+)
+{
+	std::size_t no_path_counter = 0;
+	collect_ordered_nodes_impl(conf, globally_loaded, include_chain, ordered_nodes, no_path_counter, known_path, include_directive, parent_id);
+}
+
+void Global_context::collect_ordered_nodes_impl(
+	PC_tree_t conf,
 	std::unordered_set<std::string>& globally_loaded, ///< all files loaded so far across all branches, to detect diamond includes
 	std::unordered_set<std::string>& include_chain, ///< files currently open in the active include branch, to detect circular includes
 	std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
+	std::size_t& no_path_counter, // to be sure that we do not reuse a unique counter/id, in the case we do not have paths
 	const std::string& known_path,
 	PC_tree_t include_directive, // exact line
 	const std::string& parent_id // includer id
@@ -277,9 +292,7 @@ void Global_context::collect_ordered_nodes(
 	}
 #endif
 	if (!has_real_path) {
-		// static, to be sure that we do not reuse a unique counter/id, in the case we do not have paths
-		static std::size_t s_counter{0};
-		current_id = "<no-path:" + std::to_string(s_counter++) + ">";
+		current_id = "<no-path:" + std::to_string(no_path_counter++) + ">";
 	}
 
 	// ── Step 2: circular detection ───────────────────────────────────────────

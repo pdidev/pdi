@@ -78,6 +78,18 @@ private:
 	// The node of each first definition, for duplicate error reporting
 	std::unordered_map<std::string, PC_tree_t> m_defined;
 
+	// Private defintion of collect_ordered_nodes to handle local no_path_counter
+	void collect_ordered_nodes_impl(
+		PC_tree_t conf,
+		std::unordered_set<std::string>& globally_loaded,
+		std::unordered_set<std::string>& include_chain,
+		std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
+		std::size_t& no_path_counter,
+		const std::string& known_path = "",
+		PC_tree_t include_directive = {},
+		const std::string& parent_id = ""
+	);
+
 public:
 	static void init(PC_tree_t conf);
 
