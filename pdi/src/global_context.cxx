@@ -45,7 +45,6 @@
 
 #include "global_context.h"
 
-#include <atomic>
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
@@ -278,7 +277,8 @@ void Global_context::collect_ordered_nodes(
 	}
 #endif
 	if (!has_real_path) {
-		static std::atomic<std::size_t> s_counter{0};
+		// Static, to be sure that we do not reuse a unique counter/id, in the case we do not have paths
+		static std::size_t s_counter{0};
 		current_id = "<no-path:" + std::to_string(s_counter++) + ">";
 	}
 
