@@ -137,8 +137,8 @@ public:
 	/// Diamond/circular detection is handled here.
 	void collect_ordered_nodes(
 		PC_tree_t conf,
-		std::unordered_set<std::string>& loaded,
-		std::unordered_set<std::string>& stack,
+		std::unordered_set<std::string>& globally_loaded,
+		std::unordered_set<std::string>& include_chain,
 		std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
 		const std::string& known_path = "",
 		PC_tree_t include_directive = {},

@@ -250,8 +250,8 @@ void Global_context::check_duplicate(const PC_tree_t& node, const std::string& n
 
 void Global_context::collect_ordered_nodes(
 	PC_tree_t conf,
-	std::unordered_set<std::string>& loaded,
-	std::unordered_set<std::string>& stack,
+	std::unordered_set<std::string>& globally_loaded, ///< all files loaded so far across all branches, to detect diamond includes
+	std::unordered_set<std::string>& include_chain, ///< files currently open in the active include branch, to detect circular includes
 	std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
 	const std::string& known_path,
 	PC_tree_t include_directive, // exact line
@@ -277,13 +277,13 @@ void Global_context::collect_ordered_nodes(
 	}
 #endif
 	if (!has_real_path) {
-		// Static, to be sure that we do not reuse a unique counter/id, in the case we do not have paths
+		// static, to be sure that we do not reuse a unique counter/id, in the case we do not have paths
 		static std::size_t s_counter{0};
 		current_id = "<no-path:" + std::to_string(s_counter++) + ">";
 	}
 
 	// ── Step 2: circular detection ───────────────────────────────────────────
-	if (has_real_path && stack.count(current_id)) {
+	if (has_real_path && include_chain.count(current_id)) {
 		if (!parent_id.empty()) {
 			throw Config_error(
 				include_directive,
@@ -297,7 +297,7 @@ void Global_context::collect_ordered_nodes(
 	}
 
 	// ── Step 3: diamond detection ────────────────────────────────────────────
-	if (loaded.count(current_id)) {
+	if (globally_loaded.count(current_id)) {
 		if (!parent_id.empty()) {
 			m_logger.warn("Diamond include: '{}' has already been loaded, skipping (included again from '{}')", current_id, parent_id);
 		} else {
@@ -306,15 +306,15 @@ void Global_context::collect_ordered_nodes(
 		return;
 	}
 
-	stack.insert(current_id);
-	loaded.insert(current_id);
+	include_chain.insert(current_id);
+	globally_loaded.insert(current_id);
 
 	// ── Step 4: recurse into includes (post-order: children before parent) ───
 	PC_tree_t includes = PC_get(conf, ".include");
 	if (!PC_status(includes)) {
 		PDI::each(includes, [&](PC_tree_t node) {
-			// `node` is the scalar YAML node of the include entry:
-			// Config_error(node, ...) gives the exact line of the offending directive.
+			// `node` is the scalar YAML node of the include entry
+			// Config_error(node, ...) gives the exact line of the offending directive
 			const std::string inc = PDI::to_string(node);
 			const bool is_absolute = fs::path(inc).is_absolute();
 
@@ -354,13 +354,13 @@ void Global_context::collect_ordered_nodes(
 				throw Config_error(node, "Failed to parse included file: '{}'", full_path.string());
 			}
 
-			collect_ordered_nodes(sub, loaded, stack, ordered_nodes, full_path.string(), node, current_id);
+			collect_ordered_nodes(sub, globally_loaded, include_chain, ordered_nodes, full_path.string(), node, current_id);
 		});
 	}
 
 	// ── Step 5: append this node after its children (post-order) ────────────
 	ordered_nodes.emplace_back(current_id, conf);
-	stack.erase(current_id);
+	include_chain.erase(current_id);
 }
 
 void Global_context::finalize_and_exit()
@@ -371,10 +371,10 @@ void Global_context::finalize_and_exit()
 
 void Global_context::load_pdi_config(PC_tree_t conf)
 {
-	std::unordered_set<std::string> loaded;
-	std::unordered_set<std::string> stack;
+	std::unordered_set<std::string> globally_loaded;
+	std::unordered_set<std::string> include_chain;
 	std::vector<std::pair<std::string, PC_tree_t>> ordered_nodes;
-	collect_ordered_nodes(conf, loaded, stack, ordered_nodes);
+	collect_ordered_nodes(conf, globally_loaded, include_chain, ordered_nodes);
 
 	// Sub-pass A: register + load plugins so custom types (e.g. MPI_Comm)
 	// are available before metadata/data are parsed.
