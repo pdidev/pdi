@@ -16,6 +16,7 @@ and this project adheres to
 ### For users
 
 #### Added
+* fix macOS Python support. [#656](https://github.com/pdidev/pdi/issues/656)
 
 #### Changed
 
