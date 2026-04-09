@@ -413,7 +413,7 @@ try {
 	Global_context::context().logger().trace("Multi expose: Calling event `{}'", event_name);
 	Global_context::context().event(event_name);
 
-	// remark: The reclaim of the datas are done in the destructor of the Var_to_reclaim (see struct Var_to_reclaim)
+	// remark: The reclaim of the data is done in the destructor of the Var_to_reclaim (see struct Var_to_reclaim)
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);

@@ -43,7 +43,7 @@ Delayed_data_callbacks::Delayed_data_callbacks(Global_context& ctx)
 	, m_context{ctx}
 {}
 
-// In the destructor, we need to throw an error message in case of the callback on the data doesn't work (trigger function)
+// In the destructor, we need to throw an error message in case the callback on the data doesn't work (trigger function)
 //  (example: error in the config.yml for a plugin, error due to external library incompatibility)
 Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 {
