@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -41,18 +41,15 @@ using namespace std;
 namespace PDI {
 //handler to private fields of Descriptor
 struct Descriptor_test_handler {
-	static unique_ptr<Data_descriptor> default_desc(Global_context& global_ctx)
-	{
-		return unique_ptr<Data_descriptor>{new Data_descriptor_impl{global_ctx, "default_desc"}};
-	}
+	static Data_descriptor* default_desc(Global_context& global_ctx) { return &global_ctx.desc("default_desc"); }
 
-	static Datatype_sptr desc_get_type(unique_ptr<Data_descriptor>& desc, Global_context& global_ctx)
+	static Datatype_sptr desc_get_type(Data_descriptor* desc, Global_context& global_ctx)
 	{
-		Datatype_template_sptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc.get())->m_type;
+		Datatype_template_sptr desc_template = dynamic_cast<Data_descriptor_impl*>(desc)->m_type;
 		return desc_template->evaluate(global_ctx);
 	}
 
-	static int desc_get_refs_number(unique_ptr<Data_descriptor>& desc) { return dynamic_cast<Data_descriptor_impl*>(desc.get())->m_refs.size(); }
+	static int desc_get_refs_number(Data_descriptor* desc) { return dynamic_cast<Data_descriptor_impl*>(desc)->m_refs.size(); }
 };
 } // namespace PDI
 
@@ -64,8 +61,8 @@ struct DataDescTest: public ::testing::Test {
 	PC_tree_t array_config{PC_parse_string("{ size: 10, type: array, subtype: int }")};
 	shared_ptr<Array_datatype> array_datatype{Array_datatype::make(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)), 10)};
 	PDI::Paraconf_wrapper fw;
-	Global_context global_ctx{PC_parse_string("")};
-	unique_ptr<Data_descriptor> m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
+	Global_context global_ctx{PC_parse_string("logging: debug")};
+	Data_descriptor* m_desc_default = Descriptor_test_handler::default_desc(global_ctx);
 };
 
 /*
