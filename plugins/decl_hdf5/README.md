@@ -67,7 +67,7 @@ The possible values for the keys are as follow:
     * `policy` (string, default: "STOP") : Determines behavior if subfiling requirements are not met.
       * `STOP`: Throw a runtime error.
       * `CONTINUE`: Fall back to a standard HDF5 output file.
-    * `stripe_size` (integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MB) is used.
+    * `stripe_size` (non-negative integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MB) is used.
   * Yaml example
     * full configuration:
       ```

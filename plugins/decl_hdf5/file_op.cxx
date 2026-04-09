@@ -337,7 +337,15 @@ void File_op::execute(Context& ctx)
 				H5Pget_fapl_subfiling(file_lst, &subf_config);
 				subf_config.shared_cfg.stripe_count = subfiling_stripe_count;
 				if (auto stripe_size = subfiling().stripe_size().to_long(ctx)) {
-					subf_config.shared_cfg.stripe_size = stripe_size;
+					if (stripe_size > 0) {
+						subf_config.shared_cfg.stripe_size = stripe_size;
+					} 
+					else if (stripe_size < 0) {
+						throw System_error{"Negative stripe_size is provided. Please set stripe_size > 0."};
+					}
+					else {
+						ctx.logger().info("Using default stripe_size");
+					}
 				}
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
 			}
