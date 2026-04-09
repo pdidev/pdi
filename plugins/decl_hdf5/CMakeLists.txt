@@ -60,7 +60,7 @@ endif()
 set(HDF5_DEPS hdf5::hdf5)
 
 # MPI
-if("${HDF5_IS_PARALLEL}" OR "${HDF5_PROVIDES_PARALLEL}")
+if("${HDF5_IS_PARALLEL}")
 	if("${BUILD_TESTING}" AND "${BUILD_FORTRAN}")
 		set(MPI_COMPONENTS Fortran)
 	endif()
