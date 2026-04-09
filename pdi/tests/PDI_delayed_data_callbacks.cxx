@@ -118,7 +118,7 @@ TEST_F(DataDescDelayed, test_scope_guard)
 	Data_descriptor& desc_x = context.desc(data_x);
 	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
-	
+
 	context.callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
@@ -156,7 +156,7 @@ TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 	Data_descriptor& desc_x = context.desc(data_x);
 	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
-	
+
 	context.callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
@@ -173,14 +173,14 @@ TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 		context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 
 		context.callbacks().add_data_callback(
-		[](const std::string& name, Ref ref) {
-			Ref_w ref_write{ref};
-			int* x = static_cast<int*>(ref_write.get());
-			*x += 10;
-			ASSERT_STREQ(name.c_str(), "data_x");
-		},
-		"data_x"
-	);
+			[](const std::string& name, Ref ref) {
+				Ref_w ref_write{ref};
+				int* x = static_cast<int*>(ref_write.get());
+				*x += 10;
+				ASSERT_STREQ(name.c_str(), "data_x");
+			},
+			"data_x"
+		);
 
 		ASSERT_EQ(x, 0);
 	}
@@ -194,7 +194,7 @@ TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 /*
  * Name:                DataDescDelayed.reclaim_before_trigger
  *
- * Description:         Check the behaviour of trigger when a data name is not shared
+ * Description:         Check the behavior of trigger when a data name is not shared
  *
  */
 TEST_F(DataDescDelayed, reclaim_before_trigger)
@@ -203,7 +203,7 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 	Data_descriptor& desc_x = context.desc(data_x);
 	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
-	
+
 	context.callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
@@ -222,14 +222,14 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 
 	context.desc("data_x").reclaim();
 	ASSERT_EQ(x, 0);
-	
-	
+
+
 	// Check the error message is trigger is called before reclaim
-	try{
+	try {
 		delayed_callbacks.trigger();
-	} catch( Error & e) {
-		ASSERT_STREQ( "Error in data callbacks for data_x: Value_error: Cannot access a non shared value: `data_x'", e.what() );
-	} catch(...) {
+	} catch (Error& e) {
+		ASSERT_STREQ("Error in data callbacks for data_x: Value_error: Cannot access a non shared value: `data_x'", e.what());
+	} catch (...) {
 		FAIL();
 	}
 }
@@ -237,7 +237,7 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 /*
  * Name:                DataDescDelayed.reclaim_before_trigger
  *
- * Description:         Check the behaviour of trigger when a data name is defined twice.
+ * Description:         Check the behavior of trigger when a data name is defined twice.
  *
  */
 TEST_F(DataDescDelayed, same_name_added)
@@ -246,7 +246,7 @@ TEST_F(DataDescDelayed, same_name_added)
 	Data_descriptor& desc_x = context.desc(data_x);
 	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
-	
+
 	context.callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
@@ -262,12 +262,11 @@ TEST_F(DataDescDelayed, same_name_added)
 	Delayed_data_callbacks delayed_callbacks(context);
 	context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 	delayed_callbacks.add_dataname("data_x"); // the list of data to trigger contains two times "data_x"
-	
+
 	delayed_callbacks.trigger();
-	ASSERT_EQ(x, 84); // the callback on "data_x" is called twice 
+	ASSERT_EQ(x, 84); // the callback on "data_x" is called twice
 	context.desc("data_x").reclaim();
 	ASSERT_EQ(x, 84);
-	
 }
 
 /*
@@ -282,7 +281,7 @@ TEST_F(DataDescDelayed, two_trigger_calls)
 	Data_descriptor& desc_x = context.desc(data_x);
 	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
-	
+
 	context.callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
@@ -298,7 +297,7 @@ TEST_F(DataDescDelayed, two_trigger_calls)
 		Delayed_data_callbacks delayed_callbacks(context);
 		context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 		ASSERT_EQ(x, 0);
-		
+
 		delayed_callbacks.trigger();
 		ASSERT_EQ(x, 42);
 	} // the second call of trigger at the end of this scope
