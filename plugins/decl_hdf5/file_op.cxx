@@ -342,7 +342,7 @@ void File_op::execute(Context& ctx)
 					} else if (stripe_size < 0) {
 						throw System_error{"Negative stripe_size is provided. Please set stripe_size > 0."};
 					} else {
-						ctx.logger().info("Using default stripe_size");
+						ctx.logger().warn("Using default stripe_size");
 					}
 				}
 				H5Pset_fapl_subfiling(file_lst, &subf_config);
