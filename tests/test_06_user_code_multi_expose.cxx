@@ -86,3 +86,47 @@ TEST(test_06_user_code_multi_expose_test, 01)
 
 	PDI_finalize();
 }
+
+/*
+ * Name:               test_multi_expose_with_same_name
+ *
+ * Description:        Verify the behavior of multi_expose when we shared two different
+ *                     data in the same place in PDI store.
+ */
+
+// Define user_code function
+extern "C" {
+
+void add_2(void)
+{
+	int* value;
+	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
+	PDI_release("value");
+	*value = *value + 2;
+}
+
+} // end extern "C"
+
+TEST(test_multi_expose_with_same_name, 01)
+{
+	const char* CONFIG_YAML
+		= "logging: trace                          \n"
+		  "data:                                   \n"
+		  "  pdi_var1: int                         \n"
+		  "plugins:                                \n"
+		  "  user_code:                            \n"
+		  "    on_data:                            \n"
+		  "      pdi_var1:                         \n"
+		  "        add_2: { value: $pdi_var1 }     \n";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	int var1 = 3;
+	int var2 = 11;
+
+	PDI_multi_expose("my_test", "pdi_var1", &var1, PDI_OUT, "pdi_var1", &var2, PDI_OUT, NULL);
+
+	check_value("var1", var1, 3); // the reference of pdi_var1 in the store is &var2 => no change in the value
+	check_value("var2", var2, 15); // tha add_2 function is called two times on reference &var2.
+	PDI_finalize();
+}

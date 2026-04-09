@@ -27,7 +27,6 @@
 
 #include <pdi/array_datatype.h>
 #include <pdi/data_descriptor.h>
-#include <pdi/delayed_data_callbacks.h>
 #include <pdi/error.h>
 #include <pdi/paraconf_wrapper.h>
 #include <pdi/scalar_datatype.h>
@@ -333,79 +332,4 @@ TEST_F(DataDescTest, multi_read_share_meta)
 
 	ptr = Ref_r{this->m_desc_default->ref()}.get();
 	ASSERT_NE(this->array, ptr);
-}
-
-/*
- * Struct prepared for DataDescDelayedCallbacksTest
- */
-struct DataDescDelayedCallbacksTest: public ::testing::Test {
-	Paraconf_wrapper fw;
-	Global_context context{PC_parse_string("logging: trace")};
-};
-
-/*
- * Name:                CallbacksTest.callbacks().multiple_delayed_data_callbacks
- *
- * Tested functions:    PDI::Data_descriptor::share(void*, bool, bool, bool)
- *                      PDI::Data_descriptor::share(Ref, bool, bool)
- *                      PDI::Data_descriptor::trigger_delayed_data_callbacks()
- *                      PDI::Data_descriptor::release()
- *
- * Description:         Checks if callback is correctly called when a data is delayed
- * 						with trigger_delayed_data_callbacks()
- *
- */
-TEST_F(DataDescDelayedCallbacksTest, multiple_delayed_data_callbacks)
-{
-	string data_x{"data_x"};
-	string data_y{"data_y"};
-	Data_descriptor& desc_x = context.desc(data_x);
-	Data_descriptor& desc_y = context.desc(data_y);
-	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
-	context.desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
-	int x = 0;
-	int y = 0;
-
-	context.callbacks().add_data_callback(
-		[](const std::string& name, Ref ref) {
-			Ref_w ref_write{ref};
-			int* x = static_cast<int*>(ref_write.get());
-			*x += 42;
-			ASSERT_STREQ(name.c_str(), "data_x");
-		},
-		"data_x"
-	);
-
-	context.callbacks().add_data_callback(
-		[](const std::string& name, Ref ref) {
-			Ref_w ref_write{ref};
-			int* y = static_cast<int*>(ref_write.get());
-			*y += 53;
-			ASSERT_STREQ(name.c_str(), "data_y");
-		},
-		"data_y"
-	);
-
-	ASSERT_EQ(x, 0);
-	ASSERT_EQ(y, 0);
-
-	Delayed_data_callbacks delayed_callbacks_x(context);
-	Delayed_data_callbacks delayed_callbacks_y(context);
-	context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks_x));
-	context.desc("data_y").share(&y, true, true, std::move(delayed_callbacks_y));
-	ASSERT_EQ(x, 0);
-	ASSERT_EQ(y, 0);
-	delayed_callbacks_x.trigger();
-
-	ASSERT_EQ(x, 42);
-	ASSERT_EQ(y, 0);
-	delayed_callbacks_y.trigger();
-
-	ASSERT_EQ(x, 42);
-	ASSERT_EQ(y, 53);
-
-	context.desc("data_y").reclaim();
-	context.desc("data_x").reclaim();
-	ASSERT_EQ(x, 42);
-	ASSERT_EQ(y, 53);
 }

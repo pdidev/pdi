@@ -68,6 +68,8 @@ Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 
 void Delayed_data_callbacks::add_dataname(const std::string& name)
 {
+	// Comment: In case of a multi_expose, if the data is defined twice then the callback "on_data" are called twice also in PDI v1.10
+	//         Therefore, we need to add the name to have the same behaviour.
 	m_datanames.emplace_back(name);
 }
 
