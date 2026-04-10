@@ -23,28 +23,27 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <iostream>
 #include <mpi.h>
 #include <pdi.h>
-#include <iostream>
 
 const char CONF_YAML[] =
-    "metadata:\n"
-    "  ii: int\n"
     "data:\n"
-    "  cp_status: int\n"
-    "  cp_counter: int\n"
-    "  var: int\n"
+    "  ii: int\n"
+	"  var: int\n"
     "plugins:\n"
     "  veloc:\n"
     "    failure: 1\n"
     "    config_file: veloc_config.cfg\n"
-    "    status: cp_status\n"
-    "    counter: cp_counter\n"
     "    checkpoint_label: test_01\n"
-    "    checkpoint_nr : 0\n"
     "    iteration: ii\n"
     "    protect_data: [ii, var]\n"  
-	"    recover_on: recover\n";
+	"    recover_var:\n"
+	"      - on_event: recover_iter\n"
+	"        var: [ii]\n";
+    // "      - on_event: recover_var\n"
+	// "        var: [var]\n";
+    
 
 int main(int argc, char* argv[])
 {	
@@ -52,44 +51,31 @@ int main(int argc, char* argv[])
     PC_tree_t conf = PC_parse_string(CONF_YAML);
 	PDI_init(conf);
 	
-	int cp_status;
-	int rec_ii = -1;  
+	int rec_ii = 0;  
 	int rec_var = 0;
-	
-	PDI_expose("cp_status", &cp_status, PDI_IN);
 
-	if(cp_status!=0){
+	PDI_multi_expose("recover_iter", "ii", &rec_ii, PDI_INOUT,
+			NULL);
 
-		std::cerr << "TEST_01_3 FAILED: status value " << cp_status
-                  << " does not match expected value " << 0 << std::endl;
-		exit(1); 
-	}
-	
-	PDI_multi_expose("recover", "ii", &rec_ii, PDI_INOUT,
-			"var", &rec_var, PDI_INOUT, NULL);
-			
-	PDI_expose("cp_status", &cp_status, PDI_IN);
+	if(rec_ii != 1){
 
-	if(cp_status!=1){
-		std::cerr << "TEST_01_3 FAILED: status value " << cp_status
+		std::cerr << "TEST_01_5 FAILED: recovered iter value " << rec_ii
                   << " does not match expected value " << 1 << std::endl;
-		exit(1); 
-	}
-
-    if(rec_ii != 0){
-		std::cerr << "TEST_01_3 FAILED: recovered iter value " << rec_ii
-                  << " does not match expected value " << 0 << std::endl;
 		exit(1);
 	}
+	
 
-    if(rec_var != 51){
+	// PDI_multi_expose("recover_var", "var", &rec_var, PDI_INOUT, NULL);
 
-		std::cerr << "TEST_01_3 FAILED: recovered var value " << rec_var
-                  << " does not match expected value " << 51 << std::endl;
-		exit(1); 
-	}
+	// if(rec_var != 52){
 
-	std::cout << "TEST 01_3 PASSED " <<std::endl;
+	// 	std::cerr << "TEST_01_5 FAILED: recovered var value " << rec_var
+    //               << " does not match expected value " << 52 << std::endl;
+	// 	exit(1);
+	// }
+ 
+
+	std::cout << "TEST TEST_01_5 PASSED " <<std::endl;
 
 	PDI_finalize();
 	MPI_Finalize();

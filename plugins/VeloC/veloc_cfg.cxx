@@ -124,6 +124,60 @@ bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const stri
 	return result.second;
 }
 
+
+
+set<int> load_rest(Context& ctx, PC_tree_t tree, std::unordered_map<int, std::string> protected_data)
+{
+    // Build a reverse lookup: name -> id
+    unordered_map<string, int> name_to_id;
+    for (auto& [id, name] : protected_data) {
+        name_to_id[name] = id;
+    }
+
+    // for each var name, checks if present in protected_data. Is this necessary?
+    // if so, it adds the variable index to an unordered set
+    // which then in the constructor is used as a value of a key-value map where the key is the event name 
+    set<int> not_recover;
+    if (!PC_status(PC_get(tree, "[0]"))){ //list 
+        each(tree, [&](PC_tree_t subtree) -> void {
+            string var_name = to_string(subtree);
+            auto it = name_to_id.find(var_name);
+            if (it == name_to_id.end()) {
+                throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: Unknown variable name `{}' in `recover_rest'", var_name};
+            }
+            auto&& result = not_recover.emplace(it->second);
+            if (!result.second) {
+                throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: UDuplicate variable name `{}' in `recover_rest'", var_name};
+            }
+        });
+    }
+    else{ //single value 
+        string var_name = to_string(tree);
+        auto it = name_to_id.find(var_name);
+        if (it == name_to_id.end()) {
+                throw Error{PDI_ERR_CONFIG, 
+                "VELOC PLUGIN YAML: Unknown variable name `{}' in `recover_rest'", var_name};
+            }
+        auto&& result = not_recover.emplace(it->second);
+        if (!result.second) {
+            throw Error{PDI_ERR_CONFIG, 
+            "VELOC PLUGIN YAML: UDuplicate variable name `{}' in `recover_rest'", var_name};
+        }
+    }
+
+    set<int> do_recover;
+    for (auto& [id, name] : protected_data) {
+        if (std::find(not_recover.begin(), not_recover.end(), id) == not_recover.end()) {
+            // id is NOT in the set
+            do_recover.insert(id);
+        }
+    }
+
+    return do_recover;
+}
+
 // takes the ".var" entries of the recover_var tree 
 
 set<int> load_vars(Context& ctx, PC_tree_t tree, std::unordered_map<int, std::string> protected_data)
@@ -218,11 +272,14 @@ manual_cp_defined{false}, manual_rec_defined{false}, m_requested_checkpoint{-1}
         else if (key == "recover_var"){
             // parsed in pass 3
         }
-        else if (key == "manual_checkpoint"){
+        else if (key == "recover_rest"){
             // parsed in pass 4
         }
-        else if (key == "manual_recovery"){
+        else if (key == "manual_checkpoint"){
             // parsed in pass 5
+        }
+        else if (key == "manual_recovery"){
+            // parsed in pass 6
         }
         else {
             throw Config_error{tree, "Unknown key in VeloC plugin configuration: `{}'", key};
@@ -252,14 +309,14 @@ manual_cp_defined{false}, manual_rec_defined{false}, m_requested_checkpoint{-1}
             // list of recover_var entries
             each(recover_var_tree, [&](PC_tree_t recover_var_subtree) {
                 PC_tree_t var_tree = PC_get(recover_var_subtree, ".var");
-                if (PC_status(var_tree)) {                               // <-- guard: .var may be absent
+                if (PC_status(var_tree)) {                             
                     ctx.logger().warn("VeloC config: `recover_var' entry missing `.var', skipping.");
                     return;
                 }
                 auto&& vars = load_vars(ctx, var_tree, m_protected_data);
 
                 PC_tree_t event_tree = PC_get(recover_var_subtree, ".on_event");
-                if (PC_status(event_tree)) {                             // <-- guard: .on_event may be absent
+                if (PC_status(event_tree)) {                            
                     ctx.logger().warn("VeloC config: `recover_var' entry missing `.on_event', skipping.");
                     return;
                 }
@@ -271,13 +328,58 @@ manual_cp_defined{false}, manual_rec_defined{false}, m_requested_checkpoint{-1}
         else {
             // single recover_var entry
             PC_tree_t var_tree = PC_get(recover_var_tree, ".var");
-            if (PC_status(var_tree)) {                                   // <-- guard: .var may be absent
+            if (PC_status(var_tree)) {                                  
                 ctx.logger().warn("VeloC config: `recover_var' missing `.var', skipping.");
             }
             else {
                 auto&& vars = load_vars(ctx, var_tree, m_protected_data);
 
                 PC_tree_t event_tree = PC_get(recover_var_tree, ".on_event");
+                if (PC_status(event_tree)) {                            
+                    ctx.logger().warn("VeloC config: `recover_var' missing `.on_event', skipping.");
+                }
+                else {
+                    load_events(m_events, ctx, event_tree, Event_type::RECOVER_VAR, [this, vars](const string& event_name) {
+                        m_recover_var.emplace(event_name, vars);
+                    });
+                }
+            }
+        }
+    }
+
+    // spass 4
+    PC_tree_t reover_rest_tree = PC_get(tree, ".recover_rest");
+    if (!PC_status(reover_rest_tree)) {
+        if (!PC_status(PC_get(reover_rest_tree, "[0]"))) {
+            // list of recover_var entries
+            each(reover_rest_tree, [&](PC_tree_t recover_rest_subtree) {
+                PC_tree_t var_tree = PC_get(recover_rest_subtree, ".var");
+                if (PC_status(var_tree)) {                             
+                    ctx.logger().warn("VeloC config: `recover_var' entry missing `.var', skipping.");
+                    return;
+                }
+                auto&& vars = load_rest(ctx, var_tree, m_protected_data);
+
+                PC_tree_t event_tree = PC_get(recover_rest_subtree, ".on_event");
+                if (PC_status(event_tree)) {                            
+                    ctx.logger().warn("VeloC config: `recover_var' entry missing `.on_event', skipping.");
+                    return;
+                }
+                load_events(m_events, ctx, event_tree, Event_type::RECOVER_VAR, [this, vars](const string& event_name) {
+                    m_recover_var.emplace(event_name, vars);
+                });
+            });
+        }
+        else {
+            // single recover_var entry
+            PC_tree_t var_tree = PC_get(reover_rest_tree, ".var");
+            if (PC_status(var_tree)) {                                   // <-- guard: .var may be absent
+                ctx.logger().warn("VeloC config: `recover_var' missing `.var', skipping.");
+            }
+            else {
+                auto&& vars = load_vars(ctx, var_tree, m_protected_data);
+
+                PC_tree_t event_tree = PC_get(reover_rest_tree, ".on_event");
                 if (PC_status(event_tree)) {                             // <-- guard: .on_event may be absent
                     ctx.logger().warn("VeloC config: `recover_var' missing `.on_event', skipping.");
                 }
@@ -290,7 +392,7 @@ manual_cp_defined{false}, manual_rec_defined{false}, m_requested_checkpoint{-1}
         }
     }
 
-    // pass 4
+    // pass 5
     PC_tree_t manual_cp_tree = PC_get(tree, ".manual_checkpoint");
     if (!PC_status(manual_cp_tree)) {
         manual_cp_defined = true; 
@@ -318,7 +420,7 @@ manual_cp_defined{false}, manual_rec_defined{false}, m_requested_checkpoint{-1}
         });
     }
 
-    // pass 5
+    // pass 6
     PC_tree_t manual_rec_tree = PC_get(tree, ".manual_recovery");
     if (!PC_status(manual_rec_tree)) {
         manual_rec_defined = true; 
@@ -382,7 +484,7 @@ void Veloc_cfg::check_conformity(Context& ctx){
     );
 
     if(!cp_events_defined && !rec_events_defined && !sync_events_defined && 
-        !manual_cp_defined && !manual_rec_defined){
+        !manual_cp_defined && !manual_rec_defined && (m_recover_var.size()==0)){
             throw Error{PDI_ERR_CONFIG, 
             "VELOC PLUGIN YAML: No events have been defined"};      
     }
@@ -409,9 +511,9 @@ void Veloc_cfg::check_conformity(Context& ctx){
             "VELOC PLUGIN YAML: The iteration number must be included in the data to be protected"};
     }
 
-    if(m_requested_checkpoint)
+    // if(m_requested_checkpoint) ? What here? 
 
-    if(!rec_events_defined){
+    if(!rec_events_defined && (m_recover_var.size()==0)){
         if(m_requested_checkpoint!=-1){
             ctx.logger().warn("VELOC PLUGIN YAML : No recovery events have been defined. "
                 "Ignoring 'checkpoint_nr' key\n");
@@ -436,7 +538,8 @@ void Veloc_cfg::check_conformity(Context& ctx){
         }
     }
 
-    if(m_failure==1 && !rec_events_defined && !sync_events_defined){
+    if(m_failure==1 && !rec_events_defined && !sync_events_defined 
+        && (m_recover_var.size()==0)){
         ctx.logger().warn("VELOC PLUGIN YAML : The failure key has been set to 1 " 
             "but no recovery or synchronization events have been defined\n");
     }

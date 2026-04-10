@@ -165,7 +165,6 @@ class veloc_plugin : public Plugin
                 else if (desc.second == Desc_type::COUNTER_CP) {
                     context().callbacks().add_data_callback([this](const string& name, Ref ref) {
                         if (Ref_w wref = ref) {
-                            // TO DO : define counter_cp() func
                             *static_cast<int*>(wref.get()) = cp_counter; 
                         }
                     },

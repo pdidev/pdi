@@ -23,13 +23,14 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
+#include <iostream>
 #include <mpi.h>
 #include <pdi.h>
 
 const char CONF_YAML[] =
+    "metadata:\n"
+    "  ii: int\n"
     "data:\n"
-    "  a: int\n"
 	"  var: int\n"
     "plugins:\n"
     "  veloc:\n"
@@ -38,14 +39,12 @@ const char CONF_YAML[] =
     "    checkpoint_label: test_01\n"
     "    iteration: ii\n"
     "    protect_data: [ii, var]\n"  
-	"    recover_var:\n"
-	"      - on_event: recover_iter\n"
-	"        var: [ii]\n"
-	"      - on_event: recover_var\n"
-	"        var: [var]\n"
-	"      - on_event: recover_all\n"
-	"        var: [ii, var]\n";
-	
+	// "    recover_var:\n"
+	// "      - on_event: recover_iter\n"
+	// "        var: [ii]\n"
+	"    recover_rest:\n"
+	"      - on_event: recover_rest\n"
+	"        var: [ii]\n";
 
 int main(int argc, char* argv[])
 {	
@@ -53,33 +52,30 @@ int main(int argc, char* argv[])
     PC_tree_t conf = PC_parse_string(CONF_YAML);
 	PDI_init(conf);
 	
-	int cp_status;
-	int cp_counter; 
 	int rec_ii = 0;  
 	int rec_var = 0;
 
-	PDI_multi_expose("recover_iter", "ii", &rec_ii, PDI_INOUT,
-			NULL);
+	// PDI_multi_expose("recover_iter", "ii", &rec_ii, PDI_INOUT,
+	// 		NULL);
 
-	if(rec_ii != 25){
+	// if(rec_ii != 1){
 
-		std::cerr << "TEST_01_3 FAILED: recovered iter value " << rec_ii
-                  << " does not match expected value " << 25 << std::endl;
-		exit(1);
-	}
-	
+	// 	std::cerr << "TEST_01_5 FAILED: recovered iter value " << rec_ii
+    //               << " does not match expected value " << 1 << std::endl;
+	// 	exit(1);
+	// }
 
-	PDI_multi_expose("recover_var", "var", &rec_var, PDI_INOUT, NULL);
+	PDI_multi_expose("recover_rest", "var", &rec_var, PDI_INOUT, NULL);
 
-	if(rec_var != 50){
+	if(rec_var != 52){
 
-		std::cerr << "TEST_01_3 FAILED: recovered var value " << rec_var
-                  << " does not match expected value " << 50 << std::endl;
+		std::cerr << "TEST_01_5 FAILED: recovered var value " << rec_var
+                  << " does not match expected value " << 52 << std::endl;
 		exit(1);
 	}
  
 
-	std::cout << "TEST 01_3 PASSED " <<std::endl;
+	std::cout << "TEST TEST_01_5 PASSED " <<std::endl;
 
 	PDI_finalize();
 	MPI_Finalize();
