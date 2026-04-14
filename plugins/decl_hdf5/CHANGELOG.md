@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 * Add subfiling support [#602](https://github.com/pdidev/pdi/issues/602)
+* Add tests for HDF5 precision conversion (data in double precision while dataset declared with simple precision in file)
 
 ### Changed
 * Fully qualify `std::move` calls to prevent a compilation warning and incorrect
