@@ -27,7 +27,7 @@ cmake_minimum_required(VERSION 3.22...4.2)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../../cmake/runtest-dir")
 
-set(ALL_TEST_NAMES array dataset group struct variables)
+set(ALL_TEST_NAMES array dataset group struct variables d2s_precision )
 if("${BUILD_HDF5_PARALLEL}")
     list(APPEND ALL_TEST_NAMES mpi mpi_independent)
 endif()
