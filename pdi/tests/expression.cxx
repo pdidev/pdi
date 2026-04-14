@@ -78,22 +78,8 @@ TYPED_TEST(ExpressionU@CASE_NAME@Test, toLong)
 
 	for (auto op1: ALL_VALS<operand1_type>) {
 		for (auto op2: ALL_VALS<operand2_type>) {
-			EXPECT_CALL(o1_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op1,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op1)>,
-					true,
-					false
-				)));
-			EXPECT_CALL(o2_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op2,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op2)>,
-					true,
-					false
-				)));
+			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
+			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
 			auto const & expr = fmt::format("${{o1}} {} ${{o2}}", operator_type::sign);
 			auto const & expected = static_cast<long>(operator_type::eval(op1, op2));
@@ -119,22 +105,8 @@ TYPED_TEST(ExpressionU@CASE_NAME@Test, toDouble)
 
 	for (auto op1: ALL_VALS<operand1_type>) {
 		for (auto op2: ALL_VALS<operand2_type>) {
-			EXPECT_CALL(o1_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op1,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op1)>,
-					true,
-					false
-				)));
-			EXPECT_CALL(o2_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op2,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op2)>,
-					true,
-					false
-				)));
+			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
+			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
 			auto const & expr = fmt::format("${{o1}} {} ${{o2}}", operator_type::sign);
 			auto const & expected = operator_type::eval(op1, op2);
@@ -160,22 +132,8 @@ TYPED_TEST(ExpressionU@CASE_NAME@Test, toRef)
 
 	for (auto op1: ALL_VALS<operand1_type>) {
 		for (auto op2: ALL_VALS<operand2_type>) {
-			EXPECT_CALL(o1_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op1,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op1)>,
-					true,
-					false
-				)));
-			EXPECT_CALL(o2_desc, ref())
-				.WillOnce(testing::Return(Ref(
-					&op2,
-					[](void*) {},
-					Scalar_datatype::type_for_v<decltype(op2)>,
-					true,
-					false
-				)));
+			EXPECT_CALL(o1_desc, ref()).WillOnce(testing::Return(Ref(&op1, [](void*) {}, Scalar_datatype::type_for_v<decltype(op1)>, true, false)));
+			EXPECT_CALL(o2_desc, ref()).WillOnce(testing::Return(Ref(&op2, [](void*) {}, Scalar_datatype::type_for_v<decltype(op2)>, true, false)));
 
 			auto const & expr = fmt::format("${{o1}} {} ${{o2}}", operator_type::sign);
 			auto const & expected = operator_type::eval(op1, op2);
