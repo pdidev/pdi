@@ -96,4 +96,4 @@ bool finalize()
 	auto status = PDI_finalize();
 	return status == PDI_status_t::PDI_OK;
 }
-} // namespace PDI_adaptor
+} // namespace pdi_adaptor
