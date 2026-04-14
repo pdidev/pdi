@@ -23,37 +23,35 @@ if(result.returncode != 0):
 # get endiannes of the computer
 endianness = sys.byteorder
 
-if(endianness == 'little'):
-    # Check the initialize json dump
-    reference_initialize_json = source_folder + "/references/initialize_reference.json"
-    actual_initialize_json = binary_folder + "initialize_params.conduit_bin.1.0_json"
-    with open(reference_initialize_json) as ref_file:
-        with open(actual_initialize_json) as actual_file:
-            ref_json = json.load(ref_file)
-            actual_json = json.load(actual_file)
+reference_directory = 'references' # if(endianness == 'little');
+if(endianness == 'big'):
+    reference_directory = reference_directory + '_big_endian'
+
+# Check the initialize json dump
+reference_initialize_json = source_folder + "/" + reference_directory + "/initialize_reference.json"
+actual_initialize_json = binary_folder + "initialize_params.conduit_bin.1.0_json"
+with open(reference_initialize_json) as ref_file:
+    with open(actual_initialize_json) as actual_file:
+        ref_json = json.load(ref_file)
+        actual_json = json.load(actual_file)
+        if ref_json.items() != actual_json.items():
+            # Ignore the length of the script path which depends on platform.
+            actual_json["catalyst"]["scripts"]["script1"]["number_of_elements"] = ref_json["catalyst"]["scripts"]["script1"]["number_of_elements"]
             if ref_json.items() != actual_json.items():
-                # Ignore the length of the script path which depends on platform.
-                actual_json["catalyst"]["scripts"]["script1"]["number_of_elements"] = ref_json["catalyst"]["scripts"]["script1"]["number_of_elements"]
-                if ref_json.items() != actual_json.items():
-                    print(f'Differences detected in file "{actual_initialize_json}" compared to reference "{reference_initialize_json}')
-                    exit(1)
+                print(f'Differences detected in file "{actual_initialize_json}" compared to reference "{reference_initialize_json}')
+                exit(1)
 
-    # Check the execute json dump
-    reference_execute_json = source_folder + "/references/execute_reference.json"
-    for step in range(9):
-        filepath = binary_folder + f"execute_invc{step}_params.conduit_bin.1.0_json"
-        if not filecmp.cmp(reference_execute_json, filepath):
-            print(f'Differences detected in file "{filepath}" compared to reference "{reference_execute_json}')
-            exit(1)
-
-    # Check the finalize json dump
-    reference_finalize_json = source_folder + "/references/finalize_reference.json"
-    actual_finalize_json = binary_folder + "finalize_params.conduit_bin.1.0_json"
-    if not filecmp.cmp(reference_finalize_json, actual_finalize_json):
-        print(f'Differences detected in file "{actual_finalize_json}" compared to reference "{reference_finalize_json}')
+# Check the execute json dump
+reference_execute_json = source_folder + "/" + reference_directory + "/execute_reference.json"
+for step in range(9):
+    filepath = binary_folder + f"execute_invc{step}_params.conduit_bin.1.0_json"
+    if not filecmp.cmp(reference_execute_json, filepath):
+        print(f'Differences detected in file "{filepath}" compared to reference "{reference_execute_json}')
         exit(1)
 
-else:
-    print(f'The reference solution is based on little endian. So it is not possible to check with big endian.')
-    print(f'The test is marked as failed anyway for the moment.')
+# Check the finalize json dump
+reference_finalize_json = source_folder + "/" + reference_directory + "/finalize_reference.json"
+actual_finalize_json = binary_folder + "finalize_params.conduit_bin.1.0_json"
+if not filecmp.cmp(reference_finalize_json, actual_finalize_json):
+    print(f'Differences detected in file "{actual_finalize_json}" compared to reference "{reference_finalize_json}')
     exit(1)
