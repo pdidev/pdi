@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -156,7 +157,7 @@ void Callbacks::call_data_callbacks(const string& name, Ref ref) const
 		for (auto&& err: errors) {
 			errmsg += string(err.what()) + "\n";
 		}
-		throw System_error{errmsg.c_str()};
+		throw System_error{"{}", errmsg.c_str()};
 	}
 }
 
@@ -195,7 +196,7 @@ void Callbacks::call_data_remove_callbacks(const string& name, Ref ref) const
 		for (auto&& err: errors) {
 			errmsg += string(err.what()) + "\n";
 		}
-		throw System_error{errmsg.c_str()};
+		throw System_error{"{}", errmsg.c_str()};
 	}
 }
 
@@ -234,7 +235,7 @@ void Callbacks::call_event_callbacks(const string& name) const
 		for (auto&& err: errors) {
 			errmsg += string(err.what()) + "\n";
 		}
-		throw System_error{errmsg.c_str()};
+		throw System_error{"{}", errmsg.c_str()};
 	}
 }
 
@@ -273,7 +274,7 @@ void Callbacks::call_empty_desc_access_callbacks(const string& name) const
 		for (auto&& err: errors) {
 			errmsg += string(err.what()) + "\n";
 		}
-		throw System_error{errmsg.c_str()};
+		throw System_error{"{}", errmsg.c_str()};
 	}
 }
 

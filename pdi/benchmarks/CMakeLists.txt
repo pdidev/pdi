@@ -57,7 +57,7 @@ set(PDI_benchmark_SRC
           PDI_logger.cxx)
         
 add_executable(PDI_benchmarks ${PDI_benchmark_SRC})
-target_compile_features(PDI_benchmarks PUBLIC cxx_std_17)
+target_compile_features(PDI_benchmarks PUBLIC cxx_std_20)
 target_include_directories(PDI_benchmarks PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 target_link_libraries(PDI_benchmarks
                       benchmark::benchmark

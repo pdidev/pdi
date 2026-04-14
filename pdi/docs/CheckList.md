@@ -44,7 +44,11 @@ To publish a new minor or major release:
 When changing the list of dependencies or just the version of one dependency:
 * update `pdi/docs/Source_installation.md`,
 * update `spack.yaml`,
-* update PDI distribution CMakeLists.txt as well as all CMakeLists.txt actually using it,
+* update PDI distribution CMakeLists.txt as well as all CMakeLists.txt actually
+  using it,
 * update the dockerfiles used for tests,
 * prepare the update of the spack, deb & RPM packages for the next version,
-* change `.github/workflows/*.yml` to use the new docker test images.
+* change `.github/workflows/*.yml` to use the new docker test images,
+* if the new minimum compiler versions support an updated version of C / C++ /
+  Fortran, change this info in `pdi/docs/Source_installation.md` and
+  `pdi/CONTRIBUTING.md` as well as every `c[xx]_std_??` in cmake.

@@ -169,7 +169,7 @@ target_include_directories(PDI_C
 target_link_libraries(PDI_C
 		PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS}
 		PRIVATE spdlog::spdlog)
-target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11)
+target_compile_features(PDI_C PUBLIC cxx_std_20 c_std_17)
 set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
 set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
 set_property(TARGET PDI_C PROPERTY C_VISIBILITY_PRESET hidden)
@@ -204,7 +204,6 @@ install(EXPORT PDI_C_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" 
 
 add_library(PDI_plugins INTERFACE)
 target_link_libraries(PDI_plugins INTERFACE PDI::PDI_C spdlog::spdlog)
-target_compile_features(PDI_plugins INTERFACE cxx_std_17 c_std_11)
 add_library(PDI::PDI_plugins ALIAS PDI_plugins)
 install(TARGETS PDI_plugins EXPORT PDI_plugins_EXPORT
 		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Runtime NAMELINK_COMPONENT Development

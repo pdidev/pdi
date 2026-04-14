@@ -30,9 +30,8 @@ Most dependencies are embedded in the distribution and the only required
 external dependencies are:
 * a POSIX compatible OS such as GNU/linux,
 * [cmake](https://cmake.org/) version 3.22 or above,
-* a C 99, C++ 17 and Fortran 03 compiler such as
-  - [gcc](https://gcc.gnu.org/) 11 or above,
-  - [clang](https://clang.llvm.org/) 14 or above,
+* a C 17, C++ 20 and Fortran 18 compiler such as [gcc](https://gcc.gnu.org/) 11
+  or above,
 * a [python](https://www.python.org/) interpreter, version 3.10 or above,
 * a [bash](https://www.gnu.org/software/bash/) interpreter,
 * a [MPI](https://www.mpi-forum.org/) 2 implementation such as
@@ -164,7 +163,7 @@ Dependencies of **%PDI**:
 
 * a POSIX compatible OS such as GNU/linux,
 * **[cmake](https://cmake.org/) version 3.22 or above (not provided)**,
-* **a C 99 and C++ 17 compiler (not provided)** such as
+* **a C 17 and C++ 20 compiler (not provided)** such as
   - [gcc](https://gcc.gnu.org/) 11 or above,
   - [clang](https://clang.llvm.org/) 14 or above,
 * the [paraconf](https://github.com/pdidev/paraconf) library version 1.0 or above (provided),
@@ -174,7 +173,7 @@ Dependencies of **%PDI**:
 Additional dependencies for **the Fortran API**:
 
 * the PDI library,
-* **a Fortran 03 compiler (not provided)** such as
+* **a Fortran 18 compiler (not provided)** such as
   - [gcc](https://gcc.gnu.org/) 11 or above,
 * **a [python](https://www.python.org/) interpreter, version 3.10 or above (not provided)**.
 

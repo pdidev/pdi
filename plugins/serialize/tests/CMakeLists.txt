@@ -47,6 +47,6 @@ endif()
 )
 
 add_executable(serialize_tests serialize_tests.cxx)
-target_compile_features(serialize_tests PUBLIC cxx_std_17)
+target_compile_features(serialize_tests PUBLIC cxx_std_20)
 target_link_libraries(serialize_tests PDI::PDI_C GTest::gtest GTest::gtest_main)
 gtest_discover_tests(serialize_tests)

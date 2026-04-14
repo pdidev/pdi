@@ -49,7 +49,10 @@ The blocks *should* be in order:
 
 ## C coding conventions
 
-These conventions only apply to the C part of PDI (the C public application API)
+These conventions only apply to the C part of PDI (the C public application API).
+
+PDI C public application API is C 17.
+Features from more recent versions of C are not allowed.
 
 Naming:
 * all public elements (symbol, type, macro, ...) *must* start with the `PDI_`
@@ -65,6 +68,9 @@ Prototypes:
   status
 
 ## C++ coding conventions
+
+PDI is C++ 20.
+Features from more recent versions of C++ are not allowed.
 
 The auto keyword should be used for types as `auto&&` and only in one of the
 following cases:
