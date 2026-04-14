@@ -16,6 +16,7 @@ and this project adheres to
 ### For users
 
 #### Added
+* fix macOS Python support. [#656](https://github.com/pdidev/pdi/issues/656)
 
 #### Changed
 * The minimum version of C required is now C17 (ISO/IEC 9899:2018) instead of
