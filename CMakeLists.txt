@@ -109,13 +109,13 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 	if(4.1 VERSION_GREATER "${CMAKE_VERSION}")
 		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.1")
 	elseif(4.3 VERSION_GREATER "${CMAKE_VERSION}")
-		# Workaround conpiling with HDF5-2.0.0+
+		# Workaround compiling with HDF5-2.0.0+
 		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.3")
 	endif()
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
 endif()
 if("${BUILD_DECL_HDF5_PLUGIN}")
-	# Workaround conpiling with HDF5-2.0.0+
+	# Workaround compiling with HDF5-2.0.0+
 	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
 		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake/4.3")
 	endif()
