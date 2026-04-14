@@ -39,17 +39,17 @@ int main()
 		  "  decl_hdf5:                                                     \n"
 		  "    - file: d2s_test.h5                                          \n"
 		  "      datasets:                                                  \n"
-          "        float_data: {size: [100, 10], type: array, subtype: float }\n"
-          "      write:                                                     \n"
-          "        double_data:                                              \n"
-          "          dataset: float_data                                    \n";
+		  "        float_data: {size: [100, 10], type: array, subtype: float }\n"
+		  "      write:                                                     \n"
+		  "        double_data:                                              \n"
+		  "          dataset: float_data                                    \n";
 
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
 	double test_array[1000];
 
 	for (int i = 0; i < 1000; i++) {
-			test_array[i] = i * 10.0 + 3.141592653589793;
+		test_array[i] = i * 10.0 + 3.141592653589793;
 	}
 
 	PDI_expose("double_data", test_array, PDI_OUT);

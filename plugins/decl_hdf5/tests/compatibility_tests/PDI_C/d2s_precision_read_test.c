@@ -23,9 +23,9 @@
  ******************************************************************************/
 
 #include <assert.h>
+#include <math.h>
 #include <unistd.h>
 #include <pdi.h>
-#include <math.h>
 
 #define FILE "d2s_test.h5"
 
@@ -40,10 +40,10 @@ int main()
 		  "  decl_hdf5:                                                     \n"
 		  "    - file: d2s_test.h5                                          \n"
 		  "      datasets:                                                  \n"
-          "        float_data: {size: [100, 10], type: array, subtype: float }\n"
-          "      read:                                                     \n"
-          "        double_data:                                              \n"
-          "          dataset: float_data                                    \n";
+		  "        float_data: {size: [100, 10], type: array, subtype: float }\n"
+		  "      read:                                                     \n"
+		  "        double_data:                                              \n"
+		  "          dataset: float_data                                    \n";
 
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	PDI_init(conf);
@@ -53,11 +53,18 @@ int main()
 	}
 	PDI_expose("double_data", test_array, PDI_IN);
 
-	for (int i = 0; i < 1000; i++) {		
-        if (fabs(test_array[i] - (i * 10.0 + 3.141592653589793)) > 1.e-4) {
-            fprintf(stderr, "test_array[%d] %f != %f, diff = %f\n ", i, test_array[i], i * 10.0 + 3.141592653589793, fabs(test_array[i] - (i * 10.0 + 3.141592653589793)));
-            return 1;
-        }
+	for (int i = 0; i < 1000; i++) {
+		if (fabs(test_array[i] - (i * 10.0 + 3.141592653589793)) > 1.e-4) {
+			fprintf(
+				stderr,
+				"test_array[%d] %f != %f, diff = %f\n ",
+				i,
+				test_array[i],
+				i * 10.0 + 3.141592653589793,
+				fabs(test_array[i] - (i * 10.0 + 3.141592653589793))
+			);
+			return 1;
+		}
 	}
 
 	PDI_finalize();

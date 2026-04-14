@@ -24,8 +24,8 @@
 
 #include <assert.h>
 #include <hdf5.h>
-#include <unistd.h>
 #include <math.h>
+#include <unistd.h>
 
 #define FILE "d2s_test.h5"
 
@@ -52,11 +52,18 @@ int main()
 		return 1;
 	}
 
-	for (int i = 0; i < 1000; i++) {		
-        if (fabs(dset_data[i] - (i * 10.0 + 3.141592653589793)) > 1.e-4) {
-            fprintf(stderr, "dset_data[%d]: %f != %f, diff = %f\n ", i, dset_data[i], i * 10.0 + 3.141592653589793, fabs(dset_data[i] - (i * 10.0 + 3.141592653589793)));
-            return 1;
-        }
+	for (int i = 0; i < 1000; i++) {
+		if (fabs(dset_data[i] - (i * 10.0 + 3.141592653589793)) > 1.e-4) {
+			fprintf(
+				stderr,
+				"dset_data[%d]: %f != %f, diff = %f\n ",
+				i,
+				dset_data[i],
+				i * 10.0 + 3.141592653589793,
+				fabs(dset_data[i] - (i * 10.0 + 3.141592653589793))
+			);
+			return 1;
+		}
 	}
 
 	status = H5Dclose(dataset_id);
