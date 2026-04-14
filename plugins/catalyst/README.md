@@ -42,6 +42,7 @@ So, the user of this plugin should set an event name referenced by the `on_event
 
 Internally, `catalyst_initialize` is called by `PDI_Init` and `catalyst_finalize` is called by `PDI_finalize`.
 
+# IMPORTANT NOTICE: YAML CONFIGURATION FILE
 
 In the sub-tree corresponding to the catalyst plugin, a double quoted value is evaluated as a string.
 
@@ -55,6 +56,18 @@ dims: { i: '$numXPoints', j: '60', k: 44 }
 Be careful, if you compile conduit with 32-bits index (option `CONDUIT_INDEX_32`), you recommand to define a metadata/data for the index and pass the data as `i` in the previous example.
 
 In the case of real value, the value is evaluated as `double`. Excepted if the real value depend on a data defined in PDI data store.
+
+For real or integer value, we recommend to use simple quoted value as `i: '$numXPoints'` for example instead of plain.
+
+Summary:
+
+| scalar type | yaml scalar style | example |
+| --- | --- | --- |
+| string | double quoted | "mystring" |
+| --- | --- | --- |
+| integer | plain or simple quoted | 32 or '32' |
+| --- | --- | --- |
+| real | plain or simple quoted | 1.22 or '1.22'|
 
 
 # License
