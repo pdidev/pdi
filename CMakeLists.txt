@@ -108,8 +108,18 @@ if("${BUILD_DECL_NETCDF_PLUGIN}")
 	# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
 	if(4.1 VERSION_GREATER "${CMAKE_VERSION}")
 		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.1")
+	elseif(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+		# Workaround conpiling with HDF5-2.0.0+
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.3")
 	endif()
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
+endif()
+if("${BUILD_DECL_HDF5_PLUGIN}")
+	# Workaround conpiling with HDF5-2.0.0+
+	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake/4.3")
+	endif()
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake")
 endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
@@ -308,7 +318,7 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	sbuild_add_dependency(HDF5 "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/hdf5-1.12.3"
 		COMPONENTS ${HDF5_COMPONENTS}
-		MODULE_VARS HDF5_IS_PARALLEL HDF5_PROVIDES_PARALLEL HDF5_VERSION
+		MODULE_VARS HDF5_IS_PARALLEL HDF5_VERSION
 		CMAKE_CACHE_ARGS
 			-DBUILD_STATIC_LIBS:BOOL=OFF
 			-DBUILD_TESTING:BOOL=OFF
@@ -325,9 +335,6 @@ if("${BUILD_DECL_HDF5_PLUGIN}" OR "${BUILD_DECL_NETCDF_PLUGIN}")
 	if("${HDF5_FOUND}")
 		if("${HDF5_VERSION}" VERSION_LESS 1.10)
 			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
-		endif()
-		if("${HDF5_VERSION}" VERSION_GREATER_EQUAL 2.0.0)
-			set(HDF5_IS_PARALLEL "${HDF5_PROVIDES_PARALLEL}")
 		endif()
 		if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 			message(FATAL_ERROR
