@@ -16,14 +16,19 @@ and this project adheres to
 ### For users
 
 #### Added
+* fix macOS Python support. [#656](https://github.com/pdidev/pdi/issues/656)
 
 #### Changed
+* The minimum version of C required is now C17 (ISO/IEC 9899:2018) instead of
+  C11.
 
 #### Deprecated
 
 #### Removed
 
 #### Fixed
+* Fix some incorrect uses of `{fmt}` that could lead to compilation errors in
+  C++ 20+ or crashes in C++ <20 [#660](https://github.com/pdidev/pdi/issues/660)
 
 #### Security
 
@@ -33,6 +38,7 @@ and this project adheres to
 #### Added
 
 #### Changed
+* Versions of C++ used in now C++ 20 instead of C++ 17.
 
 #### Deprecated
 

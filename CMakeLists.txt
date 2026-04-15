@@ -105,10 +105,7 @@ list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake")
 if("${BUILD_DECL_NETCDF_PLUGIN}")
-	# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
-	if(4.1 VERSION_GREATER "${CMAKE_VERSION}")
-		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.1")
-	elseif(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
 		# Workaround compiling with HDF5-2.0.0+
 		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.3")
 	endif()
@@ -119,7 +116,6 @@ if("${BUILD_DECL_HDF5_PLUGIN}")
 	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
 		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake/4.3")
 	endif()
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_hdf5/cmake")
 endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
@@ -275,7 +271,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 
 # if ( PDI or ... )
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.14.1"
+	EMBEDDED_PATH "vendor/spdlog-1.15.3"
 	CMAKE_CACHE_ARGS
 		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
