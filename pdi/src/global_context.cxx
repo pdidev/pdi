@@ -211,7 +211,7 @@ Datatype_template_sptr Global_context::datatype(PC_tree_t node)
 
 void Global_context::add_datatype(const string& name, Datatype_template_parser parser)
 {
-	if (!m_datatype_parsers.emplace(name, move(parser)).second) {
+	if (!m_datatype_parsers.emplace(name, std::move(parser)).second) {
 		//if a datatype with the given name already exists
 		throw Type_error{"Datatype already defined `{}'", name};
 	}

@@ -96,7 +96,7 @@ tuple<vector<hsize_t>, vector<hsize_t>, vector<hsize_t>> get_selection(hid_t sel
 	vector<hsize_t> subsize(rank);
 	if (0 > H5Sget_select_bounds(selection, &start[0], &subsize[0])) handle_hdf5_err();
 	transform(start.begin(), start.end(), subsize.begin(), subsize.begin(), [](hsize_t start, hsize_t end) { return end - start + 1; });
-	return make_tuple(move(size), move(start), move(subsize));
+	return make_tuple(std::move(size), std::move(start), std::move(subsize));
 }
 
 /** Validates that memory space and dataset space number of elements match
