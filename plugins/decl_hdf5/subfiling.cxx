@@ -31,9 +31,9 @@
 
 #include "subfiling.h"
 
-using PDI::Spectree_error;
 using PDI::each;
 using PDI::opt_each;
+using PDI::Spectree_error;
 using PDI::to_string;
 using std::string;
 
