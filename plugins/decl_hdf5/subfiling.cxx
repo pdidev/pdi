@@ -31,7 +31,7 @@
 
 #include "subfiling.h"
 
-using PDI::Config_error;
+using PDI::Spectree_error;
 using PDI::each;
 using PDI::opt_each;
 using PDI::to_string;
@@ -53,11 +53,11 @@ Subfiling::Subfiling(PC_tree_t sf_tree)
 			} else if (key == "stripe_size") {
 				m_sf_stripe_size = value;
 			} else {
-				throw Config_error{key_tree, "Invalid configuration key in subfiling: `{}'", key};
+				throw Spectree_error{key_tree, "Invalid configuration key in subfiling: `{}'", key};
 			}
 		});
 	} else {
-		throw Config_error{sf_tree, "subfiling node is not parsed correctly"};
+		throw Spectree_error{sf_tree, "subfiling node is not parsed correctly"};
 	}
 }
 
