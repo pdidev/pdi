@@ -43,6 +43,8 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Added a new testing API (`pdi/testing.h`) to replace usage of assert in plugin
+  tests [#236](https://github.com/pdidev/pdi/issues/236)
 
 #### Changed
 * Versions of C++ used in now C++ 20 instead of C++ 17.
