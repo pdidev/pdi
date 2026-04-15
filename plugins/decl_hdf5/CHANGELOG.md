@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 * Add subfiling support [#602](https://github.com/pdidev/pdi/issues/602)
-* Add cmake patch for missing `HDF5_IS_PARALLEL` with HDF5-2.0.0+ in cmake pre-4.3
+* Added support for HDF5-2 by fixing an issue that arose when combining cmake < 4.3 with HDF5 >= 2 [#678](https://github.com/pdidev/pdi/issues/678)
 
 ### Changed
 
