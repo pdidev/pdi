@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -92,7 +92,7 @@ std::vector<size_t> Dnc_io::get_dims_start(const std::vector<size_t>& var_stride
 		}
 	} else {
 		if (m_start.size() != var_stride.size()) {
-			throw PDI::Error{PDI_ERR_RIGHT, "Decl_netcdf plugin: Dimensions of stride and start differ: {} != {}", m_start.size(), var_stride.size()};
+			throw PDI::Permission_error{"Decl_netcdf plugin: Dimensions of stride and start differ: {} != {}", m_start.size(), var_stride.size()};
 		}
 		for (auto&& start: m_start) {
 			var_start.emplace_back(start.to_long(m_ctx));
@@ -110,12 +110,7 @@ std::vector<size_t> Dnc_io::get_dims_count(const std::vector<size_t>& var_stride
 		}
 	} else {
 		if (m_subsize.size() != var_stride.size()) {
-			throw PDI::Error{
-				PDI_ERR_RIGHT,
-				"Decl_netcdf plugin: Dimensions of stride and subsize differ: {} != {}",
-				m_subsize.size(),
-				var_stride.size()
-			};
+			throw PDI::Permission_error{"Decl_netcdf plugin: Dimensions of stride and subsize differ: {} != {}", m_subsize.size(), var_stride.size()};
 		}
 		for (auto&& subsize: m_subsize) {
 			var_count.emplace_back(subsize.to_long(m_ctx));

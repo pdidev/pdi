@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,13 @@
 
 #ifdef __cplusplus
 extern "C" {
+#define PDI_UNAVAILABLE_DEPRECATED [[deprecated("PDI_UNAVAILABLE is never used")]]
+#define PDI_ERR_CONFIG_DEPRECATED [[deprecated("Use PDI_ERR_SPECTREE instead")]]
+#define PDI_ERR_RIGHT_DEPRECATED [[deprecated("Use PDI_ERR_PERMISSION instead")]]
+#else
+#define PDI_UNAVAILABLE_DEPRECATED
+#define PDI_ERR_CONFIG_DEPRECATED
+#define PDI_ERR_RIGHT_DEPRECATED
 #endif
 
 /** \addtogroup error
@@ -73,27 +80,31 @@ extern "C" {
 typedef enum PDI_status_e {
 	/// everything went well
 	PDI_OK = 0,
-	/// on an input call, no such data is available
-	PDI_UNAVAILABLE,
-	/// The configuration file is invalid
-	PDI_ERR_CONFIG,
+	/// \deprecated PDI_UNAVAILABLE is never used in PDI
+	// initialize the value to workaround a bug in AppleClang 15
+	PDI_UNAVAILABLE PDI_UNAVAILABLE_DEPRECATED = (PDI_OK + 1),
+	/// Invalid entry in the specification tree
+	PDI_ERR_SPECTREE,
+	PDI_ERR_CONFIG PDI_ERR_CONFIG_DEPRECATED = PDI_ERR_SPECTREE,
 	/// A value expression is invalid
 	PDI_ERR_VALUE,
 	/// Tried to load a non-existing plugin
 	PDI_ERR_PLUGIN,
 	/// Implementation limitation (typically an unimplemented feature)
 	PDI_ERR_IMPL,
-	/// A system error occured (OS, etc.)
+	/// A system error occurred (OS, etc.)
 	PDI_ERR_SYSTEM,
 	/** A call to a function has been made at a wrong time (e.g. closing an
 	 *  unopened transaction)
 	 */
 	PDI_ERR_STATE,
-	/// A conflict of onwership over a content has been raised
-	PDI_ERR_RIGHT,
+	/// A conflict of ownership over a content has been raised
+	PDI_ERR_PERMISSION,
+	PDI_ERR_RIGHT PDI_ERR_RIGHT_DEPRECATED = PDI_ERR_PERMISSION,
 	/// Invalid type error
-	PDI_ERR_TYPE
-
+	PDI_ERR_TYPE,
+	/// The amount of distinct error codes defined. This should always remain last and not be used as an error code
+	PDI_NB_STATUSES_DEFINED
 } PDI_status_t;
 
 /** Type of a callback function used when an error occurs

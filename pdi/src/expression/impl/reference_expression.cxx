@@ -153,7 +153,7 @@ long Expression::Impl::Reference_expression::to_long(Context& ctx) const
 		if (Ref_r ref = to_ref(ctx)) {
 			return ref.scalar_value<long>();
 		}
-		throw Right_error{"Unable to grant access for value reference"};
+		throw Permission_error{"Unable to grant access for value reference"};
 	} catch (const Error& e) {
 		throw Error{e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
@@ -165,7 +165,7 @@ double Expression::Impl::Reference_expression::to_double(Context& ctx) const
 		if (Ref_r ref = to_ref(ctx)) {
 			return ref.scalar_value<double>();
 		}
-		throw Right_error{"Unable to grant read access for value reference"};
+		throw Permission_error{"Unable to grant read access for value reference"};
 	} catch (const Error& e) {
 		throw Error{e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
