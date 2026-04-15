@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -256,7 +256,7 @@ struct mpi_plugin: Plugin {
 
 		predef_desc.metadata(true);
 		// share a RO reference on comm_self with no memory destruction function (local variable)
-		predef_desc.share({data, nullptr, move(type), true, false}, true, false);
+		predef_desc.share({data, nullptr, std::move(type), true, false}, true, false);
 		predef_desc.reclaim(); // reclaim the reference and let PDI keep a copy (metadata)
 	}
 
@@ -369,7 +369,7 @@ struct mpi_plugin: Plugin {
 		ctx.callbacks().add_data_callback(
 			[&ctx, c_comm_desc, mpi_comm_type](const string& fortran_comm_desc, Ref ref) {
 				ctx.logger().debug("Transtype `{}' to `{}` (F->C)", fortran_comm_desc, c_comm_desc);
-				Ref c_comm_ref{new MPI_Comm, [](void* p) { delete static_cast<MPI_Comm*>(p); }, move(mpi_comm_type), true, true};
+				Ref c_comm_ref{new MPI_Comm, [](void* p) { delete static_cast<MPI_Comm*>(p); }, std::move(mpi_comm_type), true, true};
 				if (Ref_r ref_r{ref}) {
 					MPI_Fint f_comm;
 					set_val(f_comm, ref_r);

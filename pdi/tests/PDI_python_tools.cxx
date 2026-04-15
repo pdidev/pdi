@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -63,7 +64,7 @@ TEST(Python, ref_to_python)
 		}
 	}
 
-	Ref test_ref{data, [](void*) {}, move(type), true, true};
+	Ref test_ref{data, [](void*) {}, std::move(type), true, true};
 	{
 		pybind11::dict pyscope = pybind11::module::import("__main__").attr("__dict__");
 		pyscope["py_data"] = to_python(test_ref);

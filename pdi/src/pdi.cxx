@@ -53,7 +53,6 @@ using std::endl;
 using std::exception;
 using std::list;
 using std::make_shared;
-using std::move;
 using std::setfill;
 using std::setw;
 using std::stack;

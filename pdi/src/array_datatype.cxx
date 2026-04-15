@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -46,7 +46,6 @@ using std::align;
 using std::endl;
 using std::make_shared;
 using std::max;
-using std::move;
 using std::pair;
 using std::regex;
 using std::regex_replace;
@@ -61,14 +60,14 @@ using std::vector;
 
 Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, size_t start, size_t subsize, const Attributes_map& attributes)
 	: Datatype(attributes)
-	, m_subtype{move(subtype)}
-	, m_size{move(size)}
-	, m_start{move(start)}
-	, m_subsize{move(subsize)}
+	, m_subtype{std::move(subtype)}
+	, m_size{std::move(size)}
+	, m_start{std::move(start)}
+	, m_subsize{std::move(subsize)}
 {}
 
 Array_datatype::Array_datatype(Datatype_sptr subtype, size_t size, const Attributes_map& attributes)
-	: Array_datatype{move(subtype), size, 0, move(size), attributes}
+	: Array_datatype{std::move(subtype), size, 0, std::move(size), attributes}
 {}
 
 Datatype_sptr Array_datatype::subtype() const

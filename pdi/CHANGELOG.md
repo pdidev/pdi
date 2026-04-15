@@ -21,6 +21,8 @@ and this project adheres to
 #### Changed
 * The minimum version of C required is now C17 (ISO/IEC 9899:2018) instead of
   C11.
+* Fully qualify `std::move` calls to prevent a compilation warning and incorrect
+  usages [#675](https://github.com/pdidev/pdi/issues/675)
 
 #### Deprecated
 
