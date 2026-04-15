@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,6 @@
 
 namespace PDI {
 
-using std::move;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -48,7 +47,7 @@ Context::Iterator::Iterator(const unordered_map<string, unique_ptr<Data_descript
 {}
 
 Context::Iterator::Iterator(unordered_map<string, unique_ptr<Data_descriptor>>::iterator&& data)
-	: m_data(move(data))
+	: m_data(std::move(data))
 {}
 
 Data_descriptor* Context::Iterator::operator->()
@@ -84,7 +83,7 @@ Context::Iterator Context::get_iterator(const std::unordered_map<std::string, un
 
 Context::Iterator Context::get_iterator(std::unordered_map<std::string, unique_ptr<Data_descriptor>>::iterator&& data)
 {
-	return move(data);
+	return std::move(data);
 }
 
 Context::~Context() = default;

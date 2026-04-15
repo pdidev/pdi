@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,6 @@ using PDI::System_error;
 using PDI::Type_error;
 using std::dynamic_pointer_cast;
 using std::make_tuple;
-using std::move;
 using std::string;
 using std::tie;
 using std::tuple;
@@ -175,7 +174,7 @@ tuple<Raii_hid, Raii_hid> space(Datatype_sptr type, bool dense)
 		Raii_hid h5_space = make_raii_hid(H5Screate_simple(rank, &h5_size[0], NULL), H5Sclose);
 		if (0 > H5Sselect_hyperslab(h5_space, H5S_SELECT_SET, &h5_start[0], NULL, &h5_subsize[0], NULL)) handle_hdf5_err();
 
-		return make_tuple(move(h5_space), Raii_hid{get_h5_type(subtype), H5Tclose});
+		return make_tuple(std::move(h5_space), Raii_hid{get_h5_type(subtype), H5Tclose});
 	} else {
 		if (!type->dense()) {
 			throw Type_error{"The top array datatype is the only one that can be sparse in dataset"};

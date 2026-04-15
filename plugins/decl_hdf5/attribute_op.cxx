@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -32,26 +33,25 @@
 namespace decl_hdf5 {
 
 
-using PDI::Config_error;
 using PDI::Context;
 using PDI::each;
 using PDI::Expression;
 using PDI::Ref_r;
 using PDI::Ref_w;
+using PDI::Spectree_error;
 using PDI::to_string;
 using PDI::Value_error;
-using std::move;
 using std::string;
 using std::tie;
 
 Attribute_op::Attribute_op(Direction direction, PC_tree_t attr_path_tree, Expression when)
 	: m_direction{direction}
-	, m_when{move(when)}
+	, m_when{std::move(when)}
 {
 	string attr_path = to_string(attr_path_tree);
 	size_t pos = attr_path.find('#');
 	if (pos == string::npos) {
-		throw Config_error{attr_path_tree, "Attribute path must contain `#' sign to separate group/dataset from attribute name"};
+		throw Spectree_error{attr_path_tree, "Attribute path must contain `#' sign to separate group/dataset from attribute name"};
 	}
 	m_object_path = Expression{attr_path.substr(0, pos)};
 	m_name = attr_path.substr(pos + 1);
@@ -63,7 +63,7 @@ Attribute_op::Attribute_op(Direction direction, const string& desc, Expression w
 	: m_desc{desc}
 	, m_direction{direction}
 	, m_value{"$" + desc}
-	, m_when{move(when)}
+	, m_when{std::move(when)}
 {
 	each(tree, [&](PC_tree_t key_tree, PC_tree_t value) {
 		string key = to_string(key_tree);
@@ -80,7 +80,7 @@ Attribute_op::Attribute_op(Direction direction, const string& desc, Expression w
 		} else if (key == "when") {
 			m_when = to_string(value);
 		} else {
-			throw Config_error{key_tree, "Unknown key for HDF5 attribute configuration: `{}'", key};
+			throw Spectree_error{key_tree, "Unknown key for HDF5 attribute configuration: `{}'", key};
 		}
 	});
 }
@@ -88,8 +88,8 @@ Attribute_op::Attribute_op(Direction direction, const string& desc, Expression w
 Attribute_op::Attribute_op(Direction direction, Expression object_path, const string& attr_name, Expression value, Expression when)
 	: m_direction{direction}
 	, m_name{attr_name}
-	, m_object_path{move(object_path)}
-	, m_value{move(value)}
+	, m_object_path{std::move(object_path)}
+	, m_value{std::move(value)}
 	, m_when{when}
 {}
 

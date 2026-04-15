@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,8 +64,8 @@ public:
 	Dataset_explicit_type(std::string def, int b_line, int e_line, std::regex regex, PDI::Datatype_template_sptr type)
 		: m_definition(def)
 		, m_begin_line(b_line)
-		, m_end_line(e_line)
 		, m_regex(regex)
+		, m_end_line(e_line)
 		, m_type(type)
 	{}
 

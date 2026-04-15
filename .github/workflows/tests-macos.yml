@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -54,8 +54,18 @@ jobs:
       PDI_MPI: openmpi
       CTEST_DIR: "/tmp/tests_output"
     steps:
-    - run: brew install open-mpi
-    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.14'
+    - name: Install MPI (macOS)
+      run: brew install open-mpi
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools pyyaml numpy mpi4py
+    - name: Set up PDI
+      uses: actions/checkout@v4
       with:
         submodules: recursive
     - name: Build PDI

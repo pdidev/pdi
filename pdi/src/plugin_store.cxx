@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -167,7 +167,7 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 			m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_path_node));
 			m_plugin_path.push_back(PDI::to_string(plugin_path_node));
 		} else {
-			throw Config_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
+			throw Spectree_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
 		}
 	}
 
@@ -202,7 +202,7 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 		} else {
 			const string error_msg = dlerror();
 			m_ctx.logger().debug("Unable to load `{}' {}", libname, error_msg);
-			load_errors.push_back(format("\n  * unable to load `{}' {}", libname, error_msg));
+			load_errors.push_back(fmt::format("\n  * unable to load `{}' {}", libname, error_msg));
 		}
 	}
 
@@ -217,7 +217,7 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 		} else {
 			const string error_msg = dlerror();
 			m_ctx.logger().debug("Unable to load `{}' relative to system path {}", libname, error_msg);
-			load_errors.push_back(format("\n  * unable to load `{}' relative to system path {}", libname, error_msg));
+			load_errors.push_back(fmt::format("\n  * unable to load `{}' relative to system path {}", libname, error_msg));
 		}
 	}
 
@@ -231,7 +231,7 @@ void* Plugin_store::plugin_dlopen(const std::string& plugin_name)
 	} else {
 		const string error_msg = dlerror();
 		m_ctx.logger().debug("Unable to load `{}' from system path {}", libname, error_msg);
-		load_errors.push_back(format("\n  * unable to load `{}' from system path {}", libname, error_msg));
+		load_errors.push_back(fmt::format("\n  * unable to load `{}' from system path {}", libname, error_msg));
 	}
 
 	throw Plugin_error{"Unable to load plugin `{}': {}", plugin_name, join(load_errors, ", ")};

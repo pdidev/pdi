@@ -16,14 +16,26 @@ and this project adheres to
 ### For users
 
 #### Added
+* fix macOS Python support. [#656](https://github.com/pdidev/pdi/issues/656)
 
 #### Changed
+* The minimum version of C required is now C17 (ISO/IEC 9899:2018) instead of
+  C11.
+* Fully qualify `std::move` calls to prevent a compilation warning and incorrect
+  usages [#675](https://github.com/pdidev/pdi/issues/675)
 
 #### Deprecated
+* Error names have been improved to fix
+  [#670](https://github.com/pdidev/pdi/issues/670):
+  - `PDI_ERR_CONFIG` has been renamed to `PDI_ERR_SPECTREE`,
+  - `PDI_ERR_RIGHT` has been renamed to `PDI_ERR_PERMISSION`,
+  - `PDI_UNAVAILABLE` is never used and will be removed.
 
 #### Removed
 
 #### Fixed
+* Fix some incorrect uses of `{fmt}` that could lead to compilation errors in
+  C++ 20+ or crashes in C++ <20 [#660](https://github.com/pdidev/pdi/issues/660)
 
 #### Security
 
@@ -31,12 +43,18 @@ and this project adheres to
 ### For plugin developers
 
 #### Added
+* Added a new testing API (`pdi/testing.h`) to replace usage of assert in plugin
+  tests [#236](https://github.com/pdidev/pdi/issues/236)
 
 #### Changed
+* Versions of C++ used in now C++ 20 instead of C++ 17.
+* `PDI::Right_error` has been replaced by `PDI::Permission_error`.
+* `PDI::Config_error` has been replaced by `PDI::Spectree_error`.
 
 #### Deprecated
 
 #### Removed
+* `PDI::Unavailable_error` was never used and has been removed.
 
 #### Fixed
 

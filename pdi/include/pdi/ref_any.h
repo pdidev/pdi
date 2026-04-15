@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -167,13 +167,13 @@ protected:
 		 */
 		Referenced_data(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable)
 			: m_buffer(std::make_shared<Referenced_buffer>(
-				[data, freefunc, type]() {
-					type->destroy_data(data);
-					freefunc(data);
-				},
-				readable,
-				writable
-			))
+				  [data, freefunc, type]() {
+					  type->destroy_data(data);
+					  freefunc(data);
+				  },
+				  readable,
+				  writable
+			  ))
 			, m_data{data}
 			, m_type{type}
 		{
@@ -343,6 +343,32 @@ public:
 		return m_content == get_content(o);
 	}
 
+	bool operator== (const Ref_any& o) const noexcept
+	{
+		is_null();
+		return m_content == get_content(o);
+	}
+
+	template <bool OR, bool OW>
+	bool operator== (const Ref_any<OR, OW>& o) const noexcept
+	{
+		is_null();
+		return m_content == get_content(o);
+	}
+
+	bool operator!= (const Ref_any& o) const noexcept
+	{
+		is_null();
+		return m_content != get_content(o);
+	}
+
+	template <bool OR, bool OW>
+	bool operator!= (const Ref_any<OR, OW>& o) const noexcept
+	{
+		is_null();
+		return m_content != get_content(o);
+	}
+
 	bool operator!= (const Reference_base& o) const noexcept
 	{
 		is_null();
@@ -465,7 +491,7 @@ public:
 	 */
 	ref_access_t<R, W> get() const
 	{
-		if (is_null()) throw Right_error{"Trying to dereference a null reference"};
+		if (is_null()) throw Permission_error{"Trying to dereference a null reference"};
 		return m_content->m_data;
 	}
 

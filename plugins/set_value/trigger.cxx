@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -39,7 +40,7 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node)
 	: m_ctx{ctx}
 {
 	if (!PDI::is_list(operation_list_node)) {
-		throw PDI::Config_error{operation_list_node, "Operations must be defined as a list"};
+		throw PDI::Spectree_error{operation_list_node, "Operations must be defined as a list"};
 	}
 
 	size_t operations_count = PDI::len(operation_list_node);
@@ -61,7 +62,7 @@ Trigger::Trigger(PDI::Context& ctx, PC_tree_t operation_list_node)
 		} else if (operation == "logger") {
 			m_operations.emplace_back(new Logger_operation{m_ctx, operation_value});
 		} else {
-			throw PDI::Config_error{PC_get(value_map, "{0}"), "Unknown operation: {}", operation};
+			throw PDI::Spectree_error{PC_get(value_map, "{0}"), "Unknown operation: {}", operation};
 		}
 	}
 }

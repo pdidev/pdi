@@ -60,7 +60,34 @@ The possible values for the keys are as follow:
   See
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
-* `subfiling`: an integer value interpreted as the total number of subfiles. This key is available only when the underlying HDF5 has `H5_HAVE_SUBFILING_VFD` enabled. By default `subfiling: 0` is used indicating no HDF5 subfiling. `subfiling: 2` means 2 subfiles will be generated.
+
+* `subfiling`: a key-value map or an integer. Configures the HDF5 Subfiling Virtual File Driver (VFD). This feature is only available if the underlying HDF5 installation was compiled with `H5_HAVE_SUBFILING_VFD`.
+  * Configuration keys:
+    * `count` (integer, default: 0) : the total number of subfiles to generate. If set to -1 or other negative values, the one-subfile-per-node mode will be triggered.
+    * `policy` (string, default: "STOP") : Determines behavior if subfiling requirements are not met.
+      * `STOP`: Throw a runtime error.
+      * `CONTINUE`: Fall back to a standard HDF5 output file.
+    * `stripe_size` (non-negative integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MB) is used.
+  * Yaml example
+    * full configuration:
+      ```
+      subfiling:
+        count: 4              # generate 4 subfiles
+        policy: CONTINUE      # Fallback to standard HDF5 if necessary
+        stripe_size: 8388608  # 8MB stripes
+      ```
+    * shorthand configuration:
+      ```
+      subfiling: 2 
+      ```
+      This will set `count=2` and all other members use default values.
+  * Here are several important notes for using `subfiling` correctly:
+    * **MPI Threading Requirement**: The simulation must be initialized with `MPI_THREAD_MULTIPLE`. If this is not satisfied, the application will throw a runtime error unless policy is set to `CONTINUE`. In `CONTINUE` mode, the simulation will proceed using standard HDF5 I/O.
+    * **Stripe Size Configuration**:  The stripe size can be set in the YAML via `stripe_size` or via the environment variable `H5FD_SUBFILING_STRIPE_SIZE`. The YAML value takes precedence if both are provided.
+    * **Custom File Locations**: To store subfiles in a specific directory (e.g., a high-speed scratch burst buffer), provide an absolute path to `H5FD_SUBFILING_SUBFILE_PREFIX`. **Note** : You must set the same path to `H5FD_SUBFILING_CONFIG_FILE_PREFIX` so the main .h5 file can locate its constituent subfiles.
+    * **Naming Convention**: Subfile names are managed internally by HDF5 and cannot be easily customized. They follow a template similar to:
+    `[filename].h5.subfile_[contextID]_[subfile_index]_of_[total_subfiles]`
+    (e.g., `output.h5.subfile_11273556_01_of_10`)
 
 ### DATA_SECTION
 

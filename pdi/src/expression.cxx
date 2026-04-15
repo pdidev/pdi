@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -49,11 +49,10 @@
 
 namespace PDI {
 
-using std::move;
 using std::unique_ptr;
 
 Expression::Expression(std::unique_ptr<Impl> impl)
-	: m_impl(move(impl))
+	: m_impl(std::move(impl))
 {}
 
 Expression::Expression() = default;
@@ -163,7 +162,7 @@ std::pair<Expression, long> Expression::parse_reference(const char* reference_st
 {
 	const char* reference_str_to_parse = reference_str;
 	unique_ptr<Expression::Impl> reference_impl = Expression::Impl::Reference_expression::parse(&reference_str_to_parse);
-	return {move(reference_impl), reference_str_to_parse - reference_str};
+	return {std::move(reference_impl), reference_str_to_parse - reference_str};
 }
 
 } // namespace PDI

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2022 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -37,7 +37,6 @@
 
 namespace {
 
-using PDI::Config_error;
 using PDI::Context;
 using PDI::Context_proxy;
 using PDI::Data_descriptor;
@@ -46,11 +45,11 @@ using PDI::Datatype_sptr;
 using PDI::Error;
 using PDI::Impl_error;
 using PDI::len;
+using PDI::Permission_error;
 using PDI::Plugin;
 using PDI::Ref;
 using PDI::Ref_r;
 using PDI::Ref_w;
-using PDI::Right_error;
 using PDI::Scalar_datatype;
 using PDI::Scalar_kind;
 using PDI::to_long;
@@ -256,7 +255,7 @@ struct mpi_plugin: Plugin {
 
 		predef_desc.metadata(true);
 		// share a RO reference on comm_self with no memory destruction function (local variable)
-		predef_desc.share({data, nullptr, move(type), true, false}, true, false);
+		predef_desc.share({data, nullptr, std::move(type), true, false}, true, false);
 		predef_desc.reclaim(); // reclaim the reference and let PDI keep a copy (metadata)
 	}
 
@@ -333,7 +332,7 @@ struct mpi_plugin: Plugin {
 					*static_cast<MPI_Fint*>(Ref_w{fortran_comm_ref}.get()) = MPI_Comm_c2f(*static_cast<const MPI_Comm*>(ref_r.get()));
 					ctx.desc(fortran_comm_desc).share(fortran_comm_ref, false, false);
 				} else {
-					throw Right_error{"Cannot read `{}' data to transtype to fortran communicator", c_comm_desc};
+					throw Permission_error{"Cannot read `{}' data to transtype to fortran communicator", c_comm_desc};
 				}
 			},
 			c_comm_desc
@@ -347,7 +346,7 @@ struct mpi_plugin: Plugin {
 					if (Ref_r fortran_comm_ref_r = ctx.desc(fortran_comm_desc).ref()) {
 						*static_cast<MPI_Comm*>(c_comm_ref_w.get()) = MPI_Comm_f2c(*static_cast<const MPI_Fint*>(fortran_comm_ref_r.get()));
 					} else {
-						throw Right_error{"Cannot read `{}' data", c_comm_desc};
+						throw Permission_error{"Cannot read `{}' data", c_comm_desc};
 					}
 				}
 				ctx.desc(fortran_comm_desc).release();
@@ -369,14 +368,14 @@ struct mpi_plugin: Plugin {
 		ctx.callbacks().add_data_callback(
 			[&ctx, c_comm_desc, mpi_comm_type](const string& fortran_comm_desc, Ref ref) {
 				ctx.logger().debug("Transtype `{}' to `{}` (F->C)", fortran_comm_desc, c_comm_desc);
-				Ref c_comm_ref{new MPI_Comm, [](void* p) { delete static_cast<MPI_Comm*>(p); }, move(mpi_comm_type), true, true};
+				Ref c_comm_ref{new MPI_Comm, [](void* p) { delete static_cast<MPI_Comm*>(p); }, std::move(mpi_comm_type), true, true};
 				if (Ref_r ref_r{ref}) {
 					MPI_Fint f_comm;
 					set_val(f_comm, ref_r);
 					*static_cast<MPI_Comm*>(Ref_w{c_comm_ref}.get()) = MPI_Comm_f2c(f_comm);
 					ctx.desc(c_comm_desc).share(c_comm_ref, false, false);
 				} else {
-					throw Right_error{"Cannot read `{}' data to transtype to C communicator", fortran_comm_desc};
+					throw Permission_error{"Cannot read `{}' data to transtype to C communicator", fortran_comm_desc};
 				}
 			},
 			fortran_comm_desc
@@ -391,7 +390,7 @@ struct mpi_plugin: Plugin {
 					if (Ref_r c_comm_ref_r = ctx.desc(c_comm_desc).ref()) {
 						set_val(fortran_comm_ref_w, MPI_Comm_c2f(*static_cast<const MPI_Comm*>(c_comm_ref_r.get())));
 					} else {
-						throw Right_error{"Cannot read `{}' data", c_comm_desc};
+						throw Permission_error{"Cannot read `{}' data", c_comm_desc};
 					}
 				} else {
 					ctx.logger().error("Cannot write `{}' communicator back", fortran_comm_desc);
