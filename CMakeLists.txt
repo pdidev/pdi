@@ -76,6 +76,7 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 
 
