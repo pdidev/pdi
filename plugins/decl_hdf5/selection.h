@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ namespace decl_hdf5 {
 class Selection
 {
 	/// The tree representing the selection
-	PC_tree_t m_selection_tree;
+	PC_tree_t m_selection_tree = {PC_NODE_NOT_FOUND, nullptr, nullptr};
 
 	/// The size of the selection in each dimension or empty for default
 	std::vector<PDI::Expression> m_size;
