@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -354,13 +354,13 @@ struct serialize_plugin: PDI::Plugin {
 			// need to make a deserialize copy
 			PDI::Ref_w ref_w{ref};
 			if (!ref_w) {
-				throw PDI::Right_error{"Serialize plugin: Cannot get write access to data: {}", desc_name};
+				throw PDI::Permission_error{"Serialize plugin: Cannot get write access to data: {}", desc_name};
 			}
 
 			// get write access, because it's for sure PDI_IN
 			PDI::Ref_w serialized_ref{context().desc(serialized_name).ref()};
 			if (!serialized_ref) {
-				throw PDI::Right_error{"Serialize plugin: Cannot get write access to serialized data: {}", serialized_name};
+				throw PDI::Permission_error{"Serialize plugin: Cannot get write access to serialized data: {}", serialized_name};
 			}
 
 			size_t bytes_copied = deserialize_copy(ref.type(), ref_w.get(), serialized_ref.get());

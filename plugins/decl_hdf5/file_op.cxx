@@ -45,7 +45,6 @@
 
 #include "file_op.h"
 
-using PDI::Config_error;
 using PDI::Context;
 using PDI::each;
 using PDI::Error;
@@ -53,6 +52,7 @@ using PDI::Expression;
 using PDI::opt_each;
 using PDI::Ref_r;
 using PDI::Ref_w;
+using PDI::Spectree_error;
 using PDI::System_error;
 using PDI::to_string;
 using std::function;
@@ -89,7 +89,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
-			throw Config_error {key_tree, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+			throw Spectree_error {key_tree, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
 		} else if (key == "datasets") {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
@@ -104,7 +104,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 						ctx.datatype(dset_type)
 					);
 				} else {
-					Config_error{key_tree, "Error in the definition of dataset `{}' in datasets section.", dset_name_value};
+					Spectree_error{key_tree, "Error in the definiion of dataset `{}' in datasets section.", dset_name_value};
 				}
 			});
 		} else if (key == "deflate") {
@@ -120,7 +120,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if (key == "logging") {
 			// pass
 		} else {
-			throw Config_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
+			throw Spectree_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
 		}
 	});
 
@@ -221,7 +221,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		// check the dataset ops don't have specific communicators set
 		for (auto&& one_dset_op: dset_ops) {
 			if (one_dset_op.communicator()) {
-				throw Config_error{tree, "Communicator can not be set at the dataset level for event triggered I/O"};
+				throw Spectree_error{tree, "Communicator can not be set at the dataset level for event triggered I/O"};
 			}
 		}
 #endif
@@ -275,8 +275,9 @@ void File_op::execute(Context& ctx)
 					dset_writes.push_back(one_dset_op);
 				}
 			}
-		} catch (const Error& e) {
-			ctx.logger().warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
+		} catch (PDI::Value_error const & e) {
+			//TODO: explain why we only warn here
+			ctx.logger().warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
 		}
 	}
 
@@ -292,8 +293,9 @@ void File_op::execute(Context& ctx)
 					attr_writes.push_back(one_attr_op);
 				}
 			}
-		} catch (const Error& e) {
-			ctx.logger().warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
+		} catch (PDI::Value_error const & e) {
+			//TODO: explain why we only warn here
+			ctx.logger().warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
 		}
 	}
 	// nothing to do if no op is selected
