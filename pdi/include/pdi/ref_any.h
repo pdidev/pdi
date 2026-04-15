@@ -167,13 +167,13 @@ protected:
 		 */
 		Referenced_data(void* data, std::function<void(void*)> freefunc, Datatype_sptr type, bool readable, bool writable)
 			: m_buffer(std::make_shared<Referenced_buffer>(
-				[data, freefunc, type]() {
-					type->destroy_data(data);
-					freefunc(data);
-				},
-				readable,
-				writable
-			))
+				  [data, freefunc, type]() {
+					  type->destroy_data(data);
+					  freefunc(data);
+				  },
+				  readable,
+				  writable
+			  ))
 			, m_data{data}
 			, m_type{type}
 		{
