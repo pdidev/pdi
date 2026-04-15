@@ -33,12 +33,12 @@
 namespace decl_hdf5 {
 
 
-using PDI::Config_error;
 using PDI::Context;
 using PDI::each;
 using PDI::Expression;
 using PDI::Ref_r;
 using PDI::Ref_w;
+using PDI::Spectree_error;
 using PDI::to_string;
 using PDI::Value_error;
 using std::string;
@@ -51,7 +51,7 @@ Attribute_op::Attribute_op(Direction direction, PC_tree_t attr_path_tree, Expres
 	string attr_path = to_string(attr_path_tree);
 	size_t pos = attr_path.find('#');
 	if (pos == string::npos) {
-		throw Config_error{attr_path_tree, "Attribute path must contain `#' sign to separate group/dataset from attribute name"};
+		throw Spectree_error{attr_path_tree, "Attribute path must contain `#' sign to separate group/dataset from attribute name"};
 	}
 	m_object_path = Expression{attr_path.substr(0, pos)};
 	m_name = attr_path.substr(pos + 1);
@@ -80,7 +80,7 @@ Attribute_op::Attribute_op(Direction direction, const string& desc, Expression w
 		} else if (key == "when") {
 			m_when = to_string(value);
 		} else {
-			throw Config_error{key_tree, "Unknown key for HDF5 attribute configuration: `{}'", key};
+			throw Spectree_error{key_tree, "Unknown key for HDF5 attribute configuration: `{}'", key};
 		}
 	});
 }

@@ -55,7 +55,6 @@
 #include "dataset_op.h"
 
 using PDI::Array_datatype;
-using PDI::Config_error;
 using PDI::Context;
 using PDI::Datatype;
 using PDI::Datatype_sptr;
@@ -65,6 +64,7 @@ using PDI::Expression;
 using PDI::Ref_r;
 using PDI::Ref_w;
 using PDI::Scalar_datatype;
+using PDI::Spectree_error;
 using PDI::System_error;
 using PDI::to_string;
 using PDI::Tuple_datatype;
@@ -125,7 +125,7 @@ void validate_dataspaces(PC_tree_t selectree, hid_t h5_mem_space, hid_t h5_file_
 			file_desc << " (" << pr_start[ii] << "-" << (pr_start[ii] + pr_subsize[ii] - 1) << "/0-" << (pr_size[ii] - 1) << ")";
 
 
-		throw Config_error{selectree, "Incompatible selections while writing `{}': [{} ] -> [{} ]", dataset_name, mem_desc.str(), file_desc.str()};
+		throw Spectree_error{selectree, "Incompatible selections while writing `{}': [{} ] -> [{} ]", dataset_name, mem_desc.str(), file_desc.str()};
 	}
 }
 
@@ -155,7 +155,7 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 #ifdef H5_HAVE_PARALLEL
 				m_communicator = to_string(value);
 #else
-				throw Config_error {value, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+				throw Spectree_error {value, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
 			} else if (key == "memory_selection") {
 				m_memory_selection = value;
@@ -175,12 +175,12 @@ Dataset_op::Dataset_op(Direction dir, string name, Expression default_when, PC_t
 				} else if (to_string(value) == "COLLECTIVE") {
 					m_mpio = H5FD_MPIO_COLLECTIVE;
 				} else {
-					throw Config_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
+					throw Spectree_error{key_tree, "Not valid mpio value: `{}'. Expecting INDEPENDENT or COLLECTIVE.", to_string(value)};
 				}
 			} else if (key == "collision_policy") {
 				m_collision_policy = to_collision_policy(to_string(value));
 			} else {
-				throw Config_error{key_tree, "Unknown key for HDF5 dataset configuration: `{}'", key};
+				throw Spectree_error{key_tree, "Unknown key for HDF5 dataset configuration: `{}'", key};
 			}
 		}
 	});
@@ -374,7 +374,8 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 	for (auto&& dsets_elem = dsets.begin(); dsets_elem != dsets.end(); ++dsets_elem) {
 		if (std::regex_match(dataset_name, dsets_elem->regex())) {
 			if (!dset_found.has_value()) {
-				ctx.logger().trace(" `{}' match an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem->definition());
+				ctx.logger()
+					.trace(" `{}' matches an element of datasets(defined as regex) with value := `{}'", dataset_name, dsets_elem->definition());
 				dset_found = *dsets_elem;
 			} else {
 				// if we found an other element in the list of datasets, we can't choose the right dataset
@@ -385,7 +386,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 				list_dataset_found.emplace_back(dsets_elem->definition() + dsets_elem->get_msg_err_line());
 				++dsets_elem; // get the next element in the iterator on dsets
 				// loop over the rest of the elements in the iterator on dsets
-				for (dsets_elem; dsets_elem != dsets.end(); ++dsets_elem) {
+				for (; dsets_elem != dsets.end(); ++dsets_elem) {
 					if (std::regex_match(dataset_name, dsets_elem->regex())) {
 						list_dataset_found.emplace_back(dsets_elem->definition() + dsets_elem->get_msg_err_line());
 					}
@@ -399,7 +400,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 					  " - {2}\n"
 					  "Attention: The elements are considered as a regex.";
 
-				throw Config_error{
+				throw Spectree_error{
 					m_dataset_selection.selection_tree(),
 					msg_config_error,
 					list_dataset_found.size(),
@@ -418,7 +419,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 		m_dataset_selection.apply(ctx, h5_file_space, h5_mem_space);
 	} else {
 		if (!m_dataset_selection.size().empty()) {
-			throw Config_error{m_dataset_selection.selection_tree(), "Dataset selection is invalid for implicit dataset `{}'", dataset_name};
+			throw Spectree_error{m_dataset_selection.selection_tree(), "Dataset selection is invalid for implicit dataset `{}'", dataset_name};
 		}
 		dataset_type = ref.type();
 		tie(h5_file_space, h5_file_type) = space(dataset_type, true);

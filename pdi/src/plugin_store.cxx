@@ -167,7 +167,7 @@ void Plugin_store::initialize_path(PC_tree_t plugin_path_node)
 			m_ctx.logger().trace("Adding plugin path from yaml: `{}'", PDI::to_string(plugin_path_node));
 			m_plugin_path.push_back(PDI::to_string(plugin_path_node));
 		} else {
-			throw Config_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
+			throw Spectree_error{plugin_path_node, "plugin_path must be a single path or an array of paths"};
 		}
 	}
 

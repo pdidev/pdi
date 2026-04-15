@@ -174,7 +174,7 @@ try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	// metadata must provide read access
 	if (metadata() && !Ref_r(data_ref)) {
-		throw Right_error{"Metadata sharing must offer read access"};
+		throw Permission_error{"Metadata sharing must offer read access"};
 	}
 
 	// make a reference and put it in the store
@@ -198,12 +198,12 @@ try {
 
 	if (data_ref && !ref()) {
 		m_refs.pop();
-		throw Right_error{"Unable to grant requested rights"};
+		throw Permission_error{"Unable to grant requested rights"};
 	}
 
 	try {
 		m_context.callbacks().call_data_callbacks(m_name, ref());
-	} catch (const exception&) {
+	} catch (...) {
 		m_refs.pop();
 		throw;
 	}

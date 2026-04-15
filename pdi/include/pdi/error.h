@@ -79,43 +79,30 @@ public:
 	PDI_status_t status() const noexcept;
 };
 
-class PDI_EXPORT Unavailable_error: public Error
+class PDI_EXPORT Spectree_error: public Error
 {
 public:
 	template <typename... Args>
-	Unavailable_error(fmt::format_string<Args...> format_str, Args&&... args)
-		: Error(PDI_UNAVAILABLE, "Unavailable_error: {}" + fmt::format(format_str, std::forward<Args>(args)...))
-	{}
-
-	Unavailable_error(Unavailable_error&&) = default;
-
-	Unavailable_error(const Unavailable_error&) = default;
-};
-
-class PDI_EXPORT Config_error: public Error
-{
-public:
-	template <typename... Args>
-	Config_error(PC_tree_t tree, fmt::format_string<Args...> format_str, Args&&... args)
-		: Error(PDI_ERR_CONFIG)
+	Spectree_error(PC_tree_t tree, fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_SPECTREE)
 	{
 		std::ostringstream err_msg;
 		if (!PC_status(tree) && tree.node) {
 			if (tree.node->start_mark.line == tree.node->end_mark.line) {
-				err_msg << "Config_error in line " << tree.node->start_mark.line + 1 << ": ";
+				err_msg << "Spectree_error in line " << tree.node->start_mark.line + 1 << ": ";
 			} else {
-				err_msg << "Config_error in lines " << tree.node->start_mark.line + 1 << " - " << tree.node->end_mark.line << ": ";
+				err_msg << "Spectree_error in lines " << tree.node->start_mark.line + 1 << " - " << tree.node->end_mark.line << ": ";
 			}
 		} else {
-			err_msg << "Config_error: ";
+			err_msg << "Spectree_error: ";
 		}
 		err_msg << fmt::format(format_str, std::forward<Args>(args)...);
 		m_what = err_msg.str();
 	}
 
-	Config_error(Config_error&&) = default;
+	Spectree_error(Spectree_error&&) = default;
 
-	Config_error(const Config_error&) = default;
+	Spectree_error(const Spectree_error&) = default;
 };
 
 class PDI_EXPORT Value_error: public Error
@@ -183,17 +170,17 @@ public:
 	State_error(const State_error&) = default;
 };
 
-class PDI_EXPORT Right_error: public Error
+class PDI_EXPORT Permission_error: public Error
 {
 public:
 	template <typename... Args>
-	inline constexpr Right_error(fmt::format_string<Args...> format_str, Args&&... args)
-		: Error(PDI_ERR_RIGHT, "Right_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
+	inline constexpr Permission_error(fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_PERMISSION, "Permission_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
-	Right_error(Right_error&&) = default;
+	Permission_error(Permission_error&&) = default;
 
-	Right_error(const Right_error&) = default;
+	Permission_error(const Permission_error&) = default;
 };
 
 class PDI_EXPORT Type_error: public Error

@@ -1448,7 +1448,7 @@ TEST_F(decl_hdf5_test, check_config_error_for_four_regex_found)
 	int has_failed = 0;
 
 	std::string true_errmsg
-		= "Error while triggering event `write_event': Config_error in lines 41 - 42: Found `4' match(es) in the list of datasets "
+		= "Error while triggering event `write_event': Spectree_error in lines 41 - 42: Found `4' match(es) in the list of datasets "
 		  "section for `group123/array_data'. Cannot choose the right element in datasets.\n"
 		  "The elements that match `group123/array_data' are:\n"
 		  " - group[0-9]+/array_data defined in lines 20 - 23\n"
@@ -1457,7 +1457,7 @@ TEST_F(decl_hdf5_test, check_config_error_for_four_regex_found)
 		  " - group12.*/array_data defined in lines 33 - 36\n"
 		  "Attention: The elements are considered as a regex.";
 
-	PDI_status_t true_status = PDI_ERR_CONFIG;
+	PDI_status_t true_status = PDI_ERR_SPECTREE;
 	context_check_error ctx{true_errmsg, true_status, has_failed};
 
 	// defined local error handler
@@ -1563,9 +1563,10 @@ TEST_F(decl_hdf5_test, check_config_error_for_no_regex_found)
 {
 	SetUp("decl_hdf5_test_no_regex.h5");
 	int has_failed = 0;
-	std::string true_errmsg = "Error while triggering event `write_event': Config_error in lines 19 - 20: Dataset selection is invalid for implicit "
-							  "dataset `group123/array_data'";
-	PDI_status_t true_status = PDI_ERR_CONFIG;
+	std::string true_errmsg
+		= "Error while triggering event `write_event': Spectree_error in lines 19 - 20: Dataset selection is invalid for implicit "
+		  "dataset `group123/array_data'";
+	PDI_status_t true_status = PDI_ERR_SPECTREE;
 	context_check_error ctx{true_errmsg, true_status, has_failed};
 
 	// defined local error handler

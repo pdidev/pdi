@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -38,14 +38,17 @@ extern "C" {
 typedef enum PDI_status_e {
 	PDI_OK = 0,
 	PDI_UNAVAILABLE,
-	PDI_ERR_CONFIG,
+	PDI_ERR_SPECTREE,
+	PDI_ERR_CONFIG = PDI_ERR_SPECTREE,
 	PDI_ERR_VALUE,
 	PDI_ERR_PLUGIN,
 	PDI_ERR_IMPL,
 	PDI_ERR_SYSTEM,
 	PDI_ERR_STATE,
-	PDI_ERR_RIGHT,
-	PDI_ERR_TYPE
+	PDI_ERR_PERMISSION,
+	PDI_ERR_RIGHT = PDI_ERR_PERMISSION,
+	PDI_ERR_TYPE,
+	PDI_NB_STATUSES_DEFINED
 } PDI_status_t;
 
 typedef void (*PDI_errfunc_f)(PDI_status_t status, const char* message, void* context);
