@@ -56,7 +56,6 @@ using PDI::Spectree_error;
 using PDI::System_error;
 using PDI::to_string;
 using std::function;
-using std::move;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -112,11 +111,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if (key == "fletcher") {
 			fletcher = value;
 		} else if (key == "subfiling") {
-#ifdef H5_HAVE_SUBFILING_VFD
-			template_op.m_subfiling = to_string(value);
-#else 
-			ctx.logger().warn("Used HDF5 does not support subfiling. Subfiling setup ignored");
-#endif
+			template_op.m_subfiling = value;
 		} else if (key == "write") {
 			// will read in pass 2
 		} else if (key == "read") {
@@ -208,17 +203,17 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			}
 #endif
 			one_op.m_dset_ops.emplace_back(one_dset_op);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 		for (auto&& one_attr_op: attr_ops) {
 			File_op one_op = template_op;
 			one_op.m_attr_ops.emplace_back(one_attr_op);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 		for (auto&& one_dset_size_op: dset_size_ops) {
 			File_op one_op = template_op;
 			one_op.m_dset_size_ops.emplace(one_dset_size_op.first, one_dset_size_op.second);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 	} else {
 #ifdef H5_HAVE_PARALLEL
@@ -229,10 +224,10 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			}
 		}
 #endif
-		template_op.m_dset_ops = move(dset_ops);
-		template_op.m_attr_ops = move(attr_ops);
-		template_op.m_dset_size_ops = move(dset_size_ops);
-		result.emplace_back(move(template_op));
+		template_op.m_dset_ops = std::move(dset_ops);
+		template_op.m_attr_ops = std::move(attr_ops);
+		template_op.m_dset_size_ops = std::move(dset_size_ops);
+		result.emplace_back(std::move(template_op));
 	}
 
 	return result;
@@ -261,7 +256,7 @@ File_op::File_op(const File_op& other)
 
 File_op::File_op(Expression&& file, Collision_policy collision_policy)
 	: m_collision_policy{collision_policy}
-	, m_file{move(file)}
+	, m_file{std::move(file)}
 {}
 
 void File_op::execute(Context& ctx)
@@ -317,16 +312,44 @@ void File_op::execute(Context& ctx)
 		if (0 > H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL)) handle_hdf5_err();
 		use_mpio = true;
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
-#ifdef H5_HAVE_SUBFILING_VFD
-		if (subfiling().to_long(ctx)) {
-			ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
 
-			H5FD_subfiling_config_t subf_config;
-			H5Pget_fapl_subfiling(file_lst, &subf_config);
-			subf_config.shared_cfg.stripe_count = subfiling().to_long(ctx);
-			H5Pset_fapl_subfiling(file_lst, &subf_config);
-		}
+		if (auto subfiling_stripe_count = subfiling().count().to_long(ctx)) {
+#ifndef H5_HAVE_SUBFILING_VFD
+			if (subfiling().policy().to_string(ctx) == "CONTINUE") {
+				ctx.logger().warn("Used HDF5 does not support subfiling. HDF5 subfiling is ignored");
+			} else {
+				throw System_error{"Used HDF5 does not support subfiling. Please set subfiling to 0."};
+			}
 #endif
+			int provided;
+			MPI_Query_thread(&provided);
+			if (provided < MPI_THREAD_MULTIPLE) {
+				if (subfiling().policy().to_string(ctx) == "CONTINUE") {
+					subfiling_stripe_count = 0;
+					ctx.logger().warn("MPI is not initialized with MPI_THREAD_MULTIPLE. HDF5 subfiling is ignored");
+				} else {
+					throw System_error{"HDF5 subfiling requires MPI_THREAD_MULTIPLE (3). The provided level of thread support is {}", provided};
+				}
+			}
+#ifdef H5_HAVE_SUBFILING_VFD
+			if (subfiling_stripe_count != 0) {
+				ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
+				H5FD_subfiling_config_t subf_config;
+				H5Pget_fapl_subfiling(file_lst, &subf_config);
+				subf_config.shared_cfg.stripe_count = subfiling_stripe_count;
+				if (auto stripe_size = subfiling().stripe_size().to_long(ctx)) {
+					if (stripe_size > 0) {
+						subf_config.shared_cfg.stripe_size = stripe_size;
+					} else if (stripe_size < 0) {
+						throw System_error{"Negative stripe_size is provided. Please set stripe_size > 0."};
+					} else {
+						ctx.logger().warn("Using default stripe_size");
+					}
+				}
+				H5Pset_fapl_subfiling(file_lst, &subf_config);
+			}
+#endif
+		}
 	}
 #endif
 

@@ -83,7 +83,8 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		collision_policy.cxx
 		file_op.cxx
 		hdf5_wrapper.cxx
-		selection.cxx)
+		selection.cxx
+		subfiling.cxx)
 target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 

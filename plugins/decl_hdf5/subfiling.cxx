@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,70 +22,43 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include "config.h"
-
+#include <algorithm>
 #include <iostream>
-#include <memory>
+#include <string>
 
-#include <dlfcn.h>
+#include <pdi/context.h>
+#include <pdi/error.h>
 
-#include "pdi/error.h"
-#include "pdi/paraconf_wrapper.h"
-#include "pdi/plugin.h"
-#include "pdi/ref_any.h"
+#include "subfiling.h"
 
-#include "pdi/context.h"
-
-namespace PDI {
-
+using PDI::each;
+using PDI::opt_each;
+using PDI::Spectree_error;
+using PDI::to_string;
 using std::string;
-using std::unique_ptr;
-using std::unordered_map;
 
-Context::Iterator::Iterator(const unordered_map<string, unique_ptr<Data_descriptor>>::iterator& data)
-	: m_data(data)
-{}
+namespace decl_hdf5 {
 
-Context::Iterator::Iterator(unordered_map<string, unique_ptr<Data_descriptor>>::iterator&& data)
-	: m_data(std::move(data))
-{}
-
-Data_descriptor* Context::Iterator::operator->()
+Subfiling::Subfiling(PC_tree_t sf_tree)
 {
-	return m_data->second.get();
+	if (PDI::is_scalar(sf_tree)) {
+		m_sf_count = PDI::to_string(sf_tree);
+	} else if (PDI::is_map(sf_tree)) {
+		PDI::each(sf_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
+			string key = to_string(key_tree);
+			if (key == "policy") {
+				m_sf_policy = value;
+			} else if (key == "count") {
+				m_sf_count = value;
+			} else if (key == "stripe_size") {
+				m_sf_stripe_size = value;
+			} else {
+				throw Spectree_error{key_tree, "Invalid configuration key in subfiling: `{}'", key};
+			}
+		});
+	} else {
+		throw Spectree_error{sf_tree, "subfiling node is not parsed correctly"};
+	}
 }
 
-Data_descriptor& Context::Iterator::operator* ()
-{
-	return *m_data->second;
-}
-
-Context::Iterator& Context::Iterator::operator++ ()
-{
-	++m_data;
-	return *this;
-}
-
-bool Context::Iterator::operator!= (const Iterator& o)
-{
-	return (m_data != o.m_data);
-}
-
-bool Context::Iterator::operator== (const Iterator& o)
-{
-	return (m_data == o.m_data);
-}
-
-Context::Iterator Context::get_iterator(const std::unordered_map<std::string, unique_ptr<Data_descriptor>>::iterator& data)
-{
-	return data;
-}
-
-Context::Iterator Context::get_iterator(std::unordered_map<std::string, unique_ptr<Data_descriptor>>::iterator&& data)
-{
-	return std::move(data);
-}
-
-Context::~Context() = default;
-
-} // namespace PDI
+} // namespace decl_hdf5

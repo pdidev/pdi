@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -44,7 +44,6 @@ using std::align;
 using std::endl;
 using std::make_shared;
 using std::max;
-using std::move;
 using std::pair;
 using std::regex;
 using std::regex_replace;
@@ -57,7 +56,7 @@ using std::vector;
 
 Record_datatype::Member::Member(size_t displacement, Datatype_sptr type, const string& name)
 	: m_displacement{displacement}
-	, m_type{move(type)}
+	, m_type{std::move(type)}
 	, m_name{name}
 {}
 
@@ -94,8 +93,8 @@ bool Record_datatype::Member::operator!= (const Member& rhs) const
 
 Record_datatype::Record_datatype(vector<Member>&& members, size_t size, const Attributes_map& attributes)
 	: Datatype(attributes)
-	, m_members{move(members)}
-	, m_buffersize{move(size)}
+	, m_members{std::move(members)}
+	, m_buffersize{std::move(size)}
 {}
 
 const vector<Record_datatype::Member>& Record_datatype::members() const
@@ -112,7 +111,7 @@ Datatype_sptr Record_datatype::densify() const
 		size_t alignment = densified_type->alignment();
 		// align the next member as requested
 		displacement += (alignment - (displacement % alignment)) % alignment;
-		densified_members.emplace_back(displacement, move(densified_type), member.name());
+		densified_members.emplace_back(displacement, std::move(densified_type), member.name());
 		displacement += densified_members.back().type()->buffersize();
 	}
 	//add padding at the end of record
@@ -121,7 +120,7 @@ Datatype_sptr Record_datatype::densify() const
 
 	// ensure the record size is at least 1 to have a unique address
 	displacement = max<size_t>(1, displacement);
-	return unique_ptr<Record_datatype>{new Record_datatype{move(densified_members), displacement}};
+	return unique_ptr<Record_datatype>{new Record_datatype{std::move(densified_members), displacement}};
 }
 
 Datatype_sptr Record_datatype::evaluate(Context&) const
@@ -290,13 +289,13 @@ bool Record_datatype::operator== (const Datatype& other) const
 
 struct Record_datatype::Shared_enabler: public Record_datatype {
 	Shared_enabler(vector<Member>&& members, size_t size, const Attributes_map& attributes)
-		: Record_datatype(move(members), size, attributes)
+		: Record_datatype(std::move(members), size, attributes)
 	{}
 };
 
 shared_ptr<Record_datatype> Record_datatype::make(vector<Member>&& members, size_t size, const Attributes_map& attributes)
 {
-	return make_shared<Shared_enabler>(move(members), size, attributes);
+	return make_shared<Shared_enabler>(std::move(members), size, attributes);
 }
 
 } // namespace PDI
