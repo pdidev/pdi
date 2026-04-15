@@ -31,10 +31,7 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_decl_netcdf_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if("${CMAKE_VERSION}" VERSION_LESS 4.1)
-	# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
-	list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}/4.1")
-elseif("${CMAKE_VERSION}" VERSION_LESS 4.3)
+if("${CMAKE_VERSION}" VERSION_LESS 4.3)
 	# Workaround for compiling with HDF5-2.0.0+
 	list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}/4.3")
 endif()
