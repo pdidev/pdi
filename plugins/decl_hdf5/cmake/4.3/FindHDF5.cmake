@@ -319,7 +319,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/SelectLibraryConfigurations.cmake)
 include(FindPackageHandleStandardArgs)
 
 cmake_policy(PUSH)
+if(POLICY CMP0159)
 cmake_policy(SET CMP0159 NEW) # file(STRINGS) with REGEX updates CMAKE_MATCH_<n>
+endif()
 
 # We haven't found HDF5 yet. Clear its state in case it is set in the parent
 # scope somewhere else. We can't rely on it because different components may
