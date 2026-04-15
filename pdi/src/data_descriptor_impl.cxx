@@ -97,7 +97,7 @@ Data_descriptor_impl::~Data_descriptor_impl()
 
 void Data_descriptor_impl::default_type(Datatype_template_sptr type)
 {
-	m_type = move(type);
+	m_type = std::move(type);
 }
 
 Datatype_template_sptr Data_descriptor_impl::default_type()

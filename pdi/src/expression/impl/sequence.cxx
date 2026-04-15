@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -43,7 +43,6 @@ namespace PDI {
 
 using std::dynamic_pointer_cast;
 using std::max;
-using std::move;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -129,7 +128,7 @@ Ref Expression::Impl::Sequence::to_ref(Context& ctx) const
 
 		// ensure the tuple size is at least 1 to have a unique address
 		displacement = max<size_t>(1, displacement);
-		result_type = Tuple_datatype::make(move(tuple_elements), displacement);
+		result_type = Tuple_datatype::make(std::move(tuple_elements), displacement);
 	}
 
 	return Impl::to_ref(ctx, result_type);

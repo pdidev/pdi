@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+* Fully qualify `std::move` calls to prevent a compilation warning and incorrect
+  usages [#675](https://github.com/pdidev/pdi/issues/675)
 
 ### Deprecated
 

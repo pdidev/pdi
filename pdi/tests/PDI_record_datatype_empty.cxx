@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -43,7 +43,7 @@ struct RecordDatatypeEmptyTest: public ::testing::Test {
 		test_size = sizeof(EmptyStructure);
 
 		vector<Record_datatype::Member> test_members;
-		test_record = Record_datatype::make(move(test_members), test_size);
+		test_record = Record_datatype::make(std::move(test_members), test_size);
 	}
 
 	//size used to create Record_datatype

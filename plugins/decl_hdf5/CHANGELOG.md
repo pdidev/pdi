@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Add cmake patch for missing `HDF5_IS_PARALLEL` with HDF5-2.0.0+ in cmake pre-4.3
 
 ### Changed
+* Fully qualify `std::move` calls to prevent a compilation warning and incorrect
+  usages [#675](https://github.com/pdidev/pdi/issues/675)
 
 ### Deprecated
 

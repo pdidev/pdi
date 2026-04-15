@@ -56,7 +56,6 @@ using PDI::Spectree_error;
 using PDI::System_error;
 using PDI::to_string;
 using std::function;
-using std::move;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -208,17 +207,17 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			}
 #endif
 			one_op.m_dset_ops.emplace_back(one_dset_op);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 		for (auto&& one_attr_op: attr_ops) {
 			File_op one_op = template_op;
 			one_op.m_attr_ops.emplace_back(one_attr_op);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 		for (auto&& one_dset_size_op: dset_size_ops) {
 			File_op one_op = template_op;
 			one_op.m_dset_size_ops.emplace(one_dset_size_op.first, one_dset_size_op.second);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 	} else {
 #ifdef H5_HAVE_PARALLEL
@@ -229,10 +228,10 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			}
 		}
 #endif
-		template_op.m_dset_ops = move(dset_ops);
-		template_op.m_attr_ops = move(attr_ops);
-		template_op.m_dset_size_ops = move(dset_size_ops);
-		result.emplace_back(move(template_op));
+		template_op.m_dset_ops = std::move(dset_ops);
+		template_op.m_attr_ops = std::move(attr_ops);
+		template_op.m_dset_size_ops = std::move(dset_size_ops);
+		result.emplace_back(std::move(template_op));
 	}
 
 	return result;
@@ -261,7 +260,7 @@ File_op::File_op(const File_op& other)
 
 File_op::File_op(Expression&& file, Collision_policy collision_policy)
 	: m_collision_policy{collision_policy}
-	, m_file{move(file)}
+	, m_file{std::move(file)}
 {}
 
 void File_op::execute(Context& ctx)
