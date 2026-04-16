@@ -34,6 +34,7 @@ project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
 option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_HDF5_PARALLEL "Enable HDF5 parallel build" ON)
+option(ENABLE_BENCHMARKING "Activate benchmarks in the test suite" OFF)
 
 include(CTest)
 
