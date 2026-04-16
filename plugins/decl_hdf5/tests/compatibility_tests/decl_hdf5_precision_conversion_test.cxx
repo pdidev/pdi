@@ -23,8 +23,6 @@
  ******************************************************************************/
 
 #include <filesystem>
-#include <numeric>
-#include <ranges>
 
 #include <hdf5.h>
 
