@@ -27,7 +27,7 @@ cmake_minimum_required(VERSION 3.22...4.2)
 
 set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../../cmake/runtest-dir")
 
-set(ALL_TEST_NAMES array dataset group struct variables d2s_precision )
+set(ALL_TEST_NAMES array dataset group struct variables)
 if("${BUILD_HDF5_PARALLEL}")
     list(APPEND ALL_TEST_NAMES mpi mpi_independent)
 endif()
@@ -60,3 +60,7 @@ foreach(test_name ${ALL_TEST_NAMES})
         endforeach(read_prefix)
     endforeach(write_prefix)
 endforeach(test_name)
+    
+add_executable(decl_hdf5_conversion_test decl_hdf5_precision_conversion_test.cxx)
+target_link_libraries(decl_hdf5_conversion_test ${HDF5_DEPS} PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
+gtest_discover_tests(decl_hdf5_conversion_test)
