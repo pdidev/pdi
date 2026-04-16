@@ -1,6 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2024 National Institute for Research in Digital Science and Technology (Inria)
+ * Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2024-2026 National Institute for Research in Digital Science and Technology (Inria)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -149,7 +149,24 @@ void Damaris_api_call_handler::damaris_api_call_event(
                 //release the Damaris clients mpi comm
                 PDI_release(Damaris_cfg::client_comm_get_dataset_name().c_str());
             }
+
+            // Get the pointer of PC_tree_t as a (void*)
+            uintptr_t *conf;
+            PDI_access("conf_yaml", (void**)&conf, PDI_IN);
+            PDI_release("conf_yaml");
+
+            // Get the pointer of PC_tree_t as is object type (need to be done before PDI_finalize)
+            uintptr_t cc_conf=*conf;
+            PC_tree_t *vv_conf = reinterpret_cast<PC_tree_t *> (cc_conf);
+
             PDI_finalize();
+
+            if (PC_tree_destroy(vv_conf)) {
+                printf("Damaris server: Error in PC_tree_destroy\n");
+            }
+            vv_conf = NULL;
+            conf    = NULL;
+
             MPI_Finalize();
             exit(0);
         }

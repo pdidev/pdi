@@ -13,6 +13,7 @@ pdi:
     psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
     pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
     mpi_comm: MPI_Comm
+    conf_yaml: uintptr_t
   data: # type of values for which PDI does not keep a copy
     # Question: pourquoi pas d'erreur meme si "is_client" n'est pas déclaré comme data, et que simulation accède à cette donnée?
     #is_client: int 

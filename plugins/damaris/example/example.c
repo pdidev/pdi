@@ -170,6 +170,10 @@ int main(int argc, char* argv[])
 	}
 	PDI_init(PC_get(conf, ".pdi"));
 
+	// expose the pointer of conf
+	uintptr_t pconf = (uintptr_t) &conf;
+	PDI_expose("conf_yaml", &pconf, PDI_OUT);
+
 	PDI_expose("mpi_comm", &main_comm, PDI_INOUT); // <-- allow plugin to set, returns Damaris client comm
 
 	int psize_1d;
