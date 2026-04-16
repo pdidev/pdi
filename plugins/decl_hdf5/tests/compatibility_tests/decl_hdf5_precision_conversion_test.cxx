@@ -31,6 +31,13 @@
 class DeclHdf5: public ::PDI::PdiTest
 {};
 
+template<typename T>
+bool are_equal(double d, T f) {
+    double diff = std::abs(d - static_cast<double>(f));
+    // Scale epsilon by the larger of the two values
+    return diff <= (std::max(std::abs(d), std::abs(static_cast<double>(f))) 
+                   * std::numeric_limits<T>::epsilon());
+}
 /* Precision conversion with decl_hdf5 
  * data in double precision
  * file dataset in double, float, and int
@@ -84,6 +91,18 @@ plugins:
 	hid_t type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_IEEE_F64LE));
+  auto read_double_array = make_a<std::array<std::array<double, N>, N>>();
+
+  herr_t status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, 
+                            H5P_DEFAULT, read_double_array.data());
+
+  for (auto i = 0; i < N; i++)
+  {
+    for (auto j = 0; j < N; j++)
+    {
+      EXPECT_TRUE(are_equal<double>(test_array[i][j], read_double_array[i][j]));
+    }
+  }
 
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
@@ -94,6 +113,18 @@ plugins:
 	type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_IEEE_F32LE));
+  auto read_float_array = make_a<std::array<std::array<float, N>, N>>();
+
+  status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, 
+                            H5P_DEFAULT, read_float_array.data());
+
+  for (auto i = 0; i < N; i++)
+  {
+    for (auto j = 0; j < N; j++)
+    {
+      EXPECT_TRUE(are_equal<float>(test_array[i][j], read_float_array[i][j]));
+    }
+  }
 
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
@@ -104,6 +135,18 @@ plugins:
 	type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_STD_I32LE));
+  auto read_int_array = make_a<std::array<std::array<int, N>, N>>();
+
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, 
+                            H5P_DEFAULT, read_int_array.data());
+
+  // for (auto i = 0; i < N; i++)
+  // {
+  //   for (auto j = 0; j < N; j++)
+  //   {
+  //     EXPECT_TRUE(are_equal<int>(test_array[i][j], read_int_array[i][j]));
+  //   }
+  // }
 
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
