@@ -69,10 +69,10 @@ plugins:
 	EXPECT_FALSE(std::filesystem::exists("d2f_test.h5"));
 	EXPECT_FALSE(std::filesystem::exists("d2i_test.h5"));
 
-	int const N = 100;
+	static constexpr int const N = 100;
 	PDI_expose("N", &N, PDI_OUT);
 
-	auto const test_array = make_a<std::array<double, N * N>>();
+	auto const test_array = make_a<std::array<std::array<double, N>, N>>();
 	PDI_expose("array", test_array.data(), PDI_OUT);
 
 	EXPECT_TRUE(std::filesystem::exists("d2d_test.h5"));
