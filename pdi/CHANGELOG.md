@@ -17,12 +17,17 @@ and this project adheres to
 
 #### Added
 * fix macOS Python support. [#656](https://github.com/pdidev/pdi/issues/656)
+* added a `ENABLE_BENCHMARKING` flag to cmake to enable running the benchmarks
+  as part of the tests (off by default)
+  [#679](https://github.com/pdidev/pdi/issues/679)
 
 #### Changed
 * The minimum version of C required is now C17 (ISO/IEC 9899:2018) instead of
   C11.
 * Fully qualify `std::move` calls to prevent a compilation warning and incorrect
   usages [#675](https://github.com/pdidev/pdi/issues/675)
+* benchmarks are not run as part of the test suite by default anymore, one must
+  set `ENABLE_BENCHMARKING` to `ON` in Cmake to re-enable them
 
 #### Deprecated
 * Error names have been improved to fix

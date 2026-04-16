@@ -108,6 +108,7 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
 |`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
+|`ENABLE_BENCHMARKING`      |`OFF`  |Run benchmarks as part of the test suite.|
 
 
 The following flags define whether to:
@@ -138,8 +139,6 @@ The following flags define where to install %PDI, those prefixed with `CMAKE_`
 are provided and documented by the
 [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)
 cmake module.
-
-
 
 |Flag          |Default   |Description|
 |:-------------|:---------|:----------|

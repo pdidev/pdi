@@ -68,4 +68,7 @@ target_link_libraries(PDI_benchmarks
 set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/runtest-dir")
 add_test(NAME PDI_benchmarks
          COMMAND "${RUNTEST_DIR}" sh -c "$<TARGET_FILE:PDI_benchmarks> --benchmark_format=json > ${BENCHMARK_RESULT_PATH}/PDI_benchmark_result.json")
+if(NOT "${ENABLE_BENCHMARKING}")
+  set_property(TEST PDI_benchmarks PROPERTY DISABLED TRUE)
+endif()
 set_property(TEST PDI_benchmarks PROPERTY TIMEOUT 300)
