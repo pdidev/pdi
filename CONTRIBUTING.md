@@ -3,16 +3,6 @@
 To make you known to others, please join the PDI slack channel at 
 https://pdidev.slack.com
 
-# Branching model
-
-Each feature should be developed in answer to a requirement described in an
-issue. Each feature should be implemented in its own branch based on the
-`main` branch. Draft pull requests should be created on github early to discuss
-design choices. Branches should be rebased on `main` before integration.
-
-Bug fixes should be developed on the latest release branch. The release branch
-should then be merged into main.
-
 # PDI Coding style
 
 ## API levels
