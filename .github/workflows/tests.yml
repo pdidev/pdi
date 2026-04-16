@@ -31,8 +31,37 @@ name: tests
 on:
   push: { branches: [ main, 'v[0-9]+.[0-9]+' ] }
   pull_request:
+  workflow_dispatch:
 jobs:
+  indent:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - run: exec ./bin/test_indent
+  first: # do a first run so as not to needlessly use all resources for all to fail
+    needs: indent
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v6
+      with: { submodules: recursive }
+    - name: Test
+      uses: ./.github/actions/test/
+      with: 
+        image: 'ghcr.io/pdidev/spack/latest/clang/mpich/all:v4'
+  second: # do a second run at the opposite of the spectrum from the first
+    needs: first
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v6
+      with: { submodules: recursive }
+    - name: Test
+      uses: ./.github/actions/test/
+      with: 
+        image: 'ghcr.io/pdidev/ubuntu/jammy/openmpi/mini:v4'
   spack:
+    needs: second
     strategy:
       fail-fast: false
       matrix:
@@ -40,28 +69,75 @@ jobs:
         compiler: ['gcc', 'clang']
         mpi:      ['openmpi', 'mpich']
         variant:  ['mini', 'all']
+        # exclude config already done in first
+        exclude: [ { version: latest, compiler: clang, mpi: mpich, variant: all } ]
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with: { submodules: recursive }
     - name: Test
       uses: ./.github/actions/test/
       with: 
         image: 'ghcr.io/pdidev/spack/${{matrix.version}}/${{matrix.compiler}}/${{matrix.mpi}}/${{matrix.variant}}:v4'
   debuntu:
+    needs: second
     strategy:
       fail-fast: false
       matrix:
         base:    ['ubuntu/jammy', 'ubuntu/rolling', 'debian/bookworm', 'debian/unstable']
         mpi:     ['openmpi', 'mpich']
         variant: ['mini', 'all']
+        # exclude config already done in second
+        exclude: [ { base: 'ubuntu/jammy', mpi: openmpi, variant: mini } ]
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout branch
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with: { submodules: recursive }
     - name: Test
       uses: ./.github/actions/test/
       with: 
         image: 'ghcr.io/pdidev/${{matrix.base}}/${{matrix.mpi}}/${{matrix.variant}}:v4'
+  macos:
+    needs: second
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15, macos-26]
+        cxx_std: ['17']
+        build_type: ['Debug']
+    runs-on: ${{matrix.os}}
+    env:
+      MAKEFLAGS: -j4
+      CC: clang
+      CXX: clang++
+      CMAKE_BUILD_TYPE: ${{matrix.build_type}}
+      OMPI_MCA_rmaps_base_oversubscribe: 1
+      PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
+      PDI_SYSTEM: macos
+      PDI_COMPILER: clang
+      PDI_MPI: openmpi
+      CTEST_DIR: "/tmp/tests_output"
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.14'
+    - name: Install MPI (macOS)
+      run: brew install open-mpi
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools pyyaml numpy mpi4py
+    - name: Set up PDI
+      uses: actions/checkout@v6
+      with:
+        submodules: recursive
+    - name: Build PDI
+      run: bin/build_and_run_all_tests
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v5
+      if: ( success() || failure() )  # always run even if the previous step fails
+      with:
+        report_paths: '/tmp/tests_output/tests_*.xml'

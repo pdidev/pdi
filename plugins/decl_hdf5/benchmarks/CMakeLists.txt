@@ -66,4 +66,7 @@ target_link_libraries(decl_hdf5_benchmarks
 set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/runtest-dir")
 add_test(NAME decl_hdf5_benchmarks
          COMMAND "${RUNTEST_DIR}" sh -c "$<TARGET_FILE:decl_hdf5_benchmarks> --benchmark_format=json > ${BENCHMARK_RESULT_PATH}/decl_hdf5_benchmark_result.json")
+if(NOT "${ENABLE_BENCHMARKING}")
+  set_property(TEST decl_hdf5_benchmarks PROPERTY DISABLED TRUE)
+endif()
 set_property(TEST decl_hdf5_benchmarks PROPERTY TIMEOUT 300)
