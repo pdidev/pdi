@@ -30,18 +30,12 @@
 
 #include <pdi/testing.h>
 
-using PDI::make_random;
-using PDI::random_init;
-using testing::Eq;
-using testing::StartsWith;
-using testing::StrEq;
-
 class DeclHdf5: public ::PDI::PdiTest
 {};
 
 /* Precision conversion with decl_hdf5 
  * data in double precision
- * file dataset in simple precision
+ * file dataset in double, float, and int
  */
 TEST_F(DeclHdf5, PrecisionConversion)
 {
