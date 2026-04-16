@@ -75,18 +75,6 @@ private:
 
 	Global_context(Global_context&&) = delete;
 
-	/// Private definition of collect_ordered_nodes to handle local no_path_counter
-	void collect_ordered_nodes_impl(
-		PC_tree_t conf,
-		std::unordered_set<std::string>& globally_loaded,
-		std::unordered_set<std::string>& include_chain,
-		std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
-		std::size_t& no_path_counter,
-		const std::string& known_path = "",
-		PC_tree_t include_directive = {},
-		const std::string& parent_id = ""
-	);
-
 public:
 	static void init(PC_tree_t conf);
 
@@ -138,19 +126,6 @@ public:
 	void add_datatype(const std::string&, Datatype_template_parser) override;
 
 	Callbacks& callbacks() override;
-
-	/// Traverses the include tree once in post-order (deepest includes first),
-	/// filling `ordered_nodes` with (canonical_id, PC_tree_t) pairs.
-	/// Diamond/circular detection is handled here.
-	void collect_ordered_nodes(
-		PC_tree_t conf,
-		std::unordered_set<std::string>& globally_loaded,
-		std::unordered_set<std::string>& include_chain,
-		std::vector<std::pair<std::string, PC_tree_t>>& ordered_nodes,
-		const std::string& known_path = "",
-		PC_tree_t include_directive = {},
-		const std::string& parent_id = ""
-	);
 
 	void finalize_and_exit() override;
 
