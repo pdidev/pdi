@@ -117,9 +117,4 @@ void Context_proxy::finalize_and_exit()
 	m_real_context.finalize_and_exit();
 }
 
-void Context_proxy::check_duplicate(const PC_tree_t& node, const std::string& name)
-{
-	m_real_context.check_duplicate(node, name);
-}
-
 } //namespace PDI

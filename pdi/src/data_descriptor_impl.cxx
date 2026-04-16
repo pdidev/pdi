@@ -75,6 +75,14 @@ Data_descriptor_impl::Data_descriptor_impl(Global_context& ctx, const char* name
 	, m_metadata{false}
 {}
 
+Data_descriptor_impl::Data_descriptor_impl(Global_context& ctx, const char* name, PC_tree_t source_node)
+	: m_context{ctx}
+	, m_type{UNDEF_TYPE}
+	, m_name{name}
+	, m_metadata{false}
+	, m_source_node{source_node}
+{}
+
 Data_descriptor_impl::Data_descriptor_impl(Data_descriptor_impl&&) = default;
 
 Data_descriptor_impl::~Data_descriptor_impl()

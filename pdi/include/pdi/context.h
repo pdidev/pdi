@@ -135,9 +135,6 @@ public:
 
 	/// Finalizes PDI and exits application
 	virtual void finalize_and_exit() = 0;
-
-	// Check duplicates of configuration member
-	virtual void check_duplicate(const PC_tree_t& node, const std::string& name) = 0;
 };
 
 } // namespace PDI

@@ -310,24 +310,22 @@ TEST_F(ContextTest, iterator_operator_equal_equal)
 TEST_F(ContextTest, check_duplicate)
 {
 	PC_tree_t conf_a = PC_parse_string("variable_A: int");
-	PC_tree_t conf_b = PC_parse_string("variable_B: int");
-	PC_tree_t conf_c = PC_parse_string("variable_C: int");
+	PC_tree_t conf_b = PC_parse_string("variable_B: int\nvariable_C: int");
 
 	auto* ctx = static_cast<Global_context*>(this->test_context.get());
 
-	// Test 1: First call should succeed
-	ASSERT_NO_THROW(ctx->check_duplicate(conf_a, "variable_A"));
+	// Test 1: First definition should succeed
+	ASSERT_NO_THROW(ctx->make_and_check_descriptor(PC_get(conf_a, "{0}")));
 
-	// Test 2: Second call with same name should throw Config_error
-	EXPECT_THROW(ctx->check_duplicate(conf_a, "variable_A"), Config_error);
+	// Test 2: Redefining the same name should throw Config_error
+	EXPECT_THROW(ctx->make_and_check_descriptor(PC_get(conf_a, "{0}")), Config_error);
 
 	// Test 3: Different names should both succeed
-	ASSERT_NO_THROW(ctx->check_duplicate(conf_b, "variable_B"));
-	ASSERT_NO_THROW(ctx->check_duplicate(conf_c, "variable_C"));
+	ASSERT_NO_THROW(ctx->make_and_check_descriptor(PC_get(conf_b, "{0}"))); // variable_B
+	ASSERT_NO_THROW(ctx->make_and_check_descriptor(PC_get(conf_b, "{1}"))); // variable_C
 
 	PC_tree_destroy(&conf_a);
 	PC_tree_destroy(&conf_b);
-	PC_tree_destroy(&conf_c);
 }
 
 /*

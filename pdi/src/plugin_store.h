@@ -124,6 +124,7 @@ public:
 	 * \param conf the configuration specifying the plugin path & list of plugins to load
 	 */
 	Plugin_store(Context& ctx, PC_tree_t conf);
+	// Plugin_store(Context& ctx);
 
 	/** Actually load the plugins
 	 */

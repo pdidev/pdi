@@ -75,10 +75,7 @@ private:
 
 	Global_context(Global_context&&) = delete;
 
-	// The node of each first definition, for duplicate error reporting
-	std::unordered_map<std::string, PC_tree_t> m_defined;
-
-	// Private defintion of collect_ordered_nodes to handle local no_path_counter
+	/// Private definition of collect_ordered_nodes to handle local no_path_counter
 	void collect_ordered_nodes_impl(
 		PC_tree_t conf,
 		std::unordered_set<std::string>& globally_loaded,
@@ -142,8 +139,6 @@ public:
 
 	Callbacks& callbacks() override;
 
-	void check_duplicate(const PC_tree_t& node, const std::string& name) override;
-
 	/// Traverses the include tree once in post-order (deepest includes first),
 	/// filling `ordered_nodes` with (canonical_id, PC_tree_t) pairs.
 	/// Diamond/circular detection is handled here.
@@ -160,6 +155,9 @@ public:
 	void finalize_and_exit() override;
 
 	void load_pdi_config(PC_tree_t conf);
+
+	/// Creates a descriptor for `key_node`, throwing Config_error if already defined.
+	Data_descriptor& make_and_check_descriptor(PC_tree_t key_node);
 
 	~Global_context() override;
 };

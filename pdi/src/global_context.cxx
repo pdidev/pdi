@@ -63,8 +63,8 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
-#ifdef PARACONF_VERSION_MAJOR
-#if (PARACONF_VERSION_MAJOR > 1) || (PARACONF_VERSION_MAJOR == 1 && PARACONF_VERSION_MINOR >= 1)
+#if defined(PARACONF_VERSION)
+#if (PARACONF_UNTYPED_VERSION >= PARACONF_UNTYPED_COMPUTE_VERSION(1, 1, 0))
 #define PDI_HAS_PC_PATH 1
 #else
 #define PDI_HAS_PC_PATH 0
@@ -77,24 +77,16 @@ namespace PDI {
 
 namespace {
 
-void load_data(Context& ctx, PC_tree_t node, bool is_metadata)
+void load_data(Global_context& ctx, PC_tree_t node, bool is_metadata)
 {
 	int map_len = len(node);
-
 	for (int map_id = 0; map_id < map_len; ++map_id) {
-		std::string name = to_string(PC_get(node, "{%d}", map_id));
-
-		ctx.check_duplicate(PC_get(node, "{%d}", map_id), name);
-
-		Data_descriptor& dsc = ctx.desc(name.c_str());
+		PC_tree_t key_node = PC_get(node, "{%d}", map_id);
+		Data_descriptor& dsc = ctx.make_and_check_descriptor(key_node); // Both defining a descriptor and checking for duplicate
 		dsc.metadata(is_metadata);
 		dsc.default_type(ctx.datatype(PC_get(node, "<%d>", map_id)));
 	}
-
-	if (is_metadata)
-		ctx.logger().trace("Loaded {} metadata", map_len);
-	else
-		ctx.logger().trace("Loaded {} data", map_len);
+	ctx.logger().trace("Loaded {} {}", map_len, is_metadata ? "metadata" : "data");
 }
 
 } // namespace
@@ -130,7 +122,7 @@ Global_context::Global_context(PC_tree_t conf)
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
 
-	load_pdi_config(conf); // single tree traversal + two flat sub-passes
+	load_pdi_config(conf); // single tree traversal + two flat sub-passes (one for the plugins, one for the types/metadata/data)
 
 	// evaluate pattern after loading plugins
 	m_logger.evaluate_pattern(*this);
@@ -221,31 +213,6 @@ void Global_context::add_datatype(const string& name, Datatype_template_parser p
 Callbacks& Global_context::callbacks()
 {
 	return m_callbacks;
-}
-
-void Global_context::check_duplicate(const PC_tree_t& node, const std::string& name)
-{
-	auto [it, inserted] = m_defined.emplace(name, node);
-	if (!inserted) {
-		// it->second = first definition site (deepest file in include tree, post-order)
-		// node = redefinition site (current file being processed)
-#if PDI_HAS_PC_PATH
-		const char* orig_path = PC_path(it->second);
-		const char* redef_path = PC_path(node);
-
-		bool orig_has_path = orig_path && fs::exists(orig_path);
-		bool redef_has_path = redef_path && fs::exists(redef_path);
-
-		if (redef_has_path && orig_has_path) {
-			throw Config_error(node, "Duplicate definition of '{}', originally defined in '{}', defined again in '{}'", name, redef_path, orig_path);
-		} else if (redef_has_path) {
-			throw Config_error(node, "Duplicate definition of '{}', originally defined in string config, defined again in '{}'", name, redef_path);
-		} else if (orig_has_path) {
-			throw Config_error(node, "Duplicate definition of '{}', originally defined in '{}', defined again in a string config", name, orig_path);
-		}
-#endif
-		throw Config_error(node, "Duplicate definition of '{}'", name);
-	}
 }
 
 void Global_context::collect_ordered_nodes(
@@ -401,6 +368,58 @@ void Global_context::load_pdi_config(PC_tree_t conf)
 		if (auto m = PC_get(node, ".metadata"); !PC_status(m)) load_data(*this, m, true);
 		if (auto d = PC_get(node, ".data"); !PC_status(d)) load_data(*this, d, false);
 	}
+}
+
+Data_descriptor& Global_context::make_and_check_descriptor(PC_tree_t key_node)
+{
+	std::string descriptor_name = to_string(key_node);
+
+	auto [descriptor_entry, is_new_entry] = m_descriptors.emplace(
+		descriptor_name,
+		std::unique_ptr<Data_descriptor>(new Data_descriptor_impl(*this, descriptor_name.c_str(), key_node))
+	);
+
+	if (!is_new_entry) {
+		// first_definition_node: from the deepest included file (first encountered in post-order)
+		PC_tree_t first_definition_node = static_cast<Data_descriptor_impl&>(*descriptor_entry->second).m_source_node;
+
+		// redefinition_node: from the parent/root config (encountered later in post-order)
+		PC_tree_t redefinition_node = key_node;
+
+#if PDI_HAS_PC_PATH
+		const char* first_definition_path = PC_path(first_definition_node);
+		const char* redefinition_path = PC_path(redefinition_node);
+		bool first_has_path = first_definition_path && fs::exists(first_definition_path);
+		bool redef_has_path = redefinition_path && fs::exists(redefinition_path);
+
+		if (first_has_path && redef_has_path) {
+			throw Config_error(
+				redefinition_node,
+				"Duplicate definition of '{}', first defined in '{}', then redefined in '{}'",
+				descriptor_name,
+				redefinition_path, // root/parent file = first from user's perspective
+				first_definition_path // deepest included file = redefinition from user's perspective
+			);
+		} else if (first_has_path) {
+			throw Config_error(
+				redefinition_node,
+				"Duplicate definition of '{}', first defined in a string config, then redefined in '{}'",
+				descriptor_name,
+				first_definition_path
+			);
+		} else if (redef_has_path) {
+			throw Config_error(
+				redefinition_node,
+				"Duplicate definition of '{}', first defined in '{}', then redefined in a string config",
+				descriptor_name,
+				redefinition_path
+			);
+		}
+#endif
+		throw Config_error(redefinition_node, "Duplicate definition of '{}'", descriptor_name);
+	}
+
+	return *descriptor_entry->second;
 }
 
 Global_context::~Global_context()

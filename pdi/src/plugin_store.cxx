@@ -242,7 +242,7 @@ Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
 {
 	initialize_path(PC_get(conf, ".plugin_path"));
 	// Plugin registration is deferred to register_plugins(),
-	// called for each node (root included) by load_pdi_config_impl.
+	// called for each node (root included) by load_pdi_config_impl().
 }
 
 void Plugin_store::load_plugins()
@@ -261,9 +261,6 @@ void Plugin_store::load_plugins()
 
 void Plugin_store::register_plugins(PC_tree_t conf)
 {
-	// Allow included files to extend the plugin path too.
-	initialize_path(PC_get(conf, ".plugin_path"));
-
 	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
 	if (nb_plugins > 0) m_ctx.logger().trace("Registering {} plugin(s)", nb_plugins);
 	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
