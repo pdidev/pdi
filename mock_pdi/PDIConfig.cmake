@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -44,6 +44,7 @@ endif()
 # Create the PDI_C target only once
 if(NOT TARGET PDI_C)
 	add_library(PDI_C INTERFACE)
+	target_compile_features(PDI_C PUBLIC cxx_std_20 c_std_17)
 	target_include_directories(PDI_C INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
 	target_compile_definitions(PDI_C INTERFACE "WITHOUT_PDI=1")
 	add_library(PDI::pdi   ALIAS PDI_C)
