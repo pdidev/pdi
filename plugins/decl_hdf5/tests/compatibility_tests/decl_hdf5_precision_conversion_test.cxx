@@ -130,10 +130,10 @@ plugins:
 	type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_IEEE_F32LE));
-	auto read_float_array = make_a<std::array<std::array<float, N>, N>>();
+	std::array<std::array<float, N>, N>> read_float_array;
 
 	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data());
-
+	ASSERT_GE(status, 0);
 	EXPECT_TRUE(compare_2dfields<float>(test_array, read_float_array));
 
 	H5Tclose(type_id);
@@ -146,10 +146,10 @@ plugins:
 	type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_STD_I32LE));
-	auto read_int_array = make_a<std::array<std::array<int, N>, N>>();
+	std::array<std::array<int, N>, N>> read_int_array;
 
 	status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_int_array.data());
-
+	ASSERT_GE(status, 0);
 	EXPECT_TRUE(compare_2dfields<int>(test_array, read_int_array));
 
 	H5Tclose(type_id);
