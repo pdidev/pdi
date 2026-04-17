@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -59,8 +59,8 @@ public:
 	 * \param[in] args the python-style parameters for the message
 	 * \see printf
 	 */
-	template <typename S, typename... Args>
-	Error(PDI_status_t errcode, const S& format_str, Args&&... args)
+	template <typename... Args>
+	inline constexpr Error(PDI_status_t errcode, fmt::format_string<Args...> format_str, Args&&... args)
 		: m_status{errcode}
 		, m_what{fmt::format(format_str, std::forward<Args>(args)...)}
 	{}
@@ -79,51 +79,38 @@ public:
 	PDI_status_t status() const noexcept;
 };
 
-class PDI_EXPORT Unavailable_error: public Error
+class PDI_EXPORT Spectree_error: public Error
 {
 public:
-	template <typename S, typename... Args>
-	Unavailable_error(const S& format_str, Args&&... args)
-		: Error(PDI_UNAVAILABLE, std::string("Unavailable_error: ") + format_str, std::forward<Args>(args)...)
-	{}
-
-	Unavailable_error(Unavailable_error&&) = default;
-
-	Unavailable_error(const Unavailable_error&) = default;
-};
-
-class PDI_EXPORT Config_error: public Error
-{
-public:
-	template <typename S, typename... Args>
-	Config_error(PC_tree_t tree, const S& format_str, Args&&... args)
-		: Error(PDI_ERR_CONFIG)
+	template <typename... Args>
+	Spectree_error(PC_tree_t tree, fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_SPECTREE)
 	{
 		std::ostringstream err_msg;
 		if (!PC_status(tree) && tree.node) {
 			if (tree.node->start_mark.line == tree.node->end_mark.line) {
-				err_msg << "Config_error in line " << tree.node->start_mark.line + 1 << ": ";
+				err_msg << "Spectree_error in line " << tree.node->start_mark.line + 1 << ": ";
 			} else {
-				err_msg << "Config_error in lines " << tree.node->start_mark.line + 1 << " - " << tree.node->end_mark.line << ": ";
+				err_msg << "Spectree_error in lines " << tree.node->start_mark.line + 1 << " - " << tree.node->end_mark.line << ": ";
 			}
 		} else {
-			err_msg << "Config_error: ";
+			err_msg << "Spectree_error: ";
 		}
 		err_msg << fmt::format(format_str, std::forward<Args>(args)...);
 		m_what = err_msg.str();
 	}
 
-	Config_error(Config_error&&) = default;
+	Spectree_error(Spectree_error&&) = default;
 
-	Config_error(const Config_error&) = default;
+	Spectree_error(const Spectree_error&) = default;
 };
 
 class PDI_EXPORT Value_error: public Error
 {
 public:
-	template <typename S, typename... Args>
-	Value_error(const S& format_str, Args&&... args)
-		: Error(PDI_ERR_VALUE, std::string("Value_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename... Args>
+	inline constexpr Value_error(fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_VALUE, "Value_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
 	Value_error(Value_error&&) = default;
@@ -134,9 +121,9 @@ public:
 class PDI_EXPORT Plugin_error: public Error
 {
 public:
-	template <typename S, typename... Args>
-	Plugin_error(const S& format_str, Args&&... args)
-		: Error(PDI_ERR_PLUGIN, std::string("Plugin_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename... Args>
+	inline constexpr Plugin_error(fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_PLUGIN, "Plugin_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
 	Plugin_error(Plugin_error&&) = default;
@@ -147,9 +134,9 @@ public:
 class PDI_EXPORT Impl_error: public Error
 {
 public:
-	template <typename S, typename... Args>
-	Impl_error(const S& format_str, Args&&... args)
-		: Error(PDI_ERR_IMPL, std::string("Impl_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename... Args>
+	inline constexpr Impl_error(fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_IMPL, "Impl_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
 	Impl_error(Impl_error&&) = default;
@@ -160,9 +147,9 @@ public:
 class PDI_EXPORT System_error: public Error
 {
 public:
-	template <typename S, typename... Args>
-	System_error(const S& format_str, Args&&... args)
-		: Error(PDI_ERR_SYSTEM, std::string("System_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename... Args>
+	inline constexpr System_error(fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_SYSTEM, "System_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
 	System_error(System_error&&) = default;
@@ -173,9 +160,9 @@ public:
 class PDI_EXPORT State_error: public Error
 {
 public:
-	template <typename S, typename... Args>
-	State_error(const S& format_str, Args&&... args)
-		: Error(PDI_ERR_STATE, std::string("State_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename... Args>
+	inline constexpr State_error(fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_STATE, "State_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
 	State_error(State_error&&) = default;
@@ -183,25 +170,25 @@ public:
 	State_error(const State_error&) = default;
 };
 
-class PDI_EXPORT Right_error: public Error
+class PDI_EXPORT Permission_error: public Error
 {
 public:
-	template <typename S, typename... Args>
-	Right_error(const S& format_str, Args&&... args)
-		: Error(PDI_ERR_RIGHT, std::string("Right_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename... Args>
+	inline constexpr Permission_error(fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_PERMISSION, "Permission_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
-	Right_error(Right_error&&) = default;
+	Permission_error(Permission_error&&) = default;
 
-	Right_error(const Right_error&) = default;
+	Permission_error(const Permission_error&) = default;
 };
 
 class PDI_EXPORT Type_error: public Error
 {
 public:
-	template <typename S, typename... Args>
-	Type_error(const S& format_str, Args&&... args)
-		: Error(PDI_ERR_TYPE, std::string("Type_error: ") + format_str, std::forward<Args>(args)...)
+	template <typename... Args>
+	inline constexpr Type_error(fmt::format_string<Args...> format_str, Args&&... args)
+		: Error(PDI_ERR_TYPE, "Type_error: {}", fmt::format(format_str, std::forward<Args>(args)...))
 	{}
 
 	Type_error(Type_error&&) = default;

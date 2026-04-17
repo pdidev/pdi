@@ -76,6 +76,7 @@ option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones"
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 ### Default build type
 
@@ -103,11 +104,19 @@ list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake")
 if("${BUILD_DECL_NETCDF_PLUGIN}")
-	# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
-	if(4.1 VERSION_GREATER "${CMAKE_VERSION}")
-		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.1")
+	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+		# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/plugins/decl_netcdf/cmake/4.3")
 	endif()
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
+endif()
+if("${BUILD_DECL_HDF5_PLUGIN}")
+	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+		# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/plugins/decl_hdf5/cmake/4.3")
+	endif()
 endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
@@ -263,7 +272,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 
 # if ( PDI or ... )
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.14.1"
+	EMBEDDED_PATH "vendor/spdlog-1.15.3"
 	CMAKE_CACHE_ARGS
 		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"

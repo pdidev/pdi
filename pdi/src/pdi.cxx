@@ -54,7 +54,6 @@ using std::endl;
 using std::exception;
 using std::list;
 using std::make_shared;
-using std::move;
 using std::setfill;
 using std::setw;
 using std::stack;
@@ -127,7 +126,7 @@ void assert_status(PDI_status_t status, const char* message, void*)
 {
 	if (status) {
 		if (Global_context::initialized()) {
-			Global_context::context().logger().error(message);
+			Global_context::context().logger().error("{}", message);
 		} else {
 			cerr << "[PDI][NOINIT] *** Fatal error: " << message << endl;
 		}
@@ -140,7 +139,7 @@ void assert_status(PDI_status_t status, const char* message, void*)
 void warn_status(PDI_status_t status, const char* message, void*)
 {
 	if (status && Global_context::initialized()) {
-		Global_context::context().logger().warn(message);
+		Global_context::context().logger().warn("{}", message);
 	}
 }
 
@@ -220,7 +219,7 @@ try {
 			PDI_VERSION_PATCH
 		};
 	}
-	Global_context::context().logger().trace("PDI API version: {}.{}.{}");
+	Global_context::context().logger().trace("PDI API version: {}.{}.{}", PDI_VERSION_MAJOR, PDI_VERSION_MINOR, PDI_VERSION_PATCH);
 	return PDI_OK;
 } catch (const Error& e) {
 	return g_error_context.return_err(e);

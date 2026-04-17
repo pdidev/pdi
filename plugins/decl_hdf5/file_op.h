@@ -46,6 +46,7 @@
 #include "collision_policy.h"
 #include "dataset_explicit_type.h"
 #include "dataset_op.h"
+#include "subfiling.h"
 
 namespace decl_hdf5 {
 
@@ -63,14 +64,11 @@ class File_op
 	/// a list of events that trigger this operation
 	std::vector<std::string> m_event;
 
+	Subfiling m_subfiling;
+
 #ifdef H5_HAVE_PARALLEL
 	/// a communicator for parallel HDF5 (null if no comm is specified)
 	PDI::Expression m_communicator;
-
-#ifdef H5_HAVE_SUBFILING_VFD
-	/// HDF5 subfiling
-	PDI::Expression m_subfiling = 0L;
-#endif
 #endif
 
 	/// type information for the datasets for which an explicit type is specified
@@ -125,11 +123,9 @@ public:
 
 #ifdef H5_HAVE_PARALLEL
 	PDI::Expression communicator() const { return m_communicator; }
+#endif
 
-#ifdef H5_HAVE_SUBFILING_VFD
-	PDI::Expression subfiling() const { return m_subfiling; }
-#endif
-#endif
+	Subfiling const & subfiling() const { return m_subfiling; }
 
 	/** Executes the requested operation.
 	 *

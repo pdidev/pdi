@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018-2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -119,7 +119,7 @@ TEST_F(DataRefAnyTest, copyConstructor)
  */
 TEST_F(DataRefAnyTest, moveConstructor)
 {
-	Ref moved_ref(move(*this->m_tested_ref));
+	Ref moved_ref(std::move(*this->m_tested_ref));
 	EXPECT_TRUE(moved_ref);
 	EXPECT_FALSE(*this->m_tested_ref);
 	EXPECT_EQ(nullptr, Reference_base::get_content(*this->m_tested_ref));

@@ -8,14 +8,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 * Add subfiling support [#602](https://github.com/pdidev/pdi/issues/602)
+* Added support for HDF5-2 by fixing an issue that arose when combining 
+  cmake < 4.3 with HDF5 >= 2 [#678](https://github.com/pdidev/pdi/issues/678)
+* added a `ENABLE_BENCHMARKING` flag to cmake to enable running the benchmarks
+  as part of the tests (off by default)
+  [#679](https://github.com/pdidev/pdi/issues/679)
 
 ### Changed
+* Fully qualify `std::move` calls to prevent a compilation warning and incorrect
+  usages [#675](https://github.com/pdidev/pdi/issues/675)
+* benchmarks are not run as part of the test suite by default anymore, one must
+  set `ENABLE_BENCHMARKING` to `ON` in Cmake to re-enable them
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+* Fixed a rare bug, where the plugin would crash while reporting an error with
+  multiple matching regexes [#668](https://github.com/pdidev/pdi/issues/668)
 
 ### Security
 

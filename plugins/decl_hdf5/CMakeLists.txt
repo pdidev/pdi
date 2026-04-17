@@ -31,9 +31,16 @@
 cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
 
+if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+    # Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+	# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/4.3")
+endif()
+
 option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_HDF5_PARALLEL "Enable HDF5 parallel build" ON)
+option(ENABLE_BENCHMARKING "Activate benchmarks in the test suite" OFF)
 
 include(CTest)
 
@@ -77,7 +84,8 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		collision_policy.cxx
 		file_op.cxx
 		hdf5_wrapper.cxx
-		selection.cxx)
+		selection.cxx
+		subfiling.cxx)
 target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 

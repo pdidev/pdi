@@ -28,7 +28,6 @@
 #include "pdi/logger.h"
 #include "pdi/timer.h"
 
-using std::move;
 using std::string;
 
 namespace PDI {
@@ -107,12 +106,12 @@ Logger& Context_proxy::pdi_core_logger()
 
 Datatype_template_sptr Context_proxy::datatype(PC_tree_t node)
 {
-	return m_real_context.datatype(move(node));
+	return m_real_context.datatype(std::move(node));
 }
 
 void Context_proxy::add_datatype(const string& name, Datatype_template_parser parser)
 {
-	m_real_context.add_datatype(name, move(parser));
+	m_real_context.add_datatype(name, std::move(parser));
 }
 
 Callbacks& Context_proxy::callbacks()

@@ -33,6 +33,7 @@
 #include <pdi.h>
 #include <pdi/context.h>
 #include <pdi/data_descriptor.h>
+#include <pdi/error.h>
 #include <pdi/expression.h>
 #include <pdi/logger.h>
 #include <pdi/paraconf_wrapper.h>

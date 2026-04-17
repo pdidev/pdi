@@ -37,7 +37,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 {
 	PC_tree_t file_node = PC_get(config, ".file");
 	if (PC_status(file_node)) {
-		throw PDI::Error{PDI_ERR_CONFIG, "Decl_netcdf plugin: `file' node is mandatory"};
+		throw PDI::Spectree_error{file_node, "Decl_netcdf plugin: `file' node is mandatory"};
 	}
 	m_file_path = PDI::Expression{PDI::to_string(file_node)};
 	m_ctx.logger().trace("Creating file info");
@@ -151,7 +151,7 @@ Dnc_file_context::Dnc_file_context(PDI::Context& ctx, PC_tree_t config)
 				this->m_write.emplace(PDI::to_string(desc_name), Dnc_io{this->m_ctx, write_value});
 			});
 		} else {
-			throw PDI::Error{PDI_ERR_CONFIG, "write node is not parsed correctly"};
+			throw PDI::Spectree_error{write_node, "write node is not parsed correctly"};
 		}
 	}
 

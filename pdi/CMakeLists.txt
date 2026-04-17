@@ -56,6 +56,7 @@ option(BUILD_SHARED_LIBS   "Build shared libraries rather than static ones" ON)
 option(BUILD_TESTING       "Build tests" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_PYTHON        "Enable Python support" "${BUILD_UNSTABLE}")
+option(ENABLE_BENCHMARKING "Activate benchmarks in the test suite" OFF)
 
 if(NOT "${BUILD_SHARED_LIBS}") 
 	message(FATAL_ERROR "Building PDI as a static lib is not supported currently")
@@ -170,7 +171,7 @@ target_include_directories(PDI_C
 target_link_libraries(PDI_C
 		PUBLIC paraconf::paraconf ${CMAKE_DL_LIBS}
 		PRIVATE spdlog::spdlog)
-target_compile_features(PDI_C PRIVATE cxx_std_17 c_std_11)
+target_compile_features(PDI_C PUBLIC cxx_std_20 c_std_17)
 set_property(TARGET PDI_C PROPERTY LIBRARY_OUTPUT_NAME "pdi")
 set_property(TARGET PDI_C PROPERTY ENABLE_EXPORTS TRUE)
 set_property(TARGET PDI_C PROPERTY C_VISIBILITY_PRESET hidden)
@@ -205,7 +206,6 @@ install(EXPORT PDI_C_EXPORT NAMESPACE "PDI::" DESTINATION "${INSTALL_CMAKEDIR}" 
 
 add_library(PDI_plugins INTERFACE)
 target_link_libraries(PDI_plugins INTERFACE PDI::PDI_C spdlog::spdlog)
-target_compile_features(PDI_plugins INTERFACE cxx_std_17 c_std_11)
 add_library(PDI::PDI_plugins ALIAS PDI_plugins)
 install(TARGETS PDI_plugins EXPORT PDI_plugins_EXPORT
 		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Runtime NAMELINK_COMPONENT Development
@@ -240,7 +240,7 @@ if("${BUILD_PYTHON}")
 			"$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/include>"
 			PRIVATE "$<BUILD_INTERFACE:${PDI_SOURCE_DIR}/src>"
 	)
-	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11 PDI::PDI_plugins)
+	target_link_libraries(PDI_pysupport PUBLIC pybind11::pybind11 pybind11::python_link_helper PDI::PDI_plugins)
 	set_property(TARGET PDI_pysupport PROPERTY LIBRARY_OUTPUT_NAME "pdi_pysupport")
 	set_property(TARGET PDI_pysupport PROPERTY ENABLE_EXPORTS TRUE)
 	set_property(TARGET PDI_pysupport PROPERTY C_VISIBILITY_PRESET hidden)

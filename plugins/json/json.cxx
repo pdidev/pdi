@@ -96,7 +96,7 @@ private:
 					if (key == "when") {
 						default_when = to_string(value_tree);
 					} else if (key != "file" && key != "write") {
-						throw Config_error{key_tree, "Unknown keyword '{}' encountered while expecting file, when, or write", key};
+						throw Spectree_error{key_tree, "Unknown keyword '{}' encountered while expecting file, when, or write", key};
 					}
 				});
 
@@ -122,7 +122,7 @@ private:
 								}
 							});
 						} else {
-							throw Config_error{key_tree, "Unknown write method. Please use [var1, var2, ...]"};
+							throw Spectree_error{key_tree, "Unknown write method. Please use [var1, var2, ...]"};
 						}
 					}
 				});
