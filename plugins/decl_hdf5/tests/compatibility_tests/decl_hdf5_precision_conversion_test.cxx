@@ -129,7 +129,7 @@ plugins:
 
 	// checking ...
 	// option 1
-	bool int2double_match = std::ranges::equal(read_int_array | std::views::join, test_array | std::views::join, [](double read_val, int ref_val) {
+	bool int2double_match = std::ranges::equal(read_int_array | std::views::join, test_array | std::views::join, [](int read_val, double ref_val) {
 		return static_cast<int>(std::trunc(ref_val)) == read_val;
 	});
 
