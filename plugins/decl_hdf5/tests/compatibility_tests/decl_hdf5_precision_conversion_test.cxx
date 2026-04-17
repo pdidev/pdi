@@ -102,16 +102,15 @@ plugins:
 	type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_IEEE_F32LE));
-	std::array < std::array<float, N>, N > read_float_array;
+	std::array< std::array<float, N>, N > read_float_array;
 
 	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data());
 	ASSERT_GE(status, 0);
 
-	for(auto i=0; i<N; i++)
-	{
+	for (auto i = 0; i < N; i++) {
 		EXPECT_THAT(read_float_array[i], ::testing::Pointwise(::testing::FloatEq(), test_array[i]));
 	}
-	
+
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
@@ -122,12 +121,12 @@ plugins:
 	type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_STD_I32LE));
-	std::array < std::array<int, N>, N > read_int_array;
+	std::array< std::array<int, N>, N > read_int_array;
 
 	status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_int_array.data());
 	ASSERT_GE(status, 0);
 
-	// checking ... 
+	// checking ...
 	// working on it
 
 	H5Tclose(type_id);
