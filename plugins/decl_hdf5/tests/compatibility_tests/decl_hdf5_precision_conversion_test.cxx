@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <concepts>
 #include <filesystem>
 
 #include <hdf5.h>
@@ -31,13 +32,34 @@
 class DeclHdf5: public ::PDI::PdiTest
 {};
 
-template<typename T>
-bool are_equal(double d, T f) {
-    double diff = std::abs(d - static_cast<double>(f));
-    // Scale epsilon by the larger of the two values
-    return diff <= (std::max(std::abs(d), std::abs(static_cast<double>(f))) 
-                   * std::numeric_limits<T>::epsilon());
+template <std::floating_point T, size_t N> // Only for floating point values
+bool compare_2dfields(const std::array<std::array<double, N>, N>& d_data, const std::array<std::array<T, N>, N>& read_data)
+{
+	for (size_t i = 0; i < N; ++i) {
+		for (size_t j = 0; j < N; ++j) {
+			const double diff = std::abs(d_data[i][j] - static_cast<double>(read_data[i][j]));
+			if (diff > std::numeric_limits<T>::epsilon()) {
+				return false;
+			}
+		}
+	}
+	return true;
 }
+
+template <typename T, size_t N>
+requires std::is_integral_v<T> // Only for integer values
+bool compare_2dfields(const std::array<std::array<double, N>, N>& d_data, const std::array<std::array<T, N>, N>& read_data)
+{
+	for (size_t i = 0; i < N; ++i) {
+		for (size_t j = 0; j < N; ++j) {
+			if (static_cast<T>(std::trunc(d_data[i][j])) != read_data[i][j]) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 /* Precision conversion with decl_hdf5 
  * data in double precision
  * file dataset in double, float, and int
@@ -76,7 +98,7 @@ plugins:
 	EXPECT_FALSE(std::filesystem::exists("d2f_test.h5"));
 	EXPECT_FALSE(std::filesystem::exists("d2i_test.h5"));
 
-	static constexpr int const N = 100;
+	static constexpr size_t const N = 100;
 	PDI_expose("N", &N, PDI_OUT);
 
 	auto const test_array = make_a<std::array<std::array<double, N>, N>>();
@@ -86,67 +108,49 @@ plugins:
 	EXPECT_TRUE(std::filesystem::exists("d2f_test.h5"));
 	EXPECT_TRUE(std::filesystem::exists("d2i_test.h5"));
 
+	// read double precision dataset and compare
 	hid_t file_id = H5Fopen("d2d_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	hid_t dataset_id = H5Dopen2(file_id, "/double_ds", H5P_DEFAULT);
 	hid_t type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_IEEE_F64LE));
-  auto read_double_array = make_a<std::array<std::array<double, N>, N>>();
+	auto read_double_array = make_a<std::array<std::array<double, N>, N>>();
 
-  herr_t status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, 
-                            H5P_DEFAULT, read_double_array.data());
+	herr_t status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_double_array.data());
 
-  for (auto i = 0; i < N; i++)
-  {
-    for (auto j = 0; j < N; j++)
-    {
-      EXPECT_TRUE(are_equal<double>(test_array[i][j], read_double_array[i][j]));
-    }
-  }
+	EXPECT_TRUE(compare_2dfields<double>(test_array, read_double_array));
 
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
 
+	// read simple precision dataset and compare
 	file_id = H5Fopen("d2f_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	dataset_id = H5Dopen2(file_id, "/float_ds", H5P_DEFAULT);
 	type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_IEEE_F32LE));
-  auto read_float_array = make_a<std::array<std::array<float, N>, N>>();
+	auto read_float_array = make_a<std::array<std::array<float, N>, N>>();
 
-  status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, 
-                            H5P_DEFAULT, read_float_array.data());
+	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data());
 
-  for (auto i = 0; i < N; i++)
-  {
-    for (auto j = 0; j < N; j++)
-    {
-      EXPECT_TRUE(are_equal<float>(test_array[i][j], read_float_array[i][j]));
-    }
-  }
+	EXPECT_TRUE(compare_2dfields<float>(test_array, read_float_array));
 
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
 
+	// read ingeger dataset and compare
 	file_id = H5Fopen("d2i_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	dataset_id = H5Dopen2(file_id, "/int_ds", H5P_DEFAULT);
 	type_id = H5Dget_type(dataset_id);
 
 	EXPECT_TRUE(H5Tequal(type_id, H5T_STD_I32LE));
-  auto read_int_array = make_a<std::array<std::array<int, N>, N>>();
+	auto read_int_array = make_a<std::array<std::array<int, N>, N>>();
 
-  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, 
-                            H5P_DEFAULT, read_int_array.data());
+	status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_int_array.data());
 
-  // for (auto i = 0; i < N; i++)
-  // {
-  //   for (auto j = 0; j < N; j++)
-  //   {
-  //     EXPECT_TRUE(are_equal<int>(test_array[i][j], read_int_array[i][j]));
-  //   }
-  // }
+	EXPECT_TRUE(compare_2dfields<int>(test_array, read_int_array));
 
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
