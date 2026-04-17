@@ -89,6 +89,7 @@ plugins:
 	std::array<std::array<double, N>, N> read_double_array;
 
 	herr_t status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_double_array.data());
+	ASSERT_GE(status, 0);
 
 	EXPECT_EQ(test_array, read_double_array);
 
