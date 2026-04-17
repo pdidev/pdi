@@ -129,11 +129,12 @@ plugins:
 
 	// checking ...
 	// option 1
-	bool int2double_match = std::equal(read_int_array.begin(), read_int_array.end(), test_array.begin(), [](const auto& read_row, const auto& ref_row) {
-		return std::equal(read_row.begin(), read_row.end(), ref_row.begin(), [](int read_val, double ref_val) {
-			return static_cast<int>(std::trunc(ref_val)) == read_val;
-		});
-	});
+	bool int2double_match
+		= std::equal(read_int_array.begin(), read_int_array.end(), test_array.begin(), [](const auto& read_row, const auto& ref_row) {
+			  return std::equal(read_row.begin(), read_row.end(), ref_row.begin(), [](int read_val, double ref_val) {
+				  return static_cast<int>(std::trunc(ref_val)) == read_val;
+			  });
+		  });
 
 	EXPECT_TRUE(int2double_match);
 
