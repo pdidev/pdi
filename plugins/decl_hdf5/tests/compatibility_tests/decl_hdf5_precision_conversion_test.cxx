@@ -108,9 +108,9 @@ plugins:
 	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data());
 	ASSERT_GE(status, 0);
 
-	for (auto i = 0; i < N; i++) {
-		EXPECT_THAT(read_float_array[i], ::testing::Pointwise(::testing::FloatEq(), test_array[i]));
-	}
+	EXPECT_THAT(read_float_array, testing::ElementsAreArray(test_array | std::views::transform([](std::array<double, N> const & aref) {
+																return testing::Pointwise(testing::FloatEq(), aref);
+															})));
 
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
@@ -127,16 +127,11 @@ plugins:
 	status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_int_array.data());
 	ASSERT_GE(status, 0);
 
-	// checking ...
-	// option 1
-	bool int2double_match
-		= std::equal(read_int_array.begin(), read_int_array.end(), test_array.begin(), [](const auto& read_row, const auto& ref_row) {
-			  return std::equal(read_row.begin(), read_row.end(), ref_row.begin(), [](int read_val, double ref_val) {
-				  return static_cast<int>(std::trunc(ref_val)) == read_val;
-			  });
-		  });
-
-	EXPECT_TRUE(int2double_match);
+	EXPECT_THAT(read_int_array, testing::ElementsAreArray(test_array | std::views::transform([](std::array<double, N> const & aref) {
+															  return testing::ElementsAreArray(aref | std::views::transform([](double const & ref) {
+																								   return static_cast<int>(ref);
+																							   }));
+														  })));
 
 	H5Tclose(type_id);
 	H5Dclose(dataset_id);
