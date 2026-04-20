@@ -41,10 +41,11 @@ const char CONF_YAML[] =
     "    status: cp_status\n"
     "    counter: cp_counter\n"
     "    checkpoint_label: test_01\n"
-    "    checkpoint_nr : 0\n"
-    "    iteration: ii\n"
-    "    protect_data: [ii, var]\n"  
-	"    recover_on: recover\n";
+	"    iteration: ii\n"
+	"    managed_checkpointing:\n"
+	"      protect_data: [ii, var]\n"
+	"      recover_on: recover\n"
+    "      checkpoint_nr : 0\n";
 
 int main(int argc, char* argv[])
 {	

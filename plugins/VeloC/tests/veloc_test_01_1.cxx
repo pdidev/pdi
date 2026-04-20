@@ -43,8 +43,9 @@ const char CONF_YAML[] =
     "    counter: cp_counter\n"
     "    checkpoint_label: test_01\n"
     "    iteration: ii\n"
-    "    protect_data: [ii, var]\n"   
-    "    checkpoint_on: ckp\n";
+	"    managed_checkpointing:\n"
+	"      protect_data: [ii, var]\n"
+	"      checkpoint_on: ckp\n";
 
 int main(int argc, char* argv[])
 {

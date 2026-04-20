@@ -12,15 +12,15 @@ const char CONF_YAML[] =
     "  veloc:\n"
     "    failure: 0\n"
     "    config_file: veloc_config.cfg\n"
-    "    checkpoint_label: test_02\n"
+    "    checkpoint_label: test_03\n"
     "    iteration: ii\n"
-    "    protect_data: [var]\n"
-    "    manual_checkpoint:\n"
-    "      original_file: file1.h5\n"
-    "      veloc_file: veloc_file\n"
-    "      start_on: start\n"
-    "      route_file_on: route\n"
-    "      end_on: end\n";
+    "    custom_checkpointing:\n"
+    "       veloc_file: veloc_file\n"
+    "       manual_checkpoint:\n"
+    "           original_file: file1.h5\n"
+    "           start_on: start\n"
+    "           route_file_on: route\n"
+    "           end_on: end\n";
 
 
 int main(int argc, char* argv[])
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
         var = 2 * ii;
 
         PDI_multi_expose("start", "ii", &ii, PDI_OUT,
-                                       "var", &var, PDI_OUT, NULL);
+                            "var", &var, PDI_OUT, NULL);
 
         PDI_multi_expose("route", "veloc_file", veloc_file, PDI_INOUT, NULL);
         

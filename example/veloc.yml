@@ -21,5 +21,5 @@ pdi:
       iteration : iter # needed by VeloC to checkpoint  
       when : '$iter % 1000 = 0'
       protect_data: [iter, main_field] # data to be checkpointed, iter must be included 
-      synchronize_on: newiter # PDI_event to check status and checkpoint/recover as a consequence 
+      synchronize_on: newiter # PDI_event to check status and consequently checkpoint/recover  
 

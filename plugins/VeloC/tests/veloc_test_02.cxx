@@ -44,9 +44,10 @@ const char CONF_YAML[] =
 	"    status: cp_status\n"
     "    checkpoint_label: test_02\n"
     "    iteration: ii\n"
-    "    protect_data: [ii, arr]\n"   
-    "    synchronize_on: sync\n"
-	"    when: '$ii % 2 = 0 '\n";
+	"    managed_checkpointing:\n"
+	"      protect_data: [ii, arr]\n"
+	"      synchronize_on: sync\n"
+	"      when: '$ii % 2 = 0 '\n";
 
 int main(int argc, char* argv[])
 {
@@ -73,7 +74,7 @@ int main(int argc, char* argv[])
                 "arr", arr, PDI_INOUT,
                 NULL);
 		
-		if((cp_status) && (ii == 5)){
+		if((cp_status) && (ii == 5)){ //no recovery needed 
 			break; 
 		}
     };
@@ -95,7 +96,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-     std::cout << "TEST 02 PASSED " <<std::endl;
+    std::cout << "TEST 02 PASSED " <<std::endl;
 	
 	PDI_finalize();
 	MPI_Finalize();

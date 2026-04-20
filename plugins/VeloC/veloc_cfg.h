@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018-2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,7 @@
 
 enum class Event_type {
 	RECOVER,
-    CHECKPOINT,
-	RECOVER_VAR,
+	CHECKPOINT,
 	STATE_SYNC,
 	START_CHECKPOINT,
 	ROUTE_FILE_FOR_CP,
@@ -52,26 +51,40 @@ enum class Event_type {
 
 enum class Desc_type {
 	STATUS,
-    COUNTER_CP
+	COUNTER_CP
 };
 
-struct ManualCheckpoint{
+struct ManualCheckpoint {
+	bool is_valid = false; 
 	std::string original_file;
-	std::string routed_file;
 	Event_type start_cp_on;
 	Event_type route_on;
-	Event_type end_cp_on; 
-	// PDI::Expression when;
+	Event_type end_cp_on;
 };
 
-
-struct ManualRecovery{
+struct ManualRecovery {
+	bool is_valid = false; 
 	std::string original_file;
-	std::string routed_file;
 	Event_type start_rec_on;
 	Event_type route_on;
-	Event_type end_rec_on; 
-	// PDI::Expression when;
+	Event_type end_rec_on;
+	int requested_checkpoint = -1; 
+};
+
+// Holds all configuration parsed from the "managed-checkpointing" block.
+struct ManagedCheckpointingCfg {
+	bool is_valid = false; 
+	std::unordered_map<int, std::string> protected_data;
+	PDI::Expression when = 1L;
+	int requested_checkpoint = -1; 
+};
+
+// Holds all configuration parsed from the "custom-checkpointing" block.
+struct CustomCheckpointingCfg {
+	bool is_valid = false; 
+	std::string routed_file;     
+	ManualCheckpoint manual_cp;
+	ManualRecovery manual_rec;
 };
 
 
@@ -79,62 +92,46 @@ class Veloc_cfg
 {
 	std::string m_config_file;
 
-    std::string m_cp_label; 
+	std::string m_cp_label;
 
-	ManualCheckpoint m_manual_cp;
+	std::string m_iter_name;
 
-	ManualRecovery m_manual_rec;
+	int m_failure = 0;            
 
-	bool manual_cp_defined;
+	ManagedCheckpointingCfg m_managed;
 
-	bool manual_rec_defined;
+	CustomCheckpointingCfg m_custom;
 
-    int m_failure; 
-
-	int m_status; 
-
-	int m_requested_checkpoint; 
-
-    std::string m_iter_name;
-	
-	std::unordered_map<int, std::string> m_protected_data;
-	
 	std::unordered_map<std::string, Desc_type> m_descs;
-	
+
 	std::unordered_map<std::string, Event_type> m_events;
 
-	PDI::Expression m_when;
-	
-	std::unordered_map<std::string, std::set<int>> m_recover_var; // event a - 1,2,3 ( = recover variables with index 1,2, and 3 in m_protected_data on "event")
-
 	void check_conformity(PDI::Context& ctx);
-	
+
 public:
 	Veloc_cfg(PDI::Context& ctx, PC_tree_t tree);
-	
-	std::string config()  const { return m_config_file; }
 
-	std::string label() const { return m_cp_label; }
-	
-	int failure() const { return m_failure; }
+	std::string config() { return m_config_file; }
 
-	int requested_checkpoint() const { return m_requested_checkpoint; }
+	std::string label() { return m_cp_label; }
 
-	std::string iter_name() const { return m_iter_name; }
+	std::string iter_name() { return m_iter_name; }
 
-	const ManualCheckpoint manual_cp() const {return m_manual_cp;}
+	int failure() { return m_failure; }
 
-	const ManualRecovery manual_rec() const {return m_manual_rec;}
+	ManagedCheckpointingCfg&  managed() { return m_managed; }
 
-	const PDI::Expression& when() const { return m_when; }
-	
-	const std::unordered_map<int, std::string>& protected_data() const {return m_protected_data; }
-	
-	const std::unordered_map<std::string, Desc_type>& descs() const {return m_descs;}
-	
-	const std::unordered_map<std::string, Event_type>& events() const {return m_events;}
-	
-	const std::unordered_map<std::string, std::set<int>>& recover_var() const {return m_recover_var;}
+	bool managed_defined() { return m_managed.is_valid; }
+
+	CustomCheckpointingCfg& custom() { return m_custom; }
+
+	ManualCheckpoint& manual_cp() { return m_custom.manual_cp; }
+
+	ManualRecovery&  manual_rec() { return m_custom.manual_rec; }
+
+	std::unordered_map<std::string, Desc_type>&  descs() { return m_descs; }
+
+	std::unordered_map<std::string, Event_type>&  events() { return m_events; }
 }; // class Veloc_cfg
 
 #endif // VELOC_CFG_H_

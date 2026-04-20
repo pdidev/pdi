@@ -18,6 +18,7 @@ const char CONF_YAML[] =
     "       veloc_file: veloc_file\n"
     "       manual_recover:\n"
     "           original_file: file1.h5\n"
+    "           checkpoint_nr: 1\n"
     "           start_on: start\n"
     "           route_file_on: route\n"
     "           end_on: end\n";
@@ -41,13 +42,13 @@ int main(int argc, char* argv[])
     int var = 0;
     char veloc_file[256];
 
-    int expected_var = 4;
+    int expected_var = 2;
 
     PDI_multi_expose("start", "var", &var, PDI_OUT, NULL);
 
     PDI_multi_expose("route", "veloc_file", veloc_file, PDI_INOUT, NULL);
     if (veloc_file[0] == '\0') {
-        std::cerr << "TEST_03_2 FAILED: veloc_file was not filled by route event" << std::endl;
+        std::cerr << "TEST_03_3 FAILED: veloc_file was not filled by route event" << std::endl;
         exit(1);
     }
 
@@ -82,7 +83,7 @@ int main(int argc, char* argv[])
     }
 
     if (read_var != expected_var) {
-        std::cerr << "TEST_03_2 FAILED: dataset value " << read_var
+        std::cerr << "TEST_03_3 FAILED: dataset value " << read_var
                   << " does not match expected value " << expected_var << std::endl;
         H5Dclose(dset_id);
         H5Fclose(file_id);
@@ -95,7 +96,7 @@ int main(int argc, char* argv[])
     PDI_event("end");
     PDI_reclaim("var");
 
-    std::cout << "TEST 03_2 PASSED" << std::endl;
+    std::cout << "TEST 03_3 PASSED" << std::endl;
 
     PDI_finalize();
     MPI_Finalize();

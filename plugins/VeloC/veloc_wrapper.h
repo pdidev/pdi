@@ -39,31 +39,27 @@
 #include <algorithm>
 #include <optional>
 
-void init(MPI_Comm comm, std::string veloc_file);
+void init(PDI::Context& ctx, MPI_Comm comm, std::string veloc_file);
 
 void protect_data(PDI::Context& ctx,int id, void * ptr, size_t n, size_t sub_bytes);
 
 void unprotect_data(PDI::Context& ctx, int id);
 
 int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> when, 
-	std::string label, std::string iter_name);
+	std::string label, int version);
 
-int load_checkpoint(PDI::Context& ctx, std::string label, int cp_id=0);
+int read_checkpoint(PDI::Context& ctx, std::string label, int cp_id); // is this needed? can't remember anymore 
 
-void selective_load(std::string label, int * ids, int len);
+void init_checkpoint(PDI::Context& ctx, std::string label, int version);
 
-void init_checkpoint(PDI::Context& ctx, std::string label, std::string iter_name);
+void route_file(PDI::Context& ctx,const std::string& input_filename, char* output_filename);
 
-void route_file(const std::string& input_filename, char* output_filename);
+void end_checkpoint(PDI::Context& ctx);
 
-void end_checkpoint();
+void init_restart(PDI::Context& ctx, std::string label, int version);
 
-void end_selective_load();
+void end_restart(PDI::Context& ctx);
 
-void init_restart(PDI::Context& ctx, std::string label);
-
-void end_restart();
-
-void finalize();
+void finalize(PDI::Context& ctx);
 
 #endif 
