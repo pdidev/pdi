@@ -38,6 +38,10 @@ class DeclHdf5: public ::PDI::PdiTest
  */
 TEST_F(DeclHdf5, PrecisionConversion)
 {
+#if defined(__clang__) && (__clang_major__ == 15)
+	GTEST_SKIP() << "Skipping test because Clang 15 has known issues with ranges.";
+#endif
+
 	InitPdi(PC_parse_string(R"==(
 logging: trace
 metadata:
@@ -116,7 +120,7 @@ plugins:
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
 
-	// read ingeger dataset and compare
+	// read integer dataset and compare
 	file_id = H5Fopen("d2i_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	dataset_id = H5Dopen2(file_id, "/int_ds", H5P_DEFAULT);
 	type_id = H5Dget_type(dataset_id);
