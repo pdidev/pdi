@@ -26,12 +26,12 @@ const char CONF_VALID[] =
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
     "      veloc_file : veloc_file_buf \n"
-    "      manual_checkpoint:\n"
+    "      custom_checkpoint:\n"
     "           original_file: my_file.dat\n"
     "           start_on: start_ckp\n"
     "           route_file_on: route_ckp\n"
     "           end_on: end_ckp\n"
-    "      manual_recover:\n"
+    "      custom_recover:\n"
     "           original_file: my_file.dat\n"
     "           start_on: start_rec\n"
     "           route_file_on: route_rec\n"
@@ -127,7 +127,7 @@ const char CONF_CP_OFILE_MISSING[] =
     "    checkpoint_label: test_01\n"
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
-    "       manual_checkpoint:\n"
+    "       custom_checkpoint:\n"
     "           original_file: my_file.dat\n"
     "           start_on: start_ckp\n"
     "           route_file_on: route_ckp\n"
@@ -147,7 +147,7 @@ const char CONF_CP_START_MISSING[] =
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
     "       veloc_file : veloc_file_buf\n"
-    "       manual_checkpoint:\n"
+    "       custom_checkpoint:\n"
     "           original_file: my_file.dat\n"
     "           route_file_on: route_ckp\n"
     "           end_on: end_ckp\n";
@@ -166,7 +166,7 @@ const char CONF_CP_ROUTE_MISSING[] =
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
     "       veloc_file : veloc_file_buf\n"
-    "       manual_checkpoint:\n"
+    "       custom_checkpoint:\n"
     "           original_file: my_file.dat\n"
     "           start_on: start_ckp\n"
     "           end_on: end_ckp\n";
@@ -185,7 +185,7 @@ const char CONF_CP_END_MISSING[] =
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
     "       veloc_file : veloc_file_buf\n"
-    "       manual_checkpoint:\n"
+    "       custom_checkpoint:\n"
     "           original_file: my_file.dat\n"
     "           start_on: start_ckp\n"
     "           route_file_on: route_ckp\n";
@@ -205,7 +205,7 @@ const char CONF_REC_OFILE_MISSING[] =
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
     "       veloc_file : veloc_file_buf\n"
-    "       manual_recover:\n"
+    "       custom_recover:\n"
     "           start_on: start_ckp\n"
     "           route_file_on: route_ckp\n"
     "           end_on: end_ckp\n";
@@ -224,7 +224,7 @@ const char CONF_REC_START_MISSING[] =
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
     "       veloc_file : veloc_file_buf\n"
-    "       manual_recover:\n"
+    "       custom_recover:\n"
     "           original_file: my_file.dat\n"
     "           route_file_on: route_ckp\n"
     "           end_on: end_ckp\n";
@@ -243,7 +243,7 @@ const char CONF_REC_ROUTE_MISSING[] =
     "    iteration: ii\n"
     "    protect_data: [ii, var]\n"
     "    recover_on: rec\n"
-    "    manual_recover:\n"
+    "    custom_recover:\n"
     "      original_file: my_file.dat\n"
     "      veloc_file: veloc_file_buf\n"
     "      start_on: start_rec\n"
@@ -263,7 +263,7 @@ const char CONF_REC_END_MISSING[] =
     "    iteration: ii\n"
     "    protect_data: [ii, var]\n"
     "    recover_on: rec\n"
-    "    manual_recover:\n"
+    "    custom_recover:\n"
     "      original_file: my_file.dat\n"
     "      veloc_file: veloc_file_buf\n"
     "      start_on: start_rec\n"
@@ -282,12 +282,12 @@ const char CONF_DUPLICATE_EVENTS[] =
     "    checkpoint_label: test_0\n"
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
-    "      manual_checkpoint:\n"
+    "      custom_checkpoint:\n"
     "           original_file: my_file.dat\n"
     "           start_on: start_ckp\n"
     "           route_file_on: route_ckp\n"
     "           end_on: end_ckp\n"
-    "      manual_recover:\n"
+    "      custom_recover:\n"
     "           original_file: my_file.dat\n"
     "           start_on: start_ckp\n"
     "           route_file_on: route_ckp\n"
@@ -300,7 +300,7 @@ int main(int argc, char* argv[])
     struct Test { const char* name; const char* yaml; int expect_error; };
 
     const Test tests[] = {
-        { "valid managed checkpointing",        CONF_VALID,        0 },
+        { "valid custom configuration",        CONF_VALID,        0 },
 
         { "missing config_file",                CONF_CONFIG_MISSING,       1 },
         { "missing checkpoint_label",           CONF_LABEL_MISSING,         1 },
@@ -309,15 +309,15 @@ int main(int argc, char* argv[])
         { "invalid failure value",              CONF_BAD_FAILURE,          1 },
         { "missing protect_data",               CONF_PROTECT_DATA_MISSING, 1 },
 
-        { "manual_checkpoint: missing veloc_file",    CONF_CP_OFILE_MISSING, 1 },
-        { "manual_checkpoint: missing start_on",      CONF_CP_START_MISSING,      1 },
-        { "manual_checkpoint: missing route_file_on", CONF_CP_ROUTE_MISSING,      1 },
-        { "manual_checkpoint: missing end_on",        CONF_CP_END_MISSING,        1 },
+        { "custom_checkpoint: missing veloc_file",    CONF_CP_OFILE_MISSING, 1 },
+        { "custom_checkpoint: missing start_on",      CONF_CP_START_MISSING,      1 },
+        { "custom_checkpoint: missing route_file_on", CONF_CP_ROUTE_MISSING,      1 },
+        { "custom_checkpoint: missing end_on",        CONF_CP_END_MISSING,        1 },
 
-        { "manual_recover: missing original_file",    CONF_REC_OFILE_MISSING,     1 },
-        { "manual_recover: missing start_on",         CONF_REC_START_MISSING,     1 },
-        { "manual_recover: missing route_file_on",    CONF_REC_ROUTE_MISSING,     1 },
-        { "manual_recover: missing end_on",           CONF_REC_END_MISSING,       1 },
+        { "custom_recover: missing original_file",    CONF_REC_OFILE_MISSING,     1 },
+        { "custom_recover: missing start_on",         CONF_REC_START_MISSING,     1 },
+        { "custom_recover: missing route_file_on",    CONF_REC_ROUTE_MISSING,     1 },
+        { "custom_recover: missing end_on",           CONF_REC_END_MISSING,       1 },
 
         { "missing config_file",                      CONF_DUPLICATE_EVENTS,       1 },
     };

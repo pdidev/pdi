@@ -246,16 +246,16 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
             if (key == "veloc_file") {
                 m_custom.routed_file = to_string(value);
             }
-            else if(key == "manual_checkpoint"){
+            else if(key == "custom_checkpoint"){
                 // parsed in step 4 
             }
-            else if( key == "manual_recover"){
+            else if( key == "custom_recover"){
                 // parsed in step 5
             }
         });
 
         // Step 4 
-        PC_tree_t manual_cp_tree = PC_get(custom_tree, ".manual_checkpoint");
+        PC_tree_t manual_cp_tree = PC_get(custom_tree, ".custom_checkpoint");
         if (!PC_status(manual_cp_tree)) {
             each(manual_cp_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
                 string key = to_string(key_tree);
@@ -268,7 +268,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
                 } else if (key == "route_file_on") {
                     load_events(m_events, ctx, value, Event_type::ROUTE_FILE_FOR_CP);
                 } else {
-                    ctx.logger().warn("VeloC config: unknown key `{}' in `manual_checkpoint', ignoring.", key);
+                    ctx.logger().warn("VeloC config: unknown key `{}' in `custom_checkpoint', ignoring.", key);
                 }
             });
 
@@ -277,7 +277,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
         }
 
         // Step 5
-        PC_tree_t manual_rec_tree = PC_get(custom_tree, ".manual_recover");
+        PC_tree_t manual_rec_tree = PC_get(custom_tree, ".custom_recover");
         if (!PC_status(manual_rec_tree)) {
             each(manual_rec_tree, [&](PC_tree_t key_tree, PC_tree_t value) {
                 string key = to_string(key_tree);
@@ -292,7 +292,7 @@ Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree)
                 }else if (key == "checkpoint_nr") {
                     m_custom.manual_rec.requested_checkpoint = to_long(value);
                 } else {
-                    ctx.logger().warn("VeloC config: unknown key `{}' in `manual_recover', ignoring.", key);
+                    ctx.logger().warn("VeloC config: unknown key `{}' in `custom_recover', ignoring.", key);
                 }
             });
             manual_rec().is_valid = validate_manual_op<Event_type::START_RECOVERY, 
@@ -402,7 +402,7 @@ void Veloc_cfg::check_conformity(Context& ctx)
 	if (m_custom.is_valid) {
 		if (!m_custom.manual_cp.is_valid && !m_custom.manual_rec.is_valid) {
 			ctx.logger().warn("VeloC Plugin Spectree: `custom_checkpointing' is defined but "
-				"neither `manual_checkpoint' nor `manual_recover' have been configured");
+				"neither `custom_checkpoint' nor `custom_recover' have been configured");
 		}
 	}
 }

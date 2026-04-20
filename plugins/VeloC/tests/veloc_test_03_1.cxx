@@ -16,7 +16,7 @@ const char CONF_YAML[] =
     "    iteration: ii\n"
     "    custom_checkpointing:\n"
     "       veloc_file: veloc_file\n"
-    "       manual_checkpoint:\n"
+    "       custom_checkpoint:\n"
     "           original_file: file1.h5\n"
     "           start_on: start\n"
     "           route_file_on: route\n"
