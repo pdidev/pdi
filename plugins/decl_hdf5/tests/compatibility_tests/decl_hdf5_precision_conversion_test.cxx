@@ -29,6 +29,9 @@
 
 #include <pdi/testing.h>
 
+#if defined(__clang__) && (__clang_major__ == 15)
+// Skipping test because Clang 15 has known issues with ranges.
+#else
 class DeclHdf5: public ::PDI::PdiTest
 {};
 
@@ -38,10 +41,6 @@ class DeclHdf5: public ::PDI::PdiTest
  */
 TEST_F(DeclHdf5, PrecisionConversion)
 {
-#if defined(__clang__) && (__clang_major__ == 15)
-	GTEST_SKIP() << "Skipping test because Clang 15 has known issues with ranges.";
-#endif
-
 	InitPdi(PC_parse_string(R"==(
 logging: trace
 metadata:
@@ -141,3 +140,5 @@ plugins:
 	H5Dclose(dataset_id);
 	H5Fclose(file_id);
 }
+
+#endif
