@@ -28,12 +28,12 @@
 #include <map>
 #include <set>
 #include <tuple>
-#include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
-#include <pdi/expression.h>
 #include <pdi/pdi_fwd.h>
+#include <pdi/expression.h>
 
 #include <veloc.h>
 
@@ -55,7 +55,7 @@ enum class Desc_type {
 };
 
 struct ManualCheckpoint {
-	bool is_valid = false; 
+	bool is_valid = false;
 	std::string original_file;
 	Event_type start_cp_on;
 	Event_type route_on;
@@ -63,30 +63,27 @@ struct ManualCheckpoint {
 };
 
 struct ManualRecovery {
-	bool is_valid = false; 
+	bool is_valid = false;
 	std::string original_file;
 	Event_type start_rec_on;
 	Event_type route_on;
 	Event_type end_rec_on;
-	int requested_checkpoint = -1; 
+	int requested_checkpoint = -1;
 };
 
-// Holds all configuration parsed from the "managed-checkpointing" block.
 struct ManagedCheckpointingCfg {
-	bool is_valid = false; 
+	bool is_valid = false;
 	std::unordered_map<int, std::string> protected_data;
 	PDI::Expression when = 1L;
-	int requested_checkpoint = -1; 
+	int requested_checkpoint = -1;
 };
 
-// Holds all configuration parsed from the "custom-checkpointing" block.
 struct CustomCheckpointingCfg {
-	bool is_valid = false; 
-	std::string routed_file;     
+	bool is_valid = false;
+	std::string routed_file;
 	ManualCheckpoint manual_cp;
 	ManualRecovery manual_rec;
 };
-
 
 class Veloc_cfg
 {
@@ -132,6 +129,7 @@ public:
 	std::unordered_map<std::string, Desc_type>&  descs() { return m_descs; }
 
 	std::unordered_map<std::string, Event_type>&  events() { return m_events; }
-}; // class Veloc_cfg
+}; 
+// class Veloc_cfg
 
 #endif // VELOC_CFG_H_

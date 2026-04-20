@@ -25,33 +25,32 @@
 #ifndef VELOC_WRAPPER_H
 #define VELOC_WRAPPER_H
 
-#include <pdi/plugin.h>
+#include <veloc.h>
 #include <pdi/context.h>
 #include <pdi/context_proxy.h>
 #include <pdi/expression.h>
-#include <veloc.h>
+#include <pdi/plugin.h>
 
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <string>
 #include <algorithm>
+#include <iostream>
 #include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 void init(PDI::Context& ctx, MPI_Comm comm, std::string veloc_file);
 
-void protect_data(PDI::Context& ctx,int id, void * ptr, size_t n, size_t sub_bytes);
+void protect_data(PDI::Context& ctx, int id, void* ptr, size_t n, size_t sub_bytes);
 
 void unprotect_data(PDI::Context& ctx, int id);
 
-int write_checkpoint(PDI::Context& ctx, std::optional<const PDI::Expression> when, 
-	std::string label, int version);
+int write_checkpoint(PDI::Context& ctx, PDI::Expression when, std::string label, int version);
 
-int read_checkpoint(PDI::Context& ctx, std::string label, int cp_id); // is this needed? can't remember anymore 
+int read_checkpoint(PDI::Context& ctx, std::string label, int cp_id); // is this needed? can't remember anymore
 
 void init_checkpoint(PDI::Context& ctx, std::string label, int version);
 
-void route_file(PDI::Context& ctx,const std::string& input_filename, char* output_filename);
+void route_file(PDI::Context& ctx, const std::string& input_filename, char* output_filename);
 
 void end_checkpoint(PDI::Context& ctx);
 
@@ -61,4 +60,4 @@ void end_restart(PDI::Context& ctx);
 
 void finalize(PDI::Context& ctx);
 
-#endif 
+#endif

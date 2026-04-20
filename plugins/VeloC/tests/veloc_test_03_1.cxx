@@ -22,11 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
- 
+#include <mpi.h> 
 #include <iostream>
-#include <mpi.h>
-#include <pdi.h>
+
 #include <hdf5.h>
+#include <pdi.h>
 
 const char CONF_YAML[] =
     "data:\n"

@@ -35,43 +35,46 @@
 #include "veloc_cfg.h"
 
 using PDI::Context;
+using PDI::each;
 using PDI::Error;
 using PDI::Config_error;
 using PDI::Expression;
 using PDI::Impl_error;
 using PDI::len;
+using PDI::opt_each;
 using PDI::to_long;
 using PDI::to_string;
-using PDI::each;
-using PDI::opt_each;
 
 using std::function;
 using std::map;
-using std::string;
 using std::set;
+using std::string;
 using std::tuple;
 using std::unordered_map;
 using std::unordered_set;
 
-
 namespace {
 
-    // Used to register event names of a given type into the events map (m_events)
-    // TO DO : REFACTOR TO AVOID REPEATING CODE 
-    bool load_events(unordered_map<string, Event_type>& events, Context& ctx, PC_tree_t tree, Event_type event_type,
-        function<void(const string&)> on_load_func = function<void(const string&)>())
-    {
-        const map<Event_type, string> event_names = {
-            {Event_type::CHECKPOINT,        "checkpoint_on"},
-            {Event_type::RECOVER,           "recover_on"},
-            {Event_type::STATE_SYNC,        "synchronize_on"},
-            {Event_type::START_CHECKPOINT,  "start_cp_on"},
-            {Event_type::END_CHECKPOINT,    "end_cp_on"},
-            {Event_type::ROUTE_FILE_FOR_CP, "route_file_for_cp_on"},
-            {Event_type::ROUTE_FILE_FOR_REC,"route_file_for_rec_on"},
-            {Event_type::START_RECOVERY,    "start_rec_on"},
-            {Event_type::END_RECOVERY,      "end_rec_on"}
-        };
+// Used to register event names of a given type into the events map (m_events)
+// TO DO : REFACTOR TO AVOID REPEATING CODE
+bool load_events(
+	unordered_map<string, Event_type>& events,
+	Context& ctx,
+	PC_tree_t tree,
+	Event_type event_type,
+	function<void(const string&)> on_load_func = function<void(const string&)>()
+)
+{
+	const map<Event_type, string> event_names
+		= {{Event_type::CHECKPOINT, "checkpoint_on"},
+		   {Event_type::RECOVER, "recover_on"},
+		   {Event_type::STATE_SYNC, "synchronize_on"},
+		   {Event_type::START_CHECKPOINT, "start_cp_on"},
+		   {Event_type::END_CHECKPOINT, "end_cp_on"},
+		   {Event_type::ROUTE_FILE_FOR_CP, "route_file_for_cp_on"},
+		   {Event_type::ROUTE_FILE_FOR_REC, "route_file_for_rec_on"},
+		   {Event_type::START_RECOVERY, "start_rec_on"},
+		   {Event_type::END_RECOVERY, "end_rec_on"}};
 
         bool inserted = false;
         if (!PC_status(PC_get(tree, "[0]"))) { // list
@@ -121,56 +124,70 @@ namespace {
         return result.second;
     }
 
+template <Event_type... RequiredEvents>
+bool validate_manual_op(
+	const unordered_map<string, Event_type>& events,
+	std::string original_file
+)
+{
+	const map<Event_type, string> event_names
+		= {{Event_type::START_CHECKPOINT, "start_on"},
+		   {Event_type::END_CHECKPOINT, "end_on"},
+		   {Event_type::ROUTE_FILE_FOR_CP, "route_file_on"},
+		   {Event_type::ROUTE_FILE_FOR_REC, "route_file_on"},
+		   {Event_type::START_RECOVERY, "start_on"},
+		   {Event_type::END_RECOVERY, "end_on"}};
 
+	std::array<Event_type, sizeof...(RequiredEvents)> required{RequiredEvents...};
 
-    template<Event_type... RequiredEvents>
-    bool validate_manual_op(const unordered_map<string, Event_type>& events, std::string original_file) {
-        const map<Event_type, string> event_names = {
-            {Event_type::START_CHECKPOINT,  "start_on"},
-            {Event_type::END_CHECKPOINT,    "end_on"},
-            {Event_type::ROUTE_FILE_FOR_CP, "route_file_on"},
-            {Event_type::ROUTE_FILE_FOR_REC,"route_file_on"},
-            {Event_type::START_RECOVERY,    "start_on"},
-            {Event_type::END_RECOVERY,      "end_on"}
-        };
+	for (auto event_type : required) {
+		bool defined = std::any_of(
+			events.begin(),
+			events.end(),
+			[event_type](const auto& pair) { return pair.second == event_type; }
+		);
 
-        std::array<Event_type, sizeof...(RequiredEvents)> required{RequiredEvents...};
+		if (!defined) {
+			throw Error{
+				PDI_ERR_CONFIG,
+				"VeloC Specification Tree: '{}' must be defined in manual checkpoint/recover",
+				event_names.at(event_type)
+			};
+		}
+	}
 
-        for (auto event_type : required) {
-            bool defined = std::any_of(events.begin(), events.end(),  // searches the actual events map
-                [event_type](const auto& pair) { return pair.second == event_type; });
+	if (original_file.empty()) {
+		throw Error{
+			PDI_ERR_CONFIG,
+			"VeloC Specification Tree: 'original_file' must be defined in manual checkpoint/recover"
+		};
+	}
 
-            if (!defined) {
-                throw Error{PDI_ERR_CONFIG,
-                    "VeloC Specification Tree: '{}' must be defined in manual checkpoint/recover",
-                    event_names.at(event_type)};
-            }
-        }
-        if(original_file.empty()){
-             throw Error{PDI_ERR_CONFIG,
-                    "VeloC Specification Tree: 'original_file' must be defined in manual checkpoint/recover"};
-        }
-        return true;
-    }
+	return true;
+}
 
+bool validate_custom_config(CustomCheckpointingCfg cfg)
+{
+	if (cfg.routed_file.empty()) {
+		throw Error{
+			PDI_ERR_CONFIG,
+			"VeloC Specification Tree: 'veloc_file' must be defined in 'custom_checkpointing' "
+		};
+	}
+	return true;
+}
 
+bool validate_managed_config(ManagedCheckpointingCfg cfg)
+{
+	if (cfg.protected_data.size() == 0) {
+		throw Error{
+			PDI_ERR_CONFIG,
+			"VeloC Specification Tree: 'protected data' must be defined in 'managed_checkpointing' "
+		};
+	}
+	return true;
+}
 
-    bool validate_custom_config(CustomCheckpointingCfg cfg){
-        if(cfg.routed_file.empty()){
-            throw Error{PDI_ERR_CONFIG, 
-                "VeloC Specification Tree: 'veloc_file' must be defined in 'custom_checkpointing' "}; 
-        }
-        return true;
-    }
-
-
-    bool validate_managed_config(ManagedCheckpointingCfg cfg){
-        if(cfg.protected_data.size()==0){
-            throw Error{PDI_ERR_CONFIG, 
-                "VeloC Specification Tree: 'protected data' must be defined in 'managed_checkpointing' "}; 
-        }
-        return true;
-    }
 } // anonymous namespace
 
 Veloc_cfg::Veloc_cfg(Context& ctx, PC_tree_t tree) 

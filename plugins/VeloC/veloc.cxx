@@ -25,159 +25,165 @@
 #include <pdi/plugin.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
+#include <pdi/plugin.h>
 #include <pdi/ref_any.h>
-#include <veloc.h>
 
 #include <fstream>
 #include <iostream>
 
-#include "veloc_wrapper.h"
 #include "veloc_cfg.h"
+#include "veloc_wrapper.h"
 
+using PDI::Config_error;
 using PDI::Context;
 using PDI::Datatype_sptr;
 using PDI::each;
-using PDI::opt_each;
 using PDI::Error;
-using PDI::Config_error;
+using PDI::opt_each;
 using PDI::Plugin;
 using PDI::Ref;
-using PDI::Ref_w;
 using PDI::Ref_r;
+using PDI::Ref_w;
 using PDI::to_long;
 using PDI::to_string;
 using std::string;
+using std::tie;
 using std::unordered_map;
 using std::vector;
-using std::tie; 
 
-// Same logic as in scalar_datatype.cxx 
+// Same logic as in scalar_datatype.cxx
 namespace {
-    inline bool nulltype(const PDI::Datatype_sptr& d)
-    {
-        const auto* scalar = dynamic_cast<const PDI::Scalar_datatype*>(d.get());
-        if (!scalar) return false;
-        if (scalar->buffersize()) return false;
-        if (scalar->datasize()) return false;
-        if (scalar->alignment()) return false;
-        if (scalar->kind() != PDI::Scalar_kind::UNKNOWN) return false;
-        return true;
-    }
+inline bool nulltype(const PDI::Datatype_sptr& d)
+{
+	const auto* scalar = dynamic_cast<const PDI::Scalar_datatype*>(d.get());
+	if (!scalar) return false;
+	if (scalar->buffersize()) return false;
+	if (scalar->datasize()) return false;
+	if (scalar->alignment()) return false;
+	if (scalar->kind() != PDI::Scalar_kind::UNKNOWN) return false;
+	return true;
+}
 } // anonymous namespace
 
-
-class veloc_plugin : public Plugin
+class veloc_plugin: public Plugin
 {
-    Veloc_cfg m_config; 
+	Veloc_cfg m_config;
 
-    int recovered_iter;
+	int recovered_iter;
+	int status;
+	int cp_counter;
 
-    int status; 
+	void protect_all_for_read()
+	{
+		for (auto&& data: m_config.managed().protected_data) {
+			Ref_r ref = context().desc(data.second).ref();
+			if (nulltype(ref.type())) {
+				throw Error{
+					PDI_ERR_CONFIG,
+					"VELOC PLUGIN YAML: Protected data `{}' (id: `{}') has no valid type — "
+					"check that the name in protect_data matches the data/metadata section",
+					data.second,
+					data.first
+				};
+			}
+			if (ref) {
+				const Datatype_sptr type = ref.type();
+				size_t n = 1;
+				size_t bytes = type->datasize();
 
-    int cp_counter; 
+				if (auto* array_type = dynamic_cast<const PDI::Array_datatype*>(type.get())) {
+					n = array_type->subsize();
+				}
 
-    // protect all variables to be included in checkpoints 
-    void protect_all_for_read(){
-        for (auto&& data: m_config.managed().protected_data) {
-            Ref_r ref = context().desc(data.second).ref();
-            if (nulltype(ref.type())) {
-                throw Error{PDI_ERR_CONFIG,
-                    "VELOC PLUGIN YAML: Protected data `{}' (id: `{}') has no valid type — "
-                    "check that the name in protect_data matches the data/metadata section",
-                    data.second, data.first};
-            }
-            if(ref){
-                const Datatype_sptr type = ref.type();
-                size_t n = 1;  
-                size_t bytes = type-> datasize();
+				size_t sub_bytes = bytes / n;
 
-                if(auto* array_type = 
-                    dynamic_cast<const PDI::Array_datatype*>(type.get())) { 
-                    n = array_type->subsize();
-                }
+				if (!type->dense()) {
+					context().logger().warn("Sparse types are not supported (`{}')", data.second);
+					continue;
+				}
 
-                size_t sub_bytes = bytes/n; 
+				protect_data(context(), data.first, const_cast<void*>(ref.get()), n, sub_bytes);
+			}
+		}
+	}
 
-                if (!type->dense()) {
-                    context().logger().warn("Sparse types are not supported (`{}')", data.second);
-                    continue;
-                }
+	void unprotect_all()
+	{
+		for (auto&& data: m_config.managed().protected_data) {
+			unprotect_data(context(), data.first);
+		}
+	}
 
-                protect_data(context(), data.first, const_cast<void*>(ref.get()), n, sub_bytes);   
-            }
-        }
-    }
+	void protect_all_for_write()
+	{
+		for (auto&& data: m_config.managed().protected_data) {
+			Ref_w ref = context().desc(data.second).ref();
+			if (nulltype(ref.type())) {
+				throw Error{
+					PDI_ERR_CONFIG,
+					"VELOC PLUGIN YAML: Protected data `{}' (id: `{}') has no valid type — "
+					"check that the name in protect_data matches the data/metadata section",
+					data.second,
+					data.first
+				};
+			}
+			if (ref) {
+				const Datatype_sptr type = ref.type();
+				size_t n = 1;
+				size_t bytes = type->datasize();
 
-    void unprotect_all(){
-        for (auto&& data: m_config.managed().protected_data) {
-            unprotect_data(context(), data.first);   
-        }
-    }
+				if (auto* array_type =
+				    dynamic_cast<const PDI::Array_datatype*>(type.get()))
+				{
+					n = array_type->subsize();
+				}
 
-    // protect all variables to be restored 
-    void protect_all_for_write(){    
-        for (auto&& data: m_config.managed().protected_data) {
-            Ref_w ref = context().desc(data.second).ref();
-            if (nulltype(ref.type())) {
-                throw Error{PDI_ERR_CONFIG,
-                    "VELOC PLUGIN YAML: Protected data `{}' (id: `{}') has no valid type — "
-                    "check that the name in protect_data matches the data/metadata section",
-                    data.second, data.first};
-            }
-            if(ref){
-                const Datatype_sptr type = ref.type();
-                size_t n = 1;  
-                size_t bytes = type-> datasize();
+				size_t sub_bytes = bytes / n;
 
-                if(auto* array_type = // If Datatype is an array 
-                    dynamic_cast<const PDI::Array_datatype*>(type.get())) { 
-                    n = array_type->subsize();
-                }
+				if (!type->dense()) {
+					context().logger().warn("Sparse types are not supported (`{}')", data.second);
+					continue;
+				}
 
-                size_t sub_bytes = bytes/n; 
+				protect_data(context(), data.first, const_cast<void*>(ref.get()), n, sub_bytes);
+			}
+		}
+	}
 
-                if (!type->dense()) {
-                    context().logger().warn("Sparse types are not supported (`{}')", data.second);
-                    continue;
-                }
+public:
+	veloc_plugin(Context& ctx, PC_tree_t config)
+		: Plugin(ctx)
+		, m_config{ctx, config}
+		, cp_counter{0}
+		, recovered_iter{-1}
+	{
+		status = m_config.failure() == 1 ? 0 : 1;
 
-                protect_data(context(), data.first, const_cast<void*>(ref.get()), n, sub_bytes);   
-            }
-        }
-    }
-    
+		init(context(), MPI_COMM_WORLD, m_config.config());
 
-    public : 
-        veloc_plugin(Context& ctx, PC_tree_t config)
-            : Plugin(ctx), m_config{ctx, config}, cp_counter{0},
-            recovered_iter{-1}
-        {
-            status = m_config.failure()==1? 0:1; 
-            
-            // Initialize VeloC 
-            init(context(),MPI_COMM_WORLD, m_config.config());
-            
-            for (auto&& desc: m_config.descs()) {
-                if (desc.second == Desc_type::STATUS) {
-                    context().callbacks().add_data_callback([this](const string& name, Ref ref) {
-                        if (Ref_w wref = ref) {
-                            *static_cast<int*>(wref.get()) = status; 
-                        }
-                    },
-                    desc.first);
-                }
-                else if (desc.second == Desc_type::COUNTER_CP) {
-                    context().callbacks().add_data_callback([this](const string& name, Ref ref) {
-                        if (Ref_w wref = ref) {
-                            *static_cast<int*>(wref.get()) = cp_counter; 
-                        }
-                    },
-                    desc.first);
-                }
-                else{
-                    throw Error{PDI_ERR_IMPL, "Unexpected event type"};
-                }
-            } // data call backs  
+		for (auto&& desc: m_config.descs()) {
+			if (desc.second == Desc_type::STATUS) {
+				context().callbacks().add_data_callback(
+					[this](const string&, Ref ref) {
+						if (Ref_w wref = ref) {
+							*static_cast<int*>(wref.get()) = status;
+						}
+					},
+					desc.first
+				);
+			} else if (desc.second == Desc_type::COUNTER_CP) {
+				context().callbacks().add_data_callback(
+					[this](const string&, Ref ref) {
+						if (Ref_w wref = ref) {
+							*static_cast<int*>(wref.get()) = cp_counter;
+						}
+					},
+					desc.first
+				);
+			} else {
+				throw Error{PDI_ERR_IMPL, "Unexpected event type"};
+			}
+		}
 
             for (auto&& event: m_config.events()) { 
                 switch (event.second) {
@@ -287,12 +293,12 @@ class veloc_plugin : public Plugin
             } // event call backs
         }
 
-        ~veloc_plugin(){
-            finalize(context());
-            context().logger().info("{} checkpoints were written", cp_counter);
-            context().logger().info("Closing plugin");
-        }
+	~veloc_plugin()
+	{
+		finalize(context());
+		context().logger().info("{} checkpoints were written", cp_counter);
+		context().logger().info("Closing plugin");
+	}
 };
-PDI_PLUGIN(veloc)
-	
 
+PDI_PLUGIN(veloc)

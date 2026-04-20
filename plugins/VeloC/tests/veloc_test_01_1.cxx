@@ -23,69 +23,59 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <assert.h>
-#include <mpi.h>
 #include <pdi.h>
-#include <iostream>
 
-const char CONF_YAML[] =
-    "metadata:\n"
-    "  ii: int\n"
-    "data:\n"
-    "  cp_status: int\n"
-    "  cp_counter: int\n"
-    "  var: int\n"
-    "plugins:\n"
-    "  veloc:\n"
-    "    failure: 0\n"
-    "    config_file: veloc_config.cfg\n"
-    "    status: cp_status\n"
-    "    counter: cp_counter\n"
-    "    checkpoint_label: test_01\n"
-    "    iteration: ii\n"
-	"    managed_checkpointing:\n"
-	"      protect_data: [ii, var]\n"
-	"      checkpoint_on: ckp\n";
+const char CONF_YAML[]
+	= "metadata:\n"
+	  "  ii: int\n"
+	  "data:\n"
+	  "  cp_status: int\n"
+	  "  cp_counter: int\n"
+	  "  var: int\n"
+	  "plugins:\n"
+	  "  veloc:\n"
+	  "    failure: 0\n"
+	  "    config_file: veloc_config.cfg\n"
+	  "    status: cp_status\n"
+	  "    counter: cp_counter\n"
+	  "    checkpoint_label: test_01\n"
+	  "    iteration: ii\n"
+	  "    managed_checkpointing:\n"
+	  "      protect_data: [ii, var]\n"
+	  "      checkpoint_on: ckp\n";
 
 int main(int argc, char* argv[])
 {
 	MPI_Init(&argc, &argv);
 	PC_tree_t conf = PC_parse_string(CONF_YAML);
 	PDI_init(conf);
-	
-	int cp_status;
-	int cp_counter; 
-	
-	int ii = 0; 
-	int var = 50;
-	
-	PDI_expose("cp_status", &cp_status, PDI_IN);
-	if(cp_status!=1){
 
-		std::cerr << "TEST_01_1 FAILED: status value " << cp_status
-                  << " does not match expected value " << 1 << std::endl;
-		exit(1); 
+	int cp_status;
+	int cp_counter;
+
+	int ii = 0;
+	int var = 50;
+
+	PDI_expose("cp_status", &cp_status, PDI_IN);
+	if (cp_status != 1) {
+		std::cerr << "TEST_01_1 FAILED: status value " << cp_status << " does not match expected value " << 1 << std::endl;
+		exit(1);
 	}
 
-	for(; ii<2; ii++){
-		var = var  + 1, 
-		PDI_multi_expose("ckp", "ii", &ii, PDI_INOUT,
-			"var", &var, PDI_INOUT, NULL);
+	for (; ii < 2; ii++) {
+		var = var + 1, PDI_multi_expose("ckp", "ii", &ii, PDI_INOUT, "var", &var, PDI_INOUT, NULL);
 	}
 
 	PDI_expose("cp_counter", &cp_counter, PDI_IN);
-	
-	if(cp_counter!=2){
 
-		std::cerr << "TEST_01_1 FAILED: counter value " << cp_counter
-                  << " does not match expected value " << 1 << std::endl;
-		exit(1); 
-
+	if (cp_counter != 2) {
+		std::cerr << "TEST_01_1 FAILED: counter value " << cp_counter << " does not match expected value " << 1 << std::endl;
+		exit(1);
 	}
-    std::cout << "TEST 01_1 PASSED " <<std::endl;
-	
+	std::cout << "TEST 01_1 PASSED " << std::endl;
+
 	PDI_finalize();
 	MPI_Finalize();
-	
+
 	return 0;
 }
