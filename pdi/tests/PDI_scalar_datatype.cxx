@@ -61,7 +61,7 @@ struct ScalarDatatypeTest: public ::testing::Test {
 };
 
 typedef ::testing::Types<int, long, unsigned int, unsigned long, float, double> TypesForScalar;
-TYPED_TEST_CASE(ScalarDatatypeTest, TypesForScalar);
+TYPED_TEST_SUITE(ScalarDatatypeTest, TypesForScalar);
 
 /*
  * Name:                ScalarDatatypeTest/<typename>.check_kind

@@ -744,11 +744,11 @@ vector<string> invalid_data{
 	"{type: tuple, elements: [{type: char, disp: 0}, {type: int, disp: 4}, {type: double, disp: 8}]}",
 	"{type: tuple, elements: [{type: char, disp: 0}, {type: int}, {type: double, disp: 8}]}"
 };
-INSTANTIATE_TEST_CASE_P(ScalarTypes, PositiveTypeParseTest, testing::ValuesIn(scalar_types));
-INSTANTIATE_TEST_CASE_P(ArrayTypes, PositiveTypeParseTest, testing::ValuesIn(array_types));
-INSTANTIATE_TEST_CASE_P(RecordTypes, PositiveTypeParseTest, testing::ValuesIn(record_types));
-INSTANTIATE_TEST_CASE_P(StructTypes, PositiveTypeParseTest, testing::ValuesIn(struct_types));
-INSTANTIATE_TEST_CASE_P(TupleTypes, PositiveTypeParseTest, testing::ValuesIn(tuple_types));
-INSTANTIATE_TEST_CASE_P(PointerTypes, PositiveTypeParseTest, testing::ValuesIn(pointer_types));
+INSTANTIATE_TEST_SUITE_P(ScalarTypes, PositiveTypeParseTest, testing::ValuesIn(scalar_types));
+INSTANTIATE_TEST_SUITE_P(ArrayTypes, PositiveTypeParseTest, testing::ValuesIn(array_types));
+INSTANTIATE_TEST_SUITE_P(RecordTypes, PositiveTypeParseTest, testing::ValuesIn(record_types));
+INSTANTIATE_TEST_SUITE_P(StructTypes, PositiveTypeParseTest, testing::ValuesIn(struct_types));
+INSTANTIATE_TEST_SUITE_P(TupleTypes, PositiveTypeParseTest, testing::ValuesIn(tuple_types));
+INSTANTIATE_TEST_SUITE_P(PointerTypes, PositiveTypeParseTest, testing::ValuesIn(pointer_types));
 
-INSTANTIATE_TEST_CASE_P(, NegativeTypeParseTest, testing::ValuesIn(invalid_data));
+INSTANTIATE_TEST_SUITE_P(, NegativeTypeParseTest, testing::ValuesIn(invalid_data));

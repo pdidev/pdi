@@ -51,7 +51,7 @@ typedef ::testing::Types<
 	DenseTuplesInTupleTest,
 	SparseTuplesInTupleTest>
 	TypesForTuple;
-TYPED_TEST_CASE(TupleDatatypeTest, TypesForTuple);
+TYPED_TEST_SUITE(TupleDatatypeTest, TypesForTuple);
 
 /*
  * Name:                TupleDatatypeTest/<structname>.check_dense

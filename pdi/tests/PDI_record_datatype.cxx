@@ -52,7 +52,7 @@ typedef ::testing::Types<
 	DenseRecordsInRecordTest,
 	SparseRecordsInRecordTest>
 	TypesForRecord;
-TYPED_TEST_CASE(RecordDatatypeTest, TypesForRecord);
+TYPED_TEST_SUITE(RecordDatatypeTest, TypesForRecord);
 
 /*
  * Name:                RecordDatatypeTest/<structname>.check_dense
