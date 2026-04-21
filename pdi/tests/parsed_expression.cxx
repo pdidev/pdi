@@ -56,7 +56,7 @@ struct ParseableExpressionU@CASE_NAME@Test: public ::testing::Test{};
 // clang-format on
 
 // clang-format off
-TYPED_TEST_CASE(ParseableExpressionU@CASE_NAME@Test, OperatorTypes);
+TYPED_TEST_SUITE(ParseableExpressionU@CASE_NAME@Test, OperatorTypes);
 // clang-format on
 
 
