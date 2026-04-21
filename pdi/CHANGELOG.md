@@ -28,6 +28,8 @@ and this project adheres to
   usages [#675](https://github.com/pdidev/pdi/issues/675)
 * benchmarks are not run as part of the test suite by default anymore, one must
   set `ENABLE_BENCHMARKING` to `ON` in Cmake to re-enable them
+* Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
+  to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
 
 #### Deprecated
 * Error names have been improved to fix
