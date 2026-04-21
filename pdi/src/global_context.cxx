@@ -376,15 +376,17 @@ void Global_context::load_pdi_config(PC_tree_t conf)
 	std::vector<std::pair<std::string, PC_tree_t>> ordered_nodes;
 	collect_ordered_nodes(*this, conf, globally_loaded, include_chain, ordered_nodes);
 
-	// Sub-pass A: register + load plugins so custom types (e.g. MPI_Comm)
-	// are available before metadata/data are parsed.
+	// Sub-pass A: user types first, plugins may reference them during initialization
+	for (auto& [id, node]: ordered_nodes)
+		Datatype_template::load_user_datatypes(*this, PC_get(node, ".types"));
+
+	// Sub-pass B: register and load plugins, now that user types are available
 	for (auto& [id, node]: ordered_nodes)
 		m_plugins.register_plugins(node);
 	m_plugins.load_plugins();
 
-	// Sub-pass B: types, metadata, data, in include order.
+	// Sub-pass C: metadata, data
 	for (auto& [id, node]: ordered_nodes) {
-		Datatype_template::load_user_datatypes(*this, PC_get(node, ".types"));
 		if (auto m = PC_get(node, ".metadata"); !PC_status(m)) load_data(*this, m, true);
 		if (auto d = PC_get(node, ".data"); !PC_status(d)) load_data(*this, d, false);
 	}
