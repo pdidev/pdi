@@ -131,7 +131,7 @@ public:
 
 	void load_pdi_config(PC_tree_t conf);
 
-	/// Creates a descriptor for `key_node`, throwing Config_error if already defined.
+	/// Creates a descriptor for `key_node`, throwing Spectree_error if already defined.
 	Data_descriptor& make_and_check_descriptor(PC_tree_t key_node);
 
 	~Global_context() override;

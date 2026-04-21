@@ -317,8 +317,8 @@ TEST_F(ContextTest, check_duplicate)
 	// Test 1: First definition should succeed
 	ASSERT_NO_THROW(ctx->make_and_check_descriptor(PC_get(conf_a, "{0}")));
 
-	// Test 2: Redefining the same name should throw Config_error
-	EXPECT_THROW(ctx->make_and_check_descriptor(PC_get(conf_a, "{0}")), Config_error);
+	// Test 2: Redefining the same name should throw Spectree_error
+	EXPECT_THROW(ctx->make_and_check_descriptor(PC_get(conf_a, "{0}")), Spectree_error);
 
 	// Test 3: Different names should both succeed
 	ASSERT_NO_THROW(ctx->make_and_check_descriptor(PC_get(conf_b, "{0}"))); // variable_B
@@ -347,8 +347,7 @@ TEST_F(ContextTest, load_pdi_config_duplicate_data_via_inclusion)
 	ASSERT_NO_THROW(ctx->load_pdi_config(main_conf));
 
 	// Test 2: Defining the same variable again in a second load is an issue and should throw System_error
-	EXPECT_THROW(ctx->load_pdi_config(included_conf), Config_error);
-	// EXPECT_THROW(ctx->load_pdi_config(included_conf), System_error);
+	EXPECT_THROW(ctx->load_pdi_config(included_conf), Spectree_error);
 
 	PC_tree_destroy(&main_conf);
 	PC_tree_destroy(&included_conf);

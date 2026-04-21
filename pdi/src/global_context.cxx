@@ -139,14 +139,14 @@ void collect_ordered_nodes_impl(
 	// ── Step 2: circular detection ───────────────────────────────────────────
 	if (has_real_path && include_chain.count(current_id)) {
 		if (!parent_id.empty()) {
-			throw Config_error(
+			throw Spectree_error(
 				include_directive,
 				"Circular include detected: '{}' is already being loaded (included from '{}')",
 				current_id,
 				parent_id
 			);
 		} else {
-			throw Config_error(include_directive, "Circular include detected: '{}' is already being loaded", current_id);
+			throw Spectree_error(include_directive, "Circular include detected: '{}' is already being loaded", current_id);
 		}
 	}
 
@@ -170,13 +170,13 @@ void collect_ordered_nodes_impl(
 	if (!PC_status(includes)) {
 		PDI::each(includes, [&](PC_tree_t node) {
 			// `node` is the scalar YAML node of the include entry
-			// Config_error(node, ...) gives the exact line of the offending directive
+			// Spectree_error(node, ...) gives the exact line of the offending directive
 			const std::string inc = PDI::to_string(node);
 			const bool is_absolute = fs::path(inc).is_absolute();
 
 #if PDI_HAS_PC_PATH
 			if (!is_absolute && !has_real_path) {
-				throw Config_error(
+				throw Spectree_error(
 					node,
 					"Relative include '{}' cannot be resolved: "
 					"the root config was parsed from a string (no file path available)",
@@ -186,7 +186,7 @@ void collect_ordered_nodes_impl(
 			fs::path full_path = is_absolute ? fs::path(inc) : fs::path(fs::path(current_id).parent_path()) / inc;
 #else
 			if (!is_absolute) {
-				throw Config_error(node,
+				throw Spectree_error(node,
 					"Relative include '{}' is not supported: "
 					"Paraconf >= 1.1 is required for relative path resolution",
 					inc
@@ -198,16 +198,16 @@ void collect_ordered_nodes_impl(
 			if (!fs::exists(full_path)) {
 				// has_real_path tells us whether we can name the includer file
 				if (has_real_path) {
-					throw Config_error(node, "Included file not found: '{}' (included from '{}')", full_path.string(), current_id);
+					throw Spectree_error(node, "Included file not found: '{}' (included from '{}')", full_path.string(), current_id);
 				} else {
-					throw Config_error(node, "Included file not found: '{}'", full_path.string());
+					throw Spectree_error(node, "Included file not found: '{}'", full_path.string());
 				}
 			}
 			full_path = fs::canonical(full_path);
 
 			PC_tree_t sub = PC_parse_path(full_path.string().c_str());
 			if (PC_status(sub) != PC_OK) {
-				throw Config_error(node, "Failed to parse included file: '{}'", full_path.string());
+				throw Spectree_error(node, "Failed to parse included file: '{}'", full_path.string());
 			}
 
 			collect_ordered_nodes(ctx, sub, globally_loaded, include_chain, ordered_nodes, full_path.string(), node, current_id);
@@ -413,7 +413,7 @@ Data_descriptor& Global_context::make_and_check_descriptor(PC_tree_t key_node)
 		bool redef_has_path = redefinition_path && fs::exists(redefinition_path);
 
 		if (first_has_path && redef_has_path) {
-			throw Config_error(
+			throw Spectree_error(
 				redefinition_node,
 				"Duplicate definition of '{}', first defined in '{}', then redefined in '{}'",
 				descriptor_name,
@@ -421,14 +421,14 @@ Data_descriptor& Global_context::make_and_check_descriptor(PC_tree_t key_node)
 				first_definition_path // deepest included file = redefinition from user's perspective
 			);
 		} else if (first_has_path) {
-			throw Config_error(
+			throw Spectree_error(
 				redefinition_node,
 				"Duplicate definition of '{}', first defined in a string config, then redefined in '{}'",
 				descriptor_name,
 				first_definition_path
 			);
 		} else if (redef_has_path) {
-			throw Config_error(
+			throw Spectree_error(
 				redefinition_node,
 				"Duplicate definition of '{}', first defined in '{}', then redefined in a string config",
 				descriptor_name,
@@ -436,7 +436,7 @@ Data_descriptor& Global_context::make_and_check_descriptor(PC_tree_t key_node)
 			);
 		}
 #endif
-		throw Config_error(redefinition_node, "Duplicate definition of '{}'", descriptor_name);
+		throw Spectree_error(redefinition_node, "Duplicate definition of '{}'", descriptor_name);
 	}
 
 	return *descriptor_entry->second;
