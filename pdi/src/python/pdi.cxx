@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 * All rights reserved.
 *
@@ -60,7 +60,6 @@ using pyobj = pybind11::object;
 // using pystr = pybind11::str;
 using pytup = pybind11::tuple;
 using namespace pybind11::literals;
-using std::move;
 using std::vector;
 
 /** Check API version of PDI and python

@@ -102,7 +102,7 @@ foreach(OPERAND1_TYPE IN LISTS MODULABLE_OPERAND_TYPES)
 	endforeach()
 endforeach()
 
-target_compile_features(PDI_unit_tests PRIVATE cxx_std_17)
+target_compile_features(PDI_unit_tests PRIVATE cxx_std_20)
 target_link_libraries(PDI_unit_tests PDI::PDI_plugins Threads::Threads GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 target_include_directories(PDI_unit_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 gtest_discover_tests(PDI_unit_tests)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -210,7 +210,7 @@ TEST_F(DataDescTest, multi_write_share_data)
 		this->m_desc_default->share(this->m_desc_default->ref(), false, true);
 		FAIL();
 	} catch (const Error& err) {
-		ASSERT_EQ(PDI_status_t::PDI_ERR_RIGHT, err.status());
+		ASSERT_EQ(PDI_status_t::PDI_ERR_PERMISSION, err.status());
 	}
 
 	this->m_desc_default->reclaim();
@@ -236,7 +236,7 @@ TEST_F(DataDescTest, read_write_share_data)
 		this->m_desc_default->share(this->m_desc_default->ref(), false, true);
 		FAIL();
 	} catch (const Error& err) {
-		ASSERT_EQ(PDI_status_t::PDI_ERR_RIGHT, err.status());
+		ASSERT_EQ(PDI_status_t::PDI_ERR_PERMISSION, err.status());
 	}
 	this->m_desc_default->release();
 
@@ -246,7 +246,7 @@ TEST_F(DataDescTest, read_write_share_data)
 		this->m_desc_default->share(this->m_desc_default->ref(), true, false);
 		FAIL();
 	} catch (const Error& err) {
-		ASSERT_EQ(PDI_status_t::PDI_ERR_RIGHT, err.status());
+		ASSERT_EQ(PDI_status_t::PDI_ERR_PERMISSION, err.status());
 	}
 	this->m_desc_default->reclaim();
 }
@@ -285,7 +285,7 @@ TEST_F(DataDescTest, share_meta_without_read)
 		this->m_desc_default->share(this->array, false, true);
 		FAIL();
 	} catch (const Error& err) {
-		ASSERT_EQ(PDI_status_t::PDI_ERR_RIGHT, err.status());
+		ASSERT_EQ(PDI_status_t::PDI_ERR_PERMISSION, err.status());
 	}
 }
 
