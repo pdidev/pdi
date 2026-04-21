@@ -31,7 +31,16 @@ using namespace PDI;
 
 /* Checks that the constructor works correctly
  */
-TEST(ErrorTest, Constructor)
+TEST(Error, StringConstructor)
+{
+	Type_error error("{} errors in {}", 0, "ErrorTest");
+	ASSERT_STREQ("0 errors in ErrorTest", error.what());
+	ASSERT_EQ(error.status(), PDI_ERR_TYPE);
+}
+
+/* Checks that the constructor works correctly
+ */
+TEST(Error, Constructor)
 {
 	Type_error error("{} errors in {}", 0, "ErrorTest");
 	ASSERT_STREQ("0 errors in ErrorTest", error.what());
