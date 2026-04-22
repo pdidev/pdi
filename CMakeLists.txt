@@ -107,11 +107,19 @@ list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake")
 if("${BUILD_DECL_NETCDF_PLUGIN}")
-	# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
-	if(4.1 VERSION_GREATER "${CMAKE_VERSION}")
-		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.1")
+	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+		# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/plugins/decl_netcdf/cmake/4.3")
 	endif()
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
+endif()
+if("${BUILD_DECL_HDF5_PLUGIN}")
+	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+		# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/plugins/decl_hdf5/cmake/4.3")
+	endif()
 endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
@@ -521,17 +529,17 @@ sbuild_add_module(PDI_EXAMPLE
 	SUBSTEPS test
 )
 
-sbuild_add_module(PDI_TESTS
+sbuild_add_module(PDI_COMBINATION_TESTS
 	ENABLE_BUILD_FLAG BUILD_TESTING
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/combination_tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
 	SUBSTEPS test
 )
 
-sbuild_add_module(PDI_TEST_API
+sbuild_add_module(PDI_API_TESTS
 	ENABLE_BUILD_FLAG BUILD_TESTING
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test_api"
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/api_tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
 	SUBSTEPS test

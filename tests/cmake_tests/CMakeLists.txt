@@ -79,13 +79,13 @@ endfunction()
 message(STATUS "checking subdirectory scope")
 
 message("++ add_subdirectory(example)")
-add_subdirectory(../example example)
+add_subdirectory(../../example example)
 
-message("++ add_subdirectory(test_api)")
-add_subdirectory(../test_api/ test_api)
+message("++ add_subdirectory(api_tests)")
+add_subdirectory(../../tests/api_tests/ api_tests)
 
 message("++ add_subdirectory(tests)")
-add_subdirectory(../tests/ tests)
+add_subdirectory(../../tests/combination_tests/ combination_tests)
 
 message("++ add_subdirectory(subdir)")
 add_subdirectory(subdir)
