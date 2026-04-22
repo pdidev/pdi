@@ -12,6 +12,39 @@ and this project adheres to
 ### For users
 
 #### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
+## [1.11.0] - 2026-22-04
+
+### For users
+
+#### Added
 * Add subfiling support in Decl'HDF5
   [#602](https://github.com/pdidev/pdi/issues/602)
 * Enable plugin `decl_netcdf` in macOS CI
@@ -53,8 +86,6 @@ and this project adheres to
   error with multiple matching regexes
   [#668](https://github.com/pdidev/pdi/issues/668)
 
-#### Security
-
 
 ### For plugin developers
 
@@ -67,14 +98,8 @@ and this project adheres to
 * `PDI::Right_error` has been replaced by `PDI::Permission_error`.
 * `PDI::Config_error` has been replaced by `PDI::Spectree_error`.
 
-#### Deprecated
-
 #### Removed
 * `PDI::Unavailable_error` was never used and has been removed.
-
-#### Fixed
-
-#### Security
 
 
 
