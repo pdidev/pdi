@@ -48,7 +48,7 @@ https://github.com/pdidev/pdi/releases ):
 
 ```bash
 wget https://github.com/pdidev/pdi/archive/refs/tags/1.10.1.tar.gz
-tar -xjf 1.10.1.tar.bz2
+tar -xjf 1.10.1.tar.gz
 mkdir 1.10.1/build
 cd 1.10.1/build
 cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
