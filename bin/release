@@ -90,7 +90,7 @@ do read -p 'please enter either y or n [yN] ' VALID
 done
 case "${VALID}" in
 [Yy])
-	git push origin "v$MAJOR.$MINOR:v$MAJOR.$MINOR" "main:main" "$MAJOR.$MINOR.$PATCH"
+	git push -q origin "v$MAJOR.$MINOR:v$MAJOR.$MINOR" "main:main" "$MAJOR.$MINOR.$PATCH"
 	rm -rf "${PDIDIR}"
 	printf "Please now:\n * describe the release at https://github.com/pdidev/pdi/releases\n * publish new binary packages at https://github.com/pdidev/pkgs\n * publish new spack packages at https://github.com/pdidev/spack and https://github.com/spack/spack-packages/\n"
 ;;
