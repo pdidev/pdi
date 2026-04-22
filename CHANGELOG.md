@@ -7,7 +7,7 @@ and this project adheres to
 
 
 
-## [Unreleased]
+## [1.11.0] - 2026-22-04
 
 ### For users
 
@@ -53,8 +53,6 @@ and this project adheres to
   error with multiple matching regexes
   [#668](https://github.com/pdidev/pdi/issues/668)
 
-#### Security
-
 
 ### For plugin developers
 
@@ -67,14 +65,8 @@ and this project adheres to
 * `PDI::Right_error` has been replaced by `PDI::Permission_error`.
 * `PDI::Config_error` has been replaced by `PDI::Spectree_error`.
 
-#### Deprecated
-
 #### Removed
 * `PDI::Unavailable_error` was never used and has been removed.
-
-#### Fixed
-
-#### Security
 
 
 
