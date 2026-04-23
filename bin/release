@@ -1,0 +1,100 @@
+#!/bin/bash
+#=============================================================================
+# Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# * Neither the names of CEA, nor the names of the contributors may be used to
+#   endorse or promote products derived from this software without specific
+#   prior written  permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#=============================================================================
+
+set -e -o pipefail
+export LC_ALL=C
+
+cd "$(mktemp --tmpdir -d PDI.release.XXXXXXXXXX)"
+printf "cloning..."
+git clone -q git@github.com:pdidev/pdi.git .
+printf "\n"
+PDIDIR="$PWD"
+
+OMAJOR="$(git tag -l | sort -V | tail -n 1 | sed -E 's/^([0-9]+)\.[0-9]+\.[0-9]+/\1/')"
+OMINOR="$(git tag -l | sort -V | tail -n 1 | sed -E 's/^[0-9]+\.([0-9]+)\.[0-9]+/\1/')"
+OPATCH="$(git tag -l | sort -V | tail -n 1 | sed -E 's/^[0-9]+\.[0-9]+\.([0-9]+)/\1/')"
+
+printf "select your type of release:\n * mInor $((OMAJOR)).$((OMINOR+1)).0 (i)\n * mAjor $((OMAJOR+1)).0.0 (a)\n * cancel and eXit (x)\n"
+read -p '[iaX] ' RELTYPE
+while [[ ! "$RELTYPE" =~ ^i$|^I$|^a$|^A$|^x$|^X$|^$ ]]
+do read -p 'please enter either i, a, or x [iaX] ' RELTYPE
+done
+case "$RELTYPE" in
+[iI])
+	MAJOR="$(( OMAJOR ))"
+	MINOR="$(( OMINOR + 1 ))"
+;;
+[aA])
+	MAJOR="$(( OMAJOR + 1 ))"
+	MINOR=0
+;;
+*)
+	printf "Ok, exiting...\n"
+	rm -rf "${PDIDIR}"
+	exit
+;;
+esac
+PATCH=0
+
+git switch -qc "v$MAJOR.$MINOR"
+echo "$MAJOR.$MINOR.$PATCH" > VERSION
+sed "
+s/release $OMAJOR\.$OMINOR\.$OPATCH/release $MAJOR.$MINOR.$PATCH/;
+s%$OMAJOR\.$OMINOR\.$OPATCH\.tar\.gz%$MAJOR.$MINOR.$PATCH\.tar\.gz%;
+s%$OMAJOR\.$OMINOR\.$OPATCH/build%$MAJOR.$MINOR.$PATCH/build%;
+" -i pdi/docs/Source_installation.md
+sed "s/set(PDI_VERSION .*/set(PDI_VERSION \"$MAJOR.$MINOR.$PATCH\")/" -i mock_pdi/PDIConfigVersion.cmake
+sed "
+s/## \[Unreleased\].*/## [$MAJOR.$MINOR.$PATCH] - $(date +%Y-%d-%m)/;
+/^#### /{N;/^####.*\n *$/d}
+" -i CHANGELOG.md
+git commit -qm "PDI Release $MAJOR.$MINOR.$PATCH" VERSION pdi/docs/Source_installation.md mock_pdi/PDIConfigVersion.cmake CHANGELOG.md
+git tag -m "PDI release $MAJOR.$MINOR.$PATCH" -s "$MAJOR.$MINOR.$PATCH"
+git switch -q main
+git merge -qm "Merge branch 'v1.10' back into main" --no-ff "v$MAJOR.$MINOR"
+
+echo "$MAJOR.$((MINOR+1)).0-alpha" > VERSION
+sed -E '1,/^(## .*)/s/^(## .*)/## [Unreleased]\n\n### For users\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n### For plugin developers\n\n#### Added\n\n#### Changed\n\n#### Deprecated\n\n#### Removed\n\n#### Fixed\n\n#### Security\n\n\n\n\1/' -i CHANGELOG.md
+git commit -qC HEAD --amend VERSION CHANGELOG.md
+
+read -p "Do you want to push the release that has been prepared in ${PDIDIR} ? [yN] " VALID
+while [[ ! "$RELTYPE" =~ ^i$|^I$|^a$|^A$|^x$|^X$|^$ ]]
+do read -p 'please enter either y or n [yN] ' VALID
+done
+case "${VALID}" in
+[Yy])
+	git push -q origin "v$MAJOR.$MINOR:v$MAJOR.$MINOR" "main:main" "$MAJOR.$MINOR.$PATCH"
+	rm -rf "${PDIDIR}"
+	printf "Please now:\n * describe the release at https://github.com/pdidev/pdi/releases\n * publish new binary packages at https://github.com/pdidev/pkgs\n * publish new spack packages at https://github.com/pdidev/spack and https://github.com/spack/spack-packages/\n"
+;;
+*)
+	printf "release candidate kept in ${PDIDIR}\n"
+;;
+esac

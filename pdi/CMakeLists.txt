@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH "${PDI_SOURCE_DIR}/cmake")
 
 # Version
 
-file(READ VERSION PDI_VERSION)
+file(READ ../VERSION PDI_VERSION)
 string(STRIP "${PDI_VERSION}" PDI_VERSION)
 string(REGEX MATCH "([0-9A-Za-z]+)\\.([0-9A-Za-z]+)\\.([0-9A-Za-z]+)(-([0-9A-Za-z]+))?" "\\1;\\2;\\3" "${PDI_VERSION}")
 set(PDI_VERSION_MAJOR "${CMAKE_MATCH_1}")
