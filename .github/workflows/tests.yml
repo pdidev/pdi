@@ -124,8 +124,8 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: '3.14'
-    - name: Install MPI (macOS)
-      run: brew install open-mpi
+    - name: Install MPI (macOS) and doxygen
+      run: brew install open-mpi doxygen
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip
