@@ -7,6 +7,41 @@ and this project adheres to
 
 
 
+## [Unreleased]
+
+### For users
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+* Do not fail building the documentation when Fortran support is disabled, to
+  fix [#690](https://github.com/pdidev/pdi/issues/690)
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+
+#### Security
+
+
+
 ## [1.11.0] - 2026-22-04
 
 ### For users
