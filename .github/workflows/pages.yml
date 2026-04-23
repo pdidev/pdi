@@ -62,6 +62,7 @@ jobs:
         docker cp "$(cat docker.cid)":$(docker image inspect -f '{{.Config.WorkingDir}}' "${IMG}")/docs/html public
         zip -r pages.zip public
     - name: Archive production artifacts
+      if: "${{ github.event.ref_type == 'tag' }}"
       uses: softprops/action-gh-release@v3
       with:
         files: pages.zip
