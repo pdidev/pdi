@@ -1,9 +1,8 @@
-PDI Catalyst Plugin
-===================
+# The PDI Catalyst Plugin {#PDI_Catalyst_plugin}
 
 This PDI plugin pushes PDI shared data to the Catalyst 2 API. The goal is to leverage the numerous Catalyst implementations like [Catalyst-ParaView](https://gitlab.kitware.com/paraview/paraview) or [Catalyst-ADIOS2](https://gitlab.kitware.com/paraview/adioscatalyst), helping massive data analysis and visualization at exascale.
 
-# Build Instructions
+## Build Instructions
 
  - Build and Install [PDI](https://pdi.dev/master/index.html)
  - Build and Install [Catalyst](https://gitlab.kitware.com/paraview/catalyst), with MPI support.
@@ -15,11 +14,11 @@ This PDI plugin pushes PDI shared data to the Catalyst 2 API. The goal is to lev
    * in case of you used vendored version of libraries during your PDI build, instead of system libraries, you may have to define additional PDI dependencies locations. For example `spdlog_DIR` CMake variable for the spdlog library.
  - Build with `make` or `ninja`
 
-# Running the Test
+## Running the Test
 
 The test executable expects the config yaml file as arguments.
 
-# Use Catalyst-Paraview
+## Use Catalyst-Paraview
 
 To use the Catalyst-ParaView implementation, you should also set the following environment variables:
  - `CATALYST_IMPLEMENTATION_NAME=paraview`
@@ -27,7 +26,7 @@ To use the Catalyst-ParaView implementation, you should also set the following e
 
 and likely add the catalyst lib folder to `LD_LIBRARY_PATH` if the catalyst library is installed in a non-standard location.
 
-# Design Considerations
+## Design Considerations
 
 *This is a work-in-progress. This paragraph is subject to change.*
 
@@ -38,11 +37,48 @@ However, Catalyst requires additional semantic about meanings of the data, to ma
 The current approach is to add this semantic to the PDI Specification Tree under the `catalyst` key. See the [example file](test/pdi.yml.in) for actual implementation.
 
 PDI is very flexible about the timing of the data sharing using an advanced event mechanism, whereas Catalyst needs all data at the same point in time.
-So, the user of this plugin should set an event name referenced by the `on_event` key in the yaml config, in order to trigger the call to `catalyst_execute`. Data should have been shared either before the event or during the event using the `PDI_multi_expose` function.
+So, the user of this plugin should set an event name referenced by the `on_event` key in the yaml config, in order to trigger the call to `catalyst_execute`. Data should have been shared during the event using the `PDI_multi_expose` function.
 
 Internally, `catalyst_initialize` is called by `PDI_Init` and `catalyst_finalize` is called by `PDI_finalize`.
 
-# IMPORTANT NOTICE: YAML CONFIGURATION FILE
+## Configuration grammar
+
+*This is a work-in-progress. This paragraph is subject to change.*
+
+Simple plugin build:
+```yaml
+plugins:
+  catalyst:                // name of the plugin
+    scripts:               // list of run scripts on event ("iter" in this example)
+      script1: "script.py" // name of the script following by ':' with the filename of this script
+    on_event: "iter"       // name of the event when 'catalyst_execute' is executed
+    execute:               // contains the information (conduit_node) needed to run 'catalyst_execute'
+      state:
+        timestep: '$iter'  // integral value for current timestep (paraview only?)
+        time: '1.0*$iter'  // float64 value for current time
+      channels:            // list of channels
+        grid:              // name of a channel
+          type: "mesh"     // type of channel considering
+          data:            // A conduit Mesh Blueprint and object to define vtkGhostType
+            coordsets:     // list of coordset supported by Mesh Blueprint
+              ...
+            topologies:    // list of topology supported by Mesh Blueprint
+              ...
+            fields:        // list of field supported by Mesh Blueprint
+              ...
+            ghost_layers:  // allow to define vtkGhostType for structured mesh and uniform mesh with ghost layers.
+              my_topology: // name of a topology defined in this channel
+                association: "element"                               // consider vtkGhostType defined on element
+                start: ['$dstart[1]', '$dstart[0]']                  // starting index of the domain without ghost
+                size: ['$dend[1]-$dstart[1]', '$dend[0]-$dstart[0]'] // size of domain without ghost
+```
+
+In paraview implemementation for catalyst, a description of variables (conduit_node)
+can be found in https://docs.paraview.org/en/v6.1.0/Catalyst/blueprints.html.
+All variables in each protocol are not supported by this plugin.
+
+
+### IMPORTANT NOTICE: YAML FILE
 
 In the sub-tree corresponding to the catalyst plugin, a double quoted value is evaluated as a string.
 
@@ -70,11 +106,11 @@ Summary:
 | real | plain or simple quoted | 1.22 or '1.22'|
 
 
-# License
+## License
 
 This repository is under the Apache 2.0 license, see NOTICE and LICENSE file.
 
-The test case is a modification of the Catalyst2 CxxFullExample code from the ParaView source code, licenced under BSD-3-Clauses.
+The test case (in '/plugins/catalyst/tests') is a modification of the Catalyst2 CxxFullExample code from the ParaView source code, licenced under BSD-3-Clauses.
 
 Developed by Kitware SAS (Kitware Europe), motivated by the [NumPEx](https://numpex.org/) program.
 
