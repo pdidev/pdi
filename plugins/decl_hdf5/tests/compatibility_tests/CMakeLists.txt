@@ -60,3 +60,7 @@ foreach(test_name ${ALL_TEST_NAMES})
         endforeach(read_prefix)
     endforeach(write_prefix)
 endforeach(test_name)
+    
+add_executable(decl_hdf5_conversion_test decl_hdf5_precision_conversion_test.cxx)
+target_link_libraries(decl_hdf5_conversion_test ${HDF5_DEPS} PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
+gtest_discover_tests(decl_hdf5_conversion_test)

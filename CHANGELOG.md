@@ -12,6 +12,7 @@ and this project adheres to
 ### For users
 
 #### Added
+* Add tests for HDF5 precision conversion
 
 #### Changed
 
