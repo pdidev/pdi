@@ -76,7 +76,6 @@ add_custom_target(doc ALL
 	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../"
 	DEPENDS ${DOXYGEN_INPUT}
 )
-# add_dependencies(doc generated_files_for_doc)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}/html")
 
 add_subdirectory(First_steps)
