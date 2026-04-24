@@ -392,7 +392,7 @@ void Dataset_op::do_write(Context& ctx, hid_t h5_file, hid_t write_lst, const st
 					}
 				}
 
-				// Remark: message error is defined outside Config_error because is too long.
+				// Remark: message error is defined outside Spectree_error because is too long.
 				static constexpr char const * const msg_config_error
 					= "Found `{0}' match(es) in the list of datasets section for `{1}'."
 					  " Cannot choose the right element in datasets.\n"

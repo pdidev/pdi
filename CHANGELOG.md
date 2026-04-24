@@ -144,6 +144,8 @@ and this project adheres to
 
 #### Added
 * Added tests for using an installed PDI
+* Support an include mechanism for PDI config,
+  to include other YAML files into root YAML document.
 
 #### Fixed
 * Support multiple consecutive calls to `find_package(PDI)`

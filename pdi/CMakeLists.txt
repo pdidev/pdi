@@ -94,6 +94,7 @@ if("${BUILD_FORTRAN}")
 	list(APPEND PARACONF_COMPONENTS "f90")
 endif()
 set(PDI_REQUIRED_PARACONF_VERSION 1.0) # used in PDIConfig too
+# set(PDI_REQUIRED_PARACONF_VERSION 1.1) # used in PDIConfig too
 find_package(paraconf "${PDI_REQUIRED_PARACONF_VERSION}" REQUIRED COMPONENTS ${PARACONF_COMPONENTS}) # must match PDIConfig.cmake.in
 set(PDI_REQUIRED_SPDLOG_VERSION 1.9) # used in PDIConfig too
 find_package(spdlog "${PDI_REQUIRED_SPDLOG_VERSION}" REQUIRED) # must match PDIConfig.cmake.in

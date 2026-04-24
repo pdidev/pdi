@@ -241,14 +241,8 @@ Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
 	: m_ctx(ctx)
 {
 	initialize_path(PC_get(conf, ".plugin_path"));
-
-	// pre-load the plugins
-	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
-	m_ctx.logger().trace("Loading {} plugin(s)", nb_plugins);
-	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
-		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
-		m_plugins.emplace(plugin_name, make_shared<Stored_plugin>(m_ctx, *this, plugin_name, PC_get(conf, ".plugins<%d>", plugin_id)));
-	}
+	// Plugin registration is deferred to register_plugins(),
+	// called for each node (root included) by load_pdi_config_impl().
 }
 
 void Plugin_store::load_plugins()
@@ -262,6 +256,20 @@ void Plugin_store::load_plugins()
 		throw;
 	} catch (const exception& e) {
 		throw System_error{"Error while loading plugins: {}", e.what()};
+	}
+}
+
+void Plugin_store::register_plugins(PC_tree_t conf)
+{
+	int nb_plugins = len(PC_get(conf, ".plugins"), 0);
+	if (nb_plugins > 0) m_ctx.logger().trace("Registering {} plugin(s)", nb_plugins);
+	for (int plugin_id = 0; plugin_id < nb_plugins; ++plugin_id) {
+		string plugin_name = to_string(PC_get(conf, ".plugins{%d}", plugin_id));
+		if (m_plugins.count(plugin_name)) {
+			m_ctx.logger().warn("Plugin `{}' already registered, skipping", plugin_name);
+			continue;
+		}
+		m_plugins.emplace(plugin_name, make_shared<Stored_plugin>(m_ctx, *this, plugin_name, PC_get(conf, ".plugins<%d>", plugin_id)));
 	}
 }
 
