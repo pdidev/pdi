@@ -290,18 +290,15 @@ endif()
 
 # Fortran API library
 
-if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
-	zpp_preprocess(OUTPUT PDIF_H SOURCES src/fortran/pdif.h.zpp)
-	add_custom_target(generated_files_for_doc DEPENDS "${PDIF_H}")
-endif()
 if("${BUILD_FORTRAN}")
-	zpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.f90.zpp)
 	file(MAKE_DIRECTORY "${PDI_BINARY_DIR}/fmoddir")
+	zpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.h.zpp)
 	add_custom_target(mv_zpp_files # we put in in fmoddir because pdif.h is compiler dependant
 			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PDIF_H}" "${PDI_BINARY_DIR}/fmoddir/pdif.h"
 			DEPENDS "${PDIF_H}"
 			VERBATIM
 	)
+	zpp_preprocess(OUTPUT PDI_F90 SOURCES src/fortran/pdi.f90.zpp)
 	add_library(PDI_f90 ${PDI_F90} src/fortran/pdi_c.f90)
 	target_link_libraries(PDI_f90 PUBLIC PDI::PDI_C paraconf::paraconf_f90 PRIVATE PDI::PDI_plugins)
 	add_dependencies(PDI_f90 mv_zpp_files)
