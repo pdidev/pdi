@@ -7,7 +7,7 @@ and this project adheres to
 
 
 
-## [Unreleased]
+## [1.11.1] - Unreleased
 
 ### For users
 
@@ -42,7 +42,7 @@ and this project adheres to
 
 
 
-## [1.11.0] - 2026-22-04
+## [1.11.0] - 2026-04-22
 
 ### For users
 
