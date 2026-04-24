@@ -232,7 +232,7 @@ subroutine PDI_access_${T}_${D}D(name, ptr_data, accessf, &
 !$SH     if [ "$D" -gt 0 ]; then
   , contiguous &
 !$SH     fi
-  :: ptr_data$(array_desc $D)
+  :: ptr_data$(if [ $D -gt 0 ]; then echo -n "("; for i in $(seq 1 $D); do echo -n ":"; if [ $i -lt $D ]; then echo -n ","; fi; done; echo -n ")"; fi)
   integer, intent(IN) :: accessf
 !$SH     if [ 0 -lt "$D" ]; then
   integer, intent(IN) :: ptr_data_shape($D)
