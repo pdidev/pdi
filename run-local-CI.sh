@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #=============================================================================
-# Copyright (C) 2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2025-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -62,6 +62,7 @@ export MAKEFLAGS='-j 4'
 export CTEST_FLAGS="--output-junit /tmp/tests.xml"
 export TEST_DIR="/tmp_dir_test"
 export SRCDIR="/src"
+export CMAKE_FLAGS="-DBUILD_DOCUMENTATION=OFF"
 
 chmod +x /tmp/build_and_run_all_tests
 /tmp/build_and_run_all_tests
@@ -69,7 +70,6 @@ EOF
 
 chmod +x "$SCRIPT_DIR/$SCRIPT_NAME"
 
-# Step 1: Create a container and inject the script
 echo "Creating and preparing container..."
 CONTAINER_ID=$(podman create \
   --userns=keep-id \
@@ -81,8 +81,6 @@ CONTAINER_ID=$(podman create \
 echo "Copying script and binary into container..."
 podman cp "$SCRIPT_DIR/$SCRIPT_NAME" "$CONTAINER_ID:/tmp/run.sh"
 podman cp "$BINARY_PATH" "$CONTAINER_ID:/tmp/build_and_run_all_tests"
-
-# DO NOT run podman exec here — container isn't running yet
 
 echo "Starting container and running script..."
 podman start --attach "$CONTAINER_ID"
