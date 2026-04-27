@@ -191,16 +191,16 @@ public:
                             if(!status){
                                 context().logger().warn("A checkpoint event was launched before a recovery event");
                             }
-                            protect_all_for_read(); 
-                            Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
-                            auto new_iter = new_iter_r.scalar_value<int>();
-                            if(new_iter!= recovered_iter){  
-                                int result = write_checkpoint(context(), m_config.managed().when, m_config.label(), new_iter); 
-                                if (result){
-                                    cp_counter++; 
-                                }
-                            }
-                            unprotect_all();
+							if (m_config.managed().when.to_long(context())){
+								protect_all_for_read(); 
+                            	Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
+								auto new_iter = new_iter_r.scalar_value<int>();
+								if(new_iter!= recovered_iter){  
+									write_checkpoint(context(), m_config.label(), new_iter); 
+									cp_counter++; 
+								}
+								unprotect_all();
+							}
                         },
                         event.first);
                     } break;
@@ -224,16 +224,16 @@ public:
                                 unprotect_all();
                             } 
                             else if(status) { // recovery not needed 
-                                protect_all_for_read(); 
-                                Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
-                                auto new_iter = new_iter_r.scalar_value<int>();
-                                if(new_iter!= recovered_iter){  
-                                    int result = write_checkpoint(context(), m_config.managed().when, m_config.label(), new_iter); 
-                                    if (result){
-                                        cp_counter++; 
-                                    }
-                                }
-                                unprotect_all();
+                                if (m_config.managed().when.to_long(context())){
+									protect_all_for_read(); 
+									Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
+									auto new_iter = new_iter_r.scalar_value<int>();
+									if(new_iter!= recovered_iter){  
+										write_checkpoint(context(), m_config.label(), new_iter); 
+										cp_counter++; 
+									}
+									unprotect_all();
+								}
                             }
                         },
                         event.first);

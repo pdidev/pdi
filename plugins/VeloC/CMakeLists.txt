@@ -23,7 +23,6 @@ target_link_libraries(pdi_veloc_plugin
     PDI::PDI_plugins 
     veloc::client          
     MPI::MPI_C 
-    MPI::MPI_CXX
 )
 
 set_target_properties(pdi_veloc_plugin PROPERTIES
