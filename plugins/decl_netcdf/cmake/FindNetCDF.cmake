@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,9 +40,6 @@ This module will define the following variables:
 
 :NetCDF_FOUND: Whether NetCDF was found or not.
 :NetCDF_VERSION: The version of NetCDF found.
-:NetCDF_INCLUDE_DIRECTORIES: .
-:NetCDF_COMPILE_DEFINITIONS: .
-:NetCDF_LINK_LIBRARIES: .
 :NetCDF_FEATURES: the features supported amongst CDF5, DAP, DAP2, DAP4,
                   DISKLESS, HDF4, HDF5, JNA, MMAP, NC2, NC4, PARALLEL,
                   PARALLEL4, PNETCDF
@@ -54,7 +51,7 @@ In addition, the module provides the following target to link against:
 The following variable can be set to guide the search for NetCDF libraries and
 includes:
 
-:NetCDF_CFGSCRIPT: The config script to use.
+:NetCDF_CFGSCRIPT: The config script (nc-config) to use.
 
 :NetCDF_FIND_DEBUG: Set to true to get extra debugging output.
 
@@ -63,7 +60,7 @@ includes:
 
 #]==]
 
-cmake_minimum_required(VERSION 3.16...3.25)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 set(_NetCDF_features_list CDF5 DAP DAP2 DAP4 DISKLESS HDF4 HDF5 JNA MMAP NC2 NC4 PARALLEL PARALLEL4 PNETCDF)
 
@@ -205,7 +202,7 @@ function(_NetCDF_find_CMAKE)
 		set(NetCDF_FOUND TRUE)
 		set(NetCDF_VERSION "${netCDF_VERSION}")
 		if(TARGET "${netCDF_LIBRARIES}")
-			if(NetCDF_FIND_DEBUG)
+			if("${NetCDF_FIND_DEBUG}" AND NOT "${NetCDF_FIND_QUIETLY}")
 				message(STATUS "Found NetCDF CMAKE target ${netCDF_LIBRARIES}")
 			endif()
 			set(NetCDF_LINK_LIBRARIES ${netCDF_LIBRARIES})
@@ -275,7 +272,7 @@ function(_NetCDF_find_CFGSCRIPT CFGSCRIPT)
 			set(NetCDF_FOUND "FALSE" PARENT_SCOPE)
 			return()
 		endif()
-		if(NetCDF_FIND_DEBUG)
+		if("${NetCDF_FIND_DEBUG}" AND NOT "${NetCDF_FIND_QUIETLY}")
 			message(STATUS "${CFGSCRIPT} ${${INFO}_OPT} returns ${${INFO}}")
 		endif()
 	endforeach()
@@ -290,7 +287,9 @@ function(_NetCDF_find_CFGSCRIPT CFGSCRIPT)
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 		if(NOT "${CFGSCRIPT_RETURN}" EQUAL "0")
-			message(WARNING "Error running ${CFGSCRIPT} ${FEATURE_OPT}")
+			if(NOT "${NetCDF_FIND_QUIETLY}")
+				message(VERBOSE "Error running ${CFGSCRIPT} ${FEATURE_OPT}")
+			endif()
 			continue()
 		endif()
 		if("x${FEATURE_${FEATURE}}" MATCHES "yes")
@@ -366,9 +365,9 @@ if("${NetCDF_FOUND}")
 		if("PARALLEL4" IN_LIST NetCDF_FEATURES)
 			set(HDF5_PREFER_PARALLEL ON)
 		endif()
-		find_package(HDF5 REQUIRED COMPONENTS C)
-		if("${HDF5_VERSION}" VERSION_LESS "1.8.0")
-			message(ERROR "HDF5 version 1.8.0 at least required by NetCDF, HDF5 ${HDF5_VERSION} found.")
+		find_package(HDF5 REQUIRED COMPONENTS C HL)
+		if("${HDF5_VERSION}" VERSION_LESS 1.10)
+			message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 		endif()
 		if("PARALLEL4" IN_LIST NetCDF_FEATURES AND NOT "${HDF5_IS_PARALLEL}")
 			message(ERROR "Parallel HDF5 required by NetCDF, sequential HDF5 only found.")

@@ -1,0 +1,34 @@
+#!/bin/bash
+##############################################################################
+# SPDX-FileCopyrightText: 2014-2024 Centre national de la recherche scientifique (CNRS)
+# SPDX-FileCopyrightText: 2014-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# SPDX-FileCopyrightText: 2014-2024 Julien Bigot <julien.bigot@cea.fr>
+# SPDX-FileCopyrightText: 2014-2024 Université Paris-Saclay
+# SPDX-FileCopyrightText: 2014-2024 Université de Versailles Saint-Quentin-en-Yvelines
+#
+# SPDX-License-Identifier: MIT
+##############################################################################
+
+set -xe
+
+if [ $# -gt 1 ]
+then
+	echo "usage: $0 [<version>]" 1>&2
+	exit 1
+elif [ $# -eq 1 ]
+then
+	export VERSION="$1"
+	sed "s/__version__\s*=.*/__version__ = '${VERSION}'/" -i zpp/version.py
+elif [ $# -eq 0 ]
+then
+	export VERSION="$(grep __version__ zpp/version.py | sed -e "s/.*=\s*'//" -e "s/'\s*$//")"
+fi
+
+git commit -a
+git tag -sm "Zpp release ${VERSION}" "${VERSION}"
+rm -Rf dist || true
+python3 -m build
+
+git push
+git push --tags
+python3 -m twine upload -s dist/*

@@ -1,0 +1,23 @@
+##############################################################################
+# SPDX-FileCopyrightText: 2014-2024 Centre national de la recherche scientifique (CNRS)
+# SPDX-FileCopyrightText: 2014-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# SPDX-FileCopyrightText: 2014-2024 Julien Bigot <julien.bigot@cea.fr>
+# SPDX-FileCopyrightText: 2014-2024 Université Paris-Saclay
+# SPDX-FileCopyrightText: 2014-2024 Université de Versailles Saint-Quentin-en-Yvelines
+#
+# SPDX-License-Identifier: MIT
+##############################################################################
+
+Multiple people have contributed to ZPP. To show our appreciation for their
+public spirit, we list here in alphabetical order a condensed list of their
+contributions.
+
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* current python version of ZPP
+* support for command-line includes and definitions
+* cmake & setuptools based buildsystems
+* bash functions provided in the include files
+
+Guillaume Latu - CEA (guillaume.latu@cea.fr)
+* historical awk based version of ZPP.

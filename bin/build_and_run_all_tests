@@ -1,6 +1,6 @@
 #!/bin/bash
 #=============================================================================
-# Copyright (C) 2022-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2022-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -33,7 +33,7 @@ set -xe
 
 
 
-# Make our work dirs
+# Setup our directories
 
 # Set SRCDIR only if not provided
 if [[ -z "${SRCDIR:-}" ]]; then
@@ -41,13 +41,16 @@ if [[ -z "${SRCDIR:-}" ]]; then
   SRCDIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 fi
 
-TEST_DIR="${TEST_DIR:-${PWD}}"
-cd "${TEST_DIR}"
-cd "$(mktemp -d pdibuild.XXXXX)"
-TEST_DIR="${PWD}"
+if [ -z "${TEST_DIR}" ]
+then
+	cd "$(mktemp -d pdibuild.XXXXX)"
+	TEST_DIR="${PWD}"
+else
+	cd "${TEST_DIR}"
+	TEST_DIR="${PWD}"
+fi
 
 cd "${TEST_DIR}"
-
 
 
 # Gather options
@@ -71,59 +74,76 @@ fi
 
 # Various workarounds
 
-NC_VERSION_MAJOR="$(nc-config --version | sed 's/^[a-zA-Z ]*\([0-9]*\)\.\([0-9]*\).*$/\1/')"
-NC_VERSION_MINOR="$(nc-config --version | sed 's/^[a-zA-Z ]*\([0-9]*\)\.\([0-9]*\).*$/\2/')"
-if (( NC_VERSION_MAJOR > 4 || ( NC_VERSION_MAJOR == 4 && NC_VERSION_MINOR > 8 ) )) || [[ "x${PDI_LIBS}" != "xprovided" ]]
-then
-	#TODO: NetCDF error https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/issues/433
-	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}test_05_C"
-fi
-
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_MPI}" = "xmpich" ]]
 then
-	#Workaround: mpi4py in debuntu is packaged for openmpi only
+	# Workaround: mpi4py in debuntu is packaged for openmpi only
 	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}PDI_example_trace_P|PDI_example_decl_hdf5_P"
-fi
-
-if [[ "x${PDI_SYSTEM}" =~ ^xubuntu && "x${PDI_MPI}" = "xmpich" ]] && dpkg -s mpich | grep -q 4.2.0-5
-then
-	#Workaround: mpich is broken in ubuntu noble and launches independent processes
-	#Due to https://bugs.launchpad.net/ubuntu/+source/mpich/+bug/2072338
-	EXCLUDED_PDI_TESTS="${EXCLUDED_PDI_TESTS:+$EXCLUDED_PDI_TESTS|}mpi|decl_hdf5_02_F|decl_hdf5_03_F|decl_hdf5_04_F|PDI_example"
 fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^x(ubuntu|debian) && "x${PDI_LIBS}" = "xprovided" ]]
 then
-	#Workaround: parallel NetCDF detection broken in debuntu (and absent in mpich case)
+	# Workaround: parallel NetCDF detection broken in debuntu (and absent in mpich case)
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
 
 if [[ "x${PDI_SYSTEM}" =~ ^xmacos ]]
 then
-	#Workaround: not all plugins work on OSX yet (https://github.com/pdidev/pdi/issues/580)
-	CMAKE_FLAGS="${CMAKE_FLAGS} \
--DBUILD_BENCHMARKING=OFF \
--DBUILD_DECL_HDF5_PLUGIN=ON \
--DBUILD_DECL_NETCDF_PLUGIN=OFF \
--DBUILD_DEISA_PLUGIN=OFF \
--DBUILD_DOCUMENTATION=OFF \
--DBUILD_HDF5_PARALLEL=ON \
--DBUILD_FORTRAN=OFF \
--DBUILD_PYTHON=OFF \
--DBUILD_MPI_PLUGIN=ON \
--DBUILD_NETCDF_PARALLEL=ON \
--DBUILD_PYCALL_PLUGIN=OFF \
--DBUILD_SERIALIZE_PLUGIN=ON \
--DBUILD_SET_VALUE_PLUGIN=ON \
--DBUILD_TESTING=ON \
--DBUILD_TRACE_PLUGIN=ON \
--DBUILD_USER_CODE_PLUGIN=ON"
+	# Workaround: not all plugins work on OSX yet (https://github.com/pdidev/pdi/issues/580)
+	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_BENCHMARKING=OFF -DBUILD_DOCUMENTATION=OFF -DBUILD_FORTRAN=OFF"
 fi
 
 
 
-# Configure, build & test
+# And now for the actual tests
 
-cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} "${SRCDIR}"
-make ${MAKEFLAGS}
-ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS}
+printf "\n\n\n\e[1;36m *** Configure, build & test the whole pdi distribution\e[m\n\n"
+
+mkdir -p install/include install/lib # Workaround for https://github.com/pdidev/pdi/issues/644
+cmake --install-prefix "${PWD}/install" -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}" -B tests_distribution
+cmake --build tests_distribution -- ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_distribution.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_distribution
+
+
+printf "\n\n\n\e[1;36m *** Install the pdi distribution & use it from an external project\e[m\n\n"
+
+cmake --install tests_distribution
+./install/bin/pdirun cmake -DDIST_PROFILE=Devel ${CMAKE_FLAGS} -S "${SRCDIR}/tests/cmake_tests" -B test_from_install
+./install/bin/pdirun cmake --build test_from_install -- ${MAKEFLAGS}
+./install/bin/pdirun ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_from_install.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir test_from_install
+
+
+printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with SubdirMock PDI\e[m\n\n"
+
+cmake -DDISABLE_PDI=ON -S "${SRCDIR}/example" -B tests_example_subdirmock
+cmake --build tests_example_subdirmock -- ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_example_subdirmock
+
+
+printf "\n\n\n\e[1;36m *** Configure, build & test pdi API with SubdirMock PDI\e[m\n\n"
+
+cmake -DDISABLE_PDI=ON -S "${SRCDIR}/tests/api_tests" -B tests_api_subdirmock
+cmake --build tests_api_subdirmock -- ${MAKEFLAGS}
+ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_subdirmock.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_api_subdirmock
+
+
+if [[ "x${PDI_LIBS}" = "xprovided" ]]; then
+	
+	printf "\n\n\n\e[1;36m *** Configure, build & test pdi example with MockFind PDI\e[m\n\n"
+	
+	cd "${TEST_DIR}"
+	mkdir tests_example_mockfind
+	cd tests_example_mockfind
+	cmake -DPDI_ROOT="${SRCDIR}/mock_pdi" -S "${SRCDIR}/example" -B tests_example_mockfind
+	cmake --build tests_example_mockfind -- ${MAKEFLAGS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_example_mockfind.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_example_mockfind
+	
+	
+	printf "\n\n\n\e[1;36m *** Configure, build & test pdi API with MockFind PDI\e[m\n\n"
+	
+	cd "${TEST_DIR}"
+	mkdir tests_api_mockfind
+	cd tests_api_mockfind
+	cmake -DPDI_ROOT="${SRCDIR}/mock_pdi" -S "${SRCDIR}/tests/api_tests" -B tests_api_mockfind
+	cmake --build tests_api_mockfind ${MAKEFLAGS}
+	ctest --output-on-failure --timeout 90 ${CTEST_FLAGS} ${CTEST_DIR:+--output-junit "${CTEST_DIR}/tests_api_mockfind.xml"} ${EXCLUDED_PDI_TESTS:+-E $EXCLUDED_PDI_TESTS} --test-dir tests_api_mockfind
+fi

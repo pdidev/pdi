@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -153,7 +153,7 @@ long Expression::Impl::Reference_expression::to_long(Context& ctx) const
 		if (Ref_r ref = to_ref(ctx)) {
 			return ref.scalar_value<long>();
 		}
-		throw Right_error{"Unable to grant access for value reference"};
+		throw Permission_error{"Unable to grant access for value reference"};
 	} catch (const Error& e) {
 		throw Error{e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
@@ -165,7 +165,7 @@ double Expression::Impl::Reference_expression::to_double(Context& ctx) const
 		if (Ref_r ref = to_ref(ctx)) {
 			return ref.scalar_value<double>();
 		}
-		throw Right_error{"Unable to grant read access for value reference"};
+		throw Permission_error{"Unable to grant read access for value reference"};
 	} catch (const Error& e) {
 		throw Error{e.status(), "while referencing `{}': {}", m_referenced, e.what()};
 	}
@@ -180,7 +180,7 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 			if (scal_type->datasize() == 1 && (scal_type->kind() == Scalar_kind::SIGNED || scal_type->kind() == Scalar_kind::UNSIGNED)) {
 				result = string{static_cast<const char*>(raw_data.get()), referenced_type->size()};
 				if (!m_fmt_format.empty()) {
-					result = fmt::format("{" + m_fmt_format + "}", result.c_str());
+					result = fmt::format(fmt::runtime("{" + m_fmt_format + "}"), result.c_str());
 				}
 			}
 		} else {
@@ -195,7 +195,7 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 				ss_result << lres;
 				result = ss_result.str();
 			} else {
-				result = fmt::format("{" + m_fmt_format + "}", lres);
+				result = fmt::format(fmt::runtime("{" + m_fmt_format + "}"), lres);
 			}
 		} else {
 			if (m_fmt_format.empty()) {
@@ -203,7 +203,7 @@ std::string Expression::Impl::Reference_expression::to_string(Context& ctx) cons
 				ss_result << setprecision(17) << dres;
 				result = ss_result.str();
 			} else {
-				result = fmt::format("{" + m_fmt_format + "}", dres);
+				result = fmt::format(fmt::runtime("{" + m_fmt_format + "}"), dres);
 			}
 		}
 	}

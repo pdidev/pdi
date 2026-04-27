@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021-2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -26,7 +26,11 @@
 #include <hdf5.h>
 #ifdef H5_HAVE_PARALLEL
 #include <mpi.h>
+#ifdef H5_HAVE_SUBFILING_VFD
+#include <H5FDsubfiling.h>
 #endif
+#endif
+
 
 #include <memory>
 #include <unordered_map>
@@ -41,7 +45,6 @@
 
 #include "file_op.h"
 
-using PDI::Config_error;
 using PDI::Context;
 using PDI::each;
 using PDI::Error;
@@ -49,10 +52,10 @@ using PDI::Expression;
 using PDI::opt_each;
 using PDI::Ref_r;
 using PDI::Ref_w;
+using PDI::Spectree_error;
 using PDI::System_error;
 using PDI::to_string;
 using std::function;
-using std::move;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -85,16 +88,30 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 #ifdef H5_HAVE_PARALLEL
 			template_op.m_communicator = to_string(value);
 #else
-			throw Config_error {key_tree, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
+			throw Spectree_error {key_tree, "Used HDF5 is not parallel. Invalid communicator: `{}'", to_string(value)};
 #endif
 		} else if (key == "datasets") {
 			each(value, [&](PC_tree_t dset_name, PC_tree_t dset_type) {
-				template_op.m_datasets.emplace(to_string(dset_name), ctx.datatype(dset_type));
+				std::string dset_name_value = to_string(dset_name);
+				std::regex dset_regex(dset_name_value, std::regex::ECMAScript);
+				if (dset_type.node && dset_name.node) {
+					template_op.m_datasets.emplace_back(
+						dset_name_value,
+						dset_name.node->start_mark.line,
+						dset_type.node->end_mark.line,
+						dset_regex,
+						ctx.datatype(dset_type)
+					);
+				} else {
+					Spectree_error{key_tree, "Error in the definiion of dataset `{}' in datasets section.", dset_name_value};
+				}
 			});
 		} else if (key == "deflate") {
 			deflate = value;
 		} else if (key == "fletcher") {
 			fletcher = value;
+		} else if (key == "subfiling") {
+			template_op.m_subfiling = value;
 		} else if (key == "write") {
 			// will read in pass 2
 		} else if (key == "read") {
@@ -102,7 +119,7 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 		} else if (key == "logging") {
 			// pass
 		} else {
-			throw Config_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
+			throw Spectree_error{key_tree, "Unknown key in HDF5 file configuration: `{}'", key};
 		}
 	});
 
@@ -186,31 +203,31 @@ vector<File_op> File_op::parse(Context& ctx, PC_tree_t tree)
 			}
 #endif
 			one_op.m_dset_ops.emplace_back(one_dset_op);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 		for (auto&& one_attr_op: attr_ops) {
 			File_op one_op = template_op;
 			one_op.m_attr_ops.emplace_back(one_attr_op);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 		for (auto&& one_dset_size_op: dset_size_ops) {
 			File_op one_op = template_op;
 			one_op.m_dset_size_ops.emplace(one_dset_size_op.first, one_dset_size_op.second);
-			result.emplace_back(move(one_op));
+			result.emplace_back(std::move(one_op));
 		}
 	} else {
 #ifdef H5_HAVE_PARALLEL
 		// check the dataset ops don't have specific communicators set
 		for (auto&& one_dset_op: dset_ops) {
 			if (one_dset_op.communicator()) {
-				throw Config_error{tree, "Communicator can not be set at the dataset level for event triggered I/O"};
+				throw Spectree_error{tree, "Communicator can not be set at the dataset level for event triggered I/O"};
 			}
 		}
 #endif
-		template_op.m_dset_ops = move(dset_ops);
-		template_op.m_attr_ops = move(attr_ops);
-		template_op.m_dset_size_ops = move(dset_size_ops);
-		result.emplace_back(move(template_op));
+		template_op.m_dset_ops = std::move(dset_ops);
+		template_op.m_attr_ops = std::move(attr_ops);
+		template_op.m_dset_size_ops = std::move(dset_size_ops);
+		result.emplace_back(std::move(template_op));
 	}
 
 	return result;
@@ -223,6 +240,9 @@ File_op::File_op(const File_op& other)
 	,
 #ifdef H5_HAVE_PARALLEL
 	m_communicator{other.m_communicator}
+#ifdef H5_HAVE_SUBFILING_VFD
+	, m_subfiling{other.m_subfiling}
+#endif
 	,
 #endif
 	m_dset_ops{other.m_dset_ops}
@@ -230,13 +250,13 @@ File_op::File_op(const File_op& other)
 	, m_dset_size_ops{other.m_dset_size_ops}
 {
 	for (auto&& dataset: other.m_datasets) {
-		m_datasets.emplace(dataset.first, dataset.second);
+		m_datasets.emplace_back(dataset);
 	}
 }
 
 File_op::File_op(Expression&& file, Collision_policy collision_policy)
 	: m_collision_policy{collision_policy}
-	, m_file{move(file)}
+	, m_file{std::move(file)}
 {}
 
 void File_op::execute(Context& ctx)
@@ -254,8 +274,9 @@ void File_op::execute(Context& ctx)
 					dset_writes.push_back(one_dset_op);
 				}
 			}
-		} catch (const Error& e) {
-			ctx.logger().warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
+		} catch (PDI::Value_error const & e) {
+			//TODO: explain why we only warn here
+			ctx.logger().warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_dset_op.value(), e.what());
 		}
 	}
 
@@ -271,8 +292,9 @@ void File_op::execute(Context& ctx)
 					attr_writes.push_back(one_attr_op);
 				}
 			}
-		} catch (const Error& e) {
-			ctx.logger().warn("Unable to evaluate when close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
+		} catch (PDI::Value_error const & e) {
+			//TODO: explain why we only warn here
+			ctx.logger().warn("Unable to evaluate \"when\" close while executing transfer for {}: `{}'", one_attr_op.name(), e.what());
 		}
 	}
 	// nothing to do if no op is selected
@@ -290,6 +312,44 @@ void File_op::execute(Context& ctx)
 		if (0 > H5Pset_fapl_mpio(file_lst, comm, MPI_INFO_NULL)) handle_hdf5_err();
 		use_mpio = true;
 		ctx.logger().debug("Opening `{}' file in parallel mode", filename);
+
+		if (auto subfiling_stripe_count = subfiling().count().to_long(ctx)) {
+#ifndef H5_HAVE_SUBFILING_VFD
+			if (subfiling().policy().to_string(ctx) == "CONTINUE") {
+				ctx.logger().warn("Used HDF5 does not support subfiling. HDF5 subfiling is ignored");
+			} else {
+				throw System_error{"Used HDF5 does not support subfiling. Please set subfiling to 0."};
+			}
+#endif
+			int provided;
+			MPI_Query_thread(&provided);
+			if (provided < MPI_THREAD_MULTIPLE) {
+				if (subfiling().policy().to_string(ctx) == "CONTINUE") {
+					subfiling_stripe_count = 0;
+					ctx.logger().warn("MPI is not initialized with MPI_THREAD_MULTIPLE. HDF5 subfiling is ignored");
+				} else {
+					throw System_error{"HDF5 subfiling requires MPI_THREAD_MULTIPLE (3). The provided level of thread support is {}", provided};
+				}
+			}
+#ifdef H5_HAVE_SUBFILING_VFD
+			if (subfiling_stripe_count != 0) {
+				ctx.logger().info("HDF5 subfiling enabled for file {}", filename);
+				H5FD_subfiling_config_t subf_config;
+				H5Pget_fapl_subfiling(file_lst, &subf_config);
+				subf_config.shared_cfg.stripe_count = subfiling_stripe_count;
+				if (auto stripe_size = subfiling().stripe_size().to_long(ctx)) {
+					if (stripe_size > 0) {
+						subf_config.shared_cfg.stripe_size = stripe_size;
+					} else if (stripe_size < 0) {
+						throw System_error{"Negative stripe_size is provided. Please set stripe_size > 0."};
+					} else {
+						ctx.logger().warn("Using default stripe_size");
+					}
+				}
+				H5Pset_fapl_subfiling(file_lst, &subf_config);
+			}
+#endif
+		}
 	}
 #endif
 

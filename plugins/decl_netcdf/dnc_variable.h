@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -56,13 +56,20 @@ class Dnc_variable
 	/// Attributes of the variable
 	std::vector<Dnc_attribute> m_attributes;
 
+	/// Compression level of this variable
+	PDI::Expression m_deflate;
+
+	/// Chunking property set from yaml
+	PDI::Expression m_chunking;
+
 public:
 	/** Creates NetCDF variable information from yaml
 	 *
 	 * \param ctx Context of this variable
 	 * \param config Configuration node of this variable
+	 * \param deflate Deflate level of the file
 	 */
-	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config);
+	Dnc_variable(PDI::Context& ctx, const std::string& path, PC_tree_t config, PDI::Expression deflate = PDI::Expression(0L));
 
 	/** Getter for variable name
 	 *
@@ -93,6 +100,18 @@ public:
 	 * \return attributes of the variable
 	 */
 	const std::vector<Dnc_attribute>& attributes() const;
+
+	/** Getter for variable deflate level
+	 *
+	 * \return deflate level of the variable
+	 */
+	const PDI::Expression& deflate() const;
+
+	/** Getter for variable chunk size
+	 *
+	 * \return chunk size of the variable
+	 */
+	const PDI::Expression& chunking() const;
 };
 
 } // namespace decl_netcdf

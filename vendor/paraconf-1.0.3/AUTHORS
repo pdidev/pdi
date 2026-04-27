@@ -1,0 +1,24 @@
+Copyright (C) The Paraconf development team, see COPYRIGHT.md file at the
+              root of the project or at https://github.com/pdidev/paraconf
+
+SPDX-License-Identifier: MIT
+
+
+
+Multiple people have contributed to paraconf. To show our appreciation for
+their public spirit, we list here in alphabetical order a condensed list of
+their contributions.
+
+Julien Bigot - CEA (julien.bigot@cea.fr)
+* Initial design and implementation
+* maintainer
+
+Abel Marin-Lafleche - CEA (abel.marin-lafleche@maisondelasimulation.fr)
+* Improvement of the Fortran API
+
+Mathieu Rigal - CEA (mathieu.rigal@cea.fr)
+* Code generation tool
+
+Corentin Roussel - CEA (corentin.roussel@cea.fr)
+* Multiple bugfixes
+* initial README

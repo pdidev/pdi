@@ -1,51 +1,116 @@
-Multiple people have contributed to the PDI distribution. To show our
-appreciation for their public spirit, we list here in alphabetical order a
-condensed list of their contributions.
-
-Please note this is the list for the distribution mechanism of PDI. The list for
-each sub-project (including PDI itself) is located in the dedicated sub-project
-AUTHORS file.
+Multiple people have contributed to the PDI project. To show our appreciation for their public
+spirit, we list here in alphabetical order a condensed list of their contributions.
 
 Julian Auriac - CEA (julian.auriac@cea.fr)
+* Add mock PDI
 * Fix CI bug where tests.xml file could not be written
-* Added local CI
+* Add local CI
+* Improve a Decl'HDF5 test to work on OSX
+* Add API tests
 
 Julien Bigot - CEA (julien.bigot@cea.fr)
+* Initial design and implementation
 * Maintainer (Dec. 2014 - ...)
-* Design and initial implementation
 
-Amal Gueroudji - CEA (agueroudji@anl.gov)
-* Deisa plugin creation
+Mohamed Gaalich - CEA (mohamed.gaalich@cea.fr)
+* Initial PDI Fortran interface
+* Added Fortran example
+* Added FTI example
+
+Anida Khizar - CEA (anida.khizar@cea.fr)
+* fix HDF5 API version compatibility issue
 
 Benoit Martin - CEA (bmartin@cea.fr)
 * CMake maintainer (Oct. 2024 - ...)
-* Deisa plugin refactoring
+* Context::find()
+* support for const data in `PDI_share`, `PDI_expose` and `PDI_multi_expose`
+* Initial implementation of the cmake test
 
 François-Xavier Mordant - CEA (francois-xavier.mordant@cea.fr)
 * Fixed CMake issues, internal API enhancement
 * Bug fix, JSON plugin
+* Add support for ZSH in env
+* Update supported CMake versions
+* Initial work on `Context::find()`
+* Design and initial implementation of the json plugin
 
 Jacques Morice - CEA (jacques.morice@cea.fr)
-* fix the directory of hdf5 library for rhel
+* Fix the directory of hdf5 library for rhel
+* operator== in Context::Iterator()
+* contribution to Decl'HDF5 features improvement, validation
+* fix issue [#55](https://github.com/pdidev/pkgs/issues/55)
+* fix issue [#582](https://github.com/pdidev/pkgs/issues/582)
+
+Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
+* Fortran interface fixes
+* developments in the fortran interface
+* contribution to Decl'HDF5 feature design, validation
 
 Thomas Padioleau - CEA (thomas.padioleau@cea.fr)
 * Added macOS CI
+* Fixed CMake issues
+* Compile warning fix
+* Fixed a bug with parallel file deletion in Decl'HDF5
 
 Tomasz Paluszkiewicz - PSNC (tomaszp@man.poznan.pl)
-The scientific/academic work is financed from financial resources for science
-in the years 2016 - 2018 granted for the realization of the international
-project co-financed by Polish Ministry of Science and Higher Education.
-* Many improvements, bugfixes and cleanups
+* Updated Python example
+* Development of many unit-tests
+* Support for plugin dependencies
+* Support of the multi_expose function
+* Bugfixes in Decl'HDF5
+* Support for embedded HDF5
+* Initial dependencies lookup support
+* Minor adaptations of the trace plugin for new PDI API
+* Documentation of the user_code plugin
 
 Corentin Roussel - CEA (Corentin.roussel@cea.fr)
 * Co-maintainer (Sep. 2016 - Feb. 2018)
+* Updated examples to match PDI API updates
+* Initial implementation of the user_code plugin
 
 Karol Sierociński - PSNC (ksiero@man.poznan.pl)
-The scientific/academic work is financed from financial resources for science
-in the years 2016 - 2018 granted for the realization of the international
-project co-financed by Polish Ministry of Science and Higher Education.
+* Co-maintainer (May 2020 - Jun. 2022)
 * Many improvements, bugfixes and cleanups
 * PDI benchmarks
+* Updated examples to match new PDI config. format
+* FlowVR examples
+* Set-up and development of unit-tests
+* Support for records in YAML
+* Logging support
+* Support for complex datatypes
+* Callback mechanism
+* Support for member subreference
+* Record datatype support in Decl'HDF5
+* Attributes support in Decl'HDF5
+* Multiple bugfixes in Decl'HDF5
+* Schema validator implementation in Decl'HDF5
+* Updates to match PDI API updates in Decl'HDF5
+* Unified logs in Decl'HDF5
+* Filename and dataset name collision policy in Decl'HDF5
+* Design and initial implementation of MPI plugin
+* Schema validator in MPI plugin
+* Design and initial implementation of the Decl'NetCDF plugin
+* Design and initial implementation of the Serialization plugin
+* Schema validator for user_code plugin
+* Logging improvement for user_code plugin
+* Design and initial implementation of the set_value plugin
+* Tests inspired by Parflow that combine Serialize & Decl'HDF5
+
+Kacper Sinkiewicz - PSNC (ksinkiew@man.poznan.pl)
+* Error subclasses
+* Support for C struct in yaml
+* Support for size_t, ptrdiff_t, byte
+* Support for string boolean types in yaml.
+* Support for integers from stdint.h
+* Many tests, including compatibility tests in Decl'HDF5
+* Test refactoring using GTEST in Serialization, Decl'HDF5 and Decl'NetCDF
+* Documentation of the pycall plugin
+* Bug fix in the set_value plugin
+
+Benedikt Steinbusch - FZJ (b.steinbusch@fz-juelich.de)
+* SIONlib examples
 
 Yushan Wang - CEA (yushan.wang@cea.fr)
 * Maintainer (Sept. 2023 - ...)
+* enable HDF5 subfiling
+* Add native compression support in Decl'NetCDF

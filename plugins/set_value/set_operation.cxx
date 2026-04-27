@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -61,7 +61,7 @@ void Set_operation::execute()
 			context().logger().trace("Copy value to {} with size {} B", data_to_set.first, value_ref.type()->buffersize());
 			memcpy(existing_ref_w.get(), value_ref.get(), existing_ref_w.type()->buffersize());
 		} else {
-			throw PDI::Right_error{"Cannot get write access for `{}' to set values", data_to_set.first};
+			throw PDI::Permission_error{"Cannot get write access for `{}' to set values", data_to_set.first};
 		}
 	}
 }

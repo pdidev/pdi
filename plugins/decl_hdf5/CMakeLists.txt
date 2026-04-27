@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 #
 # All rights reserved.
@@ -28,13 +28,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_decl_hdf5_plugin LANGUAGES C CXX)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+    # Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+	# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/4.3")
+endif()
 
 option(BUILD_BENCHMARKING  "Build PDI benchmarks" ON)
 option(BUILD_FORTRAN       "Enable Fortran support" ON)
 option(BUILD_HDF5_PARALLEL "Enable HDF5 parallel build" ON)
+option(ENABLE_BENCHMARKING "Activate benchmarks in the test suite" OFF)
 
 include(CTest)
 
@@ -49,9 +55,10 @@ include(GNUInstallDirs)
 set(HDF5_USE_STATIC_LIBRARIES OFF)
 set(HDF5_PREFER_PARALLEL "${BUILD_HDF5_PARALLEL}")
 find_package(HDF5 REQUIRED COMPONENTS C)
-if("${HDF5_VERSION}" VERSION_LESS "1.10.0")
-	message(FATAL_ERROR "HDF5 version 1.10.0 at least required, HDF5 ${HDF5_VERSION} found.")
+if("${HDF5_VERSION}" VERSION_LESS 1.10)
+	message(FATAL_ERROR "HDF5 version 1.10 at least required, HDF5 ${HDF5_VERSION} found.")
 endif()
+
 if("${BUILD_HDF5_PARALLEL}" AND NOT "${HDF5_IS_PARALLEL}")
 	message(FATAL_ERROR "Parallel HDF5 required, sequential HDF5 only found. Please set -DBUILD_HDF5_PARALLEL=OFF to disable parallel HDF5")
 endif()
@@ -77,7 +84,8 @@ add_library(pdi_decl_hdf5_plugin MODULE
 		collision_policy.cxx
 		file_op.cxx
 		hdf5_wrapper.cxx
-		selection.cxx)
+		selection.cxx
+		subfiling.cxx)
 target_link_libraries(pdi_decl_hdf5_plugin PUBLIC PDI::PDI_plugins ${HDF5_DEPS})
 set_target_properties(pdi_decl_hdf5_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 

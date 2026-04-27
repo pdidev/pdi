@@ -1,0 +1,33 @@
+# Copyright (C) The Paraconf development team, see COPYRIGHT.md file at the
+#               root of the project or at https://github.com/pdidev/paraconf
+#
+# SPDX-License-Identifier: MIT
+
+name: "Tests"
+on:
+  schedule: [ { cron: "48 5 * * 2" } ] # run every Tuesday 5h48
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  reuse:
+    name: Reuse compliance check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@v6
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Build
+        run: |
+          cmake -B build -S .
+          cmake --build build
+          ctest --output-on-failure --test-dir build

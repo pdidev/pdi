@@ -1168,17 +1168,20 @@ a[id]
 	position: -webkit-sticky;
 	position: sticky;
 	top: 0;
-	height: calc(100vh - 5rem);
-	width: 15rem;
+	width: 15rem !important;
 	margin: calc(-1.5rem - 2px) 0 0 0;
 	padding: calc(1.5rem + 2px) 0 0 0;
 }
 
-#doc-content
+#container
 {
 	max-width: 52rem;
-	padding: 0;
 	margin: 0 15rem 0 0 !important;
+}
+
+#doc-content
+{
+	margin: 0 !important;
 }
 
 @media (max-width: 68rem)

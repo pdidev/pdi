@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2022 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,19 +27,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 project(decl_hdf5_benchmarks)
 
 if(NOT TARGET GTest::gtest)
   option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
-  add_subdirectory("../../../vendor/googletest-b4aaf97/" "googletest" EXCLUDE_FROM_ALL)
+  add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
 endif()
 if(NOT TARGET benchmark::benchmark)
   option(BENCHMARK_ENABLE_TESTING "Enable testing of the benchmark library." OFF)
   option(BENCHMARK_ENABLE_WERROR "Build Release candidates with -Werror." OFF)
   option(BENCHMARK_ENABLE_INSTALL "Enable installation of benchmark. (Projects embedding benchmark may want to turn this OFF.)" OFF)
-  add_subdirectory("../../../vendor/benchmark-38df9da/" "benchmark" EXCLUDE_FROM_ALL)
+  add_subdirectory("../../../vendor/benchmark-4ed29ae/" "benchmark" EXCLUDE_FROM_ALL)
 endif()
 
 include(CTest)
@@ -66,4 +66,7 @@ target_link_libraries(decl_hdf5_benchmarks
 set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/runtest-dir")
 add_test(NAME decl_hdf5_benchmarks
          COMMAND "${RUNTEST_DIR}" sh -c "$<TARGET_FILE:decl_hdf5_benchmarks> --benchmark_format=json > ${BENCHMARK_RESULT_PATH}/decl_hdf5_benchmark_result.json")
+if(NOT "${ENABLE_BENCHMARKING}")
+  set_property(TEST decl_hdf5_benchmarks PROPERTY DISABLED TRUE)
+endif()
 set_property(TEST decl_hdf5_benchmarks PROPERTY TIMEOUT 300)

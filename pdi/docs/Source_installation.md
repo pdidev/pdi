@@ -16,8 +16,8 @@ The %PDI source distribution includes:
 To download the sources, have a look at the list of all releases at 
 https://github.com/pdidev/pdi/releases/
 
-For example, release 1.9.2 can be downloaded from
-https://github.com/pdidev/pdi/archive/refs/tags/1.9.2.tar.gz
+For example, release 1.11.0 can be downloaded from
+https://github.com/pdidev/pdi/archive/refs/tags/1.11.0.tar.gz
 
 ## Default installation {#default_installation}
 
@@ -29,29 +29,28 @@ Installing the default %PDI source distribution is fairly easy.
 Most dependencies are embedded in the distribution and the only required
 external dependencies are:
 * a POSIX compatible OS such as GNU/linux,
-* [cmake](https://cmake.org/) version 3.16.3 or above,
-* a C 99, C++ 17 and Fortran 03 compiler such as
-  - [gcc](https://gcc.gnu.org/) 9.3 or above,
-  - [clang](https://clang.llvm.org/) 10.0 or above,
-* a [python](https://www.python.org/) interpreter, version 3.8.2 or above,
+* [cmake](https://cmake.org/) version 3.22 or above,
+* a C 17, C++ 20 and Fortran 18 compiler such as [gcc](https://gcc.gnu.org/) 11
+  or above,
+* a [python](https://www.python.org/) interpreter, version 3.10 or above,
 * a [bash](https://www.gnu.org/software/bash/) interpreter,
 * a [MPI](https://www.mpi-forum.org/) 2 implementation such as
-  - [openmpi](https://www.open-mpi.org/) 4.0 or above,
-  - [mpich](https://www.mpich.org/) 3.3 or above.
+  - [openmpi](https://www.open-mpi.org/) 4.1 or above,
+  - [mpich](https://www.mpich.org/) 4.0 or above.
 
 \attention
 This list of dependencies can be further reduced or extended by changing the
 set of features compiled.
 
-For example, release 1.9.2 can be installed by following these instructions (but
+For example, release 1.11.0 can be installed by following these instructions (but
 look for the latest release at
 https://github.com/pdidev/pdi/releases ):
 
 ```bash
-wget https://github.com/pdidev/pdi/archive/refs/tags/1.9.2.tar.gz
-tar -xjf 1.9.2.tar.bz2
-mkdir 1.9.2/build
-cd 1.9.2/build
+wget https://github.com/pdidev/pdi/archive/refs/tags/1.11.0.tar.gz
+tar -xjf 1.11.0.tar.gz
+mkdir 1.11.0/build
+cd 1.11.0/build
 cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
 make install   # compilation and installation
 ```
@@ -106,10 +105,10 @@ The following flags define which features of the distribution to enable or not.
 |`BUILD_TESTING`            |`ON`   |Build the tests.|
 |`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
 |`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
-|`BUILD_DEISA_PLUGIN`       |`OFF`  |Build the Deisa plug-in.|
 |`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
 |`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
+|`ENABLE_BENCHMARKING`      |`OFF`  |Run benchmarks as part of the test suite.|
 
 
 The following flags define whether to:
@@ -138,10 +137,8 @@ The following flags define whether to:
 
 The following flags define where to install %PDI, those prefixed with `CMAKE_`
 are provided and documented by the
-[GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)
+[GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)
 cmake module.
-
-
 
 |Flag          |Default   |Description|
 |:-------------|:---------|:----------|
@@ -149,12 +146,12 @@ cmake module.
 |`INSTALL_FMODDIR`|`LIBDIR/pdi/finclude/${COMPILER_VERSION}`|Fortran modules|
 |`INSTALL_PDIDATADIR`|`DATADIR/pdi`|PDI data|
 |`INSTALL_PDIPLUGINDIR`|`LIBDIR/pdi/plugins_${PDI_VERSION}`|PDI plugins|
-|`CMAKE_INSTALL_BINDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|user executables|
-|`CMAKE_INSTALL_DATADIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|read-only architecture-independent data|
-|`CMAKE_INSTALL_DOCDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|documentation root|
-|`CMAKE_INSTALL_INCLUDEDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|C header files|
-|`CMAKE_INSTALL_LIBDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.19/module/GNUInstallDirs.html)|object code libraries|
-|`CMAKE_INSTALL_PREFIX`|see [CMake doc](https://cmake.org/cmake/help/v3.19/variable/CMAKE_INSTALL_PREFIX.html)|Installation base|
+|`CMAKE_INSTALL_BINDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|user executables|
+|`CMAKE_INSTALL_DATADIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|read-only architecture-independent data|
+|`CMAKE_INSTALL_DOCDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|documentation root|
+|`CMAKE_INSTALL_INCLUDEDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|C header files|
+|`CMAKE_INSTALL_LIBDIR`|see [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)|object code libraries|
+|`CMAKE_INSTALL_PREFIX`|see [CMake doc](https://cmake.org/cmake/help/v3.22/variable/CMAKE_INSTALL_PREFIX.html)|Installation base|
 
 ## List of dependencies {#dependecies}
 
@@ -164,52 +161,52 @@ All dependencies are provided in the distribution unless specified otherwise.
 Dependencies of **%PDI**:
 
 * a POSIX compatible OS such as GNU/linux,
-* **[cmake](https://cmake.org/) version 3.16 or above (not provided)**,
-* **a C 99 and C++ 17 compiler (not provided)** such as
-  - [gcc](https://gcc.gnu.org/) 9.3 or above,
-  - [clang](https://clang.llvm.org/) 10.0 or above,
-* the [paraconf](https://github.com/pdidev/paraconf) library version 1.0.0 or above (provided),
+* **[cmake](https://cmake.org/) version 3.22 or above (not provided)**,
+* **a C 17 and C++ 20 compiler (not provided)** such as
+  - [gcc](https://gcc.gnu.org/) 11 or above,
+  - [clang](https://clang.llvm.org/) 14 or above,
+* the [paraconf](https://github.com/pdidev/paraconf) library version 1.0 or above (provided),
 * the [libyaml](https://pyyaml.org/wiki/LibYAML) library version 0.2.2 or above (provided),
-* the [spdlog](https://github.com/gabime/spdlog) library version 1.5.0 or above (provided).
+* the [spdlog](https://github.com/gabime/spdlog) library version 1.9 or above (provided).
 
 Additional dependencies for **the Fortran API**:
 
 * the PDI library,
-* **a Fortran 03 compiler (not provided)** such as
-  - [gcc](https://gcc.gnu.org/) 9.3 or above,
-* **a [python](https://www.python.org/) interpreter, version 3.8.2 or above (not provided)**.
+* **a Fortran 18 compiler (not provided)** such as
+  - [gcc](https://gcc.gnu.org/) 11 or above,
+* **a [python](https://www.python.org/) interpreter, version 3.10 or above (not provided)**.
 
 Additional dependencies for **the Python support**:
 
 * the PDI library,
-* **the [python](https://www.python.org/) development environment version 3.8.2 or above (not provided)**,
-* the [pybind11](https://pybind11.readthedocs.io/en/stable) library version 2.4.3 or above.
+* **the [python](https://www.python.org/) development environment version 3.10 or above (not provided)**,
+* the [pybind11](https://pybind11.readthedocs.io/en/stable) library version 2.9 or above.
 
 Dependencies of **the Decl'HDF5 plugin**:
 
 * the PDI library,
-* the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.10.4 or above (provided),
+* the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.10 or above (provided),
 * **a MPI implementation for the parallel version of the plugin (not provided)**, such as
-  - [openmpi](https://www.open-mpi.org/) 4.0 or above,
-  - [mpich](https://www.mpich.org/) 3.3 or above.
+  - [openmpi](https://www.open-mpi.org/) 4.1 or above,
+  - [mpich](https://www.mpich.org/) 4.0 or above.
 
 Dependencies of **the Decl'NetCDF plugin**:
 
 * the PDI library,
-* the [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) library version 4.7.3 or above (provided),
-* the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.10.4 or above (provided),
+* the [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) library version 4.8 or above (provided),
+* the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.10 or above (provided),
 * **a MPI implementation for the parallel version of the plugin (not provided)**, such as
-  - [openmpi](https://www.open-mpi.org/) 4.0 or above,
-  - [mpich](https://www.mpich.org/) 3.3 or above.
+  - [openmpi](https://www.open-mpi.org/) 4.1 or above,
+  - [mpich](https://www.mpich.org/) 4.0 or above.
 
 Dependencies of **the JSON plugin**:
 
 * the PDI library,
-* the [Json](https://github.com/nlohmann/json/) library version 3.9.1 or above (provided).
+* the [Json](https://github.com/nlohmann/json/) library version 3.9 or above (provided).
   
 Dependencies of **the MPI plugin**:
 
 * the PDI library,
 * **a MPI-2 implementation (not provided)** such as
-  - [openmpi](https://www.open-mpi.org/) 4.0 or above,
-  - [mpich](https://www.mpich.org/) 3.3 or above.
+  - [openmpi](https://www.open-mpi.org/) 4.1 or above,
+  - [mpich](https://www.mpich.org/) 4.0 or above.

@@ -1,7 +1,0 @@
-#!@PYTHON_EXECUTABLE@ -B
-from sys import path
-
-if __name__ == '__main__':
-    path.insert(0, "@CMAKE_CURRENT_SOURCE_DIR@")
-    from zpp import main
-    main()

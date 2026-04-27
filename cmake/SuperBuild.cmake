@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.16...3.25)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 include(GNUInstallDirs)
 include(ExternalProject)
@@ -99,11 +99,7 @@ endfunction()
 # 
 ###
 function(sbuild_add_dependency _SBUILD_NAME _SBUILD_DEFAULT)
-	if("${CMAKE_VERSION}" VERSION_LESS "3.7")
-		cmake_parse_arguments(_SBUILD "BUILD_DEPENDENCY;NO_INSTALL" "EMBEDDED_PATH;BUILD_IN_SOURCE;VERSION;SOURCE_SUBDIR" "CMAKE_CACHE_ARGS;DEPENDS;CONFIGURE_COMMAND;BUILD_COMMAND;INSTALL_COMMAND;COMPONENTS;OPTIONAL_COMPONENTS;PATCH_COMMAND;MODULE_VARS;ENV" ${ARGN})
-	else()
-		cmake_parse_arguments(PARSE_ARGV 2 _SBUILD "BUILD_DEPENDENCY;NO_INSTALL" "EMBEDDED_PATH;BUILD_IN_SOURCE;VERSION;SOURCE_SUBDIR" "CMAKE_CACHE_ARGS;DEPENDS;CONFIGURE_COMMAND;BUILD_COMMAND;INSTALL_COMMAND;COMPONENTS;OPTIONAL_COMPONENTS;PATCH_COMMAND;MODULE_VARS;ENV")
-	endif()
+	cmake_parse_arguments(PARSE_ARGV 2 _SBUILD "BUILD_DEPENDENCY;NO_INSTALL" "EMBEDDED_PATH;BUILD_IN_SOURCE;VERSION;SOURCE_SUBDIR" "CMAKE_CACHE_ARGS;DEPENDS;CONFIGURE_COMMAND;BUILD_COMMAND;INSTALL_COMMAND;COMPONENTS;OPTIONAL_COMPONENTS;PATCH_COMMAND;MODULE_VARS;ENV")
 	
 	if(DEFINED _SBUILD_EMBEDDED_PATH)
 		set("USE_${_SBUILD_NAME}" "${_SBUILD_DEFAULT}" CACHE STRING "version of ${_SBUILD_NAME} to use, this can be 1) a path to the library source, 2) EMBEDDED to use the provided version, 3) SYSTEM to use an already installed version (you can use CMAKE_PREFIX_PATH to specify where to look, or 4) AUTO to use SYSTEM if available and EMBEDDED otherwise")
@@ -249,11 +245,7 @@ endfunction()
 # 
 ###
 function(sbuild_add_module _SBUILD_NAME)
-	if("${CMAKE_VERSION}" VERSION_LESS "3.7")
-		cmake_parse_arguments(_SBUILD "NO_INSTALL" "SOURCE_DIR;ENABLE_BUILD;ENABLE_BUILD_FLAG" "CMAKE_CACHE_ARGS;DEPENDS;SUBSTEPS;INSTALL_COMMAND" ${ARGN})
-	else()
-		cmake_parse_arguments(PARSE_ARGV 1 _SBUILD "NO_INSTALL" "SOURCE_DIR;ENABLE_BUILD;ENABLE_BUILD_FLAG" "CMAKE_CACHE_ARGS;DEPENDS;SUBSTEPS;INSTALL_COMMAND")
-	endif()
+	cmake_parse_arguments(PARSE_ARGV 1 _SBUILD "NO_INSTALL" "SOURCE_DIR;ENABLE_BUILD;ENABLE_BUILD_FLAG" "CMAKE_CACHE_ARGS;DEPENDS;SUBSTEPS;INSTALL_COMMAND")
 	
 	if(DEFINED _SBUILD_ENABLE_BUILD_FLAG AND NOT "${${_SBUILD_ENABLE_BUILD_FLAG}}")
 		message(STATUS " **Module**: DISABLED ${_SBUILD_NAME} (-D${_SBUILD_ENABLE_BUILD_FLAG}=OFF)")
@@ -345,11 +337,7 @@ endfunction()
 
 if("${BUILD_TESTING}")
 	enable_testing()
-	if("${CMAKE_VERSION}" VERSION_LESS 3.10)
-		set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_BINARY_DIR}/SubTests.cmake")
-	else()
-		set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" APPEND PROPERTY TEST_INCLUDE_FILES "${CMAKE_BINARY_DIR}/SubTests.cmake")
-	endif()
+	set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" APPEND PROPERTY TEST_INCLUDE_FILES "${CMAKE_BINARY_DIR}/SubTests.cmake")
 	file(WRITE "${CMAKE_BINARY_DIR}/SubTests.cmake"
 	"set(ADDPATH [=[${CMAKE_BINARY_DIR}/staging/${CMAKE_INSTALL_LIBDIR}:${CMAKE_BINARY_DIR}/staging/lib]=])\n"
 	[===[

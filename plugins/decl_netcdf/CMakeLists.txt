@@ -1,6 +1,6 @@
 #=============================================================================
 # Copyright (C) 2019 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
-# Copyright (C) 2020-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -28,9 +28,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 project(pdi_decl_netcdf_plugin LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+    # Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+	# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/4.3")
+endif()
 
 option(BUILD_NETCDF_PARALLEL "Build Decl'NetCDF in parallel mode" ON)
 
@@ -44,7 +49,7 @@ if("${BUILD_NETCDF_PARALLEL}")
 endif()
 
 # NetCDF
-find_package(NetCDF 4.7.3 REQUIRED)
+find_package(NetCDF 4.8 REQUIRED)
 if("${BUILD_NETCDF_PARALLEL}" AND NOT "PARALLEL4" IN_LIST NetCDF_FEATURES)
 	message(FATAL_ERROR "Parallel NetCDF required, sequential NetCDF only found. Please set -DBUILD_NETCDF_PARALLEL=OFF to disable parallel NetCDF")
 endif()

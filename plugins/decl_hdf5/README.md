@@ -42,9 +42,9 @@ The possible values for the keys are as follow:
   can be replaced inside the `DATA_SECTION`.
 * `datasets`: a key-value map associating a PDI type to string keys.
   Each string is the name of a dataset to create in the file on first
-  access, with the type described in the value. The string key can also be 
+  access, with the type described in the value. The string key is 
   a regular expression (regex), and be used to define "generic keys",
-  that can be used in `DATA_IO_DESC` for the keyword dataset.
+  that can be used in `DATA_IO_DESC` for the keyword dataset. The regex use the Modiﬁed ECMAScript regular expression grammar.
 * `collision_policy`: a string identifying a \ref COLLISION_POLICY
 * `deflate`: an integer value (from 0 to 9) defining the default deflate (GNU
   gzip) compression level to use for datasets created in this file.
@@ -60,6 +60,34 @@ The possible values for the keys are as follow:
   See
   https://support.hdfgroup.org/HDF5/doc/RM/RM_H5P.html#Property-SetFletcher32
   for more information.
+
+* `subfiling`: a key-value map or an integer. Configures the HDF5 Subfiling Virtual File Driver (VFD). This feature is only available if the underlying HDF5 installation was compiled with `H5_HAVE_SUBFILING_VFD`.
+  * Configuration keys:
+    * `count` (integer, default: 0) : the total number of subfiles to generate. If set to -1 or other negative values, the one-subfile-per-node mode will be triggered.
+    * `policy` (string, default: "STOP") : Determines behavior if subfiling requirements are not met.
+      * `STOP`: Throw a runtime error.
+      * `CONTINUE`: Fall back to a standard HDF5 output file.
+    * `stripe_size` (non-negative integer, default: 0): The amount of data (in bytes) written to one subfile before rotating to the next. If 0, the HDF5 default (typically 32MB) is used.
+  * Yaml example
+    * full configuration:
+      ```
+      subfiling:
+        count: 4              # generate 4 subfiles
+        policy: CONTINUE      # Fallback to standard HDF5 if necessary
+        stripe_size: 8388608  # 8MB stripes
+      ```
+    * shorthand configuration:
+      ```
+      subfiling: 2 
+      ```
+      This will set `count=2` and all other members use default values.
+  * Here are several important notes for using `subfiling` correctly:
+    * **MPI Threading Requirement**: The simulation must be initialized with `MPI_THREAD_MULTIPLE`. If this is not satisfied, the application will throw a runtime error unless policy is set to `CONTINUE`. In `CONTINUE` mode, the simulation will proceed using standard HDF5 I/O.
+    * **Stripe Size Configuration**:  The stripe size can be set in the YAML via `stripe_size` or via the environment variable `H5FD_SUBFILING_STRIPE_SIZE`. The YAML value takes precedence if both are provided.
+    * **Custom File Locations**: To store subfiles in a specific directory (e.g., a high-speed scratch burst buffer), provide an absolute path to `H5FD_SUBFILING_SUBFILE_PREFIX`. **Note** : You must set the same path to `H5FD_SUBFILING_CONFIG_FILE_PREFIX` so the main .h5 file can locate its constituent subfiles.
+    * **Naming Convention**: Subfile names are managed internally by HDF5 and cannot be easily customized. They follow a template similar to:
+    `[filename].h5.subfile_[contextID]_[subfile_index]_of_[total_subfiles]`
+    (e.g., `output.h5.subfile_11273556_01_of_10`)
 
 ### DATA_SECTION
 
@@ -114,7 +142,8 @@ The possible values for the keys are as follow:
   It defaults to selecting the whole data.
 * `dataset_selection`: a `SELECTION_DESC` specifying the selection of
   data in the file data to write or read.
-  This is only valid if the dataset is defined in the datasets.
+  This is only valid if the dataset is explicitly defined in the `datasets`
+  section.
 * `attributes`: a key-value map specifying the set of attributes to read from
   (respectively, write to) the file when the associated dataset is read
   (respectively, written).

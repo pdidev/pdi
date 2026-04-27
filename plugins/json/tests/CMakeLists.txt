@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2023-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2023-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 #=============================================================================
 
-cmake_minimum_required(VERSION 3.16...3.29)
+cmake_minimum_required(VERSION 3.22...4.2)
 
 # Add the plugin path to PDI_PLUGIN_PATH
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
@@ -49,11 +49,10 @@ function(build_test_compare TEST_NAME)
 
     # Compare content
     add_test(NAME verify_content_${TEST_NAME}
-        COMMAND ${CMAKE_COMMAND} -DTEST_NAME=${TEST_NAME}
-                                  -DEXPECTED_OUTPUT_PATH=${EXPECTED_OUTPUT_PATH}
-                                  -DACTUAL_OUTPUT_PATH=${ACTUAL_OUTPUT_PATH}
-                                  -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compare_content.cmake)
-
+             COMMAND ${CMAKE_COMMAND} -DTEST_NAME=${TEST_NAME}
+                                      -DEXPECTED_OUTPUT_PATH=${EXPECTED_OUTPUT_PATH}
+                                      -DACTUAL_OUTPUT_PATH=${ACTUAL_OUTPUT_PATH}
+                                      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compare_content.cmake)
     set_tests_properties(verify_content_${TEST_NAME} PROPERTIES FIXTURES_REQUIRED ${TEST_NAME})
 endfunction()
 

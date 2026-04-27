@@ -1,4 +1,5 @@
 /*******************************************************************************
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -59,9 +60,9 @@ TEST(ErrorTest, call_constructor_no_vargs)
  */
 TEST(ErrorTest, call_constructor_vargs)
 {
-	Error error(PDI_UNAVAILABLE, "{} errors in {}?", 0, "ErrorTest");
+	Error error(PDI_ERR_SYSTEM, "{} errors in {}?", 0, "ErrorTest");
 	ASSERT_STREQ("0 errors in ErrorTest?", error.what());
-	ASSERT_EQ(error.status(), PDI_UNAVAILABLE);
+	ASSERT_EQ(error.status(), PDI_ERR_SYSTEM);
 }
 
 /*

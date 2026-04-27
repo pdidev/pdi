@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies
+# Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies
 # alternatives (CEA)
 # All rights reserved.
 #
@@ -23,7 +23,8 @@
 # THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.16...3.25)
+cmake_policy(PUSH)
+cmake_policy(VERSION 3.22...4.2)
 
 include(FindPackageHandleStandardArgs)
 
@@ -94,3 +95,5 @@ sys.stdout.write(';'.join([sysconfig.get_python_lib(prefix='',plat_specific=Fals
 endif()
 
 find_package_handle_standard_args(Python3Path REQUIRED_VARS Python3Path_INSTALL_SITELIBDIR Python3Path_INSTALL_SITEARCHDIR Python3Path_INSTALL_STDLIBDIR Python3Path_INSTALL_STDARCHDIR)
+
+cmake_policy(POP)

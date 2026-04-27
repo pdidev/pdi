@@ -1,5 +1,5 @@
 #--------------------------------------------------------------------------------
-# Copyright (C) 2023 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2023-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -41,7 +41,5 @@ if (ACTUAL_CONTENT STREQUAL EXPECTED_CONTENT)
     message(STATUS "${TEST_NAME} : Produced and expected contents corresponds\nTest verify_content_${TEST_NAME} passed.")
 else ()
     message(FATAL_ERROR "${TEST_NAME} : Produced and expected contents does not corresponds\nTest verify_content_${TEST_NAME} failed."
-                    #    "Actual output:\n${ACTUAL_CONTENT}\n"
-                    #    "Expected output:\n${EXPECTED_CONTENT}"
 )
 endif ()
