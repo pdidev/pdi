@@ -121,6 +121,29 @@ set_property(TEST PDI_example_decl_hdf5_P PROPERTY PROCESSORS 3)
 endif("${BUILD_PYTHON}")
 endif("${BUILD_DECL_HDF5_PLUGIN}")
 
+if("${BUILD_VELOC_PLUGIN}")
+	set(VELOC_EXAMPLE_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/veloc_test_workdir")
+	file(MAKE_DIRECTORY "${VELOC_EXAMPLE_WORKDIR}")
+	file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/veloc_example.cfg" DESTINATION "${VELOC_EXAMPLE_WORKDIR}")
+    add_test(NAME PDI_example_veloc COMMAND 
+        "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS}
+        "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS}
+        "${CMAKE_CURRENT_SOURCE_DIR}/veloc.yml")
+    add_test(NAME PDI_example_veloc_recovery COMMAND
+        "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS}
+        "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS}
+        "${CMAKE_CURRENT_SOURCE_DIR}/veloc_recovery.yml")
+    set_property(TEST PDI_example_veloc PROPERTY 
+                 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/veloc_test_workdir")
+    set_property(TEST PDI_example_veloc_recovery PROPERTY 
+                 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/veloc_test_workdir")
+    set_property(TEST PDI_example_veloc_recovery PROPERTY DEPENDS PDI_example_veloc)
+    set_property(TEST PDI_example_veloc PROPERTY TIMEOUT 15)
+    set_property(TEST PDI_example_veloc PROPERTY PROCESSORS 3)
+    set_property(TEST PDI_example_veloc_recovery PROPERTY TIMEOUT 15)
+    set_property(TEST PDI_example_veloc_recovery PROPERTY PROCESSORS 3)
+endif("${BUILD_VELOC_PLUGIN}")
+
 if("${BUILD_DECL_NETCDF_PLUGIN}")
 add_test(NAME PDI_example_decl_netcdf_C_serial COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/decl_netcdf_serial.yml")
 set_property(TEST PDI_example_decl_netcdf_C_serial PROPERTY TIMEOUT 15)

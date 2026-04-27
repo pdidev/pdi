@@ -252,6 +252,7 @@ int main(int argc, char* argv[])
 
 	PDI_event("main_loop");
 	for (ii = 0;; ++ii) {
+
 		elapsed_offset = MPI_Wtime() - start;
 
 		PDI_multi_expose("newiter",
@@ -261,9 +262,8 @@ int main(int argc, char* argv[])
 			NULL);
 
 		if (veloc_recovery_flag) {
-			// set start considering the elapsed time before failure
-			start = start - elapsed_offset;
-			veloc_recovery_flag = 0; // only do this once
+			start = MPI_Wtime() - elapsed_offset;
+			veloc_recovery_flag = 0;
 		}
 
 		iter(dsize, cur, next);
