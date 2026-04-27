@@ -77,42 +77,20 @@ void Delayed_data_callbacks::trigger()
 {
 	int i = 0;
 	size_t number_of_elements = m_datanames.size();
-	std::vector<Error> trigger_data_errors;
+	std::vector<std::exception_ptr> trigger_data_errors;
 
 	for (auto&& element_name: m_datanames) {
 		try {
 			m_context.logger().trace("Trigger data callback `{}' ({}/{})", element_name.c_str(), ++i, number_of_elements);
 			m_context.callbacks().call_data_callbacks(element_name, m_context[element_name].ref());
-		} catch (const Error& e) {
-			trigger_data_errors.emplace_back(e.status(), "Error in data callbacks for " + element_name + ": " + e.what());
-		} catch (const std::exception& e) {
-			trigger_data_errors.emplace_back(PDI_ERR_SYSTEM, "Error in data callbacks for " + element_name + ": " + e.what());
 		} catch (...) {
-			trigger_data_errors.emplace_back(PDI_ERR_SYSTEM, "Error in data callbacks for " + element_name + ": Not a std::exception based error.");
+			trigger_data_errors.emplace_back(std::current_exception());
 		}
 	}
 
 	m_datanames.clear();
 
-	if (!trigger_data_errors.empty()) {
-		if (1 == trigger_data_errors.size()) {
-			if (std::uncaught_exceptions()) {
-				Global_context::context().logger().error("Error while triggering data callbacks: {}", trigger_data_errors.front().what());
-			} else {
-				throw Error{trigger_data_errors.front().status(), trigger_data_errors.front().what()};
-			}
-		} else {
-			Multiple_error trigger_multiple_error{
-				trigger_data_errors,
-				std::to_string(trigger_data_errors.size()) + " error(s) while triggering data callbacks"
-			};
-			if (std::uncaught_exceptions()) {
-				Global_context::context().logger().error(trigger_multiple_error.what());
-			} else {
-				throw trigger_multiple_error;
-			}
-		}
-	}
+	rethrow_with_context(trigger_data_errors, "In triggering on_data for `{}' data, ", number_of_elements);
 }
 
 void Delayed_data_callbacks::cancel()

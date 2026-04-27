@@ -180,8 +180,8 @@ void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write)
 try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	return share(data_ref, read, write, Delayed_data_callbacks(m_context));
-} catch (Error& e) {
-	throw Error(e.status(), "Unable to share `{}', {}", name(), e.what());
+} catch (...) {
+	rethrow_with_context(std::current_exception(), "Unable to share `{}', ", name());
 }
 
 void* Data_descriptor_impl::share(Ref data_ref, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks)
@@ -216,16 +216,7 @@ try {
 		throw Permission_error{"Unable to grant requested rights"};
 	}
 
-<<<<<<< HEAD
-	try {
-		m_context.callbacks().call_data_callbacks(m_name, ref());
-	} catch (...) {
-		m_refs.pop();
-		throw;
-	}
-=======
 	delayed_callbacks.add_dataname(m_name);
->>>>>>> 82e0de44 (resolve conflict)
 
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	return result;

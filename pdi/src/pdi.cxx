@@ -168,15 +168,25 @@ void warn_status(PDI_status_t status, const char* message, void*)
  */
 struct Var_to_reclaim {
 	std::vector<string> m_varnames;
-	Var_to_reclaim() = default;
+	const string m_event_name;
+	Var_to_reclaim(const char *event_name) : m_event_name{event_name} {}
 
 	~Var_to_reclaim() noexcept(false)
 	{
 		try {
 			this->trigger_reclaim();
-		} catch (...) {
-			if (std::uncaught_exceptions() == 0) {
+		} catch (std::exception &e) {
+			if (std::uncaught_exceptions()==0) {
 				throw;
+			} else {
+				Global_context::context().logger().error("Error when triggering reclaim in multi expose for event `{}'",  e.what());
+			}
+			// else:  stack unwinding case
+		} catch (...) {
+			if (std::uncaught_exceptions()==0) {
+				throw;
+			} else {
+				Global_context::context().logger().error("Error when triggering reclaim in multi expose for event");
 			}
 			// else:  stack unwinding case
 		}
@@ -184,43 +194,18 @@ struct Var_to_reclaim {
 
 	void trigger_reclaim()
 	{
-		std::vector<Error> reclaim_data_errors;
+		std::vector<std::exception_ptr> reclaim_data_errors;
 		int counter = 0;
 		for (auto&& it = m_varnames.rbegin(); it != m_varnames.rend(); it++) {
 			try {
 				Global_context::context().logger().trace("Multi expose: Reclaiming `{}' ({}/{})", it->c_str(), ++counter, m_varnames.size());
 				Global_context::context()[it->c_str()].reclaim();
-			} catch (const Error& e) {
-				reclaim_data_errors.emplace_back(e);
-			} catch (const std::exception& e) {
-				reclaim_data_errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 			} catch (...) {
-				reclaim_data_errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error in reclaiming the data=" + (*it));
+				reclaim_data_errors.emplace_back(std::current_exception());
 			}
 		}
-		if (!reclaim_data_errors.empty()) {
-			if (1 == reclaim_data_errors.size()) {
-				if (std::uncaught_exceptions()) {
-					Global_context::context().logger().error("Error when triggering reclaim in multi expose: {}", reclaim_data_errors.front().what());
-				} else {
-					throw Error{
-						reclaim_data_errors.front().status(),
-						"Error when triggering reclaim in multi expose: {}",
-						reclaim_data_errors.front().what()
-					};
-				}
-			} else {
-				Multiple_error reclaim_multiple_error{
-					reclaim_data_errors,
-					std::to_string(reclaim_data_errors.size()) + " error(s) when triggering reclaim in multi expose:"
-				};
-				if (std::uncaught_exceptions()) {
-					Global_context::context().logger().error(reclaim_multiple_error.what());
-				} else {
-					throw reclaim_multiple_error;
-				}
-			}
-		}
+		rethrow_with_context(reclaim_data_errors, "In triggering reclaim in multi expose for event `{}', ", m_event_name);
+
 		m_varnames.clear();
 	}
 
@@ -412,7 +397,7 @@ try {
 	Paraconf_wrapper fw;
 	va_list ap;
 
-	Var_to_reclaim list_names; // list of variable that will be reclaimed at the end of this function
+	Var_to_reclaim list_names{event_name}; // list of variable that will be reclaimed at the end of this function
 	Delayed_data_callbacks delayed_callbacks(Global_context::context());
 	int i = -1;
 	Global_context::context().logger().trace("Multi expose: Sharing `{}' ({}/{})", name, ++i, list_names.size());
