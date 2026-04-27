@@ -31,7 +31,7 @@
 set -euo pipefail
 
 # ----------- Config ------------------
-IMAGE="ghcr.io/pdidev/ubuntu/rolling/openmpi/all:v3"
+IMAGE="ghcr.io/pdidev/ubuntu/rolling/openmpi/all:v4"
 SCRIPT_NAME="run.sh"
 SCRIPT_DIR="./.ci_tmp"
 REPORT_FILE="tests.xml"
