@@ -4,9 +4,12 @@ project(pdi_veloc_plugin LANGUAGES C CXX)
 include(CTest)
 include(GNUInstallDirs)
 
+add_compile_definitions(OMPI_SKIP_MPICXX=1)
+
 find_package(spdlog 1.9 REQUIRED)
 find_package(PDI REQUIRED plugins)
 find_package(MPI REQUIRED COMPONENTS C CXX)
+
 
 
 # Let users control via environment/standard CMake vars
