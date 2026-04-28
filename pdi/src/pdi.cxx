@@ -179,16 +179,14 @@ struct Var_to_reclaim {
 			if (std::uncaught_exceptions()==0) {
 				throw;
 			} else {
-				Global_context::context().logger().error("Error when triggering reclaim in multi expose for event `{}'",  e.what());
+				Global_context::context().logger().error("{}",e.what());
 			}
-			// else:  stack unwinding case
 		} catch (...) {
 			if (std::uncaught_exceptions()==0) {
 				throw;
 			} else {
-				Global_context::context().logger().error("Error when triggering reclaim in multi expose for event");
+				Global_context::context().logger().error("Error when triggering reclaim in multi expose for event `{}'", m_event_name);
 			}
-			// else:  stack unwinding case
 		}
 	}
 
@@ -204,7 +202,7 @@ struct Var_to_reclaim {
 				reclaim_data_errors.emplace_back(std::current_exception());
 			}
 		}
-		rethrow_with_context(reclaim_data_errors, "In triggering reclaim in multi expose for event `{}', ", m_event_name);
+		rethrow_with_context(reclaim_data_errors, "`{}' error(s) when triggering reclaim(s) in multi expose for event `{}': ", m_varnames.size(), m_event_name);
 
 		m_varnames.clear();
 	}

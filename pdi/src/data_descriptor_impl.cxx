@@ -154,8 +154,11 @@ bool Data_descriptor_impl::empty()
 }
 
 void Data_descriptor_impl::share(void* data, bool read, bool write)
-{
+try{
 	share(data, read, write, Delayed_data_callbacks(m_context));
+} catch (...) {
+	// need this line to catch exception in the destructor of Delayed_data_callback
+	rethrow_with_context(std::current_exception(), "Unable to share `{}', ", name());
 }
 
 void Data_descriptor_impl::share(void* data, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks)
@@ -181,6 +184,7 @@ try {
 	assert((!metadata() || !m_refs.empty()) && "metadata descriptors should always keep a placeholder");
 	return share(data_ref, read, write, Delayed_data_callbacks(m_context));
 } catch (...) {
+	// need this line to catch exception in the destructor of Delayed_data_callback
 	rethrow_with_context(std::current_exception(), "Unable to share `{}', ", name());
 }
 

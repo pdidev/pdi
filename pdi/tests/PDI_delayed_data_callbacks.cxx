@@ -228,7 +228,7 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 	try {
 		delayed_callbacks.trigger();
 	} catch (Error& e) {
-		ASSERT_STREQ("In triggering on_data for `1' data, Cannot access a non shared value: `data_x'", e.what());
+		ASSERT_STREQ("`1' error(s) while triggering data callbacks, Cannot access a non shared value: `data_x'", e.what());
 	} catch (...) {
 		FAIL();
 	}

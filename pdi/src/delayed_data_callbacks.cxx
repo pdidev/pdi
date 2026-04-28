@@ -54,6 +54,7 @@ Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 			// An exception is throwing before. Print simple message to avoid std::terminate.
 			m_context.logger().error("Error in the destructor of Delayed_data_callbacks, {}", e.what());
 		} else {
+			m_context.logger().info("{}","#### exception:: throw the same error");
 			throw;
 		}
 	} catch (...) {
@@ -61,6 +62,7 @@ Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 			// An exception is throwing before. Print simple message to avoid std::terminate.
 			m_context.logger().error("Error in the destructor of Delayed_data_callbacks.");
 		} else {
+			m_context.logger().info("{}","**** no std::exception:: throw the same error");
 			throw;
 		}
 	}
@@ -90,7 +92,7 @@ void Delayed_data_callbacks::trigger()
 
 	m_datanames.clear();
 
-	rethrow_with_context(trigger_data_errors, "In triggering on_data for `{}' data, ", number_of_elements);
+	rethrow_with_context(trigger_data_errors, "`{}' error(s) while triggering data callbacks, ", number_of_elements);
 }
 
 void Delayed_data_callbacks::cancel()

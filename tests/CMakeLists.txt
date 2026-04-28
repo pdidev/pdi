@@ -74,7 +74,7 @@ endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 if("${BUILD_USER_CODE_PLUGIN}")
 
 add_executable(test_06_user_code_multi_expose_CXX test_06_user_code_multi_expose.cxx)
-target_link_libraries(test_06_user_code_multi_expose_CXX PDI::PDI_C GTest::gtest GTest::gtest_main)
+target_link_libraries(test_06_user_code_multi_expose_CXX PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
 set_target_properties(test_06_user_code_multi_expose_CXX PROPERTIES ENABLE_EXPORTS TRUE)
 gtest_discover_tests(test_06_user_code_multi_expose_CXX)
 

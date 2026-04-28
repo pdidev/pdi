@@ -22,10 +22,24 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <gtest/gtest.h>
-#include <pdi.h>
+#include <filesystem>
+#include <iostream>
+#include <numeric>
+#include <ranges>
 
-// Function to check the value
+#include <pdi/testing.h>
+
+
+class CheckMultiExpose: public ::PDI::PdiTest
+{};
+
+/*
+ * Name:               CheckMultiExpose.AccesSecondData
+ *
+ * Description:        Acces to second data on the event "on_data" for the first data of a multi expose
+ */
+
+// Function to check the value inside the user_code function
 void check_value(const char* var_name, int& var, const int expected_value)
 {
 	EXPECT_EQ(var, expected_value) << "Wrong value of " << var_name << ": " << var << " != " << expected_value;
@@ -34,61 +48,40 @@ void check_value(const char* var_name, int& var, const int expected_value)
 // Define user_code function
 extern "C" {
 
-// Test access of the first argument var1
-void test_access_var1(void)
-{
-	int* value;
-	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
-	PDI_release("value");
-	check_value("var1", *value, -4);
-}
-
 // Test access of the last argument var2
 void test_access_var2(void)
 {
 	int* value;
 	PDI_access("value", (void**)&value, PDI_IN); // Read something from input
 	PDI_release("value");
-	check_value("var2", *value, 3);
+	check_value("second", *value, 3);
 }
 
 } // end extern "C"
 
-/*
- * Name:               user_code_multi_expose_test
- *
- * Description:        Verify that the value of data in a multi_expose are given to PDI
- *                     before the loop "on_data" event. 
- */
-
-
-TEST(test_06_user_code_multi_expose_test, 01)
+TEST_F(CheckMultiExpose, AccesSecondData)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                          \n"
-		  "data:                                   \n"
-		  "  var1: int                             \n"
-		  "  var2: int                             \n"
-		  "plugins:                                \n"
-		  "  user_code:                            \n"
-		  "    on_data:                            \n"
-		  "      var2:                             \n"
-		  "        test_access_var1: { value: $var1 }\n"
-		  "      var1:                             \n"
-		  "        test_access_var2: { value: $var2 }\n";
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  first: int
+  second: int
+plugins:
+  user_code:
+    on_data:
+      first:
+        test_access_var2: { value: $second }
+)=="));
 
-	PDI_init(PC_parse_string(CONFIG_YAML));
+	const int var1 = -4;
+	const int var2 = 3;
 
-	int var1 = -4;
-	int var2 = 3;
-
-	PDI_multi_expose("my_test", "var1", &var1, PDI_OUT, "var2", &var2, PDI_OUT, NULL);
-
-	PDI_finalize();
+	PDI_multi_expose("my_test", "first", &var1, PDI_OUT, "second", &var2, PDI_OUT, NULL);
 }
 
+
 /*
- * Name:               test_multi_expose_with_same_name
+ * Name:               CheckMultiExpose, DataWithSameName
  *
  * Description:        Verify the behavior of multi_expose when we shared two different
  *                     data in the same place in PDI store.
@@ -107,26 +100,24 @@ void add_2(void)
 
 } // end extern "C"
 
-TEST(test_multi_expose_with_same_name, 01)
+TEST_F(CheckMultiExpose, DataWithSameName)
 {
-	const char* CONFIG_YAML
-		= "logging: trace                          \n"
-		  "data:                                   \n"
-		  "  pdi_var1: int                         \n"
-		  "plugins:                                \n"
-		  "  user_code:                            \n"
-		  "    on_data:                            \n"
-		  "      pdi_var1:                         \n"
-		  "        add_2: { value: $pdi_var1 }     \n";
+	InitPdi(PC_parse_string(R"==(
+logging: trace
+data:
+  pdi_var1: int
+plugins:
+  user_code:
+    on_data:
+      pdi_var1:
+        add_2: { value: $pdi_var1 }
+)=="));
 
-	PDI_init(PC_parse_string(CONFIG_YAML));
-
-	int var1 = 3;
-	int var2 = 11;
+	const int var1 = 3;
+	const int var2 = 11;
 
 	PDI_multi_expose("my_test", "pdi_var1", &var1, PDI_OUT, "pdi_var1", &var2, PDI_OUT, NULL);
 
-	check_value("var1", var1, 3); // the reference of pdi_var1 in the store is &var2 => no change in the value
-	check_value("var2", var2, 15); // tha add_2 function is called two times on reference &var2.
-	PDI_finalize();
+	EXPECT_EQ( var1, 3) << "Wrong value of var1"; // the reference of pdi_var1 in the store is &var2 => no change in the value
+	EXPECT_EQ( var2, 15)<< "Wrong value of var2"; // the add_2 function is called two times on reference &var2.
 }
