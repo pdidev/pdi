@@ -24,7 +24,9 @@ typedef struct conduit_node_impl conduit_node; // ??
 class catalyst_plugin: public PDI::Plugin
 {
 public:
+	/// @brief Builds a catalsyt_plugin specification tree from its yaml config
 	catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree);
+
 	~catalyst_plugin();
 
 private:
@@ -49,7 +51,7 @@ private:
 	/// @brief function running in pdi_finalize
 	void run_catalyst_finalize();
 
-	/// @brief TO COMPLETE
+	/// @brief TO COMPLET
 	/// @param execute_node
 	/// @param execute_spec
 	/// @param list_vtkGhostType_to_create
@@ -59,23 +61,23 @@ private:
 		std::vector<Catalyst_plugin_structured_ghost>& list_vtkGhostType_to_create
 	);
 
-	/// @brief TO COMPLETE
-	/// @param execute_node
-	/// @param execute_spec
-	void create_catalyst_conduit_node(conduit_node* execute_node, PC_tree_t& execute_spec);
+	/// @brief creates a conduit_node for catalyst_excute from yaml tree
+	/// @param execute_node conduit node that will be created
+	/// @param execute_spec The tree representing the execute section
+	void create_catalyst_execute_conduit_node(conduit_node* execute_node, PC_tree_t& execute_spec);
 
-	/// @brief TO COMPLETE
-	/// @param node
-	/// @param tree
+	/// @brief Fills a conduit node corresponding to array shared with pdi from a yaml tree. 
+	/// @param the node in which to operate
+	/// @param tree specification tree containing a PDI_data_array
 	void fill_node_with_pdi_data_array(conduit_node* node, PC_tree_t& tree);
 
-	/// @brief TO COMPLETE
-	/// @param node
-	/// @param tree
-	/// @param name
-	/// @param scalar_datatype
-	/// @param ref_r
-	void fill_node_with_scalar_pdi_data(
+	/// @brief Sets value of a conduit node corresponding to a pdi scalar datatype from a yaml tree
+	/// @param node the node in which we set the value
+	/// @param name name of the array
+	/// @param tree specification tree containing a PDI_data_array
+	/// @param scalar_datatype type of the scalar
+	/// @param ref_r reference of the array 
+	void set_value_for_pdi_scalar_datatype(
 		conduit_node* node,
 		PC_tree_t& tree,
 		const std::string& name,
@@ -83,13 +85,13 @@ private:
 		PDI::Ref_r& ref_r
 	);
 
-	/// @brief TO COMPLETE
-	/// @param node
-	/// @param name
-	/// @param tree
-	/// @param array_datatype
-	/// @param ref_r
-	void fill_node_with_array_pdi_data(
+	/// @brief Sets values of a conduit node corresponding to a pdi array datatype from a yaml tree
+	/// @param node the node in which we set the value
+	/// @param name name of the array
+	/// @param tree specification tree containing a PDI_data_array
+	/// @param array_datatype type of the array
+	/// @param ref_r reference of the array 
+	void set_value_for_pdi_array_datatype(
 		conduit_node* node,
 		const std::string& name,
 		PC_tree_t& tree,
