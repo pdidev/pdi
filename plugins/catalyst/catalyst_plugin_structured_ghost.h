@@ -17,7 +17,7 @@ class Catalyst_plugin_structured_ghost
 
 	/// The tree representing the ghost config
 	PC_tree_t m_ghost_tree;
-	/// The parent tree of m_ghost_tree for config_error message
+	/// The parent tree of m_ghost_tree for specification tree error message
 	PC_tree_t m_parent_tree; 
 
 	/// name of the mesh (It correspond to the topology name in the mesh blue print)
@@ -47,7 +47,7 @@ class Catalyst_plugin_structured_ghost
 		if (!PC_status(m_topology_name_spec)) {
 			m_topology_name = PDI::to_string(m_topology_name_spec);
 		} else {
-			throw PDI::Config_error{m_ghost_tree, "The name of the topology is not defined."};
+			throw PDI::Spectree_error{m_ghost_tree, "The name of the topology is not defined."};
 		}
 	
 		// A TESTER: 
@@ -75,7 +75,7 @@ class Catalyst_plugin_structured_ghost
 			std::string path_to_origins = "topologies/"+m_topology_name+"/origin";
 			//if (value_type == "uniform" && conduit_cpp::cpp_node(parent_node).has_path(path_to_origins)) {
 			if (conduit_cpp::cpp_node(parent_node).has_path(path_to_origins)) {
-				throw PDI::Config_error{m_ghost_tree, "For uniform topology, we dont support origin keyword to generate vtkGhostType for paraview."};
+				throw PDI::Spectree_error{m_ghost_tree, "For uniform topology, we dont support origin keyword to generate vtkGhostType for paraview."};
 			}
 
 			std::string path_to_dims   = "coordsets/"+value_coordset+"/dims/";
@@ -91,7 +91,7 @@ class Catalyst_plugin_structured_ghost
 		}
 		else {
 			// Config error is return because we are in a constructor.
-			throw PDI::Config_error{m_ghost_tree, "ghost_layers yaml node is only valid with uniform and structured topology. The topology `{}' is not of this type `{}'  "};
+			throw PDI::Spectree_error{m_ghost_tree, "ghost_layers yaml node is only valid with uniform and structured topology. The topology is `{}'", value_type};
 		}
 				
 		// define the conduit for the vtkGhostType
@@ -109,15 +109,15 @@ class Catalyst_plugin_structured_ghost
 				m_association = PDI::to_string(value);
 			}  
 			else {
-				throw PDI::Config_error{key_tree, "Invalid configuration key in mask_ghost for topology `{}': `{}'", m_topology_name, key};
+				throw PDI::Spectree_error{key_tree, "Invalid configuration key in mask_ghost for topology `{}': `{}'", m_topology_name, key};
 			}
 		});
 
 		if (m_size.size() != m_start.size()) {
-			throw PDI::Config_error{m_ghost_tree, "Invalid configuration in mask_ghost for topology `{}' the number of elements in size and in start are not the same.", m_topology_name};
+			throw PDI::Spectree_error{m_ghost_tree, "Invalid configuration in mask_ghost for topology `{}' the number of elements in size and in start are not the same.", m_topology_name};
 		}
 		if (m_size.size() != m_dimensions.size()) {
-			throw PDI::Config_error{m_parent_tree, "Invalid configuration in mask_ghost for topology `{}', the dimension of the problem `{}' is not equal to `{}' the number of elements in size and in start.", m_topology_name, m_dimensions.size(), m_size.size()};
+			throw PDI::Spectree_error{m_parent_tree, "Invalid configuration in mask_ghost for topology `{}', the dimension of the problem `{}' is not equal to `{}' the number of elements in size and in start.", m_topology_name, m_dimensions.size(), m_size.size()};
 		}
 		
 		// check size + start + dims (TODO:  en dernier)
@@ -221,11 +221,11 @@ class Catalyst_plugin_structured_ghost
 				return conduit_cpp::cpp_node(parent_node)[path_to_type].as_string();
 			} else{
 				PC_tree_t msg_tree = retrieve_pc_tree_from_parent_node("topologies", dataname);
-				throw PDI::Config_error{msg_tree, "... Vec Ghost Type catalyst ... The {} for topology `{}' is not defined as a string.", dataname, m_topology_name};
+				throw PDI::Spectree_error{msg_tree, "... Vec Ghost Type catalyst ... The {} for topology `{}' is not defined as a string.", dataname, m_topology_name};
 			}
 		}
 		else {
-			throw PDI::Config_error{m_parent_tree, "... Vec Ghost Type catalyst ... The {} for topology `{}' is not defined.", dataname, m_topology_name};
+			throw PDI::Spectree_error{m_parent_tree, "... Vec Ghost Type catalyst ... The {} for topology `{}' is not defined.", dataname, m_topology_name};
 		}
 	}
 
@@ -241,7 +241,7 @@ class Catalyst_plugin_structured_ghost
 		PC_tree_t msg_tree = PC_get(m_parent_tree, PC_to_dataname.c_str());
 
 		if ( PC_status(msg_tree)) {
-			throw PDI::Config_error(msg_tree, "");
+			throw PDI::Spectree_error(msg_tree, "");
 		} else {
 			if (conduit_cpp::cpp_node(parent_node).has_path(path_to_dims)) {
 				std::list<std::string> list_dims{"i","j","k"};
@@ -262,7 +262,7 @@ class Catalyst_plugin_structured_ghost
 							m_ctx.logger().info("dims/`{}' = `{}' for the `{}'.", elem, tmp_int,msg_data);
 						}
 						else {
-							throw PDI::Config_error{msg_tree, "For `{}' the value of dims/`{}' is not an integer or a long", msg_data, elem};
+							throw PDI::Spectree_error{msg_tree, "For `{}' the value of dims/`{}' is not an integer or a long", msg_data, elem};
 						}	
 					}
 					else{
@@ -271,10 +271,10 @@ class Catalyst_plugin_structured_ghost
 					}
 				}
 				if (m_dimensions.size()==0) {
-					throw PDI::Config_error{msg_tree, "No dims/i , dims/j and dims/k are defined for the `{}'", msg_data};
+					throw PDI::Spectree_error{msg_tree, "No dims/i , dims/j and dims/k are defined for the `{}'", msg_data};
 				}
 			} else {
-				throw PDI::Config_error(msg_tree, "For the `{}', we need dims keyword to generate vtkGhostType for catalyst.", msg_data);
+				throw PDI::Spectree_error(msg_tree, "For the `{}', we need dims keyword to generate vtkGhostType for catalyst.", msg_data);
 			}
 		}
 	}
