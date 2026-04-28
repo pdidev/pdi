@@ -60,11 +60,17 @@ jobs:
           "${IMG}" \
           bash /src/run.sh
         docker cp "$(cat docker.cid)":$(docker image inspect -f '{{.Config.WorkingDir}}' "${IMG}")/docs/html public
+        zip -r pages.zip public
     - name: Archive production artifacts
       uses: actions/upload-artifact@v7
       with:
         name: pages
         path: public
+    - name: Publish pages artifact
+      if: "${{ github.event.ref_type == 'tag' }}"
+      uses: softprops/action-gh-release@v3
+      with:
+        files: pages.zip
     - name: Deploy
       if: "${{ github.event_name == 'push' }}"
       run: |
