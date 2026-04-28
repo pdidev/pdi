@@ -28,7 +28,7 @@ project(pdi_tests LANGUAGES C CXX)
 
 if(NOT TARGET GTest::gtest)
 	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
-	add_subdirectory("../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+	add_subdirectory("../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
 endif()
 include(GoogleTest)
 
@@ -71,11 +71,12 @@ set_tests_properties(test_05_C PROPERTIES DISABLED TRUE)
 
 endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_SERIALIZE_PLUGIN}")
 
-if("${BUILD_USER_CODE_PLUGIN}")
+if("${BUILD_USER_CODE_PLUGIN}" AND "${BUILD_DECL_HDF5_PLUGIN}")
 
-add_executable(test_06_user_code_multi_expose_CXX test_06_user_code_multi_expose.cxx)
-target_link_libraries(test_06_user_code_multi_expose_CXX PDI::PDI_C GTest::gtest GTest::gtest_main)
-set_target_properties(test_06_user_code_multi_expose_CXX PROPERTIES ENABLE_EXPORTS TRUE)
-gtest_discover_tests(test_06_user_code_multi_expose_CXX)
+## combination test between multi_expose api and  user_code plugin or decl_hdf5 plugin
+add_executable(test_06_multi_expose_CXX test_06_multi_expose.cxx)
+target_link_libraries(test_06_multi_expose_CXX PDI::PDI_C GTest::gmock GTest::gmock_main GTest::gtest GTest::gtest_main)
+set_target_properties(test_06_multi_expose_CXX PROPERTIES ENABLE_EXPORTS TRUE)
+gtest_discover_tests(test_06_multi_expose_CXX)
 
-endif("${BUILD_USER_CODE_PLUGIN}")
+endif("${BUILD_USER_CODE_PLUGIN}" AND "${BUILD_DECL_HDF5_PLUGIN}")

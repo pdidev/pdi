@@ -78,22 +78,23 @@ public:
 	 */
 	virtual bool empty() = 0;
 
-	/** Shares some data with PDI
+	/** Shares some data with PDI and callbacks on the data will be trigger inside this function
 	 * \param[in,out] data the shared data
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
 	 */
 	virtual void share(void* data, bool read, bool write) = 0;
 
-	/** Shares some data with PDI
+	/** Shares some data with PDI and callbacks on the data will be trigger outside this function
 	 * \param[in,out] data the shared data
 	 * \param read whether read access is granted to other references
 	 * \param write whether write access is granted to other references
-	 * \param delayed_callbacks a list of callbacks where the callback for this data will be added, instead of being triggered. So that one can delay the trigger
+	 * \param delayed_callbacks a list of callbacks where the callback for this data will be added,
+	 * instead of being triggered. So that one can delay the trigger
 	 */
 	virtual void share(void* data, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks) = 0;
 
-	/** Shares some data with PDI
+	/** Shares some data with PDI and callbacks on the data will be trigger inside this function
 	 * \param[in,out] ref a reference to the shared data
 	 * \param read whether the stored reference should have read access
 	 * \param write whether the stored reference should have write access
@@ -101,11 +102,12 @@ public:
 	 */
 	virtual void* share(Ref ref, bool read, bool write) = 0;
 
-	/** Shares some data with PDI
+	/** Shares some data with PDI and callbacks on the data will be trigger outside this function
 	 * \param[in,out] ref a reference to the shared data
 	 * \param read whether the stored reference should have read access
 	 * \param write whether the stored reference should have write access
-	 * \param delayed_callbacks a list of callbacks where the callback for this data will be added, instead of being triggered. So that one can delay the trigger
+	 * \param delayed_callbacks a list of callbacks where the callback for this data will be added,
+	 * instead of being triggered. So that one can delay the trigger
 	 * \return the just shared buffer
 	 */
 	virtual void* share(Ref ref, bool read, bool write, Delayed_data_callbacks&& delayed_callbacks) = 0;
