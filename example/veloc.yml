@@ -18,8 +18,8 @@ pdi:
     veloc:
       failure : 0 # whether user wants to restore or not 
       config_file: veloc_example.cfg # needed for VeloC internal config 
-      checkpoint_label : example # needed by VeloC to checkpoint-recover 
-      iteration : iter # needed by VeloC to checkpoint  
+      checkpoint_label : example # needed by VeloC to name checkpoint files 
+      iteration : iter # needed by VeloC to name checkpoint files 
       managed_checkpointing:
         protect_data: [iter, main_field,elapsed_offset] # data to be checkpointed or recovered, iter must be included
         synchronize_on: newiter # PDI_event to check status and consequently checkpoint/recover  
