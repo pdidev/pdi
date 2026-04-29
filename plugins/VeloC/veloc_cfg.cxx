@@ -56,14 +56,8 @@ using std::unordered_set;
 namespace {
 
 // Used to register event names of a given type into the events map (m_events)
-// TO DO : REFACTOR TO AVOID REPEATING CODE
-bool load_events(
-	unordered_map<string, Event_type>& events,
-	Context& ctx,
-	PC_tree_t tree,
-	Event_type event_type,
-	function<void(const string&)> on_load_func = function<void(const string&)>()
-)
+bool load_events( unordered_map<string, Event_type>& events, Context& ctx, PC_tree_t tree, 
+	Event_type event_type, function<void(const string&)> on_load_func = function<void(const string&)>())
 {
 	const map<Event_type, string> event_names
 		= {{Event_type::CHECKPOINT, "checkpoint_on"},
@@ -76,59 +70,50 @@ bool load_events(
 		   {Event_type::START_RECOVERY, "start_rec_on"},
 		   {Event_type::END_RECOVERY, "end_rec_on"}};
 
-        bool inserted = false;
-        if (!PC_status(PC_get(tree, "[0]"))) { // list
-            each(tree, [&](PC_tree_t subtree) {
-                auto&& result = events.emplace(to_string(subtree), event_type);
-                if (result.second) {
-                    inserted = true;
-                    if (on_load_func) on_load_func(result.first->first);
-                } else {
-                    throw Error{PDI_ERR_SPECTREE,
-                        "Duplicate event name `{}' in `{}' (previously defined in `{}')",
-                        result.first->first,
-                        event_names.at(event_type),
-                        event_names.at(result.first->second)};
-                }
-            });
-        } else {
-            auto&& result = events.emplace(to_string(tree), event_type);
-            if (result.second) {
-                inserted = true;
-                if (on_load_func) on_load_func(result.first->first);
-            } else {
-                    throw Error{PDI_ERR_SPECTREE,
-                        "Duplicate event name `{}' in `{}' (previously defined in `{}')",
-                        result.first->first,
-                        event_names.at(event_type),
-                        event_names.at(result.first->second)};
-            }
-        }
-        return inserted;
-    }
+	bool inserted = false;
 
+	auto insert_event = [&](PC_tree_t subtree) {
+		auto&& result = events.emplace(to_string(subtree), event_type);
+		if (result.second) {
+			inserted = true;
+			if (on_load_func) on_load_func(result.first->first);
+		} 
+		else {
+			throw Error{PDI_ERR_SPECTREE,
+				"Duplicate event name `{}' in `{}' (previously defined in `{}')",
+				result.first->first,
+				event_names.at(event_type),
+				event_names.at(result.first->second)};
+			}
+	};
 
-    
-    // Used to register a descriptor name (status / counter) into the descs map.
-    bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, const string& name, Desc_type desc_type)
-    {
-        const map<Desc_type, string> desc_names = {
-            {Desc_type::STATUS,    "status"},
-            {Desc_type::COUNTER_CP,"counter"},
-        };
-        auto&& result = descs.emplace(name, desc_type);
-        if (!result.second) {
-            ctx.logger().warn("Duplicate use of a descriptor `{}' in `{}' (previously used in `{}')",
-                name, desc_names.at(desc_type), desc_names.at(result.first->second));
-        }
-        return result.second;
-    }
+	if (!PC_status(PC_get(tree, "[0]"))) { 
+		each(tree, insert_event);
+	} else {
+		insert_event(tree);
+	}
+	return inserted;
+}
+
+// Used to register a descriptor name (status / counter) into the descs map.
+bool load_desc(unordered_map<string, Desc_type>& descs, Context& ctx, 
+	const string& name, Desc_type desc_type)
+{
+	const map<Desc_type, string> desc_names = {
+		{Desc_type::STATUS,    "status"},
+		{Desc_type::COUNTER_CP,"counter"},
+	};
+	auto&& result = descs.emplace(name, desc_type);
+	if (!result.second) {
+		ctx.logger().warn("Duplicate use of a descriptor `{}' in `{}' (previously used in `{}')",
+			name, desc_names.at(desc_type), desc_names.at(result.first->second));
+	}
+	return result.second;
+}
 
 template <Event_type... RequiredEvents>
-bool validate_manual_op(
-	const unordered_map<string, Event_type>& events,
-	std::string original_file
-)
+bool validate_manual_op( const unordered_map<string, Event_type>& events,
+	std::string original_file)
 {
 	const map<Event_type, string> event_names
 		= {{Event_type::START_CHECKPOINT, "start_on"},
