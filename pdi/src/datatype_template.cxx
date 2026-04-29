@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -51,7 +51,6 @@ namespace PDI {
 using std::exception;
 using std::make_shared;
 using std::max;
-using std::move;
 using std::string;
 using std::transform;
 using std::unique_ptr;
@@ -116,18 +115,18 @@ class Array_template: public Datatype_template
 public:
 	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize, PC_tree_t datatype_tree)
 		: Datatype_template(datatype_tree)
-		, m_subtype{move(subtype)}
-		, m_size{move(size)}
-		, m_start{move(start)}
-		, m_subsize{move(subsize)}
+		, m_subtype{std::move(subtype)}
+		, m_size{std::move(size)}
+		, m_start{std::move(start)}
+		, m_subsize{std::move(subsize)}
 	{}
 
 	Array_template(Datatype_template_sptr subtype, Expression size, Expression start, Expression subsize, const Attributes_map& attributes = {})
 		: Datatype_template(attributes)
-		, m_subtype{move(subtype)}
-		, m_size{move(size)}
-		, m_start{move(start)}
-		, m_subsize{move(subsize)}
+		, m_subtype{std::move(subtype)}
+		, m_size{std::move(size)}
+		, m_start{std::move(start)}
+		, m_subsize{std::move(subsize)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -155,9 +154,9 @@ public:
 		string m_name;
 
 		Member(Expression disp, Datatype_template_sptr type, string name)
-			: m_displacement{move(disp)}
-			, m_type{move(type)}
-			, m_name{move(name)}
+			: m_displacement{std::move(disp)}
+			, m_type{std::move(type)}
+			, m_name{std::move(name)}
 		{}
 
 		Member(const Member& o)
@@ -177,14 +176,14 @@ private:
 public:
 	Record_template(vector<Member>&& members, Expression&& size, PC_tree_t datatype_tree)
 		: Datatype_template(datatype_tree)
-		, m_members{move(members)}
-		, m_buffersize{move(size)}
+		, m_members{std::move(members)}
+		, m_buffersize{std::move(size)}
 	{}
 
 	Record_template(vector<Member>&& members, Expression&& size, const Attributes_map& attributes = {})
 		: Datatype_template(attributes)
-		, m_members{move(members)}
-		, m_buffersize{move(size)}
+		, m_members{std::move(members)}
+		, m_buffersize{std::move(size)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -193,7 +192,7 @@ public:
 		for (auto&& member: m_members) {
 			evaluated_members.emplace_back(member.m_displacement.to_long(ctx), member.m_type->evaluate(ctx), member.m_name);
 		}
-		return Record_datatype::make(move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx)), m_attributes);
+		return Record_datatype::make(std::move(evaluated_members), static_cast<size_t>(m_buffersize.to_long(ctx)), m_attributes);
 	}
 };
 
@@ -206,8 +205,8 @@ public:
 		string m_name;
 
 		Member(Datatype_template_sptr type, string name)
-			: m_type{move(type)}
-			, m_name{move(name)}
+			: m_type{std::move(type)}
+			, m_name{std::move(name)}
 		{}
 
 		Member(const Member& o)
@@ -240,7 +239,7 @@ public:
 			size_t alignment = member_type->alignment();
 			// align the next member as requested
 			displacement += (alignment - (displacement % alignment)) % alignment;
-			evaluated_members.emplace_back(displacement, move(member_type), member.m_name);
+			evaluated_members.emplace_back(displacement, std::move(member_type), member.m_name);
 			displacement += evaluated_members.back().type()->buffersize();
 			struct_alignment = max(struct_alignment, alignment);
 		}
@@ -249,7 +248,7 @@ public:
 
 		// ensure the record size is at least 1 to have a unique address
 		displacement = max<size_t>(1, displacement);
-		return Record_datatype::make(move(evaluated_members), displacement, m_attributes);
+		return Record_datatype::make(std::move(evaluated_members), displacement, m_attributes);
 	}
 };
 
@@ -286,7 +285,7 @@ public:
 		 * \param[in] type type of the element
 		 */
 		Element(Datatype_template_sptr type)
-			: m_type{move(type)}
+			: m_type{std::move(type)}
 		{}
 
 		/** Creates new Element template with only type defined
@@ -295,8 +294,8 @@ public:
 		 * \param[in] type type of the element
 		 */
 		Element(Expression disp, Datatype_template_sptr type)
-			: m_displacement{move(disp)}
-			, m_type{move(type)}
+			: m_displacement{std::move(disp)}
+			, m_type{std::move(type)}
 		{}
 
 		/** Creates a copy of an element template
@@ -319,19 +318,19 @@ private:
 public:
 	Tuple_template(vector<Element>&& elements, PC_tree_t datatype_tree)
 		: Datatype_template(datatype_tree)
-		, m_elements{move(elements)}
+		, m_elements{std::move(elements)}
 	{}
 
 	Tuple_template(vector<Element>&& elements, Expression&& size, PC_tree_t datatype_tree)
 		: Datatype_template(datatype_tree)
-		, m_elements{move(elements)}
-		, m_buffersize{move(size)}
+		, m_elements{std::move(elements)}
+		, m_buffersize{std::move(size)}
 	{}
 
 	Tuple_template(vector<Element>&& elements, Expression&& size, const Attributes_map& attributes = {})
 		: Datatype_template(attributes)
-		, m_elements{move(elements)}
-		, m_buffersize{move(size)}
+		, m_elements{std::move(elements)}
+		, m_buffersize{std::move(size)}
 	{}
 
 	Datatype_sptr evaluate(Context& ctx) const override
@@ -353,7 +352,7 @@ public:
 				size_t alignment = element_type->alignment();
 				// align the next element as requested
 				displacement += (alignment - (displacement % alignment)) % alignment;
-				evaluated_elements.emplace_back(displacement, move(element_type));
+				evaluated_elements.emplace_back(displacement, std::move(element_type));
 				displacement += evaluated_elements.back().type()->buffersize();
 				tuple_alignment = max(tuple_alignment, alignment);
 			}
@@ -366,7 +365,7 @@ public:
 		}
 
 
-		return Tuple_datatype::make(move(evaluated_elements), tuple_buffersize, m_attributes);
+		return Tuple_datatype::make(std::move(evaluated_elements), tuple_buffersize, m_attributes);
 	}
 };
 
@@ -391,10 +390,10 @@ vector<Expression> get_array_property(PC_tree_t node, string property)
 void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>& subsize, vector<Expression>& start)
 {
 	if (size.empty()) {
-		throw Config_error{node, "Array must have defined `size'"};
+		throw Spectree_error{node, "Array must have defined `size'"};
 	}
 	if (!start.empty() && subsize.empty()) {
-		throw Config_error{node, "Array with a `start` property must have a defined `subsize'"};
+		throw Spectree_error{node, "Array with a `start` property must have a defined `subsize'"};
 		//TODO: handle by setting subsize to size-start
 	}
 	if (start.empty()) {
@@ -406,10 +405,10 @@ void validate_array(PC_tree_t node, vector<Expression>& size, vector<Expression>
 
 	//check if rank of array is correct
 	if (size.size() != subsize.size()) {
-		throw Config_error{node, "`subsize' must have the same rank as `size': {} != {}", subsize.size(), size.size()};
+		throw Spectree_error{node, "`subsize' must have the same rank as `size': {} != {}", subsize.size(), size.size()};
 	}
 	if (size.size() != start.size()) {
-		throw Config_error{node, "`start' must have the same rank as `size': {} != {}", start.size(), size.size()};
+		throw Spectree_error{node, "`start' must have the same rank as `size': {} != {}", start.size(), size.size()};
 	}
 }
 
@@ -420,7 +419,7 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 		if (order_str == "c" && order_str == "C") {
 			ctx.logger().warn("`order: C' for array is the only supported order and its specification is deprecated");
 		} else if (order_str != "") {
-			throw Config_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
+			throw Spectree_error{node, "Incorrect array ordering: `{}', only C order is supported", order_str};
 		}
 	}
 
@@ -432,13 +431,15 @@ Datatype_template_sptr to_array_datatype_template(Context& ctx, PC_tree_t node)
 
 	PC_tree_t config_elem = PC_get(node, ".subtype");
 	if (PC_status(config_elem)) {
-		throw Config_error{node, "Array must have `subtype'"};
+		throw Spectree_error{node, "Array must have `subtype'"};
 	}
 
 	Datatype_template_sptr res_type = ctx.datatype(config_elem);
 
 	for (ssize_t ii = array_size.size() - 1; ii >= 0; --ii) {
-		res_type.reset(new Array_template(move(res_type), move(array_size[ii]), move(array_start[ii]), move(array_subsize[ii]), node));
+		res_type.reset(
+			new Array_template(std::move(res_type), std::move(array_size[ii]), std::move(array_start[ii]), std::move(array_subsize[ii]), node)
+		);
 	}
 	return res_type;
 }
@@ -463,22 +464,22 @@ vector<Tuple_template::Element> get_tuple_elements(Context& ctx, PC_tree_t eleme
 			result.emplace_back(disp, ctx.datatype(element_node));
 		}
 	} else {
-		throw Config_error{elements_node, "Tuple elements subtree must be a seqence or ordered mapping"};
+		throw Spectree_error{elements_node, "Tuple elements subtree must be a seqence or ordered mapping"};
 	}
 
 	// check if non or all of elements have diplacement defined
 	if (displacement_counter != 0 && displacement_counter != nb_elements) {
-		throw Config_error{elements_node, "None or all of tuple elements must to have `disp' defined"};
+		throw Spectree_error{elements_node, "None or all of tuple elements must to have `disp' defined"};
 	}
 
 	// buffersize defined, but no displacement in elements
 	if (buffersize_defined && displacement_counter == 0) {
-		throw Config_error{elements_node, "If tuple buffersize is defined, all `disp' must be defined also"};
+		throw Spectree_error{elements_node, "If tuple buffersize is defined, all `disp' must be defined also"};
 	}
 
 	// buffersize not defined, but displacement is defined in elements
 	if (!buffersize_defined && displacement_counter != 0) {
-		throw Config_error{elements_node, "If tuple buffersize is not defined, `disp' cannot be defined also"};
+		throw Spectree_error{elements_node, "If tuple buffersize is not defined, `disp' cannot be defined also"};
 	}
 
 	return result;
@@ -494,11 +495,11 @@ Datatype_template_sptr to_tuple_datatype_template(Context& ctx, PC_tree_t node)
 
 	PC_tree_t elements_node = PC_get(node, ".elements");
 	if (PC_status(elements_node)) {
-		throw Config_error{node, "Tuple datatype must have `elements' subtree"};
+		throw Spectree_error{node, "Tuple datatype must have `elements' subtree"};
 	}
 	bool tuple_buffersize_defined = static_cast<bool>(tuple_buffersize);
 	return unique_ptr<Tuple_template>{
-		new Tuple_template{get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), move(tuple_buffersize), node}
+		new Tuple_template{get_tuple_elements(ctx, elements_node, tuple_buffersize_defined), std::move(tuple_buffersize), node}
 	};
 }
 
@@ -516,11 +517,11 @@ vector<Record_template::Member> get_members(Context& ctx, PC_tree_t member_list_
 
 		PC_tree_t disp_conf = PC_get(member_node, ".disp");
 		if (PC_status(disp_conf)) {
-			throw Config_error{member_node, "All members must have displacements"};
+			throw Spectree_error{member_node, "All members must have displacements"};
 		}
 		Expression disp = to_string(disp_conf);
 
-		members.emplace_back(move(disp), ctx.datatype(member_node), move(member_name));
+		members.emplace_back(std::move(disp), ctx.datatype(member_node), std::move(member_name));
 	}
 	return members;
 }
@@ -529,13 +530,13 @@ Datatype_template_sptr to_record_datatype_template(Context& ctx, PC_tree_t node)
 {
 	PC_tree_t buffersize_conf = PC_get(node, ".buffersize");
 	if (PC_status(buffersize_conf)) {
-		throw Config_error{node, "Record must have defined buffersize"};
+		throw Spectree_error{node, "Record must have defined buffersize"};
 	}
 	Expression record_buffersize = to_string(buffersize_conf);
 
 	PC_tree_t member_list_node = PC_get(node, ".members");
 
-	return unique_ptr<Record_template>{new Record_template{get_members(ctx, member_list_node), move(record_buffersize), node}};
+	return unique_ptr<Record_template>{new Record_template{get_members(ctx, member_list_node), std::move(record_buffersize), node}};
 }
 
 Datatype_template_sptr to_struct_datatype_template(Context& ctx, PC_tree_t node)
@@ -551,7 +552,7 @@ Datatype_template_sptr to_pointer_datatype_template(Context& ctx, PC_tree_t node
 {
 	PC_tree_t subtype_conf = PC_get(node, ".subtype");
 	if (PC_status(subtype_conf)) {
-		throw Config_error{node, "Pointer must have defined subtype"};
+		throw Spectree_error{node, "Pointer must have defined subtype"};
 	}
 	return unique_ptr<Pointer_template>{new Pointer_template{ctx.datatype(subtype_conf), node}};
 }
@@ -726,7 +727,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		if (kind == 0)
 			kind = PDI_CHARACTER_DEFAULT_KIND;
 		else if (kind < 0)
-			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
+			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
 	});
 	ctx.add_datatype("integer", [](Context&, PC_tree_t tree) {
@@ -734,7 +735,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		if (kind == 0)
 			kind = PDI_INTEGER_DEFAULT_KIND;
 		else if (kind < 0)
-			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
+			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::SIGNED, kind, tree}};
 	});
 	ctx.add_datatype("logical", [](Context&, PC_tree_t tree) {
@@ -742,7 +743,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		if (kind == 0)
 			kind = PDI_LOGICAL_DEFAULT_KIND;
 		else if (kind < 0)
-			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
+			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::UNSIGNED, kind, tree}};
 	});
 	ctx.add_datatype("real", [](Context&, PC_tree_t tree) {
@@ -750,7 +751,7 @@ void Datatype_template::load_basic_datatypes(Context& ctx)
 		if (kind == 0)
 			kind = PDI_REAL_DEFAULT_KIND;
 		else if (kind < 0)
-			throw Config_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
+			throw Spectree_error{PC_get(tree, ".kind"), "`kind' of the datatype cannot be less than 0"};
 		return Datatype_template_sptr{new Scalar_template{Scalar_kind::FLOAT, kind, tree}};
 	});
 #endif // BUILD_FORTRAN

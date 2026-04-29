@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
- * Copyright (C) 2024-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -847,6 +847,266 @@ TEST(decl_netcdf_test, size_of)
 		// printf("%d ?= %d\n", int_array[i], i);
 		ASSERT_EQ(int_array[i], i);
 	}
+
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.defalte
+ *
+ * Description:         Tests simple write and read of compressed variables
+*/
+TEST(decl_netcdf_test, deflate)
+{
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    metadata:
+      pb_size: int
+      input: int
+      chunk: int
+    data:
+      int_scalar: int
+      int_array: {type: array, subtype: int, size: $pb_size}
+      int_matrix:
+        type: array
+        subtype: int
+        size: ['$pb_size', '$pb_size']
+    plugins:
+      decl_netcdf:
+      - file: 'test_deflate_0.nc'
+        variables:
+          int_scalar: int
+          int_array:
+            type: array
+            subtype: int
+            size: $pb_size
+            dimensions: ['time']
+          int_matrix:
+            type: array
+            subtype: int
+            size: ['$pb_size', '$pb_size']
+            dimensions: ['col', 'row']
+        when: '${input}=0'
+        write: [int_scalar, int_array, int_matrix]
+      - file: 'test_deflate_6.nc'
+        variables:
+          int_scalar: int
+          int_array:
+            type: array
+            subtype: int
+            size: $pb_size
+            dimensions: ['time']
+            deflate: 6
+          int_matrix:
+            type: array
+            subtype: int
+            size: ['$pb_size', '$pb_size']
+            dimensions: ['col', 'row']
+            deflate: 6
+        when: '${input}=0'
+        write: [int_scalar, int_array, int_matrix]
+      - file: 'test_deflate_9.nc'
+        deflate: 9
+        variables:
+          int_scalar: int
+          int_array:
+            type: array
+            subtype: int
+            size: $pb_size
+            dimensions: ['time']
+            chunking: $chunk
+          int_matrix:
+            type: array
+            subtype: int
+            size: ['$pb_size', '$pb_size']
+            dimensions: ['col', 'row']
+            chunking: ['$chunk', '$chunk']
+        when: '${input}=0'
+        write: [int_scalar, int_array, int_matrix]
+      - file: 'test_deflate_mix.nc'
+        deflate: 6
+        variables:
+          int_scalar: int
+          int_array:
+            type: array
+            subtype: int
+            size: $pb_size
+            dimensions: ['time']
+            deflate: 9
+            chunking: $chunk
+          int_matrix:
+            type: array
+            subtype: int
+            size: ['$pb_size', '$pb_size']
+            dimensions: ['col', 'row']
+            chunking: ['$chunk', '$chunk']
+        when: '${input}=0'
+        write: [int_scalar, int_array, int_matrix]
+      - file: 'test_deflate_6.nc'
+        when: '${input}=1'
+        read: [int_scalar, int_array, int_matrix]
+    )";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+
+	// init data
+	int input = 0;
+	int int_scalar = 42;
+	int N = 1000;
+	int chunk = 1000;
+	int* int_array = new int[N];
+	int* int_matrix = new int[N * N];
+
+	// write data
+	for (int i = 0; i < N; i++) {
+		int_array[i] = i;
+	}
+
+	for (int i = 0; i < N * N; i++) {
+		int_matrix[i] = i;
+	}
+
+	PDI_expose("input", &input, PDI_OUT);
+	PDI_expose("pb_size", &N, PDI_OUT);
+	PDI_expose("chunk", &chunk, PDI_OUT);
+
+	PDI_expose("int_scalar", &int_scalar, PDI_OUT);
+	PDI_expose("int_array", int_array, PDI_OUT);
+	PDI_expose("int_matrix", int_matrix, PDI_OUT);
+
+	// check the deflate level of output files
+	int result;
+	result = std::system("which ncdump > /dev/null 2>&1");
+	// check the deflate level only if ncdump is available
+	if (result == 0) {
+		result = std::system("ncdump -hs test_deflate_6.nc | grep -q '_DeflateLevel = 6'");
+		EXPECT_EQ(result, 0) << "Deflate level for test_deflate_6.nc is not 6";
+		result = std::system("ncdump -hs test_deflate_9.nc | grep -q '_DeflateLevel = 9'");
+		EXPECT_EQ(result, 0) << "Deflate level for test_deflate_9.nc is not 9";
+		result = std::system("ncdump -hs test_deflate_mix.nc | grep -q 'int_array:_DeflateLevel = 9'");
+		EXPECT_EQ(result, 0) << "Deflate level of int_array in test_deflate_mix.nc is not 9";
+		result = std::system("ncdump -hs test_deflate_mix.nc | grep -q 'int_matrix:_DeflateLevel = 6'");
+		EXPECT_EQ(result, 0) << "Deflate level of int_matrix in test_deflate_mix.nc is not 6";
+	}
+
+
+	// read data
+	input = 1;
+	int_scalar = 0;
+	for (int i = 0; i < N; i++) {
+		int_array[i] = 0;
+	}
+	for (int i = 0; i < N * N; i++) {
+		int_matrix[i] = 0;
+	}
+
+	PDI_expose("input", &input, PDI_OUT);
+
+	PDI_expose("int_scalar", &int_scalar, PDI_IN);
+	PDI_expose("int_array", int_array, PDI_IN);
+	PDI_expose("int_matrix", int_matrix, PDI_IN);
+
+	// verify
+	ASSERT_EQ(int_scalar, 42);
+
+	for (int i = 0; i < N; i++) {
+		ASSERT_EQ(int_array[i], i);
+	}
+
+	for (int i = 0; i < N * N; i++) {
+		ASSERT_EQ(int_matrix[i], i);
+	}
+
+	delete[] int_array;
+	delete[] int_matrix;
+
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.read
+ *
+ * Description:         Tests write and read of int with type mismatch
+ */
+TEST(decl_netcdf_test, int_read)
+{
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    data:
+      int_in: int32
+      int_out: int64
+    plugins:
+      decl_netcdf:
+      - file: 'test_int_read.nc'
+        variable:
+          scalar_int32: int32
+        on_event: write_data
+        write:
+          int_in:
+            variable: scalar_int32
+      - file: 'test_int_read.nc'
+        variable:
+          scalar_int32: int32
+        on_event: read_data
+        read:
+          int_out:
+            variable:
+              scalar_int32
+    )";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+	PDI_errhandler(PDI_NULL_HANDLER);
+
+	// write data
+	int32_t int_in = 42;
+	PDI_multi_expose("write_data", "int_in", &int_in, PDI_OUT, NULL);
+
+	// read data
+	int64_t int_out = -1;
+	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "int_out", &int_out, PDI_IN, NULL));
+	PDI_finalize();
+}
+
+/*
+ * Name:                decl_netcdf_test.read
+ *
+ * Description:         Tests write and read of float/double with type mismatch
+ */
+TEST(decl_netcdf_test, float_read)
+{
+	constexpr char CONFIG_YAML[] = R"(
+    logging: trace
+    data:
+      var_in: float
+      var_out: double
+    plugins:
+      decl_netcdf:
+      - file: 'test_float_read.nc'
+        variable:
+          nc_var: float
+        on_event: write_data
+        write:
+          var_in:
+            variable: nc_var
+      - file: 'test_float_read.nc'
+        variable:
+          nc_var: float
+        on_event: read_data
+        read:
+          var_out:
+            variable: nc_var
+    )";
+
+	PDI_init(PC_parse_string(CONFIG_YAML));
+	PDI_errhandler(PDI_NULL_HANDLER);
+
+	// write data
+	float var_in = 12.34;
+	PDI_multi_expose("write_data", "var_in", &var_in, PDI_OUT, NULL);
+
+	// read data
+	double var_out = -1.0;
+	EXPECT_NE(PDI_OK, PDI_multi_expose("read_data", "var_out", &var_out, PDI_IN, NULL));
 
 	PDI_finalize();
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -46,6 +46,7 @@
 #include "collision_policy.h"
 #include "dataset_explicit_type.h"
 #include "dataset_op.h"
+#include "subfiling.h"
 
 namespace decl_hdf5 {
 
@@ -62,6 +63,8 @@ class File_op
 
 	/// a list of events that trigger this operation
 	std::vector<std::string> m_event;
+
+	Subfiling m_subfiling;
 
 #ifdef H5_HAVE_PARALLEL
 	/// a communicator for parallel HDF5 (null if no comm is specified)
@@ -121,6 +124,8 @@ public:
 #ifdef H5_HAVE_PARALLEL
 	PDI::Expression communicator() const { return m_communicator; }
 #endif
+
+	Subfiling const & subfiling() const { return m_subfiling; }
 
 	/** Executes the requested operation.
 	 *

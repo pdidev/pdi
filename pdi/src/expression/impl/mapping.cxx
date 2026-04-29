@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -44,7 +44,6 @@ namespace PDI {
 using std::dynamic_pointer_cast;
 using std::make_shared;
 using std::max;
-using std::move;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -104,7 +103,7 @@ Ref Expression::Impl::Mapping::to_ref(Context& ctx) const
 	//add padding at the end of record
 	displacement += (record_alignment - (displacement % record_alignment)) % record_alignment;
 
-	return Impl::to_ref(ctx, Record_datatype::make(move(members), displacement));
+	return Impl::to_ref(ctx, Record_datatype::make(std::move(members), displacement));
 }
 
 size_t Expression::Impl::Mapping::copy_value(Context& ctx, void* buffer, Datatype_sptr type) const

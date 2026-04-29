@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+* Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
 * All rights reserved.
 *
@@ -165,7 +165,7 @@ Datatype_sptr python_type(const pybind11::array& a)
 
 	Datatype_sptr result = Scalar_datatype::make(k, static_cast<size_t>(a.dtype().itemsize()));
 	for (int ii = a.ndim() - 1; ii >= 0; --ii) {
-		result = Array_datatype::make(move(result), sizes[ii], 0, static_cast<size_t>(a.shape(ii)));
+		result = Array_datatype::make(std::move(result), sizes[ii], 0, static_cast<size_t>(a.shape(ii)));
 	}
 	return result;
 }

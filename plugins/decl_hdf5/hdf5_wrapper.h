@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -113,12 +113,11 @@ public:
 	 */
 	Raii_hid& operator= (Raii_hid&& moved_from)
 	{
-		using std::move;
 		// destroy ourselves first
 		if (m_destroyer) m_destroyer(m_value);
 		// then move the parameter into ourselves
 		m_value = moved_from.m_value;
-		m_destroyer = move(moved_from.m_destroyer);
+		m_destroyer = std::move(moved_from.m_destroyer);
 		moved_from.m_destroyer = NULL;
 		return *this;
 	}
@@ -140,9 +139,8 @@ public:
 template <typename Destroyer>
 Raii_hid make_raii_hid(hid_t value, Destroyer&& dst, const char* message = NULL)
 {
-	using std::move;
 	if (0 > value) handle_hdf5_err(message);
-	return Raii_hid{value, move(dst)};
+	return Raii_hid{value, std::move(dst)};
 }
 
 /** builds a HDF5 dataspace that represents a PDI Datatype

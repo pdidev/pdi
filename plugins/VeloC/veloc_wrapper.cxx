@@ -67,16 +67,12 @@ void unprotect_data(PDI::Context& ctx, int id)
 	}
 }
 
-int write_checkpoint(PDI::Context& ctx, PDI::Expression when, std::string label, int version)
+void write_checkpoint(PDI::Context& ctx, std::string label, int version)
 {
-	if (!when.to_long(ctx)) {
-		return 0;
-	}
 	if (VELOC_Checkpoint(label.c_str(), version) != VELOC_SUCCESS) {
 		ctx.logger().error("Error during checkpointing. Aborting.");
 		exit(2);
 	}
-	return 1;
 }
 
 int read_checkpoint(PDI::Context& ctx, std::string label, int version)
@@ -89,6 +85,10 @@ int read_checkpoint(PDI::Context& ctx, std::string label, int version)
 			exit(2);
 		}
 	}
+	else{
+		ctx.logger().error("No previous checkpoint found for restarting");
+		exit(2);
+	}
 	return target;
 }
 
@@ -100,6 +100,10 @@ void init_restart(PDI::Context& ctx, std::string label, int version)
 		if (VELOC_Restart_begin(label.c_str(), target) != VELOC_SUCCESS) {
 			ctx.logger().error("Error when initiating the restart phase.");
 		}
+	}
+	else{
+		ctx.logger().error("No previous checkpoint found for restarting");
+		exit(2);
 	}
 }
 

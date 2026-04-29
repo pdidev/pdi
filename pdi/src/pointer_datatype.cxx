@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -39,7 +39,6 @@ using std::dynamic_pointer_cast;
 using std::endl;
 using std::function;
 using std::make_shared;
-using std::move;
 using std::pair;
 using std::shared_ptr;
 using std::static_pointer_cast;
@@ -50,7 +49,7 @@ using std::vector;
 
 Pointer_datatype::Pointer_datatype(Datatype_sptr subtype, const Attributes_map& attributes)
 	: Datatype(attributes)
-	, m_subtype{move(subtype)}
+	, m_subtype{std::move(subtype)}
 {}
 
 Pointer_datatype::Pointer_datatype(
@@ -60,9 +59,9 @@ Pointer_datatype::Pointer_datatype(
 	const Attributes_map& attributes
 )
 	: Datatype(attributes)
-	, m_subtype{move(subtype)}
-	, m_copy{move(copy)}
-	, m_destroy{move(destroy)}
+	, m_subtype{std::move(subtype)}
+	, m_copy{std::move(copy)}
+	, m_destroy{std::move(destroy)}
 {}
 
 Datatype_sptr Pointer_datatype::subtype() const

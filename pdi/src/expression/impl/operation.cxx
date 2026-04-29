@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2020 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -428,7 +428,7 @@ unique_ptr<Expression::Impl> Expression::Impl::Operation::parse(char const ** va
 	while (op_level(exprval) == level) {
 		if (!expr) {
 			expr.reset(new Operation);
-			expr->m_first_operand = move(result);
+			expr->m_first_operand = std::move(result);
 		}
 		Operator oper = parse_operator(&exprval, level);
 		expr->m_operands.emplace_back(oper, Expression{parse(&exprval, level + 1)});

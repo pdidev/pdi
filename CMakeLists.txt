@@ -62,21 +62,22 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 # Modules to build
 
 option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
-option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
-option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
+option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plugin" ON)
+option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plugin" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
-option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
+option(BUILD_MPI_PLUGIN         "Build MPI plugin" ON)
 option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
-option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_PYCALL_PLUGIN      "Build Pycall plugin" "${BUILD_UNSTABLE}")
 option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
-option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
-option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
+option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plugin" ON)
+option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plugin" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
-option(BUILD_VELOC_PLUGIN   	"Build VeloC plugin" OFF)
+option(BUILD_VELOC_PLUGIN   	"Build VeloC plugin" "${BUILD_UNSTABLE}")
+option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 
 
@@ -106,11 +107,19 @@ list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 	"${CMAKE_CURRENT_SOURCE_DIR}/pdi/cmake")
 if("${BUILD_DECL_NETCDF_PLUGIN}")
-	# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
-	if(4.1 VERSION_GREATER "${CMAKE_VERSION}")
-		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake/4.1")
+	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+		# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/plugins/decl_netcdf/cmake/4.3")
 	endif()
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/plugins/decl_netcdf/cmake")
+endif()
+if("${BUILD_DECL_HDF5_PLUGIN}")
+	if(4.3 VERSION_GREATER "${CMAKE_VERSION}")
+		# Workaround missing "Prefer h5hl<LANG> compilers if HDF5_FIND_HL is enabled" in cmake pre-4.1
+		# Workaround for missing HDF5_IS_PARALLEL with HDF5-2.0.0+ in cmake pre-4.3
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/plugins/decl_hdf5/cmake/4.3")
+	endif()
 endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE STRING "" FORCE)
 
@@ -266,7 +275,7 @@ sbuild_add_dependency(paraconf "${USE_DEFAULT}"
 
 # if ( PDI or ... )
 sbuild_add_dependency(spdlog "${USE_DEFAULT}"
-	EMBEDDED_PATH "vendor/spdlog-1.14.1"
+	EMBEDDED_PATH "vendor/spdlog-1.15.3"
 	CMAKE_CACHE_ARGS
 		"-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
 		"-DSPDLOG_BUILD_BENCH:BOOL=OFF"
@@ -419,6 +428,7 @@ if("${BUILD_JSON_PLUGIN}")
 		EMBEDDED_PATH "vendor/json-3.11.4"
 		CMAKE_CACHE_ARGS
 			"-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.10" # needed until upstream is updated
+			"-DJSON_BuildTests:BOOL=OFF" # skip unit tests for json
 		VERSION 3.11
 	)
 endif()
@@ -519,17 +529,17 @@ sbuild_add_module(PDI_EXAMPLE
 	SUBSTEPS test
 )
 
-sbuild_add_module(PDI_TESTS
+sbuild_add_module(PDI_COMBINATION_TESTS
 	ENABLE_BUILD_FLAG BUILD_TESTING
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/combination_tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
 	SUBSTEPS test
 )
 
-sbuild_add_module(PDI_TEST_API
+sbuild_add_module(PDI_API_TESTS
 	ENABLE_BUILD_FLAG BUILD_TESTING
-	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test_api"
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/api_tests"
 	DEPENDS PDI
 	INSTALL_COMMAND ""
 	SUBSTEPS test

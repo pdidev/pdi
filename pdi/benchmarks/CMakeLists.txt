@@ -57,7 +57,7 @@ set(PDI_benchmark_SRC
           PDI_logger.cxx)
         
 add_executable(PDI_benchmarks ${PDI_benchmark_SRC})
-target_compile_features(PDI_benchmarks PUBLIC cxx_std_17)
+target_compile_features(PDI_benchmarks PUBLIC cxx_std_20)
 target_include_directories(PDI_benchmarks PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 target_link_libraries(PDI_benchmarks
                       benchmark::benchmark
@@ -68,4 +68,7 @@ target_link_libraries(PDI_benchmarks
 set(RUNTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/runtest-dir")
 add_test(NAME PDI_benchmarks
          COMMAND "${RUNTEST_DIR}" sh -c "$<TARGET_FILE:PDI_benchmarks> --benchmark_format=json > ${BENCHMARK_RESULT_PATH}/PDI_benchmark_result.json")
+if(NOT "${ENABLE_BENCHMARKING}")
+  set_property(TEST PDI_benchmarks PROPERTY DISABLED TRUE)
+endif()
 set_property(TEST PDI_benchmarks PROPERTY TIMEOUT 300)

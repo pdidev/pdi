@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2021 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -47,7 +47,6 @@ using std::function;
 using std::make_shared;
 using std::map;
 using std::max;
-using std::move;
 using std::shared_ptr;
 using std::static_pointer_cast;
 using std::string;
@@ -132,8 +131,8 @@ Scalar_datatype::Scalar_datatype(
 	, m_dense_size{dense_size}
 	, m_align{align}
 	, m_kind{kind}
-	, m_copy{move(copy)}
-	, m_destroy{move(destroy)}
+	, m_copy{std::move(copy)}
+	, m_destroy{std::move(destroy)}
 {
 	if (!nulltype(*this) && !ispow2(m_align)) throw Value_error{"alignment should be a power of 2"};
 }

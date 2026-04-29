@@ -53,16 +53,16 @@ RUN_CLANG_FORMAT='false'
 DOCKER="$(which docker)"
 if "${DOCKER}" --version >/dev/null 2>&1
 then
-	RUN_CLANG_FORMAT="${DOCKER} run --rm -v $(pwd):/src ghcr.io/pdidev/run_clang_format:v3"
+	RUN_CLANG_FORMAT="${DOCKER} run --rm -v $(pwd):/src ghcr.io/pdidev/run-clang-format:v4"
 fi
 
 # Look for a local version
 if [ -f vendor/run-clang-format/run-clang-format.py ]
 then
-	for CLANG_FORMAT in clang-format-17 clang-format17 clang-format
+	for CLANG_FORMAT in clang-format-18 clang-format18 clang-format
 	do
 		CLANG_FORMAT="$(which "${CLANG_FORMAT}")"
-		if which "${CLANG_FORMAT}" >/dev/null && [ 17 -le "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" 2>/dev/null ]
+		if which "${CLANG_FORMAT}" >/dev/null && [ 18 -eq "$("${CLANG_FORMAT}" --version | sed 's/.*version\s\+\([0-9]\+\)\..*/\1/')" 2>/dev/null ]
 		then
 			RUN_CLANG_FORMAT="python3 vendor/run-clang-format/run-clang-format.py --clang-format-executable ${CLANG_FORMAT}"
 			break
@@ -72,7 +72,7 @@ fi
 
 if [ "${RUN_CLANG_FORMAT}" = false ]
 then
-	echo "clang-format version 17 not found and docker not usable"
+	echo "clang-format version 18 not found and docker not usable"
 	exit 127
 fi
 

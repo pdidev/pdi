@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2019 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -116,7 +116,7 @@ public:
 	 * \param with aliases of descriptors for python code
 	 */
 	Trigger(string code, PC_tree_t with)
-		: m_code{move(code)}
+		: m_code{std::move(code)}
 	{
 		if (!PC_status(PC_get(with, "{0}"))) { // parameters
 			int nwith = len(with);
@@ -133,7 +133,7 @@ public:
 	 * \param with alias of descriptor for python code
 	 */
 	Trigger(string code, string with)
-		: m_code{move(code)}
+		: m_code{std::move(code)}
 	{
 		string var = string("$") + with;
 		m_aliases.emplace_back(with, var);

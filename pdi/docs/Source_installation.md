@@ -16,8 +16,8 @@ The %PDI source distribution includes:
 To download the sources, have a look at the list of all releases at 
 https://github.com/pdidev/pdi/releases/
 
-For example, release 1.10.1 can be downloaded from
-https://github.com/pdidev/pdi/archive/refs/tags/1.10.1.tar.gz
+For example, release 1.11.0 can be downloaded from
+https://github.com/pdidev/pdi/archive/refs/tags/1.11.0.tar.gz
 
 ## Default installation {#default_installation}
 
@@ -30,9 +30,8 @@ Most dependencies are embedded in the distribution and the only required
 external dependencies are:
 * a POSIX compatible OS such as GNU/linux,
 * [cmake](https://cmake.org/) version 3.22 or above,
-* a C 99, C++ 17 and Fortran 03 compiler such as
-  - [gcc](https://gcc.gnu.org/) 11 or above,
-  - [clang](https://clang.llvm.org/) 14 or above,
+* a C 17, C++ 20 and Fortran 18 compiler such as [gcc](https://gcc.gnu.org/) 11
+  or above,
 * a [python](https://www.python.org/) interpreter, version 3.10 or above,
 * a [bash](https://www.gnu.org/software/bash/) interpreter,
 * a [MPI](https://www.mpi-forum.org/) 2 implementation such as
@@ -43,15 +42,15 @@ external dependencies are:
 This list of dependencies can be further reduced or extended by changing the
 set of features compiled.
 
-For example, release 1.10.1 can be installed by following these instructions (but
+For example, release 1.11.0 can be installed by following these instructions (but
 look for the latest release at
 https://github.com/pdidev/pdi/releases ):
 
 ```bash
-wget https://github.com/pdidev/pdi/archive/refs/tags/1.10.1.tar.gz
-tar -xjf 1.10.1.tar.bz2
-mkdir 1.10.1/build
-cd 1.10.1/build
+wget https://github.com/pdidev/pdi/archive/refs/tags/1.11.0.tar.gz
+tar -xjf 1.11.0.tar.gz
+mkdir 1.11.0/build
+cd 1.11.0/build
 cmake -DCMAKE_INSTALL_PREFIX="${HOME}/.local/" ..   # configuration
 make install   # compilation and installation
 ```
@@ -96,19 +95,21 @@ The following flags define which features of the distribution to enable or not.
 |Flag                       |Default|Description|
 |:--------------------------|:------|:----------|
 |`BUILD_BENCHMARKING`       |`ON`   |Build the benchmarks.|
-|`BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plug-in.|
-|`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plug-in.|
+|`BUILD_DECL_HDF5_PLUGIN`   |`ON`   |Build the Decl'HDF5 plugin.|
+|`BUILD_DECL_NETCDF_PLUGIN` |`ON`   |Build the Decl'NetCDF plugin.|
 |`BUILD_FORTRAN`            |`ON`   |Build the Fortran interface.|
-|`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|
-|`BUILD_JSON_PLUGIN`        |`OFF`  |Build the Json plug-in.|
-|`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plug-in.|
+|`BUILD_HDF5_PARALLEL`      |`ON`   |Build the parallel version of the Decl'HDF5 plugin instead of the sequential one.|            
+|`BUILD_VELOC_PLUGIN`       |`OFF`  |Build the VeloC plugin.|
+|`BUILD_JSON_PLUGIN`        |`OFF`  |Build the Json plugin.|
+|`BUILD_MPI_PLUGIN`         |`ON`   |Build the MPI plugin.|
 |`BUILD_NETCDF_PARALLEL`    |`ON`   |Build the parallel version of the Decl'NetCDF plugin instead of the sequential one.|
 |`BUILD_TESTING`            |`ON`   |Build the tests.|
-|`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plug-in.|
-|`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plug-in.|
+|`BUILD_TRACE_PLUGIN`       |`ON`   |Build the Trace plugin.|
+|`BUILD_USER_CODE_PLUGIN`   |`ON`   |Build the User-code plugin.|
 |`BUILD_DOCUMENTATION`      |`OFF`  |Build the documentation website. (devel profile)|
-|`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plug-in. (unstable)|
+|`BUILD_PYCALL_PLUGIN`      |`OFF`  |Build Pycall plugin. (unstable)|
 |`BUILD_PYTHON`             |`OFF`  |Build the Python interface. (unstable)|
+|`ENABLE_BENCHMARKING`      |`OFF`  |Run benchmarks as part of the test suite.|
 
 
 The following flags define whether to:
@@ -140,8 +141,6 @@ are provided and documented by the
 [GNUInstallDirs](https://cmake.org/cmake/help/v3.22/module/GNUInstallDirs.html)
 cmake module.
 
-
-
 |Flag          |Default   |Description|
 |:-------------|:---------|:----------|
 |`INSTALL_CMAKEDIR`|`PDIDATADIR/cmake`|Cmake modules.|
@@ -164,7 +163,7 @@ Dependencies of **%PDI**:
 
 * a POSIX compatible OS such as GNU/linux,
 * **[cmake](https://cmake.org/) version 3.22 or above (not provided)**,
-* **a C 99 and C++ 17 compiler (not provided)** such as
+* **a C 17 and C++ 20 compiler (not provided)** such as
   - [gcc](https://gcc.gnu.org/) 11 or above,
   - [clang](https://clang.llvm.org/) 14 or above,
 * the [paraconf](https://github.com/pdidev/paraconf) library version 1.0 or above (provided),
@@ -174,7 +173,7 @@ Dependencies of **%PDI**:
 Additional dependencies for **the Fortran API**:
 
 * the PDI library,
-* **a Fortran 03 compiler (not provided)** such as
+* **a Fortran 18 compiler (not provided)** such as
   - [gcc](https://gcc.gnu.org/) 11 or above,
 * **a [python](https://www.python.org/) interpreter, version 3.10 or above (not provided)**.
 
@@ -198,6 +197,13 @@ Dependencies of **the Decl'NetCDF plugin**:
 * the [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) library version 4.8 or above (provided),
 * the [HDF5](https://www.hdfgroup.org/solutions/hdf5/) library version 1.10 or above (provided),
 * **a MPI implementation for the parallel version of the plugin (not provided)**, such as
+  - [openmpi](https://www.open-mpi.org/) 4.1 or above,
+  - [mpich](https://www.mpich.org/) 4.0 or above.
+
+Dependencies of **the VeloC plugin**:
+* the PDI library,
+* the [VeloC](https://veloc.readthedocs.io/en/latest/userguide.html) library version 1.8 or above (not provided)
+* **a MPI implementation**, such as
   - [openmpi](https://www.open-mpi.org/) 4.1 or above,
   - [mpich](https://www.mpich.org/) 4.0 or above.
 
