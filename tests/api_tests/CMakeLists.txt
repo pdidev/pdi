@@ -32,7 +32,7 @@ include(CTest)
 
 if("${DISABLE_PDI}")
 	set(PDI_MOCK_PARACONF_TARGET TRUE)
-	add_subdirectory(../mock_pdi mock_pdi)
+	add_subdirectory(../../mock_pdi mock_pdi)
 else()
 	find_package(paraconf REQUIRED COMPONENTS C)
 	find_package(PDI REQUIRED COMPONENTS C)

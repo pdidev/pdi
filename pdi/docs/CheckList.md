@@ -21,23 +21,7 @@ To publish a small fix as a patch release:
 
 ## New minor or major release
 
-To publish a new minor or major release:
-* start from the main branch
-* change the version in `pdi/VERSION`
-* change the version in `pdi/docs/Source_installation.md`
-* change the version in `mock_pdi/PDIConfigVersion.cmake`
-* go over all `CHANGELOG.md` files and mark the just released version
-* commit these changes into a new version branch (`v${X}.${Y}`)
-* tag the new release: `git tag -m "PDI release ${X}.${Y}.0" -s "${X}.${Y}.0"`
-* merge the version branch into main `git merge --no-ff "v${X}.${Y}"`
-* in the merge commit:
-  - change the version in `pdi/VERSION` by increasing the minor and add the
-    `-alpha` suffix
-  - add an `[Unreleased]` section at the top of all `CHANGELOG.md` files
-* push all that
-* describe the release https://github.com/pdidev/pdi/releases
-* publish new packages https://github.com/pdidev/pkgs
-* publish new recipes  https://github.com/pdidev/spack
+To publish a new minor or major release, you should use `bin/release`
 
 ## Dependency change
 

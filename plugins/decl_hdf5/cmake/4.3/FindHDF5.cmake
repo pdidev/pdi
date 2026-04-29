@@ -10,7 +10,7 @@ self-describing array data:
 
 .. code-block:: cmake
 
-  find_package(HDF5 [<version>] ... [COMPONENTS <components>...] ...)
+  find_package(HDF5 [<version>] [COMPONENTS <components>...] [...])
 
 If the HDF5 library is built using its CMake-based build system, it will as
 of HDF5 version 1.8.15 provide its own CMake Package Configuration file
@@ -71,8 +71,9 @@ This module provides the following :ref:`Imported Targets`:
 ``HDF5::HDF5``
   .. versionadded:: 3.19
 
-  Target encapsulating the usage requirements for all found HDF5 libraries
-  (``HDF5_LIBRARIES``), available if HDF5 and all required components are found.
+  Target encapsulating the usage requirements for all found HDF5 binding
+  libraries (``HDF5_LIBRARIES``), available if HDF5 and all required components
+  are found.
 
 ``hdf5::hdf5``
   .. versionadded:: 3.19
@@ -126,7 +127,7 @@ Result Variables
 This module defines the following variables:
 
 ``HDF5_FOUND``
-  Boolean indicating whether (the requested version of) HDF5 is found.
+  Boolean indicating whether (the requested version of) HDF5 was found.
 
 ``HDF5_VERSION``
   .. versionadded:: 3.3
@@ -319,7 +320,7 @@ include(FindPackageHandleStandardArgs)
 
 cmake_policy(PUSH)
 if(POLICY CMP0159)
-	cmake_policy(SET CMP0159 NEW) # file(STRINGS) with REGEX updates CMAKE_MATCH_<n>
+cmake_policy(SET CMP0159 NEW) # file(STRINGS) with REGEX updates CMAKE_MATCH_<n>
 endif()
 
 # We haven't found HDF5 yet. Clear its state in case it is set in the parent
@@ -407,7 +408,7 @@ function(_HDF5_test_regular_compiler_C success version is_parallel)
       "  fid = H5Fcreate(\"foo.h5\",H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT);\n"
       "  return 0;\n"
       "}")
-    try_compile(${success} "${_HDF5_TEST_DIR}" "${_HDF5_TEST_DIR}/${_HDF5_TEST_SRC}"
+    try_compile(${success} "${_HDF5_TEST_DIR}" SOURCES "${_HDF5_TEST_DIR}/${_HDF5_TEST_SRC}"
       COPY_FILE ${_HDF5_TEST_DIR}/compiler_has_h5_c
     )
   endif()
@@ -453,7 +454,7 @@ function(_HDF5_test_regular_compiler_CXX success version is_parallel)
       "  H5File file(\"foo.h5\", H5F_ACC_TRUNC);\n"
       "  return 0;\n"
       "}")
-    try_compile(${success} "${_HDF5_TEST_DIR}" "${_HDF5_TEST_DIR}/${_HDF5_TEST_SRC}"
+    try_compile(${success} "${_HDF5_TEST_DIR}" SOURCES "${_HDF5_TEST_DIR}/${_HDF5_TEST_SRC}"
       COPY_FILE ${_HDF5_TEST_DIR}/compiler_has_h5_cxx
     )
   endif()
@@ -487,7 +488,7 @@ function(_HDF5_test_regular_compiler_Fortran success is_parallel)
       "  call h5open_f(error)\n"
       "  call h5close_f(error)\n"
       "end\n")
-    try_compile(${success} "${_HDF5_TEST_DIR}" "${_HDF5_TEST_DIR}/${_HDF5_TEST_SRC}")
+    try_compile(${success} "${_HDF5_TEST_DIR}" SOURCES "${_HDF5_TEST_DIR}/${_HDF5_TEST_SRC}")
     if(${success})
       execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -showconfig
         OUTPUT_VARIABLE config_output
@@ -684,7 +685,16 @@ if(NOT HDF5_FOUND AND NOT HDF5_NO_FIND_PACKAGE_CONFIG_FILE)
         if(HDF5_FIND_DEBUG)
             message(STATUS "Found HDF5 at ${HDF5_DIR} via NO_MODULE. Now trying to extract locations etc.")
         endif()
-        set(HDF5_IS_PARALLEL ${HDF5_ENABLE_PARALLEL})
+        # Extract information from imported targets
+        if (DEFINED HDF5_ENABLE_PARALLEL)
+          # Versions of <2.0.0 use `HDF5_ENABLE_PARALLEL`
+          set(HDF5_IS_PARALLEL ${HDF5_ENABLE_PARALLEL})
+        elseif(DEFINED HDF5_PROVIDES_PARALLEL)
+          # Versions of >=2.0.0 use `HDF5_PROVIDES_PARALLEL`
+          set(HDF5_IS_PARALLEL ${HDF5_PROVIDES_PARALLEL})
+        else()
+          set(HDF5_IS_PARALLEL NONE)
+        endif()
         set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
         set(HDF5_LIBRARIES)
         if (NOT TARGET hdf5 AND NOT TARGET hdf5-static AND NOT TARGET hdf5-shared)

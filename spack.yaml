@@ -31,7 +31,7 @@ spack:
   specs:
   - 'cmake@3.22.1:4'
   - 'doxygen@1.9.1:1'
-  - 'hdf5@1.10.7:1'
+  - 'hdf5@1.10.7:2'
   - 'libyaml@0.2.2:'
   - 'mpi'
   - 'netcdf-c@4.8.1:4'
