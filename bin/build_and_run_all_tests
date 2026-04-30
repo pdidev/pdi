@@ -35,7 +35,11 @@ set -xe
 
 # Setup our directories
 
-SRCDIR="${PWD}"
+# Set SRCDIR only if not provided
+if [[ -z "${SRCDIR:-}" ]]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  SRCDIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
 
 if [ -z "${TEST_DIR}" ]
 then
@@ -45,10 +49,6 @@ else
 	cd "${TEST_DIR}"
 	TEST_DIR="${PWD}"
 fi
-
-cd "${SRCDIR}"
-cd "$(dirname "$0")/.."
-SRCDIR="${PWD}"
 
 cd "${TEST_DIR}"
 
