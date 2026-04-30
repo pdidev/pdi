@@ -20,4 +20,5 @@ podman run --rm \
   -v "$PWD":/src \
   -w /src \
   "$IMAGE" \
+  "$@" \
   $FILES
