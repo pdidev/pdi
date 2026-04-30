@@ -40,6 +40,9 @@ Jacques Morice - CEA (jacques.morice@cea.fr)
 * fix issue [#55](https://github.com/pdidev/pkgs/issues/55)
 * fix issue [#582](https://github.com/pdidev/pkgs/issues/582)
 
+Iole Bolognesi - CNRS (iole.bolognesi@cea.fr)
+* development of the VeloC plugin 
+
 Yacine Ould Rouis - CNRS (yacine.ould-rouis@inria.fr)
 * Fortran interface fixes
 * developments in the fortran interface

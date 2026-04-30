@@ -62,20 +62,21 @@ set(USE_DEFAULT AUTO CACHE STRING "Default version of libraries to use; this can
 # Modules to build
 
 option(BUILD_BENCHMARKING       "Build PDI benchmarks" ON)
-option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plug-in" ON)
-option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in" ON)
+option(BUILD_DECL_HDF5_PLUGIN   "Build Decl'HDF5 plugin" ON)
+option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plugin" ON)
 option(BUILD_FORTRAN            "Build with Fortran support" ON)
 option(BUILD_HDF5_PARALLEL      "Build Decl'HDF5 in parallel mode" ON)
-option(BUILD_MPI_PLUGIN         "Build MPI plug-in" ON)
+option(BUILD_MPI_PLUGIN         "Build MPI plugin" ON)
 option(BUILD_NETCDF_PARALLEL    "Build Decl'NetCDF in parallel mode" ON)
-option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in" "${BUILD_UNSTABLE}")
+option(BUILD_PYCALL_PLUGIN      "Build Pycall plugin" "${BUILD_UNSTABLE}")
 option(BUILD_PYTHON             "Build with Python support" "${BUILD_UNSTABLE}")
-option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plug-in" ON)
-option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plug-in" ON)
+option(BUILD_SET_VALUE_PLUGIN   "Build Set_value plugin" ON)
+option(BUILD_SERIALIZE_PLUGIN   "Build Serialize plugin" ON)
 option(BUILD_SHARED_LIBS        "Build shared libraries rather than static ones" ON)
 option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
+option(BUILD_VELOC_PLUGIN   	"Build VeloC plugin" "${BUILD_UNSTABLE}")
 option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
 
 
@@ -487,6 +488,13 @@ sbuild_add_module(PYCALL_PLUGIN
 sbuild_add_module(SET_VALUE_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_SET_VALUE_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/set_value"
+	DEPENDS PDI
+	SUBSTEPS test
+)
+
+sbuild_add_module(VELOC_PLUGIN
+	ENABLE_BUILD_FLAG BUILD_VELOC_PLUGIN
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/VeloC"
 	DEPENDS PDI
 	SUBSTEPS test
 )

@@ -242,11 +242,29 @@ int main(int argc, char* argv[])
 
 	init(dsize, pcoord, cur);
 
-	PDI_event("main_loop");
+	double elapsed_offset = 0.0;
+	long veloc_recovery_flag = 1;
+	long failure_at = 0; 
+
+
 	double start = MPI_Wtime();
 	int next_reduce = 0;
+
+	PDI_event("main_loop");
 	for (ii = 0;; ++ii) {
-		PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, NULL);
+
+		elapsed_offset = MPI_Wtime() - start;
+
+		PDI_multi_expose("newiter",
+			"iter", &ii, PDI_INOUT,
+			"main_field", cur, PDI_INOUT,
+			"elapsed_offset", &elapsed_offset, PDI_INOUT,
+			NULL);
+
+		if (veloc_recovery_flag) {
+			start = MPI_Wtime() - elapsed_offset;
+			veloc_recovery_flag = 0;
+		}
 
 		iter(dsize, cur, next);
 		exchange(cart_com, dsize, next);

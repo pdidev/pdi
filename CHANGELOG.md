@@ -12,6 +12,7 @@ and this project adheres to
 ### For users
 
 #### Added
+* Added new VeloC plugin. Enables users to write and recover checkpoints using the [VeloC library](https://veloc.readthedocs.io/en/latest/userguide.html)
 
 #### Changed
 
