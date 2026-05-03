@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 
 #include <pdi/array_datatype.h>
+#include <pdi/context.h>
 #include <pdi/data_descriptor.h>
 #include <pdi/delayed_data_callbacks.h>
 #include <pdi/error.h>
@@ -43,28 +44,35 @@ using namespace std;
  * Struct prepared for DataDescDelayed
  */
 struct DataDescDelayed: public ::testing::Test {
+	DataDescDelayed()
+		: test_conf{PC_parse_string("logging: trace")}
+	{}
+
+	void SetUp() override { context.reset(new Global_context{test_conf}); }
+
 	Paraconf_wrapper fw;
-	Global_context context{PC_parse_string("logging: trace")};
+	PC_tree_t test_conf;
+	unique_ptr<Global_context> context;
 };
 
 /*
  * Name:                DataDescDelayed.multiple_data_callbacks
  *
- * Description:         TODO: Jacques
+ * Description:         Check, in case of multiple data, each data callbacks are called
  *
  */
 TEST_F(DataDescDelayed, multiple_delayed_data_callbacks)
 {
 	string data_x{"data_x"};
 	string data_y{"data_y"};
-	Data_descriptor& desc_x = context.desc(data_x);
-	Data_descriptor& desc_y = context.desc(data_y);
-	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
-	context.desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	Data_descriptor& desc_x = context->desc(data_x);
+	Data_descriptor& desc_y = context->desc(data_y);
+	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	context->desc(data_y).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 	int y = 0;
 
-	context.callbacks().add_data_callback(
+	context->callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
 			int* x = static_cast<int*>(ref_write.get());
@@ -74,7 +82,7 @@ TEST_F(DataDescDelayed, multiple_delayed_data_callbacks)
 		"data_x"
 	);
 
-	context.callbacks().add_data_callback(
+	context->callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
 			int* y = static_cast<int*>(ref_write.get());
@@ -87,9 +95,9 @@ TEST_F(DataDescDelayed, multiple_delayed_data_callbacks)
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
 
-	Delayed_data_callbacks delayed_callbacks(context);
-	context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
-	context.desc("data_y").share(&y, true, true, std::move(delayed_callbacks));
+	Delayed_data_callbacks delayed_callbacks(*context);
+	context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+	context->desc("data_y").share(&y, true, true, std::move(delayed_callbacks));
 	ASSERT_EQ(x, 0);
 	ASSERT_EQ(y, 0);
 
@@ -98,8 +106,8 @@ TEST_F(DataDescDelayed, multiple_delayed_data_callbacks)
 	ASSERT_EQ(x, 42);
 	ASSERT_EQ(y, 53);
 
-	context.desc("data_y").reclaim();
-	context.desc("data_x").reclaim();
+	context->desc("data_y").reclaim();
+	context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 42);
 	ASSERT_EQ(y, 53);
 }
@@ -115,11 +123,11 @@ TEST_F(DataDescDelayed, multiple_delayed_data_callbacks)
 TEST_F(DataDescDelayed, test_scope_guard)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context.desc(data_x);
-	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	Data_descriptor& desc_x = context->desc(data_x);
+	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
-	context.callbacks().add_data_callback(
+	context->callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
 			int* x = static_cast<int*>(ref_write.get());
@@ -131,14 +139,14 @@ TEST_F(DataDescDelayed, test_scope_guard)
 
 	ASSERT_EQ(x, 0);
 	{
-		Delayed_data_callbacks delayed_callbacks(context);
-		context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+		Delayed_data_callbacks delayed_callbacks(*context);
+		context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 		ASSERT_EQ(x, 0);
 	}
 	// check that delayed_callbacks.trigger() is called in dtor of delayed_callbacks
 	ASSERT_EQ(x, 42);
 
-	context.desc("data_x").reclaim();
+	context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 42);
 }
 
@@ -153,11 +161,11 @@ TEST_F(DataDescDelayed, test_scope_guard)
 TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context.desc(data_x);
-	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	Data_descriptor& desc_x = context->desc(data_x);
+	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
-	context.callbacks().add_data_callback(
+	context->callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
 			int* x = static_cast<int*>(ref_write.get());
@@ -169,10 +177,10 @@ TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 
 	ASSERT_EQ(x, 0);
 	{
-		Delayed_data_callbacks delayed_callbacks(context);
-		context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+		Delayed_data_callbacks delayed_callbacks(*context);
+		context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 
-		context.callbacks().add_data_callback(
+		context->callbacks().add_data_callback(
 			[](const std::string& name, Ref ref) {
 				Ref_w ref_write{ref};
 				int* x = static_cast<int*>(ref_write.get());
@@ -187,7 +195,7 @@ TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 	// check that delayed_callbacks.trigger() is called in the end of dtor of delayed_callbacks
 	ASSERT_EQ(x, 52);
 
-	context.desc("data_x").reclaim();
+	context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 52);
 }
 
@@ -200,11 +208,11 @@ TEST_F(DataDescDelayed, test_scope_guard_2_callback)
 TEST_F(DataDescDelayed, reclaim_before_trigger)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context.desc(data_x);
-	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	Data_descriptor& desc_x = context->desc(data_x);
+	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
-	context.callbacks().add_data_callback(
+	context->callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
 			int* x = static_cast<int*>(ref_write.get());
@@ -216,11 +224,11 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 
 	ASSERT_EQ(x, 0);
 
-	Delayed_data_callbacks delayed_callbacks(context);
-	context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+	Delayed_data_callbacks delayed_callbacks(*context);
+	context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 	ASSERT_EQ(x, 0);
 
-	context.desc("data_x").reclaim();
+	context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 0);
 
 
@@ -243,11 +251,11 @@ TEST_F(DataDescDelayed, reclaim_before_trigger)
 TEST_F(DataDescDelayed, same_name_added)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context.desc(data_x);
-	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	Data_descriptor& desc_x = context->desc(data_x);
+	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
-	context.callbacks().add_data_callback(
+	context->callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
 			int* x = static_cast<int*>(ref_write.get());
@@ -259,13 +267,13 @@ TEST_F(DataDescDelayed, same_name_added)
 
 	ASSERT_EQ(x, 0);
 
-	Delayed_data_callbacks delayed_callbacks(context);
-	context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+	Delayed_data_callbacks delayed_callbacks(*context);
+	context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 	delayed_callbacks.add_dataname("data_x"); // the list of data to trigger contains two times "data_x"
 
 	delayed_callbacks.trigger();
 	ASSERT_EQ(x, 84); // the callback on "data_x" is called twice
-	context.desc("data_x").reclaim();
+	context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 84);
 }
 
@@ -278,11 +286,11 @@ TEST_F(DataDescDelayed, same_name_added)
 TEST_F(DataDescDelayed, two_trigger_calls)
 {
 	string data_x{"data_x"};
-	Data_descriptor& desc_x = context.desc(data_x);
-	context.desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
+	Data_descriptor& desc_x = context->desc(data_x);
+	context->desc(data_x).default_type(Scalar_datatype::make(Scalar_kind::SIGNED, sizeof(int)));
 	int x = 0;
 
-	context.callbacks().add_data_callback(
+	context->callbacks().add_data_callback(
 		[](const std::string& name, Ref ref) {
 			Ref_w ref_write{ref};
 			int* x = static_cast<int*>(ref_write.get());
@@ -294,13 +302,13 @@ TEST_F(DataDescDelayed, two_trigger_calls)
 
 	ASSERT_EQ(x, 0);
 	{
-		Delayed_data_callbacks delayed_callbacks(context);
-		context.desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
+		Delayed_data_callbacks delayed_callbacks(*context);
+		context->desc("data_x").share(&x, true, true, std::move(delayed_callbacks));
 		ASSERT_EQ(x, 0);
 
 		delayed_callbacks.trigger();
 		ASSERT_EQ(x, 42);
 	} // the second call of trigger at the end of this scope
-	context.desc("data_x").reclaim();
+	context->desc("data_x").reclaim();
 	ASSERT_EQ(x, 42); // Check the list of data in second trigger is empty
 }

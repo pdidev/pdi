@@ -32,18 +32,16 @@
 #include <pdi/error.h>
 #include <pdi/fmt.h>
 
-#include <data_descriptor_impl.h>
-
 #include "pdi/delayed_data_callbacks.h"
 
 namespace PDI {
 
 Delayed_data_callbacks::Delayed_data_callbacks(Global_context& ctx)
-	: m_datanames{}
-	, m_context{ctx}
+	: m_context{ctx}
+	, m_datanames{}
 {}
 
-// In the destructor, we need to throw an error message in case the callback on the data doesn't work (trigger function)
+// In the destructor, we need to throw an error message in case the callback doesn't work on a data(trigger function)
 //  (example: error in the config.yml for a plugin, error due to external library incompatibility)
 Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 {
@@ -54,15 +52,15 @@ Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 			// An exception is throwing before. Print simple message to avoid std::terminate.
 			m_context.logger().error("Error in the destructor of Delayed_data_callbacks, {}", e.what());
 		} else {
-			m_context.logger().info("{}","#### exception:: throw the same error");
+			m_context.logger().info("{}", "Error in the destructor of Delayed_data_callbacks");
 			throw;
 		}
 	} catch (...) {
 		if (std::uncaught_exceptions()) {
 			// An exception is throwing before. Print simple message to avoid std::terminate.
-			m_context.logger().error("Error in the destructor of Delayed_data_callbacks.");
+			m_context.logger().error("Error (no std::exception) in the destructor of Delayed_data_callbacks.");
 		} else {
-			m_context.logger().info("{}","**** no std::exception:: throw the same error");
+			m_context.logger().info("{}", "Error (no std::exception) in the destructor of Delayed_data_callbacks.");
 			throw;
 		}
 	}
@@ -70,7 +68,7 @@ Delayed_data_callbacks::~Delayed_data_callbacks() noexcept(false)
 
 void Delayed_data_callbacks::add_dataname(const std::string& name)
 {
-	// Comment: In case of a multi_expose, if the data is defined twice then the callback "on_data" are called twice also in PDI v1.10
+	// Comment: In case of a multi_expose, if the data is defined twice then the callback "on_data" are called twice also (in PDI v1.10)
 	//         Therefore, we need to add the name to have the same behaviour.
 	m_datanames.emplace_back(name);
 }

@@ -169,20 +169,23 @@ void warn_status(PDI_status_t status, const char* message, void*)
 struct Var_to_reclaim {
 	std::vector<string> m_varnames;
 	const string m_event_name;
-	Var_to_reclaim(const char *event_name) : m_event_name{event_name} {}
+
+	Var_to_reclaim(const char* event_name)
+		: m_event_name{event_name}
+	{}
 
 	~Var_to_reclaim() noexcept(false)
 	{
 		try {
 			this->trigger_reclaim();
-		} catch (std::exception &e) {
-			if (std::uncaught_exceptions()==0) {
+		} catch (std::exception& e) {
+			if (std::uncaught_exceptions() == 0) {
 				throw;
 			} else {
-				Global_context::context().logger().error("{}",e.what());
+				Global_context::context().logger().error("{}", e.what());
 			}
 		} catch (...) {
-			if (std::uncaught_exceptions()==0) {
+			if (std::uncaught_exceptions() == 0) {
 				throw;
 			} else {
 				Global_context::context().logger().error("Error when triggering reclaim in multi expose for event `{}'", m_event_name);
@@ -202,7 +205,12 @@ struct Var_to_reclaim {
 				reclaim_data_errors.emplace_back(std::current_exception());
 			}
 		}
-		rethrow_with_context(reclaim_data_errors, "`{}' error(s) when triggering reclaim(s) in multi expose for event `{}': ", m_varnames.size(), m_event_name);
+		rethrow_with_context(
+			reclaim_data_errors,
+			"`{}' error(s) when triggering reclaim(s) in multi expose for event `{}': ",
+			m_varnames.size(),
+			m_event_name
+		);
 
 		m_varnames.clear();
 	}

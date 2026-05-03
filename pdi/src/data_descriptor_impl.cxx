@@ -154,7 +154,7 @@ bool Data_descriptor_impl::empty()
 }
 
 void Data_descriptor_impl::share(void* data, bool read, bool write)
-try{
+try {
 	share(data, read, write, Delayed_data_callbacks(m_context));
 } catch (...) {
 	// need this line to catch exception in the destructor of Delayed_data_callback

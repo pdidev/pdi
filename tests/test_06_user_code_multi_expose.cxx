@@ -29,7 +29,6 @@
 
 #include <pdi/testing.h>
 
-
 class CheckMultiExpose: public ::PDI::PdiTest
 {};
 
@@ -79,7 +78,6 @@ plugins:
 	PDI_multi_expose("my_test", "first", &var1, PDI_OUT, "second", &var2, PDI_OUT, NULL);
 }
 
-
 /*
  * Name:               CheckMultiExpose, DataWithSameName
  *
@@ -118,6 +116,6 @@ plugins:
 
 	PDI_multi_expose("my_test", "pdi_var1", &var1, PDI_OUT, "pdi_var1", &var2, PDI_OUT, NULL);
 
-	EXPECT_EQ( var1, 3) << "Wrong value of var1"; // the reference of pdi_var1 in the store is &var2 => no change in the value
-	EXPECT_EQ( var2, 15)<< "Wrong value of var2"; // the add_2 function is called two times on reference &var2.
+	EXPECT_EQ(var1, 3) << "Wrong value of var1"; // the reference of pdi_var1 in the store is &var2 => no change in the value
+	EXPECT_EQ(var2, 15) << "Wrong value of var2"; // the add_2 function is called two times on reference &var2.
 }
