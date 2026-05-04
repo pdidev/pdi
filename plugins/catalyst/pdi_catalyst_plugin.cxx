@@ -173,11 +173,16 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 		PC_tree_t tree;
 		std::string name;
 		conduit_node* parent_node;
-		PC_tree_t parent_tree; // Adding parent_tree for config error message
 	};
 
+	// value to keep the parent tree of the current.tree
+	PC_tree_t current_parent_tree;
+
+
 	std::stack<Spec_tree_node> remaining_tree_and_parent_node;
-	remaining_tree_and_parent_node.push({execute_spec, "catalyst", execute_node, execute_spec});
+	remaining_tree_and_parent_node.push({execute_spec, "catalyst", execute_node});
+	current_parent_tree = execute_spec; // initialize parent tree as execute_spec
+	
 	while (!remaining_tree_and_parent_node.empty()) {
 		auto current = remaining_tree_and_parent_node.top();
 		remaining_tree_and_parent_node.pop();
@@ -196,7 +201,7 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 
 				// loop over the meshes in the ghost layers tree
 				for (int index = data_tree_size - 1; index >= 0; --index) {
-					list_vtkGhostType_to_create.emplace_back(context(), current.parent_node, current.tree, current.parent_tree, index);
+					list_vtkGhostType_to_create.emplace_back(context(), current.parent_node, current.tree, current_parent_tree, index);
 				}
 			} else {
 				throw PDI::Spectree_error(current.tree, "ghost_layers node only support yaml mapping node.");
@@ -223,7 +228,10 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 						if (conduit_cpp::cpp_node(current.parent_node).has_path(current.name)) {
 							auto current_node
 								= conduit_cpp::cpp_node(current.parent_node)[current.name]; // Attention: creation of the node if doesn't exit
-							remaining_tree_and_parent_node.push({value, PDI::to_string(key), conduit_cpp::c_node(&current_node), current.tree});
+							remaining_tree_and_parent_node.push({value, PDI::to_string(key), conduit_cpp::c_node(&current_node)});
+
+							current_parent_tree = current.tree;
+							
 						} else {
 							throw PDI::System_error("Error in creating vtkGhostType: a conduit node doesn't exist !!");
 						}
