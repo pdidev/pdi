@@ -66,7 +66,7 @@ private:
 	/// @param execute_spec The tree representing the execute section
 	void create_catalyst_execute_conduit_node(conduit_node* execute_node, PC_tree_t& execute_spec);
 
-	/// @brief Fills a conduit node corresponding to array shared with pdi from a yaml tree. 
+	/// @brief Fills a conduit node corresponding to array shared with pdi from a yaml tree.
 	/// @param the node in which to operate
 	/// @param tree specification tree containing a PDI_data_array
 	void fill_node_with_pdi_data_array(conduit_node* node, PC_tree_t& tree);
@@ -76,7 +76,7 @@ private:
 	/// @param name name of the array
 	/// @param tree specification tree containing a PDI_data_array
 	/// @param scalar_datatype type of the scalar
-	/// @param ref_r reference of the array 
+	/// @param ref_r reference of the array
 	void set_value_for_pdi_scalar_datatype(
 		conduit_node* node,
 		PC_tree_t& tree,
@@ -90,7 +90,7 @@ private:
 	/// @param name name of the array
 	/// @param tree specification tree containing a PDI_data_array
 	/// @param array_datatype type of the array
-	/// @param ref_r reference of the array 
+	/// @param ref_r reference of the array
 	void set_value_for_pdi_array_datatype(
 		conduit_node* node,
 		const std::string& name,
