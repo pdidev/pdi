@@ -15,7 +15,6 @@ pdi:
   data: # type of values for which PDI does not keep a copy
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
 
-  logging: debug
   plugins:
     mpi:
     catalyst:

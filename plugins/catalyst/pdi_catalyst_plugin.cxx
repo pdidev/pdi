@@ -30,9 +30,25 @@ catalyst_plugin::catalyst_plugin(PDI::Context& ctx, PC_tree_t spec_tree)
 	ctx.callbacks().add_event_callback([this](const std::string& event_name) { this->process_event(event_name); });
 }
 
-catalyst_plugin::~catalyst_plugin()
+catalyst_plugin::~catalyst_plugin() noexcept(false)
 {
-	run_catalyst_finalize();
+	try{
+		run_catalyst_finalize();
+	} catch (const std::exception& e) {
+		if (std::uncaught_exceptions()) {
+			throw;
+		} else {
+			context().logger().error("When closing catalyst plugin `{}'",e.what());
+		}
+	} catch(...) {
+		if (std::uncaught_exceptions()) {
+			throw;
+		}
+		else {
+			context().logger().error("When closing catalyst plugin");
+		}
+	}
+	context().logger().info("Closing plugin");
 }
 
 void catalyst_plugin::process_pdi_init()
@@ -56,6 +72,7 @@ void catalyst_plugin::process_pdi_init()
 void catalyst_plugin::process_event(const std::string& event_name)
 {
 	if (event_name == this->m_pdi_execute_event_name) {
+		context().logger().info("call run_catalyst_execute in event `{}'...",event_name);
 		run_catalyst_execute();
 	}
 }
@@ -166,9 +183,9 @@ void catalyst_plugin::read_info_for_creating_vtk_ghost(
 		auto current = remaining_tree_and_parent_node.top();
 		remaining_tree_and_parent_node.pop();
 
-		context().logger().info("Read node of name`{}'", current.name);
+		context().logger().debug("Read node of name`{}'", current.name);
 		if (current.name == "ghost_layers") {
-			context().logger().info("Ghost layer node: `{}'", current.name);
+			context().logger().debug("Ghost layer node: `{}'", current.name);
 
 			if (current.tree.node->type == YAML_MAPPING_NODE) {
 				int data_tree_size = PDI::len(current.tree);
@@ -232,7 +249,6 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 	while (!remaining_tree_and_parent_node.empty()) {
 		auto current = remaining_tree_and_parent_node.top();
 		remaining_tree_and_parent_node.pop();
-
 		context().logger().info("Read node of name`{}'", current.name);
 		if (current.name == "ghost_layers") {
 			context().logger().info(" ghost_layers keys will be read after");
@@ -249,6 +265,7 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 		// 		}
 		// 	}
 		} else {
+			context().logger().info("Read node of name`{}'", current.name);
 			auto current_node = conduit_cpp::cpp_node(current.parent_node)[current.name];
 			switch (current.tree.node->type) {
 			case YAML_NO_NODE:
@@ -259,39 +276,77 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 				switch (current.tree.node->data.scalar.style) {
 				case YAML_PLAIN_SCALAR_STYLE:
 				case YAML_SINGLE_QUOTED_SCALAR_STYLE:
+				case YAML_DOUBLE_QUOTED_SCALAR_STYLE:
+				{
 					// handle integer or float/double type that depend perhaps on scalar PDI data
-					{
-						std::string data_name{PDI::to_string(current.tree)};
-						PDI::Expression data_expression{PDI::to_string(current.tree)};
-						PDI::Ref_r spec_ref = data_expression.to_ref(context());
-						auto data_type = spec_ref.type()->evaluate(context());
+					context().logger().info("$$ read value of an integer or float or string ");
+					std::string data_name{PDI::to_string(current.tree)};
+					context().logger().info("data_name=`{}'",data_name);
+					PDI::Expression data_expression{PDI::to_string(current.tree)};
 
-						if (auto scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type)) {
-							set_value_for_pdi_scalar_datatype(conduit_cpp::c_node(&current_node), current.tree, data_name, *scalar_datatype, spec_ref);
-						} else {
-							// context().logger().error("Unsupported datatype for variable: `{}'. It should be scalar type (integer or float).", data_name);
-							throw PDI::Spectree_error{
-								current.tree,
-								"Unsupported datatype for variable: `{}'. It should be scalar type (integer or float).",
-								data_name
-							};
+					PDI::Ref_r spec_ref = data_expression.to_ref(context());
+					if (!spec_ref) {
+						context().logger().info("problem !spec_ref");
+						throw PDI::Value_error{
+							"Error of right access for: `{}'",
+							data_name
+						};
+					}
+					auto data_type = spec_ref.type()->evaluate(context());
+					if (!data_type) {
+						context().logger().info("problem !data_type");
+						throw PDI::Spectree_error{
+							current.tree,
+							"Error of right access for: `{}'",
+							data_name
+						};
+					}
+					if (auto&& scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(data_type)) {
+						context().logger().debug("## read a scalar type `{}' ##", data_name);
+						set_value_for_pdi_scalar_datatype(conduit_cpp::c_node(&current_node), current.tree, data_name, *scalar_datatype, spec_ref);
+					} else if(auto &&array_datatype = std::dynamic_pointer_cast<const PDI::Array_datatype>(data_type)) {
+						context().logger().debug("## read an array type `{}' ##", data_name);
+
+						// check the array_datatype is a string
+						PDI::Datatype_sptr type = array_datatype->subtype();
+						{
+							auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(type);
+							type = array_type->subtype();
+						}
+						// case multi dimensional array ??
+						// while (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(type)) {
+						// 	type = array_type->subtype();
+						// }
+						auto array_scalar_datatype = std::dynamic_pointer_cast<const PDI::Scalar_datatype>(type);
+						if (!array_scalar_datatype) {
+							// context().logger().error("Array subtype of variable {} should be scalar type.", name);
+							throw PDI::Spectree_error{current.tree, "Array subtype of variable `{}' should be scalar type.", current.name};
+						}
+						PDI::Scalar_kind scalar_kind = array_scalar_datatype->kind();
+						if (scalar_kind == PDI::Scalar_kind::SIGNED && array_scalar_datatype->buffersize() == sizeof(char))
+						{
+							context().logger().debug("## scalar_kind is signed");
+							current_node.set_string(PDI::to_string(current.tree));
+						}
+						else if (scalar_kind == PDI::Scalar_kind::UNSIGNED && array_scalar_datatype->buffersize() == sizeof(unsigned char))
+						{
+							context().logger().info("##  scalar_kind is unsigned");
+							current_node.set_string(PDI::to_string(current.tree));
+						}
+						else {
+							throw PDI::Spectree_error{current.tree, "The scalar type must be a string for `{}'.", current.name};
 						}
 					}
-					break;
-				case YAML_DOUBLE_QUOTED_SCALAR_STYLE:
-					// handle string type
-					current_node.set_string(PDI::to_string(current.tree));
-					break;
+				}
+				break;
 				case YAML_LITERAL_SCALAR_STYLE:
 				case YAML_FOLDED_SCALAR_STYLE:
 				case YAML_ANY_SCALAR_STYLE:
-					// context().logger().error("Unsupported YAML scalar style for variable `{}'", current.name);
 					throw PDI::Spectree_error{current.tree, "Unsupported YAML scalar style for variable `{}'", current.name};
 					break;
 				}
 				break;
 			case YAML_SEQUENCE_NODE:
-				// context().logger().error("Unsupported Sequence YAML Node for variable `{}'", current.name);
 				throw PDI::Spectree_error{current.tree, "Unsupported Sequence YAML Node for variable `{}'", current.name};
 				break;
 			case YAML_MAPPING_NODE:
@@ -315,7 +370,6 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 					auto value = PC_get(current.tree, "<%d>", index);
 					remaining_tree_and_parent_node.push({value, PDI::to_string(key), conduit_cpp::c_node(&current_node)});
 				}
-				break;
 			}
 		}
 	}
@@ -323,14 +377,18 @@ void catalyst_plugin::create_catalyst_execute_conduit_node(conduit_node* execute
 
 void catalyst_plugin::run_catalyst_execute()
 {
+	context().logger().info("run_catalyst_execute()");
 	conduit_cpp::Node node;
 	std::vector<Catalyst_plugin_structured_ghost> list_vtkGhostType_to_create; // object contain vector vtkGhostType
 	auto execute_spec = PC_get(this->m_spec_tree, ".execute");
 
+	context().logger().info("get m_spec_tree execute");
 	conduit_node* node_pointer = conduit_cpp::c_node(&node);
 	// create the conduit node for catalyst_execute
+	context().logger().info("create conduit_node");
 	create_catalyst_execute_conduit_node(node_pointer, execute_spec);
 
+	context().logger().info("read vtk_ghost");
 	// read information to create the vtkGhostType for paraview (read "ghost_layers" node in the yaml file)
 	//create_node_for_mask_ghost( node_pointer, execute_spec, list_vtkGhostType_to_create);
 	read_info_for_creating_vtk_ghost(node_pointer, execute_spec, list_vtkGhostType_to_create);
@@ -348,20 +406,17 @@ void catalyst_plugin::run_catalyst_execute()
 		node[tmp_path + "/fields/vtkGhostType/values"].set_external(vtk_ghost_type.get_vector(), vtk_ghost_type.get_size(), 0, 1, sizeof(uint8_t));
 	}
 
-	context().logger().debug("Print conduit node including vtk ghost type created ...");
+	context().logger().info("Print conduit node including vtk ghost type created ...");
 	if (context().logger().level() == spdlog::level::debug || context().logger().level() == spdlog::level::trace) {
 		node.print();
 	}
 
-	context().logger().debug("catalyst_execute call...");
+	context().logger().info("catalyst_execute call...");
 	auto result = catalyst_execute(node_pointer);
 	if (result != catalyst_status_ok) {
-		// context().logger().error("catalyst_execute failure");
 		throw PDI::System_error{"catalyst_execute failure"};
 	}
-
-	// clear m_current_pdi_data at each iteration
-	// this->m_current_pdi_data.clear();
+	context().logger().info("end catalyst_execute call...");
 }
 
 void catalyst_plugin::run_catalyst_finalize()
@@ -394,15 +449,12 @@ void catalyst_plugin::fill_node_with_pdi_data_array(conduit_node* node, PC_tree_
 		context().logger().warn("Cannot read `{}' this data is not available", name);
 		// Remark: This error can arrive outside PDI_initilialize. This implies that is not really a config error
 		throw PDI::System_error{"No \"name\" child in PDI_data_array spec `{}'.", name};
-		//return;
 	}
 
 	auto data_type = ref_r.type();
 	if (auto array_datatype = std::dynamic_pointer_cast<const PDI::Array_datatype>(data_type)) {
 		set_value_for_pdi_array_datatype(node, name, tree, *array_datatype, ref_r);
 	} else {
-		// context().logger().error("Unsupported datatype for variable: {}. The type should be array type.", name);
-		// throw PDI::Spectree_error{tree, "Unsupported datatype for variable: `{}'. The type should be array type.", name};
 		// Remark: This error can arrive outside PDI_initilialize. This implies that is not really a config error
 		throw PDI::System_error{"Unsupported datatype for variable: `{}'. The type should be array type.", name};
 	}
@@ -429,7 +481,7 @@ void catalyst_plugin::set_value_for_pdi_scalar_datatype(
 		} else if (buffer_size == sizeof(conduit_int64)) {
 			catalyst_conduit_node_set_int64(node, *static_cast<const conduit_int64*>(ref_r.get()));
 		} else {
-			// context().logger().error("Unknown SIGNED buffer size of {} for variable `{}'", buffer_size, name);
+			context().logger().info("Unknown SIGNED buffer size of {} for variable `{}'", buffer_size, name);
 			throw PDI::Spectree_error{tree, "Unknown SIGNED buffer size of `{}' for variable `{}'", buffer_size, name};
 		}
 	} else if (scalar_kind == PDI::Scalar_kind::UNSIGNED) {
@@ -443,7 +495,7 @@ void catalyst_plugin::set_value_for_pdi_scalar_datatype(
 		} else if (buffer_size == sizeof(conduit_uint64)) {
 			catalyst_conduit_node_set_uint64(node, *static_cast<const conduit_uint64*>(ref_r.get()));
 		} else {
-			// context().logger().error("Unknown UNSIGNED buffer size of {} for variable `{}'", buffer_size, name);
+			context().logger().info("Unknown UNSIGNED buffer size of {} for variable `{}'", buffer_size, name);
 			throw PDI::Spectree_error{tree, "Unknown UNSIGNED buffer size of `{}' for variable `{}'", buffer_size, name};
 		}
 	} else if (scalar_kind == PDI::Scalar_kind::FLOAT) {
@@ -453,11 +505,11 @@ void catalyst_plugin::set_value_for_pdi_scalar_datatype(
 		} else if (buffer_size == sizeof(conduit_float64)) {
 			catalyst_conduit_node_set_float64(node, *static_cast<const conduit_float64*>(ref_r.get()));
 		} else {
-			// context().logger().error("Unknown FLOAT buffer size of {} for variable `{}'", buffer_size, name);
+			context().logger().info("Unknown FLOAT buffer size of {} for variable `{}'", buffer_size, name);
 			throw PDI::Spectree_error{tree, "Unknown FLOAT buffer size of `{}' for variable `{}'", buffer_size, name};
 		}
 	} else {
-		// context().logger().error("Unknown Scalar Type for variable `{}'", name);
+		context().logger().info("Unknown Scalar Type for variable `{}'", name);
 		throw PDI::Spectree_error{tree, "Unknown Scalar Type for variable `{}'", name};
 	}
 }
@@ -486,14 +538,11 @@ void catalyst_plugin::get_conduit_index_t_value(PC_tree_t& spec, const std::stri
 						"Unknown Scalar Type for variable `{}'. The type must be an integer signed or unsigned)",
 						PDI::to_string(spec)
 					};
-					// context().logger().error("Unknown Scalar Type for variable {}. The type must be an integerc (signed or unsigned)", PDI::to_string(spec));
 				}
 			} else {
 				throw PDI::Spectree_error{spec, "The datatype must be a scalar datatype for variable: `{}'", PDI::to_string(spec)};
-				// context().logger().error("The datatype must be a scalar datatype for variable: `{}'", PDI::to_string(spec));
 			}
 		} else {
-			// context().logger().error("Supported only YAML_SCALAR_NODE for variable `{}'", name);
 			throw PDI::Spectree_error{spec, "Supported only YAML_SCALAR_NODE for variable `{}'", name};
 		}
 		
@@ -504,7 +553,6 @@ void catalyst_plugin::get_conduit_index_t_value(PC_tree_t& spec, const std::stri
 			// case conduit_index_t is 32-bits
 			value = static_cast<conduit_index_t>(tmp_value);
 			if (value != tmp_value) {
-				// context().logger().error("Error in cast of a type conduit_index_t in long. {} != `{}'", value, tmp_value);
 				throw PDI::System_error{"Error in cast of a type conduit_index_t in long. `{}' != `{}'", value, tmp_value};
 			}
 		}
@@ -520,7 +568,6 @@ void catalyst_plugin::set_value_for_pdi_array_datatype(
 )
 {
 	PDI::Datatype_sptr type = array_datatype.subtype();
-	// ???? bizarre ==>
 	while (auto&& array_type = std::dynamic_pointer_cast<const PDI::Array_datatype>(type)) {
 		type = array_type->subtype();
 	}
@@ -744,6 +791,6 @@ std::string catalyst_plugin::read_pdi_execute_event_name()
 	} else {
 		throw PDI::Spectree_error{execute_spec, "No event name for catalyst plugin is given"};
 	}
-
+	context().logger().info("result: read_pdi_execute_event_name `{}'.",event_name);
 	return event_name;
 }
