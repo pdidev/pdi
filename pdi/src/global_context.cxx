@@ -107,6 +107,11 @@ Global_context::Global_context(PC_tree_t conf)
 	, m_plugins{*this, conf}
 	, m_callbacks{*this}
 {
+	PC_tree_t timer_node = PC_get(conf, ".timer");
+	if (!PC_status(timer_node)) {
+		m_timer.enable_timer(to_bool(timer_node));
+	}
+
 	// load basic datatypes
 	Datatype_template::load_basic_datatypes(*this);
 	// load user datatypes
@@ -181,6 +186,11 @@ void Global_context::event(const char* name)
 Logger& Global_context::logger()
 {
 	return m_logger;
+}
+
+Timer& Global_context::timer()
+{
+	return m_timer;
 }
 
 Datatype_template_sptr Global_context::datatype(PC_tree_t node)

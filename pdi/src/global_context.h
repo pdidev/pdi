@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -41,6 +41,7 @@
 #include "pdi/logger.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
+#include "pdi/timer.h"
 
 #include "plugin_store.h"
 
@@ -56,6 +57,9 @@ private:
 
 	/// Global logger of PDI, should be constructed first, destroyed last
 	Logger m_logger;
+
+	/// Global timer of PDI
+	Timer m_timer;
 
 	/// Datatype_template constructors available in PDI
 	std::unordered_map<std::string, Datatype_template_parser> m_datatype_parsers;
@@ -118,6 +122,8 @@ public:
 	void event(const char* name) override;
 
 	Logger& logger() override;
+
+	Timer& timer() override;
 
 	Datatype_template_sptr datatype(PC_tree_t node) override;
 

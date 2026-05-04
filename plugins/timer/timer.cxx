@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
- * Copyright (C) 2018-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,42 +22,60 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef PDI_CONTEXT_MOCK_H_
-#define PDI_CONTEXT_MOCK_H_
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <unordered_map>
 
-#include <memory>
-#include <gmock/gmock.h>
-#include <pdi/callbacks.h>
+#include <pdi/array_datatype.h>
 #include <pdi/context.h>
-#include <pdi/datatype_template.h>
+#include <pdi/expression.h>
+#include <pdi/logger.h>
 #include <pdi/plugin.h>
+#include <pdi/pointer_datatype.h>
+#include <pdi/record_datatype.h>
+#include <pdi/ref_any.h>
+#include <pdi/scalar_datatype.h>
+#include <pdi/tuple_datatype.h>
 
-struct MockContext: public PDI::Context {
-	MOCK_METHOD1(desc, PDI::Data_descriptor&(const std::string&));
-	MOCK_METHOD1(desc, PDI::Data_descriptor&(const char*));
+namespace {
 
-	MOCK_METHOD1(BracketOp1, PDI::Data_descriptor&(const std::string&));
+using namespace PDI;
 
-	PDI::Data_descriptor& operator[] (const std::string& str) override { return BracketOp1(str); }
+/** The timer plugin 
+*/
+class timer_plugin: public PDI::Plugin
+{
+	// Map between data variables and a pair between condition and the output filenames
+	std::map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
+	std::map<std::string, double> accumulated_times;
+	bool timer_enabled = false;
 
-	MOCK_METHOD1(BracketOp2, PDI::Data_descriptor&(const char*));
+public:
+	timer_plugin(Context& ctx, PC_tree_t spec_tree)
+		: Plugin{ctx}
+	{
+		// initialize m_data_to_path_map from config.yml
+		// read_config_tree(ctx.logger(), spec_tree);
 
-	PDI::Data_descriptor& operator[] (const char* str) override { return BracketOp2(str); }
+		ctx.logger().info("Plugin loaded successfully");
+	}
 
-	MOCK_METHOD0(begin, PDI::Context::Iterator());
-	MOCK_METHOD0(end, PDI::Context::Iterator());
-	MOCK_METHOD1(find, PDI::Context::Iterator(const std::string& name));
+	~timer_plugin() { context().logger().info("Closing plugin"); }
 
-	MOCK_METHOD1(event, void(const char*));
+	static std::string pretty_name() { return "TIMER"; }
 
-	MOCK_METHOD0(logger, PDI::Logger&());
-	MOCK_METHOD0(timer, PDI::Timer&());
+private:
+	/** Read the configuration file
+	 *
+	 * \param logger PDI's logger instance
+	 * \param spec_tree the yaml tree
+	 */
+	// void read_config_tree(Logger& logger, PC_tree_t spec_tree)
+	// {
+	// }
 
-	MOCK_METHOD1(datatype, PDI::Datatype_template_sptr(PC_tree_t));
-	MOCK_METHOD2(add_datatype, void(const std::string&, Datatype_template_parser));
-	MOCK_METHOD0(callbacks, PDI::Callbacks&());
-	MOCK_METHOD0(finalize_and_exit, void());
 };
 
-
-#endif //PDI_CONTEXT_MOCK_H_
+} // namespace
+PDI_PLUGIN(timer)

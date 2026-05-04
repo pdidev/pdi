@@ -26,6 +26,7 @@
 #include "pdi/context.h"
 #include "pdi/context_proxy.h"
 #include "pdi/logger.h"
+#include "pdi/timer.h"
 
 using std::string;
 
@@ -34,10 +35,12 @@ namespace PDI {
 
 Context_proxy::Context_proxy(Context& ctx)
 	: m_real_context{ctx}
+	, m_timer{&(ctx.timer())}
 {}
 
 Context_proxy::Context_proxy(Context& ctx, const string& logger_name, PC_tree_t logging_tree)
 	: m_real_context{ctx}
+	, m_timer{&(ctx.timer())}
 	, m_plugin_logger{m_real_context.logger(), logger_name, logging_tree}
 {}
 
@@ -89,6 +92,11 @@ void Context_proxy::event(const char* name)
 Logger& Context_proxy::logger()
 {
 	return m_plugin_logger;
+}
+
+Timer& Context_proxy::timer()
+{
+	return *m_timer;
 }
 
 Logger& Context_proxy::pdi_core_logger()

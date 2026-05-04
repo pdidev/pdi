@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2021-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2021-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2019-2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -30,6 +30,7 @@
 #include <pdi/callbacks.h>
 #include <pdi/context.h>
 #include <pdi/logger.h>
+#include <pdi/timer.h>
 
 #include <functional>
 #include <string>
@@ -43,6 +44,8 @@ class PDI_EXPORT Context_proxy: public Context
 
 	/// Logger of the plugin
 	Logger m_plugin_logger;
+
+	Timer* m_timer;
 
 public:
 	/** Creates Context proxy without plugin logger
@@ -100,6 +103,12 @@ public:
 	 *  \return plugin logger
 	 */
 	Logger& logger() override;
+
+	/** Returns plugin timer
+	 *
+	 *  \return plugin timer
+	 */
+	Timer& timer() override;
 
 	/** Returns pdi core logger
 	 *
