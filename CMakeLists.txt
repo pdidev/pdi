@@ -422,6 +422,10 @@ endif()
 
 ## Catalyst
 if("${BUILD_CATALYST_PLUGIN}")
+	set(CATALYST_WRAP_PYTHON OFF)
+	if("${BUILD_PYTHON}")
+		set(CATALYST_WRAP_PYTHON ON)
+	endif()
 	sbuild_add_dependency(catalyst "${USE_DEFAULT}"
 		EMBEDDED_PATH "vendor/catalyst-2.0.0"
 		CMAKE_CACHE_ARGS
@@ -429,12 +433,10 @@ if("${BUILD_CATALYST_PLUGIN}")
                         "-DCATALYST_BUILD_TESTING:BOOL=OFF"
                         "-DCATALYST_USE_MPI:BOOL=ON"
                         "-DCATALYST_WRAP_FORTRAN:BOOL=OFF"
-                        "-DCATALYST_WRAP_PYTHON:BOOL=OFF"
+                        "-DCATALYST_WRAP_PYTHON:BOOL=${CATALYST_WRAP_PYTHON}"
 		VERSION 2.0.0
 	)
 endif()
-
-
 
 ## JSON
 

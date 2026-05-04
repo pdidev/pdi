@@ -26,10 +26,6 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 # Catalyst
 # find_package(catalyst REQUIRED)
-# if(NOT ${CATALYST_USE_MPI})
-#     message(WARNING "No MPI support in your Catalyst library, please activate MPI in your Catalyst build if you want to use in parallel.")
-# endif()
-
 find_package(catalyst REQUIRED)
 if("${BUILD_CATALYST_PARALLEL}" AND NOT "${CATALYST_USE_MPI}")
 	message(FATAL_ERROR "Catalyst with MPI support required, sequential catalyst only found. Please set -DBUILD_CATALYST_PARALLEL=OFF to disable parallel Catalyst")
@@ -54,7 +50,6 @@ find_package(PDI REQUIRED COMPONENTS plugins) # ${PDI_COMPONENTS})
 # The Plugin
 add_library(pdi_catalyst_plugin MODULE pdi_catalyst_plugin.cxx)
 if("${CATALYST_USE_MPI}")
-    #target_include_directories(pdi_catalyst_plugin PRIVATE "${MPI_C_INCLUDE_DIRS}")
     target_compile_definitions(pdi_catalyst_plugin PUBLIC CATALYST_IS_PARALLEL=ON)
 endif()
 target_link_libraries(pdi_catalyst_plugin PDI::PDI_plugins ${CATALYST_DEPS})
