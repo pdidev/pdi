@@ -73,7 +73,7 @@ class Catalyst_plugin_structured_ghost
 			m_ctx.logger().info("For the uniform topology `{}', the name of coordset is `{}'", m_topology_name, value_coordset);
 
 			std::string path_to_origins = "topologies/"+m_topology_name+"/origin";
-			//if (value_type == "uniform" && conduit_cpp::cpp_node(parent_node).has_path(path_to_origins)) {
+
 			if (conduit_cpp::cpp_node(parent_node).has_path(path_to_origins)) {
 				throw PDI::Spectree_error{m_ghost_tree, "For uniform topology, we dont support origin keyword to generate vtkGhostType for paraview."};
 			}
@@ -100,7 +100,7 @@ class Catalyst_plugin_structured_ghost
 
 		PDI::each(mask_ghost_spec , [&](PC_tree_t key_tree, PC_tree_t value) {
 			std::string key = PDI::to_string(key_tree);
-			m_ctx.logger().info("key= {}", key);
+			m_ctx.logger().debug("read key= {} in ghost layers section.", key);
 			if (key == "size") {
 				PDI::opt_each(value, [&](PC_tree_t size) { m_size.emplace_back(PDI::to_string(size)); });
 			} else if (key == "start") {
