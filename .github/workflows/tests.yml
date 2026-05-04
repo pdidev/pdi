@@ -112,7 +112,7 @@ jobs:
       MAKEFLAGS: -j4
       CC: clang
       CXX: clang++
-      FC: gfortran
+      FC: gfortran-15
       CMAKE_BUILD_TYPE: ${{matrix.build_type}}
       OMPI_MCA_rmaps_base_oversubscribe: 1
       PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
