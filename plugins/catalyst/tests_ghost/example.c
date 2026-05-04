@@ -32,24 +32,30 @@
 
 #include "pdi.h"
 
+void create_coordinate_of_vertices(
+	int dsize[2],
+	int dstart[2],
+	int local_size[2],
+	int pcoord[2],
+	double coords_x[dsize[0] + 1][dsize[1] + 1],
+	double coords_y[dsize[0] + 1][dsize[1] + 1]
+)
+{
+	// catalyst variables
+	int cells_ghost = 1;
 
-void create_coordinate_of_vertices( int dsize[2], int dstart[2], int local_size[2], int pcoord[2], double coords_x[dsize[0]+1][dsize[1]+1], double coords_y[dsize[0]+1][dsize[1]+1]){
+	size_t number_of_points[2];
+	number_of_points[0] = dsize[0] + 1;
+	number_of_points[1] = dsize[1] + 1;
+	size_t total_number_of_points = number_of_points[0] * number_of_points[1];
 
-  // catalyst variables
-  int cells_ghost=1;
-
-  size_t number_of_points[2];
-  number_of_points[0] = dsize[0]+1;
-  number_of_points[1] = dsize[1]+1;
-  size_t total_number_of_points =  number_of_points[0]*number_of_points[1]; 
-
-  // the first axis correspond to the y-coordinate.
-  for(int ix=0; ix<number_of_points[0]; ix++) {
-    for(int iy=0; iy<number_of_points[1]; iy++) {
-      coords_y[ix][iy] = 1.0*(ix-dstart[0]) + pcoord[0]*(local_size[0]);
-      coords_x[ix][iy] = 1.0*(iy-dstart[1]) + pcoord[1]*(local_size[1]);
-    } 
-  }
+	// the first axis correspond to the y-coordinate.
+	for (int ix = 0; ix < number_of_points[0]; ix++) {
+		for (int iy = 0; iy < number_of_points[1]; iy++) {
+			coords_y[ix][iy] = 1.0 * (ix - dstart[0]) + pcoord[0] * (local_size[0]);
+			coords_x[ix][iy] = 1.0 * (iy - dstart[1]) + pcoord[1] * (local_size[1]);
+		}
+	}
 }
 
 int main(int argc, char* argv[])
@@ -83,7 +89,7 @@ int main(int argc, char* argv[])
 	dsize[0] = longval;
 	PC_int(PC_get(conf, ".globalsize[1]"), &longval);
 	dsize[1] = longval;
-		
+
 	int psize[2];
 	PC_int(PC_get(conf, ".parallelism.height"), &longval);
 	psize[0] = longval;
@@ -117,14 +123,14 @@ int main(int argc, char* argv[])
 	local_size[1] = dsize[1] / psize[1];
 
 	//
-	dsize[0]  = local_size[0] + ghost_height[0] + ghost_height[1];
+	dsize[0] = local_size[0] + ghost_height[0] + ghost_height[1];
 	dstart[0] = ghost_height[0];
-	dend[0]   = dsize[0] - ghost_height[1];
+	dend[0] = dsize[0] - ghost_height[1];
 
 	//
-	dsize[1]  = local_size[1] + ghost_width[0] + ghost_width[1];
+	dsize[1] = local_size[1] + ghost_width[0] + ghost_width[1];
 	dstart[1] = ghost_width[0];
-	dend[1]   = dsize[1] - ghost_width[1];
+	dend[1] = dsize[1] - ghost_width[1];
 
 	int ii = 0;
 
@@ -137,26 +143,41 @@ int main(int argc, char* argv[])
 
 	int(*cur)[dsize[1]] = malloc(sizeof(int) * dsize[1] * dsize[0]);
 
-	// initialize 
-	for (int yy=0; yy<dsize[0]; ++yy) {
-		for (int xx=0; xx<dsize[1]; ++xx) {
-			cur[yy][xx] = - (pcoord_1d + 1);
+	// initialize
+	for (int yy = 0; yy < dsize[0]; ++yy) {
+		for (int xx = 0; xx < dsize[1]; ++xx) {
+			cur[yy][xx] = -(pcoord_1d + 1);
 		}
 	}
 
-	for (int yy=dstart[0]; yy<dend[0]; ++yy) {
-		for (int xx=dstart[1]; xx<dend[1]; ++xx) {
+	for (int yy = dstart[0]; yy < dend[0]; ++yy) {
+		for (int xx = dstart[1]; xx < dend[1]; ++xx) {
 			cur[yy][xx] = (pcoord_1d + 1);
 		}
 	}
-	
-	// allocate variables for the vertex of the mesh
-  	double(*coords_x)[dsize[1]+1] = malloc(sizeof(double)* (dsize[1]+1) * (dsize[0]+1) );
-  	double(*coords_y)[dsize[1]+1] = malloc(sizeof(double)* (dsize[1]+1) * (dsize[0]+1) );
-    
-  	create_coordinate_of_vertices( dsize, dstart, local_size, pcoord, coords_x, coords_y);
 
-	PDI_multi_expose("newiter", "iter", &ii, PDI_INOUT, "main_field", cur, PDI_INOUT, "coords_x", coords_x, PDI_INOUT, "coords_y", coords_y, PDI_INOUT, NULL);
+	// allocate variables for the vertex of the mesh
+	double(*coords_x)[dsize[1] + 1] = malloc(sizeof(double) * (dsize[1] + 1) * (dsize[0] + 1));
+	double(*coords_y)[dsize[1] + 1] = malloc(sizeof(double) * (dsize[1] + 1) * (dsize[0] + 1));
+
+	create_coordinate_of_vertices(dsize, dstart, local_size, pcoord, coords_x, coords_y);
+
+	PDI_multi_expose(
+		"newiter",
+		"iter",
+		&ii,
+		PDI_INOUT,
+		"main_field",
+		cur,
+		PDI_INOUT,
+		"coords_x",
+		coords_x,
+		PDI_INOUT,
+		"coords_y",
+		coords_y,
+		PDI_INOUT,
+		NULL
+	);
 
 	// free cur
 	free(cur);
