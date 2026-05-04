@@ -4,3 +4,6 @@
 [submodule "vendor/run-clang-format"]
 	path = vendor/run-clang-format
 	url = https://github.com/Sarcasm/run-clang-format.git
+[submodule "vendor/catalyst-2.0.0"]
+	path = vendor/catalyst-2.0.0
+	url = https://gitlab.kitware.com/paraview/catalyst
