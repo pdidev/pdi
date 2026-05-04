@@ -112,6 +112,7 @@ jobs:
       MAKEFLAGS: -j4
       CC: clang
       CXX: clang++
+      FC: gfortran
       CMAKE_BUILD_TYPE: ${{matrix.build_type}}
       OMPI_MCA_rmaps_base_oversubscribe: 1
       PRTE_MCA_rmaps_default_mapping_policy: :oversubscribe
@@ -124,8 +125,8 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: '3.14'
-    - name: Install MPI (macOS) and doxygen
-      run: brew install open-mpi doxygen
+    - name: Install MPI (macOS), Fortran, and doxygen
+      run: brew install open-mpi gcc doxygen
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip
