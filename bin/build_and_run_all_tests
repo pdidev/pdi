@@ -86,12 +86,6 @@ then
 	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NETCDF_PARALLEL=OFF"
 fi
 
-if [[ "x${PDI_SYSTEM}" =~ ^xmacos ]]
-then
-	# Workaround: not all plugins work on OSX yet (https://github.com/pdidev/pdi/issues/580)
-	CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_BENCHMARKING=OFF -DBUILD_FORTRAN=ON"
-fi
-
 
 
 # And now for the actual tests
