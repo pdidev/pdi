@@ -17,7 +17,7 @@ and this project adheres to
   [#657](https://github.com/pdidev/pdi/issues/657)
 * A new error code `PDI_ERR_INVALIDACTION` has been added when an action
   requested in the yaml specification tree makes no sense (but the specification
-  tree in syntaxically correct)
+  tree is syntaxically correct)
 * A new error code `PDI_ERR_MULTIPLE` has been added when multiple errors of
   different kind happen
 * `PDI_STATUS_MSG` has been added to offer an english description of error
