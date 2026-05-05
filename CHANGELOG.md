@@ -47,7 +47,9 @@ and this project adheres to
 #### Added
 
 #### Changed
-
+* Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
+  to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
+  
 #### Deprecated
 
 #### Removed
