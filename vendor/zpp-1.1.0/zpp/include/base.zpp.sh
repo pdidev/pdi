@@ -46,7 +46,7 @@ function zpp_str_repeat() {
   if [ "${TO}" -lt "${FROM}" ]; then return; fi
   RES="${START}${STR//@N/${FROM}}"
   (( ++FROM ))
-  for N in $(seq $FROM $TO); do
+  for (( N=FROM; N<=TO; N++ )); do
     RES="${RES}${SEP}${STR//@N/${N}}"
   done
   echo "${RES}${END}"

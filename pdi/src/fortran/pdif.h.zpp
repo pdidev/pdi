@@ -185,7 +185,7 @@ interface PDI_access
 !$SH     if [ 0 -lt "0$D" ]; then
   , contiguous &
 !$SH     fi
-  :: ptr_data$(if [ $D -gt 0 ]; then echo -n "("; for i in $(seq 1 $D); do echo -n ":"; if [ $i -lt $D ]; then echo -n ","; fi; done; echo -n ")"; fi)
+  :: ptr_data$(array_desc $D)
     integer, intent(IN) :: access
 !$SH     if [ 0 -lt "$D" ]; then
     integer, intent(IN) :: ptr_data_shape($D)
