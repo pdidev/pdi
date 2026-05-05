@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 #
 # All rights reserved.
 #
@@ -33,7 +33,7 @@ ALLEXTERNALS           = NO
 ALLOW_UNICODE_NAMES    = NO
 ALPHABETICAL_INDEX     = YES
 ALWAYS_DETAILED_SEC    = NO
-AUTOLINK_IGNORE_WORDS  =
+AUTOLINK_IGNORE_WORDS  = PDI
 AUTOLINK_SUPPORT       = YES
 BINARY_TOC             = NO
 BRIEF_MEMBER_DESC      = YES
@@ -90,7 +90,7 @@ EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
 EXCLUDE                =
 EXCLUDE_PATTERNS       =
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = *::impl, *::impl::*
 EXCLUDE_SYMLINKS       = NO
 EXPAND_AS_DEFINED      =
 EXPAND_ONLY_PREDEF     = YES
@@ -175,7 +175,7 @@ HTML_OUTPUT            = @CMAKE_CURRENT_BINARY_DIR@/html
 HTML_PROJECT_COOKIE    =
 HTML_STYLESHEET        = @CMAKE_CURRENT_SOURCE_DIR@/_template/style.css
 IDL_PROPERTY_SUPPORT   = YES
-IGNORE_PREFIX          =
+IGNORE_PREFIX          = 
 IMAGE_PATH             = @CMAKE_CURRENT_SOURCE_DIR@/images
 IMPLICIT_DIR_DOCS      = NO
 INCLUDED_BY_GRAPH      = NO

@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <iostream>
 #include <list>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -44,6 +45,8 @@
 #include "pdi/ref_any.h"
 
 #include "global_context.h"
+
+static_assert(std::size(PDI_STATUS_MSG) == PDI_NB_STATUSES_DEFINED, "The signification of each error code should be listed in PDI_STATUS_MSG");
 
 namespace {
 
@@ -66,6 +69,8 @@ struct Error_context {
 
 	string errmsg;
 
+	std::ostringstream verbosemsg;
+
 	Error_context()
 		: handler{PDI_ASSERT_HANDLER}
 	{}
@@ -74,7 +79,9 @@ struct Error_context {
 	 */
 	PDI_status_t return_err(const Error& err)
 	{
-		errmsg = err.what();
+		verbosemsg = std::ostringstream();
+		build_verbosemsg(err, 0);
+		errmsg = err.full_msg();
 		if (handler.func) handler.func(err.status(), errmsg.c_str(), handler.context);
 		return err.status();
 	}
@@ -95,6 +102,20 @@ struct Error_context {
 		errmsg = "Unexpected error";
 		if (handler.func) handler.func(PDI_ERR_SYSTEM, errmsg.c_str(), handler.context);
 		return PDI_ERR_SYSTEM;
+	}
+
+	void build_verbosemsg(const exception& err, int indent)
+	{
+		static std::regex const NEWLINE("\n");
+		std::string const indstr = std::string(' ', 2 * indent);
+		std::string const rplstr = "\n" + indstr;
+		verbosemsg << indstr << "* " << std::regex_replace(err.what(), NEWLINE, rplstr) << "\n";
+		try {
+			std::rethrow_if_nested(err);
+		} catch (const exception& ne) {
+			build_verbosemsg(ne, indent + 1);
+		} catch (...) {
+		}
 	}
 
 }; // struct Error_context

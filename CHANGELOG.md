@@ -12,6 +12,16 @@ and this project adheres to
 ### For users
 
 #### Added
+* Improved messages for specification tree errors, with file & line numbers and
+  support for file names from Paraconf 1.1,
+  [#657](https://github.com/pdidev/pdi/issues/657)
+* A new error code `PDI_ERR_INVALIDACTION` has been added when an action
+  requested in the yaml specification tree makes no sense (but the specification
+  tree is syntaxically correct)
+* A new error code `PDI_ERR_MULTIPLE` has been added when multiple errors of
+  different kind happen
+* `PDI_STATUS_MSG` has been added to offer an english description of error
+  codes.
 
 #### Changed
 
@@ -33,6 +43,7 @@ and this project adheres to
 #### Deprecated
 
 #### Removed
+* `PDI::Error` is now an abstract class and should never be used directly.
 
 #### Fixed
 

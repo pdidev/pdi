@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
+#include <exception>
 #include <iomanip>
 #include <memory>
 #include <sstream>
@@ -154,8 +155,8 @@ long Expression::Impl::Reference_expression::to_long(Context& ctx) const
 			return ref.scalar_value<long>();
 		}
 		throw Permission_error{"Unable to grant access for value reference"};
-	} catch (const Error& e) {
-		throw Error{e.status(), "while referencing `{}': {}", m_referenced, e.what()};
+	} catch (...) {
+		rethrow_with_context(std::current_exception(), "while referencing `{}', ", m_referenced);
 	}
 }
 
@@ -166,8 +167,8 @@ double Expression::Impl::Reference_expression::to_double(Context& ctx) const
 			return ref.scalar_value<double>();
 		}
 		throw Permission_error{"Unable to grant read access for value reference"};
-	} catch (const Error& e) {
-		throw Error{e.status(), "while referencing `{}': {}", m_referenced, e.what()};
+	} catch (...) {
+		rethrow_with_context(std::current_exception(), "while referencing `{}', ", m_referenced);
 	}
 }
 
