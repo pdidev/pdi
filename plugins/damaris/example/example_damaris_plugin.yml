@@ -5,76 +5,55 @@ datasize: [60, 12]
 # degree of parallelism
 parallelism: { height: 3, width: 1 }
 
-# only the following config is passed to PDI
 pdi:
-  metadata: # type of small values for which PDI keeps a copy
+  metadata:
     iter:   int                    # current iteration id
     dsize:  { size: 2, type: array, subtype: int } # local data size including ghosts/boundary
     psize:  { size: 2, type: array, subtype: int } # number of processes in each dimension
     pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
     mpi_comm: MPI_Comm
     conf_yaml: uintptr_t
-  data: # type of values for which PDI does not keep a copy
+  data:
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
   
   plugins:
     mpi:
-    trace: ~
     damaris:
-      communicator: $MPI_COMM_WORLD # pas utilisé actuellement
       architecture: 
         sim_name: example  
-        domains: 1 # => nb de block par sous domain 
-        # damaris divise le sous domain par block equitablement
+        domains: 1
         dedicated:
           core: 1
           node: 0 
+      client_comm_get: mpi_comm # Needed to return the Damaris client comm
       datasets:
         - dataset: 
             name: main_field
             layout: main_field_layout
-            mesh: mesh2d # pour la visualisation
-            centering: zonal
             storage: hdf5_example
-            script:
-            visualizable: true
-            time_varying: true
-            #comment: This is the zonal pressure from our test simulation
-      layouts: # on ne peut pas modifier la valuer de layout une fois initialisé, travail en cours pour la modification dynamique
+      layouts:
         - layout: 
-            name: main_field_layout # ~hdf5 dataset_selection
+            name: main_field_layout
             type: double
-            global: '$psize[0]*($dsize[0]-2),$psize[1]*($dsize[1]-2)'
+            global: ['$psize[0]*($dsize[0]-2)', '$psize[1]*($dsize[1]-2)']
             dimensions: [ '$dsize[0]', '$dsize[1]' ] # process dim, with ghosts/boundaries
-            ghosts: '1:1,1:1'   # 1 ghost à gauche de dim1, 1 ghost à droit de dim1 , 1 ghost à gauche de dim2, 1 ghost à droit de dim2
+            ghosts: '1:1,1:1'
             depends_on: [dsize, psize] # This will help ensure an update of the layout attributes value to Damaris lib once the metadata are exposed (using Damaris Parameters in the background)!
       storages:
         - storage:
             name: hdf5_example
             type: HDF5
-            file_mode: Collective # or FilePerCore
-            files_path: ./HDF5_files/   # Where to save files
-            # hdf5 file name defined by damaris
-            #frequency: 1    
-      #Events sections
+            file_mode: Collective       # or FilePerCore
+            files_path: ./HDF5_files_without_is_client/   # Where to save files
+          
       write: 
         main_field: # the name of the data to write, if dataset not specified afterward! ~meme notion de dataset hdf5
           dataset: main_field 
           when: '$iter<10'   # do only write the first 10 iterations (0...9), Default at every iteration.
-          #position: ['$pcoord[0]', '$pcoord[1]']
           position: ['($dsize[0]-2)*$pcoord[0]', '($dsize[1]-2)*$pcoord[1]'] # ~start de dataset_selection par iteration
-          # damaris "append" file with next iteration
-          #block: [...] # To be defined # indice de block à écrire = 0 par default => tout le sous-domain
-          # si "architecture/domains" >1 on peut écrire les block de indice 0 à domains-1
-      #get_is_client: is_client #Needed only when is_client is used
-      dc_ending_operations: #Will be used in the future to provide couple of instructions to execute at the end of the simulation, for the dedicated cores. MayBe relying on user_code plugin!!?
-      client_comm_get: mpi_comm #Needed to return the Damaris client comm
-      
-      #Optional config, has a default behavior 
+
       log:
-        #file_name: example # default = $sim_name
+        file_name: example_without_is_client
         rotation_size: 5
         log_level: info
         flush: true
-        
-
