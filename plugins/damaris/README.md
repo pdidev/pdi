@@ -14,7 +14,7 @@ full potential of this plugin.
 * `communicator`: (currently not used) A $-expression referencing an MPI communicator.
 
 * `architecture`: a key-value map.
-  * `sim_name`(string): the name of the simulation  
+  * `sim_name`(string): the name of the simulation, also used as the name of output files.
   * `domains`(integer, default: 1) : number of blocks by sub domain
   * `dedicated`: describes what resources will be used by Damaris. Notes: for the momenet, the plugin works with either `only dedicated cores`, or `only dedicated nodes`. In the future, the mix of two modes will be supported.
     * `core`: an integer value (default 0). Number of cores per node that will be used for Damaris
@@ -40,7 +40,7 @@ full potential of this plugin.
 
 * `storages`: list of `STORAGE_DESC`.
   * `storage:` a key value map that represent the storage used to save a`dataset`. It is composed with
-    * `name` (string) Name of the output file
+    * `name` (string) Name of the storage
     * `type` Type of the output file. Currently only HDF5 is supported.
     * `file_mode` (Collective or FilePerCore)
     * `files_path` Path for the output files
