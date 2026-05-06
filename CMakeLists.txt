@@ -518,7 +518,7 @@ sbuild_add_module(USER_CODE_PLUGIN
 sbuild_add_module(DAMARIS_PLUGIN
 	ENABLE_BUILD_FLAG BUILD_DAMARIS_PLUGIN
 	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/plugins/damaris"
-	DEPENDS PDI #Damaris !?
+	DEPENDS PDI
 )
 
 sbuild_add_module(PDI_EXAMPLE
