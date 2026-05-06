@@ -278,7 +278,6 @@ void Damaris_api_call_handler::damaris_api_call_event(
 				//if(nb_awaited_args <= arg_pos)
 				break;
 		}
-		//ctx.logger().info("------------------- CALLING damaris_pdi_client_comm_get arg_pos({}==='{}')", arg1_name, client_comm);
 	}
 	// DAMARIS_SET_POSITION
 	else if (event_name == event_names.at(Event_type::DAMARIS_SET_POSITION))
@@ -527,10 +526,7 @@ void Damaris_api_call_handler::damaris_api_call_event(
 	else if (event_name == event_names.at(Event_type::DAMARIS_END_ITERATION))
 	{
 		if (m_damaris) {
-			//ctx.logger().info("Plugin called damaris_end_iteration()");
-
 			int err = m_damaris->damaris_pdi_end_iteration();
-			//iteration++;
 
 			ctx.logger().info("Plugin sent damaris_end_iteration() to Damaris");
 		} else {
@@ -580,8 +576,7 @@ void Damaris_api_call_handler::damaris_pdi_init(Context& ctx, unique_ptr<Damaris
 	if (!m_damaris) {
 		MPI_Comm comm = MPI_COMM_WORLD;
 		if (m_communicator) {
-			//comm = static_cast<const MPI_Comm>(m_communicator.to_string(ctx));
-			//comm = *(static_cast<const MPI_Comm*>(Ref_r{m_communicator.to_ref(ctx)}.get()));
+			//TODO: could be replaced by a communicator passed from the simulation!
 		}
 
 		// This creator method calls damaris_initialize(), passin in an XML file, so if we want to

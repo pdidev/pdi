@@ -118,8 +118,6 @@ public:
 				ctx.callbacks().add_event_callback([this](const std::string& name) { this->event(name); }, ev_name.second);
 		}
 
-		//ctx.callbacks().add_event_callback([this](const std::string& name) { this->event(name); });
-
 		ctx.logger().info("Plugin loaded successfully");
 	}
 
@@ -127,9 +125,7 @@ public:
 	{
 		ensure_damaris_is_initialized("");
 
-		//context().logger().info("data `{}' has been exposed", name);//too verbose
-
-		//Update damaris parameters
+		//Update damaris parameters, which depend on PDI metadatas
 		if (m_config.is_needed_metadata(name)) {
 			std::unordered_map<std::string, std::pair<std::string, std::string>> updatable_parameters = m_config.get_updatable_parameters(context());
 
@@ -144,18 +140,11 @@ public:
 					void* prm_value_buffer;
 					size_t prm_buffer_size;
 					if (std::find(std::begin(int_numbers_types), std::end(int_numbers_types), prm_type) != std::end(int_numbers_types)) {
-						//std::cout << "int_numbers_types contains " << prm_type << '\n';//Can be too verbose
 						int prm_long_value = std::atoi(prm_value.c_str());
 						prm_value_buffer = &prm_long_value;
 						prm_buffer_size = sizeof(int);
 
 						int msg_err = m_damaris->damaris_pdi_parameter_set(prm_name.c_str(), prm_value_buffer, prm_buffer_size);
-
-						//checking if it works!
-						/*int new_prm_val;
-						m_damaris->damaris_pdi_parameter_get(prm_name.c_str(), &new_prm_val, prm_buffer_size);	
-						context().logger().info("---------------------------------------------------------> Parameter '{}' updated successfully, new value '{}' vs Sent Value '{}'", prm_name, new_prm_val, prm_long_value);
-						*/
 					} else if (std::find(std::begin(real_numbers_types), std::end(real_numbers_types), prm_type) != std::end(real_numbers_types)) {
 						std::cout << "real_numbers_types contains " << prm_type << '\n';
 						double prm_dbl_value = std::atof(prm_value.c_str());
@@ -182,7 +171,6 @@ public:
 				context().logger().info("data `{}' Is a needed metadata for the evaluation of parameters {}", name, prm_name_concat);
 			}
 		} else if (m_config.is_dataset_to_write(name)) {
-			//context().logger().info("is_dataset_to_write(`{}') = '{}'", name, m_config.is_dataset_to_write(name));//too verbose
 			if (Ref_r rref = ref) {
 				Dataset_Write_Info ds_write_info = m_config.get_dataset_write_info(name);
 
@@ -258,7 +246,6 @@ public:
 
 								context().logger().info("is_damaris_api_call_event ( `{}' ) = TRUE", aw_event);
 								m_event_handler.damaris_api_call_event(context(), m_damaris, aw_event, {});
-								//m_event_handler.damaris_api_call_event(context(), m_damaris, aw_event, list<string> expose_dataname = {});
 							} else { //Non Damaris call event
 							}
 						}
@@ -268,11 +255,6 @@ public:
 			} else {
 				context().logger().error("The Damaris need write access over the data (`{}')", name);
 			}
-
-			//Debugging
-			//iteration++;
-			//if(iteration == 2)
-			//	exit(0);
 		} else if (m_config.is_parameter_to_update(name)) {
 			context().logger().info("m_config.is_parameter_to_update('{}') = `{}'", name, m_config.is_parameter_to_update(name));
 			std::pair<std::string, Desc_type> prm_to_update_info = m_config.get_parameter_to_update_info(name);
@@ -339,8 +321,6 @@ public:
 			multi_expose_transaction_dataname.emplace_back(name);
 			//multi_expose_transaction_dataref.emplace_back(ref);
 		}
-
-		//In Situ
 	}
 
 	void event(const std::string& event_name)

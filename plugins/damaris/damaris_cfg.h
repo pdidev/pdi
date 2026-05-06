@@ -159,10 +159,7 @@ class Damaris_cfg
 	std::unordered_map<std::string, damaris::model::DamarisLayoutXML> m_layouts;
 	std::unordered_map<std::string, damaris::model::DamarisParameterXML> m_parameters;
 	std::unordered_map<std::string, damaris::model::DamarisStoreXML> m_storages;
-	std::unordered_map<std::string, damaris::model::DamarisMeshXML> m_meshes;
 	std::unordered_map<std::string, damaris::model::DamarisGroupXML> m_groups;
-	damaris::model::DamarisParaviewXML* m_paraview = NULL;
-	damaris::model::DamarisPyScriptXML* m_pyscript = NULL;
 
 	std::unordered_map<std::string, Desc_type> m_descs;
 	std::unordered_map<std::string, Event_type> m_events;
@@ -222,9 +219,6 @@ protected:
 	void parse_datasets_tree(Context& ctx, PC_tree_t datasets_tree_list);
 	void parse_layouts_tree(Context& ctx, PC_tree_t layouts_tree_list);
 	void parse_storages_tree(Context& ctx, PC_tree_t storages_tree_list);
-	void parse_meshes_tree(Context& ctx, PC_tree_t meshes_tree_list);
-	void parse_paraview_tree(Context& ctx, PC_tree_t paraview_tree);
-	void parse_pyscript_tree(Context& ctx, PC_tree_t pyscript_tree);
 	void parse_write_tree(Context& ctx, PC_tree_t write_tree_list);
 	void parse_parameter_to_update_tree(Context& ctx, PC_tree_t ptu_tree_list, Desc_type op_type);
 	void parse_log_tree(Context& ctx, PC_tree_t config);
@@ -233,17 +227,6 @@ protected:
 	{
 		m_xml_config_object = XML_CONFIG_TEMPLATE;
 		damarisXMLModifyModel = damaris::model::ModifyModel(m_xml_config_object);
-
-		/*
-    m_init_on_event = "";
-    m_start_on_event = "";
-    m_stop_on_event = "";
-    m_end_iteration_on_event = "";
-    m_finalize_on_event = "";
-
-    m_paraview = NULL;
-    m_pyscript = NULL;
-    */
 	}
 
 
@@ -259,7 +242,6 @@ public:
 	const std::unordered_map<std::string, damaris::model::DamarisParameterXML>& parameters() const;
 	const damaris::model::DamarisParameterXML get_parameter_xml(string prm_name) const;
 	const std::unordered_map<std::string, damaris::model::DamarisStoreXML>& storages() const;
-	const std::unordered_map<std::string, damaris::model::DamarisMeshXML>& meshes() const;
 	const std::unordered_map<std::string, damaris::model::DamarisGroupXML>& groups() const;
 
 	const std::unordered_map<std::string, Desc_type>& descs() const;
