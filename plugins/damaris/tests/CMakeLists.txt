@@ -1,6 +1,6 @@
 #=============================================================================
-# Copyright (C) 2015-2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
-# Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
+# Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 National Institute for Research in Digital Science and Technology (Inria)
 #
 # All rights reserved.
 #
@@ -30,24 +30,24 @@
 
 cmake_minimum_required(VERSION 3.16...3.29)
 
-set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
+# set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
 
-# Add the plugin path to PDI_PLUGIN_PATH
-set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
-file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
-     CONTENT "
-set(PDI_PLUGIN_PATH \"\$ENV{PDI_PLUGIN_PATH}\")\n
-if(\"x\${PDI_PLUGIN_PATH}x\" STREQUAL xx)\n
-set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_damaris_plugin>\")\n
-else()\n
-set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_damaris_plugin>:\${PDI_PLUGIN_PATH}\")\n
-endif()
-"
-)
+# # Add the plugin path to PDI_PLUGIN_PATH
+# set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
+# file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
+#      CONTENT "
+# set(PDI_PLUGIN_PATH \"\$ENV{PDI_PLUGIN_PATH}\")\n
+# if(\"x\${PDI_PLUGIN_PATH}x\" STREQUAL xx)\n
+# set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_damaris_plugin>\")\n
+# else()\n
+# set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_damaris_plugin>:\${PDI_PLUGIN_PATH}\")\n
+# endif()
+# "
+# )
 
-# Damaris plugin test
-add_executable(damaris_mpi_test_01 damaris_mpi_test_01.c)
-target_link_libraries(damaris_mpi_test_01 damaris MPI::MPI_C MPI::MPI_CXX)
-add_test(NAME damaris_mpi_test_01 COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:damaris_mpi_test_01>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/damaris_mpi_test_01.yml")
-set_property(TEST damaris_mpi_test_01 PROPERTY PROCESSORS 1)
+## used ctest in next commit
 
+# copy yaml file, to binary folder, for example_damaris_plugin_with_is_client.c
+configure_file(test_damaris_scalar_type.yml test_damaris_scalar_type.yml)
+add_executable (test_damaris_scalar_type test_damaris_scalar_type.c)
+target_link_libraries (test_damaris_scalar_type PDI::PDI_C MPI::MPI_CXX)
