@@ -49,7 +49,7 @@ and this project adheres to
 #### Added
 
 #### Changed
-  
+
 #### Deprecated
 
 #### Removed
