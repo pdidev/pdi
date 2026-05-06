@@ -84,8 +84,7 @@ int read_checkpoint(PDI::Context& ctx, std::string label, int version)
 			ctx.logger().error("Error during restart. Aborting.");
 			exit(2);
 		}
-	}
-	else{
+	} else {
 		ctx.logger().error("No previous checkpoint found for restarting");
 		exit(2);
 	}
@@ -100,8 +99,7 @@ void init_restart(PDI::Context& ctx, std::string label, int version)
 		if (VELOC_Restart_begin(label.c_str(), target) != VELOC_SUCCESS) {
 			ctx.logger().error("Error when initiating the restart phase.");
 		}
-	}
-	else{
+	} else {
 		ctx.logger().error("No previous checkpoint found for restarting");
 		exit(2);
 	}

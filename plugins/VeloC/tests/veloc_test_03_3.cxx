@@ -106,8 +106,7 @@ int main(int argc, char* argv[])
 	}
 
 	if (read_var != expected_var) {
-		std::cerr << "TEST_03_3 FAILED: dataset value " << read_var
-		          << " does not match expected value " << expected_var << std::endl;
+		std::cerr << "TEST_03_3 FAILED: dataset value " << read_var << " does not match expected value " << expected_var << std::endl;
 		H5Dclose(dset_id);
 		H5Fclose(file_id);
 		exit(1);

@@ -22,7 +22,6 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <pdi/plugin.h>
 #include <pdi/context.h>
 #include <pdi/expression.h>
 #include <pdi/plugin.h>
@@ -131,9 +130,7 @@ class veloc_plugin: public Plugin
 				size_t n = 1;
 				size_t bytes = type->datasize();
 
-				if (auto* array_type =
-				    dynamic_cast<const PDI::Array_datatype*>(type.get()))
-				{
+				if (auto* array_type = dynamic_cast<const PDI::Array_datatype*>(type.get())) {
 					n = array_type->subsize();
 				}
 
@@ -182,115 +179,132 @@ public:
 			} else {
 				throw Error{PDI_ERR_IMPL, "Unexpected Desc Type"};
 			}
-		} // data call backs 
+		} // data call backs
 
-		for (auto&& event: m_config.events()) { 
+		for (auto&& event: m_config.events()) {
 			switch (event.second) {
-				case Event_type::CHECKPOINT: {
-					context().callbacks().add_event_callback([this](const string& event_name) {
-						if(!status){
+			case Event_type::CHECKPOINT: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
+						if (!status) {
 							context().logger().warn("A checkpoint event was launched before a recovery event");
 						}
-						if (m_config.managed().when.to_long(context())){
-							protect_all_for_read(); 
+						if (m_config.managed().when.to_long(context())) {
+							protect_all_for_read();
 							Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 							auto new_iter = new_iter_r.scalar_value<int>();
-							if(new_iter!= recovered_iter){  
-								write_checkpoint(context(), m_config.label(), new_iter); 
-								cp_counter++; 
+							if (new_iter != recovered_iter) {
+								write_checkpoint(context(), m_config.label(), new_iter);
+								cp_counter++;
 							}
 							unprotect_all();
 						}
 					},
-					event.first);
-				} break;
-				case Event_type::RECOVER: {
-					context().callbacks().add_event_callback([this](const string& event_name) {
+					event.first
+				);
+			} break;
+			case Event_type::RECOVER: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
 						protect_all_for_write();
-						int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint); 
+						int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
 						recovered_iter = result;
-						status = 1; 
+						status = 1;
 						unprotect_all();
 					},
-					event.first);
-				} break;
-				case Event_type::STATE_SYNC: {
-					context().callbacks().add_event_callback([this](const string& event_name) {
+					event.first
+				);
+			} break;
+			case Event_type::STATE_SYNC: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
 						if (!status) { // recovery needed
 							protect_all_for_write();
-							int result = read_checkpoint(context(), m_config.label(),m_config.managed().requested_checkpoint); 
+							int result = read_checkpoint(context(), m_config.label(), m_config.managed().requested_checkpoint);
 							recovered_iter = result;
-							status = 1; 
+							status = 1;
 							unprotect_all();
-						} 
-						else if(status) { // recovery not needed 
-							if (m_config.managed().when.to_long(context())){
-								protect_all_for_read(); 
+						} else if (status) { // recovery not needed
+							if (m_config.managed().when.to_long(context())) {
+								protect_all_for_read();
 								Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 								auto new_iter = new_iter_r.scalar_value<int>();
-								if(new_iter!= recovered_iter){  
-									write_checkpoint(context(), m_config.label(), new_iter); 
-									cp_counter++; 
+								if (new_iter != recovered_iter) {
+									write_checkpoint(context(), m_config.label(), new_iter);
+									cp_counter++;
 								}
 								unprotect_all();
 							}
 						}
 					},
-					event.first);
-				} break;
-				case Event_type::START_CHECKPOINT: {
-					context().callbacks().add_event_callback([this](const string& event_name) {
+					event.first
+				);
+			} break;
+			case Event_type::START_CHECKPOINT: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
 						Ref_r new_iter_r = context().desc(m_config.iter_name()).ref();
 						auto new_iter = new_iter_r.scalar_value<int>();
 						init_checkpoint(context(), m_config.label(), new_iter);
 					},
-					event.first);
-				}break;
-				case Event_type::START_RECOVERY: {
-					context().callbacks().add_event_callback([this](const string& event_name) {
+					event.first
+				);
+			} break;
+			case Event_type::START_RECOVERY: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
 						init_restart(context(), m_config.label(), m_config.custom().manual_rec.requested_checkpoint);
 					},
-					event.first);
-				}break;
-				case Event_type::ROUTE_FILE_FOR_CP: {
-				context().callbacks().add_event_callback([this](const string& event_name) {
-					Ref_w wref = context().desc(m_config.custom().routed_file).ref(); 
-					if (wref) {
-						char* routed_chars = static_cast<char*>(wref.get()); 
-						route_file(context(),m_config.manual_cp().original_file, routed_chars);
-					}
-				},
-				event.first);
-				} break;
-				case Event_type::ROUTE_FILE_FOR_REC: {
-				context().callbacks().add_event_callback([this](const string& event_name) {
-					Ref_w wref = context().desc(m_config.custom().routed_file).ref();
-					if (wref) {
-						char* routed_chars = static_cast<char*>(wref.get()); 
-						route_file(context(),m_config.manual_rec().original_file, routed_chars);
-					}
-				},
-				event.first);
-				} break;
-				case Event_type::END_CHECKPOINT: {
-					context().callbacks().add_event_callback([this](const string& event_name) {
+					event.first
+				);
+			} break;
+			case Event_type::ROUTE_FILE_FOR_CP: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
+						Ref_w wref = context().desc(m_config.custom().routed_file).ref();
+						if (wref) {
+							char* routed_chars = static_cast<char*>(wref.get());
+							route_file(context(), m_config.manual_cp().original_file, routed_chars);
+						}
+					},
+					event.first
+				);
+			} break;
+			case Event_type::ROUTE_FILE_FOR_REC: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
+						Ref_w wref = context().desc(m_config.custom().routed_file).ref();
+						if (wref) {
+							char* routed_chars = static_cast<char*>(wref.get());
+							route_file(context(), m_config.manual_rec().original_file, routed_chars);
+						}
+					},
+					event.first
+				);
+			} break;
+			case Event_type::END_CHECKPOINT: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
 						end_checkpoint(context());
 						unprotect_all();
 					},
-					event.first);
-				}break;
-				case Event_type::END_RECOVERY: {
-					context().callbacks().add_event_callback([this](const string& event_name) {
+					event.first
+				);
+			} break;
+			case Event_type::END_RECOVERY: {
+				context().callbacks().add_event_callback(
+					[this](const string& event_name) {
 						end_restart(context());
 						unprotect_all();
 					},
-					event.first);
-				}break;
-				default:
-					throw Error{PDI_ERR_IMPL, "Unexpected event type"};
+					event.first
+				);
+			} break;
+			default:
+				throw Error{PDI_ERR_IMPL, "Unexpected event type"};
 			}
 		} // event call backs
-    }
+	}
 
 	~veloc_plugin()
 	{
