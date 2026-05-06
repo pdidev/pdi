@@ -77,9 +77,7 @@ option(BUILD_TRACE_PLUGIN       "Build Trace plugin" ON)
 option(BUILD_USER_CODE_PLUGIN   "Build User-code plugin" ON)
 option(BUILD_JSON_PLUGIN        "Build JSON plugin" OFF)
 option(ENABLE_BENCHMARKING      "Activate benchmarks in the test suite" OFF)
-option(BUILD_DAMARIS_PLUGIN   	"Build Damaris plug-in" ON)
-
-
+option(BUILD_DAMARIS_PLUGIN   	"Build Damaris plug-in" OFF)
 
 
 ### Default build type
