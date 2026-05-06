@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2026 National Institute for Research in Digital Science and Technology (Inria)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -164,7 +165,7 @@ int main(int argc, char* argv[])
 	MPI_Comm main_comm = MPI_COMM_WORLD;
 	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-	if (world_size < 4) {
+	if (world_size != 4) {
 		fprintf(stderr, "Please use at least 4 mpi processes\n");
 		exit(1);
 	}
@@ -258,7 +259,6 @@ int main(int argc, char* argv[])
 			// 	next_reduce = ii + rem_iter;
 			// 	if (0 == pcoord_1d) printf("iter=%7d; time=%7.3f; next_reduce=%7d\n", ii, global_time, next_reduce);
 			// }
-			//PDI_event("damaris_end_iteration");
 		}
 		PDI_expose("iter", &ii, PDI_OUT);
 		PDI_expose("main_field", cur, PDI_OUT);
