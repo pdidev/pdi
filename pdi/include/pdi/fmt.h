@@ -33,13 +33,9 @@
 #endif
 #include <spdlog/fmt/bundled/core.h>
 #include <spdlog/fmt/bundled/format.h>
-#if FMT_VERSION >= 110000
 #include <spdlog/fmt/bundled/ranges.h>
-#endif
 #else // SPDLOG_FMT_EXTERNAL is defined - use external fmtlib
 #include <fmt/core.h>
 #include <fmt/format.h>
-#if FMT_VERSION >= 110000
 #include <fmt/ranges.h>
-#endif
 #endif
