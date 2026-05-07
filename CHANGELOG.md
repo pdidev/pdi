@@ -7,6 +7,7 @@ and this project adheres to
 
 
 
+
 ## [1.11.1] - Unreleased
 
 ### For users
@@ -22,6 +23,8 @@ and this project adheres to
 #### Fixed
 * Do not fail building the documentation when Fortran support is disabled, to
   fix [#690](https://github.com/pdidev/pdi/issues/690)
+* Updated the embedded version of zpp to fix an issue with Fortran on MacOSX,
+  part of [#688](https://github.com/pdidev/pdi/issues/688)
 
 #### Security
 
