@@ -1,0 +1,23 @@
+include:
+  - test_09_array_data.yml
+  - test_09_record_data.yml
+
+logging: trace
+metadata:
+  input: int
+data:
+  scalar_data: int
+
+plugins:
+  serialize:
+    scalar_data: scalar_data_serialized
+    scalar_subdata: scalar_subdata_serialized
+    array_data: array_data_serialized
+    record_data: record_data_serialized
+  decl_hdf5:
+    - file: test_09.h5
+      when: $input=0
+      write: [scalar_data_serialized, scalar_subdata_serialized, array_data_serialized, record_data_serialized]
+    - file: test_09.h5
+      when: $input=1
+      read: [scalar_data_serialized, scalar_subdata_serialized, array_data_serialized, record_data_serialized]

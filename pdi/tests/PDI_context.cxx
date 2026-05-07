@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
- * Copyright (C) 2024 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2024-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -297,4 +297,58 @@ TEST_F(ContextTest, iterator_operator_equal_equal)
 
 		ASSERT_EQ(counter_false, 2);
 	}
+}
+
+/*
+ * Name:                ContextTest.check_duplicate
+ *
+ * Tested functions:    PDI::Context::check_duplicate
+ *
+ * Description:         Checks if duplicate definitions 
+ *                      throw System_error.
+ */
+TEST_F(ContextTest, check_duplicate)
+{
+	PC_tree_t conf_a = PC_parse_string("variable_A: int");
+	PC_tree_t conf_b = PC_parse_string("variable_B: int\nvariable_C: int");
+
+	auto* ctx = static_cast<Global_context*>(this->test_context.get());
+
+	// Test 1: First definition should succeed
+	ASSERT_NO_THROW(ctx->make_and_check_descriptor(PC_get(conf_a, "{0}")));
+
+	// Test 2: Redefining the same name should throw Spectree_error
+	EXPECT_THROW(ctx->make_and_check_descriptor(PC_get(conf_a, "{0}")), Spectree_error);
+
+	// Test 3: Different names should both succeed
+	ASSERT_NO_THROW(ctx->make_and_check_descriptor(PC_get(conf_b, "{0}"))); // variable_B
+	ASSERT_NO_THROW(ctx->make_and_check_descriptor(PC_get(conf_b, "{1}"))); // variable_C
+
+	PC_tree_destroy(&conf_a);
+	PC_tree_destroy(&conf_b);
+}
+
+/*
+ * Name:                ContextTest.load_pdi_config_duplicate_data_via_inclusion
+ *
+ * Tested functions:    PDI::load_pdi_config (recursive inclusion), through multiple PC_parse_string
+ *
+ * Description:         Checks if including Paraconf trees with duplicate data fields
+ *                      throws System_error (simulates test_07.yml and test_07_data.yml).
+ */
+TEST_F(ContextTest, load_pdi_config_duplicate_data_via_inclusion)
+{
+	PC_tree_t main_conf = PC_parse_string("data: {scalar_data: int}");
+	PC_tree_t included_conf = PC_parse_string("data: {scalar_data: double}");
+
+	auto* ctx = static_cast<Global_context*>(this->test_context.get());
+
+	// Test 1: Defining a variable is not an issue
+	ASSERT_NO_THROW(ctx->load_pdi_config(main_conf));
+
+	// Test 2: Defining the same variable again in a second load is an issue and should throw System_error
+	EXPECT_THROW(ctx->load_pdi_config(included_conf), Spectree_error);
+
+	PC_tree_destroy(&main_conf);
+	PC_tree_destroy(&included_conf);
 }

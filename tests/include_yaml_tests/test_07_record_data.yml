@@ -1,0 +1,12 @@
+data:
+  record_data:
+    type: record
+    buffersize: 16
+    members:
+      a:
+        disp: 0
+        type: int
+      b:
+        disp: 8
+        type: pointer
+        subtype: int

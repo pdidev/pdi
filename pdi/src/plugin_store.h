@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (C) 2018 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
- * Copyright (C) 2020 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2020-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,10 +124,16 @@ public:
 	 * \param conf the configuration specifying the plugin path & list of plugins to load
 	 */
 	Plugin_store(Context& ctx, PC_tree_t conf);
+	// Plugin_store(Context& ctx);
 
 	/** Actually load the plugins
 	 */
 	void load_plugins();
+
+	/** Register plugins from an additional config node (e.g. an included file)
+	 *  Actual loading still happens in load_plugins()
+	 */
+	void register_plugins(PC_tree_t conf);
 };
 
 } // namespace PDI

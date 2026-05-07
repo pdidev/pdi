@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2015-2025 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+ * Copyright (C) 2015-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
  * Copyright (C) 2021 Institute of Bioorganic Chemistry Polish Academy of Science (PSNC)
  * All rights reserved.
  *
@@ -26,12 +26,14 @@
 #ifndef PDI_GLOBAL_CONTEXT_H_
 #define PDI_GLOBAL_CONTEXT_H_
 
+#include <filesystem>
 #include <list>
 #include <map>
 #include <memory>
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "pdi/pdi_fwd.h"
 #include "pdi/callbacks.h"
@@ -126,6 +128,11 @@ public:
 	Callbacks& callbacks() override;
 
 	void finalize_and_exit() override;
+
+	void load_pdi_config(PC_tree_t conf);
+
+	/// Creates a descriptor for `key_node`, throwing Spectree_error if already defined.
+	Data_descriptor& make_and_check_descriptor(PC_tree_t key_node);
 
 	~Global_context() override;
 };

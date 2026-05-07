@@ -1,0 +1,26 @@
+include:
+  - test_11_serialize_plugin.yml
+  - test_11_hdf5_plugin.yml
+
+logging: trace
+metadata:
+  input: int
+data:
+  scalar_data: int
+  array_data:
+    type: array
+    subtype: int
+    size: 8
+    subsize: 4
+    start: 2
+  record_data:
+    type: record
+    buffersize: 16
+    members:
+      a:
+        disp: 0
+        type: int
+      b:
+        disp: 8
+        type: pointer
+        subtype: int
