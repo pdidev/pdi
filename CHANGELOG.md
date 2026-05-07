@@ -22,6 +22,8 @@ and this project adheres to
   different kind happen
 * `PDI_STATUS_MSG` has been added to offer an english description of error
   codes.
+* Added support for MacOS and fixed all CI issues on MacOS, fix
+  [#688](https://github.com/pdidev/pdi/issues/688)
 
 #### Changed
 
