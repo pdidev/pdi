@@ -59,10 +59,13 @@ class PDI_EXPORT Data_descriptor_impl: public Data_descriptor
 
 	bool m_metadata;
 
+	PC_tree_t m_source_node; ///< YAML key node of the first definition, for duplicate error reporting
 
 	/** Create an empty descriptor
 	 */
 	Data_descriptor_impl(Global_context& ctx, const char* name);
+
+	Data_descriptor_impl(Global_context& ctx, const char* name, PC_tree_t source_node);
 
 	Data_descriptor_impl(const Data_descriptor_impl&) = delete;
 

@@ -1,0 +1,11 @@
+include:
+  - test_11_subdata.yml
+
+plugins:
+  decl_hdf5:
+    - file: test_11.h5
+      when: $input=0
+      write: [scalar_data_serialized, scalar_subdata_serialized, array_data_serialized, record_data_serialized]
+    - file: test_11.h5
+      when: $input=1
+      read: [scalar_data_serialized, scalar_subdata_serialized, array_data_serialized, record_data_serialized]
