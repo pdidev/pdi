@@ -1,9 +1,9 @@
 ##############################################################################
-# SPDX-FileCopyrightText: 2014-2024 Centre national de la recherche scientifique (CNRS)
-# SPDX-FileCopyrightText: 2014-2024 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
-# SPDX-FileCopyrightText: 2014-2024 Julien Bigot <julien.bigot@cea.fr>
-# SPDX-FileCopyrightText: 2014-2024 Université Paris-Saclay
-# SPDX-FileCopyrightText: 2014-2024 Université de Versailles Saint-Quentin-en-Yvelines
+# SPDX-FileCopyrightText: 2014-2026 Centre national de la recherche scientifique (CNRS)
+# SPDX-FileCopyrightText: 2014-2026 Commissariat a l'énergie atomique et aux énergies alternatives (CEA)
+# SPDX-FileCopyrightText: 2014-2026 Julien Bigot <julien.bigot@cea.fr>
+# SPDX-FileCopyrightText: 2014-2026 Université Paris-Saclay
+# SPDX-FileCopyrightText: 2014-2026 Université de Versailles Saint-Quentin-en-Yvelines
 #
 # SPDX-License-Identifier: MIT
 ##############################################################################
@@ -162,12 +162,11 @@ def main():
     (input, output, includes, defines, verbose) = parse_cmdline()
     tmpdir = setup_dir(includes)
     try:
-        print(str(tmpdir), str(input), str(defines), str(output))
         handle_file(tmpdir, input, defines, output)
     except Exception as e:
         print(e, file=stderr)
         if verbose:
-            print(str(e),format_exc(e), file=stderr)
+            print(str(e), format_exc(e), file=stderr)
         result = -1
     finally:
         rmtree(tmpdir)

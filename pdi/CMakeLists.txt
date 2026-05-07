@@ -106,7 +106,7 @@ if("${BUILD_PYTHON}")
 	find_package(pybind11 "${PDI_REQUIRED_PYBIND11_VERSION}" REQUIRED)
 endif()
 if("${BUILD_FORTRAN}" OR "${BUILD_DOCUMENTATION}")
-	add_subdirectory("../vendor/zpp-1.1.0/" "zpp")
+	add_subdirectory("../vendor/zpp-1.1.2/" "zpp")
 endif()
 
 
