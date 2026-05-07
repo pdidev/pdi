@@ -9,28 +9,34 @@ The *specification tree root* is a **mapping** that contains the following keys:
 
 |key|value|
 |:--|:----|
-|`"types"` (*optional*)|a \ref types_map_node|
-|`"data"` (*optional*)|a \ref data_map_node|
-|`"metadata"` (*optional*)|a \ref data_map_node|
-|`"plugins"` (*optional*)|a \ref plugin_map_node|
+|`"include"` (*optional*)|a \ref include_node|
 |`"logging"` (*optional*)|a \ref logging_node|
+|`"metadata"` (*optional*)|a \ref data_map_node|
+|`"data"` (*optional*)|a \ref data_map_node|
+|`"plugins"` (*optional*)|a \ref plugin_map_node|
 |`"plugin_path"` (*optional*)|a \ref plugin_path_map_node|
+|`"types"` (*optional*)|a \ref types_map_node|
 |`".*"` (*optional*)| *anything* |
 
-* the `types` section specifies user-defined datatypes
-* the `data` and `metadata` sections specify the type of the data in buffers
+* the `include` section specify other YAML configuration part of a same
+  Paraconf tree
+* the `logging` section specify logger properties
+* the `metadata` and `data` sections specify the type of the data in buffers
   exposed by the application; for `metadata`, %PDI keeps a copy while it only
   keeps references for `data`,
 * the `plugins` section specifies the list of plugins to load and their
   configuration,
 * the `plugin_path` section specifies the path to a directory where %PDI should
   search for plugins
-* the `logging` section specify logger properties
+* the `types` section specifies user-defined datatypes
 * additional sections are ignored.
 
 ### Example:
 
 ```{.python}
+include:
+  - my_other_configuration_file.yml
+logging: trace
 metadata:
   my_metadata: int
 data:
@@ -41,6 +47,116 @@ data:
 plugins:
   decl_hdf5: #...
   mpi: #...
+```
+
+## include {#include_node}
+
+An *include* is a sequence of scalars, each scalar representing a path to
+a \subpage YAML configuration file. 
+
+An *include* is fully supported in both the root YAML configuration and
+further included YAML configuration.
+
+Examples:
+
+```yaml
+include: /<full>/<path>/<to>/subfile.yml
+```
+Paraconf 1.1+ also enables relative path :
+```yaml
+include: subfile.yml
+```
+
+* entirely optional, without default value
+
+
+## logging {#logging_node}
+
+A *logging* can be **any of**:
+* a \ref logging_map_node,
+* a \ref logging_level_node,
+
+A *logging* is fully supported in \ref root_node and
+any \ref plugin_map_node "plugin_map_node".
+
+
+## logging_level {#logging_level_node}
+
+A *logging_level* is a scalar which determines verbosity level. It can be set to 
+  (from the most to the least verbose): 
+* `"debug"` - shows a log when a normal situation of the execution might be
+  useful to understand the behavior of the library,
+* `"info"` - shows a log when a normal situation of the execution is likely
+  useful to understand the behavior of the library,
+* `"warn"` - shows a log when a very likely invalid situation has been detected
+  by the library (user input that is technically valid, but very unusual for
+  example),
+* `"error"` - shows a log when an invalid situation has been detected by the
+  library (invalid user input, invalid hardware behaviour, etc.),
+* `"off"` - logs are disabled.
+
+Example:
+
+```yaml
+logging: "debug"
+```
+
+* by default `level` is set to `info`
+
+
+## logging_map {#logging_map_node}
+
+A *logging_map* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"level"`  (*optional*)|a \ref logging_level_node|
+|`"pattern"` (*optional*)|a logger prefix pattern of spdlog|
+|`"output"` (*optional*)|a \ref logging_output_map_node|
+
+* spdlog pattern is a string that is parsed by spdlog library,
+  (see more: https://github.com/gabime/spdlog/wiki/3.-Custom-formatting)
+* %PDI introduces new special flag `%{<EXPR>}`, where `<EXPR>` represents a
+  \ref expression_node "string-valued $-expression"|a $-expression that will be
+  evaluated just after all plugins have been initialized,
+* *pattern* by default is set to (where %n is `PDI` or a plugin name):
+  ```
+  [%T][%n] *** %^%l%$: %v
+  ```
+  for serial execution and:
+  ```
+  [%T][%{MPI_COMM_WORLD.rank:06d}][%n] *** %^%l%$: %v
+  ```
+  when running application with MPI/
+
+Example:
+
+```yaml
+logging:
+  level: "debug"
+  pattern: "[%{MPI_COMM_WORLD.rank:04d}][%n][%l]"
+```
+
+
+## logging_output_map {#logging_output_map_node}
+
+A *logging_output_map* is a **mapping** that contains the following keys:
+
+|key|value|
+|:--|:----|
+|`"file"`  (*optional*)|a path of the file where to write logs|
+|`"console"` (*optional*)|`on` or `off`|
+
+* by default when `file` is defined, `console` is set to `off`.
+
+Example:
+
+```yaml
+logging:
+  level: "debug"
+  output:
+    file: "test.log"
+    console: "on"
 ```
 
 
@@ -772,115 +888,6 @@ It accepts no parameter.
 ```{.python}
 type: intptr
 ```
-
-
-## logging {#logging_node}
-
-A *logging* can be **any of**:
-* a \ref logging_map_node,
-* a \ref logging_level_node,
-
-A *logging* is fully supported in \ref root_node and any \ref plugin_map_node .
-
-
-## logging_level {#logging_level_node}
-
-A *logging_level* is a scalar which determines verbosity level. It can be set to 
-  (from the most to the least verbose): 
-* `"debug"` - shows a log when a normal situation of the execution might be
-  useful to understand the behavior of the library,
-* `"info"` - shows a log when a normal situation of the execution is likely
-  useful to understand the behavior of the library,
-* `"warn"` - shows a log when a very likely invalid situation has been detected
-  by the library (user input that is technically valid, but very unusual for
-  example),
-* `"error"` - shows a log when an invalid situation has been detected by the
-  library (invalid user input, invalid hardware behaviour, etc.),
-* `"off"` - logs are disabled.
-
-Examples:
-
-```yaml
-logging: "debug"
-```
-
-* by default `level` is set to `info`
-
-
-## logging_map {#logging_map_node}
-
-A *logging_map* is a **mapping** that contains the following keys:
-
-|key|value|
-|:--|:----|
-|`"level"`  (*optional*)|a \ref logging_level_node|
-|`"pattern"` (*optional*)|a logger prefix pattern of spdlog|
-|`"output"` (*optional*)|a \ref logging_output_map_node|
-
-* spdlog pattern is a string that is parsed by spdlog library,
-  (see more: https://github.com/gabime/spdlog/wiki/3.-Custom-formatting)
-* %PDI introduces new special flag `%{<EXPR>}`, where `<EXPR>` represents a
-  \ref expression_node "string-valued $-expression"|a $-expression that will be
-  evaluated just after all plugins have been initialized,
-* *pattern* by default is set to (where %n is `PDI` or a plugin name):
-  ```
-  [%T][%n] *** %^%l%$: %v
-  ```
-  for serial execution and:
-  ```
-  [%T][%{MPI_COMM_WORLD.rank:06d}][%n] *** %^%l%$: %v
-  ```
-  when running application with MPI/
-
-Example:
-
-```yaml
-logging:
-  level: "debug"
-  pattern: "[%{MPI_COMM_WORLD.rank:04d}][%n][%l]"
-```
-
-
-## logging_output_map {#logging_output_map_node}
-
-A *logging_output_map* is a **mapping** that contains the following keys:
-
-|key|value|
-|:--|:----|
-|`"file"`  (*optional*)|a path of the file where to write logs|
-|`"console"` (*optional*)|`on` or `off`|
-
-* by default when `file` is defined, `console` is set to `off`.
-
-Example:
-
-```yaml
-logging:
-  level: "debug"
-  output:
-    file: "test.log"
-    console: "on"
-```
-
-### Example:
-
-```{.python}
-type: struct
-members:
-  - my_char: char
-```
-
-```{.python}
-type: struct
-members:
-  - my_long: int64
-  - my_array:
-      type: array
-      subtype: int64
-      size: [10, 10]
-```
-
-See \ref struct_type_node for more examples.
 
 
 ## logical_type {#logical_type_node}
