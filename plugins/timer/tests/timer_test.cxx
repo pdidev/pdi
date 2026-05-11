@@ -110,14 +110,14 @@ int main(int argc, char* argv[])
 
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
-	
+
 	PDI_init(conf);
 
 	int rank;
 	MPI_Comm_rank(world, &rank);
 	int size;
 	MPI_Comm_size(world, &size);
-	
+
 	PDI_expose("nproc", &size, PDI_OUT);
 
 	MPI_Cart_create(world, DIM, dims, periodic, 0, &comm2D);
@@ -166,5 +166,4 @@ int main(int argc, char* argv[])
 	PDI_finalize();
 	PC_tree_destroy(&conf);
 	MPI_Finalize();
-
 }
