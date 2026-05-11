@@ -42,7 +42,6 @@
 #include "pdi/paraconf_wrapper.h"
 #include "pdi/plugin.h"
 #include "pdi/ref_any.h"
-#include "pdi/timer.h"
 
 #include "global_context.h"
 
