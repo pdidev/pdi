@@ -102,12 +102,10 @@ private:
 			PC_tree_t timer_item = PC_get(spec_tree, "[%d]", i);
 			std::string timer_name = to_string(PC_get(timer_item, "{0}"));
 
-			ctx.logger().debug("Defined timer: {}", timer_name);
-
 			PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
 
 			if (is_map(val)) {
-				bool timer_well_defined = true;
+				ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
 				each(val, [&](PC_tree_t key_tree, PC_tree_t value) {
 					if (!PC_status(value)) {
 						std::string key = to_string(key_tree);
@@ -115,18 +113,17 @@ private:
 							auto st = to_string(value);
 							start_events[st].push_back(timer_name);
 							ctx.logger().debug("\t start_event = {}", st);
-							timer_well_defined = !timer_well_defined;
 						} else if (key == "stop") {
 							auto st = to_string(value);
 							ctx.logger().debug("\t stop_event = {}", st);
 							stop_events[st].push_back(timer_name);
-							timer_well_defined = !timer_well_defined;
 						}
 					} else {
 						throw Spectree_error{val, "Timer has no start and stop attributes"};
 					}
 				});
 			} else if (is_scalar(val)) {
+				ctx.logger().debug("Defined timer (scalar-styled): {}", timer_name);
 				auto st = to_string(val) + "_start_timer";
 				start_events[st].push_back(timer_name);
 				ctx.logger().debug("\t start_event = {}", st);
@@ -134,6 +131,7 @@ private:
 				stop_events[st].push_back(timer_name);
 				ctx.logger().debug("\t stop_event = {}", st);
 			} else if (is_list(val)) {
+				ctx.logger().debug("Defined timer (list-styled): {}", timer_name);
 				int size_list = len(val, 0);
 				for (int i = 0; i < size_list; i++) {
 					auto st = to_string(PC_get(val, "[%d]", i)) + "_start_timer";
