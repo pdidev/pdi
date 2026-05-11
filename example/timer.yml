@@ -16,6 +16,15 @@ pdi:
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
   timer: true
   plugins:
+    trace: debug
+    timer:
+      - timer_h5: "decl_hdf5"
+      - timer_nc:
+          start: "decl_netcdf_start_timer"
+          stop: "decl_netcdf_stop_timer"
+      - timer_python: [pycall, user_code]
+      - timer_json: {start: "json_start_timer", stop: "json_stop_timer"}
+      - timer_pdi: "pdi"
     mpi:
     decl_hdf5:
       file: data.h5

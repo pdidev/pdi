@@ -142,7 +142,7 @@ public:
 	/** Call the function that has been registered
 	 * \param ctx the PDI context for this trigger
 	 */
-	void call(Context& ctx, const std::string& name)
+	void call(Context& ctx)
 	{
 		// a python context we fill with exposed variables
 		pydict pyscope = pymod::import("__main__").attr("__dict__");
@@ -153,9 +153,9 @@ public:
 			alias.expose(ctx, pyscope);
 		}
 		try {
-			ctx.timer().startTimer(name);
+			ctx.event("pycall_start_timer");
 			pybind11::exec(m_code, pyscope);
-			ctx.timer().stopTimer(name);
+			ctx.event("pycall_stop_timer");
 		} catch (const std::exception& e) {
 			ctx.logger().error("while calling python, caught exception: {}", e.what());
 		} catch (...) {
@@ -192,7 +192,7 @@ struct pycall_plugin: Plugin {
 				ctx.callbacks().add_event_callback(
 					[&ctx, triggers](const std::string&) mutable {
 						for (auto&& trigger: triggers) {
-							trigger.call(ctx, pretty_name());
+							trigger.call(ctx);
 						}
 					},
 					to_string(PC_get(on_event, "{%d}", map_id))
@@ -200,7 +200,7 @@ struct pycall_plugin: Plugin {
 			} else {
 				Trigger event_trigger{to_string(PC_get(event, ".exec")), PC_get(event, ".with")};
 				ctx.callbacks().add_event_callback(
-					[&ctx, event_trigger](const std::string&) mutable { event_trigger.call(ctx, pretty_name()); },
+					[&ctx, event_trigger](const std::string&) mutable { event_trigger.call(ctx); },
 					to_string(PC_get(on_event, "{%d}", map_id))
 				);
 			}
@@ -213,7 +213,7 @@ struct pycall_plugin: Plugin {
 			string data_name = to_string(PC_get(on_data, "{%d}", map_id));
 			Trigger data_trigger{to_string(PC_get(on_data, "<%d>", map_id)), data_name};
 			ctx.callbacks().add_data_callback(
-				[&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx, pretty_name()); },
+				[&ctx, data_trigger](const std::string&, Ref) mutable { data_trigger.call(ctx); },
 				data_name
 			);
 		}

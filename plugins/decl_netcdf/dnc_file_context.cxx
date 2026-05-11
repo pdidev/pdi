@@ -212,7 +212,7 @@ Dnc_variable* Dnc_file_context::variable(const std::string& desc_name, const std
 
 void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 {
-	m_ctx.timer().startTimer(pretty_name());
+	m_ctx.event("decl_netcdf_start_timer");
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder; // memory for Variables created from descriptor
 
@@ -277,12 +277,12 @@ void Dnc_file_context::execute(const std::string& desc_name, PDI::Ref ref)
 			nc_file.get_sizeof_variable(size_it->first, dataset_name, ref);
 		}
 	}
-	m_ctx.timer().stopTimer(pretty_name());
+	m_ctx.event("decl_netcdf_stop_timer");
 }
 
 void Dnc_file_context::execute()
 {
-	m_ctx.timer().startTimer(pretty_name());
+	m_ctx.event("decl_netcdf_start_timer");
 	if (m_when.to_long(m_ctx)) {
 		std::list<Dnc_variable> variables_holder;
 		std::vector<Dnc_variable*> variables_to_get;
@@ -357,7 +357,7 @@ void Dnc_file_context::execute()
 			i++;
 		}
 	}
-	m_ctx.timer().stopTimer(pretty_name());
+	m_ctx.event("decl_netcdf_stop_timer");
 }
 
 } // namespace decl_netcdf

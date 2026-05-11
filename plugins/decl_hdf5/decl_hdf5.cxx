@@ -114,22 +114,20 @@ public:
 
 	void data(const std::string& name, Ref ref)
 	{
-		context().timer().startTimer(pretty_name());
+		context().event("decl_hdf5_start_timer");
 		Hdf5_error_handler _;
 		for (auto&& op: m_data[name]) {
 			op.execute(context());
 		}
-		context().timer().stopTimer(pretty_name());
+		context().event("decl_hdf5_stop_timer");
 	}
 
 	void event(const std::string& event)
 	{
-		context().timer().startTimer(pretty_name());
 		Hdf5_error_handler _;
 		for (auto&& op: m_events[event]) {
 			op.execute(context());
 		}
-		context().timer().stopTimer(pretty_name());
 	}
 
 	/** Pretty name for the plugin that will be shown in the logger

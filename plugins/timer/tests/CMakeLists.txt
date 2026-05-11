@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2023-2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
+# Copyright (C) 2026 Commissariat a l'energie atomique et aux energies alternatives (CEA)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -16,33 +16,32 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLEq FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #=============================================================================
 
 cmake_minimum_required(VERSION 3.22...4.2)
-project(pdi_timer_plugin LANGUAGES C CXX)
 
-# Includes
-include(CTest)
-include(GNUInstallDirs)
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
 
-# PDI
-find_package(PDI REQUIRED COMPONENTS plugins)
-
-# The plugin
-add_library(pdi_timer_plugin MODULE timer.cxx)
-target_link_libraries(pdi_timer_plugin PUBLIC PDI::PDI_plugins )
-
-# Installation
-set(INSTALL_PDIPLUGINDIR "${PDI_DEFAULT_PLUGINDIR}" CACHE PATH "PDI plugins (${PDI_DEFAULT_PLUGINDIR})")
-install(TARGETS pdi_timer_plugin
-		LIBRARY DESTINATION "${INSTALL_PDIPLUGINDIR}"
+file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
+     CONTENT "
+set(PDI_PLUGIN_PATH \"\$ENV{PDI_PLUGIN_PATH}\")\n
+if(\"x\${PDI_PLUGIN_PATH}x\" STREQUAL xx)\n
+set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_timer_plugin>\")\n
+else()\n
+set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_timer_plugin>:\${PDI_PLUGIN_PATH}\")\n
+endif()
+"
 )
 
-# Tests
-if("${BUILD_TESTING}")
-	add_subdirectory(tests/)
-endif()
+find_package(MPI REQUIRED)
+
+# 3. Set the C++ standard (using the variable from your matrix)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_executable(timer_test timer_test.cxx )
+target_link_libraries(timer_test PDI::PDI_C MPI::MPI_CXX)
