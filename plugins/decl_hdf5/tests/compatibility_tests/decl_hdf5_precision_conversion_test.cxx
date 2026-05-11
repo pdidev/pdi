@@ -85,8 +85,8 @@ plugins:
 	hid_t dataset_id = H5Dopen2(file_id, "/double_ds", H5P_DEFAULT);
 	hid_t type_id = H5Dget_type(dataset_id);
 	ASSERT_GE(file_id, 0);
-    ASSERT_GE(dataset_id, 0);
-    ASSERT_GE(type_id, 0);
+	ASSERT_GE(dataset_id, 0);
+	ASSERT_GE(type_id, 0);
 
 	EXPECT_GT(H5Tequal(type_id, H5T_IEEE_F64LE), 0);
 	std::array<std::array<double, N>, N> read_double_array;
@@ -104,9 +104,9 @@ plugins:
 	file_id = H5Fopen("d2f_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	dataset_id = H5Dopen2(file_id, "/float_ds", H5P_DEFAULT);
 	type_id = H5Dget_type(dataset_id);
-    ASSERT_GE(file_id, 0);
-    ASSERT_GE(dataset_id, 0);
-    ASSERT_GE(type_id, 0);
+	ASSERT_GE(file_id, 0);
+	ASSERT_GE(dataset_id, 0);
+	ASSERT_GE(type_id, 0);
 
 	EXPECT_GT(H5Tequal(type_id, H5T_IEEE_F32LE), 0);
 	std::array< std::array<float, N>, N > read_float_array;
@@ -131,8 +131,8 @@ plugins:
 	dataset_id = H5Dopen2(file_id, "/int_ds", H5P_DEFAULT);
 	type_id = H5Dget_type(dataset_id);
 	ASSERT_GE(file_id, 0);
-    ASSERT_GE(dataset_id, 0);
-    ASSERT_GE(type_id, 0);
+	ASSERT_GE(dataset_id, 0);
+	ASSERT_GE(type_id, 0);
 
 	EXPECT_GT(H5Tequal(type_id, H5T_STD_I32LE), 0);
 	std::array< std::array<int, N>, N > read_int_array;
