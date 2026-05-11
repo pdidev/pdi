@@ -33,7 +33,6 @@
 namespace {
 
 using namespace PDI;
-using Clock = std::chrono::high_resolution_clock;
 
 /** The timer plugin 
 */
@@ -41,7 +40,7 @@ class timer_plugin: public PDI::Plugin
 {
 	// Map of timer's name and timer's starting point
 	std::map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
-	
+
 	// Map of timer's name and timer's duration
 	std::map<std::string, double> accumulated_times;
 
