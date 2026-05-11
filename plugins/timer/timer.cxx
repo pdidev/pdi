@@ -23,7 +23,8 @@
  ******************************************************************************/
 
 #include <string>
-#include <unordered_map>
+#include <map>
+#include <chrono>
 
 #include <pdi/context.h>
 #include <pdi/logger.h>
@@ -38,8 +39,10 @@ using Clock = std::chrono::high_resolution_clock;
 */
 class timer_plugin: public PDI::Plugin
 {
-	// Map between data variables and a pair between condition and the output filenames
+	// Map of timer's name and timer's starting point
 	std::map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
+	
+	// Map of timer's name and timer's duration
 	std::map<std::string, double> accumulated_times;
 
 	// Map of start event, and different timers to be started
@@ -103,8 +106,9 @@ private:
 			std::string timer_name = to_string(PC_get(timer_item, "{0}"));
 
 			PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
-
 			if (is_map(val)) {
+				bool timer_start_defined = false;
+				bool timer_stop_defined = false;
 				ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
 				each(val, [&](PC_tree_t key_tree, PC_tree_t value) {
 					if (!PC_status(value)) {
@@ -113,15 +117,18 @@ private:
 							auto st = to_string(value);
 							start_events[st].push_back(timer_name);
 							ctx.logger().debug("\t start_event = {}", st);
+							timer_start_defined = true;
 						} else if (key == "stop") {
 							auto st = to_string(value);
 							ctx.logger().debug("\t stop_event = {}", st);
 							stop_events[st].push_back(timer_name);
+							timer_stop_defined = true;
 						}
-					} else {
-						throw Spectree_error{val, "Timer has no start and stop attributes"};
 					}
 				});
+				if (!timer_start_defined || !timer_stop_defined) {
+					throw Spectree_error{val, "Both start and stop attributs are mandatory for timer {}", timer_name};
+				}
 			} else if (is_scalar(val)) {
 				ctx.logger().debug("Defined timer (scalar-styled): {}", timer_name);
 				auto st = to_string(val) + "_start_timer";
