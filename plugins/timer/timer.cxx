@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-#include <string>
-#include <map>
 #include <chrono>
+#include <map>
+#include <string>
 
 #include <pdi/context.h>
 #include <pdi/logger.h>
