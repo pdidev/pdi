@@ -68,14 +68,14 @@ plugins:
         stop: "event_toto_stop_timer"
 
   decl_hdf5:
-    - file: subfiling_reals.h5
+    - file: output_reals.h5
       communicator: $MPI_COMM_WORLD
       datasets:
         reals: {type: array, subtype: double, size: [$njt, $nit]}
       write:
         reals:
           dataset_selection: {start: [$jstart, $istart]}
-    - file: subfiling_values.h5
+    - file: output_values.h5
       communicator: $MPI_COMM_WORLD
       datasets:
         values: {type: array, subtype: int, size: [$njt, $nit]}
@@ -106,26 +106,19 @@ int main(int argc, char* argv[])
 	dims[1] = 1;
 
 	int provided;
-	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+	MPI_Init(&argc, &argv);
 
-	if (provided != MPI_THREAD_MULTIPLE) {
-		printf("provided level = %d, required level = %d\n", provided, MPI_THREAD_MULTIPLE);
-		return -1;
-	}
 	PC_tree_t conf = PC_parse_string(CONFIG_YAML);
 	MPI_Comm world = MPI_COMM_WORLD;
+	
 	PDI_init(conf);
+
 	int rank;
 	MPI_Comm_rank(world, &rank);
-
 	int size;
 	MPI_Comm_size(world, &size);
-	if (size != 1) {
-		printf("Run on 1 procs only.");
-		MPI_Abort(MPI_COMM_WORLD, -1);
-	}
+	
 	PDI_expose("nproc", &size, PDI_OUT);
-
 
 	MPI_Cart_create(world, DIM, dims, periodic, 0, &comm2D);
 	MPI_Cart_coords(comm2D, rank, DIM, coord);
