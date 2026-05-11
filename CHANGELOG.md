@@ -13,6 +13,18 @@ and this project adheres to
 
 #### Added
 * Add tests for HDF5 precision conversion
+* Improved messages for specification tree errors, with file & line numbers and
+  support for file names from Paraconf 1.1,
+  [#657](https://github.com/pdidev/pdi/issues/657)
+* A new error code `PDI_ERR_INVALIDACTION` has been added when an action
+  requested in the yaml specification tree makes no sense (but the specification
+  tree is syntaxically correct)
+* A new error code `PDI_ERR_MULTIPLE` has been added when multiple errors of
+  different kind happen
+* `PDI_STATUS_MSG` has been added to offer an english description of error
+  codes.
+* Added support for MacOS and fixed all CI issues on MacOS, fix
+  [#688](https://github.com/pdidev/pdi/issues/688)
 
 #### Changed
 
@@ -21,6 +33,46 @@ and this project adheres to
 #### Removed
 
 #### Fixed
+* Migrate from `TYPED_TEST_CASE` to `TYPED_TEST_SUITE`, from `INSTANTIATE_TEST_CASE_P`
+  to `INSTANTIATE_TEST_SUITE_P` to resolve deprecation warnings.
+
+#### Security
+
+
+### For plugin developers
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+* `PDI::Error` is now an abstract class and should never be used directly.
+
+#### Fixed
+
+#### Security
+
+
+
+## [1.11.1] - Unreleased
+
+### For users
+
+#### Added
+
+#### Changed
+
+#### Deprecated
+
+#### Removed
+
+#### Fixed
+* Do not fail building the documentation when Fortran support is disabled, to
+  fix [#690](https://github.com/pdidev/pdi/issues/690)
+* Updated the embedded version of zpp to fix an issue with Fortran on MacOSX,
+  part of [#688](https://github.com/pdidev/pdi/issues/688)
 
 #### Security
 
@@ -41,7 +93,7 @@ and this project adheres to
 
 
 
-## [1.11.0] - 2026-22-04
+## [1.11.0] - 2026-04-22
 
 ### For users
 
