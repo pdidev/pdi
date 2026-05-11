@@ -112,8 +112,8 @@ ExposedAlias::ExposedAlias(Context& ctx, const Alias& alias)
 {
 	try {
 		m_desc->share(alias.m_value.to_ref(ctx), false, false);
-	} catch (const Error& e) {
-		throw Error{e.status(), "Could not alias `{}' because {}", alias.m_name, e.what()};
+	} catch (...) {
+		PDI::rethrow_with_context(std::current_exception(), "Could not alias `{}' because ", alias.m_name);
 	}
 }
 

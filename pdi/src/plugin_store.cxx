@@ -253,16 +253,20 @@ Plugin_store::Plugin_store(Context& ctx, PC_tree_t conf)
 
 void Plugin_store::load_plugins()
 {
-	try {
-		for (auto&& plugin: m_plugins) {
+	std::vector<std::exception_ptr> errors;
+	for (auto&& plugin: m_plugins) {
+		try {
 			//TODO: what to do if a single plugin fails to load?
 			plugin.second->ensure_loaded(m_plugins);
+		} catch (...) {
+			try {
+				rethrow_with_context(std::current_exception(), "while loading plugin `{}', ", plugin.first);
+			} catch (...) {
+				errors.emplace_back(std::current_exception());
+			}
 		}
-	} catch (const Error& e) {
-		throw;
-	} catch (const exception& e) {
-		throw System_error{"Error while loading plugins: {}", e.what()};
 	}
+	rethrow_with_context(errors, "");
 }
 
 } // namespace PDI

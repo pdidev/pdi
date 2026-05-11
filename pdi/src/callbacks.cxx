@@ -125,40 +125,27 @@ void Callbacks::call_init_callbacks() const
 void Callbacks::call_data_callbacks(const string& name, Ref ref) const
 {
 	std::vector<std::reference_wrapper<const std::function<void(const std::string&, Ref)>>> data_callbacks;
-	//add named callbacks
+	// add named callbacks
 	auto callback_it_pair = m_named_data_callbacks.equal_range(name);
 	for (auto it = callback_it_pair.first; it != callback_it_pair.second; it++) {
 		data_callbacks.emplace_back(std::cref(it->second));
 	}
-	//add the unnamed callbacks
+	// add the unnamed callbacks
 	for (auto it = m_data_callbacks.begin(); it != m_data_callbacks.end(); it++) {
 		data_callbacks.emplace_back(std::cref(*it));
 	}
 	m_context.logger().trace("Calling `{}' share. Callbacks to call: {}", name, data_callbacks.size());
-	//call gathered callbacks
-	vector<Error> errors;
+	// call gathered callbacks
+	vector<std::exception_ptr> errors;
 	for (const std::function<void(const std::string&, Ref)>& callback: data_callbacks) {
 		try {
 			callback(name, ref);
 			//TODO: remove the faulty plugin in case of error?
-		} catch (const Error& e) {
-			errors.emplace_back(e);
-		} catch (const exception& e) {
-			errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 		} catch (...) {
-			errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error");
+			errors.emplace_back(std::current_exception());
 		}
 	}
-	if (!errors.empty()) {
-		if (1 == errors.size()) {
-			throw Error{errors.front().status(), "Error while triggering data share `{}': {}", name, errors.front().what()};
-		}
-		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering data share `" + name + "':\n";
-		for (auto&& err: errors) {
-			errmsg += string(err.what()) + "\n";
-		}
-		throw System_error{"{}", errmsg.c_str()};
-	}
+	rethrow_with_context(errors, "while sharing `{}', ", name);
 }
 
 void Callbacks::call_data_remove_callbacks(const string& name, Ref ref) const
@@ -175,29 +162,16 @@ void Callbacks::call_data_remove_callbacks(const string& name, Ref ref) const
 	}
 	m_context.logger().trace("Calling `{}' data remove. Callbacks to call: {}", name, data_remove_callbacks.size());
 	//call gathered callbacks
-	vector<Error> errors;
+	vector<std::exception_ptr> errors;
 	for (const std::function<void(const std::string&, Ref)>& callback: data_remove_callbacks) {
 		try {
 			callback(name, ref);
 			//TODO: remove the faulty plugin in case of error?
-		} catch (const Error& e) {
-			errors.emplace_back(e);
-		} catch (const exception& e) {
-			errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 		} catch (...) {
-			errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error");
+			errors.emplace_back(std::current_exception());
 		}
 	}
-	if (!errors.empty()) {
-		if (1 == errors.size()) {
-			throw Error{errors.front().status(), "Error while triggering data share `{}': {}", name, errors.front().what()};
-		}
-		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering data share `" + name + "':\n";
-		for (auto&& err: errors) {
-			errmsg += string(err.what()) + "\n";
-		}
-		throw System_error{"{}", errmsg.c_str()};
-	}
+	rethrow_with_context(errors, "while removing `{}', ", name);
 }
 
 void Callbacks::call_event_callbacks(const string& name) const
@@ -214,29 +188,16 @@ void Callbacks::call_event_callbacks(const string& name) const
 	}
 	m_context.logger().trace("Calling `{}' event. Callbacks to call: {}", name, event_callbacks.size());
 	//call gathered callbacks
-	std::vector<Error> errors;
+	vector<std::exception_ptr> errors;
 	for (const function<void(const string&)>& callback: event_callbacks) {
 		try {
 			callback(name);
 			//TODO: remove the faulty plugin in case of error?
-		} catch (const Error& e) {
-			errors.emplace_back(e);
-		} catch (const exception& e) {
-			errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 		} catch (...) {
-			errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error");
+			errors.emplace_back(std::current_exception());
 		}
 	}
-	if (!errors.empty()) {
-		if (1 == errors.size()) {
-			throw Error{errors.front().status(), "Error while triggering event `{}': {}", name, errors.front().what()};
-		}
-		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering event `" + string(name) + "':\n";
-		for (auto&& err: errors) {
-			errmsg += string(err.what()) + "\n";
-		}
-		throw System_error{"{}", errmsg.c_str()};
-	}
+	rethrow_with_context(errors, "while triggering `{}', ", name);
 }
 
 void Callbacks::call_empty_desc_access_callbacks(const string& name) const
@@ -253,29 +214,16 @@ void Callbacks::call_empty_desc_access_callbacks(const string& name) const
 	}
 	m_context.logger().trace("Calling `{}' empty desc access. Callbacks to call: {}", name, empty_desc_callbacks.size());
 	//call gathered callbacks
-	vector<Error> errors;
+	vector<std::exception_ptr> errors;
 	for (const std::function<void(const std::string&)>& callback: empty_desc_callbacks) {
 		try {
 			callback(name);
 			//TODO: remove the faulty plugin in case of error?
-		} catch (const Error& e) {
-			errors.emplace_back(e);
-		} catch (const exception& e) {
-			errors.emplace_back(PDI_ERR_SYSTEM, e.what());
 		} catch (...) {
-			errors.emplace_back(PDI_ERR_SYSTEM, "Not std::exception based error");
+			errors.emplace_back(std::current_exception());
 		}
 	}
-	if (!errors.empty()) {
-		if (1 == errors.size()) {
-			throw Error{errors.front().status(), "Error while triggering empty desc access `{}': {}", name, errors.front().what()};
-		}
-		string errmsg = "Multiple (" + std::to_string(errors.size()) + ") errors while triggering empty desc access `" + name + "':\n";
-		for (auto&& err: errors) {
-			errmsg += string(err.what()) + "\n";
-		}
-		throw System_error{"{}", errmsg.c_str()};
-	}
+	rethrow_with_context(errors, "while populating `{}', ", name);
 }
 
 } // namespace PDI
