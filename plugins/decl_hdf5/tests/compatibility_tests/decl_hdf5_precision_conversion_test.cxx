@@ -70,25 +70,28 @@ plugins:
 	EXPECT_FALSE(std::filesystem::exists("d2f_test.h5"));
 	EXPECT_FALSE(std::filesystem::exists("d2i_test.h5"));
 
-	static constexpr size_t const N = 100;
+	static constexpr size_t N = 100;
 	PDI_expose("N", &N, PDI_OUT);
 
 	auto const test_array = make_a<std::array<std::array<double, N>, N>>();
 	PDI_expose("array", test_array.data(), PDI_OUT);
 
-	EXPECT_TRUE(std::filesystem::exists("d2d_test.h5"));
-	EXPECT_TRUE(std::filesystem::exists("d2f_test.h5"));
-	EXPECT_TRUE(std::filesystem::exists("d2i_test.h5"));
+	ASSERT_TRUE(std::filesystem::exists("d2d_test.h5"));
+	ASSERT_TRUE(std::filesystem::exists("d2f_test.h5"));
+	ASSERT_TRUE(std::filesystem::exists("d2i_test.h5"));
 
 	// read double precision dataset and compare
 	hid_t file_id = H5Fopen("d2d_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	hid_t dataset_id = H5Dopen2(file_id, "/double_ds", H5P_DEFAULT);
 	hid_t type_id = H5Dget_type(dataset_id);
+	ASSERT_GE(file_id, 0);
+    ASSERT_GE(dataset_id, 0);
+    ASSERT_GE(type_id, 0);
 
-	EXPECT_TRUE(H5Tequal(type_id, H5T_IEEE_F64LE));
+	EXPECT_GT(H5Tequal(type_id, H5T_IEEE_F64LE), 0);
 	std::array<std::array<double, N>, N> read_double_array;
 
-	herr_t status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_double_array.data());
+	herr_t status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_double_array.data()->data());
 	ASSERT_GE(status, 0);
 
 	EXPECT_EQ(test_array, read_double_array);
@@ -101,11 +104,14 @@ plugins:
 	file_id = H5Fopen("d2f_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	dataset_id = H5Dopen2(file_id, "/float_ds", H5P_DEFAULT);
 	type_id = H5Dget_type(dataset_id);
+    ASSERT_GE(file_id, 0);
+    ASSERT_GE(dataset_id, 0);
+    ASSERT_GE(type_id, 0);
 
-	EXPECT_TRUE(H5Tequal(type_id, H5T_IEEE_F32LE));
+	EXPECT_GT(H5Tequal(type_id, H5T_IEEE_F32LE), 0);
 	std::array< std::array<float, N>, N > read_float_array;
 
-	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data());
+	status = H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_float_array.data()->data());
 	ASSERT_GE(status, 0);
 
 #if defined(__clang__) && (__clang_major__ == 15)
@@ -124,11 +130,14 @@ plugins:
 	file_id = H5Fopen("d2i_test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 	dataset_id = H5Dopen2(file_id, "/int_ds", H5P_DEFAULT);
 	type_id = H5Dget_type(dataset_id);
+	ASSERT_GE(file_id, 0);
+    ASSERT_GE(dataset_id, 0);
+    ASSERT_GE(type_id, 0);
 
-	EXPECT_TRUE(H5Tequal(type_id, H5T_STD_I32LE));
+	EXPECT_GT(H5Tequal(type_id, H5T_STD_I32LE), 0);
 	std::array< std::array<int, N>, N > read_int_array;
 
-	status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_int_array.data());
+	status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, read_int_array.data()->data());
 	ASSERT_GE(status, 0);
 
 #if defined(__clang__) && (__clang_major__ == 15)
