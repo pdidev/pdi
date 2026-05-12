@@ -50,25 +50,22 @@ class timer_plugin: public PDI::Plugin
 	// Map of start event, and different timers to be stopped
 	std::unordered_map<std::string, std::vector<std::string> > stop_events;
 
-private:
-	Context& timer_context;
-
 public:
 	timer_plugin(Context& ctx, PC_tree_t spec_tree)
 		: Plugin{ctx}
-		, timer_context{ctx}
 	{
 		read_config_tree(ctx, spec_tree);
 
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
 			if (start_events.find(name) != start_events.end()) {
-				for (const auto& event_name : start_events[name]) {
-    				startTimer(event_name);
+				for (const auto& event_name: start_events[name]) {
+					startTimer(event_name);
 				}
 			}
+
 			if (stop_events.find(name) != stop_events.end()) {
-				for (const auto& event_name : stop_events[name]) {
-    				stopTimer(event_name);
+				for (const auto& event_name: stop_events[name]) {
+					stopTimer(event_name);
 				}
 			}
 		});
@@ -78,11 +75,13 @@ public:
 
 	~timer_plugin()
 	{
-		printReport();
+		for (const auto& [name, duration]: accumulated_times) {
+			context().logger().info("Total time spent for {} : {} seconds", name, duration);
+		}
 		context().logger().info("Closing plugin");
 	}
 
-	static std::string pretty_name() { return "TIMER"; }
+	static std::string pretty_name() { return "Timer"; }
 
 private:
 	/** Read the configuration file
@@ -127,17 +126,17 @@ private:
 
 	void print_timer_property()
 	{
-		timer_context.logger().debug("All registered timers: ");
+		context().logger().debug("All registered timers: ");
 		for (const auto& [key, value]: start_events) {
-			timer_context.logger().debug("event [{}] starts timer ", key);
+			context().logger().debug("event [{}] starts timer ", key);
 			for (auto n: value) {
-				timer_context.logger().debug(" \t\t {} ", n);
+				context().logger().debug(" \t\t {} ", n);
 			}
 		}
 		for (const auto& [key, value]: stop_events) {
-			timer_context.logger().debug("event [{}] stops timer ", key);
+			context().logger().debug("event [{}] stops timer ", key);
 			for (auto n: value) {
-				timer_context.logger().debug(" \t\t {} ", n);
+				context().logger().debug(" \t\t {} ", n);
 			}
 		}
 	}
@@ -145,7 +144,7 @@ private:
 	void startTimer(const std::string& name)
 	{
 		if (start_times.find(name) != start_times.end()) {
-			timer_context.logger().error("Timer for {} is already running. Ignoring the start", name);
+			context().logger().error("Timer for {} is already running. Ignoring the start", name);
 			return;
 		}
 		start_times[name] = std::chrono::high_resolution_clock::now();
@@ -156,7 +155,7 @@ private:
 	{
 		auto it = start_times.find(name);
 		if (it == start_times.end()) {
-			timer_context.logger().error("Error: Cannot end timer for {}  because it was never started.", name);
+			context().logger().error("Cannot end timer for {}  because it was never started.", name);
 			return;
 		}
 
@@ -165,14 +164,6 @@ private:
 
 		accumulated_times[name] += elapsed.count();
 		start_times.erase(it);
-	}
-
-	// Output the results of all timers
-	void printReport() const
-	{
-		for (const auto& [name, duration]: accumulated_times) {
-			timer_context.logger().info("Totale time spent for {} : {} seconds", name, duration);
-		}
 	}
 };
 
