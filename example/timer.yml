@@ -14,7 +14,6 @@ pdi:
     pcoord: { size: 2, type: array, subtype: int } # coordinate of the process
   data: # type of values for which PDI does not keep a copy
     main_field: { size: [ '$dsize[0]', '$dsize[1]' ], type: array, subtype: double }
-  timer: true
   plugins:
     trace: debug
     timer:
