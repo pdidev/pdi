@@ -118,8 +118,6 @@ int main(int argc, char* argv[])
 	int size;
 	MPI_Comm_size(world, &size);
 
-	PDI_expose("nproc", &size, PDI_OUT);
-
 	MPI_Cart_create(world, DIM, dims, periodic, 0, &comm2D);
 	MPI_Cart_coords(comm2D, rank, DIM, coord);
 
