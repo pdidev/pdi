@@ -114,12 +114,10 @@ public:
 
 	void data(const std::string& name, Ref ref)
 	{
-		context().event("decl_hdf5_start_timer");
 		Hdf5_error_handler _;
 		for (auto&& op: m_data[name]) {
 			op.execute(context());
 		}
-		context().event("decl_hdf5_stop_timer");
 	}
 
 	void event(const std::string& event)

@@ -24,8 +24,16 @@
 
 cmake_minimum_required(VERSION 3.22...4.2)
 
-set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
+if(NOT TARGET GTest::gtest)
+	option(INSTALL_GTEST "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)" OFF)
+	add_subdirectory("../../../vendor/googletest-56efe39/" "googletest" EXCLUDE_FROM_ALL)
+endif()
+include(GoogleTest)
 
+set(RUNTEST_DIR "${CMAKE_CURRENT_LIST_DIR}/../cmake/runtest-dir")
+
+# Add the plugin path to PDI_PLUGIN_PATH
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY TEST_INCLUDE_FILE "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake")
 file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/TestPath.cmake"
      CONTENT "
 set(PDI_PLUGIN_PATH \"\$ENV{PDI_PLUGIN_PATH}\")\n
@@ -36,12 +44,13 @@ set(ENV{PDI_PLUGIN_PATH} \"\$<TARGET_FILE_DIR:pdi_timer_plugin>:\${PDI_PLUGIN_PA
 endif()
 "
 )
-
 find_package(MPI REQUIRED)
 
-# 3. Set the C++ standard (using the variable from your matrix)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(timer_test timer_test.cxx )
 target_link_libraries(timer_test PDI::PDI_C MPI::MPI_CXX)
+add_test(NAME timer_test COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:timer_test>" ${MPIEXEC_POSTFLAGS})
+set_property(TEST timer_test PROPERTY TIMEOUT 15)
+set_property(TEST timer_test PROPERTY PROCESSORS 2)

@@ -23,8 +23,8 @@
  ******************************************************************************/
 
 #include <chrono>
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include <pdi/context.h>
 #include <pdi/logger.h>
@@ -39,16 +39,16 @@ using namespace PDI;
 class timer_plugin: public PDI::Plugin
 {
 	// Map of timer's name and timer's starting point
-	std::map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
+	std::unordered_map<std::string, std::chrono::high_resolution_clock::time_point> start_times;
 
 	// Map of timer's name and timer's duration
-	std::map<std::string, double> accumulated_times;
+	std::unordered_map<std::string, double> accumulated_times;
 
 	// Map of start event, and different timers to be started
-	std::map<const std::string, std::vector<std::string> > start_events;
+	std::unordered_map<std::string, std::vector<std::string> > start_events;
 
 	// Map of start event, and different timers to be stopped
-	std::map<const std::string, std::vector<std::string> > stop_events;
+	std::unordered_map<std::string, std::vector<std::string> > stop_events;
 
 private:
 	Context& timer_context;
@@ -62,17 +62,15 @@ public:
 
 		ctx.callbacks().add_event_callback([this](const std::string& name) {
 			if (start_events.find(name) != start_events.end()) {
-				for (int i = 0; i < start_events[name].size(); i++) {
-					auto sub_timer_name = start_events[name][i];
-					startTimer(sub_timer_name);
+				for (const auto& event_name : start_events[name]) {
+    				startTimer(event_name);
 				}
 			} else if (stop_events.find(name) != stop_events.end()) {
-				for (int i = 0; i < stop_events[name].size(); i++) {
-					auto sub_timer_name = stop_events[name][i];
-					stopTimer(sub_timer_name);
+				for (const auto& event_name : stop_events[name]) {
+    				stopTimer(event_name);
 				}
 			} else {
-				this->context().logger().info("event {} is not recoreded by any timers. Skipping", name);
+				this->context().logger().info("event {} is not recorded by any timers. Skipping", name);
 			}
 		});
 
@@ -106,53 +104,26 @@ private:
 
 			PC_tree_t val = PC_get(timer_item, ".%s", timer_name.c_str());
 			if (is_map(val)) {
-				bool timer_start_defined = false;
-				bool timer_stop_defined = false;
 				ctx.logger().debug("Defined timer (map-styled): {}", timer_name);
-				each(val, [&](PC_tree_t key_tree, PC_tree_t value) {
-					if (!PC_status(value)) {
-						std::string key = to_string(key_tree);
-						if (key == "start") {
-							auto st = to_string(value);
-							start_events[st].push_back(timer_name);
-							ctx.logger().debug("\t start_event = {}", st);
-							timer_start_defined = true;
-						} else if (key == "stop") {
-							auto st = to_string(value);
-							ctx.logger().debug("\t stop_event = {}", st);
-							stop_events[st].push_back(timer_name);
-							timer_stop_defined = true;
-						}
-					}
-				});
-				if (!timer_start_defined || !timer_stop_defined) {
-					throw Spectree_error{val, "Both start and stop attributs are mandatory for timer {}", timer_name};
-				}
-			} else if (is_scalar(val)) {
-				ctx.logger().debug("Defined timer (scalar-styled): {}", timer_name);
-				auto st = to_string(val) + "_start_timer";
-				start_events[st].push_back(timer_name);
-				ctx.logger().debug("\t start_event = {}", st);
-				st = to_string(val) + "_stop_timer";
-				stop_events[st].push_back(timer_name);
-				ctx.logger().debug("\t stop_event = {}", st);
-			} else if (is_list(val)) {
-				ctx.logger().debug("Defined timer (list-styled): {}", timer_name);
-				int size_list = len(val, 0);
-				for (int i = 0; i < size_list; i++) {
-					auto st = to_string(PC_get(val, "[%d]", i)) + "_start_timer";
-					ctx.logger().debug("\t start_event = {}", st);
-					start_events[st].push_back(timer_name);
-					st = to_string(PC_get(val, "[%d]", i)) + "_stop_timer";
-					ctx.logger().debug("\t stop_event = {}", st);
-					stop_events[st].push_back(timer_name);
-				}
+				auto start_ev = to_string(PC_get(val, ".start"));
+				auto stop_ev = to_string(PC_get(val, ".stop"));
+				register_timer(start_ev, stop_ev, timer_name);
 			} else {
-				ctx.logger().warn("timer not scalar, not map, not list");
-				throw Spectree_error{val, "Timer not correctly defined"};
+				ctx.logger().debug("Defined timer (scalar/list-styled): {}", timer_name);
+				opt_each(val, [&](PC_tree_t sub_elem) {
+					auto start_ev = to_string(sub_elem) + "_start_timer";
+					auto stop_ev = to_string(sub_elem) + "_stop_timer";
+					register_timer(start_ev, stop_ev, timer_name);
+				});
 			}
 		}
 		print_timer_property();
+	}
+
+	void register_timer(std::string& start_event, std::string& stop_event, std::string& timer_name)
+	{
+		start_events[start_event].push_back(timer_name);
+		stop_events[stop_event].push_back(timer_name);
 	}
 
 	void print_timer_property()
