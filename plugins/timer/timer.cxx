@@ -65,12 +65,11 @@ public:
 				for (const auto& event_name : start_events[name]) {
     				startTimer(event_name);
 				}
-			} else if (stop_events.find(name) != stop_events.end()) {
+			}
+			if (stop_events.find(name) != stop_events.end()) {
 				for (const auto& event_name : stop_events[name]) {
     				stopTimer(event_name);
 				}
-			} else {
-				this->context().logger().info("event {} is not recorded by any timers. Skipping", name);
 			}
 		});
 
