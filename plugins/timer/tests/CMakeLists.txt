@@ -50,6 +50,6 @@ add_executable(timer_test timer_test.cxx )
 target_link_libraries(timer_test PDI::PDI_C MPI::MPI_CXX)
 target_compile_features(timer_test PRIVATE cxx_std_17)
 
-add_test(NAME timer_test COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 2 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:timer_test>" ${MPIEXEC_POSTFLAGS})
+add_test(NAME timer_test COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 1 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:timer_test>" ${MPIEXEC_POSTFLAGS})
 set_property(TEST timer_test PROPERTY TIMEOUT 15)
-set_property(TEST timer_test PROPERTY PROCESSORS 2)
+set_property(TEST timer_test PROPERTY PROCESSORS 1)

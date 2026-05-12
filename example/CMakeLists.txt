@@ -40,6 +40,7 @@ option(BUILD_DECL_NETCDF_PLUGIN "Build Decl'NetCDF plug-in"  OFF)
 option(BUILD_FORTRAN            "Build with Fortran support" OFF)
 option(BUILD_PYCALL_PLUGIN      "Build Pycall plug-in"       OFF)
 option(BUILD_PYTHON             "Build with Python support"  OFF)
+option(BUILD_TIMER_PLUGIN       "Build Timer plugin"         OFF)
 option(BUILD_JSON_PLUGIN        "Build JSON plug-in"         OFF)
 option(DISABLE_PDI              "Disable the use of both PDI and Paraconf in the project" OFF)
 
@@ -143,7 +144,6 @@ add_test(NAME PDI_example_json_F COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXE
 set_property(TEST PDI_example_json_F PROPERTY TIMEOUT 30)
 set_property(TEST PDI_example_json_F PROPERTY PROCESSORS 6)
 endif("${BUILD_FORTRAN}")
-
 endif("${BUILD_JSON_PLUGIN}")
 
 add_test(NAME PDI_example_trace_C COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/trace.yml")
@@ -161,3 +161,11 @@ add_test(NAME PDI_example_trace_P COMMAND "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}"
 set_property(TEST PDI_example_trace_P PROPERTY TIMEOUT 15)
 set_property(TEST PDI_example_trace_P PROPERTY PROCESSORS 3)
 endif("${BUILD_PYTHON}")
+
+if("${BUILD_TIMER_PLUGIN}")
+if("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_DECL_HDF5_PLUGIN}")
+add_test(NAME PDI_example_timer COMMAND "${RUNTEST_DIR}" "${MPIEXEC}" "${MPIEXEC_NUMPROC_FLAG}" 3 ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:PDI_example_C>" ${MPIEXEC_POSTFLAGS} "${CMAKE_CURRENT_SOURCE_DIR}/timer.yml")
+set_property(TEST PDI_example_timer PROPERTY TIMEOUT 15)
+set_property(TEST PDI_example_timer PROPERTY PROCESSORS 3)
+endif("${BUILD_DECL_NETCDF_PLUGIN}" AND "${BUILD_DECL_HDF5_PLUGIN}")
+endif("${BUILD_TIMER_PLUGIN}")

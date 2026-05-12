@@ -58,30 +58,8 @@ data:
     subsize: [$nj, $ni]
     start: [$njg, $nig]
 plugins:
-  mpi:
   timer: 
-    - timer_AAA: {start: "decl_hdf5_start_timer", stop: "decl_hdf5_stop_timer"}
-    - timer_BBB: "decl_hdf5"
-    - timer_CCC: [decl_hdf5, event_toto]
-    - timer_DDD: 
-        start: "event_toto_start_timer"
-        stop: "event_toto_stop_timer"
-
-  decl_hdf5:
-    - file: output_reals.h5
-      communicator: $MPI_COMM_WORLD
-      datasets:
-        reals: {type: array, subtype: double, size: [$njt, $nit]}
-      write:
-        reals:
-          dataset_selection: {start: [$jstart, $istart]}
-    - file: output_values.h5
-      communicator: $MPI_COMM_WORLD
-      datasets:
-        values: {type: array, subtype: int, size: [$njt, $nit]}
-      write:
-        values:
-          dataset_selection: {start: [$jstart, $istart]}
+    - timer_pdi: "pdi"
 )";
 
 int main(int argc, char* argv[])

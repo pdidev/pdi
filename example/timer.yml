@@ -21,7 +21,7 @@ pdi:
       - timer_nc:
           start: "decl_netcdf_start_timer"
           stop: "decl_netcdf_stop_timer"
-      - timer_python: [pycall, user_code]
+      - timer_user: [pycall, user_code]
       - timer_json: {start: "json_start_timer", stop: "json_stop_timer"}
       - timer_pdi: "pdi"
     mpi:
@@ -59,7 +59,3 @@ pdi:
           variable_selection: # only write into a single slice in time
             subsize:  [1, '$dsize[0]', '$dsize[1]']
             start: [$iter, '$dsize[0]*$pcoord[0]', '$dsize[1]*$pcoord[1]']
-    json:
-      file: data_${pcoord[0]}_${pcoord[1]}.json
-      when: '$iter<10'
-      write: [main_field]
