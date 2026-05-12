@@ -10,10 +10,11 @@ plugins:
   timer: 
     - timer_A: {start: "decl_hdf5_start_timer", stop: "decl_hdf5_stop_timer"}
     - timer_B: "decl_hdf5"
-    - timer_C: [toto, titi]
+    - timer_C: ["toto", "titi"]
     - timer_D: 
         start: "begin_timing"
         stop: "end_timing"
+    - timer_E: ["pdi"]
 ```
 
 The timer plugin configuration contains a list of timer names (e.g. `- timer_A`, `- timer_B`, etc). Each timer will record the time spent between the `start` and `stop` events.
@@ -26,3 +27,4 @@ The timer plugin configuration contains a list of timer names (e.g. `- timer_A`,
 
 It is also possible to have different names for start and stop events such as `timer_D`. 
 
+To measure the time used by PDI between `PDI_init` and `PDI_finalize`, one can define a timer as shown by `timer_E` with timer prefix "pdi".
